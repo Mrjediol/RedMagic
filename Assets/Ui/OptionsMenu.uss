@@ -1,0 +1,110 @@
+.options-menu {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.scrim--strong {
+    background-color: rgba(6, 4, 6, 0.62);
+}
+
+.options-panel {
+    width: 62%;
+    max-width: 1180px;
+    padding: 52px 60px 44px 60px;
+    align-items: stretch;
+    background-color: rgba(12, 8, 10, 0.86);
+    border-width: 2px;
+    border-color: rgba(150, 112, 74, 0.5);
+    border-radius: 18px;
+}
+
+.options-title {
+    margin-bottom: 30px;
+    font-size: 62px;
+    letter-spacing: 5px;
+    -unity-font-style: bold;
+    color: var(--color-title);
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.8);
+}
+
+.option-row {
+    flex-direction: row;
+    align-items: center;
+    margin: 12px 0;
+    padding: 6px 0;
+}
+
+.option-label {
+    width: 160px;
+    font-size: 30px;
+    -unity-font-style: bold;
+    color: #ecdfbf;
+}
+
+.option-slider {
+    flex-grow: 1;
+    min-height: 34px;
+    margin: 0 8px;
+}
+
+.option-slider .unity-base-slider__tracker {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-width: 1px;
+    border-color: rgba(150, 112, 74, 0.4);
+    border-radius: 4px;
+}
+
+.option-slider .unity-base-slider__dragger {
+    width: 24px;
+    height: 24px;
+    border-width: 0;
+    border-radius: 12px;
+    background-color: #f4ce84;
+}
+
+.option-slider:hover .unity-base-slider__dragger {
+    background-color: #ffe6a8;
+}
+
+.option-value {
+    width: 132px;
+    font-size: 24px;
+    color: rgba(214, 176, 120, 0.9);
+    -unity-text-align: middle-right;
+}
+
+.option-mute {
+    width: 168px;
+    margin-left: 28px;
+    font-size: 20px;
+}
+
+.option-mute .unity-toggle__label {
+    color: #d8c9a6;
+    font-size: 20px;
+    min-width: auto;
+}
+
+.option-mute .unity-toggle__checkmark {
+    width: 28px;
+    height: 28px;
+    margin-right: 10px;
+    border-width: 2px;
+    border-color: rgba(150, 112, 74, 0.65);
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.option-mute:checked .unity-toggle__checkmark {
+    background-color: rgba(122, 26, 34, 0.9);
+    border-color: var(--color-btn-border-hover);
+    -unity-background-image-tint-color: #ffe6a8;
+}
+
+.back-button {
+    align-self: center;
+    margin-top: 34px;
+}

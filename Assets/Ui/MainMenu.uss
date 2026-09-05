@@ -1,0 +1,113 @@
+:root {
+    --color-title: #f4e8c6;
+    --color-subtitle: rgba(214, 176, 120, 0.85);
+    --color-btn-text: #ecdfbf;
+    --color-btn-text-hover: #fff7e2;
+    --color-btn-bg: rgba(18, 11, 14, 0.82);
+    --color-btn-bg-hover: rgba(122, 26, 34, 0.85);
+    --color-btn-bg-active: rgba(88, 16, 22, 0.9);
+    --color-btn-border: rgba(150, 112, 74, 0.55);
+    --color-btn-border-hover: rgba(244, 206, 132, 0.95);
+    --color-quit-border-hover: rgba(214, 132, 108, 0.95);
+}
+
+.main-menu {
+    flex-grow: 1;
+    background-color: #08050700;
+    justify-content: space-between;
+}
+
+.background-layer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: #080507;
+    background-image: url("project://database/Assets/Ui/Art/necrotic_bone_shrine_03.png");
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.scrim {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(6, 4, 6, 0.35);
+}
+
+.title-container {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 96px;
+}
+
+.game-title {
+    font-size: 104px;
+    -unity-font-style: bold;
+    letter-spacing: 6px;
+    color: var(--color-title);
+    -unity-text-align: middle-center;
+    white-space: normal;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.85);
+}
+
+.game-subtitle {
+    margin-top: 8px;
+    font-size: 30px;
+    letter-spacing: 10px;
+    color: var(--color-subtitle);
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+}
+
+.button-container {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 72px;
+}
+
+.menu-button {
+    width: 440px;
+    height: 96px;
+    margin: 11px 0;
+    padding: 0;
+    font-size: 36px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    color: var(--color-btn-text);
+    background-color: var(--color-btn-bg);
+    border-width: 2px;
+    border-color: var(--color-btn-border);
+    border-radius: 12px;
+    -unity-text-align: middle-center;
+    transition-duration: 0.12s;
+    scale: 1;
+}
+
+.menu-button:hover {
+    scale: 1.05;
+    color: var(--color-btn-text-hover);
+    background-color: var(--color-btn-bg-hover);
+    border-color: var(--color-btn-border-hover);
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(255, 226, 158, 0.6);
+}
+
+.menu-button:active {
+    scale: 0.98;
+    background-color: var(--color-btn-bg-active);
+}
+
+.menu-button:focus {
+    border-color: var(--color-btn-border-hover);
+}
+
+.menu-button--quit:hover {
+    background-color: rgba(70, 20, 24, 0.85);
+    border-color: var(--color-quit-border-hover);
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ui="UnityEngine.UIElements"
+    xmlns:uie="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
+>
+    <ui:Style src="MainMenu.uss" />
+    <ui:VisualElement name="mainMenu" class="main-menu">
+        <ui:VisualElement name="backgroundLayer" class="background-layer" picking-mode="Ignore" />
+        <ui:VisualElement name="scrim" class="scrim" picking-mode="Ignore" />
+        <ui:VisualElement name="titleContainer" class="title-container" picking-mode="Ignore">
+            <ui:Label name="gameTitle" text="TÍTULO DEL JUEGO" class="game-title" />
+            <ui:Label name="gameSubtitle" text="Roguelite" class="game-subtitle" />
+        </ui:VisualElement>
+        <ui:VisualElement name="buttonContainer" class="button-container">
+            <ui:Button name="playButton" text="Jugar" class="menu-button" />
+            <ui:Button name="optionsButton" text="Opciones" class="menu-button" />
+            <ui:Button name="quitButton" text="Salir" class="menu-button menu-button--quit" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

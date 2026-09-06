@@ -1514,6 +1514,7 @@ MonoBehaviour:
   defaultMusicVolume: 0.8
   defaultSfxVolume: 1
   musicFadeDuration: 0.75
+  musicResourceFolder: Music
   sfxVoiceCount: 8
 --- !u!4 &780735658
 Transform:
@@ -3131,11 +3132,15 @@ MonoBehaviour:
     sceneAsset: {fileID: 102900000, guid: 8c9cfa26abfee488c85f1582747f6a02, type: 3}
     scenePath: Assets/Scenes/MainHub.unity
     sceneName: MainHub
-  worlds: []
+  worlds:
+  - {fileID: 11400000, guid: fa02f61dd9f9f43498805495dfbd4783, type: 2}
+  - {fileID: 11400000, guid: f7b0121c34b26684d894d0aa12b1d92b, type: 2}
+  - {fileID: 11400000, guid: 3a74a0ce5ea18464394b8d9a3cd0bf43, type: 2}
   chainToNextWorld: 1
   playerPrefab: {fileID: 4486680268914706177, guid: d17a89dc0989ba9428e9443f056f2fbb, type: 3}
   deathReturnDelay: 1.5
   debugSeed: 0
+  hubMusicId: MainHub
 --- !u!4 &1900001002
 Transform:
   m_ObjectHideFlags: 0

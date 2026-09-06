@@ -25,11 +25,12 @@ namespace RedMagic.RunEditor
     ///
     /// El <c>Base Section Prefab</c> (bajo "Opciones") es opcional y es un campo por mundo: su
     /// valor en el momento de generar es el que se usa para ESE mundo, así que el Mundo 2 puede
-    /// usar un prefab base distinto simplemente cambiándolo antes de generarlo. Si se asigna, ese
-    /// prefab (sólo terreno, típicamente) sustituye a la caja de marcador de terreno en cada
-    /// sección nueva; el resto del placeholder (cámara, luz global, entrada, salida) se sigue
-    /// generando igual, porque el prefab no tiene por qué traerlos. El jefe nunca usa el prefab.
-    /// Si se deja vacío, el comportamiento es el de siempre.
+    /// usar un prefab base distinto simplemente cambiándolo antes de generarlo. Si se asigna, se
+    /// instancia tal cual en cada escena nueva del mundo —secciones y jefe— y se da por hecho que
+    /// ya trae el terreno, el <see cref="SectionEntry"/> y el <see cref="SectionExit"/>; el
+    /// generador sólo añade cámara y luz global. En el jefe se le quita cualquier SectionExit tras
+    /// instanciarlo, porque el jefe avanza al morir, no al cruzar una salida. Si se deja vacío,
+    /// cada escena se monta con un placeholder de marcador propio (terreno + entrada + salida).
     ///
     /// Menú: <b>Tools > RedMagic > World Scene Generator</b>.
     /// </summary>
@@ -86,17 +87,18 @@ namespace RedMagic.RunEditor
             _createWorldAsset = EditorGUILayout.Toggle("Crear WorldDefinition", _createWorldAsset);
             _buildPlaceholderContent = EditorGUILayout.Toggle(
                 new GUIContent("Contenido placeholder",
-                               "Añade cámara, luz global, terreno, entrada y salida a cada escena " +
-                               "nueva para que sea jugable desde el primer momento."),
+                               "Añade cámara y luz global a cada escena nueva (más terreno, entrada " +
+                               "y salida de marcador si no hay Base Section Prefab) para que sea " +
+                               "jugable desde el primer momento."),
                 _buildPlaceholderContent);
 
             _baseSectionPrefab = (GameObject)EditorGUILayout.ObjectField(
                 new GUIContent("Base Section Prefab",
-                               "Opcional, sólo terreno. Si se asigna, sustituye a la caja de " +
-                               "marcador de terreno en cada sección nueva de ESTE mundo; la cámara, " +
-                               "la luz, la entrada y la salida se siguen generando igual (el jefe " +
-                               "nunca usa este prefab). Es un campo por mundo: cambia el valor antes " +
-                               "de generar cada mundo si cada uno necesita un terreno base distinto."),
+                               "Opcional. Si se asigna, se instancia en cada escena nueva de ESTE " +
+                               "mundo (secciones y jefe) y se asume que ya trae terreno, SectionEntry " +
+                               "y SectionExit; el generador sólo añade cámara y luz. En el jefe se le " +
+                               "quita el SectionExit. Es un campo por mundo: cámbialo antes de generar " +
+                               "cada mundo si cada uno usa un prefab base distinto."),
                 _baseSectionPrefab, typeof(GameObject), allowSceneObjects: false);
 
             EditorGUILayout.Space();
@@ -104,7 +106,7 @@ namespace RedMagic.RunEditor
                 $"Se generará: World{_worldNumber}_Section01 … World{_worldNumber}_Section{_sectionCount:00}" +
                 (_createBossScene ? $" + World{_worldNumber}_Boss" : "") +
                 (_baseSectionPrefab != null
-                    ? $"\nSecciones a partir de '{_baseSectionPrefab.name}'."
+                    ? $"\nEscenas a partir de '{_baseSectionPrefab.name}'."
                     : ""),
                 EditorStyles.wordWrappedMiniLabel);
 
@@ -188,7 +190,7 @@ namespace RedMagic.RunEditor
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
 
             if (_buildPlaceholderContent)
-                BuildPlaceholderContent(scene, isBoss, isBoss ? null : _baseSectionPrefab);
+                BuildPlaceholderContent(scene, isBoss, _baseSectionPrefab);
 
             EditorSceneManager.SaveScene(scene, path);
             EditorSceneManager.CloseScene(scene, removeScene: true);
@@ -196,15 +198,14 @@ namespace RedMagic.RunEditor
         }
 
         /// <summary>
-        /// Monta el mínimo para que la sección se pueda jugar nada más generarla: cámara que sigue
-        /// al jugador, luz global (sin ella los sprites Lit de URP 2D salen en negro), terreno, el
-        /// punto de entrada y, si no es el jefe, la salida al final.
+        /// Monta el mínimo para que la escena se pueda jugar nada más generarla: cámara que sigue
+        /// al jugador y luz global (sin ella los sprites Lit de URP 2D salen en negro).
         ///
-        /// <paramref name="baseSectionPrefab"/> sustituye SÓLO la pieza de terreno cuando se pasa
-        /// (nunca en el jefe): el resto (cámara, luz, entrada, salida) se genera igual porque el
-        /// prefab es sólo terreno, no una plantilla de sección completa. La entrada y la salida se
-        /// dejan en las mismas coordenadas fijas de siempre, así que si el terreno del prefab no
-        /// coincide con las del placeholder puede hacer falta reposicionarlas a mano tras generar.
+        /// Si hay <paramref name="baseSectionPrefab"/>, se instancia y se da por hecho que ya trae
+        /// el terreno, el <see cref="SectionEntry"/> y el <see cref="SectionExit"/>; en el jefe se
+        /// le quita el SectionExit después, porque el jefe avanza al morir. Sin prefab, se genera
+        /// un placeholder de marcador: una caja de terreno, un SectionEntry y —salvo en el jefe—
+        /// un SectionExit, en coordenadas fijas.
         /// </summary>
         private static void BuildPlaceholderContent(Scene scene, bool isBoss, GameObject baseSectionPrefab)
         {
@@ -226,27 +227,32 @@ namespace RedMagic.RunEditor
             light2D.intensity = 1f;
 
             if (baseSectionPrefab != null)
-                InstantiateBaseSectionPrefab(baseSectionPrefab, scene);
-            else
             {
-                var ground = new GameObject("Ground (placeholder)");
-                SceneManager.MoveGameObjectToScene(ground, scene);
-                ground.transform.position = new Vector3(10f, -4f, 0f);
-                var groundCollider = ground.AddComponent<BoxCollider2D>();
-                groundCollider.size = new Vector2(60f, 2f);
-            }
+                var instance = InstantiateBaseSectionPrefab(baseSectionPrefab, scene);
 
-            var entry = new GameObject("SectionEntry");
-            SceneManager.MoveGameObjectToScene(entry, scene);
-            entry.transform.position = new Vector3(-8f, -2f, 0f);
-            entry.AddComponent<SectionEntry>();
+                // El jefe no lleva salida: avanza al morir, no al cruzar un trigger. Si el prefab
+                // base trae un SectionExit, se quita de la instancia del jefe para que no se pueda
+                // saltar el combate cruzándola.
+                if (isBoss && instance != null)
+                    foreach (var prefabExit in instance.GetComponentsInChildren<SectionExit>(true))
+                        Object.DestroyImmediate(prefabExit.gameObject);
 
-            if (isBoss)
-            {
-                // El jefe no lleva SectionExit: el avance lo dispara su muerte, enganchando el
-                // evento Died de su Health a RunManager.AdvanceSection.
                 return;
             }
+
+            // Sin prefab base: placeholder de marcador (terreno + entrada + salida).
+            var ground = new GameObject("Ground (placeholder)");
+            SceneManager.MoveGameObjectToScene(ground, scene);
+            ground.transform.position = new Vector3(10f, -4f, 0f);
+            var groundCollider = ground.AddComponent<BoxCollider2D>();
+            groundCollider.size = new Vector2(60f, 2f);
+
+            var placeholderEntry = new GameObject("SectionEntry");
+            SceneManager.MoveGameObjectToScene(placeholderEntry, scene);
+            placeholderEntry.transform.position = new Vector3(-8f, -2f, 0f);
+            placeholderEntry.AddComponent<SectionEntry>();
+
+            if (isBoss) return;
 
             var exit = new GameObject("SectionExit");
             SceneManager.MoveGameObjectToScene(exit, scene);
@@ -258,18 +264,19 @@ namespace RedMagic.RunEditor
         }
 
         /// <summary>
-        /// Instancia el terreno del Base Section Prefab en la escena. Usa
+        /// Instancia el Base Section Prefab en la escena. Usa
         /// <see cref="PrefabUtility.InstantiatePrefab(Object, Scene)"/> y no
         /// <see cref="Object.Instantiate(Object)"/> para que la instancia se quede conectada al
-        /// prefab: un cambio en el terreno base se puede volver a aplicar después a todas las
-        /// secciones ya generadas con "Apply" en vez de rehacerlas una a una.
+        /// prefab: un cambio en el prefab base se puede volver a aplicar después a todas las
+        /// escenas ya generadas con "Apply" en vez de rehacerlas una a una.
         /// </summary>
-        private static void InstantiateBaseSectionPrefab(GameObject prefab, Scene scene)
+        private static GameObject InstantiateBaseSectionPrefab(GameObject prefab, Scene scene)
         {
             var instance = PrefabUtility.InstantiatePrefab(prefab, scene) as GameObject;
             if (instance == null)
                 Debug.LogError($"[WorldSceneGenerator] No se pudo instanciar el Base Section Prefab " +
                                $"'{prefab.name}' en '{scene.path}'.", prefab);
+            return instance;
         }
 
         private static void AddToBuildSettings(string scenePath)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Core;
 using RedMagic.Gameplay;
@@ -86,6 +87,11 @@ namespace RedMagic.Run
         [Tooltip("Semilla fija para depurar: la misma semilla da siempre las mismas secciones en el " +
                  "mismo orden. 0 = semilla nueva en cada run.")]
         [SerializeField] private int debugSeed;
+
+        [Header("Música")]
+        [Tooltip("Id de la música del hub. Debe haber un clip con este nombre en Resources/Music " +
+                 "(o una entrada en el AudioManager). Si no existe, el hub suena en silencio.")]
+        [SerializeField] private string hubMusicId = "MainHub";
 
         // ------------------------------------------------------------------ estado
 
@@ -311,7 +317,19 @@ namespace RedMagic.Run
         public WorldDefinition NextWorldAfter(WorldDefinition world)
         {
             int i = worlds.IndexOf(world);
-            return i >= 0 && i + 1 < worlds.Count ? worlds[i + 1] : null;
+
+            if (i < 0)
+            {
+                // El encadenado sale de la lista 'Worlds' del RunManager, no del asset del mundo:
+                // si el mundo actual no está en ella (o está pero le falta el siguiente detrás),
+                // la run termina en el hub aunque exista un WorldDefinition para el mundo siguiente.
+                Debug.LogWarning($"[RunManager] '{world.DisplayName}' no está en la lista 'Worlds' del " +
+                                 "RunManager, así que no hay forma de saber qué mundo va después. " +
+                                 "Añádelo (y los siguientes, en orden) en el Inspector del RunManager.", this);
+                return null;
+            }
+
+            return i + 1 < worlds.Count ? worlds[i + 1] : null;
         }
 
         // ------------------------------------------------------------------ flujo de escenas
@@ -363,6 +381,10 @@ namespace RedMagic.Run
             // 5. Colocar al jugador y apuntarle la cámara de la sección nueva.
             PlacePlayerAtEntry(_loadedRunScene);
             RetargetCameras(_loadedRunScene);
+
+            // 6. Música de la fase (World{n}-{puesto} o BossBattle{n}). Si no hay clip con ese
+            //    nombre en Resources/Music, PlaySceneMusic deja la escena en silencio sin errores.
+            PlayPhaseMusic();
 
             Unfreeze();
             IsTransitioning = false;
@@ -461,6 +483,10 @@ namespace RedMagic.Run
         private void EnterHub()
         {
             EnsurePlayer();
+
+            // La música del hub no depende del jugador: se pone aunque no haya playerPrefab.
+            AudioManager.Instance?.PlaySceneMusic(hubMusicId);
+
             if (Player == null) return;    // sin playerPrefab asignado: no hay nada que colocar
 
             MoveToHubEntry(Player);
@@ -650,6 +676,23 @@ namespace RedMagic.Run
         }
 
         // ------------------------------------------------------------------ utilidades
+
+        /// <summary>
+        /// Id de música por convención para la fase actual: <c>World{n}-{puesto}</c> para las
+        /// secciones (el puesto es el orden dentro de la run, 1..N, no el nombre de la escena) y
+        /// <c>BossBattle{n}</c> para el jefe, donde <c>n</c> es <see cref="WorldDefinition.WorldNumber"/>.
+        /// Dejar un clip con ese nombre en Resources/Music le pone música a esa fase; si no existe,
+        /// esa fase suena en silencio, así que añadir el Mundo 2 no obliga a tocar nada aquí.
+        /// </summary>
+        private string CurrentMusicId()
+        {
+            int world = CurrentWorld != null ? CurrentWorld.WorldNumber : 0;
+            return Phase == RunPhase.Boss
+                ? $"BossBattle{world}"
+                : $"World{world}-{CurrentSectionNumber}";
+        }
+
+        private void PlayPhaseMusic() => AudioManager.Instance?.PlaySceneMusic(CurrentMusicId());
 
         private void SetPhase(RunPhase phase)
         {

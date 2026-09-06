@@ -45,6 +45,11 @@ namespace RedMagic.Audio
         [Tooltip("Segundos de fundido al cambiar o parar la música. 0 = corte seco.")]
         [Range(0f, 5f)] [SerializeField] private float musicFadeDuration = 0.75f;
 
+        [Tooltip("Carpeta dentro de un 'Resources' donde PlaySceneMusic(id) busca el clip por " +
+                 "nombre (MainHub, World1-1, BossBattle1...). Añadir ahí un clip con el nombre " +
+                 "correcto le pone música a esa escena/fase sin tocar código ni el Inspector.")]
+        [SerializeField] private string musicResourceFolder = "Music";
+
         [Header("Voces de SFX")]
         [Tooltip("Nº de AudioSource reservados para SFX. Cada sonido con pitch propio necesita su " +
                  "propia voz porque el pitch es del AudioSource, no del PlayOneShot.")]
@@ -53,12 +58,14 @@ namespace RedMagic.Audio
         private readonly Dictionary<string, SoundData> _library = new Dictionary<string, SoundData>();
         private readonly Dictionary<string, float> _volume = new Dictionary<string, float>();
         private readonly Dictionary<string, bool> _muted = new Dictionary<string, bool>();
+        private readonly HashSet<string> _missingSceneMusic = new HashSet<string>();
 
         private AudioSource _musicSource;
         private AudioSource[] _sfxVoices;
         private int _nextVoice;
         private string _currentMusicId;
         private Coroutine _musicRoutine;
+        private Coroutine _sceneMusicRoutine;
 
         /// <summary>Grupo del mixer al que van los SFX. Lo usa <see cref="SoundEmitter"/>.</summary>
         public AudioMixerGroup SfxGroup => sfxGroup;
@@ -153,6 +160,83 @@ namespace RedMagic.Audio
 
             if (_musicRoutine != null) StopCoroutine(_musicRoutine);
             _musicRoutine = StartCoroutine(PlayMusicRoutine(data));
+        }
+
+        /// <summary>
+        /// Música por convención de escena/fase. Busca <paramref name="id"/> primero en la lista
+        /// del Inspector y, si no está, como AudioClip en <c>Resources/{musicResourceFolder}/{id}</c>.
+        /// Si no existe en ningún sitio corta la música actual y no suena nada — <b>sin warnings</b>,
+        /// para que una escena a la que aún no se le ha puesto tema simplemente esté en silencio.
+        /// Lo usa <c>RunManager</c> para el hub (<c>MainHub</c>), las secciones (<c>World{n}-{puesto}</c>)
+        /// y los jefes (<c>BossBattle{n}</c>): basta con dejar un clip con ese nombre en Resources/Music.
+        /// </summary>
+        public void PlaySceneMusic(string id)
+        {
+            if (_sceneMusicRoutine != null)
+            {
+                StopCoroutine(_sceneMusicRoutine);
+                _sceneMusicRoutine = null;
+            }
+
+            if (string.IsNullOrEmpty(id))
+            {
+                StopMusic();
+                return;
+            }
+
+            // Ya resuelto antes (en la lista del Inspector o en una carga previa): reproducir ya.
+            if (_library.ContainsKey(id))
+            {
+                PlayMusic(id);
+                return;
+            }
+
+            // Se sabe que no existe: silencio, sin volver a tocar disco.
+            if (_missingSceneMusic.Contains(id))
+            {
+                StopMusic();
+                return;
+            }
+
+            // Primera vez con este id: cargar el clip de Resources en asíncrono. Hacerlo síncrono
+            // (Resources.Load) es lo que provocaba el tirón al cambiar de escena, porque bloquea el
+            // hilo principal mientras se abre el asset. La música anterior sigue sonando hasta que
+            // el clip nuevo está listo, así que no hay silencio intermedio.
+            _sceneMusicRoutine = StartCoroutine(LoadSceneMusicRoutine(id));
+        }
+
+        // Carga un clip de música de Resources por nombre, en asíncrono. Cachea el acierto en
+        // _library (como SoundData sintético en loop por el grupo Music) y el fallo en
+        // _missingSceneMusic para no reintentar cada transición. El caché de fallos es de esta
+        // sesión: un clip añadido más tarde se detecta al reentrar en Play o en un build.
+        private IEnumerator LoadSceneMusicRoutine(string id)
+        {
+            string path = string.IsNullOrEmpty(musicResourceFolder) ? id : musicResourceFolder + "/" + id;
+
+            var request = Resources.LoadAsync<AudioClip>(path);
+            yield return request;
+
+            _sceneMusicRoutine = null;
+
+            var clip = request.asset as AudioClip;   // null si no existe: no registra nada en consola
+            if (clip == null)
+            {
+                _missingSceneMusic.Add(id);
+                StopMusic();
+                yield break;
+            }
+
+            _library[id] = new SoundData
+            {
+                id = id,
+                clip = clip,
+                volume = 1f,
+                pitch = 1f,
+                loop = true,
+                mixerGroup = musicGroup
+            };
+
+            PlayMusic(id);
         }
 
         // Espera a que el clip esté cargado (puede tener "Preload Audio Data" desactivado) y luego

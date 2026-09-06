@@ -165,6 +165,7 @@ GameObject:
   - component: {fileID: 252512177}
   - component: {fileID: 252512176}
   - component: {fileID: 252512182}
+  - component: {fileID: 252512183}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -349,6 +350,72 @@ MonoBehaviour:
     minPitch: 0.95
     maxPitch: 1.05
   playOnSpawnAutomatically: 1
+--- !u!114 &252512183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 252512175}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44fe6df95735a8348a179dfa93063c30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.RangedAttack
+  mode: 2
+  projectilePrefab: {fileID: 5154675108906216295, guid: f59efbf6d4928cd46b825dbbe37fabb8, type: 3}
+  muzzleOffset: {x: 0.55, y: 0}
+  damage: 10
+  projectileSpeed: 9
+  projectileHitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  cooldown: 2.2
+  windup: 0.2
+  animatorTrigger: 
+  attackSfxId: SFX_Fireball
+  muzzleEffect: {fileID: 0}
+  inputActions: {fileID: 0}
+  actionMapName: Player
+  actionName: Fireball
+  useTouchButton: 1
+  detectionRange: 9
+  targetTag: Player
+  onlyFireWhenFacing: 1
+  turnToFaceTarget: 1
+  verticalTolerance: 3
+  drawGizmos: 1
+--- !u!1 &459068597
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 459068598}
+  m_Layer: 0
+  m_Name: GameObject (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &459068598
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459068597}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.18248, y: 10.70301, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -456,7 +523,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 8
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -503,7 +570,7 @@ MonoBehaviour:
   fallbackTargetTag: Player
   offset: {x: 1.5, y: 0.8}
   smoothTime: 0.18
-  followVertical: 0
+  followVertical: 1
   useBounds: 0
   minBounds: {x: -20, y: -5}
   maxBounds: {x: 20, y: 10}
@@ -521,6 +588,10 @@ GameObject:
   - component: {fileID: 521717471}
   - component: {fileID: 521717470}
   - component: {fileID: 521717469}
+  - component: {fileID: 521717476}
+  - component: {fileID: 521717475}
+  - component: {fileID: 521717478}
+  - component: {fileID: 521717477}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -568,10 +639,12 @@ MonoBehaviour:
   actionMapName: Player
   moveActionName: Move
   jumpActionName: Jump
+  dashActionName: Dash
   jumpSfxId: SFX_PlayerJump
   footstepSfxId: SFX_PlayerFootstep
   footstepInterval: 0.32
   stompSfxId: SFX_EnemyStomp
+  dashSfxId: SFX_PlayerDash
   enableStomp: 1
   stompDamage: 0
   _characterBounds:
@@ -595,7 +668,19 @@ MonoBehaviour:
   _coyoteTimeThreshold: 0.1
   _jumpBuffer: 0.1
   _jumpEndEarlyGravityModifier: 3
+  maxAirJumps: 1
+  airJumpHeight: 0
+  allowDash: 1
+  dashSpeed: 26
+  dashDuration: 0.18
+  dashCooldown: 0.55
+  maxAirDashes: 1
+  dashIgnoresGravity: 1
   _freeColliderIterations: 10
+  allowCrouch: 1
+  snapToGround: 1
+  groundSkin: 0.01
+  solverSkin: 0.06
 --- !u!114 &521717471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -703,6 +788,97 @@ Transform:
   - {fileID: 36265110}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &521717475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521717468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a25cfbe258b33f94ea1784802d025799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerAttack
+  inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
+  actionMapName: Player
+  attackActionName: Attack
+  damage: 25
+  cooldown: 0.45
+  windup: 0.12
+  activeTime: 0.1
+  hitboxOffset: {x: 0.7, y: 0.1}
+  hitboxSize: {x: 1.1, y: 1}
+  crouchYOffset: -0.35
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  attackSfxId: SFX_PlayerAttack
+  drawGizmo: 1
+--- !u!114 &521717476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521717468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60200dfc898d9154e9675470a2a28c34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerAnimator
+  animator: {fileID: 1711149827}
+--- !u!114 &521717477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521717468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44fe6df95735a8348a179dfa93063c30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.RangedAttack
+  mode: 1
+  projectilePrefab: {fileID: 5154675108906216295, guid: f59efbf6d4928cd46b825dbbe37fabb8, type: 3}
+  muzzleOffset: {x: 0.6, y: 0.05}
+  damage: 25
+  projectileSpeed: 13
+  projectileHitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  cooldown: 0.7
+  windup: 0.12
+  animatorTrigger: Attack
+  attackSfxId: SFX_Fireball
+  muzzleEffect: {fileID: 0}
+  inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
+  actionMapName: Player
+  actionName: Fireball
+  useTouchButton: 1
+  detectionRange: 8
+  targetTag: Player
+  onlyFireWhenFacing: 1
+  turnToFaceTarget: 1
+  verticalTolerance: 2.5
+  drawGizmos: 1
+--- !u!114 &521717478
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521717468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52741b71fea6e6e479570d8b2f0d212d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerVfx
+  dashEffect: {fileID: 328274588803049760, guid: a17d1e8e9ede38e40b9c0dedc69dbf02, type: 3}
+  dashEffectOffset: {x: -0.35, y: -0.25}
+  doubleJumpEffect: {fileID: 8222763789216808007, guid: 6b556bb8477730b4e9040f06340724b8, type: 3}
+  doubleJumpEffectOffset: {x: 0, y: -0.72}
 --- !u!1 &524311951
 GameObject:
   m_ObjectHideFlags: 0
@@ -916,7 +1092,7 @@ Transform:
   m_GameObject: {fileID: 537356724}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -3, z: 0}
+  m_LocalPosition: {x: 0.11, y: -4.27, z: 0}
   m_LocalScale: {x: 44, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1103,30 +1279,48 @@ MonoBehaviour:
     loop: 0
     mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   - id: SFX_PlayerJump
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: 12285846daf4f464ca097cbaf9aade30, type: 3}
     volume: 1
     pitch: 1
     loop: 0
     mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   - id: SFX_PlayerFootstep
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: aa370c90110c9d04d8b7d6ea3a61aacb, type: 3}
     volume: 1
     pitch: 1
     loop: 0
     mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   - id: SFX_PlayerHurt
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: 9d0864ce49035c8418b3f129ad3d8be1, type: 3}
     volume: 1
     pitch: 1
     loop: 0
     mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   - id: SFX_PlayerDeath
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: 6ce737ff19c3b0f44a081ce833ff5d1d, type: 3}
     volume: 1
     pitch: 1
     loop: 0
     mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   - id: SFX_EnemyStomp
+    clip: {fileID: 8300000, guid: 9d0864ce49035c8418b3f129ad3d8be1, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_PlayerAttack
+    clip: {fileID: 8300000, guid: 9d0864ce49035c8418b3f129ad3d8be1, type: 3}
+    volume: 1
+    pitch: 0.38
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_Fireball
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_PlayerDash
     clip: {fileID: 0}
     volume: 1
     pitch: 1
@@ -1284,7 +1478,7 @@ Transform:
   m_GameObject: {fileID: 838161153}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7, y: -0.4, z: 0}
+  m_LocalPosition: {x: -7.14, y: -1.28, z: 0}
   m_LocalScale: {x: 4, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1450,6 +1644,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1536048189
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1536048190}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1536048190
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1536048189}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 8.18248, y: 10.70301, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1711149824
 GameObject:
   m_ObjectHideFlags: 0
@@ -1460,6 +1685,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1711149825}
   - component: {fileID: 1711149826}
+  - component: {fileID: 1711149827}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -1476,8 +1702,8 @@ Transform:
   m_GameObject: {fileID: 1711149824}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.7, y: 1.5, z: 1}
+  m_LocalPosition: {x: 0, y: -0.75, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 521717474}
@@ -1531,7 +1757,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 107a7961d6f3ed1498960c7ecf491248, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 20daa800a641d9e4cae18a06630db1ef, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1541,6 +1767,28 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!95 &1711149827
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1711149824}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 68f392d04366fdc42a5f1e3d82d7f8fd, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1753370053
 GameObject:
   m_ObjectHideFlags: 0
@@ -1673,7 +1921,7 @@ Transform:
   m_GameObject: {fileID: 1753370053}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7, y: -1, z: 0}
+  m_LocalPosition: {x: 7.63, y: -0.29, z: 0}
   m_LocalScale: {x: 5, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1765,3 +2013,5 @@ SceneRoots:
   - {fileID: 521717474}
   - {fileID: 252512181}
   - {fileID: 524311955}
+  - {fileID: 1536048190}
+  - {fileID: 459068598}

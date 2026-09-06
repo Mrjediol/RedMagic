@@ -553,6 +553,24 @@ MonoBehaviour:
     pitch: 1
     loop: 0
     mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_PlayerAttack
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_Fireball
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_PlayerDash
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   defaultMasterVolume: 1
   defaultMusicVolume: 0.8
   defaultSfxVolume: 1

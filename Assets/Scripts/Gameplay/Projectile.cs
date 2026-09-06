@@ -1,5 +1,6 @@
 using RedMagic.Audio;
 using RedMagic.Combat;
+using RedMagic.Fx;
 using UnityEngine;
 
 namespace RedMagic.Gameplay
@@ -26,6 +27,17 @@ namespace RedMagic.Gameplay
         [Tooltip("Capas contra las que impacta.")]
         [SerializeField] private LayerMask hitLayers = ~0;
 
+        [Header("Ciclo de vida")]
+        [Tooltip("Destruir al terminar en vez de sólo desactivar. Actívalo cuando el proyectil se " +
+                 "instancia en caliente (como hace RangedAttack); déjalo apagado si viene de un pool.")]
+        [SerializeField] private bool destroyWhenDone;
+
+        [Header("Impacto")]
+        [Tooltip("Efecto que aparece al terminar el proyectil (explosión). Opcional.")]
+        [SerializeField] private GameObject impactEffect;
+        [Tooltip("Desplazamiento del efecto respecto al punto final del proyectil.")]
+        [SerializeField] private Vector2 impactEffectOffset;
+
         private Rigidbody2D _body;
         private SoundEmitter _sound;
         private Collider2D[] _ownColliders;
@@ -50,6 +62,18 @@ namespace RedMagic.Gameplay
             // Reset para reutilización desde el pool.
             _despawning = false;
             _lifeTimer = lifetime;
+        }
+
+        /// <summary>
+        /// Ajusta daño, velocidad y capas antes de lanzar. Lo usa <c>RangedAttack</c> para que un
+        /// mismo prefab de proyectil sirva a distintos atacantes (jugador o enemigo).
+        /// Cualquier valor negativo deja el del prefab.
+        /// </summary>
+        public void Configure(float newDamage, float newSpeed, LayerMask newHitLayers)
+        {
+            if (newDamage >= 0f) damage = newDamage;
+            if (newSpeed > 0f) speed = newSpeed;
+            hitLayers = newHitLayers;
         }
 
         /// <summary>Lanza el proyectil. <paramref name="owner"/> se ignora en las colisiones.</summary>
@@ -112,18 +136,26 @@ namespace RedMagic.Gameplay
             // El sonido se dispara ANTES de desactivar el GameObject.
             _sound?.Play("OnDeath");
 
+            // La explosión es un objeto aparte, así que sobrevive al despawn del proyectil.
+            int facing = _direction.x < 0f ? -1 : 1;
+            VfxOneShot.Spawn(impactEffect,
+                             transform.position + new Vector3(impactEffectOffset.x * facing, impactEffectOffset.y, 0f),
+                             facing);
+
             if (_body != null) _body.linearVelocity = Vector2.zero;
 
             ReturnToPool();
         }
 
         /// <summary>
-        /// Devolución al pool. Por defecto sólo desactiva el objeto; sustitúyelo por la llamada
-        /// a tu pool real cuando lo tengas.
+        /// Devolución al pool. Por defecto sólo desactiva el objeto (o lo destruye si
+        /// <see cref="destroyWhenDone"/> está activo); sustitúyelo por la llamada a tu pool
+        /// real cuando lo tengas.
         /// </summary>
         protected virtual void ReturnToPool()
         {
-            gameObject.SetActive(false);
+            if (destroyWhenDone) Destroy(gameObject);
+            else gameObject.SetActive(false);
         }
     }
 }

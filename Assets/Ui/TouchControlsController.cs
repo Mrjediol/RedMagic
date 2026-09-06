@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 namespace RedMagic.UI
 {
     /// <summary>
-    /// Controles táctiles en pantalla (izquierda / derecha / saltar) para móvil.
+    /// Controles táctiles en pantalla (izquierda / derecha / agacharse / atacar / saltar) para móvil.
     /// Escriben en <see cref="TouchInput"/>, que <c>PlayerMovement</c> combina con el teclado y el mando.
     ///
     /// Reparto de responsabilidades:
@@ -22,6 +22,10 @@ namespace RedMagic.UI
         private Button _leftButton;
         private Button _rightButton;
         private Button _jumpButton;
+        private Button _attackButton;
+        private Button _crouchButton;
+        private Button _dashButton;
+        private Button _fireballButton;
 
         private void OnEnable()
         {
@@ -34,12 +38,33 @@ namespace RedMagic.UI
             _leftButton = _root.Q<Button>("leftButton");
             _rightButton = _root.Q<Button>("rightButton");
             _jumpButton = _root.Q<Button>("jumpButton");
+            _attackButton = _root.Q<Button>("attackButton");
+            _crouchButton = _root.Q<Button>("crouchButton");
+            _dashButton = _root.Q<Button>("dashButton");
+            _fireballButton = _root.Q<Button>("fireballButton");
 
             WireHold(_leftButton, -1f);
             WireHold(_rightButton, 1f);
 
             if (_jumpButton != null)
                 _jumpButton.RegisterCallback<PointerDownEvent>(OnJumpDown);
+
+            if (_attackButton != null)
+                _attackButton.RegisterCallback<PointerDownEvent>(OnAttackDown);
+
+            if (_dashButton != null)
+                _dashButton.RegisterCallback<PointerDownEvent>(OnDashDown);
+
+            if (_fireballButton != null)
+                _fireballButton.RegisterCallback<PointerDownEvent>(OnFireballDown);
+
+            if (_crouchButton != null)
+            {
+                _crouchButton.RegisterCallback<PointerDownEvent>(OnCrouchDown);
+                _crouchButton.RegisterCallback<PointerUpEvent>(OnCrouchUp);
+                _crouchButton.RegisterCallback<PointerLeaveEvent>(OnCrouchLeave);
+                _crouchButton.RegisterCallback<PointerCaptureOutEvent>(OnCrouchCaptureOut);
+            }
 
             if (GameStateManager.Instance != null)
             {
@@ -58,6 +83,23 @@ namespace RedMagic.UI
 
             if (_jumpButton != null)
                 _jumpButton.UnregisterCallback<PointerDownEvent>(OnJumpDown);
+
+            if (_attackButton != null)
+                _attackButton.UnregisterCallback<PointerDownEvent>(OnAttackDown);
+
+            if (_dashButton != null)
+                _dashButton.UnregisterCallback<PointerDownEvent>(OnDashDown);
+
+            if (_fireballButton != null)
+                _fireballButton.UnregisterCallback<PointerDownEvent>(OnFireballDown);
+
+            if (_crouchButton != null)
+            {
+                _crouchButton.UnregisterCallback<PointerDownEvent>(OnCrouchDown);
+                _crouchButton.UnregisterCallback<PointerUpEvent>(OnCrouchUp);
+                _crouchButton.UnregisterCallback<PointerLeaveEvent>(OnCrouchLeave);
+                _crouchButton.UnregisterCallback<PointerCaptureOutEvent>(OnCrouchCaptureOut);
+            }
 
             if (GameStateManager.Instance != null)
                 GameStateManager.Instance.PausedChanged -= OnPausedChanged;
@@ -112,6 +154,22 @@ namespace RedMagic.UI
         }
 
         private static void OnJumpDown(PointerDownEvent evt) => TouchInput.QueueJump();
+
+        private static void OnAttackDown(PointerDownEvent evt) => TouchInput.QueueAttack();
+
+        private static void OnDashDown(PointerDownEvent evt) => TouchInput.QueueDash();
+
+        private static void OnFireballDown(PointerDownEvent evt) => TouchInput.QueueFireball();
+
+        // ------------------------------------------------------------------ agacharse (mantenido)
+
+        private static void OnCrouchDown(PointerDownEvent evt) => TouchInput.Crouch = true;
+
+        private static void OnCrouchUp(PointerUpEvent evt) => TouchInput.Crouch = false;
+
+        private static void OnCrouchLeave(PointerLeaveEvent evt) => TouchInput.Crouch = false;
+
+        private static void OnCrouchCaptureOut(PointerCaptureOutEvent evt) => TouchInput.Crouch = false;
 
         // ------------------------------------------------------------------ pausa
 

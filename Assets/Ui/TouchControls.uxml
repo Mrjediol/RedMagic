@@ -16,9 +16,13 @@
             <ui:VisualElement name="movePad" class="touch-cluster touch-cluster--left" picking-mode="Ignore">
                 <ui:Button name="leftButton" text="&lt;" class="touch-button" />
                 <ui:Button name="rightButton" text="&gt;" class="touch-button" />
+                <ui:Button name="crouchButton" text="AGACHAR" class="touch-button touch-button--crouch" />
+                <ui:Button name="dashButton" text="DASH" class="touch-button touch-button--dash" />
             </ui:VisualElement>
 
             <ui:VisualElement name="actionPad" class="touch-cluster touch-cluster--right" picking-mode="Ignore">
+                <ui:Button name="fireballButton" text="FUEGO" class="touch-button touch-button--fireball" />
+                <ui:Button name="attackButton" text="ATACAR" class="touch-button touch-button--attack" />
                 <ui:Button name="jumpButton" text="SALTAR" class="touch-button touch-button--jump" />
             </ui:VisualElement>
 

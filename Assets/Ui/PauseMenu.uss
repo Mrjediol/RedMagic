@@ -1,0 +1,84 @@
+.pause-menu {
+    flex-grow: 1;
+}
+
+/* --- Botón de pausa en pantalla (móvil/táctil) --- */
+
+.pause-open-button {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    width: 104px;
+    height: 104px;
+    margin: 0;
+    padding: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(18, 11, 14, 0.6);
+    border-width: 2px;
+    border-color: rgba(150, 112, 74, 0.55);
+    border-radius: 16px;
+    transition-duration: 0.12s;
+    scale: 1;
+}
+
+.pause-open-button:hover {
+    scale: 1.06;
+    background-color: rgba(122, 26, 34, 0.7);
+    border-color: var(--color-btn-border-hover);
+}
+
+.pause-open-button:active {
+    scale: 0.95;
+    background-color: rgba(88, 16, 22, 0.8);
+}
+
+.pause-open-bar {
+    width: 12px;
+    height: 40px;
+    margin: 0 5px;
+    border-radius: 3px;
+    background-color: #ecdfbf;
+}
+
+/* --- Superposición de pausa --- */
+
+.pause-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.pause-scrim {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(4, 3, 5, 0.72);
+}
+
+.pause-panel {
+    align-items: center;
+    padding: 56px 72px 48px 72px;
+    background-color: rgba(12, 8, 10, 0.92);
+    border-width: 2px;
+    border-color: rgba(150, 112, 74, 0.5);
+    border-radius: 18px;
+}
+
+.pause-title {
+    margin-bottom: 30px;
+    font-size: 68px;
+    letter-spacing: 8px;
+    -unity-font-style: bold;
+    color: var(--color-title);
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.8);
+}

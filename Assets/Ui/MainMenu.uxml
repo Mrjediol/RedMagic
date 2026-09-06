@@ -1,22 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ui:UXML
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ui="UnityEngine.UIElements"
-    xmlns:uie="UnityEditor.UIElements"
-    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
->
-    <ui:Style src="MainMenu.uss" />
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Ui/MainMenu.uss?fileID=7433441132597879392&amp;guid=1bc0f283f5902bb4f8e04c4a5c3d8948&amp;type=3#MainMenu"/>
     <ui:VisualElement name="mainMenu" class="main-menu">
-        <ui:VisualElement name="backgroundLayer" class="background-layer" picking-mode="Ignore" />
-        <ui:VisualElement name="scrim" class="scrim" picking-mode="Ignore" />
-        <ui:VisualElement name="titleContainer" class="title-container" picking-mode="Ignore">
-            <ui:Label name="gameTitle" text="TÍTULO DEL JUEGO" class="game-title" />
-            <ui:Label name="gameSubtitle" text="Roguelite" class="game-subtitle" />
+        <ui:VisualElement name="backgroundLayer" picking-mode="Ignore" class="background-layer"/>
+        <ui:VisualElement name="scrim" picking-mode="Ignore" class="scrim"/>
+        <ui:VisualElement name="titleContainer" picking-mode="Ignore" class="title-container">
+            <ui:Label name="gameTitle" text="RED MAGIC" class="game-title"/>
+            <ui:Label name="gameSubtitle" text="Adventure&#10;" class="game-subtitle"/>
         </ui:VisualElement>
         <ui:VisualElement name="buttonContainer" class="button-container">
-            <ui:Button name="playButton" text="Jugar" class="menu-button" />
-            <ui:Button name="optionsButton" text="Opciones" class="menu-button" />
-            <ui:Button name="quitButton" text="Salir" class="menu-button menu-button--quit" />
+            <ui:Button name="playButton" text="Jugar" class="menu-button"/>
+            <ui:Button name="optionsButton" text="Opciones" class="menu-button"/>
+            <ui:Button name="quitButton" text="Salir" class="menu-button menu-button--quit"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

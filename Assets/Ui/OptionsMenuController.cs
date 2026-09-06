@@ -1,4 +1,5 @@
 using RedMagic.Audio;
+using RedMagic.Core;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -6,15 +7,12 @@ namespace RedMagic.UI
 {
     /// <summary>
     /// Conecta los sliders y toggles de OptionsMenu.uxml con el AudioManager.
-    /// El botón Volver oculta este menú y devuelve el control al menú principal.
+    /// Se abre desde otra pantalla (menú principal o pausa) con <see cref="Open"/> y el botón
+    /// Volver regresa a esa pantalla.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
-    public class OptionsMenuController : MonoBehaviour
+    public class OptionsMenuController : MonoBehaviour, IMenuScreen
     {
-        [Header("Navegación")]
-        [Tooltip("Menú principal que se vuelve a mostrar al pulsar Volver.")]
-        [SerializeField] private MainMenuController mainMenu;
-
         [Tooltip("Si está marcado, el menú de opciones se muestra al arrancar (normalmente desactivado).")]
         [SerializeField] private bool visibleOnStart;
 
@@ -25,7 +23,13 @@ namespace RedMagic.UI
         private Toggle _masterMute, _musicMute, _sfxMute;
         private Label _masterValue, _musicValue, _sfxValue;
         private Button _backButton;
+
         private bool _hidden = true;
+        private bool _open;
+        private IMenuScreen _returnTo;
+
+        /// <summary>True mientras el menú de opciones está mostrándose.</summary>
+        public bool IsOpen => _open;
 
         private void OnEnable()
         {
@@ -37,6 +41,7 @@ namespace RedMagic.UI
                 return;
 
             _hidden = !visibleOnStart;
+            _open = visibleOnStart;
 
             _masterSlider = _root.Q<Slider>("masterSlider");
             _musicSlider = _root.Q<Slider>("musicSlider");
@@ -58,7 +63,7 @@ namespace RedMagic.UI
 
             if (_backButton != null)
             {
-                _backButton.clicked += OnBack;
+                _backButton.clicked += GoBack;
                 _backButton.RegisterCallback<PointerEnterEvent>(OnHover);
             }
 
@@ -74,9 +79,21 @@ namespace RedMagic.UI
 
             if (_backButton != null)
             {
-                _backButton.clicked -= OnBack;
+                _backButton.clicked -= GoBack;
                 _backButton.UnregisterCallback<PointerEnterEvent>(OnHover);
             }
+        }
+
+        /// <summary>Abre Opciones desde <paramref name="returnTo"/> y pausa el juego.</summary>
+        public void Open(IMenuScreen returnTo)
+        {
+            _returnTo = returnTo;
+            if (!_open && GameStateManager.Instance != null)
+                GameStateManager.Instance.SetPaused(true);
+            _open = true;
+
+            RefreshFromAudioManager();
+            SetVisible(true);
         }
 
         /// <summary>Muestra u oculta el menú sin desactivar el GameObject (evita perder el layout de UI Toolkit).</summary>
@@ -89,9 +106,9 @@ namespace RedMagic.UI
 
         private void ApplyVisibility()
         {
-            // Se usa 'visibility' en vez de 'display:none': un root de UIDocument oculto con display
-            // no recibe tamaño del panel y luego no vuelve a dimensionarse al mostrarlo. 'hidden'
-            // participa en el layout pero no se dibuja ni recibe eventos de puntero.
+            // 'visibility' en vez de 'display:none': un root de UIDocument oculto con display no recibe
+            // tamaño del panel y luego no se redimensiona al mostrarlo. 'hidden' participa en el layout
+            // pero no se dibuja ni recibe eventos de puntero.
             if (_root != null)
                 _root.style.visibility = _hidden ? Visibility.Hidden : Visibility.Visible;
         }
@@ -160,13 +177,20 @@ namespace RedMagic.UI
             UpdateValueLabel(LabelFor(group), SliderValueFor(group), evt.newValue);
         }
 
-        private void OnBack()
+        /// <summary>Vuelve a la pantalla que abrió Opciones (botón Volver o Escape/Atrás).</summary>
+        public void GoBack()
         {
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlaySFX("SFX_ButtonClick");
 
-            if (mainMenu != null) mainMenu.SetVisible(true);
+            if (_open && GameStateManager.Instance != null)
+                GameStateManager.Instance.SetPaused(false);
+            _open = false;
+
             SetVisible(false);
+
+            if (_returnTo != null) _returnTo.SetVisible(true);
+            else Debug.LogWarning("[OptionsMenu] Sin pantalla de retorno; usa Open(returnTo).", this);
         }
 
         private static void OnHover(PointerEnterEvent _)

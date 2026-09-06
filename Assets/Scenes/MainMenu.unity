@@ -256,6 +256,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &531058419
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 531058421}
+  - component: {fileID: 531058420}
+  m_Layer: 0
+  m_Name: GameStateManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &531058420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531058419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c96b5421a5440c459f4cd300f61b558, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Core.GameStateManager
+  playerInputBehaviours: []
+--- !u!4 &531058421
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531058419}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &773491706
 GameObject:
   m_ObjectHideFlags: 0
@@ -286,7 +331,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c953dc0ccd06cd743a36b8b0ddbb9300, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.UI.OptionsMenuController
-  mainMenu: {fileID: 931500088}
   visibleOnStart: 0
 --- !u!114 &773491708
 MonoBehaviour:
@@ -358,6 +402,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.UI.MainMenuController
   gameplaySceneName: SampleScene
   optionsMenu: {fileID: 773491707}
+  menuMusicId: Music_Menu
 --- !u!114 &931500089
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -484,10 +529,10 @@ MonoBehaviour:
   musicGroup: {fileID: 2760064263517888288, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   sfxGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   sounds:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  Music_Menu: {fileID: 0}
+  - {fileID: 11400000, guid: 496f7999d0f6d26408cfe58197ad1d38, type: 2}
+  - {fileID: 11400000, guid: 7bc03003c627c9541a39308f83f0e368, type: 2}
+  - {fileID: 11400000, guid: ab362e32fbe49644ea5b6a72c663ab84, type: 2}
+  Music_Menu: {fileID: 8300000, guid: 6ce737ff19c3b0f44a081ce833ff5d1d, type: 3}
   SFX_ButtonHover: {fileID: 0}
   SFX_ButtonClick: {fileID: 0}
   defaultMasterVolume: 1
@@ -517,3 +562,4 @@ SceneRoots:
   - {fileID: 931500090}
   - {fileID: 1872438041}
   - {fileID: 773491709}
+  - {fileID: 531058421}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ui="UnityEngine.UIElements"
+    xmlns:uie="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
+>
+    <ui:Style src="MainMenu.uss" />
+    <ui:Style src="PauseMenu.uss" />
+    <ui:VisualElement name="pauseMenu" class="pause-menu" picking-mode="Ignore">
+
+        <ui:Button name="openPauseButton" class="pause-open-button" tooltip="Pausa">
+            <ui:VisualElement class="pause-open-bar" picking-mode="Ignore" />
+            <ui:VisualElement class="pause-open-bar" picking-mode="Ignore" />
+        </ui:Button>
+
+        <ui:VisualElement name="pauseOverlay" class="pause-overlay">
+            <ui:VisualElement name="pauseScrim" class="pause-scrim" />
+            <ui:VisualElement name="pausePanel" class="pause-panel">
+                <ui:Label text="PAUSA" class="pause-title" />
+                <ui:Button name="resumeButton" text="Reanudar" class="menu-button" />
+                <ui:Button name="optionsButton" text="Opciones" class="menu-button" />
+                <ui:Button name="mainMenuButton" text="Menú principal" class="menu-button menu-button--quit" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

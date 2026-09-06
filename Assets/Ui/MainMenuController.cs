@@ -1,5 +1,7 @@
 using RedMagic.Audio;
+using RedMagic.Core;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 #if UNITY_EDITOR
@@ -13,7 +15,7 @@ namespace RedMagic.UI
     /// Se engancha a los botones definidos en MainMenu.uxml.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
-    public class MainMenuController : MonoBehaviour
+    public class MainMenuController : MonoBehaviour, IMenuScreen
     {
         [Header("Escenas")]
         [Tooltip("Nombre de la escena de juego que carga el botón Jugar (debe estar en Build Settings).")]
@@ -56,6 +58,11 @@ namespace RedMagic.UI
 
         private void Start()
         {
+            // Estar en el menú principal cuenta como "menú abierto": el juego queda en pausa
+            // (inofensivo aquí, pero coherente con el resto de menús).
+            if (GameStateManager.Instance != null)
+                GameStateManager.Instance.SetPaused(true);
+
             // La música del menú suena en bucle mientras se está en el menú (SoundData con loop = true).
             // PlayMusic ignora la llamada si ese tema ya está sonando, así que volver de Opciones no lo reinicia.
             if (!string.IsNullOrWhiteSpace(menuMusicId) && AudioManager.Instance != null)
@@ -67,6 +74,18 @@ namespace RedMagic.UI
             Unwire(_playButton, OnPlayClicked);
             Unwire(_optionsButton, OnOptionsClicked);
             Unwire(_quitButton, OnQuitClicked);
+        }
+
+        private void Update()
+        {
+            // Botón "Atrás" de Android (= tecla Escape en el Input System): si Opciones está
+            // abierto, vuelve al menú. En el menú principal no hace nada (añade aquí un
+            // "¿salir del juego?" si lo quieres).
+            var keyboard = Keyboard.current;
+            if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame) return;
+
+            if (optionsMenu != null && optionsMenu.IsOpen)
+                optionsMenu.GoBack();
         }
 
         /// <summary>Muestra u oculta el menú sin desactivar el GameObject (evita perder el layout de UI Toolkit).</summary>
@@ -119,6 +138,10 @@ namespace RedMagic.UI
                 return;
             }
 
+            // Al entrar a gameplay: despausar del todo y parar la música del menú.
+            if (GameStateManager.Instance != null)
+                GameStateManager.Instance.ForceResume();
+
             if (AudioManager.Instance != null)
                 AudioManager.Instance.StopMusic();
 
@@ -135,7 +158,7 @@ namespace RedMagic.UI
                 return;
             }
 
-            optionsMenu.SetVisible(true);
+            optionsMenu.Open(this);
             SetVisible(false);
         }
 

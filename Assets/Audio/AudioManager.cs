@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -42,12 +43,14 @@ namespace RedMagic.Audio
         [Range(0f, 1f)] [SerializeField] private float defaultSfxVolume = 1f;
 
         private readonly Dictionary<string, SoundData> _library = new Dictionary<string, SoundData>();
+        private readonly Dictionary<string, AudioClip> _placeholderClips = new Dictionary<string, AudioClip>();
         private readonly Dictionary<string, float> _volume = new Dictionary<string, float>();
         private readonly Dictionary<string, bool> _muted = new Dictionary<string, bool>();
 
         private AudioSource _musicSource;
         private AudioSource _sfxSource;
         private string _currentMusicId;
+        private Coroutine _musicRoutine;
 
         private const string PrefVolume = "audio.volume.";
         private const string PrefMuted = "audio.muted.";
@@ -87,6 +90,7 @@ namespace RedMagic.Audio
         private void BuildLibrary()
         {
             _library.Clear();
+            _placeholderClips.Clear();
 
             foreach (var sound in sounds)
             {
@@ -94,7 +98,6 @@ namespace RedMagic.Audio
                 _library[sound.id] = sound;
             }
 
-            // Placeholders: crean una entrada si no existe ya un SoundData con ese id.
             RegisterPlaceholder("Music_Menu", Music_Menu, musicGroup, loop: true);
             RegisterPlaceholder("SFX_ButtonHover", SFX_ButtonHover, sfxGroup, loop: false);
             RegisterPlaceholder("SFX_ButtonClick", SFX_ButtonClick, sfxGroup, loop: false);
@@ -102,12 +105,11 @@ namespace RedMagic.Audio
 
         private void RegisterPlaceholder(string id, AudioClip clip, AudioMixerGroup group, bool loop)
         {
-            if (_library.TryGetValue(id, out var existing))
-            {
-                // Ya hay un SoundData asignado con este id: sólo rellenamos el clip si falta.
-                if (existing.clip == null) existing.clip = clip;
-                return;
-            }
+            // El clip del campo del Inspector se usa como fallback en tiempo de ejecución
+            // (nunca se escribe en el SoundData asset, para no ensuciarlo).
+            if (clip != null) _placeholderClips[id] = clip;
+
+            if (_library.ContainsKey(id)) return; // ya hay un SoundData real con ese id
 
             var data = ScriptableObject.CreateInstance<SoundData>();
             data.id = id;
@@ -117,6 +119,13 @@ namespace RedMagic.Audio
             data.mixerGroup = group;
             data.hideFlags = HideFlags.HideAndDontSave;
             _library[id] = data;
+        }
+
+        // Clip efectivo: el del SoundData, o el placeholder del Inspector si el SoundData no tiene ninguno.
+        private AudioClip ClipFor(SoundData data)
+        {
+            if (data.clip != null) return data.clip;
+            return _placeholderClips.TryGetValue(data.id, out var c) ? c : null;
         }
 
         private void SetupSources()
@@ -140,16 +149,53 @@ namespace RedMagic.Audio
             if (_currentMusicId == id && _musicSource.isPlaying) return;
 
             _currentMusicId = id;
-            _musicSource.clip = data.clip;
+
+            if (_musicRoutine != null) StopCoroutine(_musicRoutine);
+            _musicRoutine = StartCoroutine(PlayMusicRoutine(data));
+        }
+
+        // El clip puede tener "Preload Audio Data" desactivado: en ese caso Play() se llamaría
+        // sobre un clip aún sin cargar y a veces no suena. Forzamos la carga y esperamos.
+        // Con Time.timeScale = 0 esta corrutina sigue avanzando (yield return null no usa tiempo escalado).
+        private IEnumerator PlayMusicRoutine(SoundData data)
+        {
+            var clip = ClipFor(data);
+
+            _musicSource.Stop();
+            _musicSource.clip = clip;
             _musicSource.loop = data.loop;
             _musicSource.volume = data.volume;
             _musicSource.outputAudioMixerGroup = data.mixerGroup != null ? data.mixerGroup : musicGroup;
 
-            if (data.clip != null) _musicSource.Play();
+            if (clip == null)
+            {
+                Debug.LogWarning($"[AudioManager] '{data.id}' no tiene AudioClip asignado.", this);
+                _musicRoutine = null;
+                yield break;
+            }
+
+            if (clip.loadState == AudioDataLoadState.Unloaded)
+                clip.LoadAudioData();
+
+            while (clip.loadState == AudioDataLoadState.Loading)
+                yield return null;
+
+            if (clip.loadState == AudioDataLoadState.Loaded)
+                _musicSource.Play();
+            else
+                Debug.LogWarning($"[AudioManager] No se pudo cargar el clip de música '{data.id}'.", this);
+
+            _musicRoutine = null;
         }
 
         public void StopMusic()
         {
+            if (_musicRoutine != null)
+            {
+                StopCoroutine(_musicRoutine);
+                _musicRoutine = null;
+            }
+
             _musicSource.Stop();
             _musicSource.clip = null;
             _currentMusicId = null;
@@ -157,12 +203,15 @@ namespace RedMagic.Audio
 
         public void PlaySFX(string id)
         {
-            if (!TryGet(id, out var data) || data.clip == null) return;
+            if (!TryGet(id, out var data)) return;
+
+            var clip = ClipFor(data);
+            if (clip == null) return;
 
             var group = data.mixerGroup != null ? data.mixerGroup : sfxGroup;
             if (_sfxSource.outputAudioMixerGroup != group) _sfxSource.outputAudioMixerGroup = group;
 
-            _sfxSource.PlayOneShot(data.clip, data.volume);
+            _sfxSource.PlayOneShot(clip, data.volume);
         }
 
         private bool TryGet(string id, out SoundData data)

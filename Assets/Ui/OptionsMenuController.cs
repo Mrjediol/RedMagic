@@ -94,6 +94,10 @@ namespace RedMagic.UI
 
             RefreshFromAudioManager();
             SetVisible(true);
+
+            // Con mando: dar foco para poder navegar los sliders/toggles con el d-pad.
+            if (InputDeviceManager.GamepadActive)
+                _masterSlider?.Focus();
         }
 
         /// <summary>Muestra u oculta el menú sin desactivar el GameObject (evita perder el layout de UI Toolkit).</summary>

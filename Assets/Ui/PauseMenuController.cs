@@ -11,9 +11,9 @@ namespace RedMagic.UI
     /// Menú de pausa durante el juego (UI Toolkit).
     ///
     /// Formas de pausar:
-    ///  - Botón de pausa en pantalla (esquina superior derecha), pensado para móvil/táctil.
-    ///  - Botón "Atrás" de Android: Unity lo mapea a la tecla Escape del Input System
-    ///    (KEYCODE_BACK -> Key.Escape), así que <see cref="Keyboard"/> lo cubre sin código extra.
+    ///  - Táctil: botón de pausa en pantalla (esquina superior derecha). Sólo visible en modo táctil.
+    ///  - Mando: botón Start / Menú.
+    ///  - Android: el botón "Atrás" llega como tecla Escape del Input System.
     ///
     /// Mientras está abierto el juego queda en pausa vía <see cref="GameStateManager"/>;
     /// la música y los SFX de UI siguen sonando.
@@ -37,6 +37,7 @@ namespace RedMagic.UI
         private Button _mainMenuButton;
 
         private bool _open;
+        private bool _touchMode = true;
 
         private void OnEnable()
         {
@@ -58,9 +59,18 @@ namespace RedMagic.UI
             Wire(_optionsButton, OpenOptions);
             Wire(_mainMenuButton, GoToMainMenu);
 
+            _overlay?.RegisterCallback<NavigationCancelEvent>(OnNavigationCancel);
+
+            if (InputDeviceManager.Instance != null)
+            {
+                InputDeviceManager.Instance.ModeChanged -= OnInputModeChanged;
+                InputDeviceManager.Instance.ModeChanged += OnInputModeChanged;
+                _touchMode = InputDeviceManager.Instance.CurrentMode == InputMode.Touch;
+            }
+
             _open = false;
             ShowOverlay(false);
-            ShowPauseButton(true);
+            RefreshPauseButton();
         }
 
         private void OnDisable()
@@ -69,17 +79,35 @@ namespace RedMagic.UI
             Unwire(_resumeButton, Resume);
             Unwire(_optionsButton, OpenOptions);
             Unwire(_mainMenuButton, GoToMainMenu);
+
+            _overlay?.UnregisterCallback<NavigationCancelEvent>(OnNavigationCancel);
+
+            if (InputDeviceManager.Instance != null)
+                InputDeviceManager.Instance.ModeChanged -= OnInputModeChanged;
         }
 
         private void Update()
         {
-            // Update se ejecuta con Time.timeScale = 0. El botón "Atrás" de Android llega aquí como Escape.
+            // Update corre con Time.timeScale = 0.
             var keyboard = Keyboard.current;
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+            {
+                OnBackInput();
+                return;
+            }
+
+            var gamepad = Gamepad.current;
+            if (gamepad != null && (gamepad.startButton.wasPressedThisFrame || gamepad.selectButton.wasPressedThisFrame))
                 OnBackInput();
         }
 
-        /// <summary>Escape / botón Atrás de Android.</summary>
+        private void OnNavigationCancel(NavigationCancelEvent _)
+        {
+            // Botón B / Este del mando dentro del menú de pausa.
+            OnBackInput();
+        }
+
+        /// <summary>Escape / Atrás de Android / Start del mando.</summary>
         private void OnBackInput()
         {
             if (!_open)
@@ -88,7 +116,6 @@ namespace RedMagic.UI
                 return;
             }
 
-            // Si Opciones está encima, "Atrás" vuelve al menú de pausa.
             if (optionsMenu != null && optionsMenu.IsOpen)
             {
                 optionsMenu.GoBack();
@@ -96,6 +123,16 @@ namespace RedMagic.UI
             }
 
             Resume();
+        }
+
+        private void OnInputModeChanged(InputMode mode)
+        {
+            _touchMode = mode == InputMode.Touch;
+            RefreshPauseButton();
+
+            // Si se pasa a mando con la pausa abierta, dar foco para poder navegar.
+            if (_open && !_touchMode)
+                FocusFirstButton();
         }
 
         private void Pause()
@@ -108,8 +145,11 @@ namespace RedMagic.UI
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlaySFX("SFX_ButtonClick");
 
-            ShowPauseButton(false);
+            RefreshPauseButton();
             ShowOverlay(true);
+
+            if (!_touchMode)
+                FocusFirstButton();
         }
 
         private void Resume()
@@ -123,7 +163,7 @@ namespace RedMagic.UI
                 GameStateManager.Instance.SetPaused(false);
 
             ShowOverlay(false);
-            ShowPauseButton(true);
+            RefreshPauseButton();
         }
 
         private void OpenOptions()
@@ -157,6 +197,14 @@ namespace RedMagic.UI
         public void SetVisible(bool visible)
         {
             ShowOverlay(visible);
+            if (visible && !_touchMode)
+                FocusFirstButton();
+        }
+
+        private void FocusFirstButton()
+        {
+            // El overlay se muestra con display de forma síncrona, así que el botón ya es enfocable.
+            _resumeButton?.Focus();
         }
 
         // _overlay y _openPauseButton son elementos HIJOS (no el root del UIDocument), así que
@@ -167,10 +215,11 @@ namespace RedMagic.UI
                 _overlay.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
-        private void ShowPauseButton(bool visible)
+        private void RefreshPauseButton()
         {
+            // El botón de pausa en pantalla sólo tiene sentido en táctil y cuando NO estás en pausa.
             if (_openPauseButton != null)
-                _openPauseButton.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+                _openPauseButton.style.display = (_touchMode && !_open) ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void Wire(Button button, System.Action onClick)

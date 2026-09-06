@@ -450,7 +450,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1723004502}
-  - component: {fileID: 1723004501}
   m_Layer: 0
   m_Name: MainMenuManager
   m_TagString: Untagged
@@ -458,29 +457,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1723004501
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1723004500}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4f7a2c9e1b04c3e8a5f6d7b8c9e0a1b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gameplaySceneName: SampleScene
-  gameTitle: RedMagic
-  playLabel: Jugar
-  quitLabel: Salir
-  hoverClip: {fileID: 0}
-  clickClip: {fileID: 0}
-  sfxVolume: 0.6
-  playButton: {fileID: 0}
-  quitButton: {fileID: 0}
-  _audioSource: {fileID: 0}
-  _isLeaving: 0
 --- !u!4 &1723004502
 Transform:
   m_ObjectHideFlags: 0
@@ -532,12 +508,17 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 496f7999d0f6d26408cfe58197ad1d38, type: 2}
   - {fileID: 11400000, guid: 7bc03003c627c9541a39308f83f0e368, type: 2}
   - {fileID: 11400000, guid: ab362e32fbe49644ea5b6a72c663ab84, type: 2}
+  - {fileID: 11400000, guid: 2f22c1456660fcf4e91daca9897a16bc, type: 2}
+  - {fileID: 11400000, guid: d274e2678fdeb7f47ab34c72965f13af, type: 2}
+  - {fileID: 11400000, guid: dbef3f2a70da17343b83a59dbfa0e3b1, type: 2}
+  - {fileID: 11400000, guid: 768e4608104aaa9498561ae2c1d6142d, type: 2}
   Music_Menu: {fileID: 8300000, guid: 6ce737ff19c3b0f44a081ce833ff5d1d, type: 3}
-  SFX_ButtonHover: {fileID: 0}
-  SFX_ButtonClick: {fileID: 0}
+  SFX_ButtonHover: {fileID: 8300000, guid: aa317a050fdf9184f951f5a24ba92d3a, type: 3}
+  SFX_ButtonClick: {fileID: 8300000, guid: d1d638259dc10b245abe84ba3b4c9eb2, type: 3}
   defaultMasterVolume: 1
   defaultMusicVolume: 0.8
   defaultSfxVolume: 1
+  sfxVoiceCount: 8
 --- !u!4 &1872438041
 Transform:
   m_ObjectHideFlags: 0

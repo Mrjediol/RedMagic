@@ -1,0 +1,67 @@
+.touch-controls {
+    flex-grow: 1;
+}
+
+.touch-controls-inner {
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 72px 72px 72px;
+}
+
+.touch-cluster {
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.touch-cluster--left {
+    flex-grow: 1;
+    justify-content: flex-start;
+}
+
+.touch-cluster--right {
+    flex-grow: 1;
+    justify-content: flex-end;
+}
+
+.touch-button {
+    width: 180px;
+    height: 180px;
+    margin: 0 18px;
+    padding: 0;
+    font-size: 64px;
+    -unity-font-style: bold;
+    color: rgba(236, 223, 191, 0.9);
+    background-color: rgba(18, 11, 14, 0.45);
+    border-width: 3px;
+    border-color: rgba(150, 112, 74, 0.5);
+    border-radius: 90px;
+    -unity-text-align: middle-center;
+    transition-duration: 0.08s;
+    scale: 1;
+}
+
+.touch-button:hover {
+    background-color: rgba(18, 11, 14, 0.6);
+}
+
+.touch-button:active {
+    scale: 0.94;
+    background-color: rgba(122, 26, 34, 0.75);
+    border-color: rgba(244, 206, 132, 0.95);
+    color: #fff7e2;
+}
+
+.touch-button--jump {
+    width: 230px;
+    height: 230px;
+    font-size: 34px;
+    letter-spacing: 2px;
+    border-radius: 115px;
+    background-color: rgba(60, 16, 22, 0.5);
+}
+
+.touch-button--jump:active {
+    background-color: rgba(150, 32, 42, 0.8);
+}

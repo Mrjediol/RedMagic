@@ -54,6 +54,14 @@ namespace RedMagic.UI
             Wire(_quitButton, OnQuitClicked);
 
             ApplyVisibility();
+            FocusForGamepad();
+        }
+
+        /// <summary>Con mando, deja el primer botón enfocado para poder navegar con el d-pad.</summary>
+        private void FocusForGamepad()
+        {
+            if (!_hidden && InputDeviceManager.GamepadActive)
+                _playButton?.Focus();
         }
 
         private void Start()
@@ -93,6 +101,7 @@ namespace RedMagic.UI
         {
             _hidden = !visible;
             ApplyVisibility();
+            FocusForGamepad();
         }
 
         private void ApplyVisibility()

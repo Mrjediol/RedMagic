@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ui="UnityEngine.UIElements"
+    xmlns:uie="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
+>
+    <ui:Style src="TouchControls.uss" />
+
+    <!-- touch-only: TouchOnlyUI lo oculta cuando hay un mando activo. -->
+    <ui:VisualElement name="touchControls" class="touch-controls touch-only" picking-mode="Ignore">
+
+        <!-- TouchControlsController oculta esta capa mientras el juego está en pausa. -->
+        <ui:VisualElement name="touchControlsInner" class="touch-controls-inner" picking-mode="Ignore">
+
+            <ui:VisualElement name="movePad" class="touch-cluster touch-cluster--left" picking-mode="Ignore">
+                <ui:Button name="leftButton" text="&lt;" class="touch-button" />
+                <ui:Button name="rightButton" text="&gt;" class="touch-button" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="actionPad" class="touch-cluster touch-cluster--right" picking-mode="Ignore">
+                <ui:Button name="jumpButton" text="SALTAR" class="touch-button touch-button--jump" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

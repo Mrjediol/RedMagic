@@ -42,6 +42,11 @@ namespace RedMagic.Audio
         [Range(0f, 1f)] [SerializeField] private float defaultMusicVolume = 0.8f;
         [Range(0f, 1f)] [SerializeField] private float defaultSfxVolume = 1f;
 
+        [Header("Voces de SFX")]
+        [Tooltip("Nº de AudioSource reservados para SFX con pitch propio (SoundEmitter). " +
+                 "Cada sonido con pitch necesita su propia voz porque el pitch es del AudioSource, no del PlayOneShot.")]
+        [Range(1, 32)] [SerializeField] private int sfxVoiceCount = 8;
+
         private readonly Dictionary<string, SoundData> _library = new Dictionary<string, SoundData>();
         private readonly Dictionary<string, AudioClip> _placeholderClips = new Dictionary<string, AudioClip>();
         private readonly Dictionary<string, float> _volume = new Dictionary<string, float>();
@@ -49,8 +54,16 @@ namespace RedMagic.Audio
 
         private AudioSource _musicSource;
         private AudioSource _sfxSource;
+        private AudioSource[] _sfxVoices;
+        private int _nextVoice;
         private string _currentMusicId;
         private Coroutine _musicRoutine;
+
+        /// <summary>Grupo del mixer al que van los SFX. Lo usa <see cref="SoundEmitter"/>.</summary>
+        public AudioMixerGroup SfxGroup => sfxGroup;
+
+        /// <summary>Grupo del mixer al que va la música.</summary>
+        public AudioMixerGroup MusicGroup => musicGroup;
 
         private const string PrefVolume = "audio.volume.";
         private const string PrefMuted = "audio.muted.";
@@ -139,6 +152,21 @@ namespace RedMagic.Audio
             _sfxSource.playOnAwake = false;
             _sfxSource.loop = false;
             _sfxSource.outputAudioMixerGroup = sfxGroup;
+
+            // Voces con pitch propio. PlayOneShot comparte el pitch del AudioSource, así que
+            // cada sonido que quiera variación necesita su propia voz.
+            var voicesRoot = new GameObject("SfxVoices");
+            voicesRoot.transform.SetParent(transform, false);
+
+            _sfxVoices = new AudioSource[Mathf.Max(1, sfxVoiceCount)];
+            for (int i = 0; i < _sfxVoices.Length; i++)
+            {
+                var voice = voicesRoot.AddComponent<AudioSource>();
+                voice.playOnAwake = false;
+                voice.loop = false;
+                voice.outputAudioMixerGroup = sfxGroup;
+                _sfxVoices[i] = voice;
+            }
         }
 
         // ------------------------------------------------------------------ playback
@@ -212,6 +240,42 @@ namespace RedMagic.Audio
             if (_sfxSource.outputAudioMixerGroup != group) _sfxSource.outputAudioMixerGroup = group;
 
             _sfxSource.PlayOneShot(clip, data.volume);
+        }
+
+        /// <summary>
+        /// Reproduce un AudioClip suelto por el grupo SFX del mixer, con su propio volumen y pitch.
+        /// Es la vía que usa <see cref="SoundEmitter"/>: el clip lo aporta el objeto, pero el
+        /// enrutado (y por tanto el volumen/mute global de Master y SFX) sigue siendo de AudioManager.
+        /// </summary>
+        public void PlayClip(AudioClip clip, float volume = 1f, float pitch = 1f, AudioMixerGroup group = null)
+        {
+            if (clip == null || _sfxVoices == null || _sfxVoices.Length == 0) return;
+
+            var voice = TakeVoice();
+            voice.clip = clip;
+            voice.volume = Mathf.Clamp01(volume);
+            voice.pitch = Mathf.Max(0.01f, pitch);
+            voice.outputAudioMixerGroup = group != null ? group : sfxGroup;
+            voice.Play();
+        }
+
+        // Coge una voz libre; si están todas ocupadas roba la más antigua (round-robin).
+        private AudioSource TakeVoice()
+        {
+            for (int i = 0; i < _sfxVoices.Length; i++)
+            {
+                var candidate = _sfxVoices[(_nextVoice + i) % _sfxVoices.Length];
+                if (candidate != null && !candidate.isPlaying)
+                {
+                    _nextVoice = (_nextVoice + i + 1) % _sfxVoices.Length;
+                    return candidate;
+                }
+            }
+
+            var stolen = _sfxVoices[_nextVoice];
+            _nextVoice = (_nextVoice + 1) % _sfxVoices.Length;
+            stolen.Stop();
+            return stolen;
         }
 
         private bool TryGet(string id, out SoundData data)

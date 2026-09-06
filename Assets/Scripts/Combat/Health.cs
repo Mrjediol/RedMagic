@@ -47,6 +47,15 @@ namespace RedMagic.Combat
         /// <summary>Se dispara una sola vez, al llegar la vida a 0.</summary>
         public event Action Died;
 
+        /// <summary>
+        /// Se dispara al llamar a <see cref="ResetHealth"/> mientras se estaba muerto. Es el
+        /// complemento de <see cref="Died"/>: un componente que se desactiva permanentemente al
+        /// morir (por ejemplo <c>PlayerMovement</c> apagando el control, o <c>PlayerAnimator</c>
+        /// dejando el parámetro Dead a true) se suscribe también a este evento para deshacerlo,
+        /// en vez de comprobar <see cref="IsDead"/> a cada frame.
+        /// </summary>
+        public event Action Revived;
+
         private bool _deathRaised;
 
         private void Awake()
@@ -98,9 +107,15 @@ namespace RedMagic.Combat
         /// <summary>Resetea la vida al máximo (respawn).</summary>
         public void ResetHealth()
         {
+            bool wasDead = _deathRaised;
+
             _deathRaised = false;
             currentHealth = maxHealth;
             HealthChanged?.Invoke(currentHealth, maxHealth);
+
+            // Sólo si de verdad venía de estar muerto: entrar al hub sano ya sin haber muerto no
+            // debería disparar Revived de la nada.
+            if (wasDead) Revived?.Invoke();
         }
 
         private static void PlaySfx(string id)

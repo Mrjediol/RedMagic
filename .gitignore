@@ -73,3 +73,17 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Vendored asset-package content that ships for reference/marketing only and is never referenced
+# by the game itself (demo scenes, promo screenshots). Untracked via `git rm --cached` (files stay
+# on disk and in history) and ignored here so they don't get re-added and don't drown out
+# first-party code in git diffs/status. Note: .gitignore only affects untracked paths — it has no
+# effect on a file that's still tracked, so this only works because these were untracked first.
+/Assets/Brackeys/2D Mega Pack/-- Example Photos --/
+/Assets/Brackeys/2D Mega Pack/-- Example Photos --.meta
+/Assets/Brackeys/2D Mega Pack/Demo Scene.unity
+/Assets/Brackeys/2D Mega Pack/Demo Scene.unity.meta
+/Assets/Cainos/Pixel Art Platformer - Village Props/Scene/SC Demo Scene - Village Props.unity
+/Assets/Cainos/Pixel Art Platformer - Village Props/Scene/SC Demo Scene - Village Props.unity.meta
+/Assets/Dragon Warrior Files/Demo.unity
+/Assets/Dragon Warrior Files/Demo.unity.meta

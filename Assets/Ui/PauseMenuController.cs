@@ -1,5 +1,6 @@
 using RedMagic.Audio;
 using RedMagic.Core;
+using RedMagic.Run;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -25,8 +26,9 @@ namespace RedMagic.UI
         [Tooltip("Menú de opciones de la escena de juego (opcional).")]
         [SerializeField] private OptionsMenuController optionsMenu;
 
-        [Tooltip("Escena del menú principal que carga el botón 'Menú principal'.")]
-        [SerializeField] private string mainMenuSceneName = "MainMenu";
+        [Tooltip("Escena del menú principal que carga el botón 'Menú principal'. La referencia es " +
+                 "al asset, no a su nombre, así que aguanta renombrados.")]
+        [SerializeField] private SceneReference mainMenuScene = new SceneReference();
 
         private UIDocument _document;
         private VisualElement _root;
@@ -35,6 +37,7 @@ namespace RedMagic.UI
         private Button _resumeButton;
         private Button _optionsButton;
         private Button _mainMenuButton;
+        private Button _abandonRunButton;
 
         private bool _open;
         private bool _touchMode = true;
@@ -54,10 +57,15 @@ namespace RedMagic.UI
             _optionsButton = _root.Q<Button>("optionsButton");
             _mainMenuButton = _root.Q<Button>("mainMenuButton");
 
+            // Opcional: si el UXML todavía no tiene botón de abandonar run, esto queda a null y no
+            // pasa nada. Así se puede añadir al layout más adelante sin tocar este script.
+            _abandonRunButton = _root.Q<Button>("abandonRunButton");
+
             Wire(_openPauseButton, Pause);
             Wire(_resumeButton, Resume);
             Wire(_optionsButton, OpenOptions);
             Wire(_mainMenuButton, GoToMainMenu);
+            Wire(_abandonRunButton, AbandonRun);
 
             _overlay?.RegisterCallback<NavigationCancelEvent>(OnNavigationCancel);
 
@@ -71,6 +79,7 @@ namespace RedMagic.UI
             _open = false;
             ShowOverlay(false);
             RefreshPauseButton();
+            RefreshRunButtons();
         }
 
         private void OnDisable()
@@ -79,6 +88,7 @@ namespace RedMagic.UI
             Unwire(_resumeButton, Resume);
             Unwire(_optionsButton, OpenOptions);
             Unwire(_mainMenuButton, GoToMainMenu);
+            Unwire(_abandonRunButton, AbandonRun);
 
             _overlay?.UnregisterCallback<NavigationCancelEvent>(OnNavigationCancel);
 
@@ -146,6 +156,7 @@ namespace RedMagic.UI
                 AudioManager.Instance.PlaySFX("SFX_ButtonClick");
 
             RefreshPauseButton();
+            RefreshRunButtons();
             ShowOverlay(true);
 
             if (!_touchMode)
@@ -186,11 +197,47 @@ namespace RedMagic.UI
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlaySFX("SFX_ButtonClick");
 
+            // Se valida antes de cerrar nada: si la escena no se pudiera cargar, más vale dejar el
+            // menú de pausa abierto que despausar hacia ningún sitio.
+            string path = mainMenuScene.ResolveForLoad(this);
+            if (path == null) return;
+
+            // El RunManager es persistente: si se va al menú principal a mitad de una run hay que
+            // decírselo, o se quedaría creyendo que sigue dentro de la partida.
+            if (RunManager.Instance != null)
+                RunManager.Instance.DiscardRun();
+
             _open = false;
             if (GameStateManager.Instance != null)
                 GameStateManager.Instance.ForceResume();
 
-            SceneManager.LoadScene(mainMenuSceneName);
+            SceneManager.LoadScene(path);
+        }
+
+        /// <summary>Abandona la run en curso y vuelve al hub. El RunManager se encarga de la carga.</summary>
+        private void AbandonRun()
+        {
+            if (RunManager.Instance == null || !RunManager.Instance.RunInProgress) return;
+
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlaySFX("SFX_ButtonClick");
+
+            _open = false;
+            ShowOverlay(false);
+
+            if (GameStateManager.Instance != null)
+                GameStateManager.Instance.ForceResume();
+
+            RunManager.Instance.AbandonRun();
+        }
+
+        /// <summary>El botón de abandonar sólo tiene sentido dentro de una run.</summary>
+        private void RefreshRunButtons()
+        {
+            if (_abandonRunButton == null) return;
+
+            bool inRun = RunManager.Instance != null && RunManager.Instance.RunInProgress;
+            _abandonRunButton.style.display = inRun ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         /// <summary>IMenuScreen: usado por OptionsMenuController para volver a mostrar la pausa.</summary>

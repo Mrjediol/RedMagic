@@ -19,6 +19,7 @@ namespace RedMagic.Core
         private static bool _attackQueued;
         private static bool _dashQueued;
         private static bool _fireballQueued;
+        private static bool _interactQueued;
 
         /// <summary>La UI táctil lo llama al pulsar el botón de salto.</summary>
         public static void QueueJump() => _jumpQueued = true;
@@ -64,6 +65,17 @@ namespace RedMagic.Core
             return true;
         }
 
+        /// <summary>La UI táctil lo llama al pulsar el botón de interactuar (tumbas del hub).</summary>
+        public static void QueueInteract() => _interactQueued = true;
+
+        /// <summary>Devuelve true una sola vez por pulsación de interactuar.</summary>
+        public static bool ConsumeInteract()
+        {
+            if (!_interactQueued) return false;
+            _interactQueued = false;
+            return true;
+        }
+
         public static void Clear()
         {
             Horizontal = 0f;
@@ -72,6 +84,7 @@ namespace RedMagic.Core
             _attackQueued = false;
             _dashQueued = false;
             _fireballQueued = false;
+            _interactQueued = false;
         }
 
         // Con "Reload Domain" desactivado los estáticos sobreviven entre sesiones de Play.

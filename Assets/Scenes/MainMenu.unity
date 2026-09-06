@@ -129,7 +129,6 @@ GameObject:
   m_Component:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
-  - component: {fileID: 519420029}
   - component: {fileID: 519420030}
   m_Layer: 0
   m_Name: Main Camera
@@ -138,14 +137,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &519420029
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 519420028}
-  m_Enabled: 1
 --- !u!114 &519420030
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -400,7 +391,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fec6cffc0ed3f2d44aa07571d9d70b51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.UI.MainMenuController
-  gameplaySceneName: SampleScene
+  hubScene:
+    sceneAsset: {fileID: 102900000, guid: 8c9cfa26abfee488c85f1582747f6a02, type: 3}
+    scenePath: Assets/Scenes/MainHub.unity
+    sceneName: MainHub
   optionsMenu: {fileID: 773491707}
   menuMusicId: Music_Menu
 --- !u!114 &931500089
@@ -482,6 +476,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1872438041}
   - component: {fileID: 1872438040}
+  - component: {fileID: 1900002001}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -576,6 +571,14 @@ MonoBehaviour:
   defaultSfxVolume: 1
   musicFadeDuration: 0.75
   sfxVoiceCount: 8
+--- !u!81 &1900002001
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1872438039}
+  m_Enabled: 1
 --- !u!4 &1872438041
 Transform:
   m_ObjectHideFlags: 0

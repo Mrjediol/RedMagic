@@ -18,8 +18,9 @@ namespace RedMagic.UI
     public class MainMenuController : MonoBehaviour, IMenuScreen
     {
         [Header("Escenas")]
-        [Tooltip("Nombre de la escena de juego que carga el botón Jugar (debe estar en Build Settings).")]
-        [SerializeField] private string gameplaySceneName = "SampleScene";
+        [Tooltip("Escena que carga el botón Jugar: el hub. La referencia es al asset, no a su " +
+                 "nombre, así que aguanta renombrados. Debe estar en Build Settings.")]
+        [SerializeField] private SceneReference hubScene = new SceneReference();
 
         [Header("Opciones")]
         [Tooltip("Menú de opciones. Se muestra al pulsar Opciones y este menú se oculta.")]
@@ -141,20 +142,19 @@ namespace RedMagic.UI
         {
             PlayClick();
 
-            if (string.IsNullOrWhiteSpace(gameplaySceneName))
-            {
-                Debug.LogWarning("[MainMenu] gameplaySceneName está vacío.", this);
-                return;
-            }
+            // Se valida ANTES de tocar pausa o música: si la escena no se pudiera cargar, el menú
+            // se queda como estaba en vez de cortar la música y dejar al jugador en un menú mudo.
+            string path = hubScene.ResolveForLoad(this);
+            if (path == null) return;
 
-            // Al entrar a gameplay: despausar del todo y parar la música del menú.
+            // Al entrar al hub: despausar del todo y parar la música del menú.
             if (GameStateManager.Instance != null)
                 GameStateManager.Instance.ForceResume();
 
             if (AudioManager.Instance != null)
                 AudioManager.Instance.StopMusic();
 
-            SceneManager.LoadScene(gameplaySceneName);
+            SceneManager.LoadScene(path);
         }
 
         private void OnOptionsClicked()

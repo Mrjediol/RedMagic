@@ -279,7 +279,11 @@ namespace RedMagic.Gameplay
             _jumpAction?.Enable();
             _dashAction?.Enable();
 
-            if (_health != null) _health.Died += OnDied;
+            if (_health != null)
+            {
+                _health.Died += OnDied;
+                _health.Revived += OnRevived;
+            }
         }
 
         private void OnDisable()
@@ -288,7 +292,11 @@ namespace RedMagic.Gameplay
             _jumpAction?.Disable();
             _dashAction?.Disable();
 
-            if (_health != null) _health.Died -= OnDied;
+            if (_health != null)
+            {
+                _health.Died -= OnDied;
+                _health.Revived -= OnRevived;
+            }
         }
 
         private void Update()
@@ -686,6 +694,9 @@ namespace RedMagic.Gameplay
             IsCrouching = false;
             _dashTimer = 0f;
         }
+
+        /// <summary>Complemento de <see cref="OnDied"/>: devuelve el control tras un respawn.</summary>
+        private void OnRevived() => _controlEnabled = true;
 
         private static void PlaySfx(string id)
         {

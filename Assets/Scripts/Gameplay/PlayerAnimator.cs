@@ -14,7 +14,7 @@ namespace RedMagic.Gameplay
     ///  - Crouching (Bool)  agachado
     ///  - Attack (Trigger)  lo dispara <see cref="PlayerAttack"/>
     ///  - Hurt (Trigger)    al recibir daño
-    ///  - Dead (Bool)       al morir (estado terminal, sin salida)
+    ///  - Dead (Bool)       al morir; vuelve a false si Health dispara Revived (respawn)
     /// </summary>
     [DisallowMultipleComponent]
     public class PlayerAnimator : MonoBehaviour
@@ -51,6 +51,7 @@ namespace RedMagic.Gameplay
             if (_health == null) return;
             _health.Damaged += OnDamaged;
             _health.Died += OnDied;
+            _health.Revived += OnRevived;
         }
 
         private void OnDisable()
@@ -58,6 +59,7 @@ namespace RedMagic.Gameplay
             if (_health == null) return;
             _health.Damaged -= OnDamaged;
             _health.Died -= OnDied;
+            _health.Revived -= OnRevived;
         }
 
         private void Update()
@@ -101,6 +103,11 @@ namespace RedMagic.Gameplay
             animator.ResetTrigger(HurtKey);
             animator.ResetTrigger(AttackKey);
             animator.SetBool(DeadKey, true);
+        }
+
+        private void OnRevived()
+        {
+            if (animator != null) animator.SetBool(DeadKey, false);
         }
     }
 }

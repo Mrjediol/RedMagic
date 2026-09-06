@@ -11,6 +11,54 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MainHub.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Boss.unity
+    guid: 399eb5522346b2f4c8f6ff1f3c83f700
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section01.unity
+    guid: 6e23ad6cc74a2874882ba736137b41a4
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section02.unity
+    guid: 539545d6f3797ee4684d78031fe20adb
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section03.unity
+    guid: 4f47a9a0eb2a04845bdf8eebbdb8c2bd
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section04.unity
+    guid: 22bd4f82e77802e4cb4cd0158650c55d
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section05.unity
+    guid: 580d1db374dc6a744af497d795d8ccc0
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section06.unity
+    guid: fdc17e2b913be644eab438b5b1ce68fd
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section07.unity
+    guid: 43439ce74c57f534b8d9c133943b2109
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section08.unity
+    guid: d340782483b9aab429b6e73d0ddce85a
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section09.unity
+    guid: ff07d70375bf8764b87dfcc7f49d3c84
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section10.unity
+    guid: 75b8f58bb47013e4a84ef9f463a755d9
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section11.unity
+    guid: 3773db51bbbc070448675a10a4243513
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section12.unity
+    guid: bf8238927a36eab44af18536c0bd138f
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section13.unity
+    guid: 2a9cef5aa7e49764f9169cbf2d68c25f
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section14.unity
+    guid: cbab2bd88bf10934689e845f19a81e84
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section15.unity
+    guid: 440b75b7f9cd30a49986d94c84afa16f
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

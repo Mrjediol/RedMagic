@@ -7,7 +7,7 @@ namespace RedMagic.Combat
     /// <summary>
     /// Componente de vida reutilizable (jugador, enemigos, objetos destructibles).
     /// Dispara eventos al cambiar la vida, al recibir daño y al morir, y lanza los SFX
-    /// correspondientes a través de <see cref="AudioManager"/> por id de SoundData.
+    /// correspondientes a través de <see cref="AudioManager"/> por id de sonido.
     /// </summary>
     [DisallowMultipleComponent]
     public class Health : MonoBehaviour
@@ -18,10 +18,10 @@ namespace RedMagic.Combat
         [Tooltip("Si está activo no recibe daño (útil para pruebas).")]
         [SerializeField] private bool invulnerable;
 
-        [Header("SFX — ids de SoundData del AudioManager")]
-        [Tooltip("id del SoundData al recibir daño. Déjalo vacío para no sonar.")]
+        [Header("SFX — ids de sonido del AudioManager")]
+        [Tooltip("id del sonido al recibir daño. Déjalo vacío para no sonar.")]
         [SerializeField] private string hurtSfxId;
-        [Tooltip("id del SoundData al morir. Déjalo vacío para no sonar.")]
+        [Tooltip("id del sonido al morir. Déjalo vacío para no sonar.")]
         [SerializeField] private string deathSfxId;
 
         public float MaxHealth => maxHealth;

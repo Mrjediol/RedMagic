@@ -564,16 +564,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f1fa4864a6c5594696e15dd36fe645b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerMovement
-  moveSpeed: 6
-  jumpForce: 12
-  fallGravityMultiplier: 1.9
-  coyoteTime: 0.1
-  jumpBufferTime: 0.12
-  groundCheck: {fileID: 36265110}
-  groundCheckRadius: 0.14
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player
   moveActionName: Move
@@ -581,6 +571,31 @@ MonoBehaviour:
   jumpSfxId: SFX_PlayerJump
   footstepSfxId: SFX_PlayerFootstep
   footstepInterval: 0.32
+  stompSfxId: SFX_EnemyStomp
+  enableStomp: 1
+  stompDamage: 0
+  _characterBounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0.35, y: 0.75, z: 0}
+  _groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  _detectorCount: 3
+  _detectionRayLength: 0.1
+  _rayBuffer: 0.1
+  _acceleration: 90
+  _moveClamp: 13
+  _deAcceleration: 60
+  _apexBonus: 2
+  _fallClamp: -40
+  _minFallSpeed: 80
+  _maxFallSpeed: 120
+  _jumpHeight: 30
+  _jumpApexThreshold: 10
+  _coyoteTimeThreshold: 0.1
+  _jumpBuffer: 0.1
+  _jumpEndEarlyGravityModifier: 3
+  _freeColliderIterations: 10
 --- !u!114 &521717471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -652,14 +667,14 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 521717468}
-  m_BodyType: 0
+  m_BodyType: 2
   m_Simulated: 1
-  m_UseFullKinematicContacts: 0
+  m_UseFullKinematicContacts: 1
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 3
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -667,7 +682,7 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 1
+  m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
@@ -780,7 +795,7 @@ GameObject:
   - component: {fileID: 537356727}
   - component: {fileID: 537356726}
   - component: {fileID: 537356725}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1069,19 +1084,58 @@ MonoBehaviour:
   musicGroup: {fileID: 2760064263517888288, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   sfxGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   sounds:
-  - {fileID: 11400000, guid: 496f7999d0f6d26408cfe58197ad1d38, type: 2}
-  - {fileID: 11400000, guid: 7bc03003c627c9541a39308f83f0e368, type: 2}
-  - {fileID: 11400000, guid: ab362e32fbe49644ea5b6a72c663ab84, type: 2}
-  - {fileID: 11400000, guid: 2f22c1456660fcf4e91daca9897a16bc, type: 2}
-  - {fileID: 11400000, guid: d274e2678fdeb7f47ab34c72965f13af, type: 2}
-  - {fileID: 11400000, guid: dbef3f2a70da17343b83a59dbfa0e3b1, type: 2}
-  - {fileID: 11400000, guid: 768e4608104aaa9498561ae2c1d6142d, type: 2}
-  Music_Menu: {fileID: 8300000, guid: 6ce737ff19c3b0f44a081ce833ff5d1d, type: 3}
-  SFX_ButtonHover: {fileID: 0}
-  SFX_ButtonClick: {fileID: 0}
+  - id: Music_Menu
+    clip: {fileID: 8300000, guid: 6ce737ff19c3b0f44a081ce833ff5d1d, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 1
+    mixerGroup: {fileID: 2760064263517888288, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_ButtonHover
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_ButtonClick
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_PlayerJump
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_PlayerFootstep
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_PlayerHurt
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_PlayerDeath
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
+  - id: SFX_EnemyStomp
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    loop: 0
+    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
   defaultMasterVolume: 1
   defaultMusicVolume: 0.8
   defaultSfxVolume: 1
+  musicFadeDuration: 0.75
   sfxVoiceCount: 8
 --- !u!4 &780735658
 Transform:
@@ -1109,7 +1163,7 @@ GameObject:
   - component: {fileID: 838161156}
   - component: {fileID: 838161155}
   - component: {fileID: 838161154}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Platform_B
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1498,7 +1552,7 @@ GameObject:
   - component: {fileID: 1753370056}
   - component: {fileID: 1753370055}
   - component: {fileID: 1753370054}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Platform_A
   m_TagString: Untagged
   m_Icon: {fileID: 0}

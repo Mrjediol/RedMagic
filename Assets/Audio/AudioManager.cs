@@ -7,8 +7,14 @@ namespace RedMagic.Audio
 {
     /// <summary>
     /// Gestor de audio global. Singleton persistente (DontDestroyOnLoad).
-    /// Enruta música y SFX a través de un AudioMixer con los grupos Master / Music / SFX
-    /// y persiste volumen y mute por grupo en PlayerPrefs.
+    ///
+    /// Los sonidos se dan de alta en una única lista en el Inspector (<see cref="sounds"/>): cada
+    /// entrada es un <see cref="SoundData"/> con id, clip, volumen, pitch, loop y grupo de mezcla.
+    /// Para añadir un sonido nuevo se hace crecer la lista y se rellenan los campos — igual que el
+    /// viejo array de "Sounds", sin ScriptableObjects.
+    ///
+    /// Internamente sigue enrutando música y SFX por un AudioMixer con los grupos Master / Music /
+    /// SFX y persiste volumen y mute por grupo en PlayerPrefs (lo que consume el menú de Opciones).
     /// </summary>
     [DisallowMultipleComponent]
     public class AudioManager : MonoBehaviour
@@ -25,35 +31,30 @@ namespace RedMagic.Audio
         [SerializeField] private AudioMixerGroup musicGroup;
         [SerializeField] private AudioMixerGroup sfxGroup;
 
-        [Header("Biblioteca de sonidos")]
-        [Tooltip("Assets SoundData disponibles para PlaySFX / PlayMusic (se buscan por su campo id).")]
+        [Header("Sonidos")]
+        [Tooltip("Alta de sonidos: id + clip + volumen + pitch + loop + grupo. " +
+                 "El id es lo que se pasa a PlaySFX(id) / PlayMusic(id).")]
         [SerializeField] private List<SoundData> sounds = new List<SoundData>();
-
-        [Header("Placeholders — asigna los AudioClip en el Inspector")]
-        [Tooltip("id: \"Music_Menu\"")]
-        [SerializeField] private AudioClip Music_Menu;
-        [Tooltip("id: \"SFX_ButtonHover\"")]
-        [SerializeField] private AudioClip SFX_ButtonHover;
-        [Tooltip("id: \"SFX_ButtonClick\"")]
-        [SerializeField] private AudioClip SFX_ButtonClick;
 
         [Header("Valores por defecto (usados si no hay nada guardado en PlayerPrefs)")]
         [Range(0f, 1f)] [SerializeField] private float defaultMasterVolume = 1f;
         [Range(0f, 1f)] [SerializeField] private float defaultMusicVolume = 0.8f;
         [Range(0f, 1f)] [SerializeField] private float defaultSfxVolume = 1f;
 
+        [Header("Música")]
+        [Tooltip("Segundos de fundido al cambiar o parar la música. 0 = corte seco.")]
+        [Range(0f, 5f)] [SerializeField] private float musicFadeDuration = 0.75f;
+
         [Header("Voces de SFX")]
-        [Tooltip("Nº de AudioSource reservados para SFX con pitch propio (SoundEmitter). " +
-                 "Cada sonido con pitch necesita su propia voz porque el pitch es del AudioSource, no del PlayOneShot.")]
+        [Tooltip("Nº de AudioSource reservados para SFX. Cada sonido con pitch propio necesita su " +
+                 "propia voz porque el pitch es del AudioSource, no del PlayOneShot.")]
         [Range(1, 32)] [SerializeField] private int sfxVoiceCount = 8;
 
         private readonly Dictionary<string, SoundData> _library = new Dictionary<string, SoundData>();
-        private readonly Dictionary<string, AudioClip> _placeholderClips = new Dictionary<string, AudioClip>();
         private readonly Dictionary<string, float> _volume = new Dictionary<string, float>();
         private readonly Dictionary<string, bool> _muted = new Dictionary<string, bool>();
 
         private AudioSource _musicSource;
-        private AudioSource _sfxSource;
         private AudioSource[] _sfxVoices;
         private int _nextVoice;
         private string _currentMusicId;
@@ -88,7 +89,7 @@ namespace RedMagic.Audio
 
         private void Start()
         {
-            // Empujar los valores al mixer un frame después de Awake: SetFloot sobre parámetros
+            // Empujar los valores al mixer un frame después de Awake: SetFloat sobre parámetros
             // expuestos puede ignorarse silenciosamente si se llama demasiado pronto tras la carga.
             ApplyAllToMixer();
         }
@@ -103,42 +104,18 @@ namespace RedMagic.Audio
         private void BuildLibrary()
         {
             _library.Clear();
-            _placeholderClips.Clear();
 
             foreach (var sound in sounds)
             {
                 if (sound == null || string.IsNullOrEmpty(sound.id)) continue;
+                if (_library.ContainsKey(sound.id))
+                {
+                    Debug.LogWarning($"[AudioManager] id de sonido duplicado: '{sound.id}'. Se usa el primero.", this);
+                    continue;
+                }
+
                 _library[sound.id] = sound;
             }
-
-            RegisterPlaceholder("Music_Menu", Music_Menu, musicGroup, loop: true);
-            RegisterPlaceholder("SFX_ButtonHover", SFX_ButtonHover, sfxGroup, loop: false);
-            RegisterPlaceholder("SFX_ButtonClick", SFX_ButtonClick, sfxGroup, loop: false);
-        }
-
-        private void RegisterPlaceholder(string id, AudioClip clip, AudioMixerGroup group, bool loop)
-        {
-            // El clip del campo del Inspector se usa como fallback en tiempo de ejecución
-            // (nunca se escribe en el SoundData asset, para no ensuciarlo).
-            if (clip != null) _placeholderClips[id] = clip;
-
-            if (_library.ContainsKey(id)) return; // ya hay un SoundData real con ese id
-
-            var data = ScriptableObject.CreateInstance<SoundData>();
-            data.id = id;
-            data.clip = clip;
-            data.volume = 1f;
-            data.loop = loop;
-            data.mixerGroup = group;
-            data.hideFlags = HideFlags.HideAndDontSave;
-            _library[id] = data;
-        }
-
-        // Clip efectivo: el del SoundData, o el placeholder del Inspector si el SoundData no tiene ninguno.
-        private AudioClip ClipFor(SoundData data)
-        {
-            if (data.clip != null) return data.clip;
-            return _placeholderClips.TryGetValue(data.id, out var c) ? c : null;
         }
 
         private void SetupSources()
@@ -148,13 +125,8 @@ namespace RedMagic.Audio
             _musicSource.loop = true;
             _musicSource.outputAudioMixerGroup = musicGroup;
 
-            _sfxSource = gameObject.AddComponent<AudioSource>();
-            _sfxSource.playOnAwake = false;
-            _sfxSource.loop = false;
-            _sfxSource.outputAudioMixerGroup = sfxGroup;
-
-            // Voces con pitch propio. PlayOneShot comparte el pitch del AudioSource, así que
-            // cada sonido que quiera variación necesita su propia voz.
+            // Voces de SFX. PlayOneShot comparte el pitch del AudioSource, así que cada sonido que
+            // quiera pitch propio necesita su propia voz.
             var voicesRoot = new GameObject("SfxVoices");
             voicesRoot.transform.SetParent(transform, false);
 
@@ -171,6 +143,7 @@ namespace RedMagic.Audio
 
         // ------------------------------------------------------------------ playback
 
+        /// <summary>Reproduce el sonido <paramref name="id"/> como música (loop, grupo Music, con fundido).</summary>
         public void PlayMusic(string id)
         {
             if (!TryGet(id, out var data)) return;
@@ -182,17 +155,19 @@ namespace RedMagic.Audio
             _musicRoutine = StartCoroutine(PlayMusicRoutine(data));
         }
 
-        // El clip puede tener "Preload Audio Data" desactivado: en ese caso Play() se llamaría
-        // sobre un clip aún sin cargar y a veces no suena. Forzamos la carga y esperamos.
-        // Con Time.timeScale = 0 esta corrutina sigue avanzando (yield return null no usa tiempo escalado).
+        // Espera a que el clip esté cargado (puede tener "Preload Audio Data" desactivado) y luego
+        // hace un fundido de entrada. Con Time.timeScale = 0 la corrutina sigue avanzando porque
+        // se mide con Time.unscaledDeltaTime.
         private IEnumerator PlayMusicRoutine(SoundData data)
         {
-            var clip = ClipFor(data);
+            var clip = data.clip;
+            float targetVolume = Mathf.Clamp01(data.volume);
 
-            _musicSource.Stop();
+            // Fundido de salida de lo que estuviera sonando.
+            yield return FadeMusicOut();
+
             _musicSource.clip = clip;
             _musicSource.loop = data.loop;
-            _musicSource.volume = data.volume;
             _musicSource.outputAudioMixerGroup = data.mixerGroup != null ? data.mixerGroup : musicGroup;
 
             if (clip == null)
@@ -208,14 +183,30 @@ namespace RedMagic.Audio
             while (clip.loadState == AudioDataLoadState.Loading)
                 yield return null;
 
-            if (clip.loadState == AudioDataLoadState.Loaded)
-                _musicSource.Play();
-            else
+            if (clip.loadState != AudioDataLoadState.Loaded)
+            {
                 Debug.LogWarning($"[AudioManager] No se pudo cargar el clip de música '{data.id}'.", this);
+                _musicRoutine = null;
+                yield break;
+            }
 
+            _musicSource.volume = musicFadeDuration > 0f ? 0f : targetVolume;
+            _musicSource.Play();
+
+            // Fundido de entrada.
+            while (_musicSource.volume < targetVolume)
+            {
+                _musicSource.volume = musicFadeDuration > 0f
+                    ? Mathf.MoveTowards(_musicSource.volume, targetVolume, targetVolume * Time.unscaledDeltaTime / musicFadeDuration)
+                    : targetVolume;
+                yield return null;
+            }
+
+            _musicSource.volume = targetVolume;
             _musicRoutine = null;
         }
 
+        /// <summary>Para la música con un fundido de salida.</summary>
         public void StopMusic()
         {
             if (_musicRoutine != null)
@@ -224,22 +215,45 @@ namespace RedMagic.Audio
                 _musicRoutine = null;
             }
 
-            _musicSource.Stop();
-            _musicSource.clip = null;
             _currentMusicId = null;
+            _musicRoutine = StartCoroutine(StopMusicRoutine());
         }
 
+        private IEnumerator StopMusicRoutine()
+        {
+            yield return FadeMusicOut();
+            _musicSource.Stop();
+            _musicSource.clip = null;
+            _musicRoutine = null;
+        }
+
+        private IEnumerator FadeMusicOut()
+        {
+            if (!_musicSource.isPlaying) yield break;
+
+            if (musicFadeDuration <= 0f)
+            {
+                _musicSource.Stop();
+                yield break;
+            }
+
+            float start = _musicSource.volume;
+            while (_musicSource.volume > 0f)
+            {
+                _musicSource.volume = Mathf.MoveTowards(_musicSource.volume, 0f, start * Time.unscaledDeltaTime / musicFadeDuration);
+                yield return null;
+            }
+
+            _musicSource.Stop();
+        }
+
+        /// <summary>Reproduce el sonido <paramref name="id"/> como efecto puntual por el grupo SFX.</summary>
         public void PlaySFX(string id)
         {
             if (!TryGet(id, out var data)) return;
+            if (data.clip == null) return;
 
-            var clip = ClipFor(data);
-            if (clip == null) return;
-
-            var group = data.mixerGroup != null ? data.mixerGroup : sfxGroup;
-            if (_sfxSource.outputAudioMixerGroup != group) _sfxSource.outputAudioMixerGroup = group;
-
-            _sfxSource.PlayOneShot(clip, data.volume);
+            PlayClip(data.clip, data.volume, data.pitch, data.mixerGroup);
         }
 
         /// <summary>
@@ -254,7 +268,7 @@ namespace RedMagic.Audio
             var voice = TakeVoice();
             voice.clip = clip;
             voice.volume = Mathf.Clamp01(volume);
-            voice.pitch = Mathf.Max(0.01f, pitch);
+            voice.pitch = Mathf.Clamp(pitch, 0.1f, 3f);
             voice.outputAudioMixerGroup = group != null ? group : sfxGroup;
             voice.Play();
         }

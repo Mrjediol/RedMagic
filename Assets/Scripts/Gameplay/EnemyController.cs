@@ -6,8 +6,19 @@ using UnityEngine;
 namespace RedMagic.Gameplay
 {
     /// <summary>
-    /// IA placeholder de enemigo: se queda quieto o patrulla de un lado a otro alrededor de su
-    /// posición inicial. Sin persecución ni ataques todavía; es sólo para probar la escena.
+    /// IA de enemigo de cuerpo a cuerpo. El ciclo es el clásico de plataformas: deambula por su
+    /// zona (o espera quieto), y en cuanto el jugador entra en su radio de detección deja lo que
+    /// estaba haciendo y va a por él; al tocarlo le hace daño por contacto.
+    ///
+    /// La detección y la patrulla son independientes: <see cref="behaviour"/> decide qué hace
+    /// mientras NO ve al jugador (quieto = emboscada, patrulla = ronda), y
+    /// <see cref="chasePlayer"/> decide si lo persigue cuando lo ve. Así un mismo script cubre
+    /// desde un bicho que patrulla y embiste hasta una torreta que sólo espera.
+    ///
+    /// Para no entrar y salir del estado de persecución en el borde del radio hay histéresis:
+    /// engancha a <see cref="detectionRadius"/> y no suelta hasta <see cref="loseSightRadius"/>.
+    /// Y con <see cref="stopAtLedges"/> ni la patrulla ni la persecución se tiran por un
+    /// precipicio: sondean el suelo un paso por delante antes de avanzar.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     [DisallowMultipleComponent]
@@ -20,6 +31,7 @@ namespace RedMagic.Gameplay
         }
 
         [Header("Comportamiento")]
+        [Tooltip("Qué hace mientras NO ve al jugador: quedarse quieto (emboscada) o patrullar.")]
         [SerializeField] private Behaviour behaviour = Behaviour.Patrol;
         [SerializeField] private float patrolSpeed = 2f;
         [Tooltip("Distancia a cada lado del punto de inicio.")]
@@ -28,8 +40,32 @@ namespace RedMagic.Gameplay
         [SerializeField] private float waitAtEnds = 0.5f;
         [SerializeField] private bool startMovingRight = true;
 
-        [Header("Daño por contacto (placeholder)")]
-        [Tooltip("Daño que hace al jugador al tocarlo. 0 = no hace daño.")]
+        [Header("Persecución")]
+        [Tooltip("Si está activo, abandona la patrulla y va a por el objetivo cuando lo detecta.")]
+        [SerializeField] private bool chasePlayer = true;
+        [Tooltip("Etiqueta del objetivo. Es también a quién le hace daño por contacto.")]
+        [SerializeField] private string targetTag = "Player";
+        [Tooltip("Distancia horizontal a la que detecta al objetivo y empieza a perseguirlo.")]
+        [SerializeField] private float detectionRadius = 6f;
+        [Tooltip("Distancia a la que se rinde. Conviene que sea mayor que el radio de detección: " +
+                 "esa diferencia es la histéresis que evita el parpadeo perseguir/patrullar.")]
+        [SerializeField] private float loseSightRadius = 9f;
+        [SerializeField] private float chaseSpeed = 3.5f;
+        [Tooltip("Diferencia de altura máxima para 'ver' al objetivo. Evita que persiga a alguien " +
+                 "que está dos plataformas más arriba y no puede alcanzar.")]
+        [SerializeField] private float verticalTolerance = 3f;
+
+        [Header("Bordes")]
+        [Tooltip("Sondea el suelo un paso por delante y no avanza si no hay: ni patrullando ni " +
+                 "persiguiendo se tira por un precipicio.")]
+        [SerializeField] private bool stopAtLedges = true;
+        [Tooltip("Capas que cuentan como suelo para ese sondeo.")]
+        [SerializeField] private LayerMask groundLayers = ~0;
+        [Tooltip("Cuánto baja el rayo del sondeo antes de dar el borde por precipicio.")]
+        [SerializeField] private float ledgeProbeDepth = 0.6f;
+
+        [Header("Daño por contacto")]
+        [Tooltip("Daño que hace al objetivo al tocarlo. 0 = no hace daño.")]
         [SerializeField] private float contactDamage;
         [SerializeField] private float contactDamageCooldown = 1f;
 
@@ -37,6 +73,7 @@ namespace RedMagic.Gameplay
         private SpriteRenderer _sprite;
         private Health _health;
         private SoundEmitter _sound;
+        private Collider2D _collider;
 
         private Vector2 _origin;
         private int _direction = 1;
@@ -44,12 +81,29 @@ namespace RedMagic.Gameplay
         private float _contactTimer;
         private bool _active = true;
 
+        private Transform _target;
+        private float _retargetTimer;
+        private bool _chasing;
+
+        /// <summary>True mientras está persiguiendo al objetivo (lo usan animadores y gizmos).</summary>
+        public bool IsChasing => _chasing;
+
+        /// <summary>Segundos entre reintentos de buscar al objetivo cuando no se ha encontrado.</summary>
+        private const float RetargetInterval = 0.5f;
+
+        /// <summary>Cuánto se separa del borde del collider el rayo que sondea el suelo.</summary>
+        private const float LedgeProbeInset = 0.05f;
+
+        /// <summary>Buffer reutilizable para el sondeo de suelo (sin allocs por frame).</summary>
+        private static readonly RaycastHit2D[] GroundHits = new RaycastHit2D[8];
+
         private void Awake()
         {
             _body = GetComponent<Rigidbody2D>();
             _sprite = GetComponentInChildren<SpriteRenderer>();
             _health = GetComponent<Health>();
             _sound = GetComponent<SoundEmitter>();
+            _collider = GetComponent<Collider2D>();
 
             _body.freezeRotation = true;
             _origin = transform.position;
@@ -89,6 +143,9 @@ namespace RedMagic.Gameplay
                 return;
             }
 
+            // La persecución tiene prioridad sobre lo que estuviera haciendo.
+            if (TryChase()) return;
+
             if (behaviour == Behaviour.Idle)
             {
                 Stop();
@@ -97,6 +154,83 @@ namespace RedMagic.Gameplay
 
             Patrol();
         }
+
+        // ------------------------------------------------------------------ persecución
+
+        /// <summary>
+        /// Decide si toca perseguir y, si es que sí, mueve al enemigo hacia el objetivo.
+        /// Devuelve false cuando no hay a quién perseguir, para que el llamante siga con la
+        /// patrulla.
+        /// </summary>
+        private bool TryChase()
+        {
+            if (!chasePlayer)
+            {
+                _chasing = false;
+                return false;
+            }
+
+            var target = ResolveTarget();
+            if (target == null)
+            {
+                _chasing = false;
+                return false;
+            }
+
+            Vector2 toTarget = (Vector2)target.position - (Vector2)transform.position;
+
+            // Fuera del alcance vertical no se le "ve": está en otra plataforma y perseguirlo sólo
+            // haría que el enemigo se quedase pegado a una pared debajo de él.
+            if (Mathf.Abs(toTarget.y) > verticalTolerance)
+            {
+                _chasing = false;
+                return false;
+            }
+
+            // Histéresis: engancha con detectionRadius y no suelta hasta loseSightRadius.
+            float distance = Mathf.Abs(toTarget.x);
+            float threshold = _chasing ? Mathf.Max(loseSightRadius, detectionRadius) : detectionRadius;
+            _chasing = distance <= threshold;
+
+            if (!_chasing) return false;
+
+            _direction = toTarget.x >= 0f ? 1 : -1;
+            if (_sprite != null) _sprite.flipX = _direction < 0;
+
+            // Con el objetivo ya al alcance del morro, el sondeo de borde se ignora: el jugador
+            // está justo delante, así que hay suelo donde pisar, y un empujón entre cuerpos no
+            // debe leerse como precipicio y dejar al enemigo clavado a medio combate.
+            float reach = (_collider != null ? _collider.bounds.extents.x : 0.3f) + 0.6f;
+            bool withinReach = distance <= reach;
+
+            if (!withinReach && !CanAdvance(_direction)) Stop();
+            else Move(chaseSpeed);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Busca al objetivo por etiqueta y lo cachea. Se reintenta cada pocos segundos en vez de
+        /// cada frame porque el jugador de la run es un objeto persistente que puede no existir
+        /// todavía cuando la sección acaba de cargarse.
+        /// </summary>
+        private Transform ResolveTarget()
+        {
+            if (_target != null) return _target;
+
+            _retargetTimer -= Time.fixedDeltaTime;
+            if (_retargetTimer > 0f) return null;
+
+            _retargetTimer = RetargetInterval;
+
+            if (string.IsNullOrEmpty(targetTag)) return null;
+
+            var found = GameObject.FindGameObjectWithTag(targetTag);
+            _target = found != null ? found.transform : null;
+            return _target;
+        }
+
+        // ------------------------------------------------------------------ patrulla
 
         private void Patrol()
         {
@@ -108,8 +242,12 @@ namespace RedMagic.Gameplay
             }
 
             float offsetFromOrigin = transform.position.x - _origin.x;
-            if ((_direction > 0 && offsetFromOrigin >= patrolDistance) ||
-                (_direction < 0 && offsetFromOrigin <= -patrolDistance))
+            bool reachedEnd = (_direction > 0 && offsetFromOrigin >= patrolDistance) ||
+                              (_direction < 0 && offsetFromOrigin <= -patrolDistance);
+
+            // Dar la vuelta también en un precipicio, no sólo al final del tramo: así se puede
+            // soltar el mismo enemigo en una plataforma corta sin ajustarle la distancia a mano.
+            if (reachedEnd || !CanAdvance(_direction))
             {
                 _direction = -_direction;
                 _waitTimer = waitAtEnds;
@@ -117,11 +255,53 @@ namespace RedMagic.Gameplay
                 return;
             }
 
-            var velocity = _body.linearVelocity;
-            velocity.x = _direction * patrolSpeed;
-            _body.linearVelocity = velocity;
+            Move(patrolSpeed);
 
             if (_sprite != null) _sprite.flipX = _direction < 0;
+        }
+
+        // ------------------------------------------------------------------ movimiento
+
+        private void Move(float speed)
+        {
+            var velocity = _body.linearVelocity;
+            velocity.x = _direction * speed;
+            _body.linearVelocity = velocity;
+        }
+
+        /// <summary>
+        /// True si hay suelo un paso por delante en la dirección dada.
+        ///
+        /// El rayo sale por delante del morro pero desde la altura del CENTRO del cuerpo (no de
+        /// los pies) y es largo: <c>media altura + ledgeProbeDepth</c>. Así, un empujón que
+        /// levante al bicho unos centímetros —lo normal al chocar con el jugador— no se lee como
+        /// precipicio y lo deja parado a medio combate.
+        ///
+        /// Los impactos contra uno mismo y contra el objetivo se descartan: que el jugador esté
+        /// delante (comparte capa con el suelo) no significa que haya plataforma.
+        /// </summary>
+        private bool CanAdvance(int direction)
+        {
+            if (!stopAtLedges || _collider == null) return true;
+
+            var bounds = _collider.bounds;
+            var origin = new Vector2(
+                direction > 0 ? bounds.max.x + LedgeProbeInset : bounds.min.x - LedgeProbeInset,
+                bounds.center.y);
+            float length = bounds.extents.y + Mathf.Max(0.15f, ledgeProbeDepth);
+
+            var filter = new ContactFilter2D { useLayerMask = true, layerMask = groundLayers, useTriggers = false };
+            int count = Physics2D.Raycast(origin, Vector2.down, filter, GroundHits, length);
+
+            for (int i = 0; i < count; i++)
+            {
+                var col = GroundHits[i].collider;
+                if (col == null || col == _collider || col.transform.IsChildOf(transform)) continue;
+                if (_target != null && col.transform.IsChildOf(_target.root)) continue;
+                return true;
+            }
+
+            return false;
         }
 
         private void Stop()
@@ -137,6 +317,11 @@ namespace RedMagic.Gameplay
 
             var otherHealth = collision.collider.GetComponentInParent<Health>();
             if (otherHealth == null || otherHealth == _health) return;
+
+            // Sólo daña al objetivo. Se comprueba sobre el GameObject del Health (la raíz del
+            // jugador, que es la que lleva la etiqueta) y no sobre el collider tocado, que puede
+            // ser un hijo sin etiquetar. Sin esto, dos enemigos que se rozan se matan entre ellos.
+            if (!string.IsNullOrEmpty(targetTag) && !otherHealth.CompareTag(targetTag)) return;
 
             otherHealth.TakeDamage(contactDamage);
             _contactTimer = contactDamageCooldown;
@@ -158,8 +343,23 @@ namespace RedMagic.Gameplay
         private void OnDrawGizmosSelected()
         {
             Vector3 origin = Application.isPlaying ? (Vector3)_origin : transform.position;
+
+            // Tramo de patrulla.
             Gizmos.color = Color.yellow;
             Gizmos.DrawLine(origin + Vector3.left * patrolDistance, origin + Vector3.right * patrolDistance);
+
+            if (!chasePlayer) return;
+
+            // Radios de detección y de abandono, como cajas: la detección es horizontal pero está
+            // limitada en vertical por verticalTolerance, y una esfera mentiría sobre su forma.
+            Gizmos.color = new Color(1f, 0.4f, 0.2f, 0.9f);
+            Gizmos.DrawWireCube(transform.position,
+                                new Vector3(detectionRadius * 2f, verticalTolerance * 2f, 0f));
+
+            Gizmos.color = new Color(1f, 0.4f, 0.2f, 0.3f);
+            Gizmos.DrawWireCube(transform.position,
+                                new Vector3(Mathf.Max(loseSightRadius, detectionRadius) * 2f,
+                                            verticalTolerance * 2f, 0f));
         }
     }
 }

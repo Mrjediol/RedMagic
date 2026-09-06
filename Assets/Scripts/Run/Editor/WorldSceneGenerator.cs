@@ -215,7 +215,9 @@ namespace RedMagic.RunEditor
             camera.transform.position = new Vector3(0f, 0f, -10f);
             var cam = camera.AddComponent<Camera>();
             cam.orthographic = true;
-            cam.orthographicSize = 5f;
+            // En una run, RunManager fuerza su propio 'cameraOrthographicSize' en todas las
+            // cámaras con CameraFollow; esto es sólo para que la escena se vea bien suelta.
+            cam.orthographicSize = 6.5f;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.09f, 0.08f, 0.12f, 1f);
             camera.AddComponent<CameraFollow>();
@@ -244,6 +246,10 @@ namespace RedMagic.RunEditor
             var ground = new GameObject("Ground (placeholder)");
             SceneManager.MoveGameObjectToScene(ground, scene);
             ground.transform.position = new Vector3(10f, -4f, 0f);
+            // En la capa "Ground" para que el sondeo de bordes de EnemyController lo reconozca
+            // como suelo (y no lo confunda con jugador/enemigos, que van en Default).
+            int groundLayer = LayerMask.NameToLayer("Ground");
+            if (groundLayer >= 0) ground.layer = groundLayer;
             var groundCollider = ground.AddComponent<BoxCollider2D>();
             groundCollider.size = new Vector2(60f, 2f);
 

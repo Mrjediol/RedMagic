@@ -60,6 +60,7 @@ namespace RedMagic.UI
             if (health == null) return;
             health.HealthChanged += OnHealthChanged;
             health.Died += OnDied;
+            health.Revived += OnRevived;
             OnHealthChanged(health.CurrentHealth, health.MaxHealth);
         }
 
@@ -68,6 +69,7 @@ namespace RedMagic.UI
             if (health == null) return;
             health.HealthChanged -= OnHealthChanged;
             health.Died -= OnDied;
+            health.Revived -= OnRevived;
         }
 
         private void LateUpdate()
@@ -94,6 +96,19 @@ namespace RedMagic.UI
         private void OnDied()
         {
             if (hideOnDeath && _visualRoot != null) _visualRoot.SetActive(false);
+        }
+
+        /// <summary>
+        /// Respawn: deshace el ocultado de <see cref="OnDied"/>. Sin esto, un personaje persistente
+        /// (el jugador de la run) revive sin barra de vida porque el GameObject se quedó apagado.
+        /// Se reaplica <see cref="OnHealthChanged"/> para que <see cref="hideWhenFull"/> siga
+        /// mandando y el relleno vuelva a su escala.
+        /// </summary>
+        private void OnRevived()
+        {
+            if (_visualRoot == null) return;
+            _visualRoot.SetActive(true);
+            OnHealthChanged(health.CurrentHealth, health.MaxHealth);
         }
 
         // ------------------------------------------------------------------ construcción

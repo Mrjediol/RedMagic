@@ -93,6 +93,28 @@ namespace RedMagic.Run
                  "(o una entrada en el AudioManager). Si no existe, el hub suena en silencio.")]
         [SerializeField] private string hubMusicId = "MainHub";
 
+        [Header("Cámara")]
+        [Tooltip("Tamaño ortográfico que se fuerza en todas las cámaras con CameraFollow (hub, " +
+                 "secciones y jefe) tras cada carga, para que el zoom sea idéntico y no pegue un " +
+                 "salto al empezar o avanzar una run. Ajústalo aquí para buscar el encuadre óptimo.")]
+        [Min(0.1f)]
+        [SerializeField] private float cameraOrthographicSize = 6.5f;
+
+        [Header("Suavizado de transiciones")]
+        [Tooltip("Cada cuántas cargas de escena se hace la limpieza de assets no usados " +
+                 "(Resources.UnloadUnusedAssets), que es lo que más tira del frame en una " +
+                 "transición. 1 = en cada carga (mínima memoria, lo suyo en móvil). 0 = nunca. " +
+                 "En un PC con memoria de sobra, 3-4 deja las transiciones más suaves.")]
+        [Min(0)]
+        [SerializeField] private int assetCleanupEveryNScenes = 1;
+
+        [Tooltip("Frames (con el juego congelado) que se esperan tras cargar la escena antes de " +
+                 "devolver el control, para que el primer frame de trabajo pesado (integrar la " +
+                 "escena, compilar shaders) caiga dentro de la transición y no en la primera " +
+                 "décima de juego.")]
+        [Min(0)]
+        [SerializeField] private int postLoadSettleFrames = 2;
+
         // ------------------------------------------------------------------ estado
 
         /// <summary>True entre StartRun y la vuelta al hub.</summary>
@@ -136,6 +158,7 @@ namespace RedMagic.Run
         private GameObject _playerRoot;     // contenedor persistente del jugador de la run
         private Coroutine _flow;
         private bool _frozen;               // si hemos sumado una pausa al contador de GameStateManager
+        private int _scenesSinceCleanup;    // para assetCleanupEveryNScenes
 
         // ------------------------------------------------------------------ ciclo de vida
 
@@ -161,6 +184,12 @@ namespace RedMagic.Run
             // evento, EnterHub sólo corre cuando la escena está de verdad lista, sea cual sea el
             // contexto desde el que se disparó la carga.
             SceneManager.sceneLoaded += OnSceneLoaded;
+
+            // El cargador asíncrono reparte su trabajo en trozos más pequeños por frame: cargar una
+            // sección tarda un pelín más de reloj pero deja de comerse frames enteros, que es lo que
+            // se nota como tirón al entrar en una escena. Las transiciones van tapadas por el freeze,
+            // así que el tiempo extra de carga no molesta.
+            Application.backgroundLoadingPriority = ThreadPriority.Low;
 
             // Con "Reload Domain" desactivado los estáticos sobreviven entre sesiones de Play.
             _frozen = false;
@@ -374,6 +403,11 @@ namespace RedMagic.Run
 
             while (!load.isDone) yield return null;
 
+            // La integración de la escena (todos los Awake/OnEnable/Start de golpe) es el frame
+            // más caro de la transición; se le deja respirar un frame antes de tocar nada más para
+            // no encadenar ese pico con el del reposicionamiento y la cámara.
+            yield return null;
+
             _loadedRunScene = target.GetLoadedScene();
             if (_loadedRunScene.IsValid())
                 SceneManager.SetActiveScene(_loadedRunScene);
@@ -384,7 +418,13 @@ namespace RedMagic.Run
 
             // 6. Música de la fase (World{n}-{puesto} o BossBattle{n}). Si no hay clip con ese
             //    nombre en Resources/Music, PlaySceneMusic deja la escena en silencio sin errores.
+            //    Se lanza aquí para que la carga del clip solape con los frames de asentamiento.
             PlayPhaseMusic();
+
+            // 7. Unos frames más, aún congelados, para que el warm-up de shaders y el primer
+            //    LateUpdate de la cámara caigan dentro de la transición y no nada más soltar.
+            for (int i = 0; i < postLoadSettleFrames; i++)
+                yield return null;
 
             Unfreeze();
             IsTransitioning = false;
@@ -404,9 +444,16 @@ namespace RedMagic.Run
             _loadedRunScene = default;
 
             // Liberar de verdad texturas y mallas de lo que se acaba de ir: sin esto la memoria
-            // sólo baja cuando al recolector le apetece, que en móvil llega tarde.
-            var cleanup = Resources.UnloadUnusedAssets();
-            while (!cleanup.isDone) yield return null;
+            // sólo baja cuando al recolector le apetece, que en móvil llega tarde. Es el paso que
+            // más pesa en una transición, así que su frecuencia se controla desde el Inspector
+            // (assetCleanupEveryNScenes): en móvil, cada carga; en PC con memoria de sobra, cada
+            // varias, para que las transiciones sean más suaves.
+            if (assetCleanupEveryNScenes > 0 && ++_scenesSinceCleanup >= assetCleanupEveryNScenes)
+            {
+                _scenesSinceCleanup = 0;
+                var cleanup = Resources.UnloadUnusedAssets();
+                while (!cleanup.isDone) yield return null;
+            }
         }
 
         /// <summary>
@@ -649,7 +696,11 @@ namespace RedMagic.Run
         }
 
         /// <summary>
-        /// Apunta las cámaras de la sección recién cargada al jugador de la run.
+        /// Apunta las cámaras de la escena recién cargada al jugador de la run y les fija el mismo
+        /// <see cref="cameraOrthographicSize"/>, para que el zoom no cambie entre el hub y las
+        /// secciones (cada escena trae su cámara con su propio tamaño y sin esto se notaría el
+        /// salto al empezar la run).
+        ///
         /// <c>CameraFollow</c> se busca su objetivo por etiqueta en su propio Start, pero eso sólo
         /// funciona si el jugador ya existe en ese instante; hacerlo explícito aquí quita esa
         /// dependencia de orden.
@@ -662,7 +713,13 @@ namespace RedMagic.Run
             {
                 var cameras = root.GetComponentsInChildren<CameraFollow>(true);
                 foreach (var follow in cameras)
+                {
                     follow.SetTarget(Player.transform);
+
+                    var cam = follow.GetComponent<Camera>();
+                    if (cam != null && cam.orthographic)
+                        cam.orthographicSize = cameraOrthographicSize;
+                }
             }
         }
 

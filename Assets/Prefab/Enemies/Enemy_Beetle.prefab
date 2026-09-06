@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4577605972886982299}
   - component: {fileID: 7460014757749799527}
   - component: {fileID: 4518286049624566306}
+  - component: {fileID: 3924913454017557972}
   m_Layer: 0
   m_Name: Enemy_Beetle
   m_TagString: Untagged
@@ -210,6 +211,19 @@ MonoBehaviour:
     minPitch: 0.95
     maxPitch: 1.05
   playOnSpawnAutomatically: 1
+--- !u!114 &3924913454017557972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7315227397564450535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2985d1d8de77b546b4fbeddccf21c6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
+  tier: 0
 --- !u!1 &8717866115797684849
 GameObject:
   m_ObjectHideFlags: 0

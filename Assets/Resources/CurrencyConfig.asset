@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77d1acac04af53e459d3f95c3e991ee3, type: 3}
+  m_Name: CurrencyConfig
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyConfig
+  visuals:
+  - currency: 0
+    icon: {fileID: 21300000, guid: 9bbbd195d0fe6d1459215b8047a23e7c, type: 3}
+    label: Gold
+    tint: {r: 1, g: 1, b: 1, a: 1}
+  - currency: 1
+    icon: {fileID: 21300000, guid: 1c439d48db75c1946b3c329ff69d7ad4, type: 3}
+    label: Diamond
+    tint: {r: 1, g: 1, b: 1, a: 1}
+  - currency: 2
+    icon: {fileID: 21300000, guid: 2f3a2b02d8ae35d4f950eac5d1411a05, type: 3}
+    label: Soul Fragment
+    tint: {r: 1, g: 1, b: 1, a: 1}
+  - currency: 3
+    icon: {fileID: 21300000, guid: 65f1eda3752505047964f88c1e1439a7, type: 3}
+    label: Skull
+    tint: {r: 1, g: 1, b: 1, a: 1}
+  basic:
+    gold:
+      min: 3
+      max: 8
+    diamond:
+      min: 0
+      max: 0
+    soulFragment:
+      min: 1
+      max: 3
+    skull:
+      min: 0
+      max: 0
+  elite:
+    gold:
+      min: 12
+      max: 24
+    diamond:
+      min: 1
+      max: 3
+    soulFragment:
+      min: 4
+      max: 8
+    skull:
+      min: 1
+      max: 2
+  boss:
+    gold:
+      min: 40
+      max: 80
+    diamond:
+      min: 6
+      max: 14
+    soulFragment:
+      min: 10
+      max: 20
+    skull:
+      min: 3
+      max: 6

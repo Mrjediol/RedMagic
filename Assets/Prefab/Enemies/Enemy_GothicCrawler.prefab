@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 173594065411715662}
   - component: {fileID: 3406769988305783241}
   - component: {fileID: 8040475196586370921}
+  - component: {fileID: 8228236223742428162}
   m_Layer: 0
   m_Name: Enemy_GothicCrawler
   m_TagString: Untagged
@@ -301,3 +302,16 @@ MonoBehaviour:
     minPitch: 0.95
     maxPitch: 1.05
   playOnSpawnAutomatically: 1
+--- !u!114 &8228236223742428162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6480817819827520977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2985d1d8de77b546b4fbeddccf21c6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
+  tier: 0

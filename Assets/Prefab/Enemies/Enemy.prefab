@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 1249979409084378934}
   - component: {fileID: 2508108536381289626}
   - component: {fileID: 3937163096249117252}
+  - component: {fileID: 8486707503098747283}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -237,6 +238,17 @@ MonoBehaviour:
   patrolDistance: 3
   waitAtEnds: 0.5
   startMovingRight: 1
+  chasePlayer: 1
+  targetTag: Player
+  detectionRadius: 6
+  loseSightRadius: 9
+  chaseSpeed: 3.5
+  verticalTolerance: 3
+  stopAtLedges: 1
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  ledgeProbeDepth: 0.6
   contactDamage: 0
   contactDamageCooldown: 1
 --- !u!114 &1249979409084378934
@@ -326,3 +338,16 @@ MonoBehaviour:
   turnToFaceTarget: 1
   verticalTolerance: 3
   drawGizmos: 1
+--- !u!114 &8486707503098747283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 862684330106874375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2985d1d8de77b546b4fbeddccf21c6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
+  tier: 0

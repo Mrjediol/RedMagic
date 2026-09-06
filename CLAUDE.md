@@ -103,6 +103,53 @@ to pick up the change.
 - **`TombInteractable`** — placed in the hub, references a `WorldDefinition` asset directly (not an
   index/name) so reordering `RunManager.worlds` can't desync a tomb from its world.
 
+### Economy (`Assets/Scripts/Economy/`)
+
+- **`CurrencyManager`** — `DontDestroyOnLoad` singleton **hand-placed in MainMenu and MainHub**
+  (like `AudioManager` / `RunManager`); a `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]` fallback
+  self-creates one only if a scene didn't provide it. Its four amount fields (`gold`, `diamond`,
+  `soulFragment`, `skull`) mirror the live state and are **editable in the Inspector, including
+  during Play** — type a value and `OnValidate` applies it immediately (persists the meta ones,
+  fires `Changed`); any code change mirrors back so the Inspector always shows the truth. This is
+  the test knob for currency. Context-menu "Borrar moneda de meta guardada" wipes the saved
+  `PlayerPrefs`. `CurrencyManager.IsRunCurrency` is the single source of the run-vs-meta split:
+  **Gold** and **Diamond** are run currency (spent in mid-run shops, zeroed on `RunManager.RunEnded`
+  whether you died or won, not persisted); **SoulFragment** and **Skull** are meta currency (spent
+  in the hub, saved to `PlayerPrefs`, survive death). Spending is `TrySpend` (used by `UpgradeManager`).
+- **`CurrencyConfig`** — one ScriptableObject at `Assets/Resources/CurrencyConfig.asset`, loaded by
+  `Resources.Load`. Holds per-currency HUD visuals (icon/label/tint) and the drop table: a
+  min–max `DropRange` per currency for each `EnemyTier` (Basic / Elite / Boss). This asset **is**
+  the "currency manager" for tuning drop amounts — edit it in the Inspector.
+- **`CurrencyDropper`** — `[RequireComponent(Health)]`; on `Health.Died` calls
+  `CurrencyManager.GrantDrops(tier)`, which rolls each currency's range for that tier. On the enemy
+  prefabs (`Enemy_*`, tier set per prefab) and on boss enemy instances (tier Boss). A Basic tier
+  with diamond/skull ranges left at 0 simply drops none of those.
+- **`CurrencyHud`** (`Assets/Ui/CurrencyHud.cs`) — self-bootstrapping persistent `UIDocument`, built
+  in code, always visible (a row of icon+amount, top-right). Uses its own
+  `Assets/Resources/CurrencyHudPanelSettings.asset` (sorting order 15, under the menus at 20).
+  Note: headless `capture_game_view` / `screenshot` do **not** render UI Toolkit runtime panels, so
+  the HUD (and touch controls) are invisible in those captures even when working — verify by
+  querying the visual tree instead.
+
+**Permanent upgrades** (the hub cauldron):
+
+- **`UpgradeTree`** — ScriptableObject at `Assets/Resources/UpgradeTree.asset`. A `rows × columns`
+  grid (currently 3×5) of `Node`s in row-major order. Each node has `maxLevel`, a cost that scales
+  with level (`baseCost + costPerLevel * currentLevel`), and a placeholder `bonusPerLevel` /
+  `statId`. Fill in real upgrades by editing the asset.
+- **`UpgradeManager`** — self-bootstrapping `DontDestroyOnLoad` singleton. Levels are saved per node
+  id in `PlayerPrefs` (meta-progression, survives death). "Skull: The Hero Slayer" unlock rule:
+  within a row, column N is buyable only once column N-1 has level ≥ 1; rows are independent.
+  `TryBuy(row, col)` pays `UpgradeManager.Cost` (SoulFragment) via `CurrencyManager.TrySpend`.
+  `GetBonus(statId)` sums purchased bonuses — the hook for a future player-stat system; nothing
+  reads it yet.
+- **`UpgradeMenuController`** (`Assets/Ui/`) — self-bootstrapping persistent code-built `UIDocument`
+  (`Assets/Resources/UpgradeMenuPanelSettings.asset`, sorting order 30). Hidden until
+  `Open()`; pauses the game via `GameStateManager` while open. Close with Esc / E / gamepad B.
+- **`CauldronInteractable`** — trigger-collider proximity interactable (same shape as
+  `TombInteractable`) added to a "Cauldron Interact Zone" child near the cauldron in MainHub;
+  interact key calls `UpgradeMenuController.Instance.Open()`.
+
 ### Input
 
 Three input sources are meant to coexist, not be exclusive: the Input System asset

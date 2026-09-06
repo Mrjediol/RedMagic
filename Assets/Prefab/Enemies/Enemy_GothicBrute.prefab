@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 5259296825146427721}
   - component: {fileID: 3093690907683328127}
   - component: {fileID: 7148575228320461157}
+  - component: {fileID: 6632451431687752491}
   m_Layer: 0
   m_Name: Enemy_GothicBrute
   m_TagString: Untagged
@@ -210,6 +211,19 @@ MonoBehaviour:
     minPitch: 0.95
     maxPitch: 1.05
   playOnSpawnAutomatically: 1
+--- !u!114 &6632451431687752491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1192576064084604408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2985d1d8de77b546b4fbeddccf21c6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
+  tier: 1
 --- !u!1 &4898404332534665505
 GameObject:
   m_ObjectHideFlags: 0

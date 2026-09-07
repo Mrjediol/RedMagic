@@ -77,6 +77,25 @@ namespace RedMagic.Items
 
         public static bool IsUniversal(BuildTag tag) => KindOf(tag) == TagKind.Universal;
 
+        /// <summary>Nombre para la UI (columna de sinergias, chips de tags del panel de descripción).</summary>
+        public static string DisplayName(BuildTag tag) => tag switch
+        {
+            BuildTag.Ice => "Hielo",
+            BuildTag.Fire => "Fuego",
+            BuildTag.Tank => "Tanque",
+            BuildTag.Haste => "Rapidez",
+            BuildTag.Lifesteal => "Vampirismo",
+            BuildTag.Reset => "Reset",
+            _ => tag.ToString(),
+        };
+
+        public static string DisplayName(ElementId element) => element switch
+        {
+            ElementId.Ice => "Hielo",
+            ElementId.Fire => "Fuego",
+            _ => "físico",
+        };
+
         /// <summary>
         /// La <see cref="BuildTag"/> que aporta un elemento al conteo, o null si es
         /// <see cref="ElementId.None"/> (un arma física no suma a ninguna sinergia elemental).

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ccda641669b0ea4c9c00458bc771e95, type: 3}
+  m_Name: Ability_CharcoVenenoso
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.ZoneAbility
+  displayName: Charco Venenoso
+  description: Deja un charco a tus pies que va quemando cinco segundos.
+  category: 2
+  icon: {fileID: 0}
+  accent: {r: 0.5, g: 0.85, b: 0.35, a: 1}
+  cooldown: 2.5
+  windup: 0
+  damage: 6
+  knockbackMultiplier: 0
+  castSfxId: 
+  fxSprite: {fileID: 0}
+  placement: 0
+  forwardDistance: 1.5
+  offset: {x: 0, y: -0.35}
+  mode: 0
+  radius: 1.8
+  duration: 5
+  tickInterval: 0.5
+  armDelay: 0.2

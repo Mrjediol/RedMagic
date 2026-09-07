@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80416a7fe6de126418701afa5c5c06c2, type: 3}
+  m_Name: Ability_FiloVeloz
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.MeleeArcAbility
+  displayName: Filo Veloz
+  description: "Un corte corto y seco. Poco da\xF1o, casi sin espera entre golpes."
+  category: 0
+  icon: {fileID: 0}
+  accent: {r: 0.85, g: 0.88, b: 0.95, a: 1}
+  cooldown: 0.22
+  windup: 0
+  damage: 14
+  knockbackMultiplier: 0.5
+  castSfxId: 
+  fxSprite: {fileID: 0}
+  offset: {x: 0.8, y: 0.1}
+  size: {x: 1.2, y: 1}
+  angle: 0
+  bothSides: 0
+  hits: 1
+  timeBetweenHits: 0.12
+  launchMultiplier: 1

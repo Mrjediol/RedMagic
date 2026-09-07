@@ -30,6 +30,13 @@ namespace RedMagic.UI
         public static readonly Color CostAfford = new(0.6f, 0.9f, 0.55f);
         public static readonly Color CostTooDear = new(0.95f, 0.45f, 0.45f);
 
+        /// <summary>
+        /// Borde luminoso para el elemento seleccionado (ratón/dedo encima, o foco de
+        /// teclado/mando). Más saturado y brillante que <see cref="GoldBorder"/> a propósito: tiene
+        /// que distinguirse de un vistazo, sobre todo navegando con mando desde el sofá o el móvil.
+        /// </summary>
+        public static readonly Color SelectionHighlight = new(1f, 0.82f, 0.32f, 0.95f);
+
         // ------------------------------------------------------------------ tamaños
 
         public const int TitleFontSize = 34;
@@ -111,6 +118,7 @@ namespace RedMagic.UI
             button.style.color = Cream;
             button.style.backgroundColor = CellBuyable;
             SetBorder(button, 2, GoldBorder, 10);
+            AddSelectionHighlight(button, 10f);
             return button;
         }
 
@@ -143,6 +151,47 @@ namespace RedMagic.UI
             button.style.whiteSpace = WhiteSpace.Normal;
             button.style.backgroundColor = CellBg;
             SetBorder(button, 2, GoldBorder, 12);
+            AddSelectionHighlight(button, 12f);
+        }
+
+        /// <summary>
+        /// Da a un elemento una señal visible de "esto es lo que está seleccionado ahora mismo":
+        /// al pasarle el ratón/dedo por encima, o al recibir el foco navegando con teclado o mando.
+        ///
+        /// Estos menús se construyen en código y no tienen hoja de estilos, así que no hay
+        /// <c>:hover</c>/<c>:focus</c> de USS como en los menús UXML (Main/Pause/Options). Esto es
+        /// el equivalente hecho a mano: dibuja un anillo brillante como un hijo superpuesto en
+        /// <c>Position.Absolute</c>, en vez de tocar el fondo o el borde propios del elemento.
+        /// Así nunca pelea con el color de fondo que cada menú ya cambia según su propio estado
+        /// (bloqueado, asequible, al máximo, equipado…) — el anillo es puramente aditivo y se pinta
+        /// encima, nunca sustituye nada.
+        ///
+        /// <see cref="PickingMode.Ignore"/> en el anillo evita que se coma los clics que van
+        /// dirigidos al botón. El leve <c>scale</c> extra es el mismo empujón visual que ya usan
+        /// los menús UXML en <c>:hover</c> (ver <c>MainMenu.uss</c>).
+        /// </summary>
+        public static void AddSelectionHighlight(VisualElement element, float radius)
+        {
+            var ring = new VisualElement { name = "selection-ring", pickingMode = PickingMode.Ignore };
+            FillParent(ring);
+            SetBorder(ring, 3, SelectionHighlight, radius);
+            ring.style.display = DisplayStyle.None;
+            element.Add(ring);
+
+            bool hovered = false;
+            bool focused = false;
+
+            void Refresh()
+            {
+                bool selected = hovered || focused;
+                ring.style.display = selected ? DisplayStyle.Flex : DisplayStyle.None;
+                element.style.scale = new Scale(selected ? new Vector3(1.035f, 1.035f, 1f) : Vector3.one);
+            }
+
+            element.RegisterCallback<PointerEnterEvent>(_ => { hovered = true; Refresh(); });
+            element.RegisterCallback<PointerLeaveEvent>(_ => { hovered = false; Refresh(); });
+            element.RegisterCallback<FocusEvent>(_ => { focused = true; Refresh(); });
+            element.RegisterCallback<BlurEvent>(_ => { focused = false; Refresh(); });
         }
 
         public static Label CardTitle(string text)

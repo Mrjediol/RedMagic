@@ -37,6 +37,11 @@ namespace RedMagic.Gameplay
         [Tooltip("Cuánto tiempo permanece activa la caja de daño.")]
         [SerializeField] private float activeTime = 0.1f;
 
+        [Tooltip("Cuánto empuja este golpe: multiplica el retroceso que cada enemigo tiene " +
+                 "configurado en su componente Knockback. 1 = el suyo tal cual, 0 = no empuja.")]
+        [Min(0f)]
+        [SerializeField] private float knockbackMultiplier = 1f;
+
         [Header("Caja de daño (relativa al jugador, hacia donde mira)")]
         [Tooltip("Desplazamiento del centro. La X se invierte según la dirección del sprite.")]
         [SerializeField] private Vector2 hitboxOffset = new Vector2(0.7f, 0.1f);
@@ -67,6 +72,20 @@ namespace RedMagic.Gameplay
         /// <summary>True mientras dura la ventana activa del golpe.</summary>
         public bool IsAttacking => _swinging;
 
+        /// <summary>
+        /// Silencia el ataque básico sin desactivar el componente. Lo usa <c>AbilityUser</c>
+        /// mientras hay una habilidad equipada.
+        ///
+        /// <b>No vale con poner <c>enabled = false</c></b>: los dos scripts sacan su acción de
+        /// ataque del mismo <see cref="InputActionAsset"/>, así que comparten el <b>mismo</b>
+        /// objeto <see cref="InputAction"/>. Al desactivar este componente, su <c>OnDisable</c>
+        /// llamaba a <c>Disable()</c> sobre esa acción compartida y dejaba también a la habilidad
+        /// sin entrada: se equipaba y no pasaba nada al pulsar.
+        ///
+        /// Silenciado no consume la cola táctil: esas pulsaciones son para quien esté al mando.
+        /// </summary>
+        public bool Suppressed { get; set; }
+
         private void Awake()
         {
             _movement = GetComponent<PlayerMovement>();
@@ -96,6 +115,8 @@ namespace RedMagic.Gameplay
 
         private void Update()
         {
+            if (Suppressed) return;
+
             if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
 
             // En pausa o muerto no se ataca, pero se vacía la cola táctil para que no se acumule.
@@ -153,7 +174,19 @@ namespace RedMagic.Gameplay
                 if (target == null || target == _health || target.IsDead) continue;
                 if (!_alreadyHit.Add(target)) continue;   // un golpe por objetivo y por ataque
 
-                target.TakeDamage(damage);
+                // TakeDamage devuelve false si el golpe no ha entrado (i-frames): en ese caso
+                // tampoco se empuja, o un enemigo invulnerable saldría volando de todos modos.
+                if (!target.TakeDamage(damage)) continue;
+
+                // El empujón va hacia donde mira el jugador, no "alejándose de su posición": con
+                // el enemigo pegado encima ambas cosas se separan, y lo que se espera de un
+                // espadazo es que mande al bicho en la dirección del golpe.
+                if (knockbackMultiplier > 0f)
+                {
+                    var knockback = target.GetComponent<Knockback>();
+                    if (knockback != null)
+                        knockback.Apply(_movement != null ? _movement.Facing : 1, knockbackMultiplier);
+                }
             }
         }
 

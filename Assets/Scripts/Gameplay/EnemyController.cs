@@ -68,12 +68,17 @@ namespace RedMagic.Gameplay
         [Tooltip("Daño que hace al objetivo al tocarlo. 0 = no hace daño.")]
         [SerializeField] private float contactDamage;
         [SerializeField] private float contactDamageCooldown = 1f;
+        [Tooltip("Cuánto empuja el golpe por contacto: multiplica el retroceso configurado en el " +
+                 "Knockback del objetivo. 1 = el suyo tal cual, 0 = no empuja.")]
+        [Min(0f)]
+        [SerializeField] private float contactKnockbackMultiplier = 1f;
 
         private Rigidbody2D _body;
         private SpriteRenderer _sprite;
         private Health _health;
         private SoundEmitter _sound;
         private Collider2D _collider;
+        private Knockback _knockback;
 
         private Vector2 _origin;
         private int _direction = 1;
@@ -104,6 +109,7 @@ namespace RedMagic.Gameplay
             _health = GetComponent<Health>();
             _sound = GetComponent<SoundEmitter>();
             _collider = GetComponent<Collider2D>();
+            _knockback = GetComponent<Knockback>();
 
             _body.freezeRotation = true;
             _origin = transform.position;
@@ -142,6 +148,10 @@ namespace RedMagic.Gameplay
                 Stop();
                 return;
             }
+
+            // Mientras sale despedido, la IA no toca la velocidad: si siguiera escribiéndola cada
+            // FixedUpdate el empujón se borraría en el mismo frame y el golpe no se notaría.
+            if (_knockback != null && _knockback.IsActive) return;
 
             // La persecución tiene prioridad sobre lo que estuviera haciendo.
             if (TryChase()) return;
@@ -323,7 +333,9 @@ namespace RedMagic.Gameplay
             // ser un hijo sin etiquetar. Sin esto, dos enemigos que se rozan se matan entre ellos.
             if (!string.IsNullOrEmpty(targetTag) && !otherHealth.CompareTag(targetTag)) return;
 
-            otherHealth.TakeDamage(contactDamage);
+            // El empujón aleja al objetivo de este cuerpo, y sólo si el golpe entra de verdad
+            // (los i-frames del jugador se comen los contactos repetidos, y con ellos el empujón).
+            otherHealth.TakeDamage(contactDamage, transform.position, contactKnockbackMultiplier);
             _contactTimer = contactDamageCooldown;
         }
 
@@ -334,8 +346,11 @@ namespace RedMagic.Gameplay
 
             _sound?.Play("OnDeath");
 
-            // Placeholder: se apaga el enemigo. Sustitúyelo por animación de muerte / drop / etc.
-            if (_sprite != null) _sprite.color = new Color(0.35f, 0.1f, 0.12f, 0.5f);
+            // El aspecto del cadáver y su desaparición son cosa de Corpse. Sin ese componente se
+            // mantiene el tinte de siempre, para que un enemigo suelto siga viéndose muerto.
+            if (_sprite != null && GetComponent<Corpse>() == null)
+                _sprite.color = new Color(0.35f, 0.1f, 0.12f, 0.5f);
+
             foreach (var col in GetComponentsInChildren<Collider2D>()) col.enabled = false;
             _body.simulated = false;
         }

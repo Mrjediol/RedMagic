@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80416a7fe6de126418701afa5c5c06c2, type: 3}
+  m_Name: Ability_Torbellino
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.MeleeArcAbility
+  displayName: Torbellino
+  description: Cuatro barridos a los dos lados. Para salir de un cerco.
+  category: 0
+  icon: {fileID: 0}
+  accent: {r: 0.95, g: 0.75, b: 0.3, a: 1}
+  cooldown: 0.95
+  windup: 0
+  damage: 12
+  knockbackMultiplier: 0.8
+  castSfxId: 
+  fxSprite: {fileID: 0}
+  offset: {x: 0.9, y: 0.05}
+  size: {x: 1.7, y: 1.4}
+  angle: 0
+  bothSides: 1
+  hits: 4
+  timeBetweenHits: 0.1
+  launchMultiplier: 1

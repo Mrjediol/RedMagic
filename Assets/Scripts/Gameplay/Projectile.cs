@@ -26,6 +26,10 @@ namespace RedMagic.Gameplay
         [SerializeField] private float damage = 10f;
         [Tooltip("Capas contra las que impacta.")]
         [SerializeField] private LayerMask hitLayers = ~0;
+        [Tooltip("Cuánto empuja el impacto: multiplica el retroceso configurado en el Knockback " +
+                 "del objetivo. 1 = el suyo tal cual, 0 = no empuja.")]
+        [Min(0f)]
+        [SerializeField] private float knockbackMultiplier = 1f;
 
         [Header("Ciclo de vida")]
         [Tooltip("Destruir al terminar en vez de sólo desactivar. Actívalo cuando el proyectil se " +
@@ -38,14 +42,51 @@ namespace RedMagic.Gameplay
         [Tooltip("Desplazamiento del efecto respecto al punto final del proyectil.")]
         [SerializeField] private Vector2 impactEffectOffset;
 
+        [Header("Comportamiento avanzado (todo a 0 = proyectil recto de siempre)")]
+        [Tooltip("Objetivos que atraviesa antes de desaparecer. 0 = muere en el primero.")]
+        [Min(0)]
+        [SerializeField] private int pierceCount;
+        [Tooltip("Grados por segundo que puede girar para seguir al objetivo más cercano. 0 = no persigue.")]
+        [Min(0f)]
+        [SerializeField] private float homingTurnRate;
+        [Tooltip("Distancia a la que busca objetivo cuando persigue.")]
+        [Min(0f)]
+        [SerializeField] private float homingRange = 9f;
+        [Tooltip("Caída en unidades/s². 0 = trayectoria recta; >0 = tiro parabólico (granada).")]
+        [Min(0f)]
+        [SerializeField] private float arcGravity;
+
+        [Header("Daño en área al terminar")]
+        [Tooltip("Radio de la explosión final. 0 = sin explosión.")]
+        [Min(0f)]
+        [SerializeField] private float impactRadius;
+        [Tooltip("Daño de esa explosión (independiente del daño de impacto directo).")]
+        [Min(0f)]
+        [SerializeField] private float impactDamage;
+
         private Rigidbody2D _body;
         private SoundEmitter _sound;
         private Collider2D[] _ownColliders;
 
         private Vector2 _direction = Vector2.right;
+        private Vector2 _velocity;
         private GameObject _owner;
+        private string _friendlyTag;
         private float _lifeTimer;
+        private int _pierceLeft;
+        private Health _lifestealTarget;
+        private float _lifesteal;
         private bool _despawning;
+
+        /// <summary>Objetivos ya golpeados por este disparo (para que atravesar no golpee dos veces).</summary>
+        private readonly System.Collections.Generic.HashSet<Health> _hitTargets =
+            new System.Collections.Generic.HashSet<Health>();
+
+        private static readonly Collider2D[] ImpactBuffer = new Collider2D[32];
+
+        /// <summary>Objetivos ya alcanzados por la explosión que se está resolviendo.</summary>
+        private static readonly System.Collections.Generic.HashSet<Health> ExplosionTargets =
+            new System.Collections.Generic.HashSet<Health>();
 
         private void Awake()
         {
@@ -62,6 +103,8 @@ namespace RedMagic.Gameplay
             // Reset para reutilización desde el pool.
             _despawning = false;
             _lifeTimer = lifetime;
+            _pierceLeft = pierceCount;
+            _hitTargets.Clear();
         }
 
         /// <summary>
@@ -76,6 +119,54 @@ namespace RedMagic.Gameplay
             hitLayers = newHitLayers;
         }
 
+        /// <summary>
+        /// Ajusta el comportamiento avanzado (atravesar, perseguir, parábola, explosión final).
+        /// Lo usan las habilidades para que un solo proyectil construido en código sirva de flecha
+        /// perforante, de orbe teledirigido o de granada sin necesidad de un prefab por variante.
+        /// </summary>
+        public void ConfigureBehaviour(int newPierce, float newHomingTurnRate, float newHomingRange,
+                                       float newArcGravity, float newImpactRadius, float newImpactDamage,
+                                       float newKnockbackMultiplier, float newLifetime)
+        {
+            pierceCount = Mathf.Max(0, newPierce);
+            homingTurnRate = Mathf.Max(0f, newHomingTurnRate);
+            if (newHomingRange > 0f) homingRange = newHomingRange;
+            arcGravity = Mathf.Max(0f, newArcGravity);
+            impactRadius = Mathf.Max(0f, newImpactRadius);
+            impactDamage = Mathf.Max(0f, newImpactDamage);
+            if (newKnockbackMultiplier >= 0f) knockbackMultiplier = newKnockbackMultiplier;
+            if (newLifetime > 0f) lifetime = newLifetime;
+
+            _pierceLeft = pierceCount;
+        }
+
+        /// <summary>
+        /// Hace que el daño de este proyectil cure a <paramref name="beneficiary"/> una fracción
+        /// de lo que haga (robo de vida de las armas de nivel alto). Fracción 0 lo apaga.
+        /// </summary>
+        public void ConfigureLifesteal(Health beneficiary, float fraction)
+        {
+            _lifestealTarget = beneficiary;
+            _lifesteal = Mathf.Clamp01(fraction);
+        }
+
+        /// <summary>
+        /// Cura al dueño del disparo por una fracción del daño hecho. Se cura por el daño
+        /// pretendido, no por la vida que le quedara al objetivo: rematar cura igual que golpear.
+        /// </summary>
+        private void Lifesteal(float damageDealt)
+        {
+            if (_lifesteal <= 0f || _lifestealTarget == null) return;
+            _lifestealTarget.Heal(damageDealt * _lifesteal);
+        }
+
+        /// <summary>
+        /// Marca el proyectil como "instanciado en caliente": al terminar se destruye en vez de
+        /// desactivarse. Lo usan los proyectiles que se construyen en código (habilidades), que no
+        /// vienen de ningún pool y quedarían acumulándose desactivados en la escena.
+        /// </summary>
+        public void DestroyWhenDone() => destroyWhenDone = true;
+
         /// <summary>Lanza el proyectil. <paramref name="owner"/> se ignora en las colisiones.</summary>
         public void Launch(Vector2 direction, GameObject owner = null)
         {
@@ -83,8 +174,16 @@ namespace RedMagic.Gameplay
             _owner = owner;
             _lifeTimer = lifetime;
             _despawning = false;
+            _pierceLeft = pierceCount;
+            _hitTargets.Clear();
+            _velocity = _direction * speed;
 
-            if (_body != null) _body.linearVelocity = _direction * speed;
+            // La etiqueta del lanzador marca a los suyos: la explosión y el proyectil que atraviesa
+            // no deben dañar a quien dispara ni a sus aliados. "Untagged" no distingue a nadie, así
+            // que en ese caso no se filtra (los enemigos sin etiqueta se comportan como hasta ahora).
+            _friendlyTag = owner != null && !owner.CompareTag("Untagged") ? owner.tag : null;
+
+            if (_body != null) _body.linearVelocity = _velocity;
 
             transform.right = _direction;
         }
@@ -100,7 +199,76 @@ namespace RedMagic.Gameplay
         private void FixedUpdate()
         {
             if (_despawning || _body == null) return;
-            _body.linearVelocity = _direction * speed;
+
+            float dt = Time.fixedDeltaTime;
+
+            if (homingTurnRate > 0f) SteerTowardsTarget(dt);
+
+            if (arcGravity > 0f)
+            {
+                // Tiro parabólico: la velocidad deja de ser constante, así que a partir de aquí
+                // manda _velocity y no dirección × velocidad.
+                _velocity.y -= arcGravity * dt;
+            }
+            else
+            {
+                _velocity = _direction * speed;
+            }
+
+            _body.linearVelocity = _velocity;
+
+            if (_velocity.sqrMagnitude > 0.0001f) transform.right = _velocity.normalized;
+        }
+
+        /// <summary>
+        /// Gira la dirección hacia el objetivo válido más cercano, como mucho
+        /// <see cref="homingTurnRate"/> grados por segundo. El giro es limitado a propósito: un
+        /// proyectil que apunta perfecto es imposible de esquivar y no se lee como un disparo.
+        /// </summary>
+        private void SteerTowardsTarget(float dt)
+        {
+            var target = FindHomingTarget();
+            if (target == null) return;
+
+            Vector2 desired = ((Vector2)target.transform.position - (Vector2)transform.position).normalized;
+            float maxDegrees = homingTurnRate * dt;
+
+            _direction = Vector3.RotateTowards(_direction, desired, maxDegrees * Mathf.Deg2Rad, 0f);
+            _direction.Normalize();
+
+            if (arcGravity > 0f) _velocity = _direction * _velocity.magnitude;
+        }
+
+        private Health FindHomingTarget()
+        {
+            var filter = new ContactFilter2D { useLayerMask = true, layerMask = hitLayers, useTriggers = true };
+            int count = Physics2D.OverlapCircle(transform.position, homingRange, filter, ImpactBuffer);
+
+            Health best = null;
+            float bestDistance = float.MaxValue;
+
+            for (int i = 0; i < count; i++)
+            {
+                var health = ImpactBuffer[i] != null ? ImpactBuffer[i].GetComponentInParent<Health>() : null;
+                if (!IsEnemyTarget(health)) continue;
+
+                float distance = ((Vector2)health.transform.position - (Vector2)transform.position).sqrMagnitude;
+                if (distance >= bestDistance) continue;
+
+                bestDistance = distance;
+                best = health;
+            }
+
+            return best;
+        }
+
+        /// <summary>Objetivo dañable: vivo, no el que dispara, ni de su bando, ni ya golpeado.</summary>
+        private bool IsEnemyTarget(Health health)
+        {
+            if (health == null || health.IsDead) return false;
+            if (_owner != null && health.transform.IsChildOf(_owner.transform)) return false;
+            if (!string.IsNullOrEmpty(_friendlyTag) && health.CompareTag(_friendlyTag)) return false;
+            return true;
         }
 
         private void OnTriggerEnter2D(Collider2D other) => HandleHit(other);
@@ -117,11 +285,31 @@ namespace RedMagic.Gameplay
             foreach (var own in _ownColliders)
                 if (other == own) return;
 
+            // Un proyectil nunca choca con otro. Sin esto, los cinco perdigones de una escopeta
+            // —que salen del mismo punto y por tanto solapados— se detectan entre ellos en el
+            // primer frame y se aniquilan mutuamente: el disparo parece no existir.
+            if (other.GetComponentInParent<Projectile>() != null) return;
+
             var health = other.GetComponentInParent<Health>();
+
+            // Aliado o ya golpeado: se atraviesa sin gastar perforación ni terminar el disparo.
+            if (health != null && (!IsEnemyTarget(health) || _hitTargets.Contains(health))) return;
+
             if (health != null && damage > 0f)
             {
-                health.TakeDamage(damage);
+                // El empujón sale del punto de impacto, así que empuja en el sentido en el que
+                // volaba el proyectil. Si los i-frames se comen el golpe, TakeDamage no empuja.
+                if (health.TakeDamage(damage, transform.position, knockbackMultiplier)) Lifesteal(damage);
+                _hitTargets.Add(health);
                 _sound?.Play("OnHit");
+            }
+
+            // Perforación: sólo se gasta contra objetivos, nunca contra el escenario — una flecha
+            // que atraviesa enemigos no debería atravesar también las paredes.
+            if (health != null && _pierceLeft > 0)
+            {
+                _pierceLeft--;
+                return;
             }
 
             Despawn();
@@ -136,6 +324,8 @@ namespace RedMagic.Gameplay
             // El sonido se dispara ANTES de desactivar el GameObject.
             _sound?.Play("OnDeath");
 
+            ExplodeIfDue();
+
             // La explosión es un objeto aparte, así que sobrevive al despawn del proyectil.
             int facing = _direction.x < 0f ? -1 : 1;
             VfxOneShot.Spawn(impactEffect,
@@ -145,6 +335,30 @@ namespace RedMagic.Gameplay
             if (_body != null) _body.linearVelocity = Vector2.zero;
 
             ReturnToPool();
+        }
+
+        /// <summary>
+        /// Daño en área al terminar (granadas, bombas). Golpea una vez a cada objetivo del radio,
+        /// incluidos los que el impacto directo ya tocó: la explosión es un golpe aparte, y de
+        /// todos modos los i-frames del objetivo deciden si le entra.
+        /// </summary>
+        private void ExplodeIfDue()
+        {
+            if (impactRadius <= 0f || impactDamage <= 0f) return;
+
+            var filter = new ContactFilter2D { useLayerMask = true, layerMask = hitLayers, useTriggers = true };
+            int count = Physics2D.OverlapCircle(transform.position, impactRadius, filter, ImpactBuffer);
+
+            ExplosionTargets.Clear();
+
+            for (int i = 0; i < count; i++)
+            {
+                var health = ImpactBuffer[i] != null ? ImpactBuffer[i].GetComponentInParent<Health>() : null;
+                if (!IsEnemyTarget(health)) continue;
+                if (!ExplosionTargets.Add(health)) continue;   // un objetivo con varios colliders es uno
+
+                if (health.TakeDamage(impactDamage, transform.position, knockbackMultiplier)) Lifesteal(impactDamage);
+            }
         }
 
         /// <summary>

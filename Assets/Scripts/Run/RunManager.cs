@@ -103,6 +103,15 @@ namespace RedMagic.Run
                  "no trae un ShopSpawnPoint propio.")]
         [SerializeField] private float shopDistanceBeforeExit = 5f;
 
+        [Header("Recompensa del jefe")]
+        [Tooltip("Prefab que aparece al caer el jefe, sobre su cadáver (el altar de mejora de " +
+                 "arma). Vacío = el jefe no suelta nada.")]
+        [SerializeField] private GameObject bossRewardPrefab;
+
+        [Tooltip("Desplazamiento respecto al punto donde murió el jefe, para que no quede " +
+                 "enterrado en el suelo.")]
+        [SerializeField] private Vector3 bossRewardOffset = new Vector3(0f, 0.5f, 0f);
+
         [Header("Cámara")]
         [Tooltip("Tamaño ortográfico que se fuerza en todas las cámaras con CameraFollow (hub, " +
                  "secciones y jefe) tras cada carga, para que el zoom sea idéntico y no pegue un " +
@@ -163,6 +172,7 @@ namespace RedMagic.Run
         private List<SceneReference> _order;
         private int _index;                 // índice dentro de _order
         private Scene _loadedRunScene;      // la sección o el jefe cargado ahora mismo
+        private SectionClearTracker _boundTracker;   // al que se le escucha 'Cleared'
         private Scene _runRootScene;        // escena-sostén creada en memoria
         private Health _playerHealth;
         private GameObject _playerRoot;     // contenedor persistente del jugador de la run
@@ -208,11 +218,28 @@ namespace RedMagic.Run
             ResetRunState();
         }
 
+        /// <summary>
+        /// Se engancha al contador de enemigos (que se auto-crea después que esto) para enterarse
+        /// de cuándo cae el jefe. Se llama tras cada carga porque el tracker puede aparecer más
+        /// tarde; suscribirse dos veces no duplica el aviso porque antes se quita.
+        /// </summary>
+        private void BindClearTracker()
+        {
+            var tracker = SectionClearTracker.Instance;
+            if (tracker == null || tracker == _boundTracker) return;
+
+            if (_boundTracker != null) _boundTracker.Cleared -= OnSectionCleared;
+
+            tracker.Cleared += OnSectionCleared;
+            _boundTracker = tracker;
+        }
+
         private void OnDestroy()
         {
             if (Instance != this) return;
 
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            if (_boundTracker != null) _boundTracker.Cleared -= OnSectionCleared;
             UnsubscribeFromPlayer();
             Unfreeze();
             Instance = null;
@@ -428,6 +455,7 @@ namespace RedMagic.Run
             PlacePlayerAtEntry(_loadedRunScene);
             RetargetCameras(_loadedRunScene);
             SpawnShopIfDue(_loadedRunScene);
+            BindClearTracker();
 
             // 6. Música de la fase (World{n}-{puesto} o BossBattle{n}). Si no hay clip con ese
             //    nombre en Resources/Music, PlaySceneMusic deja la escena en silencio sin errores.
@@ -480,6 +508,28 @@ namespace RedMagic.Run
             // La tienda no trae enemigos, pero re-escanear deja el contador correcto pase lo que
             // pase si algún día el prefab spawnea algo con vida.
             SectionClearTracker.Instance?.Track(scene);
+        }
+
+        /// <summary>
+        /// Suelta la recompensa del jefe cuando cae el último enemigo de la escena del jefe.
+        ///
+        /// Se engancha al <see cref="SectionClearTracker"/> en vez de pedir que cada jefe lleve un
+        /// componente propio: el jefe es "lo último que queda vivo en su escena", así que cualquier
+        /// escena de jefe suelta su recompensa sin tener que acordarse de configurar nada. Aparece
+        /// sobre el cadáver, y el mundo no avanza por soltarla — el jugador la usa y sale por su
+        /// pie.
+        /// </summary>
+        private void OnSectionCleared()
+        {
+            if (bossRewardPrefab == null || Phase != RunPhase.Boss) return;
+            if (!_loadedRunScene.IsValid() || !_loadedRunScene.isLoaded) return;
+
+            var tracker = SectionClearTracker.Instance;
+            Vector3 position = tracker != null ? tracker.LastDeathPosition : Vector3.zero;
+
+            var reward = Instantiate(bossRewardPrefab, position + bossRewardOffset, Quaternion.identity);
+            reward.name = bossRewardPrefab.name;
+            SceneManager.MoveGameObjectToScene(reward, _loadedRunScene);
         }
 
         /// <summary>
@@ -636,6 +686,8 @@ namespace RedMagic.Run
                 body.linearVelocity = Vector2.zero;
                 body.angularVelocity = 0f;
             }
+
+            player.GetComponentInChildren<Knockback>()?.Cancel();
         }
 
         // ------------------------------------------------------------------ jugador
@@ -762,13 +814,16 @@ namespace RedMagic.Run
 
             Player.transform.position = entry.SpawnPosition;
 
-            // Cortar la inercia que traía de la sección anterior.
+            // Cortar la inercia que traía de la sección anterior, incluida la de un empujón a
+            // medias: si no, se entra en la sección nueva despedido y sin control unos frames.
             var body = Player.GetComponentInChildren<Rigidbody2D>();
             if (body != null)
             {
                 body.linearVelocity = Vector2.zero;
                 body.angularVelocity = 0f;
             }
+
+            Player.GetComponentInChildren<Knockback>()?.Cancel();
         }
 
         /// <summary>

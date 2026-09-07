@@ -16,6 +16,9 @@ GameObject:
   - component: {fileID: 3093690907683328127}
   - component: {fileID: 7148575228320461157}
   - component: {fileID: 6632451431687752491}
+  - component: {fileID: 4449062781989523668}
+  - component: {fileID: 6281777299882213842}
+  - component: {fileID: 8061179336622323252}
   m_Layer: 0
   m_Name: Enemy_GothicBrute
   m_TagString: Untagged
@@ -127,6 +130,8 @@ MonoBehaviour:
   maxHealth: 90
   currentHealth: 90
   invulnerable: 0
+  invulnerabilityDuration: 0
+  invulnerabilityUsesUnscaledTime: 0
   hurtSfxId: 
   deathSfxId: 
 --- !u!114 &5259296825146427721
@@ -159,6 +164,7 @@ MonoBehaviour:
   ledgeProbeDepth: 0.6
   contactDamage: 16
   contactDamageCooldown: 1.2
+  contactKnockbackMultiplier: 1
 --- !u!114 &3093690907683328127
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -224,6 +230,56 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
   tier: 1
+--- !u!114 &4449062781989523668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1192576064084604408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2834dccf877e154e8542123d8a6320f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Knockback
+  horizontalForce: 8
+  verticalForce: 4
+  duration: 0.18
+  resistance: 0
+  immune: 0
+--- !u!114 &6281777299882213842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1192576064084604408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149b2f6ad9846b2459f53db66c4872ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.HitFlash
+  flashColor: {r: 1, g: 0.35, b: 0.35, a: 1}
+  flashDuration: 0.1
+  blinkWhileInvulnerable: 1
+  blinkInterval: 0.06
+  blinkAlpha: 0.35
+--- !u!114 &8061179336622323252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1192576064084604408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d2eae826431e14f92ff10101336621, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Corpse
+  linger: 0.6
+  fadeDuration: 0.35
+  corpseTint: {r: 0.35, g: 0.1, b: 0.12, a: 0.75}
+  destroyWhenDone: 1
 --- !u!1 &4898404332534665505
 GameObject:
   m_ObjectHideFlags: 0

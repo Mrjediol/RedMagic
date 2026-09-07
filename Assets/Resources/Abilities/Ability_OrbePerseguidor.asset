@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6780b9ee653d3ac47bef31ecb6ae7cf5, type: 3}
+  m_Name: Ability_OrbePerseguidor
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.ProjectileAbility
+  displayName: Orbe Perseguidor
+  description: "Lento pero gira para buscar al enemigo m\xE1s cercano."
+  category: 1
+  icon: {fileID: 0}
+  accent: {r: 0.7, g: 0.45, b: 0.95, a: 1}
+  cooldown: 0.7
+  windup: 0
+  damage: 18
+  knockbackMultiplier: 1
+  castSfxId: 
+  fxSprite: {fileID: 0}
+  projectile:
+    prefab: {fileID: 0}
+    speed: 7
+    lifetime: 4
+    size: {x: 0.45, y: 0.45}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    homingTurnRate: 200
+    homingRange: 10
+    arcGravity: 0
+    impactRadius: 0
+    impactDamage: 0
+  projectilesPerShot: 1
+  spreadAngle: 0
+  randomSpread: 0
+  burstCount: 1
+  burstInterval: 0.1

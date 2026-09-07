@@ -83,9 +83,12 @@ namespace RedMagic.Combat
 
         private bool _deathRaised;
         private float _invulnerabilityTimer;
+        private Knockback _knockback;
 
         private void Awake()
         {
+            _knockback = GetComponent<Knockback>();
+
             if (maxHealth <= 0f) maxHealth = 1f;
             if (currentHealth <= 0f) currentHealth = maxHealth;
             currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
@@ -118,6 +121,9 @@ namespace RedMagic.Combat
         /// <b>Devuelve true sólo si el golpe ha entrado de verdad</b> (no estaba muerto, ni
         /// invulnerable, ni era daño 0). Quien ataque debe mirar ese valor antes de aplicar
         /// retroceso o efectos: así un golpe comido por los i-frames tampoco empuja.
+        ///
+        /// Esta sobrecarga no empuja. Para que el golpe además haga retroceder, usa
+        /// <see cref="TakeDamage(float, Vector2, float)"/> pasando de dónde viene el golpe.
         /// </summary>
         public bool TakeDamage(float amount)
         {
@@ -136,6 +142,29 @@ namespace RedMagic.Combat
             PlaySfx(hurtSfxId);
 
             if (currentHealth <= 0f) Die();
+            return true;
+        }
+
+        /// <summary>
+        /// Aplica daño y, si el golpe entra, el retroceso configurado en el <see cref="Knockback"/>
+        /// de este mismo objeto, alejándose de <paramref name="sourcePosition"/> (la posición del
+        /// atacante, del proyectil o del cuerpo con el que se ha chocado).
+        ///
+        /// El empujón se decide aquí, y no en cada atacante, por dos razones: el golpe absorbido
+        /// por los i-frames tampoco empuja sin que nadie tenga que acordarse de comprobarlo, y la
+        /// fuerza la afina la víctima en su propio prefab. <paramref name="knockbackMultiplier"/>
+        /// es lo único que aporta el atacante: 1 = el empujón normal de la víctima, 0 = ninguno.
+        ///
+        /// Sin componente <see cref="Knockback"/> se comporta exactamente igual que
+        /// <see cref="TakeDamage(float)"/>, así que es seguro llamarla contra cualquier cosa.
+        /// </summary>
+        public bool TakeDamage(float amount, Vector2 sourcePosition, float knockbackMultiplier = 1f)
+        {
+            if (!TakeDamage(amount)) return false;
+
+            // Al morir no se empuja: el cadáver apaga su física (y su control, si es el jugador),
+            // así que el empujón no se vería y sí dejaría un temporizador corriendo.
+            if (!IsDead && _knockback != null) _knockback.ApplyFrom(sourcePosition, knockbackMultiplier);
             return true;
         }
 

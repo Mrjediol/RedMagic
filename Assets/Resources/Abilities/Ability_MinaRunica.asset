@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ccda641669b0ea4c9c00458bc771e95, type: 3}
+  m_Name: Ability_MinaRunica
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.ZoneAbility
+  displayName: "Mina R\xFAnica"
+  description: Trampa que espera y estalla en cuanto alguien se acerca.
+  category: 2
+  icon: {fileID: 0}
+  accent: {r: 0.95, g: 0.3, b: 0.35, a: 1}
+  cooldown: 1.6
+  windup: 0
+  damage: 45
+  knockbackMultiplier: 2
+  castSfxId: 
+  fxSprite: {fileID: 0}
+  placement: 1
+  forwardDistance: 1.5
+  offset: {x: 0, y: -0.35}
+  mode: 1
+  radius: 2.2
+  duration: 12
+  tickInterval: 0.5
+  armDelay: 0.35

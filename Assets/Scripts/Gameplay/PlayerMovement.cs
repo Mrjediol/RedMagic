@@ -35,7 +35,7 @@ namespace RedMagic.Gameplay
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(Collider2D))]
     [DisallowMultipleComponent]
-    public class PlayerMovement : MonoBehaviour
+    public class PlayerMovement : MonoBehaviour, IKnockbackReceiver
     {
         // ---------------------------------------------------------------- tipos internos
 
@@ -83,6 +83,9 @@ namespace RedMagic.Gameplay
 
         /// <summary>True mientras dura un dash.</summary>
         public bool IsDashing => _dashTimer > 0f;
+
+        /// <summary>True mientras el jugador sale despedido por un golpe (no controla).</summary>
+        public bool IsKnockedBack => _knockbackTimer > 0f;
 
         /// <summary>Se dispara al usar un salto en el aire (doble salto). Lo usa el VFX de los pies.</summary>
         public event System.Action AirJumped;
@@ -207,6 +210,7 @@ namespace RedMagic.Gameplay
 
         private int _airJumpsUsed;
         private int _airDashesUsed;
+        private float _knockbackTimer;
         private float _dashTimer;
         private float _dashCooldownTimer;
         private int _dashDirection = 1;
@@ -317,10 +321,24 @@ namespace RedMagic.Gameplay
                 _currentHorizontalSpeed = 0f;
                 IsCrouching = false;
                 _dashTimer = 0f;
+                _knockbackTimer = 0f;
                 return;
             }
 
-            GatherInput();
+            // Durante el retroceso no se lee la entrada: el golpe manda. La cola táctil se vacía
+            // igualmente para que no se dispare un salto acumulado al recuperar el control.
+            if (IsKnockedBack)
+            {
+                TouchInput.ConsumeJump();
+                TouchInput.ConsumeDash();
+                _input = default;
+                IsCrouching = false;
+            }
+            else
+            {
+                GatherInput();
+            }
+
             RunCollisionChecks();
 
             // Al tocar suelo se recargan los saltos y dashes aéreos.
@@ -331,9 +349,13 @@ namespace RedMagic.Gameplay
             }
 
             if (_dashCooldownTimer > 0f) _dashCooldownTimer -= Time.deltaTime;
-            TryStartDash();
+            if (!IsKnockedBack) TryStartDash();
 
-            if (_dashTimer > 0f)
+            if (IsKnockedBack)
+            {
+                UpdateKnockback();   // el empujón manda sobre todo lo demás
+            }
+            else if (_dashTimer > 0f)
             {
                 UpdateDash();     // el dash manda: sustituye a andar y a la gravedad
                 CalculateJump();  // …pero saltar puede cancelarlo
@@ -575,6 +597,64 @@ namespace RedMagic.Gameplay
             }
         }
 
+        // ================================================================ retroceso
+
+        /// <summary>
+        /// Recibe el empujón de <see cref="Knockback"/>. Como este controlador integra su propia
+        /// velocidad y sólo usa un Rigidbody2D cinemático, el empujón no puede llegar como una
+        /// fuerza: se escribe directamente en la velocidad interna.
+        ///
+        /// Durante <paramref name="duration"/> segundos la entrada se ignora — si no, mantener la
+        /// dirección contraria anularía el empujón en el mismo frame y el golpe no se notaría.
+        /// </summary>
+        public void ApplyKnockback(Vector2 velocity, float duration)
+        {
+            if (duration <= 0f) return;
+
+            _knockbackTimer = Mathf.Max(_knockbackTimer, duration);
+
+            _currentHorizontalSpeed = velocity.x;
+            _currentVerticalSpeed = velocity.y;
+
+            // Un golpe corta el dash y el salto en curso, y devuelve el control aéreo: si no,
+            // salir despedido en pleno dash dejaría al jugador cayendo sin recursos.
+            _dashTimer = 0f;
+            _endedJumpEarly = true;
+            IsCrouching = false;
+
+            if (velocity.y > 0f) _coyoteUsable = false;
+        }
+
+        /// <summary>Corta el empujón y devuelve el control (muerte, respawn, cambio de sección).</summary>
+        public void CancelKnockback()
+        {
+            if (_knockbackTimer <= 0f) return;
+
+            _knockbackTimer = 0f;
+            _currentHorizontalSpeed = 0f;
+            _currentVerticalSpeed = 0f;
+        }
+
+        private void UpdateKnockback()
+        {
+            _knockbackTimer -= Time.deltaTime;
+
+            // Contra una pared el empujón se corta en seco en vez de empotrar al jugador en ella.
+            if ((_currentHorizontalSpeed > 0 && _colRight) || (_currentHorizontalSpeed < 0 && _colLeft))
+                _currentHorizontalSpeed = 0f;
+
+            // La gravedad sigue actuando: el empujón es un arco, no un desplazamiento plano.
+            CalculateJumpApex();
+            CalculateGravity();
+
+            if (_knockbackTimer <= 0f)
+            {
+                _knockbackTimer = 0f;
+                // Se devuelve el control sin arrastrar velocidad de más.
+                _currentHorizontalSpeed = Mathf.Clamp(_currentHorizontalSpeed, -_moveClamp, _moveClamp);
+            }
+        }
+
         // ================================================================ pegado al suelo
 
         // El sensor da por apoyado al personaje cuando el suelo está a menos de
@@ -676,7 +756,7 @@ namespace RedMagic.Gameplay
                              transform.position.y + _characterBounds.center.y > other.bounds.center.y;
             if (!fromAbove) return;
 
-            if (stompDamage > 0f) otherHealth.TakeDamage(stompDamage);
+            if (stompDamage > 0f) otherHealth.TakeDamage(stompDamage, transform.position);
             else otherHealth.Die();
 
             Jump(_jumpHeight);      // rebote
@@ -693,6 +773,7 @@ namespace RedMagic.Gameplay
             _currentVerticalSpeed = 0f;
             IsCrouching = false;
             _dashTimer = 0f;
+            _knockbackTimer = 0f;
         }
 
         /// <summary>Complemento de <see cref="OnDied"/>: devuelve el control tras un respawn.</summary>

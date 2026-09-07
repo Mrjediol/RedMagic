@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6780b9ee653d3ac47bef31ecb6ae7cf5, type: 3}
+  m_Name: Ability_EscopetaEspectral
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.ProjectileAbility
+  displayName: Escopeta Espectral
+  description: "Cinco perdigones en abanico. Devastadora de cerca, in\xFAtil de lejos."
+  category: 1
+  icon: {fileID: 0}
+  accent: {r: 0.75, g: 0.85, b: 1, a: 1}
+  cooldown: 0.85
+  windup: 0
+  damage: 9
+  knockbackMultiplier: 0.6
+  castSfxId: 
+  fxSprite: {fileID: 0}
+  projectile:
+    prefab: {fileID: 0}
+    speed: 16
+    lifetime: 0.45
+    size: {x: 0.22, y: 0.22}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    homingTurnRate: 0
+    homingRange: 9
+    arcGravity: 0
+    impactRadius: 0
+    impactDamage: 0
+  projectilesPerShot: 5
+  spreadAngle: 34
+  randomSpread: 3
+  burstCount: 1
+  burstInterval: 0.1

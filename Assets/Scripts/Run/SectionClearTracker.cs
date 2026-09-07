@@ -46,10 +46,20 @@ namespace RedMagic.Run
         /// <summary>Se dispara una vez, al morir el último enemigo de la sección.</summary>
         public event Action Cleared;
 
+        /// <summary>
+        /// Dónde murió el último enemigo de la sección. Es donde tiene sentido dejar caer lo que
+        /// suelte: la recompensa del jefe aparece sobre su cadáver, no en un punto fijo.
+        /// </summary>
+        public Vector3 LastDeathPosition { get; private set; }
+
         /// <summary>Se dispara con cada cambio del contador (para HUD/contadores futuros).</summary>
         public event Action<int> RemainingChanged;
 
         private readonly List<Health> _tracked = new();
+
+        /// <summary>Enemigos cuya muerte ya se ha contabilizado (para saber cuál acaba de caer).</summary>
+        private readonly HashSet<Health> _deadSeen = new();
+
         private Scene _trackedScene;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -124,6 +134,7 @@ namespace RedMagic.Run
                 if (health != null) health.Died -= OnEnemyDied;
 
             _tracked.Clear();
+            _deadSeen.Clear();
             _trackedScene = default;
         }
 
@@ -133,7 +144,15 @@ namespace RedMagic.Run
             // después) no descuadra el contador.
             int alive = 0;
             foreach (var health in _tracked)
-                if (health != null && !health.IsDead) alive++;
+            {
+                if (health == null) continue;
+
+                if (!health.IsDead) { alive++; continue; }
+
+                // El evento no dice quién ha muerto, así que se detecta al vuelo el primero que
+                // aparece muerto y todavía no se había apuntado: ése es el de este aviso.
+                if (_deadSeen.Add(health)) LastDeathPosition = health.transform.position;
+            }
 
             bool nowCleared = alive == 0;
             bool wasCleared = IsCleared;

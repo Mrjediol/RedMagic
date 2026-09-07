@@ -115,6 +115,98 @@ to pick up the change.
   with a single section. `SpawnShopIfDue` instantiates `shopPrefab` at a `ShopSpawnPoint` marker if
   the section has one, else `shopDistanceBeforeExit` units short of the `SectionExit`.
 
+### Combat (`Assets/Scripts/Combat/`)
+
+- **`Health`** — the only place damage is applied. `TakeDamage(amount)` **returns false when the
+  hit didn't land** (dead, invulnerable, zero damage); attackers must check it before playing hit
+  effects. I-frames live here (`invulnerabilityDuration`); `InvulnerabilityChanged` fires on
+  entering/leaving them. **Only the player has them (0.8s); enemies are set to 0** — i-frames are
+  there to stop two enemies plus a projectile counting as three hits on the player, and on an enemy
+  they instead swallow every multi-hit ability (a 5-pellet shotgun landed one pellet). Enemy
+  hit-stun is knockback's job, not invulnerability's.
+- **`Knockback`** — sits next to `Health` on anything that should be pushed. **The victim owns the
+  force** (`horizontalForce`/`verticalForce`/`duration`/`resistance` per prefab); the attacker only
+  passes a multiplier, so a heavy enemy or a boss is tuned in one place instead of in every attack.
+  `TakeDamage(amount, sourcePosition, multiplier)` is the overload that damages *and* pushes — it
+  only pushes if the hit actually landed, so an i-framed hit doesn't punt. Applying the push takes
+  two paths: `IKnockbackReceiver` for the player (its controller integrates its own velocity, so a
+  force would do nothing) and `Rigidbody2D.linearVelocity` for dynamic bodies (enemies).
+  `EnemyController` yields control while `Knockback.IsActive`; `PlayerMovement` ignores input for
+  the same window (otherwise holding the opposite direction cancels the hit on the same frame).
+  Melee (`PlayerAttack`) pushes along the attacker's facing, not away from its position, so an
+  enemy standing on top of the player still gets sent the way the swing points.
+- **`HitFlash`** — tints the sprite on damage and blinks it during i-frames. Without it i-frames
+  read as the game not registering hits. Add it wherever `Health` is.
+- **`Corpse`** — on death, tints the body, holds it ~0.6s so the kill reads, fades it over ~0.35s
+  and destroys the GameObject. Colliders/physics are still switched off by whoever drives the
+  character (`EnemyController.OnDied`); this only owns the look and the cleanup, so an enemy with
+  different AI still tidies itself up. Corpses that stay forever litter the scene and hide things —
+  they were covering the reward the boss drops.
+- Both are already on `Player.prefab` and every `Enemy_*.prefab`. **New damageable prefabs need
+  `Knockback` + `HitFlash` added by hand** — `Health` works without them, just silently unpushed.
+
+### Abilities (`Assets/Scripts/Abilities/`)
+
+The attack system. An ability is a **ScriptableObject asset** in `Assets/Resources/Abilities/`;
+`AbilityLibrary` sweeps that folder, so adding one is dropping an asset there — no code, no
+Inspector wiring, no registry list. Writing a C# class is only needed for a new *archetype* (a new
+shape of attack), not for a new ability. **Tools > RedMagic > Ability Starter Pack** creates the
+starting 22 (idempotent — it never touches an asset that already exists).
+
+- **`AbilityDefinition`** — abstract base: name/description/category/accent, cooldown, windup,
+  damage, knockback multiplier, cast SFX id, FX sprite, plus `Execute(AbilityContext)`. Assets are
+  **stateless** (they're shared by everyone using them) — all cast state lives in `AbilityUser`.
+- **`AbilityContext`** — everything about the caster, built per cast: caster GameObject, coroutine
+  runner, `Health`, hit layers, facing, aim, damage scale, and a **friendly tag**. That tag is the
+  whole team system: nothing carrying the caster's tag can be damaged, so the same asset works for
+  the player, an enemy, or a summoned turret with no layer setup.
+- **`AbilityHit`** — the one place target filtering lives (skip self, dead, friendlies, and the
+  same `Health` reached through two colliders) plus circle/box overlap-and-damage helpers.
+- **Archetypes**: `MeleeArcAbility` (box in front, multi-hit, angled/both-sides),
+  `ProjectileAbility` (count/spread/burst + a `ProjectileSpec`), `NovaAbility` (radial, optional
+  pulses, optional grounded-only), `BeamAbility` (instant box along the aim, stops at ground),
+  `DashStrikeAbility` (lunges by reusing `Knockback.ApplyVelocity`, damages along the path),
+  `ZoneAbility` (`DamageZone`: ticking pool or proximity mine), `OrbitAbility` (orbs on an
+  `OrbitSpinner` pivot), `TurretAbility` (`AbilityTurret` that shoots on its own), `BuffAbility`
+  (heal / i-frames / temporary damage multiplier).
+- **`AbilityUser`** (on `Player.prefab`) — holds the equipped ability, cooldown and buffs, reads the
+  same Attack action as `PlayerAttack`, and **disables `PlayerAttack` while an ability is equipped**
+  (two scripts reading one button would both fire and fight over the touch queue). `Equip(null)`
+  gives the sword back.
+- **No prefabs**: projectiles, zones, orbs and turrets are built in code from a sprite + tint
+  (`AbilityFx`, with a generated white square as the fallback sprite) so a new ability needs no art
+  pipeline. Assign `fxSprite` on the asset when real art exists.
+- `Projectile` gained optional pierce / homing / arc gravity / impact-AoE, all defaulting to off, so
+  one code-built projectile covers arrows, homing orbs and grenades.
+- **`AbilityChest`** (on `Assets/Prefab/Eviroment/GoldChest.prefab`) — proximity interactable, same
+  shape as `TombInteractable`. Opens the lid by setting the Animator bool `IsOpened` (the parameter
+  Cainos' chest controller already uses, so no vendor script is referenced), waits `grantDelay`, then
+  equips an ability on the player's `AbilityUser`. Empty `forcedAbility` = random, which is the
+  shipping behaviour; `AbilityChestEditor` draws that field as a dropdown of every ability with
+  "Aleatoria" first. `singleUse` off lets it be reopened while testing.
+- **Weapon levels (1–3)** — `AbilityDefinition.LevelTier` (`level2`/`level3` on every asset) holds
+  what a level changes **relative to level 1, not cumulatively**: damage ×, cooldown ×, size ×, and
+  lifesteal. `AbilityUser` resolves the level per cast and folds it into the context
+  (`DamageScale`, `SizeScale`, `Lifesteal`), so each archetype only multiplies its own geometry and
+  no ability knows who is casting it. `AbilityHit.Damage` and `Projectile` apply lifesteal.
+  **`AbilityLevelManager`** (self-bootstrapping singleton) owns the levels, keyed by asset
+  reference, charges Skulls (1 for →2, 3 for →3, tunable in `upgradeCosts`) and **wipes them on
+  `RunEnded`** — weapon levels are run progress like gold, not meta-progression.
+- **`WeaponUpgradeAltar`** (on `Assets/Prefab/Eviroment/WeaponUpgrade.prefab`) + **
+  `WeaponUpgradeMenuController`** (`Assets/Ui/`, `WeaponUpgradeMenuPanelSettings`, order 33) — the
+  forge. Deliberately one card, one button: it only upgrades the **currently equipped** weapon, and
+  the text comes from `AbilityDefinition.TierSummary`, so no new weapon needs UI work.
+- **Boss reward** — `RunManager.bossRewardPrefab` (set to `WeaponUpgrade` in MainHub) spawns at
+  `SectionClearTracker.LastDeathPosition` when the boss scene is cleared during `RunPhase.Boss`.
+  It hangs off the clear tracker rather than a per-boss component: the boss is whatever dies last
+  in its own scene, so every boss drops its reward with no wiring. Killing the boss does not
+  advance the world by itself — the player uses the altar and walks out.
+- **`AbilityMenuController`** (`Assets/Ui/`) — dev-only test menu, opens with **K**, lists every
+  ability and equips it on click. Same self-bootstrapping code-built pattern as the other menus
+  (`AbilityMenuPanelSettings`, sorting order 32). Nothing in the ability system depends on it.
+- Projectiles never collide with other projectiles — pellets from one shotgun blast spawn on top of
+  each other and would annihilate on frame one.
+
 ### Economy (`Assets/Scripts/Economy/`)
 
 - **`CurrencyManager`** — `DontDestroyOnLoad` singleton **hand-placed in MainMenu and MainHub**

@@ -49,6 +49,9 @@ GameObject:
   - component: {fileID: 8182171875400212576}
   - component: {fileID: 5468658681699711123}
   - component: {fileID: 6828806480495331336}
+  - component: {fileID: 5434083709010949724}
+  - component: {fileID: 806451231179633599}
+  - component: {fileID: 9158418647574550477}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -161,6 +164,8 @@ MonoBehaviour:
   maxHealth: 40
   currentHealth: 40
   invulnerable: 0
+  invulnerabilityDuration: 0.8
+  invulnerabilityUsesUnscaledTime: 0
   hurtSfxId: SFX_PlayerHurt
   deathSfxId: SFX_PlayerDeath
 --- !u!114 &7988243875702620455
@@ -277,6 +282,7 @@ MonoBehaviour:
   cooldown: 0.45
   windup: 0.12
   activeTime: 0.1
+  knockbackMultiplier: 1
   hitboxOffset: {x: 0.7, y: 0.1}
   hitboxSize: {x: 1.1, y: 1}
   crouchYOffset: -0.35
@@ -336,6 +342,60 @@ MonoBehaviour:
   turnToFaceTarget: 1
   verticalTolerance: 2.5
   drawGizmos: 1
+--- !u!114 &5434083709010949724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4486680268914706177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2834dccf877e154e8542123d8a6320f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Knockback
+  horizontalForce: 10
+  verticalForce: 14
+  duration: 0.22
+  resistance: 0
+  immune: 0
+--- !u!114 &806451231179633599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4486680268914706177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149b2f6ad9846b2459f53db66c4872ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.HitFlash
+  flashColor: {r: 1, g: 0.35, b: 0.35, a: 1}
+  flashDuration: 0.1
+  blinkWhileInvulnerable: 1
+  blinkInterval: 0.06
+  blinkAlpha: 0.35
+--- !u!114 &9158418647574550477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4486680268914706177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81ab04220430ed34d979efef83067448, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.AbilityUser
+  equipped: {fileID: 0}
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
+  actionMapName: Player
+  attackActionName: Attack
+  useTouchButton: 1
 --- !u!1 &5936975751486156930
 GameObject:
   m_ObjectHideFlags: 0

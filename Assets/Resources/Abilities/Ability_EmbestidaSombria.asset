@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 940435746f01fa841b898693ba24f19c, type: 3}
+  m_Name: Ability_EmbestidaSombria
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.DashStrikeAbility
+  displayName: "Embestida Sombr\xEDa"
+  description: Cargas hacia delante atravesando enemigos, invulnerable.
+  category: 3
+  icon: {fileID: 0}
+  accent: {r: 0.45, g: 0.35, b: 0.6, a: 1}
+  cooldown: 1
+  windup: 0
+  damage: 24
+  knockbackMultiplier: 1.2
+  castSfxId: 
+  fxSprite: {fileID: 0}
+  dashSpeed: 24
+  dashDuration: 0.22
+  dashLift: 0
+  hitSize: {x: 1.6, y: 1.3}
+  oneHitPerTarget: 1
+  invulnerableWhileDashing: 1

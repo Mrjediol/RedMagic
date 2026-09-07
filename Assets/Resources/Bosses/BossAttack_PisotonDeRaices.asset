@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe8e9158717b5a4da011a6132422570, type: 3}
+  m_Name: BossAttack_PisotonDeRaices
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.ShockwaveAttack
+  displayName: "Pisot\xF3n de Ra\xEDces"
+  description: "Las ra\xEDces revientan el suelo a los dos lados. Salta por encima
+    de la onda."
+  accent: {r: 0.45, g: 0.85, b: 0.38, a: 1}
+  telegraph: 0.85
+  recovery: 1.25
+  weight: 1.4
+  cooldownInAttacks: 1
+  damage: 22
+  knockbackMultiplier: 1.6
+  sfxId: 
+  shakeAmplitude: 0.45
+  shakeDuration: 0.35
+  bandMin: 0
+  bandMax: 1.9
+  alternateBands: 0
+  bandMinB: 1.9
+  bandMaxB: 9
+  waves: 1
+  timeBetweenWaves: 0.5
+  bothDirections: 1
+  width: 1.7
+  speed: 15
+  travelDistance: 0
+  spawnInset: 1.6
+  speedRampPerWave: 1

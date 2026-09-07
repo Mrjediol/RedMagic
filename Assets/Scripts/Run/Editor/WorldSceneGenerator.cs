@@ -217,7 +217,7 @@ namespace RedMagic.RunEditor
             cam.orthographic = true;
             // En una run, RunManager fuerza su propio 'cameraOrthographicSize' en todas las
             // cámaras con CameraFollow; esto es sólo para que la escena se vea bien suelta.
-            cam.orthographicSize = 6.5f;
+            cam.orthographicSize = 8.5f;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.09f, 0.08f, 0.12f, 1f);
             camera.AddComponent<CameraFollow>();

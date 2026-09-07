@@ -294,7 +294,7 @@ MonoBehaviour:
   fallbackTargetTag: Player
   offset: {x: 1.5, y: 0.8}
   smoothTime: 0.18
-  followVertical: 0
+  followVertical: 1
   useBounds: 0
   minBounds: {x: -20, y: -5}
   maxBounds: {x: 20, y: 10}
@@ -333,7 +333,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 8.5
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2

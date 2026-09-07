@@ -220,7 +220,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef28717ec505b21429d9e10a5dac00d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.AbilityChest
-  forcedAbility: {fileID: 0}
+  forcedWeapon: {fileID: 0}
   singleUse: 1
   grantDelay: 0.35
   animator: {fileID: 6672460767984985607}

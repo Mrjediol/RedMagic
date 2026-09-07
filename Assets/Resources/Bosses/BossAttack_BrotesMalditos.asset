@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e970fe33522351d4e8ff16deda5acb60, type: 3}
+  m_Name: BossAttack_BrotesMalditos
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.SummonAddsAttack
+  displayName: Brotes Malditos
+  description: "Escupe brotes que salen del suelo. Deja de mirar s\xF3lo al jefe."
+  accent: {r: 0.45, g: 0.85, b: 0.38, a: 1}
+  telegraph: 0.9
+  recovery: 1.5
+  weight: 0.75
+  cooldownInAttacks: 3
+  damage: 0
+  knockbackMultiplier: 1
+  sfxId: 
+  shakeAmplitude: 0
+  shakeDuration: 0.25
+  prefabs: []
+  count: 2
+  maxAlive: 4
+  addTag: Enemy
+  distanceRange: {x: 5, y: 11}
+  spawnHeight: 0.9
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  markerSeconds: 0.6
+  timeBetweenSpawns: 0.15

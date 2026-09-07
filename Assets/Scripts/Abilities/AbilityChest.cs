@@ -2,23 +2,25 @@ using System.Collections;
 using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Gameplay;
+using RedMagic.Items;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace RedMagic.Abilities
 {
     /// <summary>
-    /// Cofre que da una habilidad. El jugador se acerca, pulsa interactuar, el cofre reproduce su
-    /// animación de abrirse y le equipa una habilidad.
+    /// Cofre que da un <b>arma</b> (<see cref="WeaponDefinition"/>). El jugador se acerca, pulsa
+    /// interactuar, el cofre reproduce su animación de abrirse y le equipa el arma en el
+    /// <see cref="WeaponLoadout"/> de la run.
     ///
-    /// Por defecto la habilidad es <b>aleatoria</b> entre todas las de
-    /// <c>Resources/Abilities</c> — que es como funcionará en el juego —, pero en el Inspector se
-    /// puede forzar una concreta para probar: el desplegable lo dibuja
-    /// <c>AbilityChestEditor</c> y su primera opción es "Aleatoria".
+    /// Por defecto el arma es <b>aleatoria</b> entre todas las de <c>Resources/Items</c> — que es
+    /// como funcionará en el juego —, pero en el Inspector se puede forzar una concreta para probar:
+    /// el desplegable lo dibuja <c>AbilityChestEditor</c> y su primera opción es "Aleatoria".
     ///
-    /// La animación no se toca a mano: se enciende el bool del Animator (el mismo
-    /// <c>IsOpened</c> que usa el controlador del cofre dorado), así que sirve cualquier
-    /// controlador que tenga ese parámetro, y el cofre sigue funcionando aunque no tenga Animator.
+    /// La animación no se toca a mano: se enciende el bool del Animator (el mismo <c>IsOpened</c>
+    /// que usa el controlador del cofre dorado), así que sirve cualquier controlador que tenga ese
+    /// parámetro, y el cofre sigue funcionando aunque no tenga Animator.
     ///
     /// Misma forma de interacción que <c>TombInteractable</c> y <c>CauldronInteractable</c>:
     /// collider en trigger, acción de interactuar del asset de input con teclas de reserva, y
@@ -29,14 +31,15 @@ namespace RedMagic.Abilities
     public class AbilityChest : MonoBehaviour
     {
         [Header("Contenido")]
-        [Tooltip("Habilidad que suelta este cofre. Vacío = una al azar (lo normal en el juego). " +
+        [Tooltip("Arma que suelta este cofre. Vacío = una al azar (lo normal en el juego). " +
                  "El desplegable del Inspector lo dibuja AbilityChestEditor.")]
-        [SerializeField] private AbilityDefinition forcedAbility;
+        [FormerlySerializedAs("forcedAbility")]
+        [SerializeField] private WeaponDefinition forcedWeapon;
 
         [Tooltip("Un solo uso. Desactívalo para poder abrirlo una y otra vez mientras pruebas.")]
         [SerializeField] private bool singleUse = true;
 
-        [Tooltip("Segundos entre que se abre la tapa y se entrega la habilidad, para que se vea " +
+        [Tooltip("Segundos entre que se abre la tapa y se entrega el arma, para que se vea " +
                  "la animación antes del cambio.")]
         [Min(0f)]
         [SerializeField] private float grantDelay = 0.35f;
@@ -66,13 +69,12 @@ namespace RedMagic.Abilities
         [SerializeField] private string openSfxId = "SFX_ButtonClick";
 
         private InputAction _interactAction;
-        private AbilityUser _user;
         private bool _playerInRange;
         private bool _opened;
         private bool _busy;
 
-        /// <summary>Habilidad que soltará: la forzada, o null si va a ser aleatoria.</summary>
-        public AbilityDefinition ForcedAbility => forcedAbility;
+        /// <summary>Arma que soltará: la forzada, o null si va a ser aleatoria.</summary>
+        public WeaponDefinition ForcedWeapon => forcedWeapon;
 
         /// <summary>True si ya se ha abierto y es de un solo uso.</summary>
         public bool IsSpent => _opened && singleUse;
@@ -165,54 +167,40 @@ namespace RedMagic.Abilities
 
         private void Grant()
         {
-            var ability = PickAbility();
-            if (ability == null)
+            var weapon = PickWeapon();
+            if (weapon == null)
             {
-                Debug.LogWarning("[AbilityChest] No hay habilidades en Resources/Abilities: el " +
-                                 "cofre se abre vacío.", this);
+                Debug.LogWarning("[AbilityChest] No hay armas en Resources/Items: el cofre se abre " +
+                                 "vacío.", this);
                 return;
             }
 
-            var user = ResolveUser();
-            if (user == null)
+            if (WeaponLoadout.Instance == null)
             {
-                Debug.LogWarning("[AbilityChest] No hay ningún AbilityUser al que darle la habilidad.", this);
+                Debug.LogWarning("[AbilityChest] No hay WeaponLoadout al que darle el arma.", this);
                 return;
             }
 
-            user.Equip(ability);
+            WeaponLoadout.Instance.Inventory.SetWeapon(weapon);
 
-            // Destello del color de la habilidad sobre el cofre: se ve que ha salido algo y de qué
-            // familia es, sin necesidad de UI.
-            AbilityFx.Flash(ability.FxSprite, transform.position + Vector3.up * 0.6f,
-                            Vector2.one * 0.9f, ability.Accent, 0.6f, 0f, 2f, gameObject);
+            // El sistema de armas reemplaza al de habilidades: si el jugador aún llevaba una
+            // habilidad equipada, se la quitamos para que el arma dispare de inmediato (WeaponUser
+            // cede ante una habilidad equipada). Null-safe por si AbilityUser ya no está.
+            foreach (var user in FindObjectsByType<AbilityUser>(FindObjectsSortMode.None))
+                user.Equip(null);
 
-            Debug.Log($"[AbilityChest] Habilidad obtenida: {ability.DisplayName} ({ability.ShortStats()}).", this);
+            // Destello del color del arma sobre el cofre: se ve que ha salido algo y de qué familia
+            // es, sin necesidad de UI.
+            AbilityFx.Flash(weapon.Icon, transform.position + Vector3.up * 0.6f,
+                            Vector2.one * 0.9f, weapon.Accent, 0.6f, 0f, 2f, gameObject);
+
+            Debug.Log($"[AbilityChest] Arma obtenida: {weapon.DisplayName} " +
+                      $"({weapon.BaseDamage:0} dmg · {weapon.BaseCooldown:0.00}s).", this);
         }
 
-        private AbilityDefinition PickAbility()
+        private WeaponDefinition PickWeapon()
         {
-            if (forcedAbility != null) return forcedAbility;
-
-            var all = AbilityLibrary.All;
-            return all.Count == 0 ? null : all[Random.Range(0, all.Count)];
-        }
-
-        /// <summary>
-        /// El jugador que ha abierto el cofre. Se prefiere el que ha entrado en el trigger; si el
-        /// cofre se abre por script (sin nadie dentro) se busca el que haya en la partida.
-        /// </summary>
-        private AbilityUser ResolveUser()
-        {
-            if (_user != null) return _user;
-
-            var users = FindObjectsByType<AbilityUser>(FindObjectsSortMode.None);
-            if (users.Length == 0) return null;
-
-            foreach (var user in users)
-                if (user.gameObject.scene.name == "DontDestroyOnLoad") return user;
-
-            return users[0];
+            return forcedWeapon != null ? forcedWeapon : WeaponLibrary.Random();
         }
 
         private bool HasParameter(string parameterName)
@@ -223,7 +211,7 @@ namespace RedMagic.Abilities
                 if (parameter.name == parameterName) return true;
 
             Debug.LogWarning($"[AbilityChest] El Animator no tiene el parámetro '{parameterName}'; " +
-                             "el cofre da la habilidad pero no se anima.", this);
+                             "el cofre da el arma pero no se anima.", this);
             return false;
         }
 
@@ -232,7 +220,6 @@ namespace RedMagic.Abilities
             if (!other.CompareTag(playerTag)) return;
 
             _playerInRange = true;
-            _user = other.GetComponentInParent<AbilityUser>();
             SetPromptVisible(true);
         }
 

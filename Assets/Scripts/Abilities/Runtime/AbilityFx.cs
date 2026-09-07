@@ -13,6 +13,10 @@ namespace RedMagic.Abilities
     public static class AbilityFx
     {
         private static Sprite _defaultSprite;
+        private static Core.Pool<AbilityVfx> _flashPool;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void ResetPools() => _flashPool = null;
 
         /// <summary>
         /// Cuadrado blanco generado en memoria, para no depender de ningún asset de arte. Se crea
@@ -65,16 +69,30 @@ namespace RedMagic.Abilities
             return go;
         }
 
-        /// <summary>Efecto de un solo uso: aparece, se desvanece y se destruye solo.</summary>
+        /// <summary>
+        /// Efecto de un solo uso: aparece, se desvanece y vuelve al pool. Es el efecto más spammeado
+        /// del juego (un flash por impacto), así que va <b>pooled</b> (<see cref="Core.Pool{T}"/>):
+        /// el GameObject + SpriteRenderer se crean una vez y se reutilizan.
+        /// </summary>
         public static GameObject Flash(Sprite sprite, Vector3 position, Vector2 size, Color color,
                                        float duration, float rotationDegrees = 0f,
                                        float growTo = 1f, GameObject sortingReference = null)
         {
-            var go = SpawnSprite("Ability FX", sprite, position, size, color, rotationDegrees, sortingReference);
-            var fade = go.AddComponent<AbilityVfx>();
-            fade.Play(duration, growTo);
-            return go;
+            _flashPool ??= new Core.Pool<AbilityVfx>(BuildFlash, prewarm: 16);
+
+            var vfx = _flashPool.Get();
+            vfx.Begin(sprite, position, size, color, rotationDegrees, growTo, sortingReference, duration);
+            return vfx.gameObject;
         }
+
+        private static AbilityVfx BuildFlash()
+        {
+            var go = new GameObject("Ability FX");
+            go.AddComponent<SpriteRenderer>();
+            return go.AddComponent<AbilityVfx>();
+        }
+
+        internal static void ReleaseFlash(AbilityVfx vfx) => _flashPool?.Release(vfx);
 
         /// <summary>
         /// Escala el transform para que el sprite mida <paramref name="size"/> unidades. Los
@@ -115,11 +133,12 @@ namespace RedMagic.Abilities
     }
 
     /// <summary>
-    /// Desvanece y opcionalmente agranda un sprite durante unos segundos y se destruye. Es el
-    /// "impacto" genérico de las habilidades sin arte propio.
+    /// Desvanece y opcionalmente agranda un sprite durante unos segundos y vuelve al pool. Es el
+    /// "impacto" genérico de las habilidades sin arte propio. Lo saca y lo reaprovecha
+    /// <see cref="AbilityFx.Flash"/>.
     /// </summary>
     [DisallowMultipleComponent]
-    public class AbilityVfx : MonoBehaviour
+    public class AbilityVfx : MonoBehaviour, Core.IPooled
     {
         private SpriteRenderer _renderer;
         private Color _startColor;
@@ -128,16 +147,34 @@ namespace RedMagic.Abilities
         private float _timer;
         private float _growTo = 1f;
 
-        /// <param name="duration">Segundos hasta desaparecer.</param>
-        /// <param name="growTo">Escala final relativa (1 = no crece, 2 = duplica su tamaño).</param>
-        public void Play(float duration, float growTo = 1f)
+        private void Awake()
         {
-            _renderer = GetComponent<SpriteRenderer>();
-            _startColor = _renderer != null ? _renderer.color : Color.white;
+            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+        }
+
+        /// <summary>Prepara el efecto desde el pool: sprite, color, tamaño, orientación y duración.</summary>
+        internal void Begin(Sprite sprite, Vector3 position, Vector2 size, Color color,
+                            float rotationDegrees, float growTo, GameObject sortingReference, float duration)
+        {
+            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+
+            transform.position = position;
+            transform.rotation = Quaternion.Euler(0f, 0f, rotationDegrees);
+
+            _renderer.sprite = sprite != null ? sprite : AbilityFx.DefaultSprite;
+            _renderer.color = color;
+            AbilityFx.CopySorting(_renderer, sortingReference);
+            AbilityFx.Resize(transform, _renderer, size);
+
+            _startColor = _renderer.color;
             _startScale = transform.localScale;
             _duration = Mathf.Max(0.01f, duration);
             _growTo = Mathf.Max(0.01f, growTo);
             _timer = 0f;
+        }
+
+        void Core.IPooled.OnReturnedToPool()
+        {
         }
 
         private void Update()
@@ -155,7 +192,7 @@ namespace RedMagic.Abilities
             if (!Mathf.Approximately(_growTo, 1f))
                 transform.localScale = _startScale * Mathf.Lerp(1f, _growTo, t);
 
-            if (t >= 1f) Destroy(gameObject);
+            if (t >= 1f) AbilityFx.ReleaseFlash(this);
         }
     }
 }

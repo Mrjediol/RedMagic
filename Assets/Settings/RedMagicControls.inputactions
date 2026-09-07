@@ -226,7 +226,7 @@
                 {
                     "name": "",
                     "id": "7a2e4b19-6c53-4f80-a1d7-93be05fc2a61",
-                    "path": "<Keyboard>/j",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
@@ -311,6 +311,11 @@
                 {
                     "devicePath": "<Keyboard>",
                     "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Mouse>",
+                    "isOptional": true,
                     "isOR": false
                 }
             ]

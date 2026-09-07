@@ -37,6 +37,29 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 
 ## Architecture
 
+### Object pooling — spawn-heavy objects are never Instantiate/Destroy'd
+
+Anything that spawns repeatedly goes through a pool (`Assets/Scripts/Core/Pool.cs`,
+`PrefabPool.cs`), built on `UnityEngine.Pool.ObjectPool<T>`:
+
+- **`Pool<T>`** — for MonoBehaviours that build their own GameObject in code. `new Pool<T>(factory,
+  prewarm)`, then `Get()` (creates one more only when empty) / `Release()` (deactivates, keeps for
+  reuse). Optional `IPooled.OnReturnedToPool()` for reset. Used by `ShotProjectile`, `ShotBeam`,
+  `DamagePopup`, `AbilityVfx` (the `AbilityFx.Flash` impact/muzzle flash), and the code-built
+  `Projectile` path in `ProjectileFactory`.
+- **`PrefabPool`** — one pool per prefab, keyed by the prefab asset. `Spawn(prefab, pos, rot)` /
+  `Despawn(go)` (via the `PooledInstance` marker it stamps on). Used by `VfxOneShot` and the
+  prefab `Projectile` path.
+- **`PoolRunner`** — persistent `DontDestroyOnLoad` root that every pooled instance is parented
+  under (so a scene unload never destroys the reserve) and that force-releases everything still
+  active on each `sceneLoaded`, so nothing bleeds between sections.
+- Domain Reload is off, so every `static` pool field is nulled in a
+  `[RuntimeInitializeOnLoadMethod(BeforeSceneLoad)]`, and `PoolRunner` clears its releaser list
+  once at runtime start.
+- Low-churn spawns (one `Corpse` per death, boss reward, shop, `AbilityFx.SpawnSprite` for a
+  seconds-long zone/turret/orb) are still plain `new GameObject`/`Instantiate` — pool them if they
+  ever become hot.
+
 ### Persistent singletons
 
 Three `DontDestroyOnLoad` singletons carry state across scene loads, all following the same
@@ -117,7 +140,9 @@ to pick up the change.
 
 ### Combat (`Assets/Scripts/Combat/`)
 
-- **`Health`** — the only place damage is applied. `TakeDamage(amount)` **returns false when the
+- **`Health`** — the only place damage is applied. Exposes instance `Damaged`/`HealthChanged`/`Died`
+  events plus a **static `AnyDamaged(Health, float)`** — the global feed `DamagePopups` subscribes to
+  once instead of hooking every character. `TakeDamage(amount)` **returns false when the
   hit didn't land** (dead, invulnerable, zero damage); attackers must check it before playing hit
   effects. I-frames live here (`invulnerabilityDuration`); `InvulnerabilityChanged` fires on
   entering/leaving them. **Only the player has them (0.8s); enemies are set to 0** — i-frames are
@@ -137,6 +162,23 @@ to pick up the change.
   enemy standing on top of the player still gets sent the way the swing points.
 - **`HitFlash`** — tints the sprite on damage and blinks it during i-frames. Without it i-frames
   read as the game not registering hits. Add it wherever `Health` is.
+- **Projectile collision rule** — `ShotProjectile` (and the old `Projectile`) stop for exactly two
+  things: a collider with a `Health` in its parents (an enemy / the dummy — friendly-tag and
+  already-hit filtered), or a collider on the **`Ground` layer (6)** — the terrain painted with
+  the Tile Painter, matching `1 << 6` used by `ShotBeam` / `PlayerMovement`. Everything else —
+  decoration, trigger zones (cauldron, tomb, shop), other props — is passed straight through.
+- **`GroundSnap`** (`Assets/Scripts/Gameplay/`, on `Shop.prefab` and `WeaponUpgrade.prefab`) — on
+  `Start` (and via context-menu) raycasts down to the `Ground` layer and drops the object so the
+  base of its sprite bounds rests on the terrain. Needed because `RunManager` spawns the shop and
+  the boss reward at marker/exit positions that aren't ground-aligned (and the shop's wheelbarrow
+  no longer has the dynamic Rigidbody2D that used to let it fall into place). Reusable on any
+  spawned prop.
+- **`EnvironmentDecorColliders`** (`Assets/Scripts/Gameplay/`, on MainHub's `Enviroment`) — on
+  `Awake` (and via its inspector context-menu) disables the `Collider2D` of every child that is
+  pure decoration, so imported props (barrels, fences…) with baked-in colliders don't block
+  movement or the physics broadphase. **Skips** any child with a `Health`, any `RedMagic.*` script
+  on itself or a parent up to the container, any trigger collider, or anything in its `keep` list —
+  so the same container can still hold the dummy, cauldron, tomb, chest, etc.
 - **`Corpse`** — on death, tints the body, holds it ~0.6s so the kill reads, fades it over ~0.35s
   and destroys the GameObject. Colliders/physics are still switched off by whoever drives the
   character (`EnemyController.OnDied`); this only owns the look and the cleanup, so an enemy with
@@ -144,6 +186,36 @@ to pick up the change.
   they were covering the reward the boss drops.
 - Both are already on `Player.prefab` and every `Enemy_*.prefab`. **New damageable prefabs need
   `Knockback` + `HitFlash` added by hand** — `Health` works without them, just silently unpushed.
+- **`DamagePopups`** (`Assets/Scripts/Fx/`) — self-bootstrapping `DontDestroyOnLoad` singleton.
+  Subscribes once to `Health.AnyDamaged` and spawns a floating number (code-built world-space
+  `Canvas` + `Text` with the built-in `LegacyRuntime.ttf`, no font asset) over the victim: warm and
+  size-scaled for damage dealt to enemies / the dummy, red and `-`-prefixed for damage the player
+  takes (distinguished by the `Player` tag). `DamagePopups.Show(pos, amount, kind)` for manual use.
+- **`TrainingDummy`** (`Assets/Scripts/Combat/`, on `Assets/Prefab/Eviroment/Target.prefab`) —
+  `[RequireComponent(Health)]`. The prefab's `Health` has `maxHealth 1000000` and
+  `invulnerabilityDuration 0`; the component calls `Health.ResetHealth()` on every hit, so it never
+  dies and every pellet / beam tick / burst shot registers. Draws an IMGUI readout above itself
+  (`FpsOverlay`-style) — last hit, DPS, hit count, average, max — for the current burst, which
+  auto-resets after `idleResetSeconds` (2.5s) idle or on **R**.
+- **`EnemyController.canFly`** — per-prefab bool. Off (default) is the ground enemy as before:
+  gravity, ledge probing, and it ignores targets outside `verticalTolerance`. On, the enemy's
+  `gravityScale` is zeroed in `Awake`, the ledge probe and the vertical-tolerance gate are skipped,
+  detection uses true distance, and chasing flies straight at the target on both axes while holding
+  its altitude. Set it on the floating enemies; leave it off for anything that should walk.
+
+### Camera (`Assets/Scripts/Gameplay/CameraFollow.cs`)
+
+The camera follows both axes (`followVertical` on everywhere), but **the two axes are not treated
+the same**: horizontal is smoothed with `smoothTime` (0.18), vertical is **hard-locked to the
+player with no smoothing at all** (`verticalSmoothTime` defaults to 0 = snap). That split is the
+whole point — an earlier pass that smoothed the vertical axis and added a fall look-ahead was
+rejected as unplayable, because any vertical lag means you don't see where you're landing until
+after you've landed. If vertical follow ever feels wrong again, fix the framing (`offset.y`, zoom),
+**not** by adding vertical smoothing back.
+
+Zoom is a separate knob: `RunManager.cameraOrthographicSize` (8.5) is forced onto every
+`CameraFollow` camera after each load, so the hub and the sections match.
+`ShakeAll(amplitude, duration)` is the project-wide camera shake (see Bosses).
 
 ### Abilities (`Assets/Scripts/Abilities/`)
 
@@ -178,12 +250,16 @@ starting 22 (idempotent — it never touches an asset that already exists).
   pipeline. Assign `fxSprite` on the asset when real art exists.
 - `Projectile` gained optional pierce / homing / arc gravity / impact-AoE, all defaulting to off, so
   one code-built projectile covers arrows, homing orbs and grenades.
-- **`AbilityChest`** (on `Assets/Prefab/Eviroment/GoldChest.prefab`) — proximity interactable, same
-  shape as `TombInteractable`. Opens the lid by setting the Animator bool `IsOpened` (the parameter
-  Cainos' chest controller already uses, so no vendor script is referenced), waits `grantDelay`, then
-  equips an ability on the player's `AbilityUser`. Empty `forcedAbility` = random, which is the
-  shipping behaviour; `AbilityChestEditor` draws that field as a dropdown of every ability with
-  "Aleatoria" first. `singleUse` off lets it be reopened while testing.
+- **`AbilityChest`** (class still named that; on `Assets/Prefab/Eviroment/GoldChest.prefab`) —
+  proximity interactable, same shape as `TombInteractable`. Opens the lid by setting the Animator
+  bool `IsOpened` (the parameter Cainos' chest controller already uses, so no vendor script is
+  referenced), waits `grantDelay`, then grants a **`WeaponDefinition`** via
+  `WeaponLoadout.Instance.Inventory.SetWeapon` (and clears any equipped ability on `AbilityUser` so
+  `WeaponUser` fires the new weapon immediately). Empty `forcedWeapon` = random from
+  `WeaponLibrary` (folder scan of `Resources/Items`), which is the shipping behaviour;
+  `AbilityChestEditor` draws that field as a dropdown of every weapon (grouped by innate element)
+  with "Aleatoria" first. `singleUse` off lets it be reopened while testing. The MainHub instance
+  overrides `forcedWeapon` to `Weapon_RayoArcano`.
 - **Weapon levels (1–3)** — `AbilityDefinition.LevelTier` (`level2`/`level3` on every asset) holds
   what a level changes **relative to level 1, not cumulatively**: damage ×, cooldown ×, size ×, and
   lifesteal. `AbilityUser` resolves the level per cast and folds it into the context
@@ -206,6 +282,49 @@ starting 22 (idempotent — it never touches an asset that already exists).
   (`AbilityMenuPanelSettings`, sorting order 32). Nothing in the ability system depends on it.
 - Projectiles never collide with other projectiles — pellets from one shotgun blast spawn on top of
   each other and would annihilate on frame one.
+
+### Bosses (`Assets/Scripts/Bosses/`)
+
+Same content-by-convention shape as the ability system, one level up: a boss is a
+**`BossDefinition` asset** plus a prefab, and each of its attacks is its own **`BossAttack`
+ScriptableObject** in `Assets/Resources/Bosses/`. Writing C# is only needed for a new *archetype*
+(a new shape of attack), never for a new boss, a new attack asset or a phase-2 variant.
+**Tools > RedMagic > Boss > Crear jefe: Arbol Ancestral** builds the first boss (10 attack assets +
+definition + prefab) and **… > Colocar Arbol Ancestral en World1_Boss** drops it into the scene —
+both idempotent, neither overwrites an existing asset.
+
+- **`BossController`** (on the boss prefab, replaces `EnemyController` — a boss never patrols) —
+  waits for the player to enter `activationRadius`, plays an intro (invulnerable + camera shake +
+  health bar + optional `musicId`), then loops **telegraph → attack → recovery → pause**. That
+  cycle is the whole readability of the fight: nothing damages during the telegraph, and the
+  recovery is the player's DPS window, so the nastier the attack the longer its recovery. Measures
+  the arena's ground with a raycast at `Start` and **snaps itself onto it** (its prefab origin is
+  the sprite's base), so placing a boss is dropping it roughly in the scene.
+- **Phases** — `BossPhase` entries inside the definition, entered when normalized health drops
+  below `startsAtHealth` (never backwards, so lifesteal can't rewind a phase). Entering one cuts
+  the attack coroutine, goes invulnerable for `transitionSeconds` (otherwise a well-timed burst
+  skips phase 2 entirely), and swaps the attack deck. `speedScale` shortens every timing in the
+  phase and `frenzyBelowHealth` shortens them again at low health — so phase 2 is the same assets,
+  faster, not a duplicated set.
+- **`BossContext`** — the per-cast bundle (boss, player, ground Y, arena size, phase pacing) that
+  carries an **`AbilityContext`** inside it, so boss attacks reuse `AbilityHit` for target
+  filtering/damage and `ProjectileFactory` for **pooled** projectiles instead of a parallel system.
+- **Archetypes**: `ShockwaveAttack` (`BossShockwave`, pooled) — a screen-wide wave inside a
+  **height band**: band `0→1.9` must be jumped, band `1.9→9` must be ducked by staying grounded,
+  and `alternateBands` makes one attack ask for jump→land→jump. Having both bands is what forces
+  reading the telegraph instead of jumping on reflex. `BulletHellAttack` — `Radial` (ring; with
+  `spinPerVolley` a spiral whose gap you must track), `Fan` (aimed cone) and `Rain` (ground
+  markers first, then drops). `SummonAddsAttack` — adds, capped by `maxAlive`, killed when the boss
+  dies.
+- **`BossHealthBar`** — screen-space uGUI built in code (no prefab/UXML/PanelSettings), sorting
+  order 18 so menus still cover it. Shows the definition's name/title, an amber "ghost" trail
+  behind the fill and a tick per phase threshold. A new boss needs no UI work.
+- **Teams** — the boss and its adds share the **`Enemy` tag**, which is what stops the boss's own
+  bullets from killing its summons (`AbilityContext.FriendlyTag` / `Projectile`'s owner tag). Tag
+  any new boss-side spawn the same way.
+- **`CameraFollow.ShakeAll(amplitude, duration)`** — camera shake lives inside `CameraFollow`
+  (which already owns the camera position, so there's no LateUpdate ordering fight) and is
+  reusable by anything, not just bosses.
 
 ### Economy (`Assets/Scripts/Economy/`)
 
@@ -256,14 +375,21 @@ starting 22 (idempotent — it never touches an asset that already exists).
 
 **Mid-run shop:**
 
-- **`ShopConfig`** — ScriptableObject at `Assets/Resources/ShopConfig.asset`: the item pool plus
-  `itemsPerShop`. `RollStock(seed)` samples distinct items with a seeded partial Fisher-Yates, same
-  as `WorldDefinition`.
+- **`ItemLibrary`** (`Assets/Scripts/Items/`) — folder scan of `Resources/Items` bucketed by slot
+  (`Elements` / `Trajectories` / `Shapes` / `FreePool`), same pattern as `AbilityLibrary` /
+  `WeaponLibrary`. The shop and any future consumer read real `ItemDefinition` assets from here.
+- **`ShopConfig`** — ScriptableObject at `Assets/Resources/ShopConfig.asset`. **No item list** — it
+  only tunes `freePoolCount` (default 3) and a min–max `CostRange` per type. `RollStock(seed)`
+  composes one shop: 1 random Element + 1 Trajectory + 1 Shape modifier + `freePoolCount` distinct
+  free-pool items (6 total), seeded partial Fisher-Yates, returns `ShopStockEntry { Item, Cost }`.
 - **`ShopInteractable`** — on the `Shop.prefab` ("Shop Interact Zone" child). Rolls its stock once
   (seeded from `RunSeed` + its x position), refuses to open while `SectionClearTracker` reports
-  enemies alive, and `MarkSold` removes an item permanently — each item is buy-once.
+  enemies alive, and `MarkSold` removes an entry permanently — each item is buy-once.
 - **`ShopMenuController`** (`Assets/Ui/`) — same self-bootstrapping code-built pattern as the
-  upgrade menu, own `Assets/Resources/ShopMenuPanelSettings.asset`. Spends **Gold**.
+  upgrade menu, own `Assets/Resources/ShopMenuPanelSettings.asset`. Spends **Gold** and **equips on
+  purchase** into `WeaponLoadout.Instance.Inventory` via `TryEquip`: a modifier replaces its
+  dedicated slot silently; a free-pool item takes the first empty slot, or — if all 6 are full —
+  opens a second overlay to pick which slot to discard, and only charges once the player picks.
 
 **`MenuStyle`** (`Assets/Ui/MenuStyle.cs`) — shared palette, sizes and element factories for both
 code-built menus. **Change the size constants here to rescale that UI**; both screens follow. Sizes

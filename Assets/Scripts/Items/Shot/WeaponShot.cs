@@ -20,16 +20,46 @@ namespace RedMagic.Items
     /// </summary>
     public sealed class WeaponShot
     {
+        // -- Entrega (paso 1: base) --------------------------------------------------------------
+        public ShotDelivery delivery = ShotDelivery.Projectile;
+
+        // -- Haz / carga (paso 1: base) ---------------------------------------------------------
+        public float beamDuration = 0.5f;
+        public float beamTickInterval = 0.06f;
+        public float beamLength = 14f;
+        public float beamWidth = 0.5f;
+
+        /// <summary>Daño relativo a la carga mínima. Lo aplica <see cref="ShotResolver"/> según la carga real.</summary>
+        public float minChargeDamage = 0.35f;
+
+        /// <summary>0..1, carga con la que se disparó. 1 = disparo normal / sin carga.</summary>
+        public float chargeFraction = 1f;
+
         // -- Emisión (paso 3: Forma) ----------------------------------------------------------------
         public int projectileCount = 1;
         public float spreadAngle;
+        public float randomSpread;
         public float damage;
+
+        // -- Ráfaga base: repite el volley del cañón N veces (paso 1: base) ------------------------
+        public int burstCount = 1;
+        public float burstInterval = 0.09f;
 
         // -- Movimiento del proyectil (paso 1: base) -----------------------------------------------
         public float speed = 12f;
         public float lifetime = 2f;
         public Vector2 size = new Vector2(0.35f, 0.35f);
         public Vector2 muzzleOffset = new Vector2(0.6f, 0.1f);
+
+        /// <summary>Enemigos que el proyectil atraviesa antes de morir. 0 = muere en el primer impacto.</summary>
+        public int pierce;
+
+        /// <summary>Caída en u/s². >0 = parábola. La auto-mira (trayectoria) tiene prioridad si ambas están.</summary>
+        public float arcGravity;
+
+        // -- Explosión al terminar (base) ---------------------------------------------------------
+        public float impactRadius;
+        public float impactDamage;
 
         // -- Trayectoria (paso 2) ----------------------------------------------------------------
         public TrajectoryKind trajectory = TrajectoryKind.Straight;
@@ -56,12 +86,26 @@ namespace RedMagic.Items
             var shot = weapon.Shot;
             return new WeaponShot
             {
+                delivery = shot.delivery,
+                beamDuration = Mathf.Max(0.05f, shot.beamDuration),
+                beamTickInterval = Mathf.Max(0.02f, shot.beamTickInterval),
+                beamLength = Mathf.Max(0.5f, shot.beamLength),
+                beamWidth = Mathf.Max(0.05f, shot.beamWidth),
+                minChargeDamage = Mathf.Clamp01(shot.minChargeDamage),
                 projectileCount = Mathf.Max(1, shot.count),
+                spreadAngle = shot.spreadAngle,
+                randomSpread = shot.randomSpread,
+                burstCount = Mathf.Max(1, shot.burstCount),
+                burstInterval = Mathf.Max(0.02f, shot.burstInterval),
                 damage = weapon.BaseDamage,
                 speed = shot.speed,
                 lifetime = shot.lifetime,
                 size = shot.size,
                 muzzleOffset = shot.muzzleOffset,
+                pierce = Mathf.Max(0, shot.pierce),
+                arcGravity = Mathf.Max(0f, shot.arcGravity),
+                impactRadius = Mathf.Max(0f, shot.impactRadius),
+                impactDamage = Mathf.Max(0f, shot.impactDamage),
                 tint = weapon.Accent,
             };
         }
@@ -76,6 +120,8 @@ namespace RedMagic.Items
             var child = (WeaponShot)MemberwiseClone();
             child.projectileCount = 1;
             child.spreadAngle = 0f;
+            child.randomSpread = 0f;
+            child.burstCount = 1;   // la ráfaga es del cañón, no se hereda al partirse
             child.splitGenerationsLeft = Mathf.Max(0, splitGenerationsLeft - 1);
             child.damage = damage * Mathf.Clamp01(splitDamageFraction);
             return child;

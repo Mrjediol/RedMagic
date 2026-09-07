@@ -12,35 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9141d819e5710ab459042ca0a79174d8, type: 3}
   m_Name: ShopConfig
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.ShopConfig
-  items:
-  - id: flask
-    title: Health Flask
-    description: Placeholder item
-    cost: 25
-    icon: {fileID: 0}
-  - id: charm
-    title: Iron Charm
-    description: Placeholder item
-    cost: 40
-    icon: {fileID: 0}
-  - id: boots
-    title: Swift Boots
-    description: Placeholder item
-    cost: 35
-    icon: {fileID: 0}
-  - id: rune
-    title: Cracked Rune
-    description: Placeholder item
-    cost: 20
-    icon: {fileID: 0}
-  - id: vial
-    title: Ember Vial
-    description: Placeholder item
-    cost: 45
-    icon: {fileID: 0}
-  - id: purse
-    title: Coin Purse
-    description: Placeholder item
-    cost: 30
-    icon: {fileID: 0}
-  itemsPerShop: 3
+  freePoolCount: 3
+  elementCost:
+    min: 30
+    max: 50
+  trajectoryCost:
+    min: 30
+    max: 50
+  shapeCost:
+    min: 30
+    max: 50
+  freePoolCost:
+    min: 18
+    max: 38

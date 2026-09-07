@@ -58,12 +58,24 @@ namespace RedMagic.Abilities
         public float impactDamage;
     }
 
-    /// <summary>Instancia proyectiles a partir de un <see cref="ProjectileSpec"/>.</summary>
+    /// <summary>
+    /// Instancia proyectiles a partir de un <see cref="ProjectileSpec"/>, <b>pooled</b>: los de
+    /// prefab van por <see cref="Core.PrefabPool"/>, los construidos en código por un
+    /// <see cref="Core.Pool{T}"/> propio. Nunca <c>Instantiate</c>/<c>Destroy</c> por disparo.
+    /// </summary>
     public static class ProjectileFactory
     {
+        private static Core.Pool<Projectile> _codePool;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void ResetPools() => _codePool = null;
+
+        /// <summary>Devuelve un proyectil construido en código a su pool. Lo llama <see cref="Projectile.ReturnToPool"/>.</summary>
+        internal static void ReleaseCodePooled(Projectile projectile) => _codePool?.Release(projectile);
+
         /// <summary>
         /// Lanza un proyectil desde <paramref name="origin"/> en <paramref name="direction"/>.
-        /// Devuelve el objeto creado (o null si el prefab estaba mal montado).
+        /// Devuelve el objeto (o null si el prefab estaba mal montado).
         /// </summary>
         public static GameObject Spawn(in AbilityContext ctx, ProjectileSpec spec, Vector2 origin,
                                        Vector2 direction, float damage, float knockbackMultiplier,
@@ -71,21 +83,30 @@ namespace RedMagic.Abilities
         {
             if (spec == null) return null;
 
-            GameObject instance = spec.prefab != null
-                ? UnityEngine.Object.Instantiate(spec.prefab, origin, Quaternion.identity)
-                : BuildProjectile(ctx, spec, origin, sprite, tint);
+            Projectile projectile;
+
+            if (spec.prefab != null)
+            {
+                var go = Core.PrefabPool.Spawn(spec.prefab, origin, Quaternion.identity);
+                projectile = go != null ? go.GetComponent<Projectile>() : null;
+                if (projectile == null)
+                {
+                    Debug.LogWarning($"[Abilities] El prefab '{spec.prefab.name}' no tiene componente Projectile.");
+                    if (go != null) Core.PrefabPool.Despawn(go);
+                    return null;
+                }
+                projectile.PooledPrefab = true;
+            }
+            else
+            {
+                _codePool ??= new Core.Pool<Projectile>(BuildCodeProjectile, prewarm: 16);
+                projectile = _codePool.Get();
+                projectile.ApplyCodeVisual(origin, spec.size * ctx.SizeScale, sprite, tint, ctx.Caster);
+            }
 
             // El nivel del arma engorda el proyectil y su explosión. El spec es un asset
             // compartido, así que se escala aquí al lanzar y nunca se toca el original.
             float impactRadius = spec.impactRadius * ctx.SizeScale;
-
-            var projectile = instance.GetComponent<Projectile>();
-            if (projectile == null)
-            {
-                Debug.LogWarning($"[Abilities] El prefab '{instance.name}' no tiene componente Projectile.");
-                UnityEngine.Object.Destroy(instance);
-                return null;
-            }
 
             projectile.Configure(damage, spec.speed, ctx.HitLayers);
             projectile.ConfigureBehaviour(spec.pierce, spec.homingTurnRate, spec.homingRange,
@@ -94,29 +115,21 @@ namespace RedMagic.Abilities
             projectile.ConfigureLifesteal(ctx.CasterHealth, ctx.Lifesteal);
             projectile.Launch(direction, ctx.Caster);
 
-            return instance;
+            return projectile.gameObject;
         }
 
         /// <summary>
-        /// Monta el proyectil pieza a pieza. El orden importa: <c>Projectile</c> cachea el
-        /// Rigidbody2D y sus colliders en <c>Awake</c>, que se ejecuta en cuanto se añade el
-        /// componente, así que va el último.
+        /// Monta el proyectil de código pieza a pieza, <b>una vez por instancia del pool</b>. El
+        /// orden importa: <c>Projectile</c> cachea el Rigidbody2D y sus colliders en <c>Awake</c>,
+        /// que corre al añadir el componente, así que va el último.
         /// </summary>
-        private static GameObject BuildProjectile(in AbilityContext ctx, ProjectileSpec spec,
-                                                  Vector2 origin, Sprite sprite, Color tint)
+        private static Projectile BuildCodeProjectile()
         {
-            var go = AbilityFx.SpawnSprite("Ability Projectile", sprite, origin,
-                                           spec.size * ctx.SizeScale, tint, 0f, ctx.Caster);
+            var go = AbilityFx.SpawnSprite("Ability Projectile", null, Vector3.zero, Vector2.one,
+                                           Color.white, 0f, null);
 
             var collider = go.AddComponent<CircleCollider2D>();
             collider.isTrigger = true;
-            // El collider vive en espacio local, ya escalado por SpawnSprite: en local el sprite
-            // mide su bounds original, así que medio bounds es el radio que se ve en pantalla.
-            var renderer = go.GetComponent<SpriteRenderer>();
-            var localSize = renderer != null && renderer.sprite != null
-                ? (Vector2)renderer.sprite.bounds.size
-                : Vector2.one;
-            collider.radius = Mathf.Max(localSize.x, localSize.y) * 0.5f;
 
             var body = go.AddComponent<Rigidbody2D>();
             body.gravityScale = 0f;
@@ -124,9 +137,8 @@ namespace RedMagic.Abilities
             body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
             var projectile = go.AddComponent<Projectile>();
-            projectile.DestroyWhenDone();
-
-            return go;
+            projectile.PooledCode = true;
+            return projectile;
         }
     }
 }

@@ -1,25 +1,26 @@
 using System.Collections.Generic;
+using RedMagic.Items;
 using UnityEditor;
 using UnityEngine;
 
 namespace RedMagic.Abilities.EditorTools
 {
     /// <summary>
-    /// Inspector de <see cref="AbilityChest"/>. Sustituye el campo de arrastrar-y-soltar de la
-    /// habilidad forzada por un <b>desplegable</b> con todas las habilidades del juego, cuya
-    /// primera opción es "Aleatoria".
+    /// Inspector de <see cref="AbilityChest"/>. Sustituye el campo de arrastrar-y-soltar del arma
+    /// forzada por un <b>desplegable</b> con todas las armas del juego, cuya primera opción es
+    /// "Aleatoria".
     ///
     /// Existe por comodidad de pruebas: elegir qué suelta el cofre es lo que se toca a cada rato
-    /// mientras se comparan habilidades, y buscar el asset a mano en el proyecto cada vez es un
-    /// engorro. La lista sale de <see cref="AbilityLibrary"/>, así que las habilidades nuevas
-    /// aparecen solas sin tocar este archivo.
+    /// mientras se comparan armas, y buscar el asset a mano en el proyecto cada vez es un engorro.
+    /// La lista sale de <see cref="WeaponLibrary"/>, así que las armas nuevas aparecen solas sin
+    /// tocar este archivo.
     /// </summary>
     [CustomEditor(typeof(AbilityChest))]
     public class AbilityChestEditor : Editor
     {
         private const string RandomLabel = "Aleatoria (como en el juego)";
 
-        private List<AbilityDefinition> _abilities;
+        private List<WeaponDefinition> _weapons;
         private string[] _options;
 
         private void OnEnable() => RefreshOptions();
@@ -28,65 +29,66 @@ namespace RedMagic.Abilities.EditorTools
         {
             serializedObject.Update();
 
-            var property = serializedObject.FindProperty("forcedAbility");
+            var property = serializedObject.FindProperty("forcedWeapon");
 
             using (new EditorGUILayout.HorizontalScope())
             {
-                int current = IndexOf(property.objectReferenceValue as AbilityDefinition);
-                int next = EditorGUILayout.Popup("Habilidad del cofre", current, _options);
+                int current = IndexOf(property.objectReferenceValue as WeaponDefinition);
+                int next = EditorGUILayout.Popup("Arma del cofre", current, _options);
 
                 if (next != current)
-                    property.objectReferenceValue = next == 0 ? null : _abilities[next - 1];
+                    property.objectReferenceValue = next == 0 ? null : _weapons[next - 1];
 
                 // Botón de refresco: si se crean assets con el Inspector abierto, la lista cacheada
                 // se queda corta y no hay forma de saberlo desde aquí.
                 if (GUILayout.Button("↻", GUILayout.Width(26))) RefreshOptions();
             }
 
-            if (property.objectReferenceValue is AbilityDefinition chosen)
-                EditorGUILayout.HelpBox(chosen.DisplayName + "\n" + chosen.ShortStats(), MessageType.None);
+            if (property.objectReferenceValue is WeaponDefinition chosen)
+                EditorGUILayout.HelpBox(
+                    $"{chosen.DisplayName}\n{chosen.BaseDamage:0} dmg · {chosen.BaseCooldown:0.00}s",
+                    MessageType.None);
 
-            DrawPropertiesExcluding(serializedObject, "forcedAbility", "m_Script");
+            DrawPropertiesExcluding(serializedObject, "forcedWeapon", "m_Script");
 
             serializedObject.ApplyModifiedProperties();
         }
 
         private void RefreshOptions()
         {
-            AbilityLibrary.Invalidate();
+            WeaponLibrary.Invalidate();
 
-            _abilities = new List<AbilityDefinition>(AbilityLibrary.All);
-            _options = new string[_abilities.Count + 1];
+            _weapons = new List<WeaponDefinition>(WeaponLibrary.All);
+            _options = new string[_weapons.Count + 1];
             _options[0] = RandomLabel;
 
-            for (int i = 0; i < _abilities.Count; i++)
-                _options[i + 1] = CategoryPrefix(_abilities[i].Category) + _abilities[i].DisplayName;
+            for (int i = 0; i < _weapons.Count; i++)
+                _options[i + 1] = ElementPrefix(_weapons[i].InnateElement) + _weapons[i].DisplayName;
         }
 
-        private int IndexOf(AbilityDefinition ability)
+        private int IndexOf(WeaponDefinition weapon)
         {
-            if (ability == null) return 0;
+            if (weapon == null) return 0;
 
-            int index = _abilities.IndexOf(ability);
+            int index = _weapons.IndexOf(weapon);
 
-            // Una habilidad asignada que ya no está en la lista (asset movido fuera de Resources)
-            // se refresca una vez antes de darla por perdida.
+            // Un arma asignada que ya no está en la lista (asset movido fuera de Resources) se
+            // refresca una vez antes de darla por perdida.
             if (index < 0)
             {
                 RefreshOptions();
-                index = _abilities.IndexOf(ability);
+                index = _weapons.IndexOf(weapon);
             }
 
             return index < 0 ? 0 : index + 1;
         }
 
-        /// <summary>Agrupa visualmente el desplegable por familia usando submenús de Unity.</summary>
-        private static string CategoryPrefix(AbilityCategory category) => category switch
+        /// <summary>Agrupa visualmente el desplegable por elemento innato usando submenús de Unity.</summary>
+        private static string ElementPrefix(ElementId element) => element switch
         {
-            AbilityCategory.Melee => "Cuerpo a cuerpo/",
-            AbilityCategory.Ranged => "A distancia/",
-            AbilityCategory.Area => "Área/",
-            _ => "Utilidad/"
+            ElementId.Ice => "Hielo/",
+            ElementId.Fire => "Fuego/",
+            _ => "Físico/",
         };
     }
 }

@@ -379,9 +379,9 @@ PrefabInstance:
       value: 1918881111
       objectReference: {fileID: 0}
     - target: {fileID: 5703692462984795082, guid: ed53e94378883174baa77619b4f54265, type: 3}
-      propertyPath: forcedAbility
+      propertyPath: forcedWeapon
       value: 
-      objectReference: {fileID: 11400000, guid: 49020b9d4ba3a9d43b711f6197bca4d9, type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 6322926410334942216, guid: ed53e94378883174baa77619b4f54265, type: 3}
       propertyPath: m_LocalPosition.x
       value: 18.251503
@@ -951,10 +951,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.CameraFollow
   target: {fileID: 0}
   fallbackTargetTag: Player
-  offset: {x: 1.5, y: 0.8}
+  offset: {x: 1, y: 2}
   smoothTime: 0.18
+  verticalSmoothTime: 0.08
   followVertical: 1
-  useBounds: 0
+  verticalLookAhead: 0.4
+  maxVerticalLookAhead: 4.5
+  useBounds: 1
   minBounds: {x: -20, y: -5}
   maxBounds: {x: 20, y: 10}
 --- !u!1 &524311951
@@ -1821,6 +1824,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 920616442}
+  - component: {fileID: 920616443}
   m_Layer: 0
   m_Name: Enviroment
   m_TagString: Untagged
@@ -1842,7 +1846,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 15789914}
-  - {fileID: 1587058156}
+  - {fileID: 4978010613159227809}
   - {fileID: 854083942}
   - {fileID: 1931081370}
   - {fileID: 939186325}
@@ -1858,6 +1862,20 @@ Transform:
   - {fileID: 1109124514}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &920616443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 920616441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48c783ed5a500f088028337d4ba1665c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.EnvironmentDecorColliders
+  keep: []
+  moveToBackgroundLayer: 0
 --- !u!1001 &932587719
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2535,63 +2553,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1356756941
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 920616442}
-    m_Modifications:
-    - target: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 36.9882
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -4.2388
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4978010614504130162, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-      propertyPath: m_Name
-      value: PF Village Props - Archery Target 01
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
 --- !u!1001 &1396913389
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2678,10 +2639,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bd4afac199c4ae41aad40e44fea6d9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyManager
-  gold: 0
-  diamond: 0
-  soulFragment: 111111
-  skull: 0
+  gold: 1111
+  diamond: 1111
+  soulFragment: 1111
+  skull: 1111
 --- !u!4 &1417426019
 Transform:
   m_ObjectHideFlags: 0
@@ -2959,11 +2920,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1587058156 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4978010614504130156, guid: 55e220e9324021f4aba5a837610ec52e, type: 3}
-  m_PrefabInstance: {fileID: 1356756941}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1593147894 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3564026850829729314, guid: ed925410cd097664ea4b9e3e758f02a4, type: 3}
@@ -28528,6 +28484,68 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fcf85d5a84fad4949ab55749a15d876f, type: 3}
+--- !u!4 &4978010613159227809 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+  m_PrefabInstance: {fileID: 6639187424282035834}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &6639187424282035834
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 920616442}
+    m_Modifications:
+    - target: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 36.9882
+      objectReference: {fileID: 0}
+    - target: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -4.2388
+      objectReference: {fileID: 0}
+    - target: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4328337789507041319, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7805924718304367574, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
+      propertyPath: m_Name
+      value: PF Village Props - Archery Target 01
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6e302dba906d98441a4c29ae4a294387, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -39,16 +40,60 @@ namespace RedMagic.Items
             return shot;
         }
 
-        /// <summary>Resuelve y lanza el disparo desde <paramref name="ctx"/>.</summary>
-        public static void Fire(WeaponInventory inventory, in ShotContext ctx)
+        /// <summary>
+        /// Resuelve y lanza el disparo desde <paramref name="ctx"/>.
+        ///
+        /// <paramref name="chargeFraction"/> (0..1) es la carga con la que se soltó el botón: 1 para
+        /// un arma normal sin carga. Por debajo de 1 el daño se interpola entre
+        /// <see cref="WeaponShot.minChargeDamage"/> y ×1, y —en un haz— el alcance y la duración
+        /// también escalan.
+        ///
+        /// Un disparo base de tipo <see cref="ShotDelivery.Hitscan"/> se entrega como
+        /// <see cref="ShotBeam"/>; el resto como proyectiles (con ráfaga si
+        /// <see cref="WeaponShot.burstCount"/> &gt; 1).
+        /// </summary>
+        public static void Fire(WeaponInventory inventory, in ShotContext ctx, float chargeFraction = 1f)
         {
             var shot = Resolve(inventory);
             if (shot == null || !ctx.IsValid) return;
 
-            EmitVolley(shot, ctx);
+            shot.chargeFraction = Mathf.Clamp01(chargeFraction);
+            if (shot.chargeFraction < 1f)
+                shot.damage *= Mathf.Lerp(shot.minChargeDamage, 1f, shot.chargeFraction);
+
+            if (shot.delivery == ShotDelivery.Hitscan)
+            {
+                EmitBeam(shot, ctx);
+                return;
+            }
+
+            int bursts = Mathf.Max(1, shot.burstCount);
+            if (bursts <= 1)
+            {
+                EmitVolley(shot, ctx);
+                return;
+            }
+
+            EmitVolley(shot, ctx);   // el primero, ya
+
+            if (ctx.Runner != null)
+                ctx.Runner.StartCoroutine(BurstRest(shot, ctx, bursts));
+            else
+                for (int i = 1; i < bursts; i++) EmitVolley(shot, ctx);
         }
 
-        /// <summary>El volley inicial: 1 proyectil, o N en abanico si la Forma es MultiShot.</summary>
+        private static IEnumerator BurstRest(WeaponShot shot, ShotContext ctx, int bursts)
+        {
+            var wait = new WaitForSeconds(Mathf.Max(0.02f, shot.burstInterval));
+            for (int i = 1; i < bursts; i++)
+            {
+                yield return wait;
+                if (!ctx.IsValid) yield break;
+                EmitVolley(shot, ctx);
+            }
+        }
+
+        /// <summary>El volley del cañón: 1 proyectil, o N en abanico (Forma MultiShot o escopeta base).</summary>
         private static void EmitVolley(WeaponShot shot, in ShotContext ctx)
         {
             Vector2 origin = ctx.Muzzle(shot.muzzleOffset);
@@ -61,7 +106,29 @@ namespace RedMagic.Items
             for (int i = 0; i < count; i++)
             {
                 float angle = count > 1 ? start + step * i : baseAngle;
+                if (shot.randomSpread > 0f)
+                    angle += Random.Range(-shot.randomSpread * 0.5f, shot.randomSpread * 0.5f);
                 ShotProjectile.Spawn(shot, ctx, origin, DirFromAngle(angle), shot.damage);
+            }
+        }
+
+        /// <summary>
+        /// Entrega de haz (hitscan): 1 rayo a lo largo del apuntado, o N en abanico si la Forma es
+        /// MultiShot. La Trayectoria (auto-mira) y el Elemento van en el <see cref="WeaponShot"/>, así
+        /// que el haz los hereda igual que un proyectil. La carga escala alcance y duración.
+        /// </summary>
+        private static void EmitBeam(WeaponShot shot, in ShotContext ctx)
+        {
+            float baseAngle = Mathf.Atan2(ctx.Aim.y, ctx.Aim.x) * Mathf.Rad2Deg;
+
+            int count = Mathf.Max(1, shot.projectileCount);
+            float step = count > 1 ? shot.spreadAngle / (count - 1) : 0f;
+            float start = baseAngle - shot.spreadAngle * 0.5f;
+
+            for (int i = 0; i < count; i++)
+            {
+                float angle = count > 1 ? start + step * i : baseAngle;
+                ShotBeam.Spawn(shot, ctx, DirFromAngle(angle));
             }
         }
 

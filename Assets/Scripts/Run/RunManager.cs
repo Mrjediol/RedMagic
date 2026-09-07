@@ -117,7 +117,7 @@ namespace RedMagic.Run
                  "secciones y jefe) tras cada carga, para que el zoom sea idéntico y no pegue un " +
                  "salto al empezar o avanzar una run. Ajústalo aquí para buscar el encuadre óptimo.")]
         [Min(0.1f)]
-        [SerializeField] private float cameraOrthographicSize = 6.5f;
+        [SerializeField] private float cameraOrthographicSize = 8.5f;
 
         [Header("Suavizado de transiciones")]
         [Tooltip("Cada cuántas cargas de escena se hace la limpieza de assets no usados " +

@@ -68,6 +68,12 @@ namespace RedMagic.Gameplay
         private SoundEmitter _sound;
         private Collider2D[] _ownColliders;
 
+        /// <summary>Lo pone <see cref="Abilities.ProjectileFactory"/>: proyectil construido en código, va a su <c>Pool&lt;Projectile&gt;</c>.</summary>
+        internal bool PooledCode;
+
+        /// <summary>Lo pone <see cref="Abilities.ProjectileFactory"/>: proyectil con prefab, va a <see cref="Core.PrefabPool"/>.</summary>
+        internal bool PooledPrefab;
+
         private Vector2 _direction = Vector2.right;
         private Vector2 _velocity;
         private GameObject _owner;
@@ -81,6 +87,10 @@ namespace RedMagic.Gameplay
         /// <summary>Objetivos ya golpeados por este disparo (para que atravesar no golpee dos veces).</summary>
         private readonly System.Collections.Generic.HashSet<Health> _hitTargets =
             new System.Collections.Generic.HashSet<Health>();
+
+        // Capa 'Ground' del proyecto: el terreno pintado. Lo único que detiene un proyectil aparte
+        // de un objetivo con Health.
+        private const int GroundMask = 1 << 6;
 
         private static readonly Collider2D[] ImpactBuffer = new Collider2D[32];
 
@@ -278,7 +288,8 @@ namespace RedMagic.Gameplay
         private void HandleHit(Collider2D other)
         {
             if (_despawning || other == null) return;
-            if (((1 << other.gameObject.layer) & hitLayers) == 0) return;
+            // Se ignora todo lo que no esté en las capas de impacto ni sea terreno.
+            if (((1 << other.gameObject.layer) & (hitLayers | GroundMask)) == 0) return;
 
             // Ignorar a quien lo disparó y a los colliders propios.
             if (_owner != null && (other.gameObject == _owner || other.transform.IsChildOf(_owner.transform))) return;
@@ -292,27 +303,34 @@ namespace RedMagic.Gameplay
 
             var health = other.GetComponentInParent<Health>();
 
-            // Aliado o ya golpeado: se atraviesa sin gastar perforación ni terminar el disparo.
-            if (health != null && (!IsEnemyTarget(health) || _hitTargets.Contains(health))) return;
-
-            if (health != null && damage > 0f)
+            if (health != null)
             {
-                // El empujón sale del punto de impacto, así que empuja en el sentido en el que
-                // volaba el proyectil. Si los i-frames se comen el golpe, TakeDamage no empuja.
-                if (health.TakeDamage(damage, transform.position, knockbackMultiplier)) Lifesteal(damage);
-                _hitTargets.Add(health);
-                _sound?.Play("OnHit");
-            }
+                // Aliado o ya golpeado: se atraviesa sin gastar perforación ni terminar el disparo.
+                if (!IsEnemyTarget(health) || _hitTargets.Contains(health)) return;
 
-            // Perforación: sólo se gasta contra objetivos, nunca contra el escenario — una flecha
-            // que atraviesa enemigos no debería atravesar también las paredes.
-            if (health != null && _pierceLeft > 0)
-            {
-                _pierceLeft--;
+                if (damage > 0f)
+                {
+                    // El empujón sale del punto de impacto, así que empuja en el sentido en el que
+                    // volaba el proyectil. Si los i-frames se comen el golpe, TakeDamage no empuja.
+                    if (health.TakeDamage(damage, transform.position, knockbackMultiplier)) Lifesteal(damage);
+                    _hitTargets.Add(health);
+                    _sound?.Play("OnHit");
+                }
+
+                // Perforación: sólo se gasta contra objetivos, nunca contra el escenario.
+                if (_pierceLeft > 0)
+                {
+                    _pierceLeft--;
+                    return;
+                }
+
+                Despawn();
                 return;
             }
 
-            Despawn();
+            // Sin Health: sólo el terreno pintado (capa Ground) detiene el proyectil. Decoración y
+            // zonas de trigger se atraviesan.
+            if (((1 << other.gameObject.layer) & GroundMask) != 0) Despawn();
         }
 
         /// <summary>Apaga el proyectil para devolverlo al pool, sonando antes su OnDeath.</summary>
@@ -362,14 +380,42 @@ namespace RedMagic.Gameplay
         }
 
         /// <summary>
-        /// Devolución al pool. Por defecto sólo desactiva el objeto (o lo destruye si
-        /// <see cref="destroyWhenDone"/> está activo); sustitúyelo por la llamada a tu pool
-        /// real cuando lo tengas.
+        /// Devolución al pool según cómo se creó: <see cref="Abilities.ProjectileFactory"/> marca
+        /// <see cref="PooledCode"/> / <see cref="PooledPrefab"/>. Sin marca, respeta
+        /// <see cref="destroyWhenDone"/> (proyectil instanciado en caliente) o sólo desactiva.
         /// </summary>
         protected virtual void ReturnToPool()
         {
+            if (PooledCode) { Abilities.ProjectileFactory.ReleaseCodePooled(this); return; }
+            if (PooledPrefab) { Core.PrefabPool.Despawn(gameObject); return; }
             if (destroyWhenDone) Destroy(gameObject);
             else gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Reaplica lo que cambia por disparo en un proyectil construido en código y reutilizado
+        /// del pool: posición, sprite, tinte, tamaño, capa de ordenación y radio del collider.
+        /// </summary>
+        internal void ApplyCodeVisual(Vector3 origin, Vector2 worldSize, Sprite sprite, Color tint,
+                                      GameObject sortingReference)
+        {
+            transform.position = origin;
+            transform.rotation = Quaternion.identity;
+
+            var renderer = GetComponentInChildren<SpriteRenderer>();
+            if (renderer == null) return;
+
+            renderer.sprite = sprite != null ? sprite : Abilities.AbilityFx.DefaultSprite;
+            renderer.color = tint;
+            Abilities.AbilityFx.CopySorting(renderer, sortingReference);
+            Abilities.AbilityFx.Resize(renderer.transform, renderer, worldSize);
+
+            var circle = GetComponent<CircleCollider2D>();
+            if (circle != null && renderer.sprite != null)
+            {
+                var bounds = renderer.sprite.bounds.size;
+                circle.radius = Mathf.Max(bounds.x, bounds.y) * 0.5f;
+            }
         }
     }
 }

@@ -18,6 +18,10 @@ namespace RedMagic.Economy
     ///
     /// El escaparate se sortea una vez por tienda (con la semilla de la run, así que es
     /// reproducible) y se recuerda entre aperturas: lo comprado no vuelve a aparecer.
+    ///
+    /// Los artículos son items reales del sistema de builds (<see cref="RedMagic.Items.ItemLibrary"/>):
+    /// 1 de Elemento + 1 de Trayectoria + 1 de Forma + varios de pool libre. Comprar equipa el item
+    /// en el <see cref="RedMagic.Items.WeaponLoadout"/> — de eso se encarga el menú de tienda.
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     [DisallowMultipleComponent]
@@ -40,13 +44,13 @@ namespace RedMagic.Economy
         [Header("Sonido")]
         [SerializeField] private string openSfxId = "SFX_ButtonClick";
 
-        private readonly List<ShopConfig.Item> _stock = new();
+        private readonly List<ShopStockEntry> _stock = new();
         private ShopConfig _config;
         private bool _rolled;
         private bool _playerInRange;
 
         /// <summary>Artículos que quedan por comprar en esta tienda.</summary>
-        public IReadOnlyList<ShopConfig.Item> Stock
+        public IReadOnlyList<ShopStockEntry> Stock
         {
             get
             {
@@ -120,9 +124,9 @@ namespace RedMagic.Economy
         }
 
         /// <summary>Quita el artículo del escaparate tras comprarlo (sólo se puede comprar una vez).</summary>
-        public void MarkSold(ShopConfig.Item item)
+        public void MarkSold(ShopStockEntry entry)
         {
-            if (item != null) _stock.Remove(item);
+            if (entry != null) _stock.Remove(entry);
         }
 
         // El escaparate se sortea una sola vez, con la semilla de la run + la posición de la
@@ -143,7 +147,8 @@ namespace RedMagic.Economy
             int seed = RunManager.Instance != null ? RunManager.Instance.RunSeed : Environment.TickCount;
             seed ^= Mathf.RoundToInt(transform.position.x * 73856093f);
 
-            _stock.AddRange(_config.RollStock(seed));
+            foreach (var entry in _config.RollStock(seed))
+                if (entry != null && entry.Item != null) _stock.Add(entry);
         }
 
         private void OnTriggerEnter2D(Collider2D other)

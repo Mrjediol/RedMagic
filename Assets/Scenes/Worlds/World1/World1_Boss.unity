@@ -336,6 +336,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &723783514
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3040206363054208600, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040206363054208600, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.59
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040206363054208600, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040206363054208600, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040206363054208600, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040206363054208600, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040206363054208600, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040206363054208600, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040206363054208600, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3040206363054208600, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4186240346871813401, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
+      propertyPath: m_Name
+      value: Boss_ArbolAncestral
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6264b6008856ca441ad3296b08b258a1, type: 3}
 --- !u!1 &913391276
 GameObject:
   m_ObjectHideFlags: 0
@@ -647,6 +704,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Run.SectionExit
   playerTag: Player
   oneShot: 1
+  requireEnemiesDead: 1
 --- !u!61 &1411193613
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -742,7 +800,10 @@ MonoBehaviour:
   fallbackTargetTag: Player
   offset: {x: 1.5, y: 0.8}
   smoothTime: 0.18
-  followVertical: 0
+  verticalSmoothTime: 0.08
+  followVertical: 1
+  verticalLookAhead: 0.4
+  maxVerticalLookAhead: 4.5
   useBounds: 0
   minBounds: {x: -20, y: -5}
   maxBounds: {x: 20, y: 10}
@@ -781,7 +842,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 8.5
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -824,3 +885,4 @@ SceneRoots:
   - {fileID: 1047002001}
   - {fileID: 455296344}
   - {fileID: 1411193614}
+  - {fileID: 723783514}

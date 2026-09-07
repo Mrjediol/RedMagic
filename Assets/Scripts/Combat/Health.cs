@@ -63,6 +63,14 @@ namespace RedMagic.Combat
         /// <summary>Cantidad de daño efectivamente recibido.</summary>
         public event Action<float> Damaged;
 
+        /// <summary>
+        /// Versión global de <see cref="Damaged"/>: <c>(quién lo recibe, cuánto)</c> para
+        /// <b>cualquier</b> <see cref="Health"/>. Un oyente único (números de daño flotantes, feed
+        /// de combate…) se suscribe una sola vez y cubre a todos los personajes sin escanear la
+        /// escena ni enganchar cada instancia. Se dispara junto a <see cref="Damaged"/>.
+        /// </summary>
+        public static event Action<Health, float> AnyDamaged;
+
         /// <summary>Se dispara una sola vez, al llegar la vida a 0.</summary>
         public event Action Died;
 
@@ -138,6 +146,7 @@ namespace RedMagic.Combat
             }
 
             Damaged?.Invoke(amount);
+            AnyDamaged?.Invoke(this, amount);
             HealthChanged?.Invoke(currentHealth, maxHealth);
             PlaySfx(hurtSfxId);
 

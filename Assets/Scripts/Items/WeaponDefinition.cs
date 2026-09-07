@@ -21,9 +21,19 @@ namespace RedMagic.Items
         [Tooltip("Cómo entrega el daño el arma base.")]
         public ShotDelivery delivery = ShotDelivery.Projectile;
 
-        [Tooltip("Proyectiles/golpes que lanza un disparo base (normalmente 1).")]
+        [Tooltip("Proyectiles/golpes que lanza un disparo base (normalmente 1). >1 = abanico tipo escopeta.")]
         [Min(1)]
         public int count = 1;
+
+        [Tooltip("Abanico total en grados repartido entre los proyectiles del disparo base. " +
+                 "Sólo hace algo con count > 1.")]
+        [Min(0f)]
+        public float spreadAngle;
+
+        [Tooltip("Dispersión aleatoria en grados aplicada a cada proyectil (±mitad). Da 'temblor' a " +
+                 "una ráfaga sin depender de la Forma.")]
+        [Min(0f)]
+        public float randomSpread;
 
         [Header("Projectile / Hitscan")]
         [Min(0f)]
@@ -39,6 +49,32 @@ namespace RedMagic.Items
         [Tooltip("Salida del disparo respecto al arma. La X se invierte según hacia dónde mira.")]
         public Vector2 muzzleOffset = new Vector2(0.6f, 0.1f);
 
+        [Tooltip("Enemigos que atraviesa antes de desaparecer. 0 = muere en el primer impacto.")]
+        [Min(0)]
+        public int pierce;
+
+        [Tooltip("Caída en unidades/s². >0 = trayectoria parabólica tipo granada.")]
+        [Min(0f)]
+        public float arcGravity;
+
+        [Header("Ráfaga base")]
+        [Tooltip("Veces que se repite el volley al pulsar disparo una vez. 1 = disparo único.")]
+        [Min(1)]
+        public int burstCount = 1;
+
+        [Tooltip("Segundos entre repeticiones de la ráfaga.")]
+        [Min(0.02f)]
+        public float burstInterval = 0.09f;
+
+        [Header("Explosión al terminar")]
+        [Tooltip("Radio de la explosión al impactar o agotar la vida. 0 = sin explosión.")]
+        [Min(0f)]
+        public float impactRadius;
+
+        [Tooltip("Daño de la explosión (además del impacto directo). Sólo cuenta si el radio es > 0.")]
+        [Min(0f)]
+        public float impactDamage;
+
         [Header("Melee")]
         [Min(0f)]
         public float meleeRange = 1.2f;
@@ -46,6 +82,38 @@ namespace RedMagic.Items
         [Tooltip("Ángulo del arco de golpe en grados.")]
         [Min(0f)]
         public float meleeArc = 90f;
+
+        [Header("Carga (mantener para disparar)")]
+        [Tooltip("Segundos de mantener el botón hasta plena carga. 0 = dispara al pulsar " +
+                 "(comportamiento de todas las armas normales).")]
+        [Min(0f)]
+        public float chargeTime;
+
+        [Tooltip("Fracción mínima de carga para que salga un disparo al soltar. Por debajo = se " +
+                 "cancela sin gastar cooldown.")]
+        [Range(0f, 1f)]
+        public float minChargeToFire = 0.2f;
+
+        [Tooltip("Daño (respecto al base) a la carga mínima; sube linealmente hasta ×1 a plena carga.")]
+        [Range(0f, 1f)]
+        public float minChargeDamage = 0.35f;
+
+        [Header("Haz (ShotDelivery.Hitscan)")]
+        [Tooltip("Segundos que el haz barre tras dispararse. Escala con la carga.")]
+        [Min(0.05f)]
+        public float beamDuration = 0.5f;
+
+        [Tooltip("Segundos entre ticks de daño del haz.")]
+        [Min(0.02f)]
+        public float beamTickInterval = 0.06f;
+
+        [Tooltip("Alcance del haz en unidades. Escala con la carga.")]
+        [Min(0.5f)]
+        public float beamLength = 14f;
+
+        [Tooltip("Grosor del haz en unidades.")]
+        [Min(0.05f)]
+        public float beamWidth = 0.5f;
     }
 
     /// <summary>

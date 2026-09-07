@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Economy;
+using RedMagic.Items;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -12,6 +13,15 @@ namespace RedMagic.UI
     /// Escaparate de la tienda de mitad de run. Enseña los artículos que le quedan a un
     /// <see cref="ShopInteractable"/> concreto; se pagan con <b>oro</b> y cada uno se puede comprar
     /// una vez: al comprarlo desaparece de la lista.
+    ///
+    /// <b>Comprar equipa.</b> El item entra en el <see cref="WeaponLoadout"/> de la run siguiendo la
+    /// lógica del <see cref="WeaponInventory"/>:
+    /// <list type="bullet">
+    /// <item>Elemento / Trayectoria / Forma: van a su slot dedicado; si ya había uno, lo sustituyen
+    /// ("último equipado gana").</item>
+    /// <item>Item de pool libre: entra en el primer slot libre vacío. Si los 6 están llenos, se
+    /// abre un selector para que el jugador elija <b>cuál sustituir</b> antes de cobrar.</item>
+    /// </list>
     ///
     /// Mismo montaje que <see cref="UpgradeMenuController"/>: se auto-crea, es persistente,
     /// construye su UI en código y saca el <see cref="PanelSettings"/> de Resources. Mientras está
@@ -29,6 +39,13 @@ namespace RedMagic.UI
         private Label _goldLabel;
         private VisualElement _itemRow;
         private Label _emptyLabel;
+
+        private VisualElement _replaceOverlay;
+        private VisualElement _replaceRow;
+        private Label _replaceHeading;
+        private FreePoolItemDefinition _pendingIncoming;
+        private ShopStockEntry _pendingEntry;
+
         private ShopInteractable _shop;
         private bool _open;
         private bool _built;
@@ -73,16 +90,18 @@ namespace RedMagic.UI
             if (!_open) return;
 
             var keyboard = Keyboard.current;
-            if (keyboard != null && (keyboard.escapeKey.wasPressedThisFrame ||
-                                     keyboard.eKey.wasPressedThisFrame))
-            {
-                Close();
-                return;
-            }
-
+            bool cancel = keyboard != null && (keyboard.escapeKey.wasPressedThisFrame ||
+                                               keyboard.eKey.wasPressedThisFrame);
             var gamepad = Gamepad.current;
-            if (gamepad != null && (gamepad.buttonEast.wasPressedThisFrame ||
-                                    gamepad.startButton.wasPressedThisFrame))
+            cancel |= gamepad != null && (gamepad.buttonEast.wasPressedThisFrame ||
+                                          gamepad.startButton.wasPressedThisFrame);
+
+            if (!cancel) return;
+
+            // El selector de "cuál sustituir" se cierra primero y deja la tienda abierta.
+            if (_replaceOverlay != null && _replaceOverlay.style.display == DisplayStyle.Flex)
+                CloseReplacePicker();
+            else
                 Close();
         }
 
@@ -114,6 +133,7 @@ namespace RedMagic.UI
             _open = false;
             _shop = null;
 
+            CloseReplacePicker();
             _overlay.style.display = DisplayStyle.None;
 
             if (CurrencyManager.Instance != null) CurrencyManager.Instance.Changed -= OnCurrencyChanged;
@@ -168,6 +188,7 @@ namespace RedMagic.UI
 
             _itemRow = new VisualElement();
             _itemRow.style.flexDirection = FlexDirection.Row;
+            _itemRow.style.flexWrap = Wrap.Wrap;
             _itemRow.style.justifyContent = Justify.Center;
             panel.Add(_itemRow);
 
@@ -181,7 +202,46 @@ namespace RedMagic.UI
             panel.Add(_emptyLabel);
 
             panel.Add(MenuStyle.Hint("Esc / E / B to close"));
+
+            BuildReplaceOverlay(root);
         }
+
+        private void BuildReplaceOverlay(VisualElement root)
+        {
+            _replaceOverlay = new VisualElement { name = "shop-replace-overlay" };
+            MenuStyle.FillParent(_replaceOverlay);
+            _replaceOverlay.style.backgroundColor = MenuStyle.Backdrop;
+            _replaceOverlay.style.alignItems = Align.Center;
+            _replaceOverlay.style.justifyContent = Justify.Center;
+            _replaceOverlay.style.display = DisplayStyle.None;
+            root.Add(_replaceOverlay);
+
+            var panel = MenuStyle.Panel();
+            _replaceOverlay.Add(panel);
+
+            var header = MenuStyle.Header();
+            panel.Add(header);
+            header.Add(MenuStyle.Title("REPLACE"));
+            header.Add(MenuStyle.CloseButton(CloseReplacePicker));
+
+            _replaceHeading = new Label();
+            _replaceHeading.style.fontSize = MenuStyle.BodyFontSize;
+            _replaceHeading.style.color = MenuStyle.Cream;
+            _replaceHeading.style.unityTextAlign = TextAnchor.MiddleCenter;
+            _replaceHeading.style.whiteSpace = WhiteSpace.Normal;
+            _replaceHeading.style.marginBottom = 14;
+            panel.Add(_replaceHeading);
+
+            _replaceRow = new VisualElement();
+            _replaceRow.style.flexDirection = FlexDirection.Row;
+            _replaceRow.style.flexWrap = Wrap.Wrap;
+            _replaceRow.style.justifyContent = Justify.Center;
+            panel.Add(_replaceRow);
+
+            panel.Add(MenuStyle.Hint("Elige el item que se descarta · Esc para cancelar"));
+        }
+
+        // ------------------------------------------------------------------ escaparate
 
         private void RebuildItems()
         {
@@ -200,50 +260,193 @@ namespace RedMagic.UI
             if (empty) return;
 
             // Se copia la lista: comprar muta el stock de la tienda y no se puede iterar sobre él.
-            foreach (var item in new List<ShopConfig.Item>(stock))
-                _itemRow.Add(BuildCard(item, gold));
+            foreach (var entry in new List<ShopStockEntry>(stock))
+                _itemRow.Add(BuildCard(entry, gold));
         }
 
-        private VisualElement BuildCard(ShopConfig.Item item, int gold)
+        private VisualElement BuildCard(ShopStockEntry entry, int gold)
         {
-            bool affordable = gold >= item.cost;
+            var item = entry.Item;
+            bool affordable = gold >= entry.Cost;
 
-            var card = new Button(() => Buy(item));
+            var card = new Button(() => Buy(entry));
             MenuStyle.Card(card);
             card.style.backgroundColor = affordable ? MenuStyle.CellBuyable : MenuStyle.CellBg;
             card.SetEnabled(affordable);
             card.RegisterCallback<PointerEnterEvent>(_ => AudioManager.Instance?.PlaySFX("SFX_ButtonHover"));
 
-            if (item.icon != null)
+            if (item.Icon != null)
             {
-                var icon = new Image { sprite = item.icon, scaleMode = ScaleMode.ScaleToFit };
-                icon.style.width = 64;
-                icon.style.height = 64;
+                var icon = new Image { sprite = item.Icon, scaleMode = ScaleMode.ScaleToFit };
+                icon.style.width = 56;
+                icon.style.height = 56;
                 card.Add(icon);
             }
 
-            card.Add(MenuStyle.CardTitle(item.title));
-            card.Add(MenuStyle.CardDescription(item.description));
+            var slot = new Label(SlotLabel(item));
+            slot.style.fontSize = MenuStyle.HintFontSize;
+            slot.style.color = new Color(item.Accent.r, item.Accent.g, item.Accent.b, 0.9f);
+            slot.style.unityFontStyleAndWeight = FontStyle.Bold;
+            card.Add(slot);
 
-            var price = MenuStyle.CardFooter($"{item.cost} G");
+            card.Add(MenuStyle.CardTitle(item.DisplayName));
+            card.Add(MenuStyle.CardDescription(TagsText(item)));
+
+            var replaces = ReplaceHint(item);
+            if (!string.IsNullOrEmpty(replaces))
+            {
+                var note = MenuStyle.CardDescription(replaces);
+                note.style.color = new Color(MenuStyle.Cream.r, MenuStyle.Cream.g, MenuStyle.Cream.b, 0.55f);
+                card.Add(note);
+            }
+
+            var price = MenuStyle.CardFooter($"{entry.Cost} G");
             price.style.color = affordable ? MenuStyle.CostAfford : MenuStyle.CostTooDear;
             card.Add(price);
 
             return card;
         }
 
-        private void Buy(ShopConfig.Item item)
+        // ------------------------------------------------------------------ compra + equipar
+
+        private void Buy(ShopStockEntry entry)
         {
-            if (_shop == null || item == null) return;
+            if (_shop == null || entry == null || entry.Item == null) return;
+
+            var loadout = WeaponLoadout.Instance;
+            if (loadout == null)
+            {
+                Debug.LogWarning("[ShopMenu] No hay WeaponLoadout: no se puede equipar lo comprado.", this);
+                return;
+            }
+
+            var inventory = loadout.Inventory;
+
+            // Pool libre con los 6 slots llenos: el jugador elige cuál descarta antes de cobrar.
+            if (entry.Item is FreePoolItemDefinition free && inventory.FreeSlotsFull)
+            {
+                OpenReplacePicker(free, entry);
+                return;
+            }
 
             var wallet = CurrencyManager.Instance;
-            if (wallet == null || !wallet.TrySpend(Currency.Gold, item.cost)) return;
+            if (wallet == null || !wallet.TrySpend(Currency.Gold, entry.Cost)) return;
 
-            // Comprado = fuera del escaparate. TrySpend ya dispara Changed, que repinta, pero se
-            // llama explícito por si el precio era 0.
-            _shop.MarkSold(item);
+            // TryEquip reparte por tipo: modificador → su slot dedicado (sustituye al anterior),
+            // item de pool → primer slot libre vacío.
+            inventory.TryEquip(entry.Item);
+
+            _shop.MarkSold(entry);
             AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
             RebuildItems();
+        }
+
+        private void OpenReplacePicker(FreePoolItemDefinition incoming, ShopStockEntry entry)
+        {
+            _pendingIncoming = incoming;
+            _pendingEntry = entry;
+
+            _replaceHeading.text = $"Los 6 slots libres están llenos. ¿Qué descartas por " +
+                                   $"\"{incoming.DisplayName}\"?  ({entry.Cost} G)";
+
+            _replaceRow.Clear();
+            var inventory = WeaponLoadout.Instance.Inventory;
+
+            for (int i = 0; i < WeaponInventory.FreeSlotCount; i++)
+            {
+                int index = i;
+                var current = inventory.GetFree(index);
+
+                var card = new Button(() => ConfirmReplace(index));
+                MenuStyle.Card(card);
+                card.style.backgroundColor = MenuStyle.CellBg;
+                card.RegisterCallback<PointerEnterEvent>(_ => AudioManager.Instance?.PlaySFX("SFX_ButtonHover"));
+
+                card.Add(MenuStyle.CardTitle($"Slot {index + 1}"));
+                if (current != null)
+                {
+                    card.Add(MenuStyle.CardDescription(current.DisplayName));
+                    card.Add(MenuStyle.CardDescription(TagsText(current)));
+                }
+                else
+                {
+                    card.Add(MenuStyle.CardDescription("(vacío)"));
+                }
+
+                _replaceRow.Add(card);
+            }
+
+            _replaceOverlay.style.display = DisplayStyle.Flex;
+        }
+
+        private void ConfirmReplace(int slotIndex)
+        {
+            var loadout = WeaponLoadout.Instance;
+            var wallet = CurrencyManager.Instance;
+
+            if (loadout == null || wallet == null || _pendingIncoming == null || _pendingEntry == null)
+            {
+                CloseReplacePicker();
+                return;
+            }
+
+            if (!wallet.TrySpend(Currency.Gold, _pendingEntry.Cost))
+            {
+                CloseReplacePicker();
+                return;
+            }
+
+            loadout.Inventory.EquipFree(slotIndex, _pendingIncoming);
+            _shop?.MarkSold(_pendingEntry);
+            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+
+            CloseReplacePicker();
+            RebuildItems();
+        }
+
+        private void CloseReplacePicker()
+        {
+            _pendingIncoming = null;
+            _pendingEntry = null;
+            if (_replaceOverlay != null) _replaceOverlay.style.display = DisplayStyle.None;
+        }
+
+        // ------------------------------------------------------------------ texto
+
+        private static string SlotLabel(ItemDefinition item) => item switch
+        {
+            ElementModifier => "ELEMENTO",
+            TrajectoryModifier => "TRAYECTORIA",
+            ShapeModifier => "FORMA",
+            _ => "POOL LIBRE",
+        };
+
+        private static string TagsText(ItemDefinition item)
+        {
+            var tags = item.Tags;
+            if (tags.Count == 0) return "—";
+
+            var parts = new List<string>(tags.Count);
+            for (int i = 0; i < tags.Count; i++) parts.Add(BuildTags.DisplayName(tags[i]));
+            return string.Join(" · ", parts);
+        }
+
+        /// <summary>Qué sustituye este item si su slot dedicado ya está ocupado (nota en la carta).</summary>
+        private static string ReplaceHint(ItemDefinition item)
+        {
+            var loadout = WeaponLoadout.Instance;
+            if (loadout == null) return null;
+            var inv = loadout.Inventory;
+
+            ItemDefinition occupied = item switch
+            {
+                ElementModifier when inv.Element != null => inv.Element,
+                TrajectoryModifier when inv.Trajectory != null => inv.Trajectory,
+                ShapeModifier when inv.Shape != null => inv.Shape,
+                _ => null,
+            };
+
+            return occupied != null ? $"reemplaza {occupied.DisplayName}" : null;
         }
     }
 }

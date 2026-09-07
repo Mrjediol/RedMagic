@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca7e4e726982a714f8b0f3d8944d404b, type: 3}
+  m_Name: Weapon_BolaDeFuego
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponDefinition
+  displayName: Bola de Fuego
+  description: "El arma base: un proyectil recto, r\xE1pido y fiable. Sin sorpresas,
+    sin puntos ciegos. Nace ardiendo."
+  icon: {fileID: 0}
+  accent: {r: 1, g: 0.55, b: 0.15, a: 1}
+  baseDamage: 22
+  baseCooldown: 0.5
+  baseKnockbackMultiplier: 1
+  baseShot:
+    delivery: 0
+    count: 1
+    spreadAngle: 0
+    randomSpread: 0
+    speed: 14
+    lifetime: 2.5
+    size: {x: 0.4, y: 0.4}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    arcGravity: 0
+    burstCount: 1
+    burstInterval: 0.09
+    impactRadius: 0
+    impactDamage: 0
+    meleeRange: 1.2
+    meleeArc: 90
+  innateElement: 2
+  universalTag: 101

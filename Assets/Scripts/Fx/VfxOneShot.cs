@@ -4,7 +4,8 @@ namespace RedMagic.Fx
 {
     /// <summary>
     /// Efecto visual de un solo uso (polvo de dash, estela del doble salto, explosión…).
-    /// Se instancia, reproduce su animación y se destruye solo.
+    /// Va <b>pooled</b> por prefab (<see cref="Core.PrefabPool"/>): se saca, reproduce su animación
+    /// y vuelve al pool — nunca <c>Instantiate</c>/<c>Destroy</c>.
     ///
     /// El prefab lleva un SpriteRenderer y, si el efecto tiene varios frames, un Animator con el
     /// clip correspondiente. La duración sale de <see cref="lifetime"/>, o del propio clip si se
@@ -47,11 +48,11 @@ namespace RedMagic.Fx
         private void Update()
         {
             _timer -= unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
-            if (_timer <= 0f) Destroy(gameObject);
+            if (_timer <= 0f) Core.PrefabPool.Despawn(gameObject);
         }
 
         /// <summary>
-        /// Instancia el prefab en <paramref name="position"/>, orientado según
+        /// Saca el efecto del pool en <paramref name="position"/>, orientado según
         /// <paramref name="facing"/> (-1 mira a la izquierda). Devuelve null si no hay prefab,
         /// así que se puede llamar sin comprobar nada.
         /// </summary>
@@ -59,9 +60,11 @@ namespace RedMagic.Fx
         {
             if (prefab == null) return null;
 
-            var instance = Instantiate(prefab, position, Quaternion.identity, parent);
+            var instance = Core.PrefabPool.Spawn(prefab, position, Quaternion.identity, parent);
+            if (instance == null) return null;
 
-            var scale = instance.transform.localScale;
+            // El pool reutiliza instancias cuya escala quedó volteada: se parte de la del prefab.
+            var scale = prefab.transform.localScale;
             scale.x = Mathf.Abs(scale.x) * (facing < 0 ? -1f : 1f);
             instance.transform.localScale = scale;
 

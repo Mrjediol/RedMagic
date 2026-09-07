@@ -31,6 +31,9 @@ namespace RedMagic.Gameplay
         }
 
         [Header("Comportamiento")]
+        [Tooltip("Si vuela: se mueve libre por el aire (sin gravedad, ignora precipicios) y " +
+                 "persigue al objetivo también en vertical. Si no: sólo camina por el suelo.")]
+        [SerializeField] private bool canFly;
         [Tooltip("Qué hace mientras NO ve al jugador: quedarse quieto (emboscada) o patrullar.")]
         [SerializeField] private Behaviour behaviour = Behaviour.Patrol;
         [SerializeField] private float patrolSpeed = 2f;
@@ -93,6 +96,9 @@ namespace RedMagic.Gameplay
         /// <summary>True mientras está persiguiendo al objetivo (lo usan animadores y gizmos).</summary>
         public bool IsChasing => _chasing;
 
+        /// <summary>True si el enemigo vuela (se mueve libre por el aire, sin gravedad).</summary>
+        public bool CanFly => canFly;
+
         /// <summary>Segundos entre reintentos de buscar al objetivo cuando no se ha encontrado.</summary>
         private const float RetargetInterval = 0.5f;
 
@@ -112,6 +118,8 @@ namespace RedMagic.Gameplay
             _knockback = GetComponent<Knockback>();
 
             _body.freezeRotation = true;
+            // Un enemigo volador flota: sin gravedad, y sostiene su altura él mismo.
+            if (canFly) _body.gravityScale = 0f;
             _origin = transform.position;
             _direction = startMovingRight ? 1 : -1;
         }
@@ -189,16 +197,18 @@ namespace RedMagic.Gameplay
 
             Vector2 toTarget = (Vector2)target.position - (Vector2)transform.position;
 
-            // Fuera del alcance vertical no se le "ve": está en otra plataforma y perseguirlo sólo
-            // haría que el enemigo se quedase pegado a una pared debajo de él.
-            if (Mathf.Abs(toTarget.y) > verticalTolerance)
+            // Un enemigo de suelo que ve al objetivo fuera de su alcance vertical no le "ve": está
+            // en otra plataforma y perseguirlo sólo lo pegaría a una pared debajo de él. Un volador
+            // sí puede subir, así que para él la tolerancia vertical no aplica.
+            if (!canFly && Mathf.Abs(toTarget.y) > verticalTolerance)
             {
                 _chasing = false;
                 return false;
             }
 
-            // Histéresis: engancha con detectionRadius y no suelta hasta loseSightRadius.
-            float distance = Mathf.Abs(toTarget.x);
+            // Histéresis: engancha con detectionRadius y no suelta hasta loseSightRadius. El de
+            // suelo mide sólo la distancia horizontal; el volador, la distancia real.
+            float distance = canFly ? toTarget.magnitude : Mathf.Abs(toTarget.x);
             float threshold = _chasing ? Mathf.Max(loseSightRadius, detectionRadius) : detectionRadius;
             _chasing = distance <= threshold;
 
@@ -207,12 +217,21 @@ namespace RedMagic.Gameplay
             _direction = toTarget.x >= 0f ? 1 : -1;
             if (_sprite != null) _sprite.flipX = _direction < 0;
 
-            // Con el objetivo ya al alcance del morro, el sondeo de borde se ignora: el jugador
-            // está justo delante, así que hay suelo donde pisar, y un empujón entre cuerpos no
-            // debe leerse como precipicio y dejar al enemigo clavado a medio combate.
             float reach = (_collider != null ? _collider.bounds.extents.x : 0.3f) + 0.6f;
             bool withinReach = distance <= reach;
 
+            if (canFly)
+            {
+                // Vuela directo hacia el objetivo en línea recta; al alcance del morro, se queda
+                // flotando encima en vez de empujarlo sin parar.
+                if (withinReach) Stop();
+                else MoveTowards(toTarget.normalized, chaseSpeed);
+                return true;
+            }
+
+            // Con el objetivo ya al alcance del morro, el sondeo de borde se ignora: el jugador
+            // está justo delante, así que hay suelo donde pisar, y un empujón entre cuerpos no
+            // debe leerse como precipicio y dejar al enemigo clavado a medio combate.
             if (!withinReach && !CanAdvance(_direction)) Stop();
             else Move(chaseSpeed);
 
@@ -276,7 +295,15 @@ namespace RedMagic.Gameplay
         {
             var velocity = _body.linearVelocity;
             velocity.x = _direction * speed;
+            // Un volador no tiene gravedad que lo baje: mantiene su altura anulando la deriva.
+            if (canFly) velocity.y = 0f;
             _body.linearVelocity = velocity;
+        }
+
+        /// <summary>Mueve en cualquier dirección (sólo lo usa el enemigo volador al perseguir).</summary>
+        private void MoveTowards(Vector2 direction, float speed)
+        {
+            _body.linearVelocity = direction * speed;
         }
 
         /// <summary>
@@ -292,7 +319,8 @@ namespace RedMagic.Gameplay
         /// </summary>
         private bool CanAdvance(int direction)
         {
-            if (!stopAtLedges || _collider == null) return true;
+            // Un volador no se cae por un precipicio; el sondeo de suelo no le aplica.
+            if (canFly || !stopAtLedges || _collider == null) return true;
 
             var bounds = _collider.bounds;
             var origin = new Vector2(
@@ -318,6 +346,8 @@ namespace RedMagic.Gameplay
         {
             var velocity = _body.linearVelocity;
             velocity.x = 0f;
+            // El volador se queda flotando quieto; el de suelo conserva su caída/gravedad.
+            if (canFly) velocity.y = 0f;
             _body.linearVelocity = velocity;
         }
 

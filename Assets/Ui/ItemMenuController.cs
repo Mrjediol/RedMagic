@@ -574,10 +574,13 @@ namespace RedMagic.UI
                 _description.Add(Paragraph(weapon.Description));
 
             var shot = weapon.Shot;
+            string charge = shot.chargeTime > 0f
+                ? $"\nCarga: mantener {shot.chargeTime:0.00}s (mín. {shot.minChargeToFire * 100f:0}% para disparar)"
+                : "";
             _description.Add(Paragraph(
                 $"Daño base {weapon.BaseDamage:0} · cadencia {weapon.BaseCooldown:0.00}s\n" +
                 $"Disparo base: {shot.delivery}, {shot.speed:0} u/s, vida {shot.lifetime:0.0}s\n" +
-                $"Elemento innato: {BuildTags.DisplayName(weapon.InnateElement)}"));
+                $"Elemento innato: {BuildTags.DisplayName(weapon.InnateElement)}" + charge));
 
             var resolved = _loadout != null ? ShotResolver.Resolve(_loadout.Inventory) : null;
             if (resolved != null)
@@ -591,13 +594,25 @@ namespace RedMagic.UI
 
         private static string DescribeShot(WeaponShot shot)
         {
-            string trajectory = shot.homingTurnRate > 0f ? "auto-mira" : "recto";
-            string shape = shot.splitCount > 0 ? $"división en {shot.splitCount}"
+            string trajectory = shot.homingTurnRate > 0f ? "auto-mira"
+                : shot.arcGravity > 0f ? "parábola" : "recto";
+            bool beam = shot.delivery == ShotDelivery.Hitscan;
+            string shape = beam
+                ? (shot.projectileCount > 1 ? $"{shot.projectileCount} haces" : "haz")
+                : shot.splitCount > 0 ? $"división en {shot.splitCount}"
                 : shot.projectileCount > 1 ? $"{shot.projectileCount} en abanico"
                 : "1 proyectil";
             string element = shot.element != ElementId.None
                 ? BuildTags.DisplayName(shot.element) : "físico";
-            return $"{trajectory} · {shape} · {element}";
+
+            string extra = "";
+            if (beam) extra += $" · barre {shot.beamDuration:0.00}s, alcance {shot.beamLength:0}";
+            if (shot.burstCount > 1) extra += $" · ráfaga ×{shot.burstCount}";
+            if (shot.pierce > 0) extra += $" · perfora {shot.pierce}";
+            if (shot.impactRadius > 0f && shot.impactDamage > 0f)
+                extra += $" · explota ({shot.impactDamage:0} en {shot.impactRadius:0.0})";
+
+            return $"{trajectory} · {shape} · {element}{extra}";
         }
 
         // ------------------------------------------------------------------ resaltado de sinergias

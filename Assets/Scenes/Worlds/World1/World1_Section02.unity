@@ -441,6 +441,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Run.SectionExit
   playerTag: Player
   oneShot: 1
+  requireEnemiesDead: 1
 --- !u!61 &1142923845
 BoxCollider2D:
   m_ObjectHideFlags: 0

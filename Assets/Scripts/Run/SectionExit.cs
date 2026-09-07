@@ -22,7 +22,16 @@ namespace RedMagic.Run
                  "jugador entra y sale del trigger durante la transición).")]
         [SerializeField] private bool oneShot = true;
 
+        [Tooltip("La salida no se abre hasta que no queda ningún enemigo vivo en la sección " +
+                 "(lo decide SectionClearTracker). Desactívalo para una sección de tránsito.")]
+        [SerializeField] private bool requireEnemiesDead = true;
+
         private bool _used;
+
+        /// <summary>True si la salida está esperando a que el jugador limpie la sección.</summary>
+        public bool BlockedByEnemies =>
+            requireEnemiesDead && SectionClearTracker.Instance != null &&
+            !SectionClearTracker.Instance.IsCleared;
 
         private void Reset()
         {
@@ -32,10 +41,17 @@ namespace RedMagic.Run
 
         private void OnEnable() => _used = false;
 
-        private void OnTriggerEnter2D(Collider2D other)
+        private void OnTriggerEnter2D(Collider2D other) => TryUse(other);
+
+        // También en Stay: si el jugador ya estaba dentro del trigger cuando cayó el último
+        // enemigo, Enter no vuelve a dispararse y se quedaría encerrado en la sección.
+        private void OnTriggerStay2D(Collider2D other) => TryUse(other);
+
+        private void TryUse(Collider2D other)
         {
             if (_used && oneShot) return;
             if (!other.CompareTag(playerTag)) return;
+            if (BlockedByEnemies) return;
 
             if (RunManager.Instance == null)
             {

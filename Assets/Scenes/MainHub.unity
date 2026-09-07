@@ -2807,6 +2807,53 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ed925410cd097664ea4b9e3e758f02a4, type: 3}
+--- !u!1 &1520134341
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1520134343}
+  - component: {fileID: 1520134342}
+  m_Layer: 0
+  m_Name: SectionClearTracker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1520134342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1520134341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc7a506f49a0c36439ba5fe4f71634dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Run.SectionClearTracker
+  clearEffectPrefab: {fileID: 1085088545867549799, guid: e0ab161e73a143f4ca886a264fbb5c62, type: 3}
+  clearEffectScale: 2
+  clearSfxId: SFX_Fireball
+--- !u!4 &1520134343
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1520134341}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1530855029 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3564026850829729314, guid: 41d4294f662241e458641e7328f39628, type: 3}
@@ -3286,6 +3333,8 @@ MonoBehaviour:
   deathReturnDelay: 1.5
   debugSeed: 0
   hubMusicId: MainHub
+  shopPrefab: {fileID: 3199234433168532602, guid: 0e30d468d4d91eb41a4f2d06c3e36df6, type: 3}
+  shopDistanceBeforeExit: 5
   cameraOrthographicSize: 6.5
   assetCleanupEveryNScenes: 1
   postLoadSettleFrames: 2
@@ -28427,3 +28476,4 @@ SceneRoots:
   - {fileID: 1660014786}
   - {fileID: 920616442}
   - {fileID: 1417426019}
+  - {fileID: 1520134343}

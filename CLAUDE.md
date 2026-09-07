@@ -102,6 +102,18 @@ to pick up the change.
   than `Health` knowing anything about runs.
 - **`TombInteractable`** — placed in the hub, references a `WorldDefinition` asset directly (not an
   index/name) so reordering `RunManager.worlds` can't desync a tomb from its world.
+- **`SectionClearTracker`** — `DontDestroyOnLoad` singleton placed in MainHub (with an
+  `AfterSceneLoad` fallback). On every scene load it subscribes to every `Health` **inside that
+  scene** — the run player is `DontDestroyOnLoad` so it is excluded for free — and exposes
+  `IsCleared` / `RemainingEnemies` / `Cleared`. This is the "kill everything first" gate:
+  `SectionExit` (`requireEnemiesDead`) and `ShopInteractable` both refuse to work while enemies
+  live. When the last one dies it plays `clearSfxId` and spawns `clearEffectPrefab` (the fireball's
+  `VFX_Explosion`) at every `SectionExit` in the scene, so the feedback points at the way out.
+- **Shop placement** — `RunManager` picks `_shopSectionIndex` at random from the sampled section
+  order (seeded off `RunSeed`, so it's reproducible; never the boss scene), which guarantees
+  **exactly one shop per world, always before the boss** — including the degenerate case of a world
+  with a single section. `SpawnShopIfDue` instantiates `shopPrefab` at a `ShopSpawnPoint` marker if
+  the section has one, else `shopDistanceBeforeExit` units short of the `SectionExit`.
 
 ### Economy (`Assets/Scripts/Economy/`)
 
@@ -149,6 +161,21 @@ to pick up the change.
 - **`CauldronInteractable`** — trigger-collider proximity interactable (same shape as
   `TombInteractable`) added to a "Cauldron Interact Zone" child near the cauldron in MainHub;
   interact key calls `UpgradeMenuController.Instance.Open()`.
+
+**Mid-run shop:**
+
+- **`ShopConfig`** — ScriptableObject at `Assets/Resources/ShopConfig.asset`: the item pool plus
+  `itemsPerShop`. `RollStock(seed)` samples distinct items with a seeded partial Fisher-Yates, same
+  as `WorldDefinition`.
+- **`ShopInteractable`** — on the `Shop.prefab` ("Shop Interact Zone" child). Rolls its stock once
+  (seeded from `RunSeed` + its x position), refuses to open while `SectionClearTracker` reports
+  enemies alive, and `MarkSold` removes an item permanently — each item is buy-once.
+- **`ShopMenuController`** (`Assets/Ui/`) — same self-bootstrapping code-built pattern as the
+  upgrade menu, own `Assets/Resources/ShopMenuPanelSettings.asset`. Spends **Gold**.
+
+**`MenuStyle`** (`Assets/Ui/MenuStyle.cs`) — shared palette, sizes and element factories for both
+code-built menus. **Change the size constants here to rescale that UI**; both screens follow. Sizes
+are in the panels' 1600×900 reference resolution, so they render ~1.2× larger at 1080p.
 
 ### Input
 

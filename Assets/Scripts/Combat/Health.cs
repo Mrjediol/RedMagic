@@ -15,8 +15,18 @@ namespace RedMagic.Combat
         [Header("Vida")]
         [SerializeField] private float maxHealth = 100f;
         [SerializeField] private float currentHealth = 100f;
-        [Tooltip("Si está activo no recibe daño (útil para pruebas).")]
+        [Tooltip("Si está activo no recibe daño nunca (útil para pruebas).")]
         [SerializeField] private bool invulnerable;
+
+        [Header("Invulnerabilidad tras el golpe (i-frames)")]
+        [Tooltip("Segundos de invulnerabilidad justo después de recibir daño. Evita que dos " +
+                 "enemigos, o un contacto y un proyectil, cuenten como dos o tres golpes en el " +
+                 "mismo instante. 0 = sin i-frames (cada impacto hace daño).")]
+        [Min(0f)]
+        [SerializeField] private float invulnerabilityDuration = 0.15f;
+
+        [Tooltip("Usar tiempo sin escalar, para que los i-frames no se congelen con el juego en pausa.")]
+        [SerializeField] private bool invulnerabilityUsesUnscaledTime;
 
         [Header("SFX — ids de sonido del AudioManager")]
         [Tooltip("id del sonido al recibir daño. Déjalo vacío para no sonar.")]
@@ -38,6 +48,15 @@ namespace RedMagic.Combat
             set => invulnerable = value;
         }
 
+        /// <summary>
+        /// True si ahora mismo no se puede hacer daño: por la casilla <see cref="Invulnerable"/>
+        /// o porque siguen corriendo los i-frames del último golpe.
+        /// </summary>
+        public bool IsInvulnerable => invulnerable || _invulnerabilityTimer > 0f;
+
+        /// <summary>Segundos de i-frames que quedan (0 si no hay).</summary>
+        public float InvulnerabilityRemaining => Mathf.Max(0f, _invulnerabilityTimer);
+
         /// <summary>(vidaActual, vidaMáxima). Se dispara con cualquier cambio de vida.</summary>
         public event Action<float, float> HealthChanged;
 
@@ -56,7 +75,14 @@ namespace RedMagic.Combat
         /// </summary>
         public event Action Revived;
 
+        /// <summary>
+        /// Cambio del estado de i-frames (true al empezar, false al acabar). Lo puede escuchar un
+        /// parpadeo del sprite para que se vea que el golpe no cuenta.
+        /// </summary>
+        public event Action<bool> InvulnerabilityChanged;
+
         private bool _deathRaised;
+        private float _invulnerabilityTimer;
 
         private void Awake()
         {
@@ -71,17 +97,46 @@ namespace RedMagic.Combat
             HealthChanged?.Invoke(currentHealth, maxHealth);
         }
 
-        public void TakeDamage(float amount)
+        private void Update()
         {
-            if (amount <= 0f || IsDead || invulnerable) return;
+            if (_invulnerabilityTimer <= 0f) return;
+
+            _invulnerabilityTimer -= invulnerabilityUsesUnscaledTime
+                ? Time.unscaledDeltaTime
+                : Time.deltaTime;
+
+            if (_invulnerabilityTimer <= 0f)
+            {
+                _invulnerabilityTimer = 0f;
+                InvulnerabilityChanged?.Invoke(false);
+            }
+        }
+
+        /// <summary>
+        /// Aplica daño y arranca los i-frames.
+        ///
+        /// <b>Devuelve true sólo si el golpe ha entrado de verdad</b> (no estaba muerto, ni
+        /// invulnerable, ni era daño 0). Quien ataque debe mirar ese valor antes de aplicar
+        /// retroceso o efectos: así un golpe comido por los i-frames tampoco empuja.
+        /// </summary>
+        public bool TakeDamage(float amount)
+        {
+            if (amount <= 0f || IsDead || IsInvulnerable) return false;
 
             currentHealth = Mathf.Max(0f, currentHealth - amount);
+
+            if (invulnerabilityDuration > 0f)
+            {
+                _invulnerabilityTimer = invulnerabilityDuration;
+                InvulnerabilityChanged?.Invoke(true);
+            }
 
             Damaged?.Invoke(amount);
             HealthChanged?.Invoke(currentHealth, maxHealth);
             PlaySfx(hurtSfxId);
 
             if (currentHealth <= 0f) Die();
+            return true;
         }
 
         public void Heal(float amount)
@@ -111,6 +166,12 @@ namespace RedMagic.Combat
 
             _deathRaised = false;
             currentHealth = maxHealth;
+
+            if (_invulnerabilityTimer > 0f)
+            {
+                _invulnerabilityTimer = 0f;
+                InvulnerabilityChanged?.Invoke(false);
+            }
             HealthChanged?.Invoke(currentHealth, maxHealth);
 
             // Sólo si de verdad venía de estar muerto: entrar al hub sano ya sin haber muerto no

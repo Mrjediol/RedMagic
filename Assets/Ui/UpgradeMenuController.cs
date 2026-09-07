@@ -16,7 +16,9 @@ namespace RedMagic.UI
     ///
     /// Se auto-crea y es persistente (DontDestroyOnLoad) como <c>CurrencyHud</c>: construye su
     /// <see cref="UIDocument"/> en código y saca el <see cref="PanelSettings"/> de Resources. Está
-    /// oculto salvo cuando <see cref="Open"/> lo llama <see cref="CauldronInteractable"/>.
+    /// oculto salvo cuando <see cref="Open"/> lo llama <c>CauldronInteractable</c>.
+    ///
+    /// El aspecto y los tamaños salen de <see cref="MenuStyle"/>, compartidos con la tienda.
     ///
     /// Mientras está abierto el juego queda en pausa vía <see cref="GameStateManager"/>, así que el
     /// jugador no se mueve por el hub por detrás.
@@ -35,18 +37,6 @@ namespace RedMagic.UI
         private Cell[,] _cells;
         private bool _open;
         private bool _built;
-
-        // ---- paleta, a juego con RedMagicTheme / PauseMenu.uss ----
-        private static readonly Color Backdrop = new(0.02f, 0.015f, 0.02f, 0.82f);
-        private static readonly Color PanelBg = new(0.047f, 0.031f, 0.039f, 0.96f);
-        private static readonly Color GoldBorder = new(0.588f, 0.439f, 0.29f, 0.6f);
-        private static readonly Color Cream = new(0.925f, 0.874f, 0.749f);
-        private static readonly Color CellBg = new(0.086f, 0.063f, 0.078f, 0.95f);
-        private static readonly Color CellBuyable = new(0.478f, 0.102f, 0.133f, 0.85f);
-        private static readonly Color CellMaxed = new(0.34f, 0.27f, 0.13f, 0.9f);
-        private static readonly Color Locked = new(0.5f, 0.5f, 0.5f, 0.35f);
-        private static readonly Color CostAfford = new(0.6f, 0.9f, 0.55f);
-        private static readonly Color CostTooDear = new(0.95f, 0.45f, 0.45f);
 
         private sealed class Cell
         {
@@ -183,79 +173,36 @@ namespace RedMagic.UI
 
         private void BuildUi(VisualElement root)
         {
-            root.style.position = Position.Absolute;
-            root.style.top = 0;
-            root.style.left = 0;
-            root.style.right = 0;
-            root.style.bottom = 0;
+            MenuStyle.FillParent(root);
 
             _overlay = new VisualElement { name = "upgrade-overlay" };
-            _overlay.style.position = Position.Absolute;
-            _overlay.style.top = 0;
-            _overlay.style.left = 0;
-            _overlay.style.right = 0;
-            _overlay.style.bottom = 0;
-            _overlay.style.backgroundColor = Backdrop;
+            MenuStyle.FillParent(_overlay);
+            _overlay.style.backgroundColor = MenuStyle.Backdrop;
             _overlay.style.alignItems = Align.Center;
             _overlay.style.justifyContent = Justify.Center;
             _overlay.style.display = DisplayStyle.None;
             root.Add(_overlay);
 
-            var panel = new VisualElement { name = "upgrade-panel" };
-            panel.style.paddingTop = 20;
-            panel.style.paddingBottom = 20;
-            panel.style.paddingLeft = 24;
-            panel.style.paddingRight = 24;
-            panel.style.backgroundColor = PanelBg;
-            SetBorder(panel, 2, GoldBorder, 18);
-            panel.style.maxWidth = Length.Percent(94);
+            var panel = MenuStyle.Panel();
             _overlay.Add(panel);
 
-            // ---- cabecera ----
-            var header = new VisualElement();
-            header.style.flexDirection = FlexDirection.Row;
-            header.style.alignItems = Align.Center;
-            header.style.justifyContent = Justify.SpaceBetween;
-            header.style.marginBottom = 16;
+            var header = MenuStyle.Header();
             panel.Add(header);
 
-            var title = new Label("PERMANENT UPGRADES");
-            title.style.unityFontStyleAndWeight = FontStyle.Bold;
-            title.style.fontSize = 24;
-            title.style.color = Cream;
-            title.style.letterSpacing = 2;
-            header.Add(title);
+            header.Add(MenuStyle.Title("PERMANENT UPGRADES"));
 
-            _soulLabel = new Label("0");
-            _soulLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            _soulLabel.style.fontSize = 20;
-            _soulLabel.style.color = Cream;
-            _soulLabel.style.marginLeft = 24;
-            _soulLabel.style.marginRight = 24;
+            _soulLabel = MenuStyle.CurrencyLabel();
             header.Add(_soulLabel);
 
-            var close = new Button(Close) { text = "✕" };
-            close.style.fontSize = 18;
-            close.style.width = 34;
-            close.style.height = 34;
-            close.style.color = Cream;
-            close.style.backgroundColor = CellBuyable;
-            SetBorder(close, 1, GoldBorder, 8);
-            header.Add(close);
+            header.Add(MenuStyle.CloseButton(Close));
 
-            // ---- rejilla ----
-            _grid = new VisualElement();
+            _grid = new VisualElement { name = "upgrade-grid" };
             _grid.style.flexDirection = FlexDirection.Column;
             panel.Add(_grid);
 
             BuildGrid();
 
-            var hint = new Label("Esc / E / B to close");
-            hint.style.marginTop = 12;
-            hint.style.fontSize = 11;
-            hint.style.color = new Color(Cream.r, Cream.g, Cream.b, 0.45f);
-            hint.style.unityTextAlign = TextAnchor.MiddleCenter;
-            panel.Add(hint);
+            panel.Add(MenuStyle.Hint("Esc / E / B to close"));
         }
 
         private void BuildGrid()
@@ -265,7 +212,10 @@ namespace RedMagic.UI
             var tree = UpgradeManager.Instance != null ? UpgradeManager.Instance.Tree : null;
             if (tree == null)
             {
-                _grid.Add(new Label("(no UpgradeTree asset in Resources)") { style = { color = Cream } });
+                var missing = new Label("(no UpgradeTree asset in Resources)");
+                missing.style.color = MenuStyle.Cream;
+                missing.style.fontSize = MenuStyle.BodyFontSize;
+                _grid.Add(missing);
                 _cells = new Cell[0, 0];
                 return;
             }
@@ -291,46 +241,17 @@ namespace RedMagic.UI
         {
             int r = row, c = column;
             var button = new Button(() => TryBuy(r, c));
-            button.style.width = 138;
-            button.style.height = 116;
-            button.style.marginLeft = 5;
-            button.style.marginRight = 5;
-            button.style.marginTop = 5;
-            button.style.marginBottom = 5;
-            button.style.paddingTop = 8;
-            button.style.paddingBottom = 8;
-            button.style.paddingLeft = 8;
-            button.style.paddingRight = 8;
-            button.style.flexDirection = FlexDirection.Column;
-            button.style.alignItems = Align.Center;
-            button.style.justifyContent = Justify.SpaceBetween;
-            button.style.whiteSpace = WhiteSpace.Normal;
-            SetBorder(button, 2, GoldBorder, 10);
+            MenuStyle.Card(button);
             button.RegisterCallback<PointerEnterEvent>(_ => AudioManager.Instance?.PlaySFX("SFX_ButtonHover"));
 
-            var title = new Label(node != null ? node.title : "-");
-            title.style.unityFontStyleAndWeight = FontStyle.Bold;
-            title.style.fontSize = 13;
-            title.style.color = Cream;
-            title.style.unityTextAlign = TextAnchor.MiddleCenter;
+            var title = MenuStyle.CardTitle(node != null ? node.title : "-");
+            var desc = MenuStyle.CardDescription("");
+            var level = MenuStyle.CardLevel("");
+            var footer = MenuStyle.CardFooter("");
+
             button.Add(title);
-
-            var desc = new Label();
-            desc.style.fontSize = 10;
-            desc.style.color = new Color(Cream.r, Cream.g, Cream.b, 0.75f);
-            desc.style.unityTextAlign = TextAnchor.MiddleCenter;
-            desc.style.whiteSpace = WhiteSpace.Normal;
             button.Add(desc);
-
-            var level = new Label();
-            level.style.fontSize = 12;
-            level.style.unityFontStyleAndWeight = FontStyle.Bold;
-            level.style.color = Cream;
             button.Add(level);
-
-            var footer = new Label();
-            footer.style.fontSize = 12;
-            footer.style.unityFontStyleAndWeight = FontStyle.Bold;
             button.Add(footer);
 
             return new Cell { button = button, title = title, level = level, desc = desc, footer = footer };
@@ -375,7 +296,7 @@ namespace RedMagic.UI
             if (node == null || upgrades == null)
             {
                 cell.button.SetEnabled(false);
-                cell.button.style.backgroundColor = Locked;
+                cell.button.style.backgroundColor = MenuStyle.Locked;
                 return;
             }
 
@@ -391,10 +312,10 @@ namespace RedMagic.UI
             if (!unlocked)
             {
                 cell.button.SetEnabled(false);
-                cell.button.style.backgroundColor = Locked;
+                cell.button.style.backgroundColor = MenuStyle.Locked;
                 cell.button.style.opacity = 0.55f;
                 cell.footer.text = "LOCKED";
-                cell.footer.style.color = CostTooDear;
+                cell.footer.style.color = MenuStyle.CostTooDear;
                 return;
             }
 
@@ -403,9 +324,9 @@ namespace RedMagic.UI
             if (maxed)
             {
                 cell.button.SetEnabled(false);
-                cell.button.style.backgroundColor = CellMaxed;
+                cell.button.style.backgroundColor = MenuStyle.CellMaxed;
                 cell.footer.text = "MAX";
-                cell.footer.style.color = Cream;
+                cell.footer.style.color = MenuStyle.Cream;
                 return;
             }
 
@@ -413,9 +334,9 @@ namespace RedMagic.UI
             bool canAfford = upgrades.CanBuy(row, column);
 
             cell.button.SetEnabled(true);
-            cell.button.style.backgroundColor = canAfford ? CellBuyable : CellBg;
+            cell.button.style.backgroundColor = canAfford ? MenuStyle.CellBuyable : MenuStyle.CellBg;
             cell.footer.text = $"{cost} SF";
-            cell.footer.style.color = canAfford ? CostAfford : CostTooDear;
+            cell.footer.style.color = canAfford ? MenuStyle.CostAfford : MenuStyle.CostTooDear;
         }
 
         private static string SafeFormat(string template, int value)
@@ -423,22 +344,6 @@ namespace RedMagic.UI
             if (string.IsNullOrEmpty(template)) return "";
             try { return string.Format(template, value); }
             catch (FormatException) { return template; }
-        }
-
-        private static void SetBorder(VisualElement e, float width, Color color, float radius)
-        {
-            e.style.borderTopWidth = width;
-            e.style.borderBottomWidth = width;
-            e.style.borderLeftWidth = width;
-            e.style.borderRightWidth = width;
-            e.style.borderTopColor = color;
-            e.style.borderBottomColor = color;
-            e.style.borderLeftColor = color;
-            e.style.borderRightColor = color;
-            e.style.borderTopLeftRadius = radius;
-            e.style.borderTopRightRadius = radius;
-            e.style.borderBottomLeftRadius = radius;
-            e.style.borderBottomRightRadius = radius;
         }
     }
 }

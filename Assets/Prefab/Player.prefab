@@ -162,8 +162,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ed19a26ed8fe1a4585cf1652e42f4c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Health
-  maxHealth: 40
-  currentHealth: 40
+  maxHealth: 4000
+  currentHealth: 4000
   invulnerable: 0
   invulnerabilityDuration: 0.8
   invulnerabilityUsesUnscaledTime: 0
@@ -397,6 +397,25 @@ MonoBehaviour:
   actionMapName: Player
   attackActionName: Attack
   useTouchButton: 1
+--- !u!114 &1145223074590112823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4486680268914706177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7915b000cdaf5d4987f2ffb907860da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponUser
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
+  actionMapName: Player
+  attackActionName: Attack
+  useTouchButton: 1
 --- !u!1 &5936975751486156930
 GameObject:
   m_ObjectHideFlags: 0
@@ -511,22 +530,3 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1145223074590112823
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4486680268914706177}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7915b000cdaf5d4987f2ffb907860da, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponUser
-  hitLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
-  actionMapName: Player
-  attackActionName: Attack
-  useTouchButton: 1

@@ -119,6 +119,63 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1001 &411050694
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4842060209679273764, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_Name
+      value: Boss_EspantapajarosMarchito
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977908251954412835, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977908251954412835, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977908251954412835, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977908251954412835, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977908251954412835, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977908251954412835, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977908251954412835, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977908251954412835, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977908251954412835, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8977908251954412835, guid: b118ab0fba654e944a121764f92b603c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b118ab0fba654e944a121764f92b603c, type: 3}
 --- !u!1 &560758293
 GameObject:
   m_ObjectHideFlags: 0
@@ -151,6 +208,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Run.SectionExit
   playerTag: Player
   oneShot: 1
+  requireEnemiesDead: 1
 --- !u!61 &560758295
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -389,6 +447,7 @@ MonoBehaviour:
   offset: {x: 1.5, y: 0.8}
   smoothTime: 0.18
   followVertical: 1
+  verticalSmoothTime: 0
   useBounds: 0
   minBounds: {x: -20, y: -5}
   maxBounds: {x: 20, y: 10}
@@ -466,3 +525,4 @@ SceneRoots:
   - {fileID: 1776704839}
   - {fileID: 1380425934}
   - {fileID: 560758296}
+  - {fileID: 411050694}

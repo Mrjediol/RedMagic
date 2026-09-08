@@ -13,7 +13,7 @@ namespace RedMagic.Abilities
     /// </summary>
     public static class AbilityLibrary
     {
-        public const string ResourceFolder = "Abilities";
+        public const string ResourceFolder = "Legacy/Abilities";
 
         private static List<AbilityDefinition> _all;
 

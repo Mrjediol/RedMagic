@@ -217,75 +217,89 @@ Zoom is a separate knob: `RunManager.cameraOrthographicSize` (8.5) is forced ont
 `CameraFollow` camera after each load, so the hub and the sections match.
 `ShakeAll(amplitude, duration)` is the project-wide camera shake (see Bosses).
 
-### Abilities (`Assets/Scripts/Abilities/`)
+### Weapons & items — the build system (`Assets/Scripts/Items/`)
 
-The attack system. An ability is a **ScriptableObject asset** in `Assets/Resources/Abilities/`;
-`AbilityLibrary` sweeps that folder, so adding one is dropping an asset there — no code, no
-Inspector wiring, no registry list. Writing a C# class is only needed for a new *archetype* (a new
-shape of attack), not for a new ability. **Tools > RedMagic > Ability Starter Pack** creates the
-starting 22 (idempotent — it never touches an asset that already exists).
+The current attack system (it **replaced** the ability system; see Legacy below). A weapon is a
+`WeaponDefinition` asset in `Assets/Resources/Items/Weapons/` describing a **base shot**; items
+transform that shot. Content by convention: a new weapon or item is a new asset, no code, no
+Inspector wiring.
 
-- **`AbilityDefinition`** — abstract base: name/description/category/accent, cooldown, windup,
-  damage, knockback multiplier, cast SFX id, FX sprite, plus `Execute(AbilityContext)`. Assets are
-  **stateless** (they're shared by everyone using them) — all cast state lives in `AbilityUser`.
-- **`AbilityContext`** — everything about the caster, built per cast: caster GameObject, coroutine
-  runner, `Health`, hit layers, facing, aim, damage scale, and a **friendly tag**. That tag is the
-  whole team system: nothing carrying the caster's tag can be damaged, so the same asset works for
-  the player, an enemy, or a summoned turret with no layer setup.
-- **`AbilityHit`** — the one place target filtering lives (skip self, dead, friendlies, and the
-  same `Health` reached through two colliders) plus circle/box overlap-and-damage helpers.
-- **Archetypes**: `MeleeArcAbility` (box in front, multi-hit, angled/both-sides),
-  `ProjectileAbility` (count/spread/burst + a `ProjectileSpec`), `NovaAbility` (radial, optional
-  pulses, optional grounded-only), `BeamAbility` (instant box along the aim, stops at ground),
-  `DashStrikeAbility` (lunges by reusing `Knockback.ApplyVelocity`, damages along the path),
-  `ZoneAbility` (`DamageZone`: ticking pool or proximity mine), `OrbitAbility` (orbs on an
-  `OrbitSpinner` pivot), `TurretAbility` (`AbilityTurret` that shoots on its own), `BuffAbility`
-  (heal / i-frames / temporary damage multiplier).
-- **`AbilityUser`** (on `Player.prefab`) — holds the equipped ability, cooldown and buffs, reads the
-  same Attack action as `PlayerAttack`, and **disables `PlayerAttack` while an ability is equipped**
-  (two scripts reading one button would both fire and fight over the touch queue). `Equip(null)`
-  gives the sword back.
-- **No prefabs**: projectiles, zones, orbs and turrets are built in code from a sprite + tint
-  (`AbilityFx`, with a generated white square as the fallback sprite) so a new ability needs no art
-  pipeline. Assign `fxSprite` on the asset when real art exists.
-- `Projectile` gained optional pierce / homing / arc gravity / impact-AoE, all defaulting to off, so
-  one code-built projectile covers arrows, homing orbs and grenades.
-- **`AbilityChest`** (class still named that; on `Assets/Prefab/Eviroment/GoldChest.prefab`) —
-  proximity interactable, same shape as `TombInteractable`. Opens the lid by setting the Animator
-  bool `IsOpened` (the parameter Cainos' chest controller already uses, so no vendor script is
-  referenced), waits `grantDelay`, then grants a **`WeaponDefinition`** via
-  `WeaponLoadout.Instance.Inventory.SetWeapon` (and clears any equipped ability on `AbilityUser` so
-  `WeaponUser` fires the new weapon immediately). Empty `forcedWeapon` = random from
-  `WeaponLibrary` (folder scan of `Resources/Items`), which is the shipping behaviour;
-  `AbilityChestEditor` draws that field as a dropdown of every weapon (grouped by innate element)
-  with "Aleatoria" first. `singleUse` off lets it be reopened while testing. The MainHub instance
-  overrides `forcedWeapon` to `Weapon_RayoArcano`.
-- **Weapon levels (1–3)** — `AbilityDefinition.LevelTier` (`level2`/`level3` on every asset) holds
-  what a level changes **relative to level 1, not cumulatively**: damage ×, cooldown ×, size ×, and
-  lifesteal. `AbilityUser` resolves the level per cast and folds it into the context
-  (`DamageScale`, `SizeScale`, `Lifesteal`), so each archetype only multiplies its own geometry and
-  no ability knows who is casting it. `AbilityHit.Damage` and `Projectile` apply lifesteal.
-  **`AbilityLevelManager`** (self-bootstrapping singleton) owns the levels, keyed by asset
-  reference, charges Skulls (1 for →2, 3 for →3, tunable in `upgradeCosts`) and **wipes them on
-  `RunEnded`** — weapon levels are run progress like gold, not meta-progression.
-- **`WeaponUpgradeAltar`** (on `Assets/Prefab/Eviroment/WeaponUpgrade.prefab`) + **
-  `WeaponUpgradeMenuController`** (`Assets/Ui/`, `WeaponUpgradeMenuPanelSettings`, order 33) — the
-  forge. Deliberately one card, one button: it only upgrades the **currently equipped** weapon, and
-  the text comes from `AbilityDefinition.TierSummary`, so no new weapon needs UI work.
-- **Boss reward** — `RunManager.bossRewardPrefab` (set to `WeaponUpgrade` in MainHub) spawns at
-  `SectionClearTracker.LastDeathPosition` when the boss scene is cleared during `RunPhase.Boss`.
-  It hangs off the clear tracker rather than a per-boss component: the boss is whatever dies last
-  in its own scene, so every boss drops its reward with no wiring. Killing the boss does not
-  advance the world by itself — the player uses the altar and walks out.
-- **`AbilityMenuController`** (`Assets/Ui/`) — dev-only test menu, opens with **K**, lists every
-  ability and equips it on click. Same self-bootstrapping code-built pattern as the other menus
-  (`AbilityMenuPanelSettings`, sorting order 32). Nothing in the ability system depends on it.
-- Projectiles never collide with other projectiles — pellets from one shotgun blast spawn on top of
-  each other and would annihilate on frame one.
+- **Shot pipeline** (`ShotResolver`, `WeaponShot`): 1. the weapon emits its base shot
+  (`WeaponShot.FromWeapon`) → 2. the equipped **Trajectory** modifier (how it moves) → 3. the
+  **Shape** modifier (how many projectiles / splits) → 4. the **Element** modifier (paints damage
+  type), which every projectile produced by step 3 inherits automatically, split children included.
+  `Resolve` returns the resolved plan with no physics (testable); `Fire` also launches it. A weapon
+  with no Element item still paints with its `InnateElement`.
+- **Slots** (`WeaponInventory`) — 3 dedicated (Element / Trajectory / Shape, exactly one item each,
+  last equipped wins) + 6 free slots with no type restriction, plus the equipped weapon. It only
+  tracks what sits in each slot and raises `ItemEquipped`/`ItemUnequipped`; nothing else.
+- **Items** — `ItemDefinition` (base: name/description/icon/accent + synergy tags) → `WeaponModifier`
+  (`ElementModifier`, `TrajectoryModifier`, `ShapeModifier`, each with a fixed `PipelineOrder`) and
+  `FreePoolItemDefinition`. Free-pool items **do not transform the shot at all** — their whole
+  contribution is a pair of tags.
+- **Synergies** (`SynergyTracker` + `BuildTag`/`BuildTags` + `Assets/Resources/SynergyConfig.asset`)
+  — the single source of truth for tag points, fed only by `WeaponInventory` events. Every equipped
+  copy counts (+1 per tag, the same asset in two free slots counts twice), thresholds are 2/4/6 and
+  points cap at 6. It counts and notifies; it implements no threshold effect.
+- **`WeaponUser`** (on `Player.prefab`) — the only holder of firing state (cooldown, hold-to-charge
+  via `BaseShot.chargeTime`). Silences `PlayerAttack` while a weapon is equipped, and yields to a
+  legacy `AbilityUser` if an ability is somehow equipped.
+- **`WeaponLoadout`** — self-bootstrapping `DontDestroyOnLoad` singleton owning the run's
+  `WeaponInventory`.
+- **Weapon levels (1–3)** — `WeaponLevelManager` (self-bootstrapping singleton, keyed by
+  `WeaponDefinition` asset reference) charges Skulls (1 for →2, 3 for →3, tunable in
+  `upgradeCosts`) and **wipes on `RunEnded`**, same shape as the old ability-level system it
+  replaces. **Placeholder effect only**: until real per-level stats are designed, levelling up just
+  tints the shot — black at level 2, gold at level 3 (`WeaponLevelManager.TryGetLevelTint`, applied
+  by `ShotResolver.Resolve` after the Element step) — purely to prove the plumbing works.
+  **`WeaponForgeAltar`** (on `Assets/Prefab/Eviroment/WeaponUpgrade.prefab`, `RunManager`'s
+  `bossRewardPrefab`) + **`WeaponForgeMenuController`** (`Assets/Ui/`, own
+  `WeaponForgeMenuPanelSettings`) are the forge: same one-card-one-button shape as before, reading
+  `WeaponUser.Weapon` instead of the legacy `AbilityUser.Equipped`.
+- **Runtime** (`Items/Shot/`) — `ShotProjectile` and `ShotBeam`, both pooled, built in code, reusing
+  `AbilityHit` for target filtering/damage and `AbilityFx` for sprite/tint/sorting.
+- **`WeaponLibrary`** / **`ItemLibrary`** — folder scans of `Resources/Items/(Weapons|Modifiers)` and
+  the item assets, same pattern as the old `AbilityLibrary`.
+- **`ItemMenuController`** (`Assets/Ui/`, key **I**, `ItemMenuPanelSettings`) — the build screen;
+  same self-bootstrapping code-built pattern as the other menus.
+- **`AbilityChest`** (name kept; on `Assets/Prefab/Eviroment/GoldChest.prefab`) — proximity
+  interactable that grants a **`WeaponDefinition`** through `WeaponLoadout.Instance.Inventory`.
+  Empty `forcedWeapon` = random from `WeaponLibrary`; `AbilityChestEditor` draws it as a dropdown.
+- **`ShopMenuController`** buys items and equips them straight into the inventory (`TryEquip`).
+- **`ShotPipelineHarness`** — drop it in a scene and hit Play to fire the four configurations
+  (bare / trajectory only / shape only / all three layers) at a dummy it spawns.
+- Current content: 7 weapons (the ones rescued from the old abilities plus a plain
+  `Weapon_ProyectilRecto`), 4 modifiers, 4 free-pool items.
+- Projectiles never collide with other projectiles — pellets from one blast spawn on top of each
+  other and would annihilate on frame one.
+
+### Legacy (`Assets/Scripts/Legacy/`, `Assets/Resources/Legacy/`) — reference only, do not build on it
+
+The **ability system**: 22 `AbilityDefinition` assets (now in `Assets/Resources/Legacy/Abilities/`
+— `AbilityLibrary.ResourceFolder` points there, so the dev-only K menu still lists them as a
+working reference instead of coming up empty), the nine archetype classes, `AbilityUser`,
+`AbilityLibrary`, `AbilityMenuController`, the `AbilityStarterPack` editor tool, and the runtime
+pieces only they used: `AbilityTurret`, `DamageZone`, `OrbitSpinner`. Plus the **old weapon level
+1–3** system that hung off it, `AbilityLevelManager` + `WeaponUpgradeAltar` +
+`WeaponUpgradeMenuController` — replaced by the `WeaponLevelManager` / `WeaponForgeAltar` /
+`WeaponForgeMenuController` trio documented above. Superseded by the weapons/items build system;
+five of the abilities were rescued as weapons (`Assets/Resources/Items/Weapons/`).
+
+It still compiles and the `.meta` files moved with the sources, so GUIDs are intact. `Player.prefab`
+still carries the legacy `AbilityUser` component (inert unless something equips it) and
+`WeaponUpgrade.prefab` (`RunManager.bossRewardPrefab`) was **repointed** from `WeaponUpgradeAltar`
+to the new `WeaponForgeAltar` — that swap is why the forge used to say "no llevas arma equipada"
+even with an item-system weapon out. Read the rest as reference and port what is needed into
+`Assets/Scripts/Items/`; do not extend it.
+
+**Deliberately *not* legacy**, because the live systems call into it: `AbilityContext` /
+`AbilityHit` (the one place target filtering and damage application live — weapons and bosses both
+use it), `AbilityFx` (code-built sprites/flashes, no art pipeline), `ProjectileSpec` /
+`ProjectileFactory` and `Projectile` (the pooled projectile the bosses fire).
 
 ### Bosses (`Assets/Scripts/Bosses/`)
 
-Same content-by-convention shape as the ability system, one level up: a boss is a
+Same content-by-convention shape as the weapons/items system, one level up: a boss is a
 **`BossDefinition` asset** plus a prefab, and each of its attacks is its own **`BossAttack`
 ScriptableObject** in `Assets/Resources/Bosses/`. Writing C# is only needed for a new *archetype*
 (a new shape of attack), never for a new boss, a new attack asset or a phase-2 variant.

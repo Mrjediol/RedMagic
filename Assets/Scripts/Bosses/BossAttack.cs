@@ -124,5 +124,31 @@ namespace RedMagic.Bosses
             AbilityFx.Flash(ctx.FxSprite, position, size, color, Mathf.Max(0.05f, duration), 0f, 1.15f,
                             ctx.Ability.Caster);
         }
+
+        /// <summary>
+        /// Marca de aviso <b>girada</b> y con intensidad regulable. Hace falta para los avisos que
+        /// no son cajas rectas (el filo de una guadaña) y para poder pintar la misma marca fuerte o
+        /// tenue — una recta de salida bien visible y el resto del recorrido apenas insinuado.
+        /// </summary>
+        protected void Warn(in BossContext ctx, Vector2 position, Vector2 size, float duration,
+                            float rotationDegrees, float strength)
+        {
+            var color = ctx.Accent;
+            color.a = 0.55f * Mathf.Clamp01(strength);
+            AbilityFx.Flash(ctx.FxSprite, position, size, color, Mathf.Max(0.05f, duration),
+                            rotationDegrees, 1f, ctx.Ability.Caster);
+        }
+
+        /// <summary>
+        /// Marca en un color propio en vez del de la fase. Sólo para lo que significa lo contrario
+        /// que el resto de avisos: un <b>sitio seguro</b> no puede pintarse del mismo color que lo
+        /// que hace daño.
+        /// </summary>
+        protected static void Mark(in BossContext ctx, Vector2 position, Vector2 size, Color color,
+                                   float duration, float growTo = 1f)
+        {
+            AbilityFx.Flash(ctx.FxSprite, position, size, color, Mathf.Max(0.05f, duration), 0f, growTo,
+                            ctx.Ability.Caster);
+        }
     }
 }

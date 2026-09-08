@@ -101,6 +101,18 @@ namespace RedMagic.Bosses
         [Tooltip("Tamaño de la marca de aviso en el suelo.")]
         [SerializeField] private Vector2 rainMarkerSize = new Vector2(1f, 0.35f);
 
+        [Header("Arte")]
+        [Tooltip("Sprite de los proyectiles de ESTE patrón. Vacío = el del jefe " +
+                 "(BossController.fxSprite). Está separado del sprite del jefe para que cada " +
+                 "ataque pueda tirar de su propio objeto —calabazas, abrojos, piedras— sin que los " +
+                 "avisos y las ondas dejen de ser rectángulos legibles.\n\n" +
+                 "Ojo: los proyectiles NO giran hacia su dirección de vuelo, así que aquí sólo " +
+                 "funcionan sprites redondeados; uno alargado (una espada, una lanza) volaría de lado.")]
+        [SerializeField] private Sprite projectileSprite;
+
+        /// <summary>Sprite con el que sale cada proyectil: el propio del ataque, o el del jefe.</summary>
+        private Sprite Art(in BossContext ctx) => projectileSprite != null ? projectileSprite : ctx.FxSprite;
+
         public override string ShortStats() =>
             $"{Damage:0} dmg · {pattern} · {volleys}×{bulletsPerVolley} proyectiles";
 
@@ -171,7 +183,7 @@ namespace RedMagic.Bosses
 
                 ProjectileFactory.Spawn(ctx.Ability, projectile, origin, direction,
                                         ScaledDamage(ctx), KnockbackMultiplier,
-                                        ctx.FxSprite, ctx.Accent);
+                                        Art(ctx), ctx.Accent);
             }
         }
 
@@ -213,7 +225,7 @@ namespace RedMagic.Bosses
                     var origin = new Vector2(columns[i], ctx.CeilingY);
                     ProjectileFactory.Spawn(ctx.Ability, projectile, origin, Vector2.down,
                                             ScaledDamage(ctx), KnockbackMultiplier,
-                                            ctx.FxSprite, ctx.Accent);
+                                            Art(ctx), ctx.Accent);
                 }
 
                 if (volley < volleys - 1)

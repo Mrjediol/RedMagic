@@ -149,9 +149,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 5373330553216305747}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a5b50208ad690b4fbd6dabd191d5bd5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.WeaponUpgradeAltar
+  m_Script: {fileID: 11500000, guid: 2ca36445e66224b40826735f4136f1c0, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponForgeAltar
   consumeOnUse: 0
   playerTag: Player
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}

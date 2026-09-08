@@ -37,6 +37,12 @@ namespace RedMagic.Items
             if (shot.element == ElementId.None && weapon.InnateElement != ElementId.None)
                 shot.element = weapon.InnateElement;
 
+            // Placeholder de nivel (ver WeaponLevelManager): nivel 2 tiñe de negro, nivel 3 de
+            // dorado, por encima de cualquier tinte de elemento. Nivel 1 no toca nada.
+            int level = WeaponLevelManager.Instance != null ? WeaponLevelManager.Instance.GetLevel(weapon) : 1;
+            if (WeaponLevelManager.TryGetLevelTint(level, out var levelTint))
+                shot.tint = levelTint;
+
             return shot;
         }
 

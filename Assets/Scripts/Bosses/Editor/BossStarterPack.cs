@@ -1,8 +1,6 @@
-using System;
 using RedMagic.Combat;
 using RedMagic.Economy;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -48,9 +46,9 @@ namespace RedMagic.Bosses.EditorTools
         [MenuItem("Tools/RedMagic/Boss/Crear jefe: Arbol Ancestral")]
         public static void Generate()
         {
-            EnsureTag("Enemy");
-            EnsureFolder(BossFolder);
-            EnsureFolder(PrefabFolder);
+            BossAuthoring.EnsureTag("Enemy");
+            BossAuthoring.EnsureFolder(BossFolder);
+            BossAuthoring.EnsureFolder(PrefabFolder);
 
             var attacks = CreateAttacks();
             var definition = CreateDefinition(attacks);
@@ -66,69 +64,9 @@ namespace RedMagic.Bosses.EditorTools
         }
 
         [MenuItem("Tools/RedMagic/Boss/Colocar Arbol Ancestral en World1_Boss")]
-        public static void PlaceInBossScene()
-        {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
-            if (prefab == null)
-            {
-                Debug.LogError("[BossStarterPack] No existe el prefab del jefe. Ejecuta primero " +
-                               "'Crear jefe: Arbol Ancestral'.");
-                return;
-            }
+        public static void PlaceInBossScene() =>
+            BossAuthoring.PlaceBossInScene(PrefabPath, BossScenePath, x: 6f, fallbackY: -3f);
 
-            // Se abre en aditivo y se cierra al terminar: así la escena en la que esté trabajando
-            // el usuario no se descarga ni se le pide guardarla.
-            var scene = EditorSceneManager.OpenScene(BossScenePath, OpenSceneMode.Additive);
-            if (!scene.IsValid())
-            {
-                Debug.LogError($"[BossStarterPack] No se pudo abrir '{BossScenePath}'.");
-                return;
-            }
-
-            try
-            {
-                foreach (var root in scene.GetRootGameObjects())
-                {
-                    if (root.GetComponentInChildren<BossController>(true) == null) continue;
-
-                    Debug.LogWarning("[BossStarterPack] La escena ya tiene un jefe; no se toca nada.", root);
-                    return;
-                }
-
-                // Se busca el suelo real bajo ese punto en vez de fijar una altura: la escena
-                // puede tener tilemap, plataformas o un placeholder, y el origen del prefab es la
-                // base del jefe. (En juego, BossController vuelve a plantarse solo.)
-                var position = new Vector3(6f, GroundYAt(6f, fallback: -3f), 0f);
-
-                var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
-                instance.transform.position = position;
-
-                EditorSceneManager.MarkSceneDirty(scene);
-                EditorSceneManager.SaveScene(scene);
-
-                Debug.Log($"[BossStarterPack] Jefe colocado en '{BossScenePath}' en {position}.", prefab);
-            }
-            finally
-            {
-                EditorSceneManager.CloseScene(scene, removeScene: true);
-            }
-        }
-
-        /// <summary>
-        /// Altura del suelo (capa Ground) bajo <paramref name="x"/> en la escena recién abierta.
-        /// Hace falta sincronizar la física porque los transforms acaban de deserializarse y el
-        /// mundo 2D todavía no los conoce.
-        /// </summary>
-        private static float GroundYAt(float x, float fallback)
-        {
-            Physics2D.SyncTransforms();
-
-            int groundLayer = LayerMask.NameToLayer("Ground");
-            int mask = groundLayer >= 0 ? 1 << groundLayer : Physics2D.AllLayers;
-
-            var hit = Physics2D.Raycast(new Vector2(x, 40f), Vector2.down, 120f, mask);
-            return hit.collider != null ? hit.point.y : fallback;
-        }
 
         // ==================================================================== ataques
 
@@ -308,15 +246,15 @@ namespace RedMagic.Bosses.EditorTools
             var phases = so.FindProperty("phases");
             phases.arraySize = 2;
 
-            WritePhase(phases.GetArrayElementAtIndex(0),
-                       "Raíces Despiertas", startsAtHealth: 1f, damageScale: 1f, speedScale: 1f,
+            BossAuthoring.WritePhase(phases.GetArrayElementAtIndex(0),
+                "Raíces Despiertas", startsAtHealth: 1f, damageScale: 1f, speedScale: 1f,
                        accent: PhaseOneAccent, pause: new Vector2(1f, 1.7f),
                        transitionSeconds: 0f, frenzyBelow: 0f,
                        attacks: new[] { a.RootStomp, a.BranchSweep, a.AcornRain, a.ThornVolley, a.CursedSprouts });
 
             // Fase 2: la misma idea, más rápida, más daño y con los patrones que piden leer de
             // verdad. Por debajo del 20% entra en frenesí y ya no da respiro.
-            WritePhase(phases.GetArrayElementAtIndex(1),
+            BossAuthoring.WritePhase(phases.GetArrayElementAtIndex(1),
                        "Corazón Podrido", startsAtHealth: 0.55f, damageScale: 1.15f, speedScale: 1.2f,
                        accent: PhaseTwoAccent, pause: new Vector2(0.7f, 1.2f),
                        transitionSeconds: 2f, frenzyBelow: 0.2f,
@@ -332,27 +270,6 @@ namespace RedMagic.Bosses.EditorTools
             return definition;
         }
 
-        private static void WritePhase(SerializedProperty phase, string displayName, float startsAtHealth,
-                                       float damageScale, float speedScale, Color accent, Vector2 pause,
-                                       float transitionSeconds, float frenzyBelow, BossAttack[] attacks)
-        {
-            phase.FindPropertyRelative("displayName").stringValue = displayName;
-            phase.FindPropertyRelative("startsAtHealth").floatValue = startsAtHealth;
-            phase.FindPropertyRelative("damageScale").floatValue = damageScale;
-            phase.FindPropertyRelative("speedScale").floatValue = speedScale;
-            phase.FindPropertyRelative("accent").colorValue = accent;
-            phase.FindPropertyRelative("pauseBetweenAttacks").vector2Value = pause;
-            phase.FindPropertyRelative("transitionSeconds").floatValue = transitionSeconds;
-            phase.FindPropertyRelative("transitionShake").floatValue = transitionSeconds > 0f ? 0.7f : 0f;
-            phase.FindPropertyRelative("frenzyBelowHealth").floatValue = frenzyBelow;
-            phase.FindPropertyRelative("frenzySpeedScale").floatValue = 1.35f;
-
-            var list = phase.FindPropertyRelative("attacks");
-            list.arraySize = attacks.Length;
-            for (int i = 0; i < attacks.Length; i++)
-                list.GetArrayElementAtIndex(i).objectReferenceValue = attacks[i];
-        }
-
         // ==================================================================== prefab
 
         private static GameObject CreatePrefab(BossDefinition definition)
@@ -362,7 +279,7 @@ namespace RedMagic.Bosses.EditorTools
 
             var root = new GameObject("Boss_ArbolAncestral");
             root.transform.position = Vector3.zero;
-            TrySetTag(root, "Enemy");
+            BossAuthoring.TrySetTag(root, "Enemy");
 
             // ---- visual: se reaprovecha el árbol del pack de props, escalado a tamaño de jefe.
             var visual = new GameObject("Sprite");
@@ -370,7 +287,7 @@ namespace RedMagic.Bosses.EditorTools
             visual.transform.localScale = Vector3.one * VisualScale;
 
             var renderer = visual.AddComponent<SpriteRenderer>();
-            renderer.sprite = LoadTreeSprite();
+            renderer.sprite = BossAuthoring.LoadSpriteFromPrefab(TreePrefabPath);
             renderer.sortingLayerName = "Characters";
             renderer.sortingOrder = 5;
 
@@ -396,7 +313,7 @@ namespace RedMagic.Bosses.EditorTools
 
             // ---- combate
             var health = root.AddComponent<Health>();
-            new Fields(health)
+            new BossAuthoring.Fields(health)
                 .Set("maxHealth", 2600f)
                 .Set("currentHealth", 2600f)
                 // Sin i-frames, como el resto de enemigos: si no, una escopeta de 5 perdigones
@@ -405,18 +322,18 @@ namespace RedMagic.Bosses.EditorTools
                 .Apply();
 
             var knockback = root.AddComponent<Knockback>();
-            new Fields(knockback).Set("immune", true).Set("resistance", 1f).Apply();
+            new BossAuthoring.Fields(knockback).Set("immune", true).Set("resistance", 1f).Apply();
 
             root.AddComponent<HitFlash>();
 
             var corpse = root.AddComponent<Corpse>();
-            new Fields(corpse).Set("linger", 1.6f).Set("fadeDuration", 1.4f).Apply();
+            new BossAuthoring.Fields(corpse).Set("linger", 1.6f).Set("fadeDuration", 1.4f).Apply();
 
             var dropper = root.AddComponent<CurrencyDropper>();
-            new Fields(dropper).Set("tier", (int)EnemyTier.Boss).Apply();
+            new BossAuthoring.Fields(dropper).Set("tier", (int)EnemyTier.Boss).Apply();
 
             var controller = root.AddComponent<BossController>();
-            new Fields(controller)
+            new BossAuthoring.Fields(controller)
                 .SetObject("definition", definition)
                 .Set("arenaHalfWidth", 15f)
                 .Set("arenaHeight", 13f)
@@ -437,123 +354,12 @@ namespace RedMagic.Bosses.EditorTools
             return prefab;
         }
 
-        private static Sprite LoadTreeSprite()
-        {
-            var treePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(TreePrefabPath);
-            var source = treePrefab != null ? treePrefab.GetComponentInChildren<SpriteRenderer>(true) : null;
-
-            if (source != null && source.sprite != null) return source.sprite;
-
-            Debug.LogWarning("[BossStarterPack] No se encontró el sprite del árbol; el jefe se queda " +
-                             "sin sprite (asígnaselo a mano en el prefab).");
-            return null;
-        }
-
         // ==================================================================== utilidades
 
-        private static T Attack<T>(string fileName, string displayName, string description,
-                                   Color accent, Func<Fields, Fields> configure) where T : BossAttack
-        {
-            string path = $"{BossFolder}/{fileName}.asset";
-
-            var existing = AssetDatabase.LoadAssetAtPath<T>(path);
-            if (existing != null) return existing;
-
-            var asset = ScriptableObject.CreateInstance<T>();
-            AssetDatabase.CreateAsset(asset, path);
-
-            var fields = new Fields(asset)
-                .Set("displayName", displayName)
-                .Set("description", description)
-                .Set("accent", accent);
-
-            configure(fields);
-            fields.Apply();
-
-            return asset;
-        }
-
-        private static void EnsureFolder(string folder)
-        {
-            if (AssetDatabase.IsValidFolder(folder)) return;
-
-            var parts = folder.Split('/');
-            string current = parts[0];
-
-            for (int i = 1; i < parts.Length; i++)
-            {
-                string next = $"{current}/{parts[i]}";
-                if (!AssetDatabase.IsValidFolder(next)) AssetDatabase.CreateFolder(current, parts[i]);
-                current = next;
-            }
-        }
-
-        /// <summary>
-        /// Da de alta una etiqueta si falta. El jefe y sus esbirros la comparten, y eso es lo que
-        /// impide que los proyectiles del jefe maten a sus propias invocaciones.
-        /// </summary>
-        private static void EnsureTag(string tag)
-        {
-            var asset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
-            if (asset == null || asset.Length == 0) return;
-
-            var so = new SerializedObject(asset[0]);
-            var tags = so.FindProperty("tags");
-
-            for (int i = 0; i < tags.arraySize; i++)
-                if (tags.GetArrayElementAtIndex(i).stringValue == tag) return;
-
-            tags.InsertArrayElementAtIndex(tags.arraySize);
-            tags.GetArrayElementAtIndex(tags.arraySize - 1).stringValue = tag;
-            so.ApplyModifiedPropertiesWithoutUndo();
-
-            Debug.Log($"[BossStarterPack] Etiqueta '{tag}' dada de alta.");
-        }
-
-        private static void TrySetTag(GameObject go, string tag)
-        {
-            try
-            {
-                go.tag = tag;
-            }
-            catch (UnityException)
-            {
-                Debug.LogWarning($"[BossStarterPack] No se pudo poner la etiqueta '{tag}'.", go);
-            }
-        }
-
-        /// <summary>
-        /// Escritor de campos serializados encadenable, igual que el del Ability Starter Pack: los
-        /// campos de los ataques son privados a propósito y sólo el editor debe rellenarlos.
-        /// </summary>
-        private class Fields
-        {
-            private readonly SerializedObject _so;
-
-            public Fields(Object target) => _so = new SerializedObject(target);
-
-            public Fields Set(string path, float value) => Write(path, p => p.floatValue = value);
-            public Fields Set(string path, int value) => Write(path, p => p.intValue = value);
-            public Fields Set(string path, bool value) => Write(path, p => p.boolValue = value);
-            public Fields Set(string path, string value) => Write(path, p => p.stringValue = value);
-            public Fields Set(string path, Vector2 value) => Write(path, p => p.vector2Value = value);
-            public Fields Set(string path, Color value) => Write(path, p => p.colorValue = value);
-            public Fields SetObject(string path, Object value) => Write(path, p => p.objectReferenceValue = value);
-
-            private Fields Write(string path, Action<SerializedProperty> write)
-            {
-                var property = _so.FindProperty(path);
-                if (property == null)
-                {
-                    Debug.LogWarning($"[BossStarterPack] El campo '{path}' no existe en {_so.targetObject.name}.");
-                    return this;
-                }
-
-                write(property);
-                return this;
-            }
-
-            public void Apply() => _so.ApplyModifiedPropertiesWithoutUndo();
-        }
+        /// <summary>Atajo a <see cref="BossAuthoring.Attack{T}"/> con la carpeta de este jefe.</summary>
+        private static T Attack<T>(string fileName, string displayName, string description, Color accent,
+                                   System.Func<BossAuthoring.Fields, BossAuthoring.Fields> configure)
+            where T : BossAttack =>
+            BossAuthoring.Attack<T>(BossFolder, fileName, displayName, description, accent, configure);
     }
 }

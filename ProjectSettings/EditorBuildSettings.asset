@@ -17,7 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Worlds/World1/World1_Section01.unity
     guid: 4f47a9a0eb2a04845bdf8eebbdb8c2bd
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Worlds/World1/World1_Section02.unity
     guid: 539545d6f3797ee4684d78031fe20adb
   - enabled: 1

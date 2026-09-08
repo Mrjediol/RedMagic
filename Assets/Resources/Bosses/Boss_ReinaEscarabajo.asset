@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
+  m_Name: Boss_ReinaEscarabajo
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  displayName: Reina Escarabajo
+  title: Madre del Nido Anegado
+  description: Lleva tanto tiempo poniendo bajo la tumba que el suelo ya no es suelo,
+    sino su nido. Todo lo que pisas es suyo.
+  phases:
+  - displayName: Nido Anegado
+    startsAtHealth: 1
+    attacks:
+    - {fileID: 11400000, guid: b609de824632b384d8fafa094fa54c3c, type: 2}
+    - {fileID: 11400000, guid: 17fda90e9f6979f489b22af128b259f0, type: 2}
+    - {fileID: 11400000, guid: f2ffb47b1d7135e43b7e9098616dd5e3, type: 2}
+    - {fileID: 11400000, guid: efd2c482bcd6c9b4dbd687b35de8f8cc, type: 2}
+    pauseBetweenAttacks: {x: 0.9, y: 1.5}
+    damageScale: 1
+    damageTakenMultiplier: 1
+    speedScale: 1
+    accent: {r: 0.45, g: 0.85, b: 0.62, a: 1}
+    transitionSeconds: 0
+    transitionShake: 0
+    transitionSfxId: 
+    frenzyBelowHealth: 0
+    frenzySpeedScale: 1.35
+  - displayName: Puesta
+    startsAtHealth: 0.5
+    attacks:
+    - {fileID: 11400000, guid: 29ee708ea2c05c747b360d1c2d0a06a3, type: 2}
+    - {fileID: 11400000, guid: 520a4b3a286b98246a8850a6240926c2, type: 2}
+    - {fileID: 11400000, guid: 1fc726ac770da8b44afee0c3d6ee27e0, type: 2}
+    - {fileID: 11400000, guid: c0c24da20bb0f234995280f2823edda1, type: 2}
+    - {fileID: 11400000, guid: 17fda90e9f6979f489b22af128b259f0, type: 2}
+    pauseBetweenAttacks: {x: 0.7, y: 1.1}
+    damageScale: 1.15
+    damageTakenMultiplier: 1
+    speedScale: 1.2
+    accent: {r: 0.85, g: 0.78, b: 0.28, a: 1}
+    transitionSeconds: 2
+    transitionShake: 0.7
+    transitionSfxId: 
+    frenzyBelowHealth: 0.2
+    frenzySpeedScale: 1.35

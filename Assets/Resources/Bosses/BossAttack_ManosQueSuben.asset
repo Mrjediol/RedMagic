@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e970fe33522351d4e8ff16deda5acb60, type: 3}
+  m_Name: BossAttack_ManosQueSuben
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.SummonAddsAttack
+  displayName: Manos que Suben
+  description: Algo trepa por dentro del pozo. Deja de mirar el agujero.
+  accent: {r: 0.35, g: 0.72, b: 0.6, a: 1}
+  telegraph: 0.85
+  recovery: 1.3
+  weight: 1.1
+  cooldownInAttacks: 3
+  damage: 0
+  knockbackMultiplier: 1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  sfxId: 
+  shakeAmplitude: 0
+  shakeDuration: 0.25
+  prefabs:
+  - {fileID: 6480817819827520977, guid: 8b25e64e76de99e4aa19eb5b3cdd7857, type: 3}
+  count: 2
+  maxAlive: 4
+  addTag: Enemy
+  distanceRange: {x: 3.5, y: 9}
+  spawnHeight: 0.9
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  markerSeconds: 0.6
+  timeBetweenSpawns: 0.18

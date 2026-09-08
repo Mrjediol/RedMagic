@@ -59,6 +59,20 @@ namespace RedMagic.Bosses
         [Min(0f)]
         [SerializeField] private float knockbackMultiplier = 1f;
 
+        [Header("Castigo")]
+        [Tooltip("Segundos que el jefe queda EXPUESTO al acabar este ataque, durante su " +
+                 "recuperación. 0 = no abre ventana.\n\n" +
+                 "Es lo que convierte 'esquiva y espera' en 'esquiva y castiga': con un jefe " +
+                 "acorazado (la armadura de la fase), pegarle fuera de la ventana casi no vale, " +
+                 "así que el ataque más peligroso pasa a ser también la oportunidad.")]
+        [Min(0f)]
+        [SerializeField] private float vulnerableSeconds;
+
+        [Tooltip("Cuánto multiplica el daño recibido durante la ventana, por encima de la " +
+                 "armadura de la fase.")]
+        [Min(1f)]
+        [SerializeField] private float vulnerableMultiplier = 2.5f;
+
         [Header("Presencia")]
         [Tooltip("id de sonido del AudioManager al lanzar el ataque. Vacío = sin sonido.")]
         [SerializeField] private string sfxId;
@@ -77,6 +91,8 @@ namespace RedMagic.Bosses
         public float Recovery => recovery;
         public float Weight => weight;
         public int CooldownInAttacks => cooldownInAttacks;
+        public float VulnerableSeconds => vulnerableSeconds;
+        public float VulnerableMultiplier => vulnerableMultiplier;
 
         protected float Damage => damage;
         protected float KnockbackMultiplier => knockbackMultiplier;

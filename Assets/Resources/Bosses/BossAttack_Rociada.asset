@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2525450634218674ab5451d6a8b81c8f, type: 3}
+  m_Name: BossAttack_Rociada
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BulletHellAttack
+  displayName: Rociada
+  description: "Un anillo de \xE1cido que gira. El hueco se mueve: s\xEDguelo."
+  accent: {r: 0.85, g: 0.78, b: 0.28, a: 1}
+  telegraph: 0.65
+  recovery: 1.1
+  weight: 1.3
+  cooldownInAttacks: 1
+  damage: 10
+  knockbackMultiplier: 0.35
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  sfxId: 
+  shakeAmplitude: 0
+  shakeDuration: 0.25
+  pattern: 0
+  projectile:
+    prefab: {fileID: 0}
+    speed: 7.5
+    lifetime: 5
+    size: {x: 0.4, y: 0.4}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    homingTurnRate: 0
+    homingRange: 9
+    arcGravity: 0
+    impactRadius: 0
+    impactDamage: 0
+  volleys: 6
+  timeBetweenVolleys: 0.22
+  bulletsPerVolley: 12
+  arcDegrees: 360
+  startAngle: 0
+  spinPerVolley: 14
+  alternateSpin: 0
+  randomSpread: 0
+  aimAtPlayer: 0
+  originOffset: {x: 0, y: 2.8}
+  spawnRadius: 1.3
+  rainSpan: 1
+  rainMarkerSeconds: 0.5
+  rainJitter: 0.8
+  rainMarkerSize: {x: 1, y: 0.35}
+  projectileSprite: {fileID: 21300258, guid: 7810966f0f690954c87305933cabf2b0, type: 3}

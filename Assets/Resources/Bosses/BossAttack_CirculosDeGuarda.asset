@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3625575af4d5d4e9a940262c609d7c, type: 3}
+  m_Name: BossAttack_CirculosDeGuarda
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.SafeZoneAttack
+  displayName: "C\xEDrculos de Guarda"
+  description: "S\xF3lo se salva quien est\xE9 dentro de un c\xEDrculo. Corre a uno."
+  accent: {r: 0.42, g: 0.83, b: 0.95, a: 1}
+  telegraph: 0.75
+  recovery: 1.5
+  weight: 1.1
+  cooldownInAttacks: 2
+  damage: 26
+  knockbackMultiplier: 1.2
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  sfxId: 
+  shakeAmplitude: 0.55
+  shakeDuration: 0.45
+  safeSpots: 3
+  spotRadius: 2.3
+  minSeparation: 6
+  edgeMargin: 2.5
+  guaranteeReachable: 1
+  reachableRadius: 10
+  markerSeconds: 1.6
+  pulses: 1
+  timeBetweenPulses: 1.3
+  moveSpotsEachPulse: 0
+  safeColor: {r: 0.96, g: 0.94, b: 0.74, a: 0.85}
+  blastHeight: 0

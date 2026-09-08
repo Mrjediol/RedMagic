@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
+  m_Name: Boss_PozoMaldito
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  displayName: Pozo Maldito
+  title: Boca del Mundo de Abajo
+  description: "El pueblo lo tapi\xF3 hace generaciones y sigui\xF3 sacando agua
+    de \xE9l. Nadie pregunt\xF3 nunca de d\xF3nde ven\xEDa."
+  phases:
+  - displayName: Agua Negra
+    startsAtHealth: 1
+    attacks:
+    - {fileID: 11400000, guid: c4fcaaefbe87fcb4bab56f209817b3d6, type: 2}
+    - {fileID: 11400000, guid: a635b8b36e6bb7043b928c29f1068975, type: 2}
+    - {fileID: 11400000, guid: 1c69fb4be95c51247b60607612cd633b, type: 2}
+    - {fileID: 11400000, guid: 2bf8786bbe2f1e74ea0e806f0f04836b, type: 2}
+    pauseBetweenAttacks: {x: 0.9, y: 1.5}
+    damageScale: 1
+    damageTakenMultiplier: 1
+    speedScale: 1
+    accent: {r: 0.35, g: 0.72, b: 0.6, a: 1}
+    transitionSeconds: 0
+    transitionShake: 0
+    transitionSfxId: 
+    frenzyBelowHealth: 0
+    frenzySpeedScale: 1.35
+  - displayName: Desborde
+    startsAtHealth: 0.5
+    attacks:
+    - {fileID: 11400000, guid: ad1766158e3641d4d8d03f9b2fbff152, type: 2}
+    - {fileID: 11400000, guid: b4e5b4c41adab0847a27387281a64821, type: 2}
+    - {fileID: 11400000, guid: 4cbb7ed4f7ca78c4896c3b10cc471f15, type: 2}
+    - {fileID: 11400000, guid: 409071058b458184cb87d762b9f18a2c, type: 2}
+    - {fileID: 11400000, guid: 1c69fb4be95c51247b60607612cd633b, type: 2}
+    - {fileID: 11400000, guid: 2bf8786bbe2f1e74ea0e806f0f04836b, type: 2}
+    pauseBetweenAttacks: {x: 0.7, y: 1.1}
+    damageScale: 1.15
+    damageTakenMultiplier: 1
+    speedScale: 1.2
+    accent: {r: 0.6, g: 0.35, b: 0.75, a: 1}
+    transitionSeconds: 2
+    transitionShake: 0.7
+    transitionSfxId: 
+    frenzyBelowHealth: 0.2
+    frenzySpeedScale: 1.35

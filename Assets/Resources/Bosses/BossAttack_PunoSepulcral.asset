@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf9989cdc85c6464690d1b8e60779ca4, type: 3}
+  m_Name: BossAttack_PunoSepulcral
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.GroundSlamAttack
+  displayName: "Pu\xF1o Sepulcral"
+  description: "Marca el suelo bajo tus pies y lo revienta. Ap\xE1rtate\u2026 y vuelve:
+    el pu\xF1o se queda clavado y ah\xED s\xED duele."
+  accent: {r: 0.55, g: 0.68, b: 0.82, a: 1}
+  telegraph: 0.7
+  recovery: 2.6
+  weight: 1.8
+  cooldownInAttacks: 1
+  damage: 30
+  knockbackMultiplier: 2
+  vulnerableSeconds: 2.4
+  vulnerableMultiplier: 3
+  sfxId: 
+  shakeAmplitude: 0.7
+  shakeDuration: 0.45
+  aimAtPlayer: 1
+  maxReach: 0
+  radius: 3.4
+  windup: 0.8
+  height: 3.2
+  slams: 1
+  timeBetweenSlams: 0.9
+  rubbleSeconds: 0
+  rubbleDamagePerTick: 6
+  rubbleTickInterval: 0.5

@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe8e9158717b5a4da011a6132422570, type: 3}
+  m_Name: BossAttack_Terremoto
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.ShockwaveAttack
+  displayName: Terremoto
+  description: Suelo, altura, suelo. Salta, aterriza y vuelve a saltar.
+  accent: {r: 0.93, g: 0.42, b: 0.22, a: 1}
+  telegraph: 1
+  recovery: 1.5
+  weight: 1.1
+  cooldownInAttacks: 2
+  damage: 24
+  knockbackMultiplier: 1.7
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  sfxId: 
+  shakeAmplitude: 0.55
+  shakeDuration: 0.4
+  bandMin: 0
+  bandMax: 2
+  alternateBands: 1
+  bandMinB: 2
+  bandMaxB: 9
+  waves: 3
+  timeBetweenWaves: 0.7
+  bothDirections: 1
+  width: 1.6
+  speed: 14
+  travelDistance: 0
+  spawnInset: 1.5
+  speedRampPerWave: 1

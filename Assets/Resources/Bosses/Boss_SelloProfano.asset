@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
+  m_Name: Boss_SelloProfano
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  displayName: Sello Profano
+  title: Lo Que la Tumba Retiene
+  description: "No es el guardi\xE1n de la tumba: es la cerradura. Lleva siglos aguantando,
+    y ya no distingue entre lo que quiere entrar y lo que quiere salir."
+  phases:
+  - displayName: Sello Intacto
+    startsAtHealth: 1
+    attacks:
+    - {fileID: 11400000, guid: 33553285b2b7b6f479693d0ebf24f960, type: 2}
+    - {fileID: 11400000, guid: 40b9f2d9917c3604baac94045f7c3b03, type: 2}
+    - {fileID: 11400000, guid: ee94682f8fd1e1d48b72e710ae76cc8c, type: 2}
+    - {fileID: 11400000, guid: b0e1a3af0fb4b094698c2b15faeea538, type: 2}
+    pauseBetweenAttacks: {x: 0.9, y: 1.5}
+    damageScale: 1
+    damageTakenMultiplier: 1
+    speedScale: 1
+    accent: {r: 0.42, g: 0.83, b: 0.95, a: 1}
+    transitionSeconds: 0
+    transitionShake: 0
+    transitionSfxId: 
+    frenzyBelowHealth: 0
+    frenzySpeedScale: 1.35
+  - displayName: Sello Roto
+    startsAtHealth: 0.5
+    attacks:
+    - {fileID: 11400000, guid: aebfddd8f00538e4283cd4a341b848d0, type: 2}
+    - {fileID: 11400000, guid: ab68c601aa6329349b9fefc173d70186, type: 2}
+    - {fileID: 11400000, guid: dfa408ae258f7cb4c93f9a5bfd27e1c7, type: 2}
+    - {fileID: 11400000, guid: 13bc80bb5bb25f2439d2bb59988cd742, type: 2}
+    - {fileID: 11400000, guid: 40b9f2d9917c3604baac94045f7c3b03, type: 2}
+    - {fileID: 11400000, guid: b0e1a3af0fb4b094698c2b15faeea538, type: 2}
+    pauseBetweenAttacks: {x: 0.65, y: 1.1}
+    damageScale: 1.15
+    damageTakenMultiplier: 1
+    speedScale: 1.2
+    accent: {r: 0.95, g: 0.3, b: 0.5, a: 1}
+    transitionSeconds: 2
+    transitionShake: 0.7
+    transitionSfxId: 
+    frenzyBelowHealth: 0.2
+    frenzySpeedScale: 1.35

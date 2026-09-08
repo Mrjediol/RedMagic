@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9b1fa9426c9d4646af42cb557b20cea, type: 3}
+  m_Name: BossAttack_AgujaDeLuz
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.SweepBeamAttack
+  displayName: Aguja de Luz
+  description: "Una aguja de luz que barre de arriba abajo. Mira a qu\xE9 distancia
+    est\xE1s."
+  accent: {r: 0.95, g: 0.3, b: 0.5, a: 1}
+  telegraph: 0.9
+  recovery: 1.4
+  weight: 1.3
+  cooldownInAttacks: 1
+  damage: 23
+  knockbackMultiplier: 1.6
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  sfxId: 
+  shakeAmplitude: 0.35
+  shakeDuration: 0.3
+  pivotOffset: {x: 0, y: 3}
+  fromAngle: 84
+  toAngle: -6
+  sweepSeconds: 0.9
+  sweepTowardPlayer: 1
+  bothSides: 1
+  sweeps: 1
+  timeBetweenSweeps: 0.6
+  returnSweep: 1
+  length: 0
+  width: 0.8

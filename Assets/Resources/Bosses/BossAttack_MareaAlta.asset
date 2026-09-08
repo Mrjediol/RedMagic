@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8e88e53a00ca684eb0a557d4cc8174c, type: 3}
+  m_Name: BossAttack_MareaAlta
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.PlatformFloodAttack
+  displayName: Marea Alta
+  description: "M\xE1s \xE1cido, m\xE1s rato y un saliente menos. Elige bien a cu\xE1l
+    subes."
+  accent: {r: 0.85, g: 0.78, b: 0.28, a: 1}
+  telegraph: 0.85
+  recovery: 1.5
+  weight: 1.5
+  cooldownInAttacks: 2
+  damage: 0
+  knockbackMultiplier: 1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  sfxId: 
+  shakeAmplitude: 0
+  shakeDuration: 0.25
+  platformCount: 2
+  platformSize: {x: 3.8, y: 0.7}
+  platformHeights:
+  - 3.2
+  - 5.6
+  platformSeconds: 7.5
+  minSeparation: 8
+  floodSeconds: 5.5
+  floodSegments: 6
+  floodHeight: 1.4
+  floodDamagePerTick: 13
+  floodTickInterval: 0.45
+  climbSeconds: 1.2
+  markerSeconds: 0.45

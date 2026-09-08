@@ -47,11 +47,21 @@ namespace RedMagic.Bosses.EditorTools
             return asset;
         }
 
-        /// <summary>Rellena una <see cref="BossPhase"/> dentro del array serializado del jefe.</summary>
+        /// <summary>
+        /// Rellena una <see cref="BossPhase"/> dentro del array serializado del jefe.
+        ///
+        /// <b>Escribe TODOS los campos, también los que "ya tienen valor por defecto".</b> Un
+        /// elemento de array creado con <c>SerializedProperty.arraySize</c> se inicializa a ceros:
+        /// Unity no ejecuta los inicializadores de campo de C#. Así que un campo que aquí no se
+        /// toque no vale 1 — vale 0, y con <c>damageTakenMultiplier</c> eso significa un jefe al
+        /// que no se le puede hacer daño en toda la pelea.
+        /// </summary>
         public static void WritePhase(SerializedProperty phase, string displayName, float startsAtHealth,
                                       float damageScale, float speedScale, Color accent, Vector2 pause,
-                                      float transitionSeconds, float frenzyBelow, BossAttack[] attacks)
+                                      float transitionSeconds, float frenzyBelow, BossAttack[] attacks,
+                                      float damageTaken = 1f)
         {
+            phase.FindPropertyRelative("damageTakenMultiplier").floatValue = Mathf.Max(0.01f, damageTaken);
             phase.FindPropertyRelative("displayName").stringValue = displayName;
             phase.FindPropertyRelative("startsAtHealth").floatValue = startsAtHealth;
             phase.FindPropertyRelative("damageScale").floatValue = damageScale;

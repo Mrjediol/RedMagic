@@ -18,6 +18,12 @@ namespace RedMagic.Combat
         [Tooltip("Si está activo no recibe daño nunca (útil para pruebas).")]
         [SerializeField] private bool invulnerable;
 
+        [Tooltip("Multiplica TODO el daño que recibe este personaje. 1 = normal, 0.35 = acorazado, " +
+                 "2.5 = expuesto. Es un solo número porque el daño entra por un único sitio; quien " +
+                 "golpea no tiene que saber nada de armaduras.")]
+        [Min(0f)]
+        [SerializeField] private float damageMultiplier = 1f;
+
         [Header("Invulnerabilidad tras el golpe (i-frames)")]
         [Tooltip("Segundos de invulnerabilidad justo después de recibir daño. Evita que dos " +
                  "enemigos, o un contacto y un proyectil, cuenten como dos o tres golpes en el " +
@@ -46,6 +52,20 @@ namespace RedMagic.Combat
         {
             get => invulnerable;
             set => invulnerable = value;
+        }
+
+        /// <summary>
+        /// Multiplicador de daño recibido. Lo mueven en caliente los estados de un combate: la
+        /// armadura de una fase de jefe, o su ventana de castigo tras un ataque pesado.
+        ///
+        /// Vive aquí y no en el atacante porque <see cref="Health"/> es el único sitio donde se
+        /// aplica daño: así el número que ve el jugador en el popup ya es el real, y ninguna arma,
+        /// habilidad o ataque de jefe necesita saber que existen armaduras.
+        /// </summary>
+        public float DamageMultiplier
+        {
+            get => damageMultiplier;
+            set => damageMultiplier = Mathf.Max(0f, value);
         }
 
         /// <summary>
@@ -137,6 +157,12 @@ namespace RedMagic.Combat
         {
             if (amount <= 0f || IsDead || IsInvulnerable) return false;
 
+            // La armadura se aplica aquí, antes de nada más, para que todo lo que viene después
+            // —la vida, los eventos, el número flotante— hable del daño que de verdad ha entrado.
+            // Con multiplicador 0 el golpe no entra, así que tampoco empuja ni gasta i-frames.
+            amount *= damageMultiplier;
+            if (amount <= 0f) return false;
+
             currentHealth = Mathf.Max(0f, currentHealth - amount);
 
             if (invulnerabilityDuration > 0f)
@@ -175,6 +201,20 @@ namespace RedMagic.Combat
             // así que el empujón no se vería y sí dejaría un temporizador corriendo.
             if (!IsDead && _knockback != null) _knockback.ApplyFrom(sourcePosition, knockbackMultiplier);
             return true;
+        }
+
+        /// <summary>
+        /// Cambia la vida máxima en caliente. Hace falta para lo que se construye en código y se
+        /// reutiliza desde un pool (las anclas de un jefe, por ejemplo): el prefab no puede traer
+        /// el número puesto porque no hay prefab.
+        /// </summary>
+        public void SetMaxHealth(float value, bool healToFull)
+        {
+            maxHealth = Mathf.Max(1f, value);
+            if (healToFull) currentHealth = maxHealth;
+            else currentHealth = Mathf.Min(currentHealth, maxHealth);
+
+            HealthChanged?.Invoke(currentHealth, maxHealth);
         }
 
         public void Heal(float amount)

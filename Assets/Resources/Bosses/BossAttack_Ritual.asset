@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6d492d2030d8b84e8c1ef2b148e8731, type: 3}
+  m_Name: BossAttack_Ritual
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.AnchorRitualAttack
+  displayName: Ritual
+  description: "Se cierra y clava tres anclas. R\xF3mpelas: mientras est\xE9n en
+    pie, pegarle a \xE9l no sirve de nada."
+  accent: {r: 0.42, g: 0.83, b: 0.95, a: 1}
+  telegraph: 0.8
+  recovery: 2.2
+  weight: 1.6
+  cooldownInAttacks: 3
+  damage: 0
+  knockbackMultiplier: 1
+  vulnerableSeconds: 3
+  vulnerableMultiplier: 3
+  sfxId: 
+  shakeAmplitude: 0
+  shakeDuration: 0.25
+  anchorCount: 3
+  anchorHealth: 110
+  anchorSize: {x: 1.3, y: 1.6}
+  anchorSprite: {fileID: -1758970209, guid: 7810966f0f690954c87305933cabf2b0, type: 3}
+  anchorHeight: 0.9
+  minSeparation: 6
+  edgeMargin: 2.5
+  ritualSeconds: 9
+  damageTakenDuringRitual: 0.05
+  dischargeDamage: 34
+  dischargeKnockback: 2
+  dischargeWarning: 0.7

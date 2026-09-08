@@ -295,6 +295,7 @@ MonoBehaviour:
   offset: {x: 1.5, y: 0.8}
   smoothTime: 0.18
   followVertical: 1
+  verticalSmoothTime: 0
   useBounds: 0
   minBounds: {x: -20, y: -5}
   maxBounds: {x: 20, y: 10}

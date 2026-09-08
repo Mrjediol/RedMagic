@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4719577844862401677}
   - component: {fileID: 2250430706827033350}
+  - component: {fileID: 4979320243512730508}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -91,6 +92,21 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &4979320243512730508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3592000429385562164}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d1091056b3220945a2089059991a129, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.FacePlayer
+  spriteFacesRight: 0
+  target: {fileID: 0}
+  targetTag: Player
 --- !u!1 &4572301196196564212
 GameObject:
   m_ObjectHideFlags: 0
@@ -220,6 +236,7 @@ MonoBehaviour:
   maxHealth: 22
   currentHealth: 22
   invulnerable: 0
+  damageMultiplier: 1
   invulnerabilityDuration: 0
   invulnerabilityUsesUnscaledTime: 0
   hurtSfxId: 

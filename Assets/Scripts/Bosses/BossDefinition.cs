@@ -29,6 +29,12 @@ namespace RedMagic.Bosses
         [Min(0.01f)]
         public float damageScale = 1f;
 
+        [Tooltip("Multiplica el daño que RECIBE el jefe durante la fase. 1 = normal; por debajo " +
+                 "de 1 va acorazado y sólo se le hace daño de verdad en las ventanas de castigo " +
+                 "que abren sus ataques (BossAttack.vulnerableSeconds).")]
+        [Min(0f)]
+        public float damageTakenMultiplier = 1f;
+
         [Tooltip("Multiplica el ritmo: 1.3 = todos los avisos, oleadas y recuperaciones un 30% más " +
                  "rápidos. Es lo que convierte la fase 2 en la misma baraja pero agobiante.")]
         [Min(0.1f)]
@@ -116,9 +122,23 @@ namespace RedMagic.Bosses
 
         private void OnValidate()
         {
+            if (phases == null || phases.Length == 0) return;
+
             // La primera fase tiene que cubrir al jefe a vida llena o el combate empezaría sin
             // ninguna fase activa y el jefe se quedaría plantado sin atacar.
-            if (phases != null && phases.Length > 0) phases[0].startsAtHealth = 1f;
+            phases[0].startsAtHealth = 1f;
+
+            // Una fase a 0 es un jefe al que no se le puede quitar vida: nunca es lo que alguien
+            // quiere, y como los elementos de array nacen a ceros es un fallo fácil de colar sin
+            // enterarse. Se repara y se avisa en vez de dejar un combate imposible de ganar.
+            for (int i = 0; i < phases.Length; i++)
+            {
+                if (phases[i] == null || phases[i].damageTakenMultiplier > 0f) continue;
+
+                phases[i].damageTakenMultiplier = 1f;
+                Debug.LogWarning($"[Boss] '{name}': la fase '{phases[i].displayName}' recibía 0 de " +
+                                 $"daño (invencible). Se ha puesto a 1.", this);
+            }
         }
     }
 }

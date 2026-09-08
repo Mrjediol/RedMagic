@@ -39,6 +39,12 @@ namespace RedMagic.Bosses
         // para que el trozo que se queda atrás tras un golpe fuerte se lea de un vistazo.
         private static readonly Color GhostColor = new Color(0.98f, 0.76f, 0.32f, 1f);
         private static readonly Color FillColor = new Color(0.76f, 0.11f, 0.16f, 1f);
+
+        /// <summary>Barra dorada mientras el jefe está expuesto: "pégale AHORA".</summary>
+        private static readonly Color VulnerableFillColor = new Color(1f, 0.82f, 0.3f, 1f);
+
+        /// <summary>Barra de acero mientras se cubre: "no le pegues AHORA".</summary>
+        private static readonly Color GuardFillColor = new Color(0.5f, 0.72f, 0.95f, 1f);
         private static readonly Color TickColor = new Color(0.05f, 0.03f, 0.05f, 0.9f);
 
         private BossController _boss;
@@ -46,6 +52,7 @@ namespace RedMagic.Bosses
 
         private CanvasGroup _group;
         private RectTransform _fill;
+        private Image _fillImage;
         private RectTransform _ghost;
         private RectTransform _ticks;
         private Text _nameLabel;
@@ -101,6 +108,10 @@ namespace RedMagic.Bosses
             _health = boss.BossHealth;
             _hiding = false;
 
+            boss.VulnerabilityChanged += OnVulnerabilityChanged;
+            boss.GuardChanged += OnGuardChanged;
+            OnVulnerabilityChanged(boss.IsVulnerable);
+
             if (_health != null)
             {
                 _health.HealthChanged += OnHealthChanged;
@@ -125,8 +136,62 @@ namespace RedMagic.Bosses
         private void Unbind()
         {
             if (_health != null) _health.HealthChanged -= OnHealthChanged;
+            if (_boss != null)
+            {
+                _boss.VulnerabilityChanged -= OnVulnerabilityChanged;
+                _boss.GuardChanged -= OnGuardChanged;
+            }
             _health = null;
             _boss = null;
+        }
+
+        /// <summary>
+        /// Lo contrario del aviso de exposición: la barra se vuelve acero y el subtítulo dice que
+        /// pegar ahora sale caro. Las dos señales viven en el mismo sitio a propósito — el jugador
+        /// mira la barra, así que ahí tienen que estar tanto el "ahora sí" como el "ahora no".
+        /// </summary>
+        private void OnGuardChanged(bool guarding)
+        {
+            if (_fillImage == null) return;
+
+            _fillImage.color = guarding ? GuardFillColor : FillColor;
+            SetSubtitle(guarding ? "SE CUBRE" : null, GuardFillColor);
+        }
+
+        /// <summary>
+        /// La barra se vuelve dorada mientras el jefe está expuesto. La señal principal es su aura,
+        /// pero el jugador que está castigando mira los números y la barra, no al jefe — así que
+        /// la ventana también tiene que verse aquí.
+        /// </summary>
+        private void OnVulnerabilityChanged(bool vulnerable)
+        {
+            if (_fillImage == null) return;
+
+            _fillImage.color = vulnerable ? VulnerableFillColor : FillColor;
+            SetSubtitle(vulnerable ? "¡EXPUESTO!" : null, VulnerableFillColor);
+        }
+
+        /// <summary>
+        /// Escribe un aviso de estado bajo el nombre, o lo quita (null) devolviendo el epíteto del
+        /// jefe. Centralizado para que exposición y guardia no se pisen el subtítulo.
+        /// </summary>
+        private void SetSubtitle(string text, Color color)
+        {
+            if (_titleLabel == null) return;
+
+            if (string.IsNullOrEmpty(text))
+            {
+                var definition = _boss != null ? _boss.Definition : null;
+                _titleLabel.text = definition != null ? definition.Title : string.Empty;
+                _titleLabel.color = new Color(0.85f, 0.72f, 0.58f, 0.95f);
+            }
+            else
+            {
+                _titleLabel.text = text;
+                _titleLabel.color = color;
+            }
+
+            _titleLabel.gameObject.SetActive(!string.IsNullOrWhiteSpace(_titleLabel.text));
         }
 
         private void OnHealthChanged(float current, float max)
@@ -250,6 +315,7 @@ namespace RedMagic.Bosses
             _fill = StretchFill(NewImage("Fill", bar, FillColor,
                                          new Vector2(BorderThickness, BorderThickness),
                                          new Vector2(-BorderThickness, -BorderThickness)));
+            _fillImage = _fill.GetComponent<Image>();
 
             _ticks = NewRect("PhaseTicks", bar);
             _ticks.anchorMin = Vector2.zero;

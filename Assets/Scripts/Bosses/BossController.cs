@@ -111,6 +111,14 @@ namespace RedMagic.Bosses
         [Min(1f)]
         [SerializeField] private float auraScale = 1.06f;
 
+        [Tooltip("Color del aura mientras el jefe está expuesto. A propósito distinto del de " +
+                 "cualquier fase: mientras brilla así, pegarle renta.")]
+        [SerializeField] private Color vulnerableAura = new Color(1f, 0.86f, 0.35f, 1f);
+
+        [Tooltip("Color del aura mientras el jefe se cubre. Tiene que ser lo más distinto posible " +
+                 "del de exposición: significan cosas opuestas.")]
+        [SerializeField] private Color guardAura = new Color(0.45f, 0.72f, 1f, 1f);
+
         [Tooltip("Balanceo lento del cuerpo mientras espera, en grados. 0 = quieto.")]
         [Min(0f)]
         [SerializeField] private float swayDegrees = 1.8f;
@@ -139,6 +147,10 @@ namespace RedMagic.Bosses
         private bool _dead;
         private Coroutine _fightRoutine;
         private Coroutine _attackRoutine;
+        private Coroutine _vulnerableRoutine;
+        private Coroutine _guardRoutine;
+        private float _reflectDamage;
+        private float _reflectKnockback;
         private float _auraTarget;
 
         /// <summary>Esbirros invocados por los ataques. Se limpian al morir el jefe.</summary>
@@ -169,6 +181,18 @@ namespace RedMagic.Bosses
 
         /// <summary>Se dispara al morir el jefe.</summary>
         public event Action Defeated;
+
+        /// <summary>True mientras dura una ventana de castigo (el jefe recibe daño multiplicado).</summary>
+        public bool IsVulnerable { get; private set; }
+
+        /// <summary>Abre y cierra la ventana de castigo. Lo escucha la barra de vida.</summary>
+        public event Action<bool> VulnerabilityChanged;
+
+        /// <summary>True mientras el jefe está cubierto: apenas recibe daño y lo devuelve.</summary>
+        public bool IsGuarding { get; private set; }
+
+        /// <summary>Abre y cierra la guardia. Lo escucha la barra de vida.</summary>
+        public event Action<bool> GuardChanged;
 
         /// <summary>
         /// Apunta un esbirro invocado para que muera con el jefe. Sin esto, matar al jefe dejaría
@@ -411,8 +435,162 @@ namespace RedMagic.Bosses
 
             if (_dead) yield break;
 
+            // --- castigo: si el ataque lo declara, el jefe queda expuesto durante su recuperación.
+            // La ventana empieza aquí y no antes a propósito: mientras el ataque está haciendo daño
+            // no puede ser también la oportunidad de pegarle.
+            if (attack.VulnerableSeconds > 0f)
+                EnterVulnerable(attack.VulnerableSeconds / pace, attack.VulnerableMultiplier);
+
             // --- recuperación: el jefe se queda quieto. Ésta es la ventana de daño del jugador.
             yield return new WaitForSeconds(attack.Recovery / pace);
+        }
+
+        // ------------------------------------------------------------------ ventana de castigo
+
+        /// <summary>
+        /// Deja al jefe expuesto <paramref name="seconds"/> segundos: recibe el daño multiplicado
+        /// y su aura cambia a <see cref="vulnerableAura"/> para que se vea desde la otra punta de
+        /// la arena. Es público para que también pueda abrirla un ataque a mitad de su ejecución
+        /// (por ejemplo, uno que se quede con el puño clavado en el suelo).
+        /// </summary>
+        public void EnterVulnerable(float seconds, float multiplier)
+        {
+            if (_dead || seconds <= 0f) return;
+
+            if (_vulnerableRoutine != null) StopCoroutine(_vulnerableRoutine);
+            _vulnerableRoutine = StartCoroutine(VulnerableWindow(seconds, Mathf.Max(1f, multiplier)));
+        }
+
+        private IEnumerator VulnerableWindow(float seconds, float multiplier)
+        {
+            // Simétrico a la guardia: los dos estados escriben el mismo multiplicador, así que el
+            // que entra tiene que cerrar al otro o el que salga después restauraría la armadura
+            // por debajo y se comería la ventana.
+            EndGuard();
+
+            IsVulnerable = true;
+            VulnerabilityChanged?.Invoke(true);
+
+            _health.DamageMultiplier = PhaseArmor() * multiplier;
+
+            SetAuraColor(vulnerableAura);
+            _auraTarget = 0.8f;
+
+            yield return new WaitForSeconds(seconds);
+
+            _vulnerableRoutine = null;
+            EndVulnerable();
+        }
+
+        /// <summary>Cierra la ventana y devuelve la armadura de la fase. Es idempotente.</summary>
+        private void EndVulnerable()
+        {
+            if (_vulnerableRoutine != null)
+            {
+                StopCoroutine(_vulnerableRoutine);
+                _vulnerableRoutine = null;
+            }
+
+            _health.DamageMultiplier = PhaseArmor();
+
+            if (!IsVulnerable) return;
+
+            IsVulnerable = false;
+            _auraTarget = 0f;
+            ApplyPhaseVisuals(CurrentPhase);
+            VulnerabilityChanged?.Invoke(false);
+        }
+
+        /// <summary>Armadura de la fase actual: cuánto daño recibe el jefe fuera de las ventanas.</summary>
+        private float PhaseArmor()
+        {
+            var phase = CurrentPhase;
+            return phase != null ? Mathf.Max(0f, phase.damageTakenMultiplier) : 1f;
+        }
+
+        // ------------------------------------------------------------------ guardia
+
+        /// <summary>
+        /// El jefe se cubre: durante <paramref name="seconds"/> apenas recibe daño y <b>devuelve</b>
+        /// una fracción de lo que le entra a quien se lo hizo.
+        ///
+        /// Es la ventana de castigo del revés, y por eso existe: la de castigo enseña "pégale
+        /// ahora", ésta enseña "ahora no". Un jefe que sólo tenga la primera se juega pulsando el
+        /// botón sin mirar; teniendo las dos, hay que leerlo.
+        ///
+        /// La armadura de la guardia no se pone a 0 a propósito: el golpe tiene que <i>entrar</i>
+        /// para poder devolverse, y ver un número ridículo salir del jefe es justo la señal de que
+        /// estás perdiendo el tiempo.
+        /// </summary>
+        public void EnterGuard(float seconds, float damageTaken, float reflectDamage, float reflectKnockback)
+        {
+            if (_dead || seconds <= 0f) return;
+
+            if (_guardRoutine != null) StopCoroutine(_guardRoutine);
+            _guardRoutine = StartCoroutine(GuardWindow(seconds, Mathf.Max(0.01f, damageTaken),
+                                                       Mathf.Max(0f, reflectDamage),
+                                                       Mathf.Max(0f, reflectKnockback)));
+        }
+
+        private IEnumerator GuardWindow(float seconds, float damageTaken, float reflectDamage,
+                                        float reflectKnockback)
+        {
+            // Una guardia cancela cualquier ventana de castigo abierta: no puede estar expuesto y
+            // cubierto a la vez.
+            EndVulnerable();
+
+            IsGuarding = true;
+            _reflectDamage = reflectDamage;
+            _reflectKnockback = reflectKnockback;
+            GuardChanged?.Invoke(true);
+
+            _health.DamageMultiplier = damageTaken;
+            _health.Damaged += OnGuardedDamage;
+
+            SetAuraColor(guardAura);
+            _auraTarget = 0.7f;
+
+            yield return new WaitForSeconds(seconds);
+
+            _guardRoutine = null;
+            EndGuard();
+        }
+
+        private void EndGuard()
+        {
+            if (_guardRoutine != null)
+            {
+                StopCoroutine(_guardRoutine);
+                _guardRoutine = null;
+            }
+
+            if (!IsGuarding) return;
+
+            _health.Damaged -= OnGuardedDamage;
+            _health.DamageMultiplier = PhaseArmor();
+
+            IsGuarding = false;
+            _auraTarget = 0f;
+            ApplyPhaseVisuals(CurrentPhase);
+            GuardChanged?.Invoke(false);
+        }
+
+        /// <summary>
+        /// Devuelve parte del golpe a quien esté pegando. Se busca al objetivo en vez de guardar
+        /// quién golpeó porque <c>Health</c> no dice de dónde vino el daño — y para lo que hace
+        /// falta aquí (castigar a quien está encima del jefe) el objetivo es exactamente ése.
+        /// </summary>
+        private void OnGuardedDamage(float amount)
+        {
+            if (!IsGuarding || _reflectDamage <= 0f) return;
+
+            var target = ResolveTarget();
+            if (target == null) return;
+
+            var health = target.GetComponentInParent<Health>();
+            if (health == null || health.IsDead) return;
+
+            health.TakeDamage(_reflectDamage, transform.position, _reflectKnockback);
         }
 
         private BossContext BuildContext(BossPhase phase)
@@ -481,6 +659,11 @@ namespace RedMagic.Bosses
                 _fightRoutine = null;
             }
 
+            // Ni una ventana de castigo ni una guardia deben sobrevivir al cambio de fase: la
+            // armadura que les tocaría restaurar sería la de la fase anterior.
+            EndGuard();
+            EndVulnerable();
+
             _health.Invulnerable = true;
             ApplyPhaseVisuals(phase);
             PhaseChanged?.Invoke(_phaseIndex);
@@ -503,9 +686,19 @@ namespace RedMagic.Bosses
 
         private void ApplyPhaseVisuals(BossPhase phase)
         {
-            if (phase == null || _aura == null) return;
+            if (phase == null) return;
 
-            var color = phase.accent;
+            // La armadura es de la fase, así que se aplica con el resto de su identidad: una fase
+            // puede empezar acorazada y la siguiente agrietarse sin tocar nada más.
+            if (!IsVulnerable) _health.DamageMultiplier = Mathf.Max(0f, phase.damageTakenMultiplier);
+
+            SetAuraColor(phase.accent);
+        }
+
+        private void SetAuraColor(Color color)
+        {
+            if (_aura == null) return;
+
             color.a = _aura.color.a;
             _aura.color = color;
         }
@@ -521,6 +714,23 @@ namespace RedMagic.Bosses
             StopAllCoroutines();
             _attackRoutine = null;
             _fightRoutine = null;
+            _vulnerableRoutine = null;
+            _guardRoutine = null;
+
+            if (IsVulnerable)
+            {
+                IsVulnerable = false;
+                VulnerabilityChanged?.Invoke(false);
+            }
+
+            if (IsGuarding)
+            {
+                // La suscripción al daño tiene que soltarse a mano: StopAllCoroutines corta la
+                // corrutina de la guardia, pero no deshace lo que ya había enganchado.
+                _health.Damaged -= OnGuardedDamage;
+                IsGuarding = false;
+                GuardChanged?.Invoke(false);
+            }
 
             // Los esbirros mueren con su invocador: si no, el jugador se queda peleando contra los
             // restos mientras recoge la recompensa del jefe.

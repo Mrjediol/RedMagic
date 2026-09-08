@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf9989cdc85c6464690d1b8e60779ca4, type: 3}
+  m_Name: BossAttack_PunoDoble
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.GroundSlamAttack
+  displayName: "Pu\xF1o Doble"
+  description: "Dos pu\xF1etazos, y el segundo va a donde te has apartado del primero."
+  accent: {r: 0.93, g: 0.42, b: 0.22, a: 1}
+  telegraph: 0.65
+  recovery: 2.1
+  weight: 1.7
+  cooldownInAttacks: 1
+  damage: 30
+  knockbackMultiplier: 2
+  vulnerableSeconds: 1.9
+  vulnerableMultiplier: 3
+  sfxId: 
+  shakeAmplitude: 0.7
+  shakeDuration: 0.45
+  aimAtPlayer: 1
+  maxReach: 0
+  radius: 3.2
+  windup: 0.65
+  height: 3.2
+  slams: 2
+  timeBetweenSlams: 0.85
+  rubbleSeconds: 6
+  rubbleDamagePerTick: 6
+  rubbleTickInterval: 0.5

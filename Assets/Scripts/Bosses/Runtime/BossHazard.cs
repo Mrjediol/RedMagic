@@ -1,5 +1,6 @@
 using RedMagic.Abilities;
 using RedMagic.Core;
+using RedMagic.Fx;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -28,6 +29,9 @@ namespace RedMagic.Bosses
         private static void ResetPools() => _pool = null;
 
         private SpriteRenderer _renderer;
+        private FxPlaceholderStyle _style;
+        private bool _pooledPrefab;
+        private bool _styled = true;
 
         private AbilityContext _ctx;
         private Vector2 _size;
@@ -43,9 +47,16 @@ namespace RedMagic.Bosses
         public static BossHazard Spawn(in BossContext ctx, Vector2 center, Vector2 size, float seconds,
                                        float damagePerTick, float tickInterval, float knockbackMultiplier)
         {
-            _pool ??= new Pool<BossHazard>(Build, prewarm: 8);
+            var hazard = BossFxSpawn.FromPrefab<BossHazard>(ctx.Boss != null ? ctx.Boss.HazardPrefab : null);
+            bool fromPrefab = hazard != null;
 
-            var hazard = _pool.Get();
+            if (hazard == null)
+            {
+                _pool ??= new Pool<BossHazard>(Build, prewarm: 8);
+                hazard = _pool.Get();
+            }
+
+            hazard._pooledPrefab = fromPrefab;
             hazard.Begin(ctx, center, size, seconds, damagePerTick, tickInterval, knockbackMultiplier);
             return hazard;
         }
@@ -60,7 +71,9 @@ namespace RedMagic.Bosses
         private void Begin(in BossContext ctx, Vector2 center, Vector2 size, float seconds,
                            float damagePerTick, float tickInterval, float knockbackMultiplier)
         {
-            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            if (_renderer == null) _renderer = GetComponentInChildren<SpriteRenderer>();
+            if (_style == null) _style = GetComponent<FxPlaceholderStyle>();
+            _styled = !_pooledPrefab || _style != null;
 
             _ctx = ctx.Ability;
             _size = new Vector2(Mathf.Max(0.2f, size.x), Mathf.Max(0.2f, size.y));
@@ -72,19 +85,29 @@ namespace RedMagic.Bosses
             _tickTimer = _tickInterval;
             _damagePerTick = Mathf.Max(0f, damagePerTick);
             _knockbackMultiplier = Mathf.Max(0f, knockbackMultiplier);
-            _tint = ctx.Accent;
+            _tint = _styled ? ctx.Accent : Color.white;
             _finished = false;
 
             transform.position = center;
 
-            _renderer.sprite = ctx.FxSprite != null ? ctx.FxSprite : AbilityFx.DefaultSprite;
-            AbilityFx.CopySorting(_renderer, ctx.Ability.Caster);
-            AbilityFx.Resize(transform, _renderer, _size);
+            if (!_pooledPrefab)
+            {
+                _renderer.sprite = ctx.FxSprite != null ? ctx.FxSprite : AbilityFx.DefaultSprite;
+                AbilityFx.CopySorting(_renderer, ctx.Ability.Caster);
+                AbilityFx.Resize(transform, _renderer, _size);
+            }
+            else if (_style != null)
+            {
+                _style.Apply(ctx.Accent, _size, ctx.Ability.Caster);
+            }
         }
 
         void IPooled.OnReturnedToPool()
         {
         }
+
+        // PrefabPool no tiene hook por instancia: inerte hasta el próximo Begin.
+        private void OnEnable() => _finished = true;
 
         private void Update()
         {
@@ -111,7 +134,7 @@ namespace RedMagic.Bosses
         /// </summary>
         private void Breathe()
         {
-            if (_renderer == null) return;
+            if (_renderer == null || !_styled) return;
 
             float life = Mathf.Clamp01(_secondsLeft / _totalSeconds);
             float pulse = 0.78f + 0.22f * Mathf.Sin(Time.time * 6f);
@@ -125,7 +148,7 @@ namespace RedMagic.Bosses
         private void Finish()
         {
             _finished = true;
-            _pool?.Release(this);
+            BossFxSpawn.Release(this, _pooledPrefab, _pool);
         }
 
         private void OnDrawGizmosSelected()

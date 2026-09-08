@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Weapon_EscopetaEspectral
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponDefinition
   displayName: Escopeta Espectral
-  description: "Cinco perdigones de escarcha en abanico corto. Demoledora pegada a
-    la cara, in\xFAtil a media sala. Te obliga a entrar. Nace de hielo."
+  description: "Cinco perdigones de escarcha en abanico corto. Demoledora pegada
+    a la cara, in\xFAtil a media sala. Te obliga a entrar. Nace de hielo."
   icon: {fileID: 0}
   accent: {r: 0.75, g: 0.85, b: 1, a: 1}
   baseDamage: 9
@@ -35,7 +35,16 @@ MonoBehaviour:
     burstInterval: 0.09
     impactRadius: 0
     impactDamage: 0
+    projectilePrefab: {fileID: 3544784464265721044, guid: d1669616c6c7c3d4bbd98cef2be270ac, type: 3}
+    beamPrefab: {fileID: 0}
     meleeRange: 1.2
     meleeArc: 90
+    chargeTime: 0
+    minChargeToFire: 0.2
+    minChargeDamage: 0.35
+    beamDuration: 0.5
+    beamTickInterval: 0.06
+    beamLength: 14
+    beamWidth: 0.5
   innateElement: 1
   universalTag: 100

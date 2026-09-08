@@ -1,4 +1,5 @@
 using System;
+using RedMagic.Fx;
 using RedMagic.Gameplay;
 using UnityEngine;
 
@@ -96,6 +97,11 @@ namespace RedMagic.Abilities
                     return null;
                 }
                 projectile.PooledPrefab = true;
+
+                // Placeholder (forma geométrica): se le tiñe y redimensiona por disparo, igual que
+                // al proyectil de código. El arte final no lleva FxPlaceholderStyle y se respeta.
+                var style = go.GetComponent<FxPlaceholderStyle>();
+                if (style != null) style.Apply(tint, spec.size * ctx.SizeScale, ctx.Caster);
             }
             else
             {

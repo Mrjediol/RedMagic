@@ -75,6 +75,17 @@ namespace RedMagic.Items
         [Min(0f)]
         public float impactDamage;
 
+        [Header("Arte (placeholder → sprite real)")]
+        [Tooltip("Prefab del proyectil. Vacío = se construye en código con la forma geométrica y " +
+                 "el tinte del arma (como hasta ahora). Con prefab, el disparo sale de él por el " +
+                 "pool: para poner arte de verdad basta con abrir el prefab y cambiarle el sprite. " +
+                 "Si el prefab lleva un FxPlaceholderStyle, se le sigue aplicando tinte/tamaño; si " +
+                 "no, se respeta tal cual (arte final).")]
+        public GameObject projectilePrefab;
+
+        [Tooltip("Prefab del haz (sólo armas Hitscan). Mismas reglas que projectilePrefab.")]
+        public GameObject beamPrefab;
+
         [Header("Melee")]
         [Min(0f)]
         public float meleeRange = 1.2f;

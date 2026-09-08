@@ -1,6 +1,7 @@
 using RedMagic.Abilities;
 using RedMagic.Combat;
 using RedMagic.Core;
+using RedMagic.Fx;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -31,6 +32,9 @@ namespace RedMagic.Bosses
         private SpriteRenderer _renderer;
         private BoxCollider2D _collider;
         private Health _health;
+        private FxPlaceholderStyle _style;
+        private bool _pooledPrefab;
+        private bool _styled = true;
 
         private Color _tint;
         private bool _released;
@@ -44,9 +48,16 @@ namespace RedMagic.Bosses
         public static BossAnchor Spawn(in BossContext ctx, Vector2 position, Vector2 size,
                                        float maxHealth, Sprite sprite)
         {
-            _pool ??= new Pool<BossAnchor>(Build, prewarm: 4);
+            var anchor = BossFxSpawn.FromPrefab<BossAnchor>(ctx.Boss != null ? ctx.Boss.AnchorPrefab : null);
+            bool fromPrefab = anchor != null;
 
-            var anchor = _pool.Get();
+            if (anchor == null)
+            {
+                _pool ??= new Pool<BossAnchor>(Build, prewarm: 4);
+                anchor = _pool.Get();
+            }
+
+            anchor._pooledPrefab = fromPrefab;
             anchor.Begin(ctx, position, size, maxHealth, sprite);
             return anchor;
         }
@@ -71,18 +82,31 @@ namespace RedMagic.Bosses
         private void Begin(in BossContext ctx, Vector2 position, Vector2 size, float maxHealth,
                            Sprite sprite)
         {
-            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            if (_renderer == null) _renderer = GetComponentInChildren<SpriteRenderer>();
+            if (_collider == null) _collider = GetComponent<BoxCollider2D>();
+            if (_health == null) _health = GetComponent<Health>();
+            if (_style == null) _style = GetComponent<FxPlaceholderStyle>();
+            _styled = !_pooledPrefab || _style != null;
 
-            _tint = ctx.Accent;
+            _tint = _styled ? ctx.Accent : Color.white;
             _released = false;
 
             transform.position = position;
 
-            _renderer.sprite = sprite != null ? sprite
-                             : ctx.FxSprite != null ? ctx.FxSprite : AbilityFx.DefaultSprite;
-            _renderer.color = _tint;
-            AbilityFx.CopySorting(_renderer, ctx.Ability.Caster);
-            AbilityFx.Resize(transform, _renderer, size);
+            if (!_pooledPrefab)
+            {
+                _renderer.sprite = sprite != null ? sprite
+                                 : ctx.FxSprite != null ? ctx.FxSprite : AbilityFx.DefaultSprite;
+                _renderer.color = _tint;
+                AbilityFx.CopySorting(_renderer, ctx.Ability.Caster);
+                AbilityFx.Resize(transform, _renderer, size);
+            }
+            else
+            {
+                // El sprite por-ataque (AnchorRitualAttack.anchorSprite) sigue mandando si se pasó.
+                if (sprite != null && _renderer != null) _renderer.sprite = sprite;
+                if (_style != null) _style.Apply(ctx.Accent, size, ctx.Ability.Caster);
+            }
 
             var scale = transform.localScale;
             _collider.size = new Vector2(size.x / Mathf.Max(0.0001f, scale.x),
@@ -101,6 +125,13 @@ namespace RedMagic.Bosses
             if (_collider != null) _collider.enabled = false;
         }
 
+        // PrefabPool no tiene hook por instancia: inerte y sin collider hasta el próximo Begin.
+        private void OnEnable()
+        {
+            _released = true;
+            if (_collider != null) _collider.enabled = false;
+        }
+
         private void Update()
         {
             if (_released) return;
@@ -108,7 +139,7 @@ namespace RedMagic.Bosses
             if (_health != null && _health.IsDead) { Release(true); return; }
 
             // Late despacio: un objetivo que respira se distingue del decorado del escenario.
-            if (_renderer == null) return;
+            if (_renderer == null || !_styled) return;
 
             var color = _tint;
             color.a = _tint.a * (0.72f + 0.28f * Mathf.Sin(Time.time * 4f));
@@ -128,7 +159,7 @@ namespace RedMagic.Bosses
                             new Color(_tint.r, _tint.g, _tint.b, broken ? 0.9f : 0.5f),
                             broken ? 0.4f : 0.25f, 0f, broken ? 2.2f : 1.4f, gameObject);
 
-            _pool?.Release(this);
+            BossFxSpawn.Release(this, _pooledPrefab, _pool);
         }
 
         private void TryCopyTag(GameObject reference)

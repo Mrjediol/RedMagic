@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using RedMagic.Abilities;
 using RedMagic.Combat;
+using RedMagic.Fx;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -41,6 +42,8 @@ namespace RedMagic.Items
         private Vector2 _direction = Vector2.right;
 
         private SpriteRenderer _renderer;
+        private FxPlaceholderStyle _style;
+        private bool _pooledPrefab;
         private float _life;
         private float _lifeLeft;
         private float _reach;
@@ -57,12 +60,35 @@ namespace RedMagic.Items
 
         public static ShotBeam Spawn(WeaponShot shot, in ShotContext ctx, Vector2 direction)
         {
-            _pool ??= new Core.Pool<ShotBeam>(Build, prewarm: 4);
-
             float frac = Mathf.Clamp01(shot.chargeFraction);
             float reach = shot.beamLength * Mathf.Lerp(0.55f, 1f, frac);
 
-            var beam = _pool.Get();
+            ShotBeam beam = null;
+
+            if (shot.beamPrefab != null)
+            {
+                var go = Core.PrefabPool.Spawn(shot.beamPrefab, Vector3.zero, Quaternion.identity);
+                beam = go != null ? go.GetComponent<ShotBeam>() : null;
+
+                if (beam == null)
+                {
+                    Debug.LogWarning($"[Items] El prefab de haz '{shot.beamPrefab.name}' no tiene " +
+                                     $"componente ShotBeam; se usa el haz de código.");
+                    if (go != null) Core.PrefabPool.Despawn(go);
+                }
+                else
+                {
+                    beam._pooledPrefab = true;
+                }
+            }
+
+            if (beam == null)
+            {
+                _pool ??= new Core.Pool<ShotBeam>(Build, prewarm: 4);
+                beam = _pool.Get();
+                beam._pooledPrefab = false;
+            }
+
             beam.Init(shot, ctx, direction, reach, frac);
 
             // Fogonazo corto en la boca, del color del haz.
@@ -85,17 +111,29 @@ namespace RedMagic.Items
             _shot = null;
         }
 
+        // PrefabPool no tiene hook por instancia: al reactivarse queda inerte (Update sale si
+        // _shot es null) hasta que Init lo relanza en el mismo frame.
+        private void OnEnable() => _shot = null;
+
         private void Init(WeaponShot shot, in ShotContext ctx, Vector2 direction, float reach, float chargeFraction)
         {
             _shot = shot;
             _ctx = ctx;
             _direction = direction.sqrMagnitude < 0.0001f ? Vector2.right : direction.normalized;
             _reach = reach;
-            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            if (_renderer == null) _renderer = GetComponentInChildren<SpriteRenderer>();
+            if (_style == null) _style = GetComponent<FxPlaceholderStyle>();
 
             _tint = new Color(shot.tint.r, shot.tint.g, shot.tint.b, 0.85f);
-            _renderer.color = _tint;
-            AbilityFx.CopySorting(_renderer, ctx.Caster);
+
+            // El haz de código pinta y ordena el sprite; el de prefab sólo si es un placeholder.
+            // El estirado y el fundido van siempre en UpdateVisual: el largo TIENE que casar con el
+            // recorte del raycast.
+            if (!_pooledPrefab || _style != null)
+            {
+                _renderer.color = _tint;
+                AbilityFx.CopySorting(_renderer, ctx.Caster);
+            }
 
             _life = _lifeLeft = shot.beamDuration * Mathf.Lerp(0.5f, 1f, chargeFraction);
             _tickTimer = 0f;
@@ -122,7 +160,14 @@ namespace RedMagic.Items
 
             UpdateVisual();
 
-            if (_lifeLeft <= 0f) _pool.Release(this);
+            if (_lifeLeft <= 0f) Finish();
+        }
+
+        private void Finish()
+        {
+            _shot = null;
+            if (_pooledPrefab) Core.PrefabPool.Despawn(gameObject);
+            else _pool.Release(this);
         }
 
         private void Steer(float dt)
@@ -204,13 +249,20 @@ namespace RedMagic.Items
             float angle = Mathf.Atan2(_direction.y, _direction.x) * Mathf.Rad2Deg;
             transform.position = origin + _direction * (reach * 0.5f);
             transform.rotation = Quaternion.Euler(0f, 0f, angle);
+
+            // El largo TIENE que casar con el recorte del raycast, así que el estirado va siempre
+            // (el arte final es un sprite de 1 unidad pensado para estirarse en X).
             AbilityFx.Resize(transform, _renderer, new Vector2(reach, _shot.beamWidth));
 
-            // Se desvanece en el último 40% de vida.
-            float t = _life > 0f ? Mathf.Clamp01(_lifeLeft / (_life * 0.4f)) : 1f;
-            var color = _tint;
-            color.a = _tint.a * t;
-            _renderer.color = color;
+            // Tinte y fundido: sólo el haz de código o el placeholder. El arte final anima su
+            // propia salida.
+            if (!_pooledPrefab || _style != null)
+            {
+                float t = _life > 0f ? Mathf.Clamp01(_lifeLeft / (_life * 0.4f)) : 1f;
+                var color = _tint;
+                color.a = _tint.a * t;
+                _renderer.color = color;
+            }
         }
     }
 }

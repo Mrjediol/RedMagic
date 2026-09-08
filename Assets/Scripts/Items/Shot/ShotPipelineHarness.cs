@@ -104,7 +104,13 @@ namespace RedMagic.Items
         private static void ClearProjectiles()
         {
             foreach (var projectile in Object.FindObjectsByType<ShotProjectile>(FindObjectsSortMode.None))
-                Destroy(projectile.gameObject);
+            {
+                // Un proyectil de prefab vuelve a su PrefabPool; sólo el de código se destruye.
+                if (projectile.TryGetComponent<Core.PooledInstance>(out _))
+                    Core.PrefabPool.Despawn(projectile.gameObject);
+                else
+                    Destroy(projectile.gameObject);
+            }
         }
 
         private static int CountProjectiles(out List<ElementId> elements, out int homing)

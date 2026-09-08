@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Weapon_RayoArcano
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponDefinition
   displayName: Rayo Arcano
-  description: "Se mantiene para cargar y al soltar barre un haz que atraviesa la sala
-    entera y todo lo que haya en ella. Se puede soltar antes de tiempo por un haz m\xE1s
-    corto y flojo. Con Auto-mira, el haz se pega al enemigo m\xE1s cercano."
+  description: "Se mantiene para cargar y al soltar barre un haz que atraviesa la
+    sala entera y todo lo que haya en ella. Se puede soltar antes de tiempo por un
+    haz m\xE1s corto y flojo. Con Auto-mira, el haz se pega al enemigo m\xE1s cercano."
   icon: {fileID: 0}
   accent: {r: 0.8, g: 0.6, b: 1, a: 1}
   baseDamage: 9
@@ -36,6 +36,8 @@ MonoBehaviour:
     burstInterval: 0.09
     impactRadius: 0
     impactDamage: 0
+    projectilePrefab: {fileID: 0}
+    beamPrefab: {fileID: 3335263575987350525, guid: da11580422c8d9445afee38f4fe7b25b, type: 3}
     meleeRange: 1.2
     meleeArc: 90
     chargeTime: 0.7

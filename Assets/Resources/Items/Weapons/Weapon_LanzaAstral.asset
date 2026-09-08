@@ -36,7 +36,16 @@ MonoBehaviour:
     burstInterval: 0.09
     impactRadius: 0
     impactDamage: 0
+    projectilePrefab: {fileID: 2111399164218715573, guid: 1a1669ac3ae668d4990335b84be86ba3, type: 3}
+    beamPrefab: {fileID: 0}
     meleeRange: 1.2
     meleeArc: 90
+    chargeTime: 0
+    minChargeToFire: 0.2
+    minChargeDamage: 0.35
+    beamDuration: 0.5
+    beamTickInterval: 0.06
+    beamLength: 14
+    beamWidth: 0.5
   innateElement: 0
   universalTag: 102

@@ -1,6 +1,7 @@
 using System.Collections;
 using RedMagic.Abilities;
 using RedMagic.Audio;
+using RedMagic.Fx;
 using RedMagic.Gameplay;
 using UnityEngine;
 
@@ -137,8 +138,24 @@ namespace RedMagic.Bosses
         {
             var color = ctx.Accent;
             color.a = 0.55f;
-            AbilityFx.Flash(ctx.FxSprite, position, size, color, Mathf.Max(0.05f, duration), 0f, 1.15f,
-                            ctx.Ability.Caster);
+            EmitWarn(ctx, position, size, color, duration, 0f, 1.15f);
+        }
+
+        /// <summary>
+        /// Pinta el aviso: por el prefab de aviso del jefe (<see cref="BossController.WarnPrefab"/>,
+        /// editable para meter arte real) si lo tiene, o por el cuadrado pooled de
+        /// <see cref="AbilityFx.Flash"/> si no.
+        /// </summary>
+        private static void EmitWarn(in BossContext ctx, Vector2 position, Vector2 size, Color color,
+                                     float duration, float rotationDegrees, float growTo)
+        {
+            var prefab = ctx.Boss != null ? ctx.Boss.WarnPrefab : null;
+            float d = Mathf.Max(0.05f, duration);
+
+            if (prefab != null)
+                FxTelegraph.Spawn(prefab, position, size, color, d, rotationDegrees, growTo, ctx.Ability.Caster);
+            else
+                AbilityFx.Flash(ctx.FxSprite, position, size, color, d, rotationDegrees, growTo, ctx.Ability.Caster);
         }
 
         /// <summary>
@@ -151,8 +168,7 @@ namespace RedMagic.Bosses
         {
             var color = ctx.Accent;
             color.a = 0.55f * Mathf.Clamp01(strength);
-            AbilityFx.Flash(ctx.FxSprite, position, size, color, Mathf.Max(0.05f, duration),
-                            rotationDegrees, 1f, ctx.Ability.Caster);
+            EmitWarn(ctx, position, size, color, duration, rotationDegrees, 1f);
         }
 
         /// <summary>
@@ -163,8 +179,7 @@ namespace RedMagic.Bosses
         protected static void Mark(in BossContext ctx, Vector2 position, Vector2 size, Color color,
                                    float duration, float growTo = 1f)
         {
-            AbilityFx.Flash(ctx.FxSprite, position, size, color, Mathf.Max(0.05f, duration), 0f, growTo,
-                            ctx.Ability.Caster);
+            EmitWarn(ctx, position, size, color, duration, 0f, growTo);
         }
     }
 }

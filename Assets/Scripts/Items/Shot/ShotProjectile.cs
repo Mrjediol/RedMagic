@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using RedMagic.Abilities;
 using RedMagic.Combat;
+using RedMagic.Fx;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -41,6 +42,11 @@ namespace RedMagic.Items
         private Rigidbody2D _body;
         private SpriteRenderer _renderer;
         private CircleCollider2D _collider;
+        private FxPlaceholderStyle _style;
+
+        /// <summary>true = sacado de <see cref="Core.PrefabPool"/> (el arma trae prefab); false = del pool de código.</summary>
+        private bool _pooledPrefab;
+
         private readonly HashSet<Health> _hit = new HashSet<Health>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -55,14 +61,43 @@ namespace RedMagic.Items
 
         public int SplitGenerationsLeft => _shot != null ? _shot.splitGenerationsLeft : 0;
 
-        /// <summary>Saca del pool y lanza un proyectil. Lo usan el volley inicial y el split al impacto.</summary>
+        /// <summary>
+        /// Saca del pool y lanza un proyectil. Lo usan el volley inicial y el split al impacto.
+        ///
+        /// Si el arma trae <see cref="WeaponShot.projectilePrefab"/> el proyectil sale de ese prefab
+        /// por <see cref="Core.PrefabPool"/> (para poner arte real basta con editar el prefab); si
+        /// no, o si el prefab está mal montado, se construye en código como hasta ahora.
+        /// </summary>
         public static ShotProjectile Spawn(WeaponShot shot, in ShotContext ctx, Vector2 position,
                                            Vector2 direction, float damage)
         {
-            _pool ??= new Core.Pool<ShotProjectile>(Build, prewarm: 32);
+            ShotProjectile projectile = null;
 
-            var projectile = _pool.Get();
-            projectile.transform.position = position;
+            if (shot.projectilePrefab != null)
+            {
+                var go = Core.PrefabPool.Spawn(shot.projectilePrefab, position, Quaternion.identity);
+                projectile = go != null ? go.GetComponent<ShotProjectile>() : null;
+
+                if (projectile == null)
+                {
+                    Debug.LogWarning($"[Items] El prefab de proyectil '{shot.projectilePrefab.name}' " +
+                                     $"no tiene componente ShotProjectile; se usa el proyectil de código.");
+                    if (go != null) Core.PrefabPool.Despawn(go);
+                }
+                else
+                {
+                    projectile._pooledPrefab = true;
+                }
+            }
+
+            if (projectile == null)
+            {
+                _pool ??= new Core.Pool<ShotProjectile>(Build, prewarm: 32);
+                projectile = _pool.Get();
+                projectile._pooledPrefab = false;
+                projectile.transform.position = position;
+            }
+
             projectile.Init(shot, ctx, direction, damage);
             return projectile;
         }
@@ -95,11 +130,21 @@ namespace RedMagic.Items
         private void Awake()
         {
             if (_body == null) _body = GetComponent<Rigidbody2D>();
-            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            if (_renderer == null) _renderer = GetComponentInChildren<SpriteRenderer>();
             if (_collider == null) _collider = GetComponent<CircleCollider2D>();
+            if (_style == null) _style = GetComponent<FxPlaceholderStyle>();
         }
 
-        void Core.IPooled.OnReturnedToPool()
+        void Core.IPooled.OnReturnedToPool() => ResetForReuse();
+
+        /// <summary>
+        /// El <see cref="Core.PrefabPool"/> no tiene hook por instancia: al reactivarse (spawn
+        /// normal o reciclado forzado en carga de escena) queda inerte hasta que su <see cref="Init"/>
+        /// lo relanza en el mismo frame.
+        /// </summary>
+        private void OnEnable() => ResetForReuse();
+
+        private void ResetForReuse()
         {
             _done = true;
             _hit.Clear();
@@ -119,9 +164,18 @@ namespace RedMagic.Items
             _hit.Clear();
 
             // Datos por disparo sobre el sprite reutilizado: tinte, tamaño y capa de ordenación.
-            _renderer.color = shot.tint;
-            AbilityFx.Resize(transform, _renderer, shot.size);
-            AbilityFx.CopySorting(_renderer, ctx.Caster);
+            // El proyectil de código se estiliza siempre; el de prefab sólo si es un placeholder
+            // (lleva FxPlaceholderStyle); el arte final se respeta tal cual.
+            if (!_pooledPrefab)
+            {
+                _renderer.color = shot.tint;
+                AbilityFx.Resize(transform, _renderer, shot.size);
+                AbilityFx.CopySorting(_renderer, ctx.Caster);
+            }
+            else if (_style != null)
+            {
+                _style.Apply(shot.tint, shot.size, ctx.Caster);
+            }
 
             _body.linearVelocity = _velocity;
             transform.right = _direction;
@@ -248,7 +302,9 @@ namespace RedMagic.Items
                 SpawnSplit();
 
             if (_body != null) _body.linearVelocity = Vector2.zero;
-            _pool.Release(this);
+
+            if (_pooledPrefab) Core.PrefabPool.Despawn(gameObject);
+            else _pool.Release(this);
         }
 
         /// <summary>

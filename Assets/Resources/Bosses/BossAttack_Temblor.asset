@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe8e9158717b5a4da011a6132422570, type: 3}
+  m_Name: BossAttack_Temblor
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.ShockwaveAttack
+  displayName: Temblor
+  description: "El suelo tiembla: est\xE1 cavando debajo. Salta."
+  accent: {r: 0.45, g: 0.85, b: 0.62, a: 1}
+  telegraph: 0.5
+  recovery: 0
+  weight: 1
+  cooldownInAttacks: 0
+  damage: 14
+  knockbackMultiplier: 1.1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  sfxId: 
+  shakeAmplitude: 0.35
+  shakeDuration: 0.3
+  bandMin: 0
+  bandMax: 1.7
+  alternateBands: 0
+  bandMinB: 1.9
+  bandMaxB: 9
+  waves: 2
+  timeBetweenWaves: 0.4
+  bothDirections: 1
+  width: 1.6
+  speed: 15
+  travelDistance: 0
+  spawnInset: 1.2
+  speedRampPerWave: 1

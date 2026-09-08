@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1512704049850501700
+--- !u!1 &197527623961953764
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,244 +8,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4127795585851332258}
-  - component: {fileID: 5017557869220229334}
-  - component: {fileID: 4350875140241544651}
-  - component: {fileID: 1645361497061522780}
-  - component: {fileID: 5831508548908333947}
-  - component: {fileID: 6287430104203127287}
-  - component: {fileID: 3044109657589621189}
-  - component: {fileID: 3596264652747601982}
-  - component: {fileID: 431950323374061812}
-  m_Layer: 0
-  m_Name: Boss_ReinaEscarabajo
-  m_TagString: Enemy
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4127795585851332258
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1512704049850501700}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 627311948579141086}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!50 &5017557869220229334
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1512704049850501700}
-  m_BodyType: 1
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 1
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 4
---- !u!61 &4350875140241544651
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1512704049850501700}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 2.9429998}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 4.2120004, y: 5.8859997}
-  m_EdgeRadius: 0
---- !u!114 &1645361497061522780
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1512704049850501700}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ed19a26ed8fe1a4585cf1652e42f4c1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Health
-  maxHealth: 2600
-  currentHealth: 2600
-  invulnerable: 0
-  damageMultiplier: 1
-  invulnerabilityDuration: 0
-  invulnerabilityUsesUnscaledTime: 0
-  hurtSfxId: 
-  deathSfxId: 
---- !u!114 &5831508548908333947
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1512704049850501700}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2834dccf877e154e8542123d8a6320f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Knockback
-  horizontalForce: 8
-  verticalForce: 4
-  duration: 0.18
-  resistance: 1
-  immune: 1
---- !u!114 &6287430104203127287
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1512704049850501700}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 149b2f6ad9846b2459f53db66c4872ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.HitFlash
-  flashColor: {r: 1, g: 0.35, b: 0.35, a: 1}
-  flashDuration: 0.1
-  blinkWhileInvulnerable: 1
-  blinkInterval: 0.06
-  blinkAlpha: 0.35
---- !u!114 &3044109657589621189
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1512704049850501700}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 02d2eae826431e14f92ff10101336621, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Corpse
-  linger: 1.6
-  fadeDuration: 1.4
-  corpseTint: {r: 0.35, g: 0.1, b: 0.12, a: 0.75}
-  destroyWhenDone: 1
---- !u!114 &3596264652747601982
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1512704049850501700}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2985d1d8de77b546b4fbeddccf21c6b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
-  tier: 2
---- !u!114 &431950323374061812
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1512704049850501700}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0c31c033ed721ff4c9fbd2053b719179, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossController
-  definition: {fileID: 11400000, guid: 6d671ed53f7ce2a4daf4312c24c308db, type: 2}
-  arenaHalfWidth: 16
-  arenaHeight: 13
-  hitLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  snapToGround: 1
-  targetTag: Player
-  activationRadius: 18
-  faceTarget: 1
-  introSeconds: 2.2
-  musicId: 
-  roarSfxId: 
-  introShake: 0.6
-  contactDamage: 15
-  contactDamageCooldown: 0.8
-  contactKnockbackMultiplier: 1.5
-  fxSprite: {fileID: 0}
-  showTelegraphAura: 1
-  auraScale: 1.06
-  vulnerableAura: {r: 1, g: 0.86, b: 0.35, a: 1}
-  guardAura: {r: 0.45, g: 0.72, b: 1, a: 1}
-  swayDegrees: 0
-  swaySpeed: 1.1
---- !u!1 &2536687867661331964
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 627311948579141086}
-  - component: {fileID: 4638031415480278469}
-  - component: {fileID: 7859835439832785609}
+  - component: {fileID: 9109939401328562909}
+  - component: {fileID: 1821118241801450701}
+  - component: {fileID: 9149249230268615755}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -253,29 +18,29 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &627311948579141086
+--- !u!4 &9109939401328562909
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2536687867661331964}
+  m_GameObject: {fileID: 197527623961953764}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.0874996, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4127795585851332258}
+  m_Father: {fileID: 1788622323707461286}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &4638031415480278469
+--- !u!212 &1821118241801450701
 SpriteRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2536687867661331964}
+  m_GameObject: {fileID: 197527623961953764}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -327,13 +92,13 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &7859835439832785609
+--- !u!114 &9149249230268615755
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2536687867661331964}
+  m_GameObject: {fileID: 197527623961953764}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5319388704fe2a6428ead1ab05a9114b, type: 3}
@@ -346,3 +111,275 @@ MonoBehaviour:
   framesPerSecond: 5
   pingPong: 1
   randomStart: 0
+--- !u!1 &3814016234625323509
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1788622323707461286}
+  - component: {fileID: 2710317595025470401}
+  - component: {fileID: 3212992872651244356}
+  - component: {fileID: 6500977080944400715}
+  - component: {fileID: 4041580197617844451}
+  - component: {fileID: 5800825650245867691}
+  - component: {fileID: 5937195741649153637}
+  - component: {fileID: 6035223370808890685}
+  - component: {fileID: 9146116163732805391}
+  - component: {fileID: 973932015588174962}
+  m_Layer: 0
+  m_Name: Boss_ReinaEscarabajo
+  m_TagString: Enemy
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1788622323707461286
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3814016234625323509}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 9109939401328562909}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!50 &2710317595025470401
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3814016234625323509}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 1
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4
+--- !u!61 &3212992872651244356
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3814016234625323509}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 5.8860016, y: 4.2120013}
+  m_EdgeRadius: 0
+--- !u!114 &6500977080944400715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3814016234625323509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ed19a26ed8fe1a4585cf1652e42f4c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Health
+  maxHealth: 2600
+  currentHealth: 2600
+  invulnerable: 0
+  damageMultiplier: 1
+  invulnerabilityDuration: 0
+  invulnerabilityUsesUnscaledTime: 0
+  hurtSfxId: 
+  deathSfxId: 
+--- !u!114 &4041580197617844451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3814016234625323509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2834dccf877e154e8542123d8a6320f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Knockback
+  horizontalForce: 8
+  verticalForce: 4
+  duration: 0.18
+  resistance: 1
+  immune: 1
+--- !u!114 &5800825650245867691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3814016234625323509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149b2f6ad9846b2459f53db66c4872ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.HitFlash
+  flashColor: {r: 1, g: 0.35, b: 0.35, a: 1}
+  flashDuration: 0.1
+  blinkWhileInvulnerable: 1
+  blinkInterval: 0.06
+  blinkAlpha: 0.35
+--- !u!114 &5937195741649153637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3814016234625323509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d2eae826431e14f92ff10101336621, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Corpse
+  linger: 1.6
+  fadeDuration: 1.4
+  corpseTint: {r: 0.35, g: 0.1, b: 0.12, a: 0.75}
+  destroyWhenDone: 1
+--- !u!114 &6035223370808890685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3814016234625323509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2985d1d8de77b546b4fbeddccf21c6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
+  tier: 2
+--- !u!114 &9146116163732805391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3814016234625323509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c31c033ed721ff4c9fbd2053b719179, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossController
+  definition: {fileID: 11400000, guid: 6d671ed53f7ce2a4daf4312c24c308db, type: 2}
+  arenaHalfWidth: 16
+  arenaHeight: 13
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  snapToGround: 0
+  targetTag: Player
+  activationRadius: 18
+  faceTarget: 0
+  introSeconds: 2.2
+  musicId: 
+  roarSfxId: 
+  introShake: 0.6
+  contactDamage: 15
+  contactDamageCooldown: 0.8
+  contactKnockbackMultiplier: 1.5
+  fxSprite: {fileID: 0}
+  warnPrefab: {fileID: 5370477405329698864, guid: bf7aa07013226084ea49b0ea047dc362, type: 3}
+  shockwavePrefab: {fileID: 4644358226651596634, guid: 20e8f37df19bb2847b4edd6906e38389, type: 3}
+  sweepBeamPrefab: {fileID: 7448650366277206246, guid: 760a85a91bbbfbd42b26f621c333140b, type: 3}
+  hazardPrefab: {fileID: 359099617871499961, guid: a8dba00398b9bd240988232ea85df2f8, type: 3}
+  platformPrefab: {fileID: 164162919880657894, guid: 26e3e57e470a2b442b758866427e0194, type: 3}
+  anchorPrefab: {fileID: 312728630472330168, guid: 1156e9c8beac1d94dbf0cd020dc27fc7, type: 3}
+  showTelegraphAura: 1
+  auraScale: 1.06
+  vulnerableAura: {r: 1, g: 0.86, b: 0.35, a: 1}
+  guardAura: {r: 0.45, g: 0.72, b: 1, a: 1}
+  swayDegrees: 0
+  swaySpeed: 1.1
+--- !u!114 &973932015588174962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3814016234625323509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 717243c4e795c884993e92f649d21c2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossBurrowLocomotion
+  surfaceSpeed: 4.5
+  patrolMargin: 2
+  surfacedSeconds: {x: 6, y: 9}
+  digSeconds: 0.5
+  emergeSeconds: 0.5
+  emergeWarnSeconds: 0.9
+  emergeOffsetRange: {x: 1, y: 5}
+  transitSeconds: {x: 2.5, y: 3.5}
+  tremorInterval: 1.1
+  tremorAttack: {fileID: 11400000, guid: 7991138bfd314e245a5885a9309e00b8, type: 2}
+  surfaceLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  ceilingProbeHeight: 20
+  spriteUprightDegrees: -90
+  dustSprite: {fileID: 0}
+  dustColor: {r: 0.52, g: 0.4, b: 0.28, a: 0.9}
+  dustSize: 3

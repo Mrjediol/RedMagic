@@ -48,8 +48,11 @@ Anything that spawns repeatedly goes through a pool (`Assets/Scripts/Core/Pool.c
   `DamagePopup`, `AbilityVfx` (the `AbilityFx.Flash` impact/muzzle flash), and the code-built
   `Projectile` path in `ProjectileFactory`.
 - **`PrefabPool`** — one pool per prefab, keyed by the prefab asset. `Spawn(prefab, pos, rot)` /
-  `Despawn(go)` (via the `PooledInstance` marker it stamps on). Used by `VfxOneShot` and the
-  prefab `Projectile` path.
+  `Despawn(go)` (via the `PooledInstance` marker it stamps on). Used by `VfxOneShot`, `FxTelegraph`,
+  and the prefab path of `Projectile` / `ShotProjectile` / `ShotBeam` / the boss runtime visuals
+  (`BossShockwave`, `BossSweepBeam`, `BossHazard`, `BossPlatform`, `BossAnchor`) — those all fall
+  back to `Pool<T>` when no placeholder prefab is assigned. `PrefabPool` has no per-instance reset
+  hook, so those types reset transient state in `OnEnable`.
 - **`PoolRunner`** — persistent `DontDestroyOnLoad` root that every pooled instance is parented
   under (so a scene unload never destroys the reserve) and that force-releases everything still
   active on each `sceneLoaded`, so nothing bleeds between sections.
@@ -59,6 +62,44 @@ Anything that spawns repeatedly goes through a pool (`Assets/Scripts/Core/Pool.c
 - Low-churn spawns (one `Corpse` per death, boss reward, shop, `AbilityFx.SpawnSprite` for a
   seconds-long zone/turret/orb) are still plain `new GameObject`/`Instantiate` — pool them if they
   ever become hot.
+
+### Placeholder visuals → real art (`Assets/Prefab/Fx/`)
+
+Every repeatedly-spawned visual (weapon projectiles, boss bullets, boss telegraph rectangles,
+waves, sweep beams, hazard patches, platforms, anchors) is **built in code** as a tinted
+geometric shape by default — but each now also has an **optional prefab slot** on its data
+asset. Assign a prefab and the visual comes from that prefab through `PrefabPool` instead;
+swapping in real art is then: open the prefab, delete the shape sprite, drop the real sprite
+(or add a trail / particles / an Animator). No code, no per-consumer wiring beyond the one field.
+
+- **`Fx.FxPlaceholderStyle`** (`Assets/Scripts/Fx/FxPlaceholderStyle.cs`) — the marker a
+  *placeholder* prefab carries. `Apply(tint, worldSize, sortingRef)` does exactly the per-instance
+  styling the code path does (`SpriteRenderer.color`, `AbilityFx.Resize`, `AbilityFx.CopySorting`,
+  collider radius/size from `sprite.bounds`), each step gated by a bool (`tint` / `resize` /
+  `matchSorting` / `scaleColliderToSprite`). The spawner rule everywhere: **null prefab** → build
+  in code, restyle inline (unchanged); **prefab + `FxPlaceholderStyle`** → `PrefabPool.Spawn`,
+  `style.Apply(...)`; **prefab, no marker** → real art, spawner only sets position/rotation.
+- The null-prefab **code fallback stays on purpose** — safety net + `ShotPipelineHarness`.
+- **`Fx.FxTelegraph`** — `PrefabPool`-backed telegraph (grow + fade + despawn), the prefab
+  equivalent of `AbilityFx.Flash`. Used by `BossAttack.Warn`/`Mark` when the boss has a `warnPrefab`.
+- **`Bosses.BossFxSpawn`** — the shared "prefab or code pool" branch + release routing for the
+  five pooled boss runtime types.
+- Prefab slots: `BaseShot.projectilePrefab` / `beamPrefab` (weapons), `ProjectileSpec.prefab`
+  (boss bullets / ability projectiles — restyle-aware now), `BossController.{warnPrefab,
+  shockwavePrefab, sweepBeamPrefab, hazardPrefab, platformPrefab, anchorPrefab}` (shared per boss).
+- Generators under **Tools > RedMagic > FX**: `1 · Generar prefabs placeholder` (builds the shape
+  sprites in `Assets/Art/Placeholder/` + the prefabs), `2 · Asignar a armas`, `3 · Asignar a
+  jefes` — idempotent, only fill a slot that is still null.
+- `ShotProjectile` / `ShotBeam` rotate to face travel direction, so elongated art is fine there;
+  `BulletHellAttack` bullets do **not** rotate — only round-ish art works. A real-art prefab makes
+  that attack's `projectileSprite` + phase accent inert (the prefab owns the look).
+- The `Platform` / `Anchor` placeholder prefabs must carry their colliders (solid `Ground`-layer
+  box; trigger box + `Health` + `HitFlash`) — the generator builds them precisely.
+- Any **new** repeatedly-spawned visual follows this: ship it as a placeholder prefab under
+  `Assets/Prefab/Fx/` with `FxPlaceholderStyle`, wired through an asset field, code fallback kept.
+- The generic one-shot VFX prefabs (`Fireball`, `VFX_Explosion`, `VFX_DashWind`, `VFX_DoubleJump`)
+  now live in `Assets/Prefab/Fx/` too (moved out of `Assets/Dragon Warrior Files/`; their
+  material/anim dependencies stayed there).
 
 ### Persistent singletons
 
@@ -256,8 +297,10 @@ Inspector wiring.
   `bossRewardPrefab`) + **`WeaponForgeMenuController`** (`Assets/Ui/`, own
   `WeaponForgeMenuPanelSettings`) are the forge: same one-card-one-button shape as before, reading
   `WeaponUser.Weapon` instead of the legacy `AbilityUser.Equipped`.
-- **Runtime** (`Items/Shot/`) — `ShotProjectile` and `ShotBeam`, both pooled, built in code, reusing
-  `AbilityHit` for target filtering/damage and `AbilityFx` for sprite/tint/sorting.
+- **Runtime** (`Items/Shot/`) — `ShotProjectile` and `ShotBeam`, both pooled, reusing `AbilityHit`
+  for target filtering/damage and `AbilityFx` for sprite/tint/sorting. Built in code unless the
+  weapon's `BaseShot.projectilePrefab` / `beamPrefab` is set, in which case the visual comes from
+  that prefab via `PrefabPool` (see "Placeholder visuals → real art").
 - **`WeaponLibrary`** / **`ItemLibrary`** — folder scans of `Resources/Items/(Weapons|Modifiers)` and
   the item assets, same pattern as the old `AbilityLibrary`.
 - **`ItemMenuController`** (`Assets/Ui/`, key **I**, `ItemMenuPanelSettings`) — the build screen;
@@ -294,8 +337,9 @@ even with an item-system weapon out. Read the rest as reference and port what is
 
 **Deliberately *not* legacy**, because the live systems call into it: `AbilityContext` /
 `AbilityHit` (the one place target filtering and damage application live — weapons and bosses both
-use it), `AbilityFx` (code-built sprites/flashes, no art pipeline), `ProjectileSpec` /
-`ProjectileFactory` and `Projectile` (the pooled projectile the bosses fire).
+use it), `AbilityFx` (code-built sprites/flashes — the fallback when no placeholder prefab is
+assigned), `ProjectileSpec` / `ProjectileFactory` and `Projectile` (the pooled projectile the
+bosses fire; `ProjectileFactory` now restyles a prefab instance that carries `FxPlaceholderStyle`).
 
 ### Bosses (`Assets/Scripts/Bosses/`)
 
@@ -413,11 +457,19 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
     it splits your attention with crawlers out of the shaft and puddles that stay. Cainos well at
     ×3.2; its geyser is an ordinary bullet-hell fan with `arcGravity`, which reads as black water
     thrown up and falling back.
-  - **Reina Escarabajo** (`BeetleQueenPack`) — *where is the fight happening?*: floods the floor
-    with acid and grows ledges to stand on, so for a few seconds the fight leaves the ground
-    entirely, with her brood (`Enemy_Beetle`) forcing the choice between coming down to clear them
-    or waiting it out. The only animated boss so far — Brackeys' 3-frame beetle at ×1.5 driven by
-    `SpriteFlipbook`.
+  - **Reina Escarabajo** (`BeetleQueenPack`) — *where is she now?*: the only **moving** boss. A
+    `BossBurrowLocomotion` component (next to `BossController`, `[RequireComponent]`) patrols her
+    across the arena on the floor/ceiling, then every few seconds she digs into the nearest surface,
+    tunnels invisibly (dropping a low-band `BossAttack_Temblor` shockwave every ~1s that forces a
+    jump — this asset is in **no phase deck**, only the locomotion fires it), and re-emerges from
+    the opposite surface 1–5m to one side after a dust telegraph. Her normal deck (`Marea Ácida`
+    flood + ledges, `Salivazo` fan, `Camada` brood, `Embestida` shockwave) only fires while she is
+    surfaced — locomotion calls `BossController.SuspendAttacks`/`ResumeAttacks` around each burrow
+    and `SetBodyVisible(false)` + `Health.Invulnerable` while underground. Her origin is the sprite
+    **centre** (not the base like every other boss) so the rotate/flip/head-dive all pivot clean;
+    Brackeys' 3-frame beetle at ×1.5, pre-rotated -90° (its art faces up), animated by
+    `SpriteFlipbook`. `BeetleQueenPack` is **not** idempotent-only: it has a
+    *RECREAR (borra y regenera)* menu item that deletes its owned assets and rebuilds them.
   - **Sello Profano** (`UnholySealPack`) — *what deserves your damage?*: the anchor ritual is its
     spine, and the rest of the deck is deliberately a greatest-hits of the earlier bosses (sweep,
     refuges, spiral, rubble) so a player who got this far recognises everything and only has to do

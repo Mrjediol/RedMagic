@@ -21,12 +21,14 @@ MonoBehaviour:
   cooldownInAttacks: 1
   damage: 13
   knockbackMultiplier: 0.6
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
   sfxId: 
   shakeAmplitude: 0
   shakeDuration: 0.25
   pattern: 2
   projectile:
-    prefab: {fileID: 0}
+    prefab: {fileID: 8923912939919671748, guid: 7f691322c3a603a409613592ed153ee8, type: 3}
     speed: 14
     lifetime: 3
     size: {x: 0.62, y: 0.62}

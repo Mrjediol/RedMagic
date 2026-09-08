@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using RedMagic.Abilities;
 using RedMagic.Combat;
 using RedMagic.Core;
+using RedMagic.Fx;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -29,6 +30,9 @@ namespace RedMagic.Bosses
         private static void ResetPools() => _pool = null;
 
         private SpriteRenderer _renderer;
+        private FxPlaceholderStyle _style;
+        private bool _pooledPrefab;
+        private bool _styled = true;
 
         private AbilityContext _ctx;
         private int _direction = 1;
@@ -54,9 +58,16 @@ namespace RedMagic.Bosses
                                           float bandMinY, float bandMaxY, float width, float speed,
                                           float distance, float damage, float knockbackMultiplier)
         {
-            _pool ??= new Pool<BossShockwave>(Build, prewarm: 6);
+            var wave = BossFxSpawn.FromPrefab<BossShockwave>(ctx.Boss != null ? ctx.Boss.ShockwavePrefab : null);
+            bool fromPrefab = wave != null;
 
-            var wave = _pool.Get();
+            if (wave == null)
+            {
+                _pool ??= new Pool<BossShockwave>(Build, prewarm: 6);
+                wave = _pool.Get();
+            }
+
+            wave._pooledPrefab = fromPrefab;
             wave.Begin(ctx, originX, direction, bandMinY, bandMaxY, width, speed, distance,
                        damage, knockbackMultiplier);
             return wave;
@@ -73,7 +84,9 @@ namespace RedMagic.Bosses
                            float bandMaxY, float width, float speed, float distance,
                            float damage, float knockbackMultiplier)
         {
-            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            if (_renderer == null) _renderer = GetComponentInChildren<SpriteRenderer>();
+            if (_style == null) _style = GetComponent<FxPlaceholderStyle>();
+            _styled = !_pooledPrefab || _style != null;
 
             _ctx = ctx.Ability;
             _direction = direction < 0 ? -1 : 1;
@@ -84,17 +97,24 @@ namespace RedMagic.Bosses
             _width = Mathf.Max(0.2f, width);
             _height = Mathf.Max(0.2f, bandMaxY - bandMinY);
             _centerY = (bandMinY + bandMaxY) * 0.5f;
-            _tint = ctx.Accent;
+            _tint = _styled ? ctx.Accent : Color.white;
             _finished = false;
 
             _hit.Clear();
 
             transform.position = new Vector3(originX, _centerY, 0f);
 
-            _renderer.sprite = ctx.FxSprite != null ? ctx.FxSprite : AbilityFx.DefaultSprite;
-            _renderer.color = _tint;
-            AbilityFx.CopySorting(_renderer, ctx.Ability.Caster);
-            AbilityFx.Resize(transform, _renderer, new Vector2(_width, _height));
+            if (!_pooledPrefab)
+            {
+                _renderer.sprite = ctx.FxSprite != null ? ctx.FxSprite : AbilityFx.DefaultSprite;
+                _renderer.color = _tint;
+                AbilityFx.CopySorting(_renderer, ctx.Ability.Caster);
+                AbilityFx.Resize(transform, _renderer, new Vector2(_width, _height));
+            }
+            else if (_style != null)
+            {
+                _style.Apply(ctx.Accent, new Vector2(_width, _height), ctx.Ability.Caster);
+            }
         }
 
         void IPooled.OnReturnedToPool() => _hit.Clear();
@@ -118,13 +138,16 @@ namespace RedMagic.Bosses
 
         private void Update()
         {
-            if (_finished || _renderer == null) return;
+            if (_finished || _renderer == null || !_styled) return;
 
             // Se apaga al final del recorrido, para que se lea que la onda se disipa.
             var color = _tint;
             color.a = _tint.a * Mathf.Clamp01(_distanceLeft * 0.35f);
             _renderer.color = color;
         }
+
+        // PrefabPool no tiene hook por instancia: al reactivarse queda inerte hasta el próximo Begin.
+        private void OnEnable() { _finished = true; _hit.Clear(); }
 
         private void DamageInside(Vector2 center)
         {
@@ -142,7 +165,7 @@ namespace RedMagic.Bosses
         private void Finish()
         {
             _finished = true;
-            _pool?.Release(this);
+            BossFxSpawn.Release(this, _pooledPrefab, _pool);
         }
 
         private void OnDrawGizmosSelected()

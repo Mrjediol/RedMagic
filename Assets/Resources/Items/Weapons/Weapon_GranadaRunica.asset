@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponDefinition
   displayName: "Granada R\xFAnica"
   description: "Se lanza en par\xE1bola y revienta en un radio grande al tocar algo
-    o al agotarse: poco impacto directo, mucho en la explosi\xF3n, mucho empuje. Nace
-    de hielo."
+    o al agotarse: poco impacto directo, mucho en la explosi\xF3n, mucho empuje.
+    Nace de hielo."
   icon: {fileID: 0}
   accent: {r: 0.5, g: 0.9, b: 0.45, a: 1}
   baseDamage: 12
@@ -36,7 +36,16 @@ MonoBehaviour:
     burstInterval: 0.09
     impactRadius: 2.2
     impactDamage: 38
+    projectilePrefab: {fileID: 7329954009625756488, guid: 593c7cd80f1cb984e9f8333e647b4d54, type: 3}
+    beamPrefab: {fileID: 0}
     meleeRange: 1.2
     meleeArc: 90
+    chargeTime: 0
+    minChargeToFire: 0.2
+    minChargeDamage: 0.35
+    beamDuration: 0.5
+    beamTickInterval: 0.06
+    beamLength: 14
+    beamWidth: 0.5
   innateElement: 1
   universalTag: 100

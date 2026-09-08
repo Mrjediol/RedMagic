@@ -102,6 +102,35 @@ namespace RedMagic.Bosses
                  "cuadrado generado por AbilityFx.")]
         [SerializeField] private Sprite fxSprite;
 
+        [Header("Placeholders de FX (prefab → arte real)")]
+        [Tooltip("Prefab del aviso/telegrafiado. Vacío = el cuadrado de AbilityFx.Flash. Compartido " +
+                 "por todos los avisos del jefe; para arte de verdad, edita el prefab.")]
+        [SerializeField] private GameObject warnPrefab;
+
+        [Tooltip("Prefab de la onda de choque (ShockwaveAttack). Vacío = construida en código.")]
+        [SerializeField] private GameObject shockwavePrefab;
+
+        [Tooltip("Prefab del filo giratorio (SweepBeamAttack). Vacío = construido en código.")]
+        [SerializeField] private GameObject sweepBeamPrefab;
+
+        [Tooltip("Prefab del parche de suelo peligroso (HazardFieldAttack, rubble, marea). Vacío = código.")]
+        [SerializeField] private GameObject hazardPrefab;
+
+        [Tooltip("Prefab de la plataforma temporal (PlatformFloodAttack). Debe llevar un " +
+                 "BoxCollider2D sólido en la capa Ground. Vacío = construida en código.")]
+        [SerializeField] private GameObject platformPrefab;
+
+        [Tooltip("Prefab del ancla del ritual (AnchorRitualAttack). Debe llevar BoxCollider2D " +
+                 "trigger + Health + HitFlash. Vacío = construida en código.")]
+        [SerializeField] private GameObject anchorPrefab;
+
+        public GameObject WarnPrefab => warnPrefab;
+        public GameObject ShockwavePrefab => shockwavePrefab;
+        public GameObject SweepBeamPrefab => sweepBeamPrefab;
+        public GameObject HazardPrefab => hazardPrefab;
+        public GameObject PlatformPrefab => platformPrefab;
+        public GameObject AnchorPrefab => anchorPrefab;
+
         [Tooltip("Silueta del jefe que se enciende detrás de él durante el aviso de cada ataque. Se " +
                  "construye en código; hace legible que 'algo viene' sin pelearse con el HitFlash " +
                  "del cuerpo, que también escribe el color del sprite.")]
@@ -145,6 +174,7 @@ namespace RedMagic.Bosses
         private int _phaseIndex;
         private bool _fighting;
         private bool _dead;
+        private bool _attacksSuspended;
         private Coroutine _fightRoutine;
         private Coroutine _attackRoutine;
         private Coroutine _vulnerableRoutine;
@@ -172,6 +202,58 @@ namespace RedMagic.Bosses
         public bool IsFighting => _fighting && !_dead;
         public float GroundY => _groundY;
         public float ArenaHalfWidth => arenaHalfWidth;
+        public float ArenaHeight => arenaHeight;
+
+        /// <summary>
+        /// Corta la baraja: <see cref="FightLoop"/> deja de sortear ataques y el que estuviera en
+        /// curso se detiene. Lo usa un jefe con locomoción propia (la Reina Escarabajo mientras
+        /// excava) para no atacar desde donde el jugador no puede verla. Idempotente.
+        /// </summary>
+        public void SuspendAttacks()
+        {
+            _attacksSuspended = true;
+            if (_attackRoutine != null)
+            {
+                StopCoroutine(_attackRoutine);
+                _attackRoutine = null;
+            }
+        }
+
+        /// <summary>Reanuda la baraja tras un <see cref="SuspendAttacks"/>.</summary>
+        public void ResumeAttacks() => _attacksSuspended = false;
+
+        /// <summary>
+        /// Enseña u oculta el cuerpo del jefe y su aura sin desactivar el GameObject (los
+        /// colliders y las corrutinas siguen vivos). Para un jefe que desaparece bajo tierra.
+        /// </summary>
+        public void SetBodyVisible(bool visible)
+        {
+            if (_body != null) _body.enabled = visible;
+            if (_aura != null) _aura.enabled = visible;
+        }
+
+        /// <summary>
+        /// Lanza un ataque puntual fuera de la baraja — aviso y ejecución, con el contexto y el
+        /// ritmo de la fase actual. Para picos que dispara otro componente: el temblor que la
+        /// Reina Escarabajo suelta mientras túnela, invisible, entre una superficie y la otra.
+        /// </summary>
+        public void RunScriptedAttack(BossAttack attack)
+        {
+            if (attack == null || _dead) return;
+            StartCoroutine(ScriptedAttack(attack));
+        }
+
+        private IEnumerator ScriptedAttack(BossAttack attack)
+        {
+            var phase = CurrentPhase;
+            float pace = PaceOf(phase);
+
+            attack.OnTelegraph(BuildContext(phase));
+            yield return new WaitForSeconds(attack.Telegraph / pace);
+            if (_dead) yield break;
+
+            yield return attack.Run(BuildContext(phase));
+        }
 
         /// <summary>Se dispara al empezar el combate (tras la presentación).</summary>
         public event Action FightStarted;
@@ -322,6 +404,14 @@ namespace RedMagic.Bosses
             {
                 var phase = CurrentPhase;
                 if (phase == null || phase.attacks == null || phase.attacks.Length == 0)
+                {
+                    yield return null;
+                    continue;
+                }
+
+                // Un jefe con locomoción propia puede pedir que se pare la baraja mientras está
+                // fuera de la arena (la Reina Escarabajo, bajo tierra).
+                if (_attacksSuspended)
                 {
                     yield return null;
                     continue;

@@ -22,6 +22,12 @@ namespace RedMagic.Bosses.EditorTools
     ///
     /// Es además el primer jefe <b>animado</b>: el sprite del pack de Brackeys trae tres
     /// fotogramas y los pasa <see cref="SpriteFlipbook"/>.
+    ///
+    /// <b>Es también el primer jefe que se mueve.</b> Un escarabajo plantado en el sitio no se lee
+    /// como vivo: lleva un <see cref="BossBurrowLocomotion"/> que la hace patrullar en superficie y,
+    /// cada pocos segundos, excavar — se hunde en el suelo o el techo, túnela invisible soltando
+    /// temblores (el <c>BossAttack_Temblor</c>) y reaparece por la superficie opuesta un poco más
+    /// allá. Su baraja normal sólo dispara mientras se la ve.
     /// </summary>
     public static class BeetleQueenPack
     {
@@ -51,7 +57,38 @@ namespace RedMagic.Bosses.EditorTools
 
         // ==================================================================== menú
 
-        [MenuItem("Tools/RedMagic/Boss/Crear jefe: Reina Escarabajo")]
+        [MenuItem("Tools/RedMagic/Boss/Reina Escarabajo/RECREAR (borra y regenera)")]
+        public static void Recreate()
+        {
+            if (!EditorUtility.DisplayDialog("Recrear Reina Escarabajo",
+                    "Borra el prefab, la definición y los assets de ataque de la Reina Escarabajo y " +
+                    "los vuelve a generar con el diseño actual. Se pierde cualquier ajuste hecho a " +
+                    "mano en esos assets.\n\n¿Continuar?", "Borrar y regenerar", "Cancelar"))
+                return;
+
+            foreach (var path in OwnedAssetPaths())
+                if (AssetDatabase.LoadMainAssetAtPath(path) != null)
+                    AssetDatabase.DeleteAsset(path);
+
+            AssetDatabase.Refresh();
+            Generate();
+        }
+
+        private static string[] OwnedAssetPaths() => new[]
+        {
+            PrefabPath, DefinitionPath,
+            BossFolder + "/BossAttack_MareaAcida.asset",
+            BossFolder + "/BossAttack_Salivazo.asset",
+            BossFolder + "/BossAttack_Camada.asset",
+            BossFolder + "/BossAttack_Embestida.asset",
+            BossFolder + "/BossAttack_Temblor.asset",
+            BossFolder + "/BossAttack_MareaAlta.asset",
+            BossFolder + "/BossAttack_Rociada.asset",
+            BossFolder + "/BossAttack_Eclosion.asset",
+            BossFolder + "/BossAttack_Estampida.asset",
+        };
+
+        [MenuItem("Tools/RedMagic/Boss/Reina Escarabajo/Crear (si no existe)")]
         public static void Generate()
         {
             BossAuthoring.EnsureTag("Enemy");
@@ -60,7 +97,7 @@ namespace RedMagic.Bosses.EditorTools
 
             var attacks = CreateAttacks();
             var definition = CreateDefinition(attacks);
-            var prefab = CreatePrefab(definition);
+            var prefab = CreatePrefab(definition, attacks);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -77,6 +114,9 @@ namespace RedMagic.Bosses.EditorTools
             public BossAttack Spit;
             public BossAttack Brood;
             public BossAttack Charge;
+
+            /// <summary>No va en ninguna baraja: lo lanza <see cref="BossBurrowLocomotion"/> mientras túnela.</summary>
+            public BossAttack Tremor;
 
             public BossAttack HighTide;
             public BossAttack Spray;
@@ -144,6 +184,19 @@ namespace RedMagic.Bosses.EditorTools
                     .Set("bandMin", 0f).Set("bandMax", 1.8f)
                     .Set("waves", 1).Set("bothDirections", true)
                     .Set("width", 1.8f).Set("speed", 17f).Set("spawnInset", 1.6f));
+
+            // Temblor de tránsito: no está en ninguna baraja. Lo dispara la locomoción mientras la
+            // Reina túnela bajo el suelo — no se la ve, pero el suelo avisa. Franja baja: se salta.
+            a.Tremor = Attack<ShockwaveAttack>("BossAttack_Temblor", "Temblor",
+                "El suelo tiembla: está cavando debajo. Salta.",
+                PhaseOneAccent, f => f
+                    .Set("telegraph", 0.5f).Set("recovery", 0f).Set("weight", 1f)
+                    .Set("cooldownInAttacks", 0)
+                    .Set("damage", 14f).Set("knockbackMultiplier", 1.1f)
+                    .Set("shakeAmplitude", 0.35f).Set("shakeDuration", 0.3f)
+                    .Set("bandMin", 0f).Set("bandMax", 1.7f)
+                    .Set("waves", 2).Set("timeBetweenWaves", 0.4f).Set("bothDirections", true)
+                    .Set("width", 1.6f).Set("speed", 15f).Set("spawnInset", 1.2f));
 
             // ---------------------------------------------------------------- fase 2
 
@@ -245,7 +298,7 @@ namespace RedMagic.Bosses.EditorTools
 
         // ==================================================================== prefab
 
-        private static GameObject CreatePrefab(BossDefinition definition)
+        private static GameObject CreatePrefab(BossDefinition definition, Attacks a)
         {
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
             if (existing != null) return existing;
@@ -279,20 +332,26 @@ namespace RedMagic.Bosses.EditorTools
                 .Set("randomStart", false)
                 .Apply();
 
+            // A diferencia del resto de jefes, el origen de éste es el CENTRO del sprite, no su
+            // base: la locomoción la gira y la voltea (marcha, techo, picado de cabeza), y todo eso
+            // pivota limpio sólo alrededor del centro. El componente ya la coloca a la altura justa
+            // sobre cada superficie.
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
             var bounds = renderer.bounds;
-            visual.transform.localPosition += new Vector3(0f, -bounds.min.y, 0f);
-            bounds = renderer.bounds;
 
             var body = root.AddComponent<Rigidbody2D>();
             body.bodyType = RigidbodyType2D.Kinematic;
             body.useFullKinematicContacts = true;
             body.freezeRotation = true;
 
+            // El sprite ya está tumbado -90°, así que bounds.size viene con ancho y alto en su
+            // orientación de marcha: la caja se ajusta a eso y va centrada en el origen.
             var collider = root.AddComponent<BoxCollider2D>();
             float width = Mathf.Max(1f, bounds.size.x * ColliderWidthFactor);
             float height = Mathf.Max(1f, bounds.size.y * ColliderHeightFactor);
             collider.size = new Vector2(width, height);
-            collider.offset = new Vector2(0f, height * 0.5f);
+            collider.offset = Vector2.zero;
 
             var health = root.AddComponent<Health>();
             new BossAuthoring.Fields(health)
@@ -322,8 +381,28 @@ namespace RedMagic.Bosses.EditorTools
                 .Set("contactDamage", 15f)
                 .Set("contactDamageCooldown", 0.8f)
                 .Set("contactKnockbackMultiplier", 1.5f)
-                // Ya se mueve sola con el flipbook: el balanceo encima la marearía.
+                // La locomoción de excavadora la coloca en cada superficie y la orienta hacia su
+                // marcha, así que el jefe no debe ni plantarla en el suelo, ni girarla hacia el
+                // jugador, ni balancearla.
+                .Set("snapToGround", false)
+                .Set("faceTarget", false)
                 .Set("swayDegrees", 0f)
+                .Apply();
+
+            var locomotion = root.AddComponent<BossBurrowLocomotion>();
+            new BossAuthoring.Fields(locomotion)
+                .SetObject("tremorAttack", a.Tremor)
+                .Set("surfaceSpeed", 4.5f)
+                .Set("patrolMargin", 2f)
+                .Set("surfacedSeconds", new Vector2(6f, 9f))
+                .Set("digSeconds", 0.5f)
+                .Set("emergeSeconds", 0.5f)
+                .Set("emergeWarnSeconds", 0.9f)
+                .Set("emergeOffsetRange", new Vector2(1f, 5f))
+                .Set("transitSeconds", new Vector2(2.5f, 3.5f))
+                .Set("tremorInterval", 1.1f)
+                .Set("ceilingProbeHeight", 20f)
+                .Set("spriteUprightDegrees", -90f)
                 .Apply();
 
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);

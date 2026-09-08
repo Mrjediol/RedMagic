@@ -1,5 +1,6 @@
 using RedMagic.Abilities;
 using RedMagic.Core;
+using RedMagic.Fx;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -30,6 +31,9 @@ namespace RedMagic.Bosses
 
         private SpriteRenderer _renderer;
         private BoxCollider2D _collider;
+        private FxPlaceholderStyle _style;
+        private bool _pooledPrefab;
+        private bool _styled = true;
 
         private float _secondsLeft;
         private Color _tint;
@@ -37,9 +41,16 @@ namespace RedMagic.Bosses
 
         public static BossPlatform Spawn(in BossContext ctx, Vector2 center, Vector2 size, float seconds)
         {
-            _pool ??= new Pool<BossPlatform>(Build, prewarm: 6);
+            var platform = BossFxSpawn.FromPrefab<BossPlatform>(ctx.Boss != null ? ctx.Boss.PlatformPrefab : null);
+            bool fromPrefab = platform != null;
 
-            var platform = _pool.Get();
+            if (platform == null)
+            {
+                _pool ??= new Pool<BossPlatform>(Build, prewarm: 6);
+                platform = _pool.Get();
+            }
+
+            platform._pooledPrefab = fromPrefab;
             platform.Begin(ctx, center, size, seconds);
             return platform;
         }
@@ -64,23 +75,32 @@ namespace RedMagic.Bosses
 
         private void Begin(in BossContext ctx, Vector2 center, Vector2 size, float seconds)
         {
-            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            if (_renderer == null) _renderer = GetComponentInChildren<SpriteRenderer>();
             if (_collider == null) _collider = GetComponent<BoxCollider2D>();
+            if (_style == null) _style = GetComponent<FxPlaceholderStyle>();
+            _styled = !_pooledPrefab || _style != null;
 
             _secondsLeft = Mathf.Max(0.5f, seconds);
-            _tint = ctx.Accent;
+            _tint = _styled ? ctx.Accent : Color.white;
             _finished = false;
 
             transform.position = center;
             transform.rotation = Quaternion.identity;
 
-            _renderer.sprite = ctx.FxSprite != null ? ctx.FxSprite : AbilityFx.DefaultSprite;
-            _renderer.color = _tint;
-            AbilityFx.CopySorting(_renderer, ctx.Ability.Caster);
-            AbilityFx.Resize(transform, _renderer, size);
+            if (!_pooledPrefab)
+            {
+                _renderer.sprite = ctx.FxSprite != null ? ctx.FxSprite : AbilityFx.DefaultSprite;
+                _renderer.color = _tint;
+                AbilityFx.CopySorting(_renderer, ctx.Ability.Caster);
+                AbilityFx.Resize(transform, _renderer, size);
+            }
+            else if (_style != null)
+            {
+                _style.Apply(ctx.Accent, size, ctx.Ability.Caster);
+            }
 
             // El collider va en coordenadas locales, así que hay que deshacer la escala que acaba
-            // de aplicar Resize para que mida justo lo que se ve.
+            // de aplicar Resize para que mida justo lo que se ve. Vale para los tres casos.
             var scale = transform.localScale;
             _collider.size = new Vector2(size.x / Mathf.Max(0.0001f, scale.x),
                                          size.y / Mathf.Max(0.0001f, scale.y));
@@ -93,6 +113,13 @@ namespace RedMagic.Bosses
             if (_collider != null) _collider.enabled = false;
         }
 
+        // PrefabPool no tiene hook por instancia: inerte y sin collider hasta el próximo Begin.
+        private void OnEnable()
+        {
+            _finished = true;
+            if (_collider != null) _collider.enabled = false;
+        }
+
         private void Update()
         {
             if (_finished) return;
@@ -100,7 +127,7 @@ namespace RedMagic.Bosses
             _secondsLeft -= Time.deltaTime;
             if (_secondsLeft <= 0f) { Finish(); return; }
 
-            if (_renderer == null) return;
+            if (_renderer == null || !_styled) return;
 
             // El último segundo parpadea: es el aviso de que hay que bajarse.
             var color = _tint;
@@ -114,7 +141,7 @@ namespace RedMagic.Bosses
         {
             _finished = true;
             if (_collider != null) _collider.enabled = false;
-            _pool?.Release(this);
+            BossFxSpawn.Release(this, _pooledPrefab, _pool);
         }
     }
 }

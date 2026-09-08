@@ -51,6 +51,13 @@ namespace RedMagic.Items
         public Vector2 size = new Vector2(0.35f, 0.35f);
         public Vector2 muzzleOffset = new Vector2(0.6f, 0.1f);
 
+        // -- Arte (paso 1: base) -----------------------------------------------------------------
+        /// <summary>Prefab del proyectil, o null para construirlo en código. Lo heredan los hijos de un split.</summary>
+        public GameObject projectilePrefab;
+
+        /// <summary>Prefab del haz (armas Hitscan), o null para construirlo en código.</summary>
+        public GameObject beamPrefab;
+
         /// <summary>Enemigos que el proyectil atraviesa antes de morir. 0 = muere en el primer impacto.</summary>
         public int pierce;
 
@@ -102,6 +109,8 @@ namespace RedMagic.Items
                 lifetime = shot.lifetime,
                 size = shot.size,
                 muzzleOffset = shot.muzzleOffset,
+                projectilePrefab = shot.projectilePrefab,
+                beamPrefab = shot.beamPrefab,
                 pierce = Mathf.Max(0, shot.pierce),
                 arcGravity = Mathf.Max(0f, shot.arcGravity),
                 impactRadius = Mathf.Max(0f, shot.impactRadius),

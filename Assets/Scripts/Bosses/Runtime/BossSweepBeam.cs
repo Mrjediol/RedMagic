@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using RedMagic.Abilities;
 using RedMagic.Combat;
 using RedMagic.Core;
+using RedMagic.Fx;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -30,6 +31,9 @@ namespace RedMagic.Bosses
         private static void ResetPools() => _pool = null;
 
         private SpriteRenderer _renderer;
+        private FxPlaceholderStyle _style;
+        private bool _pooledPrefab;
+        private bool _styled = true;
 
         private AbilityContext _ctx;
         private Vector2 _pivot;
@@ -56,9 +60,16 @@ namespace RedMagic.Bosses
                                           float seconds, float length, float width, float damage,
                                           float knockbackMultiplier)
         {
-            _pool ??= new Pool<BossSweepBeam>(Build, prewarm: 4);
+            var beam = BossFxSpawn.FromPrefab<BossSweepBeam>(ctx.Boss != null ? ctx.Boss.SweepBeamPrefab : null);
+            bool fromPrefab = beam != null;
 
-            var beam = _pool.Get();
+            if (beam == null)
+            {
+                _pool ??= new Pool<BossSweepBeam>(Build, prewarm: 4);
+                beam = _pool.Get();
+            }
+
+            beam._pooledPrefab = fromPrefab;
             beam.Begin(ctx, pivot, fromAngle, toAngle, seconds, length, width, damage, knockbackMultiplier);
             return beam;
         }
@@ -74,7 +85,9 @@ namespace RedMagic.Bosses
                            float seconds, float length, float width, float damage,
                            float knockbackMultiplier)
         {
-            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            if (_renderer == null) _renderer = GetComponentInChildren<SpriteRenderer>();
+            if (_style == null) _style = GetComponent<FxPlaceholderStyle>();
+            _styled = !_pooledPrefab || _style != null;
 
             _ctx = ctx.Ability;
             _pivot = pivot;
@@ -86,19 +99,29 @@ namespace RedMagic.Bosses
             _width = Mathf.Max(0.2f, width);
             _damage = Mathf.Max(0f, damage);
             _knockbackMultiplier = Mathf.Max(0f, knockbackMultiplier);
-            _tint = ctx.Accent;
+            _tint = _styled ? ctx.Accent : Color.white;
             _finished = false;
 
             _hit.Clear();
 
-            _renderer.sprite = ctx.FxSprite != null ? ctx.FxSprite : AbilityFx.DefaultSprite;
-            AbilityFx.CopySorting(_renderer, ctx.Ability.Caster);
-            AbilityFx.Resize(transform, _renderer, new Vector2(_length, _width));
+            if (!_pooledPrefab)
+            {
+                _renderer.sprite = ctx.FxSprite != null ? ctx.FxSprite : AbilityFx.DefaultSprite;
+                AbilityFx.CopySorting(_renderer, ctx.Ability.Caster);
+                AbilityFx.Resize(transform, _renderer, new Vector2(_length, _width));
+            }
+            else if (_style != null)
+            {
+                _style.Apply(ctx.Accent, new Vector2(_length, _width), ctx.Ability.Caster);
+            }
 
             Place(_fromAngle, 0f);
         }
 
         void IPooled.OnReturnedToPool() => _hit.Clear();
+
+        // PrefabPool no tiene hook por instancia: inerte hasta el próximo Begin.
+        private void OnEnable() { _finished = true; _hit.Clear(); }
 
         /// <summary>
         /// El giro va en <c>Update</c> y no en <c>FixedUpdate</c>: a 50 Hz una pasada rápida se
@@ -142,7 +165,7 @@ namespace RedMagic.Bosses
             transform.position = _pivot + direction * (_length * 0.5f);
             transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
-            if (_renderer == null) return;
+            if (_renderer == null || !_styled) return;
 
             var color = _tint;
             color.a = _tint.a * alpha;
@@ -167,7 +190,7 @@ namespace RedMagic.Bosses
         private void Finish()
         {
             _finished = true;
-            _pool?.Release(this);
+            BossFxSpawn.Release(this, _pooledPrefab, _pool);
         }
 
         private void OnDrawGizmosSelected()

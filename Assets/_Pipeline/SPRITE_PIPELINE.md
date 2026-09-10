@@ -1,0 +1,332 @@
+# Sprite pipeline — de una lámina a un enemigo jugable
+
+Este documento es la referencia completa. **Si estás leyendo esto para importar una lámina nueva,
+no hace falta que mires el código**: los pasos de abajo bastan.
+
+Regla que gobierna todo el sistema: *lo que se repite se automatiza*. Añadir contenido debe ser
+escribir lo que ese contenido tiene de particular; todo lo compartido — vida, retroceso, parpadeo
+al golpe, cadáver, monedas, collider, cuerpo físico — lo pone la herramienta.
+
+---
+
+## 0. Resumen en 30 segundos
+
+```
+Lámina (PNG/JPG)
+   │   SpriteSheetRecipe.asset   ← la rejilla y el mapeo fila→estado, una sola vez
+   ▼
+Assets/Art/Characters/<Nombre>/<Nombre>_<Estado>.png     hojas limpias, ya cortadas
+   ▼
+   ├─ Anim/<Nombre>_<Estado>.anim  +  <Nombre>.controller   (runtime = Animator)
+   └─ estados dentro de un SpriteStateMachine              (runtime = Flipbook)
+   ▼
+   EnemyRecipe.asset  →  Assets/Prefab/Enemies/Enemy_<Nombre>.prefab
+```
+
+Menú: **Tools ▸ RedMagic ▸ Pipeline**.
+
+---
+
+## 1. Estructura de carpetas
+
+| Ruta | Qué contiene |
+|---|---|
+| `Assets/Sprites/` | Láminas tal como llegan del artista. No se tocan nunca. |
+| `Assets/Art/Characters/<Nombre>/` | Todo lo generado de ese personaje. |
+| `Assets/Art/Characters/<Nombre>/<Nombre>.sheet.asset` | La receta de la lámina. **Es la fuente de verdad del corte.** |
+| `Assets/Art/Characters/<Nombre>/<Nombre>.enemy.asset` | La ficha del enemigo. **Es la fuente de verdad de sus números.** |
+| `Assets/Art/Characters/<Nombre>/<Nombre>_<Estado>.png` | Hoja limpia de un estado, cortada en sprites. |
+| `Assets/Art/Characters/<Nombre>/Anim/` | Los `.anim` generados. |
+| `Assets/Art/Characters/<Nombre>/<Nombre>.controller` | El AnimatorController generado. |
+| `Assets/Prefab/Enemies/Enemy_<Nombre>.prefab` | El prefab final. |
+| `Assets/Scripts/Pipeline/Editor/<Nombre>Pack.cs` | El pack: escribe las dos recetas y lanza el pipeline. Opcional pero recomendado. |
+
+**Un personaje = una carpeta.** Igual que los FX de jefe (`Assets/Prefab/Fx/Bosses/<Jefe>/`), un
+repaso de arte de un personaje es una carpeta, y ningún personaje lee los assets de otro.
+
+## 2. Convención de nombres
+
+| Cosa | Patrón | Ejemplo |
+|---|---|---|
+| Sprite | `<Personaje>_<Estado>_<##>` | `TreeWalk_Attack_03` |
+| Hoja de estado | `<Personaje>_<Estado>.png` | `TreeWalk_Attack.png` |
+| Clip | `<Personaje>_<Estado>.anim` | `TreeWalk_Attack.anim` |
+| Controller | `<Personaje>.controller` | `TreeWalk.controller` |
+| Prefab | `Enemy_<Nombre>.prefab` | `Enemy_TreeWalk.prefab` |
+
+Los índices empiezan en `00` y llevan dos cifras siempre.
+
+### Estados que el generador cablea solo
+
+`Idle` · `Walk` · `Attack` · `Hurt` · `Death`
+
+Cualquier otro nombre se crea igualmente como estado y como clip, pero **sin transiciones**: hay
+que cablearlo a mano en la ventana del Animator, o dispararlo por código.
+
+Los parámetros del Animator son los mismos que ya usa `PlayerAnimator`, a propósito, para que el
+proyecto tenga un solo vocabulario:
+
+| Parámetro | Tipo | Lo escribe |
+|---|---|---|
+| `Speed` | Float | `EnemyAnimator`, desde la velocidad horizontal del `Rigidbody2D` |
+| `Attack` | Trigger | `EnemyAnimator` al acercarse al objetivo, o `EnemyAnimator.TriggerAttack()` |
+| `Hurt` | Trigger | evento `Health.Damaged` |
+| `Dead` | Bool | evento `Health.Died` |
+
+---
+
+## 3. Formato de lámina esperado
+
+- Una **fila por estado**, un **frame por columna**. El número de frames puede variar por fila.
+- Se admiten rótulos escritos en la imagen (`IDLE`, `ATTACK`…): el corte los descarta.
+- Las filas se declaran en la receta **de arriba abajo**, en el mismo orden que en la imagen.
+
+### Alfa
+
+**Un PNG con alfa real siempre da mejor resultado.** El corte conserva los bordes suaves tal cual.
+
+Si la lámina no tiene alfa (un JPG, o un PNG con el damero de transparencia pintado encima), deja
+`Key Background` encendido: se deduce el color de fondo del marco de la imagen y se recorta. Es un
+recorte **duro** — sin semitransparencias — así que el borde queda algo más seco que con alfa real.
+Funciona bien y es lo que se ha usado con `TreeWalk.jpg`.
+
+Si quedan restos del fondo, sube `Background Tolerance`. Si se come parte del arte, bájala.
+
+---
+
+## 4. Procedimiento
+
+### 4.1 Camino rápido (ventana)
+
+1. **Tools ▸ RedMagic ▸ Pipeline ▸ 1 · Ventana de pipeline**
+2. Crea la receta: *Assets ▸ Create ▸ RedMagic ▸ Pipeline ▸ Sprite Sheet Recipe*.
+   Asigna `sheet`, escribe `characterName`, describe las filas (estado, nº de frames, fps, loop).
+3. Arrastra la receta a la ventana y pulsa **Cortar hoja + generar animación**.
+4. Mira las hojas generadas. Si algún frame sale mal, ajusta la receta y repite: es idempotente.
+5. Crea la ficha: *Assets ▸ Create ▸ RedMagic ▸ Pipeline ▸ Enemy Recipe*, apúntala a la receta de
+   arriba y rellena vida, velocidades y daño.
+6. Pulsa **Cortar + generar prefab de enemigo**.
+
+### 4.2 Camino reproducible (pack) — el recomendado
+
+Copia `Assets/Scripts/Pipeline/Editor/TreeWalkPack.cs`, cambia los datos y el nombre del menú.
+Un pack no hace trabajo: escribe las dos recetas y llama a `SpritePipeline.RunEnemy`. Ventaja: la
+importación queda en git y se puede relanzar entera cuando llegue una versión retocada de la lámina.
+
+Desde la CLI, sin abrir la interfaz:
+
+```bash
+unity command run_script --file Assets/Scripts/Pipeline/Editor/TreeWalkPack.cs \
+                         --entry RedMagic.Pipeline.EditorTools.TreeWalkPack.Run
+```
+
+### 4.3 Sustituir un placeholder
+
+Para cambiar el arte de un prefab que ya existe y ya funciona (el círculo rojo de un proyectil, la
+caja gris de un enemigo):
+
+1. Corta la lámina (paso 4.1, hasta el punto 4).
+2. En la ventana, sección **3 · Sustituir un placeholder**: arrastra el prefab, ajusta la escala y
+   pulsa **Vestir**.
+
+Cambia únicamente el `SpriteRenderer` (sprite + color a blanco) y engancha el Animator o el
+flipbook. **Colliders, scripts, Rigidbody, tamaños y referencias no se tocan.** Si algo no gusta,
+`git checkout` del prefab y la lógica ni se entera.
+
+### 4.4 Comandos de menú
+
+| Menú | Qué hace |
+|---|---|
+| `Pipeline ▸ 1 · Ventana de pipeline` | Todo el proceso en una pantalla |
+| `Pipeline ▸ 2 · Cortar hoja + animar` | Con una `SpriteSheetRecipe` seleccionada en el Project |
+| `Pipeline ▸ 3 · Generar enemigo` | Con una `EnemyRecipe` seleccionada |
+| `Pipeline ▸ 4 · Auditar contenido` | Lista los prefabs con `Health` a los que les falta algo |
+| `Pipeline ▸ 5 · Auditar y reparar` | Añade lo que falte |
+| `Pipeline ▸ Packs ▸ …` | Un pack por personaje |
+
+---
+
+## 5. Animator o Flipbook
+
+Se elige en la receta, campo `runtime`. **No es una preferencia, depende de si el objeto pasa por
+pool:**
+
+| | `Animator` | `Flipbook` |
+|---|---|---|
+| Para | enemigos, jefes | proyectiles, FX, cualquier cosa en `PrefabPool` |
+| Genera | `.anim` + `.controller` | estados dentro de un `SpriteStateMachine` |
+| Transiciones | sí, en la ventana del Animator | no: se llama a `Play("Estado")` |
+
+Un objeto en pool **no puede** llevar Animator: `PrefabPool` no tiene gancho de reinicio por
+instancia, así que una instancia reutilizada volvería a la vida a mitad de su animación de muerte.
+`SpriteStateMachine` rebobina en `OnEnable`, que es el único momento de reinicio que hay.
+
+Para FX de una sola animación sigue existiendo `Gameplay.SpriteFlipbook`, más simple.
+`SpriteStateMachine` es su versión con varios estados.
+
+---
+
+## 6. Qué pone la fábrica de enemigos sin que se lo pidas
+
+En la raíz del prefab: `Rigidbody2D` (dinámico, rotación congelada, sin gravedad si vuela),
+`BoxCollider2D`, `Health`, `Knockback`, `HitFlash`, `Corpse`, `CurrencyDropper`,
+`EnemyController`, `EnemyAnimator`.
+En el hijo `Sprite`: `SpriteRenderer` y el `Animator` (o el `SpriteStateMachine`).
+
+Esto no es comodidad, es corregir un fallo que era silencioso: `Health` funciona perfectamente sin
+`Knockback` y sin `HitFlash`. El enemigo recibe daño y muere, pero no parpadea ni sale despedido —
+y eso, jugando, se lee como que el juego no registra los impactos. No hay error en consola.
+
+Detalles que la fábrica decide sola:
+
+- **Collider**: si `colliderSize` es `(0,0)` se deduce del sprite de reposo — 55% del ancho (para
+  que la copa del árbol no choque con las paredes) y 90% del alto.
+- **Origen a los pies**: el pivote de los sprites es `BottomCenter`, así que el collider sube desde
+  el origen. Colocar un enemigo es dejarlo sobre el terreno.
+- **`invulnerabilityDuration` a 0**: los i-frames en un enemigo se tragan las armas multigolpe (una
+  escopeta de 5 perdigones acertaría uno). El aturdimiento es trabajo del retroceso.
+
+**La ficha manda sobre el prefab**: regenerar reescribe los números desde la receta. Los ajustes se
+hacen en el asset, no abriendo el prefab. Lo que la fábrica no gestiona (un componente añadido a
+mano) no se borra nunca.
+
+---
+
+## 6-bis. Ataque a distancia: el objeto suelto se convierte en proyectil solo
+
+Cuando la fila de ataque dibuja algo separado del personaje — la piedra que el ogro ya ha soltado,
+el aguijón que la abeja acaba de disparar — el corte lo detecta como un grupo de más. Declarando
+en la receta **sólo las poses del personaje**, `SheetSlicer` retira ese grupo de la cuenta de
+frames y lo exporta aparte, centrado y sin fondo, como `<Personaje>_<Fila>_Prop.png`.
+
+```csharp
+// La fila del Ogro tiene 5 dibujos, pero el quinto es SÓLO la piedra volando.
+new SheetRow { state = "Attack", frames = 4, fps = 12f, loop = false, releaseFrame = 3 },
+```
+
+**Cuenta las poses del personaje, no los dibujos de la fila.** Es el único número que hay que
+mirar dos veces al escribir un pack.
+
+El objeto retirado **no entra en los límites del frame**, y eso importa por dos motivos medidos en
+la lámina del Ogro:
+
+- La celda es uniforme para toda la fila. Si el proyectil se fundiera con su vecino, la celda
+  pasaba de ~140 px a **385** y el resto de frames se rellenaban de aire, dejando al personaje
+  diminuto y descentrado.
+- El juego ya lanza ahí un proyectil de verdad — ese mismo sprite. Si además quedara pintado en el
+  dibujo, se verían dos.
+
+Para convertirlo en proyectil, en la `EnemyRecipe` basta con que el arquetipo dispare y con decir
+de qué fila sale el prop:
+
+```csharp
+t.archetype = EnemyArchetype.Ranged;      // o Static + staticAttack = AttackKind.Ranged
+recipe.projectilePropState = "Attack";    // la fila cuyo prop se usa
+recipe.projectileScale = 1f;
+
+t.projectile.speed = 9f;
+t.projectile.lifetime = 3.5f;
+t.projectile.size = new Vector2(0.45f, 0.45f);
+t.projectile.muzzleOffset = new Vector2(0.7f, 1f);   // a la altura de la mano
+t.aimAtTarget = true;   // un tiro plano falla en cuanto hay desnivel
+```
+
+`EnemyFactory` entonces construye (o actualiza)
+`Assets/Prefab/Fx/Enemies/<Nombre>/Fx_<Nombre>_Projectile.prefab` vía
+**`ProjectilePrefabFactory`** y lo mete en `tuning.projectile.prefab`. Sin `FxPlaceholderStyle`: el
+sprite ya es arte real, sale del propio personaje, así que el spawner sólo posiciona — no tiñe ni
+redimensiona. El disparo va por `ProjectileFactory`, o sea **pooled** como todo lo demás.
+
+Quién dispara y cuándo lo decide `EnemyAttack` en el `OnAttackRelease` que el pipeline planta en el
+frame de `releaseFrame`; no hay que tocar nada más.
+
+**La perilla del proyectil es `Enemy_<X>.prefab ▸ EnemyStats ▸ Tuning ▸ projectile`**, no el
+componente `Projectile` del prefab del proyectil. `ProjectileFactory.Spawn` llama a `Configure` con
+los valores del spec en **cada disparo**, así que los campos serializados de `Fx_<X>_Projectile`
+(velocidad, vida, daño, homing…) se pisan siempre y editarlos ahí no hace nada. El tamaño visual sí
+se toca en ese prefab porque es la escala del `SpriteRenderer`, que el spawn no toca. El pipeline
+copia ahora el spec sobre el componente `Projectile` del prefab al generar, sólo para que lo que se
+ve ahí sea la verdad — pero se sigue editando en el `Tuning`.
+
+**Si la fila no dibuja nada suelto** y el arquetipo dispara igualmente, sale un aviso y el
+proyectil se construye en código (una forma teñida). Funciona, pero se ve a placeholder.
+
+---
+
+## 6-ter. Voladores y estáticos en el aire
+
+El nombre del archivo de la lámina ya dice el arquetipo. La traducción es directa salvo un caso:
+
+| Lámina | `archetype` | Extra |
+|---|---|---|
+| `…-meele-movimiento-suelo` | `Melee` | — |
+| `…-distancia-movimiento-suelo` | `Ranged` | `personalSpace` > 0 para que retroceda |
+| `…-meele-movimiento-aire` | `FlyingMelee` | — |
+| `…-distancia-movimiento-aire` | `FlyingRanged` | — |
+| `…-distancia-statico-suelo` | `Static` + `staticAttack = Ranged` | — |
+| `…-distancia-statica-aire` | `Static` + `staticAttack = Ranged` | **`gravityScale = 0`** |
+
+El caso raro es el último: los arquetipos `Flying*` son los que **vuelan persiguiendo**. Una
+torreta en el aire no persigue, así que no es `Flying*` — lo único que necesita del vuelo es no
+caerse, y eso es `tuning.gravityScale = 0`, que `EnemyStats.Apply` vuelca al `Rigidbody2D`. Se
+queda a la altura a la que la dejes en la escena.
+
+**Todo lo que flota lleva `anchor = AnchorMode.Center` en la receta de la lámina**, no
+`BottomCenter`: un bicho que vuela no tiene pies sobre los que apoyarse, y con el pivote abajo el
+aguijón (o la cola, o lo que cuelgue) haría de suelo. `EnemyFactory` lee ese anchor y **centra el
+collider** en consecuencia; dar por hecho `BottomCenter` dejaba el collider medio cuerpo por encima
+del dibujo, o sea disparos que atraviesan al bicho y golpes que impactan en el aire.
+
+**Sólo los que se mueven Y disparan huyen** (`EnemyTuning.Retreats`). Un melé persigue y pega, y un
+`Static` no se mueve: en esos dos, `personalSpace` se ignora y su círculo ni siquiera se dibuja en
+los gizmos, aunque el valor siga guardado de un cambio de arquetipo anterior.
+
+## 7. Cuando algo sale mal
+
+| Síntoma | Causa y arreglo |
+|---|---|
+| «se han detectado N filas» y N ≠ las declaradas | Las franjas de contenido no se separan. Pasa a `sliceMode = Grid` con `columns`. |
+| Sale un frame de más | Un objeto suelto dentro del frame (un proyectil lanzado). Declara `frames` en la fila: el corte retira el grupo más pequeño hasta cuadrar y lo exporta como prop. |
+| Sale un frame de menos, con celda mucho más ancha | Dos frames se pisan en horizontal — polvo de un pisotón, un estallido. Pon `evenSplit = true` en esa `SheetRow`: parte la franja en `frames` columnas iguales en vez de buscar manchas. Lo usa `Gorila` en su fila de ataque. |
+| Fondo pegado a los frames | `Key Background` apagado en una lámina sin alfa, o `Background Tolerance` muy baja. |
+| Se come parte del arte | `Background Tolerance` muy alta, o el arte tiene el mismo tono que el fondo. |
+| El personaje da saltos al animar | El ancla no es estable. Con `AnchorMode.BottomCenter` se ancla a los pies; si el arte no apoya siempre igual, prueba `Center`. |
+| El enemigo flota o se hunde | Escala del sprite (`spriteScale`) frente al `colliderSize`. Deja `colliderSize` en `(0,0)` para que se deduzca. |
+| El prefab sale sin arte | Se generó antes de cortar la lámina. Relanza el pack. |
+| Un clip sale vacío (1 s, 60 fps, sin eventos) tras generar | Es el bug de la primera importación: los sub-sprites recién cortados no estaban listos en el tick en que se construyó el clip. `SpritePipeline.RunSheet` ahora construye los clips **dos veces** con un `Refresh` en medio para curarlo solo; si aun así aparece, relanza el pack una vez más. |
+| El enemigo se queda en Idle y nunca ataca/persigue | Casi siempre no hay ningún objeto con la etiqueta `Player` en la escena que se está probando — `MainHub` no tiene jugador propio hasta que `RunManager.StartRun` lo instancia; probar el prefab ahí sin pasar por el flujo normal (menú → hub → run) deja a `EnemyController`/`EnemyAnimator` sin nada que perseguir. No es un fallo del pipeline. |
+| Un enemigo colocado en una escena se quedó en Idle aunque hay jugador y el prefab funciona en uno nuevo | La instancia de la escena es de una versión **anterior** del prefab (de antes de corregir algo en el generador) y algo en ella quedó desincronizado — visto una vez con `EnemyAnimator.animator` en null pese a que una instancia nueva del mismo prefab lo resuelve bien en `Awake`. El arreglo es borrar esa instancia y volver a arrastrar el prefab actual, no perseguir la causa exacta. |
+| `ranged` activo pero no aparece ningún proyectil | El log de generación dice si encontró el prop suelto. Si no lo encontró: la fila no tiene ningún objeto separado del personaje (revisa la lámina), o se generó el prefab **antes** de cortar/re-cortar la hoja — relanza `SpritePipeline.RunEnemy`, que corta primero. |
+
+Comprobar que un cambio compila, sin abrir el editor a mano:
+
+```bash
+unity command recompile
+unity command recompile_status   # errors: [] = limpio
+```
+
+---
+
+## 8. Ejemplo trabajado: TreeWalk
+
+`Assets/Sprites/TreeWalk.jpg`, 1264×1264, 4 filas (IDLE / ATTACK / HURT / DEATH) × 5 frames, con
+los rótulos escritos en la imagen y **sin canal alfa**.
+
+Lo que hizo el pipeline sin intervención:
+
+1. Dedujo el fondo (blanco ~249) del marco y lo recortó.
+2. Encontró 8 franjas de contenido — 4 de personajes y 4 de rótulos — y se quedó con las 4 más
+   altas, que son las de los personajes.
+3. Segmentó cada banda en manchas conexas y las agrupó por solapamiento horizontal, de modo que las
+   hojas que salen despedidas en HURT viajan con su frame en vez de contar como frames.
+4. En ATTACK detectó 6 grupos: la piedra que el bicho lanza en el cuarto frame va suelta y
+   separada de la mano. Como la receta declara 5, absorbió el grupo más pequeño en su vecino más
+   cercano — y además lo exportó aparte, centrado, como `TreeWalk_Attack_Prop.png`.
+5. Empaquetó cada estado en celdas uniformes ancladas a los pies, con el pivote en el ancla.
+6. Generó 4 clips, el controller con sus transiciones, y `Enemy_TreeWalk.prefab` con los nueve
+   componentes compartidos, collider `0.81 × 1.52` deducido del arte y sprite a escala `0.7`.
+7. Con `recipe.ranged = true`, construyó `Fx_TreeWalk_Projectile.prefab` a partir de esa piedra y
+   añadió un `RangedAttack` en `AutoDetect`: TreeWalk ahora tira la piedra de verdad cada 1.8s
+   cuando el jugador entra en su rango, con la animación de "Attack" cuadrada al soltarla.
+
+Coste de la siguiente lámina: copiar `TreeWalkPack.cs`, cambiar los datos, ejecutar.

@@ -21,6 +21,10 @@ namespace RedMagic.Combat
     ///
     /// La dirección sale de <c>PlayerMovement.Facing</c> si existe, y si no del <c>flipX</c> del
     /// SpriteRenderer — que es justo lo que ya usa <c>EnemyController</c> al patrullar.
+    ///
+    /// El proyectil sale de <see cref="Core.PrefabPool"/>, nunca de <c>Instantiate</c>: en modo
+    /// <b>AutoDetect</b> dispara con cooldown durante toda la pelea, así que es justo el caso que
+    /// la regla del proyecto de poolear lo que se repite pide cubrir.
     /// </summary>
     [DisallowMultipleComponent]
     public class RangedAttack : MonoBehaviour
@@ -180,17 +184,22 @@ namespace RedMagic.Combat
         {
             Vector3 origin = MuzzlePosition(direction.x < 0f ? -1 : 1);
 
-            var instance = Instantiate(projectilePrefab, origin, Quaternion.identity);
-            var projectile = instance.GetComponent<Projectile>();
+            // Vía PrefabPool, no Instantiate: esto dispara con cooldown, así que a lo largo de una
+            // pelea son decenas de instancias — exactamente lo que la regla del proyecto de "nunca
+            // Instantiate/Destroy lo que se repite" pide poolear.
+            var instance = PrefabPool.Spawn(projectilePrefab, origin, Quaternion.identity);
+            var projectile = instance != null ? instance.GetComponent<Projectile>() : null;
 
             if (projectile != null)
             {
+                projectile.PooledPrefab = true;
                 projectile.Configure(damage, projectileSpeed, projectileHitLayers);
                 projectile.Launch(direction, gameObject);
             }
             else
             {
                 Debug.LogWarning($"[RangedAttack] El prefab '{projectilePrefab.name}' no tiene componente Projectile.", this);
+                if (instance != null) PrefabPool.Despawn(instance);
             }
 
             VfxOneShot.Spawn(muzzleEffect, origin, direction.x < 0f ? -1 : 1);

@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e336af67ac476047b25568b1f1326e1, type: 3}
+  m_Name: BossAttack_CoronaMayor
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.OrbRingAttack
+  displayName: Corona Mayor
+  description: "La corona completa, dos veces seguidas y girando el doble de r\xE1pido.
+    Los huecos existen, pero no se quedan quietos."
+  accent: {r: 0.78, g: 0.33, b: 0.85, a: 1}
+  telegraph: 0.45
+  recovery: 1.2
+  weight: 1.5
+  cooldownInAttacks: 3
+  damage: 12
+  knockbackMultiplier: 0.5
+  vulnerableSeconds: 1
+  vulnerableMultiplier: 2
+  sfxId: 
+  shakeAmplitude: 0.45
+  shakeDuration: 0.35
+  orbCount: 14
+  ringRadius: 3.2
+  originOffset: {x: 0, y: 3}
+  startAngle: 0
+  alignToPlayer: 1
+  spinDegreesPerSecond: 55
+  startScale: 0.15
+  endScale: 1
+  codeOrbSize: 0.7
+  growSeconds: 1.1
+  appearStagger: 0.05
+  holdSeconds: 0.25
+  recoilFraction: 0.2
+  volleys: 2
+  timeBetweenVolleys: 1
+  launchSpread: 2
+  projectile:
+    prefab: {fileID: 3324571526966067928, guid: c2ce730cf2c2871458df70606a174385, type: 3}
+    speed: 9
+    lifetime: 5
+    size: {x: 0.5, y: 0.5}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    homingTurnRate: 0
+    homingRange: 9
+    arcGravity: 0
+    impactRadius: 0
+    impactDamage: 0
+  orbPrefab: {fileID: 5896703725959780536, guid: 7adfd30051c6e3848bbfdb3e8ccbba2f, type: 3}
+  orbSprite: {fileID: 0}
+  tintOrbWithAccent: 0
+  projectileSprite: {fileID: 0}

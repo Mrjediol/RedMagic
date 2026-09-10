@@ -32,8 +32,9 @@ namespace RedMagic.Gameplay
         [SerializeField] private float knockbackMultiplier = 1f;
 
         [Header("Ciclo de vida")]
-        [Tooltip("Destruir al terminar en vez de sólo desactivar. Actívalo cuando el proyectil se " +
-                 "instancia en caliente (como hace RangedAttack); déjalo apagado si viene de un pool.")]
+        [Tooltip("Destruir al terminar en vez de sólo desactivar. Sólo para un proyectil que de " +
+                 "verdad se instancia en caliente y no pasa por ningún pool; RangedAttack y " +
+                 "ProjectileFactory ya poolean por su cuenta y dejan esto apagado.")]
         [SerializeField] private bool destroyWhenDone;
 
         [Header("Impacto")]

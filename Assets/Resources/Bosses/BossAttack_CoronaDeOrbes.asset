@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e336af67ac476047b25568b1f1326e1, type: 3}
+  m_Name: BossAttack_CoronaDeOrbes
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.OrbRingAttack
+  displayName: Corona de Orbes
+  description: "Se rodea de orbes diminutos y los deja crecer. Cuando est\xE1n maduros,
+    salen todos a la vez. Col\xF3cate en un hueco mientras hay tiempo \u2014 o aprovecha
+    para pegarle."
+  accent: {r: 0.45, g: 0.85, b: 0.38, a: 1}
+  telegraph: 0.5
+  recovery: 1.35
+  weight: 1.3
+  cooldownInAttacks: 2
+  damage: 12
+  knockbackMultiplier: 0.5
+  vulnerableSeconds: 1.3
+  vulnerableMultiplier: 2
+  sfxId: 
+  shakeAmplitude: 0.35
+  shakeDuration: 0.3
+  orbCount: 9
+  ringRadius: 2.8
+  originOffset: {x: 0, y: 3}
+  startAngle: 0
+  alignToPlayer: 1
+  spinDegreesPerSecond: 30
+  startScale: 0.15
+  endScale: 1
+  codeOrbSize: 0.7
+  growSeconds: 1.5
+  appearStagger: 0.08
+  holdSeconds: 0.35
+  recoilFraction: 0.18
+  volleys: 1
+  timeBetweenVolleys: 0.9
+  launchSpread: 0
+  projectile:
+    prefab: {fileID: 3324571526966067928, guid: c2ce730cf2c2871458df70606a174385, type: 3}
+    speed: 8
+    lifetime: 4.5
+    size: {x: 0.5, y: 0.5}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    homingTurnRate: 0
+    homingRange: 9
+    arcGravity: 0
+    impactRadius: 0
+    impactDamage: 0
+  orbPrefab: {fileID: 5896703725959780536, guid: 7adfd30051c6e3848bbfdb3e8ccbba2f, type: 3}
+  orbSprite: {fileID: 0}
+  tintOrbWithAccent: 0
+  projectileSprite: {fileID: 0}

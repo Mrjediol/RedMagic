@@ -1,0 +1,162 @@
+using RedMagic.Abilities;
+using RedMagic.Combat;
+using UnityEngine;
+
+namespace RedMagic.Enemies
+{
+    /// <summary>
+    /// Resuelve el golpe del enemigo <b>en el instante que le avisa la animación</b>, no cuando le
+    /// toca a un temporizador. Sirve para los dos tipos: si el arquetipo es a distancia lanza el
+    /// proyectil, y si es de melé aplica una caja de daño por delante.
+    ///
+    /// No decide <i>cuándo</i> se ataca — eso es del cerebro — ni <i>en qué frame</i> — eso es del
+    /// clip. Sólo ejecuta. Por eso un enemigo nuevo no necesita un script de ataque propio:
+    /// cambian los números de <see cref="EnemyStats"/>, no el código.
+    ///
+    /// El daño entra por <see cref="AbilityHit"/> y el proyectil por
+    /// <see cref="ProjectileFactory"/>, que son los mismos caminos que usan jefes y armas: filtrado
+    /// de objetivos, robo de vida y pooling ya resueltos en un solo sitio.
+    /// </summary>
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(EnemyStats))]
+    public class EnemyAttack : MonoBehaviour
+    {
+        private EnemyStats _stats;
+        private EnemyAnimation _animation;
+        private Health _health;
+
+        /// <summary>
+        /// <b>Punto</b> al que va el golpe, no dirección. Lo fija el cerebro al empezar el ataque y
+        /// la dirección se calcula al soltar, desde la boca del disparo.
+        ///
+        /// Guardar el punto y no el vector es lo que impide el fallo clásico: la boca está a la
+        /// altura de la mano (medio cuerpo por encima del origen), así que un vector calculado de
+        /// pivote a pivote sale plano desde ahí arriba y pasa por encima de la cabeza del objetivo.
+        /// </summary>
+        private Vector2 _aimPoint;
+
+        private bool _hasAim;
+
+        private void Awake()
+        {
+            _stats = GetComponent<EnemyStats>();
+            _animation = GetComponent<EnemyAnimation>();
+            _health = GetComponent<Health>();
+        }
+
+        private void OnEnable()
+        {
+            if (_animation != null) _animation.AttackReleased += Execute;
+        }
+
+        private void OnDisable()
+        {
+            if (_animation != null) _animation.AttackReleased -= Execute;
+        }
+
+        /// <summary>
+        /// Apunta el próximo golpe a un punto del mundo. El cerebro la llama al entrar en estado de
+        /// ataque, con el centro del objetivo, y el punto se congela ahí: el golpe no persigue al
+        /// jugador a mitad del gesto, que es lo que hace que se pueda esquivar.
+        /// </summary>
+        public void AimAt(Vector2 worldPoint)
+        {
+            _aimPoint = worldPoint;
+            _hasAim = true;
+        }
+
+        /// <summary>Hacia dónde mira el golpe, desde donde nace de verdad.</summary>
+        private Vector2 Direction(Vector2 origin)
+        {
+            if (!_hasAim) return new Vector2(transform.localScale.x >= 0f ? 1f : -1f, 0f);
+
+            Vector2 direction = _aimPoint - origin;
+            if (direction.sqrMagnitude < 0.0001f) return Vector2.right;
+
+            // Sin apuntado libre el tiro sale plano, pero al menos hacia el lado correcto.
+            if (!_stats.Tuning.aimAtTarget) return new Vector2(direction.x >= 0f ? 1f : -1f, 0f);
+
+            return direction.normalized;
+        }
+
+        /// <summary>
+        /// El golpe. Público para poder dispararlo desde fuera (una prueba, un jefe que reutiliza
+        /// al enemigo), aunque lo normal es que lo llame el evento de la animación.
+        /// </summary>
+        public void Execute()
+        {
+            var tuning = _stats.Tuning;
+            if (_health != null && _health.IsDead) return;
+
+            if (tuning.IsRanged) Shoot(tuning);
+            else Strike(tuning);
+        }
+
+        // ============================================================ a distancia
+
+        private void Shoot(EnemyTuning tuning)
+        {
+            // El facing se decide con el punto, no con la dirección, porque la dirección todavía
+            // no existe: depende de dónde caiga la boca, que a su vez depende del facing.
+            int facing = Facing();
+            Vector2 origin = (Vector2)transform.position +
+                             new Vector2(tuning.projectile.muzzleOffset.x * facing,
+                                         tuning.projectile.muzzleOffset.y);
+
+            Vector2 direction = Direction(origin);
+            var context = Context(tuning, direction, facing);
+
+            ProjectileFactory.Spawn(context, tuning.projectile, origin, direction,
+                                    tuning.attackDamage, tuning.attackKnockbackMultiplier,
+                                    tuning.projectileSprite, tuning.projectileTint);
+        }
+
+        // ============================================================ melé
+
+        private void Strike(EnemyTuning tuning)
+        {
+            // La caja sale hacia donde mira, no desde donde está: un enemigo pegado al jugador debe
+            // golpear en el sentido del gesto, igual que hace el melé del jugador.
+            int facing = Facing();
+            Vector2 center = (Vector2)transform.position +
+                             new Vector2(tuning.meleeHitboxOffset.x * facing, tuning.meleeHitboxOffset.y);
+
+            var context = Context(tuning, new Vector2(facing, 0f), facing);
+
+            AbilityHit.DamageBox(context, center, tuning.meleeHitboxSize, 0f,
+                                 tuning.attackDamage, tuning.attackKnockbackMultiplier, center);
+        }
+
+        /// <summary>Lado hacia el que va el golpe, según el punto apuntado.</summary>
+        private int Facing()
+        {
+            if (!_hasAim) return 1;
+            return _aimPoint.x >= transform.position.x ? 1 : -1;
+        }
+
+        // ============================================================ contexto
+
+        /// <summary>
+        /// El paquete que <see cref="AbilityHit"/> y <see cref="ProjectileFactory"/> esperan. La
+        /// etiqueta "amiga" es la del propio enemigo: es lo que impide que sus balas maten a los
+        /// suyos sin montar capas ni bandos.
+        /// </summary>
+        private AbilityContext Context(EnemyTuning tuning, Vector2 aim, int facing)
+        {
+            string friendly = CompareTag("Untagged") ? null : tag;
+
+            return new AbilityContext(gameObject, this, _health, tuning.hitLayers, facing, aim, friendly);
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            var stats = GetComponent<EnemyStats>();
+            if (stats == null || stats.Tuning.IsRanged) return;
+
+            var tuning = stats.Tuning;
+            Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.5f);
+            Gizmos.DrawWireCube(transform.position + (Vector3)tuning.meleeHitboxOffset,
+                                tuning.meleeHitboxSize);
+        }
+    }
+}

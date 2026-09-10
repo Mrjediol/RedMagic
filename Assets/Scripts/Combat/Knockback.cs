@@ -94,6 +94,18 @@ namespace RedMagic.Combat
         /// <summary>Dirección horizontal del último empujón (-1 / 1), para animaciones y VFX.</summary>
         public int LastDirection { get; private set; } = 1;
 
+        /// <summary>
+        /// Ajusta las cuatro cifras del empujón en caliente. Lo usa <c>EnemyStats</c>, que reúne en
+        /// un único componente todo lo afinable de un enemigo y lo reparte a los compartidos.
+        /// </summary>
+        public void Configure(float horizontal, float vertical, float seconds, float resist)
+        {
+            horizontalForce = Mathf.Max(0f, horizontal);
+            verticalForce = Mathf.Max(0f, vertical);
+            duration = Mathf.Max(0f, seconds);
+            resistance = Mathf.Clamp01(resist);
+        }
+
         /// <summary>Se dispara al empezar un empujón, con su velocidad ya calculada.</summary>
         public event System.Action<Vector2> Knocked;
 

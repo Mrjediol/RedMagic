@@ -229,12 +229,12 @@ MonoBehaviour:
   contactDamageCooldown: 0.8
   contactKnockbackMultiplier: 1.4
   fxSprite: {fileID: 0}
-  warnPrefab: {fileID: 5370477405329698864, guid: bf7aa07013226084ea49b0ea047dc362, type: 3}
-  shockwavePrefab: {fileID: 4644358226651596634, guid: 20e8f37df19bb2847b4edd6906e38389, type: 3}
-  sweepBeamPrefab: {fileID: 7448650366277206246, guid: 760a85a91bbbfbd42b26f621c333140b, type: 3}
-  hazardPrefab: {fileID: 359099617871499961, guid: a8dba00398b9bd240988232ea85df2f8, type: 3}
-  platformPrefab: {fileID: 164162919880657894, guid: 26e3e57e470a2b442b758866427e0194, type: 3}
-  anchorPrefab: {fileID: 312728630472330168, guid: 1156e9c8beac1d94dbf0cd020dc27fc7, type: 3}
+  warnPrefab: {fileID: 5911861681095886554, guid: 5b31e24f5197c7b4483548a7b61f60ca, type: 3}
+  shockwavePrefab: {fileID: 2120918042927778585, guid: da8a33b6ce6ec2c4e8d220c2817504a4, type: 3}
+  sweepBeamPrefab: {fileID: 6442484649126455640, guid: 7a0c5f297dabc944a8ab2a15fcaa0115, type: 3}
+  hazardPrefab: {fileID: 1939339282232729834, guid: ac2e8bfba5b3c374ca8bb9cf49818511, type: 3}
+  platformPrefab: {fileID: 647711205960040344, guid: 154aac7a9174b4e479bfc41959b81666, type: 3}
+  anchorPrefab: {fileID: 5872634429807742750, guid: 1b95a519c21f969478ec445a83644333, type: 3}
   showTelegraphAura: 1
   auraScale: 1.06
   vulnerableAura: {r: 1, g: 0.86, b: 0.35, a: 1}

@@ -75,6 +75,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Worlds/World3/World3_Section01.unity
     guid: 73d8398786d5a2947bead095d2e75913
   m_configObjects:
+    com.unity.adaptivePerformance.basic.provider_settings: {fileID: 11400000, guid: a99728a281b759d4dbfdbbd8fdd87634, type: 2}
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: c158f1ab2c0c7074eb5822584efa8ffa, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 335bfed14a7e9e14ebd5bce369bcc6a5, type: 2}
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

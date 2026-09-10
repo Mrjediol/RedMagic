@@ -1,0 +1,146 @@
+using System;
+using UnityEngine;
+
+namespace RedMagic.Pipeline
+{
+    /// <summary>Cómo se anima el personaje una vez cortada la hoja.</summary>
+    public enum AnimRuntime
+    {
+        /// <summary>
+        /// <see cref="Animator"/> + AnimatorController generado. Para enemigos y jefes, que se
+        /// instancian de uno en uno y no pasan por pool.
+        /// </summary>
+        Animator,
+
+        /// <summary>
+        /// <see cref="RedMagic.Gameplay.SpriteFlipbook"/> vía <see cref="SpriteStateMachine"/>.
+        /// <b>Obligatorio para lo que va por pool</b> (proyectiles, FX): <c>PrefabPool</c> no tiene
+        /// gancho de reinicio por instancia, así que un Animator se reutilizaría con el estado de
+        /// la vez anterior. El flipbook rebobina en <c>OnEnable</c>.
+        /// </summary>
+        Flipbook,
+    }
+
+    /// <summary>Cómo se localizan los frames dentro de la lámina.</summary>
+    public enum SliceMode
+    {
+        /// <summary>
+        /// Detecta el contenido solo: bandas por filas, frames por componentes conexas, rótulos
+        /// descartados. Es el modo por defecto porque aguanta láminas con texto, márgenes
+        /// irregulares y filas de distinto número de frames.
+        /// </summary>
+        AutoBounds,
+
+        /// <summary>Rejilla uniforme de <see cref="SpriteSheetRecipe.columns"/> × filas.</summary>
+        Grid,
+    }
+
+    /// <summary>Dónde cae el pivote de cada frame dentro de su celda.</summary>
+    public enum AnchorMode
+    {
+        /// <summary>A los pies, centrado. Lo normal en un personaje: no flota ni se hunde.</summary>
+        BottomCenter,
+
+        /// <summary>Centro de la caja de contenido. Para orbes, proyectiles y cosas que giran.</summary>
+        Center,
+    }
+
+    /// <summary>Una fila de la lámina = un estado de animación.</summary>
+    [Serializable]
+    public class SheetRow
+    {
+        [Tooltip("Nombre del estado. Idle / Walk / Attack / Hurt / Death son los que el " +
+                 "AnimatorController generado sabe cablear solo; cualquier otro se crea como " +
+                 "estado suelto sin transiciones.")]
+        public string state = "Idle";
+
+        [Tooltip("Frames esperados en la fila. 0 = los que se detecten. Si se pone un número y " +
+                 "no cuadra, el corte avisa en vez de inventarse frames.")]
+        [Min(0)] public int frames;
+
+        [Min(0.1f)] public float fps = 10f;
+
+        public bool loop = true;
+
+        [Tooltip("Sólo para la fila de ataque: en qué frame sale el golpe (el proyectil, o la caja " +
+                 "de melé). El generador clava ahí un AnimationEvent, así que el daño cae en el " +
+                 "dibujo exacto en el que el bicho suelta, no cuando lo diga un temporizador.\n" +
+                 "-1 = sin evento (se usa el tiempo de respaldo de EnemyStats).")]
+        public int releaseFrame = -1;
+
+        [Tooltip("Reparte la fila en 'frames' columnas iguales en vez de buscar manchas conexas. " +
+                 "Para filas cuyos frames se pisan en horizontal — polvo de un pisotón, un " +
+                 "estallido de energía, hojas que salen volando — donde la detección por contenido " +
+                 "junta dos dibujos en uno. Necesita que los frames estén dibujados en rejilla.")]
+        public bool evenSplit;
+    }
+
+    /// <summary>
+    /// La configuración de una hoja de sprites, guardada como asset.
+    ///
+    /// <b>Este asset es el punto de todo el pipeline.</b> La rejilla, el mapeo fila→estado y los
+    /// fps se escriben una vez aquí y se quedan: relanzar el corte, regenerar los clips o rehacer
+    /// el prefab no exige volver a deducir nada. Una sesión futura solo tiene que abrir el asset,
+    /// no releer la lámina.
+    /// </summary>
+    [CreateAssetMenu(fileName = "NuevaHoja.sheet", menuName = "RedMagic/Pipeline/Sprite Sheet Recipe")]
+    public class SpriteSheetRecipe : ScriptableObject
+    {
+        [Header("Origen")]
+        [Tooltip("La lámina tal cual llega. No se toca: el corte escribe hojas nuevas y limpias.")]
+        public Texture2D sheet;
+
+        [Tooltip("Nombre del personaje. Da nombre a sprites, clips, controller y carpeta.")]
+        public string characterName = "NuevoPersonaje";
+
+        [Tooltip("Vacío = Assets/Art/Characters/<characterName>.")]
+        public string outputFolder = "";
+
+        [Header("Corte")]
+        public SliceMode sliceMode = SliceMode.AutoBounds;
+
+        [Tooltip("Filas de la lámina, de arriba abajo. Cada una es un estado.")]
+        public SheetRow[] rows =
+        {
+            new SheetRow { state = "Idle",   fps = 8f,  loop = true },
+            new SheetRow { state = "Attack", fps = 12f, loop = false },
+            new SheetRow { state = "Hurt",   fps = 12f, loop = false },
+            new SheetRow { state = "Death",  fps = 8f,  loop = false },
+        };
+
+        [Tooltip("Solo en modo Grid: columnas de la rejilla.")]
+        [Min(1)] public int columns = 5;
+
+        [Header("Fondo")]
+        [Tooltip("Si la lámina no trae alfa real (un JPG, o un PNG con el damero pintado encima), " +
+                 "se deduce el fondo de los bordes y se pasa a transparente. Con alfa real, " +
+                 "déjalo apagado: es más fiel.")]
+        public bool keyBackground = true;
+
+        [Tooltip("Cuánto puede alejarse un pixel del color de fondo y seguir contando como fondo. " +
+                 "Súbelo si quedan restos del damero, bájalo si se come el arte.")]
+        [Range(0f, 0.5f)] public float backgroundTolerance = 0.12f;
+
+        [Tooltip("Con alfa real: a partir de qué alfa un pixel cuenta como contenido.")]
+        [Range(0f, 1f)] public float alphaThreshold = 0.15f;
+
+        [Header("Celda")]
+        [Tooltip("Píxeles de aire alrededor del contenido en cada celda.")]
+        [Min(0)] public int margin = 8;
+
+        public AnchorMode anchor = AnchorMode.BottomCenter;
+
+        [Min(1)] public int pixelsPerUnit = 100;
+
+        [Tooltip("Bilinear para arte pintado; Point para pixel art.")]
+        public FilterMode filterMode = FilterMode.Bilinear;
+
+        [Header("Animación")]
+        public AnimRuntime runtime = AnimRuntime.Animator;
+
+        /// <summary>Carpeta de salida efectiva.</summary>
+        public string ResolvedFolder => string.IsNullOrWhiteSpace(outputFolder)
+            ? $"Assets/Art/Characters/{characterName}"
+            : outputFolder.TrimEnd('/');
+    }
+}

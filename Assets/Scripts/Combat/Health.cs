@@ -217,6 +217,19 @@ namespace RedMagic.Combat
             HealthChanged?.Invoke(currentHealth, maxHealth);
         }
 
+        /// <summary>
+        /// Duración de los i-frames en caliente. Lo usa <c>EnemyStats</c>, que centraliza en un
+        /// solo componente todo lo que se afina de un enemigo y lo reparte a los compartidos.
+        /// </summary>
+        public void SetInvulnerabilityDuration(float value) => invulnerabilityDuration = Mathf.Max(0f, value);
+
+        /// <summary>Ids de sonido en caliente. Vacío = sin sonido, como el valor por defecto.</summary>
+        public void SetSfx(string hurt, string death)
+        {
+            hurtSfxId = hurt ?? string.Empty;
+            deathSfxId = death ?? string.Empty;
+        }
+
         public void Heal(float amount)
         {
             if (amount <= 0f || IsDead) return;

@@ -1,0 +1,469 @@
+fileFormatVersion: 2
+guid: 292f81ff2e26b2a4f8eed1060a9f23ba
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 5477163641307893808
+    second: Orbe_Idle_0
+  - first:
+      213: -5116647859150936385
+    second: Orbe_Idle_1
+  - first:
+      213: -4268432445450454965
+    second: Orbe_Idle_2
+  - first:
+      213: 266144209482109160
+    second: Orbe_Idle_3
+  - first:
+      213: -2196178177311929912
+    second: Orbe_Idle_4
+  - first:
+      213: -5687665216938390661
+    second: Orbe_Idle_5
+  - first:
+      213: -4202947893829237973
+    second: Orbe_Idle_6
+  - first:
+      213: 2151158899714809434
+    second: Orbe_Idle_7
+  - first:
+      213: -5376980581654421043
+    second: Orbe_Idle_8
+  - first:
+      213: 5310335724297983330
+    second: Orbe_Idle_9
+  - first:
+      213: 5141790500266388034
+    second: Orbe_Idle_10
+  - first:
+      213: 1710472924042122200
+    second: Orbe_Idle_11
+  - first:
+      213: 5131941503933757204
+    second: Orbe_Idle_12
+  - first:
+      213: 1753751725078984675
+    second: Orbe_Idle_13
+  - first:
+      213: 6320533818615446569
+    second: Orbe_Idle_14
+  - first:
+      213: 2330459044605446445
+    second: Orbe_Idle_15
+  - first:
+      213: 3822582095743236923
+    second: Orbe_Idle_16
+  - first:
+      213: 4486865282625505123
+    second: Orbe_Idle_17
+  - first:
+      213: -6806822310003010160
+    second: Orbe_Idle_18
+  - first:
+      213: -1549217735803915113
+    second: Orbe_Idle_19
+  - first:
+      213: -5261879042612005754
+    second: Orbe_Idle_20
+  - first:
+      213: -8497081559355848917
+    second: Orbe_Idle_21
+  - first:
+      213: 1062226087414195047
+    second: Orbe_Idle_22
+  - first:
+      213: 1193384850675596273
+    second: Orbe_Idle_23
+  - first:
+      213: 745613283845608577
+    second: Orbe_Idle_24
+  - first:
+      213: 3104871242592175705
+    second: Orbe_Idle_25
+  - first:
+      213: -1672687915180831797
+    second: Orbe_Idle_26
+  - first:
+      213: 6608367012499591824
+    second: Orbe_Idle_27
+  - first:
+      213: -760318076130132429
+    second: Orbe_Idle_28
+  - first:
+      213: 4858418940634639264
+    second: Orbe_Idle_29
+  - first:
+      213: 1901215689442283092
+    second: Orbe_Idle_30
+  - first:
+      213: -7207033867393230123
+    second: Orbe_Idle_31
+  - first:
+      213: 3125062517754113200
+    second: Orbe_Idle_32
+  - first:
+      213: -4151796835155922116
+    second: Orbe_Idle_33
+  - first:
+      213: 2530936321804532151
+    second: Orbe_Idle_34
+  - first:
+      213: 4266316011992584972
+    second: Orbe_Idle_35
+  - first:
+      213: 2089806083823957108
+    second: Orbe_Idle_36
+  - first:
+      213: -7996749169020265207
+    second: Orbe_Idle_37
+  - first:
+      213: -7700742290122950513
+    second: Orbe_Idle_38
+  - first:
+      213: 6159844395950430322
+    second: Orbe_Idle_39
+  - first:
+      213: -6802980955785554136
+    second: Orbe_Idle_40
+  - first:
+      213: -9129777287699489663
+    second: Orbe_Idle_41
+  - first:
+      213: -4851858535281452261
+    second: Orbe_Idle_42
+  - first:
+      213: -6319049491843464942
+    second: Orbe_Idle_43
+  - first:
+      213: -3111949048006780193
+    second: Orbe_Idle_44
+  - first:
+      213: 2853080444775889511
+    second: Orbe_Idle_45
+  - first:
+      213: 1076371774017237575
+    second: Orbe_Idle_46
+  - first:
+      213: -2234643662253125279
+    second: Orbe_Idle_47
+  - first:
+      213: -5043848219730876549
+    second: Orbe_Idle_48
+  - first:
+      213: -7201090522331215973
+    second: Orbe_Idle_49
+  - first:
+      213: -645802400537373606
+    second: Orbe_Idle_50
+  - first:
+      213: 6352157448352391215
+    second: Orbe_Idle_51
+  - first:
+      213: -2689608797257028569
+    second: Orbe_Idle_52
+  - first:
+      213: -661667682693620232
+    second: Orbe_Idle_53
+  - first:
+      213: 5877876284676605816
+    second: Orbe_Idle_54
+  - first:
+      213: 904716358149241449
+    second: Orbe_Idle_55
+  - first:
+      213: 9001808941053673785
+    second: Orbe_Idle_56
+  - first:
+      213: 8286825306330079451
+    second: Orbe_Idle_57
+  - first:
+      213: 5657335908720684790
+    second: Orbe_Idle_58
+  - first:
+      213: -1322857164174872630
+    second: Orbe_Idle_59
+  - first:
+      213: 2918814057930939559
+    second: Orbe_Idle_60
+  - first:
+      213: -833829846514154348
+    second: Orbe_Idle_61
+  - first:
+      213: 6098032468368369048
+    second: Orbe_Idle_62
+  - first:
+      213: -1788789198309728580
+    second: Orbe_Idle_63
+  - first:
+      213: -3676914810497378380
+    second: Orbe_Idle_64
+  - first:
+      213: 4086760700081615556
+    second: Orbe_Idle_65
+  - first:
+      213: 5947891093478444982
+    second: Orbe_Idle_66
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Orbe_Idle_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 156
+        height: 192
+      alignment: 9
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f973cf39e559d1b4fb29498cb0f03e1f
+      internalID: 5477163641307893808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Orbe_Idle_1
+      rect:
+        serializedVersion: 2
+        x: 156
+        y: 0
+        width: 156
+        height: 192
+      alignment: 9
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3cb76d3f1b1168145950b91ce71784b7
+      internalID: -5116647859150936385
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Orbe_Idle_2
+      rect:
+        serializedVersion: 2
+        x: 312
+        y: 0
+        width: 156
+        height: 192
+      alignment: 9
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b988a6ee64a53924c8f1db7905e521c6
+      internalID: -4268432445450454965
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Orbe_Idle_3
+      rect:
+        serializedVersion: 2
+        x: 468
+        y: 0
+        width: 156
+        height: 192
+      alignment: 9
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 688909a4000cb4449925f9c43c8abc01
+      internalID: 266144209482109160
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Orbe_Idle_4
+      rect:
+        serializedVersion: 2
+        x: 624
+        y: 0
+        width: 156
+        height: 192
+      alignment: 9
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8ce78e296d8aa6045b8e3c0f5a3f87ad
+      internalID: -2196178177311929912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Orbe_Idle_5
+      rect:
+        serializedVersion: 2
+        x: 780
+        y: 0
+        width: 156
+        height: 192
+      alignment: 9
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f507425ea62411c41911bb0b92658375
+      internalID: -5687665216938390661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 7a8719a96d40ac54c9fa23a8793e43d7
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Orbe_Idle_0: 5477163641307893808
+      Orbe_Idle_1: -5116647859150936385
+      Orbe_Idle_2: -4268432445450454965
+      Orbe_Idle_3: 266144209482109160
+      Orbe_Idle_4: -2196178177311929912
+      Orbe_Idle_5: -5687665216938390661
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

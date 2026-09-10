@@ -26,12 +26,29 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
   the way to verify a C# change compiles.
 - **Console output**: `unity command console --level error --tail 50` reads the live editor's
   console without needing a screenshot.
+- **Compile check with the Editor closed** (or stuck in Safe Mode, which is exactly when you need
+  it most): `dotnet build Assembly-CSharp.csproj` and `dotnet build Assembly-CSharp-Editor.csproj`
+  from the project root. Unity keeps those two `.csproj` files in sync with the real file list, so
+  this is a genuine check of the same sources — add `-t:Rebuild` to defeat caching. **Verify the
+  file list first** (`grep -c "Compile Include" Assembly-CSharp.csproj` against
+  `find Assets -name '*.cs' -not -path '*/Editor/*' | wc -l`): if Unity died before regenerating
+  them, the projects are stale and a "0 errors" is meaningless because your new files aren't in it.
 - **Scene inspection**: `unity command list_open_scenes`, `get_scene_hierarchy`, `find_gameobjects`,
   `get_component_properties` read the actual loaded scene state — prefer these over parsing scene
   YAML by hand when an editor is connected, since they reflect what Unity actually deserialized
   (see the SceneReference gotcha below).
 - **Builds**: `unity build --target <platform>` / `unity command build` trigger a Player build via
   the CLI; there's no CI config in this repo.
+- **Play Mode via the CLI ticks far slower than real time when the Editor window has no focus/OS
+  input** — `Time.realtimeSinceStartup` and `Time.frameCount` still creep forward, but a component's
+  own `Update()`/coroutines can sit frozen for many real seconds between two `eval` calls, only
+  visibly catching up in a burst right after `unity command editor_focus`. A single `eval` reading a
+  timer twice with a real-time gap in between is **not reliable evidence** that gameplay logic is
+  broken — it may only prove the harness never gave Unity a reason to tick. To actually verify
+  timed/AI/physics behavior: call `editor_focus` immediately before the window you're measuring,
+  or invoke the private `Update`/coroutine method via reflection to force one step deterministically,
+  or use `capture_game_view` (a real screenshot is unambiguous — see the ranged-enemy debugging in
+  the pipeline doc for a worked example) rather than trusting polled state across an idle gap.
 - **Tests**: `com.unity.test-framework` is in `Packages/manifest.json` but no test assembly or
   `Tests/` folder exists yet — there is nothing to run.
 
@@ -86,17 +103,47 @@ swapping in real art is then: open the prefab, delete the shape sprite, drop the
   five pooled boss runtime types.
 - Prefab slots: `BaseShot.projectilePrefab` / `beamPrefab` (weapons), `ProjectileSpec.prefab`
   (boss bullets / ability projectiles — restyle-aware now), `BossController.{warnPrefab,
-  shockwavePrefab, sweepBeamPrefab, hazardPrefab, platformPrefab, anchorPrefab}` (shared per boss).
+  shockwavePrefab, sweepBeamPrefab, hazardPrefab, platformPrefab, anchorPrefab}`.
+- **Boss FX are one folder per boss**: `Assets/Prefab/Fx/Bosses/<BossName>/` holds every visual
+  for that fight — `Fx_<Boss>_{Warn,Shockwave,SweepBeam,Hazard,Platform,Anchor,Bullet}` — so an
+  art pass on a whole boss is one folder, and no boss reads another's prefabs. Each boss's six
+  `BossController` slots point at its own copies, and its `BulletHellAttack` assets'
+  `projectile.prefab` at its own `_Bullet`. Any new boss visual ships the same way, in that
+  boss's folder.
 - Generators under **Tools > RedMagic > FX**: `1 · Generar prefabs placeholder` (builds the shape
-  sprites in `Assets/Art/Placeholder/` + the prefabs), `2 · Asignar a armas`, `3 · Asignar a
-  jefes` — idempotent, only fill a slot that is still null.
-- `ShotProjectile` / `ShotBeam` rotate to face travel direction, so elongated art is fine there;
-  `BulletHellAttack` bullets do **not** rotate — only round-ish art works. A real-art prefab makes
-  that attack's `projectileSprite` + phase accent inert (the prefab owns the look).
+  sprites in `Assets/Art/Placeholder/` + the weapon prefabs + a per-boss FX set), `2 · Asignar a
+  armas`, `3 · Asignar a jefes` (fills null slots per boss) — idempotent. `4 · Migrar FX de jefe
+  a carpeta por jefe` was the one-time move off the old shared-by-type `Fx_Boss_*` prefabs.
+- `ShotProjectile` / `ShotBeam` **and** `Gameplay.Projectile` (the boss/ability bullet) all rotate
+  to face travel direction — `Projectile` sets `transform.right` in `Launch` and every
+  `FixedUpdate` — so elongated art with a trail is fine everywhere, authored pointing **+X**.
+  (An earlier note here claimed `BulletHellAttack` bullets don't rotate; they do.) A real-art
+  prefab makes that attack's `projectileSprite` + phase accent inert (the prefab owns the look).
 - The `Platform` / `Anchor` placeholder prefabs must carry their colliders (solid `Ground`-layer
   box; trigger box + `Health` + `HitFlash`) — the generator builds them precisely.
 - Any **new** repeatedly-spawned visual follows this: ship it as a placeholder prefab under
   `Assets/Prefab/Fx/` with `FxPlaceholderStyle`, wired through an asset field, code fallback kept.
+- **Frame animation is `Gameplay.SpriteFlipbook`, not an Animator** — a sprite array + fps, with
+  `pingPong`, `randomStart` and `oneShot` (play once, hold the last frame, expose `Finished` /
+  `Duration`). It rewinds in `OnEnable`, which is mandatory for pooling: `PrefabPool` has **no**
+  per-instance hook, so `OnEnable` is the only reset a prefab FX gets. `VfxOneShot` only measures
+  Animator clips, so a flipbook-driven one-shot must set `lifetime` = `frames / fps` by hand.
+  For a *pooled* visual with **several** states, use `Pipeline.SpriteStateMachine` instead — same
+  `OnEnable` rewind, plus named states (see the sprite pipeline section).
+- **Real art replaces a placeholder by turning the style flags off, not by deleting art.** When a
+  sprite carries its own colour, set `tint: false`; when its cell is non-square (a trail), set
+  `resize: false` too and let the prefab's own transform scale fix the size — `AbilityFx.Resize`
+  scales per-axis from sprite bounds and would squash a wide cell into an egg.
+- **Worked example — the Árbol Ancestral's orb** (`Assets/Prefab/Fx/Bosses/ArbolAncestral/Orbe/`):
+  `orbe.png` is a hand-supplied reference sheet (three strips, labels and a palette baked in).
+  `Tools > RedMagic > FX > Orbe · Cortar hoja` (`Fx/Editor/OrbeSheetSlicer.cs`) segments it into
+  `Orbe_Idle` (6) / `Orbe_Move` (8) / `Orbe_Impact` (6), lifts the art off the black background by
+  treating the residual over the background colour as alpha, packs uniform cells anchored on the
+  orb, and slices them through `ISpriteEditorDataProvider` at 100 px/unit with the pivot on the
+  ball (so `Orbe_Move`'s trail hangs behind a correct rotation centre). Band Y ranges are constants
+  in that file — re-run its `Diagnose`/`DiagnoseBands` entry points if the source sheet changes.
+  `Tools > RedMagic > Boss > Arbol · Orbe` (`Bosses/Editor/ArbolOrbePack.cs`) then builds the
+  prefabs, dresses `Fx_ArbolAncestral_Bullet` and authors the attack assets.
 - The generic one-shot VFX prefabs (`Fireball`, `VFX_Explosion`, `VFX_DashWind`, `VFX_DoubleJump`)
   now live in `Assets/Prefab/Fx/` too (moved out of `Assets/Dragon Warrior Files/`; their
   material/anim dependencies stayed there).
@@ -179,6 +226,147 @@ to pick up the change.
   with a single section. `SpawnShopIfDue` instantiates `shopPrefab` at a `ShopSpawnPoint` marker if
   the section has one, else `shopDistanceBeforeExit` units short of the `SectionExit`.
 
+### Enemies (`Assets/Scripts/Enemies/`)
+
+The base every non-boss enemy is built on. **Four components on the root, and only one of them is
+meant to be edited by hand.**
+
+- **`EnemyStats`** — *the* component you touch. Holds an `EnemyTuning` block with **everything**
+  tunable (type, health, knockback, ranges, speeds, attack, per-state animation speed, target tag,
+  layers) and hands out what belongs to shared components: it pushes into `Health` and `Knockback`
+  on `Awake` and on inspector edits, because those are used by the player and bosses too and can't
+  depend on anything enemy-specific. Nothing else in the enemy stack carries numbers of its own —
+  they all read from here. `EnemyStatsEditor` draws it flat and hides the fields that don't apply
+  to the chosen archetype. Gizmos show the ranges on selection.
+- **`EnemyTuning`** is a plain `[Serializable]` class, used by **both** `EnemyStats` and
+  `EnemyRecipe`, so the list of tunables is written once and the pipeline copies it rather than
+  translating field by field.
+- **Five archetypes** (`EnemyArchetype`): `Static`, `Melee`, `Ranged`, `FlyingMelee`,
+  `FlyingRanged`. Movement and attack kind are folded into one enum because that's how you actually
+  think when creating an enemy — except `Static`, which takes a separate `staticAttack`
+  (`Melee`/`Ranged`) since a turret can be either.
+- **`EnemyBrain`** — the state machine: `Idle → Approach → Attacking → Cooldown → Idle`, plus
+  `Retreat` and `Dead`. `Static` skips detection entirely: it waits in idle and attacks the moment
+  the target is inside `attackRange`. Ground movement keeps the ledge probe; flyers steer with a
+  few whisker raycasts (`AvoidAngles`) rather than pathfinding. Target range checks use a cached
+  transform + distance, **not** a trigger collider — cheaper than bodies in the broadphase and no
+  collision-matrix setup.
+  - **The leash is `detectionRange`, and only that** — it is the boundary in both directions and
+    the gizmo drawn in the scene. Engage on entering it; give up after `loseInterestGrace` seconds
+    (default **1s**) *continuously* outside it, timer resetting on every re-entry (that time margin
+    is the hysteresis — there is no second radius). Only distance counts: a jump or a step never
+    drops the target. An earlier pass added a wider `loseInterestRange` and an `alwaysChaseOnceSeen`
+    "chase forever" toggle; both were removed because they made the visible detection ring
+    meaningless — **do not reintroduce a second range or an override for a value the user
+    configured** (see the `configured-ranges-are-the-contract` memory).
+  - **Only ranged movers retreat.** `EnemyTuning.Retreats` (`Moves && IsRanged && personalSpace > 0`)
+    is the single rule, read by the brain, the gizmos and the inspector so they can't desync. A
+    melee enemy chases and hits — it never backs off, even if it carries a stale `personalSpace`
+    from a previous archetype (which the inspector hides and the gizmo no longer draws). `Retreat`
+    has a hysteresis band (`retreatReleaseFactor`) and, if it backs into a wall, gives up retreating
+    and fights instead of freezing.
+- **`EnemyAnimation`** — drives the Animator and, crucially, **announces the exact frame the hit
+  leaves**. The attack clip carries two `AnimationEvent`s planted by the pipeline
+  (`OnAttackRelease` at the authored frame, `OnAttackFinished` at the end); the brain waits for the
+  second to start cooling down. Falls back to a timer (`attackReleaseFallback`) when a clip has no
+  events. Per-state speed goes through one Animator float per state (`IdleSpeed`, `AttackSpeed`, …)
+  so idle can be slow while the attack is fast.
+- **The Animator lives on the ROOT, not the sprite child** — `AnimationEvent`s only reach
+  components on their own GameObject, and the brain/attack live on the root. Clips animate the
+  child by path (`AnimClipBuilder.RendererPath` = `"Sprite"`). Moving it back would silently break
+  every attack.
+- **`EnemyAttack`** — executes on the release event: `ProjectileFactory.Spawn` for ranged,
+  `AbilityHit.DamageBox` for melee, so damage and pooling go through the same paths as weapons and
+  bosses. It aims at a **world point** frozen when the attack starts (the target collider's
+  *centre*, not its pivot), and computes direction from the **muzzle** at release. Aiming
+  pivot-to-pivot is the bug that makes a shot from hand height sail over the target's head.
+- `EnemyController` (`Assets/Scripts/Gameplay/`) is the **older** system, still used by
+  hand-built enemies and boss adds (`SummonAddsAttack`, `RunManager`, `WorldSceneGenerator`), so it
+  stays. `EnemyFactory` strips it (and `RangedAttack`) from anything it generates — both write
+  `Rigidbody2D.linearVelocity` every `FixedUpdate`, so they'd fight over the body.
+
+### Sprite / enemy pipeline (`Assets/Scripts/Pipeline/`)
+
+**Read `Assets/_Pipeline/SPRITE_PIPELINE.md` before importing any sprite sheet or adding an
+enemy** — it documents the whole thing and is written so this section doesn't have to be re-derived.
+
+A sprite sheet (one row per animation state, one column per frame) becomes a playable enemy through
+two ScriptableObject "recipes" and one menu command. Both recipes are assets, so the configuration
+survives the session and every step is re-runnable and idempotent.
+
+- **`SpriteSheetRecipe`** (`<Name>.sheet.asset`) — the sheet, the row→state mapping, fps/loop per
+  state, background keying, anchor, ppu, and the `AnimRuntime`. **`SheetSlicer`** does not slice the
+  original in place: it emits one clean PNG per state into `Assets/Art/Characters/<Name>/` with the
+  background removed, labels dropped, uniform cells and the pivot on the same point of the character
+  in every frame. `AutoBounds` mode finds bands as the N tallest content runs (N from the recipe, so
+  painted-in row labels fall out) and frames as connected components grouped by x-overlap; a row's
+  declared `frames` count is authoritative and reconciles stray blobs (a thrown projectile drawn
+  loose inside a frame) — it **removes** that blob from the frame count (never merges it into a
+  neighbour: a thrown projectile sits far from the body and merging stretched the row's uniform
+  cell 2-3× wide, shrinking the character) and **exports it as its own centred sprite**,
+  `<Name>_<Row>_Prop.png`, which becomes the projectile below. `Grid` mode is the plain
+  rows×columns fallback. **When writing a pack, `SheetRow.frames` counts the character's poses,
+  not the drawings in the row** — a 5-drawing attack row where the 5th is the loose projectile is
+  `frames = 4`. **`SheetRow.evenSplit`** splits a row into N equal columns instead of
+  connected-components, for rows whose FX bleed sideways (a slam's dust, an energy burst) and would
+  otherwise merge two poses — `GorilaPack` needs it.
+- **`AnimClipBuilder`** — sprites → one `AnimationClip` per state → `AnimatorController`. **Updates
+  in place**: existing states keep their hand-tuned transitions, only clips are rewritten and missing
+  states added. Parameters are the ones `PlayerAnimator` already uses (`Speed`, `Attack`, `Hurt`,
+  `Dead`) — one animation vocabulary for the whole project. **`SpritePipeline.RunSheet` builds the
+  clips twice with a `Refresh` between** — on the first import of a brand-new sheet the freshly
+  sliced sub-sprites aren't queryable in the same tick and the first pass leaves empty clips
+  (1s / 60fps / no events); the second pass fills them, and it's idempotent on every re-run.
+- **`AnimRuntime` is not a preference, it follows pooling**: `Animator` for enemies/bosses;
+  **`Flipbook` for anything in `PrefabPool`**, because `PrefabPool` has no per-instance reset hook,
+  so a reused Animator would resume mid-death. **`Pipeline.SpriteStateMachine`** is the multi-state
+  equivalent of `Gameplay.SpriteFlipbook` and rewinds in `OnEnable`.
+- **`EnemyRecipe`** (`<Name>.enemy.asset`) + **`EnemyFactory`** — the enemy counterpart of
+  `BossAuthoring`. The recipe carries an `EnemyTuning` block (the *same* class `EnemyStats` uses)
+  plus presence (sprite scale, collider, sorting, tag); the factory stamps `Rigidbody2D`,
+  `BoxCollider2D` (deduced from the sprite when left at zero; origin **at the feet for
+  `AnchorMode.BottomCenter`, centred for `AnchorMode.Center`** — a flyer has no feet, and assuming
+  bottom-anchored left the collider half a body high), `Health`, `Knockback`, `HitFlash`, `Corpse`,
+  `CurrencyDropper` and the enemy quartet (`EnemyStats`, `EnemyBrain`, `EnemyAnimation`,
+  `EnemyAttack`) — and **retires** `EnemyController`/`RangedAttack` if the prefab came from the old
+  system.
+- **Archetype from the sheet's filename** — content is named `<name>-<attack>-<mobility>-<plane>`
+  (e.g. `Ogro-distancia-movimiento-suelo`, `abeja-distancia-statica-aire`). `Melee`/`Ranged`/
+  `FlyingMelee`/`FlyingRanged` map directly; a **static turret that hovers** is `Static` +
+  `staticAttack = Ranged` with **`tuning.gravityScale = 0`** (not a `Flying*` archetype — those
+  *fly while chasing*), and its sheet recipe needs `anchor = AnchorMode.Center`.
+- **Hand-tuned values win.** The recipe *seeds* `EnemyStats` the first time (or when the component
+  is missing, which is how an old-system prefab gets upgraded); after that, regenerating the art
+  leaves the numbers alone. `Pipeline ▸ 3b · Generar enemigo RESETEANDO valores` is the explicit
+  way back to the recipe's values.
+- **Ranged enemies** — an archetype that shoots (or `Static` + `staticAttack = Ranged`) plus a row
+  that exported a prop sprite (see above). `EnemyFactory` builds a pooled projectile prefab from it
+  via **`ProjectilePrefabFactory`** (no `FxPlaceholderStyle`: the sprite is already real art, lifted
+  off the character's own sheet) at `Assets/Prefab/Fx/Enemies/<Name>/`, and drops it into
+  `tuning.projectile.prefab`. Firing goes through `ProjectileFactory`, so it is pooled like every
+  other projectile in the game. **The projectile's speed/lifetime/damage/homing knobs are on
+  `EnemyStats ▸ Tuning ▸ projectile`, NOT on the `Fx_<Name>_Projectile` prefab** —
+  `ProjectileFactory.Spawn` calls `Projectile.Configure` with the spec on every shot, so the
+  prefab's serialized fields are overwritten each time (only its `SpriteRenderer` scale, i.e.
+  visual size, survives). `EnemyFactory.MirrorSpecOntoPrefab` copies the spec onto the prefab at
+  generation so it reads true, but it's still not the edit point.
+- **`SheetRow.releaseFrame`** is what ties the throw to the drawing: the frame the generator plants
+  the `OnAttackRelease` event on. `-1` = no event, fall back to `EnemyStats.attackReleaseFallback`.
+- **`PrefabDresser`** — replaces a placeholder's visuals on an existing prefab (sprite + controller
+  or flipbook, colour back to white) and **touches nothing else** — colliders, scripts, rigidbody
+  and references stay as they were.
+- **`ContentAudit`** (`Pipeline ▸ 4/5`) — scans every prefab with a `Health` for missing
+  `Knockback`/`HitFlash`/`CurrencyDropper` and optionally adds them. That failure is silent by
+  design (`Health` works fine without them; the enemy just never flinches), which is why it needs a
+  scanner rather than a convention.
+- **Per-character packs** (`Assets/Scripts/Pipeline/Editor/<Name>Pack.cs`) — same shape as the boss
+  packs: pure data that writes the two recipes and calls `SpritePipeline.RunEnemy`. **This is how a
+  new character ships** — copy the file, change the data. Shipped: `TreeWalkPack` (static ranged),
+  `OgroPack` (ranged mover), `AbejaPack` (hovering static ranged), `ChampiPack` (static ranged),
+  `GorilaPack` (melee mover, `evenSplit` attack). Reproducible from git, runnable headless via
+  `unity command run_script --file <pack> --entry <Namespace.Type.Run>`.
+- One folder per character (`Assets/Art/Characters/<Name>/`), same rule as the per-boss FX folders.
+
 ### Combat (`Assets/Scripts/Combat/`)
 
 - **`Health`** — the only place damage is applied. Exposes instance `Damaged`/`HealthChanged`/`Died`
@@ -214,6 +402,21 @@ to pick up the change.
   the boss reward at marker/exit positions that aren't ground-aligned (and the shop's wheelbarrow
   no longer has the dynamic Rigidbody2D that used to let it fall into place). Reusable on any
   spawned prop.
+- **Every `TilemapCollider2D` MUST be merged into a `CompositeCollider2D`** (+ a `Rigidbody2D` set
+  to **Static**, which the composite requires). A bare `TilemapCollider2D` emits **one box per
+  tile**, and two adjacent tiles share a vertical face that the physics engine treats as a real
+  wall: anything walking along the top **snags on the seam and stops dead on ground that looks
+  perfectly flat**. This cost a long debugging session — the symptom reads as broken AI ("the enemy
+  follows me and then randomly stops"), so it gets chased in `EnemyBrain` where there is nothing to
+  find. The proof is in the contact list, not the code:
+  `Rigidbody2D.GetContacts` returned `[Tilemap] normal=(1.00, 0.00) point=(9.01, -3.00)` on flat
+  terrain. After merging, MainHub went from hundreds of boxes to 5 outlines and the same enemy went
+  from walking 2.9 units to 11.5 without stopping. It hits the player too (stutter while running).
+  **Tools > RedMagic > Pipeline > `6 · Auditar colliders de tilemap` / `7 · Auditar y reparar`**
+  (`TilemapColliderAudit`) scans every scene in `Assets/Scenes` and fixes this; `RunSingle(path,
+  repair)` is the per-scene entry point for the CLI, because opening all nine scenes at once blows
+  the 5s `unity command eval` timeout. It also forces a Static body — five world scenes had the
+  ground tilemap on a **Dynamic** `Rigidbody2D`. Run it after painting terrain in a new scene.
 - **`EnvironmentDecorColliders`** (`Assets/Scripts/Gameplay/`, on MainHub's `Enviroment`) — on
   `Awake` (and via its inspector context-menu) disables the `Collider2D` of every child that is
   pure decoration, so imported props (barrels, fences…) with baked-in colliders don't block
@@ -225,8 +428,10 @@ to pick up the change.
   character (`EnemyController.OnDied`); this only owns the look and the cleanup, so an enemy with
   different AI still tidies itself up. Corpses that stay forever litter the scene and hide things —
   they were covering the reward the boss drops.
-- Both are already on `Player.prefab` and every `Enemy_*.prefab`. **New damageable prefabs need
-  `Knockback` + `HitFlash` added by hand** — `Health` works without them, just silently unpushed.
+- Both are already on `Player.prefab` and every `Enemy_*.prefab`. A damageable prefab built any way
+  other than through `EnemyFactory` needs `Knockback` + `HitFlash` added by hand — `Health` works
+  without them, just silently unpushed and unflashing. `EnemyFactory` stamps them, and
+  `ContentAudit` (`Tools ▸ RedMagic ▸ Pipeline ▸ 4/5`) finds and fixes the ones that predate it.
 - **`DamagePopups`** (`Assets/Scripts/Fx/`) — self-bootstrapping `DontDestroyOnLoad` singleton.
   Subscribes once to `Health.AnyDamaged` and spawns a floating number (code-built world-space
   `Canvas` + `Text` with the built-in `LegacyRuntime.ttf`, no font asset) over the victim: warm and
@@ -435,13 +640,26 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
     left exposed, run out of time and it discharges across the whole arena. Anchors are plain
     `Health` objects tagged like the boss, so every weapon in the game breaks them and none of the
     boss's own attacks do.
+  - `OrbRingAttack` (`BossOrb`, pooled) — **"where do I stand before it's loaded?"**. The boss
+    doesn't shoot, it *builds* the shot: orbs appear one at a time in a crown around it, tiny, and
+    grow while the ring turns. Nothing damages during that — the pattern is drawn in the air
+    before it exists, so it says exactly how many projectiles are coming and how wide the gaps
+    are. At full size they all launch outward at once. Unlike a plain radial volley, which you read
+    while it's already reaching you, the whole attack is the wait: stand in a gap, or spend it
+    hitting the boss (hence a generous `vulnerableSeconds`). Charge orbs are pure visuals — no
+    collider, no damage — and each is swapped for a real `ProjectileFactory` projectile at its own
+    position on release, so nothing jumps. They also self-expire, so a coroutine cut by a phase
+    change can't leave a crown floating.
   - `SummonAddsAttack` — adds, capped by `maxAlive`, killed when the boss dies.
 - **Every boss is built on a different question on purpose** — that is the design rule for the next
   one, not just a description of these. Bosses 4-6 have no scene of their own yet: their generators
   only build the prefab in `Assets/Prefab/Enemies/`, to be dropped into whatever arena is being
   tested.
   - **Árbol Ancestral** (World 1) — *height*: shockwave bands plus spirals, with ground-bound
-    sprouts as adds.
+    sprouts as adds. Its bullets are the green orb (`Fx_ArbolAncestral_Bullet` wears `Orbe_Move`
+    with a `SpriteFlipbook` and bursts into `Fx_Orbe_Impacto`), and it now also grows crowns of
+    them: `BossAttack_CoronaDeOrbes` in phase 1, `BossAttack_CoronaMayor` (14 orbs, two crowns,
+    twice the spin) in phase 2.
   - **Espantapájaros Marchito** (World 2) — *distance and place*: the pivoting scythe and the
     refuges, with **flying** crows (`Enemy_Cuervo.prefab`, an ordinary `EnemyController` with
     `canFly`) that cannot be out-run the way sprouts can. Cainos scarecrow at ×3.2, pumpkins and

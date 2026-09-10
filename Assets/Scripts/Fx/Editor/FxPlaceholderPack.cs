@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using RedMagic.Bosses;
 using RedMagic.Fx;
 using RedMagic.Items;
 using UnityEditor;
@@ -18,12 +20,43 @@ namespace RedMagic.FxTools
     /// soltar el sprite (o añadirle estela / partículas / Animator). Cero código. Si el prefab
     /// conserva su <see cref="FxPlaceholderStyle"/>, el spawner le sigue aplicando tinte y tamaño;
     /// si se lo quitas, se respeta tal cual.
+    ///
+    /// <b>Los FX de jefe van en una carpeta por jefe</b>: <c>Assets/Prefab/Fx/Bosses/&lt;Jefe&gt;/</c>
+    /// contiene TODOS los visuales de ese jefe (aviso, onda, filo, hazard, plataforma, ancla, bala),
+    /// para que rehacer el aspecto de un combate entero sea abrir una sola carpeta. Cada jefe tiene
+    /// su propia copia, así su arte puede divergir del de los demás.
     /// </summary>
     public static class FxPlaceholderPack
     {
         private const string ShapeFolder = "Assets/Art/Placeholder";
         private const string PrefabFolder = "Assets/Prefab/Fx";
+        private const string BossFxFolder = "Assets/Prefab/Fx/Bosses";
         private const string WeaponFolder = "Assets/Resources/Items/Weapons";
+        private const string BossPrefabFolder = "Assets/Prefab/Enemies";
+
+        // Prefabs placeholder compartidos de la organización anterior (uno por tipo, reusado por
+        // todos los jefes). El migrador los borra tras repartir una copia por jefe.
+        private static readonly string[] LegacySharedBossPrefabs =
+        {
+            "Assets/Prefab/Fx/Bosses/Fx_Boss_Warn.prefab",
+            "Assets/Prefab/Fx/Bosses/Fx_Boss_Shockwave.prefab",
+            "Assets/Prefab/Fx/Bosses/Fx_Boss_SweepBeam.prefab",
+            "Assets/Prefab/Fx/Bosses/Fx_Boss_Hazard.prefab",
+            "Assets/Prefab/Fx/Bosses/Fx_Boss_Platform.prefab",
+            "Assets/Prefab/Fx/Bosses/Fx_Boss_Anchor.prefab",
+            "Assets/Prefab/Fx/Fx_Boss_Bullet.prefab",
+        };
+
+        /// <summary>Un slot de <see cref="BossController"/> y el sufijo del prefab que lo llena.</summary>
+        private static readonly (string field, string suffix)[] BossSlots =
+        {
+            ("warnPrefab",      "Warn"),
+            ("shockwavePrefab", "Shockwave"),
+            ("sweepBeamPrefab", "SweepBeam"),
+            ("hazardPrefab",    "Hazard"),
+            ("platformPrefab",  "Platform"),
+            ("anchorPrefab",    "Anchor"),
+        };
 
         // ================================================================= menú
 
@@ -46,15 +79,9 @@ namespace RedMagic.FxTools
             ShotProjectilePrefab("Fx_Shot_Sliver", sliver);
             ShotBeamPrefab("Fx_Shot_Beam", square);
 
-            BossBulletPrefab("Fx_Boss_Bullet", disc);
-
-            EnsureFolder(PrefabFolder + "/Bosses");
-            BossWarnPrefab("Bosses/Fx_Boss_Warn", square);
-            BossFxPrefab<RedMagic.Bosses.BossShockwave>("Bosses/Fx_Boss_Shockwave", square, null, true);
-            BossFxPrefab<RedMagic.Bosses.BossSweepBeam>("Bosses/Fx_Boss_SweepBeam", square, null, true);
-            BossFxPrefab<RedMagic.Bosses.BossHazard>("Bosses/Fx_Boss_Hazard", square, null, true);
-            BossFxPrefab<RedMagic.Bosses.BossPlatform>("Bosses/Fx_Boss_Platform", square, PlatformExtras, false);
-            BossFxPrefab<RedMagic.Bosses.BossAnchor>("Bosses/Fx_Boss_Anchor", square, AnchorExtras, false);
+            EnsureFolder(BossFxFolder);
+            foreach (var boss in DiscoverBosses())
+                BuildBossFxSet(boss.shortName, square, disc);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -103,63 +130,154 @@ namespace RedMagic.FxTools
         }
 
         [MenuItem("Tools/RedMagic/FX/3 · Asignar a jefes")]
-        public static void AssignToBosses()
+        public static void AssignToBosses() => WireBosses(overwrite: false);
+
+        [MenuItem("Tools/RedMagic/FX/4 · Migrar FX de jefe a carpeta por jefe")]
+        public static void MigrateBossFxPerBoss()
         {
-            int bullets = 0, controllers = 0;
+            EnsureFolder(BossFxFolder);
 
-            // --- balas de los ataques bullet-hell
-            var bullet = LoadPrefab("Fx_Boss_Bullet");
-            foreach (var guid in AssetDatabase.FindAssets("t:BulletHellAttack", new[] { "Assets/Resources/Bosses" }))
+            var square = LoadShape("Square") ?? ShapeSprite("Square", (x, y) => true);
+            var disc = LoadShape("Disc") ?? ShapeSprite("Disc", (x, y) => x * x + y * y <= 1f);
+
+            int sets = 0;
+            foreach (var boss in DiscoverBosses())
             {
-                var asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(guid));
-                if (asset == null) continue;
-
-                var so = new SerializedObject(asset);
-                var prop = so.FindProperty("projectile.prefab");
-                if (prop == null || prop.objectReferenceValue != null) continue;
-
-                prop.objectReferenceValue = bullet;
-                so.ApplyModifiedPropertiesWithoutUndo();
-                EditorUtility.SetDirty(asset);
-                bullets++;
+                BuildBossFxSet(boss.shortName, square, disc);
+                sets++;
             }
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
-            // --- prefabs placeholder en cada BossController
-            var slots = new (string field, string prefab)[]
-            {
-                ("warnPrefab",      "Bosses/Fx_Boss_Warn"),
-                ("shockwavePrefab", "Bosses/Fx_Boss_Shockwave"),
-                ("sweepBeamPrefab", "Bosses/Fx_Boss_SweepBeam"),
-                ("hazardPrefab",    "Bosses/Fx_Boss_Hazard"),
-                ("platformPrefab",  "Bosses/Fx_Boss_Platform"),
-                ("anchorPrefab",    "Bosses/Fx_Boss_Anchor"),
-            };
+            // Re-apunta TODO (también los slots ya rellenos con los prefabs compartidos).
+            WireBosses(overwrite: true);
 
-            foreach (var guid in AssetDatabase.FindAssets("t:GameObject", new[] { "Assets/Prefab/Enemies" }))
+            // Con cada jefe apuntando ya a su copia, los compartidos sobran.
+            int deleted = 0;
+            foreach (var path in LegacySharedBossPrefabs)
+                if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null && AssetDatabase.DeleteAsset(path))
+                    deleted++;
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[FxPlaceholderPack] Migración: {sets} set(s) por jefe, {deleted} prefab(s) compartido(s) borrado(s).");
+        }
+
+        // ================================================================= jefes
+
+        private struct BossEntry
+        {
+            public string shortName;              // "ArbolAncestral"
+            public BossController controller;
+            public BossDefinition definition;
+        }
+
+        /// <summary>Cada prefab de <c>Assets/Prefab/Enemies</c> que lleva un <see cref="BossController"/>.</summary>
+        private static IEnumerable<BossEntry> DiscoverBosses()
+        {
+            foreach (var guid in AssetDatabase.FindAssets("t:GameObject", new[] { BossPrefabFolder }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 var root = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                var controller = root != null ? root.GetComponentInChildren<RedMagic.Bosses.BossController>(true) : null;
+                var controller = root != null ? root.GetComponentInChildren<BossController>(true) : null;
                 if (controller == null) continue;
 
-                var so = new SerializedObject(controller);
+                string n = root.name;
+                if (n.StartsWith("Boss_")) n = n.Substring("Boss_".Length);
+
+                yield return new BossEntry { shortName = n, controller = controller, definition = controller.Definition };
+            }
+        }
+
+        private static string BossFolder(string shortName) => $"{BossFxFolder}/{shortName}";
+
+        /// <summary>Ruta relativa a <see cref="PrefabFolder"/> del prefab &lt;suffix&gt; de un jefe.</summary>
+        private static string BossPrefabRel(string shortName, string suffix) =>
+            $"Bosses/{shortName}/Fx_{shortName}_{suffix}";
+
+        /// <summary>Crea (si faltan) los 7 visuales placeholder de un jefe en su carpeta.</summary>
+        private static void BuildBossFxSet(string shortName, Sprite square, Sprite disc)
+        {
+            EnsureFolder(BossFolder(shortName));
+
+            BossWarnPrefab(BossPrefabRel(shortName, "Warn"), square);
+            BossFxPrefab<BossShockwave>(BossPrefabRel(shortName, "Shockwave"), square, null, true);
+            BossFxPrefab<BossSweepBeam>(BossPrefabRel(shortName, "SweepBeam"), square, null, true);
+            BossFxPrefab<BossHazard>(BossPrefabRel(shortName, "Hazard"), square, null, true);
+            BossFxPrefab<BossPlatform>(BossPrefabRel(shortName, "Platform"), square, PlatformExtras, false);
+            BossFxPrefab<BossAnchor>(BossPrefabRel(shortName, "Anchor"), square, AnchorExtras, false);
+            BossBulletPrefab(BossPrefabRel(shortName, "Bullet"), disc);
+        }
+
+        /// <summary>
+        /// Engancha cada jefe a los visuales de <i>su</i> carpeta: los seis slots del
+        /// <see cref="BossController"/> y el prefab de bala de cada ataque bullet-hell de sus barajas.
+        /// <paramref name="overwrite"/> = false rellena sólo lo que esté vacío (idempotente); true
+        /// re-apunta todo (migración desde los prefabs compartidos).
+        /// </summary>
+        private static void WireBosses(bool overwrite)
+        {
+            int controllers = 0, bullets = 0;
+
+            foreach (var boss in DiscoverBosses())
+            {
+                var so = new SerializedObject(boss.controller);
                 bool touched = false;
-                foreach (var (field, prefabName) in slots)
+                foreach (var (field, suffix) in BossSlots)
                 {
                     var prop = so.FindProperty(field);
-                    if (prop == null || prop.objectReferenceValue != null) continue;
-                    prop.objectReferenceValue = LoadPrefab(prefabName);
+                    if (prop == null) continue;
+                    if (prop.objectReferenceValue != null && !overwrite) continue;
+
+                    var prefab = LoadPrefab(BossPrefabRel(boss.shortName, suffix));
+                    if (prefab == null) { Debug.LogWarning($"[FxPlaceholderPack] Falta {BossPrefabRel(boss.shortName, suffix)}."); continue; }
+                    if (prop.objectReferenceValue == prefab) continue;
+
+                    prop.objectReferenceValue = prefab;
                     touched = true;
                 }
-                if (!touched) continue;
+                if (touched)
+                {
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(boss.controller);
+                    controllers++;
+                }
 
-                so.ApplyModifiedPropertiesWithoutUndo();
-                EditorUtility.SetDirty(controller);
-                controllers++;
+                var bullet = LoadPrefab(BossPrefabRel(boss.shortName, "Bullet"));
+                foreach (var attack in EnumerateAttacks(boss.definition))
+                {
+                    if (!(attack is BulletHellAttack)) continue;
+
+                    var aso = new SerializedObject(attack);
+                    var prop = aso.FindProperty("projectile.prefab");
+                    if (prop == null) continue;
+                    if (prop.objectReferenceValue != null && !overwrite) continue;
+                    if (prop.objectReferenceValue == bullet) continue;
+
+                    prop.objectReferenceValue = bullet;
+                    aso.ApplyModifiedPropertiesWithoutUndo();
+                    EditorUtility.SetDirty(attack);
+                    bullets++;
+                }
             }
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"[FxPlaceholderPack] Jefes: {bullets} ataque(s) bullet-hell y {controllers} BossController enganchados.");
+            Debug.Log($"[FxPlaceholderPack] Jefes: {controllers} BossController y {bullets} ataque(s) bullet-hell enganchados.");
+        }
+
+        private static IEnumerable<BossAttack> EnumerateAttacks(BossDefinition def)
+        {
+            if (def == null) yield break;
+            var phases = def.Phases;
+            if (phases == null) yield break;
+
+            var seen = new HashSet<BossAttack>();
+            foreach (var phase in phases)
+            {
+                if (phase?.attacks == null) continue;
+                foreach (var attack in phase.attacks)
+                    if (attack != null && seen.Add(attack)) yield return attack;
+            }
         }
 
         // ================================================================= sprites
@@ -253,7 +371,7 @@ namespace RedMagic.FxTools
             string path = $"{PrefabFolder}/{name}.prefab";
             if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null) return;
 
-            var go = new GameObject(name);
+            var go = new GameObject(Path.GetFileName(name));
 
             var body = go.AddComponent<Rigidbody2D>();
             body.gravityScale = 0f;

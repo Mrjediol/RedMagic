@@ -19,6 +19,10 @@ namespace RedMagic.Gameplay
     /// engancha a <see cref="detectionRadius"/> y no suelta hasta <see cref="loseSightRadius"/>.
     /// Y con <see cref="stopAtLedges"/> ni la patrulla ni la persecución se tiran por un
     /// precipicio: sondean el suelo un paso por delante antes de avanzar.
+    ///
+    /// <see cref="stoppingDistance"/> es lo que distingue a un enemigo a distancia de uno cuerpo a
+    /// cuerpo en el movimiento: sin ella la IA persigue siempre hasta el contacto, y un disparo
+    /// con proyectil nunca se ve porque para cuando dispara ya está encima empujando.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     [DisallowMultipleComponent]
@@ -57,6 +61,13 @@ namespace RedMagic.Gameplay
         [Tooltip("Diferencia de altura máxima para 'ver' al objetivo. Evita que persiga a alguien " +
                  "que está dos plataformas más arriba y no puede alcanzar.")]
         [SerializeField] private float verticalTolerance = 3f;
+        [Tooltip("A esta distancia deja de avanzar y se queda quieto en vez de seguir hasta tocar. " +
+                 "0 = siempre cierra hasta el contacto (lo normal en un cuerpo a cuerpo). Es para un " +
+                 "enemigo con ataque a distancia: sin esto, la IA lo lleva a pegarse al objetivo " +
+                 "igual que uno sin proyectil, y el disparo nunca se lee porque para cuando dispara " +
+                 "ya está encima. Sigue re-evaluándose cada frame, así que si el objetivo se aleja " +
+                 "más de aquí, vuelve a acercarse.")]
+        [SerializeField] private float stoppingDistance;
 
         [Header("Bordes")]
         [Tooltip("Sondea el suelo un paso por delante y no avanza si no hay: ni patrullando ni " +
@@ -216,6 +227,14 @@ namespace RedMagic.Gameplay
 
             _direction = toTarget.x >= 0f ? 1 : -1;
             if (_sprite != null) _sprite.flipX = _direction < 0;
+
+            // Se queda a distancia en vez de cerrar hasta tocar: es lo que le da a un ataque a
+            // distancia una ventana real para dispararse antes de que el cuerpo a cuerpo lo tape.
+            if (stoppingDistance > 0f && distance <= stoppingDistance)
+            {
+                Stop();
+                return true;
+            }
 
             float reach = (_collider != null ? _collider.bounds.extents.x : 0.3f) + 0.6f;
             bool withinReach = distance <= reach;

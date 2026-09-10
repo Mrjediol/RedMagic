@@ -28,7 +28,7 @@ MonoBehaviour:
   shakeDuration: 0.25
   pattern: 2
   projectile:
-    prefab: {fileID: 8923912939919671748, guid: 7f691322c3a603a409613592ed153ee8, type: 3}
+    prefab: {fileID: 7579062486835776124, guid: 35cd870796a9bd346bc92d9a8d2302d6, type: 3}
     speed: 14
     lifetime: 3
     size: {x: 0.62, y: 0.62}

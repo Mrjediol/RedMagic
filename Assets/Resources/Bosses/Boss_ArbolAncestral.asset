@@ -25,8 +25,10 @@ MonoBehaviour:
     - {fileID: 11400000, guid: ae98f40315c17924b8c03707479c31b5, type: 2}
     - {fileID: 11400000, guid: 1143d1791f049a54b8aabb14fa473838, type: 2}
     - {fileID: 11400000, guid: 863e3ddc71d003040a9c955c8c7e2f84, type: 2}
+    - {fileID: 11400000, guid: 252227d00116f1c4da32044685250013, type: 2}
     pauseBetweenAttacks: {x: 1, y: 1.7}
     damageScale: 1
+    damageTakenMultiplier: 1
     speedScale: 1
     accent: {r: 0.45, g: 0.85, b: 0.38, a: 1}
     transitionSeconds: 0
@@ -44,8 +46,10 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 000295fffdfe92b4da0ab6c8a05f0ea4, type: 2}
     - {fileID: 11400000, guid: 1143d1791f049a54b8aabb14fa473838, type: 2}
     - {fileID: 11400000, guid: 863e3ddc71d003040a9c955c8c7e2f84, type: 2}
+    - {fileID: 11400000, guid: 3336f65c0b45f9841be942c4bedc3e3a, type: 2}
     pauseBetweenAttacks: {x: 0.7, y: 1.2}
     damageScale: 1.15
+    damageTakenMultiplier: 1
     speedScale: 1.2
     accent: {r: 0.78, g: 0.33, b: 0.85, a: 1}
     transitionSeconds: 2

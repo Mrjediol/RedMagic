@@ -69,6 +69,21 @@ namespace RedMagic.Gameplay
         public bool LandingThisFrame { get; private set; }
         public bool IsGrounded => _colDown;
 
+        /// <summary>Normal de la superficie bajo los pies. (0,1) en plano.</summary>
+        public Vector2 GroundNormal => _groundNormal;
+
+        /// <summary>Inclinación de esa superficie en grados. 0 = plano.</summary>
+        public float SlopeAngle => _slopeAngle;
+
+        /// <summary>True apoyado en una rampa transitable (0 &lt; ángulo ≤ <c>maxSlopeAngle</c>).</summary>
+        public bool IsOnSlope => _onWalkableSlope;
+
+        /// <summary>True si el suelo bajo los pies es una plataforma de un solo sentido.</summary>
+        public bool IsOnPlatform => _onPlatform;
+
+        /// <summary>True mientras se está atravesando una plataforma hacia abajo.</summary>
+        public bool IsDroppingThrough => _dropTimer > 0f;
+
         /// <summary>True mientras el jugador mantiene abajo estando en el suelo.</summary>
         public bool IsCrouching { get; private set; }
 
@@ -131,6 +146,38 @@ namespace RedMagic.Gameplay
         [SerializeField] private int _detectorCount = 3;
         [SerializeField] private float _detectionRayLength = 0.1f;
         [SerializeField] [Range(0.1f, 0.3f)] private float _rayBuffer = 0.1f;
+
+        // ---------------------------------------------------------------- rampas
+
+        [Header("SLOPES — rampas")]
+        [Tooltip("Permite caminar por terreno irregular siguiendo la superficie. Apagado, el " +
+                 "controlador se comporta exactamente como antes (sólo suelo plano).")]
+        [SerializeField] private bool enableSlopes = true;
+
+        [Tooltip("Inclinación máxima que se puede subir. Por encima, la rampa actúa como pared.")]
+        [Range(0f, 80f)]
+        [SerializeField] private float maxSlopeAngle = 45f;
+
+        [Tooltip("Longitud del rayo que lee la normal del suelo. Debe ser mayor que " +
+                 "'Detection Ray Length' para ver la rampa antes de pisarla.")]
+        [SerializeField] private float slopeCheckDistance = 0.35f;
+
+        [Tooltip("Cuánto se sigue considerando 'en el suelo' al bajar una rampa. Es lo que evita " +
+                 "el rebote: al descender los pies se despegan un instante cada frame.")]
+        [SerializeField] private float slopeSnapDistance = 0.35f;
+
+        // ---------------------------------------------------------------- plataformas
+
+        [Header("PLATFORMS — plataformas de un solo sentido")]
+        [Tooltip("Capa del suelo atravesable: se puede saltar a través desde abajo y se pisa por " +
+                 "arriba. Debe ser una capa distinta de 'Ground Layer'.")]
+        [SerializeField] private LayerMask _platformLayer;
+
+        [Tooltip("Abajo + salto deja caer al jugador a través de la plataforma que pisa.")]
+        [SerializeField] private bool allowDropThrough = true;
+
+        [Tooltip("Segundos que la plataforma se ignora tras iniciar la caída a través de ella.")]
+        [SerializeField] private float dropThroughDuration = 0.35f;
 
         // ---------------------------------------------------------------- caminar
 
@@ -228,6 +275,48 @@ namespace RedMagic.Gameplay
         private bool _colUp, _colRight, _colDown, _colLeft;
         private float _timeLeftGrounded;
 
+        // rampas / plataformas
+        private Vector2 _groundNormal = Vector2.up;
+        private float _slopeAngle;
+        private float _groundDistance = float.MaxValue;
+        private bool _onWalkableSlope;
+        private bool _onPlatform;
+        private int _steepBlockDir;   // -1 / 1: sentido cuesta arriba de una rampa no trepable
+        private float _dropTimer;
+        private float _dropSurfaceY = float.MinValue;   // altura de la plataforma que se está atravesando
+
+        /// <summary>
+        /// Una plataforma sólo existe para el sensor de suelo cuando el personaje no sube y no
+        /// está atravesándola. Fuera de eso es aire en todas las direcciones.
+        /// </summary>
+        private bool PlatformsActive => _platformLayer.value != 0 && _currentVerticalSpeed <= 0f;
+
+        /// <summary>Margen bajo la superficie abandonada a partir del cual otra plataforma vuelve a contar.</summary>
+        private const float DropThroughMargin = 0.05f;
+
+        /// <summary>
+        /// Filtro común de los impactos contra plataformas, para el sensor de suelo y para el
+        /// aterrizaje. Decide qué cara cuenta como pisable y cuál se está atravesando ahora mismo.
+        /// </summary>
+        private bool AcceptPlatformHit(RaycastHit2D hit)
+        {
+            if (!hit) return false;
+
+            // Nacer DENTRO de la plataforma (subiendo a través de ella) devuelve un impacto a
+            // distancia 0: eso no es un suelo sobre el que estar.
+            if (hit.distance <= 0.0001f) return false;
+
+            // Sólo se pisa por arriba: fuera caras laterales e inferior.
+            if (hit.normal.y <= 0.5f) return false;
+
+            // Mientras se atraviesa una plataforma se descarta SÓLO la que se abandonó (y cualquiera
+            // a su misma altura). Una que esté más abajo sigue frenando la caída: si no, un salto
+            // hacia abajo atravesaría toda una pila de plataformas de golpe.
+            if (_dropTimer > 0f && hit.point.y > _dropSurfaceY - DropThroughMargin) return false;
+
+            return true;
+        }
+
         // salto
         private bool _coyoteUsable;
         private bool _endedJumpEarly = true;
@@ -322,6 +411,7 @@ namespace RedMagic.Gameplay
                 IsCrouching = false;
                 _dashTimer = 0f;
                 _knockbackTimer = 0f;
+                _dropTimer = 0f;
                 return;
             }
 
@@ -339,6 +429,8 @@ namespace RedMagic.Gameplay
                 GatherInput();
             }
 
+            if (_dropTimer > 0f) _dropTimer -= Time.deltaTime;
+
             RunCollisionChecks();
 
             // Al tocar suelo se recargan los saltos y dashes aéreos.
@@ -346,6 +438,7 @@ namespace RedMagic.Gameplay
             {
                 _airJumpsUsed = 0;
                 _airDashesUsed = 0;
+                _dropTimer = 0f;   // se ha vuelto a pisar algo: la caída a través ha terminado
             }
 
             if (_dashCooldownTimer > 0f) _dashCooldownTimer -= Time.deltaTime;
@@ -414,7 +507,7 @@ namespace RedMagic.Gameplay
             CalculateRayRanged();
 
             LandingThisFrame = false;
-            var groundedCheck = RunDetection(_raysDown);
+            var groundedCheck = ProbeGround();
 
             if (_colDown && !groundedCheck) _timeLeftGrounded = Time.time; // acaba de despegar
             else if (!_colDown && groundedCheck)
@@ -429,9 +522,92 @@ namespace RedMagic.Gameplay
             _colLeft = RunDetection(_raysLeft);
             _colRight = RunDetection(_raysRight);
 
+            // Ojo: arriba / izquierda / derecha miran SÓLO la capa sólida. Es lo que hace que una
+            // plataforma se pueda atravesar de lado y de abajo arriba sin ningún caso especial.
             bool RunDetection(RayRange range) =>
                 EvaluateRayPositions(range).Any(point =>
                     Physics2D.Raycast(point, range.Dir, _detectionRayLength, _groundLayer));
+        }
+
+        /// <summary>
+        /// Sensor de suelo. Además de decir si hay apoyo, deja anotada la normal de la superficie
+        /// (para el movimiento en rampa), la distancia exacta (para <see cref="SnapToGround"/>),
+        /// si el apoyo es una plataforma de un solo sentido y el sentido bloqueado por una rampa
+        /// demasiado inclinada.
+        /// </summary>
+        private bool ProbeGround()
+        {
+            _groundNormal = Vector2.up;
+            _slopeAngle = 0f;
+            _groundDistance = float.MaxValue;
+            _onWalkableSlope = false;
+            _onPlatform = false;
+            _steepBlockDir = 0;
+
+            // Al bajar una rampa los pies se despegan un instante en cada frame. Mientras se venía
+            // apoyado y no se sube, el sensor mira más abajo para no perder el suelo; SnapToGround
+            // vuelve a pegarlo. Sin esto el descenso son microsaltos.
+            bool descending = enableSlopes && _colDown && _currentVerticalSpeed <= 0f;
+            float groundedRange = descending ? Mathf.Max(_detectionRayLength, slopeSnapDistance) : _detectionRayLength;
+            float probeRange = Mathf.Max(groundedRange, enableSlopes ? slopeCheckDistance : 0f);
+
+            bool platformsActive = PlatformsActive;
+            float bestDistance = float.MaxValue;
+            Vector2 bestNormal = Vector2.up;
+            bool bestIsPlatform = false;
+            float steepestAngle = 0f;
+            Vector2 steepestNormal = Vector2.zero;
+
+            foreach (var point in EvaluateRayPositions(_raysDown))
+            {
+                Consider(Physics2D.Raycast(point, Vector2.down, probeRange, _groundLayer), false);
+
+                if (platformsActive)
+                {
+                    var plat = Physics2D.Raycast(point, Vector2.down, probeRange, _platformLayer);
+                    if (AcceptPlatformHit(plat)) Consider(plat, true);
+                }
+            }
+
+            bool grounded = bestDistance <= groundedRange;
+            if (grounded)
+            {
+                _groundDistance = bestDistance;
+                _groundNormal = bestNormal;
+                _slopeAngle = Vector2.Angle(bestNormal, Vector2.up);
+                _onPlatform = bestIsPlatform;
+                _onWalkableSlope = enableSlopes && _slopeAngle > 0.5f;
+            }
+
+            if (enableSlopes && steepestNormal != Vector2.zero)
+                _steepBlockDir = steepestNormal.x > 0f ? -1 : 1;   // cuesta arriba = contra la normal
+
+            return grounded;
+
+            void Consider(RaycastHit2D hit, bool isPlatform)
+            {
+                if (!hit) return;
+
+                float angle = Vector2.Angle(hit.normal, Vector2.up);
+
+                if (enableSlopes && angle > maxSlopeAngle)
+                {
+                    // Rampa no trepable: no es suelo. Sólo se anota para bloquear el avance, y sólo
+                    // si está de verdad bajo los pies (si no, una pared a media pantalla frenaría).
+                    if (hit.distance <= groundedRange && angle > steepestAngle)
+                    {
+                        steepestAngle = angle;
+                        steepestNormal = hit.normal;
+                    }
+                    return;
+                }
+
+                if (hit.distance >= bestDistance) return;
+
+                bestDistance = hit.distance;
+                bestNormal = hit.normal;
+                bestIsPlatform = isPlatform;
+            }
         }
 
         private void CalculateRayRanged()
@@ -481,6 +657,19 @@ namespace RedMagic.Gameplay
 
             if ((_currentHorizontalSpeed > 0 && _colRight) || (_currentHorizontalSpeed < 0 && _colLeft))
                 _currentHorizontalSpeed = 0;
+
+            BlockAgainstSteepSlope();
+        }
+
+        /// <summary>
+        /// Una rampa de más de <c>maxSlopeAngle</c> se comporta como pared: no se trepa. Los rayos
+        /// laterales ya frenan contra un muro alto; esto cubre las cuñas bajas, que sólo tocan los
+        /// rayos de abajo.
+        /// </summary>
+        private void BlockAgainstSteepSlope()
+        {
+            if (_steepBlockDir == 0 || _currentHorizontalSpeed == 0f) return;
+            if ((int)Mathf.Sign(_currentHorizontalSpeed) == _steepBlockDir) _currentHorizontalSpeed = 0f;
         }
 
         // ================================================================ gravedad
@@ -520,6 +709,13 @@ namespace RedMagic.Gameplay
 
         private void CalculateJump()
         {
+            // Abajo + salto sobre una plataforma = dejarse caer, no saltar.
+            if (TryDropThroughPlatform())
+            {
+                JumpingThisFrame = false;
+                return;
+            }
+
             if ((_input.JumpDown && CanUseCoyote) || HasBufferedJump)
             {
                 Jump(_jumpHeight);
@@ -555,6 +751,38 @@ namespace RedMagic.Gameplay
             PlaySfx(jumpSfxId);
         }
 
+        /// <summary>
+        /// Atravesar hacia abajo la plataforma que se pisa. El patrón es <b>abajo + salto</b>: es el
+        /// más común en plataformeros 2D de Unity y el más robusto de los dos, porque "sólo abajo"
+        /// provoca caídas accidentales cada vez que se agacha — y este controlador ya usa abajo
+        /// para agacharse.
+        /// </summary>
+        private bool TryDropThroughPlatform()
+        {
+            if (!allowDropThrough || !_input.JumpDown || !_colDown || !_onPlatform) return false;
+            if (_input.Y > -0.5f && !_input.CrouchHeld) return false;
+
+            _dropTimer = dropThroughDuration;
+
+            // Altura de la superficie que se abandona. Es lo que distingue "la plataforma que estoy
+            // atravesando" de "la siguiente, más abajo", sin depender de la identidad del collider
+            // (un tilemap compuesto mete todas las plataformas en un único collider).
+            _dropSurfaceY = _raysDown.Start.y - _groundDistance;
+
+            // Se deja de estar apoyado en el acto: si no, SnapToGround volvería a pegar los pies a
+            // la plataforma este mismo frame y el jugador no llegaría a caer.
+            _colDown = false;
+            _onPlatform = false;
+            _onWalkableSlope = false;
+            _coyoteUsable = false;
+            _timeLeftGrounded = float.MinValue;
+            _lastJumpPressed = float.MinValue;   // que el buffer no dispare un salto al frame siguiente
+            IsCrouching = false;
+
+            if (_currentVerticalSpeed > 0f) _currentVerticalSpeed = 0f;
+            return true;
+        }
+
         // ================================================================ dash
 
         private void TryStartDash()
@@ -583,8 +811,10 @@ namespace RedMagic.Gameplay
             _currentHorizontalSpeed = dashSpeed * _dashDirection;
             if (dashIgnoresGravity) _currentVerticalSpeed = 0f;
 
-            // No atravesar paredes durante el dash.
-            if ((_currentHorizontalSpeed > 0 && _colRight) || (_currentHorizontalSpeed < 0 && _colLeft))
+            // No atravesar paredes durante el dash (una rampa no trepable cuenta como pared).
+            BlockAgainstSteepSlope();
+            if (_currentHorizontalSpeed == 0f ||
+                (_currentHorizontalSpeed > 0 && _colRight) || (_currentHorizontalSpeed < 0 && _colLeft))
             {
                 _currentHorizontalSpeed = 0f;
                 _dashTimer = 0f;
@@ -660,20 +890,18 @@ namespace RedMagic.Gameplay
         // El sensor da por apoyado al personaje cuando el suelo está a menos de
         // _detectionRayLength por debajo, así que puede quedarse flotando hasta esa distancia.
         // Aquí se baja lo justo para que los pies toquen de verdad.
+        // Al bajar una rampa el hueco puede llegar a 'slopeSnapDistance': ProbeGround ya midió la
+        // distancia exacta al suelo (rampa o plataforma incluidas), así que aquí sólo se baja.
         private void SnapToGround()
         {
             if (!snapToGround || !_colDown || _currentVerticalSpeed > 0f) return;
+            if (_groundDistance >= float.MaxValue) return;
 
-            float closest = float.MaxValue;
-            foreach (var point in EvaluateRayPositions(_raysDown))
-            {
-                var hit = Physics2D.Raycast(point, Vector2.down, _detectionRayLength, _groundLayer);
-                if (hit && hit.distance < closest) closest = hit.distance;
-            }
+            float drop = _groundDistance - groundSkin;
+            if (drop <= 0.0001f) return;
 
-            float drop = closest - groundSkin;
-            if (closest < float.MaxValue && drop > 0.0001f)
-                transform.position += Vector3.down * drop;
+            transform.position += Vector3.down * drop;
+            CalculateRayRanged();   // los sensores se quedaron altos tras bajar
         }
 
         // ================================================================ pasos
@@ -700,7 +928,14 @@ namespace RedMagic.Gameplay
         {
             var pos = transform.position;
             RawMovement = new Vector3(_currentHorizontalSpeed, _currentVerticalSpeed);
-            var move = RawMovement * Time.deltaTime;
+
+            // En rampa el desplazamiento sigue la superficie en vez de ser horizontal puro.
+            var move = (Vector3)ProjectOnSlope(RawMovement) * Time.deltaTime;
+
+            // El barrido de colisión no ve las plataformas: aterrizar sobre ellas y subir por las
+            // inclinadas se resuelve aquí.
+            move = ResolvePlatform(move);
+
             var furthestPoint = pos + move;
 
             // La caja del barrido va encogida: apoyado en el suelo la caja a tamaño real entra
@@ -736,6 +971,70 @@ namespace RedMagic.Gameplay
 
                 positionToMoveTo = posToTry;
             }
+        }
+
+        /// <summary>
+        /// Reparte la velocidad horizontal sobre la tangente de la rampa. La tangente es unitaria,
+        /// así que el módulo de la velocidad en pendiente es el mismo que en plano: subir y bajar
+        /// se sienten igual que andar. Al subir esto evita quedarse clavado contra la cuesta; al
+        /// bajar evita despegarse y rebotar.
+        /// </summary>
+        private Vector2 ProjectOnSlope(Vector2 raw)
+        {
+            if (!_onWalkableSlope || raw.y > 0f) return raw;   // saltando: movimiento normal
+
+            var tangent = new Vector2(_groundNormal.y, -_groundNormal.x);   // orientada a +X
+            return tangent * raw.x;
+        }
+
+        /// <summary>
+        /// Resuelve el contacto contra las plataformas de un solo sentido. El barrido de
+        /// <see cref="MoveCharacter"/> sólo conoce la capa sólida, así que aquí se hacen las dos
+        /// cosas que él haría si las viera:
+        ///  - <b>frenar la caída</b> sobre la cara superior (el sensor de suelo, de 0.1, no alcanza
+        ///    a un frame de caída a 40 u/s),
+        ///  - <b>subir el pie</b> hasta la superficie al recorrer una plataforma inclinada. Sin
+        ///    esto, un paso grande (ir rápido) mete los pies dentro del collider; el rayo del
+        ///    sensor nace ya dentro, Physics2D devuelve un impacto a distancia 0 que no cuenta como
+        ///    suelo, y el personaje se cae a través de la rampa. Yendo despacio el paso nunca llega
+        ///    a penetrar, que es justo por qué el fallo sólo aparecía a velocidad.
+        ///
+        /// Se prueba en la columna de <b>destino</b> del paso, no en la de origen.
+        /// </summary>
+        private Vector3 ResolvePlatform(Vector3 move)
+        {
+            if (!PlatformsActive) return move;
+
+            // Cuánto puede subir el pie en un frame: lo que gana la rampa más inclinada admitida a
+            // lo largo del avance horizontal. Sólo apoyado; en el aire esto es sólo el aterrizaje.
+            float rise = _colDown
+                ? Mathf.Abs(move.x) * Mathf.Min(3f, Mathf.Tan(maxSlopeAngle * Mathf.Deg2Rad)) + groundSkin
+                : 0f;
+            float fall = Mathf.Max(0f, -move.y) + groundSkin;
+
+            float feetY = _raysDown.Start.y;
+            float destFeetY = feetY + move.y;
+            float bestSurfaceY = float.MinValue;
+
+            foreach (var point in EvaluateRayPositions(_raysDown))
+            {
+                var origin = new Vector2(point.x + move.x, feetY + rise);
+                var hit = Physics2D.Raycast(origin, Vector2.down, rise + fall, _platformLayer);
+
+                if (!AcceptPlatformHit(hit)) continue;
+                if (Vector2.Angle(hit.normal, Vector2.up) > maxSlopeAngle) continue;   // pared, no rampa
+
+                if (hit.point.y > bestSurfaceY) bestSurfaceY = hit.point.y;
+            }
+
+            if (bestSurfaceY == float.MinValue) return move;
+
+            float targetFeetY = bestSurfaceY + groundSkin;
+            if (targetFeetY <= destFeetY) return move;   // el paso no llega a la superficie: nada que corregir
+
+            move.y += targetFeetY - destFeetY;
+            if (_currentVerticalSpeed < 0f) _currentVerticalSpeed = 0f;
+            return move;
         }
 
         // ================================================================ pisotón / contacto
@@ -774,10 +1073,19 @@ namespace RedMagic.Gameplay
             IsCrouching = false;
             _dashTimer = 0f;
             _knockbackTimer = 0f;
+            _dropTimer = 0f;
         }
 
         /// <summary>Complemento de <see cref="OnDied"/>: devuelve el control tras un respawn.</summary>
         private void OnRevived() => _controlEnabled = true;
+
+        // La capa de plataformas NO puede estar también en la máscara sólida: el barrido de
+        // colisión la trataría como muro y no se podría atravesar por abajo.
+        private void OnValidate()
+        {
+            if ((_groundLayer.value & _platformLayer.value) != 0)
+                _groundLayer = _groundLayer.value & ~_platformLayer.value;
+        }
 
         private static void PlaySfx(string id)
         {
@@ -801,8 +1109,14 @@ namespace RedMagic.Gameplay
             }
 
             Gizmos.color = Color.red;
-            var futureMove = new Vector3(_currentHorizontalSpeed, _currentVerticalSpeed) * Time.deltaTime;
+            var futureMove = (Vector3)ProjectOnSlope(new Vector2(_currentHorizontalSpeed, _currentVerticalSpeed)) * Time.deltaTime;
             Gizmos.DrawWireCube(transform.position + _characterBounds.center + futureMove, _characterBounds.size);
+
+            if (!_colDown) return;
+
+            // Normal del suelo: verde si la rampa es transitable, roja si actúa como pared.
+            Gizmos.color = _slopeAngle <= maxSlopeAngle ? Color.green : Color.red;
+            Gizmos.DrawRay(new Vector3(transform.position.x, _raysDown.Start.y - _groundDistance), _groundNormal);
         }
     }
 }

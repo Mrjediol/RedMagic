@@ -202,6 +202,15 @@ MonoBehaviour:
   _detectorCount: 3
   _detectionRayLength: 0.1
   _rayBuffer: 0.1
+  enableSlopes: 1
+  maxSlopeAngle: 45
+  slopeCheckDistance: 0.35
+  slopeSnapDistance: 0.35
+  _platformLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  allowDropThrough: 1
+  dropThroughDuration: 0.35
   _acceleration: 90
   _moveClamp: 13
   _deAcceleration: 60

@@ -68,11 +68,50 @@ namespace RedMagic.Pipeline
                  "-1 = sin evento (se usa el tiempo de respaldo de EnemyStats).")]
         public int releaseFrame = -1;
 
+        [Tooltip("Recuadros de los frames puestos a mano, en píxeles de la lámina (y=0 abajo, como " +
+                 "en el Sprite Editor de Unity). Si hay alguno, mandan sobre la detección " +
+                 "automática y sobre 'evenSplit'.\n\n" +
+                 "Es la salida de emergencia para una fila que ninguna heurística acierta: FX que " +
+                 "se solapan de forma irregular, frames de anchos muy distintos. El resto del " +
+                 "corte sigue igual — se quita el fondo, se empaqueta en celdas uniformes y el " +
+                 "pivote queda en el mismo punto en todos los frames.")]
+        public RectInt[] frameRects;
+
         [Tooltip("Reparte la fila en 'frames' columnas iguales en vez de buscar manchas conexas. " +
                  "Para filas cuyos frames se pisan en horizontal — polvo de un pisotón, un " +
                  "estallido de energía, hojas que salen volando — donde la detección por contenido " +
                  "junta dos dibujos en uno. Necesita que los frames estén dibujados en rejilla.")]
         public bool evenSplit;
+    }
+
+    /// <summary>
+    /// Un estado extra que no tiene fila propia, hecho con un trozo de otra fila.
+    ///
+    /// Existe porque una lámina casi nunca dibuja todos los estados que el AnimatorController
+    /// necesita: lo normal es que traiga un salto completo y ningún dibujo de caída, o que el
+    /// controller tenga un ataque agachado que en la lámina no está. En vez de dejar esos estados
+    /// con el arte viejo (lo que se ve como una mezcla de dos personajes), se derivan de la fila
+    /// más cercana.
+    /// </summary>
+    [Serializable]
+    public class DerivedClip
+    {
+        [Tooltip("Nombre del estado que se genera. Debe coincidir con el estado del " +
+                 "AnimatorController al que quieres que llegue.")]
+        public string state = "Fall";
+
+        [Tooltip("Estado de origen: el 'state' de una de las filas de arriba.")]
+        public string fromState = "Jump";
+
+        [Tooltip("Índice del primer frame que se toma de esa fila (0 = el primero).")]
+        [Min(0)] public int firstFrame;
+
+        [Tooltip("Cuántos frames se toman. 0 = hasta el final de la fila.")]
+        [Min(0)] public int frameCount;
+
+        [Min(0.1f)] public float fps = 10f;
+
+        public bool loop = true;
     }
 
     /// <summary>
@@ -111,6 +150,17 @@ namespace RedMagic.Pipeline
         [Tooltip("Solo en modo Grid: columnas de la rejilla.")]
         [Min(1)] public int columns = 5;
 
+        [Header("Recorte previo (píxeles, como se ve la imagen)")]
+        [Tooltip("Franja izquierda que se ignora ANTES de analizar nada. Es lo que quita la " +
+                 "columna de rótulos (IDLE, WALK, …) que el artista deja pintada en la lámina: si " +
+                 "se deja, cuenta como contenido, se lleva un frame por delante y además su color " +
+                 "puede colarse en la detección del fondo.")]
+        [Min(0)] public int cropLeft;
+
+        [Min(0)] public int cropRight;
+        [Min(0)] public int cropTop;
+        [Min(0)] public int cropBottom;
+
         [Header("Fondo")]
         [Tooltip("Si la lámina no trae alfa real (un JPG, o un PNG con el damero pintado encima), " +
                  "se deduce el fondo de los bordes y se pasa a transparente. Con alfa real, " +
@@ -137,6 +187,24 @@ namespace RedMagic.Pipeline
 
         [Header("Animación")]
         public AnimRuntime runtime = AnimRuntime.Animator;
+
+        [Tooltip("Clava OnAttackRelease / OnAttackFinished en el clip 'Attack'. Es lo que hace que " +
+                 "el golpe salga en el dibujo exacto, y lo recibe EnemyAnimation. Apágalo para un " +
+                 "personaje que no lleve ese componente — el jugador — o Unity avisará en cada " +
+                 "reproducción de que nadie escucha el evento.")]
+        public bool attackEvents = true;
+
+        [Tooltip("Estados extra montados con trozos de las filas de arriba: la caída sacada del " +
+                 "salto, el ataque agachado sacado del ataque… Ver DerivedClip.")]
+        public DerivedClip[] derivedClips = new DerivedClip[0];
+
+        [Tooltip("Ruta del SpriteRenderer VISTA DESDE EL GameObject QUE LLEVA EL ANIMATOR. En un " +
+                 "enemigo generado el Animator va en la raíz y el sprite en el hijo 'Sprite', que " +
+                 "es el valor por defecto. Vacía = el Animator y el SpriteRenderer están en el " +
+                 "mismo objeto (así es el prefab del jugador).\n\n" +
+                 "Si esto no coincide con el prefab real, los clips animan a un objeto que no " +
+                 "existe: el personaje se ve, pero se queda congelado en un frame.")]
+        public string rendererPath = "Sprite";
 
         /// <summary>Carpeta de salida efectiva.</summary>
         public string ResolvedFolder => string.IsNullOrWhiteSpace(outputFolder)

@@ -79,16 +79,12 @@ namespace RedMagic.Pipeline.EditorTools
 
                 clip.frameRate = row.fps;
 
-                var binding = new EditorCurveBinding
-                {
-                    type = typeof(SpriteRenderer),
-                    path = RendererPath,
-                    propertyName = "m_Sprite",
-                };
+                var binding = SpriteBinding(recipe);
 
-                // Se limpia la ruta antigua: una hoja generada antes de mover el Animator a la raíz
-                // dejaría dos curvas y el sprite parpadearía entre ellas.
-                AnimationUtility.SetObjectReferenceCurve(clip, LegacyBinding(), null);
+                // Se limpia cualquier curva de sprite anterior, sea cual sea su ruta: si el prefab
+                // cambia de sitio el Animator, la curva vieja apunta a un objeto que ya no existe
+                // y el clip se queda congelado (o parpadea entre las dos).
+                ClearSpriteCurves(clip);
 
                 var keys = new ObjectReferenceKeyframe[sprites.Count];
                 for (int i = 0; i < sprites.Count; i++)
@@ -101,7 +97,8 @@ namespace RedMagic.Pipeline.EditorTools
                 settings.stopTime = sprites.Count / row.fps;
                 AnimationUtility.SetAnimationClipSettings(clip, settings);
 
-                if (row.state == Attack) AddAttackEvents(clip, row, sprites.Count, log);
+                if (row.state == Attack && recipe.attackEvents) AddAttackEvents(clip, row, sprites.Count, log);
+                else AnimationUtility.SetAnimationEvents(clip, new AnimationEvent[0]);
 
                 EditorUtility.SetDirty(clip);
                 clips[row.state] = clip;
@@ -109,7 +106,84 @@ namespace RedMagic.Pipeline.EditorTools
                                $"{sprites.Count} frames @ {row.fps}fps, loop={row.loop}");
             }
 
+            BuildDerivedClips(recipe, clips, folder, log);
             return clips;
+        }
+
+        /// <summary>
+        /// Los estados que la lámina no dibuja, montados con un trozo de los que sí — la caída
+        /// sacada de los frames en el aire del salto, el ataque agachado sacado del ataque.
+        ///
+        /// Sin esto, un controller ya cableado (el del jugador) se queda con el arte anterior en
+        /// los estados que la lámina nueva no cubre, y el personaje cambia de aspecto a mitad de
+        /// partida. Se leen los frames del clip ya construido, así que no hay que volver a cortar.
+        /// </summary>
+        private static void BuildDerivedClips(SpriteSheetRecipe recipe,
+                                              Dictionary<string, AnimationClip> clips,
+                                              string folder, StringBuilder log)
+        {
+            if (recipe.derivedClips == null) return;
+
+            var binding = SpriteBinding(recipe);
+
+            foreach (var derived in recipe.derivedClips)
+            {
+                if (derived == null || string.IsNullOrWhiteSpace(derived.state)) continue;
+
+                if (!clips.TryGetValue(derived.fromState, out var source))
+                {
+                    log.AppendLine($"  AVISO derivado {derived.state}: no existe el estado de " +
+                                   $"origen '{derived.fromState}'.");
+                    continue;
+                }
+
+                var sourceKeys = AnimationUtility.GetObjectReferenceCurve(source, binding);
+                if (sourceKeys == null || sourceKeys.Length == 0)
+                {
+                    log.AppendLine($"  AVISO derivado {derived.state}: '{derived.fromState}' no tiene frames.");
+                    continue;
+                }
+
+                int first = Mathf.Clamp(derived.firstFrame, 0, sourceKeys.Length - 1);
+                int count = derived.frameCount <= 0
+                    ? sourceKeys.Length - first
+                    : Mathf.Min(derived.frameCount, sourceKeys.Length - first);
+
+                string path = $"{folder}/{recipe.characterName}_{derived.state}.anim";
+                var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
+                bool created = clip == null;
+
+                if (created)
+                {
+                    clip = new AnimationClip();
+                    AssetDatabase.CreateAsset(clip, path);
+                }
+
+                clip.frameRate = derived.fps;
+                ClearSpriteCurves(clip);
+                AnimationUtility.SetAnimationEvents(clip, new AnimationEvent[0]);
+
+                var keys = new ObjectReferenceKeyframe[count];
+                for (int i = 0; i < count; i++)
+                    keys[i] = new ObjectReferenceKeyframe
+                    {
+                        time = i / derived.fps,
+                        value = sourceKeys[first + i].value,
+                    };
+
+                AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
+
+                var settings = AnimationUtility.GetAnimationClipSettings(clip);
+                settings.loopTime = derived.loop;
+                settings.stopTime = count / derived.fps;
+                AnimationUtility.SetAnimationClipSettings(clip, settings);
+
+                EditorUtility.SetDirty(clip);
+                clips[derived.state] = clip;
+                log.AppendLine($"  clip {(created ? "creado " : "actualizado")} {derived.state} " +
+                               $"(derivado de {derived.fromState}[{first}..{first + count - 1}]): " +
+                               $"{count} frames @ {derived.fps}fps, loop={derived.loop}");
+            }
         }
 
         /// <summary>
@@ -149,12 +223,25 @@ namespace RedMagic.Pipeline.EditorTools
             return sprites;
         }
 
-        private static EditorCurveBinding LegacyBinding() => new EditorCurveBinding
+        /// <summary>
+        /// Dónde vive el <see cref="SpriteRenderer"/> visto desde el Animator. Lo dice la receta
+        /// porque no es igual en todos los prefabs: en un enemigo generado el Animator va en la
+        /// raíz, pero el del jugador está en el propio hijo del sprite.
+        /// </summary>
+        private static EditorCurveBinding SpriteBinding(SpriteSheetRecipe recipe) => new EditorCurveBinding
         {
             type = typeof(SpriteRenderer),
-            path = "",
+            path = recipe.rendererPath ?? "",
             propertyName = "m_Sprite",
         };
+
+        /// <summary>Borra del clip toda curva de sprite, apunte a donde apunte.</summary>
+        private static void ClearSpriteCurves(AnimationClip clip)
+        {
+            foreach (var existing in AnimationUtility.GetObjectReferenceCurveBindings(clip))
+                if (existing.propertyName == "m_Sprite")
+                    AnimationUtility.SetObjectReferenceCurve(clip, existing, null);
+        }
 
         /// <summary>
         /// Clava los dos avisos del ataque en el clip: el golpe y el final. Con

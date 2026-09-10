@@ -330,3 +330,78 @@ Lo que hizo el pipeline sin intervención:
    cuando el jugador entra en su rango, con la animación de "Attack" cuadrada al soltarla.
 
 Coste de la siguiente lámina: copiar `TreeWalkPack.cs`, cambiar los datos, ejecutar.
+
+---
+
+## 9. Rótulos pintados en la lámina — `cropLeft` y compañía
+
+Muchas láminas traen los nombres de las filas (`IDLE`, `WALK`, `SALTAR`…) escritos en una columna
+a la izquierda, o una paleta de colores en un margen. Eso **es contenido** para el corte: se lleva
+un frame por delante y, peor, su color entra en la lista de tonos que se toman por fondo.
+
+La receta lo resuelve con cuatro enteros: `cropLeft` / `cropRight` / `cropTop` / `cropBottom`,
+en píxeles y **como se ve la imagen** (arriba es arriba). Lo que quede fuera se ignora antes de
+deducir el fondo, no después.
+
+Mídelo, no lo estimes: `PlayerPack.Diagnose` (**Tools ▸ RedMagic ▸ Pipeline ▸ Packs ▸ Player ·
+Diagnosticar lámina**) imprime el porcentaje de píxeles oscuros por columna y dice dónde acaba el
+rótulo. Copia ese patrón en el pack del personaje nuevo si su lámina trae rótulos.
+
+En modo `Grid` la rejilla se reparte **sobre el recorte**, no sobre la lámina entera, así que un
+recorte a la izquierda ya no desplaza todas las celdas.
+
+## 10. Estados que la lámina no dibuja — `derivedClips`
+
+Un controller cableado casi siempre tiene más estados que filas la lámina: hay salto pero no
+caída, hay ataque pero no ataque agachado. Si se dejan, esos estados **siguen con el arte
+anterior** y el personaje cambia de aspecto a mitad de partida.
+
+`SpriteSheetRecipe.derivedClips` los monta con un trozo de otra fila:
+
+```csharp
+new DerivedClip { state = "Fall", fromState = "Jump", firstFrame = 3, frameCount = 1, loop = true }
+```
+
+`frameCount = 0` significa «hasta el final de la fila». Se generan como un `.anim` normal en
+`Anim/`, así que `BuildController` los coloca en su estado igual que a los demás.
+
+## 11. Cambiar el arte del jugador
+
+El jugador **no** pasa por `EnemyFactory`: su prefab lleva el control, el ataque, el inventario y
+el audio, y eso no se toca. Su pack (`Assets/Scripts/Pipeline/Editor/PlayerPack.cs`,
+**Tools ▸ RedMagic ▸ Pipeline ▸ Packs ▸ Player**) hace sólo tres cosas:
+
+1. Corta la lámina en `Assets/Art/Characters/Player/`.
+2. **Copia** el controller una vez (`DragonWarrior.controller` → `Player.controller`) y deja que
+   `AnimClipBuilder` le reescriba los clips *en su sitio*. Las transiciones afinadas a mano y los
+   parámetros que escribe `PlayerAnimator` (`Speed`, `VSpeed`, `Grounded`, `Crouching`, `Attack`,
+   `Hurt`, `Dead`) quedan intactos: por eso cambiar el arte no cambia cómo se juega.
+3. Apunta `Player.prefab` al controller nuevo y escala el hijo `Sprite` para que el personaje mida
+   lo mismo que antes — la escala sale del `bounds` del sprite real, no de un número a ojo.
+
+Los estados de la fila se llaman **igual que los del controller** (`Idle`, `Walk`, `Jump`,
+`Attack`, `Hurt`, `Die`…). Eso es lo que hace que reescribir los clips baste.
+
+`attackEvents = false` en la receta: `OnAttackRelease` / `OnAttackFinished` los escucha
+`EnemyAnimation`, que el jugador no lleva. Sin apagarlo, Unity avisa en cada ataque.
+
+Para una lámina nueva del jugador: sustituye el JPEG, borra `Player.sheet.asset` si cambian las
+filas, y vuelve a lanzar el pack.
+
+## 12. Cuando ninguna heurística acierta una fila — `frameRects`
+
+`SheetRow.frameRects` es la salida de emergencia: recuadros de frame puestos a mano, en píxeles de
+la lámina (`y = 0` abajo, igual que en el Sprite Editor de Unity). Si hay alguno, mandan sobre la
+detección automática y sobre `evenSplit`.
+
+Lo demás del corte **no** cambia: se sigue quitando el fondo, empaquetando en celdas uniformes y
+poniendo el pivote en el mismo punto del personaje en todos los frames. Lo que se pone a mano es
+sólo *dónde empieza y acaba cada frame*.
+
+Cómo se sacan los números sin contar píxeles: abre la lámina en el Sprite Editor, corta esa fila a
+mano, y lee el `rect` de cada sprite resultante. `PlayerPack.AdoptHandCutAttack` hace justo eso con
+los cinco `attack1..5.asset` de `Assets/Sprites/New folder/` y los **copia** a la receta — una vez
+copiados la receta es autosuficiente y los sprites sueltos se pueden borrar.
+
+Fue necesario en la fila del ataque del jugador: el aura de energía crece tanto que invade los
+frames vecinos, y el reparto uniforme cortaba la última pose por la mitad.

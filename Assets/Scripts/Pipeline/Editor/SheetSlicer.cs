@@ -20,6 +20,46 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class SheetSlicer
     {
+        /// <summary>Zona útil de la lámina, en píxeles de textura (y=0 abajo).</summary>
+        public struct CropRect
+        {
+            public int x0, x1, y0, y1;
+            public int Width => x1 - x0 + 1;
+            public int Height => y1 - y0 + 1;
+        }
+
+        /// <summary>
+        /// Traduce el recorte de la receta (expresado como se ve la imagen: arriba es arriba) a
+        /// coordenadas de textura, donde y=0 es la fila de abajo.
+        /// </summary>
+        private static CropRect ResolveCrop(SpriteSheetRecipe recipe, int w, int h)
+        {
+            var crop = new CropRect
+            {
+                x0 = Mathf.Clamp(recipe.cropLeft, 0, w - 1),
+                x1 = Mathf.Clamp(w - 1 - recipe.cropRight, 0, w - 1),
+                y0 = Mathf.Clamp(recipe.cropBottom, 0, h - 1),
+                y1 = Mathf.Clamp(h - 1 - recipe.cropTop, 0, h - 1),
+            };
+
+            if (crop.x1 < crop.x0) { crop.x0 = 0; crop.x1 = w - 1; }
+            if (crop.y1 < crop.y0) { crop.y0 = 0; crop.y1 = h - 1; }
+            return crop;
+        }
+
+        private static bool IsFullFrame(CropRect crop, int w, int h) =>
+            crop.x0 == 0 && crop.y0 == 0 && crop.x1 == w - 1 && crop.y1 == h - 1;
+
+        /// <summary>Borra de la máscara todo lo que quede fuera de la zona útil.</summary>
+        private static void ApplyCrop(bool[] mask, int w, int h, CropRect crop)
+        {
+            if (IsFullFrame(crop, w, h)) return;
+
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                if (x < crop.x0 || x > crop.x1 || y < crop.y0 || y > crop.y1) mask[y * w + x] = false;
+        }
+
         /// <summary>Un frame localizado dentro de la lámina.</summary>
         private struct Frame
         {
@@ -85,20 +125,28 @@ namespace RedMagic.Pipeline.EditorTools
             int w = tex.width, h = tex.height;
             var px = tex.GetPixels32();
 
+            // Zona útil de la lámina: fuera queda lo que la receta manda ignorar (la columna de
+            // rótulos, una paleta pintada al margen…). Se aplica ANTES de deducir el fondo, o el
+            // color del rótulo entraría en la lista de tonos de fondo y se comería arte.
+            var crop = ResolveCrop(recipe, w, h);
+
             // Máscara de contenido. Con alfa real basta el alfa; si no, se deduce el fondo de los
             // bordes (el damero de un JPG son dos grises que ocupan todo el marco).
             bool[] mask = recipe.keyBackground
-                ? MaskByBackground(px, w, h, recipe.backgroundTolerance, out var bgColors)
+                ? MaskByBackground(px, w, h, crop, recipe.backgroundTolerance, out var bgColors)
                 : MaskByAlpha(px, recipe.alphaThreshold, out bgColors);
 
+            ApplyCrop(mask, w, h, crop);
+
             result.Log.AppendLine($"[SheetSlicer] {recipe.characterName}: {w}x{h}, " +
-                                  $"{(recipe.keyBackground ? $"fondo detectado ({bgColors.Count} tonos)" : "alfa real")}.");
+                                  $"{(recipe.keyBackground ? $"fondo detectado ({bgColors.Count} tonos)" : "alfa real")}" +
+                                  $"{(IsFullFrame(crop, w, h) ? "" : $", recorte x[{crop.x0}..{crop.x1}] y[{crop.y0}..{crop.y1}]")}.");
 
             string folder = recipe.ResolvedFolder;
             EnsureFolder(folder);
 
             var bands = recipe.sliceMode == SliceMode.Grid
-                ? GridBands(recipe, w, h)
+                ? GridBands(recipe, crop)
                 : AutoBands(mask, w, h, recipe.rows.Length, result.Log);
 
             if (bands.Count != recipe.rows.Length)
@@ -117,8 +165,11 @@ namespace RedMagic.Pipeline.EditorTools
 
                 List<Blob> absorbed = null;
                 List<Frame> frames;
-                if (recipe.sliceMode == SliceMode.Grid)
-                    frames = GridFrames(mask, w, by0, by1, recipe.columns, recipe.anchor);
+                if (row.frameRects != null && row.frameRects.Length > 0)
+                    // Recuadros puestos a mano: mandan sobre todo lo demás.
+                    frames = ExplicitFrames(mask, w, h, row.frameRects, recipe.anchor, result.Log);
+                else if (recipe.sliceMode == SliceMode.Grid)
+                    frames = GridFrames(mask, w, crop, by0, by1, recipe.columns, recipe.anchor);
                 else if (row.evenSplit && row.frames > 0)
                     // Filas con FX que se pisan en X (polvo, estallidos): la detección por
                     // contenido las junta, así que se parte la franja de contenido en N columnas
@@ -201,7 +252,7 @@ namespace RedMagic.Pipeline.EditorTools
         /// lámina como <c>Read/Write</c> ni deshacer el cambio después, y funciona con JPG igual
         /// que con PNG.
         /// </summary>
-        private static Texture2D LoadRaw(string assetPath)
+        public static Texture2D LoadRaw(string assetPath)
         {
             string full = Path.Combine(Directory.GetCurrentDirectory(), assetPath);
             if (!File.Exists(full)) return null;
@@ -234,11 +285,11 @@ namespace RedMagic.Pipeline.EditorTools
         /// comparta con esos tonos por casualidad se recupera después, porque sólo se descartan
         /// las manchas pequeñas.
         /// </summary>
-        private static bool[] MaskByBackground(Color32[] px, int w, int h, float tolerance,
-                                               out List<Color32> bg)
+        private static bool[] MaskByBackground(Color32[] px, int w, int h, CropRect crop,
+                                               float tolerance, out List<Color32> bg)
         {
             var tally = new Dictionary<int, (Color32 c, int n)>();
-            int border = Mathf.Max(2, Mathf.Min(w, h) / 64);
+            int border = Mathf.Max(2, Mathf.Min(crop.Width, crop.Height) / 64);
             int sampled = 0;
 
             void Sample(int x, int y)
@@ -249,9 +300,11 @@ namespace RedMagic.Pipeline.EditorTools
                 sampled++;
             }
 
-            for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-                if (x < border || x >= w - border || y < border || y >= h - border) Sample(x, y);
+            // El marco que se muestrea es el de la zona útil, no el de la lámina entera.
+            for (int y = crop.y0; y <= crop.y1; y++)
+            for (int x = crop.x0; x <= crop.x1; x++)
+                if (x < crop.x0 + border || x > crop.x1 - border ||
+                    y < crop.y0 + border || y > crop.y1 - border) Sample(x, y);
 
             // Umbral bajo a propósito: un damero son dos tonos y uno de ellos puede quedar en
             // minoría si el marco lo corta de forma desigual. Se cogen los tonos frecuentes, no
@@ -290,15 +343,21 @@ namespace RedMagic.Pipeline.EditorTools
 
         // ============================================================ bandas (filas)
 
-        private static List<(int y0, int y1)> GridBands(SpriteSheetRecipe recipe, int w, int h)
+        private static List<(int y0, int y1)> GridBands(SpriteSheetRecipe recipe, CropRect crop)
         {
             var bands = new List<(int, int)>();
-            int n = recipe.rows.Length;
-            int cell = h / n;
+            int n = Mathf.Max(1, recipe.rows.Length);
+            float cell = crop.Height / (float)n;
 
             // La fila 0 de la receta es la de arriba de la imagen; en coordenadas de Unity y=0 es
             // abajo, así que se recorre al revés.
-            for (int i = 0; i < n; i++) bands.Add((h - (i + 1) * cell, h - i * cell - 1));
+            for (int i = 0; i < n; i++)
+            {
+                int top = crop.y1 - Mathf.RoundToInt(i * cell);
+                int bottom = (i == n - 1) ? crop.y0 : crop.y1 - Mathf.RoundToInt((i + 1) * cell) + 1;
+                bands.Add((bottom, top));
+            }
+
             return bands;
         }
 
@@ -342,6 +401,35 @@ namespace RedMagic.Pipeline.EditorTools
         // ============================================================ frames dentro de una banda
 
         /// <summary>
+        /// Frames a partir de los recuadros que trae la receta. Cada recuadro se recorta a su
+        /// propio contenido, igual que en los demás modos: lo que se pone a mano es <b>dónde
+        /// empieza y acaba cada frame</b>, no la celda final — el empaquetado uniforme y el pivote
+        /// los sigue calculando el corte, que es lo que impide que la animación tiemble.
+        /// </summary>
+        private static List<Frame> ExplicitFrames(bool[] mask, int w, int h, RectInt[] rects,
+                                                  AnchorMode anchor, StringBuilder log)
+        {
+            var frames = new List<Frame>();
+
+            foreach (var rect in rects)
+            {
+                int x0 = Mathf.Clamp(Mathf.Min(rect.xMin, rect.xMax), 0, w - 1);
+                int x1 = Mathf.Clamp(Mathf.Max(rect.xMin, rect.xMax) - 1, 0, w - 1);
+                int y0 = Mathf.Clamp(Mathf.Min(rect.yMin, rect.yMax), 0, h - 1);
+                int y1 = Mathf.Clamp(Mathf.Max(rect.yMin, rect.yMax) - 1, 0, h - 1);
+
+                if (x1 < x0 || y1 < y0) continue;
+
+                var f = Bounds(mask, w, x0, x1, y0, y1);
+                if (f.x1 < f.x0) f = new Frame { x0 = x0, x1 = x1, y0 = y0, y1 = y1 };
+                frames.Add(Anchor(f, anchor));
+            }
+
+            log.AppendLine($"  [frames] {frames.Count} recuadros explícitos de la receta.");
+            return frames;
+        }
+
+        /// <summary>
         /// Reparte la franja en <paramref name="want"/> columnas iguales, tomando como ancho total
         /// la extensión de contenido de la banda (no la lámina entera: así los rótulos de la
         /// izquierda no descuadran el reparto). Cada columna se recorta luego a su propio
@@ -376,15 +464,24 @@ namespace RedMagic.Pipeline.EditorTools
             return frames;
         }
 
-        private static List<Frame> GridFrames(bool[] mask, int w, int y0, int y1, int columns,
-                                              AnchorMode anchor)
+        /// <summary>
+        /// Rejilla uniforme dentro de la zona útil. Divide el <b>recorte</b>, no la lámina entera:
+        /// con una columna de rótulos a la izquierda, repartir sobre el ancho total desplaza todas
+        /// las celdas y parte a los personajes por la mitad.
+        /// </summary>
+        private static List<Frame> GridFrames(bool[] mask, int w, CropRect crop, int y0, int y1,
+                                              int columns, AnchorMode anchor)
         {
             var frames = new List<Frame>();
-            int cell = w / Mathf.Max(1, columns);
+            int n = Mathf.Max(1, columns);
+            float cell = crop.Width / (float)n;
 
-            for (int c = 0; c < columns; c++)
+            for (int c = 0; c < n; c++)
             {
-                var f = Bounds(mask, w, c * cell, c * cell + cell - 1, y0, y1);
+                int cx0 = crop.x0 + Mathf.RoundToInt(c * cell);
+                int cx1 = (c == n - 1) ? crop.x1 : crop.x0 + Mathf.RoundToInt((c + 1) * cell) - 1;
+
+                var f = Bounds(mask, w, cx0, cx1, y0, y1);
                 if (f.x1 < f.x0) continue;
                 frames.Add(Anchor(f, anchor));
             }

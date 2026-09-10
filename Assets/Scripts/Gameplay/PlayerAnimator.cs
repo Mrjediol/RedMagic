@@ -15,6 +15,8 @@ namespace RedMagic.Gameplay
     ///  - Attack (Trigger)  lo dispara <see cref="PlayerAttack"/>
     ///  - Hurt (Trigger)    al recibir daño
     ///  - Dead (Bool)       al morir; vuelve a false si Health dispara Revived (respawn)
+    ///  - Dashing (Bool)    mientras dura el dash
+    ///  - DoubleJump (Trigger) al gastar un salto en el aire
     /// </summary>
     [DisallowMultipleComponent]
     public class PlayerAnimator : MonoBehaviour
@@ -32,6 +34,8 @@ namespace RedMagic.Gameplay
         private static readonly int AttackKey = Animator.StringToHash("Attack");
         private static readonly int HurtKey = Animator.StringToHash("Hurt");
         private static readonly int DeadKey = Animator.StringToHash("Dead");
+        private static readonly int DashingKey = Animator.StringToHash("Dashing");
+        private static readonly int DoubleJumpKey = Animator.StringToHash("DoubleJump");
 
         /// <summary>Animator en uso, por si otro script necesita consultarlo.</summary>
         public Animator Animator => animator;
@@ -48,6 +52,8 @@ namespace RedMagic.Gameplay
 
         private void OnEnable()
         {
+            if (_movement != null) _movement.AirJumped += OnAirJumped;
+
             if (_health == null) return;
             _health.Damaged += OnDamaged;
             _health.Died += OnDied;
@@ -56,6 +62,8 @@ namespace RedMagic.Gameplay
 
         private void OnDisable()
         {
+            if (_movement != null) _movement.AirJumped -= OnAirJumped;
+
             if (_health == null) return;
             _health.Damaged -= OnDamaged;
             _health.Died -= OnDied;
@@ -74,6 +82,7 @@ namespace RedMagic.Gameplay
                 animator.SetFloat(VSpeedKey, 0f);
                 animator.SetBool(GroundedKey, true);
                 animator.SetBool(CrouchingKey, false);
+                animator.SetBool(DashingKey, false);
                 return;
             }
 
@@ -82,6 +91,12 @@ namespace RedMagic.Gameplay
             animator.SetFloat(VSpeedKey, raw.y);
             animator.SetBool(GroundedKey, _movement.IsGrounded);
             animator.SetBool(CrouchingKey, _movement.IsCrouching);
+            animator.SetBool(DashingKey, _movement.IsDashing);
+        }
+
+        private void OnAirJumped()
+        {
+            if (animator != null) animator.SetTrigger(DoubleJumpKey);
         }
 
         /// <summary>Lo llama <see cref="PlayerAttack"/> al iniciar un ataque.</summary>

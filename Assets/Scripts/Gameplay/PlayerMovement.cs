@@ -82,7 +82,7 @@ namespace RedMagic.Gameplay
         public bool IsOnPlatform => _onPlatform;
 
         /// <summary>True mientras se está atravesando una plataforma hacia abajo.</summary>
-        public bool IsDroppingThrough => _dropTimer > 0f;
+        public bool IsDroppingThrough => _dropCollider != null;
 
         /// <summary>True mientras el jugador mantiene abajo estando en el suelo.</summary>
         public bool IsCrouching { get; private set; }
@@ -176,8 +176,11 @@ namespace RedMagic.Gameplay
         [Tooltip("Abajo + salto deja caer al jugador a través de la plataforma que pisa.")]
         [SerializeField] private bool allowDropThrough = true;
 
-        [Tooltip("Segundos que la plataforma se ignora tras iniciar la caída a través de ella.")]
-        [SerializeField] private float dropThroughDuration = 0.35f;
+        [Tooltip("Tope de seguridad, en segundos, de la caída a través de una plataforma. " +
+                 "Normalmente NO es lo que la termina: la plataforma se suelta en cuanto el " +
+                 "personaje queda por debajo de ella. Esto sólo evita quedarse ignorándola para " +
+                 "siempre si eso no llega a pasar.")]
+        [SerializeField] private float dropThroughDuration = 1.5f;
 
         // ---------------------------------------------------------------- caminar
 
@@ -283,16 +286,14 @@ namespace RedMagic.Gameplay
         private bool _onPlatform;
         private int _steepBlockDir;   // -1 / 1: sentido cuesta arriba de una rampa no trepable
         private float _dropTimer;
-        private float _dropSurfaceY = float.MinValue;   // altura de la plataforma que se está atravesando
+        private Collider2D _dropCollider;    // la plataforma concreta que se está atravesando
+        private Collider2D _groundCollider;  // la que se pisa ahora mismo
 
         /// <summary>
         /// Una plataforma sólo existe para el sensor de suelo cuando el personaje no sube y no
         /// está atravesándola. Fuera de eso es aire en todas las direcciones.
         /// </summary>
         private bool PlatformsActive => _platformLayer.value != 0 && _currentVerticalSpeed <= 0f;
-
-        /// <summary>Margen bajo la superficie abandonada a partir del cual otra plataforma vuelve a contar.</summary>
-        private const float DropThroughMargin = 0.05f;
 
         /// <summary>
         /// Filtro común de los impactos contra plataformas, para el sensor de suelo y para el
@@ -309,10 +310,11 @@ namespace RedMagic.Gameplay
             // Sólo se pisa por arriba: fuera caras laterales e inferior.
             if (hit.normal.y <= 0.5f) return false;
 
-            // Mientras se atraviesa una plataforma se descarta SÓLO la que se abandonó (y cualquiera
-            // a su misma altura). Una que esté más abajo sigue frenando la caída: si no, un salto
-            // hacia abajo atravesaría toda una pila de plataformas de golpe.
-            if (_dropTimer > 0f && hit.point.y > _dropSurfaceY - DropThroughMargin) return false;
+            // Al dejarse caer se ignora LA PLATAFORMA CONCRETA que se pisaba, no una altura. En una
+            // rampa la misma plataforma sigue estando más abajo, así que filtrar por altura sólo
+            // hacía bajar unos centímetros y volver a aterrizar en ella. Cualquier OTRA plataforma
+            // sigue frenando la caída, incluida la de justo debajo.
+            if (_dropCollider != null && hit.collider == _dropCollider) return false;
 
             return true;
         }
@@ -411,7 +413,7 @@ namespace RedMagic.Gameplay
                 IsCrouching = false;
                 _dashTimer = 0f;
                 _knockbackTimer = 0f;
-                _dropTimer = 0f;
+                ClearDropThrough();
                 return;
             }
 
@@ -429,7 +431,7 @@ namespace RedMagic.Gameplay
                 GatherInput();
             }
 
-            if (_dropTimer > 0f) _dropTimer -= Time.deltaTime;
+            UpdateDropThrough();
 
             RunCollisionChecks();
 
@@ -438,7 +440,7 @@ namespace RedMagic.Gameplay
             {
                 _airJumpsUsed = 0;
                 _airDashesUsed = 0;
-                _dropTimer = 0f;   // se ha vuelto a pisar algo: la caída a través ha terminado
+                ClearDropThrough();   // se ha vuelto a pisar algo: la caída a través ha terminado
             }
 
             if (_dashCooldownTimer > 0f) _dashCooldownTimer -= Time.deltaTime;
@@ -542,6 +544,7 @@ namespace RedMagic.Gameplay
             _groundDistance = float.MaxValue;
             _onWalkableSlope = false;
             _onPlatform = false;
+            _groundCollider = null;
             _steepBlockDir = 0;
 
             // Al bajar una rampa los pies se despegan un instante en cada frame. Mientras se venía
@@ -555,6 +558,7 @@ namespace RedMagic.Gameplay
             float bestDistance = float.MaxValue;
             Vector2 bestNormal = Vector2.up;
             bool bestIsPlatform = false;
+            Collider2D bestCollider = null;
             float steepestAngle = 0f;
             Vector2 steepestNormal = Vector2.zero;
 
@@ -576,6 +580,7 @@ namespace RedMagic.Gameplay
                 _groundNormal = bestNormal;
                 _slopeAngle = Vector2.Angle(bestNormal, Vector2.up);
                 _onPlatform = bestIsPlatform;
+                _groundCollider = bestCollider;
                 _onWalkableSlope = enableSlopes && _slopeAngle > 0.5f;
             }
 
@@ -607,6 +612,7 @@ namespace RedMagic.Gameplay
                 bestDistance = hit.distance;
                 bestNormal = hit.normal;
                 bestIsPlatform = isPlatform;
+                bestCollider = hit.collider;
             }
         }
 
@@ -761,13 +767,12 @@ namespace RedMagic.Gameplay
         {
             if (!allowDropThrough || !_input.JumpDown || !_colDown || !_onPlatform) return false;
             if (_input.Y > -0.5f && !_input.CrouchHeld) return false;
+            if (_groundCollider == null) return false;
 
+            // Se ignora ESTA plataforma, la que se está pisando, hasta haberla dejado atrás. El
+            // temporizador es sólo un tope de seguridad por si nunca se sale de ella.
+            _dropCollider = _groundCollider;
             _dropTimer = dropThroughDuration;
-
-            // Altura de la superficie que se abandona. Es lo que distingue "la plataforma que estoy
-            // atravesando" de "la siguiente, más abajo", sin depender de la identidad del collider
-            // (un tilemap compuesto mete todas las plataformas en un único collider).
-            _dropSurfaceY = _raysDown.Start.y - _groundDistance;
 
             // Se deja de estar apoyado en el acto: si no, SnapToGround volvería a pegar los pies a
             // la plataforma este mismo frame y el jugador no llegaría a caer.
@@ -781,6 +786,33 @@ namespace RedMagic.Gameplay
 
             if (_currentVerticalSpeed > 0f) _currentVerticalSpeed = 0f;
             return true;
+        }
+
+        /// <summary>
+        /// Suelta la plataforma que se estaba atravesando en cuanto se ha dejado atrás: cuando la
+        /// cabeza del personaje queda por debajo de ella. Se mide contra los límites del collider,
+        /// así que en una rampa vale igual — hay que haber bajado del todo, no unos centímetros.
+        /// El temporizador sólo es un tope por si algo sale mal.
+        /// </summary>
+        private void UpdateDropThrough()
+        {
+            if (_dropCollider == null) return;
+
+            _dropTimer -= Time.deltaTime;
+            if (_dropTimer <= 0f)
+            {
+                ClearDropThrough();
+                return;
+            }
+
+            float headY = transform.position.y + _characterBounds.center.y + _characterBounds.extents.y;
+            if (headY < _dropCollider.bounds.min.y) ClearDropThrough();
+        }
+
+        private void ClearDropThrough()
+        {
+            _dropCollider = null;
+            _dropTimer = 0f;
         }
 
         // ================================================================ dash
@@ -1073,7 +1105,7 @@ namespace RedMagic.Gameplay
             IsCrouching = false;
             _dashTimer = 0f;
             _knockbackTimer = 0f;
-            _dropTimer = 0f;
+            ClearDropThrough();
         }
 
         /// <summary>Complemento de <see cref="OnDied"/>: devuelve el control tras un respawn.</summary>

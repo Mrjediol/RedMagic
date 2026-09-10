@@ -136,6 +136,13 @@ namespace RedMagic.Enemies
         [Tooltip("Gravedad del cuerpo. Los voladores la ponen a 0 solos.")]
         [Min(0f)] public float gravityScale = 3f;
 
+        [Header("Dormido")]
+        [Tooltip("Empieza dormido en reposo (su clip Idle es el de dormir). Al detectar al " +
+                 "objetivo — o al recibir un golpe — reproduce el clip 'Wake' quieto y después " +
+                 "persigue. Si se rinde, vuelve a donde empezó y se duerme otra vez. Sólo los " +
+                 "arquetipos que se mueven.")]
+        public bool sleepsUntilDetected;
+
         [Header("Vuelo")]
         [Tooltip("Altura sobre el objetivo a la que le gusta quedarse. 0 = va a su misma altura.")]
         public float hoverOffset = 0.5f;
@@ -163,6 +170,21 @@ namespace RedMagic.Enemies
         public Vector2 meleeHitboxSize = new Vector2(1.2f, 1f);
 
         public Vector2 meleeHitboxOffset = new Vector2(0.8f, 0.5f);
+
+        [Header("Ataque · kamikaze")]
+        [Tooltip("El ataque es EXPLOTAR: al llegar a 'attackRange' reproduce el clip de ataque " +
+                 "(la mecha), y en su frame de soltar hace 'attackDamage' en un círculo de " +
+                 "'explosionRadius' y muere. Su clip de muerte ES la explosión, así que el cadáver " +
+                 "no se tiñe. Si lo matan antes, muere sin hacer daño. Vale para cualquier " +
+                 "arquetipo: un Static así es una mina.")]
+        public bool selfDestruct;
+
+        [Tooltip("Radio del daño de la explosión, desde el centro del cuerpo. Algo mayor que " +
+                 "'attackRange' para que un paso atrás durante la mecha no lo esquive gratis.")]
+        [Min(0f)] public float explosionRadius = 1.7f;
+
+        [Tooltip("Amplitud del temblor de cámara al explotar. 0 = sin temblor.")]
+        [Min(0f)] public float explosionShake = 0.2f;
 
         [Header("Ataque · a distancia")]
         [Tooltip("El proyectil que lanza. Con 'prefab' vacío se construye uno en código con el " +
@@ -199,6 +221,7 @@ namespace RedMagic.Enemies
         [Min(0.01f)] public float attackAnimSpeed = 1f;
         [Min(0.01f)] public float hurtAnimSpeed = 1f;
         [Min(0.01f)] public float deathAnimSpeed = 1f;
+        [Min(0.01f)] public float wakeAnimSpeed = 1f;
 
         // ============================================================ objetivo
 
@@ -254,7 +277,10 @@ namespace RedMagic.Enemies
         /// que se le había cambiado el arquetipo desde Ranged seguía huyendo con un
         /// <see cref="personalSpace"/> heredado que ya no se veía por ninguna parte.
         /// </summary>
-        public bool Retreats => Moves && IsRanged && personalSpace > 0f;
+        public bool Retreats => Moves && IsRanged && personalSpace > 0f && !selfDestruct;
+
+        /// <summary>True si duerme hasta detectar al objetivo. Un Static no detecta, así que no.</summary>
+        public bool Sleeps => Moves && sleepsUntilDetected;
 
         /// <summary>Copia profunda: la ficha del pipeline no debe compartir instancia con el prefab.</summary>
         public EnemyTuning Clone()

@@ -98,6 +98,7 @@ MonoBehaviour:
     stopAtLedges: 1
     ledgeProbeDepth: 0.6
     gravityScale: 3
+    sleepsUntilDetected: 0
     hoverOffset: 0.5
     attackDamage: 10
     attackCooldown: 1.5
@@ -106,6 +107,9 @@ MonoBehaviour:
     rootedWhileAttacking: 1
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
+    selfDestruct: 0
+    explosionRadius: 1.7
+    explosionShake: 0.2
     projectile:
       prefab: {fileID: 231520291235916043, guid: 86f7a99a4550ca6459f9fc86d8e6b147, type: 3}
       speed: 12
@@ -129,6 +133,7 @@ MonoBehaviour:
     attackAnimSpeed: 1
     hurtAnimSpeed: 1
     deathAnimSpeed: 1
+    wakeAnimSpeed: 1
     targetTag: Player
     hitLayers:
       serializedVersion: 2
@@ -258,6 +263,7 @@ MonoBehaviour:
   linger: 0.6
   fadeDuration: 0.35
   corpseTint: {r: 0.35, g: 0.1, b: 0.12, a: 0.75}
+  tintOnDeath: 1
   destroyWhenDone: 1
 --- !u!114 &7461750178448897431
 MonoBehaviour:

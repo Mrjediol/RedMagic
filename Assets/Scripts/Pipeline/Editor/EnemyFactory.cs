@@ -56,6 +56,11 @@ namespace RedMagic.Pipeline.EditorTools
             ApplyProjectile(root, recipe, stats, log);
             Retire(root, log);
 
+            // Otra vez al final: al sembrar aún no existían el collider ni el Corpse, y lo que
+            // EnemyStats les empuja (fase por el terreno, tinte del cadáver) quedaba sólo en
+            // runtime. Así el prefab guardado ya dice la verdad.
+            stats.Apply();
+
             var saved = PrefabUtility.SaveAsPrefabAsset(root, path);
             Object.DestroyImmediate(root);
 

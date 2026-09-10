@@ -38,6 +38,8 @@ namespace RedMagic.Enemies
             Retreat,
             Attacking,
             Cooldown,
+            Waking,
+            Returning,
             Dead,
         }
 
@@ -59,6 +61,15 @@ namespace RedMagic.Enemies
         private float _loseInterestTimer;
         private bool _retreating;
         private bool _retreatBlocked;
+
+        /// <summary>Dormido: quieto en reposo hasta detectar (ver <see cref="EnemyTuning.sleepsUntilDetected"/>).</summary>
+        private bool _asleep;
+
+        /// <summary>Donde empezó. Un dormilón vuelve aquí a dormirse cuando se rinde.</summary>
+        private Vector2 _home;
+
+        /// <summary>Distancia a <see cref="_home"/> a la que se da por llegado.</summary>
+        private const float HomeArrival = 0.15f;
 
         /// <summary>El suelo bajo los pies, medido una vez por paso de física. Vacío en un volador.</summary>
         private GroundContact _ground;
@@ -110,8 +121,15 @@ namespace RedMagic.Enemies
             _loseInterestTimer = 0f;
             _retreating = false;
             _retreatBlocked = false;
+            _asleep = T.Sleeps;
+            _home = transform.position;
 
-            if (_animation != null) _animation.AttackFinished += OnAttackFinished;
+            if (_animation != null)
+            {
+                _animation.AttackFinished += OnAttackFinished;
+                _animation.WakeFinished += OnWakeFinished;
+            }
+
             if (_health == null) return;
 
             _health.Damaged += OnDamaged;
@@ -120,7 +138,12 @@ namespace RedMagic.Enemies
 
         private void OnDisable()
         {
-            if (_animation != null) _animation.AttackFinished -= OnAttackFinished;
+            if (_animation != null)
+            {
+                _animation.AttackFinished -= OnAttackFinished;
+                _animation.WakeFinished -= OnWakeFinished;
+            }
+
             if (_health == null) return;
 
             _health.Damaged -= OnDamaged;
@@ -137,12 +160,13 @@ namespace RedMagic.Enemies
             if (Current == State.Dead || !GameStateManager.CanPlayerAct) return;
 
             // Un ataque en curso no se interrumpe: manda la animación hasta que avise de que acabó.
-            if (Current == State.Attacking) return;
+            // Despertarse tampoco: es el aviso de que viene, y cortarlo lo hace ilegible.
+            if (Current is State.Attacking or State.Waking) return;
 
             var target = ResolveTarget();
             if (target == null)
             {
-                Enter(State.Idle);
+                Disengage();
                 return;
             }
 
@@ -156,6 +180,15 @@ namespace RedMagic.Enemies
 
             if (T.Moves) UpdateAwareness(distance, reachable);
 
+            // Dormido no hace nada más que esperar: el mismo enganche de siempre, pero lo que
+            // dispara es el despertar, no la persecución.
+            if (_asleep)
+            {
+                if (_seenTarget) BeginWake(toTarget);
+                else Enter(State.Idle);
+                return;
+            }
+
             // Un salto o un escalón cruzan 'verticalTolerance' un instante: eso NO es motivo para
             // que un enemigo que persigue se plante en seco. Para los que se mueven manda sólo el
             // enganche (_seenTarget), que se suelta al salir del radio de detección durante
@@ -164,7 +197,7 @@ namespace RedMagic.Enemies
             bool disengaged = T.Moves ? !_seenTarget : !reachable;
             if (disengaged)
             {
-                Enter(State.Idle);
+                Disengage();
                 return;
             }
 
@@ -285,7 +318,19 @@ namespace RedMagic.Enemies
                     _retreatBlocked = !MoveToward(Target(), -T.retreatSpeed);
                     break;
 
-                case State.Attacking when T.rootedWhileAttacking:
+                case State.Returning:
+                    // Al llegar (o si un borde le corta el camino) se duerme donde esté.
+                    if (!ReturnHome()) FallAsleep();
+                    break;
+
+                // Sin anclar sigue persiguiendo durante el gesto: es lo que pide un kamikaze, que
+                // no debe dejarse esquivar con un paso atrás mientras arde la mecha.
+                case State.Attacking:
+                    if (T.rootedWhileAttacking) Stop();
+                    else MoveToward(Target(), T.moveSpeed);
+                    break;
+
+                case State.Waking:
                 case State.Idle:
                 case State.Cooldown:
                     Stop();
@@ -303,7 +348,33 @@ namespace RedMagic.Enemies
         {
             if (target == null) { Stop(); return false; }
 
-            Vector2 toTarget = (Vector2)target.position - (Vector2)transform.position;
+            return MoveAlong((Vector2)target.position - (Vector2)transform.position, speed, T.hoverOffset);
+        }
+
+        /// <summary>
+        /// Un paso de vuelta a <see cref="_home"/>. False al llegar, o si un borde o una pared le
+        /// cortan el camino.
+        /// </summary>
+        private bool ReturnHome()
+        {
+            Vector2 toHome = _home - _body.position;
+            float remaining = T.Flies ? toHome.magnitude : Mathf.Abs(toHome.x);
+
+            if (remaining <= HomeArrival)
+            {
+                if (T.Flies) _body.position = _home;
+                Stop();
+                return false;
+            }
+
+            // Sin 'hoverOffset': vuelve a SU sitio exacto, no a flotar por encima de él.
+            return MoveAlong(toHome, T.moveSpeed, 0f);
+        }
+
+        /// <summary>Un paso en la dirección de <paramref name="toGoal"/>. Ver <see cref="MoveToward"/>.</summary>
+        private bool MoveAlong(Vector2 toGoal, float speed, float hover)
+        {
+            Vector2 toTarget = toGoal;
             if (speed >= 0f) FaceTowards(toTarget);
 
             if (T.Flies)
@@ -311,7 +382,7 @@ namespace RedMagic.Enemies
                 // Para un volador el terreno no existe: va recto al objetivo. Ya no esquiva nada
                 // porque ya no choca con nada (EnemyStats le excluye la capa de terreno), y el
                 // esquive por rayos que había aquí sólo servía para bordear plataformas.
-                Vector2 desired = toTarget + Vector2.up * T.hoverOffset;
+                Vector2 desired = toTarget + Vector2.up * hover;
                 if (desired.sqrMagnitude < 0.0001f) { Stop(); return false; }
 
                 _body.linearVelocity = desired.normalized * speed;
@@ -402,7 +473,57 @@ namespace RedMagic.Enemies
             Current = next;
 
             if (_animation != null)
-                _animation.SetMoving(next is State.Approach or State.Retreat);
+                _animation.SetMoving(next is State.Approach or State.Retreat or State.Returning);
+        }
+
+        /// <summary>
+        /// Sin objetivo que perseguir. El normal se queda en reposo donde esté; el dormilón vuelve
+        /// a su sitio a dormirse — su reposo es el clip de dormir, y dormido en mitad de la
+        /// nada se leería como un fallo.
+        /// </summary>
+        private void Disengage()
+        {
+            if (T.Sleeps && !_asleep) Enter(State.Returning);
+            else Enter(State.Idle);
+        }
+
+        private void FallAsleep()
+        {
+            _asleep = true;
+            _seenTarget = false;
+            _loseInterestTimer = 0f;
+            Enter(State.Idle);
+        }
+
+        /// <summary>Se despierta: queda enganchado y reproduce 'Wake' quieto antes de moverse.</summary>
+        private void BeginWake(Vector2 toTarget)
+        {
+            _asleep = false;
+            _seenTarget = true;
+            _loseInterestTimer = 0f;
+
+            Enter(State.Waking);
+            Stop();
+            FaceTowards(toTarget);
+
+            if (_animation != null) _animation.PlayWake();
+            else OnWakeFinished();
+        }
+
+        private void OnWakeFinished()
+        {
+            if (Current != State.Waking) return;
+
+            // Directo a moverse, sin pasar por el reposo: el reposo de un dormilón es el clip de
+            // dormir, y un frame de él entre despertar y volar se ve como un parpadeo.
+            if (_target != null)
+            {
+                Enter(State.Approach);
+                return;
+            }
+
+            _seenTarget = false;
+            Enter(State.Returning);
         }
 
         private void BeginAttack(Vector2 toTarget)
@@ -482,6 +603,10 @@ namespace RedMagic.Enemies
         {
             _sound?.Play("OnHit");
             if (_animation != null) _animation.PlayHurt();
+
+            // Un golpe despierta a un dormilón aunque quien dispara esté fuera de su detección.
+            if (_asleep && _health != null && !_health.IsDead)
+                BeginWake(_target != null ? (Vector2)(_target.position - transform.position) : Vector2.zero);
         }
 
         private void OnCollisionStay2D(Collision2D collision)

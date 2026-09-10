@@ -59,6 +59,10 @@ namespace RedMagic.Enemies
                                     tuning.knockbackDuration, tuning.knockbackResistance);
             }
 
+            // El clip de muerte de un kamikaze ES la explosión: teñirlo de cadáver lo ensuciaría.
+            var corpse = GetComponent<Corpse>();
+            if (corpse != null) corpse.SetTintOnDeath(!tuning.selfDestruct);
+
             var body = GetComponent<Rigidbody2D>();
             if (body != null) body.gravityScale = tuning.Flies ? 0f : tuning.gravityScale;
 
@@ -119,6 +123,13 @@ namespace RedMagic.Enemies
             // Ataque: lo tienen todos.
             Gizmos.color = new Color(1f, 0.35f, 0.2f, 0.9f);
             Gizmos.DrawWireSphere(origin, tuning.attackRange);
+
+            // Explosión: sólo el kamikaze.
+            if (tuning.selfDestruct)
+            {
+                Gizmos.color = new Color(0.4f, 0.9f, 1f, 0.9f);
+                Gizmos.DrawWireSphere(origin, tuning.explosionRadius);
+            }
 
             // Espacio propio: sólo los que huyen (se mueven y disparan).
             if (tuning.Retreats)

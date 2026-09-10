@@ -1,5 +1,6 @@
 using RedMagic.Abilities;
 using RedMagic.Combat;
+using RedMagic.Gameplay;
 using UnityEngine;
 
 namespace RedMagic.Enemies
@@ -24,6 +25,7 @@ namespace RedMagic.Enemies
         private EnemyStats _stats;
         private EnemyAnimation _animation;
         private Health _health;
+        private Collider2D _collider;
 
         /// <summary>
         /// <b>Punto</b> al que va el golpe, no dirección. Lo fija el cerebro al empezar el ataque y
@@ -42,6 +44,7 @@ namespace RedMagic.Enemies
             _stats = GetComponent<EnemyStats>();
             _animation = GetComponent<EnemyAnimation>();
             _health = GetComponent<Health>();
+            _collider = GetComponent<Collider2D>();
         }
 
         private void OnEnable()
@@ -88,8 +91,28 @@ namespace RedMagic.Enemies
             var tuning = _stats.Tuning;
             if (_health != null && _health.IsDead) return;
 
-            if (tuning.IsRanged) Shoot(tuning);
+            if (tuning.selfDestruct) Explode(tuning);
+            else if (tuning.IsRanged) Shoot(tuning);
             else Strike(tuning);
+        }
+
+        // ============================================================ kamikaze
+
+        /// <summary>
+        /// Daño en círculo alrededor del cuerpo y muerte. La explosión que se ve es el clip de
+        /// muerte, que arranca con <see cref="Health.Die"/>: por eso aquí no se instancia ningún FX.
+        /// </summary>
+        private void Explode(EnemyTuning tuning)
+        {
+            Vector2 center = _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
+            var context = Context(tuning, new Vector2(Facing(), 0f), Facing());
+
+            AbilityHit.DamageCircle(context, center, tuning.explosionRadius,
+                                    tuning.attackDamage, tuning.attackKnockbackMultiplier);
+
+            if (tuning.explosionShake > 0f) CameraFollow.ShakeAll(tuning.explosionShake, 0.25f);
+
+            if (_health != null) _health.Die();
         }
 
         // ============================================================ a distancia
@@ -151,7 +174,7 @@ namespace RedMagic.Enemies
         private void OnDrawGizmosSelected()
         {
             var stats = GetComponent<EnemyStats>();
-            if (stats == null || stats.Tuning.IsRanged) return;
+            if (stats == null || stats.Tuning.IsRanged || stats.Tuning.selfDestruct) return;
 
             var tuning = stats.Tuning;
             Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.5f);

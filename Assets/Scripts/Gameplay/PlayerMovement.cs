@@ -520,16 +520,30 @@ namespace RedMagic.Gameplay
 
             _colDown = groundedCheck;
 
-            _colUp = RunDetection(_raysUp);
-            _colLeft = RunDetection(_raysLeft);
-            _colRight = RunDetection(_raysRight);
+            _colUp = RunDetection(_raysUp, false);
+            _colLeft = RunDetection(_raysLeft, true);
+            _colRight = RunDetection(_raysRight, true);
 
             // Ojo: arriba / izquierda / derecha miran SÓLO la capa sólida. Es lo que hace que una
             // plataforma se pueda atravesar de lado y de abajo arriba sin ningún caso especial.
-            bool RunDetection(RayRange range) =>
+            //
+            // De lado, una rampa transitable NO es pared: el rayo lateral más bajo la toca en cuanto
+            // se empieza a subir (a 45º, a 1 cm del borde) y frenaba en seco al pie de la cuesta.
+            // Por eso las rampas sólo funcionaban en la capa de plataformas, que estos rayos no ven.
+            bool RunDetection(RayRange range, bool ignoreWalkable) =>
                 EvaluateRayPositions(range).Any(point =>
-                    Physics2D.Raycast(point, range.Dir, _detectionRayLength, _groundLayer));
+                {
+                    var hit = Physics2D.Raycast(point, range.Dir, _detectionRayLength, _groundLayer);
+                    return hit && !(ignoreWalkable && IsWalkableSurface(hit));
+                });
         }
+
+        /// <summary>
+        /// Cara que se puede pisar: inclinación dentro de <c>maxSlopeAngle</c>. Un impacto a distancia
+        /// 0 (el rayo nació dentro del collider) no dice nada de la cara, así que cuenta como pared.
+        /// </summary>
+        private bool IsWalkableSurface(RaycastHit2D hit) =>
+            enableSlopes && hit.distance > 0f && Vector2.Angle(hit.normal, Vector2.up) <= maxSlopeAngle;
 
         /// <summary>
         /// Sensor de suelo. Además de decir si hay apoyo, deja anotada la normal de la superficie
@@ -964,15 +978,22 @@ namespace RedMagic.Gameplay
             // En rampa el desplazamiento sigue la superficie en vez de ser horizontal puro.
             var move = (Vector3)ProjectOnSlope(RawMovement) * Time.deltaTime;
 
-            // El barrido de colisión no ve las plataformas: aterrizar sobre ellas y subir por las
-            // inclinadas se resuelve aquí.
-            move = ResolvePlatform(move);
+            // Subir el pie por una rampa (de plataforma o de suelo sólido) y aterrizar sobre las
+            // plataformas, que el barrido de colisión no ve, se resuelve aquí.
+            move = ResolveSurface(move, out float sweepLift);
 
             var furthestPoint = pos + move;
 
             // La caja del barrido va encogida: apoyado en el suelo la caja a tamaño real entra
             // dentro del margen de contacto de Physics2D y daría un choque falso cada frame.
+            // En rampa además se le sube la base: la caja es plana y la cuesta no, así que su
+            // esquina del lado de subida se mete en el suelo y el barrido lo leía como un muro.
+            // Los pies ya los ha colocado ResolveSurface; al barrido sólo le toca ver paredes.
             var solverSize = (Vector2)_characterBounds.size - Vector2.one * solverSkin;
+            solverSize.y -= sweepLift;
+            var solverOffset = new Vector3(0f, sweepLift * 0.5f);
+            furthestPoint += solverOffset;
+            pos += solverOffset;
 
             var hit = Physics2D.OverlapBox(furthestPoint, solverSize, 0, _groundLayer);
             if (!hit)
@@ -981,7 +1002,7 @@ namespace RedMagic.Gameplay
                 return;
             }
 
-            var positionToMoveTo = transform.position;
+            var positionToMoveTo = transform.position + solverOffset;
             for (int i = 1; i < _freeColliderIterations; i++)
             {
                 var t = (float)i / _freeColliderIterations;
@@ -989,7 +1010,7 @@ namespace RedMagic.Gameplay
 
                 if (Physics2D.OverlapBox(posToTry, solverSize, 0, _groundLayer))
                 {
-                    transform.position = positionToMoveTo;
+                    transform.position = positionToMoveTo - solverOffset;
 
                     if (i == 1)
                     {
@@ -1020,22 +1041,25 @@ namespace RedMagic.Gameplay
         }
 
         /// <summary>
-        /// Resuelve el contacto contra las plataformas de un solo sentido. El barrido de
-        /// <see cref="MoveCharacter"/> sólo conoce la capa sólida, así que aquí se hacen las dos
-        /// cosas que él haría si las viera:
-        ///  - <b>frenar la caída</b> sobre la cara superior (el sensor de suelo, de 0.1, no alcanza
-        ///    a un frame de caída a 40 u/s),
-        ///  - <b>subir el pie</b> hasta la superficie al recorrer una plataforma inclinada. Sin
-        ///    esto, un paso grande (ir rápido) mete los pies dentro del collider; el rayo del
-        ///    sensor nace ya dentro, Physics2D devuelve un impacto a distancia 0 que no cuenta como
-        ///    suelo, y el personaje se cae a través de la rampa. Yendo despacio el paso nunca llega
-        ///    a penetrar, que es justo por qué el fallo sólo aparecía a velocidad.
+        /// Coloca los pies sobre la superficie en la columna de <b>destino</b> del paso:
+        ///  - <b>subir el pie</b> hasta la superficie al recorrer una rampa, sea de plataforma o
+        ///    de suelo sólido. Sin esto, un paso grande (ir rápido) mete los pies dentro del
+        ///    collider; el rayo del sensor nace ya dentro, Physics2D devuelve un impacto a
+        ///    distancia 0 que no cuenta como suelo, y el personaje se cae a través de la rampa.
+        ///  - <b>frenar la caída</b> sobre la cara superior de una plataforma (el sensor de suelo,
+        ///    de 0.1, no alcanza a un frame de caída a 40 u/s). En el suelo sólido eso ya lo hace
+        ///    el barrido de <see cref="MoveCharacter"/>, así que ahí sólo se atiende apoyado.
         ///
-        /// Se prueba en la columna de <b>destino</b> del paso, no en la de origen.
+        /// <paramref name="sweepLift"/> es cuánto debe subir la base de la caja del barrido para
+        /// no leer como muro la rampa sólida que pisa: 0 en llano, así que ahí nada cambia.
         /// </summary>
-        private Vector3 ResolvePlatform(Vector3 move)
+        private Vector3 ResolveSurface(Vector3 move, out float sweepLift)
         {
-            if (!PlatformsActive) return move;
+            sweepLift = 0f;
+
+            bool platforms = PlatformsActive;
+            bool ground = enableSlopes && _colDown && _currentVerticalSpeed <= 0f;
+            if (!platforms && !ground) return move;
 
             // Cuánto puede subir el pie en un frame: lo que gana la rampa más inclinada admitida a
             // lo largo del avance horizontal. Sólo apoyado; en el aire esto es sólo el aterrizaje.
@@ -1048,16 +1072,35 @@ namespace RedMagic.Gameplay
             float destFeetY = feetY + move.y;
             float bestSurfaceY = float.MinValue;
 
+            // La rampa sólida más inclinada bajo los pies, ahora o en el destino del paso.
+            float groundAngle = _onWalkableSlope && !_onPlatform ? _slopeAngle : 0f;
+
             foreach (var point in EvaluateRayPositions(_raysDown))
             {
                 var origin = new Vector2(point.x + move.x, feetY + rise);
-                var hit = Physics2D.Raycast(origin, Vector2.down, rise + fall, _platformLayer);
 
-                if (!AcceptPlatformHit(hit)) continue;
-                if (Vector2.Angle(hit.normal, Vector2.up) > maxSlopeAngle) continue;   // pared, no rampa
+                if (platforms)
+                {
+                    var hit = Physics2D.Raycast(origin, Vector2.down, rise + fall, _platformLayer);
+                    if (AcceptPlatformHit(hit) && Vector2.Angle(hit.normal, Vector2.up) <= maxSlopeAngle)
+                        bestSurfaceY = Mathf.Max(bestSurfaceY, hit.point.y);
+                }
 
-                if (hit.point.y > bestSurfaceY) bestSurfaceY = hit.point.y;
+                if (ground)
+                {
+                    // Pared o escalón (rayo nacido dentro): no es rampa, lo frena el barrido.
+                    var hit = Physics2D.Raycast(origin, Vector2.down, rise + fall, _groundLayer);
+                    if (!IsWalkableSurface(hit)) continue;
+
+                    bestSurfaceY = Mathf.Max(bestSurfaceY, hit.point.y);
+                    groundAngle = Mathf.Max(groundAngle, Vector2.Angle(hit.normal, Vector2.up));
+                }
             }
+
+            // La esquina de la caja va '_rayBuffer' más afuera que el último rayo de pies: en una
+            // cuesta queda como mucho esa distancia × pendiente por debajo de la superficie.
+            if (groundAngle > 0.5f)
+                sweepLift = _rayBuffer * Mathf.Tan(groundAngle * Mathf.Deg2Rad) + groundSkin;
 
             if (bestSurfaceY == float.MinValue) return move;
 

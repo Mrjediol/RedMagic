@@ -17,15 +17,15 @@ MonoBehaviour:
     a la cara, in\xFAtil a media sala. Te obliga a entrar. Nace de hielo."
   icon: {fileID: 1354624353278725195, guid: ea42e9ba2d9a88a4cac7d584a3e5d084, type: 3}
   accent: {r: 0.75, g: 0.85, b: 1, a: 1}
-  baseDamage: 9
-  baseCooldown: 2
+  baseDamage: 20
+  baseCooldown: 0.2
   baseKnockbackMultiplier: 0.6
   baseShot:
     delivery: 0
-    count: 5
-    spreadAngle: 34
+    count: 10
+    spreadAngle: 50
     randomSpread: 3
-    speed: 16
+    speed: 23.1
     lifetime: 0.45
     size: {x: 0.22, y: 0.22}
     muzzleOffset: {x: 0.65, y: 0.1}

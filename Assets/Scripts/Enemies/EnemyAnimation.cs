@@ -31,6 +31,7 @@ namespace RedMagic.Enemies
         public const string Attack = "Attack";
         public const string Hurt = "Hurt";
         public const string Death = "Death";
+        public const string Wake = "Wake";
 
         [Tooltip("Vacío = se busca en este objeto y en sus hijos.")]
         [SerializeField] private Animator animator;
@@ -45,17 +46,21 @@ namespace RedMagic.Enemies
         private static readonly int AttackKey = Animator.StringToHash("Attack");
         private static readonly int HurtKey = Animator.StringToHash("Hurt");
         private static readonly int DeadKey = Animator.StringToHash("Dead");
+        private static readonly int WakeKey = Animator.StringToHash("Wake");
 
         private static readonly int IdleSpeedKey = Animator.StringToHash("IdleSpeed");
         private static readonly int WalkSpeedKey = Animator.StringToHash("WalkSpeed");
         private static readonly int AttackSpeedKey = Animator.StringToHash("AttackSpeed");
         private static readonly int HurtSpeedKey = Animator.StringToHash("HurtSpeed");
         private static readonly int DeathSpeedKey = Animator.StringToHash("DeathSpeed");
+        private static readonly int WakeSpeedKey = Animator.StringToHash("WakeSpeed");
 
         private EnemyStats _stats;
         private float _fallbackRelease = -1f;
         private float _fallbackFinish = -1f;
+        private float _wakeFinish = -1f;
         private bool _released;
+        private bool _hasWakeTrigger;
 
         /// <summary>
         /// Qué parámetros de velocidad existen <b>de verdad</b> en este controller. No todos los
@@ -65,17 +70,21 @@ namespace RedMagic.Enemies
         /// Update de CADA enemigo es lo que se comió los fps: un warning con stack trace es caro,
         /// y aquí salían decenas por segundo. Se comprueba una vez en Awake y punto.
         /// </summary>
-        private bool _hasIdleSpeed, _hasWalkSpeed, _hasAttackSpeed, _hasHurtSpeed, _hasDeathSpeed;
+        private bool _hasIdleSpeed, _hasWalkSpeed, _hasAttackSpeed, _hasHurtSpeed, _hasDeathSpeed,
+                     _hasWakeSpeed;
 
         /// <summary>Último valor aplicado de cada uno, para no repetir la llamada nativa si no cambia.</summary>
         private float _lastIdle = float.NaN, _lastWalk = float.NaN, _lastAttack = float.NaN,
-                      _lastHurt = float.NaN, _lastDeath = float.NaN;
+                      _lastHurt = float.NaN, _lastDeath = float.NaN, _lastWake = float.NaN;
 
         /// <summary>El frame en el que el golpe sale. Lo escucha el ataque.</summary>
         public event Action AttackReleased;
 
         /// <summary>El clip de ataque ha terminado. Lo escucha el cerebro para volver al reposo.</summary>
         public event Action AttackFinished;
+
+        /// <summary>El clip de despertar ha terminado. Lo escucha el cerebro para echar a moverse.</summary>
+        public event Action WakeFinished;
 
         /// <summary>True si hay un Animator de verdad (y por tanto eventos de animación).</summary>
         public bool HasAnimator => animator != null && animator.runtimeAnimatorController != null;
@@ -98,6 +107,9 @@ namespace RedMagic.Enemies
 
             foreach (var p in animator.parameters)
             {
+                if (p.type == AnimatorControllerParameterType.Trigger && p.nameHash == WakeKey)
+                    _hasWakeTrigger = true;
+
                 if (p.type != AnimatorControllerParameterType.Float) continue;
 
                 if (p.nameHash == IdleSpeedKey) _hasIdleSpeed = true;
@@ -105,6 +117,7 @@ namespace RedMagic.Enemies
                 else if (p.nameHash == AttackSpeedKey) _hasAttackSpeed = true;
                 else if (p.nameHash == HurtSpeedKey) _hasHurtSpeed = true;
                 else if (p.nameHash == DeathSpeedKey) _hasDeathSpeed = true;
+                else if (p.nameHash == WakeSpeedKey) _hasWakeSpeed = true;
             }
         }
 
@@ -112,6 +125,7 @@ namespace RedMagic.Enemies
         {
             _fallbackRelease = -1f;
             _fallbackFinish = -1f;
+            _wakeFinish = -1f;
             _released = false;
         }
 
@@ -130,6 +144,7 @@ namespace RedMagic.Enemies
             SetSpeed(_hasAttackSpeed, AttackSpeedKey, t.attackAnimSpeed, ref _lastAttack);
             SetSpeed(_hasHurtSpeed, HurtSpeedKey, t.hurtAnimSpeed, ref _lastHurt);
             SetSpeed(_hasDeathSpeed, DeathSpeedKey, t.deathAnimSpeed, ref _lastDeath);
+            SetSpeed(_hasWakeSpeed, WakeSpeedKey, t.wakeAnimSpeed, ref _lastWake);
         }
 
         private void SetSpeed(bool exists, int key, float value, ref float last)
@@ -167,7 +182,7 @@ namespace RedMagic.Enemies
             if (HasAnimator)
             {
                 animator.SetTrigger(AttackKey);
-                ArmFallback(AttackClipLength());
+                ArmFallback(ClipLength(Attack, _stats != null ? _stats.Tuning.attackAnimSpeed : 1f));
                 return;
             }
 
@@ -182,6 +197,29 @@ namespace RedMagic.Enemies
             // que el golpe exista aunque el arte todavía no.
             Release();
             Finish();
+        }
+
+        /// <summary>
+        /// Despertar. Avisa con <see cref="WakeFinished"/> al acabar el clip; sin clip de
+        /// despertar avisa en el acto, para que el enemigo no se quede dormido para siempre.
+        /// </summary>
+        public void PlayWake()
+        {
+            if (HasAnimator && _hasWakeTrigger)
+            {
+                animator.SetTrigger(WakeKey);
+                _wakeFinish = Time.time + ClipLength(Wake, _stats != null ? _stats.Tuning.wakeAnimSpeed : 1f);
+                return;
+            }
+
+            if (flipbook != null && flipbook.Has(Wake))
+            {
+                flipbook.Play(Wake, true);
+                _wakeFinish = Time.time + flipbook.DurationOf(Wake);
+                return;
+            }
+
+            WakeFinished?.Invoke();
         }
 
         public void PlayHurt()
@@ -248,18 +286,23 @@ namespace RedMagic.Enemies
         {
             if (_fallbackRelease > 0f && Time.time >= _fallbackRelease) Release();
             if (_fallbackFinish > 0f && Time.time >= _fallbackFinish) Finish();
+
+            if (_wakeFinish > 0f && Time.time >= _wakeFinish)
+            {
+                _wakeFinish = -1f;
+                WakeFinished?.Invoke();
+            }
         }
 
-        private float AttackClipLength()
+        /// <summary>Duración real del clip del estado, ya dividida por su multiplicador de velocidad.</summary>
+        private float ClipLength(string state, float speedMultiplier)
         {
             if (!HasAnimator) return 0f;
 
             foreach (var clip in animator.runtimeAnimatorController.animationClips)
             {
-                if (clip == null || !clip.name.EndsWith(Attack, StringComparison.Ordinal)) continue;
-
-                float speed = _stats != null ? Mathf.Max(0.01f, _stats.Tuning.attackAnimSpeed) : 1f;
-                return clip.length / speed;
+                if (clip == null || !clip.name.EndsWith(state, StringComparison.Ordinal)) continue;
+                return clip.length / Mathf.Max(0.01f, speedMultiplier);
             }
 
             return 0f;

@@ -31,7 +31,19 @@ namespace RedMagic.Enemies.EditorTools
                 ? value is EnemyArchetype.Ranged or EnemyArchetype.FlyingRanged
                 : (AttackKind)staticAttack.enumValueIndex == AttackKind.Ranged;
 
+            bool sleeps = moves && tuning.FindPropertyRelative("sleepsUntilDetected").boolValue;
+            bool explodes = tuning.FindPropertyRelative("selfDestruct").boolValue;
+
             EditorGUILayout.HelpBox(Describe(value), MessageType.Info);
+            if (sleeps)
+                EditorGUILayout.HelpBox("Dormido: su Idle es dormir. Al detectar (o al recibir un " +
+                                        "golpe) reproduce 'Wake' quieto y persigue; al rendirse " +
+                                        "vuelve a su sitio y se duerme.", MessageType.None);
+            if (explodes)
+                EditorGUILayout.HelpBox("Kamikaze: al llegar a 'attackRange' reproduce el ataque " +
+                                        "(la mecha) y explota — 'attackDamage' en " +
+                                        "'explosionRadius' — y muere. Su clip de muerte es la " +
+                                        "explosión.", MessageType.None);
 
             var iterator = tuning.Copy();
             var end = iterator.GetEndProperty();
@@ -40,7 +52,7 @@ namespace RedMagic.Enemies.EditorTools
             while (iterator.NextVisible(first) && !SerializedProperty.EqualContents(iterator, end))
             {
                 first = false;
-                if (Hidden(iterator.name, flies, ranged, moves)) continue;
+                if (Hidden(iterator.name, flies, ranged && !explodes, moves, sleeps, explodes)) continue;
 
                 EditorGUILayout.PropertyField(iterator, true);
             }
@@ -52,10 +64,25 @@ namespace RedMagic.Enemies.EditorTools
                 foreach (var t in targets) ((EnemyStats)t).Apply();
         }
 
-        private static bool Hidden(string field, bool flies, bool ranged, bool moves)
+        private static bool Hidden(string field, bool flies, bool ranged, bool moves, bool sleeps,
+                                   bool explodes)
         {
             switch (field)
             {
+                case "sleepsUntilDetected":
+                    return !moves;
+
+                case "wakeAnimSpeed":
+                    return !sleeps;
+
+                case "explosionRadius":
+                case "explosionShake":
+                    return !explodes;
+
+                // Muere al primer ataque: ni enfriamiento ni caja de melé.
+                case "attackCooldown":
+                    return explodes;
+
                 // Los que se mueven ya dicen en su nombre si disparan o golpean.
                 case "staticAttack":
                     return moves;
@@ -80,7 +107,7 @@ namespace RedMagic.Enemies.EditorTools
 
                 case "meleeHitboxSize":
                 case "meleeHitboxOffset":
-                    return ranged;
+                    return ranged || explodes;
 
                 case "projectile":
                 case "aimAtTarget":

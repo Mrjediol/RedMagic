@@ -34,6 +34,9 @@ namespace RedMagic.Pipeline.EditorTools
         public const string Hurt = "Hurt";
         public const string Death = "Death";
 
+        /// <summary>Despertar de un enemigo dormido: Idle —(trigger Wake)→ Wake —(fin)→ Walk.</summary>
+        public const string Wake = "Wake";
+
         /// <summary>Hijo que lleva el <see cref="SpriteRenderer"/>, visto desde la raíz.</summary>
         public const string RendererPath = "Sprite";
 
@@ -286,6 +289,7 @@ namespace RedMagic.Pipeline.EditorTools
             EnsureParameter(controller, "Attack", AnimatorControllerParameterType.Trigger);
             EnsureParameter(controller, "Hurt", AnimatorControllerParameterType.Trigger);
             EnsureParameter(controller, "Dead", AnimatorControllerParameterType.Bool);
+            if (clips.ContainsKey(Wake)) EnsureParameter(controller, Wake, AnimatorControllerParameterType.Trigger);
 
             foreach (var state in clips.Keys)
                 EnsureParameter(controller, SpeedParameter(state), AnimatorControllerParameterType.Float, 1f);
@@ -313,6 +317,7 @@ namespace RedMagic.Pipeline.EditorTools
             if (states.TryGetValue(Idle, out var idle)) machine.defaultState = idle;
 
             if (created || machine.anyStateTransitions.Length == 0) WireTransitions(machine, states, log);
+            WireWake(states, log);
 
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();
@@ -377,6 +382,41 @@ namespace RedMagic.Pipeline.EditorTools
             }
 
             log.AppendLine("  transiciones por defecto cableadas.");
+        }
+
+        /// <summary>
+        /// Dormir → despertar → moverse. Aparte de <see cref="WireTransitions"/> y mirando lo que
+        /// ya hay, para que añadir una fila 'Wake' a un controller existente también la cablee.
+        ///
+        /// Wake sale a Walk por tiempo de salida <b>sin condición</b>: despertar siempre acaba en
+        /// moverse (perseguir o volver a casa), y pasar por Idle — que en un dormilón es el clip
+        /// de dormir — metería un frame de parpadeo entre despertar y echar a volar.
+        /// </summary>
+        private static void WireWake(Dictionary<string, AnimatorState> states, StringBuilder log)
+        {
+            if (!states.TryGetValue(Wake, out var wake) || !states.TryGetValue(Idle, out var idle)) return;
+
+            bool entered = false;
+            foreach (var t in idle.transitions)
+                if (t.destinationState == wake) { entered = true; break; }
+
+            if (!entered)
+            {
+                var enter = idle.AddTransition(wake);
+                enter.AddCondition(AnimatorConditionMode.If, 0f, Wake);
+                enter.hasExitTime = false;
+                enter.duration = 0f;
+                log.AppendLine("  transición Idle → Wake (trigger Wake).");
+            }
+
+            if (wake.transitions.Length > 0) return;
+
+            var next = states.TryGetValue(Walk, out var walk) ? walk : idle;
+            var exit = wake.AddTransition(next);
+            exit.hasExitTime = true;
+            exit.exitTime = 1f;
+            exit.duration = 0.05f;
+            log.AppendLine($"  transición Wake → {next.name} (al acabar).");
         }
 
         private static void EnsureParameter(AnimatorController controller, string name,

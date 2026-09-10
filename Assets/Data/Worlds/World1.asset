@@ -16,15 +16,15 @@ MonoBehaviour:
   displayName: Mundo 1
   unlocked: 1
   sectionPool:
-  - sceneAsset: {fileID: 102900000, guid: 6e23ad6cc74a2874882ba736137b41a4, type: 3}
+  - sceneAsset: {fileID: 102900000, guid: 4f47a9a0eb2a04845bdf8eebbdb8c2bd, type: 3}
+    scenePath: Assets/Scenes/Worlds/World1/World1_Section01.unity
+    sceneName: World1_Section01
+  - sceneAsset: {fileID: 0}
     scenePath: 
     sceneName: 
-  - sceneAsset: {fileID: 102900000, guid: 539545d6f3797ee4684d78031fe20adb, type: 3}
-    scenePath: Assets/Scenes/Worlds/World1/World1_Section02.unity
-    sceneName: World1_Section02
-  - sceneAsset: {fileID: 102900000, guid: 4f47a9a0eb2a04845bdf8eebbdb8c2bd, type: 3}
-    scenePath: Assets/Scenes/Worlds/World1/World1_Section03.unity
-    sceneName: World1_Section03
+  - sceneAsset: {fileID: 0}
+    scenePath: 
+    sceneName: 
   sectionsPerRun: 2
   bossScene:
     sceneAsset: {fileID: 102900000, guid: 399eb5522346b2f4c8f6ff1f3c83f700, type: 3}

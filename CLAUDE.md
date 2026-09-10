@@ -215,7 +215,11 @@ to pick up the change.
   index/name) so reordering `RunManager.worlds` can't desync a tomb from its world.
 - **`SectionClearTracker`** — `DontDestroyOnLoad` singleton placed in MainHub (with an
   `AfterSceneLoad` fallback). On every scene load it subscribes to every `Health` **inside that
-  scene** — the run player is `DontDestroyOnLoad` so it is excluded for free — and exposes
+  scene** — the run player is `DontDestroyOnLoad` so it is excluded for free — **except** anything
+  that can never fire `Died`: Player-team (`Teams.Of`), inactive in hierarchy, or a
+  `TrainingDummy` (`CountsAsEnemy`). Section scenes carry a *disabled* `Player` instance for solo
+  testing; counting it (the old `GetComponentsInChildren<Health>(true)` scan) locked every exit
+  and the boss reward forever — and exposes
   `IsCleared` / `RemainingEnemies` / `Cleared`. This is the "kill everything first" gate:
   `SectionExit` (`requireEnemiesDead`) and `ShopInteractable` both refuse to work while enemies
   live. When the last one dies it plays `clearSfxId` and spawns `clearEffectPrefab` (the fireball's
@@ -266,6 +270,16 @@ meant to be edited by hand.**
     from a previous archetype (which the inspector hides and the gizmo no longer draws). `Retreat`
     has a hysteresis band (`retreatReleaseFactor`) and, if it backs into a wall, gives up retreating
     and fights instead of freezing.
+  - **Sleepers and kamikazes** — two orthogonal `EnemyTuning` flags. `sleepsUntilDetected`:
+    `Idle` is the sleep clip; on detection (or on being hit) the brain enters `Waking`, plays
+    `Wake` (non-interruptible, timed by clip length → `EnemyAnimation.WakeFinished`), then goes
+    straight to `Approach`; when it gives up it enters `Returning`, flies/walks back to its spawn
+    point and sleeps again (never `Idle` mid-air). `AnimClipBuilder` wires
+    `Idle →(trigger Wake)→ Wake →(exit)→ Walk`. `selfDestruct`: `EnemyAttack.Execute` → `Explode`
+    (`AbilityHit.DamageCircle` at `explosionRadius` + `Health.Die`); the `Attack` clip is the fuse,
+    `Death` is the explosion, and `EnemyStats.Apply` turns `Corpse.tintOnDeath` off.
+    `rootedWhileAttacking = false` now actively keeps chasing during the attack clip. Reference:
+    `MurcielagoPack`.
 - **`Gameplay.GroundMotion`** — walking on slopes and phasing through terrain, shared by
   `EnemyBrain` and the legacy `EnemyController` so both move the same way:
   - **Slopes.** An enemy is a dynamic `Rigidbody2D` whose velocity the AI writes. Writing only
@@ -409,7 +423,8 @@ survives the session and every step is re-runnable and idempotent.
   new character ships** — copy the file, change the data. Shipped: `TreeWalkPack` (static ranged),
   `OgroPack` (ranged mover), `AbejaPack` (hovering static ranged), `ChampiPack` (static ranged),
   `GorilaPack` (melee mover, `evenSplit` attack), `CaballoPack` (melee mover, fast charger),
-  `LoboPack` (ranged mover, kites) and `DragonPack` (flying ranged). Reproducible from git,
+  `LoboPack` (ranged mover, kites), `DragonPack` (flying ranged) and `MurcielagoPack` (sleeping
+  flying kamikaze). Reproducible from git,
   runnable headless via
   `unity command run_script --file <pack> --entry <Namespace.Type.Run>`.
 - One folder per character (`Assets/Art/Characters/<Name>/`), same rule as the per-boss FX folders.

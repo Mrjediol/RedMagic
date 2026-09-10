@@ -58,7 +58,9 @@ Los índices empiezan en `00` y llevan dos cifras siempre.
 
 ### Estados que el generador cablea solo
 
-`Idle` · `Walk` · `Attack` · `Hurt` · `Death`
+`Idle` · `Walk` · `Attack` · `Hurt` · `Death` · `Wake`
+
+(`Wake` sólo se usa con `sleepsUntilDetected`, ver §6-sexies: `Idle →(trigger Wake)→ Wake →(fin)→ Walk`.)
 
 Cualquier otro nombre se crea igualmente como estado y como clip, pero **sin transiciones**: hay
 que cablearlo a mano en la ventana del Animator, o dispararlo por código.
@@ -344,6 +346,24 @@ del dibujo, o sea disparos que atraviesan al bicho y golpes que impactan en el a
 **Sólo los que se mueven Y disparan huyen** (`EnemyTuning.Retreats`). Un melé persigue y pega, y un
 `Static` no se mueve: en esos dos, `personalSpace` se ignora y su círculo ni siquiera se dibuja en
 los gizmos, aunque el valor siga guardado de un cambio de arquetipo anterior.
+
+## 6-sexies. Dormidos y kamikazes — `MurcielagoPack`
+
+Dos casillas del `EnemyTuning`, independientes entre sí y del arquetipo:
+
+| Casilla | Qué hace | Qué pide a la lámina |
+|---|---|---|
+| `sleepsUntilDetected` | Empieza quieto en `Idle`, que pasa a ser el clip de **dormir**. Al entrar el objetivo en `detectionRange` — o al recibir un golpe — reproduce `Wake` quieto (no se interrumpe) y luego persigue. Si se rinde, **vuelve a su posición inicial** y se duerme; nunca se queda en `Idle` a mitad de camino. Sólo arquetipos que se mueven. | Una fila `Wake`, `loop = false`. |
+| `selfDestruct` | El ataque es explotar: al llegar a `attackRange` reproduce `Attack` (la mecha) y en su `releaseFrame` hace `attackDamage` en un círculo de `explosionRadius` y muere (`Health.Die`). Si lo matan antes, no hace daño. `EnemyStats` apaga el tinte del `Corpse`. Un `Static` así es una mina. | `Attack` = la mecha (corta, `releaseFrame` = último frame); `Death` = la explosión. |
+
+Con `rootedWhileAttacking = false` el enemigo **sigue persiguiendo** durante el clip de ataque: un
+kamikaze no debe poder esquivarse con un paso atrás mientras arde la mecha.
+
+El murciélago además enseña dos perillas del corte sobre la misma lámina: la fila del picado
+dibuja un estallido de velocidad en medio de las poses, que se salta con `frameRects` (los
+recuadros se leen del Sprite Editor), y los dos anillos de la explosión se tocan, así que esa fila
+va con `evenSplit`. La fila de vuelo normal (`Fly`) no la usa nadie: se declara porque el corte
+automático necesita contar las 6 franjas.
 
 ## 7. Cuando algo sale mal
 

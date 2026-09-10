@@ -34,6 +34,11 @@ namespace RedMagic.Combat
                  "del cadáver antes de empezar a desvanecerse.")]
         [SerializeField] private Color corpseTint = new Color(0.35f, 0.1f, 0.12f, 0.75f);
 
+        [Tooltip("Teñir el cuerpo al morir. Apagado cuando el clip de muerte ya es la " +
+                 "desaparición (una explosión): teñida se vería sucia. En un enemigo del pipeline " +
+                 "lo escribe EnemyStats según 'selfDestruct'.")]
+        [SerializeField] private bool tintOnDeath = true;
+
         [Tooltip("Destruir el objeto al terminar. Apágalo si el cadáver debe quedarse (por " +
                  "ejemplo, si algo va a reanimarlo).")]
         [SerializeField] private bool destroyWhenDone = true;
@@ -44,6 +49,8 @@ namespace RedMagic.Combat
 
         /// <summary>Segundos totales desde la muerte hasta que el objeto desaparece.</summary>
         public float TotalDuration => linger + fadeDuration;
+
+        public void SetTintOnDeath(bool value) => tintOnDeath = value;
 
         private void Awake()
         {
@@ -70,7 +77,10 @@ namespace RedMagic.Combat
 
         private IEnumerator FadeRoutine()
         {
-            Tint();
+            // Sin tinte se vuelve al blanco igualmente: HitFlash acaba de apagarse y podría haber
+            // dejado el sprite a mitad de destello.
+            Tint(tintOnDeath ? corpseTint : Color.white);
+            float startAlpha = tintOnDeath ? corpseTint.a : 1f;
 
             if (linger > 0f) yield return new WaitForSeconds(linger);
 
@@ -78,7 +88,7 @@ namespace RedMagic.Combat
             while (elapsed < fadeDuration)
             {
                 elapsed += Time.deltaTime;
-                SetAlpha(corpseTint.a * (1f - Mathf.Clamp01(elapsed / fadeDuration)));
+                SetAlpha(startAlpha * (1f - Mathf.Clamp01(elapsed / fadeDuration)));
                 yield return null;
             }
 
@@ -87,10 +97,10 @@ namespace RedMagic.Combat
             if (destroyWhenDone) Destroy(gameObject);
         }
 
-        private void Tint()
+        private void Tint(Color color)
         {
             foreach (var sprite in _sprites)
-                if (sprite != null) sprite.color = corpseTint;
+                if (sprite != null) sprite.color = color;
         }
 
         private void SetAlpha(float alpha)

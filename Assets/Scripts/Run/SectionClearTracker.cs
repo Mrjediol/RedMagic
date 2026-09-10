@@ -119,13 +119,28 @@ namespace RedMagic.Run
             {
                 foreach (var health in root.GetComponentsInChildren<Health>(true))
                 {
-                    if (health == null || health.IsDead) continue;
+                    if (!CountsAsEnemy(health)) continue;
                     _tracked.Add(health);
                     health.Died += OnEnemyDied;
                 }
             }
 
             SetCleared(_tracked.Count == 0, _tracked.Count);
+        }
+
+        /// <summary>
+        /// Sólo cuenta lo que el jugador puede matar de verdad. Cualquier otra cosa con vida que
+        /// se colara bloquearía la salida para siempre, porque nunca va a disparar su Died:
+        /// un Player que la sección trae desactivado para probarla suelta (bando Player, y además
+        /// inactivo), un objeto apagado en la jerarquía, o el muñeco de entrenamiento.
+        /// </summary>
+        private static bool CountsAsEnemy(Health health)
+        {
+            if (health == null || health.IsDead) return false;
+            if (!health.gameObject.activeInHierarchy) return false;
+            if (Teams.Of(health) == Team.Player) return false;
+            if (health.GetComponent<TrainingDummy>() != null) return false;
+            return true;
         }
 
         private void Untrack()

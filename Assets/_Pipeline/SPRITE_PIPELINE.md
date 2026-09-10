@@ -139,6 +139,7 @@ flipbook. **Colliders, scripts, Rigidbody, tamaños y referencias no se tocan.**
 |---|---|
 | `Pipeline ▸ 1 · Ventana de pipeline` | Todo el proceso en una pantalla |
 | `Pipeline ▸ 2 · Cortar hoja + animar` | Con una `SpriteSheetRecipe` seleccionada en el Project |
+| `Pipeline ▸ 2b · Diagnosticar bandas y manchas` | Imprime el recuadro y el área de cada mancha, banda por banda. Es con lo que se ajustan `groupSlack` y `propBlobs` |
 | `Pipeline ▸ 3 · Generar enemigo` | Con una `EnemyRecipe` seleccionada |
 | `Pipeline ▸ 4 · Auditar contenido` | Lista los prefabs con `Health` a los que les falta algo |
 | `Pipeline ▸ 5 · Auditar y reparar` | Añade lo que falte |
@@ -253,7 +254,70 @@ proyectil se construye en código (una forma teñida). Funciona, pero se ve a pl
 
 ---
 
-## 6-ter. Voladores y estáticos en el aire
+---
+
+## 6-ter. Las dos perillas del corte automático: `groupSlack` y `propBlobs`
+
+El corte automático agrupa manchas por solapamiento horizontal. Dos cosas lo rompen, y cada una
+tiene su perilla en la `SheetRow`. **Antes de tocarlas, mide**: *Tools ▸ RedMagic ▸ Pipeline ▸
+`2b · Diagnosticar bandas y manchas`* con la receta seleccionada imprime, banda por banda, el
+recuadro y el área de cada mancha. Los huecos entre dibujos se leen ahí; probar valores a ciegas
+cuesta una regeneración por intento.
+
+**`groupSlack`** — multiplica el margen con el que dos manchas se dan por del mismo frame (1 = el
+de siempre, ~1/12 de la altura del personaje). Bájalo cuando dos poses casi se toquen: la cola de
+un caballo al galope llega al hocico del siguiente y el margen por defecto (13 px) se come huecos
+reales de 3-5 px, fundiendo cinco frames en uno. Medido en `Lobo`, la fila de andar tiene huecos de
+3 px: `groupSlack = 0.2f` los respeta.
+
+```csharp
+new SheetRow { state = "Walk", frames = 5, fps = 12f, loop = true, groupSlack = 0.15f },
+```
+
+**`propBlobs`** — cuántos dibujos de la fila **no** son poses del personaje, sino el proyectil ya
+lanzado. Se apartan por la derecha (la lámina siempre los dibuja después de la última pose) y
+**antes** de agrupar. Es lo que `frames` por sí solo no arregla: si el orbe está pegado al hocico y
+se solapa en X con el personaje, para cuando la cuenta se reconcilia ya se ha fundido en la celda
+del ataque — medido en `Lobo`, la celda pasaba de 192 a 272 px y la última pose salía descentrada.
+
+```csharp
+// 6 dibujos: 4 poses del lobo + el orbe escupido, dibujado dos veces.
+new SheetRow { state = "Attack", frames = 4, fps = 12f, loop = false, releaseFrame = 3, propBlobs = 2 },
+```
+
+Con varios props se exportan como `<Personaje>_<Fila>_Prop0.png`, `…_Prop1.png`, y **el primero
+(el más a la derecha, o sea el más "en vuelo") es el que se convierte en proyectil**.
+
+### Qué elegir para una fila que sale mal
+
+| Lo que pasa | Perilla |
+|---|---|
+| Dos poses fundidas en un frame, celda mucho más ancha, huecos reales pequeños | `groupSlack` bajo (0.15–0.5) |
+| Dos poses fundidas porque el FX de una invade a la otra (polvo, estallido) y no hay hueco | `evenSplit = true` |
+| El proyectil suelto cuenta como frame, o estira la celda del ataque | `propBlobs` |
+| Ninguna heurística acierta | `frameRects` (§12) |
+
+`evenSplit` reparte la banda en columnas iguales, así que **exige rejilla**: si los dibujos no están
+igual de espaciados, cada columna se lleva un trozo del vecino (se ve como una astilla de cola
+flotando al borde del frame). Cuando hay hueco real entre dibujos, `groupSlack` da un corte exacto
+y es preferible.
+
+## 6-quater. Los rótulos ya no llegan al PNG
+
+Las láminas del proyecto traen `IDLE` / `WALK` / `ATTACK` escrito dentro de la propia fila. El
+corte los quita en dos pasos, sin que haya que configurar nada:
+
+- Todo lo que **no cae en ninguna banda** se borra de la máscara antes de emitir. `Emit` copia
+  píxeles del original dentro de un margen alrededor del frame, así que sin esto la parte baja del
+  rótulo de la fila de arriba acababa pintada encima del personaje (media palabra `HURT` sobre el
+  caballo).
+- Dentro de la banda, se borra la mancha corta **pegada al techo de la franja**. Medido en las
+  láminas del proyecto, las letras cuelgan del borde superior y el arte suelto (hojas, chispas,
+  polvo) nunca llega tan arriba, porque el techo lo marca el propio personaje. La regla anterior
+  —"mancha colgada por encima del personaje más alto"— sólo acertaba cuando el rótulo estaba
+  dibujado más alto que la crin, y en las demás filas la palabra salía pintada en el primer frame.
+
+## 6-quinquies. Voladores y estáticos en el aire
 
 El nombre del archivo de la lámina ya dice el arquetipo. La traducción es directa salvo un caso:
 
@@ -286,8 +350,8 @@ los gizmos, aunque el valor siga guardado de un cambio de arquetipo anterior.
 | Síntoma | Causa y arreglo |
 |---|---|
 | «se han detectado N filas» y N ≠ las declaradas | Las franjas de contenido no se separan. Pasa a `sliceMode = Grid` con `columns`. |
-| Sale un frame de más | Un objeto suelto dentro del frame (un proyectil lanzado). Declara `frames` en la fila: el corte retira el grupo más pequeño hasta cuadrar y lo exporta como prop. |
-| Sale un frame de menos, con celda mucho más ancha | Dos frames se pisan en horizontal — polvo de un pisotón, un estallido. Pon `evenSplit = true` en esa `SheetRow`: parte la franja en `frames` columnas iguales en vez de buscar manchas. Lo usa `Gorila` en su fila de ataque. |
+| Sale un frame de más | Un objeto suelto dentro del frame (un proyectil lanzado). Declara `frames` en la fila: el corte retira el grupo más pequeño hasta cuadrar y lo exporta como prop. Si además el objeto se **solapa** con el personaje y la celda del ataque sale mucho más ancha, usa `propBlobs` (§6-ter). |
+| Sale un frame de menos, con celda mucho más ancha | Dos frames se pisan en horizontal. Si hay hueco real entre los dibujos (aunque sea de 3 px), baja `groupSlack` — corte exacto. Si de verdad se pisan (polvo de un pisotón, un estallido), `evenSplit = true`: parte la franja en `frames` columnas iguales. Lo usa `Gorila` en su fila de ataque; `Caballo` y `Lobo` usan `groupSlack`. |
 | Fondo pegado a los frames | `Key Background` apagado en una lámina sin alfa, o `Background Tolerance` muy baja. |
 | Se come parte del arte | `Background Tolerance` muy alta, o el arte tiene el mismo tono que el fondo. |
 | El personaje da saltos al animar | El ancla no es estable. Con `AnchorMode.BottomCenter` se ancla a los pies; si el arte no apoya siempre igual, prueba `Center`. |

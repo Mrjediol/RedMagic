@@ -84,6 +84,26 @@ namespace RedMagic.Pipeline.EditorTools
             Debug.Log(RunSheet(recipe));
         }
 
+
+        [MenuItem("Tools/RedMagic/Pipeline/2b · Diagnosticar bandas y manchas (receta seleccionada)")]
+        public static void DiagnoseSelected()
+        {
+            var recipe = Selection.activeObject as SpriteSheetRecipe;
+            if (recipe == null)
+            {
+                EditorUtility.DisplayDialog("Pipeline",
+                    "Selecciona un asset de tipo Sprite Sheet Recipe en el Project.", "Vale");
+                return;
+            }
+
+            // No escribe nada: sólo imprime, por banda, el recuadro y el área de cada mancha. Es
+            // con lo que se ajustan 'groupSlack' y 'propBlobs' — se miran los huecos reales entre
+            // dibujos en vez de probar valores a ciegas.
+            Debug.Log(SheetSlicer.DiagnoseBands(recipe));
+        }
+
+        [MenuItem("Tools/RedMagic/Pipeline/2b · Diagnosticar bandas y manchas (receta seleccionada)", true)]
+        private static bool DiagnoseSelectedValidate() => Selection.activeObject is SpriteSheetRecipe;
         [MenuItem("Tools/RedMagic/Pipeline/3 · Generar enemigo (ficha seleccionada)")]
         public static void EnemySelected()
         {

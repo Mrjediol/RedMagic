@@ -137,10 +137,6 @@ namespace RedMagic.Enemies
         [Min(0f)] public float gravityScale = 3f;
 
         [Header("Vuelo")]
-        [Tooltip("Cuánto mira por delante para esquivar. Si choca con el escenario, se prueban " +
-                 "desvíos a un lado y a otro hasta encontrar hueco.")]
-        [Min(0f)] public float avoidProbeDistance = 1.5f;
-
         [Tooltip("Altura sobre el objetivo a la que le gusta quedarse. 0 = va a su misma altura.")]
         public float hoverOffset = 0.5f;
 
@@ -213,13 +209,27 @@ namespace RedMagic.Enemies
         [Tooltip("Capas a las que puede dañar el ataque.")]
         public LayerMask hitLayers = ~0;
 
-        [Tooltip("Capas que cuentan como suelo/obstáculo para el sondeo de bordes y el esquive.")]
-        public LayerMask obstacleLayers = 1 << 6;   // 'Ground'
+        [Tooltip("Capas que cuentan como terreno: dónde se apoya, qué cuenta como precipicio y, " +
+                 "en un volador, qué atraviesa. Tienen que estar las DOS del proyecto — 'Ground' " +
+                 "(lo macizo) y 'Platform' (plataformas y puentes) —: con sólo 'Ground', un " +
+                 "enemigo se planta al borde de un puente creyendo que es un precipicio, y en la " +
+                 "rampa no encuentra suelo que seguir.")]
+        public LayerMask obstacleLayers = (1 << 6) | (1 << 8);   // 'Ground' + 'Platform'
 
         // ============================================================ derivados
 
         /// <summary>True si el arquetipo vuela (sin gravedad, se mueve en los dos ejes).</summary>
         public bool Flies => archetype is EnemyArchetype.FlyingMelee or EnemyArchetype.FlyingRanged;
+
+        /// <summary>
+        /// True si este enemigo vive en el aire y, por tanto, <b>atraviesa el terreno</b>: para él
+        /// las plataformas no existen.
+        ///
+        /// No basta con <see cref="Flies"/>: una torreta que flota (la abeja) es
+        /// <see cref="EnemyArchetype.Static"/> con <see cref="gravityScale"/> a 0, porque no
+        /// persigue — pero está igual de en el aire. Sin gravedad = no se apoya en nada.
+        /// </summary>
+        public bool Airborne => Flies || gravityScale <= 0f;
 
         /// <summary>
         /// True si ataca lanzando un proyectil en vez de con una caja de golpe. El estático lo

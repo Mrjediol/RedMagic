@@ -120,6 +120,12 @@ namespace RedMagic.Abilities
             if (ctx.CasterHealth != null && target == ctx.CasterHealth) return false;
             if (ctx.Caster != null && target.transform.IsChildOf(ctx.Caster.transform)) return false;
             if (!string.IsNullOrEmpty(ctx.FriendlyTag) && target.CompareTag(ctx.FriendlyTag)) return false;
+
+            // La regla de bandos, por encima de la etiqueta amiga: sólo el jugador daña a los
+            // enemigos y sólo los enemigos al jugador. Ver Combat.Teams — la etiqueta amiga no
+            // basta porque los enemigos del pipeline nacen sin etiqueta.
+            if (Teams.Allied(ctx.Caster, target)) return false;
+
             return true;
         }
 

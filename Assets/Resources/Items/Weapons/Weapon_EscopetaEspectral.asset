@@ -15,10 +15,10 @@ MonoBehaviour:
   displayName: Escopeta Espectral
   description: "Cinco perdigones de escarcha en abanico corto. Demoledora pegada
     a la cara, in\xFAtil a media sala. Te obliga a entrar. Nace de hielo."
-  icon: {fileID: 0}
+  icon: {fileID: 1354624353278725195, guid: ea42e9ba2d9a88a4cac7d584a3e5d084, type: 3}
   accent: {r: 0.75, g: 0.85, b: 1, a: 1}
   baseDamage: 9
-  baseCooldown: 0.85
+  baseCooldown: 2
   baseKnockbackMultiplier: 0.6
   baseShot:
     delivery: 0

@@ -247,10 +247,11 @@ meant to be edited by hand.**
   (`Melee`/`Ranged`) since a turret can be either.
 - **`EnemyBrain`** — the state machine: `Idle → Approach → Attacking → Cooldown → Idle`, plus
   `Retreat` and `Dead`. `Static` skips detection entirely: it waits in idle and attacks the moment
-  the target is inside `attackRange`. Ground movement keeps the ledge probe; flyers steer with a
-  few whisker raycasts (`AvoidAngles`) rather than pathfinding. Target range checks use a cached
-  transform + distance, **not** a trigger collider — cheaper than bodies in the broadphase and no
-  collision-matrix setup.
+  the target is inside `attackRange`. Ground movement keeps the ledge probe; **flyers steer at
+  nothing — they go straight at the target because terrain no longer exists for them** (see
+  `GroundMotion` below; the old whisker-raycast avoidance was deleted along with
+  `EnemyTuning.avoidProbeDistance`). Target range checks use a cached transform + distance, **not**
+  a trigger collider — cheaper than bodies in the broadphase and no collision-matrix setup.
   - **The leash is `detectionRange`, and only that** — it is the boundary in both directions and
     the gizmo drawn in the scene. Engage on entering it; give up after `loseInterestGrace` seconds
     (default **1s**) *continuously* outside it, timer resetting on every re-entry (that time margin
@@ -265,6 +266,29 @@ meant to be edited by hand.**
     from a previous archetype (which the inspector hides and the gizmo no longer draws). `Retreat`
     has a hysteresis band (`retreatReleaseFactor`) and, if it backs into a wall, gives up retreating
     and fights instead of freezing.
+- **`Gameplay.GroundMotion`** — walking on slopes and phasing through terrain, shared by
+  `EnemyBrain` and the legacy `EnemyController` so both move the same way:
+  - **Slopes.** An enemy is a dynamic `Rigidbody2D` whose velocity the AI writes. Writing only
+    `velocity.x` into a ramp is pushing head-on against it: the enemy shakes at the foot of the
+    slope, and when it stops, gravity slides it back down. `Probe` measures the surface with three
+    downward rays (tail, centre, muzzle, from `0.35` above the feet so a few centimetres of
+    penetration don't blind it) and `AlongSlope` returns the surface **tangent** at the same speed,
+    so up, down and flat all cost the same — the dynamic-body equivalent of the player's
+    `ProjectOnSlope`. `Halt` is the other half: stopped **and resting**, velocity goes to zero on
+    both axes, which is what stops the slide. `MaxSlopeAngle` is 45°, deliberately the same as the
+    player's: a ramp one of them can climb and the other can't reads as a broken level.
+  - **Flyers phase through terrain.** `PhaseThroughTerrain` sets the collider's `excludeLayers`, so
+    no new layer and no change to the project's collision matrix. Only terrain is excluded — a
+    flyer still collides with the player, so contact damage is unchanged. The trigger is
+    `EnemyTuning.Airborne` (`Flies || gravityScale <= 0`), which also covers the hovering turret
+    (the bee is `Static` with gravity 0, not a `Flying*` archetype, but it is just as much in the
+    air).
+  - **`obstacleLayers` must contain BOTH terrain layers**, `Ground` (6) *and* `Platform` (8) — the
+    sloped bridges and most platforms in `Forest-1` are on `Platform`. With the old `1 << 6`
+    default, an enemy reaching a bridge probed for ground, found none, read it as a cliff and stood
+    still on perfectly solid footing — and on the ramp it found no surface to follow.
+    `GroundMotion.TerrainMask` is the canonical mask (resolved by layer *name*), and
+    `Pipeline ▸ 4/5` audits and repairs the mask on every enemy prefab and `EnemyRecipe`.
 - **`EnemyAnimation`** — drives the Animator and, crucially, **announces the exact frame the hit
   leaves**. The attack clip carries two `AnimationEvent`s planted by the pipeline
   (`OnAttackRelease` at the authored frame, `OnAttackFinished` at the end); the brain waits for the
@@ -309,7 +333,25 @@ survives the session and every step is re-runnable and idempotent.
   not the drawings in the row** — a 5-drawing attack row where the 5th is the loose projectile is
   `frames = 4`. **`SheetRow.evenSplit`** splits a row into N equal columns instead of
   connected-components, for rows whose FX bleed sideways (a slam's dust, an energy burst) and would
-  otherwise merge two poses — `GorilaPack` needs it.
+  otherwise merge two poses — `GorilaPack` needs it. Two further per-row knobs, both read straight
+  off the sheet with **`Pipeline ▸ 2b · Diagnosticar bandas y manchas`** (prints every blob's box
+  and area per band — measure, don't guess): **`SheetRow.groupSlack`** scales the horizontal margin
+  that decides whether two blobs belong to the same frame (1 = default, ~1/12 of the character's
+  height); lower it when neighbouring poses nearly touch (a galloping horse's tail reaches the next
+  frame's muzzle and the 13px default swallows a real 3px gap, merging five frames into one) —
+  prefer it over `evenSplit` whenever a real gap exists, because equal columns steal a sliver of the
+  neighbour when the drawings aren't perfectly gridded. **`SheetRow.propBlobs`** declares how many
+  drawings in the row are the *already-thrown projectile* rather than poses: they are pulled out
+  from the right (a sheet always draws them after the last pose) **before** grouping, which is the
+  case `frames` alone cannot fix — when the orb is drawn touching the muzzle it has already merged
+  into the attack cell by the time the count is reconciled (measured on `Lobo`: cell 192 → 272px,
+  last pose off-centre). With several, they export as `_Prop0` / `_Prop1` and the first (rightmost)
+  becomes the projectile.
+- **Row labels never reach the PNG**: everything outside the chosen bands is cleared from the mask
+  before emitting (`Emit` copies source pixels inside a margin around the frame, so the bottom of
+  the row above used to end up painted over the character), and inside a band a short blob **flush
+  with the band's ceiling** is dropped as a label — the old "blob hanging above the tallest
+  character" rule only fired when the word was drawn higher than the mane.
 - **`AnimClipBuilder`** — sprites → one `AnimationClip` per state → `AnimatorController`. **Updates
   in place**: existing states keep their hand-tuned transitions, only clips are rewritten and missing
   states added. Parameters are the ones `PlayerAnimator` already uses (`Speed`, `Attack`, `Hurt`,
@@ -358,17 +400,32 @@ survives the session and every step is re-runnable and idempotent.
 - **`ContentAudit`** (`Pipeline ▸ 4/5`) — scans every prefab with a `Health` for missing
   `Knockback`/`HitFlash`/`CurrencyDropper` and optionally adds them. That failure is silent by
   design (`Health` works fine without them; the enemy just never flinches), which is why it needs a
-  scanner rather than a convention.
+  scanner rather than a convention. It also completes the **terrain mask** (`obstacleLayers` on
+  `EnemyStats`/`EnemyRecipe`, `groundLayers` on the legacy `EnemyController`) with any missing
+  `Ground`/`Platform` layer — same class of silent failure: the enemy just stops at the foot of a
+  bridge. It only adds layers, never removes what was configured.
 - **Per-character packs** (`Assets/Scripts/Pipeline/Editor/<Name>Pack.cs`) — same shape as the boss
   packs: pure data that writes the two recipes and calls `SpritePipeline.RunEnemy`. **This is how a
   new character ships** — copy the file, change the data. Shipped: `TreeWalkPack` (static ranged),
   `OgroPack` (ranged mover), `AbejaPack` (hovering static ranged), `ChampiPack` (static ranged),
-  `GorilaPack` (melee mover, `evenSplit` attack). Reproducible from git, runnable headless via
+  `GorilaPack` (melee mover, `evenSplit` attack), `CaballoPack` (melee mover, fast charger),
+  `LoboPack` (ranged mover, kites) and `DragonPack` (flying ranged). Reproducible from git,
+  runnable headless via
   `unity command run_script --file <pack> --entry <Namespace.Type.Run>`.
 - One folder per character (`Assets/Art/Characters/<Name>/`), same rule as the per-boss FX folders.
 
 ### Combat (`Assets/Scripts/Combat/`)
 
+- **`Teams`** — the one rule about who can hurt whom: **only the player damages enemies and only
+  enemies damage the player.** A side is *derived*, never configured: carrying the `Player` tag is
+  team Player, everything else with a `Health` is team Enemy (bosses, adds, anchors, the training
+  dummy). `Teams.Allied(attacker, target)` is checked in the four places damage is filtered —
+  `AbilityHit.IsValidTarget`, `Projectile`, `ShotProjectile`, `ShotBeam` — so weapons, boss decks
+  and enemy attacks all obey it without any prefab needing to be set up. It exists because the
+  older mechanism, the attacker's "friendly tag", only worked for bosses (which do tag their adds
+  `Enemy`): pipeline enemies are born `Untagged`, so their friendly tag was empty, the filter
+  filtered nothing, and one enemy's bullet crossing another killed it. The friendly tag still
+  applies — this is an extra rule on top, not a replacement.
 - **`Health`** — the only place damage is applied. Exposes instance `Damaged`/`HealthChanged`/`Died`
   events plus a **static `AnyDamaged(Health, float)`** — the global feed `DamagePopups` subscribes to
   once instead of hooking every character. `TakeDamage(amount)` **returns false when the
@@ -489,7 +546,14 @@ Inspector wiring.
   points cap at 6. It counts and notifies; it implements no threshold effect.
 - **`WeaponUser`** (on `Player.prefab`) — the only holder of firing state (cooldown, hold-to-charge
   via `BaseShot.chargeTime`). Silences `PlayerAttack` while a weapon is equipped, and yields to a
-  legacy `AbilityUser` if an ability is somehow equipped.
+  legacy `AbilityUser` if an ability is somehow equipped. **The shot leaves on the gesture, not on
+  the press**: `releaseDelay` (0.28s, the 4th-5th drawing of the 0.42s attack clip) holds the shot
+  while the animation winds up, and the shot context — muzzle and facing — is built at release, so
+  turning mid-swing fires where you now look. The cooldown still counts from the press, so the
+  delay costs no rate of fire. It is a timer and not an `AnimationEvent` like the enemies use
+  because the player’s `Animator` lives on the `Sprite` child and events only reach components on
+  their own GameObject. `PlayerAttack.windup` and `RangedAttack.windup` (0.25s) are the same idea
+  for the other two attack paths.
 - **`WeaponLoadout`** — self-bootstrapping `DontDestroyOnLoad` singleton owning the run's
   `WeaponInventory`.
 - **Weapon levels (1–3)** — `WeaponLevelManager` (self-bootstrapping singleton, keyed by

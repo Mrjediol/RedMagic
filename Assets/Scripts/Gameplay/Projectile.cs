@@ -279,6 +279,11 @@ namespace RedMagic.Gameplay
             if (health == null || health.IsDead) return false;
             if (_owner != null && health.transform.IsChildOf(_owner.transform)) return false;
             if (!string.IsNullOrEmpty(_friendlyTag) && health.CompareTag(_friendlyTag)) return false;
+
+            // Bandos: un enemigo no puede dañar a otro enemigo aunque su bala le cruce por delante
+            // (los del pipeline nacen Untagged, así que _friendlyTag no filtra nada). Ver Teams.
+            if (Teams.Allied(_owner, health)) return false;
+
             return true;
         }
 

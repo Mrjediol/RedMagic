@@ -1,6 +1,7 @@
 using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Core;
+using RedMagic.Gameplay;
 using UnityEngine;
 
 namespace RedMagic.Enemies
@@ -59,6 +60,9 @@ namespace RedMagic.Enemies
         private bool _retreating;
         private bool _retreatBlocked;
 
+        /// <summary>El suelo bajo los pies, medido una vez por paso de física. Vacío en un volador.</summary>
+        private GroundContact _ground;
+
         /// <summary>Estado actual. Lo leen gizmos y depuración; nadie lo escribe desde fuera.</summary>
         public State Current { get; private set; } = State.Idle;
 
@@ -81,9 +85,6 @@ namespace RedMagic.Enemies
         private const float WalkableDrop = 1.5f;
 
         private static readonly RaycastHit2D[] Probe = new RaycastHit2D[8];
-
-        /// <summary>Desvíos que prueba un volador cuando lo que tiene delante está bloqueado.</summary>
-        private static readonly float[] AvoidAngles = { 0f, 25f, -25f, 50f, -50f, 80f, -80f };
 
         private EnemyTuning T => _stats.Tuning;
 
@@ -267,6 +268,11 @@ namespace RedMagic.Enemies
             // FixedUpdate el empujón se borraría en el mismo frame y el golpe no se notaría.
             if (_knockback != null && _knockback.IsActive) return;
 
+            // El suelo bajo los pies, una vez por paso de física: de ahí salen tanto seguir la
+            // rampa al andar como no resbalar al pararse. Un volador no lo necesita — el terreno
+            // ni siquiera le estorba (ver EnemyStats.Apply).
+            _ground = T.Flies ? default : GroundMotion.Probe(_collider, T.obstacleLayers);
+
             switch (Current)
             {
                 case State.Approach:
@@ -288,8 +294,9 @@ namespace RedMagic.Enemies
         }
 
         /// <summary>
-        /// Un paso hacia (o desde, con velocidad negativa) el objetivo. El volador va en los dos
-        /// ejes esquivando; el de suelo sólo en horizontal y sin tirarse por un borde.
+        /// Un paso hacia (o desde, con velocidad negativa) el objetivo. El volador va recto en los
+        /// dos ejes atravesando lo que haga falta; el de suelo camina siguiendo la pendiente y sin
+        /// tirarse por un borde.
         /// </summary>
         /// <returns>True si dio el paso; false si tuvo que pararse (sin objetivo, borde o pared).</returns>
         private bool MoveToward(Transform target, float speed)
@@ -301,11 +308,13 @@ namespace RedMagic.Enemies
 
             if (T.Flies)
             {
+                // Para un volador el terreno no existe: va recto al objetivo. Ya no esquiva nada
+                // porque ya no choca con nada (EnemyStats le excluye la capa de terreno), y el
+                // esquive por rayos que había aquí sólo servía para bordear plataformas.
                 Vector2 desired = toTarget + Vector2.up * T.hoverOffset;
                 if (desired.sqrMagnitude < 0.0001f) { Stop(); return false; }
 
-                desired = Avoid(desired.normalized * Mathf.Sign(speed));
-                _body.linearVelocity = desired * Mathf.Abs(speed);
+                _body.linearVelocity = desired.normalized * speed;
                 return true;
             }
 
@@ -317,52 +326,12 @@ namespace RedMagic.Enemies
             bool adjacent = Mathf.Abs(toTarget.x) <= Reach();
             if (!adjacent && !CanAdvance(direction)) { Stop(); return false; }
 
-            var velocity = _body.linearVelocity;
-            velocity.x = direction * Mathf.Abs(speed);
-            _body.linearVelocity = velocity;
+            // Seguir la pendiente en vez de empujar contra ella: en una plataforma inclinada,
+            // escribir sólo la X deja al enemigo temblando al pie de la cuesta, y al pararse lo
+            // deja resbalando. Mismo criterio de rampa transitable que usa el jugador.
+            _body.linearVelocity = GroundMotion.AlongSlope(_ground, direction * Mathf.Abs(speed),
+                                                           _body.linearVelocity);
             return true;
-        }
-
-        /// <summary>
-        /// Esquive del volador: si lo que tiene justo delante está bloqueado, prueba desvíos cada
-        /// vez más abiertos a un lado y a otro hasta encontrar hueco. Son tres o cuatro rayos por
-        /// frame, no un pathfinding — para un plataformas 2D en móvil es lo que compensa, y basta
-        /// para no empotrarse contra una plataforma en el camino.
-        /// </summary>
-        private Vector2 Avoid(Vector2 desired)
-        {
-            if (T.avoidProbeDistance <= 0f) return desired;
-
-            foreach (float angle in AvoidAngles)
-            {
-                Vector2 candidate = Rotate(desired, angle);
-                if (!Blocked(candidate)) return candidate;
-            }
-
-            return desired;
-        }
-
-        private bool Blocked(Vector2 direction)
-        {
-            var filter = new ContactFilter2D { useLayerMask = true, layerMask = T.obstacleLayers, useTriggers = false };
-            int count = Physics2D.Raycast(transform.position, direction, filter, Probe, T.avoidProbeDistance);
-
-            for (int i = 0; i < count; i++)
-            {
-                var hit = Probe[i].collider;
-                if (hit == null || hit == _collider || hit.transform.IsChildOf(transform)) continue;
-                if (_target != null && hit.transform.IsChildOf(_target.root)) continue;
-                return true;
-            }
-
-            return false;
-        }
-
-        private static Vector2 Rotate(Vector2 v, float degrees)
-        {
-            float rad = degrees * Mathf.Deg2Rad;
-            float cos = Mathf.Cos(rad), sin = Mathf.Sin(rad);
-            return new Vector2(v.x * cos - v.y * sin, v.x * sin + v.y * cos);
         }
 
         /// <summary>
@@ -405,12 +374,20 @@ namespace RedMagic.Enemies
             return false;
         }
 
+        /// <summary>
+        /// Quedarse quieto. En un volador es flotar (no se desploma); en uno de suelo es pararse
+        /// <b>sin resbalar</b>: en una rampa, poner sólo la X a cero deja que la gravedad lo baje
+        /// deslizando, así que apoyado se frena del todo.
+        /// </summary>
         private void Stop()
         {
-            var velocity = _body.linearVelocity;
-            velocity.x = 0f;
-            if (T.Flies) velocity.y = 0f;   // el volador se queda flotando, no se desploma
-            _body.linearVelocity = velocity;
+            if (T.Flies)
+            {
+                _body.linearVelocity = Vector2.zero;
+                return;
+            }
+
+            _body.linearVelocity = GroundMotion.Halt(_ground, _body.linearVelocity);
         }
 
         private float Reach() => (_collider != null ? _collider.bounds.extents.x : 0.3f) + 0.4f;

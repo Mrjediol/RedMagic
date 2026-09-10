@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: 04806534db3a9d048ab4cd3c651891db
+guid: 9612d52b03b47ec47a8e86d7b0c47e58
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2225838431864933590
-    second: Gemini_Generated_Image_qux7caqux7caqux7_0
+      213: 8630995308855207256
+    second: Lobo_Attack_Prop2_0
+  - first:
+      213: 797051064050148170
+    second: Lobo_Attack_Prop2_1
+  - first:
+      213: -7350913289501166200
+    second: Lobo_Attack_Prop2_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,7 +81,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -113,23 +119,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Gemini_Generated_Image_qux7caqux7caqux7_0
+      name: Lobo_Attack_Prop2
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 24
+        height: 59
+      alignment: 9
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: a23374d3dbb3c11e0800000000000000
-      internalID: -2225838431864933590
+      spriteID: 16bd3090ad176634d82c0c4a860669d7
+      internalID: -14109210
       vertices: []
       indices: 
       edges: []
@@ -138,7 +144,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 385a12c6a1da33b4f91a65a559cdc42e
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +154,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Gemini_Generated_Image_qux7caqux7caqux7_0: -2225838431864933590
+      Lobo_Attack_Prop2: -14109210
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -28,7 +28,8 @@ namespace RedMagic.Pipeline.EditorTools
         public static void RepairMenu()
         {
             if (!EditorUtility.DisplayDialog("Auditar y reparar",
-                    "Se añadirán los componentes compartidos que falten a los prefabs con Health. " +
+                    "Se añadirán los componentes compartidos que falten a los prefabs con Health y " +
+                    "se completará la máscara de terreno de los enemigos. " +
                     "No se borra ni se reconfigura nada.", "Reparar", "Cancelar"))
                 return;
 
@@ -50,6 +51,17 @@ namespace RedMagic.Pipeline.EditorTools
                 if (prefab == null || prefab.GetComponent<Health>() == null) continue;
 
                 checkedCount++;
+
+                // La máscara de terreno se revisa siempre, tenga o no carencias de componentes:
+                // es un fallo distinto y también silencioso.
+                foreach (var walker in prefab.GetComponentsInChildren<Component>(true))
+                {
+                    if (walker is not (Enemies.EnemyStats or Gameplay.EnemyController)) continue;
+                    if (!RepairTerrainMask(walker, repair, log, path)) continue;
+
+                    issues++;
+                    if (repair) fixedCount++;
+                }
 
                 // El retroceso sólo tiene sentido en algo que se pueda mover. El muñeco de
                 // entrenamiento y los anclajes de los jefes son postes clavados en el suelo: no
@@ -85,6 +97,18 @@ namespace RedMagic.Pipeline.EditorTools
                 fixedCount++;
             }
 
+
+            // Las fichas del pipeline llevan su propia copia del bloque de valores, así que si no
+            // se reparan también, regenerar un enemigo vuelve a dejarle la máscara vieja.
+            foreach (var guid in AssetDatabase.FindAssets("t:EnemyRecipe"))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var recipe = AssetDatabase.LoadAssetAtPath<EnemyRecipe>(path);
+                if (recipe == null || !RepairTerrainMask(recipe, repair, log, path)) continue;
+
+                issues++;
+                if (repair) fixedCount++;
+            }
             AssetDatabase.SaveAssets();
 
             log.AppendLine($"[ContentAudit] {checkedCount} prefabs con Health, {issues} con carencias" +
@@ -92,6 +116,57 @@ namespace RedMagic.Pipeline.EditorTools
 
             if (issues == 0) log.AppendLine("  Todo en orden.");
             return log.ToString();
+        }
+
+        /// <summary>
+        /// Repara la máscara de terreno de todo lo que camina: prefabs de enemigo (los dos
+        /// sistemas) y fichas del pipeline.
+        ///
+        /// El fallo que arregla es exactamente igual de silencioso que el de los componentes que
+        /// faltan: la máscara por defecto era sólo <c>Ground</c>, pero las plataformas y los
+        /// puentes inclinados del proyecto viven en la capa <c>Platform</c>. Con esa máscara, un
+        /// enemigo que llega a un puente sondea el suelo, no encuentra nada, lo lee como
+        /// precipicio y se planta — en un puente perfectamente sólido por el que el jugador acaba
+        /// de pasar. Y sobre la rampa no encuentra superficie que seguir, así que empuja de frente
+        /// contra la cuesta en vez de subirla.
+        ///
+        /// Sólo <b>añade</b> las capas de terreno que falten: lo que ya estuviera configurado se
+        /// respeta, porque una máscara más ancha puede ser una decisión (el sistema viejo trae
+        /// alguna con todo marcado).
+        /// </summary>
+        private static bool RepairTerrainMask(Object target, bool repair, StringBuilder log, string path)
+        {
+            int terrain = Gameplay.GroundMotion.TerrainMask.value;
+            var so = new SerializedObject(target);
+            var property = so.FindProperty("tuning.obstacleLayers") ?? so.FindProperty("groundLayers");
+            if (property == null) return false;
+
+            int current = property.intValue;
+            if ((current & terrain) == terrain) return false;
+
+            int missing = terrain & ~current;
+            log.AppendLine($"  {path}: máscara de terreno sin {LayerNames(missing)} " +
+                           $"({target.GetType().Name}).");
+
+            if (!repair) return true;
+
+            property.intValue = current | terrain;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(target);
+            return true;
+        }
+
+        private static string LayerNames(int mask)
+        {
+            var names = new StringBuilder();
+            for (int i = 0; i < 32; i++)
+            {
+                if ((mask & (1 << i)) == 0) continue;
+                string name = LayerMask.LayerToName(i);
+                names.Append(string.IsNullOrEmpty(name) ? i.ToString() : name).Append(' ');
+            }
+
+            return names.ToString().TrimEnd();
         }
     }
 }

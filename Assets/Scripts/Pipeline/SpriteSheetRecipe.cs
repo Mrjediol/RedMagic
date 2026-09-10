@@ -77,6 +77,27 @@ namespace RedMagic.Pipeline
                  "pivote queda en el mismo punto en todos los frames.")]
         public RectInt[] frameRects;
 
+        [Tooltip("Cuánto margen horizontal se admite para dar dos manchas por partes del mismo " +
+                 "frame, como múltiplo del margen normal (1 = el de siempre, ~1/12 de la altura " +
+                 "del personaje).\n\n" +
+                 "Bájalo cuando la detección junte cosas que son de frames distintos: dos poses " +
+                 "que casi se tocan (la cola de una llega al hocico de la siguiente), o el " +
+                 "proyectil dibujado pegado a la boca — que así se separa y se exporta como " +
+                 "prop en vez de estirar la celda del ataque. Súbelo si un mismo dibujo se " +
+                 "parte en trozos. Sólo afecta al modo automático.")]
+        [Min(0.05f)] public float groupSlack = 1f;
+
+        [Tooltip("Cuántos dibujos sueltos hay en la fila que NO son poses del personaje: el " +
+                 "proyectil ya lanzado, dibujado una o dos veces a la derecha del último frame.\n\n" +
+                 "Se apartan por la derecha (la lámina siempre los dibuja después de la última " +
+                 "pose) y ANTES de agrupar, así que funciona aunque el proyectil se solape en " +
+                 "horizontal con el personaje — el caso que 'frames' por sí solo no arregla, " +
+                 "porque para cuando se reconcilia la cuenta el orbe ya se ha fundido en la celda " +
+                 "del ataque, estirándola y descentrando la pose.\n\n" +
+                 "Cada uno se exporta como '<Personaje>_<Fila>_Prop.png' y el primero es el que " +
+                 "la ficha del enemigo convierte en proyectil. 0 = ninguno.")]
+        [Min(0)] public int propBlobs;
+
         [Tooltip("Reparte la fila en 'frames' columnas iguales en vez de buscar manchas conexas. " +
                  "Para filas cuyos frames se pisan en horizontal — polvo de un pisotón, un " +
                  "estallido de energía, hojas que salen volando — donde la detección por contenido " +

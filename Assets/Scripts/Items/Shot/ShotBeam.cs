@@ -234,6 +234,10 @@ namespace RedMagic.Items
             if (_ctx.CasterHealth != null && health == _ctx.CasterHealth) return false;
             if (_ctx.Caster != null && health.transform.IsChildOf(_ctx.Caster.transform)) return false;
             if (!string.IsNullOrEmpty(_ctx.FriendlyTag) && health.CompareTag(_ctx.FriendlyTag)) return false;
+
+            // Bandos (Combat.Teams): sólo el jugador daña a los enemigos y al revés. La etiqueta
+            // amiga de arriba no basta cuando quien dispara no lleva etiqueta.
+            if (Teams.Allied(_ctx.Caster, health)) return false;
             return true;
         }
 

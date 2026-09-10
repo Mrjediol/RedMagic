@@ -1,10 +1,34 @@
 fileFormatVersion: 2
-guid: e3a0a46be5601f04090e853bb3d8bb0c
+guid: 924f367f0cf6eba4b98a7cbc87fec6c0
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2264372600513265675
-    second: Gemini_Generated_Image_nfg8cmnfg8cmnfg8_0
+      213: -427371764606365656
+    second: Caballo_Idle_0
+  - first:
+      213: -169556288532639077
+    second: Caballo_Idle_1
+  - first:
+      213: 403787514513358201
+    second: Caballo_Idle_2
+  - first:
+      213: -2132415457211528737
+    second: Caballo_Idle_3
+  - first:
+      213: -7569753597331805027
+    second: Caballo_Idle_4
+  - first:
+      213: -5527732462541146435
+    second: Caballo_Idle_5
+  - first:
+      213: -4498978799437126512
+    second: Caballo_Idle_6
+  - first:
+      213: -953686849271171217
+    second: Caballo_Idle_7
+  - first:
+      213: 5006678548966034176
+    second: Caballo_Idle_8
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,7 +99,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -113,23 +137,111 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Gemini_Generated_Image_nfg8cmnfg8cmnfg8_0
+      name: Caballo_Idle_00
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1024
-        height: 1024
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        width: 200
+        height: 175
+      alignment: 9
+      pivot: {x: 0.5, y: 0.045714285}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 5ff7743fd155390e0800000000000000
-      internalID: -2264372600513265675
+      spriteID: bb2f48058f50c23499432d5936a17280
+      internalID: -1092947911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Caballo_Idle_01
+      rect:
+        serializedVersion: 2
+        x: 200
+        y: 0
+        width: 200
+        height: 175
+      alignment: 9
+      pivot: {x: 0.5, y: 0.045714285}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 63716f60a5fab9e4d9ad6a155a8192c3
+      internalID: -1304626864
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Caballo_Idle_02
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 0
+        width: 200
+        height: 175
+      alignment: 9
+      pivot: {x: 0.5, y: 0.045714285}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a35ac2b7488c7844292f90dafb4f20ea
+      internalID: -1797323325
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Caballo_Idle_03
+      rect:
+        serializedVersion: 2
+        x: 600
+        y: 0
+        width: 200
+        height: 175
+      alignment: 9
+      pivot: {x: 0.5, y: 0.045714285}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: df9f36f6c84ed964681f694b29cb3897
+      internalID: -1234223111
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Caballo_Idle_04
+      rect:
+        serializedVersion: 2
+        x: 800
+        y: 0
+        width: 200
+        height: 175
+      alignment: 9
+      pivot: {x: 0.5, y: 0.045714285}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f6527c6ebd9b6444387802f1d4260a8a
+      internalID: -1917250926
       vertices: []
       indices: 
       edges: []
@@ -138,7 +250,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: c3d64fbc2c8550a4987809622b95d8b6
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +260,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Gemini_Generated_Image_nfg8cmnfg8cmnfg8_0: -2264372600513265675
+      Caballo_Idle_00: -1092947911
+      Caballo_Idle_01: -1304626864
+      Caballo_Idle_02: -1797323325
+      Caballo_Idle_03: -1234223111
+      Caballo_Idle_04: -1917250926
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -156,12 +156,22 @@ namespace RedMagic.Pipeline.EditorTools
                                       $"pasa a modo Grid.");
             }
 
+            // Lo que no cae en ninguna banda no es de ninguna fila: rótulos que se quedaron con
+            // franja propia, paletas al margen, restos. Se borra antes de emitir nada — si no, el
+            // margen que Emit deja alrededor del frame arrastra la parte baja del rótulo de la
+            // fila de arriba al PNG (así salía media palabra 'HURT' encima del caballo).
+            ClearOutsideBands(mask, w, h, bands, result.Log);
+
             int rowCount = Mathf.Min(bands.Count, recipe.rows.Length);
 
             for (int r = 0; r < rowCount; r++)
             {
                 var row = recipe.rows[r];
                 var (by0, by1) = bands[r];
+
+                // Fuera rótulos y motas antes de decidir nada: así los ve limpios tanto el
+                // recuento de frames como el recorte que acaba en el PNG.
+                PruneBand(mask, w, by0, by1, result.Log);
 
                 List<Blob> absorbed = null;
                 List<Frame> frames;
@@ -176,7 +186,8 @@ namespace RedMagic.Pipeline.EditorTools
                     // iguales y se recorta cada una a su contenido.
                     frames = EvenSplitFrames(mask, w, by0, by1, row.frames, recipe.anchor, result.Log);
                 else
-                    frames = AutoFrames(mask, w, by0, by1, recipe.anchor, row.frames, result.Log, out absorbed);
+                    frames = AutoFrames(mask, w, by0, by1, recipe.anchor, row.frames, row.groupSlack,
+                                        row.propBlobs, result.Log, out absorbed);
 
                 if (frames.Count == 0)
                 {
@@ -245,6 +256,48 @@ namespace RedMagic.Pipeline.EditorTools
 
                 if (loaded.Count == count) result.Props[state] = loaded;
             }
+        }
+
+        /// <summary>
+        /// Diagnóstico: lista las manchas de cada banda con su recuadro. Sirve para decidir por
+        /// qué se cuela un rótulo, o por qué dos dibujos se funden, mirando números en vez de
+        /// suponer.
+        /// </summary>
+        public static string DiagnoseBands(SpriteSheetRecipe recipe)
+        {
+            var tex = LoadRaw(AssetDatabase.GetAssetPath(recipe.sheet));
+            var px = tex.GetPixels32();
+            int w = tex.width, h = tex.height;
+
+            var crop = ResolveCrop(recipe, w, h);
+            bool[] mask = recipe.keyBackground
+                ? MaskByBackground(px, w, h, crop, recipe.backgroundTolerance, out _)
+                : MaskByAlpha(px, recipe.alphaThreshold, out _);
+            ApplyCrop(mask, w, h, crop);
+
+            var log = new StringBuilder();
+            var bands = recipe.sliceMode == SliceMode.Grid
+                ? GridBands(recipe, crop)
+                : AutoBands(mask, w, h, recipe.rows.Length, log);
+
+            for (int r = 0; r < bands.Count && r < recipe.rows.Length; r++)
+            {
+                var (y0, y1) = bands[r];
+                log.AppendLine($"== {recipe.rows[r].state}  banda y[{y0}..{y1}]");
+
+                var blobs = Label(mask, w, y0, y1);
+                int tallest = 0, baseTop = 0;
+                foreach (var b in blobs)
+                    if (b.Height > tallest) { tallest = b.Height; baseTop = b.y1; }
+
+                log.AppendLine($"   la más alta = {tallest}px, su techo y={baseTop}");
+                foreach (var b in blobs)
+                    log.AppendLine($"   x[{b.x0}..{b.x1}] y[{b.y0}..{b.y1}] " +
+                                   $"alto={b.Height} área={b.area}");
+            }
+
+            Object.DestroyImmediate(tex);
+            return log.ToString();
         }
 
         /// <summary>
@@ -498,7 +551,8 @@ namespace RedMagic.Pipeline.EditorTools
         /// contar como frames de pleno derecho.
         /// </summary>
         private static List<Frame> AutoFrames(bool[] mask, int w, int y0, int y1, AnchorMode anchor,
-                                              int want, StringBuilder log, out List<Blob> absorbed)
+                                              int want, float slackScale, int propCount,
+                                              StringBuilder log, out List<Blob> absorbed)
         {
             absorbed = new List<Blob>();
 
@@ -521,8 +575,38 @@ namespace RedMagic.Pipeline.EditorTools
             if (kept.Count == 0) return new List<Frame>();
             kept.Sort((p, q) => p.x0.CompareTo(q.x0));
 
-            // Agrupa por solapamiento en X, con un margen de tolerancia proporcional al personaje.
-            int slack = Mathf.Max(4, tallest / 12);
+            // Dibujos sueltos declarados en la receta (el proyectil ya lanzado): se apartan ANTES
+            // de agrupar. Hacerlo aquí y no en Reconcile es lo que salva el caso en que el
+            // proyectil se solapa en X con el personaje — entonces el agrupado ya lo habría
+            // fundido en su frame, estirando la celda de toda la fila y descentrando la pose.
+            //
+            // Se cogen por la derecha, no por tamaño: la lámina siempre los dibuja DESPUÉS de la
+            // última pose, mientras que "el más pequeño" acaba siendo cualquier chispa del FX. Por
+            // eso mismo se saltan las manchas ridículas frente al personaje (polvo, destellos):
+            // suelen quedar aún más a la derecha que el propio proyectil.
+            if (propCount > 0)
+            {
+                int biggest = 0;
+                foreach (var b in kept) biggest = Mathf.Max(biggest, b.area);
+                int minProp = Mathf.Max(24, Mathf.RoundToInt(biggest * 0.05f));
+
+                for (int n = 0, i = kept.Count - 1; n < propCount && i >= 0; i--)
+                {
+                    if (kept[i].area < minProp) continue;
+
+                    absorbed.Add(kept[i]);
+                    log.AppendLine($"    dibujo suelto declarado en x[{kept[i].x0}..{kept[i].x1}] " +
+                                   $"(área {kept[i].area}) — fuera de la fila, exportado como prop.");
+                    kept.RemoveAt(i);
+                    n++;
+                }
+            }
+
+            // Agrupa por solapamiento en X, con un margen proporcional al personaje. La receta
+            // puede estrecharlo por fila (groupSlack) cuando dos dibujos casi se tocan o el
+            // proyectil sale pegado a la boca.
+            int slack = Mathf.Max(1, Mathf.RoundToInt(Mathf.Max(4, tallest / 12f)
+                                                      * Mathf.Max(0.05f, slackScale)));
             var groups = new List<Blob>();
             var current = kept[0];
 
@@ -604,7 +688,8 @@ namespace RedMagic.Pipeline.EditorTools
         }
 
         /// <summary>Etiquetado de componentes conexas por inundación iterativa (sin recursión).</summary>
-        private static List<Blob> Label(bool[] mask, int w, int y0, int y1)
+        private static List<Blob> Label(bool[] mask, int w, int y0, int y1,
+                                        List<List<int>> pixels = null)
         {
             var seen = new bool[(y1 - y0 + 1) * w];
             var blobs = new List<Blob>();
@@ -617,6 +702,7 @@ namespace RedMagic.Pipeline.EditorTools
                 if (seen[local] || !mask[y * w + x]) continue;
 
                 var blob = new Blob();
+                var own = pixels == null ? null : new List<int>();
                 stack.Push(local);
                 seen[local] = true;
 
@@ -624,6 +710,7 @@ namespace RedMagic.Pipeline.EditorTools
                 {
                     int p = stack.Pop();
                     int py = p / w + y0, pxl = p % w;
+                    own?.Add(py * w + pxl);
 
                     if (pxl < blob.x0) blob.x0 = pxl;
                     if (pxl > blob.x1) blob.x1 = pxl;
@@ -647,9 +734,90 @@ namespace RedMagic.Pipeline.EditorTools
                 }
 
                 blobs.Add(blob);
+                if (own != null) pixels.Add(own);
             }
 
             return blobs;
+        }
+
+
+
+        /// <summary>
+        /// Borra de la máscara todo lo que queda fuera de las bandas elegidas.
+        ///
+        /// Las bandas son las franjas de contenido más altas, una por fila; lo que sobra son los
+        /// rótulos que se dibujaron con hueco propio encima de su fila, paletas al margen o
+        /// suciedad. Aunque el recuento de frames ya los ignoraba, <see cref="Emit"/> copia
+        /// píxeles del original dentro de un margen alrededor del frame, así que la parte baja del
+        /// rótulo de la fila de arriba acababa pintada en el PNG del personaje.
+        /// </summary>
+        private static void ClearOutsideBands(bool[] mask, int w, int h,
+                                              List<(int y0, int y1)> bands, StringBuilder log)
+        {
+            var inBand = new bool[h];
+            foreach (var (y0, y1) in bands)
+                for (int y = Mathf.Max(0, y0); y <= Mathf.Min(h - 1, y1); y++) inBand[y] = true;
+
+            int cleared = 0;
+            for (int y = 0; y < h; y++)
+            {
+                if (inBand[y]) continue;
+                for (int x = 0; x < w; x++)
+                    if (mask[y * w + x]) { mask[y * w + x] = false; cleared++; }
+            }
+
+            if (cleared > 0) log.AppendLine($"  [bandas] {cleared} píxeles fuera de banda borrados.");
+        }
+        /// <summary>
+        /// Limpia de la banda lo que no es personaje: los rótulos pintados en la propia lámina
+        /// (IDLE, ATTACK…) y las motas de la compresión JPEG.
+        ///
+        /// La detección por manchas ya los descartaba al contar frames, pero el reparto uniforme
+        /// (<see cref="EvenSplitFrames"/>) y el recorte final leen la máscara directamente, así que
+        /// en una fila con 'evenSplit' el rótulo acababa dibujado dentro del primer frame. Se
+        /// borran una sola vez aquí, antes de decidir nada, y todo lo que viene después ve la fila
+        /// ya sin texto.
+        ///
+        /// El criterio: mota diminuta, o mancha corta pegada al techo de la banda (o colgada
+        /// por encima del personaje más alto de la fila).
+        /// </summary>
+        private static void PruneBand(bool[] mask, int w, int y0, int y1, StringBuilder log)
+        {
+            var pixels = new List<List<int>>();
+            var blobs = Label(mask, w, y0, y1, pixels);
+            if (blobs.Count == 0) return;
+
+            int tallest = 0, baseTop = 0;
+            foreach (var b in blobs)
+                if (b.Height > tallest) { tallest = b.Height; baseTop = b.y1; }
+
+            int cleared = 0;
+
+            for (int i = 0; i < blobs.Count; i++)
+            {
+                var b = blobs[i];
+
+                // Umbral de mota más bajo que el de AutoFrames: allí sólo se descartaba para
+                // contar, aquí se borra de verdad, y una chispa del FX es arte.
+                bool speck = b.area < 8;
+
+                // Rótulo: mancha corta pegada al techo de la banda. Medido en las láminas del
+                // proyecto, las letras cuelgan del borde superior de su franja (y1 = techo) y el
+                // arte suelto — hojas, chispas, polvo — nunca llega tan arriba, porque el techo lo
+                // marca el propio personaje. La regla anterior ("colgada por encima del personaje
+                // más alto") sólo acertaba cuando el rótulo estaba dibujado más alto que la crin:
+                // en las filas donde no lo estaba, la palabra acababa pintada en el primer frame.
+                bool label = b.Height < tallest * 0.4f
+                             && (b.y1 >= y1 - Mathf.Max(2, tallest / 20) || b.y0 > baseTop);
+
+                if (!speck && !label) continue;
+
+                foreach (int p in pixels[i]) mask[p] = false;
+                cleared++;
+            }
+
+            if (cleared > 0)
+                log.AppendLine($"  [banda] {cleared} manchas borradas (rótulos y motas).");
         }
 
         private static Frame Bounds(bool[] mask, int w, int xa, int xb, int y0, int y1)

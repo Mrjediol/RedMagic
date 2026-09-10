@@ -119,6 +119,9 @@ namespace RedMagic.Gameplay
         /// <summary>Buffer reutilizable para el sondeo de suelo (sin allocs por frame).</summary>
         private static readonly RaycastHit2D[] GroundHits = new RaycastHit2D[8];
 
+        /// <summary>El suelo bajo los pies, medido cada paso de física. Vacío en un volador.</summary>
+        private GroundContact _ground;
+
         private void Awake()
         {
             _body = GetComponent<Rigidbody2D>();
@@ -131,6 +134,11 @@ namespace RedMagic.Gameplay
             _body.freezeRotation = true;
             // Un enemigo volador flota: sin gravedad, y sostiene su altura él mismo.
             if (canFly) _body.gravityScale = 0f;
+
+            // Para un volador las plataformas no existen: atraviesa el terreno (excludeLayers por
+            // collider, sin capas nuevas). Sigue chocando con el jugador, así que el daño por
+            // contacto no cambia.
+            GroundMotion.PhaseThroughTerrain(gameObject, groundLayers, canFly);
             _origin = transform.position;
             _direction = startMovingRight ? 1 : -1;
         }
@@ -171,6 +179,11 @@ namespace RedMagic.Gameplay
             // Mientras sale despedido, la IA no toca la velocidad: si siguiera escribiéndola cada
             // FixedUpdate el empujón se borraría en el mismo frame y el golpe no se notaría.
             if (_knockback != null && _knockback.IsActive) return;
+
+            // El suelo bajo los pies, una vez por paso de física: de ahí salen tanto seguir la
+            // rampa al andar como no resbalar al pararse (ver Gameplay.GroundMotion). Un volador
+            // no lo necesita: para él el terreno ni siquiera existe.
+            _ground = canFly ? default : GroundMotion.Probe(_collider, groundLayers);
 
             // La persecución tiene prioridad sobre lo que estuviera haciendo.
             if (TryChase()) return;
@@ -312,11 +325,17 @@ namespace RedMagic.Gameplay
 
         private void Move(float speed)
         {
-            var velocity = _body.linearVelocity;
-            velocity.x = _direction * speed;
             // Un volador no tiene gravedad que lo baje: mantiene su altura anulando la deriva.
-            if (canFly) velocity.y = 0f;
-            _body.linearVelocity = velocity;
+            if (canFly)
+            {
+                _body.linearVelocity = new Vector2(_direction * speed, 0f);
+                return;
+            }
+
+            // El de suelo sigue la pendiente en vez de empujar contra ella: por una plataforma
+            // inclinada, escribir sólo la X lo deja temblando al pie de la cuesta.
+            _body.linearVelocity = GroundMotion.AlongSlope(_ground, _direction * speed,
+                                                           _body.linearVelocity);
         }
 
         /// <summary>Mueve en cualquier dirección (sólo lo usa el enemigo volador al perseguir).</summary>
@@ -363,11 +382,15 @@ namespace RedMagic.Gameplay
 
         private void Stop()
         {
-            var velocity = _body.linearVelocity;
-            velocity.x = 0f;
-            // El volador se queda flotando quieto; el de suelo conserva su caída/gravedad.
-            if (canFly) velocity.y = 0f;
-            _body.linearVelocity = velocity;
+            // El volador se queda flotando quieto; el de suelo se frena del todo si está apoyado,
+            // porque en una rampa poner sólo la X a cero lo deja resbalando cuesta abajo.
+            if (canFly)
+            {
+                _body.linearVelocity = Vector2.zero;
+                return;
+            }
+
+            _body.linearVelocity = GroundMotion.Halt(_ground, _body.linearVelocity);
         }
 
         private void OnCollisionStay2D(Collision2D collision)

@@ -291,7 +291,7 @@ MonoBehaviour:
   attackActionName: Attack
   damage: 25
   cooldown: 0.45
-  windup: 0.12
+  windup: 0.25
   activeTime: 0.1
   knockbackMultiplier: 1
   hitboxOffset: {x: 0.7, y: 0.1}
@@ -339,7 +339,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   cooldown: 0.7
-  windup: 0.12
+  windup: 0.25
   animatorTrigger: Attack
   attackSfxId: SFX_Fireball
   muzzleEffect: {fileID: 0}
@@ -422,6 +422,7 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  releaseDelay: 0.28
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player
   attackActionName: Attack

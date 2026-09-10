@@ -189,7 +189,6 @@ MonoBehaviour:
     stopAtLedges: 1
     ledgeProbeDepth: 0.6
     gravityScale: 3
-    avoidProbeDistance: 1.5
     hoverOffset: 0.5
     attackDamage: 12
     attackCooldown: 2
@@ -227,7 +226,7 @@ MonoBehaviour:
       m_Bits: 4294967295
     obstacleLayers:
       serializedVersion: 2
-      m_Bits: 64
+      m_Bits: 320
 --- !u!50 &8690499281292323018
 Rigidbody2D:
   serializedVersion: 5

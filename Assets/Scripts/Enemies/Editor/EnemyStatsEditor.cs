@@ -72,7 +72,6 @@ namespace RedMagic.Enemies.EditorTools
                 case "personalSpace":
                     return !moves || !ranged;
 
-                case "avoidProbeDistance":
                 case "hoverOffset":
                     return !flies;
 

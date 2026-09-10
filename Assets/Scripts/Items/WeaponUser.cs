@@ -1,3 +1,4 @@
+using System.Collections;
 using RedMagic.Abilities;
 using RedMagic.Audio;
 using RedMagic.Combat;
@@ -35,6 +36,18 @@ namespace RedMagic.Items
         [Header("Objetivo")]
         [Tooltip("Capas contra las que impactan los disparos de este personaje.")]
         [SerializeField] private LayerMask hitLayers = ~0;
+
+        [Header("Sincronía con la animación")]
+        [Tooltip("Segundos desde que arranca la animación de ataque hasta que sale el disparo.\n\n" +
+                 "El disparo tiene que salir CON el gesto, no al pulsar: sin esto el proyectil " +
+                 "aparecía antes de que el personaje moviera el brazo. El clip de ataque del " +
+                 "jugador dura 0,42 s (5 dibujos a 12 fps) y el lanzamiento se lee en el 4º-5º, " +
+                 "de ahí el valor por defecto. 0 = sale al pulsar (comportamiento anterior).\n\n" +
+                 "Es un retardo y no un AnimationEvent como el de los enemigos porque el Animator " +
+                 "del jugador vive en el hijo 'Sprite', y los AnimationEvent sólo llegan a " +
+                 "componentes de su propio GameObject.")]
+        [Min(0f)]
+        [SerializeField] private float releaseDelay = 0.28f;
 
         [Header("Input")]
         [SerializeField] private InputActionAsset inputActions;
@@ -221,13 +234,48 @@ namespace RedMagic.Items
 
         // ------------------------------------------------------------------ disparo
 
+        /// <summary>
+        /// Arranca el ataque: gasta el cooldown y lanza la animación <b>ya</b>, pero el disparo
+        /// espera a <see cref="releaseDelay"/>.
+        ///
+        /// El cooldown se cuenta desde la pulsación, no desde que sale el tiro, para que retrasar
+        /// el gesto no baje la cadencia del arma.
+        /// </summary>
         private void Fire(WeaponDefinition weapon, float chargeFraction)
         {
             _cooldownTimer = weapon.BaseCooldown;
             if (_animator != null) _animator.TriggerAttack();
 
-            var ctx = BuildContext();
-            ShotResolver.Fire(WeaponLoadout.Instance.Inventory, ctx, chargeFraction);
+            if (releaseDelay <= 0f)
+            {
+                Release(chargeFraction);
+                return;
+            }
+
+            StartCoroutine(ReleaseRoutine(chargeFraction));
+        }
+
+        private IEnumerator ReleaseRoutine(float chargeFraction)
+        {
+            yield return new WaitForSeconds(releaseDelay);
+
+            // Si mientras tanto se ha muerto o se ha abierto un menú, el gesto no llega a salir.
+            if (!GameStateManager.CanPlayerAct || (_health != null && _health.IsDead)) yield break;
+
+            Release(chargeFraction);
+        }
+
+        /// <summary>
+        /// Suelta el disparo. El contexto se construye <b>aquí</b>, no al pulsar: la boca y el lado
+        /// hacia el que sale son los del instante del gesto, así que girarse durante el ataque
+        /// dispara hacia donde se mira, no hacia donde se miraba.
+        /// </summary>
+        private void Release(float chargeFraction)
+        {
+            var loadout = WeaponLoadout.Instance;
+            if (loadout == null || loadout.Inventory.Weapon == null) return;
+
+            ShotResolver.Fire(loadout.Inventory, BuildContext(), chargeFraction);
         }
 
         private ShotContext BuildContext()

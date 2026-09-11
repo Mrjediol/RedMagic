@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e336af67ac476047b25568b1f1326e1, type: 3}
+  m_Name: BossAttack_TormentaDeSavia
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.OrbRingAttack
+  displayName: Tormenta de Savia
+  description: "Dos coronas llenas, m\xE1s r\xE1pidas y m\xE1s tercas. No hay sitio
+    seguro: hay ritmo."
+  accent: {r: 0.8, g: 1, b: 0.3, a: 1}
+  telegraph: 0.8
+  recovery: 1.1
+  weight: 1.3
+  cooldownInAttacks: 1
+  damage: 12
+  knockbackMultiplier: 0.6
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: Charge
+  sfxId: 
+  shakeAmplitude: 0.35
+  shakeDuration: 0.3
+  orbCount: 8
+  ringRadius: 2.8
+  originOffset: {x: 0, y: 4.65}
+  startAngle: 0
+  alignToPlayer: 1
+  spinDegreesPerSecond: 45
+  startScale: 0.2
+  endScale: 1
+  codeOrbSize: 0.7
+  growSeconds: 0.8
+  appearStagger: 0.06
+  holdSeconds: 0.2
+  recoilFraction: 0.1
+  volleys: 2
+  timeBetweenVolleys: 0.6
+  launchSpread: 0
+  launchMode: 1
+  launchStagger: 0.12
+  projectile:
+    prefab: {fileID: 2367985640549458107, guid: 1478e203ff8218040afb1d77900b258e, type: 3}
+    speed: 10.5
+    lifetime: 4.5
+    size: {x: 0.75, y: 0.75}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    homingTurnRate: 35
+    homingRange: 12
+    arcGravity: 0
+    impactRadius: 0
+    impactDamage: 0
+  orbPrefab: {fileID: 5330921414612818761, guid: d9ea6106822da3c4fa0c1062b5a974b7, type: 3}
+  orbSprite: {fileID: 0}
+  tintOrbWithAccent: 0
+  projectileSprite: {fileID: 0}

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf9989cdc85c6464690d1b8e60779ca4, type: 3}
+  m_Name: BossAttack_BosqueDeEspinas
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.GroundSlamAttack
+  displayName: Bosque de Espinas
+  description: "Cuatro p\xFAas seguidas, casi sin aviso entre una y otra. No pares."
+  accent: {r: 0.8, g: 1, b: 0.3, a: 1}
+  telegraph: 0.7
+  recovery: 1.2
+  weight: 1.2
+  cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 2
+  damage: 16
+  knockbackMultiplier: 1.2
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: Summon
+  sfxId: 
+  shakeAmplitude: 0.2
+  shakeDuration: 0.2
+  aimAtPlayer: 1
+  maxReach: 0
+  radius: 1.1
+  windup: 0.5
+  height: 3.2
+  slams: 4
+  timeBetweenSlams: 0.38
+  rubbleSeconds: 0
+  rubbleDamagePerTick: 6
+  rubbleTickInterval: 0.5
+  impactFxPrefab: {fileID: 8715254197893390883, guid: f874e364e18f9174bbb1b7c98ba91a82, type: 3}
+  fitFxToRadius: 1
+  fxLeadSeconds: 0.2

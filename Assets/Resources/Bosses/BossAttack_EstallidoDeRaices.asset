@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 021a29dfb4fbf194980fe06031c6177e, type: 3}
+  m_Name: BossAttack_EstallidoDeRaices
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.QuakeSlamAttack
+  displayName: "Estallido de Ra\xEDces"
+  description: "Hunde las ra\xEDces y toda la arena tiembla. Si tienes los pies en
+    el suelo cuando golpea, te alcanza: salta o s\xFAbete a una plataforma —
+    y vuelve a pegarle mientras se recupera."
+  accent: {r: 0.35, g: 0.95, b: 0.8, a: 1}
+  telegraph: 1
+  recovery: 1.4
+  weight: 1
+  cooldownInAttacks: 1
+  damage: 22
+  knockbackMultiplier: 1.8
+  vulnerableSeconds: 1.2
+  vulnerableMultiplier: 1.8
+  gesture: Slam
+  sfxId:
+  shakeAmplitude: 0.9
+  shakeDuration: 0.6
+  impactDelay: 1
+  floorTolerance: 0.6
+  warnFloor: 1
+  warnHeight: 0.5
+  impactFxPrefab: {fileID: 2762897584436084235, guid: 2c2620c2df28e1f47b1fee00d2cd1269, type: 3}
+  fxWidth: 9

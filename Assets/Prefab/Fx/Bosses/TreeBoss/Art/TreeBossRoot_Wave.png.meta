@@ -1,0 +1,340 @@
+fileFormatVersion: 2
+guid: c56070d3aa2a8724da974420d4d99cd0
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3241284288453287703
+    second: TreeBossRoot_Wave_0
+  - first:
+      213: -3777795521355480428
+    second: TreeBossRoot_Wave_1
+  - first:
+      213: -5953241316567680205
+    second: TreeBossRoot_Wave_2
+  - first:
+      213: -4441793605600600927
+    second: TreeBossRoot_Wave_3
+  - first:
+      213: -1774032891758745209
+    second: TreeBossRoot_Wave_4
+  - first:
+      213: 7746175348886306510
+    second: TreeBossRoot_Wave_5
+  - first:
+      213: 7836878124532603779
+    second: TreeBossRoot_Wave_6
+  - first:
+      213: -9223282685501640048
+    second: TreeBossRoot_Wave_7
+  - first:
+      213: 2926355016989064487
+    second: TreeBossRoot_Wave_8
+  - first:
+      213: 7746070478522045994
+    second: TreeBossRoot_Wave_9
+  - first:
+      213: 7904528330517001471
+    second: TreeBossRoot_Wave_10
+  - first:
+      213: -873154316553536818
+    second: TreeBossRoot_Wave_11
+  - first:
+      213: -5093002831896606176
+    second: TreeBossRoot_Wave_12
+  - first:
+      213: 8480254146675821503
+    second: TreeBossRoot_Wave_13
+  - first:
+      213: -8536458762912489414
+    second: TreeBossRoot_Wave_14
+  - first:
+      213: -946929898495906702
+    second: TreeBossRoot_Wave_15
+  - first:
+      213: -3359253153523724673
+    second: TreeBossRoot_Wave_16
+  - first:
+      213: -4223256404272216482
+    second: TreeBossRoot_Wave_17
+  - first:
+      213: 7936601259405200478
+    second: TreeBossRoot_Wave_18
+  - first:
+      213: -3236193247484412073
+    second: TreeBossRoot_Wave_19
+  - first:
+      213: -8328925240876941041
+    second: TreeBossRoot_Wave_20
+  - first:
+      213: 4325216482632605417
+    second: TreeBossRoot_Wave_21
+  - first:
+      213: -2726031265779917552
+    second: TreeBossRoot_Wave_22
+  - first:
+      213: 1878634374596650404
+    second: TreeBossRoot_Wave_23
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: TreeBossRoot_Wave_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 223
+        height: 133
+      alignment: 9
+      pivot: {x: 0.49775785, y: 0.060150377}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3599adb4f415fe4488e6ce4696fc199c
+      internalID: 141198771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossRoot_Wave_01
+      rect:
+        serializedVersion: 2
+        x: 223
+        y: 0
+        width: 223
+        height: 133
+      alignment: 9
+      pivot: {x: 0.49775785, y: 0.060150377}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 034fe407e6db6394d85c50dc45307cf1
+      internalID: 105646509
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossRoot_Wave_02
+      rect:
+        serializedVersion: 2
+        x: 446
+        y: 0
+        width: 223
+        height: 133
+      alignment: 9
+      pivot: {x: 0.49775785, y: 0.060150377}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e2f9bfe8822a12247aa9273f70d9a9f6
+      internalID: 1939850172
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossRoot_Wave_03
+      rect:
+        serializedVersion: 2
+        x: 669
+        y: 0
+        width: 223
+        height: 133
+      alignment: 9
+      pivot: {x: 0.49775785, y: 0.060150377}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4fed56bcf759f3c468590bb4dffee08d
+      internalID: -910589446
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossRoot_Wave_04
+      rect:
+        serializedVersion: 2
+        x: 892
+        y: 0
+        width: 223
+        height: 133
+      alignment: 9
+      pivot: {x: 0.49775785, y: 0.060150377}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 49f8efbba322c674f86ed978e6b9b114
+      internalID: -1590636372
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossRoot_Wave_05
+      rect:
+        serializedVersion: 2
+        x: 1115
+        y: 0
+        width: 223
+        height: 133
+      alignment: 9
+      pivot: {x: 0.49775785, y: 0.060150377}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 57e6839c300278a4f9db74dce366a365
+      internalID: -1078290982
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 394ffcb994850d94cb919f289ce2529b
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      TreeBossRoot_Wave_00: 141198771
+      TreeBossRoot_Wave_01: 105646509
+      TreeBossRoot_Wave_02: 1939850172
+      TreeBossRoot_Wave_03: -910589446
+      TreeBossRoot_Wave_04: -1590636372
+      TreeBossRoot_Wave_05: -1078290982
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

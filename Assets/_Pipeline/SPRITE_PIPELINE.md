@@ -489,3 +489,47 @@ copiados la receta es autosuficiente y los sprites sueltos se pueden borrar.
 
 Fue necesario en la fila del ataque del jugador: el aura de energía crece tanto que invade los
 frames vecinos, y el reparto uniforme cortaba la última pose por la mitad.
+
+## 13. Arte pintado sobre fondo de color — `softEdge` y `fillHoles`
+
+Las láminas pintadas sobre un fondo liso de color (`TreeBoss.png`, `BossAttack.png`: verde
+oscuro, sin alfa) rompen el recorte duro de dos maneras. Cada una tiene su perilla en la receta,
+las dos sólo con `keyBackground`:
+
+| Lo que pasa | Perilla | Valor típico |
+|---|---|---|
+| El halo de un brillo sale cortado a tijera, con un cerco del color del fondo | `softEdge` = ancho (px) de la franja del contorno donde la **luz añadida** sobre el fondo pasa a ser alfa, y se le quita el fondo mezclado del color. Lo **más oscuro** que el fondo (tinta, sombra) se queda opaco, así que la silueta no pierde el perfil. Sobre un fondo claro no cambia nada. | 10 (cuerpo), 16 (FX) |
+| El personaje sale **lleno de agujeritos**: las sombras del interior tienen el tono del fondo y el recorte las perfora (el borde suave además los agranda) | `fillHoles` = área máxima (px) de un hueco de «fondo» totalmente rodeado de personaje que se rellena. Los huecos grandes de verdad (entre brazo y cuerpo) se respetan. | 200 (cuerpo), 80 (FX) |
+
+`0` en las dos = el comportamiento de siempre, así que las láminas anteriores no cambian.
+
+Una lámina con filas que necesitan **anclas distintas** (orbes centrados, cosas que salen del
+suelo con el pivote abajo) se corta con **dos recetas sobre la misma imagen**, cada una con
+`cropTop` / `cropBottom` para quedarse con sus filas. Es lo que hace `TreeBossPack` con
+`BossAttack.png` (`TreeBossOrb` arriba, `TreeBossRoot` abajo; la línea se mide con
+`TreeBoss · Diagnosticar láminas`).
+
+## 14. Jefe animado — gestos con `BossAnimator` (`TreeBossPack`)
+
+Un jefe con lámina propia pasa por **el mismo pipeline que un enemigo** para el cuerpo
+(`SpritePipeline.RunSheet`, `runtime = Animator`), pero no por `EnemyFactory`: su prefab lo monta
+su pack (`Assets/Scripts/Bosses/Editor/<Jefe>Pack.cs`), igual que los demás jefes.
+
+- **Una fila por gesto**, con el nombre que usarán los ataques (`Charge`, `Slam`, `Summon`…) y
+  `releaseFrame` = el dibujo en el que sale el golpe. `AnimClipBuilder` planta
+  `OnAttackRelease` / `OnAttackFinished` en **cualquier fila con `releaseFrame >= 0`**, no sólo en
+  `Attack`. Los gestos quedan como estados sueltos del controller; `Idle`, `Hurt` y `Death` se
+  cablean solos.
+- En el prefab: `Animator` **en la raíz** + `BossAnimator` (recibe los eventos) + `BossController`.
+- En cada `BossAttack`, el campo **`gesture`** = nombre del estado. `BossAnimator` acelera o frena el
+  clip para que el frame de suelta caiga justo al acabar `telegraph`, y el ataque arranca en ese
+  evento. `telegraph` sigue siendo el único mando de tiempo; la fase 2 lo acorta (`speedScale`) y
+  con él acelera el gesto.
+- `Hurt` es el tambaleo: se reproduce al cambiar de fase y, con `flinchOnHit`, al recibir golpes
+  en reposo (con enfriamiento). `Death` entra por el bool `Dead`.
+- Los FX del jefe (`Assets/Prefab/Fx/Bosses/<Jefe>/`) son `SpriteFlipbook` + `VfxOneShot`
+  (runtime `Flipbook`: van por pool). Los que salen del suelo con un área de daño se escalan al
+  radio del golpe (`GroundSlamAttack.fitFxToRadius` → `VfxOneShot.SpawnFitWidth`).
+
+Para un gesto nuevo: fila nueva en la lámina y en la receta, relanzar el pack, poner su nombre en
+el `gesture` del ataque. Para un ataque nuevo: otro asset en la baraja de la fase.

@@ -730,6 +730,45 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
     position on release, so nothing jumps. They also self-expire, so a coroutine cut by a phase
     change can't leave a crown floating.
   - `SummonAddsAttack` — adds, capped by `maxAlive`, killed when the boss dies.
+  - `QuakeSlamAttack` — **"are my feet on the floor when it lands?"**. No radius: at the gesture's
+    release frame it shakes the camera (base `shakeAmplitude`/`shakeDuration`), plays its
+    `impactFxPrefab` and damages the player only if `PlayerMovement.IsGrounded &&
+    !IsOnPlatform` and the feet are within `floorTolerance` of the arena floor — jumping or
+    standing on a Platform-layer ledge is the answer. Its timing knob is `impactDelay` (overrides
+    `Telegraph`; `QuakeSlamAttackEditor` hides the base `telegraph`).
+  - `PlatformDenialAttack` (`BossBolt` + `BossHazard`, pooled) — **"where can I stand for the
+    rest of the fight?"**. Fires a `BossBolt` (straight line, no collider) at each Transform in
+    the scene boss's **`BossArenaTargets`** (scene objects can't live on an SO), and on arrival
+    leaves a `BossHazard` with `BossHazard.UntilBossDies` — permanent, ticking `damage` every
+    `fireTickInterval`. Meant as a **`BossPhase.openingAttack`**: an attack the phase fires
+    **once** after its transition, outside the shuffled deck. `BossController.OnDied` calls
+    `BossHazard.ClearFrom(this)`, so every hazard a boss left (fire, rubble) dies with it.
+- **Per-attack availability** — `BossAttack.minPhase` (1-based: below it the attack is never drawn,
+  even if it sits in that phase's deck — the empty-deck fallback respects it too) and
+  `cooldownSeconds` (real-time cooldown, on top of `cooldownInAttacks`), both checked in
+  `BossController.IsReady`/`PickAttack`. Use them to move an attack between phases without
+  duplicating assets or editing decks. `BulletHellAttack` Rain also has `rainCenterOffset`,
+  `rainRandomX` and `rainDropStagger` (drops one by one; each ground marker lasts until its drop),
+  and there is a **`Storm`** pattern: continuous for `stormSeconds` at `stormPerSecond` (neither
+  scaled by phase pace), each drop at a random **landing** X with its own angle
+  (`stormWind` ± `stormAngleRange`) and its origin shifted against the diagonal, so slanted drops
+  still cover the whole span; `stormMarkLanding` marks each landing spot until it arrives.
+- **Gestures — animated bosses (`BossAnimator`)** — a boss whose body is a sprite sheet gets an
+  `Animator` **on the root** plus `BossAnimator`, and each `BossAttack` names its body animation
+  in **`gesture`** (`Charge`, `Slam`, `Summon`…). `BossController.Telegraph` plays it and the
+  attack's `Run` starts on the clip's **`OnAttackRelease` event** (the same event the pipeline
+  plants for enemies — `AnimClipBuilder` now plants it on *any* row with `releaseFrame >= 0`, not
+  just `Attack`). The clip's speed is set so that frame lands exactly at `telegraph / pace`, so
+  `telegraph` stays the only timing knob and phase `speedScale` speeds up gestures for free;
+  `gestureSpeedRange` clamps it (then the drawing wins and the attack waits). Gestures are loose
+  controller states; `BossAnimator` returns them to `Idle`. `Hurt` = stagger on phase change
+  (and `flinchOnHit`, idle only, with cooldown); `Death` via the `Dead` bool. No gesture / no
+  `BossAnimator` = the old timed telegraph, so the six sprite bosses are unchanged.
+  `BossPhase.transitionFx` (optional one-shot prefab) bursts at the boss's feet on entering a
+  phase. Archetype knobs added for it: `OrbRingAttack.launchMode = AtPlayer` (+`launchStagger`,
+  aimed at `BossContext.PlayerCenter`) and `GroundSlamAttack.impactFxPrefab` / `fitFxToRadius` /
+  `fxLeadSeconds` (real-art crater FX via `VfxOneShot.SpawnFitWidth`; with `aimAtPlayer = false`
+  the crater is marked for the whole telegraph).
 - **Every boss is built on a different question on purpose** — that is the design rule for the next
   one, not just a description of these. Bosses 4-6 have no scene of their own yet: their generators
   only build the prefab in `Assets/Prefab/Enemies/`, to be dropped into whatever arena is being
@@ -772,6 +811,32 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
     refuges, spiral, rubble) so a player who got this far recognises everything and only has to do
     it faster, with a countdown running. Brackeys' pentagram at ×2.5, hovering, with a circle
     collider so you can pass underneath.
+  - **Ent Cristalino** (`TreeBossPack`, `Boss_TreeBoss`) — *where does the next one land?*: the
+    first boss built from its **own sprite sheets** and the reference for animated bosses. Rooted,
+    never moves; every attack is a body gesture (`TreeBoss.png` rows Idle / Charge / Slam /
+    Summon / Hurt / Death) and its FX come from `BossAttack.png`, cut by two recipes on the same
+    sheet (`TreeBossOrb` centred, `TreeBossRoot` bottom-anchored, split by `cropTop/cropBottom`).
+    Deck: `Orbes de Savia` (OrbRing, `AtPlayer`, gesture Charge), `Estallido de Raíces`
+    (**QuakeSlam**: earthquake shake + root wave, hurts only a grounded player, punish window,
+    gesture Slam), `Espinas de Raíz` (GroundSlam aimed at the player, root-spike FX with
+    `fxLeadSeconds`, gesture Summon; **`minPhase 2`** like `Bosque de Espinas`, so root spikes never
+    fire in phase 1). Phase 2 at 50%: 2.5s invulnerable stagger + shake + root
+    wave, then **`Fuego Verde`** once (`openingAttack`, PlatformDenial: 6 bolts to the
+    `FireTargets` over the two side platforms, permanent green fire), then `speedScale 1.35`,
+    shorter pauses and the bigger variants (`Tormenta de Savia`, `Bosque de Espinas`), plus
+    **`Tormenta de Hojas`** (BulletHell Storm, gesture Charge, `minPhase 2`, `cooldownSeconds 8`: 5s
+    of leaves at 7/s, random X, wind 8° ± 18°; the Rain version `Hojas Mágicas` — two waves of 10 —
+    is kept as a reusable asset but is no longer in this deck; leaves pass through Platform-layer
+    ledges and die on the Ground floor; `Fx_TreeBoss_Leaf` / `_LeafImpact` are placeholders — real
+    art authored pointing +X since `Projectile` faces its travel direction). The fire's
+    bolt/hazard are **placeholders** (`Fx_TreeBoss_FireBolt` / `_FireHazard`, tinted squares with
+    `FxPlaceholderStyle`): real art = edit those prefabs (sprite + `SpriteFlipbook`, style
+    `tint`/`resize` off), no code. *TreeBoss · Colocar en World1_Boss* places it; *TreeBoss ·
+    Colocar blancos de fuego en World1_Boss* drops 3 targets over each outermost Platform-layer
+    collider (only if the boss has none). Its sheets are painted on a flat
+    green, which is why `SpriteSheetRecipe.softEdge` (glows fade instead of being scissor-cut) and
+    `fillHoles` (bark shadows share the background's hue and got punched through) exist — see
+    `SPRITE_PIPELINE.md` §13-14.
 - **`BossHealthBar`** — screen-space uGUI built in code (no prefab/UXML/PanelSettings), sorting
   order 18 so menus still cover it. Shows the definition's name/title, an amber "ghost" trail
   behind the fill and a tick per phase threshold. A new boss needs no UI work.

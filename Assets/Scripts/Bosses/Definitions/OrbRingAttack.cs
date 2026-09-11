@@ -22,6 +22,16 @@ namespace RedMagic.Bosses
     /// cada uno se suelta y en su posición exacta nace un proyectil de verdad por
     /// <see cref="ProjectileFactory"/>, así que lo que golpea es el mismo sistema de siempre.
     /// </summary>
+    /// <summary>Hacia dónde sale cada orbe de la corona al soltarla.</summary>
+    public enum OrbLaunchMode
+    {
+        /// <summary>Hacia fuera, cada uno desde su hueco: un anillo que se abre.</summary>
+        Radial,
+
+        /// <summary>Todos al jugador (al centro de su collider), uno detrás de otro.</summary>
+        AtPlayer,
+    }
+
     [CreateAssetMenu(menuName = "RedMagic/Boss/Orb Ring Attack", fileName = "BossAttack_CoronaDeOrbes")]
     public class OrbRingAttack : BossAttack
     {
@@ -94,6 +104,17 @@ namespace RedMagic.Bosses
         [Min(0f)]
         [SerializeField] private float launchSpread;
 
+        [Tooltip("Radial = cada orbe sale hacia fuera desde su hueco (el anillo se abre).\n" +
+                 "AtPlayer = cada orbe sale hacia el jugador, uno detrás de otro: la corona deja " +
+                 "de ser un patrón de huecos y pasa a ser una cola de disparos que hay que ir " +
+                 "esquivando al ritmo de 'launchStagger'.")]
+        [SerializeField] private OrbLaunchMode launchMode = OrbLaunchMode.Radial;
+
+        [Tooltip("Sólo AtPlayer: segundos entre la salida de un orbe y la del siguiente. Cada uno " +
+                 "apunta a donde esté el jugador en SU momento. 0 = todos a la vez.")]
+        [Min(0f)]
+        [SerializeField] private float launchStagger = 0.15f;
+
         [Tooltip("Cómo vuela cada orbe una vez suelto. Ojo con 'size': si el prefab del proyectil " +
                  "lleva arte de verdad (sin FxPlaceholderStyle) el tamaño lo fija el prefab, así " +
                  "que hay que cuadrarlo a mano con 'endScale' o la bola cambiará de tamaño al salir.")]
@@ -117,7 +138,8 @@ namespace RedMagic.Bosses
         private Sprite ShotArt(in BossContext ctx) => projectileSprite != null ? projectileSprite : ctx.FxSprite;
 
         public override string ShortStats() =>
-            $"{Damage:0} dmg · corona de {orbCount} · carga {growSeconds:0.0}s";
+            $"{Damage:0} dmg · corona de {orbCount} · carga {growSeconds:0.0}s" +
+            (launchMode == OrbLaunchMode.AtPlayer ? $" · al jugador cada {launchStagger:0.00}s" : "");
 
         public override void OnTelegraph(BossContext ctx)
         {
@@ -150,8 +172,10 @@ namespace RedMagic.Bosses
             float hold = ctx.Scaled(holdSeconds);
 
             // Seguro: si la corrutina muere a medias (cambio de fase, jefe abatido), los orbes se
-            // recogen solos en vez de quedarse flotando en la arena.
-            float lifetime = stagger * count + grow + hold + 1f;
+            // recogen solos en vez de quedarse flotando en la arena. Los que esperan turno para
+            // salir hacia el jugador también cuentan.
+            float queue = launchMode == OrbLaunchMode.AtPlayer ? ctx.Scaled(launchStagger) * count : 0f;
+            float lifetime = stagger * count + grow + hold + queue + 1f;
 
             float baseAngle = alignToPlayer
                 ? Mathf.Atan2(ctx.AimAtPlayer.y, ctx.AimAtPlayer.x) * Mathf.Rad2Deg
@@ -198,8 +222,8 @@ namespace RedMagic.Bosses
                 if (!ctx.IsValid) yield break;
 
                 Impact();
-                Launch(ctx, orbs, ctx.Origin + originOffset,
-                       baseAngle + spinDegreesPerSecond * elapsed, step);
+                yield return Launch(ctx, orbs, ctx.Origin + originOffset,
+                                    baseAngle + spinDegreesPerSecond * elapsed, step);
             }
             finally
             {
@@ -224,30 +248,46 @@ namespace RedMagic.Bosses
         }
 
         /// <summary>
-        /// Suelta la corona: cada orbe se apaga y en su sitio exacto nace un proyectil que sale
-        /// hacia fuera. Se dispara desde la posición del orbe, no desde el jefe, para que no haya
-        /// ningún salto visual entre lo que se estaba viendo y lo que empieza a volar.
+        /// Suelta la corona: cada orbe se apaga y en su sitio exacto nace un proyectil. Se dispara
+        /// desde la posición del orbe, no desde el jefe, para que no haya ningún salto visual entre
+        /// lo que se estaba viendo y lo que empieza a volar. En radial salen todos a la vez hacia
+        /// fuera; hacia el jugador, de uno en uno y cada uno apuntando a donde esté en su momento.
         /// </summary>
-        private void Launch(in BossContext ctx, BossOrb[] orbs, Vector2 center, float spin, float step)
+        private IEnumerator Launch(BossContext ctx, BossOrb[] orbs, Vector2 center, float spin, float step)
         {
+            bool atPlayer = launchMode == OrbLaunchMode.AtPlayer;
+            float gap = atPlayer ? ctx.Scaled(launchStagger) : 0f;
+
             for (int i = 0; i < orbs.Length; i++)
             {
                 if (orbs[i] == null) continue;
+                if (!ctx.IsValid) yield break;
 
                 Vector2 origin = orbs[i].Position;
                 orbs[i].Release();
                 orbs[i] = null;
 
-                float angle = spin + step * i + Random.Range(-launchSpread, launchSpread);
-                float radians = angle * Mathf.Deg2Rad;
-                var direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
+                float radians = (spin + step * i) * Mathf.Deg2Rad;
+                var outward = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
 
                 // Si por lo que sea el orbe no llegó a existir, al menos que salga de su hueco.
-                if (origin == Vector2.zero) origin = center + direction * ringRadius;
+                if (origin == Vector2.zero) origin = center + outward * ringRadius;
+
+                Vector2 direction = outward;
+                if (atPlayer)
+                {
+                    Vector2 toPlayer = ctx.PlayerCenter - origin;
+                    direction = toPlayer.sqrMagnitude < 0.0001f ? outward : toPlayer.normalized;
+                }
+
+                if (launchSpread > 0f)
+                    direction = Quaternion.Euler(0f, 0f, Random.Range(-launchSpread, launchSpread)) * direction;
 
                 ProjectileFactory.Spawn(ctx.Ability, projectile, origin, direction,
                                         ScaledDamage(ctx), KnockbackMultiplier,
                                         ShotArt(ctx), ctx.Accent);
+
+                if (gap > 0f && i < orbs.Length - 1) yield return new WaitForSeconds(gap);
             }
         }
     }

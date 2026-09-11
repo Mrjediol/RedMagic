@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 855936d2c3449ce4b9939fc81d00009e, type: 3}
+  m_Name: BossAttack_FuegoVerde
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.PlatformDenialAttack
+  displayName: Fuego Verde
+  description: "Escupe fuego verde sobre las plataformas y ya no se apaga. A partir
+    de aqu\xED, las alturas son suyas."
+  accent: {r: 0.4, g: 1, b: 0.25, a: 1}
+  telegraph: 1.1
+  recovery: 1.2
+  weight: 1
+  cooldownInAttacks: 0
+  damage: 8
+  knockbackMultiplier: 0.3
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: Charge
+  sfxId: 
+  shakeAmplitude: 0.3
+  shakeDuration: 0.3
+  boltPrefab: {fileID: 6447472773088335995, guid: fa39556544fa03d429632d1f782dc437, type: 3}
+  boltSpeed: 12
+  boltSize: {x: 0.8, y: 0.8}
+  launchOffset: {x: 0, y: 4.65}
+  launchStagger: 0.12
+  firePrefab: {fileID: 8694891067485560291, guid: 3ea45ca982ad466458946d0c1fcdcfc0, type: 3}
+  fireSize: {x: 2.1, y: 1}
+  fireTickInterval: 0.5
+  snapToSurface: 1
+  snapDistance: 4

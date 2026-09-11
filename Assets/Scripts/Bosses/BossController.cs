@@ -5,6 +5,7 @@ using RedMagic.Abilities;
 using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Core;
+using RedMagic.Fx;
 using RedMagic.Gameplay;
 using UnityEngine;
 
@@ -164,6 +165,7 @@ namespace RedMagic.Bosses
         private SpriteRenderer _aura;
         private Collider2D[] _colliders;
         private Rigidbody2D _rigidbody;
+        private BossAnimator _animator;
 
         private Transform _target;
         private float _retargetTimer;
@@ -188,6 +190,9 @@ namespace RedMagic.Bosses
 
         /// <summary>Cuántos ataques han pasado desde que se usó cada patrón (para no repetir).</summary>
         private readonly Dictionary<BossAttack, int> _lastUsedAt = new Dictionary<BossAttack, int>();
+
+        /// <summary>Time.time del último lanzamiento de cada patrón (para su cooldownSeconds).</summary>
+        private readonly Dictionary<BossAttack, float> _lastUsedTime = new Dictionary<BossAttack, float>();
 
         private int _attacksLaunched;
 
@@ -248,11 +253,38 @@ namespace RedMagic.Bosses
             var phase = CurrentPhase;
             float pace = PaceOf(phase);
 
-            attack.OnTelegraph(BuildContext(phase));
-            yield return new WaitForSeconds(attack.Telegraph / pace);
+            yield return Telegraph(attack, BuildContext(phase), pace);
             if (_dead) yield break;
 
             yield return attack.Run(BuildContext(phase));
+        }
+
+        /// <summary>
+        /// El aviso de un ataque. Sin gesto, un tiempo fijo. Con gesto (<see cref="BossAttack.Gesture"/>
+        /// y un <see cref="BossAnimator"/> en el jefe) el aviso lo hace el cuerpo: el clip se ajusta
+        /// para soltar al acabar el telegrafiado y el ataque arranca en el frame de suelta, no
+        /// cuando diga un reloj — el orbe nace en el dibujo en el que el jefe abre los brazos.
+        /// </summary>
+        private IEnumerator Telegraph(BossAttack attack, BossContext ctx, float pace)
+        {
+            float seconds = attack.Telegraph / pace;
+            attack.OnTelegraph(ctx);
+
+            if (_animator != null && _animator.PlayGesture(attack.Gesture, seconds))
+            {
+                // Seguro por si el Animator no llega a soltar (clip sin evento, estado cortado):
+                // el ataque sale igual, un pelo después de lo previsto.
+                float timeout = Mathf.Max(seconds, _animator.SecondsToRelease) + 0.5f;
+                while (!_animator.Released && timeout > 0f && !_dead)
+                {
+                    timeout -= Time.deltaTime;
+                    yield return null;
+                }
+
+                yield break;
+            }
+
+            yield return new WaitForSeconds(seconds);
         }
 
         /// <summary>Se dispara al empezar el combate (tras la presentación).</summary>
@@ -313,6 +345,7 @@ namespace RedMagic.Bosses
             _body = GetComponentInChildren<SpriteRenderer>();
             _colliders = GetComponentsInChildren<Collider2D>();
             _rigidbody = GetComponent<Rigidbody2D>();
+            _animator = GetComponent<BossAnimator>();
 
             _visual = _body != null ? _body.transform : transform;
             _visualBaseRotation = _visual.localRotation;
@@ -357,6 +390,7 @@ namespace RedMagic.Bosses
             }
 
             ApplyPhaseVisuals(definition.GetPhase(0));
+            if (_animator != null) _animator.SetPace(PaceOf(definition.GetPhase(0)));
         }
 
         private void Update()
@@ -396,9 +430,24 @@ namespace RedMagic.Bosses
         /// Bucle del combate. Se relanza tal cual tras cada transición de fase, por eso la
         /// presentación es un parámetro: sólo la primera vuelta la reproduce.
         /// </summary>
-        private IEnumerator FightLoop(bool playIntro)
+        private IEnumerator FightLoop(bool playIntro, BossAttack opening = null)
         {
             if (playIntro) yield return Intro();
+
+            // Ataque de entrada de la fase (BossPhase.openingAttack): una sola vez, antes de la
+            // baraja, con su ciclo completo de aviso → ataque → recuperación → pausa.
+            if (opening != null && !_dead)
+            {
+                var phase = CurrentPhase;
+                yield return RunAttack(opening, phase);
+                if (_dead) yield break;
+
+                if (phase != null)
+                {
+                    float pause = UnityEngine.Random.Range(phase.pauseBetweenAttacks.x, phase.pauseBetweenAttacks.y);
+                    yield return new WaitForSeconds(pause / PaceOf(phase));
+                }
+            }
 
             while (!_dead)
             {
@@ -463,7 +512,8 @@ namespace RedMagic.Bosses
         /// Sorteo por peso dentro de la baraja de la fase, descartando los que todavía están en
         /// enfriamiento (<see cref="BossAttack.CooldownInAttacks"/>). Si el enfriamiento dejara la
         /// baraja vacía se ignora, para que el jefe nunca se quede parado por una mala
-        /// configuración del asset.
+        /// configuración del asset. Lo que NO se ignora nunca es <see cref="BossAttack.MinPhase"/>:
+        /// un ataque de fase 2 no sale en la fase 1 ni como último recurso.
         /// </summary>
         private BossAttack PickAttack(BossPhase phase)
         {
@@ -473,7 +523,7 @@ namespace RedMagic.Bosses
             for (int i = 0; i < phase.attacks.Length; i++)
             {
                 var candidate = phase.attacks[i];
-                if (candidate == null) continue;
+                if (candidate == null || !candidate.AvailableInPhase(_phaseIndex)) continue;
 
                 fallback ??= candidate;
                 if (!IsReady(candidate)) continue;
@@ -498,22 +548,28 @@ namespace RedMagic.Bosses
         }
 
         private bool IsReady(BossAttack attack) =>
-            !_lastUsedAt.TryGetValue(attack, out int last) ||
-            _attacksLaunched - last > attack.CooldownInAttacks;
+            attack.AvailableInPhase(_phaseIndex) &&
+            (!_lastUsedAt.TryGetValue(attack, out int last) || _attacksLaunched - last > attack.CooldownInAttacks) &&
+            (attack.CooldownSeconds <= 0f || !_lastUsedTime.TryGetValue(attack, out float at) ||
+             Time.time - at >= attack.CooldownSeconds);
 
         /// <summary>Aviso → ataque → recuperación. Es el ciclo que hace legible a un jefe.</summary>
         private IEnumerator RunAttack(BossAttack attack, BossPhase phase)
         {
             _lastUsedAt[attack] = _attacksLaunched;
+            _lastUsedTime[attack] = Time.time;
             _attacksLaunched++;
 
             var ctx = BuildContext(phase);
             float pace = PaceOf(phase);
 
-            // --- aviso: el aura se enciende y el ataque pinta sus propias marcas. Nada daña aún.
+            // El ritmo cambia también dentro de una fase (frenesí), así que se reenvía en cada ataque.
+            if (_animator != null) _animator.SetPace(pace);
+
+            // --- aviso: el aura se enciende, el jefe hace su gesto (si lo tiene) y el ataque pinta
+            // sus propias marcas. Nada daña aún.
             _auraTarget = 0.6f;
-            attack.OnTelegraph(ctx);
-            yield return new WaitForSeconds(attack.Telegraph / pace);
+            yield return Telegraph(attack, ctx, pace);
             _auraTarget = 0f;
 
             if (_dead) yield break;
@@ -758,6 +814,17 @@ namespace RedMagic.Bosses
             ApplyPhaseVisuals(phase);
             PhaseChanged?.Invoke(_phaseIndex);
 
+            // El golpe que cruza el umbral se lee: el jefe se tambalea (corta el gesto que tuviera
+            // a medias) y, si la fase lo trae, algo le estalla a los pies.
+            if (_animator != null)
+            {
+                _animator.PlayStagger();
+                _animator.SetPace(PaceOf(phase));
+            }
+
+            if (phase.transitionFx != null)
+                VfxOneShot.Spawn(phase.transitionFx, new Vector3(transform.position.x, _groundY, 0f));
+
             if (!string.IsNullOrWhiteSpace(phase.transitionSfxId) && AudioManager.Instance != null)
                 AudioManager.Instance.PlaySFX(phase.transitionSfxId);
 
@@ -771,7 +838,7 @@ namespace RedMagic.Bosses
             if (_dead) yield break;
 
             _health.Invulnerable = false;
-            _fightRoutine = StartCoroutine(FightLoop(playIntro: false));
+            _fightRoutine = StartCoroutine(FightLoop(playIntro: false, opening: phase.openingAttack));
         }
 
         private void ApplyPhaseVisuals(BossPhase phase)
@@ -825,6 +892,10 @@ namespace RedMagic.Bosses
             // Los esbirros mueren con su invocador: si no, el jugador se queda peleando contra los
             // restos mientras recoge la recompensa del jefe.
             KillAdds();
+
+            // Lo que dejó en el suelo (el fuego verde, el escombro) se va con él: un hazard que siga
+            // quemando mientras se recoge la recompensa ya no es parte de ningún combate.
+            BossHazard.ClearFrom(this);
 
             if (_aura != null) _aura.gameObject.SetActive(false);
 

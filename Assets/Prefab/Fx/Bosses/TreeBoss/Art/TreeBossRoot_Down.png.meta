@@ -1,0 +1,355 @@
+fileFormatVersion: 2
+guid: 115311742785f7a4dbb45f58b8716baa
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5067181757361802169
+    second: TreeBossRoot_Down_0
+  - first:
+      213: 717261387659156878
+    second: TreeBossRoot_Down_1
+  - first:
+      213: 8130182245963174370
+    second: TreeBossRoot_Down_2
+  - first:
+      213: 4881179890758989689
+    second: TreeBossRoot_Down_3
+  - first:
+      213: 6402307197396609059
+    second: TreeBossRoot_Down_4
+  - first:
+      213: -6604048647189022183
+    second: TreeBossRoot_Down_5
+  - first:
+      213: 3004169408738079245
+    second: TreeBossRoot_Down_6
+  - first:
+      213: -727071713383544044
+    second: TreeBossRoot_Down_7
+  - first:
+      213: 1568136910504397876
+    second: TreeBossRoot_Down_8
+  - first:
+      213: -5633179835982970296
+    second: TreeBossRoot_Down_9
+  - first:
+      213: 2588857494265320474
+    second: TreeBossRoot_Down_10
+  - first:
+      213: 7748777605700972621
+    second: TreeBossRoot_Down_11
+  - first:
+      213: -1278947246934254813
+    second: TreeBossRoot_Down_12
+  - first:
+      213: -7611521604304239277
+    second: TreeBossRoot_Down_13
+  - first:
+      213: 4154345923709776153
+    second: TreeBossRoot_Down_14
+  - first:
+      213: 9895848853376699
+    second: TreeBossRoot_Down_15
+  - first:
+      213: -1329781838347380661
+    second: TreeBossRoot_Down_16
+  - first:
+      213: 7762505980489769456
+    second: TreeBossRoot_Down_17
+  - first:
+      213: -3849374832751241142
+    second: TreeBossRoot_Down_18
+  - first:
+      213: 4388738689549771554
+    second: TreeBossRoot_Down_19
+  - first:
+      213: -7791447318483706348
+    second: TreeBossRoot_Down_20
+  - first:
+      213: 7036987304043531196
+    second: TreeBossRoot_Down_21
+  - first:
+      213: -5850422202048955800
+    second: TreeBossRoot_Down_22
+  - first:
+      213: 7680964110077163414
+    second: TreeBossRoot_Down_23
+  - first:
+      213: 4574035387404143192
+    second: TreeBossRoot_Down_24
+  - first:
+      213: -9077830118855808344
+    second: TreeBossRoot_Down_25
+  - first:
+      213: 3881828636915302457
+    second: TreeBossRoot_Down_26
+  - first:
+      213: -4239880315724576845
+    second: TreeBossRoot_Down_27
+  - first:
+      213: -4758322238655125480
+    second: TreeBossRoot_Down_28
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: TreeBossRoot_Down_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 173
+        height: 159
+      alignment: 9
+      pivot: {x: 0.49710983, y: 0.050314464}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e7035c01835d85540ab0620890cfcb5a
+      internalID: -85317021
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossRoot_Down_01
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 0
+        width: 173
+        height: 159
+      alignment: 9
+      pivot: {x: 0.49710983, y: 0.050314464}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 27f08dabf8343ef47af92efac58d9a4a
+      internalID: -928877302
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossRoot_Down_02
+      rect:
+        serializedVersion: 2
+        x: 346
+        y: 0
+        width: 173
+        height: 159
+      alignment: 9
+      pivot: {x: 0.49710983, y: 0.050314464}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8241b6207c9940f49a8c12e055d61b0b
+      internalID: -725234456
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossRoot_Down_03
+      rect:
+        serializedVersion: 2
+        x: 519
+        y: 0
+        width: 173
+        height: 159
+      alignment: 9
+      pivot: {x: 0.49710983, y: 0.050314464}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 97b39fc5a4be20a4aa12c2e949cb5316
+      internalID: 1276508601
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossRoot_Down_04
+      rect:
+        serializedVersion: 2
+        x: 692
+        y: 0
+        width: 173
+        height: 159
+      alignment: 9
+      pivot: {x: 0.49710983, y: 0.050314464}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 801a1a05df2f7ee42a2cbd0d11940347
+      internalID: -1090227034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossRoot_Down_05
+      rect:
+        serializedVersion: 2
+        x: 865
+        y: 0
+        width: 173
+        height: 159
+      alignment: 9
+      pivot: {x: 0.49710983, y: 0.050314464}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 03c44a93fb683db4a83cf9d8529d3385
+      internalID: 1029193576
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 45ea0a43f6498f84088137e854e256ba
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      TreeBossRoot_Down_00: -85317021
+      TreeBossRoot_Down_01: -928877302
+      TreeBossRoot_Down_02: -725234456
+      TreeBossRoot_Down_03: 1276508601
+      TreeBossRoot_Down_04: -1090227034
+      TreeBossRoot_Down_05: 1029193576
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

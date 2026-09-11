@@ -70,5 +70,35 @@ namespace RedMagic.Fx
 
             return instance;
         }
+
+        /// <summary>
+        /// Como <see cref="Spawn"/>, pero escalado en uniforme para que el dibujo mida
+        /// <paramref name="width"/> unidades de ancho. Para un efecto que tiene que cuadrar con un
+        /// área de daño configurable (el radio de un golpe): cambiar el radio en el Inspector no
+        /// deja el dibujo más grande o más pequeño que lo que duele. Se mide la celda del sprite,
+        /// que en una hoja cortada por el pipeline es la misma en todos los frames.
+        /// </summary>
+        public static GameObject SpawnFitWidth(GameObject prefab, Vector3 position, float width,
+                                               int facing = 1, Transform parent = null)
+        {
+            var instance = Spawn(prefab, position, facing, parent);
+            if (instance == null || width <= 0f) return instance;
+
+            float natural = NaturalWidth(prefab);
+            if (natural > 0.0001f) instance.transform.localScale *= width / natural;
+
+            return instance;
+        }
+
+        /// <summary>Ancho en mundo de la celda del sprite del prefab, a la escala autorizada en él.</summary>
+        private static float NaturalWidth(GameObject prefab)
+        {
+            var renderer = prefab.GetComponentInChildren<SpriteRenderer>(true);
+            if (renderer == null || renderer.sprite == null) return 0f;
+
+            var sprite = renderer.sprite;
+            // lossyScale de un asset de prefab = escala relativa a su raíz, que es la que Spawn copia.
+            return sprite.rect.width / sprite.pixelsPerUnit * Mathf.Abs(renderer.transform.lossyScale.x);
+        }
     }
 }

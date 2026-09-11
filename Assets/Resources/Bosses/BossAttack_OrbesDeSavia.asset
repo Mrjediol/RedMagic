@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e336af67ac476047b25568b1f1326e1, type: 3}
+  m_Name: BossAttack_OrbesDeSavia
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.OrbRingAttack
+  displayName: Orbes de Savia
+  description: "Carga el cristal del pecho y lo suelta en orbes que van a por ti
+    de uno en uno. Mu\xE9vete a su ritmo."
+  accent: {r: 0.35, g: 0.95, b: 0.8, a: 1}
+  telegraph: 0.9
+  recovery: 1.2
+  weight: 1.2
+  cooldownInAttacks: 1
+  damage: 12
+  knockbackMultiplier: 0.6
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: Charge
+  sfxId: 
+  shakeAmplitude: 0.25
+  shakeDuration: 0.25
+  orbCount: 5
+  ringRadius: 2.4
+  originOffset: {x: 0, y: 4.65}
+  startAngle: 0
+  alignToPlayer: 1
+  spinDegreesPerSecond: 25
+  startScale: 0.2
+  endScale: 1
+  codeOrbSize: 0.7
+  growSeconds: 0.9
+  appearStagger: 0.1
+  holdSeconds: 0.25
+  recoilFraction: 0.1
+  volleys: 1
+  timeBetweenVolleys: 0.8
+  launchSpread: 0
+  launchMode: 1
+  launchStagger: 0.2
+  projectile:
+    prefab: {fileID: 2367985640549458107, guid: 1478e203ff8218040afb1d77900b258e, type: 3}
+    speed: 9
+    lifetime: 4.5
+    size: {x: 0.75, y: 0.75}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    homingTurnRate: 25
+    homingRange: 12
+    arcGravity: 0
+    impactRadius: 0
+    impactDamage: 0
+  orbPrefab: {fileID: 5330921414612818761, guid: d9ea6106822da3c4fa0c1062b5a974b7, type: 3}
+  orbSprite: {fileID: 0}
+  tintOrbWithAccent: 0
+  projectileSprite: {fileID: 0}

@@ -100,7 +100,11 @@ namespace RedMagic.Pipeline.EditorTools
                 settings.stopTime = sprites.Count / row.fps;
                 AnimationUtility.SetAnimationClipSettings(clip, settings);
 
-                if (row.state == Attack && recipe.attackEvents) AddAttackEvents(clip, row, sprites.Count, log);
+                // El ataque lleva siempre sus eventos; cualquier otra fila, sólo si declara un frame
+                // de suelta — los gestos de un jefe (cargar, golpear el suelo, invocar) son filas
+                // con nombre propio que sueltan su golpe igual que un ataque.
+                if (recipe.attackEvents && (row.state == Attack || row.releaseFrame >= 0))
+                    AddAttackEvents(clip, row, sprites.Count, log);
                 else AnimationUtility.SetAnimationEvents(clip, new AnimationEvent[0]);
 
                 EditorUtility.SetDirty(clip);

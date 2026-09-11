@@ -56,6 +56,15 @@ namespace RedMagic.Bosses
         [Tooltip("id de sonido del AudioManager al entrar en la fase. Vacío = sin sonido.")]
         public string transitionSfxId;
 
+        [Tooltip("Efecto de un solo uso (pooled, con VfxOneShot) que estalla a los pies del jefe al " +
+                 "entrar en la fase. Vacío = sólo aura, sacudida y sonido.")]
+        public GameObject transitionFx;
+
+        [Tooltip("Ataque que el jefe lanza UNA sola vez al acabar la transición (tras la " +
+                 "invulnerabilidad y la sacudida), antes de volver a su baraja. No entra en el " +
+                 "sorteo. Vacío = la fase empieza directamente con la baraja.")]
+        public BossAttack openingAttack;
+
         [Header("Frenesí")]
         [Tooltip("Por debajo de esta vida normalizada la fase acelera aún más. 0 = nunca.")]
         [Range(0f, 1f)]

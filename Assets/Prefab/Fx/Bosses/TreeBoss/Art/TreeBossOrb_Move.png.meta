@@ -1,0 +1,322 @@
+fileFormatVersion: 2
+guid: 47f31426cfc3ba94c9e53daa85e03036
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2424184701562664666
+    second: TreeBossOrb_Move_0
+  - first:
+      213: -6830748570314888044
+    second: TreeBossOrb_Move_1
+  - first:
+      213: -6894052685787389382
+    second: TreeBossOrb_Move_2
+  - first:
+      213: -1337849006386335280
+    second: TreeBossOrb_Move_3
+  - first:
+      213: 4395171561267840116
+    second: TreeBossOrb_Move_4
+  - first:
+      213: -4703144074707395141
+    second: TreeBossOrb_Move_5
+  - first:
+      213: 5023590630624578396
+    second: TreeBossOrb_Move_6
+  - first:
+      213: -4452767058517611250
+    second: TreeBossOrb_Move_7
+  - first:
+      213: 2294238778474143605
+    second: TreeBossOrb_Move_8
+  - first:
+      213: -5002357489046346789
+    second: TreeBossOrb_Move_9
+  - first:
+      213: 6324803834106726765
+    second: TreeBossOrb_Move_10
+  - first:
+      213: -1755218991404851692
+    second: TreeBossOrb_Move_11
+  - first:
+      213: 4420398560680409536
+    second: TreeBossOrb_Move_12
+  - first:
+      213: -4952291016145593589
+    second: TreeBossOrb_Move_13
+  - first:
+      213: 667647951307858024
+    second: TreeBossOrb_Move_14
+  - first:
+      213: -6564910329516472080
+    second: TreeBossOrb_Move_15
+  - first:
+      213: 821525029843965360
+    second: TreeBossOrb_Move_16
+  - first:
+      213: -4521807800504034850
+    second: TreeBossOrb_Move_17
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: TreeBossOrb_Move_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 216
+        height: 89
+      alignment: 9
+      pivot: {x: 0.5, y: 0.49438202}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7998fec90b37d9c41b10d21f4890da77
+      internalID: -104892722
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossOrb_Move_01
+      rect:
+        serializedVersion: 2
+        x: 216
+        y: 0
+        width: 216
+        height: 89
+      alignment: 9
+      pivot: {x: 0.5, y: 0.49438202}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ae24addfe069ecf408aa56dbdc77d213
+      internalID: 1036181029
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossOrb_Move_02
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 0
+        width: 216
+        height: 89
+      alignment: 9
+      pivot: {x: 0.5, y: 0.49438202}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 268a4a6a3f8256145895ab4e22dc1a68
+      internalID: -1762410252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossOrb_Move_03
+      rect:
+        serializedVersion: 2
+        x: 648
+        y: 0
+        width: 216
+        height: 89
+      alignment: 9
+      pivot: {x: 0.5, y: 0.49438202}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7e6f0fcf918ad6c43a577f3b2642f175
+      internalID: -462748201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossOrb_Move_04
+      rect:
+        serializedVersion: 2
+        x: 864
+        y: 0
+        width: 216
+        height: 89
+      alignment: 9
+      pivot: {x: 0.5, y: 0.49438202}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a0ff0f564c02d52418fc4dda40345ec2
+      internalID: 1045888670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreeBossOrb_Move_05
+      rect:
+        serializedVersion: 2
+        x: 1080
+        y: 0
+        width: 216
+        height: 89
+      alignment: 9
+      pivot: {x: 0.5, y: 0.49438202}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0e4828d2d2b75094884cfedc162e584d
+      internalID: 1260614123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 616a5670f7cd63b40bce6e9e78593047
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      TreeBossOrb_Move_00: -104892722
+      TreeBossOrb_Move_01: 1036181029
+      TreeBossOrb_Move_02: -1762410252
+      TreeBossOrb_Move_03: -462748201
+      TreeBossOrb_Move_04: 1045888670
+      TreeBossOrb_Move_05: 1260614123
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

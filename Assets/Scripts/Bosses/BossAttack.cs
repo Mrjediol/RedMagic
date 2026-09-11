@@ -52,6 +52,17 @@ namespace RedMagic.Bosses
         [Min(0)]
         [SerializeField] private int cooldownInAttacks = 1;
 
+        [Tooltip("Segundos desde que se lanzó antes de que pueda volver a salir en el sorteo. Se " +
+                 "suma a 'cooldownInAttacks' (tienen que cumplirse los dos). 0 = sin espera por tiempo.")]
+        [Min(0f)]
+        [SerializeField] private float cooldownSeconds;
+
+        [Header("Fases")]
+        [Tooltip("Fase (1 = la primera) a partir de la cual este ataque puede salir en el sorteo. " +
+                 "Por debajo nunca se elige, aunque esté en la baraja de esa fase. 1 = siempre.")]
+        [Min(1)]
+        [SerializeField] private int minPhase = 1;
+
         [Header("Daño")]
         [Min(0f)]
         [SerializeField] private float damage = 18f;
@@ -74,6 +85,16 @@ namespace RedMagic.Bosses
         [Min(1f)]
         [SerializeField] private float vulnerableMultiplier = 2.5f;
 
+        [Header("Gesto")]
+        [Tooltip("Estado del Animator del jefe que hace de aviso de este ataque ('Charge', 'Slam'…). " +
+                 "Vacío = sin gesto: el aviso es sólo el aura y las marcas del ataque.\n\n" +
+                 "Con gesto (y un BossAnimator en el jefe) el cuerpo ES el aviso: el clip se acelera " +
+                 "o frena para que su frame de suelta — el evento OnAttackRelease que el pipeline " +
+                 "planta en el 'releaseFrame' de esa fila — caiga justo al acabar 'telegraph', y el " +
+                 "ataque arranca en ese frame exacto. 'telegraph' sigue siendo el único mando de " +
+                 "tiempo, así que la fase 2, al acortarlo con speedScale, acelera también el gesto.")]
+        [SerializeField] private string gesture;
+
         [Header("Presencia")]
         [Tooltip("id de sonido del AudioManager al lanzar el ataque. Vacío = sin sonido.")]
         [SerializeField] private string sfxId;
@@ -88,12 +109,22 @@ namespace RedMagic.Bosses
         public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? name : displayName;
         public string Description => description;
         public Color Accent => accent;
-        public float Telegraph => telegraph;
+        /// <summary>
+        /// Segundos de aviso. Virtual para el arquetipo que expone su tiempo con otro nombre
+        /// (<see cref="QuakeSlamAttack"/>: "segundos hasta el impacto").
+        /// </summary>
+        public virtual float Telegraph => telegraph;
         public float Recovery => recovery;
         public float Weight => weight;
         public int CooldownInAttacks => cooldownInAttacks;
+        public float CooldownSeconds => cooldownSeconds;
+        public int MinPhase => minPhase;
+
+        /// <summary>Si puede salir en el sorteo de la fase <paramref name="phaseIndex"/> (0 = la primera).</summary>
+        public bool AvailableInPhase(int phaseIndex) => phaseIndex >= minPhase - 1;
         public float VulnerableSeconds => vulnerableSeconds;
         public float VulnerableMultiplier => vulnerableMultiplier;
+        public string Gesture => gesture;
 
         protected float Damage => damage;
         protected float KnockbackMultiplier => knockbackMultiplier;

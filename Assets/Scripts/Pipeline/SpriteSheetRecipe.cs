@@ -62,10 +62,12 @@ namespace RedMagic.Pipeline
 
         public bool loop = true;
 
-        [Tooltip("Sólo para la fila de ataque: en qué frame sale el golpe (el proyectil, o la caja " +
-                 "de melé). El generador clava ahí un AnimationEvent, así que el daño cae en el " +
-                 "dibujo exacto en el que el bicho suelta, no cuando lo diga un temporizador.\n" +
-                 "-1 = sin evento (se usa el tiempo de respaldo de EnemyStats).")]
+        [Tooltip("En qué frame sale el golpe (el proyectil, o la caja de melé). El generador clava " +
+                 "ahí un AnimationEvent (OnAttackRelease, más OnAttackFinished al final), así que el " +
+                 "daño cae en el dibujo exacto en el que el bicho suelta, no cuando lo diga un " +
+                 "temporizador. Vale para la fila 'Attack' y para cualquier otra: los gestos de un " +
+                 "jefe ('Charge', 'Slam'…) son filas propias que sueltan igual (ver BossAnimator).\n" +
+                 "-1 = sin evento (el ataque usa su tiempo de respaldo).")]
         public int releaseFrame = -1;
 
         [Tooltip("Recuadros de los frames puestos a mano, en píxeles de la lámina (y=0 abajo, como " +
@@ -194,6 +196,26 @@ namespace RedMagic.Pipeline
 
         [Tooltip("Con alfa real: a partir de qué alfa un pixel cuenta como contenido.")]
         [Range(0f, 1f)] public float alphaThreshold = 0.15f;
+
+        [Tooltip("Borde suave al deducir el fondo, en píxeles desde el contorno. 0 = recorte duro, " +
+                 "como siempre.\n\n" +
+                 "Para arte PINTADO sobre un fondo liso y oscuro (brillos, halos, cristales), donde " +
+                 "el recorte duro corta el halo a tijera y deja un cerco del color del fondo. En esa " +
+                 "franja, la LUZ que el pixel añade sobre el fondo pasa a ser opacidad (el halo se " +
+                 "desvanece solo) y se le quita el fondo mezclado del color. Lo que es más OSCURO " +
+                 "que el fondo (la tinta del contorno, la corteza en sombra) se queda opaco, así que " +
+                 "la silueta no pierde el perfil. Sobre un fondo claro (damero, blanco) no cambia " +
+                 "nada: todo es más oscuro que él. Sólo con 'Key Background'.")]
+        [Min(0)] public int softEdge;
+
+        [Tooltip("Rellena los agujeros que el recorte abre DENTRO del personaje, hasta este tamaño " +
+                 "(área en píxeles). 0 = no.\n\n" +
+                 "En arte pintado sobre un fondo de color, las sombras del interior cogen el tono del " +
+                 "fondo y el recorte las perfora: el personaje sale lleno de puntitos transparentes. " +
+                 "Sólo se rellena lo que está rodeado de personaje por todos lados y es pequeño; el " +
+                 "aire de verdad entre un brazo y el cuerpo es más grande y se respeta. Sólo con " +
+                 "'Key Background'.")]
+        [Min(0)] public int fillHoles;
 
         [Header("Celda")]
         [Tooltip("Píxeles de aire alrededor del contenido en cada celda.")]

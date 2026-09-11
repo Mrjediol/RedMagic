@@ -14,7 +14,14 @@ namespace RedMagic.Bosses
         Fan,
 
         /// <summary>Cae desde el techo de la arena, con marcas en el suelo antes de cada oleada.</summary>
-        Rain
+        Rain,
+
+        /// <summary>
+        /// Tormenta: durante unos segundos caen proyectiles sin parar, cada uno en una X al azar y
+        /// con su propio ángulo (algunos en diagonal). Sin filas ni oleadas que leer: hay que
+        /// moverse entre lo que va cayendo.
+        /// </summary>
+        Storm
     }
 
     /// <summary>
@@ -85,9 +92,23 @@ namespace RedMagic.Bosses
         [SerializeField] private float spawnRadius = 1.2f;
 
         [Header("Lluvia")]
-        [Tooltip("Fracción de la anchura de la arena que cubre cada oleada. 1 = de lado a lado.")]
-        [Range(0.1f, 1f)]
+        [Tooltip("Fracción de la anchura de la arena que cubre cada oleada. 1 = de lado a lado; por " +
+                 "encima de 1 se sale un poco de la arena (para cubrir una plataforma que asoma).")]
+        [Range(0.1f, 2f)]
         [SerializeField] private float rainSpan = 1f;
+
+        [Tooltip("Desplaza en X el centro de la franja de lluvia respecto al jefe, en unidades. " +
+                 "0 = centrada en el jefe.")]
+        [SerializeField] private float rainCenterOffset;
+
+        [Tooltip("Cada gota en una X al azar dentro de la franja, en vez de repartidas en rejilla " +
+                 "(+ 'rainJitter').")]
+        [SerializeField] private bool rainRandomX;
+
+        [Tooltip("Segundos entre una gota y la siguiente dentro de la misma oleada (en rejilla, de " +
+                 "izquierda a derecha). 0 = todas a la vez. Cada marca dura hasta que cae su gota.")]
+        [Min(0f)]
+        [SerializeField] private float rainDropStagger;
 
         [Tooltip("Segundos que la marca del suelo está visible antes de que caiga el proyectil.")]
         [Min(0.05f)]
@@ -100,6 +121,29 @@ namespace RedMagic.Bosses
 
         [Tooltip("Tamaño de la marca de aviso en el suelo.")]
         [SerializeField] private Vector2 rainMarkerSize = new Vector2(1f, 0.35f);
+
+        [Header("Tormenta (Storm) — usa también rainSpan / rainCenterOffset / rainMarkerSize")]
+        [Tooltip("Segundos que dura la tormenta. NO lo acorta el ritmo de la fase: es lo que dura.")]
+        [Min(0.1f)]
+        [SerializeField] private float stormSeconds = 5f;
+
+        [Tooltip("Proyectiles por segundo mientras dura. Tampoco lo cambia el ritmo de la fase.")]
+        [Min(0.1f)]
+        [SerializeField] private float stormPerSecond = 7f;
+
+        [Tooltip("Desviación máxima respecto a la vertical, en grados (± al azar por proyectil). " +
+                 "0 = todos rectos hacia abajo. La X al azar es la de LLEGADA, así que las diagonales " +
+                 "siguen cubriendo toda la franja. Ojo: projectile.lifetime tiene que cubrir la caída " +
+                 "más larga (alto de la arena / cos(ángulo) / speed) o se apagan en el aire.")]
+        [Range(0f, 60f)]
+        [SerializeField] private float stormAngleRange = 18f;
+
+        [Tooltip("Viento: inclinación común a todos, en grados. + = caen hacia la derecha.")]
+        [Range(-45f, 45f)]
+        [SerializeField] private float stormWind;
+
+        [Tooltip("Marca en el suelo dónde va a caer cada proyectil, desde que nace hasta que llega.")]
+        [SerializeField] private bool stormMarkLanding = true;
 
         [Header("Arte")]
         [Tooltip("Sprite de los proyectiles de ESTE patrón. Vacío = el del jefe " +
@@ -114,15 +158,17 @@ namespace RedMagic.Bosses
         private Sprite Art(in BossContext ctx) => projectileSprite != null ? projectileSprite : ctx.FxSprite;
 
         public override string ShortStats() =>
-            $"{Damage:0} dmg · {pattern} · {volleys}×{bulletsPerVolley} proyectiles";
+            pattern == BulletPattern.Storm
+                ? $"{Damage:0} dmg · Storm · {stormSeconds:0.#}s × {stormPerSecond:0.#}/s · ±{stormAngleRange:0}°"
+                : $"{Damage:0} dmg · {pattern} · {volleys}×{bulletsPerVolley} proyectiles";
 
         public override void OnTelegraph(BossContext ctx)
         {
-            if (pattern == BulletPattern.Rain)
+            if (pattern == BulletPattern.Rain || pattern == BulletPattern.Storm)
             {
                 // La lluvia avisa con marcas por oleada dentro de Run; aquí sólo se marca el suelo
                 // entero para que se entienda "va a caer algo".
-                var center = new Vector2(ctx.Origin.x, ctx.GroundY + 0.2f);
+                var center = new Vector2(ctx.Origin.x + rainCenterOffset, ctx.GroundY + 0.2f);
                 Warn(ctx, center, new Vector2(ctx.ArenaHalfWidth * 2f * rainSpan, 0.4f), ctx.Scaled(Telegraph));
                 return;
             }
@@ -133,6 +179,7 @@ namespace RedMagic.Bosses
         public override IEnumerator Run(BossContext ctx)
         {
             if (pattern == BulletPattern.Rain) return RunRain(ctx);
+            if (pattern == BulletPattern.Storm) return RunStorm(ctx);
             return RunAngular(ctx);
         }
 
@@ -196,8 +243,9 @@ namespace RedMagic.Bosses
         private IEnumerator RunRain(BossContext ctx)
         {
             float span = ctx.ArenaHalfWidth * 2f * rainSpan;
-            float left = ctx.Origin.x - span * 0.5f;
+            float left = ctx.Origin.x + rainCenterOffset - span * 0.5f;
             float step = bulletsPerVolley > 1 ? span / (bulletsPerVolley - 1) : 0f;
+            float stagger = ctx.Scaled(rainDropStagger);
 
             var columns = new float[bulletsPerVolley];
 
@@ -207,11 +255,19 @@ namespace RedMagic.Bosses
 
                 for (int i = 0; i < bulletsPerVolley; i++)
                 {
-                    float x = bulletsPerVolley > 1 ? left + step * i : ctx.Origin.x;
-                    columns[i] = x + Random.Range(-rainJitter, rainJitter);
+                    if (rainRandomX)
+                    {
+                        columns[i] = Random.Range(left, left + span);
+                    }
+                    else
+                    {
+                        float x = bulletsPerVolley > 1 ? left + step * i : left + span * 0.5f;
+                        columns[i] = x + Random.Range(-rainJitter, rainJitter);
+                    }
 
+                    // Con goteo escalonado, cada marca dura hasta que cae SU gota.
                     Warn(ctx, new Vector2(columns[i], ctx.GroundY + rainMarkerSize.y * 0.5f),
-                         rainMarkerSize, ctx.Scaled(rainMarkerSeconds));
+                         rainMarkerSize, ctx.Scaled(rainMarkerSeconds) + stagger * i);
                 }
 
                 yield return new WaitForSeconds(ctx.Scaled(rainMarkerSeconds));
@@ -222,15 +278,74 @@ namespace RedMagic.Bosses
 
                 for (int i = 0; i < bulletsPerVolley; i++)
                 {
+                    if (!ctx.IsValid) yield break;
+
                     var origin = new Vector2(columns[i], ctx.CeilingY);
                     ProjectileFactory.Spawn(ctx.Ability, projectile, origin, Vector2.down,
                                             ScaledDamage(ctx), KnockbackMultiplier,
                                             Art(ctx), ctx.Accent);
+
+                    if (stagger > 0f && i < bulletsPerVolley - 1)
+                        yield return new WaitForSeconds(stagger);
                 }
 
                 if (volley < volleys - 1)
                     yield return new WaitForSeconds(ctx.Scaled(timeBetweenVolleys));
             }
+        }
+
+        // ------------------------------------------------------------------ tormenta
+
+        /// <summary>
+        /// Tormenta: <see cref="stormSeconds"/> segundos soltando <see cref="stormPerSecond"/>
+        /// proyectiles por segundo, cada uno con su X y su ángulo. La X al azar es la de LLEGADA al
+        /// suelo y el origen se desplaza en contra de la diagonal, así que inclinarlos no deja un
+        /// lado de la arena vacío ni tira la mitad fuera.
+        /// </summary>
+        private IEnumerator RunStorm(BossContext ctx)
+        {
+            float span = ctx.ArenaHalfWidth * 2f * rainSpan;
+            float left = ctx.Origin.x + rainCenterOffset - span * 0.5f;
+            float height = ctx.CeilingY - ctx.GroundY;
+            float interval = 1f / stormPerSecond;
+
+            Impact();
+
+            // Acumulador: el ritmo se mantiene aunque los frames lleguen a saltos. Empieza lleno para
+            // que el primero salga ya.
+            float due = interval;
+            for (float elapsed = 0f; elapsed < stormSeconds; elapsed += Time.deltaTime)
+            {
+                if (!ctx.IsValid) yield break;
+
+                due += Time.deltaTime;
+                while (due >= interval)
+                {
+                    due -= interval;
+                    DropStormProjectile(ctx, left, span, height);
+                }
+
+                yield return null;
+            }
+        }
+
+        private void DropStormProjectile(in BossContext ctx, float left, float span, float height)
+        {
+            float degrees = stormWind + Random.Range(-stormAngleRange, stormAngleRange);
+            float radians = degrees * Mathf.Deg2Rad;
+            var direction = new Vector2(Mathf.Sin(radians), -Mathf.Cos(radians));
+
+            float landX = Random.Range(left, left + span);
+            var origin = new Vector2(landX - height * Mathf.Tan(radians), ctx.CeilingY);
+
+            if (stormMarkLanding)
+            {
+                float fallSeconds = height / Mathf.Max(0.05f, Mathf.Cos(radians)) / Mathf.Max(0.1f, projectile.speed);
+                Warn(ctx, new Vector2(landX, ctx.GroundY + rainMarkerSize.y * 0.5f), rainMarkerSize, fallSeconds);
+            }
+
+            ProjectileFactory.Spawn(ctx.Ability, projectile, origin, direction,
+                                    ScaledDamage(ctx), KnockbackMultiplier, Art(ctx), ctx.Accent);
         }
     }
 }

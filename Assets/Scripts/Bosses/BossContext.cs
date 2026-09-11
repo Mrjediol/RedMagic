@@ -66,6 +66,15 @@ namespace RedMagic.Bosses
 
         public Vector2 PlayerPosition => Player != null ? (Vector2)Player.position : Origin;
 
+        /// <summary>
+        /// Centro del collider del jugador, no su pivote (que va a los pies). Es adonde apunta un
+        /// disparo dirigido: apuntar al pivote es la bala que pasa rozando el suelo o la cabeza.
+        /// </summary>
+        public Vector2 PlayerCenter =>
+            Player != null && Player.TryGetComponent<Collider2D>(out var body)
+                ? (Vector2)body.bounds.center
+                : PlayerPosition;
+
         /// <summary>Dirección normalizada hacia el jugador. Sin jugador apunta hacia donde mira el jefe.</summary>
         public Vector2 AimAtPlayer
         {

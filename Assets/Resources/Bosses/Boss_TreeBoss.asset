@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
+  m_Name: Boss_TreeBoss
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  displayName: Ent Cristalino
+  title: "Coraz\xF3n del Bosque"
+  description: "No se mueve: no le hace falta. Todo el bosque es su brazo, y el cristal
+    de su pecho late cada vez m\xE1s deprisa."
+  phases:
+  - displayName: Savia Tranquila
+    startsAtHealth: 1
+    attacks:
+    - {fileID: 11400000, guid: 5883a5b08f19a36478923a0cdb8817b5, type: 2}
+    - {fileID: 11400000, guid: 73c377778a5bf1846aa59cdf65ef37e6, type: 2}
+    - {fileID: 11400000, guid: 2a34b30aa2f9dda4f8eb97b2cb664611, type: 2}
+    pauseBetweenAttacks: {x: 1.1, y: 1.8}
+    damageScale: 1
+    damageTakenMultiplier: 1
+    speedScale: 1
+    accent: {r: 0.35, g: 0.95, b: 0.8, a: 1}
+    transitionSeconds: 0
+    transitionShake: 0
+    transitionSfxId: 
+    transitionFx: {fileID: 0}
+    openingAttack: {fileID: 0}
+    frenzyBelowHealth: 0
+    frenzySpeedScale: 1.35
+  - displayName: Savia Desbocada
+    startsAtHealth: 0.5
+    attacks:
+    - {fileID: 11400000, guid: e378c21c75a6b734fb99cf00d91e7302, type: 2}
+    - {fileID: 11400000, guid: 73c377778a5bf1846aa59cdf65ef37e6, type: 2}
+    - {fileID: 11400000, guid: 972da56e616f1e346b113a842dd77e07, type: 2}
+    - {fileID: 11400000, guid: 0d9d43a0b06328b4aac7078fae8f0c06, type: 2}
+    pauseBetweenAttacks: {x: 0.5, y: 0.9}
+    damageScale: 1.2
+    damageTakenMultiplier: 1
+    speedScale: 1.35
+    accent: {r: 0.8, g: 1, b: 0.3, a: 1}
+    transitionSeconds: 2.5
+    transitionShake: 0.9
+    transitionSfxId: 
+    transitionFx: {fileID: 2762897584436084235, guid: 2c2620c2df28e1f47b1fee00d2cd1269, type: 3}
+    openingAttack: {fileID: 11400000, guid: 2bc93130a1ac03b4d8ddddb1afe5120a, type: 2}
+    frenzyBelowHealth: 0.2
+    frenzySpeedScale: 1.35

@@ -138,6 +138,16 @@ namespace RedMagic.Pipeline.EditorTools
 
             ApplyCrop(mask, w, h, crop);
 
+            // Agujeros del interior (sombras con el tono del fondo): se tapan antes de nada, para
+            // que ni la detección ni el borde suave los vean como contorno.
+            bool[] filled = null;
+            if (recipe.keyBackground && recipe.fillHoles > 0)
+            {
+                filled = FillHoles(mask, w, crop, recipe.fillHoles, out int holes);
+                result.Log.AppendLine($"[SheetSlicer] {holes} agujero(s) interior(es) rellenado(s) " +
+                                      $"(≤ {recipe.fillHoles} px).");
+            }
+
             result.Log.AppendLine($"[SheetSlicer] {recipe.characterName}: {w}x{h}, " +
                                   $"{(recipe.keyBackground ? $"fondo detectado ({bgColors.Count} tonos)" : "alfa real")}" +
                                   $"{(IsFullFrame(crop, w, h) ? "" : $", recorte x[{crop.x0}..{crop.x1}] y[{crop.y0}..{crop.y1}]")}.");
@@ -161,6 +171,13 @@ namespace RedMagic.Pipeline.EditorTools
             // margen que Emit deja alrededor del frame arrastra la parte baja del rótulo de la
             // fila de arriba al PNG (así salía media palabra 'HURT' encima del caballo).
             ClearOutsideBands(mask, w, h, bands, result.Log);
+
+            // Borde suave (arte pintado sobre fondo liso): la distancia de cada pixel al contorno
+            // se mide ya, con la máscara limpia de rótulos y restos. Los agujeros tapados se le
+            // pasan para que los deje opacos: tienen el color del fondo y los volvería a abrir.
+            var soft = recipe.keyBackground && recipe.softEdge > 0
+                ? SoftKey.Build(mask, w, h, bgColors, recipe.backgroundTolerance, recipe.softEdge, filled)
+                : null;
 
             int rowCount = Mathf.Min(bands.Count, recipe.rows.Length);
 
@@ -201,12 +218,12 @@ namespace RedMagic.Pipeline.EditorTools
                                           $"y se han detectado {frames.Count}. Se usan los detectados.");
                 }
 
-                var sprites = Emit(recipe, row.state, frames, px, w, h, mask, folder, result.Log);
+                var sprites = Emit(recipe, row.state, frames, px, w, h, mask, soft, folder, result.Log);
                 if (sprites.Count > 0) result.ByState[row.state] = sprites;
 
                 if (absorbed is { Count: > 0 })
                 {
-                    var props = EmitProps(recipe, row.state, absorbed, px, w, h, mask, folder, result.Log);
+                    var props = EmitProps(recipe, row.state, absorbed, px, w, h, mask, soft, folder, result.Log);
                     if (props.Count > 0) result.Props[row.state] = props;
                 }
             }
@@ -274,6 +291,9 @@ namespace RedMagic.Pipeline.EditorTools
                 ? MaskByBackground(px, w, h, crop, recipe.backgroundTolerance, out _)
                 : MaskByAlpha(px, recipe.alphaThreshold, out _);
             ApplyCrop(mask, w, h, crop);
+
+            // Igual que en el corte, o el diagnóstico listaría como manchas los agujeros tapados.
+            if (recipe.keyBackground && recipe.fillHoles > 0) FillHoles(mask, w, crop, recipe.fillHoles, out _);
 
             var log = new StringBuilder();
             var bands = recipe.sliceMode == SliceMode.Grid
@@ -854,8 +874,8 @@ namespace RedMagic.Pipeline.EditorTools
         /// mueva solo al cambiar de frame ni al cambiar de estado.
         /// </summary>
         private static List<Sprite> Emit(SpriteSheetRecipe recipe, string state, List<Frame> frames,
-                                         Color32[] px, int w, int h, bool[] mask, string folder,
-                                         StringBuilder log)
+                                         Color32[] px, int w, int h, bool[] mask, SoftKey soft,
+                                         string folder, StringBuilder log)
         {
             int l = 0, r = 0, d = 0, u = 0;
             foreach (var f in frames)
@@ -891,12 +911,7 @@ namespace RedMagic.Pipeline.EditorTools
                     if (sx < 0 || sx >= w || sy < 0 || sy >= h) continue;
                     if (!mask[sy * w + sx]) continue;
 
-                    // Con alfa real se conserva tal cual (bordes suaves). Al deducir el fondo no
-                    // hay alfa que conservar: el recorte es duro, y por eso una lámina con alfa
-                    // de verdad siempre da mejor resultado que un JPG con el damero pintado.
-                    var c = px[sy * w + sx];
-                    byte a = recipe.keyBackground ? (byte)255 : c.a;
-                    outTex.SetPixel(i * cw + cx, cy, new Color32(c.r, c.g, c.b, a));
+                    outTex.SetPixel(i * cw + cx, cy, OutPixel(recipe, px, sy * w + sx, soft));
                 }
             }
 
@@ -941,8 +956,8 @@ namespace RedMagic.Pipeline.EditorTools
         /// con el margen mínimo — es un proyectil, no hace falta aire alrededor.
         /// </summary>
         private static List<Sprite> EmitProps(SpriteSheetRecipe recipe, string state, List<Blob> absorbed,
-                                              Color32[] px, int w, int h, bool[] mask, string folder,
-                                              StringBuilder log)
+                                              Color32[] px, int w, int h, bool[] mask, SoftKey soft,
+                                              string folder, StringBuilder log)
         {
             var sprites = new List<Sprite>();
 
@@ -962,9 +977,7 @@ namespace RedMagic.Pipeline.EditorTools
                     int sy = b.y0 - m + cy;
                     if (sx < 0 || sx >= w || sy < 0 || sy >= h || !mask[sy * w + sx]) continue;
 
-                    var c = px[sy * w + sx];
-                    byte a = recipe.keyBackground ? (byte)255 : c.a;
-                    outTex.SetPixel(cx, cy, new Color32(c.r, c.g, c.b, a));
+                    outTex.SetPixel(cx, cy, OutPixel(recipe, px, sy * w + sx, soft));
                 }
 
                 outTex.Apply();
@@ -1063,6 +1076,209 @@ namespace RedMagic.Pipeline.EditorTools
 
             provider.Apply();
             importer.SaveAndReimport();
+        }
+
+        /// <summary>
+        /// Rellena los agujeros pequeños que el recorte abre DENTRO del personaje
+        /// (<see cref="SpriteSheetRecipe.fillHoles"/>): manchas de «fondo» que no tocan el borde de
+        /// la zona útil y miden como mucho <paramref name="maxArea"/> píxeles. En arte pintado sobre
+        /// un fondo de color, las sombras del interior cogen el tono del fondo y el recorte las
+        /// perfora. Los huecos grandes (el aire entre un brazo y el cuerpo) superan el tope y se
+        /// respetan. Devuelve qué píxeles se han tapado, para que el borde suave no los reabra.
+        /// </summary>
+        private static bool[] FillHoles(bool[] mask, int w, CropRect crop, int maxArea, out int holes)
+        {
+            var filled = new bool[mask.Length];
+            var seen = new bool[mask.Length];
+            var queue = new int[mask.Length];
+            var small = new List<int>(maxArea + 1);
+            holes = 0;
+
+            for (int y = crop.y0; y <= crop.y1; y++)
+            for (int x = crop.x0; x <= crop.x1; x++)
+            {
+                int start = y * w + x;
+                if (mask[start] || seen[start]) continue;
+
+                // Relleno por inundación (4 vecinos) de esta mancha de fondo. Se recorre entera
+                // aunque sea grande, para marcarla vista; sólo se apuntan sus píxeles mientras
+                // quepa en el tope.
+                int head = 0, tail = 0;
+                bool touchesBorder = false;
+                small.Clear();
+
+                seen[start] = true;
+                queue[tail++] = start;
+
+                while (head < tail)
+                {
+                    int i = queue[head++];
+                    int px = i % w, py = i / w;
+
+                    if (small.Count <= maxArea) small.Add(i);
+                    if (px == crop.x0 || px == crop.x1 || py == crop.y0 || py == crop.y1) touchesBorder = true;
+
+                    if (px > crop.x0) Visit(i - 1);
+                    if (px < crop.x1) Visit(i + 1);
+                    if (py > crop.y0) Visit(i - w);
+                    if (py < crop.y1) Visit(i + w);
+                }
+
+                if (touchesBorder || tail > maxArea) continue;
+
+                foreach (int i in small)
+                {
+                    mask[i] = true;
+                    filled[i] = true;
+                }
+                holes++;
+
+                void Visit(int j)
+                {
+                    if (mask[j] || seen[j]) return;
+                    seen[j] = true;
+                    queue[tail++] = j;
+                }
+            }
+
+            return filled;
+        }
+
+        /// <summary>El pixel tal cual acaba en la hoja limpia: alfa real, recorte duro o borde suave.</summary>
+        private static Color32 OutPixel(SpriteSheetRecipe recipe, Color32[] px, int index, SoftKey soft)
+        {
+            var c = px[index];
+
+            // Con alfa real se conserva tal cual (bordes suaves). Al deducir el fondo el recorte es
+            // duro salvo que la receta pida borde suave (SpriteSheetRecipe.softEdge).
+            if (!recipe.keyBackground) return c;
+            return soft != null ? soft.Extract(c, index) : new Color32(c.r, c.g, c.b, 255);
+        }
+
+        /// <summary>
+        /// Borde suave para arte pintado sobre fondo liso (<see cref="SpriteSheetRecipe.softEdge"/>).
+        ///
+        /// En una franja de <c>edge</c> píxeles desde el contorno, lo que el pixel tiene de <b>luz
+        /// añadida</b> sobre el fondo se convierte en opacidad y el color se des-mezcla
+        /// (<c>F = (c − (1−a)·B) / a</c>): el halo de un cristal se desvanece solo, con su color, en
+        /// vez de acabar cortado a tijera con un cerco verde oscuro. Lo que es claramente <b>más
+        /// oscuro</b> que el fondo en algún canal — la tinta del contorno, la corteza en sombra — se
+        /// queda opaco, que es lo que impide que la silueta pierda el perfil. Más allá de la franja
+        /// todo es opaco: el interior del personaje no se toca.
+        ///
+        /// Es la misma idea que <c>OrbeSheetSlicer.Extract</c> (fondo negro, sólo brillo),
+        /// generalizada a cualquier fondo liso y a arte que mezcla brillo y tinta.
+        /// </summary>
+        private sealed class SoftKey
+        {
+            /// <summary>Luz por encima de la rodilla a partir de la cual el pixel es opaco del todo.</summary>
+            private const float Ramp = 64f;
+
+            private readonly List<Color32> _bg;
+            private readonly int[] _depth;
+            private readonly bool[] _filled;
+            private readonly int _edge;
+            private readonly float _knee;
+
+            private SoftKey(List<Color32> bg, int[] depth, bool[] filled, int edge, float knee)
+            {
+                _bg = bg;
+                _depth = depth;
+                _filled = filled;
+                _edge = edge;
+                _knee = knee;
+            }
+
+            /// <summary>
+            /// Distancia (chaflán, 8 vecinos) de cada pixel de contenido al fondo.
+            /// <paramref name="filled"/> = agujeros tapados por <c>FillHoles</c> (o null): se quedan
+            /// opacos, porque tienen el color del fondo y el borde suave los volvería a abrir.
+            /// </summary>
+            public static SoftKey Build(bool[] mask, int w, int h, List<Color32> bg, float tolerance, int edge,
+                                        bool[] filled)
+            {
+                int cap = edge + 1;
+                var depth = new int[w * h];
+
+                for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    int i = y * w + x;
+                    if (!mask[i]) continue;
+
+                    int d = cap;
+                    if (x > 0) d = Mathf.Min(d, depth[i - 1] + 1);
+                    if (y > 0)
+                    {
+                        d = Mathf.Min(d, depth[i - w] + 1);
+                        if (x > 0) d = Mathf.Min(d, depth[i - w - 1] + 1);
+                        if (x < w - 1) d = Mathf.Min(d, depth[i - w + 1] + 1);
+                    }
+                    depth[i] = d;
+                }
+
+                for (int y = h - 1; y >= 0; y--)
+                for (int x = w - 1; x >= 0; x--)
+                {
+                    int i = y * w + x;
+                    if (!mask[i]) continue;
+
+                    int d = depth[i];
+                    if (x < w - 1) d = Mathf.Min(d, depth[i + 1] + 1);
+                    if (y < h - 1)
+                    {
+                        d = Mathf.Min(d, depth[i + w] + 1);
+                        if (x < w - 1) d = Mathf.Min(d, depth[i + w + 1] + 1);
+                        if (x > 0) d = Mathf.Min(d, depth[i + w - 1] + 1);
+                    }
+                    depth[i] = d;
+                }
+
+                // La rodilla es media tolerancia: por debajo de ella un pixel es fondo, por encima
+                // empieza a ser luz (o tinta) propia.
+                float knee = Mathf.Max(0.01f, tolerance) * 255f * 0.5f;
+                return new SoftKey(bg, depth, filled, edge, knee);
+            }
+
+            public Color32 Extract(Color32 c, int index)
+            {
+                var opaque = new Color32(c.r, c.g, c.b, 255);
+                if (_depth[index] > _edge || (_filled != null && _filled[index])) return opaque;
+
+                var k = Nearest(c);
+                int dr = c.r - k.r, dg = c.g - k.g, db = c.b - k.b;
+
+                // Tinta: más oscuro que el fondo en algún canal, con claridad. Se queda como está.
+                if (Mathf.Max(-dr, Mathf.Max(-dg, -db)) > _knee) return opaque;
+
+                float light = Mathf.Max(dr, Mathf.Max(dg, db));
+                float a = Mathf.Clamp01((light - _knee) / Ramp);
+                if (a >= 0.999f) return opaque;
+                if (a <= 0.004f) return new Color32(0, 0, 0, 0);
+
+                return new Color32(Unmix(c.r, k.r, a), Unmix(c.g, k.g, a), Unmix(c.b, k.b, a),
+                                   (byte)Mathf.RoundToInt(a * 255f));
+            }
+
+            private static byte Unmix(int color, int background, float alpha) =>
+                (byte)Mathf.Clamp(Mathf.RoundToInt((color - (1f - alpha) * background) / alpha), 0, 255);
+
+            /// <summary>El tono de fondo más cercano (un damero tiene dos; un fondo liso, uno).</summary>
+            private Color32 Nearest(Color32 c)
+            {
+                var best = _bg[0];
+                int bestDistance = int.MaxValue;
+
+                foreach (var k in _bg)
+                {
+                    int distance = Mathf.Max(Mathf.Abs(c.r - k.r), Mathf.Max(Mathf.Abs(c.g - k.g), Mathf.Abs(c.b - k.b)));
+                    if (distance >= bestDistance) continue;
+                    bestDistance = distance;
+                    best = k;
+                }
+
+                return best;
+            }
         }
 
         // ============================================================ utilidades

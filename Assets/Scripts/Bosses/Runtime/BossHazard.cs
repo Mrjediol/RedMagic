@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RedMagic.Abilities;
 using RedMagic.Core;
 using RedMagic.Fx;
@@ -18,15 +19,28 @@ namespace RedMagic.Bosses
     /// El daño se resuelve por <see cref="AbilityHit.DamageBox"/> a intervalos, sin collider
     /// propio; los i-frames del jugador ya limitan cuántas veces le puede entrar de verdad.
     ///
+    /// Con <see cref="UntilBossDies"/> no se apaga nunca: dura hasta que su jefe muere
+    /// (<see cref="ClearFrom"/>, que llama <see cref="BossController"/>) o se descarga la escena.
+    ///
     /// Va <b>pooled</b>: un combate largo deja el suelo lleno de estos.
     /// </summary>
     [DisallowMultipleComponent]
     public class BossHazard : MonoBehaviour, IPooled
     {
+        /// <summary>Duración de un hazard que no se apaga solo: dura hasta que muere su jefe.</summary>
+        public const float UntilBossDies = float.PositiveInfinity;
+
         private static Pool<BossHazard> _pool;
 
+        /// <summary>Hazards vivos ahora mismo, para poder recoger los de un jefe cuando muere.</summary>
+        private static readonly List<BossHazard> Active = new List<BossHazard>();
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void ResetPools() => _pool = null;
+        private static void ResetPools()
+        {
+            _pool = null;
+            Active.Clear();
+        }
 
         private SpriteRenderer _renderer;
         private FxPlaceholderStyle _style;
@@ -34,9 +48,11 @@ namespace RedMagic.Bosses
         private bool _styled = true;
 
         private AbilityContext _ctx;
+        private BossController _owner;
         private Vector2 _size;
         private float _secondsLeft;
         private float _totalSeconds;
+        private bool _permanent;
         private float _tickInterval;
         private float _tickTimer;
         private float _damagePerTick;
@@ -44,10 +60,21 @@ namespace RedMagic.Bosses
         private Color _tint;
         private bool _finished;
 
+        /// <summary>Hazard con el prefab compartido del jefe (<see cref="BossController.HazardPrefab"/>) y el color de la fase.</summary>
         public static BossHazard Spawn(in BossContext ctx, Vector2 center, Vector2 size, float seconds,
-                                       float damagePerTick, float tickInterval, float knockbackMultiplier)
+                                       float damagePerTick, float tickInterval, float knockbackMultiplier) =>
+            Spawn(ctx, ctx.Boss != null ? ctx.Boss.HazardPrefab : null, ctx.Accent, center, size, seconds,
+                  damagePerTick, tickInterval, knockbackMultiplier);
+
+        /// <summary>
+        /// Hazard con prefab y color propios del ataque (el fuego verde), en vez del slot compartido
+        /// del jefe. <paramref name="seconds"/> = <see cref="UntilBossDies"/> para uno permanente.
+        /// </summary>
+        public static BossHazard Spawn(in BossContext ctx, GameObject prefab, Color tint, Vector2 center,
+                                       Vector2 size, float seconds, float damagePerTick, float tickInterval,
+                                       float knockbackMultiplier)
         {
-            var hazard = BossFxSpawn.FromPrefab<BossHazard>(ctx.Boss != null ? ctx.Boss.HazardPrefab : null);
+            var hazard = BossFxSpawn.FromPrefab<BossHazard>(prefab);
             bool fromPrefab = hazard != null;
 
             if (hazard == null)
@@ -57,8 +84,21 @@ namespace RedMagic.Bosses
             }
 
             hazard._pooledPrefab = fromPrefab;
-            hazard.Begin(ctx, center, size, seconds, damagePerTick, tickInterval, knockbackMultiplier);
+            hazard.Begin(ctx, tint, center, size, seconds, damagePerTick, tickInterval, knockbackMultiplier);
             return hazard;
+        }
+
+        /// <summary>Recoge todos los hazards que dejó <paramref name="boss"/>. Lo llama al morir.</summary>
+        public static void ClearFrom(BossController boss)
+        {
+            for (int i = Active.Count - 1; i >= 0; i--)
+            {
+                if (i >= Active.Count) continue;
+
+                var hazard = Active[i];
+                if (hazard == null) { Active.RemoveAt(i); continue; }
+                if (hazard._owner == boss && !hazard._finished) hazard.Finish();
+            }
         }
 
         private static BossHazard Build()
@@ -68,7 +108,7 @@ namespace RedMagic.Bosses
             return go.AddComponent<BossHazard>();
         }
 
-        private void Begin(in BossContext ctx, Vector2 center, Vector2 size, float seconds,
+        private void Begin(in BossContext ctx, Color tint, Vector2 center, Vector2 size, float seconds,
                            float damagePerTick, float tickInterval, float knockbackMultiplier)
         {
             if (_renderer == null) _renderer = GetComponentInChildren<SpriteRenderer>();
@@ -76,8 +116,10 @@ namespace RedMagic.Bosses
             _styled = !_pooledPrefab || _style != null;
 
             _ctx = ctx.Ability;
+            _owner = ctx.Boss;
             _size = new Vector2(Mathf.Max(0.2f, size.x), Mathf.Max(0.2f, size.y));
-            _totalSeconds = Mathf.Max(0.2f, seconds);
+            _permanent = float.IsPositiveInfinity(seconds);
+            _totalSeconds = _permanent ? 1f : Mathf.Max(0.2f, seconds);
             _secondsLeft = _totalSeconds;
             _tickInterval = Mathf.Max(0.05f, tickInterval);
             // El primer tic no es inmediato: aparecer justo debajo del jugador no debería contar
@@ -85,8 +127,10 @@ namespace RedMagic.Bosses
             _tickTimer = _tickInterval;
             _damagePerTick = Mathf.Max(0f, damagePerTick);
             _knockbackMultiplier = Mathf.Max(0f, knockbackMultiplier);
-            _tint = _styled ? ctx.Accent : Color.white;
+            _tint = _styled ? tint : Color.white;
             _finished = false;
+
+            if (!Active.Contains(this)) Active.Add(this);
 
             transform.position = center;
 
@@ -98,7 +142,7 @@ namespace RedMagic.Bosses
             }
             else if (_style != null)
             {
-                _style.Apply(ctx.Accent, _size, ctx.Ability.Caster);
+                _style.Apply(tint, _size, ctx.Ability.Caster);
             }
         }
 
@@ -109,12 +153,18 @@ namespace RedMagic.Bosses
         // PrefabPool no tiene hook por instancia: inerte hasta el próximo Begin.
         private void OnEnable() => _finished = true;
 
+        // También cubre el caso de PoolRunner recogiéndolo al cargar escena, que no pasa por Finish.
+        private void OnDisable() => Active.Remove(this);
+
         private void Update()
         {
             if (_finished) return;
 
-            _secondsLeft -= Time.deltaTime;
-            if (_secondsLeft <= 0f) { Finish(); return; }
+            if (!_permanent)
+            {
+                _secondsLeft -= Time.deltaTime;
+                if (_secondsLeft <= 0f) { Finish(); return; }
+            }
 
             _tickTimer -= Time.deltaTime;
             if (_tickTimer <= 0f)
@@ -136,7 +186,7 @@ namespace RedMagic.Bosses
         {
             if (_renderer == null || !_styled) return;
 
-            float life = Mathf.Clamp01(_secondsLeft / _totalSeconds);
+            float life = _permanent ? 1f : Mathf.Clamp01(_secondsLeft / _totalSeconds);
             float pulse = 0.78f + 0.22f * Mathf.Sin(Time.time * 6f);
             float fade = life < 0.25f ? life / 0.25f : 1f;
 
@@ -148,6 +198,7 @@ namespace RedMagic.Bosses
         private void Finish()
         {
             _finished = true;
+            Active.Remove(this);
             BossFxSpawn.Release(this, _pooledPrefab, _pool);
         }
 

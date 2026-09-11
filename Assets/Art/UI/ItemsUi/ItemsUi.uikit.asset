@@ -1,0 +1,177 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90780ae0e37e0a34886a6db21f0a3709, type: 3}
+  m_Name: ItemsUi.uikit
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.UiArtKitRecipe
+  outputFolder: Assets/Art/UI/ItemsUi
+  prefix: ItemsUi_
+  backgroundTolerance: 0.12
+  softOpaqueAt: 0.55
+  minEnclosedArea: 0.01
+  margin: 2
+  pieces:
+  - name: Slot
+    source: {fileID: 2800000, guid: decee1f64d425e44cb8ec6fa44a310cf, type: 3}
+    columns: 2
+    rows: 2
+    cellNames:
+    - Slot_Empty
+    - Slot_Empty_Hover
+    - Slot_Filled
+    - Slot_Filled_Hover
+    trimGroup: 0
+    softEdge: 4
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: Close
+    source: {fileID: 2800000, guid: 8db23488334d1a34c8d33bbfe31879de, type: 3}
+    columns: 2
+    rows: 1
+    cellNames:
+    - Close
+    - Close_Hover
+    trimGroup: 0
+    softEdge: 64
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: IconSlot
+    source: {fileID: 2800000, guid: 574ec238b5b39534791eefd4f5c1f6d6, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 1
+    softEdge: 4
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: IconSlot_Hover
+    source: {fileID: 2800000, guid: b5293ef132ff42949808ced2b6249f20, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 1
+    softEdge: 64
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: WeaponSlot
+    source: {fileID: 2800000, guid: 4a4dde99d4966e4439581774351fb421, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 1
+    softEdge: 4
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: Window
+    source: {fileID: 2800000, guid: 6d5492f2640c82743b9a093223586689, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 6
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 280
+      y: 278
+      width: 644
+      height: 330
+  - name: SidePanel
+    source: {fileID: 2800000, guid: f63a1f1a1d1ed1c47b1fd0938e45a68e, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 4
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 214
+      y: 230
+      width: 472
+      height: 730
+  - name: MiddlePanel
+    source: {fileID: 2800000, guid: 9ae2455881055a44ebf12dcc4af6bc80, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 4
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 212
+      y: 208
+      width: 776
+      height: 478
+  - name: TitleBar
+    source: {fileID: 2800000, guid: 3b0db9d8cd62ffc4585817d53894f640, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 4
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 266
+      y: 236
+      width: 842
+      height: 292
+  - name: Row
+    source: {fileID: 2800000, guid: de7f8a488414e9b41a7b712d68521170, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 4
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 280
+      y: 278
+      width: 644
+      height: 338

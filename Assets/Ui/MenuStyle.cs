@@ -170,11 +170,11 @@ namespace RedMagic.UI
         /// dirigidos al botón. El leve <c>scale</c> extra es el mismo empujón visual que ya usan
         /// los menús UXML en <c>:hover</c> (ver <c>MainMenu.uss</c>).
         /// </summary>
-        public static void AddSelectionHighlight(VisualElement element, float radius)
+        public static void AddSelectionHighlight(VisualElement element, float radius, Color? color = null)
         {
             var ring = new VisualElement { name = "selection-ring", pickingMode = PickingMode.Ignore };
             FillParent(ring);
-            SetBorder(ring, 3, SelectionHighlight, radius);
+            SetBorder(ring, 3, color ?? SelectionHighlight, radius);
             ring.style.display = DisplayStyle.None;
             element.Add(ring);
 

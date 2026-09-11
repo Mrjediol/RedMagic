@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RedMagic.Core;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -25,8 +26,8 @@ namespace RedMagic.Items
     /// crear uno nuevo es duplicar un asset y tocar datos, sin escribir código ni enganchar nada
     /// en el Inspector.
     ///
-    /// <b>Este paso es sólo estructura de datos</b>: no hay lógica de resolución de disparo ni de
-    /// aplicación de efectos todavía.
+    /// Lo que el item <b>hace</b> mientras está equipado va en su lista <c>effects</c>
+    /// (<see cref="ItemEffect"/>), con los valores en este mismo asset.
     /// </summary>
     public abstract class ItemDefinition : ScriptableObject
     {
@@ -50,6 +51,11 @@ namespace RedMagic.Items
                  "Cada aparición en la lista suma +1 punto completo a esa tag.")]
         [SerializeField] private List<BuildTag> tags = new List<BuildTag>();
 
+        [Header("Comportamiento")]
+        [Tooltip("Lo que hace el item mientras está equipado. '+' añade una entrada; el desplegable " +
+                 "elige el tipo de efecto y debajo salen sus valores. Varios efectos se combinan.")]
+        [SerializeReference, SubclassPicker] private List<ItemEffect> effects = new List<ItemEffect>();
+
         /// <summary>Slot en el que entra este item. Lo fija el tipo, no es editable por asset.</summary>
         public abstract ItemSlot Slot { get; }
 
@@ -58,6 +64,9 @@ namespace RedMagic.Items
         public Sprite Icon => icon;
         public Color Accent => accent;
         public IReadOnlyList<BuildTag> Tags => tags;
+
+        /// <summary>Efectos mientras está equipado (los aplica <see cref="ItemEffectRunner"/>).</summary>
+        public IReadOnlyList<ItemEffect> Effects => effects;
 
         /// <summary>
         /// Puntos que este item aporta a <paramref name="tag"/>. Cada aparición en la lista cuenta

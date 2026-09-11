@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90780ae0e37e0a34886a6db21f0a3709, type: 3}
+  m_Name: ItemIcons.uikit
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.UiArtKitRecipe
+  outputFolder: Assets/Art/UI/ItemIcons
+  prefix: Icon_
+  backgroundTolerance: 0.12
+  softOpaqueAt: 0.55
+  minEnclosedArea: 0.01
+  margin: 4
+  pieces:
+  - name: Boots
+    source: {fileID: 2800000, guid: 635139fdce9c1f9429bebcd2d0f89810, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 48
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: Cape
+    source: {fileID: 2800000, guid: bb5a2aebc2b23434ca66ef2a67e10dc8, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 48
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: Helmet
+    source: {fileID: 2800000, guid: 0f52ccec6909cad418008ba5ed88b42a, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 48
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: Ring
+    source: {fileID: 2800000, guid: 9712599c5b5f6704e8c07e50cd4f950a, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 48
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: Staff
+    source: {fileID: 2800000, guid: f381f71df5646a64683353f933874277, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 48
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0

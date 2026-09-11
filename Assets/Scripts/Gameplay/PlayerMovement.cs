@@ -188,6 +188,9 @@ namespace RedMagic.Gameplay
         [SerializeField] private float _acceleration = 90f;
         [SerializeField] private float _moveClamp = 13f;
         [SerializeField] private float _deAcceleration = 60f;
+
+        // Con los multiplicadores de items (PlayerStats). Sin items valen 1 y esto es _moveClamp tal cual.
+        private float MoveClamp => _moveClamp * PlayerStats.Multiplier(PlayerStat.MoveSpeed);
         [SerializeField] private float _apexBonus = 2f;
 
         // ---------------------------------------------------------------- gravedad
@@ -663,8 +666,8 @@ namespace RedMagic.Gameplay
 
             if (_input.X != 0)
             {
-                _currentHorizontalSpeed += _input.X * _acceleration * Time.deltaTime;
-                _currentHorizontalSpeed = Mathf.Clamp(_currentHorizontalSpeed, -_moveClamp, _moveClamp);
+                _currentHorizontalSpeed += _input.X * _acceleration * PlayerStats.Multiplier(PlayerStat.MoveSpeed) * Time.deltaTime;
+                _currentHorizontalSpeed = Mathf.Clamp(_currentHorizontalSpeed, -MoveClamp, MoveClamp);
 
                 // Bono en el ápex del salto.
                 var apexBonus = Mathf.Sign(_input.X) * _apexBonus * _apexPoint;
@@ -761,7 +764,8 @@ namespace RedMagic.Gameplay
 
         private void Jump(float height)
         {
-            _currentVerticalSpeed = height;
+            // La altura va con el cuadrado de la velocidad: ×N de altura = ×√N de velocidad.
+            _currentVerticalSpeed = height * Mathf.Sqrt(PlayerStats.Multiplier(PlayerStat.JumpHeight));
             _endedJumpEarly = false;
             _coyoteUsable = false;
             _timeLeftGrounded = float.MinValue;
@@ -843,8 +847,10 @@ namespace RedMagic.Gameplay
             Facing = _dashDirection;
             if (_sprite != null) _sprite.flipX = _dashDirection < 0;
 
-            _dashTimer = dashDuration;
-            _dashCooldownTimer = dashCooldown + dashDuration;
+            // Más distancia = más duración a la misma velocidad (el dash se sigue viendo igual de rápido).
+            float duration = dashDuration * PlayerStats.Multiplier(PlayerStat.DashDistance);
+            _dashTimer = duration;
+            _dashCooldownTimer = dashCooldown + duration;
 
             PlaySfx(dashSfxId);
             Dashed?.Invoke(_dashDirection);
@@ -869,7 +875,7 @@ namespace RedMagic.Gameplay
             if (_dashTimer <= 0f)
             {
                 // Se sale del dash sin conservar toda la velocidad, para que no patine.
-                _currentHorizontalSpeed = Mathf.Clamp(_currentHorizontalSpeed, -_moveClamp, _moveClamp);
+                _currentHorizontalSpeed = Mathf.Clamp(_currentHorizontalSpeed, -MoveClamp, MoveClamp);
             }
         }
 
@@ -927,7 +933,7 @@ namespace RedMagic.Gameplay
             {
                 _knockbackTimer = 0f;
                 // Se devuelve el control sin arrastrar velocidad de más.
-                _currentHorizontalSpeed = Mathf.Clamp(_currentHorizontalSpeed, -_moveClamp, _moveClamp);
+                _currentHorizontalSpeed = Mathf.Clamp(_currentHorizontalSpeed, -MoveClamp, MoveClamp);
             }
         }
 

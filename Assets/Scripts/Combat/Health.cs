@@ -230,6 +230,29 @@ namespace RedMagic.Combat
             deathSfxId = death ?? string.Empty;
         }
 
+        /// <summary>
+        /// Resta vida sin que sea un golpe: sin i-frames, sin sonido y sin <see cref="Damaged"/> (que
+        /// dispara la animación de daño y el parpadeo). Para pérdidas continuas — un item maldito,
+        /// un veneno. Sí sale el número flotante (<see cref="AnyDamaged"/>). Con
+        /// <paramref name="canKill"/> false nunca baja de 1.
+        /// </summary>
+        public bool Drain(float amount, bool canKill = true)
+        {
+            if (amount <= 0f || IsDead) return false;
+
+            float floor = canKill ? 0f : Mathf.Min(1f, currentHealth);
+            float next = Mathf.Max(floor, currentHealth - amount);
+            float lost = currentHealth - next;
+            if (lost <= 0f) return false;
+
+            currentHealth = next;
+            AnyDamaged?.Invoke(this, lost);
+            HealthChanged?.Invoke(currentHealth, maxHealth);
+
+            if (currentHealth <= 0f) Die();
+            return true;
+        }
+
         public void Heal(float amount)
         {
             if (amount <= 0f || IsDead) return;

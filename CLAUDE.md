@@ -596,7 +596,19 @@ Inspector wiring.
 - **`ShotPipelineHarness`** — drop it in a scene and hit Play to fire the four configurations
   (bare / trajectory only / shape only / all three layers) at a dummy it spawns.
 - Current content: 7 weapons (the ones rescued from the old abilities plus a plain
-  `Weapon_ProyectilRecto`), 4 modifiers, 4 free-pool items.
+  `Weapon_ProyectilRecto`), 4 modifiers, 9 free-pool items (5 of them the ice test items below).
+- **Item behaviour lives on the item** — read `Assets/_Pipeline/ITEMS_PIPELINE.md`.
+  `ItemDefinition.effects` is a `[SerializeReference, SubclassPicker]` list of `ItemEffect`
+  subclasses (`Assets/Scripts/Items/Effects/`): pick the type from a dropdown in the item's
+  Inspector and tune its values there. `ItemEffectRunner` (inside `WeaponLoadout`) applies them
+  only while equipped (`OnEquip` / `OnUnequip` / `Tick`); per-equip state goes in the
+  `ItemEffectContext`, never in effect fields (the instance is shared asset data). Player stat
+  changes go through `Gameplay.PlayerStats` multipliers, read by `PlayerMovement` (move speed,
+  dash distance = duration, jump height = √ on velocity). `Health.Drain` is damage that isn't a
+  hit (no i-frames, no hurt anim, still a popup). Icons: `ItemIconsPack` (keys `Assets/Icon/*`
+  via `UiArtKitProcessor`) and `Tools ▸ RedMagic ▸ Items ▸ Catálogo de items (iconos)`, which
+  edits the icon on each item asset. Test items (Botas/Capa/Yelmo/Bastón/Anillo) have absurd
+  effects on purpose — speed/dash/jump ×3, −1 HP/s, +1 diamond/s.
 - Projectiles never collide with other projectiles — pellets from one blast spawn on top of each
   other and would annihilate on frame one.
 
@@ -932,6 +944,18 @@ All menus (`MainMenuController`, `PauseMenuController`, `OptionsMenuController`,
 `IMenuScreen` (`SetVisible(bool)`) so one menu can hide itself and hand focus to another
 (Pause → Options → back) without losing UI Toolkit layout state — visibility toggles via
 `style.visibility`/`display`, not by disabling the GameObject.
+
+**UI art kits** — read `Assets/_Pipeline/UI_ART_PIPELINE.md` before dressing a screen with art.
+A kit of flat-background images becomes clean sprites through a `UiArtKitRecipe`
+(`<Kit>.uikit.asset`) + `UiArtKitProcessor` (background keying, soft halos, state grids,
+**Quad** frames: 4 quadrant 9-slices that stretch only a 2px strip, so centre ornaments never
+smear, plus the frame's interior panel as one `_Fill` sprite drawn on top — stretching the
+interior from the strips made it look split into 4 rectangles), and a per-kit pack wires typed refs into a `<Screen>Skin` asset in `Resources`.
+Runtime side is `Assets/Ui/UiFrame.cs` (`UiFrame.Dress(element)`, `UiStateSprites`). First
+user: the items screen (`ItemsUiPack` → `Resources/ItemMenuSkin.asset`, read by
+`ItemMenuController`; any missing piece falls back to the plain `MenuStyle` look). Runtime UI
+Toolkit panels don't appear in `screenshot`/`capture_game_view` — to see one, render a cloned
+`PanelSettings` into a `RenderTexture`.
 
 ### Vendored third-party content — do not search or modify by default
 

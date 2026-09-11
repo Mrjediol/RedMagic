@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e09de4f8dc290a4aa59be15d03fa0a1, type: 3}
+  m_Name: ItemMenuSkin
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.UI.ItemMenuSkin
+  window:
+    quads:
+    - {fileID: 88686908, guid: 31f8442b6feaeb54297f5c49d28b3c31, type: 3}
+    - {fileID: 1334608611, guid: 31f8442b6feaeb54297f5c49d28b3c31, type: 3}
+    - {fileID: -77582011, guid: 31f8442b6feaeb54297f5c49d28b3c31, type: 3}
+    - {fileID: -1467896445, guid: 31f8442b6feaeb54297f5c49d28b3c31, type: 3}
+    fill: {fileID: 2028158290, guid: 31f8442b6feaeb54297f5c49d28b3c31, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.36
+    padding:
+      left: 56
+      right: 56
+      top: 58
+      bottom: 46
+  sidePanel:
+    quads:
+    - {fileID: 1357658365, guid: 3b377b80f807a854d9e7b7ccc8ef62ff, type: 3}
+    - {fileID: 841889625, guid: 3b377b80f807a854d9e7b7ccc8ef62ff, type: 3}
+    - {fileID: 1646404250, guid: 3b377b80f807a854d9e7b7ccc8ef62ff, type: 3}
+    - {fileID: 1728787132, guid: 3b377b80f807a854d9e7b7ccc8ef62ff, type: 3}
+    fill: {fileID: -210924, guid: 3b377b80f807a854d9e7b7ccc8ef62ff, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.34
+    padding:
+      left: 30
+      right: 30
+      top: 26
+      bottom: 26
+  middlePanel:
+    quads:
+    - {fileID: 2085929616, guid: 9986abdd3a918da418b1183a6af79ac6, type: 3}
+    - {fileID: 770427637, guid: 9986abdd3a918da418b1183a6af79ac6, type: 3}
+    - {fileID: 1281484963, guid: 9986abdd3a918da418b1183a6af79ac6, type: 3}
+    - {fileID: -1901810425, guid: 9986abdd3a918da418b1183a6af79ac6, type: 3}
+    fill: {fileID: -962261613, guid: 9986abdd3a918da418b1183a6af79ac6, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.18
+    padding:
+      left: 34
+      right: 34
+      top: 26
+      bottom: 30
+  titleBar:
+    quads:
+    - {fileID: 963071942, guid: 1d2999bf0ff341d4c9b9172045ca1eac, type: 3}
+    - {fileID: -372031139, guid: 1d2999bf0ff341d4c9b9172045ca1eac, type: 3}
+    - {fileID: 1531689673, guid: 1d2999bf0ff341d4c9b9172045ca1eac, type: 3}
+    - {fileID: 1393467878, guid: 1d2999bf0ff341d4c9b9172045ca1eac, type: 3}
+    fill: {fileID: -2030238951, guid: 1d2999bf0ff341d4c9b9172045ca1eac, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.12
+    padding:
+      left: 20
+      right: 20
+      top: 4
+      bottom: 4
+  synergyRow:
+    quads:
+    - {fileID: -876150853, guid: 3d614604ed48dba4da05ccdbaa016d6b, type: 3}
+    - {fileID: -1090755718, guid: 3d614604ed48dba4da05ccdbaa016d6b, type: 3}
+    - {fileID: 1735240617, guid: 3d614604ed48dba4da05ccdbaa016d6b, type: 3}
+    - {fileID: 1533143907, guid: 3d614604ed48dba4da05ccdbaa016d6b, type: 3}
+    fill: {fileID: -1712687160, guid: 3d614604ed48dba4da05ccdbaa016d6b, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.1
+    padding:
+      left: 20
+      right: 20
+      top: 4
+      bottom: 4
+  emptySlot:
+    normal: {fileID: 21300000, guid: 4d53f2a66c8e69645b2f71f555fc6eb7, type: 3}
+    hover: {fileID: 21300000, guid: e60a0a6f23ae09c4e9dc251add40df1c, type: 3}
+  filledSlot:
+    normal: {fileID: 21300000, guid: 6aea81a2099035d46980a5002d41f961, type: 3}
+    hover: {fileID: 21300000, guid: 75aedcd8b7f19d343adaf964bdc16001, type: 3}
+  iconSlot:
+    normal: {fileID: 21300000, guid: d5fa886d8c81a164cbfeb9dc4a290665, type: 3}
+    hover: {fileID: 21300000, guid: eea8ec7590a84b14fa2a2c3ce7438b1f, type: 3}
+  weaponSlot:
+    normal: {fileID: 21300000, guid: b45d6cbdea481f74eb4a47086da421c2, type: 3}
+    hover: {fileID: 21300000, guid: eea8ec7590a84b14fa2a2c3ce7438b1f, type: 3}
+  closeButton:
+    normal: {fileID: 21300000, guid: 6ce3523cfb8a118438ebaf58b81d2568, type: 3}
+    hover: {fileID: 21300000, guid: 9c18740d181ac1c49b5b9b14a5e3723e, type: 3}
+  slotFrameSize: 64
+  slotWidth: 150
+  closeButtonSize: 64
+  columnTitleHeight: 46
+  columnTitleMaxWidth: 290
+  synergyRowHeight: 50
+  descriptionPadding:
+    left: 16
+    right: 12
+    top: 0
+    bottom: 0
+  hintBottomMargin: 12
+  iconWellColor: {r: 0.05, g: 0.11, b: 0.12, a: 1}
+  synergyHighlightTint: {r: 1, g: 0.8, b: 0.42, a: 1}
+  synergyCappedTint: {r: 1, g: 0.92, b: 0.7, a: 1}
+  hoverRing: {r: 0.45, g: 1, b: 0.95, a: 0.9}

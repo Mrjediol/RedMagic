@@ -20,6 +20,9 @@ namespace RedMagic.Items
         public WeaponInventory Inventory { get; private set; }
         public SynergyTracker Synergy { get; private set; }
 
+        /// <summary>Aplica los efectos de lo equipado (ver <see cref="ItemEffect"/>).</summary>
+        public ItemEffectRunner Effects { get; private set; }
+
         private bool _boundToRun;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -44,9 +47,13 @@ namespace RedMagic.Items
             // Domain Reload desactivado: se reconstruye a mano en cada Awake, como los demás
             // singletons del proyecto.
             Synergy?.Dispose();
+            Effects?.Dispose();
             Inventory = new WeaponInventory();
             Synergy = new SynergyTracker(Inventory);
+            Effects = new ItemEffectRunner(Inventory);
         }
+
+        private void Update() => Effects?.Tick(Time.deltaTime);
 
         private void OnEnable()
         {
@@ -67,6 +74,7 @@ namespace RedMagic.Items
         {
             if (Instance != this) return;
             Synergy?.Dispose();
+            Effects?.Dispose();
             Instance = null;
         }
 

@@ -1,0 +1,1326 @@
+fileFormatVersion: 2
+guid: eea8ec7590a84b14fa2a2c3ce7438b1f
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7838716031747296568
+    second: ItemsUi_IconSlot_Hover_0
+  - first:
+      213: 1678791107602402146
+    second: ItemsUi_IconSlot_Hover_1
+  - first:
+      213: 2742237005319579944
+    second: ItemsUi_IconSlot_Hover_2
+  - first:
+      213: -9031820740878977225
+    second: ItemsUi_IconSlot_Hover_3
+  - first:
+      213: -2814427012678518474
+    second: ItemsUi_IconSlot_Hover_4
+  - first:
+      213: 3319028080511693561
+    second: ItemsUi_IconSlot_Hover_5
+  - first:
+      213: -5002740256964250636
+    second: ItemsUi_IconSlot_Hover_6
+  - first:
+      213: 2898020199885600796
+    second: ItemsUi_IconSlot_Hover_7
+  - first:
+      213: -1835675466364882186
+    second: ItemsUi_IconSlot_Hover_8
+  - first:
+      213: 3323439661132004065
+    second: ItemsUi_IconSlot_Hover_9
+  - first:
+      213: -5502479247678544785
+    second: ItemsUi_IconSlot_Hover_10
+  - first:
+      213: 5377367106323792748
+    second: ItemsUi_IconSlot_Hover_11
+  - first:
+      213: -8009011079043258630
+    second: ItemsUi_IconSlot_Hover_12
+  - first:
+      213: 272353654720659678
+    second: ItemsUi_IconSlot_Hover_13
+  - first:
+      213: 6813799220233318623
+    second: ItemsUi_IconSlot_Hover_14
+  - first:
+      213: -6010571822411622490
+    second: ItemsUi_IconSlot_Hover_15
+  - first:
+      213: 5804634636897290057
+    second: ItemsUi_IconSlot_Hover_16
+  - first:
+      213: 4290408760772072134
+    second: ItemsUi_IconSlot_Hover_17
+  - first:
+      213: 8801798677867991283
+    second: ItemsUi_IconSlot_Hover_18
+  - first:
+      213: 2962192322964432521
+    second: ItemsUi_IconSlot_Hover_19
+  - first:
+      213: -4363486566875303930
+    second: ItemsUi_IconSlot_Hover_20
+  - first:
+      213: -7351734723276534103
+    second: ItemsUi_IconSlot_Hover_21
+  - first:
+      213: -997062423625194510
+    second: ItemsUi_IconSlot_Hover_22
+  - first:
+      213: -6807542766012796788
+    second: ItemsUi_IconSlot_Hover_23
+  - first:
+      213: -1207091831593777658
+    second: ItemsUi_IconSlot_Hover_24
+  - first:
+      213: -4002253607192630033
+    second: ItemsUi_IconSlot_Hover_25
+  - first:
+      213: -1879992429149092588
+    second: ItemsUi_IconSlot_Hover_26
+  - first:
+      213: -1719380591947167688
+    second: ItemsUi_IconSlot_Hover_27
+  - first:
+      213: -6633306509595787724
+    second: ItemsUi_IconSlot_Hover_28
+  - first:
+      213: 5007577852364005481
+    second: ItemsUi_IconSlot_Hover_29
+  - first:
+      213: -842852367758424733
+    second: ItemsUi_IconSlot_Hover_30
+  - first:
+      213: 7232960007066064536
+    second: ItemsUi_IconSlot_Hover_31
+  - first:
+      213: 5461203415389016991
+    second: ItemsUi_IconSlot_Hover_32
+  - first:
+      213: -2726607100050501831
+    second: ItemsUi_IconSlot_Hover_33
+  - first:
+      213: 6043195381298201759
+    second: ItemsUi_IconSlot_Hover_34
+  - first:
+      213: 3001846094133487080
+    second: ItemsUi_IconSlot_Hover_35
+  - first:
+      213: 1492011774689269703
+    second: ItemsUi_IconSlot_Hover_36
+  - first:
+      213: 6986499459974411221
+    second: ItemsUi_IconSlot_Hover_37
+  - first:
+      213: -110858024703577445
+    second: ItemsUi_IconSlot_Hover_38
+  - first:
+      213: 5729872623207032445
+    second: ItemsUi_IconSlot_Hover_39
+  - first:
+      213: -9053613444945846377
+    second: ItemsUi_IconSlot_Hover_40
+  - first:
+      213: 2872375116581504652
+    second: ItemsUi_IconSlot_Hover_41
+  - first:
+      213: 5591104653202864011
+    second: ItemsUi_IconSlot_Hover_42
+  - first:
+      213: 6336983317090546410
+    second: ItemsUi_IconSlot_Hover_43
+  - first:
+      213: 3031180148347275986
+    second: ItemsUi_IconSlot_Hover_44
+  - first:
+      213: -5511828738973150142
+    second: ItemsUi_IconSlot_Hover_45
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 0
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 455
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c2fa88ec49473390800000000000000
+      internalID: -7838716031747296568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_1
+      rect:
+        serializedVersion: 2
+        x: 438
+        y: 979
+        width: 39
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 26bc9b42e934c4710800000000000000
+      internalID: 1678791107602402146
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_2
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 0
+        width: 576
+        height: 1024
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 829210007026e0620800000000000000
+      internalID: 2742237005319579944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_3
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 54
+        width: 914
+        height: 923
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73737e883e688a280800000000000000
+      internalID: -9031820740878977225
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_4
+      rect:
+        serializedVersion: 2
+        x: 213
+        y: 0
+        width: 58
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 639780f1b8521f8d0800000000000000
+      internalID: -2814427012678518474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_5
+      rect:
+        serializedVersion: 2
+        x: 305
+        y: 0
+        width: 415
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9f2327a447e8f0e20800000000000000
+      internalID: 3319028080511693561
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_6
+      rect:
+        serializedVersion: 2
+        x: 724
+        y: 22
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f37910fd32b29ab0800000000000000
+      internalID: -5002740256964250636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_7
+      rect:
+        serializedVersion: 2
+        x: 735
+        y: 0
+        width: 100
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1876167406d73820800000000000000
+      internalID: 2898020199885600796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_8
+      rect:
+        serializedVersion: 2
+        x: 737
+        y: 20
+        width: 13
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f2fb60a3ee5686e0800000000000000
+      internalID: -1835675466364882186
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_9
+      rect:
+        serializedVersion: 2
+        x: 749
+        y: 17
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1eab73273ca3f1e20800000000000000
+      internalID: 3323439661132004065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_10
+      rect:
+        serializedVersion: 2
+        x: 757
+        y: 20
+        width: 13
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f646922174443a3b0800000000000000
+      internalID: -5502479247678544785
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_11
+      rect:
+        serializedVersion: 2
+        x: 770
+        y: 14
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c63cc4784ee30aa40800000000000000
+      internalID: 5377367106323792748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_12
+      rect:
+        serializedVersion: 2
+        x: 810
+        y: 18
+        width: 9
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af6657f6bd64ad090800000000000000
+      internalID: -8009011079043258630
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_13
+      rect:
+        serializedVersion: 2
+        x: 824
+        y: 0
+        width: 55
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed087eab43897c300800000000000000
+      internalID: 272353654720659678
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_14
+      rect:
+        serializedVersion: 2
+        x: 863
+        y: 20
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd037dc2a4a7f8e50800000000000000
+      internalID: 6813799220233318623
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_15
+      rect:
+        serializedVersion: 2
+        x: 871
+        y: 17
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a7de2cd5c8269ca0800000000000000
+      internalID: -6010571822411622490
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_16
+      rect:
+        serializedVersion: 2
+        x: 926
+        y: 23
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 947013fa2743e8050800000000000000
+      internalID: 5804634636897290057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_17
+      rect:
+        serializedVersion: 2
+        x: 943
+        y: 15
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c21b0f49089a8b30800000000000000
+      internalID: 4290408760772072134
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_18
+      rect:
+        serializedVersion: 2
+        x: 952
+        y: 17
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f013da7345462a70800000000000000
+      internalID: 8801798677867991283
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_19
+      rect:
+        serializedVersion: 2
+        x: 999
+        y: 15
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9862fae2932db1920800000000000000
+      internalID: 2962192322964432521
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_20
+      rect:
+        serializedVersion: 2
+        x: 1007
+        y: 22
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 600753f0618c173c0800000000000000
+      internalID: -4363486566875303930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_21
+      rect:
+        serializedVersion: 2
+        x: 1010
+        y: 14
+        width: 11
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ae8238683469f990800000000000000
+      internalID: -7351734723276534103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_22
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 5
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f32ee42209b922f0800000000000000
+      internalID: -997062423625194510
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_23
+      rect:
+        serializedVersion: 2
+        x: 145
+        y: 7
+        width: 15
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c80f6861cefb681a0800000000000000
+      internalID: -6807542766012796788
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_24
+      rect:
+        serializedVersion: 2
+        x: 169
+        y: 7
+        width: 43
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 606c396ef5c8f3fe0800000000000000
+      internalID: -1207091831593777658
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_25
+      rect:
+        serializedVersion: 2
+        x: 265
+        y: 0
+        width: 47
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fece1429c832578c0800000000000000
+      internalID: -4002253607192630033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_26
+      rect:
+        serializedVersion: 2
+        x: 718
+        y: 0
+        width: 20
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4150528a8dce8e5e0800000000000000
+      internalID: -1879992429149092588
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_27
+      rect:
+        serializedVersion: 2
+        x: 729
+        y: 6
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 838c94716788328e0800000000000000
+      internalID: -1719380591947167688
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_28
+      rect:
+        serializedVersion: 2
+        x: 737
+        y: 5
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43eb141dfd2c1f3a0800000000000000
+      internalID: -6633306509595787724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_29
+      rect:
+        serializedVersion: 2
+        x: 927
+        y: 15
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9602543868d7e7540800000000000000
+      internalID: 5007577852364005481
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_30
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 16
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36589a5bc369d44f0800000000000000
+      internalID: -842852367758424733
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_31
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 0
+        width: 6
+        height: 5
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89697c7fdc2a06460800000000000000
+      internalID: 7232960007066064536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_32
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 0
+        width: 12
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f93996452971acb40800000000000000
+      internalID: 5461203415389016991
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_33
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 0
+        width: 9
+        height: 5
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93f8e67e945292ad0800000000000000
+      internalID: -2726607100050501831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_34
+      rect:
+        serializedVersion: 2
+        x: 93
+        y: 0
+        width: 16
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f948f8a5e2ebdd350800000000000000
+      internalID: 6043195381298201759
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_35
+      rect:
+        serializedVersion: 2
+        x: 124
+        y: 0
+        width: 19
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e5683f3e13b8a920800000000000000
+      internalID: 3001846094133487080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_36
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 0
+        width: 14
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c7dd07ddc0b4b410800000000000000
+      internalID: 1492011774689269703
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_37
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 0
+        width: 20
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d3bb372e3805f060800000000000000
+      internalID: 6986499459974411221
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_38
+      rect:
+        serializedVersion: 2
+        x: 183
+        y: 0
+        width: 25
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b92ba01c637267ef0800000000000000
+      internalID: -110858024703577445
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_39
+      rect:
+        serializedVersion: 2
+        x: 206
+        y: 0
+        width: 18
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d76ad7aeac8948f40800000000000000
+      internalID: 5729872623207032445
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_40
+      rect:
+        serializedVersion: 2
+        x: 297
+        y: 2
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79f5d483a8a1b5280800000000000000
+      internalID: -9053613444945846377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_41
+      rect:
+        serializedVersion: 2
+        x: 868
+        y: 0
+        width: 25
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c86038533f9bcd720800000000000000
+      internalID: 2872375116581504652
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_42
+      rect:
+        serializedVersion: 2
+        x: 903
+        y: 3
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b87b0342f08979d40800000000000000
+      internalID: 5591104653202864011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_43
+      rect:
+        serializedVersion: 2
+        x: 911
+        y: 0
+        width: 10
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae232ca80cc71f750800000000000000
+      internalID: 6336983317090546410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_44
+      rect:
+        serializedVersion: 2
+        x: 967
+        y: 0
+        width: 9
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2da8478f84ae01a20800000000000000
+      internalID: 3031180148347275986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemsUi_IconSlot_Hover_45
+      rect:
+        serializedVersion: 2
+        x: 1011
+        y: 0
+        width: 13
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24457bef6fc0283b0800000000000000
+      internalID: -5511828738973150142
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      ItemsUi_IconSlot_Hover_0: -7838716031747296568
+      ItemsUi_IconSlot_Hover_1: 1678791107602402146
+      ItemsUi_IconSlot_Hover_10: -5502479247678544785
+      ItemsUi_IconSlot_Hover_11: 5377367106323792748
+      ItemsUi_IconSlot_Hover_12: -8009011079043258630
+      ItemsUi_IconSlot_Hover_13: 272353654720659678
+      ItemsUi_IconSlot_Hover_14: 6813799220233318623
+      ItemsUi_IconSlot_Hover_15: -6010571822411622490
+      ItemsUi_IconSlot_Hover_16: 5804634636897290057
+      ItemsUi_IconSlot_Hover_17: 4290408760772072134
+      ItemsUi_IconSlot_Hover_18: 8801798677867991283
+      ItemsUi_IconSlot_Hover_19: 2962192322964432521
+      ItemsUi_IconSlot_Hover_2: 2742237005319579944
+      ItemsUi_IconSlot_Hover_20: -4363486566875303930
+      ItemsUi_IconSlot_Hover_21: -7351734723276534103
+      ItemsUi_IconSlot_Hover_22: -997062423625194510
+      ItemsUi_IconSlot_Hover_23: -6807542766012796788
+      ItemsUi_IconSlot_Hover_24: -1207091831593777658
+      ItemsUi_IconSlot_Hover_25: -4002253607192630033
+      ItemsUi_IconSlot_Hover_26: -1879992429149092588
+      ItemsUi_IconSlot_Hover_27: -1719380591947167688
+      ItemsUi_IconSlot_Hover_28: -6633306509595787724
+      ItemsUi_IconSlot_Hover_29: 5007577852364005481
+      ItemsUi_IconSlot_Hover_3: -9031820740878977225
+      ItemsUi_IconSlot_Hover_30: -842852367758424733
+      ItemsUi_IconSlot_Hover_31: 7232960007066064536
+      ItemsUi_IconSlot_Hover_32: 5461203415389016991
+      ItemsUi_IconSlot_Hover_33: -2726607100050501831
+      ItemsUi_IconSlot_Hover_34: 6043195381298201759
+      ItemsUi_IconSlot_Hover_35: 3001846094133487080
+      ItemsUi_IconSlot_Hover_36: 1492011774689269703
+      ItemsUi_IconSlot_Hover_37: 6986499459974411221
+      ItemsUi_IconSlot_Hover_38: -110858024703577445
+      ItemsUi_IconSlot_Hover_39: 5729872623207032445
+      ItemsUi_IconSlot_Hover_4: -2814427012678518474
+      ItemsUi_IconSlot_Hover_40: -9053613444945846377
+      ItemsUi_IconSlot_Hover_41: 2872375116581504652
+      ItemsUi_IconSlot_Hover_42: 5591104653202864011
+      ItemsUi_IconSlot_Hover_43: 6336983317090546410
+      ItemsUi_IconSlot_Hover_44: 3031180148347275986
+      ItemsUi_IconSlot_Hover_45: -5511828738973150142
+      ItemsUi_IconSlot_Hover_5: 3319028080511693561
+      ItemsUi_IconSlot_Hover_6: -5002740256964250636
+      ItemsUi_IconSlot_Hover_7: 2898020199885600796
+      ItemsUi_IconSlot_Hover_8: -1835675466364882186
+      ItemsUi_IconSlot_Hover_9: 3323439661132004065
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -22,7 +22,7 @@ MonoBehaviour:
   cooldownInAttacks: 1
   cooldownSeconds: 8
   minPhase: 2
-  damage: 10
+  damage: 30
   knockbackMultiplier: 0.4
   vulnerableSeconds: 0
   vulnerableMultiplier: 2.5
@@ -33,9 +33,9 @@ MonoBehaviour:
   pattern: 3
   projectile:
     prefab: {fileID: 2959935278955925615, guid: ca29827b4cf7cbf4aa39fdfb7c5c9ad5, type: 3}
-    speed: 6
+    speed: 7
     lifetime: 4.5
-    size: {x: 0.5, y: 0.5}
+    size: {x: 0.65, y: 0.65}
     muzzleOffset: {x: 0.65, y: 0.1}
     pierce: 0
     homingTurnRate: 0
@@ -43,9 +43,9 @@ MonoBehaviour:
     arcGravity: 0
     impactRadius: 0
     impactDamage: 0
-  volleys: 3
+  volleys: 4
   timeBetweenVolleys: 0.35
-  bulletsPerVolley: 12
+  bulletsPerVolley: 25
   arcDegrees: 360
   startAngle: 0
   spinPerVolley: 11

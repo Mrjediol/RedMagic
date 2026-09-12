@@ -1,64 +1,70 @@
 fileFormatVersion: 2
-guid: 47274c41ce0775e47857d957511dcd0f
+guid: 6efb6befcfcb0924cabc08372d0772e6
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5590077594429483092
-    second: TreeBossRoot_Up_0
+      213: 8771357118924027357
+    second: FireAndLeaf_LeafFall_0
   - first:
-      213: 7283273558196503504
-    second: TreeBossRoot_Up_1
+      213: -4051260905042279687
+    second: FireAndLeaf_LeafFall_1
   - first:
-      213: 6800095473417201758
-    second: TreeBossRoot_Up_2
+      213: 8540900361493641704
+    second: FireAndLeaf_LeafFall_2
   - first:
-      213: 3915174261260408109
-    second: TreeBossRoot_Up_3
+      213: 5204706348149396824
+    second: FireAndLeaf_LeafFall_3
   - first:
-      213: 6123231740298027348
-    second: TreeBossRoot_Up_4
+      213: 83826076814915940
+    second: FireAndLeaf_LeafFall_4
   - first:
-      213: -5996224727331613348
-    second: TreeBossRoot_Up_5
+      213: 7770506991809008979
+    second: FireAndLeaf_LeafFall_5
   - first:
-      213: -3499790399217475315
-    second: TreeBossRoot_Up_6
+      213: 878449081620911667
+    second: FireAndLeaf_LeafFall_6
   - first:
-      213: 5097169531253990839
-    second: TreeBossRoot_Up_7
+      213: -1642928476629328802
+    second: FireAndLeaf_LeafFall_7
   - first:
-      213: -7972106336123611886
-    second: TreeBossRoot_Up_8
+      213: 5714982350574905908
+    second: FireAndLeaf_LeafFall_8
   - first:
-      213: -4044423688251425490
-    second: TreeBossRoot_Up_9
+      213: 1428077484807323411
+    second: FireAndLeaf_LeafFall_9
   - first:
-      213: 911771470199988615
-    second: TreeBossRoot_Up_10
+      213: 7364076043265825413
+    second: FireAndLeaf_LeafFall_10
   - first:
-      213: -3945632585222483855
-    second: TreeBossRoot_Up_11
+      213: -9085819465748108050
+    second: FireAndLeaf_LeafFall_11
   - first:
-      213: -1563259218457094121
-    second: TreeBossRoot_Up_12
+      213: -8784986438353166249
+    second: FireAndLeaf_LeafFall_12
   - first:
-      213: -863409888532667744
-    second: TreeBossRoot_Up_13
+      213: -4911492836289912555
+    second: FireAndLeaf_LeafFall_13
   - first:
-      213: -6555714209511380956
-    second: TreeBossRoot_Up_14
+      213: -434010324342326870
+    second: FireAndLeaf_LeafFall_14
   - first:
-      213: -8255608300671587147
-    second: TreeBossRoot_Up_15
+      213: -1065625333826983427
+    second: FireAndLeaf_LeafFall_15
   - first:
-      213: 7981726552346578831
-    second: TreeBossRoot_Up_16
+      213: -7859655022398276647
+    second: FireAndLeaf_LeafFall_16
   - first:
-      213: -1283543249211962968
-    second: TreeBossRoot_Up_17
+      213: -787908129754665984
+    second: FireAndLeaf_LeafFall_17
   - first:
-      213: -4991314971465166652
-    second: TreeBossRoot_Up_18
+      213: -6606457521477272220
+    second: FireAndLeaf_LeafFall_18
+  - first:
+      213: 3430428159952003816
+    second: FireAndLeaf_LeafFall_19
+  - first:
+      213: -6795519178465194264
+    second: FireAndLeaf_LeafFall_20
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -167,133 +173,133 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TreeBossRoot_Up_00
+      name: FireAndLeaf_LeafFall_00
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 168
-        height: 181
+        width: 89
+        height: 165
       alignment: 9
-      pivot: {x: 0.5, y: 0.044198897}
+      pivot: {x: 0.49438202, y: 0.4969697}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e956ac06766b3ce47a75587b0bfe1c81
-      internalID: -176424442
+      spriteID: 87de538e23ee5704490ee3ab91285fa2
+      internalID: 719500503
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TreeBossRoot_Up_01
+      name: FireAndLeaf_LeafFall_01
       rect:
         serializedVersion: 2
-        x: 168
+        x: 89
         y: 0
-        width: 168
-        height: 181
+        width: 89
+        height: 165
       alignment: 9
-      pivot: {x: 0.5, y: 0.044198897}
+      pivot: {x: 0.49438202, y: 0.4969697}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 35e995c0dc4e3d143acf4344bec7b410
-      internalID: 157913586
+      spriteID: 4bd6afc92d6855543b5757670e8ea398
+      internalID: -348644740
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TreeBossRoot_Up_02
+      name: FireAndLeaf_LeafFall_02
       rect:
         serializedVersion: 2
-        x: 336
+        x: 178
         y: 0
-        width: 168
-        height: 181
+        width: 89
+        height: 165
       alignment: 9
-      pivot: {x: 0.5, y: 0.044198897}
+      pivot: {x: 0.49438202, y: 0.4969697}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5f4fa2825cc002a45997614a0793fcd8
-      internalID: 1163961634
+      spriteID: 403627e4290f3cb4db529af1282e0d31
+      internalID: 860932796
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TreeBossRoot_Up_03
+      name: FireAndLeaf_LeafFall_03
       rect:
         serializedVersion: 2
-        x: 504
+        x: 267
         y: 0
-        width: 168
-        height: 181
+        width: 89
+        height: 165
       alignment: 9
-      pivot: {x: 0.5, y: 0.044198897}
+      pivot: {x: 0.49438202, y: 0.4969697}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1c7b85a6ade019642bc9816c14290bf3
-      internalID: 1179508709
+      spriteID: 3595090567ffcad449130b6354a20edb
+      internalID: -538653659
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TreeBossRoot_Up_04
+      name: FireAndLeaf_LeafFall_04
       rect:
         serializedVersion: 2
-        x: 672
+        x: 356
         y: 0
-        width: 168
-        height: 181
+        width: 89
+        height: 165
       alignment: 9
-      pivot: {x: 0.5, y: 0.044198897}
+      pivot: {x: 0.49438202, y: 0.4969697}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 22f1143f3073be04ebe8963553f7c2fa
-      internalID: -386432723
+      spriteID: 2b9d31d7eda844d41bc74b7b0ee734a0
+      internalID: -217143082
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TreeBossRoot_Up_05
+      name: FireAndLeaf_LeafFall_05
       rect:
         serializedVersion: 2
-        x: 840
+        x: 445
         y: 0
-        width: 168
-        height: 181
+        width: 89
+        height: 165
       alignment: 9
-      pivot: {x: 0.5, y: 0.044198897}
+      pivot: {x: 0.49438202, y: 0.4969697}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 186a0ba0ffa75054aa26733799471a05
-      internalID: -904315063
+      spriteID: 75b641223a3efa04586264160cec7309
+      internalID: 56170354
       vertices: []
       indices: 
       edges: []
@@ -302,7 +308,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 148514de301654543b3adab45e9a588f
+    spriteID: 5ae0cd6cb37de484ea02bb428c9d76cf
     internalID: 0
     vertices: []
     indices: 
@@ -312,12 +318,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      TreeBossRoot_Up_00: -176424442
-      TreeBossRoot_Up_01: 157913586
-      TreeBossRoot_Up_02: 1163961634
-      TreeBossRoot_Up_03: 1179508709
-      TreeBossRoot_Up_04: -386432723
-      TreeBossRoot_Up_05: -904315063
+      FireAndLeaf_LeafFall_00: 719500503
+      FireAndLeaf_LeafFall_01: -348644740
+      FireAndLeaf_LeafFall_02: 860932796
+      FireAndLeaf_LeafFall_03: -538653659
+      FireAndLeaf_LeafFall_04: -217143082
+      FireAndLeaf_LeafFall_05: 56170354
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1,4 +1,5 @@
 using System.Collections;
+using RedMagic.Fx;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -43,6 +44,10 @@ namespace RedMagic.Bosses
         [SerializeField] private float launchStagger = 0.12f;
 
         [Header("Fuego (hasta que muere el jefe)")]
+        [Tooltip("Ráfaga de un solo uso al llegar el proyectil, antes de que nazca el fuego " +
+                 "permanente (un VfxOneShot). Opcional: vacío = sin ráfaga, el fuego nace sin más.")]
+        [SerializeField] private GameObject fireImpactFxPrefab;
+
         [Tooltip("Prefab del fuego (BossHazard). PLACEHOLDER: Fx_<Jefe>_FireHazard, un cuadrado " +
                  "teñido. Arte final: edita ese prefab. Vacío = cuadrado construido en código.")]
         [SerializeField] private GameObject firePrefab;
@@ -111,6 +116,8 @@ namespace RedMagic.Bosses
         private void Ignite(BossContext ctx, Vector2 at)
         {
             if (!ctx.IsValid || ctx.Boss.BossHealth == null || ctx.Boss.BossHealth.IsDead) return;
+
+            VfxOneShot.Spawn(fireImpactFxPrefab, at);
 
             BossHazard.Spawn(ctx, firePrefab, Accent, at, fireSize, BossHazard.UntilBossDies,
                              Damage, fireTickInterval, KnockbackMultiplier);

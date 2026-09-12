@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7206234359008370179}
   - component: {fileID: 6936500130355417735}
   - component: {fileID: 7484422763975966887}
+  - component: {fileID: 996831465246268323}
   m_Layer: 0
   m_Name: Fx_TreeBoss_FireBolt
   m_TagString: Untagged
@@ -29,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.7729469, y: 0.7729469, z: 0.7729469}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -83,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 6
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 107a7961d6f3ed1498960c7ecf491248, type: 3}
+  m_Sprite: {fileID: 418162154, guid: 1e59c4fdc2c4b284a8d7654b060b42db, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -117,7 +118,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fe1b58647cd01642b23470262c1f3e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Fx.FxPlaceholderStyle
-  tint: 1
-  resize: 1
+  tint: 0
+  resize: 0
   matchSorting: 1
-  scaleColliderToSprite: 1
+  scaleColliderToSprite: 0
+--- !u!114 &996831465246268323
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6447472773088335995}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5319388704fe2a6428ead1ab05a9114b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.SpriteFlipbook
+  frames:
+  - {fileID: 418162154, guid: 1e59c4fdc2c4b284a8d7654b060b42db, type: 3}
+  - {fileID: -206031281, guid: 1e59c4fdc2c4b284a8d7654b060b42db, type: 3}
+  - {fileID: 1322962760, guid: 1e59c4fdc2c4b284a8d7654b060b42db, type: 3}
+  - {fileID: 1338826319, guid: 1e59c4fdc2c4b284a8d7654b060b42db, type: 3}
+  - {fileID: 1831747822, guid: 1e59c4fdc2c4b284a8d7654b060b42db, type: 3}
+  - {fileID: 911637668, guid: 1e59c4fdc2c4b284a8d7654b060b42db, type: 3}
+  framesPerSecond: 12
+  pingPong: 0
+  randomStart: 1
+  oneShot: 0

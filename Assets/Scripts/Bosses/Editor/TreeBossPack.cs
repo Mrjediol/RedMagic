@@ -83,6 +83,22 @@ namespace RedMagic.Bosses.EditorTools
         private const string LeafImpactPath = FxFolder + "/Fx_TreeBoss_LeafImpact.prefab";
         private static readonly Color LeafPlaceholderColor = new Color(0.9f, 0.95f, 0.35f, 1f);
 
+        // ARTE FINAL del fuego verde y las hojas mágicas: lámina aparte (no la del cuerpo ni la de
+        // savia), 5 filas de 6 frames — viaje del fuego, estallido, fuego de suelo en bucle, hoja
+        // cayendo, impacto de la hoja. DressFireAndLeafArt sustituye los cuatro prefabs de arriba
+        // en cuanto la lámina esté cortada, y crea el quinto (el estallido, que antes no existía)
+        // sin tocar boltPrefab/firePrefab/projectile.prefab ni ningún número del ataque.
+        private const string FireLeafSheet = "Assets/Sprites/FireAndleaf.png";
+        private const string FireLeafRecipePath = FxArtFolder + "/FireAndLeaf.sheet.asset";
+        private const string FireImpactPath = FxFolder + "/Fx_TreeBoss_FireImpact.prefab";
+
+        private const float FireBoltWidth = 1.6f;
+        private const float FireHazardWidth = 2f;
+        private const float FireImpactWidth = 2.2f;
+        private const float LeafWidth = 0.6f;
+        private const float LeafImpactWidth = 1f;
+        private const float LeafColliderRadius = 0.22f;
+
         private const string BossFolder = "Assets/Resources/Bosses";
         private const string DefinitionPath = BossFolder + "/Boss_TreeBoss.asset";
         private const string PrefabFolder = "Assets/Prefab/Enemies";
@@ -158,14 +174,17 @@ namespace RedMagic.Bosses.EditorTools
             var body = BodyRecipe();
             var orb = OrbRecipe();
             var root = RootRecipe();
+            var fireLeaf = FireLeafRecipe();
             AssetDatabase.SaveAssets();
 
             log.Append(SpritePipeline.RunSheet(body));
             log.Append(SpritePipeline.RunSheet(orb));
             log.Append(SpritePipeline.RunSheet(root));
+            log.Append(SpritePipeline.RunSheet(fireLeaf));
 
             var fx = BuildFx(log);
             var attacks = CreateAttacks(fx);
+            EnsureFireImpactFx(attacks.FireDenial, fx.fireImpact);
             var definition = CreateDefinition(attacks, fx);
             BuildBossPrefab(definition, log);
 
@@ -195,7 +214,7 @@ namespace RedMagic.Bosses.EditorTools
         {
             EnsureFolders();
             var log = new StringBuilder();
-            foreach (var recipe in new[] { BodyRecipe(), OrbRecipe(), RootRecipe() })
+            foreach (var recipe in new[] { BodyRecipe(), OrbRecipe(), RootRecipe(), FireLeafRecipe() })
                 log.AppendLine($"##### {recipe.name}").Append(SheetSlicer.DiagnoseBands(recipe));
             return log.ToString();
         }
@@ -297,6 +316,42 @@ namespace RedMagic.Bosses.EditorTools
             return recipe;
         }
 
+        /// <summary>
+        /// Lámina aparte del fuego verde y las hojas mágicas de la fase 2: 5 filas de 6 frames —
+        /// viaje del fuego, estallido, fuego de suelo (bucle), hoja cayendo, impacto de la hoja.
+        /// Centrada, no a los pies: las cinco filas viajan o estallan en el aire o sobre un punto
+        /// fijo, ninguna se planta de pie como un personaje.
+        /// </summary>
+        private static SpriteSheetRecipe FireLeafRecipe()
+        {
+            var recipe = AssetDatabase.LoadAssetAtPath<SpriteSheetRecipe>(FireLeafRecipePath);
+            if (recipe != null) return recipe;
+
+            recipe = ScriptableObject.CreateInstance<SpriteSheetRecipe>();
+            recipe.sheet = AssetDatabase.LoadAssetAtPath<Texture2D>(FireLeafSheet);
+            recipe.characterName = "FireAndLeaf";
+            recipe.outputFolder = FxArtFolder;
+            recipe.sliceMode = SliceMode.AutoBounds;
+
+            recipe.rows = new[]
+            {
+                new SheetRow { state = "FireTravel", frames = 6, fps = 12f, loop = true },
+                new SheetRow { state = "FireImpact", frames = 6, fps = 14f, loop = false },
+                new SheetRow { state = "FireHazard", frames = 6, fps = 8f,  loop = true },
+                new SheetRow { state = "LeafFall",   frames = 6, fps = 10f, loop = true },
+                new SheetRow { state = "LeafImpact", frames = 6, fps = 14f, loop = false },
+            };
+
+            ConfigureKey(recipe, tolerance: 0.1f, softEdge: 16);
+            recipe.fillHoles = 80;   // mismo fondo liso oscuro que TreeBoss/BossAttack: sombras del propio dibujo
+            recipe.anchor = AnchorMode.Center;
+            recipe.runtime = AnimRuntime.Flipbook;   // pooled: sin Animator
+            recipe.attackEvents = false;
+
+            AssetDatabase.CreateAsset(recipe, FireLeafRecipePath);
+            return recipe;
+        }
+
         /// <summary>Las dos láminas son arte pintado sobre un verde liso, sin alfa: fondo deducido y borde suave.</summary>
         private static void ConfigureKey(SpriteSheetRecipe recipe, float tolerance, int softEdge)
         {
@@ -313,8 +368,8 @@ namespace RedMagic.Bosses.EditorTools
         private sealed class Fx
         {
             public GameObject charge, bullet, impact, spike, wave;
-            public GameObject fireBolt, fireHazard;   // PLACEHOLDER hasta que llegue el arte del fuego
-            public GameObject leaf, leafImpact;       // PLACEHOLDER hasta que llegue el arte de las hojas
+            public GameObject fireBolt, fireHazard, fireImpact;
+            public GameObject leaf, leafImpact;
         }
 
         private static Fx BuildFx(StringBuilder log)
@@ -327,6 +382,11 @@ namespace RedMagic.Bosses.EditorTools
             };
             fx.leafImpact = LeafImpactPlaceholder(log);
             fx.leaf = LeafPlaceholder(fx.leafImpact, log);
+
+            // Sustituye los cuatro placeholders de arriba por el arte final y crea el estallido de
+            // impacto (nuevo) en cuanto Assets/Sprites/FireAndleaf.png esté cortada. Sin lámina
+            // cortada, no toca nada y el juego sigue con los cuadrados de código.
+            DressFireAndLeafArt(fx, log);
 
             var idle = SpritesOf("TreeBossOrb", "Idle");
             var move = SpritesOf("TreeBossOrb", "Move");
@@ -512,6 +572,192 @@ namespace RedMagic.Bosses.EditorTools
             return AssetDatabase.LoadAssetAtPath<GameObject>(path);
         }
 
+        // ================================================================= fuego verde y hojas (arte final)
+
+        /// <summary>
+        /// Sustituye el placeholder del fuego verde y las hojas mágicas por el arte final: mete un
+        /// SpriteFlipbook en los tres prefabs de disparo/hazard/hoja que ya existen (el ataque sigue
+        /// apuntando a los mismos cuatro prefabs de siempre, nada cambia ahí) y crea el estallido de
+        /// impacto, que antes no existía. Si la lámina aún no está cortada, no toca nada.
+        /// </summary>
+        private static void DressFireAndLeafArt(Fx fx, StringBuilder log)
+        {
+            var travel = SpritesOf("FireAndLeaf", "FireTravel");
+            var impact = SpritesOf("FireAndLeaf", "FireImpact");
+            var hazard = SpritesOf("FireAndLeaf", "FireHazard");
+            var fall = SpritesOf("FireAndLeaf", "LeafFall");
+            var leafImpact = SpritesOf("FireAndLeaf", "LeafImpact");
+
+            if (travel.Length == 0 || impact.Length == 0 || hazard.Length == 0 ||
+                fall.Length == 0 || leafImpact.Length == 0)
+            {
+                log.AppendLine("  fuego y hojas siguen con el placeholder: falta cortar " + FireLeafSheet);
+                return;
+            }
+
+            fx.fireImpact = OneShot(FireImpactPath, impact, 14f, FireImpactWidth, sortingOrder: 7, sink: 0f, log);
+
+            DressFlipbook(FireBoltPath, travel, 12f, loop: true, width: FireBoltWidth,
+                         colliderWorldRadius: 0f, spriteRotation: 0f, log);
+            DressFlipbook(FireHazardPath, hazard, 8f, loop: true, width: FireHazardWidth,
+                         colliderWorldRadius: 0f, spriteRotation: 0f, log);
+            // La hoja SÍ necesita el giro de compensación: en la lámina cae con la punta hacia abajo
+            // (ángulo local ≈ -90°), pero Projectile gira la raíz cada FixedUpdate para que sea el eje
+            // +X local el que apunte a la dirección de vuelo — sin corregir, la punta sale desfasada
+            // 90° de por dónde cae de verdad (medido en juego: puntaba hacia las 8, no hacia abajo).
+            DressFlipbook(LeafPath, fall, 10f, loop: true, width: LeafWidth,
+                         colliderWorldRadius: LeafColliderRadius, spriteRotation: 90f, log);
+            DressLeafImpact(LeafImpactPath, leafImpact, 14f, LeafImpactWidth, log);
+        }
+
+        /// <summary>
+        /// Mete (o actualiza) un SpriteFlipbook con el arte final de un placeholder (FireBolt /
+        /// FireHazard / Leaf) y apaga tinte y redimensionado de <see cref="FxPlaceholderStyle"/> —
+        /// el fuego y la hoja no son cuadrados, forzarlos al tamaño del disparo los deformaría (real
+        /// art: "turning the style flags off, not deleting art"). La escala real se fija aquí a
+        /// mano, como el resto del arte de este jefe; <paramref name="colliderWorldRadius"/> > 0
+        /// hace lo mismo con el CircleCollider2D de la hoja, que antes se ajustaba solo vía
+        /// 'scaleColliderToSprite'.
+        ///
+        /// <paramref name="spriteRotation"/> != 0 mueve el dibujo a un hijo "Sprite" con esa
+        /// rotación local fija, en vez de dejarlo en la raíz: <see cref="Projectile"/> reescribe
+        /// <c>transform.rotation</c> DE LA RAÍZ en cada FixedUpdate para mirar hacia la dirección de
+        /// vuelo, así que un desfase puesto en la raíz se perdería en el primer paso de física — sólo
+        /// un hijo, al que Projectile no toca, puede compensar que la lámina no dibuje el objeto
+        /// "apuntando a +X" (la hoja cae con la punta hacia abajo en la lámina, no hacia la derecha).
+        /// </summary>
+        private static void DressFlipbook(string path, Sprite[] frames, float fps, bool loop, float width,
+                                          float colliderWorldRadius, float spriteRotation, StringBuilder log)
+        {
+            var root = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                // GetComponentInChildren y no GetComponent: una vestida anterior con
+                // spriteRotation != 0 pudo haber movido el renderer a un hijo "Sprite", y esto tiene
+                // que seguir encontrándolo en un relanzamiento posterior (idempotente de verdad).
+                var rootRenderer = root.GetComponentInChildren<SpriteRenderer>(true);
+                if (rootRenderer == null)
+                {
+                    log.AppendLine("  AVISO: " + path + " no tiene SpriteRenderer.");
+                    return;
+                }
+
+                SpriteRenderer renderer;
+                SpriteFlipbook flipbook;
+
+                if (Mathf.Abs(spriteRotation) < 0.01f)
+                {
+                    renderer = rootRenderer;
+                    flipbook = renderer.GetComponent<SpriteFlipbook>();
+                    if (flipbook == null) flipbook = renderer.gameObject.AddComponent<SpriteFlipbook>();
+                }
+                else
+                {
+                    var child = root.transform.Find("Sprite");
+                    if (child == null)
+                    {
+                        var go = new GameObject("Sprite");
+                        go.transform.SetParent(root.transform, false);
+                        child = go.transform;
+                    }
+
+                    renderer = child.GetComponent<SpriteRenderer>();
+                    if (renderer == null) renderer = child.gameObject.AddComponent<SpriteRenderer>();
+                    renderer.sortingLayerID = rootRenderer.sortingLayerID;
+                    renderer.sortingOrder = rootRenderer.sortingOrder;
+                    renderer.sharedMaterial = rootRenderer.sharedMaterial;
+                    child.localRotation = Quaternion.Euler(0f, 0f, spriteRotation);
+
+                    flipbook = child.GetComponent<SpriteFlipbook>();
+                    if (flipbook == null) flipbook = child.gameObject.AddComponent<SpriteFlipbook>();
+
+                    // El visual vive ahora en el hijo: cualquier SpriteRenderer/SpriteFlipbook que
+                    // haya quedado en la RAÍZ de una vestida anterior (antes de tener hijo) sobra.
+                    // El SpriteFlipbook se destruye PRIMERO — [RequireComponent(SpriteRenderer)]
+                    // impide borrar el renderer mientras el flipbook siga dependiendo de él.
+                    foreach (var stale in root.GetComponents<SpriteFlipbook>())
+                        Object.DestroyImmediate(stale, true);
+                    foreach (var stale in root.GetComponents<SpriteRenderer>())
+                        Object.DestroyImmediate(stale, true);
+                }
+
+                renderer.sprite = frames[0];
+                renderer.color = Color.white;
+
+                new BossAuthoring.Fields(flipbook)
+                    .SetObjectArray("frames", frames)
+                    .Set("framesPerSecond", fps)
+                    .Set("pingPong", false)
+                    .Set("randomStart", true)
+                    .Set("oneShot", !loop)
+                    .Apply();
+
+                float scale = width / CellWidth(frames[0]);
+                root.transform.localScale = Vector3.one * scale;
+
+                var style = root.GetComponent<FxPlaceholderStyle>();
+                if (style != null)
+                    new BossAuthoring.Fields(style)
+                        .Set("tint", false).Set("resize", false).Set("scaleColliderToSprite", false)
+                        .Apply();
+
+                if (colliderWorldRadius > 0f)
+                {
+                    var circle = root.GetComponent<CircleCollider2D>();
+                    if (circle != null) circle.radius = colliderWorldRadius / scale;
+                }
+
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+
+            log.AppendLine("  arte final aplicado: " + path);
+        }
+
+        /// <summary>
+        /// El impacto de la hoja es distinto de los otros tres: no lleva FxPlaceholderStyle (nunca
+        /// se tiñó por disparo, sólo un color fijo en el prefab) y ya tenía un VfxOneShot con una
+        /// duración fija a mano — aquí se ajusta a la duración real de la tira.
+        /// </summary>
+        private static void DressLeafImpact(string path, Sprite[] frames, float fps, float width, StringBuilder log)
+        {
+            var root = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                var renderer = root.GetComponent<SpriteRenderer>();
+                renderer.sprite = frames[0];
+                renderer.color = Color.white;
+
+                var flipbook = root.GetComponent<SpriteFlipbook>();
+                if (flipbook == null) flipbook = root.AddComponent<SpriteFlipbook>();
+
+                new BossAuthoring.Fields(flipbook)
+                    .SetObjectArray("frames", frames)
+                    .Set("framesPerSecond", fps)
+                    .Set("pingPong", false)
+                    .Set("randomStart", false)
+                    .Set("oneShot", true)
+                    .Apply();
+
+                root.transform.localScale = Vector3.one * (width / CellWidth(frames[0]));
+
+                var oneShot = root.GetComponent<VfxOneShot>();
+                if (oneShot != null)
+                    new BossAuthoring.Fields(oneShot).Set("lifetime", frames.Length / fps).Apply();
+
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+
+            log.AppendLine("  arte final aplicado: " + path);
+        }
+
         // ================================================================= ataques
 
         private sealed class Attacks
@@ -660,6 +906,7 @@ namespace RedMagic.Bosses.EditorTools
                     .Set("launchOffset", new Vector2(0f, BodyHeight * 0.62f))   // desde el cristal
                     .Set("launchStagger", 0.12f)
                     .SetObject("firePrefab", fx.fireHazard)
+                    .SetObject("fireImpactFxPrefab", fx.fireImpact)
                     .Set("fireSize", new Vector2(2.1f, 1f)).Set("fireTickInterval", 0.5f)
                     .Set("snapToSurface", true).Set("snapDistance", 4f));
 
@@ -912,6 +1159,24 @@ namespace RedMagic.Bosses.EditorTools
             slot.objectReferenceValue = opening;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(definition);
+        }
+
+        /// <summary>
+        /// Rellena el hueco de la ráfaga de impacto del fuego en un ataque 'Fuego Verde' que ya
+        /// existía de antes de tener este campo: sólo si está vacío, igual que
+        /// <see cref="EnsureOpeningAttack"/>.
+        /// </summary>
+        private static void EnsureFireImpactFx(BossAttack attack, GameObject fireImpact)
+        {
+            if (attack == null || fireImpact == null) return;
+
+            var so = new SerializedObject(attack);
+            var prop = so.FindProperty("fireImpactFxPrefab");
+            if (prop == null || prop.objectReferenceValue != null) return;
+
+            prop.objectReferenceValue = fireImpact;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(attack);
         }
 
         /// <summary>

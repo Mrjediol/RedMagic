@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f0d342f95c145c44a25c9b802727df1, type: 3}
+  m_Name: FireAndLeaf.sheet
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.SpriteSheetRecipe
+  sheet: {fileID: 2800000, guid: 8a216916d5a5cd146ba2f47a4bdbc619, type: 3}
+  characterName: FireAndLeaf
+  outputFolder: Assets/Prefab/Fx/Bosses/TreeBoss/Art
+  sliceMode: 0
+  rows:
+  - state: FireTravel
+    frames: 6
+    fps: 12
+    loop: 1
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: FireImpact
+    frames: 6
+    fps: 14
+    loop: 0
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: FireHazard
+    frames: 6
+    fps: 8
+    loop: 1
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: LeafFall
+    frames: 6
+    fps: 10
+    loop: 1
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: LeafImpact
+    frames: 6
+    fps: 14
+    loop: 0
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  columns: 5
+  cropLeft: 0
+  cropRight: 0
+  cropTop: 0
+  cropBottom: 0
+  keyBackground: 1
+  backgroundTolerance: 0.1
+  alphaThreshold: 0.15
+  softEdge: 16
+  fillHoles: 80
+  margin: 8
+  anchor: 1
+  pixelsPerUnit: 100
+  filterMode: 1
+  runtime: 1
+  attackEvents: 0
+  derivedClips: []
+  rendererPath: Sprite

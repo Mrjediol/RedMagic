@@ -20,6 +20,8 @@ MonoBehaviour:
   recovery: 1.2
   weight: 1
   cooldownInAttacks: 0
+  cooldownSeconds: 0
+  minPhase: 1
   damage: 8
   knockbackMultiplier: 0.3
   vulnerableSeconds: 0
@@ -33,6 +35,7 @@ MonoBehaviour:
   boltSize: {x: 0.8, y: 0.8}
   launchOffset: {x: 0, y: 4.65}
   launchStagger: 0.12
+  fireImpactFxPrefab: {fileID: 6190914829685942938, guid: fec614b5c0c9b5d4c96e89f5bed7f410, type: 3}
   firePrefab: {fileID: 8694891067485560291, guid: 3ea45ca982ad466458946d0c1fcdcfc0, type: 3}
   fireSize: {x: 2.1, y: 1}
   fireTickInterval: 0.5

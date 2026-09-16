@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Enemy Sprite Extractor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    --bg:#1a1d21; --panel:#22262b; --border:#33383f; --accent:#5ec8a8;
+    --accent2:#e8b04b; --danger:#ff8a8a; --text:#e8e8e8; --muted:#9aa0a6;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;}
+  #sidebar{width:340px;min-width:340px;background:var(--panel);border-right:1px solid var(--border);padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+  #main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  #canvasWrap{flex:1;overflow:auto;position:relative;background:linear-gradient(45deg,#26292e 25%,transparent 25%),linear-gradient(-45deg,#26292e 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#26292e 75%),linear-gradient(-45deg,transparent 75%,#26292e 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0px;}
+  canvas{display:block;}
+  #bottomPanel{height:360px;min-height:220px;max-height:70vh;background:var(--panel);border-top:1px solid var(--border);display:flex;gap:0;overflow:hidden;resize:vertical;}
+  h1{font-size:15px;margin:0 0 4px;color:var(--accent);}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 8px;border-bottom:1px solid var(--border);padding-bottom:6px;}
+  p.hint{font-size:12px;color:var(--muted);line-height:1.5;margin:0;}
+  button{background:#2d3238;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;cursor:pointer;}
+  button:hover{background:#383e46;}
+  button.primary{background:var(--accent);color:#0f1210;font-weight:600;border:none;}
+  button.primary:hover{filter:brightness(1.08);}
+  button.danger{color:var(--danger);}
+  button.small{padding:3px 8px;font-size:11px;}
+  button.active{outline:2px solid var(--accent);}
+  input[type=file]{font-size:12px;width:100%;}
+  input[type=number],input[type=text],select{width:100%;background:#1a1d21;border:1px solid var(--border);color:var(--text);border-radius:4px;padding:6px;font-size:12px;}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px;}
+  .field{margin-bottom:10px;}
+  .row{display:flex;gap:8px;}
+  .row>*{flex:1;}
+  #status{font-size:12px;color:var(--accent2);min-height:32px;line-height:1.4;}
+  kbd{background:#1a1d21;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:11px;}
+
+  /* animation lanes — now the BIG panel */
+  #lanesPanel{flex:1;min-width:0;padding:10px;overflow-y:auto;}
+  .laneCard{background:#1a1d21;border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:8px;}
+  .laneCard.projectileCard{border-color:#7a5be8;}
+  .sectionLabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 6px;}
+  .laneHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .laneName{font-weight:600;font-size:12px;color:var(--accent);}
+  .laneMeta{display:flex;gap:6px;margin-bottom:6px;align-items:center;}
+  .laneMeta input,.laneMeta select{font-size:11px;padding:3px;}
+  .laneFrames{display:flex;flex-wrap:wrap;gap:4px;min-height:44px;}
+  .frameThumb{width:44px;height:44px;border:1px solid var(--border);border-radius:4px;background-size:cover;background-position:center;position:relative;cursor:default;}
+  .frameThumb .fIdx{position:absolute;top:0;left:1px;font-size:9px;color:#fff;text-shadow:0 0 2px #000;pointer-events:none;}
+  .frameThumb .fCtrls{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;opacity:0;transition:opacity .1s;}
+  .frameThumb:hover .fCtrls{opacity:1;}
+  .frameThumb .fBtn{background:#000000cc;color:#fff;font-size:9px;width:14px;height:14px;line-height:14px;text-align:center;cursor:pointer;border-radius:2px;}
+  .frameThumb .fBtn.del{background:#8a2f2fcc;}
+
+  /* unsorted sprites — narrow side panel */
+  #unsortedPanel{width:230px;min-width:230px;border-left:1px solid var(--border);padding:10px;overflow-y:auto;display:flex;flex-direction:column;}
+  #unsortedGrid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .detBox{width:44px;height:44px;border:1px solid var(--border);border-radius:4px;position:relative;cursor:pointer;background-size:cover;background-position:center;}
+  .detBox.selected{outline:2px solid var(--accent2);}
+  .detBox .idx{position:absolute;bottom:1px;left:2px;font-size:9px;color:#fff;text-shadow:0 0 2px #000;}
+
+  /* compact assign toolbar, lives inside the unsorted panel header */
+  #assignBar{display:none;flex-direction:column;gap:5px;background:#1a1d21;border:1px solid var(--border);border-radius:6px;padding:6px;margin-top:6px;}
+  #assignBar .assignRow{display:flex;gap:5px;}
+  #assignBar select{font-size:11px;padding:4px;}
+  #assignBar button{font-size:11px;padding:4px 6px;white-space:nowrap;}
+  #selCount{font-size:11px;color:var(--accent2);}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div>
+    <h1>🍄 Enemy Sprite Extractor</h1>
+    <p class="hint">Sube tu hoja de sprites, ajusta la detección, agrupa en animaciones y exporta.</p>
+  </div>
+
+  <div>
+    <h2>1. Imagen</h2>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <div>
+    <h2>2. Quitar fondo</h2>
+    <div class="field">
+      <label>Tolerancia de color (0-100)</label>
+      <input type="range" id="tolerance" min="0" max="100" value="18">
+    </div>
+    <button id="removeBgBtn" style="width:100%">🎨 Detectar y quitar fondo</button>
+  </div>
+
+  <div>
+    <h2>3. Detección de sprites</h2>
+    <div class="field">
+      <label>Área mínima (px², filtra ruido/texto)</label>
+      <input type="number" id="minArea" value="400">
+    </div>
+    <div class="field">
+      <label>Dilatación para unir partes cercanas (px)</label>
+      <input type="number" id="dilation" value="6">
+    </div>
+    <div class="field">
+      <label>Padding extra al recortar (px)</label>
+      <input type="number" id="padding" value="4">
+    </div>
+    <button id="detectBtn" class="primary" style="width:100%">🔍 Detectar sprites</button>
+    <p class="hint" style="margin-top:8px;">
+      Modo manual: <button id="addBoxModeBtn" class="small">＋ Añadir caja</button>
+      Selecciona una caja y pulsa <kbd>Supr</kbd> para borrarla, o arrastra sus esquinas para ajustarla.
+      <br><br>
+      Selección múltiple en el panel de la derecha: <kbd>Ctrl</kbd>+click añade/quita una a una, <kbd>Shift</kbd>+click selecciona todo el rango entre la última y esta.
+    </p>
+  </div>
+
+  <div>
+    <h2>4. Enemigo</h2>
+    <div class="field">
+      <label>Nombre del enemigo</label>
+      <input type="text" id="enemyName" placeholder="ej. MushroomWarrior">
+    </div>
+  </div>
+
+  <div>
+    <h2>5. Exportar</h2>
+    <button id="exportBtn" class="primary" style="width:100%">⬇ Descargar .zip</button>
+    <div id="status"></div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="canvasWrap">
+    <canvas id="canvas"></canvas>
+  </div>
+  <div id="bottomPanel">
+    <div id="lanesPanel">
+      <h2 style="margin-top:0;">Animaciones
+        <button id="addLaneBtn" class="small" style="float:right;">＋ Nueva</button>
+        <button id="addProjBtn" class="small" style="float:right;margin-right:6px;color:#c9b8ff;">＋ Proyectil</button>
+      </h2>
+      <div id="lanesList"></div>
+    </div>
+    <div id="unsortedPanel">
+      <h2 style="margin-top:0;">Sprites (<span id="unsortedCount">0</span>)</h2>
+      <p class="hint">Ctrl+click o Shift+click para seleccionar varios.</p>
+
+      <div id="assignBar">
+        <span id="selCount">0 seleccionados</span>
+        <div class="assignRow">
+          <select id="assignSelect" style="flex:1;"></select>
+          <button id="assignBtn" class="small primary">Asignar</button>
+        </div>
+        <div class="assignRow">
+          <button id="deleteBoxBtn" class="small danger" style="flex:1;">Borrar selección</button>
+          <button id="clearSelBtn" class="small" style="flex:1;">Deseleccionar</button>
+        </div>
+      </div>
+
+      <div id="unsortedGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let img = null;
+let workCanvas = document.createElement('canvas'); // holds bg-removed RGBA data
+let workCtx = workCanvas.getContext('2d');
+let bgRemoved = false;
+
+let boxes = []; // {x,y,w,h, assignedLane: null|laneId}
+let selectedIndices = new Set(); // multi-selection (box indices)
+let lastClickedIndex = -1; // anchor for shift-range selection
+let lanes = []; // {id, name, fps, loop, frameBoxIndices: [boxIndex,...]}
+let laneIdCounter = 0;
+
+function primarySelected(){
+  // returns the single selected box index when exactly one is selected (for canvas edit handles)
+  return selectedIndices.size===1 ? [...selectedIndices][0] : -1;
+}
+function clearSelection(){
+  selectedIndices.clear();
+  lastClickedIndex = -1;
+}
+
+let mode = 'select'; // 'select' | 'addbox'
+let dragState = null; // {type:'move'|'resize'|'create', ...}
+
+document.getElementById('fileInput').addEventListener('change', e=>{
+  const f = e.target.files[0];
+  if(f) loadImageFile(f);
+});
+
+function loadImageFile(f){
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const image = new Image();
+    image.onload = ()=>{
+      img = image;
+      canvas.width = img.width; canvas.height = img.height;
+      workCanvas.width = img.width; workCanvas.height = img.height;
+      workCtx.clearRect(0,0,img.width,img.height);
+      workCtx.drawImage(img,0,0);
+      bgRemoved = false;
+      boxes = [];
+      lanes = [];
+      clearSelection();
+      render();
+      renderLanes();
+      renderUnsorted();
+      setStatus(`Imagen cargada: ${img.width}×${img.height}px`);
+    };
+    image.src = ev.target.result;
+  };
+  reader.readAsDataURL(f);
+}
+
+// ---------------- Background removal ----------------
+document.getElementById('removeBgBtn').addEventListener('click', ()=>{
+  if(!img){ setStatus('Carga una imagen primero.'); return; }
+  const tol = parseInt(document.getElementById('tolerance').value) * 2.55; // 0-100 -> 0-255 approx
+  const imgData = workCtx.getImageData(0,0,workCanvas.width,workCanvas.height);
+  const d = imgData.data;
+  const w = workCanvas.width, h = workCanvas.height;
+
+  // sample background color from the 4 corners
+  const corners = [[0,0],[w-1,0],[0,h-1],[w-1,h-1]];
+  let r=0,g=0,b=0;
+  corners.forEach(([cx,cy])=>{
+    const idx = (cy*w+cx)*4;
+    r += d[idx]; g += d[idx+1]; b += d[idx+2];
+  });
+  r/=4; g/=4; b/=4;
+
+  // flood fill from all border pixels that match background color, mark as transparent
+  const visited = new Uint8Array(w*h);
+  const stack = [];
+  for(let x=0;x<w;x++){ stack.push([x,0]); stack.push([x,h-1]); }
+  for(let y=0;y<h;y++){ stack.push([0,y]); stack.push([w-1,y]); }
+
+  function matches(idx){
+    const dr = d[idx]-r, dg = d[idx+1]-g, db = d[idx+2]-b;
+    return Math.sqrt(dr*dr+dg*dg+db*db) <= tol;
+  }
+
+  while(stack.length){
+    const [x,y] = stack.pop();
+    if(x<0||y<0||x>=w||y>=h) continue;
+    const p = y*w+x;
+    if(visited[p]) continue;
+    visited[p]=1;
+    const idx = p*4;
+    if(!matches(idx)) continue;
+    d[idx+3] = 0; // make transparent
+    stack.push([x+1,y]);stack.push([x-1,y]);stack.push([x,y+1]);stack.push([x,y-1]);
+  }
+
+  workCtx.putImageData(imgData,0,0);
+  bgRemoved = true;
+  render();
+  setStatus('Fondo eliminado. Revisa el resultado; si quedaron restos, sube la tolerancia y repite.');
+});
+
+// ---------------- Sprite detection (connected components) ----------------
+document.getElementById('detectBtn').addEventListener('click', ()=>{
+  if(!img){ setStatus('Carga una imagen primero.'); return; }
+  if(!bgRemoved){ setStatus('Recomendado: quita el fondo antes de detectar (paso 2).'); }
+
+  const minArea = parseInt(document.getElementById('minArea').value) || 400;
+  const dilation = parseInt(document.getElementById('dilation').value) || 0;
+  const padding = parseInt(document.getElementById('padding').value) || 0;
+
+  const w = workCanvas.width, h = workCanvas.height;
+  const imgData = workCtx.getImageData(0,0,w,h);
+  const d = imgData.data;
+
+  // foreground mask: alpha above threshold
+  let mask = new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++){ mask[i] = d[i*4+3] > 10 ? 1 : 0; }
+
+  // dilate
+  if(dilation > 0){
+    mask = dilateMask(mask, w, h, dilation);
+  }
+
+  // connected components (4-connectivity), iterative flood fill
+  const labels = new Int32Array(w*h).fill(-1);
+  const detected = [];
+  let label = 0;
+  const stack = [];
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const p = y*w+x;
+      if(mask[p] && labels[p]===-1){
+        let minX=x,maxX=x,minY=y,maxY=y,area=0;
+        stack.push(p); labels[p]=label;
+        while(stack.length){
+          const cp = stack.pop();
+          const cx = cp % w, cy = (cp / w) | 0;
+          area++;
+          if(cx<minX)minX=cx; if(cx>maxX)maxX=cx;
+          if(cy<minY)minY=cy; if(cy>maxY)maxY=cy;
+          const neighbors = [cp-1,cp+1,cp-w,cp+w];
+          for(const np of neighbors){
+            if(np<0||np>=w*h) continue;
+            const nx = np % w;
+            if(Math.abs(nx-cx) > 1) continue; // avoid wrap-around on row edges
+            if(mask[np] && labels[np]===-1){
+              labels[np]=label; stack.push(np);
+            }
+          }
+        }
+        if(area >= minArea){
+          detected.push({x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1});
+        }
+        label++;
+      }
+    }
+  }
+
+  // apply padding and clamp, using ORIGINAL (non-dilated) tight crop by re-measuring alpha within dilated bbox
+  boxes = detected.map(b=>{
+    let x = Math.max(0, b.x - padding);
+    let y = Math.max(0, b.y - padding);
+    let x2 = Math.min(w, b.x+b.w + padding);
+    let y2 = Math.min(h, b.y+b.h + padding);
+    return {x, y, w:x2-x, h:y2-y, assignedLane:null};
+  });
+
+  // sort into reading order: cluster rows by y-center proximity, then sort by x within row
+  boxes.sort((a,b)=> (a.y+a.h/2) - (b.y+b.h/2));
+  const rows = [];
+  const rowTol = 40;
+  boxes.forEach(bx=>{
+    const cy = bx.y + bx.h/2;
+    let row = rows.find(r => Math.abs(r.cy - cy) < rowTol);
+    if(!row){ row = {cy, items:[]}; rows.push(row); }
+    row.items.push(bx);
+  });
+  boxes = rows.flatMap(r => r.items.sort((a,b)=>a.x-b.x));
+
+  clearSelection();
+  render();
+  renderUnsorted();
+  setStatus(`Detectados ${boxes.length} sprites. Revisa, elimina texto/ruido si se coló, y asígnalos a animaciones abajo.`);
+});
+
+function dilateMask(mask, w, h, radius){
+  let current = mask;
+  for(let it=0; it<radius; it++){
+    const next = new Uint8Array(w*h);
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const p = y*w+x;
+        if(current[p]){ next[p]=1; continue; }
+        if((x>0 && current[p-1]) || (x<w-1 && current[p+1]) ||
+           (y>0 && current[p-w]) || (y<h-1 && current[p+w])){
+          next[p]=1;
+        }
+      }
+    }
+    current = next;
+  }
+  return current;
+}
+
+// ---------------- Canvas rendering & interaction ----------------
+function render(){
+  if(!img) return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(bgRemoved ? workCanvas : img, 0,0);
+
+  boxes.forEach((b,i)=>{
+    const selected = selectedIndices.has(i);
+    ctx.strokeStyle = b.assignedLane ? '#5ec8a8' : (selected ? '#e8b04b' : '#e85b5b');
+    ctx.lineWidth = selected ? 3 : 1.5;
+    ctx.strokeRect(b.x,b.y,b.w,b.h);
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(b.x, b.y-14, 22, 14);
+    ctx.fillStyle = '#fff';
+    ctx.font = '11px sans-serif';
+    ctx.fillText(i, b.x+3, b.y-3);
+
+    // resize handles only shown when this is the single selected box
+    if(selected && primarySelected()===i){
+      const hs = 6;
+      ctx.fillStyle = '#e8b04b';
+      [[b.x,b.y],[b.x+b.w,b.y],[b.x,b.y+b.h],[b.x+b.w,b.y+b.h]].forEach(([hx,hy])=>{
+        ctx.fillRect(hx-hs/2, hy-hs/2, hs, hs);
+      });
+    }
+  });
+}
+
+document.getElementById('addBoxModeBtn').addEventListener('click', (e)=>{
+  mode = mode==='addbox' ? 'select' : 'addbox';
+  e.target.classList.toggle('active', mode==='addbox');
+});
+
+function getPos(e){
+  const rect = canvas.getBoundingClientRect();
+  return { x: Math.round(e.clientX-rect.left), y: Math.round(e.clientY-rect.top) };
+}
+
+function hitTestHandle(pos, b){
+  const hs=8;
+  const corners = {tl:[b.x,b.y], tr:[b.x+b.w,b.y], bl:[b.x,b.y+b.h], br:[b.x+b.w,b.y+b.h]};
+  for(const key in corners){
+    const [cx,cy] = corners[key];
+    if(Math.abs(pos.x-cx)<hs && Math.abs(pos.y-cy)<hs) return key;
+  }
+  return null;
+}
+
+canvas.addEventListener('mousedown', e=>{
+  if(!img) return;
+  const pos = getPos(e);
+
+  if(mode==='addbox'){
+    dragState = { type:'create', startX:pos.x, startY:pos.y };
+    return;
+  }
+
+  const primary = primarySelected();
+  if(primary>=0){
+    const b = boxes[primary];
+    const handle = hitTestHandle(pos,b);
+    if(handle){
+      dragState = { type:'resize', handle, box:b };
+      return;
+    }
+  }
+
+  // check click inside any box (topmost/last first)
+  for(let i=boxes.length-1;i>=0;i--){
+    const b = boxes[i];
+    if(pos.x>=b.x && pos.x<=b.x+b.w && pos.y>=b.y && pos.y<=b.y+b.h){
+      applySelectionClick(i, e.ctrlKey||e.metaKey, e.shiftKey);
+      // only allow dragging to move when it's the sole selected box (avoid accidental multi-move)
+      if(selectedIndices.size===1 && selectedIndices.has(i)){
+        dragState = { type:'move', box:b, offX:pos.x-b.x, offY:pos.y-b.y };
+      }
+      render(); updateAssignBar(); renderUnsorted();
+      return;
+    }
+  }
+  clearSelection();
+  render(); updateAssignBar(); renderUnsorted();
+});
+
+// shared selection logic used by both the canvas and the sidebar thumbnails
+function applySelectionClick(i, ctrlKey, shiftKey){
+  if(shiftKey && lastClickedIndex>=0){
+    const [a,b] = [lastClickedIndex, i].sort((x,y)=>x-y);
+    for(let k=a;k<=b;k++) selectedIndices.add(k);
+  } else if(ctrlKey){
+    if(selectedIndices.has(i)) selectedIndices.delete(i); else selectedIndices.add(i);
+    lastClickedIndex = i;
+  } else {
+    selectedIndices.clear();
+    selectedIndices.add(i);
+    lastClickedIndex = i;
+  }
+}
+
+canvas.addEventListener('mousemove', e=>{
+  if(!dragState || !img) return;
+  const pos = getPos(e);
+
+  if(dragState.type==='create'){
+    render();
+    const x = Math.min(dragState.startX,pos.x), y = Math.min(dragState.startY,pos.y);
+    const w = Math.abs(pos.x-dragState.startX), h = Math.abs(pos.y-dragState.startY);
+    ctx.strokeStyle = '#e8b04b'; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+    ctx.strokeRect(x,y,w,h); ctx.setLineDash([]);
+  } else if(dragState.type==='move'){
+    dragState.box.x = pos.x - dragState.offX;
+    dragState.box.y = pos.y - dragState.offY;
+    render();
+  } else if(dragState.type==='resize'){
+    const b = dragState.box;
+    if(dragState.handle==='br'){ b.w = pos.x-b.x; b.h = pos.y-b.y; }
+    if(dragState.handle==='tl'){ const ex=b.x+b.w, ey=b.y+b.h; b.x=pos.x; b.y=pos.y; b.w=ex-b.x; b.h=ey-b.y; }
+    if(dragState.handle==='tr'){ const ey=b.y+b.h; b.y=pos.y; b.w=pos.x-b.x; b.h=ey-b.y; }
+    if(dragState.handle==='bl'){ const ex=b.x+b.w; b.x=pos.x; b.w=ex-b.x; b.h=pos.y-b.y; }
+    render();
+  }
+});
+
+canvas.addEventListener('mouseup', e=>{
+  if(!dragState) return;
+  const pos = getPos(e);
+  if(dragState.type==='create'){
+    const x = Math.min(dragState.startX,pos.x), y = Math.min(dragState.startY,pos.y);
+    const w = Math.abs(pos.x-dragState.startX), h = Math.abs(pos.y-dragState.startY);
+    if(w>4 && h>4){
+      boxes.push({x,y,w,h,assignedLane:null});
+      selectedIndices.clear();
+      selectedIndices.add(boxes.length-1);
+      lastClickedIndex = boxes.length-1;
+    }
+    mode = 'select';
+    document.getElementById('addBoxModeBtn').classList.remove('active');
+  }
+  dragState = null;
+  render(); updateAssignBar(); renderUnsorted();
+});
+
+document.addEventListener('keydown', e=>{
+  if((e.key==='Delete'||e.key==='Backspace') && selectedIndices.size>0 && document.activeElement.tagName!=='INPUT'){
+    removeBoxes([...selectedIndices]);
+  }
+});
+
+// remove multiple box indices at once, keeping all references (lanes, selection) consistent
+function removeBoxes(indices){
+  const toRemove = new Set(indices);
+  const sortedDesc = [...toRemove].sort((a,b)=>b-a);
+
+  sortedDesc.forEach(i=>{
+    boxes.splice(i,1);
+    lanes.forEach(l=>{
+      l.frameBoxIndices = l.frameBoxIndices
+        .filter(idx=>idx!==i)
+        .map(idx=> idx>i ? idx-1 : idx);
+    });
+  });
+
+  clearSelection();
+  render(); updateAssignBar(); renderUnsorted(); renderLanes();
+}
+
+document.getElementById('deleteBoxBtn').addEventListener('click', ()=>{
+  if(selectedIndices.size>0) removeBoxes([...selectedIndices]);
+});
+document.getElementById('clearSelBtn').addEventListener('click', ()=>{
+  clearSelection();
+  render(); updateAssignBar(); renderUnsorted();
+});
+
+// ---------------- Lanes (animations + projectiles) ----------------
+// lane.type: 'animation' | 'projectile'
+// animation lanes may optionally have: lane.projectileLink = { projId, spawnFrame } | null
+document.getElementById('addLaneBtn').addEventListener('click', ()=>{
+  const name = prompt('Nombre de la animación (ej. Idle, Attack, Hurt, Death):');
+  if(!name) return;
+  lanes.push({ id: 'lane'+(laneIdCounter++), type:'animation', name, fps:8, loop:true, frameBoxIndices: [], projectileLink:null });
+  renderLanes(); updateAssignBar();
+});
+
+document.getElementById('addProjBtn').addEventListener('click', ()=>{
+  const name = prompt('Nombre del proyectil (ej. MushroomSpore):');
+  if(!name) return;
+  lanes.push({ id: 'lane'+(laneIdCounter++), type:'projectile', name, fps:10, loop:true, frameBoxIndices: [] });
+  renderLanes(); updateAssignBar();
+});
+
+function renderLanes(){
+  const list = document.getElementById('lanesList');
+  list.innerHTML = '';
+
+  const animLanes = lanes.filter(l=>l.type==='animation');
+  const projLanes = lanes.filter(l=>l.type==='projectile');
+
+  if(animLanes.length){
+    const lbl = document.createElement('div');
+    lbl.className = 'sectionLabel';
+    lbl.textContent = 'Animaciones del enemigo';
+    list.appendChild(lbl);
+    animLanes.forEach(lane => list.appendChild(buildLaneCard(lane, projLanes)));
+  }
+  if(projLanes.length){
+    const lbl = document.createElement('div');
+    lbl.className = 'sectionLabel';
+    lbl.textContent = 'Animaciones de proyectiles';
+    list.appendChild(lbl);
+    projLanes.forEach(lane => list.appendChild(buildLaneCard(lane, projLanes)));
+  }
+}
+
+function buildLaneCard(lane, projLanes){
+    const card = document.createElement('div');
+    card.className = 'laneCard' + (lane.type==='projectile' ? ' projectileCard' : '');
+
+    let projectileControlsHtml = '';
+    if(lane.type==='animation'){
+      const hasProj = lane.projectileLink != null;
+      const projOptions = projLanes.map(p=>
+        `<option value="${p.id}" ${hasProj && lane.projectileLink.projId===p.id?'selected':''}>${p.name}</option>`
+      ).join('');
+      projectileControlsHtml = `
+        <div class="laneMeta" style="margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:3px;font-size:11px;width:auto;">
+            <input type="checkbox" ${hasProj?'checked':''} data-act="projToggle" style="width:auto;"> 🎯 Dispara proyectil
+          </label>
+        </div>
+        <div class="laneMeta" data-role="projFields" style="${hasProj?'':'display:none;'}">
+          <select data-act="projSelect" style="flex:2;" ${projLanes.length===0?'disabled':''}>
+            ${projLanes.length===0 ? '<option>Crea un proyectil primero →</option>' : projOptions}
+          </select>
+          <input type="number" data-act="spawnFrame" min="0" max="${Math.max(0,lane.frameBoxIndices.length-1)}"
+                 value="${hasProj?lane.projectileLink.spawnFrame:0}" title="Frame de lanzamiento" style="flex:1;">
+        </div>
+      `;
+    }
+
+    card.innerHTML = `
+      <div class="laneHeader">
+        <span class="laneName">${lane.type==='projectile'?'🎯 ':''}${lane.name}</span>
+        <button class="small danger" data-act="delLane">✕</button>
+      </div>
+      <div class="laneMeta">
+        <input type="number" value="${lane.fps}" title="FPS" data-act="fps" style="width:50px;">
+        <label style="display:flex;align-items:center;gap:3px;font-size:11px;">
+          <input type="checkbox" ${lane.loop?'checked':''} data-act="loop" style="width:auto;"> loop
+        </label>
+      </div>
+      ${projectileControlsHtml}
+      <div class="laneFrames"></div>
+    `;
+    card.querySelector('[data-act=delLane]').onclick = ()=>{
+      lane.frameBoxIndices.forEach(idx=> boxes[idx].assignedLane=null);
+      // if a projectile lane is deleted, unlink it from any animation that referenced it
+      if(lane.type==='projectile'){
+        lanes.forEach(l=>{
+          if(l.type==='animation' && l.projectileLink && l.projectileLink.projId===lane.id){
+            l.projectileLink = null;
+          }
+        });
+      }
+      lanes = lanes.filter(l=>l.id!==lane.id);
+      renderLanes(); renderUnsorted(); render();
+    };
+    card.querySelector('[data-act=fps]').onchange = (e)=> lane.fps = parseFloat(e.target.value)||8;
+    card.querySelector('[data-act=loop]').onchange = (e)=> lane.loop = e.target.checked;
+
+    if(lane.type==='animation'){
+      const toggle = card.querySelector('[data-act=projToggle]');
+      const fields = card.querySelector('[data-role=projFields]');
+      toggle.onchange = (e)=>{
+        if(e.target.checked){
+          const firstProj = projLanes[0];
+          lane.projectileLink = firstProj ? { projId: firstProj.id, spawnFrame: 0 } : { projId:null, spawnFrame:0 };
+        } else {
+          lane.projectileLink = null;
+        }
+        renderLanes();
+      };
+      const projSelect = card.querySelector('[data-act=projSelect]');
+      if(projSelect){
+        projSelect.onchange = (e)=>{ if(lane.projectileLink) lane.projectileLink.projId = e.target.value; };
+      }
+      const spawnInput = card.querySelector('[data-act=spawnFrame]');
+      if(spawnInput){
+        spawnInput.onchange = (e)=>{ if(lane.projectileLink) lane.projectileLink.spawnFrame = parseInt(e.target.value)||0; };
+      }
+    }
+
+    const framesDiv = card.querySelector('.laneFrames');
+    lane.frameBoxIndices.forEach((boxIdx, orderIdx)=>{
+      const b = boxes[boxIdx];
+      const thumb = document.createElement('div');
+      thumb.className = 'frameThumb';
+      thumb.style.backgroundImage = `url(${cropToDataURL(b)})`;
+      thumb.title = `Frame ${orderIdx+1}`;
+
+      const isFirst = orderIdx===0, isLast = orderIdx===lane.frameBoxIndices.length-1;
+      thumb.innerHTML = `
+        <span class="fIdx">${orderIdx+1}</span>
+        <div class="fCtrls">
+          <span class="fBtn" data-act="left" style="${isFirst?'visibility:hidden;':''}">‹</span>
+          <span class="fBtn del" data-act="remove">✕</span>
+          <span class="fBtn" data-act="right" style="${isLast?'visibility:hidden;':''}">›</span>
+        </div>
+      `;
+      thumb.querySelector('[data-act=left]').onclick = (ev)=>{
+        ev.stopPropagation();
+        [lane.frameBoxIndices[orderIdx-1], lane.frameBoxIndices[orderIdx]] =
+          [lane.frameBoxIndices[orderIdx], lane.frameBoxIndices[orderIdx-1]];
+        renderLanes();
+      };
+      thumb.querySelector('[data-act=right]').onclick = (ev)=>{
+        ev.stopPropagation();
+        [lane.frameBoxIndices[orderIdx+1], lane.frameBoxIndices[orderIdx]] =
+          [lane.frameBoxIndices[orderIdx], lane.frameBoxIndices[orderIdx+1]];
+        renderLanes();
+      };
+      thumb.querySelector('[data-act=remove]').onclick = (ev)=>{
+        ev.stopPropagation();
+        b.assignedLane = null;
+        lane.frameBoxIndices.splice(orderIdx,1);
+        renderLanes(); renderUnsorted(); render();
+      };
+      framesDiv.appendChild(thumb);
+    });
+
+    return card;
+}
+
+function renderUnsorted(){
+  const grid = document.getElementById('unsortedGrid');
+  grid.innerHTML = '';
+  let count = 0;
+  boxes.forEach((b,i)=>{
+    if(b.assignedLane) return;
+    count++;
+    const div = document.createElement('div');
+    div.className = 'detBox' + (selectedIndices.has(i) ? ' selected':'');
+    div.style.backgroundImage = `url(${cropToDataURL(b)})`;
+    div.innerHTML = `<span class="idx">${i}</span>`;
+    div.onclick = (e)=>{
+      applySelectionClick(i, e.ctrlKey||e.metaKey, e.shiftKey);
+      render(); updateAssignBar(); renderUnsorted();
+    };
+    grid.appendChild(div);
+  });
+  document.getElementById('unsortedCount').textContent = count;
+}
+
+function cropToDataURL(b){
+  const c = document.createElement('canvas');
+  c.width = Math.max(1,b.w); c.height = Math.max(1,b.h);
+  const cctx = c.getContext('2d');
+  cctx.drawImage(bgRemoved?workCanvas:img, b.x,b.y,b.w,b.h, 0,0,b.w,b.h);
+  return c.toDataURL();
+}
+
+function updateAssignBar(){
+  const bar = document.getElementById('assignBar');
+  const select = document.getElementById('assignSelect');
+  const selCount = document.getElementById('selCount');
+
+  if(selectedIndices.size===0){
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'flex';
+  selCount.textContent = `${selectedIndices.size} seleccionado${selectedIndices.size>1?'s':''}`;
+
+  if(lanes.length===0){
+    select.innerHTML = '<option>Crea una animación primero →</option>';
+  } else {
+    const animOpts = lanes.filter(l=>l.type==='animation').map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+    const projOpts = lanes.filter(l=>l.type==='projectile').map(l=>`<option value="${l.id}">${l.name}</option>`).join('');
+    select.innerHTML =
+      (animOpts ? `<optgroup label="Animaciones">${animOpts}</optgroup>` : '') +
+      (projOpts ? `<optgroup label="Proyectiles">${projOpts}</optgroup>` : '');
+  }
+}
+
+document.getElementById('assignBtn').addEventListener('click', ()=>{
+  if(selectedIndices.size===0 || lanes.length===0) return;
+  const laneId = document.getElementById('assignSelect').value;
+  const lane = lanes.find(l=>l.id===laneId);
+
+  // keep the order in which the user selected them (Shift-range already comes in ascending order
+  // from the Set insertion order, which matches how applySelectionClick added them)
+  [...selectedIndices].forEach(idx=>{
+    const b = boxes[idx];
+    if(b.assignedLane){
+      const oldLane = lanes.find(l=>l.id===b.assignedLane);
+      if(oldLane) oldLane.frameBoxIndices = oldLane.frameBoxIndices.filter(i=>i!==idx);
+    }
+    b.assignedLane = laneId;
+    lane.frameBoxIndices.push(idx);
+  });
+
+  clearSelection();
+  render(); renderLanes(); renderUnsorted(); updateAssignBar();
+  setStatus(`${lane.frameBoxIndices.length} frames en "${lane.name}".`);
+});
+
+function setStatus(msg){ document.getElementById('status').textContent = msg; }
+
+// ---------------- Export ----------------
+document.getElementById('exportBtn').addEventListener('click', async ()=>{
+  if(!img){ setStatus('Carga una imagen primero.'); return; }
+  const enemyName = document.getElementById('enemyName').value.trim() || 'Enemy';
+  const animLanes = lanes.filter(l=>l.type==='animation' && l.frameBoxIndices.length>0);
+  const projLanes = lanes.filter(l=>l.type==='projectile' && l.frameBoxIndices.length>0);
+
+  if(animLanes.length===0){ setStatus('Crea al menos una animación de enemigo y asígnale sprites.'); return; }
+
+  const zip = new JSZip();
+  const manifest = { enemyName, animations: [], projectiles: [] };
+
+  animLanes.forEach(lane=>{
+    const folder = zip.folder(lane.name);
+    lane.frameBoxIndices.forEach((boxIdx, i)=>{
+      const b = boxes[boxIdx];
+      const base64 = cropToDataURL(b).split(',')[1];
+      folder.file(`frame_${String(i).padStart(3,'0')}.png`, base64, {base64:true});
+    });
+
+    let projectileField = null;
+    if(lane.projectileLink && lane.projectileLink.projId){
+      const linkedProj = lanes.find(l=>l.id===lane.projectileLink.projId);
+      if(linkedProj && linkedProj.frameBoxIndices.length>0){
+        const maxFrame = lane.frameBoxIndices.length-1;
+        const spawnFrame = Math.min(Math.max(0, lane.projectileLink.spawnFrame), maxFrame);
+        projectileField = { name: linkedProj.name, spawnFrame };
+      }
+    }
+
+    manifest.animations.push({
+      name: lane.name,
+      fps: lane.fps,
+      loop: lane.loop,
+      frameCount: lane.frameBoxIndices.length,
+      projectile: projectileField
+    });
+  });
+
+  projLanes.forEach(lane=>{
+    const folder = zip.folder('Projectiles').folder(lane.name);
+    lane.frameBoxIndices.forEach((boxIdx, i)=>{
+      const b = boxes[boxIdx];
+      const base64 = cropToDataURL(b).split(',')[1];
+      folder.file(`frame_${String(i).padStart(3,'0')}.png`, base64, {base64:true});
+    });
+    manifest.projectiles.push({
+      name: lane.name,
+      fps: lane.fps,
+      loop: lane.loop,
+      frameCount: lane.frameBoxIndices.length
+    });
+  });
+
+  zip.file('manifest.json', JSON.stringify(manifest, null, 2));
+
+  setStatus('Generando .zip...');
+  const blob = await zip.generateAsync({type:'blob'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${enemyName}.zip`; a.click();
+  URL.revokeObjectURL(url);
+  setStatus(`Exportado ${enemyName}.zip — ${manifest.animations.length} animaciones, ${manifest.projectiles.length} proyectiles. Descomprímelo dentro de Assets/ en Unity.`);
+});
+</script>
+</body>
+</html>

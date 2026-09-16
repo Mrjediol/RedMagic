@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://redmagic.local/schemas/projectile-config.schema.json",
+  "title": "ProjectileConfig",
+  "description": "Mirrors RedMagic.Abilities.ProjectileSpec (Assets/Scripts/Abilities/Runtime/ProjectileSpec.cs) field-for-field. Usable standalone (a library file of named specs, referenced by id) or inline (embedded as EnemyConfig.tuning.projectile).",
+
+  "$comment": "SCOPE CORRECTION — read before using this schema. The brief listed 'speed, lifetime, damage, hitLayers, knockbackMultiplier, pierceCount, homingTurnRate/Range, arcGravity, impactRadius/Damage, pooled-or-destroy'. That list is the UNION of ProjectileSpec and the Projectile MonoBehaviour, not ProjectileSpec itself. Verified against source, ProjectileSpec carries exactly eleven fields: prefab, speed, lifetime, size, muzzleOffset, pierce, homingTurnRate, homingRange, arcGravity, impactRadius, impactDamage. The other four are NOT spec data and are deliberately absent from this schema: 'damage' and 'knockbackMultiplier' are per-shot arguments (EnemyAttack.Shoot passes tuning.attackDamage / tuning.attackKnockbackMultiplier into ProjectileFactory.Spawn), 'hitLayers' arrives via AbilityContext.HitLayers (= tuning.hitLayers), and 'destroyWhenDone' is a Projectile field driven by the PooledCode/PooledPrefab marks the factory stamps, never by a spec. Note also the field is 'pierce' on the spec and 'pierceCount' on the component. Putting any of the four here would produce a config whose values are silently overwritten on every shot — the exact failure the enemy-projectile-tuning-lives-on-enemystats convention exists to prevent. Player-side ShotProjectile/WeaponShot are out of scope for this pass and are not referenced anywhere in this file.",
+
+  "type": "object",
+
+  "oneOf": [
+    {
+      "$comment": "Standalone library document: a map of id -> spec. One file can hold every shared projectile in the game.",
+      "properties": {
+        "$schema": { "type": "string" },
+        "projectiles": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_-]*$" },
+          "additionalProperties": { "$ref": "#/definitions/projectileSpec" },
+          "minProperties": 1
+        }
+      },
+      "required": ["projectiles"],
+      "additionalProperties": false
+    },
+    { "$ref": "#/definitions/projectileSpec" }
+  ],
+
+  "definitions": {
+
+    "projectileSpec": {
+      "type": "object",
+      "additionalProperties": false,
+
+      "properties": {
+
+        "use": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+          "$comment": "Optional id of an entry in a standalone projectile library. When present the library entry is loaded first and the sibling keys in this object are applied on top as overrides, so an enemy can reuse a shared 'arcing_rock' and only change its speed. This key is an IMPORTER convenience and maps to nothing in ProjectileSpec — it is resolved away before any field is written. All-inline (no 'use') is equally valid and is what EnemyTuning.projectile holds today."
+        },
+
+        "prefab": {
+          "$ref": "_shared.schema.json#/definitions/assetRef",
+          "$comment": "ProjectileSpec.prefab (GameObject). Optional. Null/absent = the projectile is BUILT IN CODE from the owner's sprite and tint (ProjectileFactory.BuildCodeProjectile); present = spawned through Core.PrefabPool. Either way it is pooled — this field never changes whether pooling happens, only which pool. The prefab must carry a Projectile component or the factory logs a warning and drops the shot. For pipeline enemies this is normally the auto-generated Assets/Prefab/Fx/Enemies/<Name>/Fx_<Name>_Projectile.prefab.",
+          "default": null
+        },
+
+        "speed": {
+          "type": "number",
+          "minimum": 0.1,
+          "default": 12,
+          "$comment": "ProjectileSpec.speed. [Min(0.1f)] in C#, mirrored as 'minimum'."
+        },
+
+        "lifetime": {
+          "type": "number",
+          "minimum": 0.05,
+          "default": 2.5,
+          "description": "Seconds of flight before it despawns on its own.",
+          "$comment": "ProjectileSpec.lifetime. [Min(0.05f)]."
+        },
+
+        "size": {
+          "$ref": "_shared.schema.json#/definitions/vector2",
+          "default": { "x": 0.35, "y": 0.35 },
+          "description": "World-space size of the projectile.",
+          "$comment": "ProjectileSpec.size. Applied as spec.size * ctx.SizeScale — to the code-built sprite directly, or through FxPlaceholderStyle.Apply on a placeholder prefab. A prefab carrying REAL art has no FxPlaceholderStyle, so this value is inert for it; that is intentional and matches the placeholder-visuals convention."
+        },
+
+        "muzzleOffset": {
+          "$ref": "_shared.schema.json#/definitions/vector2",
+          "default": { "x": 0.65, "y": 0.1 },
+          "description": "Spawn offset from the shooter. X is mirrored by facing.",
+          "$comment": "ProjectileSpec.muzzleOffset. Read by EnemyAttack.Shoot to build the origin BEFORE the aim direction is computed, so it is what decides that the shot leaves from the hand rather than the pivot."
+        },
+
+        "pierce": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Targets passed through before despawning. 0 = dies on the first.",
+          "$comment": "ProjectileSpec.pierce. NOTE the name: the receiving component field is Projectile.pierceCount. Use 'pierce' here — this schema mirrors the spec, and ProjectileFactory maps spec.pierce -> ConfigureBehaviour(newPierce). Piercing is only spent on targets, never on terrain."
+        },
+
+        "homingTurnRate": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Degrees/second of steering toward the nearest valid target. 0 = flies straight.",
+          "$comment": "ProjectileSpec.homingTurnRate. The turn is rate-limited on purpose: a perfectly-tracking projectile is undodgeable and stops reading as a shot."
+        },
+
+        "homingRange": {
+          "type": "number",
+          "minimum": 0,
+          "default": 9,
+          "$comment": "ProjectileSpec.homingRange. Careful: Projectile.ConfigureBehaviour only applies this when > 0 ('if (newHomingRange > 0f)'), so an explicit 0 leaves the component's own 9 in place rather than disabling homing. To disable homing set homingTurnRate to 0."
+        },
+
+        "arcGravity": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Fall in units/s². > 0 makes it a lobbed grenade instead of a straight shot.",
+          "$comment": "ProjectileSpec.arcGravity. When > 0 the projectile integrates its own _velocity instead of direction * speed."
+        },
+
+        "impactRadius": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Radius of the explosion when the projectile ends. 0 = no explosion.",
+          "$comment": "ProjectileSpec.impactRadius. Scaled by ctx.SizeScale at spawn time, never written back to the shared spec."
+        },
+
+        "impactDamage": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Damage of that explosion, separate from the direct hit.",
+          "$comment": "ProjectileSpec.impactDamage. Projectile.ExplodeIfDue requires BOTH impactRadius > 0 and impactDamage > 0, so setting one alone is a silent no-op."
+        }
+      }
+    }
+  }
+}

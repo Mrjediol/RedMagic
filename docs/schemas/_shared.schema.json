@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://redmagic.local/schemas/shared.schema.json",
+  "title": "RedMagic shared JSON types",
+  "$comment": "Value types shared by enemy-config, projectile-config and boss-config. Every definition here maps onto a Unity serialized type with ZERO runtime changes: the importer converts the JSON form into the Unity value before writing it into the serialized field.",
+
+  "definitions": {
+
+    "vector2": {
+      "$comment": "Maps to UnityEngine.Vector2. Object form is explicit, array form is terse; both are accepted so hand-written JSON stays readable.",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" }
+          },
+          "required": ["x", "y"],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+
+    "color": {
+      "$comment": "Maps to UnityEngine.Color (RGBA floats 0..1). Hex form is what an artist will actually type; object form exists for values outside 0..1 or generated output. Alpha defaults to 1 when a 6-digit hex is given.",
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "r": { "type": "number" },
+            "g": { "type": "number" },
+            "b": { "type": "number" },
+            "a": { "type": "number", "default": 1 }
+          },
+          "required": ["r", "g", "b"],
+          "additionalProperties": false
+        }
+      ]
+    },
+
+    "layerMask": {
+      "$comment": "Maps to UnityEngine.LayerMask, which Unity serializes as an int bitmask. The name-array form is the PREFERRED one and is the reason this definition exists: EnemyTuning.obstacleLayers currently defaults to the magic number (1<<6)|(1<<8), and hardcoding a raw 320 in a JSON file reproduces exactly the class of silent bug that the ContentAudit tool was written to repair. The importer resolves each name with LayerMask.NameToLayer and FAILS LOUDLY on an unknown name, so a renamed layer breaks the import instead of breaking the game. The integer form is kept only so machine-generated JSON can round-trip an existing asset.",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "examples": [["Ground", "Platform"]]
+        },
+        {
+          "type": "string",
+          "enum": ["everything", "nothing"],
+          "$comment": "'everything' is Unity's ~0 (-1), the serialized default of EnemyTuning.hitLayers and Projectile.hitLayers."
+        },
+        { "type": "integer" }
+      ]
+    },
+
+    "assetRef": {
+      "$comment": "A reference to a Unity asset. JSON cannot carry a typed Unity object reference, so the importer resolves the asset at edit time via AssetDatabase and writes the resolved object into the serialized field. 'guid' wins when both are present: a GUID survives a rename, a path does not (see the avoid-name-string-coupling convention). 'path' alone is allowed because it is what a human can write and read.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "$comment": "Shorthand: an asset path relative to the project root, e.g. 'Assets/Prefab/Fx/Enemies/Ogro/Fx_Ogro_Projectile.prefab'.",
+          "pattern": "^Assets/"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string", "pattern": "^Assets/" },
+            "guid": { "type": "string", "pattern": "^[0-9a-f]{32}$" }
+          },
+          "anyOf": [
+            { "required": ["path"] },
+            { "required": ["guid"] }
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

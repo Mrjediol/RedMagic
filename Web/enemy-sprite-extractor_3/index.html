@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Enemy Sprite Extractor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="moduleFailBanner" hidden>
+  ⚠ No se pudo cargar <code>app.js</code> (un <code>&lt;script type="module"&gt;</code>). La causa
+  casi siempre es abrir este archivo con doble clic (<code>file://…</code>) en vez de servirlo por
+  HTTP — los navegadores bloquean los módulos ES por CORS en ese caso. Sirve la carpeta con un
+  servidor local (ver "Running locally" en <code>ARCHITECTURE.md</code>) y recarga.
+</div>
+
+<div id="tabBar">
+  <button class="tabBtn active" data-tab="sprites">🍄 Sprites</button>
+  <button class="tabBtn" data-tab="enemy" disabled title="Próximamente">🧩 Enemy Creator</button>
+</div>
+
+<div id="tab-sprites" class="tabPanel">
+  <div id="sidebar">
+    <div>
+      <h1>Enemy Sprite Extractor</h1>
+      <p class="hint">Sube tu hoja de sprites, ajusta la detección, agrupa en animaciones y exporta.</p>
+    </div>
+
+    <div>
+      <h2>1. Imagen</h2>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div>
+      <h2>2. Quitar fondo</h2>
+      <div class="field">
+        <label>Tolerancia de color (0-100)</label>
+        <input type="range" id="tolerance" min="0" max="100" value="18">
+      </div>
+      <button id="removeBgBtn" style="width:100%">🎨 Detectar y quitar fondo</button>
+    </div>
+
+    <div>
+      <h2>3. Sprites</h2>
+
+      <div class="modeSwitch">
+        <button id="modeDetectBtn" class="active">Detección automática</button>
+        <button id="modeGridBtn">Grid uniforme</button>
+      </div>
+
+      <div id="detectModePanel" class="modePanel">
+        <div class="field">
+          <label>Área mínima (px², filtra ruido/texto)</label>
+          <input type="number" id="minArea" value="400">
+        </div>
+        <div class="field">
+          <label>Dilatación para unir partes cercanas (px)</label>
+          <input type="number" id="dilation" value="6">
+        </div>
+        <div class="field">
+          <label>Padding extra al recortar (px)</label>
+          <input type="number" id="padding" value="4">
+        </div>
+        <button id="detectBtn" class="primary" style="width:100%">🔍 Detectar sprites</button>
+      </div>
+
+      <div id="gridModePanel" class="modePanel" hidden>
+        <div class="row">
+          <div class="field">
+            <label>Filas</label>
+            <input type="number" id="gridRows" value="4" min="1">
+          </div>
+          <div class="field">
+            <label>Columnas</label>
+            <input type="number" id="gridCols" value="6" min="1">
+          </div>
+        </div>
+        <p class="hint" style="margin-bottom:8px;">
+          Divide la hoja en una cuadrícula exacta y crea una animación por fila
+          (<code>Row_0</code>, <code>Row_1</code>…) con sus columnas como frames en orden.
+          Renómbralas después en el panel de animaciones.
+        </p>
+        <button id="gridSliceBtn" class="primary" style="width:100%">▦ Auto-slice por grid</button>
+      </div>
+
+      <p class="hint" style="margin-top:8px;">
+        Modo manual: <button id="addBoxModeBtn" class="small">＋ Añadir caja</button>
+        Selecciona una caja y pulsa <kbd>Supr</kbd> para borrarla, o arrastra sus esquinas para ajustarla.
+        <br><br>
+        Selección múltiple en el panel de la derecha: <kbd>Ctrl</kbd>+click añade/quita una a una, <kbd>Shift</kbd>+click selecciona todo el rango entre la última y esta.
+        <br><br>
+        Navegación del lienzo: rueda del ratón para zoom, arrastrar con el botón central para desplazar — igual que la Scene view de Unity.
+      </p>
+    </div>
+
+    <div>
+      <h2>4. Enemigo</h2>
+      <div class="field">
+        <label>Nombre del enemigo</label>
+        <input type="text" id="enemyName" placeholder="ej. MushroomWarrior">
+      </div>
+    </div>
+
+    <div>
+      <h2>5. Exportar</h2>
+      <button id="exportBtn" class="primary" style="width:100%">⬇ Descargar .zip</button>
+      <div id="status"></div>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="canvasWrap">
+      <canvas id="canvas"></canvas>
+      <div id="zoomReadout">100%</div>
+    </div>
+    <div id="bottomPanel">
+      <div id="lanesPanel">
+        <h2 style="margin-top:0;">Animaciones
+          <button id="addLaneBtn" class="small" style="float:right;">＋ Nueva</button>
+          <button id="addProjBtn" class="small" style="float:right;margin-right:6px;color:#c9b8ff;">＋ Proyectil</button>
+        </h2>
+        <div id="lanesList"></div>
+      </div>
+      <div id="unsortedPanel">
+        <h2 style="margin-top:0;">Sprites (<span id="unsortedCount">0</span>)</h2>
+        <p class="hint">Ctrl+click o Shift+click para seleccionar varios.</p>
+
+        <div id="assignBar">
+          <span id="selCount">0 seleccionados</span>
+          <div class="assignRow">
+            <select id="assignSelect" style="flex:1;"></select>
+            <button id="assignBtn" class="small primary">Asignar</button>
+          </div>
+          <div class="assignRow">
+            <button id="deleteBoxBtn" class="small danger" style="flex:1;">Borrar selección</button>
+            <button id="clearSelBtn" class="small" style="flex:1;">Deseleccionar</button>
+          </div>
+        </div>
+
+        <div id="unsortedGrid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-enemy" class="tabPanel" hidden>
+  <div class="placeholderPanel">Enemy Creator — próximamente.</div>
+</div>
+
+<script>
+  // Catches a <script type=module> that fails to LOAD (network/CORS — e.g. this file opened
+  // via file:// instead of http://): that failure fires a capturable 'error' Event on the
+  // element, not a catchable exception, so it never reaches try/catch or window.onerror's
+  // message-based handling. Without this, the failure is completely silent: no UI, no visible
+  // error, just a dead page — exactly the "broken import kills the rest of the script" case.
+  // A runtime error INSIDE app.js (once it's loaded) is a normal uncaught exception and still
+  // reaches the console/devtools as usual; this only covers the module never starting at all.
+  window.addEventListener('error', (e) => {
+    if (e.target && e.target.id === 'appModuleScript') {
+      document.getElementById('moduleFailBanner').hidden = false;
+    }
+  }, true);
+</script>
+<script type="module" src="app.js" id="appModuleScript"></script>
+</body>
+</html>

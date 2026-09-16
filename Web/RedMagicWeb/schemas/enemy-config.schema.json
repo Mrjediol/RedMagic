@@ -1,0 +1,262 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://redmagic.local/schemas/enemy-config.schema.json",
+  "title": "EnemyConfig",
+  "description": "Mirrors RedMagic.Pipeline.EnemyRecipe (Assets/Scripts/Pipeline/EnemyRecipe.cs) plus the RedMagic.Enemies.EnemyTuning block it carries (Assets/Scripts/Enemies/EnemyTuning.cs). One JSON document = one EnemyRecipe asset = one Enemy_<name>.prefab produced by EnemyFactory.Generate.",
+
+  "$comment": "PIPELINE POSITION — this is an EDIT-TIME authoring format, not a runtime one. The importer writes an EnemyRecipe asset and calls EnemyFactory.Generate, which seeds EnemyStats through EnemyStats.EditorSetTuning — a method guarded by #if UNITY_EDITOR. EnemyTuning has no serializer of its own beyond Unity's Inspector serialization, so loading one of these files in a build would require a runtime change and is out of scope.\n\nDERIVED PROPERTIES ARE NOT FIELDS. EnemyTuning.Flies, .Airborne, .IsRanged, .Moves, .Retreats and .Sleeps are computed C# properties with no backing store. They are deliberately absent from this schema: an importer that 'set' them would be inventing data, and the values would disagree with the archetype the moment someone edited it. Drive them by setting 'archetype', 'staticAttack', 'gravityScale', 'personalSpace', 'selfDestruct' and 'sleepsUntilDetected'.",
+
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["enemyName", "art"],
+
+  "properties": {
+
+    "$schema": { "type": "string" },
+
+    "enemyName": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+      "description": "Names the prefab: Enemy_<enemyName>.prefab.",
+      "$comment": "EnemyRecipe.enemyName. REQUIRED rather than optional-with-default. The C# default is 'NuevoEnemigo', but a default here would make two un-named configs silently generate and overwrite the same prefab path."
+    },
+
+    "art": {
+      "$ref": "_shared.schema.json#/definitions/assetRef",
+      "description": "The already-sliced SpriteSheetRecipe asset (<Name>.sheet.asset). Supplies the base sprite, the clips and the projectile prop.",
+      "$comment": "EnemyRecipe.art. REQUIRED: EnemyFactory bails out of sprite dressing, animation wiring and projectile extraction when this is null, so a config without it cannot produce a working enemy. It is a reference and not an inline block on purpose — the sheet recipe is its own asset with its own per-row slicing knobs (groupSlack, propBlobs, evenSplit, cropTop/Bottom, softEdge, fillHoles), re-run independently of the enemy, and frequently shared work. A SheetConfig schema is a separate deliverable."
+    },
+
+    "prefabFolder": {
+      "type": "string",
+      "pattern": "^Assets/",
+      "default": "Assets/Prefab/Enemies",
+      "$comment": "EnemyRecipe.prefabFolder. C# default is the empty string, which EnemyRecipe.ResolvedFolder turns into 'Assets/Prefab/Enemies'; the resolved value is used as the schema default so the JSON reads true."
+    },
+
+    "presence": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How the enemy occupies the screen. Maps to EnemyRecipe's [Header(\"Presencia\")] block.",
+      "$comment": "Grouped under one key for readability. These are four flat fields on EnemyRecipe (spriteScale, colliderSize, colliderOffset, sortingOrder, tag); the importer flattens this object back out. Grouping is the only structural liberty taken in this schema and it changes no field name.",
+      "properties": {
+        "spriteScale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "minimum": 0.01,
+          "default": 1,
+          "$comment": "EnemyRecipe.spriteScale, [Min(0.01f)]. Scales the 'Sprite' child, not the art."
+        },
+        "colliderSize": {
+          "$ref": "_shared.schema.json#/definitions/vector2",
+          "default": { "x": 0, "y": 0 },
+          "$comment": "EnemyRecipe.colliderSize. (0,0) is meaningful, not missing: it tells EnemyFactory to deduce the box from the idle sprite bounds * spriteScale. Leave it at zero unless the deduced box is wrong."
+        },
+        "colliderOffset": {
+          "$ref": "_shared.schema.json#/definitions/vector2",
+          "default": { "x": 0, "y": 0 },
+          "$comment": "EnemyRecipe.colliderOffset. Also zero-means-auto: EnemyFactory only honours it when its sqrMagnitude > 0.0001, otherwise it places the origin at the feet for AnchorMode.BottomCenter or centred for AnchorMode.Center, read off the sheet recipe."
+        },
+        "sortingOrder": { "type": "integer", "default": 5, "$comment": "EnemyRecipe.sortingOrder." },
+        "tag": {
+          "type": "string",
+          "default": "Untagged",
+          "$comment": "EnemyRecipe.tag. 'Untagged' for an ordinary enemy; 'Enemy' for a boss's adds, so the boss's own bullets do not kill them. Applied through BossAuthoring.TrySetTag, which registers the tag if the project lacks it. Note that team filtering does NOT depend on this — Combat.Teams derives sides from the Player tag — the friendly tag is an extra rule layered on top."
+        }
+      }
+    },
+
+    "projectileArt": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Where the projectile's sprite comes from. Only read for ranged archetypes. Maps to EnemyRecipe's [Header(\"Proyectil\")] block.",
+      "$comment": "EnemyRecipe.projectilePropState / .projectileScale. Separate from tuning.projectile because these two describe how EnemyFactory BUILDS the projectile prefab out of the sheet, while tuning.projectile describes how the projectile FLIES.",
+      "properties": {
+        "propState": {
+          "type": "string",
+          "default": "Attack",
+          "$comment": "EnemyRecipe.projectilePropState. The sheet row whose loose blob was exported as <Character>_<Row>_Prop.png. If that row exported no prop, EnemyFactory warns and the enemy ends up with no projectile prefab (it then falls back to the code-built projectile, which still works)."
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.01,
+          "default": 1,
+          "$comment": "EnemyRecipe.projectileScale, [Min(0.01f)]. Scales the SpriteRenderer of the generated prefab. This is the ONLY projectile value that lives on the prefab and survives a shot — everything else is overwritten by ProjectileFactory.Spawn on every launch."
+        }
+      }
+    },
+
+    "tier": {
+      "type": "string",
+      "enum": ["Basic", "Elite", "Boss"],
+      "default": "Basic",
+      "description": "Currency drop tier, rolled against CurrencyConfig's per-tier DropRange table.",
+      "$comment": "EnemyRecipe.tier -> RedMagic.Economy.EnemyTier (Assets/Scripts/Economy/Currency.cs). Written onto the CurrencyDropper as an int by EnemyFactory. Enum names are used rather than the ints so a reordered enum cannot silently repoint every config."
+    },
+
+    "tuning": {
+      "$ref": "#/definitions/enemyTuning",
+      "description": "The gameplay block. Identical to what ends up in the prefab's EnemyStats.",
+      "$comment": "EnemyRecipe.tuning. Optional in full: 'new EnemyTuning()' is a valid melee enemy, so every key below is optional-with-default. The recipe SEEDS EnemyStats only on first generation or when the component is missing — hand-tuned Inspector values win on a re-run unless the importer is told to reset (EnemyFactory.Generate(resetTuning: true), i.e. Pipeline > 3b)."
+    }
+  },
+
+  "definitions": {
+
+    "enemyTuning": {
+      "type": "object",
+      "additionalProperties": false,
+
+      "$comment": "IMPORTER WARNING — EnemyStats.OnValidate MUTATES two of these values and it runs during import, because the importer is editor code. (1) If tuning.Moves, detectionRange is forced up to at least attackRange + 2 (EnemyStats.ApproachBandMargin). (2) personalSpace is clamped down to at most attackRange. A config that violates either will be silently rewritten, and the asset will not match the JSON that produced it. The importer must apply both clamps itself and report them, so the JSON stays the source of truth instead of becoming a lie about the asset.",
+
+      "properties": {
+
+        "archetype": {
+          "type": "string",
+          "enum": ["Static", "Melee", "Ranged", "FlyingMelee", "FlyingRanged"],
+          "default": "Melee",
+          "description": "Decides how it moves and how it attacks.",
+          "$comment": "EnemyTuning.archetype -> EnemyArchetype. This is a CLOSED enum in C#, consumed by EnemyBrain, EnemyTuning's derived properties, EnemyStatsEditor and every pipeline pack — a sixth value is a code change in all of those, not a data change, so the schema enumerates it exactly rather than accepting free strings."
+        },
+
+        "staticAttack": {
+          "type": "string",
+          "enum": ["Melee", "Ranged"],
+          "default": "Ranged",
+          "description": "Only for Static: whether that turret shoots or strikes.",
+          "$comment": "EnemyTuning.staticAttack -> AttackKind. IGNORED for the four moving archetypes, which carry the answer in their own name. A hovering turret is Static + Ranged + gravityScale 0 — NOT a Flying* archetype, because those chase."
+        },
+
+        "maxHealth": { "type": "number", "minimum": 1, "default": 30, "$comment": "EnemyTuning.maxHealth, [Min(1f)]. Pushed into Health.SetMaxHealth by EnemyStats.Apply." },
+        "invulnerabilityDuration": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "$comment": "EnemyTuning.invulnerabilityDuration. Keep at 0 on enemies ON PURPOSE: i-frames swallow multi-hit weapons (a 5-pellet shotgun would land one pellet). Hit-stun is knockback's job. Only the player has i-frames."
+        },
+        "hurtSfxId": { "type": "string", "default": "", "$comment": "EnemyTuning.hurtSfxId. AudioManager sound id; pushed into Health.SetSfx." },
+        "deathSfxId": { "type": "string", "default": "", "$comment": "EnemyTuning.deathSfxId." },
+
+        "knockbackHorizontal": { "type": "number", "minimum": 0, "default": 6, "$comment": "EnemyTuning.knockbackHorizontal. Pushed into Knockback.Configure. The VICTIM owns the force; an attacker only passes a multiplier." },
+        "knockbackVertical": { "type": "number", "minimum": 0, "default": 3, "$comment": "EnemyTuning.knockbackVertical." },
+        "knockbackDuration": { "type": "number", "minimum": 0, "default": 0.18, "$comment": "EnemyTuning.knockbackDuration." },
+        "knockbackResistance": { "type": "number", "minimum": 0, "maximum": 1, "default": 0, "$comment": "EnemyTuning.knockbackResistance, [Range(0,1)]." },
+
+        "detectionRange": {
+          "type": "number",
+          "minimum": 0,
+          "default": 7,
+          "description": "The leash, in both directions. Ignored by Static.",
+          "$comment": "EnemyTuning.detectionRange. This is the ONLY chase boundary and the ring drawn in the scene — there is deliberately no second, wider 'lose interest' radius and no chase-forever override; both existed once and were removed for making the visible ring meaningless. Subject to the OnValidate clamp described at the top of this definition."
+        },
+        "loseInterestGrace": {
+          "type": "number",
+          "minimum": 0,
+          "default": 1,
+          "description": "Seconds continuously outside detectionRange before giving up. Resets on re-entry.",
+          "$comment": "EnemyTuning.loseInterestGrace. This time margin IS the hysteresis, which is why no second radius is needed."
+        },
+        "attackRange": { "type": "number", "minimum": 0, "default": 1.6, "$comment": "EnemyTuning.attackRange. Where it stops advancing and the attack animation begins." },
+        "personalSpace": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Backs off if the target gets closer than this. 0 = never retreats.",
+          "$comment": "EnemyTuning.personalSpace. Only has an effect when EnemyTuning.Retreats is true (Moves && IsRanged && personalSpace > 0 && !selfDestruct) — a melee enemy with a stale value inherited from a previous archetype does not retreat, and the Inspector hides it. Clamped to attackRange by OnValidate."
+        },
+        "retreatReleaseFactor": { "type": "number", "minimum": 1, "maximum": 2, "default": 1.35, "$comment": "EnemyTuning.retreatReleaseFactor, [Range(1,2)]. Dead band that stops the shoot/retreat jitter at the edge." },
+        "verticalTolerance": { "type": "number", "minimum": 0, "default": 3, "$comment": "EnemyTuning.verticalTolerance. Ignored by a flyer." },
+
+        "moveSpeed": { "type": "number", "minimum": 0, "default": 2.5, "$comment": "EnemyTuning.moveSpeed." },
+        "retreatSpeed": { "type": "number", "minimum": 0, "default": 2.5, "$comment": "EnemyTuning.retreatSpeed." },
+        "stopAtLedges": { "type": "boolean", "default": true, "$comment": "EnemyTuning.stopAtLedges. Ground enemies only." },
+        "ledgeProbeDepth": { "type": "number", "minimum": 0, "default": 0.6, "$comment": "EnemyTuning.ledgeProbeDepth. How far down the probe looks for floor one step ahead." },
+        "gravityScale": {
+          "type": "number",
+          "minimum": 0,
+          "default": 3,
+          "$comment": "EnemyTuning.gravityScale. Pushed onto the Rigidbody2D by EnemyStats.Apply, which forces 0 for a Flies archetype regardless of this value. Setting it to 0 on a Static is what makes a hovering turret: it flips the derived Airborne to true, which makes GroundMotion.PhaseThroughTerrain exclude terrain from the collider."
+        },
+
+        "sleepsUntilDetected": {
+          "type": "boolean",
+          "default": false,
+          "description": "Starts asleep; the Idle clip is the sleep. Wakes on detection or on being hit, then chases; returns home and sleeps again when it gives up.",
+          "$comment": "EnemyTuning.sleepsUntilDetected. Orthogonal to archetype, but only honoured when Moves (derived EnemyTuning.Sleeps). Requires the sheet to export a 'Wake' row — the brain's Waking state is timed by that clip's length via EnemyAnimation.WakeFinished, and AnimClipBuilder wires Idle -(Wake trigger)-> Wake -(exit)-> Walk."
+        },
+
+        "hoverOffset": {
+          "type": "number",
+          "default": 0.5,
+          "description": "Height above the target a flyer likes to hold. 0 = same height.",
+          "$comment": "EnemyTuning.hoverOffset. NOTE: no [Min] attribute in C# — negative values are legal and mean it hovers below the target, so this schema sets no 'minimum'."
+        },
+
+        "attackDamage": { "type": "number", "minimum": 0, "default": 10, "$comment": "EnemyTuning.attackDamage. Used by all three attack paths: the melee box, the explosion radius, and as the per-shot damage handed to ProjectileFactory.Spawn." },
+        "attackCooldown": { "type": "number", "minimum": 0, "default": 1.8, "$comment": "EnemyTuning.attackCooldown. Counted from the END of the attack (the OnAttackFinished event), not the start." },
+        "attackKnockbackMultiplier": { "type": "number", "minimum": 0, "default": 1, "$comment": "EnemyTuning.attackKnockbackMultiplier. A multiplier on the victim's own Knockback values." },
+        "attackReleaseFallback": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.25,
+          "$comment": "EnemyTuning.attackReleaseFallback. Only used when the attack clip carries no OnAttackRelease AnimationEvent. The pipeline normally plants one from SheetRow.releaseFrame, which makes this inert — leave it alone unless the sheet row sets releaseFrame to -1."
+        },
+        "rootedWhileAttacking": { "type": "boolean", "default": true, "$comment": "EnemyTuning.rootedWhileAttacking. False keeps it chasing through the attack clip (what a charging kamikaze wants)." },
+
+        "meleeHitboxSize": { "$ref": "_shared.schema.json#/definitions/vector2", "default": { "x": 1.2, "y": 1 }, "$comment": "EnemyTuning.meleeHitboxSize, world units. Read by EnemyAttack.Strike -> AbilityHit.DamageBox." },
+        "meleeHitboxOffset": { "$ref": "_shared.schema.json#/definitions/vector2", "default": { "x": 0.8, "y": 0.5 }, "$comment": "EnemyTuning.meleeHitboxOffset. X is mirrored by facing, so the box goes where the swing points rather than away from the body." },
+
+        "selfDestruct": {
+          "type": "boolean",
+          "default": false,
+          "description": "The attack IS exploding: attackDamage in a circle of explosionRadius, then death.",
+          "$comment": "EnemyTuning.selfDestruct. Orthogonal to archetype — a Static with this set is a mine. Takes priority over IsRanged in EnemyAttack.Execute. Also flips Corpse.tintOnDeath off via EnemyStats.Apply, because the death clip IS the explosion, and forces derived Retreats to false."
+        },
+        "explosionRadius": { "type": "number", "minimum": 0, "default": 1.7, "$comment": "EnemyTuning.explosionRadius. Should exceed attackRange so a step back during the fuse does not dodge it for free." },
+        "explosionShake": { "type": "number", "minimum": 0, "default": 0.2, "$comment": "EnemyTuning.explosionShake -> CameraFollow.ShakeAll amplitude. 0 = no shake. The duration is hardcoded to 0.25s in EnemyAttack.Explode and is not exposed." },
+
+        "projectile": {
+          "$ref": "projectile-config.schema.json#/definitions/projectileSpec",
+          "description": "How its shot flies. Only read by ranged archetypes.",
+          "$comment": "EnemyTuning.projectile (ProjectileSpec). Inline here, or a { \"use\": \"<id>\" } reference into a shared projectile library. THIS is the edit point for a pipeline enemy's projectile — the generated Fx_<Name>_Projectile.prefab's own Projectile fields are overwritten by ProjectileFactory.Spawn on every launch and are not."
+        },
+        "aimAtTarget": {
+          "type": "boolean",
+          "default": true,
+          "$comment": "EnemyTuning.aimAtTarget. False still faces the right way but fires flat, which misses across any height difference."
+        },
+        "projectileSprite": {
+          "$ref": "_shared.schema.json#/definitions/assetRef",
+          "default": null,
+          "$comment": "EnemyTuning.projectileSprite (Sprite). Used ONLY when tuning.projectile.prefab is null, as the sprite the code-built projectile wears. With a prefab, the prefab wins. EnemyFactory normally fills the prefab from the sheet's prop, which makes this inert."
+        },
+        "projectileTint": { "$ref": "_shared.schema.json#/definitions/color", "default": "#ffffffff", "$comment": "EnemyTuning.projectileTint. Applied to the code-built sprite, or via FxPlaceholderStyle.Apply on a placeholder prefab. Real art (no FxPlaceholderStyle) ignores it." },
+
+        "contactDamage": { "type": "number", "minimum": 0, "default": 0, "$comment": "EnemyTuning.contactDamage. 0 = no body damage; a ranged enemy normally keeps it at 0 or very low." },
+        "contactDamageCooldown": { "type": "number", "minimum": 0, "default": 1, "$comment": "EnemyTuning.contactDamageCooldown." },
+        "contactKnockbackMultiplier": { "type": "number", "minimum": 0, "default": 1, "$comment": "EnemyTuning.contactKnockbackMultiplier." },
+
+        "idleAnimSpeed": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.idleAnimSpeed, [Min(0.01f)]. One Animator float per state (IdleSpeed, AttackSpeed, ...) so idle can be slow while the attack is fast." },
+        "moveAnimSpeed": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.moveAnimSpeed." },
+        "attackAnimSpeed": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.attackAnimSpeed." },
+        "hurtAnimSpeed": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.hurtAnimSpeed." },
+        "deathAnimSpeed": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.deathAnimSpeed." },
+        "wakeAnimSpeed": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.wakeAnimSpeed. Only meaningful when sleepsUntilDetected is true." },
+
+        "targetTag": { "type": "string", "default": "Player", "$comment": "EnemyTuning.targetTag. Who it chases and damages." },
+        "hitLayers": {
+          "$ref": "_shared.schema.json#/definitions/layerMask",
+          "default": "everything",
+          "$comment": "EnemyTuning.hitLayers. C# default is ~0 = every layer, expressed here as the 'everything' sentinel. Flows into AbilityContext.HitLayers and from there into Projectile.hitLayers, so it governs both the melee box and the shot."
+        },
+        "obstacleLayers": {
+          "$ref": "_shared.schema.json#/definitions/layerMask",
+          "default": ["Ground", "Platform"],
+          "description": "What counts as terrain: what it stands on, what reads as a cliff, and what a flyer phases through.",
+          "$comment": "EnemyTuning.obstacleLayers. The C# default is the magic number (1<<6)|(1<<8). BOTH names are mandatory: with 'Ground' alone an enemy stops at the foot of a Platform-layer bridge believing it is a cliff, and finds no surface to follow on a ramp. Expressing this by NAME in JSON is the single highest-value thing this schema does — it is the one field where a raw bitmask has already shipped a real bug, and ContentAudit exists to repair it after the fact."
+        }
+      }
+    }
+  }
+}

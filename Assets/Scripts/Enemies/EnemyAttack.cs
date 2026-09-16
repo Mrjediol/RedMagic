@@ -22,10 +22,24 @@ namespace RedMagic.Enemies
     [RequireComponent(typeof(EnemyStats))]
     public class EnemyAttack : MonoBehaviour
     {
+        /// <summary>
+        /// Nombre del hijo opcional que marca dónde nace el disparo — la boca de un dragón, la
+        /// punta de un bastón. Colócalo en el Prefab Editor arrastrándolo a la posición exacta con
+        /// el enemigo mirando a la DERECHA (facing=1): al mirar a la izquierda su X se refleja
+        /// solo, igual que ya hacía <see cref="EnemyTuning.projectile"/>'s <c>muzzleOffset</c> — no
+        /// hace falta un segundo valor para el otro lado. <see cref="EnemyFactory"/> lo crea solo
+        /// (semillado en la posición de <c>muzzleOffset</c>) la primera vez que genera un enemigo a
+        /// distancia; a partir de ahí es un GameObject normal del prefab, se mueve a mano y no se
+        /// vuelve a tocar. Sin este hijo, <see cref="Shoot"/> sigue usando el número de
+        /// <c>muzzleOffset</c> tal cual — ningún enemigo existente cambia de comportamiento.
+        /// </summary>
+        public const string MuzzleChildName = "Muzzle";
+
         private EnemyStats _stats;
         private EnemyAnimation _animation;
         private Health _health;
         private Collider2D _collider;
+        private Transform _muzzle;
 
         /// <summary>
         /// <b>Punto</b> al que va el golpe, no dirección. Lo fija el cerebro al empezar el ataque y
@@ -45,6 +59,7 @@ namespace RedMagic.Enemies
             _animation = GetComponent<EnemyAnimation>();
             _health = GetComponent<Health>();
             _collider = GetComponent<Collider2D>();
+            _muzzle = transform.Find(MuzzleChildName);
         }
 
         private void OnEnable()
@@ -122,9 +137,7 @@ namespace RedMagic.Enemies
             // El facing se decide con el punto, no con la dirección, porque la dirección todavía
             // no existe: depende de dónde caiga la boca, que a su vez depende del facing.
             int facing = Facing();
-            Vector2 origin = (Vector2)transform.position +
-                             new Vector2(tuning.projectile.muzzleOffset.x * facing,
-                                         tuning.projectile.muzzleOffset.y);
+            Vector2 origin = MuzzleOrigin(tuning, facing);
 
             Vector2 direction = Direction(origin);
             var context = Context(tuning, direction, facing);
@@ -132,6 +145,21 @@ namespace RedMagic.Enemies
             ProjectileFactory.Spawn(context, tuning.projectile, origin, direction,
                                     tuning.attackDamage, tuning.attackKnockbackMultiplier,
                                     tuning.projectileSprite, tuning.projectileTint);
+        }
+
+        /// <summary>
+        /// Dónde nace el disparo. Con un hijo "Muzzle" colocado a mano, su posición local manda —
+        /// reflejada en X por el facing, igual que el número de <c>muzzleOffset</c> — porque
+        /// apunta al sitio real (la boca del dragón), sea cual sea la proporción del personaje. Sin
+        /// ese hijo cae al número tal cual, sin cambiar nada para los enemigos existentes.
+        /// </summary>
+        private Vector2 MuzzleOrigin(EnemyTuning tuning, int facing)
+        {
+            Vector2 offset = _muzzle != null
+                ? (Vector2)_muzzle.localPosition
+                : tuning.projectile.muzzleOffset;
+
+            return (Vector2)transform.position + new Vector2(offset.x * facing, offset.y);
         }
 
         // ============================================================ melé
@@ -174,9 +202,18 @@ namespace RedMagic.Enemies
         private void OnDrawGizmosSelected()
         {
             var stats = GetComponent<EnemyStats>();
-            if (stats == null || stats.Tuning.IsRanged || stats.Tuning.selfDestruct) return;
+            if (stats == null || stats.Tuning.selfDestruct) return;
 
             var tuning = stats.Tuning;
+            if (tuning.IsRanged)
+            {
+                var muzzle = transform.Find(MuzzleChildName);
+                Vector2 offset = muzzle != null ? (Vector2)muzzle.localPosition : tuning.projectile.muzzleOffset;
+                Gizmos.color = new Color(0.2f, 0.8f, 1f, 0.9f);
+                Gizmos.DrawSphere(transform.position + (Vector3)offset, 0.06f);
+                return;
+            }
+
             Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.5f);
             Gizmos.DrawWireCube(transform.position + (Vector3)tuning.meleeHitboxOffset,
                                 tuning.meleeHitboxSize);

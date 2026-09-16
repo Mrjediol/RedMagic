@@ -1,0 +1,131 @@
+// modules/enemy-defaults.js
+// -----------------------------------------------------------------------------
+// Every default value here mirrors docs/schemas/enemy-config.schema.json /
+// projectile-config.schema.json's own "default" keys, field-for-field — this is what pre-fills
+// the Enemy Creator form so an untouched form already exports a valid enemy. If a default here
+// ever drifts from the schema, modules/enemy-config-schema.js's live Ajv validation against the
+// REAL schema is the safety net that catches it (an untouched form would start showing an error).
+//
+// Two kinds of "optional, no real default" fields are modeled as empty strings in form state,
+// NOT as their schema default: `projectileSprite`, and the inline projectile sub-form's `prefab`/
+// `use`. Their schema default is JSON `null` or absence, but assetRef's own type never accepts a
+// literal `null` — so the correct exported form is OMITTING the key, which
+// modules/enemy-export.js's buildExportObject does whenever the field is left empty.
+
+export function createDefaultProjectileSpec() {
+  return {
+    prefab: '', // empty = omitted on export (ProjectileSpec.prefab default: null)
+    speed: 12,
+    lifetime: 2.5,
+    size: { x: 0.35, y: 0.35 },
+    muzzleOffset: { x: 0.65, y: 0.1 },
+    pierce: 0,
+    homingTurnRate: 0,
+    homingRange: 9,
+    arcGravity: 0,
+    impactRadius: 0,
+    impactDamage: 0,
+    use: '', // empty = omitted (library reference id, importer-only convenience key)
+  };
+}
+
+export function createDefaultEnemyTuning() {
+  return {
+    archetype: 'Melee',
+    staticAttack: 'Ranged',
+
+    maxHealth: 30,
+    invulnerabilityDuration: 0,
+    hurtSfxId: '',
+    deathSfxId: '',
+
+    knockbackHorizontal: 6,
+    knockbackVertical: 3,
+    knockbackDuration: 0.18,
+    knockbackResistance: 0,
+
+    detectionRange: 7,
+    loseInterestGrace: 1,
+    attackRange: 1.6,
+    personalSpace: 0,
+    retreatReleaseFactor: 1.35,
+    verticalTolerance: 3,
+
+    moveSpeed: 2.5,
+    retreatSpeed: 2.5,
+    stopAtLedges: true,
+    ledgeProbeDepth: 0.6,
+    gravityScale: 3,
+
+    sleepsUntilDetected: false,
+
+    hoverOffset: 0.5,
+
+    attackDamage: 10,
+    attackCooldown: 1.8,
+    attackKnockbackMultiplier: 1,
+    attackReleaseFallback: 0.25,
+    rootedWhileAttacking: true,
+
+    meleeHitboxSize: { x: 1.2, y: 1 },
+    meleeHitboxOffset: { x: 0.8, y: 0.5 },
+
+    selfDestruct: false,
+    explosionRadius: 1.7,
+    explosionShake: 0.2,
+
+    // 'projectile' is intentionally absent here — the "usar por defecto / configurar inline"
+    // toggle (modules/enemy-form.js) owns projectileMode + projectileSpec instead; export only
+    // adds a 'projectile' key when the user picked "configurar inline".
+    aimAtTarget: true,
+    projectileSprite: '', // empty = omitted on export (default: null, not a real asset)
+    projectileTint: '#ffffffff',
+
+    contactDamage: 0,
+    contactDamageCooldown: 1,
+    contactKnockbackMultiplier: 1,
+
+    idleAnimSpeed: 1,
+    moveAnimSpeed: 1,
+    attackAnimSpeed: 1,
+    hurtAnimSpeed: 1,
+    deathAnimSpeed: 1,
+    wakeAnimSpeed: 1,
+
+    targetTag: 'Player',
+    hitLayers: 'everything',
+    obstacleLayers: ['Ground', 'Platform'],
+
+    // Form-only state (stripped by buildExportObject, never sent to the validator/export as-is).
+    projectileMode: 'default', // 'default' | 'inline'
+    projectileSpec: createDefaultProjectileSpec(),
+  };
+}
+
+export function createDefaultEnemyConfig() {
+  return {
+    // No default in the schema on purpose (two unnamed configs would collide) — starts empty,
+    // the form shows a validation error until the user fills them in.
+    enemyName: '',
+    art: '',
+
+    prefabFolder: 'Assets/Prefab/Enemies',
+
+    presence: {
+      spriteScale: 1,
+      colliderSize: { x: 0, y: 0 },
+      colliderOffset: { x: 0, y: 0 },
+      sortingOrder: 5,
+      tag: 'Untagged',
+    },
+
+    projectileArt: {
+      propState: 'Attack',
+      scale: 1,
+    },
+
+    tier: 'Basic',
+
+    tuning: createDefaultEnemyTuning(),
+  };
+}

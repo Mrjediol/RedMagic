@@ -270,7 +270,11 @@ namespace RedMagic.Pipeline.EditorTools
         private static void ApplyProjectile(GameObject root, EnemyRecipe recipe, EnemyStats stats,
                                             StringBuilder log)
         {
-            if (!stats.Tuning.IsRanged || recipe.art == null) return;
+            if (!stats.Tuning.IsRanged) return;
+
+            EnsureMuzzle(root, stats, log);
+
+            if (recipe.art == null) return;
 
             var prop = LoadPropSprite(recipe.art, recipe.projectilePropState);
             if (prop == null)
@@ -292,6 +296,27 @@ namespace RedMagic.Pipeline.EditorTools
             MirrorSpecOntoPrefab(prefab, stats.Tuning, log);
 
             log.AppendLine($"  proyectil: '{prefab.name}' desde el prop de '{recipe.projectilePropState}'.");
+        }
+
+        /// <summary>
+        /// Crea el hijo "Muzzle" (ver <see cref="RedMagic.Enemies.EnemyAttack.MuzzleChildName"/>) la
+        /// primera vez que este enemigo se genera a distancia, sembrado en la posición del
+        /// <c>muzzleOffset</c> numérico para que el disparo no cambie de sitio al añadirlo. Es
+        /// idempotente y de mano gana: si ya existe (porque alguien lo arrastró a la boca del
+        /// dragón en el Prefab Editor) no se toca nunca más, igual que el resto de valores afinados
+        /// a mano en este pipeline.
+        /// </summary>
+        private static void EnsureMuzzle(GameObject root, EnemyStats stats, StringBuilder log)
+        {
+            const string name = RedMagic.Enemies.EnemyAttack.MuzzleChildName;
+            if (root.transform.Find(name) != null) return;
+
+            var muzzle = new GameObject(name);
+            muzzle.transform.SetParent(root.transform, false);
+            muzzle.transform.localPosition = stats.Tuning.projectile.muzzleOffset;
+
+            log.AppendLine($"  '{name}' creado en {(Vector2)muzzle.transform.localPosition} " +
+                           "(arrástralo en el Prefab Editor a donde deba nacer el disparo).");
         }
 
         /// <summary>

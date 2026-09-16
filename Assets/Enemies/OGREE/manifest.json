@@ -1,0 +1,41 @@
+{
+  "enemyName": "OGREE",
+  "animations": [
+    {
+      "name": "Idle",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Walk",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Attack",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 4,
+      "projectile": null
+    },
+    {
+      "name": "Hurt",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Death",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 4,
+      "projectile": null
+    }
+  ],
+  "projectiles": []
+}

@@ -29,11 +29,26 @@
 // 3. Selecciona esa carpeta. Se generará:
 //      Assets/Enemies/<Nombre>/Animations/*.anim
 //      Assets/Enemies/<Nombre>/<Nombre>Controller.controller
+//      Assets/Enemies/<Nombre>/<Nombre>.sheet.asset   (SpriteSheetRecipe — ver más abajo)
 //      Assets/Projectiles/<NombreProyectil>/... (clip + controller)
 //      Assets/Prefabs/Enemies/<Nombre>.prefab
 //      Assets/Prefabs/Projectiles/<NombreProyectil>.prefab
+//
+// SpriteSheetRecipe: EnemyConfigImporter.cs (Tools > RedMagic > Import Config) exige que el campo
+// 'art' de un EnemyConfig apunte a un SpriteSheetRecipe real — es el único tipo que
+// EnemyFactory.Generate sabe leer para vestir el prefab de un enemigo del pipeline nuevo (ver
+// docs/enemy-config-art-field-audit.md). Este importador no corta una lámina única con
+// SheetSlicer — viene de un manifest + un PNG por frame — así que el recipe que construye es "de
+// compatibilidad": mismos datos que el manifest, más una copia mínima del controller y de un
+// sprite de reposo por fila con el nombre exacto que EnemyFactory busca en disco. Limitación
+// conocida: un enemigo a distancia generado por esta vía no tiene el "prop" suelto que
+// EnemyFactory.ApplyProjectile busca (esa convención es propia de SheetSlicer) — cae en el
+// fallback ya soportado por el proyecto, un proyectil construido en código sin prefab, no en un
+// error.
 // -----------------------------------------------------------------------------
 
+using RedMagic.Pipeline;
+using RedMagic.Pipeline.EditorTools;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -99,23 +114,45 @@ public class EnemyImporter : EditorWindow
         string folder = EditorUtility.OpenFolderPanel("Selecciona la carpeta del enemigo (con manifest.json)", "Assets", "");
         if (string.IsNullOrEmpty(folder)) return;
 
+        BuildEnemyFromFolderPath(folder);
+    }
+
+    /// <summary>
+    /// El cuerpo real de <see cref="BuildEnemyFromFolder"/>, separado del selector de carpeta para
+    /// poder invocarlo también sin diálogo (scripts, <c>unity command eval</c>, tests) — mismo
+    /// patrón que <c>SpritePipeline.RunSheet</c>/<c>RunEnemy</c> ya usan en el resto del pipeline.
+    ///
+    /// <paramref name="showDialog"/> = false cambia cada <c>EditorUtility.DisplayDialog</c> por un
+    /// <c>Debug.Log</c>: un diálogo modal deja el hilo principal del Editor bloqueado hasta que
+    /// alguien hace click, y eso incluye <c>unity command eval</c> — cualquier llamada headless se
+    /// queda colgada "Main thread operation timed out" hasta que un humano entra a Unity a pulsar
+    /// OK. El menú (<see cref="BuildEnemyFromFolder"/>) sigue mostrando el diálogo de verdad.
+    /// </summary>
+    public static void BuildEnemyFromFolderPath(string folder, bool showDialog = true)
+    {
+        void Report(string message)
+        {
+            if (showDialog) EditorUtility.DisplayDialog("Enemy Importer", message, "OK");
+            else Debug.Log($"[EnemyImporter] {message.Replace("\n\n", " — ").Replace("\n", " ")}");
+        }
+
         if (!folder.Replace("\\", "/").Contains("/Assets"))
         {
-            EditorUtility.DisplayDialog("Enemy Importer", "La carpeta debe estar dentro de Assets/ de tu proyecto de Unity.", "OK");
+            Report("La carpeta debe estar dentro de Assets/ de tu proyecto de Unity.");
             return;
         }
 
         string manifestPath = Path.Combine(folder, "manifest.json");
         if (!File.Exists(manifestPath))
         {
-            EditorUtility.DisplayDialog("Enemy Importer", "No se encontró manifest.json en la carpeta seleccionada.", "OK");
+            Report("No se encontró manifest.json en la carpeta seleccionada.");
             return;
         }
 
         Manifest manifest = ParseManifest(File.ReadAllText(manifestPath));
         if (manifest == null || manifest.animations == null || manifest.animations.Count == 0)
         {
-            EditorUtility.DisplayDialog("Enemy Importer", "El manifest no contiene animaciones válidas.", "OK");
+            Report("El manifest no contiene animaciones válidas.");
             return;
         }
         if (manifest.projectiles == null) manifest.projectiles = new List<ProjectileEntry>();
@@ -179,7 +216,7 @@ public class EnemyImporter : EditorWindow
                 continue;
             }
 
-            AnimationClip clip = BuildClip(sprites, anim.fps, anim.loop);
+            AnimationClip clip = BuildClip(sprites, anim.fps, anim.loop, RedMagic.Pipeline.EditorTools.AnimClipBuilder.RendererPath);
 
             // Si esta animación dispara un proyectil, añade el Animation Event en el frame indicado
             if (anim.projectile != null && projectilePrefabsByName.ContainsKey(anim.projectile.name))
@@ -194,7 +231,7 @@ public class EnemyImporter : EditorWindow
 
         if (builtClips.Count == 0)
         {
-            EditorUtility.DisplayDialog("Enemy Importer", "No se pudo generar ninguna animación de enemigo.", "OK");
+            Report("No se pudo generar ninguna animación de enemigo.");
             return;
         }
 
@@ -207,17 +244,119 @@ public class EnemyImporter : EditorWindow
         PrefabUtility.SaveAsPrefabAsset(enemyPrefabObj, enemyPrefabPath);
         Object.DestroyImmediate(enemyPrefabObj);
 
+        SpriteSheetRecipe sheetRecipe = BuildSpriteSheetRecipe(enemyRoot, enemyName, manifest, enemyController, builtClips);
+        string sheetRecipePath = AssetDatabase.GetAssetPath(sheetRecipe);
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        EditorUtility.DisplayDialog("Enemy Importer",
+        Report(
             $"Enemigo '{enemyName}' generado:\n\n" +
             $"- {builtClips.Count} animaciones\n" +
             $"- {projectilePrefabsByName.Count} prefab(s) de proyectil\n" +
-            $"- Prefab enemigo: {enemyPrefabPath}",
-            "OK");
+            $"- Prefab enemigo: {enemyPrefabPath}\n" +
+            $"- SpriteSheetRecipe (para EnemyConfig.art): {sheetRecipePath}");
 
         Selection.activeObject = AssetDatabase.LoadAssetAtPath<GameObject>(enemyPrefabPath);
+    }
+
+    // ---------------------------------------------------------------------------
+    // SpriteSheetRecipe de compatibilidad — ver el comentario de cabecera del archivo.
+    // ---------------------------------------------------------------------------
+
+    /// <summary>
+    /// Crea (o actualiza, si ya existe — idempotente, igual que el resto del pipeline) un
+    /// <see cref="SpriteSheetRecipe"/> a partir de los mismos datos del manifest que el resto de
+    /// este importador ya usa, más una copia mínima del controller y de un sprite de reposo por
+    /// fila con el nombre/ruta exactos que <c>EnemyFactory</c> busca en disco.
+    /// </summary>
+    private static SpriteSheetRecipe BuildSpriteSheetRecipe(string enemyRoot, string enemyName,
+        Manifest manifest, AnimatorController controller, List<BuiltClip> builtClips)
+    {
+        string recipePath = $"{enemyRoot}/{enemyName}.sheet.asset";
+        SpriteSheetRecipe recipe = AssetDatabase.LoadAssetAtPath<SpriteSheetRecipe>(recipePath);
+        if (recipe == null)
+        {
+            recipe = ScriptableObject.CreateInstance<SpriteSheetRecipe>();
+            AssetDatabase.CreateAsset(recipe, recipePath);
+        }
+
+        recipe.characterName = enemyName;
+        // outputFolder NO se deja en blanco: el default de SpriteSheetRecipe.ResolvedFolder es
+        // Assets/Art/Characters/<nombre>, que es donde vive el corte real de SheetSlicer — este
+        // importador guarda el controller y los PNG en enemyRoot (Assets/Enemies/<nombre>), así
+        // que EnemyFactory tiene que buscar ahí.
+        recipe.outputFolder = enemyRoot;
+        recipe.runtime = AnimRuntime.Animator;
+        recipe.rows = manifest.animations.Select(a => new SheetRow
+        {
+            state = a.name,
+            frames = a.frameCount,
+            fps = a.fps > 0 ? a.fps : 8f,
+            loop = a.loop,
+            releaseFrame = -1, // sin AnimationEvent propio; EnemyAttack usa su respaldo por tiempo
+        }).ToArray();
+        EditorUtility.SetDirty(recipe);
+
+        // EnemyFactory.ApplyAnimation busca el controller como '{ResolvedFolder}/{characterName}.controller'
+        // (sin el sufijo 'Controller' que usa este importador). Se copia con ese segundo nombre en
+        // vez de renombrar el original, para no romper nada que ya dependa de '<Nombre>Controller.controller'.
+        string expectedControllerPath = $"{enemyRoot}/{enemyName}.controller";
+        if (AssetDatabase.LoadAssetAtPath<AnimatorController>(expectedControllerPath) == null)
+        {
+            AssetDatabase.CopyAsset(AssetDatabase.GetAssetPath(controller), expectedControllerPath);
+        }
+
+        // EnemyFactory.IdleSprite busca, dentro de '{ResolvedFolder}/{characterName}_{fila}.png',
+        // un sub-sprite llamado exactamente SheetSlicer.SpriteName(characterName, fila, 0). Esto
+        // NO reproduce el corte multi-frame real de SheetSlicer — sólo copia el primer frame de
+        // cada fila con ese nombre, lo mínimo para que EnemyFactory tenga un sprite de reposo (y
+        // un collider deducido de él) de verdad en vez de salir sin arte.
+        foreach (var clip in builtClips) EnsureRepresentativeSprite(enemyRoot, enemyName, clip);
+
+        return recipe;
+    }
+
+    /// <summary>Copia el primer frame de <paramref name="clip"/> con el nombre que EnemyFactory.IdleSprite espera.</summary>
+    private static void EnsureRepresentativeSprite(string enemyRoot, string enemyName, BuiltClip clip)
+    {
+        if (clip.firstSprite == null) return;
+
+        string destPath = $"{enemyRoot}/{enemyName}_{clip.name}.png";
+        string desiredName = SheetSlicer.SpriteName(enemyName, clip.name, 0);
+
+        // Ya existe con el nombre correcto: nada que hacer (idempotente).
+        foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(destPath))
+            if (asset is Sprite sprite && sprite.name == desiredName) return;
+
+        if (!File.Exists(destPath))
+        {
+            string sourcePath = AssetDatabase.GetAssetPath(clip.firstSprite);
+            if (string.IsNullOrEmpty(sourcePath)) return;
+            AssetDatabase.CopyAsset(sourcePath, destPath);
+            AssetDatabase.Refresh();
+        }
+
+        var importer = AssetImporter.GetAtPath(destPath) as TextureImporter;
+        if (importer == null) return;
+
+        importer.textureType = TextureImporterType.Sprite;
+        importer.spriteImportMode = SpriteImportMode.Multiple;
+#pragma warning disable CS0618 // TextureImporter.spritesheet: API vieja pero sigue siendo la forma
+                               // más simple de dar nombre a un único sub-sprite sin depender de
+                               // ISpriteEditorDataProvider para este caso mínimo.
+        importer.spritesheet = new[]
+        {
+            new SpriteMetaData
+            {
+                name = desiredName,
+                rect = new Rect(0, 0, clip.firstSprite.texture.width, clip.firstSprite.texture.height),
+                alignment = (int)SpriteAlignment.Custom,
+                pivot = new Vector2(0.5f, 0f), // pies — igual que ConfigureSpriteImport(pivotBottom:true)
+            },
+        };
+#pragma warning restore CS0618
+        importer.SaveAndReimport();
     }
 
     // -------------------------------------------------------------------
@@ -263,12 +402,24 @@ public class EnemyImporter : EditorWindow
         importer.SaveAndReimport();
     }
 
-    private static AnimationClip BuildClip(List<Sprite> sprites, float fps, bool loop)
+    /// <summary>
+    /// <paramref name="rendererPath"/> debe coincidir con dónde vive el <c>SpriteRenderer</c> visto
+    /// DESDE el GameObject que lleva el Animator, o la curva no resuelve y el clip reproduce "sin
+    /// arte" (Unity lo enseña como "Sprite Missing" en la ventana Animation).
+    ///  - Vacío ("") para el prefab que este mismo importador construye
+    ///    (<see cref="BuildEnemyPrefab"/>/<see cref="BuildProjectilePrefab"/>): ahí el
+    ///    SpriteRenderer va en la MISMA raíz que el Animator.
+    ///  - <c>AnimClipBuilder.RendererPath</c> ("Sprite") para que el MISMO clip también funcione en
+    ///    el prefab que construye <c>EnemyFactory.Generate</c> — vía el SpriteSheetRecipe de
+    ///    compatibilidad de <see cref="BuildSpriteSheetRecipe"/> —, donde el Animator va en la raíz
+    ///    pero el SpriteRenderer en el hijo "Sprite" (ver el comentario de cabecera de este archivo).
+    /// </summary>
+    private static AnimationClip BuildClip(List<Sprite> sprites, float fps, bool loop, string rendererPath = "")
     {
         AnimationClip clip = new AnimationClip();
         clip.frameRate = fps > 0 ? fps : 8f;
 
-        EditorCurveBinding binding = new EditorCurveBinding { type = typeof(SpriteRenderer), path = "", propertyName = "m_Sprite" };
+        EditorCurveBinding binding = new EditorCurveBinding { type = typeof(SpriteRenderer), path = rendererPath, propertyName = "m_Sprite" };
         ObjectReferenceKeyframe[] keyframes = new ObjectReferenceKeyframe[sprites.Count];
         float frameDuration = 1f / clip.frameRate;
         for (int i = 0; i < sprites.Count; i++)
@@ -300,45 +451,105 @@ public class EnemyImporter : EditorWindow
         AnimationUtility.SetAnimationEvents(clip, existing.ToArray());
     }
 
+    /// <summary>
+    /// Construye el controller con el vocabulario de parámetros REAL que
+    /// <c>RedMagic.Enemies.EnemyAnimation</c> espera — el mismo que
+    /// <c>RedMagic.Pipeline.EditorTools.AnimClipBuilder.BuildController</c> ya usa para el pipeline
+    /// de verdad: <c>Moving</c> (bool, Idle↔Walk), <c>Attack</c>/<c>Hurt</c> (triggers, desde
+    /// AnyState), <c>Dead</c> (bool, desde AnyState, sin salida), más un <c>&lt;Estado&gt;Speed</c>
+    /// (float) por estado.
+    ///
+    /// Una versión anterior de este método inventaba su propio vocabulario (un trigger llamado
+    /// literalmente "Walk", "Death" como trigger en vez de "Dead" como bool) — coincidía por
+    /// casualidad con "Attack"/"Hurt", pero <c>Animator.SetBool("Moving", ...)</c> y
+    /// <c>SetBool("Dead", ...)</c> sobre un parámetro que no existe no lanza excepción, simplemente
+    /// no hace nada: el enemigo se quedaba congelado en Idle al andar y nunca reproducía el clip de
+    /// muerte. <c>EnemyAnimation</c> sólo aplica los parámetros de velocidad que de verdad existen
+    /// en el controller (los cachea una vez en <c>Awake</c>), así que da igual si faltan algunos
+    /// estados — lo que no puede faltar es <c>Moving</c>/<c>Attack</c>/<c>Hurt</c>/<c>Dead</c>.
+    /// </summary>
     private static AnimatorController BuildEnemyAnimatorController(string enemyRoot, string enemyName, List<BuiltClip> clips)
     {
         string controllerPath = $"{enemyRoot}/{enemyName}Controller.controller";
         AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
         var rootStateMachine = controller.layers[0].stateMachine;
 
-        var idleEntry = clips.FirstOrDefault(c => c.name.ToLower() == "idle");
-        var defaultEntry = idleEntry ?? clips[0];
+        controller.AddParameter(new AnimatorControllerParameter { name = "Moving", type = AnimatorControllerParameterType.Bool });
+        controller.AddParameter(new AnimatorControllerParameter { name = "Attack", type = AnimatorControllerParameterType.Trigger });
+        controller.AddParameter(new AnimatorControllerParameter { name = "Hurt", type = AnimatorControllerParameterType.Trigger });
+        controller.AddParameter(new AnimatorControllerParameter { name = "Dead", type = AnimatorControllerParameterType.Bool });
 
         var statesByName = new Dictionary<string, AnimatorState>();
         foreach (var c in clips)
         {
             AnimatorState state = rootStateMachine.AddState(c.name);
             state.motion = c.clip;
+
+            string speedParam = $"{c.name}Speed";
+            controller.AddParameter(new AnimatorControllerParameter
+            {
+                name = speedParam, type = AnimatorControllerParameterType.Float, defaultFloat = 1f,
+            });
+            state.speedParameterActive = true;
+            state.speedParameter = speedParam;
+
             statesByName[c.name] = state;
         }
 
-        rootStateMachine.defaultState = statesByName[defaultEntry.name];
+        AnimatorState Find(string name) =>
+            statesByName.FirstOrDefault(kv => string.Equals(kv.Key, name, System.StringComparison.OrdinalIgnoreCase)).Value;
 
-        foreach (var c in clips)
+        var idle = Find("Idle");
+        var walk = Find("Walk");
+        var attack = Find("Attack");
+        var hurt = Find("Hurt");
+        var death = Find("Death");
+
+        rootStateMachine.defaultState = idle ?? statesByName.Values.First();
+
+        // Idle <-> Walk por el bool "Moving" que escribe EnemyBrain — no por trigger.
+        if (idle != null && walk != null)
         {
-            if (c.name == defaultEntry.name) continue;
+            var toWalk = idle.AddTransition(walk);
+            toWalk.AddCondition(AnimatorConditionMode.If, 0f, "Moving");
+            toWalk.hasExitTime = false;
+            toWalk.duration = 0.05f;
 
-            controller.AddParameter(c.name, AnimatorControllerParameterType.Trigger);
+            var toIdle = walk.AddTransition(idle);
+            toIdle.AddCondition(AnimatorConditionMode.IfNot, 0f, "Moving");
+            toIdle.hasExitTime = false;
+            toIdle.duration = 0.05f;
+        }
 
-            AnimatorStateTransition anyTransition = rootStateMachine.AddAnyStateTransition(statesByName[c.name]);
-            anyTransition.AddCondition(AnimatorConditionMode.If, 0, c.name);
-            anyTransition.duration = 0.05f;
-            anyTransition.hasExitTime = false;
-            anyTransition.canTransitionToSelf = false;
+        // Attack/Hurt desde AnyState (para que interrumpan lo que sea), y de vuelta a Idle al
+        // acabar el clip — igual que AnimClipBuilder.WireTransitions.
+        foreach (var (name, state) in new[] { ("Attack", attack), ("Hurt", hurt) })
+        {
+            if (state == null) continue;
 
-            bool isDeath = c.name.ToLower() == "death";
-            if (!c.loop && !isDeath)
-            {
-                AnimatorStateTransition backToIdle = statesByName[c.name].AddTransition(statesByName[defaultEntry.name]);
-                backToIdle.hasExitTime = true;
-                backToIdle.exitTime = 1f;
-                backToIdle.duration = 0.05f;
-            }
+            var enter = rootStateMachine.AddAnyStateTransition(state);
+            enter.AddCondition(AnimatorConditionMode.If, 0f, name);
+            enter.AddCondition(AnimatorConditionMode.IfNot, 0f, "Dead");
+            enter.hasExitTime = false;
+            enter.duration = 0.02f;
+            enter.canTransitionToSelf = false;
+
+            if (idle == null) continue;
+
+            var exit = state.AddTransition(idle);
+            exit.hasExitTime = true;
+            exit.exitTime = 1f;
+            exit.duration = 0.05f;
+        }
+
+        // Muerte: bool "Dead" desde AnyState, sin transición de salida (destino terminal).
+        if (death != null)
+        {
+            var die = rootStateMachine.AddAnyStateTransition(death);
+            die.AddCondition(AnimatorConditionMode.If, 0f, "Dead");
+            die.hasExitTime = false;
+            die.duration = 0.05f;
+            die.canTransitionToSelf = false;
         }
 
         return controller;
@@ -348,7 +559,15 @@ public class EnemyImporter : EditorWindow
         Dictionary<string, GameObject> projectilePrefabsByName, IEnumerable<ProjectileRef> usedProjectiles)
     {
         GameObject go = new GameObject(enemyName);
-        var sr = go.AddComponent<SpriteRenderer>();
+
+        // El SpriteRenderer va en un hijo llamado "Sprite" — NO en la raíz — para que este prefab
+        // reproduzca los mismos AnimationClip que construye EnemyFactory.Generate (Animator en la
+        // raíz, SpriteRenderer en RedMagic.Pipeline.EditorTools.AnimClipBuilder.RendererPath). Los
+        // clips llevan esa ruta grabada en su curva de sprites (ver BuildClip): con el
+        // SpriteRenderer en la raíz, la curva no resuelve y Unity lo enseña como "Sprite Missing".
+        var spriteChild = new GameObject(RedMagic.Pipeline.EditorTools.AnimClipBuilder.RendererPath);
+        spriteChild.transform.SetParent(go.transform, false);
+        var sr = spriteChild.AddComponent<SpriteRenderer>();
         sr.sprite = defaultSprite;
 
         var animator = go.AddComponent<Animator>();

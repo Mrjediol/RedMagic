@@ -1,0 +1,146 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 615ce5f3d68963a4995b25ab810d7492, type: 3}
+  m_Name: MenuSkin
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.UI.MenuSkin
+  window:
+    quads:
+    - {fileID: -103428655, guid: a57a78e49d4892d4daeacc9829de9abc, type: 3}
+    - {fileID: -1627037319, guid: a57a78e49d4892d4daeacc9829de9abc, type: 3}
+    - {fileID: 1702994379, guid: a57a78e49d4892d4daeacc9829de9abc, type: 3}
+    - {fileID: -423690547, guid: a57a78e49d4892d4daeacc9829de9abc, type: 3}
+    fill: {fileID: 644158636, guid: a57a78e49d4892d4daeacc9829de9abc, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.26
+    padding:
+      left: 58
+      right: 58
+      top: 56
+      bottom: 56
+  card:
+    quads:
+    - {fileID: -1270175452, guid: 1bdf5a80d64a5b84cbffae39a8b1c590, type: 3}
+    - {fileID: -614250214, guid: 1bdf5a80d64a5b84cbffae39a8b1c590, type: 3}
+    - {fileID: 1017828054, guid: 1bdf5a80d64a5b84cbffae39a8b1c590, type: 3}
+    - {fileID: -1088067796, guid: 1bdf5a80d64a5b84cbffae39a8b1c590, type: 3}
+    fill: {fileID: 1972971241, guid: 1bdf5a80d64a5b84cbffae39a8b1c590, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.14
+    padding:
+      left: 34
+      right: 34
+      top: 30
+      bottom: 30
+  panel:
+    quads:
+    - {fileID: 586404718, guid: cbe873b43824cbc4dad3a6a6ff5fe85d, type: 3}
+    - {fileID: -2056918731, guid: cbe873b43824cbc4dad3a6a6ff5fe85d, type: 3}
+    - {fileID: 1905419738, guid: cbe873b43824cbc4dad3a6a6ff5fe85d, type: 3}
+    - {fileID: -1671771205, guid: cbe873b43824cbc4dad3a6a6ff5fe85d, type: 3}
+    fill: {fileID: -991105458, guid: cbe873b43824cbc4dad3a6a6ff5fe85d, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.24
+    padding:
+      left: 72
+      right: 72
+      top: 52
+      bottom: 50
+  panelTall:
+    quads:
+    - {fileID: 1444959832, guid: 8e9c6f7b7e9f6924a8c7f33fe7792ff2, type: 3}
+    - {fileID: -330629819, guid: 8e9c6f7b7e9f6924a8c7f33fe7792ff2, type: 3}
+    - {fileID: 1986922407, guid: 8e9c6f7b7e9f6924a8c7f33fe7792ff2, type: 3}
+    - {fileID: 149612971, guid: 8e9c6f7b7e9f6924a8c7f33fe7792ff2, type: 3}
+    fill: {fileID: -570887335, guid: 8e9c6f7b7e9f6924a8c7f33fe7792ff2, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.3
+    padding:
+      left: 54
+      right: 54
+      top: 58
+      bottom: 58
+  titleBar:
+    quads:
+    - {fileID: -1270175452, guid: 1bdf5a80d64a5b84cbffae39a8b1c590, type: 3}
+    - {fileID: -614250214, guid: 1bdf5a80d64a5b84cbffae39a8b1c590, type: 3}
+    - {fileID: 1017828054, guid: 1bdf5a80d64a5b84cbffae39a8b1c590, type: 3}
+    - {fileID: -1088067796, guid: 1bdf5a80d64a5b84cbffae39a8b1c590, type: 3}
+    fill: {fileID: 1972971241, guid: 1bdf5a80d64a5b84cbffae39a8b1c590, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.14
+    padding:
+      left: 44
+      right: 44
+      top: 26
+      bottom: 26
+  button:
+    quads:
+    - {fileID: -1136298906, guid: 3f52b9f6557c32441929d4f8344face5, type: 3}
+    - {fileID: 795160811, guid: 3f52b9f6557c32441929d4f8344face5, type: 3}
+    - {fileID: -1270957617, guid: 3f52b9f6557c32441929d4f8344face5, type: 3}
+    - {fileID: 1588879319, guid: 3f52b9f6557c32441929d4f8344face5, type: 3}
+    fill: {fileID: 1963500578, guid: 3f52b9f6557c32441929d4f8344face5, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.09
+    padding:
+      left: 30
+      right: 30
+      top: 22
+      bottom: 22
+  buttonHover:
+    quads:
+    - {fileID: 642624253, guid: 269b39480a2be8b41b68ea04231109f3, type: 3}
+    - {fileID: -897930880, guid: 269b39480a2be8b41b68ea04231109f3, type: 3}
+    - {fileID: -658146088, guid: 269b39480a2be8b41b68ea04231109f3, type: 3}
+    - {fileID: 699613651, guid: 269b39480a2be8b41b68ea04231109f3, type: 3}
+    fill: {fileID: -253838162, guid: 269b39480a2be8b41b68ea04231109f3, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.09
+    padding:
+      left: 30
+      right: 30
+      top: 22
+      bottom: 22
+  buttonPressed:
+    quads:
+    - {fileID: -1158695520, guid: 552de48532e75614e925e671b6e8ec04, type: 3}
+    - {fileID: 1397917403, guid: 552de48532e75614e925e671b6e8ec04, type: 3}
+    - {fileID: -1918659488, guid: 552de48532e75614e925e671b6e8ec04, type: 3}
+    - {fileID: 44223085, guid: 552de48532e75614e925e671b6e8ec04, type: 3}
+    fill: {fileID: 223515908, guid: 552de48532e75614e925e671b6e8ec04, type: 3}
+    fillCornerRadius: 36
+    maxScale: 0.09
+    padding:
+      left: 30
+      right: 30
+      top: 22
+      bottom: 22
+  closeButton:
+    normal: {fileID: 21300000, guid: d03d29179748d114188e6fa265621004, type: 3}
+    hover: {fileID: 21300000, guid: c182d5bcf8f70764088a77b70a45cfd1, type: 3}
+  checkOff:
+    normal: {fileID: 21300000, guid: 4cfb3ebfb7de3a040922a718289cd4b8, type: 3}
+    hover: {fileID: 21300000, guid: 3d3c5d213cc4db34c9b5f1af0d0d171b, type: 3}
+  checkOn:
+    normal: {fileID: 21300000, guid: b4829af0d6289fe4c99ab2c2dfd7e9af, type: 3}
+    hover: {fileID: 21300000, guid: a988021e6b39d644b9e92818a58b3269, type: 3}
+  titleBarHeight: 132
+  titleBarMaxWidth: 720
+  mainTitleHeight: 240
+  mainTitleMaxWidth: 1000
+  checkBoxSize: 52
+  closeButtonSize: 56
+  disabledTint: {r: 0.55, g: 0.58, b: 0.6, a: 1}
+  quitTint: {r: 1, g: 0.72, b: 0.68, a: 1}
+  cardLockedTint: {r: 0.5, g: 0.53, b: 0.55, a: 1}
+  cardBuyableTint: {r: 1, g: 0.93, b: 0.74, a: 1}
+  cardMaxedTint: {r: 1, g: 0.84, b: 0.45, a: 1}

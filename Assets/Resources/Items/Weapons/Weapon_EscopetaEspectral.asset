@@ -16,7 +16,7 @@ MonoBehaviour:
   description: "Cinco perdigones de escarcha en abanico corto. Demoledora pegada
     a la cara, in\xFAtil a media sala. Te obliga a entrar. Nace de hielo."
   icon: {fileID: 1354624353278725195, guid: ea42e9ba2d9a88a4cac7d584a3e5d084, type: 3}
-  accent: {r: 0.75, g: 0.85, b: 1, a: 1}
+  accent: {r: 0, g: 0.990566, b: 0.1134182, a: 1}
   baseDamage: 20
   baseCooldown: 0.2
   baseKnockbackMultiplier: 0.6

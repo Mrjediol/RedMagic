@@ -24,7 +24,7 @@
     bottom: 0;
     left: 0;
     background-color: #080507;
-    background-image: url("project://database/Assets/Ui/Art/necrotic_bone_shrine_03.png");
+    background-image: url("project://database/Assets/Ui/Art/MainMenu.jpeg");
     -unity-background-scale-mode: scale-and-crop;
 }
 
@@ -42,26 +42,6 @@
     align-items: center;
     justify-content: flex-start;
     padding-top: 96px;
-}
-
-.game-title {
-    font-size: 104px;
-    -unity-font-style: bold;
-    letter-spacing: 6px;
-    color: var(--color-title);
-    -unity-text-align: middle-center;
-    white-space: normal;
-    -unity-text-outline-width: 2px;
-    -unity-text-outline-color: rgba(0, 0, 0, 0.85);
-}
-
-.game-subtitle {
-    margin-top: 8px;
-    font-size: 30px;
-    letter-spacing: 10px;
-    color: var(--color-subtitle);
-    -unity-text-align: middle-center;
-    -unity-font-style: bold;
 }
 
 .button-container {

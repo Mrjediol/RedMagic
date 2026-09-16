@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1183873433405448287}
   - component: {fileID: 1192958239998838477}
   m_Layer: 0
-  m_Name: Chest
+  m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -81,7 +81,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -2305204071527019509, guid: 7810966f0f690954c87305933cabf2b0, type: 3}
+  m_Sprite: {fileID: -1668288044, guid: e955b90ed262793459cc27ea98865fe7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -103,7 +103,7 @@ GameObject:
   - component: {fileID: 6672460767984985607}
   - component: {fileID: 8542614622507851536}
   - component: {fileID: 8209818706858700468}
-  - component: {fileID: 5703692462984795082}
+  - component: {fileID: 5829929809505512136}
   m_Layer: 0
   m_Name: GoldChest
   m_TagString: Untagged
@@ -137,7 +137,7 @@ Animator:
   m_GameObject: {fileID: 7654515232336563112}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: f256d94ad78633f4da3695977645607e, type: 2}
+  m_Controller: {fileID: 9100000, guid: 63b1a48684ce66443b2e3bc1d080514a, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -208,7 +208,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2.6625, y: 1.7375}
   m_EdgeRadius: 0
---- !u!114 &5703692462984795082
+--- !u!114 &5829929809505512136
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -217,17 +217,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 7654515232336563112}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef28717ec505b21429d9e10a5dac00d7, type: 3}
+  m_Script: {fileID: 11500000, guid: f9ca71099cc2a6141a7182bf47604ced, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Abilities.AbilityChest
-  forcedWeapon: {fileID: 0}
-  singleUse: 1
-  grantDelay: 0.35
-  animator: {fileID: 6672460767984985607}
-  openParameter: IsOpened
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Hub.ChestLootContainer
   playerTag: Player
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player
   actionName: Interact
-  prompt: {fileID: 0}
+  animator: {fileID: 6672460767984985607}
+  openParameter: IsOpened
   openSfxId: SFX_ButtonClick
+  lootSfxId: 
+  forcedWeapon: {fileID: 0}

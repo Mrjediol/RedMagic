@@ -1,0 +1,173 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f0d342f95c145c44a25c9b802727df1, type: 3}
+  m_Name: MainHubItems.sheet
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.SpriteSheetRecipe
+  sheet: {fileID: 2800000, guid: 636a505a754281f4b93fbd6706aee5e7, type: 3}
+  characterName: MainHubItems
+  outputFolder: 
+  sliceMode: 0
+  rows:
+  - state: ChestOpening
+    frames: 7
+    fps: 8
+    loop: 0
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: BookOpening
+    frames: 7
+    fps: 8
+    loop: 0
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: AnvilSpark
+    frames: 4
+    fps: 10
+    loop: 0
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: WardrobeOpening
+    frames: 6
+    fps: 8
+    loop: 0
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: MirrorIdle
+    frames: 6
+    fps: 6
+    loop: 1
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  columns: 5
+  cropLeft: 0
+  cropRight: 0
+  cropTop: 0
+  cropBottom: 0
+  keyBackground: 1
+  backgroundTolerance: 0.06
+  alphaThreshold: 0.15
+  softEdge: 14
+  fillHoles: 400
+  margin: 8
+  anchor: 0
+  pixelsPerUnit: 100
+  filterMode: 1
+  runtime: 0
+  attackEvents: 0
+  derivedClips:
+  - state: ChestClosed
+    fromState: ChestOpening
+    firstFrame: 0
+    frameCount: 1
+    fps: 8
+    loop: 1
+    reverse: 0
+  - state: ChestOpeningAnim
+    fromState: ChestOpening
+    firstFrame: 0
+    frameCount: 4
+    fps: 8
+    loop: 0
+    reverse: 0
+  - state: ChestOpen
+    fromState: ChestOpening
+    firstFrame: 3
+    frameCount: 2
+    fps: 4
+    loop: 1
+    reverse: 0
+  - state: ChestClosing
+    fromState: ChestOpening
+    firstFrame: 4
+    frameCount: 3
+    fps: 8
+    loop: 0
+    reverse: 0
+  - state: BookClosed
+    fromState: BookOpening
+    firstFrame: 0
+    frameCount: 1
+    fps: 8
+    loop: 1
+    reverse: 0
+  - state: BookOpeningAnim
+    fromState: BookOpening
+    firstFrame: 0
+    frameCount: 4
+    fps: 8
+    loop: 0
+    reverse: 0
+  - state: BookOpen
+    fromState: BookOpening
+    firstFrame: 3
+    frameCount: 2
+    fps: 4
+    loop: 1
+    reverse: 0
+  - state: BookClosing
+    fromState: BookOpening
+    firstFrame: 4
+    frameCount: 3
+    fps: 8
+    loop: 0
+    reverse: 0
+  - state: WardrobeClosed
+    fromState: WardrobeOpening
+    firstFrame: 0
+    frameCount: 1
+    fps: 8
+    loop: 1
+    reverse: 0
+  - state: WardrobeOpeningAnim
+    fromState: WardrobeOpening
+    firstFrame: 0
+    frameCount: 3
+    fps: 8
+    loop: 0
+    reverse: 0
+  - state: WardrobeOpen
+    fromState: WardrobeOpening
+    firstFrame: 2
+    frameCount: 2
+    fps: 4
+    loop: 1
+    reverse: 0
+  - state: WardrobeClosing
+    fromState: WardrobeOpening
+    firstFrame: 3
+    frameCount: 3
+    fps: 8
+    loop: 0
+    reverse: 0
+  - state: AnvilIdle
+    fromState: AnvilSpark
+    firstFrame: 0
+    frameCount: 1
+    fps: 8
+    loop: 1
+    reverse: 0
+  rendererPath: Sprite

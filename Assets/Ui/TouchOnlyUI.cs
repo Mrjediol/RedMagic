@@ -52,8 +52,10 @@ namespace RedMagic.UI
             var root = _document != null ? _document.rootVisualElement : null;
             if (root == null) return;
 
-            bool show = InputDeviceManager.Instance == null
-                        || InputDeviceManager.Instance.CurrentMode == InputMode.Touch;
+            // Sólo con pantalla táctil de verdad: con teclado y ratón (o mando) estos botones
+            // estorban. Ojo, antes esto era "|| Instance == null", que en PC los enseñaba durante
+            // el primer frame.
+            bool show = InputDeviceManager.TouchActive;
 
             root.Query(className: TouchOnlyClass).ForEach(e =>
                 e.style.display = show ? DisplayStyle.Flex : DisplayStyle.None);

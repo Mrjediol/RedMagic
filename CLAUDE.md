@@ -211,8 +211,17 @@ to pick up the change.
   scene's `SectionEntry` and retargets `CameraFollow` components after each load. Player death is
   detected via the existing `Health.Died` event — `RunManager` subscribes to it directly rather
   than `Health` knowing anything about runs.
-- **`TombInteractable`** — placed in the hub, references a `WorldDefinition` asset directly (not an
-  index/name) so reordering `RunManager.worlds` can't desync a tomb from its world.
+- **`SectionExit` is also how you leave the hub.** Assign its `world` (a `WorldDefinition` asset
+  reference, not an index/name, so reordering `RunManager.worlds` can't desync it) and, with no run
+  in progress, crossing it calls `StartRun(world)` instead of `AdvanceSection()`. Leaving the hub
+  and moving between sections are the same gesture for the player — walking through a door — so
+  they are the same component, and `RunManager` is what knows whether that means start or advance.
+  `_used` is only latched if the run actually starts, so a locked or misconfigured world leaves the
+  door working. Its gizmo is blue for a hub door, amber for a section exit. MainHub's is at the far
+  right of the ground (x≈35) with `requireEnemiesDead` off — there is nothing to kill in the hub.
+  The predecessor, `TombInteractable` (proximity + press E, its own input handling), is retired to
+  `Assets/Scripts/Legacy/`, along with `CauldronInteractable` and `AbilityChest` (see Main Hub
+  interactables below for what replaced them).
 - **`SectionClearTracker`** — `DontDestroyOnLoad` singleton placed in MainHub (with an
   `AfterSceneLoad` fallback). On every scene load it subscribes to every `Health` **inside that
   scene** — the run player is `DontDestroyOnLoad` so it is excluded for free — **except** anything
@@ -224,6 +233,19 @@ to pick up the change.
   `SectionExit` (`requireEnemiesDead`) and `ShopInteractable` both refuse to work while enemies
   live. When the last one dies it plays `clearSfxId` and spawns `clearEffectPrefab` (the fireball's
   `VFX_Explosion`) at every `SectionExit` in the scene, so the feedback points at the way out.
+- **`PlayerScaleConfig`** — per-scene override for the player's `transform.localScale`, needed
+  because each level's background is generated separately by AI and the art scale isn't consistent
+  from one image to the next. Lives at `Assets/Resources/PlayerScaleConfig.asset` (loaded with
+  `Resources.Load`, same pattern as `CurrencyConfig`/`ShopConfig` — nothing to drag onto
+  `RunManager`), a list of `(SceneReference, float)` rows edited through
+  `PlayerScaleConfigEditor`'s **Tools ▸ RedMagic ▸ Jugador ▸ Sincronizar escalas con Build
+  Settings** (also a button in the asset's own Inspector), which appends one row per enabled
+  Build Settings scene at scale 1.0 — idempotent, never touches a row already tuned. `RunManager`
+  calls `ApplyPlayerScale(scene)` right after `Player.transform.position = entry.SpawnPosition`
+  (`PlacePlayerAtEntry`, `MoveToHubEntry`/`EnterHub`) — same synchronous span, before any `yield`,
+  so the resize lands in the same frame as the teleport and is never seen popping. No entry for the
+  loaded scene → scale 1.0 and a console warning (a new scene nobody's tuned yet); no asset at all
+  → the prefab's scale is left alone entirely.
 - **Shop placement** — `RunManager` picks `_shopSectionIndex` at random from the sampled section
   order (seeded off `RunSeed`, so it's reproducible; never the boss scene), which guarantees
   **exactly one shop per world, always before the boss** — including the degenerate case of a world
@@ -531,9 +553,35 @@ rejected as unplayable, because any vertical lag means you don't see where you'r
 after you've landed. If vertical follow ever feels wrong again, fix the framing (`offset.y`, zoom),
 **not** by adding vertical smoothing back.
 
-Zoom is a separate knob: `RunManager.cameraOrthographicSize` (8.5) is forced onto every
+Zoom is a separate knob: `RunManager.cameraOrthographicSize` is forced onto every
 `CameraFollow` camera after each load, so the hub and the sections match.
 `ShakeAll(amplitude, duration)` is the project-wide camera shake (see Bosses).
+
+**Bounds — what is clamped is the visible rectangle, not the camera's centre.** Background art is
+AI-generated with no margin past the playable area, so its edges *are* the limits of the framing.
+`CameraBoundsSource.Background` (the default) measures the GameObject named **`BG`** in the
+camera's **own scene** — by name, per scene, because run sections load additively and two `BG`s
+are in memory during a transition. **If `BG` has its own `Renderer`, that renderer alone is the
+bounds and its children are ignored**: level decoration (platforms, frames, vines) is parented
+under `BG` and sticks out past the background image, so unioning it pushes the limit *beyond the
+art* — in `World1_Boss` the image ends at x 22.82 and the union reached 22.95, which is exactly the
+sliver of clear-colour blue this system exists to prevent. Only a `BG` with no renderer of its own
+(a parallax container) falls back to the union of its children. `ClampCenter` subtracts half a viewport
+(`orthographicSize` × `aspect`, both read every frame since `RunManager` rewrites the zoom after
+each load) from that rectangle; if the background is *smaller* than the screen on an axis there is
+no valid position, so the camera centres on the background on that axis, splitting the overspill
+instead of dumping it all on one side. The clamp is applied to the SmoothDamp **target** (so the
+camera doesn't accumulate velocity into a wall and lurch off the edge) **and** to the final
+position after shake (so a boss stomp can't shove the view past the art). `Manual` mode keeps a
+hand-typed rectangle for a scene with no background; `None` disables it. No `BG` found is not an
+error — the camera just follows unclamped, as before.
+
+`Tools > RedMagic > Camera > Auditar encuadre (BG vs cámara)` (`CameraBoundsAudit`) opens every
+scene under `Assets/Scenes` and reports, at the zoom `RunManager` actually forces and at both 16:9
+and 20:9, how many world units each background is short of covering the screen. Run it whenever new
+background art lands: a background too small produces no error and no pink material, only a visible
+strip of nothing at the level's edge. Selecting the camera also draws it — green is the background,
+amber is where the camera centre may go, red means the screen doesn't fit.
 
 ### Weapons & items — the build system (`Assets/Scripts/Items/`)
 
@@ -902,9 +950,8 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
 - **`UpgradeMenuController`** (`Assets/Ui/`) — self-bootstrapping persistent code-built `UIDocument`
   (`Assets/Resources/UpgradeMenuPanelSettings.asset`, sorting order 30). Hidden until
   `Open()`; pauses the game via `GameStateManager` while open. Close with Esc / E / gamepad B.
-- **`CauldronInteractable`** — trigger-collider proximity interactable (same shape as
-  `TombInteractable`) added to a "Cauldron Interact Zone" child near the cauldron in MainHub;
-  interact key calls `UpgradeMenuController.Instance.Open()`.
+- The trigger for this menu is now `Hub.BookLootContainer` on the hub's book lectern (see Main Hub
+  interactables); `CauldronInteractable`, the old single-press placeholder, is retired to Legacy.
 
 **Mid-run shop:**
 
@@ -928,6 +975,85 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
 code-built menus. **Change the size constants here to rescale that UI**; both screens follow. Sizes
 are in the panels' 1600×900 reference resolution, so they render ~1.2× larger at 1080p.
 
+### Main Hub interactables (`Assets/Scripts/Hub/`)
+
+Five hand-built props in the hub, each its own MonoBehaviour rather than data-driven content —
+there's no recurring "new prop" pipeline to build a tool for yet, unlike enemies/bosses/items. All
+five share one sheet, `Assets/Sprites/Maibhubitems.png` (flat dark-teal background, no alpha, keyed
+like `TreeBoss.png`/`BossAttack.png`), sliced via `Assets/Art/Characters/MainHubItems/`.
+
+**Import is `Hub.EditorTools.MainHubItemsPack`** (`Tools ▸ RedMagic ▸ Hub ▸ Generar props del hub`)
+— doesn't fit the usual `<Name>Pack` shape (one recipe, one character) because this is one sheet →
+five *different* objects, each needing its own `AnimatorController`. Measured with `Pipeline ▸ 2b`
+before writing it: the sheet is **not** a uniform 7-column grid — chest/book are 7 real frames,
+wardrobe/mirror only 6, anvil 4 (the row's 7 slots are sparse; `AutoBounds` finds the 4 real blobs
+and ignores the true gaps). Each "furniture" row (chest/book/wardrobe) already draws the **whole**
+closed→open→closed arc in one direction — no `reverse` needed on the `DerivedClip`s that carve it
+into Closed/Opening/Open/Closing (see `SPRITE_PIPELINE.md` §10). **`Hub.EditorTools.
+OpenCloseControllerBuilder`** builds the controllers `AnimClipBuilder.BuildController` can't (it
+only wires the enemy Idle/Walk/Attack/Hurt/Death vocabulary): `BuildBoolDriven` for the bool-gated
+4-state open/close cycle (chest/book/wardrobe, param `IsOpened`), `BuildTriggerOneShot` for a
+fire-and-return gesture (anvil, trigger `Spark`), `BuildIdleLoop` for a single always-playing state
+(mirror's shimmer). The pack dresses `GoldChest.prefab` in place (`PrefabDresser`-style: only the
+`SpriteRenderer` + `Animator`, nothing else touched) and creates `BookLectern`/`Wardrobe`/`Anvil`/
+`Mirror` prefabs under `Assets/Prefab/Eviroment/` *if missing* — re-running it after one is placed
+and hand-tuned in a scene won't overwrite it.
+
+- **`InteractionPromptUi`** — the "Press [Interact] to…" cartel, shared by every interactable in
+  this folder. Self-bootstrapping persistent `UIDocument`, same shape as `CurrencyHud` (own
+  `Assets/Resources/InteractionPromptPanelSettings.asset`, sorting order 16, just above the
+  currency HUD's 15). Exists because the old pattern — a `GameObject prompt` sign hand-dragged per
+  object, just `SetActive` — can't change its wording at runtime, and the two-step flow needs
+  "…to open" to become "…to pick up"/"…to consult" without a second sign. `Show(caller, text)` /
+  `Hide(caller)` are static; `Hide` only clears the cartel if `caller` is who last showed it, so two
+  overlapping interactables can't steal the prompt from each other.
+- **`RewardPopupUi`** — "Arma obtenida: X" (icon + name), self-bootstrapping, holds a couple
+  seconds then fades. Didn't exist before — the chest used to just log to console and flash a
+  colour. Built generic (`Show(icon, title, name, accent)`) so the wardrobe's future 3-item loot
+  reuses it instead of writing a second popup.
+- **`HubLootContainer`** (abstract) — the open → wait → use/pick-up → close skeleton shared by all
+  three "furniture" objects (chest, wardrobe, book): trigger+tag detection, the same interact-input
+  reading as `SectionExit` (InputActionAsset + E/Enter/gamepad-north/touch fallback), an `Animator`
+  bool (`openParameter`, default `IsOpened` — same convention as the Cainos chest controller and
+  the old `AbilityChest`) that's optional and null-safe so the logic works before any art exists,
+  and the reset-on-return-to-hub rule. That reset subscribes to `RunManager.RunEnded` with the
+  exact retry-until-bound pattern `WeaponLoadout` already uses (`SceneManager.sceneLoaded` →
+  `TryBindToRun` until `RunManager.Instance` exists) — a container resets on **any** `RunEnded`,
+  win or lose, same as `WeaponLoadout.Inventory.Clear()`. Subclasses implement `OpenPromptText` /
+  `PickupPromptText` / `OnLoot()`, and override `BlocksHubExitUntilLooted` if being empty should
+  matter (only the chest does).
+  - **`ChestLootContainer`** — replaces `AbilityChest` (moved to `Legacy/`) on
+    `Assets/Prefab/Eviroment/GoldChest.prefab`, now dressed with the real chest art (still placed
+    as an in-run reward chest in the world scenes, not yet in MainHub — dragging one into the hub
+    is on the to-do list before the exit gate below does anything). Same weapon-grant logic (`WeaponLibrary.Random()` or the
+    Inspector-forced `forcedWeapon`, `WeaponLoadout.Instance.Inventory.SetWeapon`, the
+    `AbilityFx.Flash` colour burst, unequipping any stray `AbilityUser`), now behind two toques
+    instead of one, plus `RewardPopupUi.Show(...)`. Its Inspector still gets the "pick a weapon or
+    Aleatoria" dropdown (`Hub.EditorTools.ChestLootContainerEditor`, ported from
+    `AbilityChestEditor`). **This is the run's only source of a starting weapon**, which is what
+    makes it required — see `SectionExit` below.
+  - **`WardrobeLootContainer`** — same shape, `BlocksHubExitUntilLooted = false` (optional loot),
+    `OnLoot()` is a marked `// TODO` stub (3 items, pool/rarity undecided) that logs instead of
+    granting anything yet.
+  - **`BookLootContainer`** — replaces `CauldronInteractable` (moved to `Legacy/`, it was only ever
+    the pre-art placeholder for this menu). Same two-step shape as the chest/wardrobe, but
+    `OnLoot()` — the "2nd toque" — opens `UpgradeMenuController` instead of granting an item;
+    doesn't block the hub exit.
+- **`AnvilInteractable`** / **`MirrorInteractable`** — single-touch, no open/close state, own copy
+  of the detection+input block (there's no two-step state machine here for a shared base to save).
+  Anvil plays an optional `Animator` trigger then calls the `// TODO` hook `OnAnvilInteract()`.
+  Mirror's row is a continuous idle shimmer loop rather than a triggered animation; interacting
+  calls its own `// TODO` hook `OnMirrorInteract()` and opens **`MirrorMenuController`**
+  (`Assets/Ui/MirrorMenuController.cs`) — a placeholder menu, same self-bootstrapping shape and
+  `MenuStyle` look as `UpgradeMenuController` (own `Assets/Resources/MirrorMenuPanelSettings.asset`,
+  sorting order 30), whose body is just a "Coming soon" label until stats/cosmetics are decided.
+- **`SectionExit.BlockedByMissingWeapon`** — the hub door (`SectionExit` with `world` assigned, see
+  the Run/world system section) refuses to `StartRun` while
+  `WeaponLoadout.Instance.Inventory.Weapon == null`, gated by `[SerializeField] bool
+  requireWeaponToStartRun = true` (next to `requireEnemiesDead`, same convention). Checking the
+  inventory directly — not a separate "chest looted" flag — means there's only one source of truth
+  and the gate self-resets for free: `WeaponLoadout` already wipes the weapon on every `RunEnded`.
+
 ### Input
 
 Three input sources are meant to coexist, not be exclusive: the Input System asset
@@ -936,6 +1062,28 @@ static class that on-screen touch buttons (`TouchControlsController`) push queue
 Gameplay scripts (`PlayerMovement`, `PlayerAttack`, `RangedAttack`) check both every frame. All
 input is gated behind `GameStateManager.CanPlayerAct` — check that first in any new input-driven
 script rather than re-deriving a pause check.
+
+**`InputDeviceManager` has three modes — `Touch`, `Gamepad`, `KeyboardMouse` — and only a real
+`Touchscreen` sets `Touch`.** In the Input System `Mouse` derives from `Pointer` exactly like
+`Touchscreen`, so the old code (which matched `Pointer`) dropped a PC into touch mode on the first
+click and the mobile on-screen buttons appeared. `OnEvent` now checks `Touchscreen` **before**
+`Mouse`/`Keyboard`; keep that order. `DetectInitialMode()` decides what you start in before
+touching anything: gamepad if one is connected, `Touch` on a mobile platform (or a touchscreen with
+no keyboard), otherwise `KeyboardMouse`. Use the static helpers rather than comparing the enum:
+`TouchActive` (falls back to `Application.isMobilePlatform` when the manager doesn't exist yet, so
+PC never flashes the touch buttons for a frame), `KeyboardMouseActive`, `GamepadActive`.
+
+Each mode shows its own on-screen help and nothing else:
+- **Touch** → the on-screen buttons (`TouchControls.uxml`, container class `touch-only`, shown/
+  hidden by `TouchOnlyUI`) plus the on-screen pause button (`PauseMenuController._touchMode`). On PC
+  both hide; Esc still opens pause, so nothing is lost.
+- **KeyboardMouse** → **`Assets/Ui/ControlsLegendHud.cs`**, a self-bootstrapping translucent key
+  list in the bottom-left (WASD / Espacio / Shift / Clic izq. / E / I / Esc). It shares
+  `InteractionPromptPanelSettings` and hides itself whenever `CanPlayerAct` is false, which also
+  keeps it off the main menu and out from under any open menu. **Its rows are hand-written** — if a
+  binding changes in `RedMagicControls.inputactions` (or in a script that reads keys directly, like
+  E to interact or I for items), update `ControlsLegendHud.Rows` too.
+- **Gamepad** → neither, since the prompts would be wrong buttons.
 
 ### UI
 
@@ -951,11 +1099,36 @@ A kit of flat-background images becomes clean sprites through a `UiArtKitRecipe`
 **Quad** frames: 4 quadrant 9-slices that stretch only a 2px strip, so centre ornaments never
 smear, plus the frame's interior panel as one `_Fill` sprite drawn on top — stretching the
 interior from the strips made it look split into 4 rectangles), and a per-kit pack wires typed refs into a `<Screen>Skin` asset in `Resources`.
-Runtime side is `Assets/Ui/UiFrame.cs` (`UiFrame.Dress(element)`, `UiStateSprites`). First
-user: the items screen (`ItemsUiPack` → `Resources/ItemMenuSkin.asset`, read by
-`ItemMenuController`; any missing piece falls back to the plain `MenuStyle` look). Runtime UI
-Toolkit panels don't appear in `screenshot`/`capture_game_view` — to see one, render a cloned
-`PanelSettings` into a `RenderTexture`.
+Runtime side is `Assets/Ui/UiFrame.cs` (`UiFrame.Dress(element)`, `UiStateSprites`). Two kits
+ship: the items screen (`ItemsUiPack` → `Resources/ItemMenuSkin.asset`, read by
+`ItemMenuController`) and the **menu kit** (`MenusUiPack` over `Assets/Ui/UiSprites` →
+`Resources/MenuSkin.asset`), which dresses four screens: main, pause, options and the **permanent
+upgrades** grid. Any missing piece falls back to the plain `MenuStyle`/USS look, so deleting a skin
+only removes the art, never breaks a screen.
+
+The first three are UXML+USS and the upgrades grid is code-built — which changes nothing for
+dressing, since `UiFrame.Dress` works on any `VisualElement`. They share
+**`Assets/Ui/MenuSkinDresser.cs`** (UXML ones call `DressWithSkin()` from `OnEnable`; the grid
+dresses inside its own `BuildUi`/`BuildCell`); it is idempotent via an `rm-skinned` marker class, so
+a repeated `OnEnable` doesn't stack layers or re-register callbacks. In the upgrades grid, a cell's
+state (locked / affordable / maxed) is shown by **tinting the frame**, not by a background colour —
+the background sits behind the stone and wouldn't be visible (`UpgradeMenuController.PaintCell`).
+**`UI_ART_PIPELINE.md` §3-ter is the tweak guide**: which knob moves what, the vertical budget, and
+what must be mirrored back into the pack so a skin reset doesn't undo it. Traps it exists to avoid,
+all of which bit during that pass:
+- **A frame layer covers the element's own text.** UI Toolkit draws children above the parent's
+  text, and the frame is a child — so titles get **wrapped** in a plaque and a `Button`'s `text` is
+  moved into a child `Label`. Font properties inherit, so the USS (`:hover` included) still rules.
+- **Padding must exceed the frame's stone thickness**, which is `fill.rect.x * scale` in screen px
+  with `scale` from `UiFrame.Fit` — compute it, don't eyeball it; too little and the text sits
+  inside the bevel. If the needed padding eats the panel, lower `maxScale` instead.
+- **Multi-state pieces of the same drawing share `trimGroup` *and* `interior`** (the three button
+  states do), or the hover's glow shrinks its fill and the button jumps on mouse-over.
+
+Runtime UI Toolkit panels don't appear in `screenshot` or `capture_game_view --source camera`.
+What does work is **`capture_game_view --source screen`, Play Mode only**. Rendering a cloned
+`PanelSettings` into a `RenderTexture` does *not* work in Edit Mode — an offscreen panel never
+draws without a runtime and the texture comes back blank.
 
 ### Vendored third-party content — do not search or modify by default
 

@@ -1,0 +1,15 @@
+# Vendored third-party asset packs — reference only, not part of the game's own architecture
+Assets/Cainos/
+Assets/Dragon Warrior Files/
+Assets/Brackeys/
+
+# Unity/IDE generated
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+UserSettings/
+.vs/
+.idea/

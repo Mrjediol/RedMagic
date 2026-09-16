@@ -25,9 +25,11 @@ namespace RedMagic.UI
         private const string PanelSettingsResourcePath = "CurrencyHudPanelSettings";
 
         private UIDocument _document;
+        private VisualElement _row;
         private readonly Dictionary<Currency, Label> _amountLabels = new();
         private bool _built;
         private bool _bound;
+        private bool _visible = true;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -72,6 +74,19 @@ namespace RedMagic.UI
         {
             if (!_built) TryBuild();
             if (_built && !_bound) TryBind();
+            if (_built) ApplyVisibility();
+        }
+
+        // No hay moneda que contar en el menú principal (todavía no hay run ni hub), así que el
+        // HUD se esconde ahí mismo — igual que los controles de teclado (ControlsLegendHud) y los
+        // botones táctiles (TouchOnlyUI) se esconden según el contexto en vez de estar siempre fijos.
+        private void ApplyVisibility()
+        {
+            bool show = !MainMenuController.IsOpen;
+            if (show == _visible) return;
+
+            _visible = show;
+            _row.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void TryBuild()
@@ -114,18 +129,22 @@ namespace RedMagic.UI
             root.style.bottom = 0;
             root.pickingMode = PickingMode.Ignore;
 
-            var row = new VisualElement { name = "currency-row" };
-            row.pickingMode = PickingMode.Ignore;
-            row.style.position = Position.Absolute;
-            row.style.top = 14;
-            row.style.right = 16;
-            row.style.flexDirection = FlexDirection.Row;
-            row.style.alignItems = Align.Center;
-            root.Add(row);
+            _row = new VisualElement { name = "currency-row" };
+            _row.pickingMode = PickingMode.Ignore;
+            _row.style.position = Position.Absolute;
+            _row.style.top = 14;
+            _row.style.right = 16;
+            _row.style.flexDirection = FlexDirection.Row;
+            _row.style.alignItems = Align.Center;
+            root.Add(_row);
 
             var config = CurrencyManager.Instance != null ? CurrencyManager.Instance.Config : null;
             foreach (var currency in OrderedCurrencies(config))
-                row.Add(BuildEntry(currency, config != null ? config.VisualFor(currency) : null));
+                _row.Add(BuildEntry(currency, config != null ? config.VisualFor(currency) : null));
+
+            // El primer Update tras montar decide la visibilidad real (main menu o no); arrancar
+            // visible y corregir ahí evita un parpadeo si el menú principal ya estaba activo.
+            ApplyVisibility();
         }
 
         // El orden del HUD lo manda el CurrencyConfig; si falta, se usa el orden del enum.

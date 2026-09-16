@@ -135,6 +135,11 @@ namespace RedMagic.Pipeline
         [Min(0.1f)] public float fps = 10f;
 
         public bool loop = true;
+
+        [Tooltip("Recorre el tramo elegido al revés (del último frame al primero). Para un cierre " +
+                 "que reutiliza los mismos dibujos de una apertura pero en sentido contrario, sin " +
+                 "que la lámina tenga que dibujar la secuencia dos veces.")]
+        public bool reverse;
     }
 
     /// <summary>

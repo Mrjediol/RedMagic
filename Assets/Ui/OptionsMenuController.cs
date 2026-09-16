@@ -67,8 +67,29 @@ namespace RedMagic.UI
                 _backButton.RegisterCallback<PointerEnterEvent>(OnHover);
             }
 
+            DressWithSkin();
             RefreshFromAudioManager();
             ApplyVisibility();
+        }
+
+        /// <summary>
+        /// Pone el arte de <see cref="MenuSkin"/> encima del UXML. Sin ese asset no hace nada y el
+        /// menú se ve con el aspecto plano del USS, como siempre.
+        /// </summary>
+        private void DressWithSkin()
+        {
+            var skin = MenuSkinDresser.Skin;
+            if (skin == null) return;
+
+            MenuSkinDresser.DressPanel(_root.Q<VisualElement>("optionsPanel"), skin.panel);
+            MenuSkinDresser.DressTitle(_root.Q<Label>(className: "options-title"), skin.titleBar,
+                                       skin.titleBarHeight, skin.titleBarMaxWidth);
+
+            MenuSkinDresser.DressToggle(_masterMute, skin);
+            MenuSkinDresser.DressToggle(_musicMute, skin);
+            MenuSkinDresser.DressToggle(_sfxMute, skin);
+
+            MenuSkinDresser.DressButton(_backButton, skin, Color.white);
         }
 
         private void OnDisable()

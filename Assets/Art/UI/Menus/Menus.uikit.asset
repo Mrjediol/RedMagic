@@ -1,0 +1,162 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90780ae0e37e0a34886a6db21f0a3709, type: 3}
+  m_Name: Menus.uikit
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.UiArtKitRecipe
+  outputFolder: Assets/Art/UI/Menus
+  prefix: Menus_
+  backgroundTolerance: 0.12
+  softOpaqueAt: 0.55
+  minEnclosedArea: 0.01
+  margin: 2
+  pieces:
+  - name: Window
+    source: {fileID: 2800000, guid: 7901d42ecf0242c4ebfb69ef07bfdde5, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 6
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 248
+      y: 244
+      width: 519
+      height: 522
+  - name: Panel
+    source: {fileID: 2800000, guid: fec51255960fcfb4abc8c957bcecbdff, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 6
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 216
+      y: 209
+      width: 766
+      height: 482
+  - name: PanelTall
+    source: {fileID: 2800000, guid: b7f6b410f4ba8744c8b77bfbde146206, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 6
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 217
+      y: 233
+      width: 458
+      height: 724
+  - name: TitleBar
+    source: {fileID: 2800000, guid: bb34a2b77831bc44cb0ce6550e727704, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 6
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 267
+      y: 238
+      width: 842
+      height: 295
+  - name: Button
+    source: {fileID: 2800000, guid: eb163d89cf90aa74bbdb45033cdf14f3, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 1
+    softEdge: 6
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 269
+      y: 236
+      width: 834
+      height: 297
+  - name: Button_Hover
+    source: {fileID: 2800000, guid: 6085700bfd339a34ea4afd2fa185eb60, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 1
+    softEdge: 64
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 269
+      y: 236
+      width: 834
+      height: 297
+  - name: Button_Pressed
+    source: {fileID: 2800000, guid: df506c5bc9f72aa4e97471cee19d2127, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 1
+    softEdge: 6
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 269
+      y: 236
+      width: 834
+      height: 297
+  - name: Close
+    source: {fileID: 2800000, guid: 7b62adef676ffc64c8a0d3bc409493c6, type: 3}
+    columns: 2
+    rows: 1
+    cellNames:
+    - Close
+    - Close_Hover
+    trimGroup: 0
+    softEdge: 64
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: Check
+    source: {fileID: 2800000, guid: ce7af7e6c7d7ffa449cb2b7f235478e7, type: 3}
+    columns: 2
+    rows: 2
+    cellNames:
+    - Check_Off
+    - Check_On
+    - Check_Off_Hover
+    - Check_On_Hover
+    trimGroup: 0
+    softEdge: 48
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0

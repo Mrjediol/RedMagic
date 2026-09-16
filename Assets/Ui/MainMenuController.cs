@@ -17,6 +17,13 @@ namespace RedMagic.UI
     [RequireComponent(typeof(UIDocument))]
     public class MainMenuController : MonoBehaviour, IMenuScreen
     {
+        /// <summary>
+        /// True mientras la escena del menú principal está activa (aunque esté mostrando el
+        /// submenú de Opciones encima). Otros HUD persistentes (<see cref="CurrencyHud"/>) lo usan
+        /// para no enseñarse aquí — no hay moneda que contar todavía.
+        /// </summary>
+        public static bool IsOpen { get; private set; }
+
         [Header("Escenas")]
         [Tooltip("Escena que carga el botón Jugar: el hub. La referencia es al asset, no a su " +
                  "nombre, así que aguanta renombrados. Debe estar en Build Settings.")]
@@ -39,6 +46,8 @@ namespace RedMagic.UI
 
         private void OnEnable()
         {
+            IsOpen = true;
+
             if (_document == null)
                 _document = GetComponent<UIDocument>();
 
@@ -54,8 +63,25 @@ namespace RedMagic.UI
             Wire(_optionsButton, OnOptionsClicked);
             Wire(_quitButton, OnQuitClicked);
 
+            DressWithSkin();
             ApplyVisibility();
             FocusForGamepad();
+        }
+
+        /// <summary>
+        /// Pone el arte de <see cref="MenuSkin"/> encima del UXML. Sin ese asset no hace nada y el
+        /// menú se ve con el aspecto plano del USS, como siempre.
+        /// </summary>
+        private void DressWithSkin()
+        {
+            var skin = MenuSkinDresser.Skin;
+            if (skin == null) return;
+
+            // Sin título (MainMenu.jpeg hace de portada): nada que enmarcar en titleContainer.
+
+            MenuSkinDresser.DressButton(_playButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_optionsButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_quitButton, skin, skin.quitTint);
         }
 
         /// <summary>Con mando, deja el primer botón enfocado para poder navegar con el d-pad.</summary>
@@ -80,6 +106,8 @@ namespace RedMagic.UI
 
         private void OnDisable()
         {
+            IsOpen = false;
+
             Unwire(_playButton, OnPlayClicked);
             Unwire(_optionsButton, OnOptionsClicked);
             Unwire(_quitButton, OnQuitClicked);

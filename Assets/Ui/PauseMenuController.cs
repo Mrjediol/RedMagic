@@ -76,10 +76,31 @@ namespace RedMagic.UI
                 _touchMode = InputDeviceManager.Instance.CurrentMode == InputMode.Touch;
             }
 
+            DressWithSkin();
+
             _open = false;
             ShowOverlay(false);
             RefreshPauseButton();
             RefreshRunButtons();
+        }
+
+        /// <summary>
+        /// Pone el arte de <see cref="MenuSkin"/> encima del UXML. Sin ese asset no hace nada y el
+        /// menú se ve con el aspecto plano del USS, como siempre.
+        /// </summary>
+        private void DressWithSkin()
+        {
+            var skin = MenuSkinDresser.Skin;
+            if (skin == null) return;
+
+            MenuSkinDresser.DressPanel(_root.Q<VisualElement>("pausePanel"), skin.panelTall);
+            MenuSkinDresser.DressTitle(_root.Q<Label>(className: "pause-title"), skin.titleBar,
+                                       skin.titleBarHeight, skin.titleBarMaxWidth);
+
+            MenuSkinDresser.DressButton(_resumeButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_optionsButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_mainMenuButton, skin, skin.quitTint);
+            MenuSkinDresser.DressButton(_abandonRunButton, skin, skin.quitTint);
         }
 
         private void OnDisable()

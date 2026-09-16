@@ -21,7 +21,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 8de16d05c0884744288742f061ca610c, type: 2}
+  m_Motion: {fileID: 7400000, guid: 220d726f88f5d5d4b8803c2676e5f82a, type: 2}
   m_Tag: 
   m_SpeedParameter: AttackSpeed
   m_MirrorParameter: 
@@ -235,7 +235,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: aab6cf26905d286488eb0450c6a9c22d, type: 2}
+  m_Motion: {fileID: 7400000, guid: a08480d30834b33499df69d9991a7aed, type: 2}
   m_Tag: 
   m_SpeedParameter: DeathSpeed
   m_MirrorParameter: 
@@ -262,7 +262,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 12367adc86d43f943b5ed979fda2f653, type: 2}
+  m_Motion: {fileID: 7400000, guid: f4d60fcedbcc3a34f87f364e50bec9ed, type: 2}
   m_Tag: 
   m_SpeedParameter: HurtSpeed
   m_MirrorParameter: 
@@ -361,7 +361,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 177271f2c34953b40be9a0f4b88cec46, type: 2}
+  m_Motion: {fileID: 7400000, guid: 33af70b1cbcd17d4ea643765426d2f10, type: 2}
   m_Tag: 
   m_SpeedParameter: IdleSpeed
   m_MirrorParameter: 
@@ -388,7 +388,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 655afb4826c56ec43adcce7d6da018d8, type: 2}
+  m_Motion: {fileID: 7400000, guid: 2b1dd590dceddfa4889fe47a710addb4, type: 2}
   m_Tag: 
   m_SpeedParameter: WalkSpeed
   m_MirrorParameter: 

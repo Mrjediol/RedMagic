@@ -81,7 +81,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -861864711, guid: 60026bd27af8e01499c72d629646c57f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e064821b3940dfd42bc1621c692d748b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -296,10 +296,10 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0.5661}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
+    pivot: {x: 0.5, y: 0}
+    oldSize: {x: 1.25, y: 1.48}
+    newSize: {x: 1.25, y: 1.48}
+    adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
@@ -405,7 +405,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ed37d55e7aa88c49b4ecc292adf821e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Enemies.EnemyAnimation
-  animator: {fileID: 0}
+  animator: {fileID: 473625957299124523}
   flipbook: {fileID: 0}
   spriteRenderer: {fileID: 0}
 --- !u!95 &473625957299124523

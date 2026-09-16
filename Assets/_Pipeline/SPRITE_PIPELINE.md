@@ -449,6 +449,13 @@ new DerivedClip { state = "Fall", fromState = "Jump", firstFrame = 3, frameCount
 `frameCount = 0` significa «hasta el final de la fila». Se generan como un `.anim` normal en
 `Anim/`, así que `BuildController` los coloca en su estado igual que a los demás.
 
+**`reverse = true`** recorre ese tramo al revés (del último frame al primero). Es para un cierre
+que reutiliza los mismos dibujos de una apertura pero en sentido contrario, sin que la lámina
+tenga que dibujar la secuencia dos veces — aunque en la práctica, si la fila ya dibuja el ciclo
+completo abrir+cerrar (medido en `Maibhubitems.png`: cerrado → grieta → brillo pico → brillo
+atenuado → grieta → cerrado, los 6-7 frames de un tirón), el cierre sale de los últimos frames de
+la propia fila **en el mismo orden**, sin `reverse` — mide con `2b` antes de asumir que hace falta.
+
 ## 11. Cambiar el arte del jugador
 
 El jugador **no** pasa por `EnemyFactory`: su prefab lleva el control, el ataque, el inventario y

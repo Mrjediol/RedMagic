@@ -172,11 +172,14 @@ namespace RedMagic.Pipeline.EditorTools
 
                 var keys = new ObjectReferenceKeyframe[count];
                 for (int i = 0; i < count; i++)
+                {
+                    int sourceIndex = derived.reverse ? first + count - 1 - i : first + i;
                     keys[i] = new ObjectReferenceKeyframe
                     {
                         time = i / derived.fps,
-                        value = sourceKeys[first + i].value,
+                        value = sourceKeys[sourceIndex].value,
                     };
+                }
 
                 AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
 
@@ -188,7 +191,8 @@ namespace RedMagic.Pipeline.EditorTools
                 EditorUtility.SetDirty(clip);
                 clips[derived.state] = clip;
                 log.AppendLine($"  clip {(created ? "creado " : "actualizado")} {derived.state} " +
-                               $"(derivado de {derived.fromState}[{first}..{first + count - 1}]): " +
+                               $"(derivado de {derived.fromState}[{first}..{first + count - 1}]" +
+                               $"{(derived.reverse ? " invertido" : "")}): " +
                                $"{count} frames @ {derived.fps}fps, loop={derived.loop}");
             }
         }

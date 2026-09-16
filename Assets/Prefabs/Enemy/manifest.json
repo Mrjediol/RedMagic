@@ -1,0 +1,27 @@
+{
+  "enemyName": "Enemy",
+  "animations": [
+    {
+      "name": "tile",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 4,
+      "projectile": null
+    },
+    {
+      "name": "mid",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 4,
+      "projectile": null
+    },
+    {
+      "name": "down",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 4,
+      "projectile": null
+    }
+  ],
+  "projectiles": []
+}

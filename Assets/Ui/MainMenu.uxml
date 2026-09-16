@@ -3,10 +3,10 @@
     <ui:VisualElement name="mainMenu" class="main-menu">
         <ui:VisualElement name="backgroundLayer" picking-mode="Ignore" class="background-layer"/>
         <ui:VisualElement name="scrim" picking-mode="Ignore" class="scrim"/>
-        <ui:VisualElement name="titleContainer" picking-mode="Ignore" class="title-container">
-            <ui:Label name="gameTitle" text="RED MAGIC" class="game-title"/>
-            <ui:Label name="gameSubtitle" text="Adventure&#10;" class="game-subtitle"/>
-        </ui:VisualElement>
+        <!-- Sin título: el fondo (MainMenu.jpeg) hace de portada. El contenedor se deja vacío
+             a propósito, como espaciador — mismo flex-grow que buttonContainer, así los botones
+             se quedan en la mitad inferior igual que antes. -->
+        <ui:VisualElement name="titleContainer" picking-mode="Ignore" class="title-container"/>
         <ui:VisualElement name="buttonContainer" class="button-container">
             <ui:Button name="playButton" text="Jugar" class="menu-button"/>
             <ui:Button name="optionsButton" text="Opciones" class="menu-button"/>

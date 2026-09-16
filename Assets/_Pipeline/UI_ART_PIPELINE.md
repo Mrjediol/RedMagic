@@ -81,6 +81,80 @@ Presupuesto de alto: 4 filas de slots + textos tienen que caber también en un m
 (≈810 px de alto virtual con la escala 1600×900 / match 0.5). Con `slotFrameSize` 64 caben justas;
 si lo subes, comprueba el móvil — si no caben, el marco no se aplasta (`flexShrink 0`), se desborda.
 
+## 3-bis. Menús de pantalla completa (`MenusUiPack` → `Resources/MenuSkin.asset`)
+
+Principal, pausa y opciones. A diferencia de la de items, **esas tres pantallas son UXML+USS**, no
+construidas en código — da igual: `UiFrame.Dress` vale para cualquier `VisualElement`. Lo que las
+viste es `Assets/Ui/MenuSkinDresser.cs`, compartido por los tres controladores (cada uno llama a su
+`DressWithSkin()` en `OnEnable`), y **es idempotente**: marca lo ya vestido con la clase
+`rm-skinned`, así que un `OnEnable` repetido no duplica capas ni callbacks.
+
+| Fuente (`Assets/Ui/UiSprites/`) | Pieza | Uso |
+|---|---|---|
+| `Container` | `Panel` (quad) | cuerpo del menú de opciones |
+| `VerticalContainer` | `PanelTall` (quad) | cuerpo del menú de pausa |
+| `TitleContainer` | `TitleBar` (quad) | placa detrás de RED MAGIC / PAUSA / OPCIONES |
+| `Unpresedbutton` / `HoverButton` / `PressedButton` | `Button` / `_Hover` / `_Pressed` (quad) | los tres estados de un botón de menú |
+| `CloseButtonWithHover` (2×1) | `Close` / `_Hover` | botón redondo (libre) |
+| `checkBox` (2×2) | `Check_Off` / `_On` / `_Off_Hover` / `_On_Hover` | casillas de silenciar |
+| `Sample` | `Window` (quad) | marco cuadrado, libre |
+
+Dos cosas que este kit obliga a hacer bien y que valen para cualquier otro:
+
+- **Los tres estados del botón son el mismo dibujo**, así que comparten `trimGroup` *y*
+  `interior`. Si cada uno se midiera solo, el halo del hover encogería su relleno y el botón daría
+  un salto al pasar el ratón. Se comprueba en el log: los tres tienen que imprimir los mismos
+  márgenes de interior.
+- **El relleno de cada marco tiene que ser mayor que el grosor de su piedra** (ver la tabla de
+  problemas). Los `interior` de este kit se midieron rellenando el panel liso desde el centro con
+  tolerancia de color y quedándose con su caja; la comprobación de que la medida es buena es que
+  los márgenes salen **simétricos** (izq≈der, arriba≈abajo).
+
+## 3-ter. Retocar los menús ya vestidos — lo que hay que saber
+
+Las cuatro pantallas vestidas con `MenuSkin` y **dónde se toca cada cosa**:
+
+| Pantalla | Construida en | Se viste en | Piezas que usa |
+|---|---|---|---|
+| Principal | `MainMenu.uxml` + `.uss` | `MainMenuController.DressWithSkin()` | `titleBar` (placa de RED MAGIC), `button*` |
+| Pausa | `PauseMenu.uxml` + `.uss` | `PauseMenuController.DressWithSkin()` | `panelTall`, `titleBar`, `button*` |
+| Opciones | `OptionsMenu.uxml` + `.uss` | `OptionsMenuController.DressWithSkin()` | `panel`, `titleBar`, `button*`, `checkOn`/`checkOff` |
+| Mejoras permanentes | **código** (`MenuStyle`) | dentro de `UpgradeMenuController.BuildUi/BuildCell/RefreshCell` | `panel`, `titleBar`, `card`, `closeButton` |
+
+**Qué mando mueve qué:**
+
+- **Grosor de la piedra de un marco** → `maxScale` de ese `UiFrame` en el skin. Más bajo = piedra
+  más fina y más hueco por dentro. Es el mando a tocar cuando el relleno necesario se come el panel.
+- **Aire entre el texto y la piedra** → `padding` de ese `UiFrame`. **Tiene que ser mayor que la
+  piedra**: `piedra = fill.rect.x * escala`, con
+  `escala = min(maxScale, ancho/2/(bordeIzq+bordeDer+1), alto/2/(bordeSup+bordeInf+1))`.
+- **Tamaño de las placas de título** → `titleBarHeight` / `titleBarMaxWidth` (pausa y opciones),
+  `mainTitleHeight` / `mainTitleMaxWidth` (principal) y la constante `SkinnedTitleHeight` dentro de
+  `UpgradeMenuController` (ahí la letra es de 34 px, la mitad). El **ancho** de la placa se ajusta
+  solo al texto; esos números sólo la limitan.
+- **Tamaño de botón** → lo sigue mandando el USS (`.menu-button`), no el skin: es maqueta de
+  pantalla, no arte. El marco se adapta a lo que mida el botón.
+- **Casillas** → `checkBoxSize`. **X de cerrar** → `closeButtonSize`.
+- **Estado de una celda de mejora** → `cardLockedTint` / `cardBuyableTint` / `cardMaxedTint`. Con
+  arte, el estado va en el **tinte del marco**, no en el color de fondo: el fondo queda por detrás
+  de la piedra y no se ve (ver `UpgradeMenuController.PaintCell`).
+
+Los **sprites** del skin se reescriben en cada pasada del pack; los **números** sólo al crearlo. Si
+tocas números a mano en el Inspector, sobreviven a un `Procesar kit de arte` normal — y
+*Procesar kit RESETEANDO números del skin* es la vuelta explícita a los de `MenusUiPack`. **Si
+cambias un número que quieras conservar, cámbialo también en el pack**, o el primer reseteo se lo
+lleva.
+
+**Presupuesto de alto (referencia 900 px).** El panel de mejoras es el más justo: placa 96 + 22 de
+cabecera + 3 filas × (180 + 14) + pista 33 + relleno del panel 102 ≈ **835**. Si subes el alto de la
+celda o de la placa, comprueba que sigue cabiendo: el panel va centrado, así que lo que sobra se
+recorta por arriba y por abajo sin avisar.
+
+**Cómo comprobarlo.** No hay forma de renderizar estos paneles desde el editor (ver la tabla de
+problemas): hay que entrar en Play y usar `capture_game_view --source screen`. Lo que **sí** se
+puede comprobar sin jugar, y conviene hacerlo antes, es que `padding ≥ piedra` para el tamaño real
+de cada elemento — con la fórmula de arriba, en un `unity command eval`.
+
 ## 4. Vestir otra pantalla con otro kit
 
 1. Deja las imágenes en `Assets/Ui/<Kit>/`.
@@ -106,4 +180,6 @@ si lo subes, comprueba el móvil — si no caben, el marco no se aplasta (`flexS
 | Esquinas del relleno interior tapando el bisel | ajusta `fillCornerRadius` de ese marco en el skin |
 | Normal y hover no coinciden | mismo archivo → misma rejilla; archivos distintos → mismo `trimGroup` |
 | Skin con sprites vacíos tras la primera importación | vuelve a ejecutar el pack (sub-sprites recién cortados) |
-| Capturas sin la UI | `screenshot`/`capture_game_view` no pintan paneles de UI Toolkit; renderiza el `PanelSettings` (clonado) a una `RenderTexture` |
+| Capturas sin la UI | `screenshot` y `capture_game_view --source camera` no pintan paneles de UI Toolkit. Lo que sí funciona: **`capture_game_view --source screen`, y sólo en Play Mode** (lee el backbuffer ya compuesto). Renderizar un `PanelSettings` clonado a una `RenderTexture` **no vale en modo edición**: el panel fuera de pantalla no se dibuja sin runtime y la textura sale en blanco |
+| **El texto se mete dentro del bisel** | el `padding` del marco es menor que el grosor de su piedra. La piedra mide `fill.rect.x * escala` px de pantalla (y lo propio arriba/abajo), donde la escala es la que calcula `UiFrame.Fit` para el tamaño real del elemento: `min(maxScale, w/2/(bordeIzq+bordeDer+1), h/2/(bordeSup+bordeInf+1))`. **Calcúlalo, no lo estimes**, y deja 12-15 px de aire por encima. Si el relleno necesario se come el panel, baja `maxScale` (piedra más fina) en vez de subir el relleno |
+| Texto de un `Button` o `Label` tapado por el marco | UI Toolkit dibuja los hijos **por encima** del texto propio del elemento, y el marco es un hijo. El texto tiene que ser otro hijo: los títulos se **envuelven** en una placa y los botones pasan su `text` a un `Label` hijo (lo hace `MenuSkinDresser`) |

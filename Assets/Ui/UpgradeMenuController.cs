@@ -16,9 +16,15 @@ namespace RedMagic.UI
     ///
     /// Se auto-crea y es persistente (DontDestroyOnLoad) como <c>CurrencyHud</c>: construye su
     /// <see cref="UIDocument"/> en código y saca el <see cref="PanelSettings"/> de Resources. Está
-    /// oculto salvo cuando <see cref="Open"/> lo llama <c>CauldronInteractable</c>.
+    /// oculto salvo cuando <see cref="Open"/> lo llama <c>Hub.BookLootContainer</c> (el atril del
+    /// libro; antes era el caldero, ya retirado a Legacy).
     ///
-    /// El aspecto y los tamaños salen de <see cref="MenuStyle"/>, compartidos con la tienda.
+    /// La maqueta y los tamaños salen de <see cref="MenuStyle"/>, compartidos con la tienda; el
+    /// <b>arte</b> sale de <see cref="MenuSkin"/> vía <see cref="MenuSkinDresser"/> — marco de
+    /// piedra en el panel y en cada celda, placa en el título y la X redonda del kit. Sin ese
+    /// asset el menú se dibuja igual que siempre, plano. Ojo al tocarlo: el estado de una celda
+    /// (bloqueada / comprable / al máximo) se pinta <b>tiñendo el marco</b>, no con el color de
+    /// fondo — ver <see cref="PaintCell"/>.
     ///
     /// Mientras está abierto el juego queda en pausa vía <see cref="GameStateManager"/>, así que el
     /// jugador no se mueve por el hub por detrás.
@@ -30,6 +36,13 @@ namespace RedMagic.UI
 
         private const string PanelSettingsResourcePath = "UpgradeMenuPanelSettings";
 
+        /// <summary>
+        /// Alto de la placa del título en esta pantalla. La letra aquí es de 34 px (la mitad que en
+        /// pausa/opciones), y la piedra de la placa se lleva ~22 px por arriba y otros tantos por
+        /// abajo: 96 deja el texto centrado con aire sin dejar un pedrusco desproporcionado.
+        /// </summary>
+        private const float SkinnedTitleHeight = 96f;
+
         private UIDocument _document;
         private VisualElement _overlay;
         private Label _soulLabel;
@@ -37,6 +50,9 @@ namespace RedMagic.UI
         private Cell[,] _cells;
         private bool _open;
         private bool _built;
+
+        /// <summary>Arte del kit de menús. Null = aspecto plano de <see cref="MenuStyle"/>, como siempre.</summary>
+        private MenuSkin _skin;
 
         private sealed class Cell
         {
@@ -174,6 +190,7 @@ namespace RedMagic.UI
         private void BuildUi(VisualElement root)
         {
             MenuStyle.FillParent(root);
+            _skin = MenuSkinDresser.Skin;
 
             _overlay = new VisualElement { name = "upgrade-overlay" };
             MenuStyle.FillParent(_overlay);
@@ -186,15 +203,30 @@ namespace RedMagic.UI
             var panel = MenuStyle.Panel();
             _overlay.Add(panel);
 
+            // El marco de piedra sustituye al fondo+borde planos de MenuStyle.Panel.
+            MenuSkinDresser.DressPanel(panel, _skin?.panel);
+
             var header = MenuStyle.Header();
             panel.Add(header);
 
-            header.Add(MenuStyle.Title("PERMANENT UPGRADES"));
+            var title = MenuStyle.Title("PERMANENT UPGRADES");
+            header.Add(title);
 
             _soulLabel = MenuStyle.CurrencyLabel();
             header.Add(_soulLabel);
 
-            header.Add(MenuStyle.CloseButton(Close));
+            var close = MenuStyle.CloseButton(Close);
+            header.Add(close);
+
+            if (_skin != null)
+            {
+                // La placa del título va con su alto propio: aquí la letra es de 34 px, la mitad
+                // que en pausa/opciones, así que la placa de 132 dejaría un hueco enorme.
+                // Sin margen inferior: aquí la placa va dentro de una cabecera en fila, no encima
+                // del contenido, así que ese hueco la descentraría respecto a la X.
+                MenuSkinDresser.DressTitle(title, _skin.titleBar, SkinnedTitleHeight, 0f, 0f);
+                MenuSkinDresser.DressCloseButton(close, _skin);
+            }
 
             _grid = new VisualElement { name = "upgrade-grid" };
             _grid.style.flexDirection = FlexDirection.Column;
@@ -243,6 +275,10 @@ namespace RedMagic.UI
             var button = new Button(() => TryBuy(r, c));
             MenuStyle.Card(button);
             button.RegisterCallback<PointerEnterEvent>(_ => AudioManager.Instance?.PlaySFX("SFX_ButtonHover"));
+
+            // El marco de la celda va DESPUÉS de MenuStyle.Card: Dress limpia el fondo y el borde
+            // planos y pone su propio relleno, más ancho, para que el texto no pise la piedra.
+            MenuSkinDresser.DressPanel(button, _skin?.card);
 
             var title = MenuStyle.CardTitle(node != null ? node.title : "-");
             var desc = MenuStyle.CardDescription("");
@@ -296,7 +332,7 @@ namespace RedMagic.UI
             if (node == null || upgrades == null)
             {
                 cell.button.SetEnabled(false);
-                cell.button.style.backgroundColor = MenuStyle.Locked;
+                PaintCell(cell.button, MenuStyle.Locked, _skin?.cardLockedTint);
                 return;
             }
 
@@ -312,7 +348,7 @@ namespace RedMagic.UI
             if (!unlocked)
             {
                 cell.button.SetEnabled(false);
-                cell.button.style.backgroundColor = MenuStyle.Locked;
+                PaintCell(cell.button, MenuStyle.Locked, _skin?.cardLockedTint);
                 cell.button.style.opacity = 0.55f;
                 cell.footer.text = "LOCKED";
                 cell.footer.style.color = MenuStyle.CostTooDear;
@@ -324,7 +360,7 @@ namespace RedMagic.UI
             if (maxed)
             {
                 cell.button.SetEnabled(false);
-                cell.button.style.backgroundColor = MenuStyle.CellMaxed;
+                PaintCell(cell.button, MenuStyle.CellMaxed, _skin?.cardMaxedTint);
                 cell.footer.text = "MAX";
                 cell.footer.style.color = MenuStyle.Cream;
                 return;
@@ -334,9 +370,27 @@ namespace RedMagic.UI
             bool canAfford = upgrades.CanBuy(row, column);
 
             cell.button.SetEnabled(true);
-            cell.button.style.backgroundColor = canAfford ? MenuStyle.CellBuyable : MenuStyle.CellBg;
+            PaintCell(cell.button, canAfford ? MenuStyle.CellBuyable : MenuStyle.CellBg,
+                      canAfford ? _skin?.cardBuyableTint : Color.white);
             cell.footer.text = $"{cost} SF";
             cell.footer.style.color = canAfford ? MenuStyle.CostAfford : MenuStyle.CostTooDear;
+        }
+
+        /// <summary>
+        /// Pinta el estado de una celda. Con arte, el estado va en el <b>tinte del marco</b>
+        /// (<paramref name="skinTint"/>): pintarle un color de fondo taparía la piedra, porque el
+        /// marco se dibuja en una capa aparte y el fondo del botón queda por detrás. Sin arte, se
+        /// sigue usando el color plano de siempre.
+        /// </summary>
+        private void PaintCell(VisualElement button, Color plainBackground, Color? skinTint)
+        {
+            if (_skin != null && _skin.card.IsSet)
+            {
+                UiFrame.Tint(button, skinTint ?? Color.white);
+                return;
+            }
+
+            button.style.backgroundColor = plainBackground;
         }
 
         private static string SafeFormat(string template, int value)

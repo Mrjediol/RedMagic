@@ -38,6 +38,7 @@ button.primary:hover{filter:brightness(1.08);}
 button.danger{color:var(--danger);}
 button.small{padding:3px 8px;font-size:11px;}
 button.active{outline:2px solid var(--accent);}
+button:disabled{opacity:.45;cursor:not-allowed;}
 input[type=file]{font-size:12px;width:100%;}
 input[type=number],input[type=text],select{width:100%;background:#1a1d21;border:1px solid var(--border);color:var(--text);border-radius:4px;padding:6px;font-size:12px;}
 label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px;}
@@ -135,3 +136,23 @@ kbd{background:#1a1d21;border:1px solid var(--border);border-radius:3px;padding:
 
 .efProjectileInline{margin-top:10px;padding:10px;border:1px dashed var(--border);border-radius:6px;background:#181b1e;}
 .efProjectileInline[hidden]{display:none;}
+
+/* ---------------- shared enemy library (Sprites-tab panel + Biblioteca tab) ---------------- */
+#libraryPanel{flex:1;min-width:0;padding:16px 20px;overflow-y:auto;}
+.libList{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;}
+#libraryTabList.libList{max-height:none;flex-direction:row;flex-wrap:wrap;}
+#libraryTabList .libCard{width:220px;}
+
+.libCard{display:flex;gap:10px;align-items:center;background:#1e2226;border:1px solid var(--border);border-radius:6px;padding:8px;}
+#libraryTabList .libCard{flex-direction:column;align-items:stretch;}
+.libThumb{width:48px;height:48px;object-fit:contain;background:#0f1114;border-radius:4px;flex:none;image-rendering:pixelated;}
+#libraryTabList .libThumb{width:100%;height:110px;}
+.libInfo{flex:1;min-width:0;}
+.libName{font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.libDate{font-size:10px;color:var(--muted);}
+.libBadges{margin-top:2px;display:flex;gap:4px;flex-wrap:wrap;}
+.libBadge{font-size:10px;color:var(--muted);background:#0f1114;border:1px solid var(--border);border-radius:3px;padding:1px 5px;}
+.libBadgeConfig{color:var(--accent);border-color:var(--accent);}
+.libActions{display:flex;gap:4px;flex-wrap:wrap;flex:none;}
+#libraryTabList .libActions{margin-top:6px;}
+.libActions button:disabled{opacity:.4;cursor:not-allowed;}

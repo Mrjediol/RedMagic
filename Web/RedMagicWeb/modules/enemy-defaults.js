@@ -109,6 +109,14 @@ export function createDefaultEnemyConfig() {
     enemyName: '',
     art: '',
 
+    // Form-only state, stripped/translated by buildExportObject (modules/enemy-export.js):
+    // 'library' (default) picks a sheet authored in THIS tool's shared library this session or a
+    // past one (modules/enemy-library.js) by id — art is then computed from enemyName, matching
+    // the path EnemyImporter.cs's sprite-import step will actually create it at. 'manual' is the
+    // original behavior: a plain path/assetRef into a sheet already imported into Unity.
+    artMode: 'library',
+    artLibraryId: null,
+
     prefabFolder: 'Assets/Prefab/Enemies',
 
     presence: {

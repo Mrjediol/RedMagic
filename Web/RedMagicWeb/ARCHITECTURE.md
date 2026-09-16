@@ -34,10 +34,14 @@ module's responsibility shifts, update its row in the same change.
 | An animation's "fires a projectile" link | `modules/animation-lanes.js` | `setProjectileLink(lane, projLanes, enabled)` |
 | Deleting multiple boxes at once (keeps every lane's indices consistent) | `modules/animation-lanes.js` | `removeBoxes(boxes, lanes, indices)` |
 | Cropping a box to pixels / a data URL (used by thumbnails AND export) | `modules/export-manifest.js` | `cropBox`, `cropToDataURL` |
-| manifest.json shape / zip folder layout | `modules/export-manifest.js` | `buildExportZip({enemyName, lanes, boxes, source, JSZip})` — **coordinate with the Unity-side importer (`Assets/Editor/EnemyImporter.cs`) before changing field names or folder structure** |
+| manifest.json shape / zip folder layout | `modules/export-manifest.js` | `populateSpriteZip({enemyName, lanes, boxes, source})` fills an existing JSZip and returns the manifest; `buildExportZip({...}, JSZip)` wraps it into a fresh zip + blob for the plain export — **coordinate with the Unity-side importer (`Assets/Editor/EnemyImporter.cs`) before changing field names or folder structure** |
 | Triggering the actual file download | `modules/export-manifest.js` | `downloadBlob(blob, filename)` |
+| The shared, persistent (IndexedDB) enemy library — save/list/get/delete/update | `modules/enemy-library.js` | `saveEnemy`, `listEnemies`, `getEnemy`, `deleteEnemy`, `updateEnemy` — see "Shared enemy library" below |
+| Decoding a saved sheet snapshot back into an `Image`, building a card thumbnail | `modules/enemy-library.js` | `loadImageFromDataURL(dataURL)`, `buildThumbnail(source)` |
+| Rendering a library card grid (thumbnail/name/date/badges + caller-supplied action buttons) | `modules/library-panel.js` | `renderLibraryCards(container, {getActions})` — the ONE implementation shared by the Sprites-tab panel and the Biblioteca tab; only which actions each passes in differs (`app.js`) |
+| Building the combined sprites+config zip (`manifest.json` + PNGs + `enemy-config.json` at root) | `modules/enemy-bundle.js` | `buildCombinedBundle({enemyName, sprite, configObj})` |
 | The "app.js failed to load" fallback banner (e.g. opened via `file://` instead of a server) | `index.html` | the inline classic `<script>` right before `<script type="module" src="app.js">`, and `#moduleFailBanner` in the CSS/HTML |
-| Tab switching (Sprites / Enemy Creator) | `app.js` | top-of-file `.tabBtn` click wiring |
+| Tab switching (Sprites / Enemy Creator / Biblioteca) | `app.js` | top-of-file `.tabBtn` click wiring |
 | Detect-vs-grid sidebar mode switch | `app.js` | `setSpriteMode(next)` |
 | Canvas box click/drag/resize/create interaction | `app.js` | `canvas` `mousedown`/`mousemove`/`mouseup` listeners, `hitTestHandle`, `getPos` |
 | Box multi-select rules (click / ctrl+click / shift-range) | `app.js` | `applySelectionClick(i, ctrlKey, shiftKey)` — shared by the canvas and the unsorted grid |
@@ -63,6 +67,8 @@ beyond the current session; boss/map/player config are out of scope.
 | Turning live form state into the actual exportable/validatable JSON (omitting empty optional refs, folding in the projectile toggle) | `modules/enemy-export.js` | `buildExportObject(state)` |
 | A generic input widget (text/number/bool/enum/vector2/color/layerMask/assetRef) | `modules/enemy-form-fields.js` | one `xField({...})` builder per JSON-Schema type — schema-agnostic, reused by every field |
 | The layerMask widget's mode switch (everything/nothing/specific checkboxes/raw fallback) or the known-layer checkbox list | `modules/enemy-form-fields.js` | `layerMaskField({...})`; known layers passed in from `modules/enemy-form.js`'s `KNOWN_LAYERS` |
+| The `art` field's library-picker / manual-path toggle, and linking a draft to a library entry from outside (Biblioteca tab's "Editar en Enemy Creator") | `modules/enemy-form.js` | `setArtMode()`, `refreshArtLibraryOptions()`, exposed `linkLibraryEntry(id, enemyName)` — computed `art` string itself lives in `modules/enemy-export.js`'s `libraryArtPath()` |
+| Enabling/wiring "⬇ Exportar todo junto (.zip)", and persisting the exported config back onto the linked library entry | `modules/enemy-form.js` | `updateCombinedExportAvailability()`, `exportCombinedBtn` handler, `persistConfigToLibraryIfLinked()` |
 | Which EnemyConfig field maps to which widget, and which UI group/order it's in | `modules/enemy-form.js` | `TUNING_FIELDS` array (group, key, widget kind, label, opts) — add a row here for a new schema field, no new function needed |
 | The presence / projectileArt / top-level field rows (not table-driven — small, fixed sets) | `modules/enemy-form.js` | the "top-level fields" and "presence" sections at the top of `initEnemyCreator()` |
 | The projectile "usar por defecto ↔ configurar inline" toggle and its sub-form fields | `modules/enemy-form.js` | `setProjectileMode()`, `renderProjectileInline()`, `PROJECTILE_SPEC_FIELDS` |
@@ -72,6 +78,76 @@ beyond the current session; boss/map/player config are out of scope.
 | The actual `.json` download | `modules/enemy-form.js` | `exportBtn` click handler — reuses `export-manifest.js`'s `downloadBlob` |
 | Enemy Creator layout / colors | `styles.css` | the `Enemy Creator tab` block (`.ef*` classes) |
 | Enemy Creator page structure (form/preview panels) | `index.html` | `#tab-enemy` — containers only, `enemy-form.js` populates `#enemyFormRoot` |
+
+### Shared enemy library (Sprites ↔ Enemy Creator ↔ Biblioteca)
+
+**Why it exists**: the Enemy Creator's `art` field used to assume a sheet had already been
+imported into Unity in a separate prior step. The real workflow is building sprites and config
+together in one session — so sprite authoring state now persists in the browser (IndexedDB,
+`modules/enemy-library.js`, database `redmagic-enemy-library`, one object store `enemies` keyed by
+a generated `id`) and both tabs read/write the same records. Survives a page reload and a browser
+restart; each browser profile has its own copy (nothing is synced anywhere).
+
+**Record shape** (one per enemy):
+
+```
+{
+  id: string,                // uuid
+  enemyName: string,
+  createdAt, updatedAt: number,   // epoch ms
+  thumbnail: string|null,    // small dataURL for the library cards
+  sprite: {
+    lanes: [...],             // same shape as app.js's `lanes` — see "Data model" below
+    boxes: [...],             // same shape as app.js's `boxes`
+    sourceDataURL: string,    // the FULL sheet (post-bg-removal, if that was run) as a PNG dataURL
+    width, height: number,
+  },
+  config: object|null,        // the last EnemyConfig export object built against this entry, or
+                               // null until Enemy Creator has exported at least once while linked
+}
+```
+
+Only `sprite.lanes`/`sprite.boxes` (small JSON) plus one PNG snapshot of the whole sheet are
+stored — NOT one crop per frame — because `populateSpriteZip`/`buildExportZip` already crop frames
+from a source canvas on demand; reloading `sourceDataURL` into an `Image` reproduces that same
+source canvas, so re-exporting a saved entry crops identically to exporting it live never having
+left the Sprites tab.
+
+**Sprites tab**: "💾 Guardar como enemigo" writes the current `lanes`/`boxes`/sheet snapshot as a
+record (`app.js`'s `currentLibraryId` tracks which record the currently-loaded sheet came from, so
+re-saving updates it in place instead of duplicating it — reset to `null` only on loading a brand
+new image file). The "Enemigos guardados" panel below it (`#spritesLibraryList`,
+`renderSpritesLibraryList()`) lists every record with Cargar (reopens for editing — replaces
+`img`/`boxes`/`lanes` and rebinds `currentLibraryId`) / Exportar zip (existing sprite-only format,
+unchanged) / Eliminar.
+
+**Enemy Creator tab**: the `art` field is a mode switch. **"Desde biblioteca"** (default) is a
+dropdown of every saved record; picking one sets `state.artLibraryId` (the config draft links to
+that record by id — it does not copy or duplicate its sprite data) and pre-fills `enemyName` if
+still empty. The exported `art` string in this mode is computed
+(`modules/enemy-export.js`'s `libraryArtPath()`) as
+`Assets/Enemies/<enemyName>/<enemyName>.sheet.asset` — the exact path
+`Assets/Editor/EnemyImporter.cs`'s sprite-import step creates a `SpriteSheetRecipe` at, by
+convention; the Unity-side combined-bundle importer (see below) resolves the real freshly-created
+asset explicitly rather than trusting this string, so a convention drift here is inert, never a
+silent bug. **"Escribir ruta manualmente"** is the original behavior: a plain path/assetRef into a
+sheet already imported into Unity in a past session, independent of this session's library.
+
+With library mode active and a record selected, **"⬇ Exportar todo junto (.zip)"**
+(`modules/enemy-bundle.js`'s `buildCombinedBundle`) produces one zip containing the linked
+record's sprite manifest + PNGs (same structure `populateSpriteZip` always produces) **plus
+`enemy-config.json` at the zip root**. With manual-path art this button is disabled (no sprite data
+to bundle) — the existing **"⬇ Exportar solo config (.json)"** button always stays available.
+Either export also persists the built config object onto the library record
+(`persistConfigToLibraryIfLinked`) — non-fatal if it fails, the download already happened — which
+is what lets the Biblioteca tab offer "Exportar combinado" for that entry afterward without the
+form needing to be refilled.
+
+**Biblioteca tab** (`#tab-library`, `renderLibraryTab()` in `app.js`): every saved record in one
+place, reusing `modules/library-panel.js`'s card renderer with the full action set — Cargar en
+Sprites, Editar en Enemy Creator (switches tab and calls `enemyCreator.linkLibraryEntry(id,
+enemyName)`), Exportar zip, Exportar combinado (disabled until the record has a linked `config`),
+Eliminar.
 
 ## Data model (owned by `app.js`, passed into the modules above)
 

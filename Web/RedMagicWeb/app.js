@@ -13,6 +13,9 @@ import * as Lanes from './modules/animation-lanes.js';
 import { buildGridBoxes } from './modules/grid-autoslice.js';
 import { cropToDataURL, buildExportZip, downloadBlob } from './modules/export-manifest.js';
 import { initEnemyCreator } from './modules/enemy-form.js';
+import { saveEnemy, getEnemy, deleteEnemy, loadImageFromDataURL, buildThumbnail } from './modules/enemy-library.js';
+import { renderLibraryCards } from './modules/library-panel.js';
+import { buildCombinedBundle } from './modules/enemy-bundle.js';
 
 // Always pre-created on image load, in this order — "Animaciones automáticas" defaults its
 // 5-row mapping to this same order (row i -> DEFAULT_LANE_NAMES[i]) when there are exactly 5 rows.
@@ -34,7 +37,11 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     // Enemy Creator's lane cross-reference is read-only, display-only context from the Sprites
     // tab — refreshed on switching TO the tab rather than reactively, so the two tabs stay
     // decoupled (enemy-form.js never reaches into app.js's `lanes` directly).
-    if (btn.dataset.tab === 'enemy' && enemyCreator) enemyCreator.refreshLaneInfo();
+    if (btn.dataset.tab === 'enemy' && enemyCreator) {
+      enemyCreator.refreshLaneInfo();
+      enemyCreator.refreshArtLibrary();
+    }
+    if (btn.dataset.tab === 'library') renderLibraryTab();
   });
 }
 
@@ -62,6 +69,11 @@ let lanes = []; // {id, type, name, fps, loop, frameBoxIndices, projectileLink}
 let spriteMode = 'detect'; // 'detect' | 'grid' — which sidebar panel + action is active
 let interactionMode = 'select'; // 'select' | 'addbox'
 let dragState = null; // {type:'move'|'resize'|'create', ...}
+
+// Library entry this sheet was loaded from / last saved as, or null for a sheet that has never
+// been saved. "💾 Guardar como enemigo" updates this record in place instead of duplicating it
+// whenever it's set — see saveToLibraryBtn's handler below.
+let currentLibraryId = null;
 
 function currentSource() { return bgRemoved ? workCanvas : img; }
 
@@ -96,6 +108,7 @@ function loadImageFile(f) {
       bgRemoved = false;
       boxes = [];
       lanes = [];
+      currentLibraryId = null;
       Lanes.resetLaneIdCounter();
       DEFAULT_LANE_NAMES.forEach((name) => Lanes.createLane(lanes, 'animation', name));
       clearSelection();
@@ -673,6 +686,127 @@ enemyCreator = initEnemyCreator({
   previewEl: document.getElementById('enemyJsonPreview'),
   summaryEl: document.getElementById('enemyValidationSummary'),
   exportBtn: document.getElementById('enemyExportBtn'),
+  exportCombinedBtn: document.getElementById('enemyExportCombinedBtn'),
   // Display-only cross-reference (see the tab-switch handler above) — never a schema field.
   getLaneNames: () => lanes.filter((l) => l.type === 'animation').map((l) => l.name),
 });
+
+// ============================================================ shared enemy library (persistent, cross-tab)
+
+document.getElementById('saveToLibraryBtn').addEventListener('click', async () => {
+  if (!img) { setStatus('Carga una imagen primero.'); return; }
+  const enemyName = document.getElementById('enemyName').value.trim() || 'Enemy';
+  const hasAnim = lanes.some((l) => l.type === 'animation' && l.frameBoxIndices.length > 0);
+  if (!hasAnim) { setStatus('Crea al menos una animación de enemigo y asígnale sprites antes de guardar.'); return; }
+
+  // currentSource() is `img` (a plain <img>, no toDataURL) whenever bg removal hasn't run yet —
+  // draw it into a throwaway canvas first so this works regardless of bgRemoved.
+  const snap = document.createElement('canvas');
+  snap.width = img.width;
+  snap.height = img.height;
+  snap.getContext('2d').drawImage(currentSource(), 0, 0);
+  const sourceDataURL = snap.toDataURL();
+  const thumbnail = buildThumbnail(snap);
+
+  const record = await saveEnemy({
+    id: currentLibraryId,
+    enemyName,
+    sprite: { lanes: structuredClone(lanes), boxes: structuredClone(boxes), sourceDataURL, width: img.width, height: img.height },
+    thumbnail,
+  });
+  currentLibraryId = record.id;
+
+  renderSpritesLibraryList();
+  setStatus(`Enemigo "${enemyName}" guardado en la biblioteca (${new Date(record.updatedAt).toLocaleTimeString()}).`);
+});
+
+/** Loads a saved entry's sheet + boxes + lanes back onto the canvas for further editing. */
+async function loadLibraryEntryIntoSprites(entry) {
+  const image = await loadImageFromDataURL(entry.sprite.sourceDataURL);
+  img = image;
+  canvas.width = entry.sprite.width;
+  canvas.height = entry.sprite.height;
+  workCanvas.width = entry.sprite.width;
+  workCanvas.height = entry.sprite.height;
+  workCtx.clearRect(0, 0, workCanvas.width, workCanvas.height);
+  workCtx.drawImage(image, 0, 0);
+  bgRemoved = false; // `img` already holds whatever pixels were saved (bg-removed or not) — see currentSource()
+
+  boxes = structuredClone(entry.sprite.boxes);
+  lanes = structuredClone(entry.sprite.lanes);
+  currentLibraryId = entry.id;
+  document.getElementById('enemyName').value = entry.enemyName;
+
+  clearSelection();
+  view.frameToFit();
+  render(); renderLanes(); renderUnsorted();
+  setStatus(`Enemigo "${entry.enemyName}" cargado desde la biblioteca.`);
+}
+
+async function exportLibraryEntryZip(entry) {
+  const image = await loadImageFromDataURL(entry.sprite.sourceDataURL);
+  const c = document.createElement('canvas');
+  c.width = entry.sprite.width; c.height = entry.sprite.height;
+  c.getContext('2d').drawImage(image, 0, 0);
+
+  const { blob } = await buildExportZip({
+    enemyName: entry.enemyName, lanes: entry.sprite.lanes, boxes: entry.sprite.boxes, source: c, JSZip: window.JSZip,
+  });
+  downloadBlob(blob, `${entry.enemyName}.zip`);
+}
+
+async function deleteLibraryEntry(entry) {
+  if (!confirm(`¿Eliminar "${entry.enemyName}" de la biblioteca? Esto no se puede deshacer.`)) return;
+  await deleteEnemy(entry.id);
+  if (currentLibraryId === entry.id) currentLibraryId = null;
+  renderSpritesLibraryList();
+}
+
+function renderSpritesLibraryList() {
+  renderLibraryCards(document.getElementById('spritesLibraryList'), {
+    getActions: (entry) => [
+      { label: 'Cargar', className: 'small', onClick: loadLibraryEntryIntoSprites },
+      { label: 'Exportar zip', className: 'small', onClick: exportLibraryEntryZip },
+      { label: 'Eliminar', className: 'small danger', onClick: deleteLibraryEntry },
+    ],
+  });
+}
+renderSpritesLibraryList();
+
+// ============================================================ Biblioteca tab (shared, full actions)
+
+function renderLibraryTab() {
+  renderLibraryCards(document.getElementById('libraryTabList'), {
+    getActions: (entry) => [
+      {
+        label: 'Cargar en Sprites',
+        className: 'small',
+        onClick: async (e) => {
+          await loadLibraryEntryIntoSprites(e);
+          document.querySelector('.tabBtn[data-tab="sprites"]').click();
+        },
+      },
+      {
+        label: 'Editar en Enemy Creator',
+        className: 'small',
+        onClick: async (e) => {
+          document.querySelector('.tabBtn[data-tab="enemy"]').click();
+          await enemyCreator.linkLibraryEntry(e.id, e.enemyName);
+        },
+      },
+      { label: 'Exportar zip', className: 'small', onClick: exportLibraryEntryZip },
+      {
+        label: 'Exportar combinado',
+        className: 'small',
+        disabled: !entry.config,
+        title: entry.config ? '' : 'Ábrelo en Enemy Creator y expórtalo una vez primero.',
+        onClick: async (e) => {
+          if (!e.config) return;
+          const blob = await buildCombinedBundle({ enemyName: e.enemyName, sprite: e.sprite, configObj: e.config });
+          downloadBlob(blob, `${e.enemyName.replace(/[^A-Za-z0-9_]/g, '_')}.bundle.zip`);
+        },
+      },
+      { label: 'Eliminar', className: 'small danger', onClick: async (e) => { await deleteLibraryEntry(e); renderLibraryTab(); } },
+    ],
+  });
+}

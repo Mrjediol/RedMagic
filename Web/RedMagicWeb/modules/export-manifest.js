@@ -30,24 +30,24 @@ export function cropToDataURL(source, box) {
 }
 
 /**
- * Builds the manifest object and zips it up alongside one PNG per frame,
- * exactly as the old tool did: `manifest.json` at the root, one folder per
- * animation lane (`<lane.name>/frame_000.png, ...`), projectile lanes nested
- * under `Projectiles/<lane.name>/...`.
+ * Fills `zip` (an already-constructed JSZip instance) with the manifest's PNG frames — one folder
+ * per animation lane (`<lane.name>/frame_000.png, ...`), projectile lanes nested under
+ * `Projectiles/<lane.name>/...` — and returns the manifest object. Does NOT write `manifest.json`
+ * into the zip and does NOT generate the blob: split out of `buildExportZip` below so a caller
+ * that needs to add MORE files to the same zip (the combined sprites+config bundle, see
+ * modules/enemy-bundle.js) can do so before finalizing, instead of unzipping and rezipping.
  *
  * @param {object} args
  * @param {string} args.enemyName
  * @param {Array} args.lanes
  * @param {Array} args.boxes
  * @param {HTMLImageElement|HTMLCanvasElement} args.source - the (possibly bg-removed) image to crop from.
- * @param {typeof import('jszip')} args.JSZip - the JSZip constructor (loaded globally via CDN in index.html).
- * @returns {Promise<{blob: Blob, manifest: object}>}
+ * @returns {object} manifest
  */
-export async function buildExportZip({ enemyName, lanes, boxes, source, JSZip }) {
+export function populateSpriteZip(zip, { enemyName, lanes, boxes, source }) {
   const animLanes = lanes.filter((l) => l.type === 'animation' && l.frameBoxIndices.length > 0);
   const projLanes = lanes.filter((l) => l.type === 'projectile' && l.frameBoxIndices.length > 0);
 
-  const zip = new JSZip();
   const manifest = { enemyName, animations: [], projectiles: [] };
 
   animLanes.forEach((lane) => {
@@ -90,6 +90,20 @@ export async function buildExportZip({ enemyName, lanes, boxes, source, JSZip })
     });
   });
 
+  return manifest;
+}
+
+/**
+ * Convenience wrapper for the plain Sprites-tab export: builds a fresh zip, populates it, writes
+ * `manifest.json`, and generates the final blob.
+ *
+ * @param {object} args - see populateSpriteZip, plus:
+ * @param {typeof import('jszip')} args.JSZip - the JSZip constructor (loaded globally via CDN in index.html).
+ * @returns {Promise<{blob: Blob, manifest: object}>}
+ */
+export async function buildExportZip({ enemyName, lanes, boxes, source, JSZip }) {
+  const zip = new JSZip();
+  const manifest = populateSpriteZip(zip, { enemyName, lanes, boxes, source });
   zip.file('manifest.json', JSON.stringify(manifest, null, 2));
 
   const blob = await zip.generateAsync({ type: 'blob' });

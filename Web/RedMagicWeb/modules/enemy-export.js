@@ -32,11 +32,28 @@ function buildTuningExport(tuning) {
   return out;
 }
 
+/**
+ * Library mode's 'art' isn't a path the user typed — it's the path EnemyImporter.cs's sprite-import
+ * step (Assets/Editor/EnemyImporter.cs, BuildSpriteSheetRecipe) will create the SpriteSheetRecipe
+ * at once the combined bundle is imported: 'Assets/Enemies/<enemyName>/<enemyName>.sheet.asset'.
+ * Emitted so a "solo config JSON" export stays schema-valid even before that sheet exists — the
+ * combined-bundle Unity importer (CombinedBundleImporter.cs) resolves the REAL freshly-created
+ * asset explicitly rather than trusting this string, so a mismatch here is inert, not a silent bug.
+ */
+function libraryArtPath(enemyName) {
+  const name = enemyName.trim();
+  return `Assets/Enemies/${name}/${name}.sheet.asset`;
+}
+
 /** @param {object} state - the Enemy Creator's live form state (see enemy-defaults.js's shape). */
 export function buildExportObject(state) {
+  const art = state.artMode === 'library' && state.artLibraryId
+    ? libraryArtPath(state.enemyName)
+    : state.art.trim();
+
   return {
     enemyName: state.enemyName.trim(),
-    art: state.art.trim(),
+    art,
     prefabFolder: state.prefabFolder.trim() || 'Assets/Prefab/Enemies',
     presence: { ...state.presence },
     projectileArt: { ...state.projectileArt },

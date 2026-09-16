@@ -19,6 +19,7 @@
 <div id="tabBar">
   <button class="tabBtn active" data-tab="sprites">🍄 Sprites</button>
   <button class="tabBtn" data-tab="enemy">🧩 Enemy Creator</button>
+  <button class="tabBtn" data-tab="library">📚 Biblioteca</button>
 </div>
 
 <div id="tab-sprites" class="tabPanel">
@@ -106,7 +107,13 @@
     <div>
       <h2>5. Exportar</h2>
       <button id="exportBtn" class="primary" style="width:100%">⬇ Descargar .zip</button>
+      <button id="saveToLibraryBtn" style="width:100%;margin-top:6px;">💾 Guardar como enemigo</button>
       <div id="status"></div>
+    </div>
+
+    <div>
+      <h2>6. Enemigos guardados</h2>
+      <div id="spritesLibraryList" class="libList"></div>
     </div>
   </div>
 
@@ -160,8 +167,20 @@
   <div id="enemyPreviewPanel">
     <h2 style="margin-top:0;">Vista previa</h2>
     <div id="enemyValidationSummary"></div>
-    <button id="enemyExportBtn" class="primary" style="width:100%;">⬇ Exportar .json</button>
+    <button id="enemyExportBtn" class="primary" style="width:100%;">⬇ Exportar solo config (.json)</button>
+    <button id="enemyExportCombinedBtn" style="width:100%;margin-top:6px;">⬇ Exportar todo junto (.zip)</button>
     <pre id="enemyJsonPreview"></pre>
+  </div>
+</div>
+
+<div id="tab-library" class="tabPanel" hidden>
+  <div id="libraryPanel">
+    <h1>📚 Biblioteca de enemigos</h1>
+    <p class="hint">
+      Todos los enemigos guardados en esta pestaña o en la pestaña Sprites, con su hoja de sprites y,
+      si ya se exportó al menos una vez desde Enemy Creator, su EnemyConfig enlazado.
+    </p>
+    <div id="libraryTabList" class="libList"></div>
   </div>
 </div>
 

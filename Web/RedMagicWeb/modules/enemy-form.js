@@ -15,6 +15,8 @@ import { createDefaultEnemyConfig, createDefaultProjectileSpec } from './enemy-d
 import { buildExportObject } from './enemy-export.js';
 import { loadEnemyConfigValidator, validateEnemyConfig } from './enemy-config-schema.js';
 import { downloadBlob } from './export-manifest.js';
+import { listEnemies, getEnemy, updateEnemy } from './enemy-library.js';
+import { buildCombinedBundle } from './enemy-bundle.js';
 
 const KNOWN_LAYERS = ['Ground', 'Platform'];
 
@@ -111,7 +113,7 @@ const PROJECTILE_SPEC_FIELDS = [
   ['impactDamage', 'number', 'Daño de esa explosión', { min: 0 }],
 ];
 
-export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, exportBtn, getLaneNames }) {
+export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, exportBtn, exportCombinedBtn, getLaneNames }) {
   const state = createDefaultEnemyConfig();
   const fieldErrorSetters = {}; // instancePath ('/tuning/archetype', etc.) -> setError()
   let validate = null;
@@ -137,13 +139,77 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   registerError('/enemyName', nameField.setError);
   topSection.appendChild(nameField.row);
 
-  const artField = F.assetRefField({
-    label: 'Hoja de sprites ya cortada (art)', value: state.art,
-    hint: 'Ruta al asset SpriteSheetRecipe (<Nombre>.sheet.asset) ya generado por el pipeline de sprites.',
+  // --- art: pick a sheet authored in this tool's shared library, or fall back to a manual path
+  // into a sheet already imported into Unity in a past session (see enemy-defaults.js's comment).
+  const artModeSwitch = document.createElement('div');
+  artModeSwitch.className = 'modeSwitch';
+  const artBtnLibrary = document.createElement('button'); artBtnLibrary.textContent = 'Desde biblioteca';
+  const artBtnManual = document.createElement('button'); artBtnManual.textContent = 'Escribir ruta manualmente';
+  artModeSwitch.appendChild(artBtnLibrary);
+  artModeSwitch.appendChild(artBtnManual);
+  const artModeRow = document.createElement('div');
+  artModeRow.className = 'efRow';
+  const artModeLabel = document.createElement('label');
+  artModeLabel.textContent = 'Hoja de sprites (art)';
+  artModeRow.appendChild(artModeLabel);
+  artModeRow.appendChild(artModeSwitch);
+  topSection.appendChild(artModeRow);
+
+  const artLibrarySelect = document.createElement('select');
+  const artLibraryRow = document.createElement('div');
+  artLibraryRow.className = 'efRow';
+  artLibraryRow.appendChild(artLibrarySelect);
+  const artLibraryHint = document.createElement('p');
+  artLibraryHint.className = 'efHint';
+  artLibraryHint.textContent = 'Enemigos guardados en la pestaña Sprites ("💾 Guardar como enemigo") o en Biblioteca.';
+  artLibraryRow.appendChild(artLibraryHint);
+  topSection.appendChild(artLibraryRow);
+
+  const manualArtField = F.assetRefField({
+    label: 'Ruta manual (art)', value: state.art,
+    hint: 'Ruta al asset SpriteSheetRecipe (<Nombre>.sheet.asset) ya generado por el pipeline de sprites en una sesión anterior.',
     onChange: (v) => { state.art = v; refresh(); },
   });
-  registerError('/art', artField.setError);
-  topSection.appendChild(artField.row);
+  registerError('/art', manualArtField.setError);
+  topSection.appendChild(manualArtField.row);
+
+  let libraryEntriesCache = [];
+
+  async function refreshArtLibraryOptions() {
+    libraryEntriesCache = await listEnemies();
+    if (libraryEntriesCache.length === 0) {
+      artLibrarySelect.innerHTML = '<option value="">(sin enemigos guardados — usa la pestaña Sprites)</option>';
+      return;
+    }
+    artLibrarySelect.innerHTML = ['<option value="">Selecciona un enemigo guardado…</option>']
+      .concat(libraryEntriesCache.map((e) =>
+        `<option value="${e.id}" ${e.id === state.artLibraryId ? 'selected' : ''}>${e.enemyName} — ${new Date(e.updatedAt).toLocaleString()}</option>`
+      )).join('');
+  }
+
+  artLibrarySelect.addEventListener('change', () => {
+    state.artLibraryId = artLibrarySelect.value || null;
+    const picked = libraryEntriesCache.find((e) => e.id === state.artLibraryId);
+    if (picked && !state.enemyName.trim()) {
+      state.enemyName = picked.enemyName;
+      nameField.input.value = picked.enemyName;
+    }
+    updateCombinedExportAvailability();
+    refresh();
+  });
+
+  function setArtMode(mode) {
+    state.artMode = mode;
+    artBtnLibrary.classList.toggle('active', mode === 'library');
+    artBtnManual.classList.toggle('active', mode === 'manual');
+    artLibraryRow.hidden = mode !== 'library';
+    manualArtField.row.hidden = mode !== 'manual';
+    if (mode === 'library') refreshArtLibraryOptions();
+    updateCombinedExportAvailability();
+    refresh();
+  }
+  artBtnLibrary.addEventListener('click', () => setArtMode('library'));
+  artBtnManual.addEventListener('click', () => setArtMode('manual'));
 
   const prefabFolderField = F.textField({
     label: 'Carpeta del prefab (prefabFolder)', value: state.prefabFolder,
@@ -415,12 +481,55 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
       `<ul>${errors.map((e) => `<li><code>${e.path || '(raíz)'}</code> — ${e.message}</li>`).join('')}</ul>`;
   }
 
-  exportBtn.addEventListener('click', () => {
+  /** Once a draft is linked to a library entry, every export also persists the config onto it —
+   *  this is what lets the Biblioteca tab and a later "editar en Enemy Creator" session offer
+   *  "exportar combinado" without the user re-filling the form. Never fatal: the download itself
+   *  already happened by the time this runs. */
+  async function persistConfigToLibraryIfLinked(exportObj) {
+    if (state.artMode !== 'library' || !state.artLibraryId) return;
+    try { await updateEnemy(state.artLibraryId, { config: exportObj }); }
+    catch (err) { console.warn('[enemy-form] no se pudo guardar el config en la biblioteca:', err); }
+  }
+
+  exportBtn.addEventListener('click', async () => {
     const exportObj = buildExportObject(state);
     const name = (state.enemyName.trim() || 'Enemy').replace(/[^A-Za-z0-9_]/g, '_');
     const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
     downloadBlob(blob, `${name}.enemy.json`);
+    await persistConfigToLibraryIfLinked(exportObj);
   });
+
+  // ============================================================ combined bundle export (sprites + config)
+
+  function updateCombinedExportAvailability() {
+    if (!exportCombinedBtn) return;
+    const available = state.artMode === 'library' && !!state.artLibraryId;
+    exportCombinedBtn.disabled = !available;
+    exportCombinedBtn.title = available
+      ? ''
+      : 'Sólo disponible con un enemigo de la biblioteca seleccionado como art (no con ruta manual).';
+  }
+
+  if (exportCombinedBtn) {
+    exportCombinedBtn.addEventListener('click', async () => {
+      if (state.artMode !== 'library' || !state.artLibraryId) return;
+
+      const entry = await getEnemy(state.artLibraryId);
+      if (!entry) {
+        summaryEl.innerHTML = '<p class="efSummaryError">El enemigo de la biblioteca ya no existe — vuelve a seleccionarlo.</p>';
+        await refreshArtLibraryOptions();
+        return;
+      }
+
+      const exportObj = buildExportObject(state);
+      const enemyName = exportObj.enemyName || entry.enemyName;
+      const blob = await buildCombinedBundle({ enemyName, sprite: entry.sprite, configObj: exportObj });
+      downloadBlob(blob, `${enemyName.replace(/[^A-Za-z0-9_]/g, '_')}.bundle.zip`);
+      await persistConfigToLibraryIfLinked(exportObj);
+    });
+  }
+
+  setArtMode(state.artMode);
 
   // ============================================================ Sprites-tab lane cross-reference (display-only)
 
@@ -436,5 +545,20 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
   refresh();
 
-  return { refreshLaneInfo };
+  /**
+   * Links this draft to a library entry from outside (the Biblioteca tab's "Editar en Enemy
+   * Creator" action) — switches to library mode, selects it, and pre-fills enemyName if empty.
+   */
+  async function linkLibraryEntry(id, enemyName) {
+    await refreshArtLibraryOptions();
+    state.artLibraryId = id;
+    artLibrarySelect.value = id;
+    if (!state.enemyName.trim() && enemyName) {
+      state.enemyName = enemyName;
+      nameField.input.value = enemyName;
+    }
+    setArtMode('library');
+  }
+
+  return { refreshLaneInfo, refreshArtLibrary: refreshArtLibraryOptions, linkLibraryEntry };
 }

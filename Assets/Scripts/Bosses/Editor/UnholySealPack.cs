@@ -28,6 +28,11 @@ namespace RedMagic.Bosses.EditorTools
         private const string PrefabPath = PrefabFolder + "/Boss_SelloProfano.prefab";
         private const string DefinitionPath = BossFolder + "/Boss_SelloProfano.asset";
 
+        // BOTH BROKEN BY DESIGN since the vendor-asset cleanup (Brackeys/ and Cainos/ deleted —
+        // see docs/folder-restructure-audit.md / Assets/Editor/VendorCleanupMigration.cs). The
+        // shipped Boss_SelloProfano.prefab was already retargeted to the placeholder square in
+        // that same pass and needs no regen; whatever reads these already fails loudly (warn/null),
+        // not by throwing — point them at real paths first if this pack is ever re-run.
         private const string SealTexture =
             "Assets/Brackeys/2D Mega Pack/Environment/Gothic/Pentagram_Activated.png";
 

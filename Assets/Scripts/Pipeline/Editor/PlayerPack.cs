@@ -35,6 +35,14 @@ namespace RedMagic.Pipeline.EditorTools
         private const string Folder = "Assets/Art/Characters/Player";
         private const string SheetRecipePath = Folder + "/Player.sheet.asset";
         private const string ControllerPath = Folder + "/Player.controller";
+        // BROKEN BY DESIGN since the vendor-asset cleanup: "Assets/Dragon Warrior Files/" was
+        // deleted from the project (see docs/folder-restructure-audit.md /
+        // Assets/Editor/VendorCleanupMigration.cs). Nobody regenerates the player from this pack
+        // anymore, so this is deliberately left pointing at a path that no longer exists rather
+        // than silently retargeted to a placeholder controller — EnsureController's
+        // AssetDatabase.CopyAsset below already fails loudly (logs and returns, no exception) the
+        // moment this pack is next run, instead of misbehaving quietly. If this pack is ever run
+        // again for real, point this at a real starting controller first.
         private const string SourceController = "Assets/Dragon Warrior Files/Animations/DragonWarrior.controller";
         private const string PlayerPrefab = "Assets/Prefab/Player.prefab";
 
@@ -169,7 +177,10 @@ namespace RedMagic.Pipeline.EditorTools
 
             if (!AssetDatabase.CopyAsset(SourceController, ControllerPath))
             {
-                log.AppendLine($"[PlayerPack] ERROR: no se pudo copiar '{SourceController}'.");
+                log.AppendLine($"[PlayerPack] ERROR: no se pudo copiar '{SourceController}' — ese archivo vivía en " +
+                    "Assets/Dragon Warrior Files/, que se eliminó del proyecto (vendor-asset cleanup). " +
+                    "Este pack no se ha vuelto a ejecutar desde entonces; si hace falta de verdad, " +
+                    "actualiza SourceController a un controller real antes de reintentar.");
                 return;
             }
 

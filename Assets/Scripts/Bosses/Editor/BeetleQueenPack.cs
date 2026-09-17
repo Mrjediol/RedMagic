@@ -36,6 +36,11 @@ namespace RedMagic.Bosses.EditorTools
         private const string PrefabPath = PrefabFolder + "/Boss_ReinaEscarabajo.prefab";
         private const string DefinitionPath = BossFolder + "/Boss_ReinaEscarabajo.asset";
 
+        // BOTH BROKEN BY DESIGN since the vendor-asset cleanup (Brackeys/ and Cainos/ deleted —
+        // see docs/folder-restructure-audit.md / Assets/Editor/VendorCleanupMigration.cs). The
+        // shipped Boss_ReinaEscarabajo.prefab was already retargeted to the placeholder square in
+        // that same pass and needs no regen; whatever reads these already fails loudly (warn/null),
+        // not by throwing — point them at real paths first if this pack is ever re-run.
         private const string BeetleSheet = "Assets/Brackeys/2D Mega Pack/Enemies/Insects/GiantBeetle.png";
         private const string BroodPrefabPath = PrefabFolder + "/Enemy_Beetle.prefab";
 

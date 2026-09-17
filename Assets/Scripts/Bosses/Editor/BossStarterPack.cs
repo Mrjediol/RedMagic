@@ -22,6 +22,11 @@ namespace RedMagic.Bosses.EditorTools
         private const string PrefabPath = PrefabFolder + "/Boss_ArbolAncestral.prefab";
         private const string DefinitionPath = BossFolder + "/Boss_ArbolAncestral.asset";
 
+        // BROKEN BY DESIGN since the vendor-asset cleanup (Cainos/ deleted — see
+        // docs/folder-restructure-audit.md / Assets/Editor/VendorCleanupMigration.cs). The shipped
+        // Boss_ArbolAncestral.prefab was already retargeted to the placeholder square in that same
+        // pass and needs no regen; whatever call site reads this constant should fail loudly
+        // (warn/null), not throw — point it at a real path first if this pack is ever re-run.
         private const string TreePrefabPath =
             "Assets/Cainos/Pixel Art Platformer - Village Props/Prefab/PF Village Props - Tree 01.prefab";
 

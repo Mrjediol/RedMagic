@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6056043217521907042}
   - component: {fileID: 6621759047056921293}
-  - component: {fileID: 221559114077487698}
   - component: {fileID: 5870314447072388090}
   - component: {fileID: 3677322708537407972}
   - component: {fileID: 5412418896357647589}
@@ -85,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 12
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 0869b1e96aac6d34cb086976dc7af826, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 107a7961d6f3ed1498960c7ecf491248, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -95,28 +94,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!95 &221559114077487698
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5154675108906216295}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: cd81c5d73dccfa743b0fd79a2108ee29, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!50 &5870314447072388090
 Rigidbody2D:
   serializedVersion: 5
@@ -198,6 +175,13 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  knockbackMultiplier: 1
   destroyWhenDone: 1
   impactEffect: {fileID: 1085088545867549799, guid: e0ab161e73a143f4ca886a264fbb5c62, type: 3}
   impactEffectOffset: {x: 0, y: 0}
+  pierceCount: 0
+  homingTurnRate: 0
+  homingRange: 9
+  arcGravity: 0
+  impactRadius: 0
+  impactDamage: 0

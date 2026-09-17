@@ -34,6 +34,16 @@ namespace RedMagic.Bosses.EditorTools
         private const string CrowPrefabPath = PrefabFolder + "/Enemy_Cuervo.prefab";
         private const string DefinitionPath = BossFolder + "/Boss_EspantapajarosMarchito.asset";
 
+        // BROKEN BY DESIGN since the vendor-asset cleanup — both Cainos/ and Brackeys/ were deleted
+        // from the project (see docs/folder-restructure-audit.md / Assets/Editor/
+        // VendorCleanupMigration.cs). The already-committed Boss_EspantapajarosMarchito.prefab and
+        // its BossAttack_*.asset were retargeted to the placeholder square as part of that same
+        // pass, so this pack does NOT need to run again for the shipped boss — these two constants
+        // are left pointing at paths that no longer exist rather than silently retargeted, since
+        // both call sites (BossAuthoring.LoadSprite below, and the direct LoadAssetAtPath at
+        // renderer.sprite = ... further down) already fail loudly with a Debug.LogWarning/null
+        // instead of throwing or misbehaving quietly. Point these at real paths first if this pack
+        // is ever genuinely re-run.
         private const string PropsSheet =
             "Assets/Cainos/Pixel Art Platformer - Village Props/Texture/TX Village Props.png";
 

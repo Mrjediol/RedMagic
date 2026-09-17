@@ -29,6 +29,11 @@ namespace RedMagic.Bosses.EditorTools
         private const string PrefabPath = PrefabFolder + "/Boss_PozoMaldito.prefab";
         private const string DefinitionPath = BossFolder + "/Boss_PozoMaldito.asset";
 
+        // BROKEN BY DESIGN since the vendor-asset cleanup (Cainos/ deleted — see
+        // docs/folder-restructure-audit.md / Assets/Editor/VendorCleanupMigration.cs). The shipped
+        // Boss_PozoMaldito.prefab was already retargeted to the placeholder square in that same
+        // pass and needs no regen; BossAuthoring.LoadSprite already fails loudly (warn/null), not
+        // by throwing — point this at a real path first if this pack is ever re-run.
         private const string PropsSheet =
             "Assets/Cainos/Pixel Art Platformer - Village Props/Texture/TX Village Props.png";
 

@@ -20,17 +20,20 @@ MonoBehaviour:
   recovery: 2
   weight: 1.6
   cooldownInAttacks: 3
+  cooldownSeconds: 0
+  minPhase: 1
   damage: 0
   knockbackMultiplier: 1
   vulnerableSeconds: 2.6
   vulnerableMultiplier: 3.2
+  gesture: 
   sfxId: 
   shakeAmplitude: 0
   shakeDuration: 0.25
   anchorCount: 4
   anchorHealth: 130
   anchorSize: {x: 1.3, y: 1.6}
-  anchorSprite: {fileID: -1758970209, guid: 7810966f0f690954c87305933cabf2b0, type: 3}
+  anchorSprite: {fileID: 21300000, guid: 107a7961d6f3ed1498960c7ecf491248, type: 3}
   anchorHeight: 0.9
   minSeparation: 5.5
   edgeMargin: 2.5

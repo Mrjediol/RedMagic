@@ -19,10 +19,13 @@ MonoBehaviour:
   recovery: 1.1
   weight: 1.3
   cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
   damage: 12
   knockbackMultiplier: 0.6
   vulnerableSeconds: 0
   vulnerableMultiplier: 2.5
+  gesture: 
   sfxId: 
   shakeAmplitude: 0
   shakeDuration: 0.25
@@ -51,7 +54,15 @@ MonoBehaviour:
   originOffset: {x: 0, y: 2.6}
   spawnRadius: 0.6
   rainSpan: 1
+  rainCenterOffset: 0
+  rainRandomX: 0
+  rainDropStagger: 0
   rainMarkerSeconds: 0.5
   rainJitter: 0.8
   rainMarkerSize: {x: 1, y: 0.35}
-  projectileSprite: {fileID: 21300138, guid: 7810966f0f690954c87305933cabf2b0, type: 3}
+  stormSeconds: 5
+  stormPerSecond: 7
+  stormAngleRange: 18
+  stormWind: 0
+  stormMarkLanding: 1
+  projectileSprite: {fileID: 21300000, guid: 107a7961d6f3ed1498960c7ecf491248, type: 3}

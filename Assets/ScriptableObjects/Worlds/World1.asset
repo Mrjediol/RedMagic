@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a516c779e3248418e47ab343afceee7, type: 3}
+  m_Name: World1
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Run.WorldDefinition
+  worldNumber: 1
+  displayName: Mundo 1
+  unlocked: 1
+  sectionPool:
+  - sceneAsset: {fileID: 102900000, guid: 4f47a9a0eb2a04845bdf8eebbdb8c2bd, type: 3}
+    scenePath: Assets/Scenes/Worlds/World1/World1_Section01.unity
+    sceneName: World1_Section01
+  - sceneAsset: {fileID: 0}
+    scenePath: 
+    sceneName: 
+  - sceneAsset: {fileID: 0}
+    scenePath: 
+    sceneName: 
+  - sceneAsset: {fileID: 102900000, guid: c4366745cc8567b4fbb8639e20d92cf1, type: 3}
+    scenePath: Assets/Scenes/TestScene.unity
+    sceneName: TestScene
+  sectionsPerRun: 2
+  bossScene:
+    sceneAsset: {fileID: 102900000, guid: 399eb5522346b2f4c8f6ff1f3c83f700, type: 3}
+    scenePath: Assets/Scenes/Worlds/World1/World1_Boss.unity
+    sceneName: World1_Boss

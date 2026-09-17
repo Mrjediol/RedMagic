@@ -18,8 +18,8 @@ namespace RedMagic.Bosses.EditorTools
     /// </summary>
     public static class ArbolOrbePack
     {
-        private const string OrbFolder = "Assets/Prefab/Fx/Bosses/ArbolAncestral/Orbe";
-        private const string BossFxFolder = "Assets/Prefab/Fx/Bosses/ArbolAncestral";
+        private const string OrbFolder = "Assets/Prefabs/Fx/Bosses/ArbolAncestral/Orbe";
+        private const string BossFxFolder = "Assets/Prefabs/Fx/Bosses/ArbolAncestral";
         private const string BossFolder = "Assets/Resources/Bosses";
 
         private const string IdleSheet = OrbFolder + "/Orbe_Idle.png";

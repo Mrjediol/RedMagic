@@ -104,6 +104,26 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   if (f) loadImageFile(f);
 });
 
+// Ctrl+V alternative to the file input — same loadImageFile() entry point, so everything
+// downstream (detection, bg removal, lanes) behaves identically either way. Scoped to the
+// Sprites tab being the active panel; silently ignored otherwise or when the clipboard has no
+// image (e.g. pasted text) — a paste of unrelated content is not something to warn about here.
+document.addEventListener('paste', (e) => {
+  const spritesPanel = document.getElementById('tab-sprites');
+  if (!spritesPanel || spritesPanel.hidden) return;
+
+  const items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+
+  for (const item of items) {
+    if (item.type && item.type.startsWith('image/')) {
+      const f = item.getAsFile();
+      if (f) loadImageFile(f);
+      break;
+    }
+  }
+});
+
 function loadImageFile(f) {
   const reader = new FileReader();
   reader.onload = (ev) => {

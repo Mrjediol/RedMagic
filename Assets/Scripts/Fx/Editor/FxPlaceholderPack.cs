@@ -21,7 +21,7 @@ namespace RedMagic.FxTools
     /// conserva su <see cref="FxPlaceholderStyle"/>, el spawner le sigue aplicando tinte y tamaño;
     /// si se lo quitas, se respeta tal cual.
     ///
-    /// <b>Los FX de jefe van en una carpeta por jefe</b>: <c>Assets/Prefab/Fx/Bosses/&lt;Jefe&gt;/</c>
+    /// <b>Los FX de jefe van en una carpeta por jefe</b>: <c>Assets/Prefabs/Fx/Bosses/&lt;Jefe&gt;/</c>
     /// contiene TODOS los visuales de ese jefe (aviso, onda, filo, hazard, plataforma, ancla, bala),
     /// para que rehacer el aspecto de un combate entero sea abrir una sola carpeta. Cada jefe tiene
     /// su propia copia, así su arte puede divergir del de los demás.
@@ -29,22 +29,22 @@ namespace RedMagic.FxTools
     public static class FxPlaceholderPack
     {
         private const string ShapeFolder = "Assets/Art/Placeholder";
-        private const string PrefabFolder = "Assets/Prefab/Fx";
-        private const string BossFxFolder = "Assets/Prefab/Fx/Bosses";
+        private const string PrefabFolder = "Assets/Prefabs/Fx";
+        private const string BossFxFolder = "Assets/Prefabs/Fx/Bosses";
         private const string WeaponFolder = "Assets/Resources/Items/Weapons";
-        private const string BossPrefabFolder = "Assets/Prefab/Enemies";
+        private const string BossPrefabFolder = "Assets/Prefabs/Enemies";
 
         // Prefabs placeholder compartidos de la organización anterior (uno por tipo, reusado por
         // todos los jefes). El migrador los borra tras repartir una copia por jefe.
         private static readonly string[] LegacySharedBossPrefabs =
         {
-            "Assets/Prefab/Fx/Bosses/Fx_Boss_Warn.prefab",
-            "Assets/Prefab/Fx/Bosses/Fx_Boss_Shockwave.prefab",
-            "Assets/Prefab/Fx/Bosses/Fx_Boss_SweepBeam.prefab",
-            "Assets/Prefab/Fx/Bosses/Fx_Boss_Hazard.prefab",
-            "Assets/Prefab/Fx/Bosses/Fx_Boss_Platform.prefab",
-            "Assets/Prefab/Fx/Bosses/Fx_Boss_Anchor.prefab",
-            "Assets/Prefab/Fx/Fx_Boss_Bullet.prefab",
+            "Assets/Prefabs/Fx/Bosses/Fx_Boss_Warn.prefab",
+            "Assets/Prefabs/Fx/Bosses/Fx_Boss_Shockwave.prefab",
+            "Assets/Prefabs/Fx/Bosses/Fx_Boss_SweepBeam.prefab",
+            "Assets/Prefabs/Fx/Bosses/Fx_Boss_Hazard.prefab",
+            "Assets/Prefabs/Fx/Bosses/Fx_Boss_Platform.prefab",
+            "Assets/Prefabs/Fx/Bosses/Fx_Boss_Anchor.prefab",
+            "Assets/Prefabs/Fx/Fx_Boss_Bullet.prefab",
         };
 
         /// <summary>Un slot de <see cref="BossController"/> y el sufijo del prefab que lo llena.</summary>
@@ -172,7 +172,7 @@ namespace RedMagic.FxTools
             public BossDefinition definition;
         }
 
-        /// <summary>Cada prefab de <c>Assets/Prefab/Enemies</c> que lleva un <see cref="BossController"/>.</summary>
+        /// <summary>Cada prefab de <c>Assets/Prefabs/Enemies</c> que lleva un <see cref="BossController"/>.</summary>
         private static IEnumerable<BossEntry> DiscoverBosses()
         {
             foreach (var guid in AssetDatabase.FindAssets("t:GameObject", new[] { BossPrefabFolder }))

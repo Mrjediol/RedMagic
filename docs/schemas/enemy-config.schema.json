@@ -39,8 +39,8 @@
     "prefabFolder": {
       "type": "string",
       "pattern": "^Assets/",
-      "default": "Assets/Prefab/Enemies",
-      "$comment": "EnemyRecipe.prefabFolder. C# default is the empty string, which EnemyRecipe.ResolvedFolder turns into 'Assets/Prefab/Enemies'; the resolved value is used as the schema default so the JSON reads true."
+      "default": "Assets/Prefabs/Enemies",
+      "$comment": "EnemyRecipe.prefabFolder. C# default is the empty string, which EnemyRecipe.ResolvedFolder turns into 'Assets/Prefabs/Enemies'; the resolved value is used as the schema default so the JSON reads true. (Renamed from 'Assets/Prefab/Enemies' — singular — in the Assets/ folder restructure; see docs/folder-restructure-audit.md.)"
     },
 
     "presence": {

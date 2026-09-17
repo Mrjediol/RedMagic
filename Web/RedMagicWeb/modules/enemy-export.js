@@ -35,14 +35,16 @@ function buildTuningExport(tuning) {
 /**
  * Library mode's 'art' isn't a path the user typed — it's the path EnemyImporter.cs's sprite-import
  * step (Assets/Editor/EnemyImporter.cs, BuildSpriteSheetRecipe) will create the SpriteSheetRecipe
- * at once the combined bundle is imported: 'Assets/Enemies/<enemyName>/<enemyName>.sheet.asset'.
- * Emitted so a "solo config JSON" export stays schema-valid even before that sheet exists — the
- * combined-bundle Unity importer (CombinedBundleImporter.cs) resolves the REAL freshly-created
- * asset explicitly rather than trusting this string, so a mismatch here is inert, not a silent bug.
+ * at once the combined bundle is imported: 'Assets/Art/EnemyImports/<enemyName>/<enemyName>.sheet.asset'
+ * (renamed from 'Assets/Enemies/<enemyName>/...' in the Assets/ folder restructure — see
+ * docs/folder-restructure-audit.md). Emitted so a "solo config JSON" export stays schema-valid even
+ * before that sheet exists — the combined-bundle Unity importer (CombinedBundleImporter.cs)
+ * resolves the REAL freshly-created asset explicitly rather than trusting this string, so a
+ * mismatch here is inert, not a silent bug.
  */
 function libraryArtPath(enemyName) {
   const name = enemyName.trim();
-  return `Assets/Enemies/${name}/${name}.sheet.asset`;
+  return `Assets/Art/EnemyImports/${name}/${name}.sheet.asset`;
 }
 
 /** @param {object} state - the Enemy Creator's live form state (see enemy-defaults.js's shape). */

@@ -29,25 +29,32 @@ ES por CORS en ese caso (verás un banner de aviso en la propia página si pasa 
 
 ## Tools ▸ Web ▸ Enemy Importer ▸ Build Enemy From Folder
 
-**Qué hace**: construye un enemigo completo (sprites recortados + `AnimationClip` por animación +
-`AnimatorController` + prefab del enemigo, y lo mismo para cualquier proyectil que use) a partir de
-la carpeta que produce la pestaña **Sprites** de la web.
+**Qué hace**: recorta los sprites + genera un `AnimationClip` por animación + un
+`AnimatorController` + el `SpriteSheetRecipe` "de compatibilidad" que `EnemyConfigImporter`/
+`EnemyFactory.Generate` necesitan para construir el prefab jugable de verdad (`EnemyStats`/
+`EnemyBrain`/`EnemyAttack`, ver el siguiente menú) — y, si el enemigo dispara algo, el mismo
+tratamiento + un prefab de proyectil, a partir de la carpeta que produce la pestaña **Sprites** de
+la web. **Ya NO genera un prefab de enemigo propio**: una versión anterior escribía uno
+sólo-sprite, sin ningún componente de gameplay, pensado para un flujo manual ya retirado — se quitó
+porque nada lo leía nunca (`EnemyFactory.Generate` sólo necesita el `SpriteSheetRecipe` + los
+PNG/controller en disco, nunca ese prefab).
 
 **Web app**: pestaña 🍄 *Sprites* — botón "⬇ Descargar .zip" (o "Exportar zip" desde una entrada
 guardada en la Biblioteca).
 
 **Entrada esperada**: descomprime el `.zip` DENTRO de `Assets/`, por ejemplo en
-`Assets/Enemies/RawImport/MushroomWarrior/`, y selecciona esa carpeta cuando el menú te la pida.
-Dentro debe estar `manifest.json` más una carpeta de PNGs por animación (formato que fija
+`Assets/Art/EnemyImports/RawImport/MushroomWarrior/`, y selecciona esa carpeta cuando el menú te la
+pida. Dentro debe estar `manifest.json` más una carpeta de PNGs por animación (formato que fija
 `Web/RedMagicWeb/modules/export-manifest.js`).
 
 **Qué produce**:
-- `Assets/Enemies/<Nombre>/Animations/*.anim`
-- `Assets/Enemies/<Nombre>/<Nombre>Controller.controller`
-- `Assets/Enemies/<Nombre>/<Nombre>.sheet.asset` (un `SpriteSheetRecipe`)
-- `Assets/Projectiles/<NombreProyectil>/...` (clip + controller) si el enemigo dispara algo
-- `Assets/Prefabs/Enemies/<Nombre>.prefab`
-- `Assets/Prefabs/Projectiles/<NombreProyectil>.prefab`
+- `Assets/Art/EnemyImports/<Nombre>/Animations/*.anim`
+- `Assets/Art/EnemyImports/<Nombre>/<Nombre>Controller.controller`
+- `Assets/Art/EnemyImports/<Nombre>/<Nombre>.sheet.asset` (un `SpriteSheetRecipe`)
+- `Assets/Prefabs/Projectiles/<NombreProyectil>/...` (clip + controller + prefab) si el enemigo
+  dispara algo
+- El prefab jugable de verdad sale del siguiente menú (*Import Config...*), apuntando su `art` a
+  este `.sheet.asset` — no de aquí directamente.
 
 **Caveats**:
 - Cada frame del `AnimationClip` apunta DIRECTAMENTE al PNG de entrada — **no copia los frames a
@@ -92,11 +99,13 @@ creado corre el import de config tal cual — el campo `art` del config se sobre
 real del recipe que se acaba de crear, así que un `enemyName` que no coincida entre el manifest y el
 config falla alto en vez de producir un enemigo con el arte equivocado.
 
-**Qué produce**: lo mismo que *Enemy Importer* arriba, más el `EnemyStats`/tuning ya aplicado desde
-el config — un enemigo listo para jugar en un solo paso.
+**Qué produce**: lo mismo que *Enemy Importer* arriba, más el prefab jugable real (vía
+`EnemyConfigImporter`/`EnemyFactory.Generate`, en `Assets/Prefabs/Enemies/Enemy_<Nombre>.prefab`)
+con el `EnemyStats`/tuning ya aplicado desde el config — un enemigo listo para jugar en un solo
+paso.
 
-**Caveats**: mismo aviso que arriba sobre no borrar la carpeta de entrada (`Assets/Enemies/<Nombre>/`)
-después de importar.
+**Caveats**: mismo aviso que arriba sobre no borrar la carpeta de entrada
+(`Assets/Art/EnemyImports/<Nombre>/`) después de importar.
 
 ---
 
@@ -178,36 +187,38 @@ de esta máquina/instalación del Editor, no datos del proyecto — nunca se ver
 el equipo, igual que el resto de lo que Unity guarda en `Library/`). Un ítem nuevo que no está
 todavía en el orden guardado aparece al final, en el orden que devolvió el escaneo.
 
-**Por qué "Eliminar" revisa hasta 3 rutas por enemigo — el hallazgo del audit**: dos importadores
-distintos escriben un prefab con forma de enemigo en dos carpetas hermanas reales y pobladas,
-`Assets/Prefab/Enemies/Enemy_<Nombre>.prefab` (pipeline/`EnemyFactory`/`EnemyConfigImporter` — el
-prefab de verdad, con `EnemyStats`/`EnemyBrain`/`EnemyAttack`, listo para jugar) y
-`Assets/Prefabs/Enemies/<Nombre>.prefab` (el `EnemyImporter.cs` standalone — "Build Enemy From
-Folder" —, sin prefijo, nota el plural "Prefabs"; sólo sprites/Animator, sin ningún componente de
-gameplay). El segundo es un artefacto INTERMEDIO camino al primero (el propio `EnemyConfigImporter`
-lee los sprites que ese paso dejó para construir el prefab real) — no algo pensado como entrada de
-biblioteca, así que la categoría **Enemies** lo excluye por completo: sólo escanea
-`Assets/Prefab/Enemies/` (singular). Lo que sí sigue revisando por `<Nombre>` junto al prefab real
-son sus datos de sprites, que pueden vivir en `Assets/Art/Characters/<Nombre>/` (camino pipeline)
-y/o `Assets/Enemies/<Nombre>/` (camino `EnemyImporter.cs` — el prefab real puede seguir apuntando
-ahí si vino de "Importar enemigo completo"). "Eliminar enemigo" lista las rutas que realmente
-existen (hasta 3: el prefab más esas dos carpetas), pide confirmación explícita, y borra cada una
-con `AssetDatabase.MoveAssetToTrash` (recuperable desde la papelera del sistema operativo, nunca un
-borrado duro) — si alguna ruta ya no existe, se omite y se reporta al final en vez de abortar todo
-el borrado. Los proyectiles (`Assets/Projectiles/<Nombre>/`, `Assets/Prefabs/Projectiles/<Nombre>.prefab`)
+**Por qué "Eliminar" puede revisar hasta 2 rutas por enemigo — historial**: hasta la reestructura de
+carpetas (ver `docs/folder-restructure-audit.md`), dos importadores distintos escribían un prefab
+con forma de enemigo en dos carpetas hermanas reales y pobladas: `Assets/Prefab/Enemies/
+Enemy_<Nombre>.prefab` (pipeline/`EnemyFactory`/`EnemyConfigImporter` — el prefab de verdad, con
+`EnemyStats`/`EnemyBrain`/`EnemyAttack`, listo para jugar) y `Assets/Prefabs/Enemies/<Nombre>.prefab`
+(el `EnemyImporter.cs` standalone — "Build Enemy From Folder" —, sin prefijo; sólo sprites/Animator,
+sin ningún componente de gameplay). El segundo era un artefacto INTERMEDIO camino al primero (el
+propio `EnemyConfigImporter` lee los sprites que ese paso deja para construir el prefab real) — no
+algo pensado como entrada de biblioteca. La categoría **Enemies** ya lo excluía por completo desde
+antes de la reestructura; en la reestructura, ese paso de escritura se quitó del todo de
+`EnemyImporter.cs`, la carpeta plural (ya sólo basura de pruebas) se borró, y la carpeta real se
+renombró para reusar ese mismo nombre plural ahora libre — así que hoy sólo existe UNA carpeta de
+prefabs de enemigo, `Assets/Prefabs/Enemies/` (plural), y es la que escanea esta categoría. Lo que
+sí sigue revisando por `<Nombre>` junto al prefab real son sus datos de sprites, que pueden vivir en
+`Assets/Art/Characters/<Nombre>/` (camino pipeline) y/o `Assets/Art/EnemyImports/<Nombre>/` (camino
+`EnemyImporter.cs`, renombrado desde `Assets/Enemies/<Nombre>/` en la misma reestructura — el
+prefab real puede seguir apuntando ahí si vino de "Importar enemigo completo"). "Eliminar enemigo"
+lista las rutas que realmente existen (hasta 2: el prefab más esa carpeta), pide confirmación
+explícita, y borra cada una con `AssetDatabase.MoveAssetToTrash` (recuperable desde la papelera del
+sistema operativo, nunca un borrado duro) — si alguna ruta ya no existe, se omite y se reporta al
+final en vez de abortar todo el borrado. Los proyectiles (`Assets/Prefabs/Projectiles/<Nombre>/`)
 **no** se borran con el enemigo a propósito: están indexados por nombre de proyectil, no de
-enemigo, y nada impide que dos enemigos compartan uno — bórralos a mano si quedan huérfanos. Los
-prefabs sueltos de `Assets/Prefabs/Enemies/` tampoco se tocan desde aquí — quedan fuera del alcance
-de esta categoría; límpialos a mano si son basura de pruebas.
+enemigo, y nada impide que dos enemigos compartan uno — bórralos a mano si quedan huérfanos.
 
 **Por categoría**:
 
-- **Enemies** — un card por `<Nombre>`, sólo desde `Assets/Prefab/Enemies/Enemy_<Nombre>.prefab`
-  (ver arriba — `Assets/Prefabs/Enemies/` NUNCA aparece aquí). "Abrir prefab" entra en Prefab Mode
-  sobre ese prefab real para tocar `EnemyStats`/tuning directamente en el Inspector. "Eliminar
+- **Enemies** — un card por `<Nombre>`, desde `Assets/Prefabs/Enemies/Enemy_<Nombre>.prefab` (la
+  única carpeta de prefabs de enemigo que existe hoy — ver arriba). "Abrir prefab" entra en Prefab
+  Mode sobre ese prefab real para tocar `EnemyStats`/tuning directamente en el Inspector. "Eliminar
   enemigo" como se describe arriba.
 - **Bosses** — un card por `BossDefinition` en `Assets/Resources/Bosses/` (`Boss_<Nombre>.asset`),
-  con el `Boss_<Nombre>.prefab` de `Assets/Prefab/Enemies/` como vista previa si existe. Sólo
+  con el `Boss_<Nombre>.prefab` de `Assets/Prefabs/Enemies/` como vista previa si existe. Sólo
   "Abrir definición"/"Abrir prefab" — **sin acción de borrado**: los `BossAttack_*.asset` de un
   jefe viven sueltos en la misma carpeta plana sin subcarpeta propia (a diferencia de los
   personajes), así que no hay un conjunto de rutas seguro y completo que enumerar todavía; bórralos
@@ -227,7 +238,7 @@ de esta categoría; límpialos a mano si son basura de pruebas.
   borra el `.json` homónimo en la misma carpeta si Unity lo tiene indexado como asset (la
   convención de nombre 1:1 carpeta/JSON que usa el importador por lotes — ver *Import Map JSONs
   (Batch)...* arriba).
-- **Player** — una sola tarjeta fija (`Assets/Prefab/Player.prefab`) si existe. Sólo "Abrir prefab":
+- **Player** — una sola tarjeta fija (`Assets/Prefabs/Player.prefab`) si existe. Sólo "Abrir prefab":
   a diferencia de todo lo demás, el jugador no tiene convención por nombre (`PlayerPack.cs`
   re-viste ese único prefab in situ), así que no hay nada que desambiguar ni una acción de borrado
   segura que ofrecer aquí — es el único prefab de jugador del juego.

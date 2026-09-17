@@ -9,10 +9,13 @@
 //   - Un AnimationClip por animación (de enemigo y de proyectil)
 //   - Un AnimatorController por enemigo (con triggers de transición) y uno
 //     simple por cada proyectil
-//   - Un prefab del enemigo Y un prefab por cada proyectil que use, enlazados:
-//     si una animación tiene un proyectil asociado, se añade un Animation
-//     Event en el frame de lanzamiento que llama a SpawnProjectile(string) en
-//     el componente EnemyProjectileSpawner del enemigo.
+//   - Un prefab por cada proyectil que use, enlazado a EnemyProjectileSpawner (ver más abajo)
+//   - Un SpriteSheetRecipe "de compatibilidad" que EnemyConfigImporter/EnemyFactory.Generate
+//     leen para construir el prefab REAL, jugable (EnemyStats/EnemyBrain/EnemyAttack) — ver más
+//     abajo. Este importador YA NO escribe un prefab de enemigo propio: lo hacía en una versión
+//     anterior (un prefab sólo-sprite, sin componentes de gameplay, pensado para un flujo manual ya
+//     retirado) y ese paso se quitó porque nada lo leía — EnemyFactory.Generate nunca lo consulta,
+//     sólo necesita el SpriteSheetRecipe + los PNG/controller en disco que este importador sí deja.
 //
 // REQUISITOS:
 // 1. Coloca este archivo en Assets/Editor/EnemyImporter.cs
@@ -25,15 +28,15 @@
 //
 // USO:
 // 1. Descomprime el .zip exportado por la web DENTRO de tu carpeta Assets,
-//    por ejemplo en: Assets/Enemies/RawImport/MushroomWarrior/
+//    por ejemplo en: Assets/Art/EnemyImports/RawImport/MushroomWarrior/
 // 2. En Unity: Tools > Enemy Importer > Build Enemy From Folder
 // 3. Selecciona esa carpeta. Se generará:
-//      Assets/Enemies/<Nombre>/Animations/*.anim
-//      Assets/Enemies/<Nombre>/<Nombre>Controller.controller
-//      Assets/Enemies/<Nombre>/<Nombre>.sheet.asset   (SpriteSheetRecipe — ver más abajo)
-//      Assets/Projectiles/<NombreProyectil>/... (clip + controller)
-//      Assets/Prefabs/Enemies/<Nombre>.prefab
-//      Assets/Prefabs/Projectiles/<NombreProyectil>.prefab
+//      Assets/Art/EnemyImports/<Nombre>/Animations/*.anim
+//      Assets/Art/EnemyImports/<Nombre>/<Nombre>Controller.controller
+//      Assets/Art/EnemyImports/<Nombre>/<Nombre>.sheet.asset   (SpriteSheetRecipe — ver más abajo)
+//      Assets/Prefabs/Projectiles/<NombreProyectil>/... (clip + controller + prefab)
+// 4. El prefab jugable de verdad sale de EnemyConfigImporter/EnemyFactory.Generate, apuntando su
+//    'art' al .sheet.asset de arriba — no de este importador directamente.
 //
 // SpriteSheetRecipe: EnemyConfigImporter.cs (Tools > RedMagic > Import Config) exige que el campo
 // 'art' de un EnemyConfig apunte a un SpriteSheetRecipe real — es el único tipo que
@@ -62,9 +65,11 @@ public class EnemyImporter : EditorWindow
     // Ajusta estos valores por defecto a tu proyecto
     private const float PIXELS_PER_UNIT = 100f;
     private const FilterMode SPRITE_FILTER_MODE = FilterMode.Bilinear; // usa Point para pixel art
-    private const string ENEMY_PREFAB_FOLDER = "Assets/Prefabs/Enemies";
+    // Un solo folder para el prefab del proyectil Y su anim/controller — antes eran dos folders
+    // top-level separados (Assets/Prefabs/Projectiles + Assets/Projectiles); consolidados en uno
+    // solo bajo el Prefabs/ real como parte de la reestructura de carpetas.
     private const string PROJECTILE_PREFAB_FOLDER = "Assets/Prefabs/Projectiles";
-    private const string PROJECTILE_ASSET_FOLDER = "Assets/Projectiles";
+    private const string PROJECTILE_ASSET_FOLDER = "Assets/Prefabs/Projectiles";
 
     [System.Serializable]
     public class ProjectileRef
@@ -214,14 +219,12 @@ public class EnemyImporter : EditorWindow
         }
 
         // ---------------- 2. Construir clips del ENEMIGO ----------------
-        string enemyRoot = $"Assets/Enemies/{enemyName}";
+        string enemyRoot = $"Assets/Art/EnemyImports/{enemyName}";
         string animFolder = $"{enemyRoot}/Animations";
         Directory.CreateDirectory(animFolder);
         AssetDatabase.Refresh();
 
         var builtClips = new List<BuiltClip>();
-        // guarda, por nombre de animación, qué proyectil dispara y en qué frame (tiempo normalizado 0-1 para el evento)
-        var projectileTriggers = new Dictionary<string, ProjectileRef>();
 
         foreach (var anim in manifest.animations)
         {
@@ -239,7 +242,6 @@ public class EnemyImporter : EditorWindow
             if (anim.projectile != null && projectilePrefabsByName.ContainsKey(anim.projectile.name))
             {
                 AddSpawnProjectileEvent(clip, anim.projectile.spawnFrame, anim.fps, anim.projectile.name);
-                projectileTriggers[anim.name] = anim.projectile;
             }
 
             AssetDatabase.CreateAsset(clip, $"{animFolder}/{anim.name}.anim");
@@ -253,13 +255,6 @@ public class EnemyImporter : EditorWindow
         }
 
         AnimatorController enemyController = BuildEnemyAnimatorController(enemyRoot, enemyName, builtClips);
-        GameObject enemyPrefabObj = BuildEnemyPrefab(enemyName, enemyController, builtClips[0].firstSprite, projectilePrefabsByName, projectileTriggers.Values, anchor);
-
-        Directory.CreateDirectory(ENEMY_PREFAB_FOLDER);
-        AssetDatabase.Refresh();
-        string enemyPrefabPath = $"{ENEMY_PREFAB_FOLDER}/{enemyName}.prefab";
-        PrefabUtility.SaveAsPrefabAsset(enemyPrefabObj, enemyPrefabPath);
-        Object.DestroyImmediate(enemyPrefabObj);
 
         SpriteSheetRecipe sheetRecipe = BuildSpriteSheetRecipe(enemyRoot, enemyName, manifest, enemyController, builtClips, anchor);
         string sheetRecipePath = AssetDatabase.GetAssetPath(sheetRecipe);
@@ -271,10 +266,11 @@ public class EnemyImporter : EditorWindow
             $"Enemigo '{enemyName}' generado:\n\n" +
             $"- {builtClips.Count} animaciones\n" +
             $"- {projectilePrefabsByName.Count} prefab(s) de proyectil\n" +
-            $"- Prefab enemigo: {enemyPrefabPath}\n" +
-            $"- SpriteSheetRecipe (para EnemyConfig.art): {sheetRecipePath}");
+            $"- SpriteSheetRecipe (para EnemyConfig.art): {sheetRecipePath}\n\n" +
+            "Este importador ya no crea un prefab de enemigo propio — usa Tools > Web > Import " +
+            "Config... apuntando 'art' a este SpriteSheetRecipe para generar el prefab jugable real.");
 
-        Selection.activeObject = AssetDatabase.LoadAssetAtPath<GameObject>(enemyPrefabPath);
+        Selection.activeObject = sheetRecipe;
     }
 
     // ---------------------------------------------------------------------------
@@ -301,7 +297,7 @@ public class EnemyImporter : EditorWindow
         recipe.characterName = enemyName;
         // outputFolder NO se deja en blanco: el default de SpriteSheetRecipe.ResolvedFolder es
         // Assets/Art/Characters/<nombre>, que es donde vive el corte real de SheetSlicer — este
-        // importador guarda el controller y los PNG en enemyRoot (Assets/Enemies/<nombre>), así
+        // importador guarda el controller y los PNG en enemyRoot (Assets/Art/EnemyImports/<nombre>), así
         // que EnemyFactory tiene que buscar ahí.
         recipe.outputFolder = enemyRoot;
         recipe.runtime = AnimRuntime.Animator;
@@ -428,9 +424,9 @@ public class EnemyImporter : EditorWindow
     /// <paramref name="rendererPath"/> debe coincidir con dónde vive el <c>SpriteRenderer</c> visto
     /// DESDE el GameObject que lleva el Animator, o la curva no resuelve y el clip reproduce "sin
     /// arte" (Unity lo enseña como "Sprite Missing" en la ventana Animation).
-    ///  - Vacío ("") para el prefab que este mismo importador construye
-    ///    (<see cref="BuildEnemyPrefab"/>/<see cref="BuildProjectilePrefab"/>): ahí el
-    ///    SpriteRenderer va en la MISMA raíz que el Animator.
+    ///  - Vacío ("") para el prefab de proyectil que este mismo importador construye
+    ///    (<see cref="BuildProjectilePrefab"/>): ahí el SpriteRenderer va en la MISMA raíz que el
+    ///    Animator.
     ///  - <c>AnimClipBuilder.RendererPath</c> ("Sprite") para que el MISMO clip también funcione en
     ///    el prefab que construye <c>EnemyFactory.Generate</c> — vía el SpriteSheetRecipe de
     ///    compatibilidad de <see cref="BuildSpriteSheetRecipe"/> —, donde el Animator va en la raíz
@@ -575,76 +571,6 @@ public class EnemyImporter : EditorWindow
         }
 
         return controller;
-    }
-
-    private static GameObject BuildEnemyPrefab(string enemyName, AnimatorController controller, Sprite defaultSprite,
-        Dictionary<string, GameObject> projectilePrefabsByName, IEnumerable<ProjectileRef> usedProjectiles, AnchorMode anchor)
-    {
-        GameObject go = new GameObject(enemyName);
-
-        // El SpriteRenderer va en un hijo llamado "Sprite" — NO en la raíz — para que este prefab
-        // reproduzca los mismos AnimationClip que construye EnemyFactory.Generate (Animator en la
-        // raíz, SpriteRenderer en RedMagic.Pipeline.EditorTools.AnimClipBuilder.RendererPath). Los
-        // clips llevan esa ruta grabada en su curva de sprites (ver BuildClip): con el
-        // SpriteRenderer en la raíz, la curva no resuelve y Unity lo enseña como "Sprite Missing".
-        var spriteChild = new GameObject(RedMagic.Pipeline.EditorTools.AnimClipBuilder.RendererPath);
-        spriteChild.transform.SetParent(go.transform, false);
-        var sr = spriteChild.AddComponent<SpriteRenderer>();
-        sr.sprite = defaultSprite;
-
-        var animator = go.AddComponent<Animator>();
-        animator.runtimeAnimatorController = controller;
-
-        var rb = go.AddComponent<Rigidbody2D>();
-        rb.gravityScale = 0f;
-        rb.bodyType = RigidbodyType2D.Kinematic; // ajusta según tu sistema de movimiento
-
-        var col = go.AddComponent<BoxCollider2D>();
-        if (defaultSprite != null)
-        {
-            col.size = defaultSprite.bounds.size;
-            // Mismo cálculo que EnemyFactory.cs para 'centeredPivot': con el pivote en el centro de
-            // la caja (Center) el collider ya queda centrado en el origen; sólo un pivote a los pies
-            // (BottomCenter) necesita empujarlo media altura hacia arriba. Antes esto asumía
-            // siempre pies, así que un enemigo Center quedaba con el collider medio cuerpo por
-            // encima del dibujo — el mismo bug que motivó 'centeredPivot' en EnemyFactory.
-            col.offset = anchor == AnchorMode.Center ? Vector2.zero : new Vector2(0, defaultSprite.bounds.extents.y);
-        }
-
-        // Sólo añade el spawner si el enemigo realmente dispara algún proyectil
-        var distinctProjNames = usedProjectiles.Select(p => p.name).Distinct().ToList();
-        if (distinctProjNames.Count > 0)
-        {
-            var spawnerType = System.Type.GetType("EnemyProjectileSpawner");
-            if (spawnerType == null)
-            {
-                Debug.LogWarning("[EnemyImporter] No se encontró el script 'EnemyProjectileSpawner' en el proyecto. " +
-                    "Copia EnemyProjectileSpawner.cs (no en carpeta Editor) y vuelve a importar para enlazar los proyectiles automáticamente.");
-            }
-            else
-            {
-                var spawnerComponent = go.AddComponent(spawnerType);
-                var so = new SerializedObject(spawnerComponent);
-                var listProp = so.FindProperty("projectiles");
-                if (listProp != null)
-                {
-                    listProp.ClearArray();
-                    int i = 0;
-                    foreach (var name in distinctProjNames)
-                    {
-                        if (!projectilePrefabsByName.ContainsKey(name)) continue;
-                        listProp.InsertArrayElementAtIndex(i);
-                        var element = listProp.GetArrayElementAtIndex(i);
-                        element.FindPropertyRelative("name").stringValue = name;
-                        element.FindPropertyRelative("prefab").objectReferenceValue = projectilePrefabsByName[name];
-                        i++;
-                    }
-                    so.ApplyModifiedPropertiesWithoutUndo();
-                }
-            }
-        }
-
-        return go;
     }
 
     private static GameObject BuildProjectilePrefab(string projectileName, AnimatorController controller, Sprite defaultSprite)

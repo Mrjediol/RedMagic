@@ -25,7 +25,7 @@ namespace RedMagic.Pipeline
         [Tooltip("La hoja ya cortada. De ahí salen el sprite base y los clips.")]
         public SpriteSheetRecipe art;
 
-        [Tooltip("Vacío = Assets/Prefab/Enemies.")]
+        [Tooltip("Vacío = Assets/Prefabs/Enemies.")]
         public string prefabFolder = "";
 
         [Header("Presencia")]
@@ -63,7 +63,7 @@ namespace RedMagic.Pipeline
 
         /// <summary>Carpeta efectiva del prefab.</summary>
         public string ResolvedFolder => string.IsNullOrWhiteSpace(prefabFolder)
-            ? "Assets/Prefab/Enemies"
+            ? "Assets/Prefabs/Enemies"
             : prefabFolder.TrimEnd('/');
 
         /// <summary>Ruta del prefab que genera esta ficha.</summary>

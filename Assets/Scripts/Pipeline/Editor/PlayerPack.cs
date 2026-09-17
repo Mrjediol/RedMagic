@@ -44,7 +44,7 @@ namespace RedMagic.Pipeline.EditorTools
         // moment this pack is next run, instead of misbehaving quietly. If this pack is ever run
         // again for real, point this at a real starting controller first.
         private const string SourceController = "Assets/Dragon Warrior Files/Animations/DragonWarrior.controller";
-        private const string PlayerPrefab = "Assets/Prefab/Player.prefab";
+        private const string PlayerPrefab = "Assets/Prefabs/Player.prefab";
 
         /// <summary>Recuadros del ataque cortados a mano, como Sprite sueltos.</summary>
         private const string HandCutFolder = "Assets/Sprites/New folder";

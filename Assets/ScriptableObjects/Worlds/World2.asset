@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a516c779e3248418e47ab343afceee7, type: 3}
+  m_Name: World2
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Run.WorldDefinition
+  worldNumber: 2
+  displayName: Mundo 2
+  unlocked: 1
+  sectionPool:
+  - sceneAsset: {fileID: 102900000, guid: 594b46cde2cf98c489085bbc603a33a5, type: 3}
+    scenePath: Assets/Scenes/Worlds/World2/World2_Section01.unity
+    sceneName: World2_Section01
+  - sceneAsset: {fileID: 102900000, guid: df675aff1f045294c938c093c1d462d1, type: 3}
+    scenePath: Assets/Scenes/Worlds/World2/World2_Section02.unity
+    sceneName: World2_Section02
+  - sceneAsset: {fileID: 102900000, guid: 934cf6381e8ef17448579cc4b766823a, type: 3}
+    scenePath: Assets/Scenes/Worlds/World2/World2_Section03.unity
+    sceneName: World2_Section03
+  - sceneAsset: {fileID: 102900000, guid: ca396949ffef96944809818a8827aaa1, type: 3}
+    scenePath: Assets/Scenes/Worlds/World2/World2_Section04.unity
+    sceneName: World2_Section04
+  - sceneAsset: {fileID: 102900000, guid: ea9302b593c1d2443b3e4ccd40783caf, type: 3}
+    scenePath: Assets/Scenes/Worlds/World2/World2_Section05.unity
+    sceneName: World2_Section05
+  sectionsPerRun: 2
+  bossScene:
+    sceneAsset: {fileID: 102900000, guid: eb7cd7ee2aa08494b978aabcb5565ca8, type: 3}
+    scenePath: Assets/Scenes/Worlds/World2/World2_Boss.unity
+    sceneName: World2_Boss

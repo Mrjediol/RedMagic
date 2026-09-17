@@ -18,7 +18,7 @@ namespace RedMagic.FxTools
     /// </summary>
     public static class OrbeSheetSlicer
     {
-        private const string Folder = "Assets/Prefab/Fx/Bosses/ArbolAncestral";
+        private const string Folder = "Assets/Prefabs/Fx/Bosses/ArbolAncestral";
         private const string Sheet = Folder + "/orbe.png";
         private const string OutFolder = Folder + "/Orbe";
 

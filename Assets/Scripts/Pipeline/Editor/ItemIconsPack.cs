@@ -7,13 +7,13 @@ using UnityEngine;
 namespace RedMagic.Pipeline.EditorTools
 {
     /// <summary>
-    /// Iconos de items: quita el fondo de las imágenes de <c>Assets/Icon/</c> con el mismo procesador
+    /// Iconos de items: quita el fondo de las imágenes de <c>Assets/Art/Icons/</c> con el mismo procesador
     /// que el arte de UI (<see cref="UiArtKitProcessor"/>, receta <c>ItemIcons.uikit.asset</c>) y los
     /// pone en los items que aún no tengan icono. Además crea los items de prueba de hielo (botas,
     /// capa, yelmo, anillo, bastón) con efectos exagerados para comprobar el sistema de efectos.
     ///
     /// Re-ejecutable: los PNG se regeneran; los items y la receta sólo se crean si faltan, y un icono
-    /// ya asignado a mano no se toca. Un icono nuevo = imagen en <c>Assets/Icon/</c> + una pieza más
+    /// ya asignado a mano no se toca. Un icono nuevo = imagen en <c>Assets/Art/Icons/</c> + una pieza más
     /// en la receta (Inspector) + ejecutar esto; luego se asigna en el item o en
     /// <c>Tools ▸ RedMagic ▸ Items ▸ Catálogo</c>.
     /// </summary>

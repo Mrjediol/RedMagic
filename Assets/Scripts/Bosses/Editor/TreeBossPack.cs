@@ -54,7 +54,7 @@ namespace RedMagic.Bosses.EditorTools
         private const string BodyRecipePath = ArtFolder + "/TreeBoss.sheet.asset";
         private const string ControllerPath = ArtFolder + "/TreeBoss.controller";
 
-        private const string FxFolder = "Assets/Prefab/Fx/Bosses/TreeBoss";
+        private const string FxFolder = "Assets/Prefabs/Fx/Bosses/TreeBoss";
         private const string FxArtFolder = FxFolder + "/Art";
         private const string OrbRecipePath = FxArtFolder + "/TreeBossOrb.sheet.asset";
         private const string RootRecipePath = FxArtFolder + "/TreeBossRoot.sheet.asset";
@@ -101,7 +101,7 @@ namespace RedMagic.Bosses.EditorTools
 
         private const string BossFolder = "Assets/Resources/Bosses";
         private const string DefinitionPath = BossFolder + "/Boss_TreeBoss.asset";
-        private const string PrefabFolder = "Assets/Prefab/Enemies";
+        private const string PrefabFolder = "Assets/Prefabs/Enemies";
         private const string PrefabPath = PrefabFolder + "/Boss_TreeBoss.prefab";
         private const string BossScenePath = "Assets/Scenes/Worlds/World1/World1_Boss.unity";
 

@@ -30,7 +30,7 @@ namespace RedMagic.Hub.EditorTools
         private const string RootFolder = "Assets/Art/Characters/MainHubItems";
         private const string RecipePath = RootFolder + "/MainHubItems.sheet.asset";
         private const string AnimFolder = RootFolder + "/Anim/";
-        private const string PrefabFolder = "Assets/Prefab/Eviroment/";
+        private const string PrefabFolder = "Assets/Prefabs/Eviroment/";
 
         [MenuItem("Tools/RedMagic/Hub/Generar props del hub", priority = 400)]
         public static void Run()
@@ -184,7 +184,7 @@ namespace RedMagic.Hub.EditorTools
         /// </summary>
         private static void DressGoldChest()
         {
-            const string path = "Assets/Prefab/Eviroment/GoldChest.prefab";
+            const string path = "Assets/Prefabs/Eviroment/GoldChest.prefab";
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (prefab == null)
             {

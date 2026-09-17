@@ -10,28 +10,30 @@
 // Unity persists a plain EditorWindow's dock position across sessions by its Type, same as any
 // other panel, with no extra code needed.
 //
-// WHY ONLY ONE ENEMY PREFAB FOLDER: audited before writing this (see docs/web-tools-guide.md and
-// ARCHITECTURE.md's Map Tracer section for the write-up). Two DIFFERENT, both real and populated,
-// sibling folders hold enemy-shaped prefabs in this project:
-//   - Assets/Prefab/Enemies/Enemy_<Name>.prefab   — pipeline-pack / EnemyFactory / EnemyConfigImporter.
-//     The REAL, gameplay-ready prefab: EnemyStats/EnemyBrain/EnemyAttack and everything else
-//     EnemyFactory stamps. (Also Boss_<Name>.prefab here — bosses share this folder, excluded from
-//     the Enemies grid.) This is the ONLY folder the Enemies category reads from.
-//   - Assets/Prefabs/Enemies/<Name>.prefab        — legacy standalone EnemyImporter.cs ("Build Enemy
-//     From Folder"), no prefix. Sprite/Animator only — no gameplay component at all. An
-//     INTERMEDIATE artifact on the way to the real prefab above (EnemyConfigImporter is what
-//     actually builds the gameplay prefab, reading sprites this step produced), not something meant
-//     to be a library entry — deliberately excluded from every scan/list/delete in this file.
-// A single enemy's sprite/recipe data can independently live under Assets/Art/Characters/<Name>/
-// (pipeline: .sheet.asset/.enemy.asset/sliced PNGs/controller) and/or Assets/Enemies/<Name>/
-// (EnemyImporter output that the real prefab's AnimationClips may still reference directly,
-// enemy-config.json if it came from a combined-bundle import). "Eliminar enemigo" groups by <Name>
-// off the real prefab and also trashes whichever of THOSE two exist alongside it.
+// ENEMY PREFAB FOLDER — HISTORY: two audits and a folder restructure went into this (see
+// docs/web-tools-guide.md, ARCHITECTURE.md's Map Tracer section, and
+// docs/folder-restructure-audit.md). Up through that restructure there were TWO sibling folders,
+// "Assets/Prefab/Enemies/" (singular — the REAL, gameplay-ready `Enemy_<Name>.prefab`/
+// `Boss_<Name>.prefab`, EnemyStats/EnemyBrain/EnemyAttack and everything EnemyFactory stamps) and
+// "Assets/Prefabs/Enemies/" (plural — a sprite/Animator-only INTERMEDIATE artifact from
+// EnemyImporter.cs's old "Build Enemy From Folder" prefab-writing step, read by nothing
+// downstream). The Enemies category only ever scanned the singular, real one — deliberately
+// excluding the plural intermediate folder. As part of the restructure, that dead prefab-writing
+// step was removed from EnemyImporter.cs entirely, the plural folder (by then just test junk) was
+// deleted, and the REAL folder was renamed to reuse the now-free plural name — so
+// ENEMY_PIPELINE_FOLDER below is "Assets/Prefabs/Enemies" (plural) today, and there is only one
+// enemy prefab folder in the project, full stop.
 //
-// DELIBERATELY NOT deleted with an enemy: projectile assets (Assets/Projectiles/<ProjName>/,
-// Assets/Prefabs/Projectiles/<ProjName>.prefab). Those are keyed by PROJECTILE name, not enemy
-// name, and nothing stops two enemies sharing one — auto-deleting them per-enemy risks breaking an
-// unrelated enemy silently. Left for manual cleanup.
+// A single enemy's sprite/recipe data can independently live under Assets/Art/Characters/<Name>/
+// (pipeline: .sheet.asset/.enemy.asset/sliced PNGs/controller) and/or Assets/Art/EnemyImports/<Name>/
+// (EnemyImporter output that the real prefab's AnimationClips may still reference directly,
+// enemy-config.json if it came from a combined-bundle import — this folder was itself renamed from
+// "Assets/Enemies/" in the same restructure). "Eliminar enemigo" groups by <Name> off the real
+// prefab and also trashes whichever of THOSE two exist alongside it.
+//
+// DELIBERATELY NOT deleted with an enemy: projectile assets (Assets/Prefabs/Projectiles/<ProjName>/).
+// Those are keyed by PROJECTILE name, not enemy name, and nothing stops two enemies sharing one —
+// auto-deleting them per-enemy risks breaking an unrelated enemy silently. Left for manual cleanup.
 //
 // PER-CATEGORY DISPLAY ORDER: AssetDatabase has no notion of a user-chosen order, so one is kept
 // separately — a small JSON file under Library/ (not Assets/, so it's local to this machine/Editor
@@ -62,11 +64,11 @@ public class WebLibraryWindow : EditorWindow
         (Category.Player, "Player"),
     };
 
-    private const string ENEMY_PIPELINE_FOLDER = "Assets/Prefab/Enemies";   // Enemy_<Name>.prefab / Boss_<Name>.prefab — the ONLY source for the Enemies grid
+    private const string ENEMY_PIPELINE_FOLDER = "Assets/Prefabs/Enemies";   // Enemy_<Name>.prefab / Boss_<Name>.prefab — the ONLY source for the Enemies grid
     private const string ART_CHARACTERS_FOLDER = "Assets/Art/Characters";
-    private const string ENEMY_IMPORTER_FOLDER = "Assets/Enemies";
+    private const string ENEMY_IMPORTER_FOLDER = "Assets/Art/EnemyImports";
     private const string BOSS_DEFINITION_FOLDER = "Assets/Resources/Bosses";
-    private const string PLAYER_PREFAB_PATH = "Assets/Prefab/Player.prefab";
+    private const string PLAYER_PREFAB_PATH = "Assets/Prefabs/Player.prefab";
     private const string SCENES_FOLDER = "Assets/Scenes";
 
     private class Entry
@@ -181,7 +183,7 @@ public class WebLibraryWindow : EditorWindow
                 return "MiniBosses: sin herramienta de importación dedicada todavía — no hay ningún " +
                        "tipo/convención de asset para minijefes en el proyecto (auditado, cero coincidencias).";
             case Category.Player:
-                return "No se encontró Assets/Prefab/Player.prefab.";
+                return "No se encontró Assets/Prefabs/Player.prefab.";
             case Category.Bosses:
                 return "Sin BossDefinition en Assets/Resources/Bosses/.";
             case Category.Escenas:

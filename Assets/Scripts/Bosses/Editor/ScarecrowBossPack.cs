@@ -29,7 +29,7 @@ namespace RedMagic.Bosses.EditorTools
     public static class ScarecrowBossPack
     {
         private const string BossFolder = "Assets/Resources/Bosses";
-        private const string PrefabFolder = "Assets/Prefab/Enemies";
+        private const string PrefabFolder = "Assets/Prefabs/Enemies";
         private const string PrefabPath = PrefabFolder + "/Boss_EspantapajarosMarchito.prefab";
         private const string CrowPrefabPath = PrefabFolder + "/Enemy_Cuervo.prefab";
         private const string DefinitionPath = BossFolder + "/Boss_EspantapajarosMarchito.asset";

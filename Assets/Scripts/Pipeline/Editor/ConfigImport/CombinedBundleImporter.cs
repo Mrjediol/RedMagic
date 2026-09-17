@@ -37,7 +37,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// staging") deja cada keyframe apuntando a un asset borrado — el clip conserva el NÚMERO de
     /// frames (va horneado en los tiempos de las keyframes) pero cada uno queda sin sprite, y el
     /// enemigo se vuelve invisible en Play. La entrada se descomprime, por tanto, DIRECTAMENTE en
-    /// <c>Assets/Enemies/&lt;enemyName&gt;/</c> — la misma carpeta que ya usan las salidas de
+    /// <c>Assets/Art/EnemyImports/&lt;enemyName&gt;/</c> — la misma carpeta que ya usan las salidas de
     /// <see cref="EnemyImporter"/> (Animations/, el .sheet.asset, el .controller) y la misma que
     /// tendría un usuario descomprimiendo el .zip a mano ahí, tal y como documenta la cabecera de
     /// <c>EnemyImporter.cs</c> — y nunca se borra.
@@ -102,7 +102,7 @@ namespace RedMagic.Pipeline.EditorTools
                 // Destino PERMANENTE — mismo folder que EnemyImporter.cs usa para sus propias
                 // salidas y que un unzip a mano ahí produciría. Copia (no mueve) archivo a archivo
                 // para que reimportar el mismo enemigo sobrescriba en vez de fallar por "ya existe".
-                string enemyRoot = $"Assets/Enemies/{enemyName}";
+                string enemyRoot = $"Assets/Art/EnemyImports/{enemyName}";
                 Directory.CreateDirectory(enemyRoot);
                 CopyDirectoryRecursive(tempExtractFolder, enemyRoot);
                 AssetDatabase.Refresh();
@@ -148,7 +148,7 @@ namespace RedMagic.Pipeline.EditorTools
             finally
             {
                 // Sólo la carpeta temporal del sistema (nunca tocada por AssetDatabase) se limpia
-                // aquí — el destino en Assets/Enemies/<enemyName>/ es permanente, ver arriba.
+                // aquí — el destino en Assets/Art/EnemyImports/<enemyName>/ es permanente, ver arriba.
                 if (tempExtractFolder != null && Directory.Exists(tempExtractFolder))
                 {
                     try { Directory.Delete(tempExtractFolder, recursive: true); }

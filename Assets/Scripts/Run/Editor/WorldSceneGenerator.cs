@@ -41,7 +41,7 @@ namespace RedMagic.RunEditor
         private int _sectionsPerRun = 5;
         private bool _createBossScene = true;
         private string _sceneRoot = "Assets/Scenes/Worlds";
-        private string _dataRoot = "Assets/Data/Worlds";
+        private string _dataRoot = "Assets/ScriptableObjects/Worlds";
         private bool _addToBuildSettings = true;
         private bool _createWorldAsset = true;
         private bool _unlocked = true;

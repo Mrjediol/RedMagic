@@ -285,7 +285,7 @@ namespace RedMagic.Pipeline.EditorTools
                 return;
             }
 
-            string folder = $"Assets/Prefab/Fx/Enemies/{recipe.enemyName}";
+            string folder = $"Assets/Prefabs/Fx/Enemies/{recipe.enemyName}";
             var prefab = ProjectilePrefabFactory.BuildFromSprite(
                 folder, $"{recipe.enemyName}_Projectile", prop, recipe.projectileScale);
 

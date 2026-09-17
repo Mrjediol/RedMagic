@@ -18,7 +18,7 @@ namespace RedMagic.Bosses.EditorTools
     public static class BossStarterPack
     {
         private const string BossFolder = "Assets/Resources/Bosses";
-        private const string PrefabFolder = "Assets/Prefab/Enemies";
+        private const string PrefabFolder = "Assets/Prefabs/Enemies";
         private const string PrefabPath = PrefabFolder + "/Boss_ArbolAncestral.prefab";
         private const string DefinitionPath = BossFolder + "/Boss_ArbolAncestral.asset";
 

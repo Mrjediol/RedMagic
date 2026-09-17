@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.EnemyRecipe
   enemyName: Dragoncito
   art: {fileID: 11400000, guid: 69a167fd94404e841a169a12665d51e5, type: 2}
-  prefabFolder: Assets/Prefab/Enemies
+  prefabFolder: 
   spriteScale: 1
   colliderSize: {x: 0, y: 0}
   colliderOffset: {x: 0, y: 0}

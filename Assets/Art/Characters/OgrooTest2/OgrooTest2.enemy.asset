@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.EnemyRecipe
   enemyName: OgrooTest2
   art: {fileID: 11400000, guid: d32b038ee84d4354490449debaa12f51, type: 2}
-  prefabFolder: Assets/Prefab/Enemies
+  prefabFolder: 
   spriteScale: 1
   colliderSize: {x: 0, y: 0}
   colliderOffset: {x: 0, y: 0}

@@ -123,7 +123,7 @@ export function createDefaultEnemyConfig() {
     // schema's $comment on 'anchor'.
     anchor: 'Center',
 
-    prefabFolder: 'Assets/Prefab/Enemies',
+    prefabFolder: 'Assets/Prefabs/Enemies',
 
     presence: {
       spriteScale: 1,

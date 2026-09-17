@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.EnemyRecipe
   enemyName: Butterfly
   art: {fileID: 11400000, guid: 30e8b8e8acb8d584ca6788f713a06daa, type: 2}
-  prefabFolder: Assets/Prefab/Enemies
+  prefabFolder: 
   spriteScale: 1
   colliderSize: {x: 0, y: 0}
   colliderOffset: {x: 0, y: 0}

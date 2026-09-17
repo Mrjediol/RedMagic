@@ -2,7 +2,7 @@
   "enemyName": "PurpleTuirtle",
   "art": "Assets/Art/EnemyImports/PurpleTuirtle/PurpleTuirtle.sheet.asset",
   "anchor": "Center",
-  "prefabFolder": "Assets/Prefab/Enemies",
+  "prefabFolder": "Assets/Prefabs/Enemies",
   "presence": {
     "spriteScale": 1,
     "colliderSize": {

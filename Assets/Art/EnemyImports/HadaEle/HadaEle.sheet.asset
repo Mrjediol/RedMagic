@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f0d342f95c145c44a25c9b802727df1, type: 3}
+  m_Name: HadaEle.sheet
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.SpriteSheetRecipe
+  sheet: {fileID: 0}
+  characterName: HadaEle
+  outputFolder: Assets/Art/EnemyImports/HadaEle
+  sliceMode: 0
+  rows:
+  - state: Idle
+    frames: 5
+    fps: 8
+    loop: 1
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: Walk
+    frames: 5
+    fps: 8
+    loop: 1
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: Attack
+    frames: 4
+    fps: 8
+    loop: 1
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: Hurt
+    frames: 5
+    fps: 8
+    loop: 1
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  - state: Death
+    frames: 5
+    fps: 8
+    loop: 1
+    releaseFrame: -1
+    frameRects: []
+    groupSlack: 1
+    propBlobs: 0
+    evenSplit: 0
+  columns: 5
+  cropLeft: 0
+  cropRight: 0
+  cropTop: 0
+  cropBottom: 0
+  keyBackground: 1
+  backgroundTolerance: 0.12
+  alphaThreshold: 0.15
+  softEdge: 0
+  fillHoles: 0
+  margin: 8
+  anchor: 1
+  pixelsPerUnit: 100
+  filterMode: 1
+  runtime: 0
+  attackEvents: 1
+  derivedClips: []
+  rendererPath: Sprite

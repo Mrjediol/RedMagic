@@ -229,7 +229,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
   const prefabFolderField = F.textField({
     label: 'Carpeta del prefab (prefabFolder)', value: state.prefabFolder,
-    hint: 'Vacío = Assets/Prefab/Enemies.',
+    hint: 'Vacío = Assets/Prefabs/Enemies.',
     onChange: (v) => { state.prefabFolder = v; refresh(); },
   });
   registerError('/prefabFolder', prefabFolderField.setError);

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.EnemyRecipe
   enemyName: PurpleTuirtle
   art: {fileID: 11400000, guid: e9017f1b7b76b864db0a0ab21e286e11, type: 2}
-  prefabFolder: Assets/Prefab/Enemies
+  prefabFolder: 
   spriteScale: 1
   colliderSize: {x: 0, y: 0}
   colliderOffset: {x: 0, y: 0}

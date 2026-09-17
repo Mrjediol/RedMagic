@@ -1,7 +1,7 @@
 {
   "enemyName": "Turtle",
   "art": "Assets/Enemies/Turtle/Turtle.sheet.asset",
-  "prefabFolder": "Assets/Prefab/Enemies",
+  "prefabFolder": "Assets/Prefabs/Enemies",
   "presence": {
     "spriteScale": 1,
     "colliderSize": {

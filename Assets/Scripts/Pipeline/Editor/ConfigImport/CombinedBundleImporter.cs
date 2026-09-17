@@ -44,7 +44,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class CombinedBundleImporter
     {
-        [MenuItem("Tools/RedMagic/Import Config.../Importar enemigo completo (sprites + config)...")]
+        [MenuItem("Tools/Web/Import Config.../Importar enemigo completo (sprites + config)...")]
         public static void ImportBundleMenu()
         {
             string path = EditorUtility.OpenFilePanel(
@@ -89,6 +89,16 @@ namespace RedMagic.Pipeline.EditorTools
                 var configRoot = JObject.Parse(File.ReadAllText(configPath));
                 string enemyName = ConfigJson.RequireString(configRoot, "enemyName", "EnemyConfig");
 
+                // 'anchor' sólo existe para decidirlo AQUÍ: este es el único de los tres import
+                // paths que realmente CORTA un SpriteSheetRecipe nuevo (vía EnemyImporter, más
+                // abajo) — el import de config suelto (EnemyConfigImporter.Import) sólo referencia
+                // un recipe YA existente por 'art', cuyo anchor ya quedó fijado cuando se cortó, así
+                // que no tiene sentido (ni es seguro) que ese camino lo sobreescriba. Ver
+                // docs/schemas/COMPATIBILITY.md.
+                AnchorMode anchor = configRoot["anchor"] != null
+                    ? ConfigJson.ParseEnum<AnchorMode>(configRoot["anchor"], $"{enemyName}.anchor")
+                    : AnchorMode.Center;
+
                 // Destino PERMANENTE — mismo folder que EnemyImporter.cs usa para sus propias
                 // salidas y que un unzip a mano ahí produciría. Copia (no mueve) archivo a archivo
                 // para que reimportar el mismo enemigo sobrescriba en vez de fallar por "ya existe".
@@ -99,7 +109,7 @@ namespace RedMagic.Pipeline.EditorTools
 
                 // ---------------- paso 1: sprites — EnemyImporter.cs tal cual ----------------
                 string absoluteEnemyRoot = Path.GetFullPath(enemyRoot);
-                EnemyImporter.BuildEnemyFromFolderPath(absoluteEnemyRoot, showDialog: false);
+                EnemyImporter.BuildEnemyFromFolderPath(absoluteEnemyRoot, anchor: anchor, showDialog: false);
 
                 string recipePath = $"{enemyRoot}/{enemyName}.sheet.asset";
                 var recipe = AssetDatabase.LoadAssetAtPath<SpriteSheetRecipe>(recipePath);

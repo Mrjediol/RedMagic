@@ -27,7 +27,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class ConfigImportRunner
     {
-        [MenuItem("Tools/RedMagic/Import Config.../Importar archivo...")]
+        [MenuItem("Tools/Web/Import Config.../Importar archivo...")]
         public static void ImportFileMenu()
         {
             string path = EditorUtility.OpenFilePanel("Selecciona un config JSON", Application.dataPath, "json");
@@ -36,7 +36,7 @@ namespace RedMagic.Pipeline.EditorTools
             RunAndShow(path, libraryPath: null, ConfigKind.Auto, resetEnemyTuning: false);
         }
 
-        [MenuItem("Tools/RedMagic/Import Config.../Importar archivo (RESETEANDO tuning de enemigo)...")]
+        [MenuItem("Tools/Web/Import Config.../Importar archivo (RESETEANDO tuning de enemigo)...")]
         public static void ImportFileResetMenu()
         {
             string path = EditorUtility.OpenFilePanel("Selecciona un EnemyConfig JSON", Application.dataPath, "json");
@@ -51,7 +51,7 @@ namespace RedMagic.Pipeline.EditorTools
             RunAndShow(path, libraryPath: null, ConfigKind.Auto, resetEnemyTuning: true);
         }
 
-        [MenuItem("Tools/RedMagic/Import Config.../Ventana de importación")]
+        [MenuItem("Tools/Web/Import Config.../Ventana de importación")]
         public static void OpenWindow() => EditorWindow.GetWindow<ConfigImportWindow>("Import Config");
 
         private static void RunAndShow(string path, string libraryPath, ConfigKind kind, bool resetEnemyTuning)

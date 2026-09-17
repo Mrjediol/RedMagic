@@ -27,6 +27,16 @@ backing store, and are deliberately absent from the schema. Seeding goes through
 `presence` and two under `projectileArt` purely for readability; the importer flattens them back
 out and **no field is renamed**. Everything else is flat, matching the class.
 
+**EnemyConfig → `SpriteSheetRecipe.anchor`** — not a 1:1 field mapping like the ones above: `anchor`
+is not a field on `EnemyRecipe` or `EnemyTuning` at all, it is `RedMagic.Pipeline.AnchorMode` on
+whatever `SpriteSheetRecipe` the config's `art` resolves to. It is consumed **only** by the
+combined-bundle import (`CombinedBundleImporter.ImportBundle` → `EnemyImporter.BuildEnemyFromFolderPath`),
+the one import path that actually cuts a fresh `SpriteSheetRecipe` from raw PNGs — a plain
+config-only import (`EnemyConfigImporter.Import`) references an `art` recipe that already exists,
+whose `anchor` was already fixed whenever *that* was cut, and does not touch it. See the field's
+`$comment` in the schema for the full reasoning, and "Things that need no code change" below for
+the bug this closes.
+
 **ProjectileConfig → `ProjectileSpec`** — all 11 fields map 1:1.
 
 **BossConfig → `BossDefinition` / `BossPhase`** — all 4 + 15 fields map 1:1.
@@ -79,7 +89,21 @@ serialized class itself needs nothing.
 read-only properties. The importer must go through `SerializedObject.FindProperty`, exactly as
 `BossAuthoring.Fields.Write` already does. No accessibility change is needed or wanted.
 
-**5. Two `Projectile.ConfigureBehaviour` guards swallow zeros.**
+**5. `anchor` fixed a real bug in `EnemyImporter.cs`, not just a missing schema field.**
+Before this field existed, `EnemyImporter.cs`'s sprite-import path (`ConfigureSpriteImport`) hardcoded
+every enemy's sprite pivot to `BottomCenter` ("pies") regardless of archetype — unlike the
+pipeline-pack path, which already had per-recipe `AnchorMode` and used it (e.g.
+`MurcielagoPack.cs: anchor = AnchorMode.Center // vuela: sin pies`). A flying enemy imported via the
+web's combined bundle got a pivot at an empty point in the air below its body, and with it a
+`transform.position`-relative `detectionRange`/`attackRange`/`explosionRadius` (and their gizmos —
+`EnemyStats.OnDrawGizmosSelected`) all measured from that same wrong point instead of the body.
+Fixed by threading `AnchorMode` through `EnemyImporter.BuildEnemyFromFolderPath` (default `Center`)
+instead of the old `bool pivotBottom`, including the generated `BoxCollider2D`'s offset
+(`EnemyImporter.BuildEnemyPrefab`, mirroring `EnemyFactory.cs`'s `centeredPivot` calculation) and the
+compatibility recipe's own `anchor` field (`BuildSpriteSheetRecipe`), so a later regen through
+`EnemyFactory.Generate` against the same recipe would not silently fall back to `BottomCenter`.
+
+**6. Two `Projectile.ConfigureBehaviour` guards swallow zeros.**
 `homingRange` is only applied when `> 0`, so an explicit `0` leaves the component's own `9` in
 place rather than disabling homing — disable it with `homingTurnRate: 0`. `lifetime` has the same
 guard but its `[Min(0.05f)]` makes it unreachable.

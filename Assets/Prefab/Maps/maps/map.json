@@ -1,0 +1,140 @@
+{
+  "format": "RedMagicMap/1",
+  "canvas": {
+    "width": 2048,
+    "height": 672
+  },
+  "instances": [
+    {
+      "assetName": "Bg",
+      "fileName": "Bg.png",
+      "type": "background",
+      "x": 169,
+      "y": 25,
+      "width": 2188,
+      "height": 719,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    {
+      "assetName": "Border",
+      "fileName": "Border.png",
+      "type": "border",
+      "x": 309,
+      "y": 14,
+      "width": 1774,
+      "height": 887,
+      "scaleX": 0.7513148009015777,
+      "scaleY": 0.7513148009015777
+    },
+    {
+      "assetName": "frame_007",
+      "fileName": "frame_007.png",
+      "type": "platform",
+      "x": 1017,
+      "y": 274,
+      "width": 553,
+      "height": 212,
+      "scaleX": 0.5644739300537773,
+      "scaleY": 0.5644739300537773
+    },
+    {
+      "assetName": "frame_005",
+      "fileName": "frame_005.png",
+      "type": "platform",
+      "x": 747,
+      "y": 505,
+      "width": 333,
+      "height": 437,
+      "scaleX": 0.38554328942953164,
+      "scaleY": 0.38554328942953164
+    },
+    {
+      "assetName": "frame_003",
+      "fileName": "frame_003.png",
+      "type": "platform",
+      "x": 450,
+      "y": 234,
+      "width": 493,
+      "height": 221,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    {
+      "assetName": "frame_007",
+      "fileName": "frame_007.png",
+      "type": "platform",
+      "x": 1016,
+      "y": 458,
+      "width": 553,
+      "height": 212,
+      "scaleX": 0.6830134553650707,
+      "scaleY": 0.6830134553650707
+    }
+  ],
+  "collisions": {
+    "groundLines": [],
+    "platformLines": [
+      {
+        "points": [
+          {
+            "x": 1029.4184264611831,
+            "y": 294.88553541198974
+          },
+          {
+            "x": 1318.4290786487172,
+            "y": 294.88553541198974
+          }
+        ]
+      },
+      {
+        "points": [
+          {
+            "x": 467,
+            "y": 335
+          },
+          {
+            "x": 579,
+            "y": 336
+          }
+        ]
+      },
+      {
+        "points": [
+          {
+            "x": 584,
+            "y": 296
+          },
+          {
+            "x": 686,
+            "y": 296
+          }
+        ]
+      },
+      {
+        "points": [
+          {
+            "x": 695,
+            "y": 265
+          },
+          {
+            "x": 925,
+            "y": 267
+          }
+        ]
+      },
+      {
+        "points": [
+          {
+            "x": 1031.0262960180316,
+            "y": 483.27149784850764
+          },
+          {
+            "x": 1380.7291851649477,
+            "y": 483.27149784850764
+          }
+        ]
+      }
+    ]
+  }
+}

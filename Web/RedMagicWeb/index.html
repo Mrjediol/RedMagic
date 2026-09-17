@@ -20,6 +20,7 @@
   <button class="tabBtn active" data-tab="sprites">🍄 Sprites</button>
   <button class="tabBtn" data-tab="enemy">🧩 Enemy Creator</button>
   <button class="tabBtn" data-tab="library">📚 Biblioteca</button>
+  <button class="tabBtn" data-tab="map">🗺️ Map Tracer</button>
 </div>
 
 <div id="tab-sprites" class="tabPanel">
@@ -181,6 +182,136 @@
       si ya se exportó al menos una vez desde Enemy Creator, su EnemyConfig enlazado.
     </p>
     <div id="libraryTabList" class="libList"></div>
+  </div>
+</div>
+
+<div id="tab-map" class="tabPanel" hidden>
+  <div id="mapSidebar">
+    <div>
+      <h1>🗺️ Map Tracer</h1>
+      <p class="hint">1. Importa piezas. 2. Selecciona una o varias y asígnales tipo. 3. Traza colisiones y compón el mapa.</p>
+    </div>
+
+    <div>
+      <h2>Piezas</h2>
+      <input type="file" id="mapFileInput" accept="image/*" multiple>
+      <p class="hint">Shift+click selecciona varias piezas.</p>
+      <div class="field">
+        <label>Tipo para la selección</label>
+        <select id="mapAssetType">
+          <option value="unassigned">Sin clasificar</option>
+          <option value="border">1 · Borde — Ground</option>
+          <option value="background">2 · Fondo</option>
+          <option value="platform">3 · Plataforma — Platform</option>
+        </select>
+      </div>
+      <button id="mapApplyAssetType" class="primary" style="width:100%;">Asignar tipo a selección</button>
+      <div id="mapAssetsList" class="mapAssetsList"></div>
+    </div>
+
+    <div>
+      <h2>Pieza seleccionada</h2>
+      <p id="mapSelectedAssetInfo" class="hint">Selecciona una pieza de la biblioteca.</p>
+      <button id="mapTraceBtn" class="primary" style="width:100%;">✎ Editar colisiones de pieza</button>
+      <button id="mapBackToSceneBtn" style="width:100%;margin-top:6px;" hidden>← Volver al mapa</button>
+      <button id="mapSavePieceBtn" style="width:100%;margin-top:6px;">💾 Guardar pieza en biblioteca</button>
+      <button id="mapDeleteAssetBtn" class="danger" style="width:100%;margin-top:6px;">Eliminar pieza</button>
+    </div>
+  </div>
+
+  <div id="mapMain">
+    <div id="mapCanvasWrap">
+      <canvas id="mapCanvas"></canvas>
+      <div id="mapZoomReadout">100%</div>
+    </div>
+    <div id="mapStatus"></div>
+  </div>
+
+  <div id="mapRight">
+    <div id="mapSceneTools">
+      <h2 id="mapModeTitle">Escenario</h2>
+      <p class="hint">
+        Clic para colocar una pieza. Shift+click selecciona varias. Arrastra la selección para
+        moverla, o sus esquinas para redimensionar (Shift+arrastrar = proporcional).
+        Espacio+arrastrar o botón central mueve el lienzo.
+      </p>
+      <div class="row">
+        <button id="mapNewBtn">Nuevo mapa</button>
+        <button id="mapFitBtn">Centrar lienzo</button>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Ancho del escenario (px)</label>
+          <input id="mapWidthInput" type="number" value="2048" min="64">
+        </div>
+        <div class="field">
+          <label>Alto del escenario (px)</label>
+          <input id="mapHeightInput" type="number" value="672" min="64">
+        </div>
+      </div>
+      <button id="mapResizeBtn" style="width:100%;">Aplicar tamaño</button>
+      <button id="mapFitBorderBtn" style="width:100%;margin-top:6px;">Ajustar lienzo al borde</button>
+
+      <h2 style="margin-top:14px;">Selección</h2>
+      <p id="mapSelectionInfo" class="hint">Sin selección.</p>
+      <div class="row">
+        <button id="mapSelectAllBtn">Seleccionar todo</button>
+        <button id="mapDeleteInstanceBtn" class="danger">Eliminar</button>
+      </div>
+
+      <h2 style="margin-top:14px;">Instancias</h2>
+      <div id="mapInstancesList" class="mapInstancesList"></div>
+
+      <h2 style="margin-top:14px;">Exportar</h2>
+      <button id="mapExportPngBtn" class="primary" style="width:100%;">⬇ Imagen compuesta PNG</button>
+      <button id="mapExportJsonBtn" class="primary" style="width:100%;margin-top:6px;">⬇ Map JSON + colisiones</button>
+    </div>
+
+    <div id="mapTraceTools" hidden>
+      <p class="hint">Click añade punto · Enter/click-derecho termina · Z deshace · Esc cancela.</p>
+      <p id="mapTraceHint" class="hint"></p>
+      <button id="mapNewLineBtn" class="primary" style="width:100%;">＋ Nueva línea</button>
+      <button id="mapFinishLineBtn" style="width:100%;margin-top:6px;">✓ Terminar línea</button>
+      <h2 style="margin-top:14px;">Líneas de esta pieza</h2>
+      <div id="mapLinesList" class="mapInstancesList"></div>
+    </div>
+
+    <div id="mapLibrarySection">
+      <h2 style="margin-top:14px;">Biblioteca del Map Tracer</h2>
+      <div class="field">
+        <label>Nombre del mapa</label>
+        <input type="text" id="mapNameInput" placeholder="ej. World1_Section1">
+      </div>
+      <button id="mapSaveMapBtn" class="primary" style="width:100%;">💾 Guardar mapa en biblioteca</button>
+
+      <h3 class="mapLibSubhead">Mapas guardados</h3>
+      <div id="mapsLibraryList" class="libList"></div>
+
+      <h3 class="mapLibSubhead">Piezas guardadas</h3>
+      <p class="hint">Ctrl+click o Shift+click sobre una pieza para seleccionar varias.</p>
+      <button id="mapExportSelectedPiecesBtn" class="primary" style="width:100%;" disabled>⬇ Exportar piezas seleccionadas</button>
+      <div id="piecesLibraryList" class="libList"></div>
+    </div>
+  </div>
+</div>
+
+<div id="newLaneOverlay" class="modalOverlay" hidden>
+  <div class="modalCard">
+    <h2 style="margin-top:0;">Nueva animación</h2>
+    <p class="hint">
+      Los nombres de la lista son el vocabulario fijo que espera Unity (<code>EnemyAnimation.cs</code>) —
+      elige uno para no arriesgar una falta de ortografía, o "Personalizado…" para una animación
+      propia del enemigo (ej. <code>Attack2</code>) que no forma parte de ese vocabulario.
+    </p>
+    <div class="field">
+      <label>Nombre</label>
+      <select id="newLaneNameSelect"></select>
+      <input type="text" id="newLaneCustomName" placeholder="Nombre de la animación" hidden style="margin-top:6px;">
+    </div>
+    <div class="modalActions">
+      <button id="newLaneCancelBtn">Cancelar</button>
+      <button id="newLaneConfirmBtn" class="primary">Crear</button>
+    </div>
   </div>
 </div>
 

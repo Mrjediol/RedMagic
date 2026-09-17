@@ -54,6 +54,7 @@ export function buildExportObject(state) {
   return {
     enemyName: state.enemyName.trim(),
     art,
+    anchor: state.anchor,
     prefabFolder: state.prefabFolder.trim() || 'Assets/Prefab/Enemies',
     presence: { ...state.presence },
     projectileArt: { ...state.projectileArt },

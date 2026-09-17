@@ -117,6 +117,12 @@ export function createDefaultEnemyConfig() {
     artMode: 'library',
     artLibraryId: null,
 
+    // Sprite pivot: Center (default — safe for anything without feet) or BottomCenter (ground
+    // walkers). Only consumed by the combined-bundle import, where it decides the pivot
+    // EnemyImporter.cs bakes into the sprites/collider/SpriteSheetRecipe it cuts — see the
+    // schema's $comment on 'anchor'.
+    anchor: 'Center',
+
     prefabFolder: 'Assets/Prefab/Enemies',
 
     presence: {

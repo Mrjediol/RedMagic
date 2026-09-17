@@ -16,10 +16,20 @@ import { initEnemyCreator } from './modules/enemy-form.js';
 import { saveEnemy, getEnemy, deleteEnemy, loadImageFromDataURL, buildThumbnail } from './modules/enemy-library.js';
 import { renderLibraryCards } from './modules/library-panel.js';
 import { buildCombinedBundle } from './modules/enemy-bundle.js';
+import { CanvasView as MapCanvasView } from './modules/map-canvas-view.js';
+import * as MapAssets from './modules/map-assets.js';
+import * as MapInstances from './modules/map-instances.js';
+import * as MapTracing from './modules/map-collision-tracing.js';
+import * as MapExport from './modules/map-export.js';
+import * as MapLibrary from './modules/map-library.js';
 
 // Always pre-created on image load, in this order — "Animaciones automáticas" defaults its
 // 5-row mapping to this same order (row i -> DEFAULT_LANE_NAMES[i]) when there are exactly 5 rows.
-const DEFAULT_LANE_NAMES = ['Idle', 'Walk', 'Attack', 'Hurt', 'Death'];
+// Derived from the canonical vocabulary (single source of truth in animation-lanes.js) rather than
+// listing the names again — Wake is excluded here only because it's the uncommon 6th state, not
+// because it's any less canonical; it's one click away via the "+ Nueva" dropdown or directly
+// selectable (already-created or not) in "Animaciones automáticas".
+const DEFAULT_LANE_NAMES = Lanes.CANONICAL_ANIMATION_NAMES.filter((n) => n !== 'Wake');
 
 // Set once initEnemyCreator() runs below (after `lanes` exists) — the tab-switch handler reads
 // this closure variable at CLICK time, not at registration time, so declaring it after is fine.
@@ -42,6 +52,7 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
       enemyCreator.refreshArtLibrary();
     }
     if (btn.dataset.tab === 'library') renderLibraryTab();
+    if (btn.dataset.tab === 'map') { renderMapLibraryLists(); mapView.frameToFit(); }
   });
 }
 
@@ -382,12 +393,44 @@ document.getElementById('clearSelBtn').addEventListener('click', () => {
 
 // ============================================================ lanes (animations + projectiles)
 
-document.getElementById('addLaneBtn').addEventListener('click', () => {
-  const name = prompt('Nombre de la animación (ej. Idle, Attack, Hurt, Death):');
-  if (!name) return;
+// "+ Nueva" no longer takes free text for the common case — the 5 canonical names not yet used as
+// a lane are offered as a dropdown (so they can't be mistyped against EnemyAnimation.cs's fixed
+// vocabulary; see Lanes.CANONICAL_ANIMATION_NAMES), with "Personalizado…" revealing a text field
+// for genuinely game-specific extras (Attack2, etc.) that aren't part of that vocabulary.
+const newLaneOverlay = document.getElementById('newLaneOverlay');
+const newLaneNameSelect = document.getElementById('newLaneNameSelect');
+const newLaneCustomName = document.getElementById('newLaneCustomName');
+const CUSTOM_LANE_NAME_VALUE = '__custom__';
+
+document.getElementById('addLaneBtn').addEventListener('click', openNewLaneModal);
+document.getElementById('newLaneCancelBtn').addEventListener('click', closeNewLaneModal);
+document.getElementById('newLaneConfirmBtn').addEventListener('click', confirmNewLane);
+newLaneNameSelect.addEventListener('change', syncNewLaneCustomVisibility);
+
+function openNewLaneModal() {
+  const existingNames = new Set(lanes.filter((l) => l.type === 'animation').map((l) => l.name));
+  const available = Lanes.CANONICAL_ANIMATION_NAMES.filter((n) => !existingNames.has(n));
+  newLaneNameSelect.innerHTML = available.map((n) => `<option value="${n}">${n}</option>`).join('')
+    + `<option value="${CUSTOM_LANE_NAME_VALUE}">Personalizado…</option>`;
+  newLaneCustomName.value = '';
+  syncNewLaneCustomVisibility();
+  newLaneOverlay.hidden = false;
+}
+function closeNewLaneModal() { newLaneOverlay.hidden = true; }
+function syncNewLaneCustomVisibility() {
+  const isCustom = newLaneNameSelect.value === CUSTOM_LANE_NAME_VALUE;
+  newLaneCustomName.hidden = !isCustom;
+  if (isCustom) newLaneCustomName.focus();
+}
+function confirmNewLane() {
+  const name = newLaneNameSelect.value === CUSTOM_LANE_NAME_VALUE
+    ? newLaneCustomName.value.trim()
+    : newLaneNameSelect.value;
+  if (!name) { setStatus('Escribe un nombre para la animación.'); return; }
   Lanes.createLane(lanes, 'animation', name);
+  closeNewLaneModal();
   renderLanes(); updateAssignBar();
-});
+}
 
 document.getElementById('addProjBtn').addEventListener('click', () => {
   const name = prompt('Nombre del proyectil (ej. MushroomSpore):');
@@ -438,6 +481,25 @@ function closeAutoAssignPanel() {
   pendingAutoAssignRows = null;
 }
 
+// Sentinel prefix for a canonical name that has no lane yet — confirmAutoAssign creates it (with
+// the exact canonical spelling) at confirm time instead of requiring it to be pre-created via
+// "+ Nueva". Every CANONICAL_ANIMATION_NAMES entry is always offered, existing or not; any custom
+// (non-canonical) lane the user already made is appended after them.
+const NEW_CANONICAL_LANE_PREFIX = 'canonical:';
+
+function buildAutoAssignLaneOptions(animLanes) {
+  const byName = new Map(animLanes.map((l) => [l.name, l]));
+  const canonical = Lanes.CANONICAL_ANIMATION_NAMES.map((name) => {
+    const lane = byName.get(name);
+    const value = lane ? lane.id : `${NEW_CANONICAL_LANE_PREFIX}${name}`;
+    return `<option value="${value}" data-name="${name}">${name}</option>`;
+  });
+  const custom = animLanes
+    .filter((l) => !Lanes.CANONICAL_ANIMATION_NAMES.includes(l.name))
+    .map((l) => `<option value="${l.id}" data-name="${l.name}">${l.name}</option>`);
+  return canonical.concat(custom).join('');
+}
+
 function renderAutoAssignRows() {
   autoAssignRowsEl.innerHTML = '';
   const animLanes = lanes.filter((l) => l.type === 'animation');
@@ -447,9 +509,7 @@ function renderAutoAssignRows() {
     const row = document.createElement('div');
     row.className = 'autoAssignRow';
 
-    const options = ['<option value="">Sin asignar / omitir</option>']
-      .concat(animLanes.map((l) => `<option value="${l.id}">${l.name}</option>`))
-      .join('');
+    const options = '<option value="">Sin asignar / omitir</option>' + buildAutoAssignLaneOptions(animLanes);
 
     row.innerHTML = `
       <span class="autoAssignLabel">Fila ${i + 1} (${items.length} sprite${items.length > 1 ? 's' : ''})</span>
@@ -457,8 +517,9 @@ function renderAutoAssignRows() {
     `;
 
     if (useDefaultMapping) {
-      const preferred = animLanes.find((l) => l.name === DEFAULT_LANE_NAMES[i]);
-      if (preferred) row.querySelector('select').value = preferred.id;
+      const select = row.querySelector('select');
+      const preferred = [...select.options].find((o) => o.dataset.name === DEFAULT_LANE_NAMES[i]);
+      if (preferred) select.value = preferred.value;
     }
 
     autoAssignRowsEl.appendChild(row);
@@ -469,11 +530,18 @@ function confirmAutoAssign() {
   if (!pendingAutoAssignRows) return;
 
   // Reuses the exact same assignment path the manual "Asignar" button uses
-  // (Lanes.assignBoxesToLane) — same pull-out-of-old-lane + push-in-order behavior.
+  // (Lanes.assignBoxesToLane) — same pull-out-of-old-lane + push-in-order behavior. A value
+  // prefixed with NEW_CANONICAL_LANE_PREFIX has no lane yet — create it first, with the exact
+  // canonical spelling, so it exists to assign into.
   [...autoAssignRowsEl.querySelectorAll('select')].forEach((select) => {
     if (!select.value) return; // "Sin asignar / omitir"
+    let laneId = select.value;
+    if (laneId.startsWith(NEW_CANONICAL_LANE_PREFIX)) {
+      const name = laneId.slice(NEW_CANONICAL_LANE_PREFIX.length);
+      laneId = Lanes.createLane(lanes, 'animation', name).id;
+    }
     const items = pendingAutoAssignRows[parseInt(select.dataset.row, 10)];
-    Lanes.assignBoxesToLane(lanes, boxes, select.value, items.map((b) => b._boxIndex));
+    Lanes.assignBoxesToLane(lanes, boxes, laneId, items.map((b) => b._boxIndex));
   });
 
   closeAutoAssignPanel();
@@ -810,3 +878,617 @@ function renderLibraryTab() {
     ],
   });
 }
+
+// ============================================================ Map Tracer tab
+//
+// Ported from the standalone Assets/Editor/MapTracer.html. Same shape as the Sprites tab's own
+// canvas wiring (hitTestHandle/dragState for resize, applySelectionClick-like shift semantics for
+// multi-select) but driven by the map-*.js modules instead of inline logic. See ARCHITECTURE.md's
+// "Map Tracer" section for the module map and the two-kind (maps/pieces) library schema.
+
+const mapTabPanel = document.getElementById('tab-map');
+const mapCanvas = document.getElementById('mapCanvas');
+const mapCtx = mapCanvas.getContext('2d');
+const mapCanvasWrap = document.getElementById('mapCanvasWrap');
+const mapZoomReadout = document.getElementById('mapZoomReadout');
+
+const mapView = new MapCanvasView(mapCanvas, mapCanvasWrap, {
+  onChange: (v) => { mapZoomReadout.textContent = `${Math.round(v.scale * 100)}%`; },
+});
+
+const mapFileInput = document.getElementById('mapFileInput');
+const mapAssetType = document.getElementById('mapAssetType');
+const mapApplyAssetType = document.getElementById('mapApplyAssetType');
+const mapAssetsListEl = document.getElementById('mapAssetsList');
+const mapSelectedAssetInfo = document.getElementById('mapSelectedAssetInfo');
+const mapTraceBtn = document.getElementById('mapTraceBtn');
+const mapBackToSceneBtn = document.getElementById('mapBackToSceneBtn');
+const mapSavePieceBtn = document.getElementById('mapSavePieceBtn');
+const mapDeleteAssetBtn = document.getElementById('mapDeleteAssetBtn');
+const mapSceneTools = document.getElementById('mapSceneTools');
+const mapTraceTools = document.getElementById('mapTraceTools');
+const mapModeTitle = document.getElementById('mapModeTitle');
+const mapTraceHint = document.getElementById('mapTraceHint');
+const mapNewLineBtn = document.getElementById('mapNewLineBtn');
+const mapFinishLineBtn = document.getElementById('mapFinishLineBtn');
+const mapLinesList = document.getElementById('mapLinesList');
+const mapNewBtn = document.getElementById('mapNewBtn');
+const mapFitBtn = document.getElementById('mapFitBtn');
+const mapWidthInput = document.getElementById('mapWidthInput');
+const mapHeightInput = document.getElementById('mapHeightInput');
+const mapResizeBtn = document.getElementById('mapResizeBtn');
+const mapFitBorderBtn = document.getElementById('mapFitBorderBtn');
+const mapSelectionInfo = document.getElementById('mapSelectionInfo');
+const mapSelectAllBtn = document.getElementById('mapSelectAllBtn');
+const mapDeleteInstanceBtn = document.getElementById('mapDeleteInstanceBtn');
+const mapInstancesListEl = document.getElementById('mapInstancesList');
+const mapExportPngBtn = document.getElementById('mapExportPngBtn');
+const mapExportJsonBtn = document.getElementById('mapExportJsonBtn');
+const mapNameInput = document.getElementById('mapNameInput');
+const mapSaveMapBtn = document.getElementById('mapSaveMapBtn');
+const mapExportSelectedPiecesBtn = document.getElementById('mapExportSelectedPiecesBtn');
+
+const MAP_TYPE_COLOR = { border: '#f6b84a', platform: '#70b8ff' };
+
+let mapAssets = []; // MapAssets pieces — {id,name,fileName,width,height,type,image,lines}
+let mapInstances = []; // MapInstances placements — {id,assetId,x,y,scaleX,scaleY}
+const selectedAssetIds = new Set();
+const selectedInstanceIds = new Set();
+let mapMode = 'scene'; // 'scene' | 'trace'
+let traceAssetId = null;
+let traceLine = null; // in-progress line while tracing
+let mapDragState = null; // {type:'move'|'resize', ...}
+let currentMapLibraryId = null;
+
+// Biblioteca panel's "piezas guardadas" multi-select (export batch) — same ctrl-toggle/
+// shift-range semantics as the Sprites tab's applySelectionClick, kept separate because it
+// selects library RECORD ids (persisted, string uuids), not in-session box array indices.
+const selectedPieceLibraryIds = new Set();
+let lastClickedPieceLibraryIndex = -1;
+
+function findMapAsset(id) { return MapAssets.findAsset(mapAssets, id); }
+function setMapStatus(msg) { document.getElementById('mapStatus').textContent = msg; }
+
+function applyMapCanvasSize() {
+  mapCanvas.width = parseInt(mapWidthInput.value, 10) || 2048;
+  mapCanvas.height = parseInt(mapHeightInput.value, 10) || 672;
+}
+applyMapCanvasSize();
+
+// ---- rendering ----
+
+function drawMapLine(points, type) {
+  if (!points.length) return;
+  mapCtx.strokeStyle = MAP_TYPE_COLOR[type];
+  mapCtx.lineWidth = 4 / mapView.scale;
+  mapCtx.lineJoin = 'round'; mapCtx.lineCap = 'round';
+  mapCtx.beginPath();
+  mapCtx.moveTo(points[0].x, points[0].y);
+  points.slice(1).forEach((p) => mapCtx.lineTo(p.x, p.y));
+  mapCtx.stroke();
+  points.forEach((p, n) => {
+    mapCtx.fillStyle = n ? '#fff' : MAP_TYPE_COLOR[type];
+    mapCtx.beginPath();
+    mapCtx.arc(p.x, p.y, 4 / mapView.scale, 0, Math.PI * 2);
+    mapCtx.fill();
+  });
+}
+
+function renderMapCanvas() {
+  if (mapMode === 'trace') {
+    const asset = findMapAsset(traceAssetId);
+    if (!asset) return;
+    mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+    mapCtx.drawImage(asset.image, 0, 0);
+    asset.lines.forEach((l) => drawMapLine(l.points, l.type));
+    if (traceLine) drawMapLine(traceLine.points, traceLine.type);
+    return;
+  }
+
+  mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+  ['background', 'platform', 'border'].forEach((type) => {
+    mapInstances.forEach((inst) => {
+      const asset = findMapAsset(inst.assetId);
+      if (!asset || asset.type !== type) return;
+      const b = MapInstances.getInstanceBounds(inst, asset);
+      mapCtx.drawImage(asset.image, b.x, b.y, b.w, b.h);
+      if (selectedInstanceIds.has(inst.id)) {
+        mapCtx.strokeStyle = '#5ec8a8';
+        mapCtx.lineWidth = 2 / mapView.scale;
+        mapCtx.strokeRect(b.x, b.y, b.w, b.h);
+      }
+    });
+  });
+
+  if (selectedInstanceIds.size > 0) {
+    const gb = MapInstances.getGroupBounds([...selectedInstanceIds], mapInstances, findMapAsset);
+    const hs = 7 / mapView.scale;
+    mapCtx.strokeStyle = '#e8b04b';
+    mapCtx.lineWidth = 1.5 / mapView.scale;
+    mapCtx.strokeRect(gb.x, gb.y, gb.w, gb.h);
+    mapCtx.fillStyle = '#e8b04b';
+    [[gb.x, gb.y], [gb.x + gb.w, gb.y], [gb.x, gb.y + gb.h], [gb.x + gb.w, gb.y + gb.h]].forEach(([hx, hy]) => {
+      mapCtx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
+    });
+  }
+}
+
+// ---- piece library (left panel) ----
+
+function renderMapAssetsList() {
+  mapAssetsListEl.innerHTML = '';
+  mapAssets.forEach((a) => {
+    const div = document.createElement('div');
+    div.className = 'mapAsset' + (selectedAssetIds.has(a.id) ? ' active' : '');
+    div.innerHTML = `
+      <img src="${a.image.src}">
+      <div>
+        <div class="mapAssetName">${a.name}</div>
+        <span class="mapTypeBadge ${a.type}">${MapAssets.TYPE_LABEL[a.type]}</span>
+      </div>
+    `;
+    div.onclick = (e) => {
+      if (!e.shiftKey) selectedAssetIds.clear();
+      if (e.shiftKey && selectedAssetIds.has(a.id)) selectedAssetIds.delete(a.id);
+      else selectedAssetIds.add(a.id);
+      renderMapAssetsList();
+    };
+    mapAssetsListEl.appendChild(div);
+  });
+  updateSelectedAssetInfo();
+}
+
+function updateSelectedAssetInfo() {
+  const n = selectedAssetIds.size;
+  if (n === 1) {
+    const a = findMapAsset([...selectedAssetIds][0]);
+    mapSelectedAssetInfo.textContent = `${a.name} · ${a.width}×${a.height}px · ${MapAssets.TYPE_LABEL[a.type]}`;
+  } else {
+    mapSelectedAssetInfo.textContent = n
+      ? `${n} piezas seleccionadas. Elige un tipo y pulsa "Asignar tipo a selección".`
+      : 'Selecciona una pieza de la biblioteca.';
+  }
+}
+
+mapFileInput.addEventListener('change', (e) => {
+  MapAssets.addFiles(e.target.files, mapAssets, (asset) => {
+    selectedAssetIds.add(asset.id);
+    renderMapAssetsList();
+    setMapStatus(`${mapAssets.length} piezas en biblioteca. Selecciónalas y asigna su tipo.`);
+  });
+});
+mapCanvasWrap.ondragover = (e) => e.preventDefault();
+mapCanvasWrap.ondrop = (e) => {
+  e.preventDefault();
+  MapAssets.addFiles(e.dataTransfer.files, mapAssets, (asset) => {
+    selectedAssetIds.add(asset.id);
+    renderMapAssetsList();
+  });
+};
+
+mapApplyAssetType.onclick = () => {
+  if (!selectedAssetIds.size) { setMapStatus('Selecciona una o más piezas en la biblioteca.'); return; }
+  MapAssets.assignType(mapAssets, selectedAssetIds, mapAssetType.value);
+  renderMapAssetsList(); renderMapCanvas();
+  setMapStatus(`Tipo asignado a ${selectedAssetIds.size} pieza(s).`);
+};
+
+mapDeleteAssetBtn.onclick = () => {
+  if (!selectedAssetIds.size) return;
+  MapAssets.deleteAssets(mapAssets, mapInstances, selectedAssetIds);
+  selectedAssetIds.clear(); selectedInstanceIds.clear();
+  renderMapAssetsList(); renderMapInstancesList(); renderMapCanvas();
+};
+
+mapSavePieceBtn.onclick = async () => {
+  if (selectedAssetIds.size !== 1) { setMapStatus('Selecciona exactamente una pieza para guardarla.'); return; }
+  const asset = findMapAsset([...selectedAssetIds][0]);
+  if (asset.type === 'unassigned') { setMapStatus('Asigna un tipo (Borde/Fondo/Plataforma) antes de guardar la pieza.'); return; }
+  const thumbnail = MapLibrary.buildThumbnail(asset.image);
+  await MapLibrary.savePiece({
+    name: asset.name, type: asset.type, image: asset.image,
+    width: asset.width, height: asset.height, lines: asset.lines, thumbnail,
+  });
+  renderMapLibraryLists();
+  setMapStatus(`Pieza "${asset.name}" guardada en la biblioteca.`);
+};
+
+// ---- scene ↔ trace mode ----
+
+function enterTraceMode() {
+  if (selectedAssetIds.size !== 1) { setMapStatus('Selecciona exactamente una pieza primero.'); return; }
+  const asset = findMapAsset([...selectedAssetIds][0]);
+  if (asset.type === 'unassigned') { setMapStatus('Asigna Borde o Plataforma antes de trazar colisiones.'); return; }
+  if (asset.type === 'background') { setMapStatus('Los fondos no llevan colisiones.'); return; }
+
+  mapMode = 'trace';
+  traceAssetId = asset.id;
+  traceLine = null;
+  mapModeTitle.textContent = 'Colisiones: ' + asset.name;
+  mapSceneTools.hidden = true;
+  mapTraceTools.hidden = false;
+  mapBackToSceneBtn.hidden = false;
+  mapTraceHint.textContent = `Estas líneas se exportarán como ${asset.type === 'border' ? 'Ground' : 'Platform'} en Unity.`;
+  mapCanvas.width = asset.width;
+  mapCanvas.height = asset.height;
+  renderMapLinesList();
+  renderMapCanvas();
+  mapView.frameToFit();
+}
+
+function exitTraceMode() {
+  mapMode = 'scene';
+  traceAssetId = null;
+  traceLine = null;
+  mapModeTitle.textContent = 'Escenario';
+  mapSceneTools.hidden = false;
+  mapTraceTools.hidden = true;
+  mapBackToSceneBtn.hidden = true;
+  applyMapCanvasSize();
+  renderMapCanvas();
+  mapView.frameToFit();
+}
+
+mapTraceBtn.onclick = enterTraceMode;
+mapBackToSceneBtn.onclick = exitTraceMode;
+
+function commitTraceLine() {
+  const asset = findMapAsset(traceAssetId);
+  const result = MapTracing.commitLine(asset, traceLine);
+  traceLine = null;
+  if (result.message) setMapStatus(result.message);
+  renderMapLinesList(); renderMapAssetsList(); renderMapCanvas();
+}
+
+mapNewLineBtn.onclick = () => {
+  const asset = findMapAsset(traceAssetId);
+  traceLine = MapTracing.startLine(asset.type);
+  setMapStatus('Haz clic para añadir el primer punto.');
+  renderMapCanvas();
+};
+mapFinishLineBtn.onclick = commitTraceLine;
+
+function renderMapLinesList() {
+  mapLinesList.innerHTML = '';
+  const asset = findMapAsset(traceAssetId);
+  if (!asset) return;
+  asset.lines.forEach((l, n) => {
+    const div = document.createElement('div');
+    div.className = 'mapListItem';
+    div.innerHTML = `<span style="color:${MAP_TYPE_COLOR[l.type]}">●</span> ${l.type === 'border' ? 'Ground' : 'Platform'} · ${l.points.length} puntos <span class="fBtn" data-n="${n}">✕</span>`;
+    div.querySelector('.fBtn').onclick = (ev) => {
+      ev.stopPropagation();
+      MapTracing.deleteLine(asset, n);
+      renderMapLinesList(); renderMapAssetsList(); renderMapCanvas();
+    };
+    mapLinesList.appendChild(div);
+  });
+}
+
+// ---- canvas interaction (scene mode: place/select/move/resize; trace mode: add points) ----
+
+function mapGetPos(e) {
+  const p = mapView.screenToCanvas(e.clientX, e.clientY);
+  return { x: Math.round(p.x), y: Math.round(p.y) };
+}
+
+mapCanvas.oncontextmenu = (e) => e.preventDefault();
+
+mapCanvas.addEventListener('mousedown', (e) => {
+  const pos = mapGetPos(e);
+
+  if (mapMode === 'trace') {
+    if (e.button === 2) { commitTraceLine(); return; }
+    if (e.button !== 0) return;
+    if (!traceLine) traceLine = MapTracing.startLine(findMapAsset(traceAssetId).type);
+    MapTracing.addPoint(traceLine, pos);
+    renderMapCanvas();
+    return;
+  }
+
+  if (e.button !== 0) return; // left only — middle is reserved for panning (MapCanvasView)
+
+  if (selectedInstanceIds.size > 0) {
+    const gb = MapInstances.getGroupBounds([...selectedInstanceIds], mapInstances, findMapAsset);
+    const handle = MapInstances.hitTestResizeHandle(pos, gb, 8 / mapView.scale);
+    if (handle) {
+      const resizeState = MapInstances.beginResize([...selectedInstanceIds], mapInstances, findMapAsset, handle);
+      mapDragState = { type: 'resize', resizeState };
+      return;
+    }
+  }
+
+  const hit = MapInstances.hitTestInstance(pos, mapInstances, findMapAsset);
+  if (hit) {
+    if (!e.shiftKey) selectedInstanceIds.clear();
+    selectedInstanceIds.add(hit.id);
+    const startPositions = new Map([...selectedInstanceIds].map((id) => {
+      const inst = MapInstances.findInstance(mapInstances, id);
+      return [id, { x: inst.x, y: inst.y }];
+    }));
+    mapDragState = { type: 'move', start: pos, startPositions };
+    renderMapInstancesList(); renderMapCanvas(); updateMapSelectionInfo();
+    return;
+  }
+
+  if (selectedAssetIds.size === 1) {
+    const asset = findMapAsset([...selectedAssetIds][0]);
+    const inst = MapInstances.createInstance(asset.id, pos.x, pos.y);
+    mapInstances.push(inst);
+    selectedInstanceIds.clear();
+    selectedInstanceIds.add(inst.id);
+    renderMapInstancesList(); renderMapCanvas(); updateMapSelectionInfo();
+  } else {
+    selectedInstanceIds.clear();
+    renderMapInstancesList(); renderMapCanvas(); updateMapSelectionInfo();
+    setMapStatus('Selecciona una pieza para colocarla.');
+  }
+});
+
+mapCanvas.addEventListener('mousemove', (e) => {
+  if (!mapDragState) return;
+  const pos = mapGetPos(e);
+  if (mapDragState.type === 'move') {
+    const dx = pos.x - mapDragState.start.x, dy = pos.y - mapDragState.start.y;
+    MapInstances.moveInstances([...selectedInstanceIds], mapInstances, dx, dy, mapDragState.startPositions);
+    renderMapCanvas();
+  } else if (mapDragState.type === 'resize') {
+    MapInstances.applyResize(mapDragState.resizeState, pos, e.shiftKey);
+    renderMapCanvas();
+  }
+});
+
+mapCanvas.addEventListener('mouseup', () => {
+  if (!mapDragState) return;
+  mapDragState = null;
+  renderMapInstancesList();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (mapTabPanel.hidden) return;
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+
+  if (mapMode === 'trace') {
+    if (e.key === 'Enter') commitTraceLine();
+    if (e.key === 'Escape') { traceLine = null; renderMapCanvas(); }
+    if (e.key.toLowerCase() === 'z' && traceLine) {
+      if (!MapTracing.undoPoint(traceLine)) traceLine = null;
+      renderMapCanvas();
+    }
+    return;
+  }
+
+  if ((e.key === 'Delete' || e.key === 'Backspace') && selectedInstanceIds.size > 0) {
+    e.preventDefault();
+    deleteSelectedMapInstances();
+  }
+});
+
+function deleteSelectedMapInstances() {
+  MapInstances.deleteInstances(mapInstances, selectedInstanceIds);
+  selectedInstanceIds.clear();
+  renderMapInstancesList(); renderMapCanvas(); updateMapSelectionInfo();
+}
+
+// ---- instances panel / scene tools (right panel) ----
+
+function renderMapInstancesList() {
+  mapInstancesListEl.innerHTML = '';
+  mapInstances.forEach((inst, n) => {
+    const asset = findMapAsset(inst.assetId);
+    const div = document.createElement('div');
+    div.className = 'mapListItem' + (selectedInstanceIds.has(inst.id) ? ' active' : '');
+    div.textContent = `${n + 1}. ${asset?.name || 'pieza eliminada'} (${Math.round(inst.x)}, ${Math.round(inst.y)}) · ${Math.round((inst.scaleX ?? 1) * 100)}%`;
+    div.onclick = (e) => {
+      if (!e.shiftKey) selectedInstanceIds.clear();
+      selectedInstanceIds.add(inst.id);
+      renderMapInstancesList(); renderMapCanvas(); updateMapSelectionInfo();
+    };
+    mapInstancesListEl.appendChild(div);
+  });
+}
+
+function updateMapSelectionInfo() {
+  const n = selectedInstanceIds.size;
+  mapSelectionInfo.textContent = n
+    ? `${n} pieza${n === 1 ? '' : 's'} seleccionada${n === 1 ? '' : 's'}. Arrastra sus esquinas para redimensionar (Shift = proporcional).`
+    : 'Sin selección.';
+}
+
+mapSelectAllBtn.onclick = () => {
+  selectedInstanceIds.clear();
+  mapInstances.forEach((i) => selectedInstanceIds.add(i.id));
+  renderMapInstancesList(); renderMapCanvas(); updateMapSelectionInfo();
+};
+mapDeleteInstanceBtn.onclick = () => { if (selectedInstanceIds.size) deleteSelectedMapInstances(); };
+
+mapNewBtn.onclick = () => {
+  if (!confirm('¿Vaciar escenario y conservar biblioteca de piezas?')) return;
+  mapInstances = [];
+  selectedInstanceIds.clear();
+  currentMapLibraryId = null;
+  renderMapInstancesList(); renderMapCanvas();
+};
+
+mapFitBtn.onclick = () => mapView.frameToFit();
+
+mapResizeBtn.onclick = () => {
+  if (mapMode !== 'scene') return;
+  if ((+mapWidthInput.value) > 0 && (+mapHeightInput.value) > 0) {
+    applyMapCanvasSize();
+    renderMapCanvas();
+    mapView.frameToFit();
+  }
+};
+
+mapFitBorderBtn.onclick = () => {
+  const borders = mapInstances.filter((i) => findMapAsset(i.assetId)?.type === 'border');
+  if (!borders.length) { setMapStatus('Añade al menos una pieza de tipo Borde.'); return; }
+  let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+  borders.forEach((i) => {
+    const b = MapInstances.getInstanceBounds(i, findMapAsset(i.assetId));
+    left = Math.min(left, b.x); top = Math.min(top, b.y);
+    right = Math.max(right, b.x + b.w); bottom = Math.max(bottom, b.y + b.h);
+  });
+  mapInstances.forEach((i) => { i.x -= left; i.y -= top; });
+  mapWidthInput.value = Math.ceil(right - left);
+  mapHeightInput.value = Math.ceil(bottom - top);
+  applyMapCanvasSize();
+  renderMapCanvas();
+  mapView.frameToFit();
+  setMapStatus('Lienzo ajustado al límite exterior del borde.');
+};
+
+window.addEventListener('resize', () => { if (!mapTabPanel.hidden) mapView.frameToFit(); });
+
+// ---- export ----
+
+mapExportPngBtn.onclick = async () => {
+  if (!mapInstances.length) { setMapStatus('Coloca al menos una pieza.'); return; }
+  const blob = await MapExport.composeMapToBlob(mapCanvas.width, mapCanvas.height, mapAssets, mapInstances);
+  downloadBlob(blob, 'map.png');
+};
+
+mapExportJsonBtn.onclick = () => {
+  if (!mapInstances.length) { setMapStatus('Coloca al menos una pieza.'); return; }
+  const json = MapExport.buildMapJson(mapCanvas.width, mapCanvas.height, mapAssets, mapInstances);
+  downloadBlob(new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' }), 'map.json');
+  setMapStatus('Map JSON exportado.');
+};
+
+// ---- Map Tracer library (maps + pieces) ----
+
+mapSaveMapBtn.onclick = async () => {
+  if (!mapInstances.length) { setMapStatus('Coloca al menos una pieza antes de guardar el mapa.'); return; }
+  const name = mapNameInput.value.trim() || 'Map';
+  const composed = MapExport.composeMap(mapCanvas.width, mapCanvas.height, mapAssets, mapInstances);
+  const thumbnail = MapLibrary.buildThumbnail(composed);
+  const record = await MapLibrary.saveMap({
+    id: currentMapLibraryId,
+    name, canvasWidth: mapCanvas.width, canvasHeight: mapCanvas.height,
+    assets: mapAssets, instances: mapInstances, thumbnail,
+  });
+  currentMapLibraryId = record.id;
+  renderMapLibraryLists();
+  setMapStatus(`Mapa "${name}" guardado en la biblioteca.`);
+};
+
+async function loadMapLibraryEntry(entry) {
+  const { assets, instances } = await MapLibrary.loadMapAsSession(entry);
+  mapAssets = assets;
+  mapInstances = instances;
+  mapWidthInput.value = entry.canvasWidth;
+  mapHeightInput.value = entry.canvasHeight;
+  currentMapLibraryId = entry.id;
+  mapNameInput.value = entry.name;
+  selectedAssetIds.clear(); selectedInstanceIds.clear();
+  if (mapMode === 'trace') exitTraceMode(); else applyMapCanvasSize();
+  renderMapAssetsList(); renderMapInstancesList(); renderMapCanvas();
+  mapView.frameToFit();
+  setMapStatus(`Mapa "${entry.name}" cargado.`);
+}
+
+async function exportMapLibraryEntryPng(entry) {
+  const { assets, instances } = await MapLibrary.loadMapAsSession(entry);
+  const blob = await MapExport.composeMapToBlob(entry.canvasWidth, entry.canvasHeight, assets, instances);
+  downloadBlob(blob, `${entry.name}.png`);
+}
+
+async function exportMapLibraryEntryJson(entry) {
+  const { assets, instances } = await MapLibrary.loadMapAsSession(entry);
+  const json = MapExport.buildMapJson(entry.canvasWidth, entry.canvasHeight, assets, instances);
+  downloadBlob(new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' }), `${entry.name}.json`);
+}
+
+async function deleteMapLibraryEntry(entry) {
+  if (!confirm(`¿Eliminar el mapa "${entry.name}"? Esto no se puede deshacer.`)) return;
+  await MapLibrary.deleteMap(entry.id);
+  if (currentMapLibraryId === entry.id) currentMapLibraryId = null;
+  renderMapLibraryLists();
+}
+
+/** Adds a saved piece into the CURRENT session's in-memory piece library — does NOT open a map. */
+async function loadPieceLibraryEntry(entry) {
+  const asset = await MapLibrary.loadPieceAsAsset(entry);
+  mapAssets.push(asset);
+  selectedAssetIds.clear();
+  selectedAssetIds.add(asset.id);
+  renderMapAssetsList();
+  setMapStatus(`Pieza "${entry.name}" añadida a la biblioteca de piezas de la sesión.`);
+}
+
+async function deletePieceLibraryEntry(entry) {
+  if (!confirm(`¿Eliminar la pieza "${entry.name}"? Esto no se puede deshacer.`)) return;
+  await MapLibrary.deletePiece(entry.id);
+  selectedPieceLibraryIds.delete(entry.id);
+  renderMapLibraryLists();
+}
+
+function exportPieceLibraryEntry(entry) {
+  const json = MapExport.buildPiecesJson([entry]);
+  downloadBlob(new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' }), `${entry.name}.pieces.json`);
+  setMapStatus(`Pieza "${entry.name}" exportada.`);
+}
+
+function updatePieceExportButton() {
+  mapExportSelectedPiecesBtn.disabled = selectedPieceLibraryIds.size === 0;
+}
+
+/** Same ctrl-toggle/shift-range/plain-replace rule as app.js's applySelectionClick (Sprites tab),
+ * applied to persisted piece-library record ids instead of in-session box indices. */
+function applyPieceLibrarySelectionClick(entry, index, ctrlKey, shiftKey, orderedEntries) {
+  if (shiftKey && lastClickedPieceLibraryIndex >= 0) {
+    const [a, b] = [lastClickedPieceLibraryIndex, index].sort((x, y) => x - y);
+    for (let k = a; k <= b; k++) selectedPieceLibraryIds.add(orderedEntries[k].id);
+  } else if (ctrlKey) {
+    if (selectedPieceLibraryIds.has(entry.id)) selectedPieceLibraryIds.delete(entry.id);
+    else selectedPieceLibraryIds.add(entry.id);
+    lastClickedPieceLibraryIndex = index;
+  } else {
+    selectedPieceLibraryIds.clear();
+    selectedPieceLibraryIds.add(entry.id);
+    lastClickedPieceLibraryIndex = index;
+  }
+  renderMapLibraryLists();
+}
+
+mapExportSelectedPiecesBtn.onclick = async () => {
+  if (selectedPieceLibraryIds.size === 0) return;
+  const all = await MapLibrary.listPieces();
+  const selected = all.filter((p) => selectedPieceLibraryIds.has(p.id));
+  const json = MapExport.buildPiecesJson(selected);
+  downloadBlob(new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' }), 'map-pieces.json');
+  setMapStatus(`${selected.length} pieza(s) exportadas.`);
+};
+
+function renderMapLibraryLists() {
+  renderLibraryCards(document.getElementById('mapsLibraryList'), {
+    fetchEntries: MapLibrary.listMaps,
+    getTitle: (e) => e.name,
+    getBadges: (e) => [`${e.instances.length} instancias`, `${e.canvasWidth}×${e.canvasHeight}`],
+    emptyMessage: 'Todavía no hay mapas guardados.',
+    getActions: () => [
+      { label: 'Cargar', className: 'small', onClick: loadMapLibraryEntry },
+      { label: 'Exportar PNG', className: 'small', onClick: exportMapLibraryEntryPng },
+      { label: 'Exportar JSON', className: 'small', onClick: exportMapLibraryEntryJson },
+      { label: 'Eliminar', className: 'small danger', onClick: deleteMapLibraryEntry },
+    ],
+  });
+  renderLibraryCards(document.getElementById('piecesLibraryList'), {
+    fetchEntries: MapLibrary.listPieces,
+    getTitle: (e) => e.name,
+    getBadges: (e) => [MapAssets.TYPE_LABEL[e.type] || e.type],
+    emptyMessage: 'Todavía no hay piezas guardadas.',
+    isSelected: (e) => selectedPieceLibraryIds.has(e.id),
+    onCardClick: applyPieceLibrarySelectionClick,
+    getActions: () => [
+      { label: 'Cargar', className: 'small', onClick: loadPieceLibraryEntry },
+      { label: '⬇ Exportar', className: 'small', onClick: exportPieceLibraryEntry },
+      { label: 'Eliminar', className: 'small danger', onClick: deletePieceLibraryEntry },
+    ],
+  });
+  updatePieceExportButton();
+}
+
+renderMapAssetsList();
+renderMapInstancesList();

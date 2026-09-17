@@ -11,6 +11,13 @@
 //               frameBoxIndices:[boxIndex,...], projectileLink }
 // projectileLink (animation lanes only): null | { projId, spawnFrame }
 
+// Unity's fixed animation vocabulary (EnemyAnimation.cs / AnimClipBuilder): every non-boss enemy's
+// Animator is wired with exactly these state names, shared project-wide — a lane meant to match one
+// of them must be spelled exactly this way or the exported clip lands on a state Unity never reads.
+// Single source of truth: app.js's DEFAULT_LANE_NAMES, the "+ Nueva" name dropdown and "Animaciones
+// automáticas"'s row-mapping dropdown all import this instead of hardcoding their own copy.
+export const CANONICAL_ANIMATION_NAMES = ['Idle', 'Walk', 'Attack', 'Hurt', 'Death', 'Wake'];
+
 let _laneIdCounter = 0;
 
 export function resetLaneIdCounter() {

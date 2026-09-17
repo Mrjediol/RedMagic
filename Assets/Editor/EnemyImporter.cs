@@ -3,8 +3,9 @@
 // Importa el paquete exportado por "Enemy Sprite Extractor" (manifest.json +
 // carpetas de frames por animación, incluyendo animaciones de proyectiles) y
 // genera automáticamente:
-//   - Sprites configurados (pivote inferior-centro para el enemigo, centro
-//     para los proyectiles)
+//   - Sprites configurados (pivote elegido por 'anchor' — RedMagic.Pipeline.AnchorMode, el mismo
+//     enum que ya usa SpriteSheetRecipe.anchor en el resto del pipeline — para el enemigo; siempre
+//     centro para los proyectiles, sin cambios)
 //   - Un AnimationClip por animación (de enemigo y de proyectil)
 //   - Un AnimatorController por enemigo (con triggers de transición) y uno
 //     simple por cada proyectil
@@ -108,7 +109,7 @@ public class EnemyImporter : EditorWindow
         public Sprite firstSprite;
     }
 
-    [MenuItem("Tools/Enemy Importer/Build Enemy From Folder")]
+    [MenuItem("Tools/Web/Enemy Importer/Build Enemy From Folder")]
     public static void BuildEnemyFromFolder()
     {
         string folder = EditorUtility.OpenFolderPanel("Selecciona la carpeta del enemigo (con manifest.json)", "Assets", "");
@@ -116,6 +117,11 @@ public class EnemyImporter : EditorWindow
 
         BuildEnemyFromFolderPath(folder);
     }
+
+    /// <summary>Dónde cae el pivote de un sprite dado su <see cref="AnchorMode"/> — mismo mapeo que
+    /// SheetSlicer usa para el resto del pipeline (BottomCenter = pies, Center = centro de la caja).</summary>
+    private static Vector2 PivotFor(AnchorMode anchor) =>
+        anchor == AnchorMode.Center ? new Vector2(0.5f, 0.5f) : new Vector2(0.5f, 0f);
 
     /// <summary>
     /// El cuerpo real de <see cref="BuildEnemyFromFolder"/>, separado del selector de carpeta para
@@ -127,8 +133,18 @@ public class EnemyImporter : EditorWindow
     /// alguien hace click, y eso incluye <c>unity command eval</c> — cualquier llamada headless se
     /// queda colgada "Main thread operation timed out" hasta que un humano entra a Unity a pulsar
     /// OK. El menú (<see cref="BuildEnemyFromFolder"/>) sigue mostrando el diálogo de verdad.
+    ///
+    /// <paramref name="anchor"/> decide el pivote de los sprites DEL ENEMIGO (no de sus
+    /// proyectiles, que siempre van centrados) y, con ello, el offset del collider generado y el
+    /// <see cref="SpriteSheetRecipe.anchor"/> del recipe de compatibilidad que este método produce
+    /// — antes esto estaba fijo a "pies" (BottomCenter) sin importar el archetype, lo que dejaba a
+    /// cualquier enemigo volador con el pivote en un punto vacío del aire bajo su cuerpo, y con él
+    /// el detectionRange/attackRange/explosionRadius y sus gizmos (todos medidos desde
+    /// transform.position) descentrados del arte. Default <see cref="AnchorMode.Center"/> porque el
+    /// caso más común de esta vía de import (Enemy Creator ya no distingue "de suelo" al construir
+    /// el zip) es más seguro sin asumir que el bicho tiene pies.
     /// </summary>
-    public static void BuildEnemyFromFolderPath(string folder, bool showDialog = true)
+    public static void BuildEnemyFromFolderPath(string folder, AnchorMode anchor = AnchorMode.Center, bool showDialog = true)
     {
         void Report(string message)
         {
@@ -167,7 +183,8 @@ public class EnemyImporter : EditorWindow
         foreach (var proj in manifest.projectiles)
         {
             string projSourceFolder = $"{projRelativeRoot}/{proj.name}";
-            var sprites = LoadAndConfigureSprites(projSourceFolder, pivotBottom:false);
+            // Proyectiles: siempre centrados, sin cambios — sólo el enemigo respeta 'anchor'.
+            var sprites = LoadAndConfigureSprites(projSourceFolder, AnchorMode.Center);
             if (sprites.Count == 0)
             {
                 Debug.LogWarning($"[EnemyImporter] No se encontraron imágenes para el proyectil '{proj.name}' en {projSourceFolder}");
@@ -209,7 +226,7 @@ public class EnemyImporter : EditorWindow
         foreach (var anim in manifest.animations)
         {
             string animSourceFolder = $"{relativeFolder}/{anim.name}";
-            var sprites = LoadAndConfigureSprites(animSourceFolder, pivotBottom:true);
+            var sprites = LoadAndConfigureSprites(animSourceFolder, anchor);
             if (sprites.Count == 0)
             {
                 Debug.LogWarning($"[EnemyImporter] No se encontraron imágenes para la animación '{anim.name}' en {animSourceFolder}");
@@ -236,7 +253,7 @@ public class EnemyImporter : EditorWindow
         }
 
         AnimatorController enemyController = BuildEnemyAnimatorController(enemyRoot, enemyName, builtClips);
-        GameObject enemyPrefabObj = BuildEnemyPrefab(enemyName, enemyController, builtClips[0].firstSprite, projectilePrefabsByName, projectileTriggers.Values);
+        GameObject enemyPrefabObj = BuildEnemyPrefab(enemyName, enemyController, builtClips[0].firstSprite, projectilePrefabsByName, projectileTriggers.Values, anchor);
 
         Directory.CreateDirectory(ENEMY_PREFAB_FOLDER);
         AssetDatabase.Refresh();
@@ -244,7 +261,7 @@ public class EnemyImporter : EditorWindow
         PrefabUtility.SaveAsPrefabAsset(enemyPrefabObj, enemyPrefabPath);
         Object.DestroyImmediate(enemyPrefabObj);
 
-        SpriteSheetRecipe sheetRecipe = BuildSpriteSheetRecipe(enemyRoot, enemyName, manifest, enemyController, builtClips);
+        SpriteSheetRecipe sheetRecipe = BuildSpriteSheetRecipe(enemyRoot, enemyName, manifest, enemyController, builtClips, anchor);
         string sheetRecipePath = AssetDatabase.GetAssetPath(sheetRecipe);
 
         AssetDatabase.SaveAssets();
@@ -271,7 +288,7 @@ public class EnemyImporter : EditorWindow
     /// fila con el nombre/ruta exactos que <c>EnemyFactory</c> busca en disco.
     /// </summary>
     private static SpriteSheetRecipe BuildSpriteSheetRecipe(string enemyRoot, string enemyName,
-        Manifest manifest, AnimatorController controller, List<BuiltClip> builtClips)
+        Manifest manifest, AnimatorController controller, List<BuiltClip> builtClips, AnchorMode anchor)
     {
         string recipePath = $"{enemyRoot}/{enemyName}.sheet.asset";
         SpriteSheetRecipe recipe = AssetDatabase.LoadAssetAtPath<SpriteSheetRecipe>(recipePath);
@@ -288,6 +305,11 @@ public class EnemyImporter : EditorWindow
         // que EnemyFactory tiene que buscar ahí.
         recipe.outputFolder = enemyRoot;
         recipe.runtime = AnimRuntime.Animator;
+        // Debe coincidir con el pivote que ConfigureSpriteImport aplicó a los sprites de este mismo
+        // enemigo: si EnemyFactory.Generate llegara a re-generar sobre este recipe más adelante
+        // (p.ej. Pipeline > 3b), lee este campo para decidir el offset del collider — dejarlo en su
+        // default (BottomCenter) desincronizaría ese futuro regen del pivote real ya horneado aquí.
+        recipe.anchor = anchor;
         recipe.rows = manifest.animations.Select(a => new SheetRow
         {
             state = a.name,
@@ -312,13 +334,13 @@ public class EnemyImporter : EditorWindow
         // NO reproduce el corte multi-frame real de SheetSlicer — sólo copia el primer frame de
         // cada fila con ese nombre, lo mínimo para que EnemyFactory tenga un sprite de reposo (y
         // un collider deducido de él) de verdad en vez de salir sin arte.
-        foreach (var clip in builtClips) EnsureRepresentativeSprite(enemyRoot, enemyName, clip);
+        foreach (var clip in builtClips) EnsureRepresentativeSprite(enemyRoot, enemyName, clip, anchor);
 
         return recipe;
     }
 
     /// <summary>Copia el primer frame de <paramref name="clip"/> con el nombre que EnemyFactory.IdleSprite espera.</summary>
-    private static void EnsureRepresentativeSprite(string enemyRoot, string enemyName, BuiltClip clip)
+    private static void EnsureRepresentativeSprite(string enemyRoot, string enemyName, BuiltClip clip, AnchorMode anchor)
     {
         if (clip.firstSprite == null) return;
 
@@ -352,7 +374,7 @@ public class EnemyImporter : EditorWindow
                 name = desiredName,
                 rect = new Rect(0, 0, clip.firstSprite.texture.width, clip.firstSprite.texture.height),
                 alignment = (int)SpriteAlignment.Custom,
-                pivot = new Vector2(0.5f, 0f), // pies — igual que ConfigureSpriteImport(pivotBottom:true)
+                pivot = PivotFor(anchor), // igual que ConfigureSpriteImport(anchor) para este mismo enemigo
             },
         };
 #pragma warning restore CS0618
@@ -360,7 +382,7 @@ public class EnemyImporter : EditorWindow
     }
 
     // -------------------------------------------------------------------
-    private static List<Sprite> LoadAndConfigureSprites(string relativeFolder, bool pivotBottom)
+    private static List<Sprite> LoadAndConfigureSprites(string relativeFolder, AnchorMode anchor)
     {
         var spritePaths = AssetDatabase.FindAssets("t:Texture2D", new[] { relativeFolder })
             .Select(AssetDatabase.GUIDToAssetPath)
@@ -370,14 +392,14 @@ public class EnemyImporter : EditorWindow
         var sprites = new List<Sprite>();
         foreach (var path in spritePaths)
         {
-            ConfigureSpriteImport(path, pivotBottom);
+            ConfigureSpriteImport(path, anchor);
             Sprite spr = AssetDatabase.LoadAssetAtPath<Sprite>(path);
             if (spr != null) sprites.Add(spr);
         }
         return sprites;
     }
 
-    private static void ConfigureSpriteImport(string path, bool pivotBottom)
+    private static void ConfigureSpriteImport(string path, AnchorMode anchor)
     {
         TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
         if (importer == null) return;
@@ -389,7 +411,7 @@ public class EnemyImporter : EditorWindow
         importer.filterMode = SPRITE_FILTER_MODE;
         importer.spritePixelsPerUnit = PIXELS_PER_UNIT;
 
-        Vector2 pivot = pivotBottom ? new Vector2(0.5f, 0f) : new Vector2(0.5f, 0.5f);
+        Vector2 pivot = PivotFor(anchor);
         importer.spritePivot = pivot;
 
         var settings = new TextureImporterSettings();
@@ -556,7 +578,7 @@ public class EnemyImporter : EditorWindow
     }
 
     private static GameObject BuildEnemyPrefab(string enemyName, AnimatorController controller, Sprite defaultSprite,
-        Dictionary<string, GameObject> projectilePrefabsByName, IEnumerable<ProjectileRef> usedProjectiles)
+        Dictionary<string, GameObject> projectilePrefabsByName, IEnumerable<ProjectileRef> usedProjectiles, AnchorMode anchor)
     {
         GameObject go = new GameObject(enemyName);
 
@@ -581,7 +603,12 @@ public class EnemyImporter : EditorWindow
         if (defaultSprite != null)
         {
             col.size = defaultSprite.bounds.size;
-            col.offset = new Vector2(0, defaultSprite.bounds.extents.y);
+            // Mismo cálculo que EnemyFactory.cs para 'centeredPivot': con el pivote en el centro de
+            // la caja (Center) el collider ya queda centrado en el origen; sólo un pivote a los pies
+            // (BottomCenter) necesita empujarlo media altura hacia arriba. Antes esto asumía
+            // siempre pies, así que un enemigo Center quedaba con el collider medio cuerpo por
+            // encima del dibujo — el mismo bug que motivó 'centeredPivot' en EnemyFactory.
+            col.offset = anchor == AnchorMode.Center ? Vector2.zero : new Vector2(0, defaultSprite.bounds.extents.y);
         }
 
         // Sólo añade el spawner si el enemigo realmente dispara algún proyectil

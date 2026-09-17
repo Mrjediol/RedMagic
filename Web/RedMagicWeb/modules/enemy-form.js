@@ -211,6 +211,22 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   artBtnLibrary.addEventListener('click', () => setArtMode('library'));
   artBtnManual.addEventListener('click', () => setArtMode('manual'));
 
+  // Sprite pivot — only takes effect on a combined-bundle import (the one path that actually cuts
+  // a fresh SpriteSheetRecipe); a manual/already-imported 'art' path ignores it. See the schema's
+  // $comment on 'anchor' and RedMagic.Pipeline.AnchorMode.
+  const anchorField = F.enumField({
+    label: 'Pivote del sprite (anchor)',
+    value: state.anchor,
+    options: [
+      { value: 'Center', label: 'Centro — vuela, flota, sin pies' },
+      { value: 'BottomCenter', label: 'Pies (BottomCenter) — camina por el suelo' },
+    ],
+    hint: 'Sólo se aplica al importar el .zip combinado (sprites + config) — un enemigo cuya art ya apunta a una hoja existente ignora este campo.',
+    onChange: (v) => { state.anchor = v; refresh(); },
+  });
+  registerError('/anchor', anchorField.setError);
+  topSection.appendChild(anchorField.row);
+
   const prefabFolderField = F.textField({
     label: 'Carpeta del prefab (prefabFolder)', value: state.prefabFolder,
     hint: 'Vacío = Assets/Prefab/Enemies.',

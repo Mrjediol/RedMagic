@@ -1,0 +1,111 @@
+{
+  "format": "RedMagicMap/1",
+  "canvas": {
+    "width": 2048,
+    "height": 672
+  },
+  "instances": [
+    {
+      "assetName": "Border",
+      "fileName": "Border.png",
+      "type": "border",
+      "x": 255,
+      "y": 31,
+      "width": 1774,
+      "height": 887,
+      "scaleX": 0.8782412626832018,
+      "scaleY": 0.7170236753100339
+    },
+    {
+      "assetName": "Bg",
+      "fileName": "Bg.png",
+      "type": "background",
+      "x": 156,
+      "y": 2,
+      "width": 2188,
+      "height": 719,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    {
+      "assetName": "frame_005",
+      "fileName": "frame_005.png",
+      "type": "platform",
+      "x": 718,
+      "y": 201,
+      "width": 333,
+      "height": 437,
+      "scaleX": 1,
+      "scaleY": 1
+    },
+    {
+      "assetName": "frame_007",
+      "fileName": "frame_007.png",
+      "type": "platform",
+      "x": 1066,
+      "y": 238,
+      "width": 553,
+      "height": 212,
+      "scaleX": 1,
+      "scaleY": 1
+    }
+  ],
+  "collisions": {
+    "groundLines": [
+      {
+        "points": [
+          {
+            "x": 343.70236753100335,
+            "y": 74.73844419391207
+          },
+          {
+            "x": 321.74633596392334,
+            "y": 608.2040586245772
+          },
+          {
+            "x": 1761.1837655016911,
+            "y": 609.6381059751973
+          },
+          {
+            "x": 1731.3235625704622,
+            "y": 66.13416009019166
+          },
+          {
+            "x": 344.58060879368657,
+            "y": 52.510710259301014
+          },
+          {
+            "x": 342.8241262683202,
+            "y": 86.92784667418263
+          }
+        ]
+      }
+    ],
+    "platformLines": [
+      {
+        "points": [
+          {
+            "x": 732,
+            "y": 235
+          },
+          {
+            "x": 1036,
+            "y": 234
+          }
+        ]
+      },
+      {
+        "points": [
+          {
+            "x": 1079,
+            "y": 276
+          },
+          {
+            "x": 1603,
+            "y": 275
+          }
+        ]
+      }
+    ]
+  }
+}

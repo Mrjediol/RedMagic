@@ -28,6 +28,14 @@
       "$comment": "EnemyRecipe.art. REQUIRED: EnemyFactory bails out of sprite dressing, animation wiring and projectile extraction when this is null, so a config without it cannot produce a working enemy. It is a reference and not an inline block on purpose — the sheet recipe is its own asset with its own per-row slicing knobs (groupSlack, propBlobs, evenSplit, cropTop/Bottom, softEdge, fillHoles), re-run independently of the enemy, and frequently shared work. A SheetConfig schema is a separate deliverable."
     },
 
+    "anchor": {
+      "type": "string",
+      "enum": ["Center", "BottomCenter"],
+      "default": "Center",
+      "description": "Where the enemy's sprite pivot sits: Center (mid-body — flyers, hoverers, anything with no feet) or BottomCenter (feet — ground-walkers). Drives the sprite pivot, the generated collider's offset, and the produced SpriteSheetRecipe.anchor.",
+      "$comment": "RedMagic.Pipeline.AnchorMode — the SAME enum SpriteSheetRecipe.anchor already uses for every hand-authored pipeline pack (see e.g. MurcielagoPack.cs's 'anchor = AnchorMode.Center // vuela: sin pies'). NOT an EnemyRecipe/EnemyTuning field: it only means something at the moment a SpriteSheetRecipe is CUT from raw PNGs, which is exactly what the combined-bundle import (Tools > Web > Import Config... > Importar enemigo completo, EnemyImporter.BuildEnemyFromFolderPath) does. It is READ ONLY by that path. A plain config-only import (Importar archivo...) never cuts a recipe — its 'art' points at one that ALREADY exists, whose anchor was fixed whenever it was cut (by a pipeline pack, or by an earlier combined-bundle import) — so this field is silently ignored there rather than risking an unrelated JSON reimport clobbering a deliberately hand-set anchor on a shared recipe. Default Center rather than the C# default (BottomCenter) is a deliberate schema-level choice: before this field existed, EnemyImporter.cs hardcoded every enemy's sprite pivot to BottomCenter regardless of archetype, which put a flying enemy's detectionRange/attackRange/explosionRadius (all measured from transform.position) at an empty point in the air below its body instead of on it — Center is the safer assumption for a tool that has no idea whether the enemy being built has feet."
+    },
+
     "prefabFolder": {
       "type": "string",
       "pattern": "^Assets/",
@@ -213,7 +221,12 @@
           "description": "The attack IS exploding: attackDamage in a circle of explosionRadius, then death.",
           "$comment": "EnemyTuning.selfDestruct. Orthogonal to archetype — a Static with this set is a mine. Takes priority over IsRanged in EnemyAttack.Execute. Also flips Corpse.tintOnDeath off via EnemyStats.Apply, because the death clip IS the explosion, and forces derived Retreats to false."
         },
-        "explosionRadius": { "type": "number", "minimum": 0, "default": 1.7, "$comment": "EnemyTuning.explosionRadius. Should exceed attackRange so a step back during the fuse does not dodge it for free." },
+        "explosionRadius": {
+          "type": "number",
+          "minimum": 0,
+          "default": 1.7,
+          "$comment": "EnemyTuning.explosionRadius. Only has an effect when selfDestruct is true (same convention as personalSpace/Retreats) — EnemyAttack.Explode is the only reader, and it is gated on tuning.selfDestruct. Should exceed attackRange so a step back during the fuse does not dodge it for free."
+        },
         "explosionShake": { "type": "number", "minimum": 0, "default": 0.2, "$comment": "EnemyTuning.explosionShake -> CameraFollow.ShakeAll amplitude. 0 = no shake. The duration is hardcoded to 0.25s in EnemyAttack.Explode and is not exposed." },
 
         "projectile": {

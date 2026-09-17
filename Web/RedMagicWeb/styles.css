@@ -155,4 +155,32 @@ kbd{background:#1a1d21;border:1px solid var(--border);border-radius:3px;padding:
 .libBadgeConfig{color:var(--accent);border-color:var(--accent);}
 .libActions{display:flex;gap:4px;flex-wrap:wrap;flex:none;}
 #libraryTabList .libActions{margin-top:6px;}
+.libCardSelectable{cursor:pointer;}
+.libCardSelectable.selected{border-color:var(--accent);background:#20342e;}
 .libActions button:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ---------------- Map Tracer tab ---------------- */
+#mapSidebar{width:300px;min-width:300px;background:var(--panel);border-right:1px solid var(--border);padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+#mapRight{width:300px;min-width:300px;background:var(--panel);border-left:1px solid var(--border);padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:0;}
+#mapMain{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+#mapCanvasWrap{flex:1;position:relative;overflow:hidden;cursor:default;background:linear-gradient(45deg,#26292e 25%,transparent 25%),linear-gradient(-45deg,#26292e 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#26292e 75%),linear-gradient(-45deg,transparent 75%,#26292e 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0px;}
+#mapCanvas{display:block;position:absolute;left:0;top:0;cursor:crosshair;}
+#mapZoomReadout{position:absolute;bottom:8px;right:10px;font-size:11px;color:var(--muted);background:#0006;padding:2px 8px;border-radius:4px;pointer-events:none;}
+#mapStatus{font-size:12px;color:var(--accent2);min-height:26px;line-height:1.4;padding:4px 10px;flex:none;}
+
+.mapAssetsList{display:flex;flex-direction:column;gap:5px;margin-top:8px;max-height:220px;overflow-y:auto;}
+.mapAsset{display:grid;grid-template-columns:40px 1fr;align-items:center;gap:8px;border:1px solid var(--border);padding:5px;border-radius:5px;cursor:pointer;background:#1a1d21;}
+.mapAsset.active{border-color:var(--accent);}
+.mapAsset img{width:40px;height:32px;object-fit:contain;background:#0f1114;}
+.mapAssetName{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mapTypeBadge{font-size:9px;padding:1px 5px;border-radius:3px;background:#0f1114;color:var(--muted);display:inline-block;margin-top:2px;}
+.mapTypeBadge.border{color:var(--accent2);}
+.mapTypeBadge.platform{color:#70b8ff;}
+
+.mapInstancesList{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;margin-top:6px;}
+.mapListItem{padding:6px 8px;border:1px solid var(--border);border-radius:5px;font-size:11px;cursor:pointer;background:#1a1d21;}
+.mapListItem.active{border-color:var(--accent);}
+.mapListItem .fBtn{float:right;padding:0 5px;color:var(--danger);}
+
+#mapLibrarySection{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.mapLibSubhead{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:12px 0 6px;}

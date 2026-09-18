@@ -156,7 +156,7 @@ namespace RedMagic.Gameplay
 
         [Tooltip("Inclinación máxima que se puede subir. Por encima, la rampa actúa como pared.")]
         [Range(0f, 80f)]
-        [SerializeField] private float maxSlopeAngle = 45f;
+        [SerializeField] private float maxSlopeAngle = 80f;
 
         [Tooltip("Longitud del rayo que lee la normal del suelo. Debe ser mayor que " +
                  "'Detection Ray Length' para ver la rampa antes de pisarla.")]
@@ -181,6 +181,67 @@ namespace RedMagic.Gameplay
                  "personaje queda por debajo de ella. Esto sólo evita quedarse ignorándola para " +
                  "siempre si eso no llega a pasar.")]
         [SerializeField] private float dropThroughDuration = 1.5f;
+
+        // ---------------------------------------------------------------- escalones
+
+        [Header("STEP UP — subida automática de escalones")]
+        [Tooltip("Al chocar caminando contra un borde bajo, el personaje se sube solo en vez de " +
+                 "bloquearse contra él. Independiente del salto: no consume salto en el aire ni " +
+                 "pasa por Jump.")]
+        [SerializeField] private bool enableStepUp = true;
+
+        [Tooltip("EL ÚNICO valor de la subida de escalones: hasta qué altura, medida desde los PIES " +
+                 "del personaje, un obstáculo cuenta como escalón.\n\n" +
+                 "Si el punto en que el obstáculo toca al personaje queda por DEBAJO de esa altura, " +
+                 "es un escalón y se sube encima sin frenar. Si queda por ENCIMA, es una pared: " +
+                 "bloquea igual que siempre y hay que saltar.\n\n" +
+                 "Subirlo = se trepan bordes más altos. Bajarlo = más cosas se comportan como pared.")]
+        [Range(0f, 1f)]
+        [SerializeField] private float stepThresholdHeight = 0.4f;
+
+        [Tooltip("Depuración: dibuja en el Scene view la línea de los pies, la línea del umbral y " +
+                 "los puntos de contacto detectados (verde = escalón, rojo = pared), y registra en " +
+                 "consola cada subida. Dejar apagado normalmente.")]
+        [SerializeField] private bool debugStepUp = false;
+
+        // ---------------------------------------------------------------- suelo sólido
+
+        [Header("SUELO SÓLIDO — la capa Ground es infranqueable")]
+        [Tooltip("Contención de la capa Ground: barrido real del trayecto (no sólo del punto de " +
+                 "destino) antes de mover, y corrección en LateUpdate si aun así se ha penetrado.\n\n" +
+                 "Afecta ÚNICAMENTE a la capa 'Ground Layer' de arriba. Las plataformas y todo lo " +
+                 "demás se mueven exactamente igual con esto encendido o apagado.")]
+        [SerializeField] private bool groundIsImpassable = true;
+
+        [Tooltip("SÓLO PARA GROUND. Inclinación mínima que debe tener una cara de suelo sólido " +
+                 "para que el step-up la considere un ESCALÓN al que subirse.\n\n" +
+                 "Existe porque el step-up sólo miraba 'más inclinada que maxSlopeAngle', y con eso " +
+                 "una rampa demasiado empinada (p. ej. 82° con el máximo en 80°) se confundía con un " +
+                 "escalón: se trepaba y, de paso, se saltaba el bloqueo de pared. Una cara de Ground " +
+                 "entre 'maxSlopeAngle' y este valor es una rampa no trepable y FRENA como un muro.\n\n" +
+                 "Los escalones reales de un tilemap son caras verticales (90°), así que el valor por " +
+                 "defecto no cambia ningún escalón existente. No afecta a la capa de plataformas.")]
+        [Range(45f, 90f)]
+        [SerializeField] private float groundStepMinFaceAngle = 85f;
+
+        [Tooltip("Cuánto se encoge la caja con la que la red de seguridad comprueba si el personaje " +
+                 "está dentro del suelo sólido. Debe ser mayor que el 'Default Contact Offset' de " +
+                 "Physics 2D (0.01) para que estar apoyado no cuente como penetración.")]
+        [Range(0.02f, 0.2f)]
+        [SerializeField] private float groundClampInset = 0.04f;
+
+        [Tooltip("Desplazamiento máximo que puede aplicar la red de seguridad de una sola vez. " +
+                 "Corre cada frame, así que una penetración real nunca es más profunda que un " +
+                 "frame de movimiento: este tope sólo evita un tirón visible si algo va muy mal.")]
+        [Min(0.1f)]
+        [SerializeField] private float groundClampMaxPush = 1.5f;
+
+        [Tooltip("Depuración: registra en consola y dibuja en el Scene view cada vez que la red de " +
+                 "seguridad ha tenido que sacar al personaje del suelo sólido, diciendo qué sistema " +
+                 "movió al jugador ese frame (andar / dash / retroceso / escalón / …).\n\n" +
+                 "Con el barrido funcionando esto NO debería saltar nunca: si salta durante una " +
+                 "partida de prueba, queda un camino que se salta el barrido. Dejar apagado.")]
+        [SerializeField] private bool debugGroundClamp = false;
 
         // ---------------------------------------------------------------- caminar
 
@@ -292,6 +353,35 @@ namespace RedMagic.Gameplay
         private Collider2D _dropCollider;    // la plataforma concreta que se está atravesando
         private Collider2D _groundCollider;  // la que se pisa ahora mismo
 
+        // escalones: lo que los contactos de la última colisión dejaron anotado
+        private readonly ContactPoint2D[] _stepContacts = new ContactPoint2D[16];
+        private float _stepSurfaceY;                        // altura absoluta del borde a pisar
+        private int _stepSide;                              // -1 / 1: de qué lado estaba
+        private float _stepContactTime = float.MinValue;    // cuándo se vio (para descartar lo viejo)
+        private int _stepLogOutcome;                        // sólo depuración: último veredicto registrado
+
+        // suelo sólido (Ground): barrido y red de seguridad
+        private ContactFilter2D _groundFilter;
+        private readonly List<RaycastHit2D> _groundCasts = new List<RaycastHit2D>(8);
+        private readonly Collider2D[] _groundOverlaps = new Collider2D[4];
+        private float _sweepLift;                           // el de ResolveSurface, para reusar su forma de caja
+        private bool _surfaceResolvedGround;                // ResolveSurface encontró apoyo de Ground en el destino
+        private Vector3 _lastSafePosition;                  // última posición validada fuera del suelo sólido
+        private bool _hasSafePosition;
+        private int _groundSteepDir;                        // -1 / 1: rampa de Ground no trepable vista por contactos
+        private float _groundSteepTime = float.MinValue;
+        private MoveSource _moveSource;                     // qué sistema conduce este frame
+        private MoveSource _lastWrite;                      // qué escritura de posición fue la última
+        private Vector2 _lastClampPush, _lastClampCenter, _lastClampSize;
+        private int _lastClampFrame = int.MinValue;
+
+        /// <summary>
+        /// Quién ha movido al personaje. Sólo sirve para que el aviso de <c>debugGroundClamp</c>
+        /// pueda decir qué sistema dejó al jugador dentro del suelo, en vez de limitarse a decir
+        /// que pasó.
+        /// </summary>
+        private enum MoveSource { None, Walk, Dash, Knockback, StepUp, GroundSnap, Solver }
+
         /// <summary>
         /// Una plataforma sólo existe para el sensor de suelo cuando el personaje no sube y no
         /// está atravesándola. Fuera de eso es aire en todas las direcciones.
@@ -347,8 +437,15 @@ namespace RedMagic.Gameplay
             _body.useFullKinematicContacts = true;
             _body.freezeRotation = true;
 
+            // El step-up se alimenta de los contactos de colisión (ver EvaluateStepContacts). Un
+            // cuerpo dormido deja de reportarlos, y estar quieto apoyado contra un escalón es
+            // exactamente el caso en el que hacen falta.
+            _body.sleepMode = RigidbodySleepMode2D.NeverSleep;
+
             if (_characterBounds.size == Vector3.zero && _collider != null)
                 _characterBounds = new Bounds(_collider.offset, _collider.bounds.size);
+
+            RebuildGroundFilter();
 
             if (inputActions != null)
             {
@@ -369,7 +466,11 @@ namespace RedMagic.Gameplay
             Invoke(nameof(Activate), 0.5f);
         }
 
-        private void Activate() => _active = true;
+        private void Activate()
+        {
+            _active = true;
+            _hasSafePosition = false;   // se reancla en el primer LateUpdate
+        }
 
         private void OnEnable()
         {
@@ -416,6 +517,7 @@ namespace RedMagic.Gameplay
                 IsCrouching = false;
                 _dashTimer = 0f;
                 _knockbackTimer = 0f;
+                _moveSource = MoveSource.None;
                 ClearDropThrough();
                 return;
             }
@@ -451,15 +553,18 @@ namespace RedMagic.Gameplay
 
             if (IsKnockedBack)
             {
+                _moveSource = MoveSource.Knockback;
                 UpdateKnockback();   // el empujón manda sobre todo lo demás
             }
             else if (_dashTimer > 0f)
             {
+                _moveSource = MoveSource.Dash;
                 UpdateDash();     // el dash manda: sustituye a andar y a la gravedad
                 CalculateJump();  // …pero saltar puede cancelarlo
             }
             else
             {
+                _moveSource = MoveSource.Walk;
                 CalculateWalk();      // horizontal
                 CalculateJumpApex();  // afecta a la caída: antes de la gravedad
                 CalculateGravity();   // vertical
@@ -469,6 +574,22 @@ namespace RedMagic.Gameplay
             SnapToGround();       // pega los pies al suelo (corrige el flotar del sensor)
             UpdateFootsteps();
             MoveCharacter();      // aplica el movimiento
+        }
+
+        /// <summary>
+        /// Red de seguridad. Después de que TODO lo que mueve al jugador este frame haya escrito
+        /// ya su posición, se comprueba una última vez que no ha quedado dentro de la capa Ground y,
+        /// si lo está, se le saca. Ninguna otra capa entra aquí.
+        ///
+        /// Es el último recurso, no el mecanismo: el barrido de <see cref="MoveCharacter"/> debería
+        /// hacer que esto no salte nunca. Está precisamente para que un camino que nadie previó —
+        /// un sistema nuevo que empuje al jugador, un frame largo, un teletransporte — se corrija
+        /// solo en el mismo frame en vez de terminar en una caída fuera del mapa.
+        /// </summary>
+        private void LateUpdate()
+        {
+            if (!_active || !groundIsImpassable) return;
+            ValidateGroundContainment();
         }
 
         // ================================================================ entrada
@@ -678,10 +799,240 @@ namespace RedMagic.Gameplay
                 _currentHorizontalSpeed = Mathf.MoveTowards(_currentHorizontalSpeed, 0, _deAcceleration * Time.deltaTime);
             }
 
-            if ((_currentHorizontalSpeed > 0 && _colRight) || (_currentHorizontalSpeed < 0 && _colLeft))
+            // Si el obstáculo de delante resultó ser un escalón (lo decidieron los contactos de la
+            // colisión, ver EvaluateStepContacts), se sube y NO se bloquea el avance. Si no, el
+            // bloqueo de pared de siempre, igual que antes de existir el step-up.
+            if (!ConsumeStepUp() && ((_currentHorizontalSpeed > 0 && _colRight) || (_currentHorizontalSpeed < 0 && _colLeft)))
+            {
                 _currentHorizontalSpeed = 0;
+            }
 
             BlockAgainstSteepSlope();
+        }
+
+        /// <summary>
+        /// Decide si el obstáculo con el que se acaba de chocar es un <b>escalón</b> (se sube) o una
+        /// <b>pared</b> (bloquea), usando los puntos de contacto reales de la colisión. El motor ya
+        /// dice exactamente dónde está tocando el obstáculo, así que no hay que adivinar geometría
+        /// con rayos ni hacer que varios sensores con offsets distintos coincidan entre sí.
+        ///
+        /// La regla, con un único número — <see cref="stepThresholdHeight"/>, medido desde la base de
+        /// la caja del personaje (sus pies):
+        ///  - Todo lo que bloquea el avance toca <b>por debajo</b> de esa línea → es un escalón: se
+        ///    anota su borde superior y <see cref="ConsumeStepUp"/> sube al personaje encima.
+        ///  - Algo que bloquea el avance toca <b>por encima</b> → el obstáculo sigue existiendo más
+        ///    arriba de lo que se puede subir: es pared. No se sube, y el bloqueo horizontal normal
+        ///    hace su trabajo de siempre (hay que saltar).
+        ///
+        /// "Bloquea el avance" son dos condiciones, ambas leídas del propio manifold: la cara tocada
+        /// es más inclinada que <c>maxSlopeAngle</c> (la cara vertical de un escalón lo es; el suelo
+        /// llano y las rampas transitables no, de ésas se encarga el sistema de rampas, así que los
+        /// dos sistemas no se pisan), y el contacto está del lado hacia el que se camina.
+        ///
+        /// El borde superior del escalón es el <b>contacto más alto</b> de ese conjunto: el manifold
+        /// de una cara vertical se reporta en sus dos extremos, así que el más alto ES la superficie
+        /// sobre la que hay que quedarse. Decidir y medir salen del mismo dato, luego no pueden
+        /// discrepar — que es justo lo que pasaba con tres rayos ajustados por separado.
+        ///
+        /// Corre en los callbacks de colisión (un paso de física), no por frame, y no mira cuánto se
+        /// avanzó este frame: por eso el resultado no depende de los FPS. Mientras se siga apoyado
+        /// contra el escalón, <c>OnCollisionStay2D</c> lo vuelve a reportar cada paso de física, así
+        /// que el mismo escalón se sube siempre, en cualquier momento en que se llegue a tocarlo.
+        /// </summary>
+        private void EvaluateStepContacts(Collision2D collision, bool entering)
+        {
+            if (!enableStepUp || !_active || collision.collider == null) return;
+
+            int layerBit = 1 << collision.collider.gameObject.layer;
+            int terrain = _groundLayer.value | _platformLayer.value;
+            if ((terrain & layerBit) == 0) return;
+
+            // El suelo sólido tiene una regla de más (ver 'groundStepMinFaceAngle'). Las plataformas
+            // pasan por exactamente el mismo camino de siempre.
+            bool isGround = groundIsImpassable && (_groundLayer.value & layerBit) != 0;
+
+            // La plataforma que se está atravesando hacia abajo no es un escalón al que subirse.
+            if (_dropCollider != null && collision.collider == _dropCollider) return;
+
+            // Sentido en el que se intenta avanzar. Se lee de la ENTRADA y no de la velocidad porque
+            // al chocar el bloqueo horizontal ya la ha puesto a 0, y el lado quedaría indefinido
+            // precisamente en el instante que importa.
+            int dir = Mathf.Abs(_input.X) > 0.01f
+                ? (int)Mathf.Sign(_input.X)
+                : (_currentHorizontalSpeed != 0f ? (int)Mathf.Sign(_currentHorizontalSpeed) : 0);
+            if (dir == 0) return;
+
+            var b = new Bounds(transform.position, _characterBounds.size);
+            float thresholdY = b.min.y + stepThresholdHeight;
+
+            bool blockedAboveThreshold = false;
+            bool steepGroundRamp = false;
+            float topOfStep = float.MinValue;
+            string detail = null;
+
+            // GetContacts sobre un buffer reutilizado: 'collision.contacts' asigna un array nuevo en
+            // cada callback, y esto se llama cada paso de física mientras se toque algo.
+            int count = collision.GetContacts(_stepContacts);
+            for (int i = 0; i < count; i++)
+            {
+                var contact = _stepContacts[i];
+                float angle = Vector2.Angle(contact.normal, Vector2.up);
+                bool walkableFace = angle <= maxSlopeAngle;
+                bool wrongSide = (contact.point.x - b.center.x) * dir <= 0f;
+
+                if (debugStepUp)
+                {
+                    string why = walkableFace ? $"DESCARTADO (cara de {angle:F1}° <= maxSlopeAngle {maxSlopeAngle:F0}°)"
+                               : wrongSide ? "DESCARTADO (otro lado)"
+                               : isGround && angle < groundStepMinFaceAngle
+                                   ? $"RAMPA DE GROUND NO TREPABLE ({angle:F1}° < {groundStepMinFaceAngle:F0}°) → PARED"
+                               : contact.point.y > thresholdY ? "sobre el umbral → PARED"
+                               : "bajo el umbral → escalón";
+                    detail += $"    c{i}: n={contact.normal} ang={angle:F1}° punto.y={contact.point.y:F3} " +
+                              $"(pies{(contact.point.y - b.min.y >= 0 ? "+" : "")}{contact.point.y - b.min.y:F3}) " +
+                              $"sep={contact.separation:F4} → {why}\n";
+                }
+
+                // Suelo llano o rampa transitable: no frena el avance, no es un escalón.
+                if (walkableFace) continue;
+
+                // Sólo el lado hacia el que se camina.
+                if (wrongSide) continue;
+
+                // SÓLO GROUND: una cara entre 'maxSlopeAngle' y 'groundStepMinFaceAngle' es una
+                // rampa demasiado inclinada, no un escalón. Antes caía del lado de "escalón" (su
+                // base toca por debajo del umbral), así que el personaje la trepaba de un salto
+                // por paso de física Y, de paso, ConsumeStepUp corto-circuitaba el bloqueo de
+                // pared, con lo que además seguía avanzando: se atravesaba la cuesta.
+                if (isGround && angle < groundStepMinFaceAngle)
+                {
+                    steepGroundRamp = true;
+                    if (debugStepUp) DebugDrawContact(contact.point, Color.red);
+                    continue;
+                }
+
+                if (contact.point.y > thresholdY)
+                {
+                    blockedAboveThreshold = true;
+                    if (debugStepUp) DebugDrawContact(contact.point, Color.red);
+                }
+                else
+                {
+                    topOfStep = Mathf.Max(topOfStep, contact.point.y);
+                    if (debugStepUp) DebugDrawContact(contact.point, Color.green);
+                }
+            }
+
+            // Diagnóstico: un contacto que se descarta no deja rastro, y era imposible ver por qué.
+            // Se registra al entrar en contacto y cada vez que el veredicto cambia, no en cada paso
+            // de física, para que apoyarse contra algo no llene la consola.
+            if (debugStepUp)
+            {
+                int outcome = steepGroundRamp ? 3 : blockedAboveThreshold ? 2 : (topOfStep > float.MinValue ? 1 : 0);
+                if (entering || outcome != _stepLogOutcome)
+                {
+                    string verdict = outcome == 3 ? "RAMPA DE GROUND NO TREPABLE (bloquea)"
+                                   : outcome == 2 ? "PARED" : outcome == 1 ? "ESCALON" : "NINGUN CONTACTO UTIL";
+                    Debug.Log($"[StepUp/Contacto] {Time.frameCount} '{collision.collider.name}' " +
+                              $"({LayerMask.LayerToName(collision.collider.gameObject.layer)}) → {verdict} | " +
+                              $"pies={b.min.y:F3} umbral={thresholdY:F3} (+{stepThresholdHeight:F2}) " +
+                              $"apoyado={_colDown} vy={_currentVerticalSpeed:F2} dir={dir}\n{detail}", this);
+                }
+                _stepLogOutcome = outcome;
+            }
+
+            // Una rampa de Ground no trepable arma el bloqueo horizontal (lo consume
+            // BlockAgainstSteepSlope) y nunca deja subir un escalón hacia ese mismo lado.
+            if (steepGroundRamp)
+            {
+                _groundSteepDir = dir;
+                _groundSteepTime = Time.time;
+            }
+
+            if (blockedAboveThreshold || steepGroundRamp || topOfStep == float.MinValue) return;
+
+            // Se guarda la altura ABSOLUTA de la superficie, no cuánto habría que subir: al aplicarla
+            // se recalcula contra los pies de ese momento, así que un contacto de un paso de física
+            // anterior nunca puede subir de más.
+            _stepSurfaceY = topOfStep;
+            _stepSide = dir;
+            _stepContactTime = Time.time;
+        }
+
+        /// <summary>
+        /// Aplica la subida que anotó <see cref="EvaluateStepContacts"/>, si sigue valiendo ahora
+        /// mismo. Se hace aquí, en el Update, y no dentro del callback de colisión, porque este
+        /// controlador mueve el <c>transform</c> él mismo: toda la escritura de posición vive en un
+        /// solo sitio y en un solo orden, así que no hay dos sistemas peleándose por la posición del
+        /// mismo frame.
+        ///
+        /// Sólo apoyado en el suelo: en el aire un "escalón" no es más que el borde de una plataforma
+        /// y hay que saltar, como siempre. Y sólo hacia el lado en que se detectó, para que soltar y
+        /// volver en sentido contrario no arrastre una subida vieja.
+        /// </summary>
+        private bool ConsumeStepUp()
+        {
+            if (!enableStepUp) return false;
+
+            // El contacto tiene que ser de este paso de física o del anterior; más viejo es
+            // información caduca. El margen se saca del propio reloj de física, así que vale igual a
+            // 20 que a 300 FPS.
+            bool fresh = Time.time - _stepContactTime <= Mathf.Max(Time.fixedDeltaTime, Time.deltaTime) * 2f;
+
+            var b = new Bounds(transform.position, _characterBounds.size);
+            float lift = _stepSurfaceY + groundSkin - b.min.y;
+
+            // Se acumula el motivo del rechazo en vez de salir en silencio: cuando esto falla, lo
+            // único que se veía era que el personaje no subía, sin saber cuál de las condiciones fue.
+            string reject =
+                  !fresh ? "sin contacto reciente"
+                : !_colDown ? $"EN EL AIRE (vy={_currentVerticalSpeed:F2}, sin suelo desde hace " +
+                              $"{(Time.time - _timeLeftGrounded) * 1000f:F0}ms)"
+                : _currentHorizontalSpeed == 0f ? "sin velocidad horizontal"
+                : _stepSide != (int)Mathf.Sign(_currentHorizontalSpeed)
+                              ? $"lado distinto (contacto={_stepSide}, avance={Mathf.Sign(_currentHorizontalSpeed)})"
+                : lift <= 0f ? $"los pies ya están encima (lift={lift:F3})"
+                : lift > stepThresholdHeight + groundSkin
+                              ? $"demasiado alto (lift={lift:F3} > umbral {stepThresholdHeight:F2})"
+                : null;
+
+            if (reject != null)
+            {
+                if (debugStepUp && fresh)
+                    Debug.Log($"[StepUp/Subida] {Time.frameCount} NO se sube: {reject}.", this);
+                return false;
+            }
+
+            // Esta subida NO pasa por el barrido de MoveCharacter, así que se valida aquí: un
+            // escalón bajo un techo bajo, o un saliente, dejaría al personaje dentro del suelo.
+            // Sólo mira la capa Ground; sobre plataformas la subida es exactamente la de antes.
+            if (WouldOverlapGround(transform.position + Vector3.up * lift))
+            {
+                if (debugStepUp || debugGroundClamp)
+                    Debug.Log($"[StepUp/Subida] {Time.frameCount} NO se sube: subir {lift:F3}u " +
+                              $"dejaría al personaje dentro de la capa Ground.", this);
+                return false;
+            }
+
+            _lastWrite = MoveSource.StepUp;
+            transform.position += Vector3.up * lift;
+            CalculateRayRanged();                // los sensores se quedaron bajos tras subir
+            _stepContactTime = float.MinValue;   // consumido: no se vuelve a aplicar
+            if (_currentVerticalSpeed < 0f) _currentVerticalSpeed = 0f;
+
+            if (debugStepUp)
+                Debug.Log($"[StepUp] {Time.frameCount} subido {lift:F3}u (superficie y={_stepSurfaceY:F3}).", this);
+            return true;
+        }
+
+        /// <summary>Cruz en el punto de contacto: verde = cuenta como escalón, roja = lo descarta
+        /// por estar sobre el umbral. Se mantiene unos frames para poder verla al caminar.</summary>
+        private static void DebugDrawContact(Vector2 point, Color color)
+        {
+            const float size = 0.06f;
+            const float hold = 0.15f;
+            Debug.DrawLine(point + Vector2.left * size, point + Vector2.right * size, color, hold, false);
+            Debug.DrawLine(point + Vector2.down * size, point + Vector2.up * size, color, hold, false);
         }
 
         /// <summary>
@@ -691,8 +1042,26 @@ namespace RedMagic.Gameplay
         /// </summary>
         private void BlockAgainstSteepSlope()
         {
-            if (_steepBlockDir == 0 || _currentHorizontalSpeed == 0f) return;
-            if ((int)Mathf.Sign(_currentHorizontalSpeed) == _steepBlockDir) _currentHorizontalSpeed = 0f;
+            if (_currentHorizontalSpeed == 0f) return;
+            int dir = (int)Mathf.Sign(_currentHorizontalSpeed);
+
+            // Bloqueo de siempre, de los rayos de suelo (Ground y plataformas por igual): sólo ve
+            // la cuña que ya está BAJO los pies. Se deja tal cual para no cambiar las plataformas.
+            if (_steepBlockDir != 0 && dir == _steepBlockDir)
+            {
+                _currentHorizontalSpeed = 0f;
+                return;
+            }
+
+            // SÓLO GROUND, y el que de verdad cierra el caso: la rampa no trepable que se tiene
+            // DELANTE, vista por los contactos reales de la colisión. Corre después de
+            // ConsumeStepUp, así que también anula el avance cuando el step-up se ha saltado el
+            // bloqueo de pared.
+            if (_groundSteepDir == 0 || dir != _groundSteepDir) return;
+
+            bool fresh = Time.time - _groundSteepTime <= Mathf.Max(Time.fixedDeltaTime, Time.deltaTime) * 2f;
+            if (fresh) _currentHorizontalSpeed = 0f;
+            else _groundSteepDir = 0;
         }
 
         // ================================================================ gravedad
@@ -915,6 +1284,10 @@ namespace RedMagic.Gameplay
             _knockbackTimer = 0f;
             _currentHorizontalSpeed = 0f;
             _currentVerticalSpeed = 0f;
+
+            // Esto se llama también al teletransportar (cambio de sección) y al morir: la posición
+            // buena anterior ya no vale como referencia de continuidad.
+            _hasSafePosition = false;
         }
 
         private void UpdateKnockback()
@@ -952,6 +1325,7 @@ namespace RedMagic.Gameplay
             float drop = _groundDistance - groundSkin;
             if (drop <= 0.0001f) return;
 
+            _lastWrite = MoveSource.GroundSnap;
             transform.position += Vector3.down * drop;
             CalculateRayRanged();   // los sensores se quedaron altos tras bajar
         }
@@ -987,8 +1361,7 @@ namespace RedMagic.Gameplay
             // Subir el pie por una rampa (de plataforma o de suelo sólido) y aterrizar sobre las
             // plataformas, que el barrido de colisión no ve, se resuelve aquí.
             move = ResolveSurface(move, out float sweepLift);
-
-            var furthestPoint = pos + move;
+            _sweepLift = sweepLift;
 
             // La caja del barrido va encogida: apoyado en el suelo la caja a tamaño real entra
             // dentro del margen de contacto de Physics2D y daría un choque falso cada frame.
@@ -998,8 +1371,33 @@ namespace RedMagic.Gameplay
             var solverSize = (Vector2)_characterBounds.size - Vector2.one * solverSkin;
             solverSize.y -= sweepLift;
             var solverOffset = new Vector3(0f, sweepLift * 0.5f);
-            furthestPoint += solverOffset;
+
+            // Barrido REAL del trayecto contra la capa Ground, antes de aplicar nada. El resolvedor
+            // de abajo sólo mira el punto de destino, así que por sí solo deja pasar cualquier paso
+            // grande (dash, retroceso, caída rápida, un frame largo) por encima de geometría fina.
+            move = SweepAgainstGround(pos + solverOffset, move, solverSize, sweepLift);
+
+            var furthestPoint = pos + move + solverOffset;
             pos += solverOffset;
+
+            _lastWrite = MoveSource.Solver;
+
+            // Con el suelo sólido activo, el barrido de arriba es la ÚNICA autoridad sobre Ground:
+            // ya ha medido el trayecto real y ha recortado 'move' contra paredes, techos y cuestas
+            // no trepables, perdonando la rampa que se pisa. Lo que sigue — el OverlapBox del punto
+            // de destino más el muestreo — es el resolvedor original, y tenerlos a la vez era el
+            // "mini frenado" al entrar en una cuesta: ahí los rayos de destino todavía no alcanzan
+            // la rampa, así que 'groundAngle' es 0, 'sweepLift' es 0, y sin ese margen la esquina
+            // delantera de su caja se mete en la inclinación. El OverlapBox daba positivo y el
+            // muestreo bloqueaba ya en la primera iteración: un frame entero sin avanzar.
+            //
+            // Dos resolvedores con cajas distintas no pueden estar de acuerdo. Se queda el que mide
+            // el trayecto; el viejo sigue disponible apagando 'groundIsImpassable'.
+            if (groundIsImpassable && _groundLayer.value != 0)
+            {
+                transform.position += move;
+                return;
+            }
 
             var hit = Physics2D.OverlapBox(furthestPoint, solverSize, 0, _groundLayer);
             if (!hit)
@@ -1021,8 +1419,18 @@ namespace RedMagic.Gameplay
                     if (i == 1)
                     {
                         if (_currentVerticalSpeed < 0) _currentVerticalSpeed = 0;
-                        var dir = transform.position - hit.transform.position;
-                        transform.position += dir.normalized * move.magnitude;
+
+                        // Antes aquí había un empujón a ciegas:
+                        //     transform.position += (transform.position - hit.transform.position).normalized
+                        //                           * move.magnitude;
+                        // 'hit.transform.position' es el ORIGEN DEL TRANSFORM del collider, no el
+                        // punto de contacto — para el suelo pintado con Tilemap, el origen del
+                        // Tilemap, que puede estar a decenas de unidades y en cualquier dirección.
+                        // Era un teletransporte arbitrario, de magnitud proporcional a la velocidad
+                        // (o sea: peor cuanto más rápido se iba, justo en dash y retroceso) y sin
+                        // volver a comprobarse. Se sustituye por la despenetración real, que mide
+                        // la salida más corta y sólo contra Ground.
+                        ResolveGroundPenetration();
                     }
 
                     return;
@@ -1030,6 +1438,337 @@ namespace RedMagic.Gameplay
 
                 positionToMoveTo = posToTry;
             }
+        }
+
+        // ================================================================ suelo sólido (Ground)
+
+        /// <summary>
+        /// Recorta <paramref name="move"/> para que el TRAYECTO del frame no atraviese la capa
+        /// Ground, eje por eje. Es lo único que garantiza que el suelo sólido sea infranqueable
+        /// venga el movimiento de donde venga: andar, rampa, dash, retroceso o cualquier sistema
+        /// futuro, porque todos terminan aquí.
+        ///
+        /// Lo que NO frena, a propósito, es una cara de Ground <b>transitable</b> (inclinación
+        /// dentro de <c>maxSlopeAngle</c>) a la que los pies puedan llegar este frame: de esas se
+        /// encarga <see cref="ResolveSurface"/> subiendo el pie encima, y frenarlas aquí dejaría al
+        /// personaje clavado al pie de cada cuesta. Todo lo demás — muros, techos y las rampas
+        /// demasiado inclinadas — recorta el avance hasta el punto de contacto.
+        ///
+        /// La capa de plataformas no se consulta en ningún momento: se atraviesan igual que antes.
+        /// </summary>
+        private Vector3 SweepAgainstGround(Vector3 origin, Vector3 move, Vector2 solverSize, float lift)
+        {
+            if (!groundIsImpassable || _groundLayer.value == 0) return move;
+            if (solverSize.x <= 0f || solverSize.y <= 0f) return move;
+
+            // Una cara transitable sólo se perdona si ResolveSurface acaba de resolver el apoyo de
+            // Ground en la columna de DESTINO, es decir, si el pie va a terminar encima de ella
+            // este frame. Si no lo ha resuelto, esa cuesta no es alcanzable y frena como un muro.
+            //
+            // El criterio anterior ("el contacto queda por debajo de pies + alcance") era el
+            // agujero: con 'maxSlopeAngle' alto, una pared casi vertical cuenta como transitable y
+            // su contacto está justo a la altura del pie, así que se perdonaba sola — el barrido la
+            // dejaba pasar y ResolveSurface no llegaba a subir el pie. El personaje la atravesaba.
+            // La bandera es TODO el criterio. No se le añade ningún umbral de altura: la base de la
+            // caja del barrido va por encima de los pies (medio 'solverSkin' más 'sweepLift'), así
+            // que en una rampa el contacto cae siempre por encima de la línea del pie. Compararlo
+            // con la altura del pie frenaba la cuesta a poca velocidad, ponía la horizontal a 0, y
+            // al frame siguiente se arrancaba otra vez desde 0: subir se volvía un arrastre.
+            bool forgiveWalkable = _surfaceResolvedGround;
+
+            // --- horizontal: el eje en el que frenan las paredes y las rampas no trepables.
+            if (Mathf.Abs(move.x) > 0.0001f)
+            {
+                float dirX = Mathf.Sign(move.x);
+                var dir = new Vector2(dirX, 0f);
+                float wanted = Mathf.Abs(move.x);
+                float allowed = SweepAxisAgainstGround(origin, solverSize, dir, wanted, forgiveWalkable);
+
+                // La franja inferior que 'sweepLift' saca de la caja del barrido. En una rampa de
+                // 80° son ~0.58u — el 40% inferior del cuerpo — y ahí dentro cabe entera una pared
+                // baja que el barrido no vería. Se barre aparte: la propia rampa se descarta por su
+                // normal, así que en esa franja sólo puede frenar algo demasiado inclinado.
+                if (lift > 0.0001f)
+                {
+                    var stripSize = new Vector2(solverSize.x, lift);
+                    var stripOrigin = new Vector3(origin.x, origin.y - solverSize.y * 0.5f - lift * 0.5f);
+                    allowed = Mathf.Min(allowed,
+                        SweepAxisAgainstGround(stripOrigin, stripSize, dir, wanted, forgiveWalkable));
+                }
+
+                if (allowed < wanted)
+                {
+                    move.x = allowed * dirX;
+                    if (Mathf.Abs(_currentHorizontalSpeed) > 0f &&
+                        Mathf.Sign(_currentHorizontalSpeed) == dirX) _currentHorizontalSpeed = 0f;
+                }
+            }
+
+            // --- vertical: techos y muros. Apoyado en una cuesta, una cara transitable NUNCA frena
+            // aquí: bajando, el desplazamiento es casi todo vertical y contra la propia rampa, y
+            // recortarlo convertiría cada descenso en un goteo de centímetros. En el aire, en
+            // cambio, sí frena — es el aterrizaje, y es lo que impide atravesar un suelo fino en
+            // una caída rápida o en un frame largo.
+            if (Mathf.Abs(move.y) > 0.0001f)
+            {
+                float dirY = Mathf.Sign(move.y);
+                var from = origin + new Vector3(move.x, 0f);
+                float wanted = Mathf.Abs(move.y);
+                float allowed = SweepAxisAgainstGround(from, solverSize, new Vector2(0f, dirY),
+                                                       wanted, forgiveWalkable);
+
+                if (allowed < wanted)
+                {
+                    move.y = allowed * dirY;
+                    if (Mathf.Abs(_currentVerticalSpeed) > 0f &&
+                        Mathf.Sign(_currentVerticalSpeed) == dirY) _currentVerticalSpeed = 0f;
+                }
+            }
+
+            return move;
+        }
+
+        /// <summary>
+        /// Un eje del barrido: cuánto se puede avanzar en <paramref name="dir"/> antes de tocar
+        /// Ground. Un impacto a distancia 0 (la caja ya nacía dentro) se ignora aquí — no dice nada
+        /// útil sobre el trayecto y, si se tomara, congelaría al personaje; ese caso es justo el que
+        /// arregla <see cref="ResolveGroundPenetration"/>.
+        /// </summary>
+        private float SweepAxisAgainstGround(Vector3 origin, Vector2 size, Vector2 dir,
+                                             float distance, bool forgiveWalkable)
+        {
+            if (distance <= 0.0001f || size.x <= 0f || size.y <= 0f) return distance;
+
+            int count = Physics2D.BoxCast(origin, size, 0f, dir, _groundFilter, _groundCasts, distance);
+            float best = distance;
+
+            for (int i = 0; i < count; i++)
+            {
+                var candidate = _groundCasts[i];
+                if (candidate.collider == null) continue;
+                if (candidate.distance <= 0f) continue;
+                if (candidate.distance >= best) continue;
+
+                // Cuesta transitable con el apoyo ya resuelto: la sube ResolveSurface, no es muro.
+                if (forgiveWalkable && Vector2.Angle(candidate.normal, Vector2.up) <= maxSlopeAngle)
+                    continue;
+
+                best = candidate.distance;
+            }
+
+            return best >= distance ? distance : Mathf.Max(0f, best - groundSkin);
+        }
+
+        /// <summary>
+        /// Caja de sondeo del suelo sólido para una posición dada: el cuerpo encogido
+        /// <c>groundClampInset</c> y con la base subida <c>_sweepLift</c>.
+        ///
+        /// Lo de la base no es opcional: apoyado en una rampa, la esquina baja de una caja plana
+        /// penetra de verdad en la cuesta (0.1 × tan(ángulo): más de medio cuerpo a 80°). Sin subir
+        /// la base, la red de seguridad leería cada rampa como una penetración y escupiría al
+        /// jugador fuera de la cuesta en cada frame. Es la misma forma que usa el barrido, así que
+        /// las dos mitades ven exactamente la misma geometría.
+        /// </summary>
+        private void GroundProbeBox(Vector3 position, out Vector2 center, out Vector2 size)
+        {
+            float lift = Mathf.Max(0f, _sweepLift);
+
+            size = (Vector2)_characterBounds.size - Vector2.one * groundClampInset;
+            size.y = Mathf.Max(0.05f, size.y - lift);
+            center = (Vector2)(position + _characterBounds.center) + Vector2.up * (lift * 0.5f);
+        }
+
+        /// <summary>
+        /// Red de seguridad completa, en dos mitades, porque el terreno de este juego viene en dos
+        /// formas de collider muy distintas:
+        ///
+        ///  1. <b>Geometría rellena</b> (los tilemaps y las cajas del hub): se detecta estando
+        ///     dentro, con <see cref="ResolveGroundPenetration"/>.
+        ///  2. <b>Geometría de línea abierta</b> — el terreno de los mundos son SpriteShape, que
+        ///     generan un <c>EdgeCollider2D</c> de polilínea ABIERTA y grosor 0
+        ///     (<c>m_IsOpenEnded: 1</c>, <c>m_EdgeRadius: 0</c>). Una línea <b>no tiene dentro</b>:
+        ///     en cuanto el personaje pasa al otro lado, no solapa absolutamente nada y ninguna
+        ///     prueba de solape puede verlo. Ahí la única señal es el <b>cruce</b>: si el segmento
+        ///     entre la posición buena anterior y la actual atraviesa la línea, se ha colado.
+        ///
+        /// Sin la mitad 2 la red era decorativa en todas las secciones de mundo — exactamente donde
+        /// hacía falta.
+        /// </summary>
+        private void ValidateGroundContainment()
+        {
+            var current = transform.position;
+
+            if (!_hasSafePosition)
+            {
+                _lastSafePosition = current;
+                _hasSafePosition = true;
+                return;
+            }
+
+            // Un teletransporte (cambio de sección, respawn) no es un cruce: se reancla y ya.
+            // Cualquier frame legítimo se mueve muchísimo menos que esto.
+            float teleport = Mathf.Max(4f, _characterBounds.size.y * 3f);
+            if ((current - _lastSafePosition).sqrMagnitude > teleport * teleport)
+            {
+                _lastSafePosition = current;
+                return;
+            }
+
+            if (ResolveGroundPenetration()) current = transform.position;
+
+            if (CrossedGround(_lastSafePosition, current))
+            {
+                var recovered = _lastSafePosition;
+
+                if (debugGroundClamp)
+                {
+                    _lastClampPush = recovered - current;
+                    GroundProbeBox(recovered, out _lastClampCenter, out _lastClampSize);
+                    _lastClampFrame = Time.frameCount;
+
+                    Debug.LogWarning($"[GroundClamp] {Time.frameCount} el jugador ATRAVESÓ la línea " +
+                                     $"de la capa Ground: devuelto {(recovered - current).magnitude:F3}u " +
+                                     $"a la última posición buena | sistema={_moveSource} " +
+                                     $"última escritura={_lastWrite} | apoyado={_colDown} " +
+                                     $"vx={_currentHorizontalSpeed:F2} vy={_currentVerticalSpeed:F2} " +
+                                     $"rampa={_slopeAngle:F1}° dt={Time.deltaTime * 1000f:F1}ms", this);
+                }
+
+                transform.position = recovered;
+                _lastPosition = recovered;      // la corrección no es movimiento del personaje
+                CalculateRayRanged();
+                _currentHorizontalSpeed = 0f;
+                if (_currentVerticalSpeed < 0f) _currentVerticalSpeed = 0f;
+                return;                          // _lastSafePosition sigue siendo la buena
+            }
+
+            _lastSafePosition = transform.position;
+        }
+
+        /// <summary>
+        /// ¿El segmento <paramref name="from"/> → <paramref name="to"/> atraviesa la capa Ground?
+        ///
+        /// Se mide entre CENTROS del personaje, no entre pies: caminando, el centro va media altura
+        /// por encima de la superficie, así que un recorrido normal nunca roza la línea. Aun así,
+        /// pasar por encima de una cresta afilada puede rozarla, y eso no es colarse: por eso un
+        /// cruce sólo cuenta si además, en el destino, NO hay suelo transitable bajo los pies.
+        /// </summary>
+        private bool CrossedGround(Vector3 from, Vector3 to)
+        {
+            var a = (Vector2)(from + _characterBounds.center);
+            var b = (Vector2)(to + _characterBounds.center);
+            if ((b - a).sqrMagnitude <= 0.000001f) return false;
+
+            if (Physics2D.Linecast(a, b, _groundFilter, _groundCasts) == 0) return false;
+
+            // ¿Sigue habiendo superficie pisable justo debajo? Entonces se ha pasado por encima de
+            // ella (cresta, lomo), que es movimiento legítimo.
+            float reach = _characterBounds.extents.y + _detectionRayLength + groundSkin;
+            if (Physics2D.Raycast(b, Vector2.down, _groundFilter, _groundCasts, reach) > 0)
+            {
+                for (int i = 0; i < _groundCasts.Count; i++)
+                {
+                    var below = _groundCasts[i];
+                    if (below.collider == null || below.distance <= 0f) continue;
+                    if (Vector2.Angle(below.normal, Vector2.up) <= maxSlopeAngle) return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>True si el personaje, colocado en <paramref name="position"/>, quedaría dentro
+        /// de la capa Ground. Para validar una escritura de posición que no pasa por el barrido.</summary>
+        private bool WouldOverlapGround(Vector3 position)
+        {
+            if (!groundIsImpassable || _groundLayer.value == 0) return false;
+
+            GroundProbeBox(position, out var center, out var size);
+            return Physics2D.OverlapBox(center, size, 0f, _groundFilter, _groundOverlaps) > 0;
+        }
+
+        /// <summary>
+        /// Si el personaje está dentro de la capa Ground, lo saca por el camino más corto.
+        ///
+        /// Busca la salida probando la caja de sondeo desplazada en las cuatro direcciones
+        /// cardinales y quedándose con la distancia más pequeña que la deja libre. No se usa
+        /// <c>Collider2D.Distance</c> porque mide contra el collider REAL del personaje, que en una
+        /// rampa está legítimamente penetrado, y la separación que devolvería sería la de expulsarlo
+        /// de la cuesta. La caja de sondeo, en cambio, ya descuenta esa penetración legítima.
+        ///
+        /// Corre cada frame, así que lo que tiene que corregir nunca es más profundo que un frame
+        /// de movimiento y el reajuste no se ve. <c>groundClampMaxPush</c> es sólo un tope de
+        /// seguridad para que un caso extremo no se convierta en un tirón a media pantalla.
+        /// </summary>
+        private bool ResolveGroundPenetration()
+        {
+            if (!groundIsImpassable || _groundLayer.value == 0) return false;
+
+            GroundProbeBox(transform.position, out var center, out var size);
+            if (Physics2D.OverlapBox(center, size, 0f, _groundFilter, _groundOverlaps) == 0) return false;
+
+            float step = Mathf.Max(0.02f, groundClampInset * 0.5f);
+            int steps = Mathf.CeilToInt(groundClampMaxPush / step);
+
+            Vector2 push = Vector2.zero;
+            float shortest = float.MaxValue;
+
+            for (int d = 0; d < 4; d++)
+            {
+                // Arriba primero: con empate, sacar al jugador hacia arriba es lo que menos se nota.
+                var dir = d == 0 ? Vector2.up : d == 1 ? Vector2.left : d == 2 ? Vector2.right : Vector2.down;
+
+                for (int i = 1; i <= steps; i++)
+                {
+                    float distance = i * step;
+                    if (distance >= shortest) break;
+                    if (Physics2D.OverlapBox(center + dir * distance, size, 0f, _groundFilter, _groundOverlaps) > 0)
+                        continue;
+
+                    shortest = distance;
+                    push = dir * distance;
+                    break;
+                }
+            }
+
+            if (shortest == float.MaxValue)
+            {
+                if (debugGroundClamp)
+                    Debug.LogWarning($"[GroundClamp] {Time.frameCount} DENTRO del suelo sólido y sin " +
+                                     $"salida a menos de {groundClampMaxPush:F2}u (sistema: {_moveSource}, " +
+                                     $"última escritura: {_lastWrite}). No se corrige.", this);
+                return false;
+            }
+
+            transform.position += (Vector3)push;
+
+            // El desplazamiento correctivo no es movimiento del personaje: si contara, 'Velocity'
+            // daría un pico que falsearía el cálculo del ápex del salto.
+            _lastPosition += (Vector3)push;
+            CalculateRayRanged();
+
+            // La velocidad que empujaba contra la superficie se anula; la perpendicular se conserva.
+            if (push.y > 0f && _currentVerticalSpeed < 0f) _currentVerticalSpeed = 0f;
+            if (push.y < 0f && _currentVerticalSpeed > 0f) _currentVerticalSpeed = 0f;
+            if (push.x > 0f && _currentHorizontalSpeed < 0f) _currentHorizontalSpeed = 0f;
+            if (push.x < 0f && _currentHorizontalSpeed > 0f) _currentHorizontalSpeed = 0f;
+
+            if (debugGroundClamp)
+            {
+                _lastClampPush = push;
+                _lastClampCenter = center + push;
+                _lastClampSize = size;
+                _lastClampFrame = Time.frameCount;
+
+                Debug.LogWarning($"[GroundClamp] {Time.frameCount} el jugador estaba DENTRO de la capa " +
+                                 $"Ground: sacado {push.magnitude:F3}u hacia {push.normalized} | " +
+                                 $"sistema={_moveSource} última escritura={_lastWrite} | " +
+                                 $"apoyado={_colDown} vx={_currentHorizontalSpeed:F2} " +
+                                 $"vy={_currentVerticalSpeed:F2} rampa={_slopeAngle:F1}° " +
+                                 $"sweepLift={_sweepLift:F3} dt={Time.deltaTime * 1000f:F1}ms", this);
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -1062,6 +1801,7 @@ namespace RedMagic.Gameplay
         private Vector3 ResolveSurface(Vector3 move, out float sweepLift)
         {
             sweepLift = 0f;
+            _surfaceResolvedGround = false;
 
             bool platforms = PlatformsActive;
             bool ground = enableSlopes && _colDown && _currentVerticalSpeed <= 0f;
@@ -1069,8 +1809,12 @@ namespace RedMagic.Gameplay
 
             // Cuánto puede subir el pie en un frame: lo que gana la rampa más inclinada admitida a
             // lo largo del avance horizontal. Sólo apoyado; en el aire esto es sólo el aterrizaje.
+            // Antes esto llevaba un tope fijo de 3 (≈71.57°) que en la práctica bajaba el límite
+            // real muy por debajo de lo que 'maxSlopeAngle' decía permitir en el Inspector — a 80°
+            // el pie se quedaba corto en cada paso y la rampa se sentía como pegajosa/resbaladiza.
+            // El propio 'maxSlopeAngle' (con su Range de hasta 80°) ya es el único tope necesario.
             float rise = _colDown
-                ? Mathf.Abs(move.x) * Mathf.Min(3f, Mathf.Tan(maxSlopeAngle * Mathf.Deg2Rad)) + groundSkin
+                ? Mathf.Abs(move.x) * Mathf.Tan(maxSlopeAngle * Mathf.Deg2Rad) + groundSkin
                 : 0f;
             float fall = Mathf.Max(0f, -move.y) + groundSkin;
 
@@ -1100,13 +1844,26 @@ namespace RedMagic.Gameplay
 
                     bestSurfaceY = Mathf.Max(bestSurfaceY, hit.point.y);
                     groundAngle = Mathf.Max(groundAngle, Vector2.Angle(hit.normal, Vector2.up));
+
+                    // Hay apoyo de Ground alcanzable en la columna de destino: el pie va a acabar
+                    // encima. Es lo que autoriza al barrido a NO frenar contra esta misma cuesta.
+                    _surfaceResolvedGround = true;
                 }
             }
 
             // La esquina de la caja va '_rayBuffer' más afuera que el último rayo de pies: en una
             // cuesta queda como mucho esa distancia × pendiente por debajo de la superficie.
             if (groundAngle > 0.5f)
+            {
                 sweepLift = _rayBuffer * Mathf.Tan(groundAngle * Mathf.Deg2Rad) + groundSkin;
+
+                // A partir de ~70° 'sweepLift' crece muy rápido (tan diverge) y sin este tope podía
+                // comerse toda la altura de 'solverSize' en MoveCharacter y dejarla en 0 o negativa,
+                // lo que rompe el OverlapBox del barrido. Se deja siempre medio cuerpo de margen.
+                sweepLift = Mathf.Min(sweepLift, _characterBounds.size.y * 0.5f - solverSkin);
+            }
+
+            if (debugStepUp) DebugReportSurfaceLift(move, feetY, rise, bestSurfaceY);
 
             if (bestSurfaceY == float.MinValue) return move;
 
@@ -1118,11 +1875,58 @@ namespace RedMagic.Gameplay
             return move;
         }
 
+        /// <summary>
+        /// Diagnóstico del OTRO camino por el que se sube a una superficie más alta, y el único que
+        /// funciona con plataformas: el <c>rise</c> de <see cref="ResolveSurface"/>. Ese alcance vale
+        /// <c>|move.x| × tan(maxSlopeAngle)</c>, o sea que <b>depende de cuánto se avanza en el frame</b>
+        /// — de los FPS y de la velocidad del momento — y si el escalón es más alto que ese alcance,
+        /// el rayo nace por debajo de la superficie y no la ve.
+        ///
+        /// Lanza un rayo extra, sólo con la depuración encendida, mirando bastante más arriba de lo
+        /// que <c>rise</c> permite, para poder decir exactamente "había superficie a +X sobre los
+        /// pies, el alcance de este frame era +Y, y por eso (no) se subió".
+        /// </summary>
+        private void DebugReportSurfaceLift(Vector3 move, float feetY, float rise, float bestSurfaceY)
+        {
+            if (Mathf.Abs(move.x) <= 0.0001f) return;
+
+            int dir = move.x > 0f ? 1 : -1;
+            float probeX = (dir > 0 ? _raysDown.End.x : _raysDown.Start.x) + move.x;
+            float scan = stepThresholdHeight + Mathf.Abs(move.x) + groundSkin;
+
+            var ahead = Physics2D.Raycast(new Vector2(probeX, feetY + scan), Vector2.down,
+                                          scan + groundSkin, _groundLayer | _platformLayer);
+            if (!ahead) return;
+
+            float aheadRise = ahead.point.y - feetY;
+            if (aheadRise <= groundSkin) return;   // está al nivel del pie o por debajo: no es un escalón
+
+            bool taken = bestSurfaceY > float.MinValue && bestSurfaceY >= ahead.point.y - groundSkin;
+            Debug.Log($"[StepUp/Superficie] {Time.frameCount} " +
+                      $"superficie delante a +{aheadRise:F3} sobre los pies → {(taken ? "SUBIDO" : "NO SUBIDO")} | " +
+                      $"alcance rise={rise:F3} (moveX={move.x:F3}, dt={Time.deltaTime * 1000f:F1}ms, " +
+                      $"maxSlopeAngle={maxSlopeAngle:F0}°) | apoyado={_colDown} vy={_currentVerticalSpeed:F2} | " +
+                      $"'{ahead.collider.name}' ({LayerMask.LayerToName(ahead.collider.gameObject.layer)})", this);
+        }
+
         // ================================================================ pisotón / contacto
 
         private void OnTriggerEnter2D(Collider2D other) => HandleContact(other);
 
-        private void OnCollisionEnter2D(Collision2D collision) => HandleContact(collision.collider);
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            HandleContact(collision.collider);
+            EvaluateStepContacts(collision, entering: true);
+        }
+
+        /// <summary>
+        /// Los contactos se vuelven a leer en cada paso de física mientras se siga tocando el
+        /// obstáculo. Eso es lo que hace que apoyarse contra un escalón termine subiéndolo SIEMPRE:
+        /// no hace falta acertar el frame exacto del choque, como sí hacía falta con los rayos.
+        /// El pisotón se queda sólo en <c>OnCollisionEnter2D</c> — aquí no se llama a HandleContact,
+        /// o pisar a un enemigo se repetiría cada paso de física.
+        /// </summary>
+        private void OnCollisionStay2D(Collision2D collision) => EvaluateStepContacts(collision, entering: false);
 
         private void HandleContact(Collider2D other)
         {
@@ -1166,6 +1970,26 @@ namespace RedMagic.Gameplay
         {
             if ((_groundLayer.value & _platformLayer.value) != 0)
                 _groundLayer = _groundLayer.value & ~_platformLayer.value;
+
+            if (groundStepMinFaceAngle < maxSlopeAngle) groundStepMinFaceAngle = maxSlopeAngle;
+
+            RebuildGroundFilter();
+        }
+
+        /// <summary>
+        /// Filtro compartido por TODO lo que consulta el suelo sólido: sólo la capa Ground y sin
+        /// disparadores. Los disparadores importan porque el proyecto tiene
+        /// <c>Queries Hit Triggers</c> activado, y una zona de disparo que alguien ponga en la capa
+        /// Ground no debe frenar ni expulsar al jugador.
+        /// </summary>
+        private void RebuildGroundFilter()
+        {
+            _groundFilter = new ContactFilter2D
+            {
+                useTriggers = false,
+                useLayerMask = true,
+                layerMask = _groundLayer
+            };
         }
 
         private static void PlaySfx(string id)
@@ -1178,6 +2002,31 @@ namespace RedMagic.Gameplay
         {
             Gizmos.color = Color.yellow;
             Gizmos.DrawWireCube(transform.position + _characterBounds.center, _characterBounds.size);
+
+            if (debugStepUp)
+            {
+                // Línea de los pies y línea del umbral: todo contacto que caiga entre las dos es
+                // escalón, todo el que caiga por encima de la amarilla es pared.
+                var stepBounds = new Bounds(transform.position, _characterBounds.size);
+                float margin = 0.25f;
+                Gizmos.color = Color.cyan;
+                Gizmos.DrawLine(new Vector3(stepBounds.min.x - margin, stepBounds.min.y),
+                                new Vector3(stepBounds.max.x + margin, stepBounds.min.y));
+                Gizmos.color = Color.yellow;
+                float thresholdY = stepBounds.min.y + stepThresholdHeight;
+                Gizmos.DrawLine(new Vector3(stepBounds.min.x - margin, thresholdY),
+                                new Vector3(stepBounds.max.x + margin, thresholdY));
+            }
+
+            // Última corrección de la red de seguridad de Ground: caja magenta donde quedó el
+            // personaje tras sacarlo y flecha con el empujón que hizo falta. Si esto se ve alguna
+            // vez durante una partida, queda un camino que se salta el barrido.
+            if (debugGroundClamp && _lastClampFrame != int.MinValue && Time.frameCount - _lastClampFrame < 120)
+            {
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawWireCube(_lastClampCenter, _lastClampSize);
+                Gizmos.DrawRay((Vector3)(_lastClampCenter - _lastClampPush), _lastClampPush);
+            }
 
             if (!Application.isPlaying)
             {

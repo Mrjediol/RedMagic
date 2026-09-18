@@ -121,6 +121,14 @@ namespace RedMagic.UI
         {
             // Update corre con Time.timeScale = 0.
             var keyboard = Keyboard.current;
+            // TEMPORAL — diagnóstico del bug "Esc no abre pausa": tecla P como control, para
+            // aislar si el problema es específico de Esc o del sistema de pausa en general.
+            // Quitar en cuanto se confirme el resultado de la prueba.
+            if (keyboard != null && keyboard.pKey.wasPressedThisFrame)
+            {
+                OnBackInput();
+                return;
+            }
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             {
                 OnBackInput();

@@ -44,6 +44,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Worlds/World2/World2_Section05.unity
     guid: ea9302b593c1d2443b3e4ccd40783caf
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/World1_Section02.unity
+    guid: 7d9a57d03d6b8e74299cd6fa633b38f5
   m_configObjects:
     com.unity.adaptivePerformance.basic.provider_settings: {fileID: 11400000, guid: a99728a281b759d4dbfdbbd8fdd87634, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: c158f1ab2c0c7074eb5822584efa8ffa, type: 2}

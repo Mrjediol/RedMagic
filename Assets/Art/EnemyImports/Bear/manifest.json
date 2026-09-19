@@ -1,0 +1,43 @@
+{
+  "enemyName": "Bear",
+  "kind": "enemy",
+  "animations": [
+    {
+      "name": "Idle",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Walk",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 6,
+      "projectile": null
+    },
+    {
+      "name": "Attack",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 6,
+      "projectile": null
+    },
+    {
+      "name": "Hurt",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 6,
+      "projectile": null
+    },
+    {
+      "name": "Death",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    }
+  ],
+  "projectiles": [],
+  "libraryId": "0693cc9a-25c0-4144-9459-ecad05ea6270"
+}

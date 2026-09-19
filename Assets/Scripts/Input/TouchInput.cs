@@ -12,8 +12,8 @@ namespace RedMagic.Core
         /// <summary>-1 (izquierda) … 1 (derecha). Lo escribe la UI táctil.</summary>
         public static float Horizontal { get; set; }
 
-        /// <summary>True mientras se mantiene pulsado el botón de agacharse.</summary>
-        public static bool Crouch { get; set; }
+        /// <summary>True mientras se mantiene pulsado el botón de abajo (atravesar plataformas).</summary>
+        public static bool Down { get; set; }
 
         private static bool _jumpQueued;
         private static bool _attackQueued;
@@ -79,7 +79,7 @@ namespace RedMagic.Core
         public static void Clear()
         {
             Horizontal = 0f;
-            Crouch = false;
+            Down = false;
             _jumpQueued = false;
             _attackQueued = false;
             _dashQueued = false;

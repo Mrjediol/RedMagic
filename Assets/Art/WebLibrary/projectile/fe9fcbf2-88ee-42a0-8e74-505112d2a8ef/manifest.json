@@ -1,0 +1,22 @@
+{
+  "enemyName": "BearRock",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "Move",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Impact",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    }
+  ],
+  "projectiles": [],
+  "libraryId": "fe9fcbf2-88ee-42a0-8e74-505112d2a8ef"
+}

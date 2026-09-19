@@ -12,10 +12,29 @@
 // no changes.
 
 import { listEnemies } from './enemy-library.js';
+import { kindOf } from './entry-kinds.js';
 
+// Kind first, so a mixed "Todo" listing in the Biblioteca tab is readable at a glance without
+// having to open anything. A legacy record with no kind resolves to the enemy one (kindOf).
 function defaultBadges(entry) {
-  const animCount = (entry.sprite?.lanes || []).filter((l) => l.type === 'animation' && l.frameBoxIndices.length > 0).length;
-  return [`${animCount} anim.`, ...(entry.config ? [{ text: 'config', accent: true }] : [])];
+  const meta = kindOf(entry.kind);
+  const badges = [`${meta.icon} ${meta.label}`];
+
+  // An animation count only means something for a kind that owns frames. On a sheetless entry (a
+  // boss) it would always read "0 anim." — technically true, and exactly the kind of badge that
+  // gets misread as "this one is broken".
+  if (meta.sheet) {
+    const animCount = (entry.sprite?.lanes || [])
+      .filter((l) => l.type === 'animation' && l.frameBoxIndices.length > 0).length;
+    badges.push(`${animCount} anim.`);
+  } else if (entry.config) {
+    const attacks = Object.keys(entry.config.attacks || {}).length;
+    const phases = (entry.config.phases || []).length;
+    badges.push(`${attacks} ataques`, `${phases} fases`);
+  }
+
+  if (entry.config) badges.push({ text: 'config', accent: true });
+  return badges;
 }
 
 /**
@@ -67,11 +86,20 @@ export async function renderLibraryCards(container, {
       });
     }
 
-    const thumb = document.createElement('img');
-    thumb.className = 'libThumb';
-    thumb.src = entry.thumbnail || '';
-    thumb.alt = getTitle(entry);
-    card.appendChild(thumb);
+    // A record can legitimately have no thumbnail (a boss whose base enemy isn't picked yet). An
+    // <img> with an empty src renders the browser's broken-image glyph, which reads as a failure,
+    // so the tile is drawn as an empty placeholder div instead.
+    if (entry.thumbnail) {
+      const thumb = document.createElement('img');
+      thumb.className = 'libThumb';
+      thumb.src = entry.thumbnail;
+      thumb.alt = getTitle(entry);
+      card.appendChild(thumb);
+    } else {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'libThumb libThumbEmpty';
+      card.appendChild(placeholder);
+    }
 
     const info = document.createElement('div');
     info.className = 'libInfo';

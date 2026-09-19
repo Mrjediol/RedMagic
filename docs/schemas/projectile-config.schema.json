@@ -40,6 +40,13 @@
           "$comment": "Optional id of an entry in a standalone projectile library. When present the library entry is loaded first and the sibling keys in this object are applied on top as overrides, so an enemy can reuse a shared 'arcing_rock' and only change its speed. This key is an IMPORTER convenience and maps to nothing in ProjectileSpec — it is resolved away before any field is written. All-inline (no 'use') is equally valid and is what EnemyTuning.projectile holds today."
         },
 
+        "libraryId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Id of a 'projectile'-kind entry in the web library. The importer builds (or reuses) that entry's pooled prefab on the spot and writes it into ProjectileSpec.prefab — no need to import the projectile separately first.",
+          "$comment": "IMPORTER-ONLY convenience key, like 'use': it maps to nothing on ProjectileSpec and is resolved away before any field is written. Resolved by ProjectileConfigImporter via FxPrefabBuilder.BuildOrGetProjectilePrefab(libraryId), which locates the entry's manifest.json + PNGs on disk (Assets/Art/WebLibrary/projectile/<libraryId>/, or anywhere under Assets/ carrying that libraryId in its manifest) and builds a pooled SpriteStateMachine/SpriteFlipbook prefab — never an Animator, because PrefabPool has no per-instance reset hook. MUTUALLY EXCLUSIVE WITH 'prefab' in practice: the web emits one or the other. If a hand-written config carries both, the explicit 'prefab' path wins and this is ignored with a warning, so a projectile that already pointed at a hand-placed prefab keeps behaving exactly as before. The NUMERIC tuning below is unaffected either way — it is applied identically whichever way the prefab was obtained."
+        },
+
         "prefab": {
           "$ref": "_shared.schema.json#/definitions/assetRef",
           "$comment": "ProjectileSpec.prefab (GameObject). Optional. Null/absent = the projectile is BUILT IN CODE from the owner's sprite and tint (ProjectileFactory.BuildCodeProjectile); present = spawned through Core.PrefabPool. Either way it is pooled — this field never changes whether pooling happens, only which pool. The prefab must carry a Projectile component or the factory logs a warning and drops the shot. For pipeline enemies this is normally the auto-generated Assets/Prefab/Fx/Enemies/<Name>/Fx_<Name>_Projectile.prefab.",

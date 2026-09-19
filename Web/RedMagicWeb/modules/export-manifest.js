@@ -39,16 +39,27 @@ export function cropToDataURL(source, box) {
  *
  * @param {object} args
  * @param {string} args.enemyName
+ * @param {string} [args.kind] - 'enemy' | 'projectile' | 'fx' (modules/entry-kinds.js). Emitted
+ *   into the manifest so the Unity side can discriminate instead of assuming every bundle is an
+ *   enemy. ADDITIVE: `enemyName` keeps its name and position, so an importer that predates this
+ *   field (EnemyImporter.cs parses into a typed class and ignores unknown members) reads a
+ *   kind-carrying manifest exactly as it read the old one.
+ * @param {string} [args.libraryId] - the library record's id, when this sheet was exported from a
+ *   saved entry. Emitted so Unity can find this entry's source folder BY ID instead of by folder
+ *   name — what lets `FxPrefabBuilder.BuildOrGetProjectilePrefab(libraryId)` resolve a projectile
+ *   an EnemyConfig only references by id. Absent for a never-saved sheet, which is fine: only the
+ *   lazy projectile/VFX path needs it.
  * @param {Array} args.lanes
  * @param {Array} args.boxes
  * @param {HTMLImageElement|HTMLCanvasElement} args.source - the (possibly bg-removed) image to crop from.
  * @returns {object} manifest
  */
-export function populateSpriteZip(zip, { enemyName, lanes, boxes, source }) {
+export function populateSpriteZip(zip, { enemyName, kind = 'enemy', libraryId = null, lanes, boxes, source }) {
   const animLanes = lanes.filter((l) => l.type === 'animation' && l.frameBoxIndices.length > 0);
   const projLanes = lanes.filter((l) => l.type === 'projectile' && l.frameBoxIndices.length > 0);
 
-  const manifest = { enemyName, animations: [], projectiles: [] };
+  const manifest = { enemyName, kind, animations: [], projectiles: [] };
+  if (libraryId) manifest.libraryId = libraryId;
 
   animLanes.forEach((lane) => {
     const folder = zip.folder(lane.name);
@@ -101,9 +112,9 @@ export function populateSpriteZip(zip, { enemyName, lanes, boxes, source }) {
  * @param {typeof import('jszip')} args.JSZip - the JSZip constructor (loaded globally via CDN in index.html).
  * @returns {Promise<{blob: Blob, manifest: object}>}
  */
-export async function buildExportZip({ enemyName, lanes, boxes, source, JSZip }) {
+export async function buildExportZip({ enemyName, kind = 'enemy', libraryId = null, lanes, boxes, source, JSZip }) {
   const zip = new JSZip();
-  const manifest = populateSpriteZip(zip, { enemyName, lanes, boxes, source });
+  const manifest = populateSpriteZip(zip, { enemyName, kind, libraryId, lanes, boxes, source });
   zip.file('manifest.json', JSON.stringify(manifest, null, 2));
 
   const blob = await zip.generateAsync({ type: 'blob' });

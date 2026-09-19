@@ -14,6 +14,14 @@
 
     "$schema": { "type": "string" },
 
+    "kind": {
+      "allOf": [{ "$ref": "_shared.schema.json#/definitions/entryKind" }],
+      "const": "enemy",
+      "default": "enemy",
+      "description": "Always \"enemy\" in an EnemyConfig. Present so a Unity importer can dispatch on one field across all three web-authored config kinds without first guessing the document type from its other properties.",
+      "$comment": "Pinned with 'const' rather than left as the open enum: this document type IS the enemy one, so a file claiming kind 'fx' while carrying EnemyRecipe fields is a mistake worth failing on. The shared $ref is still what defines the vocabulary (see _shared.schema.json's entryKind) so the three kinds can never drift apart. OPTIONAL, not required: every EnemyConfig exported before this field existed omits it, and ConfigImportRunner's shape-sniffing already identifies an enemy document by 'enemyName' + 'art'. It must nevertheless be declared here because this schema is additionalProperties:false — without the declaration, adding it would make every newly-exported config invalid."
+    },
+
     "enemyName": {
       "type": "string",
       "minLength": 1,

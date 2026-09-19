@@ -26,6 +26,12 @@ export function createDefaultProjectileSpec() {
     impactRadius: 0,
     impactDamage: 0,
     use: '', // empty = omitted (library reference id, importer-only convenience key)
+
+    // Id of a 'projectile'-kind entry in THIS tool's shared library. Empty = omitted on export.
+    // When set, the Unity importer builds/reuses that entry's pooled prefab and writes it into
+    // ProjectileSpec.prefab, so the enemy import alone materializes the projectile — see
+    // projectile-config.schema.json's 'libraryId'. Mutually exclusive with `prefab` in practice.
+    libraryId: '',
   };
 }
 

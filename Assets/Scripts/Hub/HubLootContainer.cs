@@ -1,5 +1,6 @@
 using RedMagic.Audio;
 using RedMagic.Core;
+using RedMagic.Gameplay;
 using RedMagic.Run;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -62,6 +63,7 @@ namespace RedMagic.Hub
 
         private InputAction _interactAction;
         private bool _playerInRange;
+        private PlayerAnimator _playerAnimator;
         private State _state = State.Closed;
         private bool _boundToRun;
 
@@ -177,6 +179,8 @@ namespace RedMagic.Hub
         /// <summary>Toque de interacción. Público para poder llamarlo desde un botón táctil o un evento.</summary>
         public void Interact()
         {
+            if (_playerAnimator != null) _playerAnimator.TriggerInteract();
+
             switch (_state)
             {
                 case State.Closed:
@@ -229,6 +233,7 @@ namespace RedMagic.Hub
             if (!other.CompareTag(playerTag)) return;
 
             _playerInRange = true;
+            _playerAnimator = other.GetComponentInParent<PlayerAnimator>();
             RefreshPrompt();
         }
 
@@ -237,6 +242,7 @@ namespace RedMagic.Hub
             if (!other.CompareTag(playerTag)) return;
 
             _playerInRange = false;
+            _playerAnimator = null;
             InteractionPromptUi.Hide(this);
         }
 

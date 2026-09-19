@@ -7,16 +7,16 @@ namespace RedMagic.Gameplay
     /// Traduce el estado de <see cref="PlayerMovement"/> y <see cref="Health"/> a los parámetros
     /// del Animator del dragón. No decide nada de gameplay: sólo observa y escribe parámetros.
     ///
-    /// Parámetros del controller DragonWarrior:
+    /// Parámetros del controller del jugador:
     ///  - Speed (Float)     velocidad horizontal absoluta
     ///  - VSpeed (Float)    velocidad vertical con signo (separa Jump de Fall)
     ///  - Grounded (Bool)   tocando suelo
-    ///  - Crouching (Bool)  agachado
     ///  - Attack (Trigger)  lo dispara <see cref="PlayerAttack"/>
     ///  - Hurt (Trigger)    al recibir daño
     ///  - Dead (Bool)       al morir; vuelve a false si Health dispara Revived (respawn)
     ///  - Dashing (Bool)    mientras dura el dash
     ///  - DoubleJump (Trigger) al gastar un salto en el aire
+    ///  - Interact (Trigger) lo dispara el interactuable que se está usando (ver <see cref="TriggerInteract"/>)
     /// </summary>
     [DisallowMultipleComponent]
     public class PlayerAnimator : MonoBehaviour
@@ -30,12 +30,12 @@ namespace RedMagic.Gameplay
         private static readonly int SpeedKey = Animator.StringToHash("Speed");
         private static readonly int VSpeedKey = Animator.StringToHash("VSpeed");
         private static readonly int GroundedKey = Animator.StringToHash("Grounded");
-        private static readonly int CrouchingKey = Animator.StringToHash("Crouching");
         private static readonly int AttackKey = Animator.StringToHash("Attack");
         private static readonly int HurtKey = Animator.StringToHash("Hurt");
         private static readonly int DeadKey = Animator.StringToHash("Dead");
         private static readonly int DashingKey = Animator.StringToHash("Dashing");
         private static readonly int DoubleJumpKey = Animator.StringToHash("DoubleJump");
+        private static readonly int InteractKey = Animator.StringToHash("Interact");
 
         /// <summary>Animator en uso, por si otro script necesita consultarlo.</summary>
         public Animator Animator => animator;
@@ -81,7 +81,6 @@ namespace RedMagic.Gameplay
                 animator.SetFloat(SpeedKey, 0f);
                 animator.SetFloat(VSpeedKey, 0f);
                 animator.SetBool(GroundedKey, true);
-                animator.SetBool(CrouchingKey, false);
                 animator.SetBool(DashingKey, false);
                 return;
             }
@@ -90,7 +89,6 @@ namespace RedMagic.Gameplay
             animator.SetFloat(SpeedKey, Mathf.Abs(raw.x));
             animator.SetFloat(VSpeedKey, raw.y);
             animator.SetBool(GroundedKey, _movement.IsGrounded);
-            animator.SetBool(CrouchingKey, _movement.IsCrouching);
             animator.SetBool(DashingKey, _movement.IsDashing);
         }
 
@@ -103,6 +101,12 @@ namespace RedMagic.Gameplay
         public void TriggerAttack()
         {
             if (animator != null) animator.SetTrigger(AttackKey);
+        }
+
+        /// <summary>Lo llama el interactuable en uso (cofre, armario, yunque, tienda…) al pulsar interactuar.</summary>
+        public void TriggerInteract()
+        {
+            if (animator != null) animator.SetTrigger(InteractKey);
         }
 
         private void OnDamaged(float amount)

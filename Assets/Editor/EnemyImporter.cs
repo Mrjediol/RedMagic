@@ -101,6 +101,16 @@ public class EnemyImporter : EditorWindow
     public class Manifest
     {
         public string enemyName;
+
+        // Añadidos por la web cuando se unificó la biblioteca por "kind" (enemy/projectile/fx —
+        // ver Web/RedMagicWeb/modules/entry-kinds.js). AMBOS SON OPCIONALES: un manifest exportado
+        // antes de que existieran no los trae, y este importador debe seguir leyéndolo igual — por
+        // eso 'kind' vacío se interpreta como "enemy" allá donde se consulta, nunca como un error.
+        // 'libraryId' es lo que permite a FxPrefabBuilder encontrar la fuente de una entrada por id
+        // en vez de por nombre de carpeta.
+        public string kind;
+        public string libraryId;
+
         public List<AnimationEntry> animations;
         public List<ProjectileEntry> projectiles;
     }
@@ -378,7 +388,9 @@ public class EnemyImporter : EditorWindow
     }
 
     // -------------------------------------------------------------------
-    private static List<Sprite> LoadAndConfigureSprites(string relativeFolder, AnchorMode anchor)
+    /// <summary>Public so FxPrefabBuilder can reuse the exact same sprite import + pivot rules for
+    /// a projectile/VFX entry instead of keeping a second copy of them.</summary>
+    public static List<Sprite> LoadAndConfigureSprites(string relativeFolder, AnchorMode anchor)
     {
         var spritePaths = AssetDatabase.FindAssets("t:Texture2D", new[] { relativeFolder })
             .Select(AssetDatabase.GUIDToAssetPath)
@@ -613,7 +625,8 @@ public class EnemyImporter : EditorWindow
         return absolutePath.Substring(idx + 1);
     }
 
-    private static Manifest ParseManifest(string json)
+    /// <summary>Public so FxPrefabBuilder can read the same manifest.json shape this importer defines.</summary>
+    public static Manifest ParseManifest(string json)
     {
         var newtonsoftType = System.Type.GetType("Newtonsoft.Json.JsonConvert, Newtonsoft.Json");
         if (newtonsoftType != null)
@@ -631,6 +644,8 @@ public class EnemyImporter : EditorWindow
     {
         Manifest m = new Manifest { animations = new List<AnimationEntry>(), projectiles = new List<ProjectileEntry>() };
         m.enemyName = ExtractStringField(json, "enemyName");
+        m.kind = ExtractStringField(json, "kind");
+        m.libraryId = ExtractStringField(json, "libraryId");
 
         m.animations = ParseAnimationArray(json, "animations");
         m.projectiles = ParseProjectileArray(json, "projectiles");

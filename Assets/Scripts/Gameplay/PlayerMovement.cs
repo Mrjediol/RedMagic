@@ -45,7 +45,7 @@ namespace RedMagic.Gameplay
             public float Y;
             public bool JumpDown;
             public bool JumpUp;
-            public bool CrouchHeld;
+            public bool DownHeld;
             public bool DashDown;
         }
 
@@ -83,9 +83,6 @@ namespace RedMagic.Gameplay
 
         /// <summary>True mientras se está atravesando una plataforma hacia abajo.</summary>
         public bool IsDroppingThrough => _dropCollider != null;
-
-        /// <summary>True mientras el jugador mantiene abajo estando en el suelo.</summary>
-        public bool IsCrouching { get; private set; }
 
         /// <summary>-1 si mira a la izquierda, 1 si mira a la derecha. Lo usa el ataque.</summary>
         public int Facing { get; private set; } = 1;
@@ -290,10 +287,6 @@ namespace RedMagic.Gameplay
         [SerializeField]
         [Tooltip("Sube la precisión de colisión a costa de rendimiento.")]
         private int _freeColliderIterations = 10;
-
-        [Header("AGACHARSE")]
-        [Tooltip("Permite agacharse manteniendo abajo en el suelo (frena el movimiento horizontal).")]
-        [SerializeField] private bool allowCrouch = true;
 
         [Header("Ajuste visual")]
         [Tooltip("Pega el personaje al suelo al aterrizar. Sin esto flota hasta " +
@@ -514,7 +507,6 @@ namespace RedMagic.Gameplay
                 _input = default;
                 _lastJumpPressed = float.MinValue;
                 _currentHorizontalSpeed = 0f;
-                IsCrouching = false;
                 _dashTimer = 0f;
                 _knockbackTimer = 0f;
                 _moveSource = MoveSource.None;
@@ -529,7 +521,6 @@ namespace RedMagic.Gameplay
                 TouchInput.ConsumeJump();
                 TouchInput.ConsumeDash();
                 _input = default;
-                IsCrouching = false;
             }
             else
             {
@@ -613,7 +604,7 @@ namespace RedMagic.Gameplay
                 Y = Mathf.Clamp(stick.y, -1f, 1f),
                 JumpDown = jumpDown,
                 JumpUp = jumpUp,
-                CrouchHeld = TouchInput.Crouch,
+                DownHeld = TouchInput.Down,
                 DashDown = dashDown
             };
 
@@ -777,14 +768,6 @@ namespace RedMagic.Gameplay
 
         private void CalculateWalk()
         {
-            // Agacharse: sólo en el suelo, y frena el avance horizontal.
-            IsCrouching = allowCrouch && _colDown && (_input.Y < -0.5f || _input.CrouchHeld);
-            if (IsCrouching)
-            {
-                _currentHorizontalSpeed = Mathf.MoveTowards(_currentHorizontalSpeed, 0, _deAcceleration * Time.deltaTime);
-                return;
-            }
-
             if (_input.X != 0)
             {
                 _currentHorizontalSpeed += _input.X * _acceleration * PlayerStats.Multiplier(PlayerStat.MoveSpeed) * Time.deltaTime;
@@ -1146,14 +1129,13 @@ namespace RedMagic.Gameplay
 
         /// <summary>
         /// Atravesar hacia abajo la plataforma que se pisa. El patrón es <b>abajo + salto</b>: es el
-        /// más común en plataformeros 2D de Unity y el más robusto de los dos, porque "sólo abajo"
-        /// provoca caídas accidentales cada vez que se agacha — y este controlador ya usa abajo
-        /// para agacharse.
+        /// más común en plataformeros 2D de Unity y el más robusto — "sólo abajo" provocaría caídas
+        /// accidentales cada vez que se pulsa abajo para otra cosa.
         /// </summary>
         private bool TryDropThroughPlatform()
         {
             if (!allowDropThrough || !_input.JumpDown || !_colDown || !_onPlatform) return false;
-            if (_input.Y > -0.5f && !_input.CrouchHeld) return false;
+            if (_input.Y > -0.5f && !_input.DownHeld) return false;
             if (_groundCollider == null) return false;
 
             // Se ignora ESTA plataforma, la que se está pisando, hasta haberla dejado atrás. El
@@ -1169,7 +1151,6 @@ namespace RedMagic.Gameplay
             _coyoteUsable = false;
             _timeLeftGrounded = float.MinValue;
             _lastJumpPressed = float.MinValue;   // que el buffer no dispare un salto al frame siguiente
-            IsCrouching = false;
 
             if (_currentVerticalSpeed > 0f) _currentVerticalSpeed = 0f;
             return true;
@@ -1271,7 +1252,6 @@ namespace RedMagic.Gameplay
             // salir despedido en pleno dash dejaría al jugador cayendo sin recursos.
             _dashTimer = 0f;
             _endedJumpEarly = true;
-            IsCrouching = false;
 
             if (velocity.y > 0f) _coyoteUsable = false;
         }
@@ -1955,7 +1935,6 @@ namespace RedMagic.Gameplay
             _input = default;
             _currentHorizontalSpeed = 0f;
             _currentVerticalSpeed = 0f;
-            IsCrouching = false;
             _dashTimer = 0f;
             _knockbackTimer = 0f;
             ClearDropThrough();

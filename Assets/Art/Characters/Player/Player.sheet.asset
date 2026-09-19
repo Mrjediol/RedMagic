@@ -114,18 +114,6 @@ MonoBehaviour:
     frameCount: 1
     fps: 10
     loop: 1
-  - state: Crouch
-    fromState: Idle
-    firstFrame: 0
-    frameCount: 1
-    fps: 8
-    loop: 1
-  - state: CrouchAttack
-    fromState: Attack
-    firstFrame: 0
-    frameCount: 0
-    fps: 12
-    loop: 0
   - state: JumpAttack
     fromState: Attack
     firstFrame: 0

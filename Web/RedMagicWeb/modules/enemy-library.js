@@ -4,11 +4,25 @@
 // tool — IndexedDB, not localStorage: a sheet's cropped frames re-encoded as base64 PNG blow past
 // localStorage's ~5MB quota almost immediately, IndexedDB does not have that ceiling.
 //
-// One record per enemy: the Sprites tab's authoring state (lanes/boxes + a snapshot of the sheet
+// One record per entry: the Sprites tab's authoring state (lanes/boxes + a snapshot of the sheet
 // pixels, everything buildExportZip needs to reproduce a zip later without the original file
 // re-uploaded) plus, once authored, the Enemy Creator's linked EnemyConfig export object. A record
-// is the unit both tabs and the Biblioteca tab share — see ARCHITECTURE.md's "Shared enemy
+// is the unit both tabs and the Biblioteca tab share — see ARCHITECTURE.md's "Shared entry
 // library" section for the exact shape.
+//
+// KIND: every record carries `kind` ('enemy' | 'projectile' | 'fx' — see modules/entry-kinds.js).
+// Records written before kinds existed have no such field; rather than a stored migration (which
+// would have to rewrite every record on first load, and fail halfway on a quota error), they are
+// normalized to 'enemy' ON READ by `normalizeRecord` below — idempotent, and the normalized value
+// is persisted the next time that record is saved for any other reason. The DB version therefore
+// stays at 1: nothing about the object store itself changed.
+//
+// The field holding the name is still called `enemyName` for every kind. It is deliberately NOT
+// renamed: it is the same key that reaches `manifest.json`, which Assets/Editor/EnemyImporter.cs
+// reads by that exact name. A neutral alias is exposed as `entryName()` for UI that shouldn't say
+// "enemy" about a VFX.
+
+import { normalizeKind } from './entry-kinds.js';
 
 const DB_NAME = 'redmagic-enemy-library';
 const DB_VERSION = 1;
@@ -50,10 +64,26 @@ function wrap(req) {
 }
 
 /**
+ * Fills in what a record saved by an older version of this tool doesn't have. Read-side only —
+ * never writes. Keep it total (every field it touches must end up valid for ANY input record), so
+ * every consumer can assume a normalized shape without re-checking.
+ */
+function normalizeRecord(record) {
+  if (!record) return null;
+  return { ...record, kind: normalizeKind(record.kind) };
+}
+
+/** The entry's display name, whatever its kind. Storage still calls this field `enemyName`. */
+export function entryName(entry) {
+  return entry ? entry.enemyName : '';
+}
+
+/**
  * Creates a new record (no `id`) or overwrites an existing one (`id` present). `entry.sprite` is
  * `{ lanes, boxes, sourceDataURL, width, height }` — everything buildExportZip/populateSpriteZip
  * needs, reconstructable into a real canvas via `loadImageFromDataURL(sourceDataURL)`.
- * `entry.config` is null until the Enemy Creator has exported at least once against this entry.
+ * `entry.config` is null until the Enemy Creator has exported at least once against this entry
+ * (only ever non-null for `kind: 'enemy'` — the other kinds have no config form).
  *
  * @returns {Promise<object>} the saved record, with its `id` (new or existing) and fresh `updatedAt`.
  */
@@ -61,6 +91,7 @@ export async function saveEnemy(entry) {
   const now = Date.now();
   const record = {
     id: entry.id || uuid(),
+    kind: normalizeKind(entry.kind),
     enemyName: entry.enemyName,
     createdAt: entry.createdAt || now,
     updatedAt: now,
@@ -73,17 +104,27 @@ export async function saveEnemy(entry) {
   return record;
 }
 
-/** All saved enemies, newest-updated first. */
+/** All saved entries of EVERY kind, newest-updated first. */
 export async function listEnemies() {
   const s = await store('readonly');
   const all = await wrap(s.getAll());
-  return all.sort((a, b) => b.updatedAt - a.updatedAt);
+  return all.map(normalizeRecord).sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+/**
+ * Saved entries of one kind (or all of them when `kind` is null/absent), newest-updated first.
+ * Filtered in JS rather than through an IndexedDB index on purpose: this library holds tens of
+ * entries, not thousands, and an index would have needed a store migration to add.
+ */
+export async function listEntries(kind = null) {
+  const all = await listEnemies();
+  return kind ? all.filter((e) => e.kind === kind) : all;
 }
 
 export async function getEnemy(id) {
   const s = await store('readonly');
   const result = await wrap(s.get(id));
-  return result || null;
+  return normalizeRecord(result) || null;
 }
 
 export async function deleteEnemy(id) {

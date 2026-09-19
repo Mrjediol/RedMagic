@@ -1,4 +1,5 @@
 {
+  "kind": "enemy",
   "enemyName": "HadaEle",
   "art": "Assets/Art/EnemyImports/HadaEle/HadaEle.sheet.asset",
   "anchor": "Center",

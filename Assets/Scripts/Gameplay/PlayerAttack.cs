@@ -16,8 +16,8 @@ namespace RedMagic.Gameplay
     /// segundos, se abre una caja de daño delante del personaje durante <see cref="activeTime"/>.
     /// Así el impacto cae más o menos donde lo enseña el sprite en vez de al pulsar el botón.
     ///
-    /// La animación concreta (suelo / agachado / aire) la elige el Animator a partir de los
-    /// parámetros Grounded y Crouching que escribe <see cref="PlayerAnimator"/>.
+    /// La animación concreta (suelo / aire) la elige el Animator a partir del parámetro Grounded
+    /// que escribe <see cref="PlayerAnimator"/>.
     /// </summary>
     [RequireComponent(typeof(PlayerMovement))]
     [DisallowMultipleComponent]
@@ -46,8 +46,6 @@ namespace RedMagic.Gameplay
         [Tooltip("Desplazamiento del centro. La X se invierte según la dirección del sprite.")]
         [SerializeField] private Vector2 hitboxOffset = new Vector2(0.7f, 0.1f);
         [SerializeField] private Vector2 hitboxSize = new Vector2(1.1f, 1.0f);
-        [Tooltip("Desplazamiento extra en Y cuando se ataca agachado.")]
-        [SerializeField] private float crouchYOffset = -0.35f;
         [SerializeField] private LayerMask hitLayers = ~0;
 
         [Header("SFX — id de sonido del AudioManager")]
@@ -193,10 +191,8 @@ namespace RedMagic.Gameplay
         private Vector2 GetHitboxCenter()
         {
             int facing = _movement != null ? _movement.Facing : 1;
-            bool crouched = _movement != null && _movement.IsCrouching;
 
-            var offset = new Vector2(hitboxOffset.x * facing,
-                                     hitboxOffset.y + (crouched ? crouchYOffset : 0f));
+            var offset = new Vector2(hitboxOffset.x * facing, hitboxOffset.y);
             return (Vector2)transform.position + offset;
         }
 

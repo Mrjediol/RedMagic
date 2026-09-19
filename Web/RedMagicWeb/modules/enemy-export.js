@@ -18,7 +18,7 @@ function omitEmpty(obj, keys) {
 }
 
 function buildProjectileExport(spec) {
-  return omitEmpty(spec, ['use', 'prefab']);
+  return omitEmpty(spec, ['use', 'prefab', 'libraryId']);
 }
 
 function buildTuningExport(tuning) {
@@ -54,6 +54,10 @@ export function buildExportObject(state) {
     : state.art.trim();
 
   return {
+    // Constant, not form state: this form only ever authors an EnemyConfig, and the schema pins
+    // 'kind' to "enemy" with a const. It is emitted so the Unity side can dispatch on one field
+    // across every web-authored config kind — see _shared.schema.json's entryKind.
+    kind: 'enemy',
     enemyName: state.enemyName.trim(),
     art,
     anchor: state.anchor,

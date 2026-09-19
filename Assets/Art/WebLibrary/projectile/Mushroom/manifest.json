@@ -1,0 +1,21 @@
+{
+  "enemyName": "Mushroom",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "Move",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 6,
+      "projectile": null
+    },
+    {
+      "name": "Impact",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 6,
+      "projectile": null
+    }
+  ],
+  "projectiles": []
+}

@@ -1,0 +1,43 @@
+{
+  "enemyName": "lobito",
+  "kind": "enemy",
+  "animations": [
+    {
+      "name": "Idle",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Walk",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Attack",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Hurt",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Death",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    }
+  ],
+  "projectiles": [],
+  "libraryId": "6238751f-5d95-4a0e-be08-a468dba84126"
+}

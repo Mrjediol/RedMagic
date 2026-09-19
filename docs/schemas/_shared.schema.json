@@ -6,6 +6,14 @@
 
   "definitions": {
 
+    "entryKind": {
+      "type": "string",
+      "enum": ["enemy", "projectile", "fx", "boss"],
+      "default": "enemy",
+      "description": "What kind of thing a web-authored library entry is. Present in both manifest.json and the exported config JSON so the Unity importer can discriminate instead of assuming every bundle is an enemy.",
+      "$comment": "Mirrors Web/RedMagicWeb/modules/entry-kinds.js's KINDS — the web app's single source of truth for this vocabulary; keep the two lists in step. The kind decides the canonical animation lane names offered when authoring the sheet (enemy: Idle/Walk/Attack/Hurt/Death/Wake, the EnemyAnimation.cs vocabulary; projectile: Awake/Move/Impact; fx: Spawn/Loop/End) and, on the Unity side, what gets built from the imported frames. ABSENT means 'enemy': every bundle exported before this field existed is an enemy, so an importer must default rather than reject. 'boss' is the odd one out and carries NO sheet of its own: a BossConfig names an existing enemy-kind entry as its art/stat baseline (BossConfig.base.enemyLibraryId) instead of owning frames, so a boss entry never appears in the Sprites tab's type selector and never produces a manifest.json of its own. It is in this enum because all four kinds share one library store and every consumer discriminates on this one field."
+    },
+
     "vector2": {
       "$comment": "Maps to UnityEngine.Vector2. Object form is explicit, array form is terse; both are accepted so hand-written JSON stays readable.",
       "oneOf": [

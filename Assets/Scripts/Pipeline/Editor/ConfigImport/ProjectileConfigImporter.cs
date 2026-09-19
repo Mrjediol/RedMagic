@@ -95,6 +95,42 @@ namespace RedMagic.Pipeline.EditorTools
         {
             if (obj.TryGetValue("prefab", out var prefab))
                 spec.prefab = ConfigJson.ReadAsset<GameObject>(prefab, $"{context}.prefab");
+
+            // 'libraryId' es la vía perezosa: en vez de una ruta a un prefab que alguien tuvo que
+            // importar antes, nombra una entrada de la biblioteca web y el prefab se construye (o
+            // se recupera) aquí mismo. Es lo único que este importador hace con arte — los números
+            // de abajo siguen siendo exactamente los de siempre.
+            //
+            // Una ruta explícita GANA sobre el id: la regla de esta tarea es que un proyectil que
+            // ya apuntaba a un prefab colocado a mano siga comportándose igual, así que un JSON con
+            // los dos campos (sólo posible escribiéndolo a mano — la web emite uno u otro) conserva
+            // el comportamiento viejo y avisa, en vez de que el builder pise silenciosamente una
+            // referencia deliberada.
+            if (obj.TryGetValue("libraryId", out var libraryIdToken) && libraryIdToken.Type == JTokenType.String)
+            {
+                string libraryId = libraryIdToken.Value<string>();
+
+                if (spec.prefab != null)
+                {
+                    Debug.LogWarning($"{context}: se han dado 'prefab' y 'libraryId' a la vez; manda " +
+                                     $"el prefab explícito y se ignora libraryId '{libraryId}'.");
+                }
+                else if (!string.IsNullOrWhiteSpace(libraryId))
+                {
+                    var log = new System.Text.StringBuilder();
+                    var built = FxPrefabBuilder.BuildOrGetProjectilePrefab(libraryId, log);
+                    if (log.Length > 0) Debug.Log(log.ToString().TrimEnd());
+
+                    if (built != null) spec.prefab = built;
+                    else
+                        throw new ConfigImportException(
+                            $"{context}: 'libraryId: \"{libraryId}\"' no se pudo materializar — no hay " +
+                            "ninguna fuente (manifest.json + PNG) en disco para esa entrada. Impórtala " +
+                            "con Tools > Web > Import Config... > Importar proyectil/VFX..., o exporta el " +
+                            "enemigo como bundle combinado para que venga incluida.");
+                }
+            }
+
             if (obj.TryGetValue("speed", out var speed))
                 spec.speed = speed.Value<float>();
             if (obj.TryGetValue("lifetime", out var lifetime))

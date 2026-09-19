@@ -1,0 +1,21 @@
+{
+  "enemyName": "RockBear",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "Impact",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Move",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    }
+  ],
+  "projectiles": []
+}

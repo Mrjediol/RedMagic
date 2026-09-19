@@ -1,6 +1,8 @@
+using System.Collections;
 using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Fx;
+using RedMagic.Pipeline;
 using UnityEngine;
 
 namespace RedMagic.Gameplay
@@ -21,6 +23,13 @@ namespace RedMagic.Gameplay
         [SerializeField] private float speed = 14f;
         [Tooltip("Segundos antes de auto-despawn si no impacta con nada.")]
         [SerializeField] private float lifetime = 3f;
+
+        [Tooltip("Rota el sprite entero para que apunte hacia donde vuela (el arte se autoriza " +
+                 "mirando +X). Apágalo para un proyectil redondo/blob (una seta, una roca, un " +
+                 "orbe) cuyo arte no está pensado para rotar — en su lugar sólo se refleja en " +
+                 "horizontal según la dirección, así el \"arriba\" del sprite se mantiene siempre " +
+                 "arriba, igual que ya hace BulletHellAttack con sus proyectiles redondos.")]
+        [SerializeField] private bool faceTravelDirection = true;
 
         [Header("Daño")]
         [SerializeField] private float damage = 10f;
@@ -68,6 +77,15 @@ namespace RedMagic.Gameplay
         private Rigidbody2D _body;
         private SoundEmitter _sound;
         private Collider2D[] _ownColliders;
+        private SpriteRenderer _renderer;
+
+        /// <summary>
+        /// Null si el prefab no lleva una (la mayoría no la lleva: el resto del proyecto es un
+        /// sprite fijo). Cuando existe y tiene un estado "Impact", <see cref="Despawn"/> lo
+        /// reproduce y retrasa la vuelta al pool su duración, en vez de desaparecer en el mismo
+        /// frame del golpe — ver el comentario de <see cref="Despawn"/>.
+        /// </summary>
+        private SpriteStateMachine _spriteMachine;
 
         /// <summary>Lo pone <see cref="Abilities.ProjectileFactory"/>: proyectil construido en código, va a su <c>Pool&lt;Projectile&gt;</c>.</summary>
         internal bool PooledCode;
@@ -104,6 +122,8 @@ namespace RedMagic.Gameplay
             _body = GetComponent<Rigidbody2D>();
             _sound = GetComponent<SoundEmitter>();
             _ownColliders = GetComponentsInChildren<Collider2D>();
+            _renderer = GetComponentInChildren<SpriteRenderer>();
+            _spriteMachine = GetComponent<SpriteStateMachine>();
 
             _body.gravityScale = 0f;
             _body.freezeRotation = true;
@@ -116,6 +136,10 @@ namespace RedMagic.Gameplay
             _lifeTimer = lifetime;
             _pierceLeft = pierceCount;
             _hitTargets.Clear();
+
+            // Sin rotación por dirección, el transform no debe conservar ninguna rotación de una
+            // vida anterior del pool — sólo el flipX del renderer orienta.
+            if (!faceTravelDirection) transform.rotation = Quaternion.identity;
         }
 
         /// <summary>
@@ -196,7 +220,7 @@ namespace RedMagic.Gameplay
 
             if (_body != null) _body.linearVelocity = _velocity;
 
-            transform.right = _direction;
+            ApplyFacing(_direction);
         }
 
         private void Update()
@@ -228,7 +252,27 @@ namespace RedMagic.Gameplay
 
             _body.linearVelocity = _velocity;
 
-            if (_velocity.sqrMagnitude > 0.0001f) transform.right = _velocity.normalized;
+            if (_velocity.sqrMagnitude > 0.0001f) ApplyFacing(_velocity.normalized);
+        }
+
+        /// <summary>
+        /// Orienta el proyectil hacia <paramref name="direction"/>. Con
+        /// <see cref="faceTravelDirection"/> rota el transform entero — la convención del resto
+        /// del proyecto, que exige el arte autorizado mirando +X. Apagado, no rota nada: sólo
+        /// refleja el <see cref="SpriteRenderer"/> en horizontal según el signo de X, así un
+        /// sprite redondo (una seta, una roca) mantiene su "arriba" siempre arriba en vez de
+        /// quedar boca abajo al volar hacia la izquierda.
+        /// </summary>
+        private void ApplyFacing(Vector2 direction)
+        {
+            if (faceTravelDirection)
+            {
+                transform.right = direction;
+                return;
+            }
+
+            if (_renderer != null && Mathf.Abs(direction.x) > 0.0001f)
+                _renderer.flipX = direction.x < 0f;
         }
 
         /// <summary>
@@ -339,7 +383,18 @@ namespace RedMagic.Gameplay
             if (((1 << other.gameObject.layer) & GroundMask) != 0) Despawn();
         }
 
-        /// <summary>Apaga el proyectil para devolverlo al pool, sonando antes su OnDeath.</summary>
+        /// <summary>
+        /// Apaga el proyectil para devolverlo al pool, sonando antes su OnDeath.
+        ///
+        /// Si el prefab trae un estado "Impact" (ver <see cref="_spriteMachine"/> — los que
+        /// construye <c>FxPrefabBuilder</c> a partir de la biblioteca web), esa animación se
+        /// reproduce ANTES de volver al pool, no después: devolverlo en el mismo frame apagaba el
+        /// GameObject de inmediato y el impacto nunca llegaba a dibujarse ni un solo frame. La
+        /// duración sale de la propia animación (<c>SpriteStateMachine.DurationOf</c>), así que
+        /// cambiar el fps/frames del "Impact" no desincroniza nada aquí. Sin ese estado —el caso de
+        /// todo proyectil anterior a esto, sprite fijo o placeholder— el comportamiento es idéntico
+        /// al de siempre: vuelta inmediata al pool.
+        /// </summary>
         public void Despawn()
         {
             if (_despawning) return;
@@ -358,6 +413,25 @@ namespace RedMagic.Gameplay
 
             if (_body != null) _body.linearVelocity = Vector2.zero;
 
+            if (_spriteMachine != null && _spriteMachine.Has("Impact"))
+            {
+                // Play() con Locked ya activo se aplicaría igual (restart:true lo permite), pero
+                // Locked se pone DESPUÉS de reproducir para que sea éste el estado bloqueado y no
+                // el que hubiera antes — y así, al terminar Impact, SpriteStateMachine no lo
+                // devuelve solo a Move (su fallback): se queda congelado en el último frame del
+                // golpe hasta que el propio pool lo apague.
+                _spriteMachine.Play("Impact", restart: true);
+                _spriteMachine.Locked = true;
+                StartCoroutine(ReturnToPoolAfter(_spriteMachine.DurationOf("Impact")));
+                return;
+            }
+
+            ReturnToPool();
+        }
+
+        private IEnumerator ReturnToPoolAfter(float seconds)
+        {
+            if (seconds > 0f) yield return new WaitForSeconds(seconds);
             ReturnToPool();
         }
 

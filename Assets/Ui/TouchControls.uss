@@ -66,13 +66,13 @@
     background-color: rgba(150, 32, 42, 0.8);
 }
 
-.touch-button--crouch {
+.touch-button--down {
     font-size: 26px;
     letter-spacing: 1px;
     background-color: rgba(24, 20, 30, 0.5);
 }
 
-.touch-button--crouch:active {
+.touch-button--down:active {
     background-color: rgba(70, 58, 92, 0.8);
 }
 

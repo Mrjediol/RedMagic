@@ -7,15 +7,19 @@
 // which function here to edit for a given change.
 
 import { removeBackground } from './modules/background-removal.js';
+import { despillMagentaEdge } from './modules/despill-magenta.js';
 import { detectSprites, clusterIntoRows } from './modules/sprite-detection.js';
 import { CanvasView } from './modules/canvas-view.js';
 import * as Lanes from './modules/animation-lanes.js';
 import { buildGridBoxes } from './modules/grid-autoslice.js';
 import { cropToDataURL, buildExportZip, downloadBlob } from './modules/export-manifest.js';
 import { initEnemyCreator } from './modules/enemy-form.js';
-import { saveEnemy, getEnemy, deleteEnemy, loadImageFromDataURL, buildThumbnail } from './modules/enemy-library.js';
+import { initFxCreator } from './modules/fx-form.js';
+import { initBossCreator } from './modules/boss-form.js';
+import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail } from './modules/enemy-library.js';
 import { renderLibraryCards } from './modules/library-panel.js';
 import { buildCombinedBundle } from './modules/enemy-bundle.js';
+import { KINDS, KIND_IDS, SHEET_KIND_IDS, DEFAULT_KIND, kindOf, canonicalLanesFor, defaultLanesFor } from './modules/entry-kinds.js';
 import { CanvasView as MapCanvasView } from './modules/map-canvas-view.js';
 import * as MapAssets from './modules/map-assets.js';
 import * as MapInstances from './modules/map-instances.js';
@@ -23,17 +27,34 @@ import * as MapTracing from './modules/map-collision-tracing.js';
 import * as MapExport from './modules/map-export.js';
 import * as MapLibrary from './modules/map-library.js';
 
-// Always pre-created on image load, in this order — "Animaciones automáticas" defaults its
-// 5-row mapping to this same order (row i -> DEFAULT_LANE_NAMES[i]) when there are exactly 5 rows.
-// Derived from the canonical vocabulary (single source of truth in animation-lanes.js) rather than
-// listing the names again — Wake is excluded here only because it's the uncommon 6th state, not
-// because it's any less canonical; it's one click away via the "+ Nueva" dropdown or directly
-// selectable (already-created or not) in "Animaciones automáticas".
-const DEFAULT_LANE_NAMES = Lanes.CANONICAL_ANIMATION_NAMES.filter((n) => n !== 'Wake');
+// What KIND of entry the Sprites tab is currently authoring — 'enemy' (default) | 'projectile' |
+// 'fx'. Everything downstream that used to be enemy-specific reads this: which lanes get
+// pre-created, which names the "+ Nueva"/auto-assign dropdowns offer, the wording of the name
+// field and save button, which saved entries the panel lists, and the `kind` written into the
+// saved record and the exported manifest. The pipeline itself (bg removal, detect/grid slicing,
+// box editing, cropping, zip building) is untouched and shared by all three.
+let currentKind = DEFAULT_KIND;
 
-// Set once initEnemyCreator() runs below (after `lanes` exists) — the tab-switch handler reads
-// this closure variable at CLICK time, not at registration time, so declaring it after is fine.
+/** The lanes pre-created on image load / grid re-slice, for whatever kind is selected. */
+function defaultLaneNames() { return defaultLanesFor(currentKind); }
+
+/** The canonical vocabulary offered in the lane-name dropdowns, for whatever kind is selected. */
+function canonicalLaneNames() { return canonicalLanesFor(currentKind); }
+
+// Set once each init*Creator() runs below (after `lanes` exists) — the tab-switch handler reads
+// these closure variables at CLICK time, not at registration time, so declaring them after is fine.
 let enemyCreator = null;
+let fxCreator = null;
+let bossCreator = null;
+
+/** The creator-tab API for a kind, or null for a kind nobody configures. See KINDS[…].creator. */
+function creatorFor(kind) {
+  const id = kindOf(kind).creator;
+  if (id === 'enemy') return enemyCreator;
+  if (id === 'fx') return fxCreator;
+  if (id === 'boss') return bossCreator;
+  return null;
+}
 
 // ============================================================ tab shell
 
@@ -51,6 +72,10 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
       enemyCreator.refreshLaneInfo();
       enemyCreator.refreshArtLibrary();
     }
+    // Same reason as above for the other two creators: their library pickers are snapshots of a
+    // store any tab can write to, so they are re-listed on entry rather than kept live.
+    if (btn.dataset.tab === 'fx' && fxCreator) fxCreator.refreshArtLibrary();
+    if (btn.dataset.tab === 'boss' && bossCreator) bossCreator.refreshLibraries();
     if (btn.dataset.tab === 'library') renderLibraryTab();
     if (btn.dataset.tab === 'map') { renderMapLibraryLists(); mapView.frameToFit(); }
   });
@@ -97,6 +122,83 @@ function clearSelection() {
 }
 function setStatus(msg) { document.getElementById('status').textContent = msg; }
 
+// ============================================================ entry kind (enemy / projectile / fx)
+//
+// The kind is a property of the SHEET being authored, so it lives next to the name field rather
+// than as a fourth tab: everything else about the Sprites tab — detection, slicing, boxes, lanes,
+// export — is identical for all three, and a separate tab would have meant three copies of it.
+
+const entryKindSelect = document.getElementById('entryKindSelect');
+const entryNameInput = document.getElementById('enemyName');
+const entryNameLabel = document.getElementById('entryNameLabel');
+const saveToLibraryBtn = document.getElementById('saveToLibraryBtn');
+const addToExistingSelect = document.getElementById('addToExistingSelect');
+const addToExistingBtn = document.getElementById('addToExistingBtn');
+const addProjBtn = document.getElementById('addProjBtn');
+const savedEntriesHeading = document.getElementById('savedEntriesHeading');
+
+// SHEET_KIND_IDS, not KIND_IDS: this selector decides what the sheet on the canvas IS, so a kind
+// that owns no frames (boss) has nothing to author here and offering it would produce an entry
+// whose lanes nothing reads. See modules/entry-kinds.js's `sheet` flag.
+entryKindSelect.innerHTML = SHEET_KIND_IDS
+  .map((id) => `<option value="${id}">${KINDS[id].icon} ${KINDS[id].label}</option>`)
+  .join('');
+
+/** Re-labels every piece of the Sprites tab that names the kind, and re-lists the saved entries. */
+function applyKindToUi() {
+  const meta = kindOf(currentKind);
+
+  entryKindSelect.value = currentKind;
+  entryNameLabel.textContent = meta.nameLabel;
+  entryNameInput.placeholder = meta.namePlaceholder;
+  saveToLibraryBtn.textContent = meta.saveLabel;
+  savedEntriesHeading.textContent = `6. ${meta.plural} guardados`;
+
+  // A projectile lane is a separate thrown object nested under `Projectiles/` in the export —
+  // only an enemy has one. For a projectile/VFX entry the sheet IS that object, so the button
+  // would author a nonsensical nested projectile-of-a-projectile.
+  addProjBtn.hidden = !meta.projectileLanes;
+
+  renderSpritesLibraryList();
+}
+
+/**
+ * Switching kind rebuilds the default lanes, because the whole point of the kind is which lanes
+ * exist. Anything already assigned would be orphaned by that, so it asks first — the same
+ * courtesy `confirmReplaceIfNeeded` extends before a re-detect — and a decline reverts the
+ * <select> rather than leaving it showing a kind that isn't active.
+ */
+function setKind(next, { rebuildLanes = true } = {}) {
+  if (next === currentKind) return true;
+
+  const hasAssignedFrames = lanes.some((l) => l.frameBoxIndices.length > 0);
+  if (rebuildLanes && hasAssignedFrames) {
+    const ok = confirm(
+      `Cambiar a "${kindOf(next).label}" recrea las animaciones por defecto de ese tipo y ` +
+      'desasigna los frames que ya hubieras repartido. Los sprites detectados se conservan. ¿Continuar?'
+    );
+    if (!ok) { entryKindSelect.value = currentKind; return false; }
+  }
+
+  currentKind = next;
+
+  if (rebuildLanes) {
+    // Frames go back to "sin asignar" rather than being deleted: the boxes are the expensive part
+    // (detection + hand editing) and are kind-agnostic, only the lane names they were sorted into
+    // are not.
+    lanes.forEach((l) => l.frameBoxIndices.forEach((i) => { if (boxes[i]) boxes[i].assignedLane = null; }));
+    lanes = [];
+    Lanes.resetLaneIdCounter();
+    defaultLaneNames().forEach((name) => Lanes.createLane(lanes, 'animation', name));
+  }
+
+  applyKindToUi();
+  if (rebuildLanes) { render(); renderLanes(); renderUnsorted(); updateAssignBar(); }
+  return true;
+}
+
+entryKindSelect.addEventListener('change', () => { setKind(entryKindSelect.value); });
+
 // ============================================================ image loading
 
 document.getElementById('fileInput').addEventListener('change', (e) => {
@@ -141,7 +243,7 @@ function loadImageFile(f) {
       lanes = [];
       currentLibraryId = null;
       Lanes.resetLaneIdCounter();
-      DEFAULT_LANE_NAMES.forEach((name) => Lanes.createLane(lanes, 'animation', name));
+      defaultLaneNames().forEach((name) => Lanes.createLane(lanes, 'animation', name));
       clearSelection();
       view.frameToFit();
       render();
@@ -158,17 +260,81 @@ window.addEventListener('resize', () => { if (img) view.frameToFit(); });
 
 // ============================================================ background removal
 
+// Snapshot of the canvas right after removeBackground, before despill — the baseline despill
+// re-applies onto (so dragging the sliders never compounds erosion on an already-eroded image).
+let postBgRemovalImageData = null;
+let despillShowingBefore = false;
+
 document.getElementById('removeBgBtn').addEventListener('click', () => {
   if (!img) { setStatus('Carga una imagen primero.'); return; }
 
   const tolerance = parseInt(document.getElementById('tolerance').value, 10);
+  const detectPockets = document.getElementById('pocketsEnabled').checked;
   const imageData = workCtx.getImageData(0, 0, workCanvas.width, workCanvas.height);
-  removeBackground(imageData, tolerance);
-  workCtx.putImageData(imageData, 0, 0);
+  removeBackground(imageData, tolerance, { detectPockets });
+
+  postBgRemovalImageData = new ImageData(
+    new Uint8ClampedArray(imageData.data), imageData.width, imageData.height
+  );
+  despillShowingBefore = false;
+
+  if (document.getElementById('despillEnabled').checked) {
+    applyDespill();
+  } else {
+    workCtx.putImageData(imageData, 0, 0);
+  }
 
   bgRemoved = true;
   render();
   setStatus('Fondo eliminado. Revisa el resultado; si quedaron restos, sube la tolerancia y repite.');
+});
+
+/** Re-runs despill from the post-bg-removal baseline using the current slider values. */
+function applyDespill() {
+  if (!postBgRemovalImageData) return;
+  const imageData = new ImageData(
+    new Uint8ClampedArray(postBgRemovalImageData.data),
+    postBgRemovalImageData.width, postBgRemovalImageData.height
+  );
+  const magentaThreshold = parseInt(document.getElementById('despillThreshold').value, 10);
+  const edgeRadius = parseInt(document.getElementById('despillRadius').value, 10);
+  despillMagentaEdge(imageData, { magentaThreshold, edgeRadius });
+  workCtx.putImageData(imageData, 0, 0);
+  despillShowingBefore = false;
+  render();
+}
+
+const despillThresholdInput = document.getElementById('despillThreshold');
+const despillRadiusInput = document.getElementById('despillRadius');
+const despillThresholdVal = document.getElementById('despillThresholdVal');
+const despillRadiusVal = document.getElementById('despillRadiusVal');
+
+despillThresholdInput.addEventListener('input', () => {
+  despillThresholdVal.textContent = despillThresholdInput.value;
+  if (postBgRemovalImageData) applyDespill();
+});
+despillRadiusInput.addEventListener('input', () => {
+  despillRadiusVal.textContent = despillRadiusInput.value;
+  if (postBgRemovalImageData) applyDespill();
+});
+
+document.getElementById('despillReapplyBtn').addEventListener('click', () => {
+  if (!postBgRemovalImageData) { setStatus('Quita el fondo primero.'); return; }
+  applyDespill();
+  setStatus('Halo magenta reaplicado.');
+});
+
+document.getElementById('despillToggleBtn').addEventListener('click', () => {
+  if (!postBgRemovalImageData) { setStatus('Quita el fondo primero.'); return; }
+  despillShowingBefore = !despillShowingBefore;
+  if (despillShowingBefore) {
+    workCtx.putImageData(postBgRemovalImageData, 0, 0);
+    setStatus('Mostrando: antes de quitar el halo magenta.');
+  } else {
+    applyDespill();
+    setStatus('Mostrando: después de quitar el halo magenta.');
+  }
+  render();
 });
 
 // ============================================================ sprite mode switch (detect vs grid)
@@ -236,7 +402,7 @@ document.getElementById('gridSliceBtn').addEventListener('click', () => {
   // pass, same as a fresh image load.
   lanes = [];
   Lanes.resetLaneIdCounter();
-  DEFAULT_LANE_NAMES.forEach((name) => Lanes.createLane(lanes, 'animation', name));
+  defaultLaneNames().forEach((name) => Lanes.createLane(lanes, 'animation', name));
 
   rowIndices.forEach((indices, r) => {
     const lane = Lanes.createLane(lanes, 'animation', `Row_${r}`);
@@ -413,10 +579,11 @@ document.getElementById('clearSelBtn').addEventListener('click', () => {
 
 // ============================================================ lanes (animations + projectiles)
 
-// "+ Nueva" no longer takes free text for the common case — the 5 canonical names not yet used as
-// a lane are offered as a dropdown (so they can't be mistyped against EnemyAnimation.cs's fixed
-// vocabulary; see Lanes.CANONICAL_ANIMATION_NAMES), with "Personalizado…" revealing a text field
-// for genuinely game-specific extras (Attack2, etc.) that aren't part of that vocabulary.
+// "+ Nueva" no longer takes free text for the common case — the canonical names of the CURRENT
+// KIND not yet used as a lane are offered as a dropdown (so they can't be mistyped against the
+// vocabulary the Unity side expects; see modules/entry-kinds.js, and Lanes.CANONICAL_ANIMATION_NAMES
+// for the enemy one it reuses), with "Personalizado…" revealing a text field for genuinely
+// content-specific extras (Attack2, etc.) that aren't part of that vocabulary.
 const newLaneOverlay = document.getElementById('newLaneOverlay');
 const newLaneNameSelect = document.getElementById('newLaneNameSelect');
 const newLaneCustomName = document.getElementById('newLaneCustomName');
@@ -429,7 +596,7 @@ newLaneNameSelect.addEventListener('change', syncNewLaneCustomVisibility);
 
 function openNewLaneModal() {
   const existingNames = new Set(lanes.filter((l) => l.type === 'animation').map((l) => l.name));
-  const available = Lanes.CANONICAL_ANIMATION_NAMES.filter((n) => !existingNames.has(n));
+  const available = canonicalLaneNames().filter((n) => !existingNames.has(n));
   newLaneNameSelect.innerHTML = available.map((n) => `<option value="${n}">${n}</option>`).join('')
     + `<option value="${CUSTOM_LANE_NAME_VALUE}">Personalizado…</option>`;
   newLaneCustomName.value = '';
@@ -452,7 +619,12 @@ function confirmNewLane() {
   renderLanes(); updateAssignBar();
 }
 
-document.getElementById('addProjBtn').addEventListener('click', () => {
+// Only reachable for a kind that carries projectile lanes — applyKindToUi() hides the button
+// otherwise. Guarded here too so a stale click (or a call from elsewhere) can't create a nested
+// projectile lane on a projectile/VFX sheet, which the exporter would nest under `Projectiles/`
+// and Unity would read as a thrown prop that doesn't exist.
+addProjBtn.addEventListener('click', () => {
+  if (!kindOf(currentKind).projectileLanes) return;
   const name = prompt('Nombre del proyectil (ej. MushroomSpore):');
   if (!name) return;
   Lanes.createLane(lanes, 'projectile', name);
@@ -503,19 +675,19 @@ function closeAutoAssignPanel() {
 
 // Sentinel prefix for a canonical name that has no lane yet — confirmAutoAssign creates it (with
 // the exact canonical spelling) at confirm time instead of requiring it to be pre-created via
-// "+ Nueva". Every CANONICAL_ANIMATION_NAMES entry is always offered, existing or not; any custom
-// (non-canonical) lane the user already made is appended after them.
+// "+ Nueva". Every canonical entry of the current kind is always offered, existing or not; any
+// custom (non-canonical) lane the user already made is appended after them.
 const NEW_CANONICAL_LANE_PREFIX = 'canonical:';
 
 function buildAutoAssignLaneOptions(animLanes) {
   const byName = new Map(animLanes.map((l) => [l.name, l]));
-  const canonical = Lanes.CANONICAL_ANIMATION_NAMES.map((name) => {
+  const canonical = canonicalLaneNames().map((name) => {
     const lane = byName.get(name);
     const value = lane ? lane.id : `${NEW_CANONICAL_LANE_PREFIX}${name}`;
     return `<option value="${value}" data-name="${name}">${name}</option>`;
   });
   const custom = animLanes
-    .filter((l) => !Lanes.CANONICAL_ANIMATION_NAMES.includes(l.name))
+    .filter((l) => !canonicalLaneNames().includes(l.name))
     .map((l) => `<option value="${l.id}" data-name="${l.name}">${l.name}</option>`);
   return canonical.concat(custom).join('');
 }
@@ -523,7 +695,7 @@ function buildAutoAssignLaneOptions(animLanes) {
 function renderAutoAssignRows() {
   autoAssignRowsEl.innerHTML = '';
   const animLanes = lanes.filter((l) => l.type === 'animation');
-  const useDefaultMapping = pendingAutoAssignRows.length === DEFAULT_LANE_NAMES.length;
+  const useDefaultMapping = pendingAutoAssignRows.length === defaultLaneNames().length;
 
   pendingAutoAssignRows.forEach((items, i) => {
     const row = document.createElement('div');
@@ -538,7 +710,7 @@ function renderAutoAssignRows() {
 
     if (useDefaultMapping) {
       const select = row.querySelector('select');
-      const preferred = [...select.options].find((o) => o.dataset.name === DEFAULT_LANE_NAMES[i]);
+      const preferred = [...select.options].find((o) => o.dataset.name === defaultLaneNames()[i]);
       if (preferred) select.value = preferred.value;
     }
 
@@ -579,7 +751,7 @@ function renderLanes() {
   if (animLanes.length) {
     const lbl = document.createElement('div');
     lbl.className = 'sectionLabel';
-    lbl.textContent = 'Animaciones del enemigo';
+    lbl.textContent = `Animaciones · ${kindOf(currentKind).label}`;
     list.appendChild(lbl);
     animLanes.forEach((lane) => list.appendChild(buildLaneCard(lane, projLanes)));
   }
@@ -754,16 +926,17 @@ document.getElementById('assignBtn').addEventListener('click', () => {
 
 document.getElementById('exportBtn').addEventListener('click', async () => {
   if (!img) { setStatus('Carga una imagen primero.'); return; }
-  const enemyName = document.getElementById('enemyName').value.trim() || 'Enemy';
+  const meta = kindOf(currentKind);
+  const enemyName = entryNameInput.value.trim() || meta.fallbackName;
   const hasAnim = lanes.some((l) => l.type === 'animation' && l.frameBoxIndices.length > 0);
-  if (!hasAnim) { setStatus('Crea al menos una animación de enemigo y asígnale sprites.'); return; }
+  if (!hasAnim) { setStatus(`Crea al menos una animación de ${meta.label.toLowerCase()} y asígnale sprites.`); return; }
 
   setStatus('Generando .zip...');
   const { blob, manifest } = await buildExportZip({
-    enemyName, lanes, boxes, source: currentSource(), JSZip: window.JSZip,
+    enemyName, kind: currentKind, lanes, boxes, source: currentSource(), JSZip: window.JSZip,
   });
   downloadBlob(blob, `${enemyName}.zip`);
-  setStatus(`Exportado ${enemyName}.zip — ${manifest.animations.length} animaciones, ${manifest.projectiles.length} proyectiles. Descomprímelo dentro de Assets/ en Unity.`);
+  setStatus(`Exportado ${enemyName}.zip (${meta.label}) — ${manifest.animations.length} animaciones, ${manifest.projectiles.length} proyectiles. Descomprímelo dentro de Assets/ en Unity.`);
 });
 
 // ============================================================ Enemy Creator tab
@@ -779,13 +952,37 @@ enemyCreator = initEnemyCreator({
   getLaneNames: () => lanes.filter((l) => l.type === 'animation').map((l) => l.name),
 });
 
+// ============================================================ Projectile/FX Creator tab
+
+fxCreator = initFxCreator({
+  formRoot: document.getElementById('fxFormRoot'),
+  previewEl: document.getElementById('fxJsonPreview'),
+  summaryEl: document.getElementById('fxValidationSummary'),
+  exportBtn: document.getElementById('fxExportBtn'),
+  exportCombinedBtn: document.getElementById('fxExportCombinedBtn'),
+});
+
+// ============================================================ Boss Creator tab
+
+bossCreator = initBossCreator({
+  formRoot: document.getElementById('bossFormRoot'),
+  previewEl: document.getElementById('bossJsonPreview'),
+  summaryEl: document.getElementById('bossValidationSummary'),
+  exportBtn: document.getElementById('bossExportBtn'),
+  saveBtn: document.getElementById('bossSaveBtn'),
+  // A boss is the one kind with no Sprites-tab presence, so saving it is the only way it can ever
+  // appear in Biblioteca — re-render that list so a save is visible without a tab round-trip.
+  onSaved: () => renderLibraryTab(),
+});
+
 // ============================================================ shared enemy library (persistent, cross-tab)
 
-document.getElementById('saveToLibraryBtn').addEventListener('click', async () => {
+saveToLibraryBtn.addEventListener('click', async () => {
   if (!img) { setStatus('Carga una imagen primero.'); return; }
-  const enemyName = document.getElementById('enemyName').value.trim() || 'Enemy';
+  const meta = kindOf(currentKind);
+  const enemyName = entryNameInput.value.trim() || meta.fallbackName;
   const hasAnim = lanes.some((l) => l.type === 'animation' && l.frameBoxIndices.length > 0);
-  if (!hasAnim) { setStatus('Crea al menos una animación de enemigo y asígnale sprites antes de guardar.'); return; }
+  if (!hasAnim) { setStatus(`Crea al menos una animación de ${meta.label.toLowerCase()} y asígnale sprites antes de guardar.`); return; }
 
   // currentSource() is `img` (a plain <img>, no toDataURL) whenever bg removal hasn't run yet —
   // draw it into a throwaway canvas first so this works regardless of bgRemoved.
@@ -798,6 +995,7 @@ document.getElementById('saveToLibraryBtn').addEventListener('click', async () =
 
   const record = await saveEnemy({
     id: currentLibraryId,
+    kind: currentKind,
     enemyName,
     sprite: { lanes: structuredClone(lanes), boxes: structuredClone(boxes), sourceDataURL, width: img.width, height: img.height },
     thumbnail,
@@ -805,7 +1003,7 @@ document.getElementById('saveToLibraryBtn').addEventListener('click', async () =
   currentLibraryId = record.id;
 
   renderSpritesLibraryList();
-  setStatus(`Enemigo "${enemyName}" guardado en la biblioteca (${new Date(record.updatedAt).toLocaleTimeString()}).`);
+  setStatus(`${meta.label} "${enemyName}" guardado en la biblioteca (${new Date(record.updatedAt).toLocaleTimeString()}).`);
 });
 
 /** Loads a saved entry's sheet + boxes + lanes back onto the canvas for further editing. */
@@ -823,12 +1021,17 @@ async function loadLibraryEntryIntoSprites(entry) {
   boxes = structuredClone(entry.sprite.boxes);
   lanes = structuredClone(entry.sprite.lanes);
   currentLibraryId = entry.id;
-  document.getElementById('enemyName').value = entry.enemyName;
+  entryNameInput.value = entry.enemyName;
+
+  // The entry's own kind wins over whatever was selected — the saved lanes belong to it. Lanes
+  // come from the record, so the default-lane rebuild is explicitly suppressed.
+  currentKind = entry.kind;
+  applyKindToUi();
 
   clearSelection();
   view.frameToFit();
-  render(); renderLanes(); renderUnsorted();
-  setStatus(`Enemigo "${entry.enemyName}" cargado desde la biblioteca.`);
+  render(); renderLanes(); renderUnsorted(); updateAssignBar();
+  setStatus(`${kindOf(entry.kind).label} "${entry.enemyName}" cargado desde la biblioteca.`);
 }
 
 async function exportLibraryEntryZip(entry) {
@@ -838,7 +1041,7 @@ async function exportLibraryEntryZip(entry) {
   c.getContext('2d').drawImage(image, 0, 0);
 
   const { blob } = await buildExportZip({
-    enemyName: entry.enemyName, lanes: entry.sprite.lanes, boxes: entry.sprite.boxes, source: c, JSZip: window.JSZip,
+    enemyName: entry.enemyName, kind: entry.kind, lanes: entry.sprite.lanes, boxes: entry.sprite.boxes, source: c, JSZip: window.JSZip,
   });
   downloadBlob(blob, `${entry.enemyName}.zip`);
 }
@@ -850,52 +1053,251 @@ async function deleteLibraryEntry(entry) {
   renderSpritesLibraryList();
 }
 
+/**
+ * The Sprites tab's own saved-entries panel lists only the kind currently being authored — it is
+ * a "pick up where I left off" shortcut for this sheet's kind, and its "Cargar" would silently
+ * switch kinds out from under the tab otherwise. The Biblioteca tab is where every kind is
+ * browsed together.
+ */
 function renderSpritesLibraryList() {
   renderLibraryCards(document.getElementById('spritesLibraryList'), {
+    fetchEntries: () => listEntries(currentKind),
+    emptyMessage: kindOf(currentKind).emptyMessage,
     getActions: (entry) => [
       { label: 'Cargar', className: 'small', onClick: loadLibraryEntryIntoSprites },
       { label: 'Exportar zip', className: 'small', onClick: exportLibraryEntryZip },
       { label: 'Eliminar', className: 'small danger', onClick: deleteLibraryEntry },
     ],
   });
+  refreshAddToExistingSelect();
 }
-renderSpritesLibraryList();
+applyKindToUi();
+
+// ============================================================ "Añadir a enemigo existente" (Sprites tab)
+//
+// Sprites now arrive one animation per image (its own upload, its own bg-removal/despill pass,
+// sliced into a single lane) instead of one grid sheet with every lane at once. "💾 Guardar como
+// enemigo" already only requires ONE lane to have frames, so authoring a brand-new entry with just
+// its first animation already works — but it always OVERWRITES the whole saved sheet, so re-saving
+// with only this session's lane would wipe out any animation already saved from a DIFFERENT image.
+// This button fixes that one gap: it composites the current session's (bg-removed/despilled) image
+// onto the target entry's existing sheet instead of replacing it, offsets this session's boxes to
+// match, and replaces only the lane(s) that share a name with what's in this session — every other
+// lane the target already had is untouched. The saved shape stays the exact same
+// `{lanes, boxes, sourceDataURL, width, height}` the rest of the app already reads, so nothing else
+// (zip export, thumbnails, Biblioteca) needs to know this happened.
+
+async function refreshAddToExistingSelect() {
+  const entries = await listEntries(currentKind);
+  const keepId = entries.some((e) => e.id === addToExistingSelect.value) ? addToExistingSelect.value : '';
+
+  addToExistingSelect.innerHTML = '';
+  if (entries.length === 0) {
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = `(sin ${kindOf(currentKind).plural.toLowerCase()} guardados)`;
+    addToExistingSelect.appendChild(opt);
+    addToExistingSelect.disabled = true;
+    addToExistingBtn.disabled = true;
+    return;
+  }
+
+  addToExistingSelect.disabled = false;
+  addToExistingBtn.disabled = false;
+  entries.forEach((e) => {
+    const opt = document.createElement('option');
+    opt.value = e.id;
+    opt.textContent = e.enemyName;
+    addToExistingSelect.appendChild(opt);
+  });
+  addToExistingSelect.value = keepId || entries[0].id;
+}
+
+addToExistingBtn.addEventListener('click', async () => {
+  if (!img) { setStatus('Carga una imagen primero.'); return; }
+  const meta = kindOf(currentKind);
+  const sessionLanes = lanes.filter((l) => l.frameBoxIndices.length > 0);
+  if (sessionLanes.length === 0) { setStatus(`Crea al menos una animación de ${meta.label.toLowerCase()} y asígnale sprites antes de añadir.`); return; }
+
+  const targetId = addToExistingSelect.value;
+  if (!targetId) { setStatus('Elige a qué enemigo guardado añadir esta animación.'); return; }
+  const target = await getEnemy(targetId);
+  if (!target) { setStatus('El enemigo elegido ya no existe — recarga la lista.'); return; }
+
+  // Session's own pixels, exactly like saveToLibraryBtn's snapshot (currentSource() is `img`
+  // itself, no toDataURL, whenever bg removal hasn't run — always go through a canvas).
+  const sessionCanvas = document.createElement('canvas');
+  sessionCanvas.width = img.width;
+  sessionCanvas.height = img.height;
+  sessionCanvas.getContext('2d').drawImage(currentSource(), 0, 0);
+
+  const hasExistingSheet = !!(target.sprite && target.sprite.sourceDataURL);
+  const oldW = hasExistingSheet ? target.sprite.width : 0;
+  const oldH = hasExistingSheet ? target.sprite.height : 0;
+  const composite = document.createElement('canvas');
+  composite.width = Math.max(oldW, sessionCanvas.width);
+  composite.height = oldH + sessionCanvas.height;
+  const cctx = composite.getContext('2d');
+
+  if (hasExistingSheet) {
+    const oldImage = await loadImageFromDataURL(target.sprite.sourceDataURL);
+    cctx.drawImage(oldImage, 0, 0); // old pixels, unmoved — every OLD box/lane still points at the same spot
+  }
+  cctx.drawImage(sessionCanvas, 0, oldH); // this session's pixels, stacked below
+
+  const mergedBoxes = hasExistingSheet ? structuredClone(target.sprite.boxes) : [];
+  const mergedLanes = hasExistingSheet ? structuredClone(target.sprite.lanes) : [];
+
+  sessionLanes.forEach((sessionLane) => {
+    // A lane sharing this session's (type, name) REPLACES the target's existing one — its old
+    // frames are simply left unreferenced in mergedBoxes (dead weight, harmless) rather than
+    // spliced out, so nothing else in mergedBoxes needs re-indexing.
+    const existingIdx = mergedLanes.findIndex((l) => l.type === sessionLane.type && l.name === sessionLane.name);
+    if (existingIdx >= 0) mergedLanes.splice(existingIdx, 1);
+
+    const newFrameIndices = sessionLane.frameBoxIndices.map((boxIdx) => {
+      const b = boxes[boxIdx];
+      mergedBoxes.push({ x: b.x, y: b.y + oldH, w: b.w, h: b.h, assignedLane: null });
+      return mergedBoxes.length - 1;
+    });
+
+    mergedLanes.push({
+      id: `lane${mergedLanes.length}_${sessionLane.name}`,
+      type: sessionLane.type,
+      name: sessionLane.name,
+      fps: sessionLane.fps,
+      loop: sessionLane.loop,
+      frameBoxIndices: newFrameIndices,
+      projectileLink: sessionLane.type === 'animation' ? null : undefined,
+    });
+  });
+
+  const record = await saveEnemy({
+    id: target.id,
+    kind: target.kind,
+    enemyName: target.enemyName,
+    sprite: { lanes: mergedLanes, boxes: mergedBoxes, sourceDataURL: composite.toDataURL(), width: composite.width, height: composite.height },
+    thumbnail: buildThumbnail(composite),
+  });
+
+  renderSpritesLibraryList();
+  const addedNames = sessionLanes.map((l) => l.name).join(', ');
+  setStatus(`"${addedNames}" añadida(s) a "${record.enemyName}" (${new Date(record.updatedAt).toLocaleTimeString()}).`);
+});
 
 // ============================================================ Biblioteca tab (shared, full actions)
 
+// null = every kind. Persisted only for the session; the Biblioteca tab re-renders on each switch
+// to it, so the filter survives tab hopping without any storage.
+let libraryKindFilter = null;
+
+const libraryFilterBar = document.getElementById('libraryFilterBar');
+
+function renderLibraryFilterBar() {
+  const options = [{ id: null, label: 'Todo', icon: '📚' }]
+    .concat(KIND_IDS.map((id) => ({ id, label: KINDS[id].plural, icon: KINDS[id].icon })));
+
+  libraryFilterBar.innerHTML = '';
+  options.forEach(({ id, label, icon }) => {
+    const btn = document.createElement('button');
+    btn.className = `small libFilterBtn${libraryKindFilter === id ? ' active' : ''}`;
+    btn.textContent = `${icon} ${label}`;
+    btn.onclick = () => { libraryKindFilter = id; renderLibraryTab(); };
+    libraryFilterBar.appendChild(btn);
+  });
+}
+
+/**
+ * Which Creator tab an entry's "Editar en …" action opens, labelled for that kind. Driven by
+ * `KINDS[kind].creator` rather than an if-chain on the kind id, so a sixth kind with its own
+ * creator needs nothing here — the same rule the Sprites tab already follows for its own labels.
+ */
+const CREATOR_LABELS = { enemy: 'Enemy Creator', fx: 'Proyectil/VFX', boss: 'Boss Creator' };
+
+function editActionFor(entry) {
+  const creatorId = kindOf(entry.kind).creator;
+  const label = creatorId ? `Editar en ${CREATOR_LABELS[creatorId]}` : 'Editar config';
+
+  // Disabled with the reason rather than hidden: a missing button reads as a bug, a disabled one
+  // with a tooltip explains the model.
+  return {
+    label,
+    className: 'small',
+    disabled: !creatorId,
+    title: creatorId ? '' : 'Este tipo de entrada no tiene pantalla de configuración.',
+    onClick: async (e) => {
+      const creator = creatorFor(e.kind);
+      if (!creator) return;
+      document.querySelector(`.tabBtn[data-tab="${kindOf(e.kind).creator}"]`).click();
+      // Each creator takes what it needs: the enemy one links a sheet by id+name, the fx one also
+      // needs the kind (it authors two), the boss one reopens a saved config by its own record id.
+      if (kindOf(e.kind).creator === 'fx') await creator.linkLibraryEntry(e.id, e.enemyName, e.kind);
+      else if (kindOf(e.kind).creator === 'boss') await creator.linkLibraryEntry(e.id);
+      else await creator.linkLibraryEntry(e.id, e.enemyName);
+    },
+  };
+}
+
 function renderLibraryTab() {
+  renderLibraryFilterBar();
   renderLibraryCards(document.getElementById('libraryTabList'), {
-    getActions: (entry) => [
-      {
-        label: 'Cargar en Sprites',
-        className: 'small',
-        onClick: async (e) => {
-          await loadLibraryEntryIntoSprites(e);
-          document.querySelector('.tabBtn[data-tab="sprites"]').click();
+    fetchEntries: () => listEntries(libraryKindFilter),
+    emptyMessage: libraryKindFilter
+      ? kindOf(libraryKindFilter).emptyMessage
+      : 'Todavía no hay nada guardado. Autoriza una hoja en la pestaña Sprites y guárdala, o monta un jefe en Boss Creator.',
+    getActions: (entry) => {
+      // Everything sprite-shaped is gated on the kind owning a sheet at all: a boss entry has no
+      // `sprite` block, so Cargar/Exportar zip/Exportar combinado would throw rather than misbehave.
+      const hasSheet = kindOf(entry.kind).sheet;
+      const sheetOnlyTitle = 'Un jefe no tiene hoja propia: su arte es la del enemigo base.';
+
+      return [
+        {
+          label: 'Cargar en Sprites',
+          className: 'small',
+          disabled: !hasSheet,
+          title: hasSheet ? '' : sheetOnlyTitle,
+          onClick: async (e) => {
+            if (!kindOf(e.kind).sheet) return;
+            await loadLibraryEntryIntoSprites(e);
+            document.querySelector('.tabBtn[data-tab="sprites"]').click();
+          },
         },
-      },
-      {
-        label: 'Editar en Enemy Creator',
-        className: 'small',
-        onClick: async (e) => {
-          document.querySelector('.tabBtn[data-tab="enemy"]').click();
-          await enemyCreator.linkLibraryEntry(e.id, e.enemyName);
+        editActionFor(entry),
+        {
+          label: 'Exportar zip',
+          className: 'small',
+          disabled: !hasSheet,
+          title: hasSheet ? '' : sheetOnlyTitle,
+          onClick: (e) => { if (kindOf(e.kind).sheet) exportLibraryEntryZip(e); },
         },
-      },
-      { label: 'Exportar zip', className: 'small', onClick: exportLibraryEntryZip },
-      {
-        label: 'Exportar combinado',
-        className: 'small',
-        disabled: !entry.config,
-        title: entry.config ? '' : 'Ábrelo en Enemy Creator y expórtalo una vez primero.',
-        onClick: async (e) => {
-          if (!e.config) return;
-          const blob = await buildCombinedBundle({ enemyName: e.enemyName, sprite: e.sprite, configObj: e.config });
-          downloadBlob(blob, `${e.enemyName.replace(/[^A-Za-z0-9_]/g, '_')}.bundle.zip`);
+        {
+          label: 'Exportar combinado',
+          className: 'small',
+          disabled: !hasSheet || !entry.config,
+          title: !hasSheet
+            ? sheetOnlyTitle
+            : (entry.config ? '' : `Ábrelo en ${CREATOR_LABELS[kindOf(entry.kind).creator]} y expórtalo una vez primero.`),
+          onClick: async (e) => {
+            if (!e.config || !kindOf(e.kind).sheet) return;
+            const blob = await buildCombinedBundle({ enemyName: e.enemyName, kind: e.kind, libraryId: e.id, sprite: e.sprite, configObj: e.config });
+            downloadBlob(blob, `${e.enemyName.replace(/[^A-Za-z0-9_]/g, '_')}.bundle.zip`);
+          },
         },
-      },
-      { label: 'Eliminar', className: 'small danger', onClick: async (e) => { await deleteLibraryEntry(e); renderLibraryTab(); } },
-    ],
+        {
+          label: 'Exportar config',
+          className: 'small',
+          disabled: !entry.config,
+          title: entry.config ? '' : 'Esta entrada todavía no tiene configuración guardada.',
+          onClick: (e) => {
+            if (!e.config) return;
+            const blob = new Blob([JSON.stringify(e.config, null, 2)], { type: 'application/json' });
+            downloadBlob(blob, `${e.enemyName.replace(/[^A-Za-z0-9_]/g, '_')}.${e.kind}.json`);
+          },
+        },
+        { label: 'Eliminar', className: 'small danger', onClick: async (e) => { await deleteLibraryEntry(e); renderLibraryTab(); } },
+      ];
+    },
   });
 }
 

@@ -17,7 +17,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// <list type="bullet">
     /// <item><b>El controller se copia, no se genera.</b> El del jugador (<c>DragonWarrior</c>)
     /// tiene diez estados y transiciones afinadas a mano sobre los parámetros que escribe
-    /// <see cref="PlayerAnimator"/> (Speed, VSpeed, Grounded, Crouching, Attack, Hurt, Dead). Se
+    /// <see cref="PlayerAnimator"/> (Speed, VSpeed, Grounded, Attack, Hurt, Dead). Se
     /// duplica a la carpeta del personaje y <see cref="AnimClipBuilder"/> le reescribe los clips
     /// en su sitio, así que el cableado — y por tanto el comportamiento — queda idéntico.</item>
     /// <item><b>Los estados que la lámina no dibuja se derivan.</b> La hoja no trae caída ni
@@ -133,13 +133,8 @@ namespace RedMagic.Pipeline.EditorTools
                 // ahí, que es como se lee una caída en un plataformero.
                 new DerivedClip { state = "Fall", fromState = "Jump", firstFrame = 3, frameCount = 1, fps = 10f, loop = true },
 
-                // Tampoco hay agachado: se mantiene la primera pose del reposo.
-                new DerivedClip { state = "Crouch", fromState = "Idle", firstFrame = 0, frameCount = 1, fps = 8f, loop = true },
-
-                // Las dos variantes del ataque que el controller tiene cableadas reutilizan el
-                // ataque. Sin esto se quedarían con el arte del dragón.
-                new DerivedClip { state = "CrouchAttack", fromState = "Attack", fps = 12f, loop = false },
-                new DerivedClip { state = "JumpAttack",   fromState = "Attack", fps = 12f, loop = false },
+                // El salto atacando reutiliza el ataque. Sin esto se quedaría con el arte del dragón.
+                new DerivedClip { state = "JumpAttack", fromState = "Attack", fps = 12f, loop = false },
             };
 
             recipe.keyBackground = true;          // JPEG con el damero de transparencia pintado

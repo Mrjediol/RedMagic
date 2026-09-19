@@ -1,0 +1,22 @@
+{
+  "enemyName": "ForestWolfBall",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "Move",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 4,
+      "projectile": null
+    },
+    {
+      "name": "Impact",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    }
+  ],
+  "projectiles": [],
+  "libraryId": "d7b180a0-bd16-4f63-93fa-9ecc37aa47ec"
+}

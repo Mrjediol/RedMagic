@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using RedMagic.Audio;
 using RedMagic.Core;
+using RedMagic.Gameplay;
 using RedMagic.Run;
 using RedMagic.UI;
 using UnityEngine;
@@ -48,6 +49,7 @@ namespace RedMagic.Economy
         private ShopConfig _config;
         private bool _rolled;
         private bool _playerInRange;
+        private PlayerAnimator _playerAnimator;
 
         /// <summary>Artículos que quedan por comprar en esta tienda.</summary>
         public IReadOnlyList<ShopStockEntry> Stock
@@ -114,6 +116,8 @@ namespace RedMagic.Economy
                 return;
             }
 
+            if (_playerAnimator != null) _playerAnimator.TriggerInteract();
+
             EnsureStock();
 
             if (!string.IsNullOrWhiteSpace(openSfxId) && AudioManager.Instance != null)
@@ -155,6 +159,7 @@ namespace RedMagic.Economy
         {
             if (!other.CompareTag(playerTag)) return;
             _playerInRange = true;
+            _playerAnimator = other.GetComponentInParent<PlayerAnimator>();
             SetPromptVisible(!BlockedByEnemies);
         }
 
@@ -162,6 +167,7 @@ namespace RedMagic.Economy
         {
             if (!other.CompareTag(playerTag)) return;
             _playerInRange = false;
+            _playerAnimator = null;
             SetPromptVisible(false);
         }
 

@@ -21,12 +21,13 @@ module's responsibility shifts, update its row in the same change.
 | The end-to-end detect pipeline (order of the steps above) | `modules/sprite-detection.js` | `detectSprites(imageData, opts)` |
 | Grid auto-slice cell math (rows×cols → boxes, ASSUMES a perfect uniform grid) | `modules/grid-autoslice.js` | `buildGridBoxes(width, height, rows, cols)` |
 | Which row becomes which lane, frame order within a row (grid mode) | `app.js` | `gridSliceBtn` click handler (calls `buildGridBoxes` + `Lanes.createLane`/`assignBoxesToLane`) |
-| **The canonical animation vocabulary Unity expects** (Idle/Walk/Attack/Hurt/Death/Wake — `EnemyAnimation.cs`/`AnimClipBuilder`, shared project-wide) | `modules/animation-lanes.js` | `CANONICAL_ANIMATION_NAMES` constant — the single source of truth; every other place a canonical name is offered reads this instead of listing the names again |
-| The 5 default lanes always created on image load (Idle/Walk/Attack/Hurt/Death — the common case; `CANONICAL_ANIMATION_NAMES` minus Wake) | `app.js` | `DEFAULT_LANE_NAMES` constant (derived from `Lanes.CANONICAL_ANIMATION_NAMES`), created in `loadImageFile()` |
+| **What KIND an entry is** (`enemy` / `projectile` / `fx` / `boss`) and everything that differs between them — lane vocabulary, default lanes, UI wording, whether it owns a sheet at all (`sheet`), whether it can carry projectile lanes, and WHICH creator tab authors its config (`creator`) + under what file name (`configFile`) | `modules/entry-kinds.js` | `KINDS` — the single source of truth for the kind dimension. Adding a fifth kind is one more entry here and nothing else. `SHEET_KIND_IDS` is the subset the Sprites tab offers |
+| **The canonical animation vocabulary Unity expects** for the ENEMY kind (Idle/Walk/Attack/Hurt/Death/Wake — `EnemyAnimation.cs`/`AnimClipBuilder`, shared project-wide) | `modules/animation-lanes.js` | `CANONICAL_ANIMATION_NAMES` constant — still the single source of truth for those names; `entry-kinds.js` imports it as the enemy kind's `lanes` rather than restating them. The other kinds' vocabularies (projectile: Awake/Move/Impact; fx: Spawn/Loop/End) live in `entry-kinds.js` |
+| The default lanes created on image load, per kind (enemy: Idle/Walk/Attack/Hurt/Death; projectile: Move/Impact; fx: Spawn/Loop/End) | `modules/entry-kinds.js` | each kind's `defaultLanes`; `app.js`'s `defaultLaneNames()` reads it for the current kind, used by `loadImageFile()`, the grid re-slice and `setKind()` |
 | How the sprite sheet gets loaded (two entry points, one shared path) | `app.js` | `fileInput`'s `change` listener AND the document-level `paste` listener both just resolve a `File`/`Blob` and hand it to the same `loadImageFile(f)` — add a third input source (e.g. drag-and-drop) the same way rather than duplicating the `FileReader`/`Image` logic. The paste listener only acts while `#tab-sprites` is the visible panel, and silently no-ops if the clipboard has no `image/*` item (e.g. pasted text) |
 | "+ Nueva" animation-name entry — a dropdown of not-yet-used canonical names plus "Personalizado…", not free text, so a canonical name can't be mistyped; the free-text field is for genuinely game-specific extras (e.g. `Attack2`) | `app.js` | `openNewLaneModal()`, `syncNewLaneCustomVisibility()`, `confirmNewLane()`; markup in `index.html`'s `#newLaneOverlay` |
-| "Animaciones automáticas" — clusters the CURRENT (already detected/manually-edited) unassigned boxes into rows via `clusterIntoRows`, not a fresh grid; every row's dropdown always offers ALL of `CANONICAL_ANIMATION_NAMES` (creating the lane at confirm time if it doesn't exist yet, with the exact canonical spelling) plus any custom lane already made | `app.js` | `openAutoAssignPanel()`, `buildAutoAssignLaneOptions()`, `renderAutoAssignRows()`, `confirmAutoAssign()` — assignment itself goes through the same `Lanes.assignBoxesToLane` the manual "Asignar" button uses; a canonical name with no lane yet is encoded as an option value prefixed `NEW_CANONICAL_LANE_PREFIX`, resolved into a real `Lanes.createLane` call in `confirmAutoAssign()` |
-| Default row→lane mapping when there are exactly 5 rows | `app.js` | `DEFAULT_LANE_NAMES` order, applied in `renderAutoAssignRows()` (matched by each `<option>`'s `data-name`, not by an existing lane's id, since the option may not have a lane yet) |
+| "Animaciones automáticas" — clusters the CURRENT (already detected/manually-edited) unassigned boxes into rows via `clusterIntoRows`, not a fresh grid; every row's dropdown always offers ALL of the CURRENT KIND's canonical names (`app.js`'s `canonicalLaneNames()`) (creating the lane at confirm time if it doesn't exist yet, with the exact canonical spelling) plus any custom lane already made | `app.js` | `openAutoAssignPanel()`, `buildAutoAssignLaneOptions()`, `renderAutoAssignRows()`, `confirmAutoAssign()` — assignment itself goes through the same `Lanes.assignBoxesToLane` the manual "Asignar" button uses; a canonical name with no lane yet is encoded as an option value prefixed `NEW_CANONICAL_LANE_PREFIX`, resolved into a real `Lanes.createLane` call in `confirmAutoAssign()` |
+| Default row→lane mapping when the row count matches the current kind's default-lane count | `app.js` | `defaultLaneNames()` order, applied in `renderAutoAssignRows()` (matched by each `<option>`'s `data-name`, not by an existing lane's id, since the option may not have a lane yet) |
 | Zoom-to-cursor math, min/max zoom | `modules/canvas-view.js` | `CanvasView._onWheel`, `minScale`/`maxScale` fields |
 | Middle-mouse pan | `modules/canvas-view.js` | `CanvasView._onMouseDown` / `_onMouseMove` |
 | Initial "fit sheet to view" framing on image load | `modules/canvas-view.js` | `CanvasView.frameToFit()` |
@@ -37,14 +38,16 @@ module's responsibility shifts, update its row in the same change.
 | An animation's "fires a projectile" link | `modules/animation-lanes.js` | `setProjectileLink(lane, projLanes, enabled)` |
 | Deleting multiple boxes at once (keeps every lane's indices consistent) | `modules/animation-lanes.js` | `removeBoxes(boxes, lanes, indices)` |
 | Cropping a box to pixels / a data URL (used by thumbnails AND export) | `modules/export-manifest.js` | `cropBox`, `cropToDataURL` |
-| manifest.json shape / zip folder layout | `modules/export-manifest.js` | `populateSpriteZip({enemyName, lanes, boxes, source})` fills an existing JSZip and returns the manifest; `buildExportZip({...}, JSZip)` wraps it into a fresh zip + blob for the plain export — **coordinate with the Unity-side importer (`Assets/Editor/EnemyImporter.cs`) before changing field names or folder structure** |
+| Which library entries travel INSIDE an enemy's combined bundle (`Library/<libraryId>/`), so importing the enemy alone materializes its projectile | `modules/enemy-bundle.js` | `embedReferencedLibraryEntries()` — **coordinate with `CombinedBundleImporter.LiftEmbeddedLibraryEntries` and `FxPrefabBuilder` on the Unity side** |
+| The Enemy Creator's "projectile art from the library" picker (exports `tuning.projectile.libraryId`) | `modules/enemy-form.js` | `renderProjectileLibraryRow()` |
+| manifest.json shape / zip folder layout | `modules/export-manifest.js` | `populateSpriteZip({enemyName, kind, lanes, boxes, source})` (`kind` is emitted into the manifest; `enemyName` keeps its name for every kind because that is the key `EnemyImporter.cs` reads) fills an existing JSZip and returns the manifest; `buildExportZip({...}, JSZip)` wraps it into a fresh zip + blob for the plain export — **coordinate with the Unity-side importer (`Assets/Editor/EnemyImporter.cs`) before changing field names or folder structure** |
 | Triggering the actual file download | `modules/export-manifest.js` | `downloadBlob(blob, filename)` |
-| The shared, persistent (IndexedDB) enemy library — save/list/get/delete/update | `modules/enemy-library.js` | `saveEnemy`, `listEnemies`, `getEnemy`, `deleteEnemy`, `updateEnemy` — see "Shared enemy library" below |
+| The shared, persistent (IndexedDB) entry library — save/list/get/delete/update, for every kind | `modules/enemy-library.js` | `saveEnemy`, `listEnemies` (all kinds), `listEntries(kind)` (one kind, or all when null), `getEnemy`, `deleteEnemy`, `updateEnemy`, `entryName` — see "Shared entry library" below |
 | Decoding a saved sheet snapshot back into an `Image`, building a card thumbnail | `modules/enemy-library.js` | `loadImageFromDataURL(dataURL)`, `buildThumbnail(source)` |
 | Rendering a library card grid (thumbnail/name/date/badges + caller-supplied action buttons) | `modules/library-panel.js` | `renderLibraryCards(container, {getActions, fetchEntries, getTitle, getBadges, emptyMessage})` — the ONE implementation shared by the Sprites-tab panel, the Biblioteca tab, and the Map Tracer tab's maps/pieces lists; defaults reproduce the original enemy-library-only behavior, so only `getActions` (and, for non-enemy entries, `fetchEntries`/`getTitle`/`getBadges`) differ per call site (`app.js`) |
 | Building the combined sprites+config zip (`manifest.json` + PNGs + `enemy-config.json` at root) | `modules/enemy-bundle.js` | `buildCombinedBundle({enemyName, sprite, configObj})` |
 | The "app.js failed to load" fallback banner (e.g. opened via `file://` instead of a server) | `index.html` | the inline classic `<script>` right before `<script type="module" src="app.js">`, and `#moduleFailBanner` in the CSS/HTML |
-| Tab switching (Sprites / Enemy Creator / Biblioteca / Map Tracer) | `app.js` | top-of-file `.tabBtn` click wiring |
+| Tab switching (Sprites / Enemy Creator / Proyectil-VFX / Boss Creator / Biblioteca / Map Tracer) | `app.js` | top-of-file `.tabBtn` click wiring; `creatorFor(kind)` maps a kind to its creator-tab API via `KINDS[kind].creator` |
 | Detect-vs-grid sidebar mode switch | `app.js` | `setSpriteMode(next)` |
 | Canvas box click/drag/resize/create interaction | `app.js` | `canvas` `mousedown`/`mousemove`/`mouseup` listeners, `hitTestHandle`, `getPos` |
 | Box multi-select rules (click / ctrl+click / shift-range) | `app.js` | `applySelectionClick(i, ctrlKey, shiftKey)` — shared by the canvas and the unsorted grid |
@@ -64,8 +67,8 @@ beyond the current session; boss/map/player config are out of scope.
 
 | To change... | Edit | Function |
 |---|---|---|
-| Which schema files are loaded / how Ajv is set up (draft-07, cross-file `$ref`s) | `modules/enemy-config-schema.js` | `loadEnemyConfigValidator()` |
-| Running the live validator against a built config, turning Ajv errors into `{path, message}` | `modules/enemy-config-schema.js` | `validateEnemyConfig(validate, doc)` |
+| Which schema files are loaded / how Ajv is set up (draft-07, cross-file `$ref`s), for **every** creator tab | `modules/config-schema.js` | `loadValidator(name)` (`'enemy'`/`'fx'`/`'boss'`/`'projectile'`), `validateConfig(validate, doc)` — **one shared Ajv instance**, because a `$ref` only resolves against schemas registered in the same instance and registering `_shared` twice in one instance throws |
+| The Enemy Creator's own entry point into that registry (thin wrappers, same names as before) | `modules/enemy-config-schema.js` | `loadEnemyConfigValidator()`, `validateEnemyConfig` |
 | A schema default the form pre-fills (must match `docs/schemas/*.json`'s own `"default"` keys) | `modules/enemy-defaults.js` | `createDefaultEnemyConfig()`, `createDefaultEnemyTuning()`, `createDefaultProjectileSpec()` |
 | Turning live form state into the actual exportable/validatable JSON (omitting empty optional refs, folding in the projectile toggle) | `modules/enemy-export.js` | `buildExportObject(state)` |
 | A generic input widget (text/number/bool/enum/vector2/color/layerMask/assetRef) | `modules/enemy-form-fields.js` | one `xField({...})` builder per JSON-Schema type — schema-agnostic, reused by every field |
@@ -83,7 +86,219 @@ beyond the current session; boss/map/player config are out of scope.
 | Enemy Creator layout / colors | `styles.css` | the `Enemy Creator tab` block (`.ef*` classes) |
 | Enemy Creator page structure (form/preview panels) | `index.html` | `#tab-enemy` — containers only, `enemy-form.js` populates `#enemyFormRoot` |
 
-### Shared enemy library (Sprites ↔ Enemy Creator ↔ Biblioteca)
+### Projectile/FX Creator tab
+
+Authors an **FxConfig** (`docs/schemas/fx-config.schema.json`) — a projectile or a VFX as its own
+reusable library entity, instead of its numbers only existing nested inside whichever enemy throws
+it. Built as a near-mirror of the Enemy Creator (same widgets, same "Desde biblioteca" picker, same
+live Ajv preview, same two export buttons); what differs is a much smaller document plus a `kind`
+switch that hides the projectile-only half.
+
+**The entry and its config are ONE record.** A projectile authored in the Sprites tab is already a
+`kind:'projectile'` library record; this tab fills in that same record's `config`, exactly as Enemy
+Creator fills in an enemy record's. That is what "selectable elsewhere by `libraryId`" means with no
+second storage system — the id an EnemyConfig's `tuning.projectile.libraryId` already points at is
+the id that now also carries the tuning.
+
+| To change... | Edit | Function |
+|---|---|---|
+| Which FxConfig field maps to which widget, the kind switch, the art picker | `modules/fx-form.js` | `initFxCreator()`, `PROJECTILE_SPEC_FIELDS`, `applyKind()`, `refreshArtOptions()` |
+| Reopening a saved entry's config into the form (and from Biblioteca's "Editar en…") | `modules/fx-form.js` | `adoptConfig()`, exposed `linkLibraryEntry(id, name, kind)` |
+| A schema default the form pre-fills, and the movement-mode dropdown's list/wording | `modules/fx-defaults.js` | `createDefaultFxConfig()`, `MOVEMENT_MODES` — the ProjectileSpec half is `enemy-defaults.js`'s `createDefaultProjectileSpec()`, **not** a second copy |
+| Form state → exportable JSON (drops `projectile` for kind `fx`, drops the spec's art keys) | `modules/fx-export.js` | `buildFxExportObject(state)` |
+| Page structure / layout | `index.html` (`#tab-fx`) / `styles.css` | containers only; reuses the `.ef*` widget styles |
+
+**`damage` / `count` are deliberately absent** from the tuning block, and the form says so on
+screen. `ProjectileSpec` has neither: damage is a per-shot argument the attacker supplies
+(`EnemyAttack.Shoot` passes `tuning.attackDamage` into `ProjectileFactory.Spawn`), and how many
+projectiles a volley fires is the *attack's* shape (`BulletHellAttack`'s pattern, the weapon
+system's `ShapeModifier`). Adding either here would produce a value silently overwritten on every
+single shot — see `projectile-config.schema.json`'s own "SCOPE CORRECTION" note.
+
+**Movement modes are declared ahead of their behaviour.** `movement` takes `Straight` (implemented)
+plus `Homing`/`Boomerang`/`Bounce`/`SplitOnImpact` (not). `FxPrefabBuilder` stamps the chosen mode
+onto the built prefab as a `RedMagic.Gameplay.ProjectileMovementPlaceholder`, so shipping a real
+mover later is adding a component that reads that field — no schema change, no re-export of
+existing entries, no importer rework. See "Placeholder movement (Unity side)" below.
+
+### Boss Creator tab
+
+Assembles a **BossConfig** (`docs/schemas/boss-config.schema.json`) — a base enemy, a library of
+attacks, and the phases that draw from it — and saves it to the shared library as a `kind:'boss'`
+record. **Web-only**: nothing imports this into Unity yet (that is future work, until boss 2 has
+art), so everything here is shaped to match what `BossDefinition`/`BossPhase`/`BossAttack` already
+are — which is exactly what the schema mirrors — never to match an importer that does not exist.
+
+Unlike the other two creator tabs it authors two nested **lists** whose lengths the user controls,
+so it is not table-driven: the form is two card lists rebuilt from state on every *structural*
+change, with the generic widgets inside each card. Scalar edits mutate state in place and only
+refresh the preview — a full rebuild on every keystroke would lose focus mid-typing.
+
+| To change... | Edit | Function |
+|---|---|---|
+| The starter list of attack "slots" offered in the type dropdown | `modules/boss-defaults.js` | `ATTACK_SLOTS` — a picker convenience, **not** a registry (the schema's "OPEN ARCHETYPE SET" note is why); `projectile: true` marks the subclasses that actually carry an embedded `ProjectileSpec` |
+| Default values for a new attack / phase / document | `modules/boss-defaults.js` | `createDefaultAttack()`, `createDefaultPhase(i)`, `createDefaultBossConfig()` |
+| The attack cards, the phase cards and the per-phase deck checkboxes | `modules/boss-form.js` | `renderAttacks()`, `renderPhases()` |
+| The base-enemy picker and the per-attack projectile picker | `modules/boss-form.js` | `refreshBaseOptions()`, `refreshProjectileOptions()` |
+| Saving to / reopening from the library | `modules/boss-form.js` | `saveBtn` handler, `adoptConfig()`, `linkLibraryEntry(id)` |
+| Form state → exportable JSON (attacks array → keyed object, `params.projectile.libraryId`) | `modules/boss-export.js` | `buildBossExportObject(state)` |
+| Page structure / layout | `index.html` (`#tab-boss`) / `styles.css` | the `.bc*` classes — the only markup the other creator tabs don't already have |
+
+Two shape translations live in `boss-export.js` and are worth knowing before changing either side:
+
+- **`attacks` is an array in the form and an object keyed by local id in the document.**
+  `BossPhase.attacks` is an array of *references* to shared `BossAttack` assets; the same asset
+  legitimately sits in several decks or in none, so inlining per deck would create duplicate assets
+  and break that sharing.
+- **`projectileLibraryId` is flat on the form and lands in `params.projectile.libraryId`.** `params`
+  is the subclass-specific half the schema leaves open, and `projectile` is a real serialized field
+  on `BulletHellAttack`/`OrbRingAttack`. `BossConfigImporter.WriteField` already detects a
+  `ProjectileSpec`-typed property there and hands it to `ProjectileConfigImporter.Resolve`, which
+  already resolves `libraryId` through `FxPrefabBuilder` — so this rides the exact path an enemy's
+  projectile rides, with **no importer change**. Anywhere else would have needed one.
+
+Two additive keys were added to `boss-config.schema.json` for this: **`kind`** (pinned `"boss"`,
+same role as EnemyConfig's) and **`base`** (`{enemyLibraryId, enemyName}`, importer-only, maps to
+nothing on `BossDefinition`). `BossConfigImporter` reads only `displayName`/`attacks`/`phases` and
+ignores unknown root keys, so a BossConfig written before these existed still imports unchanged.
+
+### Entry kinds (enemy / projectile / fx / boss)
+
+Every library entry has a **`kind`** — `enemy` (default), `projectile`, `fx` or `boss` — defined
+once in `modules/entry-kinds.js`. The Sprites tab's pipeline (background removal, detect/grid
+slicing, box editing, cropping, zip building) is entirely generic and is **shared unchanged** by the
+three sheet kinds; the kind only decides:
+
+| | `enemy` | `projectile` | `fx` | `boss` |
+|---|---|---|---|---|
+| Owns a sprite sheet (`sheet`) | yes | yes | yes | **no** |
+| Canonical lanes | Idle / Walk / Attack / Hurt / Death / Wake | Awake / Move / Impact | Spawn / Loop / End | — |
+| Pre-created on load | all but `Wake` | `Move`, `Impact` (`Awake` optional) | all three | — |
+| Projectile lanes (`Projectiles/` in the zip) | yes | no | no | no |
+| Creator tab (`creator`) | Enemy Creator | Proyectil/VFX | Proyectil/VFX | Boss Creator |
+| Config file in a bundle (`configFile`) | `enemy-config.json` | `fx-config.json` | `fx-config.json` | `boss-config.json` |
+
+**`boss` is the one kind with no sheet of its own.** A boss is assembled, not drawn: it names an
+existing enemy entry as its body/stat baseline (`base.enemyLibraryId`) and its own content is decks
+of attacks and the phases that draw from them. `sheet: false` is what keeps it out of the Sprites
+tab's type selector (`SHEET_KIND_IDS`) — offering "author a boss sheet" there would produce an entry
+whose lanes nothing reads — and it is what gates every sprite-shaped action in the Biblioteca tab
+(Cargar en Sprites / Exportar zip / Exportar combinado), since a boss record has no `sprite` block
+for them to read.
+
+The lane sets are what each kind's Unity consumer actually needs: the enemy one is
+`EnemyAnimation.cs`'s fixed vocabulary; the projectile triad mirrors the shape the project already
+ships by hand for the Árbol Ancestral's orb (`Orbe_Idle`/`Orbe_Move`/`Orbe_Impact`); the fx triad
+covers both a one-shot (a single `Spawn` lane, loop off — what `VfxOneShot`/`SpriteFlipbook(oneShot)`
+consume) and a sustained effect (all three, as named states for `Pipeline.SpriteStateMachine`). A
+lane with no frames is skipped by `populateSpriteZip`, so pre-creating all three costs nothing.
+
+**Where it is chosen**: the "4. Qué es" `<select>` in the Sprites sidebar (`#entryKindSelect`,
+`app.js`'s `setKind()`/`applyKindToUi()`). Switching kind rebuilds the default lanes — that being
+the whole point of the kind — so it confirms first when frames are already assigned, and
+un-assigns rather than deletes the boxes (detection + hand editing is the expensive part and is
+kind-agnostic). Loading a saved entry adopts **that entry's** kind instead.
+
+**Where it goes**: `kind` is written into the saved record, into `manifest.json`, and into every
+exported config (schema: `_shared.schema.json#/definitions/entryKind`, pinned to `"enemy"` by
+`enemy-config.schema.json` and to `"boss"` by `boss-config.schema.json`, narrowed to
+`projectile`/`fx` by `fx-config.schema.json`). It is **additive** — `enemyName` keeps its name and
+position in the manifest for every kind, because that is the key `Assets/Editor/EnemyImporter.cs`
+reads, and an absent `kind` means `enemy` so every bundle exported before this field existed still
+imports identically.
+
+### Adding one animation at a time to an already-saved entry (Sprites tab)
+
+Sprites now get generated **one animation per image** (its own upload, its own bg-removal/despill
+pass, its own detect-or-grid slice into a single lane), arriving separately over time, instead of
+one grid sheet holding every lane at once. "💾 Guardar como enemigo" already only required ONE
+lane to have frames (`hasAnim`), so authoring a brand-new entry with just its `Idle` lane already
+worked. The one real gap was **adding a second animation, from a different image, to an entry
+that's already saved** — the old save always overwrote the entry's whole `sprite` (one shared
+sheet + box pool), so re-saving with only this session's new lane would have wiped every
+previously-saved animation that isn't in THIS session.
+
+**"➕ Añadir a enemigo existente"** (next to "💾 Guardar como enemigo") fixes exactly that, by
+**compositing** rather than overwriting: it loads the target entry's existing sheet image (if it
+has one), stacks the current session's (bg-removed/despilled) image below it on a taller canvas,
+offsets the current session's box coordinates to match, and merges lanes — a lane whose name
+matches one already on the target REPLACES it (old frames dropped, new ones take over); every
+other lane the target already had is untouched, unmoved, and still points at the same pixels. The
+result is saved back through the exact same `{lanes, boxes, sourceDataURL, width, height}` shape
+every other part of the app already reads — `populateSpriteZip`, the Biblioteca tab, thumbnails —
+so nothing downstream needed to change or learn a second data shape.
+
+| To change... | Edit | Function |
+|---|---|---|
+| The target picker + button | `index.html` / `app.js` | `#addToExistingSelect`/`#addToExistingBtn` in the Sprites sidebar; `app.js`'s "Añadir a enemigo existente" section |
+| The composite-and-merge algorithm (stack images, offset boxes, replace same-named lanes) | `app.js` | `mergeSessionIntoEntry(targetSprite)` |
+
+Because the merge always lands back in the ONE shape the rest of the app already understands,
+there is no "legacy vs new" split to track and no export/import path that needs updating — a
+`sourceDataURL` growing by composition is just a bigger version of the same sheet the app has
+always saved.
+
+### Placeholder movement (Unity side)
+
+`RedMagic.Gameplay.ProjectileMovementPlaceholder` (`Assets/Scripts/Gameplay/`) is stamped onto every
+projectile prefab `FxPrefabBuilder` builds. It does exactly two things:
+
+1. **Carries the movement mode** the FxConfig asked for (`Mode`, the same enum member names as
+   `fx-config.schema.json#/definitions/movementMode`, written by name and never by ordinal). It is
+   the *data*, not the behaviour — when `BoomerangMovement` / `BounceMovement` / `SplitOnImpact`
+   exist, each reads this field (or replaces this component outright), and shipping one is swapping
+   a component, not re-exporting configs or touching the importer.
+2. **Flies straight and despawns when nobody launched it** — i.e. when the prefab is dropped into a
+   scene and you hit Play. That is the standalone check it exists for: that the projectile built
+   from the web tab came out right, moves, and returns to the pool, without building an enemy to
+   fire it.
+
+The moment something really launches it (`ProjectileFactory.Spawn` → `Projectile.Launch`) it steps
+aside and never touches anything: it detects that by waiting one frame and checking whether the
+`Rigidbody2D` carries velocity (`Launch` writes it synchronously right after `PrefabPool.Spawn`).
+When it *does* drive, it disables the `Projectile` component so the two lifetime timers can't race,
+and re-enables it in `OnDisable` so the pooled instance goes back unchanged. **It still carries no
+tuning**: what flies in game is the shooter's own `ProjectileSpec`
+(`EnemyStats ▸ Tuning ▸ projectile`), because the factory rewrites the prefab on every shot.
+
+`FxPrefabBuilder` gets the mode from an **optional `fx-config.json` sitting next to `manifest.json`**
+in the entry's source folder (`FxPrefabBuilder.ReadMovementPreview`). Optional by design: a folder
+without one builds exactly as it did before this existed. Routing it through the folder rather than
+through the callers means the lazy path (an enemy referencing a projectile by `libraryId`) picks it
+up for free — `CombinedBundleImporter.LiftEmbeddedLibraryEntries` and `FxBundleImporter` both copy
+whole folders, so the config travels with the frames either way, and no call signature changed.
+
+### Projectile art by library id (web ↔ Unity lazy build)
+
+An enemy's `tuning.projectile` can name its art two ways, and the difference is where the prefab
+comes from:
+
+- **`prefab`** — a path to a prefab already in the Unity project. Unchanged, original behaviour.
+- **`libraryId`** — the id of a `projectile`-kind entry in this library. Unity builds (or reuses)
+  that entry's pooled prefab **at import time** and writes it into `ProjectileSpec.prefab`.
+
+The picker for the second one is the "Arte desde biblioteca" row at the top of the Enemy Creator's
+inline projectile sub-form (`renderProjectileLibraryRow()` in `modules/enemy-form.js`), which lists
+`listEntries('projectile')`. Leaving it on "(ninguno)" is exactly the old behaviour.
+
+**What makes it lazy rather than a two-step import**: `buildCombinedBundle` walks the config it is
+about to write and, for every referenced `libraryId`, writes that entry's own `manifest.json` +
+frames (+ its own `fx-config.json`, if it has one) into `Library/<libraryId>/` inside the same zip
+(`embedReferencedLibraryEntries()`, which collects the ids via `referencedLibraryIds(configObj)` —
+`tuning.projectile.libraryId` for an enemy, `base.enemyLibraryId` plus every
+`attacks.<id>.params.projectile.libraryId` for a boss, deduplicated). So the enemy's
+bundle physically carries its projectile's art, and importing the enemy alone is enough —
+`ProjectileConfigImporter` → `FxPrefabBuilder.BuildOrGetProjectilePrefab(libraryId)` finds the
+frames already on disk. Unity's `CombinedBundleImporter` lifts those `Library/<id>/` folders out to
+the shared `Assets/Art/WebLibrary/<kind>/<id>/` before importing the enemy, because a projectile can
+be shared by two enemies and must not be deleted along with either one.
+
+`manifest.json` therefore carries **`libraryId`** too (additive, alongside `kind`): it is what lets
+Unity find an entry's source folder by id instead of by folder name, so renaming a folder — or the
+entry — never orphans it. Both fields are optional on the Unity side; a manifest without them reads
+exactly as it did before.
+
+### Shared entry library (Sprites ↔ the three Creator tabs ↔ Biblioteca)
 
 **Why it exists**: the Enemy Creator's `art` field used to assume a sheet had already been
 imported into Unity in a separate prior step. The real workflow is building sprites and config
@@ -92,22 +307,33 @@ together in one session — so sprite authoring state now persists in the browse
 a generated `id`) and both tabs read/write the same records. Survives a page reload and a browser
 restart; each browser profile has its own copy (nothing is synced anywhere).
 
-**Record shape** (one per enemy):
+Records of all four kinds live in the **same** store. `listEntries(kind)` filters (in JS — this
+library holds tens of entries, not thousands, and an index would have needed a store migration);
+`listEnemies()` still returns everything. A record written before kinds existed has no `kind` field
+and is normalized to `'enemy'` **on read** (`normalizeRecord`), not by a stored migration that
+would have to rewrite every record on first load — so the DB version stays at 1 and old enemies
+never drop out of a filter.
+
+**Record shape** (one per entry):
 
 ```
 {
   id: string,                // uuid
-  enemyName: string,
+  kind: 'enemy'|'projectile'|'fx'|'boss',  // absent on pre-kind records -> normalized to 'enemy' on read
+  enemyName: string,         // the display name for EVERY kind — NOT renamed, see "Where it goes" above
   createdAt, updatedAt: number,   // epoch ms
-  thumbnail: string|null,    // small dataURL for the library cards
-  sprite: {
+  thumbnail: string|null,    // small dataURL for the library cards. A boss borrows its BASE enemy's
+                             // thumbnail; null renders as an empty dashed tile, never a broken <img>.
+  sprite: {                  // NULL for kind 'boss' — it owns no frames (KINDS.boss.sheet === false)
     lanes: [...],             // same shape as app.js's `lanes` — see "Data model" below
     boxes: [...],             // same shape as app.js's `boxes`
     sourceDataURL: string,    // the FULL sheet (post-bg-removal, if that was run) as a PNG dataURL
     width, height: number,
   },
-  config: object|null,        // the last EnemyConfig export object built against this entry, or
-                               // null until Enemy Creator has exported at least once while linked
+  config: object|null,        // the last config export object built against this entry — an
+                               // EnemyConfig / FxConfig / BossConfig depending on `kind` — or null
+                               // until that kind's Creator tab has exported (or saved) once. A boss
+                               // record is config-only: it is CREATED by that save, not by Sprites.
 }
 ```
 
@@ -117,16 +343,20 @@ from a source canvas on demand; reloading `sourceDataURL` into an `Image` reprod
 source canvas, so re-exporting a saved entry crops identically to exporting it live never having
 left the Sprites tab.
 
-**Sprites tab**: "💾 Guardar como enemigo" writes the current `lanes`/`boxes`/sheet snapshot as a
+**Sprites tab**: the save button (labelled per kind — "💾 Guardar como enemigo/proyectil/VFX") writes the current `lanes`/`boxes`/sheet snapshot as a
 record (`app.js`'s `currentLibraryId` tracks which record the currently-loaded sheet came from, so
 re-saving updates it in place instead of duplicating it — reset to `null` only on loading a brand
-new image file). The "Enemigos guardados" panel below it (`#spritesLibraryList`,
-`renderSpritesLibraryList()`) lists every record with Cargar (reopens for editing — replaces
+new image file). The saved-entries panel below it (`#spritesLibraryList`, `renderSpritesLibraryList()`)
+lists the records **of the currently selected kind only** — it is a "pick up where I left off"
+shortcut for this sheet's kind, and its Cargar would otherwise switch kinds out from under the
+tab; the Biblioteca tab is where every kind is browsed together — with Cargar (reopens for editing — replaces
 `img`/`boxes`/`lanes` and rebinds `currentLibraryId`) / Exportar zip (existing sprite-only format,
 unchanged) / Eliminar.
 
 **Enemy Creator tab**: the `art` field is a mode switch. **"Desde biblioteca"** (default) is a
-dropdown of every saved record; picking one sets `state.artLibraryId` (the config draft links to
+dropdown of every saved record **of kind `enemy`** (`listEntries('enemy')` — a projectile/VFX sheet
+is a valid entry but not a valid `art` for an enemy: `EnemyFactory` reads that sheet for the
+enemy's own body clips and its thrown prop, neither of which those sheets have); picking one sets `state.artLibraryId` (the config draft links to
 that record by id — it does not copy or duplicate its sprite data) and pre-fills `enemyName` if
 still empty. The exported `art` string in this mode is computed
 (`modules/enemy-export.js`'s `libraryArtPath()`) as
@@ -147,11 +377,29 @@ Either export also persists the built config object onto the library record
 is what lets the Biblioteca tab offer "Exportar combinado" for that entry afterward without the
 form needing to be refilled.
 
-**Biblioteca tab** (`#tab-library`, `renderLibraryTab()` in `app.js`): every saved record in one
-place, reusing `modules/library-panel.js`'s card renderer with the full action set — Cargar en
-Sprites, Editar en Enemy Creator (switches tab and calls `enemyCreator.linkLibraryEntry(id,
-enemyName)`), Exportar zip, Exportar combinado (disabled until the record has a linked `config`),
-Eliminar.
+**Projectile/FX Creator tab**: same shape, one level simpler — the art picker *is* the link, so
+there is no mode switch. Picking an entry sets `state.libraryId`, and every export
+(`persistConfigToLibrary`) writes the built FxConfig onto **that same record**, which is what makes
+it show up in Biblioteca with a `config` badge. See the tab's own section above.
+
+**Boss Creator tab**: the only tab that **creates** a record rather than filling one in. A boss has
+no sheet, so there is nothing for the Sprites tab to have saved first: "💾 Guardar jefe en
+biblioteca" calls `saveEnemy({kind:'boss', sprite: null, config: exportObj})` the first time and
+`updateEnemy(id, …)` after that (the tab's own `currentBossId`, same role as `app.js`'s
+`currentLibraryId`).
+
+**Biblioteca tab** (`#tab-library`, `renderLibraryTab()` in `app.js`): every saved record of every
+kind in one place, behind a kind filter bar (`#libraryFilterBar`, `renderLibraryFilterBar()`, built
+from `KIND_IDS` — Todo / Enemigos / Proyectiles / VFX / Jefes), reusing
+`modules/library-panel.js`'s card renderer with the full action set — Cargar en Sprites, **Editar
+en …** (`editActionFor(entry)`, which reads `KINDS[kind].creator` to pick both the label and the
+tab to switch to, then calls that creator's `linkLibraryEntry`), Exportar zip, Exportar combinado,
+Exportar config, Eliminar. Actions that don't apply are **disabled with an explanatory tooltip**
+rather than hidden — a missing button reads as a bug, a disabled one explains the model — and the
+three sprite-shaped ones are gated on `KINDS[kind].sheet`, so a boss card can't reach code that
+would read a `sprite` block it doesn't have. Each card badges its kind first (and, for a boss, its
+attack/phase counts instead of an always-zero animation count), so a mixed "Todo" listing is
+readable without opening anything.
 
 ### Map Tracer tab
 

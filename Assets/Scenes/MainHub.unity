@@ -1190,6 +1190,63 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1001 &1057554499
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 10275106911080464, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 13.588219
+      objectReference: {fileID: 0}
+    - target: {fileID: 10275106911080464, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -5.572627
+      objectReference: {fileID: 0}
+    - target: {fileID: 10275106911080464, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 10275106911080464, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 10275106911080464, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 10275106911080464, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 10275106911080464, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 10275106911080464, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 10275106911080464, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 10275106911080464, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5058070711598846378, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
+      propertyPath: m_Name
+      value: Enemy_TurtleWithShoot
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a1dcc06d70f2b6e46805bb4dd1ab3af4, type: 3}
 --- !u!1 &1072282197
 GameObject:
   m_ObjectHideFlags: 0
@@ -2229,3 +2286,4 @@ SceneRoots:
   - {fileID: 354840229}
   - {fileID: 1073507471}
   - {fileID: 785420147}
+  - {fileID: 1057554499}

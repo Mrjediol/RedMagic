@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 126b098e637f3e246bc8c7945717c3f9, type: 3}
+  m_Name: Bear.enemy
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.EnemyRecipe
+  enemyName: Bear
+  art: {fileID: 11400000, guid: 0b9f19a6a742ff24792f47858c9bd95e, type: 2}
+  prefabFolder: Assets/Prefabs/Enemies
+  spriteScale: 1
+  colliderSize: {x: 0, y: 0}
+  colliderOffset: {x: 0, y: 0}
+  sortingOrder: 5
+  tag: Untagged
+  tuning:
+    archetype: 2
+    staticAttack: 1
+    maxHealth: 30
+    invulnerabilityDuration: 0
+    hurtSfxId: 
+    deathSfxId: 
+    knockbackHorizontal: 6
+    knockbackVertical: 3
+    knockbackDuration: 0.18
+    knockbackResistance: 0
+    detectionRange: 8
+    loseInterestGrace: 1
+    attackRange: 6
+    personalSpace: 3
+    retreatReleaseFactor: 1.35
+    verticalTolerance: 3
+    moveSpeed: 2.5
+    retreatSpeed: 2.5
+    stopAtLedges: 1
+    ledgeProbeDepth: 0.6
+    gravityScale: 3
+    sleepsUntilDetected: 0
+    hoverOffset: 0.5
+    attackDamage: 10
+    attackCooldown: 1.8
+    attackKnockbackMultiplier: 1
+    attackReleaseFallback: 0.25
+    rootedWhileAttacking: 1
+    meleeHitboxSize: {x: 1.2, y: 1}
+    meleeHitboxOffset: {x: 0.8, y: 0.5}
+    selfDestruct: 0
+    explosionRadius: 1.7
+    explosionShake: 0.2
+    projectile:
+      prefab: {fileID: 6032421100844184569, guid: 37036ea01a01b4f41bc46097a34ddc80, type: 3}
+      speed: 12
+      lifetime: 2.5
+      size: {x: 0.35, y: 0.35}
+      muzzleOffset: {x: 0.7, y: 1}
+      pierce: 0
+      homingTurnRate: 0
+      homingRange: 9
+      arcGravity: 0
+      impactRadius: 0
+      impactDamage: 0
+    aimAtTarget: 1
+    projectileSprite: {fileID: 0}
+    projectileTint: {r: 1, g: 1, b: 1, a: 1}
+    contactDamage: 0
+    contactDamageCooldown: 1
+    contactKnockbackMultiplier: 1
+    idleAnimSpeed: 1
+    moveAnimSpeed: 1
+    attackAnimSpeed: 1
+    hurtAnimSpeed: 1
+    deathAnimSpeed: 1
+    wakeAnimSpeed: 1
+    targetTag: Player
+    hitLayers:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    obstacleLayers:
+      serializedVersion: 2
+      m_Bits: 320
+  projectilePropState: Attack
+  projectileScale: 1
+  tier: 0

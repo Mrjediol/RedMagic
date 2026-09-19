@@ -16,7 +16,7 @@
             <ui:VisualElement name="movePad" class="touch-cluster touch-cluster--left" picking-mode="Ignore">
                 <ui:Button name="leftButton" text="&lt;" class="touch-button" />
                 <ui:Button name="rightButton" text="&gt;" class="touch-button" />
-                <ui:Button name="crouchButton" text="AGACHAR" class="touch-button touch-button--crouch" />
+                <ui:Button name="downButton" text="ABAJO" class="touch-button touch-button--down" />
                 <ui:Button name="dashButton" text="DASH" class="touch-button touch-button--dash" />
             </ui:VisualElement>
 

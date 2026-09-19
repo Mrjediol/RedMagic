@@ -1,5 +1,6 @@
 {
   "enemyName": "HadaEle",
+  "kind": "enemy",
   "animations": [
     {
       "name": "Idle",
@@ -37,5 +38,6 @@
       "projectile": null
     }
   ],
-  "projectiles": []
+  "projectiles": [],
+  "libraryId": "d5e90689-7221-4b63-88d9-8354c1bd77e0"
 }

@@ -1,5 +1,6 @@
 using RedMagic.Audio;
 using RedMagic.Core;
+using RedMagic.Gameplay;
 using RedMagic.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -40,6 +41,7 @@ namespace RedMagic.Hub
 
         private InputAction _interactAction;
         private bool _playerInRange;
+        private PlayerAnimator _playerAnimator;
 
         private void Reset()
         {
@@ -92,6 +94,8 @@ namespace RedMagic.Hub
         /// <summary>Usa el espejo. Público para poder llamarlo desde un botón táctil o un evento.</summary>
         public void Interact()
         {
+            if (_playerAnimator != null) _playerAnimator.TriggerInteract();
+
             if (animator != null && !string.IsNullOrWhiteSpace(interactTrigger)) animator.SetTrigger(interactTrigger);
 
             if (!string.IsNullOrWhiteSpace(useSfxId) && AudioManager.Instance != null)
@@ -126,6 +130,7 @@ namespace RedMagic.Hub
             if (!other.CompareTag(playerTag)) return;
 
             _playerInRange = true;
+            _playerAnimator = other.GetComponentInParent<PlayerAnimator>();
             InteractionPromptUi.Show(this, "Pulsa [Interactuar] para usar el espejo");
         }
 
@@ -134,6 +139,7 @@ namespace RedMagic.Hub
             if (!other.CompareTag(playerTag)) return;
 
             _playerInRange = false;
+            _playerAnimator = null;
             InteractionPromptUi.Hide(this);
         }
 

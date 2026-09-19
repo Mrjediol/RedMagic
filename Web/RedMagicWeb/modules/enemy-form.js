@@ -15,7 +15,7 @@ import { createDefaultEnemyConfig, createDefaultProjectileSpec } from './enemy-d
 import { buildExportObject } from './enemy-export.js';
 import { loadEnemyConfigValidator, validateEnemyConfig } from './enemy-config-schema.js';
 import { downloadBlob } from './export-manifest.js';
-import { listEnemies, getEnemy, updateEnemy } from './enemy-library.js';
+import { listEntries, getEnemy, updateEnemy } from './enemy-library.js';
 import { buildCombinedBundle } from './enemy-bundle.js';
 
 const KNOWN_LAYERS = ['Ground', 'Platform'];
@@ -175,8 +175,12 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
   let libraryEntriesCache = [];
 
+  // Enemy-kind entries only. A projectile or VFX entry is a perfectly valid library record but
+  // not a valid 'art' for an EnemyConfig: EnemyFactory reads that sheet for the enemy's own body
+  // clips and its thrown prop, neither of which a projectile/VFX sheet has. Offering them would
+  // produce a config that imports into a broken enemy instead of failing at authoring time.
   async function refreshArtLibraryOptions() {
-    libraryEntriesCache = await listEnemies();
+    libraryEntriesCache = await listEntries('enemy');
     if (libraryEntriesCache.length === 0) {
       artLibrarySelect.innerHTML = '<option value="">(sin enemigos guardados — usa la pestaña Sprites)</option>';
       return;
@@ -392,10 +396,62 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   projInlineBox.className = 'efProjectileInline';
   projGroup.insertBefore(projInlineBox, projToggleRow.nextSibling);
 
+  /**
+   * The projectile's ART, picked from the shared library instead of typed as a Unity path. This is
+   * the authoring half of the lazy-resolution flow: choosing an entry here exports
+   * `tuning.projectile.libraryId`, and the Unity importer builds (or reuses) that entry's pooled
+   * prefab on the spot — so the projectile never has to be imported into Unity as a separate step
+   * first. Leaving it on "(ninguno)" is the unchanged old behaviour: either a hand-typed `prefab`
+   * path below, or nothing at all (a projectile built in code).
+   */
+  function renderProjectileLibraryRow() {
+    const row = document.createElement('div');
+    row.className = 'efRow';
+
+    const label = document.createElement('label');
+    label.textContent = 'Arte desde biblioteca';
+    row.appendChild(label);
+
+    const wrap = document.createElement('div');
+    wrap.style.flex = '1';
+
+    const select = document.createElement('select');
+    select.innerHTML = '<option value="">(ninguno — usar el campo Prefab de abajo)</option>';
+    wrap.appendChild(select);
+
+    const hint = document.createElement('p');
+    hint.className = 'efHint';
+    hint.textContent = 'Un proyectil guardado en la pestaña Sprites (tipo Proyectil). Se construirá en '
+      + 'Unity al importar este enemigo; no hace falta importarlo antes por separado.';
+    wrap.appendChild(hint);
+
+    row.appendChild(wrap);
+    projInlineBox.appendChild(row);
+
+    // Populated async so the sub-form renders immediately; the picked value is re-applied once the
+    // options exist, since a <select> silently drops a value it has no <option> for.
+    listEntries('projectile').then((entries) => {
+      if (entries.length === 0) {
+        select.innerHTML = '<option value="">(no hay proyectiles guardados — créalos en la pestaña Sprites)</option>';
+        return;
+      }
+      select.innerHTML = '<option value="">(ninguno — usar el campo Prefab de abajo)</option>'
+        + entries.map((e) => `<option value="${e.id}">${e.enemyName}</option>`).join('');
+      select.value = state.tuning.projectileSpec.libraryId || '';
+    });
+
+    select.addEventListener('change', () => {
+      state.tuning.projectileSpec.libraryId = select.value;
+      refresh();
+    });
+  }
+
   function renderProjectileInline() {
     projInlineBox.innerHTML = '';
     projInlineBox.hidden = state.tuning.projectileMode !== 'inline';
     if (projInlineBox.hidden) return;
+
+    renderProjectileLibraryRow();
 
     PROJECTILE_SPEC_FIELDS.forEach(([key, kind, label, optsOrHint]) => {
       const isHintString = typeof optsOrHint === 'string';
@@ -539,7 +595,9 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
       const exportObj = buildExportObject(state);
       const enemyName = exportObj.enemyName || entry.enemyName;
-      const blob = await buildCombinedBundle({ enemyName, sprite: entry.sprite, configObj: exportObj });
+      const blob = await buildCombinedBundle({
+        enemyName, kind: entry.kind, libraryId: entry.id, sprite: entry.sprite, configObj: exportObj,
+      });
       downloadBlob(blob, `${enemyName.replace(/[^A-Za-z0-9_]/g, '_')}.bundle.zip`);
       await persistConfigToLibraryIfLinked(exportObj);
     });

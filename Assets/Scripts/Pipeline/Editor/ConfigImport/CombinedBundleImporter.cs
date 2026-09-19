@@ -104,8 +104,27 @@ namespace RedMagic.Pipeline.EditorTools
                 // para que reimportar el mismo enemigo sobrescriba en vez de fallar por "ya existe".
                 string enemyRoot = $"Assets/Art/EnemyImports/{enemyName}";
                 Directory.CreateDirectory(enemyRoot);
+
+                // Las entradas de biblioteca EMBEBIDAS (Library/<libraryId>/ en la raíz del zip —
+                // el proyectil/VFX que este enemigo referencia por id) se sacan ANTES de copiar el
+                // resto, a su carpeta compartida. Dos razones, las dos reales:
+                //  · Son COMPARTIDAS: dos enemigos pueden tirar el mismo proyectil. Dejarlas dentro
+                //    de Assets/Art/EnemyImports/<enemyName>/ las haría desaparecer al borrar ese
+                //    enemigo desde Tools > Web > Biblioteca, llevándose por delante el arte del
+                //    proyectil del otro — exactamente el riesgo que WebLibraryWindow.cs ya documenta
+                //    al negarse a borrar prefabs de proyectil por enemigo.
+                //  · FxPrefabBuilder las encuentra igual estén donde estén (busca el manifest por
+                //    libraryId), pero en su carpeta canónica el acierto es directo, sin recorrer
+                //    todos los manifest.json del proyecto.
+                int lifted = LiftEmbeddedLibraryEntries(tempExtractFolder, report);
+
                 CopyDirectoryRecursive(tempExtractFolder, enemyRoot);
                 AssetDatabase.Refresh();
+
+                if (lifted > 0)
+                    report.Warnings.Add($"{lifted} entrada(s) de biblioteca embebida(s) (proyectil/VFX) " +
+                                        $"colocadas en '{FxPrefabBuilder.SourceRoot}/' — se construirán al " +
+                                        "resolverse el config del enemigo.");
 
                 // ---------------- paso 1: sprites — EnemyImporter.cs tal cual ----------------
                 string absoluteEnemyRoot = Path.GetFullPath(enemyRoot);
@@ -157,6 +176,71 @@ namespace RedMagic.Pipeline.EditorTools
             }
 
             return report.BuildSummary();
+        }
+
+        /// <summary>
+        /// Mueve <c>Library/&lt;libraryId&gt;/</c> del zip descomprimido a
+        /// <c>Assets/Art/WebLibrary/&lt;kind&gt;/&lt;libraryId&gt;/</c>, una carpeta por entrada.
+        /// Mueve (no copia) para que no quede un duplicado dentro de la carpeta del enemigo, y se
+        /// salta las que ya existan con contenido: reimportar el mismo enemigo no debe pisar el arte
+        /// de un proyectil que quizá otro enemigo ya esté usando.
+        /// </summary>
+        /// <returns>Cuántas entradas se colocaron.</returns>
+        private static int LiftEmbeddedLibraryEntries(string extractRoot, ConfigImportReport report)
+        {
+            string libraryDir = Path.Combine(extractRoot, "Library");
+            if (!Directory.Exists(libraryDir)) return 0;
+
+            int moved = 0;
+            foreach (var entryDir in Directory.GetDirectories(libraryDir))
+            {
+                string manifestPath = Path.Combine(entryDir, "manifest.json");
+                if (!File.Exists(manifestPath))
+                {
+                    report.Warnings.Add($"Library/{Path.GetFileName(entryDir)} no trae manifest.json; se ignora.");
+                    continue;
+                }
+
+                EnemyImporter.Manifest manifest;
+                try { manifest = EnemyImporter.ParseManifest(File.ReadAllText(manifestPath)); }
+                catch (Exception e)
+                {
+                    report.Warnings.Add($"Library/{Path.GetFileName(entryDir)}: manifest ilegible ({e.Message}); se ignora.");
+                    continue;
+                }
+
+                string kind = manifest != null ? manifest.kind : null;
+                if (kind != FxPrefabBuilder.KindProjectile && kind != FxPrefabBuilder.KindFx)
+                {
+                    report.Warnings.Add($"Library/{Path.GetFileName(entryDir)}: 'kind' es '{kind}', " +
+                                        "que no es proyectil ni VFX; se ignora.");
+                    continue;
+                }
+
+                string id = !string.IsNullOrWhiteSpace(manifest.libraryId)
+                    ? manifest.libraryId
+                    : Path.GetFileName(entryDir);
+
+                string dest = FxPrefabBuilder.SourceFolderFor(kind, id);
+                if (Directory.Exists(dest) && Directory.GetFiles(dest).Length > 0)
+                {
+                    report.Warnings.Add($"'{dest}' ya existe; se conserva la fuente que ya había " +
+                                        "(no se pisa el arte de un proyectil que otro enemigo puede compartir).");
+                    Directory.Delete(entryDir, recursive: true);
+                    continue;
+                }
+
+                Directory.CreateDirectory(Path.GetDirectoryName(dest));
+                CopyDirectoryRecursive(entryDir, dest);
+                Directory.Delete(entryDir, recursive: true);
+                moved++;
+            }
+
+            // La carpeta contenedora ya sólo puede estar vacía o llevar restos ignorados.
+            try { if (Directory.GetFileSystemEntries(libraryDir).Length == 0) Directory.Delete(libraryDir); }
+            catch { /* que quede no rompe nada */ }
+
+            return moved;
         }
 
         private static void CopyDirectoryRecursive(string sourceDir, string destDir)

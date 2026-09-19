@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://redmagic.local/schemas/fx-config.schema.json",
+  "title": "FxConfig",
+  "description": "One web-authored PROJECTILE or VFX library entry, as its own reusable entity: its art (a 'projectile'/'fx'-kind entry in the shared web library) plus, for a projectile, the ProjectileSpec tuning that entry ships with. The counterpart of EnemyConfig for the other two sheet kinds — see Web/RedMagicWeb/modules/fx-form.js.",
+
+  "$comment": "WHY THIS EXISTS, AND WHAT IT DELIBERATELY IS NOT. Before this schema a projectile/VFX library entry was sprites only: its numbers lived on whatever consumed it (EnemyStats ▸ Tuning ▸ projectile, a BossAttack's embedded ProjectileSpec). That is still true at RUNTIME and this file does not change it — see the 'projectile' property's $comment. What this document adds is an AUTHORING-side default carried by the entry itself, so 'FireOrb' can be defined once with the speed/lifetime/pierce it is supposed to have instead of those numbers being retyped into every enemy and boss attack that throws it.\n\nFIELD NAMES ARE NOT INVENTED. The 'projectile' block is projectile-config.schema.json#/definitions/projectileSpec by $ref, unchanged — the exact eleven fields ProjectileConfigImporter already reads. In particular 'damage', 'count', 'knockbackMultiplier' and 'hitLayers' are NOT here, for the reason projectile-config.schema.json's own SCOPE CORRECTION note gives: they are per-shot arguments the attacker supplies (EnemyAttack.Shoot passes tuning.attackDamage / tuning.attackKnockbackMultiplier into ProjectileFactory.Spawn) or arrive via AbilityContext, so a value written here would be silently overwritten on every single shot. How many projectiles a volley fires is likewise the ATTACK's shape (BulletHellAttack's pattern/count, the weapon system's ShapeModifier), never a property of one projectile.",
+
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "name"],
+
+  "properties": {
+
+    "$schema": { "type": "string" },
+
+    "kind": {
+      "allOf": [{ "$ref": "_shared.schema.json#/definitions/entryKind" }],
+      "enum": ["projectile", "fx"],
+      "description": "Which of the two this document configures. 'fx' hides every projectile-only field.",
+      "$comment": "Narrowed from the shared enum rather than pinned with a 'const' like EnemyConfig's: one form authors both, and the two differ only by whether a ProjectileSpec comes along. The shared $ref still defines the vocabulary so the kinds cannot drift apart."
+    },
+
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+      "description": "Names the built prefab: Fx_<name>.prefab.",
+      "$comment": "Same shape and the same reason as EnemyConfig.enemyName — FxPrefabBuilder.SafeName() already sanitizes the manifest's name into exactly this alphabet, so enforcing it at authoring time means what you type is what the asset is called."
+    },
+
+    "libraryId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Id of the 'projectile'/'fx'-kind entry in the web library whose frames are this entity's art.",
+      "$comment": "The SAME id ProjectileSpec.libraryId carries, so an EnemyConfig that references this projectile and this document agree on one identifier. Optional only so a config can be inspected before its art is picked; the exporter always writes it, and FxPrefabBuilder.FindSourceFolder(libraryId) is what turns it into frames on disk."
+    },
+
+    "movement": {
+      "$ref": "#/definitions/movementMode",
+      "default": "Straight"
+    },
+
+    "projectile": {
+      "$ref": "projectile-config.schema.json#/definitions/projectileSpec",
+      "description": "The ProjectileSpec this entry ships with. Projectile-kind only.",
+      "$comment": "AUTHORING DEFAULT, NOT THE LIVE TUNING. ProjectileFactory.Spawn calls Projectile.Configure/ConfigureBehaviour with the spec of whoever fired the shot on every single shot, so what actually flies in game is EnemyStats ▸ Tuning ▸ projectile (or the BossAttack's own embedded spec) — never the prefab's serialized fields. That is the enemy-projectile-tuning-lives-on-enemystats convention and this schema does not bend it. These values are (a) what the web form seeds an enemy's/boss's spec with when that projectile is picked, and (b) what ProjectileMovementPlaceholder uses to fly the prefab on its own in a scene with nothing firing it, which is the standalone Play-mode check. The 'prefab' key inside this block is meaningless here and should be omitted: the prefab is what this document BUILDS."
+    }
+  },
+
+  "allOf": [
+    {
+      "$comment": "A VFX has no ProjectileSpec: nothing spawns it as a projectile, so speed/pierce/homing would be inert fields inviting someone to tune them.",
+      "if": { "properties": { "kind": { "const": "fx" } }, "required": ["kind"] },
+      "then": { "not": { "required": ["projectile"] } }
+    }
+  ],
+
+  "definitions": {
+
+    "movementMode": {
+      "type": "string",
+      "enum": ["Straight", "Homing", "Boomerang", "Bounce", "SplitOnImpact"],
+      "default": "Straight",
+      "description": "How the projectile is meant to travel. Only 'Straight' is implemented today; the rest are declared so a config can already say what it wants.",
+      "$comment": "DECLARED AHEAD OF ITS BEHAVIOUR, ON PURPOSE. Mirrors RedMagic.Gameplay.ProjectileMovementPlaceholder.MovementMode (Assets/Scripts/Gameplay/ProjectileMovementPlaceholder.cs), which FxPrefabBuilder stamps onto the built prefab. Today every mode flies straight — the placeholder implements 'Straight' and nothing else, and a non-Straight value is carried and logged, never silently treated as Straight-forever. The point of naming the other four now is that the real movers (BoomerangMovement, BounceMovement, SplitOnImpact…) become a DROP-IN: the config and the prefab already say which one they want, so shipping one is adding a component that reads this field, with no schema change, no re-export of existing entries and no importer rework. Enum member NAMES, never ordinals, so reordering this list cannot repoint an existing config."
+    }
+  }
+}

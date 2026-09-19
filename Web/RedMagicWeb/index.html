@@ -19,6 +19,8 @@
 <div id="tabBar">
   <button class="tabBtn active" data-tab="sprites">🍄 Sprites</button>
   <button class="tabBtn" data-tab="enemy">🧩 Enemy Creator</button>
+  <button class="tabBtn" data-tab="fx">🔥 Proyectil/VFX</button>
+  <button class="tabBtn" data-tab="boss">👑 Boss Creator</button>
   <button class="tabBtn" data-tab="library">📚 Biblioteca</button>
   <button class="tabBtn" data-tab="map">🗺️ Map Tracer</button>
 </div>
@@ -43,6 +45,28 @@
         <input type="range" id="tolerance" min="0" max="100" value="18">
       </div>
       <button id="removeBgBtn" style="width:100%">🎨 Detectar y quitar fondo</button>
+
+      <div class="field" style="margin-top:10px;">
+        <label><input type="checkbox" id="pocketsEnabled" checked> Detectar bolsillos internos de fondo</label>
+      </div>
+
+      <div class="field" style="margin-top:10px;">
+        <label><input type="checkbox" id="despillEnabled" checked> Quitar halo magenta</label>
+      </div>
+      <div id="despillPanel">
+        <div class="field">
+          <label>Sensibilidad magenta (<span id="despillThresholdVal">15</span>)</label>
+          <input type="range" id="despillThreshold" min="5" max="40" value="15">
+        </div>
+        <div class="field">
+          <label>Grosor de borde (<span id="despillRadiusVal">2</span>px)</label>
+          <input type="range" id="despillRadius" min="1" max="4" value="2">
+        </div>
+        <div class="field" style="display:flex; gap:8px;">
+          <button id="despillReapplyBtn" style="flex:1">🔁 Reaplicar</button>
+          <button id="despillToggleBtn" style="flex:1">👁 Antes/después</button>
+        </div>
+      </div>
     </div>
 
     <div>
@@ -99,9 +123,20 @@
     </div>
 
     <div>
-      <h2>4. Enemigo</h2>
+      <h2>4. Qué es</h2>
       <div class="field">
-        <label>Nombre del enemigo</label>
+        <label>Tipo</label>
+        <select id="entryKindSelect"></select>
+        <p class="hint" style="margin-top:6px;">
+          Decide qué animaciones se crean por defecto y qué nombres ofrece "＋ Nueva" —
+          <strong>Enemigo</strong>: Idle/Walk/Attack/Hurt/Death (+Wake);
+          <strong>Proyectil</strong>: Move/Impact (+Awake);
+          <strong>VFX</strong>: Spawn/Loop/End.
+          Se guarda en el <code>manifest.json</code> para que Unity sepa qué construir.
+        </p>
+      </div>
+      <div class="field">
+        <label id="entryNameLabel">Nombre del enemigo</label>
         <input type="text" id="enemyName" placeholder="ej. MushroomWarrior">
       </div>
     </div>
@@ -110,11 +145,21 @@
       <h2>5. Exportar</h2>
       <button id="exportBtn" class="primary" style="width:100%">⬇ Descargar .zip</button>
       <button id="saveToLibraryBtn" style="width:100%;margin-top:6px;">💾 Guardar como enemigo</button>
+
+      <p class="hint" style="margin-top:10px;">
+        ¿Ya existe? Añade esta animación a un enemigo guardado sin tocar las que ya tiene —
+        reemplaza la que comparta nombre (ej. una <code>Walk</code> nueva sustituye a la anterior).
+      </p>
+      <div id="addToExistingRow">
+        <select id="addToExistingSelect"></select>
+        <button id="addToExistingBtn">➕ Añadir</button>
+      </div>
+
       <div id="status"></div>
     </div>
 
     <div>
-      <h2>6. Enemigos guardados</h2>
+      <h2 id="savedEntriesHeading">6. Enemigos guardados</h2>
       <div id="spritesLibraryList" class="libList"></div>
     </div>
   </div>
@@ -175,13 +220,54 @@
   </div>
 </div>
 
+<div id="tab-fx" class="tabPanel" hidden>
+  <div id="fxFormPanel">
+    <h1>🔥 Proyectil / VFX Creator</h1>
+    <p class="hint">
+      Define un proyectil o un VFX como una entidad reutilizable de la biblioteca, con su arte y (si
+      es proyectil) su <code>ProjectileSpec</code>. La configuración se guarda sobre la misma entrada
+      que ya creaste en la pestaña Sprites, así que el <code>libraryId</code> que usan los enemigos
+      y los ataques de jefe es el mismo que lleva estos números.
+    </p>
+    <div id="fxFormRoot"></div>
+  </div>
+  <div id="fxPreviewPanel">
+    <h2 style="margin-top:0;">Vista previa</h2>
+    <div id="fxValidationSummary"></div>
+    <button id="fxExportBtn" class="primary" style="width:100%;">⬇ Exportar solo config (.json)</button>
+    <button id="fxExportCombinedBtn" style="width:100%;margin-top:6px;">⬇ Exportar todo junto (.zip)</button>
+    <pre id="fxJsonPreview"></pre>
+  </div>
+</div>
+
+<div id="tab-boss" class="tabPanel" hidden>
+  <div id="bossFormPanel">
+    <h1>👑 Boss Creator</h1>
+    <p class="hint">
+      Monta un jefe: un enemigo base de la biblioteca, una biblioteca de ataques y las fases que
+      reparten de ella. <strong>Todavía no hay importador de jefes en Unity</strong> — esto guarda el
+      <code>BossConfig</code> en la biblioteca y lo exporta como JSON, listo para cuando lo haya.
+    </p>
+    <div id="bossFormRoot"></div>
+  </div>
+  <div id="bossPreviewPanel">
+    <h2 style="margin-top:0;">Vista previa</h2>
+    <div id="bossValidationSummary"></div>
+    <button id="bossSaveBtn" class="primary" style="width:100%;">💾 Guardar jefe en biblioteca</button>
+    <button id="bossExportBtn" style="width:100%;margin-top:6px;">⬇ Exportar config (.json)</button>
+    <pre id="bossJsonPreview"></pre>
+  </div>
+</div>
+
 <div id="tab-library" class="tabPanel" hidden>
   <div id="libraryPanel">
-    <h1>📚 Biblioteca de enemigos</h1>
+    <h1>📚 Biblioteca</h1>
     <p class="hint">
-      Todos los enemigos guardados en esta pestaña o en la pestaña Sprites, con su hoja de sprites y,
-      si ya se exportó al menos una vez desde Enemy Creator, su EnemyConfig enlazado.
+      Todo lo guardado: enemigos, proyectiles y VFX creados en la pestaña Sprites (con su hoja de
+      sprites y, si ya pasaron por su Creator, su config enlazado) más los jefes montados en Boss
+      Creator, que no tienen hoja propia y se apoyan en un enemigo base.
     </p>
+    <div id="libraryFilterBar" class="libFilterBar"></div>
     <div id="libraryTabList" class="libList"></div>
   </div>
 </div>
@@ -300,9 +386,11 @@
   <div class="modalCard">
     <h2 style="margin-top:0;">Nueva animación</h2>
     <p class="hint">
-      Los nombres de la lista son el vocabulario fijo que espera Unity (<code>EnemyAnimation.cs</code>) —
-      elige uno para no arriesgar una falta de ortografía, o "Personalizado…" para una animación
-      propia del enemigo (ej. <code>Attack2</code>) que no forma parte de ese vocabulario.
+      Los nombres de la lista son el vocabulario fijo que espera Unity para el <strong>tipo</strong>
+      seleccionado arriba (enemigo: <code>EnemyAnimation.cs</code>; proyectil: Awake/Move/Impact;
+      VFX: Spawn/Loop/End) — elige uno para no arriesgar una falta de ortografía, o
+      "Personalizado…" para una animación propia (ej. <code>Attack2</code>) que no forma parte de
+      ese vocabulario.
     </p>
     <div class="field">
       <label>Nombre</label>

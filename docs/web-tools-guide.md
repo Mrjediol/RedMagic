@@ -68,7 +68,7 @@ pida. Dentro debe estar `manifest.json` más una carpeta de PNGs por animación 
 
 ## Tools ▸ Web ▸ Import Config...
 
-Cuatro entradas, todas leen el `EnemyConfig`/`ProjectileSpec`/`BossDefinition` JSON que arma la
+Seis entradas. Las cuatro primeras leen el `EnemyConfig`/`ProjectileSpec`/`BossDefinition` JSON que arma la
 pestaña **Enemy Creator** de la web. Comparten un único punto de entrada
 (`ConfigImportRunner`/`ConfigImportWindow`) que detecta automáticamente qué tipo de config es por
 su forma (o respeta el tipo si lo fuerzas desde la ventana).
@@ -106,6 +106,93 @@ paso.
 
 **Caveats**: mismo aviso que arriba sobre no borrar la carpeta de entrada
 (`Assets/Art/EnemyImports/<Nombre>/`) después de importar.
+
+### Importar proyectil/VFX (.zip)... / (carpeta)...
+**Web app**: pestaña 🍄 *Sprites* con el **Tipo** puesto a *Proyectil* o *VFX* — botón
+"⬇ Descargar .zip"; o la pestaña 🔥 *Proyectil/VFX* — botón "⬇ Exportar todo junto (.zip)", que
+añade un `fx-config.json` a la raíz del mismo zip (ver más abajo).
+
+Construye el prefab **pooled** de un proyectil o de un efecto a partir del mismo `manifest.json` +
+carpetas de PNG por animación que usa todo lo demás. La versión *(carpeta)* hace lo mismo con una
+carpeta ya descomprimida dentro de `Assets/`.
+
+**Qué produce**:
+
+| Tipo | Prefab | Componentes |
+|---|---|---|
+| `projectile` | `Assets/Prefabs/Fx/Projectiles/<Nombre>/Fx_<Nombre>.prefab` | SpriteRenderer + Rigidbody2D (gravedad 0) + CircleCollider2D (trigger) + `Projectile` + `ProjectileMovementPlaceholder` |
+| `fx` | `Assets/Prefabs/Fx/Vfx/<Nombre>/Fx_<Nombre>.prefab` | SpriteRenderer + `VfxOneShot` con el `lifetime` ya calculado de los frames |
+
+En los dos casos la animación va con **`SpriteStateMachine`** (varios estados) o
+**`SpriteFlipbook`** (uno solo), **nunca un Animator**: estos prefabs pasan por `PrefabPool`, que no
+tiene gancho de reinicio por instancia, así que un Animator reutilizado volvería del pool a mitad de
+la animación anterior. La fuente se queda en `Assets/Art/WebLibrary/<tipo>/<libraryId>/` y **no se
+borra nunca**: los sprites del prefab SON esos PNG.
+
+Cada prefab lleva un `WebLibrarySource` con el id de la entrada de la que salió. Es lo que hace que
+volver a importar la misma entrada **devuelva el prefab que ya existe** en vez de crear un duplicado,
+incluso si lo has renombrado o movido a mano.
+
+**`fx-config.json`, si viene.** La pestaña 🔥 *Proyectil/VFX* exporta, junto al manifest y los PNG,
+un `fx-config.json` (`docs/schemas/fx-config.schema.json`). Es **opcional**: una carpeta sin él se
+construye exactamente igual que antes de que existiera. Cuando está, el importador saca de él una
+sola cosa — el **modo de movimiento** y los valores de vista previa que se estampan en el
+`ProjectileMovementPlaceholder` del prefab. **No aporta tuning**: velocidad, vida, perforación y
+autoguiado de partida siguen saliendo del `ProjectileSpec` de quien dispara
+(`EnemyStats ▸ Tuning ▸ projectile`, o el del ataque del jefe), porque `ProjectileFactory.Spawn`
+reescribe el prefab en cada disparo.
+
+`ProjectileMovementPlaceholder` (`Assets/Scripts/Gameplay/`) es un **suplente**, no el sistema
+definitivo: lleva el modo pedido (`Straight` / `Homing` / `Boomerang` / `Bounce` / `SplitOnImpact`,
+de los cuales sólo el primero tiene lógica) y, **cuando nadie lo ha lanzado**, hace volar el prefab
+recto y lo despawnea — que es justo la comprobación de "esto se construyó bien" con el prefab suelto
+en una escena y Play. En cuanto `ProjectileFactory` lo lanza de verdad, se aparta y no toca nada.
+Cuando existan los movers reales, cada uno leerá ese campo: el cambio será **quitar y poner un
+componente**, sin tocar el esquema, los configs ya exportados ni este importador.
+
+**Este paso es opcional para un enemigo.** Si un `EnemyConfig` referencia el proyectil por
+`tuning.projectile.libraryId`, el import del enemigo lo construye solo (ver abajo). Esta entrada
+existe para traer un proyectil/VFX por su cuenta — para asignarlo a mano a un `BossAttack`, a un
+arma, o antes de que exista el enemigo que lo tira.
+
+### Proyectiles perezosos desde la biblioteca (`libraryId`)
+El campo `tuning.projectile` de un `EnemyConfig` admite dos formas de decir de dónde sale el arte:
+
+- **`prefab`** — una ruta a un prefab que ya está en el proyecto. Sigue funcionando **exactamente
+  igual que siempre**.
+- **`libraryId`** — el id de una entrada de tipo *Proyectil* de la biblioteca web. Al importar,
+  `FxPrefabBuilder.BuildOrGetProjectilePrefab` devuelve el prefab que ya existiera para ese id o lo
+  construye al vuelo, y lo escribe en `ProjectileSpec.prefab`. **No hace falta haber importado el
+  proyectil antes**: el bundle combinado del enemigo trae dentro (`Library/<libraryId>/`) los frames
+  de la entrada referenciada, y el importador los coloca en `Assets/Art/WebLibrary/` — fuera de la
+  carpeta del enemigo, porque dos enemigos pueden compartir el mismo proyectil y borrar uno no debe
+  llevarse el arte del otro.
+
+Si un JSON escrito a mano trae los dos, **manda `prefab`** y se avisa por consola. Los **números**
+del proyectil (velocidad, vida, perforación, autoguiado…) vienen de `ProjectileConfigImporter` en
+los dos casos, sin cambios — el prefab sólo aporta el aspecto, como siempre.
+
+### Jefes: la web ya los monta, Unity todavía no los importa
+
+La pestaña 👑 **Boss Creator** guarda un `BossConfig` (`docs/schemas/boss-config.schema.json`) en la
+biblioteca del navegador y lo exporta como `.json`, pero **no hay ningún menú aquí que lo importe**:
+eso es trabajo pendiente para cuando el jefe 2 tenga arte. Si abres este documento buscando "cómo
+importo un jefe": todavía no se puede, y la ausencia es deliberada, no un olvido.
+
+Lo que sí está listo del lado de Unity, y por eso no habrá que rehacerlo:
+
+- `BossConfigImporter` (`Assets/Scripts/Bosses/Editor/`) ya sabe leer ese esquema — resuelve el
+  `type` de cada ataque contra los tipos que heredan de `BossAttack`, escribe los 17 campos base y
+  el bloque abierto `params` por `SerializedProperty`, y crea el `BossDefinition` con sus fases.
+- El **proyectil de un ataque de jefe** ya funciona por la vía perezosa de arriba: el Boss Creator
+  lo exporta como `attacks.<id>.params.projectile.libraryId`, y `BossConfigImporter.WriteField`
+  detecta un campo de tipo `ProjectileSpec` ahí y lo pasa a `ProjectileConfigImporter.Resolve`, que
+  ya resuelve `libraryId` vía `FxPrefabBuilder`. Es exactamente el mismo camino que el proyectil de
+  un enemigo.
+
+Lo que falta es la mitad de *presencia*: de qué prefab sale el cuerpo del jefe. Por eso el esquema
+tiene el bloque `base` (`enemyLibraryId`) — la web ya guarda qué enemigo de la biblioteca es la base
+del jefe; nadie lo lee todavía.
 
 ---
 

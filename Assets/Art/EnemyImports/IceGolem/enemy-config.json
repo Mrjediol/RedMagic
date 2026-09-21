@@ -1,0 +1,83 @@
+{
+  "kind": "enemy",
+  "enemyName": "IceGolem",
+  "art": "Assets/Art/EnemyImports/IceGolem/IceGolem.sheet.asset",
+  "anchor": "Center",
+  "prefabFolder": "Assets/Prefabs/Enemies",
+  "presence": {
+    "spriteScale": 1,
+    "colliderSize": {
+      "x": 0,
+      "y": 0
+    },
+    "colliderOffset": {
+      "x": 0,
+      "y": 0
+    },
+    "sortingOrder": 5,
+    "tag": "Untagged"
+  },
+  "projectileArt": {
+    "propState": "Attack",
+    "scale": 1
+  },
+  "tier": "Basic",
+  "tuning": {
+    "archetype": "Melee",
+    "staticAttack": "Ranged",
+    "maxHealth": 30,
+    "invulnerabilityDuration": 0,
+    "hurtSfxId": "",
+    "deathSfxId": "",
+    "knockbackHorizontal": 6,
+    "knockbackVertical": 3,
+    "knockbackDuration": 0.18,
+    "knockbackResistance": 0,
+    "detectionRange": 7,
+    "loseInterestGrace": 1,
+    "attackRange": 1.6,
+    "personalSpace": 0,
+    "retreatReleaseFactor": 1.35,
+    "verticalTolerance": 3,
+    "moveSpeed": 2.5,
+    "retreatSpeed": 2.5,
+    "stopAtLedges": true,
+    "ledgeProbeDepth": 0.6,
+    "gravityScale": 3,
+    "sleepsUntilDetected": false,
+    "hoverOffset": 0.5,
+    "attackDamage": 10,
+    "attackCooldown": 1.8,
+    "attackKnockbackMultiplier": 1,
+    "attackReleaseFallback": 0.25,
+    "rootedWhileAttacking": true,
+    "meleeHitboxSize": {
+      "x": 1.2,
+      "y": 1
+    },
+    "meleeHitboxOffset": {
+      "x": 0.8,
+      "y": 0.5
+    },
+    "selfDestruct": false,
+    "explosionRadius": 1.7,
+    "explosionShake": 0.2,
+    "aimAtTarget": true,
+    "projectileTint": "#ffffffff",
+    "contactDamage": 0,
+    "contactDamageCooldown": 1,
+    "contactKnockbackMultiplier": 1,
+    "idleAnimSpeed": 1,
+    "moveAnimSpeed": 1,
+    "attackAnimSpeed": 1,
+    "hurtAnimSpeed": 1,
+    "deathAnimSpeed": 1,
+    "wakeAnimSpeed": 1,
+    "targetTag": "Player",
+    "hitLayers": "everything",
+    "obstacleLayers": [
+      "Ground",
+      "Platform"
+    ]
+  }
+}

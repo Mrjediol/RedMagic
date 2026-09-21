@@ -1,0 +1,22 @@
+{
+  "enemyName": "IceSpiritShoot",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "Move",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Impact",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    }
+  ],
+  "projectiles": [],
+  "libraryId": "14c39798-fac0-4e94-bed2-e298fb36dea7"
+}

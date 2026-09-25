@@ -48,6 +48,41 @@ namespace RedMagic.Items
             return all.Count == 0 ? null : all[UnityEngine.Random.Range(0, all.Count)];
         }
 
+        /// <summary>La de mayor daño base (al azar entre empatadas), o null si no hay ninguna.</summary>
+        public static WeaponDefinition Strongest()
+        {
+            WeaponDefinition best = null;
+            int ties = 0;
+            foreach (var weapon in All)
+            {
+                if (best == null || weapon.BaseDamage > best.BaseDamage) { best = weapon; ties = 1; }
+                else if (Mathf.Approximately(weapon.BaseDamage, best.BaseDamage) &&
+                         UnityEngine.Random.Range(0, ++ties) == 0) best = weapon;
+            }
+            return best;
+        }
+
+        /// <summary>
+        /// Hasta <paramref name="count"/> armas distintas al azar. Con <paramref name="include"/>, esa
+        /// va seguro entre ellas (en una posición al azar).
+        /// </summary>
+        public static List<WeaponDefinition> RandomDistinct(int count, WeaponDefinition include = null)
+        {
+            var pool = new List<WeaponDefinition>(All);
+            if (include != null) pool.Remove(include);
+
+            for (int i = pool.Count - 1; i > 0; i--)
+            {
+                int j = UnityEngine.Random.Range(0, i + 1);
+                (pool[i], pool[j]) = (pool[j], pool[i]);
+            }
+
+            int take = Mathf.Min(count - (include != null ? 1 : 0), pool.Count);
+            var result = pool.GetRange(0, Mathf.Max(0, take));
+            if (include != null) result.Insert(UnityEngine.Random.Range(0, result.Count + 1), include);
+            return result;
+        }
+
         /// <summary>Olvida el catálogo cacheado (tras crear o borrar assets en el editor).</summary>
         public static void Invalidate() => _all = null;
     }

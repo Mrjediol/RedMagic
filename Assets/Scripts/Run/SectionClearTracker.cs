@@ -62,6 +62,14 @@ namespace RedMagic.Run
 
         private Scene _trackedScene;
 
+        /// <summary>
+        /// Quién mantiene la sección cerrada aunque no quede nadie vivo ahora mismo (un
+        /// <see cref="WaveManager"/> con oleadas por salir). No se vacía en <see cref="Track"/>:
+        /// el WaveManager de la sección nueva ya puede haberse apuntado, y el de la vieja se
+        /// borra solo al descargarse.
+        /// </summary>
+        private readonly HashSet<object> _holds = new();
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void EnsureExists()
         {
@@ -125,7 +133,36 @@ namespace RedMagic.Run
                 }
             }
 
-            SetCleared(_tracked.Count == 0, _tracked.Count);
+            SetCleared(_tracked.Count == 0 && _holds.Count == 0, _tracked.Count);
+        }
+
+        /// <summary>
+        /// Empieza a contar un enemigo aparecido después de cargar la sección (oleadas, adds).
+        /// Idempotente.
+        /// </summary>
+        public void Register(Health health)
+        {
+            if (!CountsAsEnemy(health) || _tracked.Contains(health)) return;
+            _tracked.Add(health);
+            health.Died += OnEnemyDied;
+            Recount(announce: true);
+        }
+
+        /// <summary>Mantiene la sección sin despejar hasta <see cref="ReleaseHold"/>.</summary>
+        public void AddHold(object owner)
+        {
+            if (owner == null || !_holds.Add(owner)) return;
+            Recount(announce: false);
+        }
+
+        /// <summary>
+        /// Suelta la retención de <paramref name="owner"/>. <paramref name="announce"/> = false para
+        /// soltarla sin el aviso de "despejada" (la escena se está descargando a medias).
+        /// </summary>
+        public void ReleaseHold(object owner, bool announce = true)
+        {
+            if (owner == null || !_holds.Remove(owner)) return;
+            Recount(announce);
         }
 
         /// <summary>
@@ -153,7 +190,9 @@ namespace RedMagic.Run
             _trackedScene = default;
         }
 
-        private void OnEnemyDied()
+        private void OnEnemyDied() => Recount(announce: true);
+
+        private void Recount(bool announce)
         {
             // Se recuenta en vez de descontar: así un enemigo destruido sin morir (o spawneado
             // después) no descuadra el contador.
@@ -169,12 +208,12 @@ namespace RedMagic.Run
                 if (_deadSeen.Add(health)) LastDeathPosition = health.transform.position;
             }
 
-            bool nowCleared = alive == 0;
+            bool nowCleared = alive == 0 && _holds.Count == 0;
             bool wasCleared = IsCleared;
 
             SetCleared(nowCleared, alive);
 
-            if (nowCleared && !wasCleared) OnSectionCleared();
+            if (announce && nowCleared && !wasCleared) OnSectionCleared();
         }
 
         private void SetCleared(bool cleared, int remaining)

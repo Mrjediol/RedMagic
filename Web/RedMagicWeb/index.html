@@ -41,6 +41,19 @@
     <div>
       <h2>2. Quitar fondo</h2>
       <div class="field">
+        <label>Color de fondo (chroma key) · <span id="keyColorMode" class="keyMode">auto</span></label>
+        <div class="keyRow">
+          <input type="color" id="keyColorInput" value="#ff00ff" title="Elegir color">
+          <button id="keyAutoBtn" title="Detectarlo en los bordes de la imagen">Auto</button>
+          <button id="keyEyedropperBtn" title="Clic en la imagen para coger el color">💧 Cuentagotas</button>
+        </div>
+        <div class="keyRow">
+          <button class="keyPreset" data-color="#ff00ff" style="border-left:6px solid #ff00ff">Magenta</button>
+          <button class="keyPreset" data-color="#00ff00" style="border-left:6px solid #00ff00">Verde</button>
+          <button class="keyPreset" data-color="#0000ff" style="border-left:6px solid #0000ff">Azul</button>
+        </div>
+      </div>
+      <div class="field">
         <label>Tolerancia de color (0-100)</label>
         <input type="range" id="tolerance" min="0" max="100" value="18">
       </div>
@@ -51,11 +64,11 @@
       </div>
 
       <div class="field" style="margin-top:10px;">
-        <label><input type="checkbox" id="despillEnabled" checked> Quitar halo magenta</label>
+        <label><input type="checkbox" id="despillEnabled" checked> Despill edge (quitar halo del color de fondo)</label>
       </div>
       <div id="despillPanel">
         <div class="field">
-          <label>Sensibilidad magenta (<span id="despillThresholdVal">15</span>)</label>
+          <label>Sensibilidad del halo (<span id="despillThresholdVal">15</span>)</label>
           <input type="range" id="despillThreshold" min="5" max="40" value="15">
         </div>
         <div class="field">

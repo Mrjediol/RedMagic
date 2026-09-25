@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e6ac4aa102c02047bbcf0b72861056f, type: 3}
+  m_Name: LegendaryPassiveTuning
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassiveTuning
+  bossItemsLevel1: 1
+  bossItemsLevel2: 2
+  chestWeaponChoices: 3
+  chestChoiceUpgradesLevel2: 1
+  rerollsLevel1: 2
+  rerollsLevel2: 4
+  reviveHealthFraction: 0.3
+  reviveInvulnerability: 2
+  reviveShieldHits: 3
+  shieldColor: {r: 0.3, g: 1, b: 0.9, a: 0.35}
+  damageBonusLevel1: 0.1
+  damageBonusLevel2: 0.2
+  firstWaveSlowStrength: 0.4
+  firstWaveSlowDuration: 8
+  enemyHealthReductionLevel2: 0.2
+  levelsPerFreeItem: 3
+  chestWeaponUpgrades: 2

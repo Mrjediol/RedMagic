@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: LegendaryPassive_8
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
   id: 8
-  icon: {fileID: 0}
-  displayName: Aliento Vital
-  description: +1 HP Regen / 10s
-  upgradeDescription: +2 HP Regen / 10s
+  icon: {fileID: -7689779681191461060, guid: 0883848c0e77cd14f9763c815d57285b, type: 3}
+  displayName: El Tomo Roto
+  description: Chest weapon starts with 2 upgrades applied
+  upgradeDescription: Chest weapon is also always the highest base-damage weapon
+    available
   effectKind: 8
-  baseValue: 1
   maxLevel: 2
   upgradeCost: 50
   isUnlocked: 0

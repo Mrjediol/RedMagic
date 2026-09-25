@@ -6,8 +6,8 @@
 // UI, and reacting to canvas mouse events. See ARCHITECTURE.md for exactly
 // which function here to edit for a given change.
 
-import { removeBackground } from './modules/background-removal.js';
-import { despillMagentaEdge } from './modules/despill-magenta.js';
+import { removeBackground, detectKeyColor } from './modules/background-removal.js';
+import { despillEdge } from './modules/despill-edge.js';
 import { detectSprites, clusterIntoRows } from './modules/sprite-detection.js';
 import { CanvasView } from './modules/canvas-view.js';
 import * as Lanes from './modules/animation-lanes.js';
@@ -249,7 +249,9 @@ function loadImageFile(f) {
       render();
       renderLanes();
       renderUnsorted();
-      setStatus(`Imagen cargada: ${img.width}×${img.height}px`);
+      if (keyMode === 'auto') autoDetectKey();
+      setEyedropper(false);
+      setStatus(`Imagen cargada: ${img.width}×${img.height}px · fondo ${keyColorInput.value}`);
     };
     image.src = ev.target.result;
   };
@@ -259,6 +261,71 @@ function loadImageFile(f) {
 window.addEventListener('resize', () => { if (img) view.frameToFit(); });
 
 // ============================================================ background removal
+
+// ------------------------------------------------------------ key color (chroma key)
+// One key color drives every step: border flood-fill, enclosed pockets and despill edge.
+// 'auto' re-detects it from the image border on load and on each "quitar fondo"; picking a
+// preset, a color or using the eyedropper switches to 'manual' until "Auto" is pressed again.
+
+const keyColorInput = document.getElementById('keyColorInput');
+const keyColorModeLabel = document.getElementById('keyColorMode');
+const keyEyedropperBtn = document.getElementById('keyEyedropperBtn');
+let keyMode = 'auto';
+let eyedropperActive = false;
+
+const toHex = (v) => Math.round(v).toString(16).padStart(2, '0');
+const rgbToHex = ({ r, g, b }) => `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+/** The current key color as {r,g,b}. */
+function keyColor() { return hexToRgb(keyColorInput.value); }
+
+function setKeyColor(rgbOrHex, mode) {
+  keyColorInput.value = typeof rgbOrHex === 'string' ? rgbOrHex : rgbToHex(rgbOrHex);
+  keyMode = mode;
+  keyColorModeLabel.textContent = mode === 'auto' ? `auto ${keyColorInput.value}` : keyColorInput.value;
+}
+
+/** Detects the key from the image border (the untouched source unless one is given). */
+function autoDetectKey(imageData) {
+  const data = imageData || workCtx.getImageData(0, 0, workCanvas.width, workCanvas.height);
+  const detected = detectKeyColor(data);
+  if (detected) setKeyColor(detected, 'auto');
+}
+
+function setEyedropper(active) {
+  eyedropperActive = active;
+  keyEyedropperBtn.classList.toggle('active', active);
+  canvasWrap.classList.toggle('eyedropper', active);
+}
+
+/** RGB of the ORIGINAL image at (x, y) — the work canvas loses the color of pixels already made transparent. */
+function sampleSourcePixel(x, y) {
+  const probe = document.createElement('canvas');
+  probe.width = probe.height = 1;
+  const ctx = probe.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(img, x, y, 1, 1, 0, 0, 1, 1);
+  const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+  return { r, g, b };
+}
+
+keyColorInput.addEventListener('input', () => setKeyColor(keyColorInput.value, 'manual'));
+document.getElementById('keyAutoBtn').addEventListener('click', () => {
+  if (!img) { setKeyColor(keyColorInput.value, 'auto'); return; }
+  autoDetectKey();
+  setStatus(`Color de fondo detectado: ${keyColorInput.value}`);
+});
+document.querySelectorAll('.keyPreset').forEach((btn) => {
+  btn.addEventListener('click', () => setKeyColor(btn.dataset.color, 'manual'));
+});
+keyEyedropperBtn.addEventListener('click', () => {
+  if (!img) { setStatus('Carga una imagen primero.'); return; }
+  setEyedropper(!eyedropperActive);
+  if (eyedropperActive) setStatus('Cuentagotas: haz clic en el fondo de la imagen.');
+});
 
 // Snapshot of the canvas right after removeBackground, before despill — the baseline despill
 // re-applies onto (so dragging the sliders never compounds erosion on an already-eroded image).
@@ -271,7 +338,8 @@ document.getElementById('removeBgBtn').addEventListener('click', () => {
   const tolerance = parseInt(document.getElementById('tolerance').value, 10);
   const detectPockets = document.getElementById('pocketsEnabled').checked;
   const imageData = workCtx.getImageData(0, 0, workCanvas.width, workCanvas.height);
-  removeBackground(imageData, tolerance, { detectPockets });
+  if (keyMode === 'auto') autoDetectKey(imageData);
+  removeBackground(imageData, tolerance, { keyColor: keyColor(), detectPockets });
 
   postBgRemovalImageData = new ImageData(
     new Uint8ClampedArray(imageData.data), imageData.width, imageData.height
@@ -296,9 +364,9 @@ function applyDespill() {
     new Uint8ClampedArray(postBgRemovalImageData.data),
     postBgRemovalImageData.width, postBgRemovalImageData.height
   );
-  const magentaThreshold = parseInt(document.getElementById('despillThreshold').value, 10);
+  const threshold = parseInt(document.getElementById('despillThreshold').value, 10);
   const edgeRadius = parseInt(document.getElementById('despillRadius').value, 10);
-  despillMagentaEdge(imageData, { magentaThreshold, edgeRadius });
+  despillEdge(imageData, { keyColor: keyColor(), threshold, edgeRadius });
   workCtx.putImageData(imageData, 0, 0);
   despillShowingBefore = false;
   render();
@@ -321,7 +389,7 @@ despillRadiusInput.addEventListener('input', () => {
 document.getElementById('despillReapplyBtn').addEventListener('click', () => {
   if (!postBgRemovalImageData) { setStatus('Quita el fondo primero.'); return; }
   applyDespill();
-  setStatus('Halo magenta reaplicado.');
+  setStatus('Halo reaplicado.');
 });
 
 document.getElementById('despillToggleBtn').addEventListener('click', () => {
@@ -329,10 +397,10 @@ document.getElementById('despillToggleBtn').addEventListener('click', () => {
   despillShowingBefore = !despillShowingBefore;
   if (despillShowingBefore) {
     workCtx.putImageData(postBgRemovalImageData, 0, 0);
-    setStatus('Mostrando: antes de quitar el halo magenta.');
+    setStatus('Mostrando: antes de quitar el halo.');
   } else {
     applyDespill();
-    setStatus('Mostrando: después de quitar el halo magenta.');
+    setStatus('Mostrando: después de quitar el halo.');
   }
   render();
 });
@@ -483,6 +551,15 @@ function applySelectionClick(i, ctrlKey, shiftKey) {
 canvas.addEventListener('mousedown', (e) => {
   if (!img || e.button !== 0) return; // left button only — middle is reserved for panning
   const pos = getPos(e);
+
+  if (eyedropperActive) {
+    if (pos.x >= 0 && pos.y >= 0 && pos.x < img.width && pos.y < img.height) {
+      setKeyColor(sampleSourcePixel(pos.x, pos.y), 'manual');
+      setStatus(`Color de fondo: ${keyColorInput.value}`);
+    }
+    setEyedropper(false);
+    return;
+  }
 
   if (interactionMode === 'addbox') {
     dragState = { type: 'create', startX: pos.x, startY: pos.y };

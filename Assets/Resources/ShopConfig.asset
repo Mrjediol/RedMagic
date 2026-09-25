@@ -12,16 +12,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9141d819e5710ab459042ca0a79174d8, type: 3}
   m_Name: ShopConfig
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.ShopConfig
-  freePoolCount: 3
-  elementCost:
-    min: 30
-    max: 50
-  trajectoryCost:
-    min: 30
-    max: 50
-  shapeCost:
-    min: 30
-    max: 50
-  freePoolCost:
-    min: 18
-    max: 38
+  shopScene:
+    sceneAsset: {fileID: 102900000, guid: 594b46cde2cf98c489085bbc603a33a5, type: 3}
+    scenePath: Assets/Scenes/Shop.unity
+    sceneName: Shop
+  rarityWeightsPerWorld:
+  - common: 50
+    blue: 35
+    epic: 12
+    legendary: 3
+  - common: 35
+    blue: 35
+    epic: 22
+    legendary: 8
+  - common: 20
+    blue: 35
+    epic: 30
+    legendary: 15
+  - common: 10
+    blue: 30
+    epic: 35
+    legendary: 25
+  basePrice:
+    common: 30
+    blue: 60
+    epic: 120
+    legendary: 200
+  priceMultiplierPerWorld:
+  - 1
+  - 1.4
+  - 1.8
+  - 2.2

@@ -13,12 +13,11 @@ MonoBehaviour:
   m_Name: LegendaryPassive_3
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
   id: 3
-  icon: {fileID: 0}
-  displayName: Filo Brutal
-  description: +3 Attack Damage
-  upgradeDescription: +6 Attack Damage
+  icon: {fileID: 6103056907601288328, guid: b244ee62af32d9340bd2bc186e44c356, type: 3}
+  displayName: "P\xE1ginas del Eco"
+  description: +2 permanent rerolls per run
+  upgradeDescription: +4 permanent rerolls, rerolls show 2 options instead of 1
   effectKind: 3
-  baseValue: 3
   maxLevel: 2
   upgradeCost: 50
   isUnlocked: 0

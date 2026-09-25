@@ -114,8 +114,53 @@ namespace RedMagic.UI
 
         private void OnCurrencyChanged(Currency currency, int amount)
         {
+            // Mientras cuenta hacia atrás (PlaySpend) manda la animación; al acabar pone el valor real.
+            if (_spending.Contains(currency)) return;
             if (_amountLabels.TryGetValue(currency, out var label))
                 label.text = amount.ToString();
+        }
+
+        // ------------------------------------------------------------------ gasto animado
+
+        private readonly HashSet<Currency> _spending = new();
+
+        /// <summary>
+        /// Gasto visible: el contador de <paramref name="currency"/> tiembla y baja de
+        /// <paramref name="from"/> a <paramref name="to"/> en <paramref name="tickDuration"/> segundos
+        /// (tiempo real). No toca la moneda: sólo lo que se ve.
+        /// </summary>
+        public static void PlaySpend(Currency currency, int from, int to, float tickDuration,
+                                     float shakeAmplitude, float shakeDuration)
+        {
+            if (Instance == null || !Instance._amountLabels.TryGetValue(currency, out var label)) return;
+            Instance.StartCoroutine(Instance.SpendRoutine(currency, label, from, to, tickDuration,
+                                                          shakeAmplitude, shakeDuration));
+        }
+
+        private System.Collections.IEnumerator SpendRoutine(Currency currency, Label label, int from, int to,
+                                                           float tickDuration, float shakeAmplitude,
+                                                           float shakeDuration)
+        {
+            _spending.Add(currency);
+            var entry = label.parent;
+            var baseColor = Color.white;
+            float total = Mathf.Max(tickDuration, shakeDuration);
+
+            for (float t = 0f; t < total; t += Time.unscaledDeltaTime)
+            {
+                float tick = tickDuration > 0f ? Mathf.Clamp01(t / tickDuration) : 1f;
+                label.text = Mathf.RoundToInt(Mathf.Lerp(from, to, tick)).ToString();
+                label.style.color = Color.Lerp(new Color(1f, 0.55f, 0.4f), baseColor, tick);
+
+                float k = shakeDuration > 0f ? Mathf.Clamp01(1f - t / shakeDuration) : 0f;
+                entry.style.translate = new Translate(Mathf.Sin(t * 70f) * shakeAmplitude * k, 0f);
+                yield return null;
+            }
+
+            entry.style.translate = new Translate(0f, 0f);
+            label.style.color = baseColor;
+            _spending.Remove(currency);
+            if (CurrencyManager.Instance != null) label.text = CurrencyManager.Instance.Get(currency).ToString();
         }
 
         // ------------------------------------------------------------------ construcción de la UI

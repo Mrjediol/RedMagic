@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3145da20209034a4091c4729d184575a, type: 3}
+  m_Name: PassiveDropCinematicSettings
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.UI.PassiveDropCinematicSettings
+  overlayColor: {r: 0.01, g: 0.02, b: 0.05, a: 0.85}
+  overlayFadeIn: 0.18
+  iconSize: 240
+  dropDelay: 0.1
+  dropStartOffset: 650
+  dropDuration: 0.42
+  bounceHeight: 55
+  bounceDuration: 0.3
+  shockColor: {r: 0.3, g: 1, b: 0.9, a: 0.95}
+  shockDuration: 0.6
+  shockMaxSize: 720
+  ringCount: 2
+  ringStagger: 0.09
+  sparkCount: 20
+  sparkDistance: 300
+  sparkSize: 16
+  zoomScale: 1.6
+  zoomDelay: 0.05
+  zoomDuration: 0.6
+  glowColor: {r: 0.3, g: 1, b: 0.9, a: 1}
+  glowSize: 1.9
+  glowPulseSpeed: 1.6
+  glowMinAlpha: 0.3
+  glowMaxAlpha: 0.85
+  glowScalePulse: 0.08
+  headerText: Has obtenido
+  headerFontSize: 34
+  nameFontSize: 76
+  headerColor: {r: 0.75, g: 0.95, b: 0.95, a: 1}
+  nameColor: {r: 1, g: 0.93, b: 0.7, a: 1}
+  textMargin: 26
+  textDelay: 0.25
+  textFadeDuration: 0.4
+  continueText: Toca para continuar
+  continueFontSize: 30
+  continueColor: {r: 0.85, g: 0.95, b: 1, a: 1}
+  continueDelay: 0.5
+  continuePulseSpeed: 1.2
+  outroDuration: 0.4
+  landSfxId: 
+  continueSfxId: SFX_ButtonClick

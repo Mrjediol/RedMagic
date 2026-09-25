@@ -1,0 +1,21 @@
+{
+  "enemyName": "Items",
+  "kind": "enemy",
+  "animations": [
+    {
+      "name": "armario",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 6,
+      "projectile": null
+    },
+    {
+      "name": "Mirror",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 6,
+      "projectile": null
+    }
+  ],
+  "projectiles": []
+}

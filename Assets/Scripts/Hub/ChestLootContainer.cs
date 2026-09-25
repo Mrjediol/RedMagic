@@ -1,5 +1,7 @@
 using RedMagic.Abilities;
+using RedMagic.Economy;
 using RedMagic.Items;
+using RedMagic.UI;
 using UnityEngine;
 
 namespace RedMagic.Hub
@@ -12,9 +14,13 @@ namespace RedMagic.Hub
     /// <c>WeaponLoadout.Instance.Inventory.SetWeapon</c> sea la única forma de conseguir un arma
     /// en el hub, y lo es.
     ///
-    /// Sustituye a <c>AbilityChest</c> (movido a Legacy): misma lógica de entrega, ahora sobre
-    /// <see cref="HubLootContainer"/> para el flujo en dos toques (abrir → recoger) y el reseteo
-    /// al volver de una run.
+    /// Pasivas legendarias que lo cambian (números en <see cref="LegendaryPassiveTuning"/>):
+    ///  - <b>Grimorio del Umbral</b>: nv1 muestra 3 armas y el jugador elige
+    ///    (<see cref="WeaponChoiceMenuController"/>); nv2 la elegida sale con 1 mejora.
+    ///  - <b>El Tomo Roto</b>: nv1 el arma sale con 2 mejoras; nv2 además es la de mayor daño base
+    ///    (con el Grimorio, va seguro entre las opciones).
+    /// Las mejoras se suman y se topan en <see cref="WeaponLevelManager.MaxLevel"/>. Un
+    /// <see cref="forcedWeapon"/> puesto en el Inspector manda sobre todo esto (es una prueba).
     /// </summary>
     public class ChestLootContainer : HubLootContainer
     {
@@ -32,7 +38,40 @@ namespace RedMagic.Hub
 
         protected override void OnLoot()
         {
-            var weapon = forcedWeapon != null ? forcedWeapon : WeaponLibrary.Random();
+            if (WeaponLoadout.Instance == null)
+            {
+                Debug.LogWarning("[ChestLootContainer] No hay WeaponLoadout al que darle el arma.", this);
+                return;
+            }
+
+            if (forcedWeapon != null)
+            {
+                Grant(forcedWeapon, chosen: false);
+                return;
+            }
+
+            var tuning = LegendaryPassiveTuning.Current;
+            bool strongest = LegendaryPassiveEffects.Level(LegendaryPassiveEffectKind.ChestWeaponUpgrades) >= 2;
+
+            if (LegendaryPassiveEffects.Has(LegendaryPassiveEffectKind.ChestWeaponChoice))
+            {
+                var options = WeaponLibrary.RandomDistinct(tuning.chestWeaponChoices,
+                                                           strongest ? WeaponLibrary.Strongest() : null);
+                var passive = LegendaryPassiveEffects.Find(LegendaryPassiveEffectKind.ChestWeaponChoice);
+
+                if (options.Count > 1 && WeaponChoiceMenuController.Instance != null &&
+                    WeaponChoiceMenuController.Instance.Open(options, w => Grant(w, chosen: true),
+                                                             passive != null ? passive.displayName : ""))
+                    return;
+
+                if (options.Count > 0)
+                {
+                    Grant(options[0], chosen: true);
+                    return;
+                }
+            }
+
+            var weapon = strongest ? WeaponLibrary.Strongest() : WeaponLibrary.Random();
             if (weapon == null)
             {
                 Debug.LogWarning("[ChestLootContainer] No hay armas en Resources/Items: el cofre " +
@@ -40,13 +79,24 @@ namespace RedMagic.Hub
                 return;
             }
 
-            if (WeaponLoadout.Instance == null)
-            {
-                Debug.LogWarning("[ChestLootContainer] No hay WeaponLoadout al que darle el arma.", this);
-                return;
-            }
+            Grant(weapon, chosen: false);
+        }
+
+        /// <param name="chosen">La eligió el jugador con el Grimorio (cuenta para su nivel 2).</param>
+        private void Grant(WeaponDefinition weapon, bool chosen)
+        {
+            if (weapon == null || WeaponLoadout.Instance == null) return;
 
             WeaponLoadout.Instance.Inventory.SetWeapon(weapon);
+
+            var tuning = LegendaryPassiveTuning.Current;
+            int upgrades = 0;
+            if (forcedWeapon == null && LegendaryPassiveEffects.Has(LegendaryPassiveEffectKind.ChestWeaponUpgrades))
+                upgrades += tuning.chestWeaponUpgrades;
+            if (chosen && LegendaryPassiveEffects.Level(LegendaryPassiveEffectKind.ChestWeaponChoice) >= 2)
+                upgrades += tuning.chestChoiceUpgradesLevel2;
+            if (upgrades > 0 && WeaponLevelManager.Instance != null)
+                WeaponLevelManager.Instance.SetLevel(weapon, 1 + upgrades);
 
             // El sistema de armas reemplaza al de habilidades: si el jugador aún llevaba una
             // habilidad equipada, se la quitamos para que el arma dispare de inmediato (WeaponUser
@@ -59,9 +109,11 @@ namespace RedMagic.Hub
             AbilityFx.Flash(weapon.Icon, transform.position + Vector3.up * 0.6f,
                             Vector2.one * 0.9f, weapon.Accent, 0.6f, 0f, 2f, gameObject);
 
-            RewardPopupUi.Show(weapon.Icon, "Arma obtenida", weapon.DisplayName, weapon.Accent);
+            int level = WeaponLevelManager.Instance != null ? WeaponLevelManager.Instance.GetLevel(weapon) : 1;
+            RewardPopupUi.Show(weapon.Icon, level > 1 ? $"Arma obtenida · Nivel {level}" : "Arma obtenida",
+                               weapon.DisplayName, weapon.Accent);
 
-            Debug.Log($"[ChestLootContainer] Arma obtenida: {weapon.DisplayName} " +
+            Debug.Log($"[ChestLootContainer] Arma obtenida: {weapon.DisplayName} nivel {level} " +
                       $"({weapon.BaseDamage:0} dmg · {weapon.BaseCooldown:0.00}s).", this);
         }
     }

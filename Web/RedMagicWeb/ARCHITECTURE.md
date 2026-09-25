@@ -11,7 +11,9 @@ module's responsibility shifts, update its row in the same change.
 
 | To change... | Edit | Function |
 |---|---|---|
-| How background removal picks the bg color / flood-fills | `modules/background-removal.js` | `removeBackground(imageData, tolerancePercent)` |
+| How background removal picks the key color / flood-fills | `modules/background-removal.js` | `detectKeyColor(imageData)` (dominant border color), `removeBackground(imageData, tolerancePercent, { keyColor })` — any chroma key, not only magenta |
+| How the key-colored halo is cleaned off the edge | `modules/despill-edge.js` | `despillEdge(imageData, { keyColor, threshold, edgeRadius })`: spill = min(key channels) − max(other channels); above `threshold` the edge pixel is deleted, above 0 its key channels are clamped (green → G = max(R,B)) |
+| Where the key color is chosen (presets / picker / eyedropper / auto) | `app.js` | `keyColor()`, `setKeyColor`, `autoDetectKey` — one key feeds flood-fill, pockets and despill |
 | The foreground alpha mask (threshold for "is this pixel part of a sprite") | `modules/sprite-detection.js` | `buildAlphaMask(imageData, alphaThreshold)` |
 | How much detected blobs get grown before merging (dilation) | `modules/sprite-detection.js` | `dilateMask(mask, w, h, radius)` |
 | Connected-component blob finding / min-area noise filter | `modules/sprite-detection.js` | `connectedComponents(mask, w, h, minArea)` |

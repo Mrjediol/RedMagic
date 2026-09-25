@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RedMagic.Combat;
+using RedMagic.UI;
 using UnityEngine;
 
 namespace RedMagic.Economy
@@ -251,9 +252,6 @@ namespace RedMagic.Economy
             PlayerPrefs.SetInt(TotalKillsPrefKey, total);
             PlayerPrefs.Save();
 
-            if (LegendaryPassiveEffects.GoldPerKill > 0 && CurrencyManager.Instance != null)
-                CurrencyManager.Instance.Add(Currency.Gold, LegendaryPassiveEffects.GoldPerKill);
-
             if (total % KillsPerDrop == 0) TryDropRandomPassive();
         }
 
@@ -272,6 +270,7 @@ namespace RedMagic.Economy
             var chosen = locked[UnityEngine.Random.Range(0, locked.Count)];
             Unlock(chosen);
             HasNewPassiveNotification = true;
+            PassiveDropCinematic.Show(chosen);
         }
     }
 }

@@ -13,12 +13,11 @@ MonoBehaviour:
   m_Name: LegendaryPassive_5
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
   id: 5
-  icon: {fileID: 0}
-  displayName: Reloj Roto
-  description: -10% Cooldowns
-  upgradeDescription: -20% Cooldowns
+  icon: {fileID: 2823726601231208955, guid: 38fab7c519dd5e24bb551f7d4699dcd3, type: 3}
+  displayName: "Volumen Carmes\xED"
+  description: +10% damage permanently
+  upgradeDescription: +20% damage permanently
   effectKind: 5
-  baseValue: 0.1
   maxLevel: 2
   upgradeCost: 50
   isUnlocked: 0

@@ -104,11 +104,7 @@ namespace RedMagic.Abilities
 
             float amount = damage * ctx.DamageScale;
 
-            // Bono plano de las pasivas legendarias de daño — sólo cuenta cuando quien golpea es el
-            // jugador, nunca en un ataque de enemigo/jefe que también pase por aquí.
             bool byPlayer = Teams.Of(ctx.Caster) == Team.Player;
-            if (byPlayer)
-                amount += Economy.LegendaryPassiveEffects.AttackDamageBonus;
 
             // Lo del jugador pasa por PlayerHit (bonos de items, ralentización, avisos de baja); lo
             // de enemigos y jefes va directo, como siempre.

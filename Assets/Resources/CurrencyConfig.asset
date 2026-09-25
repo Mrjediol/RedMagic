@@ -14,19 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyConfig
   visuals:
   - currency: 0
-    icon: {fileID: 21300000, guid: 9bbbd195d0fe6d1459215b8047a23e7c, type: 3}
+    icon: {fileID: 21300000, guid: b8b124f46a7903d4a85813d293082e9b, type: 3}
     label: Gold
     tint: {r: 1, g: 1, b: 1, a: 1}
   - currency: 1
-    icon: {fileID: 21300000, guid: 1c439d48db75c1946b3c329ff69d7ad4, type: 3}
+    icon: {fileID: 21300000, guid: 4baf1d1f3ac40684baaa2beb08a5feb6, type: 3}
     label: Diamond
     tint: {r: 1, g: 1, b: 1, a: 1}
   - currency: 2
-    icon: {fileID: 21300000, guid: 2f3a2b02d8ae35d4f950eac5d1411a05, type: 3}
+    icon: {fileID: 21300000, guid: 51d962a82dadef04aa4d16177d19c5ce, type: 3}
     label: Soul Fragment
     tint: {r: 1, g: 1, b: 1, a: 1}
   - currency: 3
-    icon: {fileID: 21300000, guid: 65f1eda3752505047964f88c1e1439a7, type: 3}
+    icon: {fileID: 21300000, guid: f9527d22570f86448a7f3ef68a6bf8e4, type: 3}
     label: Skull
     tint: {r: 1, g: 1, b: 1, a: 1}
   basic:

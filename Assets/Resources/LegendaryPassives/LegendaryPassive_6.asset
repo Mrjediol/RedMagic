@@ -13,12 +13,11 @@ MonoBehaviour:
   m_Name: LegendaryPassive_6
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
   id: 6
-  icon: {fileID: 0}
-  displayName: Piel de Piedra
-  description: +2 Armor
-  upgradeDescription: +4 Armor
+  icon: {fileID: -901835197367864875, guid: 95411ce5028b3f74092114a059208dcd, type: 3}
+  displayName: "Anales del Vac\xEDo"
+  description: First wave of each level starts with all enemies slowed
+  upgradeDescription: All enemies in the run start with -20% HP
   effectKind: 6
-  baseValue: 2
   maxLevel: 2
   upgradeCost: 50
   isUnlocked: 0

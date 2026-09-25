@@ -75,19 +75,7 @@ namespace RedMagic.Hub
             if (InteractPressed()) Interact();
         }
 
-        private bool InteractPressed()
-        {
-            if (_interactAction != null && _interactAction.WasPressedThisFrame()) return true;
-
-            var keyboard = Keyboard.current;
-            if (keyboard != null && (keyboard.eKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame))
-                return true;
-
-            var gamepad = Gamepad.current;
-            if (gamepad != null && gamepad.buttonNorth.wasPressedThisFrame) return true;
-
-            return TouchInput.ConsumeInteract();
-        }
+        private bool InteractPressed() => InteractInput.Pressed(_interactAction);
 
         /// <summary>Usa el yunque. Público para poder llamarlo desde un botón táctil o un evento.</summary>
         public void Interact()

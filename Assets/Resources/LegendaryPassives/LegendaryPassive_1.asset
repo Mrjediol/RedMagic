@@ -13,12 +13,11 @@ MonoBehaviour:
   m_Name: LegendaryPassive_1
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
   id: 1
-  icon: {fileID: 0}
-  displayName: Bolsa sin Fondo
-  description: +1 Gold per kill
-  upgradeDescription: +2 Gold per kill
+  icon: {fileID: -8723728233184346459, guid: e6834448e1f2310488da2061721f9a56, type: 3}
+  displayName: Tomo del Destino
+  description: When picking an item, choose from 3 options instead of 1
+  upgradeDescription: Also reroll those 3 options once for free
   effectKind: 1
-  baseValue: 1
   maxLevel: 2
   upgradeCost: 50
   isUnlocked: 0

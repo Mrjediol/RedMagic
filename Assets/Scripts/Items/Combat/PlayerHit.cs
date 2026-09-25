@@ -95,6 +95,9 @@ namespace RedMagic.Items
 
             amount += CombatModifiers.HitBonus(target);
 
+            // Volumen Carmesí: multiplica todo lo anterior, así escala también los bonos de items.
+            amount *= Economy.LegendaryPassiveEffects.PlayerDamageMultiplier;
+
             bool wasSlowed = SlowStatus.IsSlowedTarget(target);
             if (!target.TakeDamage(amount, sourcePosition, knockbackMultiplier)) return false;
 

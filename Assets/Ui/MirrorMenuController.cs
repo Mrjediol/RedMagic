@@ -54,6 +54,7 @@ namespace RedMagic.UI
         // panel de detalle
         private Label _detailTitle;
         private Label _detailDescription;
+        private Label _detailDescription2;
         private Label _detailLevel;
         private Label _detailUpgradeDescription;
         private Button _upgradeButton;
@@ -329,6 +330,14 @@ namespace RedMagic.UI
             _detailDescription.style.marginBottom = 14;
             _detailView.Add(_detailDescription);
 
+            // Nivel 2: línea aparte bajo la del nivel 1, las dos visibles a la vez.
+            _detailDescription2 = MenuStyle.CardDescription("");
+            _detailDescription2.style.fontSize = MenuStyle.BodyFontSize;
+            _detailDescription2.style.maxWidth = 460;
+            _detailDescription2.style.marginTop = -6;
+            _detailDescription2.style.marginBottom = 14;
+            _detailView.Add(_detailDescription2);
+
             _detailLevel = MenuStyle.CardLevel("");
             _detailLevel.style.fontSize = 22;
             _detailLevel.style.marginBottom = 18;
@@ -493,6 +502,7 @@ namespace RedMagic.UI
             {
                 _detailTitle.text = "";
                 _detailDescription.text = "";
+                _detailDescription2.style.display = DisplayStyle.None;
                 _detailLevel.text = "";
                 _detailUpgradeDescription.text = "";
                 _upgradeButton.style.display = DisplayStyle.None;
@@ -504,7 +514,9 @@ namespace RedMagic.UI
             bool maxed = manager.IsMaxed(passive);
 
             _detailTitle.text = passive.displayName;
-            _detailDescription.text = passive.EffectDescriptionForLevel(level);
+            _detailDescription.text = $"Nivel 1: {passive.description}";
+            _detailDescription2.text = $"Nivel 2: {passive.upgradeDescription}";
+            _detailDescription2.style.display = level >= 2 ? DisplayStyle.Flex : DisplayStyle.None;
             _detailLevel.text = $"Level {level} / {passive.maxLevel}";
 
             if (maxed)
@@ -515,7 +527,7 @@ namespace RedMagic.UI
                 return;
             }
 
-            _detailUpgradeDescription.text = $"Upgrade: {passive.upgradeDescription}";
+            _detailUpgradeDescription.text = $"Mejora → Nivel 2: {passive.upgradeDescription}";
             _upgradeButton.style.display = DisplayStyle.Flex;
 
             bool canAfford = manager.CanUpgrade(passive);

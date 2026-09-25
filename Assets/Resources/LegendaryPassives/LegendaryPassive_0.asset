@@ -13,12 +13,11 @@ MonoBehaviour:
   m_Name: LegendaryPassive_0
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
   id: 0
-  icon: {fileID: 0}
-  displayName: "Coraz\xF3n de Hierro"
-  description: +5 Max HP
-  upgradeDescription: +10 Max HP
+  icon: {fileID: 7122626419019938785, guid: 11db601442f51e945b1105ae497f9147, type: 3}
+  displayName: Codex Aurum
+  description: A free item drops after defeating each world boss
+  upgradeDescription: Two free items drop after defeating each world boss
   effectKind: 0
-  baseValue: 5
   maxLevel: 2
   upgradeCost: 50
   isUnlocked: 0

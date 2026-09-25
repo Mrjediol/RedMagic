@@ -25,11 +25,61 @@ MonoBehaviour:
     scale: 1.1
   - scene:
       sceneAsset: {fileID: 102900000, guid: 399eb5522346b2f4c8f6ff1f3c83f700, type: 3}
-      scenePath: Assets/Scenes/Worlds/World1/World1_Boss.unity
-      sceneName: World1_Boss
+      scenePath: Assets/Scenes/Worlds/World1/BosqueBoss.unity
+      sceneName: BosqueBoss
     scale: 1
   - scene:
       sceneAsset: {fileID: 102900000, guid: 4f47a9a0eb2a04845bdf8eebbdb8c2bd, type: 3}
-      scenePath: Assets/Scenes/Worlds/World1/World1_Section01.unity
-      sceneName: World1_Section01
+      scenePath: Assets/Scenes/Worlds/World1/Bosque1.unity
+      sceneName: Bosque1
+    scale: 1
+  - scene:
+      sceneAsset: {fileID: 102900000, guid: c4366745cc8567b4fbb8639e20d92cf1, type: 3}
+      scenePath: Assets/Scenes/Bosque2.unity
+      sceneName: Bosque2
+    scale: 1
+  - scene:
+      sceneAsset: {fileID: 102900000, guid: 0f2fec494426bc645816b516586c5e81, type: 3}
+      scenePath: Assets/Scenes/Worlds/World1/Bosque3.unity
+      sceneName: Bosque3
+    scale: 1
+  - scene:
+      sceneAsset: {fileID: 102900000, guid: 7d9a57d03d6b8e74299cd6fa633b38f5, type: 3}
+      scenePath: Assets/Scenes/Worlds/World1/Bosque4.unity
+      sceneName: Bosque4
+    scale: 1
+  - scene:
+      sceneAsset: {fileID: 102900000, guid: 68eacb98ccaae32448c7b11a8712a4ba, type: 3}
+      scenePath: Assets/Scenes/Ice1.unity
+      sceneName: Ice1
+    scale: 1
+  - scene:
+      sceneAsset: {fileID: 102900000, guid: 49008393c71e696469e4867decdc2ae4, type: 3}
+      scenePath: Assets/Scenes/Ice2.unity
+      sceneName: Ice2
+    scale: 1
+  - scene:
+      sceneAsset: {fileID: 102900000, guid: 172adc07d4124f240a0233013e7973d2, type: 3}
+      scenePath: Assets/Scenes/Ice3.unity
+      sceneName: Ice3
+    scale: 1
+  - scene:
+      sceneAsset: {fileID: 102900000, guid: d82dcfd92ad1d7f4a911dff5c75f3f55, type: 3}
+      scenePath: Assets/Scenes/Ice4.unity
+      sceneName: Ice4
+    scale: 1
+  - scene:
+      sceneAsset: {fileID: 102900000, guid: c212d2d50cbe95541a9c9951bfc841c6, type: 3}
+      scenePath: Assets/Scenes/Fire1.unity
+      sceneName: Fire1
+    scale: 1
+  - scene:
+      sceneAsset: {fileID: 102900000, guid: 7757a44f119776143883c0345dc842f8, type: 3}
+      scenePath: Assets/Scenes/Fire1 1.unity
+      sceneName: Fire1 1
+    scale: 1
+  - scene:
+      sceneAsset: {fileID: 102900000, guid: 594b46cde2cf98c489085bbc603a33a5, type: 3}
+      scenePath: Assets/Scenes/Shop.unity
+      sceneName: Shop
     scale: 1

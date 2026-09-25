@@ -238,9 +238,23 @@ to pick up the change.
   testing; counting it (the old `GetComponentsInChildren<Health>(true)` scan) locked every exit
   and the boss reward forever — and exposes
   `IsCleared` / `RemainingEnemies` / `Cleared`. This is the "kill everything first" gate:
-  `SectionExit` (`requireEnemiesDead`) and `ShopInteractable` both refuse to work while enemies
+  `SectionExit` (`requireEnemiesDead`) refuses to work while enemies
   live. When the last one dies it plays `clearSfxId` and spawns `clearEffectPrefab` (the fireball's
   `VFX_Explosion`) at every `SectionExit` in the scene, so the feedback points at the way out.
+- **`WaveManager`** (+ `WaveDefinition` / `EnemySpawn`, serialized classes — not SOs, because
+  entries reference scene `Transform`s) — optional, one per combat scene
+  (**GameObject ▸ RedMagic ▸ Wave Manager** creates it with two child spawn points). `Start` →
+  wave 1 (after its `startDelay`); each `EnemySpawn` is `Instantiate`d after its `spawnDelay` at its
+  spawn point and moved into the manager's scene (sections load additively); next wave when every
+  spawned `Health` is dead (`Health.AnyDied` + a null/dead poll for enemies destroyed without
+  dying). Events `OnWaveStart(int)` / `OnWaveComplete(int)` / `OnAllWavesComplete` (0-based).
+  Enemy prefabs are untouched. It **holds `SectionClearTracker`** (`AddHold`/`ReleaseHold`) so the
+  exit/shop stay locked between waves, and `Register`s each spawned enemy (the tracker only scans at
+  load); the "cleared" feedback fires once, after the last wave — an unload mid-wave releases
+  silently. Gizmos are always drawn: a sphere per spawn point coloured by the first wave that uses
+  it, labelled `W<n> <enemy> ×<count>`; unused points grey. Inspector (`WaveManagerEditor` +
+  `EnemySpawnDrawer`): collapsible waves with a summary line, one row per enemy (prefab / spawn
+  point dropdown from the manager's list — stored as a reference, not a name / delay).
 - **`PlayerScaleConfig`** — per-scene override for the player's `transform.localScale`, needed
   because each level's background is generated separately by AI and the art scale isn't consistent
   from one image to the next. Lives at `Assets/Resources/PlayerScaleConfig.asset` (loaded with
@@ -254,11 +268,6 @@ to pick up the change.
   so the resize lands in the same frame as the teleport and is never seen popping. No entry for the
   loaded scene → scale 1.0 and a console warning (a new scene nobody's tuned yet); no asset at all
   → the prefab's scale is left alone entirely.
-- **Shop placement** — `RunManager` picks `_shopSectionIndex` at random from the sampled section
-  order (seeded off `RunSeed`, so it's reproducible; never the boss scene), which guarantees
-  **exactly one shop per world, always before the boss** — including the degenerate case of a world
-  with a single section. `SpawnShopIfDue` instantiates `shopPrefab` at a `ShopSpawnPoint` marker if
-  the section has one, else `shopDistanceBeforeExit` units short of the `SectionExit`.
 
 ### Enemies (`Assets/Scripts/Enemies/`)
 
@@ -504,11 +513,10 @@ survives the session and every step is re-runnable and idempotent.
   already-hit filtered), or a collider on the **`Ground` layer (6)** — the terrain painted with
   the Tile Painter, matching `1 << 6` used by `ShotBeam` / `PlayerMovement`. Everything else —
   decoration, trigger zones (cauldron, tomb, shop), other props — is passed straight through.
-- **`GroundSnap`** (`Assets/Scripts/Gameplay/`, on `Shop.prefab` and `WeaponUpgrade.prefab`) — on
+- **`GroundSnap`** (`Assets/Scripts/Gameplay/`, on `WeaponUpgrade.prefab`) — on
   `Start` (and via context-menu) raycasts down to the `Ground` layer and drops the object so the
-  base of its sprite bounds rests on the terrain. Needed because `RunManager` spawns the shop and
-  the boss reward at marker/exit positions that aren't ground-aligned (and the shop's wheelbarrow
-  no longer has the dynamic Rigidbody2D that used to let it fall into place). Reusable on any
+  base of its sprite bounds rests on the terrain. Needed because `RunManager` spawns
+  the boss reward at a position that isn't ground-aligned. Reusable on any
   spawned prop.
 - **Every `TilemapCollider2D` MUST be merged into a `CompositeCollider2D`** (+ a `Rigidbody2D` set
   to **Static**, which the composite requires). A bare `TilemapCollider2D` emits **one box per
@@ -663,11 +671,11 @@ Inspector wiring.
 - **`AbilityChest`** (name kept; on `Assets/Prefab/Eviroment/GoldChest.prefab`) — proximity
   interactable that grants a **`WeaponDefinition`** through `WeaponLoadout.Instance.Inventory`.
   Empty `forcedWeapon` = random from `WeaponLibrary`; `AbilityChestEditor` draws it as a dropdown.
-- **`ShopMenuController`** buys items and equips them straight into the inventory (`TryEquip`).
+- **The shop** (`Economy.ShopManager`, see Economy) sells items and equips them straight into the inventory (`TryEquip`).
 - **`ShotPipelineHarness`** — drop it in a scene and hit Play to fire the four configurations
   (bare / trajectory only / shape only / all three layers) at a dummy it spawns.
 - Current content: 7 weapons (the ones rescued from the old abilities plus a plain
-  `Weapon_ProyectilRecto`), 4 modifiers, 10 free-pool items (6 of them the ice set below).
+  `Weapon_ProyectilRecto`) and the 6 ice-set free-pool items below — no modifier assets right now.
 - **Item behaviour lives on the item** — read `Assets/_Pipeline/ITEMS_PIPELINE.md`.
   `ItemDefinition.effects` is a `[SerializeReference, SubclassPicker]` list of `ItemEffect`
   subclasses (`Assets/Scripts/Items/Effects/`): pick the type from a dropdown in the item's
@@ -959,6 +967,10 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
   `Resources.Load`. Holds per-currency HUD visuals (icon/label/tint) and the drop table: a
   min–max `DropRange` per currency for each `EnemyTier` (Basic / Elite / Boss). This asset **is**
   the "currency manager" for tuning drop amounts — edit it in the Inspector.
+  Currency icons: source art in `Assets/Art/Currency/` (Coin/Diamond/Skull/SoulFragmen, big canvases),
+  trimmed by alpha into `Assets/Art/UI/Currency/Currency_<Currency>.png` (bilinear, mipmaps, 256 max,
+  1.6 u longest side) and assigned in `CurrencyConfig` by **Tools ▸ RedMagic ▸ UI ▸ Iconos de moneda ·
+  Procesar e instalar** (`CurrencyIconsPack`). Everything (HUD, shop prices) reads icons from there.
 - **`CurrencyDropper`** — `[RequireComponent(Health)]`; on `Health.Died` calls
   `CurrencyManager.GrantDrops(tier)`, which rolls each currency's range for that tier. On the enemy
   prefabs (`Enemy_*`, tier set per prefab) and on boss enemy instances (tier Boss). A Basic tier
@@ -988,23 +1000,48 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
 - The trigger for this menu is now `Hub.BookLootContainer` on the hub's book lectern (see Main Hub
   interactables); `CauldronInteractable`, the old single-press placeholder, is retired to Legacy.
 
-**Mid-run shop:**
+**Shop (scene-based, between sections):**
 
-- **`ItemLibrary`** (`Assets/Scripts/Items/`) — folder scan of `Resources/Items` bucketed by slot
-  (`Elements` / `Trajectories` / `Shapes` / `FreePool`), same pattern as `AbilityLibrary` /
-  `WeaponLibrary`. The shop and any future consumer read real `ItemDefinition` assets from here.
-- **`ShopConfig`** — ScriptableObject at `Assets/Resources/ShopConfig.asset`. **No item list** — it
-  only tunes `freePoolCount` (default 3) and a min–max `CostRange` per type. `RollStock(seed)`
-  composes one shop: 1 random Element + 1 Trajectory + 1 Shape modifier + `freePoolCount` distinct
-  free-pool items (6 total), seeded partial Fisher-Yates, returns `ShopStockEntry { Item, Cost }`.
-- **`ShopInteractable`** — on the `Shop.prefab` ("Shop Interact Zone" child). Rolls its stock once
-  (seeded from `RunSeed` + its x position), refuses to open while `SectionClearTracker` reports
-  enemies alive, and `MarkSold` removes an entry permanently — each item is buy-once.
-- **`ShopMenuController`** (`Assets/Ui/`) — same self-bootstrapping code-built pattern as the
-  upgrade menu, own `Assets/Resources/ShopMenuPanelSettings.asset`. Spends **Gold** and **equips on
-  purchase** into `WeaponLoadout.Instance.Inventory` via `TryEquip`: a modifier replaces its
-  dedicated slot silently; a free-pool item takes the first empty slot, or — if all 6 are full —
-  opens a second overlay to pick which slot to discard, and only charges once the player picks.
+- **Flow** — `RunPhase.Shop`. `RunManager.AdvanceSection` from a cleared normal section loads
+  `ShopConfig.shopScene` (global, never in a world's section pool) before the next section; from
+  the shop it continues as usual; bosses never lead to a shop. Enter at the scene's `SectionEntry`
+  (left door), leave through its `SectionExit` (right door). After loading, `RunManager.StockShop`
+  calls `ShopManager.Stock(CurrentWorldNumber, seed)`; a Shop scene opened on its own stocks itself
+  as world 1.
+- **`ItemLibrary.All`** (`Assets/Scripts/Items/`) is the global item pool (folder scan of
+  `Resources/Items`), read by the shop and `ItemPickup` — a new item asset shows up in both with no
+  wiring. The pool is currently the 6 ice-set items.
+- **`ShopConfig`** (`Assets/Resources/ShopConfig.asset`) — every shop number: `shopScene`,
+  `rarityWeightsPerWorld` (index 0 = world 1, last entry covers every later world), `basePrice`
+  per rarity × `priceMultiplierPerWorld`. `RollStock(count, world, rng)` rolls rarity by weight,
+  then an item of it, falling back to the nearest rarity that still has items; no duplicates.
+- **`Economy.ShopManager`** (in `Shop.unity`) — `itemSpawnPoints` (one per altar), icon size /
+  price offset / bob, proximity ranges, the Interact action. Adds a **`ShopAltar`** to each point
+  (icon with a bob + world-space coin+price canvas, red when unaffordable, shake/flash on a denied
+  buy). Nearest altar in range → **`UI.ShopItemPanel`** (UI Toolkit, own
+  `ShopItemPanelSettings`, sorting 17): name in rarity colour, rarity, description, each tag
+  "now → after" (gold + the `SynergyConfig` tier text when the buy crosses 2/4/6), and the hint.
+  Interact (`Core.InteractInput`) → `CurrencyManager.TrySpend(Gold)` → `WeaponInventory.TryEquip`
+  → altar cleared. A free-pool item with all 6 free slots full is refused before charging.
+- **`Tools ▸ RedMagic ▸ Tienda ▸ Preparar escena Shop`** (`ShopSceneSetup`) — adds whatever is
+  missing to `Shop.unity` (BG, floor, entry/exit, `ShopManager` with 5 points (one per altar) laid out on
+  `Shop1.png`, `CameraFollow`) and assigns `ShopConfig.shopScene`. Idempotent; it respects the
+  `BG.prefab` layout already in the scene.
+- **Shop FX** — every number in `Resources/ShopFxConfig.asset` (`ShopFxConfig`: per-rarity aura
+  table — halo alpha/pulse, particles/s, size, sparkle interval/count, purchase burst — plus focus
+  boost, pop/flash/fly/ring timings, legendary shake/extra sparkles, HUD gold shake/tick). Colours
+  come only from `Resources/ItemRarityColors.asset` via `ItemRarities.ColorOf` (also used by the UI).
+  `ShopAltar` builds halo + aura/burst `ParticleSystem`s + flash overlay once per altar;
+  `PlayPurchase` empties the altar immediately and runs pop → burst → arc to the player → ring,
+  no pause; `CurrencyHud.PlaySpend` shakes and counts the gold down. Additive look =
+  `Assets/Art/Fx/Shaders/SpriteAdditive.shader` (`RedMagic/Sprite Additive`) +
+  `Assets/Art/Fx/Materials/Fx_SpriteAdditive.mat`. **Unity 6 gotcha**: a SpriteRenderer's colour
+  reaches the shader as `unity_SpriteColor`, NOT the vertex colour — a custom sprite shader that
+  only reads `COLOR` renders every tint as white; particles do use the vertex colour
+  (`_UseSpriteColor = 0` on their material). `Tools ▸ RedMagic ▸ Tienda ▸ Generar FX de tienda`
+  (`ShopFxSetup`) creates the material + both assets if missing.
+- **`Core.InteractInput.Pressed(action)`** is the one "Interact pressed this frame" recipe (action,
+  E/Enter, gamepad north, touch). Every interactable uses it.
 
 **`MenuStyle`** (`Assets/Ui/MenuStyle.cs`) — shared palette, sizes and element factories for both
 code-built menus. **Change the size constants here to rescale that UI**; both screens follow. Sizes
@@ -1082,6 +1119,28 @@ and hand-tuned in a scene won't overwrite it.
   (`Assets/Ui/MirrorMenuController.cs`) — a placeholder menu, same self-bootstrapping shape and
   `MenuStyle` look as `UpgradeMenuController` (own `Assets/Resources/MirrorMenuPanelSettings.asset`,
   sorting order 30), whose body is just a "Coming soon" label until stats/cosmetics are decided.
+- **Legendary passives (mirror)** — 9 `LegendaryPassive` assets in `Resources/LegendaryPassives/`,
+  synced (names, level 1/2 texts, `effectKind`, icon from `Assets/Art/Pasives/<NameWithoutSpaces>.png`)
+  by `Tools ▸ RedMagic ▸ Hub ▸ Espejo · Generar pasivas legendarias` (`LegendaryPassiveStarterPack`).
+  `LegendaryPassiveEffects.Level(kind)` gives the owned level (0/1/2; level 2 includes level 1
+  unless the text says "instead"); every number is in `Resources/LegendaryPassiveTuning.asset`.
+  Where each effect lives: **Codex Aurum / Páginas del Eco / Anales del Vacío / Manuscrito
+  Eterno** → `Economy.LegendaryPassiveRunner` (self-bootstrapping; boss clear → `Items.ItemPickup.Drop`,
+  run start → `Run.RunRerolls`, `WaveManager.AnyEnemySpawned` wave 0 → `SlowStatus`,
+  `Health.AnyStarted` → -20% max HP on enemies during a run, every N cleared sections → item);
+  **Grimorio del Umbral / El Tomo Roto** → `Hub.ChestLootContainer` (+ `UI.WeaponChoiceMenuController`,
+  upgrades via `WeaponLevelManager.SetLevel`); **El Libro Sin Nombre** →
+  `Gameplay.LegendaryPassivePlayerHook` on Player.prefab, through `Health.DeathGuard` /
+  `Health.HitAbsorber`; **Volumen Carmesí** → `PlayerDamageMultiplier` in `Items.PlayerHit.Deal`.
+  Tomo del Destino and Páginas del Eco lvl 2 are TODO (shop/reroll rework). `ItemPickup` is the
+  free-item-on-the-ground drop: pooled, touch to equip (`TryEquip`), stays if free slots are full. When
+  `LegendaryPassiveManager` drops one it calls **`UI.PassiveDropCinematic.Show(passive)`** (also
+  `Show(name, icon)`): self-bootstrapping persistent uGUI canvas at `sortingOrder` 32767, built once
+  and reused, queues repeated calls, pauses via `GameStateManager`, unscaled time, dismissed by any
+  tap/click/key/gamepad south. Every timing/size/colour lives in
+  `Resources/PassiveDropCinematicSettings.asset` (`Espejo · Ajustes de cinemática de pasiva`);
+  `Espejo · Probar cinemática de pasiva (Play)` previews it. Headless `capture_game_view` does not
+  show overlay canvases — switch the canvas to `ScreenSpaceCamera` at runtime to screenshot it.
 - **`SectionExit.BlockedByMissingWeapon`** — the hub door (`SectionExit` with `world` assigned, see
   the Run/world system section) refuses to `StartRun` while
   `WeaponLoadout.Instance.Inventory.Weapon == null`, gated by `[SerializeField] bool

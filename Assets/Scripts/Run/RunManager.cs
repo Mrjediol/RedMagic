@@ -17,6 +17,8 @@ namespace RedMagic.Run
         None,
         /// <summary>Jugando una de las secciones sorteadas.</summary>
         Section,
+        /// <summary>En la tienda, entre una sección despejada y la siguiente (nunca tras el jefe).</summary>
+        Shop,
         /// <summary>Jugando el jefe del mundo.</summary>
         Boss
     }
@@ -93,15 +95,8 @@ namespace RedMagic.Run
                  "(o una entrada en el AudioManager). Si no existe, el hub suena en silencio.")]
         [SerializeField] private string hubMusicId = "MainHub";
 
-        [Header("Tienda")]
-        [Tooltip("Prefab de la tienda. Se coloca UNA por mundo, en una de las secciones sorteadas " +
-                 "elegida al azar (nunca en el jefe). Si el mundo sólo tiene una sección antes del " +
-                 "jefe, la tienda cae ahí seguro.")]
-        [SerializeField] private GameObject shopPrefab;
-
-        [Tooltip("A qué distancia por delante de la salida se coloca la tienda cuando la sección " +
-                 "no trae un ShopSpawnPoint propio.")]
-        [SerializeField] private float shopDistanceBeforeExit = 5f;
+        [Tooltip("Id de la música de la tienda (la escena de tienda va en ShopConfig).")]
+        [SerializeField] private string shopMusicId = "Shop";
 
         [Header("Recompensa del jefe")]
         [Tooltip("Prefab que aparece al caer el jefe, sobre su cadáver (el altar de mejora de " +
@@ -151,6 +146,12 @@ namespace RedMagic.Run
         /// <summary>Sección actual dentro de la run, empezando en 1. 0 si no hay run o si toca jefe.</summary>
         public int CurrentSectionNumber => Phase == RunPhase.Section ? _index + 1 : 0;
 
+        /// <summary>
+        /// Número del mundo en curso (desde 1; 1 si no hay run). Es lo que se le pasa a la tienda
+        /// para escalar rarezas y precios.
+        /// </summary>
+        public int CurrentWorldNumber => CurrentWorld != null ? Mathf.Max(1, CurrentWorld.WorldNumber) : 1;
+
         /// <summary>Cuántas secciones tiene la run actual, sin contar el jefe.</summary>
         public int SectionCount => _order?.Count ?? 0;
 
@@ -179,7 +180,6 @@ namespace RedMagic.Run
         private Coroutine _flow;
         private bool _frozen;               // si hemos sumado una pausa al contador de GameStateManager
         private int _scenesSinceCleanup;    // para assetCleanupEveryNScenes
-        private int _shopSectionIndex = -1; // en qué sección del mundo actual sale la tienda
 
         private const string PlayerScaleConfigResourcePath = "PlayerScaleConfig";
         private PlayerScaleConfig _playerScaleConfig;
@@ -322,7 +322,6 @@ namespace RedMagic.Run
 
             CurrentWorld = world;
             _index = 0;
-            PickShopSection();
             RunInProgress = true;
             SetPhase(RunPhase.Section);
 
@@ -353,6 +352,15 @@ namespace RedMagic.Run
             if (Phase == RunPhase.Boss)
             {
                 CompleteWorld();
+                return;
+            }
+
+            // Sección normal despejada → tienda antes de lo siguiente. Desde la tienda (o sin
+            // escena de tienda asignada) se sigue como siempre.
+            if (Phase == RunPhase.Section && Economy.ShopConfig.Instance.shopScene.CanLoad)
+            {
+                SetPhase(RunPhase.Shop);
+                _flow = StartCoroutine(EnterCurrentRoutine(firstOfRun: false));
                 return;
             }
 
@@ -407,8 +415,12 @@ namespace RedMagic.Run
         // ------------------------------------------------------------------ flujo de escenas
 
         /// <summary>Escena que toca cargar ahora mismo, según fase e índice.</summary>
-        private SceneReference CurrentTarget =>
-            Phase == RunPhase.Boss ? CurrentWorld.BossScene : _order[_index];
+        private SceneReference CurrentTarget => Phase switch
+        {
+            RunPhase.Boss => CurrentWorld.BossScene,
+            RunPhase.Shop => Economy.ShopConfig.Instance.shopScene,
+            _ => _order[_index],
+        };
 
         private IEnumerator EnterCurrentRoutine(bool firstOfRun)
         {
@@ -458,7 +470,7 @@ namespace RedMagic.Run
             // 5. Colocar al jugador y apuntarle la cámara de la sección nueva.
             PlacePlayerAtEntry(_loadedRunScene);
             RetargetCameras(_loadedRunScene);
-            SpawnShopIfDue(_loadedRunScene);
+            StockShop(_loadedRunScene);
             BindClearTracker();
 
             // 6. Música de la fase (World{n}-{puesto} o BossBattle{n}). Si no hay clip con ese
@@ -479,39 +491,17 @@ namespace RedMagic.Run
         // ------------------------------------------------------------------ tienda
 
         /// <summary>
-        /// Elige en qué sección del mundo actual sale la tienda: una al azar de las sorteadas,
-        /// nunca el jefe. Como va con la semilla de la run, la misma semilla pone la tienda en el
-        /// mismo sitio. Si el mundo sólo tiene una sección antes del jefe, sale ahí seguro — que es
-        /// justo lo que se busca: <b>una tienda por mundo, siempre antes del jefe</b>.
+        /// Tras cargar la escena de la tienda, le pasa el mundo en curso (escala rarezas y precios
+        /// en <see cref="Economy.ShopConfig"/>) y una semilla derivada de la run, para que la misma
+        /// semilla dé las mismas tiendas.
         /// </summary>
-        private void PickShopSection()
+        private void StockShop(Scene scene)
         {
-            // El XOR desmarca esta tirada de la del orden de secciones: con la misma semilla, la
-            // tienda no queda siempre pegada a la misma posición del sorteo.
-            const int ShopSeedSalt = 0x5409;
+            if (Phase != RunPhase.Shop || !scene.IsValid() || !scene.isLoaded) return;
 
-            _shopSectionIndex = _order != null && _order.Count > 0
-                ? new System.Random(RunSeed ^ ShopSeedSalt).Next(0, _order.Count)
-                : -1;
-        }
-
-        /// <summary>
-        /// Instancia la tienda en la sección recién cargada, si es la que tocaba. La escena del
-        /// jefe nunca la lleva porque <see cref="_shopSectionIndex"/> indexa sólo las secciones.
-        /// </summary>
-        private void SpawnShopIfDue(Scene scene)
-        {
-            if (shopPrefab == null || Phase != RunPhase.Section) return;
-            if (_index != _shopSectionIndex) return;
-            if (!scene.IsValid() || !scene.isLoaded) return;
-
-            var shop = Instantiate(shopPrefab, ResolveShopPosition(scene), Quaternion.identity);
-            shop.name = shopPrefab.name;
-            SceneManager.MoveGameObjectToScene(shop, scene);
-
-            // La tienda no trae enemigos, pero re-escanear deja el contador correcto pase lo que
-            // pase si algún día el prefab spawnea algo con vida.
-            SectionClearTracker.Instance?.Track(scene);
+            foreach (var root in scene.GetRootGameObjects())
+                foreach (var shop in root.GetComponentsInChildren<Economy.ShopManager>(true))
+                    shop.Stock(CurrentWorldNumber, RunSeed ^ (_index * 7919 + CurrentWorldNumber * 104729));
         }
 
         /// <summary>
@@ -534,30 +524,6 @@ namespace RedMagic.Run
             var reward = Instantiate(bossRewardPrefab, position + bossRewardOffset, Quaternion.identity);
             reward.name = bossRewardPrefab.name;
             SceneManager.MoveGameObjectToScene(reward, _loadedRunScene);
-        }
-
-        /// <summary>
-        /// Dónde plantar la tienda: si la sección trae un <see cref="ShopSpawnPoint"/> manda ese;
-        /// si no, un poco antes de la salida (que es por donde el jugador pasa sí o sí); y como
-        /// último recurso, junto a la entrada.
-        /// </summary>
-        private Vector3 ResolveShopPosition(Scene scene)
-        {
-            SectionExit exit = null;
-
-            foreach (var root in scene.GetRootGameObjects())
-            {
-                var marker = root.GetComponentInChildren<ShopSpawnPoint>(true);
-                if (marker != null) return marker.transform.position;
-
-                exit ??= root.GetComponentInChildren<SectionExit>(true);
-            }
-
-            if (exit != null)
-                return exit.transform.position + Vector3.left * shopDistanceBeforeExit;
-
-            var entry = SectionEntry.FindIn(scene);
-            return entry != null ? entry.SpawnPosition + Vector3.right * 6f : Vector3.zero;
         }
 
         private IEnumerator UnloadPreviousRoutine(bool firstOfRun)
@@ -626,7 +592,6 @@ namespace RedMagic.Run
 
             CurrentWorld = next;
             _index = 0;
-            PickShopSection();
             SetPhase(RunPhase.Section);
             RunStarted?.Invoke(next);
             _flow = StartCoroutine(EnterCurrentRoutine(firstOfRun: false));
@@ -912,9 +877,12 @@ namespace RedMagic.Run
         private string CurrentMusicId()
         {
             int world = CurrentWorld != null ? CurrentWorld.WorldNumber : 0;
-            return Phase == RunPhase.Boss
-                ? $"BossBattle{world}"
-                : $"World{world}-{CurrentSectionNumber}";
+            return Phase switch
+            {
+                RunPhase.Boss => $"BossBattle{world}",
+                RunPhase.Shop => shopMusicId,
+                _ => $"World{world}-{CurrentSectionNumber}",
+            };
         }
 
         private void PlayPhaseMusic() => AudioManager.Instance?.PlaySceneMusic(CurrentMusicId());

@@ -27,6 +27,26 @@ namespace RedMagic.Items
         public static IReadOnlyList<ShapeModifier> Shapes => _shapes ??= Load<ShapeModifier>();
         public static IReadOnlyList<FreePoolItemDefinition> FreePool => _freePool ??= Load<FreePoolItemDefinition>();
 
+        /// <summary>
+        /// El pool global: todos los items de todas las clases. Lo que lee la tienda y los drops
+        /// gratis, así que un item nuevo en <c>Resources/Items</c> aparece en ambos sin más.
+        /// </summary>
+        public static IReadOnlyList<ItemDefinition> All
+        {
+            get
+            {
+                if (_all != null) return _all;
+                _all = new List<ItemDefinition>();
+                _all.AddRange(Elements);
+                _all.AddRange(Trajectories);
+                _all.AddRange(Shapes);
+                _all.AddRange(FreePool);
+                return _all;
+            }
+        }
+
+        private static List<ItemDefinition> _all;
+
         private static List<T> Load<T>() where T : ItemDefinition
         {
             var list = new List<T>(Resources.LoadAll<T>(ResourceFolder));
@@ -42,6 +62,7 @@ namespace RedMagic.Items
             _trajectories = null;
             _shapes = null;
             _freePool = null;
+            _all = null;
         }
     }
 }

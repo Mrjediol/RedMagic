@@ -116,6 +116,30 @@ namespace RedMagic.Combat
         public static event Action<Health> AnyDied;
 
         /// <summary>
+        /// Cualquier <see cref="Health"/> que arranca (en su <c>Start</c>, antes de avisar a las
+        /// barras). Para reglas globales sobre lo que aparece — p. ej. una pasiva que baja la vida
+        /// de todos los enemigos de la run — sin tocar cada spawner.
+        /// </summary>
+        public static event Action<Health> AnyStarted;
+
+        /// <summary>
+        /// Si está puesto, se consulta justo antes de morir: devolver true cancela la muerte (quien
+        /// lo devuelve tiene que dejar la vida por encima de 0, p. ej. con <see cref="ReviveAt"/>).
+        /// Un único dueño a la vez — lo pone el jugador para "revivir una vez por run".
+        /// </summary>
+        public Func<Health, bool> DeathGuard { get; set; }
+
+        /// <summary>
+        /// Si está puesto, se consulta con cada golpe que va a entrar (ya con armadura aplicada):
+        /// devolver true lo absorbe — no quita vida, no dispara <see cref="Damaged"/>, sí arranca
+        /// los i-frames. Un escudo de N golpes, por ejemplo. <see cref="Drain"/> no pasa por aquí.
+        /// </summary>
+        public Func<Health, float, bool> HitAbsorber { get; set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticEvents() => AnyStarted = null;
+
+        /// <summary>
         /// Se dispara al llamar a <see cref="ResetHealth"/> mientras se estaba muerto. Es el
         /// complemento de <see cref="Died"/>: un componente que se desactiva permanentemente al
         /// morir (por ejemplo <c>PlayerMovement</c> apagando el control, o <c>PlayerAnimator</c>
@@ -146,6 +170,8 @@ namespace RedMagic.Combat
 
         private void Start()
         {
+            AnyStarted?.Invoke(this);
+
             // Se avisa en Start para que las barras de vida ya estén suscritas.
             HealthChanged?.Invoke(currentHealth, maxHealth);
         }
@@ -184,6 +210,12 @@ namespace RedMagic.Combat
             // Con multiplicador 0 el golpe no entra, así que tampoco empuja ni gasta i-frames.
             amount *= damageMultiplier * _statusDamageMultiplier;
             if (amount <= 0f) return false;
+
+            if (HitAbsorber != null && HitAbsorber(this, amount))
+            {
+                StartInvulnerability(invulnerabilityDuration);
+                return false;
+            }
 
             currentHealth = Mathf.Max(0f, currentHealth - amount);
 
@@ -287,6 +319,7 @@ namespace RedMagic.Combat
         public void Die()
         {
             if (_deathRaised) return;
+            if (DeathGuard != null && DeathGuard(this) && currentHealth > 0f) return;
             _deathRaised = true;
 
             currentHealth = 0f;
@@ -314,6 +347,26 @@ namespace RedMagic.Combat
             // Sólo si de verdad venía de estar muerto: entrar al hub sano ya sin haber muerto no
             // debería disparar Revived de la nada.
             if (wasDead) Revived?.Invoke();
+        }
+
+        /// <summary>
+        /// Vuelve a una fracción de la vida máxima sin pasar por la muerte (lo usa un
+        /// <see cref="DeathGuard"/>). No dispara <see cref="Revived"/>: nunca se llegó a morir.
+        /// </summary>
+        public void ReviveAt(float fraction)
+        {
+            currentHealth = Mathf.Clamp(maxHealth * fraction, 1f, maxHealth);
+            HealthChanged?.Invoke(currentHealth, maxHealth);
+        }
+
+        /// <summary>I-frames durante <paramref name="seconds"/> (se queda con el mayor si ya había).</summary>
+        public void StartInvulnerability(float seconds)
+        {
+            if (seconds <= 0f || seconds <= _invulnerabilityTimer) return;
+
+            bool was = _invulnerabilityTimer > 0f;
+            _invulnerabilityTimer = seconds;
+            if (!was) InvulnerabilityChanged?.Invoke(true);
         }
 
         private static void PlaySfx(string id)

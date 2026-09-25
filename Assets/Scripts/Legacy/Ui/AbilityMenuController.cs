@@ -18,7 +18,7 @@ namespace RedMagic.UI
     /// detrás de una comprobación de build de desarrollo, o borrarse sin tocar nada más — nada del
     /// sistema de habilidades depende de este archivo.
     ///
-    /// Mismo montaje que <see cref="UpgradeMenuController"/> y <see cref="ShopMenuController"/>:
+    /// Mismo montaje que <see cref="UpgradeMenuController"/> y el antiguo menú de tienda:
     /// se auto-crea, es persistente, construye su UI en código y saca el
     /// <see cref="PanelSettings"/> de Resources; mientras está abierto el juego queda en pausa vía
     /// <see cref="GameStateManager"/>.

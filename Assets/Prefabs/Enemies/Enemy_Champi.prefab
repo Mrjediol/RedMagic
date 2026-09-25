@@ -213,6 +213,9 @@ MonoBehaviour:
       arcGravity: 0
       impactRadius: 0
       impactDamage: 0
+      faceDirection: 0
+      facingAxis: 0
+      aimMode: 0
     aimAtTarget: 1
     projectileSprite: {fileID: -673302759, guid: 0e4a38bbde795264cb2c2538401d0122, type: 3}
     projectileTint: {r: 1, g: 1, b: 1, a: 1}

@@ -250,3 +250,8 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .bcArtThumb.empty{border-style:dashed;}
 .bcNotes{font-size:11px;color:var(--muted);}
 .bcIdBar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.keyRow{display:flex;gap:6px;margin-top:6px;align-items:center;}
+.keyRow button{flex:1;padding:6px 6px;font-size:12px;}
+#keyColorInput{width:44px;height:32px;padding:0;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;flex:none;}
+.keyMode{color:var(--accent);font-weight:600;}
+#canvasWrap.eyedropper, #canvasWrap.eyedropper canvas{cursor:crosshair;}

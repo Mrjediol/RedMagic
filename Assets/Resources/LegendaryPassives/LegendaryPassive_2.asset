@@ -13,12 +13,11 @@ MonoBehaviour:
   m_Name: LegendaryPassive_2
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
   id: 2
-  icon: {fileID: 0}
-  displayName: Botas Veloces
-  description: +5% Movement Speed
-  upgradeDescription: +10% Movement Speed
+  icon: {fileID: 8971066615115160188, guid: 0d569c0a5cd01e545b9263df12281ab4, type: 3}
+  displayName: Grimorio del Umbral
+  description: See 3 weapons in the chest and choose which to take
+  upgradeDescription: The chosen weapon starts with 1 upgrade already applied
   effectKind: 2
-  baseValue: 0.05
   maxLevel: 2
   upgradeCost: 50
   isUnlocked: 0

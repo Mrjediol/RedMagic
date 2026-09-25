@@ -3,20 +3,30 @@ using UnityEngine;
 namespace RedMagic.Economy
 {
     /// <summary>
-    /// Qué estadística toca una <see cref="LegendaryPassive"/>. <see cref="LegendaryPassiveEffects"/>
-    /// es quien lee esto y lo convierte en un bono real; el asset sólo declara la intención.
+    /// Qué mecánica activa una <see cref="LegendaryPassive"/>. <see cref="LegendaryPassiveEffects"/>
+    /// es quien lee esto y lo aplica; el asset sólo declara la intención. Valores explícitos
+    /// porque se serializan como int en los assets.
     /// </summary>
     public enum LegendaryPassiveEffectKind
     {
-        MaxHealth,
-        GoldPerKill,
-        MoveSpeed,
-        AttackDamage,
-        DashSpeed,
-        CooldownReduction,
-        Armor,
-        XpGain,
-        HpRegen,
+        /// <summary>Codex Aurum — objeto(s) gratis al derrotar a cada jefe de mundo.</summary>
+        FreeItemAfterBoss = 0,
+        /// <summary>Tomo del Destino — elegir entre 3 objetos (nivel 2: 1 reroll gratis).</summary>
+        ItemChoiceOptions = 1,
+        /// <summary>Grimorio del Umbral — 3 armas en el cofre (nivel 2: la elegida con 1 mejora).</summary>
+        ChestWeaponChoice = 2,
+        /// <summary>Páginas del Eco — rerolls permanentes por run (nivel 2: +4, 2 opciones).</summary>
+        PermanentRerolls = 3,
+        /// <summary>El Libro Sin Nombre — revivir una vez al 30 % (nivel 2: + escudo de 3 golpes).</summary>
+        ReviveOnce = 4,
+        /// <summary>Volumen Carmesí — +10 % / +20 % de daño.</summary>
+        DamageBonus = 5,
+        /// <summary>Anales del Vacío — 1ª oleada ralentizada (nivel 2: enemigos de la run con -20 % vida).</summary>
+        WeakenedEnemies = 6,
+        /// <summary>Manuscrito Eterno — objeto gratis cada 3 niveles (nivel 2: siempre épico/legendario).</summary>
+        PeriodicFreeItem = 7,
+        /// <summary>El Tomo Roto — arma del cofre con 2 mejoras (nivel 2: además la de más daño base).</summary>
+        ChestWeaponUpgrades = 8,
     }
 
     /// <summary>
@@ -24,10 +34,10 @@ namespace RedMagic.Economy
     /// 3×3. Vive en <c>Assets/Resources/LegendaryPassives/</c> (barrido de carpeta, igual que
     /// <c>Items/Weapons</c>) — añadir una pasiva nueva es crear el asset, sin tocar código.
     ///
-    /// Sólo tiene <b>2 niveles</b>: 1 = efecto base al desbloquearla, 2 = el único upgrade
-    /// disponible, que dobla el valor (<see cref="baseValue"/> × nivel — ver
-    /// <see cref="LegendaryPassiveEffects"/>). <see cref="description"/> es el texto del nivel 1,
-    /// <see cref="upgradeDescription"/> el texto (ya final, no una plantilla) del nivel 2.
+    /// Sólo tiene <b>2 niveles</b>: 1 = efecto base al desbloquearla, 2 = el único upgrade.
+    /// <see cref="description"/> es el texto del nivel 1, <see cref="upgradeDescription"/> el
+    /// texto (ya final, no una plantilla) del nivel 2. Qué hace cada nivel lo decide
+    /// <see cref="LegendaryPassiveEffects"/> según <see cref="effectKind"/>.
     ///
     /// <see cref="isUnlocked"/> y <see cref="currentLevel"/> son el <b>valor de diseño por
     /// defecto</b> (para probar en el editor o dar de salida una pasiva ya desbloqueada), NO el
@@ -55,13 +65,9 @@ namespace RedMagic.Economy
         [Tooltip("Descripción del efecto en el nivel 2 (el único upgrade). Texto final, no plantilla.")]
         public string upgradeDescription = "Efecto placeholder mejorado.";
 
-        [Header("Efecto real")]
-        [Tooltip("Qué estadística modifica. Lo lee LegendaryPassiveEffects para calcular el bono real.")]
-        public LegendaryPassiveEffectKind effectKind = LegendaryPassiveEffectKind.MaxHealth;
-
-        [Tooltip("Valor del efecto en el nivel 1. El nivel 2 vale el doble (baseValue × nivel). " +
-                 "Fracción para los porcentuales (0.05 = 5%), número llano para el resto.")]
-        public float baseValue = 1f;
+        [Header("Efecto")]
+        [Tooltip("Qué mecánica activa. Lo lee LegendaryPassiveEffects.")]
+        public LegendaryPassiveEffectKind effectKind;
 
         [Min(1)]
         [Tooltip("Niveles totales disponibles. Siempre 2 en este diseño: base + un upgrade.")]

@@ -22,12 +22,10 @@ namespace RedMagic.Items
             _ => "Común",
         };
 
-        public static Color ColorOf(ItemRarity rarity) => rarity switch
-        {
-            ItemRarity.Blue => new Color(0.35f, 0.65f, 1f),
-            ItemRarity.Epic => new Color(0.75f, 0.45f, 1f),
-            ItemRarity.Legendary => new Color(1f, 0.65f, 0.2f),
-            _ => new Color(0.85f, 0.85f, 0.85f),
-        };
+        /// <summary>
+        /// Color de la rareza: nombres en la UI, auras y efectos de la tienda, drops. Único origen:
+        /// <see cref="ItemRarityColors"/> (<c>Resources/ItemRarityColors.asset</c>, editable en el Inspector).
+        /// </summary>
+        public static Color ColorOf(ItemRarity rarity) => ItemRarityColors.Current.For(rarity);
     }
 }

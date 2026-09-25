@@ -213,6 +213,9 @@ MonoBehaviour:
       arcGravity: 0
       impactRadius: 0
       impactDamage: 0
+      faceDirection: 0
+      facingAxis: 0
+      aimMode: 0
     aimAtTarget: 1
     projectileSprite: {fileID: 0}
     projectileTint: {r: 1, g: 1, b: 1, a: 1}
@@ -368,7 +371,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2985d1d8de77b546b4fbeddccf21c6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
-  tier: 0
+  tier: 1
 --- !u!114 &2450479413652918220
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -13,12 +13,11 @@ MonoBehaviour:
   m_Name: LegendaryPassive_4
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
   id: 4
-  icon: {fileID: 0}
-  displayName: Impulso Fantasma
-  description: +5% Dash Speed
-  upgradeDescription: +10% Dash Speed
+  icon: {fileID: -3734527791512185524, guid: d8cf02d6ea2f34547b702bfd826d223f, type: 3}
+  displayName: El Libro Sin Nombre
+  description: Revive once per run at 30% HP
+  upgradeDescription: On revive, also gain a shield that absorbs 3 hits
   effectKind: 4
-  baseValue: 0.05
   maxLevel: 2
   upgradeCost: 50
   isUnlocked: 0

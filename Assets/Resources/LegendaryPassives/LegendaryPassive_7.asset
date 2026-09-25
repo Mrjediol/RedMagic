@@ -13,12 +13,11 @@ MonoBehaviour:
   m_Name: LegendaryPassive_7
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
   id: 7
-  icon: {fileID: 0}
-  displayName: "Sabidur\xEDa Antigua"
-  description: +5% XP Gain
-  upgradeDescription: +10% XP Gain
+  icon: {fileID: -8467037385029057477, guid: e096aebc055870d4c91d610e632b0976, type: 3}
+  displayName: Manuscrito Eterno
+  description: Every 3 completed levels, receive a free item
+  upgradeDescription: That free item is always epic or legendary
   effectKind: 7
-  baseValue: 0.05
   maxLevel: 2
   upgradeCost: 50
   isUnlocked: 0

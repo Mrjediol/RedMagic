@@ -277,8 +277,7 @@ namespace RedMagic.Items
         /// </summary>
         private void Fire(WeaponDefinition weapon, float chargeFraction)
         {
-            // Reducción de cooldown de las pasivas legendarias — 1 = normal, más bajo = más rápido.
-            _cooldownTimer = weapon.BaseCooldown * RedMagic.Economy.LegendaryPassiveEffects.CooldownMultiplier;
+            _cooldownTimer = weapon.BaseCooldown;
             if (_animator != null) _animator.TriggerAttack();
 
             if (releaseDelay <= 0f)

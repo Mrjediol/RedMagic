@@ -1,118 +1,95 @@
 using System;
-using RedMagic.Gameplay;
 using UnityEngine;
 
 namespace RedMagic.Economy
 {
     /// <summary>
-    /// Suma el efecto real de todas las pasivas legendarias desbloqueadas (nivel × <see
-    /// cref="LegendaryPassive.baseValue"/>) y lo deja en un sitio estático que cualquier sistema
-    /// puede leer — mismo espíritu que <see cref="PlayerStats"/>: el jugador cambia de instancia
-    /// entre hub y run, así que el bono no puede vivir en un componente suyo, tiene que sobrevivirlo.
+    /// Qué pasivas legendarias tiene el jugador y a qué nivel, en un sitio estático que cualquier
+    /// sistema puede leer — el jugador cambia de instancia entre hub y run, así que no puede vivir
+    /// en un componente suyo.
     ///
     /// <see cref="Recompute"/> lo llama <see cref="LegendaryPassiveManager"/> cada vez que algo
-    /// cambia (desbloqueo, mejora, al arrancar). Velocidad de movimiento y de dash se escriben
-    /// directamente en <see cref="PlayerStats"/> aquí mismo — son multiplicadores globales y ya
-    /// existe el sitio para ellos. El resto de bonos (vida máx., armadura, daño, cooldown, oro por
-    /// baja, regeneración) se deja en propiedades estáticas que el sistema correspondiente lee o
-    /// aplica en su propio punto de enganche:
-    ///  - Vida máxima / armadura: <c>LegendaryPassiveStatHook</c> en <c>Player.prefab</c>.
-    ///  - Daño de ataque: <c>AbilityHit.Damage</c> (el único sitio por el que pasa todo el daño).
-    ///  - Cooldown de armas: <c>WeaponUser.Fire</c>.
-    ///  - Oro por baja: <see cref="LegendaryPassiveManager"/>, al registrar la baja.
-    ///  - Ganancia de XP: <b>TODO</b> — no existe sistema de experiencia/nivel de jugador todavía;
-    ///    <see cref="XpGainFraction"/> ya calcula el bono agregado para cuando exista.
+    /// cambia (desbloqueo, mejora, al arrancar). <see cref="Level"/> da 0 (no la tiene), 1 o 2. El
+    /// nivel 2 incluye lo del nivel 1 salvo que el texto diga "en vez de". Los números están en
+    /// <see cref="LegendaryPassiveTuning"/>.
+    ///
+    /// Dónde se aplica cada una:
+    ///  - Codex Aurum, Páginas del Eco, Anales del Vacío, Manuscrito Eterno:
+    ///    <see cref="LegendaryPassiveRunner"/> (eventos de la run).
+    ///  - Grimorio del Umbral, El Tomo Roto: <c>Hub.ChestLootContainer</c>.
+    ///  - El Libro Sin Nombre: <c>Gameplay.LegendaryPassivePlayerHook</c> (en Player.prefab).
+    ///  - Volumen Carmesí: <see cref="PlayerDamageMultiplier"/>, leído por <c>Items.PlayerHit.Deal</c>.
+    ///  - Tomo del Destino: TODO (ver <see cref="Recompute"/>).
     /// </summary>
     public static class LegendaryPassiveEffects
     {
-        private static readonly object MoveSpeedKey = new();
-        private static readonly object DashSpeedKey = new();
+        private static readonly int KindCount = Enum.GetValues(typeof(LegendaryPassiveEffectKind)).Length;
+        private static int[] _levels = new int[KindCount];
 
-        public static float MaxHealthBonus { get; private set; }
-        public static int GoldPerKill { get; private set; }
-        public static float AttackDamageBonus { get; private set; }
-
-        /// <summary>Multiplicador de daño recibido ya aplicado (1 = sin armadura, más bajo = más armadura).</summary>
-        public static float ArmorDamageMultiplier { get; private set; } = 1f;
-
-        /// <summary>Multiplicador del cooldown de armas ya aplicado (1 = normal, más bajo = más rápido).</summary>
-        public static float CooldownMultiplier { get; private set; } = 1f;
-
-        public static float HpRegenPerTick { get; private set; }
-        public const float HpRegenTickSeconds = 10f;
-
-        /// <summary>TODO: sin sistema de XP todavía. Fracción agregada (0.05 = +5%) lista para cuando exista.</summary>
-        public static float XpGainFraction { get; private set; }
+        /// <summary>Multiplicador de todo el daño que hace el jugador (Volumen Carmesí). 1 = sin bono.</summary>
+        public static float PlayerDamageMultiplier { get; private set; } = 1f;
 
         /// <summary>Se dispara al terminar cada <see cref="Recompute"/>, con los valores ya actualizados.</summary>
         public static event Action Changed;
 
+        /// <summary>Nivel que tiene el jugador de esa mecánica: 0 = no desbloqueada, 1 o 2.</summary>
+        public static int Level(LegendaryPassiveEffectKind kind)
+        {
+            int i = (int)kind;
+            return i >= 0 && i < _levels.Length ? _levels[i] : 0;
+        }
+
+        public static bool Has(LegendaryPassiveEffectKind kind) => Level(kind) > 0;
+
+        /// <summary>El asset de la pasiva de esa mecánica (para nombre/icono en avisos), o null.</summary>
+        public static LegendaryPassive Find(LegendaryPassiveEffectKind kind)
+        {
+            foreach (var passive in LegendaryPassiveLibrary.BySlot)
+                if (passive != null && passive.effectKind == kind) return passive;
+            return null;
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
-            MaxHealthBonus = 0f;
-            GoldPerKill = 0;
-            AttackDamageBonus = 0f;
-            ArmorDamageMultiplier = 1f;
-            CooldownMultiplier = 1f;
-            HpRegenPerTick = 0f;
-            XpGainFraction = 0f;
-            PlayerStats.Remove(MoveSpeedKey);
-            PlayerStats.Remove(DashSpeedKey);
+            _levels = new int[KindCount];
+            PlayerDamageMultiplier = 1f;
             Changed = null;
         }
 
         /// <summary>
-        /// Recalcula todos los bonos desde cero a partir de lo desbloqueado/mejorado en
-        /// <see cref="LegendaryPassiveManager"/>. Barato: 9 pasivas como mucho, se puede llamar
-        /// cada vez que algo cambia sin preocuparse por el coste.
+        /// Recalcula todo desde cero a partir de lo desbloqueado/mejorado en
+        /// <see cref="LegendaryPassiveManager"/>. Barato: 9 pasivas como mucho.
         /// </summary>
         public static void Recompute()
         {
+            Array.Clear(_levels, 0, _levels.Length);
+
             var manager = LegendaryPassiveManager.Instance;
-
-            float maxHealth = 0f, moveFrac = 0f, attackDamage = 0f, dashFrac = 0f,
-                  cooldownFrac = 0f, armor = 0f, xpFrac = 0f, hpRegen = 0f;
-            int goldPerKill = 0;
-
             if (manager != null)
             {
                 foreach (var passive in LegendaryPassiveLibrary.BySlot)
                 {
                     if (passive == null || !manager.IsUnlocked(passive)) continue;
 
-                    int level = Mathf.Max(1, manager.GetLevel(passive));
-                    float value = passive.baseValue * level;
-
-                    switch (passive.effectKind)
-                    {
-                        case LegendaryPassiveEffectKind.MaxHealth: maxHealth += value; break;
-                        case LegendaryPassiveEffectKind.GoldPerKill: goldPerKill += Mathf.RoundToInt(value); break;
-                        case LegendaryPassiveEffectKind.MoveSpeed: moveFrac += value; break;
-                        case LegendaryPassiveEffectKind.AttackDamage: attackDamage += value; break;
-                        case LegendaryPassiveEffectKind.DashSpeed: dashFrac += value; break;
-                        case LegendaryPassiveEffectKind.CooldownReduction: cooldownFrac += value; break;
-                        case LegendaryPassiveEffectKind.Armor: armor += value; break;
-                        case LegendaryPassiveEffectKind.XpGain: xpFrac += value; break;
-                        case LegendaryPassiveEffectKind.HpRegen: hpRegen += value; break;
-                    }
+                    int i = (int)passive.effectKind;
+                    if (i < 0 || i >= _levels.Length) continue;
+                    _levels[i] = Mathf.Max(_levels[i], Mathf.Max(1, manager.GetLevel(passive)));
                 }
             }
 
-            MaxHealthBonus = maxHealth;
-            GoldPerKill = goldPerKill;
-            AttackDamageBonus = attackDamage;
-            HpRegenPerTick = hpRegen;
-            XpGainFraction = xpFrac; // TODO: sumar a la ganancia de XP cuando exista ese sistema.
+            var tuning = LegendaryPassiveTuning.Current;
+            PlayerDamageMultiplier = Level(LegendaryPassiveEffectKind.DamageBonus) switch
+            {
+                >= 2 => 1f + tuning.damageBonusLevel2,
+                1 => 1f + tuning.damageBonusLevel1,
+                _ => 1f,
+            };
 
-            // 5 % de reducción de daño recibido por punto de armadura, nunca por debajo de 0.
-            ArmorDamageMultiplier = Mathf.Clamp01(1f - armor * 0.05f);
-
-            // Nunca por debajo del 10 % del cooldown original: evita un arma a cadencia 0.
-            CooldownMultiplier = Mathf.Clamp(1f - cooldownFrac, 0.1f, 1f);
-
-            PlayerStats.SetMultiplier(MoveSpeedKey, PlayerStat.MoveSpeed, 1f + moveFrac);
-            PlayerStats.SetMultiplier(DashSpeedKey, PlayerStat.DashDistance, 1f + dashFrac);
+            // TODO ItemChoiceOptions (Tomo del Destino): al recoger un objeto ofrecer 3 opciones en
+            //      vez de 1; nivel 2 = un reroll gratis de esas 3. Pendiente del rework de tienda.
+            // TODO PermanentRerolls nivel 2 (Páginas del Eco): cada reroll muestra 2 opciones.
+            //      Pendiente del rework de rerolls; el +2/+4 ya lo aplica LegendaryPassiveRunner.
 
             Changed?.Invoke();
         }

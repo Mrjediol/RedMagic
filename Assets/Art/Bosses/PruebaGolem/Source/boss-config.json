@@ -1,0 +1,144 @@
+{
+  "kind": "boss",
+  "displayName": "PruebaGolem",
+  "artAssets": {
+    "Boulder_Projectile": {
+      "kind": "projectile",
+      "folder": "Art/560bdbd7-9cea-453e-95a8-2384863878b8",
+      "libraryId": "560bdbd7-9cea-453e-95a8-2384863878b8",
+      "entryName": "Boulder",
+      "states": {
+        "Move": {
+          "folder": "Move",
+          "fps": 8,
+          "loop": true
+        },
+        "Impact": {
+          "folder": "Impact",
+          "fps": 8,
+          "loop": true
+        }
+      },
+      "worldWidth": 1.5,
+      "colliderScale": 0.8,
+      "faceTravelDirection": true
+    },
+    "Boulder_Prop": {
+      "kind": "prop",
+      "folder": "Art/560bdbd7-9cea-453e-95a8-2384863878b8",
+      "libraryId": "560bdbd7-9cea-453e-95a8-2384863878b8",
+      "entryName": "Boulder",
+      "states": {
+        "Move": {
+          "folder": "Move",
+          "fps": 8,
+          "loop": true
+        },
+        "Impact": {
+          "folder": "Impact",
+          "fps": 8,
+          "loop": true
+        }
+      },
+      "worldWidth": 1.5
+    }
+  },
+  "body": {
+    "folder": "Body",
+    "libraryId": "fe220779-0018-46f3-a127-f1e9e275a2ab",
+    "entryName": "IceGolem",
+    "height": 6,
+    "hoverHeight": 0,
+    "health": 2500,
+    "contactDamage": 12,
+    "arenaHalfWidth": 15,
+    "arenaHeight": 12,
+    "activationRadius": 18,
+    "colliderWidth": 0.5,
+    "colliderHeight": 0.8,
+    "animations": {
+      "Idle": {
+        "fps": 8,
+        "loop": true
+      },
+      "Walk": {
+        "fps": 8,
+        "loop": true
+      },
+      "Attack": {
+        "fps": 8,
+        "loop": true,
+        "releaseFrame": 2
+      },
+      "Hurt": {
+        "fps": 8,
+        "loop": true
+      },
+      "Death": {
+        "fps": 8,
+        "loop": true
+      }
+    },
+    "movement": {
+      "type": "HoverKeepDistance",
+      "params": {
+        "minDistance": 5,
+        "maxDistance": 9,
+        "speed": 3.5,
+        "acceleration": 10,
+        "arriveTolerance": 0.35,
+        "followHeight": false,
+        "heightAboveTarget": 2.5,
+        "verticalSpeed": 2.5
+      }
+    }
+  },
+  "attacks": {
+    "Ataque1": {
+      "type": "ThrowProjectileAttack",
+      "displayName": "Ataque1",
+      "params": {
+        "throwGesture": "Attack",
+        "projectile": {
+          "prefab": {
+            "art": "Boulder_Projectile"
+          },
+          "lifetime": 4,
+          "size": {
+            "x": 1.6,
+            "y": 1.6
+          },
+          "pierce": 0,
+          "impactRadius": 2.2,
+          "impactDamage": 16
+        },
+        "heldPropPrefab": {
+          "art": "Boulder_Prop"
+        }
+      }
+    }
+  },
+  "phases": [
+    {
+      "displayName": "Fase 1",
+      "startsAtHealth": 1,
+      "attacks": [
+        "Ataque1"
+      ],
+      "pauseBetweenAttacks": {
+        "x": 0.9,
+        "y": 1.5
+      },
+      "damageScale": 1,
+      "damageTakenMultiplier": 1,
+      "speedScale": 1,
+      "accent": "#8ce666ff",
+      "transitionSeconds": 0,
+      "transitionShake": 0.5,
+      "transitionSfxId": "",
+      "frenzyBelowHealth": 0,
+      "frenzySpeedScale": 1.35,
+      "openingAttack": "Ataque1"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "enemyName": "FistImpact",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "Awake",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 4,
+      "projectile": null
+    }
+  ],
+  "projectiles": []
+}

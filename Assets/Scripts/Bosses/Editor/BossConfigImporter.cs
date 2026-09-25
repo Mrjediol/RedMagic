@@ -67,6 +67,20 @@ namespace RedMagic.Bosses.EditorTools
                 resolvedTypes[prop.Name] = ResolveAttackType(typeName, $"attacks.{prop.Name}");
             }
 
+            // --- Arte de los ataques (opcional): se construye tras validar los tipos (fallar antes de escribir) y antes de los ataques, porque los ataques lo
+            // referencian con {"art": "id"}, que aquí se cambia por la ruta del prefab construido.
+            string slug = Slugify(displayName);
+            ResolveRelativeFolders(root, slug);
+            var log = new StringBuilder();
+            Dictionary<string, string> artMap = null;
+            if (root["artAssets"] is JObject artAssets)
+            {
+                artMap = BossArtBuilder.Build(slug, artAssets, log);
+                foreach (var path in artMap.Values) report.Add(false, path);
+            }
+            BossArtBuilder.ResolveArtRefs(attacksJson, artMap, report.Warnings, "attacks");
+            if (root["phases"] != null) BossArtBuilder.ResolveArtRefs(root["phases"], artMap, report.Warnings, "phases");
+
             // --- Pase 2: crear/actualizar cada BossAttack. -----------------------------------
             SheetSlicer.EnsureFolder(BossFolder);
             var attacksByKey = new Dictionary<string, BossAttack>();
@@ -96,7 +110,6 @@ namespace RedMagic.Bosses.EditorTools
             }
 
             // --- BossDefinition ---------------------------------------------------------------
-            string slug = Slugify(displayName);
             string definitionPath = $"{BossFolder}/Boss_{slug}.asset";
 
             var definition = AssetDatabase.LoadAssetAtPath<BossDefinition>(definitionPath);
@@ -124,6 +137,15 @@ namespace RedMagic.Bosses.EditorTools
             EditorUtility.SetDirty(definition);
 
             report.Add(isNewDefinition, definitionPath);
+
+            // --- Cuerpo (opcional): clips + controller + prefab jugable, enlazado a la definición.
+            if (root["body"] is JObject body)
+            {
+                AssetDatabase.SaveAssets();
+                BossBodyBuilder.Build(slug, body, definition, artMap, report, log);
+            }
+
+            if (log.Length > 0) Debug.Log($"[BossConfigImporter] '{displayName}':\n{log}");
         }
 
         // ============================================================ resolución de tipo
@@ -324,6 +346,36 @@ namespace RedMagic.Bosses.EditorTools
             }
         }
 
+        // ============================================================ carpetas relativas
+
+        /// <summary>Donde deja <see cref="BossBundleImporter"/> los frames de un jefe exportado de la web.</summary>
+        internal static string SourceFolderFor(string slug) => $"Assets/Art/Bosses/{slug}/Source";
+
+        /// <summary>
+        /// Las carpetas de arte que no empiezan por "Assets/" son relativas a
+        /// <see cref="SourceFolderFor"/>: así el JSON que exporta la web ("Body", "Art/&lt;id&gt;") vale
+        /// igual dentro del .zip que suelto, reimportado después para afinar números.
+        /// </summary>
+        private static void ResolveRelativeFolders(JObject root, string slug)
+        {
+            string baseFolder = SourceFolderFor(slug);
+
+            string Fix(string folder)
+            {
+                if (string.IsNullOrWhiteSpace(folder)) return folder;
+                folder = folder.Replace('\\', '/').Trim();
+                return folder.StartsWith("Assets/", StringComparison.Ordinal) ? folder : $"{baseFolder}/{folder.TrimStart('/')}";
+            }
+
+            if (root["body"] is JObject body && body["folder"] != null)
+                body["folder"] = Fix(body.Value<string>("folder"));
+
+            if (root["artAssets"] is JObject art)
+                foreach (var prop in art.Properties())
+                    if (prop.Value is JObject entry && entry["folder"] != null)
+                        entry["folder"] = Fix(entry.Value<string>("folder"));
+        }
+
         // ============================================================ nombre de archivo
 
         /// <summary>
@@ -332,7 +384,7 @@ namespace RedMagic.Bosses.EditorTools
         /// jefe aparte — se deriva de 'displayName' para no inventar un campo que rompería el
         /// mapeo 1:1 con BossDefinition que exige docs/schemas/COMPATIBILITY.md.
         /// </summary>
-        private static string Slugify(string text)
+        internal static string Slugify(string text)
         {
             if (string.IsNullOrWhiteSpace(text)) return "Boss";
 

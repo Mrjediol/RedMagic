@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 4299524906146918145}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.75, z: 0}
+  m_LocalPosition: {x: 0.1485, y: -0.6909, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -53,6 +53,7 @@ GameObject:
   - component: {fileID: 806451231179633599}
   - component: {fileID: 9158418647574550477}
   - component: {fileID: 1145223074590112823}
+  - component: {fileID: 1232626756917567298}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -138,7 +139,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.13462609, y: 0.09355366}
+  m_Offset: {x: 0.13050383, y: 0.20544243}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -148,7 +149,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.9692522, y: 1.6871073}
+  m_Size: {x: 0.9610077, y: 1.7879105}
   m_EdgeRadius: 0
 --- !u!114 &8253735097509097905
 MonoBehaviour:
@@ -192,10 +193,10 @@ MonoBehaviour:
   footstepInterval: 0.32
   stompSfxId: SFX_EnemyStomp
   dashSfxId: SFX_PlayerDash
-  enableStomp: 1
+  enableStomp: 0
   stompDamage: 0
   _characterBounds:
-    m_Center: {x: 0.12, y: 0.09, z: 0}
+    m_Center: {x: 0.12, y: 0.15, z: 0}
     m_Extent: {x: 0.49, y: 0.84, z: 0}
   _groundLayer:
     serializedVersion: 2
@@ -204,7 +205,7 @@ MonoBehaviour:
   _detectionRayLength: 0.1
   _rayBuffer: 0.1
   enableSlopes: 1
-  maxSlopeAngle: 45
+  maxSlopeAngle: 80
   slopeCheckDistance: 0.35
   slopeSnapDistance: 0.35
   _platformLayer:
@@ -219,7 +220,7 @@ MonoBehaviour:
   groundStepMinFaceAngle: 85
   groundClampInset: 0.04
   groundClampMaxPush: 1.5
-  debugGroundClamp: 0
+  debugGroundClamp: 1
   _acceleration: 90
   _moveClamp: 13
   _deAcceleration: 60
@@ -256,8 +257,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7602759935582e842946b33b9bbe424a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.UI.HealthBarUI
-  headHeightOffset: 1.05
-  horizontalOffset: 0
+  healthBarOffset: {x: 0, y: 1.32}
   barWidth: 1
   barHeight: 0.14
   borderThickness: 0.02
@@ -301,7 +301,7 @@ MonoBehaviour:
   windup: 0.25
   activeTime: 0.1
   knockbackMultiplier: 1
-  hitboxOffset: {x: 0.7, y: 0.1}
+  hitboxOffset: {x: 0.49, y: 0.1}
   hitboxSize: {x: 1.1, y: 1}
   hitLayers:
     serializedVersion: 2
@@ -338,7 +338,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.RangedAttack
   mode: 1
   projectilePrefab: {fileID: 5154675108906216295, guid: f59efbf6d4928cd46b825dbbe37fabb8, type: 3}
-  muzzleOffset: {x: 0.6, y: 0.05}
+  muzzleOffset: {x: 0.99, y: 0.05}
   damage: 25
   projectileSpeed: 13
   projectileHitLayers:
@@ -429,10 +429,24 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   releaseDelay: 0.28
+  previewWeapon: {fileID: 11400000, guid: 646ccef625a76464a8886b4ce55cc056, type: 2}
+  alwaysShowPreview: 0
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player
   attackActionName: Attack
   useTouchButton: 1
+--- !u!114 &1232626756917567298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4486680268914706177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70116179f72527a42ab36158c004de7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.LegendaryPassiveStatHook
 --- !u!1 &5936975751486156930
 GameObject:
   m_ObjectHideFlags: 0
@@ -460,8 +474,8 @@ Transform:
   m_GameObject: {fileID: 5936975751486156930}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.001, y: -0.861, z: 0}
-  m_LocalScale: {x: 1.1971833, y: 1.1971833, z: 1}
+  m_LocalPosition: {x: -0.068, y: 0.187, z: 0}
+  m_LocalScale: {x: 0.19076107, y: 0.19076107, z: 0.15934159}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4706790193865507132}
@@ -515,7 +529,7 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 4c0ac70c5ec67dd46b966308e9d0f8a7, type: 3}
+  m_Sprite: {fileID: -1808982527863717971, guid: 076d5edf98fd12043b41947571e54b8d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

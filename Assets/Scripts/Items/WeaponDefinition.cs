@@ -49,6 +49,21 @@ namespace RedMagic.Items
         [Tooltip("Salida del disparo respecto al arma. La X se invierte según hacia dónde mira.")]
         public Vector2 muzzleOffset = new Vector2(0.6f, 0.1f);
 
+        [Header("Projectile Collider Override")]
+        [Tooltip("Apagado = el collider del prefab (o el círculo del proyectil de código) tal cual. " +
+                 "Encendido = esta arma define su propia forma de colisión con los tres campos de " +
+                 "abajo, sin tocar el prefab compartido. Vista previa: selecciona el Player (WeaponUser).")]
+        public bool overrideCollider;
+
+        public Gameplay.ProjectileColliderType colliderType = Gameplay.ProjectileColliderType.Circle;
+
+        [Tooltip("En unidades del mundo. Circle: X = radio (Y no se usa). Box / Capsule: ancho × alto, " +
+                 "con X hacia la punta del proyectil.")]
+        public Vector2 colliderSize = new Vector2(0.2f, 0.2f);
+
+        [Tooltip("Centro del collider respecto al del proyectil, en unidades del mundo (X = hacia la punta).")]
+        public Vector2 colliderOffset;
+
         [Tooltip("Enemigos que atraviesa antes de desaparecer. 0 = muere en el primer impacto.")]
         [Min(0)]
         public int pierce;
@@ -85,6 +100,20 @@ namespace RedMagic.Items
 
         [Tooltip("Prefab del haz (sólo armas Hitscan). Mismas reglas que projectilePrefab.")]
         public GameObject beamPrefab;
+
+        [Header("Aiming")]
+        [Tooltip("Rota el proyectil para que su punta (Facing Axis) mire hacia donde vuela, al salir y " +
+                 "en cada paso (autoguiado, parábola). Apagado = decide el prefab (su casilla " +
+                 "'Face Travel Direction' del ShotProjectile), así las armas que ya existían no cambian.")]
+        public bool faceDirection;
+
+        [Tooltip("Lado del sprite que es la punta. Right = arte dibujado mirando a +X (convención).")]
+        public Gameplay.ProjectileFacingAxis facingAxis = Gameplay.ProjectileFacingAxis.Right;
+
+        [Tooltip("Fixed = hacia donde mira el jugador (de siempre). MouseDirection = hacia el cursor al " +
+                 "disparar. NearestEnemy = hacia el enemigo vivo más cercano al disparar (sin perseguir). " +
+                 "Vale también para haces.")]
+        public Gameplay.ProjectileAimMode aimMode = Gameplay.ProjectileAimMode.Fixed;
 
         [Header("Melee")]
         [Min(0f)]
@@ -197,6 +226,11 @@ namespace RedMagic.Items
 
         private void OnValidate()
         {
+#if UNITY_EDITOR
+            // La vista previa de tamaño / boca / collider (WeaponUser) vive en la escena: se repinta
+            // al tocar el arma en el Inspector, sin entrar en Play.
+            UnityEditor.SceneView.RepaintAll();
+#endif
             if (BuildTags.IsElemental(universalTag))
                 Debug.LogWarning($"[Items] Arma '{name}': 'universalTag' está puesta a una tag " +
                                  $"elemental ({universalTag}). Usa 'innateElement' para el elemento.", this);

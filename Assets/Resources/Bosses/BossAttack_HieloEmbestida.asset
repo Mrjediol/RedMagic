@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2036d6145a3a93f419a08687c3f20fba, type: 3}
+  m_Name: BossAttack_HieloEmbestida
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.ChargeDashAttack
+  displayName: Embestida Glacial
+  description: 
+  accent: {r: 0.55, g: 0.9, b: 0.4, a: 1}
+  telegraph: 0.9
+  recovery: 1.3
+  weight: 1
+  cooldownInAttacks: 2
+  cooldownSeconds: 0
+  minPhase: 1
+  damage: 20
+  knockbackMultiplier: 1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: Dash
+  sfxId: 
+  shakeAmplitude: 0.3
+  shakeDuration: 0.25
+  speed: 45
+  overshoot: 4
+  maxDistance: 10
+  arenaMargin: 1
+  lockSeconds: 0.35
+  warnWidth: 1.6
+  hitboxOffset: {x: 0.8, y: 2.2}
+  hitboxSize: {x: 3.4, y: 3.4}
+  travelState: DashLoop
+  launchFxPrefab: {fileID: 0}
+  hitFxPrefab: {fileID: 7811782841351297057, guid: 91d81f1301ade13449cdd71347b9d771, type: 3}

@@ -854,6 +854,14 @@ namespace RedMagic.UI
             _description.Clear();
             _description.Add(DescriptionTitle(item.DisplayName));
 
+            if (item.Rarity != ItemRarity.Common)
+            {
+                var rarity = Paragraph(ItemRarities.DisplayName(item.Rarity));
+                rarity.style.color = ItemRarities.ColorOf(item.Rarity);
+                rarity.style.unityFontStyleAndWeight = FontStyle.Bold;
+                _description.Add(rarity);
+            }
+
             if (!string.IsNullOrWhiteSpace(item.Description))
                 _description.Add(Paragraph(item.Description));
 

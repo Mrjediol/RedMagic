@@ -1,0 +1,246 @@
+{
+  "kind": "boss",
+  "displayName": "Coloso de Hielo",
+  "title": "Guardián del Glaciar",
+  "description": "Coloso flotante de roca y hielo. Puños sueltos, embiste y lanza rocas.",
+
+  "artAssets": {
+    "Boulder": {
+      "kind": "projectile",
+      "folder": "Assets/Art/BossEffects/Boulder",
+      "states": {
+        "Move": { "folder": "Move", "fps": 12, "loop": true },
+        "Impact": { "folder": "Impact", "fps": 18, "loop": false }
+      },
+      "worldWidth": 1.8,
+      "faceTravelDirection": false,
+      "colliderScale": 0.8
+    },
+    "BoulderHeld": {
+      "kind": "prop",
+      "folder": "Assets/Art/BossEffects/Boulder",
+      "states": { "Held": { "folder": "Move", "fps": 8, "loop": true } },
+      "worldWidth": 1.8
+    },
+    "PunchWave": {
+      "kind": "projectile",
+      "folder": "Assets/Art/BossEffects/PowerPunch",
+      "states": { "Move": { "folder": "Row_1", "fps": 10, "loop": true } },
+      "worldWidth": 2.6,
+      "faceTravelDirection": true,
+      "colliderScale": 0.7
+    },
+    "FistImpact": {
+      "kind": "fx",
+      "folder": "Assets/Art/BossEffects/FistImpact",
+      "states": { "Burst": { "folder": "Awake", "fps": 14, "loop": false } },
+      "worldWidth": 2.4
+    },
+    "WarnCircle": {
+      "kind": "warning",
+      "folder": "Assets/Art/BossEffects/Warning",
+      "states": { "Pulse": { "folder": "circle", "fps": 8, "loop": true } },
+      "tint": false
+    },
+    "WarnArrow": {
+      "kind": "warning",
+      "folder": "Assets/Art/BossEffects/Warning",
+      "states": { "Pulse": { "folder": "Row", "fps": 8, "loop": true } },
+      "tint": false
+    }
+  },
+
+  "body": {
+    "folder": "Assets/Art/EnemyImports/BossIce",
+    "height": 6.5,
+    "hoverHeight": 0.3,
+    "health": 3000,
+    "contactDamage": 14,
+    "arenaHalfWidth": 16,
+    "arenaHeight": 12,
+    "activationRadius": 18,
+    "colliderWidth": 0.5,
+    "colliderHeight": 0.8,
+    "animations": {
+      "Idle":        { "fps": 7,  "loop": true },
+      "Walk":        { "fps": 8,  "loop": true },
+      "Hurt":        { "fps": 10, "loop": false },
+      "Death":       { "fps": 8,  "loop": false },
+      "Dash":        { "fps": 10, "loop": false, "releaseFrame": 2 },
+      "GroundSlam":  { "fps": 10, "loop": false, "releaseFrame": 3 },
+      "PowerPunch":  { "fps": 10, "loop": false, "releaseFrame": 3 },
+      "PickUP":      { "fps": 10, "loop": false, "releaseFrame": 4 },
+      "Throw":       { "fps": 10, "loop": false, "releaseFrame": 3 },
+      "FistBarrage": { "fps": 10, "loop": false, "releaseFrame": 1 }
+    },
+    "derived": {
+      "DashLoop": { "from": "Dash", "first": 2, "count": 2, "fps": 8, "loop": true }
+    },
+    "movement": {
+      "type": "HoverKeepDistance",
+      "params": { "minDistance": 5, "maxDistance": 9, "speed": 3, "acceleration": 8 }
+    },
+    "warnCircle": "WarnCircle",
+    "warnArrow": "WarnArrow"
+  },
+
+  "attacks": {
+    "HieloGolpeSuelo": {
+      "type": "ShockwaveAttack",
+      "displayName": "Golpe al Suelo",
+      "gesture": "GroundSlam",
+      "telegraph": 0.9,
+      "recovery": 1.1,
+      "damage": 16,
+      "shakeAmplitude": 0.4,
+      "shakeDuration": 0.3,
+      "params": {
+        "bandMin": 0,
+        "bandMax": 1.8,
+        "waves": 1,
+        "bothDirections": true,
+        "width": 1.4,
+        "speed": 14,
+        "spawnInset": 2
+      }
+    },
+    "HieloPunoPotente": {
+      "type": "MeleeStrikeAttack",
+      "displayName": "Puñetazo Potente",
+      "gesture": "PowerPunch",
+      "telegraph": 0.8,
+      "recovery": 1.2,
+      "damage": 22,
+      "vulnerableSeconds": 1.2,
+      "shakeAmplitude": 0.35,
+      "params": {
+        "hits": 1,
+        "hitboxOffset": { "x": 2.6, "y": 2.2 },
+        "hitboxSize": { "x": 3.4, "y": 2.8 },
+        "launchProjectile": true,
+        "projectile": {
+          "prefab": { "art": "PunchWave" },
+          "speed": 16,
+          "lifetime": 0.6,
+          "size": { "x": 2.6, "y": 2.6 },
+          "muzzleOffset": { "x": 3, "y": 2.2 }
+        },
+        "impactFxPrefab": { "art": "FistImpact" },
+        "impactFxWidth": 2.4
+      }
+    },
+    "HieloRafagaPunos": {
+      "type": "MeleeStrikeAttack",
+      "displayName": "Ráfaga de Puños",
+      "gesture": "FistBarrage",
+      "telegraph": 0.6,
+      "recovery": 0.9,
+      "damage": 9,
+      "params": {
+        "hits": 2,
+        "timeBetweenHits": 0.2,
+        "hitboxOffset": { "x": 2.3, "y": 2.0 },
+        "hitboxSize": { "x": 3.0, "y": 2.6 },
+        "launchProjectile": false,
+        "impactFxPrefab": { "art": "FistImpact" },
+        "impactFxWidth": 1.8
+      }
+    },
+    "HieloEmbestida": {
+      "type": "ChargeDashAttack",
+      "displayName": "Embestida Glacial",
+      "gesture": "Dash",
+      "telegraph": 0.9,
+      "recovery": 1.3,
+      "damage": 20,
+      "cooldownInAttacks": 2,
+      "shakeAmplitude": 0.3,
+      "params": {
+        "speed": 20,
+        "overshoot": 4,
+        "lockSeconds": 0.35,
+        "hitboxOffset": { "x": 0.8, "y": 2.2 },
+        "hitboxSize": { "x": 3.4, "y": 3.4 },
+        "travelState": "DashLoop",
+        "hitFxPrefab": { "art": "FistImpact" }
+      }
+    },
+    "HieloLanzarRoca": {
+      "type": "ThrowProjectileAttack",
+      "displayName": "Lanzar Roca",
+      "gesture": "PickUP",
+      "telegraph": 1.0,
+      "recovery": 1.0,
+      "damage": 18,
+      "shakeAmplitude": 0.3,
+      "params": {
+        "throwGesture": "Throw",
+        "holdSeconds": 0.5,
+        "flightSeconds": 1.1,
+        "gravity": 30,
+        "throws": 1,
+        "projectile": {
+          "prefab": { "art": "Boulder" },
+          "size": { "x": 1.8, "y": 1.8 },
+          "lifetime": 4,
+          "impactRadius": 2.2,
+          "impactDamage": 16
+        },
+        "heldPropPrefab": { "art": "BoulderHeld" },
+        "heldOffset": { "x": 0, "y": 7 },
+        "heldSize": { "x": 1.8, "y": 1.8 }
+      }
+    },
+    "HieloLanzarRocas": {
+      "type": "ThrowProjectileAttack",
+      "displayName": "Lluvia de Rocas",
+      "gesture": "PickUP",
+      "telegraph": 1.0,
+      "recovery": 1.2,
+      "damage": 18,
+      "minPhase": 2,
+      "shakeAmplitude": 0.3,
+      "params": {
+        "throwGesture": "Throw",
+        "holdSeconds": 0.4,
+        "flightSeconds": 1.0,
+        "gravity": 30,
+        "throws": 2,
+        "timeBetweenThrows": 0.4,
+        "landingSpread": 1.5,
+        "projectile": {
+          "prefab": { "art": "Boulder" },
+          "size": { "x": 1.8, "y": 1.8 },
+          "lifetime": 4,
+          "impactRadius": 2.2,
+          "impactDamage": 16
+        },
+        "heldPropPrefab": { "art": "BoulderHeld" },
+        "heldOffset": { "x": 0, "y": 7 },
+        "heldSize": { "x": 1.8, "y": 1.8 }
+      }
+    }
+  },
+
+  "phases": [
+    {
+      "displayName": "Fase 1",
+      "startsAtHealth": 1,
+      "attacks": ["HieloGolpeSuelo", "HieloPunoPotente", "HieloRafagaPunos", "HieloEmbestida", "HieloLanzarRoca"],
+      "pauseBetweenAttacks": { "x": 0.9, "y": 1.5 },
+      "accent": "#7fd8ff",
+      "transitionSeconds": 0
+    },
+    {
+      "displayName": "Fase 2",
+      "startsAtHealth": 0.5,
+      "attacks": ["HieloGolpeSuelo", "HieloPunoPotente", "HieloRafagaPunos", "HieloEmbestida", "HieloLanzarRocas"],
+      "pauseBetweenAttacks": { "x": 0.6, "y": 1.1 },
+      "damageScale": 1.15,
+      "speedScale": 1.3,
+      "accent": "#c4f1ff",
+      "transitionSeconds": 2.0,
+      "transitionShake": 0.6
+    }
+  ]
+}

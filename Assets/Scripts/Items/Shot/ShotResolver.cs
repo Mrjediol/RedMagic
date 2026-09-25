@@ -58,10 +58,14 @@ namespace RedMagic.Items
         /// <see cref="ShotBeam"/>; el resto como proyectiles (con ráfaga si
         /// <see cref="WeaponShot.burstCount"/> &gt; 1).
         /// </summary>
-        public static void Fire(WeaponInventory inventory, in ShotContext ctx, float chargeFraction = 1f)
+        public static void Fire(WeaponInventory inventory, in ShotContext fireCtx, float chargeFraction = 1f)
         {
             var shot = Resolve(inventory);
-            if (shot == null || !ctx.IsValid) return;
+            if (shot == null || !fireCtx.IsValid) return;
+
+            // Apuntado (BaseShot ▸ Aiming): se decide UNA vez, en el instante del disparo, y lo hereda
+            // todo lo que salga de él — abanico, ráfaga, haz. Ver Gameplay.ProjectileAim.
+            var ctx = Aimed(shot, fireCtx);
 
             shot.chargeFraction = Mathf.Clamp01(chargeFraction);
             if (shot.chargeFraction < 1f)
@@ -86,6 +90,16 @@ namespace RedMagic.Items
                 ctx.Runner.StartCoroutine(BurstRest(shot, ctx, bursts));
             else
                 for (int i = 1; i < bursts; i++) EmitVolley(shot, ctx);
+        }
+
+        /// <summary>El mismo contexto con el apuntado resuelto según <see cref="WeaponShot.aimMode"/>.</summary>
+        private static ShotContext Aimed(WeaponShot shot, in ShotContext ctx)
+        {
+            if (shot.aimMode == Gameplay.ProjectileAimMode.Fixed) return ctx;
+
+            Vector2 aim = Gameplay.ProjectileAim.Resolve(shot.aimMode, ctx.Muzzle(shot.muzzleOffset), ctx.Aim, ctx.Caster);
+            return new ShotContext(ctx.Caster, ctx.Runner, ctx.CasterHealth, ctx.HitLayers, ctx.Facing, aim,
+                                   ctx.FriendlyTag, ctx.DamageScale, ctx.Impact);
         }
 
         private static IEnumerator BurstRest(WeaponShot shot, ShotContext ctx, int bursts)

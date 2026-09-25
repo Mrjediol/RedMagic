@@ -23,6 +23,9 @@ namespace RedMagic.Items
         /// <summary>Aplica los efectos de lo equipado (ver <see cref="ItemEffect"/>).</summary>
         public ItemEffectRunner Effects { get; private set; }
 
+        /// <summary>Efectos de umbral de sinergia (Hielo 6, Rapidez 2, Reset 2, Vampirismo 2).</summary>
+        public SynergyEffectRunner SynergyEffects { get; private set; }
+
         private bool _boundToRun;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -46,14 +49,20 @@ namespace RedMagic.Items
 
             // Domain Reload desactivado: se reconstruye a mano en cada Awake, como los demás
             // singletons del proyecto.
+            SynergyEffects?.Dispose();
             Synergy?.Dispose();
             Effects?.Dispose();
             Inventory = new WeaponInventory();
             Synergy = new SynergyTracker(Inventory);
             Effects = new ItemEffectRunner(Inventory);
+            SynergyEffects = new SynergyEffectRunner(Synergy);
         }
 
-        private void Update() => Effects?.Tick(Time.deltaTime);
+        private void Update()
+        {
+            Effects?.Tick(Time.deltaTime);
+            SynergyEffects?.Tick();
+        }
 
         private void OnEnable()
         {
@@ -73,6 +82,7 @@ namespace RedMagic.Items
         private void OnDestroy()
         {
             if (Instance != this) return;
+            SynergyEffects?.Dispose();
             Synergy?.Dispose();
             Effects?.Dispose();
             Instance = null;

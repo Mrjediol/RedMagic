@@ -211,3 +211,42 @@ kbd{background:#1a1d21;border:1px solid var(--border);border-radius:3px;padding:
 /* ---------------- "Añadir a enemigo existente" (Sprites tab) ---------------- */
 #addToExistingRow{display:flex;gap:6px;margin-top:6px;}
 #addToExistingRow select{flex:1;}
+
+/* ---------------- Boss Creator (catálogo de Unity) ---------------- */
+.bcBanner:empty{display:none;}
+.bcBanner{background:#2a1f1f;border:1px solid var(--danger);border-radius:6px;padding:8px 10px;margin-bottom:12px;}
+.bcClickable{cursor:pointer;}
+.bcBtns{display:flex;gap:4px;flex:none;}
+.bcBtns button{padding:3px 8px;}
+.bcAddRow{display:flex;gap:8px;align-items:center;}
+.bcAddRow select{flex:1;}
+.bcAnimList{display:flex;flex-direction:column;gap:8px;margin:8px 0;}
+.bcAnimRow{background:#1a1d21;border:1px solid var(--border);border-radius:6px;padding:6px 8px;}
+.bcAnimHead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.bcAnimHead .efHint{margin:0;}
+.bcAnimName{font-weight:600;font-size:12px;color:var(--accent);}
+input.bcTiny{width:56px !important;padding:3px 4px !important;}
+.bcInline{display:inline-flex;align-items:center;gap:3px;margin:0;color:var(--text);}
+.bcRelease{margin-left:auto;font-size:11px;color:var(--accent2);}
+.bcFrames{display:flex;gap:4px;flex-wrap:wrap;}
+.bcFrame{width:52px;height:52px;border:1px solid var(--border);border-radius:4px;background-color:#101214;background-size:contain;background-repeat:no-repeat;background-position:center;position:relative;cursor:pointer;}
+.bcFrame span{position:absolute;left:2px;top:0;font-size:9px;color:var(--muted);}
+.bcFrame:hover{border-color:var(--accent);}
+.bcFrame.release{outline:2px solid var(--accent2);border-color:var(--accent2);}
+.bcFrame.release::after{content:'💥';position:absolute;right:1px;bottom:0;font-size:12px;}
+.bcDetails{margin:8px 0;}
+.bcDetails>summary{cursor:pointer;font-size:12px;color:var(--muted);margin-bottom:6px;}
+.bcSubCard{background:#1a1d21;border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin:8px 0;}
+.bcH3{font-size:12px;color:var(--accent2);margin:0 0 8px;}
+.bcH4{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:10px 0 6px;grid-column:1/-1;}
+.bcParams{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 12px;}
+.bcObject{grid-column:1/-1;border:1px dashed var(--border);border-radius:6px;padding:8px 10px;margin:4px 0 10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0 12px;}
+.bcObjectTitle{grid-column:1/-1;font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:6px;}
+.bcObject>.efHint{grid-column:1/-1;}
+.bcArtRow{grid-column:1/-1;}
+.bcArtLine{display:flex;gap:8px;align-items:center;}
+.bcArtLine select{flex:1;}
+.bcArtThumb{width:36px;height:36px;flex:none;border:1px solid var(--border);border-radius:4px;background:#101214 center/contain no-repeat;}
+.bcArtThumb.empty{border-style:dashed;}
+.bcNotes{font-size:11px;color:var(--muted);}
+.bcIdBar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px;}

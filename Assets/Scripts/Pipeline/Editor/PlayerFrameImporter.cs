@@ -202,7 +202,7 @@ namespace RedMagic.Pipeline.EditorTools
             AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
 
             var clipSettings = AnimationUtility.GetAnimationClipSettings(clip);
-            clipSettings.loopTime = loop;
+            clipSettings.loopTime = RedMagic.Pipeline.AnimStates.Loops(clip.name, loop);
             clipSettings.stopTime = sprites.Count / fps;
             AnimationUtility.SetAnimationClipSettings(clip, clipSettings);
 

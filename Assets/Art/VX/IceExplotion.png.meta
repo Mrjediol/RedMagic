@@ -1,0 +1,2392 @@
+fileFormatVersion: 2
+guid: a2789e81b37713540855126154ffbf7e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8504578089484790640
+    second: IceExplotion_0
+  - first:
+      213: 1668203714680854257
+    second: IceExplotion_1
+  - first:
+      213: 6376292550477482103
+    second: IceExplotion_2
+  - first:
+      213: 2391047656371625584
+    second: IceExplotion_3
+  - first:
+      213: 6830449402921135728
+    second: IceExplotion_4
+  - first:
+      213: 1011401640571730495
+    second: IceExplotion_5
+  - first:
+      213: -8651279204189172348
+    second: IceExplotion_6
+  - first:
+      213: 1947569513952741474
+    second: IceExplotion_7
+  - first:
+      213: 7496726889354043886
+    second: IceExplotion_8
+  - first:
+      213: 574691353414257166
+    second: IceExplotion_9
+  - first:
+      213: -7509463666257332626
+    second: IceExplotion_10
+  - first:
+      213: 5572945704600433783
+    second: IceExplotion_11
+  - first:
+      213: -7098852593625453856
+    second: IceExplotion_12
+  - first:
+      213: 434455490575854388
+    second: IceExplotion_13
+  - first:
+      213: 6465356410165361203
+    second: IceExplotion_14
+  - first:
+      213: 8724864731688250927
+    second: IceExplotion_15
+  - first:
+      213: -6637181411207424357
+    second: IceExplotion_16
+  - first:
+      213: -1283647108353405330
+    second: IceExplotion_17
+  - first:
+      213: -7575568920567645331
+    second: IceExplotion_18
+  - first:
+      213: -3075454112271178404
+    second: IceExplotion_19
+  - first:
+      213: -7632355481819911669
+    second: IceExplotion_20
+  - first:
+      213: -7636555211089463508
+    second: IceExplotion_21
+  - first:
+      213: 7693493885294572248
+    second: IceExplotion_22
+  - first:
+      213: 2882964716465432735
+    second: IceExplotion_23
+  - first:
+      213: -2841924094169327869
+    second: IceExplotion_24
+  - first:
+      213: -2793263906515141064
+    second: IceExplotion_25
+  - first:
+      213: -2779092390521308267
+    second: IceExplotion_26
+  - first:
+      213: 1164782841798038966
+    second: IceExplotion_27
+  - first:
+      213: 1499929851551777860
+    second: IceExplotion_28
+  - first:
+      213: 8535595245472099415
+    second: IceExplotion_29
+  - first:
+      213: -5877985031005645250
+    second: IceExplotion_30
+  - first:
+      213: -2494086250590069036
+    second: IceExplotion_31
+  - first:
+      213: -4784229899734473826
+    second: IceExplotion_32
+  - first:
+      213: 9113374796055039583
+    second: IceExplotion_33
+  - first:
+      213: 5387656110590529103
+    second: IceExplotion_34
+  - first:
+      213: 7663164525666867785
+    second: IceExplotion_35
+  - first:
+      213: 4575854554744180465
+    second: IceExplotion_36
+  - first:
+      213: 6209178535843319560
+    second: IceExplotion_37
+  - first:
+      213: -4681580092421618213
+    second: IceExplotion_38
+  - first:
+      213: 1683247644835879790
+    second: IceExplotion_39
+  - first:
+      213: 7513610422925825117
+    second: IceExplotion_40
+  - first:
+      213: 8638605345525199959
+    second: IceExplotion_41
+  - first:
+      213: 8574842315090674031
+    second: IceExplotion_42
+  - first:
+      213: 6358299391518350941
+    second: IceExplotion_43
+  - first:
+      213: 5214122829924537416
+    second: IceExplotion_44
+  - first:
+      213: -3392472752799486630
+    second: IceExplotion_45
+  - first:
+      213: -8667663179661829970
+    second: IceExplotion_46
+  - first:
+      213: -415162628028252500
+    second: IceExplotion_47
+  - first:
+      213: -7942601381373167478
+    second: IceExplotion_48
+  - first:
+      213: -8080730289276160653
+    second: IceExplotion_49
+  - first:
+      213: 3797597572409731123
+    second: IceExplotion_50
+  - first:
+      213: 6522456952653693733
+    second: IceExplotion_51
+  - first:
+      213: 4020186363248043586
+    second: IceExplotion_52
+  - first:
+      213: -5282321914640619798
+    second: IceExplotion_53
+  - first:
+      213: 916289876493546745
+    second: IceExplotion_54
+  - first:
+      213: -342729068832259407
+    second: IceExplotion_55
+  - first:
+      213: -4183503384378932725
+    second: IceExplotion_56
+  - first:
+      213: -3311121569149512204
+    second: IceExplotion_57
+  - first:
+      213: -2816072815209409402
+    second: IceExplotion_58
+  - first:
+      213: -6910245374794039250
+    second: IceExplotion_59
+  - first:
+      213: -8195697752543966992
+    second: IceExplotion_60
+  - first:
+      213: -4748048032693826435
+    second: IceExplotion_61
+  - first:
+      213: -7093249024112851854
+    second: IceExplotion_62
+  - first:
+      213: 2729819664545250225
+    second: IceExplotion_63
+  - first:
+      213: -8435296381399419847
+    second: IceExplotion_64
+  - first:
+      213: -7404656481137207037
+    second: IceExplotion_65
+  - first:
+      213: 8604470509245267691
+    second: IceExplotion_66
+  - first:
+      213: 5006077054015040938
+    second: IceExplotion_67
+  - first:
+      213: -8780685135451578926
+    second: IceExplotion_68
+  - first:
+      213: 1221684272528667650
+    second: IceExplotion_69
+  - first:
+      213: 2697533483169653410
+    second: IceExplotion_70
+  - first:
+      213: -4060589999187523388
+    second: IceExplotion_71
+  - first:
+      213: -5464465391398591282
+    second: IceExplotion_72
+  - first:
+      213: -5684105609248504947
+    second: IceExplotion_73
+  - first:
+      213: -7677220620776422052
+    second: IceExplotion_74
+  - first:
+      213: 9185169927889038858
+    second: IceExplotion_75
+  - first:
+      213: -838880366918660316
+    second: IceExplotion_76
+  - first:
+      213: 9025836762053921495
+    second: IceExplotion_77
+  - first:
+      213: -6951567401610685230
+    second: IceExplotion_78
+  - first:
+      213: -8466170960762467854
+    second: IceExplotion_79
+  - first:
+      213: 5445067547126308514
+    second: IceExplotion_80
+  - first:
+      213: -572832432111210356
+    second: IceExplotion_81
+  - first:
+      213: -5041358261878996953
+    second: IceExplotion_82
+  - first:
+      213: 959896884936972277
+    second: IceExplotion_83
+  - first:
+      213: -8453130689576604063
+    second: IceExplotion_84
+  - first:
+      213: 7305092553281663405
+    second: IceExplotion_85
+  - first:
+      213: 2118608264985322628
+    second: IceExplotion_86
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: IceExplotion_0
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 512
+        width: 237
+        height: 192
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07baf4496b4560670800000000000000
+      internalID: 8504578089484790640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_1
+      rect:
+        serializedVersion: 2
+        x: 509
+        y: 578
+        width: 89
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f61a82a076a62710800000000000000
+      internalID: 1668203714680854257
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_2
+      rect:
+        serializedVersion: 2
+        x: 617
+        y: 644
+        width: 72
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7780e27aa442d7850800000000000000
+      internalID: 6376292550477482103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_3
+      rect:
+        serializedVersion: 2
+        x: 641
+        y: 550
+        width: 116
+        height: 138
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07e9f07dc25be2120800000000000000
+      internalID: 2391047656371625584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_4
+      rect:
+        serializedVersion: 2
+        x: 778
+        y: 0
+        width: 1097
+        height: 712
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07ea46dea81aace50800000000000000
+      internalID: 6830449402921135728
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_5
+      rect:
+        serializedVersion: 2
+        x: 981
+        y: 605
+        width: 28
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3a7687fe68390e00800000000000000
+      internalID: 1011401640571730495
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_6
+      rect:
+        serializedVersion: 2
+        x: 1064
+        y: 632
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48d8495766b70f780800000000000000
+      internalID: -8651279204189172348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_7
+      rect:
+        serializedVersion: 2
+        x: 1430
+        y: 624
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 268888e7728270b10800000000000000
+      internalID: 1947569513952741474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_8
+      rect:
+        serializedVersion: 2
+        x: 1448
+        y: 635
+        width: 21
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee12112f269b90860800000000000000
+      internalID: 7496726889354043886
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_9
+      rect:
+        serializedVersion: 2
+        x: 1470
+        y: 642
+        width: 13
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0aceb7bdb6b9f700800000000000000
+      internalID: 574691353414257166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_10
+      rect:
+        serializedVersion: 2
+        x: 257
+        y: 594
+        width: 36
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e667707159609c790800000000000000
+      internalID: -7509463666257332626
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_11
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 562
+        width: 74
+        height: 55
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7747f337794175d40800000000000000
+      internalID: 5572945704600433783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_12
+      rect:
+        serializedVersion: 2
+        x: 702
+        y: 582
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ea281c6d2fcb7d90800000000000000
+      internalID: -7098852593625453856
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_13
+      rect:
+        serializedVersion: 2
+        x: 1935
+        y: 598
+        width: 138
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43bed7287fe770600800000000000000
+      internalID: 434455490575854388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_14
+      rect:
+        serializedVersion: 2
+        x: 2067
+        y: 594
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33a733e666f89b950800000000000000
+      internalID: 6465356410165361203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_15
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 59
+        width: 347
+        height: 466
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2eac954f32f41970800000000000000
+      internalID: 8724864731688250927
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_16
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 482
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b96d72bfbaef3e3a0800000000000000
+      internalID: -6637181411207424357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_17
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 514
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e6e43a981c19f2ee0800000000000000
+      internalID: -1283647108353405330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_18
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 498
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d6b731e243c2ed690800000000000000
+      internalID: -7575568920567645331
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_19
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 497
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c55ef0387cac155d0800000000000000
+      internalID: -3075454112271178404
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_20
+      rect:
+        serializedVersion: 2
+        x: 362
+        y: 490
+        width: 57
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0a6e92902d641690800000000000000
+      internalID: -7632355481819911669
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_21
+      rect:
+        serializedVersion: 2
+        x: 370
+        y: 15
+        width: 454
+        height: 535
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c27ba57ee71850690800000000000000
+      internalID: -7636555211089463508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_22
+      rect:
+        serializedVersion: 2
+        x: 1852
+        y: 39
+        width: 301
+        height: 490
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d27f924de7c4ca60800000000000000
+      internalID: 7693493885294572248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_23
+      rect:
+        serializedVersion: 2
+        x: 2067
+        y: 507
+        width: 32
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9828e09229520820800000000000000
+      internalID: 2882964716465432735
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_24
+      rect:
+        serializedVersion: 2
+        x: 2081
+        y: 502
+        width: 16
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 307d960f7157f88d0800000000000000
+      internalID: -2841924094169327869
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_25
+      rect:
+        serializedVersion: 2
+        x: 2083
+        y: 487
+        width: 10
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83ebe30c6455c39d0800000000000000
+      internalID: -2793263906515141064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_26
+      rect:
+        serializedVersion: 2
+        x: 2091
+        y: 482
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59b7cf0f13eae69d0800000000000000
+      internalID: -2779092390521308267
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_27
+      rect:
+        serializedVersion: 2
+        x: 2096
+        y: 496
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b597d5c2d32a2010800000000000000
+      internalID: 1164782841798038966
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_28
+      rect:
+        serializedVersion: 2
+        x: 1792
+        y: 449
+        width: 9
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4448fb5c042d0d410800000000000000
+      internalID: 1499929851551777860
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_29
+      rect:
+        serializedVersion: 2
+        x: 1987
+        y: 465
+        width: 23
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75ca0e8f6a6847670800000000000000
+      internalID: 8535595245472099415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_30
+      rect:
+        serializedVersion: 2
+        x: 826
+        y: 439
+        width: 6
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3658d7d1c33d6ea0800000000000000
+      internalID: -5877985031005645250
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_31
+      rect:
+        serializedVersion: 2
+        x: 828
+        y: 435
+        width: 12
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4de9462f4c9336dd0800000000000000
+      internalID: -2494086250590069036
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_32
+      rect:
+        serializedVersion: 2
+        x: 1834
+        y: 446
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e93268e01400b9db0800000000000000
+      internalID: -4784229899734473826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_33
+      rect:
+        serializedVersion: 2
+        x: 2126
+        y: 417
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5ecbdf9716397e70800000000000000
+      internalID: 9113374796055039583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_34
+      rect:
+        serializedVersion: 2
+        x: 2132
+        y: 417
+        width: 7
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4e06b300bcc4ca40800000000000000
+      internalID: 5387656110590529103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_35
+      rect:
+        serializedVersion: 2
+        x: 822
+        y: 405
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94a9fbfe887095a60800000000000000
+      internalID: 7663164525666867785
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_36
+      rect:
+        serializedVersion: 2
+        x: 2106
+        y: 375
+        width: 49
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1fe416f3973b08f30800000000000000
+      internalID: 4575854554744180465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_37
+      rect:
+        serializedVersion: 2
+        x: 2132
+        y: 372
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80fcbef0bfe6b2650800000000000000
+      internalID: 6209178535843319560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_38
+      rect:
+        serializedVersion: 2
+        x: 1778
+        y: 358
+        width: 7
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd54ba3c5bfa70fb0800000000000000
+      internalID: -4681580092421618213
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_39
+      rect:
+        serializedVersion: 2
+        x: 2117
+        y: 284
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e6b947390d81c5710800000000000000
+      internalID: 1683247644835879790
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_40
+      rect:
+        serializedVersion: 2
+        x: 420
+        y: 239
+        width: 13
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d549a2feed4b54860800000000000000
+      internalID: 7513610422925825117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_41
+      rect:
+        serializedVersion: 2
+        x: 2116
+        y: 250
+        width: 7
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 754f1dedacd72e770800000000000000
+      internalID: 8638605345525199959
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_42
+      rect:
+        serializedVersion: 2
+        x: 2122
+        y: 252
+        width: 10
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f61c7f377a5fff670800000000000000
+      internalID: 8574842315090674031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_43
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 212
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5e980fdb973d3850800000000000000
+      internalID: 6358299391518350941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_44
+      rect:
+        serializedVersion: 2
+        x: 2102
+        y: 223
+        width: 23
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84418e496194c5840800000000000000
+      internalID: 5214122829924537416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_45
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 192
+        width: 18
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5de13361048be0d0800000000000000
+      internalID: -3392472752799486630
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_46
+      rect:
+        serializedVersion: 2
+        x: 372
+        y: 144
+        width: 33
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea81687e24646b780800000000000000
+      internalID: -8667663179661829970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_47
+      rect:
+        serializedVersion: 2
+        x: 123
+        y: 158
+        width: 11
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: caebb581acb0d3af0800000000000000
+      internalID: -415162628028252500
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_48
+      rect:
+        serializedVersion: 2
+        x: 334
+        y: 166
+        width: 23
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a88b9b6102636c190800000000000000
+      internalID: -7942601381373167478
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_49
+      rect:
+        serializedVersion: 2
+        x: 358
+        y: 174
+        width: 15
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37574fd8d9a7bdf80800000000000000
+      internalID: -8080730289276160653
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_50
+      rect:
+        serializedVersion: 2
+        x: 1772
+        y: 166
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3382e5f1fd6c3b430800000000000000
+      internalID: 3797597572409731123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_51
+      rect:
+        serializedVersion: 2
+        x: 338
+        y: 162
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 52343bd7a0c648a50800000000000000
+      internalID: 6522456952653693733
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_52
+      rect:
+        serializedVersion: 2
+        x: 408
+        y: 150
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 246e44092329ac730800000000000000
+      internalID: 4020186363248043586
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_53
+      rect:
+        serializedVersion: 2
+        x: 424
+        y: 160
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae6a590a43c61b6b0800000000000000
+      internalID: -5282321914640619798
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_54
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 160
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9f43fa7b9c057bc00800000000000000
+      internalID: 916289876493546745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_55
+      rect:
+        serializedVersion: 2
+        x: 127
+        y: 126
+        width: 9
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b28d0e4ab16e3bf0800000000000000
+      internalID: -342729068832259407
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_56
+      rect:
+        serializedVersion: 2
+        x: 135
+        y: 128
+        width: 9
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b02037946d531f5c0800000000000000
+      internalID: -4183503384378932725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_57
+      rect:
+        serializedVersion: 2
+        x: 418
+        y: 128
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f595b6d9788c02d0800000000000000
+      internalID: -3311121569149512204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_58
+      rect:
+        serializedVersion: 2
+        x: 489
+        y: 144
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6841fcbd1bc4be8d0800000000000000
+      internalID: -2816072815209409402
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_59
+      rect:
+        serializedVersion: 2
+        x: 165
+        y: 108
+        width: 11
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e208d949170e910a0800000000000000
+      internalID: -6910245374794039250
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_60
+      rect:
+        serializedVersion: 2
+        x: 199
+        y: 95
+        width: 15
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f846251158034e80800000000000000
+      internalID: -8195697752543966992
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_61
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 114
+        width: 20
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7ccac2787b8b1eb0800000000000000
+      internalID: -4748048032693826435
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_62
+      rect:
+        serializedVersion: 2
+        x: 442
+        y: 95
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2740e5e1897bf8d90800000000000000
+      internalID: -7093249024112851854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_63
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 85
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bb781e858442e520800000000000000
+      internalID: 2729819664545250225
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_64
+      rect:
+        serializedVersion: 2
+        x: 816
+        y: 99
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 934bc8b12aecfea80800000000000000
+      internalID: -8435296381399419847
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_65
+      rect:
+        serializedVersion: 2
+        x: 1227
+        y: 63
+        width: 31
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 309d50679206d3990800000000000000
+      internalID: -7404656481137207037
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_66
+      rect:
+        serializedVersion: 2
+        x: 794
+        y: 79
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bee73e7f658396770800000000000000
+      internalID: 8604470509245267691
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_67
+      rect:
+        serializedVersion: 2
+        x: 808
+        y: 81
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aadeccaae88297540800000000000000
+      internalID: 5006077054015040938
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_68
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 80
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2dd1bd0346db42680800000000000000
+      internalID: -8780685135451578926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_69
+      rect:
+        serializedVersion: 2
+        x: 947
+        y: 67
+        width: 9
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 204b0c38f5b44f010800000000000000
+      internalID: 1221684272528667650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_70
+      rect:
+        serializedVersion: 2
+        x: 953
+        y: 63
+        width: 11
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a2ac0a29609f6520800000000000000
+      internalID: 2697533483169653410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_71
+      rect:
+        serializedVersion: 2
+        x: 1253
+        y: 70
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c88cefd8e2e5a7c0800000000000000
+      internalID: -4060589999187523388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_72
+      rect:
+        serializedVersion: 2
+        x: 1281
+        y: 65
+        width: 9
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec46542bda15a24b0800000000000000
+      internalID: -5464465391398591282
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_73
+      rect:
+        serializedVersion: 2
+        x: 1060
+        y: 45
+        width: 21
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8300f660100e11b0800000000000000
+      internalID: -5684105609248504947
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_74
+      rect:
+        serializedVersion: 2
+        x: 1538
+        y: 65
+        width: 18
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5541546588057590800000000000000
+      internalID: -7677220620776422052
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_75
+      rect:
+        serializedVersion: 2
+        x: 1553
+        y: 65
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0e2d616267487f70800000000000000
+      internalID: 9185169927889038858
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_76
+      rect:
+        serializedVersion: 2
+        x: 1804
+        y: 54
+        width: 21
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42f83c830c2bb54f0800000000000000
+      internalID: -838880366918660316
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_77
+      rect:
+        serializedVersion: 2
+        x: 700
+        y: 49
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7dac2e2d6b6324d70800000000000000
+      internalID: 9025836762053921495
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_78
+      rect:
+        serializedVersion: 2
+        x: 1349
+        y: 33
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d45fca7742178f90800000000000000
+      internalID: -6951567401610685230
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_79
+      rect:
+        serializedVersion: 2
+        x: 603
+        y: 33
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f9860ced5e128a80800000000000000
+      internalID: -8466170960762467854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_80
+      rect:
+        serializedVersion: 2
+        x: 635
+        y: 39
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ae987cb514c09b40800000000000000
+      internalID: 5445067547126308514
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_81
+      rect:
+        serializedVersion: 2
+        x: 641
+        y: 37
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c80303020f3ec08f0800000000000000
+      internalID: -572832432111210356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_82
+      rect:
+        serializedVersion: 2
+        x: 642
+        y: 33
+        width: 13
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 720c83ffe5f790ab0800000000000000
+      internalID: -5041358261878996953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_83
+      rect:
+        serializedVersion: 2
+        x: 1309
+        y: 33
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5f71caf812d325d00800000000000000
+      internalID: 959896884936972277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_84
+      rect:
+        serializedVersion: 2
+        x: 1317
+        y: 33
+        width: 19
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16e65d7ac6270ba80800000000000000
+      internalID: -8453130689576604063
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_85
+      rect:
+        serializedVersion: 2
+        x: 601
+        y: 19
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da174b129f6e06560800000000000000
+      internalID: 7305092553281663405
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: IceExplotion_86
+      rect:
+        serializedVersion: 2
+        x: 625
+        y: 13
+        width: 18
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48428acfdfec66d10800000000000000
+      internalID: 2118608264985322628
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      IceExplotion_0: 8504578089484790640
+      IceExplotion_1: 1668203714680854257
+      IceExplotion_10: -7509463666257332626
+      IceExplotion_11: 5572945704600433783
+      IceExplotion_12: -7098852593625453856
+      IceExplotion_13: 434455490575854388
+      IceExplotion_14: 6465356410165361203
+      IceExplotion_15: 8724864731688250927
+      IceExplotion_16: -6637181411207424357
+      IceExplotion_17: -1283647108353405330
+      IceExplotion_18: -7575568920567645331
+      IceExplotion_19: -3075454112271178404
+      IceExplotion_2: 6376292550477482103
+      IceExplotion_20: -7632355481819911669
+      IceExplotion_21: -7636555211089463508
+      IceExplotion_22: 7693493885294572248
+      IceExplotion_23: 2882964716465432735
+      IceExplotion_24: -2841924094169327869
+      IceExplotion_25: -2793263906515141064
+      IceExplotion_26: -2779092390521308267
+      IceExplotion_27: 1164782841798038966
+      IceExplotion_28: 1499929851551777860
+      IceExplotion_29: 8535595245472099415
+      IceExplotion_3: 2391047656371625584
+      IceExplotion_30: -5877985031005645250
+      IceExplotion_31: -2494086250590069036
+      IceExplotion_32: -4784229899734473826
+      IceExplotion_33: 9113374796055039583
+      IceExplotion_34: 5387656110590529103
+      IceExplotion_35: 7663164525666867785
+      IceExplotion_36: 4575854554744180465
+      IceExplotion_37: 6209178535843319560
+      IceExplotion_38: -4681580092421618213
+      IceExplotion_39: 1683247644835879790
+      IceExplotion_4: 6830449402921135728
+      IceExplotion_40: 7513610422925825117
+      IceExplotion_41: 8638605345525199959
+      IceExplotion_42: 8574842315090674031
+      IceExplotion_43: 6358299391518350941
+      IceExplotion_44: 5214122829924537416
+      IceExplotion_45: -3392472752799486630
+      IceExplotion_46: -8667663179661829970
+      IceExplotion_47: -415162628028252500
+      IceExplotion_48: -7942601381373167478
+      IceExplotion_49: -8080730289276160653
+      IceExplotion_5: 1011401640571730495
+      IceExplotion_50: 3797597572409731123
+      IceExplotion_51: 6522456952653693733
+      IceExplotion_52: 4020186363248043586
+      IceExplotion_53: -5282321914640619798
+      IceExplotion_54: 916289876493546745
+      IceExplotion_55: -342729068832259407
+      IceExplotion_56: -4183503384378932725
+      IceExplotion_57: -3311121569149512204
+      IceExplotion_58: -2816072815209409402
+      IceExplotion_59: -6910245374794039250
+      IceExplotion_6: -8651279204189172348
+      IceExplotion_60: -8195697752543966992
+      IceExplotion_61: -4748048032693826435
+      IceExplotion_62: -7093249024112851854
+      IceExplotion_63: 2729819664545250225
+      IceExplotion_64: -8435296381399419847
+      IceExplotion_65: -7404656481137207037
+      IceExplotion_66: 8604470509245267691
+      IceExplotion_67: 5006077054015040938
+      IceExplotion_68: -8780685135451578926
+      IceExplotion_69: 1221684272528667650
+      IceExplotion_7: 1947569513952741474
+      IceExplotion_70: 2697533483169653410
+      IceExplotion_71: -4060589999187523388
+      IceExplotion_72: -5464465391398591282
+      IceExplotion_73: -5684105609248504947
+      IceExplotion_74: -7677220620776422052
+      IceExplotion_75: 9185169927889038858
+      IceExplotion_76: -838880366918660316
+      IceExplotion_77: 9025836762053921495
+      IceExplotion_78: -6951567401610685230
+      IceExplotion_79: -8466170960762467854
+      IceExplotion_8: 7496726889354043886
+      IceExplotion_80: 5445067547126308514
+      IceExplotion_81: -572832432111210356
+      IceExplotion_82: -5041358261878996953
+      IceExplotion_83: 959896884936972277
+      IceExplotion_84: -8453130689576604063
+      IceExplotion_85: 7305092553281663405
+      IceExplotion_86: 2118608264985322628
+      IceExplotion_9: 574691353414257166
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

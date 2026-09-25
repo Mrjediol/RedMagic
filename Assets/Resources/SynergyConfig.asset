@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.SynergyConfig
   entries:
   - tag: 0
-    tier1: -10% de velocidad a los enemigos golpeados.
-    tier2: "+da\xF1o a los enemigos ralentizados."
-    tier3: "Al recibir un golpe letal: 1 vida extra, invulnerable 1.5s en una tumba
-      de hielo que da\xF1a alrededor y luego se rompe."
+    tier1: Los disparos ralentizan un 40% durante 3 s.
+    tier2: "Los ralentizados reciben +15% de da\xF1o de cualquier fuente."
+    tier3: "Matar a un ralentizado suelta un estallido de hielo (10 de da\xF1o, radio
+      1,8)."
   - tag: 1
     tier1: "Aplica quemadura (da\xF1o por tiempo)."
     tier2: "+duraci\xF3n de la quemadura."
@@ -27,14 +27,26 @@ MonoBehaviour:
     tier2: "+regeneraci\xF3n de vida pasiva."
     tier3: Escudo temporal al bajar del 30% de vida (una vez por encuentro).
   - tag: 101
-    tier1: -10% de enfriamiento del arma.
+    tier1: "Con un enemigo ralentizado en pantalla, el enfriamiento corre \xD71,5."
     tier2: -20% de enfriamiento del arma.
     tier3: -35% de enfriamiento del arma.
   - tag: 102
-    tier1: 5% de robo de vida.
+    tier1: Cada baja cura 3 de vida.
     tier2: 10% de robo de vida.
     tier3: "La curaci\xF3n sobrante por robo de vida se convierte en escudo temporal."
   - tag: 103
-    tier1: Con 2 items Reset equipados, cada uno dispara con N-1.
+    tier1: Cada baja quita 2 s al enfriamiento actual.
     tier2: Con 3+ items Reset equipados, cada uno dispara con N-2.
     tier3: "N reducido al m\xEDnimo con el m\xE1ximo de items Reset."
+  tuning:
+    slowStrength: 0.4
+    slowDuration: 3
+    slowTint: {r: 0.4, g: 0.8, b: 1, a: 0.8}
+    fullTintAtSlow: 0.6
+    ice4DamageTakenBonus: 0.15
+    ice6BurstRadius: 1.8
+    ice6BurstDamage: 10
+    ice6BurstPrefab: {fileID: 1923879451483141602, guid: b5922a57bb5593e4b8dee873830f0941, type: 3}
+    haste2CooldownRate: 1.5
+    reset2CooldownReduction: 2
+    lifesteal2HealPerKill: 3

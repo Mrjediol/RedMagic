@@ -28,7 +28,9 @@ namespace RedMagic.Abilities
         [Min(0.05f)]
         public float lifetime = 2.5f;
 
-        [Tooltip("Tamaño del proyectil en unidades del mundo.")]
+        [Tooltip("Tamaño del proyectil en unidades del mundo. Con arte del importador de jefes " +
+                 "(FxArtSize) manda el ANCHO (X) y el collider escala con él. Un prefab hecho a " +
+                 "mano sin FxArtSize usa su propia escala.")]
         public Vector2 size = new Vector2(0.35f, 0.35f);
 
         [Tooltip("Salida del disparo respecto al lanzador. La X se invierte según hacia dónde mira.")]
@@ -57,6 +59,20 @@ namespace RedMagic.Abilities
         [Tooltip("Daño de la explosión. Se suma al impacto directo sólo si el radio es > 0.")]
         [Min(0f)]
         public float impactDamage;
+
+        [Header("Aiming")]
+        [Tooltip("Rota el proyectil para que su punta (Facing Axis) mire hacia donde vuela, al salir y " +
+                 "en cada paso (autoguiado, parábola). Apagado = decide el prefab (su casilla " +
+                 "'Face Travel Direction'), así los proyectiles que ya existían no cambian.")]
+        public bool faceDirection;
+
+        [Tooltip("Lado del sprite que es la punta. Right = arte dibujado mirando a +X (convención).")]
+        public ProjectileFacingAxis facingAxis = ProjectileFacingAxis.Right;
+
+        [Tooltip("Fixed = la dirección que da quien dispara. MouseDirection / NearestEnemy sólo para " +
+                 "el jugador (cursor / enemigo más cercano al salir, sin perseguir); en un enemigo " +
+                 "equivalen a Fixed.")]
+        public ProjectileAimMode aimMode = ProjectileAimMode.Fixed;
     }
 
     /// <summary>
@@ -102,6 +118,7 @@ namespace RedMagic.Abilities
                 // al proyectil de código. El arte final no lleva FxPlaceholderStyle y se respeta.
                 var style = go.GetComponent<FxPlaceholderStyle>();
                 if (style != null) style.Apply(tint, spec.size * ctx.SizeScale, ctx.Caster);
+                else if (go.TryGetComponent(out FxArtSize fit)) fit.FitWidth(spec.size.x * ctx.SizeScale);
             }
             else
             {
@@ -119,6 +136,10 @@ namespace RedMagic.Abilities
                                           spec.arcGravity, impactRadius, spec.impactDamage,
                                           knockbackMultiplier, spec.lifetime);
             projectile.ConfigureLifesteal(ctx.CasterHealth, ctx.Lifesteal);
+            projectile.ConfigureFacing(spec.faceDirection, spec.facingAxis);
+
+            // Apuntado (ratón / enemigo más cercano) — sólo cambia algo si dispara el jugador.
+            direction = ProjectileAim.Resolve(spec.aimMode, origin, direction, ctx.Caster);
             projectile.Launch(direction, ctx.Caster);
 
             return projectile.gameObject;

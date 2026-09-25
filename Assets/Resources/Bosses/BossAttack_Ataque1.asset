@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd0d6ee900bed42448cb0e1afdda8f34, type: 3}
+  m_Name: BossAttack_Ataque1
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.ThrowProjectileAttack
+  displayName: Ataque1
+  description: 
+  accent: {r: 0.55, g: 0.9, b: 0.4, a: 1}
+  telegraph: 0.8
+  recovery: 1.1
+  weight: 1
+  cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
+  damage: 18
+  knockbackMultiplier: 1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: 
+  sfxId: 
+  shakeAmplitude: 0
+  shakeDuration: 0.25
+  throwGesture: Attack
+  holdSeconds: 0.6
+  flightSeconds: 1.1
+  gravity: 30
+  landingSpread: 0
+  throws: 1
+  timeBetweenThrows: 0.5
+  projectile:
+    prefab: {fileID: 1917426589994827731, guid: 9038f01dd1459eb48bbbef5b78bb2888, type: 3}
+    speed: 12
+    lifetime: 4
+    size: {x: 1.6, y: 1.6}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    homingTurnRate: 0
+    homingRange: 9
+    arcGravity: 0
+    impactRadius: 2.2
+    impactDamage: 16
+  heldPropPrefab: {fileID: 8996101908221349602, guid: 5a26a3867690bbb4492bb582e15758f1, type: 3}
+  heldOffset: {x: 0, y: 5.5}
+  heldSize: {x: 1.6, y: 1.6}
+  markLanding: 1
+  markRadius: 0

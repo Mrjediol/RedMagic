@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfe8e9158717b5a4da011a6132422570, type: 3}
+  m_Name: BossAttack_HieloGolpeSuelo
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.ShockwaveAttack
+  displayName: Golpe al Suelo
+  description: 
+  accent: {r: 0.55, g: 0.9, b: 0.4, a: 1}
+  telegraph: 0.9
+  recovery: 1.1
+  weight: 1
+  cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
+  damage: 16
+  knockbackMultiplier: 1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: GroundSlam
+  sfxId: 
+  shakeAmplitude: 0.4
+  shakeDuration: 0.3
+  bandMin: 0
+  bandMax: 1.8
+  alternateBands: 0
+  bandMinB: 1.9
+  bandMaxB: 9
+  waves: 1
+  timeBetweenWaves: 0.5
+  bothDirections: 1
+  width: 1.4
+  speed: 14
+  travelDistance: 0
+  spawnInset: 2
+  speedRampPerWave: 1

@@ -1,11 +1,8 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/Ui/MainMenu.uss?fileID=7433441132597879392&amp;guid=1bc0f283f5902bb4f8e04c4a5c3d8948&amp;type=3#MainMenu"/>
-    <ui:VisualElement name="mainMenu" class="main-menu">
+    <ui:VisualElement name="mainMenu" class="main-menu" style="background-image: url(&quot;project://database/Assets/Art/UI/MainMenu.jpeg?fileID=2800000&amp;guid=9b93da1ad30065640b7ec3dab0744d65&amp;type=3#MainMenu&quot;); -unity-background-image-tint-color: rgb(255, 255, 255);">
         <ui:VisualElement name="backgroundLayer" picking-mode="Ignore" class="background-layer"/>
-        <ui:VisualElement name="scrim" picking-mode="Ignore" class="scrim"/>
-        <!-- Sin título: el fondo (MainMenu.jpeg) hace de portada. El contenedor se deja vacío
-             a propósito, como espaciador — mismo flex-grow que buttonContainer, así los botones
-             se quedan en la mitad inferior igual que antes. -->
+        <ui:VisualElement name="scrim" picking-mode="Ignore" class="scrim" style="background-image: url(&quot;project://database/Assets/Art/UI/MainMenu.jpeg?fileID=2800000&amp;guid=9b93da1ad30065640b7ec3dab0744d65&amp;type=3#MainMenu&quot;);"/>
         <ui:VisualElement name="titleContainer" picking-mode="Ignore" class="title-container"/>
         <ui:VisualElement name="buttonContainer" class="button-container">
             <ui:Button name="playButton" text="Jugar" class="menu-button"/>

@@ -145,6 +145,7 @@ flipbook. **Colliders, scripts, Rigidbody, tamaños y referencias no se tocan.**
 | `Pipeline ▸ 3 · Generar enemigo` | Con una `EnemyRecipe` seleccionada |
 | `Pipeline ▸ 4 · Auditar contenido` | Lista los prefabs con `Health` a los que les falta algo |
 | `Pipeline ▸ 5 · Auditar y reparar` | Añade lo que falte |
+| `Pipeline ▸ 8 · Auditar animaciones terminales` / `9 · … y reparar` | Muerte/impacto en bucle (clips, controllers, estados de `SpriteStateMachine`, flipbooks de `VfxOneShot`). Ver §5-bis |
 | `Pipeline ▸ Packs ▸ …` | Un pack por personaje |
 
 ---
@@ -166,6 +167,25 @@ instancia, así que una instancia reutilizada volvería a la vida a mitad de su 
 
 Para FX de una sola animación sigue existiendo `Gameplay.SpriteFlipbook`, más simple.
 `SpriteStateMachine` es su versión con varios estados.
+
+## 5-bis. Muerte e impacto nunca repiten — `Pipeline.AnimStates`
+
+Una animación **terminal** (nombre con `Death`/`Impact`/`Explo`/`Muerte`/`Despawn`, o exactamente
+`Die`/`Dead`/`End`/`Destroy`) se reproduce una vez y se queda en su último dibujo hasta que el objeto
+muere o vuelve al pool. El exportador web marca `loop: true` por defecto y eso hacía que el primer
+dibujo reapareciera al final (cadáver ~1 s visible, "Impact" esperando a acabar). La regla vive en
+**un sitio** (`AnimStates.IsTerminal` / `Loops`) y se aplica en tres capas:
+
+- **Importadores** (`AnimClipBuilder`, `EnemyImporter`, `FxPrefabBuilder`, `BossBodyBuilder`,
+  `PlayerFrameImporter`): el bucle de un estado terminal se escribe siempre a `false`. Un VFX de
+  `FxPrefabBuilder` nunca repite.
+- **Runtime**, por si queda un asset viejo: `SpriteStateMachine` no repite ni vuelve al estado por
+  defecto tras un terminal (`PlayOnce` para forzarlo; `Projectile` lo usa en "Impact",
+  `EnemyAnimation` en la muerte); `VfxOneShot` pone en una sola pasada su flipbook / máquina;
+  `EnemyAnimation` clava el Animator en el último frame si el clip de muerte viniera en bucle.
+- **Auditoría** `Pipeline ▸ 8/9`: relánzala tras importar contenido nuevo.
+
+Un estado terminal nuevo con otro nombre: añade el término en `AnimStates`, no un parche por objeto.
 
 ---
 

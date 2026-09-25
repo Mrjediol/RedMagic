@@ -13,18 +13,23 @@ MonoBehaviour:
   m_Name: Item_YelmoRunico
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
   displayName: "Yelmo R\xFAnico"
-  description: 'Las runas del yelmo tiran de ti hacia arriba. (Prueba: saltas el
-    triple.)'
+  description: Las runas guardan cada muerte. A la quinta, el hielo estalla a tu
+    alrededor.
   icon: {fileID: 21300000, guid: 5c5a265ebc64bac48845946daebb5751, type: 3}
   accent: {r: 0.55, g: 0.85, b: 0.95, a: 1}
-  tags: 0000000064000000
+  rarity: 3
+  tags: 0000000066000000
   effects:
-  - rid: 5384780386449490184
+  - rid: 5384780706789982319
   references:
     version: 2
     RefIds:
-    - rid: 5384780386449490184
-      type: {class: PlayerStatMultiplierEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
+    - rid: 5384780706789982319
+      type: {class: KillCounterExplosionEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
       data:
-        stat: 2
-        multiplier: 3
+        killsRequired: 5
+        radius: 4.5
+        damage: 40
+        slowsTargets: 1
+        explosionPrefab: {fileID: 1923879451483141602, guid: b5922a57bb5593e4b8dee873830f0941, type: 3}
+        hudAccent: {r: 0.55, g: 0.9, b: 1, a: 1}

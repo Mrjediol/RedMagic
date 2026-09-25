@@ -203,6 +203,60 @@ namespace RedMagic.Bosses
         }
 
         /// <summary>
+        /// Aviso de <b>área en el suelo</b>: un círculo (elipse vista de lado) centrado en
+        /// <paramref name="groundPoint"/> que cubre <paramref name="radius"/>. Sale del
+        /// <see cref="BossController.WarnCirclePrefab"/> del jefe (arte propio, escalado al diámetro);
+        /// sin él, una franja plana del mismo ancho pegada al suelo.
+        /// </summary>
+        protected void WarnCircle(in BossContext ctx, Vector2 groundPoint, float radius, float duration,
+                                  float strength = 1f)
+        {
+            var color = ctx.Accent;
+            color.a = 0.55f * Mathf.Clamp01(strength);
+            float d = Mathf.Max(0.05f, duration);
+            float diameter = Mathf.Max(0.1f, radius * 2f);
+
+            var prefab = ctx.Boss != null ? ctx.Boss.WarnCirclePrefab : null;
+            if (prefab != null)
+            {
+                FxTelegraph.Spawn(prefab, groundPoint, new Vector2(diameter, radius), color, d, 0f, 1f,
+                                  ctx.Ability.Caster);
+                return;
+            }
+
+            EmitWarn(ctx, groundPoint + Vector2.up * 0.2f, new Vector2(diameter, 0.4f), color, d, 0f, 1f);
+        }
+
+        /// <summary>
+        /// Aviso de <b>trayectoria</b>: una flecha desde <paramref name="from"/> en
+        /// <paramref name="direction"/> de <paramref name="length"/> unidades (una embestida, una
+        /// carga). Sale del <see cref="BossController.WarnArrowPrefab"/> del jefe (arte mirando +X,
+        /// escalado al largo); sin él, una barra girada del mismo largo.
+        /// </summary>
+        protected void WarnArrow(in BossContext ctx, Vector2 from, Vector2 direction, float length,
+                                 float width, float duration, float strength = 1f)
+        {
+            if (direction.sqrMagnitude < 0.0001f) direction = new Vector2(ctx.Facing, 0f);
+            direction.Normalize();
+
+            var color = ctx.Accent;
+            color.a = 0.55f * Mathf.Clamp01(strength);
+            float d = Mathf.Max(0.05f, duration);
+            float len = Mathf.Max(0.1f, length);
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            Vector2 center = from + direction * (len * 0.5f);
+
+            var prefab = ctx.Boss != null ? ctx.Boss.WarnArrowPrefab : null;
+            if (prefab != null)
+            {
+                FxTelegraph.Spawn(prefab, center, new Vector2(len, width), color, d, angle, 1f, ctx.Ability.Caster);
+                return;
+            }
+
+            EmitWarn(ctx, center, new Vector2(len, Mathf.Max(0.1f, width)), color, d, angle, 1f);
+        }
+
+        /// <summary>
         /// Marca en un color propio en vez del de la fase. Sólo para lo que significa lo contrario
         /// que el resto de avisos: un <b>sitio seguro</b> no puede pintarse del mismo color que lo
         /// que hace daño.

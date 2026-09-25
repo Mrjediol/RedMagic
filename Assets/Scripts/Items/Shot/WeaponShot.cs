@@ -58,6 +58,17 @@ namespace RedMagic.Items
         /// <summary>Prefab del haz (armas Hitscan), o null para construirlo en código.</summary>
         public GameObject beamPrefab;
 
+        // Collider propio del arma (ver Gameplay.ProjectileColliderShape).
+        public bool overrideCollider;
+        public Gameplay.ProjectileColliderType colliderType;
+        public Vector2 colliderSize;
+        public Vector2 colliderOffset;
+
+        // Aiming (ver Gameplay.ProjectileAim).
+        public bool faceDirection;
+        public Gameplay.ProjectileFacingAxis facingAxis = Gameplay.ProjectileFacingAxis.Right;
+        public Gameplay.ProjectileAimMode aimMode = Gameplay.ProjectileAimMode.Fixed;
+
         /// <summary>Enemigos que el proyectil atraviesa antes de morir. 0 = muere en el primer impacto.</summary>
         public int pierce;
 
@@ -111,6 +122,13 @@ namespace RedMagic.Items
                 muzzleOffset = shot.muzzleOffset,
                 projectilePrefab = shot.projectilePrefab,
                 beamPrefab = shot.beamPrefab,
+                faceDirection = shot.faceDirection,
+                facingAxis = shot.facingAxis,
+                aimMode = shot.aimMode,
+                overrideCollider = shot.overrideCollider,
+                colliderType = shot.colliderType,
+                colliderSize = shot.colliderSize,
+                colliderOffset = shot.colliderOffset,
                 pierce = Mathf.Max(0, shot.pierce),
                 arcGravity = Mathf.Max(0f, shot.arcGravity),
                 impactRadius = Mathf.Max(0f, shot.impactRadius),

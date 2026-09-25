@@ -542,6 +542,14 @@ namespace RedMagic.Gameplay
             if (_dashCooldownTimer > 0f) _dashCooldownTimer -= Time.deltaTime;
             if (!IsKnockedBack) TryStartDash();
 
+            // Saltar durante un dash lo cancela en el acto: si no, UpdateDash seguiría pisando la
+            // velocidad vertical que Jump() acaba de poner (dashIgnoresGravity la fuerza a 0 cada
+            // frame) y el salto se anularía él solo al frame siguiente. La velocidad horizontal del
+            // dash no se toca aquí, así que el impulso se conserva y sólo se amortigua como cualquier
+            // otra salida de dash (el mismo clamp a MoveClamp que aplica UpdateDash al terminar).
+            if (!IsKnockedBack && _dashTimer > 0f && _input.JumpDown)
+                _dashTimer = 0f;
+
             if (IsKnockedBack)
             {
                 _moveSource = MoveSource.Knockback;
@@ -626,11 +634,16 @@ namespace RedMagic.Gameplay
             LandingThisFrame = false;
             var groundedCheck = ProbeGround();
 
-            if (_colDown && !groundedCheck) _timeLeftGrounded = Time.time; // acaba de despegar
+            if (_colDown && !groundedCheck)
+            {
+                _timeLeftGrounded = Time.time; // acaba de despegar
+                _dashCooldownTimer = 0f;       // suelo→aire resetea el cooldown del dash (dash→salto→dash)
+            }
             else if (!_colDown && groundedCheck)
             {
                 _coyoteUsable = true;   // acaba de tocar suelo
                 LandingThisFrame = true;
+                _dashCooldownTimer = 0f; // aire→suelo también resetea el cooldown del dash
             }
 
             _colDown = groundedCheck;

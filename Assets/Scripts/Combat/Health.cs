@@ -69,6 +69,19 @@ namespace RedMagic.Combat
         }
 
         /// <summary>
+        /// Segundo multiplicador de daño recibido, para <b>estados</b> temporales (la ralentización
+        /// de hielo que deja al enemigo expuesto: <see cref="SlowStatus"/>). Va aparte de
+        /// <see cref="DamageMultiplier"/> porque ése lo mueven los jefes (armadura de fase, ventana
+        /// de castigo): si un estado lo escribiera, al acabar pisaría la armadura del jefe. Se
+        /// multiplican entre sí. No se serializa: siempre arranca en 1.
+        /// </summary>
+        public float StatusDamageMultiplier
+        {
+            get => _statusDamageMultiplier;
+            set => _statusDamageMultiplier = Mathf.Max(0f, value);
+        }
+
+        /// <summary>
         /// True si ahora mismo no se puede hacer daño: por la casilla <see cref="Invulnerable"/>
         /// o porque siguen corriendo los i-frames del último golpe.
         /// </summary>
@@ -95,6 +108,14 @@ namespace RedMagic.Combat
         public event Action Died;
 
         /// <summary>
+        /// Versión global de <see cref="Died"/>: cualquier <see cref="Health"/> que muere, para un
+        /// oyente único que no quiere engancharse a cada instancia (igual razón que
+        /// <see cref="AnyDamaged"/>) — por ejemplo, contar bajas de enemigos para un sistema de
+        /// meta-progresión sin escanear la escena.
+        /// </summary>
+        public static event Action<Health> AnyDied;
+
+        /// <summary>
         /// Se dispara al llamar a <see cref="ResetHealth"/> mientras se estaba muerto. Es el
         /// complemento de <see cref="Died"/>: un componente que se desactiva permanentemente al
         /// morir (por ejemplo <c>PlayerMovement</c> apagando el control, o <c>PlayerAnimator</c>
@@ -111,6 +132,7 @@ namespace RedMagic.Combat
 
         private bool _deathRaised;
         private float _invulnerabilityTimer;
+        private float _statusDamageMultiplier = 1f;
         private Knockback _knockback;
 
         private void Awake()
@@ -160,7 +182,7 @@ namespace RedMagic.Combat
             // La armadura se aplica aquí, antes de nada más, para que todo lo que viene después
             // —la vida, los eventos, el número flotante— hable del daño que de verdad ha entrado.
             // Con multiplicador 0 el golpe no entra, así que tampoco empuja ni gasta i-frames.
-            amount *= damageMultiplier;
+            amount *= damageMultiplier * _statusDamageMultiplier;
             if (amount <= 0f) return false;
 
             currentHealth = Mathf.Max(0f, currentHealth - amount);
@@ -271,6 +293,7 @@ namespace RedMagic.Combat
             HealthChanged?.Invoke(currentHealth, maxHealth);
             PlaySfx(deathSfxId);
             Died?.Invoke();
+            AnyDied?.Invoke(this);
         }
 
         /// <summary>Resetea la vida al máximo (respawn).</summary>

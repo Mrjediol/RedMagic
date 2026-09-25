@@ -49,6 +49,15 @@ namespace RedMagic.Items
         [Min(0f)]
         [SerializeField] private float releaseDelay = 0.28f;
 
+        [Header("Vista previa en la escena (editor)")]
+        [Tooltip("Arma que se dibuja en la escena al seleccionar el jugador o el propio asset del arma, " +
+                 "sin entrar en Play: el proyectil a su tamaño (Base Shot ▸ Size), su collider y la boca " +
+                 "(Muzzle Offset). En Play se dibuja el arma equipada. Vacío = sólo en Play.")]
+        [SerializeField] private WeaponDefinition previewWeapon;
+
+        [Tooltip("Dibujar la vista previa siempre, aunque no esté seleccionado nada.")]
+        [SerializeField] private bool alwaysShowPreview;
+
         [Header("Input")]
         [SerializeField] private InputActionAsset inputActions;
         [SerializeField] private string actionMapName = "Player";
@@ -71,6 +80,25 @@ namespace RedMagic.Items
         private GameObject _chargeFx;
 
         private bool _suppressingBasic;
+
+        /// <summary>El WeaponUser del jugador activo (hub o run), o null. Para efectos de item que tocan el cooldown.</summary>
+        public static WeaponUser Current { get; private set; }
+
+        /// <summary>
+        /// Justo antes de soltar cada disparo, con el contexto del gesto. Los efectos "el siguiente
+        /// disparo…" (Bastón: ×3 de daño; Yelmo: explosión) se suscriben aquí y pueden subir
+        /// <see cref="CastArgs.DamageScale"/>. La instancia se reutiliza: no la guardes.
+        /// </summary>
+        public static event System.Action<CastArgs> Casting;
+
+        private static readonly CastArgs SharedCastArgs = new CastArgs();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            Current = null;
+            Casting = null;
+        }
 
         /// <summary>Arma equipada ahora mismo, o null.</summary>
         public WeaponDefinition Weapon =>
@@ -107,18 +135,24 @@ namespace RedMagic.Items
             }
         }
 
-        private void OnEnable() => _attackAction?.Enable();
+        private void OnEnable()
+        {
+            _attackAction?.Enable();
+            Current = this;
+        }
 
         private void OnDisable()
         {
             _attackAction?.Disable();
             CancelCharge();
             ReleaseBasicAttack();
+            if (Current == this) Current = null;
         }
 
         private void Update()
         {
-            if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
+            // Items que aceleran el enfriamiento (Botas, Rapidez 2) cambian el ritmo, no el cooldown base.
+            if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime * PlayerStats.Multiplier(PlayerStat.CooldownRate);
 
             var weapon = Weapon;
 
@@ -243,7 +277,8 @@ namespace RedMagic.Items
         /// </summary>
         private void Fire(WeaponDefinition weapon, float chargeFraction)
         {
-            _cooldownTimer = weapon.BaseCooldown;
+            // Reducción de cooldown de las pasivas legendarias — 1 = normal, más bajo = más rápido.
+            _cooldownTimer = weapon.BaseCooldown * RedMagic.Economy.LegendaryPassiveEffects.CooldownMultiplier;
             if (_animator != null) _animator.TriggerAttack();
 
             if (releaseDelay <= 0f)
@@ -275,14 +310,34 @@ namespace RedMagic.Items
             var loadout = WeaponLoadout.Instance;
             if (loadout == null || loadout.Inventory.Weapon == null) return;
 
-            ShotResolver.Fire(loadout.Inventory, BuildContext(), chargeFraction);
+            int facing = ResolveFacing();
+
+            var args = SharedCastArgs;
+            args.User = this;
+            args.Facing = facing;
+            args.Origin = PlayerHit.BodyCenter(this);
+            args.DamageScale = 1f;
+            args.Impact = null;
+            Casting?.Invoke(args);
+
+            ShotResolver.Fire(loadout.Inventory, BuildContext(facing, args.DamageScale, args.Impact), chargeFraction);
         }
 
-        private ShotContext BuildContext()
+        private ShotContext BuildContext(int facing, float damageScale, ShotImpactHook impact)
         {
-            int facing = ResolveFacing();
             return new ShotContext(gameObject, this, _health, hitLayers, facing,
-                                   new Vector2(facing, 0f), gameObject.tag, 1f);
+                                   new Vector2(facing, 0f), gameObject.tag, damageScale, impact);
+        }
+
+        // ------------------------------------------------------------------ cooldown desde fuera
+
+        /// <summary>Deja el arma lista para disparar ya (Bastón: la baja recarga el siguiente disparo).</summary>
+        public void ResetCooldown() => _cooldownTimer = 0f;
+
+        /// <summary>Resta <paramref name="seconds"/> al cooldown que esté corriendo (Reset 2).</summary>
+        public void ReduceCooldown(float seconds)
+        {
+            if (seconds > 0f && _cooldownTimer > 0f) _cooldownTimer = Mathf.Max(0f, _cooldownTimer - seconds);
         }
 
         private Vector2 MuzzleWorld(WeaponDefinition weapon)
@@ -298,6 +353,35 @@ namespace RedMagic.Items
             if (_sprite != null) return _sprite.flipX ? -1 : 1;
             return 1;
         }
+
+        // ------------------------------------------------------------------ vista previa (editor)
+
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            var weapon = Application.isPlaying && Weapon != null ? Weapon : previewWeapon;
+            if (weapon == null) return;
+
+            if (!alwaysShowPreview && !PreviewSelected(weapon)) return;
+            WeaponShotPreview.Draw(weapon, transform, ResolveFacingForPreview());
+        }
+
+        // Se ve al seleccionar el jugador (o algo suyo) o el asset del arma que se está afinando.
+        private bool PreviewSelected(WeaponDefinition weapon)
+        {
+            if (UnityEditor.Selection.activeObject == weapon) return true;
+            foreach (var t in UnityEditor.Selection.transforms)
+                if (t == transform || t.IsChildOf(transform)) return true;
+            return false;
+        }
+
+        private int ResolveFacingForPreview()
+        {
+            if (Application.isPlaying) return ResolveFacing();
+            var sprite = GetComponentInChildren<SpriteRenderer>();
+            return sprite != null && sprite.flipX ? -1 : 1;
+        }
+#endif
 
         // ------------------------------------------------------------------ espada
 

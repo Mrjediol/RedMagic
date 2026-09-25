@@ -30,6 +30,14 @@ namespace RedMagic.Items
 
         private static Core.Pool<ShotProjectile> _pool;
 
+        [Tooltip("Rota el proyectil entero para que apunte hacia donde vuela (lo de siempre). Apágalo " +
+                 "en un prefab con arte que no debe girar: entonces sólo se refleja en horizontal. " +
+                 "El arma puede forzar el giro igualmente con BaseShot ▸ Aiming ▸ Face Direction.")]
+        [SerializeField] private bool faceTravelDirection = true;
+
+        /// <summary>El prefab gira hacia donde vuela (lo lee la vista previa de WeaponUser).</summary>
+        public bool FacesTravelDirection => faceTravelDirection;
+
         private WeaponShot _shot;
         private ShotContext _ctx;
         private float _damage;
@@ -38,6 +46,20 @@ namespace RedMagic.Items
         private int _pierceLeft;
         private float _lifeTimer;
         private bool _done;
+
+        /// <summary>Escondido entre la baja y la reaparición (Capa). Ni se mueve ni gasta vida.</summary>
+        private bool _dormant;
+        private Renderer[] _renderers;
+        // Colliders del prefab (o el círculo del de código), con su estado original, y los de override
+        // del arma (BaseShot ▸ Projectile Collider Override): uno por forma, creado la primera vez que
+        // un arma lo pide y reutilizado después — nunca AddComponent por disparo.
+        private Collider2D[] _prefabColliders;
+        private bool[] _prefabEnabled;
+        private CircleCollider2D _overrideCircle;
+        private BoxCollider2D _overrideBox;
+        private CapsuleCollider2D _overrideCapsule;
+        private Collider2D _activeOverride;
+        private TrailRenderer[] _trails;
 
         private Rigidbody2D _body;
         private SpriteRenderer _renderer;
@@ -133,6 +155,11 @@ namespace RedMagic.Items
             if (_renderer == null) _renderer = GetComponentInChildren<SpriteRenderer>();
             if (_collider == null) _collider = GetComponent<CircleCollider2D>();
             if (_style == null) _style = GetComponent<FxPlaceholderStyle>();
+            _renderers = GetComponentsInChildren<Renderer>(true);
+            _prefabColliders = GetComponentsInChildren<Collider2D>(true);
+            _prefabEnabled = new bool[_prefabColliders.Length];
+            for (int i = 0; i < _prefabColliders.Length; i++) _prefabEnabled[i] = _prefabColliders[i].enabled;
+            _trails = GetComponentsInChildren<TrailRenderer>(true);
         }
 
         void Core.IPooled.OnReturnedToPool() => ResetForReuse();
@@ -147,6 +174,7 @@ namespace RedMagic.Items
         private void ResetForReuse()
         {
             _done = true;
+            SetDormant(false);
             _hit.Clear();
             if (_body != null) _body.linearVelocity = Vector2.zero;
         }
@@ -177,13 +205,35 @@ namespace RedMagic.Items
                 _style.Apply(shot.tint, shot.size, ctx.Caster);
             }
 
+            // Después del tamaño: el override se da en unidades del mundo y se traduce con la escala final.
+            ApplyColliderOverride(shot);
+
             _body.linearVelocity = _velocity;
-            transform.right = _direction;
+            ApplyFacing(_direction);
+        }
+
+        /// <summary>
+        /// Orientación (Gameplay.ProjectileAim): gira con la punta del arma (BaseShot ▸ Aiming ▸ Facing
+        /// Axis) si el prefab gira o el arma lo fuerza; si no, sin rotación y reflejado según la X.
+        /// </summary>
+        private void ApplyFacing(Vector2 direction)
+        {
+            if (direction.sqrMagnitude < 0.0001f) return;
+
+            if (faceTravelDirection || (_shot != null && _shot.faceDirection))
+            {
+                if (_renderer != null) _renderer.flipX = false;
+                Gameplay.ProjectileAim.Face(transform, direction, _shot != null ? _shot.facingAxis : Gameplay.ProjectileFacingAxis.Right);
+                return;
+            }
+
+            transform.rotation = Quaternion.identity;
+            if (_renderer != null && Mathf.Abs(direction.x) > 0.0001f) _renderer.flipX = direction.x < 0f;
         }
 
         private void Update()
         {
-            if (_done) return;
+            if (_done || _dormant) return;
 
             _lifeTimer -= Time.deltaTime;
             // Una granada (radio de explosión) revienta al agotar la vida; el resto sólo desaparece.
@@ -192,7 +242,7 @@ namespace RedMagic.Items
 
         private void FixedUpdate()
         {
-            if (_done || _body == null) return;
+            if (_done || _dormant || _body == null) return;
 
             float dt = Time.fixedDeltaTime;
 
@@ -213,7 +263,7 @@ namespace RedMagic.Items
             }
 
             _body.linearVelocity = _velocity;
-            if (_direction.sqrMagnitude > 0.0001f) transform.right = _direction;
+            ApplyFacing(_direction);
         }
 
         private void Steer(float dt)
@@ -263,7 +313,7 @@ namespace RedMagic.Items
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (_done || other == null) return;
+            if (_done || _dormant || other == null) return;
 
             // Un proyectil nunca choca con otro (los hijos de un split salen solapados).
             if (other.GetComponentInParent<ShotProjectile>() != null) return;
@@ -274,9 +324,24 @@ namespace RedMagic.Items
             {
                 if (!IsTarget(health) || _hit.Contains(health)) return;
 
+                // El centro del cuerpo se toma ANTES del golpe: al morir, el cadáver apaga su collider.
+                Vector2 body = other.bounds.center;
+
                 float scaled = _damage * _ctx.DamageScale;
-                if (scaled > 0f) health.TakeDamage(scaled, transform.position, 1f);
+                bool killed = false;
+                if (scaled > 0f) PlayerHit.Deal(health, scaled, transform.position, 1f, HitKind.Projectile, out killed);
                 _hit.Add(health);   // aunque no entre (i-frames), no lo re-golpeamos este vuelo
+
+                // Primer impacto del disparo (Yelmo: la explosión sale aquí, en el cuerpo golpeado).
+                _ctx.Impact?.Fire(body);
+
+                // Capa (atravesar al matar): desaparece, espera y reaparece en el cuerpo del muerto con
+                // la misma dirección y velocidad. No gasta perforación ni explota / splitea: sigue.
+                if (killed && CombatModifiers.PierceOnKill(out float delay))
+                {
+                    StartCoroutine(ResumeAfterKill(body, delay));
+                    return;
+                }
 
                 // Atraviesa hasta agotar la perforación; el último impacto sí explota / splitea.
                 if (_pierceLeft > 0)
@@ -294,10 +359,92 @@ namespace RedMagic.Items
             if (((1 << other.gameObject.layer) & GroundMask) != 0) Finish(impacted: true);
         }
 
+        /// <summary>
+        /// Capa: el proyectil que mata se esconde <paramref name="delay"/> segundos y reaparece en
+        /// <paramref name="position"/> (el cuerpo del muerto) con la misma velocidad. La vida del
+        /// proyectil no corre mientras está escondido. Si vuelve al pool entretanto (carga de
+        /// escena), el OnEnable del siguiente uso lo despierta y la corrutina ya murió con él.
+        /// </summary>
+        private System.Collections.IEnumerator ResumeAfterKill(Vector2 position, float delay)
+        {
+            SetDormant(true);
+            if (delay > 0f) yield return new WaitForSeconds(delay);
+            if (_done) yield break;
+
+            transform.position = position;
+            if (_body != null) _body.position = position;
+            foreach (var trail in _trails) if (trail != null) trail.Clear();
+
+            SetDormant(false);
+            if (_body != null) _body.linearVelocity = _velocity;
+        }
+
+        /// <summary>
+        /// Collider de esta arma (BaseShot ▸ Projectile Collider Override). Encendido: se usa un
+        /// collider propio de la forma pedida, medido en unidades del mundo, y los del prefab se
+        /// apagan. Apagado: los del prefab vuelven tal cual. El prefab compartido nunca se modifica,
+        /// así dos armas con el mismo prefab pueden tener colisiones distintas.
+        /// </summary>
+        private void ApplyColliderOverride(WeaponShot shot)
+        {
+            _activeOverride = null;
+
+            if (shot.overrideCollider)
+            {
+                Collider2D collider = shot.colliderType switch
+                {
+                    Gameplay.ProjectileColliderType.Box => _overrideBox ??= NewOverride<BoxCollider2D>(),
+                    Gameplay.ProjectileColliderType.Capsule => _overrideCapsule ??= NewOverride<CapsuleCollider2D>(),
+                    _ => _overrideCircle ??= NewOverride<CircleCollider2D>(),
+                };
+
+                Gameplay.ProjectileColliderShape.Configure(collider, shot.colliderType, shot.colliderSize,
+                                                  shot.colliderOffset, transform.lossyScale);
+                _activeOverride = collider;
+            }
+
+            RefreshColliders(!_dormant);
+        }
+
+        private T NewOverride<T>() where T : Collider2D
+        {
+            var collider = gameObject.AddComponent<T>();
+            collider.isTrigger = true;
+            collider.enabled = false;
+            return collider;
+        }
+
+        /// <summary>Enciende el juego de colliders que toca (override o prefab), o ninguno si <paramref name="on"/> es false.</summary>
+        private void RefreshColliders(bool on)
+        {
+            if (_prefabColliders != null)
+                for (int i = 0; i < _prefabColliders.Length; i++)
+                    if (_prefabColliders[i] != null)
+                        _prefabColliders[i].enabled = on && _activeOverride == null && _prefabEnabled[i];
+
+            if (_overrideCircle != null) _overrideCircle.enabled = on && _activeOverride == _overrideCircle;
+            if (_overrideBox != null) _overrideBox.enabled = on && _activeOverride == _overrideBox;
+            if (_overrideCapsule != null) _overrideCapsule.enabled = on && _activeOverride == _overrideCapsule;
+        }
+
+        private void SetDormant(bool dormant)
+        {
+            _dormant = dormant;
+            if (dormant && _body != null) _body.linearVelocity = Vector2.zero;
+
+            if (_renderers != null)
+                foreach (var r in _renderers) if (r != null) r.enabled = !dormant;
+            RefreshColliders(!dormant);
+        }
+
         private void Finish(bool impacted)
         {
             if (_done) return;
             _done = true;
+
+            // Terreno o fin de vida sin haber tocado a nadie: el aviso de impacto salta donde acaba,
+            // para que la carga de un efecto (Yelmo) no se pierda en un disparo al aire.
+            _ctx.Impact?.Fire(transform.position);
 
             if (impacted && _shot.impactRadius > 0f && _shot.impactDamage > 0f)
                 Explode();
@@ -327,7 +474,7 @@ namespace RedMagic.Items
             {
                 var health = Buffer[i] != null ? Buffer[i].GetComponentInParent<Health>() : null;
                 if (!IsTarget(health) || !ExplodeSet.Add(health)) continue;
-                health.TakeDamage(damage, transform.position, 1f);
+                PlayerHit.Deal(health, damage, transform.position, 1f, HitKind.Projectile);
             }
 
             var tint = new Color(_shot.tint.r, _shot.tint.g, _shot.tint.b, 0.55f);

@@ -33,6 +33,18 @@ namespace RedMagic.Items
 
         [SerializeField] private List<Entry> entries = new List<Entry>();
 
+        [Tooltip("Números de los efectos de umbral ya implementados (los aplica SynergyEffectRunner " +
+                 "y PlayerHit). Se afinan aquí, también en Play.")]
+        [SerializeField] private SynergyTuning tuning = new SynergyTuning();
+
+        /// <summary>Valores de los efectos de umbral implementados.</summary>
+        public SynergyTuning Tuning => tuning ??= new SynergyTuning();
+
+        /// <summary>Los valores del asset, o los de fábrica si falta el asset.</summary>
+        public static SynergyTuning CurrentTuning => Instance != null ? Instance.Tuning : DefaultTuning;
+
+        private static readonly SynergyTuning DefaultTuning = new SynergyTuning();
+
         public Entry For(BuildTag tag) => entries.Find(e => e.tag == tag);
 
         /// <summary>Descripción del tramo <paramref name="tier"/> (1..3), o null si no está definido.</summary>
@@ -47,6 +59,24 @@ namespace RedMagic.Items
                 3 => entry.tier3,
                 _ => null,
             };
+        }
+
+        /// <summary>Texto editable de un umbral (lo escribe el pack del set de hielo).</summary>
+        public void SetTierText(BuildTag tag, int tier, string text)
+        {
+            var entry = For(tag);
+            if (entry == null)
+            {
+                entry = new Entry { tag = tag };
+                entries.Add(entry);
+            }
+
+            switch (tier)
+            {
+                case 1: entry.tier1 = text; break;
+                case 2: entry.tier2 = text; break;
+                case 3: entry.tier3 = text; break;
+            }
         }
 
         private static SynergyConfig _instance;

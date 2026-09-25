@@ -16,7 +16,7 @@ MonoBehaviour:
   description: 'Arma de prueba: un proyectil recto sin nada especial.'
   icon: {fileID: 0}
   accent: {r: 0.85, g: 0.82, b: 0.7, a: 1}
-  baseDamage: 20
+  baseDamage: 7
   baseCooldown: 0.4
   baseKnockbackMultiplier: 1
   baseShot:
@@ -25,17 +25,24 @@ MonoBehaviour:
     spreadAngle: 0
     randomSpread: 0
     speed: 14
-    lifetime: 2.5
-    size: {x: 0.35, y: 0.35}
-    muzzleOffset: {x: 0.6, y: 0.1}
+    lifetime: 5
+    size: {x: 1.34, y: 0.74}
+    muzzleOffset: {x: 0.42, y: 0.01}
+    overrideCollider: 1
+    colliderType: 1
+    colliderSize: {x: 1.34, y: 0.74}
+    colliderOffset: {x: 0, y: 0}
     pierce: 0
     arcGravity: 0
     burstCount: 1
     burstInterval: 0.09
     impactRadius: 0
     impactDamage: 0
-    projectilePrefab: {fileID: 978843057492195504, guid: 46434b74354da304c80a2570e5c97a9e, type: 3}
+    projectilePrefab: {fileID: 3544784464265721044, guid: d1669616c6c7c3d4bbd98cef2be270ac, type: 3}
     beamPrefab: {fileID: 0}
+    faceDirection: 1
+    facingAxis: 0
+    aimMode: 2
     meleeRange: 1.2
     meleeArc: 90
     chargeTime: 0

@@ -17,22 +17,19 @@ MonoBehaviour:
   unlocked: 1
   sectionPool:
   - sceneAsset: {fileID: 102900000, guid: 4f47a9a0eb2a04845bdf8eebbdb8c2bd, type: 3}
-    scenePath: Assets/Scenes/Worlds/World1/World1_Section01.unity
-    sceneName: World1_Section01
-  - sceneAsset: {fileID: 0}
-    scenePath: 
-    sceneName: 
-  - sceneAsset: {fileID: 0}
-    scenePath: 
-    sceneName: 
+    scenePath: Assets/Scenes/Worlds/World1/Bosque1.unity
+    sceneName: Bosque1
   - sceneAsset: {fileID: 102900000, guid: c4366745cc8567b4fbb8639e20d92cf1, type: 3}
-    scenePath: Assets/Scenes/TestScene.unity
-    sceneName: TestScene
+    scenePath: Assets/Scenes/Bosque2.unity
+    sceneName: Bosque2
+  - sceneAsset: {fileID: 102900000, guid: 0f2fec494426bc645816b516586c5e81, type: 3}
+    scenePath: Assets/Scenes/Worlds/World1/Bosque3.unity
+    sceneName: Bosque3
   - sceneAsset: {fileID: 102900000, guid: 7d9a57d03d6b8e74299cd6fa633b38f5, type: 3}
-    scenePath: Assets/Scenes/Worlds/World1/World1_Section02.unity
-    sceneName: World1_Section02
+    scenePath: Assets/Scenes/Worlds/World1/Bosque4.unity
+    sceneName: Bosque4
   sectionsPerRun: 2
   bossScene:
     sceneAsset: {fileID: 102900000, guid: 399eb5522346b2f4c8f6ff1f3c83f700, type: 3}
-    scenePath: Assets/Scenes/Worlds/World1/World1_Boss.unity
-    sceneName: World1_Boss
+    scenePath: Assets/Scenes/Worlds/World1/BosqueBoss.unity
+    sceneName: BosqueBoss

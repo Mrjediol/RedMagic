@@ -24,10 +24,32 @@ namespace RedMagic.Fx
         [SerializeField] private bool unscaledTime = false;
 
         private float _timer;
+        private bool _enforced;
 
         private void OnEnable()
         {
             _timer = ResolveLifetime();
+            _enforced = false;
+            EnforceSinglePass(rewindFlipbooks: true);
+        }
+
+        /// <summary>
+        /// Un efecto de un solo uso <b>nunca repite</b>, lo diga o no su prefab: su flipbook o su
+        /// máquina de estados se ponen en una sola pasada, clavados en el último frame hasta que el
+        /// pool lo apague. Con bucle, el margen <see cref="extraTime"/> (o un frame de más del pool)
+        /// enseñaba otra vez el primer dibujo al final. Se aplica en OnEnable y otra vez en el primer
+        /// Update, porque el OnEnable del flipbook (que rebobina) puede correr después del nuestro.
+        /// </summary>
+        private void EnforceSinglePass(bool rewindFlipbooks)
+        {
+            // El flipbook respeta oneShot en su propio OnEnable, así que basta con hacerlo una vez.
+            if (rewindFlipbooks)
+                foreach (var flipbook in GetComponentsInChildren<Gameplay.SpriteFlipbook>())
+                    flipbook.PlayOnceFromStart();
+
+            // La máquina se resetea en su OnEnable: si corrió después del nuestro, se vuelve a fijar.
+            foreach (var machine in GetComponentsInChildren<Pipeline.SpriteStateMachine>())
+                if (!machine.IsPlayingOnce) machine.PlayOnce(machine.DefaultState);
         }
 
         private float ResolveLifetime()
@@ -47,6 +69,12 @@ namespace RedMagic.Fx
 
         private void Update()
         {
+            if (!_enforced)
+            {
+                _enforced = true;
+                EnforceSinglePass(rewindFlipbooks: false);
+            }
+
             _timer -= unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
             if (_timer <= 0f) Core.PrefabPool.Despawn(gameObject);
         }

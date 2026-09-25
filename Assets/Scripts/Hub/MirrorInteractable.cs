@@ -1,16 +1,18 @@
 using RedMagic.Audio;
 using RedMagic.Core;
+using RedMagic.Economy;
 using RedMagic.Gameplay;
 using RedMagic.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace RedMagic.Hub
 {
     /// <summary>
     /// El espejo del hub: un solo toque, reproduce su animación y abre
-    /// <see cref="MirrorMenuController"/> (todavía un cascarón vacío — ver ese archivo). Misma
-    /// mecánica de detección/input que <c>CauldronInteractable</c>/<see cref="AnvilInteractable"/>.
+    /// <see cref="MirrorMenuController"/> — la rejilla 3×3 de pasivas legendarias. Misma mecánica
+    /// de detección/input que <c>CauldronInteractable</c>/<see cref="AnvilInteractable"/>.
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     [DisallowMultipleComponent]
@@ -39,9 +41,17 @@ namespace RedMagic.Hub
         [Tooltip("id de sonido del AudioManager al usarlo. Vacío = sin sonido.")]
         [SerializeField] private string useSfxId = "SFX_ButtonClick";
 
+        [Header("Aviso de pasiva legendaria nueva")]
+        [Tooltip("Desplazamiento, en unidades de mundo, del \"!\" que aparece sobre el espejo " +
+                 "mientras LegendaryPassiveManager.HasNewPassiveNotification esté activo.")]
+        [SerializeField] private Vector3 notificationOffset = new(0f, 1.6f, 0f);
+
         private InputAction _interactAction;
         private bool _playerInRange;
         private PlayerAnimator _playerAnimator;
+
+        private static Font _notificationFont;
+        private GameObject _notificationBadge;
 
         private void Reset()
         {
@@ -58,13 +68,26 @@ namespace RedMagic.Hub
                 var map = inputActions.FindActionMap(actionMapName, throwIfNotFound: false);
                 _interactAction = map?.FindAction(actionName, throwIfNotFound: false);
             }
+
+            BuildNotificationBadge();
         }
 
-        private void OnEnable() => _interactAction?.Enable();
+        private void OnEnable()
+        {
+            _interactAction?.Enable();
+
+            if (LegendaryPassiveManager.Instance != null)
+                LegendaryPassiveManager.Instance.NotificationChanged += OnNotificationChanged;
+            RefreshNotificationBadge();
+        }
 
         private void OnDisable()
         {
             _interactAction?.Disable();
+
+            if (LegendaryPassiveManager.Instance != null)
+                LegendaryPassiveManager.Instance.NotificationChanged -= OnNotificationChanged;
+
             if (_playerInRange) InteractionPromptUi.Hide(this);
             _playerInRange = false;
         }
@@ -116,14 +139,10 @@ namespace RedMagic.Hub
         }
 
         /// <summary>
-        /// TODO: implementar el contenido real del espejo aquí (estadísticas, cosméticos — sin
-        /// decidir todavía). Por ahora sólo confirma por consola que el gancho llegó; el menú que
-        /// se abre es un cascarón vacío.
+        /// Gancho para lo que un espejo concreto quiera hacer además de abrir el menú (VFX, SFX
+        /// extra...). No hace nada por defecto.
         /// </summary>
-        protected virtual void OnMirrorInteract()
-        {
-            Debug.Log("[MirrorInteractable] TODO: implementar el contenido real del espejo.", this);
-        }
+        protected virtual void OnMirrorInteract() { }
 
         private void OnTriggerEnter2D(Collider2D other)
         {
@@ -141,6 +160,59 @@ namespace RedMagic.Hub
             _playerInRange = false;
             _playerAnimator = null;
             InteractionPromptUi.Hide(this);
+        }
+
+        // ------------------------------------------------------------------ aviso de pasiva nueva
+
+        /// <summary>
+        /// "!" en world space (Canvas + Text con la fuente incorporada, sin prefab ni asset de
+        /// fuente) flotando sobre el espejo — mismo trato de construcción en código que
+        /// <see cref="RedMagic.Fx.DamagePopups"/>. Placeholder hasta que haya un icono de verdad.
+        /// </summary>
+        private void BuildNotificationBadge()
+        {
+            _notificationFont ??= Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            var go = new GameObject("MirrorNotificationBadge", typeof(RectTransform), typeof(Canvas));
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = notificationOffset;
+            go.transform.localScale = Vector3.one * 0.02f;
+
+            var canvas = go.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.sortingOrder = 50;
+
+            var rect = (RectTransform)go.transform;
+            rect.sizeDelta = new Vector2(60f, 60f);
+
+            var textGo = new GameObject("Text", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            textGo.transform.SetParent(go.transform, false);
+            var textRect = (RectTransform)textGo.transform;
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+
+            var text = textGo.GetComponent<Text>();
+            text.font = _notificationFont;
+            text.text = "!";
+            text.fontSize = 44;
+            text.fontStyle = FontStyle.Bold;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = new Color(1f, 0.84f, 0.25f);
+
+            _notificationBadge = go;
+            _notificationBadge.SetActive(false);
+        }
+
+        private void OnNotificationChanged(bool hasNotification) => RefreshNotificationBadge();
+
+        private void RefreshNotificationBadge()
+        {
+            if (_notificationBadge == null) return;
+            bool show = LegendaryPassiveManager.Instance != null &&
+                        LegendaryPassiveManager.Instance.HasNewPassiveNotification;
+            _notificationBadge.SetActive(show);
         }
 
         private void OnDrawGizmosSelected()

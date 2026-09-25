@@ -118,7 +118,7 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 3942e5d3249783b47bacf4514f128771, type: 3}
     - {fileID: 21300000, guid: 4e4897c84dc809248801993d7dc33b8c, type: 3}
     fps: 8
-    loop: 1
+    loop: 0
   - name: Move
     frames:
     - {fileID: 21300000, guid: da86ff89aff563a42b23b79a362fe958, type: 3}

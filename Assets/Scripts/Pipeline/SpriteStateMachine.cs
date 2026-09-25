@@ -41,6 +41,10 @@ namespace RedMagic.Pipeline
         private float _timer;
         private int _frame;
 
+        // Reproducción forzada de una sola pasada (PlayOnce): ignora el bucle del estado y no vuelve
+        // al de por defecto al terminar.
+        private bool _once;
+
         /// <summary>Nombre del estado en curso, o vacío.</summary>
         public string CurrentState => _current != null ? _current.name : string.Empty;
 
@@ -49,6 +53,24 @@ namespace RedMagic.Pipeline
 
         /// <summary>Cuando está activo, <see cref="Play"/> no cambia de estado. Lo usa la muerte.</summary>
         public bool Locked { get; set; }
+
+        public string DefaultState => defaultState;
+
+        /// <summary>true si está en una pasada forzada (<see cref="PlayOnce"/>).</summary>
+        public bool IsPlayingOnce => _once;
+
+        /// <summary>
+        /// Reproduce <paramref name="stateName"/> desde el principio UNA vez y se queda en su último
+        /// frame, bloqueado: sin bucle aunque el estado lo tenga y sin volver al estado por defecto.
+        /// Para lo que acaba con el objeto (impacto de un proyectil, un VFX de un solo uso).
+        /// </summary>
+        public void PlayOnce(string stateName)
+        {
+            Locked = false;
+            Play(stateName, restart: true);
+            _once = true;
+            Locked = true;
+        }
 
         private void Awake()
         {
@@ -62,6 +84,7 @@ namespace RedMagic.Pipeline
             // empezar, no continuar donde la dejó su vida anterior.
             Locked = false;
             _current = null;
+            _once = false;
             Play(defaultState, true);
         }
 
@@ -90,6 +113,7 @@ namespace RedMagic.Pipeline
             _timer = 0f;
             _frame = 0;
             Finished = false;
+            _once = false;
             Apply();
         }
 
@@ -112,7 +136,9 @@ namespace RedMagic.Pipeline
                 return;
             }
 
-            if (_current.loop)
+            // Terminal (muerte, impacto) o PlayOnce: nunca repite, aunque el asset diga loop.
+            bool terminal = _once || AnimStates.IsTerminal(_current.name);
+            if (_current.loop && !terminal)
             {
                 _frame %= _current.frames.Length;
                 Apply();
@@ -125,7 +151,7 @@ namespace RedMagic.Pipeline
             Apply();
             Finished = true;
 
-            if (!Locked && _fallback != null && _current != _fallback) Play(_fallback.name);
+            if (!Locked && !terminal && _fallback != null && _current != _fallback) Play(_fallback.name);
         }
 
         private void Apply()

@@ -13,18 +13,18 @@ MonoBehaviour:
   m_Name: Item_BotasRunicas
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
   displayName: "Botas R\xFAnicas"
-  description: 'Botas de escarcha que apenas rozan el suelo. (Prueba: triplican la
-    velocidad.)'
+  description: "Botas de escarcha que apenas rozan el suelo. Con el fr\xEDo a la
+    vista, el tiempo corre a tu favor."
   icon: {fileID: 21300000, guid: 5bf457c58064ce84dab28fd394f1eb5c, type: 3}
   accent: {r: 0.55, g: 0.85, b: 0.95, a: 1}
+  rarity: 2
   tags: 0000000065000000
   effects:
-  - rid: 5384780386449490182
+  - rid: 5384780706789982316
   references:
     version: 2
     RefIds:
-    - rid: 5384780386449490182
-      type: {class: PlayerStatMultiplierEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
+    - rid: 5384780706789982316
+      type: {class: SlowedEnemyCooldownEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
       data:
-        stat: 0
-        multiplier: 3
+        cooldownRate: 1.5

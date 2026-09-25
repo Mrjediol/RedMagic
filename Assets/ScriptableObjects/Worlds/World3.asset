@@ -16,11 +16,11 @@ MonoBehaviour:
   displayName: Mundo 3
   unlocked: 1
   sectionPool:
-  - sceneAsset: {fileID: 102900000, guid: 73d8398786d5a2947bead095d2e75913, type: 3}
-    scenePath: Assets/Scenes/Worlds/World3/World3_Section01.unity
-    sceneName: World3_Section01
+  - sceneAsset: {fileID: 102900000, guid: c212d2d50cbe95541a9c9951bfc841c6, type: 3}
+    scenePath: Assets/Scenes/Fire1.unity
+    sceneName: Fire1
   sectionsPerRun: 1
   bossScene:
-    sceneAsset: {fileID: 102900000, guid: a511f9c977ef6a44db24f84a8a06bb9e, type: 3}
-    scenePath: Assets/Scenes/Worlds/World3/World3_Boss.unity
-    sceneName: World3_Boss
+    sceneAsset: {fileID: 102900000, guid: 7757a44f119776143883c0345dc842f8, type: 3}
+    scenePath: Assets/Scenes/Fire1 1.unity
+    sceneName: Fire1 1

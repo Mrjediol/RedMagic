@@ -325,6 +325,8 @@ namespace RedMagic.Gameplay
 
         private void Move(float speed)
         {
+            speed *= SlowStatus.SpeedScale(this);   // ralentización de hielo
+
             // Un volador no tiene gravedad que lo baje: mantiene su altura anulando la deriva.
             if (canFly)
             {
@@ -341,6 +343,7 @@ namespace RedMagic.Gameplay
         /// <summary>Mueve en cualquier dirección (sólo lo usa el enemigo volador al perseguir).</summary>
         private void MoveTowards(Vector2 direction, float speed)
         {
+            speed *= SlowStatus.SpeedScale(this);
             _body.linearVelocity = direction * speed;
         }
 

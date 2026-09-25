@@ -307,6 +307,9 @@ namespace RedMagic.Enemies
                 arcGravity = source.arcGravity,
                 impactRadius = source.impactRadius,
                 impactDamage = source.impactDamage,
+                faceDirection = source.faceDirection,
+                facingAxis = source.facingAxis,
+                aimMode = source.aimMode,
             };
         }
     }

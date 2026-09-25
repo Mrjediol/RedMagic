@@ -37,6 +37,10 @@ namespace RedMagic.Bosses
         [Header("Estados")]
         [SerializeField] private string idleState = "Idle";
 
+        [Tooltip("Desplazamiento (si el jefe lleva un Mover). Con el bool 'Moving' del pipeline se " +
+                 "usan sus transiciones Idle↔Walk; sin él, se reproduce este estado directamente.")]
+        [SerializeField] private string moveState = "Walk";
+
         [Tooltip("Tambaleo: al cambiar de fase y, con 'flinchOnHit', al recibir golpes.")]
         [SerializeField] private string staggerState = "Hurt";
 
@@ -74,14 +78,16 @@ namespace RedMagic.Bosses
         }
 
         private static readonly int DeadKey = Animator.StringToHash("Dead");
+        private static readonly int MovingKey = Animator.StringToHash("Moving");
 
         private readonly Dictionary<int, ClipTiming> _timings = new Dictionary<int, ClipTiming>();
         private readonly HashSet<int> _parameters = new HashSet<int>();
         private readonly HashSet<int> _warnedMissing = new HashSet<int>();
 
         private Health _health;
-        private int _idleHash, _staggerHash, _deathHash, _gestureHash;
+        private int _idleHash, _staggerHash, _deathHash, _gestureHash, _moveHash;
         private bool _inGesture;
+        private bool _holding;
         private bool _dead;
         private float _releaseAt = -1f;
         private float _finishAt = -1f;
@@ -103,6 +109,7 @@ namespace RedMagic.Bosses
             _idleHash = Animator.StringToHash(idleState);
             _staggerHash = Animator.StringToHash(staggerState);
             _deathHash = Animator.StringToHash(deathState);
+            _moveHash = Animator.StringToHash(moveState);
 
             CacheController();
         }
@@ -199,6 +206,7 @@ namespace RedMagic.Bosses
 
             SetSpeed(state, speed);
 
+            _holding = false;
             _gestureHash = hash;
             _inGesture = true;
             Released = false;
@@ -211,12 +219,69 @@ namespace RedMagic.Bosses
             return true;
         }
 
+        /// <summary>
+        /// Desplazándose o no (lo avisa el <c>Mover</c> a través del controlador). Nunca pisa un
+        /// gesto en curso: un jefe no se mueve mientras ataca, y si llegara el aviso a destiempo
+        /// manda el ataque.
+        /// </summary>
+        public void SetMoving(bool moving)
+        {
+            if (_dead || !HasAnimator) return;
+
+            if (_parameters.Contains(MovingKey))
+            {
+                animator.SetBool(MovingKey, moving);
+                return;
+            }
+
+            if (_inGesture || _holding) return;
+
+            int wanted = moving ? _moveHash : _idleHash;
+            if (!animator.HasState(0, wanted)) return;
+            if (animator.GetCurrentAnimatorStateInfo(0).shortNameHash != wanted) animator.Play(wanted, 0, 0f);
+        }
+
+        /// <summary>
+        /// Reproduce un estado suelto y lo <b>mantiene</b> (sin volver solo al reposo) hasta
+        /// <see cref="ReturnToRest"/>: la pose de viaje de una embestida, que dura lo que dure el
+        /// recorrido y no lo que dure el clip. Devuelve false si no existe el estado.
+        /// </summary>
+        public bool Hold(string state)
+        {
+            if (_dead || !HasAnimator || string.IsNullOrWhiteSpace(state)) return false;
+
+            int hash = Animator.StringToHash(state);
+            if (!animator.HasState(0, hash)) return false;
+
+            CancelGesture();
+            _holding = true;
+            SetSpeed(state, 1f);
+            animator.Play(hash, 0, 0f);
+            return true;
+        }
+
+        /// <summary>Si hay una pose mantenida (<see cref="Hold"/>), la suelta y vuelve al reposo; si no, nada.</summary>
+        public void ClearHold()
+        {
+            if (_holding) ReturnToRest();
+        }
+
+        /// <summary>Suelta lo que hubiera (gesto o <see cref="Hold"/>) y vuelve al reposo.</summary>
+        public void ReturnToRest()
+        {
+            _holding = false;
+            CancelGesture();
+            if (_dead || !HasAnimator) return;
+            if (animator.HasState(0, _idleHash)) animator.Play(_idleHash, 0, 0f);
+        }
+
         /// <summary>Tambaleo: corta el gesto que hubiera (sin soltarlo) y se encoge.</summary>
         public void PlayStagger()
         {
             if (_dead || !HasAnimator) return;
 
             CancelGesture();
+            _holding = false;
             _lastFlinch = Time.time;
 
             if (animator.HasState(0, _staggerHash)) animator.Play(_staggerHash, 0, 0f);
@@ -266,7 +331,7 @@ namespace RedMagic.Bosses
 
         private void OnDamaged(float amount)
         {
-            if (!flinchOnHit || _dead || _inGesture || !HasAnimator) return;
+            if (!flinchOnHit || _dead || _inGesture || _holding || !HasAnimator) return;
             if (amount < flinchMinDamage || Time.time - _lastFlinch < flinchCooldown) return;
             if (animator.GetCurrentAnimatorStateInfo(0).shortNameHash != _idleHash) return;
 

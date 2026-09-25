@@ -1,41 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ui:UXML
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ui="UnityEngine.UIElements"
-    xmlns:uie="UnityEditor.UIElements"
-    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd"
->
-    <ui:Style src="MainMenu.uss" />
-    <ui:Style src="OptionsMenu.uss" />
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Ui/MainMenu.uss?fileID=7433441132597879392&amp;guid=1bc0f283f5902bb4f8e04c4a5c3d8948&amp;type=3#MainMenu"/>
+    <Style src="project://database/Assets/Ui/OptionsMenu.uss?fileID=7433441132597879392&amp;guid=1f45bf5183789224d85ff656bdd830b5&amp;type=3#OptionsMenu"/>
     <ui:VisualElement name="optionsMenu" class="options-menu">
-        <ui:VisualElement name="backgroundLayer" class="background-layer" picking-mode="Ignore" />
-        <ui:VisualElement name="scrim" class="scrim scrim--strong" picking-mode="Ignore" />
-
+        <ui:VisualElement name="backgroundLayer" picking-mode="Ignore" class="background-layer"/>
+        <ui:VisualElement name="scrim" picking-mode="Ignore" class="scrim scrim--strong" style="background-image: url(&quot;project://database/Assets/Art/UI/MainMenu.jpeg?fileID=2800000&amp;guid=9b93da1ad30065640b7ec3dab0744d65&amp;type=3#MainMenu&quot;);"/>
         <ui:VisualElement name="optionsPanel" class="options-panel">
-            <ui:Label text="OPCIONES" class="options-title" />
-
+            <ui:Label text="OPCIONES" class="options-title"/>
             <ui:VisualElement name="masterRow" class="option-row">
-                <ui:Label text="Master" class="option-label" />
-                <ui:Slider name="masterSlider" low-value="0" high-value="1" class="option-slider" />
-                <ui:Label name="masterValue" text="100%" class="option-value" />
-                <ui:Toggle name="masterMute" label="Silenciar" class="option-mute" />
+                <ui:Label text="Master" class="option-label"/>
+                <ui:Slider name="masterSlider" low-value="0" high-value="1" class="option-slider"/>
+                <ui:Label name="masterValue" text="100%" class="option-value"/>
+                <ui:Toggle name="masterMute" label="Silenciar" class="option-mute"/>
             </ui:VisualElement>
-
             <ui:VisualElement name="musicRow" class="option-row">
-                <ui:Label text="Música" class="option-label" />
-                <ui:Slider name="musicSlider" low-value="0" high-value="1" class="option-slider" />
-                <ui:Label name="musicValue" text="100%" class="option-value" />
-                <ui:Toggle name="musicMute" label="Silenciar" class="option-mute" />
+                <ui:Label text="Música" class="option-label"/>
+                <ui:Slider name="musicSlider" low-value="0" high-value="1" class="option-slider"/>
+                <ui:Label name="musicValue" text="100%" class="option-value"/>
+                <ui:Toggle name="musicMute" label="Silenciar" class="option-mute"/>
             </ui:VisualElement>
-
             <ui:VisualElement name="sfxRow" class="option-row">
-                <ui:Label text="Efectos" class="option-label" />
-                <ui:Slider name="sfxSlider" low-value="0" high-value="1" class="option-slider" />
-                <ui:Label name="sfxValue" text="100%" class="option-value" />
-                <ui:Toggle name="sfxMute" label="Silenciar" class="option-mute" />
+                <ui:Label text="Efectos" class="option-label"/>
+                <ui:Slider name="sfxSlider" low-value="0" high-value="1" class="option-slider"/>
+                <ui:Label name="sfxValue" text="100%" class="option-value"/>
+                <ui:Toggle name="sfxMute" label="Silenciar" class="option-mute"/>
             </ui:VisualElement>
-
-            <ui:Button name="backButton" text="Volver" class="menu-button back-button" />
+            <ui:Button name="backButton" text="Volver" class="menu-button back-button"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

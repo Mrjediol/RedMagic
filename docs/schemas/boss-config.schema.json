@@ -3,25 +3,29 @@
   "$id": "https://redmagic.local/schemas/boss-config.schema.json",
   "title": "BossConfig",
   "description": "Mirrors RedMagic.Bosses.BossDefinition and BossPhase (Assets/Scripts/Bosses/BossDefinition.cs) plus the shared base of RedMagic.Bosses.BossAttack (Assets/Scripts/Bosses/BossAttack.cs). One JSON document = one BossDefinition asset plus the BossAttack assets its decks reference.",
-
   "$comment": "OPEN ARCHETYPE SET — the central design constraint. Each BossAttack subclass declares its own serialized fields and its own Run(BossContext) coroutine, so there is no fixed union of parameters to enumerate. This schema therefore closes over the SHARED base (the 17 fields on BossAttack itself, which every subclass inherits) and leaves the subclass-specific half as an open 'params' object keyed by C# field name. The importer resolves 'type' to a System.Type and writes each params key through SerializedObject.FindProperty — exactly the mechanism BossAuthoring.Fields.Write already uses to populate private serialized fields today. Consequence: shipping a 14th archetype is a new .cs file and nothing else. This schema does not change, no registry is edited, and no enum gains a case. Validation of the params block is the importer's job (it fails loudly on a key FindProperty cannot resolve, which catches typos and renamed fields), not the schema's.",
-
   "type": "object",
   "additionalProperties": false,
-  "required": ["displayName", "attacks", "phases"],
-
+  "required": [
+    "displayName",
+    "attacks",
+    "phases"
+  ],
   "properties": {
-
-    "$schema": { "type": "string" },
-
+    "$schema": {
+      "type": "string"
+    },
     "kind": {
-      "allOf": [{ "$ref": "_shared.schema.json#/definitions/entryKind" }],
+      "allOf": [
+        {
+          "$ref": "_shared.schema.json#/definitions/entryKind"
+        }
+      ],
       "const": "boss",
       "default": "boss",
       "description": "Always \"boss\" in a BossConfig. Present so a Unity importer can dispatch on one field across every web-authored config kind.",
       "$comment": "Same role and same reasoning as EnemyConfig's own 'kind' — pinned with 'const' because this document type IS the boss one, declared here only because this schema is additionalProperties:false, and OPTIONAL because BossConfigImporter identifies a boss document by 'displayName' + 'attacks' + 'phases' and ignores unknown root keys. A BossConfig written before this field existed therefore still imports unchanged."
     },
-
     "base": {
       "type": "object",
       "additionalProperties": false,
@@ -39,7 +43,6 @@
         }
       }
     },
-
     "displayName": {
       "type": "string",
       "minLength": 1,
@@ -55,34 +58,155 @@
       "default": "",
       "$comment": "BossDefinition.description, [TextArea(2,4)]."
     },
-
     "attacks": {
       "type": "object",
       "minProperties": 1,
-      "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_-]*$" },
-      "additionalProperties": { "$ref": "#/definitions/attackEntry" },
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/attackEntry"
+      },
       "description": "Library of this boss's attack assets, keyed by a local id that the phase decks reference.",
       "$comment": "A library rather than inline-per-phase because BossPhase.attacks is an array of REFERENCES to shared BossAttack ScriptableObjects, and the same asset legitimately appears in several decks (a phase-1 card the phase-2 deck keeps) or in none at all (the Reina Escarabajo's Temblor, fired only by her locomotion). Inlining an attack per deck slot would create duplicate assets and quietly break that sharing."
     },
-
     "phases": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/definitions/bossPhase" },
+      "items": {
+        "$ref": "#/definitions/bossPhase"
+      },
       "description": "In order, from most health to least.",
       "$comment": "BossDefinition.phases. BossDefinition.OnValidate FORCES phases[0].startsAtHealth to 1 on import — see the importer warning on that field."
+    },
+    "artAssets": {
+      "type": "object",
+      "description": "Art prefabs built at import time (BossArtBuilder.cs) from frame folders, referenced from attacks/body with {\"art\": \"<id>\"}.",
+      "$comment": "'folder' not starting with Assets/ is relative to Assets/Art/Bosses/<slug>/Source/ (where BossBundleImporter puts the zip's frames). libraryId/entryName are web-only (reopen), ignored by Unity.",
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "kind",
+          "folder"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "kind": {
+            "enum": [
+              "projectile",
+              "fx",
+              "warning",
+              "prop"
+            ]
+          },
+          "folder": {
+            "type": "string",
+            "minLength": 1
+          },
+          "states": {
+            "type": "object"
+          },
+          "worldWidth": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "colliderScale": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "faceTravelDirection": {
+            "type": "boolean"
+          },
+          "tint": {
+            "type": "boolean"
+          },
+          "libraryId": {
+            "type": "string"
+          },
+          "entryName": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "body": {
+      "type": "object",
+      "description": "Playable prefab: clips from frame folders + controller + Boss_<slug>.prefab (BossBodyBuilder.cs). Stats/movement apply only when the prefab is first created.",
+      "required": [
+        "folder",
+        "animations"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "folder": {
+          "type": "string",
+          "minLength": 1
+        },
+        "animations": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "fps": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "loop": {
+                "type": "boolean"
+              },
+              "releaseFrame": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "folder": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "derived": {
+          "type": "object"
+        },
+        "movement": {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        },
+        "warnCircle": {
+          "type": "string"
+        },
+        "warnArrow": {
+          "type": "string"
+        }
+      }
     }
   },
-
   "definitions": {
-
     "attackEntry": {
       "$comment": "Either a reference to an attack asset that already exists (shared with another boss, or hand-tuned and not to be regenerated), or a full definition that the importer creates.",
       "oneOf": [
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["asset"],
+          "required": [
+            "asset"
+          ],
           "properties": {
             "asset": {
               "$ref": "_shared.schema.json#/definitions/assetRef",
@@ -90,38 +214,44 @@
             }
           }
         },
-        { "$ref": "#/definitions/attackDefinition" }
+        {
+          "$ref": "#/definitions/attackDefinition"
+        }
       ]
     },
-
     "attackDefinition": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type"],
-
+      "required": [
+        "type"
+      ],
       "properties": {
-
         "type": {
           "type": "string",
           "pattern": "^[A-Z][A-Za-z0-9]*Attack$",
           "description": "The BossAttack subclass to instantiate, by C# type name.",
           "$comment": "Deliberately a PATTERN, not an enum. Enumerating the thirteen shipped archetypes (AnchorRitualAttack, BulletHellAttack, GroundSlamAttack, GuardStanceAttack, HazardFieldAttack, OrbRingAttack, PlatformDenialAttack, PlatformFloodAttack, QuakeSlamAttack, SafeZoneAttack, ShockwaveAttack, SummonAddsAttack, SweepBeamAttack) would make this schema a registry that has to be edited every time an archetype ships — precisely the coupling the boss system was built to avoid. The importer resolves the name against types assignable to RedMagic.Bosses.BossAttack and fails loudly if it does not exist or is abstract."
         },
-
         "assetPath": {
           "type": "string",
           "pattern": "^Assets/",
           "$comment": "Where to write the created asset. Optional; the importer defaults to Assets/Resources/Bosses/BossAttack_<id>.asset, matching the shipped convention. Generation is idempotent — an existing asset at this path is updated in place, never replaced, so hand-tuned numbers on fields the config does not mention survive."
         },
-
-        "displayName": { "type": "string", "default": "Ataque", "$comment": "BossAttack.displayName. Falls back to the asset name when blank." },
-        "description": { "type": "string", "default": "", "$comment": "BossAttack.description, [TextArea(2,4)]." },
+        "displayName": {
+          "type": "string",
+          "default": "Ataque",
+          "$comment": "BossAttack.displayName. Falls back to the asset name when blank."
+        },
+        "description": {
+          "type": "string",
+          "default": "",
+          "$comment": "BossAttack.description, [TextArea(2,4)]."
+        },
         "accent": {
           "$ref": "_shared.schema.json#/definitions/color",
           "default": "#8ce666",
           "$comment": "BossAttack.accent. Colour of this attack's telegraph and effects. Default in C# is (0.55, 0.9, 0.4, 1). Note SafeZoneAttack deliberately paints refuges in its OWN safeColor instead, because what saves you must not look like what hurts you."
         },
-
         "telegraph": {
           "type": "number",
           "minimum": 0,
@@ -136,7 +266,12 @@
           "description": "Seconds the boss stands still afterwards. This is the player's DPS window.",
           "$comment": "BossAttack.recovery. The design rule: the more devastating the attack, the longer this is."
         },
-        "weight": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "BossAttack.weight, [Min(0.01f)]. Weight in the phase's draw." },
+        "weight": {
+          "type": "number",
+          "minimum": 0.01,
+          "default": 1,
+          "$comment": "BossAttack.weight, [Min(0.01f)]. Weight in the phase's draw."
+        },
         "cooldownInAttacks": {
           "type": "integer",
           "minimum": 0,
@@ -156,10 +291,18 @@
           "description": "1-based phase from which this attack can be drawn. Below it, never — even if it sits in that phase's deck.",
           "$comment": "BossAttack.minPhase -> AvailableInPhase(phaseIndex) => phaseIndex >= minPhase - 1. This is a HARD gate: BossController.PickAttack's empty-deck fallback is itself inside the AvailableInPhase check, so it cannot be bypassed. It is the supported way to move an attack between phases without duplicating the asset."
         },
-
-        "damage": { "type": "number", "minimum": 0, "default": 18, "$comment": "BossAttack.damage (protected). Multiplied by the phase's damageScale at cast time via ScaledDamage(ctx)." },
-        "knockbackMultiplier": { "type": "number", "minimum": 0, "default": 1, "$comment": "BossAttack.knockbackMultiplier (protected). Multiplies the victim's own configured Knockback." },
-
+        "damage": {
+          "type": "number",
+          "minimum": 0,
+          "default": 18,
+          "$comment": "BossAttack.damage (protected). Multiplied by the phase's damageScale at cast time via ScaledDamage(ctx)."
+        },
+        "knockbackMultiplier": {
+          "type": "number",
+          "minimum": 0,
+          "default": 1,
+          "$comment": "BossAttack.knockbackMultiplier (protected). Multiplies the victim's own configured Knockback."
+        },
         "vulnerableSeconds": {
           "type": "number",
           "minimum": 0,
@@ -173,21 +316,34 @@
           "default": 2.5,
           "$comment": "BossAttack.vulnerableMultiplier, [Min(1f)]. Stacks on top of the phase's damageTakenMultiplier. Both ride on Health.DamageMultiplier, so no weapon needs to know armour exists."
         },
-
         "gesture": {
           "type": "string",
           "default": "",
           "description": "Animator state on the boss that acts as this attack's telegraph ('Charge', 'Slam'...). Empty = no gesture.",
           "$comment": "BossAttack.gesture. With a gesture AND a BossAnimator on the boss, the body IS the warning: the clip's speed is set so its OnAttackRelease event lands exactly at telegraph/pace, and Run starts on that frame. 'telegraph' therefore stays the only timing knob and a phase's speedScale accelerates gestures for free. Empty, or no BossAnimator, falls back to the plain timed telegraph — which is why the six sprite bosses were unaffected when this shipped."
         },
-
-        "sfxId": { "type": "string", "default": "", "$comment": "BossAttack.sfxId. AudioManager id played on launch." },
-        "shakeAmplitude": { "type": "number", "minimum": 0, "default": 0, "$comment": "BossAttack.shakeAmplitude -> CameraFollow.ShakeAll. 0 = no shake." },
-        "shakeDuration": { "type": "number", "minimum": 0, "default": 0.25, "$comment": "BossAttack.shakeDuration." },
-
+        "sfxId": {
+          "type": "string",
+          "default": "",
+          "$comment": "BossAttack.sfxId. AudioManager id played on launch."
+        },
+        "shakeAmplitude": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "$comment": "BossAttack.shakeAmplitude -> CameraFollow.ShakeAll. 0 = no shake."
+        },
+        "shakeDuration": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.25,
+          "$comment": "BossAttack.shakeDuration."
+        },
         "params": {
           "type": "object",
-          "propertyNames": { "pattern": "^[a-z][A-Za-z0-9]*$" },
+          "propertyNames": {
+            "pattern": "^[a-z][A-Za-z0-9]*$"
+          },
           "additionalProperties": true,
           "default": {},
           "description": "Fields specific to the chosen 'type', keyed by the subclass's C# field name.",
@@ -195,16 +351,18 @@
         }
       }
     },
-
     "bossPhase": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["attacks"],
-
+      "required": [
+        "attacks"
+      ],
       "properties": {
-
-        "displayName": { "type": "string", "default": "Fase", "$comment": "BossPhase.displayName. Inspector and logs only." },
-
+        "displayName": {
+          "type": "string",
+          "default": "Fase",
+          "$comment": "BossPhase.displayName. Inspector and logs only."
+        },
         "startsAtHealth": {
           "type": "number",
           "minimum": 0,
@@ -213,24 +371,31 @@
           "description": "Normalized health at or below which this phase takes over.",
           "$comment": "BossPhase.startsAtHealth, [Range(0,1)]. IMPORTER WARNING: BossDefinition.OnValidate unconditionally forces phases[0].startsAtHealth = 1, so any other value on the first phase is silently overwritten on import. The importer should reject it in the config instead of writing a value the asset will not keep. Phases never run backwards — BossController refuses a lower index — so healing cannot rewind a transition."
         },
-
         "attacks": {
           "type": "array",
           "minItems": 0,
-          "items": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]*$" },
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+          },
           "description": "The phase's deck: ids into the top-level 'attacks' library.",
           "$comment": "BossPhase.attacks (BossAttack[]). Ids, not inline definitions, so one asset can sit in several decks. An empty deck is legal but means the phase can only act through openingAttack. Remember minPhase still filters this list: an attack with minPhase 2 sitting in phase 1's deck is never drawn."
         },
-
         "pauseBetweenAttacks": {
           "$ref": "_shared.schema.json#/definitions/vector2",
-          "default": { "x": 0.9, "y": 1.6 },
+          "default": {
+            "x": 0.9,
+            "y": 1.6
+          },
           "description": "Min (x) and max (y) wait between attacks, on top of each attack's recovery.",
           "$comment": "BossPhase.pauseBetweenAttacks. A Vector2 used as a range, not a position — mapped as-is rather than reshaped into {min,max}, because renaming it would break the field-for-field guarantee."
         },
-
-        "damageScale": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "BossPhase.damageScale, [Min(0.01f)]. Multiplies the damage of every attack in the phase, applied through BossContext/AbilityContext.DamageScale." },
-
+        "damageScale": {
+          "type": "number",
+          "minimum": 0.01,
+          "default": 1,
+          "$comment": "BossPhase.damageScale, [Min(0.01f)]. Multiplies the damage of every attack in the phase, applied through BossContext/AbilityContext.DamageScale."
+        },
         "damageTakenMultiplier": {
           "type": "number",
           "minimum": 0.01,
@@ -238,7 +403,6 @@
           "description": "Multiplies damage the boss RECEIVES during this phase. Below 1 = armoured.",
           "$comment": "BossPhase.damageTakenMultiplier. C# declares [Min(0f)] but this schema sets minimum 0.01 ON PURPOSE: 0 is an unkillable boss, and because array elements are zero-initialised and skip C# field initialisers, it is a failure that has already shipped three bosses that could not be damaged at all. BossDefinition.OnValidate now repairs a 0 to 1 and warns; the schema refuses it outright so the config never has to be repaired. BossAuthoring.WritePhase clamps with Mathf.Max(0.01f, ...) for the same reason."
         },
-
         "speedScale": {
           "type": "number",
           "minimum": 0.1,
@@ -246,9 +410,11 @@
           "description": "Multiplies the pace: 1.3 = every telegraph, wave and recovery 30% faster.",
           "$comment": "BossPhase.speedScale, [Min(0.1f)]. This is what makes phase 2 the same deck but overwhelming, instead of a duplicated set of assets."
         },
-
-        "accent": { "$ref": "_shared.schema.json#/definitions/color", "default": "#8ce666", "$comment": "BossPhase.accent. Tints the boss, its warnings and its projectiles." },
-
+        "accent": {
+          "$ref": "_shared.schema.json#/definitions/color",
+          "default": "#8ce666",
+          "$comment": "BossPhase.accent. Tints the boss, its warnings and its projectiles."
+        },
         "transitionSeconds": {
           "type": "number",
           "minimum": 0,
@@ -261,19 +427,21 @@
           "default": 0.5,
           "$comment": "BossPhase.transitionShake. IMPORTER WARNING: BossAuthoring.WritePhase hardcodes this as 'transitionSeconds > 0f ? 0.7f : 0f', ignoring anything the caller wanted — routing this config through WritePhase silently drops the configured value. The importer must write this field directly via SerializedProperty (the same mechanism WritePhase uses internally), not through WritePhase itself. This is a limitation of the authoring helper, not of BossPhase — the serialized field itself takes any value fine."
         },
-        "transitionSfxId": { "type": "string", "default": "", "$comment": "BossPhase.transitionSfxId. AudioManager id." },
+        "transitionSfxId": {
+          "type": "string",
+          "default": "",
+          "$comment": "BossPhase.transitionSfxId. AudioManager id."
+        },
         "transitionFx": {
           "$ref": "_shared.schema.json#/definitions/assetRef",
           "default": null,
           "$comment": "BossPhase.transitionFx (GameObject). Pooled one-shot via VfxOneShot, bursts at the boss's feet on entering the phase."
         },
-
         "openingAttack": {
           "type": "string",
           "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
           "$comment": "BossPhase.openingAttack. An id into the top-level library. Fired ONCE when the transition ends, outside the shuffled deck, then the boss returns to normal draws. It does not need to appear in 'attacks' — the Ent Cristalino's Fuego Verde is an opening attack and is in no deck."
         },
-
         "frenzyBelowHealth": {
           "type": "number",
           "minimum": 0,

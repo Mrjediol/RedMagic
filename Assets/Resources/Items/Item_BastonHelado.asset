@@ -13,19 +13,20 @@ MonoBehaviour:
   m_Name: Item_BastonHelado
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
   displayName: "Bast\xF3n Helado"
-  description: "El cristal bebe de quien lo empu\xF1a. (Prueba: pierdes 1 de vida
-    por segundo.)"
+  description: "El cristal bebe de cada ca\xEDda. La siguiente descarga no espera
+    y golpea el triple."
   icon: {fileID: 21300000, guid: dfa3bbef7546b7f4595cc6f777719324, type: 3}
   accent: {r: 0.55, g: 0.85, b: 0.95, a: 1}
-  tags: 0000000066000000
+  rarity: 3
+  tags: 0000000065000000
   effects:
-  - rid: 5384780386449490185
+  - rid: 5384780706789982317
   references:
     version: 2
     RefIds:
-    - rid: 5384780386449490185
-      type: {class: DrainHealthEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
+    - rid: 5384780706789982317
+      type: {class: KillEmpowersNextCastEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
       data:
-        amount: 1
-        interval: 1
-        canKill: 0
+        damageMultiplier: 3
+        resetCooldown: 1
+        hudAccent: {r: 0.55, g: 0.9, b: 1, a: 1}

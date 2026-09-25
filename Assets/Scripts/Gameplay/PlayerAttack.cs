@@ -174,7 +174,8 @@ namespace RedMagic.Gameplay
 
                 // TakeDamage devuelve false si el golpe no ha entrado (i-frames): en ese caso
                 // tampoco se empuja, o un enemigo invulnerable saldría volando de todos modos.
-                if (!target.TakeDamage(damage)) continue;
+                // Por PlayerHit: los items "al matar" cuentan también las bajas de espada.
+                if (!Items.PlayerHit.Deal(target, damage, transform.position, 0f, Items.HitKind.Melee)) continue;
 
                 // El empujón va hacia donde mira el jugador, no "alejándose de su posición": con
                 // el enemigo pegado encima ambas cosas se separan, y lo que se espera de un

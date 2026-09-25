@@ -15,12 +15,10 @@ namespace RedMagic.UI
     public class HealthBarUI : MonoBehaviour
     {
         [Header("Posición")]
-        [Tooltip("Altura, en unidades de mundo sobre el origen del personaje, a la que se sitúa la barra. " +
-                 "Súbelo para modelos altos, bájalo para modelos bajos.")]
-        public float headHeightOffset = 1.2f;
-
-        [Tooltip("Desplazamiento horizontal de la barra respecto al personaje.")]
-        public float horizontalOffset;
+        [Tooltip("Desplazamiento de la barra respecto al origen del personaje, en unidades de mundo. " +
+                 "X = horizontal, Y = altura sobre la cabeza. Súbelo para modelos altos, bájalo para " +
+                 "modelos bajos.")]
+        [SerializeField] private Vector2 healthBarOffset = new Vector2(0f, 1.2f);
 
         [Header("Tamaño (unidades de mundo)")]
         [SerializeField] private float barWidth = 1f;
@@ -77,7 +75,7 @@ namespace RedMagic.UI
             if (_barRoot == null) return;
 
             // La barra es hija del personaje, así que basta con la posición local.
-            _barRoot.localPosition = new Vector3(horizontalOffset, headHeightOffset, 0f);
+            _barRoot.localPosition = new Vector3(healthBarOffset.x, healthBarOffset.y, 0f);
             _barRoot.localRotation = Quaternion.identity;
         }
 
@@ -123,7 +121,7 @@ namespace RedMagic.UI
             _visualRoot = canvasGo;
             _barRoot = (RectTransform)canvasGo.transform;
             _barRoot.SetParent(transform, false);
-            _barRoot.localPosition = new Vector3(horizontalOffset, headHeightOffset, 0f);
+            _barRoot.localPosition = new Vector3(healthBarOffset.x, healthBarOffset.y, 0f);
             _barRoot.localRotation = Quaternion.identity;
             _barRoot.localScale = Vector3.one / UnitsPerWorldUnit;
             _barRoot.sizeDelta = new Vector2(w, h);

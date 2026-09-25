@@ -45,9 +45,20 @@ namespace RedMagic.Bosses
         /// <summary>Color de la fase, para teñir avisos y proyectiles sin arte propio.</summary>
         public readonly Color Accent;
 
+        /// <summary>Centro fijo de la arena, o NaN = sigue al jefe (lo de siempre).</summary>
+        private readonly float _arenaCenterX;
+
+        /// <summary>
+        /// Centro X de la arena. Para un jefe quieto es su propia posición, leída en vivo (lo de
+        /// siempre); para uno que se mueve por su cuenta (Mover, embestidas) es donde empezó, para
+        /// que la arena no viaje con él.
+        /// </summary>
+        public float ArenaCenterX => float.IsNaN(_arenaCenterX) ? Origin.x : _arenaCenterX;
+
         public BossContext(BossController boss, Transform player, in AbilityContext ability,
                            float groundY, float arenaHalfWidth, float arenaHeight,
-                           float speedScale, Sprite fxSprite, Color accent)
+                           float speedScale, Sprite fxSprite, Color accent,
+                           float arenaCenterX = float.NaN)
         {
             Boss = boss;
             Player = player;
@@ -58,6 +69,7 @@ namespace RedMagic.Bosses
             SpeedScale = speedScale <= 0f ? 1f : speedScale;
             FxSprite = fxSprite;
             Accent = accent.a <= 0f ? Color.white : accent;
+            _arenaCenterX = arenaCenterX;
         }
 
         public bool IsValid => Boss != null && Boss.gameObject.activeInHierarchy;
@@ -96,8 +108,8 @@ namespace RedMagic.Bosses
         }
 
         /// <summary>Borde izquierdo / derecho de la arena, en X.</summary>
-        public float ArenaMinX => Origin.x - ArenaHalfWidth;
-        public float ArenaMaxX => Origin.x + ArenaHalfWidth;
+        public float ArenaMinX => ArenaCenterX - ArenaHalfWidth;
+        public float ArenaMaxX => ArenaCenterX + ArenaHalfWidth;
 
         /// <summary>Techo de la arena: de aquí caen los proyectiles de lluvia.</summary>
         public float CeilingY => GroundY + ArenaHeight;

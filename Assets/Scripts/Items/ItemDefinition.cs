@@ -44,6 +44,9 @@ namespace RedMagic.Items
         [Tooltip("Color de acento de la carta / tooltip.")]
         [SerializeField] private Color accent = new Color(0.8f, 0.8f, 0.85f);
 
+        [Tooltip("Rareza: color del nombre en la UI (y, más adelante, peso en tienda y cofres).")]
+        [SerializeField] private ItemRarity rarity = ItemRarity.Common;
+
         [Header("Tags de sinergia")]
         [Tooltip("Tags que este item aporta al conteo. Reglas por slot (se avisan en OnValidate):\n" +
                  "· Elemento y pool libre: 1 elemental + 1 universal\n" +
@@ -63,6 +66,7 @@ namespace RedMagic.Items
         public string Description => description;
         public Sprite Icon => icon;
         public Color Accent => accent;
+        public ItemRarity Rarity => rarity;
         public IReadOnlyList<BuildTag> Tags => tags;
 
         /// <summary>Efectos mientras está equipado (los aplica <see cref="ItemEffectRunner"/>).</summary>

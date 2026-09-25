@@ -166,7 +166,7 @@ namespace RedMagic.Pipeline.EditorTools
                     name = anim.name,
                     frames = sprites.ToArray(),
                     fps = anim.fps > 0 ? anim.fps : 10f,
-                    loop = anim.loop,
+                    loop = AnimStates.Loops(anim.name, anim.loop),   // "Impact" nunca repite
                 });
             }
 
@@ -338,15 +338,19 @@ namespace RedMagic.Pipeline.EditorTools
             try
             {
                 var primary = PickPrimary(states, "Spawn");
+
+                // Un VFX de un solo uso NUNCA repite, diga lo que diga el manifiesto (el exportador
+                // marca loop por defecto): con bucle, el margen final de VfxOneShot enseñaba otra vez
+                // el primer dibujo. Sólo se reproduce el estado principal (VfxOneShot lo fuerza a una
+                // pasada), así que la duración es la suya.
+                primary.loop = false;
                 SetUpRenderer(root, primary);
                 ApplyAnimation(root, states, primary);
 
                 // VfxOneShot sólo sabe medir clips de Animator; con un flipbook hay que darle la
-                // duración a mano (SPRITE_PIPELINE.md lo documenta como obligatorio). Se usa la
-                // suma de los estados que NO repiten: un efecto Spawn→End dura las dos pasadas.
+                // duración a mano (SPRITE_PIPELINE.md lo documenta como obligatorio).
                 var oneShot = root.AddComponent<VfxOneShot>();
-                float lifetime = states.Where(s => !s.loop).Sum(s => s.Duration);
-                if (lifetime <= 0f) lifetime = primary.Duration;   // todo en bucle: al menos una pasada
+                float lifetime = primary.Duration;
                 WritePrivateFloat(oneShot, "lifetime", lifetime);
 
                 MarkSource(root, manifest, KindFx, sourceFolder);

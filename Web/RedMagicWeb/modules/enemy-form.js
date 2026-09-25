@@ -11,7 +11,7 @@
 // cosmetic labeling only, the exported JSON stays exactly as flat as the schema itself.
 
 import * as F from './enemy-form-fields.js';
-import { createDefaultEnemyConfig, createDefaultProjectileSpec } from './enemy-defaults.js';
+import { createDefaultEnemyConfig, createDefaultProjectileSpec, PROJECTILE_AIMING_FIELDS } from './enemy-defaults.js';
 import { buildExportObject } from './enemy-export.js';
 import { loadEnemyConfigValidator, validateEnemyConfig } from './enemy-config-schema.js';
 import { downloadBlob } from './export-manifest.js';
@@ -111,6 +111,7 @@ const PROJECTILE_SPEC_FIELDS = [
   ['arcGravity', 'number', 'Gravedad de arco (parábola)', { min: 0 }],
   ['impactRadius', 'number', 'Radio de explosión al impactar', { min: 0 }],
   ['impactDamage', 'number', 'Daño de esa explosión', { min: 0 }],
+  ...PROJECTILE_AIMING_FIELDS,
 ];
 
 export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, exportBtn, exportCombinedBtn, getLaneNames }) {
@@ -455,8 +456,8 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
     PROJECTILE_SPEC_FIELDS.forEach(([key, kind, label, optsOrHint]) => {
       const isHintString = typeof optsOrHint === 'string';
-      const hint = isHintString ? optsOrHint : undefined;
       const opts = isHintString ? {} : optsOrHint;
+      const hint = isHintString ? optsOrHint : opts.hint;
       const onChange = (v) => { state.tuning.projectileSpec[key] = v; refresh(); };
 
       let built;
@@ -464,6 +465,8 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
       else if (kind === 'text') built = F.textField({ label, value: state.tuning.projectileSpec[key], hint, onChange });
       else if (kind === 'assetRef') built = F.assetRefField({ label, value: state.tuning.projectileSpec[key], hint, onChange });
       else if (kind === 'vector2') built = F.vector2Field({ label, value: state.tuning.projectileSpec[key], hint, onChange });
+      else if (kind === 'bool') built = F.boolField({ label, value: state.tuning.projectileSpec[key], hint, onChange });
+      else if (kind === 'enum') built = F.enumField({ label, value: state.tuning.projectileSpec[key], options: opts.options, hint, onChange });
 
       registerError(`/tuning/projectile/${key}`, built.setError);
       projInlineBox.appendChild(built.row);

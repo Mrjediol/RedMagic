@@ -127,7 +127,7 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 9d7737a2eaca8224190487ebdfbeb2fc, type: 3}
     - {fileID: 21300000, guid: 2e7943ee37c85b1459537fcca3735203, type: 3}
     fps: 8
-    loop: 1
+    loop: 0
   defaultState: Move
 --- !u!50 &4284111953145993917
 Rigidbody2D:

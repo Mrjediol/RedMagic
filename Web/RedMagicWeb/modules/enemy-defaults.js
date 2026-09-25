@@ -25,6 +25,14 @@ export function createDefaultProjectileSpec() {
     arcGravity: 0,
     impactRadius: 0,
     impactDamage: 0,
+
+    // Aiming (ProjectileSpec ▸ Aiming, Gameplay.ProjectileAim in Unity). Defaults = today's behavior:
+    // faceDirection false leaves rotation to the prefab, Right = art drawn pointing +X, Fixed = the
+    // shooter decides the direction. MouseDirection / NearestEnemy only act for the player.
+    faceDirection: false,
+    facingAxis: 'Right',
+    aimMode: 'Fixed',
+
     use: '', // empty = omitted (library reference id, importer-only convenience key)
 
     // Id of a 'projectile'-kind entry in THIS tool's shared library. Empty = omitted on export.
@@ -149,3 +157,31 @@ export function createDefaultEnemyConfig() {
     tuning: createDefaultEnemyTuning(),
   };
 }
+
+/** ProjectileSpec.facingAxis values, in schema order — the dropdown options of both creators. */
+export const PROJECTILE_FACING_AXES = [
+  { value: 'Right', label: 'Right — punta a la derecha (+X, la convención)' },
+  { value: 'Left', label: 'Left — punta a la izquierda' },
+  { value: 'Up', label: 'Up — punta arriba' },
+  { value: 'Down', label: 'Down — punta abajo' },
+];
+
+/** ProjectileSpec.aimMode values, in schema order. */
+export const PROJECTILE_AIM_MODES = [
+  { value: 'Fixed', label: 'Fixed — la dirección que da quien dispara' },
+  { value: 'MouseDirection', label: 'MouseDirection — hacia el cursor (sólo jugador)' },
+  { value: 'NearestEnemy', label: 'NearestEnemy — al enemigo más cercano al salir (sólo jugador)' },
+];
+
+/**
+ * The three Aiming rows, shared by enemy-form.js and fx-form.js so both creators show the same
+ * widgets in the same order. Row shape = [key, kind, label, optsOrHint], like PROJECTILE_SPEC_FIELDS.
+ */
+export const PROJECTILE_AIMING_FIELDS = [
+  ['faceDirection', 'bool', 'Girar hacia donde vuela (faceDirection)',
+    'Rota el sprite para que su punta mire a la dirección de vuelo. Apagado = decide el prefab.'],
+  ['facingAxis', 'enum', 'Punta del sprite (facingAxis)',
+    { options: PROJECTILE_FACING_AXES, hint: 'Qué lado del dibujo apunta hacia donde vuela.' }],
+  ['aimMode', 'enum', 'Apuntado (aimMode)',
+    { options: PROJECTILE_AIM_MODES, hint: 'Ratón / enemigo más cercano sólo cambian algo si dispara el jugador; un enemigo sigue en Fixed.' }],
+];

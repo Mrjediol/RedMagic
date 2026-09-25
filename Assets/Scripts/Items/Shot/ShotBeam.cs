@@ -165,6 +165,8 @@ namespace RedMagic.Items
 
         private void Finish()
         {
+            // Haz que no tocó a nadie: el aviso de impacto sale en su punta.
+            if (_shot != null) _ctx.Impact?.Fire(Origin() + _direction * _reach);
             _shot = null;
             if (_pooledPrefab) Core.PrefabPool.Despawn(gameObject);
             else _pool.Release(this);
@@ -202,7 +204,8 @@ namespace RedMagic.Items
             {
                 var health = Buffer[i] != null ? Buffer[i].GetComponentInParent<Health>() : null;
                 if (!IsTarget(health) || !TickSet.Add(health)) continue;
-                if (damage > 0f) health.TakeDamage(damage, health.transform.position, 1f);
+                if (damage > 0f) PlayerHit.Deal(health, damage, health.transform.position, 1f, HitKind.Beam);
+                _ctx.Impact?.Fire(PlayerHit.BodyCenter(health));   // primer enemigo que toca el haz
             }
         }
 

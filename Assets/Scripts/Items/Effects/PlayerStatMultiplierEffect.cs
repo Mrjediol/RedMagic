@@ -34,6 +34,7 @@ namespace RedMagic.Items
             PlayerStat.MoveSpeed => "Velocidad",
             PlayerStat.DashDistance => "Distancia de dash",
             PlayerStat.JumpHeight => "Altura de salto",
+            PlayerStat.CooldownRate => "Ritmo de enfriamiento",
             _ => stat.ToString(),
         };
     }

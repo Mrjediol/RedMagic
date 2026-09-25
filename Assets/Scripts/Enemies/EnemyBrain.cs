@@ -374,6 +374,9 @@ namespace RedMagic.Enemies
         /// <summary>Un paso en la dirección de <paramref name="toGoal"/>. Ver <see cref="MoveToward"/>.</summary>
         private bool MoveAlong(Vector2 toGoal, float speed, float hover)
         {
+            // Ralentización (hielo): escala la velocidad, sea de avance, retirada o vuelta a casa.
+            speed *= SlowStatus.SpeedScale(this);
+
             Vector2 toTarget = toGoal;
             if (speed >= 0f) FaceTowards(toTarget);
 

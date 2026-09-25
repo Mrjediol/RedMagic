@@ -37,7 +37,7 @@ whose `anchor` was already fixed whenever *that* was cut, and does not touch it.
 `$comment` in the schema for the full reasoning, and "Things that need no code change" below for
 the bug this closes.
 
-**ProjectileConfig → `ProjectileSpec`** — all 11 fields map 1:1.
+**ProjectileConfig → `ProjectileSpec`** — all 14 fields map 1:1 (the last three — `faceDirection`, `facingAxis`, `aimMode` — are the Aiming block; the two enums travel as their C# names and `ProjectileConfigImporter` parses them case-insensitively).
 
 **BossConfig → `BossDefinition` / `BossPhase`** — all 4 + 15 fields map 1:1.
 

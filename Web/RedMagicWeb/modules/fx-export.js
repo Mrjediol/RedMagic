@@ -21,7 +21,7 @@ function omitEmpty(obj, keys) {
   return out;
 }
 
-/** The spec block as the schema wants it: the eleven ProjectileSpec numbers, no art keys. */
+/** The spec block as the schema wants it: the ProjectileSpec fields (numbers + the three Aiming keys), no art keys. */
 function buildProjectileExport(spec) {
   const out = { ...spec };
   delete out.prefab;

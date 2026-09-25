@@ -127,6 +127,36 @@ namespace RedMagic.Enemies
             _fallbackFinish = -1f;
             _wakeFinish = -1f;
             _released = false;
+
+            _dead = false;
+            if (_frozen && animator != null) animator.speed = 1f;
+            _frozen = false;
+        }
+
+        // Muerto: el clip de muerte se reproduce UNA vez y el cadáver se queda en su último dibujo.
+        private bool _dead;
+        private bool _frozen;
+
+        /// <summary>
+        /// Red de seguridad de la muerte con Animator: si el clip de muerte viene en bucle (los
+        /// importados del exportador web lo traían), al pasar de su final se clava en el último
+        /// frame y se para el Animator. Va en LateUpdate y fuerza la evaluación con Update(0): así el
+        /// primer dibujo que el bucle acaba de poner nunca llega a pintarse. Con un clip sin bucle no
+        /// hace nada (ya se queda quieto solo). Ver <c>Pipeline.AnimStates</c>.
+        /// </summary>
+        private void LateUpdate()
+        {
+            if (!_dead || _frozen || !HasAnimator || animator.IsInTransition(0)) return;
+
+            var info = animator.GetCurrentAnimatorStateInfo(0);
+            // Sólo en el estado de muerte: justo tras morir aún puede estar en Walk (en bucle, con
+            // normalizedTime > 1) hasta que arranque la transición.
+            if (!info.IsName(Death) || !info.loop || info.normalizedTime < 1f) return;
+
+            animator.Play(info.fullPathHash, 0, 0.9999f);
+            animator.speed = 0f;
+            animator.Update(0f);
+            _frozen = true;
         }
 
         /// <summary>
@@ -230,12 +260,11 @@ namespace RedMagic.Enemies
 
         public void PlayDeath()
         {
+            _dead = true;
             if (HasAnimator) animator.SetBool(DeadKey, true);
 
             if (flipbook == null) return;
-            flipbook.Locked = false;
-            flipbook.Play(Death, true);
-            flipbook.Locked = true;   // el cadáver se queda en el último frame
+            flipbook.PlayOnce(Death);   // una pasada: el cadáver se queda en el último frame
         }
 
         /// <summary>-1 mira a la izquierda, 1 a la derecha.</summary>

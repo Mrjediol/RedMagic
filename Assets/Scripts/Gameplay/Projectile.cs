@@ -79,6 +79,10 @@ namespace RedMagic.Gameplay
         private Collider2D[] _ownColliders;
         private SpriteRenderer _renderer;
 
+        // Orientación de este disparo (ProjectileSpec ▸ Aiming), puesta por ProjectileFactory.
+        private bool _forceFace;
+        private ProjectileFacingAxis _facingAxis = ProjectileFacingAxis.Right;
+
         /// <summary>
         /// Null si el prefab no lleva una (la mayoría no la lleva: el resto del proyecto es un
         /// sprite fijo). Cuando existe y tiene un estado "Impact", <see cref="Despawn"/> lo
@@ -137,6 +141,11 @@ namespace RedMagic.Gameplay
             _pierceLeft = pierceCount;
             _hitTargets.Clear();
 
+            // La orientación por disparo (ProjectileSpec.faceDirection / facingAxis) vuelve a lo del
+            // prefab: quien lo saque del pool la vuelve a poner con ConfigureFacing antes de Launch.
+            _forceFace = false;
+            _facingAxis = ProjectileFacingAxis.Right;
+
             // Sin rotación por dirección, el transform no debe conservar ninguna rotación de una
             // vida anterior del pool — sólo el flipX del renderer orienta.
             if (!faceTravelDirection) transform.rotation = Quaternion.identity;
@@ -183,6 +192,18 @@ namespace RedMagic.Gameplay
         {
             _lifestealTarget = beneficiary;
             _lifesteal = Mathf.Clamp01(fraction);
+        }
+
+        /// <summary>
+        /// Orientación de este disparo (<c>ProjectileSpec ▸ Aiming</c>): <paramref name="faceDirection"/>
+        /// fuerza a rotar hacia donde vuela aunque el prefab no lo haga (<see cref="faceTravelDirection"/>
+        /// apagado); <paramref name="axis"/> es el lado del sprite que hace de punta. Se llama antes de
+        /// <see cref="Launch"/>; el pool lo reinicia en <c>OnEnable</c>.
+        /// </summary>
+        public void ConfigureFacing(bool faceDirection, ProjectileFacingAxis axis)
+        {
+            _forceFace = faceDirection;
+            _facingAxis = axis;
         }
 
         /// <summary>
@@ -265,11 +286,13 @@ namespace RedMagic.Gameplay
         /// </summary>
         private void ApplyFacing(Vector2 direction)
         {
-            if (faceTravelDirection)
+            if (faceTravelDirection || _forceFace)
             {
-                transform.right = direction;
+                ProjectileAim.Face(transform, direction, _facingAxis);
                 return;
             }
+
+            transform.rotation = Quaternion.identity;
 
             if (_renderer != null && Mathf.Abs(direction.x) > 0.0001f)
                 _renderer.flipX = direction.x < 0f;
@@ -415,13 +438,10 @@ namespace RedMagic.Gameplay
 
             if (_spriteMachine != null && _spriteMachine.Has("Impact"))
             {
-                // Play() con Locked ya activo se aplicaría igual (restart:true lo permite), pero
-                // Locked se pone DESPUÉS de reproducir para que sea éste el estado bloqueado y no
-                // el que hubiera antes — y así, al terminar Impact, SpriteStateMachine no lo
-                // devuelve solo a Move (su fallback): se queda congelado en el último frame del
-                // golpe hasta que el propio pool lo apague.
-                _spriteMachine.Play("Impact", restart: true);
-                _spriteMachine.Locked = true;
+                // PlayOnce: una sola pasada aunque el estado venga marcado con bucle (el exportador
+                // web lo marca por defecto), bloqueado y sin volver a Move — se queda congelado en
+                // el último frame del golpe hasta que el propio pool lo apague. Ver AnimStates.
+                _spriteMachine.PlayOnce("Impact");
                 StartCoroutine(ReturnToPoolAfter(_spriteMachine.DurationOf("Impact")));
                 return;
             }

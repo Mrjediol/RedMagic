@@ -13,8 +13,8 @@
 
 Orden por complejidad de prompt necesaria:
 
-1. **Web + tool importer de proyectiles y VFX** — construir la herramienta (parte de Claude Code, no de arte IA), con import a Unity listo para usar por jugador, enemigos y bosses. Primera prioridad ahora mismo.
-2. **Dash tipo Skull Slayer** — dash en salto y dash en suelo con cooldowns independientes (permite encadenar 2 dashes casi instantáneos). El más simple, un prompt directo.
+1. DONE **Web + tool importer de proyectiles y VFX** — construir la herramienta (parte de Claude Code, no de arte IA), con import a Unity listo para usar por jugador, enemigos y bosses. Primera prioridad ahora mismo.
+2. DONE **Dash tipo Skull Slayer** — dash en salto y dash en suelo con cooldowns independientes (permite encadenar 2 dashes casi instantáneos). El más simple, un prompt directo.
 3. **Ataques del player** — 2 o 3 ataques con proyectiles y progresión/mejoras pensadas. Depende de tener el arte listo primero.
 4. **Sistema de builds/upgrades** — quitar placeholders de items, pensar pasivas únicas y de conjunto, mejoras reales fuera de la run, definir el anvil (tipo de disparo o forma). El más complejo, requiere diseño previo.
 5. **Boss 2 — lógica** — ataques únicos y comportamiento del segundo boss (depende de tener también el arte del boss listo, ver Vía B, y el diseño, ver Vía C).
@@ -47,4 +47,5 @@ Ideas fuera del alcance del prototipo, apuntadas para no olvidarlas:
   Mejorar Flujo de pedir prompts y hacer removebackground.
   Arreglar bug de que las animacion de los projectiles impact no son limpias, aveces al acabar sale algun artefacto visual.
   Añadir la opcion al projectile? mira al player? de ser asi la punta del projectile debe estar girada para salir siempre mirando al player, el ejemplo seria una flecha, la rotacion deberia de hacer que salga hacia el player este arriba o abajo.
-  
+  Bugs : hitbox personaje al suelo, hay que moverse bien- 
+  bug las muertes, de personajes y projectiles se bugean, tengo que ver como hago el impacto si que salga despues de morir.

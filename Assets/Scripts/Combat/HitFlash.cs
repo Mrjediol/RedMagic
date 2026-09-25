@@ -44,6 +44,11 @@ namespace RedMagic.Combat
         private bool _blinking;
         private bool _dimmed;
 
+        // Capa de estado (p. ej. el azul de la ralentización): el color "de reposo" pasa a ser el
+        // original multiplicado por este tinte, y el destello y el parpadeo se pintan encima.
+        private Color _statusTint = Color.white;
+        private float _statusWeight;
+
         private void Awake()
         {
             _health = GetComponent<Health>();
@@ -117,16 +122,44 @@ namespace RedMagic.Combat
                 var sprite = _sprites[i];
                 if (sprite == null) continue;
 
-                var color = _flashTimer > 0f ? flashColor : _originalColors[i];
+                var color = _flashTimer > 0f ? flashColor : BaseColor(i);
                 color.a = _originalColors[i].a * (_dimmed ? blinkAlpha : 1f);
                 sprite.color = color;
             }
         }
 
+        /// <summary>
+        /// Tinte de estado persistente (ralentización, veneno…): multiplica el color original por
+        /// <paramref name="tint"/> con mezcla <paramref name="weight"/> (0 = sin tinte). El destello
+        /// del golpe y el parpadeo se siguen pintando encima y, al acabar, vuelven a este color en
+        /// vez de al original. Con <paramref name="repaint"/> false sólo se guarda (lo usa quien no
+        /// quiere tocar el sprite en ese momento, p. ej. al morir, cuando manda el Corpse).
+        /// </summary>
+        public void SetStatusTint(Color tint, float weight, bool repaint = true)
+        {
+            weight = Mathf.Clamp01(weight);
+            if (Mathf.Approximately(weight, _statusWeight) && tint == _statusTint) return;
+
+            _statusTint = tint;
+            _statusWeight = weight;
+
+            if (repaint && _flashTimer <= 0f && !_blinking) Restore();
+        }
+
+        /// <summary>Color de reposo del sprite <paramref name="i"/>: el original, teñido por el estado.</summary>
+        private Color BaseColor(int i)
+        {
+            var original = _originalColors[i];
+            if (_statusWeight <= 0f) return original;
+
+            var tint = Color.Lerp(Color.white, _statusTint, _statusWeight);
+            return new Color(original.r * tint.r, original.g * tint.g, original.b * tint.b, original.a);
+        }
+
         private void Restore()
         {
             for (int i = 0; i < _sprites.Count && i < _originalColors.Count; i++)
-                if (_sprites[i] != null) _sprites[i].color = _originalColors[i];
+                if (_sprites[i] != null) _sprites[i].color = BaseColor(i);
         }
     }
 }

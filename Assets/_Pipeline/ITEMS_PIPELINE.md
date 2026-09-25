@@ -24,6 +24,12 @@ pantalla de items (tecla I), la tienda y los ciclos de prueba los encuentran sol
 | Jugador · Multiplicar estadística | `PlayerStatMultiplierEffect` | `stat` (Velocidad / Distancia de dash / Altura de salto), `multiplier` |
 | Jugador · Perder vida por segundo | `DrainHealthEffect` | `amount`, `interval`, `canKill` |
 | Economía · Dar moneda por segundo | `GrantCurrencyEffect` | `currency`, `amount`, `interval` |
+| Enfriamiento · Más rápido con ralentizados en pantalla | `SlowedEnemyCooldownEffect` | `cooldownRate` |
+| Al matar · Siguiente disparo instantáneo y potenciado | `KillEmpowersNextCastEffect` | `damageMultiplier`, `resetCooldown`, `hudAccent` |
+| Proyectil · Sigue tras matar | `PierceOnKillEffect` | `respawnDelay` |
+| Al matar N · Explosión de hielo en el siguiente disparo | `KillCounterExplosionEffect` | `killsRequired`, `radius`, `damage`, `slowsTargets`, `explosionPrefab` |
+| Golpe · % de vida máxima a ralentizados | `SlowedBonusDamageEffect` | `percentOfMaxHealth`, `maxBonusPerHit` |
+| Ralentizar · Rompe armadura mientras dure | `SlowArmorShredEffect` | `armorReduction` |
 
 - Se aplican **sólo mientras el item está equipado** (`ItemEffectRunner`, dentro de
   `WeaponLoadout`): al quitarlo, se deshacen. Vaciar el inventario al acabar la run los quita todos.
@@ -62,17 +68,53 @@ public sealed class MiEfecto : ItemEffect
 - La pantalla de items pinta el icono dentro del slot hueco; la tienda, en la carta. Sin icono se
   ve la inicial del nombre.
 
-## 4. Items de prueba (hielo)
+### Ganchos de combate para efectos (código)
 
-Creados por `ItemIconsPack` (sólo si faltan), para comprobar el sistema — exagerados a propósito:
-
-| Item | Efecto |
+| Necesito… | Uso |
 |---|---|
-| Botas Rúnicas | velocidad ×3 |
-| Capa de Escarcha | dash ×3 de largo |
-| Yelmo Rúnico | salto ×3 de alto |
-| Bastón Helado | −1 de vida por segundo (no mata) |
-| Anillo Glacial | +1 diamante por segundo |
+| "al golpear" / "al matar" | `PlayerHit.Landed` / `PlayerHit.Killed` (suscribir en `OnEquip`, quitar en `OnUnequip`; delegados en `context.GetState<T>()`) |
+| "el siguiente disparo…" | `WeaponUser.Casting` (`CastArgs.DamageScale`, `Origin`, `Facing`) |
+| "donde impacte ese disparo" | en `Casting`: `args.OnFirstImpact(point => …)` — salta una vez con el primer impacto (enemigo → centro del cuerpo; terreno / fin de vida / punta del haz si no toca a nadie) |
+| tocar el cooldown | `WeaponUser.Current.ResetCooldown()` / `ReduceCooldown(s)`; ritmo: `PlayerStats` `PlayerStat.CooldownRate` |
+| daño extra por golpe / expuesto al ralentizar / atravesar al matar | `CombatModifiers.SetHitBonus` / `SetSlowVulnerability` / `SetPierceOnKill` (clave = context) |
+| chapa en el HUD | `BuffIndicators.Set(context, icon, text, highlight, accent)` → `UI.ItemBuffHud` la pinta. **Sólo si el jugador tiene algo que decidir** (carga que se acumula, "listo"); un efecto automático no lleva chapa |
+| área de hielo | `IceBurst.Detonate(center, radius, damage, prefab, applySlow)` |
 
-Prueba: Play → I → clic en un slot libre hasta el item → cierra y juega. Clic otra vez (o vacíalo)
-y el efecto se va.
+- **Todo daño del jugador pasa por `PlayerHit.Deal`** (proyectil, haz, espada, habilidades antiguas).
+  Un arma nueva que haga daño debe llamarlo, no `Health.TakeDamage`, o sus golpes no cuentan para
+  items ni sinergias.
+- Rareza: campo `rarity` del item (Común / Azul / Épico / Legendario), sale coloreada en la pantalla I.
+
+## 4. Ralentización y sinergias implementadas
+
+- `Combat.SlowStatus` — se añade solo al primer ralentizar. Velocidad ×(1−fuerza) (`EnemyBrain`,
+  `EnemyController`), tinte azul por la capa de estado de `HitFlash` (más fuerte = más saturado; se
+  desvanece al acabar), daño extra por `Health.StatusDamageMultiplier` (aparte de la armadura del jefe).
+- Números en **`Assets/Resources/SynergyConfig.asset` ▸ Tuning** (`SynergyTuning`):
+
+| Umbral | Efecto | Dónde |
+|---|---|---|
+| Hielo 2 | proyectil/haz ralentiza (`slowStrength` 0.4, `slowDuration` 3 s) | `PlayerHit.Deal` |
+| Hielo 4 | ralentizados reciben +15% de todo | `PlayerHit.ApplySlow` |
+| Hielo 6 | matar ralentizado → estallido pequeño (`Fx_IceExplosion` a radio 1.8) | `SynergyEffectRunner` |
+| Rapidez 2 | enfriamiento ×1.5 con ralentizado en pantalla | `SynergyEffectRunner` |
+| Reset 2 | −2 s al cooldown por baja | `SynergyEffectRunner` |
+| Vampirismo 2 | +3 vida por baja, **repartida entre las motas rojas y aplicada cuando llegan al jugador** (no al matar); rojas en cada baja, verdes sobre el jugador sólo si recupera vida (`Fx.LifeMotes` + `DrainPacket`, pooled) | `SynergyEffectRunner` |
+
+## 5. Set de hielo — `Tools ▸ RedMagic ▸ Items ▸ Set de hielo · Generar` (`IceSetPack`)
+
+| Item | Rareza | Tags | Efecto |
+|---|---|---|---|
+| Botas Rúnicas | Épico | Hielo + Rapidez | enfriamiento ×1.5 con ralentizado en pantalla |
+| Bastón Helado | Legendario | Hielo + Rapidez | al matar: cooldown a 0 y siguiente disparo ×3 (sin chapa: es automático) |
+| Capa de Escarcha | Épico | Hielo + Reset | proyectil que mata reaparece en el cuerpo 0.5 s después |
+| Yelmo Rúnico | Legendario | Hielo + Vampirismo | 5 bajas → el siguiente disparo explota en hielo donde impacte (chapa 0/5 … ¡LISTO!) |
+| Anillo Glacial | Azul | Hielo + Vampirismo | +8% vida máx. del ralentizado por golpe |
+| Grimorio Glacial | Azul | Hielo + Reset | ralentizado recibe +30% (−30% armadura) |
+
+- Corta `Assets/Art/VX/IceExplotion.png` → `Assets/Art/VX/IceExplosion/` y monta
+  `Assets/Prefabs/Fx/Items/Fx_IceExplosion.prefab` (pooled, flipbook).
+- Convierte cada item **sólo si aún no lleva su efecto**; después respeta lo afinado a mano. Nunca toca iconos.
+- Icono del Grimorio: `Assets/Art/Icons/Grimorio.png`, constante `GrimoireIconPath` del pack.
+- Reescribe el texto de los umbrales implementados con los números actuales del Tuning: tras
+  retocar números, relanzar el pack para que la UI diga lo mismo.

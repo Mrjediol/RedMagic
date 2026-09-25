@@ -72,6 +72,23 @@ namespace RedMagic.Gameplay
             if (_renderer != null) _renderer.sprite = frames[Mathf.Min(_index, frames.Length - 1)];
         }
 
+        /// <summary>
+        /// Rebobina y fuerza una sola pasada (se queda en el último fotograma), aunque el prefab
+        /// venga en bucle. Lo llama <c>VfxOneShot</c>: un efecto de un solo uso nunca repite — con
+        /// bucle, el margen final (<c>extraTime</c>) enseñaba otra vez el primer dibujo.
+        /// </summary>
+        public void PlayOnceFromStart()
+        {
+            oneShot = true;
+            _timer = 0f;
+            _index = 0;
+            Finished = false;
+
+            if (frames == null || frames.Length == 0) return;
+            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            if (_renderer != null) _renderer.sprite = frames[0];
+        }
+
         private void Update()
         {
             if (Finished || frames == null || frames.Length < 2 || _renderer == null) return;

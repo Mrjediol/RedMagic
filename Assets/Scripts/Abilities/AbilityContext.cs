@@ -103,7 +103,19 @@ namespace RedMagic.Abilities
             if (!IsValidTarget(target, ctx)) return false;
 
             float amount = damage * ctx.DamageScale;
-            if (!target.TakeDamage(amount, sourcePosition, knockbackMultiplier)) return false;
+
+            // Bono plano de las pasivas legendarias de daño — sólo cuenta cuando quien golpea es el
+            // jugador, nunca en un ataque de enemigo/jefe que también pase por aquí.
+            bool byPlayer = Teams.Of(ctx.Caster) == Team.Player;
+            if (byPlayer)
+                amount += Economy.LegendaryPassiveEffects.AttackDamageBonus;
+
+            // Lo del jugador pasa por PlayerHit (bonos de items, ralentización, avisos de baja); lo
+            // de enemigos y jefes va directo, como siempre.
+            bool landed = byPlayer
+                ? Items.PlayerHit.Deal(target, amount, sourcePosition, knockbackMultiplier, Items.HitKind.Ability)
+                : target.TakeDamage(amount, sourcePosition, knockbackMultiplier);
+            if (!landed) return false;
 
             // Robo de vida: se cura por el daño que se pretendía hacer, no por la vida que le
             // quedaba al objetivo. Rematar a un enemigo con 1 de vida cura igual que golpearlo

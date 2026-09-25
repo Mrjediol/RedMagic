@@ -123,44 +123,46 @@ existing entries, no importer rework. See "Placeholder movement (Unity side)" be
 
 ### Boss Creator tab
 
-Assembles a **BossConfig** (`docs/schemas/boss-config.schema.json`) — a base enemy, a library of
-attacks, and the phases that draw from it — and saves it to the shared library as a `kind:'boss'`
-record. **Web-only**: nothing imports this into Unity yet (that is future work, until boss 2 has
-art), so everything here is shaped to match what `BossDefinition`/`BossPhase`/`BossAttack` already
-are — which is exactly what the schema mirrors — never to match an importer that does not exist.
+Builds a whole boss — body animations, movement, warnings, attacks with their art, phases — and
+exports a `.zip` that Unity imports in one step (**Tools ▸ Web ▸ Import Config… ▸ Importar jefe
+completo (.zip)**, `Assets/Scripts/Bosses/Editor/BossBundleImporter.cs`).
 
-Unlike the other two creator tabs it authors two nested **lists** whose lengths the user controls,
-so it is not table-driven: the form is two card lists rebuilt from state on every *structural*
-change, with the generic widgets inside each card. Scalar edits mutate state in place and only
-refresh the preview — a full rebuild on every keystroke would lose focus mid-typing.
+**Nothing about a specific attack is hardcoded on the web.** The list of attack types, movement
+types, every field with its default/tooltip/min, and every art slot come from
+`modules/boss-catalog.js`, which Unity **generates** (`BossCatalogExporter.cs`, by reflection over
+every `BossAttack` / `MovementBehaviour` subclass; rewritten after each compile, and on demand from
+Tools ▸ Web ▸ Exportar catálogo de jefes). A new C# archetype therefore appears here with no web
+edit. `modules/boss-catalog-notes.js` only adds Spanish names/one-liners for known types.
 
 | To change... | Edit | Function |
 |---|---|---|
-| The starter list of attack "slots" offered in the type dropdown | `modules/boss-defaults.js` | `ATTACK_SLOTS` — a picker convenience, **not** a registry (the schema's "OPEN ARCHETYPE SET" note is why); `projectile: true` marks the subclasses that actually carry an embedded `ProjectileSpec` |
-| Default values for a new attack / phase / document | `modules/boss-defaults.js` | `createDefaultAttack()`, `createDefaultPhase(i)`, `createDefaultBossConfig()` |
-| The attack cards, the phase cards and the per-phase deck checkboxes | `modules/boss-form.js` | `renderAttacks()`, `renderPhases()` |
-| The base-enemy picker and the per-attack projectile picker | `modules/boss-form.js` | `refreshBaseOptions()`, `refreshProjectileOptions()` |
-| Saving to / reopening from the library | `modules/boss-form.js` | `saveBtn` handler, `adoptConfig()`, `linkLibraryEntry(id)` |
-| Form state → exportable JSON (attacks array → keyed object, `params.projectile.libraryId`) | `modules/boss-export.js` | `buildBossExportObject(state)` |
-| Page structure / layout | `index.html` (`#tab-boss`) / `styles.css` | the `.bc*` classes — the only markup the other creator tabs don't already have |
+| Which fields/types exist, their defaults, art slots | the C# attack itself (`[ArtSlot]`, `[AttackHides]`, `[Tooltip]`, `[Header]`, `[Min]`) | read by `BossCatalogExporter.Describe` |
+| Spanish label / group / one-liner of an attack type | `modules/boss-catalog-notes.js` | `ATTACK_NOTES` |
+| What each art kind needs (projectile / fx / warning / prop) and which library kinds it lists first | `modules/boss-catalog-notes.js` | `ART_KIND_NOTES` |
+| Form state shape, body stat defaults, phase defaults | `modules/boss-defaults.js` | `createDefaultBossConfig`, `BODY_STATS`, `createAttack`, `createDefaultPhase` |
+| Form UI (body lanes + release-frame picker, movement, warnings, attack cards, art used, phases) | `modules/boss-form.js` | `renderBody`, `renderAttacks`/`attackCard`, `renderFields` (generic catalog-field renderer), `artPicker`, `renderArt`, `renderPhases` |
+| State → `boss-config.json` (what is exported, relative folders, art ids, problems/notes) | `modules/boss-export.js` | `buildBossExport` |
+| The .zip layout | `modules/boss-bundle.js` | `buildBossBundle` |
 
-Two shape translations live in `boss-export.js` and are worth knowing before changing either side:
+**Export rules** (`boss-export.js`, mirrored by `BossConfigImporter.cs`):
 
-- **`attacks` is an array in the form and an object keyed by local id in the document.**
-  `BossPhase.attacks` is an array of *references* to shared `BossAttack` assets; the same asset
-  legitimately sits in several decks or in none, so inlining per deck would create duplicate assets
-  and break that sharing.
-- **`projectileLibraryId` is flat on the form and lands in `params.projectile.libraryId`.** `params`
-  is the subclass-specific half the schema leaves open, and `projectile` is a real serialized field
-  on `BulletHellAttack`/`OrbRingAttack`. `BossConfigImporter.WriteField` already detects a
-  `ProjectileSpec`-typed property there and hands it to `ProjectileConfigImporter.Resolve`, which
-  already resolves `libraryId` through `FxPrefabBuilder` — so this rides the exact path an enemy's
-  projectile rides, with **no importer change**. Anywhere else would have needed one.
+- Attack base fields and `params` are written **only when they differ from the type default**, so
+  re-importing does not undo hand-tuning done in Unity on fields the web never touched. A
+  `ProjectileSpec` is written whole once anything in it changes (Unity rebuilds it from
+  `new ProjectileSpec()`).
+- An art slot set to a library entry becomes `{"art": "<id>"}` plus `artAssets.<id>` (frames +
+  kind); empty = the attack's placeholder in Unity (`BossArtBuilder.cs` builds the prefabs).
+- Art/body `folder`s are **relative** (`Body`, `Art/<libraryId>`): the importer resolves them
+  against `Assets/Art/Bosses/<slug>/Source/`, where the zip's frames land. That is why the loose
+  `.json` export can be re-imported later to change only numbers.
+- `body` stats and movement apply only when `Boss_<slug>.prefab` is first created; later imports
+  relink clips/controller/definition and keep the prefab's hand-tuned values.
+- `body.libraryId`/`entryName` and `artAssets.*.libraryId`/`entryName` are web-only (Unity ignores
+  them). The full form state is also saved on the library record as `draft`, which is what
+  "Editar en Boss Creator" restores; records from the older form (no `draft`) are adopted from
+  their config.
 
-Two additive keys were added to `boss-config.schema.json` for this: **`kind`** (pinned `"boss"`,
-same role as EnemyConfig's) and **`base`** (`{enemyLibraryId, enemyName}`, importer-only, maps to
-nothing on `BossDefinition`). `BossConfigImporter` reads only `displayName`/`attacks`/`phases` and
-ignores unknown root keys, so a BossConfig written before these existed still imports unchanged.
+Zip layout: `boss-config.json`, `Body/<Animation>/frame_000.png…`, `Art/<libraryId>/<Lane>/frame_000.png…`.
 
 ### Entry kinds (enemy / projectile / fx / boss)
 

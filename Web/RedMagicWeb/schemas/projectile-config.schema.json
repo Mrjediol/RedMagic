@@ -4,7 +4,7 @@
   "title": "ProjectileConfig",
   "description": "Mirrors RedMagic.Abilities.ProjectileSpec (Assets/Scripts/Abilities/Runtime/ProjectileSpec.cs) field-for-field. Usable standalone (a library file of named specs, referenced by id) or inline (embedded as EnemyConfig.tuning.projectile).",
 
-  "$comment": "SCOPE CORRECTION — read before using this schema. The brief listed 'speed, lifetime, damage, hitLayers, knockbackMultiplier, pierceCount, homingTurnRate/Range, arcGravity, impactRadius/Damage, pooled-or-destroy'. That list is the UNION of ProjectileSpec and the Projectile MonoBehaviour, not ProjectileSpec itself. Verified against source, ProjectileSpec carries exactly eleven fields: prefab, speed, lifetime, size, muzzleOffset, pierce, homingTurnRate, homingRange, arcGravity, impactRadius, impactDamage. The other four are NOT spec data and are deliberately absent from this schema: 'damage' and 'knockbackMultiplier' are per-shot arguments (EnemyAttack.Shoot passes tuning.attackDamage / tuning.attackKnockbackMultiplier into ProjectileFactory.Spawn), 'hitLayers' arrives via AbilityContext.HitLayers (= tuning.hitLayers), and 'destroyWhenDone' is a Projectile field driven by the PooledCode/PooledPrefab marks the factory stamps, never by a spec. Note also the field is 'pierce' on the spec and 'pierceCount' on the component. Putting any of the four here would produce a config whose values are silently overwritten on every shot — the exact failure the enemy-projectile-tuning-lives-on-enemystats convention exists to prevent. Player-side ShotProjectile/WeaponShot are out of scope for this pass and are not referenced anywhere in this file.",
+  "$comment": "SCOPE CORRECTION — read before using this schema. The brief listed 'speed, lifetime, damage, hitLayers, knockbackMultiplier, pierceCount, homingTurnRate/Range, arcGravity, impactRadius/Damage, pooled-or-destroy'. That list is the UNION of ProjectileSpec and the Projectile MonoBehaviour, not ProjectileSpec itself. Verified against source, ProjectileSpec carries exactly fourteen fields: prefab, speed, lifetime, size, muzzleOffset, pierce, homingTurnRate, homingRange, arcGravity, impactRadius, impactDamage, plus the three Aiming fields faceDirection, facingAxis, aimMode. The other four are NOT spec data and are deliberately absent from this schema: 'damage' and 'knockbackMultiplier' are per-shot arguments (EnemyAttack.Shoot passes tuning.attackDamage / tuning.attackKnockbackMultiplier into ProjectileFactory.Spawn), 'hitLayers' arrives via AbilityContext.HitLayers (= tuning.hitLayers), and 'destroyWhenDone' is a Projectile field driven by the PooledCode/PooledPrefab marks the factory stamps, never by a spec. Note also the field is 'pierce' on the spec and 'pierceCount' on the component. Putting any of the four here would produce a config whose values are silently overwritten on every shot — the exact failure the enemy-projectile-tuning-lives-on-enemystats convention exists to prevent. Player-side ShotProjectile/WeaponShot are out of scope for this pass and are not referenced anywhere in this file.",
 
   "type": "object",
 
@@ -127,6 +127,29 @@
           "default": 0,
           "description": "Damage of that explosion, separate from the direct hit.",
           "$comment": "ProjectileSpec.impactDamage. Projectile.ExplodeIfDue requires BOTH impactRadius > 0 and impactDamage > 0, so setting one alone is a silent no-op."
+        },
+
+        "faceDirection": {
+          "type": "boolean",
+          "default": false,
+          "description": "Rotate the projectile so its tip (facingAxis) points where it flies — at spawn and every step (homing, arcs).",
+          "$comment": "ProjectileSpec.faceDirection (Aiming). false = the PREFAB decides (Projectile.faceTravelDirection), so every projectile that existed before this field keeps its look; true forces rotation even on a prefab that does not rotate. Applied by Gameplay.ProjectileAim.Face through Projectile.ConfigureFacing."
+        },
+
+        "facingAxis": {
+          "type": "string",
+          "enum": ["Right", "Left", "Up", "Down"],
+          "default": "Right",
+          "description": "Which side of the sprite is the tip. Right = art drawn pointing +X (the project convention).",
+          "$comment": "ProjectileSpec.facingAxis (Gameplay.ProjectileFacingAxis). Written by name; ProjectileConfigImporter parses it case-insensitively and rejects unknown values."
+        },
+
+        "aimMode": {
+          "type": "string",
+          "enum": ["Fixed", "MouseDirection", "NearestEnemy"],
+          "default": "Fixed",
+          "description": "Fixed = direction given by the shooter. MouseDirection = toward the cursor at the moment of firing. NearestEnemy = toward the nearest living enemy at spawn (locked, not homing). The last two only act when the PLAYER fires; for an enemy they behave as Fixed.",
+          "$comment": "ProjectileSpec.aimMode (Gameplay.ProjectileAimMode), resolved once at spawn by Gameplay.ProjectileAim.Resolve inside ProjectileFactory.Spawn. The player weapon BaseShot carries the same three fields and resolves them in ShotResolver.Fire."
         }
       }
     }

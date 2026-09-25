@@ -114,10 +114,18 @@ swapping in real art is then: open the prefab, delete the shape sprite, drop the
   sprites in `Assets/Art/Placeholder/` + the weapon prefabs + a per-boss FX set), `2 · Asignar a
   armas`, `3 · Asignar a jefes` (fills null slots per boss) — idempotent. `4 · Migrar FX de jefe
   a carpeta por jefe` was the one-time move off the old shared-by-type `Fx_Boss_*` prefabs.
-- `ShotProjectile` / `ShotBeam` **and** `Gameplay.Projectile` (the boss/ability bullet) all rotate
-  to face travel direction — `Projectile` sets `transform.right` in `Launch` and every
-  `FixedUpdate` — so elongated art with a trail is fine everywhere, authored pointing **+X**.
-  (An earlier note here claimed `BulletHellAttack` bullets don't rotate; they do.) A real-art
+- **Projectile aiming + orientation is one system, `Gameplay.ProjectileAim`**, used by BOTH paths.
+  `ProjectileSpec` (enemy/boss/ability) and `BaseShot` (player weapon) each carry an **Aiming**
+  block: `faceDirection` (force rotating toward travel; false = the prefab's own
+  `faceTravelDirection` decides, which is how every pre-existing projectile kept its look),
+  `facingAxis` (Right/Left/Up/Down = which side of the art is the tip; Right = +X convention) and
+  `aimMode` (Fixed / MouseDirection / NearestEnemy — the last two player-only, resolved once at
+  spawn: `ProjectileFactory.Spawn` for specs, `ShotResolver.Fire` for weapons so the whole
+  volley/burst/beam inherits it). `Projectile` and `ShotProjectile` both re-face every physics step
+  through `ProjectileAim.Face`. The web schema (`projectile-config.schema.json`, mirrored in
+  `docs/schemas`) and both creators (Enemy + Projectile/FX) carry the three fields;
+  `ProjectileConfigImporter` writes them. Don't add rotation or aim code anywhere else.
+  A real-art
   prefab makes that attack's `projectileSprite` + phase accent inert (the prefab owns the look).
 - The `Platform` / `Anchor` placeholder prefabs must carry their colliders (solid `Ground`-layer
   box; trigger box + `Health` + `HitFlash`) — the generator builds them precisely.
@@ -395,6 +403,12 @@ survives the session and every step is re-runnable and idempotent.
   clips twice with a `Refresh` between** — on the first import of a brand-new sheet the freshly
   sliced sub-sprites aren't queryable in the same tick and the first pass leaves empty clips
   (1s / 60fps / no events); the second pass fills them, and it's idempotent on every re-run.
+- **Terminal animations never loop** (`Pipeline.AnimStates`: Death/Impact/Explo/Muerte/Despawn, exact
+  Die/Dead/End/Destroy). Enforced by every clip/state importer, at runtime (`SpriteStateMachine`
+  won't loop or fall back after a terminal state, `PlayOnce`; `VfxOneShot` forces a single pass;
+  `EnemyAnimation` freezes a looping Death clip on its last frame) and by `Pipeline ▸ 8/9 · …
+  animaciones terminales` (`TerminalAnimAudit`). The web exporter defaults `loop: true`, which is
+  what made the first frame flash after deaths/impacts. `SPRITE_PIPELINE.md` §5-bis.
 - **`AnimRuntime` is not a preference, it follows pooling**: `Animator` for enemies/bosses;
   **`Flipbook` for anything in `PrefabPool`**, because `PrefabPool` has no per-instance reset hook,
   so a reused Animator would resume mid-death. **`Pipeline.SpriteStateMachine`** is the multi-state
@@ -617,6 +631,15 @@ Inspector wiring.
   because the player’s `Animator` lives on the `Sprite` child and events only reach components on
   their own GameObject. `PlayerAttack.windup` and `RangedAttack.windup` (0.25s) are the same idea
   for the other two attack paths.
+- **Projectile size / muzzle / collider authoring** — `BaseShot ▸ Projectile Collider Override`
+  (`overrideCollider`, `colliderType` Circle/Box/Capsule, `colliderSize` world units — Circle uses X
+  as radius — `colliderOffset`): `ShotProjectile` swaps in its own collider of that shape (created once
+  per pooled instance, never per shot) and disables the prefab's, so the shared prefab is never
+  edited; off = prefab collider untouched. World→local math is `Gameplay.ProjectileColliderShape`.
+  **Scene preview**: `WeaponUser ▸ previewWeapon` (Player.prefab = `Weapon_ProyectilRecto`) draws,
+  with no Play mode, the muzzle cross (yellow), the projectile at its real size (cyan) and its
+  collider (green) whenever the player or that weapon asset is selected; editing the weapon repaints
+  the Scene view (`WeaponDefinition.OnValidate`). Drawing lives in `Items.WeaponShotPreview`.
 - **`WeaponLoadout`** — self-bootstrapping `DontDestroyOnLoad` singleton owning the run's
   `WeaponInventory`.
 - **Weapon levels (1–3)** — `WeaponLevelManager` (self-bootstrapping singleton, keyed by
@@ -644,7 +667,7 @@ Inspector wiring.
 - **`ShotPipelineHarness`** — drop it in a scene and hit Play to fire the four configurations
   (bare / trajectory only / shape only / all three layers) at a dummy it spawns.
 - Current content: 7 weapons (the ones rescued from the old abilities plus a plain
-  `Weapon_ProyectilRecto`), 4 modifiers, 9 free-pool items (5 of them the ice test items below).
+  `Weapon_ProyectilRecto`), 4 modifiers, 10 free-pool items (6 of them the ice set below).
 - **Item behaviour lives on the item** — read `Assets/_Pipeline/ITEMS_PIPELINE.md`.
   `ItemDefinition.effects` is a `[SerializeReference, SubclassPicker]` list of `ItemEffect`
   subclasses (`Assets/Scripts/Items/Effects/`): pick the type from a dropdown in the item's
@@ -655,8 +678,20 @@ Inspector wiring.
   dash distance = duration, jump height = √ on velocity). `Health.Drain` is damage that isn't a
   hit (no i-frames, no hurt anim, still a popup). Icons: `ItemIconsPack` (keys `Assets/Icon/*`
   via `UiArtKitProcessor`) and `Tools ▸ RedMagic ▸ Items ▸ Catálogo de items (iconos)`, which
-  edits the icon on each item asset. Test items (Botas/Capa/Yelmo/Bastón/Anillo) have absurd
-  effects on purpose — speed/dash/jump ×3, −1 HP/s, +1 diamond/s.
+  edits the icon on each item asset.
+- **Ice set + slow + synergy effects** (`Tools ▸ RedMagic ▸ Items ▸ Set de hielo · Generar`,
+  `IceSetPack`): 6 items with real mechanics, `Fx_IceExplosion` (pooled flipbook). **All player
+  damage goes through `Items.PlayerHit.Deal`** (shots, beam, sword, legacy abilities) — it applies
+  item hit bonuses, Ice-2 slow (`Combat.SlowStatus`: speed via `SlowStatus.SpeedScale` in the enemy
+  movers, tint via `HitFlash.SetStatusTint`, extra damage via `Health.StatusDamageMultiplier`, kept
+  separate from boss armour) and raises `Landed`/`Killed`. Hooks for effects: `PlayerHit.Killed`,
+  `WeaponUser.Casting` (next-shot buffs; `CastArgs.OnFirstImpact` for "where this shot lands" — the Helmet
+  explosion), `CombatModifiers`, `BuffIndicators` → `UI.ItemBuffHud` (only for effects the player must
+  time; the Staff has none). Lifesteal 2: the heal travels with pooled `Fx.LifeMotes` — red motes
+  fly from the kill to the player every kill and each applies its share of the heal ON ARRIVAL
+  (`DrainPacket`); green motes only when HP was actually gained.
+  Threshold numbers live in `SynergyConfig ▸ Tuning`, applied by `SynergyEffectRunner` (in
+  `WeaponLoadout`). Items have a `rarity`. Details: `ITEMS_PIPELINE.md` §4-5.
 - Projectiles never collide with other projectiles — pellets from one blast spawn on top of each
   other and would annihilate on frame one.
 

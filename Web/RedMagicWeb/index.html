@@ -244,9 +244,9 @@
   <div id="bossFormPanel">
     <h1>👑 Boss Creator</h1>
     <p class="hint">
-      Monta un jefe: un enemigo base de la biblioteca, una biblioteca de ataques y las fases que
-      reparten de ella. <strong>Todavía no hay importador de jefes en Unity</strong> — esto guarda el
-      <code>BossConfig</code> en la biblioteca y lo exporta como JSON, listo para cuando lo haya.
+      Monta un jefe completo: animaciones del cuerpo (de la pestaña Sprites), movimiento, avisos,
+      ataques con su arte y fases. Los tipos de ataque y sus campos vienen de Unity. Exporta un
+      <code>.zip</code> y en Unity: <em>Tools ▸ Web ▸ Import Config… ▸ Importar jefe completo</em>.
     </p>
     <div id="bossFormRoot"></div>
   </div>
@@ -254,7 +254,8 @@
     <h2 style="margin-top:0;">Vista previa</h2>
     <div id="bossValidationSummary"></div>
     <button id="bossSaveBtn" class="primary" style="width:100%;">💾 Guardar jefe en biblioteca</button>
-    <button id="bossExportBtn" style="width:100%;margin-top:6px;">⬇ Exportar config (.json)</button>
+    <button id="bossZipBtn" style="width:100%;margin-top:6px;">⬇ Exportar jefe completo (.zip)</button>
+    <button id="bossExportBtn" style="width:100%;margin-top:6px;">⬇ Exportar sólo config (.json)</button>
     <pre id="bossJsonPreview"></pre>
   </div>
 </div>

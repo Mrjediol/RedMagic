@@ -99,6 +99,9 @@ export async function saveEnemy(entry) {
     thumbnail: entry.thumbnail || null,
     config: entry.config || null,
   };
+  // The Boss Creator's full form state (boss entries only), so reopening a boss restores exactly
+  // what was on screen — the exported config alone loses web-only choices.
+  if (entry.draft) record.draft = entry.draft;
   const s = await store('readwrite');
   await wrap(s.put(record));
   return record;

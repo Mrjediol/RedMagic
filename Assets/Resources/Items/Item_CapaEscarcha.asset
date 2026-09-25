@@ -13,18 +13,18 @@ MonoBehaviour:
   m_Name: Item_CapaEscarcha
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
   displayName: Capa de Escarcha
-  description: "Una r\xE1faga helada te sigue al esquivar. (Prueba: dash el triple
-    de largo.)"
+  description: 'Lo que mata no se detiene: el disparo se recompone en el cuerpo helado
+    y sigue.'
   icon: {fileID: 21300000, guid: 93bcd3768b03a9b478c864960d05f131, type: 3}
   accent: {r: 0.55, g: 0.85, b: 0.95, a: 1}
+  rarity: 2
   tags: 0000000067000000
   effects:
-  - rid: 5384780386449490183
+  - rid: 5384780706789982318
   references:
     version: 2
     RefIds:
-    - rid: 5384780386449490183
-      type: {class: PlayerStatMultiplierEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
+    - rid: 5384780706789982318
+      type: {class: PierceOnKillEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
       data:
-        stat: 1
-        multiplier: 3
+        respawnDelay: 0.5

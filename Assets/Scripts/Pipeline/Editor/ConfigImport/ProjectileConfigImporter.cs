@@ -151,6 +151,23 @@ namespace RedMagic.Pipeline.EditorTools
                 spec.impactRadius = impactRadius.Value<float>();
             if (obj.TryGetValue("impactDamage", out var impactDamage))
                 spec.impactDamage = impactDamage.Value<float>();
+
+            // Aiming (ProjectileAim): los dos enums llegan como texto ("Right", "NearestEnemy").
+            if (obj.TryGetValue("faceDirection", out var faceDirection))
+                spec.faceDirection = faceDirection.Value<bool>();
+            if (obj.TryGetValue("facingAxis", out var facingAxis))
+                spec.facingAxis = ReadEnum(facingAxis, spec.facingAxis, $"{context}.facingAxis");
+            if (obj.TryGetValue("aimMode", out var aimMode))
+                spec.aimMode = ReadEnum(aimMode, spec.aimMode, $"{context}.aimMode");
+        }
+
+        private static T ReadEnum<T>(JToken token, T fallback, string context) where T : struct, System.Enum
+        {
+            string text = token.Type == JTokenType.String ? token.Value<string>() : token.ToString();
+            if (System.Enum.TryParse(text, true, out T value)) return value;
+
+            throw new ConfigImportException($"{context}: {text} no es un valor válido (" +
+                                            string.Join(", ", System.Enum.GetNames(typeof(T))) + ").");
         }
 
         /// <summary>
@@ -172,6 +189,9 @@ namespace RedMagic.Pipeline.EditorTools
             projectileProp.FindPropertyRelative("arcGravity").floatValue = spec.arcGravity;
             projectileProp.FindPropertyRelative("impactRadius").floatValue = spec.impactRadius;
             projectileProp.FindPropertyRelative("impactDamage").floatValue = spec.impactDamage;
+            projectileProp.FindPropertyRelative("faceDirection").boolValue = spec.faceDirection;
+            projectileProp.FindPropertyRelative("facingAxis").enumValueIndex = (int)spec.facingAxis;
+            projectileProp.FindPropertyRelative("aimMode").enumValueIndex = (int)spec.aimMode;
         }
 
         // ============================================================ entrada directa (menú)

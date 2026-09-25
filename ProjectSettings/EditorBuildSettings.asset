@@ -12,41 +12,74 @@ EditorBuildSettings:
     path: Assets/Scenes/MainHub.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   - enabled: 1
-    path: Assets/Scenes/TestScene.unity
-    guid: c4366745cc8567b4fbb8639e20d92cf1
-  - enabled: 1
-    path: Assets/Scenes/Worlds/World1/TestBosque1.unity
-    guid: 0f2fec494426bc645816b516586c5e81
-  - enabled: 1
-    path: Assets/Scenes/Worlds/World1/testboss.unity
-    guid: 0113bd89b3b561444b749c296f53e673
-  - enabled: 1
-    path: Assets/Scenes/Worlds/World1/World1_Boss.unity
-    guid: 399eb5522346b2f4c8f6ff1f3c83f700
-  - enabled: 1
-    path: Assets/Scenes/Worlds/World1/World1_Section01.unity
+    path: Assets/Scenes/Worlds/World1/Bosque1.unity
     guid: 4f47a9a0eb2a04845bdf8eebbdb8c2bd
   - enabled: 1
+    path: Assets/Scenes/Bosque2.unity
+    guid: c4366745cc8567b4fbb8639e20d92cf1
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/Bosque3.unity
+    guid: 0f2fec494426bc645816b516586c5e81
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/Bosque4.unity
+    guid: 7d9a57d03d6b8e74299cd6fa633b38f5
+  - enabled: 1
+    path: Assets/Scenes/Worlds/World1/BosqueBoss.unity
+    guid: 399eb5522346b2f4c8f6ff1f3c83f700
+  - enabled: 1
+    path: Assets/Scenes/Ice1.unity
+    guid: 68eacb98ccaae32448c7b11a8712a4ba
+  - enabled: 1
+    path: Assets/Scenes/Ice2.unity
+    guid: 49008393c71e696469e4867decdc2ae4
+  - enabled: 1
+    path: Assets/Scenes/Ice3.unity
+    guid: 172adc07d4124f240a0233013e7973d2
+  - enabled: 1
+    path: Assets/Scenes/Ice4.unity
+    guid: d82dcfd92ad1d7f4a911dff5c75f3f55
+  - enabled: 1
+    path: Assets/Scenes/Fire1.unity
+    guid: c212d2d50cbe95541a9c9951bfc841c6
+  - enabled: 1
+    path: Assets/Scenes/Fire1 1.unity
+    guid: 7757a44f119776143883c0345dc842f8
+  - enabled: 0
     path: Assets/Scenes/Worlds/World2/World2_Boss.unity
     guid: eb7cd7ee2aa08494b978aabcb5565ca8
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Worlds/World2/World2_Section01.unity
     guid: 594b46cde2cf98c489085bbc603a33a5
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Worlds/World2/World2_Section02.unity
     guid: df675aff1f045294c938c093c1d462d1
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Worlds/World2/World2_Section03.unity
     guid: 934cf6381e8ef17448579cc4b766823a
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Worlds/World2/World2_Section04.unity
     guid: ca396949ffef96944809818a8827aaa1
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Worlds/World2/World2_Section05.unity
     guid: ea9302b593c1d2443b3e4ccd40783caf
-  - enabled: 1
-    path: Assets/Scenes/Worlds/World1/World1_Section02.unity
-    guid: 7d9a57d03d6b8e74299cd6fa633b38f5
+  - enabled: 0
+    path: Assets/Scenes/Worlds/World3/World3_Section01.unity
+    guid: b34b22d2cee90904396488a393883d41
+  - enabled: 0
+    path: Assets/Scenes/Worlds/World1/testboss.unity
+    guid: 0113bd89b3b561444b749c296f53e673
+  - enabled: 0
+    path: Assets/Scenes/Worlds/World3/World3_Section02.unity
+    guid: bbd3ad6e394c4d142846aaeb9a572d40
+  - enabled: 0
+    path: Assets/Scenes/Worlds/World3/World3_Section03.unity
+    guid: 44efc113f3c3cf34f8d3c53df74feeea
+  - enabled: 0
+    path: Assets/Scenes/Worlds/World3/World3_Section04.unity
+    guid: 97e7c542820d98643ab888c71eebf16b
+  - enabled: 0
+    path: Assets/Scenes/Worlds/World3/World3_Section05.unity
+    guid: 9ec28983138295042b0163b26d9c1200
   m_configObjects:
     com.unity.adaptivePerformance.basic.provider_settings: {fileID: 11400000, guid: a99728a281b759d4dbfdbbd8fdd87634, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: c158f1ab2c0c7074eb5822584efa8ffa, type: 2}

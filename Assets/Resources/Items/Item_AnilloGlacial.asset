@@ -13,18 +13,18 @@ MonoBehaviour:
   m_Name: Item_AnilloGlacial
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
   displayName: Anillo Glacial
-  description: 'La gema se escarcha de diamantes. (Prueba: +1 diamante por segundo.)'
+  description: "La gema muerde la carne congelada: cuanto m\xE1s grande, m\xE1s sangra."
   icon: {fileID: 21300000, guid: 390a7d3de07861c4690d6a4604447f47, type: 3}
   accent: {r: 0.55, g: 0.85, b: 0.95, a: 1}
-  tags: 0000000067000000
+  rarity: 1
+  tags: 0000000066000000
   effects:
-  - rid: 5384780386449490186
+  - rid: 5384780706789982320
   references:
     version: 2
     RefIds:
-    - rid: 5384780386449490186
-      type: {class: GrantCurrencyEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
+    - rid: 5384780706789982320
+      type: {class: SlowedBonusDamageEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
       data:
-        currency: 1
-        amount: 2
-        interval: 0.1
+        percentOfMaxHealth: 0.08
+        maxBonusPerHit: 0

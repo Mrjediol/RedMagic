@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
+  m_Name: Boss_PruebaGolem
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  displayName: PruebaGolem
+  title: 
+  description: 
+  phases:
+  - displayName: Fase 1
+    startsAtHealth: 1
+    attacks:
+    - {fileID: 11400000, guid: c7a6670928b6d4c4ab59013873cb15af, type: 2}
+    pauseBetweenAttacks: {x: 0.9, y: 1.5}
+    damageScale: 1
+    damageTakenMultiplier: 1
+    speedScale: 1
+    accent: {r: 0.54901963, g: 0.9019608, b: 0.4, a: 1}
+    transitionSeconds: 0
+    transitionShake: 0.5
+    transitionSfxId: 
+    transitionFx: {fileID: 0}
+    openingAttack: {fileID: 11400000, guid: c7a6670928b6d4c4ab59013873cb15af, type: 2}
+    frenzyBelowHealth: 0
+    frenzySpeedScale: 1.35

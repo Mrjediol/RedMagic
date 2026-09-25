@@ -7,6 +7,7 @@ using RedMagic.Combat;
 using RedMagic.Core;
 using RedMagic.Fx;
 using RedMagic.Gameplay;
+using RedMagic.Gameplay.Movement;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -108,6 +109,14 @@ namespace RedMagic.Bosses
                  "por todos los avisos del jefe; para arte de verdad, edita el prefab.")]
         [SerializeField] private GameObject warnPrefab;
 
+        [Tooltip("Prefab del aviso de ÁREA en el suelo (círculo/elipse). Lo usan los ataques que " +
+                 "marcan dónde va a caer algo (la roca lanzada). Vacío = franja plana de color.")]
+        [SerializeField] private GameObject warnCirclePrefab;
+
+        [Tooltip("Prefab del aviso de TRAYECTORIA (flecha, arte mirando +X). Lo usan las " +
+                 "embestidas. Vacío = barra girada de color.")]
+        [SerializeField] private GameObject warnArrowPrefab;
+
         [Tooltip("Prefab de la onda de choque (ShockwaveAttack). Vacío = construida en código.")]
         [SerializeField] private GameObject shockwavePrefab;
 
@@ -126,6 +135,8 @@ namespace RedMagic.Bosses
         [SerializeField] private GameObject anchorPrefab;
 
         public GameObject WarnPrefab => warnPrefab;
+        public GameObject WarnCirclePrefab => warnCirclePrefab;
+        public GameObject WarnArrowPrefab => warnArrowPrefab;
         public GameObject ShockwavePrefab => shockwavePrefab;
         public GameObject SweepBeamPrefab => sweepBeamPrefab;
         public GameObject HazardPrefab => hazardPrefab;
@@ -156,6 +167,18 @@ namespace RedMagic.Bosses
         [Min(0.01f)]
         [SerializeField] private float swaySpeed = 1.1f;
 
+        [Header("Depuración")]
+        [Tooltip("Dibuja en Play (vista Scene, y en Game con Gizmos activados) las cajas y círculos " +
+                 "de daño que usan los ataques en el momento en que golpean.")]
+        [SerializeField] private bool debugHitboxes;
+
+        [Header("Movimiento (opcional: componente Mover)")]
+        [Tooltip("Con un Mover en el jefe, se mueve SOLO en la pausa entre ataques (nunca durante el " +
+                 "aviso, el ataque o la recuperación: la recuperación es la ventana del jugador). " +
+                 "Distancia a los bordes de la arena que no cruza al moverse.")]
+        [Min(0f)]
+        [SerializeField] private float moveArenaMargin = 2f;
+
         // ------------------------------------------------------------------ estado
 
         private Health _health;
@@ -166,6 +189,9 @@ namespace RedMagic.Bosses
         private Collider2D[] _colliders;
         private Rigidbody2D _rigidbody;
         private BossAnimator _animator;
+        private Mover _mover;
+        private float _arenaCenterX;
+        private bool _arenaAnchored;
 
         private Transform _target;
         private float _retargetTimer;
@@ -209,6 +235,31 @@ namespace RedMagic.Bosses
         public float ArenaHalfWidth => arenaHalfWidth;
         public float ArenaHeight => arenaHeight;
 
+        /// <summary>Capa de animación del cuerpo, si la tiene (para ataques con más de un gesto).</summary>
+        public BossAnimator BodyAnimator => _animator;
+
+        /// <summary>
+        /// Deja de girarse hacia el jugador mientras está a true: una embestida que le pasa por
+        /// encima no debe darse la vuelta a mitad del recorrido.
+        /// </summary>
+        public bool FacingLocked { get; set; }
+
+        /// <summary>El movimiento del jefe, si lleva un <see cref="Mover"/>.</summary>
+        public Mover Movement => _mover;
+
+        /// <summary>
+        /// Desplaza el cuerpo del jefe (una embestida). Por el Rigidbody cinemático si lo tiene, para
+        /// que la física lo vea moverse y el contacto siga funcionando.
+        /// </summary>
+        public void MoveBody(Vector2 position)
+        {
+            // Un jefe que se ha movido deja de llevarse la arena consigo: desde aquí se mide desde
+            // donde empezó. Los jefes que nunca llaman a esto siguen exactamente como antes.
+            _arenaAnchored = true;
+            if (_rigidbody != null && _rigidbody.simulated) _rigidbody.MovePosition(position);
+            else transform.position = new Vector3(position.x, position.y, transform.position.z);
+        }
+
         /// <summary>
         /// Corta la baraja: <see cref="FightLoop"/> deja de sortear ataques y el que estuviera en
         /// curso se detiene. Lo usa un jefe con locomoción propia (la Reina Escarabajo mientras
@@ -217,6 +268,8 @@ namespace RedMagic.Bosses
         public void SuspendAttacks()
         {
             _attacksSuspended = true;
+            FacingLocked = false;
+            if (_animator != null) _animator.ClearHold();
             if (_attackRoutine != null)
             {
                 StopCoroutine(_attackRoutine);
@@ -346,6 +399,7 @@ namespace RedMagic.Bosses
             _colliders = GetComponentsInChildren<Collider2D>();
             _rigidbody = GetComponent<Rigidbody2D>();
             _animator = GetComponent<BossAnimator>();
+            _mover = GetComponent<Mover>();
 
             _visual = _body != null ? _body.transform : transform;
             _visualBaseRotation = _visual.localRotation;
@@ -367,12 +421,14 @@ namespace RedMagic.Bosses
         {
             _health.Died += OnDied;
             _health.HealthChanged += OnHealthChanged;
+            if (_mover != null) _mover.MovingChanged += OnMovingChanged;
         }
 
         private void OnDisable()
         {
             _health.Died -= OnDied;
             _health.HealthChanged -= OnHealthChanged;
+            if (_mover != null) _mover.MovingChanged -= OnMovingChanged;
         }
 
         private void Start()
@@ -382,6 +438,17 @@ namespace RedMagic.Bosses
             // El origen del prefab es la base del jefe, así que plantarlo es igualar la Y.
             if (snapToGround)
                 transform.position = new Vector3(transform.position.x, _groundY, transform.position.z);
+
+            // La arena se mide desde donde empieza el jefe. Con Mover se queda ahí aunque él se
+            // mueva; sin Mover sigue siendo su posición (el jefe no se mueve), como siempre.
+            _arenaCenterX = transform.position.x;
+            if (_mover != null)
+            {
+                _arenaAnchored = true;
+                _mover.Paused = true;
+                float half = Mathf.Max(0.5f, arenaHalfWidth - moveArenaMargin);
+                _mover.SetBounds(_arenaCenterX - half, _arenaCenterX + half);
+            }
 
             if (definition == null || definition.PhaseCount == 0)
             {
@@ -445,7 +512,7 @@ namespace RedMagic.Bosses
                 if (phase != null)
                 {
                     float pause = UnityEngine.Random.Range(phase.pauseBetweenAttacks.x, phase.pauseBetweenAttacks.y);
-                    yield return new WaitForSeconds(pause / PaceOf(phase));
+                    yield return PauseBetweenAttacks(pause / PaceOf(phase));
                 }
             }
 
@@ -478,8 +545,31 @@ namespace RedMagic.Bosses
                 if (_dead) yield break;
 
                 float pause = UnityEngine.Random.Range(phase.pauseBetweenAttacks.x, phase.pauseBetweenAttacks.y);
-                yield return new WaitForSeconds(pause / PaceOf(phase));
+                yield return PauseBetweenAttacks(pause / PaceOf(phase));
             }
+        }
+
+        /// <summary>
+        /// La pausa entre ataques. Es el único momento en que un jefe con <see cref="Mover"/> se
+        /// mueve: se recoloca y vuelve a plantarse antes del siguiente aviso.
+        /// </summary>
+        private IEnumerator PauseBetweenAttacks(float seconds)
+        {
+            if (_mover == null)
+            {
+                yield return new WaitForSeconds(seconds);
+                yield break;
+            }
+
+            _mover.Target = ResolveTarget();
+            _mover.Paused = false;
+            yield return new WaitForSeconds(seconds);
+            _mover.Paused = true;
+        }
+
+        private void OnMovingChanged(bool moving)
+        {
+            if (_animator != null) _animator.SetMoving(moving && !_dead);
         }
 
         private IEnumerator Intro()
@@ -556,6 +646,13 @@ namespace RedMagic.Bosses
         /// <summary>Aviso → ataque → recuperación. Es el ciclo que hace legible a un jefe.</summary>
         private IEnumerator RunAttack(BossAttack attack, BossPhase phase)
         {
+            // Nunca se mueve mientras ataca: el aviso, el golpe y la recuperación son en el sitio.
+            if (_mover != null) _mover.Paused = true;
+
+            // Lo que un ataque anterior cortado a medias pudiera dejar puesto.
+            FacingLocked = false;
+            if (_animator != null) _animator.ClearHold();
+
             _lastUsedAt[attack] = _attacksLaunched;
             _lastUsedTime[attack] = Time.time;
             _attacksLaunched++;
@@ -753,7 +850,8 @@ namespace RedMagic.Bosses
 
             return new BossContext(this, ResolveTarget(), ability, _groundY, arenaHalfWidth,
                                    arenaHeight, PaceOf(phase), fxSprite,
-                                   phase != null ? phase.accent : Color.white);
+                                   phase != null ? phase.accent : Color.white,
+                                   _arenaAnchored ? _arenaCenterX : float.NaN);
         }
 
         /// <summary>Ritmo efectivo de la fase, incluido el frenesí de vida baja.</summary>
@@ -792,6 +890,10 @@ namespace RedMagic.Bosses
         private IEnumerator EnterPhase(BossPhase phase)
         {
             if (phase == null) yield break;
+
+            // La pausa entre ataques puede quedar cortada a medias: el movimiento se para aquí.
+            if (_mover != null) _mover.Paused = true;
+            FacingLocked = false;
 
             if (_attackRoutine != null)
             {
@@ -867,6 +969,8 @@ namespace RedMagic.Bosses
             if (_dead) return;
             _dead = true;
             _fighting = false;
+
+            if (_mover != null) _mover.Paused = true;
 
             StopAllCoroutines();
             _attackRoutine = null;
@@ -984,7 +1088,7 @@ namespace RedMagic.Bosses
 
         private void UpdateFacing()
         {
-            if (!faceTarget || _body == null) return;
+            if (!faceTarget || _body == null || FacingLocked) return;
 
             var target = ResolveTarget();
             if (target == null) return;
@@ -1077,6 +1181,19 @@ namespace RedMagic.Bosses
             // Sin suelo debajo (arena flotante o capa mal puesta): la base del sprite es la mejor
             // aproximación disponible, y es mejor que dejar los ataques a la altura del centro.
             return _body != null ? _body.bounds.min.y : transform.position.y;
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (!debugHitboxes || !Application.isPlaying) return;
+
+            BossHitboxDebug.Prune();
+            foreach (var e in BossHitboxDebug.Current)
+            {
+                Gizmos.color = e.Color;
+                if (e.Radius > 0f) Gizmos.DrawWireSphere(e.Center, e.Radius);
+                else Gizmos.DrawWireCube(e.Center, e.Size);
+            }
         }
 
         private void OnDrawGizmosSelected()

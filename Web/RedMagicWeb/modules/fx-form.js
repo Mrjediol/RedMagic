@@ -17,6 +17,7 @@
 
 import * as F from './enemy-form-fields.js';
 import { createDefaultFxConfig, MOVEMENT_MODES } from './fx-defaults.js';
+import { PROJECTILE_AIMING_FIELDS } from './enemy-defaults.js';
 import { buildFxExportObject } from './fx-export.js';
 import { loadValidator, validateConfig } from './config-schema.js';
 import { downloadBlob } from './export-manifest.js';
@@ -41,6 +42,7 @@ const PROJECTILE_SPEC_FIELDS = [
   ['arcGravity', 'number', 'Gravedad de arco (parábola)', { min: 0 }],
   ['impactRadius', 'number', 'Radio de explosión al impactar', { min: 0 }],
   ['impactDamage', 'number', 'Daño de esa explosión', { min: 0 }],
+  ...PROJECTILE_AIMING_FIELDS,
 ];
 
 export function initFxCreator({ formRoot, previewEl, summaryEl, exportBtn, exportCombinedBtn }) {
@@ -196,14 +198,16 @@ export function initFxCreator({ formRoot, previewEl, summaryEl, exportBtn, expor
 
   PROJECTILE_SPEC_FIELDS.forEach(([key, kind, label, optsOrHint]) => {
     const isHintString = typeof optsOrHint === 'string';
-    const hint = isHintString ? optsOrHint : undefined;
     const opts = isHintString ? {} : optsOrHint;
+    const hint = isHintString ? optsOrHint : opts.hint;
     const onChange = (v) => { state.projectile[key] = v; refresh(); };
 
     let built;
     if (kind === 'number') built = F.numberField({ label, value: state.projectile[key], min: opts.min, step: opts.step, hint, onChange });
     else if (kind === 'text') built = F.textField({ label, value: state.projectile[key], hint, onChange });
     else if (kind === 'vector2') built = F.vector2Field({ label, value: state.projectile[key], hint, onChange });
+    else if (kind === 'bool') built = F.boolField({ label, value: state.projectile[key], hint, onChange });
+    else if (kind === 'enum') built = F.enumField({ label, value: state.projectile[key], options: opts.options, hint, onChange });
 
     registerError(`/projectile/${key}`, built.setError);
     specInputs[key] = built;
@@ -250,6 +254,8 @@ export function initFxCreator({ formRoot, previewEl, summaryEl, exportBtn, expor
         if (widget.xInput && value && typeof value === 'object') {
           widget.xInput.value = value.x;
           widget.yInput.value = value.y;
+        } else if (widget.input && widget.input.type === 'checkbox') {
+          widget.input.checked = !!value;
         } else if (widget.input) {
           widget.input.value = value;
         }

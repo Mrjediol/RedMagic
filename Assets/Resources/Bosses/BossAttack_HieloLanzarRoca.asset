@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd0d6ee900bed42448cb0e1afdda8f34, type: 3}
+  m_Name: BossAttack_HieloLanzarRoca
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.ThrowProjectileAttack
+  displayName: Lanzar Roca
+  description: 
+  accent: {r: 0.55, g: 0.9, b: 0.4, a: 1}
+  telegraph: 1
+  recovery: 1
+  weight: 1
+  cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
+  damage: 100
+  knockbackMultiplier: 1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: PickUP
+  sfxId: 
+  shakeAmplitude: 0.3
+  shakeDuration: 0.25
+  throwGesture: Throw
+  holdSeconds: 0.5
+  flightSeconds: 1.1
+  gravity: 30
+  landingSpread: 0
+  throws: 1
+  timeBetweenThrows: 0.5
+  projectile:
+    prefab: {fileID: 8874909056576618124, guid: bb1b1c50e32175c4c9e4ff37b93fc03e, type: 3}
+    speed: 24
+    lifetime: 4
+    size: {x: 10, y: 10}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    homingTurnRate: 0
+    homingRange: 9
+    arcGravity: 0
+    impactRadius: 2.2
+    impactDamage: 16
+  heldPropPrefab: {fileID: 2243479322485747769, guid: bf2f729af8a952b49bdd2e0b3d850809, type: 3}
+  heldOffset: {x: 0.25424957, y: 15.294986}
+  heldSize: {x: 6, y: 6}
+  markLanding: 1
+  markRadius: 0

@@ -210,7 +210,7 @@ public class EnemyImporter : EditorWindow
             Directory.CreateDirectory(projRoot);
             AssetDatabase.Refresh();
 
-            AnimationClip clip = BuildClip(sprites, proj.fps, proj.loop);
+            AnimationClip clip = BuildClip(sprites, proj.fps, RedMagic.Pipeline.AnimStates.Loops(proj.name, proj.loop));
             AssetDatabase.CreateAsset(clip, $"{projRoot}/{proj.name}.anim");
 
             AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath($"{projRoot}/{proj.name}Controller.controller");
@@ -246,7 +246,7 @@ public class EnemyImporter : EditorWindow
                 continue;
             }
 
-            AnimationClip clip = BuildClip(sprites, anim.fps, anim.loop, RedMagic.Pipeline.EditorTools.AnimClipBuilder.RendererPath);
+            AnimationClip clip = BuildClip(sprites, anim.fps, RedMagic.Pipeline.AnimStates.Loops(anim.name, anim.loop), RedMagic.Pipeline.EditorTools.AnimClipBuilder.RendererPath);
 
             // Si esta animación dispara un proyectil, añade el Animation Event en el frame indicado
             if (anim.projectile != null && projectilePrefabsByName.ContainsKey(anim.projectile.name))
@@ -255,7 +255,7 @@ public class EnemyImporter : EditorWindow
             }
 
             AssetDatabase.CreateAsset(clip, $"{animFolder}/{anim.name}.anim");
-            builtClips.Add(new BuiltClip { name = anim.name, fps = anim.fps, loop = anim.loop, clip = clip, firstSprite = sprites[0] });
+            builtClips.Add(new BuiltClip { name = anim.name, fps = anim.fps, loop = RedMagic.Pipeline.AnimStates.Loops(anim.name, anim.loop), clip = clip, firstSprite = sprites[0] });
         }
 
         if (builtClips.Count == 0)
@@ -321,7 +321,7 @@ public class EnemyImporter : EditorWindow
             state = a.name,
             frames = a.frameCount,
             fps = a.fps > 0 ? a.fps : 8f,
-            loop = a.loop,
+            loop = RedMagic.Pipeline.AnimStates.Loops(a.name, a.loop),   // muerte nunca repite
             releaseFrame = -1, // sin AnimationEvent propio; EnemyAttack usa su respaldo por tiempo
         }).ToArray();
         EditorUtility.SetDirty(recipe);

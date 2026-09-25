@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efa3a18277fe72448310e64239923c9, type: 3}
+  m_Name: Item_Grimorio
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
+  displayName: Grimorio Glacial
+  description: "Sus p\xE1ginas escarchan la armadura de quien se ralentiza."
+  icon: {fileID: 21300000, guid: b8388fe706ea246458b4ca388936c2c7, type: 3}
+  accent: {r: 0.55, g: 0.85, b: 0.95, a: 1}
+  rarity: 1
+  tags: 0000000067000000
+  effects:
+  - rid: 5384780706789982321
+  references:
+    version: 2
+    RefIds:
+    - rid: 5384780706789982321
+      type: {class: SlowArmorShredEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
+      data:
+        armorReduction: 0.3

@@ -1,0 +1,14 @@
+{
+  "enemyName": "PowerPunch",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "Row_1",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    }
+  ],
+  "projectiles": []
+}

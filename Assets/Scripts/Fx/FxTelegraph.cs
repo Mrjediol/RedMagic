@@ -20,9 +20,29 @@ namespace RedMagic.Fx
                  "propia salida (Animator / partículas).")]
         [SerializeField] private bool fadeOut = true;
 
+        /// <summary>Cómo cuadra un aviso con arte propio (sin <see cref="FxPlaceholderStyle"/>) con el tamaño pedido.</summary>
+        public enum FitMode
+        {
+            /// <summary>La escala del prefab tal cual (lo de siempre).</summary>
+            None,
+            /// <summary>Escala uniforme para que el dibujo mida el ancho pedido: el círculo del radio, la flecha del recorrido.</summary>
+            FitWidth,
+        }
+
+        [Tooltip("Sólo para arte propio (sin FxPlaceholderStyle). FitWidth = el dibujo se escala en " +
+                 "uniforme hasta medir el ancho del aviso, así el círculo coincide con el radio que " +
+                 "duele y la flecha con el recorrido del ataque.")]
+        [SerializeField] private FitMode fit = FitMode.None;
+
+        [Tooltip("Sólo para arte propio: tiñe el sprite con el color del aviso (el de la fase). " +
+                 "Apágalo si el dibujo ya trae sus colores.")]
+        [SerializeField] private bool applyColor = true;
+
         private SpriteRenderer _renderer;
         private FxPlaceholderStyle _style;
         private bool _cached;
+        private Vector3 _baseScale = Vector3.one;
+        private Color _baseColor = Color.white;
 
         private Color _startColor = Color.white;
         private Vector3 _startScale = Vector3.one;
@@ -56,6 +76,10 @@ namespace RedMagic.Fx
             if (_cached) return;
             _renderer = GetComponentInChildren<SpriteRenderer>();
             _style = GetComponent<FxPlaceholderStyle>();
+            // La primera vez que sale del pool la escala es la del prefab: es la base a la que se
+            // vuelve en cada uso (el pool reutiliza instancias ya crecidas).
+            _baseScale = transform.localScale;
+            if (_renderer != null) _baseColor = _renderer.color;
             _cached = true;
         }
 
@@ -63,8 +87,17 @@ namespace RedMagic.Fx
         {
             Cache();
 
-            if (_style != null) _style.Apply(color, size, sortingRef);
-            else if (_renderer != null) _renderer.color = color;
+            if (_style != null)
+            {
+                _style.Apply(color, size, sortingRef);
+            }
+            else
+            {
+                transform.localScale = _baseScale;
+                // Sin teñir se vuelve al color del prefab: el fundido del uso anterior lo dejó a alfa 0.
+                if (_renderer != null) _renderer.color = applyColor ? color : _baseColor;
+                if (fit == FitMode.FitWidth) FitToWidth(size.x);
+            }
 
             _startColor = _renderer != null ? _renderer.color : color;
             _startScale = transform.localScale;
@@ -72,6 +105,15 @@ namespace RedMagic.Fx
             _growTo = growTo;
             _timer = 0f;
             _running = true;
+        }
+
+        private void FitToWidth(float width)
+        {
+            if (_renderer == null || _renderer.sprite == null || width <= 0f) return;
+
+            float child = _renderer.transform == transform ? 1f : Mathf.Abs(_renderer.transform.localScale.x);
+            float natural = _renderer.sprite.bounds.size.x * child * Mathf.Abs(_baseScale.x);
+            if (natural > 0.0001f) transform.localScale = _baseScale * (width / natural);
         }
 
         private void Update()

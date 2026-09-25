@@ -1,0 +1,21 @@
+{
+  "enemyName": "Warning",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "circle",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Row",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    }
+  ],
+  "projectiles": []
+}

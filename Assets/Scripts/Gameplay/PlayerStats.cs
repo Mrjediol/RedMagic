@@ -14,6 +14,12 @@ namespace RedMagic.Gameplay
 
         /// <summary>Altura del salto (la velocidad inicial se escala con la raíz: altura ∝ velocidad²).</summary>
         JumpHeight,
+
+        /// <summary>
+        /// Ritmo al que se descuenta el enfriamiento del arma (<c>WeaponUser</c>): ×1.5 = el cooldown se
+        /// vacía un 50% más rápido. No cambia el cooldown base, sólo lo rápido que corre.
+        /// </summary>
+        CooldownRate,
     }
 
     /// <summary>

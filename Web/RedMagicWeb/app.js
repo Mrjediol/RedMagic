@@ -969,6 +969,7 @@ bossCreator = initBossCreator({
   previewEl: document.getElementById('bossJsonPreview'),
   summaryEl: document.getElementById('bossValidationSummary'),
   exportBtn: document.getElementById('bossExportBtn'),
+  zipBtn: document.getElementById('bossZipBtn'),
   saveBtn: document.getElementById('bossSaveBtn'),
   // A boss is the one kind with no Sprites-tab presence, so saving it is the only way it can ever
   // appear in Biblioteca — re-render that list so a save is visible without a tab round-trip.

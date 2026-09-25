@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
+  m_Name: Boss_ColosodeHielo
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  displayName: Coloso de Hielo
+  title: "Guardi\xE1n del Glaciar"
+  description: "Coloso flotante de roca y hielo. Pu\xF1os sueltos, embiste y lanza
+    rocas."
+  phases:
+  - displayName: Fase 1
+    startsAtHealth: 1
+    attacks:
+    - {fileID: 11400000, guid: b0b27610e4d74ca46ad41d590950f824, type: 2}
+    - {fileID: 11400000, guid: fc4aa03008f30cc4285c862cc14a085d, type: 2}
+    - {fileID: 11400000, guid: 8b8441e6f14dad24aa64edf43873a025, type: 2}
+    - {fileID: 11400000, guid: de34646184324b747ada67361a541f1d, type: 2}
+    - {fileID: 11400000, guid: 11b2c24d759a4fb4183639a0bfa17e3c, type: 2}
+    pauseBetweenAttacks: {x: 0.9, y: 1.5}
+    damageScale: 1
+    damageTakenMultiplier: 1
+    speedScale: 1
+    accent: {r: 0.49803922, g: 0.84705883, b: 1, a: 1}
+    transitionSeconds: 0
+    transitionShake: 0.5
+    transitionSfxId: 
+    transitionFx: {fileID: 0}
+    openingAttack: {fileID: 0}
+    frenzyBelowHealth: 0
+    frenzySpeedScale: 1.35
+  - displayName: Fase 2
+    startsAtHealth: 0.5
+    attacks:
+    - {fileID: 11400000, guid: b0b27610e4d74ca46ad41d590950f824, type: 2}
+    - {fileID: 11400000, guid: fc4aa03008f30cc4285c862cc14a085d, type: 2}
+    - {fileID: 11400000, guid: 8b8441e6f14dad24aa64edf43873a025, type: 2}
+    - {fileID: 11400000, guid: de34646184324b747ada67361a541f1d, type: 2}
+    - {fileID: 11400000, guid: 62157c4b3df928a40a318b9365345584, type: 2}
+    pauseBetweenAttacks: {x: 0.6, y: 1.1}
+    damageScale: 1.15
+    damageTakenMultiplier: 1
+    speedScale: 1.3
+    accent: {r: 0.76862746, g: 0.94509804, b: 1, a: 1}
+    transitionSeconds: 2
+    transitionShake: 0.6
+    transitionSfxId: 
+    transitionFx: {fileID: 0}
+    openingAttack: {fileID: 0}
+    frenzyBelowHealth: 0
+    frenzySpeedScale: 1.35

@@ -96,7 +96,7 @@ namespace RedMagic.Pipeline.EditorTools
                 AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
 
                 var settings = AnimationUtility.GetAnimationClipSettings(clip);
-                settings.loopTime = row.loop;
+                settings.loopTime = AnimStates.Loops(row.state, row.loop);   // muerte/impacto nunca repiten
                 settings.stopTime = sprites.Count / row.fps;
                 AnimationUtility.SetAnimationClipSettings(clip, settings);
 
@@ -184,7 +184,7 @@ namespace RedMagic.Pipeline.EditorTools
                 AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
 
                 var settings = AnimationUtility.GetAnimationClipSettings(clip);
-                settings.loopTime = derived.loop;
+                settings.loopTime = AnimStates.Loops(derived.state, derived.loop);
                 settings.stopTime = count / derived.fps;
                 AnimationUtility.SetAnimationClipSettings(clip, settings);
 

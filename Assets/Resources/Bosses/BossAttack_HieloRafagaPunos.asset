@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee1deec015162e141a08d4b800e9e8da, type: 3}
+  m_Name: BossAttack_HieloRafagaPunos
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.MeleeStrikeAttack
+  displayName: "R\xE1faga de Pu\xF1os"
+  description: 
+  accent: {r: 0.55, g: 0.9, b: 0.4, a: 1}
+  telegraph: 0.6
+  recovery: 0.9
+  weight: 1
+  cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
+  damage: 9
+  knockbackMultiplier: 1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: FistBarrage
+  sfxId: 
+  shakeAmplitude: 0
+  shakeDuration: 0.25
+  hits: 2
+  timeBetweenHits: 0.2
+  hitboxOffset: {x: 4.54, y: 8.46}
+  hitboxSize: {x: 5.98, y: 4.96}
+  warnHitbox: 1
+  launchProjectile: 1
+  projectileEveryHit: 0
+  aimAtPlayer: 1
+  projectileDamage: 0
+  projectile:
+    prefab: {fileID: 1109573919493009943, guid: 09f608e8662b9ee4f9fe35a7ab1bc844, type: 3}
+    speed: 14
+    lifetime: 1.6
+    size: {x: 5, y: 5}
+    muzzleOffset: {x: 7.4, y: 8.5}
+    pierce: 0
+    homingTurnRate: 0
+    homingRange: 9
+    arcGravity: 0
+    impactRadius: 0
+    impactDamage: 0
+  impactFxPrefab: {fileID: 7811782841351297057, guid: 91d81f1301ade13449cdd71347b9d771, type: 3}
+  impactFxWidth: 1.8

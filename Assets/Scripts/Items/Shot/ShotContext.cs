@@ -33,10 +33,14 @@ namespace RedMagic.Items
         /// <summary>Multiplicador global de daño (nivel del arma, sinergias, buffs). 1 = neutro.</summary>
         public readonly float DamageScale;
 
+        /// <summary>Aviso de primer impacto del disparo (null si nadie lo pidió). Ver <see cref="ShotImpactHook"/>.</summary>
+        public readonly ShotImpactHook Impact;
+
         public ShotContext(GameObject caster, MonoBehaviour runner, Health casterHealth,
                            LayerMask hitLayers, int facing, Vector2 aim, string friendlyTag,
-                           float damageScale = 1f)
+                           float damageScale = 1f, ShotImpactHook impact = null)
         {
+            Impact = impact;
             Caster = caster;
             Runner = runner;
             CasterHealth = casterHealth;

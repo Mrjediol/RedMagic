@@ -44,6 +44,16 @@ namespace RedMagic.Items
         /// <summary>Acumulador libre para efectos por intervalo.</summary>
         public float Timer;
 
+        /// <summary>
+        /// Estado propio de este equipado para efectos con más que un temporizador (contador de
+        /// bajas, "siguiente disparo cargado", los delegados con los que se suscribió a eventos).
+        /// Ver <see cref="GetState{T}"/>.
+        /// </summary>
+        public object State;
+
+        /// <summary>El estado de este equipado, creado la primera vez.</summary>
+        public T GetState<T>() where T : class, new() => State as T ?? (T)(State = new T());
+
         public ItemEffectContext(ItemDefinition item) => Item = item;
 
         /// <summary>La vida del jugador actual (hub o run), o null si no hay jugador activo.</summary>

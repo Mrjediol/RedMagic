@@ -1217,7 +1217,9 @@ variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three 
   content is excluded with the asset label `SoundIgnore`, never a list in code.
 - **Sounds tab** (Biblioteca Web): folder tree, filters, assign/replace clips and variants straight into
   the prefab/asset, preview, grade, notes, add a declared slot, remove a sound. It is the only place sound
-  status lives — no markdown status docs.
+  status lives — no markdown status docs. `SoundRegistryWatcher` counts changes to prefabs/assets/
+  scenes/scripts/music since the last regeneration and the tab shows a "regenerate" notice (a full scan opens
+  scenes, so it is not run on every change).
 - **Rule — grading new sounds**: whenever a new sound is added to the game, ask the user to grade it
   Perfect / Good / Bad / Horrible before considering the task done, and write the answer into
   `SoundStatus.json` (`SoundRegistry.SetStatus`, or the Sounds tab).

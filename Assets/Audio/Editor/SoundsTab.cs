@@ -60,6 +60,15 @@ namespace RedMagic.Audio.EditorTools
             DrawHeader();
             DrawFilters();
             if (_adding) DrawAddForm();
+            int stale = SoundRegistryWatcher.StaleCount;
+            if (stale > 0)
+            {
+                EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+                EditorGUILayout.LabelField($"Hay cambios en el proyecto desde la última regeneración ({stale}). " +
+                                           "Lo nuevo (enemigos, armas, mundos…) no aparece hasta regenerar.", EditorStyles.wordWrappedLabel);
+                if (GUILayout.Button("Regenerar ahora", GUILayout.Width(120), GUILayout.Height(30))) Regenerate();
+                EditorGUILayout.EndHorizontal();
+            }
             if (!string.IsNullOrEmpty(_message)) EditorGUILayout.HelpBox(_message, _messageType);
 
             if (_entries.Count == 0)
@@ -555,10 +564,12 @@ namespace RedMagic.Audio.EditorTools
             string source = clip != null ? AssetDatabase.GetAssetPath(clip) : null;
             if (existing != null && existing == source) return;
 
+            SoundRegistryWatcher.IgnoreNext(existing);
             if (existing != null) AssetDatabase.MoveAssetToTrash(existing);
             if (clip == null) return;
 
             string target = $"{SoundRegistry.MusicResourceFolder}/{e.MusicName}{Path.GetExtension(source)}";
+            SoundRegistryWatcher.IgnoreNext(target);
             if (!AssetDatabase.CopyAsset(source, target)) throw new IOException($"No se pudo copiar a {target}.");
         }
 

@@ -36,6 +36,8 @@ namespace RedMagic.Audio.EditorTools
         public static bool Edit(SoundSlot slot, Action<SerializedProperty> edit, out string error)
         {
             error = null;
+            // Lo que se escribe aquí ya deja el registro al día: que el aviso de "desactualizado" no lo cuente.
+            SoundRegistryWatcher.IgnoreNext(string.IsNullOrEmpty(slot.ScenePath) ? slot.AssetPath : slot.ScenePath);
             if (!string.IsNullOrEmpty(slot.ScenePath)) return EditInScene(slot, edit, out error);
             if (slot.AssetPath.EndsWith(".prefab", StringComparison.Ordinal)) return EditInPrefab(slot, edit, out error);
             return EditInAsset(slot, edit, out error);

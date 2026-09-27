@@ -90,6 +90,7 @@ namespace RedMagic.Audio.EditorTools
             var entries = Build(slots, LoadDeclared(), out var merged);
             MigrateDeclaredStatus(merged);
             WriteGenerated(entries);
+            SoundRegistryWatcher.MarkFresh();
 
             ok = true;
             report = Summary(entries, LoadStatus());

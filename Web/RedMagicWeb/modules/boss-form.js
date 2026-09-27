@@ -707,7 +707,6 @@ export function initBossCreator({ formRoot, previewEl, summaryEl, exportBtn, zip
       ].forEach(([key, label, min]) => {
         grid.appendChild(F.numberField({ label, value: phase[key], min, onChange: (v) => { phase[key] = v; refresh(); } }).row);
       });
-      grid.appendChild(F.textField({ label: 'Sonido de transición (sfxId)', value: phase.transitionSfxId || '', onChange: (v) => { phase.transitionSfxId = v; refresh(); } }).row);
       grid.appendChild(F.colorField({ label: 'Color de la fase', value: phase.accent, hint: 'Tiñe los placeholders.', onChange: (v) => { phase.accent = v; refresh(); } }).row);
       grid.appendChild(F.enumField({
         label: 'Ataque de apertura', value: phase.openingAttack || '',

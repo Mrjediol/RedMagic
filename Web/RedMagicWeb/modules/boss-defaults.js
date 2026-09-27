@@ -80,7 +80,6 @@ export function createDefaultPhase(index = 0) {
     accent: '#8ce666ff',
     transitionSeconds: index === 0 ? 0 : 1.8,
     transitionShake: 0.5,
-    transitionSfxId: '',
     frenzyBelowHealth: 0,
     frenzySpeedScale: 1.35,
     openingAttack: '',

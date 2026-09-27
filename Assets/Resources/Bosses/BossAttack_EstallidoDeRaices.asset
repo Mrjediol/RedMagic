@@ -14,19 +14,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.QuakeSlamAttack
   displayName: "Estallido de Ra\xEDces"
   description: "Hunde las ra\xEDces y toda la arena tiembla. Si tienes los pies en
-    el suelo cuando golpea, te alcanza: salta o s\xFAbete a una plataforma —
+    el suelo cuando golpea, te alcanza: salta o s\xFAbete a una plataforma \u2014
     y vuelve a pegarle mientras se recupera."
   accent: {r: 0.35, g: 0.95, b: 0.8, a: 1}
   telegraph: 1
   recovery: 1.4
   weight: 1
   cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
   damage: 22
   knockbackMultiplier: 1.8
   vulnerableSeconds: 1.2
   vulnerableMultiplier: 1.8
   gesture: Slam
-  sfxId:
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   shakeAmplitude: 0.9
   shakeDuration: 0.6
   impactDelay: 1

@@ -57,13 +57,6 @@ namespace RedMagic.Hub
                  "dorado de Cainos y AbilityChest).")]
         [SerializeField] private string openParameter = "IsOpened";
 
-#pragma warning disable CS0414
-        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua, sólo para la herramienta de migración.
-        // El sonido va en el SoundEmitter del prop (OnInteract / OnLoot).
-        [SerializeField, HideInInspector] private string openSfxId = "SFX_ButtonClick";
-        [SerializeField, HideInInspector] private string lootSfxId = "";
-#pragma warning restore CS0414
-
         private InputAction _interactAction;
         private bool _playerInRange;
         private PlayerAnimator _playerAnimator;

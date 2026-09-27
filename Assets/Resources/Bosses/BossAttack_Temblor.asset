@@ -19,11 +19,24 @@ MonoBehaviour:
   recovery: 0
   weight: 1
   cooldownInAttacks: 0
+  cooldownSeconds: 0
+  minPhase: 1
   damage: 14
   knockbackMultiplier: 1.1
   vulnerableSeconds: 0
   vulnerableMultiplier: 2.5
-  sfxId: 
+  gesture: 
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   shakeAmplitude: 0.35
   shakeDuration: 0.3
   bandMin: 0

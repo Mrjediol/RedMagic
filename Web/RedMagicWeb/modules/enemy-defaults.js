@@ -50,8 +50,6 @@ export function createDefaultEnemyTuning() {
 
     maxHealth: 30,
     invulnerabilityDuration: 0,
-    hurtSfxId: '',
-    deathSfxId: '',
 
     knockbackHorizontal: 6,
     knockbackVertical: 3,

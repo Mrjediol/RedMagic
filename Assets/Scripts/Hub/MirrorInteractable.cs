@@ -40,12 +40,6 @@ namespace RedMagic.Hub
                  "bucle sigue su curso).")]
         [SerializeField] private string interactTrigger = "";
 
-#pragma warning disable CS0414
-        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua, sólo para la herramienta de migración.
-        // El sonido va en el SoundEmitter del prop (OnInteract / OnLoot).
-        [SerializeField, HideInInspector] private string useSfxId = "SFX_ButtonClick";
-#pragma warning restore CS0414
-
         [Header("Aviso de pasiva legendaria nueva")]
         [Tooltip("Desplazamiento, en unidades de mundo, del \"!\" que aparece sobre el espejo " +
                  "mientras LegendaryPassiveManager.HasNewPassiveNotification esté activo.")]

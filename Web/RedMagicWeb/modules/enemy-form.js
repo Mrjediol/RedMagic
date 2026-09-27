@@ -42,8 +42,6 @@ const TUNING_FIELDS = [
   // group, key, kind, label, opts
   ['Vida', 'maxHealth', 'number', 'Vida máxima', { min: 1 }],
   ['Vida', 'invulnerabilityDuration', 'number', 'Duración invulnerabilidad (i-frames)', { min: 0 }],
-  ['Vida', 'hurtSfxId', 'text', 'SFX al recibir daño', {}],
-  ['Vida', 'deathSfxId', 'text', 'SFX al morir', {}],
 
   ['Retroceso', 'knockbackHorizontal', 'number', 'Retroceso horizontal', { min: 0 }],
   ['Retroceso', 'knockbackVertical', 'number', 'Retroceso vertical', { min: 0 }],

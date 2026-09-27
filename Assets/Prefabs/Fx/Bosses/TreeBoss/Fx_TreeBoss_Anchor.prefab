@@ -160,8 +160,6 @@ MonoBehaviour:
   damageMultiplier: 1
   invulnerabilityDuration: 0
   invulnerabilityUsesUnscaledTime: 0
-  hurtSfxId: 
-  deathSfxId: 
 --- !u!114 &4838038385461947341
 MonoBehaviour:
   m_ObjectHideFlags: 0

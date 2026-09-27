@@ -27,8 +27,6 @@
     "staticAttack": "Ranged",
     "maxHealth": 60,
     "invulnerabilityDuration": 0,
-    "hurtSfxId": "",
-    "deathSfxId": "",
     "knockbackHorizontal": 6,
     "knockbackVertical": 3,
     "knockbackDuration": 0.18,

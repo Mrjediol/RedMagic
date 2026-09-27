@@ -72,12 +72,6 @@ namespace RedMagic.Economy
         [SerializeField] private SoundCue denySound = new SoundCue();
         [SerializeField] private SoundCue rerollSound = new SoundCue();
 
-#pragma warning disable CS0414
-        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua, sólo para la herramienta de migración.
-        [SerializeField, HideInInspector] private string denySfxId = "SFX_ButtonClick";
-        [SerializeField, HideInInspector] private string rerollSfxId = "SFX_ButtonClick";
-#pragma warning restore CS0414
-
         public IReadOnlyList<Transform> SpawnPoints => itemSpawnPoints;
 
         private readonly List<ShopAltar> _altars = new();         // ordenados de izquierda a derecha

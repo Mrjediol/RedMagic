@@ -19,7 +19,7 @@ namespace RedMagic.Audio
         OnAirJump = 5,   // PlayerMovement: doble salto
         OnDash = 6,      // PlayerMovement
         Footstep = 7,    // PlayerMovement: cada paso en suelo
-        // 8 = OnStomp, retirado con la mecánica de pisotón: no reutilizar el valor.
+        // 8: retirado (mecánica eliminada). No reutilizar el valor: iría a datos antiguos.
         OnActivate = 9,  // BossController: empieza el combate (rugido)
         OnInteract = 10, // props del hub: abrir / usar
         OnLoot = 11      // props del hub: recoger el contenido

@@ -32,7 +32,19 @@ MonoBehaviour:
     accent: {r: 0.35, g: 0.72, b: 0.6, a: 1}
     transitionSeconds: 0
     transitionShake: 0
-    transitionSfxId: 
+    transitionSound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    transitionFx: {fileID: 0}
+    openingAttack: {fileID: 0}
     frenzyBelowHealth: 0
     frenzySpeedScale: 1.35
   - displayName: Desborde
@@ -51,6 +63,18 @@ MonoBehaviour:
     accent: {r: 0.6, g: 0.35, b: 0.75, a: 1}
     transitionSeconds: 2
     transitionShake: 0.7
-    transitionSfxId: 
+    transitionSound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    transitionFx: {fileID: 0}
+    openingAttack: {fileID: 0}
     frenzyBelowHealth: 0.2
     frenzySpeedScale: 1.35

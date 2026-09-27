@@ -31,7 +31,17 @@ MonoBehaviour:
     cooldownMultiplier: 0.55
     sizeMultiplier: 1.9
     lifesteal: 0.1
-  castSfxId: 
+  castSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   fxSprite: {fileID: 0}
   length: 9
   width: 0.5

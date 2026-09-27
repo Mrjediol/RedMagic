@@ -27,7 +27,17 @@ MonoBehaviour:
   vulnerableSeconds: 3
   vulnerableMultiplier: 3
   gesture: 
-  sfxId: 
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   shakeAmplitude: 0
   shakeDuration: 0.25
   anchorCount: 3

@@ -244,8 +244,6 @@ MonoBehaviour:
   damageMultiplier: 1
   invulnerabilityDuration: 0
   invulnerabilityUsesUnscaledTime: 0
-  hurtSfxId: 
-  deathSfxId: 
 --- !u!114 &4041580197617844451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -336,14 +334,15 @@ MonoBehaviour:
   activationRadius: 18
   faceTarget: 0
   introSeconds: 2.2
-  musicId: 
-  roarSfxId: 
+  music: {fileID: 0}
   introShake: 0.6
   contactDamage: 15
   contactDamageCooldown: 0.8
   contactKnockbackMultiplier: 1.5
   fxSprite: {fileID: 0}
   warnPrefab: {fileID: 4451654063715725330, guid: 1c2740a2dc8d02c49929a72d1b8028d9, type: 3}
+  warnCirclePrefab: {fileID: 0}
+  warnArrowPrefab: {fileID: 0}
   shockwavePrefab: {fileID: 983698630927829216, guid: 45ddd1bc5de84994da635706843c837d, type: 3}
   sweepBeamPrefab: {fileID: 6429733715115959590, guid: e1cac1226257475478e2048a192b94f4, type: 3}
   hazardPrefab: {fileID: 5400391048780887443, guid: f0966154672e4fc479a11eda1c19f440, type: 3}
@@ -355,6 +354,8 @@ MonoBehaviour:
   guardAura: {r: 0.45, g: 0.72, b: 1, a: 1}
   swayDegrees: 0
   swaySpeed: 1.1
+  debugHitboxes: 0
+  moveArenaMargin: 2
 --- !u!114 &973932015588174962
 MonoBehaviour:
   m_ObjectHideFlags: 0

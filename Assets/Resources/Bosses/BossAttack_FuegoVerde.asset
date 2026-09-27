@@ -27,7 +27,17 @@ MonoBehaviour:
   vulnerableSeconds: 0
   vulnerableMultiplier: 2.5
   gesture: Charge
-  sfxId: 
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   shakeAmplitude: 0.3
   shakeDuration: 0.3
   boltPrefab: {fileID: 6447472773088335995, guid: fa39556544fa03d429632d1f782dc437, type: 3}

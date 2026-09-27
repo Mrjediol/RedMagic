@@ -179,15 +179,8 @@ Play sessions):
   every gameplay script (`PlayerMovement`, `PlayerAttack`, `RangedAttack`, `EnemyController`) polls
   directly, without needing a reference to the singleton. `ForceResume()` zeroes the counter
   unconditionally (used when leaving to gameplay/hub, where no menu should stay "open").
-- **`AudioManager`** (`Assets/Audio/AudioManager.cs`) — looks up `SoundData` entries by string id
-  (`PlaySFX("SFX_ButtonClick")`, `PlayMusic("Music_Menu")`) and routes them through an
-  `AudioMixer` with Master/Music/SFX groups, persisting volume/mute to `PlayerPrefs`. **Gotcha**:
-  an `AudioManager` GameObject is hand-placed in every scene that might be the first one loaded
-  (MainMenu, MainHub), each with its own `sounds` list serialized in the Inspector. Only the first
-  one loaded survives; the others self-destruct. Adding a sound to one scene's list and not the
-  other's works fine in the Editor (whichever scene you hit Play from) but silently drops the sound
-  in a real build that always starts at MainMenu. Keep these lists in sync until they're unified
-  into one prefab.
+- **`AudioManager`** (`Assets/Audio/AudioManager.cs`) — **one prefab**, `Assets/Resources/AudioManager.prefab`,
+  instantiated `BeforeSceneLoad` (never place one in a scene). See **Audio** below.
 - **`RunManager`** (`Assets/Scripts/Run/RunManager.cs`) — owns the run loop. See below.
 
 ### Scene references — never store a scene by name string
@@ -976,7 +969,7 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
 ### Economy (`Assets/Scripts/Economy/`)
 
 - **`CurrencyManager`** — `DontDestroyOnLoad` singleton **hand-placed in MainMenu and MainHub**
-  (like `AudioManager` / `RunManager`); a `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]` fallback
+  (like `RunManager`); a `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]` fallback
   self-creates one only if a scene didn't provide it. Its four amount fields (`gold`, `diamond`,
   `soulFragment`, `skull`) mirror the live state and are **editable in the Inspector, including
   during Play** — type a value and `OnValidate` applies it immediately (persists the meta ones,
@@ -1179,6 +1172,28 @@ and hand-tuned in a scene won't overwrite it.
   requireWeaponToStartRun = true` (next to `requireEnemiesDead`, same convention). Checking the
   inventory directly — not a separate "chest looted" flag — means there's only one source of truth
   and the gate self-resets for free: `WeaponLoadout` already wipes the weapon on every `RunEnded`.
+
+### Audio (`Assets/Audio/`)
+
+No string ids anywhere. Every sound slot is a **`SoundCue`** (plain `[Serializable]` class, no SO): clip
+variants, volume, pitch range, no-repeat, priority, positional + rolloff. Two places hold them:
+- **`SoundEmitter`** on an object's root, one entry per `SoundTrigger` (OnHit, OnDeath, OnAttack, OnJump,
+  OnAirJump, OnDash, Footstep, OnActivate, OnInteract, OnLoot, OnSpawn). It subscribes itself to every
+  **`ISoundEventSource`** on its GameObject (`Health`, `PlayerMovement`, `PlayerAttack`, `RangedAttack`,
+  `EnemyAttack`, `BossController`, `Projectile`, hub props). A new sound moment = raise
+  `SoundTriggered` from the component + a trigger value (explicit numbers, never renumber; 8 is retired).
+- **`SoundCue` fields** on data/system owners: `BossAttack.sound`, `BossPhase.transitionSound`,
+  `WeaponDefinition.chargeSound/fireSound`, `ShopManager` buy/deny/reroll, `SectionClearTracker.clearSound`,
+  `PassiveDropCinematicSettings.landSound`, and the UI cues on the AudioManager prefab.
+- **`AudioManager`** (prefab in Resources, bootstrapped `BeforeSceneLoad`, owns the only `AudioListener`):
+  `Play(cue[, worldPos])`, `StartLoop/StopLoop` (loops pause with the game), growable voice pool
+  (`sfxVoicesMax`), priority stealing, same-clip anti-stacking, mixer volumes (debounced PlayerPrefs).
+  Music: `PlayMusic(AudioClip)`; scene music via `PlaySceneMusic(name)` = `Resources/Music/<name>` —
+  the one string-keyed path, kept on purpose (tech debt, see `docs/audio-system-audit.md`).
+- **UI Toolkit**: `UiSounds.Bind(root)` once per document (hover + navigation focus, silent initial focus,
+  `BackClass` / `NoClickClass`); `UiSounds.Back()/Deny()` for keys that don't go through a button.
+- Import: anything under `Assets/Audio/` gets preload + mobile defaults (`SfxImportPostprocessor`).
+- Missing / placeholder sounds are tracked in `docs/audio-pending.md`.
 
 ### Input
 

@@ -151,8 +151,6 @@
           "default": 0,
           "$comment": "EnemyTuning.invulnerabilityDuration. Keep at 0 on enemies ON PURPOSE: i-frames swallow multi-hit weapons (a 5-pellet shotgun would land one pellet). Hit-stun is knockback's job. Only the player has i-frames."
         },
-        "hurtSfxId": { "type": "string", "default": "", "$comment": "EnemyTuning.hurtSfxId. AudioManager sound id; pushed into Health.SetSfx." },
-        "deathSfxId": { "type": "string", "default": "", "$comment": "EnemyTuning.deathSfxId." },
 
         "knockbackHorizontal": { "type": "number", "minimum": 0, "default": 6, "$comment": "EnemyTuning.knockbackHorizontal. Pushed into Knockback.Configure. The VICTIM owns the force; an attacker only passes a multiplier." },
         "knockbackVertical": { "type": "number", "minimum": 0, "default": 3, "$comment": "EnemyTuning.knockbackVertical." },

@@ -2375,7 +2375,6 @@ MonoBehaviour:
     rolloffStart: 8
     rolloffEnd: 24
     initialized: 1
-  clearSfxId: 
 --- !u!4 &1680743613
 Transform:
   m_ObjectHideFlags: 0

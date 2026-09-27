@@ -156,8 +156,6 @@ MonoBehaviour:
   damageMultiplier: 1
   invulnerabilityDuration: 0
   invulnerabilityUsesUnscaledTime: 0
-  hurtSfxId: 
-  deathSfxId: 
 --- !u!114 &2384019693040095576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -236,6 +234,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossAnimator
   animator: {fileID: 0}
   idleState: Idle
+  moveState: Walk
   staggerState: Hurt
   deathState: Death
   idleSpeed: 1
@@ -269,14 +268,15 @@ MonoBehaviour:
   activationRadius: 18
   faceTarget: 1
   introSeconds: 2.2
-  musicId: 
-  roarSfxId: 
+  music: {fileID: 0}
   introShake: 0.6
   contactDamage: 12
   contactDamageCooldown: 0.8
   contactKnockbackMultiplier: 1.4
   fxSprite: {fileID: 0}
   warnPrefab: {fileID: 6698733723327767179, guid: 16c822a2e7bc9494a8b9077676672ff6, type: 3}
+  warnCirclePrefab: {fileID: 0}
+  warnArrowPrefab: {fileID: 0}
   shockwavePrefab: {fileID: 3781527352210372703, guid: eea0ee7347f08f54683dc219c8b81ca8, type: 3}
   sweepBeamPrefab: {fileID: 3416242293171783625, guid: 93df18111cb485a4b90950937b75965c, type: 3}
   hazardPrefab: {fileID: 3724520821487177617, guid: 380f88932c390a14ba135a1fd4176bb1, type: 3}
@@ -288,6 +288,8 @@ MonoBehaviour:
   guardAura: {r: 0.45, g: 0.72, b: 1, a: 1}
   swayDegrees: 0
   swaySpeed: 1.1
+  debugHitboxes: 0
+  moveArenaMargin: 2
 --- !u!114 &790043077973965318
 MonoBehaviour:
   m_ObjectHideFlags: 0

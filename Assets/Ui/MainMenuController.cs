@@ -38,11 +38,6 @@ namespace RedMagic.UI
         [Tooltip("Suena en bucle mientras se está en el menú. Vacío = sin música.")]
         [SerializeField] private AudioClip menuMusic;
 
-#pragma warning disable CS0414
-        // TEMPORAL (audio fase 4): valor de la tabla de ids antigua, sólo para la herramienta de migración.
-        [SerializeField, HideInInspector] private string menuMusicId = "Music_Menu";
-#pragma warning restore CS0414
-
         private UIDocument _document;
         private VisualElement _root;
         private Button _playButton;

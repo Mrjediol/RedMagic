@@ -21,7 +21,27 @@ MonoBehaviour:
   windup: 0
   damage: 8
   knockbackMultiplier: 0.3
-  castSfxId: 
+  level2:
+    damageMultiplier: 1.15
+    cooldownMultiplier: 0.85
+    sizeMultiplier: 1.25
+    lifesteal: 0
+  level3:
+    damageMultiplier: 1.3
+    cooldownMultiplier: 0.7
+    sizeMultiplier: 1.5
+    lifesteal: 0.1
+  castSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   fxSprite: {fileID: 0}
   projectile:
     prefab: {fileID: 0}
@@ -35,6 +55,9 @@ MonoBehaviour:
     arcGravity: 0
     impactRadius: 0
     impactDamage: 0
+    faceDirection: 0
+    facingAxis: 0
+    aimMode: 0
   projectilesPerShot: 1
   spreadAngle: 0
   randomSpread: 4

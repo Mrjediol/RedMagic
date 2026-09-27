@@ -34,13 +34,6 @@ namespace RedMagic.Combat
         [Tooltip("Usar tiempo sin escalar, para que los i-frames no se congelen con el juego en pausa.")]
         [SerializeField] private bool invulnerabilityUsesUnscaledTime;
 
-#pragma warning disable CS0414
-        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua. Nada los lee en runtime; sólo
-        // la herramienta de migración, que los pasa al SoundEmitter. Se borran en la fase 4.
-        [SerializeField, HideInInspector] private string hurtSfxId;
-        [SerializeField, HideInInspector] private string deathSfxId;
-#pragma warning restore CS0414
-
         /// <summary>OnHit al encajar daño, OnDeath al morir. Ver <see cref="SoundEmitter"/>.</summary>
         public event Action<SoundTrigger> SoundTriggered;
 

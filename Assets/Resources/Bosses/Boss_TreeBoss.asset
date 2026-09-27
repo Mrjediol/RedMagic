@@ -31,7 +31,17 @@ MonoBehaviour:
     accent: {r: 0.35, g: 0.95, b: 0.8, a: 1}
     transitionSeconds: 0
     transitionShake: 0
-    transitionSfxId: 
+    transitionSound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
     transitionFx: {fileID: 0}
     openingAttack: {fileID: 0}
     frenzyBelowHealth: 0
@@ -50,7 +60,17 @@ MonoBehaviour:
     accent: {r: 0.8, g: 1, b: 0.3, a: 1}
     transitionSeconds: 2.5
     transitionShake: 0.9
-    transitionSfxId: 
+    transitionSound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
     transitionFx: {fileID: 2762897584436084235, guid: 2c2620c2df28e1f47b1fee00d2cd1269, type: 3}
     openingAttack: {fileID: 11400000, guid: 2bc93130a1ac03b4d8ddddb1afe5120a, type: 2}
     frenzyBelowHealth: 0.2

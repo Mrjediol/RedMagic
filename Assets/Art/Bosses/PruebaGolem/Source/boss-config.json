@@ -135,7 +135,6 @@
       "accent": "#8ce666ff",
       "transitionSeconds": 0,
       "transitionShake": 0.5,
-      "transitionSfxId": "",
       "frenzyBelowHealth": 0,
       "frenzySpeedScale": 1.35,
       "openingAttack": "Ataque1"

@@ -27,7 +27,17 @@ MonoBehaviour:
   vulnerableSeconds: 0
   vulnerableMultiplier: 2.5
   gesture: Summon
-  sfxId: 
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   shakeAmplitude: 0.2
   shakeDuration: 0.2
   aimAtPlayer: 1

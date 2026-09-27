@@ -296,3 +296,17 @@ Doc: `Assets/_Pipeline/AUDIO_PIPELINE.md` + a short CLAUDE.md section.
 3. Loops + pause handling; weapon cues (fire/charge/impact/beam).
 4. `UiSounds.Bind` + remove hardcoded UI calls; system cues (shop, hub, clear, pickup, cinematic).
 5. Positional attenuation/pan; DSP buffer device test; pipeline doc.
+
+---
+
+## 5. Outcome (phases 1–4) and known tech debt
+
+The refactor is complete: string-id API, id table, `SoundData` and every hidden TEMPORAL field are gone;
+sounds live in `SoundCue` slots (see the Audio section of `CLAUDE.md`). Pending/placeholder sounds:
+`docs/audio-pending.md`. Migration history: `docs/audio-migration-log.md`.
+
+**Known tech debt, kept on purpose — the one string-keyed audio path.** Scene music is loaded by file
+name from `Resources/Music/` through `AudioManager.PlaySceneMusic(name)`, with names built by
+`RunManager`: `hubMusicId` (`MainHub`), `shopMusicId` (`Shop`), `World{n}-{k}` for sections and
+`BossBattle{n}` for bosses. A rename breaks it silently (the scene just has no music). Replacing it
+means moving music onto `WorldDefinition` / `ShopConfig` as `AudioClip` fields.

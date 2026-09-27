@@ -86,8 +86,5 @@ namespace RedMagic.UI
         [Header("Sonido")]
         [Tooltip("Cuando el icono aterriza. Al continuar suena el clic de UI del AudioManager.")]
         public SoundCue landSound = new SoundCue();
-
-        // TEMPORAL (audio fase 4): valor de la tabla de ids antigua, sólo para la herramienta de migración.
-        [HideInInspector] public string continueSfxId = "SFX_ButtonClick";
     }
 }

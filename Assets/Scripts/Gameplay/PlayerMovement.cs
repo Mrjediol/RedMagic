@@ -130,14 +130,6 @@ namespace RedMagic.Gameplay
         [Tooltip("Segundos entre pasos (evento Footstep del SoundEmitter) al correr por el suelo.")]
         [SerializeField] private float footstepInterval = 0.32f;
 
-#pragma warning disable CS0414
-        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua. Nada los lee en runtime; sólo
-        // la herramienta de migración, que los pasa al SoundEmitter. Se borran en la fase 4.
-        [SerializeField, HideInInspector] private string jumpSfxId = "SFX_PlayerJump";
-        [SerializeField, HideInInspector] private string footstepSfxId = "SFX_PlayerFootstep";
-        [SerializeField, HideInInspector] private string dashSfxId = "SFX_PlayerDash";
-#pragma warning restore CS0414
-
         // ---------------------------------------------------------------- colisión
 
         [Header("COLLISION")]

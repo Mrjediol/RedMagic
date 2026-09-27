@@ -212,4 +212,3 @@ MonoBehaviour:
   actionName: Interact
   animator: {fileID: 0}
   sparkTrigger: Spark
-  useSfxId: 

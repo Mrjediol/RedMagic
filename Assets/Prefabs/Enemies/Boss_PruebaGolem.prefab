@@ -156,8 +156,6 @@ MonoBehaviour:
   damageMultiplier: 1
   invulnerabilityDuration: 0
   invulnerabilityUsesUnscaledTime: 0
-  hurtSfxId: 
-  deathSfxId: 
 --- !u!114 &4632657072957282419
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -270,8 +268,7 @@ MonoBehaviour:
   activationRadius: 18
   faceTarget: 1
   introSeconds: 2.2
-  musicId: 
-  roarSfxId: 
+  music: {fileID: 0}
   introShake: 0.6
   contactDamage: 12
   contactDamageCooldown: 0.8

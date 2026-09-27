@@ -63,10 +63,6 @@ namespace RedMagic.Combat
         [Header("Animación y sonido")]
         [Tooltip("Trigger del Animator al atacar. Vacío = no se toca el Animator.")]
         [SerializeField] private string animatorTrigger = "Attack";
-#pragma warning disable CS0414
-        // TEMPORAL (audio fase 4): valor de la tabla de ids antigua, sólo para la herramienta de migración.
-        [SerializeField, HideInInspector] private string attackSfxId = "";
-#pragma warning restore CS0414
         [Tooltip("Efecto opcional en la boca del disparo.")]
         [SerializeField] private GameObject muzzleEffect;
 

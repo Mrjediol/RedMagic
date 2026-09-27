@@ -248,7 +248,6 @@ export function buildBossExport(state, catalog, entriesById) {
       accent: p.accent,
       transitionSeconds: p.transitionSeconds,
       transitionShake: p.transitionShake,
-      transitionSfxId: p.transitionSfxId || '',
       frenzyBelowHealth: p.frenzyBelowHealth ?? 0,
       frenzySpeedScale: p.frenzySpeedScale ?? 1.35,
     };

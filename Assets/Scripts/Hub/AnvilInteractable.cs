@@ -36,12 +36,6 @@ namespace RedMagic.Hub
         [Tooltip("Trigger del Animator que reproduce la chispa una vez.")]
         [SerializeField] private string sparkTrigger = "Spark";
 
-#pragma warning disable CS0414
-        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua, sólo para la herramienta de migración.
-        // El sonido va en el SoundEmitter del prop (OnInteract / OnLoot).
-        [SerializeField, HideInInspector] private string useSfxId = "SFX_ButtonClick";
-#pragma warning restore CS0414
-
         private InputAction _interactAction;
         private bool _playerInRange;
         private PlayerAnimator _playerAnimator;

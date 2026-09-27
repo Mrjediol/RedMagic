@@ -26,7 +26,17 @@ MonoBehaviour:
   vulnerableSeconds: 0
   vulnerableMultiplier: 2.5
   gesture: 
-  sfxId: 
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   shakeAmplitude: 0
   shakeDuration: 0.25
   pattern: 0
@@ -42,6 +52,9 @@ MonoBehaviour:
     arcGravity: 0
     impactRadius: 0
     impactDamage: 0
+    faceDirection: 0
+    facingAxis: 0
+    aimMode: 0
   volleys: 6
   timeBetweenVolleys: 0.22
   bulletsPerVolley: 13

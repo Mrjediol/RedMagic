@@ -170,8 +170,6 @@ MonoBehaviour:
   damageMultiplier: 1
   invulnerabilityDuration: 0.8
   invulnerabilityUsesUnscaledTime: 0
-  hurtSfxId: 
-  deathSfxId: 
 --- !u!114 &7988243875702620455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -190,9 +188,6 @@ MonoBehaviour:
   jumpActionName: Jump
   dashActionName: Dash
   footstepInterval: 0.32
-  jumpSfxId: 
-  footstepSfxId: 
-  dashSfxId: 
   _characterBounds:
     m_Center: {x: 0.12, y: 0.15, z: 0}
     m_Extent: {x: 0.49, y: 0.84, z: 0}
@@ -304,7 +299,6 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  attackSfxId: 
   drawGizmo: 1
 --- !u!114 &5468658681699711123
 MonoBehaviour:
@@ -347,7 +341,6 @@ MonoBehaviour:
   cooldown: 0.7
   windup: 0.25
   animatorTrigger: Attack
-  attackSfxId: 
   muzzleEffect: {fileID: 0}
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player

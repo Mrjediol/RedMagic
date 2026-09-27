@@ -28,7 +28,17 @@ MonoBehaviour:
     accent: {r: 0.54901963, g: 0.9019608, b: 0.4, a: 1}
     transitionSeconds: 0
     transitionShake: 0.5
-    transitionSfxId: 
+    transitionSound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
     transitionFx: {fileID: 0}
     openingAttack: {fileID: 11400000, guid: c7a6670928b6d4c4ab59013873cb15af, type: 2}
     frenzyBelowHealth: 0

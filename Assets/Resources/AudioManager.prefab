@@ -92,7 +92,6 @@ MonoBehaviour:
     rolloffStart: 8
     rolloffEnd: 24
     initialized: 1
-  sounds: []
   defaultMasterVolume: 1
   defaultMusicVolume: 0.8
   defaultSfxVolume: 1

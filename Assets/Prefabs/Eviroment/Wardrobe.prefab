@@ -121,8 +121,6 @@ MonoBehaviour:
   actionName: Interact
   animator: {fileID: 0}
   openParameter: IsOpened
-  openSfxId: 
-  lootSfxId: 
 --- !u!1 &1077971989357583004
 GameObject:
   m_ObjectHideFlags: 0

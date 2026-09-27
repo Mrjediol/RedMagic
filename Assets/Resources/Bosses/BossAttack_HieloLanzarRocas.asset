@@ -26,7 +26,17 @@ MonoBehaviour:
   vulnerableSeconds: 0
   vulnerableMultiplier: 2.5
   gesture: PickUP
-  sfxId: 
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   shakeAmplitude: 0.3
   shakeDuration: 0.25
   throwGesture: Throw
@@ -48,6 +58,9 @@ MonoBehaviour:
     arcGravity: 0
     impactRadius: 2.2
     impactDamage: 16
+    faceDirection: 0
+    facingAxis: 0
+    aimMode: 0
   heldPropPrefab: {fileID: 2243479322485747769, guid: bf2f729af8a952b49bdd2e0b3d850809, type: 3}
   heldOffset: {x: 0, y: 7}
   heldSize: {x: 1.8, y: 1.8}

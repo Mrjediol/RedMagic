@@ -19,11 +19,24 @@ MonoBehaviour:
   recovery: 2.1
   weight: 1.7
   cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
   damage: 30
   knockbackMultiplier: 2
   vulnerableSeconds: 1.9
   vulnerableMultiplier: 3
-  sfxId: 
+  gesture: 
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   shakeAmplitude: 0.7
   shakeDuration: 0.45
   aimAtPlayer: 1
@@ -36,3 +49,6 @@ MonoBehaviour:
   rubbleSeconds: 6
   rubbleDamagePerTick: 6
   rubbleTickInterval: 0.5
+  impactFxPrefab: {fileID: 0}
+  fitFxToRadius: 1
+  fxLeadSeconds: 0

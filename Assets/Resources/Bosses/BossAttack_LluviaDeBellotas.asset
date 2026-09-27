@@ -19,11 +19,24 @@ MonoBehaviour:
   recovery: 1.1
   weight: 1.2
   cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
   damage: 13
   knockbackMultiplier: 0.6
   vulnerableSeconds: 0
   vulnerableMultiplier: 2.5
-  sfxId: 
+  gesture: 
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   shakeAmplitude: 0
   shakeDuration: 0.25
   pattern: 2
@@ -39,6 +52,9 @@ MonoBehaviour:
     arcGravity: 0
     impactRadius: 0
     impactDamage: 0
+    faceDirection: 0
+    facingAxis: 0
+    aimMode: 0
   volleys: 2
   timeBetweenVolleys: 0.5
   bulletsPerVolley: 7
@@ -51,7 +67,15 @@ MonoBehaviour:
   originOffset: {x: 0, y: 2.2}
   spawnRadius: 1.2
   rainSpan: 0.95
+  rainCenterOffset: 0
+  rainRandomX: 0
+  rainDropStagger: 0
   rainMarkerSeconds: 0.55
   rainJitter: 0.7
   rainMarkerSize: {x: 1, y: 0.35}
+  stormSeconds: 5
+  stormPerSecond: 7
+  stormAngleRange: 18
+  stormWind: 0
+  stormMarkLanding: 1
   projectileSprite: {fileID: 0}

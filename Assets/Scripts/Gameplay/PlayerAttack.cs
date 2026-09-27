@@ -51,11 +51,6 @@ namespace RedMagic.Gameplay
         [SerializeField] private Vector2 hitboxSize = new Vector2(1.1f, 1.0f);
         [SerializeField] private LayerMask hitLayers = ~0;
 
-#pragma warning disable CS0414
-        // TEMPORAL (audio fase 4): valor de la tabla de ids antigua, sólo para la herramienta de migración.
-        [SerializeField, HideInInspector] private string attackSfxId = "SFX_PlayerAttack";
-#pragma warning restore CS0414
-
         [Header("Depuración")]
         [Tooltip("Dibuja la caja de daño en la vista de escena.")]
         [SerializeField] private bool drawGizmo = true;

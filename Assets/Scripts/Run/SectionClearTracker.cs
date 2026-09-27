@@ -37,11 +37,6 @@ namespace RedMagic.Run
         [Tooltip("Sonido al despejar la sección.")]
         [SerializeField] private SoundCue clearSound = new SoundCue();
 
-#pragma warning disable CS0414
-        // TEMPORAL (audio fase 4): valor de la tabla de ids antigua, sólo para la herramienta de migración.
-        [SerializeField, HideInInspector] private string clearSfxId = "SFX_Fireball";
-#pragma warning restore CS0414
-
         /// <summary>True si no queda ningún enemigo vivo en la sección actual.</summary>
         public bool IsCleared { get; private set; } = true;
 

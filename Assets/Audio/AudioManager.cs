@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 using RedMagic.Core;
 
 namespace RedMagic.Audio
@@ -57,10 +56,6 @@ namespace RedMagic.Audio
         [SerializeField] private SoundCue uiBack = new SoundCue { priority = SoundPriority.Critical };
         [SerializeField] private SoundCue uiDeny = new SoundCue { priority = SoundPriority.Critical };
 
-        // TEMPORAL (audio fase 4): la tabla de ids antigua. Nada la lee en runtime; sólo la
-        // herramienta de migración, para resolver cada id a su clip. Se borra en la fase 4.
-        [SerializeField, HideInInspector] private List<SoundData> sounds = new List<SoundData>();
-
         [Header("Valores por defecto (usados si no hay nada guardado en PlayerPrefs)")]
         [Range(0f, 1f)] [SerializeField] private float defaultMasterVolume = 1f;
         [Range(0f, 1f)] [SerializeField] private float defaultMusicVolume = 0.8f;
@@ -77,7 +72,6 @@ namespace RedMagic.Audio
 
         [Header("Voces de SFX (móvil: vigilar el total frente a Project Settings ▸ Audio ▸ Max Real Voices)")]
         [Tooltip("AudioSources de efectos creados al arrancar.")]
-        [FormerlySerializedAs("sfxVoiceCount")]
         [Range(1, 32)] [SerializeField] private int sfxVoicesInitial = 8;
 
         [Tooltip("Tope de AudioSources de efectos. El pool crece hasta aquí; a partir de ahí se roba voz por prioridad.")]

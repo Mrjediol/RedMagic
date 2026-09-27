@@ -322,11 +322,6 @@
           "description": "Animator state on the boss that acts as this attack's telegraph ('Charge', 'Slam'...). Empty = no gesture.",
           "$comment": "BossAttack.gesture. With a gesture AND a BossAnimator on the boss, the body IS the warning: the clip's speed is set so its OnAttackRelease event lands exactly at telegraph/pace, and Run starts on that frame. 'telegraph' therefore stays the only timing knob and a phase's speedScale accelerates gestures for free. Empty, or no BossAnimator, falls back to the plain timed telegraph — which is why the six sprite bosses were unaffected when this shipped."
         },
-        "sfxId": {
-          "type": "string",
-          "default": "",
-          "$comment": "BossAttack.sfxId. AudioManager id played on launch."
-        },
         "shakeAmplitude": {
           "type": "number",
           "minimum": 0,
@@ -426,11 +421,6 @@
           "minimum": 0,
           "default": 0.5,
           "$comment": "BossPhase.transitionShake. IMPORTER WARNING: BossAuthoring.WritePhase hardcodes this as 'transitionSeconds > 0f ? 0.7f : 0f', ignoring anything the caller wanted — routing this config through WritePhase silently drops the configured value. The importer must write this field directly via SerializedProperty (the same mechanism WritePhase uses internally), not through WritePhase itself. This is a limitation of the authoring helper, not of BossPhase — the serialized field itself takes any value fine."
-        },
-        "transitionSfxId": {
-          "type": "string",
-          "default": "",
-          "$comment": "BossPhase.transitionSfxId. AudioManager id."
         },
         "transitionFx": {
           "$ref": "_shared.schema.json#/definitions/assetRef",

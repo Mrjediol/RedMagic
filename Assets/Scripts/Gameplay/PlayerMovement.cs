@@ -27,7 +27,7 @@ namespace RedMagic.Gameplay
     ///    <see cref="TouchInput"/>. Las tres fuentes conviven; gana la de mayor magnitud.
     ///  - <b>Pausa / muerte</b>: respeta <see cref="GameStateManager.CanPlayerAct"/> y el evento
     ///    <see cref="Health.Died"/>.
-    ///  - <b>Audio</b>: avisa de salto, doble salto, dash, pasos y pisotón como
+    ///  - <b>Audio</b>: avisa de salto, doble salto, dash y pasos como
     ///    <see cref="ISoundEventSource"/>; qué suena lo decide el <see cref="SoundEmitter"/>.
     ///
     /// El Rigidbody2D se mantiene (forzado a Kinematic) sólo para que sigan llegando los eventos
@@ -38,7 +38,7 @@ namespace RedMagic.Gameplay
     [DisallowMultipleComponent]
     public class PlayerMovement : MonoBehaviour, IKnockbackReceiver, ISoundEventSource
     {
-        /// <summary>OnJump / OnAirJump / OnDash / Footstep / OnStomp. Ver <see cref="SoundEmitter"/>.</summary>
+        /// <summary>OnJump / OnAirJump / OnDash / Footstep. Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
 
         // ---------------------------------------------------------------- tipos internos
@@ -135,17 +135,8 @@ namespace RedMagic.Gameplay
         // la herramienta de migración, que los pasa al SoundEmitter. Se borran en la fase 4.
         [SerializeField, HideInInspector] private string jumpSfxId = "SFX_PlayerJump";
         [SerializeField, HideInInspector] private string footstepSfxId = "SFX_PlayerFootstep";
-        [SerializeField, HideInInspector] private string stompSfxId = "SFX_EnemyStomp";
         [SerializeField, HideInInspector] private string dashSfxId = "SFX_PlayerDash";
 #pragma warning restore CS0414
-
-        // ---------------------------------------------------------------- pisotón
-
-        [Header("Pisotón a enemigos")]
-        [Tooltip("Si está activo, caer sobre algo con Health por encima lo mata y rebota.")]
-        [SerializeField] private bool enableStomp = true;
-        [Tooltip("Daño aplicado al enemigo pisado (0 o menos = matar directamente).")]
-        [SerializeField] private float stompDamage = 0f;
 
         // ---------------------------------------------------------------- colisión
 
@@ -1914,44 +1905,16 @@ namespace RedMagic.Gameplay
                       $"'{ahead.collider.name}' ({LayerMask.LayerToName(ahead.collider.gameObject.layer)})", this);
         }
 
-        // ================================================================ pisotón / contacto
+        // ================================================================ contacto
 
-        private void OnTriggerEnter2D(Collider2D other) => HandleContact(other);
-
-        private void OnCollisionEnter2D(Collision2D collision)
-        {
-            HandleContact(collision.collider);
-            EvaluateStepContacts(collision, entering: true);
-        }
+        private void OnCollisionEnter2D(Collision2D collision) => EvaluateStepContacts(collision, entering: true);
 
         /// <summary>
         /// Los contactos se vuelven a leer en cada paso de física mientras se siga tocando el
         /// obstáculo. Eso es lo que hace que apoyarse contra un escalón termine subiéndolo SIEMPRE:
         /// no hace falta acertar el frame exacto del choque, como sí hacía falta con los rayos.
-        /// El pisotón se queda sólo en <c>OnCollisionEnter2D</c> — aquí no se llama a HandleContact,
-        /// o pisar a un enemigo se repetiría cada paso de física.
         /// </summary>
         private void OnCollisionStay2D(Collision2D collision) => EvaluateStepContacts(collision, entering: false);
-
-        private void HandleContact(Collider2D other)
-        {
-            if (!enableStomp || other == null || !_active) return;
-
-            var otherHealth = other.GetComponentInParent<Health>();
-            if (otherHealth == null || otherHealth == _health || otherHealth.IsDead) return;
-
-            // Sólo cuenta como pisotón si vamos cayendo y por encima del objetivo.
-            bool fromAbove = _currentVerticalSpeed < 0f &&
-                             transform.position.y + _characterBounds.center.y > other.bounds.center.y;
-            if (!fromAbove) return;
-
-            if (stompDamage > 0f) otherHealth.TakeDamage(stompDamage, transform.position);
-            else otherHealth.Die();
-
-            Jump(_jumpHeight);      // rebote
-            SoundTriggered?.Invoke(SoundTrigger.OnJump);   // el rebote suena como un salto (como antes)
-            SoundTriggered?.Invoke(SoundTrigger.OnStomp);
-        }
 
         // ================================================================ varios
 

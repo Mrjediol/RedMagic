@@ -15,11 +15,11 @@ namespace RedMagic.Audio
         OnHit = 1,       // Health: recibe daño · Projectile: impacta
         OnDeath = 2,     // Health: muere · Projectile: vuelve al pool
         OnAttack = 3,    // EnemyAttack (frame de release) · PlayerAttack · RangedAttack
-        OnJump = 4,      // PlayerMovement: salto desde el suelo (y rebote del pisotón)
+        OnJump = 4,      // PlayerMovement: salto desde el suelo
         OnAirJump = 5,   // PlayerMovement: doble salto
         OnDash = 6,      // PlayerMovement
         Footstep = 7,    // PlayerMovement: cada paso en suelo
-        OnStomp = 8,     // PlayerMovement: pisa a un enemigo
+        // 8 = OnStomp, retirado con la mecánica de pisotón: no reutilizar el valor.
         OnActivate = 9,  // BossController: empieza el combate (rugido)
         OnInteract = 10, // props del hub: abrir / usar
         OnLoot = 11      // props del hub: recoger el contenido

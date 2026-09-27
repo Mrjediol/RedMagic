@@ -38,8 +38,8 @@ MonoBehaviour:
     noRepeatLast: 1
     priority: 1
     positional: 1
-    rolloffStart: 8
-    rolloffEnd: 24
+    rolloffStart: 10
+    rolloffEnd: 32
     initialized: 1
   manuscritoDropSound:
     clips:
@@ -50,8 +50,8 @@ MonoBehaviour:
     noRepeatLast: 1
     priority: 1
     positional: 1
-    rolloffStart: 8
-    rolloffEnd: 24
+    rolloffStart: 10
+    rolloffEnd: 32
     initialized: 1
   grimorioChoiceSound:
     clips:

@@ -88,8 +88,8 @@ MonoBehaviour:
     noRepeatLast: 1
     priority: 1
     positional: 1
-    rolloffStart: 8
-    rolloffEnd: 24
+    rolloffStart: 10
+    rolloffEnd: 32
     initialized: 1
   terrainImpactSound:
     clips:
@@ -100,8 +100,8 @@ MonoBehaviour:
     noRepeatLast: 1
     priority: 1
     positional: 1
-    rolloffStart: 8
-    rolloffEnd: 24
+    rolloffStart: 10
+    rolloffEnd: 32
     initialized: 1
   expireSound:
     clips:
@@ -112,8 +112,8 @@ MonoBehaviour:
     noRepeatLast: 1
     priority: 0
     positional: 1
-    rolloffStart: 8
-    rolloffEnd: 24
+    rolloffStart: 10
+    rolloffEnd: 32
     initialized: 1
   explosionSound:
     clips: []

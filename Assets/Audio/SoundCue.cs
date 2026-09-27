@@ -24,8 +24,8 @@ namespace RedMagic.Audio
     [Serializable]
     public class SoundCue
     {
-        public const float DefaultRolloffStart = 8f;
-        public const float DefaultRolloffEnd = 24f;
+        public const float DefaultRolloffStart = 10f;
+        public const float DefaultRolloffEnd = 32f;
 
         [Tooltip("Variantes. Se elige una al azar en cada reproducción.")]
         public AudioClip[] clips = Array.Empty<AudioClip>();

@@ -455,8 +455,8 @@ MonoBehaviour:
       noRepeatLast: 1
       priority: 1
       positional: 1
-      rolloffStart: 8
-      rolloffEnd: 24
+      rolloffStart: 10
+      rolloffEnd: 32
       initialized: 1
   - trigger: 2
     cue:
@@ -467,8 +467,8 @@ MonoBehaviour:
       noRepeatLast: 1
       priority: 2
       positional: 1
-      rolloffStart: 8
-      rolloffEnd: 24
+      rolloffStart: 10
+      rolloffEnd: 32
       initialized: 1
   - trigger: 1
     cue:
@@ -479,8 +479,8 @@ MonoBehaviour:
       noRepeatLast: 1
       priority: 1
       positional: 1
-      rolloffStart: 8
-      rolloffEnd: 24
+      rolloffStart: 10
+      rolloffEnd: 32
       initialized: 1
   - trigger: 15
     cue:
@@ -491,7 +491,7 @@ MonoBehaviour:
       noRepeatLast: 1
       priority: 0
       positional: 1
-      rolloffStart: 8
-      rolloffEnd: 24
+      rolloffStart: 10
+      rolloffEnd: 32
       initialized: 1
   useGenericFallback: 1

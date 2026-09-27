@@ -55,6 +55,13 @@ namespace RedMagic.Audio
     /// dibuja) si el miembro bool <see cref="Member"/> del objeto dueño devuelve true. Así un arma
     /// sin carga no enseña "sonido de carga" y el registro no lo lista.
     /// </summary>
+    /// <summary>
+    /// Marca un objeto como enemigo a efectos de sonido: si su <see cref="SoundEmitter"/> no tiene clip
+    /// para un momento con genérico (herido, muerte, movimiento, ataque), suena el de
+    /// <see cref="SystemSounds"/>. Lo implementan <c>EnemyStats</c> y <c>BossController</c>.
+    /// </summary>
+    public interface IEnemySoundFallbackUser { }
+
     [AttributeUsage(AttributeTargets.Field)]
     public sealed class SoundSlotIfAttribute : Attribute
     {
@@ -85,6 +92,16 @@ namespace RedMagic.Audio
         [Tooltip("Sonidos de este objeto. Varias entradas con el mismo momento suenan todas.")]
         [SerializeField] private List<SoundEvent> soundEvents = new List<SoundEvent>();
 
+        [Tooltip("Sólo en enemigos: si un momento con genérico (herido, muerte, movimiento, ataque) no tiene " +
+                 "clip aquí, suena el sonido genérico de enemigo del AudioManager. Desactívalo para callar a " +
+                 "este enemigo en lo que no tenga sonido propio.")]
+        [SerializeField] private bool useGenericFallback = true;
+
+        /// <summary>True si los huecos vacíos de este objeto heredan el sonido genérico de enemigo.</summary>
+        public bool UsesGenericFallback => useGenericFallback && (_isEnemy || GetComponent<IEnemySoundFallbackUser>() != null);
+
+        private bool _isEnemy;   // cacheado en OnEnable: OnMove suena a menudo
+
         private static readonly List<ISoundEventSource> s_sourceBuffer = new List<ISoundEventSource>();
         private readonly List<ISoundEventSource> _sources = new List<ISoundEventSource>();
         private Action<SoundTrigger> _handler;
@@ -104,6 +121,7 @@ namespace RedMagic.Audio
         private void OnEnable()
         {
             _handler ??= Play;
+            _isEnemy = GetComponent<IEnemySoundFallbackUser>() != null;
 
             GetComponents(s_sourceBuffer);
             for (int i = 0; i < s_sourceBuffer.Count; i++)
@@ -146,10 +164,20 @@ namespace RedMagic.Audio
             if (audio == null) return;
 
             Vector3 position = transform.position;
+            bool played = false;
             for (int i = 0; i < soundEvents.Count; i++)
             {
                 var e = soundEvents[i];
-                if (e != null && e.trigger == trigger) audio.Play(e.cue, position);
+                if (e == null || e.trigger != trigger || e.cue == null || !e.cue.HasClips) continue;
+                audio.Play(e.cue, position);
+                played = true;
+            }
+
+            // Hueco vacío en un enemigo: suena el genérico (si lo hay para ese momento).
+            if (!played && SystemSounds.HasEnemyFallback(trigger) && UsesGenericFallback)
+            {
+                var fallback = SystemSounds.Current;
+                if (fallback != null) audio.Play(fallback.EnemyFallback(trigger), position);
             }
         }
 

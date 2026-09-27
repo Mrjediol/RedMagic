@@ -81,10 +81,11 @@ namespace RedMagic.Bosses
         [Tooltip("Tamaño del objeto sostenido. Con arte del importador manda el ancho (X).")]
         [SerializeField] private Vector2 heldSize = new Vector2(1.6f, 1.6f);
 
-        [Header("Aviso de caída")]
+        [Header("Sonido")]
         [Tooltip("Al coger el objeto que va a lanzar (la roca en alto).")]
         [SerializeField] private SoundCue pickupSound = new SoundCue { positional = true };
 
+        [Header("Aviso de caída")]
         [SerializeField] private bool markLanding = true;
 
         [Tooltip("Radio de la marca. 0 = el de la explosión (o 1.5 si no explota).")]

@@ -538,6 +538,55 @@ MonoBehaviour:
     rolloffStart: 8
     rolloffEnd: 24
     initialized: 1
+  enemyHurt:
+    clips:
+    - {fileID: 8300000, guid: de2818da99c66d946b552fad56d8b5db, type: 3}
+    volume: 1
+    pitchMin: 0.95
+    pitchMax: 1.05
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  enemyDeath:
+    clips:
+    - {fileID: 8300000, guid: 827f7fb163f5b164b806a2149a48d85b, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 2
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  enemyMove:
+    clips:
+    - {fileID: 8300000, guid: 7ab6eec96f5817c4d95bde18f5103ce1, type: 3}
+    - {fileID: 8300000, guid: 66b1dbecf67d583429ddef95166b9ea3, type: 3}
+    volume: 1
+    pitchMin: 0.95
+    pitchMax: 1.05
+    noRepeatLast: 1
+    priority: 0
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  enemyAttack:
+    clips:
+    - {fileID: 8300000, guid: 74d207867f79dbb40a8e8943f1609f72, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   synergyTierReached:
     clips:
     - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}

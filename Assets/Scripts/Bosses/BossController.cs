@@ -36,7 +36,7 @@ namespace RedMagic.Bosses
     /// </summary>
     [RequireComponent(typeof(Health))]
     [DisallowMultipleComponent]
-    public class BossController : MonoBehaviour, ISoundEventSource
+    public class BossController : MonoBehaviour, ISoundEventSource, IEnemySoundFallbackUser
     {
         /// <summary>OnActivate al empezar la presentación (rugido), OnVulnerable al abrir una ventana de castigo. Ver <see cref="SoundEmitter"/>.</summary>
         public event Action<SoundTrigger> SoundTriggered;

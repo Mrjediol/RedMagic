@@ -207,6 +207,10 @@ namespace RedMagic.Pipeline.EditorTools
 
             Get<EnemyBrain>(root);
             Get<EnemyAttack>(root);
+
+            // Sonido: sin entradas propias suena el genérico de enemigo (SystemSounds); sus huecos
+            // salen solos en la pestaña Sounds.
+            Get<Audio.SoundEmitter>(root);
         }
 
         // ============================================================ animación

@@ -184,6 +184,8 @@ namespace RedMagic.Bosses.EditorTools
                     if (f.IsDefined(typeof(NonSerializedAttribute), false)) continue;
                     if (f.IsDefined(typeof(HideInInspector), false)) continue;
                     if (f.IsDefined(typeof(SerializeReference), false)) continue;
+                    // Los sonidos (SoundCue) son datos de Unity que se asignan en la pestaña Sounds, no en la web.
+                    if (f.FieldType == typeof(RedMagic.Audio.SoundCue)) continue;
                     if (!f.IsPublic && !f.IsDefined(typeof(SerializeField), false)) continue;
                     yield return f;
                 }

@@ -98,6 +98,7 @@ namespace RedMagic.Audio.EditorTools
             foreach (var slot in slots)
             {
                 if (!slot.EntryMissing && slot.Clips.Count > 0) continue;
+                if (slot.UsesFallback) continue;   // enemigo: su hueco vacío ya suena con el genérico
 
                 bool ok = SoundSlotEditor.Edit(slot, cue =>
                 {

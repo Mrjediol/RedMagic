@@ -448,7 +448,7 @@ MonoBehaviour:
   - trigger: 3
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: 74d207867f79dbb40a8e8943f1609f72, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -460,8 +460,7 @@ MonoBehaviour:
       initialized: 1
   - trigger: 2
     cue:
-      clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      clips: []
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -473,8 +472,7 @@ MonoBehaviour:
       initialized: 1
   - trigger: 1
     cue:
-      clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      clips: []
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -486,8 +484,7 @@ MonoBehaviour:
       initialized: 1
   - trigger: 15
     cue:
-      clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      clips: []
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -497,3 +494,4 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+  useGenericFallback: 1

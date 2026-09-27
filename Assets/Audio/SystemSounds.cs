@@ -78,6 +78,16 @@ namespace RedMagic.Audio
         public SoundCue soulFragmentGained = new SoundCue();
         public SoundCue skullGained = new SoundCue();
 
+        [Header("Enemigo genérico (se usa cuando un enemigo no tiene su propio sonido)")]
+        [Tooltip("Enemigo recibe daño.")]
+        public SoundCue enemyHurt = new SoundCue { positional = true };
+        [Tooltip("Enemigo muere.")]
+        public SoundCue enemyDeath = new SoundCue { positional = true, priority = SoundPriority.High };
+        [Tooltip("Paso / aleteo de un enemigo que se desplaza.")]
+        public SoundCue enemyMove = new SoundCue { positional = true, priority = SoundPriority.Low };
+        [Tooltip("Enemigo ataca (frame en que sale el golpe o el disparo).")]
+        public SoundCue enemyAttack = new SoundCue { positional = true };
+
         [Header("Build y estados")]
         [Tooltip("Una sinergia alcanza un umbral (2 / 4 / 6).")]
         public SoundCue synergyTierReached = new SoundCue { priority = SoundPriority.High };
@@ -101,6 +111,23 @@ namespace RedMagic.Audio
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void ResetStatics() => s_current = null;
+
+        /// <summary>
+        /// Cue genérica de enemigo para <paramref name="trigger"/>, o null si ese momento no tiene
+        /// genérico. La usa <see cref="SoundEmitter"/> cuando un enemigo no tiene su propio clip.
+        /// </summary>
+        public SoundCue EnemyFallback(SoundTrigger trigger) => trigger switch
+        {
+            SoundTrigger.OnHit => enemyHurt,
+            SoundTrigger.OnDeath => enemyDeath,
+            SoundTrigger.OnMove => enemyMove,
+            SoundTrigger.OnAttack => enemyAttack,
+            _ => null,
+        };
+
+        /// <summary>Momentos que tienen sonido genérico de enemigo.</summary>
+        public static bool HasEnemyFallback(SoundTrigger trigger) =>
+            trigger is SoundTrigger.OnHit or SoundTrigger.OnDeath or SoundTrigger.OnMove or SoundTrigger.OnAttack;
 
         /// <summary>Suena la cue que elige <paramref name="pick"/> (2D).</summary>
         public static void Play(Func<SystemSounds, SoundCue> pick)

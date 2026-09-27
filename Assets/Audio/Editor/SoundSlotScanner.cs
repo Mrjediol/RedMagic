@@ -38,6 +38,8 @@ namespace RedMagic.Audio.EditorTools
         public SoundTrigger Trigger;
         /// <summary>El objeto declara el momento pero aún no hay entrada en su SoundEmitter.</summary>
         public bool EntryMissing;
+        /// <summary>Hueco vacío de un enemigo que suena con el genérico de SystemSounds (InheritedPlaceholder).</summary>
+        public bool UsesFallback;
         public readonly List<AudioClip> Clips = new List<AudioClip>();
     }
 
@@ -119,6 +121,9 @@ namespace RedMagic.Audio.EditorTools
                                             List<SoundSlot> slots, List<string> problems)
         {
             var events = emitter != null ? new SerializedObject(emitter).FindProperty("soundEvents") : null;
+            // Enemigo con el genérico activo: sus huecos vacíos de herido/muerte/movimiento/ataque heredan.
+            bool fallback = owner.GetComponent<IEnemySoundFallbackUser>() != null &&
+                            (emitter == null || emitter.UsesGenericFallback);
             var seen = new Dictionary<SoundTrigger, int>();
 
             if (events != null)
@@ -143,6 +148,7 @@ namespace RedMagic.Audio.EditorTools
                     slot.Trigger = trigger;
                     slot.PropertyPath = cue.propertyPath;
                     ReadClips(cue, slot.Clips);
+                    slot.UsesFallback = fallback && slot.Clips.Count == 0 && SystemSounds.HasEnemyFallback(trigger);
                     slots.Add(slot);
                 }
             }
@@ -154,6 +160,7 @@ namespace RedMagic.Audio.EditorTools
                                    nameof(SoundEmitter), trigger.ToString());
                 slot.Trigger = trigger;
                 slot.EntryMissing = true;
+                slot.UsesFallback = fallback && SystemSounds.HasEnemyFallback(trigger);
                 slots.Add(slot);
             }
         }

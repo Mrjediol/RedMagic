@@ -1,3 +1,4 @@
+using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Gameplay;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace RedMagic.Enemies
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Health))]
-    public class EnemyStats : MonoBehaviour
+    public class EnemyStats : MonoBehaviour, IEnemySoundFallbackUser
     {
         [SerializeField] private EnemyTuning tuning = new EnemyTuning();
 

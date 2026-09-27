@@ -350,8 +350,7 @@ MonoBehaviour:
       initialized: 1
   - trigger: 2
     cue:
-      clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      clips: []
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -363,8 +362,7 @@ MonoBehaviour:
       initialized: 1
   - trigger: 1
     cue:
-      clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      clips: []
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -387,6 +385,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+  useGenericFallback: 1
 --- !u!1 &7795828779510967830
 GameObject:
   m_ObjectHideFlags: 0

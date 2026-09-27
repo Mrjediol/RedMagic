@@ -62,6 +62,7 @@ MonoBehaviour:
   damageMultiplier: 1
   invulnerabilityDuration: 0
   invulnerabilityUsesUnscaledTime: 0
+  lowHealthThreshold: 0.25
 --- !u!114 &5494390779667067832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -127,6 +128,7 @@ MonoBehaviour:
     contactDamage: 6.65
     contactDamageCooldown: 1
     contactKnockbackMultiplier: 1.6
+    moveSoundInterval: 0.4
     idleAnimSpeed: 1
     moveAnimSpeed: 1
     attackAnimSpeed: 1

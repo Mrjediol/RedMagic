@@ -5,7 +5,7 @@ using UnityEngine;
 namespace RedMagic.AudioEditor
 {
     /// <summary>
-    /// Una entrada del <see cref="SoundEmitter"/> en dos filas: el momento, y debajo su
+    /// Una entrada del <see cref="SoundEmitter"/>: el momento, "callado" y debajo su
     /// <see cref="SoundCue"/> (con su propio plegado, ver <see cref="SoundCueDrawer"/>).
     /// </summary>
     [CustomPropertyDrawer(typeof(SoundEvent))]
@@ -15,8 +15,9 @@ namespace RedMagic.AudioEditor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            return EditorGUIUtility.singleLineHeight + Pad +
-                   EditorGUI.GetPropertyHeight(property.FindPropertyRelative("cue"), true);
+            float line = EditorGUIUtility.singleLineHeight + Pad;
+            if (property.FindPropertyRelative("silent").boolValue) return line * 2;
+            return line * 2 + EditorGUI.GetPropertyHeight(property.FindPropertyRelative("cue"), true);
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -24,14 +25,21 @@ namespace RedMagic.AudioEditor
             EditorGUI.BeginProperty(position, label, property);
 
             var trigger = property.FindPropertyRelative("trigger");
+            var silent = property.FindPropertyRelative("silent");
             var cue = property.FindPropertyRelative("cue");
 
             var row = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
             EditorGUI.PropertyField(row, trigger, new GUIContent("Momento"));
 
             row.y += row.height + Pad;
-            row.height = EditorGUI.GetPropertyHeight(cue, true);
-            EditorGUI.PropertyField(row, cue, new GUIContent("Sonido"), true);
+            EditorGUI.PropertyField(row, silent, new GUIContent("Callado"));
+
+            if (!silent.boolValue)
+            {
+                row.y += row.height + Pad;
+                row.height = EditorGUI.GetPropertyHeight(cue, true);
+                EditorGUI.PropertyField(row, cue, new GUIContent("Sonido"), true);
+            }
 
             EditorGUI.EndProperty();
         }

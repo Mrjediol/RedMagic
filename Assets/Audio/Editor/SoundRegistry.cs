@@ -98,6 +98,75 @@ namespace RedMagic.Audio.EditorTools
 
         // ------------------------------------------------------------------ construir
 
+        /// <summary>Recalcula clips y origen de una fila tras cambiar su hueco (sin volver a escanear).</summary>
+        public static void Refresh(SoundRegistryEntry e)
+        {
+            var test = AssetDatabase.LoadAssetAtPath<AudioClip>(SoundSlotEditor.GenericTestClipPath);
+            if (e.Kind == SoundSlotKind.MusicConvention)
+            {
+                var music = FindMusic(e.MusicName);
+                e.Clips = music != null ? new List<string> { music } : new List<string>();
+                e.ClipSource = music != null ? ClipSource.Own : ClipSource.None;
+                return;
+            }
+            if (e.Slot == null) return;
+            e.Clips = e.Slot.Clips.Select(AssetDatabase.GetAssetPath).ToList();
+            e.ClipSource = e.Slot.UsesFallback ? ClipSource.InheritedPlaceholder
+                         : e.Slot.Clips.Count == 0 ? ClipSource.None
+                         : e.Slot.Clips.Any(c => c == test) ? ClipSource.GenericTest
+                         : ClipSource.Own;
+        }
+
+        /// <summary>El registro tal y como está en disco (sin volver a escanear).</summary>
+        public static List<SoundRegistryEntry> LoadGenerated()
+        {
+            var list = new List<SoundRegistryEntry>();
+            if (!File.Exists(GeneratedPath)) return list;
+
+            var root = JObject.Parse(File.ReadAllText(GeneratedPath));
+            foreach (var o in (root["slots"] as JArray)?.OfType<JObject>() ?? Enumerable.Empty<JObject>())
+            {
+                var e = new SoundRegistryEntry
+                {
+                    Id = (string)o["id"],
+                    Name = (string)o["name"],
+                    Category = (string)o["category"],
+                    Kind = Enum.TryParse((string)o["kind"], out SoundSlotKind k) ? k : SoundSlotKind.Declared,
+                    Origin = (string)o["origin"],
+                    DeclaredKey = (string)o["declaredKey"],
+                    ClipSource = Enum.TryParse((string)o["clipSource"], out ClipSource c) ? c : ClipSource.None,
+                    Clips = (o["clips"] as JArray)?.Select(x => (string)x).ToList() ?? new List<string>(),
+                    MusicName = (string)o["musicName"],
+                    Notes = (string)o["notes"],
+                };
+
+                if (o["owner"] is JObject owner)
+                {
+                    e.Slot = new SoundSlot
+                    {
+                        Id = e.Id,
+                        Kind = e.Kind,
+                        AssetPath = (string)owner["asset"],
+                        AssetGuid = (string)owner["guid"],
+                        ScenePath = (string)owner["scene"] ?? "",
+                        ObjectPath = (string)owner["object"] ?? "",
+                        ComponentType = (string)owner["component"],
+                        Member = (string)owner["member"],
+                        PropertyPath = (string)owner["property"] ?? "",
+                        EntryMissing = (bool?)owner["entryMissing"] ?? false,
+                        UsesFallback = e.ClipSource == ClipSource.InheritedPlaceholder,
+                    };
+                    if (e.Kind == SoundSlotKind.EmitterTrigger &&
+                        Enum.TryParse(e.Slot.Member.Split('#')[0], out SoundTrigger trigger))
+                        e.Slot.Trigger = trigger;
+                    foreach (var path in e.Clips)
+                        if (AssetDatabase.LoadAssetAtPath<AudioClip>(path) is AudioClip clip) e.Slot.Clips.Add(clip);
+                }
+                list.Add(e);
+            }
+            return list;
+        }
+
         private static List<SoundRegistryEntry> Build(List<SoundSlot> slots, List<JObject> declared,
                                                       out Dictionary<string, string> merged)
         {
@@ -244,7 +313,8 @@ namespace RedMagic.Audio.EditorTools
 
         // ------------------------------------------------------------------ ficheros
 
-        private static void WriteGenerated(List<SoundRegistryEntry> entries)
+        /// <summary>Reescribe el fichero generado con las filas en memoria (tras asignar un clip desde la pestaña).</summary>
+        public static void WriteGenerated(List<SoundRegistryEntry> entries)
         {
             var array = new JArray();
             foreach (var e in entries)

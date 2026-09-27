@@ -57,9 +57,14 @@ public class WebLibraryWindow : EditorWindow
 {
     // Declaration order is only the first-run fallback: the sidebar is drawn from the persisted tab
     // order (LibraryOrderStore, key TabOrderKey), reordered by dragging one tab onto another.
-    private enum Category { Escenas, Enemies, Bosses, MiniBosses, Mapas, Player, Pasivas, Items, Armas }
+    private enum Category { Escenas, Enemies, Bosses, MiniBosses, Mapas, Player, Pasivas, Items, Armas, Sonidos }
 
-    private static string Label(Category cat) => cat == Category.Pasivas ? "Pasivas Legendarias" : cat.ToString();
+    private static string Label(Category cat) => cat switch
+    {
+        Category.Pasivas => "Pasivas Legendarias",
+        Category.Sonidos => "Sounds",
+        _ => cat.ToString(),
+    };
 
     // Bottom-bar utilities (WebLibraryUtilities does the work). Same persisted, drag-to-swap order
     // as the tabs; "Actualizar" stays pinned first.
@@ -111,6 +116,8 @@ public class WebLibraryWindow : EditorWindow
 
     [SerializeField] private Category _category;
     [SerializeField] private bool _hasCategory; // false only on a brand-new window: open on the first tab
+    // Pestaña Sounds: el registro de sonidos (Assets/Audio/Editor/SoundsTab.cs). Su estado de filtros sobrevive a recargas.
+    [SerializeField] private RedMagic.Audio.EditorTools.SoundsTab _sounds = new RedMagic.Audio.EditorTools.SoundsTab();
     private Vector2 _sidebarScroll, _gridScroll;
     private bool _dirty = true; // scans are cached, not re-run every OnGUI — see RequestRescan()
     private readonly Dictionary<Category, List<Entry>> _cache = new Dictionary<Category, List<Entry>>();
@@ -233,6 +240,14 @@ public class WebLibraryWindow : EditorWindow
         EditorGUILayout.BeginVertical();
 
         EditorGUILayout.LabelField(Label(_category), EditorStyles.boldLabel);
+
+        if (_category == Category.Sonidos)
+        {
+            _sounds ??= new RedMagic.Audio.EditorTools.SoundsTab();
+            _sounds.Draw(position.width - 140);
+            EditorGUILayout.EndVertical();
+            return;
+        }
 
         var entries = _cache.TryGetValue(_category, out var list) ? list : new List<Entry>();
 
@@ -514,6 +529,8 @@ public class WebLibraryWindow : EditorWindow
             ScanScriptables<ItemDefinition>(i => i.DisplayName, i => i.Icon), EntryId);
         _cache[Category.Armas] = LibraryOrderStore.Apply(Category.Armas,
             ScanScriptables<WeaponDefinition>(w => w.DisplayName, w => w.Icon), EntryId);
+        _cache[Category.Sonidos] = new List<Entry>();   // la pestaña Sounds dibuja su propio registro
+        _sounds?.Reload();
     }
 
     /// <summary>Every asset of type <typeparamref name="T"/> in the project (FindAssets, so a new

@@ -83,6 +83,9 @@ namespace RedMagic.Audio
     {
         public SoundTrigger trigger = SoundTrigger.OnHit;
         public SoundCue cue = new SoundCue();
+
+        [Tooltip("Quitado a propósito (pestaña Sounds): no suena nada, ni siquiera el genérico de enemigo.")]
+        public bool silent;
     }
 
     /// <summary>
@@ -176,7 +179,9 @@ namespace RedMagic.Audio
             for (int i = 0; i < soundEvents.Count; i++)
             {
                 var e = soundEvents[i];
-                if (e == null || e.trigger != trigger || e.cue == null || !e.cue.HasClips) continue;
+                if (e == null || e.trigger != trigger) continue;
+                if (e.silent) { played = true; continue; }   // callado a propósito: tampoco genérico
+                if (e.cue == null || !e.cue.HasClips) continue;
                 audio.Play(e.cue, position);
                 played = true;
             }

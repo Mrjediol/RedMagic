@@ -46,6 +46,8 @@ namespace RedMagic.Audio.EditorTools
         public bool EntryMissing;
         /// <summary>Hueco vacío de un enemigo que suena con el genérico de SystemSounds (InheritedPlaceholder).</summary>
         public bool UsesFallback;
+        /// <summary>Entrada callada a propósito (quitada desde la pestaña Sounds).</summary>
+        public bool Silent;
         public readonly List<AudioClip> Clips = new List<AudioClip>();
     }
 
@@ -154,7 +156,8 @@ namespace RedMagic.Audio.EditorTools
                     slot.Trigger = trigger;
                     slot.PropertyPath = cue.propertyPath;
                     ReadClips(cue, slot.Clips);
-                    slot.UsesFallback = fallback && slot.Clips.Count == 0 && SystemSounds.HasEnemyFallback(trigger);
+                    slot.Silent = e.FindPropertyRelative("silent").boolValue;
+                    slot.UsesFallback = fallback && !slot.Silent && slot.Clips.Count == 0 && SystemSounds.HasEnemyFallback(trigger);
                     slots.Add(slot);
                 }
             }

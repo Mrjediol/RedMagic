@@ -1,7 +1,7 @@
 {
   "_comment": "Calificaciones y notas de los sonidos, por id estable del registro. Lo escribe la pestaña Sounds.",
   "slots": {
-    "0f1e2d3c4b5a69788796a5b4c3d2e1f0/MainMenuUI/MainMenuController/menuMusic": {
+    "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/menuMusic": {
       "status": "Bad",
       "notes": "Placeholder aceptado: un clip corto (Sly 2) en bucle como música de menú.",
       "lastModified": "2026-09-27 17:42"

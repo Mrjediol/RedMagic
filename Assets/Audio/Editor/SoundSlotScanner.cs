@@ -233,7 +233,10 @@ namespace RedMagic.Audio.EditorTools
                 if (type == typeof(SoundEmitter) || !HasCueField(type, 0)) continue;
                 foreach (var script in MonoImporter.GetAllRuntimeMonoScripts())
                     if (script != null && script.GetClass() == type)
-                        guids.Add(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(script)));
+                    {
+                        string g = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(script));
+                        if (!string.IsNullOrEmpty(g)) guids.Add(g);   // vacío = "está en todas las escenas": nunca
+                    }
             }
             return guids;
         }

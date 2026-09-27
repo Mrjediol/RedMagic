@@ -1170,7 +1170,7 @@
       "musicName": "MainHub"
     },
     {
-      "id": "0f1e2d3c4b5a69788796a5b4c3d2e1f0/MainMenuUI/MainMenuController/menuMusic",
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/menuMusic",
       "name": "Menu",
       "category": "Music",
       "kind": "MusicField",
@@ -1180,12 +1180,10 @@
         "Assets/Audio/Sfx/Sly_2_-_Band_of_Thieves_(USA).iso_00367.wav"
       ],
       "owner": {
-        "asset": "Assets/Scenes/MainMenu.unity",
-        "guid": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
-        "component": "MainMenuController",
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
         "member": "menuMusic",
-        "scene": "Assets/Scenes/MainMenu.unity",
-        "object": "MainMenuUI",
         "property": "menuMusic"
       }
     },
@@ -2502,7 +2500,7 @@
       }
     },
     {
-      "id": "594b46cde2cf98c489085bbc603a33a5/ShopManager/ShopManager/buySound",
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/shopBuy",
       "name": "Buy",
       "category": "Shop",
       "kind": "CueField",
@@ -2512,17 +2510,15 @@
         "Assets/Audio/Sounds/shop_buy.wav"
       ],
       "owner": {
-        "asset": "Assets/Scenes/Shop.unity",
-        "guid": "594b46cde2cf98c489085bbc603a33a5",
-        "component": "ShopManager",
-        "member": "buySound",
-        "scene": "Assets/Scenes/Shop.unity",
-        "object": "ShopManager",
-        "property": "buySound"
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "shopBuy",
+        "property": "shopBuy"
       }
     },
     {
-      "id": "594b46cde2cf98c489085bbc603a33a5/ShopManager/ShopManager/denySound",
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/shopDeny",
       "name": "Deny",
       "category": "Shop",
       "kind": "CueField",
@@ -2532,17 +2528,15 @@
         "Assets/Audio/Test/generic_test.wav"
       ],
       "owner": {
-        "asset": "Assets/Scenes/Shop.unity",
-        "guid": "594b46cde2cf98c489085bbc603a33a5",
-        "component": "ShopManager",
-        "member": "denySound",
-        "scene": "Assets/Scenes/Shop.unity",
-        "object": "ShopManager",
-        "property": "denySound"
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "shopDeny",
+        "property": "shopDeny"
       }
     },
     {
-      "id": "594b46cde2cf98c489085bbc603a33a5/ShopManager/ShopManager/rerollSound",
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/shopReroll",
       "name": "Reroll",
       "category": "Shop",
       "kind": "CueField",
@@ -2552,13 +2546,11 @@
         "Assets/Audio/Test/generic_test.wav"
       ],
       "owner": {
-        "asset": "Assets/Scenes/Shop.unity",
-        "guid": "594b46cde2cf98c489085bbc603a33a5",
-        "component": "ShopManager",
-        "member": "rerollSound",
-        "scene": "Assets/Scenes/Shop.unity",
-        "object": "ShopManager",
-        "property": "rerollSound"
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "shopReroll",
+        "property": "shopReroll"
       }
     },
     {

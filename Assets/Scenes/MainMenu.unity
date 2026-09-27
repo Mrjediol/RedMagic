@@ -396,7 +396,6 @@ MonoBehaviour:
     scenePath: Assets/Scenes/MainHub.unity
     sceneName: MainHub
   optionsMenu: {fileID: 773491707}
-  menuMusic: {fileID: 8300000, guid: 6ce737ff19c3b0f44a081ce833ff5d1d, type: 3}
 --- !u!114 &931500089
 MonoBehaviour:
   m_ObjectHideFlags: 0

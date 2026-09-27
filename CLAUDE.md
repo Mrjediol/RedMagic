@@ -1185,11 +1185,14 @@ variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three 
   add it to `DeclareSoundTriggers`, append a trigger value (explicit numbers, never renumber; 8 retired).
 - **`SoundCue` fields** on data owners: `BossAttack.sound` (+ `pickupSound`, `igniteSound`, `fireLoopSound`
   on their attack types), `BossPhase.transitionSound`, `WeaponDefinition` (charge/fire/impact/terrain/
-  expire/explosion/beam loop), `ShopManager` buy/deny/reroll, `LegendaryPassiveTuning` (one per passive
+  expire/explosion/beam loop), `LegendaryPassiveTuning` (one per passive
   moment), `PassiveDropCinematicSettings.landSound`. A field that only applies sometimes carries
   **`[SoundSlotIf(nameof(boolMember))]`**: hidden in the Inspector and absent from the registry when false.
 - **`SystemSounds`** (on `Resources/AudioManager.prefab`): everything that is the game's, not an object's —
-  UI (hover/focus/click/back/deny), open/close per menu, menu actions, run flow, economy, synergy, status.
+  UI (hover/focus/click/back/deny), open/close per menu, menu actions, shop (buy/deny/reroll), menu
+  music (`[MusicSlot]`), run flow, economy, synergy, status, generic enemy sounds. No scene object holds a
+  sound: the scanner then never has to open scenes (opening them additively floods the console with URP
+  "more than one global light" errors).
   `SystemSounds.Play(s => s.runStart)`. Never put a sound field on a scene-placed object that exists in
   several scenes (RunManager, SectionClearTracker…): it would be one slot per scene.
 - **`AudioManager`** (prefab in Resources, bootstrapped `BeforeSceneLoad`, owns the only `AudioListener`):

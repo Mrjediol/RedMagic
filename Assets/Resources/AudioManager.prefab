@@ -134,6 +134,43 @@ MonoBehaviour:
     rolloffStart: 8
     rolloffEnd: 24
     initialized: 1
+  menuMusic: {fileID: 8300000, guid: 6ce737ff19c3b0f44a081ce833ff5d1d, type: 3}
+  shopBuy:
+    clips:
+    - {fileID: 8300000, guid: a14542e33b05581428759a999a366db1, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  shopDeny:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  shopReroll:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
   mainMenu:
     open:
       clips:

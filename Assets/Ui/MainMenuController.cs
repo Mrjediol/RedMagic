@@ -34,11 +34,6 @@ namespace RedMagic.UI
         [Tooltip("Menú de opciones. Se muestra al pulsar Opciones y este menú se oculta.")]
         [SerializeField] private OptionsMenuController optionsMenu;
 
-        [Header("Música")]
-        [Tooltip("Suena en bucle mientras se está en el menú. Vacío = sin música.")]
-        [MusicSlot]
-        [SerializeField] private AudioClip menuMusic;
-
         private UIDocument _document;
         private VisualElement _root;
         private Button _playButton;
@@ -103,8 +98,8 @@ namespace RedMagic.UI
                 GameStateManager.Instance.SetPaused(true);
 
             // PlayMusic ignora la llamada si ese tema ya está sonando, así que volver de Opciones no lo reinicia.
-            if (menuMusic != null && AudioManager.Instance != null)
-                AudioManager.Instance.PlayMusic(menuMusic);
+            var menuMusic = SystemSounds.Current != null ? SystemSounds.Current.menuMusic : null;   // en el prefab del AudioManager
+            if (menuMusic != null) AudioManager.Instance.PlayMusic(menuMusic);
             SystemSounds.Play(s => s.mainMenu.open);
         }
 

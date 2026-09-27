@@ -150,6 +150,10 @@ namespace RedMagic.Audio.EditorTools
                 case "shopEnter":
                     category = "Shop";
                     break;
+                case "shopBuy": case "shopDeny": case "shopReroll":
+                    category = "Shop";
+                    name = Pretty(member.Substring(4));
+                    return;
                 case "goldGained": case "diamondGained": case "soulFragmentGained": case "skullGained":
                     category = "Economy";
                     break;

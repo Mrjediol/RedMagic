@@ -601,42 +601,6 @@ MonoBehaviour:
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player
   actionName: Interact
-  buySound:
-    clips:
-    - {fileID: 8300000, guid: a14542e33b05581428759a999a366db1, type: 3}
-    volume: 1
-    pitchMin: 1
-    pitchMax: 1
-    noRepeatLast: 1
-    priority: 1
-    positional: 0
-    rolloffStart: 8
-    rolloffEnd: 24
-    initialized: 1
-  denySound:
-    clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-    volume: 1
-    pitchMin: 1
-    pitchMax: 1
-    noRepeatLast: 1
-    priority: 1
-    positional: 0
-    rolloffStart: 8
-    rolloffEnd: 24
-    initialized: 1
-  rerollSound:
-    clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-    volume: 1
-    pitchMin: 1
-    pitchMax: 1
-    noRepeatLast: 1
-    priority: 1
-    positional: 0
-    rolloffStart: 8
-    rolloffEnd: 24
-    initialized: 1
 --- !u!4 &1111949888
 Transform:
   m_ObjectHideFlags: 0

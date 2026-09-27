@@ -32,6 +32,18 @@ namespace RedMagic.Audio
         [Tooltip("Acción rechazada en un menú (sin fondos, bloqueado, al máximo).")]
         public SoundCue uiDeny = new SoundCue { priority = SoundPriority.Critical };
 
+        [Header("Música")]
+        [Tooltip("Suena en bucle mientras se está en el menú principal. Vacío = sin música.")]
+        [MusicSlot]
+        public AudioClip menuMusic;
+
+        [Header("Tienda")]
+        [Tooltip("Compra hecha (sólo si se cobra y se equipa).")]
+        public SoundCue shopBuy = new SoundCue();
+        [Tooltip("Interacción rechazada (sin oro, sin rerolls, huecos llenos).")]
+        public SoundCue shopDeny = new SoundCue();
+        public SoundCue shopReroll = new SoundCue();
+
         [Header("Menús")]
         public MenuSounds mainMenu = new MenuSounds();
         public MenuSounds pauseMenu = new MenuSounds();

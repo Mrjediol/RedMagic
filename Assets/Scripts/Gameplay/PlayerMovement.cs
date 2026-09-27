@@ -1337,7 +1337,10 @@ namespace RedMagic.Gameplay
             // Así el intervalo se respeta siempre, pase lo que pase con el sensor de suelo.
             _footstepTimer -= Time.deltaTime;
 
-            if (!_colDown || Mathf.Abs(_currentHorizontalSpeed) < 0.5f) return;
+            // Sólo andando por el suelo: nada en el aire, al saltar (este frame aún toca suelo), en el
+            // dash ni al salir despedido. En pausa Update ni llega aquí, así que el reloj se congela.
+            if (!_colDown || JumpingThisFrame || IsDashing || IsKnockedBack) return;
+            if (Mathf.Abs(_currentHorizontalSpeed) < 0.5f) return;
             if (_footstepTimer > 0f) return;
 
             _footstepTimer = footstepInterval;

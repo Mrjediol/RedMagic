@@ -165,6 +165,20 @@ namespace RedMagic.Audio
         private const string PrefMuted = "audio.muted.";
         private const float MinLinear = 0.0001f; // ~ -80 dB
 
+        /// <summary>Ruta en Resources del prefab que se instancia al arrancar (ver <see cref="Bootstrap"/>).</summary>
+        public const string PrefabResourcePath = "AudioManager";
+
+        // Un único AudioManager para todo el juego: el prefab de Resources se instancia antes de
+        // cargar la primera escena, así gana siempre. Las copias que aún quedan en escenas se
+        // destruyen solas en su Awake (Instance ya existe). Sin prefab, se usa la de la escena.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void Bootstrap()
+        {
+            Instance = null;   // Domain Reload desactivado: no arrastrar la de la sesión anterior
+            var prefab = Resources.Load<AudioManager>(PrefabResourcePath);
+            if (prefab != null) Instantiate(prefab).name = prefab.name;
+        }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)

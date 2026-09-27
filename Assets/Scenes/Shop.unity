@@ -601,6 +601,40 @@ MonoBehaviour:
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player
   actionName: Interact
+  buySound:
+    clips:
+    - {fileID: 8300000, guid: a14542e33b05581428759a999a366db1, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  denySound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  rerollSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   denySfxId: SFX_ButtonClick
   rerollSfxId: SFX_ButtonClick
 --- !u!4 &1111949888

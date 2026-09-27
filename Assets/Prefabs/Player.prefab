@@ -54,6 +54,7 @@ GameObject:
   - component: {fileID: 9158418647574550477}
   - component: {fileID: 1145223074590112823}
   - component: {fileID: 1232626756917567298}
+  - component: {fileID: 5668994849381310021}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -170,7 +171,7 @@ MonoBehaviour:
   invulnerabilityDuration: 0.8
   invulnerabilityUsesUnscaledTime: 0
   hurtSfxId: SFX_PlayerHurt
-  deathSfxId: SFX_PlayerDeath
+  deathSfxId: 
 --- !u!114 &7988243875702620455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188,13 +189,10 @@ MonoBehaviour:
   moveActionName: Move
   jumpActionName: Jump
   dashActionName: Dash
-  jumpSfxId: SFX_PlayerJump
-  footstepSfxId: SFX_PlayerFootstep
   footstepInterval: 0.32
-  stompSfxId: SFX_EnemyStomp
-  dashSfxId: SFX_PlayerDash
-  enableStomp: 0
-  stompDamage: 0
+  jumpSfxId: 
+  footstepSfxId: 
+  dashSfxId: 
   _characterBounds:
     m_Center: {x: 0.12, y: 0.15, z: 0}
     m_Extent: {x: 0.49, y: 0.84, z: 0}
@@ -449,6 +447,73 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70116179f72527a42ab36158c004de7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.LegendaryPassiveStatHook
+--- !u!114 &5668994849381310021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4486680268914706177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 4
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 2003ffb7399335544afb004fb81d2623, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 5
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 2003ffb7399335544afb004fb81d2623, type: 3}
+      volume: 1
+      pitchMin: 1.1
+      pitchMax: 1.1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 6
+    cue:
+      clips:
+      - {fileID: 8300000, guid: a79bc298b9edb8647a967201931790e8, type: 3}
+      volume: 0.8
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 7
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 75a92ff837abffb46b22a39bc760e436, type: 3}
+      - {fileID: 8300000, guid: 552fdeb2cdf14e84f82a19475b313d4c, type: 3}
+      - {fileID: 8300000, guid: 1bad6106a706537479bf650a24b489e9, type: 3}
+      volume: 1
+      pitchMin: 0.95
+      pitchMax: 1.05
+      noRepeatLast: 1
+      priority: 0
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
 --- !u!1 &5936975751486156930
 GameObject:
   m_ObjectHideFlags: 0

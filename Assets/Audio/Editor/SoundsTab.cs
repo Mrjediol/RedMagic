@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -32,8 +33,7 @@ namespace RedMagic.Audio.EditorTools
         [SerializeField] private bool _needsReplace;
         [SerializeField] private bool _showRemoved;
         [SerializeField] private string _folder = "";
-        [SerializeField] private List<string> _expanded = new List<string>();
-        [SerializeField] private Vector2 _treeScroll, _listScroll;
+        [SerializeField] private Vector2 _listScroll;
 
         [NonSerialized] private List<SoundRegistryEntry> _entries;
         [NonSerialized] private Dictionary<string, SoundStatusRecord> _status;
@@ -109,52 +109,116 @@ namespace RedMagic.Audio.EditorTools
 
         // ------------------------------------------------------------------ árbol
 
+        [SerializeField] private TreeViewState<int> _treeState;
+        [NonSerialized] private FolderTree _tree;
+        [NonSerialized] private string _treeSignature;
+
         private void DrawTree()
         {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.Width(220), GUILayout.ExpandHeight(true));
-            _treeScroll = EditorGUILayout.BeginScrollView(_treeScroll);
-
             var visible = _entries.Where(e => _showRemoved || !IsRemoved(e)).ToList();
-            if (FolderButton("Todo", "", visible.Count, 0)) _folder = "";
 
-            var tops = visible.Select(e => Top(e.Category)).Distinct()
-                .OrderBy(t => Array.IndexOf(TopOrder, t) < 0 ? 999 : Array.IndexOf(TopOrder, t)).ThenBy(t => t);
-            foreach (var top in tops) DrawNode(top, visible, 0);
-
-            EditorGUILayout.EndScrollView();
-            EditorGUILayout.EndVertical();
-        }
-
-        private void DrawNode(string path, List<SoundRegistryEntry> visible, int depth)
-        {
-            var inside = visible.Where(e => InFolder(e.Category, path)).ToList();
-            var children = inside.Select(e => e.Category)
-                .Where(c => c.Length > path.Length && c.StartsWith(path + "/"))
-                .Select(c => path + "/" + c.Substring(path.Length + 1).Split('/')[0])
-                .Distinct().OrderBy(c => c).ToList();
-
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(depth * 12);
-            bool open = _expanded.Contains(path);
-            if (children.Count > 0)
+            // El árbol se reconstruye sólo cuando cambian las carpetas o los recuentos.
+            var counts = new SortedDictionary<string, int>(StringComparer.Ordinal);
+            foreach (var e in visible)
             {
-                bool now = EditorGUILayout.Foldout(open, GUIContent.none, true);
-                if (now != open) { if (now) _expanded.Add(path); else _expanded.Remove(path); }
-                GUILayout.Space(-4);
+                string path = "";
+                foreach (var part in e.Category.Split('/'))
+                {
+                    path = path.Length == 0 ? part : path + "/" + part;
+                    counts.TryGetValue(path, out int n);
+                    counts[path] = n + 1;
+                }
             }
-            else GUILayout.Space(14);
+            string signature = visible.Count + "|" + string.Join(";", counts.Select(p => p.Key + "=" + p.Value));
 
-            string label = path.Contains("/") ? path.Substring(path.LastIndexOf('/') + 1) : path;
-            if (FolderButton(label, path, inside.Count, 0)) _folder = path;
-            EditorGUILayout.EndHorizontal();
+            _treeState ??= new TreeViewState<int>();
+            if (_tree == null)
+            {
+                _tree = new FolderTree(_treeState, path => _folder = path);
+                _treeSignature = null;
+            }
+            if (_treeSignature != signature)
+            {
+                _tree.SetData(counts, visible.Count, _folder);
+                _treeSignature = signature;
+            }
 
-            if (open) foreach (var child in children) DrawNode(child, visible, depth + 1);
+            var rect = GUILayoutUtility.GetRect(220, 220, 100, 100000, GUILayout.Width(220), GUILayout.ExpandHeight(true));
+            GUI.Box(rect, GUIContent.none, EditorStyles.helpBox);
+            _tree.OnGUI(new Rect(rect.x + 2, rect.y + 2, rect.width - 4, rect.height - 4));
         }
 
-        private bool FolderButton(string label, string path, int count, int indent)
+        /// <summary>Árbol de carpetas con el TreeView nativo de Unity (el mismo aspecto que la Jerarquía).</summary>
+        private sealed class FolderTree : TreeView<int>
         {
-            var style = new GUIStyle(EditorStyles.label) { fontStyle = _folder == path ? FontStyle.Bold : FontStyle.Normal };
-            return GUILayout.Button($"{label}  ({count})", style);
+            private readonly Action<string> _onSelect;
+            private readonly Dictionary<int, string> _paths = new Dictionary<int, string>();
+            private readonly Dictionary<int, int> _counts = new Dictionary<int, int>();
+            private SortedDictionary<string, int> _data = new SortedDictionary<string, int>();
+            private int _total;
+
+            public FolderTree(TreeViewState<int> state, Action<string> onSelect) : base(state)
+            {
+                _onSelect = onSelect;
+                showAlternatingRowBackgrounds = true;
+                rowHeight = 20f;
+            }
+
+            public void SetData(SortedDictionary<string, int> counts, int total, string selected)
+            {
+                _data = counts;
+                _total = total;
+                Reload();
+                int id = Id(selected ?? "");
+                if (!GetSelection().Contains(id)) SetSelection(new[] { id });
+            }
+
+            private static int Id(string path) => path.Length == 0 ? 1 : (path.GetHashCode() & 0x7fffffff) | 2;
+
+            protected override TreeViewItem<int> BuildRoot()
+            {
+                _paths.Clear();
+                _counts.Clear();
+                var root = new TreeViewItem<int>(0, -1, "root");
+                var all = new TreeViewItem<int>(Id(""), 0, "Todo");
+                _paths[all.id] = "";
+                _counts[all.id] = _total;
+                root.AddChild(all);
+
+                var tops = _data.Keys.Where(k => !k.Contains("/"))
+                    .OrderBy(t => Array.IndexOf(TopOrder, t) < 0 ? 999 : Array.IndexOf(TopOrder, t)).ThenBy(t => t, StringComparer.Ordinal);
+                foreach (var top in tops) all.AddChild(Node(top));
+
+                SetupDepthsFromParentsAndChildren(root);
+                return root;
+            }
+
+            private TreeViewItem<int> Node(string path)
+            {
+                var item = new TreeViewItem<int>(Id(path), 0, path.Substring(path.LastIndexOf('/') + 1));
+                _paths[item.id] = path;
+                _counts[item.id] = _data[path];
+                foreach (var child in _data.Keys.Where(k => k.StartsWith(path + "/", StringComparison.Ordinal) &&
+                                                           k.IndexOf('/', path.Length + 1) < 0))
+                    item.AddChild(Node(child));
+                return item;
+            }
+
+            protected override void RowGUI(RowGUIArgs args)
+            {
+                base.RowGUI(args);
+                if (!_counts.TryGetValue(args.item.id, out int count)) return;
+                var style = new GUIStyle(EditorStyles.miniLabel) { alignment = TextAnchor.MiddleRight };
+                GUI.Label(new Rect(args.rowRect.x, args.rowRect.y, args.rowRect.width - 6, args.rowRect.height),
+                          count.ToString(), style);
+            }
+
+            protected override void SelectionChanged(IList<int> selectedIds)
+            {
+                if (selectedIds.Count > 0 && _paths.TryGetValue(selectedIds[0], out string path)) _onSelect(path);
+            }
+
+            protected override bool CanMultiSelect(TreeViewItem<int> item) => false;
         }
 
         // ------------------------------------------------------------------ filas
@@ -206,7 +270,18 @@ namespace RedMagic.Audio.EditorTools
                 var picked = (AudioClip)EditorGUILayout.ObjectField(current, typeof(AudioClip), false, GUILayout.Width(190));
                 if (EditorGUI.EndChangeCheck()) Assign(e, picked);
             }
-            GUILayout.Label(e.Clips.Count > 1 ? $"+{e.Clips.Count - 1}" : "", GUILayout.Width(22));
+            // Variantes: el botón abre el panel para verlas, cambiarlas, quitarlas o añadir más.
+            bool canVary = HasVariants(e) && !removed;
+            using (new EditorGUI.DisabledScope(!canVary))
+            {
+                bool open = _variantsOpen.Contains(e.Id);
+                string label = canVary ? $"{e.Clips.Count} {(open ? "▴" : "▾")}" : "";
+                if (GUILayout.Button(new GUIContent(label, "Variantes: suena una al azar cada vez"),
+                                     EditorStyles.miniButton, GUILayout.Width(36)) && canVary)
+                {
+                    if (open) _variantsOpen.Remove(e.Id); else _variantsOpen.Add(e.Id);
+                }
+            }
 
             // Estado → SoundStatus.json
             var prevColor = GUI.color;
@@ -220,6 +295,8 @@ namespace RedMagic.Audio.EditorTools
 
             if (GUILayout.Button("⋯", GUILayout.Width(22))) RowMenu(e, record);
             EditorGUILayout.EndHorizontal();
+
+            if (_variantsOpen.Contains(e.Id) && HasVariants(e) && !removed) DrawVariants(e);
 
             // Notas (del usuario o del declarado)
             string notes = !string.IsNullOrEmpty(record.Notes) ? record.Notes : e.Notes;
@@ -319,6 +396,109 @@ namespace RedMagic.Audio.EditorTools
                 SoundRegistry.Refresh(e);
                 SoundRegistry.WriteGenerated(_entries);
                 Info(clip != null ? $"{e.Name}: {clip.name}" : $"{e.Name}: sin clip");
+            }
+            catch (Exception ex) { Error($"{e.Name}: {ex.Message}"); }
+            GUIUtility.ExitGUI();
+        }
+
+        // ------------------------------------------------------------------ variantes
+
+        [NonSerialized] private readonly HashSet<string> _variantsOpen = new HashSet<string>();
+
+        /// <summary>Huecos con SoundCue (admiten varias variantes). La música es de un solo clip.</summary>
+        private static bool HasVariants(SoundRegistryEntry e) =>
+            e.Slot != null && (e.Kind == SoundSlotKind.EmitterTrigger || e.Kind == SoundSlotKind.CueField);
+
+        private void DrawVariants(SoundRegistryEntry e)
+        {
+            var clips = e.Clips.Select(AssetDatabase.LoadAssetAtPath<AudioClip>).Where(c => c != null).ToList();
+            List<AudioClip> changed = null;
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUILayout.LabelField("Variantes (suena una al azar cada vez, sin repetir la anterior)", EditorStyles.miniBoldLabel);
+
+            for (int i = 0; i < clips.Count; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Label((i + 1).ToString(), GUILayout.Width(18));
+                if (GUILayout.Button("▶", GUILayout.Width(24))) PlayPreview(clips[i]);
+                EditorGUI.BeginChangeCheck();
+                var picked = (AudioClip)EditorGUILayout.ObjectField(clips[i], typeof(AudioClip), false);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    changed = new List<AudioClip>(clips);
+                    if (picked != null) changed[i] = picked; else changed.RemoveAt(i);
+                }
+                if (GUILayout.Button(new GUIContent("✕", "Quitar esta variante"), GUILayout.Width(24)))
+                {
+                    changed = new List<AudioClip>(clips);
+                    changed.RemoveAt(i);
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("+", GUILayout.Width(18));
+            GUILayout.Space(28);
+            var added = (AudioClip)EditorGUILayout.ObjectField(null, typeof(AudioClip), false);
+            if (added != null) changed = new List<AudioClip>(clips) { added };
+            GUILayout.Space(28);
+            EditorGUILayout.EndHorizontal();
+
+            // Zona para sustituirlas todas: arrastrar 4 pasos nuevos deja exactamente esos 4.
+            var drop = GUILayoutUtility.GetRect(0, 34, GUILayout.ExpandWidth(true));
+            GUI.Box(drop, "Suelta aquí uno o varios clips para SUSTITUIR todas las variantes", EditorStyles.helpBox);
+            var dropped = DroppedClips(drop);
+            if (dropped != null) changed = dropped;
+
+            EditorGUILayout.EndVertical();
+
+            if (changed != null) SetClips(e, changed);
+        }
+
+        private static List<AudioClip> DroppedClips(Rect area)
+        {
+            var evt = Event.current;
+            if (!area.Contains(evt.mousePosition)) return null;
+            if (evt.type != EventType.DragUpdated && evt.type != EventType.DragPerform) return null;
+
+            var clips = DragAndDrop.objectReferences.OfType<AudioClip>().ToList();
+            if (clips.Count == 0) return null;
+
+            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+            if (evt.type != EventType.DragPerform) return null;
+
+            DragAndDrop.AcceptDrag();
+            evt.Use();
+            return clips.OrderBy(c => c.name, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        /// <summary>Deja en el hueco exactamente estos clips, en este orden.</summary>
+        private void SetClips(SoundRegistryEntry e, List<AudioClip> clips)
+        {
+            try
+            {
+                var slot = e.Slot;
+                bool ok = SoundSlotEditor.Edit(slot, prop =>
+                {
+                    if (!prop.FindPropertyRelative("initialized").boolValue)
+                        SoundSlotEditor.InitCue(prop, prop.FindPropertyRelative("positional").boolValue, SoundPriority.Normal);
+                    var list = prop.FindPropertyRelative("clips");
+                    list.arraySize = clips.Count;
+                    for (int i = 0; i < clips.Count; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = clips[i];
+                    SetSilent(prop, false);
+                }, out string error);
+                if (!ok) throw new InvalidOperationException(error);
+
+                slot.Clips.Clear();
+                slot.Clips.AddRange(clips);
+                slot.EntryMissing = false;
+                slot.UsesFallback = clips.Count == 0 && slot.Kind == SoundSlotKind.EmitterTrigger &&
+                                    SystemSounds.HasEnemyFallback(slot.Trigger) && OwnerUsesFallback(slot);
+
+                SoundRegistry.Refresh(e);
+                SoundRegistry.WriteGenerated(_entries);
+                Info($"{e.Name}: {clips.Count} variante{(clips.Count == 1 ? "" : "s")}.");
             }
             catch (Exception ex) { Error($"{e.Name}: {ex.Message}"); }
             GUIUtility.ExitGUI();

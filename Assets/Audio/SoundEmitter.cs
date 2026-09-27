@@ -72,9 +72,33 @@ namespace RedMagic.Audio
 
         public IReadOnlyList<SoundEvent> SoundEvents => soundEvents;
 
+        // OnSpawn no suena en OnEnable sino al final del frame (AudioManager.LateUpdate →
+        // FlushPendingSpawns), y sólo si el objeto sigue activo. PrefabPool instancia el prefab
+        // activo y lo apaga en el mismo frame antes de entregarlo: sonar en OnEnable daba dos
+        // OnSpawn en el primer uso de cada instancia. Además así el spawner ya lo ha colocado.
+        private static readonly List<SoundEmitter> s_pendingSpawns = new List<SoundEmitter>();
+        private bool _spawnQueued;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void ResetStatics() => s_pendingSpawns.Clear();
+
         private void OnEnable()
         {
-            if (playOnSpawnAutomatically) Play(SoundTrigger.OnSpawn);
+            if (!playOnSpawnAutomatically || _spawnQueued || AudioManager.Instance == null) return;
+            _spawnQueued = true;
+            s_pendingSpawns.Add(this);
+        }
+
+        internal static void FlushPendingSpawns()
+        {
+            for (int i = 0; i < s_pendingSpawns.Count; i++)
+            {
+                var emitter = s_pendingSpawns[i];
+                if (emitter == null) continue;
+                emitter._spawnQueued = false;
+                if (emitter.isActiveAndEnabled) emitter.Play(SoundTrigger.OnSpawn);
+            }
+            s_pendingSpawns.Clear();
         }
 
         /// <summary>Dispara todas las entradas cuyo trigger coincida (versión con enum, sin erratas).</summary>

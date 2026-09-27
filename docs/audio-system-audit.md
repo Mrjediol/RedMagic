@@ -142,7 +142,7 @@ only ever fires `OnHit`/`OnDeath` from `EnemyBrain`/`EnemyController`/`Projectil
 | 9 | Low | `PlayerPrefs.Save()` per slider tick. |
 | 10 | Low | `BossController.musicId` default `"Music_Boss"` is not registered → warning on any boss prefab not built by a pack (packs write empty). |
 | 11 | Low | Dead/leftover: `SoundData.loop` ignored for SFX; `SoundEmitter.Has()` unused; 3 `Sly_2_*.wav` rips and `enemydmg1/jump/jump2.wav` are placeholders; `sfx_gen.py` inside `Assets/`; Legacy controllers still call `PlaySFX`. |
-| 12 | Info | **AudioListener:** exactly one per scene (on the camera), none on Player/persistent objects, none added by code (`DisplayLetterbox` backdrop camera has none). Additive run loading unloads the previous scene **before** loading the next, so **two listeners never coexist** — no duplication. The flip side: during every hub→section and section→section transition there are **zero** listeners for the unload→load window (Unity logs "no audio listeners"; music keeps "playing" on a source nobody hears). Masked by the fade, but it's the reason to move the listener onto the persistent `AudioManager`. |
+| 12 | Info | **AudioListener (corrected during phase 1):** in every scene the one listener sits on the `AudioManager` GameObject, not the camera, so the persistent AudioManager already carried it through additive loads — there was never a zero-listener window. Only `Shop.unity` has none (only matters when opened standalone). Phase 1 makes this ownership explicit (AudioManager adds its listener if missing and disables any other on load). |
 
 ### 3.3 What's good (keep)
 

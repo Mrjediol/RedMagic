@@ -16,6 +16,12 @@ namespace RedMagic.Audio.EditorTools
         EmitterTrigger,
         /// <summary>Campo <see cref="SoundCue"/> de un componente o asset.</summary>
         CueField,
+        /// <summary>Campo AudioClip de música marcado con <see cref="MusicSlotAttribute"/>.</summary>
+        MusicField,
+        /// <summary>Pista por convención en <c>Resources/Music/&lt;nombre&gt;</c> (la deriva el registro).</summary>
+        MusicConvention,
+        /// <summary>Hueco declarado a mano: el momento aún no existe en el juego.</summary>
+        Declared,
     }
 
     /// <summary>Un hueco de sonido que existe en el proyecto, derivado del proyecto mismo.</summary>
@@ -238,7 +244,7 @@ namespace RedMagic.Audio.EditorTools
                 foreach (var f in t.GetFields(flags | BindingFlags.DeclaredOnly))
                 {
                     var ft = f.FieldType.IsArray ? f.FieldType.GetElementType() : f.FieldType;
-                    if (ft == typeof(SoundCue)) return true;
+                    if (ft == typeof(SoundCue) || f.IsDefined(typeof(MusicSlotAttribute), false)) return true;
                     if (ft != null && ft.IsClass && ft.IsSerializable && ft.Namespace != null &&
                         ft.Namespace.StartsWith("RedMagic", StringComparison.Ordinal) && HasCueField(ft, depth + 1))
                         return true;
@@ -257,6 +263,18 @@ namespace RedMagic.Audio.EditorTools
             while (it.Next(enter))
             {
                 enter = true;
+                if (it.propertyType == SerializedPropertyType.ObjectReference)
+                {
+                    var clipField = SoundSlotRules.FieldOf(it);
+                    if (clipField == null || !clipField.IsDefined(typeof(MusicSlotAttribute), false)) continue;
+
+                    var music = NewSlot(SoundSlotKind.MusicField, path, guid, scene, objectPath, componentType, it.propertyPath);
+                    music.PropertyPath = it.propertyPath;
+                    if (it.objectReferenceValue is AudioClip clip) music.Clips.Add(clip);
+                    slots.Add(music);
+                    continue;
+                }
+
                 if (it.propertyType != SerializedPropertyType.Generic || it.type != nameof(SoundCue)) continue;
                 enter = false;   // no bajar dentro de la cue
 

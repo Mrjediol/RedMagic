@@ -36,6 +36,7 @@ namespace RedMagic.UI
 
         [Header("Música")]
         [Tooltip("Suena en bucle mientras se está en el menú. Vacío = sin música.")]
+        [MusicSlot]
         [SerializeField] private AudioClip menuMusic;
 
         private UIDocument _document;

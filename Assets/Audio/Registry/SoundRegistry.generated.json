@@ -1,0 +1,3015 @@
+{
+  "_comment": "GENERADO por Tools > RedMagic > Audio > 3. No editar a mano: se sobrescribe. Calificaciones y notas: SoundStatus.json. Huecos sin momento aún: SoundDeclared.json.",
+  "slots": [
+    {
+      "id": "56fb851934fd63542ac2ea35df703eb9/SoundEmitter/OnActivate",
+      "name": "Activation",
+      "category": "Bosses/ColosodeHielo",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
+        "guid": "56fb851934fd63542ac2ea35df703eb9",
+        "component": "SoundEmitter",
+        "member": "OnActivate",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "56fb851934fd63542ac2ea35df703eb9/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Bosses/ColosodeHielo",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
+        "guid": "56fb851934fd63542ac2ea35df703eb9",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "56fb851934fd63542ac2ea35df703eb9/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Bosses/ColosodeHielo",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
+        "guid": "56fb851934fd63542ac2ea35df703eb9",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "55976d839ff5f3b45bea45375a392b62/BossDefinition/phases.Array.data[1].transitionSound",
+      "name": "Phase 2 transition",
+      "category": "Bosses/ColosodeHielo",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/Boss_ColosodeHielo.asset",
+        "guid": "55976d839ff5f3b45bea45375a392b62",
+        "component": "BossDefinition",
+        "member": "phases.Array.data[1].transitionSound",
+        "property": "phases.Array.data[1].transitionSound"
+      }
+    },
+    {
+      "id": "56fb851934fd63542ac2ea35df703eb9/SoundEmitter/OnVulnerable",
+      "name": "Vulnerable window",
+      "category": "Bosses/ColosodeHielo",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
+        "guid": "56fb851934fd63542ac2ea35df703eb9",
+        "component": "SoundEmitter",
+        "member": "OnVulnerable",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "de34646184324b747ada67361a541f1d/ChargeDashAttack/sound",
+      "name": "HieloEmbestida",
+      "category": "Bosses/ColosodeHielo/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_HieloEmbestida.asset",
+        "guid": "de34646184324b747ada67361a541f1d",
+        "component": "ChargeDashAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "b0b27610e4d74ca46ad41d590950f824/ShockwaveAttack/sound",
+      "name": "HieloGolpeSuelo",
+      "category": "Bosses/ColosodeHielo/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_HieloGolpeSuelo.asset",
+        "guid": "b0b27610e4d74ca46ad41d590950f824",
+        "component": "ShockwaveAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "11b2c24d759a4fb4183639a0bfa17e3c/ThrowProjectileAttack/sound",
+      "name": "HieloLanzarRoca",
+      "category": "Bosses/ColosodeHielo/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_HieloLanzarRoca.asset",
+        "guid": "11b2c24d759a4fb4183639a0bfa17e3c",
+        "component": "ThrowProjectileAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "11b2c24d759a4fb4183639a0bfa17e3c/ThrowProjectileAttack/pickupSound",
+      "name": "HieloLanzarRoca · Pickup",
+      "category": "Bosses/ColosodeHielo/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_HieloLanzarRoca.asset",
+        "guid": "11b2c24d759a4fb4183639a0bfa17e3c",
+        "component": "ThrowProjectileAttack",
+        "member": "pickupSound",
+        "property": "pickupSound"
+      }
+    },
+    {
+      "id": "62157c4b3df928a40a318b9365345584/ThrowProjectileAttack/sound",
+      "name": "HieloLanzarRocas",
+      "category": "Bosses/ColosodeHielo/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_HieloLanzarRocas.asset",
+        "guid": "62157c4b3df928a40a318b9365345584",
+        "component": "ThrowProjectileAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "62157c4b3df928a40a318b9365345584/ThrowProjectileAttack/pickupSound",
+      "name": "HieloLanzarRocas · Pickup",
+      "category": "Bosses/ColosodeHielo/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_HieloLanzarRocas.asset",
+        "guid": "62157c4b3df928a40a318b9365345584",
+        "component": "ThrowProjectileAttack",
+        "member": "pickupSound",
+        "property": "pickupSound"
+      }
+    },
+    {
+      "id": "fc4aa03008f30cc4285c862cc14a085d/MeleeStrikeAttack/sound",
+      "name": "HieloPunoPotente",
+      "category": "Bosses/ColosodeHielo/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_HieloPunoPotente.asset",
+        "guid": "fc4aa03008f30cc4285c862cc14a085d",
+        "component": "MeleeStrikeAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "8b8441e6f14dad24aa64edf43873a025/MeleeStrikeAttack/sound",
+      "name": "HieloRafagaPunos",
+      "category": "Bosses/ColosodeHielo/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_HieloRafagaPunos.asset",
+        "guid": "8b8441e6f14dad24aa64edf43873a025",
+        "component": "MeleeStrikeAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "f601d572303009c4b9ada9aab10e20a2/SoundEmitter/OnActivate",
+      "name": "Activation",
+      "category": "Bosses/TreeBoss",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
+        "guid": "f601d572303009c4b9ada9aab10e20a2",
+        "component": "SoundEmitter",
+        "member": "OnActivate",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "f601d572303009c4b9ada9aab10e20a2/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Bosses/TreeBoss",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
+        "guid": "f601d572303009c4b9ada9aab10e20a2",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "f601d572303009c4b9ada9aab10e20a2/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Bosses/TreeBoss",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
+        "guid": "f601d572303009c4b9ada9aab10e20a2",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "7a25097e1bcb58746986c2da883c44e5/BossDefinition/phases.Array.data[1].transitionSound",
+      "name": "Phase 2 transition",
+      "category": "Bosses/TreeBoss",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/Boss_TreeBoss.asset",
+        "guid": "7a25097e1bcb58746986c2da883c44e5",
+        "component": "BossDefinition",
+        "member": "phases.Array.data[1].transitionSound",
+        "property": "phases.Array.data[1].transitionSound"
+      }
+    },
+    {
+      "id": "f601d572303009c4b9ada9aab10e20a2/SoundEmitter/OnVulnerable",
+      "name": "Vulnerable window",
+      "category": "Bosses/TreeBoss",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
+        "guid": "f601d572303009c4b9ada9aab10e20a2",
+        "component": "SoundEmitter",
+        "member": "OnVulnerable",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "972da56e616f1e346b113a842dd77e07/GroundSlamAttack/sound",
+      "name": "BosqueDeEspinas",
+      "category": "Bosses/TreeBoss/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_BosqueDeEspinas.asset",
+        "guid": "972da56e616f1e346b113a842dd77e07",
+        "component": "GroundSlamAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "2a34b30aa2f9dda4f8eb97b2cb664611/GroundSlamAttack/sound",
+      "name": "EspinasDeRaiz",
+      "category": "Bosses/TreeBoss/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_EspinasDeRaiz.asset",
+        "guid": "2a34b30aa2f9dda4f8eb97b2cb664611",
+        "component": "GroundSlamAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "73c377778a5bf1846aa59cdf65ef37e6/QuakeSlamAttack/sound",
+      "name": "EstallidoDeRaices",
+      "category": "Bosses/TreeBoss/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_EstallidoDeRaices.asset",
+        "guid": "73c377778a5bf1846aa59cdf65ef37e6",
+        "component": "QuakeSlamAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "2bc93130a1ac03b4d8ddddb1afe5120a/PlatformDenialAttack/sound",
+      "name": "FuegoVerde",
+      "category": "Bosses/TreeBoss/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_FuegoVerde.asset",
+        "guid": "2bc93130a1ac03b4d8ddddb1afe5120a",
+        "component": "PlatformDenialAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "2bc93130a1ac03b4d8ddddb1afe5120a/PlatformDenialAttack/fireLoopSound",
+      "name": "FuegoVerde · Fire loop",
+      "category": "Bosses/TreeBoss/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_FuegoVerde.asset",
+        "guid": "2bc93130a1ac03b4d8ddddb1afe5120a",
+        "component": "PlatformDenialAttack",
+        "member": "fireLoopSound",
+        "property": "fireLoopSound"
+      }
+    },
+    {
+      "id": "2bc93130a1ac03b4d8ddddb1afe5120a/PlatformDenialAttack/igniteSound",
+      "name": "FuegoVerde · Ignite",
+      "category": "Bosses/TreeBoss/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_FuegoVerde.asset",
+        "guid": "2bc93130a1ac03b4d8ddddb1afe5120a",
+        "component": "PlatformDenialAttack",
+        "member": "igniteSound",
+        "property": "igniteSound"
+      }
+    },
+    {
+      "id": "5883a5b08f19a36478923a0cdb8817b5/OrbRingAttack/sound",
+      "name": "OrbesDeSavia",
+      "category": "Bosses/TreeBoss/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_OrbesDeSavia.asset",
+        "guid": "5883a5b08f19a36478923a0cdb8817b5",
+        "component": "OrbRingAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "0d9d43a0b06328b4aac7078fae8f0c06/BulletHellAttack/sound",
+      "name": "TormentaDeHojas",
+      "category": "Bosses/TreeBoss/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_TormentaDeHojas.asset",
+        "guid": "0d9d43a0b06328b4aac7078fae8f0c06",
+        "component": "BulletHellAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "e378c21c75a6b734fb99cf00d91e7302/OrbRingAttack/sound",
+      "name": "TormentaDeSavia",
+      "category": "Bosses/TreeBoss/Attacks",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Bosses/BossAttack_TormentaDeSavia.asset",
+        "guid": "e378c21c75a6b734fb99cf00d91e7302",
+        "component": "OrbRingAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/goldMarkApplied",
+      "name": "Gold mark applied",
+      "category": "Build & Status",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "goldMarkApplied",
+        "property": "goldMarkApplied"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/slowApplied",
+      "name": "Slow applied",
+      "category": "Build & Status",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "slowApplied",
+        "property": "slowApplied"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/synergyTierReached",
+      "name": "Synergy tier reached",
+      "category": "Build & Status",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "synergyTierReached",
+        "property": "synergyTierReached"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/diamondGained",
+      "name": "Diamond gained",
+      "category": "Economy",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "diamondGained",
+        "property": "diamondGained"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/goldGained",
+      "name": "Gold gained",
+      "category": "Economy",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "goldGained",
+        "property": "goldGained"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/skullGained",
+      "name": "Skull gained",
+      "category": "Economy",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "skullGained",
+        "property": "skullGained"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/soulFragmentGained",
+      "name": "Soul fragment gained",
+      "category": "Economy",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "soulFragmentGained",
+        "property": "soulFragmentGained"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/enemyAttack",
+      "name": "Attack",
+      "category": "Enemies/Generic (fallback)",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/EnemyGenericSounds/enemy_attack.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "enemyAttack",
+        "property": "enemyAttack"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/enemyDeath",
+      "name": "Death",
+      "category": "Enemies/Generic (fallback)",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/EnemyGenericSounds/enemy_die.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "enemyDeath",
+        "property": "enemyDeath"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/enemyHurt",
+      "name": "Hurt",
+      "category": "Enemies/Generic (fallback)",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/EnemyGenericSounds/enemy_hurt.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "enemyHurt",
+        "property": "enemyHurt"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/enemyMove",
+      "name": "Move",
+      "category": "Enemies/Generic (fallback)",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/EnemyGenericSounds/enemy_move_01.wav",
+        "Assets/Audio/Sounds/EnemyGenericSounds/enemy_move_02.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "enemyMove",
+        "property": "enemyMove"
+      }
+    },
+    {
+      "id": "df03e960fcd6b8442b4e6820d5dd5c41/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/IceGolem",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/EnemyGenericSounds/enemy_attack.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Enemy_IceGolem.prefab",
+        "guid": "df03e960fcd6b8442b4e6820d5dd5c41",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "df03e960fcd6b8442b4e6820d5dd5c41/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/IceGolem",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Enemy_IceGolem.prefab",
+        "guid": "df03e960fcd6b8442b4e6820d5dd5c41",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "df03e960fcd6b8442b4e6820d5dd5c41/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/IceGolem",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Enemy_IceGolem.prefab",
+        "guid": "df03e960fcd6b8442b4e6820d5dd5c41",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "df03e960fcd6b8442b4e6820d5dd5c41/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/IceGolem",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Enemy_IceGolem.prefab",
+        "guid": "df03e960fcd6b8442b4e6820d5dd5c41",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "ac3f483dadeed734b963e9b32ecbecd2/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/IceSpirit",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
+        "guid": "ac3f483dadeed734b963e9b32ecbecd2",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "ac3f483dadeed734b963e9b32ecbecd2/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/IceSpirit",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
+        "guid": "ac3f483dadeed734b963e9b32ecbecd2",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "ac3f483dadeed734b963e9b32ecbecd2/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/IceSpirit",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
+        "guid": "ac3f483dadeed734b963e9b32ecbecd2",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "ac3f483dadeed734b963e9b32ecbecd2/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/IceSpirit",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
+        "guid": "ac3f483dadeed734b963e9b32ecbecd2",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "7d50f52936cd7b44badf503aa71db18e/SoundEmitter/OnInteract",
+      "name": "Use",
+      "category": "Interactables/Anvil",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Eviroment/Anvil.prefab",
+        "guid": "7d50f52936cd7b44badf503aa71db18e",
+        "component": "SoundEmitter",
+        "member": "OnInteract",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "a528c8f325a4f604ea949bf395cea764/SoundEmitter/OnInteract",
+      "name": "Open",
+      "category": "Interactables/BookLectern",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Eviroment/BookLectern.prefab",
+        "guid": "a528c8f325a4f604ea949bf395cea764",
+        "component": "SoundEmitter",
+        "member": "OnInteract",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "a528c8f325a4f604ea949bf395cea764/SoundEmitter/OnLoot",
+      "name": "Take",
+      "category": "Interactables/BookLectern",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Eviroment/BookLectern.prefab",
+        "guid": "a528c8f325a4f604ea949bf395cea764",
+        "component": "SoundEmitter",
+        "member": "OnLoot",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "ed53e94378883174baa77619b4f54265/SoundEmitter/OnInteract",
+      "name": "Open",
+      "category": "Interactables/GoldChest",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Eviroment/GoldChest.prefab",
+        "guid": "ed53e94378883174baa77619b4f54265",
+        "component": "SoundEmitter",
+        "member": "OnInteract",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "ed53e94378883174baa77619b4f54265/SoundEmitter/OnLoot",
+      "name": "Take",
+      "category": "Interactables/GoldChest",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Eviroment/GoldChest.prefab",
+        "guid": "ed53e94378883174baa77619b4f54265",
+        "component": "SoundEmitter",
+        "member": "OnLoot",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "39487ec913203b64ea1352a039be6192/SoundEmitter/OnInteract",
+      "name": "Use",
+      "category": "Interactables/Mirror",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Eviroment/Mirror.prefab",
+        "guid": "39487ec913203b64ea1352a039be6192",
+        "component": "SoundEmitter",
+        "member": "OnInteract",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "6e302dba906d98441a4c29ae4a294387/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Interactables/Target",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Eviroment/Target.prefab",
+        "guid": "6e302dba906d98441a4c29ae4a294387",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "3a9384f67c101f644b83ab8f25fb657b/SoundEmitter/OnInteract",
+      "name": "Open",
+      "category": "Interactables/Wardrobe",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Eviroment/Wardrobe.prefab",
+        "guid": "3a9384f67c101f644b83ab8f25fb657b",
+        "component": "SoundEmitter",
+        "member": "OnInteract",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "3a9384f67c101f644b83ab8f25fb657b/SoundEmitter/OnLoot",
+      "name": "Take",
+      "category": "Interactables/Wardrobe",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Eviroment/Wardrobe.prefab",
+        "guid": "3a9384f67c101f644b83ab8f25fb657b",
+        "component": "SoundEmitter",
+        "member": "OnLoot",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "fb5066dd780f9a34ebb4e87662f8dbf3/LegendaryPassiveTuning/analesSlowSound",
+      "name": "Anales slow",
+      "category": "Legendary Passives",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
+        "guid": "fb5066dd780f9a34ebb4e87662f8dbf3",
+        "component": "LegendaryPassiveTuning",
+        "member": "analesSlowSound",
+        "property": "analesSlowSound"
+      }
+    },
+    {
+      "id": "fb5066dd780f9a34ebb4e87662f8dbf3/LegendaryPassiveTuning/codexAurumDropSound",
+      "name": "Codex aurum drop",
+      "category": "Legendary Passives",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
+        "guid": "fb5066dd780f9a34ebb4e87662f8dbf3",
+        "component": "LegendaryPassiveTuning",
+        "member": "codexAurumDropSound",
+        "property": "codexAurumDropSound"
+      }
+    },
+    {
+      "id": "fb5066dd780f9a34ebb4e87662f8dbf3/LegendaryPassiveTuning/grimorioChoiceSound",
+      "name": "Grimorio choice",
+      "category": "Legendary Passives",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
+        "guid": "fb5066dd780f9a34ebb4e87662f8dbf3",
+        "component": "LegendaryPassiveTuning",
+        "member": "grimorioChoiceSound",
+        "property": "grimorioChoiceSound"
+      }
+    },
+    {
+      "id": "fb5066dd780f9a34ebb4e87662f8dbf3/LegendaryPassiveTuning/libroReviveSound",
+      "name": "Libro revive",
+      "category": "Legendary Passives",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
+        "guid": "fb5066dd780f9a34ebb4e87662f8dbf3",
+        "component": "LegendaryPassiveTuning",
+        "member": "libroReviveSound",
+        "property": "libroReviveSound"
+      }
+    },
+    {
+      "id": "fb5066dd780f9a34ebb4e87662f8dbf3/LegendaryPassiveTuning/libroShieldSound",
+      "name": "Libro shield",
+      "category": "Legendary Passives",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
+        "guid": "fb5066dd780f9a34ebb4e87662f8dbf3",
+        "component": "LegendaryPassiveTuning",
+        "member": "libroShieldSound",
+        "property": "libroShieldSound"
+      }
+    },
+    {
+      "id": "fb5066dd780f9a34ebb4e87662f8dbf3/LegendaryPassiveTuning/manuscritoDropSound",
+      "name": "Manuscrito drop",
+      "category": "Legendary Passives",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
+        "guid": "fb5066dd780f9a34ebb4e87662f8dbf3",
+        "component": "LegendaryPassiveTuning",
+        "member": "manuscritoDropSound",
+        "property": "manuscritoDropSound"
+      }
+    },
+    {
+      "id": "00cceca7f9b16314999b55edaccc30d1/PassiveDropCinematicSettings/landSound",
+      "name": "Passive drop · Land",
+      "category": "Legendary Passives",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/PassiveDropCinematicSettings.asset",
+        "guid": "00cceca7f9b16314999b55edaccc30d1",
+        "component": "PassiveDropCinematicSettings",
+        "member": "landSound",
+        "property": "landSound"
+      }
+    },
+    {
+      "id": "declared:tomoDestinoChoice",
+      "name": "Tomo del Destino · elegir entre 3 objetos",
+      "category": "Legendary Passives",
+      "kind": "Declared",
+      "origin": "Declared",
+      "clipSource": "None",
+      "clips": [],
+      "declaredKey": "tomoDestinoChoice",
+      "notes": "El efecto de la pasiva (elegir entre 3 objetos al recoger uno) aún no existe. Al implementarlo, añade 'tomoDestinoChoiceSound' a LegendaryPassiveTuning y este hueco se funde solo."
+    },
+    {
+      "id": "fb5066dd780f9a34ebb4e87662f8dbf3/LegendaryPassiveTuning/tomoRotoUpgradeSound",
+      "name": "Tomo roto upgrade",
+      "category": "Legendary Passives",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
+        "guid": "fb5066dd780f9a34ebb4e87662f8dbf3",
+        "component": "LegendaryPassiveTuning",
+        "member": "tomoRotoUpgradeSound",
+        "property": "tomoRotoUpgradeSound"
+      }
+    },
+    {
+      "id": "56fb851934fd63542ac2ea35df703eb9/BossController/music",
+      "name": "Boss override · ColosodeHielo",
+      "category": "Music",
+      "kind": "MusicField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
+        "guid": "56fb851934fd63542ac2ea35df703eb9",
+        "component": "BossController",
+        "member": "music",
+        "property": "music"
+      }
+    },
+    {
+      "id": "f601d572303009c4b9ada9aab10e20a2/BossController/music",
+      "name": "Boss override · TreeBoss",
+      "category": "Music",
+      "kind": "MusicField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
+        "guid": "f601d572303009c4b9ada9aab10e20a2",
+        "component": "BossController",
+        "member": "music",
+        "property": "music"
+      }
+    },
+    {
+      "id": "music/MainHub",
+      "name": "Hub",
+      "category": "Music",
+      "kind": "MusicConvention",
+      "origin": "Convention",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Resources/Music/MainHub.mp3"
+      ],
+      "musicName": "MainHub"
+    },
+    {
+      "id": "0f1e2d3c4b5a69788796a5b4c3d2e1f0/MainMenuUI/MainMenuController/menuMusic",
+      "name": "Menu",
+      "category": "Music",
+      "kind": "MusicField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Sly_2_-_Band_of_Thieves_(USA).iso_00367.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Scenes/MainMenu.unity",
+        "guid": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+        "component": "MainMenuController",
+        "member": "menuMusic",
+        "scene": "Assets/Scenes/MainMenu.unity",
+        "object": "MainMenuUI",
+        "property": "menuMusic"
+      }
+    },
+    {
+      "id": "music/Shop",
+      "name": "Shop",
+      "category": "Music",
+      "kind": "MusicConvention",
+      "origin": "Convention",
+      "clipSource": "None",
+      "clips": [],
+      "musicName": "Shop"
+    },
+    {
+      "id": "music/BossBattle1",
+      "name": "World 1 · Boss",
+      "category": "Music",
+      "kind": "MusicConvention",
+      "origin": "Convention",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Resources/Music/BossBattle1.mp3"
+      ],
+      "musicName": "BossBattle1"
+    },
+    {
+      "id": "music/World1-1",
+      "name": "World 1 · Section 1",
+      "category": "Music",
+      "kind": "MusicConvention",
+      "origin": "Convention",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Resources/Music/World1-1.mp3"
+      ],
+      "musicName": "World1-1"
+    },
+    {
+      "id": "music/BossBattle2",
+      "name": "World 2 · Boss",
+      "category": "Music",
+      "kind": "MusicConvention",
+      "origin": "Convention",
+      "clipSource": "None",
+      "clips": [],
+      "musicName": "BossBattle2"
+    },
+    {
+      "id": "music/World2-1",
+      "name": "World 2 · Section 1",
+      "category": "Music",
+      "kind": "MusicConvention",
+      "origin": "Convention",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Resources/Music/World2-1.mp3"
+      ],
+      "musicName": "World2-1"
+    },
+    {
+      "id": "music/World2-2",
+      "name": "World 2 · Section 2",
+      "category": "Music",
+      "kind": "MusicConvention",
+      "origin": "Convention",
+      "clipSource": "None",
+      "clips": [],
+      "musicName": "World2-2"
+    },
+    {
+      "id": "music/BossBattle3",
+      "name": "World 3 · Boss",
+      "category": "Music",
+      "kind": "MusicConvention",
+      "origin": "Convention",
+      "clipSource": "None",
+      "clips": [],
+      "musicName": "BossBattle3"
+    },
+    {
+      "id": "music/World3-1",
+      "name": "World 3 · Section 1",
+      "category": "Music",
+      "kind": "MusicConvention",
+      "origin": "Convention",
+      "clipSource": "None",
+      "clips": [],
+      "musicName": "World3-1"
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnAttack",
+      "name": "Melee attack",
+      "category": "Player/Attack",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/enemydmg1.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "property": "soundEvents.Array.data[5].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnRangedAttack",
+      "name": "Ranged attack",
+      "category": "Player/Attack",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnRangedAttack",
+        "property": "soundEvents.Array.data[11].cue"
+      }
+    },
+    {
+      "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/fireSound",
+      "name": "Fire",
+      "category": "Player/Attack/BolaDeFuego",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
+        "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "fireSound",
+        "property": "fireSound"
+      }
+    },
+    {
+      "id": "a6c925cbbe61526704c311d7fb0a376c/WeaponDefinition/fireSound",
+      "name": "Fire",
+      "category": "Player/Attack/EscopetaEspectral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
+        "guid": "a6c925cbbe61526704c311d7fb0a376c",
+        "component": "WeaponDefinition",
+        "member": "fireSound",
+        "property": "fireSound"
+      }
+    },
+    {
+      "id": "23dff8ac298c99f53ea6feef5436cb08/WeaponDefinition/fireSound",
+      "name": "Fire",
+      "category": "Player/Attack/GranadaRunica",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
+        "guid": "23dff8ac298c99f53ea6feef5436cb08",
+        "component": "WeaponDefinition",
+        "member": "fireSound",
+        "property": "fireSound"
+      }
+    },
+    {
+      "id": "b286b86e93a8a3a9f1891e913b1090fb/WeaponDefinition/fireSound",
+      "name": "Fire",
+      "category": "Player/Attack/LanzaAstral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
+        "guid": "b286b86e93a8a3a9f1891e913b1090fb",
+        "component": "WeaponDefinition",
+        "member": "fireSound",
+        "property": "fireSound"
+      }
+    },
+    {
+      "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/fireSound",
+      "name": "Fire",
+      "category": "Player/Attack/ProyectilRecto",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
+        "guid": "646ccef625a76464a8886b4ce55cc056",
+        "component": "WeaponDefinition",
+        "member": "fireSound",
+        "property": "fireSound"
+      }
+    },
+    {
+      "id": "8925b63ba0f269c6039bbabaf86a5cc5/WeaponDefinition/fireSound",
+      "name": "Fire",
+      "category": "Player/Attack/RafagaArcana",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
+        "guid": "8925b63ba0f269c6039bbabaf86a5cc5",
+        "component": "WeaponDefinition",
+        "member": "fireSound",
+        "property": "fireSound"
+      }
+    },
+    {
+      "id": "c96dd323e939eb9cf88301ec22ae540c/WeaponDefinition/chargeSound",
+      "name": "Charge",
+      "category": "Player/Attack/RayoArcano",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
+        "guid": "c96dd323e939eb9cf88301ec22ae540c",
+        "component": "WeaponDefinition",
+        "member": "chargeSound",
+        "property": "chargeSound"
+      }
+    },
+    {
+      "id": "c96dd323e939eb9cf88301ec22ae540c/WeaponDefinition/fireSound",
+      "name": "Fire",
+      "category": "Player/Attack/RayoArcano",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
+        "guid": "c96dd323e939eb9cf88301ec22ae540c",
+        "component": "WeaponDefinition",
+        "member": "fireSound",
+        "property": "fireSound"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[6].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnHeal",
+      "name": "Heal",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnHeal",
+        "property": "soundEvents.Array.data[7].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/enemydmg1.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[4].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnLowHealth",
+      "name": "Low health",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnLowHealth",
+        "property": "soundEvents.Array.data[10].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnAirJump",
+      "name": "Air jump",
+      "category": "Player/Movement",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/player_jump.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnAirJump",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnDash",
+      "name": "Dash",
+      "category": "Player/Movement",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/player_dash.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnDash",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/Footstep",
+      "name": "Footstep",
+      "category": "Player/Movement",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/player_footstep_01.wav",
+        "Assets/Audio/Sounds/player_footstep_02.wav",
+        "Assets/Audio/Sounds/player_footstep_03.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "Footstep",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnJump",
+      "name": "Jump",
+      "category": "Player/Movement",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/player_jump.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnJump",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnLand",
+      "name": "Land",
+      "category": "Player/Movement",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnLand",
+        "property": "soundEvents.Array.data[8].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnLoot",
+      "name": "Pick up item",
+      "category": "Player/Pickup",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnLoot",
+        "property": "soundEvents.Array.data[9].cue"
+      }
+    },
+    {
+      "id": "bb1b1c50e32175c4c9e4ff37b93fc03e/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/ColosodeHielo_Boulder",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_Boulder.prefab",
+        "guid": "bb1b1c50e32175c4c9e4ff37b93fc03e",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "bb1b1c50e32175c4c9e4ff37b93fc03e/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/ColosodeHielo_Boulder",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_Boulder.prefab",
+        "guid": "bb1b1c50e32175c4c9e4ff37b93fc03e",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "bb1b1c50e32175c4c9e4ff37b93fc03e/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/ColosodeHielo_Boulder",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_Boulder.prefab",
+        "guid": "bb1b1c50e32175c4c9e4ff37b93fc03e",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "bb1b1c50e32175c4c9e4ff37b93fc03e/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/ColosodeHielo_Boulder",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_Boulder.prefab",
+        "guid": "bb1b1c50e32175c4c9e4ff37b93fc03e",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "09f608e8662b9ee4f9fe35a7ab1bc844/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/ColosodeHielo_PunchWave",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_PunchWave.prefab",
+        "guid": "09f608e8662b9ee4f9fe35a7ab1bc844",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "09f608e8662b9ee4f9fe35a7ab1bc844/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/ColosodeHielo_PunchWave",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_PunchWave.prefab",
+        "guid": "09f608e8662b9ee4f9fe35a7ab1bc844",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "09f608e8662b9ee4f9fe35a7ab1bc844/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/ColosodeHielo_PunchWave",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_PunchWave.prefab",
+        "guid": "09f608e8662b9ee4f9fe35a7ab1bc844",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "09f608e8662b9ee4f9fe35a7ab1bc844/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/ColosodeHielo_PunchWave",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_PunchWave.prefab",
+        "guid": "09f608e8662b9ee4f9fe35a7ab1bc844",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "93ebc4ef3e8aa1444b7560410286ac5c/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/IceSpiritShoot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Projectiles/IceSpiritShoot/Fx_IceSpiritShoot.prefab",
+        "guid": "93ebc4ef3e8aa1444b7560410286ac5c",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "93ebc4ef3e8aa1444b7560410286ac5c/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/IceSpiritShoot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Projectiles/IceSpiritShoot/Fx_IceSpiritShoot.prefab",
+        "guid": "93ebc4ef3e8aa1444b7560410286ac5c",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "93ebc4ef3e8aa1444b7560410286ac5c/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/IceSpiritShoot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Projectiles/IceSpiritShoot/Fx_IceSpiritShoot.prefab",
+        "guid": "93ebc4ef3e8aa1444b7560410286ac5c",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "93ebc4ef3e8aa1444b7560410286ac5c/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/IceSpiritShoot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Projectiles/IceSpiritShoot/Fx_IceSpiritShoot.prefab",
+        "guid": "93ebc4ef3e8aa1444b7560410286ac5c",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "1478e203ff8218040afb1d77900b258e/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/TreeBoss_Bullet",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Bullet.prefab",
+        "guid": "1478e203ff8218040afb1d77900b258e",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "1478e203ff8218040afb1d77900b258e/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/TreeBoss_Bullet",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Bullet.prefab",
+        "guid": "1478e203ff8218040afb1d77900b258e",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "1478e203ff8218040afb1d77900b258e/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/TreeBoss_Bullet",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Bullet.prefab",
+        "guid": "1478e203ff8218040afb1d77900b258e",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "1478e203ff8218040afb1d77900b258e/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/TreeBoss_Bullet",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Bullet.prefab",
+        "guid": "1478e203ff8218040afb1d77900b258e",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "ca29827b4cf7cbf4aa39fdfb7c5c9ad5/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/TreeBoss_Leaf",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Leaf.prefab",
+        "guid": "ca29827b4cf7cbf4aa39fdfb7c5c9ad5",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "ca29827b4cf7cbf4aa39fdfb7c5c9ad5/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/TreeBoss_Leaf",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Leaf.prefab",
+        "guid": "ca29827b4cf7cbf4aa39fdfb7c5c9ad5",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "ca29827b4cf7cbf4aa39fdfb7c5c9ad5/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/TreeBoss_Leaf",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Leaf.prefab",
+        "guid": "ca29827b4cf7cbf4aa39fdfb7c5c9ad5",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "ca29827b4cf7cbf4aa39fdfb7c5c9ad5/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/TreeBoss_Leaf",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Leaf.prefab",
+        "guid": "ca29827b4cf7cbf4aa39fdfb7c5c9ad5",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/expireSound",
+      "name": "Expire",
+      "category": "Projectiles/Weapons/BolaDeFuego",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
+        "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "expireSound",
+        "property": "expireSound"
+      }
+    },
+    {
+      "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/impactSound",
+      "name": "Impact",
+      "category": "Projectiles/Weapons/BolaDeFuego",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
+        "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "impactSound",
+        "property": "impactSound"
+      }
+    },
+    {
+      "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/terrainImpactSound",
+      "name": "Terrain impact",
+      "category": "Projectiles/Weapons/BolaDeFuego",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
+        "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "terrainImpactSound",
+        "property": "terrainImpactSound"
+      }
+    },
+    {
+      "id": "a6c925cbbe61526704c311d7fb0a376c/WeaponDefinition/expireSound",
+      "name": "Expire",
+      "category": "Projectiles/Weapons/EscopetaEspectral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
+        "guid": "a6c925cbbe61526704c311d7fb0a376c",
+        "component": "WeaponDefinition",
+        "member": "expireSound",
+        "property": "expireSound"
+      }
+    },
+    {
+      "id": "a6c925cbbe61526704c311d7fb0a376c/WeaponDefinition/impactSound",
+      "name": "Impact",
+      "category": "Projectiles/Weapons/EscopetaEspectral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
+        "guid": "a6c925cbbe61526704c311d7fb0a376c",
+        "component": "WeaponDefinition",
+        "member": "impactSound",
+        "property": "impactSound"
+      }
+    },
+    {
+      "id": "a6c925cbbe61526704c311d7fb0a376c/WeaponDefinition/terrainImpactSound",
+      "name": "Terrain impact",
+      "category": "Projectiles/Weapons/EscopetaEspectral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
+        "guid": "a6c925cbbe61526704c311d7fb0a376c",
+        "component": "WeaponDefinition",
+        "member": "terrainImpactSound",
+        "property": "terrainImpactSound"
+      }
+    },
+    {
+      "id": "23dff8ac298c99f53ea6feef5436cb08/WeaponDefinition/explosionSound",
+      "name": "Explosion",
+      "category": "Projectiles/Weapons/GranadaRunica",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
+        "guid": "23dff8ac298c99f53ea6feef5436cb08",
+        "component": "WeaponDefinition",
+        "member": "explosionSound",
+        "property": "explosionSound"
+      }
+    },
+    {
+      "id": "23dff8ac298c99f53ea6feef5436cb08/WeaponDefinition/impactSound",
+      "name": "Impact",
+      "category": "Projectiles/Weapons/GranadaRunica",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
+        "guid": "23dff8ac298c99f53ea6feef5436cb08",
+        "component": "WeaponDefinition",
+        "member": "impactSound",
+        "property": "impactSound"
+      }
+    },
+    {
+      "id": "b286b86e93a8a3a9f1891e913b1090fb/WeaponDefinition/expireSound",
+      "name": "Expire",
+      "category": "Projectiles/Weapons/LanzaAstral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
+        "guid": "b286b86e93a8a3a9f1891e913b1090fb",
+        "component": "WeaponDefinition",
+        "member": "expireSound",
+        "property": "expireSound"
+      }
+    },
+    {
+      "id": "b286b86e93a8a3a9f1891e913b1090fb/WeaponDefinition/impactSound",
+      "name": "Impact",
+      "category": "Projectiles/Weapons/LanzaAstral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
+        "guid": "b286b86e93a8a3a9f1891e913b1090fb",
+        "component": "WeaponDefinition",
+        "member": "impactSound",
+        "property": "impactSound"
+      }
+    },
+    {
+      "id": "b286b86e93a8a3a9f1891e913b1090fb/WeaponDefinition/terrainImpactSound",
+      "name": "Terrain impact",
+      "category": "Projectiles/Weapons/LanzaAstral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
+        "guid": "b286b86e93a8a3a9f1891e913b1090fb",
+        "component": "WeaponDefinition",
+        "member": "terrainImpactSound",
+        "property": "terrainImpactSound"
+      }
+    },
+    {
+      "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/expireSound",
+      "name": "Expire",
+      "category": "Projectiles/Weapons/ProyectilRecto",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
+        "guid": "646ccef625a76464a8886b4ce55cc056",
+        "component": "WeaponDefinition",
+        "member": "expireSound",
+        "property": "expireSound"
+      }
+    },
+    {
+      "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/impactSound",
+      "name": "Impact",
+      "category": "Projectiles/Weapons/ProyectilRecto",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
+        "guid": "646ccef625a76464a8886b4ce55cc056",
+        "component": "WeaponDefinition",
+        "member": "impactSound",
+        "property": "impactSound"
+      }
+    },
+    {
+      "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/terrainImpactSound",
+      "name": "Terrain impact",
+      "category": "Projectiles/Weapons/ProyectilRecto",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
+        "guid": "646ccef625a76464a8886b4ce55cc056",
+        "component": "WeaponDefinition",
+        "member": "terrainImpactSound",
+        "property": "terrainImpactSound"
+      }
+    },
+    {
+      "id": "8925b63ba0f269c6039bbabaf86a5cc5/WeaponDefinition/expireSound",
+      "name": "Expire",
+      "category": "Projectiles/Weapons/RafagaArcana",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
+        "guid": "8925b63ba0f269c6039bbabaf86a5cc5",
+        "component": "WeaponDefinition",
+        "member": "expireSound",
+        "property": "expireSound"
+      }
+    },
+    {
+      "id": "8925b63ba0f269c6039bbabaf86a5cc5/WeaponDefinition/impactSound",
+      "name": "Impact",
+      "category": "Projectiles/Weapons/RafagaArcana",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
+        "guid": "8925b63ba0f269c6039bbabaf86a5cc5",
+        "component": "WeaponDefinition",
+        "member": "impactSound",
+        "property": "impactSound"
+      }
+    },
+    {
+      "id": "8925b63ba0f269c6039bbabaf86a5cc5/WeaponDefinition/terrainImpactSound",
+      "name": "Terrain impact",
+      "category": "Projectiles/Weapons/RafagaArcana",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
+        "guid": "8925b63ba0f269c6039bbabaf86a5cc5",
+        "component": "WeaponDefinition",
+        "member": "terrainImpactSound",
+        "property": "terrainImpactSound"
+      }
+    },
+    {
+      "id": "c96dd323e939eb9cf88301ec22ae540c/WeaponDefinition/beamLoopSound",
+      "name": "Beam loop",
+      "category": "Projectiles/Weapons/RayoArcano",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
+        "guid": "c96dd323e939eb9cf88301ec22ae540c",
+        "component": "WeaponDefinition",
+        "member": "beamLoopSound",
+        "property": "beamLoopSound"
+      }
+    },
+    {
+      "id": "c96dd323e939eb9cf88301ec22ae540c/WeaponDefinition/impactSound",
+      "name": "Impact",
+      "category": "Projectiles/Weapons/RayoArcano",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
+        "guid": "c96dd323e939eb9cf88301ec22ae540c",
+        "component": "WeaponDefinition",
+        "member": "impactSound",
+        "property": "impactSound"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/bossRewardAppear",
+      "name": "Boss reward appear",
+      "category": "Run Flow",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "bossRewardAppear",
+        "property": "bossRewardAppear"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/doorLocked",
+      "name": "Door locked",
+      "category": "Run Flow",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "doorLocked",
+        "property": "doorLocked"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/enemySpawn",
+      "name": "Enemy spawn",
+      "category": "Run Flow",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "enemySpawn",
+        "property": "enemySpawn"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/runComplete",
+      "name": "Run complete",
+      "category": "Run Flow",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "runComplete",
+        "property": "runComplete"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/runOver",
+      "name": "Run over",
+      "category": "Run Flow",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "runOver",
+        "property": "runOver"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/runStart",
+      "name": "Run start",
+      "category": "Run Flow",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "runStart",
+        "property": "runStart"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/sectionClear",
+      "name": "Section clear",
+      "category": "Run Flow",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "sectionClear",
+        "property": "sectionClear"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/sectionEnter",
+      "name": "Section enter",
+      "category": "Run Flow",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "sectionEnter",
+        "property": "sectionEnter"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/waveStart",
+      "name": "Wave start",
+      "category": "Run Flow",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "waveStart",
+        "property": "waveStart"
+      }
+    },
+    {
+      "id": "594b46cde2cf98c489085bbc603a33a5/ShopManager/ShopManager/buySound",
+      "name": "Buy",
+      "category": "Shop",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/shop_buy.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Scenes/Shop.unity",
+        "guid": "594b46cde2cf98c489085bbc603a33a5",
+        "component": "ShopManager",
+        "member": "buySound",
+        "scene": "Assets/Scenes/Shop.unity",
+        "object": "ShopManager",
+        "property": "buySound"
+      }
+    },
+    {
+      "id": "594b46cde2cf98c489085bbc603a33a5/ShopManager/ShopManager/denySound",
+      "name": "Deny",
+      "category": "Shop",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Scenes/Shop.unity",
+        "guid": "594b46cde2cf98c489085bbc603a33a5",
+        "component": "ShopManager",
+        "member": "denySound",
+        "scene": "Assets/Scenes/Shop.unity",
+        "object": "ShopManager",
+        "property": "denySound"
+      }
+    },
+    {
+      "id": "594b46cde2cf98c489085bbc603a33a5/ShopManager/ShopManager/rerollSound",
+      "name": "Reroll",
+      "category": "Shop",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Scenes/Shop.unity",
+        "guid": "594b46cde2cf98c489085bbc603a33a5",
+        "component": "ShopManager",
+        "member": "rerollSound",
+        "scene": "Assets/Scenes/Shop.unity",
+        "object": "ShopManager",
+        "property": "rerollSound"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/shopEnter",
+      "name": "Shop enter",
+      "category": "Shop",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "shopEnter",
+        "property": "shopEnter"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/uiBack",
+      "name": "Back",
+      "category": "UI",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "uiBack",
+        "property": "uiBack"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/uiClick",
+      "name": "Click",
+      "category": "UI",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "uiClick",
+        "property": "uiClick"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/uiDeny",
+      "name": "Deny",
+      "category": "UI",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "uiDeny",
+        "property": "uiDeny"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/uiFocus",
+      "name": "Focus",
+      "category": "UI",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "uiFocus",
+        "property": "uiFocus"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/uiHover",
+      "name": "Hover",
+      "category": "UI",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/ui_hover.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "uiHover",
+        "property": "uiHover"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/mirrorPassiveUpgraded",
+      "name": "Mirror passive upgraded",
+      "category": "UI/Menu actions",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "mirrorPassiveUpgraded",
+        "property": "mirrorPassiveUpgraded"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/upgradeBought",
+      "name": "Upgrade bought",
+      "category": "UI/Menu actions",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "upgradeBought",
+        "property": "upgradeBought"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/weaponLevelUp",
+      "name": "Weapon level up",
+      "category": "UI/Menu actions",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "weaponLevelUp",
+        "property": "weaponLevelUp"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/itemMenu.close",
+      "name": "Close",
+      "category": "UI/Menus/Item",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "itemMenu.close",
+        "property": "itemMenu.close"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/itemMenu.open",
+      "name": "Open",
+      "category": "UI/Menus/Item",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "itemMenu.open",
+        "property": "itemMenu.open"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/mainMenu.close",
+      "name": "Close",
+      "category": "UI/Menus/Main",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "mainMenu.close",
+        "property": "mainMenu.close"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/mainMenu.open",
+      "name": "Open",
+      "category": "UI/Menus/Main",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "mainMenu.open",
+        "property": "mainMenu.open"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/mirrorMenu.close",
+      "name": "Close",
+      "category": "UI/Menus/Mirror",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "mirrorMenu.close",
+        "property": "mirrorMenu.close"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/mirrorMenu.open",
+      "name": "Open",
+      "category": "UI/Menus/Mirror",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "mirrorMenu.open",
+        "property": "mirrorMenu.open"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/optionsMenu.close",
+      "name": "Close",
+      "category": "UI/Menus/Options",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "optionsMenu.close",
+        "property": "optionsMenu.close"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/optionsMenu.open",
+      "name": "Open",
+      "category": "UI/Menus/Options",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "optionsMenu.open",
+        "property": "optionsMenu.open"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/pauseMenu.close",
+      "name": "Close",
+      "category": "UI/Menus/Pause",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "pauseMenu.close",
+        "property": "pauseMenu.close"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/pauseMenu.open",
+      "name": "Open",
+      "category": "UI/Menus/Pause",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "pauseMenu.open",
+        "property": "pauseMenu.open"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/upgradeMenu.close",
+      "name": "Close",
+      "category": "UI/Menus/Upgrade",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "upgradeMenu.close",
+        "property": "upgradeMenu.close"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/upgradeMenu.open",
+      "name": "Open",
+      "category": "UI/Menus/Upgrade",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "upgradeMenu.open",
+        "property": "upgradeMenu.open"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/weaponChoiceMenu.close",
+      "name": "Close",
+      "category": "UI/Menus/Weapon choice",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "weaponChoiceMenu.close",
+        "property": "weaponChoiceMenu.close"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/weaponChoiceMenu.open",
+      "name": "Open",
+      "category": "UI/Menus/Weapon choice",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "weaponChoiceMenu.open",
+        "property": "weaponChoiceMenu.open"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/weaponForgeMenu.close",
+      "name": "Close",
+      "category": "UI/Menus/Weapon forge",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "weaponForgeMenu.close",
+        "property": "weaponForgeMenu.close"
+      }
+    },
+    {
+      "id": "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/weaponForgeMenu.open",
+      "name": "Open",
+      "category": "UI/Menus/Weapon forge",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "GenericTest",
+      "clips": [
+        "Assets/Audio/Test/generic_test.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/AudioManager.prefab",
+        "guid": "7fa4d2184cc2a6349add1c56424e9ca3",
+        "component": "SystemSounds",
+        "member": "weaponForgeMenu.open",
+        "property": "weaponForgeMenu.open"
+      }
+    }
+  ]
+}

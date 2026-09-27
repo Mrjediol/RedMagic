@@ -51,6 +51,14 @@ namespace RedMagic.Audio
     }
 
     /// <summary>
+    /// Marca un campo <see cref="UnityEngine.AudioClip"/> de música como hueco de sonido del registro
+    /// (la música de menú, la música propia de un jefe). La música de escena por convención
+    /// (<c>Resources/Music/&lt;nombre&gt;</c>) la deriva el registro de los mundos, no de un campo.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class MusicSlotAttribute : Attribute { }
+
+    /// <summary>
     /// Condición de existencia de un hueco <see cref="SoundCue"/>: el campo sólo cuenta (y sólo se
     /// dibuja) si el miembro bool <see cref="Member"/> del objeto dueño devuelve true. Así un arma
     /// sin carga no enseña "sonido de carga" y el registro no lo lista.

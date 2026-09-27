@@ -1,0 +1,13 @@
+{
+  "_comment": "Huecos de sonido cuyo momento aún no existe en el juego. matchComponent + matchMember es la clave con la que se funden con el hueco real cuando el escáner lo descubra.",
+  "slots": [
+    {
+      "key": "tomoDestinoChoice",
+      "name": "Tomo del Destino · elegir entre 3 objetos",
+      "category": "Legendary Passives",
+      "matchComponent": "LegendaryPassiveTuning",
+      "matchMember": "tomoDestinoChoiceSound",
+      "notes": "El efecto de la pasiva (elegir entre 3 objetos al recoger uno) aún no existe. Al implementarlo, añade 'tomoDestinoChoiceSound' a LegendaryPassiveTuning y este hueco se funde solo."
+    }
+  ]
+}

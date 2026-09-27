@@ -105,6 +105,7 @@ namespace RedMagic.Bosses
         [Tooltip("Música del combate, arranca con la presentación. Vacío = no cambia la música " +
                  "(la de la fase, BossBattle{n} en Resources/Music, sigue sonando). El rugido de " +
                  "entrada es el momento OnActivate del SoundEmitter.")]
+        [MusicSlot]
         [SerializeField] private AudioClip music;
 
         [Min(0f)]

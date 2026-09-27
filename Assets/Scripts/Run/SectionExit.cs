@@ -1,3 +1,4 @@
+using RedMagic.Audio;
 using RedMagic.Items;
 using UnityEngine;
 
@@ -75,18 +76,22 @@ namespace RedMagic.Run
 
         private void OnEnable() => _used = false;
 
-        private void OnTriggerEnter2D(Collider2D other) => TryUse(other);
+        private void OnTriggerEnter2D(Collider2D other) => TryUse(other, entering: true);
 
         // También en Stay: si el jugador ya estaba dentro del trigger cuando cayó el último
         // enemigo, Enter no vuelve a dispararse y se quedaría encerrado en la sección.
-        private void OnTriggerStay2D(Collider2D other) => TryUse(other);
+        private void OnTriggerStay2D(Collider2D other) => TryUse(other, entering: false);
 
-        private void TryUse(Collider2D other)
+        private void TryUse(Collider2D other, bool entering)
         {
             if (_used && oneShot) return;
             if (!other.CompareTag(playerTag)) return;
-            if (BlockedByEnemies) return;
-            if (BlockedByMissingWeapon) return;
+            if (BlockedByEnemies || BlockedByMissingWeapon)
+            {
+                // Sólo al llegar: en Stay sonaría cada frame mientras se empuja la puerta.
+                if (entering) SystemSounds.PlayAt(s => s.doorLocked, transform.position);
+                return;
+            }
 
             var manager = RunManager.Instance;
 

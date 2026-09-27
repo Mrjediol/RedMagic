@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RedMagic.Audio;
 using UnityEngine;
 
 namespace RedMagic.Combat
@@ -70,7 +71,9 @@ namespace RedMagic.Combat
             if (!target.TryGetComponent(out SlowStatus status))
                 status = target.gameObject.AddComponent<SlowStatus>();
 
+            bool fresh = !status.IsSlowed;
             status.Refresh(strength, duration, vulnerability, tint, fullTintAtStrength);
+            if (fresh) SystemSounds.PlayAt(s => s.slowApplied, target.transform.position);
             return status;
         }
 

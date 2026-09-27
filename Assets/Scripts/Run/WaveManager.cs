@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using RedMagic.Audio;
 using RedMagic.Combat;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -111,6 +112,7 @@ namespace RedMagic.Run
 
                 CurrentWave = i;
                 OnWaveStart?.Invoke(i);
+                SystemSounds.Play(s => s.waveStart);
 
                 _pendingSpawns = wave.enemies.Count;
                 foreach (var entry in wave.enemies) StartCoroutine(SpawnAfterDelay(entry, i));
@@ -157,6 +159,7 @@ namespace RedMagic.Run
             // Las secciones se cargan aditivas: sin esto el enemigo nacería en la escena activa
             // y no se descargaría con la sección.
             if (go.scene != gameObject.scene) SceneManager.MoveGameObjectToScene(go, gameObject.scene);
+            SystemSounds.PlayAt(s => s.enemySpawn, point.position);
 
             var health = go.GetComponentInChildren<Health>();
             if (health == null)

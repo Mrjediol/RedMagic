@@ -98,12 +98,16 @@ namespace RedMagic.Items
         public float statusDuration;
         public float statusMagnitude;
 
+        /// <summary>Arma de la que sale el disparo: de ella salen sus sonidos de impacto. Los hijos de un split la heredan.</summary>
+        public WeaponDefinition source;
+
         /// <summary>Paso 1: valores base del arma, sin ningún modificador.</summary>
         public static WeaponShot FromWeapon(WeaponDefinition weapon)
         {
             var shot = weapon.Shot;
             return new WeaponShot
             {
+                source = weapon,
                 delivery = shot.delivery,
                 beamDuration = Mathf.Max(0.05f, shot.beamDuration),
                 beamTickInterval = Mathf.Max(0.02f, shot.beamTickInterval),

@@ -38,8 +38,28 @@ namespace RedMagic.Bosses
     [DisallowMultipleComponent]
     public class BossController : MonoBehaviour, ISoundEventSource
     {
-        /// <summary>OnActivate al empezar la presentación (rugido). Ver <see cref="SoundEmitter"/>.</summary>
+        /// <summary>OnActivate al empezar la presentación (rugido), OnVulnerable al abrir una ventana de castigo. Ver <see cref="SoundEmitter"/>.</summary>
         public event Action<SoundTrigger> SoundTriggered;
+
+        public void DeclareSoundTriggers(List<SoundTrigger> into)
+        {
+            into.Add(SoundTrigger.OnActivate);
+            if (HasPunishWindows()) into.Add(SoundTrigger.OnVulnerable);
+        }
+
+        // Algún ataque de la baraja (o de apertura) deja al jefe expuesto al acabar.
+        private bool HasPunishWindows()
+        {
+            if (definition == null) return false;
+            foreach (var phase in definition.Phases)
+            {
+                if (phase == null) continue;
+                if (phase.openingAttack != null && phase.openingAttack.VulnerableSeconds > 0f) return true;
+                foreach (var attack in phase.attacks)
+                    if (attack != null && attack.VulnerableSeconds > 0f) return true;
+            }
+            return false;
+        }
 
         [Header("Definición")]
         [Tooltip("Asset con el nombre, las fases y las barajas de ataques de este jefe.")]
@@ -703,6 +723,7 @@ namespace RedMagic.Bosses
 
             if (_vulnerableRoutine != null) StopCoroutine(_vulnerableRoutine);
             _vulnerableRoutine = StartCoroutine(VulnerableWindow(seconds, Mathf.Max(1f, multiplier)));
+            SoundTriggered?.Invoke(SoundTrigger.OnVulnerable);
         }
 
         private IEnumerator VulnerableWindow(float seconds, float multiplier)

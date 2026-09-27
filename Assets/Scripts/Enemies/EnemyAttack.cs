@@ -26,6 +26,8 @@ namespace RedMagic.Enemies
         /// <summary>OnAttack en el frame en que sale el golpe/disparo. Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
 
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into) { into.Add(SoundTrigger.OnAttack); }
+
         /// <summary>
         /// Nombre del hijo opcional que marca dónde nace el disparo — la boca de un dragón, la
         /// punta de un bastón. Colócalo en el Prefab Editor arrastrándolo a la posición exacta con

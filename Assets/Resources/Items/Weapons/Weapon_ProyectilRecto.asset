@@ -55,3 +55,84 @@ MonoBehaviour:
     beamWidth: 0.5
   innateElement: 0
   universalTag: 100
+  chargeSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  fireSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  impactSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  terrainImpactSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  expireSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 0
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  explosionSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 2
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  beamLoopSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1

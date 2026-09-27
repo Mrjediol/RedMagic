@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RedMagic.Audio;
 
 namespace RedMagic.Items
 {
@@ -201,6 +202,7 @@ namespace RedMagic.Items
                 for (int i = 0; i < thresholds.Length; i++)
                     if (oldEffective < thresholds[i] && newEffective >= thresholds[i])
                         ThresholdReached?.Invoke(tag, thresholds[i]);
+                        SystemSounds.Play(s => s.synergyTierReached);
             }
             else
             {

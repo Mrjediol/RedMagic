@@ -8,7 +8,7 @@ namespace RedMagic.UI
     /// Sonidos de UI Toolkit. <see cref="Bind"/> una vez por documento (en su OnEnable / al construir
     /// la UI) y todo botón del árbol suena solo:
     /// <list type="bullet">
-    /// <item>hover con ratón/dedo y cambio de foco con mando/teclado → <c>uiHover</c>;</item>
+    /// <item>hover con ratón/dedo → <c>uiHover</c>; cambio de foco con mando/teclado → <c>uiFocus</c>;</item>
     /// <item>clic o submit → <c>uiClick</c> (<c>uiBack</c> con <see cref="BackClass"/>; nada con
     /// <see cref="NoClickClass"/>).</item>
     /// </list>
@@ -18,7 +18,7 @@ namespace RedMagic.UI
     /// Reglas: el foco sólo suena si lo movió la navegación (NavigationMoveEvent), así el foco
     /// inicial que pone un menú al abrirse es mudo; y el mismo elemento no suena dos veces seguidas
     /// aunque le lleguen hover y foco a la vez. Los clips son los de <see cref="AudioManager"/>
-    /// (UI Hover / Click / Back / Deny). Atrás/cerrar y rechazos los pide cada menú con
+    /// (<see cref="SystemSounds"/>: UI Hover / Focus / Click / Back / Deny). Atrás/cerrar y rechazos los pide cada menú con
     /// <see cref="Back"/> / <see cref="Deny"/>, porque no pasan por un botón.
     /// </summary>
     public static class UiSounds
@@ -37,10 +37,11 @@ namespace RedMagic.UI
         // Mismo elemento dentro de esta ventana = no vuelve a sonar (hover + foco juntos).
         private const float RepeatWindow = 0.25f;
 
-        public static void Hover() { var a = AudioManager.Instance; if (a != null) a.Play(a.UiHover); }
-        public static void Click() { var a = AudioManager.Instance; if (a != null) a.Play(a.UiClick); }
-        public static void Back() { var a = AudioManager.Instance; if (a != null) a.Play(a.UiBack); }
-        public static void Deny() { var a = AudioManager.Instance; if (a != null) a.Play(a.UiDeny); }
+        public static void Hover() => SystemSounds.Play(s => s.uiHover);
+        public static void Focus() => SystemSounds.Play(s => s.uiFocus);
+        public static void Click() => SystemSounds.Play(s => s.uiClick);
+        public static void Back() => SystemSounds.Play(s => s.uiBack);
+        public static void Deny() => SystemSounds.Play(s => s.uiDeny);
 
         /// <summary>Engancha los sonidos a todo el árbol de <paramref name="root"/>. Idempotente.</summary>
         public static void Bind(VisualElement root)
@@ -72,7 +73,7 @@ namespace RedMagic.UI
                 var element = Resolve(evt.target as VisualElement);
                 if (element == _hovered) return;     // moverse entre hijos del mismo botón
                 _hovered = element;
-                if (element != null) HoverOnce(element);
+                if (element != null) SoundOnce(element, focus: false);
             }
 
             public void OnPointerLeave(PointerLeaveEvent evt) => _hovered = null;
@@ -83,7 +84,7 @@ namespace RedMagic.UI
             {
                 if (_navigationFrame != Time.frameCount) return;   // foco puesto por código o por clic
                 var element = Resolve(evt.target as VisualElement);
-                if (element != null) HoverOnce(element);
+                if (element != null) SoundOnce(element, focus: true);
             }
 
             public void OnClick(ClickEvent evt) => Press(evt.target as VisualElement);
@@ -98,13 +99,14 @@ namespace RedMagic.UI
                 else Click();
             }
 
-            private void HoverOnce(VisualElement element)
+            // Hover y foco comparten la guarda: el mismo elemento no suena dos veces seguidas.
+            private void SoundOnce(VisualElement element, bool focus)
             {
                 float now = Time.unscaledTime;
                 if (element == _lastSounded && now - _lastSoundedAt < RepeatWindow) return;
                 _lastSounded = element;
                 _lastSoundedAt = now;
-                Hover();
+                if (focus) Focus(); else Hover();
             }
 
             // El botón (o elemento marcado) que contiene a target, o null si no hay / está mudo / desactivado.

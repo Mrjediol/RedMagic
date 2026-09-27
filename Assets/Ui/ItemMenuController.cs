@@ -150,17 +150,17 @@ namespace RedMagic.UI
 
             if (keyboard.iKey.wasPressedThisFrame)
             {
-                if (_open) CloseFromInput();
+                if (_open) Close();
                 else Open();
                 return;
             }
 
             if (!_open) return;
 
-            if (keyboard.escapeKey.wasPressedThisFrame) CloseFromInput();
+            if (keyboard.escapeKey.wasPressedThisFrame) Close();
 
             var gamepad = Gamepad.current;
-            if (gamepad != null && gamepad.buttonEast.wasPressedThisFrame) CloseFromInput();
+            if (gamepad != null && gamepad.buttonEast.wasPressedThisFrame) Close();
         }
 
         // ------------------------------------------------------------------ abrir / cerrar
@@ -178,6 +178,7 @@ namespace RedMagic.UI
             }
 
             _open = true;
+            SystemSounds.Play(s => s.itemMenu.open);
             _overlay.style.display = DisplayStyle.Flex;
 
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(true);
@@ -193,18 +194,11 @@ namespace RedMagic.UI
             RefreshAll();
         }
 
-        // Teclado/mando: no pasan por un botón, así que el "atrás" suena aquí. El botón de cerrar
-        // suena solo (UiSounds, clase BackClass) y llama a Close directamente.
-        private void CloseFromInput()
-        {
-            UiSounds.Back();
-            Close();
-        }
-
         public void Close()
         {
             if (!_open) return;
             _open = false;
+            SystemSounds.Play(s => s.itemMenu.close);
 
             _overlay.style.display = DisplayStyle.None;
 
@@ -303,7 +297,7 @@ namespace RedMagic.UI
 
             var sprites = _skin.closeButton;
             var button = new Button(Close) { name = "menu-close" };
-            button.AddToClassList(UiSounds.BackClass);
+            button.AddToClassList(UiSounds.NoClickClass);   // cerrar: suena el cierre del menú, no un clic
             float size = _skin.closeButtonSize;
             button.style.width = size * sprites.Aspect;
             button.style.height = size;

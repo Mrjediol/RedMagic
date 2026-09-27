@@ -29,3 +29,87 @@ MonoBehaviour:
   enemyHealthReductionLevel2: 0.2
   levelsPerFreeItem: 3
   chestWeaponUpgrades: 2
+  codexAurumDropSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  manuscritoDropSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  grimorioChoiceSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  tomoRotoUpgradeSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  libroReviveSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 2
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  libroShieldSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  analesSlowSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1

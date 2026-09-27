@@ -1,5 +1,7 @@
 fileFormatVersion: 2
 guid: e947e92332e2ac342b07a06ba7106ba2
+labels:
+- SoundIgnore
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 11400000

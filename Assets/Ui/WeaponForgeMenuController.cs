@@ -85,12 +85,12 @@ namespace RedMagic.UI
             if (keyboard != null && (keyboard.escapeKey.wasPressedThisFrame ||
                                      keyboard.eKey.wasPressedThisFrame))
             {
-                CloseFromInput();
+                Close();
                 return;
             }
 
             var gamepad = Gamepad.current;
-            if (gamepad != null && gamepad.buttonEast.wasPressedThisFrame) CloseFromInput();
+            if (gamepad != null && gamepad.buttonEast.wasPressedThisFrame) Close();
         }
 
         // ------------------------------------------------------------------ abrir / cerrar
@@ -102,6 +102,7 @@ namespace RedMagic.UI
 
             _user = user != null ? user : FindUser();
             _open = true;
+            SystemSounds.Play(s => s.weaponForgeMenu.open);
             _overlay.style.display = DisplayStyle.Flex;
 
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(true);
@@ -115,19 +116,12 @@ namespace RedMagic.UI
             Rebuild();
         }
 
-        // Teclado/mando: no pasan por un botón, así que el "atrás" suena aquí. El botón de cerrar
-        // suena solo (UiSounds, clase BackClass) y llama a Close directamente.
-        private void CloseFromInput()
-        {
-            UiSounds.Back();
-            Close();
-        }
-
         public void Close()
         {
             if (!_open) return;
 
             _open = false;
+            SystemSounds.Play(s => s.weaponForgeMenu.close);
             _overlay.style.display = DisplayStyle.None;
 
             if (CurrencyManager.Instance != null) CurrencyManager.Instance.Changed -= OnCurrencyChanged;
@@ -302,9 +296,13 @@ namespace RedMagic.UI
         private void Buy(WeaponDefinition weapon)
         {
             var levels = WeaponLevelManager.Instance;
-            if (levels == null || !levels.TryUpgrade(weapon)) return;
+            if (levels == null || !levels.TryUpgrade(weapon))
+            {
+                UiSounds.Deny();
+                return;
+            }
 
-            UiSounds.Click();
+            SystemSounds.Play(s => s.weaponLevelUp);
 
             // TryUpgrade ya ha cobrado (lo que dispara Changed y repinta), pero se repinta también
             // aquí por si la subida sale gratis y no hay cambio de moneda que escuchar.

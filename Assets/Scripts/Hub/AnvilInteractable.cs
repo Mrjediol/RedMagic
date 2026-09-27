@@ -19,6 +19,8 @@ namespace RedMagic.Hub
         /// <summary>OnInteract al abrir/usar, OnLoot al recoger. Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
 
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into) { into.Add(SoundTrigger.OnInteract); }
+
         [Header("Detección")]
         [SerializeField] private string playerTag = "Player";
 

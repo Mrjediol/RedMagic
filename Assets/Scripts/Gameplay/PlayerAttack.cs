@@ -26,6 +26,8 @@ namespace RedMagic.Gameplay
         /// <summary>OnAttack al iniciar el golpe. Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
 
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into) { into.Add(SoundTrigger.OnAttack); }
+
         [Header("Input Actions")]
         [SerializeField] private InputActionAsset inputActions;
         [SerializeField] private string actionMapName = "Player";

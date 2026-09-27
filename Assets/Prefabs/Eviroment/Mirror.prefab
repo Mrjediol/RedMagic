@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3418620761438609617}
   - component: {fileID: 6599996677466083785}
   - component: {fileID: 489489591854806525}
+  - component: {fileID: 2563990638903556753}
   m_Layer: 0
   m_Name: Mirror
   m_TagString: Untagged
@@ -159,6 +160,32 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &2563990638903556753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4007376430737122180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 10
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
 --- !u!1 &5773689946071020782
 GameObject:
   m_ObjectHideFlags: 0

@@ -34,9 +34,6 @@ namespace RedMagic.Run
         [Min(0.1f)]
         [SerializeField] private float clearEffectScale = 2f;
 
-        [Tooltip("Sonido al despejar la sección.")]
-        [SerializeField] private SoundCue clearSound = new SoundCue();
-
         /// <summary>True si no queda ningún enemigo vivo en la sección actual.</summary>
         public bool IsCleared { get; private set; } = true;
 
@@ -233,7 +230,7 @@ namespace RedMagic.Run
         /// </summary>
         private void OnSectionCleared()
         {
-            if (AudioManager.Instance != null) AudioManager.Instance.Play(clearSound);
+            SystemSounds.Play(s => s.sectionClear);
 
             if (clearEffectPrefab != null && _trackedScene.IsValid() && _trackedScene.isLoaded)
             {

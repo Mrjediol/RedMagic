@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using RedMagic.Abilities;
-using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Fx;
 using RedMagic.Gameplay;
@@ -156,13 +155,14 @@ namespace RedMagic.Items
             {
                 // Sólo pasa con un item de pool libre y los 6 huecos llenos: se queda aquí.
                 _warnCooldown = 3f;
+                Audio.SystemSounds.Play(s => s.uiDeny);
                 RewardPopupUi.Show(_item.Icon, Loc.Get("shop.free_slots_full"), _item.DisplayName, _item.Accent);
                 return;
             }
 
-            // El sonido es el OnLoot del SoundEmitter de quien lo recoge (el jugador).
-            var emitter = other.GetComponentInParent<SoundEmitter>();
-            if (emitter != null) emitter.Play(SoundTrigger.OnLoot);
+            // Suena como el OnLoot de quien lo recoge (el jugador, vía su WeaponUser).
+            var user = other.GetComponentInParent<WeaponUser>();
+            if (user != null) user.NotifyItemPickedUp();
             AbilityFx.Flash(ProceduralSprites.Glow, transform.position, Vector2.one * 2.5f,
                             ItemRarities.ColorOf(_item.Rarity), 0.4f, 0f, 1.8f, gameObject);
             RewardPopupUi.Show(_item.Icon, Loc.Get("reward.item"), _item.DisplayName,

@@ -1,3 +1,4 @@
+using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Localization;
 using RedMagic.Run;
@@ -148,13 +149,11 @@ namespace RedMagic.UI
             OnBackInput();
         }
 
-        /// <summary>Escape / Atrás de Android / Start del mando. Los botones suenan solos (UiSounds);
-        /// estas teclas no pasan por un botón, así que suenan aquí.</summary>
+        /// <summary>Escape / Atrás de Android / Start del mando. Abrir y cerrar suenan en Pause/Resume.</summary>
         private void OnBackInput()
         {
             if (!_open)
             {
-                UiSounds.Click();
                 Pause();
                 return;
             }
@@ -165,7 +164,6 @@ namespace RedMagic.UI
                 return;
             }
 
-            UiSounds.Back();
             Resume();
         }
 
@@ -183,6 +181,7 @@ namespace RedMagic.UI
         {
             if (_open) return;
             _open = true;
+            SystemSounds.Play(s => s.pauseMenu.open);
 
             if (GameStateManager.Instance != null)
                 GameStateManager.Instance.SetPaused(true);
@@ -198,6 +197,7 @@ namespace RedMagic.UI
         {
             if (!_open) return;
             _open = false;
+            SystemSounds.Play(s => s.pauseMenu.close);
 
             if (GameStateManager.Instance != null)
                 GameStateManager.Instance.SetPaused(false);

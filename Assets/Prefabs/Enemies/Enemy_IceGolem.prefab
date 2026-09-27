@@ -112,6 +112,7 @@ GameObject:
   - component: {fileID: 3199198598303953285}
   - component: {fileID: 9018731166194615984}
   - component: {fileID: 6850027337932989548}
+  - component: {fileID: 1452708940997830087}
   m_Layer: 0
   m_Name: Enemy_IceGolem
   m_TagString: Untagged
@@ -153,6 +154,7 @@ MonoBehaviour:
   damageMultiplier: 1
   invulnerabilityDuration: 0
   invulnerabilityUsesUnscaledTime: 0
+  lowHealthThreshold: 0.25
 --- !u!114 &6173560485435290154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -218,6 +220,7 @@ MonoBehaviour:
     contactDamage: 0
     contactDamageCooldown: 1
     contactKnockbackMultiplier: 1
+    moveSoundInterval: 0.4
     idleAnimSpeed: 1
     moveAnimSpeed: 1
     attackAnimSpeed: 1
@@ -429,3 +432,68 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1452708940997830087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8953631198253205537}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 3
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 1
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 15
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 0
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1

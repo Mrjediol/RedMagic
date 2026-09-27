@@ -1,3 +1,4 @@
+using RedMagic.Audio;
 using UnityEngine;
 
 namespace RedMagic.Economy
@@ -50,6 +51,22 @@ namespace RedMagic.Economy
 
         [Header("El Tomo Roto — arma del cofre")]
         [Min(0)] public int chestWeaponUpgrades = 2;
+
+        [Header("Sonidos de las pasivas")]
+        [Tooltip("Codex Aurum: caen los objetos gratis al matar al jefe.")]
+        public SoundCue codexAurumDropSound = new SoundCue { positional = true };
+        [Tooltip("Manuscrito Eterno: cae el objeto de cada N secciones.")]
+        public SoundCue manuscritoDropSound = new SoundCue { positional = true };
+        [Tooltip("Grimorio del Umbral: el cofre ofrece varias armas a elegir.")]
+        public SoundCue grimorioChoiceSound = new SoundCue();
+        [Tooltip("El Tomo Roto: el arma del cofre sale mejorada.")]
+        public SoundCue tomoRotoUpgradeSound = new SoundCue();
+        [Tooltip("El Libro Sin Nombre: revive.")]
+        public SoundCue libroReviveSound = new SoundCue { priority = SoundPriority.High };
+        [Tooltip("El Libro Sin Nombre (nivel 2): el escudo absorbe un golpe.")]
+        public SoundCue libroShieldSound = new SoundCue();
+        [Tooltip("Anales del Vacío: la primera oleada llega ralentizada (una vez por oleada).")]
+        public SoundCue analesSlowSound = new SoundCue();
 
         private static LegendaryPassiveTuning _cached;
 

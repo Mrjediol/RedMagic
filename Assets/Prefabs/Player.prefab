@@ -170,6 +170,7 @@ MonoBehaviour:
   damageMultiplier: 1
   invulnerabilityDuration: 0.8
   invulnerabilityUsesUnscaledTime: 0
+  lowHealthThreshold: 0.25
 --- !u!114 &7988243875702620455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -188,6 +189,7 @@ MonoBehaviour:
   jumpActionName: Jump
   dashActionName: Dash
   footstepInterval: 0.32
+  landMinAirTime: 0.15
   _characterBounds:
     m_Center: {x: 0.12, y: 0.15, z: 0}
     m_Extent: {x: 0.49, y: 0.84, z: 0}
@@ -527,6 +529,84 @@ MonoBehaviour:
       volume: 1
       pitchMin: 0.38
       pitchMax: 0.38
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 17
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 12
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 0
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 11
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 18
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 13
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
       noRepeatLast: 1
       priority: 1
       positional: 0

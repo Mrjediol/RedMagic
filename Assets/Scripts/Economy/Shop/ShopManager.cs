@@ -252,6 +252,7 @@ namespace RedMagic.Economy
             if (entry.Item is FreePoolItemDefinition && inventory.FreeSlotsFull)
             {
                 altar.Deny();
+                AudioManager.Instance?.Play(denySound);
                 RewardPopupUi.Show(entry.Item.Icon, Loc.Get("shop.free_slots_full"), entry.Item.DisplayName, entry.Item.Accent);
                 return;
             }

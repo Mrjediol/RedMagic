@@ -1,4 +1,5 @@
 using RedMagic.Audio;
+using RedMagic.Audio.EditorTools;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ namespace RedMagic.AudioEditor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
+            if (!SoundSlotRules.IsActive(property, fieldInfo)) return 0f;   // hueco que no aplica a este objeto
             float line = EditorGUIUtility.singleLineHeight + Pad;
             if (!property.isExpanded) return line;
 
@@ -29,6 +31,7 @@ namespace RedMagic.AudioEditor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            if (!SoundSlotRules.IsActive(property, fieldInfo)) return;
             EnsureInitialized(property);
 
             EditorGUI.BeginProperty(position, label, property);

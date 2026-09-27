@@ -30,6 +30,10 @@ MonoBehaviour:
     lifetime: 1.6
     size: {x: 0.25, y: 0.25}
     muzzleOffset: {x: 0.65, y: 0.1}
+    overrideCollider: 0
+    colliderType: 0
+    colliderSize: {x: 0.2, y: 0.2}
+    colliderOffset: {x: 0, y: 0}
     pierce: 0
     arcGravity: 0
     burstCount: 3
@@ -38,6 +42,9 @@ MonoBehaviour:
     impactDamage: 0
     projectilePrefab: {fileID: 978843057492195504, guid: 46434b74354da304c80a2570e5c97a9e, type: 3}
     beamPrefab: {fileID: 0}
+    faceDirection: 0
+    facingAxis: 0
+    aimMode: 0
     meleeRange: 1.2
     meleeArc: 90
     chargeTime: 0
@@ -49,3 +56,84 @@ MonoBehaviour:
     beamWidth: 0.5
   innateElement: 2
   universalTag: 102
+  chargeSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  fireSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  impactSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  terrainImpactSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  expireSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 0
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  explosionSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 2
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  beamLoopSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1

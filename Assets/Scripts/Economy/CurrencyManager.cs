@@ -1,4 +1,5 @@
 using System;
+using RedMagic.Audio;
 using RedMagic.Run;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -179,6 +180,7 @@ namespace RedMagic.Economy
         {
             if (amount <= 0) return;
             SetAmount(currency, _amounts[(int)currency] + amount);
+            PlayGained(currency);
         }
 
         /// <summary>
@@ -211,6 +213,17 @@ namespace RedMagic.Economy
             Add(Currency.Diamond, Scaled(drops.diamond.Roll(), scale));
             Add(Currency.SoulFragment, Scaled(drops.soulFragment.Roll(), scale));
             Add(Currency.Skull, Scaled(drops.skull.Roll(), scale));
+        }
+
+        private static void PlayGained(Currency currency)
+        {
+            switch (currency)
+            {
+                case Currency.Gold: SystemSounds.Play(s => s.goldGained); break;
+                case Currency.Diamond: SystemSounds.Play(s => s.diamondGained); break;
+                case Currency.SoulFragment: SystemSounds.Play(s => s.soulFragmentGained); break;
+                case Currency.Skull: SystemSounds.Play(s => s.skullGained); break;
+            }
         }
 
         private static int Scaled(int amount, float scale) => scale == 1f ? amount : Mathf.RoundToInt(amount * scale);

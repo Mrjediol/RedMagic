@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6234683661541560658}
   - component: {fileID: 1862578637150894891}
   - component: {fileID: 1667175026966542893}
+  - component: {fileID: 7617360770587443849}
   m_Layer: 0
   m_Name: Fx_TreeBoss_Bullet
   m_TagString: Untagged
@@ -112,6 +113,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.Projectile
   speed: 14
   lifetime: 3
+  faceTravelDirection: 1
   damage: 10
   hitLayers:
     serializedVersion: 2
@@ -126,6 +128,71 @@ MonoBehaviour:
   arcGravity: 0
   impactRadius: 0
   impactDamage: 0
+--- !u!114 &7617360770587443849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2367985640549458107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 1
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 14
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 0
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 0
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
 --- !u!1 &5520391533054484738
 GameObject:
   m_ObjectHideFlags: 0

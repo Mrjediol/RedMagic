@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -9,9 +11,11 @@ namespace RedMagic.Audio.EditorTools
     /// consola todo lo que cambia.
     ///
     /// 1 · Crear prefab AudioManager — <c>Assets/Resources/AudioManager.prefab</c>, el único
-    /// AudioManager del juego (lo instancia <see cref="AudioManager"/> antes de la primera escena).
-    /// Mixer y grupos salen de <c>GameAudioMixer</c>; el resto, de los valores por defecto del
-    /// componente (idénticos a los de las copias en escena).
+    /// AudioManager del juego (lo instancia <see cref="AudioManager"/> antes de la primera escena), con
+    /// su <see cref="SystemSounds"/>. Mixer y grupos salen de <c>GameAudioMixer</c>; el resto, de los
+    /// valores por defecto del componente.
+    ///
+    /// 2 · Preparar huecos y rellenar vacíos — ver <see cref="PrepareAndFillWithTestClip"/>.
     /// </summary>
     public static class AudioSetupTool
     {
@@ -47,6 +51,7 @@ namespace RedMagic.Audio.EditorTools
             try
             {
                 var manager = go.AddComponent<AudioManager>();
+                go.AddComponent<SystemSounds>();
                 var so = new SerializedObject(manager);
                 so.FindProperty("mixer").objectReferenceValue = mixer;
                 so.FindProperty("musicGroup").objectReferenceValue = music;
@@ -59,6 +64,81 @@ namespace RedMagic.Audio.EditorTools
             finally
             {
                 Object.DestroyImmediate(go);
+            }
+        }
+
+        /// <summary>
+        /// 2 · Deja todo hueco de sonido del juego existiendo y sonando: añade SoundEmitter y entradas a
+        /// los prefabs que declaran momentos sin entrada, y pone el clip de prueba genérico en todo hueco
+        /// vacío. Nunca toca un hueco que ya tiene clip. Si el escáner encuentra algo que no cuadra, para.
+        /// </summary>
+        [MenuItem(Menu + "2 · Preparar huecos y rellenar vacíos con el clip de prueba")]
+        public static void PrepareAndFillWithTestClip()
+        {
+            EnsureSystemSounds();
+
+            var problems = new List<string>();
+            var slots = SoundSlotScanner.Scan(problems);
+            if (problems.Count > 0)
+            {
+                Debug.LogError("[AudioSetup] El escáner encontró problemas; no se toca nada:\n- " +
+                               string.Join("\n- ", problems));
+                return;
+            }
+
+            var test = SoundSlotEditor.GenericTestClip();
+            if (test == null)
+            {
+                Debug.LogError($"[AudioSetup] No se pudo crear {SoundSlotEditor.GenericTestClipPath}.");
+                return;
+            }
+
+            var log = new StringBuilder();
+            int created = 0, filled = 0, failed = 0;
+            foreach (var slot in slots)
+            {
+                if (!slot.EntryMissing && slot.Clips.Count > 0) continue;
+
+                bool ok = SoundSlotEditor.Edit(slot, cue =>
+                {
+                    var clips = cue.FindPropertyRelative("clips");
+                    bool empty = true;
+                    for (int i = 0; i < clips.arraySize; i++)
+                        if (clips.GetArrayElementAtIndex(i).objectReferenceValue != null) empty = false;
+                    if (empty) SoundSlotEditor.SetSingleClip(cue, test);
+                }, out string error);
+
+                if (!ok)
+                {
+                    failed++;
+                    log.AppendLine($"  FALLO {slot.Id}: {error}");
+                    continue;
+                }
+
+                if (slot.EntryMissing) created++;
+                filled++;
+                log.AppendLine($"  {(slot.EntryMissing ? "entrada nueva + " : "")}clip de prueba → " +
+                               $"{slot.AssetPath} ▸ {slot.ComponentType}.{slot.Member}");
+            }
+
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[AudioSetup] Huecos: {slots.Count} · entradas creadas: {created} · " +
+                      $"rellenados con prueba: {filled} · fallos: {failed}\n{log}");
+        }
+
+        private static void EnsureSystemSounds()
+        {
+            var root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                if (root.GetComponent<SystemSounds>() != null) return;
+                root.AddComponent<SystemSounds>();
+                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+                Debug.Log($"[AudioSetup] Añadido SystemSounds a {PrefabPath}.");
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
             }
         }
 

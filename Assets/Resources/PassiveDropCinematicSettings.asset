@@ -54,7 +54,8 @@ MonoBehaviour:
   continuePulseSpeed: 1.2
   outroDuration: 0.4
   landSound:
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1

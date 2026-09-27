@@ -55,8 +55,12 @@ namespace RedMagic.Bosses
         [Min(0f)]
         public float transitionShake = 0.5f;
 
-        [Tooltip("Sonido al entrar en la fase.")]
+        [Tooltip("Sonido al entrar en la fase (la primera no tiene transición).")]
+        [SoundSlotIf(nameof(HasTransition))]
         public SoundCue transitionSound = new SoundCue();
+
+        /// <summary>Se entra en esta fase desde otra (la primera empieza a 1 y no tiene transición).</summary>
+        public bool HasTransition => startsAtHealth < 1f;
 
         [Tooltip("Efecto de un solo uso (pooled, con VfxOneShot) que estalla a los pies del jefe al " +
                  "entrar en la fase. Vacío = sólo aura, sacudida y sonido.")]

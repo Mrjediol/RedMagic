@@ -1,4 +1,5 @@
 using System.Collections;
+using RedMagic.Audio;
 using RedMagic.Fx;
 using UnityEngine;
 
@@ -60,6 +61,12 @@ namespace RedMagic.Bosses
         [Min(0.05f)]
         [SerializeField] private float fireTickInterval = 0.5f;
 
+        [Header("Sonido")]
+        [Tooltip("Cada fuego al prender (donde cae el proyectil).")]
+        [SerializeField] private SoundCue igniteSound = new SoundCue { positional = true };
+        [Tooltip("Bucle mientras arde cada fuego. Se corta solo cuando el fuego desaparece.")]
+        [SerializeField] private SoundCue fireLoopSound = new SoundCue { positional = true, priority = SoundPriority.Low };
+
         [Tooltip("Asienta el fuego sobre la superficie que haya bajo cada punto (plataforma o suelo), " +
                  "así el punto puede dejarse a ojo un poco por encima.")]
         [SerializeField] private bool snapToSurface = true;
@@ -119,8 +126,15 @@ namespace RedMagic.Bosses
 
             VfxOneShot.Spawn(fireImpactFxPrefab, at);
 
-            BossHazard.Spawn(ctx, firePrefab, Accent, at, fireSize, BossHazard.UntilBossDies,
-                             Damage, fireTickInterval, KnockbackMultiplier);
+            var fire = BossHazard.Spawn(ctx, firePrefab, Accent, at, fireSize, BossHazard.UntilBossDies,
+                                        Damage, fireTickInterval, KnockbackMultiplier);
+
+            var audio = AudioManager.Instance;
+            if (audio != null)
+            {
+                audio.Play(igniteSound, at);
+                if (fire != null) audio.StartLoop(fireLoopSound, fire, fire.transform);
+            }
         }
 
         /// <summary>Centro del fuego: sobre la superficie bajo el punto, o el punto tal cual.</summary>

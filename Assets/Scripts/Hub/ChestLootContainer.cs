@@ -1,4 +1,5 @@
 using RedMagic.Abilities;
+using RedMagic.Audio;
 using RedMagic.Economy;
 using RedMagic.Items;
 using RedMagic.Localization;
@@ -63,7 +64,10 @@ namespace RedMagic.Hub
                 if (options.Count > 1 && WeaponChoiceMenuController.Instance != null &&
                     WeaponChoiceMenuController.Instance.Open(options, w => Grant(w, chosen: true),
                                                              passive != null ? passive.DisplayName : ""))
+                {
+                    AudioManager.Instance?.Play(tuning.grimorioChoiceSound);
                     return;
+                }
 
                 if (options.Count > 0)
                 {
@@ -93,7 +97,10 @@ namespace RedMagic.Hub
             var tuning = LegendaryPassiveTuning.Current;
             int upgrades = 0;
             if (forcedWeapon == null && LegendaryPassiveEffects.Has(LegendaryPassiveEffectKind.ChestWeaponUpgrades))
+            {
                 upgrades += tuning.chestWeaponUpgrades;
+                AudioManager.Instance?.Play(tuning.tomoRotoUpgradeSound, transform.position);
+            }
             if (chosen && LegendaryPassiveEffects.Level(LegendaryPassiveEffectKind.ChestWeaponChoice) >= 2)
                 upgrades += tuning.chestChoiceUpgradesLevel2;
             if (upgrades > 0 && WeaponLevelManager.Instance != null)

@@ -1,5 +1,6 @@
 using System.Collections;
 using RedMagic.Abilities;
+using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Gameplay;
 using UnityEngine;
@@ -81,6 +82,9 @@ namespace RedMagic.Bosses
         [SerializeField] private Vector2 heldSize = new Vector2(1.6f, 1.6f);
 
         [Header("Aviso de caída")]
+        [Tooltip("Al coger el objeto que va a lanzar (la roca en alto).")]
+        [SerializeField] private SoundCue pickupSound = new SoundCue { positional = true };
+
         [SerializeField] private bool markLanding = true;
 
         [Tooltip("Radio de la marca. 0 = el de la explosión (o 1.5 si no explota).")]
@@ -107,6 +111,7 @@ namespace RedMagic.Bosses
                 float hold = ctx.Scaled(holdSeconds);
                 var prop = BossHeldProp.Spawn(heldPropPrefab, ctx.Boss.transform, heldOffset, heldSize,
                                               ctx.Accent, ctx.FxSprite, hold * 3f + 2f);
+                AudioManager.Instance?.Play(pickupSound, HeldPoint(ctx));
 
                 // --- gesto de lanzar
                 var body = ctx.Boss.BodyAnimator;

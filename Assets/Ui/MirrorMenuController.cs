@@ -111,14 +111,14 @@ namespace RedMagic.UI
             if (keyboard != null && (keyboard.escapeKey.wasPressedThisFrame ||
                                      keyboard.eKey.wasPressedThisFrame))
             {
-                CloseFromInput();
+                Close();
                 return;
             }
 
             var gamepad = Gamepad.current;
             if (gamepad != null && (gamepad.buttonEast.wasPressedThisFrame ||
                                     gamepad.startButton.wasPressedThisFrame))
-                CloseFromInput();
+                Close();
         }
 
         // ------------------------------------------------------------------ abrir / cerrar
@@ -129,6 +129,7 @@ namespace RedMagic.UI
             if (!EnsureBuilt()) return;
 
             _open = true;
+            SystemSounds.Play(s => s.mirrorMenu.open);
             _overlay.style.display = DisplayStyle.Flex;
             ShowGrid();
 
@@ -141,18 +142,11 @@ namespace RedMagic.UI
             RefreshGrid();
         }
 
-        // Teclado/mando: no pasan por un botón, así que el "atrás" suena aquí. El botón de cerrar
-        // suena solo (UiSounds, clase BackClass) y llama a Close directamente.
-        private void CloseFromInput()
-        {
-            UiSounds.Back();
-            Close();
-        }
-
         public void Close()
         {
             if (!_open) return;
             _open = false;
+            SystemSounds.Play(s => s.mirrorMenu.close);
 
             _overlay.style.display = DisplayStyle.None;
             Unsubscribe();
@@ -422,7 +416,11 @@ namespace RedMagic.UI
             if (passive == null) return;
 
             var manager = LegendaryPassiveManager.Instance;
-            if (manager == null || !manager.IsUnlocked(passive)) return; // bloqueada: no hace nada
+            if (manager == null || !manager.IsUnlocked(passive))
+            {
+                UiSounds.Deny();   // bloqueada
+                return;
+            }
 
             UiSounds.Click();
             ShowDetail(id);
@@ -434,9 +432,9 @@ namespace RedMagic.UI
             var manager = LegendaryPassiveManager.Instance;
             if (passive == null || manager == null) return;
 
-            if (manager.TryUpgrade(passive))
-                UiSounds.Click();
-            // Un fallo (sin fondos / al máximo) no hace nada: RefreshDetail ya deja claro el estado.
+            if (manager.TryUpgrade(passive)) SystemSounds.Play(s => s.mirrorPassiveUpgraded);
+            else UiSounds.Deny();
+            // Un fallo (sin fondos / al máximo) suena a rechazo; RefreshDetail ya deja claro el estado.
         }
 
         private static LegendaryPassive PassiveAt(int id) =>

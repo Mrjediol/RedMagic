@@ -341,6 +341,7 @@ namespace RedMagic.Run
                       $"{string.Join(" → ", _order.ConvertAll(s => s.Name))} → {world.BossScene.Name}");
 
             RunStarted?.Invoke(world);
+            SystemSounds.Play(s => s.runStart);
             _flow = StartCoroutine(EnterCurrentRoutine(firstOfRun: true));
             return true;
         }
@@ -493,6 +494,8 @@ namespace RedMagic.Run
             //    nombre en Resources/Music, PlaySceneMusic deja la escena en silencio sin errores.
             //    Se lanza aquí para que la carga del clip solape con los frames de asentamiento.
             PlayPhaseMusic();
+            if (Phase == RunPhase.Section) SystemSounds.Play(s => s.sectionEnter);
+            else if (Phase == RunPhase.Shop) SystemSounds.Play(s => s.shopEnter);
 
             // 7. Unos frames más, aún congelados, para que el warm-up de shaders y el primer
             //    LateUpdate de la cámara caigan dentro de la transición y no nada más soltar.
@@ -541,6 +544,7 @@ namespace RedMagic.Run
             Vector3 position = tracker != null ? tracker.LastDeathPosition : Vector3.zero;
 
             var reward = Instantiate(bossRewardPrefab, position + bossRewardOffset, Quaternion.identity);
+            SystemSounds.PlayAt(s => s.bossRewardAppear, reward.transform.position);
             reward.name = bossRewardPrefab.name;
             SceneManager.MoveGameObjectToScene(reward, _loadedRunScene);
         }
@@ -624,6 +628,7 @@ namespace RedMagic.Run
         /// </summary>
         private void ReturnToHub(bool completed)
         {
+            SystemSounds.Play(s => completed ? s.runComplete : s.runOver);
             ClearRun();
             _flow = StartCoroutine(ReturnToHubRoutine(completed));
         }

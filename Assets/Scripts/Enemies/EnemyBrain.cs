@@ -1,3 +1,4 @@
+using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Core;
 using RedMagic.Gameplay;
@@ -28,8 +29,21 @@ namespace RedMagic.Enemies
     [DisallowMultipleComponent]
     [RequireComponent(typeof(EnemyStats))]
     [RequireComponent(typeof(Rigidbody2D))]
-    public class EnemyBrain : MonoBehaviour
+    public class EnemyBrain : MonoBehaviour, ISoundEventSource
     {
+        /// <summary>OnMove cada paso mientras se desplaza, OnWake al despertar. Ver <see cref="SoundEmitter"/>.</summary>
+        public event System.Action<SoundTrigger> SoundTriggered;
+
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into)
+        {
+            var stats = _stats != null ? _stats : GetComponent<EnemyStats>();
+            if (stats == null) return;
+            if (stats.Tuning.Moves) into.Add(SoundTrigger.OnMove);
+            if (stats.Tuning.Sleeps) into.Add(SoundTrigger.OnWake);
+        }
+
+        private float _moveSoundTimer;
+
         public enum State
         {
             Idle,
@@ -333,6 +347,8 @@ namespace RedMagic.Enemies
                     Stop();
                     break;
             }
+
+            UpdateMoveSound();
         }
 
         /// <summary>
@@ -467,6 +483,20 @@ namespace RedMagic.Enemies
 
         // ============================================================ estados
 
+        // Un OnMove cada moveSoundInterval mientras se desplaza él solo (no al salir despedido ni al caer).
+        private void UpdateMoveSound()
+        {
+            _moveSoundTimer -= Time.fixedDeltaTime;
+            if (_moveSoundTimer > 0f || _body == null) return;
+
+            bool walking = Current is State.Approach or State.Retreat or State.Returning ||
+                           (Current == State.Attacking && !T.rootedWhileAttacking);
+            if (!walking || _body.linearVelocity.sqrMagnitude < 0.04f) return;
+
+            _moveSoundTimer = T.moveSoundInterval;
+            SoundTriggered?.Invoke(SoundTrigger.OnMove);
+        }
+
         private void Enter(State next)
         {
             if (Current == next) return;
@@ -505,6 +535,7 @@ namespace RedMagic.Enemies
             Enter(State.Waking);
             Stop();
             FaceTowards(toTarget);
+            SoundTriggered?.Invoke(SoundTrigger.OnWake);
 
             if (_animation != null) _animation.PlayWake();
             else OnWakeFinished();

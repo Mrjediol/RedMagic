@@ -1287,17 +1287,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Run.SectionClearTracker
   clearEffectPrefab: {fileID: 1085088545867549799, guid: e0ab161e73a143f4ca886a264fbb5c62, type: 3}
   clearEffectScale: 2
-  clearSound:
-    clips: []
-    volume: 1
-    pitchMin: 1
-    pitchMax: 1
-    noRepeatLast: 1
-    priority: 1
-    positional: 0
-    rolloffStart: 8
-    rolloffEnd: 24
-    initialized: 1
 --- !u!4 &1298031744
 Transform:
   m_ObjectHideFlags: 0

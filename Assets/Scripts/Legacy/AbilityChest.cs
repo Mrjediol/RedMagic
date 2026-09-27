@@ -37,6 +37,8 @@ namespace RedMagic.Abilities
     {
         public event System.Action<SoundTrigger> SoundTriggered;
 
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into) { into.Add(SoundTrigger.OnInteract); }
+
         [Header("Contenido")]
         [Tooltip("Arma que suelta este cofre. Vacío = una al azar (lo normal en el juego). " +
                  "El desplegable del Inspector lo dibuja AbilityChestEditor.")]

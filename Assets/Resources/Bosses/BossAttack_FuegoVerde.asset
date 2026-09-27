@@ -28,7 +28,8 @@ MonoBehaviour:
   vulnerableMultiplier: 2.5
   gesture: Charge
   sound:
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -49,5 +50,29 @@ MonoBehaviour:
   firePrefab: {fileID: 8694891067485560291, guid: 3ea45ca982ad466458946d0c1fcdcfc0, type: 3}
   fireSize: {x: 2.1, y: 1}
   fireTickInterval: 0.5
+  igniteSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  fireLoopSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 0
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   snapToSurface: 1
   snapDistance: 4

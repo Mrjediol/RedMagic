@@ -29,8 +29,10 @@ namespace RedMagic.Combat
     [DisallowMultipleComponent]
     public class RangedAttack : MonoBehaviour, ISoundEventSource
     {
-        /// <summary>OnAttack al disparar. Ver <see cref="SoundEmitter"/>.</summary>
+        /// <summary>OnRangedAttack al disparar. Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
+
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into) { into.Add(SoundTrigger.OnRangedAttack); }
 
         public enum TriggerMode
         {
@@ -164,7 +166,7 @@ namespace RedMagic.Combat
             if (_animator != null && !string.IsNullOrWhiteSpace(animatorTrigger))
                 _animator.SetTrigger(animatorTrigger);
 
-            SoundTriggered?.Invoke(SoundTrigger.OnAttack);
+            SoundTriggered?.Invoke(SoundTrigger.OnRangedAttack);
 
             StartCoroutine(FireRoutine(direction.normalized));
             return true;

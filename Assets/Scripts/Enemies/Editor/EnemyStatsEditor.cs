@@ -91,6 +91,7 @@ namespace RedMagic.Enemies.EditorTools
                 case "detectionRange":
                 case "loseInterestGrace":
                 case "moveSpeed":
+                case "moveSoundInterval":
                 case "stopAtLedges":
                 case "ledgeProbeDepth":
                     return !moves;

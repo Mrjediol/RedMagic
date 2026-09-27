@@ -19,6 +19,8 @@ namespace RedMagic.Economy
     {
         public event System.Action<SoundTrigger> SoundTriggered;
 
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into) { into.Add(SoundTrigger.OnInteract); }
+
         [Header("Detección")]
         [Tooltip("Etiqueta del objeto que puede usar el disparador.")]
         [SerializeField] private string playerTag = "Player";

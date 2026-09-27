@@ -76,6 +76,14 @@ namespace RedMagic.Gameplay
 
         private Rigidbody2D _body;
         public event System.Action<SoundTrigger> SoundTriggered;
+
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into)
+        {
+            into.Add(SoundTrigger.OnSpawn);        // lanzado (lo hace sonar el SoundEmitter al activarse)
+            into.Add(SoundTrigger.OnHit);
+            into.Add(SoundTrigger.OnHitTerrain);
+            into.Add(SoundTrigger.OnDeath);
+        }
         private Collider2D[] _ownColliders;
         private SpriteRenderer _renderer;
 
@@ -106,6 +114,7 @@ namespace RedMagic.Gameplay
         private Health _lifestealTarget;
         private float _lifesteal;
         private bool _despawning;
+        private bool _impacted;   // acabó chocando (objetivo o terreno): entonces no suena OnDeath
 
         /// <summary>Objetivos ya golpeados por este disparo (para que atravesar no golpee dos veces).</summary>
         private readonly System.Collections.Generic.HashSet<Health> _hitTargets =
@@ -136,6 +145,7 @@ namespace RedMagic.Gameplay
         {
             // Reset para reutilización desde el pool.
             _despawning = false;
+            _impacted = false;
             _lifeTimer = lifetime;
             _pierceLeft = pierceCount;
             _hitTargets.Clear();
@@ -229,6 +239,7 @@ namespace RedMagic.Gameplay
             _owner = owner;
             _lifeTimer = lifetime;
             _despawning = false;
+            _impacted = false;
             _pierceLeft = pierceCount;
             _hitTargets.Clear();
             _velocity = _direction * speed;
@@ -396,17 +407,24 @@ namespace RedMagic.Gameplay
                     return;
                 }
 
+                _impacted = true;
                 Despawn();
                 return;
             }
 
             // Sin Health: sólo el terreno pintado (capa Ground) detiene el proyectil. Decoración y
             // zonas de trigger se atraviesan.
-            if (((1 << other.gameObject.layer) & GroundMask) != 0) Despawn();
+            if (((1 << other.gameObject.layer) & GroundMask) != 0)
+            {
+                SoundTriggered?.Invoke(SoundTrigger.OnHitTerrain);
+                _impacted = true;
+                Despawn();
+            }
         }
 
         /// <summary>
-        /// Apaga el proyectil para devolverlo al pool, sonando antes su OnDeath.
+        /// Apaga el proyectil para devolverlo al pool. Si se acaba sin haber chocado (fin de vida),
+        /// suena antes su OnDeath; los choques ya sonaron como OnHit / OnHitTerrain.
         ///
         /// Si el prefab trae un estado "Impact" (ver <see cref="_spriteMachine"/> — los que
         /// construye <c>FxPrefabBuilder</c> a partir de la biblioteca web), esa animación se
@@ -423,7 +441,7 @@ namespace RedMagic.Gameplay
             _despawning = true;
 
             // El sonido se dispara ANTES de desactivar el GameObject.
-            SoundTriggered?.Invoke(SoundTrigger.OnDeath);
+            if (!_impacted) SoundTriggered?.Invoke(SoundTrigger.OnDeath);
 
             ExplodeIfDue();
 

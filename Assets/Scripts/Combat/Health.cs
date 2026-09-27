@@ -34,8 +34,31 @@ namespace RedMagic.Combat
         [Tooltip("Usar tiempo sin escalar, para que los i-frames no se congelen con el juego en pausa.")]
         [SerializeField] private bool invulnerabilityUsesUnscaledTime;
 
-        /// <summary>OnHit al encajar daño, OnDeath al morir. Ver <see cref="SoundEmitter"/>.</summary>
+        [Header("Sonido")]
+        [Tooltip("Sólo el jugador: al bajar de esta fracción de vida suena OnLowHealth (una vez por cruce).")]
+        [Range(0f, 1f)] [SerializeField] private float lowHealthThreshold = 0.25f;
+
+        /// <summary>OnHit al encajar daño, OnDeath al morir; en el jugador además OnHeal y OnLowHealth. Ver <see cref="SoundEmitter"/>.</summary>
         public event Action<SoundTrigger> SoundTriggered;
+
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into)
+        {
+            into.Add(SoundTrigger.OnHit);
+            if (GetComponent<TrainingDummy>() == null) into.Add(SoundTrigger.OnDeath);   // el muñeco no muere nunca
+            if (CompareTag("Player"))
+            {
+                into.Add(SoundTrigger.OnHeal);
+                into.Add(SoundTrigger.OnLowHealth);
+            }
+        }
+
+        // OnLowHealth al cruzar el umbral hacia abajo (y sin morir en el mismo golpe).
+        private void RaiseLowHealthIfCrossed(float before)
+        {
+            if (maxHealth <= 0f || currentHealth <= 0f) return;
+            float limit = lowHealthThreshold * maxHealth;
+            if (before > limit && currentHealth <= limit) SoundTriggered?.Invoke(SoundTrigger.OnLowHealth);
+        }
 
         public float MaxHealth => maxHealth;
         public float CurrentHealth => currentHealth;
@@ -236,6 +259,7 @@ namespace RedMagic.Combat
                 return false;
             }
 
+            float before = currentHealth;
             currentHealth = Mathf.Max(0f, currentHealth - amount);
 
             if (invulnerabilityDuration > 0f)
@@ -249,6 +273,7 @@ namespace RedMagic.Combat
             if (reduced > 0f) DamageReduced?.Invoke(reduced);
             HealthChanged?.Invoke(currentHealth, maxHealth);
             SoundTriggered?.Invoke(SoundTrigger.OnHit);
+            RaiseLowHealthIfCrossed(before);
 
             if (currentHealth <= 0f) Die();
             return true;
@@ -312,8 +337,10 @@ namespace RedMagic.Combat
             float lost = currentHealth - next;
             if (lost <= 0f) return false;
 
+            float before = currentHealth;
             currentHealth = next;
             AnyDamaged?.Invoke(this, lost);
+            RaiseLowHealthIfCrossed(before);
             HealthChanged?.Invoke(currentHealth, maxHealth);
 
             if (currentHealth <= 0f) Die();
@@ -324,8 +351,10 @@ namespace RedMagic.Combat
         {
             if (amount <= 0f || IsDead) return;
 
+            float before = currentHealth;
             currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
             HealthChanged?.Invoke(currentHealth, maxHealth);
+            if (currentHealth > before) SoundTriggered?.Invoke(SoundTrigger.OnHeal);
         }
 
         /// <summary>Mata al personaje inmediatamente. Es idempotente.</summary>

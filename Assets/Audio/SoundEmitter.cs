@@ -11,18 +11,26 @@ namespace RedMagic.Audio
     /// </summary>
     public enum SoundTrigger
     {
-        OnSpawn = 0,     // SoundEmitter al activarse (también al salir de un pool)
-        OnHit = 1,       // Health: recibe daño · Projectile: impacta
-        OnDeath = 2,     // Health: muere · Projectile: vuelve al pool
-        OnAttack = 3,    // EnemyAttack (frame de release) · PlayerAttack · RangedAttack
-        OnJump = 4,      // PlayerMovement: salto desde el suelo
-        OnAirJump = 5,   // PlayerMovement: doble salto
-        OnDash = 6,      // PlayerMovement
-        Footstep = 7,    // PlayerMovement: cada paso en suelo
+        OnSpawn = 0,         // SoundEmitter al activarse (enemigo que aparece, proyectil lanzado)
+        OnHit = 1,           // Health: recibe daño · Projectile: impacta en un objetivo
+        OnDeath = 2,         // Health: muere · Projectile: se acaba sin impactar (fin de vida)
+        OnAttack = 3,        // EnemyAttack (frame de release) · PlayerAttack (cuerpo a cuerpo)
+        OnJump = 4,          // PlayerMovement: salto desde el suelo
+        OnAirJump = 5,       // PlayerMovement: doble salto
+        OnDash = 6,          // PlayerMovement
+        Footstep = 7,        // PlayerMovement: cada paso en suelo
         // 8: retirado (mecánica eliminada). No reutilizar el valor: iría a datos antiguos.
-        OnActivate = 9,  // BossController: empieza el combate (rugido)
-        OnInteract = 10, // props del hub: abrir / usar
-        OnLoot = 11      // props del hub: recoger el contenido
+        OnActivate = 9,      // BossController: empieza el combate (rugido)
+        OnInteract = 10,     // props del hub: abrir / usar
+        OnLoot = 11,         // props del hub: recoger el contenido · WeaponUser: item del suelo
+        OnLand = 12,         // PlayerMovement: toca suelo tras estar en el aire
+        OnRangedAttack = 13, // RangedAttack: disparo a distancia
+        OnHitTerrain = 14,   // Projectile: choca con el terreno
+        OnMove = 15,         // EnemyBrain: cada paso / aleteo mientras se desplaza
+        OnWake = 16,         // EnemyBrain: un dormilón despierta
+        OnHeal = 17,         // Health (jugador): recupera vida
+        OnLowHealth = 18,    // Health (jugador): baja del umbral de vida baja
+        OnVulnerable = 19    // BossController: abre una ventana de castigo ("¡EXPUESTO!")
     }
 
     /// <summary>
@@ -33,6 +41,25 @@ namespace RedMagic.Audio
     public interface ISoundEventSource
     {
         event Action<SoundTrigger> SoundTriggered;
+
+        /// <summary>
+        /// Los momentos que ESTE componente, tal y como está configurado, puede lanzar. El registro
+        /// de sonidos los lee del prefab para saber qué huecos existen aunque aún no haya entrada
+        /// en el SoundEmitter. Sólo los que de verdad pueden ocurrir: nada de huecos fantasma.
+        /// </summary>
+        void DeclareSoundTriggers(List<SoundTrigger> into);
+    }
+
+    /// <summary>
+    /// Condición de existencia de un hueco <see cref="SoundCue"/>: el campo sólo cuenta (y sólo se
+    /// dibuja) si el miembro bool <see cref="Member"/> del objeto dueño devuelve true. Así un arma
+    /// sin carga no enseña "sonido de carga" y el registro no lo lista.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class SoundSlotIfAttribute : Attribute
+    {
+        public string Member { get; }
+        public SoundSlotIfAttribute(string member) => Member = member;
     }
 
     /// <summary>Una entrada del <see cref="SoundEmitter"/>: qué momento y qué suena.</summary>

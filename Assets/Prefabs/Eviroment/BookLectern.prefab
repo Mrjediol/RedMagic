@@ -103,6 +103,7 @@ GameObject:
   - component: {fileID: 3222187460964702710}
   - component: {fileID: 6336133160873778701}
   - component: {fileID: 1098908464776685594}
+  - component: {fileID: 9040445157567375426}
   m_Layer: 0
   m_Name: BookLectern
   m_TagString: Untagged
@@ -212,3 +213,42 @@ MonoBehaviour:
   actionName: Interact
   animator: {fileID: 0}
   openParameter: IsOpened
+--- !u!114 &9040445157567375426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7510637351069268943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 10
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 11
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1

@@ -1,4 +1,5 @@
 using RedMagic.Abilities;
+using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Economy;
 using RedMagic.Fx;
@@ -84,6 +85,7 @@ namespace RedMagic.Gameplay
             AbilityFx.Flash(ProceduralSprites.Glow, center, Vector2.one * 4f, tuning.shieldColor * 2f,
                             0.6f, 0f, 1.6f, gameObject);
             CameraFollow.ShakeAll(0.25f, 0.3f);
+            AudioManager.Instance?.Play(tuning.libroReviveSound);
 
             var passive = LegendaryPassiveEffects.Find(LegendaryPassiveEffectKind.ReviveOnce);
             RewardPopupUi.Show(passive != null ? passive.icon : null, Loc.Get("reward.revived"),
@@ -100,6 +102,7 @@ namespace RedMagic.Gameplay
             if (_shieldHits <= 0) return false;
 
             SetShield(_shieldHits - 1);
+            AudioManager.Instance?.Play(LegendaryPassiveTuning.Current.libroShieldSound);
             var color = LegendaryPassiveTuning.Current.shieldColor;
             AbilityFx.Flash(ProceduralSprites.Ring, BodyCenter(), ShieldSize(), new Color(color.r, color.g, color.b, 1f),
                             0.3f, 0f, _shieldHits > 0 ? 1.2f : 1.8f, gameObject);

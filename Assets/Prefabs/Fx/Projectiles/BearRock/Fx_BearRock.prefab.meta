@@ -1,5 +1,7 @@
 fileFormatVersion: 2
 guid: 4c705754eebda1d419e1084cbc9b0859
+labels:
+- SoundIgnore
 PrefabImporter:
   externalObjects: {}
   userData: 

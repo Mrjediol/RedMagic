@@ -75,7 +75,7 @@ namespace RedMagic.UI
             if (_backButton != null)
             {
                 _backButton.clicked += Close;
-                _backButton.AddToClassList(UiSounds.BackClass);
+                _backButton.AddToClassList(UiSounds.NoClickClass);   // el cierre del menú ya suena
             }
 
             WireArrow(_resolutionPrev, PrevResolution);
@@ -200,6 +200,7 @@ namespace RedMagic.UI
             if (!_open && GameStateManager.Instance != null)
                 GameStateManager.Instance.SetPaused(true);
             _open = true;
+            SystemSounds.Play(s => s.optionsMenu.open);
 
             RefreshFromAudioManager();
             SetVisible(true);
@@ -290,19 +291,15 @@ namespace RedMagic.UI
             UpdateValueLabel(LabelFor(group), SliderValueFor(group), evt.newValue);
         }
 
-        /// <summary>Vuelve a la pantalla que abrió Opciones desde Escape/Atrás (suena "atrás"; el botón
-        /// Volver suena solo por UiSounds y usa <see cref="Close"/>).</summary>
-        public void GoBack()
-        {
-            UiSounds.Back();
-            Close();
-        }
+        /// <summary>Vuelve a la pantalla que abrió Opciones (botón Volver o Escape/Atrás). Suena el cierre del menú.</summary>
+        public void GoBack() => Close();
 
         private void Close()
         {
             if (_open && GameStateManager.Instance != null)
                 GameStateManager.Instance.SetPaused(false);
             _open = false;
+            SystemSounds.Play(s => s.optionsMenu.close);
 
             SetVisible(false);
 

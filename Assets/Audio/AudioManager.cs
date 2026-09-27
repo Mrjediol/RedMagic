@@ -50,12 +50,6 @@ namespace RedMagic.Audio
         [SerializeField] private AudioMixerGroup musicGroup;
         [SerializeField] private AudioMixerGroup sfxGroup;
 
-        [Header("Sonidos de UI (UiSounds los usa en todos los menús)")]
-        [SerializeField] private SoundCue uiHover = new SoundCue { priority = SoundPriority.Critical };
-        [SerializeField] private SoundCue uiClick = new SoundCue { priority = SoundPriority.Critical };
-        [SerializeField] private SoundCue uiBack = new SoundCue { priority = SoundPriority.Critical };
-        [SerializeField] private SoundCue uiDeny = new SoundCue { priority = SoundPriority.Critical };
-
         [Header("Valores por defecto (usados si no hay nada guardado en PlayerPrefs)")]
         [Range(0f, 1f)] [SerializeField] private float defaultMasterVolume = 1f;
         [Range(0f, 1f)] [SerializeField] private float defaultMusicVolume = 0.8f;
@@ -733,13 +727,6 @@ namespace RedMagic.Audio
         // (transiciones de RunManager, cinemática de pasiva).
         private static bool IsGamePaused() =>
             (GameStateManager.Instance != null && GameStateManager.Instance.IsPaused) || Time.timeScale == 0f;
-
-        // ------------------------------------------------------------------ UI
-
-        public SoundCue UiHover => uiHover;
-        public SoundCue UiClick => uiClick;
-        public SoundCue UiBack => uiBack;
-        public SoundCue UiDeny => uiDeny;
 
         // ------------------------------------------------------------------ mixer / settings
 

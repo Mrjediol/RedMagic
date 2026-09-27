@@ -210,17 +210,49 @@ namespace RedMagic.Items
         [SerializeField] private BuildTag universalTag = BuildTag.Tank;
 
         [Header("Sonido")]
-        [Tooltip("Al empezar a cargar (armas con tiempo de carga).")]
+        [Tooltip("Al empezar a cargar (sólo armas con tiempo de carga).")]
+        [SoundSlotIf(nameof(HasCharge))]
         [SerializeField] private SoundCue chargeSound = new SoundCue();
 
         [Tooltip("Al salir el disparo.")]
         [SerializeField] private SoundCue fireSound = new SoundCue();
+
+        [Tooltip("Al golpear a un objetivo (cada golpe; los perdigones simultáneos suenan como uno).")]
+        [SerializeField] private SoundCue impactSound = new SoundCue { positional = true };
+
+        [Tooltip("Proyectil que choca con el terreno.")]
+        [SoundSlotIf(nameof(IsPlainProjectile))]
+        [SerializeField] private SoundCue terrainImpactSound = new SoundCue { positional = true };
+
+        [Tooltip("Proyectil que se acaba en el aire sin tocar nada.")]
+        [SoundSlotIf(nameof(IsPlainProjectile))]
+        [SerializeField] private SoundCue expireSound = new SoundCue { positional = true, priority = SoundPriority.Low };
+
+        [Tooltip("Explosión al terminar (granada).")]
+        [SoundSlotIf(nameof(Explodes))]
+        [SerializeField] private SoundCue explosionSound = new SoundCue { positional = true, priority = SoundPriority.High };
+
+        [Tooltip("Bucle mientras el haz está activo.")]
+        [SoundSlotIf(nameof(IsBeam))]
+        [SerializeField] private SoundCue beamLoopSound = new SoundCue();
+
+        public bool HasCharge => baseShot != null && baseShot.chargeTime > 0f;
+        public bool IsProjectile => baseShot != null && baseShot.delivery == ShotDelivery.Projectile;
+        public bool IsBeam => baseShot != null && baseShot.delivery == ShotDelivery.Hitscan;
+        public bool Explodes => IsProjectile && baseShot.impactRadius > 0f && baseShot.impactDamage > 0f;
+        /// <summary>Proyectil que no explota: su final (terreno o fin de vida) suena por sí mismo.</summary>
+        public bool IsPlainProjectile => IsProjectile && !Explodes;
 
         public string DisplayName => Loc.ForAsset(textKey, "name", string.IsNullOrWhiteSpace(displayName) ? name : displayName);
         public string Description => Loc.ForAsset(textKey, "description", description);
         public Sprite Icon => icon;
         public SoundCue ChargeSound => chargeSound;
         public SoundCue FireSound => fireSound;
+        public SoundCue ImpactSound => impactSound;
+        public SoundCue TerrainImpactSound => terrainImpactSound;
+        public SoundCue ExpireSound => expireSound;
+        public SoundCue ExplosionSound => explosionSound;
+        public SoundCue BeamLoopSound => beamLoopSound;
         public Color Accent => accent;
         public float BaseDamage => baseDamage;
         public float BaseCooldown => baseCooldown;

@@ -106,6 +106,7 @@ namespace RedMagic.UI
             for (int i = 0; i < _options.Count; i++) _row.Add(BuildCard(_options[i], i));
 
             _open = true;
+            SystemSounds.Play(s => s.weaponChoiceMenu.open);
             _overlay.style.display = DisplayStyle.Flex;
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(true);
 
@@ -121,6 +122,7 @@ namespace RedMagic.UI
             var callback = _onPicked;
 
             _open = false;
+            SystemSounds.Play(s => s.weaponChoiceMenu.close);
             _onPicked = null;
             _overlay.style.display = DisplayStyle.None;
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(false);

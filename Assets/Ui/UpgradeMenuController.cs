@@ -108,14 +108,14 @@ namespace RedMagic.UI
             if (keyboard != null && (keyboard.escapeKey.wasPressedThisFrame ||
                                      keyboard.eKey.wasPressedThisFrame))
             {
-                CloseFromInput();
+                Close();
                 return;
             }
 
             var gamepad = Gamepad.current;
             if (gamepad != null && (gamepad.buttonEast.wasPressedThisFrame ||
                                     gamepad.startButton.wasPressedThisFrame))
-                CloseFromInput();
+                Close();
         }
 
         // ------------------------------------------------------------------ abrir / cerrar
@@ -126,6 +126,7 @@ namespace RedMagic.UI
             if (!EnsureBuilt()) return;
 
             _open = true;
+            SystemSounds.Play(s => s.upgradeMenu.open);
             _overlay.style.display = DisplayStyle.Flex;
 
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(true);
@@ -134,18 +135,11 @@ namespace RedMagic.UI
             RefreshAll();
         }
 
-        // Teclado/mando: no pasan por un botón, así que el "atrás" suena aquí. El botón de cerrar
-        // suena solo (UiSounds, clase BackClass) y llama a Close directamente.
-        private void CloseFromInput()
-        {
-            UiSounds.Back();
-            Close();
-        }
-
         public void Close()
         {
             if (!_open) return;
             _open = false;
+            SystemSounds.Play(s => s.upgradeMenu.close);
 
             _overlay.style.display = DisplayStyle.None;
             Unsubscribe();
@@ -312,8 +306,8 @@ namespace RedMagic.UI
             var manager = UpgradeManager.Instance;
             if (manager == null) return;
 
-            if (manager.TryBuy(row, column))
-                UiSounds.Click();
+            if (manager.TryBuy(row, column)) SystemSounds.Play(s => s.upgradeBought);
+            else UiSounds.Deny();
             // Un fallo (bloqueado / sin fondos / al máximo) no hace nada: RefreshAll ya deja claro
             // el estado de cada celda.
         }

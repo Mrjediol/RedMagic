@@ -614,7 +614,8 @@ MonoBehaviour:
     rolloffEnd: 24
     initialized: 1
   denySound:
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -625,7 +626,8 @@ MonoBehaviour:
     rolloffEnd: 24
     initialized: 1
   rerollSound:
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1

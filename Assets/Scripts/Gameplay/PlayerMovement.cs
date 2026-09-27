@@ -38,8 +38,17 @@ namespace RedMagic.Gameplay
     [DisallowMultipleComponent]
     public class PlayerMovement : MonoBehaviour, IKnockbackReceiver, ISoundEventSource
     {
-        /// <summary>OnJump / OnAirJump / OnDash / Footstep. Ver <see cref="SoundEmitter"/>.</summary>
+        /// <summary>OnJump / OnAirJump / OnDash / Footstep / OnLand. Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
+
+        public void DeclareSoundTriggers(List<SoundTrigger> into)
+        {
+            into.Add(SoundTrigger.Footstep);
+            into.Add(SoundTrigger.OnJump);
+            if (maxAirJumps > 0) into.Add(SoundTrigger.OnAirJump);
+            if (allowDash) into.Add(SoundTrigger.OnDash);
+            into.Add(SoundTrigger.OnLand);
+        }
 
         // ---------------------------------------------------------------- tipos internos
 
@@ -129,6 +138,8 @@ namespace RedMagic.Gameplay
         [Header("Sonido")]
         [Tooltip("Segundos entre pasos (evento Footstep del SoundEmitter) al correr por el suelo.")]
         [SerializeField] private float footstepInterval = 0.32f;
+        [Tooltip("Segundos mínimos en el aire para que al tocar suelo suene OnLand (los bordes de un escalón no cuentan).")]
+        [SerializeField] private float landMinAirTime = 0.15f;
 
         // ---------------------------------------------------------------- colisión
 
@@ -323,6 +334,7 @@ namespace RedMagic.Gameplay
         private float _currentHorizontalSpeed, _currentVerticalSpeed;
         private bool _controlEnabled = true;
         private float _footstepTimer;
+        private float _airTime;
 
         // Hack del original: los colliders no están del todo listos al arrancar.
         private bool _active;
@@ -568,6 +580,7 @@ namespace RedMagic.Gameplay
 
             SnapToGround();       // pega los pies al suelo (corrige el flotar del sensor)
             UpdateFootsteps();
+            UpdateLanding();
             MoveCharacter();      // aplica el movimiento
         }
 
@@ -1337,6 +1350,20 @@ namespace RedMagic.Gameplay
 
             _footstepTimer = footstepInterval;
             SoundTriggered?.Invoke(SoundTrigger.Footstep);
+        }
+
+        // Cuenta el tiempo en el aire y avisa OnLand al volver al suelo tras un salto o una caída de
+        // verdad. Con el juego en pausa Update no llega aquí, así que el reloj se congela.
+        private void UpdateLanding()
+        {
+            if (!_colDown)
+            {
+                _airTime += Time.deltaTime;
+                return;
+            }
+
+            if (_airTime >= landMinAirTime) SoundTriggered?.Invoke(SoundTrigger.OnLand);
+            _airTime = 0f;
         }
 
         // ================================================================ mover

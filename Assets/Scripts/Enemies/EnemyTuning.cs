@@ -209,6 +209,12 @@ namespace RedMagic.Enemies
         [Min(0f)] public float contactDamageCooldown = 1f;
         [Min(0f)] public float contactKnockbackMultiplier = 1f;
 
+        // ============================================================ sonido
+
+        [Header("Sonido")]
+        [Tooltip("Segundos entre dos OnMove (paso / aleteo) mientras se desplaza por su cuenta.")]
+        [Min(0.05f)] public float moveSoundInterval = 0.4f;
+
         // ============================================================ animación
 
         [Header("Animación (velocidad de cada estado)")]

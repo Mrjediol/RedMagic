@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RedMagic.Abilities;
+using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Fx;
 using UnityEngine;
@@ -299,7 +300,12 @@ namespace RedMagic.Items
 
             _lifeTimer -= Time.deltaTime;
             // Una granada (radio de explosión) revienta al agotar la vida; el resto sólo desaparece.
-            if (_lifeTimer <= 0f) Finish(impacted: _shot.impactRadius > 0f);
+            if (_lifeTimer <= 0f)
+            {
+                bool explodes = _shot.impactRadius > 0f;
+                if (!explodes) PlayWeaponSound(w => w.ExpireSound, transform.position);
+                Finish(impacted: explodes);
+            }
         }
 
         private void FixedUpdate()
@@ -395,6 +401,7 @@ namespace RedMagic.Items
                 // Marca ANTES del golpe: si éste lo mata, su botín ya sale multiplicado.
                 if (_gilded && scaled > 0f) GoldMark.Mark(health);
                 if (scaled > 0f) PlayerHit.Deal(health, scaled, transform.position, 1f, HitKind.Projectile, out killed);
+                PlayWeaponSound(w => w.ImpactSound, body);
                 _hit.Add(health);   // aunque no entre (i-frames), no lo re-golpeamos este vuelo
 
                 // Primer impacto del disparo (Yelmo: la explosión sale aquí, en el cuerpo golpeado).
@@ -421,7 +428,11 @@ namespace RedMagic.Items
 
             // Sin Health: sólo el terreno pintado (capa Ground) detiene el proyectil. Decoración,
             // zonas de trigger (caldero, tumba…) y cualquier otro prop se atraviesan.
-            if (((1 << other.gameObject.layer) & GroundMask) != 0) Finish(impacted: true);
+            if (((1 << other.gameObject.layer) & GroundMask) != 0)
+            {
+                if (_shot.impactRadius <= 0f) PlayWeaponSound(w => w.TerrainImpactSound, transform.position);
+                Finish(impacted: true);
+            }
         }
 
         /// <summary>
@@ -503,6 +514,15 @@ namespace RedMagic.Items
             RefreshColliders(!dormant);
         }
 
+        // Los sonidos de impacto son del arma que disparó (WeaponDefinition), no del proyectil: el
+        // mismo prefab puede servir a varias armas.
+        private void PlayWeaponSound(System.Func<WeaponDefinition, SoundCue> pick, Vector3 at)
+        {
+            var weapon = _shot != null ? _shot.source : null;
+            var audio = AudioManager.Instance;
+            if (weapon != null && audio != null) audio.Play(pick(weapon), at);
+        }
+
         private void Finish(bool impacted)
         {
             if (_done) return;
@@ -531,6 +551,8 @@ namespace RedMagic.Items
         /// </summary>
         private void Explode()
         {
+            PlayWeaponSound(w => w.ExplosionSound, transform.position);
+
             var filter = new ContactFilter2D { useLayerMask = true, layerMask = _ctx.HitLayers, useTriggers = true };
             int count = Physics2D.OverlapCircle(transform.position, _shot.impactRadius, filter, Buffer);
 

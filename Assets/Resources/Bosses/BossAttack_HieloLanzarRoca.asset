@@ -27,7 +27,8 @@ MonoBehaviour:
   vulnerableMultiplier: 2.5
   gesture: PickUP
   sound:
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -64,5 +65,17 @@ MonoBehaviour:
   heldPropPrefab: {fileID: 2243479322485747769, guid: bf2f729af8a952b49bdd2e0b3d850809, type: 3}
   heldOffset: {x: 0.25424957, y: 15.294986}
   heldSize: {x: 6, y: 6}
+  pickupSound:
+    clips:
+    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
   markLanding: 1
   markRadius: 0

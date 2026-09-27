@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RedMagic.Abilities;
+using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Fx;
 using UnityEngine;
@@ -48,6 +49,7 @@ namespace RedMagic.Items
         private float _lifeLeft;
         private float _reach;
         private float _tickTimer;
+        private SoundLoop _loop;
         private Color _tint;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -138,6 +140,10 @@ namespace RedMagic.Items
             _life = _lifeLeft = shot.beamDuration * Mathf.Lerp(0.5f, 1f, chargeFraction);
             _tickTimer = 0f;
 
+            // Bucle del haz: dura lo que el haz y se corta solo al volver al pool (dueño = este haz).
+            var audio = AudioManager.Instance;
+            _loop = audio != null && shot.source != null ? audio.StartLoop(shot.source.BeamLoopSound, this, transform) : default;
+
             Tick();          // primer tick de daño ya, en el frame del disparo
             UpdateVisual();
         }
@@ -165,6 +171,9 @@ namespace RedMagic.Items
 
         private void Finish()
         {
+            if (_loop.IsValid) AudioManager.Instance?.StopLoop(_loop);
+            _loop = default;
+
             // Haz que no tocó a nadie: el aviso de impacto sale en su punta.
             if (_shot != null) _ctx.Impact?.Fire(Origin() + _direction * _reach);
             _shot = null;
@@ -206,6 +215,7 @@ namespace RedMagic.Items
                 if (!IsTarget(health) || !TickSet.Add(health)) continue;
                 if (damage > 0f) PlayerHit.Deal(health, damage, health.transform.position, 1f, HitKind.Beam);
                 _ctx.Impact?.Fire(PlayerHit.BodyCenter(health));   // primer enemigo que toca el haz
+                if (_shot.source != null) AudioManager.Instance?.Play(_shot.source.ImpactSound, PlayerHit.BodyCenter(health));
             }
         }
 

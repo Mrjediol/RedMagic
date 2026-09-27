@@ -22,6 +22,8 @@ namespace RedMagic.Run
     {
         public event System.Action<SoundTrigger> SoundTriggered;
 
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into) { into.Add(SoundTrigger.OnInteract); }
+
         [Header("Mundo")]
         [Tooltip("Mundo al que lleva esta tumba.")]
         [SerializeField] private WorldDefinition world;

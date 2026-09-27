@@ -1176,24 +1176,34 @@ and hand-tuned in a scene won't overwrite it.
 ### Audio (`Assets/Audio/`)
 
 No string ids anywhere. Every sound slot is a **`SoundCue`** (plain `[Serializable]` class, no SO): clip
-variants, volume, pitch range, no-repeat, priority, positional + rolloff. Two places hold them:
-- **`SoundEmitter`** on an object's root, one entry per `SoundTrigger` (OnHit, OnDeath, OnAttack, OnJump,
-  OnAirJump, OnDash, Footstep, OnActivate, OnInteract, OnLoot, OnSpawn). It subscribes itself to every
+variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three places hold them:
+- **`SoundEmitter`** on an object's root, one entry per `SoundTrigger`. It subscribes itself to every
   **`ISoundEventSource`** on its GameObject (`Health`, `PlayerMovement`, `PlayerAttack`, `RangedAttack`,
-  `EnemyAttack`, `BossController`, `Projectile`, hub props). A new sound moment = raise
-  `SoundTriggered` from the component + a trigger value (explicit numbers, never renumber; 8 is retired).
-- **`SoundCue` fields** on data/system owners: `BossAttack.sound`, `BossPhase.transitionSound`,
-  `WeaponDefinition.chargeSound/fireSound`, `ShopManager` buy/deny/reroll, `SectionClearTracker.clearSound`,
-  `PassiveDropCinematicSettings.landSound`, and the UI cues on the AudioManager prefab.
+  `EnemyAttack`, `EnemyBrain`, `BossController`, `Projectile`, `WeaponUser`, hub props). Each source also
+  **declares** the triggers it can fire (`DeclareSoundTriggers`, conditional on its config) — that is how
+  the registry knows a prefab's slots before it has entries. A new sound moment = raise `SoundTriggered`,
+  add it to `DeclareSoundTriggers`, append a trigger value (explicit numbers, never renumber; 8 retired).
+- **`SoundCue` fields** on data owners: `BossAttack.sound` (+ `pickupSound`, `igniteSound`, `fireLoopSound`
+  on their attack types), `BossPhase.transitionSound`, `WeaponDefinition` (charge/fire/impact/terrain/
+  expire/explosion/beam loop), `ShopManager` buy/deny/reroll, `LegendaryPassiveTuning` (one per passive
+  moment), `PassiveDropCinematicSettings.landSound`. A field that only applies sometimes carries
+  **`[SoundSlotIf(nameof(boolMember))]`**: hidden in the Inspector and absent from the registry when false.
+- **`SystemSounds`** (on `Resources/AudioManager.prefab`): everything that is the game's, not an object's —
+  UI (hover/focus/click/back/deny), open/close per menu, menu actions, run flow, economy, synergy, status.
+  `SystemSounds.Play(s => s.runStart)`. Never put a sound field on a scene-placed object that exists in
+  several scenes (RunManager, SectionClearTracker…): it would be one slot per scene.
 - **`AudioManager`** (prefab in Resources, bootstrapped `BeforeSceneLoad`, owns the only `AudioListener`):
   `Play(cue[, worldPos])`, `StartLoop/StopLoop` (loops pause with the game), growable voice pool
   (`sfxVoicesMax`), priority stealing, same-clip anti-stacking, mixer volumes (debounced PlayerPrefs).
   Music: `PlayMusic(AudioClip)`; scene music via `PlaySceneMusic(name)` = `Resources/Music/<name>` —
   the one string-keyed path, kept on purpose (tech debt, see `docs/audio-system-audit.md`).
 - **UI Toolkit**: `UiSounds.Bind(root)` once per document (hover + navigation focus, silent initial focus,
-  `BackClass` / `NoClickClass`); `UiSounds.Back()/Deny()` for keys that don't go through a button.
+  `BackClass` / `NoClickClass`); menus play their own open/close; `UiSounds.Deny()` on refused actions.
+- **Registry tooling** (`Assets/Audio/Editor/`): `SoundSlotScanner` derives every slot from the project;
+  assets labelled **`SoundIgnore`** (prototype content) are skipped. `SoundSlotEditor` writes a slot's cue
+  wherever it lives. `Tools ▸ RedMagic ▸ Audio ▸ 2 · Preparar huecos…` adds missing emitter entries and
+  fills empty slots with `Assets/Audio/Test/generic_test.wav` (never touches a slot with a clip).
 - Import: anything under `Assets/Audio/` gets preload + mobile defaults (`SfxImportPostprocessor`).
-- Missing / placeholder sounds are tracked in `docs/audio-pending.md`.
 
 ### Input
 

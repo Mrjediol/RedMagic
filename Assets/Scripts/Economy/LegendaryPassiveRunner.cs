@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Items;
 using RedMagic.Run;
@@ -148,6 +149,7 @@ namespace RedMagic.Economy
             {
                 int count = codex >= 2 ? tuning.bossItemsLevel2 : tuning.bossItemsLevel1;
                 ItemPickup.Drop(RandomItems(count, ItemRarity.Common), at + Vector3.right * 2.5f);
+                AudioManager.Instance?.Play(tuning.codexAurumDropSound, at + Vector3.right * 2.5f);
             }
 
             int manuscript = LegendaryPassiveEffects.Level(LegendaryPassiveEffectKind.PeriodicFreeItem);
@@ -155,6 +157,7 @@ namespace RedMagic.Economy
             {
                 var minRarity = manuscript >= 2 ? ItemRarity.Epic : ItemRarity.Common;
                 ItemPickup.Drop(RandomItems(1, minRarity), at + (boss ? Vector3.left * 2.5f : Vector3.zero));
+                AudioManager.Instance?.Play(tuning.manuscritoDropSound, at + (boss ? Vector3.left * 2.5f : Vector3.zero));
             }
         }
 
@@ -171,6 +174,8 @@ namespace RedMagic.Economy
 
         // ------------------------------------------------------------------ Anales del Vacío
 
+        private static WaveManager s_analesSoundedFor;
+
         private static void OnWaveEnemySpawned(WaveManager manager, int waveIndex, Health health)
         {
             if (waveIndex != 0 || !LegendaryPassiveEffects.Has(LegendaryPassiveEffectKind.WeakenedEnemies)) return;
@@ -179,6 +184,13 @@ namespace RedMagic.Economy
             var synergy = SynergyConfig.CurrentTuning;
             SlowStatus.Apply(health, tuning.firstWaveSlowStrength, tuning.firstWaveSlowDuration, 0f,
                              synergy.slowTint, synergy.fullTintAtSlow);
+
+            // Una vez por oleada, no por enemigo.
+            if (manager != s_analesSoundedFor)
+            {
+                s_analesSoundedFor = manager;
+                AudioManager.Instance?.Play(tuning.analesSlowSound);
+            }
         }
 
         private void OnHealthStarted(Health health)

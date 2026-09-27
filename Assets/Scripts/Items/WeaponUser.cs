@@ -31,8 +31,16 @@ namespace RedMagic.Items
     /// genérica: cualquier arma futura (haz o proyectil) puede usarla.
     /// </summary>
     [DisallowMultipleComponent]
-    public class WeaponUser : MonoBehaviour
+    public class WeaponUser : MonoBehaviour, ISoundEventSource
     {
+        /// <summary>OnLoot al recoger un item del suelo (<see cref="ItemPickup"/>). Ver <see cref="SoundEmitter"/>.</summary>
+        public event System.Action<SoundTrigger> SoundTriggered;
+
+        public void DeclareSoundTriggers(System.Collections.Generic.List<SoundTrigger> into) => into.Add(SoundTrigger.OnLoot);
+
+        /// <summary>Lo llama <see cref="ItemPickup"/> al entregar el item.</summary>
+        public void NotifyItemPickedUp() => SoundTriggered?.Invoke(SoundTrigger.OnLoot);
+
         [Header("Objetivo")]
         [Tooltip("Capas contra las que impactan los disparos de este personaje.")]
         [SerializeField] private LayerMask hitLayers = ~0;

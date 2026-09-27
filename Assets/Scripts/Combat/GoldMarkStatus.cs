@@ -1,3 +1,4 @@
+using RedMagic.Audio;
 using RedMagic.Fx;
 using UnityEngine;
 
@@ -55,8 +56,10 @@ namespace RedMagic.Combat
             if (target == null || target.IsDead || duration <= 0f) return null;
             if (!target.TryGetComponent(out GoldMarkStatus status))
                 status = target.gameObject.AddComponent<GoldMarkStatus>();
+            bool fresh = !status.IsMarked;
             status._tint = tint;
             status.Refresh(duration, dropMultiplier, color, auraSize, pulseSpeed, pulseScale, material);
+            if (fresh) SystemSounds.PlayAt(s => s.goldMarkApplied, target.transform.position);
             return status;
         }
 

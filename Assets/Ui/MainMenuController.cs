@@ -104,6 +104,7 @@ namespace RedMagic.UI
             // PlayMusic ignora la llamada si ese tema ya está sonando, así que volver de Opciones no lo reinicia.
             if (menuMusic != null && AudioManager.Instance != null)
                 AudioManager.Instance.PlayMusic(menuMusic);
+            SystemSounds.Play(s => s.mainMenu.open);
         }
 
         private void OnDisable()
@@ -169,6 +170,7 @@ namespace RedMagic.UI
 
             if (AudioManager.Instance != null)
                 AudioManager.Instance.StopMusic();
+            SystemSounds.Play(s => s.mainMenu.close);
 
             SceneManager.LoadScene(path);
         }

@@ -1649,7 +1649,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Run.SectionClearTracker
   clearEffectPrefab: {fileID: 1085088545867549799, guid: e0ab161e73a143f4ca886a264fbb5c62, type: 3}
   clearEffectScale: 2
-  clearSfxId: SFX_Fireball
+  clearSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  clearSfxId: 
 --- !u!4 &1298031744
 Transform:
   m_ObjectHideFlags: 0
@@ -2190,135 +2201,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1886276904
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1886276907}
-  - component: {fileID: 1886276906}
-  - component: {fileID: 1886276905}
-  m_Layer: 0
-  m_Name: AudioManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!81 &1886276905
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1886276904}
-  m_Enabled: 1
---- !u!114 &1886276906
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1886276904}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0d367a0ac2515cf458b72cfe4b622690, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.AudioManager
-  mixer: {fileID: 24100000, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  musicGroup: {fileID: 2760064263517888288, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  sfxGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  sounds:
-  - id: Music_Menu
-    clip: {fileID: 8300000, guid: 6ce737ff19c3b0f44a081ce833ff5d1d, type: 3}
-    volume: 1
-    pitch: 1
-    loop: 1
-    mixerGroup: {fileID: 2760064263517888288, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  - id: SFX_ButtonHover
-    clip: {fileID: 0}
-    volume: 1
-    pitch: 1
-    loop: 0
-    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  - id: SFX_ButtonClick
-    clip: {fileID: 0}
-    volume: 1
-    pitch: 1
-    loop: 0
-    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  - id: SFX_PlayerJump
-    clip: {fileID: 8300000, guid: 12285846daf4f464ca097cbaf9aade30, type: 3}
-    volume: 1
-    pitch: 1
-    loop: 0
-    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  - id: SFX_PlayerFootstep
-    clip: {fileID: 8300000, guid: aa370c90110c9d04d8b7d6ea3a61aacb, type: 3}
-    volume: 1
-    pitch: 1
-    loop: 0
-    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  - id: SFX_PlayerHurt
-    clip: {fileID: 8300000, guid: 9d0864ce49035c8418b3f129ad3d8be1, type: 3}
-    volume: 1
-    pitch: 1
-    loop: 0
-    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  - id: SFX_PlayerDeath
-    clip: {fileID: 8300000, guid: 6ce737ff19c3b0f44a081ce833ff5d1d, type: 3}
-    volume: 1
-    pitch: 1
-    loop: 0
-    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  - id: SFX_EnemyStomp
-    clip: {fileID: 8300000, guid: 9d0864ce49035c8418b3f129ad3d8be1, type: 3}
-    volume: 1
-    pitch: 1
-    loop: 0
-    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  - id: SFX_PlayerAttack
-    clip: {fileID: 8300000, guid: 9d0864ce49035c8418b3f129ad3d8be1, type: 3}
-    volume: 1
-    pitch: 0.38
-    loop: 0
-    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  - id: SFX_Fireball
-    clip: {fileID: 0}
-    volume: 1
-    pitch: 1
-    loop: 0
-    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  - id: SFX_PlayerDash
-    clip: {fileID: 0}
-    volume: 1
-    pitch: 1
-    loop: 0
-    mixerGroup: {fileID: 4438999669157264846, guid: a2b3201d8a5cb044c9975f9433886a93, type: 2}
-  defaultMasterVolume: 1
-  defaultMusicVolume: 0.8
-  defaultSfxVolume: 1
-  musicFadeDuration: 0.75
-  musicResourceFolder: Music
-  sfxVoiceCount: 8
---- !u!4 &1886276907
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1886276904}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1891858266
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2609,7 +2491,6 @@ SceneRoots:
   - {fileID: 1691658135}
   - {fileID: 1838276136}
   - {fileID: 557935597}
-  - {fileID: 1886276907}
   - {fileID: 138635372}
   - {fileID: 1297966037}
   - {fileID: 1892744620}

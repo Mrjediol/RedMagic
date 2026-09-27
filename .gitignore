@@ -87,3 +87,7 @@ crashlytics-build.properties
 /Assets/Cainos/Pixel Art Platformer - Village Props/Scene/SC Demo Scene - Village Props.unity.meta
 /Assets/Dragon Warrior Files/Demo.unity
 /Assets/Dragon Warrior Files/Demo.unity.meta
+
+# Unity crash-recovery scenes (never commit)
+/[Aa]ssets/_Recovery/
+/[Aa]ssets/_Recovery.meta

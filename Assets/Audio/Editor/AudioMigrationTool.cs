@@ -91,9 +91,11 @@ namespace RedMagic.Audio.EditorTools
             public List<Entry> Canonical;
             public readonly List<string> Log = new List<string>();
             public readonly List<string> Problems = new List<string>();
+            public readonly List<string> Pending = new List<string>();
             public int Changes;
             public void Info(string s) => Log.Add(s);
             public void Problem(string s) => Problems.Add(s);
+            public void MissingSound(string s) => Pending.Add(s);
         }
 
         // ------------------------------------------------------------------ menús / entradas
@@ -348,7 +350,7 @@ namespace RedMagic.Audio.EditorTools
 
                 if (entry.Clip == null)
                 {
-                    run.Info($"{label}: la entrada no tiene clip — no hay sonido que migrar; se vacía el campo.");
+                    run.MissingSound($"{label}: la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.");
                 }
                 else if (!WriteTarget(run, rule, entry, so, host, label))
                 {
@@ -512,7 +514,7 @@ namespace RedMagic.Audio.EditorTools
             var sb = new StringBuilder();
             sb.AppendLine($"## {DateTime.Now:yyyy-MM-dd HH:mm:ss} — {title} ({(run.Dry ? "en seco" : "aplicado")})");
             sb.AppendLine();
-            sb.AppendLine($"Cambios: {run.Changes} · Problemas: {run.Problems.Count}");
+            sb.AppendLine($"Cambios: {run.Changes} (sin clip: {run.Pending.Count}) · Problemas: {run.Problems.Count}");
             sb.AppendLine();
             if (run.Problems.Count > 0)
             {
@@ -524,6 +526,12 @@ namespace RedMagic.Audio.EditorTools
             {
                 sb.AppendLine("### Cambios");
                 foreach (var l in run.Log) sb.AppendLine("- " + l);
+                sb.AppendLine();
+            }
+            if (run.Pending.Count > 0)
+            {
+                sb.AppendLine("### Vaciados sin clip — sonidos pendientes");
+                foreach (var l in run.Pending) sb.AppendLine("- " + l);
                 sb.AppendLine();
             }
 

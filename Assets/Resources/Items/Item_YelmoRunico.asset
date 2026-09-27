@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8efa3a18277fe72448310e64239923c9, type: 3}
   m_Name: Item_YelmoRunico
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
+  textKey: item.yelmo_runico
   displayName: "Yelmo R\xFAnico"
   description: Las runas guardan cada muerte. A la quinta, el hielo estalla a tu
     alrededor.

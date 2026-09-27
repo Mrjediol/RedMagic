@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8efa3a18277fe72448310e64239923c9, type: 3}
   m_Name: Item_BotasRunicas
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
+  textKey: item.botas_runicas
   displayName: "Botas R\xFAnicas"
   description: "Botas de escarcha que apenas rozan el suelo. Con el fr\xEDo a la
     vista, el tiempo corre a tu favor."

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca7e4e726982a714f8b0f3d8944d404b, type: 3}
   m_Name: Weapon_BolaDeFuego
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponDefinition
+  textKey: weapon.bola_de_fuego
   displayName: Bola de Fuego
   description: "El arma base: un proyectil recto, r\xE1pido y fiable. Sin sorpresas,
     sin puntos ciegos. Nace ardiendo."

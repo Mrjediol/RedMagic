@@ -67,11 +67,11 @@ namespace RedMagic.Hub
         private State _state = State.Closed;
         private bool _boundToRun;
 
-        /// <summary>Texto del cartel mientras está cerrado ("Pulsa E para abrir el cofre").</summary>
-        protected abstract string OpenPromptText { get; }
+        /// <summary>Clave de idioma del cartel mientras está cerrado ("Pulsa E para abrir el cofre").</summary>
+        protected abstract string OpenPromptKey { get; }
 
-        /// <summary>Texto del cartel una vez abierto, esperando el 2º toque ("Pulsa E para recoger").</summary>
-        protected abstract string PickupPromptText { get; }
+        /// <summary>Clave de idioma del cartel una vez abierto, esperando el 2º toque ("Pulsa E para recoger").</summary>
+        protected abstract string PickupPromptKey { get; }
 
         /// <summary>Se llama en el 2º toque, con el objeto ya abierto. Aquí va la recompensa real.</summary>
         protected abstract void OnLoot();
@@ -242,7 +242,7 @@ namespace RedMagic.Hub
                 return;
             }
 
-            InteractionPromptUi.Show(this, _state == State.WaitingForPickup ? PickupPromptText : OpenPromptText);
+            InteractionPromptUi.ShowKey(this, _state == State.WaitingForPickup ? PickupPromptKey : OpenPromptKey);
         }
 
         private void OnDrawGizmosSelected()

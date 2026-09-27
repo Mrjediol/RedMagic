@@ -1,3 +1,4 @@
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -75,10 +76,10 @@ namespace RedMagic.Items
 
         public override string EffectSummary() => kind switch
         {
-            ShapeKind.SplitOnImpact => $"Al impactar se divide en {count} ({derivedDamageFraction * 100f:0}% de daño cada uno).",
-            ShapeKind.MultiShot => $"Dispara {count} proyectiles en abanico de {spreadAngle:0}°.",
-            ShapeKind.AirRepeat => $"Se repite {repeats} vez(es) en el aire.",
-            _ => "Un solo impacto.",
+            ShapeKind.SplitOnImpact => Loc.Get("modifier.shape.split", count, derivedDamageFraction * 100f),
+            ShapeKind.MultiShot => Loc.Get("modifier.shape.multishot", count, spreadAngle),
+            ShapeKind.AirRepeat => Loc.Get("modifier.shape.air_repeat", repeats),
+            _ => Loc.Get("modifier.shape.single"),
         };
     }
 }

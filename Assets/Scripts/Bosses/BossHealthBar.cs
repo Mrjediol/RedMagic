@@ -1,4 +1,5 @@
 using RedMagic.Combat;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -48,6 +49,8 @@ namespace RedMagic.Bosses
         private static readonly Color TickColor = new Color(0.05f, 0.03f, 0.05f, 0.9f);
 
         private BossController _boss;
+        private string _subtitleKey;
+        private Color _subtitleColor;
         private Health _health;
 
         private CanvasGroup _group;
@@ -93,6 +96,19 @@ namespace RedMagic.Bosses
         // ------------------------------------------------------------------ ciclo de vida
 
         private void Awake() => Build();
+
+        private void OnEnable() => Loc.Changed += OnLanguageChanged;
+
+        private void OnDisable() => Loc.Changed -= OnLanguageChanged;
+
+        // Nombre y epíteto salen del asset del jefe traducidos; el aviso de estado, de su clave.
+        private void OnLanguageChanged()
+        {
+            if (_boss == null || _nameLabel == null) return;
+            var definition = _boss.Definition;
+            _nameLabel.text = definition != null ? definition.DisplayName.ToUpperInvariant() : _boss.name;
+            SetSubtitle(_subtitleKey, _subtitleColor);
+        }
 
         private void OnDestroy()
         {
@@ -155,7 +171,7 @@ namespace RedMagic.Bosses
             if (_fillImage == null) return;
 
             _fillImage.color = guarding ? GuardFillColor : FillColor;
-            SetSubtitle(guarding ? "SE CUBRE" : null, GuardFillColor);
+            SetSubtitle(guarding ? "boss.guarding" : null, GuardFillColor);
         }
 
         /// <summary>
@@ -168,18 +184,20 @@ namespace RedMagic.Bosses
             if (_fillImage == null) return;
 
             _fillImage.color = vulnerable ? VulnerableFillColor : FillColor;
-            SetSubtitle(vulnerable ? "¡EXPUESTO!" : null, VulnerableFillColor);
+            SetSubtitle(vulnerable ? "boss.exposed" : null, VulnerableFillColor);
         }
 
         /// <summary>
-        /// Escribe un aviso de estado bajo el nombre, o lo quita (null) devolviendo el epíteto del
+        /// Escribe un aviso de estado (clave de idioma) bajo el nombre, o lo quita (null) devolviendo el epíteto del
         /// jefe. Centralizado para que exposición y guardia no se pisen el subtítulo.
         /// </summary>
-        private void SetSubtitle(string text, Color color)
+        private void SetSubtitle(string key, Color color)
         {
             if (_titleLabel == null) return;
+            _subtitleKey = key;
+            _subtitleColor = color;
 
-            if (string.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(key))
             {
                 var definition = _boss != null ? _boss.Definition : null;
                 _titleLabel.text = definition != null ? definition.Title : string.Empty;
@@ -187,7 +205,7 @@ namespace RedMagic.Bosses
             }
             else
             {
-                _titleLabel.text = text;
+                _titleLabel.text = Loc.Get(key);
                 _titleLabel.color = color;
             }
 

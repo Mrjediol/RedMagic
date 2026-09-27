@@ -4,7 +4,6 @@ using RedMagic.Fx;
 using RedMagic.Gameplay;
 using RedMagic.Items;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace RedMagic.Economy
 {
@@ -20,34 +19,35 @@ namespace RedMagic.Economy
     /// Números en <see cref="ShopFxConfig"/>, colores en <see cref="ItemRarityColors"/>.
     /// </summary>
     [DisallowMultipleComponent]
-    public class ShopAltar : MonoBehaviour
+    public class ShopAltar : MonoBehaviour, IShopInteractable
     {
-        private static readonly Color PriceColor = new(1f, 0.9f, 0.55f);
-        private static readonly Color TooDearColor = new(1f, 0.35f, 0.3f);
         private static Material _particleMaterial;
 
         public ShopStockEntry Entry { get; private set; }
         public bool HasItem => Entry.Item != null;
+
+        /// <summary>Saliendo o entrando por un reroll: ni se enfoca ni se compra.</summary>
+        public bool Animating { get; private set; }
+
+        /// <summary>El icono aún vuela hacia el jugador tras una compra.</summary>
+        public bool Purchasing => _purchasing;
+
+        public bool CanInteract => HasItem && !Animating && !_purchasing;
 
         /// <summary>Centro del icono en el mundo (para medir la distancia al jugador).</summary>
         public Vector3 ItemPosition => transform.position;
 
         private SpriteRenderer _icon, _iconFlash, _halo;
         private ParticleSystem _aura, _burst;
-        private Canvas _priceCanvas;
-        private CanvasGroup _priceGroup;
-        private Image _coin;
-        private Text _price;
+        private ShopPriceTag _tag;
 
-        private Color _color = Color.white;
+        private Color _color = Color.white, _iconColor = Color.white;
         private ItemRarity _rarity;
         private float _iconScale = 1f;
         private float _phase, _bobAmplitude, _bobSpeed;
         private float _haloFade = 1f;
         private float _nextSparkle;
-        private bool _affordable = true, _focused, _purchasing;
-        private Coroutine _deny;
-        private Vector2 _priceRowRest; // posición de reposo de la fila del precio: la sacudida siempre vuelve aquí
+        private bool _focused, _purchasing;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics() => _particleMaterial = null;
@@ -59,8 +59,9 @@ namespace RedMagic.Economy
         {
             Build(sortingReference);
             StopAllCoroutines();
-            _deny = null;
+            _tag.StopDeny();
             _purchasing = false;
+            Animating = false;
 
             Entry = entry;
             _bobAmplitude = bobAmplitude;
@@ -76,19 +77,15 @@ namespace RedMagic.Economy
             _color = ItemRarities.ColorOf(_rarity);
 
             _icon.sprite = item.Icon != null ? item.Icon : AbilityFx.DefaultSprite;
-            _icon.color = item.Icon != null ? Color.white : item.Accent;
+            _iconColor = item.Icon != null ? Color.white : item.Accent;
+            _icon.color = _iconColor;
             _icon.transform.localPosition = Vector3.zero;
             AbilityFx.Resize(_icon.transform, _icon, Vector2.one * iconSize);
             _iconScale = _icon.transform.localScale.x;
             _iconFlash.sprite = _icon.sprite;
             _iconFlash.color = new Color(1f, 1f, 1f, 0f);
 
-            _priceCanvas.transform.localPosition = new Vector3(0f, priceOffset, 0f);
-            _priceGroup.alpha = 1f;
-            _coin.sprite = coinIcon;
-            _coin.enabled = coinIcon != null;
-            _price.text = entry.Price.ToString();
-            SetAffordable(_affordable);
+            _tag.Set(coinIcon, entry.Price.ToString(), priceOffset);
 
             var fx = ShopFxConfig.Current;
             _aura.transform.localPosition = new Vector3(0f, fx.particleOriginOffset, 0f);
@@ -103,16 +100,13 @@ namespace RedMagic.Economy
         {
             Entry = default;
             StopAllCoroutines();
-            _deny = null;
+            _tag?.StopDeny();
             _purchasing = false;
+            Animating = false;
             SetVisible(false);
         }
 
-        public void SetAffordable(bool affordable)
-        {
-            _affordable = affordable;
-            if (_price != null && _deny == null) _price.color = affordable ? PriceColor : TooDearColor;
-        }
+        public void SetAffordable(bool affordable) => _tag?.SetAffordable(affordable);
 
         /// <summary>Es el altar que el jugador tiene delante: el aura brilla un poco más.</summary>
         public void SetFocused(bool focused)
@@ -125,9 +119,32 @@ namespace RedMagic.Economy
         /// <summary>"No llega": sacudida y destello rojo del precio.</summary>
         public void Deny()
         {
-            if (_priceCanvas == null || !_priceCanvas.gameObject.activeInHierarchy || _purchasing) return;
-            if (_deny != null) StopCoroutine(_deny);
-            _deny = StartCoroutine(DenyRoutine());
+            if (_tag == null || _purchasing || Animating) return;
+            _tag.Deny();
+        }
+
+        /// <summary>
+        /// Salida de reroll: tras <paramref name="delay"/>, el icono encoge a 0 y se funde (halo, aura y
+        /// precio con él). El altar deja de tener item desde YA, así que no se puede comprar.
+        /// </summary>
+        public void PlayExit(float delay, float duration)
+        {
+            if (!HasItem || _purchasing) return;
+            Entry = default;
+            _focused = false;
+            _tag.StopDeny();
+            StartCoroutine(ExitRoutine(delay, duration));
+        }
+
+        /// <summary>
+        /// Entrada de reroll, justo después de <see cref="Show"/>: oculto hasta <paramref name="delay"/>,
+        /// luego crece desde 0 con un pequeño rebote (<paramref name="overshoot"/>, 0 = sin rebote) y
+        /// aparece. No se puede enfocar hasta que acaba.
+        /// </summary>
+        public void PlayEnter(float delay, float duration, float overshoot)
+        {
+            if (!HasItem) return;
+            StartCoroutine(EnterRoutine(delay, duration, overshoot));
         }
 
         /// <summary>
@@ -139,7 +156,7 @@ namespace RedMagic.Economy
             if (!HasItem) return;
             Entry = default;
             _focused = false;
-            if (_deny != null) { StopCoroutine(_deny); _deny = null; }
+            _tag.StopDeny();
             StartCoroutine(PurchaseRoutine(player));
         }
 
@@ -165,7 +182,7 @@ namespace RedMagic.Economy
             SetWorldSize(_halo, size);
 
             // Chispazos (legendario, o cualquier rareza con intervalo > 0).
-            if (!_purchasing && aura.sparkleInterval > 0f && aura.sparkleCount > 0 && Time.time >= _nextSparkle)
+            if (!_purchasing && !Animating && aura.sparkleInterval > 0f && aura.sparkleCount > 0 && Time.time >= _nextSparkle)
             {
                 _nextSparkle = Time.time + aura.sparkleInterval * Random.Range(0.7f, 1.3f);
                 Sparkle(_aura, transform.position, aura.sparkleCount, aura.particleSize * 2.2f, 1.2f);
@@ -241,33 +258,69 @@ namespace RedMagic.Economy
             {
                 float k = 1f - t / duration;
                 _haloFade = k;
-                _priceGroup.alpha = k;
+                _tag.Alpha = k;
                 yield return null;
             }
 
             _haloFade = 0f;
-            _priceGroup.alpha = 0f;
+            _tag.Alpha = 0f;
             _halo.gameObject.SetActive(false);
-            _priceCanvas.gameObject.SetActive(false);
+            _tag.gameObject.SetActive(false);
         }
 
-        private IEnumerator DenyRoutine()
+        private IEnumerator ExitRoutine(float delay, float duration)
         {
-            var rt = (RectTransform)_price.transform.parent;
-            var basePos = _priceRowRest; // no la actual: un Deny encima de otro la dejaría desplazada
-            const float duration = 0.35f;
+            Animating = true;
+            if (delay > 0f) yield return new WaitForSeconds(delay);
+
+            var emission = _aura.emission;
+            emission.enabled = false;
 
             for (float t = 0f; t < duration; t += Time.deltaTime)
             {
-                float k = 1f - t / duration;
-                rt.anchoredPosition = basePos + Vector2.right * (Mathf.Sin(t * 60f) * 18f * k);
-                _price.color = Color.Lerp(TooDearColor, Color.white, Mathf.PingPong(t * 12f, 1f));
+                float k = t / duration;
+                SetPresence(1f - k * k, 1f - k); // encoge acelerando, se funde lineal
                 yield return null;
             }
 
-            rt.anchoredPosition = basePos;
-            _deny = null;
-            SetAffordable(_affordable);
+            SetVisible(false);
+            SetPresence(1f, 1f); // listo para el siguiente Show
+            Animating = false;
+        }
+
+        private IEnumerator EnterRoutine(float delay, float duration, float overshoot)
+        {
+            Animating = true;
+            var emission = _aura.emission;
+            emission.enabled = false;
+            SetPresence(0f, 0f);
+            if (delay > 0f) yield return new WaitForSeconds(delay);
+
+            for (float t = 0f; t < duration; t += Time.deltaTime)
+            {
+                float k = t / duration;
+                SetPresence(EaseOutBack(k, overshoot), Mathf.Clamp01(k * 2f)); // el fade dura media entrada
+                yield return null;
+            }
+
+            SetPresence(1f, 1f);
+            Animating = false;
+            ApplyAuraRate();
+        }
+
+        /// <summary>Escala del icono (1 = tamaño normal) y alfa de icono, halo y precio a la vez.</summary>
+        private void SetPresence(float scale, float alpha)
+        {
+            _icon.transform.localScale = Vector3.one * (_iconScale * Mathf.Max(0f, scale));
+            _icon.color = new Color(_iconColor.r, _iconColor.g, _iconColor.b, _iconColor.a * alpha);
+            _haloFade = alpha;
+            _tag.Alpha = alpha;
+        }
+
+        private static float EaseOutBack(float k, float overshoot)
+        {
+            float x = k - 1f;
+            return 1f + (overshoot + 1f) * x * x * x + overshoot * x * x;
         }
 
         // ------------------------------------------------------------------ partículas
@@ -351,7 +404,7 @@ namespace RedMagic.Economy
             ConfigureAura(_aura);
             ConfigureBurst(_burst);
 
-            BuildPrice();
+            _tag = new ShopPriceTag(this, transform, 0.01f, _icon);
         }
 
         private static SpriteRenderer NewSprite(string name, Transform parent, Sprite sprite, Material material)
@@ -461,52 +514,6 @@ namespace RedMagic.Economy
             return _particleMaterial;
         }
 
-        private void BuildPrice()
-        {
-            // Canvas de mundo pequeño (0.01 u por píxel) con moneda + número en fila.
-            var canvasGo = new GameObject("ShopPrice", typeof(RectTransform), typeof(Canvas), typeof(CanvasGroup));
-            canvasGo.transform.SetParent(transform, false);
-            canvasGo.transform.localScale = Vector3.one * 0.01f;
-            _priceCanvas = canvasGo.GetComponent<Canvas>();
-            _priceCanvas.renderMode = RenderMode.WorldSpace;
-            _priceCanvas.overrideSorting = true;
-            _priceCanvas.sortingLayerID = _icon.sortingLayerID;
-            _priceCanvas.sortingOrder = _icon.sortingOrder;
-            _priceGroup = canvasGo.GetComponent<CanvasGroup>();
-            ((RectTransform)canvasGo.transform).sizeDelta = new Vector2(300f, 80f);
-
-            var row = new GameObject("Row", typeof(RectTransform), typeof(HorizontalLayoutGroup));
-            row.transform.SetParent(canvasGo.transform, false);
-            ((RectTransform)row.transform).sizeDelta = new Vector2(300f, 80f);
-            _priceRowRest = ((RectTransform)row.transform).anchoredPosition;
-            var layout = row.GetComponent<HorizontalLayoutGroup>();
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = 10f;
-            layout.childControlWidth = layout.childControlHeight = false;
-            layout.childForceExpandWidth = layout.childForceExpandHeight = false;
-
-            var coinGo = new GameObject("Coin", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            coinGo.transform.SetParent(row.transform, false);
-            ((RectTransform)coinGo.transform).sizeDelta = new Vector2(56f, 56f);
-            _coin = coinGo.GetComponent<Image>();
-            _coin.preserveAspect = true;
-            _coin.raycastTarget = false;
-
-            var textGo = new GameObject("Price", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text), typeof(Outline));
-            textGo.transform.SetParent(row.transform, false);
-            ((RectTransform)textGo.transform).sizeDelta = new Vector2(150f, 70f);
-            _price = textGo.GetComponent<Text>();
-            _price.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            _price.fontSize = 54;
-            _price.fontStyle = FontStyle.Bold;
-            _price.alignment = TextAnchor.MiddleLeft;
-            _price.horizontalOverflow = HorizontalWrapMode.Overflow;
-            _price.raycastTarget = false;
-            var outline = textGo.GetComponent<Outline>();
-            outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
-            outline.effectDistance = new Vector2(3f, -3f);
-        }
-
         // ------------------------------------------------------------------ utilidades
 
         private void SetVisible(bool visible)
@@ -514,7 +521,7 @@ namespace RedMagic.Economy
             if (_icon == null) return;
             _icon.gameObject.SetActive(visible);
             _halo.gameObject.SetActive(visible);
-            _priceCanvas.gameObject.SetActive(visible);
+            _tag.gameObject.SetActive(visible);
 
             var emission = _aura.emission;
             emission.enabled = visible;

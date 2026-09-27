@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efa3a18277fe72448310e64239923c9, type: 3}
+  m_Name: Item_AmuletoDeOro
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
+  textKey: item.amuleto_de_oro
+  displayName: Amuleto de Oro
+  description: "La suerte crece con tu riqueza: cuanto m\xE1s oro llevas, mejores
+    objetos ofrece la tienda."
+  icon: {fileID: -8418299633776641508, guid: 14cddc873a9d24c4eb0684861b569b55, type: 3}
+  accent: {r: 1, g: 0.8, b: 0.3, a: 1}
+  rarity: 2
+  price: 110
+  tags: 0400000066000000
+  effects:
+  - rid: 5384780735535120518
+  references:
+    version: 2
+    RefIds:
+    - rid: 5384780735535120518
+      type: {class: ShopLuckFromGoldEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
+      data:
+        currency: 0
+        steps:
+        - gold: 100
+          luck: 0.25
+        - gold: 250
+          luck: 0.5
+        - gold: 500
+          luck: 1
+        commonWeight: 1
+        blueWeight: 1.5
+        epicWeight: 2.5
+        legendaryWeight: 4

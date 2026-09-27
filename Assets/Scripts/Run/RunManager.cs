@@ -129,6 +129,18 @@ namespace RedMagic.Run
         [Min(0)]
         [SerializeField] private int postLoadSettleFrames = 2;
 
+        [Tooltip("Segundos (reales) que tarda la pantalla en fundirse antes de cambiar de escena. " +
+                 "La carga ocurre ya tapada, así que su tirón no se ve. 0 = corte seco.")]
+        [Min(0f)]
+        [SerializeField] private float transitionFadeOut = 0.25f;
+
+        [Tooltip("Segundos (reales) que tarda la escena nueva en aparecer, ya asentada y con el " +
+                 "control devuelto.")]
+        [Min(0f)]
+        [SerializeField] private float transitionFadeIn = 0.35f;
+
+        [SerializeField] private Color transitionColor = Color.black;
+
         // ------------------------------------------------------------------ estado
 
         /// <summary>True entre StartRun y la vuelta al hub.</summary>
@@ -427,6 +439,10 @@ namespace RedMagic.Run
             IsTransitioning = true;
             Freeze();
 
+            // 0. Fundido a negro (tiempo real, el juego ya está congelado): todo lo que sigue —
+            //    descarga, carga, integración — pasa con la pantalla tapada.
+            yield return ScreenFader.FadeOut(transitionFadeOut, transitionFadeIn, transitionColor);
+
             // 1. La escena-sostén se crea una sola vez por run. A partir de aquí siempre hay al
             //    menos una escena cargada, así que descargar la actual es legal.
             if (firstOfRun || !_runRootScene.IsValid() || !_runRootScene.isLoaded)
@@ -486,6 +502,9 @@ namespace RedMagic.Run
             Unfreeze();
             IsTransitioning = false;
             _flow = null;
+
+            // 8. La escena nueva aparece ya con el juego en marcha.
+            ScreenFader.FadeIn(transitionFadeIn);
         }
 
         // ------------------------------------------------------------------ tienda
@@ -606,11 +625,26 @@ namespace RedMagic.Run
         private void ReturnToHub(bool completed)
         {
             ClearRun();
+            _flow = StartCoroutine(ReturnToHubRoutine(completed));
+        }
+
+        /// <summary>
+        /// Funde a negro y entonces carga el hub. El fundido de vuelta no se pide aquí: la carga es
+        /// Single, y <see cref="ScreenFader"/> se destapa solo tras cualquier carga Single que llega
+        /// con la pantalla tapada.
+        /// </summary>
+        private IEnumerator ReturnToHubRoutine(bool completed)
+        {
+            IsTransitioning = true;
+            yield return ScreenFader.FadeOut(transitionFadeOut, transitionFadeIn, transitionColor);
+            IsTransitioning = false;
+            _flow = null;
 
             if (!hubScene.Load(this))
             {
                 Debug.LogError("[RunManager] No se pudo volver al hub. Revisa 'Hub Scene' en el " +
                                "RunManager.", this);
+                ScreenFader.FadeIn(transitionFadeIn);
             }
 
             RunEnded?.Invoke(completed);

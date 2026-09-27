@@ -25,11 +25,19 @@ namespace RedMagic.UI
         private const string PanelSettingsResourcePath = "CurrencyHudPanelSettings";
 
         private UIDocument _document;
-        private VisualElement _row;
+        private VisualElement _column, _row;
         private readonly Dictionary<Currency, Label> _amountLabels = new();
         private bool _built;
         private bool _bound;
         private bool _visible = true;
+
+        // Contador de rerolls: debajo de las monedas, sólo en la tienda (ShopManager.Current).
+        private VisualElement _rerollEntry;
+        private Image _rerollIcon;
+        private Label _rerollLabel;
+        private bool _rerollVisible = true;
+        private int _rerollShown = -1;
+        private Coroutine _rerollPunch;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -65,6 +73,7 @@ namespace RedMagic.UI
             if (Instance != this) return;
             if (_bound && CurrencyManager.Instance != null)
                 CurrencyManager.Instance.Changed -= OnCurrencyChanged;
+            if (_bound) RedMagic.Run.RunRerolls.Changed -= OnRerollsChanged;
             Instance = null;
         }
 
@@ -83,10 +92,17 @@ namespace RedMagic.UI
         private void ApplyVisibility()
         {
             bool show = !MainMenuController.IsOpen;
+            bool showRerolls = ShopManager.Current != null;
+            if (showRerolls != _rerollVisible)
+            {
+                _rerollVisible = showRerolls;
+                _rerollEntry.style.display = showRerolls ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+
             if (show == _visible) return;
 
             _visible = show;
-            _row.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+            _column.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         private void TryBuild()
@@ -106,10 +122,46 @@ namespace RedMagic.UI
             if (manager == null) return;
 
             manager.Changed += OnCurrencyChanged;
+            RedMagic.Run.RunRerolls.Changed += OnRerollsChanged;
             _bound = true;
 
             foreach (var currency in _amountLabels.Keys)
                 OnCurrencyChanged(currency, manager.Get(currency));
+            OnRerollsChanged(RedMagic.Run.RunRerolls.Count);
+        }
+
+        // ------------------------------------------------------------------ rerolls
+
+        private void OnRerollsChanged(int count)
+        {
+            if (_rerollLabel == null) return;
+
+            var fx = ShopFxConfig.Current;
+            bool changed = _rerollShown >= 0 && count != _rerollShown;
+            _rerollShown = count;
+            _rerollLabel.text = count.ToString();
+
+            // Sin rerolls, apagado (color apagado en número e icono).
+            bool empty = count <= 0;
+            _rerollLabel.style.color = empty ? fx.rerollCounterEmptyColor : Color.white;
+            _rerollIcon.tintColor = empty ? fx.rerollCounterEmptyColor : Color.white;
+
+            if (!changed) return;
+            if (_rerollPunch != null) StopCoroutine(_rerollPunch);
+            _rerollPunch = StartCoroutine(PunchRoutine(_rerollLabel, fx.rerollCounterPunch, fx.rerollCounterPunchDuration));
+        }
+
+        private System.Collections.IEnumerator PunchRoutine(VisualElement target, float peak, float duration)
+        {
+            for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
+            {
+                float s = Mathf.Lerp(peak, 1f, t / duration);
+                target.style.scale = new Scale(new Vector3(s, s, 1f));
+                yield return null;
+            }
+
+            target.style.scale = new Scale(Vector3.one);
+            _rerollPunch = null;
         }
 
         private void OnCurrencyChanged(Currency currency, int amount)
@@ -174,18 +226,36 @@ namespace RedMagic.UI
             root.style.bottom = 0;
             root.pickingMode = PickingMode.Ignore;
 
+            _column = new VisualElement { name = "currency-column" };
+            _column.pickingMode = PickingMode.Ignore;
+            _column.style.position = Position.Absolute;
+            _column.style.top = 14;
+            _column.style.right = 16;
+            _column.style.flexDirection = FlexDirection.Column;
+            _column.style.alignItems = Align.FlexEnd;
+            root.Add(_column);
+
             _row = new VisualElement { name = "currency-row" };
             _row.pickingMode = PickingMode.Ignore;
-            _row.style.position = Position.Absolute;
-            _row.style.top = 14;
-            _row.style.right = 16;
             _row.style.flexDirection = FlexDirection.Row;
             _row.style.alignItems = Align.Center;
-            root.Add(_row);
+            _column.Add(_row);
 
             var config = CurrencyManager.Instance != null ? CurrencyManager.Instance.Config : null;
             foreach (var currency in OrderedCurrencies(config))
-                _row.Add(BuildEntry(currency, config != null ? config.VisualFor(currency) : null));
+            {
+                var visual = config != null ? config.VisualFor(currency) : null;
+                _row.Add(BuildEntry($"currency-{currency}", visual?.icon, visual != null ? visual.tint : Color.white,
+                                    out var amount));
+                _amountLabels[currency] = amount;
+            }
+
+            // Rerolls: la misma pieza que una moneda, en su propia fila debajo.
+            _rerollEntry = BuildEntry("reroll-counter", ShopConfig.Instance.rerollIcon, Color.white, out _rerollLabel);
+            _rerollEntry.style.marginTop = 6;
+            _rerollIcon = _rerollEntry.Q<Image>("icon");
+            _column.Add(_rerollEntry);
+            _rerollVisible = true; // ApplyVisibility lo corrige en este mismo paso
 
             // El primer Update tras montar decide la visibilidad real (main menu o no); arrancar
             // visible y corregir ahí evita un parpadeo si el menú principal ya estaba activo.
@@ -206,9 +276,9 @@ namespace RedMagic.UI
                 yield return currency;
         }
 
-        private VisualElement BuildEntry(Currency currency, CurrencyConfig.Visual visual)
+        private static VisualElement BuildEntry(string name, Sprite iconSprite, Color tint, out Label amount)
         {
-            var entry = new VisualElement { name = $"currency-{currency}" };
+            var entry = new VisualElement { name = name };
             entry.pickingMode = PickingMode.Ignore;
             entry.style.flexDirection = FlexDirection.Row;
             entry.style.alignItems = Align.Center;
@@ -228,14 +298,14 @@ namespace RedMagic.UI
             icon.style.width = 26;
             icon.style.height = 26;
             icon.style.marginRight = 6;
-            if (visual != null && visual.icon != null)
+            if (iconSprite != null)
             {
-                icon.sprite = visual.icon;
-                icon.tintColor = visual.tint;
+                icon.sprite = iconSprite;
+                icon.tintColor = tint;
             }
             entry.Add(icon);
 
-            var amount = new Label("0") { name = "amount" };
+            amount = new Label("0") { name = "amount" };
             amount.pickingMode = PickingMode.Ignore;
             amount.style.unityFontStyleAndWeight = FontStyle.Bold;
             amount.style.fontSize = 18;
@@ -245,8 +315,6 @@ namespace RedMagic.UI
             amount.style.minWidth = 22;
             amount.style.unityTextAlign = TextAnchor.MiddleLeft;
             entry.Add(amount);
-
-            _amountLabels[currency] = amount;
             return entry;
         }
     }

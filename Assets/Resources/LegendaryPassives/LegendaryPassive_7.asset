@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95c9808da496c3d4c967f93f4a3a88f3, type: 3}
   m_Name: LegendaryPassive_7
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
+  textKey: passive.manuscrito_eterno
   id: 7
   icon: {fileID: -8467037385029057477, guid: e096aebc055870d4c91d610e632b0976, type: 3}
   displayName: Manuscrito Eterno

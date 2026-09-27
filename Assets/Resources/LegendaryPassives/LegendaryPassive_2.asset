@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95c9808da496c3d4c967f93f4a3a88f3, type: 3}
   m_Name: LegendaryPassive_2
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
+  textKey: passive.grimorio_del_umbral
   id: 2
   icon: {fileID: 8971066615115160188, guid: 0d569c0a5cd01e545b9263df12281ab4, type: 3}
   displayName: Grimorio del Umbral

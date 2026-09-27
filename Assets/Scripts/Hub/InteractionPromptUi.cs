@@ -1,3 +1,4 @@
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -38,6 +39,7 @@ namespace RedMagic.Hub
         // sale de rango primero no debe poder apagar el cartel del que sigue dentro — por eso
         // Hide(caller) sólo apaga si el que pide ocultar es quien lo encendió.
         private Object _owner;
+        private string _key; // clave del texto visible, si vino por ShowKey
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -67,6 +69,10 @@ namespace RedMagic.Hub
             }
         }
 
+        private void OnEnable() => Loc.Changed += OnLanguageChanged;
+
+        private void OnDisable() => Loc.Changed -= OnLanguageChanged;
+
         private void OnDestroy()
         {
             if (Instance == this) Instance = null;
@@ -95,12 +101,33 @@ namespace RedMagic.Hub
         {
             if (Instance == null || string.IsNullOrEmpty(text)) return;
 
-            Instance._owner = caller;
-            if (Instance._label != null)
-            {
-                Instance._label.text = text;
-                Instance._label.style.display = DisplayStyle.Flex;
-            }
+            Instance._key = null;
+            Instance.Display(caller, text);
+        }
+
+        /// <summary>
+        /// Como <see cref="Show"/>, pero con una clave de idioma: el cartel se repinta solo si el
+        /// jugador cambia de idioma mientras está a la vista.
+        /// </summary>
+        public static void ShowKey(Object caller, string key)
+        {
+            if (Instance == null || string.IsNullOrEmpty(key)) return;
+
+            Instance._key = key;
+            Instance.Display(caller, Loc.Get(key));
+        }
+
+        private void Display(Object caller, string text)
+        {
+            _owner = caller;
+            if (_label == null) return;
+            _label.text = text;
+            _label.style.display = DisplayStyle.Flex;
+        }
+
+        private void OnLanguageChanged()
+        {
+            if (_owner != null && _key != null && _label != null) _label.text = Loc.Get(_key);
         }
 
         /// <summary>Oculta el cartel, pero sólo si sigue siendo <paramref name="caller"/> quien lo

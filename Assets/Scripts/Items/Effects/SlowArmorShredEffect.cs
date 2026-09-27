@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -28,6 +29,6 @@ namespace RedMagic.Items
         public override void OnUnequip(ItemEffectContext context) => CombatModifiers.Remove(context);
 
         public override string Summary() =>
-            $"Ralentizar rompe la armadura: −{armorReduction * 100f:0}% (recibe +{armorReduction * 100f:0}% de daño) mientras dure";
+            Loc.Get("effect.slow_armor_shred", armorReduction * 100f);
     }
 }

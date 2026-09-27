@@ -1,3 +1,4 @@
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Economy
@@ -54,6 +55,11 @@ namespace RedMagic.Economy
         [Tooltip("Icono mostrado en la casilla una vez desbloqueada. Vacío = se usa la inicial del nombre.")]
         public Sprite icon;
 
+        [Tooltip("Prefijo de sus textos en los ficheros de idioma (<prefijo>.name / .description / " +
+                 ".upgrade). Lo rellena Tools ▸ RedMagic ▸ Localización ▸ Sincronizar textos de assets; " +
+                 "vacío = se enseñan los textos de abajo tal cual.")]
+        public string textKey;
+
         [Tooltip("Nombre de la pasiva.")]
         public string displayName = "Placeholder";
 
@@ -81,7 +87,16 @@ namespace RedMagic.Economy
         public bool isUnlocked;
         [Min(0)] public int currentLevel;
 
+        /// <summary>Nombre en el idioma activo.</summary>
+        public string DisplayName => Loc.ForAsset(textKey, "name", displayName);
+
+        /// <summary>Efecto del nivel 1 en el idioma activo.</summary>
+        public string Description => Loc.ForAsset(textKey, "description", description);
+
+        /// <summary>Efecto del nivel 2 en el idioma activo.</summary>
+        public string UpgradeDescription => Loc.ForAsset(textKey, "upgrade", upgradeDescription);
+
         /// <summary>Texto del efecto tal y como está AHORA, según el nivel (1 o 2).</summary>
-        public string EffectDescriptionForLevel(int level) => level >= 2 ? upgradeDescription : description;
+        public string EffectDescriptionForLevel(int level) => level >= 2 ? UpgradeDescription : Description;
     }
 }

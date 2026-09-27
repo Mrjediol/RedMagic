@@ -35,34 +35,52 @@
 // Those are keyed by PROJECTILE name, not enemy name, and nothing stops two enemies sharing one —
 // auto-deleting them per-enemy risks breaking an unrelated enemy silently. Left for manual cleanup.
 //
-// PER-CATEGORY DISPLAY ORDER: AssetDatabase has no notion of a user-chosen order, so one is kept
+// ORDER (cards and tabs): AssetDatabase has no notion of a user-chosen order, so one is kept
 // separately — a small JSON file under Library/ (not Assets/, so it's local to this machine/Editor
-// install, never versioned as project data — see LibraryOrderStore). Cards get ↑/↓ buttons instead
-// of drag-reorder: IMGUI drag-and-drop between arbitrary grid cells is a lot of fiddly hit-testing
-// for a "quick navigation" tool, while ↑/↓ is a few lines and covers the same need (move an item a
-// few slots either way) just as well for a grid this size.
+// install, never versioned as project data — see LibraryOrderStore). Dragging a card onto another
+// card of the same tab swaps them; dragging a tab onto another tab swaps those. The drag payload is
+// DragAndDrop generic data (CardReorderKey / TabReorderKey), which is what tells an internal reorder
+// apart from a drop anywhere else: a card drag ALSO carries its asset in objectReferences, so the
+// same gesture dropped on the Scene view / Hierarchy instantiates the prefab as before.
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using RedMagic.Bosses;
+using RedMagic.Economy;
+using RedMagic.Items;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
 public class WebLibraryWindow : EditorWindow
 {
-    private enum Category { Enemies, Bosses, MiniBosses, Escenas, Mapas, Player }
+    // Declaration order is only the first-run fallback: the sidebar is drawn from the persisted tab
+    // order (LibraryOrderStore, key TabOrderKey), reordered by dragging one tab onto another.
+    private enum Category { Escenas, Enemies, Bosses, MiniBosses, Mapas, Player, Pasivas, Items, Armas }
 
-    private static readonly (Category cat, string label)[] Categories =
+    private static string Label(Category cat) => cat == Category.Pasivas ? "Pasivas Legendarias" : cat.ToString();
+
+    // Bottom-bar utilities (WebLibraryUtilities does the work). Same persisted, drag-to-swap order
+    // as the tabs; "Actualizar" stays pinned first.
+    private enum Utility { CargarHub, AnadirPlayer, QuitarPlayers }
+
+    private static string Label(Utility u) => u switch
     {
-        (Category.Enemies, "Enemies"),
-        (Category.Bosses, "Bosses"),
-        (Category.MiniBosses, "MiniBosses"),
-        (Category.Escenas, "Escenas"),
-        (Category.Mapas, "Mapas"),
-        (Category.Player, "Player"),
+        Utility.CargarHub => "Cargar MainHub",
+        Utility.AnadirPlayer => "Añadir Player",
+        _ => "Quitar Player de escenas",
     };
+
+    private const string TabOrderKey = "__Tabs";
+    private const string UtilityOrderKey = "__Utilities";
+    private const string CardReorderKey = "BibliotecaWeb.CardReorder";
+    private const string TabReorderKey = "BibliotecaWeb.TabReorder";
+    private const string UtilityReorderKey = "BibliotecaWeb.UtilityReorder";
+
+    private sealed class CardDrag { public Category category; public int index; }
+    private sealed class TabDrag { public Category category; }
+    private sealed class UtilityDrag { public Utility utility; }
 
     private const string ENEMY_PIPELINE_FOLDER = "Assets/Prefabs/Enemies";   // Enemy_<Name>.prefab / Boss_<Name>.prefab — the ONLY source for the Enemies grid
     private const string ART_CHARACTERS_FOLDER = "Assets/Art/Characters";
@@ -73,9 +91,13 @@ public class WebLibraryWindow : EditorWindow
 
     private class Entry
     {
+        public string id;               // persisted order key; null = name (the original tabs, so saved orders survive)
         public string name;
-        public string previewPath;      // asset to draw a thumbnail for / the default "open" target
+        public string previewPath;      // asset to draw a thumbnail for / the click-to-select target
+        public UnityEngine.Object previewObject; // overrides previewPath's thumbnail (a ScriptableObject's icon sprite)
+        public string dragPath;         // asset handed to Scene/Hierarchy/Inspector on drag; null = reorder-only
         public List<(string label, Action action)> actions = new List<(string, Action)>();
+        public string Id => id ?? name;
     }
 
     [MenuItem("Tools/Web/Biblioteca")]
@@ -87,12 +109,22 @@ public class WebLibraryWindow : EditorWindow
         win.Show();
     }
 
-    private Category _category = Category.Enemies;
+    [SerializeField] private Category _category;
+    [SerializeField] private bool _hasCategory; // false only on a brand-new window: open on the first tab
     private Vector2 _sidebarScroll, _gridScroll;
     private bool _dirty = true; // scans are cached, not re-run every OnGUI — see RequestRescan()
     private readonly Dictionary<Category, List<Entry>> _cache = new Dictionary<Category, List<Entry>>();
+    private List<Category> _tabs;
+    private List<Utility> _utilities;
+    private bool _reorderDragActive; // a drag WE started is in flight — gates hover highlights
 
-    private void OnEnable() => _dirty = true;
+    private void OnEnable()
+    {
+        _dirty = true;
+        _tabs = LibraryOrderStore.Apply(TabOrderKey, ((Category[])Enum.GetValues(typeof(Category))).ToList(), c => c.ToString());
+        _utilities = LibraryOrderStore.Apply(UtilityOrderKey, ((Utility[])Enum.GetValues(typeof(Utility))).ToList(), u => u.ToString());
+        if (!_hasCategory) { _category = _tabs[0]; _hasCategory = true; }
+    }
 
     private void RequestRescan() => _dirty = true;
 
@@ -104,10 +136,69 @@ public class WebLibraryWindow : EditorWindow
             _dirty = false;
         }
 
-        EditorGUILayout.BeginHorizontal();
+        Event evt = Event.current;
+        if (evt.type == EventType.DragExited || evt.type == EventType.MouseMove || evt.type == EventType.MouseDown)
+        {
+            if (_reorderDragActive) Repaint();
+            _reorderDragActive = false;
+        }
+        else if (evt.type == EventType.DragUpdated && _reorderDragActive)
+        {
+            DragAndDrop.visualMode = DragAndDropVisualMode.Rejected; // a drop target below turns it into Move
+            Repaint(); // the hover highlight follows the pointer even over empty space
+        }
+
+        EditorGUILayout.BeginHorizontal(GUILayout.ExpandHeight(true));
         DrawSidebar();
         DrawContent();
         EditorGUILayout.EndHorizontal();
+        DrawUtilityBar();
+    }
+
+    // ============================================================ bottom utility bar
+
+    private void DrawUtilityBar()
+    {
+        EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+        if (GUILayout.Button("🔄 Actualizar", GUILayout.Height(24), GUILayout.Width(132))) RequestRescan();
+
+        // Index loop: a drop swaps two entries of _utilities mid-iteration.
+        for (int i = 0; i < _utilities.Count; i++)
+        {
+            Utility utility = _utilities[i];
+            var content = new GUIContent(Label(utility));
+            Rect rect = GUILayoutUtility.GetRect(content, GUI.skin.button, GUILayout.Height(24));
+            int id = GUIUtility.GetControlID(FocusType.Passive);
+
+            DrawDraggableButton(rect, id, content, false);
+            DragSource(id, rect, () => RunUtility(utility), () => StartUtilityDrag(utility), MouseCursor.Arrow);
+            DropTarget<UtilityDrag>(UtilityReorderKey, rect, d => d.utility != utility, d => SwapUtilities(d.utility, utility));
+        }
+
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+    }
+
+    private void RunUtility(Utility utility)
+    {
+        switch (utility)
+        {
+            case Utility.CargarHub: WebLibraryUtilities.OpenHub(); break;
+            case Utility.AnadirPlayer: WebLibraryUtilities.AddPlayer(PLAYER_PREFAB_PATH); break;
+            case Utility.QuitarPlayers: WebLibraryUtilities.RemovePlayersFromAllScenes(PLAYER_PREFAB_PATH); break;
+        }
+        GUIUtility.ExitGUI(); // abrir/cerrar escenas y diálogos invalidan el layout de este evento
+    }
+
+    /// <summary>A button drawn by hand so it can be both clicked and dragged (GUILayout.Button
+    /// eats the MouseDown a drag needs).</summary>
+    private static void DrawDraggableButton(Rect rect, int id, GUIContent content, bool selected)
+    {
+        if (Event.current.type != EventType.Repaint) return;
+        var prevColor = GUI.backgroundColor;
+        if (selected) GUI.backgroundColor = new Color(0.45f, 0.72f, 1f);
+        GUI.skin.button.Draw(rect, content, rect.Contains(Event.current.mousePosition), GUIUtility.hotControl == id, false, false);
+        GUI.backgroundColor = prevColor;
     }
 
     // ============================================================ sidebar
@@ -117,17 +208,17 @@ public class WebLibraryWindow : EditorWindow
         EditorGUILayout.BeginVertical(GUILayout.Width(140), GUILayout.ExpandHeight(true));
         _sidebarScroll = EditorGUILayout.BeginScrollView(_sidebarScroll);
 
-        foreach (var (cat, label) in Categories)
+        // Index loop, not foreach: a tab drop swaps two entries of _tabs mid-iteration.
+        for (int i = 0; i < _tabs.Count; i++)
         {
-            bool selected = _category == cat;
-            var prevColor = GUI.backgroundColor;
-            if (selected) GUI.backgroundColor = new Color(0.45f, 0.72f, 1f);
-            if (GUILayout.Button(label, GUILayout.Height(30))) _category = cat;
-            GUI.backgroundColor = prevColor;
-        }
+            Category cat = _tabs[i];
+            Rect rect = GUILayoutUtility.GetRect(GUIContent.none, GUI.skin.button, GUILayout.Height(30), GUILayout.ExpandWidth(true));
+            int id = GUIUtility.GetControlID(FocusType.Passive);
 
-        GUILayout.FlexibleSpace();
-        if (GUILayout.Button("🔄 Actualizar", GUILayout.Height(24))) RequestRescan();
+            DrawDraggableButton(rect, id, new GUIContent(Label(cat)), _category == cat);
+            DragSource(id, rect, () => _category = cat, () => StartTabDrag(cat), MouseCursor.Arrow);
+            DropTarget<TabDrag>(TabReorderKey, rect, d => d.category != cat, d => SwapTabs(d.category, cat));
+        }
 
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndVertical();
@@ -135,14 +226,13 @@ public class WebLibraryWindow : EditorWindow
 
     // ============================================================ content grid
 
-    private const float CardWidth = 140f, CardHeight = 216f, CardSpacing = 8f;
+    private const float CardWidth = 140f, PreviewHeight = 96f, CardSpacing = 8f;
 
     private void DrawContent()
     {
         EditorGUILayout.BeginVertical();
 
-        var (_, label) = Categories.First(c => c.cat == _category);
-        EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(Label(_category), EditorStyles.boldLabel);
 
         var entries = _cache.TryGetValue(_category, out var list) ? list : new List<Entry>();
 
@@ -157,13 +247,14 @@ public class WebLibraryWindow : EditorWindow
 
         float contentWidth = position.width - 140 - 24; // sidebar + scrollbar/margins
         int columns = Mathf.Max(1, Mathf.FloorToInt((contentWidth + CardSpacing) / (CardWidth + CardSpacing)));
+        float cardHeight = CardHeightFor(entries);
 
         for (int i = 0; i < entries.Count; i += columns)
         {
             EditorGUILayout.BeginHorizontal();
             for (int j = i; j < Mathf.Min(i + columns, entries.Count); j++)
             {
-                DrawCard(entries, j);
+                DrawCard(entries, j, cardHeight);
                 GUILayout.Space(CardSpacing);
             }
             GUILayout.FlexibleSpace();
@@ -191,48 +282,212 @@ public class WebLibraryWindow : EditorWindow
             case Category.Mapas:
                 return "No se encontraron prefabs de mapa (se detectan por tener un hijo 'Collisions', " +
                        "la huella de MapImporter — ver Tools > Web > Map Tracer).";
+            case Category.Pasivas:
+                return "Sin assets LegendaryPassive (Tools > RedMagic > Hub > Espejo · Generar pasivas legendarias).";
+            case Category.Items:
+                return "Sin assets ItemDefinition (Assets/Resources/Items/).";
+            case Category.Armas:
+                return "Sin assets WeaponDefinition (Assets/Resources/Items/Weapons/).";
             default:
                 return "Nada encontrado.";
         }
     }
 
-    private void DrawCard(List<Entry> entries, int index)
+    /// <summary>Tight card height for this tab: every card in a tab shares it (so the grid stays
+    /// aligned), sized to the tallest name and the most action buttons actually present — not a
+    /// fixed worst case, which left one-button cards with a big empty bottom.</summary>
+    private static float CardHeightFor(List<Entry> entries)
+    {
+        GUIStyle box = GUI.skin.box, label = EditorStyles.wordWrappedLabel, button = GUI.skin.button;
+        float innerWidth = CardWidth - box.padding.horizontal;
+
+        float nameHeight = 0f;
+        int maxActions = 0;
+        foreach (var e in entries)
+        {
+            nameHeight = Mathf.Max(nameHeight, label.CalcHeight(new GUIContent(e.name), innerWidth));
+            maxActions = Mathf.Max(maxActions, e.actions.Count);
+        }
+
+        float buttonHeight = button.CalcHeight(GUIContent.none, innerWidth) + Mathf.Max(button.margin.top, button.margin.bottom);
+        return box.padding.vertical + PreviewHeight + label.margin.vertical + nameHeight + maxActions * buttonHeight;
+    }
+
+    private void DrawCard(List<Entry> entries, int index, float cardHeight)
     {
         Entry entry = entries[index];
-        EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(CardWidth), GUILayout.Height(CardHeight));
+        EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(CardWidth), GUILayout.Height(cardHeight));
 
-        Rect previewRect = GUILayoutUtility.GetRect(CardWidth - 8, 96, GUILayout.ExpandWidth(false));
-        Texture preview = GetPreview(entry.previewPath);
+        Rect previewRect = GUILayoutUtility.GetRect(CardWidth - 8, PreviewHeight, GUILayout.ExpandWidth(false));
+        int dragId = GUIUtility.GetControlID(FocusType.Passive); // siempre, para que los ids no bailen entre eventos
+        Texture preview = GetPreview(entry);
         if (preview != null) GUI.DrawTexture(previewRect, preview, ScaleMode.ScaleToFit);
         else EditorGUI.LabelField(previewRect, "(sin vista previa)", EditorStyles.centeredGreyMiniLabel);
 
         GUILayout.Label(entry.name, EditorStyles.wordWrappedLabel);
+        Rect nameRect = GUILayoutUtility.GetLastRect();
+        // Zona de arrastre = miniatura + nombre; los botones quedan fuera, así que siguen igual.
+        DragSource(dragId,
+                   Rect.MinMaxRect(previewRect.xMin, previewRect.yMin, Mathf.Max(previewRect.xMax, nameRect.xMax), nameRect.yMax),
+                   () => PingAndSelect(entry.previewPath), () => StartCardDrag(entry, index), MouseCursor.Pan);
 
         foreach (var (btnLabel, action) in entry.actions)
         {
             if (GUILayout.Button(btnLabel)) action();
         }
 
-        // Orden manual persistente (Library/, no Assets/ — ver LibraryOrderStore) — ↑/↓ en vez de
-        // arrastrar: cubre el mismo caso de uso ("mover un item unas cuantas posiciones") con mucho
-        // menos código IMGUI que un drag-and-drop entre celdas.
-        EditorGUILayout.BeginHorizontal();
-        GUI.enabled = index > 0;
-        if (GUILayout.Button("↑", GUILayout.Width((CardWidth - 8) / 2))) MoveEntry(_category, index, -1);
-        GUI.enabled = index < entries.Count - 1;
-        if (GUILayout.Button("↓", GUILayout.Width((CardWidth - 8) / 2))) MoveEntry(_category, index, 1);
-        GUI.enabled = true;
-        EditorGUILayout.EndHorizontal();
-
         EditorGUILayout.EndVertical();
+
+        // Toda la tarjeta es destino de reordenación (GetLastRect = la caja que acaba de cerrarse).
+        Category cat = _category;
+        DropTarget<CardDrag>(CardReorderKey, GUILayoutUtility.GetLastRect(),
+                             d => d.category == cat && d.index != index,
+                             d => SwapCards(cat, d.index, index));
+    }
+
+    // ============================================================ drag & drop (reorder + drag to scene)
+
+    private const float DragThreshold = 5f; // px antes de que un clic se convierta en arrastre
+    private static readonly Color DropHighlight = new Color(0.45f, 0.72f, 1f, 0.3f);
+    private Vector2 _pressPos;
+
+    /// <summary>One pressable control that is either clicked (released without moving past
+    /// <see cref="DragThreshold"/>) or dragged. <paramref name="onDrag"/> must call
+    /// DragAndDrop.StartDrag — it runs while the event is still MouseDrag, as StartDrag requires.</summary>
+    private void DragSource(int id, Rect rect, Action onClick, Action onDrag, MouseCursor cursor)
+    {
+        Event evt = Event.current;
+        switch (evt.GetTypeForControl(id))
+        {
+            case EventType.Repaint:
+                if (cursor != MouseCursor.Arrow) EditorGUIUtility.AddCursorRect(rect, cursor);
+                break;
+
+            case EventType.MouseDown:
+                if (evt.button != 0 || !rect.Contains(evt.mousePosition)) break;
+                _pressPos = evt.mousePosition;
+                GUIUtility.hotControl = id;
+                evt.Use();
+                break;
+
+            case EventType.MouseDrag:
+                if (GUIUtility.hotControl != id) break;
+                if ((evt.mousePosition - _pressPos).sqrMagnitude >= DragThreshold * DragThreshold)
+                {
+                    GUIUtility.hotControl = 0;
+                    onDrag(); // antes de Use(): Use() convierte el evento en 'Used' y StartDrag lo rechaza
+                }
+                evt.Use();
+                break;
+
+            case EventType.MouseUp:
+                if (GUIUtility.hotControl != id) break;
+                GUIUtility.hotControl = 0;
+                evt.Use();
+                if (rect.Contains(evt.mousePosition)) onClick();
+                break;
+        }
+    }
+
+    /// <summary>Accepts one of our own reorder drags (generic data under <paramref name="key"/>)
+    /// over <paramref name="rect"/>: Move cursor + highlight while hovering, <paramref name="onDrop"/>
+    /// on release. Drags from anywhere else (Project window, another card tab) are ignored.</summary>
+    private void DropTarget<T>(string key, Rect rect, Func<T, bool> accepts, Action<T> onDrop) where T : class
+    {
+        if (!_reorderDragActive) return;
+        Event evt = Event.current;
+        if (!(DragAndDrop.GetGenericData(key) is T data) || !accepts(data)) return;
+
+        switch (evt.type)
+        {
+            case EventType.Repaint:
+                if (rect.Contains(evt.mousePosition)) EditorGUI.DrawRect(rect, DropHighlight);
+                break;
+
+            case EventType.DragUpdated:
+                if (!rect.Contains(evt.mousePosition)) break;
+                DragAndDrop.visualMode = DragAndDropVisualMode.Move;
+                evt.Use();
+                break;
+
+            case EventType.DragPerform:
+                if (!rect.Contains(evt.mousePosition)) break;
+                DragAndDrop.AcceptDrag();
+                _reorderDragActive = false;
+                onDrop(data);
+                evt.Use();
+                Repaint();
+                break;
+        }
+    }
+
+    /// <summary>The card's asset rides along as objectReferences, so dropping it on the Scene view /
+    /// Hierarchy instantiates the prefab (a linked instance, since it's the asset, not a scene
+    /// object); the generic data is what makes it a reorder when dropped on another card.</summary>
+    private void StartCardDrag(Entry entry, int index)
+    {
+        DragAndDrop.PrepareStartDrag();
+        var asset = string.IsNullOrEmpty(entry.dragPath) ? null : AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(entry.dragPath);
+        if (asset != null)
+        {
+            DragAndDrop.objectReferences = new[] { asset };
+            DragAndDrop.paths = new[] { entry.dragPath };
+        }
+        DragAndDrop.SetGenericData(CardReorderKey, new CardDrag { category = _category, index = index });
+        DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+        _reorderDragActive = true;
+        DragAndDrop.StartDrag(entry.name);
+    }
+
+    private void StartTabDrag(Category cat)
+    {
+        DragAndDrop.PrepareStartDrag();
+        DragAndDrop.SetGenericData(TabReorderKey, new TabDrag { category = cat });
+        _reorderDragActive = true;
+        DragAndDrop.StartDrag(Label(cat));
+    }
+
+    /// <summary>Swaps two cards in the CURRENTLY CACHED list — no rescan needed, the in-memory
+    /// order already IS the display order — and persists the result.</summary>
+    private void SwapCards(Category cat, int a, int b)
+    {
+        if (!_cache.TryGetValue(cat, out var entries)) return;
+        if (a < 0 || b < 0 || a >= entries.Count || b >= entries.Count) return;
+        (entries[a], entries[b]) = (entries[b], entries[a]);
+        LibraryOrderStore.SaveOrder(cat, entries.Select(e => e.Id).ToList());
+    }
+
+    private void StartUtilityDrag(Utility utility)
+    {
+        DragAndDrop.PrepareStartDrag();
+        DragAndDrop.SetGenericData(UtilityReorderKey, new UtilityDrag { utility = utility });
+        _reorderDragActive = true;
+        DragAndDrop.StartDrag(Label(utility));
+    }
+
+    private void SwapUtilities(Utility a, Utility b)
+    {
+        int i = _utilities.IndexOf(a), j = _utilities.IndexOf(b);
+        if (i < 0 || j < 0) return;
+        (_utilities[i], _utilities[j]) = (_utilities[j], _utilities[i]);
+        LibraryOrderStore.SaveOrder(UtilityOrderKey, _utilities.Select(u => u.ToString()).ToList());
+    }
+
+    private void SwapTabs(Category a, Category b)
+    {
+        int i = _tabs.IndexOf(a), j = _tabs.IndexOf(b);
+        if (i < 0 || j < 0) return;
+        (_tabs[i], _tabs[j]) = (_tabs[j], _tabs[i]);
+        LibraryOrderStore.SaveOrder(TabOrderKey, _tabs.Select(c => c.ToString()).ToList());
     }
 
     /// <summary>Asset preview thumbnail, async like the Project window's — keeps repainting while
     /// Unity is still generating it so it pops in instead of staying blank forever.</summary>
-    private Texture GetPreview(string path)
+    private Texture GetPreview(Entry entry)
     {
-        if (string.IsNullOrEmpty(path)) return null;
-        var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+        var obj = entry.previewObject;
+        if (obj == null && !string.IsNullOrEmpty(entry.previewPath))
+            obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(entry.previewPath);
         if (obj == null) return null;
 
         Texture t = AssetPreview.GetAssetPreview(obj);
@@ -243,29 +498,46 @@ public class WebLibraryWindow : EditorWindow
 
     // ============================================================ scanning (cached — see RequestRescan)
 
-    private static readonly Func<Entry, string> EntryName = e => e.name;
+    private static readonly Func<Entry, string> EntryId = e => e.Id;
 
     private void RescanAll()
     {
-        _cache[Category.Enemies] = LibraryOrderStore.Apply(Category.Enemies, ScanEnemies(), EntryName);
-        _cache[Category.Bosses] = LibraryOrderStore.Apply(Category.Bosses, ScanBosses(), EntryName);
+        _cache[Category.Enemies] = LibraryOrderStore.Apply(Category.Enemies, ScanEnemies(), EntryId);
+        _cache[Category.Bosses] = LibraryOrderStore.Apply(Category.Bosses, ScanBosses(), EntryId);
         _cache[Category.MiniBosses] = new List<Entry>(); // no convention exists yet — see EmptyStateMessage
-        _cache[Category.Escenas] = LibraryOrderStore.Apply(Category.Escenas, ScanScenes(), EntryName);
-        _cache[Category.Mapas] = LibraryOrderStore.Apply(Category.Mapas, ScanMaps(), EntryName);
-        _cache[Category.Player] = LibraryOrderStore.Apply(Category.Player, ScanPlayer(), EntryName);
+        _cache[Category.Escenas] = LibraryOrderStore.Apply(Category.Escenas, ScanScenes(), EntryId);
+        _cache[Category.Mapas] = LibraryOrderStore.Apply(Category.Mapas, ScanMaps(), EntryId);
+        _cache[Category.Player] = LibraryOrderStore.Apply(Category.Player, ScanPlayer(), EntryId);
+        _cache[Category.Pasivas] = LibraryOrderStore.Apply(Category.Pasivas,
+            ScanScriptables<LegendaryPassive>(p => p.DisplayName, p => p.icon), EntryId);
+        _cache[Category.Items] = LibraryOrderStore.Apply(Category.Items,
+            ScanScriptables<ItemDefinition>(i => i.DisplayName, i => i.Icon), EntryId);
+        _cache[Category.Armas] = LibraryOrderStore.Apply(Category.Armas,
+            ScanScriptables<WeaponDefinition>(w => w.DisplayName, w => w.Icon), EntryId);
     }
 
-    /// <summary>Swaps entry <paramref name="index"/> with its neighbour in <paramref name="direction"/>
-    /// (-1 up/left, +1 down/right in reading order) within the CURRENTLY CACHED list — no rescan
-    /// needed, the in-memory order already IS the display order — and persists the result.</summary>
-    private void MoveEntry(Category cat, int index, int direction)
+    /// <summary>Every asset of type <typeparamref name="T"/> in the project (FindAssets, so a new
+    /// passive / item / weapon shows up on the next rescan with no list to maintain). Keyed by GUID —
+    /// display names are localized and may collide. Click / "Abrir en Inspector" select it; dragging
+    /// hands the asset over too, so it can be dropped into an Inspector object field.</summary>
+    private static List<Entry> ScanScriptables<T>(Func<T, string> displayName, Func<T, Sprite> icon) where T : ScriptableObject
     {
-        if (!_cache.TryGetValue(cat, out var entries)) return;
-        int j = index + direction;
-        if (j < 0 || j >= entries.Count) return;
+        var result = new List<Entry>();
+        foreach (string guid in AssetDatabase.FindAssets($"t:{typeof(T).Name}"))
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+            if (asset == null) continue;
 
-        (entries[index], entries[j]) = (entries[j], entries[index]);
-        LibraryOrderStore.SaveOrder(cat, entries.Select(e => e.name).ToList());
+            string name = null;
+            try { name = displayName(asset); } catch (Exception) { /* Loc sin cargar: se usa el nombre del asset */ }
+            if (string.IsNullOrWhiteSpace(name)) name = asset.name;
+
+            var entry = new Entry { id = guid, name = name, previewPath = path, previewObject = icon(asset), dragPath = path };
+            entry.actions.Add(("Abrir en Inspector", () => PingAndSelect(path)));
+            result.Add(entry);
+        }
+        return result.OrderBy(e => e.name, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     private List<Entry> ScanEnemies()
@@ -286,7 +558,7 @@ public class WebLibraryWindow : EditorWindow
             if (AssetDatabase.IsValidFolder(artFolder)) paths.Add(artFolder);
             if (AssetDatabase.IsValidFolder(importerFolder)) paths.Add(importerFolder);
 
-            var entry = new Entry { name = name, previewPath = path };
+            var entry = new Entry { name = name, previewPath = path, dragPath = path };
             entry.actions.Add(("Abrir prefab", () => OpenPrefab(path)));
             entry.actions.Add(("Eliminar enemigo", () => DeleteWithConfirm("Eliminar enemigo", name, paths, refreshCategory: Category.Enemies)));
             result.Add(entry);
@@ -308,7 +580,7 @@ public class WebLibraryWindow : EditorWindow
             string prefabPath = $"{ENEMY_PIPELINE_FOLDER}/Boss_{name}.prefab";
             bool hasPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) != null;
 
-            var entry = new Entry { name = name, previewPath = hasPrefab ? prefabPath : defPath };
+            var entry = new Entry { name = name, previewPath = hasPrefab ? prefabPath : defPath, dragPath = hasPrefab ? prefabPath : null };
             entry.actions.Add(("Abrir definición", () => PingAndSelect(defPath)));
             if (hasPrefab) entry.actions.Add(("Abrir prefab", () => OpenPrefab(prefabPath)));
             result.Add(entry);
@@ -355,7 +627,7 @@ public class WebLibraryWindow : EditorWindow
             var paths = new List<string> { path };
             if (hasJson) paths.Add(jsonPath);
 
-            var entry = new Entry { name = name, previewPath = path };
+            var entry = new Entry { name = name, previewPath = path, dragPath = path };
             entry.actions.Add(("Abrir prefab", () => OpenPrefab(path)));
             entry.actions.Add(("Eliminar mapa", () => DeleteWithConfirm("Eliminar mapa", name, paths, refreshCategory: Category.Mapas)));
             result.Add(entry);
@@ -372,7 +644,7 @@ public class WebLibraryWindow : EditorWindow
         var result = new List<Entry>();
         if (AssetDatabase.LoadAssetAtPath<GameObject>(PLAYER_PREFAB_PATH) == null) return result;
 
-        var entry = new Entry { name = "Player", previewPath = PLAYER_PREFAB_PATH };
+        var entry = new Entry { name = "Player", previewPath = PLAYER_PREFAB_PATH, dragPath = PLAYER_PREFAB_PATH };
         entry.actions.Add(("Abrir prefab", () => OpenPrefab(PLAYER_PREFAB_PATH)));
         result.Add(entry);
         return result;

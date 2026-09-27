@@ -1,3 +1,4 @@
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -119,7 +120,7 @@ namespace RedMagic.UI
             // .menu-button — incluido su :hover — sigue mandando sobre el rótulo.
             var caption = new Label(button.text)
             {
-                name = "button-caption",
+                name = LocalizedUi.ButtonCaptionName,
                 pickingMode = PickingMode.Ignore,
             };
             caption.style.flexGrow = 1;

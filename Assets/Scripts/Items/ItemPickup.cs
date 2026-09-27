@@ -5,6 +5,7 @@ using RedMagic.Core;
 using RedMagic.Fx;
 using RedMagic.Gameplay;
 using RedMagic.Hub;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -155,14 +156,14 @@ namespace RedMagic.Items
             {
                 // Sólo pasa con un item de pool libre y los 6 huecos llenos: se queda aquí.
                 _warnCooldown = 3f;
-                RewardPopupUi.Show(_item.Icon, "Huecos libres llenos", _item.DisplayName, _item.Accent);
+                RewardPopupUi.Show(_item.Icon, Loc.Get("shop.free_slots_full"), _item.DisplayName, _item.Accent);
                 return;
             }
 
             AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
             AbilityFx.Flash(ProceduralSprites.Glow, transform.position, Vector2.one * 2.5f,
                             ItemRarities.ColorOf(_item.Rarity), 0.4f, 0f, 1.8f, gameObject);
-            RewardPopupUi.Show(_item.Icon, "Objeto obtenido", _item.DisplayName,
+            RewardPopupUi.Show(_item.Icon, Loc.Get("reward.item"), _item.DisplayName,
                                ItemRarities.ColorOf(_item.Rarity));
 
             _pool?.Release(this);

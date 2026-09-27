@@ -1,3 +1,5 @@
+using RedMagic.Localization;
+
 namespace RedMagic.Items
 {
     /// <summary>
@@ -15,6 +17,9 @@ namespace RedMagic.Items
         Fire = 1,
         // Arcane = 2,   reservado
         // Electric = 3, reservado
+        /// <summary>Set de oro: moneda, marca de oro, proyectiles dorados. Familia elemental (&lt; 100) como
+        /// Hielo, así un item del set lleva Oro + una universal.</summary>
+        Gold = 4,
 
         // Universales
         Tank = 100,
@@ -49,7 +54,7 @@ namespace RedMagic.Items
     /// </summary>
     public static class BuildTags
     {
-        public static readonly BuildTag[] Elementals = { BuildTag.Ice, BuildTag.Fire };
+        public static readonly BuildTag[] Elementals = { BuildTag.Ice, BuildTag.Fire, BuildTag.Gold };
 
         public static readonly BuildTag[] Universals =
         {
@@ -80,20 +85,21 @@ namespace RedMagic.Items
         /// <summary>Nombre para la UI (columna de sinergias, chips de tags del panel de descripción).</summary>
         public static string DisplayName(BuildTag tag) => tag switch
         {
-            BuildTag.Ice => "Hielo",
-            BuildTag.Fire => "Fuego",
-            BuildTag.Tank => "Tanque",
-            BuildTag.Haste => "Rapidez",
-            BuildTag.Lifesteal => "Vampirismo",
-            BuildTag.Reset => "Reset",
+            BuildTag.Ice => Loc.Get("tag.ice"),
+            BuildTag.Fire => Loc.Get("tag.fire"),
+            BuildTag.Gold => Loc.Get("tag.gold"),
+            BuildTag.Tank => Loc.Get("tag.tank"),
+            BuildTag.Haste => Loc.Get("tag.haste"),
+            BuildTag.Lifesteal => Loc.Get("tag.lifesteal"),
+            BuildTag.Reset => Loc.Get("tag.reset"),
             _ => tag.ToString(),
         };
 
         public static string DisplayName(ElementId element) => element switch
         {
-            ElementId.Ice => "Hielo",
-            ElementId.Fire => "Fuego",
-            _ => "físico",
+            ElementId.Ice => Loc.Get("tag.ice"),
+            ElementId.Fire => Loc.Get("tag.fire"),
+            _ => Loc.Get("element.physical"),
         };
 
         /// <summary>

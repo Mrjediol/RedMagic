@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -26,6 +27,6 @@ namespace RedMagic.Items
         public override void OnUnequip(ItemEffectContext context) => CombatModifiers.Remove(context);
 
         public override string Summary() =>
-            $"Al matar con un proyectil, reaparece en el cuerpo {respawnDelay:0.##} s después y sigue su camino";
+            Loc.Get("effect.pierce_on_kill", respawnDelay);
     }
 }

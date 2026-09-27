@@ -40,7 +40,9 @@ namespace RedMagic.Economy
             if (_dropped) return;
             _dropped = true;
 
-            CurrencyManager.Instance?.GrantDrops(tier);
+            // Marca de oro: el marcado suelta su botín multiplicado (la marca aún está puesta: se quita
+            // después de este Died).
+            CurrencyManager.Instance?.GrantDrops(tier, GoldMarkStatus.DropMultiplierOf(_health));
         }
     }
 }

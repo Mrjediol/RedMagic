@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -69,7 +70,7 @@ namespace RedMagic.Items
         public override void Tick(ItemEffectContext context, float deltaTime)
         {
             var state = context.GetState<State>();
-            string text = state.Ready ? "¡LISTO!" : $"{state.Kills}/{killsRequired}";
+            string text = state.Ready ? Loc.Get("buff.ready") : $"{state.Kills}/{killsRequired}";
             BuffIndicators.Set(context, context.Item.Icon, text, state.Ready, hudAccent, order: 0);
         }
 
@@ -82,7 +83,7 @@ namespace RedMagic.Items
         }
 
         public override string Summary() =>
-            $"Cada {killsRequired} bajas, el siguiente disparo explota en hielo donde impacte " +
-            $"(radio {radius:0.#}, {damage:0} de daño{(slowsTargets ? ", ralentiza" : "")})";
+            Loc.Get(slowsTargets ? "effect.kill_counter_explosion_slow" : "effect.kill_counter_explosion",
+                    killsRequired, radius, damage);
     }
 }

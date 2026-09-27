@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8efa3a18277fe72448310e64239923c9, type: 3}
   m_Name: Item_BastonHelado
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
+  textKey: item.baston_helado
   displayName: "Bast\xF3n Helado"
   description: "El cristal bebe de cada ca\xEDda. La siguiente descarga no espera
     y golpea el triple."

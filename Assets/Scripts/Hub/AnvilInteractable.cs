@@ -105,7 +105,7 @@ namespace RedMagic.Hub
 
             _playerInRange = true;
             _playerAnimator = other.GetComponentInParent<PlayerAnimator>();
-            InteractionPromptUi.Show(this, "Pulsa [Interactuar] para usar el yunque");
+            InteractionPromptUi.ShowKey(this, "prompt.anvil");
         }
 
         private void OnTriggerExit2D(Collider2D other)

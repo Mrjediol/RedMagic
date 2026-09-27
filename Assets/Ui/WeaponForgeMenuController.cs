@@ -2,6 +2,7 @@ using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Economy;
 using RedMagic.Items;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -176,7 +177,9 @@ namespace RedMagic.UI
             var header = MenuStyle.Header();
             panel.Add(header);
 
-            header.Add(MenuStyle.Title("FORJA"));
+            var title = MenuStyle.Title("");
+            LocalizedUi.Bind(title, "forge.title");
+            header.Add(title);
 
             _skullLabel = MenuStyle.CurrencyLabel();
             header.Add(_skullLabel);
@@ -187,7 +190,9 @@ namespace RedMagic.UI
             _body.style.alignItems = Align.Center;
             panel.Add(_body);
 
-            panel.Add(MenuStyle.Hint("Esc / E / B para cerrar"));
+            var hint = MenuStyle.Hint("");
+            LocalizedUi.Bind(hint, "common.close_hint");
+            panel.Add(hint);
         }
 
         private void Rebuild()
@@ -197,15 +202,14 @@ namespace RedMagic.UI
             _body.Clear();
 
             int skulls = CurrencyManager.Instance != null ? CurrencyManager.Instance.Get(Currency.Skull) : 0;
-            _skullLabel.text = $"Calaveras: {skulls}";
+            _skullLabel.text = Loc.Get("forge.skulls", skulls);
 
             var weapon = _user != null ? _user.Weapon : null;
             var levels = WeaponLevelManager.Instance;
 
             if (weapon == null)
             {
-                _body.Add(Message("No llevas ningún arma equipada.\nLa forja mejora el arma que " +
-                                  "tengas puesta: equipa una y vuelve."));
+                _body.Add(Message(Loc.Get("forge.no_weapon")));
                 return;
             }
 
@@ -216,7 +220,7 @@ namespace RedMagic.UI
 
             if (cost < 0)
             {
-                _body.Add(Message($"{weapon.DisplayName} ya está al nivel máximo ({WeaponLevelManager.MaxLevel})."));
+                _body.Add(Message(Loc.Get("forge.max_level", weapon.DisplayName, WeaponLevelManager.MaxLevel)));
                 return;
             }
 
@@ -229,13 +233,13 @@ namespace RedMagic.UI
             box.style.alignItems = Align.Center;
             box.style.marginBottom = 14;
 
-            var title = MenuStyle.CardTitle($"{weapon.DisplayName}  ·  Nivel {level}");
+            var title = MenuStyle.CardTitle(Loc.Get("forge.weapon_level", weapon.DisplayName, level));
             title.style.fontSize = 26;
             title.style.color = weapon.Accent;
             box.Add(title);
 
             var stats = MenuStyle.CardDescription(
-                $"Daño base {weapon.BaseDamage:0} · Cooldown {weapon.BaseCooldown:0.00}s");
+                Loc.Get("forge.stats", weapon.BaseDamage, weapon.BaseCooldown));
             stats.style.fontSize = 16;
             box.Add(stats);
 
@@ -254,10 +258,10 @@ namespace RedMagic.UI
             card.SetEnabled(affordable);
             card.RegisterCallback<PointerEnterEvent>(_ => AudioManager.Instance?.PlaySFX("SFX_ButtonHover"));
 
-            card.Add(MenuStyle.CardTitle($"Subir a nivel {nextLevel}"));
+            card.Add(MenuStyle.CardTitle(Loc.Get("forge.upgrade_to", nextLevel)));
             card.Add(MenuStyle.CardDescription(LevelSummary(nextLevel)));
 
-            var price = MenuStyle.CardFooter($"{cost} calavera{(cost == 1 ? "" : "s")}");
+            var price = MenuStyle.CardFooter(Loc.Get(cost == 1 ? "forge.cost_one" : "forge.cost_many", cost));
             price.style.color = affordable ? MenuStyle.CostAfford : MenuStyle.CostTooDear;
             card.Add(price);
 
@@ -270,8 +274,8 @@ namespace RedMagic.UI
         /// </summary>
         private static string LevelSummary(int level) => level switch
         {
-            2 => "El disparo se tiñe de negro. (Placeholder: sin cambio de daño todavía.)",
-            3 => "El disparo se tiñe de dorado. (Placeholder: sin cambio de daño todavía.)",
+            2 => Loc.Get("forge.level2_summary"),
+            3 => Loc.Get("forge.level3_summary"),
             _ => "",
         };
 

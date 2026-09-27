@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95c9808da496c3d4c967f93f4a3a88f3, type: 3}
   m_Name: LegendaryPassive_1
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
+  textKey: passive.tomo_del_destino
   id: 1
   icon: {fileID: -8723728233184346459, guid: e6834448e1f2310488da2061721f9a56, type: 3}
   displayName: Tomo del Destino

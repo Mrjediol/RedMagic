@@ -1,10 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Gameplay;
 using RedMagic.Hub;
 using RedMagic.Items;
+using RedMagic.Localization;
 using RedMagic.Run;
 using RedMagic.UI;
 using UnityEngine;
@@ -23,12 +25,27 @@ namespace RedMagic.Economy
     /// Con el jugador cerca de un altar enseña <see cref="ShopItemPanel"/> (nombre, rareza, efecto,
     /// sinergias antes → después) e Interactuar compra: oro (<see cref="CurrencyManager.TrySpend"/>)
     /// → inventario (<see cref="WeaponInventory.TryEquip"/>) → altar vacío.
+    ///
+    /// <see cref="rerollPoint"/> es el altar del reroll (<see cref="ShopRerollAltar"/>), que se usa
+    /// igual que un altar: gasta un <see cref="RunRerolls"/> y cambia los items de todos los altares
+    /// (sin repetir los que estaban a la vista si el pool da, nunca lo ya comprado en esta visita),
+    /// con salida/entrada escalonada de izquierda a derecha. Sin rerolls, el mismo "no llega" que
+    /// un item sin oro.
     /// </summary>
     [DisallowMultipleComponent]
     public class ShopManager : MonoBehaviour
     {
+        /// <summary>La tienda de la escena cargada, si hay una (el HUD enseña los rerolls sólo entonces).</summary>
+        public static ShopManager Current { get; private set; }
+
+        /// <summary>Al surtir la tienda al entrar (una vez por visita, antes de poder usarla): Anillo de oro.</summary>
+        public static event Action<ShopManager> Entered;
+
         [Tooltip("Un punto por altar. Cada uno recibe un item (si el pool da para tantos).")]
         [SerializeField] private List<Transform> itemSpawnPoints = new();
+
+        [Tooltip("El altar del reroll (el objeto 'Reroll' de la escena, con su SpriteRenderer). Vacío = sin reroll.")]
+        [SerializeField] private Transform rerollPoint;
 
         [Header("Aspecto")]
         [Min(0.1f)] [SerializeField] private float iconSize = 1.6f;
@@ -48,39 +65,71 @@ namespace RedMagic.Economy
         [SerializeField] private string actionMapName = "Player";
         [SerializeField] private string actionName = "Interact";
 
+        [Header("Sonido")]
+        [Tooltip("Interacción rechazada (sin oro, sin rerolls).")]
+        [SerializeField] private string denySfxId = "SFX_ButtonClick";
+        [SerializeField] private string rerollSfxId = "SFX_ButtonClick";
+
         public IReadOnlyList<Transform> SpawnPoints => itemSpawnPoints;
 
-        private readonly List<ShopAltar> _altars = new();
+        private readonly List<ShopAltar> _altars = new();         // ordenados de izquierda a derecha
+        private readonly HashSet<ItemDefinition> _purchased = new(); // comprados en esta visita
+        private ShopRerollAltar _reroll;
         private InputAction _interactAction;
-        private ShopAltar _focused;
-        private bool _stocked;
+        private IShopInteractable _focused;
+        private bool _stocked, _rerolling;
+        private int _world = 1;
+        private System.Random _rng;
+        private Sprite _coin;
         private Transform _player;
         private PlayerAnimator _playerAnimator;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            Current = null;
+            Entered = null;
+        }
 
         private void Awake()
         {
             if (inputActions != null)
                 _interactAction = inputActions.FindActionMap(actionMapName, false)?.FindAction(actionName, false);
+
+            if (rerollPoint != null && !rerollPoint.TryGetComponent(out _reroll))
+                _reroll = rerollPoint.gameObject.AddComponent<ShopRerollAltar>();
+            if (_reroll != null) _reroll.Setup(priceOffset);
         }
 
         private void OnEnable()
         {
+            Current = this;
             _interactAction?.Enable();
             if (CurrencyManager.Instance != null) CurrencyManager.Instance.Changed += OnCurrencyChanged;
+            RunRerolls.Changed += OnRerollsChanged;
+            OnRerollsChanged(RunRerolls.Count);
         }
 
         private void OnDisable()
         {
+            if (Current == this) Current = null;
             _interactAction?.Disable();
             if (CurrencyManager.Instance != null) CurrencyManager.Instance.Changed -= OnCurrencyChanged;
+            RunRerolls.Changed -= OnRerollsChanged;
             SetFocus(null);
         }
 
         private void Start()
         {
-            // En una run, RunManager llama a Stock justo después de cargar; suelta, se llena sola.
+            // En una run, RunManager llama a Stock justo después de cargar; suelta, se llena sola
+            // (y trae los rerolls de salida, para poder probar el reroll).
             bool runWillStock = RunManager.Instance != null && RunManager.Instance.Phase == RunPhase.Shop;
-            if (!_stocked && !runWillStock) Stock(1, Environment.TickCount);
+            if (!_stocked && !runWillStock)
+            {
+                if (RunManager.Instance == null || !RunManager.Instance.RunInProgress)
+                    RunRerolls.Set(ShopConfig.Instance.startingRerolls);
+                Stock(1, Environment.TickCount);
+            }
         }
 
         // ------------------------------------------------------------------ surtido
@@ -89,72 +138,97 @@ namespace RedMagic.Economy
         public void Stock(int world, int seed)
         {
             _stocked = true;
+            _world = world;
+            _rng = new System.Random(seed);
+            _purchased.Clear();
             SetFocus(null);
 
-            var config = ShopConfig.Instance;
-            var stock = config.RollStock(itemSpawnPoints.Count, world, new System.Random(seed));
-            var coin = CurrencyManager.Instance != null ? CurrencyManager.Instance.Config?.VisualFor(Currency.Gold)?.icon : null;
-            var sortingRef = FindPlayer() != null ? _player.gameObject : null;
+            _coin = CurrencyManager.Instance != null ? CurrencyManager.Instance.Config?.VisualFor(Currency.Gold)?.icon : null;
 
             _altars.Clear();
-            for (int i = 0; i < itemSpawnPoints.Count; i++)
+            foreach (var point in itemSpawnPoints)
             {
-                var point = itemSpawnPoints[i];
                 if (point == null) continue;
-
                 if (!point.TryGetComponent(out ShopAltar altar)) altar = point.gameObject.AddComponent<ShopAltar>();
                 _altars.Add(altar);
-
-                if (i < stock.Count)
-                    altar.Show(stock[i], iconSize, priceOffset, bobAmplitude, bobSpeed, coin, sortingRef);
-                else
-                    altar.Clear();
             }
+            _altars.Sort((a, b) => a.transform.position.x.CompareTo(b.transform.position.x));
+
+            var stock = ShopConfig.Instance.RollStock(_altars.Count, world, _rng);
+            for (int i = 0; i < _altars.Count; i++)
+                Fill(_altars[i], stock, i);
 
             RefreshAffordability();
             Debug.Log($"[ShopManager] Tienda del mundo {world}: {stock.Count} item(s).", this);
+            Entered?.Invoke(this);
+        }
+
+        private void Fill(ShopAltar altar, List<ShopStockEntry> stock, int index)
+        {
+            if (index < stock.Count)
+                altar.Show(stock[index], iconSize, priceOffset, bobAmplitude, bobSpeed, _coin, SortingReference());
+            else
+                altar.Clear();
         }
 
         // ------------------------------------------------------------------ cercanía y compra
 
         private void Update()
         {
-            if (FindPlayer() == null) { SetFocus(null); return; }
+            if (_rerolling || FindPlayer() == null) { SetFocus(null); return; }
 
             SetFocus(Nearest());
 
             if (_focused == null || !GameStateManager.CanPlayerAct) return;
-            if (InteractInput.Pressed(_interactAction)) TryBuy(_focused);
+            if (!InteractInput.Pressed(_interactAction)) return;
+
+            if (_focused is ShopAltar altar) TryBuy(altar);
+            else if (_focused == (IShopInteractable)_reroll) TryReroll();
         }
 
-        private ShopAltar Nearest()
+        private IShopInteractable Nearest()
         {
-            ShopAltar best = null;
+            IShopInteractable best = null;
             float bestDx = float.MaxValue;
-            Vector3 p = _player.position;
 
-            foreach (var altar in _altars)
-            {
-                if (altar == null || !altar.HasItem) continue;
-                float dx = Mathf.Abs(altar.ItemPosition.x - p.x);
-                float dy = Mathf.Abs(altar.ItemPosition.y - p.y);
-                if (dx > interactRangeX || dy > interactRangeY || dx >= bestDx) continue;
-                best = altar;
-                bestDx = dx;
-            }
+            foreach (var altar in _altars) Consider(altar, ref best, ref bestDx);
+            if (_reroll != null) Consider(_reroll, ref best, ref bestDx);
 
             return best;
         }
 
-        private void SetFocus(ShopAltar altar)
+        private void Consider(IShopInteractable candidate, ref IShopInteractable best, ref float bestDx)
         {
-            if (altar == _focused) return;
-            if (_focused != null) _focused.SetFocused(false);
-            _focused = altar;
-            if (_focused != null) _focused.SetFocused(true);
+            if (candidate == null || !candidate.CanInteract) return;
+            Vector3 p = _player.position;
+            float dx = Mathf.Abs(candidate.ItemPosition.x - p.x);
+            float dy = Mathf.Abs(candidate.ItemPosition.y - p.y);
+            if (dx > interactRangeX || dy > interactRangeY || dx >= bestDx) return;
+            best = candidate;
+            bestDx = dx;
+        }
 
-            if (_focused == null) ShopItemPanel.Hide(this);
-            else ShopItemPanel.Show(this, _focused.Entry);
+        private void SetFocus(IShopInteractable target)
+        {
+            if (target == _focused) return;
+            _focused?.SetFocused(false);
+            _focused = target;
+            _focused?.SetFocused(true);
+            ShowPanel();
+        }
+
+        private void ShowPanel()
+        {
+            if (_focused is ShopAltar altar) ShopItemPanel.Show(this, altar.Entry);
+            else if (_focused != null) ShopItemPanel.ShowReroll(this, RunRerolls.Count, _altars.Count);
+            else ShopItemPanel.Hide(this);
+        }
+
+        /// <summary>El "no llega" de la tienda (sin oro, sin rerolls): una sola respuesta para todo.</summary>
+        private void Deny(IShopInteractable target)
+        {
+            target.Deny();
+            AudioManager.Instance?.PlaySFX(denySfxId);
         }
 
         private void TryBuy(ShopAltar altar)
@@ -168,8 +242,7 @@ namespace RedMagic.Economy
 
             if (wallet.Get(Currency.Gold) < entry.Price)
             {
-                altar.Deny();
-                AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+                Deny(altar);
                 return;
             }
 
@@ -177,7 +250,7 @@ namespace RedMagic.Economy
             if (entry.Item is FreePoolItemDefinition && inventory.FreeSlotsFull)
             {
                 altar.Deny();
-                RewardPopupUi.Show(entry.Item.Icon, "Huecos libres llenos", entry.Item.DisplayName, entry.Item.Accent);
+                RewardPopupUi.Show(entry.Item.Icon, Loc.Get("shop.free_slots_full"), entry.Item.DisplayName, entry.Item.Accent);
                 return;
             }
 
@@ -191,8 +264,9 @@ namespace RedMagic.Economy
                 return;
             }
 
+            _purchased.Add(entry.Item);
             AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
-            RewardPopupUi.Show(entry.Item.Icon, "Comprado", entry.Item.DisplayName, ItemRarities.ColorOf(entry.Item.Rarity));
+            RewardPopupUi.Show(entry.Item.Icon, Loc.Get("shop.bought"), entry.Item.DisplayName, ItemRarities.ColorOf(entry.Item.Rarity));
 
             // Efecto de compra (el altar queda vacío ya; el juego sigue) + el oro del HUD bajando.
             altar.PlayPurchase(_player);
@@ -202,11 +276,69 @@ namespace RedMagic.Economy
             SetFocus(null);
         }
 
+        // ------------------------------------------------------------------ reroll
+
+        private void TryReroll()
+        {
+            if (_playerAnimator != null) _playerAnimator.TriggerInteract();
+
+            if (!RunRerolls.TrySpend())
+            {
+                Deny(_reroll);
+                return;
+            }
+
+            StartCoroutine(RerollRoutine());
+        }
+
+        private IEnumerator RerollRoutine()
+        {
+            _rerolling = true;
+            SetFocus(null);
+
+            var fx = ShopFxConfig.Current;
+            AudioManager.Instance?.PlaySFX(rerollSfxId);
+            _reroll.PlayTrigger(SortingReference());
+
+            // Un icono recién comprado que aún vuela al jugador termina su viaje antes de tocar su altar.
+            while (_altars.Exists(a => a != null && a.Purchasing)) yield return null;
+
+            // Lo que estaba a la vista se evita (si el pool da); lo comprado en esta visita, nunca.
+            var displayed = new HashSet<ItemDefinition>();
+            foreach (var altar in _altars)
+                if (altar != null && altar.HasItem) displayed.Add(altar.Entry.Item);
+
+            // 1. Salida escalonada de izquierda a derecha.
+            for (int i = 0; i < _altars.Count; i++)
+                _altars[i].PlayExit(i * fx.rerollStagger, fx.rerollExitDuration);
+            yield return new WaitForSeconds(Mathf.Max(0, _altars.Count - 1) * fx.rerollStagger + fx.rerollExitDuration);
+
+            // 2. Surtido nuevo con la misma tabla de rarezas/precios; entrada escalonada con rebote.
+            var stock = ShopConfig.Instance.RollStock(_altars.Count, _world, _rng ??= new System.Random(), _purchased, displayed);
+            for (int i = 0; i < _altars.Count; i++)
+            {
+                Fill(_altars[i], stock, i);
+                _altars[i].PlayEnter(i * fx.rerollStagger, fx.rerollEnterDuration, fx.rerollEnterOvershoot);
+            }
+            RefreshAffordability();
+            yield return new WaitForSeconds(Mathf.Max(0, _altars.Count - 1) * fx.rerollStagger + fx.rerollEnterDuration);
+
+            _rerolling = false;
+        }
+
+        // ------------------------------------------------------------------ refrescos
+
         private void OnCurrencyChanged(Currency currency, int amount)
         {
             if (currency != Currency.Gold) return;
             RefreshAffordability();
-            if (_focused != null) ShopItemPanel.Show(this, _focused.Entry);
+            if (_focused is ShopAltar) ShowPanel();
+        }
+
+        private void OnRerollsChanged(int count)
+        {
+            if (_reroll != null) _reroll.SetAffordable(count > 0);
+            if (_focused != null && _focused == (IShopInteractable)_reroll) ShowPanel();
         }
 
         private void RefreshAffordability()
@@ -215,6 +347,8 @@ namespace RedMagic.Economy
             foreach (var altar in _altars)
                 if (altar != null && altar.HasItem) altar.SetAffordable(gold >= altar.Entry.Price);
         }
+
+        private GameObject SortingReference() => FindPlayer() != null ? _player.gameObject : null;
 
         private Transform FindPlayer()
         {
@@ -238,6 +372,13 @@ namespace RedMagic.Economy
                 if (p == null) continue;
                 Gizmos.DrawWireCube(p.position, Vector3.one * iconSize);
                 UnityEditor.Handles.Label(p.position + Vector3.up * (iconSize * 0.7f), $"Altar {i + 1}");
+            }
+
+            if (rerollPoint != null)
+            {
+                Gizmos.color = new Color(0.35f, 0.9f, 1f, 0.8f);
+                Gizmos.DrawWireCube(rerollPoint.position, Vector3.one * iconSize);
+                UnityEditor.Handles.Label(rerollPoint.position + Vector3.up * (iconSize * 0.7f), "Reroll");
             }
         }
 #endif

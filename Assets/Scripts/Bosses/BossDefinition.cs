@@ -1,4 +1,5 @@
 using System;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -89,6 +90,10 @@ namespace RedMagic.Bosses
     public class BossDefinition : ScriptableObject
     {
         [Header("Identidad")]
+        [Tooltip("Prefijo de sus textos en los ficheros de idioma (<prefijo>.name / .title / .description). " +
+                 "Lo rellena Tools ▸ RedMagic ▸ Localización ▸ Sincronizar textos de assets.")]
+        [SerializeField] private string textKey;
+
         [SerializeField] private string displayName = "Jefe";
 
         [Tooltip("Epíteto que sale bajo el nombre en la barra de vida.")]
@@ -101,9 +106,9 @@ namespace RedMagic.Bosses
         [Tooltip("En orden, de más vida a menos. La primera debe empezar en 1.")]
         [SerializeField] private BossPhase[] phases = Array.Empty<BossPhase>();
 
-        public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? name : displayName;
-        public string Title => title;
-        public string Description => description;
+        public string DisplayName => Loc.ForAsset(textKey, "name", string.IsNullOrWhiteSpace(displayName) ? name : displayName);
+        public string Title => Loc.ForAsset(textKey, "title", title);
+        public string Description => Loc.ForAsset(textKey, "description", description);
         public BossPhase[] Phases => phases;
         public int PhaseCount => phases != null ? phases.Length : 0;
 

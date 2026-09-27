@@ -14,8 +14,8 @@ namespace RedMagic.Hub
     /// </summary>
     public class WardrobeLootContainer : HubLootContainer
     {
-        protected override string OpenPromptText => "Pulsa [Interactuar] para abrir el armario";
-        protected override string PickupPromptText => "Pulsa [Interactuar] para recoger los items";
+        protected override string OpenPromptKey => "prompt.wardrobe_open";
+        protected override string PickupPromptKey => "prompt.wardrobe_pickup";
         protected override bool BlocksHubExitUntilLooted => false; // opcional: nunca bloquea la salida
 
         protected override void OnLoot()

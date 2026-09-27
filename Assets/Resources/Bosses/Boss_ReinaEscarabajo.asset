@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
   m_Name: Boss_ReinaEscarabajo
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  textKey: boss.reina_escarabajo
   displayName: Reina Escarabajo
   title: Madre del Nido Anegado
   description: Lleva tanto tiempo poniendo bajo la tumba que el suelo ya no es suelo,

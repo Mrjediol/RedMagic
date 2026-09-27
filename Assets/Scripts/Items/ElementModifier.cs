@@ -1,3 +1,4 @@
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -46,7 +47,7 @@ namespace RedMagic.Items
         }
 
         public override string EffectSummary() =>
-            $"El disparo pasa a ser de {BuildTags.DisplayName(element)}.";
+            Loc.Get("modifier.element", BuildTags.DisplayName(element));
 
         protected override void OnValidate()
         {

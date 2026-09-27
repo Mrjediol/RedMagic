@@ -43,3 +43,5 @@ MonoBehaviour:
   - 1.4
   - 1.8
   - 2.2
+  startingRerolls: 1
+  rerollIcon: {fileID: 21300000, guid: 7dc1d712c535eb44790e5a19f33122eb, type: 3}

@@ -1,0 +1,395 @@
+# Español — idioma por defecto (GameSettings ▸ defaultLanguage).
+# Formato: clave = texto · {0} {1}… huecos de string.Format · \n salto de línea · # comentario.
+# Guía: Assets/_Pipeline/LOCALIZATION_PIPELINE.md
+@name = Español
+@system = Spanish
+@culture = es-ES
+
+# --- común
+common.back = Volver
+common.close_hint = Esc / E / B para cerrar
+common.none = —
+
+# --- menú principal / pausa
+menu.play = Jugar
+menu.options = Opciones
+menu.quit = Salir
+pause.open = Pausa
+pause.title = PAUSA
+pause.resume = Reanudar
+pause.main_menu = Menú principal
+
+# --- opciones
+options.title = OPCIONES
+options.master = Master
+options.music = Música
+options.sfx = Efectos
+options.mute = Silenciar
+options.muted = Silenciado
+options.resolution = Pantalla
+options.resolution_value = {0} · {1}
+options.language = Idioma
+settings.resolution.pc = PC
+settings.resolution.mobile = Móvil
+
+# --- controles táctiles
+touch.down = ABAJO
+touch.dash = DASH
+touch.fire = FUEGO
+touch.attack = ATACAR
+touch.jump = SALTAR
+
+# --- chuleta de teclas (PC)
+legend.key_space = Espacio
+legend.key_left_click = Clic izq.
+legend.move = Moverse
+legend.jump = Saltar / doble salto
+legend.dash = Dash
+legend.shoot = Disparar
+legend.interact = Interactuar
+legend.items = Items
+legend.options = Opciones
+
+# --- tienda
+shop.free_slots_full = Huecos libres llenos
+shop.not_enough_gold = Oro insuficiente ({0} / {1})
+shop.buy_hint = Pulsa [Interactuar] para comprar · {0} oro
+shop.bought = Comprado
+shop.reroll.name = Reroll
+shop.reroll.left = QUEDAN {0}
+shop.reroll.description = Cambia los {0} objetos de la tienda por otros nuevos. Lo ya comprado aquí no vuelve a salir.
+shop.reroll.none = Sin rerolls
+shop.reroll.hint = Pulsa [Interactuar] para cambiar · 1 reroll
+
+# --- tags, elementos, rarezas
+tag.ice = Hielo
+tag.fire = Fuego
+tag.tank = Tanque
+tag.haste = Rapidez
+tag.lifesteal = Vampirismo
+tag.reset = Reset
+element.physical = físico
+rarity.common = Común
+rarity.blue = Azul
+rarity.epic = Épico
+rarity.legendary = Legendario
+
+# --- carteles de interacción
+prompt.chest_open = Pulsa [Interactuar] para abrir el cofre
+prompt.chest_pickup = Pulsa [Interactuar] para recoger el arma
+prompt.book_open = Pulsa [Interactuar] para abrir el libro
+prompt.book_read = Pulsa [Interactuar] para consultar el libro
+prompt.wardrobe_open = Pulsa [Interactuar] para abrir el armario
+prompt.wardrobe_pickup = Pulsa [Interactuar] para recoger los items
+prompt.anvil = Pulsa [Interactuar] para usar el yunque
+prompt.mirror = Pulsa [Interactuar] para usar el espejo
+
+# --- avisos de recompensa
+reward.weapon = Arma obtenida
+reward.weapon_level = Arma obtenida · Nivel {0}
+reward.item = Objeto obtenido
+reward.revived = ¡Has revivido!
+
+# --- jefes / buffs
+boss.guarding = SE CUBRE
+boss.exposed = ¡EXPUESTO!
+buff.ready = ¡LISTO!
+
+# --- monedas
+currency.gold = oro
+currency.diamond = diamantes
+currency.soul_fragment = fragmentos de alma
+currency.skull = calaveras
+
+# --- efectos de items (resumen en la ficha)
+effect.drain_health = Pierde {0:0.##} de vida cada {1:0.##} s
+effect.grant_currency = +{0} {1} cada {2:0.##} s
+effect.kill_counter_explosion = Cada {0} bajas, el siguiente disparo explota en hielo donde impacte (radio {1:0.#}, {2:0} de daño)
+effect.kill_counter_explosion_slow = Cada {0} bajas, el siguiente disparo explota en hielo donde impacte (radio {1:0.#}, {2:0} de daño, ralentiza)
+effect.kill_empowers_next_cast = Al matar: el siguiente disparo sale al instante y hace ×{0:0.#} de daño
+effect.pierce_on_kill = Al matar con un proyectil, reaparece en el cuerpo {0:0.##} s después y sigue su camino
+effect.slow_armor_shred = Ralentizar rompe la armadura: −{0:0}% (recibe +{0:0}% de daño) mientras dure
+effect.slowed_bonus_damage = Los ralentizados reciben +{0:0.#}% de su vida máxima en cada golpe
+effect.slowed_bonus_damage_capped = Los ralentizados reciben +{0:0.#}% de su vida máxima en cada golpe (máx. {1:0})
+effect.slowed_enemy_cooldown = Con un enemigo ralentizado en pantalla, el enfriamiento corre ×{0:0.##}
+effect.stat_multiplier = {0} ×{1:0.##}
+stat.move_speed = Velocidad
+stat.dash_distance = Distancia de dash
+stat.jump_height = Altura de salto
+stat.cooldown_rate = Ritmo de enfriamiento
+
+# --- modificadores
+modifier.element = El disparo pasa a ser de {0}.
+modifier.shape.split = Al impactar se divide en {0} ({1:0}% de daño cada uno).
+modifier.shape.multishot = Dispara {0} proyectiles en abanico de {1:0}°.
+modifier.shape.air_repeat = Se repite {0} vez(es) en el aire.
+modifier.shape.single = Un solo impacto.
+modifier.trajectory.homing = Curva hacia el enemigo más cercano.
+modifier.trajectory.bounce = Rebota {0} vez(es).
+modifier.trajectory.straight = Vuela recto.
+
+# --- mejoras permanentes (libro)
+upgrades.title = MEJORAS PERMANENTES
+upgrades.missing_tree = (falta el asset UpgradeTree en Resources)
+upgrades.soul_fragments = Fragmentos de alma: {0}
+upgrades.level = Nv {0}/{1}
+upgrades.locked = BLOQUEADO
+upgrades.max = MÁX
+upgrades.cost = {0} FA
+
+# --- forja
+forge.title = FORJA
+forge.skulls = Calaveras: {0}
+forge.no_weapon = No llevas ningún arma equipada.\nLa forja mejora el arma que tengas puesta: equipa una y vuelve.
+forge.max_level = {0} ya está al nivel máximo ({1}).
+forge.weapon_level = {0}  ·  Nivel {1}
+forge.stats = Daño base {0:0} · Cooldown {1:0.00}s
+forge.upgrade_to = Subir a nivel {0}
+forge.cost_one = {0} calavera
+forge.cost_many = {0} calaveras
+forge.level2_summary = El disparo se tiñe de negro. (Placeholder: sin cambio de daño todavía.)
+forge.level3_summary = El disparo se tiñe de dorado. (Placeholder: sin cambio de daño todavía.)
+
+# --- elegir arma (cofre con pasiva)
+weapon_choice.title = ELIGE TU ARMA
+weapon_choice.hint = Toca una carta para elegirla · teclas 1-{0}
+weapon_choice.stats = Daño {0:0} · {1:0.00}s
+
+# --- espejo (pasivas legendarias)
+mirror.title = PASIVAS LEGENDARIAS
+mirror.upgrade = MEJORAR
+mirror.back = < VOLVER
+mirror.skulls = Calaveras: {0}
+mirror.level1 = Nivel 1: {0}
+mirror.level2 = Nivel 2: {0}
+mirror.level = Nivel {0} / {1}
+mirror.max_level = Nivel máximo alcanzado.
+mirror.upgrade_to_2 = Mejora → Nivel 2: {0}
+mirror.cost = {0} calaveras
+
+# --- cinemática de pasiva
+cinematic.header = Has obtenido
+cinematic.continue = Toca para continuar
+
+# --- pantalla de items (I)
+items.hint = I / Esc / B para cerrar · clic en un slot para ciclar los items disponibles
+items.column_synergies = SINERGIAS
+items.column_equipment = EQUIPO
+items.column_description = DESCRIPCIÓN
+items.slot_element = Elemento
+items.slot_trajectory = Trayectoria
+items.slot_shape = Forma
+items.slot_free = Libre {0}
+items.free_slots = Slots libres
+items.weapon = Arma
+items.no_weapon = — sin arma —
+items.default_description = Pasa el ratón sobre un item, un modificador o el arma para ver su efecto.\n\nClic en un slot para ciclar entre los assets disponibles de ese tipo.
+items.empty_slot = Slot vacío. Clic para equipar.
+items.synergy_title = Sinergia · {0}
+items.synergy_points = Puntos: {0}
+items.synergy_points_capped = Puntos: {0}   (tope {1} alcanzado)
+items.synergy_tbd = (efecto por definir)
+items.synergy_threshold = {0} Umbral {1}: {2}
+items.reset_note = Reset no escala por puntos: su sinergia depende de cuántos items Reset llevas equipados a la vez.
+items.weapon_charge = Carga: mantener {0:0.00}s (mín. {1:0}% para disparar)
+items.weapon_stats = Daño base {0:0} · cadencia {1:0.00}s
+items.weapon_shot = Disparo base: {0}, {1:0} u/s, vida {2:0.0}s
+items.weapon_element = Elemento innato: {0}
+items.current_behaviour = Comportamiento actual
+items.tags = Tags: {0}
+shot.homing = auto-mira
+shot.arc = parábola
+shot.straight = recto
+shot.beam = haz
+shot.beams = {0} haces
+shot.split = división en {0}
+shot.fan = {0} en abanico
+shot.single = 1 proyectil
+shot.sweep = barre {0:0.00}s, alcance {1:0}
+shot.burst = ráfaga ×{0}
+shot.pierce = perfora {0}
+shot.explodes = explota ({0:0} en {1:0.0})
+shot.delivery_projectile = proyectil
+shot.delivery_melee = cuerpo a cuerpo
+shot.delivery_hitscan = haz instantáneo
+
+# ============================================================================================
+# Textos de assets de contenido (<textKey>.<campo>). Los añade
+# Tools ▸ RedMagic ▸ Localización ▸ Sincronizar textos de assets (sólo claves nuevas).
+# ============================================================================================
+
+# --- items
+item.anillo_glacial.name = Anillo Glacial
+item.anillo_glacial.description = La gema muerde la carne congelada: cuanto más grande, más sangra.
+item.baston_helado.name = Bastón Helado
+item.baston_helado.description = El cristal bebe de cada caída. La siguiente descarga no espera y golpea el triple.
+item.botas_runicas.name = Botas Rúnicas
+item.botas_runicas.description = Botas de escarcha que apenas rozan el suelo. Con el frío a la vista, el tiempo corre a tu favor.
+item.capa_de_escarcha.name = Capa de Escarcha
+item.capa_de_escarcha.description = Lo que mata no se detiene: el disparo se recompone en el cuerpo helado y sigue.
+item.grimorio_glacial.name = Grimorio Glacial
+item.grimorio_glacial.description = Sus páginas escarchan la armadura de quien se ralentiza.
+item.yelmo_runico.name = Yelmo Rúnico
+item.yelmo_runico.description = Las runas guardan cada muerte. A la quinta, el hielo estalla a tu alrededor.
+
+# --- armas
+weapon.bola_de_fuego.name = Bola de Fuego
+weapon.bola_de_fuego.description = El arma base: un proyectil recto, rápido y fiable. Sin sorpresas, sin puntos ciegos. Nace ardiendo.
+weapon.escopeta_espectral.name = Escopeta Espectral
+weapon.escopeta_espectral.description = Cinco perdigones de escarcha en abanico corto. Demoledora pegada a la cara, inútil a media sala. Te obliga a entrar. Nace de hielo.
+weapon.granada_runica.name = Granada Rúnica
+weapon.granada_runica.description = Se lanza en parábola y revienta en un radio grande al tocar algo o al agotarse: poco impacto directo, mucho en la explosión, mucho empuje. Nace de hielo.
+weapon.lanza_astral.name = Lanza Astral
+weapon.lanza_astral.description = Un asta de luz que cruza la sala entera y atraviesa a cuatro enemigos en línea. Premia alinearlos; castiga disparar a bulto. Fuerza pura, sin elemento propio.
+weapon.proyectil_recto.name = Proyectil Recto
+weapon.proyectil_recto.description = Arma de prueba: un proyectil recto sin nada especial.
+weapon.rafaga_arcana.name = Ráfaga Arcana
+weapon.rafaga_arcana.description = Cada gatillazo suelta tres chispas seguidas con un pelín de temblor. Daño bajo por bala, alto si aciertas las tres. Nace ardiendo.
+weapon.rayo_arcano.name = Rayo Arcano
+weapon.rayo_arcano.description = Se mantiene para cargar y al soltar barre un haz que atraviesa la sala entera y todo lo que haya en ella. Se puede soltar antes de tiempo por un haz más corto y flojo. Con Auto-mira, el haz se pega al enemigo más cercano.
+
+# --- pasivas legendarias (espejo)
+passive.codex_aurum.name = Codex Aurum
+passive.codex_aurum.description = Tras derrotar a cada jefe de mundo cae un objeto gratis
+passive.codex_aurum.upgrade = Tras derrotar a cada jefe de mundo caen dos objetos gratis
+passive.tomo_del_destino.name = Tomo del Destino
+passive.tomo_del_destino.description = Al coger un objeto, eliges entre 3 opciones en vez de 1
+passive.tomo_del_destino.upgrade = Además, puedes volver a tirar esas 3 opciones una vez gratis
+passive.grimorio_del_umbral.name = Grimorio del Umbral
+passive.grimorio_del_umbral.description = Ves 3 armas en el cofre y eliges cuál llevarte
+passive.grimorio_del_umbral.upgrade = El arma elegida empieza con 1 mejora ya aplicada
+passive.paginas_del_eco.name = Páginas del Eco
+passive.paginas_del_eco.description = +2 rerolls permanentes por run
+passive.paginas_del_eco.upgrade = +4 rerolls permanentes; cada reroll muestra 2 opciones en vez de 1
+passive.el_libro_sin_nombre.name = El Libro Sin Nombre
+passive.el_libro_sin_nombre.description = Revives una vez por run con el 30% de la vida
+passive.el_libro_sin_nombre.upgrade = Al revivir, también ganas un escudo que absorbe 3 golpes
+passive.volumen_carmesi.name = Volumen Carmesí
+passive.volumen_carmesi.description = +10% de daño permanente
+passive.volumen_carmesi.upgrade = +20% de daño permanente
+passive.anales_del_vacio.name = Anales del Vacío
+passive.anales_del_vacio.description = La primera oleada de cada nivel empieza con todos los enemigos ralentizados
+passive.anales_del_vacio.upgrade = Todos los enemigos de la run empiezan con un 20% menos de vida
+passive.manuscrito_eterno.name = Manuscrito Eterno
+passive.manuscrito_eterno.description = Cada 3 niveles completados, recibes un objeto gratis
+passive.manuscrito_eterno.upgrade = Ese objeto gratis siempre es épico o legendario
+passive.el_tomo_roto.name = El Tomo Roto
+passive.el_tomo_roto.description = El arma del cofre empieza con 2 mejoras aplicadas
+passive.el_tomo_roto.upgrade = Además, el arma del cofre siempre es la de mayor daño base disponible
+
+# --- jefes
+boss.arbol_ancestral.name = Árbol Ancestral
+boss.arbol_ancestral.title = Guardián del Bosque Marchito
+boss.arbol_ancestral.description = Lleva tanto tiempo enraizado en la tumba que ya no distingue entre defenderla y devorar lo que entra.
+boss.coloso_de_hielo.name = Coloso de Hielo
+boss.coloso_de_hielo.title = Guardián del Glaciar
+boss.coloso_de_hielo.description = Coloso flotante de roca y hielo. Puños sueltos, embiste y lanza rocas.
+boss.espantapajaros_marchito.name = Espantapájaros Marchito
+boss.espantapajaros_marchito.title = Señor de la Cosecha Muerta
+boss.espantapajaros_marchito.description = Lo clavaron en el campo para espantar a los cuervos. Llevan tanto tiempo obedeciéndole que ya no saben distinguir entre espantar y devorar.
+boss.guardiana_de_piedra.name = Guardiana de Piedra
+boss.guardiana_de_piedra.title = Centinela del Sepulcro
+boss.guardiana_de_piedra.description = La tallaron para velar una tumba y le dieron una sola orden. Nadie se acuerda ya de quién está enterrado ahí, pero ella sigue de guardia.
+boss.pozo_maldito.name = Pozo Maldito
+boss.pozo_maldito.title = Boca del Mundo de Abajo
+boss.pozo_maldito.description = El pueblo lo tapió hace generaciones y siguió sacando agua de él. Nadie preguntó nunca de dónde venía.
+boss.pruebagolem.name = PruebaGolem
+boss.reina_escarabajo.name = Reina Escarabajo
+boss.reina_escarabajo.title = Madre del Nido Anegado
+boss.reina_escarabajo.description = Lleva tanto tiempo poniendo bajo la tumba que el suelo ya no es suelo, sino su nido. Todo lo que pisas es suyo.
+boss.sello_profano.name = Sello Profano
+boss.sello_profano.title = Lo Que la Tumba Retiene
+boss.sello_profano.description = No es el guardián de la tumba: es la cerradura. Lleva siglos aguantando, y ya no distingue entre lo que quiere entrar y lo que quiere salir.
+boss.ent_cristalino.name = Ent Cristalino
+boss.ent_cristalino.title = Corazón del Bosque
+boss.ent_cristalino.description = No se mueve: no le hace falta. Todo el bosque es su brazo, y el cristal de su pecho late cada vez más deprisa.
+
+# --- sinergias (SynergyConfig)
+synergy.ice.tier1 = Los disparos ralentizan un 40% durante 3 s.
+synergy.ice.tier2 = Los ralentizados reciben +15% de daño de cualquier fuente.
+synergy.ice.tier3 = Matar a un ralentizado suelta un estallido de hielo (10 de daño, radio 1,8).
+synergy.fire.tier1 = Aplica quemadura (daño por tiempo).
+synergy.fire.tier2 = +duración de la quemadura.
+synergy.fire.tier3 = La quemadura se propaga a los enemigos cercanos al morir el objetivo.
+synergy.tank.tier1 = +20% de vida máxima.
+synergy.tank.tier2 = +regeneración de vida pasiva.
+synergy.tank.tier3 = Escudo temporal al bajar del 30% de vida (una vez por encuentro).
+synergy.haste.tier1 = Con un enemigo ralentizado en pantalla, el enfriamiento corre ×1,5.
+synergy.haste.tier2 = -20% de enfriamiento del arma.
+synergy.haste.tier3 = -35% de enfriamiento del arma.
+synergy.lifesteal.tier1 = Cada baja cura 3 de vida.
+synergy.lifesteal.tier2 = 10% de robo de vida.
+synergy.lifesteal.tier3 = La curación sobrante por robo de vida se convierte en escudo temporal.
+synergy.reset.tier1 = Cada baja quita 2 s al enfriamiento actual.
+synergy.reset.tier2 = Con 3+ items Reset equipados, cada uno dispara con N-2.
+synergy.reset.tier3 = N reducido al mínimo con el máximo de items Reset.
+
+# --- mejoras permanentes (UpgradeTree, placeholders)
+upgrade.r0c0.title = Mejora 1-1
+upgrade.r0c0.description = +{0}% placeholder / nv
+upgrade.r0c1.title = Mejora 1-2
+upgrade.r0c1.description = +{0}% placeholder / nv
+upgrade.r0c2.title = Mejora 1-3
+upgrade.r0c2.description = +{0}% placeholder / nv
+upgrade.r0c3.title = Mejora 1-4
+upgrade.r0c3.description = +{0}% placeholder / nv
+upgrade.r0c4.title = Mejora 1-5
+upgrade.r0c4.description = +{0}% placeholder / nv
+upgrade.r1c0.title = Mejora 2-1
+upgrade.r1c0.description = +{0}% placeholder / nv
+upgrade.r1c1.title = Mejora 2-2
+upgrade.r1c1.description = +{0}% placeholder / nv
+upgrade.r1c2.title = Mejora 2-3
+upgrade.r1c2.description = +{0}% placeholder / nv
+upgrade.r1c3.title = Mejora 2-4
+upgrade.r1c3.description = +{0}% placeholder / nv
+upgrade.r1c4.title = Mejora 2-5
+upgrade.r1c4.description = +{0}% placeholder / nv
+upgrade.r2c0.title = Mejora 3-1
+upgrade.r2c0.description = +{0}% placeholder / nv
+upgrade.r2c1.title = Mejora 3-2
+upgrade.r2c1.description = +{0}% placeholder / nv
+upgrade.r2c2.title = Mejora 3-3
+upgrade.r2c2.description = +{0}% placeholder / nv
+upgrade.r2c3.title = Mejora 3-4
+upgrade.r2c3.description = +{0}% placeholder / nv
+upgrade.r2c4.title = Mejora 3-5
+upgrade.r2c4.description = +{0}% placeholder / nv
+
+# --- set de oro: sinergia
+tag.gold = Oro
+synergy.gold.tier1 = Toda moneda que sueltan los enemigos, +15%.
+synergy.gold.tier2 = +5% de probabilidad de que cualquier proyectil salga dorado.
+synergy.gold.tier3 = La marca de oro multiplica el botín ×3 (en vez de ×2).
+
+# --- set de oro: efectos (resumen en la ficha)
+effect.currency_drop_bonus = +{0:0}% de moneda de los enemigos
+effect.max_health_bonus = +{0:0} de vida máxima
+effect.currency_on_damage_taken = +{0} {1} por cada golpe que sobrevives
+effect.shot_damage_bonus = +{0:0}% de daño de los disparos
+effect.currency_on_kill = +{0} {1} por cada baja
+effect.currency_on_kill_chance = {2:0}% de probabilidad de +{0} {1} por baja
+effect.damage_reduction_to_currency = Cada golpe recibido hace {0:0.#} menos de daño (mín. {1:0.#}); {2:0.##} {3} por punto bloqueado
+effect.force_gilded = Cada {0} ataques, un disparo dorado seguro
+effect.gilded_projectiles = Proyectiles dorados: {0:0.#}% + {1:0.##}% por punto de daño (máx. {2:0}%). Marcan al enemigo: botín ×{3:0.#} si muere marcado
+effect.shop_luck_gold = Más suerte en la tienda cuanto más oro llevas (máxima con {0} de oro: raros ×{1:0.#}, épicos ×{2:0.#}, legendarios ×{3:0.#})
+effect.rerolls_on_shop_one = +{0} reroll al entrar en cada tienda
+effect.rerolls_on_shop_many = +{0} rerolls al entrar en cada tienda
+
+# --- set de oro: items
+item.casco_de_oro.name = Casco de Oro
+item.casco_de_oro.description = Aumenta la moneda que sueltan los enemigos.
+item.pechera_de_oro.name = Pechera de Oro
+item.pechera_de_oro.description = Otorga vida máxima extra y un pequeño bonus de oro por cada golpe que sobrevives.
+item.espada_de_oro.name = Espada de Oro
+item.espada_de_oro.description = Tus ataques hacen más daño y los enemigos que matas sueltan oro extra.
+item.escudo_de_oro.name = Escudo de Oro
+item.escudo_de_oro.description = Bloquea daño y convierte parte de lo que bloquea en oro.
+item.guanteletes_de_oro.name = Guanteletes de Oro
+item.guanteletes_de_oro.description = Aumenta la velocidad de ataque; cada pocos ataques dispara un proyectil dorado seguro.
+item.botas_de_oro.name = Botas de Oro
+item.botas_de_oro.description = Tus proyectiles pueden forjarse en oro. Los proyectiles dorados marcan a los enemigos y multiplican el oro que sueltan. Cuanto más daño hace un proyectil, más probable es que salga dorado.
+item.amuleto_de_oro.name = Amuleto de Oro
+item.amuleto_de_oro.description = La suerte crece con tu riqueza: cuanto más oro llevas, mejores objetos ofrece la tienda.
+item.anillo_de_oro.name = Anillo de Oro
+item.anillo_de_oro.description = Otorga un reroll extra en cada tienda.

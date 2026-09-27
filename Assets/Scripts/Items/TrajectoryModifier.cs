@@ -1,3 +1,4 @@
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -59,9 +60,9 @@ namespace RedMagic.Items
 
         public override string EffectSummary() => kind switch
         {
-            TrajectoryKind.HomingCurve => "Curva hacia el enemigo más cercano.",
-            TrajectoryKind.Bounce => $"Rebota {bounces} vez(es).",
-            _ => "Vuela recto.",
+            TrajectoryKind.HomingCurve => Loc.Get("modifier.trajectory.homing"),
+            TrajectoryKind.Bounce => Loc.Get("modifier.trajectory.bounce", bounces),
+            _ => Loc.Get("modifier.trajectory.straight"),
         };
     }
 }

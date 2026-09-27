@@ -1,6 +1,7 @@
 using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Economy;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -221,7 +222,8 @@ namespace RedMagic.UI
             var header = MenuStyle.Header();
             panel.Add(header);
 
-            var title = MenuStyle.Title("LEGENDARY PASSIVES");
+            var title = MenuStyle.Title("");
+            LocalizedUi.Bind(title, "mirror.title");
             header.Add(title);
 
             _skullLabel = MenuStyle.CurrencyLabel();
@@ -245,7 +247,9 @@ namespace RedMagic.UI
             panel.Add(_detailView);
             BuildDetail();
 
-            panel.Add(MenuStyle.Hint("Esc / E / B to close"));
+            var hint = MenuStyle.Hint("");
+            LocalizedUi.Bind(hint, "common.close_hint");
+            panel.Add(hint);
         }
 
         private void BuildGrid()
@@ -355,7 +359,8 @@ namespace RedMagic.UI
             _detailUpgradeDescription.style.marginBottom = 10;
             upgradeBox.Add(_detailUpgradeDescription);
 
-            _upgradeButton = new Button(OnUpgradeClicked) { text = "UPGRADE" };
+            _upgradeButton = new Button(OnUpgradeClicked);
+            LocalizedUi.Bind(_upgradeButton, "mirror.upgrade");
             _upgradeButton.style.width = 220;
             _upgradeButton.style.height = 52;
             _upgradeButton.style.color = MenuStyle.Cream;
@@ -372,7 +377,8 @@ namespace RedMagic.UI
             _upgradeFooter.style.unityFontStyleAndWeight = FontStyle.Bold;
             upgradeBox.Add(_upgradeFooter);
 
-            var back = new Button(ShowGrid) { text = "< BACK" };
+            var back = new Button(ShowGrid);
+            LocalizedUi.Bind(back, "mirror.back");
             back.style.width = 160;
             back.style.height = 44;
             back.style.color = MenuStyle.Cream;
@@ -432,7 +438,7 @@ namespace RedMagic.UI
         {
             if (_skullLabel == null) return;
             int skulls = CurrencyManager.Instance != null ? CurrencyManager.Instance.Get(Currency.Skull) : 0;
-            _skullLabel.text = $"Skulls: {skulls}";
+            _skullLabel.text = Loc.Get("mirror.skulls", skulls);
         }
 
         private void RefreshGrid()
@@ -483,8 +489,8 @@ namespace RedMagic.UI
             else
             {
                 slot.icon.style.backgroundImage = new StyleBackground(StyleKeyword.None);
-                slot.monogram.text = !string.IsNullOrEmpty(passive.displayName)
-                    ? passive.displayName.Substring(0, 1).ToUpperInvariant() : "?";
+                slot.monogram.text = !string.IsNullOrEmpty(passive.DisplayName)
+                    ? passive.DisplayName.Substring(0, 1).ToUpperInvariant() : "?";
             }
 
             bool maxed = manager.IsMaxed(passive);
@@ -513,26 +519,26 @@ namespace RedMagic.UI
             int level = manager.GetLevel(passive);
             bool maxed = manager.IsMaxed(passive);
 
-            _detailTitle.text = passive.displayName;
-            _detailDescription.text = $"Nivel 1: {passive.description}";
-            _detailDescription2.text = $"Nivel 2: {passive.upgradeDescription}";
+            _detailTitle.text = passive.DisplayName;
+            _detailDescription.text = Loc.Get("mirror.level1", passive.Description);
+            _detailDescription2.text = Loc.Get("mirror.level2", passive.UpgradeDescription);
             _detailDescription2.style.display = level >= 2 ? DisplayStyle.Flex : DisplayStyle.None;
-            _detailLevel.text = $"Level {level} / {passive.maxLevel}";
+            _detailLevel.text = Loc.Get("mirror.level", level, passive.maxLevel);
 
             if (maxed)
             {
-                _detailUpgradeDescription.text = "Max level reached.";
+                _detailUpgradeDescription.text = Loc.Get("mirror.max_level");
                 _upgradeButton.style.display = DisplayStyle.None;
                 _upgradeFooter.text = "";
                 return;
             }
 
-            _detailUpgradeDescription.text = $"Mejora → Nivel 2: {passive.upgradeDescription}";
+            _detailUpgradeDescription.text = Loc.Get("mirror.upgrade_to_2", passive.UpgradeDescription);
             _upgradeButton.style.display = DisplayStyle.Flex;
 
             bool canAfford = manager.CanUpgrade(passive);
             _upgradeButton.SetEnabled(canAfford);
-            _upgradeFooter.text = $"{passive.upgradeCost} Skulls";
+            _upgradeFooter.text = Loc.Get("mirror.cost", passive.upgradeCost);
             _upgradeFooter.style.color = canAfford ? MenuStyle.CostAfford : MenuStyle.CostTooDear;
         }
 

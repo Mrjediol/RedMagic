@@ -1,5 +1,6 @@
 using RedMagic.Audio;
 using RedMagic.Core;
+using RedMagic.Localization;
 using RedMagic.Run;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -76,6 +77,7 @@ namespace RedMagic.UI
                 _touchMode = InputDeviceManager.Instance.CurrentMode == InputMode.Touch;
             }
 
+            LocalizedUi.BindTree(_root); // claves "#…" del UXML, antes de vestir
             DressWithSkin();
 
             _open = false;

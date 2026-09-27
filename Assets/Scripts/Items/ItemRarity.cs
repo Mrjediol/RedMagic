@@ -1,3 +1,4 @@
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -16,10 +17,10 @@ namespace RedMagic.Items
     {
         public static string DisplayName(ItemRarity rarity) => rarity switch
         {
-            ItemRarity.Blue => "Azul",
-            ItemRarity.Epic => "Épico",
-            ItemRarity.Legendary => "Legendario",
-            _ => "Común",
+            ItemRarity.Blue => Loc.Get("rarity.blue"),
+            ItemRarity.Epic => Loc.Get("rarity.epic"),
+            ItemRarity.Legendary => Loc.Get("rarity.legendary"),
+            _ => Loc.Get("rarity.common"),
         };
 
         /// <summary>

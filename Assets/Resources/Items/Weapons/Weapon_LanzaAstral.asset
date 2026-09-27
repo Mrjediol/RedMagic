@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca7e4e726982a714f8b0f3d8944d404b, type: 3}
   m_Name: Weapon_LanzaAstral
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponDefinition
+  textKey: weapon.lanza_astral
   displayName: Lanza Astral
   description: "Un asta de luz que cruza la sala entera y atraviesa a cuatro enemigos
     en l\xEDnea. Premia alinearlos; castiga disparar a bulto. Fuerza pura, sin elemento

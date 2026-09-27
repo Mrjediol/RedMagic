@@ -136,6 +136,19 @@ namespace RedMagic.Combat
         /// </summary>
         public Func<Health, float, bool> HitAbsorber { get; set; }
 
+        /// <summary>
+        /// Daño plano que se le resta a cada golpe (ya con armadura), sin bajar de
+        /// <see cref="MinimumDamageAfterReduction"/>. Lo mueve el jugador con sus items (Escudo de oro:
+        /// <c>Items.CombatModifiers</c>); un enemigo lo deja a 0. No se serializa.
+        /// </summary>
+        public float FlatDamageReduction { get; set; }
+
+        /// <summary>Lo mínimo que sigue entrando de un golpe reducido por <see cref="FlatDamageReduction"/>.</summary>
+        public float MinimumDamageAfterReduction { get; set; }
+
+        /// <summary>Cuánto le ha quitado <see cref="FlatDamageReduction"/> al golpe que acaba de entrar.</summary>
+        public event Action<float> DamageReduced;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStaticEvents() => AnyStarted = null;
 
@@ -211,6 +224,15 @@ namespace RedMagic.Combat
             amount *= damageMultiplier * _statusDamageMultiplier;
             if (amount <= 0f) return false;
 
+            // Reducción plana (Escudo de oro): se avisa después, si el golpe entra de verdad.
+            float reduced = 0f;
+            if (FlatDamageReduction > 0f)
+            {
+                reduced = Mathf.Clamp(amount - Mathf.Max(0f, MinimumDamageAfterReduction), 0f, FlatDamageReduction);
+                amount -= reduced;
+                if (amount <= 0f) return false;
+            }
+
             if (HitAbsorber != null && HitAbsorber(this, amount))
             {
                 StartInvulnerability(invulnerabilityDuration);
@@ -227,6 +249,7 @@ namespace RedMagic.Combat
 
             Damaged?.Invoke(amount);
             AnyDamaged?.Invoke(this, amount);
+            if (reduced > 0f) DamageReduced?.Invoke(reduced);
             HealthChanged?.Invoke(currentHealth, maxHealth);
             PlaySfx(hurtSfxId);
 

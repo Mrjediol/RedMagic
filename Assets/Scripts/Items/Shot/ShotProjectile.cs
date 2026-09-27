@@ -71,6 +71,12 @@ namespace RedMagic.Items
 
         private readonly HashSet<Health> _hit = new HashSet<Health>();
 
+        /// <summary>Proyectil dorado (<see cref="GoldMark"/>): marca con oro a quien golpea.</summary>
+        private bool _gilded;
+        // Aura dorada: un sprite hijo creado la primera vez que esta instancia sale dorada y reutilizado.
+        private SpriteRenderer _gildedAura;
+        private Color _baseColor = Color.white; // color del sprite tras estilizarlo, para quitar el dorado
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void ResetStatics() => _pool = null;
 
@@ -80,6 +86,9 @@ namespace RedMagic.Items
         public bool IsHoming => _shot != null && _shot.homingTurnRate > 0f;
 
         public float Damage => _damage;
+
+        /// <summary>Salió dorado: marca de oro al golpear.</summary>
+        public bool IsGilded => _gilded;
 
         public int SplitGenerationsLeft => _shot != null ? _shot.splitGenerationsLeft : 0;
 
@@ -177,6 +186,7 @@ namespace RedMagic.Items
             SetDormant(false);
             _hit.Clear();
             if (_body != null) _body.linearVelocity = Vector2.zero;
+            SetGilded(false);
         }
 
         private void Init(WeaponShot shot, in ShotContext ctx, Vector2 direction, float damage)
@@ -210,6 +220,50 @@ namespace RedMagic.Items
 
             _body.linearVelocity = _velocity;
             ApplyFacing(_direction);
+
+            if (_renderer != null) _baseColor = _renderer.color;
+            // Dorado: más daño, más probable (fórmula única en GoldMark). Tras el tamaño, que el aura lo sigue.
+            SetGilded(GoldMark.RollGilded(damage * ctx.DamageScale, ctx.ForceGilded));
+        }
+
+        private void SetGilded(bool gilded)
+        {
+            bool was = _gilded;
+            _gilded = gilded;
+            if (!gilded)
+            {
+                if (_gildedAura != null) _gildedAura.enabled = false;
+                if (was && _renderer != null) _renderer.color = _baseColor;
+                return;
+            }
+
+            var t = SynergyConfig.CurrentTuning;
+            if (_gildedAura == null)
+            {
+                var go = new GameObject("GildedAura");
+                go.transform.SetParent(transform, false);
+                _gildedAura = go.AddComponent<SpriteRenderer>();
+                _gildedAura.sprite = Fx.ProceduralSprites.Glow;
+            }
+            if (t.goldAuraMaterial != null) _gildedAura.sharedMaterial = t.goldAuraMaterial;
+            if (_renderer != null)
+            {
+                _gildedAura.sortingLayerID = _renderer.sortingLayerID;
+                _gildedAura.sortingOrder = _renderer.sortingOrder - 1;
+            }
+
+            // Diámetro relativo al sprite del proyectil, en espacio local (el aura cuelga de su raíz).
+            var body = _renderer != null && _renderer.sprite != null ? _renderer.sprite.bounds.size : Vector3.one;
+            var bodyScale = _renderer != null ? _renderer.transform.localScale : Vector3.one;
+            float diameter = Mathf.Max(body.x * bodyScale.x, body.y * bodyScale.y) * t.gildedAuraSize;
+            var glow = _gildedAura.sprite.bounds.size;
+            _gildedAura.transform.localScale = new Vector3(diameter / glow.x, diameter / glow.y, 1f);
+            _gildedAura.color = t.gildedAuraColor;
+            _gildedAura.enabled = !_dormant;
+
+            // Y el propio sprite, teñido de oro: el halo solo no se lee en proyectiles finos.
+            if (_renderer != null)
+                _renderer.color = Color.Lerp(_baseColor, new Color(t.gildedTint.r, t.gildedTint.g, t.gildedTint.b, _baseColor.a), t.gildedTint.a);
         }
 
         /// <summary>
@@ -233,6 +287,14 @@ namespace RedMagic.Items
 
         private void Update()
         {
+            if (_gilded && _gildedAura != null)
+            {
+                var t = SynergyConfig.CurrentTuning;
+                float wave = 0.5f + 0.5f * Mathf.Sin(Time.time * t.gildedPulseSpeed * Mathf.PI * 2f);
+                var c = t.gildedAuraColor;
+                _gildedAura.color = new Color(c.r, c.g, c.b, c.a * Mathf.Lerp(0.65f, 1f, wave));
+            }
+
             if (_done || _dormant) return;
 
             _lifeTimer -= Time.deltaTime;
@@ -329,6 +391,9 @@ namespace RedMagic.Items
 
                 float scaled = _damage * _ctx.DamageScale;
                 bool killed = false;
+
+                // Marca ANTES del golpe: si éste lo mata, su botín ya sale multiplicado.
+                if (_gilded && scaled > 0f) GoldMark.Mark(health);
                 if (scaled > 0f) PlayerHit.Deal(health, scaled, transform.position, 1f, HitKind.Projectile, out killed);
                 _hit.Add(health);   // aunque no entre (i-frames), no lo re-golpeamos este vuelo
 
@@ -434,6 +499,7 @@ namespace RedMagic.Items
 
             if (_renderers != null)
                 foreach (var r in _renderers) if (r != null) r.enabled = !dormant;
+            if (_gildedAura != null) _gildedAura.enabled = _gilded && !dormant;
             RefreshColliders(!dormant);
         }
 

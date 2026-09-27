@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95c9808da496c3d4c967f93f4a3a88f3, type: 3}
   m_Name: LegendaryPassive_6
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
+  textKey: passive.anales_del_vacio
   id: 6
   icon: {fileID: -901835197367864875, guid: 95411ce5028b3f74092114a059208dcd, type: 3}
   displayName: "Anales del Vac\xEDo"

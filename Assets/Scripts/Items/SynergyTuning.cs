@@ -68,5 +68,40 @@ namespace RedMagic.Items
 
         [Tooltip("Sprite de las motas (se tiñen rojo / verde). Vacío = cruz generada en código.")]
         public Sprite lifeMoteSprite;
+
+        [Header("Oro · marca de oro (la pone un proyectil dorado)")]
+        [Tooltip("Botín de un enemigo que muere marcado: 2 = el doble de toda moneda.")]
+        [Min(1f)] public float markDropMultiplier = 2f;
+        [Tooltip("Segundos que dura la marca. Reaplicarla la refresca (no se apila).")]
+        [Min(0.1f)] public float markDuration = 8f;
+        [Tooltip("Color del aura del enemigo marcado (el alfa es su intensidad).")]
+        public Color markAuraColor = new Color(1f, 0.8f, 0.25f, 0.9f);
+        [Tooltip("Diámetro del aura respecto al sprite del enemigo.")]
+        [Min(0.1f)] public float markAuraSize = 1.5f;
+        [Min(0f)] public float markPulseSpeed = 1.2f;
+        [Range(0f, 0.5f)] public float markPulseScale = 0.12f;
+        [Tooltip("Tinte dorado del cuerpo del marcado (el alfa es la mezcla). Si además está ralentizado, " +
+                 "manda el tinte azul del hielo.")]
+        public Color markBodyTint = new Color(1f, 0.85f, 0.35f, 0.6f);
+
+        [Header("Oro · proyectil dorado")]
+        [Tooltip("Color del aura del proyectil dorado.")]
+        public Color gildedAuraColor = new Color(1f, 0.85f, 0.3f, 1f);
+        [Tooltip("Diámetro del aura respecto al tamaño del proyectil.")]
+        [Min(0.1f)] public float gildedAuraSize = 2.4f;
+        [Tooltip("Tinte dorado del sprite del proyectil (el alfa es la mezcla con su color).")]
+        public Color gildedTint = new Color(1f, 0.82f, 0.25f, 0.75f);
+        [Min(0f)] public float gildedPulseSpeed = 3f;
+        [Tooltip("Material aditivo de las auras de oro (Fx_SpriteAdditive). Vacío = sprite normal.")]
+        public Material goldAuraMaterial;
+
+        [Header("Oro · umbrales")]
+        [Tooltip("Oro 2: toda moneda que sueltan los enemigos, +este %. 0.15 = +15%.")]
+        [Min(0f)] public float gold2DropBonus = 0.15f;
+        [Tooltip("Oro 4: probabilidad plana de que cualquier proyectil salga dorado (se suma a la de las " +
+                 "Botas). 0.05 = +5%.")]
+        [Range(0f, 1f)] public float gold4GildChanceBonus = 0.05f;
+        [Tooltip("Oro 6: se suma al multiplicador de botín de la marca (2 → 3).")]
+        [Min(0f)] public float gold6MarkMultiplierBonus = 1f;
     }
 }

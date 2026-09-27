@@ -20,6 +20,7 @@ namespace RedMagic.Items
         private static readonly Dictionary<object, Func<Health, float>> HitBonuses = new();
         private static readonly Dictionary<object, float> SlowVulnerabilities = new();
         private static readonly Dictionary<object, float> PierceOnKillDelays = new();
+        private static readonly Dictionary<object, (float flat, float minimum)> DamageReductions = new();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -27,6 +28,7 @@ namespace RedMagic.Items
             HitBonuses.Clear();
             SlowVulnerabilities.Clear();
             PierceOnKillDelays.Clear();
+            DamageReductions.Clear();
         }
 
         /// <summary>Quita todo lo que aportaba <paramref name="source"/>. Seguro de llamar de más.</summary>
@@ -35,6 +37,7 @@ namespace RedMagic.Items
             HitBonuses.Remove(source);
             SlowVulnerabilities.Remove(source);
             PierceOnKillDelays.Remove(source);
+            DamageReductions.Remove(source);
         }
 
         // -- Daño plano extra por golpe (Anillo) ---------------------------------------------------
@@ -84,6 +87,28 @@ namespace RedMagic.Items
             delay = float.MaxValue;
             foreach (float d in PierceOnKillDelays.Values) delay = Mathf.Min(delay, Mathf.Max(0f, d));
             return true;
+        }
+
+        // -- Reducción plana del daño recibido (Escudo de oro) ---------------------------------------
+
+        /// <summary>
+        /// Resta <paramref name="flat"/> a cada golpe que recibe el jugador, sin bajarlo de
+        /// <paramref name="minimumDamage"/>. <see cref="ItemEffectRunner"/> lo aplica a su
+        /// <c>Health</c> cada frame (el jugador cambia entre hub y run).
+        /// </summary>
+        public static void SetDamageReduction(object source, float flat, float minimumDamage) =>
+            DamageReductions[source] = (flat, minimumDamage);
+
+        /// <summary>Suma de las reducciones y el mayor de sus mínimos.</summary>
+        public static (float flat, float minimum) DamageReduction()
+        {
+            float flat = 0f, minimum = 0f;
+            foreach (var (f, m) in DamageReductions.Values)
+            {
+                flat += Mathf.Max(0f, f);
+                minimum = Mathf.Max(minimum, m);
+            }
+            return (flat, minimum);
         }
     }
 }

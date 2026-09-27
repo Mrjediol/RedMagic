@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8efa3a18277fe72448310e64239923c9, type: 3}
   m_Name: Item_AnilloGlacial
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
+  textKey: item.anillo_glacial
   displayName: Anillo Glacial
   description: "La gema muerde la carne congelada: cuanto m\xE1s grande, m\xE1s sangra."
   icon: {fileID: 21300000, guid: 390a7d3de07861c4690d6a4604447f47, type: 3}

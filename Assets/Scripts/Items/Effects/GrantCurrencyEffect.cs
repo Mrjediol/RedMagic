@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using RedMagic.Economy;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -23,6 +24,6 @@ namespace RedMagic.Items
                 if (CurrencyManager.Instance != null) CurrencyManager.Instance.Add(currency, amount);
             });
 
-        public override string Summary() => $"+{amount} {currency} cada {interval:0.##} s";
+        public override string Summary() => Loc.Get("effect.grant_currency", amount, Currencies.DisplayName(currency), interval);
     }
 }

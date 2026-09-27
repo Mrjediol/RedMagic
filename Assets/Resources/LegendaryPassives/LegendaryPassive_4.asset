@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95c9808da496c3d4c967f93f4a3a88f3, type: 3}
   m_Name: LegendaryPassive_4
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
+  textKey: passive.el_libro_sin_nombre
   id: 4
   icon: {fileID: -3734527791512185524, guid: d8cf02d6ea2f34547b702bfd826d223f, type: 3}
   displayName: El Libro Sin Nombre

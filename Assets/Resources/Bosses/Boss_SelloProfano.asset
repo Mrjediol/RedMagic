@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
   m_Name: Boss_SelloProfano
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  textKey: boss.sello_profano
   displayName: Sello Profano
   title: Lo Que la Tumba Retiene
   description: "No es el guardi\xE1n de la tumba: es la cerradura. Lleva siglos aguantando,

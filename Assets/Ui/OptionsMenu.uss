@@ -108,3 +108,43 @@
     align-self: center;
     margin-top: 34px;
 }
+
+/* Selector de dos flechas (resolución, idioma): ocupa el mismo hueco que slider + valor + silenciar,
+   con la misma fuente y colores que el resto de filas. */
+.option-selector {
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 0 8px;
+    min-height: 34px;
+}
+
+.option-choice {
+    flex-grow: 1;
+    font-size: 30px;
+    -unity-font-style: bold;
+    color: #ecdfbf;
+    -unity-text-align: middle-center;
+}
+
+.option-arrow {
+    width: 56px;
+    height: 48px;
+    margin: 0;
+    padding: 0;
+    font-size: 30px;
+    -unity-font-style: bold;
+    color: #f4ce84;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-width: 2px;
+    border-color: rgba(150, 112, 74, 0.65);
+    border-radius: 6px;
+}
+
+.option-arrow:hover,
+.option-arrow:focus {
+    color: #ffe6a8;
+    background-color: rgba(122, 26, 34, 0.9);
+    border-color: var(--color-btn-border-hover);
+}

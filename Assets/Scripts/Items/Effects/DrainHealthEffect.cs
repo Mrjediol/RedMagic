@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -24,6 +25,6 @@ namespace RedMagic.Items
         public override void Tick(ItemEffectContext context, float deltaTime) =>
             context.Every(interval, deltaTime, () => context.PlayerHealth?.Drain(amount, canKill));
 
-        public override string Summary() => $"Pierde {amount:0.##} de vida cada {interval:0.##} s";
+        public override string Summary() => Loc.Get("effect.drain_health", amount, interval);
     }
 }

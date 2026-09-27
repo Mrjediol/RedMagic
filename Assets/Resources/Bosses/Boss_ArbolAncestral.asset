@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
   m_Name: Boss_ArbolAncestral
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  textKey: boss.arbol_ancestral
   displayName: "\xC1rbol Ancestral"
   title: "Guardi\xE1n del Bosque Marchito"
   description: Lleva tanto tiempo enraizado en la tumba que ya no distingue entre

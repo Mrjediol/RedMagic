@@ -1,4 +1,5 @@
 using System;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Economy
@@ -43,6 +44,12 @@ namespace RedMagic.Economy
             [Tooltip("Qué stat modifica. Placeholder por ahora; cuando exista el sistema de stats " +
                      "cada nodo apuntará al suyo (damage, maxHealth, moveSpeed...).")]
             public string statId = "placeholder";
+
+            /// <summary>Título en el idioma activo: <c>upgrade.&lt;id&gt;.title</c> del fichero de idioma, o <see cref="title"/>.</summary>
+            public string DisplayTitle => Loc.GetOr($"upgrade.{id}.title", title);
+
+            /// <summary>Descripción en el idioma activo (<c>upgrade.&lt;id&gt;.description</c>), con su {0}.</summary>
+            public string DisplayDescription => Loc.GetOr($"upgrade.{id}.description", description);
 
             /// <summary>Coste de subir de <paramref name="currentLevel"/> al siguiente.</summary>
             public int CostForNextLevel(int currentLevel) => baseCost + costPerLevel * Mathf.Max(0, currentLevel);

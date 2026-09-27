@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using RedMagic.Combat;
 using RedMagic.Gameplay;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -25,6 +26,6 @@ namespace RedMagic.Items
         public override void OnUnequip(ItemEffectContext context) => PlayerStats.Remove(context);
 
         public override string Summary() =>
-            $"Con un enemigo ralentizado en pantalla, el enfriamiento corre ×{cooldownRate:0.##}";
+            Loc.Get("effect.slowed_enemy_cooldown", cooldownRate);
     }
 }

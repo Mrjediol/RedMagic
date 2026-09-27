@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efa3a18277fe72448310e64239923c9, type: 3}
+  m_Name: Item_EscudoDeOro
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
+  textKey: item.escudo_de_oro
+  displayName: Escudo de Oro
+  description: "Bloquea da\xF1o y convierte parte de lo que bloquea en oro."
+  icon: {fileID: 4556617768182904718, guid: caa6de1e89fde664390ec8d67bfb277e, type: 3}
+  accent: {r: 1, g: 0.8, b: 0.3, a: 1}
+  rarity: 1
+  price: 65
+  tags: 0400000064000000
+  effects:
+  - rid: 5384780735535120514
+  references:
+    version: 2
+    RefIds:
+    - rid: 5384780735535120514
+      type: {class: DamageReductionToCurrencyEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
+      data:
+        flatReduction: 3
+        minimumDamage: 1
+        currency: 0
+        currencyPerBlockedDamage: 1

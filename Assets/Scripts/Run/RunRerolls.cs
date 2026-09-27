@@ -4,8 +4,9 @@ using UnityEngine;
 namespace RedMagic.Run
 {
     /// <summary>
-    /// Rerolls que le quedan a la run. Por ahora sólo se rellena (Páginas del Eco lo sube al
-    /// empezar la run) — ninguna pantalla lo gasta todavía; el sistema de rerolls se rehace aparte.
+    /// Rerolls que le quedan a la run. Empieza en <c>ShopConfig.startingRerolls</c> (+ Páginas del Eco,
+    /// en <c>LegendaryPassiveRunner</c>), vuelve a 0 al acabar la run y lo gasta el altar del reroll
+    /// de la tienda (<c>ShopManager</c>). El HUD escucha <see cref="Changed"/>.
     /// </summary>
     public static class RunRerolls
     {

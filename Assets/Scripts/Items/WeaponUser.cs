@@ -317,15 +317,17 @@ namespace RedMagic.Items
             args.Origin = PlayerHit.BodyCenter(this);
             args.DamageScale = 1f;
             args.Impact = null;
+            args.ForceGilded = false;
             Casting?.Invoke(args);
 
-            ShotResolver.Fire(loadout.Inventory, BuildContext(facing, args.DamageScale, args.Impact), chargeFraction);
+            ShotResolver.Fire(loadout.Inventory, BuildContext(facing, args.DamageScale, args.Impact, args.ForceGilded),
+                              chargeFraction);
         }
 
-        private ShotContext BuildContext(int facing, float damageScale, ShotImpactHook impact)
+        private ShotContext BuildContext(int facing, float damageScale, ShotImpactHook impact, bool forceGilded = false)
         {
             return new ShotContext(gameObject, this, _health, hitLayers, facing,
-                                   new Vector2(facing, 0f), gameObject.tag, damageScale, impact);
+                                   new Vector2(facing, 0f), gameObject.tag, damageScale, impact, forceGilded);
         }
 
         // ------------------------------------------------------------------ cooldown desde fuera

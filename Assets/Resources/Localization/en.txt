@@ -1,0 +1,395 @@
+# English.
+# Format: key = text · {0} {1}… string.Format slots · \n line break · # comment.
+# Guide: Assets/_Pipeline/LOCALIZATION_PIPELINE.md
+@name = English
+@system = English
+@culture = en-US
+
+# --- common
+common.back = Back
+common.close_hint = Esc / E / B to close
+common.none = —
+
+# --- main menu / pause
+menu.play = Play
+menu.options = Options
+menu.quit = Quit
+pause.open = Pause
+pause.title = PAUSED
+pause.resume = Resume
+pause.main_menu = Main menu
+
+# --- options
+options.title = OPTIONS
+options.master = Master
+options.music = Music
+options.sfx = Effects
+options.mute = Mute
+options.muted = Muted
+options.resolution = Display
+options.resolution_value = {0} · {1}
+options.language = Language
+settings.resolution.pc = PC
+settings.resolution.mobile = Mobile
+
+# --- touch controls
+touch.down = DOWN
+touch.dash = DASH
+touch.fire = FIRE
+touch.attack = ATTACK
+touch.jump = JUMP
+
+# --- key legend (PC)
+legend.key_space = Space
+legend.key_left_click = Left click
+legend.move = Move
+legend.jump = Jump / double jump
+legend.dash = Dash
+legend.shoot = Shoot
+legend.interact = Interact
+legend.items = Items
+legend.options = Options
+
+# --- shop
+shop.free_slots_full = Free slots full
+shop.not_enough_gold = Not enough gold ({0} / {1})
+shop.buy_hint = Press [Interact] to buy · {0} gold
+shop.bought = Purchased
+shop.reroll.name = Reroll
+shop.reroll.left = {0} LEFT
+shop.reroll.description = Swaps the shop's {0} items for new ones. Anything already bought here won't come back.
+shop.reroll.none = No rerolls
+shop.reroll.hint = Press [Interact] to reroll · 1 reroll
+
+# --- tags, elements, rarities
+tag.ice = Ice
+tag.fire = Fire
+tag.tank = Tank
+tag.haste = Haste
+tag.lifesteal = Lifesteal
+tag.reset = Reset
+element.physical = physical
+rarity.common = Common
+rarity.blue = Rare
+rarity.epic = Epic
+rarity.legendary = Legendary
+
+# --- interaction prompts
+prompt.chest_open = Press [Interact] to open the chest
+prompt.chest_pickup = Press [Interact] to take the weapon
+prompt.book_open = Press [Interact] to open the book
+prompt.book_read = Press [Interact] to read the book
+prompt.wardrobe_open = Press [Interact] to open the wardrobe
+prompt.wardrobe_pickup = Press [Interact] to take the items
+prompt.anvil = Press [Interact] to use the anvil
+prompt.mirror = Press [Interact] to use the mirror
+
+# --- reward popups
+reward.weapon = Weapon obtained
+reward.weapon_level = Weapon obtained · Level {0}
+reward.item = Item obtained
+reward.revived = You were revived!
+
+# --- bosses / buffs
+boss.guarding = GUARDING
+boss.exposed = EXPOSED!
+buff.ready = READY!
+
+# --- currencies
+currency.gold = gold
+currency.diamond = diamonds
+currency.soul_fragment = soul fragments
+currency.skull = skulls
+
+# --- item effects (summary on the card)
+effect.drain_health = Lose {0:0.##} health every {1:0.##} s
+effect.grant_currency = +{0} {1} every {2:0.##} s
+effect.kill_counter_explosion = Every {0} kills, your next shot explodes in ice where it lands (radius {1:0.#}, {2:0} damage)
+effect.kill_counter_explosion_slow = Every {0} kills, your next shot explodes in ice where it lands (radius {1:0.#}, {2:0} damage, slows)
+effect.kill_empowers_next_cast = On kill: your next shot fires instantly and deals ×{0:0.#} damage
+effect.pierce_on_kill = When a projectile kills, it reappears in the body {0:0.##} s later and keeps going
+effect.slow_armor_shred = Slowing shreds armor: −{0:0}% (takes +{0:0}% damage) while it lasts
+effect.slowed_bonus_damage = Slowed enemies take +{0:0.#}% of their max health on every hit
+effect.slowed_bonus_damage_capped = Slowed enemies take +{0:0.#}% of their max health on every hit (max {1:0})
+effect.slowed_enemy_cooldown = With a slowed enemy on screen, cooldowns run ×{0:0.##}
+effect.stat_multiplier = {0} ×{1:0.##}
+stat.move_speed = Move speed
+stat.dash_distance = Dash distance
+stat.jump_height = Jump height
+stat.cooldown_rate = Cooldown rate
+
+# --- modifiers
+modifier.element = Your shot becomes {0}.
+modifier.shape.split = Splits into {0} on impact ({1:0}% damage each).
+modifier.shape.multishot = Fires {0} projectiles in a {1:0}° fan.
+modifier.shape.air_repeat = Repeats {0} time(s) in mid-air.
+modifier.shape.single = A single hit.
+modifier.trajectory.homing = Curves toward the nearest enemy.
+modifier.trajectory.bounce = Bounces {0} time(s).
+modifier.trajectory.straight = Flies straight.
+
+# --- permanent upgrades (book)
+upgrades.title = PERMANENT UPGRADES
+upgrades.missing_tree = (no UpgradeTree asset in Resources)
+upgrades.soul_fragments = Soul Fragments: {0}
+upgrades.level = Lv {0}/{1}
+upgrades.locked = LOCKED
+upgrades.max = MAX
+upgrades.cost = {0} SF
+
+# --- forge
+forge.title = FORGE
+forge.skulls = Skulls: {0}
+forge.no_weapon = You have no weapon equipped.\nThe forge upgrades the weapon you're holding: equip one and come back.
+forge.max_level = {0} is already at max level ({1}).
+forge.weapon_level = {0}  ·  Level {1}
+forge.stats = Base damage {0:0} · Cooldown {1:0.00}s
+forge.upgrade_to = Upgrade to level {0}
+forge.cost_one = {0} skull
+forge.cost_many = {0} skulls
+forge.level2_summary = Your shot turns black. (Placeholder: no damage change yet.)
+forge.level3_summary = Your shot turns gold. (Placeholder: no damage change yet.)
+
+# --- weapon choice (chest with passive)
+weapon_choice.title = CHOOSE YOUR WEAPON
+weapon_choice.hint = Tap a card to pick it · keys 1-{0}
+weapon_choice.stats = Damage {0:0} · {1:0.00}s
+
+# --- mirror (legendary passives)
+mirror.title = LEGENDARY PASSIVES
+mirror.upgrade = UPGRADE
+mirror.back = < BACK
+mirror.skulls = Skulls: {0}
+mirror.level1 = Level 1: {0}
+mirror.level2 = Level 2: {0}
+mirror.level = Level {0} / {1}
+mirror.max_level = Max level reached.
+mirror.upgrade_to_2 = Upgrade → Level 2: {0}
+mirror.cost = {0} skulls
+
+# --- passive cinematic
+cinematic.header = You obtained
+cinematic.continue = Tap to continue
+
+# --- items screen (I)
+items.hint = I / Esc / B to close · click a slot to cycle through the available items
+items.column_synergies = SYNERGIES
+items.column_equipment = LOADOUT
+items.column_description = DESCRIPTION
+items.slot_element = Element
+items.slot_trajectory = Trajectory
+items.slot_shape = Shape
+items.slot_free = Free {0}
+items.free_slots = Free slots
+items.weapon = Weapon
+items.no_weapon = — no weapon —
+items.default_description = Hover an item, a modifier or the weapon to see what it does.\n\nClick a slot to cycle through the available assets of that type.
+items.empty_slot = Empty slot. Click to equip.
+items.synergy_title = Synergy · {0}
+items.synergy_points = Points: {0}
+items.synergy_points_capped = Points: {0}   (cap of {1} reached)
+items.synergy_tbd = (effect to be defined)
+items.synergy_threshold = {0} Threshold {1}: {2}
+items.reset_note = Reset doesn't scale with points: its synergy depends on how many Reset items you have equipped at once.
+items.weapon_charge = Charge: hold {0:0.00}s (min. {1:0}% to fire)
+items.weapon_stats = Base damage {0:0} · fire rate {1:0.00}s
+items.weapon_shot = Base shot: {0}, {1:0} u/s, lifetime {2:0.0}s
+items.weapon_element = Innate element: {0}
+items.current_behaviour = Current behaviour
+items.tags = Tags: {0}
+shot.homing = homing
+shot.arc = arc
+shot.straight = straight
+shot.beam = beam
+shot.beams = {0} beams
+shot.split = splits into {0}
+shot.fan = {0} in a fan
+shot.single = 1 projectile
+shot.sweep = sweeps {0:0.00}s, range {1:0}
+shot.burst = burst ×{0}
+shot.pierce = pierces {0}
+shot.explodes = explodes ({0:0} in {1:0.0})
+shot.delivery_projectile = projectile
+shot.delivery_melee = melee
+shot.delivery_hitscan = hitscan
+
+# ============================================================================================
+# Content asset texts (<textKey>.<field>). Missing ones are listed by
+# Tools ▸ RedMagic ▸ Localización ▸ Auditar claves.
+# ============================================================================================
+
+# --- items
+item.anillo_glacial.name = Glacial Ring
+item.anillo_glacial.description = The gem bites frozen flesh: the bigger it is, the more it bleeds.
+item.baston_helado.name = Frozen Staff
+item.baston_helado.description = The crystal drinks from every fall. The next blast doesn't wait and hits three times as hard.
+item.botas_runicas.name = Runic Boots
+item.botas_runicas.description = Frost boots that barely touch the ground. With the cold in sight, time runs in your favour.
+item.capa_de_escarcha.name = Frost Cloak
+item.capa_de_escarcha.description = What kills doesn't stop: the shot reforms inside the frozen body and keeps going.
+item.grimorio_glacial.name = Glacial Grimoire
+item.grimorio_glacial.description = Its pages frost over the armor of anyone who slows down.
+item.yelmo_runico.name = Runic Helm
+item.yelmo_runico.description = The runes keep every death. On the fifth, ice bursts all around you.
+
+# --- weapons
+weapon.bola_de_fuego.name = Fireball
+weapon.bola_de_fuego.description = The basic weapon: a straight, fast, reliable projectile. No surprises, no blind spots. Born burning.
+weapon.escopeta_espectral.name = Spectral Shotgun
+weapon.escopeta_espectral.description = Five frost pellets in a tight fan. Devastating point-blank, useless at mid-range. It forces you to close in. Born of ice.
+weapon.granada_runica.name = Runic Grenade
+weapon.granada_runica.description = Lobbed in an arc, it bursts in a wide radius when it touches something or runs out: little direct impact, a lot in the blast, lots of knockback. Born of ice.
+weapon.lanza_astral.name = Astral Lance
+weapon.lanza_astral.description = A shaft of light that crosses the whole room and pierces four enemies in a line. Rewards lining them up; punishes spraying. Pure force, no element of its own.
+weapon.proyectil_recto.name = Straight Shot
+weapon.proyectil_recto.description = Test weapon: a plain straight projectile.
+weapon.rafaga_arcana.name = Arcane Burst
+weapon.rafaga_arcana.description = Each trigger pull fires three sparks in a row with a touch of spread. Low damage per bullet, high if all three land. Born burning.
+weapon.rayo_arcano.name = Arcane Ray
+weapon.rayo_arcano.description = Hold to charge and release to sweep a beam that crosses the whole room and everything in it. Release early for a shorter, weaker beam. With Homing, the beam sticks to the nearest enemy.
+
+# --- legendary passives (mirror)
+passive.codex_aurum.name = Codex Aurum
+passive.codex_aurum.description = A free item drops after defeating each world boss
+passive.codex_aurum.upgrade = Two free items drop after defeating each world boss
+passive.tomo_del_destino.name = Tome of Destiny
+passive.tomo_del_destino.description = When picking an item, choose from 3 options instead of 1
+passive.tomo_del_destino.upgrade = Also reroll those 3 options once for free
+passive.grimorio_del_umbral.name = Grimoire of the Threshold
+passive.grimorio_del_umbral.description = See 3 weapons in the chest and choose which to take
+passive.grimorio_del_umbral.upgrade = The chosen weapon starts with 1 upgrade already applied
+passive.paginas_del_eco.name = Pages of the Echo
+passive.paginas_del_eco.description = +2 permanent rerolls per run
+passive.paginas_del_eco.upgrade = +4 permanent rerolls, rerolls show 2 options instead of 1
+passive.el_libro_sin_nombre.name = The Nameless Book
+passive.el_libro_sin_nombre.description = Revive once per run at 30% HP
+passive.el_libro_sin_nombre.upgrade = On revive, also gain a shield that absorbs 3 hits
+passive.volumen_carmesi.name = Crimson Volume
+passive.volumen_carmesi.description = +10% damage permanently
+passive.volumen_carmesi.upgrade = +20% damage permanently
+passive.anales_del_vacio.name = Annals of the Void
+passive.anales_del_vacio.description = First wave of each level starts with all enemies slowed
+passive.anales_del_vacio.upgrade = All enemies in the run start with -20% HP
+passive.manuscrito_eterno.name = Eternal Manuscript
+passive.manuscrito_eterno.description = Every 3 completed levels, receive a free item
+passive.manuscrito_eterno.upgrade = That free item is always epic or legendary
+passive.el_tomo_roto.name = The Broken Tome
+passive.el_tomo_roto.description = Chest weapon starts with 2 upgrades applied
+passive.el_tomo_roto.upgrade = Chest weapon is also always the highest base-damage weapon available
+
+# --- bosses
+boss.arbol_ancestral.name = Ancestral Tree
+boss.arbol_ancestral.title = Warden of the Withered Forest
+boss.arbol_ancestral.description = It has been rooted in the tomb for so long that it no longer knows the difference between guarding it and devouring whatever comes in.
+boss.coloso_de_hielo.name = Ice Colossus
+boss.coloso_de_hielo.title = Warden of the Glacier
+boss.coloso_de_hielo.description = A floating colossus of rock and ice. Loose fists, it charges and hurls rocks.
+boss.espantapajaros_marchito.name = Withered Scarecrow
+boss.espantapajaros_marchito.title = Lord of the Dead Harvest
+boss.espantapajaros_marchito.description = They nailed it to the field to scare off the crows. The crows have obeyed it for so long they can no longer tell scaring from devouring.
+boss.guardiana_de_piedra.name = Stone Guardian
+boss.guardiana_de_piedra.title = Sentinel of the Sepulchre
+boss.guardiana_de_piedra.description = She was carved to watch over a tomb and given a single order. No one remembers who lies there anymore, but she still stands guard.
+boss.pozo_maldito.name = Cursed Well
+boss.pozo_maldito.title = Mouth of the World Below
+boss.pozo_maldito.description = The village walled it up generations ago and kept drawing water from it. No one ever asked where it came from.
+boss.pruebagolem.name = TestGolem
+boss.reina_escarabajo.name = Beetle Queen
+boss.reina_escarabajo.title = Mother of the Drowned Nest
+boss.reina_escarabajo.description = She has been laying under the tomb for so long that the ground is no longer ground, but her nest. Everything you step on is hers.
+boss.sello_profano.name = Unholy Seal
+boss.sello_profano.title = What the Tomb Holds Back
+boss.sello_profano.description = It isn't the tomb's guardian: it's the lock. It has held for centuries, and no longer knows what wants in from what wants out.
+boss.ent_cristalino.name = Crystal Ent
+boss.ent_cristalino.title = Heart of the Forest
+boss.ent_cristalino.description = It doesn't move: it doesn't need to. The whole forest is its arm, and the crystal in its chest beats faster and faster.
+
+# --- synergies (SynergyConfig)
+synergy.ice.tier1 = Shots slow by 40% for 3 s.
+synergy.ice.tier2 = Slowed enemies take +15% damage from any source.
+synergy.ice.tier3 = Killing a slowed enemy releases an ice burst (10 damage, radius 1.8).
+synergy.fire.tier1 = Applies burn (damage over time).
+synergy.fire.tier2 = +burn duration.
+synergy.fire.tier3 = Burn spreads to nearby enemies when the target dies.
+synergy.tank.tier1 = +20% max health.
+synergy.tank.tier2 = +passive health regeneration.
+synergy.tank.tier3 = Temporary shield when dropping below 30% health (once per encounter).
+synergy.haste.tier1 = With a slowed enemy on screen, cooldowns run ×1.5.
+synergy.haste.tier2 = -20% weapon cooldown.
+synergy.haste.tier3 = -35% weapon cooldown.
+synergy.lifesteal.tier1 = Each kill heals 3 health.
+synergy.lifesteal.tier2 = 10% lifesteal.
+synergy.lifesteal.tier3 = Excess lifesteal healing turns into a temporary shield.
+synergy.reset.tier1 = Each kill takes 2 s off the current cooldown.
+synergy.reset.tier2 = With 3+ Reset items equipped, each fires with N-2.
+synergy.reset.tier3 = N reduced to the minimum with the maximum Reset items.
+
+# --- permanent upgrades (UpgradeTree, placeholders)
+upgrade.r0c0.title = Upgrade 1-1
+upgrade.r0c0.description = +{0}% placeholder / lvl
+upgrade.r0c1.title = Upgrade 1-2
+upgrade.r0c1.description = +{0}% placeholder / lvl
+upgrade.r0c2.title = Upgrade 1-3
+upgrade.r0c2.description = +{0}% placeholder / lvl
+upgrade.r0c3.title = Upgrade 1-4
+upgrade.r0c3.description = +{0}% placeholder / lvl
+upgrade.r0c4.title = Upgrade 1-5
+upgrade.r0c4.description = +{0}% placeholder / lvl
+upgrade.r1c0.title = Upgrade 2-1
+upgrade.r1c0.description = +{0}% placeholder / lvl
+upgrade.r1c1.title = Upgrade 2-2
+upgrade.r1c1.description = +{0}% placeholder / lvl
+upgrade.r1c2.title = Upgrade 2-3
+upgrade.r1c2.description = +{0}% placeholder / lvl
+upgrade.r1c3.title = Upgrade 2-4
+upgrade.r1c3.description = +{0}% placeholder / lvl
+upgrade.r1c4.title = Upgrade 2-5
+upgrade.r1c4.description = +{0}% placeholder / lvl
+upgrade.r2c0.title = Upgrade 3-1
+upgrade.r2c0.description = +{0}% placeholder / lvl
+upgrade.r2c1.title = Upgrade 3-2
+upgrade.r2c1.description = +{0}% placeholder / lvl
+upgrade.r2c2.title = Upgrade 3-3
+upgrade.r2c2.description = +{0}% placeholder / lvl
+upgrade.r2c3.title = Upgrade 3-4
+upgrade.r2c3.description = +{0}% placeholder / lvl
+upgrade.r2c4.title = Upgrade 3-5
+upgrade.r2c4.description = +{0}% placeholder / lvl
+
+# --- gold set: synergy
+tag.gold = Gold
+synergy.gold.tier1 = All currency dropped by enemies, +15%.
+synergy.gold.tier2 = +5% chance for any projectile to be gilded.
+synergy.gold.tier3 = The Gold Mark multiplies loot ×3 (instead of ×2).
+
+# --- gold set: effects (card summary)
+effect.currency_drop_bonus = +{0:0}% currency from enemies
+effect.max_health_bonus = +{0:0} max health
+effect.currency_on_damage_taken = +{0} {1} for every hit you survive
+effect.shot_damage_bonus = +{0:0}% shot damage
+effect.currency_on_kill = +{0} {1} per kill
+effect.currency_on_kill_chance = {2:0}% chance of +{0} {1} per kill
+effect.damage_reduction_to_currency = Every hit you take deals {0:0.#} less damage (min. {1:0.#}); {2:0.##} {3} per point blocked
+effect.force_gilded = Every {0} attacks, a guaranteed gilded shot
+effect.gilded_projectiles = Gilded projectiles: {0:0.#}% + {1:0.##}% per damage point (max {2:0}%). They mark enemies: loot ×{3:0.#} if it dies marked
+effect.shop_luck_gold = Better shop luck the more gold you hold (max at {0} gold: rare ×{1:0.#}, epic ×{2:0.#}, legendary ×{3:0.#})
+effect.rerolls_on_shop_one = +{0} reroll when entering each shop
+effect.rerolls_on_shop_many = +{0} rerolls when entering each shop
+
+# --- gold set: items
+item.casco_de_oro.name = Gold Helmet
+item.casco_de_oro.description = Increases the currency dropped by enemies.
+item.pechera_de_oro.name = Gold Chestplate
+item.pechera_de_oro.description = Grants extra maximum health and a small gold bonus for every hit you survive.
+item.espada_de_oro.name = Gold Sword
+item.espada_de_oro.description = Your attacks deal more damage and enemies killed drop extra gold.
+item.escudo_de_oro.name = Gold Shield
+item.escudo_de_oro.description = Blocks damage and converts part of what it blocks into gold.
+item.guanteletes_de_oro.name = Gold Gauntlets
+item.guanteletes_de_oro.description = Increases attack speed; every few attacks fires a guaranteed gilded projectile.
+item.botas_de_oro.name = Gold Boots
+item.botas_de_oro.description = Your projectiles can be forged in gold. Gilded projectiles mark enemies, multiplying the gold they drop. The more damage a projectile deals, the more likely it is to be gilded.
+item.amuleto_de_oro.name = Gold Amulet
+item.amuleto_de_oro.description = Luck rises with your wealth: the more gold you hold, the better the items offered in the shop.
+item.anillo_de_oro.name = Gold Ring
+item.anillo_de_oro.description = Grants an extra reroll in every shop.

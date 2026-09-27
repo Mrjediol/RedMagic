@@ -35,12 +35,15 @@ namespace RedMagic.Items
 
         /// <summary>Aviso de primer impacto del disparo (null si nadie lo pidió). Ver <see cref="ShotImpactHook"/>.</summary>
         public readonly ShotImpactHook Impact;
+        /// <summary>Sus proyectiles salen dorados sí o sí (<see cref="GoldMark"/>).</summary>
+        public readonly bool ForceGilded;
 
         public ShotContext(GameObject caster, MonoBehaviour runner, Health casterHealth,
                            LayerMask hitLayers, int facing, Vector2 aim, string friendlyTag,
-                           float damageScale = 1f, ShotImpactHook impact = null)
+                           float damageScale = 1f, ShotImpactHook impact = null, bool forceGilded = false)
         {
             Impact = impact;
+            ForceGilded = forceGilded;
             Caster = caster;
             Runner = runner;
             CasterHealth = casterHealth;

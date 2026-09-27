@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using RedMagic.Economy;
 using RedMagic.Items;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -28,6 +29,7 @@ namespace RedMagic.UI
         private VisualElement _card, _synergies;
         private Label _name, _rarity, _description, _hint, _warning;
         private bool _built;
+        private System.Action _refill; // repinta la ficha visible al cambiar de idioma
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -53,6 +55,14 @@ namespace RedMagic.UI
                 Debug.LogWarning("[ShopItemPanel] Falta '" + PanelSettingsResourcePath + "' en Resources.", this);
         }
 
+        private void OnEnable() => Loc.Changed += OnLanguageChanged;
+        private void OnDisable() => Loc.Changed -= OnLanguageChanged;
+
+        private void OnLanguageChanged()
+        {
+            if (_owner != null) _refill?.Invoke();
+        }
+
         // ------------------------------------------------------------------ API
 
         public static void Show(object owner, ShopStockEntry entry)
@@ -60,6 +70,17 @@ namespace RedMagic.UI
             if (_instance == null || entry.Item == null || !_instance.EnsureBuilt()) return;
             _owner = owner;
             _instance.Fill(entry);
+            _instance._refill = () => _instance.Fill(entry);
+            _instance._card.style.display = DisplayStyle.Flex;
+        }
+
+        /// <summary>La misma ficha para el altar del reroll: qué hace, cuántos quedan y la tecla.</summary>
+        public static void ShowReroll(object owner, int rerolls, int slots)
+        {
+            if (_instance == null || !_instance.EnsureBuilt()) return;
+            _owner = owner;
+            _instance.FillReroll(rerolls, slots);
+            _instance._refill = () => _instance.FillReroll(rerolls, slots);
             _instance._card.style.display = DisplayStyle.Flex;
         }
 
@@ -107,11 +128,27 @@ namespace RedMagic.UI
             int gold = CurrencyManager.Instance != null ? CurrencyManager.Instance.Get(Currency.Gold) : 0;
             bool full = item is FreePoolItemDefinition && inventory != null && inventory.FreeSlotsFull;
 
-            _warning.text = full ? "Huecos libres llenos"
-                          : gold < entry.Price ? $"Oro insuficiente ({gold} / {entry.Price})"
+            _warning.text = full ? Loc.Get("shop.free_slots_full")
+                          : gold < entry.Price ? Loc.Get("shop.not_enough_gold", gold, entry.Price)
                           : "";
             _warning.style.display = _warning.text.Length > 0 ? DisplayStyle.Flex : DisplayStyle.None;
-            _hint.text = $"Pulsa [Interactuar] para comprar · {entry.Price} oro";
+            _hint.text = Loc.Get("shop.buy_hint", entry.Price);
+        }
+
+        private void FillReroll(int rerolls, int slots)
+        {
+            var accent = ShopFxConfig.Current.rerollAccent;
+
+            _name.text = Loc.Get("shop.reroll.name");
+            _name.style.color = accent;
+            _rarity.text = Loc.Get("shop.reroll.left", rerolls);
+            _rarity.style.color = rerolls > 0 ? accent : TooDear;
+            _description.text = Loc.Get("shop.reroll.description", slots);
+            _synergies.Clear();
+
+            _warning.text = rerolls > 0 ? "" : Loc.Get("shop.reroll.none");
+            _warning.style.display = _warning.text.Length > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            _hint.text = Loc.Get("shop.reroll.hint");
         }
 
         private static VisualElement SynergyLine(BuildTag tag, int now, int after)

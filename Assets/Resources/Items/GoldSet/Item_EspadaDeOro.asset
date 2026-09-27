@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8efa3a18277fe72448310e64239923c9, type: 3}
+  m_Name: Item_EspadaDeOro
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
+  textKey: item.espada_de_oro
+  displayName: Espada de Oro
+  description: "Tus ataques hacen m\xE1s da\xF1o y los enemigos que matas sueltan
+    oro extra."
+  icon: {fileID: -5937764268318024347, guid: 0b7c380f10b4d4044bc4424e12e92c3e, type: 3}
+  accent: {r: 1, g: 0.8, b: 0.3, a: 1}
+  rarity: 2
+  price: 120
+  tags: 0400000066000000
+  effects:
+  - rid: 5384780735535120512
+  - rid: 5384780735535120513
+  references:
+    version: 2
+    RefIds:
+    - rid: 5384780735535120512
+      type: {class: ShotDamageBonusEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
+      data:
+        bonus: 0.2
+    - rid: 5384780735535120513
+      type: {class: CurrencyOnKillEffect, ns: RedMagic.Items, asm: Assembly-CSharp}
+      data:
+        currency: 0
+        amount: 3
+        chance: 1

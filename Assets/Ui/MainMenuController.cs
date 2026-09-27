@@ -1,5 +1,6 @@
 using RedMagic.Audio;
 using RedMagic.Core;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -63,6 +64,7 @@ namespace RedMagic.UI
             Wire(_optionsButton, OnOptionsClicked);
             Wire(_quitButton, OnQuitClicked);
 
+            LocalizedUi.BindTree(_root); // claves "#…" del UXML, antes de vestir
             DressWithSkin();
             ApplyVisibility();
             FocusForGamepad();

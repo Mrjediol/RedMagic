@@ -99,7 +99,7 @@ namespace RedMagic.Items
 
             Vector2 aim = Gameplay.ProjectileAim.Resolve(shot.aimMode, ctx.Muzzle(shot.muzzleOffset), ctx.Aim, ctx.Caster);
             return new ShotContext(ctx.Caster, ctx.Runner, ctx.CasterHealth, ctx.HitLayers, ctx.Facing, aim,
-                                   ctx.FriendlyTag, ctx.DamageScale, ctx.Impact);
+                                   ctx.FriendlyTag, ctx.DamageScale, ctx.Impact, ctx.ForceGilded);
         }
 
         private static IEnumerator BurstRest(WeaponShot shot, ShotContext ctx, int bursts)

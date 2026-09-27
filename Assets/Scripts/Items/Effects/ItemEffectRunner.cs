@@ -46,10 +46,21 @@ namespace RedMagic.Items
 
         public void Tick(float deltaTime)
         {
+            ApplyDefense();
             if (deltaTime <= 0f) return;
             foreach (var list in _active.Values)
             foreach (var (effect, context) in list)
                 effect.Tick(context, deltaTime);
+        }
+
+        /// <summary>La reducción plana de los items (Escudo de oro) sobre la vida del jugador actual.</summary>
+        private static void ApplyDefense()
+        {
+            var health = PlayerHealth;
+            if (health == null) return;
+            var (flat, minimum) = CombatModifiers.DamageReduction();
+            health.FlatDamageReduction = flat;
+            health.MinimumDamageAfterReduction = minimum;
         }
 
         public void Dispose()

@@ -1,4 +1,5 @@
 using RedMagic.Core;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -30,16 +31,16 @@ namespace RedMagic.UI
 
         private const string PanelSettingsResourcePath = "InteractionPromptPanelSettings";
 
-        /// <summary>Tecla → qué hace. El orden es el de la lista en pantalla.</summary>
+        /// <summary>Tecla → qué hace (claves de idioma). El orden es el de la lista en pantalla.</summary>
         private static readonly (string Key, string Action)[] Rows =
         {
-            ("WASD", "Moverse"),
-            ("Espacio", "Saltar / doble salto"),
-            ("Shift", "Dash"),
-            ("Clic izq.", "Disparar"),
-            ("E", "Interactuar"),
-            ("I", "Items"),
-            ("Esc", "Opciones"),
+            ("WASD", "legend.move"),
+            ("legend.key_space", "legend.jump"),
+            ("Shift", "legend.dash"),
+            ("legend.key_left_click", "legend.shoot"),
+            ("E", "legend.interact"),
+            ("I", "legend.items"),
+            ("Esc", "legend.options"),
         };
 
         private UIDocument _document;
@@ -145,7 +146,9 @@ namespace RedMagic.UI
             row.style.marginTop = 2;
             row.style.marginBottom = 2;
 
-            var keyLabel = new Label(key) { pickingMode = PickingMode.Ignore };
+            // Las teclas con nombre ("Espacio", "Clic izq.") se traducen; "WASD", "E"… no tienen clave y se quedan tal cual.
+            var keyLabel = new Label { pickingMode = PickingMode.Ignore };
+            LocalizedUi.Bind(keyLabel, () => keyLabel.text = Loc.GetOr(key, key));
             keyLabel.style.width = 76;
             keyLabel.style.flexShrink = 0;
             keyLabel.style.fontSize = 15;
@@ -161,7 +164,8 @@ namespace RedMagic.UI
             keyLabel.style.borderBottomRightRadius = 5;
             row.Add(keyLabel);
 
-            var actionLabel = new Label(action) { pickingMode = PickingMode.Ignore };
+            var actionLabel = new Label { pickingMode = PickingMode.Ignore };
+            LocalizedUi.Bind(actionLabel, action);
             actionLabel.style.marginLeft = 10;
             actionLabel.style.fontSize = 15;
             actionLabel.style.color = new Color(0.92f, 0.88f, 0.78f, 0.62f);

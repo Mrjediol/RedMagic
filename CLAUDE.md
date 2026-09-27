@@ -152,9 +152,19 @@ swapping in real art is then: open the prefab, delete the shape sprite, drop the
   in that file — re-run its `Diagnose`/`DiagnoseBands` entry points if the source sheet changes.
   `Tools > RedMagic > Boss > Arbol · Orbe` (`Bosses/Editor/ArbolOrbePack.cs`) then builds the
   prefabs, dresses `Fx_ArbolAncestral_Bullet` and authors the attack assets.
-- The generic one-shot VFX prefabs (`Fireball`, `VFX_Explosion`, `VFX_DashWind`, `VFX_DoubleJump`)
-  now live in `Assets/Prefab/Fx/` too (moved out of `Assets/Dragon Warrior Files/`; their
-  material/anim dependencies stayed there).
+- The generic one-shot VFX prefabs (`Fireball`, `VFX_Explosion`) now live in `Assets/Prefabs/Fx/` too
+  (moved out of `Assets/Dragon Warrior Files/`; their material/anim dependencies stayed there).
+- **Player movement VFX are ParticleSystem prefabs** in `Assets/Prefabs/Fx/Player/` (`VFX_Dash`,
+  `VFX_Jump`, `VFX_DoubleJump`), built by **Tools ▸ RedMagic ▸ FX ▸ VFX del jugador · Generar**
+  (`PlayerVfxPack`; *Regenerar* overwrites tuned values) and fired by `PlayerVfx` from
+  `PlayerMovement.Dashed/Jumped/AirJumped`. `VfxOneShot` supports particles: Play On Awake/Looping off,
+  restarted on every spawn *after* the mirror scale is set (Scaling Mode = Hierarchy flips shape and
+  velocity), root Stop Action = Callback → `OnParticleSystemStopped` → `PrefabPool.Despawn`;
+  `SpawnFollowing` keeps the dash emitter on the player for the dash (streak emits by distance, world
+  space); `scaleMultiplier` follows the player's per-scene scale. Materials `Fx_ParticleAdditive/Alpha`
+  (URP Particles/Unlit + built-in Default-Particle texture), layer `Characters`. **Gotcha when
+  verifying:** a paused Game view doesn't redraw particles — capture in slow motion
+  (`Time.timeScale`), not paused.
 
 ### Persistent singletons
 
@@ -218,7 +228,11 @@ to pick up the change.
   loaded), so health/upgrades survive section transitions; `RunManager` repositions it at each
   scene's `SectionEntry` and retargets `CameraFollow` components after each load. Player death is
   detected via the existing `Health.Died` event — `RunManager` subscribes to it directly rather
-  than `Health` knowing anything about runs.
+  than `Health` knowing anything about runs. Every transition is covered by **`ScreenFader`**
+  (`Assets/Scripts/Run/`, self-bootstrapping persistent uGUI overlay, sorting 32000, unscaled time):
+  `EnterCurrentRoutine` fades out after freezing and fades in after unfreezing; `ReturnToHub` fades
+  out, then loads. Any `Single` load that arrives with the screen covered fades back in by itself,
+  so a cut transition can't leave it black. Timings/colour: `RunManager ▸ transitionFadeOut/In/Color`.
 - **`SectionExit` is also how you leave the hub.** Assign its `world` (a `WorldDefinition` asset
   reference, not an index/name, so reordering `RunManager.worlds` can't desync it) and, with no run
   in progress, crossing it calls `StartRun(world)` instead of `AdvanceSection()`. Leaving the hub
@@ -700,6 +714,15 @@ Inspector wiring.
   (`DrainPacket`); green motes only when HP was actually gained.
   Threshold numbers live in `SynergyConfig ▸ Tuning`, applied by `SynergyEffectRunner` (in
   `WeaponLoadout`). Items have a `rarity`. Details: `ITEMS_PIPELINE.md` §4-5.
+- **Gold set + Gold Mark** (`Tools ▸ RedMagic ▸ Items ▸ Set de oro · Generar`, `GoldSetPack`; assets in
+  `Assets/Resources/Items/GoldSet/`): `BuildTag.Gold` (elemental family, id 4). Player projectiles roll
+  "gilded" at spawn through the single formula `Items.GoldMark.GildChance` (sources: Boots effect, Gold
+  4); a gilded hit applies `Combat.GoldMarkStatus` (SlowStatus-style: refresh, no stack, aura + ring +
+  HitFlash tint that yields to the slow tint) and `CurrencyDropper` multiplies that enemy's loot.
+  Items carry an optional per-item `price` (0 = rarity table). New reusable hooks:
+  `Economy.CurrencyDropModifiers`, `Economy.ShopLuck`, `ShopManager.Entered`,
+  `CombatModifiers.SetDamageReduction` → `Health.FlatDamageReduction`/`DamageReduced`. Details:
+  `ITEMS_PIPELINE.md` §6.
 - Projectiles never collide with other projectiles — pellets from one blast spawn on top of each
   other and would annihilate on frame one.
 
@@ -1040,6 +1063,15 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
   only reads `COLOR` renders every tint as white; particles do use the vertex colour
   (`_UseSpriteColor = 0` on their material). `Tools ▸ RedMagic ▸ Tienda ▸ Generar FX de tienda`
   (`ShopFxSetup`) creates the material + both assets if missing.
+- **Reroll** — `ShopManager.rerollPoint` (the scene's `Reroll` sprite) gets a `ShopRerollAltar` at
+  runtime, same as spawn points get `ShopAltar`. Both implement `IShopInteractable`, so the reroll
+  shares the altars' range/focus/prompt (`ShopItemPanel.ShowReroll`)/input and the single deny path
+  (`ShopManager.Deny` → `ShopPriceTag.Deny`, the price-row shake both altars use). Spends
+  `Run.RunRerolls` (start = `ShopConfig.startingRerolls` + Páginas del Eco, set in
+  `LegendaryPassiveRunner`; a standalone Shop scene seeds it too) and re-rolls every altar through
+  `ShopConfig.RollStock(..., exclude: bought this visit, avoid: on display)`. Staggered exit/enter
+  (`ShopAltar.PlayExit/PlayEnter`) — timings, accent, altar flash and HUD punch in `ShopFxConfig ▸
+  Reroll`. `CurrencyHud` shows the counter under the currencies only while `ShopManager.Current` exists.
 - **`Core.InteractInput.Pressed(action)`** is the one "Interact pressed this frame" recipe (action,
   E/Enter, gamepad north, touch). Every interactable uses it.
 
@@ -1223,6 +1255,35 @@ Runtime UI Toolkit panels don't appear in `screenshot` or `capture_game_view --s
 What does work is **`capture_game_view --source screen`, Play Mode only**. Rendering a cloned
 `PanelSettings` into a `RenderTexture` does *not* work in Edit Mode — an offscreen panel never
 draws without a runtime and the texture comes back blank.
+
+### Localization & display settings (`Assets/Scripts/Localization/`, `Assets/Scripts/Settings/`)
+
+**Read `Assets/_Pipeline/LOCALIZATION_PIPELINE.md` before adding any player-visible text.**
+**Standing rule: never hardcode a display string.** Every new player-facing string (item names,
+descriptions, tooltips, UI labels, prompts, popups, effect summaries) gets a key with an entry in
+BOTH `es.txt` and `en.txt` — write the translation yourself — and the task ends with *Auditar
+claves* at 0 missing.
+- **No hardcoded UI strings.** `Loc.Get("key", args)` in code; `text="#key"` in UXML + `LocalizedUi.BindTree(root)`
+  in the controller's `OnEnable` (before `DressWithSkin`, which moves button text into a
+  `LocalizedUi.ButtonCaptionName` child); `LocalizedUi.Bind(label, key | refresh)` for code-built
+  static labels; `LocalizedText` for uGUI/TMP; `InteractionPromptUi.ShowKey` for prompts.
+- One file per language, `Assets/Resources/Localization/<code>.txt` (`key = value`, `{0}` format slots,
+  `@name`/`@system` metadata); a new file = a new language in the Options selector. Default/fallback
+  language + device-language-on-first-launch in `Resources/GameSettings.asset`; choice in
+  `PlayerPrefs["settings.language"]`; `Loc.Changed` repaints live, no scene reload.
+- Content assets (items, weapons, legendary passives, bosses) carry a `textKey`; their
+  `DisplayName`/`Description`/`Title` go through `Loc.ForAsset` and fall back to the asset's own text.
+  `UpgradeTree` nodes use `upgrade.<id>.*`, `SynergyConfig` tiers `synergy.<tag>.tier<n>`.
+  **Tools ▸ RedMagic ▸ Localización ▸ Sincronizar textos de assets** assigns keys + adds Spanish to
+  `es.txt`; **Auditar claves** lists missing keys per language. Use literal keys (switch), never
+  `$"prefix.{x}"`, so the audit sees them.
+- **Display presets** (`GameSettings ▸ resolutionPresets`: PC 1920×1080 16:9, Mobile 2340×1080 20:9)
+  → `DisplaySettings` (`PlayerPrefs["settings.resolutionPreset"]`, applied `BeforeSceneLoad`):
+  `Screen.SetResolution` only in a windowed desktop build; everywhere else `DisplayLetterbox` clips
+  every camera's `Camera.rect` to the preset aspect (a depth -100 backdrop camera clears the bars) and
+  pads each UI Toolkit panel's `visualTree` into the same rect (`letterboxUi`). `CameraFollow` reads
+  `camera.aspect` per frame, so its BG clamp follows. Orientation is landscape-only (PlayerSettings +
+  `Screen.autorotate*`).
 
 ### Vendored third-party content — do not search or modify by default
 

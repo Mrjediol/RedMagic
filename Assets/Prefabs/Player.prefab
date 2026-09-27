@@ -220,7 +220,7 @@ MonoBehaviour:
   groundStepMinFaceAngle: 85
   groundClampInset: 0.04
   groundClampMaxPush: 1.5
-  debugGroundClamp: 1
+  debugGroundClamp: 0
   _acceleration: 90
   _moveClamp: 13
   _deAcceleration: 60
@@ -320,9 +320,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52741b71fea6e6e479570d8b2f0d212d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerVfx
-  dashEffect: {fileID: 328274588803049760, guid: a17d1e8e9ede38e40b9c0dedc69dbf02, type: 3}
+  dashEffect: {fileID: 8560180158643051715, guid: 6281b39c655eec945bf1086d24fbe2dd, type: 3}
   dashEffectOffset: {x: -0.35, y: -0.25}
-  doubleJumpEffect: {fileID: 8222763789216808007, guid: 6b556bb8477730b4e9040f06340724b8, type: 3}
+  jumpEffect: {fileID: 235950404291878324, guid: 409efaaf238384a428b720859916bcef, type: 3}
+  jumpEffectOffset: {x: 0, y: -0.72}
+  doubleJumpEffect: {fileID: 1570693922076672748, guid: 6494517476d4e764197b8ea85e0e678f, type: 3}
   doubleJumpEffectOffset: {x: 0, y: -0.72}
 --- !u!114 &6828806480495331336
 MonoBehaviour:

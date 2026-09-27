@@ -8,8 +8,13 @@ namespace RedMagic.Fx
     /// y vuelve al pool — nunca <c>Instantiate</c>/<c>Destroy</c>.
     ///
     /// El prefab lleva un SpriteRenderer y, si el efecto tiene varios frames, un Animator con el
-    /// clip correspondiente. La duración sale de <see cref="lifetime"/>, o del propio clip si se
-    /// deja en 0.
+    /// clip correspondiente — o <b>sistemas de partículas</b> (Play On Awake y Looping apagados): se
+    /// limpian y relanzan en cada uso (<see cref="Restart"/>) y el efecto vuelve al pool cuando el
+    /// sistema raíz se para (Stop Action = Callback → <c>OnParticleSystemStopped</c>). La duración de
+    /// seguridad sale de <see cref="lifetime"/>, o del clip / de las partículas si se deja en 0.
+    ///
+    /// <see cref="SpawnFollowing"/> lo pega a un objetivo unos segundos (la estela del dash sigue al
+    /// jugador mientras dura; sus partículas, en espacio de mundo, quedan en el camino).
     /// </summary>
     [DisallowMultipleComponent]
     public class VfxOneShot : MonoBehaviour
@@ -25,12 +30,54 @@ namespace RedMagic.Fx
 
         private float _timer;
         private bool _enforced;
+        private ParticleSystem[] _particles;
+
+        // Seguimiento (SpawnFollowing): el efecto se queda en objetivo + offset mientras dure.
+        private Transform _follow;
+        private Vector3 _followOffset;
+        private float _followTimer;
 
         private void OnEnable()
         {
+            _particles ??= GetComponentsInChildren<ParticleSystem>(true);
             _timer = ResolveLifetime();
             _enforced = false;
+            _follow = null;
+            _started = false; // Spawn lo relanza ya volteado; si alguien lo activa por otra vía, el primer Update
             EnforceSinglePass(rewindFlipbooks: true);
+        }
+
+        private bool _started, _restarting;
+
+        /// <summary>
+        /// Relanza las partículas desde el instante 0. Lo llama <see cref="Spawn"/> después de fijar la
+        /// orientación, para que la primera ráfaga salga ya con el espejo aplicado.
+        ///
+        /// Stop + Clear + Play, no Clear + Play: <c>Play</c> sobre un sistema que sigue "reproduciéndose"
+        /// (una instancia reciclada a medias) no rebobina su tiempo, y el efecto terminaba en el acto sin
+        /// enseñar nada.
+        /// </summary>
+        public void Restart()
+        {
+            _started = true;
+            if (_particles == null || _particles.Length == 0) return;
+
+            _restarting = true; // el Stop de aquí puede avisar de parada: no es el final del efecto
+            _particles[0].Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            _particles[0].Play(true);
+            _restarting = false;
+        }
+
+        /// <summary>
+        /// El sistema raíz ha terminado (Stop Action = Callback): de vuelta al pool. Se ignora un aviso que
+        /// llega mientras se relanza o cuando el sistema vuelve a estar reproduciéndose — es de una pasada
+        /// anterior de esta instancia reciclada, y devolverla al pool apagaba el efecto recién lanzado.
+        /// </summary>
+        private void OnParticleSystemStopped()
+        {
+            if (_restarting || !_started) return;
+            if (_particles != null && _particles.Length > 0 && _particles[0].IsAlive(true)) return;
+            Core.PrefabPool.Despawn(gameObject);
         }
 
         /// <summary>
@@ -56,6 +103,15 @@ namespace RedMagic.Fx
         {
             if (lifetime > 0f) return lifetime;
 
+            // Partículas: lo que tarde en apagarse el sistema más largo (duración + vida máxima).
+            if (_particles != null && _particles.Length > 0)
+            {
+                float longest = 0f;
+                foreach (var ps in _particles)
+                    longest = Mathf.Max(longest, ps.main.duration + ps.main.startLifetime.constantMax);
+                return longest + extraTime;
+            }
+
             var animator = GetComponentInChildren<Animator>();
             if (animator != null && animator.runtimeAnimatorController != null)
             {
@@ -75,8 +131,23 @@ namespace RedMagic.Fx
                 EnforceSinglePass(rewindFlipbooks: false);
             }
 
-            _timer -= unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            if (!_started) Restart(); // activado sin pasar por Spawn: arranca igualmente
+
+            float dt = unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            _timer -= dt;
             if (_timer <= 0f) Core.PrefabPool.Despawn(gameObject);
+        }
+
+        private void LateUpdate()
+        {
+            if (_follow == null) return;
+            _followTimer -= unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+            if (_followTimer <= 0f || !_follow.gameObject.activeInHierarchy)
+            {
+                _follow = null;
+                return;
+            }
+            transform.position = _follow.position + _followOffset;
         }
 
         /// <summary>
@@ -84,7 +155,8 @@ namespace RedMagic.Fx
         /// <paramref name="facing"/> (-1 mira a la izquierda). Devuelve null si no hay prefab,
         /// así que se puede llamar sin comprobar nada.
         /// </summary>
-        public static GameObject Spawn(GameObject prefab, Vector3 position, int facing = 1, Transform parent = null)
+        public static GameObject Spawn(GameObject prefab, Vector3 position, int facing = 1, Transform parent = null,
+                                       float scaleMultiplier = 1f)
         {
             if (prefab == null) return null;
 
@@ -92,10 +164,35 @@ namespace RedMagic.Fx
             if (instance == null) return null;
 
             // El pool reutiliza instancias cuya escala quedó volteada: se parte de la del prefab.
-            var scale = prefab.transform.localScale;
+            // scaleMultiplier: el efecto sigue el tamaño de quien lo lanza (escala del jugador por escena).
+            var scale = prefab.transform.localScale * Mathf.Max(0.01f, scaleMultiplier);
             scale.x = Mathf.Abs(scale.x) * (facing < 0 ? -1f : 1f);
             instance.transform.localScale = scale;
 
+            // Las partículas se lanzan aquí, una vez, ya con el espejo aplicado
+            // (con Scaling Mode = Hierarchy, la X negativa invierte forma y velocidades).
+            if (instance.TryGetComponent(out VfxOneShot oneShot)) oneShot.Restart();
+
+            return instance;
+        }
+
+        /// <summary>
+        /// Como <see cref="Spawn"/>, pero el efecto sigue a <paramref name="target"/> (+ <paramref name="offset"/>,
+        /// cuya X se invierte con <paramref name="facing"/>) durante <paramref name="followSeconds"/>. Sin
+        /// emparentarlo: si el objetivo desaparece, el efecto sigue siendo del pool.
+        /// </summary>
+        public static GameObject SpawnFollowing(GameObject prefab, Transform target, Vector2 offset, int facing,
+                                                float followSeconds, float scaleMultiplier = 1f)
+        {
+            if (target == null) return null;
+            var worldOffset = new Vector3(offset.x * (facing < 0 ? -1f : 1f), offset.y, 0f);
+            var instance = Spawn(prefab, target.position + worldOffset, facing, null, scaleMultiplier);
+            if (instance != null && instance.TryGetComponent(out VfxOneShot oneShot))
+            {
+                oneShot._follow = target;
+                oneShot._followOffset = worldOffset;
+                oneShot._followTimer = followSeconds;
+            }
             return instance;
         }
 

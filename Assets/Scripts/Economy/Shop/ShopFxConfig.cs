@@ -108,6 +108,35 @@ namespace RedMagic.Economy
         [Min(0.01f)] public float goldShakeDuration = 0.3f;
         [Min(0.01f)] public float goldTickDuration = 0.35f;
 
+        [Header("Reroll — cambio de items (izquierda → derecha)")]
+        [Tooltip("Retraso entre un altar y el siguiente.")]
+        [Min(0f)] public float rerollStagger = 0.06f;
+        [Tooltip("Salida: el icono encoge a 0 y se funde.")]
+        [Min(0.01f)] public float rerollExitDuration = 0.18f;
+        [Tooltip("Entrada: crece desde 0 con rebote y aparece. No se puede comprar hasta que acaba.")]
+        [Min(0.01f)] public float rerollEnterDuration = 0.3f;
+        [Tooltip("Rebote de la entrada (0 = ninguno; 1.7 ≈ +10% de pasada).")]
+        [Min(0f)] public float rerollEnterOvershoot = 1.7f;
+
+        [Header("Reroll — altar")]
+        public Color rerollAccent = new(0.35f, 0.9f, 1f);
+        [Min(0f)] public float rerollFlashSize = 2.6f;
+        [Min(0.05f)] public float rerollFlashDuration = 0.35f;
+        [Tooltip("Vueltas completas que da el icono del altar al usarlo.")]
+        [Min(0f)] public float rerollSpinTurns = 1f;
+        [Min(1f)] public float rerollPunchScale = 1.3f;
+        [Min(0.05f)] public float rerollPunchDuration = 0.4f;
+        [Tooltip("Alfa del halo del altar sin / con el jugador delante.")]
+        [Range(0f, 1f)] public float rerollHaloAlpha = 0.2f;
+        [Range(0f, 1f)] public float rerollHaloFocusedAlpha = 0.45f;
+        [Min(0f)] public float rerollHaloSize = 2.2f;
+
+        [Header("Contador de rerolls del HUD")]
+        [Min(1f)] public float rerollCounterPunch = 1.35f;
+        [Min(0.01f)] public float rerollCounterPunchDuration = 0.25f;
+        [Tooltip("Color del contador cuando no quedan rerolls.")]
+        public Color rerollCounterEmptyColor = new(0.55f, 0.55f, 0.55f, 0.7f);
+
         public RarityAura For(ItemRarity rarity) => rarity switch
         {
             ItemRarity.Blue => blue,

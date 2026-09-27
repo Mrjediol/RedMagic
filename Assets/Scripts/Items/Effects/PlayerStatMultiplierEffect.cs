@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using RedMagic.Gameplay;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -27,14 +28,14 @@ namespace RedMagic.Items
 
         public override void OnUnequip(ItemEffectContext context) => PlayerStats.Remove(context);
 
-        public override string Summary() => $"{StatName(stat)} ×{multiplier:0.##}";
+        public override string Summary() => Loc.Get("effect.stat_multiplier", StatName(stat), multiplier);
 
         public static string StatName(PlayerStat stat) => stat switch
         {
-            PlayerStat.MoveSpeed => "Velocidad",
-            PlayerStat.DashDistance => "Distancia de dash",
-            PlayerStat.JumpHeight => "Altura de salto",
-            PlayerStat.CooldownRate => "Ritmo de enfriamiento",
+            PlayerStat.MoveSpeed => Loc.Get("stat.move_speed"),
+            PlayerStat.DashDistance => Loc.Get("stat.dash_distance"),
+            PlayerStat.JumpHeight => Loc.Get("stat.jump_height"),
+            PlayerStat.CooldownRate => Loc.Get("stat.cooldown_rate"),
             _ => stat.ToString(),
         };
     }

@@ -1,4 +1,5 @@
 using RedMagic.Core;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -34,6 +35,7 @@ namespace RedMagic.UI
             _root = _document != null ? _document.rootVisualElement : null;
             if (_root == null) return;
 
+            LocalizedUi.BindTree(_root);
             _inner = _root.Q<VisualElement>("touchControlsInner");
             _leftButton = _root.Q<Button>("leftButton");
             _rightButton = _root.Q<Button>("rightButton");

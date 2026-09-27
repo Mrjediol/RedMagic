@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca7e4e726982a714f8b0f3d8944d404b, type: 3}
   m_Name: Weapon_EscopetaEspectral
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponDefinition
+  textKey: weapon.escopeta_espectral
   displayName: Escopeta Espectral
   description: "Cinco perdigones de escarcha en abanico corto. Demoledora pegada
     a la cara, in\xFAtil a media sala. Te obliga a entrar. Nace de hielo."

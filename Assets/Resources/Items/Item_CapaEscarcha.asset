@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8efa3a18277fe72448310e64239923c9, type: 3}
   m_Name: Item_CapaEscarcha
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.FreePoolItemDefinition
+  textKey: item.capa_de_escarcha
   displayName: Capa de Escarcha
   description: 'Lo que mata no se detiene: el disparo se recompone en el cuerpo helado
     y sigue.'

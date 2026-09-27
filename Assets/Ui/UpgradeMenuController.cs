@@ -2,6 +2,7 @@ using System;
 using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Economy;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -209,7 +210,8 @@ namespace RedMagic.UI
             var header = MenuStyle.Header();
             panel.Add(header);
 
-            var title = MenuStyle.Title("PERMANENT UPGRADES");
+            var title = MenuStyle.Title("");
+            LocalizedUi.Bind(title, "upgrades.title");
             header.Add(title);
 
             _soulLabel = MenuStyle.CurrencyLabel();
@@ -234,7 +236,9 @@ namespace RedMagic.UI
 
             BuildGrid();
 
-            panel.Add(MenuStyle.Hint("Esc / E / B to close"));
+            var hint = MenuStyle.Hint("");
+            LocalizedUi.Bind(hint, "common.close_hint");
+            panel.Add(hint);
         }
 
         private void BuildGrid()
@@ -244,7 +248,7 @@ namespace RedMagic.UI
             var tree = UpgradeManager.Instance != null ? UpgradeManager.Instance.Tree : null;
             if (tree == null)
             {
-                var missing = new Label("(no UpgradeTree asset in Resources)");
+                var missing = new Label(Loc.Get("upgrades.missing_tree"));
                 missing.style.color = MenuStyle.Cream;
                 missing.style.fontSize = MenuStyle.BodyFontSize;
                 _grid.Add(missing);
@@ -280,7 +284,7 @@ namespace RedMagic.UI
             // planos y pone su propio relleno, más ancho, para que el texto no pise la piedra.
             MenuSkinDresser.DressPanel(button, _skin?.card);
 
-            var title = MenuStyle.CardTitle(node != null ? node.title : "-");
+            var title = MenuStyle.CardTitle(node != null ? node.DisplayTitle : "-");
             var desc = MenuStyle.CardDescription("");
             var level = MenuStyle.CardLevel("");
             var footer = MenuStyle.CardFooter("");
@@ -315,7 +319,7 @@ namespace RedMagic.UI
             if (_soulLabel != null)
             {
                 int soul = wallet != null ? wallet.Get(UpgradeManager.Cost) : 0;
-                _soulLabel.text = $"Soul Fragments: {soul}";
+                _soulLabel.text = Loc.Get("upgrades.soul_fragments", soul);
             }
 
             if (tree == null || _cells == null) return;
@@ -341,16 +345,16 @@ namespace RedMagic.UI
             bool maxed = upgrades.IsMaxed(node);
             int percent = Mathf.RoundToInt(node.bonusPerLevel * 100f);
 
-            cell.title.text = node.title;
-            cell.desc.text = SafeFormat(node.description, percent);
-            cell.level.text = $"Lv {lvl}/{node.maxLevel}";
+            cell.title.text = node.DisplayTitle;
+            cell.desc.text = SafeFormat(node.DisplayDescription, percent);
+            cell.level.text = Loc.Get("upgrades.level", lvl, node.maxLevel);
 
             if (!unlocked)
             {
                 cell.button.SetEnabled(false);
                 PaintCell(cell.button, MenuStyle.Locked, _skin?.cardLockedTint);
                 cell.button.style.opacity = 0.55f;
-                cell.footer.text = "LOCKED";
+                cell.footer.text = Loc.Get("upgrades.locked");
                 cell.footer.style.color = MenuStyle.CostTooDear;
                 return;
             }
@@ -361,7 +365,7 @@ namespace RedMagic.UI
             {
                 cell.button.SetEnabled(false);
                 PaintCell(cell.button, MenuStyle.CellMaxed, _skin?.cardMaxedTint);
-                cell.footer.text = "MAX";
+                cell.footer.text = Loc.Get("upgrades.max");
                 cell.footer.style.color = MenuStyle.Cream;
                 return;
             }
@@ -372,7 +376,7 @@ namespace RedMagic.UI
             cell.button.SetEnabled(true);
             PaintCell(cell.button, canAfford ? MenuStyle.CellBuyable : MenuStyle.CellBg,
                       canAfford ? _skin?.cardBuyableTint : Color.white);
-            cell.footer.text = $"{cost} SF";
+            cell.footer.text = Loc.Get("upgrades.cost", cost);
             cell.footer.style.color = canAfford ? MenuStyle.CostAfford : MenuStyle.CostTooDear;
         }
 

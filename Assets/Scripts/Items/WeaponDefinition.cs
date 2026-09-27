@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -170,6 +171,11 @@ namespace RedMagic.Items
     public class WeaponDefinition : ScriptableObject
     {
         [Header("Ficha")]
+        [Tooltip("Prefijo de sus textos en los ficheros de idioma (<prefijo>.name / .description). Lo " +
+                 "rellena Tools ▸ RedMagic ▸ Localización ▸ Sincronizar textos de assets; vacío = los textos " +
+                 "de aquí tal cual.")]
+        [SerializeField] private string textKey;
+
         [SerializeField] private string displayName;
 
         [TextArea(2, 4)]
@@ -202,8 +208,8 @@ namespace RedMagic.Items
         [Tooltip("Tag universal que el arma aporta al conteo de sinergias.")]
         [SerializeField] private BuildTag universalTag = BuildTag.Tank;
 
-        public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? name : displayName;
-        public string Description => description;
+        public string DisplayName => Loc.ForAsset(textKey, "name", string.IsNullOrWhiteSpace(displayName) ? name : displayName);
+        public string Description => Loc.ForAsset(textKey, "description", description);
         public Sprite Icon => icon;
         public Color Accent => accent;
         public float BaseDamage => baseDamage;

@@ -30,6 +30,16 @@ pantalla de items (tecla I), la tienda y los ciclos de prueba los encuentran sol
 | Al matar N · Explosión de hielo en el siguiente disparo | `KillCounterExplosionEffect` | `killsRequired`, `radius`, `damage`, `slowsTargets`, `explosionPrefab` |
 | Golpe · % de vida máxima a ralentizados | `SlowedBonusDamageEffect` | `percentOfMaxHealth`, `maxBonusPerHit` |
 | Ralentizar · Rompe armadura mientras dure | `SlowArmorShredEffect` | `armorReduction` |
+| Economía · Más moneda de los enemigos | `CurrencyDropBonusEffect` | `bonus` |
+| Jugador · Más vida máxima | `MaxHealthBonusEffect` | `amount` |
+| Economía · Moneda al recibir un golpe | `CurrencyOnDamageTakenEffect` | `currency`, `amount` |
+| Daño · Más daño en los disparos | `ShotDamageBonusEffect` | `bonus` |
+| Al matar · Moneda extra | `CurrencyOnKillEffect` | `currency`, `amount`, `chance` |
+| Defensa · Reducir daño y convertirlo en moneda | `DamageReductionToCurrencyEffect` | `flatReduction`, `minimumDamage`, `currency`, `currencyPerBlockedDamage` |
+| Proyectil · Cada N ataques, disparo dorado | `ForceGildedEveryNEffect` | `attacksPerGilded` |
+| Proyectil · Disparos dorados (marca de oro) | `GildedProjectilesEffect` | `baseChance`, `chancePerDamagePoint`, `maxChance` |
+| Tienda · Suerte según el oro que llevas | `ShopLuckFromGoldEffect` | `currency`, `steps` (oro → suerte), peso por rareza con suerte 1 |
+| Tienda · Rerolls al entrar | `RerollsOnShopEntryEffect` | `rerolls` |
 
 - Se aplican **sólo mientras el item está equipado** (`ItemEffectRunner`, dentro de
   `WeaponLoadout`): al quitarlo, se deshacen. Vaciar el inventario al acabar la run los quita todos.
@@ -84,6 +94,10 @@ public sealed class MiEfecto : ItemEffect
   Un arma nueva que haga daño debe llamarlo, no `Health.TakeDamage`, o sus golpes no cuentan para
   items ni sinergias.
 - Rareza: campo `rarity` del item (Común / Azul / Épico / Legendario), sale coloreada en la pantalla I.
+- Precio: campo `price` del item (0 = el de su rareza en `ShopConfig`); se multiplica por el del mundo.
+- **Textos**: nombre y descripción del asset son la reserva en español; la traducción va en
+  `Resources/Localization/*.txt` bajo su `textKey` (`LOCALIZATION_PIPELINE.md`). El `Summary()` de un
+  efecto nuevo usa `Loc.Get("effect.x", …)` con la clave en **los dos** idiomas.
 
 ## 4. Ralentización y sinergias implementadas
 
@@ -118,3 +132,42 @@ public sealed class MiEfecto : ItemEffect
 - Icono del Grimorio: `Assets/Art/Icons/Grimorio.png`, constante `GrimoireIconPath` del pack.
 - Reescribe el texto de los umbrales implementados con los números actuales del Tuning: tras
   retocar números, relanzar el pack para que la UI diga lo mismo.
+
+## 6. Set de oro — `Tools ▸ RedMagic ▸ Items ▸ Set de oro · Generar` (`GoldSetPack`)
+
+Assets en `Assets/Resources/Items/GoldSet/` (bajo `Resources/Items` porque `ItemLibrary` escanea esa
+carpeta), iconos de `Assets/Art/Icons/GoldSet/`. Crea lo que falte; nunca pisa lo afinado.
+
+| Item | Rareza · precio | Tags | Efectos |
+|---|---|---|---|
+| Casco de Oro | Azul · 60 | Oro + Tanque | +25% de toda moneda soltada |
+| Pechera de Oro | Azul · 70 | Oro + Tanque | +25 vida máx.; +2 oro por golpe recibido |
+| Espada de Oro | Épico · 120 | Oro + Vampirismo | +20% daño de disparo; +3 oro por baja |
+| Escudo de Oro | Azul · 65 | Oro + Tanque | −3 daño por golpe (mín. 1); 1 oro por punto bloqueado |
+| Guanteletes de Oro | Épico · 130 | Oro + Rapidez | enfriamiento ×1.2; cada 4 ataques, disparo dorado |
+| Botas de Oro | Legendario · 200 | Oro + Rapidez | dorado: 5% + 0.4%/punto de daño (máx. 50%) |
+| Amuleto de Oro | Épico · 110 | Oro + Vampirismo | suerte de tienda por oro: 100/250/500 → 0.25/0.5/1; pesos azul ×1.5, épico ×2.5, legendario ×4 |
+| Anillo de Oro | Común · 40 | Oro + Reset | +1 reroll al entrar en cada tienda |
+
+**Proyectil dorado / marca de oro** (`Items.GoldMark`, `Combat.GoldMarkStatus`):
+- Cada proyectil del jugador tira al salir: `GoldMark.GildChance(daño)` = base + porDaño × daño, con
+  tope — **la única fórmula**. Fuentes: las Botas (`SetGildSource`) y Oro 4 (base plana). Guanteletes
+  fuerzan dorado vía `CastArgs.ForceGilded` → `ShotContext.ForceGilded`.
+- Dorado = halo + tinte oro en el proyectil. Al golpear marca al enemigo **antes** del daño (una baja
+  dorada ya paga): halo, anillo que late y tinte oro (si está ralentizado manda el azul). Reaplicar
+  refresca, no apila; se quita al morir. Botín al morir marcado ×`markDropMultiplier` (Oro 6 +1),
+  aplicado en `CurrencyDropper` → `CurrencyManager.GrantDrops(tier, multiplier)`.
+- Números en `SynergyConfig ▸ Tuning ▸ Oro` (duración, colores, tamaños, material, umbrales).
+
+**Sinergia Oro** (familia elemental, como Hielo: item del set = Oro + 1 universal):
+
+| Umbral | Efecto | Dónde |
+|---|---|---|
+| Oro 2 | +15% de toda moneda soltada (`gold2DropBonus`) | `SynergyEffectRunner` → `CurrencyDropModifiers` |
+| Oro 4 | +5% plano de proyectil dorado para cualquier disparo (`gold4GildChanceBonus`) | `GoldMark.GildChance` |
+| Oro 6 | marca ×3 en vez de ×2 (`gold6MarkMultiplierBonus`) | `GoldMark.MarkMultiplier` |
+
+Hooks nuevos reutilizables: `CurrencyDropModifiers` (bono global al botín), `ShopLuck` (peso por
+rareza al sortear la tienda), `ShopManager.Entered` (al entrar en la tienda), `CombatModifiers
+.SetDamageReduction` → `Health.FlatDamageReduction` / `DamageReduced`, `PlayerHealthLink` (efecto que
+sigue al jugador del hub a la run).

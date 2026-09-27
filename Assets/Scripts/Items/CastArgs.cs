@@ -20,6 +20,9 @@ namespace RedMagic.Items
         /// <summary>Multiplicador de daño del disparo. Arranca en 1; los efectos lo multiplican.</summary>
         public float DamageScale = 1f;
 
+        /// <summary>Todos los proyectiles de este disparo salen dorados (Guanteletes de oro, ver <see cref="GoldMark"/>).</summary>
+        public bool ForceGilded;
+
         /// <summary>El aviso de primer impacto de este disparo, si algún efecto lo ha pedido.</summary>
         public ShotImpactHook Impact;
 

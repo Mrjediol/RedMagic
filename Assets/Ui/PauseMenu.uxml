@@ -9,7 +9,7 @@
     <ui:Style src="PauseMenu.uss" />
     <ui:VisualElement name="pauseMenu" class="pause-menu" picking-mode="Ignore">
 
-        <ui:Button name="openPauseButton" class="pause-open-button" tooltip="Pausa">
+        <ui:Button name="openPauseButton" class="pause-open-button" tooltip="#pause.open">
             <ui:VisualElement class="pause-open-bar" picking-mode="Ignore" />
             <ui:VisualElement class="pause-open-bar" picking-mode="Ignore" />
         </ui:Button>
@@ -17,10 +17,10 @@
         <ui:VisualElement name="pauseOverlay" class="pause-overlay">
             <ui:VisualElement name="pauseScrim" class="pause-scrim" />
             <ui:VisualElement name="pausePanel" class="pause-panel">
-                <ui:Label text="PAUSA" class="pause-title" />
-                <ui:Button name="resumeButton" text="Reanudar" class="menu-button" />
-                <ui:Button name="optionsButton" text="Opciones" class="menu-button" />
-                <ui:Button name="mainMenuButton" text="Menú principal" class="menu-button menu-button--quit" />
+                <ui:Label text="#pause.title" class="pause-title" />
+                <ui:Button name="resumeButton" text="#pause.resume" class="menu-button" />
+                <ui:Button name="optionsButton" text="#menu.options" class="menu-button" />
+                <ui:Button name="mainMenuButton" text="#pause.main_menu" class="menu-button menu-button--quit" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

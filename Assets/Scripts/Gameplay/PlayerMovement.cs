@@ -99,11 +99,17 @@ namespace RedMagic.Gameplay
         /// <summary>True mientras el jugador sale despedido por un golpe (no controla).</summary>
         public bool IsKnockedBack => _knockbackTimer > 0f;
 
+        /// <summary>Se dispara al saltar desde el suelo (o con coyote / salto guardado). Lo usa el VFX de los pies.</summary>
+        public event System.Action Jumped;
+
         /// <summary>Se dispara al usar un salto en el aire (doble salto). Lo usa el VFX de los pies.</summary>
         public event System.Action AirJumped;
 
         /// <summary>Se dispara al iniciar un dash.</summary>
         public event System.Action<int> Dashed;
+
+        /// <summary>Lo que dura un dash ahora mismo (el de base por el multiplicador de distancia de los items).</summary>
+        public float DashDuration => dashDuration * PlayerStats.Multiplier(PlayerStat.DashDistance);
 
         // ---------------------------------------------------------------- Input Actions + táctil
 
@@ -1107,6 +1113,7 @@ namespace RedMagic.Gameplay
             if ((_input.JumpDown && CanUseCoyote) || HasBufferedJump)
             {
                 Jump(_jumpHeight);
+                Jumped?.Invoke();
             }
             else if (_input.JumpDown && !_colDown && _airJumpsUsed < maxAirJumps)
             {
@@ -1211,7 +1218,7 @@ namespace RedMagic.Gameplay
             if (_sprite != null) _sprite.flipX = _dashDirection < 0;
 
             // Más distancia = más duración a la misma velocidad (el dash se sigue viendo igual de rápido).
-            float duration = dashDuration * PlayerStats.Multiplier(PlayerStat.DashDistance);
+            float duration = DashDuration;
             _dashTimer = duration;
             _dashCooldownTimer = dashCooldown + duration;
 

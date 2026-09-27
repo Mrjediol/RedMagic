@@ -15,8 +15,8 @@ namespace RedMagic.Hub
     /// </summary>
     public class BookLootContainer : HubLootContainer
     {
-        protected override string OpenPromptText => "Pulsa [Interactuar] para abrir el libro";
-        protected override string PickupPromptText => "Pulsa [Interactuar] para consultar el libro";
+        protected override string OpenPromptKey => "prompt.book_open";
+        protected override string PickupPromptKey => "prompt.book_read";
         protected override bool BlocksHubExitUntilLooted => false;
 
         protected override void OnLoot()

@@ -1,14 +1,16 @@
 using RedMagic.Audio;
 using RedMagic.Core;
+using RedMagic.Localization;
+using RedMagic.Settings;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RedMagic.UI
 {
     /// <summary>
-    /// Conecta los sliders y toggles de OptionsMenu.uxml con el AudioManager.
-    /// Se abre desde otra pantalla (menú principal o pausa) con <see cref="Open"/> y el botón
-    /// Volver regresa a esa pantalla.
+    /// Conecta los sliders y toggles de OptionsMenu.uxml con el AudioManager, y los selectores de
+    /// resolución (<see cref="DisplaySettings"/>) e idioma (<see cref="Loc"/>). Se abre desde otra
+    /// pantalla (menú principal o pausa) con <see cref="Open"/> y el botón Volver regresa a esa pantalla.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class OptionsMenuController : MonoBehaviour, IMenuScreen
@@ -23,6 +25,8 @@ namespace RedMagic.UI
         private Toggle _masterMute, _musicMute, _sfxMute;
         private Label _masterValue, _musicValue, _sfxValue;
         private Button _backButton;
+        private Button _resolutionPrev, _resolutionNext, _languagePrev, _languageNext;
+        private Label _resolutionValue, _languageValue;
 
         private bool _hidden = true;
         private bool _open;
@@ -57,6 +61,13 @@ namespace RedMagic.UI
 
             _backButton = _root.Q<Button>("backButton");
 
+            _resolutionPrev = _root.Q<Button>("resolutionPrev");
+            _resolutionNext = _root.Q<Button>("resolutionNext");
+            _resolutionValue = _root.Q<Label>("resolutionValue");
+            _languagePrev = _root.Q<Button>("languagePrev");
+            _languageNext = _root.Q<Button>("languageNext");
+            _languageValue = _root.Q<Label>("languageValue");
+
             WireGroup(_masterSlider, _masterMute, AudioManager.Master);
             WireGroup(_musicSlider, _musicMute, AudioManager.Music);
             WireGroup(_sfxSlider, _sfxMute, AudioManager.Sfx);
@@ -67,8 +78,18 @@ namespace RedMagic.UI
                 _backButton.RegisterCallback<PointerEnterEvent>(OnHover);
             }
 
+            WireArrow(_resolutionPrev, PrevResolution);
+            WireArrow(_resolutionNext, NextResolution);
+            WireArrow(_languagePrev, PrevLanguage);
+            WireArrow(_languageNext, NextLanguage);
+            Loc.Changed += OnLanguageChanged;
+
+            // Claves "#…" del UXML → texto del idioma activo; antes de vestir, que la skin mueve el
+            // rótulo de los botones a un hijo.
+            LocalizedUi.BindTree(_root);
             DressWithSkin();
             RefreshFromAudioManager();
+            RefreshSelectors();
             ApplyVisibility();
         }
 
@@ -102,6 +123,77 @@ namespace RedMagic.UI
             {
                 _backButton.clicked -= GoBack;
                 _backButton.UnregisterCallback<PointerEnterEvent>(OnHover);
+            }
+
+            UnwireArrow(_resolutionPrev, PrevResolution);
+            UnwireArrow(_resolutionNext, NextResolution);
+            UnwireArrow(_languagePrev, PrevLanguage);
+            UnwireArrow(_languageNext, NextLanguage);
+            Loc.Changed -= OnLanguageChanged;
+        }
+
+        // ------------------------------------------------------------------ resolución e idioma
+
+        private static void WireArrow(Button button, System.Action onClick)
+        {
+            if (button == null) return;
+            button.clicked += onClick;
+            button.RegisterCallback<PointerEnterEvent>(OnHover);
+        }
+
+        private static void UnwireArrow(Button button, System.Action onClick)
+        {
+            if (button == null) return;
+            button.clicked -= onClick;
+            button.UnregisterCallback<PointerEnterEvent>(OnHover);
+        }
+
+        private void PrevResolution() => StepResolution(-1);
+        private void NextResolution() => StepResolution(1);
+        private void PrevLanguage() => StepLanguage(-1);
+        private void NextLanguage() => StepLanguage(1);
+
+        private void StepResolution(int step)
+        {
+            int count = DisplaySettings.Presets.Count;
+            if (count == 0) return;
+            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+            DisplaySettings.SetPreset(((DisplaySettings.PresetIndex + step) % count + count) % count);
+            RefreshSelectors();
+        }
+
+        private void StepLanguage(int step)
+        {
+            var languages = Loc.Languages;
+            if (languages.Count == 0) return;
+
+            int current = 0;
+            for (int i = 0; i < languages.Count; i++)
+                if (languages[i].Code == Loc.Language) current = i;
+
+            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+            Loc.SetLanguage(languages[((current + step) % languages.Count + languages.Count) % languages.Count].Code);
+            // Loc.Changed → OnLanguageChanged repinta.
+        }
+
+        private void OnLanguageChanged()
+        {
+            RefreshFromAudioManager(); // "Silenciado" / "Muted"
+            RefreshSelectors();
+        }
+
+        private void RefreshSelectors()
+        {
+            var preset = DisplaySettings.Current;
+            if (_resolutionValue != null)
+                _resolutionValue.text = preset != null ? Loc.Get("options.resolution_value", Loc.Get(preset.labelKey), preset.aspect) : "-";
+
+            if (_languageValue != null)
+            {
+                string name = Loc.Language;
+                foreach (var language in Loc.Languages)
+                    if (language.Code == Loc.Language) name = language.DisplayName;
+                _languageValue.text = name;
             }
         }
 
@@ -227,7 +319,7 @@ namespace RedMagic.UI
         private static void UpdateValueLabel(Label label, float volume, bool muted)
         {
             if (label == null) return;
-            label.text = muted ? "Silenciado" : Mathf.RoundToInt(Mathf.Clamp01(volume) * 100f) + "%";
+            label.text = muted ? Loc.Get("options.muted") : Mathf.RoundToInt(Mathf.Clamp01(volume) * 100f) + "%";
         }
 
         private Label LabelFor(string group)

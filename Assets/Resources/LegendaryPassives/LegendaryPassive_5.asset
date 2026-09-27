@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95c9808da496c3d4c967f93f4a3a88f3, type: 3}
   m_Name: LegendaryPassive_5
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
+  textKey: passive.volumen_carmesi
   id: 5
   icon: {fileID: 2823726601231208955, guid: 38fab7c519dd5e24bb551f7d4699dcd3, type: 3}
   displayName: "Volumen Carmes\xED"

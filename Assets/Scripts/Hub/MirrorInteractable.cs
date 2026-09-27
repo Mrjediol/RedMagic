@@ -138,7 +138,7 @@ namespace RedMagic.Hub
 
             _playerInRange = true;
             _playerAnimator = other.GetComponentInParent<PlayerAnimator>();
-            InteractionPromptUi.Show(this, "Pulsa [Interactuar] para usar el espejo");
+            InteractionPromptUi.ShowKey(this, "prompt.mirror");
         }
 
         private void OnTriggerExit2D(Collider2D other)

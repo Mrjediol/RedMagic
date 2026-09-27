@@ -38,6 +38,10 @@ MonoBehaviour:
     tier1: Cada baja quita 2 s al enfriamiento actual.
     tier2: Con 3+ items Reset equipados, cada uno dispara con N-2.
     tier3: "N reducido al m\xEDnimo con el m\xE1ximo de items Reset."
+  - tag: 4
+    tier1: Toda moneda que sueltan los enemigos, +15%.
+    tier2: +5% de probabilidad de que cualquier proyectil salga dorado.
+    tier3: "La marca de oro multiplica el bot\xEDn \xD73 (en vez de \xD72)."
   tuning:
     slowStrength: 0.4
     slowDuration: 3
@@ -50,3 +54,21 @@ MonoBehaviour:
     haste2CooldownRate: 1.5
     reset2CooldownReduction: 2
     lifesteal2HealPerKill: 3
+    lifestealDrainMotes: 6
+    lifestealHealMotes: 5
+    lifeMoteSprite: {fileID: 0}
+    markDropMultiplier: 2
+    markDuration: 8
+    markAuraColor: {r: 1, g: 0.8, b: 0.25, a: 0.9}
+    markAuraSize: 1.5
+    markPulseSpeed: 1.2
+    markPulseScale: 0.12
+    markBodyTint: {r: 1, g: 0.85, b: 0.35, a: 0.6}
+    gildedAuraColor: {r: 1, g: 0.85, b: 0.3, a: 1}
+    gildedAuraSize: 2.4
+    gildedTint: {r: 1, g: 0.82, b: 0.25, a: 0.75}
+    gildedPulseSpeed: 3
+    goldAuraMaterial: {fileID: 2100000, guid: 4d69835d7ad47404f90aee19723a5f8b, type: 2}
+    gold2DropBonus: 0.15
+    gold4GildChanceBonus: 0.05
+    gold6MarkMultiplierBonus: 1

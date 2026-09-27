@@ -84,6 +84,13 @@ namespace RedMagic.Economy
         [Tooltip("0 = mundo 1; la última vale para ese mundo y los siguientes.")]
         public List<float> priceMultiplierPerWorld = new() { 1f, 1.4f, 1.8f, 2.2f };
 
+        [Header("Reroll")]
+        [Tooltip("Rerolls con los que empieza cada run (las pasivas suman encima). También los que " +
+                 "tiene la escena Shop abierta suelta, para probar.")]
+        [Min(0)] public int startingRerolls = 1;
+        [Tooltip("Icono del reroll: altar y contador del HUD.")]
+        public Sprite rerollIcon;
+
         private static ShopConfig _instance;
 
         /// <summary>El asset de Resources, o uno con los valores por defecto si falta.</summary>
@@ -115,28 +122,62 @@ namespace RedMagic.Economy
             return Mathf.Max(0, Mathf.RoundToInt(basePrice.For(rarity) * multiplier));
         }
 
+        /// <summary>Precio de un item: su <see cref="ItemDefinition.Price"/> propio si lo tiene, si no el de su
+        /// rareza; los dos por el multiplicador del mundo.</summary>
+        public int PriceFor(ItemDefinition item, int world)
+        {
+            if (item == null) return 0;
+            if (item.Price <= 0) return PriceFor(item.Rarity, world);
+            return Mathf.Max(0, Mathf.RoundToInt(item.Price * WorldPriceMultiplier(world)));
+        }
+
+        private float WorldPriceMultiplier(int world) => priceMultiplierPerWorld is { Count: > 0 }
+            ? priceMultiplierPerWorld[Mathf.Clamp(world - 1, 0, priceMultiplierPerWorld.Count - 1)]
+            : 1f;
+
         /// <summary>
         /// Sortea hasta <paramref name="count"/> artículos distintos: primero la rareza por peso,
         /// luego un item de esa rareza. Si no queda ninguno de esa rareza, la más cercana que tenga
         /// (primero hacia abajo, luego hacia arriba). Menos items que huecos = huecos vacíos.
         /// </summary>
-        public List<ShopStockEntry> RollStock(int count, int world, System.Random rng)
-        {
-            var remaining = new List<ItemDefinition>(ItemLibrary.All);
-            var stock = new List<ShopStockEntry>(count);
-            var weights = WeightsFor(world);
+        public List<ShopStockEntry> RollStock(int count, int world, System.Random rng) =>
+            RollStock(count, world, rng, null, null);
 
-            for (int i = 0; i < count && remaining.Count > 0; i++)
+        /// <summary>
+        /// Igual, para un reroll: <paramref name="exclude"/> no sale nunca (lo ya comprado en esta
+        /// visita) y <paramref name="avoid"/> sólo si no hay items suficientes sin él (lo que estaba a
+        /// la vista, para no repetir en seco).
+        /// </summary>
+        public List<ShopStockEntry> RollStock(int count, int world, System.Random rng,
+                                             ICollection<ItemDefinition> exclude, ICollection<ItemDefinition> avoid)
+        {
+            var fresh = new List<ItemDefinition>();
+            var fallback = new List<ItemDefinition>();
+            foreach (var item in ItemLibrary.All)
+            {
+                if (exclude != null && exclude.Contains(item)) continue;
+                (avoid != null && avoid.Contains(item) ? fallback : fresh).Add(item);
+            }
+
+            var stock = new List<ShopStockEntry>(count);
+            var weights = ShopLuck.Apply(WeightsFor(world)); // Amuleto de oro: más peso a lo raro
+            Draw(fresh, stock, count, world, weights, rng);
+            Draw(fallback, stock, count, world, weights, rng);
+            return stock;
+        }
+
+        private void Draw(List<ItemDefinition> remaining, List<ShopStockEntry> stock, int count, int world,
+                          RarityTable weights, System.Random rng)
+        {
+            while (stock.Count < count && remaining.Count > 0)
             {
                 var rarity = RollRarity(weights, rng);
                 var item = PickNearest(remaining, rarity, rng);
                 if (item == null) break;
 
                 remaining.Remove(item);
-                stock.Add(new ShopStockEntry(item, PriceFor(item.Rarity, world)));
+                stock.Add(new ShopStockEntry(item, PriceFor(item, world)));
             }
-
-            return stock;
         }
 
         private static ItemRarity RollRarity(RarityTable weights, System.Random rng)

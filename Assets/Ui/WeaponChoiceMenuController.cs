@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Items;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -99,7 +100,7 @@ namespace RedMagic.UI
             _subtitle.text = subtitle ?? "";
             _subtitle.style.display = string.IsNullOrEmpty(subtitle) ? DisplayStyle.None : DisplayStyle.Flex;
 
-            _hint.text = $"Toca una carta para elegirla · teclas 1-{Mathf.Min(9, _options.Count)}";
+            _hint.text = Loc.Get("weapon_choice.hint", Mathf.Min(9, _options.Count));
 
             _row.Clear();
             for (int i = 0; i < _options.Count; i++) _row.Add(BuildCard(_options[i], i));
@@ -152,7 +153,8 @@ namespace RedMagic.UI
             panel.style.alignItems = Align.Center;
             _overlay.Add(panel);
 
-            var title = MenuStyle.Title("ELIGE TU ARMA");
+            var title = MenuStyle.Title("");
+            LocalizedUi.Bind(title, "weapon_choice.title");
             title.style.marginBottom = 4;
             panel.Add(title);
 
@@ -198,7 +200,7 @@ namespace RedMagic.UI
             name.pickingMode = PickingMode.Ignore;
             card.Add(name);
 
-            var stats = MenuStyle.CardDescription($"Daño {weapon.BaseDamage:0} · {weapon.BaseCooldown:0.00}s");
+            var stats = MenuStyle.CardDescription(Loc.Get("weapon_choice.stats", weapon.BaseDamage, weapon.BaseCooldown));
             stats.style.fontSize = MenuStyle.BodyFontSize;
             stats.pickingMode = PickingMode.Ignore;
             card.Add(stats);

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Items;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -45,7 +46,7 @@ namespace RedMagic.UI
 
         private static readonly BuildTag[] SynergyOrder =
         {
-            BuildTag.Ice, BuildTag.Fire, BuildTag.Tank, BuildTag.Haste, BuildTag.Lifesteal, BuildTag.Reset,
+            BuildTag.Ice, BuildTag.Fire, BuildTag.Gold, BuildTag.Tank, BuildTag.Haste, BuildTag.Lifesteal, BuildTag.Reset,
         };
 
         private static readonly Vector3 HoverScale = new(1.035f, 1.035f, 1f);
@@ -89,8 +90,8 @@ namespace RedMagic.UI
         {
             public Button Button;
             public Label Value;
-            public string Placeholder;
-            public string Caption;
+            public System.Func<string> Placeholder; // rótulos en el idioma activo
+            public System.Func<string> Caption;
 
             // Sólo con skin: el marco de arte y lo que se pinta dentro.
             public bool IsWeapon;
@@ -278,7 +279,8 @@ namespace RedMagic.UI
             columns.Add(BuildSlotColumn());
             columns.Add(BuildDescriptionColumn());
 
-            var hint = MenuStyle.Hint("I / Esc / B para cerrar · clic en un slot para ciclar los items disponibles");
+            var hint = MenuStyle.Hint("");
+            LocalizedUi.Bind(hint, "items.hint");
             if (framed)
             {
                 hint.style.marginTop = 4;
@@ -318,7 +320,7 @@ namespace RedMagic.UI
 
         private VisualElement BuildSynergyColumn()
         {
-            var column = Column("SINERGIAS", SideColumnWidth, _skin != null ? _skin.sidePanel : null);
+            var column = Column("items.column_synergies", SideColumnWidth, _skin != null ? _skin.sidePanel : null);
             _skinnedRows = _skin != null && _skin.synergyRow.IsSet;
 
             foreach (var tag in SynergyOrder)
@@ -346,7 +348,8 @@ namespace RedMagic.UI
                     MenuStyle.AddSelectionHighlight(row, 10f);
                 }
 
-                var name = new Label(BuildTags.DisplayName(tag));
+                var name = new Label();
+                LocalizedUi.Bind(name, () => name.text = BuildTags.DisplayName(tag));
                 name.style.fontSize = MenuStyle.BodyFontSize;
                 name.style.color = MenuStyle.Cream;
                 name.style.unityFontStyleAndWeight = FontStyle.Bold;
@@ -376,7 +379,7 @@ namespace RedMagic.UI
 
         private VisualElement BuildSlotColumn()
         {
-            var column = Column("EQUIPO", 0, _skin != null ? _skin.middlePanel : null);
+            var column = Column("items.column_equipment", 0, _skin != null ? _skin.middlePanel : null);
             column.style.flexGrow = 1;
             column.style.marginLeft = 14;
             column.style.marginRight = 14;
@@ -418,20 +421,20 @@ namespace RedMagic.UI
             dedicated.style.justifyContent = Justify.Center;
             grid.Add(dedicated);
 
-            _elementSlot = MakeSlot("Elemento",
+            _elementSlot = MakeSlot(() => Loc.Get("items.slot_element"),
                 () => CycleDedicated(ItemSlot.DedicatedElement),
                 () => _loadout.Inventory.Element);
-            _trajectorySlot = MakeSlot("Trayectoria",
+            _trajectorySlot = MakeSlot(() => Loc.Get("items.slot_trajectory"),
                 () => CycleDedicated(ItemSlot.DedicatedTrajectory),
                 () => _loadout.Inventory.Trajectory);
-            _shapeSlot = MakeSlot("Forma",
+            _shapeSlot = MakeSlot(() => Loc.Get("items.slot_shape"),
                 () => CycleDedicated(ItemSlot.DedicatedShape),
                 () => _loadout.Inventory.Shape);
             dedicated.Add(_elementSlot.Button);
             dedicated.Add(_trajectorySlot.Button);
             dedicated.Add(_shapeSlot.Button);
 
-            grid.Add(SubHeader("Slots libres"));
+            grid.Add(SubHeader("items.free_slots"));
 
             var freeGrid = new VisualElement();
             freeGrid.style.flexDirection = FlexDirection.Row;
@@ -442,7 +445,7 @@ namespace RedMagic.UI
             for (int i = 0; i < _freeSlots.Length; i++)
             {
                 int index = i;
-                _freeSlots[i] = MakeSlot($"Libre {i + 1}",
+                _freeSlots[i] = MakeSlot(() => Loc.Get("items.slot_free", index + 1),
                     () => CycleFree(index),
                     () => _loadout.Inventory.GetFree(index));
                 freeGrid.Add(_freeSlots[i].Button);
@@ -457,29 +460,30 @@ namespace RedMagic.UI
 
             if (weaponHolder != null)
             {
-                _weaponSlot = MakeSlot("— sin arma —", CycleWeapon, () => _loadout.Inventory.Weapon,
-                    isWeapon: true, caption: "Arma");
+                _weaponSlot = MakeSlot(() => Loc.Get("items.no_weapon"), CycleWeapon, () => _loadout.Inventory.Weapon,
+                    isWeapon: true, caption: () => Loc.Get("items.weapon"));
                 weaponHolder.Add(_weaponSlot.Button);
                 return column;
             }
 
-            column.Add(SubHeader("Arma"));
+            column.Add(SubHeader("items.weapon"));
 
             var weaponRow = new VisualElement();
             weaponRow.style.flexDirection = FlexDirection.Row;
             weaponRow.style.justifyContent = Justify.Center;
             column.Add(weaponRow);
 
-            _weaponSlot = MakeSlot("— sin arma —", CycleWeapon, () => _loadout.Inventory.Weapon, isWeapon: true);
+            _weaponSlot = MakeSlot(() => Loc.Get("items.no_weapon"), CycleWeapon, () => _loadout.Inventory.Weapon, isWeapon: true);
             _weaponSlot.Button.style.width = 320;
             weaponRow.Add(_weaponSlot.Button);
 
             return column;
         }
 
-        private Label SubHeader(string text)
+        private Label SubHeader(string key)
         {
-            var label = new Label(text);
+            var label = new Label();
+            LocalizedUi.Bind(label, key);
             label.style.color = MenuStyle.Cream;
             label.style.fontSize = MenuStyle.HintFontSize;
             label.style.marginTop = IsSlotSkinned ? 10 : 18;
@@ -495,8 +499,8 @@ namespace RedMagic.UI
         private float SlotOuterWidth => _skin.slotWidth + 8f;
 
         /// <param name="caption">Rótulo bajo el marco con arte (por defecto, <paramref name="placeholder"/>).</param>
-        private SlotButton MakeSlot(string placeholder, System.Action onClick, System.Func<Object> currentItem,
-                                    bool isWeapon = false, string caption = null)
+        private SlotButton MakeSlot(System.Func<string> placeholder, System.Action onClick, System.Func<Object> currentItem,
+                                    bool isWeapon = false, System.Func<string> caption = null)
         {
             var button = new Button(() => { onClick(); AudioManager.Instance?.PlaySFX("SFX_ButtonClick"); });
             button.style.flexDirection = FlexDirection.Column;
@@ -515,7 +519,7 @@ namespace RedMagic.UI
             button.RegisterCallback<PointerEnterEvent>(_ =>
             {
                 AudioManager.Instance?.PlaySFX("SFX_ButtonHover");
-                DescribeHover(currentItem(), placeholder);
+                DescribeHover(currentItem(), placeholder());
             });
             button.RegisterCallback<PointerLeaveEvent>(_ =>
             {
@@ -539,7 +543,8 @@ namespace RedMagic.UI
             MenuStyle.SetBorder(button, 2, MenuStyle.GoldBorder, 12);
             MenuStyle.AddSelectionHighlight(button, 12f);
 
-            var caption = new Label(slot.Placeholder);
+            var caption = new Label();
+            LocalizedUi.Bind(caption, () => caption.text = slot.Placeholder());
             caption.style.fontSize = 13;
             caption.style.color = new Color(MenuStyle.Cream.r, MenuStyle.Cream.g, MenuStyle.Cream.b, 0.55f);
             button.Add(caption);
@@ -607,7 +612,8 @@ namespace RedMagic.UI
             monogram.style.fontSize = Mathf.RoundToInt(size * 0.36f);
             frame.Add(monogram);
 
-            var caption = new Label(slot.Caption) { pickingMode = PickingMode.Ignore };
+            var caption = new Label { pickingMode = PickingMode.Ignore };
+            LocalizedUi.Bind(caption, () => caption.text = slot.Caption());
             caption.style.fontSize = 12;
             caption.style.marginTop = 1;
             caption.style.color = new Color(MenuStyle.Cream.r, MenuStyle.Cream.g, MenuStyle.Cream.b, 0.6f);
@@ -687,7 +693,7 @@ namespace RedMagic.UI
 
         private VisualElement BuildDescriptionColumn()
         {
-            var column = Column("DESCRIPCIÓN", SideColumnWidth, _skin != null ? _skin.sidePanel : null);
+            var column = Column("items.column_description", SideColumnWidth, _skin != null ? _skin.sidePanel : null);
             _description = new VisualElement();
             _description.style.flexGrow = 1;
             if (_skin != null)
@@ -722,7 +728,7 @@ namespace RedMagic.UI
 
                 if (synergy.IsCapped(tag))
                 {
-                    row.Count.text = raw > BuildTags.SynergyCap ? $"6 ✦ (+{raw - BuildTags.SynergyCap})" : "6 ✦";
+                    row.Count.text = raw > BuildTags.SynergyCap ? $"{BuildTags.SynergyCap} ✦ (+{raw - BuildTags.SynergyCap})" : $"{BuildTags.SynergyCap} ✦";
                     row.Count.style.color = MenuStyle.SelectionHighlight;
                     if (_skinnedRows) UiFrame.Tint(row.Root, _skin.synergyCappedTint);
                     else MenuStyle.SetBorder(row.Root, 2, MenuStyle.SelectionHighlight, 10);
@@ -751,7 +757,7 @@ namespace RedMagic.UI
                 SetSlot(_freeSlots[i], inventory.GetFree(i));
 
             var weapon = inventory.Weapon;
-            _weaponSlot.Value.text = weapon != null ? weapon.DisplayName : "—";
+            _weaponSlot.Value.text = weapon != null ? weapon.DisplayName : Loc.Get("common.none");
             if (_weaponSlot.Art != null)
             {
                 _weaponSlot.Current = weapon;
@@ -767,7 +773,7 @@ namespace RedMagic.UI
 
         private void SetSlot(SlotButton slot, ItemDefinition item)
         {
-            slot.Value.text = item != null ? item.DisplayName : "—";
+            slot.Value.text = item != null ? item.DisplayName : Loc.Get("common.none");
             if (slot.Art != null)
             {
                 slot.Current = item;
@@ -802,28 +808,27 @@ namespace RedMagic.UI
         private void ShowDefaultDescription()
         {
             _description.Clear();
-            _description.Add(Paragraph(
-                "Pasa el ratón sobre un item, un modificador o el arma para ver su efecto.\n\n" +
-                "Clic en un slot para ciclar entre los assets disponibles de ese tipo."));
+            _description.Add(Paragraph(Loc.Get("items.default_description")));
         }
 
         private void ShowEmptySlotDescription(string placeholder)
         {
             _description.Clear();
             _description.Add(DescriptionTitle(placeholder));
-            _description.Add(Paragraph("Slot vacío. Clic para equipar."));
+            _description.Add(Paragraph(Loc.Get("items.empty_slot")));
         }
 
         private void ShowSynergyDescription(BuildTag tag)
         {
             _description.Clear();
-            _description.Add(DescriptionTitle("Sinergia · " + BuildTags.DisplayName(tag)));
+            _description.Add(DescriptionTitle(Loc.Get("items.synergy_title", BuildTags.DisplayName(tag))));
 
             var synergy = _loadout.Synergy;
             int raw = synergy.PointsFor(tag);
             int effective = synergy.EffectivePointsFor(tag);
-            _description.Add(Paragraph($"Puntos: {raw}" +
-                (synergy.IsCapped(tag) ? "   (tope 6 alcanzado)" : "")));
+            _description.Add(Paragraph(synergy.IsCapped(tag)
+                ? Loc.Get("items.synergy_points_capped", raw, BuildTags.SynergyCap)
+                : Loc.Get("items.synergy_points", raw)));
 
             var config = SynergyConfig.Instance;
             int next = synergy.NextThreshold(tag);
@@ -835,9 +840,9 @@ namespace RedMagic.UI
                 bool active = effective >= threshold;
 
                 string text = config != null ? config.Tier(tag, i + 1) : null;
-                if (string.IsNullOrWhiteSpace(text)) text = "(efecto por definir)";
+                if (string.IsNullOrWhiteSpace(text)) text = Loc.Get("items.synergy_tbd");
 
-                var line = Paragraph($"{(active ? "✓" : "•")} Umbral {threshold}: {text}");
+                var line = Paragraph(Loc.Get("items.synergy_threshold", active ? "✓" : "•", threshold, text));
                 line.style.color = active ? MenuStyle.CostAfford
                     : threshold == next ? MenuStyle.SelectionHighlight
                     : new Color(MenuStyle.Cream.r, MenuStyle.Cream.g, MenuStyle.Cream.b, 0.5f);
@@ -845,8 +850,7 @@ namespace RedMagic.UI
             }
 
             if (tag == BuildTag.Reset)
-                _description.Add(Paragraph("Reset no escala por puntos: su sinergia depende de " +
-                                           "cuántos items Reset llevas equipados a la vez."));
+                _description.Add(Paragraph(Loc.Get("items.reset_note")));
         }
 
         private void ShowItemDescription(ItemDefinition item)
@@ -884,17 +888,17 @@ namespace RedMagic.UI
 
             var shot = weapon.Shot;
             string charge = shot.chargeTime > 0f
-                ? $"\nCarga: mantener {shot.chargeTime:0.00}s (mín. {shot.minChargeToFire * 100f:0}% para disparar)"
+                ? "\n" + Loc.Get("items.weapon_charge", shot.chargeTime, shot.minChargeToFire * 100f)
                 : "";
             _description.Add(Paragraph(
-                $"Daño base {weapon.BaseDamage:0} · cadencia {weapon.BaseCooldown:0.00}s\n" +
-                $"Disparo base: {shot.delivery}, {shot.speed:0} u/s, vida {shot.lifetime:0.0}s\n" +
-                $"Elemento innato: {BuildTags.DisplayName(weapon.InnateElement)}" + charge));
+                Loc.Get("items.weapon_stats", weapon.BaseDamage, weapon.BaseCooldown) + "\n" +
+                Loc.Get("items.weapon_shot", DeliveryName(shot.delivery), shot.speed, shot.lifetime) + "\n" +
+                Loc.Get("items.weapon_element", BuildTags.DisplayName(weapon.InnateElement)) + charge));
 
             var resolved = _loadout != null ? ShotResolver.Resolve(_loadout.Inventory) : null;
             if (resolved != null)
             {
-                _description.Add(DescriptionTitle("Comportamiento actual"));
+                _description.Add(DescriptionTitle(Loc.Get("items.current_behaviour")));
                 _description.Add(Paragraph(DescribeShot(resolved)));
             }
 
@@ -903,26 +907,33 @@ namespace RedMagic.UI
 
         private static string DescribeShot(WeaponShot shot)
         {
-            string trajectory = shot.homingTurnRate > 0f ? "auto-mira"
-                : shot.arcGravity > 0f ? "parábola" : "recto";
+            string trajectory = shot.homingTurnRate > 0f ? Loc.Get("shot.homing")
+                : shot.arcGravity > 0f ? Loc.Get("shot.arc") : Loc.Get("shot.straight");
             bool beam = shot.delivery == ShotDelivery.Hitscan;
             string shape = beam
-                ? (shot.projectileCount > 1 ? $"{shot.projectileCount} haces" : "haz")
-                : shot.splitCount > 0 ? $"división en {shot.splitCount}"
-                : shot.projectileCount > 1 ? $"{shot.projectileCount} en abanico"
-                : "1 proyectil";
+                ? (shot.projectileCount > 1 ? Loc.Get("shot.beams", shot.projectileCount) : Loc.Get("shot.beam"))
+                : shot.splitCount > 0 ? Loc.Get("shot.split", shot.splitCount)
+                : shot.projectileCount > 1 ? Loc.Get("shot.fan", shot.projectileCount)
+                : Loc.Get("shot.single");
             string element = shot.element != ElementId.None
-                ? BuildTags.DisplayName(shot.element) : "físico";
+                ? BuildTags.DisplayName(shot.element) : Loc.Get("element.physical");
 
             string extra = "";
-            if (beam) extra += $" · barre {shot.beamDuration:0.00}s, alcance {shot.beamLength:0}";
-            if (shot.burstCount > 1) extra += $" · ráfaga ×{shot.burstCount}";
-            if (shot.pierce > 0) extra += $" · perfora {shot.pierce}";
+            if (beam) extra += " · " + Loc.Get("shot.sweep", shot.beamDuration, shot.beamLength);
+            if (shot.burstCount > 1) extra += " · " + Loc.Get("shot.burst", shot.burstCount);
+            if (shot.pierce > 0) extra += " · " + Loc.Get("shot.pierce", shot.pierce);
             if (shot.impactRadius > 0f && shot.impactDamage > 0f)
-                extra += $" · explota ({shot.impactDamage:0} en {shot.impactRadius:0.0})";
+                extra += " · " + Loc.Get("shot.explodes", shot.impactDamage, shot.impactRadius);
 
             return $"{trajectory} · {shape} · {element}{extra}";
         }
+
+        private static string DeliveryName(ShotDelivery delivery) => delivery switch
+        {
+            ShotDelivery.Melee => Loc.Get("shot.delivery_melee"),
+            ShotDelivery.Hitscan => Loc.Get("shot.delivery_hitscan"),
+            _ => Loc.Get("shot.delivery_projectile"),
+        };
 
         // ------------------------------------------------------------------ resaltado de sinergias
 
@@ -1015,7 +1026,7 @@ namespace RedMagic.UI
         // ------------------------------------------------------------------ piezas comunes
 
         /// <summary>Una columna con su título; con <paramref name="frame"/> lleva marco de arte.</summary>
-        private VisualElement Column(string title, float width, UiFrame frame)
+        private VisualElement Column(string titleKey, float width, UiFrame frame)
         {
             var column = new VisualElement();
             if (width > 0f)
@@ -1034,7 +1045,8 @@ namespace RedMagic.UI
                 MenuStyle.SetBorder(column, 2, MenuStyle.GoldBorder, 12);
             }
 
-            var header = new Label(title);
+            var header = new Label();
+            LocalizedUi.Bind(header, titleKey);
             header.style.unityFontStyleAndWeight = FontStyle.Bold;
             header.style.fontSize = MenuStyle.BodyFontSize;
             header.style.color = MenuStyle.Cream;
@@ -1102,7 +1114,7 @@ namespace RedMagic.UI
             var parts = new List<string>(tags.Count);
             for (int i = 0; i < tags.Count; i++) parts.Add(BuildTags.DisplayName(tags[i]));
 
-            var label = Paragraph("Tags: " + (parts.Count > 0 ? string.Join(" · ", parts) : "—"));
+            var label = Paragraph(Loc.Get("items.tags", parts.Count > 0 ? string.Join(" · ", parts) : Loc.Get("common.none")));
             label.style.color = MenuStyle.SelectionHighlight;
             label.style.unityFontStyleAndWeight = FontStyle.Bold;
             label.style.marginTop = 8;

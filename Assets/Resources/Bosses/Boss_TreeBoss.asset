@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
   m_Name: Boss_TreeBoss
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  textKey: boss.ent_cristalino
   displayName: Ent Cristalino
   title: "Coraz\xF3n del Bosque"
   description: "No se mueve: no le hace falta. Todo el bosque es su brazo, y el cristal

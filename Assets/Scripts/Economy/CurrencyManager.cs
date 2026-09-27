@@ -199,16 +199,21 @@ namespace RedMagic.Economy
         /// la fila correspondiente de <see cref="CurrencyConfig"/> y lo suma. Lo llama
         /// <see cref="CurrencyDropper"/> desde el evento <c>Died</c> del enemigo.
         /// </summary>
-        public void GrantDrops(EnemyTier tier)
+        /// <param name="multiplier">Multiplicador propio de esta muerte (la marca de oro); se combina con
+        /// los bonos globales de <see cref="CurrencyDropModifiers"/>.</param>
+        public void GrantDrops(EnemyTier tier, float multiplier = 1f)
         {
             if (_config == null) return;
 
+            float scale = Mathf.Max(0f, multiplier) * CurrencyDropModifiers.Multiplier;
             var drops = _config.DropsFor(tier);
-            Add(Currency.Gold, drops.gold.Roll());
-            Add(Currency.Diamond, drops.diamond.Roll());
-            Add(Currency.SoulFragment, drops.soulFragment.Roll());
-            Add(Currency.Skull, drops.skull.Roll());
+            Add(Currency.Gold, Scaled(drops.gold.Roll(), scale));
+            Add(Currency.Diamond, Scaled(drops.diamond.Roll(), scale));
+            Add(Currency.SoulFragment, Scaled(drops.soulFragment.Roll(), scale));
+            Add(Currency.Skull, Scaled(drops.skull.Roll(), scale));
         }
+
+        private static int Scaled(int amount, float scale) => scale == 1f ? amount : Mathf.RoundToInt(amount * scale);
 
         [ContextMenu("Borrar moneda de meta guardada (PlayerPrefs)")]
         private void ClearSavedMetaCurrency()

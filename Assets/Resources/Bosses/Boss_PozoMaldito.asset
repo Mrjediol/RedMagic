@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6cd038fc7b5fcb42a923de92d47a6c5, type: 3}
   m_Name: Boss_PozoMaldito
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossDefinition
+  textKey: boss.pozo_maldito
   displayName: Pozo Maldito
   title: Boca del Mundo de Abajo
   description: "El pueblo lo tapi\xF3 hace generaciones y sigui\xF3 sacando agua

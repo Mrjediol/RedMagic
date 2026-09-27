@@ -1891,6 +1891,9 @@ MonoBehaviour:
   cameraOrthographicSize: 10
   assetCleanupEveryNScenes: 1
   postLoadSettleFrames: 2
+  transitionFadeOut: 0.25
+  transitionFadeIn: 0.35
+  transitionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!4 &1900001002
 Transform:
   m_ObjectHideFlags: 0

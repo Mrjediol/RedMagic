@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95c9808da496c3d4c967f93f4a3a88f3, type: 3}
   m_Name: LegendaryPassive_3
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.LegendaryPassive
+  textKey: passive.paginas_del_eco
   id: 3
   icon: {fileID: 6103056907601288328, guid: b244ee62af32d9340bd2bc186e44c356, type: 3}
   displayName: "P\xE1ginas del Eco"

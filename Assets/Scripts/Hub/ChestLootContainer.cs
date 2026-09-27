@@ -1,6 +1,7 @@
 using RedMagic.Abilities;
 using RedMagic.Economy;
 using RedMagic.Items;
+using RedMagic.Localization;
 using RedMagic.UI;
 using UnityEngine;
 
@@ -29,8 +30,8 @@ namespace RedMagic.Hub
                  "desplegable del Inspector lo dibuja ChestLootContainerEditor.")]
         [SerializeField] private WeaponDefinition forcedWeapon;
 
-        protected override string OpenPromptText => "Pulsa [Interactuar] para abrir el cofre";
-        protected override string PickupPromptText => "Pulsa [Interactuar] para recoger el arma";
+        protected override string OpenPromptKey => "prompt.chest_open";
+        protected override string PickupPromptKey => "prompt.chest_pickup";
         protected override bool BlocksHubExitUntilLooted => true;
 
         /// <summary>Arma que soltará: la forzada, o null si va a ser aleatoria.</summary>
@@ -61,7 +62,7 @@ namespace RedMagic.Hub
 
                 if (options.Count > 1 && WeaponChoiceMenuController.Instance != null &&
                     WeaponChoiceMenuController.Instance.Open(options, w => Grant(w, chosen: true),
-                                                             passive != null ? passive.displayName : ""))
+                                                             passive != null ? passive.DisplayName : ""))
                     return;
 
                 if (options.Count > 0)
@@ -110,7 +111,7 @@ namespace RedMagic.Hub
                             Vector2.one * 0.9f, weapon.Accent, 0.6f, 0f, 2f, gameObject);
 
             int level = WeaponLevelManager.Instance != null ? WeaponLevelManager.Instance.GetLevel(weapon) : 1;
-            RewardPopupUi.Show(weapon.Icon, level > 1 ? $"Arma obtenida · Nivel {level}" : "Arma obtenida",
+            RewardPopupUi.Show(weapon.Icon, level > 1 ? Loc.Get("reward.weapon_level", level) : Loc.Get("reward.weapon"),
                                weapon.DisplayName, weapon.Accent);
 
             Debug.Log($"[ChestLootContainer] Arma obtenida: {weapon.DisplayName} nivel {level} " +

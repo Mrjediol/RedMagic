@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca7e4e726982a714f8b0f3d8944d404b, type: 3}
   m_Name: Weapon_RafagaArcana
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponDefinition
+  textKey: weapon.rafaga_arcana
   displayName: "R\xE1faga Arcana"
   description: "Cada gatillazo suelta tres chispas seguidas con un pel\xEDn de temblor.
     Da\xF1o bajo por bala, alto si aciertas las tres. Nace ardiendo."

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using RedMagic.Combat;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -32,7 +33,8 @@ namespace RedMagic.Items
         }
 
         public override string Summary() =>
-            $"Los ralentizados reciben +{percentOfMaxHealth * 100f:0.#}% de su vida máxima en cada golpe" +
-            (maxBonusPerHit > 0f ? $" (máx. {maxBonusPerHit:0})" : "");
+            (maxBonusPerHit > 0f
+                ? Loc.Get("effect.slowed_bonus_damage_capped", percentOfMaxHealth * 100f, maxBonusPerHit)
+                : Loc.Get("effect.slowed_bonus_damage", percentOfMaxHealth * 100f));
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -54,6 +55,6 @@ namespace RedMagic.Items
         }
 
         public override string Summary() =>
-            $"Al matar: el siguiente disparo sale al instante y hace ×{damageMultiplier:0.#} de daño";
+            Loc.Get("effect.kill_empowers_next_cast", damageMultiplier);
     }
 }

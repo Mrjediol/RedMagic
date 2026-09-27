@@ -5,9 +5,9 @@
         <ui:VisualElement name="scrim" picking-mode="Ignore" class="scrim" style="background-image: url(&quot;project://database/Assets/Art/UI/MainMenu.jpeg?fileID=2800000&amp;guid=9b93da1ad30065640b7ec3dab0744d65&amp;type=3#MainMenu&quot;);"/>
         <ui:VisualElement name="titleContainer" picking-mode="Ignore" class="title-container"/>
         <ui:VisualElement name="buttonContainer" class="button-container">
-            <ui:Button name="playButton" text="Jugar" class="menu-button"/>
-            <ui:Button name="optionsButton" text="Opciones" class="menu-button"/>
-            <ui:Button name="quitButton" text="Salir" class="menu-button menu-button--quit"/>
+            <ui:Button name="playButton" text="#menu.play" class="menu-button"/>
+            <ui:Button name="optionsButton" text="#menu.options" class="menu-button"/>
+            <ui:Button name="quitButton" text="#menu.quit" class="menu-button menu-button--quit"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

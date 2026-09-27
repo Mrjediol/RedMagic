@@ -57,6 +57,8 @@ namespace RedMagic.UI
         [Range(0f, 0.5f)] public float glowScalePulse = 0.08f;
 
         [Header("Textos")]
+        [Tooltip("Clave de idioma del encabezado; si no está traducida se usa headerText.")]
+        public string headerKey = "cinematic.header";
         public string headerText = "Has obtenido";
         [Min(8)] public int headerFontSize = 34;
         [Min(8)] public int nameFontSize = 76;
@@ -68,6 +70,8 @@ namespace RedMagic.UI
         [Min(0f)] public float textDelay = 0.25f;
         [Min(0.01f)] public float textFadeDuration = 0.4f;
 
+        [Tooltip("Clave de idioma de \"Toca para continuar\"; si no está traducida se usa continueText.")]
+        public string continueKey = "cinematic.continue";
         public string continueText = "Toca para continuar";
         [Min(8)] public int continueFontSize = 30;
         public Color continueColor = new(0.85f, 0.95f, 1f, 1f);

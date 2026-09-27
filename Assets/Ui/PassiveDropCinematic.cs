@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Economy;
+using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -59,7 +60,7 @@ namespace RedMagic.UI
         public static void Show(LegendaryPassive passive)
         {
             if (passive == null) return;
-            Show(passive.displayName, passive.icon);
+            Show(passive.DisplayName, passive.icon);
         }
 
         public static void Show(string passiveName, Sprite icon)
@@ -248,11 +249,11 @@ namespace RedMagic.UI
             _iconRoot.localScale = Vector3.one;
             _icon.enabled = false;
 
-            _header.text = s.headerText;
+            _header.text = Loc.GetOr(s.headerKey, s.headerText);
             _header.fontSize = s.headerFontSize;
             _name.text = passiveName;
             _name.fontSize = s.nameFontSize;
-            _continue.text = s.continueText;
+            _continue.text = Loc.GetOr(s.continueKey, s.continueText);
             _continue.fontSize = s.continueFontSize;
 
             foreach (var r in _rings) r.enabled = false;

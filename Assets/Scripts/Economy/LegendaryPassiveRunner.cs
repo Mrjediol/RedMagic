@@ -13,7 +13,8 @@ namespace RedMagic.Economy
     /// solo; escucha <see cref="RunManager"/>, <see cref="SectionClearTracker"/>,
     /// <see cref="WaveManager.AnyEnemySpawned"/> y <see cref="Health.AnyStarted"/>:
     ///  - <b>Codex Aurum</b>: al caer el jefe, 1/2 items gratis en el suelo (<see cref="ItemPickup"/>).
-    ///  - <b>Páginas del Eco</b>: +2/+4 a <see cref="RunRerolls"/> al empezar la run.
+    ///  - <b>Páginas del Eco</b>: +2/+4 a <see cref="RunRerolls"/> al empezar la run (sobre
+    ///    <see cref="ShopConfig.startingRerolls"/>).
     ///  - <b>Anales del Vacío</b>: nv1 ralentiza la oleada 1 de cada nivel al salir; nv2 además quita
     ///    un 20 % de vida máxima a todo enemigo que aparezca durante la run.
     ///  - <b>Manuscrito Eterno</b>: cada N niveles despejados, un item gratis (nv2: épico o legendario).
@@ -116,7 +117,7 @@ namespace RedMagic.Economy
                 1 => tuning.rerollsLevel1,
                 _ => 0,
             };
-            RunRerolls.Set(rerolls);
+            RunRerolls.Set(ShopConfig.Instance.startingRerolls + rerolls);
 
             RunStateChanged?.Invoke(true);
         }

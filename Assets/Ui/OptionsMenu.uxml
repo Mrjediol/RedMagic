@@ -5,26 +5,42 @@
         <ui:VisualElement name="backgroundLayer" picking-mode="Ignore" class="background-layer"/>
         <ui:VisualElement name="scrim" picking-mode="Ignore" class="scrim scrim--strong" style="background-image: url(&quot;project://database/Assets/Art/UI/MainMenu.jpeg?fileID=2800000&amp;guid=9b93da1ad30065640b7ec3dab0744d65&amp;type=3#MainMenu&quot;);"/>
         <ui:VisualElement name="optionsPanel" class="options-panel">
-            <ui:Label text="OPCIONES" class="options-title"/>
+            <ui:Label text="#options.title" class="options-title"/>
             <ui:VisualElement name="masterRow" class="option-row">
-                <ui:Label text="Master" class="option-label"/>
+                <ui:Label text="#options.master" class="option-label"/>
                 <ui:Slider name="masterSlider" low-value="0" high-value="1" class="option-slider"/>
                 <ui:Label name="masterValue" text="100%" class="option-value"/>
-                <ui:Toggle name="masterMute" label="Silenciar" class="option-mute"/>
+                <ui:Toggle name="masterMute" label="#options.mute" class="option-mute"/>
             </ui:VisualElement>
             <ui:VisualElement name="musicRow" class="option-row">
-                <ui:Label text="Música" class="option-label"/>
+                <ui:Label text="#options.music" class="option-label"/>
                 <ui:Slider name="musicSlider" low-value="0" high-value="1" class="option-slider"/>
                 <ui:Label name="musicValue" text="100%" class="option-value"/>
-                <ui:Toggle name="musicMute" label="Silenciar" class="option-mute"/>
+                <ui:Toggle name="musicMute" label="#options.mute" class="option-mute"/>
             </ui:VisualElement>
             <ui:VisualElement name="sfxRow" class="option-row">
-                <ui:Label text="Efectos" class="option-label"/>
+                <ui:Label text="#options.sfx" class="option-label"/>
                 <ui:Slider name="sfxSlider" low-value="0" high-value="1" class="option-slider"/>
                 <ui:Label name="sfxValue" text="100%" class="option-value"/>
-                <ui:Toggle name="sfxMute" label="Silenciar" class="option-mute"/>
+                <ui:Toggle name="sfxMute" label="#options.mute" class="option-mute"/>
             </ui:VisualElement>
-            <ui:Button name="backButton" text="Volver" class="menu-button back-button"/>
+            <ui:VisualElement name="resolutionRow" class="option-row">
+                <ui:Label text="#options.resolution" class="option-label"/>
+                <ui:VisualElement class="option-selector">
+                    <ui:Button name="resolutionPrev" text="&lt;" class="option-arrow"/>
+                    <ui:Label name="resolutionValue" text="PC · 16:9" class="option-choice"/>
+                    <ui:Button name="resolutionNext" text="&gt;" class="option-arrow"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="languageRow" class="option-row">
+                <ui:Label text="#options.language" class="option-label"/>
+                <ui:VisualElement class="option-selector">
+                    <ui:Button name="languagePrev" text="&lt;" class="option-arrow"/>
+                    <ui:Label name="languageValue" text="Español" class="option-choice"/>
+                    <ui:Button name="languageNext" text="&gt;" class="option-arrow"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Button name="backButton" text="#common.back" class="menu-button back-button"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -3,6 +3,7 @@ using RedMagic.Combat;
 using RedMagic.Economy;
 using RedMagic.Fx;
 using RedMagic.Hub;
+using RedMagic.Localization;
 using RedMagic.Run;
 using UnityEngine;
 
@@ -85,8 +86,8 @@ namespace RedMagic.Gameplay
             CameraFollow.ShakeAll(0.25f, 0.3f);
 
             var passive = LegendaryPassiveEffects.Find(LegendaryPassiveEffectKind.ReviveOnce);
-            RewardPopupUi.Show(passive != null ? passive.icon : null, "¡Has revivido!",
-                               passive != null ? passive.displayName : "", new Color(0.3f, 1f, 0.9f));
+            RewardPopupUi.Show(passive != null ? passive.icon : null, Loc.Get("reward.revived"),
+                               passive != null ? passive.DisplayName : "", new Color(0.3f, 1f, 0.9f));
 
             if (level >= 2) SetShield(tuning.reviveShieldHits);
             return true;

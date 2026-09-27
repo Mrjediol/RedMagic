@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -47,8 +48,21 @@ namespace RedMagic.Items
 
         public Entry For(BuildTag tag) => entries.Find(e => e.tag == tag);
 
-        /// <summary>Descripción del tramo <paramref name="tier"/> (1..3), o null si no está definido.</summary>
+        /// <summary>
+        /// Descripción del tramo <paramref name="tier"/> (1..3) en el idioma activo
+        /// (<see cref="TierKey"/> del fichero de idioma, o el texto del asset), o null si no está definido.
+        /// </summary>
         public string Tier(BuildTag tag, int tier)
+        {
+            var raw = RawTier(tag, tier);
+            return string.IsNullOrWhiteSpace(raw) ? raw : Loc.GetOr(TierKey(tag, tier), raw);
+        }
+
+        /// <summary>Clave de idioma de un tramo: <c>synergy.&lt;tag&gt;.tier&lt;n&gt;</c>.</summary>
+        public static string TierKey(BuildTag tag, int tier) => $"synergy.{tag.ToString().ToLowerInvariant()}.tier{tier}";
+
+        /// <summary>El texto tal cual está en el asset (el original que traduce el fichero de idioma).</summary>
+        public string RawTier(BuildTag tag, int tier)
         {
             var entry = For(tag);
             if (entry == null) return null;

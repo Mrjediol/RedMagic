@@ -12,6 +12,8 @@ namespace RedMagic.Items
     /// <item><b>Rapidez 2</b> — con un ralentizado en pantalla, el enfriamiento corre más rápido.</item>
     /// <item><b>Reset 2</b> — cada baja le quita segundos al cooldown actual.</item>
     /// <item><b>Vampirismo 2</b> — cada baja cura.</item>
+    /// <item><b>Oro 2</b> — más moneda de cada enemigo (<see cref="Economy.CurrencyDropModifiers"/>). Oro 4 y 6
+    /// los lee <see cref="GoldMark"/> al tirar el dorado y al marcar.</item>
     /// </list>
     /// Consulta el <see cref="SynergyTracker"/> (única fuente de verdad de los umbrales) en cada
     /// baja / frame, así que equipar o quitar items no necesita avisar a nadie. Los números salen de
@@ -22,6 +24,7 @@ namespace RedMagic.Items
     {
         private readonly SynergyTracker _synergy;
         private readonly object _hasteKey = new object();
+        private readonly object _goldKey = new object();
 
         public SynergyEffectRunner(SynergyTracker synergy)
         {
@@ -33,6 +36,7 @@ namespace RedMagic.Items
         {
             PlayerHit.Killed -= OnKilled;
             PlayerStats.Remove(_hasteKey);
+            Economy.CurrencyDropModifiers.Remove(_goldKey);
         }
 
         public void Tick()
@@ -40,6 +44,9 @@ namespace RedMagic.Items
             var t = SynergyConfig.CurrentTuning;
             bool haste = _synergy.IsThresholdActive(BuildTag.Haste, 2) && SlowStatus.AnyOnScreen();
             PlayerStats.SetMultiplier(_hasteKey, PlayerStat.CooldownRate, haste ? t.haste2CooldownRate : 1f);
+
+            bool gold = _synergy.IsThresholdActive(BuildTag.Gold, 2);
+            Economy.CurrencyDropModifiers.Set(_goldKey, gold ? t.gold2DropBonus : 0f);
         }
 
         /// <summary>

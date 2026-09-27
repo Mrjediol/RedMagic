@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RedMagic.Core;
+using RedMagic.Localization;
 using UnityEngine;
 
 namespace RedMagic.Items
@@ -32,6 +33,11 @@ namespace RedMagic.Items
     public abstract class ItemDefinition : ScriptableObject
     {
         [Header("Ficha")]
+        [Tooltip("Prefijo de sus textos en los ficheros de idioma (<prefijo>.name / .description). Lo " +
+                 "rellena Tools ▸ RedMagic ▸ Localización ▸ Sincronizar textos de assets; vacío = los textos " +
+                 "de aquí tal cual.")]
+        [SerializeField] private string textKey;
+
         [Tooltip("Nombre que se ve en la UI. Vacío = el nombre del asset.")]
         [SerializeField] private string displayName;
 
@@ -46,6 +52,10 @@ namespace RedMagic.Items
 
         [Tooltip("Rareza: color del nombre en la UI (y, más adelante, peso en tienda y cofres).")]
         [SerializeField] private ItemRarity rarity = ItemRarity.Common;
+
+        [Tooltip("Precio base en oro en la tienda (se multiplica por el del mundo, ShopConfig). 0 = el " +
+                 "precio por defecto de su rareza.")]
+        [Min(0)] [SerializeField] private int price;
 
         [Header("Tags de sinergia")]
         [Tooltip("Tags que este item aporta al conteo. Reglas por slot (se avisan en OnValidate):\n" +
@@ -62,9 +72,11 @@ namespace RedMagic.Items
         /// <summary>Slot en el que entra este item. Lo fija el tipo, no es editable por asset.</summary>
         public abstract ItemSlot Slot { get; }
 
-        public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? name : displayName;
-        public string Description => description;
+        public string DisplayName => Loc.ForAsset(textKey, "name", string.IsNullOrWhiteSpace(displayName) ? name : displayName);
+        public string Description => Loc.ForAsset(textKey, "description", description);
         public Sprite Icon => icon;
+        /// <summary>Precio base propio en oro, o 0 para usar el de su rareza (<c>ShopConfig.basePrice</c>).</summary>
+        public int Price => price;
         public Color Accent => accent;
         public ItemRarity Rarity => rarity;
         public IReadOnlyList<BuildTag> Tags => tags;

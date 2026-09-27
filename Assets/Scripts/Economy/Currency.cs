@@ -1,5 +1,20 @@
+using RedMagic.Localization;
+
 namespace RedMagic.Economy
 {
+    /// <summary>Nombre de cada moneda para la UI, en el idioma activo.</summary>
+    public static class Currencies
+    {
+        public static string DisplayName(Currency currency) => currency switch
+        {
+            Currency.Gold => Loc.Get("currency.gold"),
+            Currency.Diamond => Loc.Get("currency.diamond"),
+            Currency.SoulFragment => Loc.Get("currency.soul_fragment"),
+            Currency.Skull => Loc.Get("currency.skull"),
+            _ => currency.ToString(),
+        };
+    }
+
     /// <summary>
     /// Las cuatro monedas del juego. Se dividen en dos grupos según qué pasa con ellas al morir:
     ///

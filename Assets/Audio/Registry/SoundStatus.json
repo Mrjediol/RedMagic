@@ -1,0 +1,20 @@
+{
+  "_comment": "Calificaciones y notas de los sonidos, por id estable del registro. Lo escribe la pestaña Sounds.",
+  "slots": {
+    "0f1e2d3c4b5a69788796a5b4c3d2e1f0/MainMenuUI/MainMenuController/menuMusic": {
+      "status": "Bad",
+      "notes": "Placeholder aceptado: un clip corto (Sly 2) en bucle como música de menú.",
+      "lastModified": "2026-09-27 17:42"
+    },
+    "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnAttack": {
+      "status": "Bad",
+      "notes": "Placeholder migrado de la tabla antigua: enemydmg1 (daño a enemigo) a pitch 0.38. Hay que sustituirlo.",
+      "lastModified": "2026-09-27 17:42"
+    },
+    "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnHit": {
+      "status": "Bad",
+      "notes": "Placeholder migrado de la tabla antigua: usa enemydmg1, un clip de daño a enemigo. Hay que sustituirlo.",
+      "lastModified": "2026-09-27 17:42"
+    }
+  }
+}

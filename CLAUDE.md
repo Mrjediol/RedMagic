@@ -1204,6 +1204,26 @@ variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three 
   wherever it lives. `Tools ▸ RedMagic ▸ Audio ▸ 2 · Preparar huecos…` adds missing emitter entries and
   fills empty slots with `Assets/Audio/Test/generic_test.wav` (never touches a slot with a clip).
 - Import: anything under `Assets/Audio/` gets preload + mobile defaults (`SfxImportPostprocessor`).
+- **Generic enemy sounds**: `SystemSounds.enemyHurt/Death/Move/Attack`. An enemy (`EnemyStats` or
+  `BossController`, marker `IEnemySoundFallbackUser`) whose `SoundEmitter` slot is empty plays them
+  (`SoundEmitter.useGenericFallback`, default on). `EnemyFactory` stamps a `SoundEmitter` on every enemy,
+  so a new enemy shows up in the Sounds tab with hurt/death/move/attack slots and already sounds.
+  A `SoundEvent.silent` entry plays nothing at all (that is what "remove sound" writes).
+- **Sound registry** (`Assets/Audio/Registry/`): `SoundRegistry.generated.json` (derived — scanner +
+  music by convention + declared; never hand-edit; `Tools ▸ RedMagic ▸ Audio ▸ 3` or the tab regenerates
+  it, byte-identical on reruns), `SoundDeclared.json` (the few sounds with no hook yet; they merge with
+  the real slot by `matchComponent` + `matchMember` once it exists), `SoundStatus.json` (user grades
+  Pending/Perfect/Good/Bad/Horrible + notes, keyed by asset GUID + component + field/trigger). Prototype
+  content is excluded with the asset label `SoundIgnore`, never a list in code.
+- **Sounds tab** (Biblioteca Web): folder tree, filters, assign/replace clips and variants straight into
+  the prefab/asset, preview, grade, notes, add a declared slot, remove a sound. It is the only place sound
+  status lives — no markdown status docs.
+- **Rule — grading new sounds**: whenever a new sound is added to the game, ask the user to grade it
+  Perfect / Good / Bad / Horrible before considering the task done, and write the answer into
+  `SoundStatus.json` (`SoundRegistry.SetStatus`, or the Sounds tab).
+- **Rule — sound state questions**: when the user asks about the state of the game's sounds, read
+  `SoundRegistry.generated.json` and `SoundStatus.json` directly and answer from them. Never build a
+  report file.
 
 ### Input
 

@@ -367,6 +367,7 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   - trigger: 2
     cue:
       clips: []
@@ -379,6 +380,7 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   - trigger: 1
     cue:
       clips: []
@@ -391,6 +393,7 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   - trigger: 15
     cue:
       clips: []
@@ -403,6 +406,7 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   useGenericFallback: 1
 --- !u!1 &6093441562911366889
 GameObject:

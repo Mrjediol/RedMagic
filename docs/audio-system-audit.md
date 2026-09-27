@@ -302,8 +302,8 @@ Doc: `Assets/_Pipeline/AUDIO_PIPELINE.md` + a short CLAUDE.md section.
 ## 5. Outcome (phases 1–4) and known tech debt
 
 The refactor is complete: string-id API, id table, `SoundData` and every hidden TEMPORAL field are gone;
-sounds live in `SoundCue` slots (see the Audio section of `CLAUDE.md`). Pending/placeholder sounds:
-`docs/audio-pending.md`. Migration history: `docs/audio-migration-log.md`.
+sounds live in `SoundCue` slots (see the Audio section of `CLAUDE.md`). Sound status lives only in the registry
+(`Assets/Audio/Registry/`, Sounds tab of Biblioteca Web). Migration history: `docs/audio-migration-log.md`.
 
 **Known tech debt, kept on purpose — the one string-keyed audio path.** Scene music is loaded by file
 name from `Resources/Music/` through `AudioManager.PlaySceneMusic(name)`, with names built by

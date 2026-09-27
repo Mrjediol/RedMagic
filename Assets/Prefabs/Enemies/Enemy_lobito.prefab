@@ -204,8 +204,6 @@ MonoBehaviour:
     staticAttack: 1
     maxHealth: 30
     invulnerabilityDuration: 0
-    hurtSfxId: 
-    deathSfxId: 
     knockbackHorizontal: 6
     knockbackVertical: 3
     knockbackDuration: 0.18

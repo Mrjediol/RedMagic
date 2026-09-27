@@ -37,6 +37,7 @@ MonoBehaviour:
   glowMinAlpha: 0.3
   glowMaxAlpha: 0.85
   glowScalePulse: 0.08
+  headerKey: cinematic.header
   headerText: Has obtenido
   headerFontSize: 34
   nameFontSize: 76
@@ -45,11 +46,22 @@ MonoBehaviour:
   textMargin: 26
   textDelay: 0.25
   textFadeDuration: 0.4
+  continueKey: cinematic.continue
   continueText: Toca para continuar
   continueFontSize: 30
   continueColor: {r: 0.85, g: 0.95, b: 1, a: 1}
   continueDelay: 0.5
   continuePulseSpeed: 1.2
   outroDuration: 0.4
-  landSfxId: 
-  continueSfxId: SFX_ButtonClick
+  landSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 8
+    rolloffEnd: 24
+    initialized: 1
+  continueSfxId: 

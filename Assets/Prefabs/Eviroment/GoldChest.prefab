@@ -226,6 +226,6 @@ MonoBehaviour:
   actionName: Interact
   animator: {fileID: 6672460767984985607}
   openParameter: IsOpened
-  openSfxId: SFX_ButtonClick
+  openSfxId: 
   lootSfxId: 
   forcedWeapon: {fileID: 0}

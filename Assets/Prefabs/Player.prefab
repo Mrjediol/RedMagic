@@ -170,7 +170,7 @@ MonoBehaviour:
   damageMultiplier: 1
   invulnerabilityDuration: 0.8
   invulnerabilityUsesUnscaledTime: 0
-  hurtSfxId: SFX_PlayerHurt
+  hurtSfxId: 
   deathSfxId: 
 --- !u!114 &7988243875702620455
 MonoBehaviour:
@@ -304,7 +304,7 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  attackSfxId: SFX_PlayerAttack
+  attackSfxId: 
   drawGizmo: 1
 --- !u!114 &5468658681699711123
 MonoBehaviour:
@@ -347,7 +347,7 @@ MonoBehaviour:
   cooldown: 0.7
   windup: 0.25
   animatorTrigger: Attack
-  attackSfxId: SFX_Fireball
+  attackSfxId: 
   muzzleEffect: {fileID: 0}
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player
@@ -510,6 +510,32 @@ MonoBehaviour:
       pitchMax: 1.05
       noRepeatLast: 1
       priority: 0
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 1
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9d0864ce49035c8418b3f129ad3d8be1, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+  - trigger: 3
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9d0864ce49035c8418b3f129ad3d8be1, type: 3}
+      volume: 1
+      pitchMin: 0.38
+      pitchMax: 0.38
+      noRepeatLast: 1
+      priority: 1
       positional: 0
       rolloffStart: 8
       rolloffEnd: 24

@@ -123,7 +123,6 @@ namespace RedMagic.UI
             _open = false;
             _onPicked = null;
             _overlay.style.display = DisplayStyle.None;
-            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(false);
 
             callback(weapon);
@@ -137,6 +136,7 @@ namespace RedMagic.UI
             if (_document == null || _document.panelSettings == null) return false;
 
             var root = _document.rootVisualElement;
+            UiSounds.Bind(root);
             if (root == null) return false;
 
             MenuStyle.FillParent(root);
@@ -182,7 +182,6 @@ namespace RedMagic.UI
             card.style.width = CardWidth;
             card.style.height = CardHeight;
             card.style.justifyContent = Justify.Center;
-            card.RegisterCallback<PointerEnterEvent>(_ => AudioManager.Instance?.PlaySFX("SFX_ButtonHover"));
 
             var icon = new VisualElement { pickingMode = PickingMode.Ignore };
             icon.style.width = 150;

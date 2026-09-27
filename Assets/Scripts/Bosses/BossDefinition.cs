@@ -1,4 +1,5 @@
 using System;
+using RedMagic.Audio;
 using RedMagic.Localization;
 using UnityEngine;
 
@@ -54,8 +55,8 @@ namespace RedMagic.Bosses
         [Min(0f)]
         public float transitionShake = 0.5f;
 
-        [Tooltip("id de sonido del AudioManager al entrar en la fase. Vacío = sin sonido.")]
-        public string transitionSfxId;
+        [Tooltip("Sonido al entrar en la fase.")]
+        public SoundCue transitionSound = new SoundCue();
 
         [Tooltip("Efecto de un solo uso (pooled, con VfxOneShot) que estalla a los pies del jefe al " +
                  "entrar en la fase. Vacío = sólo aura, sacudida y sonido.")]

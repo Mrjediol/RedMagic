@@ -34,7 +34,7 @@ namespace RedMagic.Bosses.EditorTools
         {
             "displayName", "description", "accent", "telegraph", "recovery", "weight",
             "cooldownInAttacks", "cooldownSeconds", "minPhase", "damage", "knockbackMultiplier",
-            "vulnerableSeconds", "vulnerableMultiplier", "gesture", "sfxId", "shakeAmplitude", "shakeDuration",
+            "vulnerableSeconds", "vulnerableMultiplier", "gesture", "shakeAmplitude", "shakeDuration",
         };
 
         private static readonly HashSet<string> NoHidden = new HashSet<string>();

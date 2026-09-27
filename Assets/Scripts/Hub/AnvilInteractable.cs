@@ -14,8 +14,11 @@ namespace RedMagic.Hub
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     [DisallowMultipleComponent]
-    public class AnvilInteractable : MonoBehaviour
+    public class AnvilInteractable : MonoBehaviour, ISoundEventSource
     {
+        /// <summary>OnInteract al abrir/usar, OnLoot al recoger. Ver <see cref="SoundEmitter"/>.</summary>
+        public event System.Action<SoundTrigger> SoundTriggered;
+
         [Header("Detección")]
         [SerializeField] private string playerTag = "Player";
 
@@ -33,9 +36,11 @@ namespace RedMagic.Hub
         [Tooltip("Trigger del Animator que reproduce la chispa una vez.")]
         [SerializeField] private string sparkTrigger = "Spark";
 
-        [Header("Sonido")]
-        [Tooltip("id de sonido del AudioManager al usarlo. Vacío = sin sonido.")]
-        [SerializeField] private string useSfxId = "SFX_ButtonClick";
+#pragma warning disable CS0414
+        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua, sólo para la herramienta de migración.
+        // El sonido va en el SoundEmitter del prop (OnInteract / OnLoot).
+        [SerializeField, HideInInspector] private string useSfxId = "SFX_ButtonClick";
+#pragma warning restore CS0414
 
         private InputAction _interactAction;
         private bool _playerInRange;
@@ -84,8 +89,7 @@ namespace RedMagic.Hub
 
             if (animator != null && !string.IsNullOrWhiteSpace(sparkTrigger)) animator.SetTrigger(sparkTrigger);
 
-            if (!string.IsNullOrWhiteSpace(useSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(useSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnInteract);
 
             OnAnvilInteract();
         }

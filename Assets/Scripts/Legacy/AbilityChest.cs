@@ -33,8 +33,10 @@ namespace RedMagic.Abilities
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     [DisallowMultipleComponent]
-    public class AbilityChest : MonoBehaviour
+    public class AbilityChest : MonoBehaviour, ISoundEventSource
     {
+        public event System.Action<SoundTrigger> SoundTriggered;
+
         [Header("Contenido")]
         [Tooltip("Arma que suelta este cofre. Vacío = una al azar (lo normal en el juego). " +
                  "El desplegable del Inspector lo dibuja AbilityChestEditor.")]
@@ -68,10 +70,6 @@ namespace RedMagic.Abilities
         [Header("Aviso en pantalla")]
         [Tooltip("Objeto que se enciende cuando el jugador está cerca (un cartel de 'Pulsa E'). Opcional.")]
         [SerializeField] private GameObject prompt;
-
-        [Header("Sonido")]
-        [Tooltip("id de sonido del AudioManager al abrirlo. Vacío = sin sonido.")]
-        [SerializeField] private string openSfxId = "SFX_ButtonClick";
 
         private InputAction _interactAction;
         private bool _playerInRange;
@@ -160,8 +158,7 @@ namespace RedMagic.Abilities
 
             if (animator != null && HasParameter(openParameter)) animator.SetBool(openParameter, true);
 
-            if (!string.IsNullOrWhiteSpace(openSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(openSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnInteract);
 
             if (grantDelay > 0f) yield return new WaitForSeconds(grantDelay);
 

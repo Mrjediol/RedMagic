@@ -11,13 +11,13 @@ namespace RedMagic.Gameplay
     /// Proyectil placeholder pensado para pooling: al terminar (impacto o fin de vida) se
     /// desactiva en lugar de destruirse.
     ///
-    /// Antes de desactivarse dispara <c>OnDeath</c> en su <see cref="SoundEmitter"/> si lo tiene.
-    /// El sonido no se corta al desactivar el objeto porque lo reproduce el AudioManager en sus
-    /// propias voces, no un AudioSource local.
+    /// Avisa OnHit al impactar y OnDeath al volver al pool (<see cref="ISoundEventSource"/>); si lleva
+    /// <see cref="SoundEmitter"/>, suena. El sonido no se corta al desactivar el objeto porque lo
+    /// reproduce el AudioManager en sus propias voces, no un AudioSource local.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     [DisallowMultipleComponent]
-    public class Projectile : MonoBehaviour
+    public class Projectile : MonoBehaviour, ISoundEventSource
     {
         [Header("Movimiento")]
         [SerializeField] private float speed = 14f;
@@ -75,7 +75,7 @@ namespace RedMagic.Gameplay
         [SerializeField] private float impactDamage;
 
         private Rigidbody2D _body;
-        private SoundEmitter _sound;
+        public event System.Action<SoundTrigger> SoundTriggered;
         private Collider2D[] _ownColliders;
         private SpriteRenderer _renderer;
 
@@ -124,7 +124,6 @@ namespace RedMagic.Gameplay
         private void Awake()
         {
             _body = GetComponent<Rigidbody2D>();
-            _sound = GetComponent<SoundEmitter>();
             _ownColliders = GetComponentsInChildren<Collider2D>();
             _renderer = GetComponentInChildren<SpriteRenderer>();
             _spriteMachine = GetComponent<SpriteStateMachine>();
@@ -387,7 +386,7 @@ namespace RedMagic.Gameplay
                     // volaba el proyectil. Si los i-frames se comen el golpe, TakeDamage no empuja.
                     if (health.TakeDamage(damage, transform.position, knockbackMultiplier)) Lifesteal(damage);
                     _hitTargets.Add(health);
-                    _sound?.Play("OnHit");
+                    SoundTriggered?.Invoke(SoundTrigger.OnHit);
                 }
 
                 // Perforación: sólo se gasta contra objetivos, nunca contra el escenario.
@@ -424,7 +423,7 @@ namespace RedMagic.Gameplay
             _despawning = true;
 
             // El sonido se dispara ANTES de desactivar el GameObject.
-            _sound?.Play("OnDeath");
+            SoundTriggered?.Invoke(SoundTrigger.OnDeath);
 
             ExplodeIfDue();
 

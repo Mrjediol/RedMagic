@@ -75,8 +75,6 @@ namespace RedMagic.Enemies
                  "retroceso, no de la invulnerabilidad.")]
         [Min(0f)] public float invulnerabilityDuration;
 
-        public string hurtSfxId = "";
-        public string deathSfxId = "";
 
         // ============================================================ retroceso
 

@@ -119,7 +119,7 @@ namespace RedMagic.UI
             _overlay.style.display = DisplayStyle.None;
 
             if (CurrencyManager.Instance != null) CurrencyManager.Instance.Changed -= OnCurrencyChanged;
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("SFX_ButtonClick");
+            UiSounds.Back();
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(false);
         }
 
@@ -147,6 +147,7 @@ namespace RedMagic.UI
             if (_document == null || _document.panelSettings == null) return false;
 
             var root = _document.rootVisualElement;
+            UiSounds.Bind(root);
             if (root == null) return false;
 
             BuildUi(root);
@@ -248,7 +249,7 @@ namespace RedMagic.UI
             card.style.height = 170;
             card.style.backgroundColor = affordable ? MenuStyle.CellBuyable : MenuStyle.CellBg;
             card.SetEnabled(affordable);
-            card.RegisterCallback<PointerEnterEvent>(_ => AudioManager.Instance?.PlaySFX("SFX_ButtonHover"));
+            card.AddToClassList(UiSounds.NoClickClass);   // suena sólo si la acción sale bien
 
             card.Add(MenuStyle.CardTitle($"Subir a nivel {nextLevel}"));
             card.Add(MenuStyle.CardDescription(ability.TierSummary(nextLevel)));
@@ -277,7 +278,7 @@ namespace RedMagic.UI
             var levels = AbilityLevelManager.Instance;
             if (levels == null || !levels.TryUpgrade(ability)) return;
 
-            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+            UiSounds.Click();
 
             // TryUpgrade ya ha cobrado (lo que dispara Changed y repinta), pero se repinta también
             // aquí por si la subida sale gratis y no hay cambio de moneda que escuchar.

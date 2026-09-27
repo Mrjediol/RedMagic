@@ -1,4 +1,3 @@
-using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Core;
 using RedMagic.Gameplay;
@@ -51,7 +50,6 @@ namespace RedMagic.Enemies
         private Health _health;
         private Knockback _knockback;
 
-        private SoundEmitter _sound;
 
         private Transform _target;
         private float _retargetTimer;
@@ -108,7 +106,6 @@ namespace RedMagic.Enemies
             _collider = GetComponent<Collider2D>();
             _health = GetComponent<Health>();
             _knockback = GetComponent<Knockback>();
-            _sound = GetComponent<SoundEmitter>();
 
             _body.freezeRotation = true;
         }
@@ -604,7 +601,6 @@ namespace RedMagic.Enemies
 
         private void OnDamaged(float amount)
         {
-            _sound?.Play("OnHit");
             if (_animation != null) _animation.PlayHurt();
 
             // Un golpe despierta a un dormilón aunque quien dispara esté fuera de su detección.
@@ -629,8 +625,6 @@ namespace RedMagic.Enemies
         {
             Current = State.Dead;
             Stop();
-
-            _sound?.Play("OnDeath");
             if (_animation != null) _animation.PlayDeath();
 
             foreach (var col in GetComponentsInChildren<Collider2D>()) col.enabled = false;

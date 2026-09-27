@@ -106,8 +106,8 @@ namespace RedMagic.Abilities
         };
 
         [Header("Presentación")]
-        [Tooltip("id de sonido del AudioManager al lanzar. Vacío = sin sonido.")]
-        [SerializeField] private string castSfxId;
+        [Tooltip("Sonido al lanzar.")]
+        [SerializeField] private SoundCue castSound = new SoundCue();
         [Tooltip("Sprite del efecto. Vacío = un cuadrado blanco generado en tiempo de ejecución, " +
                  "que ya se ve y se puede sustituir por arte después.")]
         [SerializeField] private Sprite fxSprite;
@@ -187,8 +187,7 @@ namespace RedMagic.Abilities
         /// <summary>Sonido de lanzamiento. Lo llama <see cref="AbilityUser"/>, no cada arquetipo.</summary>
         public void PlayCastSfx()
         {
-            if (string.IsNullOrWhiteSpace(castSfxId)) return;
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(castSfxId);
+            if (AudioManager.Instance != null) AudioManager.Instance.Play(castSound);
         }
 
         protected float ScaledDamage(in AbilityContext ctx) => damage * ctx.DamageScale;

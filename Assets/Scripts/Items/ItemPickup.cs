@@ -160,7 +160,9 @@ namespace RedMagic.Items
                 return;
             }
 
-            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+            // El sonido es el OnLoot del SoundEmitter de quien lo recoge (el jugador).
+            var emitter = other.GetComponentInParent<SoundEmitter>();
+            if (emitter != null) emitter.Play(SoundTrigger.OnLoot);
             AbilityFx.Flash(ProceduralSprites.Glow, transform.position, Vector2.one * 2.5f,
                             ItemRarities.ColorOf(_item.Rarity), 0.4f, 0f, 1.8f, gameObject);
             RewardPopupUi.Show(_item.Icon, Loc.Get("reward.item"), _item.DisplayName,

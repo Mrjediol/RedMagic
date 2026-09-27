@@ -112,6 +112,7 @@ namespace RedMagic.UI
         public static Button CloseButton(Action onClick)
         {
             var button = new Button(onClick) { text = "✕", name = "menu-close" };
+            button.AddToClassList(UiSounds.BackClass);
             button.style.fontSize = 26;
             button.style.width = 48;
             button.style.height = 48;

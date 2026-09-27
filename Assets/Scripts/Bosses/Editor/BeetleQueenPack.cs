@@ -382,7 +382,6 @@ namespace RedMagic.Bosses.EditorTools
                 .Set("arenaHeight", 13f)
                 .Set("activationRadius", 18f)
                 .Set("introSeconds", 2.2f)
-                .Set("musicId", string.Empty)
                 .Set("contactDamage", 15f)
                 .Set("contactDamageCooldown", 0.8f)
                 .Set("contactKnockbackMultiplier", 1.5f)

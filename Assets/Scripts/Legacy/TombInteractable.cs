@@ -18,8 +18,10 @@ namespace RedMagic.Run
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     [DisallowMultipleComponent]
-    public class TombInteractable : MonoBehaviour
+    public class TombInteractable : MonoBehaviour, ISoundEventSource
     {
+        public event System.Action<SoundTrigger> SoundTriggered;
+
         [Header("Mundo")]
         [Tooltip("Mundo al que lleva esta tumba.")]
         [SerializeField] private WorldDefinition world;
@@ -46,10 +48,6 @@ namespace RedMagic.Run
 
         [Tooltip("Objeto que se enciende si la tumba está bloqueada. Opcional.")]
         [SerializeField] private GameObject lockedPrompt;
-
-        [Header("Sonido")]
-        [Tooltip("id de sonido del AudioManager al empezar la run. Vacío = sin sonido.")]
-        [SerializeField] private string enterSfxId = "SFX_ButtonClick";
 
         private InputAction _interactAction;
         private bool _playerInRange;
@@ -137,8 +135,7 @@ namespace RedMagic.Run
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(enterSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(enterSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnInteract);
 
             SetPromptsVisible(false);
             RunManager.Instance.StartRun(world);

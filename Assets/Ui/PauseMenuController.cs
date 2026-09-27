@@ -1,4 +1,3 @@
-using RedMagic.Audio;
 using RedMagic.Core;
 using RedMagic.Localization;
 using RedMagic.Run;
@@ -78,6 +77,7 @@ namespace RedMagic.UI
             }
 
             LocalizedUi.BindTree(_root); // claves "#…" del UXML, antes de vestir
+            UiSounds.Bind(_root);
             DressWithSkin();
 
             _open = false;
@@ -148,11 +148,13 @@ namespace RedMagic.UI
             OnBackInput();
         }
 
-        /// <summary>Escape / Atrás de Android / Start del mando.</summary>
+        /// <summary>Escape / Atrás de Android / Start del mando. Los botones suenan solos (UiSounds);
+        /// estas teclas no pasan por un botón, así que suenan aquí.</summary>
         private void OnBackInput()
         {
             if (!_open)
             {
+                UiSounds.Click();
                 Pause();
                 return;
             }
@@ -163,6 +165,7 @@ namespace RedMagic.UI
                 return;
             }
 
+            UiSounds.Back();
             Resume();
         }
 
@@ -183,9 +186,6 @@ namespace RedMagic.UI
 
             if (GameStateManager.Instance != null)
                 GameStateManager.Instance.SetPaused(true);
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX("SFX_ButtonClick");
-
             RefreshPauseButton();
             RefreshRunButtons();
             ShowOverlay(true);
@@ -199,8 +199,6 @@ namespace RedMagic.UI
             if (!_open) return;
             _open = false;
 
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX("SFX_ButtonClick");
             if (GameStateManager.Instance != null)
                 GameStateManager.Instance.SetPaused(false);
 
@@ -210,9 +208,6 @@ namespace RedMagic.UI
 
         private void OpenOptions()
         {
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX("SFX_ButtonClick");
-
             if (optionsMenu == null)
             {
                 Debug.LogWarning("[PauseMenu] No hay optionsMenu asignado.", this);
@@ -225,9 +220,6 @@ namespace RedMagic.UI
 
         private void GoToMainMenu()
         {
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX("SFX_ButtonClick");
-
             // Se valida antes de cerrar nada: si la escena no se pudiera cargar, más vale dejar el
             // menú de pausa abierto que despausar hacia ningún sitio.
             string path = mainMenuScene.ResolveForLoad(this);
@@ -249,9 +241,6 @@ namespace RedMagic.UI
         private void AbandonRun()
         {
             if (RunManager.Instance == null || !RunManager.Instance.RunInProgress) return;
-
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX("SFX_ButtonClick");
 
             _open = false;
             ShowOverlay(false);
@@ -304,20 +293,13 @@ namespace RedMagic.UI
         {
             if (button == null) return;
             button.clicked += onClick;
-            button.RegisterCallback<PointerEnterEvent>(OnHover);
         }
 
         private void Unwire(Button button, System.Action onClick)
         {
             if (button == null) return;
             button.clicked -= onClick;
-            button.UnregisterCallback<PointerEnterEvent>(OnHover);
         }
 
-        private static void OnHover(PointerEnterEvent _)
-        {
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX("SFX_ButtonHover");
-        }
     }
 }

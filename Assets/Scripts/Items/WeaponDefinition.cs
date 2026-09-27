@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RedMagic.Audio;
 using RedMagic.Localization;
 using UnityEngine;
 
@@ -208,9 +209,18 @@ namespace RedMagic.Items
         [Tooltip("Tag universal que el arma aporta al conteo de sinergias.")]
         [SerializeField] private BuildTag universalTag = BuildTag.Tank;
 
+        [Header("Sonido")]
+        [Tooltip("Al empezar a cargar (armas con tiempo de carga).")]
+        [SerializeField] private SoundCue chargeSound = new SoundCue();
+
+        [Tooltip("Al salir el disparo.")]
+        [SerializeField] private SoundCue fireSound = new SoundCue();
+
         public string DisplayName => Loc.ForAsset(textKey, "name", string.IsNullOrWhiteSpace(displayName) ? name : displayName);
         public string Description => Loc.ForAsset(textKey, "description", description);
         public Sprite Icon => icon;
+        public SoundCue ChargeSound => chargeSound;
+        public SoundCue FireSound => fireSound;
         public Color Accent => accent;
         public float BaseDamage => baseDamage;
         public float BaseCooldown => baseCooldown;

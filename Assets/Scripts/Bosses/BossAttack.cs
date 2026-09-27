@@ -96,8 +96,8 @@ namespace RedMagic.Bosses
         [SerializeField] private string gesture;
 
         [Header("Presencia")]
-        [Tooltip("id de sonido del AudioManager al lanzar el ataque. Vacío = sin sonido.")]
-        [SerializeField] private string sfxId;
+        [Tooltip("Sonido al lanzar el ataque (junto con la sacudida de cámara).")]
+        [SerializeField] private SoundCue sound = new SoundCue();
 
         [Tooltip("Sacudida de cámara al lanzar el ataque. 0 = ninguna.")]
         [Min(0f)]
@@ -155,8 +155,7 @@ namespace RedMagic.Bosses
         /// <summary>Sonido del ataque y sacudida de cámara, si están configurados.</summary>
         protected void Impact()
         {
-            if (!string.IsNullOrWhiteSpace(sfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(sfxId);
+            if (AudioManager.Instance != null) AudioManager.Instance.Play(sound);
 
             if (shakeAmplitude > 0f) CameraFollow.ShakeAll(shakeAmplitude, shakeDuration);
         }

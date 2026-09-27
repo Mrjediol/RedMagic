@@ -150,17 +150,17 @@ namespace RedMagic.UI
 
             if (keyboard.iKey.wasPressedThisFrame)
             {
-                if (_open) Close();
+                if (_open) CloseFromInput();
                 else Open();
                 return;
             }
 
             if (!_open) return;
 
-            if (keyboard.escapeKey.wasPressedThisFrame) Close();
+            if (keyboard.escapeKey.wasPressedThisFrame) CloseFromInput();
 
             var gamepad = Gamepad.current;
-            if (gamepad != null && gamepad.buttonEast.wasPressedThisFrame) Close();
+            if (gamepad != null && gamepad.buttonEast.wasPressedThisFrame) CloseFromInput();
         }
 
         // ------------------------------------------------------------------ abrir / cerrar
@@ -193,6 +193,14 @@ namespace RedMagic.UI
             RefreshAll();
         }
 
+        // Teclado/mando: no pasan por un botón, así que el "atrás" suena aquí. El botón de cerrar
+        // suena solo (UiSounds, clase BackClass) y llama a Close directamente.
+        private void CloseFromInput()
+        {
+            UiSounds.Back();
+            Close();
+        }
+
         public void Close()
         {
             if (!_open) return;
@@ -210,7 +218,6 @@ namespace RedMagic.UI
                 synergy.PointsChanged -= OnPointsChanged;
             }
 
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("SFX_ButtonClick");
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(false);
         }
 
@@ -226,6 +233,7 @@ namespace RedMagic.UI
             if (_document == null || _document.panelSettings == null) return false;
 
             var root = _document.rootVisualElement;
+            UiSounds.Bind(root);
             if (root == null) return false;
 
             BuildUi(root);
@@ -295,6 +303,7 @@ namespace RedMagic.UI
 
             var sprites = _skin.closeButton;
             var button = new Button(Close) { name = "menu-close" };
+            button.AddToClassList(UiSounds.BackClass);
             float size = _skin.closeButtonSize;
             button.style.width = size * sprites.Aspect;
             button.style.height = size;
@@ -363,7 +372,7 @@ namespace RedMagic.UI
                 var hovered = tag;
                 row.RegisterCallback<PointerEnterEvent>(_ =>
                 {
-                    AudioManager.Instance?.PlaySFX("SFX_ButtonHover");
+                    UiSounds.Hover();   // fila informativa, no botón: suena sólo al pasar
                     ShowSynergyDescription(hovered);
                 });
                 row.RegisterCallback<PointerLeaveEvent>(_ => ShowDefaultDescription());
@@ -502,7 +511,7 @@ namespace RedMagic.UI
         private SlotButton MakeSlot(System.Func<string> placeholder, System.Action onClick, System.Func<Object> currentItem,
                                     bool isWeapon = false, System.Func<string> caption = null)
         {
-            var button = new Button(() => { onClick(); AudioManager.Instance?.PlaySFX("SFX_ButtonClick"); });
+            var button = new Button(onClick);
             button.style.flexDirection = FlexDirection.Column;
             button.style.alignItems = Align.Center;
             button.style.justifyContent = Justify.Center;
@@ -518,7 +527,6 @@ namespace RedMagic.UI
 
             button.RegisterCallback<PointerEnterEvent>(_ =>
             {
-                AudioManager.Instance?.PlaySFX("SFX_ButtonHover");
                 DescribeHover(currentItem(), placeholder());
             });
             button.RegisterCallback<PointerLeaveEvent>(_ =>

@@ -344,9 +344,6 @@ namespace RedMagic.Bosses.EditorTools
                 .Set("arenaHeight", 13f)
                 .Set("activationRadius", 18f)
                 .Set("introSeconds", 2.2f)
-                // Vacío a propósito: 'Music_Boss' todavía no está dado de alta en las listas del
-                // AudioManager, y un id inexistente sólo dejaría un warning por combate.
-                .Set("musicId", string.Empty)
                 .Set("contactDamage", 14f)
                 .Set("contactDamageCooldown", 0.8f)
                 .Set("contactKnockbackMultiplier", 1.4f)

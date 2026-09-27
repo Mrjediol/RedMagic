@@ -1,3 +1,4 @@
+using RedMagic.Audio;
 using UnityEngine;
 
 namespace RedMagic.UI
@@ -82,8 +83,11 @@ namespace RedMagic.UI
         [Header("Salida")]
         [Min(0.01f)] public float outroDuration = 0.4f;
 
-        [Header("Sonido (ids de AudioManager, vacío = sin sonido)")]
-        public string landSfxId = "";
-        public string continueSfxId = "SFX_ButtonClick";
+        [Header("Sonido")]
+        [Tooltip("Cuando el icono aterriza. Al continuar suena el clic de UI del AudioManager.")]
+        public SoundCue landSound = new SoundCue();
+
+        // TEMPORAL (audio fase 4): valor de la tabla de ids antigua, sólo para la herramienta de migración.
+        [HideInInspector] public string continueSfxId = "SFX_ButtonClick";
     }
 }

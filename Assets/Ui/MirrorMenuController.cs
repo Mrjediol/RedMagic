@@ -111,14 +111,14 @@ namespace RedMagic.UI
             if (keyboard != null && (keyboard.escapeKey.wasPressedThisFrame ||
                                      keyboard.eKey.wasPressedThisFrame))
             {
-                Close();
+                CloseFromInput();
                 return;
             }
 
             var gamepad = Gamepad.current;
             if (gamepad != null && (gamepad.buttonEast.wasPressedThisFrame ||
                                     gamepad.startButton.wasPressedThisFrame))
-                Close();
+                CloseFromInput();
         }
 
         // ------------------------------------------------------------------ abrir / cerrar
@@ -141,6 +141,14 @@ namespace RedMagic.UI
             RefreshGrid();
         }
 
+        // Teclado/mando: no pasan por un botón, así que el "atrás" suena aquí. El botón de cerrar
+        // suena solo (UiSounds, clase BackClass) y llama a Close directamente.
+        private void CloseFromInput()
+        {
+            UiSounds.Back();
+            Close();
+        }
+
         public void Close()
         {
             if (!_open) return;
@@ -149,7 +157,6 @@ namespace RedMagic.UI
             _overlay.style.display = DisplayStyle.None;
             Unsubscribe();
 
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("SFX_ButtonClick");
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(false);
         }
 
@@ -194,6 +201,7 @@ namespace RedMagic.UI
             if (_document == null || _document.panelSettings == null) return false;
 
             var root = _document.rootVisualElement;
+            UiSounds.Bind(root);
             if (root == null) return false;
 
             BuildUi(root);
@@ -281,7 +289,7 @@ namespace RedMagic.UI
             MenuStyle.Card(button);
             button.style.width = SlotSize;
             button.style.height = SlotSize;
-            button.RegisterCallback<PointerEnterEvent>(_ => AudioManager.Instance?.PlaySFX("SFX_ButtonHover"));
+            button.AddToClassList(UiSounds.NoClickClass);   // suena sólo si la pasiva está desbloqueada
 
             // El marco de la celda va DESPUÉS de MenuStyle.Card, igual que en la rejilla de mejoras:
             // Dress limpia el fondo/borde planos y pone el suyo, con más relleno.
@@ -360,6 +368,7 @@ namespace RedMagic.UI
             upgradeBox.Add(_detailUpgradeDescription);
 
             _upgradeButton = new Button(OnUpgradeClicked);
+            _upgradeButton.AddToClassList(UiSounds.NoClickClass);   // suena sólo si la mejora sale bien
             LocalizedUi.Bind(_upgradeButton, "mirror.upgrade");
             _upgradeButton.style.width = 220;
             _upgradeButton.style.height = 52;
@@ -378,6 +387,7 @@ namespace RedMagic.UI
             upgradeBox.Add(_upgradeFooter);
 
             var back = new Button(ShowGrid);
+            back.AddToClassList(UiSounds.BackClass);
             LocalizedUi.Bind(back, "mirror.back");
             back.style.width = 160;
             back.style.height = 44;
@@ -414,7 +424,7 @@ namespace RedMagic.UI
             var manager = LegendaryPassiveManager.Instance;
             if (manager == null || !manager.IsUnlocked(passive)) return; // bloqueada: no hace nada
 
-            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+            UiSounds.Click();
             ShowDetail(id);
         }
 
@@ -425,7 +435,7 @@ namespace RedMagic.UI
             if (passive == null || manager == null) return;
 
             if (manager.TryUpgrade(passive))
-                AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+                UiSounds.Click();
             // Un fallo (sin fondos / al máximo) no hace nada: RefreshDetail ya deja claro el estado.
         }
 

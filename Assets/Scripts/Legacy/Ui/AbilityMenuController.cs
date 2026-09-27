@@ -121,7 +121,7 @@ namespace RedMagic.UI
             _open = false;
             _overlay.style.display = DisplayStyle.None;
 
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("SFX_ButtonClick");
+            UiSounds.Back();
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(false);
         }
 
@@ -151,6 +151,7 @@ namespace RedMagic.UI
             if (_document == null || _document.panelSettings == null) return false;
 
             var root = _document.rootVisualElement;
+            UiSounds.Bind(root);
             if (root == null) return false;
 
             BuildUi(root);
@@ -294,7 +295,7 @@ namespace RedMagic.UI
             card.style.backgroundColor = isEquipped ? MenuStyle.CellBuyable : MenuStyle.CellBg;
             MenuStyle.SetBorder(card, isEquipped ? 3 : 2,
                                 isEquipped ? accent : MenuStyle.GoldBorder, 12);
-            card.RegisterCallback<PointerEnterEvent>(_ => AudioManager.Instance?.PlaySFX("SFX_ButtonHover"));
+            card.AddToClassList(UiSounds.NoClickClass);   // suena sólo si la acción sale bien
         }
 
         private void Equip(AbilityDefinition ability)
@@ -303,7 +304,7 @@ namespace RedMagic.UI
             if (_user == null) return;
 
             _user.Equip(ability);
-            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+            UiSounds.Click();
 
             // Se repinta en vez de cerrarse: probar es cambiar de habilidad varias veces seguidas,
             // y cerrar el menú en cada cambio obligaría a reabrirlo con K cada vez.

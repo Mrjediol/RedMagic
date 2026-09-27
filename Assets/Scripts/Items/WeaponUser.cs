@@ -211,8 +211,7 @@ namespace RedMagic.Items
                     _charging = true;
                     _charge = 0f;
                     _chargeFx = MakeChargeFx(weapon);
-                    AudioManager.Instance?.PlaySFX(weapon.Shot.delivery == ShotDelivery.Hitscan
-                        ? "SFX_ButtonHover" : "SFX_ButtonClick");
+                    AudioManager.Instance?.Play(weapon.ChargeSound, transform.position);
                 }
 
                 _charge = Mathf.Min(weapon.Shot.chargeTime, _charge + Time.deltaTime);
@@ -319,6 +318,7 @@ namespace RedMagic.Items
             args.Impact = null;
             args.ForceGilded = false;
             Casting?.Invoke(args);
+            AudioManager.Instance?.Play(loadout.Inventory.Weapon.FireSound, transform.position);
 
             ShotResolver.Fire(loadout.Inventory, BuildContext(facing, args.DamageScale, args.Impact, args.ForceGilded),
                               chargeFraction);

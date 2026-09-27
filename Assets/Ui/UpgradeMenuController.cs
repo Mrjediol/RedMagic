@@ -108,14 +108,14 @@ namespace RedMagic.UI
             if (keyboard != null && (keyboard.escapeKey.wasPressedThisFrame ||
                                      keyboard.eKey.wasPressedThisFrame))
             {
-                Close();
+                CloseFromInput();
                 return;
             }
 
             var gamepad = Gamepad.current;
             if (gamepad != null && (gamepad.buttonEast.wasPressedThisFrame ||
                                     gamepad.startButton.wasPressedThisFrame))
-                Close();
+                CloseFromInput();
         }
 
         // ------------------------------------------------------------------ abrir / cerrar
@@ -134,6 +134,14 @@ namespace RedMagic.UI
             RefreshAll();
         }
 
+        // Teclado/mando: no pasan por un botón, así que el "atrás" suena aquí. El botón de cerrar
+        // suena solo (UiSounds, clase BackClass) y llama a Close directamente.
+        private void CloseFromInput()
+        {
+            UiSounds.Back();
+            Close();
+        }
+
         public void Close()
         {
             if (!_open) return;
@@ -142,7 +150,6 @@ namespace RedMagic.UI
             _overlay.style.display = DisplayStyle.None;
             Unsubscribe();
 
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("SFX_ButtonClick");
             if (GameStateManager.Instance != null) GameStateManager.Instance.SetPaused(false);
         }
 
@@ -181,6 +188,7 @@ namespace RedMagic.UI
             if (_document == null || _document.panelSettings == null) return false;
 
             var root = _document.rootVisualElement;
+            UiSounds.Bind(root);
             if (root == null) return false;
 
             BuildUi(root);
@@ -278,7 +286,7 @@ namespace RedMagic.UI
             int r = row, c = column;
             var button = new Button(() => TryBuy(r, c));
             MenuStyle.Card(button);
-            button.RegisterCallback<PointerEnterEvent>(_ => AudioManager.Instance?.PlaySFX("SFX_ButtonHover"));
+            button.AddToClassList(UiSounds.NoClickClass);   // suena sólo si la compra sale bien
 
             // El marco de la celda va DESPUÉS de MenuStyle.Card: Dress limpia el fondo y el borde
             // planos y pone su propio relleno, más ancho, para que el texto no pise la piedra.
@@ -305,7 +313,7 @@ namespace RedMagic.UI
             if (manager == null) return;
 
             if (manager.TryBuy(row, column))
-                AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+                UiSounds.Click();
             // Un fallo (bloqueado / sin fondos / al máximo) no hace nada: RefreshAll ya deja claro
             // el estado de cada celda.
         }

@@ -26,8 +26,11 @@ namespace RedMagic.Hub
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     [DisallowMultipleComponent]
-    public abstract class HubLootContainer : MonoBehaviour
+    public abstract class HubLootContainer : MonoBehaviour, ISoundEventSource
     {
+        /// <summary>OnInteract al abrir/usar, OnLoot al recoger. Ver <see cref="SoundEmitter"/>.</summary>
+        public event System.Action<SoundTrigger> SoundTriggered;
+
         private enum State
         {
             Closed,            // nunca interactuado, o ya reseteado por una run nueva
@@ -54,12 +57,12 @@ namespace RedMagic.Hub
                  "dorado de Cainos y AbilityChest).")]
         [SerializeField] private string openParameter = "IsOpened";
 
-        [Header("Sonido")]
-        [Tooltip("id de sonido del AudioManager al abrir. Vacío = sin sonido.")]
-        [SerializeField] private string openSfxId = "SFX_ButtonClick";
-
-        [Tooltip("id de sonido del AudioManager al recoger/cerrar. Vacío = sin sonido.")]
-        [SerializeField] private string lootSfxId = "";
+#pragma warning disable CS0414
+        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua, sólo para la herramienta de migración.
+        // El sonido va en el SoundEmitter del prop (OnInteract / OnLoot).
+        [SerializeField, HideInInspector] private string openSfxId = "SFX_ButtonClick";
+        [SerializeField, HideInInspector] private string lootSfxId = "";
+#pragma warning restore CS0414
 
         private InputAction _interactAction;
         private bool _playerInRange;
@@ -186,8 +189,7 @@ namespace RedMagic.Hub
 
             if (animator != null && HasParameter(openParameter)) animator.SetBool(openParameter, true);
 
-            if (!string.IsNullOrWhiteSpace(openSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(openSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnInteract);
 
             RefreshPrompt();
         }
@@ -200,8 +202,7 @@ namespace RedMagic.Hub
 
             if (animator != null && HasParameter(openParameter)) animator.SetBool(openParameter, false);
 
-            if (!string.IsNullOrWhiteSpace(lootSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(lootSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnLoot);
 
             InteractionPromptUi.Hide(this);
         }

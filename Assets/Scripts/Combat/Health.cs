@@ -6,11 +6,11 @@ namespace RedMagic.Combat
 {
     /// <summary>
     /// Componente de vida reutilizable (jugador, enemigos, objetos destructibles).
-    /// Dispara eventos al cambiar la vida, al recibir daño y al morir, y lanza los SFX
-    /// correspondientes a través de <see cref="AudioManager"/> por id de sonido.
+    /// Dispara eventos al cambiar la vida, al recibir daño y al morir. Sus sonidos (OnHit /
+    /// OnDeath) los pone un <see cref="SoundEmitter"/> en el mismo GameObject.
     /// </summary>
     [DisallowMultipleComponent]
-    public class Health : MonoBehaviour
+    public class Health : MonoBehaviour, ISoundEventSource
     {
         [Header("Vida")]
         [SerializeField] private float maxHealth = 100f;
@@ -34,11 +34,15 @@ namespace RedMagic.Combat
         [Tooltip("Usar tiempo sin escalar, para que los i-frames no se congelen con el juego en pausa.")]
         [SerializeField] private bool invulnerabilityUsesUnscaledTime;
 
-        [Header("SFX — ids de sonido del AudioManager")]
-        [Tooltip("id del sonido al recibir daño. Déjalo vacío para no sonar.")]
-        [SerializeField] private string hurtSfxId;
-        [Tooltip("id del sonido al morir. Déjalo vacío para no sonar.")]
-        [SerializeField] private string deathSfxId;
+#pragma warning disable CS0414
+        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua. Nada los lee en runtime; sólo
+        // la herramienta de migración, que los pasa al SoundEmitter. Se borran en la fase 4.
+        [SerializeField, HideInInspector] private string hurtSfxId;
+        [SerializeField, HideInInspector] private string deathSfxId;
+#pragma warning restore CS0414
+
+        /// <summary>OnHit al encajar daño, OnDeath al morir. Ver <see cref="SoundEmitter"/>.</summary>
+        public event Action<SoundTrigger> SoundTriggered;
 
         public float MaxHealth => maxHealth;
         public float CurrentHealth => currentHealth;
@@ -251,7 +255,7 @@ namespace RedMagic.Combat
             AnyDamaged?.Invoke(this, amount);
             if (reduced > 0f) DamageReduced?.Invoke(reduced);
             HealthChanged?.Invoke(currentHealth, maxHealth);
-            PlaySfx(hurtSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnHit);
 
             if (currentHealth <= 0f) Die();
             return true;
@@ -300,13 +304,6 @@ namespace RedMagic.Combat
         /// </summary>
         public void SetInvulnerabilityDuration(float value) => invulnerabilityDuration = Mathf.Max(0f, value);
 
-        /// <summary>Ids de sonido en caliente. Vacío = sin sonido, como el valor por defecto.</summary>
-        public void SetSfx(string hurt, string death)
-        {
-            hurtSfxId = hurt ?? string.Empty;
-            deathSfxId = death ?? string.Empty;
-        }
-
         /// <summary>
         /// Resta vida sin que sea un golpe: sin i-frames, sin sonido y sin <see cref="Damaged"/> (que
         /// dispara la animación de daño y el parpadeo). Para pérdidas continuas — un item maldito,
@@ -347,7 +344,7 @@ namespace RedMagic.Combat
 
             currentHealth = 0f;
             HealthChanged?.Invoke(currentHealth, maxHealth);
-            PlaySfx(deathSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnDeath);
             Died?.Invoke();
             AnyDied?.Invoke(this);
         }
@@ -390,12 +387,6 @@ namespace RedMagic.Combat
             bool was = _invulnerabilityTimer > 0f;
             _invulnerabilityTimer = seconds;
             if (!was) InvulnerabilityChanged?.Invoke(true);
-        }
-
-        private static void PlaySfx(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id)) return;
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(id);
         }
     }
 }

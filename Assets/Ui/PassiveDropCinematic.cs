@@ -126,7 +126,7 @@ namespace RedMagic.UI
                 if (!landed && t >= landAt)
                 {
                     landed = true;
-                    PlaySfx(s.landSfxId);
+                    AudioManager.Instance?.Play(s.landSound);
                 }
 
                 if (landed) UpdateShockwave(t - landAt, s);
@@ -141,7 +141,7 @@ namespace RedMagic.UI
                 yield return null;
             }
 
-            PlaySfx(s.continueSfxId);
+            UiSounds.Click();
 
             // Salida: el zoom se deshace y todo se funde a la vez.
             float fromZoom = zoom;
@@ -283,11 +283,6 @@ namespace RedMagic.UI
 
             var pad = Gamepad.current;
             return pad != null && (pad.buttonSouth.wasPressedThisFrame || pad.startButton.wasPressedThisFrame);
-        }
-
-        private static void PlaySfx(string id)
-        {
-            if (!string.IsNullOrWhiteSpace(id) && AudioManager.Instance != null) AudioManager.Instance.PlaySFX(id);
         }
 
         private static PassiveDropCinematicSettings LoadSettings()

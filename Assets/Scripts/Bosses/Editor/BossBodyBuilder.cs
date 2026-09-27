@@ -266,7 +266,6 @@ namespace RedMagic.Bosses.EditorTools
                 .Set("activationRadius", body.Value<float?>("activationRadius") ?? 18f)
                 .Set("faceTarget", true)
                 .Set("introSeconds", 2.2f)
-                .Set("musicId", string.Empty)
                 .Set("introShake", 0.6f)
                 .Set("contactDamage", body.Value<float?>("contactDamage") ?? 12f)
                 .Set("contactDamageCooldown", 0.8f)

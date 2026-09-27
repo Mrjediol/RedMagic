@@ -27,7 +27,8 @@ namespace RedMagic.Gameplay
     ///    <see cref="TouchInput"/>. Las tres fuentes conviven; gana la de mayor magnitud.
     ///  - <b>Pausa / muerte</b>: respeta <see cref="GameStateManager.CanPlayerAct"/> y el evento
     ///    <see cref="Health.Died"/>.
-    ///  - <b>Audio</b>: los SFX salen por <see cref="AudioManager"/> por id (salto, pasos, pisotón).
+    ///  - <b>Audio</b>: avisa de salto, doble salto, dash, pasos y pisotón como
+    ///    <see cref="ISoundEventSource"/>; qué suena lo decide el <see cref="SoundEmitter"/>.
     ///
     /// El Rigidbody2D se mantiene (forzado a Kinematic) sólo para que sigan llegando los eventos
     /// de colisión / trigger a los enemigos, proyectiles y zonas de daño.
@@ -35,8 +36,11 @@ namespace RedMagic.Gameplay
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(Collider2D))]
     [DisallowMultipleComponent]
-    public class PlayerMovement : MonoBehaviour, IKnockbackReceiver
+    public class PlayerMovement : MonoBehaviour, IKnockbackReceiver, ISoundEventSource
     {
+        /// <summary>OnJump / OnAirJump / OnDash / Footstep / OnStomp. Ver <see cref="SoundEmitter"/>.</summary>
+        public event System.Action<SoundTrigger> SoundTriggered;
+
         // ---------------------------------------------------------------- tipos internos
 
         private struct FrameInput
@@ -122,15 +126,18 @@ namespace RedMagic.Gameplay
 
         // ---------------------------------------------------------------- SFX
 
-        [Header("SFX — ids de sonido del AudioManager")]
-        [SerializeField] private string jumpSfxId = "SFX_PlayerJump";
-        [Tooltip("Pasos al correr por el suelo. Déjalo vacío para desactivarlos.")]
-        [SerializeField] private string footstepSfxId = "SFX_PlayerFootstep";
+        [Header("Sonido")]
+        [Tooltip("Segundos entre pasos (evento Footstep del SoundEmitter) al correr por el suelo.")]
         [SerializeField] private float footstepInterval = 0.32f;
-        [Tooltip("Sonido al pisar a un enemigo. Déjalo vacío para no sonar.")]
-        [SerializeField] private string stompSfxId = "SFX_EnemyStomp";
-        [Tooltip("Sonido del dash. Déjalo vacío para no sonar.")]
-        [SerializeField] private string dashSfxId = "SFX_PlayerDash";
+
+#pragma warning disable CS0414
+        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua. Nada los lee en runtime; sólo
+        // la herramienta de migración, que los pasa al SoundEmitter. Se borran en la fase 4.
+        [SerializeField, HideInInspector] private string jumpSfxId = "SFX_PlayerJump";
+        [SerializeField, HideInInspector] private string footstepSfxId = "SFX_PlayerFootstep";
+        [SerializeField, HideInInspector] private string stompSfxId = "SFX_EnemyStomp";
+        [SerializeField, HideInInspector] private string dashSfxId = "SFX_PlayerDash";
+#pragma warning restore CS0414
 
         // ---------------------------------------------------------------- pisotón
 
@@ -1114,6 +1121,7 @@ namespace RedMagic.Gameplay
             {
                 Jump(_jumpHeight);
                 Jumped?.Invoke();
+                SoundTriggered?.Invoke(SoundTrigger.OnJump);
             }
             else if (_input.JumpDown && !_colDown && _airJumpsUsed < maxAirJumps)
             {
@@ -1122,6 +1130,7 @@ namespace RedMagic.Gameplay
                 _dashTimer = 0f;
                 Jump(airJumpHeight > 0f ? airJumpHeight : _jumpHeight);
                 AirJumped?.Invoke();
+                SoundTriggered?.Invoke(SoundTrigger.OnAirJump);
             }
             else
             {
@@ -1143,8 +1152,6 @@ namespace RedMagic.Gameplay
             _timeLeftGrounded = float.MinValue;
             _lastJumpPressed = float.MinValue;
             JumpingThisFrame = true;
-
-            PlaySfx(jumpSfxId);
         }
 
         /// <summary>
@@ -1222,7 +1229,7 @@ namespace RedMagic.Gameplay
             _dashTimer = duration;
             _dashCooldownTimer = dashCooldown + duration;
 
-            PlaySfx(dashSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnDash);
             Dashed?.Invoke(_dashDirection);
         }
 
@@ -1334,8 +1341,6 @@ namespace RedMagic.Gameplay
 
         private void UpdateFootsteps()
         {
-            if (string.IsNullOrWhiteSpace(footstepSfxId)) return;
-
             // Ojo: el temporizador NO se pone a cero al dejar de andar. Si se reiniciara, cualquier
             // parpadeo de _colDown haría sonar un paso en cada frame en que vuelve a tocar suelo.
             // Así el intervalo se respeta siempre, pase lo que pase con el sensor de suelo.
@@ -1345,7 +1350,7 @@ namespace RedMagic.Gameplay
             if (_footstepTimer > 0f) return;
 
             _footstepTimer = footstepInterval;
-            PlaySfx(footstepSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.Footstep);
         }
 
         // ================================================================ mover
@@ -1944,7 +1949,8 @@ namespace RedMagic.Gameplay
             else otherHealth.Die();
 
             Jump(_jumpHeight);      // rebote
-            PlaySfx(stompSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnJump);   // el rebote suena como un salto (como antes)
+            SoundTriggered?.Invoke(SoundTrigger.OnStomp);
         }
 
         // ================================================================ varios
@@ -1989,12 +1995,6 @@ namespace RedMagic.Gameplay
                 useLayerMask = true,
                 layerMask = _groundLayer
             };
-        }
-
-        private static void PlaySfx(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id)) return;
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX(id);
         }
 
         private void OnDrawGizmos()

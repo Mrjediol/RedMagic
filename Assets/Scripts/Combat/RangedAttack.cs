@@ -27,8 +27,11 @@ namespace RedMagic.Combat
     /// la regla del proyecto de poolear lo que se repite pide cubrir.
     /// </summary>
     [DisallowMultipleComponent]
-    public class RangedAttack : MonoBehaviour
+    public class RangedAttack : MonoBehaviour, ISoundEventSource
     {
+        /// <summary>OnAttack al disparar. Ver <see cref="SoundEmitter"/>.</summary>
+        public event System.Action<SoundTrigger> SoundTriggered;
+
         public enum TriggerMode
         {
             External,
@@ -60,8 +63,10 @@ namespace RedMagic.Combat
         [Header("Animación y sonido")]
         [Tooltip("Trigger del Animator al atacar. Vacío = no se toca el Animator.")]
         [SerializeField] private string animatorTrigger = "Attack";
-        [Tooltip("id de sonido del AudioManager. Vacío = sin sonido.")]
-        [SerializeField] private string attackSfxId = "";
+#pragma warning disable CS0414
+        // TEMPORAL (audio fase 4): valor de la tabla de ids antigua, sólo para la herramienta de migración.
+        [SerializeField, HideInInspector] private string attackSfxId = "";
+#pragma warning restore CS0414
         [Tooltip("Efecto opcional en la boca del disparo.")]
         [SerializeField] private GameObject muzzleEffect;
 
@@ -163,8 +168,7 @@ namespace RedMagic.Combat
             if (_animator != null && !string.IsNullOrWhiteSpace(animatorTrigger))
                 _animator.SetTrigger(animatorTrigger);
 
-            if (!string.IsNullOrWhiteSpace(attackSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(attackSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnAttack);
 
             StartCoroutine(FireRoutine(direction.normalized));
             return true;

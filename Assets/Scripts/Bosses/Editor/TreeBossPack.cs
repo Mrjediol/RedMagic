@@ -1076,8 +1076,6 @@ namespace RedMagic.Bosses.EditorTools
                 .Set("activationRadius", 18f)
                 .Set("faceTarget", true)
                 .Set("introSeconds", 2.2f)
-                // Vacío como en el resto de jefes: 'Music_Boss' no está dado de alta en el AudioManager.
-                .Set("musicId", string.Empty)
                 .Set("introShake", 0.6f)
                 .Set("contactDamage", 12f)
                 .Set("contactDamageCooldown", 0.8f)

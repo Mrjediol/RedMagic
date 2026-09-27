@@ -1,4 +1,3 @@
-using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Core;
 using UnityEngine;
@@ -90,7 +89,6 @@ namespace RedMagic.Gameplay
         private Rigidbody2D _body;
         private SpriteRenderer _sprite;
         private Health _health;
-        private SoundEmitter _sound;
         private Collider2D _collider;
         private Knockback _knockback;
 
@@ -127,7 +125,6 @@ namespace RedMagic.Gameplay
             _body = GetComponent<Rigidbody2D>();
             _sprite = GetComponentInChildren<SpriteRenderer>();
             _health = GetComponent<Health>();
-            _sound = GetComponent<SoundEmitter>();
             _collider = GetComponent<Collider2D>();
             _knockback = GetComponent<Knockback>();
 
@@ -146,21 +143,13 @@ namespace RedMagic.Gameplay
         private void OnEnable()
         {
             if (_health == null) return;
-            _health.Damaged += OnDamaged;
             _health.Died += OnDied;
         }
 
         private void OnDisable()
         {
             if (_health == null) return;
-            _health.Damaged -= OnDamaged;
             _health.Died -= OnDied;
-        }
-
-        private void OnDamaged(float amount)
-        {
-            // Sonido de impacto configurado por objeto en su SoundEmitter.
-            _sound?.Play("OnHit");
         }
 
         private void Update()
@@ -418,8 +407,6 @@ namespace RedMagic.Gameplay
         {
             _active = false;
             Stop();
-
-            _sound?.Play("OnDeath");
 
             // El aspecto del cadáver y su desaparición son cosa de Corpse. Sin ese componente se
             // mantiene el tinte de siempre, para que un enemigo suelto siga viéndose muerto.

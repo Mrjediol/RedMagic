@@ -35,8 +35,13 @@ namespace RedMagic.UI
         [SerializeField] private OptionsMenuController optionsMenu;
 
         [Header("Música")]
-        [Tooltip("id del SoundData que suena en bucle mientras se está en el menú. Vacío = sin música.")]
-        [SerializeField] private string menuMusicId = "Music_Menu";
+        [Tooltip("Suena en bucle mientras se está en el menú. Vacío = sin música.")]
+        [SerializeField] private AudioClip menuMusic;
+
+#pragma warning disable CS0414
+        // TEMPORAL (audio fase 4): valor de la tabla de ids antigua, sólo para la herramienta de migración.
+        [SerializeField, HideInInspector] private string menuMusicId = "Music_Menu";
+#pragma warning restore CS0414
 
         private UIDocument _document;
         private VisualElement _root;
@@ -65,6 +70,7 @@ namespace RedMagic.UI
             Wire(_quitButton, OnQuitClicked);
 
             LocalizedUi.BindTree(_root); // claves "#…" del UXML, antes de vestir
+            UiSounds.Bind(_root);
             DressWithSkin();
             ApplyVisibility();
             FocusForGamepad();
@@ -100,10 +106,9 @@ namespace RedMagic.UI
             if (GameStateManager.Instance != null)
                 GameStateManager.Instance.SetPaused(true);
 
-            // La música del menú suena en bucle mientras se está en el menú (SoundData con loop = true).
             // PlayMusic ignora la llamada si ese tema ya está sonando, así que volver de Opciones no lo reinicia.
-            if (!string.IsNullOrWhiteSpace(menuMusicId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlayMusic(menuMusicId);
+            if (menuMusic != null && AudioManager.Instance != null)
+                AudioManager.Instance.PlayMusic(menuMusic);
         }
 
         private void OnDisable()
@@ -148,30 +153,16 @@ namespace RedMagic.UI
         {
             if (button == null) return;
             button.clicked += onClick;
-            button.RegisterCallback<PointerEnterEvent>(OnButtonHover);
         }
 
         private void Unwire(Button button, System.Action onClick)
         {
             if (button == null) return;
             button.clicked -= onClick;
-            button.UnregisterCallback<PointerEnterEvent>(OnButtonHover);
-        }
-
-        private static void OnButtonHover(PointerEnterEvent _)
-        {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("SFX_ButtonHover");
-        }
-
-        private static void PlayClick()
-        {
-            if (AudioManager.Instance != null) AudioManager.Instance.PlaySFX("SFX_ButtonClick");
         }
 
         private void OnPlayClicked()
         {
-            PlayClick();
-
             // Se valida ANTES de tocar pausa o música: si la escena no se pudiera cargar, el menú
             // se queda como estaba en vez de cortar la música y dejar al jugador en un menú mudo.
             string path = hubScene.ResolveForLoad(this);
@@ -189,8 +180,6 @@ namespace RedMagic.UI
 
         private void OnOptionsClicked()
         {
-            PlayClick();
-
             if (optionsMenu == null)
             {
                 Debug.LogWarning("[MainMenu] No hay optionsMenu asignado en el Inspector.", this);
@@ -203,7 +192,6 @@ namespace RedMagic.UI
 
         private void OnQuitClicked()
         {
-            PlayClick();
 #if UNITY_EDITOR
             EditorApplication.isPlaying = false;
 #else

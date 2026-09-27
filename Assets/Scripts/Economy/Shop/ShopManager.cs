@@ -66,9 +66,17 @@ namespace RedMagic.Economy
         [SerializeField] private string actionName = "Interact";
 
         [Header("Sonido")]
+        [Tooltip("Compra hecha (sólo si se cobra y se equipa).")]
+        [SerializeField] private SoundCue buySound = new SoundCue();
         [Tooltip("Interacción rechazada (sin oro, sin rerolls).")]
-        [SerializeField] private string denySfxId = "SFX_ButtonClick";
-        [SerializeField] private string rerollSfxId = "SFX_ButtonClick";
+        [SerializeField] private SoundCue denySound = new SoundCue();
+        [SerializeField] private SoundCue rerollSound = new SoundCue();
+
+#pragma warning disable CS0414
+        // TEMPORAL (audio fase 4): valores de la tabla de ids antigua, sólo para la herramienta de migración.
+        [SerializeField, HideInInspector] private string denySfxId = "SFX_ButtonClick";
+        [SerializeField, HideInInspector] private string rerollSfxId = "SFX_ButtonClick";
+#pragma warning restore CS0414
 
         public IReadOnlyList<Transform> SpawnPoints => itemSpawnPoints;
 
@@ -228,7 +236,7 @@ namespace RedMagic.Economy
         private void Deny(IShopInteractable target)
         {
             target.Deny();
-            AudioManager.Instance?.PlaySFX(denySfxId);
+            AudioManager.Instance?.Play(denySound);
         }
 
         private void TryBuy(ShopAltar altar)
@@ -265,7 +273,7 @@ namespace RedMagic.Economy
             }
 
             _purchased.Add(entry.Item);
-            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
+            AudioManager.Instance?.Play(buySound);
             RewardPopupUi.Show(entry.Item.Icon, Loc.Get("shop.bought"), entry.Item.DisplayName, ItemRarities.ColorOf(entry.Item.Rarity));
 
             // Efecto de compra (el altar queda vacío ya; el juego sigue) + el oro del HUD bajando.
@@ -297,7 +305,7 @@ namespace RedMagic.Economy
             SetFocus(null);
 
             var fx = ShopFxConfig.Current;
-            AudioManager.Instance?.PlaySFX(rerollSfxId);
+            AudioManager.Instance?.Play(rerollSound);
             _reroll.PlayTrigger(SortingReference());
 
             // Un icono recién comprado que aún vuela al jugador termina su viaje antes de tocar su altar.

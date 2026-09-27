@@ -34,8 +34,13 @@ namespace RedMagic.Run
         [Min(0.1f)]
         [SerializeField] private float clearEffectScale = 2f;
 
-        [Tooltip("id de sonido del AudioManager al despejar la sección. Vacío = sin sonido.")]
-        [SerializeField] private string clearSfxId = "SFX_Fireball";
+        [Tooltip("Sonido al despejar la sección.")]
+        [SerializeField] private SoundCue clearSound = new SoundCue();
+
+#pragma warning disable CS0414
+        // TEMPORAL (audio fase 4): valor de la tabla de ids antigua, sólo para la herramienta de migración.
+        [SerializeField, HideInInspector] private string clearSfxId = "SFX_Fireball";
+#pragma warning restore CS0414
 
         /// <summary>True si no queda ningún enemigo vivo en la sección actual.</summary>
         public bool IsCleared { get; private set; } = true;
@@ -233,8 +238,7 @@ namespace RedMagic.Run
         /// </summary>
         private void OnSectionCleared()
         {
-            if (!string.IsNullOrWhiteSpace(clearSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(clearSfxId);
+            if (AudioManager.Instance != null) AudioManager.Instance.Play(clearSound);
 
             if (clearEffectPrefab != null && _trackedScene.IsValid() && _trackedScene.isLoaded)
             {

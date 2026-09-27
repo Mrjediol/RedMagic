@@ -1,4 +1,5 @@
 using RedMagic.Abilities;
+using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Gameplay;
 using UnityEngine;
@@ -20,8 +21,11 @@ namespace RedMagic.Enemies
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(EnemyStats))]
-    public class EnemyAttack : MonoBehaviour
+    public class EnemyAttack : MonoBehaviour, ISoundEventSource
     {
+        /// <summary>OnAttack en el frame en que sale el golpe/disparo. Ver <see cref="SoundEmitter"/>.</summary>
+        public event System.Action<SoundTrigger> SoundTriggered;
+
         /// <summary>
         /// Nombre del hijo opcional que marca dónde nace el disparo — la boca de un dragón, la
         /// punta de un bastón. Colócalo en el Prefab Editor arrastrándolo a la posición exacta con
@@ -105,6 +109,8 @@ namespace RedMagic.Enemies
         {
             var tuning = _stats.Tuning;
             if (_health != null && _health.IsDead) return;
+
+            SoundTriggered?.Invoke(SoundTrigger.OnAttack);
 
             if (tuning.selfDestruct) Explode(tuning);
             else if (tuning.IsRanged) Shoot(tuning);

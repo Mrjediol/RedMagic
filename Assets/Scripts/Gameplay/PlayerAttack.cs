@@ -21,8 +21,11 @@ namespace RedMagic.Gameplay
     /// </summary>
     [RequireComponent(typeof(PlayerMovement))]
     [DisallowMultipleComponent]
-    public class PlayerAttack : MonoBehaviour
+    public class PlayerAttack : MonoBehaviour, ISoundEventSource
     {
+        /// <summary>OnAttack al iniciar el golpe. Ver <see cref="SoundEmitter"/>.</summary>
+        public event System.Action<SoundTrigger> SoundTriggered;
+
         [Header("Input Actions")]
         [SerializeField] private InputActionAsset inputActions;
         [SerializeField] private string actionMapName = "Player";
@@ -48,8 +51,10 @@ namespace RedMagic.Gameplay
         [SerializeField] private Vector2 hitboxSize = new Vector2(1.1f, 1.0f);
         [SerializeField] private LayerMask hitLayers = ~0;
 
-        [Header("SFX — id de sonido del AudioManager")]
-        [SerializeField] private string attackSfxId = "SFX_PlayerAttack";
+#pragma warning disable CS0414
+        // TEMPORAL (audio fase 4): valor de la tabla de ids antigua, sólo para la herramienta de migración.
+        [SerializeField, HideInInspector] private string attackSfxId = "SFX_PlayerAttack";
+#pragma warning restore CS0414
 
         [Header("Depuración")]
         [Tooltip("Dibuja la caja de daño en la vista de escena.")]
@@ -129,8 +134,7 @@ namespace RedMagic.Gameplay
 
             _cooldownTimer = cooldown;
             if (_animator != null) _animator.TriggerAttack();
-            if (!string.IsNullOrWhiteSpace(attackSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(attackSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnAttack);
 
             StartCoroutine(SwingRoutine());
         }

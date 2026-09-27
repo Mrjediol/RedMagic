@@ -206,7 +206,7 @@ namespace RedMagic.Bosses.EditorTools
         {
             "displayName", "description", "accent", "telegraph", "recovery", "weight",
             "cooldownInAttacks", "cooldownSeconds", "minPhase", "damage", "knockbackMultiplier",
-            "vulnerableSeconds", "vulnerableMultiplier", "gesture", "sfxId", "shakeAmplitude", "shakeDuration",
+            "vulnerableSeconds", "vulnerableMultiplier", "gesture", "shakeAmplitude", "shakeDuration",
         };
 
         private static void WriteAttackFields(BossAttack attack, JObject entry,
@@ -290,7 +290,6 @@ namespace RedMagic.Bosses.EditorTools
             Vector2 pause = ConfigJson.ReadVector2(phaseJson["pauseBetweenAttacks"], new Vector2(0.9f, 1.6f));
             float transitionSeconds = phaseJson.TryGetValue("transitionSeconds", out var ts) ? ts.Value<float>() : 1.8f;
             float transitionShake = phaseJson.TryGetValue("transitionShake", out var tsh) ? tsh.Value<float>() : 0.5f;
-            string transitionSfxId = phaseJson.TryGetValue("transitionSfxId", out var tsfx) ? tsfx.Value<string>() : "";
             float frenzyBelow = phaseJson.TryGetValue("frenzyBelowHealth", out var fb) ? fb.Value<float>() : 0f;
             float frenzySpeedScale = phaseJson.TryGetValue("frenzySpeedScale", out var fs) ? fs.Value<float>() : 1.35f;
 
@@ -319,7 +318,6 @@ namespace RedMagic.Bosses.EditorTools
             phaseProp.FindPropertyRelative("transitionShake").floatValue = transitionShake;
             phaseProp.FindPropertyRelative("frenzySpeedScale").floatValue = frenzySpeedScale;
 
-            phaseProp.FindPropertyRelative("transitionSfxId").stringValue = transitionSfxId;
             phaseProp.FindPropertyRelative("frenzyBelowHealth").floatValue = frenzyBelow;
 
             if (phaseJson.TryGetValue("transitionFx", out var fxToken))

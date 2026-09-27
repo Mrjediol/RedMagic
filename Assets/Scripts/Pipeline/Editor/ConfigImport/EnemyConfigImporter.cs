@@ -118,8 +118,6 @@ namespace RedMagic.Pipeline.EditorTools
 
             SetF(json, "maxHealth", v => t.maxHealth = v);
             SetF(json, "invulnerabilityDuration", v => t.invulnerabilityDuration = v);
-            SetS(json, "hurtSfxId", v => t.hurtSfxId = v);
-            SetS(json, "deathSfxId", v => t.deathSfxId = v);
 
             SetF(json, "knockbackHorizontal", v => t.knockbackHorizontal = v);
             SetF(json, "knockbackVertical", v => t.knockbackVertical = v);

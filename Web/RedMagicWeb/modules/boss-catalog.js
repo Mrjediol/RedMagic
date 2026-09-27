@@ -115,14 +115,6 @@ export const BOSS_CATALOG = {
       "default": ""
     },
     {
-      "name": "sfxId",
-      "label": "Sfx Id",
-      "tooltip": "id de sonido del AudioManager al lanzar el ataque. Vacío = sin sonido.",
-      "header": "Presencia",
-      "type": "string",
-      "default": ""
-    },
-    {
       "name": "shakeAmplitude",
       "label": "Shake Amplitude",
       "tooltip": "Sacudida de cámara al lanzar el ataque. 0 = ninguna.",

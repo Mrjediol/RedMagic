@@ -74,8 +74,8 @@ namespace RedMagic.UI
 
             if (_backButton != null)
             {
-                _backButton.clicked += GoBack;
-                _backButton.RegisterCallback<PointerEnterEvent>(OnHover);
+                _backButton.clicked += Close;
+                _backButton.AddToClassList(UiSounds.BackClass);
             }
 
             WireArrow(_resolutionPrev, PrevResolution);
@@ -87,6 +87,7 @@ namespace RedMagic.UI
             // Claves "#…" del UXML → texto del idioma activo; antes de vestir, que la skin mueve el
             // rótulo de los botones a un hijo.
             LocalizedUi.BindTree(_root);
+            UiSounds.Bind(_root);
             DressWithSkin();
             RefreshFromAudioManager();
             RefreshSelectors();
@@ -121,8 +122,7 @@ namespace RedMagic.UI
 
             if (_backButton != null)
             {
-                _backButton.clicked -= GoBack;
-                _backButton.UnregisterCallback<PointerEnterEvent>(OnHover);
+                _backButton.clicked -= Close;
             }
 
             UnwireArrow(_resolutionPrev, PrevResolution);
@@ -138,14 +138,12 @@ namespace RedMagic.UI
         {
             if (button == null) return;
             button.clicked += onClick;
-            button.RegisterCallback<PointerEnterEvent>(OnHover);
         }
 
         private static void UnwireArrow(Button button, System.Action onClick)
         {
             if (button == null) return;
             button.clicked -= onClick;
-            button.UnregisterCallback<PointerEnterEvent>(OnHover);
         }
 
         private void PrevResolution() => StepResolution(-1);
@@ -157,7 +155,6 @@ namespace RedMagic.UI
         {
             int count = DisplaySettings.Presets.Count;
             if (count == 0) return;
-            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
             DisplaySettings.SetPreset(((DisplaySettings.PresetIndex + step) % count + count) % count);
             RefreshSelectors();
         }
@@ -171,7 +168,6 @@ namespace RedMagic.UI
             for (int i = 0; i < languages.Count; i++)
                 if (languages[i].Code == Loc.Language) current = i;
 
-            AudioManager.Instance?.PlaySFX("SFX_ButtonClick");
             Loc.SetLanguage(languages[((current + step) % languages.Count + languages.Count) % languages.Count].Code);
             // Loc.Changed → OnLanguageChanged repinta.
         }
@@ -294,12 +290,16 @@ namespace RedMagic.UI
             UpdateValueLabel(LabelFor(group), SliderValueFor(group), evt.newValue);
         }
 
-        /// <summary>Vuelve a la pantalla que abrió Opciones (botón Volver o Escape/Atrás).</summary>
+        /// <summary>Vuelve a la pantalla que abrió Opciones desde Escape/Atrás (suena "atrás"; el botón
+        /// Volver suena solo por UiSounds y usa <see cref="Close"/>).</summary>
         public void GoBack()
         {
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX("SFX_ButtonClick");
+            UiSounds.Back();
+            Close();
+        }
 
+        private void Close()
+        {
             if (_open && GameStateManager.Instance != null)
                 GameStateManager.Instance.SetPaused(false);
             _open = false;
@@ -310,11 +310,6 @@ namespace RedMagic.UI
             else Debug.LogWarning("[OptionsMenu] Sin pantalla de retorno; usa Open(returnTo).", this);
         }
 
-        private static void OnHover(PointerEnterEvent _)
-        {
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX("SFX_ButtonHover");
-        }
 
         private static void UpdateValueLabel(Label label, float volume, bool muted)
         {

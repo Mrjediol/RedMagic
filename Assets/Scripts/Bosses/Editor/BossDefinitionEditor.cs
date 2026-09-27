@@ -215,7 +215,7 @@ namespace RedMagic.Bosses.EditorTools
             EditorGUI.indentLevel++;
             Field(phase, "transitionSeconds", "Segundos de transición");
             Field(phase, "transitionShake", "Sacudida");
-            Field(phase, "transitionSfxId", "Sonido");
+            Field(phase, "transitionSound", "Sonido");
             Field(phase, "transitionFx", "Efecto");
             Field(phase, "frenzyBelowHealth", "Frenesí por debajo de");
             Field(phase, "frenzySpeedScale", "Ritmo del frenesí");
@@ -340,7 +340,6 @@ namespace RedMagic.Bosses.EditorTools
             p.FindPropertyRelative("accent").colorValue = new Color(0.55f, 0.9f, 0.4f, 1f);
             p.FindPropertyRelative("transitionSeconds").floatValue = i == 0 ? 0f : 1.8f;
             p.FindPropertyRelative("transitionShake").floatValue = 0.5f;
-            p.FindPropertyRelative("transitionSfxId").stringValue = string.Empty;
             p.FindPropertyRelative("transitionFx").objectReferenceValue = null;
             p.FindPropertyRelative("openingAttack").objectReferenceValue = null;
             p.FindPropertyRelative("frenzyBelowHealth").floatValue = 0f;

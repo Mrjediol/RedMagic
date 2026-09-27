@@ -15,8 +15,10 @@ namespace RedMagic.Economy
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
     [DisallowMultipleComponent]
-    public class CauldronInteractable : MonoBehaviour
+    public class CauldronInteractable : MonoBehaviour, ISoundEventSource
     {
+        public event System.Action<SoundTrigger> SoundTriggered;
+
         [Header("Detección")]
         [Tooltip("Etiqueta del objeto que puede usar el disparador.")]
         [SerializeField] private string playerTag = "Player";
@@ -36,10 +38,6 @@ namespace RedMagic.Economy
 
         [Tooltip("Parámetro bool del Animator que se enciende al interactuar. Vacío = no se anima.")]
         [SerializeField] private string openParameter = "IsOpened";
-
-        [Header("Sonido")]
-        [Tooltip("id de sonido del AudioManager al abrir el menú. Vacío = sin sonido.")]
-        [SerializeField] private string openSfxId = "SFX_ButtonClick";
 
         private bool _playerInRange;
 
@@ -98,8 +96,7 @@ namespace RedMagic.Economy
             if (animator != null && !string.IsNullOrWhiteSpace(openParameter) && HasParameter(openParameter))
                 animator.SetBool(openParameter, true);
 
-            if (!string.IsNullOrWhiteSpace(openSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(openSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnInteract);
 
             SetPromptVisible(false);
             UpgradeMenuController.Instance.Open();

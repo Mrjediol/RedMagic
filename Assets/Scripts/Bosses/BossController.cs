@@ -36,8 +36,11 @@ namespace RedMagic.Bosses
     /// </summary>
     [RequireComponent(typeof(Health))]
     [DisallowMultipleComponent]
-    public class BossController : MonoBehaviour
+    public class BossController : MonoBehaviour, ISoundEventSource
     {
+        /// <summary>OnActivate al empezar la presentación (rugido). Ver <see cref="SoundEmitter"/>.</summary>
+        public event Action<SoundTrigger> SoundTriggered;
+
         [Header("Definición")]
         [Tooltip("Asset con el nombre, las fases y las barajas de ataques de este jefe.")]
         [SerializeField] private BossDefinition definition;
@@ -79,11 +82,10 @@ namespace RedMagic.Bosses
         [Min(0f)]
         [SerializeField] private float introSeconds = 2.2f;
 
-        [Tooltip("id de música del AudioManager para el combate. Vacío = no cambia la música.")]
-        [SerializeField] private string musicId = "Music_Boss";
-
-        [Tooltip("id de sonido del rugido de entrada. Vacío = sin sonido.")]
-        [SerializeField] private string roarSfxId;
+        [Tooltip("Música del combate, arranca con la presentación. Vacío = no cambia la música " +
+                 "(la de la fase, BossBattle{n} en Resources/Music, sigue sonando). El rugido de " +
+                 "entrada es el momento OnActivate del SoundEmitter.")]
+        [SerializeField] private AudioClip music;
 
         [Min(0f)]
         [SerializeField] private float introShake = 0.6f;
@@ -580,11 +582,10 @@ namespace RedMagic.Bosses
 
             BossHealthBar.Show(this);
 
-            if (!string.IsNullOrWhiteSpace(musicId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlayMusic(musicId);
+            if (music != null && AudioManager.Instance != null)
+                AudioManager.Instance.PlayMusic(music);
 
-            if (!string.IsNullOrWhiteSpace(roarSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(roarSfxId);
+            SoundTriggered?.Invoke(SoundTrigger.OnActivate);
 
             if (introShake > 0f) CameraFollow.ShakeAll(introShake, Mathf.Max(0.3f, introSeconds * 0.5f));
 
@@ -927,8 +928,8 @@ namespace RedMagic.Bosses
             if (phase.transitionFx != null)
                 VfxOneShot.Spawn(phase.transitionFx, new Vector3(transform.position.x, _groundY, 0f));
 
-            if (!string.IsNullOrWhiteSpace(phase.transitionSfxId) && AudioManager.Instance != null)
-                AudioManager.Instance.PlaySFX(phase.transitionSfxId);
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.Play(phase.transitionSound, transform.position);
 
             if (phase.transitionShake > 0f)
                 CameraFollow.ShakeAll(phase.transitionShake, Mathf.Max(0.3f, phase.transitionSeconds * 0.6f));

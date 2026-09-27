@@ -49,7 +49,6 @@ namespace RedMagic.Enemies
                 // healToFull sólo fuera de juego: en pleno combate subir el máximo no debe curar.
                 health.SetMaxHealth(tuning.maxHealth, !Application.isPlaying);
                 health.SetInvulnerabilityDuration(tuning.invulnerabilityDuration);
-                health.SetSfx(tuning.hurtSfxId, tuning.deathSfxId);
             }
 
             var knockback = GetComponent<Knockback>();

@@ -5,20 +5,14 @@ using UnityEngine.Audio;
 namespace RedMagic.Audio
 {
     /// <summary>
-    /// Una entrada de sonido de la lista del <see cref="AudioManager"/>.
-    ///
-    /// Es una clase serializable normal (no un ScriptableObject): se edita en línea en el
-    /// Inspector del AudioManager, igual que el viejo array de "Sounds". Para añadir un sonido
-    /// nuevo basta con crecer la lista y rellenar estos campos — no hay assets que crear.
-    ///
-    /// <see cref="AudioManager"/> localiza cada entrada por su <see cref="id"/>, que es el string
-    /// que se pasa a <c>PlaySFX(id)</c> / <c>PlayMusic(id)</c>.
+    /// TEMPORAL (audio fase 4): entrada de la tabla de ids antigua del AudioManager. Ya no se
+    /// reproduce nada por id; sólo existe para que la herramienta de migración lea los datos que
+    /// hay en las escenas. Se borra en la fase 4.
     /// </summary>
     [Serializable]
     public class SoundData
     {
-        [Tooltip("Identificador único. Es el string que se pasa a AudioManager.PlaySFX(id) / PlayMusic(id).")]
-        public string id = "New Sound";
+                public string id = "New Sound";
 
         [Tooltip("Clip de audio. Puede dejarse vacío como placeholder y asignarse más tarde.")]
         public AudioClip clip;

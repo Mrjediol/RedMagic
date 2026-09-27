@@ -51,10 +51,15 @@ namespace RedMagic.Audio
         [SerializeField] private AudioMixerGroup musicGroup;
         [SerializeField] private AudioMixerGroup sfxGroup;
 
-        [Header("Sonidos")]
-        [Tooltip("Alta de sonidos: id + clip + volumen + pitch + loop + grupo. " +
-                 "El id es lo que se pasa a PlaySFX(id) / PlayMusic(id).")]
-        [SerializeField] private List<SoundData> sounds = new List<SoundData>();
+        [Header("Sonidos de UI (UiSounds los usa en todos los menús)")]
+        [SerializeField] private SoundCue uiHover = new SoundCue { priority = SoundPriority.Critical };
+        [SerializeField] private SoundCue uiClick = new SoundCue { priority = SoundPriority.Critical };
+        [SerializeField] private SoundCue uiBack = new SoundCue { priority = SoundPriority.Critical };
+        [SerializeField] private SoundCue uiDeny = new SoundCue { priority = SoundPriority.Critical };
+
+        // TEMPORAL (audio fase 4): la tabla de ids antigua. Nada la lee en runtime; sólo la
+        // herramienta de migración, para resolver cada id a su clip. Se borra en la fase 4.
+        [SerializeField, HideInInspector] private List<SoundData> sounds = new List<SoundData>();
 
         [Header("Valores por defecto (usados si no hay nada guardado en PlayerPrefs)")]
         [Range(0f, 1f)] [SerializeField] private float defaultMasterVolume = 1f;
@@ -104,7 +109,7 @@ namespace RedMagic.Audio
         [Tooltip("Segundos sin cambios antes de escribir el volumen a disco (arrastrar un slider no escribe cada frame).")]
         [Range(0.1f, 3f)] [SerializeField] private float prefsSaveDelay = 0.5f;
 
-        private readonly Dictionary<string, SoundData> _library = new Dictionary<string, SoundData>();
+        private readonly Dictionary<string, AudioClip> _sceneMusic = new Dictionary<string, AudioClip>();
         private readonly Dictionary<string, float> _volume = new Dictionary<string, float>();
         private readonly Dictionary<string, bool> _muted = new Dictionary<string, bool>();
         private readonly HashSet<string> _missingSceneMusic = new HashSet<string>();
@@ -146,7 +151,7 @@ namespace RedMagic.Audio
         private float _prefsDirtySince;
 
         private AudioSource _musicSource;
-        private string _currentMusicId;
+        private AudioClip _currentMusic;
         private Coroutine _musicRoutine;
         private Coroutine _sceneMusicRoutine;
 
@@ -172,7 +177,6 @@ namespace RedMagic.Audio
             transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
 
-            BuildLibrary();
             SetupSources();
             ReadSettings();
             SetupListener();
@@ -223,23 +227,6 @@ namespace RedMagic.Audio
         }
 
         // ------------------------------------------------------------------ setup
-
-        private void BuildLibrary()
-        {
-            _library.Clear();
-
-            foreach (var sound in sounds)
-            {
-                if (sound == null || string.IsNullOrEmpty(sound.id)) continue;
-                if (_library.ContainsKey(sound.id))
-                {
-                    Debug.LogWarning($"[AudioManager] id de sonido duplicado: '{sound.id}'. Se usa el primero.", this);
-                    continue;
-                }
-
-                _library[sound.id] = sound;
-            }
-        }
 
         private void SetupSources()
         {
@@ -296,29 +283,31 @@ namespace RedMagic.Audio
                     other.enabled = false;
         }
 
-        // ------------------------------------------------------------------ playback
+        // ------------------------------------------------------------------ música
 
-        /// <summary>Reproduce el sonido <paramref name="id"/> como música (loop, grupo Music, con fundido).</summary>
-        public void PlayMusic(string id)
+        /// <summary>
+        /// Reproduce <paramref name="clip"/> como música (loop, grupo Music, con fundido). Si ese clip
+        /// ya está sonando no hace nada, así volver a un menú no reinicia su tema.
+        /// </summary>
+        public void PlayMusic(AudioClip clip, float volume = 1f)
         {
-            if (!TryGet(id, out var data)) return;
-            if (_currentMusicId == id && _musicSource.isPlaying) return;
+            if (clip == null) return;
+            if (_currentMusic == clip && _musicSource.isPlaying) return;
 
-            _currentMusicId = id;
+            _currentMusic = clip;
 
             if (_musicRoutine != null) StopCoroutine(_musicRoutine);
-            _musicRoutine = StartCoroutine(PlayMusicRoutine(data));
+            _musicRoutine = StartCoroutine(PlayMusicRoutine(clip, volume));
         }
 
         /// <summary>
-        /// Música por convención de escena/fase. Busca <paramref name="id"/> primero en la lista
-        /// del Inspector y, si no está, como AudioClip en <c>Resources/{musicResourceFolder}/{id}</c>.
-        /// Si no existe en ningún sitio corta la música actual y no suena nada — <b>sin warnings</b>,
-        /// para que una escena a la que aún no se le ha puesto tema simplemente esté en silencio.
+        /// Música por convención de escena/fase: el AudioClip <c>Resources/{musicResourceFolder}/{nombre}</c>.
+        /// Si no existe corta la música actual y no suena nada — <b>sin warnings</b>, para que una
+        /// escena a la que aún no se le ha puesto tema simplemente esté en silencio.
         /// Lo usa <c>RunManager</c> para el hub (<c>MainHub</c>), las secciones (<c>World{n}-{puesto}</c>)
         /// y los jefes (<c>BossBattle{n}</c>): basta con dejar un clip con ese nombre en Resources/Music.
         /// </summary>
-        public void PlaySceneMusic(string id)
+        public void PlaySceneMusic(string resourceName)
         {
             if (_sceneMusicRoutine != null)
             {
@@ -326,40 +315,39 @@ namespace RedMagic.Audio
                 _sceneMusicRoutine = null;
             }
 
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(resourceName))
             {
                 StopMusic();
                 return;
             }
 
-            // Ya resuelto antes (en la lista del Inspector o en una carga previa): reproducir ya.
-            if (_library.ContainsKey(id))
+            // Ya cargado en una transición anterior: reproducir ya.
+            if (_sceneMusic.TryGetValue(resourceName, out var cached))
             {
-                PlayMusic(id);
+                PlayMusic(cached);
                 return;
             }
 
             // Se sabe que no existe: silencio, sin volver a tocar disco.
-            if (_missingSceneMusic.Contains(id))
+            if (_missingSceneMusic.Contains(resourceName))
             {
                 StopMusic();
                 return;
             }
 
-            // Primera vez con este id: cargar el clip de Resources en asíncrono. Hacerlo síncrono
+            // Primera vez con este nombre: cargar el clip de Resources en asíncrono. Hacerlo síncrono
             // (Resources.Load) es lo que provocaba el tirón al cambiar de escena, porque bloquea el
             // hilo principal mientras se abre el asset. La música anterior sigue sonando hasta que
             // el clip nuevo está listo, así que no hay silencio intermedio.
-            _sceneMusicRoutine = StartCoroutine(LoadSceneMusicRoutine(id));
+            _sceneMusicRoutine = StartCoroutine(LoadSceneMusicRoutine(resourceName));
         }
 
         // Carga un clip de música de Resources por nombre, en asíncrono. Cachea el acierto en
-        // _library (como SoundData sintético en loop por el grupo Music) y el fallo en
-        // _missingSceneMusic para no reintentar cada transición. El caché de fallos es de esta
-        // sesión: un clip añadido más tarde se detecta al reentrar en Play o en un build.
-        private IEnumerator LoadSceneMusicRoutine(string id)
+        // _sceneMusic y el fallo en _missingSceneMusic para no reintentar cada transición. El caché
+        // de fallos es de esta sesión: un clip añadido más tarde se detecta al reentrar en Play o en un build.
+        private IEnumerator LoadSceneMusicRoutine(string resourceName)
         {
-            string path = string.IsNullOrEmpty(musicResourceFolder) ? id : musicResourceFolder + "/" + id;
+            string path = string.IsNullOrEmpty(musicResourceFolder) ? resourceName : musicResourceFolder + "/" + resourceName;
 
             var request = Resources.LoadAsync<AudioClip>(path);
             yield return request;
@@ -369,45 +357,28 @@ namespace RedMagic.Audio
             var clip = request.asset as AudioClip;   // null si no existe: no registra nada en consola
             if (clip == null)
             {
-                _missingSceneMusic.Add(id);
+                _missingSceneMusic.Add(resourceName);
                 StopMusic();
                 yield break;
             }
 
-            _library[id] = new SoundData
-            {
-                id = id,
-                clip = clip,
-                volume = 1f,
-                pitch = 1f,
-                loop = true,
-                mixerGroup = musicGroup
-            };
-
-            PlayMusic(id);
+            _sceneMusic[resourceName] = clip;
+            PlayMusic(clip);
         }
 
         // Espera a que el clip esté cargado (puede tener "Preload Audio Data" desactivado) y luego
         // hace un fundido de entrada. Con Time.timeScale = 0 la corrutina sigue avanzando porque
         // se mide con Time.unscaledDeltaTime.
-        private IEnumerator PlayMusicRoutine(SoundData data)
+        private IEnumerator PlayMusicRoutine(AudioClip clip, float volume)
         {
-            var clip = data.clip;
-            float targetVolume = Mathf.Clamp01(data.volume);
+            float targetVolume = Mathf.Clamp01(volume);
 
             // Fundido de salida de lo que estuviera sonando.
             yield return FadeMusicOut();
 
             _musicSource.clip = clip;
-            _musicSource.loop = data.loop;
-            _musicSource.outputAudioMixerGroup = data.mixerGroup != null ? data.mixerGroup : musicGroup;
-
-            if (clip == null)
-            {
-                Debug.LogWarning($"[AudioManager] '{data.id}' no tiene AudioClip asignado.", this);
-                _musicRoutine = null;
-                yield break;
-            }
+            _musicSource.loop = true;
+            _musicSource.outputAudioMixerGroup = musicGroup;
 
             if (clip.loadState == AudioDataLoadState.Unloaded)
                 clip.LoadAudioData();
@@ -417,7 +388,7 @@ namespace RedMagic.Audio
 
             if (clip.loadState != AudioDataLoadState.Loaded)
             {
-                Debug.LogWarning($"[AudioManager] No se pudo cargar el clip de música '{data.id}'.", this);
+                Debug.LogWarning($"[AudioManager] No se pudo cargar el clip de música '{clip.name}'.", this);
                 _musicRoutine = null;
                 yield break;
             }
@@ -447,7 +418,7 @@ namespace RedMagic.Audio
                 _musicRoutine = null;
             }
 
-            _currentMusicId = null;
+            _currentMusic = null;
             _musicRoutine = StartCoroutine(StopMusicRoutine());
         }
 
@@ -755,33 +726,12 @@ namespace RedMagic.Audio
         private static bool IsGamePaused() =>
             (GameStateManager.Instance != null && GameStateManager.Instance.IsPaused) || Time.timeScale == 0f;
 
-        // ------------------------------------------------------------------ TEMPORAL — se borra en la fase 4
-        // API por id de string. Sigue aquí sólo mientras sus llamadas se migran; no añadir usos.
+        // ------------------------------------------------------------------ UI
 
-        /// <summary>TEMPORAL (fase 4 lo borra). Reproduce la entrada <paramref name="id"/> de la tabla.</summary>
-        public void PlaySFX(string id)
-        {
-            if (!TryGet(id, out var data)) return;
-            if (data.clip == null) return;
-
-            PlayClip(data.clip, data.volume, data.pitch, data.mixerGroup);
-        }
-
-        /// <summary>TEMPORAL (fase 2 lo sustituye por SoundCue). Vía de <see cref="SoundEmitter"/>.</summary>
-        public void PlayClip(AudioClip clip, float volume = 1f, float pitch = 1f, AudioMixerGroup group = null)
-        {
-            if (clip == null || _voicesRoot == null) return;
-            StartOneShot(clip, volume, pitch, 0f, SoundPriority.Normal, group);
-        }
-
-        private bool TryGet(string id, out SoundData data)
-        {
-            if (!string.IsNullOrEmpty(id) && _library.TryGetValue(id, out data)) return true;
-
-            Debug.LogWarning($"[AudioManager] Sonido no registrado: '{id}'.", this);
-            data = null;
-            return false;
-        }
+        public SoundCue UiHover => uiHover;
+        public SoundCue UiClick => uiClick;
+        public SoundCue UiBack => uiBack;
+        public SoundCue UiDeny => uiDeny;
 
         // ------------------------------------------------------------------ mixer / settings
 

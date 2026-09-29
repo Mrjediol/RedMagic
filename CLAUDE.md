@@ -91,7 +91,15 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 | Localization, display presets | `docs/architecture/localization.md` |
 | Vendored packs | `docs/architecture/vendored.md` |
 
-Other: `docs/schemas/` (JSON configs + `COMPATIBILITY.md`), `docs/web-tools-guide.md` (web tool), `docs/RedMagic — Roadmap al prototipo.md`.
+Other: `docs/GDD.md` (game design: loop, worlds, enemies, bosses, art direction — read before design decisions), `docs/schemas/` (JSON configs + `COMPATIBILITY.md`), `docs/web-tools-guide.md` (web tool), `docs/RedMagic — Roadmap al prototipo.md`.
+
+## Git (Claude Code handles it)
+
+- Before starting a task: `git status`; if uncommitted changes exist, commit them first as `wip: pre-task snapshot` so the task is revertible.
+- After each completed task that compiles cleanly: `git add -A` + `git commit` with a short conventional message (`feat:`, `fix:`, `refactor:`, `docs:`, `art:`), one line summary + bullet body.
+- Never commit if compile errors exist; never commit `Library/`, `Temp/`, `Logs/`, `UserSettings/` (already in `.gitignore`).
+- **Never `git push`, force-push, rebase, reset --hard or delete branches** — user pushes from GitHub Desktop.
+- Large or risky refactors: create a branch `task/<short-name>` first; tell user to merge after playtest.
 
 ## Keeping docs current
 

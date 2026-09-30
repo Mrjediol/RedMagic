@@ -417,6 +417,7 @@ MonoBehaviour:
     pivot: {x: 0, y: 0}
     center: {x: 0, y: 0}
     leanFollow: 0
+    pointAngle: 0
     swayMove: {x: 0, y: 0}
     swayRotate: 0
     swayScale: {x: 0, y: 0}
@@ -427,6 +428,7 @@ MonoBehaviour:
     pivot: {x: 0, y: 0}
     center: {x: 0, y: 0}
     leanFollow: 0
+    pointAngle: 0
     swayMove: {x: 0, y: 0.04}
     swayRotate: 1.5
     swayScale: {x: 0, y: 0}
@@ -437,6 +439,7 @@ MonoBehaviour:
     pivot: {x: 0, y: 0}
     center: {x: 0, y: 0}
     leanFollow: 0
+    pointAngle: 0
     swayMove: {x: 0, y: 0}
     swayRotate: 0
     swayScale: {x: 0, y: 0}
@@ -448,6 +451,10 @@ MonoBehaviour:
   leanDegrees: 0
   leanFullSpeed: 2.5
   leanResponse: 8
+  followStiffness: 0
+  followDamping: 9
+  followMaxOffset: 0.6
+  moveGesture: 
   aimPart: {fileID: 3290079735764205417}
   aimArtAngle: 0
   aimMaxAngle: 22
@@ -470,6 +477,7 @@ MonoBehaviour:
     asleep: {fileID: 21300000, guid: 86da2c6855ee52c4ba77fc2096db3840, type: 3}
     awake: {fileID: 21300000, guid: 4d7815cb53749d947b9f782f0d4cf2be, type: 3}
     attacking: {fileID: 21300000, guid: 36a85d757c14a4c4c9210d51b137f45a, type: 3}
+    stages: []
   stretchPart: {fileID: 4629676481224857604}
   stretchRiders:
   - {fileID: 3290079735764205417}

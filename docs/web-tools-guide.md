@@ -235,8 +235,9 @@ Art/…                     ← opcional: arte de los ataques del jefe (como en 
   afinaste el rig en el Inspector, expórtalo antes (abajo) o se pierde.
 - Valida todo (nombres, padres, referencias a piezas, sprites, tipo de ataque) **antes** de escribir.
 
-### Exportar rig a JSON (selección)
-Prefabs con `ProceduralRig` seleccionados → `<name>.rig-config.json` en la carpeta que elijas, con
+### Exportar rig a JSON…
+Clic derecho en un prefab con `ProceduralRig` ▸ **Exportar rig a JSON** (o el menú: usa la selección
+del Project y, sin selección, pide el prefab) → `<name>.rig-config.json` en la carpeta que elijas, con
 los sprites como rutas del proyecto (reimportable tal cual). Es cómo llevar a la web lo afinado en
 el Inspector.
 

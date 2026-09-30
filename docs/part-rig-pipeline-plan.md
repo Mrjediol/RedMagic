@@ -121,7 +121,7 @@ attacks `classic`.
     (`name`, `windup[]`, `strike[]` poses, `strikeTime`, `recover`, `shake`), and all rig timings
     (hover, lean, windup/recover, recoil, hurt, stagger, death, fold/wake).
   - `kind`: `enemy` | `boss`, and `driver`: `code` | `dotween`.
-- **Exporter** `Tools ▸ Web ▸ Rig ▸ Exportar rig a JSON (selección)`: writes the config from an
+- **Exporter** `Tools ▸ Web ▸ Rig ▸ Exportar rig a JSON…` (o clic derecho en el prefab): writes the config from an
   existing prefab. Run it on Robot / Turret / BossIce2 and commit the three JSONs as test fixtures.
 - **Importer** `Tools ▸ Web ▸ Rig ▸ Importar rig (.zip / carpeta)…` (**separate** from the classic
   import menus):

@@ -27,21 +27,34 @@ namespace RedMagic.Rigging.EditorTools
     /// </summary>
     public static class RigConfigExporter
     {
-        [MenuItem("Tools/Web/Rig/Exportar rig a JSON (selección)")]
+        [MenuItem("Assets/Exportar rig a JSON", false, 2000)]
+        private static void ExportFromContext() => ExportSelected();
+
+        [MenuItem("Assets/Exportar rig a JSON", true)]
+        private static bool CanExportFromContext() => SelectedRigPrefabs().Count > 0;
+
+        /// <summary>Los prefabs seleccionados en el Project; sin selección, pide uno con el explorador.</summary>
+        [MenuItem("Tools/Web/Rig/Exportar rig a JSON…")]
         private static void ExportSelected()
         {
-            var prefabs = new List<string>();
-            foreach (var go in Selection.GetFiltered<GameObject>(SelectionMode.Assets))
-            {
-                string path = AssetDatabase.GetAssetPath(go);
-                if (path.EndsWith(".prefab", StringComparison.Ordinal) && go.GetComponent<ProceduralRig>() != null)
-                    prefabs.Add(path);
-            }
-
+            var prefabs = SelectedRigPrefabs();
             if (prefabs.Count == 0)
             {
-                EditorUtility.DisplayDialog("Exportar rig", "Selecciona en el Project uno o más prefabs con ProceduralRig.", "OK");
-                return;
+                string picked = EditorUtility.OpenFilePanel("Prefab por partes (con ProceduralRig)",
+                                                            Path.Combine(Application.dataPath, "Prefabs"), "prefab");
+                if (string.IsNullOrEmpty(picked)) return;
+
+                string full = Path.GetFullPath(picked).Replace('\\', '/');
+                string project = Path.GetFullPath(Path.Combine(Application.dataPath, "..")).Replace('\\', '/') + "/";
+                string asset = full.StartsWith(project, StringComparison.OrdinalIgnoreCase) ? full.Substring(project.Length) : null;
+                var go = asset != null ? AssetDatabase.LoadAssetAtPath<GameObject>(asset) : null;
+                if (go == null || go.GetComponent<ProceduralRig>() == null)
+                {
+                    EditorUtility.DisplayDialog("Exportar rig", "Ese archivo no es un prefab del proyecto con ProceduralRig.", "OK");
+                    return;
+                }
+
+                prefabs.Add(asset);
             }
 
             string folder = EditorUtility.SaveFolderPanel("Carpeta para los rig-config", Application.dataPath, "");
@@ -53,6 +66,19 @@ namespace RedMagic.Rigging.EditorTools
 
             Debug.Log($"[RigConfigExporter]\n{log}");
             EditorUtility.DisplayDialog("Exportar rig", log.ToString(), "OK");
+        }
+
+        private static List<string> SelectedRigPrefabs()
+        {
+            var prefabs = new List<string>();
+            foreach (var go in Selection.GetFiltered<GameObject>(SelectionMode.Assets))
+            {
+                string path = AssetDatabase.GetAssetPath(go);
+                if (path.EndsWith(".prefab", StringComparison.Ordinal) && go.GetComponent<ProceduralRig>() != null)
+                    prefabs.Add(path);
+            }
+
+            return prefabs;
         }
 
         /// <summary>Exporta un prefab a un archivo. Punto de entrada también para <c>unity command eval</c>.</summary>

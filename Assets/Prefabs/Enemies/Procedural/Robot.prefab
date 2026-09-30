@@ -957,6 +957,7 @@ MonoBehaviour:
     pivot: {x: 0, y: 0}
     center: {x: 0, y: 0}
     leanFollow: 0
+    pointAngle: 0
     swayMove: {x: 0, y: 0.05}
     swayRotate: 3
     swayScale: {x: 0, y: 0}
@@ -967,6 +968,7 @@ MonoBehaviour:
     pivot: {x: -0.6, y: -1.25}
     center: {x: 0, y: 0}
     leanFollow: 0
+    pointAngle: 0
     swayMove: {x: 0, y: 0}
     swayRotate: 4
     swayScale: {x: 0.1, y: 0.22}
@@ -977,6 +979,7 @@ MonoBehaviour:
     pivot: {x: -1.07, y: -1.53}
     center: {x: 0, y: 0}
     leanFollow: 0
+    pointAngle: 0
     swayMove: {x: 0, y: 0.03}
     swayRotate: 2
     swayScale: {x: 0, y: 0}
@@ -987,6 +990,7 @@ MonoBehaviour:
     pivot: {x: 0, y: 0}
     center: {x: 0, y: 0}
     leanFollow: 0
+    pointAngle: 0
     swayMove: {x: 0, y: 0.05}
     swayRotate: 0
     swayScale: {x: 0, y: 0}
@@ -997,6 +1001,7 @@ MonoBehaviour:
     pivot: {x: 0, y: 0}
     center: {x: 0, y: 0}
     leanFollow: 0
+    pointAngle: 0
     swayMove: {x: 0, y: 0}
     swayRotate: 3
     swayScale: {x: 0, y: 0}
@@ -1007,6 +1012,7 @@ MonoBehaviour:
     pivot: {x: 0, y: 0}
     center: {x: 0, y: 0}
     leanFollow: 0
+    pointAngle: 0
     swayMove: {x: 0, y: 0}
     swayRotate: 5
     swayScale: {x: 0, y: 0}
@@ -1017,6 +1023,7 @@ MonoBehaviour:
     pivot: {x: 0, y: 0}
     center: {x: 0, y: 0}
     leanFollow: 0
+    pointAngle: 0
     swayMove: {x: 0, y: 0}
     swayRotate: 6
     swayScale: {x: 0, y: 0}
@@ -1028,6 +1035,10 @@ MonoBehaviour:
   leanDegrees: 14
   leanFullSpeed: 2.5
   leanResponse: 8
+  followStiffness: 0
+  followDamping: 9
+  followMaxOffset: 0.6
+  moveGesture: 
   aimPart: {fileID: 6801709052886536608}
   aimArtAngle: 11.5
   aimMaxAngle: 70

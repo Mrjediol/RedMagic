@@ -720,6 +720,43 @@ export const BOSS_CATALOG = {
           "default": 0.06
         },
         {
+          "name": "arrowLength",
+          "label": "Arrow Length",
+          "tooltip": "Largo de la flecha de aviso, en veces el tamaño que se ve de la pieza.",
+          "header": "Extremidades · aviso",
+          "min": 0.2,
+          "type": "float",
+          "default": 1.6
+        },
+        {
+          "name": "targetMarkScale",
+          "label": "Target Mark Scale",
+          "tooltip": "Marca del destino, en veces el tamaño que se ve de la pieza.",
+          "min": 0.2,
+          "type": "float",
+          "default": 0.9
+        },
+        {
+          "name": "arrowLengthRange",
+          "label": "Arrow Length Range",
+          "tooltip": "Largo mínimo y máximo de la flecha (unidades de mundo). Proporcional a la pieza, pero nunca tan pequeña que no se vea ni tan grande que tape la pantalla.",
+          "type": "vector2",
+          "default": {
+            "x": 2.2,
+            "y": 5.0
+          }
+        },
+        {
+          "name": "targetMarkRange",
+          "label": "Target Mark Range",
+          "tooltip": "Tamaño mínimo y máximo de la marca del destino (unidades de mundo).",
+          "type": "vector2",
+          "default": {
+            "x": 1.1,
+            "y": 2.5
+          }
+        },
+        {
           "name": "throws",
           "label": "Throws",
           "header": "Lanzamientos",
@@ -770,13 +807,6 @@ export const BOSS_CATALOG = {
           "tooltip": "Cuánto sube mientras carga.",
           "type": "float",
           "default": 0.6
-        },
-        {
-          "name": "windupSpin",
-          "label": "Windup Spin",
-          "tooltip": "Grados que gira al cargar (se deshace al lanzar).",
-          "type": "float",
-          "default": -25.0
         },
         {
           "name": "flightSeconds",
@@ -1260,6 +1290,43 @@ export const BOSS_CATALOG = {
           "default": 0.06
         },
         {
+          "name": "arrowLength",
+          "label": "Arrow Length",
+          "tooltip": "Largo de la flecha de aviso, en veces el tamaño que se ve de la pieza.",
+          "header": "Extremidades · aviso",
+          "min": 0.2,
+          "type": "float",
+          "default": 1.6
+        },
+        {
+          "name": "targetMarkScale",
+          "label": "Target Mark Scale",
+          "tooltip": "Marca del destino, en veces el tamaño que se ve de la pieza.",
+          "min": 0.2,
+          "type": "float",
+          "default": 0.9
+        },
+        {
+          "name": "arrowLengthRange",
+          "label": "Arrow Length Range",
+          "tooltip": "Largo mínimo y máximo de la flecha (unidades de mundo). Proporcional a la pieza, pero nunca tan pequeña que no se vea ni tan grande que tape la pantalla.",
+          "type": "vector2",
+          "default": {
+            "x": 2.2,
+            "y": 5.0
+          }
+        },
+        {
+          "name": "targetMarkRange",
+          "label": "Target Mark Range",
+          "tooltip": "Tamaño mínimo y máximo de la marca del destino (unidades de mundo).",
+          "type": "vector2",
+          "default": {
+            "x": 1.1,
+            "y": 2.5
+          }
+        },
+        {
           "name": "spread",
           "label": "Spread",
           "tooltip": "Distancia de cada pieza al centro antes de cerrarse.",
@@ -1316,13 +1383,6 @@ export const BOSS_CATALOG = {
           "min": 0.05,
           "type": "float",
           "default": 0.5
-        },
-        {
-          "name": "aimSpin",
-          "label": "Aim Spin",
-          "tooltip": "Grados que giran las piezas para apuntarse (la izquierda gira a un lado, la derecha al otro).",
-          "type": "float",
-          "default": 70.0
         }
       ]
     },
@@ -1356,6 +1416,43 @@ export const BOSS_CATALOG = {
           "min": 0.0,
           "type": "float",
           "default": 0.06
+        },
+        {
+          "name": "arrowLength",
+          "label": "Arrow Length",
+          "tooltip": "Largo de la flecha de aviso, en veces el tamaño que se ve de la pieza.",
+          "header": "Extremidades · aviso",
+          "min": 0.2,
+          "type": "float",
+          "default": 1.6
+        },
+        {
+          "name": "targetMarkScale",
+          "label": "Target Mark Scale",
+          "tooltip": "Marca del destino, en veces el tamaño que se ve de la pieza.",
+          "min": 0.2,
+          "type": "float",
+          "default": 0.9
+        },
+        {
+          "name": "arrowLengthRange",
+          "label": "Arrow Length Range",
+          "tooltip": "Largo mínimo y máximo de la flecha (unidades de mundo). Proporcional a la pieza, pero nunca tan pequeña que no se vea ni tan grande que tape la pantalla.",
+          "type": "vector2",
+          "default": {
+            "x": 2.2,
+            "y": 5.0
+          }
+        },
+        {
+          "name": "targetMarkRange",
+          "label": "Target Mark Range",
+          "tooltip": "Tamaño mínimo y máximo de la marca del destino (unidades de mundo).",
+          "type": "vector2",
+          "default": {
+            "x": 1.1,
+            "y": 2.5
+          }
         },
         {
           "name": "mode",
@@ -1835,6 +1932,300 @@ export const BOSS_CATALOG = {
           "min": 0.0,
           "type": "float",
           "default": 0.0
+        }
+      ]
+    },
+    {
+      "type": "OrbiterDiveAttack",
+      "label": "Orbiter Dive",
+      "params": [
+        {
+          "name": "impactFxPrefab",
+          "label": "Impact Fx Prefab",
+          "tooltip": "Efecto de un solo uso (VfxOneShot) en cada impacto. Vacío = destello del color de la fase.",
+          "header": "Extremidades · impacto",
+          "type": "art",
+          "artKind": "fx",
+          "artLabel": "Impacto de la pieza",
+          "placeholder": "destello de color",
+          "default": null
+        },
+        {
+          "name": "impactFxWidth",
+          "label": "Impact Fx Width",
+          "tooltip": "Ancho del efecto de impacto (0 = escala del prefab).",
+          "min": 0.0,
+          "type": "float",
+          "default": 2.2
+        },
+        {
+          "name": "tremble",
+          "label": "Tremble",
+          "tooltip": "Temblor de la pieza mientras espera para golpear (unidades de mundo).",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.06
+        },
+        {
+          "name": "arrowLength",
+          "label": "Arrow Length",
+          "tooltip": "Largo de la flecha de aviso, en veces el tamaño que se ve de la pieza.",
+          "header": "Extremidades · aviso",
+          "min": 0.2,
+          "type": "float",
+          "default": 1.6
+        },
+        {
+          "name": "targetMarkScale",
+          "label": "Target Mark Scale",
+          "tooltip": "Marca del destino, en veces el tamaño que se ve de la pieza.",
+          "min": 0.2,
+          "type": "float",
+          "default": 0.9
+        },
+        {
+          "name": "arrowLengthRange",
+          "label": "Arrow Length Range",
+          "tooltip": "Largo mínimo y máximo de la flecha (unidades de mundo). Proporcional a la pieza, pero nunca tan pequeña que no se vea ni tan grande que tape la pantalla.",
+          "type": "vector2",
+          "default": {
+            "x": 2.2,
+            "y": 5.0
+          }
+        },
+        {
+          "name": "targetMarkRange",
+          "label": "Target Mark Range",
+          "tooltip": "Tamaño mínimo y máximo de la marca del destino (unidades de mundo).",
+          "type": "vector2",
+          "default": {
+            "x": 1.1,
+            "y": 2.5
+          }
+        },
+        {
+          "name": "liftHeight",
+          "label": "Lift Height",
+          "tooltip": "Altura del centro del corro sobre las piezas en reposo.",
+          "header": "Corro",
+          "type": "float",
+          "default": 2.5
+        },
+        {
+          "name": "orbitRadius",
+          "label": "Orbit Radius",
+          "tooltip": "Radio del corro.",
+          "min": 0.2,
+          "type": "float",
+          "default": 1.8
+        },
+        {
+          "name": "orbitSpeed",
+          "label": "Orbit Speed",
+          "tooltip": "Grados por segundo que gira el corro.",
+          "type": "float",
+          "default": 320.0
+        },
+        {
+          "name": "gatherSeconds",
+          "label": "Gather Seconds",
+          "tooltip": "Segundos en formar el corro.",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.35
+        },
+        {
+          "name": "orbitSeconds",
+          "label": "Orbit Seconds",
+          "tooltip": "Segundos girando antes del primer picado: el aviso.",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.8
+        },
+        {
+          "name": "diveWindup",
+          "label": "Dive Windup",
+          "tooltip": "Segundos que cada pieza apunta y tiembla (con su destino marcado) antes de lanzarse.",
+          "header": "Picados",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.35
+        },
+        {
+          "name": "diveSeconds",
+          "label": "Dive Seconds",
+          "tooltip": "Segundos del picado hasta el punto marcado.",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.22
+        },
+        {
+          "name": "overshoot",
+          "label": "Overshoot",
+          "tooltip": "Sigue esta distancia más allá del punto marcado.",
+          "min": 0.0,
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "betweenDives",
+          "label": "Between Dives",
+          "tooltip": "Pausa entre un picado y la carga del siguiente.",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.2
+        },
+        {
+          "name": "returnSeconds",
+          "label": "Return Seconds",
+          "tooltip": "Segundos de vuelta de todas a su sitio (lo anima el rig).",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.6
+        },
+        {
+          "name": "fallbackProjectile",
+          "label": "Fallback Projectile",
+          "header": "Sin piezas orbitales",
+          "type": "object",
+          "fields": [
+            {
+              "name": "prefab",
+              "label": "Prefab",
+              "tooltip": "Prefab con componente Projectile. Vacío = se construye uno en código con el sprite y el color de la habilidad.",
+              "type": "art",
+              "artKind": "projectile",
+              "artLabel": "Esquirla sin piezas",
+              "placeholder": "bola de color de la fase",
+              "default": null
+            },
+            {
+              "name": "speed",
+              "label": "Speed",
+              "min": 0.1,
+              "type": "float",
+              "default": 14.0
+            },
+            {
+              "name": "lifetime",
+              "label": "Lifetime",
+              "tooltip": "Segundos de vuelo antes de desaparecer solo.",
+              "min": 0.05,
+              "type": "float",
+              "default": 1.6
+            },
+            {
+              "name": "size",
+              "label": "Size",
+              "tooltip": "Tamaño del proyectil en unidades del mundo. Con arte del importador de jefes (FxArtSize) manda el ANCHO (X) y el collider escala con él. Un prefab hecho a mano sin FxArtSize usa su propia escala.",
+              "type": "vector2",
+              "default": {
+                "x": 0.6,
+                "y": 0.6
+              }
+            },
+            {
+              "name": "muzzleOffset",
+              "label": "Muzzle Offset",
+              "tooltip": "Salida del disparo respecto al lanzador. La X se invierte según hacia dónde mira.",
+              "type": "vector2",
+              "default": {
+                "x": 0.0,
+                "y": 6.0
+              }
+            },
+            {
+              "name": "pierce",
+              "label": "Pierce",
+              "tooltip": "Objetivos que atraviesa antes de desaparecer.",
+              "header": "Comportamiento",
+              "min": 0.0,
+              "type": "int",
+              "default": 0
+            },
+            {
+              "name": "homingTurnRate",
+              "label": "Homing Turn Rate",
+              "tooltip": "Grados/segundo de giro hacia el objetivo más cercano. 0 = va recto.",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "homingRange",
+              "label": "Homing Range",
+              "min": 0.0,
+              "type": "float",
+              "default": 9.0
+            },
+            {
+              "name": "arcGravity",
+              "label": "Arc Gravity",
+              "tooltip": "Caída en unidades/s². >0 = granada con trayectoria parabólica.",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "impactRadius",
+              "label": "Impact Radius",
+              "header": "Explosión al terminar",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "impactDamage",
+              "label": "Impact Damage",
+              "tooltip": "Daño de la explosión. Se suma al impacto directo sólo si el radio es > 0.",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "faceDirection",
+              "label": "Face Direction",
+              "tooltip": "Rota el proyectil para que su punta (Facing Axis) mire hacia donde vuela, al salir y en cada paso (autoguiado, parábola). Apagado = decide el prefab (su casilla 'Face Travel Direction'), así los proyectiles que ya existían no cambian.",
+              "header": "Aiming",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "name": "facingAxis",
+              "label": "Facing Axis",
+              "tooltip": "Lado del sprite que es la punta. Right = arte dibujado mirando a +X (convención).",
+              "type": "enum",
+              "options": [
+                "Right",
+                "Left",
+                "Up",
+                "Down"
+              ],
+              "default": "Right"
+            },
+            {
+              "name": "aimMode",
+              "label": "Aim Mode",
+              "tooltip": "Fixed = la dirección que da quien dispara. MouseDirection / NearestEnemy sólo para el jugador (cursor / enemigo más cercano al salir, sin perseguir); en un enemigo equivalen a Fixed.",
+              "type": "enum",
+              "options": [
+                "Fixed",
+                "MouseDirection",
+                "NearestEnemy"
+              ],
+              "default": "Fixed"
+            }
+          ],
+          "spec": "projectile",
+          "artLabel": "Esquirla sin piezas"
+        },
+        {
+          "name": "fallbackShots",
+          "label": "Fallback Shots",
+          "tooltip": "Proyectiles sin piezas orbitales.",
+          "min": 1.0,
+          "type": "int",
+          "default": 3
         }
       ]
     },
@@ -2810,6 +3201,70 @@ export const BOSS_CATALOG = {
       "label": "Throw Projectile",
       "params": [
         {
+          "name": "impactFxPrefab",
+          "label": "Impact Fx Prefab",
+          "tooltip": "Efecto de un solo uso (VfxOneShot) en cada impacto. Vacío = destello del color de la fase.",
+          "header": "Extremidades · impacto",
+          "type": "art",
+          "artKind": "fx",
+          "artLabel": "Impacto de la pieza",
+          "placeholder": "destello de color",
+          "default": null
+        },
+        {
+          "name": "impactFxWidth",
+          "label": "Impact Fx Width",
+          "tooltip": "Ancho del efecto de impacto (0 = escala del prefab).",
+          "min": 0.0,
+          "type": "float",
+          "default": 2.2
+        },
+        {
+          "name": "tremble",
+          "label": "Tremble",
+          "tooltip": "Temblor de la pieza mientras espera para golpear (unidades de mundo).",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.06
+        },
+        {
+          "name": "arrowLength",
+          "label": "Arrow Length",
+          "tooltip": "Largo de la flecha de aviso, en veces el tamaño que se ve de la pieza.",
+          "header": "Extremidades · aviso",
+          "min": 0.2,
+          "type": "float",
+          "default": 1.6
+        },
+        {
+          "name": "targetMarkScale",
+          "label": "Target Mark Scale",
+          "tooltip": "Marca del destino, en veces el tamaño que se ve de la pieza.",
+          "min": 0.2,
+          "type": "float",
+          "default": 0.9
+        },
+        {
+          "name": "arrowLengthRange",
+          "label": "Arrow Length Range",
+          "tooltip": "Largo mínimo y máximo de la flecha (unidades de mundo). Proporcional a la pieza, pero nunca tan pequeña que no se vea ni tan grande que tape la pantalla.",
+          "type": "vector2",
+          "default": {
+            "x": 2.2,
+            "y": 5.0
+          }
+        },
+        {
+          "name": "targetMarkRange",
+          "label": "Target Mark Range",
+          "tooltip": "Tamaño mínimo y máximo de la marca del destino (unidades de mundo).",
+          "type": "vector2",
+          "default": {
+            "x": 1.1,
+            "y": 2.5
+          }
+        },
+        {
           "name": "throwGesture",
           "label": "Throw Gesture",
           "tooltip": "Estado del Animator del gesto de LANZAR. El de COGER va en 'Gesto' (arriba) y hace de aviso. Vacío = sin segundo gesto: se lanza al pasar 'holdSeconds'.",
@@ -2963,6 +3418,14 @@ export const BOSS_CATALOG = {
           "artLabel": "Proyectil lanzado"
         },
         {
+          "name": "sizeScale",
+          "label": "Size Scale",
+          "tooltip": "Escala del objeto: multiplica lo que se ve (en la mano y lanzado), el radio de su explosión y la marca de caída. Todo crece junto: una roca el doble de grande avisa y revienta el doble de ancho.",
+          "min": 0.1,
+          "type": "float",
+          "default": 1.0
+        },
+        {
           "name": "heldPropPrefab",
           "label": "Held Prop Prefab",
           "tooltip": "Lo que se ve en alto antes de lanzarlo (la roca). Vacío = cuadrado del color de la fase. Tip: el mismo arte que el proyectil.",
@@ -2992,6 +3455,92 @@ export const BOSS_CATALOG = {
             "x": 1.6,
             "y": 1.6
           }
+        },
+        {
+          "name": "useLimbs",
+          "label": "Use Limbs",
+          "tooltip": "Con BossLimbs en el jefe, una mano baja al suelo, coge el objeto y lo lanza desde el puño. Apagado = siempre en alto sobre el jefe, como uno de un solo sprite.",
+          "header": "Con extremidades (jefe por partes)",
+          "type": "bool",
+          "default": true
+        },
+        {
+          "name": "limbPick",
+          "label": "Limb Pick",
+          "tooltip": "Qué mano. Alternate = con varios lanzamientos, una y luego la otra.",
+          "type": "enum",
+          "options": [
+            "Alternate",
+            "NearestToTarget",
+            "FarthestFromTarget",
+            "First",
+            "Second"
+          ],
+          "default": "Alternate"
+        },
+        {
+          "name": "pickupReach",
+          "label": "Pickup Reach",
+          "tooltip": "Dónde recoge el objeto: X hacia el jugador desde los pies del jefe.",
+          "type": "float",
+          "default": 2.5
+        },
+        {
+          "name": "raisedOffset",
+          "label": "Raised Offset",
+          "tooltip": "Dónde lo sostiene antes de lanzar, desde los pies (X hacia el jugador; negativo = por detrás del hombro, cargando).",
+          "type": "vector2",
+          "default": {
+            "x": -1.0,
+            "y": 6.5
+          }
+        },
+        {
+          "name": "reachSeconds",
+          "label": "Reach Seconds",
+          "tooltip": "Segundos de la mano bajando al suelo.",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.4
+        },
+        {
+          "name": "grabSeconds",
+          "label": "Grab Seconds",
+          "tooltip": "Segundos agarrando en el suelo.",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.15
+        },
+        {
+          "name": "liftSeconds",
+          "label": "Lift Seconds",
+          "tooltip": "Segundos subiéndolo por encima del hombro.",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.35
+        },
+        {
+          "name": "swingSeconds",
+          "label": "Swing Seconds",
+          "tooltip": "Segundos del latigazo de lanzar; el objeto sale al final.",
+          "min": 0.02,
+          "type": "float",
+          "default": 0.14
+        },
+        {
+          "name": "swingReach",
+          "label": "Swing Reach",
+          "tooltip": "Cuánto avanza la mano en el latigazo.",
+          "type": "float",
+          "default": 2.5
+        },
+        {
+          "name": "limbReturnSeconds",
+          "label": "Limb Return Seconds",
+          "tooltip": "Segundos de vuelta de la mano al cuerpo (lo anima el rig).",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.45
         },
         {
           "name": "markLanding",

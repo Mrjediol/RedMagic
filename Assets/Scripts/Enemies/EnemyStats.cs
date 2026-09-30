@@ -83,6 +83,9 @@ namespace RedMagic.Enemies
 
             // La detección tiene que dejar una banda por encima del rango de ataque, si no el
             // enemigo aparece ya "a tiro" y nunca camina: la fase de acercarse queda vacía.
+            if (tuning.Sleeps && !tuning.Moves && tuning.detectionRange < tuning.attackRange)
+                tuning.detectionRange = tuning.attackRange;
+
             if (tuning.Moves)
             {
                 float minDetection = tuning.attackRange + ApproachBandMargin;
@@ -113,8 +116,8 @@ namespace RedMagic.Enemies
         {
             Vector3 origin = transform.position;
 
-            // Detección: sólo los que persiguen. Un Static no detecta, sólo tiene a tiro o no.
-            if (tuning.Moves)
+            // Detección: los que persiguen y los dormilones. Un Static despierto sólo tiene a tiro o no.
+            if (tuning.Detects)
             {
                 Gizmos.color = new Color(1f, 0.85f, 0.2f, 0.7f);
                 Gizmos.DrawWireSphere(origin, tuning.detectionRange);

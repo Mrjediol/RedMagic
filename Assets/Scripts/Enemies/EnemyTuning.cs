@@ -137,8 +137,9 @@ namespace RedMagic.Enemies
         [Header("Dormido")]
         [Tooltip("Empieza dormido en reposo (su clip Idle es el de dormir). Al detectar al " +
                  "objetivo — o al recibir un golpe — reproduce el clip 'Wake' quieto y después " +
-                 "persigue. Si se rinde, vuelve a donde empezó y se duerme otra vez. Sólo los " +
-                 "arquetipos que se mueven.")]
+                 "persigue. Si se rinde, vuelve a donde empezó y se duerme otra vez. Un Static " +
+                 "dormido (torreta plegada) usa detectionRange para despertar y se vuelve a " +
+                 "plegar en su sitio al rendirse.")]
         public bool sleepsUntilDetected;
 
         [Header("Vuelo")]
@@ -283,8 +284,15 @@ namespace RedMagic.Enemies
         /// </summary>
         public bool Retreats => Moves && IsRanged && personalSpace > 0f && !selfDestruct;
 
-        /// <summary>True si duerme hasta detectar al objetivo. Un Static no detecta, así que no.</summary>
-        public bool Sleeps => Moves && sleepsUntilDetected;
+        /// <summary>
+        /// True si duerme hasta detectar al objetivo. Vale para cualquier arquetipo: un Static dormido
+        /// es una torreta plegada que detecta con <see cref="detectionRange"/>, se despliega y dispara
+        /// desde su sitio.
+        /// </summary>
+        public bool Sleeps => sleepsUntilDetected;
+
+        /// <summary>True si lleva la cuenta de detección/rendición: los que persiguen y los dormilones.</summary>
+        public bool Detects => Moves || Sleeps;
 
         /// <summary>Copia profunda: la ficha del pipeline no debe compartir instancia con el prefab.</summary>
         public EnemyTuning Clone()

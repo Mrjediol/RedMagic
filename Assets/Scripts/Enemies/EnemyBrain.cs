@@ -77,6 +77,9 @@ namespace RedMagic.Enemies
         /// <summary>Dormido: quieto en reposo hasta detectar (ver <see cref="EnemyTuning.sleepsUntilDetected"/>).</summary>
         private bool _asleep;
 
+        /// <summary>Falta poner la pose de dormido del primer frame (ver Update).</summary>
+        private bool _pendingSleepPose;
+
         /// <summary>Donde empezó. Un dormilón vuelve aquí a dormirse cuando se rinde.</summary>
         private Vector2 _home;
 
@@ -134,6 +137,7 @@ namespace RedMagic.Enemies
             _retreatBlocked = false;
             _asleep = T.Sleeps;
             _home = transform.position;
+            _pendingSleepPose = _asleep;
 
             if (_animation != null)
             {
@@ -165,6 +169,14 @@ namespace RedMagic.Enemies
 
         private void Update()
         {
+            // Pose de dormido al nacer: aquí y no en OnEnable, para no depender del orden de
+            // activación con el rig (que en su OnEnable vuelve a la pose del prefab).
+            if (_pendingSleepPose)
+            {
+                _pendingSleepPose = false;
+                if (_animation != null) _animation.PlaySleep(true);
+            }
+
             if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
             if (_contactTimer > 0f) _contactTimer -= Time.deltaTime;
 
@@ -189,7 +201,7 @@ namespace RedMagic.Enemies
             // objetivo cuenta como "lejos" para la conciencia de abajo, pero no se olvida de golpe.
             bool reachable = T.Flies || Mathf.Abs(toTarget.y) <= T.verticalTolerance;
 
-            if (T.Moves) UpdateAwareness(distance, reachable);
+            if (T.Detects) UpdateAwareness(distance, reachable);
 
             // Dormido no hace nada más que esperar: el mismo enganche de siempre, pero lo que
             // dispara es el despertar, no la persecución.
@@ -205,7 +217,7 @@ namespace RedMagic.Enemies
             // enganche (_seenTarget), que se suelta al salir del radio de detección durante
             // 'loseInterestGrace' segundos. Un Static no persigue: para él sigue mandando el
             // alcance vertical directo.
-            bool disengaged = T.Moves ? !_seenTarget : !reachable;
+            bool disengaged = T.Detects ? !_seenTarget : !reachable;
             if (disengaged)
             {
                 Disengage();
@@ -331,7 +343,7 @@ namespace RedMagic.Enemies
 
                 case State.Returning:
                     // Al llegar (o si un borde le corta el camino) se duerme donde esté.
-                    if (!ReturnHome()) FallAsleep();
+                    if (!T.Moves || !ReturnHome()) FallAsleep();   // un Static se pliega donde está
                     break;
 
                 // Sin anclar sigue persiguiendo durante el gesto: es lo que pide un kamikaze, que
@@ -523,6 +535,7 @@ namespace RedMagic.Enemies
             _seenTarget = false;
             _loseInterestTimer = 0f;
             Enter(State.Idle);
+            if (_animation != null) _animation.PlaySleep(false);
         }
 
         /// <summary>Se despierta: queda enganchado y reproduce 'Wake' quieto antes de moverse.</summary>
@@ -547,9 +560,10 @@ namespace RedMagic.Enemies
 
             // Directo a moverse, sin pasar por el reposo: el reposo de un dormilón es el clip de
             // dormir, y un frame de él entre despertar y volar se ve como un parpadeo.
+            // Un Static (torreta) no se acerca: despierta y se queda en guardia en su sitio.
             if (_target != null)
             {
-                Enter(State.Approach);
+                Enter(T.Moves ? State.Approach : State.Idle);
                 return;
             }
 

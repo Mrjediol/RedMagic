@@ -92,8 +92,11 @@ namespace RedMagic.Rigging
         /// <summary>Despertar. Por defecto termina en el acto: un rig sin gesto de despertar no se queda dormido.</summary>
         public virtual void PlayWake(float speed) => RaiseWakeFinished();
 
-        /// <summary>Volver a dormir. Por defecto no hace nada.</summary>
-        public virtual void PlaySleep() { }
+        /// <summary>
+        /// Volver a dormir (plegarse). <paramref name="instant"/> = pose de dormido ya, sin gesto
+        /// (nacer dormido). Por defecto sólo cambia los sprites.
+        /// </summary>
+        public virtual void PlaySleep(bool instant) => Rig.ShowSprites(RigSpriteState.Asleep);
 
         // ============================================================ avisos
 

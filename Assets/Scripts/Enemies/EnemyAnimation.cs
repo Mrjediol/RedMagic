@@ -283,6 +283,15 @@ namespace RedMagic.Enemies
         }
 
         /// <summary>
+        /// Volver a dormir (o nacer dormido, con <paramref name="instant"/>). Sólo lo usa un rig:
+        /// con Animator el reposo de un dormilón ya ES el clip de dormir.
+        /// </summary>
+        public void PlaySleep(bool instant)
+        {
+            if (HasRig) rig.PlaySleep(instant);
+        }
+
+        /// <summary>
         /// Despertar. Avisa con <see cref="WakeFinished"/> al acabar el clip; sin clip de
         /// despertar avisa en el acto, para que el enemigo no se quede dormido para siempre.
         /// </summary>

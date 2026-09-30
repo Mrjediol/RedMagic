@@ -65,12 +65,17 @@ namespace RedMagic.Rigging.EditorTools
         /// prefab abierto para lo específico del enemigo (y el bool de "recién creado").
         /// </summary>
         public static void Setup(string prefabPath, StringBuilder log,
-                                 Action<GameObject, ProceduralRig, bool> configure = null)
+                                 Action<GameObject, ProceduralRig, bool> configure = null,
+                                 Action<GameObject> prepare = null)
         {
             var root = PrefabUtility.LoadPrefabContents(prefabPath);
             try
             {
                 log.AppendLine($"== {Path.GetFileNameWithoutExtension(prefabPath)}");
+
+                // Reorganizar la jerarquía (envoltorios de pivote, fusionar variantes de sprite)
+                // antes de rellenar el rig, para que las partes salgan ya con su forma final.
+                prepare?.Invoke(root);
                 EnsureEnemyStack(root, log);
 
                 bool created = root.GetComponent<ProceduralRig>() == null;

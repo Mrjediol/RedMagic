@@ -40,6 +40,35 @@ namespace RedMagic.Rigging
         public bool breaksOnDeath = true;
     }
 
+    /// <summary>Estado visual que decide qué sprite lleva cada <see cref="RigSpriteSwap"/>.</summary>
+    public enum RigSpriteState
+    {
+        Asleep,
+        Awake,
+        Attacking,
+    }
+
+    /// <summary>
+    /// Sprites por estado para un renderer (ojos apagados / encendidos / disparando). Vacío = ese
+    /// estado no cambia el sprite.
+    /// </summary>
+    [Serializable]
+    public class RigSpriteSwap
+    {
+        public SpriteRenderer renderer;
+        public Sprite asleep;
+        public Sprite awake;
+        [Tooltip("Aviso del ataque: se pone al empezar la carga y se quita tras la coz.")]
+        public Sprite attacking;
+
+        public Sprite Get(RigSpriteState state) => state switch
+        {
+            RigSpriteState.Asleep => asleep,
+            RigSpriteState.Attacking => attacking,
+            _ => awake,
+        };
+    }
+
     /// <summary>
     /// Los <b>datos</b> de un cuerpo animado por partes: qué partes hay, cómo se balancean, y los
     /// tiempos y amplitudes de cada gesto (apuntar, retroceso, golpe, muerte…).
@@ -125,6 +154,41 @@ namespace RedMagic.Rigging
         [Min(0f)] public float muzzleFlashSize = 0.55f;
         [Min(0.01f)] public float muzzleFlashTime = 0.1f;
 
+        [Header("Sprites por estado")]
+        public List<RigSpriteSwap> spriteSwaps = new List<RigSpriteSwap>();
+
+        [Header("Plegar / desplegar (dormir / despertar)")]
+        [Tooltip("Parte que se estira en Y desde su pivote (el cuello). Vacío = no se pliega.")]
+        public Transform stretchPart;
+
+        [Tooltip("Partes que viajan en la punta de 'stretchPart' (la cabeza). Deben colgar del " +
+                 "mismo padre que ella.")]
+        public List<Transform> stretchRiders = new List<Transform>();
+
+        [Tooltip("Escala Y (relativa al prefab) del cuello plegado.")]
+        [Min(0f)] public float foldedStretch = 0.05f;
+
+        [Tooltip("Escala Y de los pasajeros plegados (cabeza aplastada sobre la base).")]
+        [Min(0.01f)] public float foldedRiderScaleY = 0.6f;
+
+        [Tooltip("Desplazamiento extra de los pasajeros plegados (unidades locales).")]
+        public Vector2 foldedRiderOffset;
+
+        [Tooltip("Segundos de despertar a velocidad 1. Al acabar se avisa WakeFinished.")]
+        [Min(0.01f)] public float wakeDuration = 0.8f;
+
+        [Tooltip("Segundos de volver a plegarse.")]
+        [Min(0.01f)] public float sleepDuration = 0.55f;
+
+        [Tooltip("Rebote al desplegarse (curva OutBack; 0 = sin rebote, 1.7 = estándar).")]
+        [Min(0f)] public float wakeOvershoot = 2.2f;
+
+        [Tooltip("Parpadeos de los ojos al encenderse (alterna dormido/despierto).")]
+        [Min(0)] public int wakeFlickers = 3;
+
+        [Tooltip("Qué fracción final del despertar ocupan los parpadeos.")]
+        [Range(0f, 1f)] public float wakeFlickerPortion = 0.4f;
+
         [Header("Golpe recibido")]
         [Min(0.01f)] public float hurtDuration = 0.28f;
         [Tooltip("Grados que se tambalea.")]
@@ -172,7 +236,68 @@ namespace RedMagic.Rigging
 
             Add(body);
             Add(aimPart);
+            Add(stretchPart);
             foreach (var p in parts) Add(p != null ? p.part : null);
+            foreach (var r in stretchRiders) Add(r);
+
+            _restSprites.Clear();
+            foreach (var swap in spriteSwaps)
+                _restSprites.Add(swap?.renderer != null ? swap.renderer.sprite : null);
+        }
+
+        private readonly List<Sprite> _restSprites = new List<Sprite>();
+
+        /// <summary>Pone a cada <see cref="RigSpriteSwap"/> el sprite del estado (si lo tiene).</summary>
+        public void ShowSprites(RigSpriteState state)
+        {
+            foreach (var swap in spriteSwaps)
+            {
+                if (swap?.renderer == null) continue;
+                var sprite = swap.Get(state);
+                if (sprite != null) swap.renderer.sprite = sprite;
+            }
+        }
+
+        /// <summary>True si este rig sabe plegarse (dormir / despertar).</summary>
+        public bool CanFold => stretchPart != null;
+
+        /// <summary>
+        /// Estiramiento Y del cuello para un grado de despliegue (0 plegado, 1 prefab; &gt;1 en el
+        /// rebote).
+        /// </summary>
+        public float StretchAt(float unfold) => Mathf.LerpUnclamped(foldedStretch, 1f, unfold);
+
+        /// <summary>
+        /// Cuánto sube un pasajero sobre su reposo con el cuello a <paramref name="stretch"/>: la
+        /// distancia pivote-del-cuello → pasajero escala con el cuello, así la cabeza va siempre en
+        /// la punta.
+        /// </summary>
+        public Vector3 RiderOffset(Vector3 riderRest, float stretch, float unfold)
+        {
+            TryGetRest(stretchPart, out var neckRest, out _, out _);
+            float tip = riderRest.y - neckRest.y;
+            return new Vector3(0f, tip * (stretch - 1f), 0f) +
+                   (Vector3)(foldedRiderOffset * (1f - Mathf.Clamp01(unfold)));
+        }
+
+        /// <summary>Escala Y de un pasajero para un grado de despliegue.</summary>
+        public float RiderScaleY(float unfold) => Mathf.LerpUnclamped(foldedRiderScaleY, 1f, Mathf.Clamp01(unfold));
+
+        /// <summary>
+        /// Curva OutBack, la misma fórmula que DOTween (<c>Ease.OutBack</c> con
+        /// <c>overshoot</c>): los dos motores despliegan idéntico.
+        /// </summary>
+        public static float OutBack(float t, float overshoot)
+        {
+            t = Mathf.Clamp01(t) - 1f;
+            return t * t * ((overshoot + 1f) * t + overshoot) + 1f;
+        }
+
+        /// <summary>Curva InBack (la inversa), igual que <c>Ease.InBack</c>.</summary>
+        public static float InBack(float t, float overshoot)
+        {
+            t = Mathf.Clamp01(t);
+            return t * t * ((overshoot + 1f) * t - overshoot);
         }
 
         private void Add(Transform t)
@@ -232,6 +357,12 @@ namespace RedMagic.Rigging
                 r.transform.localPosition = r.position;
                 r.transform.localRotation = r.rotation;
                 r.transform.localScale = r.scale;
+            }
+
+            for (int i = 0; i < spriteSwaps.Count && i < _restSprites.Count; i++)
+            {
+                var renderer = spriteSwaps[i]?.renderer;
+                if (renderer != null && _restSprites[i] != null) renderer.sprite = _restSprites[i];
             }
         }
 

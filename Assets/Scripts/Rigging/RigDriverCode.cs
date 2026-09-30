@@ -54,6 +54,11 @@ namespace RedMagic.Rigging
         private float _bodyKick;      // unidades hacia atrás
         private float _hurtTime = -1f;
 
+        // Despliegue: 0 plegado (dormido), 1 pose del prefab, >1 durante el rebote.
+        private float _unfold = 1f;
+        private Coroutine _fold;
+        private Vector3 _stretchScale;
+
         private Coroutine _attack;
         private bool _dead;
         private readonly List<Piece> _pieces = new List<Piece>();
@@ -81,6 +86,7 @@ namespace RedMagic.Rigging
             }
 
             if (rig.aimPart != null) rig.TryGetRest(rig.aimPart, out _aimPos, out _aimAngle, out _);
+            if (rig.stretchPart != null) rig.TryGetRest(rig.stretchPart, out _, out _, out _stretchScale);
         }
 
         protected override void OnEnable()
@@ -93,6 +99,8 @@ namespace RedMagic.Rigging
             _aimWeight = _armRotation = _armPush = _bodyTilt = _bodyKick = 0f;
             _hurtTime = -1f;
             _attack = null;
+            _fold = null;
+            _unfold = 1f;
             _dead = false;
             _pieces.Clear();
             _lastPosition = transform.position;
@@ -102,6 +110,7 @@ namespace RedMagic.Rigging
         {
             StopAllCoroutines();
             _attack = null;
+            _fold = null;
             _pieces.Clear();
             base.OnDisable();
         }
@@ -119,6 +128,7 @@ namespace RedMagic.Rigging
         {
             var rig = Rig;
             _aimPoint = aimPoint;
+            rig.ShowSprites(RigSpriteState.Attacking);   // aviso: ojos de disparo desde la carga
 
             // --- carga: el brazo gira hacia el punto, baja el cañón (anticipación) y lo vuelve a
             // subir, el cuerpo se echa atrás y al final tiembla. En el último 15% el cañón está
@@ -168,12 +178,94 @@ namespace RedMagic.Rigging
             _aimWeight = _armRotation = _armPush = _bodyTilt = _bodyKick = 0f;
             _aimPoint = null;
             _attack = null;
+            rig.ShowSprites(RigSpriteState.Awake);
             RaiseFinished();
         }
 
         public override void PlayHurt()
         {
             if (!_dead) _hurtTime = 0f;
+        }
+
+        // ============================================================ plegar / desplegar
+
+        public override void PlayWake(float speed)
+        {
+            if (_dead) return;
+            if (!Rig.CanFold)
+            {
+                Rig.ShowSprites(RigSpriteState.Awake);
+                RaiseWakeFinished();
+                return;
+            }
+
+            if (_fold != null) StopCoroutine(_fold);
+            _fold = StartCoroutine(WakeRoutine(Mathf.Max(0.01f, speed)));
+        }
+
+        public override void PlaySleep(bool instant)
+        {
+            if (_dead) return;
+            if (_attack != null) StopCoroutine(_attack);
+            _attack = null;
+            if (_fold != null) StopCoroutine(_fold);
+            _fold = null;
+
+            Rig.ShowSprites(RigSpriteState.Asleep);   // los ojos se apagan antes de plegarse
+            if (instant || !Rig.CanFold) _unfold = 0f;
+            else _fold = StartCoroutine(SleepRoutine());
+        }
+
+        /// <summary>
+        /// El cuello sale de la base con rebote (OutBack) llevando la cabeza en la punta; en el
+        /// tramo final los ojos parpadean hasta quedarse encendidos. Arranca desde donde esté (un
+        /// despertar a mitad de plegarse no salta).
+        /// </summary>
+        private IEnumerator WakeRoutine(float speed)
+        {
+            var rig = Rig;
+            float from = _unfold;
+            float duration = rig.wakeDuration / speed;
+            float flickerFrom = 1f - rig.wakeFlickerPortion;
+
+            for (float t = 0f; t < duration;)
+            {
+                float k = t / duration;
+                _unfold = Mathf.LerpUnclamped(from, 1f, ProceduralRig.OutBack(k, rig.wakeOvershoot));
+
+                if (k >= flickerFrom && rig.wakeFlickers > 0)
+                {
+                    float f = (k - flickerFrom) / Mathf.Max(0.0001f, rig.wakeFlickerPortion);
+                    bool on = (int)(f * rig.wakeFlickers * 2f) % 2 == 1;
+                    rig.ShowSprites(on ? RigSpriteState.Awake : RigSpriteState.Asleep);
+                }
+
+                yield return null;
+                if (!Paused) t += Time.deltaTime;
+            }
+
+            _unfold = 1f;
+            rig.ShowSprites(RigSpriteState.Awake);
+            _fold = null;
+            RaiseWakeFinished();
+        }
+
+        /// <summary>El despertar al revés: se estira un poco (InBack) y se recoge sobre la base.</summary>
+        private IEnumerator SleepRoutine()
+        {
+            var rig = Rig;
+            float from = _unfold;
+            float duration = rig.sleepDuration;
+
+            for (float t = 0f; t < duration;)
+            {
+                _unfold = Mathf.LerpUnclamped(from, 0f, ProceduralRig.InBack(t / duration, rig.wakeOvershoot * 0.5f));
+                yield return null;
+                if (!Paused) t += Time.deltaTime;
+            }
+
+            _unfold = 0f;
+            _fold = null;
         }
 
         public override void PlayDeath()
@@ -183,6 +275,9 @@ namespace RedMagic.Rigging
 
             if (_attack != null) StopCoroutine(_attack);
             _attack = null;
+            if (_fold != null) StopCoroutine(_fold);
+            _fold = null;
+            Rig.ShowSprites(RigSpriteState.Asleep);   // se apagan los ojos
 
             Vector2 center = Rig.body != null ? (Vector2)Rig.body.position : (Vector2)transform.position;
 
@@ -271,6 +366,11 @@ namespace RedMagic.Rigging
 
         private void ComposeParts()
         {
+            var rig = Rig;
+            float stretch = rig.CanFold ? rig.StretchAt(_unfold) : 1f;
+            if (rig.CanFold)
+                rig.stretchPart.localScale = new Vector3(_stretchScale.x, _stretchScale.y * stretch, _stretchScale.z);
+
             for (int i = 0; i < _parts.Length; i++)
             {
                 var pose = _parts[i];
@@ -284,10 +384,14 @@ namespace RedMagic.Rigging
                 if (i == _aimIndex) angle += AimRotation();
 
                 var t = data.part;
+                bool rider = rig.CanFold && rig.stretchRiders.Contains(t);
+                if (rider) scale.y *= rig.RiderScaleY(_unfold);
+
                 t.localRotation = Quaternion.Euler(0f, 0f, angle);
                 t.localScale = scale;
                 t.localPosition = pose.position + (Vector3)(data.swayMove * s)
                                 + ProceduralRig.PivotCorrection(data.pivot, pose.angle, pose.scale, angle, scale);
+                if (rider) t.localPosition += rig.RiderOffset(pose.position, stretch, _unfold);
 
                 if (i == _aimIndex) ApplyRecoilPush(t, angle);
             }

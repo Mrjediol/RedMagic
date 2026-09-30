@@ -31,7 +31,7 @@ namespace RedMagic.Enemies.EditorTools
                 ? value is EnemyArchetype.Ranged or EnemyArchetype.FlyingRanged
                 : (AttackKind)staticAttack.enumValueIndex == AttackKind.Ranged;
 
-            bool sleeps = moves && tuning.FindPropertyRelative("sleepsUntilDetected").boolValue;
+            bool sleeps = tuning.FindPropertyRelative("sleepsUntilDetected").boolValue;
             bool explodes = tuning.FindPropertyRelative("selfDestruct").boolValue;
 
             EditorGUILayout.HelpBox(Describe(value), MessageType.Info);
@@ -69,9 +69,6 @@ namespace RedMagic.Enemies.EditorTools
         {
             switch (field)
             {
-                case "sleepsUntilDetected":
-                    return !moves;
-
                 case "wakeAnimSpeed":
                     return !sleeps;
 
@@ -87,9 +84,12 @@ namespace RedMagic.Enemies.EditorTools
                 case "staticAttack":
                     return moves;
 
-                // Sólo un enemigo que se mueve tiene detección, persecución y bordes.
+                // Detección: los que persiguen y los dormilones (una torreta plegada también).
                 case "detectionRange":
                 case "loseInterestGrace":
+                    return !moves && !sleeps;
+
+                // Sólo un enemigo que se mueve tiene persecución y bordes.
                 case "moveSpeed":
                 case "moveSoundInterval":
                 case "stopAtLedges":

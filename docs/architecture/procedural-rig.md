@@ -11,10 +11,22 @@ sheet. Animation is code, not clips.
 - **`RigPart.pivot`** — real joint point relative to the sprite pivot. The part art is exported
   on full canvases (1024² with the piece off-centre), so the sprite pivot can sit far from the
   piece; sway, scale pulse and death spin happen around `pivot` instead. **Art is never edited.**
+- **Sprite swaps** — `spriteSwaps` (`RigSpriteSwap`: renderer + `asleep`/`awake`/`attacking`
+  sprites, empty = unchanged). `Attacking` is the telegraph: set at windup start, back to `Awake`
+  after recover; death shows `Asleep`. Swaps are data, never hardcoded.
+- **Fold / unfold** (sleep/wake) — `stretchPart` scales Y from its pivot (`foldedStretch` when
+  asleep), `stretchRiders` ride its tip (offset = rest distance × stretch, squashed to
+  `foldedRiderScaleY`, `foldedRiderOffset`). Wake = OutBack with `wakeOvershoot` + eye flicker
+  (`wakeFlickers` in the last `wakeFlickerPortion`) → `WakeFinished`; sleep = InBack back to 0.
+  `ProceduralRig.OutBack`/`InBack` are DOTween's exact formulas so both passes match.
+- **Muzzle flash** — `muzzle` + `muzzleFlash*`: pooled `AbilityFx.Flash` fired by the shared
+  `RigDriver.RaiseReleased`, so every driver flashes identically.
+- **Recoil** — windup ends with the barrel on target; after release the arm holds `recoilDelay`
+  (shot visibly leaves the barrel), then kicks over `recoilKick` with easing.
 - **`RigDriver`** (abstract) — the engine. Contract: `SetFacing` (applied immediately),
   `PlayAttack(aimPoint, speed)` → **`AttackReleased` exactly at the end of `windup`** →
   `AttackFinished` after `recover`; `PlayHurt`, `PlayDeath`, `PlayWake` (→ `WakeFinished`),
-  `PlaySleep`. Gestures advance only with scaled time **and** `GameStateManager.CanPlayerAct`.
+  `PlaySleep(instant)`. Gestures advance only with scaled time **and** `GameStateManager.CanPlayerAct`.
 - **`RigDriverCode`** — pass B (plain code): `LateUpdate` recomposes every part from
   `rest + sine sway + gesture layers`; gestures are coroutines that only write a few numbers
   (aim weight, arm rotation, push, body tilt/kick), so overlapping gestures never fight. Lean
@@ -32,6 +44,15 @@ sheet. Animation is code, not clips.
   *world* position is used (a root-level `Muzzle` keeps the old mirrored-local behaviour).
 - Timings scale with `EnemyTuning.attackAnimSpeed` / `wakeAnimSpeed`.
 
+## Sleeping enemies (any archetype)
+`EnemyTuning.Sleeps` is now just `sleepsUntilDetected` (a sleeping `Static` = folded turret);
+`Detects` (`Moves || Sleeps`) gates awareness/disengage. A static sleeper wakes on
+`detectionRange` or a hit, goes to `Idle` (not `Approach`) after `WakeFinished`, and on giving up
+folds in place (`Returning` → `FallAsleep` immediately). `FallAsleep` calls
+`EnemyAnimation.PlaySleep(false)`; the brain's first `Update` calls `PlaySleep(true)` so a sleeper
+spawns folded (not in `OnEnable`: the rig resets its pose there). Animator enemies ignore
+`PlaySleep` (their Idle clip already is the sleep).
+
 ## Two-pass comparison (code vs DOTween)
 Base prefab (`Assets/Prefabs/Enemies/Procedural/<Name>.prefab`) carries **everything except the
 driver**: enemy stack, `EnemyStats`, `ProceduralRig`. Variants add the driver:
@@ -45,6 +66,7 @@ passes change together; the comparison only differs in the engine.
   under `Visual` (golden-angle phases), and migrates old `ProceduralSway` values (the component,
   now in `Legacy/`, is removed). Idempotent.
 - `2 · Crear variante _Code (selección)` — driver variant.
+- `Packs/Torreta (Turret)` — see Enemies below.
 - `Packs/Dron (Robot)` — `ProceduralEnemyPacks.RunDrone()`: the above + drone data (aim arm,
   `Muzzle` at the gun tip, flame/ring pivots, FlyingRanged tuning, `Corpse` linger 1.1s) + the
   placeholder projectile `Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile` (disc +
@@ -57,3 +79,8 @@ regenerated).
 
 ## Enemies
 - **Robot** (TestProcedural art) — FlyingRanged drone; `RightArm` is the gun (`aimArtAngle` 11.5°).
+- **Turret** (jungle art) — Static+Ranged sleeper. `Packs/Torreta` restructures once: `neck` under a
+  `NeckPivot` at its bottom edge (neck sprite pivot is centred), the three head objects merged into
+  one `Head` + a `RigSpriteSwap`, sorting neck 2 / head 3 / base 4 (base in front → folded reads as
+  a closed box), `Muzzle` between the eyes, box collider for the unfolded body. Laser placeholder
+  `Fx_Turret_Laser` (sliver, `faceDirection`). Base `breaksOnDeath = false`.

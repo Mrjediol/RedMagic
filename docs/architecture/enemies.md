@@ -37,7 +37,9 @@ meant to be edited by hand.**
     from a previous archetype (which the inspector hides and the gizmo no longer draws). `Retreat`
     has a hysteresis band (`retreatReleaseFactor`) and, if it backs into a wall, gives up retreating
     and fights instead of freezing.
-  - **Sleepers and kamikazes** — two orthogonal `EnemyTuning` flags. `sleepsUntilDetected`:
+  - **Sleepers and kamikazes** — two orthogonal `EnemyTuning` flags. `sleepsUntilDetected` (any
+    archetype — a sleeping `Static` wakes on `detectionRange` and folds back in place; see
+    `procedural-rig.md`):
     `Idle` is the sleep clip; on detection (or on being hit) the brain enters `Waking`, plays
     `Wake` (non-interruptible, timed by clip length → `EnemyAnimation.WakeFinished`), then goes
     straight to `Approach`; when it gives up it enters `Returning`, flies/walks back to its spawn

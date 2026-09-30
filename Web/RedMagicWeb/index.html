@@ -21,6 +21,7 @@
   <button class="tabBtn" data-tab="enemy">🧩 Enemy Creator</button>
   <button class="tabBtn" data-tab="fx">🔥 Proyectil/VFX</button>
   <button class="tabBtn" data-tab="boss">👑 Boss Creator</button>
+  <button class="tabBtn" data-tab="rig">🦴 Rig Composer</button>
   <button class="tabBtn" data-tab="library">📚 Biblioteca</button>
   <button class="tabBtn" data-tab="map">🗺️ Map Tracer</button>
 </div>
@@ -271,6 +272,16 @@
     <button id="bossExportBtn" style="width:100%;margin-top:6px;">⬇ Exportar sólo config (.json)</button>
     <pre id="bossJsonPreview"></pre>
   </div>
+</div>
+
+<div id="tab-rig" class="tabPanel" hidden>
+  <div id="rigSidebar"></div>
+  <div id="rigCenter">
+    <div id="rigToolbar"></div>
+    <div id="rigCanvasWrap"><canvas id="rigCanvas"></canvas></div>
+    <div id="rigStatus" class="hint"></div>
+  </div>
+  <div id="rigInspector"></div>
 </div>
 
 <div id="tab-library" class="tabPanel" hidden>

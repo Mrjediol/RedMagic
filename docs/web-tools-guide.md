@@ -210,6 +210,10 @@ Vía **separada** de la de sprite sheets: nada de arriba cambia. Esquema:
 `docs/schemas/rig-config.schema.json` (espejo en `Web/RedMagicWeb/schemas/`). Código:
 `Assets/Scripts/Rigging/Editor/RigConfig/`.
 
+El .zip lo genera la pestaña web **🦴 Rig Composer** (suelta los PNG de las piezas, colócalas,
+marca pivotes, roles y sprites por estado, enlaza un enemigo de Enemy Creator o un jefe de Boss
+Creator y exporta). Ver `Web/RedMagicWeb/ARCHITECTURE.md ▸ Rig Composer tab`.
+
 ### Importar rig (.zip · carpeta)…
 Elige un `.zip` o el `rig-config.json` de una carpeta. El bundle lleva:
 
@@ -220,6 +224,7 @@ enemy-config.json         ← opcional (kind enemy): sólo se lee `tuning` y `ti
                             (junto a un `X.rig-config.json` suelto: `X.enemy-config.json` / `X.boss-config.json`)
 boss-config.json          ← opcional (kind boss): ataques + definición, SIN 'body'
 Art/…                     ← opcional: arte de los ataques del jefe (como en el zip de jefe)
+Library/<id>/…            ← opcional: el proyectil de biblioteca del enemigo (va a su carpeta compartida)
 ```
 
 - **Sprites**: `"Assets/…png"` = sprite del proyecto, se usa sin tocarlo. Otra ruta = archivo del

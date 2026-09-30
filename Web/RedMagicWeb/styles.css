@@ -255,3 +255,37 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 #keyColorInput{width:44px;height:32px;padding:0;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;flex:none;}
 .keyMode{color:var(--accent);font-weight:600;}
 #canvasWrap.eyedropper, #canvasWrap.eyedropper canvas{cursor:crosshair;}
+
+/* ============================================================ Rig Composer tab */
+
+
+#rigSidebar{width:270px;flex-shrink:0;border-right:1px solid var(--border);padding:12px;overflow-y:auto;}
+#rigSidebar h1{font-size:16px;margin:0 0 6px;color:var(--accent);}
+#rigSidebar h2{font-size:13px;margin:12px 0 4px;}
+#rigCenter{flex:1;min-width:0;display:flex;flex-direction:column;}
+#rigToolbar{display:flex;flex-direction:column;gap:4px;padding:6px 8px;border-bottom:1px solid var(--border);}
+.rigTools,.rigPreviewBar{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.rigTools button.active,.rigPreviewBar button.active{background:var(--accent);color:#111;}
+#rigCanvasWrap{flex:1;min-height:0;position:relative;overflow:hidden;background:#15171a;}
+#rigCanvas{position:absolute;inset:0;display:block;}
+#rigStatus{padding:4px 8px;border-top:1px solid var(--border);min-height:18px;}
+#rigInspector{width:360px;flex-shrink:0;border-left:1px solid var(--border);padding:10px 12px;overflow-y:auto;}
+.rigBlock{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.rigPartList{display:flex;flex-direction:column;gap:2px;}
+.rigPartRow{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:4px;background:#1a1d21;cursor:pointer;font-size:12px;}
+.rigPartRow.selected{outline:1px solid var(--accent);background:#23282e;}
+.rigPartRow.dropTarget{outline:2px dashed var(--accent2);}
+.rigRootRow{color:var(--accent2);cursor:default;}
+.rigPartName{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rigPartRoles{font-size:10px;color:var(--accent2);}
+.rigPartBtns button{padding:1px 5px;}
+.rigSection{margin-bottom:8px;border:1px solid var(--border);border-radius:6px;padding:4px 8px;}
+.rigSection > summary{cursor:pointer;font-weight:bold;padding:2px 0;}
+.rigGroupTitle{font-size:12px;margin:8px 0 2px;color:var(--accent2);}
+.rigActions{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;}
+.rigVariantRow{display:flex;align-items:center;gap:6px;margin:4px 0;font-size:12px;}
+.rigVariantLabel{width:110px;flex-shrink:0;}
+.rigVariantThumb{width:36px;height:36px;object-fit:contain;background:#0e0f11;border-radius:3px;}
+.rigExportSummary ul{margin:4px 0 6px 16px;padding:0;}
+#rigInspector button{margin-top:4px;}
+.rigJsonPreview{max-height:300px;overflow:auto;font-size:10px;}

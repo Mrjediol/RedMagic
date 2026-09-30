@@ -64,7 +64,7 @@ importer, refactor: design matters and mistakes are expensive). **Medium** is en
 |---|---|---|---|---|
 | 0 | Split rig attacks into their own folder and category (catalog + web picker shows "Clásico" / "De partes") | small web change | high | ☑ |
 | A | `rig-config` schema + round-trip exporter + **separate** `RigBundleImporter` (rebuilds Robot / Turret / BossIce2 from JSON) | no | high | ☑ |
-| B | New web tab **🦴 Rig Composer** (assemble parts, pivots, roles, state sprites, live sway preview, export) | yes | medium | ☐ |
+| B | New web tab **🦴 Rig Composer** (assemble parts, pivots, roles, state sprites, live sway preview, export) | yes | medium | ☑ |
 | C | Templates in the Rig Composer (folding turret / armed drone / colossus) | yes | medium | ☐ |
 | D | `IAttackHost` refactor → rig (and classic) catalog attacks usable by normal enemies | no | high | ☐ |
 | E | Gesture pose editor in the Rig Composer | yes | medium | ☐ |
@@ -164,6 +164,12 @@ attacks `classic`.
   pivot correction).
 - Library entry kind `rig`. Export `.zip` = cropped PNGs + `rig-config.json` + `enemy-config.json`
   (from the existing Enemy Creator form, embedded or linked).
+
+- **Done (Phase B outcome).** Modules `rig-defaults/model/canvas-view/export/composer.js`, library
+  kind `rig` (the document incl. part images is saved as `draft`). The joint IS the sprite pivot,
+  so `RigPart.pivot` exports as 0; PNGs cut from one shared canvas assemble themselves; "✂ Dividir
+  en piezas" splits a sheet of parts. Not in B: gestures (E), templates (C), fold/aim preview, undo.
+  Verified: the Robot PNGs → zip valid against the schema → imported in Unity, art sizes identical.
 
 ### Phase C — templates
 A template is a role checklist plus default sway, gestures and archetype:

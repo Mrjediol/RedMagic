@@ -135,6 +135,27 @@ export const KINDS = {
     creator: 'boss',
     configFile: 'boss-config.json',
   },
+
+  // An enemy or boss built from separate part PNGs (🦴 Rig Composer). Like a boss it owns no sheet:
+  // its art is the parts, stored inside the composer document (the record's `draft`), and its
+  // config is a rig-config (docs/schemas/rig-config.schema.json) that travels in its own .zip.
+  rig: {
+    id: 'rig',
+    sheet: false,
+    label: 'Rig por partes',
+    plural: 'Rigs',
+    icon: '🦴',
+    nameLabel: 'Nombre del rig',
+    namePlaceholder: 'ej. TorretaHielo',
+    fallbackName: 'Rig',
+    saveLabel: '💾 Guardar rig',
+    emptyMessage: 'Todavía no hay rigs guardados. Móntalos en la pestaña Rig Composer.',
+    lanes: [],
+    defaultLanes: [],
+    projectileLanes: false,
+    creator: 'rig',
+    configFile: 'rig-config.json',
+  },
 };
 
 /** Kind ids in display order. */

@@ -94,6 +94,12 @@ namespace RedMagic.Rigging.EditorTools
                     configPath = Path.Combine(temp, RigConfigJson.ConfigFile);
                     if (!File.Exists(configPath))
                         throw new ConfigImportException($"El .zip no trae {RigConfigJson.ConfigFile} en la raíz — ¿es un rig exportado de la web?");
+
+                    // El proyectil de biblioteca del enemigo viaja en Library/<id>/, como en un bundle
+                    // combinado: se lleva a su carpeta compartida antes de leer enemy-config.json.
+                    if (Directory.Exists(Path.Combine(temp, "Library")) &&
+                        CombinedBundleImporter.LiftEmbeddedLibraryEntries(temp, report) > 0)
+                        AssetDatabase.Refresh();
                 }
                 else
                 {

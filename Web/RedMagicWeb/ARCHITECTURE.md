@@ -49,7 +49,7 @@ module's responsibility shifts, update its row in the same change.
 | Rendering a library card grid (thumbnail/name/date/badges + caller-supplied action buttons) | `modules/library-panel.js` | `renderLibraryCards(container, {getActions, fetchEntries, getTitle, getBadges, emptyMessage})` — the ONE implementation shared by the Sprites-tab panel, the Biblioteca tab, and the Map Tracer tab's maps/pieces lists; defaults reproduce the original enemy-library-only behavior, so only `getActions` (and, for non-enemy entries, `fetchEntries`/`getTitle`/`getBadges`) differ per call site (`app.js`) |
 | Building the combined sprites+config zip (`manifest.json` + PNGs + `enemy-config.json` at root) | `modules/enemy-bundle.js` | `buildCombinedBundle({enemyName, sprite, configObj})` |
 | The "app.js failed to load" fallback banner (e.g. opened via `file://` instead of a server) | `index.html` | the inline classic `<script>` right before `<script type="module" src="app.js">`, and `#moduleFailBanner` in the CSS/HTML |
-| Tab switching (Sprites / Enemy Creator / Proyectil-VFX / Boss Creator / Biblioteca / Map Tracer) | `app.js` | top-of-file `.tabBtn` click wiring; `creatorFor(kind)` maps a kind to its creator-tab API via `KINDS[kind].creator` |
+| Tab switching (Sprites / Enemy Creator / Proyectil-VFX / Boss Creator / Rig Composer / Biblioteca / Map Tracer) | `app.js` | top-of-file `.tabBtn` click wiring; `creatorFor(kind)` maps a kind to its creator-tab API via `KINDS[kind].creator` |
 | Detect-vs-grid sidebar mode switch | `app.js` | `setSpriteMode(next)` |
 | Canvas box click/drag/resize/create interaction | `app.js` | `canvas` `mousedown`/`mousemove`/`mouseup` listeners, `hitTestHandle`, `getPos` |
 | Box multi-select rules (click / ctrl+click / shift-range) | `app.js` | `applySelectionClick(i, ctrlKey, shiftKey)` — shared by the canvas and the unsorted grid |
@@ -166,21 +166,49 @@ edit. `modules/boss-catalog-notes.js` only adds Spanish names/one-liners for kno
 
 Zip layout: `boss-config.json`, `Body/<Animation>/frame_000.png…`, `Art/<libraryId>/<Lane>/frame_000.png…`.
 
-### Entry kinds (enemy / projectile / fx / boss)
+### Rig Composer tab (🦴, part-based enemies and bosses)
+
+Assembles an enemy or boss from **separate part PNGs** and exports the `.zip` that Unity's
+**Tools ▸ Web ▸ Rig ▸ Importar rig** reads (`Assets/Scripts/Rigging/Editor/RigConfig/RigBundleImporter.cs`).
+Separate from every classic tab: it touches none of them, it only reuses shared helpers
+(`background-removal.js`, `despill-edge.js`, `sprite-detection.js`, `enemy-form-fields.js`,
+`config-schema.js`, the library). Contract: `schemas/rig-config.schema.json` +
+`docs/web-tools-guide.md ▸ Rig`.
+
+| To change... | Edit | Function |
+|---|---|---|
+| Part / document defaults, the ProceduralRig fields shown and their C# defaults | `modules/rig-defaults.js` | `createPart`, `createDefaultRigState`, `RIG_FIELD_GROUPS` — **keep in sync with `ProceduralRig.cs` initializers** |
+| Matrices, world transforms, reparent / pivot moves that keep the art in place | `modules/rig-model.js` | `worldMatrix`, `reparent`, `setPivot`, `pixelToLocal` |
+| Loading a PNG into a part (auto background removal when the corners are opaque, trim), splitting a sheet of parts | `modules/rig-model.js` | `importImage`, `splitPart`, `initialPosition` (layers of one shared canvas land already assembled: canvas centre = origin) |
+| State sprite alignment (asleep/awake/attacking/stages) | `modules/rig-model.js` | `variantPivot` — same file size as the part = same pivot pixel |
+| Canvas: camera, drawing, pixel picking, overlays (pivot, centre, point/barrel arrows, muzzle, grips, collider) | `modules/rig-canvas-view.js` | `RigCanvasView` |
+| Tools, parts list (draw order, parenting by drag), inspector, preview (sway/hover/lean/hurt = `RigDriverCode` formulas), save/export | `modules/rig-composer.js` | `initRigComposer` |
+| State → `rig-config.json`, the zip layout, companion `enemy-config.json` / `boss-config.json` | `modules/rig-export.js` | `buildRigExport`, `buildRigBundle`, `companionEnemyConfig` |
+
+Model rules: a part's **pivot is its joint and becomes the sprite's own pivot** (exported in
+`sprites`, normalized), so `RigPart.pivot` is always 0; geometry is kept in each file's original
+pixels (`cropX/cropY/origW/origH`). Muzzle and grips are exported as `Muzzle` / `Grip` nodes with
+`rigPart:false`. `gestures` is **not** exported (Phase E): an absent key keeps Unity's. Library kind
+`rig` (sheetless, like `boss`): the whole document incl. part images is the record's `draft`,
+`config` is the last rig-config. The enemy link embeds the chosen Enemy Creator entry's config
+(`tuning` + `tier`, sprite-sheet keys stripped) and its projectile's `Library/<id>/`; the boss link
+embeds a Boss Creator entry's config without `body` plus its `Art/`.
+
+### Entry kinds (enemy / projectile / fx / boss / rig)
 
 Every library entry has a **`kind`** — `enemy` (default), `projectile`, `fx` or `boss` — defined
 once in `modules/entry-kinds.js`. The Sprites tab's pipeline (background removal, detect/grid
 slicing, box editing, cropping, zip building) is entirely generic and is **shared unchanged** by the
 three sheet kinds; the kind only decides:
 
-| | `enemy` | `projectile` | `fx` | `boss` |
-|---|---|---|---|---|
-| Owns a sprite sheet (`sheet`) | yes | yes | yes | **no** |
-| Canonical lanes | Idle / Walk / Attack / Hurt / Death / Wake | Awake / Move / Impact | Spawn / Loop / End | — |
-| Pre-created on load | all but `Wake` | `Move`, `Impact` (`Awake` optional) | all three | — |
-| Projectile lanes (`Projectiles/` in the zip) | yes | no | no | no |
-| Creator tab (`creator`) | Enemy Creator | Proyectil/VFX | Proyectil/VFX | Boss Creator |
-| Config file in a bundle (`configFile`) | `enemy-config.json` | `fx-config.json` | `fx-config.json` | `boss-config.json` |
+| | `enemy` | `projectile` | `fx` | `boss` | `rig` |
+|---|---|---|---|---|---|
+| Owns a sprite sheet (`sheet`) | yes | yes | yes | **no** | **no** (parts live in its `draft`) |
+| Canonical lanes | Idle / Walk / Attack / Hurt / Death / Wake | Awake / Move / Impact | Spawn / Loop / End | — | — |
+| Pre-created on load | all but `Wake` | `Move`, `Impact` (`Awake` optional) | all three | — | — |
+| Projectile lanes (`Projectiles/` in the zip) | yes | no | no | no | no |
+| Creator tab (`creator`) | Enemy Creator | Proyectil/VFX | Proyectil/VFX | Boss Creator | Rig Composer |
+| Config file in a bundle (`configFile`) | `enemy-config.json` | `fx-config.json` | `fx-config.json` | `boss-config.json` | `rig-config.json` |
 
 **`boss` is the one kind with no sheet of its own.** A boss is assembled, not drawn: it names an
 existing enemy entry as its body/stat baseline (`base.enemyLibraryId`) and its own content is decks

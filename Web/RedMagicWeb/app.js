@@ -16,6 +16,7 @@ import { cropToDataURL, buildExportZip, downloadBlob } from './modules/export-ma
 import { initEnemyCreator } from './modules/enemy-form.js';
 import { initFxCreator } from './modules/fx-form.js';
 import { initBossCreator } from './modules/boss-form.js';
+import { initRigComposer } from './modules/rig-composer.js';
 import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail } from './modules/enemy-library.js';
 import { renderLibraryCards } from './modules/library-panel.js';
 import { buildCombinedBundle } from './modules/enemy-bundle.js';
@@ -46,6 +47,7 @@ function canonicalLaneNames() { return canonicalLanesFor(currentKind); }
 let enemyCreator = null;
 let fxCreator = null;
 let bossCreator = null;
+let rigComposer = null;
 
 /** The creator-tab API for a kind, or null for a kind nobody configures. See KINDS[…].creator. */
 function creatorFor(kind) {
@@ -53,6 +55,7 @@ function creatorFor(kind) {
   if (id === 'enemy') return enemyCreator;
   if (id === 'fx') return fxCreator;
   if (id === 'boss') return bossCreator;
+  if (id === 'rig') return rigComposer;
   return null;
 }
 
@@ -76,6 +79,7 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     // store any tab can write to, so they are re-listed on entry rather than kept live.
     if (btn.dataset.tab === 'fx' && fxCreator) fxCreator.refreshArtLibrary();
     if (btn.dataset.tab === 'boss' && bossCreator) bossCreator.refreshLibraries();
+    if (btn.dataset.tab === 'rig' && rigComposer) rigComposer.onShow();
     if (btn.dataset.tab === 'library') renderLibraryTab();
     if (btn.dataset.tab === 'map') { renderMapLibraryLists(); mapView.frameToFit(); }
   });
@@ -1053,6 +1057,17 @@ bossCreator = initBossCreator({
   onSaved: () => renderLibraryTab(),
 });
 
+// ============================================================ Rig Composer tab (part-based enemies/bosses)
+
+rigComposer = initRigComposer({
+  sidebar: document.getElementById('rigSidebar'),
+  toolbar: document.getElementById('rigToolbar'),
+  canvas: document.getElementById('rigCanvas'),
+  canvasWrap: document.getElementById('rigCanvasWrap'),
+  statusEl: document.getElementById('rigStatus'),
+  inspector: document.getElementById('rigInspector'),
+});
+
 // ============================================================ shared enemy library (persistent, cross-tab)
 
 saveToLibraryBtn.addEventListener('click', async () => {
@@ -1290,7 +1305,7 @@ function renderLibraryFilterBar() {
  * `KINDS[kind].creator` rather than an if-chain on the kind id, so a sixth kind with its own
  * creator needs nothing here — the same rule the Sprites tab already follows for its own labels.
  */
-const CREATOR_LABELS = { enemy: 'Enemy Creator', fx: 'Proyectil/VFX', boss: 'Boss Creator' };
+const CREATOR_LABELS = { enemy: 'Enemy Creator', fx: 'Proyectil/VFX', boss: 'Boss Creator', rig: 'Rig Composer' };
 
 function editActionFor(entry) {
   const creatorId = kindOf(entry.kind).creator;
@@ -1310,7 +1325,7 @@ function editActionFor(entry) {
       // Each creator takes what it needs: the enemy one links a sheet by id+name, the fx one also
       // needs the kind (it authors two), the boss one reopens a saved config by its own record id.
       if (kindOf(e.kind).creator === 'fx') await creator.linkLibraryEntry(e.id, e.enemyName, e.kind);
-      else if (kindOf(e.kind).creator === 'boss') await creator.linkLibraryEntry(e.id);
+      else if (kindOf(e.kind).creator === 'boss' || kindOf(e.kind).creator === 'rig') await creator.linkLibraryEntry(e.id);
       else await creator.linkLibraryEntry(e.id, e.enemyName);
     },
   };
@@ -1327,7 +1342,9 @@ function renderLibraryTab() {
       // Everything sprite-shaped is gated on the kind owning a sheet at all: a boss entry has no
       // `sprite` block, so Cargar/Exportar zip/Exportar combinado would throw rather than misbehave.
       const hasSheet = kindOf(entry.kind).sheet;
-      const sheetOnlyTitle = 'Un jefe no tiene hoja propia: su arte es la del enemigo base.';
+      const sheetOnlyTitle = entry.kind === 'rig'
+        ? 'Un rig no tiene hoja: sus piezas se exportan desde Rig Composer.'
+        : 'Un jefe no tiene hoja propia: su arte es la del enemigo base.';
 
       return [
         {

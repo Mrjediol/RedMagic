@@ -22,7 +22,7 @@ async function sourceCanvas(sprite) {
   return canvas;
 }
 
-async function writeLanes(folder, entry) {
+export async function writeLanes(folder, entry) {
   const source = await sourceCanvas(entry.sprite);
   framedLanes(entry).forEach((lane) => {
     const dir = folder.folder(laneFolder(lane.name));

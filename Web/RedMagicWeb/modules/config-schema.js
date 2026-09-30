@@ -25,10 +25,11 @@ const SCHEMA_FILES = {
   enemy: './schemas/enemy-config.schema.json',
   fx: './schemas/fx-config.schema.json',
   boss: './schemas/boss-config.schema.json',
+  rig: './schemas/rig-config.schema.json',
 };
 
 /** Document types a form can validate against (i.e. everything but the shared value types). */
-const ROOT_SCHEMAS = ['enemy', 'fx', 'boss', 'projectile'];
+const ROOT_SCHEMAS = ['enemy', 'fx', 'boss', 'projectile', 'rig'];
 
 let _ajvPromise = null;
 const _validators = {}; // name -> compiled validate fn
@@ -66,6 +67,7 @@ export async function loadValidator(name) {
   const validate = ajv.getSchema(`https://redmagic.local/schemas/${name === 'enemy' ? 'enemy-config'
     : name === 'fx' ? 'fx-config'
     : name === 'boss' ? 'boss-config'
+    : name === 'rig' ? 'rig-config'
     : 'projectile-config'}.schema.json`);
 
   if (!validate) throw new Error(`El esquema '${name}' no se registró correctamente.`);

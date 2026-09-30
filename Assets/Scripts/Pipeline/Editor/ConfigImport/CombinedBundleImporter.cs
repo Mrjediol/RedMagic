@@ -186,7 +186,7 @@ namespace RedMagic.Pipeline.EditorTools
         /// de un proyectil que quizá otro enemigo ya esté usando.
         /// </summary>
         /// <returns>Cuántas entradas se colocaron.</returns>
-        private static int LiftEmbeddedLibraryEntries(string extractRoot, ConfigImportReport report)
+        internal static int LiftEmbeddedLibraryEntries(string extractRoot, ConfigImportReport report)
         {
             string libraryDir = Path.Combine(extractRoot, "Library");
             if (!Directory.Exists(libraryDir)) return 0;

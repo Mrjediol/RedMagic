@@ -1,0 +1,211 @@
+// modules/rig-export.js
+// -----------------------------------------------------------------------------
+// Rig Composer state → `rig-config.json` (docs/schemas/rig-config.schema.json) and the .zip that
+// Unity's Tools ▸ Web ▸ Rig ▸ Importar rig reads (RigBundleImporter.cs):
+//
+//   rig-config.json
+//   Parts/<pieza>.png, Parts/<pieza>__asleep.png, Parts/<pieza>__stage1.png …   (cropped art)
+//   enemy-config.json            (kind enemy, optional: a linked Enemy Creator entry's tuning)
+//   Library/<libraryId>/…        (its projectile's art, same as a combined enemy bundle)
+//   boss-config.json + Art/…     (kind boss, optional: a linked Boss Creator entry, without 'body')
+//
+// Decisions that mirror the importer (see docs/web-tools-guide.md ▸ Rig):
+//  - each part's joint IS its sprite's pivot (written in `sprites`), so RigPart.pivot exports as 0;
+//  - muzzle and grips become ordinary nodes ('Muzzle' under the aim part, 'Grip' under each limb)
+//    with rigPart:false;
+//  - `gestures` is NOT written (Phase E): a present list would replace the gestures authored in
+//    Unity, an absent key keeps them.
+
+import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot } from './rig-model.js';
+import { embedReferencedLibraryEntries } from './enemy-bundle.js';
+import { writeLanes } from './boss-bundle.js';
+
+const r5 = (v) => Math.round(v * 1e5) / 1e5;
+const v2 = (v) => ({ x: r5(v.x), y: r5(v.y) });
+const scaleOut = (s) => (Math.abs(s.x - s.y) < 1e-6 ? r5(s.x) : v2(s));
+const safe = (name) => name.replace(/[^A-Za-z0-9_-]/g, '_') || 'pieza';
+
+/**
+ * @returns {{ doc: object, files: Array<{path: string, dataURL: string}>, problems: string[], notes: string[] }}
+ */
+export function buildRigExport(state) {
+  const problems = [];
+  const notes = [];
+  const files = [];
+  const sprites = {};
+  const ppu = state.pixelsPerUnit;
+  const roles = state.roles;
+  const used = new Set();
+
+  if (!state.name.trim()) problems.push('Ponle nombre (será el del prefab).');
+  if (state.parts.length === 0) problems.push('Añade al menos una pieza.');
+
+  function addFile(stem, image, pivot) {
+    let path = `Parts/${stem}.png`;
+    for (let n = 2; used.has(path); n++) path = `Parts/${stem}_${n}.png`;
+    used.add(path);
+    files.push({ path, dataURL: image.dataURL });
+    sprites[path] = { pixelsPerUnit: ppu, pivot: v2(normalizedPivot(image, pivot)) };
+    return path;
+  }
+
+  const partPaths = new Map(state.parts.map((p) => [p.uid, pathOf(state, p)]));
+  const nodes = [];
+  const swaps = [];
+
+  state.parts.forEach((part, index) => {
+    const node = { name: part.name, parent: part.parent ? partPaths.get(part.parent) : '' };
+    if (part.image) {
+      node.sprite = addFile(safe(part.name), part.image, part.pivot);
+      node.sortingOrder = index;
+    }
+    node.position = v2(part.position);
+    node.rotation = r5(part.rotation);
+    node.scale = scaleOut(part.scale);
+    node.rigPart = part.rigPart;
+    if (part.rigPart) {
+      node.pivot = { x: 0, y: 0 };
+      node.center = part.center ? v2(pixelToLocal(state, part, part.center)) : { x: 0, y: 0 };
+      node.pointAngle = r5(part.pointAngle);
+      node.leanFollow = r5(part.leanFollow);
+      node.sway = {
+        move: v2(part.sway.move), rotate: r5(part.sway.rotate), scale: v2(part.sway.scale),
+        speed: r5(part.sway.speed), phase: r5(part.sway.phase),
+      };
+      node.breaksOnDeath = part.breaksOnDeath;
+    }
+    nodes.push(node);
+
+    const v = part.variants || {};
+    const hasStates = v.asleep || v.awake || v.attacking;
+    const stages = (v.stages || []).filter(Boolean);
+    if ((hasStates || stages.length) && !part.image) problems.push(`"${part.name}": los sprites por estado necesitan una imagen base.`);
+    if ((hasStates || stages.length) && part.image) {
+      const ref = (img, suffix) => (img ? addFile(`${safe(part.name)}__${suffix}`, img, variantPivot(part, img)) : null);
+      const swap = { part: partPaths.get(part.uid), asleep: ref(v.asleep, 'asleep'), awake: ref(v.awake, 'awake'), attacking: ref(v.attacking, 'attacking'), stages: [] };
+      // Stage 0 = the base sprite (the torso intact); variants.stages[i] = stage i+1 (phase i+2).
+      if (stages.length) swap.stages = [node.sprite, ...v.stages.map((s, i) => (s ? ref(s, `stage${i + 1}`) : node.sprite))];
+      swaps.push(swap);
+      [v.asleep, v.awake, v.attacking, ...(v.stages || [])].forEach((img) => {
+        if (img && (img.origW !== part.image.origW || img.origH !== part.image.origH))
+          notes.push(`"${part.name}": un sprite de estado no tiene el tamaño de archivo de la pieza; se alinea por su centro.`);
+      });
+    }
+  });
+
+  // --- helper nodes: the muzzle under the aim part, a grip under each limb.
+  const aim = byUid(state, roles.aim);
+  let muzzlePath = null;
+  if (aim && roles.muzzle) {
+    const local = pixelToLocal(state, aim, roles.muzzle);
+    nodes.push({ name: 'Muzzle', parent: partPaths.get(aim.uid), position: v2(local), rotation: 0, scale: 1, rigPart: false });
+    muzzlePath = `${partPaths.get(aim.uid)}/Muzzle`;
+  } else if (aim) notes.push('Hay pieza que apunta pero sin boca: el disparo saldrá del centro del enemigo.');
+
+  const gripPaths = [];
+  roles.limbs.forEach((uid) => {
+    const limb = byUid(state, uid);
+    const pt = roles.grips?.[uid];
+    if (!limb || !pt) return;
+    nodes.push({ name: 'Grip', parent: partPaths.get(uid), position: v2(pixelToLocal(state, limb, pt)), rotation: 0, scale: 1, rigPart: false });
+    gripPaths.push(`${partPaths.get(uid)}/Grip`);
+  });
+
+  // --- rig block: scalar fields + the roles (Transform fields by path).
+  const rig = {};
+  Object.entries(state.rig).forEach(([k, v]) => {
+    rig[k] = typeof v === 'number' ? r5(v) : v && typeof v === 'object' && !Array.isArray(v) ? v2(v) : v;
+  });
+  rig.wakeFlickers = Math.max(0, Math.round(state.rig.wakeFlickers || 0));
+  rig.aimPart = aim ? partPaths.get(aim.uid) : null;
+  rig.muzzle = muzzlePath;
+  const stretch = byUid(state, roles.stretch);
+  rig.stretchPart = stretch ? partPaths.get(stretch.uid) : null;
+  rig.stretchRiders = roles.riders.filter((uid) => byUid(state, uid)).map((uid) => partPaths.get(uid));
+  if (stretch) roles.riders.forEach((uid) => {
+    const rider = byUid(state, uid);
+    if (rider && rider.parent !== stretch.parent) problems.push(`"${rider.name}" (pasajero) tiene que colgar del mismo padre que "${stretch.name}" (la que se estira).`);
+  });
+  if (!stretch && roles.riders.length) notes.push('Hay pasajeros pero ninguna pieza que se estire: no se pliega.');
+
+  const doc = {
+    kind: state.kind,
+    driver: state.driver,
+    name: state.name.trim(),
+    pixelsPerUnit: ppu,
+    sprites,
+    root: { scale: r5(state.rootScale) },
+    collider: state.collider.type === 'circle'
+      ? { type: 'circle', radius: r5(state.collider.radius || 0.5), offset: v2(state.collider.offset) }
+      : { type: state.collider.type, size: v2(state.collider.size), offset: v2(state.collider.offset) },
+    corpse: { linger: r5(state.corpse.linger), fadeDuration: r5(state.corpse.fadeDuration) },
+    visual: { position: { x: 0, y: 0 }, rotation: 0, scale: 1 },
+    parts: nodes,
+    rig,
+    spriteSwaps: swaps,
+  };
+
+  if (state.kind === 'boss') {
+    doc.bossLimbs = {
+      limbs: roles.limbs.filter((uid) => byUid(state, uid)).map((uid) => partPaths.get(uid)),
+      orbiters: roles.orbiters.filter((uid) => byUid(state, uid)).map((uid) => partPaths.get(uid)),
+      orbiterRadius: r5(state.bossLimbs.orbiterRadius),
+      grips: gripPaths,
+      contactRadius: r5(state.bossLimbs.contactRadius),
+    };
+    const body = { ...state.bossBody };
+    const bodyPart = byUid(state, body.bodyRenderer);
+    delete body.bodyRenderer;
+    if (bodyPart?.image) body.bodyRenderer = partPaths.get(bodyPart.uid);
+    else problems.push('Jefe: elige la pieza "cuerpo" (la que copia el aura de aviso).');
+    doc.bossBody = body;
+    if (gripPaths.length < roles.limbs.length) notes.push('Alguna extremidad no tiene agarre: los objetos se cogerán por su centro.');
+  } else if (roles.limbs.length || roles.orbiters.length) {
+    notes.push('Extremidades y orbitales sólo cuentan en un jefe (kind boss); en un enemigo se ignoran.');
+  }
+
+  return { doc, files, problems, notes };
+}
+
+/** Linked Enemy Creator config, trimmed to what a part-based enemy reads (tuning + tier). */
+export function companionEnemyConfig(entry, name) {
+  if (!entry?.config) return null;
+  const cfg = JSON.parse(JSON.stringify(entry.config));
+  ['art', 'anchor', 'presence', 'projectileArt', 'prefabFolder'].forEach((k) => delete cfg[k]);
+  cfg.kind = 'enemy';
+  cfg.enemyName = name;
+  return cfg;
+}
+
+/**
+ * The .zip for Unity.
+ * @param {object} state
+ * @param {object} links - { enemyEntry, bossEntry, entriesById: Map } (library records)
+ */
+export async function buildRigBundle(state, { enemyEntry = null, bossEntry = null, entriesById = new Map() } = {}) {
+  const { doc, files } = buildRigExport(state);
+  const zip = new window.JSZip();
+  zip.file('rig-config.json', JSON.stringify(doc, null, 2));
+  files.forEach((f) => zip.file(f.path, f.dataURL.split(',')[1], { base64: true }));
+
+  if (state.kind === 'enemy') {
+    const cfg = companionEnemyConfig(enemyEntry, doc.name);
+    if (cfg) {
+      zip.file('enemy-config.json', JSON.stringify(cfg, null, 2));
+      await embedReferencedLibraryEntries(zip, cfg);
+    }
+  } else if (bossEntry?.config) {
+    const cfg = JSON.parse(JSON.stringify(bossEntry.config));
+    delete cfg.body;   // the rig IS the body
+    zip.file('boss-config.json', JSON.stringify(cfg, null, 2));
+    const written = new Set();
+    for (const asset of Object.values(cfg.artAssets || {})) {
+      if (written.has(asset.libraryId)) continue;
+      written.add(asset.libraryId);
+      const entry = entriesById.get(asset.libraryId);
+      if (entry?.sprite) await writeLanes(zip.folder('Art').folder(asset.libraryId), entry);
+    }
+  }
+
+  return zip.generateAsync({ type: 'blob' });
+}

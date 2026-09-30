@@ -34,7 +34,7 @@ async function sourceCanvas(sprite) {
  * the shared `Assets/Art/WebLibrary/` on the Unity side, since a projectile can be shared by two
  * enemies and must not die with either one.
  */
-async function embedReferencedLibraryEntries(zip, configObj) {
+export async function embedReferencedLibraryEntries(zip, configObj) {
   for (const id of referencedLibraryIds(configObj)) {
     const entry = await getEnemy(id);
     if (!entry || !entry.sprite) continue;

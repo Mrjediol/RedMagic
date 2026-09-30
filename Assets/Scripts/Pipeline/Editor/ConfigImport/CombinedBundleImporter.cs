@@ -79,6 +79,14 @@ namespace RedMagic.Pipeline.EditorTools
                 ZipFile.ExtractToDirectory(zipPath, tempExtractFolder);
 
                 string manifestPath = Path.Combine(tempExtractFolder, "manifest.json");
+
+                // Un zip de enemigo POR PARTES (Rig Composer) traído a este menú por error: no es un
+                // bundle de hoja de sprites, así que se lo pasa entero a su propio importador.
+                if (!File.Exists(manifestPath) &&
+                    File.Exists(Path.Combine(tempExtractFolder, Rigging.EditorTools.RigConfigJson.ConfigFile)))
+                    return "Es un enemigo por partes (rig-config.json): importado con Tools ▸ Web ▸ Rig ▸ Importar rig.\n\n" +
+                           Rigging.EditorTools.RigBundleImporter.Import(zipPath);
+
                 if (!File.Exists(manifestPath))
                     throw new ConfigImportException("El .zip no contiene manifest.json — ¿es un bundle combinado válido?");
 

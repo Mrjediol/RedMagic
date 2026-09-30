@@ -225,7 +225,7 @@ namespace RedMagic.Rigging.EditorTools
                 if (head != null) rig.stretchRiders.Add(head);
                 rig.foldedStretch = 0.05f;
                 rig.foldedRiderScaleY = 0.6f;
-                rig.foldedRiderOffset = new Vector2(0f, 0.2f);   // la cabeza apoyada justo sobre la base
+                rig.foldedRiderOffset = new Vector2(0f, -0.05f);   // la cabeza se mete ~0.24 tras la base (que va delante)
 
                 // Una torreta no flota ni se inclina; la cabeza apunta un poco y cabecea al disparar.
                 rig.hoverBob = Vector2.zero;

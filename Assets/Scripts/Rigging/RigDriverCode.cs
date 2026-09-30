@@ -377,14 +377,17 @@ namespace RedMagic.Rigging
                 var data = pose.data;
                 if (data?.part == null) continue;
 
-                float s = Mathf.Sin(_clock * data.swaySpeed + data.swayPhase);
+                var t = data.part;
+                bool rider = rig.CanFold && rig.stretchRiders.Contains(t);
+
+                // Plegado no respira: el balanceo de los pasajeros escala con el despliegue, así
+                // la cabeza dormida se queda quieta y pegada a la base.
+                float s = Mathf.Sin(_clock * data.swaySpeed + data.swayPhase) *
+                          (rider ? Mathf.Clamp01(_unfold) : 1f);
                 float angle = pose.angle + data.swayRotate * s;
                 var scale = new Vector3(pose.scale.x * (1f + data.swayScale.x * s),
                                         pose.scale.y * (1f + data.swayScale.y * s), pose.scale.z);
                 if (i == _aimIndex) angle += AimRotation();
-
-                var t = data.part;
-                bool rider = rig.CanFold && rig.stretchRiders.Contains(t);
                 if (rider) scale.y *= rig.RiderScaleY(_unfold);
 
                 t.localRotation = Quaternion.Euler(0f, 0f, angle);

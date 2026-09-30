@@ -258,7 +258,9 @@ namespace RedMagic.Enemies
                 return;
             }
 
-            if (_seenTarget && distance > T.attackRange)
+            // Sólo los que se mueven se acercan: un Static dormilón también "ficha" al objetivo
+            // (para despertar y rendirse), pero se queda en su sitio esperando a tenerlo a tiro.
+            if (T.Moves && _seenTarget && distance > T.attackRange)
             {
                 Enter(State.Approach);
                 return;
@@ -399,6 +401,10 @@ namespace RedMagic.Enemies
         /// <summary>Un paso en la dirección de <paramref name="toGoal"/>. Ver <see cref="MoveToward"/>.</summary>
         private bool MoveAlong(Vector2 toGoal, float speed, float hover)
         {
+            // Garantía única del arquetipo: un Static no se desplaza nunca, venga de donde venga
+            // la orden.
+            if (!T.Moves) { Stop(); return false; }
+
             // Ralentización (hielo): escala la velocidad, sea de avance, retirada o vuelta a casa.
             speed *= SlowStatus.SpeedScale(this);
 

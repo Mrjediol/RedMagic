@@ -729,7 +729,7 @@ MonoBehaviour:
   - {fileID: 3290079735764205417}
   foldedStretch: 0.05
   foldedRiderScaleY: 0.6
-  foldedRiderOffset: {x: 0, y: 0.2}
+  foldedRiderOffset: {x: 0, y: -0.05}
   wakeDuration: 0.8
   sleepDuration: 0.55
   wakeOvershoot: 2.2

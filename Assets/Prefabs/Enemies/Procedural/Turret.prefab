@@ -733,7 +733,7 @@ MonoBehaviour:
   wakeDuration: 0.8
   sleepDuration: 0.55
   wakeOvershoot: 2.2
-  wakeFlickers: 3
+  wakeFlickers: 0
   wakeFlickerPortion: 0.4
   hurtDuration: 0.28
   hurtTilt: 5

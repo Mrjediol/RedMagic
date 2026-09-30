@@ -233,10 +233,11 @@ namespace RedMagic.Rigging
                 float k = t / duration;
                 _unfold = Mathf.LerpUnclamped(from, 1f, ProceduralRig.OutBack(k, rig.wakeOvershoot));
 
-                if (k >= flickerFrom && rig.wakeFlickers > 0)
+                if (k >= flickerFrom)
                 {
+                    // 0 parpadeos = los ojos se abren una vez, limpio, al entrar en este tramo.
                     float f = (k - flickerFrom) / Mathf.Max(0.0001f, rig.wakeFlickerPortion);
-                    bool on = (int)(f * rig.wakeFlickers * 2f) % 2 == 1;
+                    bool on = rig.wakeFlickers <= 0 || (int)(f * rig.wakeFlickers * 2f) % 2 == 1;
                     rig.ShowSprites(on ? RigSpriteState.Awake : RigSpriteState.Asleep);
                 }
 

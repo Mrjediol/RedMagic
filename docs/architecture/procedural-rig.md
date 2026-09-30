@@ -17,7 +17,7 @@ sheet. Animation is code, not clips.
 - **Fold / unfold** (sleep/wake) — `stretchPart` scales Y from its pivot (`foldedStretch` when
   asleep), `stretchRiders` ride its tip (offset = rest distance × stretch, squashed to
   `foldedRiderScaleY`, `foldedRiderOffset`). Wake = OutBack with `wakeOvershoot` + eye flicker
-  (`wakeFlickers` in the last `wakeFlickerPortion`) → `WakeFinished`; sleep = InBack back to 0.
+  (eyes open once at the start of the last `wakeFlickerPortion`; `wakeFlickers` > 0 = optional blinks) → `WakeFinished`; sleep = InBack back to 0.
   `ProceduralRig.OutBack`/`InBack` are DOTween's exact formulas so both passes match.
 - **Muzzle flash** — `muzzle` + `muzzleFlash*`: pooled `AbilityFx.Flash` fired by the shared
   `RigDriver.RaiseReleased`, so every driver flashes identically.

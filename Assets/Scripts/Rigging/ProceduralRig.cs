@@ -183,10 +183,12 @@ namespace RedMagic.Rigging
         [Tooltip("Rebote al desplegarse (curva OutBack; 0 = sin rebote, 1.7 = estándar).")]
         [Min(0f)] public float wakeOvershoot = 2.2f;
 
-        [Tooltip("Parpadeos de los ojos al encenderse (alterna dormido/despierto).")]
-        [Min(0)] public int wakeFlickers = 3;
+        [Tooltip("Parpadeos de los ojos al encenderse (alterna dormido/despierto). 0 = se abren " +
+                 "una sola vez, limpio.")]
+        [Min(0)] public int wakeFlickers;
 
-        [Tooltip("Qué fracción final del despertar ocupan los parpadeos.")]
+        [Tooltip("Tramo final del despertar en el que se abren los ojos (o parpadean): 0.4 = " +
+                 "se abren al 60% del despliegue.")]
         [Range(0f, 1f)] public float wakeFlickerPortion = 0.4f;
 
         [Header("Golpe recibido")]

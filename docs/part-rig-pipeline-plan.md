@@ -6,17 +6,42 @@ attack or a new behaviour**. Once it exists, the web lists it and any enemy can 
 
 ---
 
+## ⏸ Where we left off (2026-09-30)
+
+Done and verified: Phases 0, A, B. On top of B, decided with the user in the same session:
+- **Behaviour of a part-based enemy is authored in 🧩 Enemy Creator** (rigs show up in its art
+  picker as "🦴 … (por partes)"); it is saved on the rig record as `enemyConfig` and travels in the
+  rig .zip as `enemy-config.json`. No duplicated behaviour form in the Rig Composer.
+- **One prefab per enemy, driver included** (`RigDriverCode` on the prefab). The old base + `_Code`
+  variant pairs were merged and deleted; never reintroduce variants (memory:
+  one-prefab-no-driver-variants).
+- The classic "Importar enemigo completo" menu hands a rig .zip to the rig importer.
+- Real test by the user: `RobotAgua` authored in the web, behaviour from Enemy Creator, imported,
+  flies and shoots in game.
+
+**Next session, in this order** (details in each phase below):
+1. **Phase C — generic templates** (web, medium). The user approved doing the three; they must be
+   described by body SHAPE, not by one character (see Phase C).
+2. **Phase D — attacks on normal enemies, SEVERAL per enemy** (Unity + web, high). Multi-attack is
+   the new core requirement; the "magical girl casting different spells from the same hand" is the
+   reference case (see Phase D).
+3. **Phase E — gesture pose editor** (web, medium). Needed by D to give each spell its own gesture.
+4. **Phase F — VFX preset library** (future, after C; see Phase F). Only planned, nothing built.
+
+Pending from the user side: nothing blocking. Their scratch files `Assets/Json/` and
+`Assets/Prefabs/Enemies/Procedural/rigconfi_Code.prefab` (orphan variant) are untracked junk to delete.
+
 ## ▶ How to resume (read this first, next session)
 
 **What to tell Claude:**
 > Lee `docs/part-rig-pipeline-plan.md` y ejecuta la **Fase N** (sólo esa). Sigue las reglas de la
 > sección "Reglas de trabajo".
 
-(Replace N with the next phase in the table below. Start with **Fase 0**.)
+(Replace N with the next phase in the table below. **Next: Fase C**, then D, E, F — see "Where we left off".)
 
 **Model and effort:** use Claude Opus, with **high** effort for Phases 0, A and D (schema,
 importer, refactor: design matters and mistakes are expensive). **Medium** is enough for B, C and E
-(web UI on top of a fixed schema).
+(web UI on top of a fixed schema), and for F.
 
 **Structure:** **one phase per session/turn, not everything at once.** Each phase:
 1. Claude reads this doc plus the docs listed for that phase (and nothing else unless needed).
@@ -65,12 +90,13 @@ importer, refactor: design matters and mistakes are expensive). **Medium** is en
 | 0 | Split rig attacks into their own folder and category (catalog + web picker shows "Clásico" / "De partes") | small web change | high | ☑ |
 | A | `rig-config` schema + round-trip exporter + **separate** `RigBundleImporter` (rebuilds Robot / Turret / BossIce2 from JSON) | no | high | ☑ |
 | B | New web tab **🦴 Rig Composer** (assemble parts, pivots, roles, state sprites, live sway preview, export) | yes | medium | ☑ |
-| C | Templates in the Rig Composer (folding turret / armed drone / colossus) | yes | medium | ☐ |
-| D | `IAttackHost` refactor → rig (and classic) catalog attacks usable by normal enemies | no | high | ☐ |
+| C | Generic body templates in the Rig Composer (floating caster / folding sentry / limbed colossus) | yes | medium | ☐ |
+| D | `IAttackHost` refactor → catalog attacks on normal enemies, **several attacks per enemy** (deck + per-attack gesture) | yes (Enemy Creator) | high | ☐ |
 | E | Gesture pose editor in the Rig Composer | yes | medium | ☐ |
+| F | **VFX preset library** (web): reusable, tweakable effects (size, colour, intensity…) that attacks/characters reference and that ship inside the enemy export | yes | medium | ☐ (future, after C) |
 
-Order: 0 → A → B → C, then D and E. D is independent of B/C and can move earlier if a normal enemy
-with a rig attack is wanted sooner.
+Order (updated 2026-09-30): C → D → E → F. D does not depend on C; E is what gives each of D's
+attacks its own gesture; F comes after the templates exist.
 
 Side track, not blocking, decide any time: the **DOTween comparison**. Recommended: do only the
 drone in DOTween (`RigDriverTween` swapped onto a copy of `Robot`, same `ProceduralRig` data), compare,
@@ -171,24 +197,72 @@ attacks `classic`.
   en piezas" splits a sheet of parts. Not in B: gestures (E), templates (C), fold/aim preview, undo.
   Verified: the Robot PNGs → zip valid against the schema → imported in Unity, art sizes identical.
 
-### Phase C — templates
-A template is a role checklist plus default sway, gestures and archetype:
-- **Torreta plegable**: base, neck (stretch), head with 3 state sprites → Static + Ranged sleeper.
-- **Dron con arma**: body parts, gun arm (aim) + muzzle → FlyingRanged.
-- **Coloso**: torso, 2 limbs, orbiters, stage sprite → boss base.
+### Phase C — templates (generic body shapes)
+A template is a **body shape**, not a character: a checklist of slots (which parts, which role each
+one has, who hangs from whom, draw order) plus default sway, lean, timings, gestures and a suggested
+archetype for Enemy Creator. The same template must fit very different art. Name and describe them
+by shape; the old names (dron, torreta, coloso) are just the first art that used them.
 
-Picking a template pre-fills roles and defaults; the user only drops sprites and adjusts. The
-default values are the ones in `ProceduralEnemyPacks` / `ProceduralBossPack`.
+- **Lanzador flotante** (floating caster) — torso, head, two arms, a lower part (flame, skirt,
+  tail, wisp). One arm is the *casting arm* (aim role + muzzle at the hand/weapon tip), the other
+  sways; the lower part pulses (sway scale) and trails behind (leanFollow). Hovers and leans.
+  Suggested behaviour: FlyingRanged. Fits the drone with a gun, a flying magical girl throwing
+  spells from her hand, a floating skull with a claw, a lantern ghost…
+- **Centinela plegable** (folding sentry) — base (fixed, doesn't break on death), a stretching
+  neck/stem (stretch role, pivot at its bottom), a head riding its tip (rider) with asleep / awake /
+  attacking sprites and the muzzle between the eyes. Folds when asleep, unfolds on detection.
+  Suggested behaviour: Static + Ranged + sleepsUntilDetected. Fits the jungle turret, a plant that
+  pops out of a pot, a periscope, a jack-in-the-box…
+- **Coloso con extremidades** (limbed colossus, boss) — torso (body renderer, cracked stage
+  sprite for phase 2), a lower part, two throwable limbs (limb role, grip at the knuckles,
+  "frente al lanzar" = knuckles), optional orbiting pieces (crown crystals, floating stones), heavy
+  inertia. Suggested: boss with the rig attack deck (fist throw, slams, pincer, orbiter dive).
+  Fits the ice colossus, a stone golem, a floating pair of gauntlets around a core…
 
-### Phase D — rig attacks on normal enemies
+UX: "Nuevo desde plantilla" in the Rig Composer → the parts list shows the empty slots with their
+role and hint ("brazo que lanza: suelta aquí la mano/arma"); dropping a PNG on a slot fills it with
+the template's pivot guess (bottom for stems, shoulder side for arms), role and sway. Everything
+stays editable. Default values come from `ProceduralEnemyPacks` / `ProceduralBossPack` (the
+hand-written versions of the three shapes). Store templates as data (one JSON-like object per
+template in a web module), so a fourth one is data, not code.
+
+### Phase D — catalog attacks on normal enemies, several per enemy
+**New core requirement (2026-09-30): a normal enemy can have MORE THAN ONE attack**, like bosses
+already do. Reference case: the floating magical girl (Lanzador flotante) with three spells from
+the same hand — e.g. a fast bolt, a slow homing orb, a 3-shot fan — each with a slightly different
+gesture (a flick, a charged raise, a sweep) and its own cooldown / range / weight.
+
 - Extract `IAttackHost` (origin, facing, ground Y, `SurfaceBelow`, arena bounds, warn prefabs,
   pace/speed scale, body animator/rig, `BossLimbs`, `FacingLocked`, `MoveBody`) from what
   `BossContext` / `BossController` expose. `BossController` implements it, and so does a small
   enemy adapter.
-- `EnemyAttack` gets an optional attack asset from the catalog. `EnemyBrain` keeps deciding *when*
-  to attack; the asset decides *what*. A regular enemy can then have "Lanzar Puño".
-- The web Enemy Creator (part-based side) lets you pick a catalog attack, rig or classic.
+- `EnemyAttack` gets an optional **list** of catalog attack assets (a small deck). `EnemyBrain`
+  keeps deciding *when* to attack; the deck decides *which* (weights, per-attack cooldown, min/max
+  range, "only when the target is above/below", same availability rules as `BossAttack`: `weight`,
+  `cooldownSeconds`, `cooldownInAttacks`). The existing single built-in attack (melee / ranged
+  from `EnemyTuning`) stays as the default entry when the deck is empty — no migration of the
+  sprite-sheet enemies is needed, and it must keep working unchanged.
+- Each attack names its **gesture** (`BossAttack.gesture`, already there): the rig plays that
+  `RigGesture` as the telegraph; a sprite-sheet enemy plays the animator state of that name. Three
+  spells from one hand = three attacks with three gestures on the same casting arm/muzzle.
+- The web Enemy Creator gets an **attacks list** (reusing the Boss Creator attack cards and the
+  generated catalog: classic + "De partes"), with the enemy's built-in attack as the first entry.
+  Exported in the EnemyConfig (schema change: new optional `attacks` block, mirror of the boss
+  one) and imported by `EnemyConfigImporter` / `RigBundleImporter` into attack assets.
 - A new attack afterwards = one C# class → compile → catalog → selectable for enemies and bosses.
+
+### Phase F — VFX preset library (future, after C)
+Goal: stop making one effect per character. A library of **effect presets** in the web (e.g.
+"disparo de hechizo", "orbe cargándose", "impacto mágico", "aura de aviso", "estela"), each with
+tweakable parameters — size, colours/gradient, intensity/glow, particle count, speed, duration,
+shape — previewed live. Characters/attacks pick a preset + overrides (like art slots pick a
+library entry today), and the enemy/boss export carries the effects so it lands in Unity with them.
+
+To decide when it starts (not now): the Unity side of a preset — a parametrised pooled prefab
+(`FxPlaceholderStyle`-like component reading the parameters) vs a particle system template vs
+baked frames; how presets reference each other (a spell = muzzle flash + projectile trail + impact);
+where they live in the library (a new kind `vfx-preset`?). Constraints that already apply:
+pooling for anything spawned repeatedly, placeholders swappable as prefabs, no per-character code.
 
 ### Phase E — gesture pose editor
 In the Rig Composer, pose the parts for `windup` and `strike` (dragging a part = its offset), name

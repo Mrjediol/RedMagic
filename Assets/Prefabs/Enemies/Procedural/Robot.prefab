@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2328026402610733403
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8966063423149906135}
+  m_Layer: 0
+  m_Name: Muzzle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8966063423149906135
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2328026402610733403}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4, y: 1.4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6801709052886536608}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3142369506903534947
 GameObject:
   m_ObjectHideFlags: 0
@@ -100,7 +131,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2829737381680814951}
-  - component: {fileID: 7595080604623356471}
   m_Layer: 0
   m_Name: Base
   m_TagString: Untagged
@@ -125,22 +155,6 @@ Transform:
   - {fileID: 5642722613756758132}
   m_Father: {fileID: 7282791298661059250}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7595080604623356471
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4446423129985393569}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f0fb8aaf88ad54eaf74ff524463452, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  moveAmplitude: {x: 0, y: 0.05}
-  rotateAmplitude: 3
-  speed: 1.5
-  phase: 0.5
 --- !u!1 &4559621402266366645
 GameObject:
   m_ObjectHideFlags: 0
@@ -151,7 +165,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3378644932227722970}
   - component: {fileID: 4064249794096766788}
-  - component: {fileID: 3683304681814421264}
   m_Layer: 0
   m_Name: Torso
   m_TagString: Untagged
@@ -236,22 +249,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &3683304681814421264
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4559621402266366645}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f0fb8aaf88ad54eaf74ff524463452, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProceduralSway
-  moveAmplitude: {x: 0, y: 0.05}
-  rotateAmplitude: 0
-  speed: 1.5
-  phase: 0
 --- !u!1 &4593245981648586772
 GameObject:
   m_ObjectHideFlags: 0
@@ -262,7 +259,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6801709052886536608}
   - component: {fileID: 8559499515639112336}
-  - component: {fileID: 7989421025180335418}
   m_Layer: 0
   m_Name: RightArm
   m_TagString: Untagged
@@ -282,7 +278,8 @@ Transform:
   m_LocalPosition: {x: 0.8, y: 0.93, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8966063423149906135}
   m_Father: {fileID: 3378644932227722970}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &8559499515639112336
@@ -344,22 +341,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &7989421025180335418
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4593245981648586772}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f0fb8aaf88ad54eaf74ff524463452, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProceduralSway
-  moveAmplitude: {x: 0, y: 0}
-  rotateAmplitude: 6
-  speed: 1.5
-  phase: 3.14
 --- !u!1 &4799268669632083444
 GameObject:
   m_ObjectHideFlags: 0
@@ -370,7 +351,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1138477143558411119}
   - component: {fileID: 1104407554464959386}
-  - component: {fileID: 3023382984001134772}
   m_Layer: 0
   m_Name: LeftArm
   m_TagString: Untagged
@@ -452,22 +432,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &3023382984001134772
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4799268669632083444}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f0fb8aaf88ad54eaf74ff524463452, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProceduralSway
-  moveAmplitude: {x: 0, y: 0}
-  rotateAmplitude: 5
-  speed: 1.5
-  phase: 0
 --- !u!1 &5276637624478312981
 GameObject:
   m_ObjectHideFlags: 0
@@ -569,7 +533,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3628565344752719296}
   - component: {fileID: 7435260613218848621}
-  - component: {fileID: 2839654336290210538}
   m_Layer: 0
   m_Name: Head
   m_TagString: Untagged
@@ -651,22 +614,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &2839654336290210538
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6277554369500578408}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f0fb8aaf88ad54eaf74ff524463452, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProceduralSway
-  moveAmplitude: {x: 0, y: 0}
-  rotateAmplitude: 3
-  speed: 1.5
-  phase: 1
 --- !u!1 &7687461821369751946
 GameObject:
   m_ObjectHideFlags: 0
@@ -683,6 +630,12 @@ GameObject:
   - component: {fileID: 540525243640708251}
   - component: {fileID: 2878041893755434822}
   - component: {fileID: 1179828434732449793}
+  - component: {fileID: 4481131014602040585}
+  - component: {fileID: 431941176940370607}
+  - component: {fileID: 3719466720830640}
+  - component: {fileID: 2713525645854353226}
+  - component: {fileID: 6619610030955800623}
+  - component: {fileID: 6412280598723176089}
   m_Layer: 0
   m_Name: Robot
   m_TagString: Untagged
@@ -746,21 +699,21 @@ MonoBehaviour:
     knockbackVertical: 3
     knockbackDuration: 0.18
     knockbackResistance: 0
-    detectionRange: 7
+    detectionRange: 9
     loseInterestGrace: 1
-    attackRange: 1.6
-    personalSpace: 0
+    attackRange: 6
+    personalSpace: 3
     retreatReleaseFactor: 1.35
     verticalTolerance: 3
     moveSpeed: 2.5
-    retreatSpeed: 2.5
+    retreatSpeed: 2.2
     stopAtLedges: 1
     ledgeProbeDepth: 0.6
     gravityScale: 3
     sleepsUntilDetected: 0
-    hoverOffset: 0.5
-    attackDamage: 10
-    attackCooldown: 1.8
+    hoverOffset: 1.2
+    attackDamage: 8
+    attackCooldown: 1.6
     attackKnockbackMultiplier: 1
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
@@ -770,10 +723,10 @@ MonoBehaviour:
     explosionRadius: 1.7
     explosionShake: 0.2
     projectile:
-      prefab: {fileID: 0}
-      speed: 12
+      prefab: {fileID: 3046254852994462895, guid: 59fcad6a052333a4e9c612af15a3feeb, type: 3}
+      speed: 9
       lifetime: 2.5
-      size: {x: 0.35, y: 0.35}
+      size: {x: 0.4, y: 0.4}
       muzzleOffset: {x: 0.65, y: 0.1}
       pierce: 0
       homingTurnRate: 0
@@ -786,7 +739,7 @@ MonoBehaviour:
       aimMode: 0
     aimAtTarget: 1
     projectileSprite: {fileID: 0}
-    projectileTint: {r: 1, g: 1, b: 1, a: 1}
+    projectileTint: {r: 0.45, g: 1, b: 1, a: 1}
     contactDamage: 0
     contactDamageCooldown: 1
     contactKnockbackMultiplier: 1
@@ -827,10 +780,10 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
+  m_CollisionDetection: 1
+  m_Constraints: 4
 --- !u!114 &6229114220815574692
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -870,6 +823,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   flipbook: {fileID: 0}
   spriteRenderer: {fileID: 0}
+  rig: {fileID: 0}
 --- !u!70 &1179828434732449793
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -907,6 +861,180 @@ CapsuleCollider2D:
   m_Offset: {x: 0.096355185, y: 0.23553053}
   m_Size: {x: 3.0908167, y: 6.352933}
   m_Direction: 0
+--- !u!114 &4481131014602040585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7687461821369751946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2834dccf877e154e8542123d8a6320f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Knockback
+  horizontalForce: 8
+  verticalForce: 4
+  duration: 0.18
+  resistance: 0
+  immune: 0
+--- !u!114 &431941176940370607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7687461821369751946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149b2f6ad9846b2459f53db66c4872ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.HitFlash
+  flashColor: {r: 1, g: 0.35, b: 0.35, a: 1}
+  flashDuration: 0.1
+  blinkWhileInvulnerable: 1
+  blinkInterval: 0.06
+  blinkAlpha: 0.35
+--- !u!114 &3719466720830640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7687461821369751946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d2eae826431e14f92ff10101336621, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Corpse
+  linger: 1.1
+  fadeDuration: 0.4
+  corpseTint: {r: 0.35, g: 0.1, b: 0.12, a: 0.75}
+  tintOnDeath: 1
+  destroyWhenDone: 1
+--- !u!114 &2713525645854353226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7687461821369751946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2985d1d8de77b546b4fbeddccf21c6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
+  tier: 0
+--- !u!114 &6619610030955800623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7687461821369751946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents: []
+  useGenericFallback: 1
+--- !u!114 &6412280598723176089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7687461821369751946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c13b8fb4202993469b1b193562a84c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Rigging.ProceduralRig
+  body: {fileID: 7282791298661059250}
+  parts:
+  - part: {fileID: 2829737381680814951}
+    pivot: {x: 0, y: 0}
+    swayMove: {x: 0, y: 0.05}
+    swayRotate: 3
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1.5
+    swayPhase: 0.5
+    breaksOnDeath: 1
+  - part: {fileID: 4568411193877603687}
+    pivot: {x: -0.6, y: -1.25}
+    swayMove: {x: 0, y: 0}
+    swayRotate: 4
+    swayScale: {x: 0.1, y: 0.22}
+    swaySpeed: 16
+    swayPhase: 2.39996
+    breaksOnDeath: 1
+  - part: {fileID: 5642722613756758132}
+    pivot: {x: -1.07, y: -1.53}
+    swayMove: {x: 0, y: 0.03}
+    swayRotate: 2
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 2.3
+    swayPhase: 4.79992
+    breaksOnDeath: 1
+  - part: {fileID: 3378644932227722970}
+    pivot: {x: 0, y: 0}
+    swayMove: {x: 0, y: 0.05}
+    swayRotate: 0
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1.5
+    swayPhase: 0.91669464
+    breaksOnDeath: 1
+  - part: {fileID: 3628565344752719296}
+    pivot: {x: 0, y: 0}
+    swayMove: {x: 0, y: 0}
+    swayRotate: 3
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1.5
+    swayPhase: 1
+    breaksOnDeath: 1
+  - part: {fileID: 1138477143558411119}
+    pivot: {x: 0, y: 0}
+    swayMove: {x: 0, y: 0}
+    swayRotate: 5
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1.5
+    swayPhase: 5.7166147
+    breaksOnDeath: 1
+  - part: {fileID: 6801709052886536608}
+    pivot: {x: 0, y: 0}
+    swayMove: {x: 0, y: 0}
+    swayRotate: 6
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1.5
+    swayPhase: 3.14
+    breaksOnDeath: 1
+  hoverBob: {x: 0, y: 0.12}
+  hoverSpeed: 2.2
+  leanDegrees: 14
+  leanFullSpeed: 2.5
+  leanResponse: 8
+  aimPart: {fileID: 6801709052886536608}
+  aimArtAngle: 11.5
+  aimMaxAngle: 70
+  windup: 0.4
+  recover: 0.45
+  windupPullAngle: 10
+  windupBodyTilt: 6
+  recoilAngle: 22
+  recoilDistance: 0.3
+  bodyRecoil: 0.15
+  hurtDuration: 0.28
+  hurtTilt: 14
+  hurtSquash: 0.12
+  breakImpulse: 3.5
+  breakUpward: 4
+  breakSpin: 540
+  breakGravity: 20
+  breakBounce: 0.35
+  breakGround:
+    serializedVersion: 2
+    m_Bits: 320
 --- !u!1 &9019934161491681456
 GameObject:
   m_ObjectHideFlags: 0

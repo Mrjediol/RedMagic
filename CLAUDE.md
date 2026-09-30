@@ -77,6 +77,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 | Scene refs, `SceneReference` | `docs/architecture/scene-references.md` |
 | Runs, worlds, sections, `RunManager` | `docs/architecture/run-world.md` |
 | Enemies, AI | `docs/architecture/enemies.md` |
+| Part-based bodies (separate sprites), `ProceduralRig`, rig drivers | `docs/architecture/procedural-rig.md` |
 | Sprite/enemy import pipeline | `docs/architecture/sprite-pipeline.md` |
 | Combat, damage, projectiles | `docs/architecture/combat.md` |
 | Camera | `docs/architecture/camera.md` |

@@ -1,5 +1,6 @@
 using System;
 using RedMagic.Pipeline;
+using RedMagic.Rigging;
 using UnityEngine;
 
 namespace RedMagic.Enemies
@@ -22,6 +23,9 @@ namespace RedMagic.Enemies
     /// Sin Animator (un enemigo por pool, que anima con <see cref="SpriteStateMachine"/>) se cae a
     /// tiempos: el evento no existe, así que el aviso sale a
     /// <see cref="EnemyTuning.attackReleaseFallback"/> segundos.
+    ///
+    /// Con un <see cref="RigDriver"/> (cuerpo hecho de sprites sueltos, ver <c>ProceduralRig</c>)
+    /// manda el rig: cada orden se le reenvía y sus eventos hacen de <c>AnimationEvent</c>.
     /// </summary>
     [DisallowMultipleComponent]
     public class EnemyAnimation : MonoBehaviour
@@ -42,6 +46,10 @@ namespace RedMagic.Enemies
         [Tooltip("Sprite al que se le da la vuelta según hacia dónde mira. Vacío = el del hijo.")]
         [SerializeField] private SpriteRenderer spriteRenderer;
 
+        [Tooltip("Cuerpo por partes. Vacío = se busca en este objeto. Si existe, manda sobre el " +
+                 "Animator y el flipbook.")]
+        [SerializeField] private RigDriver rig;
+
         private static readonly int MovingKey = Animator.StringToHash("Moving");
         private static readonly int AttackKey = Animator.StringToHash("Attack");
         private static readonly int HurtKey = Animator.StringToHash("Hurt");
@@ -56,6 +64,7 @@ namespace RedMagic.Enemies
         private static readonly int WakeSpeedKey = Animator.StringToHash("WakeSpeed");
 
         private EnemyStats _stats;
+        private EnemyAttack _attack;
         private float _fallbackRelease = -1f;
         private float _fallbackFinish = -1f;
         private float _wakeFinish = -1f;
@@ -89,12 +98,17 @@ namespace RedMagic.Enemies
         /// <summary>True si hay un Animator de verdad (y por tanto eventos de animación).</summary>
         public bool HasAnimator => animator != null && animator.runtimeAnimatorController != null;
 
+        /// <summary>True si el cuerpo es un rig por partes (y es él quien avisa del golpe).</summary>
+        public bool HasRig => rig != null && rig.enabled;
+
         private void Awake()
         {
             if (animator == null) animator = GetComponentInChildren<Animator>();
             if (flipbook == null) flipbook = GetComponentInChildren<SpriteStateMachine>();
             if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            if (rig == null) rig = GetComponent<RigDriver>();
             _stats = GetComponent<EnemyStats>();
+            _attack = GetComponent<EnemyAttack>();
 
             CacheParameters();
             ApplySpeeds();
@@ -131,6 +145,25 @@ namespace RedMagic.Enemies
             _dead = false;
             if (_frozen && animator != null) animator.speed = 1f;
             _frozen = false;
+
+            if (rig == null) return;
+            rig.AttackReleased += Release;
+            rig.AttackFinished += Finish;
+            rig.WakeFinished += OnRigWakeFinished;
+        }
+
+        private void OnDisable()
+        {
+            if (rig == null) return;
+            rig.AttackReleased -= Release;
+            rig.AttackFinished -= Finish;
+            rig.WakeFinished -= OnRigWakeFinished;
+        }
+
+        private void OnRigWakeFinished()
+        {
+            _wakeFinish = -1f;
+            WakeFinished?.Invoke();
         }
 
         // Muerto: el clip de muerte se reproduce UNA vez y el cadáver se queda en su último dibujo.
@@ -198,6 +231,12 @@ namespace RedMagic.Enemies
         /// <summary>Andar o estar quieto. Sin clip de andar se queda en reposo, que es lo correcto.</summary>
         public void SetMoving(bool moving)
         {
+            if (HasRig)
+            {
+                rig.SetMoving(moving);
+                return;
+            }
+
             if (HasAnimator) animator.SetBool(MovingKey, moving);
 
             if (flipbook == null) return;
@@ -208,6 +247,20 @@ namespace RedMagic.Enemies
         public void PlayAttack()
         {
             _released = false;
+
+            if (HasRig)
+            {
+                float speed = _stats != null ? _stats.Tuning.attackAnimSpeed : 1f;
+                rig.PlayAttack(_attack != null ? _attack.AimPoint : null, speed);
+
+                // Sólo red de seguridad (un rig que se apaga a mitad del gesto): el rig avisa él
+                // mismo en el instante exacto, y esto llegaría bastante después.
+                var data = rig.GetComponent<ProceduralRig>();
+                float total = (data != null ? data.AttackDuration(speed) : 1f) + 1f;
+                _fallbackRelease = Time.time + total;
+                _fallbackFinish = Time.time + total;
+                return;
+            }
 
             if (HasAnimator)
             {
@@ -235,6 +288,12 @@ namespace RedMagic.Enemies
         /// </summary>
         public void PlayWake()
         {
+            if (HasRig)
+            {
+                rig.PlayWake(_stats != null ? _stats.Tuning.wakeAnimSpeed : 1f);
+                return;
+            }
+
             if (HasAnimator && _hasWakeTrigger)
             {
                 animator.SetTrigger(WakeKey);
@@ -254,13 +313,22 @@ namespace RedMagic.Enemies
 
         public void PlayHurt()
         {
-            if (HasAnimator) animator.SetTrigger(HurtKey);
+            if (HasRig) rig.PlayHurt();
+            else if (HasAnimator) animator.SetTrigger(HurtKey);
             else if (flipbook != null && flipbook.Has(Hurt)) flipbook.Play(Hurt, true);
         }
 
         public void PlayDeath()
         {
             _dead = true;
+            _fallbackRelease = _fallbackFinish = -1f;
+
+            if (HasRig)
+            {
+                rig.PlayDeath();
+                return;
+            }
+
             if (HasAnimator) animator.SetBool(DeadKey, true);
 
             if (flipbook == null) return;
@@ -270,7 +338,8 @@ namespace RedMagic.Enemies
         /// <summary>-1 mira a la izquierda, 1 a la derecha.</summary>
         public void SetFacing(int facing)
         {
-            if (spriteRenderer != null) spriteRenderer.flipX = facing < 0;
+            if (HasRig) rig.SetFacing(facing);
+            else if (spriteRenderer != null) spriteRenderer.flipX = facing < 0;
         }
 
         // ============================================================ eventos del clip

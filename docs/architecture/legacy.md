@@ -21,3 +21,5 @@ even with an item-system weapon out. Read the rest as reference and port what is
 use it), `AbilityFx` (code-built sprites/flashes — the fallback when no placeholder prefab is
 assigned), `ProjectileSpec` / `ProjectileFactory` and `Projectile` (the pooled projectile the
 bosses fire; `ProjectileFactory` now restyles a prefab instance that carries `FxPlaceholderStyle`).
+- `Legacy/ProceduralSway.cs` — first per-part sine sway; superseded by `RigPart` sway in
+  `ProceduralRig` (the setup tool copies its values into the rig and removes the component).

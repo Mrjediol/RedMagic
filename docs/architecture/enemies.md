@@ -70,6 +70,10 @@ meant to be edited by hand.**
     still on perfectly solid footing — and on the ramp it found no surface to follow.
     `GroundMotion.TerrainMask` is the canonical mask (resolved by layer *name*), and
     `Pipeline ▸ 4/5` audits and repairs the mask on every enemy prefab and `EnemyRecipe`.
+- **Part-based enemies** (one sprite per body part) use a `ProceduralRig` + `RigDriver` instead of
+  clips; `EnemyAnimation` forwards to the driver when one exists and its events replace the
+  `AnimationEvent`s. A `Muzzle` nested under an animated arm is used by world position. See
+  `procedural-rig.md`.
 - **`EnemyAnimation`** — drives the Animator and, crucially, **announces the exact frame the hit
   leaves**. The attack clip carries two `AnimationEvent`s planted by the pipeline
   (`OnAttackRelease` at the authored frame, `OnAttackFinished` at the end); the brain waits for the

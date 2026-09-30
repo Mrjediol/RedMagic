@@ -65,7 +65,22 @@ namespace RedMagic.Enemies
             _animation = GetComponent<EnemyAnimation>();
             _health = GetComponent<Health>();
             _collider = GetComponent<Collider2D>();
-            _muzzle = transform.Find(MuzzleChildName);
+            _muzzle = FindMuzzle(transform);
+        }
+
+        /// <summary>
+        /// El "Muzzle" directo de la raíz o, si no hay, uno anidado — el de un cuerpo por partes
+        /// cuelga del brazo-arma y se mueve con él (ver <c>ProceduralRig</c>).
+        /// </summary>
+        private static Transform FindMuzzle(Transform root)
+        {
+            var direct = root.Find(MuzzleChildName);
+            if (direct != null) return direct;
+
+            foreach (var t in root.GetComponentsInChildren<Transform>(true))
+                if (t.name == MuzzleChildName) return t;
+
+            return null;
         }
 
         private void OnEnable()
@@ -88,6 +103,9 @@ namespace RedMagic.Enemies
             _aimPoint = worldPoint;
             _hasAim = true;
         }
+
+        /// <summary>El punto congelado del próximo golpe, o null si aún no hay. Lo lee el rig para apuntar el brazo.</summary>
+        public Vector2? AimPoint => _hasAim ? _aimPoint : null;
 
         /// <summary>Hacia dónde mira el golpe, desde donde nace de verdad.</summary>
         private Vector2 Direction(Vector2 origin)
@@ -163,6 +181,10 @@ namespace RedMagic.Enemies
         /// </summary>
         private Vector2 MuzzleOrigin(EnemyTuning tuning, int facing)
         {
+            // Anidado (brazo de un rig): su posición en el mundo ya es la buena — el brazo apunta
+            // y la raíz visual está volteada —, así que no se refleja nada a mano.
+            if (_muzzle != null && _muzzle.parent != transform) return _muzzle.position;
+
             Vector2 offset = _muzzle != null
                 ? (Vector2)_muzzle.localPosition
                 : tuning.projectile.muzzleOffset;
@@ -215,10 +237,13 @@ namespace RedMagic.Enemies
             var tuning = stats.Tuning;
             if (tuning.IsRanged)
             {
-                var muzzle = transform.Find(MuzzleChildName);
-                Vector2 offset = muzzle != null ? (Vector2)muzzle.localPosition : tuning.projectile.muzzleOffset;
+                var muzzle = FindMuzzle(transform);
+                Vector3 at = muzzle != null && muzzle.parent != transform
+                    ? muzzle.position
+                    : transform.position + (Vector3)(muzzle != null ? (Vector2)muzzle.localPosition
+                                                                    : tuning.projectile.muzzleOffset);
                 Gizmos.color = new Color(0.2f, 0.8f, 1f, 0.9f);
-                Gizmos.DrawSphere(transform.position + (Vector3)offset, 0.06f);
+                Gizmos.DrawSphere(at, 0.06f);
                 return;
             }
 

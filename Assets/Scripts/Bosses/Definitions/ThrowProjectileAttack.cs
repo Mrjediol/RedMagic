@@ -73,6 +73,12 @@ namespace RedMagic.Bosses
             impactDamage = 16f,
         };
 
+        [Tooltip("Escala del objeto: multiplica lo que se ve (en la mano y lanzado), el radio de su " +
+                 "explosión y la marca de caída. Todo crece junto: una roca el doble de grande avisa " +
+                 "y revienta el doble de ancho.")]
+        [Min(0.1f)]
+        [SerializeField] private float sizeScale = 1f;
+
         [Header("Objeto en la mano")]
         [ArtSlot("Objeto sostenido", ArtSlotKind.Prop, "cuadrado de color")]
         [Tooltip("Lo que se ve en alto antes de lanzarlo (la roca). Vacío = cuadrado del color de la " +
@@ -159,8 +165,9 @@ namespace RedMagic.Bosses
 
                 // --- en alto
                 float hold = ctx.Scaled(holdSeconds);
-                var prop = BossHeldProp.Spawn(heldPropPrefab, ctx.Boss.transform, heldOffset, heldSize,
+                var prop = BossHeldProp.Spawn(heldPropPrefab, ctx.Boss.transform, heldOffset, heldSize * sizeScale,
                                               ctx.Accent, ctx.FxSprite, hold * 3f + 2f);
+                if (prop != null) ScaleHeld(prop.gameObject);
                 AudioManager.Instance?.Play(pickupSound, HeldPoint(ctx));
 
                 // --- gesto de lanzar
@@ -214,8 +221,9 @@ namespace RedMagic.Bosses
                 if (!ctx.IsValid) yield break;
 
                 float held = ctx.Scaled(reachSeconds + grabSeconds + liftSeconds + holdSeconds + swingSeconds);
-                var prop = BossHeldProp.Spawn(heldPropPrefab, limbs.Grip(hand), Vector2.zero, heldSize,
+                var prop = BossHeldProp.Spawn(heldPropPrefab, limbs.Grip(hand), Vector2.zero, heldSize * sizeScale,
                                               ctx.Accent, ctx.FxSprite, held + 2f);
+                if (prop != null) ScaleHeld(prop.gameObject);
                 AudioManager.Instance?.Play(pickupSound, ground);
                 yield return Hold(ctx, limbs, parts, new[] { ground }, ctx.Scaled(grabSeconds), down, tremble);
 
@@ -247,6 +255,31 @@ namespace RedMagic.Bosses
             }
         }
 
+        // ============================================================ tamaño
+
+        /// <summary>
+        /// El proyectil lanzado a <see cref="sizeScale"/>. Un placeholder (o arte con FxArtSize) ya se
+        /// dimensionó en este mismo disparo y se multiplica; un prefab de arte propio va a la escala del
+        /// prefab × sizeScale, en absoluto: sale del pool y no debe arrastrar la escala del uso anterior.
+        /// </summary>
+        private void ScaleThrown(GameObject go)
+        {
+            if (go == null) return;
+
+            bool fitted = projectile.prefab == null || go.GetComponent<Fx.FxPlaceholderStyle>() != null ||
+                          go.GetComponent<Fx.FxArtSize>() != null;
+            if (fitted) go.transform.localScale *= sizeScale;
+            else go.transform.localScale = projectile.prefab.transform.localScale * sizeScale;
+        }
+
+        /// <summary>Lo sostenido: con tamaño pedido ya va escalado; con arte propio, prefab × sizeScale.</summary>
+        private void ScaleHeld(GameObject go)
+        {
+            if (heldPropPrefab == null || heldPropPrefab.GetComponentInChildren<Projectile>(true) != null) return;
+            if (go.GetComponent<Fx.FxPlaceholderStyle>() != null || go.GetComponent<Fx.FxArtSize>() != null) return;
+            go.transform.localScale = heldPropPrefab.transform.localScale * sizeScale;
+        }
+
         private Vector2 HeldOffset(in BossContext ctx) => new Vector2(heldOffset.x * ctx.Facing, heldOffset.y);
 
         private Vector2 HeldPoint(in BossContext ctx) => ctx.Origin + HeldOffset(ctx);
@@ -269,20 +302,21 @@ namespace RedMagic.Bosses
 
             if (markLanding)
             {
-                float r = markRadius > 0f ? markRadius : (projectile.impactRadius > 0f ? projectile.impactRadius : 1.5f);
+                float r = (markRadius > 0f ? markRadius : (projectile.impactRadius > 0f ? projectile.impactRadius : 1.5f)) * sizeScale;
                 WarnCircle(ctx, landing, r, time);
-                BossHitboxDebug.Circle(landing, projectile.impactRadius, new Color(1f, 0.3f, 0.2f, 1f), time + 0.3f);
+                BossHitboxDebug.Circle(landing, projectile.impactRadius * sizeScale, new Color(1f, 0.3f, 0.2f, 1f), time + 0.3f);
             }
 
             var go = ProjectileFactory.Spawn(ctx.Ability, projectile, origin, velocity.normalized,
                                              ScaledDamage(ctx), KnockbackMultiplier, ctx.FxSprite, ctx.Accent);
+            ScaleThrown(go);
             var shot = go != null ? go.GetComponent<Projectile>() : null;
             if (shot == null) return;
 
             // La velocidad y la gravedad no son las del spec: son las justas para caer en la marca.
             shot.Configure(-1f, velocity.magnitude, ctx.Ability.HitLayers);
             shot.ConfigureBehaviour(projectile.pierce, 0f, projectile.homingRange, g,
-                                    projectile.impactRadius * ctx.Ability.SizeScale, projectile.impactDamage,
+                                    projectile.impactRadius * ctx.Ability.SizeScale * sizeScale, projectile.impactDamage,
                                     KnockbackMultiplier, time + Time.fixedDeltaTime);
             // Vida = tiempo de vuelo: al acabarla revienta (Projectile.Despawn explota) justo en la
             // marca, también sobre una plataforma que el proyectil atravesaría.

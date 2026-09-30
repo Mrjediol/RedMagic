@@ -31,6 +31,15 @@ namespace RedMagic.Bosses
         [Min(0f)]
         [SerializeField] protected float tremble = 0.06f;
 
+        [Header("Extremidades · aviso")]
+        [Tooltip("Largo de la flecha de aviso, en veces el tamaño que se ve de la pieza.")]
+        [Min(0.2f)]
+        [SerializeField] private float arrowLength = 1.6f;
+
+        [Tooltip("Marca del destino, en veces el tamaño que se ve de la pieza.")]
+        [Min(0.2f)]
+        [SerializeField] private float targetMarkScale = 0.9f;
+
         /// <summary>Las extremidades del jefe, o null si no tiene (entonces toca la versión sin pieza).</summary>
         protected static BossLimbs Limbs(in BossContext ctx)
         {
@@ -142,6 +151,22 @@ namespace RedMagic.Bosses
             if (hit.Landed) return;
             if (AbilityHit.DamageCircle(ctx.Ability, center, radius, ScaledDamage(ctx), KnockbackMultiplier) > 0)
                 hit.Landed = true;
+        }
+
+        /// <summary>
+        /// Aviso <b>proporcional a la pieza</b>: una flecha corta que sale de ella hacia donde va (su largo
+        /// y su grosor salen del tamaño que se ve de la pieza, no del recorrido) y una marca del tamaño
+        /// de la pieza en el destino. Un cristal avisa con una flecha de cristal; un puño, de puño.
+        /// </summary>
+        protected void WarnPart(in BossContext ctx, BossLimbs limbs, Transform part, Vector2 direction,
+                                Vector2 target, float duration)
+        {
+            Vector2 size = limbs.VisualSize(part);
+            float extent = Mathf.Max(size.x, size.y);
+            float thickness = Mathf.Min(size.x, size.y);
+
+            WarnArrow(ctx, limbs.Center(part), direction, extent * arrowLength, thickness, duration, 0.7f);
+            Warn(ctx, target, Vector2.one * extent * targetMarkScale, duration);
         }
 
         /// <summary>Sonido, sacudida y efecto del impacto.</summary>

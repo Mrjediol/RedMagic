@@ -109,8 +109,7 @@ namespace RedMagic.Bosses
 
             // --- carga: se marca el destino y el recorrido, el puño se echa atrás y tiembla.
             float charge = ctx.Scaled(windup);
-            Warn(ctx, target, Vector2.one * radius * 2.4f, charge + ctx.Scaled(flightSeconds));
-            WarnArrow(ctx, start, dir, (end - start).magnitude, radius, charge, 0.6f);
+            WarnPart(ctx, limbs, fist, dir, target, charge + ctx.Scaled(flightSeconds));
 
             // Los nudillos miran al objetivo desde que empieza a cargar: se lee hacia dónde va.
             var aim = Aim(dir);

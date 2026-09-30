@@ -353,6 +353,37 @@ namespace RedMagic.Rigging
             return null;
         }
 
+        private static readonly Dictionary<Sprite, Vector2> DrawnSizes = new Dictionary<Sprite, Vector2>();
+
+        /// <summary>
+        /// Tamaño en el mundo de lo que <b>se ve</b> de la parte: los límites de la malla ajustada del
+        /// sprite (no del lienzo, que puede ser diez veces mayor) por su escala actual. Es la medida
+        /// para dimensionar lo que la acompaña: el aviso de un puño es del tamaño de un puño.
+        /// </summary>
+        public static Vector2 PartSize(Transform t)
+        {
+            var renderer = t != null ? t.GetComponent<SpriteRenderer>() : null;
+            var sprite = renderer != null ? renderer.sprite : null;
+            if (sprite == null) return Vector2.one;
+
+            if (!DrawnSizes.TryGetValue(sprite, out var size))
+            {
+                var vertices = sprite.vertices;
+                Vector2 min = vertices[0], max = vertices[0];
+                foreach (var v in vertices)
+                {
+                    min = Vector2.Min(min, v);
+                    max = Vector2.Max(max, v);
+                }
+
+                size = max - min;
+                DrawnSizes[sprite] = size;
+            }
+
+            var scale = t.lossyScale;
+            return new Vector2(size.x * Mathf.Abs(scale.x), size.y * Mathf.Abs(scale.y));
+        }
+
         /// <summary>Centro visible de una parte en el mundo (ver <see cref="RigPart.center"/>).</summary>
         public Vector2 PartCenter(Transform t)
         {

@@ -114,6 +114,9 @@ namespace RedMagic.Bosses
         /// <summary>Centro visible de la pieza en el mundo, ahora.</summary>
         public Vector2 Center(Transform limb) => _data != null ? _data.PartCenter(limb) : (Vector2)limb.position;
 
+        /// <summary>Tamaño en el mundo de lo que se ve de la pieza (ver <see cref="ProceduralRig.PartSize"/>).</summary>
+        public Vector2 VisualSize(Transform limb) => ProceduralRig.PartSize(limb);
+
         /// <summary>Dónde estaría el centro de la pieza si estuviera en su sitio en el cuerpo, ahora.</summary>
         public Vector2 HomeCenter(Transform limb)
         {

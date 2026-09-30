@@ -130,8 +130,7 @@ namespace RedMagic.Bosses
                 end = AboveGround(ctx, end, radius);
 
                 float windup = ctx.Scaled(diveWindup);
-                Warn(ctx, target, Vector2.one * radius * 2.6f, windup + ctx.Scaled(diveSeconds));
-                WarnArrow(ctx, at[i], dir, (end - at[i]).magnitude, radius, windup, 0.6f);
+                WarnPart(ctx, limbs, parts[i], dir, target, windup + ctx.Scaled(diveSeconds));
 
                 aim[i] = dir;
                 yield return HoldOne(ctx, limbs, parts, at, aim, i, windup);

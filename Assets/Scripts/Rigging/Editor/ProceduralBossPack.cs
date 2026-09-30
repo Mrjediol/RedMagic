@@ -91,6 +91,14 @@ namespace RedMagic.Rigging.EditorTools
             var definition = Definition(log, fistThrow, doubleSlam, slamBarrage, pincer);
             EnsureInDecks(definition, shards, log);
 
+            // Sus rocas: las mismas del Coloso de Hielo, al doble de tamaño (roca, explosión y marca).
+            ReplaceInDecks(definition, Load("BossAttack_HieloLanzarRoca"),
+                           CloneAttack("BossAttack_HieloLanzarRoca", "BossAttack_Hielo2_LanzarRoca", log,
+                                       f => f.Set("sizeScale", 2f)), log);
+            ReplaceInDecks(definition, Load("BossAttack_HieloLanzarRocas"),
+                           CloneAttack("BossAttack_HieloLanzarRocas", "BossAttack_Hielo2_LanzarRocas", log,
+                                       f => f.Set("sizeScale", 2f)), log);
+
             ProceduralRigTool.Setup(PrefabPath, log,
                 prepare: root => PrepareBody(root, definition, log),
                 configure: (root, rig, created) => ConfigureRig(root, rig, created, log),
@@ -348,6 +356,51 @@ namespace RedMagic.Rigging.EditorTools
                 stages = new List<Sprite> { torso.sprite, cracked },
             });
             log.AppendLine("  fase 2: torso agrietado.");
+        }
+
+        /// <summary>
+        /// Copia de un ataque existente (mismos números) con algunos cambios. Si la copia ya existe no
+        /// se toca: lo afinado a mano manda.
+        /// </summary>
+        private static BossAttack CloneAttack(string source, string name, StringBuilder log,
+                                              System.Func<BossAuthoring.Fields, BossAuthoring.Fields> configure)
+        {
+            string path = $"{BossFolder}/{name}.asset";
+            var existing = AssetDatabase.LoadAssetAtPath<BossAttack>(path);
+            if (existing != null) return existing;
+
+            var copy = Object.Instantiate(Load(source));
+            AssetDatabase.CreateAsset(copy, path);
+            var fields = new BossAuthoring.Fields(copy);
+            configure(fields);
+            fields.Apply();
+            log.AppendLine($"  {name}: copia de {source}.");
+            return copy;
+        }
+
+        /// <summary>Cambia un ataque por otro en todas las barajas.</summary>
+        private static void ReplaceInDecks(BossDefinition definition, BossAttack from, BossAttack to, StringBuilder log)
+        {
+            if (from == null || to == null) return;
+
+            var so = new SerializedObject(definition);
+            var phases = so.FindProperty("phases");
+            bool changed = false;
+            for (int p = 0; p < phases.arraySize; p++)
+            {
+                var list = phases.GetArrayElementAtIndex(p).FindPropertyRelative("attacks");
+                for (int i = 0; i < list.arraySize; i++)
+                {
+                    var element = list.GetArrayElementAtIndex(i);
+                    if (element.objectReferenceValue != from) continue;
+                    element.objectReferenceValue = to;
+                    changed = true;
+                }
+            }
+
+            if (!changed) return;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            log.AppendLine($"  barajas: {from.name} → {to.name}.");
         }
 
         /// <summary>Mete el ataque en las barajas de las dos fases si no está.</summary>

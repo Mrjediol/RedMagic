@@ -227,7 +227,9 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
     alternating fists on the player's current X); optional ground waves (`ProjectileSpec`).
   - `ThrowProjectileAttack` is a `LimbAttack` too: with `BossLimbs` (`useLimbs`, default on) a hand
     reaches the ground in front, grabs the prop (`BossHeldProp` on the hand's grip), lifts it over the
-    shoulder (`raisedOffset`), swings and releases it from the fist; `limbPick = Alternate` makes
+    shoulder (`raisedOffset`), swings and releases it from the fist; `sizeScale` scales the rock (held and
+    thrown, placeholder or real-art prefab — absolute prefab scale × sizeScale, pool-safe), its
+    explosion and its landing mark together (BossIce2 uses ×2 copies `Hielo2_LanzarRoca(s)`); `limbPick = Alternate` makes
     `throws > 1` go one hand then the other. Bosses without limbs keep the old held-aloft path.
   - `OrbiterDiveAttack` — **"when is the next one coming?"**: the small orbiters (`BossLimbs.orbiters`,
     the crown crystals) lift into a spinning ring over the head, then one by one aim, tremble over a

@@ -118,6 +118,10 @@ regenerated).
   `pointAngle` facing down), `BossLimbs` mirrors it across its pointing axis instead — a fist
   pointing left is the mirror of one pointing right, like a character flipping. The mirror is kept
   until halfway through the rig's return blend.
+  **Warnings are part-sized**: `ProceduralRig.PartSize(t)` = world size of the sprite's tight-mesh
+  bounds (what is drawn, not the canvas); `LimbAttack.WarnPart` draws a short arrow from the part
+  (`arrowLength` × part size) and a target mark (`targetMarkScale` × part size) — never sized by the
+  flight distance (the arrow prefab fits uniformly to its length, so a path-long arrow gets fat).
   **Grips**: a `Grip` child at each fist's centre (`BossLimbs.grips`) is where held props attach.
 - **`RigPart.center`** = visible centre (contact point for attacks); **`leanFollow`** = extra
   rotation × body lean (negative = trails like a pendulum: the ice tip, the fists).

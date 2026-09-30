@@ -73,7 +73,7 @@ Order: 0 → A → B → C, then D and E. D is independent of B/C and can move e
 with a rig attack is wanted sooner.
 
 Side track, not blocking, decide any time: the **DOTween comparison**. Recommended: do only the
-drone in DOTween (`RigDriverTween` + `Robot_Dotween` variant, same `ProceduralRig` data), compare,
+drone in DOTween (`RigDriverTween` swapped onto a copy of `Robot`, same `ProceduralRig` data), compare,
 and pick one driver. The rig data is driver-agnostic, so the pipeline does not depend on this.
 
 ---

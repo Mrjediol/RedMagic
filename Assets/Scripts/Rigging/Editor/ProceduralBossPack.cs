@@ -110,7 +110,7 @@ namespace RedMagic.Rigging.EditorTools
                 configure: (root, rig, created) => ConfigureRig(root, rig, created, log),
                 enemyStack: false);
 
-            ProceduralRigTool.EnsureVariant(PrefabPath, ProceduralRigTool.CodeSuffix, typeof(RigDriverCode), log);
+            ProceduralRigTool.EnsureDriver(PrefabPath, typeof(RigDriverCode), log);
             AssetDatabase.SaveAssets();
             return log.ToString();
         }

@@ -13,8 +13,8 @@ namespace RedMagic.Rigging.EditorTools
     /// boca, sus números). La pila común y el rig los monta <see cref="ProceduralRigTool"/>.
     ///
     /// Idempotente: lo específico se siembra la primera vez (cuando el prefab aún no tenía rig);
-    /// después manda lo afinado a mano en el Inspector. Crea el placeholder de su proyectil y la
-    /// variante por motor.
+    /// después manda lo afinado a mano en el Inspector. Crea el placeholder de su proyectil y pone
+    /// el motor (RigDriverCode) en el propio prefab.
     /// </summary>
     public static class ProceduralEnemyPacks
     {
@@ -106,7 +106,7 @@ namespace RedMagic.Rigging.EditorTools
                 log.AppendLine("  sembrado: FlyingRanged, brazo-arma RightArm, proyectil placeholder.");
             });
 
-            ProceduralRigTool.EnsureVariant(path, ProceduralRigTool.CodeSuffix, typeof(RigDriverCode), log);
+            ProceduralRigTool.EnsureDriver(path, typeof(RigDriverCode), log);
 
             AssetDatabase.SaveAssets();
             return log.ToString();
@@ -297,7 +297,7 @@ namespace RedMagic.Rigging.EditorTools
                 log.AppendLine("  sembrado: Static+Ranged dormida, cuello plegable, láser placeholder.");
             });
 
-            ProceduralRigTool.EnsureVariant(path, ProceduralRigTool.CodeSuffix, typeof(RigDriverCode), log);
+            ProceduralRigTool.EnsureDriver(path, typeof(RigDriverCode), log);
 
             AssetDatabase.SaveAssets();
             return log.ToString();

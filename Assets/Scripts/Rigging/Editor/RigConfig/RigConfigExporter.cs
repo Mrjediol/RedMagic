@@ -122,7 +122,7 @@ namespace RedMagic.Rigging.EditorTools
             var json = new JObject
             {
                 ["kind"] = boss ? "boss" : "enemy",
-                ["driver"] = Driver(prefabPath),
+                ["driver"] = Driver(root),
                 ["name"] = root.name,
                 ["root"] = Root(root),
             };
@@ -162,11 +162,11 @@ namespace RedMagic.Rigging.EditorTools
 
         // ============================================================ raíz
 
-        private static string Driver(string prefabPath)
+        /// <summary>El motor que lleva el prefab (code por defecto).</summary>
+        private static string Driver(GameObject root)
         {
-            if (string.IsNullOrEmpty(prefabPath)) return "code";
-            if (File.Exists(prefabPath.Replace(".prefab", ProceduralRigTool.TweenSuffix + ".prefab"))) return "dotween";
-            return "code";
+            var driver = root.GetComponent<RigDriver>();
+            return driver != null && driver.GetType().Name == "RigDriverTween" ? "dotween" : "code";
         }
 
         private static JObject Root(GameObject root) => new JObject

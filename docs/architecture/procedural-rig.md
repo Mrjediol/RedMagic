@@ -53,11 +53,12 @@ folds in place (`Returning` → `FallAsleep` immediately). `FallAsleep` calls
 spawns folded (not in `OnEnable`: the rig resets its pose there). Animator enemies ignore
 `PlaySleep` (their Idle clip already is the sleep).
 
-## Two-pass comparison (code vs DOTween)
-Base prefab (`Assets/Prefabs/Enemies/Procedural/<Name>.prefab`) carries **everything except the
-driver**: enemy stack, `EnemyStats`, `ProceduralRig`. Variants add the driver:
-`<Name>_Code` (`RigDriverCode`) and `<Name>_Dotween` (`RigDriverTween`). Tune on the base → both
-passes change together; the comparison only differs in the engine.
+## One prefab, driver included
+Each part-based enemy/boss is **one prefab** (`Assets/Prefabs/Enemies/Procedural/<Name>.prefab`)
+carrying everything: enemy/boss stack, `ProceduralRig` **and its driver** (`RigDriverCode`). There
+are no `_Code` / `_Dotween` variants any more (the old pairs were merged on 2026-09-30, the
+variant's values winning). Trying another engine = swapping the `RigDriver` component
+(`ProceduralRigTool.EnsureDriver`); the rig data is driver-agnostic, so nothing else changes.
 
 ## Tooling (Tools ▸ RedMagic ▸ Procedural)
 - `1 · Preparar enemigo por partes (selección)` — `ProceduralRigTool.Setup`: adds the enemy stack
@@ -65,7 +66,7 @@ passes change together; the comparison only differs in the engine.
   SoundEmitter, Rigidbody2D, collider if missing), `ProceduralRig` with one `RigPart` per sprite
   under `Visual` (golden-angle phases), and migrates old `ProceduralSway` values (the component,
   now in `Legacy/`, is removed). Idempotent.
-- `2 · Crear variante _Code (selección)` — driver variant.
+- `2 · Poner motor (RigDriverCode) (selección)` — `EnsureDriver`: the driver on the prefab itself.
 - `Packs/Torreta (Turret)` — see Enemies below.
 - `Packs/Dron (Robot)` — `ProceduralEnemyPacks.RunDrone()`: the above + drone data (aim arm,
   `Muzzle` at the gun tip, flame/ring pivots, FlyingRanged tuning, `Corpse` linger 1.1s) + the
@@ -82,7 +83,7 @@ The whole body is a JSON (`docs/schemas/rig-config.schema.json`), separate from 
 pipeline. Code in `Rigging/Editor/RigConfig/`:
 - `RigConfigExporter` — prefab → JSON (hierarchy under `Visual`, `RigPart`s, every
   `ProceduralRig` field by reflection, swaps, gestures, `BossLimbs`, root collider/corpse, boss stack).
-- `RigBundleImporter` — `.zip` / folder → prefab + `_Code` variant. Builds the hierarchy, then
+- `RigBundleImporter` — `.zip` / folder → one prefab with its driver. Builds the hierarchy, then
   `ProceduralRigTool.Setup` (enemy stack) or `BossBodyBuilder.AddBossStack` (boss), then writes the
   rig. Optional `enemy-config.json` (tuning via `EnemyConfigImporter.ReadTuning`) or
   `boss-config.json` (`BossConfigImporter`, no `body`). Body = always from JSON; EnemyStats / boss

@@ -30,12 +30,12 @@
         "dotween"
       ],
       "default": "code",
-      "$comment": "Motor de la variante: code = <name>_Code (RigDriverCode). dotween = <name>_Dotween (RigDriverTween, todavía no existe: el import falla alto)."
+      "$comment": "Motor que lleva el prefab (un solo prefab, sin variantes): code = RigDriverCode. dotween = RigDriverTween (todavía no existe: el import falla alto)."
     },
     "name": {
       "type": "string",
       "minLength": 1,
-      "$comment": "Nombre del prefab: Assets/Prefabs/Enemies/Procedural/<name>.prefab (+ variante). Reimportar con el mismo nombre actualiza."
+      "$comment": "Nombre del prefab: Assets/Prefabs/Enemies/Procedural/<name>.prefab (con su motor). Reimportar con el mismo nombre actualiza."
     },
     "pixelsPerUnit": {
       "type": "number",

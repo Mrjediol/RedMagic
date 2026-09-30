@@ -114,6 +114,7 @@ GameObject:
   - component: {fileID: 8391335493649056707}
   - component: {fileID: 2378242693771179002}
   - component: {fileID: 7090486665486218838}
+  - component: {fileID: 1453133303253440999}
   m_Layer: 0
   m_Name: Turret
   m_TagString: Untagged
@@ -531,6 +532,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
   tier: 0
+--- !u!114 &1453133303253440999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 993704669555814581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e6fc707acbe7884cb21f94e3272ee9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Rigging.RigDriverCode
 --- !u!1 &3604225090275462086
 GameObject:
   m_ObjectHideFlags: 0

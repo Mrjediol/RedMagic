@@ -30,7 +30,7 @@ namespace RedMagic.Rigging.EditorTools
     /// <see cref="ProceduralEnemyPacks"/> / <see cref="ProceduralBossPack"/>, pero con datos:
     /// jerarquía <c>raíz/Visual/piezas</c>, <see cref="ProceduralRig"/> entero, pila de enemigo
     /// (<see cref="ProceduralRigTool.Setup"/>) o de jefe (<c>BossBodyBuilder.AddBossStack</c> +
-    /// <see cref="BossLimbs"/>), y la variante del motor.
+    /// <see cref="BossLimbs"/>), y el motor (<c>driver</c>) en el propio prefab: un solo prefab jugable.
     ///
     /// <b>Qué manda al reimportar.</b> El cuerpo (jerarquía bajo Visual, collider, cadáver y
     /// ProceduralRig) sale <b>siempre</b> del JSON: es lo que se edita en la web. Una clave ausente
@@ -236,11 +236,7 @@ namespace RedMagic.Rigging.EditorTools
             report.Add(isNew, prefabPath);
             if (!reset) report.Warnings.Add("Lo afinado en el Inspector (EnemyStats / vida y arena del jefe) se ha conservado; el cuerpo y el rig vienen del JSON.");
 
-            string suffix = driverType == typeof(RigDriverCode) ? ProceduralRigTool.CodeSuffix : ProceduralRigTool.TweenSuffix;
-            string variantPath = prefabPath.Replace(".prefab", suffix + ".prefab");
-            bool variantIsNew = AssetDatabase.LoadAssetAtPath<GameObject>(variantPath) == null;
-            ProceduralRigTool.EnsureVariant(prefabPath, suffix, driverType, log);
-            report.Add(variantIsNew, variantPath);
+            ProceduralRigTool.EnsureDriver(prefabPath, driverType, log);
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[RigBundleImporter] {name}\n{log}");

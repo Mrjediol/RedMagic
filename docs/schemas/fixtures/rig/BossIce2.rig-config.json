@@ -929,8 +929,8 @@
   },
   "bossBody": {
     "health": 3000.0,
-    "arenaHalfWidth": 16.0,
-    "arenaHeight": 12.0,
+    "arenaHalfWidth": 40.0,
+    "arenaHeight": 20.0,
     "activationRadius": 18.0,
     "contactDamage": 14.0,
     "definition": "Assets/Resources/Bosses/Boss_ColosodeHielo2.asset",

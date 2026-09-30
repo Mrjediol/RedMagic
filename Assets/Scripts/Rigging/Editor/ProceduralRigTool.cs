@@ -13,8 +13,8 @@ namespace RedMagic.Rigging.EditorTools
 {
     /// <summary>
     /// Convierte un prefab "cuerpo de sprites sueltos" (una raíz con un hijo <c>Visual</c> y las
-    /// partes colgando) en un enemigo funcional animado por <see cref="ProceduralRig"/>, y crea sus
-    /// variantes por motor (<c>_Code</c>, <c>_Dotween</c>).
+    /// partes colgando) en un enemigo funcional animado por <see cref="ProceduralRig"/>, con su motor
+    /// (<see cref="RigDriverCode"/>) en el propio prefab: un solo prefab, sin variantes.
     ///
     /// Lo común a todos se hace solo: la pila de enemigo (vida, retroceso, destello, cadáver,
     /// cerebro, ataque, animación, sonido, monedas), el rig con una entrada por parte y fases
@@ -27,8 +27,6 @@ namespace RedMagic.Rigging.EditorTools
     public static class ProceduralRigTool
     {
         public const string VisualName = "Visual";
-        public const string CodeSuffix = "_Code";
-        public const string TweenSuffix = "_Dotween";
 
         /// <summary>Radianes entre fases consecutivas: el ángulo áureo nunca repite patrón.</summary>
         private const float GoldenPhase = 2.39996f;
@@ -41,11 +39,11 @@ namespace RedMagic.Rigging.EditorTools
             Debug.Log(log.ToString());
         }
 
-        [MenuItem("Tools/RedMagic/Procedural/2 · Crear variante _Code (selección)")]
-        private static void CodeVariantSelected()
+        [MenuItem("Tools/RedMagic/Procedural/2 · Poner motor (RigDriverCode) (selección)")]
+        private static void DriverSelected()
         {
             var log = new StringBuilder();
-            foreach (var path in SelectedPrefabs()) EnsureVariant(path, CodeSuffix, typeof(RigDriverCode), log);
+            foreach (var path in SelectedPrefabs()) EnsureDriver(path, typeof(RigDriverCode), log);
             Debug.Log(log.ToString());
         }
 
@@ -174,36 +172,29 @@ namespace RedMagic.Rigging.EditorTools
             }
         }
 
-        // ============================================================ variantes por motor
+        // ============================================================ motor
 
         /// <summary>
-        /// Crea <c>&lt;base&gt;&lt;suffix&gt;.prefab</c> como <b>variante</b> del base con el motor
-        /// dado. Todo lo demás (partes, tiempos, números del enemigo) se hereda del base, así que
-        /// afinar el base afina las dos pasadas a la vez. Si ya existe, no se toca.
+        /// Deja en el prefab el motor <paramref name="driver"/> (un <see cref="RigDriver"/>): si ya lo
+        /// tiene no se toca (sus valores afinados se conservan); si tiene otro, se cambia. Un solo
+        /// prefab jugable — cambiar de motor es cambiar este componente, no tener otro prefab.
         /// </summary>
-        public static GameObject EnsureVariant(string basePath, string suffix, Type driver, StringBuilder log)
+        public static void EnsureDriver(string prefabPath, Type driver, StringBuilder log)
         {
-            string path = basePath.Replace(".prefab", suffix + ".prefab");
-            var existing = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-            if (existing != null)
-            {
-                log.AppendLine($"  variante '{Path.GetFileName(path)}' ya existe.");
-                return existing;
-            }
-
-            var basePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(basePath);
-            var instance = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
+            var root = PrefabUtility.LoadPrefabContents(prefabPath);
             try
             {
-                foreach (var other in instance.GetComponents<RigDriver>()) Object.DestroyImmediate(other);
-                instance.AddComponent(driver);
-                var saved = PrefabUtility.SaveAsPrefabAsset(instance, path);
-                log.AppendLine($"  variante creada: {Path.GetFileName(path)} ({driver.Name}).");
-                return saved;
+                var drivers = root.GetComponents<RigDriver>();
+                if (drivers.Length == 1 && drivers[0].GetType() == driver) return;
+
+                foreach (var other in drivers) Object.DestroyImmediate(other);
+                root.AddComponent(driver);
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+                log.AppendLine($"  motor: {driver.Name}.");
             }
             finally
             {
-                Object.DestroyImmediate(instance);
+                PrefabUtility.UnloadPrefabContents(root);
             }
         }
 

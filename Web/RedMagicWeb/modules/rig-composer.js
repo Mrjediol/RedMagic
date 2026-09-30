@@ -26,9 +26,9 @@ const TOOLS = [
   { id: 'scale', label: '⤢ Escalar', key: 's', hint: 'Arrastra alejándote/acercándote del pivote.' },
   { id: 'pivot', label: '✚ Pivote', key: 'p', hint: 'Clic: la articulación de la pieza (gira y se escala desde aquí). La imagen no se mueve.' },
   { id: 'center', label: '● Centro', key: 'c', hint: 'Clic: centro visible = punto de contacto cuando un ataque lanza la pieza.' },
-  { id: 'point', label: '➜ Punta', key: 'a', hint: 'Arrastra desde el pivote: hacia dónde mira la parte útil del dibujo (los nudillos).' },
-  { id: 'barrel', label: '➜ Cañón', key: 'b', hint: 'Sólo la pieza que apunta: arrastra la dirección del cañón en el dibujo (aimArtAngle).' },
-  { id: 'muzzle', label: '◉ Boca', key: 'm', hint: 'Clic sobre la pieza que apunta: de dónde sale el disparo.' },
+  { id: 'point', label: '➜ Punta', key: 'a', hint: 'Sólo piezas que un jefe lanza (extremidades, orbitales): arrastra hacia dónde mira su parte útil en el dibujo (los nudillos de un puño). Vuela con esa parte por delante.' },
+  { id: 'muzzle', label: '◉ Boca', key: 'm', hint: 'Clic sobre la pieza que apunta: de dónde sale el disparo. El cañón (pivote → boca) se calcula solo.' },
+  { id: 'barrel', label: '➜ Cañón', key: 'b', hint: 'Normalmente no hace falta: al poner la Boca se calcula solo (pivote → boca). Arrastra sólo para corregirlo: esa línea es la que se alinea con el jugador al apuntar.' },
   { id: 'grip', label: '✊ Agarre', key: 'g', hint: 'Clic sobre una extremidad: dónde sostiene objetos (jefes).' },
 ];
 
@@ -146,6 +146,14 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       b.onclick = () => { tool = t.id; renderToolbar(); setStatus(t.hint); };
       tools.appendChild(b);
     });
+    undoBtn = el('button', 'small', '↶ Deshacer');
+    undoBtn.title = 'Ctrl+Z';
+    undoBtn.onclick = undo;
+    redoBtn = el('button', 'small', '↷ Rehacer');
+    redoBtn.title = 'Ctrl+Y';
+    redoBtn.onclick = redo;
+    tools.append(undoBtn, redoBtn);
+    renderUndoButtons();
     const frame = el('button', 'small', '⌖ Encuadrar');
     frame.onclick = () => view.frame(state);
     tools.appendChild(frame);
@@ -192,9 +200,10 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
 
   document.addEventListener('keydown', (e) => {
     if (canvas.closest('.tabPanel')?.hidden) return;
-    if (e.target.closest('input, textarea, select')) return;
+    if ((e.target instanceof Element && e.target.closest('input, textarea, select'))) return;
     const t = TOOLS.find((x) => x.key === e.key.toLowerCase());
-    if (t && !e.ctrlKey && !e.metaKey) { tool = t.id; renderToolbar(); setStatus(t.hint); }
+    if (e.ctrlKey || e.metaKey) return;
+    if (t) { tool = t.id; renderToolbar(); setStatus(t.hint); }
     if ((e.key === 'Delete' || e.key === 'Supr') && selectedUid) { removePart(M.byUid(state, selectedUid)); }
   });
 
@@ -209,6 +218,12 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const local = M.apply(M.invert(M.worldMatrix(state, part)), visualPt);
     const px = M.localToPixel(state, part, local);
     return { x: Math.round(px.x * 10) / 10, y: Math.round(px.y * 10) / 10 };
+  }
+
+  /** aimArtAngle = direction pivot → muzzle in the arm's unrotated art (local units, y up). */
+  function barrelFromMuzzle(aim) {
+    const local = M.pixelToLocal(state, aim, state.roles.muzzle);
+    return Math.round((Math.atan2(local.y, local.x) * 180) / Math.PI * 10) / 10;
   }
 
   function localDirectionAngle(part, visualPt) {
@@ -251,6 +266,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       case 'pivot':
         if (!part.image) { setStatus('Una pieza vacía no tiene imagen: su pivote es su posición.'); return; }
         M.setPivot(state, part, pixelOn(part, pt));
+        if (part.uid === state.roles.aim && state.roles.muzzle) state.rig.aimArtAngle = barrelFromMuzzle(part);
         changed();
         break;
       case 'center':
@@ -272,7 +288,9 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
         const aim = M.byUid(state, state.roles.aim);
         if (!aim) { setStatus('Primero marca una pieza como "apunta" (inspector ▸ Roles).'); return; }
         state.roles.muzzle = pixelOn(aim, pt);
+        state.rig.aimArtAngle = barrelFromMuzzle(aim);
         changed();
+        setStatus(`Boca puesta. Cañón = pivote → boca (${state.rig.aimArtAngle}°): esa línea es la que apunta al jugador.`);
         break;
       }
       case 'grip':
@@ -527,6 +545,13 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     nameField.input.addEventListener('change', () => { part.name = M.uniqueName(state, nameField.input.value, part); changed(); });
     s.appendChild(nameField.row);
 
+    const parentOptions = [{ value: '', label: 'Visual (raíz)' }, ...state.parts
+      .filter((p) => p !== part && !M.isDescendant(state, p.uid, part.uid))
+      .map((p) => ({ value: p.uid, label: M.pathOf(state, p) }))];
+    s.appendChild(F.enumField({ label: 'Cuelga de', value: part.parent || '', options: parentOptions,
+      hint: 'Se queda donde está en pantalla; sólo cambia de qué pieza depende.',
+      onChange: (v) => { M.reparent(state, part, v || null); changed(); } }).row);
+
     s.appendChild(F.vector2Field({ label: 'Posición (u, en su padre)', value: part.position,
       onChange: (v) => { part.position = v; requestRender(); refreshExport(); } }).row);
     s.appendChild(F.numberField({ label: 'Giro (°)', value: part.rotation,
@@ -610,7 +635,8 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       d.appendChild(F.numberField({ label: 'Velocidad (rad/s)', value: part.sway.speed, min: 0, onChange: (v) => { part.sway.speed = v; refreshExport(); } }).row);
       d.appendChild(F.numberField({ label: 'Desfase (rad)', value: part.sway.phase, onChange: (v) => { part.sway.phase = v; refreshExport(); } }).row);
       d.appendChild(F.numberField({ label: 'Sigue la inclinación', value: part.leanFollow, hint: 'Positivo = se queda atrás (péndulo); negativo = tiende a vertical.', onChange: (v) => { part.leanFollow = v; refreshExport(); } }).row);
-      d.appendChild(F.numberField({ label: 'Punta (°)', value: part.pointAngle, hint: 'Herramienta ➜ Punta. 0 = derecha, −90 = abajo.', onChange: (v) => { part.pointAngle = v; requestRender(); refreshExport(); } }).row);
+      if (state.roles.limbs.includes(part.uid) || state.roles.orbiters.includes(part.uid))
+        d.appendChild(F.numberField({ label: 'Punta (°)', value: part.pointAngle, hint: 'Herramienta ➜ Punta: sale volando con esta parte por delante. 0 = derecha, −90 = abajo.', onChange: (v) => { part.pointAngle = v; requestRender(); refreshExport(); } }).row);
       d.appendChild(F.boolField({ label: 'Sale despedida al morir', value: part.breaksOnDeath, onChange: (v) => { part.breaksOnDeath = v; refreshExport(); } }).row);
     }
 
@@ -734,12 +760,67 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     refreshExport();
   }
 
+  // ============================================================ undo / redo
+
+  const history = [];
+  let historyIndex = -1;
+  let restoring = false;
+
+  function snapshot() {
+    const images = [];
+    const json = JSON.stringify({ state, selectedUid }, (k, v) =>
+      (v && typeof v === 'object' && typeof v.dataURL === 'string' ? { __img: images.push(v) - 1 } : v));
+    return { json, images };
+  }
+
+  function recordHistory() {
+    if (restoring) return;
+    const snap = snapshot();
+    if (historyIndex >= 0 && history[historyIndex].json === snap.json) return;
+    history.splice(historyIndex + 1);
+    history.push(snap);
+    if (history.length > 80) history.shift();
+    historyIndex = history.length - 1;
+    renderUndoButtons();
+  }
+
+  function restore(i) {
+    if (i < 0 || i >= history.length) return;
+    historyIndex = i;
+    const snap = history[i];
+    const data = JSON.parse(snap.json, (k, v) => (v && typeof v === 'object' && v.__img !== undefined ? snap.images[v.__img] : v));
+    restoring = true;
+    state = data.state;
+    selectedUid = data.selectedUid;
+    changed();
+    renderToolbar();
+    setTimeout(() => { restoring = false; renderUndoButtons(); }, 200);
+  }
+
+  const undo = () => restore(historyIndex - 1);
+  const redo = () => restore(historyIndex + 1);
+
+  let undoBtn = null, redoBtn = null;
+  function renderUndoButtons() {
+    if (undoBtn) undoBtn.disabled = historyIndex <= 0;
+    if (redoBtn) redoBtn.disabled = historyIndex >= history.length - 1;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (canvas.closest('.tabPanel')?.hidden || (e.target instanceof Element && e.target.closest('input, textarea, select'))) return;
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const k = e.key.toLowerCase();
+    if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+    else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+  });
+
   const fileStem = () => (state.name.trim() || 'rig').replace(/[^A-Za-z0-9_-]/g, '_');
 
   let exportTimer = 0;
   function refreshExport() {
     clearTimeout(exportTimer);
     exportTimer = setTimeout(() => {
+      recordHistory();
       if (!exportSummaryEl) return;
       const { doc, problems, notes } = buildRigExport(state);
       const schemaErrors = validate ? validateConfig(validate, doc).errors : [];

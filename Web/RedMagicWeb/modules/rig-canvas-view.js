@@ -278,12 +278,18 @@ export class RigCanvasView {
 
     const { p: pivot, m } = this._screenOf(state, part, part.pivot, opts);
 
-    // Point direction (RigPart.pointAngle): where the part's business end aims in its own art.
-    const dir = this._screenDir(m, part.pointAngle);
-    this._arrow(pivot, dir, 46, '#c38bff', 'punta');
+    // Point direction (RigPart.pointAngle): only matters for parts a boss throws (they fly with
+    // their business end first), so it is only drawn on those.
+    if (roles.limbs.includes(part.uid) || roles.orbiters.includes(part.uid))
+      this._arrow(pivot, this._screenDir(m, part.pointAngle), 46, '#c38bff', 'punta');
 
-    // The aim part also shows where its barrel points (aimArtAngle).
-    if (part.uid === roles.aim) this._arrow(pivot, this._screenDir(m, state.rig.aimArtAngle), 64, '#5ae0ff', 'cañón');
+    // The aim part: the barrel line (aimArtAngle) from the pivot — the line that is turned to face
+    // the player — long enough to reach the muzzle when there is one.
+    if (part.uid === roles.aim) {
+      const muzzle = roles.muzzle ? this._screenOf(state, part, roles.muzzle, opts).p : null;
+      const length = muzzle ? Math.max(40, Math.hypot(muzzle.x - pivot.x, muzzle.y - pivot.y)) : 64;
+      this._arrow(pivot, this._screenDir(m, state.rig.aimArtAngle), length, '#5ae0ff', 'cañón');
+    }
 
     if (part.center) this._dot(this._screenOf(state, part, part.center, opts).p, '#7dff9a', 'centro');
 

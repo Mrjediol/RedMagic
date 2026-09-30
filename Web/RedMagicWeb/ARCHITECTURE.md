@@ -185,7 +185,7 @@ Separate from every classic tab: it touches none of them, it only reuses shared 
 | Tools, parts list (draw order, parenting by drag), inspector, preview (sway/hover/lean/hurt = `RigDriverCode` formulas), save/export | `modules/rig-composer.js` | `initRigComposer` |
 | State → `rig-config.json`, the zip layout, companion `enemy-config.json` / `boss-config.json` | `modules/rig-export.js` | `buildRigExport`, `buildRigBundle`, `companionEnemyConfig` |
 
-Undo/redo (Ctrl+Z / Ctrl+Y) snapshots the document after every settled edit (images shared by reference). Parent = drag a row, or the inspector's "Cuelga de". Boca sets `aimArtAngle` = pivot → muzzle; the Punta arrow only shows on limbs/orbiters.
+Undo/redo (Ctrl+Z / Ctrl+Y) snapshots the document after every settled edit (images shared by reference). Parent = drag a row, or the inspector's "Cuelga de". Boca sets `aimArtAngle` = pivot → muzzle; the "Frente al lanzar" arrow (pointAngle) only shows on limbs/orbiters.
 
 Model rules: a part's **pivot is its joint and becomes the sprite's own pivot** (exported in
 `sprites`, normalized), so `RigPart.pivot` is always 0; geometry is kept in each file's original

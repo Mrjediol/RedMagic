@@ -281,7 +281,7 @@ export class RigCanvasView {
     // Point direction (RigPart.pointAngle): only matters for parts a boss throws (they fly with
     // their business end first), so it is only drawn on those.
     if (roles.limbs.includes(part.uid) || roles.orbiters.includes(part.uid))
-      this._arrow(pivot, this._screenDir(m, part.pointAngle), 46, '#c38bff', 'punta');
+      this._arrow(pivot, this._screenDir(m, part.pointAngle), 46, '#c38bff', 'frente');
 
     // The aim part: the barrel line (aimArtAngle) from the pivot — the line that is turned to face
     // the player — long enough to reach the muzzle when there is one.

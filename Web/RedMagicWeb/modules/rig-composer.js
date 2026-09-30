@@ -26,8 +26,8 @@ const TOOLS = [
   { id: 'scale', label: '⤢ Escalar', key: 's', hint: 'Arrastra alejándote/acercándote del pivote.' },
   { id: 'pivot', label: '✚ Pivote', key: 'p', hint: 'Clic: la articulación de la pieza (gira y se escala desde aquí). La imagen no se mueve.' },
   { id: 'center', label: '● Centro', key: 'c', hint: 'Clic: centro visible = punto de contacto cuando un ataque lanza la pieza.' },
-  { id: 'point', label: '➜ Punta', key: 'a', hint: 'Sólo piezas que un jefe lanza (extremidades, orbitales): arrastra hacia dónde mira su parte útil en el dibujo (los nudillos de un puño). Vuela con esa parte por delante.' },
-  { id: 'muzzle', label: '◉ Boca', key: 'm', hint: 'Clic sobre la pieza que apunta: de dónde sale el disparo. El cañón (pivote → boca) se calcula solo.' },
+  { id: 'point', label: '➜ Frente al lanzar', key: 'a', hint: 'Sólo piezas que un jefe lanza (extremidades, orbitales): arrastra hacia dónde mira su frente en el dibujo (los nudillos de un puño). Sale volando con ese lado por delante. NO es la boca del arma: eso es ◉ Boca.' },
+  { id: 'muzzle', label: '◉ Boca', key: 'm', hint: 'Clic sobre la pieza que apunta: la punta del arma, de donde sale el proyectil. El cañón (pivote → boca) se calcula solo.' },
   { id: 'barrel', label: '➜ Cañón', key: 'b', hint: 'Normalmente no hace falta: al poner la Boca se calcula solo (pivote → boca). Arrastra sólo para corregirlo: esa línea es la que se alinea con el jugador al apuntar.' },
   { id: 'grip', label: '✊ Agarre', key: 'g', hint: 'Clic sobre una extremidad: dónde sostiene objetos (jefes).' },
 ];
@@ -636,7 +636,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       d.appendChild(F.numberField({ label: 'Desfase (rad)', value: part.sway.phase, onChange: (v) => { part.sway.phase = v; refreshExport(); } }).row);
       d.appendChild(F.numberField({ label: 'Sigue la inclinación', value: part.leanFollow, hint: 'Positivo = se queda atrás (péndulo); negativo = tiende a vertical.', onChange: (v) => { part.leanFollow = v; refreshExport(); } }).row);
       if (state.roles.limbs.includes(part.uid) || state.roles.orbiters.includes(part.uid))
-        d.appendChild(F.numberField({ label: 'Punta (°)', value: part.pointAngle, hint: 'Herramienta ➜ Punta: sale volando con esta parte por delante. 0 = derecha, −90 = abajo.', onChange: (v) => { part.pointAngle = v; requestRender(); refreshExport(); } }).row);
+        d.appendChild(F.numberField({ label: 'Frente al lanzar (°)', value: part.pointAngle, hint: 'Herramienta ➜ Frente al lanzar: sale volando con este lado por delante. 0 = derecha, −90 = abajo.', onChange: (v) => { part.pointAngle = v; requestRender(); refreshExport(); } }).row);
       d.appendChild(F.boolField({ label: 'Sale despedida al morir', value: part.breaksOnDeath, onChange: (v) => { part.breaksOnDeath = v; refreshExport(); } }).row);
     }
 

@@ -12,7 +12,7 @@ attack or a new behaviour**. Once it exists, the web lists it and any enemy can 
 > Lee `docs/part-rig-pipeline-plan.md` y ejecuta la **Fase N** (sólo esa). Sigue las reglas de la
 > sección "Reglas de trabajo".
 
-(Replace N with the next phase in the table below. Start with **Fase 0**.)
+(Replace N with the next phase in the table below. Start with **Fase P** (Boss2 polish), then **Fase 0**.)
 
 **Model and effort:** use Claude Opus, with **high** effort for Phases 0, A and D (schema,
 importer, refactor: design matters and mistakes are expensive). **Medium** is enough for B, C and E
@@ -62,6 +62,7 @@ importer, refactor: design matters and mistakes are expensive). **Medium** is en
 
 | Phase | Deliverable | Web? | Effort | Done |
 |---|---|---|---|---|
+| P | **Boss2 polish** (see "Phase P" below): dash lean/inertia, fist and tip swing direction, moving pose | no | medium | ☐ |
 | 0 | Split rig attacks into their own folder and category (catalog + web picker shows "Clásico" / "De partes") | small web change | high | ☐ |
 | A | `rig-config` schema + round-trip exporter + **separate** `RigBundleImporter` (rebuilds Robot / Turret / BossIce2 from JSON) | no | high | ☐ |
 | B | New web tab **🦴 Rig Composer** (assemble parts, pivots, roles, state sprites, live sway preview, export) | yes | medium | ☐ |
@@ -88,6 +89,35 @@ attacks `classic`.
 ---
 
 ## Phase details
+
+### Phase P — Boss2 polish (do first; small, independent of the pipeline)
+The user compared it with the sprite Coloso de Hielo: the new attacks are better, but the dash and
+the repositioning feel worse. Diagnosis:
+1. **Wrong swing direction.** In `DashLoop` (and `Dash`) the fists have `rotate +35/+20`. On a
+   hanging fist (`pointAngle -90`) that swings the knuckles *forward*; trailing needs a negative
+   value. `RigPart.leanFollow` has the wrong sign on the tip (-1.2) and the fists (-0.5): negative
+   cancels the body lean. For a hanging part to trail like a pendulum it must be **positive**
+   (tip ≈ +0.8, fists ≈ +0.4). Also fix the `leanFollow` tooltip in `ProceduralRig`, which
+   currently says the opposite. Check the `GroundSlam` / `Throw` / `PickUP` poses for the same sign
+   mistake.
+2. **No inertia.** The visual body is glued to the root, so starts and stops are instant. Add a
+   generic **follow spring** to the rig data (`followStiffness`, `followDamping`,
+   `followMaxOffset`; 0 = off) that is driver-specific in implementation: the `Visual` lags behind
+   the root's acceleration and overshoots a little when the root stops. Enable it on BossIce2.
+3. **Short dash lean.** The travel-pose blend is 0.2s and the dash is ~0.4s. Give the dash a
+   bigger, longer lean: `leanDegrees` / `leanResponse` on BossIce2, a stronger `DashLoop` body
+   rotation, and the follow spring.
+4. **Instant speed.** `ChargeDashAttack` goes 0 → full speed → 0. Add `accelerationSeconds` /
+   `brakeSeconds` (default 0 = unchanged, so the ice boss stays identical). Give BossIce2 its own
+   copy of the dash attack (`Hielo2_Embestida`, same numbers + easing) and swap it into its decks,
+   like the ×2 rocks.
+5. **Moving does nothing visually.** `RigDriver.SetMoving` is a no-op, and the ice boss has a walk
+   clip. Add an optional **move gesture** (a `RigGesture` named e.g. `Move`, held and cross-faded
+   while `SetMoving(true)`: tip and fists trailing, a slight forward lean, crown drifting back).
+   Author it for BossIce2.
+
+All of this is data or generic rig features. Verify statically (pose math in a preview scene); the
+user playtests.
 
 ### Phase 0 — separate the rig attacks
 - `git mv` (with `.meta`, so GUIDs and asset references stay intact) `LimbAttack.cs`,

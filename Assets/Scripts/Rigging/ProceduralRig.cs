@@ -74,6 +74,10 @@ namespace RedMagic.Rigging
         [Tooltip("Aviso del ataque: se pone al empezar la carga y se quita tras la coz.")]
         public Sprite attacking;
 
+        [Tooltip("Sprite por etapa (fase de un jefe): 0 = la primera. Al cambiar de etapa se pone el " +
+                 "de esa etapa (el torso agrietado de la fase 2). Vacío = no cambia con la etapa.")]
+        public List<Sprite> stages = new List<Sprite>();
+
         public Sprite Get(RigSpriteState state) => state switch
         {
             RigSpriteState.Asleep => asleep,
@@ -307,6 +311,21 @@ namespace RedMagic.Rigging
 
         private readonly List<Sprite> _restSprites = new List<Sprite>();
 
+        /// <summary>Etapa actual (fase del jefe, 0 = la primera). Vuelve a 0 con <see cref="RestorePose"/>.</summary>
+        public int Stage { get; private set; }
+
+        /// <summary>Cambia de etapa: cada <see cref="RigSpriteSwap"/> con <c>stages</c> pone el sprite de esa etapa.</summary>
+        public void SetStage(int stage)
+        {
+            Stage = Mathf.Max(0, stage);
+            foreach (var swap in spriteSwaps)
+            {
+                if (swap?.renderer == null || swap.stages == null || swap.stages.Count == 0) continue;
+                var sprite = swap.stages[Mathf.Min(Stage, swap.stages.Count - 1)];
+                if (sprite != null) swap.renderer.sprite = sprite;
+            }
+        }
+
         /// <summary>Pone a cada <see cref="RigSpriteSwap"/> el sprite del estado (si lo tiene).</summary>
         public void ShowSprites(RigSpriteState state)
         {
@@ -453,6 +472,7 @@ namespace RedMagic.Rigging
                 r.transform.localScale = r.scale;
             }
 
+            Stage = 0;
             for (int i = 0; i < spriteSwaps.Count && i < _restSprites.Count; i++)
             {
                 var renderer = spriteSwaps[i]?.renderer;

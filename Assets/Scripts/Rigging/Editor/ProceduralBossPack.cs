@@ -81,7 +81,15 @@ namespace RedMagic.Rigging.EditorTools
                     .Set("vulnerableSeconds", 1f).Set("vulnerableMultiplier", 1.8f)
                     .Set("shakeAmplitude", 0.4f).Set("shakeDuration", 0.25f));
 
+            var shards = BossAuthoring.Attack<OrbiterDiveAttack>(BossFolder, "BossAttack_Hielo2_Esquirlas",
+                "Esquirlas de la Corona",
+                "Los cristales de la corona giran sobre su cabeza y se lanzan en picado, uno a uno, a donde estás.",
+                accent, f => f
+                    .Set("telegraph", 0.3f).Set("recovery", 1f).Set("damage", 12f)
+                    .Set("gesture", "Brace"));
+
             var definition = Definition(log, fistThrow, doubleSlam, slamBarrage, pincer);
+            EnsureInDecks(definition, shards, log);
 
             ProceduralRigTool.Setup(PrefabPath, log,
                 prepare: root => PrepareBody(root, definition, log),
@@ -151,6 +159,7 @@ namespace RedMagic.Rigging.EditorTools
             Rename(visual, "Torso/Head", "Crown");
             Rename(visual, "Torso/LeftArm", "LeftFist");
             Rename(visual, "Torso/RightArm", "RightFist");
+            SplitCrown(visual, log);
 
             if (root.GetComponent<BossController>() != null) return;   // ya preparado
 
@@ -210,11 +219,168 @@ namespace RedMagic.Rigging.EditorTools
             return target;
         }
 
+        // ============================================================ corona partida y fase 2
+
+        private const string ArtFolder = "Assets/Art/EnemyBody/Boss2";
+
+        /// <summary>Cada cristal de la corona: sprite, posición en el torso, centro visible (medido) y ritmo.</summary>
+        private static readonly (string name, Vector2 position, Vector2 center, float speed, float phase)[] Crystals =
+        {
+            ("left", new Vector2(-1.5f, 7.11f), new Vector2(-0.03f, 0.18f), 2.0f, 2.1f),
+            ("center", new Vector2(-0.22f, 7.49f), new Vector2(0.02f, 0.30f), 2.3f, 0f),
+            ("right", new Vector2(1.06f, 7.43f), new Vector2(0.05f, 0.15f), 2.6f, 4.2f),
+        };
+
+        private const float CrystalScale = 2.63f;
+
+        /// <summary>
+        /// La corona de una pieza pasa a ser un vacío "Crown" con los tres cristales sueltos (como los
+        /// colocó el usuario), y los puños van delante del torso. Idempotente.
+        /// </summary>
+        private static void SplitCrown(Transform visual, StringBuilder log)
+        {
+            var torso = visual.Find("Torso");
+            if (torso == null) return;
+
+            var crown = torso.Find("Crown");
+            if (crown != null && crown.GetComponent<SpriteRenderer>() != null)
+            {
+                Object.DestroyImmediate(crown.gameObject);
+                crown = null;
+                log.AppendLine("  corona de una pieza sustituida por tres cristales.");
+            }
+
+            if (crown == null)
+            {
+                crown = new GameObject("Crown").transform;
+                crown.SetParent(torso, false);
+            }
+
+            foreach (var c in Crystals)
+            {
+                if (crown.Find(c.name) != null) continue;
+
+                var crystal = new GameObject(c.name).transform;
+                crystal.SetParent(crown, false);
+                crystal.localPosition = c.position;
+                crystal.localScale = Vector3.one * CrystalScale;
+                var renderer = crystal.gameObject.AddComponent<SpriteRenderer>();
+                renderer.sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"{ArtFolder}/{c.name}.png");
+                renderer.sortingOrder = 2;
+            }
+
+            foreach (var fist in new[] { "LeftFist", "RightFist" })
+            {
+                var t = torso.Find(fist);
+                var renderer = t != null ? t.GetComponent<SpriteRenderer>() : null;
+                if (renderer != null) renderer.sortingOrder = 3;   // delante del torso
+            }
+        }
+
+        /// <summary>
+        /// El rig de la corona: el vacío deriva despacio, cada cristal flota a su ritmo, y los tres
+        /// son orbitales de <see cref="BossLimbs"/> (los lanza <see cref="OrbiterDiveAttack"/>). Los
+        /// gestos que apuntaban a la corona vieja pasan al vacío. Idempotente.
+        /// </summary>
+        private static void EnsureCrownRig(GameObject root, ProceduralRig rig, StringBuilder log)
+        {
+            var crown = rig.body != null ? rig.body.Find("Torso/Crown") : null;
+            if (crown == null) return;
+
+            rig.parts.RemoveAll(p => p == null || p.part == null);
+
+            if (rig.FindPart(crown) == null)
+            {
+                var part = new RigPart { part = crown, breaksOnDeath = false };
+                Sway(part, new Vector2(0f, 0.3f), 2f, 1.9f, 1.3f);
+                rig.parts.Add(part);
+            }
+
+            var orbiters = new List<Object>();
+            foreach (var c in Crystals)
+            {
+                var crystal = crown.Find(c.name);
+                if (crystal == null) continue;
+                orbiters.Add(crystal);
+
+                var part = rig.FindPart(crystal);
+                if (part == null)
+                {
+                    part = new RigPart { part = crystal };
+                    rig.parts.Add(part);
+                }
+
+                if (Mathf.Approximately(part.pointAngle, 0f))   // sin configurar todavía
+                {
+                    part.pivot = part.center = c.center;
+                    part.pointAngle = 90f;   // la punta, hacia arriba en el dibujo
+                    Sway(part, new Vector2(0f, 0.22f), 6f, c.speed, c.phase);
+                }
+            }
+
+            foreach (var gesture in rig.gestures)
+            {
+                if (gesture == null) continue;
+                foreach (var pose in gesture.windup) if (pose != null && pose.part == null) pose.part = crown;
+                foreach (var pose in gesture.strike) if (pose != null && pose.part == null) pose.part = crown;
+            }
+
+            var limbs = root.GetComponent<BossLimbs>();
+            if (limbs != null && limbs.OrbiterCount == 0 && orbiters.Count > 0)
+            {
+                new BossAuthoring.Fields(limbs).SetObjectArray("orbiters", orbiters.ToArray())
+                                               .Set("orbiterRadius", 0.45f).Apply();
+                log.AppendLine("  cristales de la corona: orbitales de BossLimbs.");
+            }
+        }
+
+        /// <summary>Torso agrietado en la fase 2 (etapa 1 del rig).</summary>
+        private static void EnsureStages(ProceduralRig rig, StringBuilder log)
+        {
+            var torsoT = rig.body != null ? rig.body.Find("Torso") : null;
+            var torso = torsoT != null ? torsoT.GetComponent<SpriteRenderer>() : null;
+            var cracked = AssetDatabase.LoadAssetAtPath<Sprite>($"{ArtFolder}/torso2.png");
+            if (torso == null || cracked == null || rig.spriteSwaps.Exists(s => s.renderer == torso)) return;
+
+            rig.spriteSwaps.Add(new RigSpriteSwap
+            {
+                renderer = torso,
+                stages = new List<Sprite> { torso.sprite, cracked },
+            });
+            log.AppendLine("  fase 2: torso agrietado.");
+        }
+
+        /// <summary>Mete el ataque en las barajas de las dos fases si no está.</summary>
+        private static void EnsureInDecks(BossDefinition definition, BossAttack attack, StringBuilder log)
+        {
+            var so = new SerializedObject(definition);
+            var phases = so.FindProperty("phases");
+            bool changed = false;
+            for (int p = 0; p < phases.arraySize; p++)
+            {
+                var list = phases.GetArrayElementAtIndex(p).FindPropertyRelative("attacks");
+                bool present = false;
+                for (int i = 0; i < list.arraySize; i++)
+                    present |= list.GetArrayElementAtIndex(i).objectReferenceValue == attack;
+                if (present) continue;
+
+                list.arraySize++;
+                list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = attack;
+                changed = true;
+            }
+
+            if (!changed) return;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            log.AppendLine($"  {attack.name} añadido a las barajas.");
+        }
+
         // ============================================================ rig
 
         private static void ConfigureRig(GameObject root, ProceduralRig rig, bool created, StringBuilder log)
         {
             EnsureGrips(root, rig, log);
+            EnsureCrownRig(root, rig, log);
+            EnsureStages(rig, log);
 
             if (!created)
             {
@@ -251,11 +417,6 @@ namespace RedMagic.Rigging.EditorTools
                     case "Torso":
                         Sway(part, new Vector2(0f, 0.08f), 1.2f, 1.1f, 0f);
                         break;
-                    case "Crown":
-                        // La corona flota sola, a su ritmo, sobre la cabeza.
-                        part.pivot = part.center = new Vector2(-0.6f, 1.9f);
-                        Sway(part, new Vector2(0f, 0.45f), 4f, 1.9f, 1.3f);
-                        break;
                     case "LeftFist":
                         part.pivot = new Vector2(0f, 1f);
                         part.pointAngle = -90f;   // los nudillos, hacia abajo en el dibujo
@@ -287,11 +448,12 @@ namespace RedMagic.Rigging.EditorTools
             rig.gestures.Add(Gesture("Brace", 0.08f, 0.4f, 2f,
                 new[] { P(visual, new Vector2(0f, -0.25f), 3f), P(crown, new Vector2(0f, 1.2f), 0f) },
                 new[] { P(visual, new Vector2(0f, 0.1f), -2f) }));
-            rig.gestures.Add(Gesture("Dash", 0.1f, 0.4f, 2f,
+            // Carga de la embestida sin latigazo: se echa atrás y aguanta (se deshace despacio, 1.2 s)
+            // mientras se fija la dirección; la pose de viaje (DashLoop) se funde encima al salir.
+            rig.gestures.Add(Gesture("Dash", 0.1f, 1.2f, 2f,
                 new[] { P(visual, new Vector2(-0.5f, 0.2f), 8f), P(left, new Vector2(-2f, 1f), 20f),
                         P(right, new Vector2(-2f, 1f), 20f), P(tip, Vector2.zero, 15f) },
-                new[] { P(visual, new Vector2(0.5f, -0.1f), -14f), P(left, new Vector2(3f, 0f), -30f),
-                        P(right, new Vector2(3f, 0f), -30f) }));
+                new RigPose[0]));
             rig.gestures.Add(Gesture("DashLoop", 0.1f, 0.35f, 0f,
                 new[] { P(visual, new Vector2(0.3f, -0.2f), -16f), P(left, new Vector2(-3f, 1f), 35f),
                         P(right, new Vector2(-3f, 1f), 35f), P(tip, Vector2.zero, 25f),

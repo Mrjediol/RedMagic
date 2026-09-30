@@ -92,6 +92,12 @@ regenerated).
   over `recover`; `shake` trembles the body at the end of the windup. Poses are `RigPose`
   (part + move/rotate/scale, additive on the composed pose; on the `body` X/rotation follow
   facing). `BossAttack.gesture` names it — a new gesture is data, never code.
+- **Gesture cross-fade** — starting a different gesture moves the old one to a fade layer (0.2 s)
+  instead of dropping its weights, so chained gestures blend (charge → travel pose). A gesture with
+  an **empty `strike`** is a held charge: no whip at release, the windup settles over `recover`
+  (the boss `Dash`: crouch back, hold while the direction locks, blend into `DashLoop`).
+- **Stages** — `RigSpriteSwap.stages` = one sprite per stage; `RigDriver.SetStage(n)` applies them
+  (`BossAnimator` calls it on `BossController.PhaseChanged`: BossIce2's cracked `torso2` in phase 2).
 - **`BossAnimator` rig path** — with a `RigDriver` on the boss it wins over the Animator:
   `PlayGesture` → `RigDriver.PlayGesture` (release event = `Released`), `Hold`/`ReturnToRest` →
   `HoldGesture`/`ClearHold` (charge travel pose), `PlayStagger` → `PlayHurt(staggerStrength)`
@@ -121,5 +127,6 @@ regenerated).
   key `boss.coloso_de_hielo_2`; root stack copied component-by-component from the ice prefab
   (BossController, Mover, Health, Corpse…, no Animator) + `BossAnimator` + `BossLimbs`; `Visual`
   at scale 0.38, 3.9 above the feet (same size as the original); parts renamed Tip / Crown /
-  LeftFist / RightFist; 6 gestures (Brace, Dash, DashLoop, GroundSlam, PickUP, Throw — the last
+  LeftFist / RightFist, crown split into an empty `Crown` + `left`/`center`/`right` crystals
+  (each bobs on its own; they are `BossLimbs` orbiters), fists drawn in front of the torso; 6 gestures (Brace, Dash, DashLoop, GroundSlam, PickUP, Throw — the last
   five match the ice attacks' gesture names, so the shared attack assets animate unchanged).

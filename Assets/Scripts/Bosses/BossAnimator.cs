@@ -92,6 +92,7 @@ namespace RedMagic.Bosses
         private readonly HashSet<int> _warnedMissing = new HashSet<int>();
 
         private Health _health;
+        private BossController _controller;
         private int _idleHash, _staggerHash, _deathHash, _gestureHash, _moveHash;
         private bool _inGesture;
         private bool _holding;
@@ -116,6 +117,7 @@ namespace RedMagic.Bosses
             if (animator == null) animator = GetComponent<Animator>();
             if (rig == null) rig = GetComponent<RigDriver>();
             _health = GetComponent<Health>();
+            _controller = GetComponent<BossController>();
 
             _idleHash = Animator.StringToHash(idleState);
             _staggerHash = Animator.StringToHash(staggerState);
@@ -128,6 +130,7 @@ namespace RedMagic.Bosses
         private void OnEnable()
         {
             if (rig != null) rig.AttackReleased += OnRigReleased;
+            if (rig != null && _controller != null) _controller.PhaseChanged += OnPhaseChanged;
             if (_health == null) return;
             _health.Damaged += OnDamaged;
             _health.Died += OnDied;
@@ -136,6 +139,7 @@ namespace RedMagic.Bosses
         private void OnDisable()
         {
             if (rig != null) rig.AttackReleased -= OnRigReleased;
+            if (rig != null && _controller != null) _controller.PhaseChanged -= OnPhaseChanged;
             if (_health == null) return;
             _health.Damaged -= OnDamaged;
             _health.Died -= OnDied;
@@ -360,6 +364,12 @@ namespace RedMagic.Bosses
 
         /// <summary>Golpes seguidos más cerca que esto sólo tambalean el rig una vez.</summary>
         private const float RigFlinchCooldown = 0.2f;
+
+        /// <summary>La fase nueva es también una etapa visual del rig (el torso agrietado de la fase 2).</summary>
+        private void OnPhaseChanged(int phaseIndex)
+        {
+            if (HasRig && !_dead) rig.SetStage(phaseIndex);
+        }
 
         private void OnRigReleased()
         {

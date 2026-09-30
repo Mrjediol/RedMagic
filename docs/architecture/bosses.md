@@ -229,12 +229,15 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
     reaches the ground in front, grabs the prop (`BossHeldProp` on the hand's grip), lifts it over the
     shoulder (`raisedOffset`), swings and releases it from the fist; `limbPick = Alternate` makes
     `throws > 1` go one hand then the other. Bosses without limbs keep the old held-aloft path.
+  - `OrbiterDiveAttack` — **"when is the next one coming?"**: the small orbiters (`BossLimbs.orbiters`,
+    the crown crystals) lift into a spinning ring over the head, then one by one aim, tremble over a
+    marked target and dive at the player's frozen position, then all return. Fallback: aimed shots.
   - `LimbPincerAttack` — **"out over the top or out the side?"**: fists fly to both sides of the
     player, aim at each other over a marked low band, then clap; only possible with two loose parts.
   - **Coloso de Hielo Desatado** (`BossIce2`, `ProceduralBossPack`) — the ice boss rebuilt from
     separate parts to test hand-animated part bosses; same definition skeleton and charge /
     ground-slam / rock assets, its two sprite punches replaced by LanzarPuño, DobleMazazo,
-    RáfagaDeMazazos (phase 2) and Tenaza. See `procedural-rig.md`.
+    RáfagaDeMazazos (phase 2), Tenaza and Esquirlas de la Corona (crown crystals); cracked torso in phase 2. See `procedural-rig.md`.
 - **Testing an attack on demand** — `BossController ▸ debugAttack` + component menu (⋮) ▸ *Probar
   ataque* (Play, fight started): suspends the deck and runs that attack; with `debugHoldDeck` the
   deck stays paused until *Reanudar baraja*.

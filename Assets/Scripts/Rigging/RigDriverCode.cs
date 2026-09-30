@@ -60,6 +60,12 @@ namespace RedMagic.Rigging
         private float _gestureWindup, _gestureStrike, _gestureShake;
         private Coroutine _gestureRoutine;
 
+        // Gesto anterior desvaneciéndose: al encadenar gestos (la carga de la embestida y su pose de
+        // viaje) el primero no desaparece de golpe, se funde con el nuevo.
+        private const float GestureCrossfade = 0.2f;
+        private RigGesture _fadeGesture;
+        private float _fadeWindup, _fadeStrike, _fadeTime;
+
         // Despliegue: 0 plegado (dormido), 1 pose del prefab, >1 durante el rebote.
         private float _unfold = 1f;
         private Coroutine _fold;
@@ -108,6 +114,7 @@ namespace RedMagic.Rigging
             _gesture = null;
             _gestureWindup = _gestureStrike = _gestureShake = 0f;
             _gestureRoutine = null;
+            _fadeGesture = null;
             _attack = null;
             _fold = null;
             _unfold = 1f;
@@ -235,9 +242,20 @@ namespace RedMagic.Rigging
         {
             if (_gestureRoutine != null) StopCoroutine(_gestureRoutine);
 
-            // Otro gesto encima: la pose nueva arranca desde cero, pero la vieja no desaparece de
-            // golpe si se estaba usando la misma — se reaprovechan los pesos actuales.
-            if (_gesture != gesture) _gestureWindup = _gestureStrike = 0f;
+            // Otro gesto encima: el viejo pasa a la capa de fundido con los pesos que tenía y el nuevo
+            // arranca de cero; el mismo gesto sigue desde donde estaba.
+            if (_gesture != gesture)
+            {
+                if (_gesture != null && (_gestureWindup > 0.001f || _gestureStrike > 0.001f))
+                {
+                    _fadeGesture = _gesture;
+                    _fadeWindup = _gestureWindup;
+                    _fadeStrike = _gestureStrike;
+                    _fadeTime = 0f;
+                }
+
+                _gestureWindup = _gestureStrike = 0f;
+            }
             _gesture = gesture;
             _gestureShake = 0f;
             _gestureRoutine = StartCoroutine(routine);
@@ -262,6 +280,15 @@ namespace RedMagic.Rigging
             _gestureShake = 0f;
             RaiseReleased();
 
+            // Sin pose de golpe (una carga que se mantiene, como la de la embestida): no hay latigazo,
+            // la pose de carga se deshace despacio en 'recover' y se funde con lo que venga detrás.
+            if (gesture.strike == null || gesture.strike.Count == 0)
+            {
+                yield return SettleRoutine(gesture.recover);
+                RaiseFinished();
+                yield break;
+            }
+
             for (float t = 0f; t < gesture.strikeTime;)
             {
                 float k = EaseOutCubic(t / gesture.strikeTime);
@@ -282,7 +309,7 @@ namespace RedMagic.Rigging
         private IEnumerator HoldRoutine()
         {
             float from = _gestureWindup;
-            const float blend = 0.15f;
+            const float blend = GestureCrossfade;
             for (float t = 0f; t < blend;)
             {
                 _gestureWindup = Mathf.Lerp(from, 1f, EaseInOut(t / blend));
@@ -316,6 +343,18 @@ namespace RedMagic.Rigging
         /// <summary>Suma las poses del gesto encima de todo lo compuesto este frame.</summary>
         private void ApplyGesture()
         {
+            if (_fadeGesture != null)
+            {
+                _fadeTime += Time.deltaTime;
+                float f = 1f - EaseInOut(_fadeTime / GestureCrossfade);
+                if (f <= 0f) _fadeGesture = null;
+                else
+                {
+                    ApplyPoses(_fadeGesture.windup, _fadeWindup * f);
+                    ApplyPoses(_fadeGesture.strike, _fadeStrike * f);
+                }
+            }
+
             if (_gesture == null) return;
 
             ApplyPoses(_gesture.windup, _gestureWindup);
@@ -445,6 +484,7 @@ namespace RedMagic.Rigging
             _gestureRoutine = null;
             _gesture = null;
             Driven.Clear();
+            _fadeGesture = null;
 
             Vector2 center = Rig.body != null ? (Vector2)Rig.body.position : (Vector2)transform.position;
 

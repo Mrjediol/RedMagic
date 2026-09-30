@@ -27,6 +27,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: c30b79f83484d3147b4f065d74b7e3c6, type: 2}
     - {fileID: 11400000, guid: f56354bbb60ae6541917b487f9007ca2, type: 2}
     - {fileID: 11400000, guid: 0271832c75597e34694ad629aee26208, type: 2}
+    - {fileID: 11400000, guid: 603bd64b063c0564eae4a3d6eee7e607, type: 2}
     pauseBetweenAttacks: {x: 0.9, y: 1.5}
     damageScale: 1
     damageTakenMultiplier: 1
@@ -58,6 +59,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: c30b79f83484d3147b4f065d74b7e3c6, type: 2}
     - {fileID: 11400000, guid: 09b083c2feb492642a538ae79af18193, type: 2}
     - {fileID: 11400000, guid: 0271832c75597e34694ad629aee26208, type: 2}
+    - {fileID: 11400000, guid: 603bd64b063c0564eae4a3d6eee7e607, type: 2}
     pauseBetweenAttacks: {x: 0.6, y: 1.1}
     damageScale: 1.15
     damageTakenMultiplier: 1

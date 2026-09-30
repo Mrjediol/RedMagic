@@ -48,12 +48,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 680047166556501955, guid: f5a6d7d0a2df58840a15833144436b47, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2299405668772030775, guid: f5a6d7d0a2df58840a15833144436b47, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3601596227129274598, guid: f5a6d7d0a2df58840a15833144436b47, type: 3}
       propertyPath: m_Name
       value: BossIce2_Code
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2299405668772030775, guid: f5a6d7d0a2df58840a15833144436b47, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 3601596227129274598, guid: f5a6d7d0a2df58840a15833144436b47, type: 3}

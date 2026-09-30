@@ -33,6 +33,13 @@ namespace RedMagic.Bosses
                  "1 = la de la derecha.")]
         [SerializeField] private List<Transform> limbs = new List<Transform>();
 
+        [Tooltip("Piezas pequeñas que orbitan y se lanzan en grupo (los cristales de la corona).")]
+        [SerializeField] private List<Transform> orbiters = new List<Transform>();
+
+        [Tooltip("Radio de contacto de cada pieza orbital (unidades de mundo).")]
+        [Min(0.05f)]
+        [SerializeField] private float orbiterRadius = 0.5f;
+
         [Tooltip("Dónde se agarra un objeto con cada pieza (la roca en el puño). Mismo orden que " +
                  "'limbs'. Vacío = el centro visible de la pieza.")]
         [SerializeField] private List<Transform> grips = new List<Transform>();
@@ -47,9 +54,14 @@ namespace RedMagic.Bosses
 
         public float ContactRadius => contactRadius;
         public int Count => limbs.Count;
+        public int OrbiterCount => orbiters.Count;
+        public float OrbiterRadius => orbiterRadius;
+
+        public Transform GetOrbiter(int index) =>
+            index >= 0 && index < orbiters.Count ? orbiters[index] : null;
 
         /// <summary>True si hay rig y piezas: si no, los ataques de extremidades caen a su versión sin pieza.</summary>
-        public bool Usable => _rig != null && _rig.enabled && _data != null && limbs.Count > 0;
+        public bool Usable => _rig != null && _rig.enabled && _data != null && (limbs.Count > 0 || orbiters.Count > 0);
 
         private void Awake()
         {

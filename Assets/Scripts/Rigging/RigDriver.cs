@@ -95,6 +95,9 @@ namespace RedMagic.Rigging
 
         public void PlayHurt() => PlayHurt(1f);
 
+        /// <summary>Etapa visual (fase de un jefe): cambia los sprites por etapa. Sin animación: la tapa el tambaleo.</summary>
+        public void SetStage(int stage) => Rig.SetStage(stage);
+
         /// <summary>Tambaleo fuerte (cambio de fase de un jefe): <see cref="ProceduralRig.staggerStrength"/>.</summary>
         public void PlayStagger() => PlayHurt(Rig.staggerStrength);
 

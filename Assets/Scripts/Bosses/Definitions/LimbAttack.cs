@@ -55,7 +55,8 @@ namespace RedMagic.Bosses
         /// Con <paramref name="hit"/> daña al tocar (una vez).
         /// </summary>
         protected IEnumerator Fly(BossContext ctx, BossLimbs limbs, Transform[] parts, Vector2[] from,
-                                  Vector2[] to, float seconds, Ease ease, Vector2?[] aim, HitOnce hit = null)
+                                  Vector2[] to, float seconds, Ease ease, Vector2?[] aim, HitOnce hit = null,
+                                  float contactRadius = 0f)
         {
             seconds = Mathf.Max(0.01f, seconds);
             var start = new float[parts.Length];
@@ -72,7 +73,8 @@ namespace RedMagic.Bosses
                     Vector2 at = Vector2.LerpUnclamped(from[i], to[i], k);
                     float angle = Mathf.LerpAngle(start[i], TargetAngle(limbs, parts[i], aim, i), turn);
                     limbs.DriveCenter(parts[i], at, angle);
-                    if (hit != null) Contact(ctx, at, limbs.ContactRadius, hit);
+                    // Sólo daña lo que se mueve: en un vuelo compartido, las piezas quietas son decorado.
+                    if (hit != null && from[i] != to[i]) Contact(ctx, at, contactRadius > 0f ? contactRadius : limbs.ContactRadius, hit);
                 }
 
                 yield return null;

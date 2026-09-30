@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 892772d28c4648842a0ea6c27d4b15e4, type: 3}
+  m_Name: BossAttack_Hielo2_Esquirlas
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.OrbiterDiveAttack
+  displayName: Esquirlas de la Corona
+  description: "Los cristales de la corona giran sobre su cabeza y se lanzan en picado,
+    uno a uno, a donde est\xE1s."
+  accent: {r: 0.55, g: 0.88, b: 1, a: 1}
+  telegraph: 0.3
+  recovery: 1
+  weight: 1
+  cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
+  damage: 12
+  knockbackMultiplier: 1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: Brace
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  shakeAmplitude: 0
+  shakeDuration: 0.25
+  impactFxPrefab: {fileID: 0}
+  impactFxWidth: 2.2
+  tremble: 0.06
+  liftHeight: 2.5
+  orbitRadius: 1.8
+  orbitSpeed: 320
+  gatherSeconds: 0.35
+  orbitSeconds: 0.8
+  diveWindup: 0.35
+  diveSeconds: 0.22
+  overshoot: 1
+  betweenDives: 0.2
+  returnSeconds: 0.6
+  fallbackProjectile:
+    prefab: {fileID: 0}
+    speed: 14
+    lifetime: 1.6
+    size: {x: 0.6, y: 0.6}
+    muzzleOffset: {x: 0, y: 6}
+    pierce: 0
+    homingTurnRate: 0
+    homingRange: 9
+    arcGravity: 0
+    impactRadius: 0
+    impactDamage: 0
+    faceDirection: 0
+    facingAxis: 0
+    aimMode: 0
+  fallbackShots: 3

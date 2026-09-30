@@ -40,6 +40,13 @@ namespace RedMagic.Bosses
         [Min(0.2f)]
         [SerializeField] private float targetMarkScale = 0.9f;
 
+        [Tooltip("Largo mínimo y máximo de la flecha (unidades de mundo). Proporcional a la pieza, pero " +
+                 "nunca tan pequeña que no se vea ni tan grande que tape la pantalla.")]
+        [SerializeField] private Vector2 arrowLengthRange = new Vector2(2.2f, 5f);
+
+        [Tooltip("Tamaño mínimo y máximo de la marca del destino (unidades de mundo).")]
+        [SerializeField] private Vector2 targetMarkRange = new Vector2(1.1f, 2.5f);
+
         /// <summary>Las extremidades del jefe, o null si no tiene (entonces toca la versión sin pieza).</summary>
         protected static BossLimbs Limbs(in BossContext ctx)
         {
@@ -165,8 +172,11 @@ namespace RedMagic.Bosses
             float extent = Mathf.Max(size.x, size.y);
             float thickness = Mathf.Min(size.x, size.y);
 
-            WarnArrow(ctx, limbs.Center(part), direction, extent * arrowLength, thickness, duration, 0.7f);
-            Warn(ctx, target, Vector2.one * extent * targetMarkScale, duration);
+            float length = Mathf.Clamp(extent * arrowLength, arrowLengthRange.x, Mathf.Max(arrowLengthRange.x, arrowLengthRange.y));
+            float mark = Mathf.Clamp(extent * targetMarkScale, targetMarkRange.x, Mathf.Max(targetMarkRange.x, targetMarkRange.y));
+
+            WarnArrow(ctx, limbs.Center(part), direction, length, thickness, duration, 0.7f);
+            Warn(ctx, target, Vector2.one * mark, duration);
         }
 
         /// <summary>Sonido, sacudida y efecto del impacto.</summary>

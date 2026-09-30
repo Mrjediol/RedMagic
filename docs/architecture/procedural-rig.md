@@ -122,6 +122,8 @@ regenerated).
   bounds (what is drawn, not the canvas); `LimbAttack.WarnPart` draws a short arrow from the part
   (`arrowLength` × part size) and a target mark (`targetMarkScale` × part size) — never sized by the
   flight distance (the arrow prefab fits uniformly to its length, so a path-long arrow gets fat).
+  Both are clamped (`arrowLengthRange` 2.2–5 u, `targetMarkRange` 1.1–2.5 u): proportional, but never
+  too small to see nor screen-covering.
   **Grips**: a `Grip` child at each fist's centre (`BossLimbs.grips`) is where held props attach.
 - **`RigPart.center`** = visible centre (contact point for attacks); **`leanFollow`** = extra
   rotation × body lean (negative = trails like a pendulum: the ice tip, the fists).

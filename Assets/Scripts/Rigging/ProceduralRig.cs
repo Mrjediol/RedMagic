@@ -100,14 +100,30 @@ namespace RedMagic.Rigging
         [Tooltip("Cuerpo echado hacia atrás durante la carga, en grados.")]
         public float windupBodyTilt = 6f;
 
+        [Tooltip("Segundos que el arma se queda apuntando tras soltar, antes de la coz: el disparo " +
+                 "se ve salir del cañón en vez de aparecer con el arma ya levantada.")]
+        [Min(0f)] public float recoilDelay = 0.06f;
+
+        [Tooltip("Segundos que tarda la coz en llegar a su máximo (sale con easing, no de golpe).")]
+        [Min(0.01f)] public float recoilKick = 0.09f;
+
         [Tooltip("Coz del arma: grados que sube el cañón al disparar.")]
-        public float recoilAngle = 22f;
+        public float recoilAngle = 15f;
 
         [Tooltip("Coz del arma: cuánto retrocede la parte a lo largo del cañón (unidades locales).")]
         public float recoilDistance = 0.3f;
 
         [Tooltip("Empujón del cuerpo entero hacia atrás al disparar (unidades locales).")]
         public float bodyRecoil = 0.15f;
+
+        [Header("Fogonazo (placeholder, pooled)")]
+        [Tooltip("Punta del arma. Vacío = sin fogonazo. Suele ser el 'Muzzle' del brazo-arma.")]
+        public Transform muzzle;
+        [Tooltip("Sprite del fogonazo. Vacío = el cuadrado por defecto de AbilityFx.")]
+        public Sprite muzzleFlashSprite;
+        public Color muzzleFlashColor = new Color(0.55f, 1f, 1f, 0.9f);
+        [Min(0f)] public float muzzleFlashSize = 0.55f;
+        [Min(0.01f)] public float muzzleFlashTime = 0.1f;
 
         [Header("Golpe recibido")]
         [Min(0.01f)] public float hurtDuration = 0.28f;
@@ -176,19 +192,38 @@ namespace RedMagic.Rigging
         }
 
         /// <summary>
-        /// Deja todo como en el prefab, incluida la jerarquía (la muerte desmonta las piezas). Es
-        /// lo que hace reutilizable a un enemigo por pool: se llama al activarse y al apagarse.
+        /// True si alguna pieza cuelga de otro padre (la muerte las desmonta). Hay que devolverlas
+        /// fuera de OnEnable/OnDisable: Unity prohíbe cambiar la jerarquía mientras se activa o
+        /// desactiva el objeto.
         /// </summary>
-        public void RestorePose()
+        public bool HierarchyChanged
+        {
+            get
+            {
+                foreach (var r in _rest)
+                    if (r.transform != null && r.transform.parent != r.parent) return true;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Deja todo como en el prefab. Con <paramref name="hierarchy"/> devuelve además cada pieza
+        /// a su padre y orden (sólo a las que se movieron). Es lo que hace reutilizable a un
+        /// enemigo por pool.
+        /// </summary>
+        public void RestorePose(bool hierarchy = false)
         {
             CaptureRest();
 
             // Primero padres (en orden de captura el cuerpo va antes que sus piezas), luego pose.
-            foreach (var r in _rest)
+            if (hierarchy)
             {
-                if (r.transform == null) continue;
-                if (r.transform.parent != r.parent) r.transform.SetParent(r.parent, false);
-                r.transform.SetSiblingIndex(Mathf.Min(r.sibling, r.parent != null ? r.parent.childCount - 1 : 0));
+                foreach (var r in _rest)
+                {
+                    if (r.transform == null || r.transform.parent == r.parent) continue;
+                    r.transform.SetParent(r.parent, false);
+                    if (r.parent != null) r.transform.SetSiblingIndex(Mathf.Min(r.sibling, r.parent.childCount - 1));
+                }
             }
 
             foreach (var r in _rest)

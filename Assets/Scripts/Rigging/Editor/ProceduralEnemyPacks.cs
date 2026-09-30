@@ -39,7 +39,14 @@ namespace RedMagic.Rigging.EditorTools
                 // El brazo derecho es el cañón: la boca va en la punta del cristal (medida sobre el
                 // dibujo: 403 px a la derecha y 140 px arriba del pivote, a 100 px/u).
                 var arm = root.transform.Find("Visual/Torso/RightArm");
-                if (arm != null) ProceduralRigTool.EnsureMuzzle(arm, new Vector2(4.0f, 1.4f));
+                if (arm != null)
+                {
+                    var muzzle = ProceduralRigTool.EnsureMuzzle(arm, new Vector2(4.0f, 1.4f));
+                    if (rig.muzzle == null) rig.muzzle = muzzle;
+                }
+
+                if (rig.muzzleFlashSprite == null)
+                    rig.muzzleFlashSprite = AssetDatabase.LoadAssetAtPath<Sprite>(PlaceholderDisc);
 
                 if (!created)
                 {

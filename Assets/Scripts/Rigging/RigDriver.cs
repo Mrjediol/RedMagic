@@ -1,4 +1,5 @@
 using System;
+using RedMagic.Abilities;
 using RedMagic.Core;
 using UnityEngine;
 
@@ -46,6 +47,16 @@ namespace RedMagic.Rigging
 
         protected virtual void OnDisable() => Rig.RestorePose();
 
+        /// <summary>
+        /// Rearma las piezas que la muerte desmontó (reutilización por pool). Se llama desde el
+        /// primer frame vivo del motor, nunca desde OnEnable/OnDisable, donde Unity no deja
+        /// tocar la jerarquía.
+        /// </summary>
+        protected void RepairHierarchy()
+        {
+            if (Rig.HierarchyChanged) Rig.RestorePose(true);
+        }
+
         // ============================================================ órdenes
 
         /// <summary>Se desplaza por su cuenta. La inclinación sale de la velocidad real; esto es opcional.</summary>
@@ -86,7 +97,19 @@ namespace RedMagic.Rigging
 
         // ============================================================ avisos
 
-        protected void RaiseReleased() => AttackReleased?.Invoke();
+        /// <summary>Aviso del golpe + fogonazo en la punta del arma (común a todos los motores).</summary>
+        protected void RaiseReleased()
+        {
+            var muzzle = Rig.muzzle;
+            if (muzzle != null && Rig.muzzleFlashSize > 0f)
+            {
+                AbilityFx.Flash(Rig.muzzleFlashSprite, muzzle.position, Vector2.one * Rig.muzzleFlashSize,
+                                Rig.muzzleFlashColor, Rig.muzzleFlashTime, 0f, 1.6f,
+                                Rig.aimPart != null ? Rig.aimPart.gameObject : gameObject);
+            }
+
+            AttackReleased?.Invoke();
+        }
         protected void RaiseFinished() => AttackFinished?.Invoke();
         protected void RaiseWakeFinished() => WakeFinished?.Invoke();
     }

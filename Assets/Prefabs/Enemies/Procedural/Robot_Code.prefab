@@ -52,6 +52,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Robot_Code
       objectReference: {fileID: 0}
+    - target: {fileID: 8966063423149906135, guid: 5a12a1f273b336d49a50b150fe202483, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8966063423149906135, guid: 5a12a1f273b336d49a50b150fe202483, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.24
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

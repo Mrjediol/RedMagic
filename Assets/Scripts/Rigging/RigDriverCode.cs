@@ -120,15 +120,16 @@ namespace RedMagic.Rigging
             var rig = Rig;
             _aimPoint = aimPoint;
 
-            // --- carga: el brazo gira hacia el punto, baja un poco el cañón (anticipación), el
-            // cuerpo se echa atrás y al final tiembla: "va a disparar".
+            // --- carga: el brazo gira hacia el punto, baja el cañón (anticipación) y lo vuelve a
+            // subir, el cuerpo se echa atrás y al final tiembla. En el último 15% el cañón está
+            // ya exactamente sobre el objetivo: el disparo sale de donde apunta.
             float windup = rig.windup / speed;
             for (float t = 0f; t < windup;)
             {
                 float k = t / windup;
+                float bell = Mathf.Sin(Mathf.PI * Mathf.Clamp01(k / 0.85f));
                 _aimWeight = EaseOutCubic(Mathf.Clamp01(k / 0.6f));
-                _armRotation = -rig.windupPullAngle * EaseInOut(k);
-                _armPush = -rig.recoilDistance * 0.35f * EaseInOut(k);
+                _armRotation = -rig.windupPullAngle * bell;
                 _bodyTilt = rig.windupBodyTilt * EaseInOut(k);
                 if (k > 0.7f) _armRotation += Mathf.Sin(_clock * 90f) * 1.5f;   // temblor de carga
 
@@ -136,21 +137,28 @@ namespace RedMagic.Rigging
                 if (!Paused) t += Time.deltaTime;
             }
 
-            // --- suelta: el aviso sale en este frame exacto, con el brazo ya apuntando.
+            // --- suelta: el aviso sale en este frame exacto, con el brazo quieto y apuntando.
             _aimWeight = 1f;
+            _armRotation = 0f;
             RaiseReleased();
 
-            // --- recupera: coz de golpe y vuelta al reposo con easing.
-            float recover = rig.recover / speed;
+            // --- recupera: el arma aguanta 'recoilDelay' (el proyectil sale del cañón a la vista),
+            // la coz sube en 'recoilKick' con easing y luego todo vuelve al reposo.
+            float hold = rig.recoilDelay / speed;
+            float kick = rig.recoilKick / speed;
+            float recover = Mathf.Max(rig.recover / speed, hold + kick + 0.01f);
+            float settle = recover - hold - kick;
             for (float t = 0f; t < recover;)
             {
                 float k = t / recover;
-                float decay = 1f - EaseOutCubic(k);
+                float strength = t < hold ? 0f
+                    : t < hold + kick ? EaseOutCubic((t - hold) / kick)
+                    : 1f - EaseInOut((t - hold - kick) / settle);
 
-                _armRotation = rig.recoilAngle * decay * (1f - Mathf.Exp(-k * 40f));   // sube en 1-2 frames
-                _armPush = rig.recoilDistance * decay;
-                _bodyKick = rig.bodyRecoil * decay;
-                _bodyTilt = rig.windupBodyTilt * decay;
+                _armRotation = rig.recoilAngle * strength;
+                _armPush = rig.recoilDistance * strength;
+                _bodyKick = rig.bodyRecoil * strength;
+                _bodyTilt = rig.windupBodyTilt * (1f - EaseOutCubic(k));
                 _aimWeight = k < 0.5f ? 1f : 1f - EaseInOut((k - 0.5f) / 0.5f);
 
                 yield return null;
@@ -213,6 +221,7 @@ namespace RedMagic.Rigging
                 return;
             }
 
+            RepairHierarchy();
             _clock += dt;
 
             // Inclinación: sale de la velocidad real, así sirve igual si lo mueve la física, la

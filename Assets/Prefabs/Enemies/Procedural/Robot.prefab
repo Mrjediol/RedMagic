@@ -1021,9 +1021,16 @@ MonoBehaviour:
   recover: 0.45
   windupPullAngle: 10
   windupBodyTilt: 6
-  recoilAngle: 22
+  recoilDelay: 0.06
+  recoilKick: 0.09
+  recoilAngle: 15
   recoilDistance: 0.3
   bodyRecoil: 0.15
+  muzzle: {fileID: 8966063423149906135}
+  muzzleFlashSprite: {fileID: 21300000, guid: dbd9a849eed229b46b08fc2e1150c821, type: 3}
+  muzzleFlashColor: {r: 0.55, g: 1, b: 1, a: 0.9}
+  muzzleFlashSize: 0.55
+  muzzleFlashTime: 0.1
   hurtDuration: 0.28
   hurtTilt: 14
   hurtSquash: 0.12

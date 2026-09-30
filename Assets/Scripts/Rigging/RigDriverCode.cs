@@ -260,6 +260,10 @@ namespace RedMagic.Rigging
 
         private void StartGesture(IEnumerator routine, RigGesture gesture)
         {
+            // Apagándose (p. ej. Mover.OnDisable → SetMoving(false)): no hay corrutinas, y
+            // OnDisable/OnEnable ya dejan el gesto en reposo.
+            if (!isActiveAndEnabled) return;
+
             if (_gestureRoutine != null) StopCoroutine(_gestureRoutine);
 
             // Otro gesto encima: el viejo pasa a la capa de fundido con los pesos que tenía y el nuevo

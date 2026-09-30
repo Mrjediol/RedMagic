@@ -689,6 +689,275 @@ export const BOSS_CATALOG = {
       ]
     },
     {
+      "type": "FistThrowAttack",
+      "label": "Fist Throw",
+      "params": [
+        {
+          "name": "impactFxPrefab",
+          "label": "Impact Fx Prefab",
+          "tooltip": "Efecto de un solo uso (VfxOneShot) en cada impacto. Vacío = destello del color de la fase.",
+          "header": "Extremidades · impacto",
+          "type": "art",
+          "artKind": "fx",
+          "artLabel": "Impacto de la pieza",
+          "placeholder": "destello de color",
+          "default": null
+        },
+        {
+          "name": "impactFxWidth",
+          "label": "Impact Fx Width",
+          "tooltip": "Ancho del efecto de impacto (0 = escala del prefab).",
+          "min": 0.0,
+          "type": "float",
+          "default": 2.2
+        },
+        {
+          "name": "tremble",
+          "label": "Tremble",
+          "tooltip": "Temblor de la pieza mientras espera para golpear (unidades de mundo).",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.06
+        },
+        {
+          "name": "throws",
+          "label": "Throws",
+          "header": "Lanzamientos",
+          "min": 1.0,
+          "type": "int",
+          "default": 1
+        },
+        {
+          "name": "timeBetweenThrows",
+          "label": "Time Between Throws",
+          "tooltip": "Segundos entre un lanzamiento y la carga del siguiente.",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.2
+        },
+        {
+          "name": "pick",
+          "label": "Pick",
+          "type": "enum",
+          "options": [
+            "Alternate",
+            "NearestToTarget",
+            "FarthestFromTarget",
+            "First",
+            "Second"
+          ],
+          "default": "NearestToTarget"
+        },
+        {
+          "name": "windup",
+          "label": "Windup",
+          "tooltip": "Segundos de carga: el puño se echa atrás y tiembla, y se marca adónde irá.",
+          "header": "Carga (aviso)",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.6
+        },
+        {
+          "name": "pullBack",
+          "label": "Pull Back",
+          "tooltip": "Cuánto se echa atrás el puño, en contra de la trayectoria.",
+          "type": "float",
+          "default": 1.2
+        },
+        {
+          "name": "pullUp",
+          "label": "Pull Up",
+          "tooltip": "Cuánto sube mientras carga.",
+          "type": "float",
+          "default": 0.6
+        },
+        {
+          "name": "windupSpin",
+          "label": "Windup Spin",
+          "tooltip": "Grados que gira al cargar (se deshace al lanzar).",
+          "type": "float",
+          "default": -25.0
+        },
+        {
+          "name": "flightSeconds",
+          "label": "Flight Seconds",
+          "tooltip": "Segundos hasta el punto marcado (acelera: sale lento y llega rápido).",
+          "header": "Vuelo",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.32
+        },
+        {
+          "name": "overshoot",
+          "label": "Overshoot",
+          "tooltip": "Sigue esta distancia más allá del punto marcado: no se para justo encima.",
+          "min": 0.0,
+          "type": "float",
+          "default": 1.5
+        },
+        {
+          "name": "embedSeconds",
+          "label": "Embed Seconds",
+          "tooltip": "Segundos clavado al final antes de volver.",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.45
+        },
+        {
+          "name": "returnSeconds",
+          "label": "Return Seconds",
+          "tooltip": "Segundos de vuelta al cuerpo.",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.55
+        },
+        {
+          "name": "hitOnReturn",
+          "label": "Hit On Return",
+          "tooltip": "También hace daño al volver (castiga perseguirlo).",
+          "type": "bool",
+          "default": false
+        },
+        {
+          "name": "fallbackProjectile",
+          "label": "Fallback Projectile",
+          "tooltip": "Lo que lanza un jefe sin piezas sueltas, desde su centro hacia el jugador.",
+          "header": "Sin extremidades",
+          "type": "object",
+          "fields": [
+            {
+              "name": "prefab",
+              "label": "Prefab",
+              "tooltip": "Prefab con componente Projectile. Vacío = se construye uno en código con el sprite y el color de la habilidad.",
+              "type": "art",
+              "artKind": "projectile",
+              "artLabel": "Proyectil sin extremidades",
+              "placeholder": "bola de color de la fase",
+              "default": null
+            },
+            {
+              "name": "speed",
+              "label": "Speed",
+              "min": 0.1,
+              "type": "float",
+              "default": 16.0
+            },
+            {
+              "name": "lifetime",
+              "label": "Lifetime",
+              "tooltip": "Segundos de vuelo antes de desaparecer solo.",
+              "min": 0.05,
+              "type": "float",
+              "default": 1.6
+            },
+            {
+              "name": "size",
+              "label": "Size",
+              "tooltip": "Tamaño del proyectil en unidades del mundo. Con arte del importador de jefes (FxArtSize) manda el ANCHO (X) y el collider escala con él. Un prefab hecho a mano sin FxArtSize usa su propia escala.",
+              "type": "vector2",
+              "default": {
+                "x": 1.2,
+                "y": 1.2
+              }
+            },
+            {
+              "name": "muzzleOffset",
+              "label": "Muzzle Offset",
+              "tooltip": "Salida del disparo respecto al lanzador. La X se invierte según hacia dónde mira.",
+              "type": "vector2",
+              "default": {
+                "x": 1.5,
+                "y": 2.5
+              }
+            },
+            {
+              "name": "pierce",
+              "label": "Pierce",
+              "tooltip": "Objetivos que atraviesa antes de desaparecer.",
+              "header": "Comportamiento",
+              "min": 0.0,
+              "type": "int",
+              "default": 0
+            },
+            {
+              "name": "homingTurnRate",
+              "label": "Homing Turn Rate",
+              "tooltip": "Grados/segundo de giro hacia el objetivo más cercano. 0 = va recto.",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "homingRange",
+              "label": "Homing Range",
+              "min": 0.0,
+              "type": "float",
+              "default": 9.0
+            },
+            {
+              "name": "arcGravity",
+              "label": "Arc Gravity",
+              "tooltip": "Caída en unidades/s². >0 = granada con trayectoria parabólica.",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "impactRadius",
+              "label": "Impact Radius",
+              "header": "Explosión al terminar",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "impactDamage",
+              "label": "Impact Damage",
+              "tooltip": "Daño de la explosión. Se suma al impacto directo sólo si el radio es > 0.",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "faceDirection",
+              "label": "Face Direction",
+              "tooltip": "Rota el proyectil para que su punta (Facing Axis) mire hacia donde vuela, al salir y en cada paso (autoguiado, parábola). Apagado = decide el prefab (su casilla 'Face Travel Direction'), así los proyectiles que ya existían no cambian.",
+              "header": "Aiming",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "name": "facingAxis",
+              "label": "Facing Axis",
+              "tooltip": "Lado del sprite que es la punta. Right = arte dibujado mirando a +X (convención).",
+              "type": "enum",
+              "options": [
+                "Right",
+                "Left",
+                "Up",
+                "Down"
+              ],
+              "default": "Right"
+            },
+            {
+              "name": "aimMode",
+              "label": "Aim Mode",
+              "tooltip": "Fixed = la dirección que da quien dispara. MouseDirection / NearestEnemy sólo para el jugador (cursor / enemigo más cercano al salir, sin perseguir); en un enemigo equivalen a Fixed.",
+              "type": "enum",
+              "options": [
+                "Fixed",
+                "MouseDirection",
+                "NearestEnemy"
+              ],
+              "default": "Fixed"
+            }
+          ],
+          "spec": "projectile",
+          "artLabel": "Proyectil sin extremidades"
+        }
+      ]
+    },
+    {
       "type": "GroundSlamAttack",
       "label": "Ground Slam",
       "params": [
@@ -956,6 +1225,382 @@ export const BOSS_CATALOG = {
           "min": 0.05,
           "type": "float",
           "default": 0.6
+        }
+      ]
+    },
+    {
+      "type": "LimbPincerAttack",
+      "label": "Limb Pincer",
+      "params": [
+        {
+          "name": "impactFxPrefab",
+          "label": "Impact Fx Prefab",
+          "tooltip": "Efecto de un solo uso (VfxOneShot) en cada impacto. Vacío = destello del color de la fase.",
+          "header": "Extremidades · impacto",
+          "type": "art",
+          "artKind": "fx",
+          "artLabel": "Impacto de la pieza",
+          "placeholder": "destello de color",
+          "default": null
+        },
+        {
+          "name": "impactFxWidth",
+          "label": "Impact Fx Width",
+          "tooltip": "Ancho del efecto de impacto (0 = escala del prefab).",
+          "min": 0.0,
+          "type": "float",
+          "default": 2.2
+        },
+        {
+          "name": "tremble",
+          "label": "Tremble",
+          "tooltip": "Temblor de la pieza mientras espera para golpear (unidades de mundo).",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.06
+        },
+        {
+          "name": "spread",
+          "label": "Spread",
+          "tooltip": "Distancia de cada pieza al centro antes de cerrarse.",
+          "header": "Tenaza",
+          "min": 0.5,
+          "type": "float",
+          "default": 3.2
+        },
+        {
+          "name": "clapHeight",
+          "label": "Clap Height",
+          "tooltip": "Alto de la franja que se aplasta. Bajo = se puede saltar.",
+          "min": 0.2,
+          "type": "float",
+          "default": 1.6
+        },
+        {
+          "name": "spreadSeconds",
+          "label": "Spread Seconds",
+          "tooltip": "Segundos en llegar a los lados.",
+          "header": "Tiempos",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.5
+        },
+        {
+          "name": "holdSeconds",
+          "label": "Hold Seconds",
+          "tooltip": "Segundos apuntándose antes de cerrar: el aviso.",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.5
+        },
+        {
+          "name": "clapSeconds",
+          "label": "Clap Seconds",
+          "tooltip": "Segundos en cerrarse.",
+          "min": 0.02,
+          "type": "float",
+          "default": 0.13
+        },
+        {
+          "name": "reboundSeconds",
+          "label": "Rebound Seconds",
+          "tooltip": "Segundos del rebote tras chocar.",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.18
+        },
+        {
+          "name": "returnSeconds",
+          "label": "Return Seconds",
+          "tooltip": "Segundos de vuelta al cuerpo (lo anima el rig).",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.5
+        },
+        {
+          "name": "aimSpin",
+          "label": "Aim Spin",
+          "tooltip": "Grados que giran las piezas para apuntarse (la izquierda gira a un lado, la derecha al otro).",
+          "type": "float",
+          "default": 70.0
+        }
+      ]
+    },
+    {
+      "type": "LimbSlamAttack",
+      "label": "Limb Slam",
+      "params": [
+        {
+          "name": "impactFxPrefab",
+          "label": "Impact Fx Prefab",
+          "tooltip": "Efecto de un solo uso (VfxOneShot) en cada impacto. Vacío = destello del color de la fase.",
+          "header": "Extremidades · impacto",
+          "type": "art",
+          "artKind": "fx",
+          "artLabel": "Impacto de la pieza",
+          "placeholder": "destello de color",
+          "default": null
+        },
+        {
+          "name": "impactFxWidth",
+          "label": "Impact Fx Width",
+          "tooltip": "Ancho del efecto de impacto (0 = escala del prefab).",
+          "min": 0.0,
+          "type": "float",
+          "default": 2.2
+        },
+        {
+          "name": "tremble",
+          "label": "Tremble",
+          "tooltip": "Temblor de la pieza mientras espera para golpear (unidades de mundo).",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.06
+        },
+        {
+          "name": "mode",
+          "label": "Mode",
+          "header": "Forma",
+          "type": "enum",
+          "options": [
+            "Together",
+            "Alternating"
+          ],
+          "default": "Together"
+        },
+        {
+          "name": "slams",
+          "label": "Slams",
+          "tooltip": "Sólo Alternating: cuántos mazazos.",
+          "min": 1.0,
+          "type": "int",
+          "default": 4
+        },
+        {
+          "name": "aimAtPlayer",
+          "label": "Aim At Player",
+          "tooltip": "Together: centrado en el jugador (encendido) o en el jefe (apagado). Alternating siempre busca al jugador.",
+          "type": "bool",
+          "default": true
+        },
+        {
+          "name": "spacing",
+          "label": "Spacing",
+          "tooltip": "Together: distancia entre los dos impactos.",
+          "min": 0.0,
+          "type": "float",
+          "default": 5.0
+        },
+        {
+          "name": "riseSeconds",
+          "label": "Rise Seconds",
+          "tooltip": "Segundos en subir.",
+          "header": "Tiempos",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.4
+        },
+        {
+          "name": "hangSeconds",
+          "label": "Hang Seconds",
+          "tooltip": "Segundos quieto arriba, temblando sobre la marca: el aviso.",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.35
+        },
+        {
+          "name": "dropSeconds",
+          "label": "Drop Seconds",
+          "tooltip": "Segundos de caída.",
+          "min": 0.02,
+          "type": "float",
+          "default": 0.1
+        },
+        {
+          "name": "embedSeconds",
+          "label": "Embed Seconds",
+          "tooltip": "Segundos hundida en el suelo tras el golpe.",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.35
+        },
+        {
+          "name": "returnSeconds",
+          "label": "Return Seconds",
+          "tooltip": "Segundos de vuelta al cuerpo (lo anima el rig).",
+          "min": 0.05,
+          "type": "float",
+          "default": 0.45
+        },
+        {
+          "name": "raiseHeight",
+          "label": "Raise Height",
+          "tooltip": "Altura sobre el suelo desde la que cae.",
+          "header": "Golpe",
+          "min": 0.5,
+          "type": "float",
+          "default": 4.0
+        },
+        {
+          "name": "impactRadius",
+          "label": "Impact Radius",
+          "tooltip": "Radio del impacto contra el suelo.",
+          "min": 0.1,
+          "type": "float",
+          "default": 1.6
+        },
+        {
+          "name": "wavesPerImpact",
+          "label": "Waves Per Impact",
+          "tooltip": "Ondas por impacto: 0 = ninguna, 1 = hacia fuera, 2 = a los dos lados.",
+          "header": "Onda rasante (opcional)",
+          "min": 0.0,
+          "max": 2.0,
+          "type": "int",
+          "default": 1
+        },
+        {
+          "name": "waveDamage",
+          "label": "Wave Damage",
+          "tooltip": "Daño de la onda. 0 = el mismo que el golpe.",
+          "min": 0.0,
+          "type": "float",
+          "default": 10.0
+        },
+        {
+          "name": "wave",
+          "label": "Wave",
+          "type": "object",
+          "fields": [
+            {
+              "name": "prefab",
+              "label": "Prefab",
+              "tooltip": "Prefab con componente Projectile. Vacío = se construye uno en código con el sprite y el color de la habilidad.",
+              "type": "art",
+              "artKind": "projectile",
+              "artLabel": "Onda rasante",
+              "placeholder": "bola aplastada del color de la fase",
+              "default": null
+            },
+            {
+              "name": "speed",
+              "label": "Speed",
+              "min": 0.1,
+              "type": "float",
+              "default": 9.0
+            },
+            {
+              "name": "lifetime",
+              "label": "Lifetime",
+              "tooltip": "Segundos de vuelo antes de desaparecer solo.",
+              "min": 0.05,
+              "type": "float",
+              "default": 1.4
+            },
+            {
+              "name": "size",
+              "label": "Size",
+              "tooltip": "Tamaño del proyectil en unidades del mundo. Con arte del importador de jefes (FxArtSize) manda el ANCHO (X) y el collider escala con él. Un prefab hecho a mano sin FxArtSize usa su propia escala.",
+              "type": "vector2",
+              "default": {
+                "x": 1.4,
+                "y": 0.6
+              }
+            },
+            {
+              "name": "muzzleOffset",
+              "label": "Muzzle Offset",
+              "tooltip": "Salida del disparo respecto al lanzador. La X se invierte según hacia dónde mira.",
+              "type": "vector2",
+              "default": {
+                "x": 0.65,
+                "y": 0.1
+              }
+            },
+            {
+              "name": "pierce",
+              "label": "Pierce",
+              "tooltip": "Objetivos que atraviesa antes de desaparecer.",
+              "header": "Comportamiento",
+              "min": 0.0,
+              "type": "int",
+              "default": 0
+            },
+            {
+              "name": "homingTurnRate",
+              "label": "Homing Turn Rate",
+              "tooltip": "Grados/segundo de giro hacia el objetivo más cercano. 0 = va recto.",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "homingRange",
+              "label": "Homing Range",
+              "min": 0.0,
+              "type": "float",
+              "default": 9.0
+            },
+            {
+              "name": "arcGravity",
+              "label": "Arc Gravity",
+              "tooltip": "Caída en unidades/s². >0 = granada con trayectoria parabólica.",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "impactRadius",
+              "label": "Impact Radius",
+              "header": "Explosión al terminar",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "impactDamage",
+              "label": "Impact Damage",
+              "tooltip": "Daño de la explosión. Se suma al impacto directo sólo si el radio es > 0.",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "faceDirection",
+              "label": "Face Direction",
+              "tooltip": "Rota el proyectil para que su punta (Facing Axis) mire hacia donde vuela, al salir y en cada paso (autoguiado, parábola). Apagado = decide el prefab (su casilla 'Face Travel Direction'), así los proyectiles que ya existían no cambian.",
+              "header": "Aiming",
+              "type": "bool",
+              "default": false
+            },
+            {
+              "name": "facingAxis",
+              "label": "Facing Axis",
+              "tooltip": "Lado del sprite que es la punta. Right = arte dibujado mirando a +X (convención).",
+              "type": "enum",
+              "options": [
+                "Right",
+                "Left",
+                "Up",
+                "Down"
+              ],
+              "default": "Right"
+            },
+            {
+              "name": "aimMode",
+              "label": "Aim Mode",
+              "tooltip": "Fixed = la dirección que da quien dispara. MouseDirection / NearestEnemy sólo para el jugador (cursor / enemigo más cercano al salir, sin perseguir); en un enemigo equivalen a Fixed.",
+              "type": "enum",
+              "options": [
+                "Fixed",
+                "MouseDirection",
+                "NearestEnemy"
+              ],
+              "default": "Fixed"
+            }
+          ],
+          "spec": "projectile",
+          "artLabel": "Onda rasante"
         }
       ]
     },

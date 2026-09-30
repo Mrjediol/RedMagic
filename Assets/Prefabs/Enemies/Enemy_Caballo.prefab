@@ -318,6 +318,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   flipbook: {fileID: 0}
   spriteRenderer: {fileID: 0}
+  rig: {fileID: 0}
 --- !u!95 &127569603956799271
 Animator:
   serializedVersion: 7

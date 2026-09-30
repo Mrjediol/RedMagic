@@ -873,8 +873,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2834dccf877e154e8542123d8a6320f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Knockback
-  horizontalForce: 8
-  verticalForce: 4
+  horizontalForce: 6
+  verticalForce: 3
   duration: 0.18
   resistance: 0
   immune: 0
@@ -955,6 +955,8 @@ MonoBehaviour:
   parts:
   - part: {fileID: 2829737381680814951}
     pivot: {x: 0, y: 0}
+    center: {x: 0, y: 0}
+    leanFollow: 0
     swayMove: {x: 0, y: 0.05}
     swayRotate: 3
     swayScale: {x: 0, y: 0}
@@ -963,6 +965,8 @@ MonoBehaviour:
     breaksOnDeath: 1
   - part: {fileID: 4568411193877603687}
     pivot: {x: -0.6, y: -1.25}
+    center: {x: 0, y: 0}
+    leanFollow: 0
     swayMove: {x: 0, y: 0}
     swayRotate: 4
     swayScale: {x: 0.1, y: 0.22}
@@ -971,6 +975,8 @@ MonoBehaviour:
     breaksOnDeath: 1
   - part: {fileID: 5642722613756758132}
     pivot: {x: -1.07, y: -1.53}
+    center: {x: 0, y: 0}
+    leanFollow: 0
     swayMove: {x: 0, y: 0.03}
     swayRotate: 2
     swayScale: {x: 0, y: 0}
@@ -979,6 +985,8 @@ MonoBehaviour:
     breaksOnDeath: 1
   - part: {fileID: 3378644932227722970}
     pivot: {x: 0, y: 0}
+    center: {x: 0, y: 0}
+    leanFollow: 0
     swayMove: {x: 0, y: 0.05}
     swayRotate: 0
     swayScale: {x: 0, y: 0}
@@ -987,6 +995,8 @@ MonoBehaviour:
     breaksOnDeath: 1
   - part: {fileID: 3628565344752719296}
     pivot: {x: 0, y: 0}
+    center: {x: 0, y: 0}
+    leanFollow: 0
     swayMove: {x: 0, y: 0}
     swayRotate: 3
     swayScale: {x: 0, y: 0}
@@ -995,6 +1005,8 @@ MonoBehaviour:
     breaksOnDeath: 1
   - part: {fileID: 1138477143558411119}
     pivot: {x: 0, y: 0}
+    center: {x: 0, y: 0}
+    leanFollow: 0
     swayMove: {x: 0, y: 0}
     swayRotate: 5
     swayScale: {x: 0, y: 0}
@@ -1003,6 +1015,8 @@ MonoBehaviour:
     breaksOnDeath: 1
   - part: {fileID: 6801709052886536608}
     pivot: {x: 0, y: 0}
+    center: {x: 0, y: 0}
+    leanFollow: 0
     swayMove: {x: 0, y: 0}
     swayRotate: 6
     swayScale: {x: 0, y: 0}
@@ -1031,6 +1045,21 @@ MonoBehaviour:
   muzzleFlashColor: {r: 0.55, g: 1, b: 1, a: 0.9}
   muzzleFlashSize: 0.55
   muzzleFlashTime: 0.1
+  spriteSwaps: []
+  stretchPart: {fileID: 0}
+  stretchRiders: []
+  foldedStretch: 0.05
+  foldedRiderScaleY: 0.6
+  foldedRiderOffset: {x: 0, y: 0}
+  wakeDuration: 0.8
+  sleepDuration: 0.55
+  wakeOvershoot: 2.2
+  wakeFlickers: 0
+  wakeFlickerPortion: 0.4
+  gestures: []
+  drivenLease: 0.25
+  drivenReturn: 0.35
+  staggerStrength: 2.5
   hurtDuration: 0.28
   hurtTilt: 14
   hurtSquash: 0.12

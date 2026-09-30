@@ -217,17 +217,28 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
     green, which is why `SpriteSheetRecipe.softEdge` (glows fade instead of being scissor-cut) and
     `fillHoles` (bark shadows share the background's hue and got punched through) exist — see
     `SPRITE_PIPELINE.md` §13-14.
-- **Limb attacks (part-based bosses)** — `BossLimbs` (next to the controller) lists the loose parts an
-  attack may throw; attacks derive from **`LimbAttack`** (flight/hold/return helpers, one hit per
-  flight, impact FX slot, `tremble`) and move parts through the rig's driven-part API. Without
-  limbs they fall back to a limb-less version (projectile / marked impact), so an asset never goes
-  mute. All timings go through `ctx.Scaled`.
+- **Limb attacks / "Ataques de partes" (part-based bosses)** — `BossLimbs` (next to the controller)
+  lists the loose parts an attack may throw; attacks derive from **`LimbAttack`** (one hit per
+  flight, impact FX slot, `tremble`, part-sized warnings, `FlyHome`) and move parts through the
+  rig's driven-part API. Without limbs they fall back to a limb-less version (projectile / marked
+  impact), so an asset never goes mute. All timings go through `ctx.Scaled`.
+  - **Folder and category**: every `LimbAttack` subclass lives in
+    `Assets/Scripts/Bosses/Definitions/Rig/`; `BossCatalogExporter` tags it `category: "rig"`
+    (everything else `classic`) and the web picker lists it under **"De partes"**. Display-only:
+    configs don't store it. A new rig attack = derive from `LimbAttack` in that folder.
+  - **`LimbMotion`** (same folder, static) holds the damage-free motion — `Limbs(ctx)`, `Fly`,
+    `Hold`, `Aim`, `LimbEase` — so a *classic* attack can optionally use hands without inheriting
+    the rig base. `LimbAttack.Fly` wraps it and adds the contact hit.
+  - Their assets (`BossAttack_Hielo2_*`) stay in `Assets/Resources/Bosses/`: `ProceduralBossPack`
+    and `BossConfigImporter` locate attack assets by that path, so moving them would make the
+    generators duplicate them.
   - `FistThrowAttack` — **"where was I when it wound up?"**: a fist pulls back trembling (target +
     path marked), flies to the frozen point + `overshoot`, embeds (ground hit = impact), flies home.
   - `LimbSlamAttack` — **"where does it land, and which way does the wave run?"**: `Together`
     (double slam either side of the player, gap in the middle) or `Alternating` (N slams,
     alternating fists on the player's current X); optional ground waves (`ProjectileSpec`).
-  - `ThrowProjectileAttack` is a `LimbAttack` too: with `BossLimbs` (`useLimbs`, default on) a hand
+  - `ThrowProjectileAttack` is **classic** (derives from `BossAttack`, lives in `Definitions/`) but
+    uses hands through `LimbMotion` when it can: with `BossLimbs` (`useLimbs`, default on) a hand
     reaches the ground in front, grabs the prop (`BossHeldProp` on the hand's grip), lifts it over the
     shoulder (`raisedOffset`), swings and releases it from the fist; `sizeScale` scales the rock (held and
     thrown, placeholder or real-art prefab — absolute prefab scale × sizeScale, pool-safe), its

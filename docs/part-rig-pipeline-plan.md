@@ -62,7 +62,7 @@ importer, refactor: design matters and mistakes are expensive). **Medium** is en
 
 | Phase | Deliverable | Web? | Effort | Done |
 |---|---|---|---|---|
-| 0 | Split rig attacks into their own folder and category (catalog + web picker shows "Clásico" / "De partes") | small web change | high | ☐ |
+| 0 | Split rig attacks into their own folder and category (catalog + web picker shows "Clásico" / "De partes") | small web change | high | ☑ |
 | A | `rig-config` schema + round-trip exporter + **separate** `RigBundleImporter` (rebuilds Robot / Turret / BossIce2 from JSON) | no | high | ☐ |
 | B | New web tab **🦴 Rig Composer** (assemble parts, pivots, roles, state sprites, live sway preview, export) | yes | medium | ☐ |
 | C | Templates in the Rig Composer (folding turret / armed drone / colossus) | yes | medium | ☐ |
@@ -104,6 +104,10 @@ attacks `classic`.
 - Rig attacks' asset files: move `BossAttack_Hielo2_*` into `Assets/Resources/Bosses/Rig/` only if
   nothing loads them by path (check `Resources.Load` usages first). Otherwise leave them and note it.
 - Docs: `bosses.md` (folder + category), `web-tools-guide.md` (picker groups).
+- **Done (Phase 0 outcome):** `ThrowProjectileAttack` now derives from `BossAttack` and moves the hand
+  through the new static `LimbMotion` (in `Rig/`; `LimbAttack` wraps it). The `Hielo2_*` assets were
+  **not** moved: `ProceduralBossPack` / `BossConfigImporter` locate attack assets by
+  `Assets/Resources/Bosses/` path.
 
 ### Phase A — schema, exporter, importer (Unity only)
 - New `docs/schemas/rig-config.schema.json` (+ mirror in `Web/RedMagicWeb/schemas`), 1:1 with

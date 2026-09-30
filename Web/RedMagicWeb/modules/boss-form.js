@@ -21,7 +21,7 @@ import {
 } from './boss-defaults.js';
 import { buildBossExport, bodyAnimationNames, framedLanes } from './boss-export.js';
 import { buildBossBundle } from './boss-bundle.js';
-import { ATTACK_NOTES, ART_KIND_NOTES, attackLabel } from './boss-catalog-notes.js';
+import { ATTACK_NOTES, ART_KIND_NOTES, attackLabel, attackGroup } from './boss-catalog-notes.js';
 import { loadValidator, validateConfig } from './config-schema.js';
 import { downloadBlob, cropBox } from './export-manifest.js';
 import { listEntries, getEnemy, saveEnemy, updateEnemy, loadImageFromDataURL } from './enemy-library.js';
@@ -483,8 +483,9 @@ export function initBossCreator({ formRoot, previewEl, summaryEl, exportBtn, zip
   function typeSelector(value) {
     const select = document.createElement('select');
     const groups = new Map();
-    (catalog?.attacks || []).forEach((a) => {
-      const g = ATTACK_NOTES[a.type]?.group || 'Otros';
+    // Classic groups first, then "De partes" (stable sort keeps the catalog order inside each).
+    [...(catalog?.attacks || [])].sort((a, b) => (a.category === 'rig') - (b.category === 'rig')).forEach((a) => {
+      const g = attackGroup(a);
       if (!groups.has(g)) groups.set(g, []);
       groups.get(g).push(a);
     });

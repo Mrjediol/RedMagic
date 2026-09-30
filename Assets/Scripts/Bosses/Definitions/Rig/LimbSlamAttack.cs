@@ -150,9 +150,9 @@ namespace RedMagic.Bosses
                 var down = new Vector2?[count];
                 for (int i = 0; i < count; i++) down[i] = Vector2.down;
 
-                yield return Fly(ctx, limbs, parts, from, top, rise, Ease.Out, down);
+                yield return Fly(ctx, limbs, parts, from, top, rise, LimbEase.Out, down);
                 yield return Hold(ctx, limbs, parts, top, hang, down, tremble);
-                yield return Fly(ctx, limbs, parts, top, ground, drop, Ease.In, down);
+                yield return Fly(ctx, limbs, parts, top, ground, drop, LimbEase.In, down);
             }
             else
             {

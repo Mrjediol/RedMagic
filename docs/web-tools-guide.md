@@ -194,6 +194,14 @@ Lo que falta es la mitad de *presencia*: de qué prefab sale el cuerpo del jefe.
 tiene el bloque `base` (`enemyLibraryId`) — la web ya guarda qué enemigo de la biblioteca es la base
 del jefe; nadie lo lee todavía.
 
+**Picker de tipo de ataque: "Clásico" / "De partes".** El desplegable agrupa los tipos en
+`Clásico · <grupo>` (Básicos, Proyectiles, Área, Especiales…) y **`De partes`** al final. El grupo
+sale del campo `category` que `BossCatalogExporter` escribe en `boss-catalog.js` (`rig` si el tipo
+hereda de `LimbAttack`, si no `classic`); los nombres/notas en español de `boss-catalog-notes.js`
+son cosméticos. La categoría es **sólo de presentación**: no va en el `BossConfig`, así que los
+configs ya guardados siguen igual. Un ataque "De partes" necesita un jefe por partes (`BossLimbs`);
+en uno de un solo sprite cae a su versión sin pieza.
+
 ---
 
 ## Tools ▸ Web ▸ Map Tracer

@@ -113,13 +113,13 @@ namespace RedMagic.Bosses
 
             // Los nudillos miran al objetivo desde que empieza a cargar: se lee hacia dónde va.
             var aim = Aim(dir);
-            yield return Fly(ctx, limbs, parts, new[] { start }, new[] { back }, charge * 0.55f, Ease.Out, aim);
+            yield return Fly(ctx, limbs, parts, new[] { start }, new[] { back }, charge * 0.55f, LimbEase.Out, aim);
             yield return Hold(ctx, limbs, parts, new[] { back }, charge * 0.45f, aim, tremble);
             if (!ctx.IsValid) yield break;
 
             // --- vuelo: acelera hacia el punto y lo pasa; daña al tocar (una vez).
             var hit = new HitOnce();
-            yield return Fly(ctx, limbs, parts, new[] { back }, new[] { end }, ctx.Scaled(flightSeconds), Ease.In, aim, hit);
+            yield return Fly(ctx, limbs, parts, new[] { back }, new[] { end }, ctx.Scaled(flightSeconds), LimbEase.In, aim, hit);
             if (!ctx.IsValid) yield break;
 
             if (hitsGround) ImpactAt(ctx, end, Vector2.one * radius * 3f);

@@ -134,6 +134,7 @@ export const BOSS_CATALOG = {
     {
       "type": "AnchorRitualAttack",
       "label": "Anchor Ritual",
+      "category": "classic",
       "params": [
         {
           "name": "anchorCount",
@@ -237,6 +238,7 @@ export const BOSS_CATALOG = {
     {
       "type": "BulletHellAttack",
       "label": "Bullet Hell",
+      "category": "classic",
       "params": [
         {
           "name": "pattern",
@@ -586,6 +588,7 @@ export const BOSS_CATALOG = {
     {
       "type": "ChargeDashAttack",
       "label": "Charge Dash",
+      "category": "classic",
       "params": [
         {
           "name": "speed",
@@ -707,6 +710,7 @@ export const BOSS_CATALOG = {
     {
       "type": "FistThrowAttack",
       "label": "Fist Throw",
+      "category": "rig",
       "params": [
         {
           "name": "impactFxPrefab",
@@ -1006,6 +1010,7 @@ export const BOSS_CATALOG = {
     {
       "type": "GroundSlamAttack",
       "label": "Ground Slam",
+      "category": "classic",
       "params": [
         {
           "name": "aimAtPlayer",
@@ -1118,6 +1123,7 @@ export const BOSS_CATALOG = {
     {
       "type": "GuardStanceAttack",
       "label": "Guard Stance",
+      "category": "classic",
       "params": [
         {
           "name": "guardSeconds",
@@ -1173,6 +1179,7 @@ export const BOSS_CATALOG = {
     {
       "type": "HazardFieldAttack",
       "label": "Hazard Field",
+      "category": "classic",
       "params": [
         {
           "name": "zonesPerWave",
@@ -1277,6 +1284,7 @@ export const BOSS_CATALOG = {
     {
       "type": "LimbPincerAttack",
       "label": "Limb Pincer",
+      "category": "rig",
       "params": [
         {
           "name": "impactFxPrefab",
@@ -1405,6 +1413,7 @@ export const BOSS_CATALOG = {
     {
       "type": "LimbSlamAttack",
       "label": "Limb Slam",
+      "category": "rig",
       "params": [
         {
           "name": "impactFxPrefab",
@@ -1720,6 +1729,7 @@ export const BOSS_CATALOG = {
     {
       "type": "MeleeStrikeAttack",
       "label": "Melee Strike",
+      "category": "classic",
       "params": [
         {
           "name": "hits",
@@ -1954,6 +1964,7 @@ export const BOSS_CATALOG = {
     {
       "type": "OrbiterDiveAttack",
       "label": "Orbiter Dive",
+      "category": "rig",
       "params": [
         {
           "name": "impactFxPrefab",
@@ -2248,6 +2259,7 @@ export const BOSS_CATALOG = {
     {
       "type": "OrbRingAttack",
       "label": "Orb Ring",
+      "category": "classic",
       "params": [
         {
           "name": "orbCount",
@@ -2571,6 +2583,7 @@ export const BOSS_CATALOG = {
     {
       "type": "PlatformDenialAttack",
       "label": "Platform Denial",
+      "category": "classic",
       "params": [
         {
           "name": "boltPrefab",
@@ -2677,6 +2690,7 @@ export const BOSS_CATALOG = {
     {
       "type": "PlatformFloodAttack",
       "label": "Platform Flood",
+      "category": "classic",
       "params": [
         {
           "name": "platformCount",
@@ -2781,6 +2795,7 @@ export const BOSS_CATALOG = {
     {
       "type": "QuakeSlamAttack",
       "label": "Quake Slam",
+      "category": "classic",
       "params": [
         {
           "name": "impactDelay",
@@ -2839,6 +2854,7 @@ export const BOSS_CATALOG = {
     {
       "type": "SafeZoneAttack",
       "label": "Safe Zone",
+      "category": "classic",
       "params": [
         {
           "name": "safeSpots",
@@ -2940,6 +2956,7 @@ export const BOSS_CATALOG = {
     {
       "type": "ShockwaveAttack",
       "label": "Shockwave",
+      "category": "classic",
       "params": [
         {
           "name": "bandMin",
@@ -3045,6 +3062,7 @@ export const BOSS_CATALOG = {
     {
       "type": "SummonAddsAttack",
       "label": "Summon Adds",
+      "category": "classic",
       "params": [
         {
           "name": "prefabs",
@@ -3122,6 +3140,7 @@ export const BOSS_CATALOG = {
     {
       "type": "SweepBeamAttack",
       "label": "Sweep Beam",
+      "category": "classic",
       "params": [
         {
           "name": "pivotOffset",
@@ -3215,71 +3234,8 @@ export const BOSS_CATALOG = {
     {
       "type": "ThrowProjectileAttack",
       "label": "Throw Projectile",
+      "category": "classic",
       "params": [
-        {
-          "name": "impactFxPrefab",
-          "label": "Impact Fx Prefab",
-          "tooltip": "Efecto de un solo uso (VfxOneShot) en cada impacto. Vacío = destello del color de la fase.",
-          "header": "Extremidades · impacto",
-          "type": "art",
-          "artKind": "fx",
-          "artLabel": "Impacto de la pieza",
-          "placeholder": "destello de color",
-          "default": null
-        },
-        {
-          "name": "impactFxWidth",
-          "label": "Impact Fx Width",
-          "tooltip": "Ancho del efecto de impacto (0 = escala del prefab).",
-          "min": 0.0,
-          "type": "float",
-          "default": 2.2
-        },
-        {
-          "name": "tremble",
-          "label": "Tremble",
-          "tooltip": "Temblor de la pieza mientras espera para golpear (unidades de mundo).",
-          "min": 0.0,
-          "type": "float",
-          "default": 0.06
-        },
-        {
-          "name": "arrowLength",
-          "label": "Arrow Length",
-          "tooltip": "Largo de la flecha de aviso, en veces el tamaño que se ve de la pieza.",
-          "header": "Extremidades · aviso",
-          "min": 0.2,
-          "type": "float",
-          "default": 1.6
-        },
-        {
-          "name": "targetMarkScale",
-          "label": "Target Mark Scale",
-          "tooltip": "Marca del destino, en veces el tamaño que se ve de la pieza.",
-          "min": 0.2,
-          "type": "float",
-          "default": 0.9
-        },
-        {
-          "name": "arrowLengthRange",
-          "label": "Arrow Length Range",
-          "tooltip": "Largo mínimo y máximo de la flecha (unidades de mundo). Proporcional a la pieza, pero nunca tan pequeña que no se vea ni tan grande que tape la pantalla.",
-          "type": "vector2",
-          "default": {
-            "x": 2.2,
-            "y": 5.0
-          }
-        },
-        {
-          "name": "targetMarkRange",
-          "label": "Target Mark Range",
-          "tooltip": "Tamaño mínimo y máximo de la marca del destino (unidades de mundo).",
-          "type": "vector2",
-          "default": {
-            "x": 1.1,
-            "y": 2.5
-          }
-        },
         {
           "name": "throwGesture",
           "label": "Throw Gesture",
@@ -3493,6 +3449,14 @@ export const BOSS_CATALOG = {
             "Second"
           ],
           "default": "Alternate"
+        },
+        {
+          "name": "tremble",
+          "label": "Tremble",
+          "tooltip": "Temblor de la mano mientras agarra y sostiene el objeto (unidades de mundo).",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.06
         },
         {
           "name": "pickupReach",

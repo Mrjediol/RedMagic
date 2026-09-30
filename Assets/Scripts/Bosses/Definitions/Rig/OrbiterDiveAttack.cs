@@ -101,7 +101,7 @@ namespace RedMagic.Bosses
             // --- corro: suben a su puesto en el círculo, con la punta hacia fuera, y giran.
             float angle = 90f;
             var ring = Ring(hub, angle, count);
-            yield return Fly(ctx, limbs, parts, from, ring, ctx.Scaled(gatherSeconds), Ease.Out, Outward(hub, ring));
+            yield return Fly(ctx, limbs, parts, from, ring, ctx.Scaled(gatherSeconds), LimbEase.Out, Outward(hub, ring));
 
             float orbit = ctx.Scaled(orbitSeconds);
             for (float t = 0f; t < orbit; t += Time.deltaTime)
@@ -137,7 +137,7 @@ namespace RedMagic.Bosses
 
                 var to = (Vector2[])at.Clone();
                 to[i] = end;
-                yield return Fly(ctx, limbs, parts, at, to, ctx.Scaled(diveSeconds), Ease.In, aim, new HitOnce(), radius);
+                yield return Fly(ctx, limbs, parts, at, to, ctx.Scaled(diveSeconds), LimbEase.In, aim, new HitOnce(), radius);
                 if (!ctx.IsValid) yield break;
 
                 at[i] = end;

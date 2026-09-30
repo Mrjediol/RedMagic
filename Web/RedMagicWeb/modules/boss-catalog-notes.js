@@ -22,6 +22,12 @@ export const ATTACK_NOTES = {
   AnchorRitualAttack: { label: 'Ritual de anclas', note: 'Se vuelve intocable hasta que rompes todas las anclas.', group: 'Especiales (escena)' },
   PlatformDenialAttack: { label: 'Negar plataformas', note: 'Prende fuegos fijos en puntos de la escena del jefe.', group: 'Especiales (escena)' },
   PlatformFloodAttack: { label: 'Inundación', note: 'Brotan salientes y el suelo se inunda: súbete.', group: 'Especiales (escena)' },
+  // --- Ataques de partes (category 'rig' en el catálogo): mueven o lanzan piezas del cuerpo.
+  // Necesitan un jefe por partes (BossLimbs); sin piezas caen a un proyectil / impacto marcado.
+  FistThrowAttack: { label: 'Lanzar puño', note: 'Un puño tiembla, sale volando a donde estabas y vuelve.' },
+  LimbSlamAttack: { label: 'Mazazo', note: 'Los puños se estampan contra el suelo (a la vez o alternos), con ondas opcionales.' },
+  LimbPincerAttack: { label: 'Tenaza', note: 'Dos puños a tus lados que se cierran en una franja baja: salta o sal.' },
+  OrbiterDiveAttack: { label: 'Esquirlas en picado', note: 'Las piezas pequeñas forman un anillo y caen una a una sobre ti.' },
 };
 
 /** What each art kind has to be, for the "qué arte necesita" line under every slot. */
@@ -34,4 +40,17 @@ export const ART_KIND_NOTES = {
 
 export function attackLabel(type, catalogEntry) {
   return ATTACK_NOTES[type]?.label || catalogEntry?.label || type;
+}
+
+/** Top-level picker groups, from the catalog's `category` (display-only; configs never store it). */
+export const ATTACK_CATEGORIES = {
+  classic: 'Clásico',
+  rig: 'De partes',
+};
+
+/** Picker group of an attack: "Clásico · Básicos", …, or "De partes" for the rig attacks. */
+export function attackGroup(catalogEntry) {
+  const category = catalogEntry?.category === 'rig' ? 'rig' : 'classic';
+  if (category === 'rig') return ATTACK_CATEGORIES.rig;
+  return `${ATTACK_CATEGORIES.classic} · ${ATTACK_NOTES[catalogEntry?.type]?.group || 'Otros'}`;
 }

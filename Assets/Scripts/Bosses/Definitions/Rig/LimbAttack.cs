@@ -12,8 +12,10 @@ namespace RedMagic.Bosses
     /// (<see cref="BossLimbs"/> + un <c>RigDriver</c>); en uno de un solo sprite caen a una versión
     /// sin pieza (proyectil / impacto marcado) para que el asset nunca quede mudo.
     ///
-    /// Las trayectorias son de aquí — gameplay, iguales con cualquier motor de animación — y el
-    /// rig sólo se encarga de devolver la pieza al cuerpo. Todos los tiempos pasan por
+    /// Las trayectorias son de aquí (<see cref="LimbMotion"/>) — gameplay, iguales con cualquier motor
+    /// de animación — y el rig sólo se encarga de devolver la pieza al cuerpo. En la web salen como
+    /// categoría "De partes" (<c>rig</c> en el catálogo); todo lo que herede de aquí vive en
+    /// <c>Definitions/Rig/</c>. Todos los tiempos pasan por
     /// <see cref="BossContext.Scaled"/>, así que la fase 2 los acelera sin más assets.
     /// </summary>
     public abstract class LimbAttack : BossAttack
@@ -48,11 +50,7 @@ namespace RedMagic.Bosses
         [SerializeField] private Vector2 targetMarkRange = new Vector2(1.1f, 2.5f);
 
         /// <summary>Las extremidades del jefe, o null si no tiene (entonces toca la versión sin pieza).</summary>
-        protected static BossLimbs Limbs(in BossContext ctx)
-        {
-            var limbs = ctx.Boss != null ? ctx.Boss.GetComponent<BossLimbs>() : null;
-            return limbs != null && limbs.Usable ? limbs : null;
-        }
+        protected static BossLimbs Limbs(in BossContext ctx) => LimbMotion.Limbs(ctx);
 
         /// <summary>Marca de "ya ha pegado" de un vuelo: cada vuelo daña una sola vez.</summary>
         protected sealed class HitOnce
@@ -63,60 +61,22 @@ namespace RedMagic.Bosses
         // ============================================================ movimiento
 
         /// <summary>
-        /// Lleva los centros de <paramref name="parts"/> de <paramref name="from"/> a
-        /// <paramref name="to"/> en <paramref name="seconds"/> (ya escalados), con easing. Cada pieza
-        /// gira para que su parte útil (los nudillos, <c>RigPart.pointAngle</c>) mire hacia
-        /// <paramref name="aim"/>[i] (dirección del mundo; null = su orientación de reposo); el giro
-        /// se completa en la primera mitad del tramo, así un puño lanzado ya va de frente al salir.
-        /// Con <paramref name="hit"/> daña al tocar (una vez).
+        /// <see cref="LimbMotion.Fly"/> con daño: con <paramref name="hit"/>, cada pieza que se mueve
+        /// daña al tocar (una vez por vuelo; las quietas de un vuelo compartido son decorado).
         /// </summary>
         protected IEnumerator Fly(BossContext ctx, BossLimbs limbs, Transform[] parts, Vector2[] from,
-                                  Vector2[] to, float seconds, Ease ease, Vector2?[] aim, HitOnce hit = null,
+                                  Vector2[] to, float seconds, LimbEase ease, Vector2?[] aim, HitOnce hit = null,
                                   float contactRadius = 0f)
         {
-            seconds = Mathf.Max(0.01f, seconds);
-            var start = new float[parts.Length];
-            for (int i = 0; i < parts.Length; i++) start[i] = limbs.LocalAngle(parts[i]);
-
-            for (float t = 0f; t < seconds; t += Time.deltaTime)
-            {
-                if (!ctx.IsValid) yield break;
-
-                float k = Apply(ease, t / seconds);
-                float turn = Apply(Ease.Out, t / (seconds * 0.5f));
-                for (int i = 0; i < parts.Length; i++)
-                {
-                    Vector2 at = Vector2.LerpUnclamped(from[i], to[i], k);
-                    float angle = Mathf.LerpAngle(start[i], TargetAngle(limbs, parts[i], aim, i), turn);
-                    limbs.DriveCenter(parts[i], at, angle);
-                    // Sólo daña lo que se mueve: en un vuelo compartido, las piezas quietas son decorado.
-                    if (hit != null && from[i] != to[i]) Contact(ctx, at, contactRadius > 0f ? contactRadius : limbs.ContactRadius, hit);
-                }
-
-                yield return null;
-            }
-
-            for (int i = 0; i < parts.Length; i++)
-                limbs.DriveCenter(parts[i], to[i], TargetAngle(limbs, parts[i], aim, i));
+            float radius = contactRadius > 0f ? contactRadius : limbs.ContactRadius;
+            return LimbMotion.Fly(ctx, limbs, parts, from, to, seconds, ease, aim,
+                                  hit != null ? at => Contact(ctx, at, radius, hit) : null);
         }
 
         /// <summary>Mantiene las piezas en <paramref name="at"/> mirando a <paramref name="aim"/> (temblando) <paramref name="seconds"/>.</summary>
-        protected IEnumerator Hold(BossContext ctx, BossLimbs limbs, Transform[] parts, Vector2[] at,
-                                   float seconds, Vector2?[] aim, float shake)
-        {
-            for (float t = 0f; t < seconds; t += Time.deltaTime)
-            {
-                if (!ctx.IsValid) yield break;
-
-                for (int i = 0; i < parts.Length; i++)
-                {
-                    Vector2 jitter = shake > 0f ? Random.insideUnitCircle * shake : Vector2.zero;
-                    limbs.DriveCenter(parts[i], at[i] + jitter, TargetAngle(limbs, parts[i], aim, i));
-                }
-
-                yield return null;
-            }
-        }
+        protected static IEnumerator Hold(BossContext ctx, BossLimbs limbs, Transform[] parts, Vector2[] at,
+                                          float seconds, Vector2?[] aim, float shake) =>
+            LimbMotion.Hold(ctx, limbs, parts, at, seconds, aim, shake);
 
         /// <summary>
         /// Vuelve volando a su sitio en el cuerpo (que puede estar moviéndose), girando de vuelta a su
@@ -132,7 +92,7 @@ namespace RedMagic.Bosses
             {
                 if (!ctx.IsValid) yield break;
 
-                float k = Apply(Ease.InOut, t / seconds);
+                float k = LimbMotion.Apply(LimbEase.InOut, t / seconds);
                 Vector2 at = Vector2.Lerp(from, limbs.HomeCenter(part), k);
                 limbs.DriveCenter(part, at, Mathf.LerpAngle(startAngle, limbs.RestAngle(part), k));
                 if (hit != null) Contact(ctx, at, limbs.ContactRadius, hit);
@@ -142,14 +102,8 @@ namespace RedMagic.Bosses
             limbs.Release(part, 0.12f);
         }
 
-        private static float TargetAngle(BossLimbs limbs, Transform part, Vector2?[] aim, int index)
-        {
-            var direction = aim != null && index < aim.Length ? aim[index] : null;
-            return direction.HasValue ? limbs.AngleToward(part, direction.Value) : limbs.RestAngle(part);
-        }
-
         /// <summary>Atajo para escribir las direcciones: <c>Aim(Vector2.right, Vector2.left)</c>.</summary>
-        protected static Vector2?[] Aim(params Vector2?[] directions) => directions;
+        protected static Vector2?[] Aim(params Vector2?[] directions) => LimbMotion.Aim(directions);
 
         // ============================================================ daño y efectos
 
@@ -200,27 +154,5 @@ namespace RedMagic.Bosses
         /// <summary>Centro de pieza que no atraviesa el suelo.</summary>
         protected static Vector2 AboveGround(in BossContext ctx, Vector2 point, float radius) =>
             new Vector2(point.x, Mathf.Max(point.y, ctx.GroundY + radius));
-
-        // ============================================================ easing
-
-        protected enum Ease
-        {
-            Linear,
-            In,
-            Out,
-            InOut,
-        }
-
-        protected static float Apply(Ease ease, float x)
-        {
-            x = Mathf.Clamp01(x);
-            switch (ease)
-            {
-                case Ease.In: return x * x * x;
-                case Ease.Out: { float i = 1f - x; return 1f - i * i * i; }
-                case Ease.InOut: return x * x * (3f - 2f * x);
-                default: return x;
-            }
-        }
     }
 }

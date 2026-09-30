@@ -77,9 +77,9 @@ namespace RedMagic.Bosses
                 var inward = Aim(Vector2.right, Vector2.left);
 
                 yield return Fly(ctx, limbs, parts, new[] { limbs.Center(a), limbs.Center(b) }, sides, gather,
-                                 Ease.Out, inward);
+                                 LimbEase.Out, inward);
                 yield return Hold(ctx, limbs, parts, sides, hold, inward, tremble);
-                yield return Fly(ctx, limbs, parts, sides, closed, clap, Ease.In, inward);
+                yield return Fly(ctx, limbs, parts, sides, closed, clap, LimbEase.In, inward);
             }
             else
             {
@@ -97,7 +97,7 @@ namespace RedMagic.Bosses
 
             // Rebote: se separan un poco por el choque y vuelven al cuerpo.
             Vector2[] rebound = { target + Vector2.left * radius * 1.6f, target + Vector2.right * radius * 1.6f };
-            yield return Fly(ctx, limbs, parts, closed, rebound, ctx.Scaled(reboundSeconds), Ease.Out, Aim(Vector2.right, Vector2.left));
+            yield return Fly(ctx, limbs, parts, closed, rebound, ctx.Scaled(reboundSeconds), LimbEase.Out, Aim(Vector2.right, Vector2.left));
             foreach (var part in parts) limbs.Release(part, ctx.Scaled(returnSeconds));
         }
     }

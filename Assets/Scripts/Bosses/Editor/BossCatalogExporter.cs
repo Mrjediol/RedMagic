@@ -21,7 +21,8 @@ namespace RedMagic.Bosses.EditorTools
     /// (<c>Web/RedMagicWeb/modules/boss-catalog.js</c>): todos los tipos de ataque y de movimiento
     /// del proyecto, con sus campos, valores por defecto, tooltips y huecos de arte, sacados por
     /// reflexión. Así la web nunca mantiene una lista a mano: un ataque nuevo en C# aparece en la
-    /// web al recompilar.
+    /// web al recompilar. Cada ataque lleva <c>category</c>: <c>rig</c> si hereda de
+    /// <see cref="LimbAttack"/> (ataques de partes), si no <c>classic</c>. Sólo es de presentación.
     ///
     /// Se regenera solo tras cada compilación (sólo reescribe si cambia) y a mano desde
     /// Tools ▸ Web ▸ Exportar catálogo de jefes.
@@ -125,6 +126,7 @@ namespace RedMagic.Bosses.EditorTools
                         ["type"] = type.Name,
                         ["label"] = ObjectNames.NicifyVariableName(type.Name.EndsWith("Attack")
                             ? type.Name.Substring(0, type.Name.Length - 6) : type.Name),
+                        ["category"] = typeof(LimbAttack).IsAssignableFrom(type) ? "rig" : "classic",
                         ["params"] = parameters,
                     });
                 }

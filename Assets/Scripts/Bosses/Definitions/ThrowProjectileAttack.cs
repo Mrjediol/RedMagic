@@ -22,12 +22,14 @@ namespace RedMagic.Bosses
     /// En un jefe <b>por partes</b> (<see cref="BossLimbs"/>) lo hace con la mano: un puño baja al suelo
     /// delante del jefe, coge el objeto, lo sube por encima del hombro y lo lanza desde el puño; con
     /// varios lanzamientos alterna de mano. El vuelo, la marca y el daño son los mismos.
+    /// Es un ataque <b>clásico</b>: las manos son opcionales, así que mueve las piezas con
+    /// <see cref="LimbMotion"/> en vez de heredar de <see cref="LimbAttack"/>.
     /// </summary>
     [CreateAssetMenu(menuName = "RedMagic/Boss/Throw Projectile Attack", fileName = "BossAttack_Throw")]
     [AttackPoint("heldOffset", "Objeto en la mano")]
     [AttackHides("projectile.speed", "projectile.muzzleOffset", "projectile.homingTurnRate",
                  "projectile.homingRange", "projectile.arcGravity")]
-    public class ThrowProjectileAttack : LimbAttack
+    public class ThrowProjectileAttack : BossAttack
     {
         [Header("Gesto de lanzar")]
         [Tooltip("Estado del Animator del gesto de LANZAR. El de COGER va en 'Gesto' (arriba) y hace " +
@@ -99,6 +101,10 @@ namespace RedMagic.Bosses
         [Tooltip("Qué mano. Alternate = con varios lanzamientos, una y luego la otra.")]
         [SerializeField] private LimbPick limbPick = LimbPick.Alternate;
 
+        [Tooltip("Temblor de la mano mientras agarra y sostiene el objeto (unidades de mundo).")]
+        [Min(0f)]
+        [SerializeField] private float tremble = 0.06f;
+
         [Tooltip("Dónde recoge el objeto: X hacia el jugador desde los pies del jefe.")]
         [SerializeField] private float pickupReach = 2.5f;
 
@@ -152,7 +158,7 @@ namespace RedMagic.Bosses
 
         public override IEnumerator Run(BossContext ctx)
         {
-            var limbs = useLimbs ? Limbs(ctx) : null;
+            var limbs = useLimbs ? LimbMotion.Limbs(ctx) : null;
             if (limbs != null)
             {
                 yield return RunWithLimbs(ctx, limbs);
@@ -211,13 +217,13 @@ namespace RedMagic.Bosses
                 var hand = limbs.Pick(limbPick, ctx.PlayerCenter);
                 if (hand == null) yield break;
                 var parts = new[] { hand };
-                var down = Aim(Vector2.down);
-                var up = Aim(Vector2.up);
+                var down = LimbMotion.Aim(Vector2.down);
+                var up = LimbMotion.Aim(Vector2.up);
 
                 // --- baja al suelo delante del jefe y agarra.
                 var ground = new Vector2(ctx.Origin.x + pickupReach * ctx.Facing, ctx.GroundY + radius);
-                yield return Fly(ctx, limbs, parts, new[] { limbs.Center(hand) }, new[] { ground },
-                                 ctx.Scaled(reachSeconds), Ease.InOut, down);
+                yield return LimbMotion.Fly(ctx, limbs, parts, new[] { limbs.Center(hand) }, new[] { ground },
+                                 ctx.Scaled(reachSeconds), LimbEase.InOut, down);
                 if (!ctx.IsValid) yield break;
 
                 float held = ctx.Scaled(reachSeconds + grabSeconds + liftSeconds + holdSeconds + swingSeconds);
@@ -225,13 +231,13 @@ namespace RedMagic.Bosses
                                               ctx.Accent, ctx.FxSprite, held + 2f);
                 if (prop != null) ScaleHeld(prop.gameObject);
                 AudioManager.Instance?.Play(pickupSound, ground);
-                yield return Hold(ctx, limbs, parts, new[] { ground }, ctx.Scaled(grabSeconds), down, tremble);
+                yield return LimbMotion.Hold(ctx, limbs, parts, new[] { ground }, ctx.Scaled(grabSeconds), down, tremble);
 
                 // --- lo sube por encima del hombro y lo sostiene (el aviso: se ve lo que viene).
                 var raised = ctx.Origin + new Vector2(raisedOffset.x * ctx.Facing, raisedOffset.y);
-                yield return Fly(ctx, limbs, parts, new[] { ground }, new[] { raised }, ctx.Scaled(liftSeconds),
-                                 Ease.Out, up);
-                yield return Hold(ctx, limbs, parts, new[] { raised }, ctx.Scaled(holdSeconds), up, tremble);
+                yield return LimbMotion.Fly(ctx, limbs, parts, new[] { ground }, new[] { raised }, ctx.Scaled(liftSeconds),
+                                 LimbEase.Out, up);
+                yield return LimbMotion.Hold(ctx, limbs, parts, new[] { raised }, ctx.Scaled(holdSeconds), up, tremble);
                 if (!ctx.IsValid) { if (prop != null) prop.Release(); yield break; }
 
                 // --- latigazo hacia el jugador: el cuerpo acompaña con su gesto y el objeto sale del puño.
@@ -239,9 +245,9 @@ namespace RedMagic.Bosses
                 if (body != null) body.PlayGesture(throwGesture, swing);
 
                 Vector2 toPlayer = ctx.PlayerCenter - raised;
-                var forward = Aim(toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : new Vector2(ctx.Facing, 0f));
+                var forward = LimbMotion.Aim(toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : new Vector2(ctx.Facing, 0f));
                 var swingEnd = raised + new Vector2(swingReach * ctx.Facing, -0.5f);
-                yield return Fly(ctx, limbs, parts, new[] { raised }, new[] { swingEnd }, swing, Ease.In, forward);
+                yield return LimbMotion.Fly(ctx, limbs, parts, new[] { raised }, new[] { swingEnd }, swing, LimbEase.In, forward);
 
                 Vector2 origin = prop != null ? prop.Position : limbs.Center(hand);
                 if (prop != null) prop.Release();

@@ -117,7 +117,7 @@ regenerated).
 - **`RigPart.pointAngle`** = where the part's business end points in its unrotated art (fists:
   -90 = knuckles down). `BossLimbs.AngleToward(limb, worldDir)` turns it into a local angle through
   the parent's matrix (mirroring included) and `DriveCenter(limb, centre, localAngle)` places it;
-  `LimbAttack.Fly/Hold` take one world direction per part (`Aim(...)`, null = rest orientation)
+  `LimbMotion.Fly/Hold` (wrapped by `LimbAttack`) take one world direction per part (`Aim(...)`, null = rest orientation)
   and finish the turn in the first half of the move, so a thrown fist leads with its knuckles.
   **Upright mirroring**: if turning a limb would leave it upside down (the art axis perpendicular to
   `pointAngle` facing down), `BossLimbs` mirrors it across its pointing axis instead — a fist

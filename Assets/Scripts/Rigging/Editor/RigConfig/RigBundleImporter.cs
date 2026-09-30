@@ -422,7 +422,7 @@ namespace RedMagic.Rigging.EditorTools
                 result[reference] = sprite;
             }
 
-            report.Warnings.Add($"{copied.Count} PNG de piezas en '{artFolder}'.");
+            report.Add(true, $"{artFolder}/ ({copied.Count} PNG de las piezas, importados del zip)");
             return result;
         }
 

@@ -262,6 +262,7 @@
         "hurtAnimSpeed": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.hurtAnimSpeed." },
         "deathAnimSpeed": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.deathAnimSpeed." },
         "wakeAnimSpeed": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.wakeAnimSpeed. Only meaningful when sleepsUntilDetected is true." },
+        "moveSoundInterval": { "type": "number", "minimum": 0.05, "default": 0.4, "$comment": "EnemyTuning.moveSoundInterval. Seconds between two OnMove sounds (step / flap) while it moves on its own." },
 
         "targetTag": { "type": "string", "default": "Player", "$comment": "EnemyTuning.targetTag. Who it chases and damages." },
         "hitLayers": {

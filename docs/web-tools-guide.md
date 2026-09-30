@@ -216,7 +216,8 @@ Elige un `.zip` o el `rig-config.json` de una carpeta. El bundle lleva:
 ```
 rig-config.json          ← el cuerpo (obligatorio)
 Parts/<pieza>.png         ← PNG recortados; rutas tal como las nombra rig-config
-enemy-config.json         ← opcional (kind enemy): sólo se lee 'tuning' y 'tier'
+enemy-config.json         ← opcional (kind enemy): sólo se lee `tuning` y `tier`
+                            (junto a un `X.rig-config.json` suelto: `X.enemy-config.json` / `X.boss-config.json`)
 boss-config.json          ← opcional (kind boss): ataques + definición, SIN 'body'
 Art/…                     ← opcional: arte de los ataques del jefe (como en el zip de jefe)
 ```
@@ -238,7 +239,8 @@ Art/…                     ← opcional: arte de los ataques del jefe (como en 
 ### Exportar rig a JSON…
 Clic derecho en un prefab con `ProceduralRig` ▸ **Exportar rig a JSON** (o el menú: usa la selección
 del Project y, sin selección, pide el prefab) → `<name>.rig-config.json` en la carpeta que elijas, con
-los sprites como rutas del proyecto (reimportable tal cual). Es cómo llevar a la web lo afinado en
+los sprites como rutas del proyecto (reimportable tal cual), más `<name>.enemy-config.json` con el
+`EnemyStats` entero (un jefe lleva su `BossDefinition` en `bossBody.definition`). Es cómo llevar a la web lo afinado en
 el Inspector.
 
 ### Probar ida y vuelta (Robot · Turret · BossIce2)

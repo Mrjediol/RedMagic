@@ -44,6 +44,20 @@ namespace RedMagic.Rigging.EditorTools
                             !StructuredRigFields.Contains(f.Name))
                 .OrderBy(f => f.MetadataToken);
 
+        /// <summary>
+        /// El archivo que acompaña a un rig-config: junto a "Robot.rig-config.json" es
+        /// "Robot.enemy-config.json"; junto a "rig-config.json" (el de un zip), "enemy-config.json".
+        /// </summary>
+        public static string SiblingPath(string rigConfigPath, string companionFile)
+        {
+            string dir = System.IO.Path.GetDirectoryName(rigConfigPath) ?? "";
+            string file = System.IO.Path.GetFileName(rigConfigPath);
+            const string suffix = "." + ConfigFile;
+            return file.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)
+                ? System.IO.Path.Combine(dir, file.Substring(0, file.Length - suffix.Length) + "." + companionFile)
+                : System.IO.Path.Combine(dir, companionFile);
+        }
+
         // ============================================================ piezas
 
         /// <summary>Ruta de <paramref name="t"/> relativa a la raíz visual ("Torso/RightArm"), o null.</summary>

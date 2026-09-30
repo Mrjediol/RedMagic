@@ -1,0 +1,84 @@
+{
+  "kind": "enemy",
+  "enemyName": "Turret",
+  "tier": "Basic",
+  "tuning": {
+    "archetype": "Static",
+    "staticAttack": "Ranged",
+    "maxHealth": 45.0,
+    "invulnerabilityDuration": 0.0,
+    "knockbackHorizontal": 6.0,
+    "knockbackVertical": 3.0,
+    "knockbackDuration": 0.18,
+    "knockbackResistance": 1.0,
+    "detectionRange": 8.0,
+    "loseInterestGrace": 1.5,
+    "attackRange": 7.5,
+    "personalSpace": 0.0,
+    "retreatReleaseFactor": 1.35,
+    "verticalTolerance": 4.0,
+    "moveSpeed": 2.5,
+    "retreatSpeed": 2.5,
+    "stopAtLedges": true,
+    "ledgeProbeDepth": 0.6,
+    "gravityScale": 3.0,
+    "sleepsUntilDetected": true,
+    "hoverOffset": 0.5,
+    "attackDamage": 12.0,
+    "attackCooldown": 2.0,
+    "attackKnockbackMultiplier": 1.0,
+    "attackReleaseFallback": 0.25,
+    "rootedWhileAttacking": true,
+    "meleeHitboxSize": {
+      "x": 1.2,
+      "y": 1.0
+    },
+    "meleeHitboxOffset": {
+      "x": 0.8,
+      "y": 0.5
+    },
+    "selfDestruct": false,
+    "explosionRadius": 1.7,
+    "explosionShake": 0.2,
+    "projectile": {
+      "prefab": "Assets/Prefabs/Fx/Enemies/Turret/Fx_Turret_Laser.prefab",
+      "speed": 16.0,
+      "lifetime": 1.2,
+      "size": {
+        "x": 1.3,
+        "y": 0.22
+      },
+      "muzzleOffset": {
+        "x": 0.65,
+        "y": 0.1
+      },
+      "pierce": 0,
+      "homingTurnRate": 0.0,
+      "homingRange": 9.0,
+      "arcGravity": 0.0,
+      "impactRadius": 0.0,
+      "impactDamage": 0.0,
+      "faceDirection": true,
+      "facingAxis": "Right",
+      "aimMode": "Fixed"
+    },
+    "aimAtTarget": true,
+    "projectileTint": "#73fff2ff",
+    "contactDamage": 0.0,
+    "contactDamageCooldown": 1.0,
+    "contactKnockbackMultiplier": 1.0,
+    "moveSoundInterval": 0.4,
+    "idleAnimSpeed": 1.0,
+    "moveAnimSpeed": 1.0,
+    "attackAnimSpeed": 1.0,
+    "hurtAnimSpeed": 1.0,
+    "deathAnimSpeed": 1.0,
+    "wakeAnimSpeed": 1.0,
+    "targetTag": "Player",
+    "hitLayers": "everything",
+    "obstacleLayers": [
+      "Ground",
+      "Platform"
+    ]
+  }
+}

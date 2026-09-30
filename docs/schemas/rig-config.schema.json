@@ -418,6 +418,10 @@
         "contactDamage": {
           "type": "number"
         },
+        "definition": {
+          "$ref": "_shared.schema.json#/definitions/assetRef",
+          "$comment": "Una BossDefinition que ya existe (la exporta RigConfigExporter). Se enlaza si el bundle no trae boss-config.json; si lo trae, manda la que crea ese import."
+        },
         "bodyRenderer": {
           "$ref": "#/definitions/partPath"
         },

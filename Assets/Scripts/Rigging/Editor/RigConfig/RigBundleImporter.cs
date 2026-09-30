@@ -102,7 +102,7 @@ namespace RedMagic.Rigging.EditorTools
                 }
 
                 var config = JObject.Parse(File.ReadAllText(configPath));
-                ImportConfig(config, source, options, report);
+                ImportConfig(config, source, configPath, options, report);
             }
             catch (ConfigImportException e) { report.Errors.Add(e.Message); }
             catch (JsonException e) { report.Errors.Add($"JSON inválido: {e.Message}"); }
@@ -128,7 +128,8 @@ namespace RedMagic.Rigging.EditorTools
             public bool RigPart => Json.Value<bool?>("rigPart") ?? true;
         }
 
-        private static void ImportConfig(JObject config, string source, Options options, ConfigImportReport report)
+        private static void ImportConfig(JObject config, string source, string configPath, Options options,
+                                         ConfigImportReport report)
         {
             // --- 1) validar TODO antes de escribir un solo asset.
             string name = options.NameOverride ?? ConfigJson.RequireString(config, "name", "RigConfig");
@@ -150,8 +151,8 @@ namespace RedMagic.Rigging.EditorTools
             // --- 3) configs que acompañan al cuerpo.
             EnemyTuning tuning = null;
             EnemyTier? tier = null;
-            string enemyConfigPath = Path.Combine(source, RigConfigJson.EnemyConfigFile);
-            string bossConfigPath = Path.Combine(source, RigConfigJson.BossConfigFile);
+            string enemyConfigPath = RigConfigJson.SiblingPath(configPath, RigConfigJson.EnemyConfigFile);
+            string bossConfigPath = RigConfigJson.SiblingPath(configPath, RigConfigJson.BossConfigFile);
             if (!boss && File.Exists(enemyConfigPath))
             {
                 var enemyJson = JObject.Parse(File.ReadAllText(enemyConfigPath));
@@ -163,6 +164,8 @@ namespace RedMagic.Rigging.EditorTools
 
             BossDefinition definition = null;
             if (boss && File.Exists(bossConfigPath)) definition = ImportBossConfig(bossConfigPath, source, report);
+            else if (boss && config["bossBody"]?["definition"] is JToken defToken && defToken.Type != JTokenType.Null)
+                definition = ConfigJson.ReadAsset<BossDefinition>(defToken, "bossBody.definition");   // una ya existente
             if (boss && File.Exists(enemyConfigPath)) report.Warnings.Add($"{RigConfigJson.EnemyConfigFile} se ignora en un jefe (su vida y arena van en 'bossBody').");
             if (!boss && File.Exists(bossConfigPath)) report.Warnings.Add($"{RigConfigJson.BossConfigFile} se ignora: kind = enemy.");
 

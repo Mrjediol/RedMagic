@@ -38,6 +38,10 @@ them and compares every public field of `ProceduralRig` by reflection (plus the 
 - **Importer-only keys**: `pixelsPerUnit`, `sprites` (per-file import settings), `root`, `collider`,
   `corpse`, `bossBody` (same keys as `BossConfig.body`'s stack, read by the shared
   `BossBodyBuilder.AddBossStack`). They describe the prefab around the rig, not rig data.
+- **Companions**: next to `X.rig-config.json` the importer reads `X.enemy-config.json` / `X.boss-config.json`
+  (in a zip: `enemy-config.json` / `boss-config.json`). The exporter writes `X.enemy-config.json` (full
+  `tuning` by reflection + `tier`, no `art`: in a rig bundle `art` is not used) and `bossBody.definition`
+  (existing asset, linked when no boss-config comes along).
 - **Things that bite**: (1) tuning from a bundled `enemy-config.json` goes through
   `EnemyConfigImporter.ReadTuning`, so the `EnemyStats.OnValidate` clamps above apply unchanged;
   its `presence` block is ignored (the body/collider come from rig-config). (2) A bundled
@@ -47,7 +51,7 @@ them and compares every public field of `ProceduralRig` by reflection (plus the 
 
 ## Field-level mapping confirmations
 
-**EnemyConfig → `EnemyTuning`** — all 45 serialized fields map 1:1 by name. The six derived
+**EnemyConfig → `EnemyTuning`** — every serialized field maps 1:1 by name (`moveSoundInterval` was missing until the rig export needed a full round trip; now in schema + importer). The six derived
 properties (`Flies`, `Airborne`, `IsRanged`, `Moves`, `Retreats`, `Sleeps`) are computed, have no
 backing store, and are deliberately absent from the schema. Seeding goes through the existing
 `EnemyStats.EditorSetTuning`, which already takes a whole `EnemyTuning` and calls `Apply()`.

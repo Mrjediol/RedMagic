@@ -149,6 +149,8 @@ attacks `classic`.
     value). Boss stack numbers go in `bossBody` (same keys as `BossConfig.body`), boss attacks in a
     bundled `boss-config.json` without `body`; enemy tuning in a bundled `enemy-config.json`.
   - The fixtures in `docs/schemas/fixtures/rig/` are real, importable examples of all of the above.
+  - Game numbers travel in a companion `enemy-config.json` (full `tuning`, same schema as the Enemy
+    Creator) next to the rig; a boss can instead reference an existing `bossBody.definition`.
 
 ### Phase B — web tab 🦴 Rig Composer
 - New tab and modules (e.g. `rig-composer.js`, `rig-canvas-view.js`, `rig-export.js`), reusing the

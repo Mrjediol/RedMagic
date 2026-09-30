@@ -9,6 +9,7 @@ using RedMagic.Combat;
 using RedMagic.Gameplay.Movement;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace RedMagic.Rigging.EditorTools
 {
@@ -95,6 +96,16 @@ namespace RedMagic.Rigging.EditorTools
             File.WriteAllText(outPath, json.ToString(Formatting.Indented) + "\n");
 
             var sb = new StringBuilder($"+ {prefabPath} → {outPath}");
+
+            // Los números de juego del enemigo viajan al lado, en su propio EnemyConfig: el
+            // importador lo busca como '<nombre>.enemy-config.json' junto al rig.
+            var enemy = EnemyConfig(prefab, json.Value<string>("name"));
+            if (enemy != null)
+            {
+                string enemyPath = RigConfigJson.SiblingPath(outPath, RigConfigJson.EnemyConfigFile);
+                File.WriteAllText(enemyPath, enemy.ToString(Formatting.Indented) + "\n");
+                sb.Append($"\n+ tuning → {enemyPath}");
+            }
             foreach (var w in warnings) sb.Append($"\n  · {w}");
             return sb.ToString();
         }
@@ -413,6 +424,10 @@ namespace RedMagic.Rigging.EditorTools
             o["activationRadius"] = RigConfigJson.Num(controller.FindProperty("activationRadius").floatValue);
             o["contactDamage"] = RigConfigJson.Num(controller.FindProperty("contactDamage").floatValue);
 
+            // La definición (fases y barajas) es un asset que ya existe: se referencia, no se copia.
+            var definition = controller.FindProperty("definition").objectReferenceValue;
+            if (definition != null) o["definition"] = AssetDatabase.GetAssetPath(definition);
+
             var body = controller.FindProperty("bodyRenderer").objectReferenceValue as SpriteRenderer;
             if (body != null) o["bodyRenderer"] = RigConfigJson.PathOf(visual, body.transform);
 
@@ -432,6 +447,63 @@ namespace RedMagic.Rigging.EditorTools
                 }
 
                 o["movement"] = new JObject { ["type"] = mover.Behaviour.GetType().Name, ["params"] = parameters };
+            }
+
+            return o;
+        }
+
+        // ============================================================ enemigo
+
+        /// <summary>
+        /// El EnemyConfig (<c>enemy-config.schema.json</c>) del EnemyStats del prefab: <c>tuning</c>
+        /// entero por reflexión (mismos nombres que la clase) + <c>tier</c>. Sin <c>art</c>: en un
+        /// enemigo por partes el arte es el rig-config. Null si no es un enemigo.
+        /// </summary>
+        public static JObject EnemyConfig(GameObject root, string name)
+        {
+            var stats = root.GetComponent<Enemies.EnemyStats>();
+            if (stats == null || root.GetComponent<BossController>() != null) return null;
+
+            var o = new JObject { ["kind"] = "enemy", ["enemyName"] = name };
+            var dropper = root.GetComponent<Economy.CurrencyDropper>();
+            if (dropper != null)
+            {
+                var tier = new SerializedObject(dropper).FindProperty("tier");
+                o["tier"] = tier.enumNames[tier.enumValueIndex];
+            }
+
+            o["tuning"] = Fields(stats.Tuning);
+            return o;
+        }
+
+        /// <summary>Campos públicos de una clase [Serializable] como JSON (los tipos que leen los importadores).</summary>
+        private static JObject Fields(object obj)
+        {
+            var o = new JObject();
+            foreach (var f in obj.GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
+            {
+                var value = f.GetValue(obj);
+                var ft = f.FieldType;
+                JToken token = null;
+
+                if (ft == typeof(float)) token = RigConfigJson.Num((float)value);
+                else if (ft == typeof(int)) token = (int)value;
+                else if (ft == typeof(bool)) token = (bool)value;
+                else if (ft == typeof(string)) token = (string)value ?? "";
+                else if (ft == typeof(Vector2)) token = RigConfigJson.V2((Vector2)value);
+                else if (ft == typeof(Color)) token = RigConfigJson.Hex((Color)value);
+                else if (ft.IsEnum) token = value.ToString();
+                else if (ft == typeof(LayerMask)) token = RigConfigJson.LayerNames((LayerMask)value);
+                else if (typeof(Object).IsAssignableFrom(ft))
+                {
+                    var asset = value as Object;
+                    if (asset != null && AssetDatabase.Contains(asset)) token = AssetDatabase.GetAssetPath(asset);
+                }
+                else if (ft.IsClass && ft.IsDefined(typeof(SerializableAttribute), false) && value != null &&
+                         ft != typeof(Audio.SoundCue))
+                    token = Fields(value);
+
+                if (token != null) o[f.Name] = token;
             }
 
             return o;

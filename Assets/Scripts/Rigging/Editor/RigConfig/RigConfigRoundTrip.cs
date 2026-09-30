@@ -65,7 +65,7 @@ namespace RedMagic.Rigging.EditorTools
 
                     var diffs = Compare(original, copy);
                     failures += diffs.Count > 0 ? 1 : 0;
-                    sb.AppendLine(diffs.Count == 0 ? $"✓ {name}: ProceduralRig, jerarquía y BossLimbs idénticos."
+                    sb.AppendLine(diffs.Count == 0 ? $"✓ {name}: ProceduralRig, jerarquía, BossLimbs y números de juego idénticos."
                                                    : $"x {name}: {diffs.Count} diferencias");
                     foreach (var d in diffs) sb.AppendLine($"    {d}");
                 }
@@ -117,6 +117,21 @@ namespace RedMagic.Rigging.EditorTools
                                         ra.sortingLayerName != rb.sortingLayerName || ra.color != rb.color))
                     diffs.Add($"{path}: sprite/orden/capa/color distintos");
             }
+
+            // Números de juego: el EnemyStats (vía <nombre>.enemy-config.json) y la definición del jefe.
+            var statsA = a.GetComponent<Enemies.EnemyStats>();
+            var statsB = b.GetComponent<Enemies.EnemyStats>();
+            if ((statsA == null) != (statsB == null)) diffs.Add("EnemyStats presente en uno solo");
+            else if (statsA != null)
+                foreach (var f in typeof(Enemies.EnemyTuning).GetFields(BindingFlags.Instance | BindingFlags.Public))
+                    if (f.FieldType != typeof(Audio.SoundCue))
+                        Value($"tuning.{f.Name}", f.GetValue(statsA.Tuning), f.GetValue(statsB.Tuning), visA, visB, diffs);
+
+            var bossA = a.GetComponent<BossController>();
+            var bossB = b.GetComponent<BossController>();
+            if (bossA != null && bossB != null)
+                Value("BossController.definition", new SerializedObject(bossA).FindProperty("definition").objectReferenceValue,
+                      new SerializedObject(bossB).FindProperty("definition").objectReferenceValue, visA, visB, diffs);
 
             var limbsA = a.GetComponent<BossLimbs>();
             var limbsB = b.GetComponent<BossLimbs>();

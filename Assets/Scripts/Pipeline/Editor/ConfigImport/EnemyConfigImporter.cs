@@ -186,6 +186,7 @@ namespace RedMagic.Pipeline.EditorTools
             SetF(json, "hurtAnimSpeed", v => t.hurtAnimSpeed = v);
             SetF(json, "deathAnimSpeed", v => t.deathAnimSpeed = v);
             SetF(json, "wakeAnimSpeed", v => t.wakeAnimSpeed = v);
+            SetF(json, "moveSoundInterval", v => t.moveSoundInterval = v);
 
             SetS(json, "targetTag", v => t.targetTag = v);
 

@@ -92,7 +92,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 | Localization, display presets | `docs/architecture/localization.md` |
 | Vendored packs | `docs/architecture/vendored.md` |
 
-Other: `docs/GDD.md` (game design: loop, worlds, enemies, bosses, art direction — read before design decisions), `docs/schemas/` (JSON configs + `COMPATIBILITY.md`), `docs/web-tools-guide.md` (web tool), `docs/RedMagic — Roadmap al prototipo.md`.
+Other: `docs/part-rig-pipeline-plan.md` (pending plan: web-authored part-based enemies, one phase per session), `docs/GDD.md` (game design: loop, worlds, enemies, bosses, art direction — read before design decisions), `docs/schemas/` (JSON configs + `COMPATIBILITY.md`), `docs/web-tools-guide.md` (web tool), `docs/RedMagic — Roadmap al prototipo.md`.
 
 ## Git (Claude Code handles it)
 

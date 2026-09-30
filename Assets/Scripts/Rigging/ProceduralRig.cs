@@ -23,8 +23,9 @@ namespace RedMagic.Rigging
                  "el punto de contacto cuando un ataque usa la pieza (el puño que golpea).")]
         public Vector2 center;
 
-        [Tooltip("Giro extra proporcional a la inclinación del cuerpo al moverse (1 = otro tanto; " +
-                 "negativo = se queda atrás como un péndulo).")]
+        [Tooltip("Giro extra proporcional a la inclinación del cuerpo al moverse. Positivo = exagera la " +
+                 "inclinación: una pieza que cuelga (punta, puño) se queda atrás como un péndulo. " +
+                 "Negativo = la compensa (tiende a quedarse vertical).")]
         public float leanFollow;
 
         [Tooltip("Hacia dónde apunta la parte \"útil\" de la pieza en su dibujo sin girar, en grados " +
@@ -154,6 +155,22 @@ namespace RedMagic.Rigging
 
         [Tooltip("Rapidez con que la inclinación sigue a la velocidad (1/s).")]
         [Min(0.01f)] public float leanResponse = 8f;
+
+        [Header("Inercia (el cuerpo va detrás de la raíz)")]
+        [Tooltip("Rigidez del muelle que une la raíz visual a la raíz. 0 = pegada (sin inercia). Con " +
+                 "inercia, al arrancar el cuerpo se queda un poco atrás y al parar se pasa un poco: " +
+                 "se lee el peso.")]
+        [Min(0f)] public float followStiffness;
+
+        [Tooltip("Amortiguación del muelle. Baja = rebota más al parar.")]
+        [Min(0f)] public float followDamping = 9f;
+
+        [Tooltip("Separación máxima entre el cuerpo y la raíz (unidades de mundo).")]
+        [Min(0f)] public float followMaxOffset = 0.6f;
+
+        [Tooltip("Gesto (de la lista de gestos) que se mantiene mientras se desplaza por su cuenta: " +
+                 "piezas que se quedan atrás, cuerpo echado hacia delante. Vacío = ninguno.")]
+        public string moveGesture;
 
         [Header("Apuntar (brazo-arma)")]
         [Tooltip("La parte que gira hacia el objetivo. Vacío = no apunta.")]

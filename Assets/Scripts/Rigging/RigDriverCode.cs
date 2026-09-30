@@ -45,6 +45,9 @@ namespace RedMagic.Rigging
         private Vector3 _lastPosition;
         private float _lean;
 
+        // Inercia: desplazamiento (mundo) del cuerpo respecto a la raíz y su velocidad (muelle).
+        private Vector2 _followOffset, _followVelocity;
+
         // Capas de gesto que la composición suma.
         private Vector2? _aimPoint;
         private float _aimWeight;
@@ -107,6 +110,7 @@ namespace RedMagic.Rigging
 
             _clock = 0f;
             _lean = 0f;
+            _followOffset = _followVelocity = Vector2.zero;
             _aimPoint = null;
             _aimWeight = _armRotation = _armPush = _bodyTilt = _bodyKick = 0f;
             _hurtTime = -1f;
@@ -220,6 +224,22 @@ namespace RedMagic.Rigging
 
             StartGesture(GestureRoutine(gesture, Mathf.Max(0.01f, secondsToRelease)), gesture);
             return true;
+        }
+
+        /// <summary>
+        /// Desplazándose: mantiene el gesto de moverse (<see cref="ProceduralRig.moveGesture"/>) fundido
+        /// encima; al parar lo suelta. Nunca pisa otro gesto (un ataque manda).
+        /// </summary>
+        public override void SetMoving(bool moving)
+        {
+            if (_dead) return;
+            var move = Rig.FindGesture(Rig.moveGesture);
+            if (move == null) return;
+
+            if (moving && (_gesture == null || _gesture == move))
+                StartGesture(HoldRoutine(), move);
+            else if (!moving && _gesture == move)
+                StartGesture(SettleRoutine(0.3f), move);
         }
 
         public override bool HoldGesture(string gestureName)
@@ -531,6 +551,7 @@ namespace RedMagic.Rigging
             // IA de un jefe o un empujón.
             Vector3 position = transform.position;
             float vx = dt > 0f ? (position.x - _lastPosition.x) / dt : 0f;
+            UpdateFollow((Vector2)(position - _lastPosition), dt);
             _lastPosition = position;
 
             var rig = Rig;
@@ -540,6 +561,33 @@ namespace RedMagic.Rigging
             ComposeBody(dt);
             ComposeParts();
             ApplyGesture();
+        }
+
+        /// <summary>
+        /// El cuerpo como una masa colgada de la raíz por un muelle: cuando la raíz se mueve el cuerpo
+        /// se queda atrás (el desplazamiento absorbe el paso), el muelle lo arrastra y, al parar, se
+        /// pasa un poco y vuelve. Un salto enorme en un frame (teletransporte, reaparecer) no se
+        /// interpreta como movimiento.
+        /// </summary>
+        private void UpdateFollow(Vector2 rootDelta, float dt)
+        {
+            var rig = Rig;
+            if (rig.followStiffness <= 0f || dt <= 0f || rootDelta.sqrMagnitude > 9f)
+            {
+                _followOffset = _followVelocity = Vector2.zero;
+                return;
+            }
+
+            _followOffset -= rootDelta;
+            Vector2 accel = -rig.followStiffness * _followOffset - rig.followDamping * _followVelocity;
+            _followVelocity += accel * dt;
+            _followOffset += _followVelocity * dt;
+
+            if (rig.followMaxOffset > 0f && _followOffset.sqrMagnitude > rig.followMaxOffset * rig.followMaxOffset)
+            {
+                _followOffset = _followOffset.normalized * rig.followMaxOffset;
+                _followVelocity = Vector2.zero;
+            }
         }
 
         private void ComposeBody(float dt)
@@ -566,7 +614,8 @@ namespace RedMagic.Rigging
             // Hacia atrás = contra el facing. La raíz visual cuelga de la raíz sin voltear, así que
             // su posición y su giro están en espacio de mundo (no reflejado).
             Vector3 bob = rig.hoverBob * Mathf.Sin(_clock * rig.hoverSpeed);
-            body.localPosition = _bodyPos + bob + new Vector3(-_bodyKick * Facing, 0f, 0f);
+            body.localPosition = _bodyPos + bob + new Vector3(-_bodyKick * Facing, 0f, 0f)
+                               + transform.InverseTransformVector(_followOffset);
             body.localRotation = Quaternion.Euler(0f, 0f,
                 _bodyAngle + _lean + (_bodyTilt + hurtTilt) * Facing);
             body.localScale = new Vector3(Mathf.Abs(_bodyScale.x) * Facing * (1f + squash),

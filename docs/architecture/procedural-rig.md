@@ -92,6 +92,11 @@ regenerated).
   over `recover`; `shake` trembles the body at the end of the windup. Poses are `RigPose`
   (part + move/rotate/scale, additive on the composed pose; on the `body` X/rotation follow
   facing). `BossAttack.gesture` names it — a new gesture is data, never code.
+- **Inertia** — `followStiffness` / `followDamping` / `followMaxOffset` (0 = off): the `Visual` hangs from the
+  root on a spring (lags when the root starts, overshoots a little when it stops). BossIce2 55 / 8 / 0.7.
+- **Move gesture** — `moveGesture` names a gesture held (cross-faded) while `SetMoving(true)` and
+  settled on stop; never overrides another gesture. BossIce2 `Move`: lean forward, fists/tip trail,
+  crown drifts back.
 - **Gesture cross-fade** — starting a different gesture moves the old one to a fade layer (0.2 s)
   instead of dropping its weights, so chained gestures blend (charge → travel pose). A gesture with
   an **empty `strike`** is a held charge: no whip at release, the windup settles over `recover`
@@ -126,7 +131,9 @@ regenerated).
   too small to see nor screen-covering.
   **Grips**: a `Grip` child at each fist's centre (`BossLimbs.grips`) is where held props attach.
 - **`RigPart.center`** = visible centre (contact point for attacks); **`leanFollow`** = extra
-  rotation × body lean (negative = trails like a pendulum: the ice tip, the fists).
+  rotation × body lean (**positive** = exaggerates it: a hanging part trails behind like a pendulum — the ice
+  tip 0.8, the fists 0.4; negative = counteracts it, stays upright). Same sign rule in gesture poses:
+  a hanging part rotated **negative** swings back (facing is mirrored for free).
 - `ProceduralRigTool.Setup(..., enemyStack: false)` for bosses (they bring their own stack).
 - `Packs/Coloso de Hielo por partes (BossIce2)` — `ProceduralBossPack`: definition
   `Boss_ColosodeHielo2` = copy of `Boss_ColosodeHielo` (same phases/pacing/health/contact) with

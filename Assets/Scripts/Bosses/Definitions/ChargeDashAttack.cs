@@ -38,6 +38,14 @@ namespace RedMagic.Bosses
         [Min(0f)]
         [SerializeField] private float arenaMargin = 1.5f;
 
+        [Tooltip("Segundos en alcanzar la velocidad plena al salir. 0 = sale a tope (lo de siempre).")]
+        [Min(0f)]
+        [SerializeField] private float accelerationSeconds;
+
+        [Tooltip("Segundos de frenada al llegar. 0 = para en seco (lo de siempre).")]
+        [Min(0f)]
+        [SerializeField] private float brakeSeconds;
+
         [Header("Aviso")]
         [Tooltip("Segundos que la flecha marca la dirección YA FIJADA antes de salir. Es el margen para " +
                  "apartarse: súbelo si es injusto, bájalo para agobiar.")]
@@ -119,12 +127,23 @@ namespace RedMagic.Bosses
             float step = speed * ctx.SpeedScale;
             bool hit = false;
 
+            // Arranque y frenada suaves (opcionales): la velocidad sube en 'accelerationSeconds' y baja al
+            // acercarse al final, en lo que tardaría en frenar desde tope en 'brakeSeconds'. Nunca por
+            // debajo del 15%: una embestida que casi se para al final se leería como que se ha atascado.
+            float accel = ctx.Scaled(accelerationSeconds);
+            float brakeDistance = step * ctx.Scaled(brakeSeconds) * 0.5f;
+            float elapsed = 0f;
+
             while (dir * (targetX - x) > 0.01f)
             {
                 yield return new WaitForFixedUpdate();
                 if (!ctx.IsValid) break;
 
-                float advance = step * Time.fixedDeltaTime;
+                elapsed += Time.fixedDeltaTime;
+                float remaining = Mathf.Abs(targetX - x);
+                float factor = Mathf.Min(accel > 0f ? Mathf.Clamp01(elapsed / accel) : 1f,
+                                         brakeDistance > 0f ? Mathf.Clamp01(remaining / brakeDistance) : 1f);
+                float advance = step * Time.fixedDeltaTime * Mathf.Max(0.15f, factor);
                 x = dir > 0 ? Mathf.Min(x + advance, targetX) : Mathf.Max(x - advance, targetX);
                 ctx.Boss.MoveBody(new Vector2(x, y));
 

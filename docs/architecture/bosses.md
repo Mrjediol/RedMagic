@@ -48,6 +48,8 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
   filtering/damage and `ProjectileFactory` for **pooled** projectiles instead of a parallel system.
 - **Archetypes** — each one exists because it asks the player a *different question*; that is the
   bar a new archetype has to clear, otherwise it belongs as another asset of an existing one.
+  - `ChargeDashAttack` has optional `accelerationSeconds` / `brakeSeconds` (0 = the old instant
+    0 → full → 0; speed never drops below 15%). BossIce2 uses its own copy `Hielo2_Embestida` (0.18 / 0.22).
   - `ShockwaveAttack` (`BossShockwave`, pooled) — **"at what height am I?"**. A screen-wide wave
     inside a **height band**: band `0→1.9` must be jumped, band `1.9→9` must be ducked by staying
     grounded, and `alternateBands` makes one attack ask for jump→land→jump. Having both bands is

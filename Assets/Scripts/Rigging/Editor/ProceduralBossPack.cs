@@ -91,6 +91,12 @@ namespace RedMagic.Rigging.EditorTools
             var definition = Definition(log, fistThrow, doubleSlam, slamBarrage, pincer);
             EnsureInDecks(definition, shards, log);
 
+            // Su embestida: la misma, con arranque y frenada suaves (el cuerpo por partes no tiene
+            // fotogramas que disimulen un 0 → tope → 0).
+            ReplaceInDecks(definition, Load("BossAttack_HieloEmbestida"),
+                           CloneAttack("BossAttack_HieloEmbestida", "BossAttack_Hielo2_Embestida", log,
+                                       f => f.Set("accelerationSeconds", 0.18f).Set("brakeSeconds", 0.22f)), log);
+
             // Sus rocas: las mismas del Coloso de Hielo, al doble de tamaño (roca, explosión y marca).
             ReplaceInDecks(definition, Load("BossAttack_HieloLanzarRoca"),
                            CloneAttack("BossAttack_HieloLanzarRoca", "BossAttack_Hielo2_LanzarRoca", log,
@@ -451,9 +457,16 @@ namespace RedMagic.Rigging.EditorTools
             // Flota despacio; se inclina mucho al deslizarse (es pesado).
             rig.hoverBob = new Vector2(0f, 0.18f);
             rig.hoverSpeed = 1.3f;
-            rig.leanDegrees = 10f;
-            rig.leanFullSpeed = 4f;
-            rig.leanResponse = 4f;
+            rig.leanDegrees = 14f;
+            rig.leanFullSpeed = 5f;
+            rig.leanResponse = 6f;
+
+            // Peso: el cuerpo va detrás de la raíz y se pasa un poco al parar; al desplazarse, pose de
+            // deslizarse (gesto "Move", abajo).
+            rig.followStiffness = 55f;
+            rig.followDamping = 8f;
+            rig.followMaxOffset = 0.7f;
+            rig.moveGesture = "Move";
             rig.hurtTilt = 6f;
             rig.hurtSquash = 0.05f;
             rig.staggerStrength = 3f;
@@ -474,14 +487,14 @@ namespace RedMagic.Rigging.EditorTools
                         part.pivot = new Vector2(0f, 1f);
                         part.pointAngle = -90f;   // los nudillos, hacia abajo en el dibujo
                         part.center = new Vector2(0.5f, -2.7f);
-                        part.leanFollow = -0.5f;
+                        part.leanFollow = 0.4f;   // positivo: cuelga y se queda atrás
                         Sway(part, new Vector2(0.1f, 0.35f), 5f, 1.5f, 0f);
                         break;
                     case "RightFist":
                         part.pivot = new Vector2(0f, 1f);
                         part.pointAngle = -90f;
                         part.center = new Vector2(-0.3f, -2.1f);
-                        part.leanFollow = -0.5f;
+                        part.leanFollow = 0.4f;   // positivo: cuelga y se queda atrás
                         Sway(part, new Vector2(-0.1f, 0.35f), 5f, 1.5f, Mathf.PI);   // a contratiempo
                         break;
                     case "Base":
@@ -491,7 +504,7 @@ namespace RedMagic.Rigging.EditorTools
                         // La punta cuelga: gira desde arriba y se queda atrás como un péndulo.
                         part.pivot = new Vector2(-0.2f, 1f);
                         part.center = new Vector2(-0.2f, -1.6f);
-                        part.leanFollow = -1.2f;
+                        part.leanFollow = 0.8f;
                         Sway(part, new Vector2(0f, 0.1f), 5f, 1.2f, 2.1f);
                         break;
                 }
@@ -504,13 +517,19 @@ namespace RedMagic.Rigging.EditorTools
             // Carga de la embestida sin latigazo: se echa atrás y aguanta (se deshace despacio, 1.2 s)
             // mientras se fija la dirección; la pose de viaje (DashLoop) se funde encima al salir.
             rig.gestures.Add(Gesture("Dash", 0.1f, 1.2f, 2f,
-                new[] { P(visual, new Vector2(-0.5f, 0.2f), 8f), P(left, new Vector2(-2f, 1f), 20f),
-                        P(right, new Vector2(-2f, 1f), 20f), P(tip, Vector2.zero, 15f) },
+                new[] { P(visual, new Vector2(-0.5f, 0.2f), 8f), P(left, new Vector2(-2f, 1f), -20f),
+                        P(right, new Vector2(-2f, 1f), -20f), P(tip, Vector2.zero, 0f) },
                 new RigPose[0]));
             rig.gestures.Add(Gesture("DashLoop", 0.1f, 0.35f, 0f,
-                new[] { P(visual, new Vector2(0.3f, -0.2f), -16f), P(left, new Vector2(-3f, 1f), 35f),
-                        P(right, new Vector2(-3f, 1f), 35f), P(tip, Vector2.zero, 25f),
+                // Rotación negativa = una pieza que cuelga se queda ATRÁS (el signo lo refleja el facing).
+                new[] { P(visual, new Vector2(0.3f, -0.2f), -22f), P(left, new Vector2(-3f, 1f), -25f),
+                        P(right, new Vector2(-3f, 1f), -25f), P(tip, Vector2.zero, -25f),
                         P(crown, new Vector2(-1f, 0f), 10f) },
+                new RigPose[0]));
+            rig.gestures.Add(Gesture("Move", 0.1f, 0.3f, 0f,
+                new[] { P(visual, Vector2.zero, -6f), P(left, new Vector2(-1.2f, 0.3f), -15f),
+                        P(right, new Vector2(-1.2f, 0.3f), -15f), P(tip, Vector2.zero, -12f),
+                        P(crown, new Vector2(-0.6f, 0f), 4f) },
                 new RigPose[0]));
             rig.gestures.Add(Gesture("GroundSlam", 0.07f, 0.5f, 2.5f,
                 new[] { P(visual, new Vector2(0f, 0.8f), 0f, new Vector2(-0.04f, 0.05f)),
@@ -520,11 +539,11 @@ namespace RedMagic.Rigging.EditorTools
                         P(crown, new Vector2(0f, -1f), 0f), P(left, new Vector2(1f, -3f), 10f),
                         P(right, new Vector2(-1f, -3f), -10f) }));
             rig.gestures.Add(Gesture("PickUP", 0.12f, 0.35f, 1f,
-                new[] { P(visual, new Vector2(0f, -0.3f), -6f), P(right, new Vector2(2f, -3f), -20f) },
+                new[] { P(visual, new Vector2(0f, -0.3f), -6f), P(right, new Vector2(2f, -3f), 20f) },
                 new[] { P(visual, Vector2.zero, 4f), P(right, new Vector2(0f, 5f), 30f) }));
             rig.gestures.Add(Gesture("Throw", 0.08f, 0.4f, 1.5f,
-                new[] { P(visual, Vector2.zero, 8f), P(right, new Vector2(-2.5f, 4f), 40f) },
-                new[] { P(visual, new Vector2(0.2f, 0f), -10f), P(right, new Vector2(4f, 1f), -40f) }));
+                new[] { P(visual, Vector2.zero, 8f), P(right, new Vector2(-2.5f, 4f), -40f) },
+                new[] { P(visual, new Vector2(0.2f, 0f), -10f), P(right, new Vector2(4f, 1f), 40f) }));
 
             log.AppendLine("  rig sembrado: corona flotante, puños a contratiempo, punta en péndulo, 6 gestos.");
         }

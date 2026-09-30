@@ -621,6 +621,22 @@ export const BOSS_CATALOG = {
           "default": 1.5
         },
         {
+          "name": "accelerationSeconds",
+          "label": "Acceleration Seconds",
+          "tooltip": "Segundos en alcanzar la velocidad plena al salir. 0 = sale a tope (lo de siempre).",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "brakeSeconds",
+          "label": "Brake Seconds",
+          "tooltip": "Segundos de frenada al llegar. 0 = para en seco (lo de siempre).",
+          "min": 0.0,
+          "type": "float",
+          "default": 0.0
+        },
+        {
           "name": "lockSeconds",
           "label": "Lock Seconds",
           "tooltip": "Segundos que la flecha marca la dirección YA FIJADA antes de salir. Es el margen para apartarse: súbelo si es injusto, bájalo para agobiar.",

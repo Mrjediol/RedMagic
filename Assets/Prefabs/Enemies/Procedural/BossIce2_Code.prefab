@@ -60,6 +60,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: BossIce2_Code
       objectReference: {fileID: 0}
+    - target: {fileID: 8531883796791437944, guid: f5a6d7d0a2df58840a15833144436b47, type: 3}
+      propertyPath: arenaHeight
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8531883796791437944, guid: f5a6d7d0a2df58840a15833144436b47, type: 3}
+      propertyPath: arenaHalfWidth
+      value: 40
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 2299405668772030775, guid: f5a6d7d0a2df58840a15833144436b47, type: 3}

@@ -1,0 +1,370 @@
+{
+  "kind": "enemy",
+  "driver": "code",
+  "name": "RobotAgua",
+  "pixelsPerUnit": 100,
+  "sprites": {
+    "Parts/Flame.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.44151,
+        "y": 0.73668
+      }
+    },
+    "Parts/Ring.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Parts/Torso.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Parts/LeftArm.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.80917,
+        "y": 0.83661
+      }
+    },
+    "Parts/RightArm.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.09616,
+        "y": 0.215
+      }
+    },
+    "Parts/Head.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.48179,
+        "y": 0.11229
+      }
+    }
+  },
+  "root": {
+    "scale": 1
+  },
+  "collider": {
+    "type": "box",
+    "size": {
+      "x": 3.57,
+      "y": 5.6
+    },
+    "offset": {
+      "x": -0.71,
+      "y": 0.16
+    }
+  },
+  "corpse": {
+    "linger": 1.1,
+    "fadeDuration": 0.4
+  },
+  "visual": {
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "rotation": 0,
+    "scale": 1
+  },
+  "parts": [
+    {
+      "name": "Flame",
+      "parent": "",
+      "sprite": "Parts/Flame.png",
+      "sortingOrder": 0,
+      "position": {
+        "x": -1.14545,
+        "y": -1.6196
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.03
+        },
+        "rotate": 2,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.6,
+        "phase": 0
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Ring",
+      "parent": "Torso",
+      "sprite": "Parts/Ring.png",
+      "sortingOrder": 1,
+      "position": {
+        "x": -0.14891,
+        "y": -1.11082
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": -0.023,
+        "y": -0.018
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.03
+        },
+        "rotate": 2,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.95,
+        "phase": 3.31665
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Torso",
+      "parent": "",
+      "sprite": "Parts/Torso.png",
+      "sortingOrder": 2,
+      "position": {
+        "x": -0.89554,
+        "y": -0.02505
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.03
+        },
+        "rotate": 2,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 2.3,
+        "phase": 5.71661
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "LeftArm",
+      "parent": "Torso",
+      "sprite": "Parts/LeftArm.png",
+      "sortingOrder": 3,
+      "position": {
+        "x": -0.86377,
+        "y": 0.84563
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.03
+        },
+        "rotate": 2,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 2.3,
+        "phase": 4.79992
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "RightArm",
+      "parent": "Torso",
+      "sprite": "Parts/RightArm.png",
+      "sortingOrder": 4,
+      "position": {
+        "x": 1.33643,
+        "y": 0.73732
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.03
+        },
+        "rotate": 2,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.6,
+        "phase": 0.91669
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Head",
+      "parent": "Torso",
+      "sprite": "Parts/Head.png",
+      "sortingOrder": 5,
+      "position": {
+        "x": 0.20103,
+        "y": 0.91514
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.03
+        },
+        "rotate": 2,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.95,
+        "phase": 2.39996
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Muzzle",
+      "parent": "Torso/RightArm",
+      "position": {
+        "x": 3.262,
+        "y": 1.385
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": false
+    }
+  ],
+  "rig": {
+    "hoverBob": {
+      "x": 0,
+      "y": 0.08
+    },
+    "hoverSpeed": 2.2,
+    "leanDegrees": 12,
+    "leanFullSpeed": 2.5,
+    "leanResponse": 8,
+    "followStiffness": 0,
+    "followDamping": 9,
+    "followMaxOffset": 0.6,
+    "moveGesture": "",
+    "aimArtAngle": 23,
+    "aimMaxAngle": 75,
+    "windup": 0.4,
+    "recover": 0.45,
+    "windupPullAngle": 10,
+    "windupBodyTilt": 6,
+    "recoilDelay": 0.06,
+    "recoilKick": 0.09,
+    "recoilAngle": 15,
+    "recoilDistance": 0.3,
+    "bodyRecoil": 0.15,
+    "muzzleFlashColor": "#8cffffe6",
+    "muzzleFlashSize": 0.55,
+    "muzzleFlashTime": 0.1,
+    "foldedStretch": 0.05,
+    "foldedRiderScaleY": 0.6,
+    "foldedRiderOffset": {
+      "x": 0,
+      "y": 0
+    },
+    "wakeDuration": 0.8,
+    "sleepDuration": 0.55,
+    "wakeOvershoot": 2.2,
+    "wakeFlickers": 0,
+    "wakeFlickerPortion": 0.4,
+    "drivenLease": 0.25,
+    "drivenReturn": 0.35,
+    "staggerStrength": 2.5,
+    "hurtDuration": 0.28,
+    "hurtTilt": 14,
+    "hurtSquash": 0.12,
+    "breakImpulse": 3.5,
+    "breakUpward": 4,
+    "breakSpin": 540,
+    "breakGravity": 20,
+    "breakBounce": 0.35,
+    "breakGround": [
+      "Ground",
+      "Platform"
+    ],
+    "aimPart": "Torso/RightArm",
+    "muzzle": "Torso/RightArm/Muzzle",
+    "stretchPart": null,
+    "stretchRiders": []
+  },
+  "spriteSwaps": []
+}

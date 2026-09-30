@@ -108,6 +108,10 @@ regenerated).
   the parent's matrix (mirroring included) and `DriveCenter(limb, centre, localAngle)` places it;
   `LimbAttack.Fly/Hold` take one world direction per part (`Aim(...)`, null = rest orientation)
   and finish the turn in the first half of the move, so a thrown fist leads with its knuckles.
+  **Upright mirroring**: if turning a limb would leave it upside down (the art axis perpendicular to
+  `pointAngle` facing down), `BossLimbs` mirrors it across its pointing axis instead — a fist
+  pointing left is the mirror of one pointing right, like a character flipping. The mirror is kept
+  until halfway through the rig's return blend.
   **Grips**: a `Grip` child at each fist's centre (`BossLimbs.grips`) is where held props attach.
 - **`RigPart.center`** = visible centre (contact point for attacks); **`leanFollow`** = extra
   rotation × body lean (negative = trails like a pendulum: the ice tip, the fists).

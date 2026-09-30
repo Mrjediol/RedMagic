@@ -1,4 +1,5 @@
 using RedMagic.Abilities;
+using RedMagic.Gameplay;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -106,6 +107,21 @@ namespace RedMagic.Bosses
                 return Player.position.x < Boss.transform.position.x ? -1 : 1;
             }
         }
+
+        /// <summary>
+        /// Altura de la superficie (terreno macizo o plataforma) bajo <paramref name="x"/>, buscando
+        /// hacia abajo desde <paramref name="fromY"/>. Sin nada debajo, <see cref="GroundY"/>. Es lo que
+        /// hace que un golpe "donde estás" llegue también si estás subido a una cornisa.
+        /// </summary>
+        public float SurfaceBelow(float x, float fromY)
+        {
+            float length = Mathf.Max(2f, fromY - GroundY + 2f);
+            var hit = Physics2D.Raycast(new Vector2(x, fromY), Vector2.down, length, GroundMotion.TerrainMask);
+            return hit.collider != null ? hit.point.y : GroundY;
+        }
+
+        /// <summary>La superficie que pisa el jugador en <paramref name="x"/> (o la de su vertical).</summary>
+        public float PlayerSurfaceAt(float x) => SurfaceBelow(x, PlayerPosition.y + 0.3f);
 
         /// <summary>Borde izquierdo / derecho de la arena, en X.</summary>
         public float ArenaMinX => ArenaCenterX - ArenaHalfWidth;

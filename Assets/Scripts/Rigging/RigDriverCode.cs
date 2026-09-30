@@ -574,7 +574,8 @@ namespace RedMagic.Rigging
                     float e = EaseInOut(driven.returnTime / driven.returnDuration);
                     t.localPosition = Vector3.LerpUnclamped(driven.fromPosition, position, e);
                     t.localRotation = Quaternion.SlerpUnclamped(driven.fromRotation, rotation, e);
-                    t.localScale = scale;
+                    // Un puño reflejado (ver BossLimbs) no se "desvoltea" de golpe al soltarlo: a mitad de vuelta.
+                    t.localScale = e < 0.5f ? driven.fromScale : scale;
                     continue;
                 }
 

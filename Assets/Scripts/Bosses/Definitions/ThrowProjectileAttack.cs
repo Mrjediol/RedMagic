@@ -254,7 +254,8 @@ namespace RedMagic.Bosses
         private void Throw(in BossContext ctx, Vector2 origin)
         {
             float x = ctx.PlayerPosition.x + (landingSpread > 0f ? Random.Range(-landingSpread, landingSpread) : 0f);
-            var landing = new Vector2(Mathf.Clamp(x, ctx.ArenaMinX, ctx.ArenaMaxX), ctx.GroundY);
+            x = Mathf.Clamp(x, ctx.ArenaMinX, ctx.ArenaMaxX);
+            var landing = new Vector2(x, ctx.PlayerSurfaceAt(x));   // la cornisa del jugador, no el suelo del jefe
 
             // El ritmo de la fase acorta el vuelo; la gravedad sube con su cuadrado para que la
             // parábola tenga la misma forma, sólo más rápida.
@@ -282,7 +283,10 @@ namespace RedMagic.Bosses
             shot.Configure(-1f, velocity.magnitude, ctx.Ability.HitLayers);
             shot.ConfigureBehaviour(projectile.pierce, 0f, projectile.homingRange, g,
                                     projectile.impactRadius * ctx.Ability.SizeScale, projectile.impactDamage,
-                                    KnockbackMultiplier, Mathf.Max(projectile.lifetime, time + 1.5f));
+                                    KnockbackMultiplier, time + Time.fixedDeltaTime);
+            // Vida = tiempo de vuelo: al acabarla revienta (Projectile.Despawn explota) justo en la
+            // marca, también sobre una plataforma que el proyectil atravesaría.
+
             shot.Launch(velocity.normalized, ctx.Ability.Caster);
         }
     }

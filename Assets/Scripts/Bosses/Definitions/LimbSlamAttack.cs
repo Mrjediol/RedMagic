@@ -118,18 +118,22 @@ namespace RedMagic.Bosses
             float radius = limbs != null ? limbs.ContactRadius : 0.8f;
             int count = xs.Length;
 
+            var floors = new float[count];
             var ground = new Vector2[count];
             var top = new Vector2[count];
             for (int i = 0; i < count; i++)
             {
+                // Cae sobre la superficie que pisa el jugador (una cornisa, el puente), no sobre el suelo
+                // del jefe, y se coloca encima de él antes de caer.
                 float x = Mathf.Clamp(xs[i], ctx.ArenaMinX, ctx.ArenaMaxX);
-                ground[i] = new Vector2(x, ctx.GroundY + radius);
-                top[i] = new Vector2(x, ctx.GroundY + raiseHeight);
+                floors[i] = aimAtPlayer || mode == SlamMode.Alternating ? ctx.PlayerSurfaceAt(x) : ctx.SurfaceBelow(x, ctx.Origin.y + 0.3f);
+                ground[i] = new Vector2(x, floors[i] + radius);
+                top[i] = new Vector2(x, Mathf.Max(floors[i], ctx.PlayerPosition.y) + raiseHeight);
             }
 
             float rise = ctx.Scaled(riseSeconds), hang = ctx.Scaled(hangSeconds), drop = ctx.Scaled(dropSeconds);
             for (int i = 0; i < count; i++)
-                WarnCircle(ctx, new Vector2(ground[i].x, ctx.GroundY), impactRadius, rise + hang + drop);
+                WarnCircle(ctx, new Vector2(ground[i].x, floors[i]), impactRadius, rise + hang + drop);
 
             Transform[] parts = null;
             if (limbs != null)
@@ -159,7 +163,7 @@ namespace RedMagic.Bosses
 
             for (int i = 0; i < count; i++)
             {
-                var point = new Vector2(ground[i].x, ctx.GroundY);
+                var point = new Vector2(ground[i].x, floors[i]);
                 AbilityHit.DamageCircle(ctx.Ability, point, impactRadius, ScaledDamage(ctx), KnockbackMultiplier);
                 BossHitboxDebug.Circle(point, impactRadius, new Color(1f, 0.3f, 0.2f, 1f));
                 ImpactAt(ctx, point + Vector2.up * 0.4f, new Vector2(impactRadius * 2f, impactRadius));

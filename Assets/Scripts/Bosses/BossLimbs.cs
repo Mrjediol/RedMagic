@@ -117,8 +117,33 @@ namespace RedMagic.Bosses
 
             // El giro se aplica primero para medir bien la distancia pivote→centro con la pose nueva.
             _rig.DrivePartAngle(limb, limb.position, localAngle);
+            KeepUpright(limb);
             Vector2 offset = Center(limb) - (Vector2)limb.position;
             _rig.DrivePartAngle(limb, center - offset, localAngle);
+        }
+
+        /// <summary>
+        /// Refleja la pieza sobre su eje de apuntar si al girarla quedaría boca abajo: un puño que
+        /// apunta a la izquierda se ve como el espejo del que apunta a la derecha (igual que un
+        /// personaje se voltea), no girado 180°. El eje "de arriba" es el perpendicular a
+        /// <c>RigPart.pointAngle</c> (+X del dibujo si apunta en vertical, +Y si en horizontal).
+        /// </summary>
+        private void KeepUpright(Transform limb)
+        {
+            if (_data == null) return;
+
+            _data.TryGetRest(limb, out _, out _, out var restScale);
+            var part = _data.FindPart(limb);
+            float point = (part != null ? part.pointAngle : 0f) * Mathf.Deg2Rad;
+            bool vertical = Mathf.Abs(Mathf.Sin(point)) >= Mathf.Abs(Mathf.Cos(point));
+
+            limb.localScale = restScale;
+            Vector3 side = limb.TransformVector(vertical ? Vector3.right : Vector3.up);
+            if (side.y >= -0.1f * side.magnitude) return;
+
+            if (vertical) restScale.x = -restScale.x;
+            else restScale.y = -restScale.y;
+            limb.localScale = restScale;
         }
 
         /// <summary>Giro local actual de la pieza.</summary>

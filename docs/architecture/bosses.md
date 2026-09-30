@@ -115,6 +115,12 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
     `fireTickInterval`. Meant as a **`BossPhase.openingAttack`**: an attack the phase fires
     **once** after its transition, outside the shuffled deck. `BossController.OnDied` calls
     `BossHazard.ClearFrom(this)`, so every hazard a boss left (fire, rubble) dies with it.
+- **`BossContext.SurfaceBelow(x, fromY)` / `PlayerSurfaceAt(x)`** — the terrain (Ground or Platform)
+  under a point. Attacks that land "where you are" use it instead of `GroundY` (the boss's own floor):
+  `LimbSlamAttack` impacts and `ThrowProjectileAttack` landings reach a player on a ledge or bridge.
+  The thrown projectile's lifetime equals its flight time, so it bursts on the mark even over a
+  pass-through platform. X is still clamped to the arena (`ArenaMinX/MaxX`, `arenaHalfWidth` around
+  the spawn): outside it, attacks stop at the edge — size the arena to the room.
 - **Per-attack availability** — `BossAttack.minPhase` (1-based: below it the attack is never drawn,
   even if it sits in that phase's deck — the empty-deck fallback respects it too) and
   `cooldownSeconds` (real-time cooldown, on top of `cooldownInAttacks`), both checked in

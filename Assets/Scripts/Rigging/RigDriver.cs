@@ -133,6 +133,7 @@ namespace RedMagic.Rigging
             public float returnDuration;
             public Vector3 fromPosition;
             public Quaternion fromRotation;
+            public Vector3 fromScale;
         }
 
         protected readonly Dictionary<Transform, DrivenPart> Driven = new Dictionary<Transform, DrivenPart>();
@@ -179,6 +180,7 @@ namespace RedMagic.Rigging
             state.returnDuration = Mathf.Max(0.01f, seconds);
             state.fromPosition = part.localPosition;
             state.fromRotation = part.localRotation;
+            state.fromScale = part.localScale;
         }
 
         public bool IsDriven(Transform part) => part != null && Driven.ContainsKey(part);

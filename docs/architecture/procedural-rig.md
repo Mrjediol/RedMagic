@@ -84,3 +84,32 @@ regenerated).
   one `Head` + a `RigSpriteSwap`, sorting neck 2 / head 3 / base 4 (base in front → folded reads as
   a closed box), `Muzzle` between the eyes, box collider for the unfolded body. Laser placeholder
   `Fx_Turret_Laser` (sliver, `faceDirection`). Base `breaksOnDeath = false`.
+- **BossIce2** (Boss2 art) — part-based variant of the Coloso de Hielo, see *Bosses* below.
+
+## Bosses (named gestures, driven parts)
+- **`RigGesture`** (`ProceduralRig.gestures`) — a named pose pair: `windup` (reached with easing
+  over the attack's telegraph) and `strike` (snapped to in `strikeTime` after release), then back
+  over `recover`; `shake` trembles the body at the end of the windup. Poses are `RigPose`
+  (part + move/rotate/scale, additive on the composed pose; on the `body` X/rotation follow
+  facing). `BossAttack.gesture` names it — a new gesture is data, never code.
+- **`BossAnimator` rig path** — with a `RigDriver` on the boss it wins over the Animator:
+  `PlayGesture` → `RigDriver.PlayGesture` (release event = `Released`), `Hold`/`ReturnToRest` →
+  `HoldGesture`/`ClearHold` (charge travel pose), `PlayStagger` → `PlayHurt(staggerStrength)`
+  (phase change), flinch on every hit (additive, ≥0.2s apart), death → `PlayDeath`.
+- **`BossController`** — `bodyRenderer` picks the sprite the telegraph aura copies (the torso);
+  with a rig, facing flips the whole `Visual` (`RigDriver.SetFacing`), its own sway is skipped and
+  `SetBodyVisible` toggles every part.
+- **Driven parts** — `RigDriver.DrivePart(part, worldPos, spin)` lends a part to an attack (the
+  driver stops composing it); `ReleasePart(part, seconds)` blends it back onto the live body. A
+  lease (`drivenLease`) auto-returns parts whose attack was cut (phase change): nothing is ever
+  left floating. Trajectories live in the attack → identical in every driver.
+- **`RigPart.center`** = visible centre (contact point for attacks); **`leanFollow`** = extra
+  rotation × body lean (negative = trails like a pendulum: the ice tip, the fists).
+- `ProceduralRigTool.Setup(..., enemyStack: false)` for bosses (they bring their own stack).
+- `Packs/Coloso de Hielo por partes (BossIce2)` — `ProceduralBossPack`: definition
+  `Boss_ColosodeHielo2` = copy of `Boss_ColosodeHielo` (same phases/pacing/health/contact) with
+  key `boss.coloso_de_hielo_2`; root stack copied component-by-component from the ice prefab
+  (BossController, Mover, Health, Corpse…, no Animator) + `BossAnimator` + `BossLimbs`; `Visual`
+  at scale 0.38, 3.9 above the feet (same size as the original); parts renamed Tip / Crown /
+  LeftFist / RightFist; 6 gestures (Brace, Dash, DashLoop, GroundSlam, PickUP, Throw — the last
+  five match the ice attacks' gesture names, so the shared attack assets animate unchanged).

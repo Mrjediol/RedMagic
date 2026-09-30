@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb41260adb3d26940b51f2c0958f69f4, type: 3}
+  m_Name: BossAttack_Hielo2_Tenaza
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.LimbPincerAttack
+  displayName: Tenaza
+  description: "Un pu\xF1o a cada lado de ti y palmada: sal por arriba o por un lado
+    antes de que se cierren."
+  accent: {r: 0.55, g: 0.88, b: 1, a: 1}
+  telegraph: 0.3
+  recovery: 1.2
+  weight: 1
+  cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
+  damage: 22
+  knockbackMultiplier: 1
+  vulnerableSeconds: 1
+  vulnerableMultiplier: 1.8
+  gesture: Brace
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  shakeAmplitude: 0.4
+  shakeDuration: 0.25
+  impactFxPrefab: {fileID: 0}
+  impactFxWidth: 2.2
+  tremble: 0.06
+  spread: 3.2
+  clapHeight: 1.6
+  spreadSeconds: 0.5
+  holdSeconds: 0.5
+  clapSeconds: 0.13
+  reboundSeconds: 0.18
+  returnSeconds: 0.5
+  aimSpin: 70

@@ -8,6 +8,7 @@ using RedMagic.Core;
 using RedMagic.Fx;
 using RedMagic.Gameplay;
 using RedMagic.Gameplay.Movement;
+using RedMagic.Rigging;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -171,6 +172,11 @@ namespace RedMagic.Bosses
                  "del cuerpo, que también escribe el color del sprite.")]
         [SerializeField] private bool showTelegraphAura = true;
 
+        [Tooltip("Sprite principal del cuerpo: el que copia el aura y el que se voltea. Vacío = el " +
+                 "primer SpriteRenderer de los hijos (lo de siempre). En un cuerpo por partes " +
+                 "(ProceduralRig) pon aquí el torso.")]
+        [SerializeField] private SpriteRenderer bodyRenderer;
+
         [Tooltip("Cuánto se agranda la silueta del aura respecto al cuerpo.")]
         [Min(1f)]
         [SerializeField] private float auraScale = 1.06f;
@@ -207,6 +213,7 @@ namespace RedMagic.Bosses
         private Health _health;
         private Knockback _knockback;
         private SpriteRenderer _body;
+        private RigDriver _rig;
         private Transform _visual;
         private SpriteRenderer _aura;
         private Collider2D[] _colliders;
@@ -309,6 +316,10 @@ namespace RedMagic.Bosses
         /// </summary>
         public void SetBodyVisible(bool visible)
         {
+            if (_rig != null)
+                foreach (var part in GetComponentsInChildren<SpriteRenderer>(true))
+                    if (part != _aura) part.enabled = visible;
+
             if (_body != null) _body.enabled = visible;
             if (_aura != null) _aura.enabled = visible;
         }
@@ -418,13 +429,15 @@ namespace RedMagic.Bosses
         {
             _health = GetComponent<Health>();
             _knockback = GetComponent<Knockback>();
-            _body = GetComponentInChildren<SpriteRenderer>();
+            _body = bodyRenderer != null ? bodyRenderer : GetComponentInChildren<SpriteRenderer>();
+            _rig = GetComponent<RigDriver>();
             _colliders = GetComponentsInChildren<Collider2D>();
             _rigidbody = GetComponent<Rigidbody2D>();
             _animator = GetComponent<BossAnimator>();
             _mover = GetComponent<Mover>();
 
-            _visual = _body != null ? _body.transform : transform;
+            // Con rig el balanceo y el volteo son suyos: aquí no se gira ningún hijo.
+            _visual = _rig != null ? transform : _body != null ? _body.transform : transform;
             _visualBaseRotation = _visual.localRotation;
 
             // Un jefe es inamovible: ni el retroceso de los golpes ni la física lo desplazan de su
@@ -1111,12 +1124,14 @@ namespace RedMagic.Bosses
 
         private void UpdateFacing()
         {
-            if (!faceTarget || _body == null || FacingLocked) return;
+            if (!faceTarget || FacingLocked || (_body == null && _rig == null)) return;
 
             var target = ResolveTarget();
             if (target == null) return;
 
-            _body.flipX = target.position.x < transform.position.x;
+            bool left = target.position.x < transform.position.x;
+            if (_rig != null) _rig.SetFacing(left ? -1 : 1);   // voltea la raíz visual entera
+            else _body.flipX = left;
         }
 
         /// <summary>Balanceo lento del cuerpo: un jefe totalmente inmóvil parece un decorado.</summary>

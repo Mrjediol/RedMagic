@@ -25,8 +25,8 @@ Transform:
   m_GameObject: {fileID: 386234749441774712}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 3.9, z: 0}
+  m_LocalScale: {x: 0.38, y: 0.38, z: 0.38}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3818492204167141191}
@@ -43,7 +43,6 @@ GameObject:
   m_Component:
   - component: {fileID: 737755070239080428}
   - component: {fileID: 8909315003450347950}
-  - component: {fileID: 2750194120594101581}
   m_Layer: 0
   m_Name: Torso
   m_TagString: Untagged
@@ -128,22 +127,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &2750194120594101581
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1127340483145514060}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f0fb8aaf88ad54eaf74ff524463452, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProceduralSway
-  moveAmplitude: {x: 0, y: 0.05}
-  rotateAmplitude: 0
-  speed: 1.5
-  phase: 0
 --- !u!1 &2299405668772030775
 GameObject:
   m_ObjectHideFlags: 0
@@ -154,9 +137,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1352019454707757807}
   - component: {fileID: 680047166556501955}
-  - component: {fileID: 712551747364661072}
   m_Layer: 0
-  m_Name: Head
+  m_Name: Crown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -236,22 +218,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &712551747364661072
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2299405668772030775}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f0fb8aaf88ad54eaf74ff524463452, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProceduralSway
-  moveAmplitude: {x: 0, y: 0}
-  rotateAmplitude: 3
-  speed: 1.5
-  phase: 1
 --- !u!1 &2743042877503312693
 GameObject:
   m_ObjectHideFlags: 0
@@ -262,9 +228,8 @@ GameObject:
   m_Component:
   - component: {fileID: 3916565256956562829}
   - component: {fileID: 2252138343580385922}
-  - component: {fileID: 5179352018643720300}
   m_Layer: 0
-  m_Name: RightArm
+  m_Name: RightFist
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -344,22 +309,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &5179352018643720300
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2743042877503312693}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f0fb8aaf88ad54eaf74ff524463452, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProceduralSway
-  moveAmplitude: {x: 0, y: 0}
-  rotateAmplitude: 6
-  speed: 1.5
-  phase: 3.14
 --- !u!1 &3238620630186026495
 GameObject:
   m_ObjectHideFlags: 0
@@ -369,7 +318,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3818492204167141191}
-  - component: {fileID: 939947586323907482}
   m_Layer: 0
   m_Name: Base
   m_TagString: Untagged
@@ -393,22 +341,6 @@ Transform:
   - {fileID: 7204070783472505219}
   m_Father: {fileID: 7347099638341194921}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &939947586323907482
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3238620630186026495}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f0fb8aaf88ad54eaf74ff524463452, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  moveAmplitude: {x: 0, y: 0.05}
-  rotateAmplitude: 3
-  speed: 1.5
-  phase: 0.5
 --- !u!1 &3601596227129274598
 GameObject:
   m_ObjectHideFlags: 0
@@ -418,9 +350,22 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 447653924762572075}
+  - component: {fileID: 5834966072153459125}
+  - component: {fileID: 3492848117207049058}
+  - component: {fileID: 5753282477145378752}
+  - component: {fileID: 4471447718214495506}
+  - component: {fileID: 4242002941135455079}
+  - component: {fileID: 8856168009914159313}
+  - component: {fileID: 4644813368519726068}
+  - component: {fileID: 9174784311287868571}
+  - component: {fileID: 8661129724709157465}
+  - component: {fileID: 8531883796791437944}
+  - component: {fileID: 1182291893000087312}
+  - component: {fileID: 2561275398287486340}
+  - component: {fileID: 6639499376834814386}
   m_Layer: 0
   m_Name: BossIce2
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -435,12 +380,636 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 11.45, y: 18.61, z: 0}
-  m_LocalScale: {x: 0.55806, y: 0.55806, z: 0.55806}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7347099638341194921}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!50 &5834966072153459125
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 1
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4
+--- !u!61 &3492848117207049058
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 4.6}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 3.4, y: 4.4}
+  m_EdgeRadius: 0
+--- !u!114 &5753282477145378752
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ed19a26ed8fe1a4585cf1652e42f4c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Health
+  maxHealth: 3000
+  currentHealth: 3000
+  invulnerable: 0
+  damageMultiplier: 1
+  invulnerabilityDuration: 0
+  invulnerabilityUsesUnscaledTime: 0
+  lowHealthThreshold: 0.25
+--- !u!114 &4471447718214495506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2834dccf877e154e8542123d8a6320f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Knockback
+  horizontalForce: 8
+  verticalForce: 4
+  duration: 0.18
+  resistance: 1
+  immune: 1
+--- !u!114 &4242002941135455079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149b2f6ad9846b2459f53db66c4872ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.HitFlash
+  flashColor: {r: 1, g: 0.35, b: 0.35, a: 1}
+  flashDuration: 0.1
+  blinkWhileInvulnerable: 1
+  blinkInterval: 0.06
+  blinkAlpha: 0.35
+--- !u!114 &8856168009914159313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d2eae826431e14f92ff10101336621, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Corpse
+  linger: 1.4
+  fadeDuration: 0.5
+  corpseTint: {r: 0.35, g: 0.1, b: 0.12, a: 0.75}
+  tintOnDeath: 0
+  destroyWhenDone: 1
+--- !u!114 &4644813368519726068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2985d1d8de77b546b4fbeddccf21c6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Economy.CurrencyDropper
+  tier: 2
+--- !u!114 &9174784311287868571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25f26422bb3b9424bbbba4b548fbca9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.Movement.Mover
+  behaviour:
+    rid: 5384780661706981485
+  movingThreshold: 0.2
+  startPaused: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: 5384780661706981485
+      type: {class: HoverKeepDistance, ns: RedMagic.Gameplay.Movement, asm: Assembly-CSharp}
+      data:
+        minDistance: 5
+        maxDistance: 9
+        speed: 3
+        acceleration: 8
+        arriveTolerance: 0.35
+        followHeight: 0
+        heightAboveTarget: 2.5
+        verticalSpeed: 2.5
+--- !u!114 &8661129724709157465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 9
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 2
+    cue:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 1
+    cue:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 19
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  useGenericFallback: 1
+--- !u!114 &8531883796791437944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c31c033ed721ff4c9fbd2053b719179, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossController
+  definition: {fileID: 11400000, guid: 6cf3be7032b4b764bbda994e6dda2635, type: 2}
+  arenaHalfWidth: 16
+  arenaHeight: 12
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  snapToGround: 1
+  targetTag: Player
+  activationRadius: 18
+  faceTarget: 1
+  introSeconds: 2.2
+  music: {fileID: 0}
+  introShake: 0.6
+  contactDamage: 14
+  contactDamageCooldown: 0.8
+  contactKnockbackMultiplier: 1.4
+  fxSprite: {fileID: 0}
+  warnPrefab: {fileID: 0}
+  warnCirclePrefab: {fileID: 5842757486688564628, guid: 6e8a1db328816824ba7d2fd3d4f60f59, type: 3}
+  warnArrowPrefab: {fileID: 5663402332763273965, guid: 9667f256f036535409d9ab6d322bc95c, type: 3}
+  shockwavePrefab: {fileID: 0}
+  sweepBeamPrefab: {fileID: 0}
+  hazardPrefab: {fileID: 0}
+  platformPrefab: {fileID: 0}
+  anchorPrefab: {fileID: 0}
+  showTelegraphAura: 1
+  bodyRenderer: {fileID: 8909315003450347950}
+  auraScale: 1.06
+  vulnerableAura: {r: 1, g: 0.86, b: 0.35, a: 1}
+  guardAura: {r: 0.45, g: 0.72, b: 1, a: 1}
+  swayDegrees: 0
+  swaySpeed: 1.1
+  debugHitboxes: 0
+  moveArenaMargin: 2
+--- !u!114 &1182291893000087312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bad32666014fe0e408165925e4808056, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossAnimator
+  animator: {fileID: 0}
+  rig: {fileID: 0}
+  idleState: Idle
+  moveState: Walk
+  staggerState: Hurt
+  deathState: Death
+  idleSpeed: 1
+  gestureSpeedRange: {x: 0.35, y: 3}
+  flinchOnHit: 1
+  flinchCooldown: 3
+  flinchMinDamage: 0
+--- !u!114 &2561275398287486340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 684b3d79bf48d044a99aa1bf2affced9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossLimbs
+  limbs:
+  - {fileID: 64156176810029400}
+  - {fileID: 3916565256956562829}
+  contactRadius: 0.9
+--- !u!114 &6639499376834814386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3601596227129274598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c13b8fb4202993469b1b193562a84c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Rigging.ProceduralRig
+  body: {fileID: 7347099638341194921}
+  parts:
+  - part: {fileID: 3818492204167141191}
+    pivot: {x: 0, y: 0}
+    center: {x: 0, y: 0}
+    leanFollow: 0
+    swayMove: {x: 0, y: 0}
+    swayRotate: 0
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1
+    swayPhase: 0
+    breaksOnDeath: 1
+  - part: {fileID: 7204070783472505219}
+    pivot: {x: -0.2, y: 1}
+    center: {x: -0.2, y: -1.6}
+    leanFollow: -1.2
+    swayMove: {x: 0, y: 0.1}
+    swayRotate: 5
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1.2
+    swayPhase: 2.1
+    breaksOnDeath: 1
+  - part: {fileID: 737755070239080428}
+    pivot: {x: 0, y: 0}
+    center: {x: 0, y: 0}
+    leanFollow: 0
+    swayMove: {x: 0, y: 0.08}
+    swayRotate: 1.2
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1.1
+    swayPhase: 0
+    breaksOnDeath: 1
+  - part: {fileID: 1352019454707757807}
+    pivot: {x: -0.6, y: 1.9}
+    center: {x: -0.6, y: 1.9}
+    leanFollow: 0
+    swayMove: {x: 0, y: 0.45}
+    swayRotate: 4
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1.9
+    swayPhase: 1.3
+    breaksOnDeath: 1
+  - part: {fileID: 64156176810029400}
+    pivot: {x: 0, y: 1}
+    center: {x: 0.5, y: -2.7}
+    leanFollow: -0.5
+    swayMove: {x: 0.1, y: 0.35}
+    swayRotate: 5
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1.5
+    swayPhase: 0
+    breaksOnDeath: 1
+  - part: {fileID: 3916565256956562829}
+    pivot: {x: 0, y: 1}
+    center: {x: -0.3, y: -2.1}
+    leanFollow: -0.5
+    swayMove: {x: -0.1, y: 0.35}
+    swayRotate: 5
+    swayScale: {x: 0, y: 0}
+    swaySpeed: 1.5
+    swayPhase: 3.1415927
+    breaksOnDeath: 1
+  hoverBob: {x: 0, y: 0.18}
+  hoverSpeed: 1.3
+  leanDegrees: 10
+  leanFullSpeed: 4
+  leanResponse: 4
+  aimPart: {fileID: 0}
+  aimArtAngle: 0
+  aimMaxAngle: 75
+  windup: 0.4
+  recover: 0.45
+  windupPullAngle: 10
+  windupBodyTilt: 6
+  recoilDelay: 0.06
+  recoilKick: 0.09
+  recoilAngle: 15
+  recoilDistance: 0.3
+  bodyRecoil: 0.15
+  muzzle: {fileID: 0}
+  muzzleFlashSprite: {fileID: 0}
+  muzzleFlashColor: {r: 0.55, g: 1, b: 1, a: 0.9}
+  muzzleFlashSize: 0.55
+  muzzleFlashTime: 0.1
+  spriteSwaps: []
+  stretchPart: {fileID: 0}
+  stretchRiders: []
+  foldedStretch: 0.05
+  foldedRiderScaleY: 0.6
+  foldedRiderOffset: {x: 0, y: 0}
+  wakeDuration: 0.8
+  sleepDuration: 0.55
+  wakeOvershoot: 2.2
+  wakeFlickers: 0
+  wakeFlickerPortion: 0.4
+  gestures:
+  - name: Brace
+    windup:
+    - part: {fileID: 7347099638341194921}
+      move: {x: 0, y: -0.25}
+      rotate: 3
+      scale: {x: 0, y: 0}
+    - part: {fileID: 1352019454707757807}
+      move: {x: 0, y: 1.2}
+      rotate: 0
+      scale: {x: 0, y: 0}
+    strike:
+    - part: {fileID: 7347099638341194921}
+      move: {x: 0, y: 0.1}
+      rotate: -2
+      scale: {x: 0, y: 0}
+    strikeTime: 0.08
+    recover: 0.4
+    shake: 2
+  - name: Dash
+    windup:
+    - part: {fileID: 7347099638341194921}
+      move: {x: -0.5, y: 0.2}
+      rotate: 8
+      scale: {x: 0, y: 0}
+    - part: {fileID: 64156176810029400}
+      move: {x: -2, y: 1}
+      rotate: 20
+      scale: {x: 0, y: 0}
+    - part: {fileID: 3916565256956562829}
+      move: {x: -2, y: 1}
+      rotate: 20
+      scale: {x: 0, y: 0}
+    - part: {fileID: 7204070783472505219}
+      move: {x: 0, y: 0}
+      rotate: 15
+      scale: {x: 0, y: 0}
+    strike:
+    - part: {fileID: 7347099638341194921}
+      move: {x: 0.5, y: -0.1}
+      rotate: -14
+      scale: {x: 0, y: 0}
+    - part: {fileID: 64156176810029400}
+      move: {x: 3, y: 0}
+      rotate: -30
+      scale: {x: 0, y: 0}
+    - part: {fileID: 3916565256956562829}
+      move: {x: 3, y: 0}
+      rotate: -30
+      scale: {x: 0, y: 0}
+    strikeTime: 0.1
+    recover: 0.4
+    shake: 2
+  - name: DashLoop
+    windup:
+    - part: {fileID: 7347099638341194921}
+      move: {x: 0.3, y: -0.2}
+      rotate: -16
+      scale: {x: 0, y: 0}
+    - part: {fileID: 64156176810029400}
+      move: {x: -3, y: 1}
+      rotate: 35
+      scale: {x: 0, y: 0}
+    - part: {fileID: 3916565256956562829}
+      move: {x: -3, y: 1}
+      rotate: 35
+      scale: {x: 0, y: 0}
+    - part: {fileID: 7204070783472505219}
+      move: {x: 0, y: 0}
+      rotate: 25
+      scale: {x: 0, y: 0}
+    - part: {fileID: 1352019454707757807}
+      move: {x: -1, y: 0}
+      rotate: 10
+      scale: {x: 0, y: 0}
+    strike: []
+    strikeTime: 0.1
+    recover: 0.35
+    shake: 0
+  - name: GroundSlam
+    windup:
+    - part: {fileID: 7347099638341194921}
+      move: {x: 0, y: 0.8}
+      rotate: 0
+      scale: {x: -0.04, y: 0.05}
+    - part: {fileID: 1352019454707757807}
+      move: {x: 0, y: 2}
+      rotate: 0
+      scale: {x: 0, y: 0}
+    - part: {fileID: 64156176810029400}
+      move: {x: 1, y: 5}
+      rotate: -25
+      scale: {x: 0, y: 0}
+    - part: {fileID: 3916565256956562829}
+      move: {x: -1, y: 5}
+      rotate: 25
+      scale: {x: 0, y: 0}
+    strike:
+    - part: {fileID: 7347099638341194921}
+      move: {x: 0, y: -0.6}
+      rotate: 0
+      scale: {x: 0.08, y: -0.08}
+    - part: {fileID: 1352019454707757807}
+      move: {x: 0, y: -1}
+      rotate: 0
+      scale: {x: 0, y: 0}
+    - part: {fileID: 64156176810029400}
+      move: {x: 1, y: -3}
+      rotate: 10
+      scale: {x: 0, y: 0}
+    - part: {fileID: 3916565256956562829}
+      move: {x: -1, y: -3}
+      rotate: -10
+      scale: {x: 0, y: 0}
+    strikeTime: 0.07
+    recover: 0.5
+    shake: 2.5
+  - name: PickUP
+    windup:
+    - part: {fileID: 7347099638341194921}
+      move: {x: 0, y: -0.3}
+      rotate: -6
+      scale: {x: 0, y: 0}
+    - part: {fileID: 3916565256956562829}
+      move: {x: 2, y: -3}
+      rotate: -20
+      scale: {x: 0, y: 0}
+    strike:
+    - part: {fileID: 7347099638341194921}
+      move: {x: 0, y: 0}
+      rotate: 4
+      scale: {x: 0, y: 0}
+    - part: {fileID: 3916565256956562829}
+      move: {x: 0, y: 5}
+      rotate: 30
+      scale: {x: 0, y: 0}
+    strikeTime: 0.12
+    recover: 0.35
+    shake: 1
+  - name: Throw
+    windup:
+    - part: {fileID: 7347099638341194921}
+      move: {x: 0, y: 0}
+      rotate: 8
+      scale: {x: 0, y: 0}
+    - part: {fileID: 3916565256956562829}
+      move: {x: -2.5, y: 4}
+      rotate: 40
+      scale: {x: 0, y: 0}
+    strike:
+    - part: {fileID: 7347099638341194921}
+      move: {x: 0.2, y: 0}
+      rotate: -10
+      scale: {x: 0, y: 0}
+    - part: {fileID: 3916565256956562829}
+      move: {x: 4, y: 1}
+      rotate: -40
+      scale: {x: 0, y: 0}
+    strikeTime: 0.08
+    recover: 0.4
+    shake: 1.5
+  drivenLease: 0.25
+  drivenReturn: 0.35
+  staggerStrength: 3
+  hurtDuration: 0.28
+  hurtTilt: 6
+  hurtSquash: 0.05
+  breakImpulse: 4
+  breakUpward: 5
+  breakSpin: 360
+  breakGravity: 20
+  breakBounce: 0.35
+  breakGround:
+    serializedVersion: 2
+    m_Bits: 320
 --- !u!1 &4826473792585622112
 GameObject:
   m_ObjectHideFlags: 0
@@ -452,7 +1021,7 @@ GameObject:
   - component: {fileID: 7204070783472505219}
   - component: {fileID: 7774877947033115186}
   m_Layer: 0
-  m_Name: Flame
+  m_Name: Tip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -542,9 +1111,8 @@ GameObject:
   m_Component:
   - component: {fileID: 64156176810029400}
   - component: {fileID: 1216270917501576050}
-  - component: {fileID: 846687992391600239}
   m_Layer: 0
-  m_Name: LeftArm
+  m_Name: LeftFist
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -624,19 +1192,3 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &846687992391600239
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8080031092773669584}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d8f0fb8aaf88ad54eaf74ff524463452, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProceduralSway
-  moveAmplitude: {x: 0, y: 0}
-  rotateAmplitude: 5
-  speed: 1.5
-  phase: 0

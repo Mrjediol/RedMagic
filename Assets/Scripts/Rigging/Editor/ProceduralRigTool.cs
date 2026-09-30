@@ -66,7 +66,7 @@ namespace RedMagic.Rigging.EditorTools
         /// </summary>
         public static void Setup(string prefabPath, StringBuilder log,
                                  Action<GameObject, ProceduralRig, bool> configure = null,
-                                 Action<GameObject> prepare = null)
+                                 Action<GameObject> prepare = null, bool enemyStack = true)
         {
             var root = PrefabUtility.LoadPrefabContents(prefabPath);
             try
@@ -75,8 +75,9 @@ namespace RedMagic.Rigging.EditorTools
 
                 // Reorganizar la jerarquía (envoltorios de pivote, fusionar variantes de sprite)
                 // antes de rellenar el rig, para que las partes salgan ya con su forma final.
+                // Un jefe monta su propia pila (BossController…) en 'prepare': sin la de enemigo.
                 prepare?.Invoke(root);
-                EnsureEnemyStack(root, log);
+                if (enemyStack) EnsureEnemyStack(root, log);
 
                 bool created = root.GetComponent<ProceduralRig>() == null;
                 var rig = Get<ProceduralRig>(root);

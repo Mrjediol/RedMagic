@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RedMagic.Combat;
+using RedMagic.Rigging;
 using UnityEngine;
 
 namespace RedMagic.Bosses
@@ -23,6 +24,9 @@ namespace RedMagic.Bosses
     /// Los gestos son estados sueltos del controller (el generador no les pone transiciones); al
     /// acabar, este componente devuelve el Animator al reposo. Tambaleo y muerte usan lo que el
     /// pipeline ya cablea: la salida de Hurt a Idle y el bool Dead.
+    ///
+    /// Con un <see cref="RigDriver"/> (cuerpo por partes, ver <c>ProceduralRig</c>) manda el rig: cada
+    /// gesto es un <c>RigGesture</c> con ese nombre y su aviso de suelta hace de AnimationEvent.
     /// </summary>
     [DisallowMultipleComponent]
     public class BossAnimator : MonoBehaviour
@@ -33,6 +37,9 @@ namespace RedMagic.Bosses
         [Tooltip("Vacío = el de este objeto. Tiene que estar en la RAÍZ del jefe, o los eventos de " +
                  "los clips no llegarían aquí.")]
         [SerializeField] private Animator animator;
+
+        [Tooltip("Cuerpo por partes. Vacío = se busca en este objeto. Si existe, manda sobre el Animator.")]
+        [SerializeField] private RigDriver rig;
 
         [Header("Estados")]
         [SerializeField] private string idleState = "Idle";
@@ -95,6 +102,9 @@ namespace RedMagic.Bosses
 
         public bool HasAnimator => animator != null && animator.runtimeAnimatorController != null;
 
+        /// <summary>True si el cuerpo es un rig por partes.</summary>
+        public bool HasRig => rig != null && rig.enabled;
+
         /// <summary>True desde que el gesto en curso ha soltado su golpe.</summary>
         public bool Released { get; private set; }
 
@@ -104,6 +114,7 @@ namespace RedMagic.Bosses
         private void Awake()
         {
             if (animator == null) animator = GetComponent<Animator>();
+            if (rig == null) rig = GetComponent<RigDriver>();
             _health = GetComponent<Health>();
 
             _idleHash = Animator.StringToHash(idleState);
@@ -116,6 +127,7 @@ namespace RedMagic.Bosses
 
         private void OnEnable()
         {
+            if (rig != null) rig.AttackReleased += OnRigReleased;
             if (_health == null) return;
             _health.Damaged += OnDamaged;
             _health.Died += OnDied;
@@ -123,6 +135,7 @@ namespace RedMagic.Bosses
 
         private void OnDisable()
         {
+            if (rig != null) rig.AttackReleased -= OnRigReleased;
             if (_health == null) return;
             _health.Damaged -= OnDamaged;
             _health.Died -= OnDied;
@@ -182,6 +195,19 @@ namespace RedMagic.Bosses
         /// </summary>
         public bool PlayGesture(string state, float secondsToRelease)
         {
+            if (HasRig)
+            {
+                if (_dead || !rig.PlayGesture(state, secondsToRelease)) return false;
+
+                _holding = false;
+                _inGesture = true;
+                Released = false;
+                SecondsToRelease = secondsToRelease;
+                _releaseAt = Time.time + secondsToRelease + 0.3f;   // sólo red de seguridad
+                _finishAt = -1f;
+                return true;
+            }
+
             if (_dead || !HasAnimator || string.IsNullOrWhiteSpace(state)) return false;
 
             int hash = Animator.StringToHash(state);
@@ -226,6 +252,12 @@ namespace RedMagic.Bosses
         /// </summary>
         public void SetMoving(bool moving)
         {
+            if (HasRig)
+            {
+                if (!_dead) rig.SetMoving(moving);
+                return;
+            }
+
             if (_dead || !HasAnimator) return;
 
             if (_parameters.Contains(MovingKey))
@@ -248,6 +280,14 @@ namespace RedMagic.Bosses
         /// </summary>
         public bool Hold(string state)
         {
+            if (HasRig)
+            {
+                if (_dead) return false;
+                CancelGesture();
+                _holding = rig.HoldGesture(state);
+                return _holding;
+            }
+
             if (_dead || !HasAnimator || string.IsNullOrWhiteSpace(state)) return false;
 
             int hash = Animator.StringToHash(state);
@@ -271,6 +311,12 @@ namespace RedMagic.Bosses
         {
             _holding = false;
             CancelGesture();
+            if (HasRig)
+            {
+                if (!_dead) rig.ClearHold();
+                return;
+            }
+
             if (_dead || !HasAnimator) return;
             if (animator.HasState(0, _idleHash)) animator.Play(_idleHash, 0, 0f);
         }
@@ -278,6 +324,17 @@ namespace RedMagic.Bosses
         /// <summary>Tambaleo: corta el gesto que hubiera (sin soltarlo) y se encoge.</summary>
         public void PlayStagger()
         {
+            if (HasRig)
+            {
+                if (_dead) return;
+                CancelGesture();
+                _holding = false;
+                _lastFlinch = Time.time;
+                rig.ClearHold();
+                rig.PlayStagger();
+                return;
+            }
+
             if (_dead || !HasAnimator) return;
 
             CancelGesture();
@@ -299,6 +356,16 @@ namespace RedMagic.Bosses
         public void OnAttackFinished()
         {
             if (_inGesture) FinishGesture();
+        }
+
+        /// <summary>Golpes seguidos más cerca que esto sólo tambalean el rig una vez.</summary>
+        private const float RigFlinchCooldown = 0.2f;
+
+        private void OnRigReleased()
+        {
+            if (!_inGesture) return;
+            Release();
+            _inGesture = false;   // el resto del gesto (golpe y vuelta) lo lleva el rig solo
         }
 
         private void Release()
@@ -331,6 +398,18 @@ namespace RedMagic.Bosses
 
         private void OnDamaged(float amount)
         {
+            // Un rig encaja cada golpe sin cortar nada (el tambaleo es una capa que se suma), así que
+            // no espera al reposo; sólo se limita la frecuencia para que una ráfaga no lo deje temblando.
+            if (HasRig)
+            {
+                if (flinchOnHit && !_dead && amount >= flinchMinDamage && Time.time - _lastFlinch >= RigFlinchCooldown)
+                {
+                    _lastFlinch = Time.time;
+                    rig.PlayHurt(1f);
+                }
+                return;
+            }
+
             if (!flinchOnHit || _dead || _inGesture || _holding || !HasAnimator) return;
             if (amount < flinchMinDamage || Time.time - _lastFlinch < flinchCooldown) return;
             if (animator.GetCurrentAnimatorStateInfo(0).shortNameHash != _idleHash) return;
@@ -342,6 +421,12 @@ namespace RedMagic.Bosses
         {
             _dead = true;
             CancelGesture();
+            if (HasRig)
+            {
+                rig.PlayDeath();
+                return;
+            }
+
             if (!HasAnimator) return;
 
             if (_parameters.Contains(DeadKey)) animator.SetBool(DeadKey, true);

@@ -53,6 +53,12 @@ namespace RedMagic.Rigging
         private float _bodyTilt;      // grados hacia atrás
         private float _bodyKick;      // unidades hacia atrás
         private float _hurtTime = -1f;
+        private float _hurtStrength = 1f;
+
+        // Gesto con nombre (jefes): pesos de la pose de carga y de la de golpe.
+        private RigGesture _gesture;
+        private float _gestureWindup, _gestureStrike, _gestureShake;
+        private Coroutine _gestureRoutine;
 
         // Despliegue: 0 plegado (dormido), 1 pose del prefab, >1 durante el rebote.
         private float _unfold = 1f;
@@ -98,6 +104,10 @@ namespace RedMagic.Rigging
             _aimPoint = null;
             _aimWeight = _armRotation = _armPush = _bodyTilt = _bodyKick = 0f;
             _hurtTime = -1f;
+            _hurtStrength = 1f;
+            _gesture = null;
+            _gestureWindup = _gestureStrike = _gestureShake = 0f;
+            _gestureRoutine = null;
             _attack = null;
             _fold = null;
             _unfold = 1f;
@@ -111,6 +121,8 @@ namespace RedMagic.Rigging
             StopAllCoroutines();
             _attack = null;
             _fold = null;
+            _gestureRoutine = null;
+            _gesture = null;
             _pieces.Clear();
             base.OnDisable();
         }
@@ -182,9 +194,159 @@ namespace RedMagic.Rigging
             RaiseFinished();
         }
 
-        public override void PlayHurt()
+        public override void PlayHurt(float strength)
         {
-            if (!_dead) _hurtTime = 0f;
+            if (_dead) return;
+            // Un golpe flojo no pisa un tambaleo fuerte que aún está sonando.
+            if (_hurtTime >= 0f && strength < _hurtStrength) return;
+            _hurtTime = 0f;
+            _hurtStrength = Mathf.Max(0.01f, strength);
+        }
+
+        // ============================================================ gestos con nombre (jefes)
+
+        public override bool PlayGesture(string gestureName, float secondsToRelease)
+        {
+            if (_dead) return false;
+            var gesture = Rig.FindGesture(gestureName);
+            if (gesture == null) return false;
+
+            StartGesture(GestureRoutine(gesture, Mathf.Max(0.01f, secondsToRelease)), gesture);
+            return true;
+        }
+
+        public override bool HoldGesture(string gestureName)
+        {
+            if (_dead) return false;
+            var gesture = Rig.FindGesture(gestureName);
+            if (gesture == null) return false;
+
+            StartGesture(HoldRoutine(), gesture);
+            return true;
+        }
+
+        public override void ClearHold()
+        {
+            if (_dead || _gesture == null) return;
+            StartGesture(SettleRoutine(0.25f), _gesture);
+        }
+
+        private void StartGesture(IEnumerator routine, RigGesture gesture)
+        {
+            if (_gestureRoutine != null) StopCoroutine(_gestureRoutine);
+
+            // Otro gesto encima: la pose nueva arranca desde cero, pero la vieja no desaparece de
+            // golpe si se estaba usando la misma — se reaprovechan los pesos actuales.
+            if (_gesture != gesture) _gestureWindup = _gestureStrike = 0f;
+            _gesture = gesture;
+            _gestureShake = 0f;
+            _gestureRoutine = StartCoroutine(routine);
+        }
+
+        /// <summary>Carga (easing) → suelta (evento) → golpe (strikeTime) → vuelta al reposo.</summary>
+        private IEnumerator GestureRoutine(RigGesture gesture, float windup)
+        {
+            float from = _gestureWindup;
+            for (float t = 0f; t < windup;)
+            {
+                float k = t / windup;
+                _gestureWindup = Mathf.Lerp(from, 1f, EaseInOut(k));
+                _gestureStrike = Mathf.Lerp(_gestureStrike, 0f, k);
+                _gestureShake = k > 0.7f ? gesture.shake : 0f;
+
+                yield return null;
+                if (!Paused) t += Time.deltaTime;
+            }
+
+            _gestureWindup = 1f;
+            _gestureShake = 0f;
+            RaiseReleased();
+
+            for (float t = 0f; t < gesture.strikeTime;)
+            {
+                float k = EaseOutCubic(t / gesture.strikeTime);
+                _gestureStrike = k;
+                _gestureWindup = 1f - k;
+
+                yield return null;
+                if (!Paused) t += Time.deltaTime;
+            }
+
+            _gestureStrike = 1f;
+            _gestureWindup = 0f;
+            yield return SettleRoutine(gesture.recover);
+            RaiseFinished();
+        }
+
+        /// <summary>Llega a la pose de carga y se queda ahí hasta <see cref="ClearHold"/>.</summary>
+        private IEnumerator HoldRoutine()
+        {
+            float from = _gestureWindup;
+            const float blend = 0.15f;
+            for (float t = 0f; t < blend;)
+            {
+                _gestureWindup = Mathf.Lerp(from, 1f, EaseInOut(t / blend));
+                yield return null;
+                if (!Paused) t += Time.deltaTime;
+            }
+
+            _gestureWindup = 1f;
+            _gestureRoutine = null;
+        }
+
+        /// <summary>De los pesos actuales a cero.</summary>
+        private IEnumerator SettleRoutine(float seconds)
+        {
+            float windup = _gestureWindup, strike = _gestureStrike;
+            _gestureShake = 0f;
+            for (float t = 0f; t < seconds;)
+            {
+                float e = 1f - EaseInOut(t / seconds);
+                _gestureWindup = windup * e;
+                _gestureStrike = strike * e;
+                yield return null;
+                if (!Paused) t += Time.deltaTime;
+            }
+
+            _gestureWindup = _gestureStrike = 0f;
+            _gesture = null;
+            _gestureRoutine = null;
+        }
+
+        /// <summary>Suma las poses del gesto encima de todo lo compuesto este frame.</summary>
+        private void ApplyGesture()
+        {
+            if (_gesture == null) return;
+
+            ApplyPoses(_gesture.windup, _gestureWindup);
+            ApplyPoses(_gesture.strike, _gestureStrike);
+
+            var body = Rig.body;
+            if (_gestureShake > 0f && body != null)
+                body.localRotation *= Quaternion.Euler(0f, 0f, Mathf.Sin(_clock * 80f) * _gestureShake);
+        }
+
+        private void ApplyPoses(List<RigPose> poses, float weight)
+        {
+            if (weight <= 0.0001f || poses == null) return;
+
+            var body = Rig.body;
+            foreach (var pose in poses)
+            {
+                var t = pose?.part;
+                if (t == null || Driven.ContainsKey(t)) continue;
+
+                // Sólo lo que se recompone cada frame: sumar sobre algo que no se reinicia lo haría derivar.
+                if (t != body && Rig.FindPart(t) == null) continue;
+
+                // La raíz visual cuelga de la raíz sin voltear: 'delante' y 'atrás' dependen del facing.
+                // Las partes cuelgan de ella ya volteadas, así que sus números valen tal cual.
+                float side = t == body ? Facing : 1f;
+                t.localPosition += new Vector3(pose.move.x * side, pose.move.y, 0f) * weight;
+                t.localRotation *= Quaternion.Euler(0f, 0f, pose.rotate * side * weight);
+                var s = t.localScale;
+                t.localScale = new Vector3(s.x * (1f + pose.scale.x * weight), s.y * (1f + pose.scale.y * weight), s.z);
+            }
         }
 
         // ============================================================ plegar / desplegar
@@ -279,6 +441,10 @@ namespace RedMagic.Rigging
             if (_fold != null) StopCoroutine(_fold);
             _fold = null;
             Rig.ShowSprites(RigSpriteState.Asleep);   // se apagan los ojos
+            if (_gestureRoutine != null) StopCoroutine(_gestureRoutine);
+            _gestureRoutine = null;
+            _gesture = null;
+            Driven.Clear();
 
             Vector2 center = Rig.body != null ? (Vector2)Rig.body.position : (Vector2)transform.position;
 
@@ -319,6 +485,7 @@ namespace RedMagic.Rigging
 
             RepairHierarchy();
             _clock += dt;
+            TickDriven(dt);
 
             // Inclinación: sale de la velocidad real, así sirve igual si lo mueve la física, la
             // IA de un jefe o un empujón.
@@ -332,6 +499,7 @@ namespace RedMagic.Rigging
 
             ComposeBody(dt);
             ComposeParts();
+            ApplyGesture();
         }
 
         private void ComposeBody(float dt)
@@ -345,13 +513,13 @@ namespace RedMagic.Rigging
             if (_hurtTime >= 0f)
             {
                 _hurtTime += dt;
-                float k = _hurtTime / rig.hurtDuration;
+                float k = _hurtTime / (rig.hurtDuration * Mathf.Sqrt(_hurtStrength));
                 if (k >= 1f) _hurtTime = -1f;
                 else
                 {
                     float envelope = 1f - k;
-                    hurtTilt = rig.hurtTilt * envelope * Mathf.Sin(k * Mathf.PI * 3f);
-                    squash = rig.hurtSquash * envelope * Mathf.Cos(k * Mathf.PI * 2f);
+                    hurtTilt = rig.hurtTilt * _hurtStrength * envelope * Mathf.Sin(k * Mathf.PI * 3f);
+                    squash = rig.hurtSquash * Mathf.Min(_hurtStrength, 2f) * envelope * Mathf.Cos(k * Mathf.PI * 2f);
                 }
             }
 
@@ -385,17 +553,34 @@ namespace RedMagic.Rigging
                 // la cabeza dormida se queda quieta y pegada a la base.
                 float s = Mathf.Sin(_clock * data.swaySpeed + data.swayPhase) *
                           (rider ? Mathf.Clamp01(_unfold) : 1f);
-                float angle = pose.angle + data.swayRotate * s;
+                // La inclinación es de mundo y la parte cuelga de la raíz volteada: se refleja con el facing.
+                float angle = pose.angle + data.swayRotate * s + _lean * data.leanFollow * Facing;
                 var scale = new Vector3(pose.scale.x * (1f + data.swayScale.x * s),
                                         pose.scale.y * (1f + data.swayScale.y * s), pose.scale.z);
                 if (i == _aimIndex) angle += AimRotation();
                 if (rider) scale.y *= rig.RiderScaleY(_unfold);
 
-                t.localRotation = Quaternion.Euler(0f, 0f, angle);
+                var position = pose.position + (Vector3)(data.swayMove * s)
+                             + ProceduralRig.PivotCorrection(data.pivot, pose.angle, pose.scale, angle, scale);
+                if (rider) position += rig.RiderOffset(pose.position, stretch, _unfold);
+                var rotation = Quaternion.Euler(0f, 0f, angle);
+
+                // Prestada a un ataque: la mueve él. Volviendo: mezcla desde donde la soltó hasta la
+                // pose que le tocaría ahora (que sigue viva: el cuerpo se mueve mientras vuelve).
+                if (Driven.TryGetValue(t, out var driven))
+                {
+                    if (!driven.returning) continue;
+
+                    float e = EaseInOut(driven.returnTime / driven.returnDuration);
+                    t.localPosition = Vector3.LerpUnclamped(driven.fromPosition, position, e);
+                    t.localRotation = Quaternion.SlerpUnclamped(driven.fromRotation, rotation, e);
+                    t.localScale = scale;
+                    continue;
+                }
+
+                t.localRotation = rotation;
                 t.localScale = scale;
-                t.localPosition = pose.position + (Vector3)(data.swayMove * s)
-                                + ProceduralRig.PivotCorrection(data.pivot, pose.angle, pose.scale, angle, scale);
-                if (rider) t.localPosition += rig.RiderOffset(pose.position, stretch, _unfold);
+                t.localPosition = position;
 
                 if (i == _aimIndex) ApplyRecoilPush(t, angle);
             }

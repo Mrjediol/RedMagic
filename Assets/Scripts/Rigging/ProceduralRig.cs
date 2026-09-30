@@ -19,6 +19,14 @@ namespace RedMagic.Rigging
                  "tocar el arte. 0 = el pivote del sprite.")]
         public Vector2 pivot;
 
+        [Tooltip("Centro de la parte visible, relativo al pivote del sprite (unidades locales). Es " +
+                 "el punto de contacto cuando un ataque usa la pieza (el puño que golpea).")]
+        public Vector2 center;
+
+        [Tooltip("Giro extra proporcional a la inclinación del cuerpo al moverse (1 = otro tanto; " +
+                 "negativo = se queda atrás como un péndulo).")]
+        public float leanFollow;
+
         [Header("Balanceo en reposo (seno)")]
         [Tooltip("Amplitud del vaivén, en unidades locales del padre.")]
         public Vector2 swayMove = new Vector2(0f, 0.05f);
@@ -67,6 +75,39 @@ namespace RedMagic.Rigging
             RigSpriteState.Attacking => attacking,
             _ => awake,
         };
+    }
+
+    /// <summary>Desplazamiento de una parte dentro de una pose de gesto (se suma al reposo).</summary>
+    [Serializable]
+    public class RigPose
+    {
+        [Tooltip("La parte, o la raíz visual (entonces X es 'hacia delante' y el giro 'hacia atrás').")]
+        public Transform part;
+        public Vector2 move;
+        [Tooltip("Grados.")]
+        public float rotate;
+        [Tooltip("Cambio de escala (0.1 = +10%).")]
+        public Vector2 scale;
+    }
+
+    /// <summary>
+    /// Un gesto con nombre (el <c>gesture</c> de un ataque de jefe: "Charge", "Slam"…): durante la
+    /// carga el cuerpo va hacia <see cref="windup"/>, al soltar salta a <see cref="strike"/> y luego
+    /// vuelve al reposo. Todo son datos: un gesto nuevo no necesita código.
+    /// </summary>
+    [Serializable]
+    public class RigGesture
+    {
+        public string name = "Charge";
+        [Tooltip("Pose al final de la carga (llega con easing).")]
+        public List<RigPose> windup = new List<RigPose>();
+        [Tooltip("Pose del golpe: se alcanza en 'strikeTime' tras soltar.")]
+        public List<RigPose> strike = new List<RigPose>();
+        [Min(0.01f)] public float strikeTime = 0.08f;
+        [Tooltip("Segundos de vuelta al reposo tras el golpe.")]
+        [Min(0.01f)] public float recover = 0.45f;
+        [Tooltip("Temblor (grados) de la raíz visual en el último 30% de la carga.")]
+        public float shake = 1.5f;
     }
 
     /// <summary>
@@ -191,7 +232,19 @@ namespace RedMagic.Rigging
                  "se abren al 60% del despliegue.")]
         [Range(0f, 1f)] public float wakeFlickerPortion = 0.4f;
 
+        [Header("Gestos con nombre (jefes)")]
+        public List<RigGesture> gestures = new List<RigGesture>();
+
+        [Header("Piezas manejadas por un ataque (puño lanzado…)")]
+        [Tooltip("Si el ataque deja de mover la pieza durante estos segundos (lo cortó un cambio de " +
+                 "fase, por ejemplo), vuelve sola al cuerpo.")]
+        [Min(0.02f)] public float drivenLease = 0.25f;
+        [Tooltip("Segundos de la vuelta automática.")]
+        [Min(0.02f)] public float drivenReturn = 0.35f;
+
         [Header("Golpe recibido")]
+        [Tooltip("Multiplicador del golpe en un tambaleo (cambio de fase de un jefe).")]
+        [Min(1f)] public float staggerStrength = 2.5f;
         [Min(0.01f)] public float hurtDuration = 0.28f;
         [Tooltip("Grados que se tambalea.")]
         public float hurtTilt = 14f;
@@ -258,6 +311,40 @@ namespace RedMagic.Rigging
                 var sprite = swap.Get(state);
                 if (sprite != null) swap.renderer.sprite = sprite;
             }
+        }
+
+        /// <summary>El gesto con ese nombre (sin distinguir mayúsculas), o null.</summary>
+        public RigGesture FindGesture(string gestureName)
+        {
+            if (string.IsNullOrWhiteSpace(gestureName)) return null;
+            foreach (var g in gestures)
+                if (g != null && string.Equals(g.name, gestureName, StringComparison.OrdinalIgnoreCase)) return g;
+            return null;
+        }
+
+        /// <summary>Los datos de la parte <paramref name="t"/>, o null.</summary>
+        public RigPart FindPart(Transform t)
+        {
+            foreach (var p in parts) if (p != null && p.part == t) return p;
+            return null;
+        }
+
+        /// <summary>Centro visible de una parte en el mundo (ver <see cref="RigPart.center"/>).</summary>
+        public Vector2 PartCenter(Transform t)
+        {
+            var data = FindPart(t);
+            return t.TransformPoint(data != null ? (Vector3)data.center : Vector3.zero);
+        }
+
+        /// <summary>
+        /// Dónde está en el mundo el pivote de la parte en su pose de reposo <b>ahora</b> (con el
+        /// cuerpo donde esté y mirando a donde mire). Es el "hogar" al que vuelve una pieza lanzada.
+        /// </summary>
+        public Vector2 RestWorldPosition(Transform t)
+        {
+            if (t == null || t.parent == null) return t != null ? (Vector2)t.position : Vector2.zero;
+            TryGetRest(t, out var local, out _, out _);
+            return t.parent.TransformPoint(local);
         }
 
         /// <summary>True si este rig sabe plegarse (dormir / despertar).</summary>

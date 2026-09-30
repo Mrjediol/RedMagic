@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using RedMagic.Abilities;
 using RedMagic.Core;
 using UnityEngine;
@@ -45,7 +46,11 @@ namespace RedMagic.Rigging
             Rig.RestorePose();
         }
 
-        protected virtual void OnDisable() => Rig.RestorePose();
+        protected virtual void OnDisable()
+        {
+            Driven.Clear();
+            Rig.RestorePose();
+        }
 
         /// <summary>
         /// Rearma las piezas que la muerte desmontó (reutilización por pool). Se llama desde el
@@ -85,7 +90,26 @@ namespace RedMagic.Rigging
         /// </summary>
         public abstract void PlayAttack(Vector2? aimPoint, float speed);
 
-        public abstract void PlayHurt();
+        /// <summary>Golpe recibido. <paramref name="strength"/> 1 = normal; el tambaleo de un jefe pasa más.</summary>
+        public abstract void PlayHurt(float strength);
+
+        public void PlayHurt() => PlayHurt(1f);
+
+        /// <summary>Tambaleo fuerte (cambio de fase de un jefe): <see cref="ProceduralRig.staggerStrength"/>.</summary>
+        public void PlayStagger() => PlayHurt(Rig.staggerStrength);
+
+        /// <summary>
+        /// Gesto con nombre (<see cref="RigGesture"/>): carga durante <paramref name="secondsToRelease"/>,
+        /// avisa <see cref="AttackReleased"/> y vuelve al reposo. False si el rig no tiene ese gesto
+        /// (quien llama cae entonces a su aviso por tiempo).
+        /// </summary>
+        public virtual bool PlayGesture(string gestureName, float secondsToRelease) => false;
+
+        /// <summary>Mantiene la pose de carga de un gesto hasta <see cref="ClearHold"/> (el viaje de una embestida).</summary>
+        public virtual bool HoldGesture(string gestureName) => false;
+
+        /// <summary>Suelta un gesto en curso o mantenido y vuelve al reposo, sin avisar de nada.</summary>
+        public virtual void ClearHold() { }
 
         public abstract void PlayDeath();
 
@@ -97,6 +121,83 @@ namespace RedMagic.Rigging
         /// (nacer dormido). Por defecto sólo cambia los sprites.
         /// </summary>
         public virtual void PlaySleep(bool instant) => Rig.ShowSprites(RigSpriteState.Asleep);
+
+        // ============================================================ piezas manejadas por un ataque
+
+        /// <summary>Estado de una pieza que un ataque ha tomado prestada (un puño lanzado).</summary>
+        protected class DrivenPart
+        {
+            public float idle;
+            public bool returning;
+            public float returnTime;
+            public float returnDuration;
+            public Vector3 fromPosition;
+            public Quaternion fromRotation;
+        }
+
+        protected readonly Dictionary<Transform, DrivenPart> Driven = new Dictionary<Transform, DrivenPart>();
+        private static readonly List<Transform> Finished = new List<Transform>();
+
+        /// <summary>
+        /// Un ataque mueve la pieza <b>en el mundo</b> (su pivote a <paramref name="worldPosition"/>,
+        /// girada <paramref name="spin"/> grados sobre su reposo). Mientras la mueva, el motor no la
+        /// toca. La trayectoria es del ataque, así que es idéntica en todos los motores; sólo la vuelta
+        /// al cuerpo es del motor. Si el ataque deja de llamar (lo cortaron), la pieza vuelve sola
+        /// tras <see cref="ProceduralRig.drivenLease"/>.
+        /// </summary>
+        public void DrivePart(Transform part, Vector2 worldPosition, float spin)
+        {
+            if (part == null) return;
+            if (!Driven.TryGetValue(part, out var state))
+            {
+                state = new DrivenPart();
+                Driven[part] = state;
+            }
+
+            state.idle = 0f;
+            state.returning = false;
+
+            part.position = new Vector3(worldPosition.x, worldPosition.y, part.position.z);
+            Rig.TryGetRest(part, out _, out float restAngle, out _);
+            part.localRotation = Quaternion.Euler(0f, 0f, restAngle + spin);
+        }
+
+        /// <summary>Devuelve la pieza al cuerpo en <paramref name="seconds"/> (lo anima el motor).</summary>
+        public void ReleasePart(Transform part, float seconds)
+        {
+            if (part == null || !Driven.TryGetValue(part, out var state) || state.returning) return;
+
+            state.returning = true;
+            state.returnTime = 0f;
+            state.returnDuration = Mathf.Max(0.01f, seconds);
+            state.fromPosition = part.localPosition;
+            state.fromRotation = part.localRotation;
+        }
+
+        public bool IsDriven(Transform part) => part != null && Driven.ContainsKey(part);
+
+        /// <summary>Avanza el plazo de las piezas prestadas y retira las que ya volvieron. Una vez por frame.</summary>
+        protected void TickDriven(float dt)
+        {
+            if (Driven.Count == 0) return;
+
+            Finished.Clear();
+            foreach (var pair in Driven)
+            {
+                var state = pair.Value;
+                if (!state.returning)
+                {
+                    state.idle += dt;
+                    if (state.idle > Rig.drivenLease) ReleasePart(pair.Key, Rig.drivenReturn);
+                    continue;
+                }
+
+                state.returnTime += dt;
+                if (state.returnTime >= state.returnDuration) Finished.Add(pair.Key);
+            }
+
+            foreach (var t in Finished) Driven.Remove(t);
+        }
 
         // ============================================================ avisos
 

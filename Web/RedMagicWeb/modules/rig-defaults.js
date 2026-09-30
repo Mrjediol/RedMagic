@@ -125,6 +125,19 @@ export function createPart({ name, image = null, index = 0 }) {
   };
 }
 
+/** A saved composer document back into a valid state (fills anything added since it was saved). */
+export function adoptRigState(draft) {
+  const base = createDefaultRigState();
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const s = { ...base, ...clone(draft) };
+  s.roles = { ...base.roles, ...(draft.roles || {}) };
+  s.rig = { ...base.rig, ...(draft.rig || {}) };
+  s.bossLimbs = { ...base.bossLimbs, ...(draft.bossLimbs || {}) };
+  s.bossBody = { ...base.bossBody, ...(draft.bossBody || {}) };
+  s.parts = (s.parts || []).map((p) => ({ ...createPart({ name: p.name }), ...p, variants: { asleep: null, awake: null, attacking: null, stages: [], ...(p.variants || {}) } }));
+  return s;
+}
+
 /** A whole composer document — also what is stored as the library record's `draft`. */
 export function createDefaultRigState() {
   return {
@@ -148,7 +161,6 @@ export function createDefaultRigState() {
     corpse: { linger: 1.1, fadeDuration: 0.4 },
     bossLimbs: { contactRadius: 0.9, orbiterRadius: 0.5 },
     bossBody: { health: 2500, arenaHalfWidth: 15, arenaHeight: 12, activationRadius: 18, contactDamage: 12, bodyRenderer: null },
-    enemyConfigId: null,           // library entry (kind enemy) whose config travels in the zip
     bossConfigId: null,            // library entry (kind boss) whose config travels in the zip
   };
 }

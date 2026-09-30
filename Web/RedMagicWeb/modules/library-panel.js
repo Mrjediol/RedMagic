@@ -29,6 +29,7 @@ function defaultBadges(entry) {
     badges.push(`${animCount} anim.`);
   } else if (entry.kind === 'rig' && entry.config) {
     badges.push(`${(entry.config.parts || []).filter((p) => p.sprite).length} piezas`, entry.config.kind === 'boss' ? 'jefe' : 'enemigo');
+    if (entry.enemyConfig) badges.push({ text: entry.enemyConfig.tuning?.archetype || 'comportamiento', accent: true });
   } else if (entry.config) {
     const attacks = Object.keys(entry.config.attacks || {}).length;
     const phases = (entry.config.phases || []).length;

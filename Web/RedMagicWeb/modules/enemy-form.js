@@ -17,6 +17,8 @@ import { loadEnemyConfigValidator, validateEnemyConfig } from './enemy-config-sc
 import { downloadBlob } from './export-manifest.js';
 import { listEntries, getEnemy, updateEnemy } from './enemy-library.js';
 import { buildCombinedBundle } from './enemy-bundle.js';
+import { buildRigBundle } from './rig-export.js';
+import { adoptRigState } from './rig-defaults.js';
 
 const KNOWN_LAYERS = ['Ground', 'Platform'];
 
@@ -178,15 +180,18 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   // not a valid 'art' for an EnemyConfig: EnemyFactory reads that sheet for the enemy's own body
   // clips and its thrown prop, neither of which a projectile/VFX sheet has. Offering them would
   // produce a config that imports into a broken enemy instead of failing at authoring time.
+  // Plus part-based enemies (🦴 rig entries, enemy kind): their body is the rig, this form only
+  // authors their behaviour, which is saved on the rig record as `enemyConfig`.
   async function refreshArtLibraryOptions() {
-    libraryEntriesCache = await listEntries('enemy');
+    const rigs = (await listEntries('rig')).filter((e) => e.draft && e.draft.kind !== 'boss');
+    libraryEntriesCache = [...(await listEntries('enemy')), ...rigs];
     if (libraryEntriesCache.length === 0) {
       artLibrarySelect.innerHTML = '<option value="">(sin enemigos guardados — usa la pestaña Sprites)</option>';
       return;
     }
     artLibrarySelect.innerHTML = ['<option value="">Selecciona un enemigo guardado…</option>']
       .concat(libraryEntriesCache.map((e) =>
-        `<option value="${e.id}" ${e.id === state.artLibraryId ? 'selected' : ''}>${e.enemyName} — ${new Date(e.updatedAt).toLocaleString()}</option>`
+        `<option value="${e.id}" ${e.id === state.artLibraryId ? 'selected' : ''}>${e.kind === 'rig' ? '🦴 ' : ''}${e.enemyName}${e.kind === 'rig' ? ' (por partes)' : ''} — ${new Date(e.updatedAt).toLocaleString()}</option>`
       )).join('');
   }
 
@@ -560,7 +565,10 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
    *  already happened by the time this runs. */
   async function persistConfigToLibraryIfLinked(exportObj) {
     if (state.artMode !== 'library' || !state.artLibraryId) return;
-    try { await updateEnemy(state.artLibraryId, { config: exportObj }); }
+    const linked = libraryEntriesCache.find((e) => e.id === state.artLibraryId);
+    // A rig record's own `config` is its rig-config: the behaviour goes next to it.
+    const patch = linked?.kind === 'rig' ? { enemyConfig: exportObj } : { config: exportObj };
+    try { await updateEnemy(state.artLibraryId, patch); }
     catch (err) { console.warn('[enemy-form] no se pudo guardar el config en la biblioteca:', err); }
   }
 
@@ -595,6 +603,15 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
       }
 
       const exportObj = buildExportObject(state);
+      if (entry.kind === 'rig') {
+        // Part-based: the rig's own .zip (parts + rig-config) with this behaviour as enemy-config.json.
+        const all = await listEntries(null);
+        const blob = await buildRigBundle(adoptRigState(entry.draft), { enemyConfig: exportObj, entriesById: new Map(all.map((e) => [e.id, e])) });
+        downloadBlob(blob, `${entry.enemyName.replace(/[^A-Za-z0-9_]/g, '_')}.rig.zip`);
+        await persistConfigToLibraryIfLinked(exportObj);
+        summaryEl.insertAdjacentHTML('afterbegin', '<p class="efSummaryOk">Exportado el .zip del rig: en Unity, Tools ▸ Web ▸ Rig ▸ Importar rig.</p>');
+        return;
+      }
       const enemyName = exportObj.enemyName || entry.enemyName;
       const blob = await buildCombinedBundle({
         enemyName, kind: entry.kind, libraryId: entry.id, sprite: entry.sprite, configObj: exportObj,

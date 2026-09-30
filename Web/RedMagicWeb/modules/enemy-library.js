@@ -102,6 +102,9 @@ export async function saveEnemy(entry) {
   // The Boss Creator's full form state (boss entries only), so reopening a boss restores exactly
   // what was on screen — the exported config alone loses web-only choices.
   if (entry.draft) record.draft = entry.draft;
+  // A rig record (🦴) keeps TWO configs: `config` is its rig-config, `enemyConfig` the behaviour
+  // (EnemyConfig) authored in Enemy Creator with this rig picked as the art.
+  if (entry.enemyConfig) record.enemyConfig = entry.enemyConfig;
   const s = await store('readwrite');
   await wrap(s.put(record));
   return record;

@@ -11,7 +11,7 @@
 // Geometry and part operations: rig-model.js. Drawing and picking: rig-canvas-view.js. Export:
 // rig-export.js. Preview formulas copy RigDriverCode.cs (sway, hover, lean, hurt).
 
-import { createDefaultRigState, createPart, RIG_FIELD_GROUPS, createDefaultRigFields } from './rig-defaults.js';
+import { createDefaultRigState, createPart, RIG_FIELD_GROUPS, createDefaultRigFields, adoptRigState } from './rig-defaults.js';
 import * as M from './rig-model.js';
 import { RigCanvasView } from './rig-canvas-view.js';
 import { buildRigExport, buildRigBundle } from './rig-export.js';
@@ -42,13 +42,13 @@ const el = (tag, cls, text) => {
   return e;
 };
 
-export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl, inspector }) {
+export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl, inspector, onEditBehaviour }) {
   let state = createDefaultRigState();
   let selectedUid = null;
   let tool = 'move';
   let currentId = null;          // library record id this document was saved as / opened from
   let validate = null;
-  let enemyEntries = [];
+  let behaviour = null;          // the EnemyConfig saved on this rig's record (from Enemy Creator)
   let bossEntries = [];
 
   // preview (RigDriverCode's formulas)
@@ -725,11 +725,18 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
         hint: 'Su boss-config (ataques, fases, arte de ataques) viaja en el .zip sin su cuerpo: el cuerpo es este rig.',
         onChange: (v) => { state.bossConfigId = v || null; refreshExport(); } }).row);
     } else {
-      const options = [{ value: '', label: '(ninguno: tuning por defecto)' }, ...enemyEntries.map((e) => ({ value: e.id, label: e.enemyName }))];
-      d.appendChild(F.enumField({ label: 'Enemigo de la biblioteca', value: state.enemyConfigId || '', options,
-        hint: 'Su tuning (arquetipo, rangos, daño, proyectil) viaja en el .zip como enemy-config.json. Su hoja de sprites no se usa.',
-        onChange: (v) => { state.enemyConfigId = v || null; refreshExport(); } }).row);
-      if (!enemyEntries.length) d.appendChild(el('p', 'hint', 'Ningún enemigo con config todavía: créalo en Enemy Creator (el arte da igual) y expórtalo una vez.'));
+      const t = behaviour?.tuning;
+      d.appendChild(el('p', behaviour ? 'efSummaryOk' : 'hint', behaviour
+        ? `✓ ${t?.archetype || 'Melee'} · vida ${t?.maxHealth ?? 30} · ataque ${t?.attackRange ?? 1.6} u (de Enemy Creator)`
+        : 'Sin comportamiento todavía: se exportará con el tuning por defecto (Melee).'));
+      d.appendChild(el('p', 'hint', 'El comportamiento (volador o no, vida, rangos, daño, proyectil) se configura en 🧩 Enemy Creator eligiendo este rig como arte. Viaja en el .zip como enemy-config.json.'));
+      const go = el('button', 'small', '🧩 Configurar en Enemy Creator');
+      go.onclick = async () => {
+        if (!state.name.trim()) { setStatus('Ponle nombre y guárdalo primero.'); return; }
+        await saveToLibrary();
+        if (currentId && onEditBehaviour) onEditBehaviour(currentId, state.name.trim());
+      };
+      d.appendChild(go);
     }
   }
 
@@ -841,11 +848,9 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     c.width = 320; c.height = 320;
     const tmp = new RigCanvasView(c, { clientWidth: 320, clientHeight: 320 }, { dpr: 1 });
     tmp.frame(state);
-    await new Promise((resolve) => {
-      let tries = 0;
-      const attempt = () => { tmp.render(state, { showMarkers: false, showCollider: false }); if (++tries > 20) resolve(); else setTimeout(attempt, 30); };
-      attempt();
-    });
+    // Every part image decoded first (the view loads them lazily on its first render).
+    await tmp.preload(state);
+    tmp.render(state, { showMarkers: false, showCollider: false });
     return buildThumbnail(c);
   }
 
@@ -868,7 +873,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const all = await listEntries(null);
     const entriesById = new Map(all.map((e) => [e.id, e]));
     const blob = await buildRigBundle(state, {
-      enemyEntry: entriesById.get(state.enemyConfigId) || null,
+      enemyConfig: (await getEnemy(currentId || ''))?.enemyConfig || null,
       bossEntry: entriesById.get(state.bossConfigId) || null,
       entriesById,
     });
@@ -878,23 +883,12 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   }
 
   async function refreshLibraries() {
-    const enemies = await listEntries('enemy');
-    enemyEntries = enemies.filter((e) => e.config);
+    behaviour = currentId ? (await getEnemy(currentId))?.enemyConfig || null : null;
     bossEntries = (await listEntries('boss')).filter((e) => e.config);
     renderInspector();
   }
 
-  /** A saved composer document back into a valid state (fills anything added since). */
-  function adopt(draft) {
-    const base = createDefaultRigState();
-    const s = { ...base, ...clone(draft) };
-    s.roles = { ...base.roles, ...(draft.roles || {}) };
-    s.rig = { ...base.rig, ...(draft.rig || {}) };
-    s.bossLimbs = { ...base.bossLimbs, ...(draft.bossLimbs || {}) };
-    s.bossBody = { ...base.bossBody, ...(draft.bossBody || {}) };
-    s.parts = (s.parts || []).map((p) => ({ ...createPart({ name: p.name }), ...p, variants: { asleep: null, awake: null, attacking: null, stages: [], ...(p.variants || {}) } }));
-    return s;
-  }
+  const adopt = adoptRigState;
 
   async function linkLibraryEntry(id) {
     const entry = await getEnemy(id);

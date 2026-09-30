@@ -1066,6 +1066,10 @@ rigComposer = initRigComposer({
   canvasWrap: document.getElementById('rigCanvasWrap'),
   statusEl: document.getElementById('rigStatus'),
   inspector: document.getElementById('rigInspector'),
+  onEditBehaviour: async (id, name) => {
+    document.querySelector('.tabBtn[data-tab="enemy"]').click();
+    await enemyCreator.linkLibraryEntry(id, name);
+  },
 });
 
 // ============================================================ shared enemy library (persistent, cross-tab)

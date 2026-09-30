@@ -5,7 +5,7 @@
 //
 //   rig-config.json
 //   Parts/<pieza>.png, Parts/<pieza>__asleep.png, Parts/<pieza>__stage1.png …   (cropped art)
-//   enemy-config.json            (kind enemy, optional: a linked Enemy Creator entry's tuning)
+//   enemy-config.json            (kind enemy, optional: the behaviour Enemy Creator saved on this rig)
 //   Library/<libraryId>/…        (its projectile's art, same as a combined enemy bundle)
 //   boss-config.json + Art/…     (kind boss, optional: a linked Boss Creator entry, without 'body')
 //
@@ -167,10 +167,10 @@ export function buildRigExport(state) {
   return { doc, files, problems, notes };
 }
 
-/** Linked Enemy Creator config, trimmed to what a part-based enemy reads (tuning + tier). */
-export function companionEnemyConfig(entry, name) {
-  if (!entry?.config) return null;
-  const cfg = JSON.parse(JSON.stringify(entry.config));
+/** The Enemy Creator config authored for this rig, trimmed to what a part-based enemy reads (tuning + tier). */
+export function companionEnemyConfig(enemyConfig, name) {
+  if (!enemyConfig) return null;
+  const cfg = JSON.parse(JSON.stringify(enemyConfig));
   ['art', 'anchor', 'presence', 'projectileArt', 'prefabFolder'].forEach((k) => delete cfg[k]);
   cfg.kind = 'enemy';
   cfg.enemyName = name;
@@ -180,16 +180,17 @@ export function companionEnemyConfig(entry, name) {
 /**
  * The .zip for Unity.
  * @param {object} state
- * @param {object} links - { enemyEntry, bossEntry, entriesById: Map } (library records)
+ * @param {object} links - { enemyConfig: EnemyConfig from Enemy Creator (the rig record's `enemyConfig`),
+ *                          bossEntry, entriesById: Map } (library records)
  */
-export async function buildRigBundle(state, { enemyEntry = null, bossEntry = null, entriesById = new Map() } = {}) {
+export async function buildRigBundle(state, { enemyConfig = null, bossEntry = null, entriesById = new Map() } = {}) {
   const { doc, files } = buildRigExport(state);
   const zip = new window.JSZip();
   zip.file('rig-config.json', JSON.stringify(doc, null, 2));
   files.forEach((f) => zip.file(f.path, f.dataURL.split(',')[1], { base64: true }));
 
   if (state.kind === 'enemy') {
-    const cfg = companionEnemyConfig(enemyEntry, doc.name);
+    const cfg = companionEnemyConfig(enemyConfig, doc.name);
     if (cfg) {
       zip.file('enemy-config.json', JSON.stringify(cfg, null, 2));
       await embedReferencedLibraryEntries(zip, cfg);

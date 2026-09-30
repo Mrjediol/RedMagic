@@ -192,8 +192,11 @@ Model rules: a part's **pivot is its joint and becomes the sprite's own pivot** 
 pixels (`cropX/cropY/origW/origH`). Muzzle and grips are exported as `Muzzle` / `Grip` nodes with
 `rigPart:false`. `gestures` is **not** exported (Phase E): an absent key keeps Unity's. Library kind
 `rig` (sheetless, like `boss`): the whole document incl. part images is the record's `draft`,
-`config` is the last rig-config. The enemy link embeds the chosen Enemy Creator entry's config
-(`tuning` + `tier`, sprite-sheet keys stripped) and its projectile's `Library/<id>/`; the boss link
+`config` is the last rig-config and `enemyConfig` its **behaviour**: Enemy Creator lists enemy-kind
+rigs in its art picker (🦴 … (por partes)); with one picked, every export saves the EnemyConfig
+onto the rig record as `enemyConfig` (not `config`), and "Exportar todo junto" produces the rig's own
+.zip (`buildRigBundle`) instead of a sprite bundle. The rig's zip embeds that config as
+`enemy-config.json` (`tuning` + `tier`, sprite-sheet keys stripped) plus its projectile's `Library/<id>/`; the boss link
 embeds a Boss Creator entry's config without `body` plus its `Art/`.
 
 ### Entry kinds (enemy / projectile / fx / boss / rig)

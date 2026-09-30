@@ -129,6 +129,13 @@ export class RigCanvasView {
     return null;
   }
 
+  /** Resolves once every part image is decoded (a fresh view loads them lazily). */
+  preload(state) {
+    return Promise.all(state.parts.filter((p) => p.image).map((p) => new Promise((resolve) => {
+      if (this._entry(p.image, resolve)) resolve();
+    })));
+  }
+
   /** The image a part shows right now (a state/stage sprite in the preview) and its pivot. */
   static shownImage(part, spriteState, stage) {
     const v = part.variants || {};

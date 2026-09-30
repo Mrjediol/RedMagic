@@ -80,6 +80,20 @@ namespace RedMagic.Pipeline.EditorTools
             if (log.Length > 0) report.Warnings.Add(log.ToString().TrimEnd());
         }
 
+        /// <summary>
+        /// Sólo el <c>tuning</c> de un EnemyConfig (con los clamps de EnemyStats aplicados), sin receta
+        /// de sprites ni prefab: para enemigos cuyo cuerpo no sale de un sprite sheet (los por partes,
+        /// <c>RigBundleImporter</c>), que siembran el EnemyStats de su propio prefab.
+        /// </summary>
+        public static EnemyTuning ReadTuning(JObject root, ConfigImportReport report,
+                                             Dictionary<string, JObject> projectileLibrary = null)
+        {
+            string enemyName = root.Value<string>("enemyName") ?? "Enemy";
+            var tuning = BuildTuning(root["tuning"] as JObject, projectileLibrary, enemyName, report);
+            ApplyEnemyStatsClamps(tuning, enemyName, report);
+            return tuning;
+        }
+
         // ============================================================ presencia / proyectil-art
 
         private static void ApplyPresence(EnemyRecipe recipe, JObject presence)

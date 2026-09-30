@@ -204,6 +204,51 @@ en uno de un solo sprite cae a su versión sin pieza.
 
 ---
 
+## Tools ▸ Web ▸ Rig (enemigos y jefes por partes)
+
+Vía **separada** de la de sprite sheets: nada de arriba cambia. Esquema:
+`docs/schemas/rig-config.schema.json` (espejo en `Web/RedMagicWeb/schemas/`). Código:
+`Assets/Scripts/Rigging/Editor/RigConfig/`.
+
+### Importar rig (.zip · carpeta)…
+Elige un `.zip` o el `rig-config.json` de una carpeta. El bundle lleva:
+
+```
+rig-config.json          ← el cuerpo (obligatorio)
+Parts/<pieza>.png         ← PNG recortados; rutas tal como las nombra rig-config
+enemy-config.json         ← opcional (kind enemy): sólo se lee 'tuning' y 'tier'
+boss-config.json          ← opcional (kind boss): ataques + definición, SIN 'body'
+Art/…                     ← opcional: arte de los ataques del jefe (como en el zip de jefe)
+```
+
+- **Sprites**: `"Assets/…png"` = sprite del proyecto, se usa sin tocarlo. Otra ruta = archivo del
+  bundle: se copia a `Assets/Art/RigImports/<name>/` y su import (Single, ppu, pivote) se escribe
+  desde `sprites` (`pixelsPerUnit`, `pivot` normalizado) o `pixelsPerUnit` general.
+- **Prefab**: `Assets/Prefabs/Enemies/Procedural/<name>.prefab` = raíz → `Visual` → piezas,
+  `ProceduralRig` entero, pila de enemigo (`ProceduralRigTool.Setup`) o de jefe
+  (`BossBodyBuilder.AddBossStack` + `BossLimbs` + `SoundEmitter`, definición del `boss-config`
+  enlazada), y la variante `<name>_Code` (`driver: "dotween"` falla alto: `RigDriverTween` no existe).
+- **Reimportar**: el **cuerpo** (nodos bajo Visual, collider, cadáver, `ProceduralRig`,
+  `BossLimbs`) sale **siempre** del JSON: clave ausente = se queda lo que había, lista presente =
+  sustituye a la entera, nodo que ya no está = se borra (con aviso). EnemyStats y la vida/arena del
+  jefe sólo se escriben la primera vez o eligiendo **Resetear desde el JSON** en el diálogo. Si
+  afinaste el rig en el Inspector, expórtalo antes (abajo) o se pierde.
+- Valida todo (nombres, padres, referencias a piezas, sprites, tipo de ataque) **antes** de escribir.
+
+### Exportar rig a JSON (selección)
+Prefabs con `ProceduralRig` seleccionados → `<name>.rig-config.json` en la carpeta que elijas, con
+los sprites como rutas del proyecto (reimportable tal cual). Es cómo llevar a la web lo afinado en
+el Inspector.
+
+### Probar ida y vuelta (Robot · Turret · BossIce2)
+Sin Play: exporta los tres prefabs de referencia a `docs/schemas/fixtures/rig/` (los fixtures del
+repo), los reimporta con otro nombre en una carpeta temporal, compara por reflexión
+`ProceduralRig`, la jerarquía y `BossLimbs`, y borra lo importado. También por CLI:
+`unity command eval --code 'return RedMagic.Rigging.EditorTools.RigConfigRoundTrip.Run();'`.
+Tras cambiar `ProceduralRig`, el exportador o el importador, tiene que seguir dando "IDA Y VUELTA OK".
+
+---
+
 ## Tools ▸ Web ▸ Map Tracer
 
 Los tres importan el/los JSON que produce la pestaña 🗺️ **Map Tracer** de la web (piezas +

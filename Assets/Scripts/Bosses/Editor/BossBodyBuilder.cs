@@ -242,25 +242,41 @@ namespace RedMagic.Bosses.EditorTools
             collider.size = new Vector2(Mathf.Max(0.5f, size.x * widthFactor), Mathf.Max(0.5f, size.y * heightFactor));
             collider.offset = new Vector2(0f, hover + collider.size.y * 0.5f);
 
+            float maxHealth = AddBossStack(root, body, report);
+
+            log.AppendLine($"  prefab nuevo Boss_{slug}: alto {height:0.#} u, vida {maxHealth:0}");
+            return root;
+        }
+
+        /// <summary>
+        /// La pila de jefe sobre la raíz (vida, retroceso, destello, cadáver, monedas, BossAnimator,
+        /// BossController y, si se pide, Mover) con los valores de <paramref name="body"/>
+        /// (<c>health</c>, <c>arenaHalfWidth</c>, <c>arenaHeight</c>, <c>activationRadius</c>,
+        /// <c>contactDamage</c>, <c>movement</c>). Reutiliza los componentes que ya haya (un Mover
+        /// existente no se duplica), así que también sirve para "resetear" un jefe ya creado. La usa
+        /// también <c>RigBundleImporter</c> para los jefes por partes. Devuelve la vida escrita.
+        /// </summary>
+        internal static float AddBossStack(GameObject root, JObject body, ConfigImportReport report)
+        {
             float maxHealth = body.Value<float?>("health") ?? 2500f;
-            new BossAuthoring.Fields(root.AddComponent<Health>())
+            new BossAuthoring.Fields(GetOrAdd<Health>(root))
                 .Set("maxHealth", maxHealth)
                 .Set("currentHealth", maxHealth)
                 .Set("invulnerabilityDuration", 0f)
                 .Apply();
 
-            new BossAuthoring.Fields(root.AddComponent<Knockback>()).Set("immune", true).Set("resistance", 1f).Apply();
-            root.AddComponent<HitFlash>();
+            new BossAuthoring.Fields(GetOrAdd<Knockback>(root)).Set("immune", true).Set("resistance", 1f).Apply();
+            GetOrAdd<HitFlash>(root);
 
-            new BossAuthoring.Fields(root.AddComponent<Corpse>())
+            new BossAuthoring.Fields(GetOrAdd<Corpse>(root))
                 .Set("linger", 1.4f).Set("fadeDuration", 1.2f).Set("tintOnDeath", false)
                 .Apply();
 
-            new BossAuthoring.Fields(root.AddComponent<CurrencyDropper>()).Set("tier", (int)EnemyTier.Boss).Apply();
+            new BossAuthoring.Fields(GetOrAdd<CurrencyDropper>(root)).Set("tier", (int)EnemyTier.Boss).Apply();
 
-            root.AddComponent<BossAnimator>();
+            GetOrAdd<BossAnimator>(root);
 
-            new BossAuthoring.Fields(root.AddComponent<BossController>())
+            new BossAuthoring.Fields(GetOrAdd<BossController>(root))
                 .Set("arenaHalfWidth", body.Value<float?>("arenaHalfWidth") ?? 15f)
                 .Set("arenaHeight", body.Value<float?>("arenaHeight") ?? 12f)
                 .Set("activationRadius", body.Value<float?>("activationRadius") ?? 18f)
@@ -273,10 +289,14 @@ namespace RedMagic.Bosses.EditorTools
                 .Set("swayDegrees", 0f)   // animado: el balanceo ya está en el dibujo
                 .Apply();
 
-            if (body["movement"] is JObject movement) AddMover(root, movement, report);
+            if (body["movement"] is JObject movement && root.GetComponent<Mover>() == null) AddMover(root, movement, report);
+            return maxHealth;
+        }
 
-            log.AppendLine($"  prefab nuevo Boss_{slug}: alto {height:0.#} u, vida {maxHealth:0}");
-            return root;
+        private static T GetOrAdd<T>(GameObject go) where T : Component
+        {
+            var component = go.GetComponent<T>();
+            return component != null ? component : go.AddComponent<T>();
         }
 
         /// <summary>Lo que se re-engancha en cada import (nuevo o existente).</summary>

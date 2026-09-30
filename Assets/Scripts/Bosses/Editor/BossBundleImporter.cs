@@ -101,7 +101,7 @@ namespace RedMagic.Bosses.EditorTools
         /// Deja <paramref name="to"/> igual que <paramref name="from"/> en PNGs: copia encima (el
         /// .meta del archivo se conserva, así que el sprite mantiene su GUID) y borra lo que sobra.
         /// </summary>
-        private static void Sync(string from, string to, ref int copied, ref int removed)
+        internal static void Sync(string from, string to, ref int copied, ref int removed)
         {
             Directory.CreateDirectory(to);
             var incoming = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

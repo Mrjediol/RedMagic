@@ -12,9 +12,38 @@ the schemas.
 | EnemyConfig | `EnemyRecipe`, `EnemyTuning` | **None** |
 | ProjectileConfig | `ProjectileSpec` | **None** |
 | BossConfig | `BossDefinition`, `BossPhase`, `BossAttack` + subclasses | **None to the runtime classes**; one authoring-helper limitation, below |
+| RigConfig | `ProceduralRig`, `RigPart`, `RigSpriteSwap`, `RigGesture`/`RigPose`, `BossLimbs` (+ root collider, `Corpse`, boss stack) | **None** — see "RigConfig" below |
 
 All three are edit-time authoring formats that produce assets. The importer writes fields and
 calls the existing generators — it introduces no new runtime code path.
+
+## RigConfig (`rig-config.schema.json`) — part-based bodies
+
+Separate from the three above: its importer (`RigBundleImporter`, *Tools ▸ Web ▸ Rig*) never goes
+through `EnemyFactory` / sprite sheets. Verified 1:1 by a round trip, not by reading:
+`RigConfigRoundTrip` exports Robot / Turret / BossIce2 to `docs/schemas/fixtures/rig/`, reimports
+them and compares every public field of `ProceduralRig` by reflection (plus the hierarchy under
+`Visual` and `BossLimbs`) — a new `ProceduralRig` field is covered automatically.
+
+- **`rig` block → `ProceduralRig`**: every serialized field by its C# name (48 today), except
+  `body` (always the `Visual` child), `parts`, `spriteSwaps`, `gestures` (own blocks). Transform
+  fields travel as **paths relative to `Visual`** (`"Visual"` = the body itself), `LayerMask` as
+  layer names (shared `layerMask`), sprites as `Assets/…` paths or bundle-relative files. The schema
+  lists the fields with `additionalProperties: false`: adding a field to `ProceduralRig` means adding
+  it to the schema too (the exporter already emits it).
+- **`parts[]` → hierarchy + `RigPart`**: one entry per Transform under Visual. The `RigPart` fields
+  map 1:1 except that the five `sway*` fields are grouped as `sway.{move,rotate,scale,speed,phase}`
+  (a grouping, like `presence` in EnemyConfig; no rename inside it). `rigPart: false` nodes (Muzzle,
+  Grip, empty pivots) exist only in the hierarchy. List order = `ProceduralRig.parts` order.
+- **Importer-only keys**: `pixelsPerUnit`, `sprites` (per-file import settings), `root`, `collider`,
+  `corpse`, `bossBody` (same keys as `BossConfig.body`'s stack, read by the shared
+  `BossBodyBuilder.AddBossStack`). They describe the prefab around the rig, not rig data.
+- **Things that bite**: (1) tuning from a bundled `enemy-config.json` goes through
+  `EnemyConfigImporter.ReadTuning`, so the `EnemyStats.OnValidate` clamps above apply unchanged;
+  its `presence` block is ignored (the body/collider come from rig-config). (2) A bundled
+  `boss-config.json` must not carry `body` (the rig *is* the body) — it is stripped with a warning.
+  (3) Unassigned object fields on a loaded component are Unity "fake nulls": compare with Unity's
+  `==`, never `is`/pattern matching (the round-trip comparer learned this).
 
 ## Field-level mapping confirmations
 

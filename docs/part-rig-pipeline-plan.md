@@ -63,7 +63,7 @@ importer, refactor: design matters and mistakes are expensive). **Medium** is en
 | Phase | Deliverable | Web? | Effort | Done |
 |---|---|---|---|---|
 | 0 | Split rig attacks into their own folder and category (catalog + web picker shows "Clásico" / "De partes") | small web change | high | ☑ |
-| A | `rig-config` schema + round-trip exporter + **separate** `RigBundleImporter` (rebuilds Robot / Turret / BossIce2 from JSON) | no | high | ☐ |
+| A | `rig-config` schema + round-trip exporter + **separate** `RigBundleImporter` (rebuilds Robot / Turret / BossIce2 from JSON) | no | high | ☑ |
 | B | New web tab **🦴 Rig Composer** (assemble parts, pivots, roles, state sprites, live sway preview, export) | yes | medium | ☐ |
 | C | Templates in the Rig Composer (folding turret / armed drone / colossus) | yes | medium | ☐ |
 | D | `IAttackHost` refactor → rig (and classic) catalog attacks usable by normal enemies | no | high | ☐ |
@@ -136,6 +136,19 @@ attacks `classic`.
 - Acceptance: importing each fixture rebuilds a prefab whose `ProceduralRig` data equals the
   original, checked by an eval comparing fields. No Play Mode.
 - Docs: new section in `web-tools-guide.md`, `COMPATIBILITY.md` entry, `procedural-rig.md`.
+- **Done (Phase A outcome) — what Phase B must produce.** Menus live under `Tools ▸ Web ▸ Rig`
+  (import, export, round-trip test). Decisions the web must follow:
+  - Part references are **paths relative to `Visual`** (`"Torso/RightArm/Muzzle"`), `"Visual"` = the
+    body. Names can repeat under different parents (two `Grip`s), paths can't.
+  - Muzzle / grips / empty pivots are ordinary `parts[]` nodes with `rigPart: false` (no special
+    role block): the muzzle *is* a node named `Muzzle` under the aim part, `rig.muzzle` points at it.
+  - Web-cropped PNGs go in the zip under e.g. `Parts/`, referenced relatively, with
+    `sprites["Parts/x.png"] = { pixelsPerUnit, pivot }` (pivot **normalized**). The importer writes
+    the texture import settings from that.
+  - `rig` block = every `ProceduralRig` field by C# name (partial is fine: absent key keeps the
+    value). Boss stack numbers go in `bossBody` (same keys as `BossConfig.body`), boss attacks in a
+    bundled `boss-config.json` without `body`; enemy tuning in a bundled `enemy-config.json`.
+  - The fixtures in `docs/schemas/fixtures/rig/` are real, importable examples of all of the above.
 
 ### Phase B — web tab 🦴 Rig Composer
 - New tab and modules (e.g. `rig-composer.js`, `rig-canvas-view.js`, `rig-export.js`), reusing the

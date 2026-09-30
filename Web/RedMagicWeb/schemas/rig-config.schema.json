@@ -1,0 +1,682 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://redmagic.local/schemas/rig-config.schema.json",
+  "title": "RigConfig",
+  "description": "Un enemigo o jefe hecho de piezas sueltas (Assets/Scripts/Rigging/ProceduralRig.cs): la jerarquía bajo Visual, cada RigPart, todo ProceduralRig, sprites por estado, gestos, BossLimbs y lo que el cuerpo necesita de la raíz. Lo escribe RigConfigExporter y lo lee RigBundleImporter (Tools ▸ Web ▸ Rig).",
+  "$comment": "MAPEO 1:1 con ProceduralRig: el bloque \"rig\" lleva cada campo por su nombre C# (el exportador los saca por reflexión, así que un campo nuevo de ProceduralRig aparece en el JSON solo: añádelo también aquí). Las piezas se referencian por RUTA relativa a Visual (\"Torso/RightArm/Muzzle\"); \"Visual\" es la raíz visual (ProceduralRig.body). Dos excepciones de forma, no de nombre: los campos de RigPart van dentro de su nodo en \"parts\" (swayMove/swayRotate/swayScale/swaySpeed/swayPhase agrupados en \"sway\"), y las listas estructuradas (spriteSwaps, gestures) tienen bloque propio. REIMPORTAR: el cuerpo sale siempre del JSON; una clave ausente conserva el valor que había y una lista presente sustituye a la entera. Ver docs/web-tools-guide.md (Rig) y COMPATIBILITY.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "parts"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "enemy",
+        "boss"
+      ],
+      "default": "enemy",
+      "$comment": "enemy = pila de enemigo (ProceduralRigTool.Setup) + enemy-config.json opcional en el bundle. boss = pila de jefe (BossBodyBuilder.AddBossStack) + BossLimbs + boss-config.json opcional (ataques y definición, sin \"body\")."
+    },
+    "driver": {
+      "type": "string",
+      "enum": [
+        "code",
+        "dotween"
+      ],
+      "default": "code",
+      "$comment": "Motor de la variante: code = <name>_Code (RigDriverCode). dotween = <name>_Dotween (RigDriverTween, todavía no existe: el import falla alto)."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "$comment": "Nombre del prefab: Assets/Prefabs/Enemies/Procedural/<name>.prefab (+ variante). Reimportar con el mismo nombre actualiza."
+    },
+    "pixelsPerUnit": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "default": 100,
+      "$comment": "IMPORTER-ONLY. PPU por defecto de los PNG del bundle (los sprites \"Assets/…\" no se tocan)."
+    },
+    "sprites": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "pixelsPerUnit": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "pivot": {
+            "$ref": "_shared.schema.json#/definitions/vector2"
+          }
+        }
+      },
+      "$comment": "IMPORTER-ONLY. Ajustes de import de cada PNG del bundle, por su ruta relativa: pixelsPerUnit y pivot NORMALIZADO (0..1; 0.5/0.5 = centro). La web recorta cada pieza y manda aquí su pivote."
+    },
+    "root": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scale": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "_shared.schema.json#/definitions/vector2"
+            }
+          ],
+          "$comment": "Número = escala uniforme (x = y = z). {x, y} = z a 1."
+        },
+        "tag": {
+          "type": "string"
+        },
+        "layer": {
+          "type": "string"
+        }
+      },
+      "$comment": "Transform de la raíz del prefab (escala) + etiqueta y capa."
+    },
+    "collider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "box",
+            "capsule",
+            "circle"
+          ]
+        },
+        "size": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        },
+        "offset": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        },
+        "radius": {
+          "type": "number"
+        },
+        "direction": {
+          "enum": [
+            "Vertical",
+            "Horizontal"
+          ]
+        },
+        "isTrigger": {
+          "type": "boolean"
+        }
+      },
+      "$comment": "El collider del cuerpo en la raíz (uno solo: los de otro tipo se quitan). box/capsule usan size; circle, radius."
+    },
+    "corpse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "linger": {
+          "type": "number"
+        },
+        "fadeDuration": {
+          "type": "number"
+        }
+      },
+      "$comment": "Corpse.linger / fadeDuration: las piezas necesitan tiempo para caer al morir."
+    },
+    "visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        },
+        "rotation": {
+          "type": "number"
+        },
+        "scale": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "_shared.schema.json#/definitions/vector2"
+            }
+          ],
+          "$comment": "Número = escala uniforme (x = y = z). {x, y} = z a 1."
+        }
+      },
+      "$comment": "Transform local de Visual (ProceduralRig.body)."
+    },
+    "parts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/node"
+      },
+      "$comment": "Todos los nodos bajo Visual. Los de rigPart (por defecto) forman ProceduralRig.parts EN ESTE ORDEN; los demás (Muzzle, Grip, pivotes vacíos) sólo existen en la jerarquía. Un nodo del prefab que no esté aquí se borra al importar (y se avisa)."
+    },
+    "rig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hoverBob": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        },
+        "hoverSpeed": {
+          "type": "number"
+        },
+        "leanDegrees": {
+          "type": "number"
+        },
+        "leanFullSpeed": {
+          "type": "number"
+        },
+        "leanResponse": {
+          "type": "number"
+        },
+        "followStiffness": {
+          "type": "number"
+        },
+        "followDamping": {
+          "type": "number"
+        },
+        "followMaxOffset": {
+          "type": "number"
+        },
+        "moveGesture": {
+          "type": "string",
+          "$comment": "Nombre de un gesto de \"gestures\" que se mantiene al desplazarse. Vacío = ninguno."
+        },
+        "aimPart": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/partPath"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "$comment": "ProceduralRig.aimPart (Transform): ruta de la pieza bajo Visual, o null."
+        },
+        "aimArtAngle": {
+          "type": "number"
+        },
+        "aimMaxAngle": {
+          "type": "number"
+        },
+        "windup": {
+          "type": "number"
+        },
+        "recover": {
+          "type": "number"
+        },
+        "windupPullAngle": {
+          "type": "number"
+        },
+        "windupBodyTilt": {
+          "type": "number"
+        },
+        "recoilDelay": {
+          "type": "number"
+        },
+        "recoilKick": {
+          "type": "number"
+        },
+        "recoilAngle": {
+          "type": "number"
+        },
+        "recoilDistance": {
+          "type": "number"
+        },
+        "bodyRecoil": {
+          "type": "number"
+        },
+        "muzzle": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/partPath"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "$comment": "ProceduralRig.muzzle (Transform): ruta de la pieza bajo Visual, o null."
+        },
+        "muzzleFlashSprite": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/spriteRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "$comment": "ProceduralRig.muzzleFlashSprite. null = el cuadrado de AbilityFx."
+        },
+        "muzzleFlashColor": {
+          "$ref": "_shared.schema.json#/definitions/color"
+        },
+        "muzzleFlashSize": {
+          "type": "number"
+        },
+        "muzzleFlashTime": {
+          "type": "number"
+        },
+        "stretchPart": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/partPath"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "$comment": "ProceduralRig.stretchPart (Transform): ruta de la pieza bajo Visual, o null."
+        },
+        "stretchRiders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/partPath"
+          },
+          "$comment": "ProceduralRig.stretchRiders (List<Transform>)."
+        },
+        "foldedStretch": {
+          "type": "number"
+        },
+        "foldedRiderScaleY": {
+          "type": "number"
+        },
+        "foldedRiderOffset": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        },
+        "wakeDuration": {
+          "type": "number"
+        },
+        "sleepDuration": {
+          "type": "number"
+        },
+        "wakeOvershoot": {
+          "type": "number"
+        },
+        "wakeFlickers": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wakeFlickerPortion": {
+          "type": "number"
+        },
+        "drivenLease": {
+          "type": "number"
+        },
+        "drivenReturn": {
+          "type": "number"
+        },
+        "staggerStrength": {
+          "type": "number"
+        },
+        "hurtDuration": {
+          "type": "number"
+        },
+        "hurtTilt": {
+          "type": "number"
+        },
+        "hurtSquash": {
+          "type": "number"
+        },
+        "breakImpulse": {
+          "type": "number"
+        },
+        "breakUpward": {
+          "type": "number"
+        },
+        "breakSpin": {
+          "type": "number"
+        },
+        "breakGravity": {
+          "type": "number"
+        },
+        "breakBounce": {
+          "type": "number"
+        },
+        "breakGround": {
+          "$ref": "_shared.schema.json#/definitions/layerMask",
+          "$comment": "ProceduralRig.breakGround (LayerMask), por nombres de capa."
+        }
+      },
+      "$comment": "Los campos de ProceduralRig, 1:1 por nombre C# (menos body = Visual, parts, spriteSwaps y gestures)."
+    },
+    "spriteSwaps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/spriteSwap"
+      },
+      "$comment": "ProceduralRig.spriteSwaps."
+    },
+    "gestures": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/gesture"
+      },
+      "$comment": "ProceduralRig.gestures (los \"gesture\" de los ataques de jefe)."
+    },
+    "bossLimbs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "limbs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/partPath"
+          }
+        },
+        "orbiters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/partPath"
+          }
+        },
+        "orbiterRadius": {
+          "type": "number"
+        },
+        "grips": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/partPath"
+          }
+        },
+        "contactRadius": {
+          "type": "number"
+        }
+      },
+      "$comment": "BossLimbs, 1:1 (piezas por ruta). Lo que los ataques de partes (Definitions/Rig) lanzan y dónde se agarran los objetos."
+    },
+    "bossBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "health": {
+          "type": "number"
+        },
+        "arenaHalfWidth": {
+          "type": "number"
+        },
+        "arenaHeight": {
+          "type": "number"
+        },
+        "activationRadius": {
+          "type": "number"
+        },
+        "contactDamage": {
+          "type": "number"
+        },
+        "bodyRenderer": {
+          "$ref": "#/definitions/partPath"
+        },
+        "movement": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "$comment": "Sólo kind = boss. Mismas claves que BossConfig.body para la pila (las lee BossBodyBuilder.AddBossStack) + bodyRenderer (la pieza cuyo sprite copia el aura de aviso). La pila se escribe la primera vez o con \"resetear\"; bodyRenderer, siempre."
+    }
+  },
+  "definitions": {
+    "partPath": {
+      "type": "string",
+      "minLength": 1,
+      "$comment": "Ruta de una pieza relativa a Visual (\"Torso/LeftFist\"), o \"Visual\" para la raíz visual."
+    },
+    "spriteRef": {
+      "type": "string",
+      "minLength": 1,
+      "$comment": "\"Assets/…png\" (o \"Assets/…png#sprite\" en una hoja con varios) = sprite del proyecto, se usa tal cual. Cualquier otra = archivo del bundle relativo a su raíz (\"Parts/torso.png\"): se copia a Assets/Art/RigImports/<name>/ con los ajustes de \"sprites\"."
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "$comment": "Sin \"/\". Ruta = parent/name, única."
+        },
+        "parent": {
+          "type": "string",
+          "default": "",
+          "$comment": "Ruta del padre bajo Visual; \"\" = hijo directo de Visual."
+        },
+        "sprite": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/spriteRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "$comment": "Con la clave = SpriteRenderer. Sin ella = nodo vacío (se le quita el renderer si lo tenía)."
+        },
+        "sortingOrder": {
+          "type": "integer",
+          "default": 0
+        },
+        "sortingLayer": {
+          "type": "string",
+          "default": "Default"
+        },
+        "color": {
+          "$ref": "_shared.schema.json#/definitions/color"
+        },
+        "flipX": {
+          "type": "boolean"
+        },
+        "flipY": {
+          "type": "boolean"
+        },
+        "position": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        },
+        "rotation": {
+          "type": "number",
+          "$comment": "Grados (Z local)."
+        },
+        "scale": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "_shared.schema.json#/definitions/vector2"
+            }
+          ],
+          "$comment": "Número = escala uniforme (x = y = z). {x, y} = z a 1."
+        },
+        "active": {
+          "type": "boolean",
+          "default": true
+        },
+        "rigPart": {
+          "type": "boolean",
+          "default": true,
+          "$comment": "false = no entra en ProceduralRig.parts (bocas, agarres, pivotes)."
+        },
+        "pivot": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        },
+        "center": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        },
+        "pointAngle": {
+          "type": "number"
+        },
+        "leanFollow": {
+          "type": "number"
+        },
+        "sway": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "move": {
+              "$ref": "_shared.schema.json#/definitions/vector2"
+            },
+            "rotate": {
+              "type": "number"
+            },
+            "scale": {
+              "$ref": "_shared.schema.json#/definitions/vector2"
+            },
+            "speed": {
+              "type": "number",
+              "minimum": 0
+            },
+            "phase": {
+              "type": "number"
+            }
+          },
+          "$comment": "RigPart.swayMove / swayRotate / swayScale / swaySpeed / swayPhase."
+        },
+        "breaksOnDeath": {
+          "type": "boolean"
+        }
+      },
+      "$comment": "Un Transform bajo Visual. pivot/center/pointAngle/leanFollow/sway/breaksOnDeath = los campos de RigPart (sólo con rigPart)."
+    },
+    "spriteSwap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "part"
+      ],
+      "properties": {
+        "part": {
+          "$ref": "#/definitions/partPath"
+        },
+        "asleep": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/spriteRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "awake": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/spriteRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attacking": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/spriteRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "#/definitions/spriteRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "$comment": "RigSpriteSwap: renderer = el de la pieza \"part\"."
+    },
+    "pose": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "part": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/partPath"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "move": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        },
+        "rotate": {
+          "type": "number"
+        },
+        "scale": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        }
+      },
+      "$comment": "RigPose."
+    },
+    "gesture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "windup": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pose"
+          }
+        },
+        "strike": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pose"
+          }
+        },
+        "strikeTime": {
+          "type": "number"
+        },
+        "recover": {
+          "type": "number"
+        },
+        "shake": {
+          "type": "number"
+        }
+      },
+      "$comment": "RigGesture."
+    }
+  }
+}

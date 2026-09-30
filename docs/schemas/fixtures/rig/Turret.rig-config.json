@@ -1,0 +1,236 @@
+{
+  "kind": "enemy",
+  "driver": "code",
+  "name": "Turret",
+  "root": {
+    "scale": 0.55806,
+    "tag": "Untagged",
+    "layer": "Default"
+  },
+  "collider": {
+    "type": "box",
+    "size": {
+      "x": 3.0,
+      "y": 4.08
+    },
+    "offset": {
+      "x": 0.0,
+      "y": 1.22
+    }
+  },
+  "corpse": {
+    "linger": 1.1,
+    "fadeDuration": 0.4
+  },
+  "visual": {
+    "position": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "rotation": 0.0,
+    "scale": 1.0
+  },
+  "parts": [
+    {
+      "name": "Base",
+      "parent": "",
+      "sprite": "Assets/Art/EnemyBody/jungle/base.png",
+      "sortingOrder": 4,
+      "position": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "rotation": 0.0,
+      "scale": 1.0,
+      "pivot": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "center": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "pointAngle": 0.0,
+      "leanFollow": 0.0,
+      "sway": {
+        "move": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "rotate": 0.0,
+        "scale": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "speed": 1.5,
+        "phase": 0.0
+      },
+      "breaksOnDeath": false
+    },
+    {
+      "name": "Head",
+      "parent": "",
+      "sprite": "Assets/Art/EnemyBody/jungle/awake.png",
+      "sortingOrder": 3,
+      "position": {
+        "x": 0.0,
+        "y": 1.03
+      },
+      "rotation": 0.0,
+      "scale": 1.0,
+      "pivot": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "center": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "pointAngle": 0.0,
+      "leanFollow": 0.0,
+      "sway": {
+        "move": {
+          "x": 0.0,
+          "y": 0.04
+        },
+        "rotate": 1.5,
+        "scale": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "speed": 1.3,
+        "phase": 2.39996
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "neck",
+      "parent": "NeckPivot",
+      "sprite": "Assets/Art/EnemyBody/jungle/neck.png",
+      "sortingOrder": 2,
+      "position": {
+        "x": 0.0,
+        "y": 1.215
+      },
+      "rotation": 0.0,
+      "scale": 1.0,
+      "pivot": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "center": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "pointAngle": 0.0,
+      "leanFollow": 0.0,
+      "sway": {
+        "move": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "rotate": 0.0,
+        "scale": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "speed": 2.3,
+        "phase": 4.79992
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Muzzle",
+      "parent": "Head",
+      "position": {
+        "x": 0.56,
+        "y": 1.02
+      },
+      "rotation": 0.0,
+      "scale": 1.0,
+      "rigPart": false
+    },
+    {
+      "name": "NeckPivot",
+      "parent": "",
+      "position": {
+        "x": 0.0,
+        "y": -0.105
+      },
+      "rotation": 0.0,
+      "scale": 1.0,
+      "rigPart": false
+    }
+  ],
+  "rig": {
+    "hoverBob": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "hoverSpeed": 2.2,
+    "leanDegrees": 0.0,
+    "leanFullSpeed": 2.5,
+    "leanResponse": 8.0,
+    "followStiffness": 0.0,
+    "followDamping": 9.0,
+    "followMaxOffset": 0.6,
+    "moveGesture": "",
+    "aimPart": "Head",
+    "aimArtAngle": 0.0,
+    "aimMaxAngle": 22.0,
+    "windup": 0.65,
+    "recover": 0.5,
+    "windupPullAngle": 4.0,
+    "windupBodyTilt": 0.0,
+    "recoilDelay": 0.06,
+    "recoilKick": 0.09,
+    "recoilAngle": 9.0,
+    "recoilDistance": 0.3,
+    "bodyRecoil": 0.0,
+    "muzzle": "Head/Muzzle",
+    "muzzleFlashSprite": "Assets/Art/Placeholder/Disc.png",
+    "muzzleFlashColor": "#8cffffe6",
+    "muzzleFlashSize": 0.7,
+    "muzzleFlashTime": 0.1,
+    "stretchPart": "NeckPivot",
+    "stretchRiders": [
+      "Head"
+    ],
+    "foldedStretch": 0.05,
+    "foldedRiderScaleY": 0.6,
+    "foldedRiderOffset": {
+      "x": 0.0,
+      "y": -0.05
+    },
+    "wakeDuration": 0.8,
+    "sleepDuration": 0.55,
+    "wakeOvershoot": 2.2,
+    "wakeFlickers": 0,
+    "wakeFlickerPortion": 0.4,
+    "drivenLease": 0.25,
+    "drivenReturn": 0.35,
+    "staggerStrength": 2.5,
+    "hurtDuration": 0.28,
+    "hurtTilt": 5.0,
+    "hurtSquash": 0.12,
+    "breakImpulse": 3.5,
+    "breakUpward": 4.0,
+    "breakSpin": 540.0,
+    "breakGravity": 20.0,
+    "breakBounce": 0.35,
+    "breakGround": [
+      "Ground",
+      "Platform"
+    ]
+  },
+  "spriteSwaps": [
+    {
+      "part": "Head",
+      "asleep": "Assets/Art/EnemyBody/jungle/sleep.png",
+      "awake": "Assets/Art/EnemyBody/jungle/awake.png",
+      "attacking": "Assets/Art/EnemyBody/jungle/ataque.png",
+      "stages": []
+    }
+  ],
+  "gestures": []
+}

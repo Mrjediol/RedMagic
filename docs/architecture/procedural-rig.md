@@ -75,7 +75,24 @@ passes change together; the comparison only differs in the engine.
 
 **New part-based enemy** = drop the body prefab (root + `Visual` + parts) in the folder, run
 `1` + `2`, set `aimPart`/`Muzzle`/tuning in the Inspector (or add a pack method if it will be
-regenerated).
+regenerated) — **or import it as data** (below).
+
+## As data: `rig-config.json` (Tools ▸ Web ▸ Rig)
+The whole body is a JSON (`docs/schemas/rig-config.schema.json`), separate from the sprite-sheet
+pipeline. Code in `Rigging/Editor/RigConfig/`:
+- `RigConfigExporter` — prefab → JSON (hierarchy under `Visual`, `RigPart`s, every
+  `ProceduralRig` field by reflection, swaps, gestures, `BossLimbs`, root collider/corpse, boss stack).
+- `RigBundleImporter` — `.zip` / folder → prefab + `_Code` variant. Builds the hierarchy, then
+  `ProceduralRigTool.Setup` (enemy stack) or `BossBodyBuilder.AddBossStack` (boss), then writes the
+  rig. Optional `enemy-config.json` (tuning via `EnemyConfigImporter.ReadTuning`) or
+  `boss-config.json` (`BossConfigImporter`, no `body`). Body = always from JSON; EnemyStats / boss
+  stack only first time or with *reset*.
+- `RigConfigJson` — shared vocabulary: part refs are **paths relative to `Visual`** (`"Visual"` =
+  body), sprites are `Assets/…` paths (used as-is) or bundle files (copied to
+  `Assets/Art/RigImports/<name>/`, import settings from `sprites`).
+- `RigConfigRoundTrip` — static acceptance test (no Play): Robot / Turret / BossIce2 → fixtures in
+  `docs/schemas/fixtures/rig/` → reimport → reflection compare → cleanup. Rerun after touching
+  `ProceduralRig` or either side of the pipeline. The packs above stay as the hand-written reference.
 
 ## Enemies
 - **Robot** (TestProcedural art) — FlyingRanged drone; `RightArm` is the gun (`aimArtAngle` 11.5°).

@@ -142,10 +142,13 @@ namespace RedMagic.Bosses
                     from[i] = limbs.Center(parts[i]);
                 }
 
-                // Sube, espera temblando sobre la marca y cae de golpe.
-                yield return Fly(ctx, limbs, parts, from, top, rise, Ease.Out, 0f, 15f);
-                yield return Hold(ctx, limbs, parts, top, hang, 15f, tremble);
-                yield return Fly(ctx, limbs, parts, top, ground, drop, Ease.In, 15f, 0f);
+                // Sube, espera temblando sobre la marca y cae de golpe, siempre con los nudillos abajo.
+                var down = new Vector2?[count];
+                for (int i = 0; i < count; i++) down[i] = Vector2.down;
+
+                yield return Fly(ctx, limbs, parts, from, top, rise, Ease.Out, down);
+                yield return Hold(ctx, limbs, parts, top, hang, down, tremble);
+                yield return Fly(ctx, limbs, parts, top, ground, drop, Ease.In, down);
             }
             else
             {
@@ -165,7 +168,7 @@ namespace RedMagic.Bosses
 
             if (parts == null) yield break;
 
-            yield return Hold(ctx, limbs, parts, ground, ctx.Scaled(embedSeconds), 0f, 0f);
+            yield return Hold(ctx, limbs, parts, ground, ctx.Scaled(embedSeconds), null, 0f);
             foreach (var part in parts) limbs.Release(part, ctx.Scaled(returnSeconds));
         }
 

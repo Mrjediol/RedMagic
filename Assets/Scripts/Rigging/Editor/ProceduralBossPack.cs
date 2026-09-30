@@ -214,6 +214,8 @@ namespace RedMagic.Rigging.EditorTools
 
         private static void ConfigureRig(GameObject root, ProceduralRig rig, bool created, StringBuilder log)
         {
+            EnsureGrips(root, rig, log);
+
             if (!created)
             {
                 log.AppendLine("  rig ya existía: valores afinados conservados.");
@@ -256,12 +258,14 @@ namespace RedMagic.Rigging.EditorTools
                         break;
                     case "LeftFist":
                         part.pivot = new Vector2(0f, 1f);
+                        part.pointAngle = -90f;   // los nudillos, hacia abajo en el dibujo
                         part.center = new Vector2(0.5f, -2.7f);
                         part.leanFollow = -0.5f;
                         Sway(part, new Vector2(0.1f, 0.35f), 5f, 1.5f, 0f);
                         break;
                     case "RightFist":
                         part.pivot = new Vector2(0f, 1f);
+                        part.pointAngle = -90f;
                         part.center = new Vector2(-0.3f, -2.1f);
                         part.leanFollow = -0.5f;
                         Sway(part, new Vector2(-0.1f, 0.35f), 5f, 1.5f, Mathf.PI);   // a contratiempo
@@ -308,6 +312,37 @@ namespace RedMagic.Rigging.EditorTools
                 new[] { P(visual, new Vector2(0.2f, 0f), -10f), P(right, new Vector2(4f, 1f), -40f) }));
 
             log.AppendLine("  rig sembrado: corona flotante, puños a contratiempo, punta en péndulo, 6 gestos.");
+        }
+
+        /// <summary>
+        /// Un hijo "Grip" en el centro visible de cada puño (donde se agarra la roca) y la lista de
+        /// agarres de <see cref="BossLimbs"/>. Idempotente: corre en cada pasada.
+        /// </summary>
+        private static void EnsureGrips(GameObject root, ProceduralRig rig, StringBuilder log)
+        {
+            var limbs = root.GetComponent<BossLimbs>();
+            if (limbs == null) return;
+
+            var grips = new List<Object>();
+            for (int i = 0; i < limbs.Count; i++)
+            {
+                var fist = limbs.Get(i);
+                if (fist == null) continue;
+
+                var grip = fist.Find("Grip");
+                if (grip == null)
+                {
+                    var data = rig.FindPart(fist);
+                    grip = new GameObject("Grip").transform;
+                    grip.SetParent(fist, false);
+                    grip.localPosition = data != null ? (Vector3)data.center : Vector3.zero;
+                    log.AppendLine($"  agarre creado en {fist.name}.");
+                }
+
+                grips.Add(grip);
+            }
+
+            new BossAuthoring.Fields(limbs).SetObjectArray("grips", grips.ToArray()).Apply();
         }
 
         private static void Sway(RigPart part, Vector2 move, float rotate, float speed, float phase)

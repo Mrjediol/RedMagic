@@ -103,6 +103,12 @@ regenerated).
   driver stops composing it); `ReleasePart(part, seconds)` blends it back onto the live body. A
   lease (`drivenLease`) auto-returns parts whose attack was cut (phase change): nothing is ever
   left floating. Trajectories live in the attack → identical in every driver.
+- **`RigPart.pointAngle`** = where the part's business end points in its unrotated art (fists:
+  -90 = knuckles down). `BossLimbs.AngleToward(limb, worldDir)` turns it into a local angle through
+  the parent's matrix (mirroring included) and `DriveCenter(limb, centre, localAngle)` places it;
+  `LimbAttack.Fly/Hold` take one world direction per part (`Aim(...)`, null = rest orientation)
+  and finish the turn in the first half of the move, so a thrown fist leads with its knuckles.
+  **Grips**: a `Grip` child at each fist's centre (`BossLimbs.grips`) is where held props attach.
 - **`RigPart.center`** = visible centre (contact point for attacks); **`leanFollow`** = extra
   rotation × body lean (negative = trails like a pendulum: the ice tip, the fists).
 - `ProceduralRigTool.Setup(..., enemyStack: false)` for bosses (they bring their own stack).

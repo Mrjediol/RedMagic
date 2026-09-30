@@ -48,36 +48,43 @@ namespace RedMagic.Bosses
 
         /// <summary>
         /// Lleva los centros de <paramref name="parts"/> de <paramref name="from"/> a
-        /// <paramref name="to"/> en <paramref name="seconds"/> (ya escalados), con easing, girándolos
-        /// de <paramref name="spinFrom"/> a <paramref name="spinTo"/>. Con <paramref name="hit"/> daña
-        /// al tocar (una vez).
+        /// <paramref name="to"/> en <paramref name="seconds"/> (ya escalados), con easing. Cada pieza
+        /// gira para que su parte útil (los nudillos, <c>RigPart.pointAngle</c>) mire hacia
+        /// <paramref name="aim"/>[i] (dirección del mundo; null = su orientación de reposo); el giro
+        /// se completa en la primera mitad del tramo, así un puño lanzado ya va de frente al salir.
+        /// Con <paramref name="hit"/> daña al tocar (una vez).
         /// </summary>
         protected IEnumerator Fly(BossContext ctx, BossLimbs limbs, Transform[] parts, Vector2[] from,
-                                  Vector2[] to, float seconds, Ease ease, float spinFrom, float spinTo,
-                                  HitOnce hit = null)
+                                  Vector2[] to, float seconds, Ease ease, Vector2?[] aim, HitOnce hit = null)
         {
             seconds = Mathf.Max(0.01f, seconds);
+            var start = new float[parts.Length];
+            for (int i = 0; i < parts.Length; i++) start[i] = limbs.LocalAngle(parts[i]);
+
             for (float t = 0f; t < seconds; t += Time.deltaTime)
             {
                 if (!ctx.IsValid) yield break;
 
                 float k = Apply(ease, t / seconds);
+                float turn = Apply(Ease.Out, t / (seconds * 0.5f));
                 for (int i = 0; i < parts.Length; i++)
                 {
                     Vector2 at = Vector2.LerpUnclamped(from[i], to[i], k);
-                    limbs.DriveCenter(parts[i], at, Mathf.LerpUnclamped(spinFrom, spinTo, k) * SpinSide(ctx, i));
+                    float angle = Mathf.LerpAngle(start[i], TargetAngle(limbs, parts[i], aim, i), turn);
+                    limbs.DriveCenter(parts[i], at, angle);
                     if (hit != null) Contact(ctx, at, limbs.ContactRadius, hit);
                 }
 
                 yield return null;
             }
 
-            for (int i = 0; i < parts.Length; i++) limbs.DriveCenter(parts[i], to[i], spinTo * SpinSide(ctx, i));
+            for (int i = 0; i < parts.Length; i++)
+                limbs.DriveCenter(parts[i], to[i], TargetAngle(limbs, parts[i], aim, i));
         }
 
-        /// <summary>Mantiene las piezas en <paramref name="at"/> (temblando) <paramref name="seconds"/>.</summary>
+        /// <summary>Mantiene las piezas en <paramref name="at"/> mirando a <paramref name="aim"/> (temblando) <paramref name="seconds"/>.</summary>
         protected IEnumerator Hold(BossContext ctx, BossLimbs limbs, Transform[] parts, Vector2[] at,
-                                   float seconds, float spin, float shake)
+                                   float seconds, Vector2?[] aim, float shake)
         {
             for (float t = 0f; t < seconds; t += Time.deltaTime)
             {
@@ -86,7 +93,7 @@ namespace RedMagic.Bosses
                 for (int i = 0; i < parts.Length; i++)
                 {
                     Vector2 jitter = shake > 0f ? Random.insideUnitCircle * shake : Vector2.zero;
-                    limbs.DriveCenter(parts[i], at[i] + jitter, spin * SpinSide(ctx, i));
+                    limbs.DriveCenter(parts[i], at[i] + jitter, TargetAngle(limbs, parts[i], aim, i));
                 }
 
                 yield return null;
@@ -94,20 +101,22 @@ namespace RedMagic.Bosses
         }
 
         /// <summary>
-        /// Vuelve volando a su sitio en el cuerpo (que puede estar moviéndose) y lo suelta al rig
-        /// para el último tramo.
+        /// Vuelve volando a su sitio en el cuerpo (que puede estar moviéndose), girando de vuelta a su
+        /// orientación de reposo, y lo suelta al rig para el último tramo.
         /// </summary>
         protected IEnumerator FlyHome(BossContext ctx, BossLimbs limbs, Transform part, float seconds,
                                       HitOnce hit = null)
         {
             Vector2 from = limbs.Center(part);
+            float startAngle = limbs.LocalAngle(part);
             seconds = Mathf.Max(0.01f, seconds);
             for (float t = 0f; t < seconds; t += Time.deltaTime)
             {
                 if (!ctx.IsValid) yield break;
 
-                Vector2 at = Vector2.Lerp(from, limbs.HomeCenter(part), Apply(Ease.InOut, t / seconds));
-                limbs.DriveCenter(part, at, 0f);
+                float k = Apply(Ease.InOut, t / seconds);
+                Vector2 at = Vector2.Lerp(from, limbs.HomeCenter(part), k);
+                limbs.DriveCenter(part, at, Mathf.LerpAngle(startAngle, limbs.RestAngle(part), k));
                 if (hit != null) Contact(ctx, at, limbs.ContactRadius, hit);
                 yield return null;
             }
@@ -115,8 +124,14 @@ namespace RedMagic.Bosses
             limbs.Release(part, 0.12f);
         }
 
-        /// <summary>Las piezas 0/1 giran en sentidos opuestos: un puño a cada lado se lee simétrico.</summary>
-        private static float SpinSide(in BossContext ctx, int index) => index % 2 == 0 ? 1f : -1f;
+        private static float TargetAngle(BossLimbs limbs, Transform part, Vector2?[] aim, int index)
+        {
+            var direction = aim != null && index < aim.Length ? aim[index] : null;
+            return direction.HasValue ? limbs.AngleToward(part, direction.Value) : limbs.RestAngle(part);
+        }
+
+        /// <summary>Atajo para escribir las direcciones: <c>Aim(Vector2.right, Vector2.left)</c>.</summary>
+        protected static Vector2?[] Aim(params Vector2?[] directions) => directions;
 
         // ============================================================ daño y efectos
 

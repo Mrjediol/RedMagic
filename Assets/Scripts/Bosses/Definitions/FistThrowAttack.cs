@@ -39,8 +39,6 @@ namespace RedMagic.Bosses
         [Tooltip("Cuánto sube mientras carga.")]
         [SerializeField] private float pullUp = 0.6f;
 
-        [Tooltip("Grados que gira al cargar (se deshace al lanzar).")]
-        [SerializeField] private float windupSpin = -25f;
 
         [Header("Vuelo")]
         [Tooltip("Segundos hasta el punto marcado (acelera: sale lento y llega rápido).")]
@@ -114,21 +112,22 @@ namespace RedMagic.Bosses
             Warn(ctx, target, Vector2.one * radius * 2.4f, charge + ctx.Scaled(flightSeconds));
             WarnArrow(ctx, start, dir, (end - start).magnitude, radius, charge, 0.6f);
 
-            yield return Fly(ctx, limbs, parts, new[] { start }, new[] { back }, charge * 0.55f, Ease.Out, 0f, windupSpin);
-            yield return Hold(ctx, limbs, parts, new[] { back }, charge * 0.45f, windupSpin, tremble);
+            // Los nudillos miran al objetivo desde que empieza a cargar: se lee hacia dónde va.
+            var aim = Aim(dir);
+            yield return Fly(ctx, limbs, parts, new[] { start }, new[] { back }, charge * 0.55f, Ease.Out, aim);
+            yield return Hold(ctx, limbs, parts, new[] { back }, charge * 0.45f, aim, tremble);
             if (!ctx.IsValid) yield break;
 
             // --- vuelo: acelera hacia el punto y lo pasa; daña al tocar (una vez).
             var hit = new HitOnce();
-            yield return Fly(ctx, limbs, parts, new[] { back }, new[] { end }, ctx.Scaled(flightSeconds), Ease.In,
-                             windupSpin, 0f, hit);
+            yield return Fly(ctx, limbs, parts, new[] { back }, new[] { end }, ctx.Scaled(flightSeconds), Ease.In, aim, hit);
             if (!ctx.IsValid) yield break;
 
             if (hitsGround) ImpactAt(ctx, end, Vector2.one * radius * 3f);
             else if (hit.Landed) ImpactAt(ctx, end, Vector2.one * radius * 2f);
 
             // --- clavado y vuelta.
-            yield return Hold(ctx, limbs, parts, new[] { end }, ctx.Scaled(embedSeconds), 0f, hitsGround ? 0f : tremble * 0.5f);
+            yield return Hold(ctx, limbs, parts, new[] { end }, ctx.Scaled(embedSeconds), aim, hitsGround ? 0f : tremble * 0.5f);
             yield return FlyHome(ctx, limbs, fist, ctx.Scaled(returnSeconds), hitOnReturn ? new HitOnce() : null);
         }
 

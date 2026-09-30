@@ -47,9 +47,6 @@ namespace RedMagic.Bosses
         [Min(0.05f)]
         [SerializeField] private float returnSeconds = 0.5f;
 
-        [Tooltip("Grados que giran las piezas para apuntarse (la izquierda gira a un lado, la derecha al otro).")]
-        [SerializeField] private float aimSpin = 70f;
-
         public override string ShortStats() =>
             $"{Damage:0} dmg · franja {spread * 2f:0.#}×{clapHeight:0.#} · aviso {holdSeconds:0.00}s";
 
@@ -76,10 +73,13 @@ namespace RedMagic.Bosses
                 if (limbs.Center(a).x > limbs.Center(b).x) (a, b) = (b, a);
                 parts = new[] { a, b };
 
+                // Los nudillos se miran entre sí, hacia lo que van a aplastar.
+                var inward = Aim(Vector2.right, Vector2.left);
+
                 yield return Fly(ctx, limbs, parts, new[] { limbs.Center(a), limbs.Center(b) }, sides, gather,
-                                 Ease.Out, 0f, aimSpin);
-                yield return Hold(ctx, limbs, parts, sides, hold, aimSpin, tremble);
-                yield return Fly(ctx, limbs, parts, sides, closed, clap, Ease.In, aimSpin, aimSpin);
+                                 Ease.Out, inward);
+                yield return Hold(ctx, limbs, parts, sides, hold, inward, tremble);
+                yield return Fly(ctx, limbs, parts, sides, closed, clap, Ease.In, inward);
             }
             else
             {
@@ -97,7 +97,7 @@ namespace RedMagic.Bosses
 
             // Rebote: se separan un poco por el choque y vuelven al cuerpo.
             Vector2[] rebound = { target + Vector2.left * radius * 1.6f, target + Vector2.right * radius * 1.6f };
-            yield return Fly(ctx, limbs, parts, closed, rebound, ctx.Scaled(reboundSeconds), Ease.Out, aimSpin, aimSpin * 0.5f);
+            yield return Fly(ctx, limbs, parts, closed, rebound, ctx.Scaled(reboundSeconds), Ease.Out, Aim(Vector2.right, Vector2.left));
             foreach (var part in parts) limbs.Release(part, ctx.Scaled(returnSeconds));
         }
     }

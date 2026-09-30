@@ -177,6 +177,15 @@ namespace RedMagic.Bosses
                  "(ProceduralRig) pon aquí el torso.")]
         [SerializeField] private SpriteRenderer bodyRenderer;
 
+        [Header("Pruebas")]
+        [Tooltip("Ataque que lanza el menú del componente (⋮) ▸ 'Probar ataque', sólo en Play y con la " +
+                 "pelea empezada. Para probar un ataque sin esperar a que salga en el sorteo.")]
+        [SerializeField] private BossAttack debugAttack;
+
+        [Tooltip("Tras 'Probar ataque' la baraja se queda parada (sólo salen los que lances a mano) " +
+                 "hasta 'Reanudar baraja'.")]
+        [SerializeField] private bool debugHoldDeck = true;
+
         [Tooltip("Cuánto se agranda la silueta del aura respecto al cuerpo.")]
         [Min(1f)]
         [SerializeField] private float auraScale = 1.06f;
@@ -309,6 +318,25 @@ namespace RedMagic.Bosses
 
         /// <summary>Reanuda la baraja tras un <see cref="SuspendAttacks"/>.</summary>
         public void ResumeAttacks() => _attacksSuspended = false;
+
+        [ContextMenu("Probar ataque (debugAttack)")]
+        private void TestAttack()
+        {
+            if (!Application.isPlaying || debugAttack == null || _dead) return;
+
+            SuspendAttacks();
+            StartCoroutine(TestAttackRoutine(debugAttack));
+        }
+
+        [ContextMenu("Reanudar baraja")]
+        private void ResumeDeck() => ResumeAttacks();
+
+        private IEnumerator TestAttackRoutine(BossAttack attack)
+        {
+            yield return ScriptedAttack(attack);
+            yield return new WaitForSeconds(attack.Recovery);
+            if (!debugHoldDeck) ResumeAttacks();
+        }
 
         /// <summary>
         /// Enseña u oculta el cuerpo del jefe y su aura sin desactivar el GameObject (los

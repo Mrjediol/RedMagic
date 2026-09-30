@@ -27,6 +27,11 @@ namespace RedMagic.Rigging
                  "negativo = se queda atrás como un péndulo).")]
         public float leanFollow;
 
+        [Tooltip("Hacia dónde apunta la parte \"útil\" de la pieza en su dibujo sin girar, en grados " +
+                 "(0 = derecha, -90 = abajo: los nudillos de un puño colgando). Un ataque que lanza la " +
+                 "pieza la gira para que esto mire hacia donde va.")]
+        public float pointAngle;
+
         [Header("Balanceo en reposo (seno)")]
         [Tooltip("Amplitud del vaivén, en unidades locales del padre.")]
         public Vector2 swayMove = new Vector2(0f, 0.05f);

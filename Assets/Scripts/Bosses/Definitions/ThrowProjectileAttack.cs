@@ -18,12 +18,16 @@ namespace RedMagic.Bosses
     ///
     /// Vale para cualquier "lanzar algo en arco": la roca del golem, un barril, una granada de un
     /// enemigo. Sin gesto de lanzar, suelta por tiempo.
+    ///
+    /// En un jefe <b>por partes</b> (<see cref="BossLimbs"/>) lo hace con la mano: un puño baja al suelo
+    /// delante del jefe, coge el objeto, lo sube por encima del hombro y lo lanza desde el puño; con
+    /// varios lanzamientos alterna de mano. El vuelo, la marca y el daño son los mismos.
     /// </summary>
     [CreateAssetMenu(menuName = "RedMagic/Boss/Throw Projectile Attack", fileName = "BossAttack_Throw")]
     [AttackPoint("heldOffset", "Objeto en la mano")]
     [AttackHides("projectile.speed", "projectile.muzzleOffset", "projectile.homingTurnRate",
                  "projectile.homingRange", "projectile.arcGravity")]
-    public class ThrowProjectileAttack : BossAttack
+    public class ThrowProjectileAttack : LimbAttack
     {
         [Header("Gesto de lanzar")]
         [Tooltip("Estado del Animator del gesto de LANZAR. El de COGER va en 'Gesto' (arriba) y hace " +
@@ -81,6 +85,44 @@ namespace RedMagic.Bosses
         [Tooltip("Tamaño del objeto sostenido. Con arte del importador manda el ancho (X).")]
         [SerializeField] private Vector2 heldSize = new Vector2(1.6f, 1.6f);
 
+        [Header("Con extremidades (jefe por partes)")]
+        [Tooltip("Con BossLimbs en el jefe, una mano baja al suelo, coge el objeto y lo lanza desde el " +
+                 "puño. Apagado = siempre en alto sobre el jefe, como uno de un solo sprite.")]
+        [SerializeField] private bool useLimbs = true;
+
+        [Tooltip("Qué mano. Alternate = con varios lanzamientos, una y luego la otra.")]
+        [SerializeField] private LimbPick limbPick = LimbPick.Alternate;
+
+        [Tooltip("Dónde recoge el objeto: X hacia el jugador desde los pies del jefe.")]
+        [SerializeField] private float pickupReach = 2.5f;
+
+        [Tooltip("Dónde lo sostiene antes de lanzar, desde los pies (X hacia el jugador; negativo = " +
+                 "por detrás del hombro, cargando).")]
+        [SerializeField] private Vector2 raisedOffset = new Vector2(-1f, 6.5f);
+
+        [Tooltip("Segundos de la mano bajando al suelo.")]
+        [Min(0.05f)]
+        [SerializeField] private float reachSeconds = 0.4f;
+
+        [Tooltip("Segundos agarrando en el suelo.")]
+        [Min(0f)]
+        [SerializeField] private float grabSeconds = 0.15f;
+
+        [Tooltip("Segundos subiéndolo por encima del hombro.")]
+        [Min(0.05f)]
+        [SerializeField] private float liftSeconds = 0.35f;
+
+        [Tooltip("Segundos del latigazo de lanzar; el objeto sale al final.")]
+        [Min(0.02f)]
+        [SerializeField] private float swingSeconds = 0.14f;
+
+        [Tooltip("Cuánto avanza la mano en el latigazo.")]
+        [SerializeField] private float swingReach = 2.5f;
+
+        [Tooltip("Segundos de vuelta de la mano al cuerpo (lo anima el rig).")]
+        [Min(0.05f)]
+        [SerializeField] private float limbReturnSeconds = 0.45f;
+
         [Header("Sonido")]
         [Tooltip("Al coger el objeto que va a lanzar (la roca en alto).")]
         [SerializeField] private SoundCue pickupSound = new SoundCue { positional = true };
@@ -104,6 +146,13 @@ namespace RedMagic.Bosses
 
         public override IEnumerator Run(BossContext ctx)
         {
+            var limbs = useLimbs ? Limbs(ctx) : null;
+            if (limbs != null)
+            {
+                yield return RunWithLimbs(ctx, limbs);
+                yield break;
+            }
+
             for (int t = 0; t < throws; t++)
             {
                 if (!ctx.IsValid) yield break;
@@ -137,6 +186,62 @@ namespace RedMagic.Bosses
                 // --- suelta
                 Impact();
                 Throw(ctx, origin);
+
+                if (t < throws - 1) yield return new WaitForSeconds(ctx.Scaled(timeBetweenThrows));
+            }
+        }
+
+        // ============================================================ con la mano
+
+        private IEnumerator RunWithLimbs(BossContext ctx, BossLimbs limbs)
+        {
+            var body = ctx.Boss.BodyAnimator;
+            for (int t = 0; t < throws; t++)
+            {
+                if (!ctx.IsValid) yield break;
+
+                float radius = limbs.ContactRadius;
+                var hand = limbs.Pick(limbPick, ctx.PlayerCenter);
+                if (hand == null) yield break;
+                var parts = new[] { hand };
+                var down = Aim(Vector2.down);
+                var up = Aim(Vector2.up);
+
+                // --- baja al suelo delante del jefe y agarra.
+                var ground = new Vector2(ctx.Origin.x + pickupReach * ctx.Facing, ctx.GroundY + radius);
+                yield return Fly(ctx, limbs, parts, new[] { limbs.Center(hand) }, new[] { ground },
+                                 ctx.Scaled(reachSeconds), Ease.InOut, down);
+                if (!ctx.IsValid) yield break;
+
+                float held = ctx.Scaled(reachSeconds + grabSeconds + liftSeconds + holdSeconds + swingSeconds);
+                var prop = BossHeldProp.Spawn(heldPropPrefab, limbs.Grip(hand), Vector2.zero, heldSize,
+                                              ctx.Accent, ctx.FxSprite, held + 2f);
+                AudioManager.Instance?.Play(pickupSound, ground);
+                yield return Hold(ctx, limbs, parts, new[] { ground }, ctx.Scaled(grabSeconds), down, tremble);
+
+                // --- lo sube por encima del hombro y lo sostiene (el aviso: se ve lo que viene).
+                var raised = ctx.Origin + new Vector2(raisedOffset.x * ctx.Facing, raisedOffset.y);
+                yield return Fly(ctx, limbs, parts, new[] { ground }, new[] { raised }, ctx.Scaled(liftSeconds),
+                                 Ease.Out, up);
+                yield return Hold(ctx, limbs, parts, new[] { raised }, ctx.Scaled(holdSeconds), up, tremble);
+                if (!ctx.IsValid) { if (prop != null) prop.Release(); yield break; }
+
+                // --- latigazo hacia el jugador: el cuerpo acompaña con su gesto y el objeto sale del puño.
+                float swing = ctx.Scaled(swingSeconds);
+                if (body != null) body.PlayGesture(throwGesture, swing);
+
+                Vector2 toPlayer = ctx.PlayerCenter - raised;
+                var forward = Aim(toPlayer.sqrMagnitude > 0.0001f ? toPlayer.normalized : new Vector2(ctx.Facing, 0f));
+                var swingEnd = raised + new Vector2(swingReach * ctx.Facing, -0.5f);
+                yield return Fly(ctx, limbs, parts, new[] { raised }, new[] { swingEnd }, swing, Ease.In, forward);
+
+                Vector2 origin = prop != null ? prop.Position : limbs.Center(hand);
+                if (prop != null) prop.Release();
+                if (!ctx.IsValid) yield break;
+
+                Impact();
+                Throw(ctx, origin);
+                limbs.Release(hand, ctx.Scaled(limbReturnSeconds));
 
                 if (t < throws - 1) yield return new WaitForSeconds(ctx.Scaled(timeBetweenThrows));
             }

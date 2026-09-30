@@ -148,6 +148,14 @@ namespace RedMagic.Rigging
         public void DrivePart(Transform part, Vector2 worldPosition, float spin)
         {
             if (part == null) return;
+            Rig.TryGetRest(part, out _, out float restAngle, out _);
+            DrivePartAngle(part, worldPosition, restAngle + spin);
+        }
+
+        /// <summary>Como <see cref="DrivePart"/>, con el giro local absoluto (grados) en vez de relativo al reposo.</summary>
+        public void DrivePartAngle(Transform part, Vector2 worldPosition, float localAngle)
+        {
+            if (part == null) return;
             if (!Driven.TryGetValue(part, out var state))
             {
                 state = new DrivenPart();
@@ -157,9 +165,8 @@ namespace RedMagic.Rigging
             state.idle = 0f;
             state.returning = false;
 
+            part.localRotation = Quaternion.Euler(0f, 0f, localAngle);
             part.position = new Vector3(worldPosition.x, worldPosition.y, part.position.z);
-            Rig.TryGetRest(part, out _, out float restAngle, out _);
-            part.localRotation = Quaternion.Euler(0f, 0f, restAngle + spin);
         }
 
         /// <summary>Devuelve la pieza al cuerpo en <paramref name="seconds"/> (lo anima el motor).</summary>

@@ -219,12 +219,19 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
   - `LimbSlamAttack` — **"where does it land, and which way does the wave run?"**: `Together`
     (double slam either side of the player, gap in the middle) or `Alternating` (N slams,
     alternating fists on the player's current X); optional ground waves (`ProjectileSpec`).
+  - `ThrowProjectileAttack` is a `LimbAttack` too: with `BossLimbs` (`useLimbs`, default on) a hand
+    reaches the ground in front, grabs the prop (`BossHeldProp` on the hand's grip), lifts it over the
+    shoulder (`raisedOffset`), swings and releases it from the fist; `limbPick = Alternate` makes
+    `throws > 1` go one hand then the other. Bosses without limbs keep the old held-aloft path.
   - `LimbPincerAttack` — **"out over the top or out the side?"**: fists fly to both sides of the
     player, aim at each other over a marked low band, then clap; only possible with two loose parts.
   - **Coloso de Hielo Desatado** (`BossIce2`, `ProceduralBossPack`) — the ice boss rebuilt from
     separate parts to test hand-animated part bosses; same definition skeleton and charge /
     ground-slam / rock assets, its two sprite punches replaced by LanzarPuño, DobleMazazo,
     RáfagaDeMazazos (phase 2) and Tenaza. See `procedural-rig.md`.
+- **Testing an attack on demand** — `BossController ▸ debugAttack` + component menu (⋮) ▸ *Probar
+  ataque* (Play, fight started): suspends the deck and runs that attack; with `debugHoldDeck` the
+  deck stays paused until *Reanudar baraja*.
 - **`BossHealthBar`** — screen-space uGUI built in code (no prefab/UXML/PanelSettings), sorting
   order 18 so menus still cover it. Shows the definition's name/title, an amber "ghost" trail
   behind the fill and a tick per phase threshold. A new boss needs no UI work.

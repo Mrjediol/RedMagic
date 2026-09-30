@@ -33,6 +33,10 @@ namespace RedMagic.Bosses
                  "1 = la de la derecha.")]
         [SerializeField] private List<Transform> limbs = new List<Transform>();
 
+        [Tooltip("Dónde se agarra un objeto con cada pieza (la roca en el puño). Mismo orden que " +
+                 "'limbs'. Vacío = el centro visible de la pieza.")]
+        [SerializeField] private List<Transform> grips = new List<Transform>();
+
         [Tooltip("Radio de contacto de cada pieza, en unidades de mundo (lo que hace daño al tocar).")]
         [Min(0.1f)]
         [SerializeField] private float contactRadius = 0.9f;
@@ -106,15 +110,48 @@ namespace RedMagic.Bosses
             return _data.RestWorldPosition(limb) + offset;
         }
 
-        /// <summary>Lleva el <b>centro</b> de la pieza a <paramref name="center"/>, girada <paramref name="spin"/> grados.</summary>
-        public void DriveCenter(Transform limb, Vector2 center, float spin)
+        /// <summary>Lleva el <b>centro</b> de la pieza a <paramref name="center"/> con giro local <paramref name="localAngle"/>.</summary>
+        public void DriveCenter(Transform limb, Vector2 center, float localAngle)
         {
             if (_rig == null || limb == null) return;
 
             // El giro se aplica primero para medir bien la distancia pivote→centro con la pose nueva.
-            _rig.DrivePart(limb, limb.position, spin);
+            _rig.DrivePartAngle(limb, limb.position, localAngle);
             Vector2 offset = Center(limb) - (Vector2)limb.position;
-            _rig.DrivePart(limb, center - offset, spin);
+            _rig.DrivePartAngle(limb, center - offset, localAngle);
+        }
+
+        /// <summary>Giro local actual de la pieza.</summary>
+        public float LocalAngle(Transform limb) => limb.localEulerAngles.z;
+
+        /// <summary>Giro local de la pieza en su pose de reposo.</summary>
+        public float RestAngle(Transform limb)
+        {
+            if (_data == null) return 0f;
+            _data.TryGetRest(limb, out _, out float angle, out _);
+            return angle;
+        }
+
+        /// <summary>
+        /// Giro local para que la parte útil de la pieza (<see cref="RigPart.pointAngle"/>: los nudillos)
+        /// mire hacia <paramref name="worldDirection"/>. Pasa por el espacio del padre con su escala,
+        /// así que con el cuerpo volteado sale bien sin más.
+        /// </summary>
+        public float AngleToward(Transform limb, Vector2 worldDirection)
+        {
+            if (limb == null || limb.parent == null || worldDirection.sqrMagnitude < 0.0001f) return RestAngle(limb);
+
+            Vector2 local = limb.parent.InverseTransformVector(worldDirection);
+            var data = _data != null ? _data.FindPart(limb) : null;
+            float point = data != null ? data.pointAngle : 0f;
+            return Mathf.Atan2(local.y, local.x) * Mathf.Rad2Deg - point;
+        }
+
+        /// <summary>Donde agarra la pieza (ver <c>grips</c>); sin punto de agarre, la propia pieza.</summary>
+        public Transform Grip(Transform limb)
+        {
+            int index = limbs.IndexOf(limb);
+            return index >= 0 && index < grips.Count && grips[index] != null ? grips[index] : limb;
         }
 
         /// <summary>Devuelve la pieza al cuerpo en <paramref name="seconds"/>.</summary>

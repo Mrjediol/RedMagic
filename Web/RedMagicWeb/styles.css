@@ -304,3 +304,15 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .rigGestureName{font-weight:600;font-size:12px;color:var(--accent2);cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rigGestureGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0 8px;}
 .rigPosePanel{border:1px dashed var(--accent);border-radius:6px;padding:6px 8px;margin:6px 0;}
+
+/* VFX Lab tab */
+#vfxFormPanel{flex:1;min-width:320px;max-width:520px;padding:16px 20px;overflow-y:auto;border-right:1px solid var(--border);}
+#vfxFormPanel h1{font-size:16px;margin:0 0 6px;color:var(--accent);}
+#vfxPreviewPanel{flex:2;min-width:0;padding:14px 18px;overflow-y:auto;}
+.vfxLanes{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0;}
+.vfxLane{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.vfxCanvas{width:192px;height:192px;image-rendering:pixelated;background:#0d0f12;border:1px solid var(--border);border-radius:6px;}
+.vfxSheet{max-width:100%;image-rendering:pixelated;background:#0d0f12;border:1px solid var(--border);border-radius:6px;}
+.vfxSaved{display:flex;align-items:center;gap:8px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;margin:4px 0;}
+.vfxSaved.selected{outline:1px solid var(--accent);}
+.vfxSavedName{flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}

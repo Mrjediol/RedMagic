@@ -16,6 +16,7 @@ import { cropToDataURL, buildExportZip, downloadBlob } from './modules/export-ma
 import { initEnemyCreator } from './modules/enemy-form.js';
 import { initFxCreator } from './modules/fx-form.js';
 import { initBossCreator } from './modules/boss-form.js';
+import { initVfxLab } from './modules/vfx-lab.js';
 import { initRigComposer } from './modules/rig-composer.js';
 import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail } from './modules/enemy-library.js';
 import { renderLibraryCards } from './modules/library-panel.js';
@@ -48,6 +49,7 @@ let enemyCreator = null;
 let fxCreator = null;
 let bossCreator = null;
 let rigComposer = null;
+let vfxLab = null;
 
 /** The creator-tab API for a kind, or null for a kind nobody configures. See KINDS[…].creator. */
 function creatorFor(kind) {
@@ -80,6 +82,7 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     if (btn.dataset.tab === 'fx' && fxCreator) fxCreator.refreshArtLibrary();
     if (btn.dataset.tab === 'boss' && bossCreator) bossCreator.refreshLibraries();
     if (btn.dataset.tab === 'rig' && rigComposer) rigComposer.onShow();
+    if (btn.dataset.tab === 'vfx' && vfxLab) vfxLab.onShow();
     if (btn.dataset.tab === 'library') renderLibraryTab();
     if (btn.dataset.tab === 'map') { renderMapLibraryLists(); mapView.frameToFit(); }
   });
@@ -1055,6 +1058,15 @@ bossCreator = initBossCreator({
   // A boss is the one kind with no Sprites-tab presence, so saving it is the only way it can ever
   // appear in Biblioteca — re-render that list so a save is visible without a tab round-trip.
   onSaved: () => renderLibraryTab(),
+});
+
+// ============================================================ VFX Lab tab (parametric effect presets)
+
+vfxLab = initVfxLab({
+  formRoot: document.getElementById('vfxFormRoot'),
+  previewRoot: document.getElementById('vfxPreviewRoot'),
+  listRoot: document.getElementById('vfxListRoot'),
+  statusEl: document.getElementById('vfxStatus'),
 });
 
 // ============================================================ Rig Composer tab (part-based enemies/bosses)

@@ -222,6 +222,22 @@ en uno de un solo sprite cae a su versión sin pieza.
 
 ---
 
+## ✨ VFX Lab (efectos por parámetros, sólo web)
+Pestaña de la web sin menú propio en Unity: elige un tipo de efecto (orbe, disparo con estela,
+impacto, orbe cargándose, aura de aviso), ajusta tamaño, colores, brillo, chispas, velocidad y
+pixelado con vista previa, y guárdalo. Queda en la biblioteca como un **proyectil** o un **VFX**
+normal (una hoja de frames ya cortada), así que:
+
+- se elige como cualquier otro arte: proyectil de un enemigo (Enemy Creator), huecos de arte de un
+  ataque (Enemy Creator ▸ Ataques, Boss Creator), avisos de un jefe;
+- viaja a Unity dentro del .zip de ese enemigo o jefe y lo construyen los importadores de siempre
+  (prefab con pool); no hay nada que importar aparte;
+- sigue siendo editable: *Abrir* en la lista de la pestaña, cambia parámetros, *Guardar cambios* →
+  misma entrada, y quien la use la recibe al volver a exportar. *Guardar como nuevo* = variante.
+
+Color y tamaño van horneados en los frames (el tamaño en juego lo sigue mandando el "size" del
+proyectil o del ataque).
+
 ## Tools ▸ Web ▸ Rig (enemigos y jefes por partes)
 
 Vía **separada** de la de sprite sheets: nada de arriba cambia. Esquema:

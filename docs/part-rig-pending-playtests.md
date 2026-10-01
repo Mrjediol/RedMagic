@@ -77,3 +77,44 @@ needs the target within `verticalTolerance` before any card is considered.
       telegraph, and it matches what "▶ Probar" showed (timing = the attack's `telegraph`).
 - [ ] E6 · A boss rig: edit one of its gestures (e.g. `Throw`), reimport, the boss attack that
       uses it shows the new pose.
+
+---
+
+## Phase F — VFX preset library (web only)
+
+**What was added**
+- New web tab **✨ VFX Lab**: five parametric effects (Orbe de hechizo, Disparo con estela,
+  Impacto mágico, Orbe cargándose, Aura de aviso) with live preview.
+- Saving one creates a normal library entry (Proyectil or VFX, a baked frame sheet) that every
+  art picker lists; it stays editable from the Lab (same entry) or as a variant.
+- Nothing new in Unity: it travels inside the enemy/boss .zip through the existing importers.
+
+**Tests**
+- [ ] F1 · Web: the tab opens, each of the five effects previews animated (loops are seamless,
+      one-shots play and pause), every slider/colour changes the preview at once. Do they LOOK
+      right for the game? Note which need a different shape, more/less glow, other defaults.
+- [ ] F2 · Save an orb ("Guardar en biblioteca"): it appears in the tab's list and in 📚 Biblioteca
+      as a Proyectil. Change its colour, "Guardar cambios": still one entry. "Guardar como nuevo":
+      a second one.
+- [ ] F3 · Enemy Creator ▸ Ataques: in an attack with a projectile slot (Lluvia/abanico), the saved
+      orb is in the art dropdown. Export, import (rig or sprite enemy), Play: the spell throws
+      that orb, animated, and it bursts with its Impact on hit. Size in game follows the attack's
+      projectile `size`.
+- [ ] F4 · The same orb as an enemy's own projectile (Enemy Creator ▸ Ataque · a distancia ▸
+      Configurar inline ▸ Arte desde biblioteca): flies and bursts.
+- [ ] F5 · An fx preset (Impacto mágico or Aura de aviso) in an attack's effect / warning slot, on
+      a boss (Boss Creator) or an enemy: it shows at the right place and size.
+- [ ] F6 · Retune a saved preset (e.g. another colour), re-export the enemy that uses it, reimport:
+      the enemy shows the new look without touching anything else.
+- [ ] F7 · Pixelado 3–4: does the pixel-art look match the rest of the game's art?
+
+**Known limits of F**: colours are baked (not tinted at runtime); re-saving a preset entry from the
+Sprites tab turns it into a plain sheet (no longer reopenable in the Lab); no trail / muzzle-flash
+presets yet.
+
+---
+
+## After the pass
+
+Bring back the list with ✓ / notes. Expected kinds of readjustment: numbers (ranges, telegraphs,
+gesture poses, effect defaults), then anything that does not behave as described above.

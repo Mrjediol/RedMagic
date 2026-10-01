@@ -29,7 +29,10 @@ On top of B, decided with the user:
 2. ~~Phase D — attacks on normal enemies, several per enemy~~ built; **playtest pending** (branch
    `task/enemy-attack-deck`).
 3. ~~Phase E — gesture pose editor~~ built (2026-10-01, same branch); **test pending**.
-4. **Phase F — VFX preset library** (future, after C; see Phase F). Only planned, nothing built.
+4. ~~Phase F — VFX preset library~~ built (2026-10-01, same branch); **test pending**.
+
+**Every phase of this plan is now built. What is left is the user's batched test pass**
+(`docs/part-rig-pending-playtests.md`, phases D → F) and the readjustments that come out of it.
 
 Pending from the user side: nothing blocking. Their scratch files `Assets/Json/` and
 `Assets/Prefabs/Enemies/Procedural/rigconfi_Code.prefab` (orphan variant) are untracked junk to delete.
@@ -40,7 +43,7 @@ Pending from the user side: nothing blocking. Their scratch files `Assets/Json/`
 > Lee `docs/part-rig-pipeline-plan.md` y ejecuta la **Fase N** (sólo esa). Sigue las reglas de la
 > sección "Reglas de trabajo".
 
-(Replace N with the next phase in the table below. **Next: Fase F** — see "Where we left off".)
+(Replace N with the next phase in the table below. **Next: nothing to build — run the pending tests and report** — see "Where we left off".)
 
 **Model and effort:** use Claude Opus, with **high** effort for Phases 0, A and D (schema,
 importer, refactor: design matters and mistakes are expensive). **Medium** is enough for B, C and E
@@ -96,7 +99,7 @@ importer, refactor: design matters and mistakes are expensive). **Medium** is en
 | C | Generic body templates in the Rig Composer (floating caster / folding sentry / limbed colossus) | yes | medium | ☑ |
 | D | `IAttackHost` refactor → catalog attacks on normal enemies, **several attacks per enemy** (deck + per-attack gesture) | yes (Enemy Creator) | high | ☑ (playtest pending) |
 | E | Gesture pose editor in the Rig Composer | yes | medium | ☑ (test pending) |
-| F | **VFX preset library** (web): reusable, tweakable effects (size, colour, intensity…) that attacks/characters reference and that ship inside the enemy export | yes | medium | ☐ (future, after C) |
+| F | **VFX preset library** (web): reusable, tweakable effects (size, colour, intensity…) that attacks/characters reference and that ship inside the enemy export | yes | medium | ☑ (test pending) |
 
 Order (updated 2026-09-30): C → D → E → F. D does not depend on C; E is what gives each of D's
 attacks its own gesture; F comes after the templates exist.
@@ -347,6 +350,33 @@ To decide when it starts (not now): the Unity side of a preset — a parametrise
 baked frames; how presets reference each other (a spell = muzzle flash + projectile trail + impact);
 where they live in the library (a new kind `vfx-preset`?). Constraints that already apply:
 pooling for anything spawned repeatedly, placeholders swappable as prefabs, no per-character code.
+
+- **Done (Phase F outcome, 2026-10-01).** Web only: new tab **✨ VFX Lab**
+  (`modules/vfx-presets.js` data + drawing, `modules/vfx-lab.js` UI). The open questions above,
+  as decided:
+  - **Unity side = baked frames.** A preset is drawn in code from its parameters and baked into
+    an ordinary frame sheet; saving it creates a normal library entry of kind `projectile`
+    (lanes Move / Impact) or `fx` (Spawn / Loop / End). No new kind, no new schema, **no C#
+    touched**: every art picker that already existed (an enemy's projectile, a catalog attack's
+    art slots for enemies and bosses, boss warnings) lists it, and it reaches Unity through the
+    existing importers as a pooled prefab. Cheapest route and the only one that is compatible
+    with everything already built; the cost is that colour/size are baked (not tintable at
+    runtime — retune and re-export instead).
+  - **Tweakable + reusable.** The entry keeps `draft.vfxPreset = { id, params }`: reopen it in
+    the Lab, move a slider, save over the same entry → whoever uses it gets the new look on its
+    next export. "Preset + overrides per character" = **Guardar como nuevo (variante)**.
+  - **Composition** (a spell = flight + impact): one projectile preset bakes both lanes in one
+    entry. The muzzle flash stays the rig's own `muzzleFlash*` fields.
+  - **Presets shipped** (data-driven, a sixth is one more entry in `PRESETS`): Orbe de hechizo,
+    Disparo con estela (projectiles); Impacto mágico, Orbe cargándose, Aura de aviso (fx).
+    Parameters: frame size, three colours, glow intensity, spark count and shape, speed, length,
+    pixelation, seed, plus one or two per preset.
+  - Checked by Claude: every preset baked and looked at (no empty frames, loops close); the tab
+    driven headless (tune, save, update in place, variant, fx preset, reopen); a saved preset
+    used as a catalog attack's projectile art and as an enemy projectile → the right frames land
+    in the bundle. Not checked: the tab in a real browser, the effects in Unity.
+  - Limits: an entry re-saved from the Sprites tab loses its link to the preset (it becomes a
+    plain sheet); colours are baked; no trail/muzzle presets yet.
 
 ### Phase E — gesture pose editor
 In the Rig Composer, pose the parts for `windup` and `strike` (dragging a part = its offset), name

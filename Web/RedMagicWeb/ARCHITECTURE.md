@@ -49,7 +49,7 @@ module's responsibility shifts, update its row in the same change.
 | Rendering a library card grid (thumbnail/name/date/badges + caller-supplied action buttons) | `modules/library-panel.js` | `renderLibraryCards(container, {getActions, fetchEntries, getTitle, getBadges, emptyMessage})` — the ONE implementation shared by the Sprites-tab panel, the Biblioteca tab, and the Map Tracer tab's maps/pieces lists; defaults reproduce the original enemy-library-only behavior, so only `getActions` (and, for non-enemy entries, `fetchEntries`/`getTitle`/`getBadges`) differ per call site (`app.js`) |
 | Building the combined sprites+config zip (`manifest.json` + PNGs + `enemy-config.json` at root) | `modules/enemy-bundle.js` | `buildCombinedBundle({enemyName, sprite, configObj})` |
 | The "app.js failed to load" fallback banner (e.g. opened via `file://` instead of a server) | `index.html` | the inline classic `<script>` right before `<script type="module" src="app.js">`, and `#moduleFailBanner` in the CSS/HTML |
-| Tab switching (Sprites / Enemy Creator / Proyectil-VFX / Boss Creator / Rig Composer / Biblioteca / Map Tracer) | `app.js` | top-of-file `.tabBtn` click wiring; `creatorFor(kind)` maps a kind to its creator-tab API via `KINDS[kind].creator` |
+| Tab switching (Sprites / Enemy Creator / Proyectil-VFX / Boss Creator / Rig Composer / VFX Lab / Biblioteca / Map Tracer) | `app.js` | top-of-file `.tabBtn` click wiring; `creatorFor(kind)` maps a kind to its creator-tab API via `KINDS[kind].creator` |
 | Detect-vs-grid sidebar mode switch | `app.js` | `setSpriteMode(next)` |
 | Canvas box click/drag/resize/create interaction | `app.js` | `canvas` `mousedown`/`mousemove`/`mouseup` listeners, `hitTestHandle`, `getPos` |
 | Box multi-select rules (click / ctrl+click / shift-range) | `app.js` | `applySelectionClick(i, ctrlKey, shiftKey)` — shared by the canvas and the unsorted grid |
@@ -171,6 +171,19 @@ edit. `modules/boss-catalog-notes.js` only adds Spanish names/one-liners for kno
   their config.
 
 Zip layout: `boss-config.json`, `Body/<Animation>/frame_000.png…`, `Art/<libraryId>/<Lane>/frame_000.png…`.
+
+### VFX Lab tab (✨, parametric effect presets)
+
+Effects drawn in code from parameters and **baked into a normal frame sheet**, saved as an ordinary
+`projectile` / `fx` library entry — so every existing art picker and export uses them unchanged.
+
+| To change... | Edit | Function |
+|---|---|---|
+| The list of presets, what each draws, its extra parameters and defaults | `modules/vfx-presets.js` | `PRESETS` — one entry per preset: `{ id, label, kind, description, defaults, params, lanes: [{ name, loop, fps, frames, draw(ctx, k, p, rnd) }] }`. A new preset is one more entry; `draw` works in a centred, y-up unit square and must close the loop on a looping lane |
+| The parameters every preset shares (size, colours, glow, sparks, speed, length, pixelation, seed) | `modules/vfx-presets.js` | `COMMON_PARAMS`, `normalizeParams()` |
+| Shared drawing pieces (glow, ring, spark shapes, the common burst) | `modules/vfx-presets.js` | `glowDot`, `ring`, `sparkShape`, `core`, `burst` |
+| How a preset becomes a sheet (one row per lane, the Sprites tab's `sprite` block shape) | `modules/vfx-presets.js` | `bakePreset()`, `drawFrame()`, `frameCount()`, `laneFps()` |
+| The tab: form, live preview, save / update in place / variant, the list of saved presets | `modules/vfx-lab.js` | `initVfxLab()` — the record keeps `draft.vfxPreset = { id, params }` to be reopened |
 
 ### Rig Composer tab (🦴, part-based enemies and bosses)
 

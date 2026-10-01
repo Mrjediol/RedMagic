@@ -111,6 +111,11 @@ kbd{background:#1a1d21;border:1px solid var(--border);border-radius:3px;padding:
 .efRangedBadge{font-size:10px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;margin-left:8px;}
 .efGroup{margin-bottom:14px;padding:10px 12px;background:#1e2226;border-radius:6px;}
 .efGroup h3{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 8px;}
+.efFold > summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0;padding:2px 0;list-style-position:inside;}
+.efFold[open] > summary{color:var(--accent2);margin-bottom:8px;}
+.efFold > summary:hover{color:var(--text);}
+details.efSection > summary{font-size:13px;font-weight:600;color:var(--accent2);cursor:pointer;padding:4px 0;border-bottom:1px solid var(--border);}
+.efSubFold{margin-top:8px;padding:6px 8px;border:1px dashed var(--border);border-radius:6px;}
 .efDeemphasized{opacity:.4;}
 
 .efRow{margin-bottom:10px;}

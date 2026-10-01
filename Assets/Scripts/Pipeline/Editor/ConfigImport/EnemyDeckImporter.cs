@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using RedMagic.Abilities;
 using RedMagic.Bosses;
 using RedMagic.Bosses.EditorTools;
 using RedMagic.Enemies;
@@ -42,8 +43,22 @@ namespace RedMagic.Pipeline.EditorTools
             public bool BuiltInAttack = true;
             public float BuiltInWeight = 1f;
 
+            /// <summary>El config traía <c>tuning.attacks</c> (aunque vacío: eso borra la baraja).</summary>
+            public bool HasDeck;
+
+            /// <summary>
+            /// El proyectil del ataque propio, ya resuelto (prefab de biblioteca incluido), o null si el
+            /// config no trae <c>tuning.projectile</c>. Se escribe en cada import, como la baraja: el
+            /// proyectil se elige en la web y, si sólo se aplicara al crear el prefab, cambiarlo
+            /// después reimportando "conservando" lo afinado no haría nada.
+            /// </summary>
+            public ProjectileSpec Projectile;
+
             public void ApplyTo(EnemyTuning tuning)
             {
+                if (Projectile != null) tuning.projectile = Projectile;
+                if (!HasDeck) return;
+
                 tuning.attacks = new List<EnemyDeckEntry>();
                 foreach (var entry in Entries) tuning.attacks.Add(entry.Clone());
                 tuning.builtInAttack = BuiltInAttack;
@@ -52,18 +67,25 @@ namespace RedMagic.Pipeline.EditorTools
         }
 
         /// <summary>
-        /// Crea/actualiza los ataques y devuelve la baraja, o null si el config no trae
-        /// <c>tuning.attacks</c>. <paramref name="artSourceFolder"/> (ruta <c>Assets/…</c>) es donde
+        /// Crea/actualiza los ataques y devuelve la baraja (y el proyectil del ataque propio), o null si
+        /// el config no trae ni <c>tuning.attacks</c> ni <c>tuning.projectile</c>. <paramref name="artSourceFolder"/> (ruta <c>Assets/…</c>) es donde
         /// están los frames del arte: las carpetas relativas de <c>artAssets</c> se resuelven ahí.
         /// </summary>
         public static Deck Read(JObject root, string enemyName, string artSourceFolder, ConfigImportReport report,
                                 Dictionary<string, JObject> projectileLibrary = null)
         {
             var tuningJson = root["tuning"] as JObject;
-            if (!(tuningJson?["attacks"] is JArray deckJson)) return null;
+            var projectileToken = tuningJson?["projectile"];
+            bool hasDeck = tuningJson?["attacks"] is JArray;
+            if (!hasDeck && projectileToken == null) return null;
+            var deckJson = tuningJson["attacks"] as JArray ?? new JArray();
 
             var deck = new Deck
             {
+                HasDeck = hasDeck,
+                Projectile = projectileToken != null
+                    ? ProjectileConfigImporter.Resolve(projectileToken, projectileLibrary, $"{enemyName}.tuning.projectile")
+                    : null,
                 BuiltInAttack = tuningJson.Value<bool?>("builtInAttack") ?? true,
                 BuiltInWeight = Mathf.Max(0.01f, tuningJson.Value<float?>("builtInWeight") ?? 1f),
             };
@@ -178,7 +200,7 @@ namespace RedMagic.Pipeline.EditorTools
             EditorUtility.SetDirty(stats);
 
             // EnemyAttack lo añadiría solo al arrancar; en el prefab se ve y deja poner arte a los avisos.
-            if (deck.Entries.Count > 0 && root.GetComponent<EnemyAttackHost>() == null)
+            if (deck.HasDeck && deck.Entries.Count > 0 && root.GetComponent<EnemyAttackHost>() == null)
                 root.AddComponent<EnemyAttackHost>();
         }
 

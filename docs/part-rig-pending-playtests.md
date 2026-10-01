@@ -96,6 +96,14 @@ needs the target within `verticalTolerance` before any card is considered.
 
 **Tests**
 - [ ] F0 · (fixed after your report) the VFX Lab preview no longer covers the tab bar / step 2: reload the page (Ctrl+F5) and check the layout.
+- [ ] F8 · (bug you reported, fixed) Enemy Creator ▸ Configurar inline ▸ BlueBullet, import with
+      **Conservarlo** over an existing enemy: the shot uses BlueBullet (the own attack's projectile is
+      now written on every import, like the deck). Check also that changing it back and reimporting
+      follows the change.
+- [ ] F9 · Enemy Creator layout: top = Enemigo (name + art), Tipo / proyectil / Ataques; everything
+      else folded under "Más parámetros" (Vida y tier, Rangos, Movimiento…), Presencia and the
+      sprite-sheet projectile art at the bottom. Does it read better? What else should be at hand
+      or folded?
 - [ ] F1 · Web: the tab opens, each of the five effects previews animated (loops are seamless,
       one-shots play and pause), every slider/colour changes the preview at once. Do they LOOK
       right for the game? Note which need a different shape, more/less glow, other defaults.

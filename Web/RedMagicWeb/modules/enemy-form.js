@@ -317,9 +317,9 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
   // ============================================================ presence
 
-  const presenceSection = document.createElement('div');
-  presenceSection.className = 'efSection';
-  presenceSection.innerHTML = '<h2>Presencia</h2>';
+  const presenceSection = document.createElement('details');
+  presenceSection.className = 'efSection efFold';
+  presenceSection.innerHTML = '<summary>Presencia (escala, collider, orden de dibujado, etiqueta)</summary>';
 
   presenceSection.appendChild(bind('number', F.numberField({
     label: 'Escala del sprite', value: state.presence.spriteScale, min: 0.01,
@@ -347,9 +347,9 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
   // ============================================================ projectileArt (de-emphasized unless ranged)
 
-  const projectileArtSection = document.createElement('div');
-  projectileArtSection.className = 'efSection';
-  projectileArtSection.innerHTML = '<h2>Arte del proyectil <span class="efRangedBadge">sólo arquetipos a distancia</span></h2>';
+  const projectileArtSection = document.createElement('details');
+  projectileArtSection.className = 'efSection efFold';
+  projectileArtSection.innerHTML = '<summary>Arte del proyectil desde una hoja de sprites <span class="efRangedBadge">sólo arquetipos a distancia</span></summary>';
 
   projectileArtSection.appendChild(bind('text', F.textField({
     label: 'Fila con el prop suelto (propState)', value: state.projectileArt.propState,
@@ -367,11 +367,11 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
   const tuningSection = document.createElement('div');
   tuningSection.className = 'efSection';
-  tuningSection.innerHTML = '<h2>Tuning (EnemyStats)</h2>';
+  tuningSection.innerHTML = '<h2>Más parámetros <span class="efHint">(plegados: ábrelos cuando quieras tocar algo)</span></h2>';
   formRoot.appendChild(tuningSection);
 
   // --- Tipo (archetype/staticAttack) ---
-  const tipoGroup = addGroup(tuningSection, 'Tipo');
+  const tipoGroup = addGroup(tuningSection, 'Tipo de enemigo', true);
   const archetypeField = F.enumField({
     label: 'Arquetipo', value: state.tuning.archetype,
     options: ['Static', 'Melee', 'Ranged', 'FlyingMelee', 'FlyingRanged'].map((v) => ({ value: v, label: v })),
@@ -398,7 +398,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   const fieldInputs = {}; // key -> <input>, so applyRangedDefaultsIfUntouched() can update what's on screen
 
   TUNING_FIELDS.forEach(([groupName, key, kind, label, opts]) => {
-    const group = groupEls[groupName] || (groupEls[groupName] = addGroup(tuningSection, groupName));
+    const group = groupEls[groupName] || (groupEls[groupName] = addGroup(tuningSection, groupName, groupName === 'Ataque · a distancia'));
     let built;
 
     const onChange = (v) => { state.tuning[key] = v; refresh(); };
@@ -521,6 +521,12 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
     renderProjectileLibraryRow();
 
+    // Los números del proyectil (velocidad, vida, tamaño…) plegados: lo habitual es sólo elegir el arte.
+    const numbers = document.createElement('details');
+    numbers.className = 'efFold efSubFold';
+    numbers.innerHTML = '<summary>Números del proyectil (velocidad, vida, tamaño, boca…)</summary>';
+    projInlineBox.appendChild(numbers);
+
     PROJECTILE_SPEC_FIELDS.forEach(([key, kind, label, optsOrHint]) => {
       const isHintString = typeof optsOrHint === 'string';
       const opts = isHintString ? {} : optsOrHint;
@@ -536,7 +542,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
       else if (kind === 'enum') built = F.enumField({ label, value: state.tuning.projectileSpec[key], options: opts.options, hint, onChange });
 
       registerError(`/tuning/projectile/${key}`, built.setError);
-      projInlineBox.appendChild(built.row);
+      numbers.appendChild(built.row);
     });
   }
 
@@ -588,7 +594,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   deckSection.appendChild(deckIntro);
 
   // --- 1ª carta: el ataque propio (melé / disparo / explosión, los números de "Tuning ▸ Ataque").
-  const builtInCard = addGroup(deckSection, 'Ataque propio (el de Tuning ▸ Ataque)');
+  const builtInCard = addGroup(deckSection, 'Ataque propio (el de Más parámetros ▸ Ataque)', true);
   const builtInSummary = document.createElement('p');
   builtInSummary.className = 'efHint';
   builtInCard.appendChild(builtInSummary);
@@ -772,7 +778,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     deckArtRoot.innerHTML = '';
     if (art.length === 0) return;
 
-    const box = addGroup(deckArtRoot, 'Arte usado por los ataques');
+    const box = addGroup(deckArtRoot, 'Arte usado por los ataques', true);
     art.forEach(({ id, key, kind, libraryId }) => {
       const entry = artEntriesById.get(libraryId);
       const opts = state.attackArt[key] || (state.attackArt[key] = createArtOptions(kind));
@@ -805,14 +811,32 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     gestureNames: linkedEntry() ? bodyGestureNames() : null,
   });
 
+  // ============================================================ orden final: lo importante a mano
+
+  // Arriba: el enemigo (nombre y cuerpo), su tipo, su proyectil y sus ataques. Debajo, plegado, el resto.
+  const quick = document.createElement('div');
+  quick.className = 'efSection';
+  quick.innerHTML = '<h2>Tipo, proyectil y ataques</h2>';
+  quick.append(tipoGroup, groupEls['Ataque · a distancia']);
+  formRoot.insertBefore(quick, tuningSection);
+  formRoot.insertBefore(deckSection, tuningSection);
+  formRoot.append(presenceSection, projectileArtSection);   // lo menos usado, al final y plegado
+
+  // Lo de importar / generar, fuera del paso: vida y tier junto a las estadísticas.
+  const importOptions = addGroup(topSection, 'Opciones de importación (pivote, carpeta del prefab)', false);
+  importOptions.append(anchorField.row, prefabFolderField.row);
+  groupEls['Vida'].appendChild(tierField.row);
+
   renderVariants();
   deckReady = true;
   catalogReady.then(loadArtEntries).then(() => { deckEditor.render(); refresh(); });
 
-  function addGroup(parent, title) {
-    const g = document.createElement('div');
-    g.className = 'efGroup';
-    const h = document.createElement('h3');
+  /** A foldable group of fields (closed unless `open`). */
+  function addGroup(parent, title, open = false) {
+    const g = document.createElement('details');
+    g.className = 'efGroup efFold';
+    g.open = open;
+    const h = document.createElement('summary');
     h.textContent = title;
     g.appendChild(h);
     parent.appendChild(g);

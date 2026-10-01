@@ -12,7 +12,7 @@ meant to be edited by hand.**
 - **Inspector**: `EnemyStatsEditor` (and the boss `BossControllerEditor`) draw one **foldout per
   `[Header]`** (`FoldoutInspector`): archetype, ranges, attack, deck and projectile open by default, the rest
   (health, knockback, movement, sleep, contact, sound, animation, target) folded; open state is remembered per
-  group. Nothing is hidden beyond the archetype rules. New tunables: just put them under a `[Header]`.
+  group. Nothing is hidden beyond the archetype rules. New tunables: put them under a `[Group("…")]`.
 - **`EnemyTuning`** is a plain `[Serializable]` class, used by **both** `EnemyStats` and
   `EnemyRecipe`, so the list of tunables is written once and the pipeline copies it rather than
   translating field by field.

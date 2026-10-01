@@ -8,7 +8,7 @@ namespace RedMagic.Enemies.EditorTools
 {
     /// <summary>
     /// Dibuja las propiedades de un objeto serializado en <b>grupos plegables</b>, un grupo por cada
-    /// <c>[Header]</c> de la clase (lo que va antes del primer Header es el grupo "General"). Nada
+    /// <c>[Group]</c> de la clase (lo que va antes del primer Group es el grupo "General"). Nada
     /// desaparece: se baja el ruido visual dejando abiertos sólo los grupos que se tocan a diario.
     /// El estado abierto/cerrado se recuerda por tipo y grupo en <see cref="SessionState"/>.
     /// Compartido por el inspector de enemigos (<c>EnemyStats</c>) y el de jefes (<c>BossController</c>).
@@ -20,7 +20,10 @@ namespace RedMagic.Enemies.EditorTools
 
         public const string General = "General";
 
-        /// <summary>Campo → cabecera de su grupo (el último [Header] visto en el orden de declaración).</summary>
+        /// <summary>True mientras se dibuja un desplegable: el título del grupo ya está, el decorador calla.</summary>
+        public static bool Drawing { get; private set; }
+
+        /// <summary>Campo → cabecera de su grupo (el último [Group] visto en el orden de declaración).</summary>
         private static Dictionary<string, string> HeadersOf(Type type)
         {
             if (HeaderCache.TryGetValue(type, out var map)) return map;
@@ -38,8 +41,8 @@ namespace RedMagic.Enemies.EditorTools
                 fields.Sort((a, b) => a.MetadataToken.CompareTo(b.MetadataToken));
                 foreach (var f in fields)
                 {
-                    var header = (HeaderAttribute)Attribute.GetCustomAttribute(f, typeof(HeaderAttribute), false);
-                    if (header != null) current = header.header;
+                    var group = (GroupAttribute)Attribute.GetCustomAttribute(f, typeof(GroupAttribute), false);
+                    if (group != null) current = group.Title;
                     map[f.Name] = current;
                 }
             }
@@ -74,14 +77,23 @@ namespace RedMagic.Enemies.EditorTools
             {
                 string key = $"FoldoutInspector.{owner.Name}.{header}";
                 bool open = SessionState.GetBool(key, openByDefault != null && openByDefault.Contains(header));
-                bool now = EditorGUILayout.BeginFoldoutHeaderGroup(open, $"{header}  ({groups[header].Count})");
+                // Foldout normal (no 'header group'): un campo de lista lleva su propio desplegable dentro.
+                bool now = EditorGUILayout.Foldout(open, $"{header}  ({groups[header].Count})", true, EditorStyles.foldoutHeader);
                 if (now != open) SessionState.SetBool(key, now);
 
-                if (now)
-                    foreach (var p in groups[header])
-                        EditorGUILayout.PropertyField(p, true);
+                if (!now) continue;
 
-                EditorGUILayout.EndFoldoutHeaderGroup();
+                Drawing = true;
+                try
+                {
+                    EditorGUI.indentLevel++;
+                    foreach (var p in groups[header]) EditorGUILayout.PropertyField(p, true);
+                    EditorGUI.indentLevel--;
+                }
+                finally
+                {
+                    Drawing = false;
+                }
             }
         }
 

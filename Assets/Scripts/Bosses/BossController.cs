@@ -5,6 +5,7 @@ using RedMagic.Abilities;
 using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Core;
+using RedMagic.Enemies;
 using RedMagic.Fx;
 using RedMagic.Gameplay;
 using RedMagic.Gameplay.Movement;
@@ -62,11 +63,11 @@ namespace RedMagic.Bosses
             return false;
         }
 
-        [Header("Definición")]
+        [Group("Definición")]
         [Tooltip("Asset con el nombre, las fases y las barajas de ataques de este jefe.")]
         [SerializeField] private BossDefinition definition;
 
-        [Header("Arena")]
+        [Group("Arena")]
         [Tooltip("Media anchura de la arena respecto al jefe. Marca hasta dónde barren las ondas y " +
                  "en qué franja cae la lluvia de proyectiles.")]
         [Min(1f)]
@@ -94,7 +95,7 @@ namespace RedMagic.Bosses
                  "Vacío = la raíz es la base (jefes con el origen en los pies).")]
         [SerializeField] private Transform feet;
 
-        [Header("Objetivo")]
+        [Group("Objetivo")]
         [Tooltip("Etiqueta del objetivo. También es a quién daña al tocarlo.")]
         [SerializeField] private string targetTag = "Player";
 
@@ -105,7 +106,7 @@ namespace RedMagic.Bosses
         [Tooltip("Gira el sprite hacia el jugador.")]
         [SerializeField] private bool faceTarget = true;
 
-        [Header("Presentación")]
+        [Group("Presentación")]
         [Min(0f)]
         [SerializeField] private float introSeconds = 2.2f;
 
@@ -118,7 +119,7 @@ namespace RedMagic.Bosses
         [Min(0f)]
         [SerializeField] private float introShake = 0.6f;
 
-        [Header("Daño por contacto")]
+        [Group("Daño por contacto")]
         [Tooltip("Daño al tocar al jugador. 0 = el cuerpo del jefe no hace daño.")]
         [Min(0f)]
         [SerializeField] private float contactDamage = 12f;
@@ -129,12 +130,12 @@ namespace RedMagic.Bosses
         [Min(0f)]
         [SerializeField] private float contactKnockbackMultiplier = 1.4f;
 
-        [Header("Efectos")]
+        [Group("Efectos")]
         [Tooltip("Sprite base de los efectos del jefe (avisos, ondas, proyectiles). Vacío = el " +
                  "cuadrado generado por AbilityFx.")]
         [SerializeField] private Sprite fxSprite;
 
-        [Header("Placeholders de FX (prefab → arte real)")]
+        [Group("Placeholders de FX (prefab → arte real)")]
         [Tooltip("Prefab del aviso/telegrafiado. Vacío = el cuadrado de AbilityFx.Flash. Compartido " +
                  "por todos los avisos del jefe; para arte de verdad, edita el prefab.")]
         [SerializeField] private GameObject warnPrefab;
@@ -183,7 +184,7 @@ namespace RedMagic.Bosses
                  "(ProceduralRig) pon aquí el torso.")]
         [SerializeField] private SpriteRenderer bodyRenderer;
 
-        [Header("Pruebas")]
+        [Group("Pruebas")]
         [Tooltip("Ataque que lanza el menú del componente (⋮) ▸ 'Probar ataque', sólo en Play y con la " +
                  "pelea empezada. Para probar un ataque sin esperar a que salga en el sorteo.")]
         [SerializeField] private BossAttack debugAttack;
@@ -211,12 +212,12 @@ namespace RedMagic.Bosses
         [Min(0.01f)]
         [SerializeField] private float swaySpeed = 1.1f;
 
-        [Header("Depuración")]
+        [Group("Depuración")]
         [Tooltip("Dibuja en Play (vista Scene, y en Game con Gizmos activados) las cajas y círculos " +
                  "de daño que usan los ataques en el momento en que golpean.")]
         [SerializeField] private bool debugHitboxes;
 
-        [Header("Movimiento (opcional: componente Mover)")]
+        [Group("Movimiento (opcional: componente Mover)")]
         [Tooltip("Con un Mover en el jefe, se mueve SOLO en la pausa entre ataques (nunca durante el " +
                  "aviso, el ataque o la recuperación: la recuperación es la ventana del jugador). " +
                  "Distancia a los bordes de la arena que no cruza al moverse.")]

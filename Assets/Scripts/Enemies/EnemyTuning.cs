@@ -123,7 +123,7 @@ namespace RedMagic.Enemies
     {
         // ============================================================ tipo
 
-        [Header("Tipo")]
+        [Group("Tipo")]
         [Tooltip("Decide cómo se mueve y cómo ataca. Static no persigue: sólo espera a que el " +
                  "objetivo entre en su rango de ataque.")]
         public EnemyArchetype archetype = EnemyArchetype.Melee;
@@ -134,7 +134,7 @@ namespace RedMagic.Enemies
 
         // ============================================================ vida
 
-        [Header("Vida")]
+        [Group("Vida")]
         [Min(1f)] public float maxHealth = 30f;
 
         [Tooltip("En un enemigo va a 0 a propósito: los i-frames se tragan las armas multigolpe " +
@@ -145,7 +145,7 @@ namespace RedMagic.Enemies
 
         // ============================================================ retroceso
 
-        [Header("Retroceso al recibir (lo define la víctima, no quien pega)")]
+        [Group("Retroceso al recibir (lo define la víctima, no quien pega)")]
         [Min(0f)] public float knockbackHorizontal = 6f;
         [Min(0f)] public float knockbackVertical = 3f;
         [Min(0f)] public float knockbackDuration = 0.18f;
@@ -153,7 +153,7 @@ namespace RedMagic.Enemies
 
         // ============================================================ rangos
 
-        [Header("Rangos")]
+        [Group("Rangos")]
         [Tooltip("El límite de la persecución, en los dos sentidos: entra aquí y el enemigo deja " +
                  "el reposo y va a por él; sale de aquí y, tras 'loseInterestGrace' segundos, se " +
                  "rinde. En un Static se ignora: un enemigo que no se mueve no necesita detectar " +
@@ -187,7 +187,7 @@ namespace RedMagic.Enemies
 
         // ============================================================ movimiento
 
-        [Header("Movimiento")]
+        [Group("Movimiento")]
         [Min(0f)] public float moveSpeed = 2.5f;
 
         [Tooltip("Velocidad al apartarse cuando le invaden el espacio propio.")]
@@ -201,7 +201,7 @@ namespace RedMagic.Enemies
         [Tooltip("Gravedad del cuerpo. Los voladores la ponen a 0 solos.")]
         [Min(0f)] public float gravityScale = 3f;
 
-        [Header("Dormido")]
+        [Group("Dormido")]
         [Tooltip("Empieza dormido en reposo (su clip Idle es el de dormir). Al detectar al " +
                  "objetivo — o al recibir un golpe — reproduce el clip 'Wake' quieto y después " +
                  "persigue. Si se rinde, vuelve a donde empezó y se duerme otra vez. Un Static " +
@@ -209,13 +209,13 @@ namespace RedMagic.Enemies
                  "plegar en su sitio al rendirse.")]
         public bool sleepsUntilDetected;
 
-        [Header("Vuelo")]
+        [Group("Vuelo")]
         [Tooltip("Altura sobre el objetivo a la que le gusta quedarse. 0 = va a su misma altura.")]
         public float hoverOffset = 0.5f;
 
         // ============================================================ ataque
 
-        [Header("Ataque")]
+        [Group("Ataque")]
         [Min(0f)] public float attackDamage = 10f;
 
         [Tooltip("Segundos entre el final de un ataque y el permiso para lanzar el siguiente. " +
@@ -231,7 +231,7 @@ namespace RedMagic.Enemies
         [Tooltip("Se queda quieto mientras ataca. Apagarlo deja que siga avanzando durante el golpe.")]
         public bool rootedWhileAttacking = true;
 
-        [Header("Ataque · baraja (ataques del catálogo)")]
+        [Group("Ataque · baraja (ataques del catálogo)")]
         [Tooltip("Ataques extra, los mismos assets que usan los jefes. Vacío = sólo el ataque " +
                  "propio de arriba (melé / disparo), como siempre. Con cartas, cada vez que toca " +
                  "atacar se sortea por peso entre las que están a su distancia y fuera de " +
@@ -245,13 +245,13 @@ namespace RedMagic.Enemies
         [Tooltip("Peso del ataque propio en el sorteo, frente al 'weight' de cada carta.")]
         [Min(0.01f)] public float builtInWeight = 1f;
 
-        [Header("Ataque · melé")]
+        [Group("Ataque · melé")]
         [Tooltip("Caja de golpe, en unidades de mundo, medida desde el enemigo hacia donde mira.")]
         public Vector2 meleeHitboxSize = new Vector2(1.2f, 1f);
 
         public Vector2 meleeHitboxOffset = new Vector2(0.8f, 0.5f);
 
-        [Header("Ataque · kamikaze")]
+        [Group("Ataque · kamikaze")]
         [Tooltip("El ataque es EXPLOTAR: al llegar a 'attackRange' reproduce el clip de ataque " +
                  "(la mecha), y en su frame de soltar hace 'attackDamage' en un círculo de " +
                  "'explosionRadius' y muere. Su clip de muerte ES la explosión, así que el cadáver " +
@@ -266,7 +266,7 @@ namespace RedMagic.Enemies
         [Tooltip("Amplitud del temblor de cámara al explotar. 0 = sin temblor.")]
         [Min(0f)] public float explosionShake = 0.2f;
 
-        [Header("Ataque · a distancia")]
+        [Group("Ataque · a distancia")]
         [Tooltip("El proyectil que lanza. Con 'prefab' vacío se construye uno en código con el " +
                  "sprite del ataque; con prefab, sale de ahí (y va por pool igual).")]
         public ProjectileSpec projectile = new ProjectileSpec();
@@ -283,7 +283,7 @@ namespace RedMagic.Enemies
 
         // ============================================================ contacto
 
-        [Header("Daño por contacto")]
+        [Group("Daño por contacto")]
         [Tooltip("Daño al tocar al objetivo con el cuerpo. 0 = no hace daño por contacto. Un " +
                  "enemigo a distancia normalmente lo lleva a 0 o muy bajo.")]
         [Min(0f)] public float contactDamage;
@@ -293,13 +293,13 @@ namespace RedMagic.Enemies
 
         // ============================================================ sonido
 
-        [Header("Sonido")]
+        [Group("Sonido")]
         [Tooltip("Segundos entre dos OnMove (paso / aleteo) mientras se desplaza por su cuenta.")]
         [Min(0.05f)] public float moveSoundInterval = 0.4f;
 
         // ============================================================ animación
 
-        [Header("Animación (velocidad de cada estado)")]
+        [Group("Animación (velocidad de cada estado)")]
         [Tooltip("Multiplicador de velocidad del clip de reposo. 1 = tal cual se generó.")]
         [Min(0.01f)] public float idleAnimSpeed = 1f;
 
@@ -311,7 +311,7 @@ namespace RedMagic.Enemies
 
         // ============================================================ objetivo
 
-        [Header("Objetivo")]
+        [Group("Objetivo")]
         [Tooltip("Etiqueta de a quién persigue y a quién daña.")]
         public string targetTag = "Player";
 

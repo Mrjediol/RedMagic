@@ -372,7 +372,7 @@ importador de mapas). Un único diálogo resumen (piezas creadas, sprites no enc
 
 ## Tools ▸ Web ▸ Biblioteca
 
-**Qué hace**: una ventana acoplable (`Tools ▸ Web ▸ Biblioteca`, `Assets/Editor/WebLibraryWindow.cs`)
+**Qué hace**: una ventana acoplable (`Tools ▸ Web ▸ Biblioteca Jere`, `Assets/Editor/WebLibraryWindow.cs`)
 para navegar y borrar de forma segura lo que estos importadores (y el pipeline de enemigos/jefes)
 han ido dejando en el proyecto — sin ella, limpiar un enemigo de prueba significa acordarte a mano
 de las 2-4 carpetas/prefabs que le corresponden y no dejarte ninguna suelta. No lee nada de la web

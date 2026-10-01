@@ -104,7 +104,7 @@ export function buildRigExport(state, ctx = {}) {
     const named = [
       ...['alert', 'hurt', 'dead'].filter((k) => v.named?.[k]).map((k) => ({ state: k, image: v.named[k], suffix: k })),
       ...Object.entries(v.gestures || {}).filter(([name, img]) => img && gestureNames.has(name))
-        .map(([name, img]) => ({ state: 'gesture', gesture: name, image: img, suffix: `gesture_${safe(name)}` })),
+        .map(([name, img]) => ({ state: 'gesture', gesture: name, image: img, suffix: `gesture_${safe(name)}`, window: v.gestureWindows?.[name] || null })),
     ];
     const orphan = Object.keys(v.gestures || {}).filter((name) => v.gestures[name] && !gestureNames.has(name));
     if (orphan.length) notes.push(`"${part.name}": tiene sprite para gestos que ya no existen (${orphan.join(', ')}); no se exportan.`);
@@ -116,7 +116,8 @@ export function buildRigExport(state, ctx = {}) {
       const swap = { part: partPaths.get(part.uid), asleep: ref(v.asleep, 'asleep'), awake: ref(v.awake, 'awake'), attacking: ref(v.attacking, 'attacking'), stages: [] };
       // Stage 0 = the base sprite (the torso intact); variants.stages[i] = stage i+1 (phase i+2).
       if (stages.length) swap.stages = [node.sprite, ...v.stages.map((s, i) => (s ? ref(s, `stage${i + 1}`) : node.sprite))];
-      if (named.length) swap.named = named.map((n) => ({ state: n.state, ...(n.gesture ? { gesture: n.gesture } : {}), sprite: ref(n.image, n.suffix) }));
+      if (named.length) swap.named = named.map((n) => ({ state: n.state, ...(n.gesture ? { gesture: n.gesture } : {}),
+        ...(n.window ? { from: r5(n.window.from), to: r5(n.window.to) } : {}), sprite: ref(n.image, n.suffix) }));
       swaps.push(swap);
       [v.asleep, v.awake, v.attacking, ...(v.stages || []), ...named.map((n) => n.image)].forEach((img) => {
         if (img && (img.origW !== part.image.origW || img.origH !== part.image.origH))

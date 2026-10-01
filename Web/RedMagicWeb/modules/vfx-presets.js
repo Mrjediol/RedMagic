@@ -25,6 +25,8 @@
 export const COMMON_PARAMS = [
   { key: 'size', label: 'Tamaño del frame (px)', type: 'int', min: 16, max: 256, step: 8, default: 96,
     hint: 'Lado de cada frame. El tamaño en el juego lo decide quien lo usa (el "size" del proyectil o del ataque).' },
+  { key: 'detail', label: 'Nitidez (× resolución)', type: 'int', min: 1, max: 4, step: 1, default: 3,
+    hint: 'Multiplica los píxeles de cada frame SIN cambiar su tamaño en el juego: 1 = como antes; 3–4 para que se vea tan nítido como arte en alta resolución.' },
   { key: 'core', label: 'Color del núcleo', type: 'color', default: '#ffffff' },
   { key: 'glow', label: 'Color del brillo', type: 'color', default: '#58c8ff' },
   { key: 'accent', label: 'Color de las chispas', type: 'color', default: '#b8f0ff' },
@@ -41,6 +43,9 @@ export const COMMON_PARAMS = [
   { key: 'seed', label: 'Semilla', type: 'int', min: 1, max: 999, step: 1, default: 7,
     hint: 'Otra semilla = otra colocación de las chispas.' },
 ];
+
+/** Largest baked frame side (px): keeps a 12-frame lane inside what a canvas can hold. */
+const MAX_FRAME_PX = 512;
 
 /** Every parameter of a preset, common ones first. */
 export function paramsOf(preset) {
@@ -361,8 +366,12 @@ export function drawFrame(ctx, preset, lane, k, p, x, y, size, createCanvas) {
  * @returns {{canvas, boxes: Array<{x,y,w,h,assignedLane}>, lanes: object[], width: number, height: number}}
  */
 export function bakePreset(preset, values, createCanvas) {
-  const p = normalizeParams(preset, values);
-  const size = p.size;
+  const base = normalizeParams(preset, values);
+  // 'detail' bakes more pixels for the same effect: the sheet is `density` times finer and everything
+  // that sizes the effect divides by it (rig-fx.js). The pixel-art look keeps its block size.
+  const density = Math.max(1, Math.min(base.detail || 1, Math.floor(MAX_FRAME_PX / base.size) || 1));
+  const p = { ...base, pixel: base.pixel > 1 ? base.pixel * density : 1 };
+  const size = base.size * density;
   const counts = preset.lanes.map((lane) => frameCount(lane, p));
   const width = size * Math.max(...counts);
   const height = size * preset.lanes.length;
@@ -385,5 +394,5 @@ export function bakePreset(preset, values, createCanvas) {
     return { id, type: 'animation', name: lane.name, fps: laneFps(lane, p), loop: lane.loop, frameBoxIndices, projectileLink: null };
   });
 
-  return { canvas, boxes, lanes, width, height };
+  return { canvas, boxes, lanes, width, height, density };
 }

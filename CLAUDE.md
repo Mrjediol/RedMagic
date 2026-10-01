@@ -68,7 +68,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 - **Inspector-first**: plain fields/checkboxes over ScriptableObject indirection when it reads better in Inspector. Prefer redesign over workaround.
 - **Legacy** (`Assets/Scripts/Legacy/`) and `Assets/_Reference/`: read-only reference, never build on it.
 - **Search scope**: `Assets/Scripts`, `Assets/Ui`, `Assets/Audio`, `Assets/Scenes`. Skip `Assets/Brackeys/`, `Assets/Cainos/`, `Assets/Dragon Warrior Files/`.
-- "Biblioteca web" = custom tabbed Unity **editor window**, NOT `Web/RedMagicWeb`.
+- "Biblioteca Jere" (antes "Biblioteca web") = custom tabbed Unity **editor window** (Tools ▸ Web ▸ Biblioteca Jere), NOT `Web/RedMagicWeb`. Tab "Enemies" = part-based, "EnemiesSprite" = sprite-sheet.
 
 ## Architecture docs — read ONLY the ones the task touches
 

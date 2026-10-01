@@ -136,6 +136,17 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     return preview.spriteState;
   }
 
+  /** Where the gesture being played is (0–1 windup, 1–2 strike, 2–3 recover), or null. */
+  function gestureMoment() {
+    const gesture = gesturePlay && (state.gestures || [])[gesturePlay.index];
+    if (!gesture) return null;
+    const times = FX.phaseTimes(gesture, previewTelegraph);
+    const t = gesturePlay.t;
+    if (t < times.strike.start) return t / times.windup.length;
+    if (times.strike.length > 0 && t < times.recover.start) return 1 + (t - times.strike.start) / times.strike.length;
+    return Math.min(3, 2 + (t - times.recover.start) / times.recover.length);
+  }
+
   function draw() {
     const anim = currentAnim();
     view.render(state, {
@@ -143,6 +154,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       poses: anim?.poses,
       visualMatrix: anim?.visual,
       spriteState: shownSpriteState(),
+      gestureMoment: gestureMoment(),
       stage: preview.stage,
       ghostRest: !!posing && !gesturePlay,
       fx: fxOverlay(anim),
@@ -180,7 +192,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   /** Frame pixels (centred, y down) → Visual space, for an effect sitting on its anchor. */
   function fxMatrix(f, anchorMatrix) {
-    const k = (f.scale > 0 ? f.scale : 1) / state.pixelsPerUnit;
+    const k = (f.scale > 0 ? f.scale : 1) / state.pixelsPerUnit / FX.fxDensity(fxEntries.get(f.fx));
     return M.multiply(anchorMatrix, M.trs(f.offset || { x: 0, y: 0 }, 0, { x: k, y: -k }));
   }
 
@@ -743,6 +755,21 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     changed();
   }
 
+  /** No motion of its own: no sway, no scale pulse, no lean follow, and out of every gesture pose. Returns the poses removed. */
+  function makeStill(part) {
+    part.sway.move = { x: 0, y: 0 };
+    part.sway.rotate = 0;
+    part.sway.scale = { x: 0, y: 0 };
+    part.leanFollow = 0;
+    let removed = 0;
+    (state.gestures || []).forEach((g) => ['windup', 'strike'].forEach((phase) => {
+      const before = (g[phase] || []).length;
+      G.removePose(g, phase, part.uid);
+      removed += before - g[phase].length;
+    }));
+    return removed;
+  }
+
   function moveInOrder(part, delta) {
     const i = state.parts.indexOf(part);
     const j = i + delta;
@@ -1094,7 +1121,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
     // --- rig part data
     if (part.rigPart) {
-      const d = rememberedSection('sway', 'Balanceo y comportamiento', false);
+      const moves = part.sway.move.x || part.sway.move.y || part.sway.rotate || part.sway.scale.x || part.sway.scale.y || part.leanFollow;
+    const d = rememberedSection('sway', `Balanceo y comportamiento${moves ? '' : ' (quieta)'}`, false);
       d.appendChild(F.vector2Field({ label: 'Vaivén (u)', value: part.sway.move, onChange: (v) => { part.sway.move = v; refreshExport(); } }).row);
       d.appendChild(F.numberField({ label: 'Giro del vaivén (°)', value: part.sway.rotate, onChange: (v) => { part.sway.rotate = v; refreshExport(); } }).row);
       d.appendChild(F.vector2Field({ label: 'Pulso de escala', value: part.sway.scale, hint: 'Una llama o un núcleo que late (0 = nada).', onChange: (v) => { part.sway.scale = v; refreshExport(); } }).row);
@@ -1104,6 +1132,10 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       if (state.roles.limbs.includes(part.uid) || state.roles.orbiters.includes(part.uid))
         d.appendChild(F.numberField({ label: 'Frente al lanzar (°)', value: part.pointAngle, hint: 'Herramienta ➜ Frente al lanzar: sale volando con este lado por delante. 0 = derecha, −90 = abajo.', onChange: (v) => { part.pointAngle = v; requestRender(); refreshExport(); } }).row);
       d.appendChild(F.boolField({ label: 'Sale despedida al morir', value: part.breaksOnDeath, onChange: (v) => { part.breaksOnDeath = v; refreshExport(); } }).row);
+      const still = el('button', 'small', '⏹ Dejar quieta (sin movimiento propio)');
+      still.title = 'Pone a cero su vaivén, giro, pulso de escala y "sigue la inclinación", y la saca de las poses de todos los gestos: se mueve sólo con la pieza de la que cuelga. Para una pieza de plantilla que en tu enemigo no es una llama ni una cola.';
+      still.onclick = () => { const n = makeStill(part); changed(); setStatus(`"${part.name}" queda quieta${n ? ` (quitada de ${n} pose(s) de gestos)` : ''}. Ctrl+Z lo deshace.`); };
+      d.appendChild(still);
     }
 
     // --- state sprites
@@ -1357,6 +1389,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     card.appendChild(grid);
 
     renderPhaseFx(card, gesture, index);
+    renderGestureSprites(card, gesture);
 
     card.appendChild(F.boolField({ label: '💤 Gesto de reposo (lo hace solo de vez en cuando)', value: state.idle.gestures.includes(gesture.name),
       hint: 'Sin objetivo, quieto y despierto. No avisa de nada ni lanza ningún ataque: sólo da vida. Cada cuánto, abajo.',
@@ -1381,6 +1414,48 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     };
     more.append(dup, del);
     card.appendChild(more);
+  }
+
+  /**
+   * The sprites this gesture changes (one per part that has one) and WHEN each shows inside it: all
+   * of it by default, or a window — "stretch the hand, show the finger, hide it, pull it back".
+   */
+  function renderGestureSprites(card, gesture) {
+    const stateId = M.gestureState(gesture.name);
+    const mine = state.parts.filter((p) => p.image && M.variantOf(p, stateId));
+    const box = el('div', 'rigFxBox');
+    box.appendChild(el('p', 'rigGroupTitle', 'Sprites de este gesto'));
+    if (!mine.length) {
+      box.appendChild(el('p', 'hint', 'Ninguna pieza cambia de sprite en este gesto. Se asignan en "Sprites por estado" (estado "gesto: ' + gesture.name + '").'));
+      card.appendChild(box);
+      return;
+    }
+    const momentSelect = (value, onChange) => {
+      const s = document.createElement('select');
+      const options = M.GESTURE_MOMENTS.some(([m]) => Math.abs(m - value) < 1e-3) ? M.GESTURE_MOMENTS : [...M.GESTURE_MOMENTS, [value, `${value}`]];
+      options.forEach(([m, label]) => { const o = el('option', null, label); o.value = String(m); s.appendChild(o); });
+      s.value = String(options.find(([m]) => Math.abs(m - value) < 1e-3)[0]);
+      s.onchange = () => onChange(parseFloat(s.value));
+      return s;
+    };
+    mine.forEach((part) => {
+      const w = M.gestureWindow(part, gesture.name);
+      const row = el('div', 'rigSpriteWindow');
+      const t = document.createElement('img'); t.src = M.variantOf(part, stateId).dataURL; t.className = 'rigVariantThumb own';
+      row.appendChild(t);
+      const body = el('div', 'rigSpriteWindowBody');
+      body.appendChild(el('span', 'rigFxName', part.name));
+      const line = el('div', 'rigSpriteWindowLine');
+      line.appendChild(el('span', 'hint', 'se ve desde'));
+      line.appendChild(momentSelect(w.from, (v) => { M.setGestureWindow(part, gesture.name, { from: v, to: Math.max(v, w.to) }); changed(); }));
+      line.appendChild(el('span', 'hint', 'hasta'));
+      line.appendChild(momentSelect(w.to, (v) => { M.setGestureWindow(part, gesture.name, { from: Math.min(v, w.from), to: v }); changed(); }));
+      body.appendChild(line);
+      row.appendChild(body);
+      box.appendChild(row);
+    });
+    box.appendChild(el('p', 'hint', 'Fuera de ese tramo la pieza lleva su sprite normal. "▶ Probar" lo enseña tal cual.'));
+    card.appendChild(box);
   }
 
   /** The effects of the phase tab on screen: a row each, the open one with its fields, and the picker. */

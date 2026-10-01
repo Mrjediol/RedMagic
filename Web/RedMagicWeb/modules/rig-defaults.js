@@ -123,7 +123,7 @@ export function createPart({ name, image = null, index = 0 }) {
     breaksOnDeath: true,
     // State sprites. named: alert (has a target) / hurt / dead; gestures: one per gesture NAME (that attack
     // shows this sprite). What shows when: rig-model.js ▸ stateImage (= ProceduralRig.RefreshSprites).
-    variants: { asleep: null, awake: null, attacking: null, stages: [], named: { alert: null, hurt: null, dead: null }, gestures: {} },
+    variants: { asleep: null, awake: null, attacking: null, stages: [], named: { alert: null, hurt: null, dead: null }, gestures: {}, gestureWindows: {} },
     slot: null,       // template slot this part fills: { id, label, hint, optional, pivot, size, … } (rig-templates.js)
   };
 }
@@ -139,7 +139,7 @@ export function adoptRigState(draft) {
   s.bossBody = { ...base.bossBody, ...(draft.bossBody || {}) };
   s.idle = { ...base.idle, ...(draft.idle || {}), gestures: [...(draft.idle?.gestures || [])] };
   s.parts = (s.parts || []).map((p) => ({ ...createPart({ name: p.name }), ...p,
-    variants: { asleep: null, awake: null, attacking: null, stages: [], gestures: {}, ...(p.variants || {}),
+    variants: { asleep: null, awake: null, attacking: null, stages: [], gestures: {}, gestureWindows: {}, ...(p.variants || {}),
       named: { alert: null, hurt: null, dead: null, ...(p.variants?.named || {}) } } }));
   return s;
 }

@@ -194,7 +194,8 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
     const patch = {
       kind: preset.kind,
       enemyName: name.trim(),
-      sprite: { lanes: baked.lanes, boxes: baked.boxes, sourceDataURL: baked.canvas.toDataURL(), width: baked.width, height: baked.height },
+      // density: how many sheet pixels make one "size" pixel (the Nitidez parameter) — see rig-fx.js.
+      sprite: { lanes: baked.lanes, boxes: baked.boxes, sourceDataURL: baked.canvas.toDataURL(), width: baked.width, height: baked.height, density: baked.density },
       thumbnail: buildThumbnail(cropBox(baked.canvas, first)),
       draft: { vfxPreset: { id: preset.id, params: { ...params } } },
     };

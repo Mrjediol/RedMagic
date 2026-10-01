@@ -47,6 +47,15 @@ export function pickLane(entry, loop) {
   return lanes.find((l) => wanted.includes(l.name)) || lanes[0] || null;
 }
 
+/**
+ * How many sheet pixels make one pixel of the effect's nominal size. VFX Lab bakes its effects finer
+ * than their size (`sprite.density`, the "Nitidez" parameter) so they stay sharp next to high
+ * resolution parts; an effect's size on the body never depends on how fine it was baked.
+ */
+export function fxDensity(entry) {
+  return entry?.sprite?.density > 0 ? entry.sprite.density : 1;
+}
+
 /** Frames of the lane a hook plays: `{ lane, boxes, fps, duration }`, or null (no art). */
 export function fxFrames(entry, loop) {
   const lane = pickLane(entry, loop);
@@ -109,8 +118,9 @@ export function fxArtId(entry, loop) {
 }
 
 /**
- * The artAssets entry of a hook's effect. `worldWidth` = the first frame's width at the rig's
- * pixels-per-unit, so an effect drawn next to the parts keeps its size against them.
+ * The artAssets entry of a hook's effect. `worldWidth` = the first frame's NOMINAL width (its pixels
+ * over its density) at the rig's pixels-per-unit, so an effect keeps its size against the parts
+ * however fine it was baked.
  */
 export function fxArtAsset(entry, loop, pixelsPerUnit) {
   const frames = fxFrames(entry, loop);
@@ -122,6 +132,6 @@ export function fxArtAsset(entry, loop, pixelsPerUnit) {
     libraryId: entry.id,
     entryName: entry.enemyName,
     states: { [folder]: { folder, fps: frames.fps, loop: !!loop } },
-    worldWidth: Math.round((frames.boxes[0].w / pixelsPerUnit) * 1e4) / 1e4,
+    worldWidth: Math.round((frames.boxes[0].w / fxDensity(entry) / pixelsPerUnit) * 1e4) / 1e4,
   };
 }

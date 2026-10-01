@@ -433,6 +433,8 @@ namespace RedMagic.Rigging.EditorTools
                     Add(s["awake"]);
                     Add(s["attacking"]);
                     if (s["stages"] is JArray stages) foreach (var st in stages) Add(st);
+                    // Los de estado con nombre (alerta, herido, muerto, por gesto) también viajan en el bundle.
+                    if (s["named"] is JArray named) foreach (var n in named) Add(n["sprite"]);
                 }
 
             var result = new Dictionary<string, Sprite>();
@@ -876,6 +878,8 @@ namespace RedMagic.Rigging.EditorTools
                     state = state,
                     gesture = state == RigNamedState.Gesture ? item.Value<string>("gesture") ?? "" : "",
                     sprite = sprite,
+                    showFrom = Mathf.Clamp(item.Value<float?>("from") ?? 0f, 0f, 3f),
+                    showTo = Mathf.Clamp(item.Value<float?>("to") ?? 3f, 0f, 3f),
                 });
             }
 

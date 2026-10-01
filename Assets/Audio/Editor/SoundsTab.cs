@@ -12,7 +12,7 @@ using UnityEngine.SceneManagement;
 namespace RedMagic.Audio.EditorTools
 {
     /// <summary>
-    /// Pestaña "Sounds" de la ventana Biblioteca Web: el registro de sonidos navegable por carpetas,
+    /// Pestaña "Sounds" de la ventana Biblioteca Jere: el registro de sonidos navegable por carpetas,
     /// con filtros, calificación, asignación directa de clip (sin abrir el prefab), preescucha,
     /// huecos declarados a mano y quitar un sonido del todo. Lee y escribe los tres ficheros de
     /// <see cref="SoundRegistry"/>. Interfaz de editor: sus textos no pasan por la localización.

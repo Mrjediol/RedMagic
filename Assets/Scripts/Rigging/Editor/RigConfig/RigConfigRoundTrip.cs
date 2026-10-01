@@ -161,7 +161,7 @@ namespace RedMagic.Rigging.EditorTools
                         new RigNamedSprite { state = RigNamedState.Alert, sprite = renderer.sprite },
                         new RigNamedSprite { state = RigNamedState.Hurt, sprite = renderer.sprite },
                         new RigNamedSprite { state = RigNamedState.Dead, sprite = renderer.sprite },
-                        new RigNamedSprite { state = RigNamedState.Gesture, gesture = "FxRoundTrip", sprite = renderer.sprite },
+                        new RigNamedSprite { state = RigNamedState.Gesture, gesture = "FxRoundTrip", sprite = renderer.sprite, showFrom = 0.75f, showTo = 2.5f },
                     };
                 }
 

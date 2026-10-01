@@ -1,6 +1,6 @@
 // WebLibraryWindow.cs
 // -----------------------------------------------------------------------------
-// Tools > Web > Biblioteca — a dockable, categorized browser for content produced by the
+// Tools > Web > Biblioteca Jere — a dockable, categorized browser for content produced by the
 // web-driven import pipelines (Enemy Sprite Extractor / Enemy Creator / Map Tracer), for quick
 // navigation and safe multi-location deletion. Left: category list. Right: a card grid for the
 // selected category, each card a thumbnail + name + action buttons — same interaction model as
@@ -57,10 +57,14 @@ public class WebLibraryWindow : EditorWindow
 {
     // Declaration order is only the first-run fallback: the sidebar is drawn from the persisted tab
     // order (LibraryOrderStore, key TabOrderKey), reordered by dragging one tab onto another.
-    private enum Category { Escenas, Enemies, Bosses, MiniBosses, Mapas, Player, Pasivas, Items, Armas, Sonidos }
+    // 'Enemies' are the sprite-sheet ones (tab "EnemiesSprite": the enum name stays, it keys their saved
+    // order); 'EnemiesParts' are the part-based ones (tab "Enemies").
+    private enum Category { Escenas, EnemiesParts, Enemies, Bosses, MiniBosses, Mapas, Player, Pasivas, Items, Armas, Sonidos }
 
     private static string Label(Category cat) => cat switch
     {
+        Category.EnemiesParts => "Enemies",
+        Category.Enemies => "EnemiesSprite",
         Category.Pasivas => "Pasivas Legendarias",
         Category.Sonidos => "Sounds",
         _ => cat.ToString(),
@@ -105,11 +109,11 @@ public class WebLibraryWindow : EditorWindow
         public string Id => id ?? name;
     }
 
-    [MenuItem("Tools/Web/Biblioteca")]
+    [MenuItem("Tools/Web/Biblioteca Jere")]
     public static void Open()
     {
         var win = GetWindow<WebLibraryWindow>();
-        win.titleContent = new GUIContent("Biblioteca Web");
+        win.titleContent = new GUIContent("Biblioteca Jere");
         win.minSize = new Vector2(480, 300);
         win.Show();
     }
@@ -285,6 +289,9 @@ public class WebLibraryWindow : EditorWindow
     {
         switch (cat)
         {
+            case Category.EnemiesParts:
+                return "Sin enemigos por partes. Se crean en la web (🧬 Enemy Studio) y se importan con " +
+                       "Tools > Web > Rig > Importar rig; aparecen aquí los prefabs de Assets/Prefabs/Enemies/Procedural/.";
             case Category.MiniBosses:
                 return "MiniBosses: sin herramienta de importación dedicada todavía — no hay ningún " +
                        "tipo/convención de asset para minijefes en el proyecto (auditado, cero coincidencias).";
@@ -517,6 +524,7 @@ public class WebLibraryWindow : EditorWindow
 
     private void RescanAll()
     {
+        _cache[Category.EnemiesParts] = LibraryOrderStore.Apply(Category.EnemiesParts, ScanPartEnemies(), EntryId);
         _cache[Category.Enemies] = LibraryOrderStore.Apply(Category.Enemies, ScanEnemies(), EntryId);
         _cache[Category.Bosses] = LibraryOrderStore.Apply(Category.Bosses, ScanBosses(), EntryId);
         _cache[Category.MiniBosses] = new List<Entry>(); // no convention exists yet — see EmptyStateMessage
@@ -578,6 +586,43 @@ public class WebLibraryWindow : EditorWindow
             var entry = new Entry { name = name, previewPath = path, dragPath = path };
             entry.actions.Add(("Abrir prefab", () => OpenPrefab(path)));
             entry.actions.Add(("Eliminar enemigo", () => DeleteWithConfirm("Eliminar enemigo", name, paths, refreshCategory: Category.Enemies)));
+            result.Add(entry);
+        }
+        return result.OrderBy(e => e.name, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>
+    /// Part-based enemies (Enemy Studio → Tools ▸ Web ▸ Rig ▸ Importar rig): every prefab of the
+    /// procedural folder with a ProceduralRig and an EnemyStats (a boss by parts has no EnemyStats and
+    /// stays in Bosses). Deleting one also removes what its import created: its part PNGs, its effect
+    /// prefabs and its deck attacks.
+    /// </summary>
+    private List<Entry> ScanPartEnemies()
+    {
+        var result = new List<Entry>();
+        string folder = RedMagic.Rigging.EditorTools.ProceduralEnemyPacks.Folder;
+        if (!AssetDatabase.IsValidFolder(folder)) return result;
+
+        foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { folder }))
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null || prefab.GetComponent<RedMagic.Rigging.ProceduralRig>() == null ||
+                prefab.GetComponent<RedMagic.Enemies.EnemyStats>() == null) continue;
+
+            string name = Path.GetFileNameWithoutExtension(path);
+            var paths = new List<string> { path };
+            foreach (string extra in new[]
+                     {
+                         $"{RedMagic.Rigging.EditorTools.RigConfigJson.ArtRoot}/{name}",
+                         $"{RedMagic.Pipeline.EditorTools.EnemyDeckImporter.ArtPrefabRoot}/{name}",
+                         $"{RedMagic.Pipeline.EditorTools.EnemyDeckImporter.AttackRoot}/{name}",
+                     })
+                if (AssetDatabase.IsValidFolder(extra)) paths.Add(extra);
+
+            var entry = new Entry { id = guid, name = name, previewPath = path, dragPath = path };
+            entry.actions.Add(("Abrir prefab", () => OpenPrefab(path)));
+            entry.actions.Add(("Eliminar enemigo", () => DeleteWithConfirm("Eliminar enemigo", name, paths, refreshCategory: Category.EnemiesParts)));
             result.Add(entry);
         }
         return result.OrderBy(e => e.name, StringComparer.OrdinalIgnoreCase).ToList();
@@ -672,7 +717,7 @@ public class WebLibraryWindow : EditorWindow
     private static void PingAndSelect(string path)
     {
         var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
-        if (obj == null) { EditorUtility.DisplayDialog("Biblioteca Web", $"No se encontró '{path}'.", "OK"); return; }
+        if (obj == null) { EditorUtility.DisplayDialog("Biblioteca Jere", $"No se encontró '{path}'.", "OK"); return; }
         Selection.activeObject = obj;
         EditorGUIUtility.PingObject(obj);
     }
@@ -680,7 +725,7 @@ public class WebLibraryWindow : EditorWindow
     private static void OpenPrefab(string path)
     {
         var obj = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-        if (obj == null) { EditorUtility.DisplayDialog("Biblioteca Web", $"No se encontró el prefab en '{path}'.", "OK"); return; }
+        if (obj == null) { EditorUtility.DisplayDialog("Biblioteca Jere", $"No se encontró el prefab en '{path}'.", "OK"); return; }
         Selection.activeObject = obj;
         EditorGUIUtility.PingObject(obj);
         AssetDatabase.OpenAsset(obj); // entra en Prefab Mode, listo para tocar EnemyStats/tuning en el Inspector

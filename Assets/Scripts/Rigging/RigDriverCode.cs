@@ -334,6 +334,7 @@ namespace RedMagic.Rigging
                 _gestureShake = k > 0.7f ? gesture.shake : 0f;
                 FireFx(gesture, RigFxPhase.Windup, fxFrom, k);
                 fxFrom = k;
+                Rig.SetGestureMoment(k);
 
                 yield return null;
                 if (!Paused) t += Time.deltaTime;
@@ -344,7 +345,8 @@ namespace RedMagic.Rigging
             FireFx(gesture, RigFxPhase.Windup, fxFrom, 1f);
             EndFxPhase(RigFxPhase.Windup);
             PlayGestureSound(gesture, GestureSoundMoment.Release);
-            if (!silent) RaiseReleased();
+            Rig.SetGestureMoment(1f);
+            if (!silent) RaiseReleased(gesture);
 
             // Sin pose de golpe (una carga que se mantiene, como la de la embestida): no hay latigazo,
             // la pose de carga se deshace despacio en 'recover' y se funde con lo que venga detrás.
@@ -367,6 +369,7 @@ namespace RedMagic.Rigging
                 float progress = t / gesture.strikeTime;
                 FireFx(gesture, RigFxPhase.Strike, fxFrom, progress);
                 fxFrom = progress;
+                Rig.SetGestureMoment(1f + progress);
 
                 yield return null;
                 if (!Paused) t += Time.deltaTime;
@@ -426,12 +429,14 @@ namespace RedMagic.Rigging
             const float blend = GestureCrossfade;
             for (float t = 0f; t < blend;)
             {
+                Rig.SetGestureMoment(t / blend);   // una pose mantenida recorre la carga y se queda en su final
                 _gestureWindup = Mathf.Lerp(from, 1f, EaseInOut(t / blend));
                 yield return null;
                 if (!Paused) t += Time.deltaTime;
             }
 
             _gestureWindup = 1f;
+            Rig.SetGestureMoment(1f);
             _gestureRoutine = null;
         }
 
@@ -450,6 +455,7 @@ namespace RedMagic.Rigging
                 float e = 1f - EaseInOut(k);
                 _gestureWindup = windup * e;
                 _gestureStrike = strike * e;
+                Rig.SetGestureMoment(2f + k);   // la vuelta al reposo, sea el final del gesto o un corte
                 if (recovering != null)
                 {
                     FireFx(recovering, RigFxPhase.Recover, fxFrom, k);

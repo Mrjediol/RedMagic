@@ -272,16 +272,16 @@ export class RigCanvasView {
   }
 
   /** The image a part shows right now (a state/stage sprite in the preview) and its pivot. */
-  static shownImage(part, spriteState, stage) {
+  static shownImage(part, spriteState, stage, moment = null) {
     // Same priority as Unity (ProceduralRig.RefreshSprites): the state's sprite, then the stage's, then the base.
-    const variant = part.image ? stateImage(part, spriteState, stage) : null;
+    const variant = part.image ? stateImage(part, spriteState, stage, moment) : null;
     if (!variant) return { image: part.image, pivot: part.pivot };
     return { image: variant, pivot: variantPivot(part, variant) };
   }
 
   /** Full matrix crop pixel → screen for a part, with the preview's visual/part poses. */
   _partScreenMatrix(state, part, opts) {
-    const { image, pivot } = RigCanvasView.shownImage(part, opts.spriteState, opts.stage);
+    const { image, pivot } = RigCanvasView.shownImage(part, opts.spriteState, opts.stage, opts.gestureMoment ?? null);
     if (!image) return null;
     let m = worldMatrix(state, part, opts.poses);
     if (opts.visualMatrix) m = multiply(opts.visualMatrix, m);

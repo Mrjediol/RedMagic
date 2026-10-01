@@ -252,6 +252,20 @@ canvas shows a gesture's sprites while it plays and the hurt ones during "💥 G
 "💤 En reposo" fold under the list has the three numbers and "▶ Probar uno". Renaming / deleting a
 gesture keeps the list in step; export = `idleGestures` (names that no longer exist drop out).
 
+**When a gesture sprite shows**: `variants.gestureWindows[<gesture>] = { from, to }` (0–1 windup, 1–2
+strike, 2–3 recover; absent = the whole gesture) — `rig-model.js` ▸ `gestureWindow` / `setGestureWindow` /
+`GESTURE_MOMENTS`, honoured by `stateImage(…, moment)`. UI: "Sprites de este gesto" in the gesture card
+(`renderGestureSprites`), two dropdowns per part; the canvas gets the moment of the gesture being played
+(`gestureMoment()` → `opts.gestureMoment`). Export: `named[].from` / `to`.
+
+**Effect resolution**: VFX Lab's "Nitidez" (`detail`) bakes `density` times more pixels per frame for the
+same effect (`bakePreset`, capped at 512 px a frame) and stores `sprite.density`; everything that sizes an
+effect on a body divides by it (`rig-fx.js` ▸ `fxDensity`: `worldWidth` of the art asset, the canvas
+preview). Re-save an old effect in the Lab to rebake it sharper; its size does not change.
+
+**"⏹ Dejar quieta"** (part inspector ▸ Balanceo): `makeStill` zeroes the part's sway, scale pulse and lean
+follow and takes it out of every gesture pose — for a template slot that is not a flame / tail in this enemy.
+
 **Gesture effects** (`modules/rig-fx.js`, DOM-free): a gesture's `fx` list hangs library effects
 (kind `fx` / `projectile`) from its phases — `{ fx: libraryId, phase, at, anchor, part, offset, scale,
 followsPart, loop }`. `pickLane` decides which lane of the entry plays (loop → `Loop`/`Move`, burst →

@@ -343,14 +343,43 @@ export function setVariant(part, stateId, image) {
 }
 
 /**
+ * WHEN, inside its gesture, a part's gesture sprite shows: `{ from, to }` on one scale for the whole
+ * gesture — 0–1 the windup, 1–2 the strike, 2–3 the recover (1 = the release). Default: all of it.
+ * "Stretch the hand, show the finger, hide it, pull the hand back" = from ¾ of the windup to
+ * halfway through the recover. Same numbers as RigNamedSprite.showFrom / showTo.
+ */
+export const WHOLE_GESTURE = { from: 0, to: 3 };
+export const GESTURE_MOMENTS = [
+  [0, 'inicio de la carga'], [0.25, '¼ de la carga'], [0.5, 'mitad de la carga'], [0.75, '¾ de la carga'],
+  [1, 'al soltar (fin de la carga)'], [2, 'fin del golpe'],
+  [2.25, '¼ de la vuelta'], [2.5, 'mitad de la vuelta'], [2.75, '¾ de la vuelta'], [3, 'final del gesto'],
+];
+
+export function gestureWindow(part, gestureName) {
+  return { ...WHOLE_GESTURE, ...(part.variants?.gestureWindows?.[gestureName] || {}) };
+}
+
+export function setGestureWindow(part, gestureName, window) {
+  const v = part.variants;
+  v.gestureWindows = v.gestureWindows || {};
+  const from = Math.min(3, Math.max(0, window.from)), to = Math.min(3, Math.max(from, window.to));
+  if (from <= 0 && to >= 3) delete v.gestureWindows[gestureName];
+  else v.gestureWindows[gestureName] = { from, to };
+}
+
+/**
  * The image a part shows in a state, with the same fallbacks as ProceduralRig.RefreshSprites — an
  * empty state lets the next one through: its own → (a gesture: attacking) → (alert / attack / hurt:
  * awake) → (dead: asleep) → the stage → the part's base image.
+ * `moment` (0–3, only while a gesture PLAYS): its own sprite counts only inside its window.
  */
-export function stateImage(part, stateId, stage = 0) {
+export function stateImage(part, stateId, stage = 0, moment = null) {
   const v = part.variants || {};
   const chain = [];
-  if (stateId) chain.push(variantOf(part, stateId));
+  if (stateId?.startsWith('gesture:') && moment !== null) {
+    const w = gestureWindow(part, stateId.slice(8));
+    if (moment >= w.from - 1e-4 && moment <= w.to + 1e-4) chain.push(variantOf(part, stateId));
+  } else if (stateId) chain.push(variantOf(part, stateId));
   if (stateId?.startsWith('gesture:')) chain.push(v.attacking);
   if (stateId === 'dead') chain.push(v.asleep);
   else if (stateId && stateId !== 'asleep') chain.push(v.awake);
@@ -362,6 +391,8 @@ export function stateImage(part, stateId, stage = 0) {
 export function renameGestureSprites(state, from, to) {
   state.parts.forEach((p) => {
     const g = p.variants?.gestures;
+    const w = p.variants?.gestureWindows;
+    if (w && from in w) { if (to) w[to] = w[from]; delete w[from]; }
     if (!g || !(from in g)) return;
     if (to) g[to] = g[from];
     delete g[from];

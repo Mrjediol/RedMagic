@@ -367,3 +367,30 @@ defensive moves (their movement is the Boss Creator's); it never interrupts its 
       after using the Studio's step 4 and coming back to 🧩, the picker is empty (not on the part-based one).
 - [ ] ES36 · Gallery: cards readable? Enough info on each? Want the built-in ones to show a schematic?
 - [ ] ES37 · Decide: keep 🧩 for sprite-sheet enemies as it is, or should the Studio absorb them too?
+
+---
+
+## After your first pass with the ice robot (2026-10-01) — fixes
+
+**What you reported → what changed**
+- *The finger sprite did not show in game (it did in "▶ Probar")* — bug in the Unity import: the PNGs of the new
+  states (alerta / herido / muerto / por gesto) were never copied out of the .zip. Fixed. **Re-export the ice robot
+  and import it again** to get them.
+- *The finger shows during the whole gesture* — each gesture sprite now has a window: gesture card ▸ **Sprites de
+  este gesto** ▸ "se ve desde … hasta …" (¾ de la carga → mitad de la vuelta, for your case). "▶ Probar" shows it.
+- *Effects look pixelated next to 2048 px parts* — ✨ VFX Lab has **Nitidez (× resolución)**, default 3: more pixels,
+  same size in game. Open each saved effect in the Lab and "Guardar cambios" to rebake it, then re-export the enemy.
+- *White square at the muzzle* — it is the placeholder muzzle flash. A gesture that has its own effects no longer
+  shows it. For the plain built-in attack: Tiempos del rig ▸ Fogonazo ▸ tamaño 0.
+- *Removing the flame's motion from the template was tedious* — part inspector ▸ Balanceo y comportamiento ▸
+  **⏹ Dejar quieta**: one click zeroes sway, pulse, lean follow and removes it from the gesture poses.
+- *Unity window* — renamed **Biblioteca Jere** (Tools ▸ Web ▸ Biblioteca Jere). Tab **Enemies** = part-based
+  enemies (everything in Enemies/Procedural with an EnemyStats), tab **EnemiesSprite** = the sprite-sheet ones.
+
+**Tests**
+- [ ] ES38 · Re-export + reimport the ice robot: the finger sprite shows in the defence, only in its window.
+- [ ] ES39 · Rebake one effect with Nitidez 3–4: sharp enough? Same size as before?
+- [ ] ES40 · The white square is gone on gestures with effects.
+- [ ] ES41 · "Dejar quieta" on the template's lower part: is anything of it still moving?
+- [ ] ES42 · Biblioteca Jere: IceRobot, Robot, Turret… under Enemies; "Eliminar enemigo" there also removes its
+      imported art, effect prefabs and attack assets (try it on a throwaway one).

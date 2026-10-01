@@ -53,6 +53,11 @@ them and compares every public field of `ProceduralRig` by reflection (plus the 
   gesture, gesture?, sprite }` ↔ `RigSpriteSwap.named` (`RigNamedSprite`). Absent = the three classic
   states only, imported as before. Behaviour change that comes with it: a state without a sprite now falls
   through to the next one (down to the prefab's sprite) instead of keeping whatever was shown.
+- **Gesture sprite window** (additive, 2026-10-01): `spriteSwaps[].named[]` with `state: gesture` may carry
+  `from` / `to` (0–3: windup 0–1, strike 1–2, recover 2–3) ↔ `RigNamedSprite.showFrom` / `showTo`. Absent =
+  the whole gesture. **Bug fixed with it**: `named[].sprite` files of a bundle were never copied (only
+  asleep / awake / attacking / stages were collected), so every named sprite of a web export was dropped
+  with a warning — the round trip did not see it because it uses project paths.
 - **Idle gestures** (additive, 2026-10-01): top-level `idleGestures` = `{ gestures: [names], interval, chance,
   windup }` ↔ `ProceduralRig.idle` (`RigIdleGestures`); it is a structured field, so it is **not** in the
   `rig` block. The exporter always writes it (the fixtures gained an empty one).

@@ -230,11 +230,20 @@ namespace RedMagic.Rigging
 
         // ============================================================ avisos
 
-        /// <summary>Aviso del golpe + fogonazo en la punta del arma (común a todos los motores).</summary>
-        protected void RaiseReleased()
+        /// <summary>
+        /// Aviso del golpe + fogonazo en la punta del arma (común a todos los motores). El fogonazo es
+        /// un placeholder: si el gesto que suelta trae sus propios efectos (<see cref="RigGesture.fx"/>),
+        /// no sale — el efecto del gesto ES el fogonazo.
+        /// </summary>
+        protected void RaiseReleased(RigGesture gesture = null)
         {
             var muzzle = Rig.muzzle;
-            if (muzzle != null && Rig.muzzleFlashSize > 0f)
+            bool ownFx = false;
+            if (gesture?.fx != null)
+                foreach (var fx in gesture.fx)
+                    if (fx != null && fx.prefab != null) { ownFx = true; break; }
+
+            if (muzzle != null && Rig.muzzleFlashSize > 0f && !ownFx)
             {
                 AbilityFx.Flash(Rig.muzzleFlashSprite, muzzle.position, Vector2.one * Rig.muzzleFlashSize,
                                 Rig.muzzleFlashColor, Rig.muzzleFlashTime, 0f, 1.6f,

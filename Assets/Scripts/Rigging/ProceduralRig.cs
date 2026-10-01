@@ -89,6 +89,13 @@ namespace RedMagic.Rigging
         public string gesture = "";
 
         public Sprite sprite;
+
+        [Tooltip("Sólo 'Gesture': desde qué momento del gesto se ve. 0–1 = la carga, 1–2 = el golpe, " +
+                 "2–3 = la vuelta al reposo (1 = justo al soltar). 0 y 3 = todo el gesto.")]
+        [Range(0f, 3f)] public float showFrom;
+
+        [Tooltip("Sólo 'Gesture': hasta qué momento del gesto se ve (misma escala que 'showFrom').")]
+        [Range(0f, 3f)] public float showTo = 3f;
     }
 
     /// <summary>
@@ -108,15 +115,20 @@ namespace RedMagic.Rigging
         [Tooltip("Más estados: detecta al objetivo, herido, muerto, y uno por gesto (ese ataque usa este sprite).")]
         public List<RigNamedSprite> named = new List<RigNamedSprite>();
 
-        /// <summary>El sprite de un estado con nombre (para <see cref="RigNamedState.Gesture"/>, el de ese gesto), o null.</summary>
-        public Sprite Named(RigNamedState state, string gesture = null)
+        /// <summary>
+        /// El sprite de un estado con nombre, o null. Para <see cref="RigNamedState.Gesture"/>: el de ese
+        /// gesto y sólo si <paramref name="moment"/> (0–3, ver <see cref="RigNamedSprite.showFrom"/>) cae
+        /// en su ventana — "estira la mano, enseña el dedo, lo quita y la recoge".
+        /// </summary>
+        public Sprite Named(RigNamedState state, string gesture = null, float moment = 0f)
         {
             if (named == null) return null;
             foreach (var n in named)
             {
                 if (n == null || n.state != state || n.sprite == null) continue;
-                if (state != RigNamedState.Gesture || string.Equals(n.gesture, gesture, StringComparison.OrdinalIgnoreCase))
-                    return n.sprite;
+                if (state != RigNamedState.Gesture) return n.sprite;
+                if (!string.Equals(n.gesture, gesture, StringComparison.OrdinalIgnoreCase)) continue;
+                if (moment >= n.showFrom - 0.0001f && moment <= n.showTo + 0.0001f) return n.sprite;
             }
 
             return null;
@@ -498,6 +510,8 @@ namespace RedMagic.Rigging
         private RigSpriteState _spriteBase = RigSpriteState.Awake;   // dormido / despierto
         private bool _spriteAttacking;       // un ataque en curso (el propio, o un gesto lanzado como ataque)
         private string _spriteGesture;       // el gesto en curso, o null
+        private float _spriteMoment;         // por dónde va ese gesto: 0–1 carga, 1–2 golpe, 2–3 vuelta
+        private int _spriteWindows;          // qué sprites de gesto están en su ventana ahora (para no refrescar cada frame)
         private bool _spriteAlert, _spriteHurt, _spriteDead;
 
         /// <summary>
@@ -517,7 +531,7 @@ namespace RedMagic.Rigging
                 Sprite sprite = null;
                 if (_spriteDead) sprite = swap.Named(RigNamedState.Dead) ?? swap.asleep;
                 if (sprite == null && !_spriteDead && _spriteHurt) sprite = swap.Named(RigNamedState.Hurt);
-                if (sprite == null && !_spriteDead && _spriteGesture != null) sprite = swap.Named(RigNamedState.Gesture, _spriteGesture);
+                if (sprite == null && !_spriteDead && _spriteGesture != null) sprite = swap.Named(RigNamedState.Gesture, _spriteGesture, _spriteMoment);
                 if (sprite == null && !_spriteDead && _spriteAttacking) sprite = swap.attacking;
                 if (sprite == null && !_spriteDead && _spriteAlert && _spriteBase == RigSpriteState.Awake) sprite = swap.Named(RigNamedState.Alert);
                 if (sprite == null && !_spriteDead) sprite = _spriteBase == RigSpriteState.Asleep ? swap.asleep : swap.awake;
@@ -532,7 +546,42 @@ namespace RedMagic.Rigging
         {
             _spriteGesture = gesture;
             _spriteAttacking = isAttack;
+            _spriteMoment = 0f;
+            _spriteWindows = ActiveGestureWindows();
             RefreshSprites();
+        }
+
+        /// <summary>
+        /// Por dónde va el gesto en curso (0–1 carga, 1–2 golpe, 2–3 vuelta). Lo dice el motor cada
+        /// frame; los sprites sólo se recalculan cuando alguno entra o sale de su ventana.
+        /// </summary>
+        public void SetGestureMoment(float moment)
+        {
+            if (_spriteGesture == null) return;
+            _spriteMoment = Mathf.Clamp(moment, 0f, 3f);
+            int windows = ActiveGestureWindows();
+            if (windows == _spriteWindows) return;
+            _spriteWindows = windows;
+            RefreshSprites();
+        }
+
+        /// <summary>Un bit por sprite de gesto (del gesto en curso) que está dentro de su ventana.</summary>
+        private int ActiveGestureWindows()
+        {
+            int mask = 0, bit = 0;
+            foreach (var swap in spriteSwaps)
+            {
+                if (swap?.named == null) continue;
+                foreach (var n in swap.named)
+                {
+                    if (n == null || n.state != RigNamedState.Gesture ||
+                        !string.Equals(n.gesture, _spriteGesture, StringComparison.OrdinalIgnoreCase)) continue;
+                    if (_spriteMoment >= n.showFrom - 0.0001f && _spriteMoment <= n.showTo + 0.0001f) mask |= 1 << (bit & 31);
+                    bit++;
+                }
+            }
+
+            return mask;
         }
 
         /// <summary>El gesto (o el ataque propio) ha terminado.</summary>

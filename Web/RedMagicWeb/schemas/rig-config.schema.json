@@ -681,6 +681,20 @@
                 "type": "string",
                 "$comment": "Nombre del gesto, cuando state = gesture."
               },
+              "from": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 3,
+                "default": 0,
+                "$comment": "RigNamedSprite.showFrom, sólo gesture: desde qué momento del gesto se ve. 0–1 = carga, 1–2 = golpe, 2–3 = vuelta."
+              },
+              "to": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 3,
+                "default": 3,
+                "$comment": "RigNamedSprite.showTo, misma escala. Por defecto todo el gesto (0–3)."
+              },
               "sprite": {
                 "$ref": "#/definitions/spriteRef"
               }

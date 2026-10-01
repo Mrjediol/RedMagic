@@ -357,7 +357,13 @@ namespace RedMagic.Rigging.EditorTools
                     {
                         if (n == null || n.sprite == null) continue;
                         var item = new JObject { ["state"] = RigConfigJson.NamedStateName(n.state) };
-                        if (n.state == RigNamedState.Gesture) item["gesture"] = n.gesture ?? "";
+                        if (n.state == RigNamedState.Gesture)
+                        {
+                            item["gesture"] = n.gesture ?? "";
+                            item["from"] = RigConfigJson.Num(n.showFrom);
+                            item["to"] = RigConfigJson.Num(n.showTo);
+                        }
+
                         item["sprite"] = RigConfigJson.SpriteRef(n.sprite);
                         named.Add(item);
                     }

@@ -1,6 +1,6 @@
 // WebLibraryUtilities.cs
 // -----------------------------------------------------------------------------
-// The scene utilities behind the Biblioteca Web bottom bar (WebLibraryWindow draws the buttons and
+// The scene utilities behind the Biblioteca Jere bottom bar (WebLibraryWindow draws the buttons and
 // their drag-to-reorder; this file only does the work):
 //
 //   · Cargar MainHub      — opens the hub scene. Resolved from RunManager.hubScene (the same
@@ -24,7 +24,7 @@ using UnityEngine.SceneManagement;
 
 internal static class WebLibraryUtilities
 {
-    private const string Title = "Biblioteca Web";
+    private const string Title = "Biblioteca Jere";
     private const string ScenesFolder = "Assets/Scenes";
 
     // ============================================================ Cargar MainHub

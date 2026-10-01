@@ -23,14 +23,20 @@ sheet. Animation is code, not clips.
   lasts), `ShowDeadSprites`, `SetAlertSprites` ← `RigDriver.SetAlert` ← `EnemyAnimation.SetAlert` ←
   `EnemyBrain.Enter` (Approach / Retreat / Attacking / Cooldown / Waking). `RestorePose` resets it
   (pool-safe). "In attack 2 this arm looks different" = a `Gesture` sprite on that part for the
-  gesture that attack names. Swaps are data, never hardcoded.
+  gesture that attack names. A gesture sprite has a **window** inside its gesture — `showFrom` /
+  `showTo` on one scale, 0–1 windup, 1–2 strike, 2–3 recover (default 0–3 = all of it): "stretch the
+  hand, show the finger, hide it, pull back". The driver reports the moment each frame
+  (`ProceduralRig.SetGestureMoment`; a held pose runs 0→1 and stays, any settle is 2→3) and the
+  sprites are only re-resolved when one enters or leaves its window. Swaps are data, never hardcoded.
 - **Fold / unfold** (sleep/wake) — `stretchPart` scales Y from its pivot (`foldedStretch` when
   asleep), `stretchRiders` ride its tip (offset = rest distance × stretch, squashed to
   `foldedRiderScaleY`, `foldedRiderOffset`). Wake = OutBack with `wakeOvershoot` + eye flicker
   (eyes open once at the start of the last `wakeFlickerPortion`; `wakeFlickers` > 0 = optional blinks) → `WakeFinished`; sleep = InBack back to 0.
   `ProceduralRig.OutBack`/`InBack` are DOTween's exact formulas so both passes match.
 - **Muzzle flash** — `muzzle` + `muzzleFlash*`: pooled `AbilityFx.Flash` fired by the shared
-  `RigDriver.RaiseReleased`, so every driver flashes identically.
+  `RigDriver.RaiseReleased`, so every driver flashes identically. It is a **placeholder** (a white
+  square without `muzzleFlashSprite`): a gesture that brings its own effects (`RigGesture.fx`) does
+  not flash, and `muzzleFlashSize = 0` turns it off for the built-in attack too.
 - **Recoil** — windup ends with the barrel on target; after release the arm holds `recoilDelay`
   (shot visibly leaves the barrel), then kicks over `recoilKick` with easing.
 - **`RigDriver`** (abstract) — the engine. Contract: `SetFacing` (applied immediately),

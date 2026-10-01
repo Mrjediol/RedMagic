@@ -57,7 +57,7 @@ variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three 
   the real slot by `matchComponent` + `matchMember` once it exists), `SoundStatus.json` (user grades
   Pending/Perfect/Good/Bad/Horrible + notes, keyed by asset GUID + component + field/trigger). Prototype
   content is excluded with the asset label `SoundIgnore`, never a list in code.
-- **Sounds tab** (Biblioteca Web): folder tree, filters, assign/replace clips and variants straight into
+- **Sounds tab** (Biblioteca Jere): folder tree, filters, assign/replace clips and variants straight into
   the prefab/asset, preview, grade, notes, add a declared slot, remove a sound. It is the only place sound
   status lives — no markdown status docs. `SoundRegistryWatcher` counts changes to prefabs/assets/
   scenes/scripts/music since the last regeneration and the tab shows a "regenerate" notice (a full scan opens

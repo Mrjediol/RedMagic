@@ -297,7 +297,7 @@ export class RigCanvasView {
   /**
    * @param {object} state
    * @param {object} opts - { selectedUid, poses, visualMatrix, spriteState, stage, showCollider,
-   *                          showMarkers, requestRender }
+   *                          showMarkers, ghostRest, requestRender }
    */
   render(state, opts = {}) {
     const ctx = this.ctx;
@@ -308,8 +308,8 @@ export class RigCanvasView {
 
     this._drawGrid();
 
-    state.parts.forEach((part) => {
-      const pm = this._partScreenMatrix(state, part, opts);
+    const drawParts = (o) => state.parts.forEach((part) => {
+      const pm = this._partScreenMatrix(state, part, o);
       if (!pm) return;
       const e = this._entry(pm.image, opts.requestRender);
       if (!e) return;
@@ -318,6 +318,16 @@ export class RigCanvasView {
       ctx.drawImage(e.img, 0, 0);
       ctx.restore();
     });
+
+    // Posing a gesture: the rest pose stays underneath as a ghost, to see how far each part moved.
+    if (opts.ghostRest) {
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      drawParts({ ...opts, poses: null, visualMatrix: null });
+      ctx.restore();
+    }
+
+    drawParts(opts);
 
     this._drawSlots(state, opts);
     if (opts.showCollider !== false) { this._drawCollider(state, opts); this._drawFeet(state); }

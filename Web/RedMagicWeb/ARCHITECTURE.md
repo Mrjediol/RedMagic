@@ -174,6 +174,16 @@ Zip layout: `boss-config.json`, `Body/<Animation>/frame_000.png…`, `Art/<libra
 
 ### Rig Composer tab (🦴, part-based enemies and bosses)
 
+**Gestures** (inspector ▸ Gestos): `modules/rig-gestures.js` holds the data helpers
+(`createGesture`, `poseOf`, `pruneGesture`…) and the formulas copied from `RigDriverCode.cs`
+(`applyPoses`, `gestureWeights`, `gestureDuration`) — DOM-free. The UI is in
+`modules/rig-composer.js`: `renderGesturesSection` / `renderGestureCard` / `renderPosePanel`,
+the pose-mode drags in `beginPoseDrag` (+ the `pose-move` / `pose-rotate` / `pose-scale` branches
+of the `mousemove` handler), and `gestureLayer()` → `previewPoses()` for what the canvas shows
+(the pose being edited, or "▶ Probar"). The rest-pose ghost is `rig-canvas-view.js`'s
+`ghostRest` render option. Changing how a gesture plays in Unity = change both
+`RigDriverCode.cs` and `rig-gestures.js`.
+
 Assembles an enemy or boss from **separate part PNGs** and exports the `.zip` that Unity's
 **Tools ▸ Web ▸ Rig ▸ Importar rig** reads (`Assets/Scripts/Rigging/Editor/RigConfig/RigBundleImporter.cs`).
 Separate from every classic tab: it touches none of them, it only reuses shared helpers

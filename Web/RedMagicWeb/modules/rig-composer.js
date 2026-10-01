@@ -5,8 +5,13 @@
 //
 //   left   — document (name, kind, scale), the parts list (draw order + parenting by drag)
 //   centre — canvas with tools: move / rotate / scale / pivot / centre / point / barrel / muzzle / grip
-//   right  — the selected part (transform, roles, sway, state sprites), rig timings, collider,
-//            links to an Enemy Creator / Boss Creator entry, validation and export
+//   right  — the selected part (transform, roles, sway, state sprites), rig timings, GESTURES,
+//            collider, links to an Enemy Creator / Boss Creator entry, validation and export
+//
+// GESTURES (inspector ▸ Gestos): named pose pairs an attack telegraphs with. "Posar carga / golpe"
+// turns the canvas into a pose editor — move / rotate / scale then write that part's OFFSET in the
+// pose instead of the part itself (drag on empty space = the whole body) — and "▶ Probar" plays the
+// gesture with RigDriverCode's timing. Data and formulas: rig-gestures.js.
 //
 // "Nuevo desde plantilla" starts the document from a body shape (rig-templates.js): its slots show
 // up as empty parts to drop art on (parts list row, canvas placeholder, or a bulk drop by file name).
@@ -23,6 +28,7 @@ import { saveEnemy, updateEnemy, getEnemy, listEntries, buildThumbnail } from '.
 import { downloadBlob } from './export-manifest.js';
 import * as F from './enemy-form-fields.js';
 import { RIG_TEMPLATES, templateById, instantiateTemplate, openSlots, matchSlot, fillSlot, fitLengths, suggestedEnemyConfig } from './rig-templates.js';
+import * as G from './rig-gestures.js';
 
 const TOOLS = [
   { id: 'move', label: '✋ Mover', key: 'v', hint: 'Arrastra una pieza. Clic en vacío = deseleccionar.' },
@@ -58,6 +64,35 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   // preview (RigDriverCode's formulas)
   const preview = { playing: false, clock: 0, lean: 0, speed: 0, hurt: -1, spriteState: '', stage: 0, last: 0 };
 
+  // gestures: which one is open in the inspector, whether one of its poses is being edited on the
+  // canvas, and the playback of "▶ Probar". UI state only — the gestures themselves are in `state`.
+  let gestureIndex = -1;
+  let posing = null;             // { index, phase: 'windup' | 'strike' } while a pose is being edited
+  let gesturePlay = null;        // { index, t } while a gesture is playing
+  let previewTelegraph = 0.6;    // seconds of windup used by "▶ Probar" (the attack's 'telegraph')
+
+  const POSE_TOOLS = ['move', 'rotate', 'scale'];
+  const PHASE_LABELS = { windup: 'carga', strike: 'golpe' };
+
+  /** The gesture layered over the body right now (playing, or the pose being edited), or null. */
+  function gestureLayer() {
+    const list = state.gestures || [];
+    if (gesturePlay && list[gesturePlay.index]) {
+      const gesture = list[gesturePlay.index];
+      const w = G.gestureWeights(gesture, gesturePlay.t, previewTelegraph);
+      return { gesture, windup: w.windup, strike: w.strike, shake: w.shake ? Math.sin(gesturePlay.t * 80) * w.shake : 0 };
+    }
+    if (posing && list[posing.index]) {
+      return { gesture: list[posing.index], windup: posing.phase === 'windup' ? 1 : 0, strike: posing.phase === 'strike' ? 1 : 0, shake: 0 };
+    }
+    return null;
+  }
+
+  /** What the canvas shows right now (poses + Visual matrix), or null for the plain rest pose. */
+  function currentAnim() {
+    return preview.playing || preview.hurt >= 0 || gestureLayer() ? previewPoses() : null;
+  }
+
   loadValidator('rig').then((v) => { validate = v; refreshExport(); })
     .catch((e) => setStatus(`No se pudo cargar el validador: ${e.message}`));
 
@@ -73,13 +108,14 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   }
 
   function draw() {
-    const anim = preview.playing || preview.hurt >= 0 ? previewPoses() : null;
+    const anim = currentAnim();
     view.render(state, {
       selectedUid,
       poses: anim?.poses,
       visualMatrix: anim?.visual,
       spriteState: preview.spriteState,
       stage: preview.stage,
+      ghostRest: !!posing && !gesturePlay,
       requestRender,
     });
   }
@@ -112,8 +148,17 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     }
 
     const bob = { x: rig.hoverBob.x * Math.sin(preview.clock * rig.hoverSpeed), y: rig.hoverBob.y * Math.sin(preview.clock * rig.hoverSpeed) };
-    const visual = M.trs(bob, preview.lean + hurtTilt, { x: 1 + squash, y: 1 - squash });
-    return { poses, visual };
+    const body = { position: bob, rotation: preview.lean + hurtTilt, scale: { x: 1 + squash, y: 1 - squash } };
+
+    // The gesture goes on top of everything else, like in the driver (additive layers).
+    const layer = gestureLayer();
+    if (layer) {
+      G.applyPoses(layer.gesture.windup, layer.windup, poses, body);
+      G.applyPoses(layer.gesture.strike, layer.strike, poses, body);
+      body.rotation += layer.shake;
+    }
+
+    return { poses, visual: M.trs(body.position, body.rotation, body.scale) };
   }
 
   function tick(now) {
@@ -127,8 +172,13 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       preview.hurt += dt;
       if (preview.hurt >= rig.hurtDuration) preview.hurt = -1;
     }
+    if (gesturePlay) {
+      const gesture = (state.gestures || [])[gesturePlay.index];
+      gesturePlay.t += dt;
+      if (!gesture || gesturePlay.t >= G.gestureDuration(gesture, previewTelegraph)) gesturePlay = null;
+    }
     draw();
-    if (preview.playing || preview.hurt >= 0 || Math.abs(preview.lean) > 0.01) requestAnimationFrame(tick);
+    if (preview.playing || preview.hurt >= 0 || gesturePlay || Math.abs(preview.lean) > 0.01) requestAnimationFrame(tick);
     else { preview.running = false; preview.last = 0; preview.lean = 0; draw(); }
   }
 
@@ -212,7 +262,12 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const t = TOOLS.find((x) => x.key === e.key.toLowerCase());
     if (e.ctrlKey || e.metaKey) return;
     if (t) { tool = t.id; renderToolbar(); setStatus(t.hint); }
-    if ((e.key === 'Delete' || e.key === 'Supr') && selectedUid) { removePart(M.byUid(state, selectedUid)); }
+    if (e.key === 'Escape' && posing) { stopPosing(); return; }
+    if (e.key === 'Delete' || e.key === 'Supr') {
+      // Posing: Supr takes the part out of the pose, never deletes the part.
+      if (posing) clearPose(poseTarget());
+      else if (selectedUid) removePart(M.byUid(state, selectedUid));
+    }
   });
 
   // ============================================================ canvas interaction
@@ -241,9 +296,48 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     return Math.round((Math.atan2(d.y, d.x) * 180) / Math.PI * 10) / 10;
   }
 
+  /** Posing: what a drag edits — the selected part, or the whole body when nothing is selected. */
+  function poseTarget() { return selectedUid || G.BODY; }
+
+  /**
+   * A press on the canvas while a pose is being edited: the same three tools, but they write the
+   * OFFSET of that part in the pose (rig-gestures.js) and leave the part itself alone.
+   */
+  function beginPoseDrag(e, pt) {
+    const gesture = state.gestures?.[posing.index];
+    if (!gesture) { stopPosing(); return; }
+    if (!POSE_TOOLS.includes(tool)) { setStatus('Posando un gesto sólo valen Mover, Rotar y Escalar. "■ Salir de posar" para el resto de herramientas.'); return; }
+    gesturePlay = null;
+
+    const anim = currentAnim();
+    const hit = view.partAt(state, e.clientX, e.clientY, { poses: anim?.poses, visualMatrix: anim?.visual });
+    if (tool === 'move' || !selectedUid) select(hit ? hit.uid : null);
+
+    const part = selectedPart();
+    if (part && !part.rigPart) { setStatus(`"${part.name}" no es parte del rig (inspector ▸ "Parte del rig"): un gesto no puede moverla.`); return; }
+
+    const pose = G.poseOf(gesture, posing.phase, poseTarget(), true);
+    const visual = anim?.visual || M.IDENTITY;
+    // Root space → the space the offset is measured in (the part's parent; the root for the body).
+    const parent = part ? M.byUid(state, part.parent) : null;
+    const frame = part ? M.multiply(visual, parent ? M.worldMatrix(state, parent, anim?.poses) : M.IDENTITY) : M.IDENTITY;
+    const pivot = part ? M.apply(M.multiply(visual, M.worldMatrix(state, part, anim?.poses)), { x: 0, y: 0 }) : M.apply(visual, { x: 0, y: 0 });
+
+    if (tool === 'move') {
+      drag = { kind: 'pose-move', pose, start: pt, move: { ...pose.move }, inv: M.invert(frame) };
+    } else if (tool === 'rotate') {
+      drag = { kind: 'pose-rotate', pose, pivot, a0: Math.atan2(pt.y - pivot.y, pt.x - pivot.x), rot: pose.rotate,
+        mirror: Math.sign(frame[0] * frame[3] - frame[1] * frame[2]) || 1 };
+    } else {
+      drag = { kind: 'pose-scale', pose, pivot, d0: Math.max(1e-3, Math.hypot(pt.x - pivot.x, pt.y - pivot.y)), scale: { ...pose.scale } };
+    }
+    setStatus(`Posando ${PHASE_LABELS[posing.phase]} de "${gesture.name}": ${part ? part.name : 'el cuerpo entero'}.`);
+  }
+
   canvas.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     const pt = view.screenToVisual(e.clientX, e.clientY);
+    if (posing) { beginPoseDrag(e, pt); return; }
     const hit = view.partAt(state, e.clientX, e.clientY);
     let part = selectedPart();
 
@@ -316,7 +410,18 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     if (!drag) return;
     const pt = view.screenToVisual(e.clientX, e.clientY);
     const p = drag.part;
-    if (drag.kind === 'move') {
+    if (drag.kind === 'pose-move') {
+      const d = M.applyVector(drag.inv, { x: pt.x - drag.start.x, y: pt.y - drag.start.y });
+      drag.pose.move = { x: drag.move.x + d.x, y: drag.move.y + d.y };
+    } else if (drag.kind === 'pose-rotate') {
+      const a = Math.atan2(pt.y - drag.pivot.y, pt.x - drag.pivot.x);
+      let rot = drag.rot + (((a - drag.a0) * 180) / Math.PI) * drag.mirror;
+      if (e.shiftKey) rot = Math.round(rot / 15) * 15;
+      drag.pose.rotate = rot;
+    } else if (drag.kind === 'pose-scale') {
+      const k = Math.hypot(pt.x - drag.pivot.x, pt.y - drag.pivot.y) / drag.d0;
+      drag.pose.scale = { x: (1 + drag.scale.x) * k - 1, y: (1 + drag.scale.y) * k - 1 };
+    } else if (drag.kind === 'move') {
       const d = M.applyVector(drag.inv, { x: pt.x - drag.start.x, y: pt.y - drag.start.y });
       p.position = { x: drag.pos.x + d.x, y: drag.pos.y + d.y };
     } else if (drag.kind === 'rotate') {
@@ -337,6 +442,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
 
   window.addEventListener('mouseup', () => {
     if (!drag) return;
+    if (drag.pose) G.roundPose(drag.pose);
     drag = null;
     changed();
   });
@@ -408,6 +514,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const ppu = state.pixelsPerUnit;
     state = instantiateTemplate(template);
     state.pixelsPerUnit = ppu;
+    resetGestureUi();
     currentId = null;
     behaviour = null;
     selectedUid = openSlots(state, true)[0]?.uid || null;
@@ -470,6 +577,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     r.limbs = r.limbs.filter((u) => u !== part.uid);
     r.orbiters = r.orbiters.filter((u) => u !== part.uid);
     delete r.grips[part.uid];
+    G.dropPartFromGestures(state, part.uid);
     if (state.bossBody.bodyRenderer === part.uid) state.bossBody.bodyRenderer = null;
     if (selectedUid === part.uid) selectedUid = null;
     changed();
@@ -667,6 +775,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     if (part) renderPartInspector(part);
     else inspector.appendChild(el('p', 'hint', 'Selecciona una pieza (clic en el lienzo o en la lista).'));
     renderRigSection();
+    renderGesturesSection();
     renderBodySection();
     renderLinksSection();
     renderExportSection();
@@ -829,16 +938,200 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const reset = el('button', 'small', 'Valores por defecto');
     reset.onclick = () => { state.rig = createDefaultRigFields(); changed(); };
     d.appendChild(reset);
+  }
 
-    d.appendChild(el('h3', 'rigGroupTitle', 'Gestos'));
-    if (state.gestures?.length) {
-      d.appendChild(el('p', 'hint', `${state.gestures.map((g) => g.name).join(' · ')} — vienen de la plantilla; un ataque elige el suyo por nombre. Se exportan y sustituyen a los del prefab.`));
-      const drop = el('button', 'small', 'No exportar gestos (conservar los de Unity)');
-      drop.onclick = () => { state.gestures = null; changed(); };
-      d.appendChild(drop);
-    } else {
-      d.appendChild(el('p', 'hint', 'Sin gestos en este documento: Unity conserva los que tenga el prefab.'));
+  // ============================================================ gestures (pose editor)
+
+  function stopPosing() {
+    if (!posing) return;
+    const gesture = state.gestures?.[posing.index];
+    if (gesture) G.pruneGesture(gesture);
+    posing = null;
+    changed();
+    setStatus('Fuera del modo pose: las herramientas vuelven a mover las piezas.');
+  }
+
+  function startPosing(index, phase) {
+    gesturePlay = null;
+    posing = { index, phase };
+    gestureIndex = index;
+    if (!POSE_TOOLS.includes(tool)) { tool = 'move'; renderToolbar(); }
+    changed();
+    setStatus(`Posando ${PHASE_LABELS[phase]} de "${state.gestures[index].name}": arrastra una pieza (Mover / Rotar / Escalar). En vacío = el cuerpo entero. Esc = salir.`);
+  }
+
+  function playGesture(index) {
+    gesturePlay = { index, t: 0 };
+    startTicking();
+  }
+
+  /** Takes `target` (part uid or the body) out of the pose being edited. */
+  function clearPose(target) {
+    const gesture = posing && state.gestures?.[posing.index];
+    if (!gesture) return;
+    G.removePose(gesture, posing.phase, target);
+    changed();
+  }
+
+  const targetName = (target) => (target === G.BODY ? 'Cuerpo entero' : M.byUid(state, target)?.name || '(pieza borrada)');
+
+  function renderGesturesSection() {
+    const list = state.gestures || [];
+    list.forEach((g) => { g.windup = g.windup || []; g.strike = g.strike || []; });   // documents saved by older versions
+    if (posing && !list[posing.index]) posing = null;
+    if (gestureIndex >= list.length) gestureIndex = list.length - 1;
+
+    const d = rememberedSection('gestures', `Gestos (${list.length})`, true);
+    d.appendChild(el('p', 'hint', 'Un gesto es el aviso de un ataque: una pose de CARGA (se llega a ella durante el aviso) y una de GOLPE (latigazo al soltar). '
+      + 'Cada ataque elige el suyo por nombre (Enemy Creator ▸ Ataques, Boss Creator).'));
+
+    if (state.gestures === null) {
+      d.appendChild(el('p', 'hint', 'Este documento no exporta gestos: Unity conserva los que tenga el prefab. Al crear uno aquí, los de aquí sustituyen a los del prefab.'));
     }
+
+    list.forEach((gesture, index) => {
+      const open = index === gestureIndex;
+      const card = el('div', `rigGesture${open ? ' open' : ''}${posing?.index === index ? ' posing' : ''}`);
+      const head = el('div', 'rigGestureHead');
+      const title = el('span', 'rigGestureName', `${open ? '▾' : '▸'} ${gesture.name}`);
+      title.onclick = () => { gestureIndex = open ? -1 : index; renderInspector(); };
+      head.appendChild(title);
+      head.appendChild(el('span', 'hint', `carga ${gesture.windup.length} · golpe ${gesture.strike.length}`));
+      const play = el('button', 'small', '▶ Probar');
+      play.title = 'Reproduce el gesto con los tiempos de RigDriverCode: carga → golpe → vuelta al reposo.';
+      play.onclick = () => playGesture(index);
+      head.appendChild(play);
+      card.appendChild(head);
+
+      if (open) renderGestureCard(card, gesture, index);
+      d.appendChild(card);
+    });
+
+    const acts = el('div', 'rigActions');
+    const add = el('button', 'small primary', '＋ Nuevo gesto');
+    add.onclick = () => {
+      if (!state.gestures) state.gestures = [];
+      state.gestures.push(G.createGesture(state));
+      gestureIndex = state.gestures.length - 1;
+      changed();
+    };
+    acts.appendChild(add);
+    if (state.gestures) {
+      const drop = el('button', 'small danger', 'No exportar gestos (conservar los de Unity)');
+      drop.title = 'Borra los gestos de este documento: al importar, Unity se queda con los que ya tenga el prefab.';
+      drop.onclick = () => {
+        if (list.length && !confirm('¿Borrar los gestos de este documento? (Ctrl+Z los recupera)')) return;
+        posing = null; gesturePlay = null; gestureIndex = -1;
+        state.gestures = null;
+        changed();
+      };
+      acts.appendChild(drop);
+    }
+    d.appendChild(acts);
+
+    d.appendChild(F.numberField({ label: 'Aviso al probar (s)', value: previewTelegraph, min: 0.05, step: '0.05',
+      hint: 'Sólo para "▶ Probar": cuánto dura la carga. En el juego es el "telegraph" del ataque que use el gesto.',
+      onChange: (v) => { previewTelegraph = v > 0 ? v : 0.6; } }).row);
+  }
+
+  function renderGestureCard(card, gesture, index) {
+    const nameField = F.textField({ label: 'Nombre', value: gesture.name,
+      hint: 'Es lo que escribe el ataque en su campo "gesto". Cambiarlo no actualiza los ataques que ya lo usaban.', onChange: () => {} });
+    nameField.input.addEventListener('change', () => {
+      const old = gesture.name;
+      gesture.name = G.uniqueGestureName(state, nameField.input.value, gesture);
+      if (state.rig.moveGesture === old) state.rig.moveGesture = gesture.name;
+      changed();
+    });
+    card.appendChild(nameField.row);
+
+    const editing = posing?.index === index ? posing.phase : null;
+    const acts = el('div', 'rigActions');
+    const phaseBtn = (phase, label, title) => {
+      const b = el('button', `small${editing === phase ? ' active' : ''}`, label);
+      b.title = title;
+      b.onclick = () => (editing === phase ? stopPosing() : startPosing(index, phase));
+      acts.appendChild(b);
+    };
+    phaseBtn('windup', '✋ Posar carga', 'La pose a la que llega durante el aviso (justo antes de soltar).');
+    phaseBtn('strike', '✋ Posar golpe', 'La pose del latigazo, justo después de soltar. Vacía = carga que se deshace sin latigazo (una embestida).');
+    if (editing) {
+      const out = el('button', 'small', '■ Salir de posar');
+      out.onclick = stopPosing;
+      acts.appendChild(out);
+    }
+    card.appendChild(acts);
+
+    if (editing) renderPosePanel(card, gesture, editing);
+
+    const grid = el('div', 'rigGestureGrid');
+    grid.appendChild(F.numberField({ label: 'Golpe (s)', value: gesture.strikeTime, min: 0.01, step: '0.01',
+      hint: 'Lo que tarda en llegar a la pose de golpe tras soltar.', onChange: (v) => { gesture.strikeTime = Math.max(0.01, v); refreshExport(); } }).row);
+    grid.appendChild(F.numberField({ label: 'Vuelta al reposo (s)', value: gesture.recover, min: 0.01, step: '0.05',
+      onChange: (v) => { gesture.recover = Math.max(0.01, v); refreshExport(); } }).row);
+    grid.appendChild(F.numberField({ label: 'Temblor (°)', value: gesture.shake, step: '0.5',
+      hint: 'Tiembla el cuerpo en el último 30% de la carga. 0 = nada.', onChange: (v) => { gesture.shake = v; refreshExport(); } }).row);
+    card.appendChild(grid);
+
+    if (state.rig.moveGesture === gesture.name) card.appendChild(el('p', 'hint', 'Es el gesto al desplazarse (Tiempos del rig ▸ moveGesture): sólo usa su pose de carga, mantenida mientras se mueve.'));
+
+    const more = el('div', 'rigActions');
+    const dup = el('button', 'small', '⧉ Duplicar');
+    dup.onclick = () => { state.gestures.splice(index + 1, 0, G.duplicateGesture(state, gesture)); gestureIndex = index + 1; posing = null; changed(); };
+    const del = el('button', 'small danger', '🗑 Borrar gesto');
+    del.onclick = () => {
+      state.gestures.splice(index, 1);
+      posing = null; gesturePlay = null; gestureIndex = -1;
+      changed();
+    };
+    more.append(dup, del);
+    card.appendChild(more);
+  }
+
+  /** The pose being edited: what is in it, and the numbers of the part (or body) a drag would edit. */
+  function renderPosePanel(card, gesture, phase) {
+    const box = el('div', 'rigPosePanel');
+    const target = poseTarget();
+    const part = selectedPart();
+    box.appendChild(el('p', 'rigTemplateInfo', `Posando ${PHASE_LABELS[phase].toUpperCase()} · ${targetName(target)}`));
+
+    const chips = el('div', 'rigActions');
+    const chip = (t) => {
+      const b = el('button', `small${t === target ? ' active' : ''}`, targetName(t));
+      b.onclick = () => select(t === G.BODY ? null : t);
+      chips.appendChild(b);
+    };
+    const inPose = gesture[phase].map((p) => p.part);
+    if (!inPose.includes(G.BODY)) chip(G.BODY);
+    inPose.forEach(chip);
+    box.appendChild(chips);
+    box.appendChild(el('p', 'hint', 'En la pose: las piezas de arriba. Clic en una pieza del lienzo (o de la lista) para añadirla; sin pieza seleccionada se posa el cuerpo entero. La silueta tenue es el reposo.'));
+
+    if (part && !part.rigPart) {
+      box.appendChild(el('p', 'efSummaryError', `"${part.name}" no es parte del rig: un gesto no puede moverla.`));
+      card.appendChild(box);
+      return;
+    }
+
+    const pose = G.poseOf(gesture, phase, target);
+    const edit = (fn) => { fn(G.poseOf(gesture, phase, target, true)); requestRender(); refreshExport(); };
+    const fine = (row, step) => { row.querySelectorAll('input[type=number]').forEach((i) => { i.step = step; }); return row; };
+    box.appendChild(fine(F.vector2Field({ label: 'Desplazamiento (u)', value: pose?.move || { x: 0, y: 0 },
+      hint: target === G.BODY ? 'X positivo = hacia delante (se refleja al mirar a la izquierda).' : 'En el espacio de su pieza padre.',
+      onChange: (v) => edit((p) => { p.move = v; }) }).row, '0.05'));
+    box.appendChild(F.numberField({ label: 'Giro (°)', value: pose?.rotate || 0, step: '1',
+      onChange: (v) => edit((p) => { p.rotate = v; }) }).row);
+    box.appendChild(fine(F.vector2Field({ label: 'Escala (± relativa)', value: pose?.scale || { x: 0, y: 0 },
+      hint: '0 = igual; 0.2 = un 20% más grande; −0.2 = un 20% más pequeña.',
+      onChange: (v) => edit((p) => { p.scale = v; }) }).row, '0.05'));
+
+    if (pose) {
+      const clear = el('button', 'small danger', `Quitar ${targetName(target)} de la pose`);
+      clear.title = 'También con la tecla Supr.';
+      clear.onclick = () => clearPose(target);
+      box.appendChild(clear);
+    }
+    card.appendChild(box);
   }
 
   function renderBodySection() {
@@ -922,7 +1215,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       downloadBlob(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }), `${fileStem()}.rig-config.json`);
     };
     const reset = el('button', 'small danger', 'Nuevo (vaciar)');
-    reset.onclick = () => { if (confirm('¿Empezar un rig nuevo? Lo no guardado se pierde.')) { state = createDefaultRigState(); currentId = null; selectedUid = null; changed(); view.frame(state); } };
+    reset.onclick = () => { if (confirm('¿Empezar un rig nuevo? Lo no guardado se pierde.')) { state = createDefaultRigState(); currentId = null; selectedUid = null; resetGestureUi(); changed(); view.frame(state); } };
     d.append(save, zip, json, reset);
     const pre = el('details', 'rigSection');
     pre.appendChild(el('summary', null, 'rig-config.json'));
@@ -985,6 +1278,13 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
     else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
   });
+
+  /** Another document on screen: nothing of the previous one's gestures is open, posing or playing. */
+  function resetGestureUi() {
+    gestureIndex = -1;
+    posing = null;
+    gesturePlay = null;
+  }
 
   const fileStem = () => (state.name.trim() || 'rig').replace(/[^A-Za-z0-9_-]/g, '_');
 
@@ -1061,6 +1361,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     state = adopt(entry.draft);
     currentId = entry.id;
     selectedUid = null;
+    resetGestureUi();
     await refreshLibraries();
     changed();
     view.frame(state);

@@ -28,8 +28,7 @@ On top of B, decided with the user:
 1. ~~Phase C — generic templates~~ done.
 2. ~~Phase D — attacks on normal enemies, several per enemy~~ built; **playtest pending** (branch
    `task/enemy-attack-deck`).
-3. **Phase E — gesture pose editor** (web, medium). Gives each of D's attacks its own hand-posed
-   gesture; until then the gestures are the template's.
+3. ~~Phase E — gesture pose editor~~ built (2026-10-01, same branch); **test pending**.
 4. **Phase F — VFX preset library** (future, after C; see Phase F). Only planned, nothing built.
 
 Pending from the user side: nothing blocking. Their scratch files `Assets/Json/` and
@@ -41,7 +40,7 @@ Pending from the user side: nothing blocking. Their scratch files `Assets/Json/`
 > Lee `docs/part-rig-pipeline-plan.md` y ejecuta la **Fase N** (sólo esa). Sigue las reglas de la
 > sección "Reglas de trabajo".
 
-(Replace N with the next phase in the table below. **Next: Fase E** (after D's playtest), then F — see "Where we left off".)
+(Replace N with the next phase in the table below. **Next: Fase F** — see "Where we left off".)
 
 **Model and effort:** use Claude Opus, with **high** effort for Phases 0, A and D (schema,
 importer, refactor: design matters and mistakes are expensive). **Medium** is enough for B, C and E
@@ -96,7 +95,7 @@ importer, refactor: design matters and mistakes are expensive). **Medium** is en
 | B | New web tab **🦴 Rig Composer** (assemble parts, pivots, roles, state sprites, live sway preview, export) | yes | medium | ☑ |
 | C | Generic body templates in the Rig Composer (floating caster / folding sentry / limbed colossus) | yes | medium | ☑ |
 | D | `IAttackHost` refactor → catalog attacks on normal enemies, **several attacks per enemy** (deck + per-attack gesture) | yes (Enemy Creator) | high | ☑ (playtest pending) |
-| E | Gesture pose editor in the Rig Composer | yes | medium | ☐ |
+| E | Gesture pose editor in the Rig Composer | yes | medium | ☑ (test pending) |
 | F | **VFX preset library** (web): reusable, tweakable effects (size, colour, intensity…) that attacks/characters reference and that ship inside the enemy export | yes | medium | ☐ (future, after C) |
 
 Order (updated 2026-09-30): C → D → E → F. D does not depend on C; E is what gives each of D's
@@ -352,6 +351,19 @@ pooling for anything spawned repeatedly, placeholders swappable as prefabs, no p
 ### Phase E — gesture pose editor
 In the Rig Composer, pose the parts for `windup` and `strike` (dragging a part = its offset), name
 the gesture, and preview it. Until this exists, gestures come from the template.
+
+- **Done (Phase E outcome, 2026-10-01).** Web only, no C# touched (the importer already read
+  `gestures`). Inspector ▸ **Gestos**: list, ＋ new, rename (keeps `moveGesture` in sync),
+  duplicate, delete, `strikeTime` / `recover` / `shake`. **Posar carga / Posar golpe** turns the
+  canvas into a pose editor: Mover / Rotar / Escalar write that part's offset in the pose (drag on
+  empty space = the whole body, `Visual`), the rest pose stays as a ghost, numbers editable in the
+  panel, Supr removes a part from the pose, Esc leaves. **▶ Probar** plays carga → golpe → reposo
+  with `RigDriverCode`'s formulas (`rig-gestures.js`). Only rig parts can be posed (same rule as
+  the driver). Gestures made here show up in Enemy Creator ▸ Ataques after saving the rig.
+  - Checked by Claude: formulas against the driver's, the editor driven headless (jsdom: pose by
+    drag and by number, tool guard, play, new gesture, undo), export valid against the schema.
+    Not checked: a real browser (drawing, feel of the drags), the result in Unity.
+  - Tests for the user: `docs/part-rig-pending-playtests.md`.
 
 ---
 

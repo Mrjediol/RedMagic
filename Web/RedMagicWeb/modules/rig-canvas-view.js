@@ -7,7 +7,7 @@
 // Pan: middle or right drag. Zoom: wheel, towards the cursor. Owns no document state: the composer
 // passes the state (and the preview poses) into render()/partAt() every time.
 
-import { multiply, invert, apply, applyVector, worldMatrix, byUid, variantPivot } from './rig-model.js';
+import { multiply, invert, apply, applyVector, worldMatrix, byUid, variantPivot, isOpenSlot } from './rig-model.js';
 
 const PICK_ALPHA = 10;
 
@@ -77,7 +77,7 @@ export class RigCanvasView {
 
   /** Frames every part (or the origin) in view. */
   frame(state) {
-    const b = this.bounds(state);
+    const b = this.bounds(state, null, true);
     const w = this.wrap.clientWidth || 600, h = this.wrap.clientHeight || 400;
     if (!b) { this.zoom = 60; this.ox = w / 2; this.oy = h * 0.7; this.onChange(); return; }
     const bw = Math.max(0.5, b.maxX - b.minX), bh = Math.max(0.5, b.maxY - b.minY);
@@ -87,19 +87,81 @@ export class RigCanvasView {
     this.onChange();
   }
 
-  /** Visual-space bounds of every part's art, or null. */
-  bounds(state, onlyUids = null) {
+  /** Visual-space bounds of every part's art (plus, with `withSlots`, the empty template slots), or null. */
+  bounds(state, onlyUids = null, withSlots = false) {
     let b = null;
+    const add = (p) => {
+      b = b ? { minX: Math.min(b.minX, p.x), maxX: Math.max(b.maxX, p.x), minY: Math.min(b.minY, p.y), maxY: Math.max(b.maxY, p.y) }
+        : { minX: p.x, maxX: p.x, minY: p.y, maxY: p.y };
+    };
     state.parts.forEach((part) => {
-      if (!part.image || (onlyUids && !onlyUids.has(part.uid))) return;
+      if (onlyUids && !onlyUids.has(part.uid)) return;
+      if (withSlots && isOpenSlot(part)) {
+        const world = worldMatrix(state, part);
+        RigCanvasView.slotCorners(part).forEach((c) => add(apply(world, c)));
+        return;
+      }
+      if (!part.image) return;
       const m = multiply(worldMatrix(state, part), this._imageMatrix(state, part, part.image, part.pivot));
-      [[0, 0], [part.image.w, 0], [0, part.image.h], [part.image.w, part.image.h]].forEach(([x, y]) => {
-        const p = apply(m, { x, y });
-        b = b ? { minX: Math.min(b.minX, p.x), maxX: Math.max(b.maxX, p.x), minY: Math.min(b.minY, p.y), maxY: Math.max(b.maxY, p.y) }
-          : { minX: p.x, maxX: p.x, minY: p.y, maxY: p.y };
-      });
+      [[0, 0], [part.image.w, 0], [0, part.image.h], [part.image.w, part.image.h]].forEach(([x, y]) => add(apply(m, { x, y })));
     });
     return b;
+  }
+
+  /** Placeholder box of an empty template slot, in the part's local units: its pivot guess sits at 0. */
+  static slotCorners(part) {
+    const [w, h] = part.slot.size;
+    const [nx, ny] = part.slot.pivot;   // x from left, y from top
+    const x0 = -nx * w, x1 = (1 - nx) * w, y0 = -(1 - ny) * h, y1 = ny * h;
+    return [{ x: x0, y: y1 }, { x: x1, y: y1 }, { x: x1, y: y0 }, { x: x0, y: y0 }];
+  }
+
+  _slotScreenCorners(state, part, opts) {
+    let m = worldMatrix(state, part, opts.poses);
+    if (opts.visualMatrix) m = multiply(opts.visualMatrix, m);
+    m = multiply(this.camera, m);
+    return RigCanvasView.slotCorners(part).map((c) => apply(m, c));
+  }
+
+  /** Topmost empty template slot under the cursor, or null. */
+  slotAt(state, clientX, clientY, opts = {}) {
+    const r = this.canvas.getBoundingClientRect();
+    const sp = { x: clientX - r.left, y: clientY - r.top };
+    for (let i = state.parts.length - 1; i >= 0; i--) {
+      const part = state.parts[i];
+      if (!isOpenSlot(part)) continue;
+      const local = apply(invert(multiply(this.camera, worldMatrix(state, part, opts.poses))), sp);
+      const [a, , c] = RigCanvasView.slotCorners(part);
+      if (local.x >= a.x && local.x <= c.x && local.y >= c.y && local.y <= a.y) return part;
+    }
+    return null;
+  }
+
+  /** Empty template slots: a dashed box where the part goes, with what to drop on it. */
+  _drawSlots(state, opts) {
+    const ctx = this.ctx;
+    state.parts.forEach((part) => {
+      if (!isOpenSlot(part)) return;
+      const corners = this._slotScreenCorners(state, part, opts);
+      const selected = part.uid === opts.selectedUid;
+      ctx.save();
+      ctx.setLineDash([6, 4]);
+      ctx.lineWidth = selected ? 2 : 1.2;
+      ctx.strokeStyle = selected ? 'rgba(90,170,255,0.95)' : part.slot.optional ? 'rgba(255,255,255,0.35)' : 'rgba(255,200,80,0.8)';
+      ctx.fillStyle = part.slot.optional ? 'rgba(255,255,255,0.03)' : 'rgba(255,200,80,0.06)';
+      ctx.beginPath();
+      corners.forEach((c, i) => (i ? ctx.lineTo(c.x, c.y) : ctx.moveTo(c.x, c.y)));
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      const cx = (corners[0].x + corners[2].x) / 2, cy = (corners[0].y + corners[2].y) / 2;
+      ctx.fillText(part.slot.label, cx, cy + 4);
+      ctx.restore();
+    });
   }
 
   /** Crop pixel (y down) → part local units, for an image drawn with `pivot` (original pixels). */
@@ -198,6 +260,7 @@ export class RigCanvasView {
       ctx.restore();
     });
 
+    this._drawSlots(state, opts);
     if (opts.showCollider !== false) this._drawCollider(state, opts);
     if (opts.showMarkers !== false) this._drawMarkers(state, opts);
   }

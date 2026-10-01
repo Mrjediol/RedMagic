@@ -184,13 +184,30 @@ Separate from every classic tab: it touches none of them, it only reuses shared 
 | Canvas: camera, drawing, pixel picking, overlays (pivot, centre, point/barrel arrows, muzzle, grips, collider) | `modules/rig-canvas-view.js` | `RigCanvasView` |
 | Tools, parts list (draw order, parenting by drag), inspector, preview (sway/hover/lean/hurt = `RigDriverCode` formulas), save/export | `modules/rig-composer.js` | `initRigComposer` |
 | State → `rig-config.json`, the zip layout, companion `enemy-config.json` / `boss-config.json` | `modules/rig-export.js` | `buildRigExport`, `buildRigBundle`, `companionEnemyConfig` |
+| Body templates: the shapes offered by "Nuevo desde plantilla", their slots, default sway / timings / gestures, suggested behaviour | `modules/rig-templates.js` | `RIG_TEMPLATES` (**data**: a new template = a new object, no code), `instantiateTemplate`, `fillSlot`, `matchSlot`, `fitLengths`, `suggestedEnemyConfig` |
+
+**Templates** (`rig-templates.js`): a template is a body *shape* (floating caster / folding sentry /
+limbed colossus), not a character. `instantiateTemplate` makes a document whose slots are empty
+parts carrying `part.slot` (`label`, `hint`, `optional`, guesses); `isOpenSlot` = slot without art.
+An open slot is drawn as a dashed placeholder (canvas + parts list), filled by dropping a PNG on its
+row / its placeholder, or in bulk by file-name keyword (`slot.match`). `fillSlot` applies the pivot /
+muzzle / grip / centre guesses (normalized in the trimmed image, y from the top); the first image
+sizes the schematic to the art, and a layer cut from the same canvas as a placed part snaps to where
+that canvas puts it. When the last required slot is filled, `fitLengths` rescales every *length*
+(sway moves, hover, recoil, gesture moves) from the template's reference `height` to the real body
+height — once (`state.template.fitted`), or again from "Reajustar amplitudes". Export: an empty
+optional slot is left out, an empty required one is a problem. With no behaviour saved from Enemy
+Creator, an enemy template's `behaviour` travels in the zip as `enemy-config.json`
+(`suggestedEnemyConfig`); the Enemy Creator form does not preload it.
 
 Undo/redo (Ctrl+Z / Ctrl+Y) snapshots the document after every settled edit (images shared by reference). Parent = drag a row, or the inspector's "Cuelga de". Boca sets `aimArtAngle` = pivot → muzzle; the "Frente al lanzar" arrow (pointAngle) only shows on limbs/orbiters.
 
 Model rules: a part's **pivot is its joint and becomes the sprite's own pivot** (exported in
 `sprites`, normalized), so `RigPart.pivot` is always 0; geometry is kept in each file's original
 pixels (`cropX/cropY/origW/origH`). Muzzle and grips are exported as `Muzzle` / `Grip` nodes with
-`rigPart:false`. `gestures` is **not** exported (Phase E): an absent key keeps Unity's. Library kind
+`rigPart:false`. `gestures` is exported only when the document has them (`state.gestures`, today the
+ones a template brings — no editor until Phase E; poses reference parts by uid or `'Visual'`): a
+present list replaces Unity's, an absent key (`null`) keeps them. Library kind
 `rig` (sheetless, like `boss`): the whole document incl. part images is the record's `draft`,
 `config` is the last rig-config and `enemyConfig` its **behaviour**: Enemy Creator lists enemy-kind
 rigs in its art picker (🦴 … (por partes)); with one picked, every export saves the EnemyConfig

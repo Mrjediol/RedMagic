@@ -91,6 +91,9 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
 - `RigConfigJson` — shared vocabulary: part refs are **paths relative to `Visual`** (`"Visual"` =
   body), sprites are `Assets/…` paths (used as-is) or bundle files (copied to
   `Assets/Art/RigImports/<name>/`, import settings from `sprites`).
+- Web side: the 🦴 Rig Composer authors the bundle; its **body templates** (floating caster / folding
+  sentry / limbed colossus — `Web/RedMagicWeb/modules/rig-templates.js`, data) are the generic
+  versions of the three packs above and ship default gestures in `gestures`.
 - `RigConfigRoundTrip` — static acceptance test (no Play): Robot / Turret / BossIce2 → fixtures in
   `docs/schemas/fixtures/rig/` → reimport → reflection compare → cleanup. Rerun after touching
   `ProceduralRig` or either side of the pipeline. The packs above stay as the hand-written reference.

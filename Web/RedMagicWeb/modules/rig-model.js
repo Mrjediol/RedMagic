@@ -71,6 +71,11 @@ export function childrenOf(state, uid) {
   return state.parts.filter((p) => p.parent === uid);
 }
 
+/** A template slot nobody has dropped art on yet (rig-templates.js): drawn as a placeholder, left out of the export. */
+export function isOpenSlot(part) {
+  return !!part.slot && !part.image;
+}
+
 /** True if `uid` is `ancestorUid` or hangs from it. */
 export function isDescendant(state, uid, ancestorUid) {
   for (let p = byUid(state, uid); p; p = byUid(state, p.parent)) if (p.uid === ancestorUid) return true;

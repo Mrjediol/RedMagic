@@ -214,6 +214,17 @@ El .zip lo genera la pestaña web **🦴 Rig Composer** (suelta los PNG de las p
 marca pivotes, roles y sprites por estado, enlaza un enemigo de Enemy Creator o un jefe de Boss
 Creator y exporta). Ver `Web/RedMagicWeb/ARCHITECTURE.md ▸ Rig Composer tab`.
 
+**Plantillas** ("Nuevo desde plantilla" en la barra izquierda): formas de cuerpo, no personajes —
+*Lanzador flotante* (torso + cabeza + brazo que lanza + brazo libre + parte baja; FlyingRanged),
+*Centinela plegable* (base + cuello que se estira + cabeza con sprites por estado; Static + Ranged
+dormido) y *Coloso con extremidades* (jefe: torso + parte baja + dos extremidades lanzables +
+orbitales). La lista de piezas enseña los huecos con su pista: suelta cada PNG en su hueco (fila o
+recuadro del lienzo; soltados todos a la vez van a su hueco por nombre de archivo: `torso`, `head`,
+`rightarm`…). Pivote, boca y agarre salen estimados y todo sigue editable. La plantilla trae sus
+gestos (se exportan en `gestures` y **sustituyen** a los del prefab al reimportar) y, en enemigos,
+un comportamiento sugerido que viaja como `enemy-config.json` mientras no se configure en Enemy
+Creator. Los huecos opcionales vacíos no se exportan.
+
 ### Importar rig (.zip · carpeta)…
 Elige un `.zip` o el `rig-config.json` de una carpeta. El bundle lleva:
 

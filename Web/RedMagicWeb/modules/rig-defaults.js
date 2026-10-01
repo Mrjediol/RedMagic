@@ -122,6 +122,7 @@ export function createPart({ name, image = null, index = 0 }) {
     },
     breaksOnDeath: true,
     variants: { asleep: null, awake: null, attacking: null, stages: [] },
+    slot: null,       // template slot this part fills: { id, label, hint, optional, pivot, size, … } (rig-templates.js)
   };
 }
 
@@ -162,5 +163,7 @@ export function createDefaultRigState() {
     bossLimbs: { contactRadius: 0.9, orbiterRadius: 0.5 },
     bossBody: { health: 2500, arenaHalfWidth: 15, arenaHeight: 12, activationRadius: 18, contactDamage: 12, bodyRenderer: null },
     bossConfigId: null,            // library entry (kind boss) whose config travels in the zip
+    template: null,                // { id, height, fitted } when made from a body template (rig-templates.js)
+    gestures: null,                // RigGesture list (poses by part uid | 'Visual'); null = not exported, Unity keeps its own
   };
 }

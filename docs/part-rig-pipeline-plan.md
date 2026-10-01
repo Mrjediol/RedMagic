@@ -6,9 +6,11 @@ attack or a new behaviour**. Once it exists, the web lists it and any enemy can 
 
 ---
 
-## ⏸ Where we left off (2026-09-30)
+## ⏸ Where we left off (2026-10-01)
 
-Done and verified: Phases 0, A, B. On top of B, decided with the user in the same session:
+Done: Phases 0, A, B (verified by the user) and **C** (2026-10-01, built and checked statically —
+the user's browser + Unity test of the three templates is still pending, see Phase C outcome).
+On top of B, decided with the user:
 - **Behaviour of a part-based enemy is authored in 🧩 Enemy Creator** (rigs show up in its art
   picker as "🦴 … (por partes)"); it is saved on the rig record as `enemyConfig` and travels in the
   rig .zip as `enemy-config.json`. No duplicated behaviour form in the Rig Composer.
@@ -20,8 +22,7 @@ Done and verified: Phases 0, A, B. On top of B, decided with the user in the sam
   flies and shoots in game.
 
 **Next session, in this order** (details in each phase below):
-1. **Phase C — generic templates** (web, medium). The user approved doing the three; they must be
-   described by body SHAPE, not by one character (see Phase C).
+1. ~~Phase C — generic templates~~ done.
 2. **Phase D — attacks on normal enemies, SEVERAL per enemy** (Unity + web, high). Multi-attack is
    the new core requirement; the "magical girl casting different spells from the same hand" is the
    reference case (see Phase D).
@@ -37,7 +38,7 @@ Pending from the user side: nothing blocking. Their scratch files `Assets/Json/`
 > Lee `docs/part-rig-pipeline-plan.md` y ejecuta la **Fase N** (sólo esa). Sigue las reglas de la
 > sección "Reglas de trabajo".
 
-(Replace N with the next phase in the table below. **Next: Fase C**, then D, E, F — see "Where we left off".)
+(Replace N with the next phase in the table below. **Next: Fase D**, then E, F — see "Where we left off".)
 
 **Model and effort:** use Claude Opus, with **high** effort for Phases 0, A and D (schema,
 importer, refactor: design matters and mistakes are expensive). **Medium** is enough for B, C and E
@@ -90,7 +91,7 @@ importer, refactor: design matters and mistakes are expensive). **Medium** is en
 | 0 | Split rig attacks into their own folder and category (catalog + web picker shows "Clásico" / "De partes") | small web change | high | ☑ |
 | A | `rig-config` schema + round-trip exporter + **separate** `RigBundleImporter` (rebuilds Robot / Turret / BossIce2 from JSON) | no | high | ☑ |
 | B | New web tab **🦴 Rig Composer** (assemble parts, pivots, roles, state sprites, live sway preview, export) | yes | medium | ☑ |
-| C | Generic body templates in the Rig Composer (floating caster / folding sentry / limbed colossus) | yes | medium | ☐ |
+| C | Generic body templates in the Rig Composer (floating caster / folding sentry / limbed colossus) | yes | medium | ☑ |
 | D | `IAttackHost` refactor → catalog attacks on normal enemies, **several attacks per enemy** (deck + per-attack gesture) | yes (Enemy Creator) | high | ☐ |
 | E | Gesture pose editor in the Rig Composer | yes | medium | ☐ |
 | F | **VFX preset library** (web): reusable, tweakable effects (size, colour, intensity…) that attacks/characters reference and that ship inside the enemy export | yes | medium | ☐ (future, after C) |
@@ -225,6 +226,29 @@ the template's pivot guess (bottom for stems, shoulder side for arms), role and 
 stays editable. Default values come from `ProceduralEnemyPacks` / `ProceduralBossPack` (the
 hand-written versions of the three shapes). Store templates as data (one JSON-like object per
 template in a web module), so a fourth one is data, not code.
+
+- **Done (Phase C outcome).** `Web/RedMagicWeb/modules/rig-templates.js`: `RIG_TEMPLATES` (data) +
+  generic `instantiateTemplate` / `fillSlot` / `matchSlot` / `fitLengths`. Web only, no C# touched.
+  - Slots are ordinary parts with `part.slot`; empty ones are dashed placeholders in the parts list
+    (label + hint) and on the canvas. Fill by dropping a PNG on the row or the placeholder, or all
+    at once (file-name keywords). Guesses applied: pivot, muzzle (+ barrel), grip, centre.
+  - Template lengths are written for a reference body height and rescaled to the real art when the
+    last required slot is filled (and on demand: "Reajustar amplitudes").
+  - **Gestures now export** when the document has them (the template's): caster `Flick` / `Charge`
+    / `Sweep` on the casting arm (three spells from one hand — waiting for Phase D to name them),
+    sentry `Nod`, colossus `Brace` / `Dash` / `DashLoop` / `Move` / `GroundSlam` / `PickUP` /
+    `Throw` (the names the existing boss attacks use). They replace the prefab's on reimport.
+  - Suggested behaviour: enemy templates carry a tuning (FlyingRanged / Static+Ranged sleeper) that
+    travels as `enemy-config.json` until Enemy Creator saves one. **Known gap:** the Enemy Creator
+    form does not preload it (it never preloads a saved config), so opening it there starts from
+    the form defaults — Phase D touches that form and is the place to fix it.
+  - Simplifications vs the hand-made packs: the caster's lower part hangs from the torso (no
+    separate `Base`); the sentry's stem is the stretch part itself with its pivot at the bottom (no
+    `NeckPivot` wrapper — the joint is the sprite pivot); the colossus keeps an empty `Crown` node
+    for its orbiters. Boss `rootScale` and the body's height above the feet are left to the user.
+  - Checked: the three templates → `buildRigExport` → valid against `rig-config.schema.json`
+    (ajv), required-only and fully filled, after a library round trip. Not checked by Claude: the
+    UI in a browser and the Unity import of a template-made rig.
 
 ### Phase D — catalog attacks on normal enemies, several per enemy
 **New core requirement (2026-09-30): a normal enemy can have MORE THAN ONE attack**, like bosses

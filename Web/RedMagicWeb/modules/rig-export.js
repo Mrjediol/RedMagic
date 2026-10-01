@@ -13,10 +13,12 @@
 //  - each part's joint IS its sprite's pivot (written in `sprites`), so RigPart.pivot exports as 0;
 //  - muzzle and grips become ordinary nodes ('Muzzle' under the aim part, 'Grip' under each limb)
 //    with rigPart:false;
-//  - `gestures` is NOT written (Phase E): a present list would replace the gestures authored in
-//    Unity, an absent key keeps them.
+//  - `gestures` is only written when the document has them (today: the ones a body template brings,
+//    rig-templates.js). A present list replaces the gestures authored in Unity, an absent key keeps them;
+//  - a template slot still empty is left out (unless a filled part hangs from it: then it stays as
+//    an empty node), and a required one is reported as a problem.
 
-import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot } from './rig-model.js';
+import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot, isOpenSlot } from './rig-model.js';
 import { embedReferencedLibraryEntries } from './enemy-bundle.js';
 import { writeLanes } from './boss-bundle.js';
 
@@ -39,6 +41,18 @@ export function buildRigExport(state) {
 
   if (!state.name.trim()) problems.push('Ponle nombre (será el del prefab).');
   if (state.parts.length === 0) problems.push('Añade al menos una pieza.');
+
+  // Template slots without art: out of the export, unless something filled hangs from them.
+  const gestures = state.gestures;
+  const hasContent = (part) => !isOpenSlot(part) || state.parts.some((c) => c.parent === part.uid && hasContent(c));
+  const emptyOptional = [];
+  state.parts.filter(isOpenSlot).forEach((part) => {
+    if (!part.slot.optional) problems.push(`Hueco de la plantilla sin rellenar: "${part.slot.label}".`);
+    else if (hasContent(part)) notes.push(`"${part.slot.label}" está vacío pero otras piezas cuelgan de él: se exporta como pivote vacío.`);
+    else emptyOptional.push(part.slot.label);
+  });
+  if (emptyOptional.length) notes.push(`Huecos opcionales vacíos (no se exportan): ${emptyOptional.join(', ')}.`);
+  state = { ...state, parts: state.parts.filter(hasContent) };
 
   function addFile(stem, image, pivot) {
     let path = `Parts/${stem}.png`;
@@ -144,6 +158,19 @@ export function buildRigExport(state) {
     rig,
     spriteSwaps: swaps,
   };
+
+  if (Array.isArray(gestures)) {
+    const poses = (list) => (list || [])
+      .map((p) => ({ part: p.part === 'Visual' ? 'Visual' : partPaths.get(p.part), move: v2(p.move), rotate: r5(p.rotate), scale: v2(p.scale) }))
+      .filter((p) => p.part);   // poses of a part that is not there (empty optional slot, deleted) drop out
+    doc.gestures = gestures.map((g) => ({
+      name: g.name, windup: poses(g.windup), strike: poses(g.strike),
+      strikeTime: r5(g.strikeTime), recover: r5(g.recover), shake: r5(g.shake),
+    }));
+    if (doc.gestures.length) notes.push(`Gestos (${doc.gestures.map((g) => g.name).join(', ')}): al reimportar sustituyen a los del prefab.`);
+    if (rig.moveGesture && !doc.gestures.some((g) => g.name === rig.moveGesture))
+      notes.push(`El gesto al desplazarse "${rig.moveGesture}" no está entre los gestos exportados.`);
+  }
 
   if (state.kind === 'boss') {
     doc.bossLimbs = {

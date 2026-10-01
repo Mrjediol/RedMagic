@@ -8,6 +8,9 @@
 //   right  — the selected part (transform, roles, sway, state sprites), rig timings, collider,
 //            links to an Enemy Creator / Boss Creator entry, validation and export
 //
+// "Nuevo desde plantilla" starts the document from a body shape (rig-templates.js): its slots show
+// up as empty parts to drop art on (parts list row, canvas placeholder, or a bulk drop by file name).
+//
 // Geometry and part operations: rig-model.js. Drawing and picking: rig-canvas-view.js. Export:
 // rig-export.js. Preview formulas copy RigDriverCode.cs (sway, hover, lean, hurt).
 
@@ -19,6 +22,7 @@ import { loadValidator, validateConfig } from './config-schema.js';
 import { saveEnemy, updateEnemy, getEnemy, listEntries, buildThumbnail } from './enemy-library.js';
 import { downloadBlob } from './export-manifest.js';
 import * as F from './enemy-form-fields.js';
+import { RIG_TEMPLATES, templateById, instantiateTemplate, openSlots, matchSlot, fillSlot, fitLengths, suggestedEnemyConfig } from './rig-templates.js';
 
 const TOOLS = [
   { id: 'move', label: '✋ Mover', key: 'v', hint: 'Arrastra una pieza. Clic en vacío = deseleccionar.' },
@@ -240,10 +244,11 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     let part = selectedPart();
 
     if (tool === 'move') {
-      if (!hit) { select(null); return; }
-      select(hit.uid);
-      const parent = M.byUid(state, hit.parent);
-      drag = { kind: 'move', part: hit, start: pt, pos: { ...hit.position }, inv: parent ? M.invert(M.worldMatrix(state, parent)) : M.IDENTITY };
+      const target = hit || view.slotAt(state, e.clientX, e.clientY);
+      if (!target) { select(null); return; }
+      select(target.uid);
+      const parent = M.byUid(state, target.parent);
+      drag = { kind: 'move', part: target, start: pt, pos: { ...target.position }, inv: parent ? M.invert(M.worldMatrix(state, parent)) : M.IDENTITY };
       return;
     }
 
@@ -336,7 +341,10 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   canvasWrap.addEventListener('drop', (e) => {
     if (!e.dataTransfer?.files?.length) return;
     e.preventDefault();
-    addFiles([...e.dataTransfer.files]);
+    const files = [...e.dataTransfer.files];
+    const slot = files.length === 1 ? view.slotAt(state, e.clientX, e.clientY) : null;
+    if (slot) fillFromFile(slot, files[0]);
+    else addFiles(files);
   });
 
   // ============================================================ document operations
@@ -359,20 +367,80 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const images = files.filter((f) => f.type.startsWith('image/'));
     if (!images.length) return;
     setStatus(`Cargando ${images.length} imagen(es)…`);
+    const wasEmpty = !state.parts.some((p) => p.image);
+    const filled = [];
     let removed = 0, last = null;
     for (const file of images) {
       const res = await M.importImage(file);
       if (!res) { setStatus(`"${file.name}" no tiene nada visible.`); continue; }
       if (res.removedBg) removed++;
+      const slot = matchSlot(state, file.name);   // a template slot this file names
+      if (slot) {
+        fillSlot(state, slot, res.image);
+        filled.push(slot.slot.label);
+        last = slot;
+        continue;
+      }
       const part = createPart({ name: M.uniqueName(state, file.name.replace(/\.[^.]+$/, '')), image: res.image, index: state.parts.length });
       part.position = M.initialPosition(state, res.image, part.pivot);
       state.parts.push(part);
       last = part;
     }
     if (last) selectedUid = last.uid;
-    if (state.parts.length === images.length) { fitCollider(); view.frame(state); }
+    const fitted = fitTemplate();
+    if (wasEmpty && !fitted) { if (!state.template) fitCollider(); view.frame(state); }
     changed();
-    setStatus(`${images.length} pieza(s) añadida(s)${removed ? `, fondo quitado en ${removed}` : ''}. Los PNG del mismo lienzo quedan ya colocados.`);
+    if (!fitted) setStatus(`${images.length} pieza(s) añadida(s)${filled.length ? ` (en su hueco: ${filled.join(', ')})` : ''}${removed ? `, fondo quitado en ${removed}` : ''}. Los PNG del mismo lienzo quedan ya colocados.`);
+  }
+
+  // ============================================================ templates
+
+  /** Starts a new document from a body template: its slots become empty parts to drop art on. */
+  function newFromTemplate(id) {
+    const template = templateById(id);
+    if (!template) return;
+    if (state.parts.length && !confirm(`¿Empezar "${template.label}" desde cero? Lo no guardado se pierde.`)) return;
+    const ppu = state.pixelsPerUnit;
+    state = instantiateTemplate(template);
+    state.pixelsPerUnit = ppu;
+    currentId = null;
+    behaviour = null;
+    selectedUid = openSlots(state, true)[0]?.uid || null;
+    changed();
+    renderToolbar();
+    view.frame(state);
+    setStatus(`Plantilla "${template.label}": suelta cada PNG sobre su hueco (lista de piezas o lienzo). Todo se puede cambiar después.`);
+  }
+
+  /** One image into a part: a template slot gets its guesses (pivot, boca, agarre…), any other part just the art. */
+  async function fillFromFile(part, file) {
+    const res = await M.importImage(file);
+    if (!res) { setStatus(`"${file.name}" no tiene nada visible.`); return; }
+    if (M.isOpenSlot(part)) {
+      fillSlot(state, part, res.image);
+      selectedUid = part.uid;
+      const fitted = fitTemplate();
+      changed();
+      if (!fitted) setStatus(`"${part.slot.label}" puesto${res.removedBg ? ' (fondo quitado)' : ''}: pivote${part.uid === state.roles.aim ? ' y boca' : ''} estimados, corrígelos con sus herramientas si hace falta.`);
+      return;
+    }
+    part.image = res.image;
+    if (!part.pivot || part.pivot.x === 0) part.pivot = { x: res.image.cropX + res.image.w / 2, y: res.image.cropY + res.image.h / 2 };
+    changed();
+  }
+
+  /**
+   * Once the last required slot is filled: the template's lengths (sway, hover, recoil, gestures)
+   * are rescaled to the real size of the art, and the collider wraps it. Runs once per document.
+   */
+  function fitTemplate(force = false) {
+    if (!state.template || (state.template.fitted && !force) || openSlots(state, true).length) return false;
+    const b = view.bounds(state);
+    if (!b) return false;
+    const k = fitLengths(state, b.maxY - b.minY);
+    if (!force) { fitCollider(); view.frame(state); }
+    setStatus(`Plantilla completa: amplitudes (balanceo, flotar, retroceso, gestos) ajustadas ×${Math.round(k * 100) / 100} al tamaño del dibujo${force ? '' : ' y collider ajustado'}.`);
+    return true;
   }
 
   function addEmptyPart() {
@@ -451,6 +519,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     add.append(input, addBtn, emptyBtn);
     add.appendChild(el('p', 'hint', 'También puedes arrastrar los PNG al lienzo. El fondo liso se quita solo y cada pieza se recorta.'));
     sidebar.appendChild(add);
+    renderTemplateBlock();
 
     sidebar.appendChild(el('h2', null, 'Piezas'));
     sidebar.appendChild(el('p', 'hint', 'Arriba = delante. Arrastra una fila sobre otra para colgarla de ella; sobre "Visual" para soltarla.'));
@@ -462,10 +531,14 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
 
     const depth = (p) => { let d = 0; for (let q = M.byUid(state, p.parent); q; q = M.byUid(state, q.parent)) d++; return d; };
     [...state.parts].reverse().forEach((part) => {
-      const row = el('div', `rigPartRow${part.uid === selectedUid ? ' selected' : ''}`);
+      const open = M.isOpenSlot(part);
+      const row = el('div', `rigPartRow${part.uid === selectedUid ? ' selected' : ''}${open ? ' rigSlotOpen' : ''}${open && part.slot.optional ? ' optional' : ''}`);
       row.draggable = true;
       row.style.paddingLeft = `${8 + depth(part) * 14}px`;
-      const name = el('span', 'rigPartName', `${part.parent ? '↳ ' : ''}${part.name}${part.image ? '' : ' ◌'}`);
+      const name = el('span', 'rigPartName', open
+        ? `${part.parent ? '↳ ' : ''}◇ ${part.slot.label}${part.slot.optional ? ' (opcional)' : ''}`
+        : `${part.parent ? '↳ ' : ''}${part.name}${part.image ? '' : ' ◌'}`);
+      if (part.slot) row.title = `${part.slot.label}: ${part.slot.hint}`;
       row.appendChild(name);
       const badges = roleBadges(part);
       if (badges.length) row.appendChild(el('span', 'rigPartRoles', badges.join(' · ')));
@@ -477,9 +550,50 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       row.onclick = () => select(part.uid);
       row.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/rig-part', part.uid); });
       wireDrop(row, part.uid);
+      // A PNG dropped on the row goes into this part (a template slot: with its pivot guess).
+      row.addEventListener('dragover', (e) => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); row.classList.add('dropTarget'); } });
+      row.addEventListener('drop', (e) => {
+        const file = [...(e.dataTransfer.files || [])].find((f) => f.type.startsWith('image/'));
+        if (!file) return;
+        e.preventDefault();
+        row.classList.remove('dropTarget');
+        fillFromFile(part, file);
+      });
       list.appendChild(row);
+      if (open) {
+        const hint = el('div', 'rigSlotHint', `${part.slot.hint} Suelta aquí su PNG.`);
+        hint.style.paddingLeft = row.style.paddingLeft;
+        list.appendChild(hint);
+      }
     });
     sidebar.appendChild(list);
+  }
+
+  let templateChoice = RIG_TEMPLATES[0].id;
+  function renderTemplateBlock() {
+    const block = el('div', 'rigBlock rigTemplateBlock');
+    const current = templateById(state.template?.id);
+    if (current) {
+      const slots = state.parts.filter((p) => p.slot);
+      const open = openSlots(state), required = openSlots(state, true);
+      block.appendChild(el('p', required.length ? 'rigTemplateInfo' : 'efSummaryOk',
+        `Plantilla: ${current.label} — ${slots.length - open.length}/${slots.length} huecos${required.length ? `. Faltan: ${required.map((p) => p.slot.label).join(', ')}` : ''}`));
+      const refit = el('button', 'small', '⤢ Reajustar amplitudes al tamaño');
+      refit.title = 'Si has cambiado mucho el tamaño del cuerpo: reescala balanceos, flotar, retroceso y gestos a su altura actual.';
+      refit.onclick = () => { if (fitTemplate(true)) changed(); else setStatus('Rellena antes los huecos que faltan.'); };
+      block.appendChild(refit);
+    }
+    const pick = F.enumField({ label: 'Nuevo desde plantilla', value: templateChoice,
+      options: RIG_TEMPLATES.map((t) => ({ value: t.id, label: `${t.label} (${t.kind === 'boss' ? 'jefe' : 'enemigo'})` })),
+      onChange: (v) => { templateChoice = v; renderSidebar(); } });
+    block.appendChild(pick.row);
+    const chosen = templateById(templateChoice);
+    block.appendChild(el('p', 'hint', chosen.shape));
+    block.appendChild(el('p', 'hint', `Sirve para: ${chosen.fits}`));
+    const go = el('button', 'small', `＋ Nuevo: ${chosen.label}`);
+    go.onclick = () => newFromTemplate(templateChoice);
+    block.appendChild(go);
+    sidebar.appendChild(block);
   }
 
   function wireDrop(row, parentUid) {
@@ -541,6 +655,13 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   function renderPartInspector(part) {
     const s = rememberedSection('part', `Pieza: ${part.name}`, true);
 
+    if (part.slot) {
+      const open = M.isOpenSlot(part);
+      const extra = [part.slot.states && 'sprites dormido / despierto / atacando', part.slot.stage && 'una etapa para la fase 2'].filter(Boolean);
+      s.appendChild(el('p', open ? 'rigTemplateInfo' : 'hint',
+        `${open ? '◇ Hueco de la plantilla — ' : 'Plantilla — '}${part.slot.label}: ${part.slot.hint}${extra.length && !open ? ` Admite además: ${extra.join(', ')} (abajo, "Sprites por estado / etapa").` : ''}`));
+    }
+
     const nameField = F.textField({ label: 'Nombre', value: part.name, onChange: () => {} });
     nameField.input.addEventListener('change', () => { part.name = M.uniqueName(state, nameField.input.value, part); changed(); });
     s.appendChild(nameField.row);
@@ -566,12 +687,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const mk = (label, title, fn, cls = 'small') => { const b = el('button', cls, label); b.title = title; b.onclick = fn; acts.appendChild(b); return b; };
     const replaceInput = document.createElement('input');
     replaceInput.type = 'file'; replaceInput.accept = 'image/*'; replaceInput.hidden = true;
-    replaceInput.onchange = async () => {
-      const f = replaceInput.files[0];
-      if (!f) return;
-      const res = await M.importImage(f);
-      if (res) { part.image = res.image; if (!part.pivot || part.pivot.x === 0) part.pivot = { x: res.image.cropX + res.image.w / 2, y: res.image.cropY + res.image.h / 2 }; changed(); }
-    };
+    replaceInput.onchange = () => { if (replaceInput.files[0]) fillFromFile(part, replaceInput.files[0]); };
     acts.appendChild(replaceInput);
     mk(part.image ? 'Cambiar imagen' : 'Poner imagen', 'Otra imagen para esta pieza (mismo pivote en píxeles del archivo).', () => replaceInput.click());
     if (part.image) {
@@ -690,6 +806,16 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const reset = el('button', 'small', 'Valores por defecto');
     reset.onclick = () => { state.rig = createDefaultRigFields(); changed(); };
     d.appendChild(reset);
+
+    d.appendChild(el('h3', 'rigGroupTitle', 'Gestos'));
+    if (state.gestures?.length) {
+      d.appendChild(el('p', 'hint', `${state.gestures.map((g) => g.name).join(' · ')} — vienen de la plantilla; un ataque elige el suyo por nombre. Se exportan y sustituyen a los del prefab.`));
+      const drop = el('button', 'small', 'No exportar gestos (conservar los de Unity)');
+      drop.onclick = () => { state.gestures = null; changed(); };
+      d.appendChild(drop);
+    } else {
+      d.appendChild(el('p', 'hint', 'Sin gestos en este documento: Unity conserva los que tenga el prefab.'));
+    }
   }
 
   function renderBodySection() {
@@ -721,14 +847,20 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const d = rememberedSection('links', state.kind === 'boss' ? 'Ataques y fases (Boss Creator)' : 'Números de juego (Enemy Creator)', true);
     if (state.kind === 'boss') {
       const options = [{ value: '', label: '(ninguno: la definición se asigna en Unity)' }, ...bossEntries.map((e) => ({ value: e.id, label: e.enemyName }))];
+      const tpl = templateById(state.template?.id);
+      if (tpl?.behaviour?.summary) d.appendChild(el('p', 'hint', `Plantilla: ${tpl.behaviour.summary}`));
       d.appendChild(F.enumField({ label: 'Jefe de la biblioteca', value: state.bossConfigId || '', options,
         hint: 'Su boss-config (ataques, fases, arte de ataques) viaja en el .zip sin su cuerpo: el cuerpo es este rig.',
         onChange: (v) => { state.bossConfigId = v || null; refreshExport(); } }).row);
     } else {
       const t = behaviour?.tuning;
-      d.appendChild(el('p', behaviour ? 'efSummaryOk' : 'hint', behaviour
+      const suggested = behaviour ? null : suggestedEnemyConfig(state);
+      const st = suggested?.tuning;
+      d.appendChild(el('p', behaviour || suggested ? 'efSummaryOk' : 'hint', behaviour
         ? `✓ ${t?.archetype || 'Melee'} · vida ${t?.maxHealth ?? 30} · ataque ${t?.attackRange ?? 1.6} u (de Enemy Creator)`
-        : 'Sin comportamiento todavía: se exportará con el tuning por defecto (Melee).'));
+        : suggested
+          ? `✓ Sugerido por la plantilla: ${st.archetype}${st.sleepsUntilDetected ? ' dormido' : ''} · vida ${st.maxHealth} · ataque ${st.attackRange} u. Viaja en el .zip mientras no lo configures en Enemy Creator (allí se parte de sus valores por defecto: pon el arquetipo ${st.archetype}).`
+          : 'Sin comportamiento todavía: se exportará con el tuning por defecto (Melee).'));
       d.appendChild(el('p', 'hint', 'El comportamiento (volador o no, vida, rangos, daño, proyectil) se configura en 🧩 Enemy Creator eligiendo este rig como arte. Viaja en el .zip como enemy-config.json.'));
       const go = el('button', 'small', '🧩 Configurar en Enemy Creator');
       go.onclick = async () => {
@@ -873,7 +1005,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const all = await listEntries(null);
     const entriesById = new Map(all.map((e) => [e.id, e]));
     const blob = await buildRigBundle(state, {
-      enemyConfig: (await getEnemy(currentId || ''))?.enemyConfig || null,
+      enemyConfig: (currentId && (await getEnemy(currentId))?.enemyConfig) || suggestedEnemyConfig(state),
       bossEntry: entriesById.get(state.bossConfigId) || null,
       entriesById,
     });

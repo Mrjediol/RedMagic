@@ -10,7 +10,7 @@ meant to be edited by hand.**
   they all read from here. `EnemyStatsEditor` draws it flat and hides the fields that don't apply
   to the chosen archetype. Gizmos show the ranges on selection.
 - **Inspector**: `EnemyStatsEditor` (and the boss `BossControllerEditor`) draw one **foldout per
-  `[Header]`** (`FoldoutInspector`): archetype, ranges, attack, deck and projectile open by default, the rest
+  `[Group]`** (`GroupAttribute` replaces `[Header]` on `EnemyTuning` and `BossController`: same look in any other inspector, silent inside the foldouts) (`FoldoutInspector`): archetype, ranges, attack, deck and projectile open by default, the rest
   (health, knockback, movement, sleep, contact, sound, animation, target) folded; open state is remembered per
   group. Nothing is hidden beyond the archetype rules. New tunables: put them under a `[Group("…")]`.
 - **`EnemyTuning`** is a plain `[Serializable]` class, used by **both** `EnemyStats` and

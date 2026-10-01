@@ -4,6 +4,13 @@
   "name": "BossCenter",
   "pixelsPerUnit": 100,
   "sprites": {
+    "Parts/Lower.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
     "Parts/Torso.png": {
       "pixelsPerUnit": 100,
       "pivot": {
@@ -55,7 +62,11 @@
     }
   },
   "root": {
-    "scale": 1
+    "scale": 1,
+    "feet": {
+      "x": 0,
+      "y": -7.875
+    }
   },
   "collider": {
     "type": "box",
@@ -64,8 +75,8 @@
       "y": 19.05
     },
     "offset": {
-      "x": 0.01,
-      "y": 0
+      "x": -0.18,
+      "y": 1.65
     }
   },
   "corpse": {
@@ -82,13 +93,50 @@
   },
   "parts": [
     {
+      "name": "Lower",
+      "parent": "Torso",
+      "sprite": "Parts/Lower.png",
+      "sortingOrder": 1,
+      "position": {
+        "x": 0.245,
+        "y": -4.63367
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": -3.6245
+      },
+      "pointAngle": 0,
+      "leanFollow": 0.8,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.1058
+        },
+        "rotate": 5,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.2,
+        "phase": 2.1
+      },
+      "breaksOnDeath": true
+    },
+    {
       "name": "Torso",
       "parent": "",
       "sprite": "Parts/Torso.png",
-      "sortingOrder": 0,
+      "sortingOrder": 2,
       "position": {
-        "x": 0.37656,
-        "y": 0.25594
+        "x": 0.22,
+        "y": 2.55219
       },
       "rotation": 0,
       "scale": 1,
@@ -122,8 +170,8 @@
       "name": "Crown",
       "parent": "Torso",
       "position": {
-        "x": -0.47722,
-        "y": 5.86878
+        "x": -0.17809,
+        "y": 5.85998
       },
       "rotation": 0,
       "scale": 1,
@@ -157,7 +205,7 @@
       "name": "OrbiterLeft",
       "parent": "Torso/Crown",
       "sprite": "Parts/OrbiterLeft.png",
-      "sortingOrder": 2,
+      "sortingOrder": 4,
       "position": {
         "x": 0.99478,
         "y": 0.38933
@@ -194,7 +242,7 @@
       "name": "OrbiterCenter",
       "parent": "Torso/Crown",
       "sprite": "Parts/OrbiterCenter.png",
-      "sortingOrder": 3,
+      "sortingOrder": 5,
       "position": {
         "x": 1.68478,
         "y": 0.78933
@@ -231,7 +279,7 @@
       "name": "OrbiterRight",
       "parent": "Torso/Crown",
       "sprite": "Parts/OrbiterRight.png",
-      "sortingOrder": 4,
+      "sortingOrder": 6,
       "position": {
         "x": 2.44978,
         "y": 0.45933
@@ -268,7 +316,7 @@
       "name": "LeftLimb",
       "parent": "Torso",
       "sprite": "Parts/LeftLimb.png",
-      "sortingOrder": 5,
+      "sortingOrder": 7,
       "position": {
         "x": -6.30747,
         "y": -3.65187
@@ -305,7 +353,7 @@
       "name": "RightLimb",
       "parent": "Torso",
       "sprite": "Parts/RightLimb.png",
-      "sortingOrder": 6,
+      "sortingOrder": 8,
       "position": {
         "x": 5.63687,
         "y": -4.46723
@@ -342,10 +390,10 @@
       "name": "Pivote",
       "parent": "Torso/Crown",
       "position": {
-        "x": 0,
-        "y": 0
+        "x": 1.72441,
+        "y": 0.26394
       },
-      "rotation": 0,
+      "rotation": 39,
       "scale": 1,
       "rigPart": false
     },
@@ -527,6 +575,18 @@
             "x": 0,
             "y": 0
           }
+        },
+        {
+          "part": "Torso/Lower",
+          "move": {
+            "x": 0,
+            "y": 0
+          },
+          "rotate": 0,
+          "scale": {
+            "x": 0,
+            "y": 0
+          }
         }
       ],
       "strike": [],
@@ -566,6 +626,18 @@
           "move": {
             "x": -3.1747,
             "y": 1.0582
+          },
+          "rotate": -25,
+          "scale": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "part": "Torso/Lower",
+          "move": {
+            "x": 0,
+            "y": 0
           },
           "rotate": -25,
           "scale": {
@@ -625,6 +697,18 @@
             "y": 0.3175
           },
           "rotate": -15,
+          "scale": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "part": "Torso/Lower",
+          "move": {
+            "x": 0,
+            "y": 0
+          },
+          "rotate": -12,
           "scale": {
             "x": 0,
             "y": 0

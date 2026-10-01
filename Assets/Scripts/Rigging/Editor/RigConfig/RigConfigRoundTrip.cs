@@ -73,6 +73,9 @@ namespace RedMagic.Rigging.EditorTools
             finally
             {
                 AssetDatabase.DeleteAsset(TempFolder);
+
+                // El import de un jefe también deja sus visuales por jefe (Fx/Bosses/<Nombre>_RoundTrip).
+                AssetDatabase.DeleteAsset("Assets/Prefabs/Fx/Bosses/BossIce2_RoundTrip");
             }
 
             sb.Insert(0, failures == 0 ? "IDA Y VUELTA OK\n" : $"IDA Y VUELTA CON FALLOS ({failures})\n");

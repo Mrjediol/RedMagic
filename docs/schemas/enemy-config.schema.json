@@ -264,6 +264,29 @@
         "builtInAttack": { "type": "boolean", "default": true, "$comment": "EnemyTuning.builtInAttack. The built-in attack (melee / shot / explosion) also enters the draw. False = attacks only with the deck. Ignored with an empty deck: the built-in one always fires." },
         "builtInWeight": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.builtInWeight, [Min(0.01f)]. Weight of the built-in attack in the draw, against each card's own 'weight'." },
 
+        "defences": {
+          "type": "array",
+          "description": "Defensive moves: when (target near / on hit / low health) and how it gets away (dash, hop back, strafe).",
+          "$comment": "EnemyTuning.defences (EnemyDefence). Read by EnemyDeckImporter.ReadDefences and, like the deck, REWRITTEN ON EVERY IMPORT when the key is present (absent = the prefab keeps its own; [] = none). Ignored by a Static enemy (it never moves). The motion is DefenceMotion (generic); EnemyBrain runs it in its Evading state. 'gesture' names a RigGesture / Animator state held while it moves (its windup pose, effects and sprites).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "trigger": { "enum": ["TargetNear", "OnHit", "LowHealth"], "default": "TargetNear" },
+              "distance": { "type": "number", "minimum": 0, "default": 2.5, "$comment": "TargetNear: the target is closer than this." },
+              "healthFraction": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.35, "$comment": "LowHealth: once per life when health drops to this fraction." },
+              "chance": { "type": "number", "minimum": 0, "maximum": 1, "default": 1 },
+              "cooldown": { "type": "number", "minimum": 0, "default": 3 },
+              "move": { "enum": ["DashAway", "HopBack", "Strafe"], "default": "DashAway", "$comment": "Strafe is sideways for flyers; a ground enemy dashes away instead." },
+              "moveDistance": { "type": "number", "minimum": 0, "default": 3 },
+              "moveDuration": { "type": "number", "minimum": 0.05, "default": 0.3, "$comment": "A ground HopBack lasts its jump instead (from hopHeight and gravity)." },
+              "hopHeight": { "type": "number", "minimum": 0, "default": 1.2 },
+              "gesture": { "type": "string", "default": "" },
+              "anticipation": { "type": "number", "minimum": 0, "default": 0.12, "$comment": "Seconds standing still with the gesture on before moving: the tell." }
+            }
+          }
+        },
+
         "meleeHitboxSize": { "$ref": "_shared.schema.json#/definitions/vector2", "default": { "x": 1.2, "y": 1 }, "$comment": "EnemyTuning.meleeHitboxSize, world units. Read by EnemyAttack.Strike -> AbilityHit.DamageBox." },
         "meleeHitboxOffset": { "$ref": "_shared.schema.json#/definitions/vector2", "default": { "x": 0.8, "y": 0.5 }, "$comment": "EnemyTuning.meleeHitboxOffset. X is mirrored by facing, so the box goes where the swing points rather than away from the body." },
 

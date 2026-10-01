@@ -321,3 +321,30 @@ there is no "hide this part in this state".
       never does it. A sleeper does not do it asleep.
 - [ ] ES26 · Tune "Cada (s)" and "Probabilidad" to taste and tell me the defaults you want (now 4 s, 0.6).
 - [ ] ES27 · A boss with an idle gesture: it plays between attacks while standing still — wanted or not?
+
+---
+
+## Enemy Studio S5 — defensive moves (web + Unity)
+
+**What was added**
+- Behaviour form ▸ **Defensa**: "＋ Añadir movimiento defensivo". Each one: *when* (you get closer than X / it is
+  hit / it is low on health), *how* (shoots backwards, hops back, sidesteps), and the gesture it holds while it
+  moves; folded: chance, cooldown, distance, duration, hop height, tell before moving.
+- Unity: `EnemyStats` ▸ group "Defensa"; the enemy enters a new state while it gets away, then goes back to
+  chasing / attacking. Sound slot "Evade" in the Sounds tab. Works on sprite-sheet enemies too.
+- Already verified in Play by Claude (frame stepping): the dash travels its distance and decelerates, the held
+  gesture and the alert sprite show, the enemy resumes afterwards; idle gestures do not disturb the brain.
+
+**Tests** (feel)
+- [ ] ES28 · A ranged flyer with "se acerca a menos de 3 → sale disparado": get close: short tell, dash away, then
+      it fights again. Does it read as a dodge? Tune distance / duration / tell and tell me better defaults.
+- [ ] ES29 · "Al recibir un golpe" with chance 0.5 + "Salto hacia atrás" on a ground enemy: about half the hits it
+      hops back in an arc and lands; it never hops off a ledge; a hit mid-attack does not cancel the attack.
+- [ ] ES30 · "Poca vida": happens once per life.
+- [ ] ES31 · With a gesture that has a looping effect "al empezar" in Carga (a trail): the trail shows during
+      the dash and stops at the end.
+- [ ] ES32 · Assign the "Evade" sound; it plays at the start of the move.
+- [ ] ES33 · Remove every defence in the web, re-export, reimport (Conservarlo): it no longer dodges.
+
+**Known limits of S5**: a walking enemy cannot sidestep (2D side view): "De lado" dashes away; bosses have no
+defensive moves (their movement is the Boss Creator's); it never interrupts its own attack to dodge.

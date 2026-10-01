@@ -40,6 +40,7 @@ namespace RedMagic.Enemies
             if (stats == null) return;
             if (stats.Tuning.Moves) into.Add(SoundTrigger.OnMove);
             if (stats.Tuning.Sleeps) into.Add(SoundTrigger.OnWake);
+            if (stats.Tuning.Moves && stats.Tuning.defences != null && stats.Tuning.defences.Count > 0) into.Add(SoundTrigger.OnEvade);
         }
 
         private float _moveSoundTimer;
@@ -54,6 +55,9 @@ namespace RedMagic.Enemies
             Waking,
             Returning,
             Dead,
+
+            /// <summary>Un movimiento defensivo en curso (<see cref="EnemyDefence"/>): aviso y desplazamiento.</summary>
+            Evading,
         }
 
         private EnemyStats _stats;
@@ -73,6 +77,20 @@ namespace RedMagic.Enemies
         private float _loseInterestTimer;
         private bool _retreating;
         private bool _retreatBlocked;
+
+        // Movimiento defensivo en curso (EnemyTuning.defences): cuál, por dónde va (negativo = aún en
+        // el aviso), cuánto dura, hacia dónde, y el enfriamiento de cada uno.
+        private EnemyDefence _evade;
+        private int _evadeIndex;
+        private float _evadeTime, _evadeDuration;
+        private Vector2 _evadeAway;
+        private int _evadeSide;
+        private bool _evadeHopped;
+        private float[] _defenceCooldowns = System.Array.Empty<float>();
+        private bool[] _lowHealthFired = System.Array.Empty<bool>();
+
+        /// <summary>Segundos hasta volver a tirar el dado tras un intento fallido (para no tirar cada frame).</summary>
+        private const float DefenceRetry = 1f;
 
         /// <summary>Dormido: quieto en reposo hasta detectar (ver <see cref="EnemyTuning.sleepsUntilDetected"/>).</summary>
         private bool _asleep;
@@ -136,6 +154,10 @@ namespace RedMagic.Enemies
             _retreating = false;
             _retreatBlocked = false;
             _asleep = T.Sleeps;
+            _evade = null;
+            int defences = T.defences != null ? T.defences.Count : 0;
+            _defenceCooldowns = new float[defences];
+            _lowHealthFired = new bool[defences];
             _home = transform.position;
             _pendingSleepPose = _asleep;
 
@@ -183,12 +205,15 @@ namespace RedMagic.Enemies
 
             if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
             if (_contactTimer > 0f) _contactTimer -= Time.deltaTime;
+            for (int i = 0; i < _defenceCooldowns.Length; i++)
+                if (_defenceCooldowns[i] > 0f) _defenceCooldowns[i] -= Time.deltaTime;
 
             if (Current == State.Dead || !GameStateManager.CanPlayerAct) return;
 
             // Un ataque en curso no se interrumpe: manda la animación hasta que avise de que acabó.
             // Despertarse tampoco: es el aviso de que viene, y cortarlo lo hace ilegible.
-            if (Current is State.Attacking or State.Waking) return;
+            // Apartarse tampoco: se acaba solo (ver EvadeStep).
+            if (Current is State.Attacking or State.Waking or State.Evading) return;
 
             var target = ResolveTarget();
             if (target == null)
@@ -227,6 +252,10 @@ namespace RedMagic.Enemies
                 Disengage();
                 return;
             }
+
+            // Movimiento defensivo por cercanía: antes que retroceder o atacar — es justo la respuesta a
+            // que el objetivo se le eche encima.
+            if (TryDefend(DefenceTrigger.TargetNear, distance)) return;
 
             // Retroceder gana al ataque a propósito: un enemigo a distancia con el jugador encima
             // tiene que apartarse, no disparar a bocajarro. Es lo que lo hace sentir "a distancia".
@@ -359,6 +388,10 @@ namespace RedMagic.Enemies
                 case State.Attacking:
                     if (T.rootedWhileAttacking) Stop();
                     else MoveToward(Target(), T.moveSpeed);
+                    break;
+
+                case State.Evading:
+                    EvadeStep();
                     break;
 
                 case State.Waking:
@@ -529,8 +562,9 @@ namespace RedMagic.Enemies
             if (_animation != null)
             {
                 _animation.SetMoving(next is State.Approach or State.Retreat or State.Returning);
-                // Con objetivo: lo persigue, se retira, ataca o enfría. Sin él: reposo, volver a su sitio, muerto.
-                _animation.SetAlert(next is State.Approach or State.Retreat or State.Attacking or State.Cooldown or State.Waking);
+                // Con objetivo: lo persigue, se retira, ataca, enfría o se aparta. Sin él: reposo, volver a su sitio, muerto.
+                _animation.SetAlert(next is State.Approach or State.Retreat or State.Attacking or State.Cooldown
+                                        or State.Waking or State.Evading);
             }
         }
 
@@ -613,9 +647,140 @@ namespace RedMagic.Enemies
             else OnAttackFinished();
         }
 
+        // ============================================================ movimientos defensivos
+
+        /// <summary>
+        /// ¿Toca apartarse por <paramref name="trigger"/>? Recorre <see cref="EnemyTuning.defences"/> y
+        /// lanza el primero que cumpla su condición, esté fuera de enfriamiento y saque su probabilidad.
+        /// Un intento fallido espera <see cref="DefenceRetry"/> antes de volver a tirar. Nunca corta un
+        /// ataque, un despertar ni otra esquiva; dormido o sin objetivo no hay de qué apartarse.
+        /// </summary>
+        private bool TryDefend(DefenceTrigger trigger, float distance = float.MaxValue)
+        {
+            var list = T.defences;
+            if (list == null || list.Count == 0 || !T.Moves || _asleep || _target == null) return false;
+            if (Current is State.Dead or State.Attacking or State.Waking or State.Evading) return false;
+            if (_defenceCooldowns.Length != list.Count) return false;   // la lista cambió en caliente: al reactivarse
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var d = list[i];
+                if (d == null || d.trigger != trigger || _defenceCooldowns[i] > 0f) continue;
+
+                switch (trigger)
+                {
+                    case DefenceTrigger.TargetNear:
+                        if (distance >= d.distance) continue;
+                        break;
+
+                    case DefenceTrigger.LowHealth:
+                        if (_lowHealthFired[i] || _health == null || _health.Normalized > d.healthFraction) continue;
+                        _lowHealthFired[i] = true;   // una vez por vida, salga o no el dado
+                        break;
+                }
+
+                if (Random.value > d.chance)
+                {
+                    _defenceCooldowns[i] = Mathf.Min(DefenceRetry, Mathf.Max(0.1f, d.cooldown));
+                    continue;
+                }
+
+                if (BeginEvade(d, i)) return true;
+            }
+
+            return false;
+        }
+
+        private bool BeginEvade(EnemyDefence d, int index)
+        {
+            Vector2 toTarget = (Vector2)_target.position - (Vector2)transform.position;
+            Vector2 away = T.Flies ? -toTarget : new Vector2(-toTarget.x, 0f);
+            away = away.sqrMagnitude > 0.0001f ? away.normalized : Vector2.left;
+
+            // Uno de suelo no se tira por un borde: si detrás no hay suelo, no se aparta.
+            if (!T.Flies && !CanAdvance(away.x >= 0f ? 1 : -1))
+            {
+                _defenceCooldowns[index] = DefenceRetry;
+                return false;
+            }
+
+            _evade = d;
+            _evadeIndex = index;
+            _evadeAway = away;
+            _evadeSide = Random.value < 0.5f ? -1 : 1;
+            _evadeHopped = false;
+            _evadeTime = -Mathf.Max(0f, d.anticipation);
+            _evadeDuration = DefenceMotion.Duration(d, T.Flies, Mathf.Abs(Physics2D.gravity.y) * _body.gravityScale);
+            _defenceCooldowns[index] = d.cooldown + d.anticipation + _evadeDuration;
+
+            Enter(State.Evading);
+            Stop();
+            FaceTowards(toTarget);   // se aparta sin darle la espalda
+
+            // La pose se mantiene mientras dura (con sus efectos y sprites) y no avisa de ningún ataque.
+            if (_animation != null && !string.IsNullOrWhiteSpace(d.gesture)) _animation.Hold(d.gesture);
+            SoundTriggered?.Invoke(SoundTrigger.OnEvade);
+            return true;
+        }
+
+        /// <summary>Un paso de física de la esquiva: el aviso quieto, luego el desplazamiento de <see cref="DefenceMotion"/>.</summary>
+        private void EvadeStep()
+        {
+            if (_evade == null) { EndEvade(); return; }
+
+            if (_evadeTime < 0f)
+            {
+                Stop();
+                _evadeTime += Time.fixedDeltaTime;
+                return;
+            }
+
+            float k = _evadeTime / _evadeDuration;
+            if (k >= 1f) { EndEvade(); return; }
+
+            Vector2 velocity = DefenceMotion.Velocity(_evade, k, _evadeDuration, _evadeAway, T.Flies, _evadeSide)
+                               * SlowStatus.SpeedScale(this);
+
+            if (T.Flies)
+            {
+                _body.linearVelocity = velocity;
+            }
+            else if (_evade.move == DefenceMove.HopBack)
+            {
+                // El impulso una vez; después la X la pone la esquiva y la Y la física (cae solo).
+                float y = _body.linearVelocity.y;
+                if (!_evadeHopped)
+                {
+                    _evadeHopped = true;
+                    y = DefenceMotion.HopImpulse(_evade.hopHeight, Mathf.Abs(Physics2D.gravity.y) * _body.gravityScale);
+                }
+
+                _body.linearVelocity = new Vector2(velocity.x, y);
+            }
+            else
+            {
+                int direction = velocity.x >= 0f ? 1 : -1;
+                if (!CanAdvance(direction)) { EndEvade(); return; }   // se acaba el suelo: hasta aquí
+                _body.linearVelocity = GroundMotion.AlongSlope(_ground, velocity.x, _body.linearVelocity);
+            }
+
+            _evadeTime += Time.fixedDeltaTime;
+        }
+
+        private void EndEvade()
+        {
+            bool hadGesture = _evade != null && !string.IsNullOrWhiteSpace(_evade.gesture);
+            _evade = null;
+            if (Current != State.Evading) return;
+
+            if (_animation != null && hadGesture) _animation.ReturnToRest();
+            Stop();
+            Enter(State.Idle);   // el siguiente Update decide: perseguir, atacar, retirarse
+        }
+
         private void OnAttackFinished()
         {
-            if (Current == State.Dead) return;
+            if (Current is State.Dead or State.Evading) return;
 
             _cooldownTimer = T.attackCooldown;
             Enter(State.Cooldown);
@@ -679,6 +844,11 @@ namespace RedMagic.Enemies
             // Un golpe despierta a un dormilón aunque quien dispara esté fuera de su detección.
             if (_asleep && _health != null && !_health.IsDead)
                 BeginWake(_target != null ? (Vector2)(_target.position - transform.position) : Vector2.zero);
+            else if (_health != null && !_health.IsDead)
+            {
+                // Reacciones defensivas al golpe: primero la de poca vida (una sola vez), luego la de "al recibir".
+                if (!TryDefend(DefenceTrigger.LowHealth)) TryDefend(DefenceTrigger.OnHit);
+            }
         }
 
         private void OnCollisionStay2D(Collision2D collision)
@@ -696,6 +866,7 @@ namespace RedMagic.Enemies
 
         private void OnDied()
         {
+            _evade = null;
             Current = State.Dead;
             Stop();
             if (_animation != null) _animation.PlayDeath();

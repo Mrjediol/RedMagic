@@ -21,7 +21,7 @@ meant to be edited by hand.**
   think when creating an enemy — except `Static`, which takes a separate `staticAttack`
   (`Melee`/`Ranged`) since a turret can be either.
 - **`EnemyBrain`** — the state machine: `Idle → Approach → Attacking → Cooldown → Idle`, plus
-  `Retreat` and `Dead`. `Static` skips detection entirely: it waits in idle and attacks the moment
+  `Retreat`, `Evading` (defensive moves, below) and `Dead`. `Static` skips detection entirely: it waits in idle and attacks the moment
   the target is inside `attackRange`. Ground movement keeps the ledge probe; **flyers steer at
   nothing — they go straight at the target because terrain no longer exists for them** (see
   `GroundMotion` below; the old whisker-raycast avoidance was deleted along with
@@ -136,6 +136,23 @@ meant to be edited by hand.**
     `Assets/ScriptableObjects/EnemyAttacks/<Enemy>/EnemyAttack_<Enemy>_<id>.asset`, art prefabs in
     `Assets/Prefabs/Fx/Enemies/<Enemy>/`. Unlike the rest of the tuning, **the deck is rewritten on
     every import** (it is authored in the web, like a boss's attacks).
+- **Defensive moves** (`EnemyTuning.defences`, a list of `EnemyDefence` — `EnemyDefence.cs`). Data: a
+  **trigger** (`TargetNear` + `distance`, `OnHit`, `LowHealth` + `healthFraction`, once per life), `chance`,
+  `cooldown`, a **move** (`DashAway`, `HopBack` + `hopHeight`, `Strafe`), `moveDistance` / `moveDuration`, a
+  `gesture` and `anticipation`.
+  - **The motion is generic**: `DefenceMotion` (static, no brain / animation knowledge) gives the duration
+    and the velocity for an instant — a burst that decelerates and integrates to exactly `moveDistance`; a
+    ground `HopBack` is a real jump (impulse from `hopHeight`, lasts until it lands), a flyer draws the arc;
+    `Strafe` is perpendicular for flyers and falls back to dashing away on the ground.
+  - **The brain runs it**: `EnemyBrain.TryDefend` (near: in `Update`, before retreat / attack; hit and low
+    health: in `OnDamaged`) → state **`Evading`**: `anticipation` seconds still, then `EvadeStep` writes the
+    velocity each physics step, then back to `Idle` for the next decision. It never interrupts an attack, a
+    wake or another evade; a failed roll waits 1 s before rolling again; a ground enemy does not start (or
+    continue) over a ledge (`CanAdvance`); knockback pauses it; `Static` enemies ignore the list.
+  - **Body**: `EnemyAnimation.Hold(gesture)` while it lasts (the gesture's windup pose, its `at = 0` effects
+    and its sprites — never an attack event), `ReturnToRest` at the end. Sound: `SoundTrigger.OnEvade`.
+  - **Pipeline**: `tuning.defences` in enemy-config, read by `EnemyDeckImporter.ReadDefences` and, like the
+    deck, **rewritten on every import** when present. Web: Enemy Creator / Studio step 4 ▸ *Defensa*.
 - `EnemyController` (`Assets/Scripts/Gameplay/`) is the **older** system, still used by
   hand-built enemies and boss adds (`SummonAddsAttack`, `RunManager`, `WorldSceneGenerator`), so it
   stays. `EnemyFactory` strips it (and `RangedAttack`) from anything it generates — both write

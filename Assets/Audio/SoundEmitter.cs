@@ -30,7 +30,8 @@ namespace RedMagic.Audio
         OnWake = 16,         // EnemyBrain: un dormilón despierta
         OnHeal = 17,         // Health (jugador): recupera vida
         OnLowHealth = 18,    // Health (jugador): baja del umbral de vida baja
-        OnVulnerable = 19    // BossController: abre una ventana de castigo ("¡EXPUESTO!")
+        OnVulnerable = 19,   // BossController: abre una ventana de castigo ("¡EXPUESTO!")
+        OnEvade = 20         // EnemyBrain: empieza un movimiento defensivo (esquiva, salto atrás)
     }
 
     /// <summary>

@@ -54,9 +54,21 @@ namespace RedMagic.Pipeline.EditorTools
             /// </summary>
             public ProjectileSpec Projectile;
 
+            /// <summary>
+            /// Los movimientos defensivos (<c>tuning.defences</c>), o null si el config no trae la clave.
+            /// Como la baraja, se escriben en cada import: se editan en la web.
+            /// </summary>
+            public List<EnemyDefence> Defences;
+
             public void ApplyTo(EnemyTuning tuning)
             {
                 if (Projectile != null) tuning.projectile = Projectile;
+                if (Defences != null)
+                {
+                    tuning.defences = new List<EnemyDefence>();
+                    foreach (var d in Defences) tuning.defences.Add(d.Clone());
+                }
+
                 if (!HasDeck) return;
 
                 tuning.attacks = new List<EnemyDeckEntry>();
@@ -77,7 +89,8 @@ namespace RedMagic.Pipeline.EditorTools
             var tuningJson = root["tuning"] as JObject;
             var projectileToken = tuningJson?["projectile"];
             bool hasDeck = tuningJson?["attacks"] is JArray;
-            if (!hasDeck && projectileToken == null) return null;
+            var defencesJson = tuningJson?["defences"] as JArray;
+            if (!hasDeck && projectileToken == null && defencesJson == null) return null;
             var deckJson = tuningJson["attacks"] as JArray ?? new JArray();
 
             var deck = new Deck
@@ -88,6 +101,7 @@ namespace RedMagic.Pipeline.EditorTools
                     : null,
                 BuiltInAttack = tuningJson.Value<bool?>("builtInAttack") ?? true,
                 BuiltInWeight = Mathf.Max(0.01f, tuningJson.Value<float?>("builtInWeight") ?? 1f),
+                Defences = defencesJson != null ? ReadDefences(defencesJson, enemyName) : null,
             };
 
             // --- los ataques que define el config (los que apuntan a un asset existente no crean nada).
@@ -173,6 +187,32 @@ namespace RedMagic.Pipeline.EditorTools
 
             AssetDatabase.SaveAssets();
             return deck;
+        }
+
+        /// <summary><c>tuning.defences</c>: cada entrada con los defaults de <see cref="EnemyDefence"/> para lo que falte.</summary>
+        public static List<EnemyDefence> ReadDefences(JArray array, string enemyName)
+        {
+            var list = new List<EnemyDefence>();
+            for (int i = 0; i < array.Count; i++)
+            {
+                string ctx = $"{enemyName}.tuning.defences[{i}]";
+                var json = ConfigJson.AsObject(array[i], ctx);
+                var d = new EnemyDefence();
+                if (json["trigger"] != null) d.trigger = ConfigJson.ParseEnum<DefenceTrigger>(json["trigger"], $"{ctx}.trigger");
+                if (json["move"] != null) d.move = ConfigJson.ParseEnum<DefenceMove>(json["move"], $"{ctx}.move");
+                d.distance = Mathf.Max(0f, json.Value<float?>("distance") ?? d.distance);
+                d.healthFraction = Mathf.Clamp01(json.Value<float?>("healthFraction") ?? d.healthFraction);
+                d.chance = Mathf.Clamp01(json.Value<float?>("chance") ?? d.chance);
+                d.cooldown = Mathf.Max(0f, json.Value<float?>("cooldown") ?? d.cooldown);
+                d.moveDistance = Mathf.Max(0f, json.Value<float?>("moveDistance") ?? d.moveDistance);
+                d.moveDuration = Mathf.Max(0.05f, json.Value<float?>("moveDuration") ?? d.moveDuration);
+                d.hopHeight = Mathf.Max(0f, json.Value<float?>("hopHeight") ?? d.hopHeight);
+                d.gesture = json.Value<string>("gesture") ?? "";
+                d.anticipation = Mathf.Max(0f, json.Value<float?>("anticipation") ?? d.anticipation);
+                list.Add(d);
+            }
+
+            return list;
         }
 
         /// <summary>Escribe la baraja en el EnemyStats de un prefab ya generado, y le pone quien lance sus ataques.</summary>

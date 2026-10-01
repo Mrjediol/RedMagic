@@ -68,9 +68,10 @@ export function buildEnemyExport(state, ctx = {}) {
   const doc = baseExport(state);
   const deck = state.deck || [];
   const variants = state.builtInVariants || [];
+  const defenceNotes = applyDefences(doc, state, ctx);
 
   // No deck = exactly the document this form always exported: the classic import is untouched.
-  if (deck.length === 0 && variants.length === 0 && !state.deckTouched) return { doc, art: [], problems: [], notes: [] };
+  if (deck.length === 0 && variants.length === 0 && !state.deckTouched) return { doc, art: [], problems: [], notes: defenceNotes };
 
   const ex = buildAttacksExport(deck, ctx.catalog || null, ctx.entriesById || new Map(),
     state.attackArt || {}, ctx.gestureNames ?? null);
@@ -97,7 +98,7 @@ export function buildEnemyExport(state, ctx = {}) {
   if (Object.keys(ex.attacks).length) doc.attacks = ex.attacks;
   if (Object.keys(ex.artAssets).length) doc.artAssets = ex.artAssets;
 
-  const notes = [...ex.notes];
+  const notes = [...ex.notes, ...defenceNotes];
   variants.forEach((v, i) => {
     if (!(v.gesture || '').trim()) notes.push(`Variante ${i + 1} del ataque propio: sin gesto, sale igual que el ataque normal.`);
     else if (ctx.gestureNames && !ctx.gestureNames.includes(v.gesture.trim()))
@@ -107,6 +108,36 @@ export function buildEnemyExport(state, ctx = {}) {
   if (!doc.tuning.builtInAttack && deck.length === 0) notes.push('Sin baraja, el ataque propio sale siempre (aunque esté desmarcado).');
 
   return { doc, art: ex.art, problems: ex.problems, notes };
+}
+
+/**
+ * `tuning.defences`: written when there are any, or when the list was edited (an empty one removes
+ * them in Unity). An enemy that never had any exports exactly the old document.
+ */
+function applyDefences(doc, state, ctx) {
+  const list = state.defences || [];
+  const notes = [];
+  if (!list.length && !state.defencesTouched) return notes;
+  const num = (v, fallback, min = 0) => (typeof v === 'number' && !Number.isNaN(v) ? Math.max(min, v) : fallback);
+  doc.tuning.defences = list.map((d) => ({
+    trigger: d.trigger || 'TargetNear',
+    distance: num(d.distance, 2.5),
+    healthFraction: Math.min(1, num(d.healthFraction, 0.35)),
+    chance: Math.min(1, num(d.chance, 1)),
+    cooldown: num(d.cooldown, 3),
+    move: d.move || 'DashAway',
+    moveDistance: num(d.moveDistance, 3),
+    moveDuration: num(d.moveDuration, 0.3, 0.05),
+    hopHeight: num(d.hopHeight, 1.2),
+    gesture: (d.gesture || '').trim(),
+    anticipation: num(d.anticipation, 0.12),
+  }));
+  if (list.length && state.tuning.archetype === 'Static') notes.push('Defensa: un enemigo Static no se desplaza, sus movimientos defensivos se ignoran.');
+  list.forEach((d, i) => {
+    const g = (d.gesture || '').trim();
+    if (g && ctx.gestureNames && !ctx.gestureNames.includes(g)) notes.push(`Defensa ${i + 1}: el gesto "${g}" no existe en el cuerpo → se aparta sin gesto.`);
+  });
+  return notes;
 }
 
 function baseExport(state) {

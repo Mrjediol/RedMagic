@@ -170,7 +170,18 @@ export function createDefaultEnemyConfig() {
     builtInVariants: [],
     attackArt: {},
     deckTouched: false,
+    // Defensive moves (EnemyTuning.defences): [{ trigger, distance, healthFraction, chance, cooldown, move,
+    // moveDistance, moveDuration, hopHeight, gesture, anticipation }]. defencesTouched = edited (or came with a
+    // saved config), so an EMPTY list is still exported: that is what removes them in Unity.
+    defences: [],
+    defencesTouched: false,
   };
+}
+
+/** A new defensive move with EnemyDefence's own defaults. */
+export function createDefence() {
+  return { trigger: 'TargetNear', distance: 2.5, healthFraction: 0.35, chance: 1, cooldown: 3, move: 'DashAway',
+    moveDistance: 3, moveDuration: 0.3, hopHeight: 1.2, gesture: '', anticipation: 0.12 };
 }
 
 /** ProjectileSpec.facingAxis values, in schema order — the dropdown options of both creators. */

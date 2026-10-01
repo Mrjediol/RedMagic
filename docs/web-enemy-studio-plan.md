@@ -1,6 +1,6 @@
 # Plan — Enemy Studio: one web flow from parts to a finished enemy
 
-Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Built so far: S1–S4** (see Progress).
+Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Built so far: S1–S5** (see Progress).
 Goal, in the user's words: import the parts of an enemy, build body and gestures, save it as a
 **template**, create projectile / VFX effects in the VFX tab, and **attach those effects anywhere
 on the enemy** — plus defensive moves, idle gestures, and per-state sprites — in one comfortable
@@ -148,7 +148,14 @@ Order rationale: S1 gives the workflow shell the user asked for; S2 is the most 
   interval, chance, windup) + `RigDriverCode.TickIdle`, which plays them silently (no attack events)
   only while resting; `idleGestures` block in rig-config; web: a checkbox per gesture + the numbers +
   "▶ Probar uno". Checked: compile, round trip, headless 121. Tests ES24… .
-- **Next: S5** (defensive moves).
+- **S5 — done (2026-10-01, same branch).** Defensive moves: `EnemyTuning.defences` (trigger near / on hit /
+  low health, chance, cooldown; move dash away / hop back / strafe; gesture + anticipation), the generic
+  `DefenceMotion`, the brain's `Evading` state, `SoundTrigger.OnEvade`, `tuning.defences` in enemy-config
+  (rewritten on every import), web section *Defensa* in the behaviour form. Works for sprite-sheet
+  enemies too (the tuning is shared). Checked: compile, round trip, headless 129, and **in Play by
+  stepping**: an idle gesture plays and ends without the brain leaving Idle; near the player the alert
+  sprite shows, the enemy holds the gesture, dashes exactly its distance decelerating and resumes.
+- **Next: S6** (polish: retire the two old tabs, one export, docs, templates gallery).
 
 ## Decisions
 - Template granularity (taken at S1): saved together (body + gestures + behaviour), each optional

@@ -595,6 +595,14 @@ namespace RedMagic.Rigging.EditorTools
 
                     if (array.Count > 0) token = array;
                 }
+                else if (value is System.Collections.Generic.List<Enemies.EnemyDefence> defences)
+                {
+                    // Movimientos defensivos: siempre la lista (vacía = no tiene), como la lee EnemyDeckImporter.
+                    var array = new JArray();
+                    foreach (var d in defences)
+                        if (d != null) array.Add(Fields(d));
+                    token = array;
+                }
                 else if (ft.IsGenericType) continue;   // otras listas: no son parte del EnemyConfig
                 else if (typeof(Object).IsAssignableFrom(ft))
                 {

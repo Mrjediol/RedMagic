@@ -20,6 +20,7 @@
 // form: adoptConfig() writes the state and every bound widget follows (bind() / syncers).
 
 import * as F from './enemy-form-fields.js';
+import { createDefence } from './enemy-defaults.js';
 import { createDefaultEnemyConfig, createDefaultProjectileSpec, PROJECTILE_AIMING_FIELDS } from './enemy-defaults.js';
 import { buildEnemyExport } from './enemy-export.js';
 import { createAttackEditor } from './attack-cards.js';
@@ -697,6 +698,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
   /** The body's gestures changed (another art picked): refill the variants' gesture dropdowns. */
   function refreshVariantGestures() {
+    renderDefences();
     variantsRoot.querySelectorAll('select[data-variant-gesture]').forEach((s) => s.refill && s.refill());
   }
 
@@ -815,6 +817,99 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     gestureNames: linkedEntry() ? bodyGestureNames() : null,
   });
 
+  // ============================================================ defensa (movimientos defensivos)
+
+  const defenceSection = document.createElement('div');
+  defenceSection.className = 'efSection';
+  defenceSection.innerHTML = '<h2>Defensa</h2>';
+  const defenceIntro = document.createElement('p');
+  defenceIntro.className = 'efHint';
+  defenceIntro.textContent = 'Cómo se aparta y cuándo: si te acercas demasiado, al recibir un golpe o con poca vida. '
+    + 'Nunca corta un ataque ya lanzado. Sin ninguno, no esquiva.';
+  defenceSection.appendChild(defenceIntro);
+  const defencesRoot = document.createElement('div');
+  defenceSection.appendChild(defencesRoot);
+
+  const DEFENCE_TRIGGERS = [
+    { value: 'TargetNear', label: 'Si el jugador se acerca a menos de…' },
+    { value: 'OnHit', label: 'Al recibir un golpe' },
+    { value: 'LowHealth', label: 'Al quedarle poca vida (una vez)' },
+  ];
+  const DEFENCE_MOVES = [
+    { value: 'DashAway', label: 'Sale disparado hacia atrás' },
+    { value: 'HopBack', label: 'Salto hacia atrás' },
+    { value: 'Strafe', label: 'De lado (voladores; en suelo = hacia atrás)' },
+  ];
+
+  function renderDefences() {
+    if (!defencesRoot) return;
+    defencesRoot.innerHTML = '';
+    const list = state.defences;
+    const touch = () => { state.defencesTouched = true; refresh(); };
+
+    list.forEach((d, index) => {
+      const card = document.createElement('div');
+      card.className = 'bcCard';
+      const head = document.createElement('div');
+      head.className = 'bcCardHead';
+      const title = document.createElement('span');
+      title.className = 'bcCardTitle';
+      title.textContent = `Defensa ${index + 1}`;
+      const del = document.createElement('button');
+      del.className = 'small danger';
+      del.textContent = '✕';
+      del.onclick = () => { list.splice(index, 1); renderDefences(); touch(); };
+      head.append(title, del);
+      card.appendChild(head);
+
+      const grid = document.createElement('div');
+      grid.className = 'bcGrid';
+      const num = (root, labelText, key, min, hint, step) => {
+        const f = F.numberField({ label: labelText, value: d[key], min, hint, step, onChange: (x) => { d[key] = x; touch(); } });
+        root.appendChild(f.row);
+      };
+      grid.appendChild(F.enumField({ label: 'Cuándo', value: d.trigger, options: DEFENCE_TRIGGERS,
+        onChange: (x) => { d.trigger = x; renderDefences(); touch(); } }).row);
+      if (d.trigger === 'TargetNear') num(grid, 'Distancia (u)', 'distance', 0, 'Más cerca que esto, se aparta.', '0.5');
+      if (d.trigger === 'LowHealth') num(grid, 'Vida (0–1)', 'healthFraction', 0, '0.35 = al bajar del 35%.', '0.05');
+      grid.appendChild(F.enumField({ label: 'Cómo', value: d.move, options: DEFENCE_MOVES,
+        onChange: (x) => { d.move = x; renderDefences(); touch(); } }).row);
+
+      const names = bodyGestureNames();
+      const opts = [{ value: '', label: names.length ? '(sin gesto)' : '(elige arriba el arte del enemigo)' },
+        ...names.map((n) => ({ value: n, label: n }))];
+      if (d.gesture && !names.includes(d.gesture)) opts.push({ value: d.gesture, label: `${d.gesture} (no existe)` });
+      grid.appendChild(F.enumField({ label: 'Gesto mientras se aparta', value: d.gesture || '', options: opts,
+        hint: 'Mantiene su pose de carga (con sus efectos y sprites) durante el movimiento.',
+        onChange: (x) => { d.gesture = x; touch(); } }).row);
+      card.appendChild(grid);
+
+      const more = document.createElement('details');
+      more.className = 'efFold';
+      const sum = document.createElement('summary');
+      sum.textContent = 'Números (probabilidad, enfriamiento, recorrido)';
+      more.appendChild(sum);
+      const moreGrid = document.createElement('div');
+      moreGrid.className = 'bcGrid';
+      num(moreGrid, 'Probabilidad (0–1)', 'chance', 0, 'De hacerlo cuando se cumple la condición.', '0.1');
+      num(moreGrid, 'Enfriamiento (s)', 'cooldown', 0, 'Hasta poder repetirlo.', '0.5');
+      num(moreGrid, 'Recorrido (u)', 'moveDistance', 0, undefined, '0.5');
+      if (d.move === 'HopBack') num(moreGrid, 'Altura del salto (u)', 'hopHeight', 0, 'En el suelo, el salto dura lo que tarde en caer.', '0.1');
+      num(moreGrid, 'Duración (s)', 'moveDuration', 0.05, d.move === 'HopBack' ? 'Sólo voladores: en el suelo manda el salto.' : undefined, '0.05');
+      num(moreGrid, 'Aviso antes de moverse (s)', 'anticipation', 0, 'Quieto, con el gesto ya puesto.', '0.05');
+      more.appendChild(moreGrid);
+      card.appendChild(more);
+      defencesRoot.appendChild(card);
+    });
+
+    const add = document.createElement('button');
+    add.className = 'small primary';
+    add.textContent = '＋ Añadir movimiento defensivo';
+    add.onclick = () => { list.push(createDefence()); state.defencesTouched = true; renderDefences(); refresh(); };
+    defencesRoot.appendChild(add);
+  }
+  renderDefences();
+
   // ============================================================ orden final: lo importante a mano
 
   // Arriba: el enemigo (nombre y cuerpo), su tipo, su proyectil y sus ataques. Debajo, plegado, el resto.
@@ -824,6 +919,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   quick.append(tipoGroup, groupEls['Ataque · a distancia']);
   formRoot.insertBefore(quick, tuningSection);
   formRoot.insertBefore(deckSection, tuningSection);
+  formRoot.insertBefore(defenceSection, tuningSection);
   formRoot.append(presenceSection, projectileArtSection);   // lo menos usado, al final y plegado
 
   // Lo de importar / generar, fuera del paso: vida y tier junto a las estadísticas.
@@ -910,7 +1006,9 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     if (!config) return;
     const fresh = createDefaultEnemyConfig();
     const t = config.tuning || {};
-    const { projectile, attacks: deckJson, ...flat } = t;
+    const { projectile, attacks: deckJson, defences: defencesJson, ...flat } = t;
+    state.defences = (Array.isArray(defencesJson) ? defencesJson : []).map((d) => ({ ...createDefence(), ...d }));
+    state.defencesTouched = Array.isArray(defencesJson);
 
     state.anchor = config.anchor || fresh.anchor;
     state.prefabFolder = config.prefabFolder || fresh.prefabFolder;
@@ -941,6 +1039,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     setProjectileMode(state.tuning.projectileMode);
     updateRangedEmphasis();
     deckArtSignature = null;
+    renderDefences();
     renderVariants();
     deckEditor.render();
   }

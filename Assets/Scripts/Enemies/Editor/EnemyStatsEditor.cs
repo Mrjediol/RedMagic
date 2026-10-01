@@ -87,6 +87,10 @@ namespace RedMagic.Enemies.EditorTools
                 case "attacks":
                     return explodes;
 
+                // Un Static no se desplaza: no puede apartarse.
+                case "defences":
+                    return !moves;
+
                 case "builtInAttack":
                 case "builtInWeight":
                     return explodes || !deck;

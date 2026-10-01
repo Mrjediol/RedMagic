@@ -245,6 +245,12 @@ namespace RedMagic.Enemies
         [Tooltip("Peso del ataque propio en el sorteo, frente al 'weight' de cada carta.")]
         [Min(0.01f)] public float builtInWeight = 1f;
 
+        [Group("Defensa (movimientos defensivos)")]
+        [Tooltip("Cómo se aparta y cuándo: el objetivo se acerca, recibe un golpe, o le queda poca vida. " +
+                 "Vacío = no esquiva. Sólo los que se mueven (un Static no se desplaza nunca). Cada uno " +
+                 "puede nombrar un gesto del cuerpo, que mantiene mientras se aparta.")]
+        public List<EnemyDefence> defences = new List<EnemyDefence>();
+
         [Group("Ataque · melé")]
         [Tooltip("Caja de golpe, en unidades de mundo, medida desde el enemigo hacia donde mira.")]
         public Vector2 meleeHitboxSize = new Vector2(1.2f, 1f);
@@ -387,6 +393,10 @@ namespace RedMagic.Enemies
             if (attacks != null)
                 foreach (var entry in attacks)
                     if (entry != null) copy.attacks.Add(entry.Clone());
+            copy.defences = new List<EnemyDefence>();
+            if (defences != null)
+                foreach (var defence in defences)
+                    if (defence != null) copy.defences.Add(defence.Clone());
             return copy;
         }
 

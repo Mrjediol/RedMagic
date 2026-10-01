@@ -87,6 +87,14 @@ returns null and nothing else runs).
   (4) Each attack asset is saved right after it is written: creating the next asset in a
   just-created folder could otherwise reload the previous one from its still-default file.
 
+## EnemyConfig defences (`tuning.defences`) — defensive moves
+
+Additive (2026-10-01). `tuning.defences[]` ↔ `EnemyTuning.defences` (`EnemyDefence`), 1:1 by field name;
+`trigger` and `move` are the C# enum member names. Read by `EnemyDeckImporter.ReadDefences` (both
+importers), **not** by `BuildTuning`: like the deck it is applied on every import when the key is present
+(`[]` removes them, an absent key keeps the prefab's). A config without the key is the same document as
+before. The rig exporter always writes the list (the two enemy fixtures gained `"defences": []`).
+
 ## Field-level mapping confirmations
 
 **EnemyConfig → `EnemyTuning`** — every serialized field maps 1:1 by name (`moveSoundInterval` was missing until the rig export needed a full round trip; now in schema + importer). The six derived

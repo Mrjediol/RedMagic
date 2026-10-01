@@ -252,6 +252,7 @@ namespace RedMagic.Audio.EditorTools
             SoundTrigger.OnHeal => "Heal",
             SoundTrigger.OnLowHealth => "Low health",
             SoundTrigger.OnVulnerable => "Vulnerable window",
+            SoundTrigger.OnEvade => "Evade",
             _ => t.ToString(),
         };
 

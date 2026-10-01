@@ -103,6 +103,18 @@ namespace RedMagic.Items
         [Tooltip("Prefab del haz (sólo armas Hitscan). Mismas reglas que projectilePrefab.")]
         public GameObject beamPrefab;
 
+        [Tooltip("Efecto de un solo uso (VfxOneShot) donde el proyectil golpea a un objetivo o al " +
+                 "terreno. Vacío = nada (como hasta ahora). Se voltea según hacia dónde volaba.")]
+        public GameObject impactVfxPrefab;
+
+        [Tooltip("Efecto de la explosión al terminar (granada). Se escala al diámetro de la explosión. " +
+                 "Vacío = el destello de código del color del arma.")]
+        public GameObject explosionVfxPrefab;
+
+        [Tooltip("Efecto en bucle en la boca mientras se carga (armas con tiempo de carga). Crece con " +
+                 "la carga hasta el tamaño del prefab. Vacío = el cuadrado de código.")]
+        public GameObject chargeVfxPrefab;
+
         [Header("Aiming")]
         [Tooltip("Rota el proyectil para que su punta (Facing Axis) mire hacia donde vuela, al salir y " +
                  "en cada paso (autoguiado, parábola). Apagado = decide el prefab (su casilla " +

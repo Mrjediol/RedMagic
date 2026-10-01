@@ -1,0 +1,31 @@
+{
+  "name": "BeamTile",
+  "preset": "beam",
+  "kind": "fx",
+  "params": {
+    "size": 96,
+    "detail": 3,
+    "core": "#ffffff",
+    "glow": "#f2ecff",
+    "accent": "#ffffff",
+    "intensity": 1,
+    "particles": 0,
+    "speed": 1,
+    "length": 1,
+    "spark": "round",
+    "pixel": 1,
+    "seed": 7,
+    "thick": 1.5,
+    "ends": "tile"
+  },
+  "frameSize": 288,
+  "density": 3,
+  "lanes": [
+    {
+      "name": "Loop",
+      "fps": 14,
+      "loop": true,
+      "frames": 6
+    }
+  ]
+}

@@ -42,7 +42,10 @@ MonoBehaviour:
     impactRadius: 0
     impactDamage: 0
     projectilePrefab: {fileID: 0}
-    beamPrefab: {fileID: 3335263575987350525, guid: da11580422c8d9445afee38f4fe7b25b, type: 3}
+    beamPrefab: {fileID: 6231635646801890061, guid: bf898744bd4dcb04ebd9e807dd42df48, type: 3}
+    impactVfxPrefab: {fileID: 0}
+    explosionVfxPrefab: {fileID: 0}
+    chargeVfxPrefab: {fileID: 4652109958439316305, guid: fb4349c13b155eb479b5e1837bf253b1, type: 3}
     faceDirection: 0
     facingAxis: 0
     aimMode: 0

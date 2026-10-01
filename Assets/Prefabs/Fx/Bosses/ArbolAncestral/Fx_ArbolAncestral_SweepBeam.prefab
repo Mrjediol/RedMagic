@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1695566571292836089}
   - component: {fileID: 5091450678124657309}
   - component: {fileID: 3225307067274392281}
+  - component: {fileID: 823277883727018545}
   m_Layer: 0
   m_Name: Fx_ArbolAncestral_SweepBeam
   m_TagString: Untagged
@@ -83,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 4
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 107a7961d6f3ed1498960c7ecf491248, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 83eb92da31a052e4c9fc47b3b088e3d6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -121,3 +122,26 @@ MonoBehaviour:
   resize: 1
   matchSorting: 1
   scaleColliderToSprite: 1
+--- !u!114 &823277883727018545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6558481039153538830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5319388704fe2a6428ead1ab05a9114b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.SpriteFlipbook
+  frames:
+  - {fileID: 21300000, guid: 83eb92da31a052e4c9fc47b3b088e3d6, type: 3}
+  - {fileID: 21300000, guid: c81cd1a4346d6904ca84661c218fc004, type: 3}
+  - {fileID: 21300000, guid: 7c26949aa80a294429800d25e0a83cf8, type: 3}
+  - {fileID: 21300000, guid: 6567911d04f3a0749a8b25d15bb29dcc, type: 3}
+  - {fileID: 21300000, guid: 758ec6eefcedd5d4abba2669d1945369, type: 3}
+  - {fileID: 21300000, guid: ae1c9af6554b6984084d2500535ff6ac, type: 3}
+  framesPerSecond: 14
+  pingPong: 0
+  randomStart: 0
+  oneShot: 0

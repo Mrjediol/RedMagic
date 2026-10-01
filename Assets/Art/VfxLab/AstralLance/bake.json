@@ -1,0 +1,35 @@
+{
+  "name": "AstralLance",
+  "preset": "needle",
+  "kind": "projectile",
+  "params": {
+    "size": 96,
+    "detail": 3,
+    "core": "#ffffff",
+    "glow": "#7fb0ff",
+    "accent": "#e0ecff",
+    "intensity": 1,
+    "particles": 4,
+    "speed": 1,
+    "length": 1,
+    "spark": "round",
+    "pixel": 1,
+    "seed": 7
+  },
+  "frameSize": 288,
+  "density": 3,
+  "lanes": [
+    {
+      "name": "Move",
+      "fps": 14,
+      "loop": true,
+      "frames": 6
+    },
+    {
+      "name": "Impact",
+      "fps": 18,
+      "loop": false,
+      "frames": 5
+    }
+  ]
+}

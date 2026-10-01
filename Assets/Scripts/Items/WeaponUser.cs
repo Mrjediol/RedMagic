@@ -86,6 +86,7 @@ namespace RedMagic.Items
         private bool _charging;
         private float _charge;
         private GameObject _chargeFx;
+        private bool _chargeFxPooled;   // sale de PrefabPool (arte del arma) y no de AbilityFx.SpawnSprite
 
         private bool _suppressingBasic;
 
@@ -242,13 +243,34 @@ namespace RedMagic.Items
         {
             _charging = false;
             _charge = 0f;
-            if (_chargeFx != null) Destroy(_chargeFx);
+            if (_chargeFx != null)
+            {
+                if (_chargeFxPooled) Core.PrefabPool.Despawn(_chargeFx);
+                else Destroy(_chargeFx);
+            }
             _chargeFx = null;
+            _chargeFxPooled = false;
         }
 
         private GameObject MakeChargeFx(WeaponDefinition weapon)
         {
             Vector2 pos = MuzzleWorld(weapon);
+
+            // Arte del arma (BaseShot ▸ Arte ▸ Charge Vfx Prefab): un bucle pooled que crece con la carga.
+            var prefab = weapon.Shot.chargeVfxPrefab;
+            if (prefab != null)
+            {
+                var pooled = Core.PrefabPool.Spawn(prefab, pos, Quaternion.identity);
+                if (pooled != null)
+                {
+                    _chargeFxPooled = true;
+                    var art = pooled.GetComponentInChildren<SpriteRenderer>();
+                    if (art != null) AbilityFx.CopySorting(art, gameObject);
+                    return pooled;
+                }
+            }
+
+            _chargeFxPooled = false;
             var fx = AbilityFx.SpawnSprite("Weapon Charge", null, pos, Vector2.one * 0.15f,
                                            new Color(weapon.Accent.r, weapon.Accent.g, weapon.Accent.b, 0.7f),
                                            0f, gameObject);
@@ -261,6 +283,14 @@ namespace RedMagic.Items
 
             float frac = Mathf.Clamp01(_charge / weapon.Shot.chargeTime);
             _chargeFx.transform.position = MuzzleWorld(weapon);
+
+            if (_chargeFxPooled)
+            {
+                // El prefab está autorizado a su tamaño de plena carga: el pool devuelve instancias
+                // con la escala del uso anterior, así que se parte siempre de la del prefab.
+                _chargeFx.transform.localScale = weapon.Shot.chargeVfxPrefab.transform.localScale * Mathf.Lerp(0.35f, 1f, frac);
+                return;
+            }
 
             var renderer = _chargeFx.GetComponent<SpriteRenderer>();
             if (renderer != null)

@@ -1,0 +1,29 @@
+{
+  "name": "RuneExplosion",
+  "preset": "explosion",
+  "kind": "fx",
+  "params": {
+    "size": 96,
+    "detail": 3,
+    "core": "#f6ffd8",
+    "glow": "#5fe04a",
+    "accent": "#d8ff9a",
+    "intensity": 1,
+    "particles": 12,
+    "speed": 1,
+    "length": 1,
+    "spark": "round",
+    "pixel": 1,
+    "seed": 7
+  },
+  "frameSize": 288,
+  "density": 3,
+  "lanes": [
+    {
+      "name": "Spawn",
+      "fps": 14,
+      "loop": false,
+      "frames": 9
+    }
+  ]
+}

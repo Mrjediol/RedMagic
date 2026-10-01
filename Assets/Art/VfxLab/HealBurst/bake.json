@@ -1,0 +1,29 @@
+{
+  "name": "HealBurst",
+  "preset": "healBurst",
+  "kind": "fx",
+  "params": {
+    "size": 96,
+    "detail": 3,
+    "core": "#ffffff",
+    "glow": "#3dea7c",
+    "accent": "#d2ffe0",
+    "intensity": 1,
+    "particles": 7,
+    "speed": 1,
+    "length": 1,
+    "spark": "round",
+    "pixel": 1,
+    "seed": 7
+  },
+  "frameSize": 288,
+  "density": 3,
+  "lanes": [
+    {
+      "name": "Spawn",
+      "fps": 12,
+      "loop": false,
+      "frames": 9
+    }
+  ]
+}

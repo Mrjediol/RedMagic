@@ -1,0 +1,29 @@
+{
+  "name": "ArcaneCharge",
+  "preset": "chargeVortex",
+  "kind": "fx",
+  "params": {
+    "size": 96,
+    "detail": 3,
+    "core": "#ffffff",
+    "glow": "#b98bff",
+    "accent": "#f0e0ff",
+    "intensity": 1,
+    "particles": 10,
+    "speed": 1,
+    "length": 1,
+    "spark": "round",
+    "pixel": 1,
+    "seed": 7
+  },
+  "frameSize": 288,
+  "density": 3,
+  "lanes": [
+    {
+      "name": "Loop",
+      "fps": 12,
+      "loop": true,
+      "frames": 8
+    }
+  ]
+}

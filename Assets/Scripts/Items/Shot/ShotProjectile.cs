@@ -402,6 +402,7 @@ namespace RedMagic.Items
                 if (_gilded && scaled > 0f) GoldMark.Mark(health);
                 if (scaled > 0f) PlayerHit.Deal(health, scaled, transform.position, 1f, HitKind.Projectile, out killed);
                 PlayWeaponSound(w => w.ImpactSound, body);
+                SpawnImpactVfx();
                 _hit.Add(health);   // aunque no entre (i-frames), no lo re-golpeamos este vuelo
 
                 // Primer impacto del disparo (Yelmo: la explosión sale aquí, en el cuerpo golpeado).
@@ -431,6 +432,7 @@ namespace RedMagic.Items
             if (((1 << other.gameObject.layer) & GroundMask) != 0)
             {
                 if (_shot.impactRadius <= 0f) PlayWeaponSound(w => w.TerrainImpactSound, transform.position);
+                SpawnImpactVfx();
                 Finish(impacted: true);
             }
         }
@@ -514,6 +516,16 @@ namespace RedMagic.Items
             RefreshColliders(!dormant);
         }
 
+        /// <summary>
+        /// El efecto de impacto del arma (BaseShot ▸ Arte ▸ Impact Vfx Prefab) donde está el proyectil,
+        /// mirando hacia donde volaba. Una granada no lo usa: su final es la explosión.
+        /// </summary>
+        private void SpawnImpactVfx()
+        {
+            if (_shot == null || _shot.impactVfxPrefab == null || _shot.impactRadius > 0f) return;
+            VfxOneShot.Spawn(_shot.impactVfxPrefab, transform.position, _direction.x < 0f ? -1 : 1);
+        }
+
         // Los sonidos de impacto son del arma que disparó (WeaponDefinition), no del proyectil: el
         // mismo prefab puede servir a varias armas.
         private void PlayWeaponSound(System.Func<WeaponDefinition, SoundCue> pick, Vector3 at)
@@ -563,6 +575,12 @@ namespace RedMagic.Items
                 var health = Buffer[i] != null ? Buffer[i].GetComponentInParent<Health>() : null;
                 if (!IsTarget(health) || !ExplodeSet.Add(health)) continue;
                 PlayerHit.Deal(health, damage, transform.position, 1f, HitKind.Projectile);
+            }
+
+            if (_shot.explosionVfxPrefab != null)
+            {
+                VfxOneShot.SpawnFitWidth(_shot.explosionVfxPrefab, transform.position, _shot.impactRadius * 2f);
+                return;
             }
 
             var tint = new Color(_shot.tint.r, _shot.tint.g, _shot.tint.b, 0.55f);

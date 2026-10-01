@@ -62,6 +62,7 @@ namespace RedMagic.Items
             // La vida viaja con las motas rojas: cada una cura su parte al LLEGAR al jugador, y la
             // primera que sube la vida suelta las verdes (LifeMotes.Drain / DrainPacket).
             Fx.LifeMotes.Sprite = t.lifeMoteSprite;
+            Fx.LifeMotes.HealVfx = t.healVfxPrefab;
             Fx.LifeMotes.Drain(kill.Position, player, t.lifestealDrainMotes, t.lifesteal2HealPerKill,
                                t.lifestealHealMotes, player.gameObject);
         }

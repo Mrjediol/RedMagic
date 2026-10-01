@@ -1,0 +1,36 @@
+{
+  "name": "Fireball",
+  "preset": "fireball",
+  "kind": "projectile",
+  "params": {
+    "size": 96,
+    "detail": 3,
+    "core": "#fff4c2",
+    "glow": "#ff7a1a",
+    "accent": "#ffd04a",
+    "intensity": 1,
+    "particles": 8,
+    "speed": 1,
+    "length": 1,
+    "spark": "round",
+    "pixel": 1,
+    "seed": 7,
+    "tail": 0.95
+  },
+  "frameSize": 288,
+  "density": 3,
+  "lanes": [
+    {
+      "name": "Move",
+      "fps": 12,
+      "loop": true,
+      "frames": 8
+    },
+    {
+      "name": "Impact",
+      "fps": 14,
+      "loop": false,
+      "frames": 8
+    }
+  ]
+}

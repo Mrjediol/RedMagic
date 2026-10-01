@@ -41,8 +41,11 @@ MonoBehaviour:
     burstInterval: 0.09
     impactRadius: 2.2
     impactDamage: 38
-    projectilePrefab: {fileID: 7329954009625756488, guid: 593c7cd80f1cb984e9f8333e647b4d54, type: 3}
+    projectilePrefab: {fileID: 133404361584157052, guid: 8fa5694e521e86f48958fc5067c5eac6, type: 3}
     beamPrefab: {fileID: 0}
+    impactVfxPrefab: {fileID: 0}
+    explosionVfxPrefab: {fileID: 7754885090528445872, guid: e2dd710516bcb9b47a5ac4800f8c39c0, type: 3}
+    chargeVfxPrefab: {fileID: 0}
     faceDirection: 0
     facingAxis: 0
     aimMode: 0

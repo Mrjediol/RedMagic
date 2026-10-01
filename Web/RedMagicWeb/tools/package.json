@@ -1,0 +1,13 @@
+{
+  "name": "redmagic-web-tools",
+  "private": true,
+  "type": "module",
+  "description": "Node-side tools of the RedMagic web app: bake VFX Lab presets and their sounds into the Unity project.",
+  "scripts": {
+    "bake-vfx": "node bake-vfx.mjs",
+    "bake-sounds": "node bake-sounds.mjs"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.60"
+  }
+}

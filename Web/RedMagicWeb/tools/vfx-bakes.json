@@ -1,0 +1,13 @@
+{
+  "$comment": "The game's own effects, baked from VFX Lab presets by bake-vfx.mjs into Assets/Art/VfxLab/<name>/. Who uses each one is VfxLabArtPack.cs (Unity). params override the preset's defaults; lanes keeps only those.",
+  "bakes": [
+    { "name": "Fireball", "preset": "fireball", "params": {} },
+    { "name": "ArcaneBurst", "preset": "arcaneMissile", "params": { "glow": "#ffc23a", "accent": "#fff3b0", "core": "#fffdf0" } },
+    { "name": "AstralLance", "preset": "needle", "params": { "glow": "#7fb0ff", "accent": "#e0ecff" } },
+    { "name": "RuneGrenade", "preset": "heavyOrb", "params": { "core": "#f4ffd8", "glow": "#4fd24a", "accent": "#d8ffb0" }, "lanes": ["Move"] },
+    { "name": "RuneExplosion", "preset": "explosion", "params": { "core": "#f6ffd8", "glow": "#5fe04a", "accent": "#d8ff9a" } },
+    { "name": "BeamTile", "preset": "beam", "params": { "ends": "tile", "thick": 1.5, "core": "#ffffff", "glow": "#f2ecff", "accent": "#ffffff", "particles": 0 }, "lanes": ["Loop"] },
+    { "name": "ArcaneCharge", "preset": "chargeVortex", "params": { "glow": "#b98bff", "accent": "#f0e0ff" }, "lanes": ["Loop"] },
+    { "name": "HealBurst", "preset": "healBurst", "params": {} }
+  ]
+}

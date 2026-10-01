@@ -1,0 +1,36 @@
+{
+  "name": "ArcaneBurst",
+  "preset": "arcaneMissile",
+  "kind": "projectile",
+  "params": {
+    "size": 96,
+    "detail": 3,
+    "core": "#fffdf0",
+    "glow": "#ffc23a",
+    "accent": "#fff3b0",
+    "intensity": 1,
+    "particles": 8,
+    "speed": 1,
+    "length": 1,
+    "spark": "round",
+    "pixel": 1,
+    "seed": 7,
+    "tail": 1.1
+  },
+  "frameSize": 288,
+  "density": 3,
+  "lanes": [
+    {
+      "name": "Move",
+      "fps": 12,
+      "loop": true,
+      "frames": 8
+    },
+    {
+      "name": "Impact",
+      "fps": 16,
+      "loop": false,
+      "frames": 7
+    }
+  ]
+}

@@ -1159,18 +1159,35 @@ function beamBand(ctx, x0, x1, half, color, alpha, soft = 0.12) {
     const v = (i + 0.5) / rows * 2 - 1;                  // −1..1 across the beam
     const a = alpha * (1 - v * v) ** 2;
     const row = ctx.createLinearGradient(x0, 0, x1, 0);
-    row.addColorStop(0, rgba(color, 0));
-    row.addColorStop(soft, rgba(color, a));
-    row.addColorStop(1 - soft, rgba(color, a));
-    row.addColorStop(1, rgba(color, 0));
-    ctx.fillStyle = row;
+    if (soft > 0) {
+      row.addColorStop(0, rgba(color, 0));
+      row.addColorStop(soft, rgba(color, a));
+      row.addColorStop(1 - soft, rgba(color, a));
+      row.addColorStop(1, rgba(color, 0));
+    }
+    ctx.fillStyle = soft > 0 ? row : rgba(color, a);
     ctx.fillRect(x0, v * half - half / rows, x1 - x0, (half / rows) * 2);
   }
 }
 
 function beam(ctx, k, p, rnd, width, alpha) {
-  const x0 = -0.62, x1 = 0.92, ox = -0.55;             // the origin (a muzzle) on the left
   const pulse = 1 + 0.12 * Math.sin(k * TAU * 2);
+  if (p.ends === 'tile') {
+    // A segment made to be STRETCHED along X by whoever draws the beam (a weapon's ray, a boss's
+    // sweep): it fills the frame edge to edge and has no origin — only what survives stretching.
+    beamBand(ctx, -1.05, 1.05, 0.42 * width * pulse, p.glow, 0.45 * alpha * p.intensity, 0);
+    beamBand(ctx, -1.05, 1.05, 0.2 * width * pulse, p.glow, 0.9 * alpha * p.intensity, 0);
+    beamBand(ctx, -1.05, 1.05, 0.1 * width, p.core, alpha, 0);
+    emit(3, k, rnd, (i, t) => {
+      ctx.save();
+      ctx.translate(-1.3 + t * 2.6, 0);
+      ctx.scale(1.2, 1);
+      glowDot(ctx, 0, 0, 0.2 * width, p.core, 0.6 * alpha);
+      ctx.restore();
+    });
+    return;
+  }
+  const x0 = -0.62, x1 = 0.92, ox = -0.55;             // the origin (a muzzle) on the left
   beamBand(ctx, x0, x1, 0.42 * width * pulse, p.glow, 0.45 * alpha * p.intensity);
   beamBand(ctx, x0, x1, 0.2 * width * pulse, p.glow, 0.9 * alpha * p.intensity);
   beamBand(ctx, x0 + 0.03, x1 - 0.03, 0.1 * width, p.core, alpha, 0.1);
@@ -1386,12 +1403,15 @@ const GROUNDS = [
     defaults: { core: '#ffffff', glow: '#a86bff', accent: '#ffb8f4', particles: 6 },
     params: [
       { key: 'thick', label: 'Grosor del haz', type: 'float', min: 0.4, max: 1.6, step: 0.05, default: 1 },
+      { key: 'ends', label: 'Extremos', type: 'enum', default: 'muzzle',
+        options: [['muzzle', 'Con origen (para colgar de un arma)'], ['tile', 'Tramo para estirar (llena el frame)']],
+        hint: '"Tramo para estirar" es lo que usan en el juego el rayo de un arma y el barrido de un jefe: lo estiran a su largo.' },
     ],
     lanes: [
       { name: 'Spawn', loop: false, fps: 16, frames: 4,
         draw(ctx, k, p, rnd) {
           beam(ctx, 0, p, rnd, p.thick * (0.15 + 0.85 * easeOut(k)), 0.5 + 0.5 * k);
-          glowDot(ctx, -0.55, 0, 0.4 * (1 - k * 0.5), p.core, 1 - k * 0.6);
+          if (p.ends !== 'tile') glowDot(ctx, -0.55, 0, 0.4 * (1 - k * 0.5), p.core, 1 - k * 0.6);
         } },
       { name: 'Loop', loop: true, fps: 14, frames: 6, draw: (ctx, k, p, rnd) => beam(ctx, k, p, rnd, p.thick, 1) },
       { name: 'End', loop: false, fps: 16, frames: 4,

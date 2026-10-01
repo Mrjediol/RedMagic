@@ -1,0 +1,29 @@
+{
+  "name": "RuneGrenade",
+  "preset": "heavyOrb",
+  "kind": "projectile",
+  "params": {
+    "size": 96,
+    "detail": 3,
+    "core": "#f4ffd8",
+    "glow": "#4fd24a",
+    "accent": "#d8ffb0",
+    "intensity": 1,
+    "particles": 6,
+    "speed": 1,
+    "length": 1,
+    "spark": "round",
+    "pixel": 1,
+    "seed": 7
+  },
+  "frameSize": 288,
+  "density": 3,
+  "lanes": [
+    {
+      "name": "Move",
+      "fps": 10,
+      "loop": true,
+      "frames": 10
+    }
+  ]
+}

@@ -58,6 +58,12 @@ namespace RedMagic.Items
         /// <summary>Prefab del haz (armas Hitscan), o null para construirlo en código.</summary>
         public GameObject beamPrefab;
 
+        /// <summary>Efecto de un solo uso al golpear (objetivo o terreno), o null. Lo heredan los hijos de un split.</summary>
+        public GameObject impactVfxPrefab;
+
+        /// <summary>Efecto de la explosión al terminar, o null para el destello de código.</summary>
+        public GameObject explosionVfxPrefab;
+
         // Collider propio del arma (ver Gameplay.ProjectileColliderShape).
         public bool overrideCollider;
         public Gameplay.ProjectileColliderType colliderType;
@@ -126,6 +132,8 @@ namespace RedMagic.Items
                 muzzleOffset = shot.muzzleOffset,
                 projectilePrefab = shot.projectilePrefab,
                 beamPrefab = shot.beamPrefab,
+                impactVfxPrefab = shot.impactVfxPrefab,
+                explosionVfxPrefab = shot.explosionVfxPrefab,
                 faceDirection = shot.faceDirection,
                 facingAxis = shot.facingAxis,
                 aimMode = shot.aimMode,

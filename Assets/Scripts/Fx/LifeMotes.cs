@@ -25,11 +25,15 @@ namespace RedMagic.Fx
         /// <summary>Sprite de las motas; null = la cruz de código.</summary>
         public static Sprite Sprite;
 
+        /// <summary>Efecto de un solo uso sobre quien recupera vida (lo expone <c>SynergyTuning</c>); null = sólo motas.</summary>
+        public static GameObject HealVfx;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void ResetStatics()
         {
             _pool = null;
             Sprite = null;
+            HealVfx = null;
         }
 
         /// <summary>
@@ -64,6 +68,7 @@ namespace RedMagic.Fx
         public static void Heal(Transform target, int count = 5, GameObject sortingReference = null)
         {
             if (target == null) return;
+            if (HealVfx != null) VfxOneShot.Spawn(HealVfx, BodyCenter(target));
             for (int i = 0; i < count; i++)
             {
                 var mote = Get(sortingReference);

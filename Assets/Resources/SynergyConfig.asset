@@ -57,6 +57,7 @@ MonoBehaviour:
     lifestealDrainMotes: 6
     lifestealHealMotes: 5
     lifeMoteSprite: {fileID: 0}
+    healVfxPrefab: {fileID: 1071764678186535048, guid: 785e854678c32714ea24b5043ffad271, type: 3}
     markDropMultiplier: 2
     markDuration: 8
     markAuraColor: {r: 1, g: 0.8, b: 0.25, a: 0.9}

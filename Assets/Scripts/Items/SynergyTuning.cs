@@ -69,6 +69,10 @@ namespace RedMagic.Items
         [Tooltip("Sprite de las motas (se tiñen rojo / verde). Vacío = cruz generada en código.")]
         public Sprite lifeMoteSprite;
 
+        [Tooltip("Efecto de un solo uso (VfxOneShot) sobre el jugador cuando SÍ recupera vida, junto a " +
+                 "las motas verdes. Vacío = sólo las motas.")]
+        public GameObject healVfxPrefab;
+
         [Header("Oro · marca de oro (la pone un proyectil dorado)")]
         [Tooltip("Botín de un enemigo que muere marcado: 2 = el doble de toda moneda.")]
         [Min(1f)] public float markDropMultiplier = 2f;

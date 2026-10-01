@@ -91,3 +91,6 @@ crashlytics-build.properties
 # Unity crash-recovery scenes (never commit)
 /[Aa]ssets/_Recovery/
 /[Aa]ssets/_Recovery.meta
+
+# Node-side web tools (Web/RedMagicWeb/tools): dependencies are installed locally, never committed
+/Web/RedMagicWeb/tools/node_modules/

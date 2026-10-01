@@ -195,7 +195,9 @@ muzzle / grip / centre guesses (normalized in the trimmed image, y from the top)
 sizes the schematic to the art, and a layer cut from the same canvas as a placed part snaps to where
 that canvas puts it. When the last required slot is filled, `fitLengths` rescales every *length*
 (sway moves, hover, recoil, gesture moves) from the template's reference `height` to the real body
-height — once (`state.template.fitted`), or again from "Reajustar amplitudes". Export: an empty
+height — once (`state.template.fitted`), or again from "Reajustar amplitudes". At that moment an
+enemy's body is also moved so its **centre sits on the origin** (the prefab root is the centre of
+the body, never the feet: ranges/detection are measured from it; toolbar "◎ Origen al centro" redoes it). Export: an empty
 optional slot is left out, an empty required one is a problem. With no behaviour saved from Enemy
 Creator, an enemy template's `behaviour` travels in the zip as `enemy-config.json`
 (`suggestedEnemyConfig`); the Enemy Creator form does not preload it.

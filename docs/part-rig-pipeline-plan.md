@@ -242,6 +242,10 @@ template in a web module), so a fourth one is data, not code.
     travels as `enemy-config.json` until Enemy Creator saves one. **Known gap:** the Enemy Creator
     form does not preload it (it never preloads a saved config), so opening it there starts from
     the form defaults — Phase D touches that form and is the place to fix it.
+  - After the user's first test (2026-10-01): caster draw order is lower → extra → casting arm →
+    torso → head → free arm (far arm behind, near arm in front), an optional "Pieza extra" slot
+    (ring, belt…) was added, and an **enemy's origin is the centre of its body** (templates are laid
+    out around it and re-centred when completed; "◎ Origen al centro" in the toolbar).
   - Simplifications vs the hand-made packs: the caster's lower part hangs from the torso (no
     separate `Base`); the sentry's stem is the stretch part itself with its pivot at the bottom (no
     `NeckPivot` wrapper — the joint is the sprite pivot); the colossus keeps an empty `Crown` node

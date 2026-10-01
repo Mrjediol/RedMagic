@@ -158,6 +158,10 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     redoBtn.onclick = redo;
     tools.append(undoBtn, redoBtn);
     renderUndoButtons();
+    const centre = el('button', 'small', '◎ Origen al centro');
+    centre.title = 'Mueve el cuerpo entero para que su centro quede en el origen (la raíz del prefab): desde ahí se miden rangos y detección.';
+    centre.onclick = () => { if (centerOrigin()) { changed(); setStatus('Origen (raíz del prefab) en el centro del cuerpo.'); } };
+    tools.appendChild(centre);
     const frame = el('button', 'small', '⌖ Encuadrar');
     frame.onclick = () => view.frame(state);
     tools.appendChild(frame);
@@ -438,7 +442,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const b = view.bounds(state);
     if (!b) return false;
     const k = fitLengths(state, b.maxY - b.minY);
-    if (!force) { fitCollider(); view.frame(state); }
+    if (!force) { if (state.kind === 'enemy') centerOrigin(); fitCollider(); view.frame(state); }
     setStatus(`Plantilla completa: amplitudes (balanceo, flotar, retroceso, gestos) ajustadas ×${Math.round(k * 100) / 100} al tamaño del dibujo${force ? '' : ' y collider ajustado'}.`);
     return true;
   }
@@ -476,6 +480,21 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     if (j < 0 || j >= state.parts.length) return;
     [state.parts[i], state.parts[j]] = [state.parts[j], state.parts[i]];
     changed();
+  }
+
+  /**
+   * Moves the whole body so its centre sits on the origin (= the prefab root). An enemy's root is
+   * the centre of its body, not its feet: ranges and detection are measured from it, and standing
+   * on the ground is the collider's job.
+   */
+  function centerOrigin() {
+    const b = view.bounds(state);
+    if (!b) return false;
+    const c = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
+    const r2 = (v) => Math.round(v * 100) / 100;
+    state.parts.forEach((p) => { if (!p.parent) p.position = { x: p.position.x - c.x, y: p.position.y - c.y }; });
+    state.collider.offset = { x: r2(state.collider.offset.x - c.x), y: r2(state.collider.offset.y - c.y) };
+    return true;
   }
 
   /** Collider = the box around every drawn part (rest pose). */

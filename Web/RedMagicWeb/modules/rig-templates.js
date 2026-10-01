@@ -20,7 +20,9 @@
 //   muzzle / grip / center   same convention: muzzle of the aim part, grip of a limb, visible centre
 //   barrel            fixed aimArtAngle (absent = computed pivot → muzzle when the slot is filled)
 //   at, size          schematic placement of the pivot in its parent and placeholder size (units of
-//                     a body `height` tall) — only how the empty checklist is drawn
+//                     a body `height` tall) — only how the empty checklist is drawn. The origin
+//                     (prefab root) is the CENTRE of an enemy's body, never its feet: ranges and
+//                     detection are measured from the root, and the ground is the collider's job
 //   sway, leanFollow, pointAngle, breaksOnDeath, rigPart     RigPart data
 //   states / stage    it wants asleep/awake/attacking sprites / a boss-phase sprite (hint only)
 //   match             file-name keywords: PNGs dropped in bulk go to the slot they name
@@ -51,14 +53,19 @@ export const RIG_TEMPLATES = [
         pivot: [0.5, 0.05], at: [0, -1.3], size: [1.4, 1.8], leanFollow: 0.6,
         sway: { move: [0, 0], rotate: 4, scale: [0.06, 0.12], speed: 6 },
         match: ['lower', 'flame', 'llama', 'skirt', 'falda', 'tail', 'cola', 'wisp', 'estela', 'thruster'] },
-      { id: 'offArm', name: 'OffArm', parent: 'torso', optional: true,
-        label: 'Brazo libre', hint: 'El brazo que no lanza: sólo se balancea. Pivote en el hombro.',
-        pivot: [0.8, 0.15], at: [-0.9, 0.6], size: [1.2, 1.8], leanFollow: 0.3,
-        sway: { move: [0, 0], rotate: 5, speed: 1.5 },
-        match: ['offarm', 'leftarm', 'armleft', 'brazoizq', 'brazolibre', 'lefthand', 'manoizq'] },
+      { id: 'accessory', name: 'Accessory', parent: 'torso', optional: true,
+        label: 'Pieza extra', hint: 'Anillo, cinturón, mochila, alas… algo más que cuelga del torso y se mece con él.',
+        pivot: [0.5, 0.5], at: [0, -0.9], size: [1.8, 0.6],
+        sway: { move: [0, 0.03], rotate: 2, speed: 2.3 },
+        match: ['accessory', 'extra', 'ring', 'anillo', 'belt', 'cinturon', 'backpack', 'mochila', 'wing', 'ala', 'cape', 'capa'] },
+      { id: 'castArm', name: 'CastArm', parent: 'torso', roles: ['aim'],
+        label: 'Brazo que lanza', hint: 'Suelta aquí la mano / arma, dibujada apuntando a la derecha. Pivote en el hombro, boca en la punta: de ahí sale el proyectil. Va detrás del torso (el brazo del fondo); cámbialo con ↑↓ si tu dibujo lo lleva delante.',
+        pivot: [0.12, 0.5], muzzle: [0.97, 0.5], at: [0.8, 0.6], size: [2.4, 0.9],
+        sway: { move: [0, 0], rotate: 6, speed: 1.5, phase: 3.14 },
+        match: ['castarm', 'rightarm', 'armright', 'brazoder', 'brazoarma', 'arma', 'gun', 'weapon', 'staff', 'wand', 'varita', 'arm', 'brazo', 'hand', 'mano', 'claw', 'garra'] },
       { id: 'torso', name: 'Torso',
         label: 'Torso', hint: 'El cuerpo: de él cuelga todo lo demás.',
-        pivot: [0.5, 0.5], at: [0, 3], size: [2, 2.6],
+        pivot: [0.5, 0.5], at: [0, 0], size: [2, 2.6],
         sway: { move: [0, 0.05], rotate: 0, speed: 1.5 },
         match: ['torso', 'body', 'cuerpo', 'chest', 'pecho'] },
       { id: 'head', name: 'Head', parent: 'torso', optional: true,
@@ -66,11 +73,11 @@ export const RIG_TEMPLATES = [
         pivot: [0.5, 0.9], at: [0, 1.3], size: [1.3, 1.3],
         sway: { move: [0, 0], rotate: 3, speed: 1.5 },
         match: ['head', 'cabeza', 'skull', 'craneo'] },
-      { id: 'castArm', name: 'CastArm', parent: 'torso', roles: ['aim'],
-        label: 'Brazo que lanza', hint: 'Suelta aquí la mano / arma, dibujada apuntando a la derecha. Pivote en el hombro, boca en la punta: de ahí sale el proyectil.',
-        pivot: [0.12, 0.5], muzzle: [0.97, 0.5], at: [0.8, 0.6], size: [2.4, 0.9],
-        sway: { move: [0, 0], rotate: 6, speed: 1.5, phase: 3.14 },
-        match: ['castarm', 'rightarm', 'armright', 'brazoder', 'brazoarma', 'arma', 'gun', 'weapon', 'staff', 'wand', 'varita', 'arm', 'brazo', 'hand', 'mano', 'claw', 'garra'] },
+      { id: 'offArm', name: 'OffArm', parent: 'torso', optional: true,
+        label: 'Brazo libre', hint: 'El brazo que no lanza, el del lado de la cámara: se dibuja delante de todo y sólo se balancea. Pivote en el hombro.',
+        pivot: [0.8, 0.15], at: [-0.9, 0.6], size: [1.2, 1.8], leanFollow: 0.3,
+        sway: { move: [0, 0], rotate: 5, speed: 1.5 },
+        match: ['offarm', 'leftarm', 'armleft', 'brazoizq', 'brazolibre', 'lefthand', 'manoizq'] },
     ],
     // Until attacks name them (Phase D), these wait in the rig: three gestures on the same casting arm.
     gestures: [
@@ -108,17 +115,17 @@ export const RIG_TEMPLATES = [
     slots: [
       { id: 'stem', name: 'Stem', roles: ['stretch'],
         label: 'Cuello / tallo', hint: 'La pieza que se estira: se escala en vertical desde su pivote, que va en su base.',
-        pivot: [0.5, 1], at: [0, 0.5], size: [0.6, 2.3],
+        pivot: [0.5, 1], at: [0, -1.5], size: [0.6, 2.3],
         sway: { move: [0, 0], rotate: 0 },
         match: ['stem', 'neck', 'cuello', 'tallo', 'pole', 'spring', 'muelle'] },
       { id: 'head', name: 'Head', roles: ['rider', 'aim'], states: true,
         label: 'Cabeza', hint: 'Viaja en la punta del cuello y dispara. Boca entre los ojos. Añádele sprites dormido / despierto / atacando (inspector ▸ Sprites por estado).',
-        pivot: [0.5, 0.5], muzzle: [0.7, 0.45], barrel: 0, at: [0, 3.2], size: [1.6, 1.4],
+        pivot: [0.5, 0.5], muzzle: [0.7, 0.45], barrel: 0, at: [0, 1.2], size: [1.6, 1.4],
         sway: { move: [0, 0.04], rotate: 1.5, speed: 1.3 },
         match: ['head', 'cabeza', 'eye', 'ojo', 'flower', 'flor', 'awake'] },
       { id: 'base', name: 'Base', breaksOnDeath: false,
         label: 'Base', hint: 'Fija en el suelo, delante de todo: plegado se lee como una caja cerrada. No sale despedida al morir.',
-        pivot: [0.5, 1], at: [0, 0], size: [2.4, 1],
+        pivot: [0.5, 1], at: [0, -2], size: [2.4, 1],
         sway: { move: [0, 0], rotate: 0 },
         match: ['base', 'pot', 'maceta', 'box', 'caja', 'stand', 'pie'] },
     ],

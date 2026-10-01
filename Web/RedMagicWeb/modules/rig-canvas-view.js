@@ -276,7 +276,8 @@ export class RigCanvasView {
     for (let y = this.oy % step; y < h; y += step) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
     ctx.stroke();
 
-    // Origin = the root / the feet: where the enemy stands in the scene.
+    // Origin = the prefab root: the point the enemy is placed by and its ranges are measured from
+    // (the centre of an enemy's body).
     ctx.strokeStyle = 'rgba(255,200,80,0.9)';
     ctx.beginPath();
     ctx.moveTo(this.ox - 12, this.oy); ctx.lineTo(this.ox + 12, this.oy);

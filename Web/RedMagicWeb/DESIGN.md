@@ -42,9 +42,12 @@ step with `--accent` / `--accent2` if those ever change.
 - **One primary button per decision.** Secondary actions are stone buttons.
 - **Carved type (Cinzel) only for names of things** (the brand, a tab's title, the selected effect).
   Never for body text, labels or buttons.
-- **Tabs are grouped by what you are doing**: make art (Sprites, VFX Lab) · put a creature together
-  (Enemy Studio, Enemy Creator, Proyectil/VFX, Boss Creator) · maps · and, alone on the right, the
-  Biblioteca (what is saved). A new tab goes in its group, not at the end.
+- **Tabs are ordered by use**: the four used most first (Enemy Studio, VFX Lab, Boss Creator, Biblioteca),
+  a divider, then the rest. **Alt+1…8** opens the tab in that position and each tab shows its number
+  (`app.js ▸ tabShortcuts`); the order of the buttons in `index.html` is the only place that mapping lives.
+  Ctrl+number belongs to the browser and cannot be used.
+- **The Biblioteca is a shelf**: each saved thing is a slab with its art in a lit niche; the colour of its
+  top edge and first badge says what kind it is (`.libCard[data-kind]`).
 - **Rebuilding a panel must not move the user**: keep scroll positions (see `vfx-lab.js ▸ renderForm`),
   and build long lists once and patch them (the Lab's gallery) instead of re-rendering.
 - **The last open tab is remembered** (`localStorage`, `app.js ▸ restoreLastTab`).

@@ -2067,12 +2067,38 @@ function renderMapLibraryLists() {
 renderMapAssetsList();
 renderMapInstancesList();
 
+// ============================================================ tab shortcuts
+
+// Alt+1…8 opens the tab in that position of the bar (Ctrl+number is the browser's own tab switch and
+// cannot be taken). Each tab shows its number, and the order of the buttons in index.html is the
+// only place the mapping lives. Works from inside a text field too: Alt+digit types nothing.
+(function tabShortcuts() {
+  const buttons = [...document.querySelectorAll('#tabBar .tabBtn')];
+  buttons.forEach((btn, i) => {
+    const key = document.createElement('kbd');
+    key.className = 'tabKey';
+    key.textContent = String(i + 1);
+    btn.appendChild(key);
+    btn.title = `${btn.title} (Alt+${i + 1})`.trim();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const m = /^(?:Digit|Numpad)([1-9])$/.exec(e.code);
+    const btn = m ? buttons[Number(m[1]) - 1] : null;
+    if (!btn || btn.disabled) return;
+    e.preventDefault();
+    btn.click();
+  });
+}());
+
 // ============================================================ reopen the last tab
 
 // Last thing of all: every tab is initialised by now, so clicking one runs its normal "on show" path.
 (function restoreLastTab() {
   let last = null;
   try { last = localStorage.getItem(LAST_TAB_KEY); } catch { /* no storage */ }
-  const btn = last && last !== 'sprites' ? document.querySelector(`.tabBtn[data-tab="${last}"]`) : null;
+  // First visit: the tab used most. (Sprites is the one the page loads on, so it needs no click.)
+  const wanted = last || 'studio';
+  const btn = wanted !== 'sprites' ? document.querySelector(`.tabBtn[data-tab="${wanted}"]`) : null;
   if (btn && !btn.disabled) btn.click();
 }());

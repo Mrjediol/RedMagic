@@ -82,6 +82,7 @@ export async function renderLibraryCards(container, {
   entries.forEach((entry, index) => {
     const card = document.createElement('div');
     card.className = 'libCard';
+    if (entry.kind) card.dataset.kind = entry.kind;   // styles.css tints the card's edge by kind
     if (isSelected) {
       card.classList.add('libCardSelectable');
       card.classList.toggle('selected', isSelected(entry));

@@ -505,3 +505,41 @@ details > summary:hover{color:var(--text);}
 /* A form takes what it needs and the preview takes the rest: no void between them on a wide screen. */
 #tab-enemy #enemyFormPanel,#fxFormPanel,#bossFormPanel{flex:0 1 1180px;}
 #tab-enemy #enemyPreviewPanel,#fxPreviewPanel,#bossPreviewPanel{flex:1 1 380px;max-width:none;}
+
+/* ---------------- tab numbers (Alt+N) ---------------- */
+.tabKey{margin-left:7px;padding:0 5px;font-size:11px;line-height:16px;color:#8d7d66;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.08);border-bottom-width:1px;border-radius:3px;vertical-align:1px;}
+.tabBtn.active .tabKey{color:var(--accent);border-color:rgba(86,224,180,.4);text-shadow:none;}
+
+/* ---------------- Biblioteca: the shelf ---------------- */
+/* Each saved thing is a slab with its art in a lit niche; the edge colour says what kind it is. */
+#libraryTabList.libList{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;max-height:none;align-items:start;}
+#libraryTabList .libCard{--kind:var(--border-lit);width:auto;gap:0;padding:0;overflow:hidden;border-radius:10px;background:var(--panel);
+  border:1px solid var(--border);border-top:3px solid var(--kind);box-shadow:0 6px 16px rgba(0,0,0,.28);transition:border-color .12s,box-shadow .12s,transform .12s;}
+#libraryTabList .libCard:hover{border-color:var(--border-lit);border-top-color:var(--kind);box-shadow:0 10px 24px rgba(0,0,0,.4);transform:translateY(-2px);}
+#libraryTabList .libCard[data-kind="enemy"]{--kind:#56e0b4;}
+#libraryTabList .libCard[data-kind="rig"]{--kind:#5fc8f0;}
+#libraryTabList .libCard[data-kind="boss"]{--kind:#f0705a;}
+#libraryTabList .libCard[data-kind="projectile"]{--kind:#e3a850;}
+#libraryTabList .libCard[data-kind="fx"]{--kind:#b98bff;}
+#libraryTabList .libCard[data-kind="rig-template"]{--kind:#8ea69f;}
+#libraryTabList .libThumb{width:100%;height:168px;padding:12px;border-radius:0;image-rendering:auto;object-fit:contain;
+  background:radial-gradient(70% 70% at 50% 45%,color-mix(in srgb,var(--kind) 16%,transparent),transparent 72%),var(--pit);border-bottom:1px solid var(--border);}
+#libraryTabList .libThumbEmpty{border:none;border-bottom:1px solid var(--border);
+  background:repeating-linear-gradient(45deg,transparent 0 10px,rgba(255,255,255,.025) 10px 20px),var(--pit);}
+#libraryTabList .libInfo{padding:11px 13px 4px;}
+#libraryTabList .libName{font-size:17px;font-weight:700;}
+#libraryTabList .libDate{font-size:12.5px;margin-top:1px;}
+#libraryTabList .libBadges{margin-top:8px;gap:5px;}
+#libraryTabList .libBadge{font-size:12.5px;padding:2px 9px;border-radius:20px;background:var(--well);}
+#libraryTabList .libBadge:first-child{color:var(--text);border-color:color-mix(in srgb,var(--kind) 60%,var(--border));background:color-mix(in srgb,var(--kind) 14%,var(--well));}
+#libraryTabList .libActions{margin-top:10px;padding:9px 11px 11px;gap:6px;border-top:1px solid var(--border);background:var(--well);}
+#libraryTabList .libActions button{flex:1 1 auto;padding:5px 9px;font-size:13px;}
+#libraryTabList > p.hint{grid-column:1/-1;max-width:560px;margin:20px 0;padding:20px 22px;font-size:15px;line-height:1.5;background:var(--panel);border:1px dashed var(--border-lit);border-radius:10px;}
+#libraryPanel{padding:18px 24px;}
+#libraryPanel > p.hint{max-width:900px;margin-bottom:12px;}
+.libFilterBar{gap:8px;margin:0 0 16px;}
+.libFilterBtn{padding:6px 13px;border-radius:20px;}
+.libFilterBtn.active{border-color:var(--accent);color:var(--accent);background:var(--selected);box-shadow:var(--glow);}
+/* The small lists (Sprites, Map Tracer, the Lab) get the same slab without the niche. */
+.libCard{border-radius:8px;border-top-color:var(--border-lit);}
+.libCard:hover{border-color:var(--border-lit);}

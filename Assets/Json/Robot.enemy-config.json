@@ -1,0 +1,84 @@
+{
+  "kind": "enemy",
+  "enemyName": "EnemyConfig",
+  "tier": "Basic",
+  "tuning": {
+    "archetype": "FlyingRanged",
+    "staticAttack": "Ranged",
+    "maxHealth": 30.0,
+    "invulnerabilityDuration": 0.0,
+    "knockbackHorizontal": 6.0,
+    "knockbackVertical": 3.0,
+    "knockbackDuration": 0.18,
+    "knockbackResistance": 0.0,
+    "detectionRange": 9.0,
+    "loseInterestGrace": 1.0,
+    "attackRange": 6.0,
+    "personalSpace": 3.0,
+    "retreatReleaseFactor": 1.35,
+    "verticalTolerance": 3.0,
+    "moveSpeed": 2.5,
+    "retreatSpeed": 2.2,
+    "stopAtLedges": true,
+    "ledgeProbeDepth": 0.6,
+    "gravityScale": 3.0,
+    "sleepsUntilDetected": false,
+    "hoverOffset": 1.2,
+    "attackDamage": 8.0,
+    "attackCooldown": 1.6,
+    "attackKnockbackMultiplier": 1.0,
+    "attackReleaseFallback": 0.25,
+    "rootedWhileAttacking": true,
+    "meleeHitboxSize": {
+      "x": 1.2,
+      "y": 1.0
+    },
+    "meleeHitboxOffset": {
+      "x": 0.8,
+      "y": 0.5
+    },
+    "selfDestruct": false,
+    "explosionRadius": 1.7,
+    "explosionShake": 0.2,
+    "projectile": {
+      "prefab": "Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile.prefab",
+      "speed": 9.0,
+      "lifetime": 2.5,
+      "size": {
+        "x": 0.4,
+        "y": 0.4
+      },
+      "muzzleOffset": {
+        "x": 0.65,
+        "y": 0.1
+      },
+      "pierce": 0,
+      "homingTurnRate": 0.0,
+      "homingRange": 9.0,
+      "arcGravity": 0.0,
+      "impactRadius": 0.0,
+      "impactDamage": 0.0,
+      "faceDirection": false,
+      "facingAxis": "Right",
+      "aimMode": "Fixed"
+    },
+    "aimAtTarget": true,
+    "projectileTint": "#73ffffff",
+    "contactDamage": 0.0,
+    "contactDamageCooldown": 1.0,
+    "contactKnockbackMultiplier": 1.0,
+    "moveSoundInterval": 0.4,
+    "idleAnimSpeed": 1.0,
+    "moveAnimSpeed": 1.0,
+    "attackAnimSpeed": 1.0,
+    "hurtAnimSpeed": 1.0,
+    "deathAnimSpeed": 1.0,
+    "wakeAnimSpeed": 1.0,
+    "targetTag": "Player",
+    "hitLayers": "everything",
+    "obstacleLayers": [
+      "Ground",
+      "Platform"
+    ]
+  }
+}

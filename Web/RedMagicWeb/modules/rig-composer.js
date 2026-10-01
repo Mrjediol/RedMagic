@@ -1223,7 +1223,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       const title = el('span', 'rigGestureName', `${open ? '▾' : '▸'} ${gesture.name}`);
       title.onclick = () => { gestureIndex = open ? -1 : index; fxIndex = -1; fxPlacing = false; renderInspector(); requestRender(); if (hooks.onChange) hooks.onChange(); };
       head.appendChild(title);
-      head.appendChild(el('span', 'hint', `carga ${gesture.windup.length} · golpe ${gesture.strike.length}${gesture.fx.length ? ` · ✨ ${gesture.fx.length}` : ''}`));
+      head.appendChild(el('span', 'hint', `carga ${gesture.windup.length} · golpe ${gesture.strike.length}${gesture.fx.length ? ` · ✨ ${gesture.fx.length}` : ''}${state.idle.gestures.includes(gesture.name) ? ' · 💤' : ''}`));
       const play = el('button', 'small', '▶ Probar');
       play.title = 'Reproduce el gesto con los tiempos de RigDriverCode: carga → golpe → vuelta al reposo.';
       play.onclick = () => playGesture(index);
@@ -1265,6 +1265,33 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     }
     d.appendChild(acts);
 
+    if (state.idle.gestures.some((n) => list.some((g) => g.name === n))) {
+      const idle = el('details', 'efFold');
+      idle.open = openSections.get('idle') ?? true;
+      idle.addEventListener('toggle', () => openSections.set('idle', idle.open));
+      idle.appendChild(el('summary', null, `💤 En reposo (${state.idle.gestures.filter((n) => list.some((g) => g.name === n)).join(', ')})`));
+      const grid = el('div', 'rigGestureGrid');
+      grid.appendChild(F.numberField({ label: 'Cada (s)', value: state.idle.interval, min: 0.2, step: '0.5',
+        hint: 'Más o menos: varía un ±25%.', onChange: (v) => { state.idle.interval = Math.max(0.2, v); refreshExport(); } }).row);
+      grid.appendChild(F.numberField({ label: 'Probabilidad (0–1)', value: state.idle.chance, min: 0, step: '0.1',
+        hint: 'De hacerlo en cada intento.', onChange: (v) => { state.idle.chance = Math.min(1, Math.max(0, v)); refreshExport(); } }).row);
+      grid.appendChild(F.numberField({ label: 'Carga (s)', value: state.idle.windup, min: 0.05, step: '0.1',
+        hint: 'Lo que tarda en llegar a la pose de carga (en un ataque es el aviso).', onChange: (v) => { state.idle.windup = Math.max(0.05, v); refreshExport(); } }).row);
+      idle.appendChild(grid);
+      const tryIdle = el('button', 'small', '▶ Probar uno');
+      tryIdle.title = 'Reproduce uno de los gestos de reposo al azar, con esa carga.';
+      tryIdle.onclick = () => {
+        const names = state.idle.gestures.filter((n) => list.some((g) => g.name === n));
+        const index = list.findIndex((g) => g.name === names[Math.floor(Math.random() * names.length)]);
+        const keep = previewTelegraph;
+        previewTelegraph = state.idle.windup;
+        playGesture(index);
+        setTimeout(() => { previewTelegraph = keep; }, (G.gestureDuration(list[index], state.idle.windup) + 0.1) * 1000);
+      };
+      idle.appendChild(tryIdle);
+      d.appendChild(idle);
+    }
+
     d.appendChild(F.numberField({ label: 'Aviso al probar (s)', value: previewTelegraph, min: 0.05, step: '0.05',
       hint: 'Sólo para "▶ Probar": cuánto dura la carga. En el juego es el "telegraph" del ataque que use el gesto.',
       onChange: (v) => { previewTelegraph = v > 0 ? v : 0.6; } }).row);
@@ -1278,6 +1305,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       gesture.name = G.uniqueGestureName(state, nameField.input.value, gesture);
       if (state.rig.moveGesture === old) state.rig.moveGesture = gesture.name;
       M.renameGestureSprites(state, old, gesture.name);
+      state.idle.gestures = state.idle.gestures.map((n) => (n === old ? gesture.name : n));
       if (preview.spriteState === M.gestureState(old)) preview.spriteState = M.gestureState(gesture.name);
       changed();
     });
@@ -1324,6 +1352,13 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
     renderPhaseFx(card, gesture, index);
 
+    card.appendChild(F.boolField({ label: '💤 Gesto de reposo (lo hace solo de vez en cuando)', value: state.idle.gestures.includes(gesture.name),
+      hint: 'Sin objetivo, quieto y despierto. No avisa de nada ni lanza ningún ataque: sólo da vida. Cada cuánto, abajo.',
+      onChange: (v) => {
+        state.idle.gestures = v ? [...new Set([...state.idle.gestures, gesture.name])] : state.idle.gestures.filter((n) => n !== gesture.name);
+        changed();
+      } }).row);
+
     if (state.rig.moveGesture === gesture.name) card.appendChild(el('p', 'hint', 'Es el gesto al desplazarse (Tiempos del rig ▸ moveGesture): sólo usa su pose de carga, mantenida mientras se mueve.'));
 
     const more = el('div', 'rigActions');
@@ -1332,6 +1367,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const del = el('button', 'small danger', '🗑 Borrar gesto');
     del.onclick = () => {
       M.renameGestureSprites(state, gesture.name, null);
+      state.idle.gestures = state.idle.gestures.filter((n) => n !== gesture.name);
       if (preview.spriteState === M.gestureState(gesture.name)) preview.spriteState = '';
       state.gestures.splice(index, 1);
       posing = null; gesturePlay = null; gestureIndex = -1;
@@ -1801,6 +1837,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       stateSprites: state.parts.reduce((n, p) => n + ['asleep', 'awake', 'attacking'].filter((k) => p.variants?.[k]).length
         + Object.values(p.variants?.named || {}).filter(Boolean).length + Object.values(p.variants?.gestures || {}).filter(Boolean).length, 0),
       openGesture: state.gestures?.[gestureIndex]?.name || null,
+      idleGestures: (state.idle?.gestures || []).length,
       template: state.template ? state.template.label || findTemplate(state.template.id)?.label || null : null,
       behaviour: !!behaviour,
     };

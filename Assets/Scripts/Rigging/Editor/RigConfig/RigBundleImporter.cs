@@ -829,6 +829,22 @@ namespace RedMagic.Rigging.EditorTools
                 }
             }
 
+            // Gestos en reposo: presentes = sustituyen; sin la clave se conservan los del prefab.
+            if (config["idleGestures"] is JObject idleJson)
+            {
+                var idle = new RigIdleGestures();
+                idle.gestures = (idleJson["gestures"] as JArray ?? new JArray())
+                    .Select(t => t.Type == JTokenType.String ? t.Value<string>() : null)
+                    .Where(n => !string.IsNullOrWhiteSpace(n)).ToList();
+                idle.interval = Mathf.Max(0.2f, idleJson.Value<float?>("interval") ?? idle.interval);
+                idle.chance = Mathf.Clamp01(idleJson.Value<float?>("chance") ?? idle.chance);
+                idle.windup = Mathf.Max(0.05f, idleJson.Value<float?>("windup") ?? idle.windup);
+                foreach (var n in idle.gestures)
+                    if (rig.FindGesture(n) == null)
+                        report.Warnings.Add($"idleGestures: el gesto '{n}' no está entre los gestos del rig; se ignora al jugar.");
+                rig.idle = idle;
+            }
+
             EditorUtility.SetDirty(rig);
         }
 

@@ -81,6 +81,16 @@ it), `scale`, `followsPart`, `loop`. Data only, authored in the web (Enemy Studi
 - The built-in attack (`PlayAttack`) has no phases of its own: it keeps the muzzle flash. To put
   effects on it, repeat it with a gesture (Enemy Creator ▸ "Repetir el ataque propio con otro gesto").
 
+## Idle gestures (`ProceduralRig.idle`)
+`RigIdleGestures`: a pool of gesture **names**, `interval`, `chance`, `windup`. `RigDriverCode.TickIdle`
+plays one at random (never the same twice in a row) every `interval` ±25% s with probability `chance`,
+only while truly resting: alive, awake and unfolded, no target (`RigDriver.SetAlert`), not moving
+(`SetMoving`), no gesture / attack / hurt in course, no part lent to an attack. It runs the ordinary
+`GestureRoutine` in **silent** mode — same poses, effects, sprites and sound, but **no
+`AttackReleased` / `AttackFinished` and no muzzle flash**, so nothing can mistake it for an attack. Any
+real gesture replaces it with the usual cross-fade; falling asleep settles it. JSON: `idleGestures`
+block (present = replaces, absent = kept). Web: the "💤 Gesto de reposo" checkbox on a gesture card.
+
 ## Enemy integration
 - `EnemyAnimation` finds a `RigDriver` on the root; if present **it wins over Animator/flipbook**:
   every order is forwarded, and the driver's events play the role of the clip's

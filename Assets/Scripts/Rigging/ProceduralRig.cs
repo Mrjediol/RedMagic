@@ -254,6 +254,26 @@ namespace RedMagic.Rigging
     }
 
     /// <summary>
+    /// Gestos que el cuerpo hace solo, de vez en cuando, mientras no tiene nada que hacer (mirar a los
+    /// lados, sacudirse, ajustarse el arma). Sólo dan vida: no avisan de nada ni lanzan ningún ataque.
+    /// </summary>
+    [Serializable]
+    public class RigIdleGestures
+    {
+        [Tooltip("Nombres de gestos de la lista de gestos. Cada vez se elige uno al azar. Vacío = ninguno.")]
+        public List<string> gestures = new List<string>();
+
+        [Tooltip("Cada cuántos segundos, más o menos, lo intenta.")]
+        [Min(0.2f)] public float interval = 4f;
+
+        [Tooltip("Probabilidad de hacerlo en cada intento.")]
+        [Range(0f, 1f)] public float chance = 0.6f;
+
+        [Tooltip("Segundos que tarda en llegar a la pose de carga del gesto (en un ataque es el aviso).")]
+        [Min(0.05f)] public float windup = 0.5f;
+    }
+
+    /// <summary>
     /// Los <b>datos</b> de un cuerpo animado por partes: qué partes hay, cómo se balancean, y los
     /// tiempos y amplitudes de cada gesto (apuntar, retroceso, golpe, muerte…).
     ///
@@ -304,6 +324,9 @@ namespace RedMagic.Rigging
         [Tooltip("Gesto (de la lista de gestos) que se mantiene mientras se desplaza por su cuenta: " +
                  "piezas que se quedan atrás, cuerpo echado hacia delante. Vacío = ninguno.")]
         public string moveGesture;
+
+        [Tooltip("Gestos que hace solo en reposo: sin objetivo, sin moverse, sin atacar y despierto.")]
+        public RigIdleGestures idle = new RigIdleGestures();
 
         [Header("Apuntar (brazo-arma)")]
         [Tooltip("La parte que gira hacia el objetivo. Vacío = no apunta.")]

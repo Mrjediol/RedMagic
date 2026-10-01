@@ -137,10 +137,16 @@ export function adoptRigState(draft) {
   s.rig = { ...base.rig, ...(draft.rig || {}) };
   s.bossLimbs = { ...base.bossLimbs, ...(draft.bossLimbs || {}) };
   s.bossBody = { ...base.bossBody, ...(draft.bossBody || {}) };
+  s.idle = { ...base.idle, ...(draft.idle || {}), gestures: [...(draft.idle?.gestures || [])] };
   s.parts = (s.parts || []).map((p) => ({ ...createPart({ name: p.name }), ...p,
     variants: { asleep: null, awake: null, attacking: null, stages: [], gestures: {}, ...(p.variants || {}),
       named: { alert: null, hurt: null, dead: null, ...(p.variants?.named || {}) } } }));
   return s;
+}
+
+/** RigIdleGestures' own defaults. */
+export function createDefaultIdle() {
+  return { gestures: [], interval: 4, chance: 0.6, windup: 0.5 };
 }
 
 /** A whole composer document — also what is stored as the library record's `draft`. */
@@ -169,6 +175,8 @@ export function createDefaultRigState() {
     bossConfigId: null,            // library entry (kind boss) whose config travels in the zip
     feetY: null,                   // boss: Y of its feet (root.feet); null = the bottom of the collider
     template: null,                // { id, height, fitted } when made from a body template (rig-templates.js)
+    // Gestures it does on its own while resting (ProceduralRig.idle): names from `gestures`.
+    idle: createDefaultIdle(),
     gestures: null,                // RigGesture list (poses by part uid | 'Visual'); null = not exported, Unity keeps its own
   };
 }

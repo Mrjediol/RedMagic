@@ -82,6 +82,11 @@ namespace RedMagic.Rigging
         private Coroutine _fold;
         private Vector3 _stretchScale;
 
+        // Gestos en reposo (ProceduralRig.idle): cuenta atrás hasta el siguiente intento, y por dónde va.
+        private float _idleTimer;
+        private int _idleLast = -1;
+        private bool _moving, _asleep;
+
         private Coroutine _attack;
         protected bool _dead;
         private readonly List<Piece> _pieces = new List<Piece>();
@@ -131,6 +136,9 @@ namespace RedMagic.Rigging
             _fold = null;
             _unfold = 1f;
             _dead = false;
+            _moving = _asleep = false;
+            _idleLast = -1;
+            _idleTimer = NextIdleDelay();
             _pieces.Clear();
             _lastPosition = transform.position;
         }
@@ -242,6 +250,7 @@ namespace RedMagic.Rigging
         /// </summary>
         public override void SetMoving(bool moving)
         {
+            _moving = moving;
             if (_dead) return;
             var move = Rig.FindGesture(Rig.moveGesture);
             if (move == null) return;
@@ -307,8 +316,12 @@ namespace RedMagic.Rigging
             _gestureRoutine = StartCoroutine(routine);
         }
 
-        /// <summary>Carga (easing) → suelta (evento) → golpe (strikeTime) → vuelta al reposo.</summary>
-        private IEnumerator GestureRoutine(RigGesture gesture, float windup)
+        /// <summary>
+        /// Carga (easing) → suelta (evento) → golpe (strikeTime) → vuelta al reposo.
+        /// <paramref name="silent"/> = un gesto de reposo: mismas poses, efectos y sonido, pero no avisa
+        /// de nada (ni <c>AttackReleased</c> ni <c>AttackFinished</c> ni fogonazo): no es un ataque.
+        /// </summary>
+        private IEnumerator GestureRoutine(RigGesture gesture, float windup, bool silent = false)
         {
             PlayGestureSound(gesture, GestureSoundMoment.Start);
             float from = _gestureWindup;
@@ -331,7 +344,7 @@ namespace RedMagic.Rigging
             FireFx(gesture, RigFxPhase.Windup, fxFrom, 1f);
             EndFxPhase(RigFxPhase.Windup);
             PlayGestureSound(gesture, GestureSoundMoment.Release);
-            RaiseReleased();
+            if (!silent) RaiseReleased();
 
             // Sin pose de golpe (una carga que se mantiene, como la de la embestida): no hay latigazo,
             // la pose de carga se deshace despacio en 'recover' y se funde con lo que venga detrás.
@@ -341,7 +354,7 @@ namespace RedMagic.Rigging
                 FireFx(gesture, RigFxPhase.Strike, -1f, 1f);
                 EndFxPhase(RigFxPhase.Strike);
                 yield return SettleRoutine(gesture.recover, gesture);
-                RaiseFinished();
+                if (!silent) RaiseFinished();
                 yield break;
             }
 
@@ -364,7 +377,46 @@ namespace RedMagic.Rigging
             FireFx(gesture, RigFxPhase.Strike, fxFrom, 1f);
             EndFxPhase(RigFxPhase.Strike);
             yield return SettleRoutine(gesture.recover, gesture);
-            RaiseFinished();
+            if (!silent) RaiseFinished();
+        }
+
+        // ============================================================ gestos en reposo
+
+        private float NextIdleDelay() => Mathf.Max(0.2f, Rig.idle != null ? Rig.idle.interval : 4f) * Random.Range(0.75f, 1.25f);
+
+        /// <summary>
+        /// En reposo de verdad — vivo, despierto y desplegado, sin objetivo, sin moverse, sin gesto ni
+        /// ataque en curso, sin piezas prestadas a un ataque — cada <c>idle.interval</c> segundos tira
+        /// el dado y, si sale, hace uno de sus gestos de reposo (nunca el mismo dos veces seguidas si
+        /// hay más). En cuanto deja de estar en reposo la cuenta vuelve a empezar; un gesto de verdad
+        /// (ataque, moverse) lo sustituye con el fundido de siempre.
+        /// </summary>
+        private void TickIdle(float dt)
+        {
+            var idle = Rig.idle;
+            if (idle?.gestures == null || idle.gestures.Count == 0) return;
+
+            bool resting = !Paused && !Alert && !_moving && !_asleep && _fold == null && _gesture == null &&
+                           _attack == null && _hurtTime < 0f && Driven.Count == 0;
+            if (!resting)
+            {
+                _idleTimer = NextIdleDelay();
+                return;
+            }
+
+            _idleTimer -= dt;
+            if (_idleTimer > 0f) return;
+            _idleTimer = NextIdleDelay();
+            if (Random.value > idle.chance) return;
+
+            int index = Random.Range(0, idle.gestures.Count);
+            if (index == _idleLast && idle.gestures.Count > 1) index = (index + 1) % idle.gestures.Count;
+            var gesture = Rig.FindGesture(idle.gestures[index]);
+            if (gesture == null) return;
+
+            _idleLast = index;
+            StartGesture(GestureRoutine(gesture, Mathf.Max(0.05f, idle.windup), silent: true), gesture);
+            Rig.ShowGestureSprites(gesture.name, isAttack: false);
         }
 
         /// <summary>Llega a la pose de carga y se queda ahí hasta <see cref="ClearHold"/>.</summary>
@@ -482,6 +534,7 @@ namespace RedMagic.Rigging
         public override void PlayWake(float speed)
         {
             if (_dead) return;
+            _asleep = false;
             if (!Rig.CanFold)
             {
                 Rig.ShowSprites(RigSpriteState.Awake);
@@ -501,6 +554,8 @@ namespace RedMagic.Rigging
             if (_fold != null) StopCoroutine(_fold);
             _fold = null;
 
+            _asleep = true;
+            if (_gesture != null) StartGesture(SettleRoutine(0.2f), _gesture);   // un gesto de reposo a medias no sigue dormido
             Rig.ShowSprites(RigSpriteState.Asleep);   // los ojos se apagan antes de plegarse
             if (instant || !Rig.CanFold) _unfold = 0f;
             else _fold = StartCoroutine(SleepRoutine());
@@ -617,6 +672,7 @@ namespace RedMagic.Rigging
             RepairHierarchy();
             _clock += dt;
             TickDriven(dt);
+            TickIdle(dt);
 
             // Inclinación: sale de la velocidad real, así sirve igual si lo mueve la física, la
             // IA de un jefe o un empujón.

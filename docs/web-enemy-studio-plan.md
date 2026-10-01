@@ -1,6 +1,6 @@
 # Plan — Enemy Studio: one web flow from parts to a finished enemy
 
-Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Built so far: S1, S2, S3** (see Progress).
+Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Built so far: S1–S4** (see Progress).
 Goal, in the user's words: import the parts of an enemy, build body and gestures, save it as a
 **template**, create projectile / VFX effects in the VFX tab, and **attach those effects anywhere
 on the enemy** — plus defensive moves, idle gestures, and per-state sprites — in one comfortable
@@ -144,7 +144,11 @@ Order rationale: S1 gives the workflow shell the user asked for; S2 is the most 
   fall-through; `EnemyBrain` reports alert. Web: the board "Sprites por estado" (step 4) + canvas
   preview per state. Checked: compile, round trip (named sprites in the synthetic case), headless 114.
   Not run in Play yet (tests ES20…).
-- **Next: S4** (idle gestures).
+- **S4 — done (2026-10-01, same branch).** Idle gestures: `ProceduralRig.idle` (pool of gesture names,
+  interval, chance, windup) + `RigDriverCode.TickIdle`, which plays them silently (no attack events)
+  only while resting; `idleGestures` block in rig-config; web: a checkbox per gesture + the numbers +
+  "▶ Probar uno". Checked: compile, round trip, headless 121. Tests ES24… .
+- **Next: S5** (defensive moves).
 
 ## Decisions
 - Template granularity (taken at S1): saved together (body + gestures + behaviour), each optional

@@ -53,6 +53,9 @@ them and compares every public field of `ProceduralRig` by reflection (plus the 
   gesture, gesture?, sprite }` ↔ `RigSpriteSwap.named` (`RigNamedSprite`). Absent = the three classic
   states only, imported as before. Behaviour change that comes with it: a state without a sprite now falls
   through to the next one (down to the prefab's sprite) instead of keeping whatever was shown.
+- **Idle gestures** (additive, 2026-10-01): top-level `idleGestures` = `{ gestures: [names], interval, chance,
+  windup }` ↔ `ProceduralRig.idle` (`RigIdleGestures`); it is a structured field, so it is **not** in the
+  `rig` block. The exporter always writes it (the fixtures gained an empty one).
 - **Things that bite**: (1) tuning from a bundled `enemy-config.json` goes through
   `EnemyConfigImporter.ReadTuning`, so the `EnemyStats.OnValidate` clamps above apply unchanged;
   its `presence` block is ignored (the body/collider come from rig-config). (2) A bundled

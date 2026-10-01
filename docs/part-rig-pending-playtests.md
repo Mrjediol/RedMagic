@@ -303,3 +303,21 @@ named after the effect (`Fx_<enemy>_gfx_<name>_<id>`); the gesture name no longe
 
 **Known limits of S3**: bosses have no "alert" (their brain does not report it); a state sprite is per part,
 there is no "hide this part in this state".
+
+---
+
+## Enemy Studio S4 — idle gestures (web + Unity)
+
+**What was added**
+- A gesture can be marked "💤 Gesto de reposo": the enemy does it on its own now and then while it has nothing
+  to do (no target, standing still, awake). Under the gestures list: every how many seconds, the chance, and
+  how long the wind-up takes; "▶ Probar uno" plays one.
+- It is only flavour: it never fires or warns of an attack. A real attack or moving cuts it with a blend.
+
+**Tests**
+- [ ] ES24 · Web: make a small gesture (a head tilt, a weapon check), tick 💤, "▶ Probar uno".
+- [ ] ES25 · Play: leave the enemy alone: it does the gesture every few seconds, not always. Walk into its range
+      mid-gesture: it blends into its chase / attack with no pop and no stray shot. While it chases or attacks it
+      never does it. A sleeper does not do it asleep.
+- [ ] ES26 · Tune "Cada (s)" and "Probabilidad" to taste and tell me the defaults you want (now 4 s, 0.6).
+- [ ] ES27 · A boss with an idle gesture: it plays between attacks while standing still — wanted or not?

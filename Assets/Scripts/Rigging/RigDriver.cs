@@ -45,6 +45,7 @@ namespace RedMagic.Rigging
         protected virtual void OnEnable()
         {
             Facing = 1;
+            Alert = false;
             Rig.RestorePose();
         }
 
@@ -102,7 +103,14 @@ namespace RedMagic.Rigging
         /// Ha detectado al objetivo (o lo ha perdido): los <see cref="RigSpriteSwap"/> con sprite de
         /// alerta lo enseñan mientras dure. Sólo sprites: no hay gesto.
         /// </summary>
-        public void SetAlert(bool alert) => Rig.SetAlertSprites(alert);
+        public void SetAlert(bool alert)
+        {
+            Alert = alert;
+            Rig.SetAlertSprites(alert);
+        }
+
+        /// <summary>True mientras quien lo maneja dice que tiene objetivo (ver <see cref="SetAlert"/>).</summary>
+        protected bool Alert { get; private set; }
 
         /// <summary>Etapa visual (fase de un jefe): cambia los sprites por etapa. Sin animación: la tapa el tambaleo.</summary>
         public void SetStage(int stage) => Rig.SetStage(stage);

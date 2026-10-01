@@ -187,7 +187,7 @@ Effects drawn in code from parameters and **baked into a normal frame sheet**, s
 
 ### Enemy Studio tab (🧬, one workflow from parts to a finished enemy)
 
-Plan and phases: `docs/web-enemy-studio-plan.md` (built: S1 shell + templates, S2 gesture effects, S3 state sprites). **It has no
+Plan and phases: `docs/web-enemy-studio-plan.md` (built: S1 shell + templates, S2 gesture effects, S3 state sprites, S4 idle gestures). **It has no
 editor of its own**: the body is the one Rig Composer and the behaviour is the one Enemy Creator
 form. While the tab is visible it **moves their panels into its layout** (`mount`) and puts them
 back when another tab is shown (`unmount`) — one document, one form, whichever tab shows them. The
@@ -241,6 +241,11 @@ shown in Enemy Studio's step 4): pick a state — the canvas shows the body in i
 sprite; the per-part section "Sprites por estado / etapa" edits the same data plus the boss stages. The
 canvas shows a gesture's sprites while it plays and the hurt ones during "💥 Golpe". Export:
 `spriteSwaps[].named` (a sprite for a gesture that no longer exists is reported and left out).
+
+**Idle gestures**: `state.idle = { gestures: [names], interval, chance, windup }` (`rig-defaults.js` ▸
+`createDefaultIdle`). The "💤 Gesto de reposo" checkbox on a gesture card adds / removes its name; the
+"💤 En reposo" fold under the list has the three numbers and "▶ Probar uno". Renaming / deleting a
+gesture keeps the list in step; export = `idleGestures` (names that no longer exist drop out).
 
 **Gesture effects** (`modules/rig-fx.js`, DOM-free): a gesture's `fx` list hangs library effects
 (kind `fx` / `projectile`) from its phases — `{ fx: libraryId, phase, at, anchor, part, offset, scale,

@@ -325,6 +325,7 @@ export function instantiateTemplate(template, take = {}) {
     fx: fxIn(g.fx, (slotId) => uidOf.get(slotId)),
   })) : null;
   if (!withGestures) state.rig.moveGesture = '';
+  else if (template.idle) state.idle = { ...state.idle, ...JSON.parse(JSON.stringify(template.idle)) };
   return state;
 }
 
@@ -459,6 +460,7 @@ export function templateFromState(state, { label, description = '', bodyHeight =
       limbs: state.roles.limbs.map((u) => ids.get(u)).filter(Boolean),
       orbiters: state.roles.orbiters.map((u) => ids.get(u)).filter(Boolean),
     },
+    idle: copy(state.idle || { gestures: [] }),
     gestures: (state.gestures || []).map((g) => ({
       name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake,
       windup: poses(g.windup), strike: poses(g.strike),

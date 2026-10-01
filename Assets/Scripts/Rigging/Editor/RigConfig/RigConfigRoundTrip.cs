@@ -137,6 +137,8 @@ namespace RedMagic.Rigging.EditorTools
                                     offset = new Vector2(-1f, 0f), scale = 2f, followsPart = true, loop = false },
                     },
                 });
+                rig.idle = new RigIdleGestures { gestures = new List<string> { "FxRoundTrip" }, interval = 2.5f, chance = 0.35f, windup = 0.8f };
+
                 // Sprites por estado con nombre: cada estado, sobre el renderer de esa pieza (su propio sprite vale).
                 SpriteRenderer renderer = null;
                 foreach (var p in rig.parts)

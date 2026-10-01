@@ -152,6 +152,7 @@ namespace RedMagic.Rigging.EditorTools
             json["rig"] = RigBlock(rig, visual, warnings);
             json["spriteSwaps"] = Swaps(rig, visual, warnings);
             json["gestures"] = Gestures(rig, visual);
+            json["idleGestures"] = IdleGestures(rig);
 
             var limbs = root.GetComponent<BossLimbs>();
             if (limbs != null) json["bossLimbs"] = Limbs(limbs, visual);
@@ -388,6 +389,18 @@ namespace RedMagic.Rigging.EditorTools
             }
 
             return gestures;
+        }
+
+        private static JObject IdleGestures(ProceduralRig rig)
+        {
+            var idle = rig.idle ?? new RigIdleGestures();
+            return new JObject
+            {
+                ["gestures"] = new JArray(idle.gestures ?? new List<string>()),
+                ["interval"] = RigConfigJson.Num(idle.interval),
+                ["chance"] = RigConfigJson.Num(idle.chance),
+                ["windup"] = RigConfigJson.Num(idle.windup),
+            };
         }
 
         /// <summary>Los efectos de un gesto agrupados por fase (<c>phases[].fx</c>), en el orden de las fases.</summary>

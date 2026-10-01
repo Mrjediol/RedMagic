@@ -232,5 +232,11 @@
       "stages": []
     }
   ],
-  "gestures": []
+  "gestures": [],
+  "idleGestures": {
+    "gestures": [],
+    "interval": 4.0,
+    "chance": 0.6,
+    "windup": 0.5
+  }
 }

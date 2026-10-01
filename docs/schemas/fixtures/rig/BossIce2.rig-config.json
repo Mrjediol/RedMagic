@@ -914,6 +914,12 @@
       "shake": 0.0
     }
   ],
+  "idleGestures": {
+    "gestures": [],
+    "interval": 4.0,
+    "chance": 0.6,
+    "windup": 0.5
+  },
   "bossLimbs": {
     "limbs": [
       "Torso/LeftFist",

@@ -209,6 +209,15 @@ export function buildRigExport(state, ctx = {}) {
         .filter((p) => p.fx.length),
     }));
     if (Object.keys(artAssets).length) doc.artAssets = artAssets;
+
+    // Idle gestures travel with the gestures they name (a name that is gone drops out).
+    const idle = state.idle || {};
+    doc.idleGestures = {
+      gestures: (idle.gestures || []).filter((name) => gestures.some((g) => g.name === name)),
+      interval: r5(Math.max(0.2, idle.interval || 4)),
+      chance: r5(Math.min(1, Math.max(0, idle.chance ?? 0.6))),
+      windup: r5(Math.max(0.05, idle.windup || 0.5)),
+    };
     if (doc.gestures.length) notes.push(`Gestos (${doc.gestures.map((g) => g.name).join(', ')}): al reimportar sustituyen a los del prefab.`);
     if (rig.moveGesture && !doc.gestures.some((g) => g.name === rig.moveGesture))
       notes.push(`El gesto al desplazarse "${rig.moveGesture}" no está entre los gestos exportados.`);

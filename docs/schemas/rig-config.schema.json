@@ -372,6 +372,37 @@
       },
       "$comment": "ProceduralRig.gestures (los \"gesture\" de los ataques de jefe)."
     },
+    "idleGestures": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "gestures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "$comment": "Nombres de gestos de \"gestures\". Vacío = no hace ninguno."
+        },
+        "interval": {
+          "type": "number",
+          "minimum": 0.2,
+          "default": 4
+        },
+        "chance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.6
+        },
+        "windup": {
+          "type": "number",
+          "minimum": 0.05,
+          "default": 0.5
+        }
+      },
+      "$comment": "ProceduralRig.idle (RigIdleGestures): gestos que hace solo en reposo (sin objetivo, quieto, despierto, sin atacar). No avisan ni lanzan nada. Presente = sustituye; ausente = se conserva lo del prefab."
+    },
     "artAssets": {
       "$ref": "boss-config.schema.json#/properties/artAssets",
       "description": "Arte de los efectos de gesto (gestures[].phases[].fx[].fx = {\"art\": \"<id>\"}). El mismo bloque que BossConfig.artAssets.",

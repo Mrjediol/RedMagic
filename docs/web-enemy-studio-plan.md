@@ -6,6 +6,47 @@ Goal, in the user's words: import the parts of an enemy, build body and gestures
 on the enemy** — plus defensive moves, idle gestures, and per-state sprites — in one comfortable
 workflow, with full freedom to make very personalised enemies.
 
+## ▶ How to resume (read this first)
+
+**What to tell Claude:**
+> Lee `docs/web-enemy-studio-plan.md` y ejecuta la **Fase S1** (sólo esa). Sigue las reglas de trabajo del plan.
+
+(Replace S1 with the phase to do. S0 is the merge, done by the user or on request.)
+
+**Model and effort:** high for S1, S2, S3, S5 (schema + Unity + web at once); medium for S4, S6.
+
+**Read at the start of a phase** (and nothing else unless needed): `CLAUDE.md`; this plan;
+`docs/architecture/procedural-rig.md`, `enemies.md`, `bosses.md` (IAttackHost), `audio.md`;
+`Web/RedMagicWeb/ARCHITECTURE.md`; `docs/schemas/COMPATIBILITY.md`; `docs/part-rig-pending-playtests.md`
+(what is still untested); `docs/part-rig-pipeline-plan.md` only for history.
+
+**Working rules (same as the part-rig plan, plus what the user asked since):**
+- No Play Mode by Claude: compile check (`unity command recompile` + `recompile_status`; focus the Editor
+  with `unity command editor_focus` or it does not tick), importer/round-trip checks via `unity command eval`,
+  web checked headless (jsdom + Ajv, the pattern used in the part-rig phases). One phase per session, commit
+  per phase, never push. Work on a task branch (`task/enemy-studio`), snapshot commit before starting.
+- **Tests are batched**: the user tests at the end, not per phase. After each phase: say what important things
+  were added, say honestly whether the goal of the step was reached, append "what was added + tests" to
+  `docs/part-rig-pending-playtests.md`.
+- **New rig features must reach everything that already automates enemies**: the Sounds tab (every new action /
+  gesture / state needs its `SoundCue` + a category in `SoundCategories`, kept on reimport by name, see
+  `audio.md`), the rig-config schema + exporter/importer + `RigConfigRoundTrip`, the inspector (fields under a
+  `[Group]`; daily ones first), pooling, localization (no hardcoded player-facing text).
+- Web UI: important fields at hand, the rest in foldable groups (the user dislikes visual noise).
+- One rig driver only: `RigDriverCode`. Do not reintroduce a second engine (see `procedural-rig.md`).
+- Generic-first: movement/defence behaviours are one C# class reusable by any enemy, with a default placeholder.
+- No hand-written name strings for wiring; `SceneReference` etc. per CLAUDE.md. Untracked user test assets
+  (`Assets/Art/Characters/Newworl`, `koros` changes…) are not ours: never commit them.
+
+## State at the start of this task (2026-10-01)
+Branch `task/rig-driver-tween` (stacked on `task/enemy-attack-deck`, 13 commits ahead of `main`) holds
+everything built so far and is **not merged**: part-rig phases D (deck of attacks per enemy,
+`IAttackHost`), E (gesture pose editor), F (VFX Lab), the retired DOTween driver (in `Legacy/`), the
+own attack repeated with another gesture, sounds per gesture / per deck attack, foldout inspectors
+(`[Group]`), Enemy Creator reorganised, the own attack's projectile written on every import. The user
+tested part of E/F and the regressions (all fine); the rest is listed in `part-rig-pending-playtests.md`.
+**Start S1 from that branch** (create `task/enemy-studio` from it) unless the user merged it to `main` first.
+
 ## Where we are (what exists and gets reused)
 - Rig Composer: parts, roles, sway, **gestures** with a pose editor and preview (`rig-gestures.js`),
   body templates (`rig-templates.js`), sprites per state / stage **per part** (asleep / awake /

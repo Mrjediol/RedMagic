@@ -223,10 +223,24 @@ en uno de un solo sprite cae a su versión sin pieza.
 ---
 
 ## ✨ VFX Lab (efectos por parámetros, sólo web)
-Pestaña de la web sin menú propio en Unity: elige un tipo de efecto (orbe, disparo con estela,
-impacto, orbe cargándose, aura de aviso), ajusta tamaño, colores, brillo, chispas, velocidad y
-pixelado con vista previa, y guárdalo. Queda en la biblioteca como un **proyectil** o un **VFX**
-normal (una hoja de frames ya cortada), así que:
+Pestaña de la web sin menú propio en Unity: elige un efecto en la **galería** (45, agrupados por
+familia), ajusta tamaño, colores, brillo, chispas, velocidad y pixelado con vista previa, y guárdalo.
+
+| Familia | Efectos |
+|---|---|
+| Proyectiles (Move + Impact, apuntan a la derecha) | Orbe de hechizo, Disparo con estela, Bola de fuego, Esquirla de hielo, Glóbulo de veneno, Chispa eléctrica, Misil arcano, Orbe sombrío, Roca, Aguja / lanza de luz, Cuchilla giratoria, Orbe pesado, Fuego fatuo |
+| Impactos y estallidos (un solo uso) | Impacto mágico, Chispazo de golpe, Explosión, Estallido de hielo, Salpicadura, Rayo caído, Polvareda de caída, Cura, Escudo roto, Tajo |
+| Cargas, auras y estados (bucle) | Orbe cargándose, Carga en espiral, Aura de mejora, Burbuja de escudo, Ardiendo, Congelado, Envenenado, Aturdido, Marca |
+| Estelas y movimiento | Estela de dash, Polvo de pisada |
+| Suelo y zonas | Aura de aviso, Zona de aviso (rellena), Onda de choque, Círculo de invocación, Suelo en llamas, Charco de veneno, Púas de hielo, Rayo continuo |
+| Disparo y aparición | Fogonazo de disparo, Nube de aparición, Teletransporte |
+
+En la vista previa: **Fondo** (Oscuro / Hielo / Bosque) para juzgarlo sobre las escenas del juego, y
+**Ver todos los frames** (todos los frames de cada animación sobre los tres fondos; en un bucle el
+último, atenuado, repite el primero). Los efectos que se apoyan en el suelo (Ardiendo, Congelado,
+Rayo caído, Púas, Suelo en llamas) tienen el suelo en la parte baja del frame: colócalos con ⌖.
+
+Queda en la biblioteca como un **proyectil** o un **VFX** normal (una hoja de frames ya cortada), así que:
 
 - se elige como cualquier otro arte: proyectil de un enemigo (Enemy Creator), huecos de arte de un
   ataque (Enemy Creator ▸ Ataques, Boss Creator), avisos de un jefe;

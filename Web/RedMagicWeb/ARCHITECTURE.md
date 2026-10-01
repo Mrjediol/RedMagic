@@ -180,11 +180,25 @@ Effects drawn in code from parameters and **baked into a normal frame sheet**, s
 
 | To change... | Edit | Function |
 |---|---|---|
-| The list of presets, what each draws, its extra parameters and defaults | `modules/vfx-presets.js` | `PRESETS` — one entry per preset: `{ id, label, kind, description, defaults, params, lanes: [{ name, loop, fps, frames, draw(ctx, k, p, rnd) }] }`. A new preset is one more entry; `draw` works in a centred, y-up unit square and must close the loop on a looping lane |
+| The first five presets (`orb`, `bolt`, `burst`, `charge`, `aura` — frozen: saved entries reopen with their params), the families | `modules/vfx-presets.js` | `PRESETS` (those five + `...EFFECTS`), `FAMILIES` — a preset is `{ id, family, label, kind, description, defaults, params, lanes: [{ name, loop, fps, frames, draw(ctx, k, p, rnd) }] }` |
+| The effects library (40 presets), by family | `modules/vfx-effects.js` | `PROJECTILES`, `BURSTS`, `AURAS`, `TRAILS`, `GROUNDS`, `MUZZLES` → `EFFECTS`. A new effect is one more entry in its family's array. One-shot pieces shared by a projectile's `Impact` and the stand-alone burst: `explosion`, `shatter`, `splash`, `arcBurst`, `debris`, `hitSpark`; shared loops: `flamesRow`, `risers`, `spiralArms`, `bubbleShield`, `reticle`, `zone`, `runeCircle`, `beam`, `iceSpikes` |
+| Shared drawing helpers | `modules/vfx-draw.js` | light: `glowDot`, `ring`, `core`, `sparkShape`, `burst`, `shockRing`, `flare`, `cone`; shapes: `streak` (teardrop), `sliver`, `shard`, `crescent`, `boltPath` + `lightning`, `puff`, `flame`, `droplet`, `bubble`, `blob`, `chunk`; colour: `mix`, `shade`, `ramp(p, t)` (core → glow → dark edge); motion: `loopNoise` (periodic), `emit` (wrapping lifetimes), `bell`, `pop`, eases; `solid(ctx, fn)` = normal blending for dark / opaque shapes |
 | The parameters every preset shares (size, colours, glow, sparks, speed, length, pixelation, seed) | `modules/vfx-presets.js` | `COMMON_PARAMS`, `normalizeParams()` |
-| Shared drawing pieces (glow, ring, spark shapes, the common burst) | `modules/vfx-presets.js` | `glowDot`, `ring`, `sparkShape`, `core`, `burst` |
 | How a preset becomes a sheet (one row per lane, the Sprites tab's `sprite` block shape) | `modules/vfx-presets.js` | `bakePreset()`, `drawFrame()`, `frameCount()`, `laneFps()` |
-| The tab: form, live preview, save / update in place / variant, the list of saved presets | `modules/vfx-lab.js` | `initVfxLab()` — the record keeps `draft.vfxPreset = { id, params }` to be reopened |
+| The tab: gallery by family, form, live preview, backdrops, contact sheet, save / update in place / variant, the list of saved presets | `modules/vfx-lab.js` | `initVfxLab()` — `thumbOf` (gallery stills, cached), `BACKDROPS`, `contactSheet()` ("Ver todos los frames"); the record keeps `draft.vfxPreset = { id, params }` to be reopened |
+
+Rules every preset keeps (the headless checks assert them):
+- `draw` works in a centred, **y-up unit square** (1 = the frame edge), never in pixels — that is what keeps
+  "Nitidez" working. The canvas arrives additive (`lighter`); anything dark or opaque goes inside `solid()`.
+- `kind` + lane names are canonical — `projectile`: `Move` (loop) / `Impact`; `fx`: `Spawn` / `Loop` / `End` —
+  because `rig-fx.js ▸ pickLane` and the art pickers look for those names.
+- A looping lane draws the same picture at `k = 0` and `k = 1` (whole turns, `loopNoise`, `emit`). Rotating
+  N-fold shapes may turn `TAU / N` per loop **only if the N copies are identical** (colour included).
+- A one-shot has no empty frame; nothing touches the frame edge at default parameters (stay inside ±0.95).
+- A projectile points to +X. Effects that stand on the ground keep it low in the frame (`GROUND`); flat ones
+  (zones, puddles, circles) are centred.
+- Pale light over a bright scene (ice) needs a darker shape of its own colour under it (`streakUnder`, the
+  `solid` rims of the shield / mark): additive glow alone disappears on light backgrounds.
 
 ### Enemy Studio tab (🧬, one workflow from parts to a finished enemy)
 

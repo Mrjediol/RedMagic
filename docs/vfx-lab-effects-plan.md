@@ -129,8 +129,69 @@ test IndexedDB when done; close tabs and stop servers.
 
 ## Survey
 
-(to be written in Phase 1)
+**Status: done 2026-10-02** — 40 presets built (45 with the original five), commit `00ad67a`.
+
+Elemental families the game really has:
+- **Ice** — the ice set + `SlowStatus` + `IceBurst`, the ice-cave world, frost wolf, frozen skeleton, ice golem,
+  IceRobot, Boss 2 (ice colossus).
+- **Fire** — `BuildTag.Fire` / `ElementId.Fire`, `Weapon_BolaDeFuego`, `PlatformDenialAttack` (fixed fires),
+  the volcano world.
+- **Gold** — the gold set, gilded projectiles, `GoldMarkStatus` (aura + ring).
+- **Arcane** (reserved tag; `Weapon_RafagaArcana`, `RayoArcano`, `LanzaAstral`), **electric** (reserved tag),
+  **spectral / shadow** (`Weapon_EscopetaEspectral`).
+- **Nature** — the hero's lime-green energy with a white-gold core, the forest world (fairy, wisp, root boar,
+  Árbol Ancestral). Poison is not a status yet, but it is the forest's obvious hazard.
+- **Rock / dust** — boulder throw, slams, quakes, landings. **Lifesteal** (red / green motes, heals).
+- Water: nothing uses it → no water preset (Salpicadura recoloured covers it).
+
+Consumers of an effect: an enemy's projectile; the art slots of the catalog attacks (10 `fx`, 9 `projectile`,
+2 `prop` — warnings, shockwaves, sweep beam, hazard patches, bullets, orbs, thrown boulder); gesture phases in
+Enemy Studio (loop on Carga, burst on Golpe, trail on a dash, dust on a landing); status visuals (slow, gold mark).
+
+Built (family → preset → what for):
+- **Projectiles**: Bola de fuego (fire weapon / volcano), Esquirla de hielo (ice enemies), Glóbulo de veneno
+  (forest), Chispa eléctrica, Misil arcano (Ráfaga arcana), Orbe sombrío (Escopeta espectral), Roca (boulder
+  throw; recolour for ice), Aguja / lanza de luz (Lanza astral, pellets, arrows), Cuchilla giratoria (thrown
+  scythes, discs), Orbe pesado (`OrbRingAttack`, boss bullets), Fuego fatuo (wisp, homing shots, souls).
+- **Bursts**: Chispazo de golpe (every hit), Explosión (grenade, kill-counter explosion, deaths), Estallido de
+  hielo (`IceBurst`), Salpicadura, Rayo caído, Polvareda de caída (landings, `LimbSlam`), Cura (lifesteal),
+  Escudo roto (guard broken), Tajo (`MeleeStrikeAttack`).
+- **Charges / auras / states**: Carga en espiral (the hero-style charge, lime by default), Aura de mejora
+  (buffs, enrage), Burbuja de escudo (`GuardStanceAttack`, `AnchorRitual`), Ardiendo, Congelado (slow),
+  Envenenado, Aturdido, Marca (gold mark, locked target).
+- **Trails**: Estela de dash (`ChargeDashAttack`, defensive dashes), Polvo de pisada.
+- **Ground**: Zona de aviso (rellena) (`GroundSlam`, `SafeZone`), Onda de choque (`ShockwaveAttack`, quake),
+  Círculo de invocación (`SummonAdds`, anchors), Suelo en llamas / Charco de veneno / Púas de hielo
+  (`HazardFieldAttack`, `PlatformDenial`), Rayo continuo (`SweepBeam`, Rayo arcano).
+- **Muzzle / spawn**: Fogonazo de disparo, Nube de aparición, Teletransporte.
 
 ## Decisions
 
-(to be filled while working)
+- **Three files instead of one**: helpers in `vfx-draw.js`, the new presets in `vfx-effects.js`;
+  `vfx-presets.js` keeps parameters + baking + the five original presets (only their helper functions moved;
+  their output is unchanged).
+- **Looked at with a real canvas in node** (`@napi-rs/canvas`, Skia — same drawing code): one contact sheet per
+  preset, every frame on dark / ice-blue / forest green, plus automatic checks (edge clipping, empty frames, loop
+  closure k=0 vs k=1). Then the Lab itself in Chrome on an isolated port (gallery, contact sheet, three saves);
+  its IndexedDB was deleted afterwards.
+- **Cut**: *Líneas de velocidad* (almost invisible on ice, redundant with the dash trail); *perdigón* (= Aguja or
+  the existing Disparo con estela, smaller); *afterimage smear* (needs the body's own sprite, not a baked sheet);
+  *water* projectile (no consumer); separate per-element charge-ups (one charge + colours does it).
+- **Redone until acceptable**: Bola de fuego (was a comb of flames → teardrop down the ramp), Estela de dash
+  (comb → soft plume with slivers), Aura de mejora (matchsticks → slivers), Tajo (too thin), Orbe sombrío (too
+  small), shield / mark / pale streaks (dark under-shape so they read on ice).
+- **Bug the checks caught**: Carga en espiral turned a third of a turn per loop with arms of alternating colour
+  → the loop jumped. Rule written down in ARCHITECTURE.md.
+- **The five original presets clip slightly at the frame edge** (burst, charge) — left alone on purpose
+  (the plan forbids changing their look).
+- **Picker = gallery of stills by family** (not optgroups) + backdrop switch + "Ver todos los frames" kept as a
+  real feature.
+- **Ground convention**: standing effects keep the floor low in the frame (y = −0.55…−0.7); flat ones are centred.
+  Asked back to the user as VFX6.
+- **One commit for the four batches** instead of one per batch: the families share helpers that kept changing
+  while the earlier batches were being judged.
+- **End-to-end pass stopped at the web side**: three effects saved through the real Lab in Chrome, their records
+  resolved with `pickLane` / `fxArtAsset` (loop → Loop / Move, one-shot → Spawn / Impact, worldWidth 0.96 at
+  Nitidez 3). The gesture → export → Unity import half was **not** run: the importers are untouched and the
+  standing rule is that the user verifies Unity imports — it is test VFX5.
+- Headless harness lives in the session scratchpad (`vfx-test.mjs`, `sheet.mjs`): 3476 checks, 0 failures.

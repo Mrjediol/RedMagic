@@ -394,3 +394,38 @@ defensive moves (their movement is the Boss Creator's); it never interrupts its 
 - [ ] ES41 · "Dejar quieta" on the template's lower part: is anything of it still moving?
 - [ ] ES42 · Biblioteca Jere: IceRobot, Robot, Turret… under Enemies; "Eliminar enemigo" there also removes its
       imported art, effect prefabs and attack assets (try it on a throwaway one).
+
+---
+
+## ✨ VFX Lab — effects library (2026-10-02)
+
+40 new presets on top of the 5 old ones (unchanged). ✨ VFX Lab ▸ pick from the gallery; "Fondo" switches the scene
+behind the preview; "Ver todos los frames" shows every frame on the three backgrounds. Checked by me: every preset
+bakes at Nitidez 1 and 3, loops close, nothing clips, lanes are the ones the pickers expect; looked at every frame
+on dark / ice / forest. **Not checked: any of them inside Unity** (the pipeline did not change; test VFX5 below).
+
+| Family | New effects |
+|---|---|
+| Proyectiles | Bola de fuego, Esquirla de hielo, Glóbulo de veneno, Chispa eléctrica, Misil arcano, Orbe sombrío, Roca, Aguja / lanza de luz, Cuchilla giratoria, Orbe pesado, Fuego fatuo |
+| Impactos | Chispazo de golpe, Explosión, Estallido de hielo, Salpicadura, Rayo caído, Polvareda de caída, Cura, Escudo roto, Tajo |
+| Cargas / auras / estados | Carga en espiral, Aura de mejora, Burbuja de escudo, Ardiendo, Congelado, Envenenado, Aturdido, Marca |
+| Estelas | Estela de dash, Polvo de pisada |
+| Suelo y zonas | Zona de aviso (rellena), Onda de choque, Círculo de invocación, Suelo en llamas, Charco de veneno, Púas de hielo, Rayo continuo |
+| Disparo y aparición | Fogonazo de disparo, Nube de aparición, Teletransporte |
+
+**Tests**
+- [ ] VFX1 · Gallery: go through every card. Per family, list the ones that **look wrong** (and what: shape, colour,
+      too busy, too weak) and the ones you would **cut**.
+- [ ] VFX2 · What is **missing** for the enemies / bosses / items you have in mind? (name + one line each)
+- [ ] VFX3 · "Fondo ▸ Hielo": which effects get lost on the ice scene? (my weakest there: Fuego fatuo, Carga en
+      espiral, Círculo de invocación, Escudo roto)
+- [ ] VFX4 · Weakest of the set in my own judgement — keep, redo or cut: Polvo de pisada (a plain puff), Envenenado
+      (thin bubbles), Estela de dash, Tajo (thin arc), Cuchilla giratoria (reads more like a fan than a blade).
+- [ ] VFX5 · In 🧬 Enemy Studio hang **Carga en espiral** (bucle) on a gesture's *Carga* and **Chispazo de golpe** on
+      its *Golpe*, "▶ Probar", export, import in Unity: do both show, at the right size, loop / one-shot correct?
+- [ ] VFX6 · Ground effects (Ardiendo, Congelado, Rayo caído, Púas de hielo, Suelo en llamas) have the floor in the
+      lower part of the frame: comfortable to place with ⌖, or would you rather have the floor at the centre?
+- [ ] VFX7 · Use one as an enemy projectile (Esquirla de hielo or Bola de fuego) and one in a boss art slot (Zona de
+      aviso as a warning, Rayo continuo on a sweep): size and orientation right in game?
+- [ ] VFX8 · Defaults: frame 96 px, Nitidez 3 — sharp enough next to the 2048 px parts? Any effect whose default
+      colours you would change?

@@ -323,6 +323,7 @@ MonoBehaviour:
     attacks: []
     builtInAttack: 1
     builtInWeight: 1
+    defences: []
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
     selfDestruct: 0
@@ -459,6 +460,11 @@ MonoBehaviour:
   followDamping: 9
   followMaxOffset: 0.6
   moveGesture: 
+  idle:
+    gestures: []
+    interval: 4
+    chance: 0.6
+    windup: 0.5
   aimPart: {fileID: 3290079735764205417}
   aimArtAngle: 0
   aimMaxAngle: 22
@@ -481,6 +487,7 @@ MonoBehaviour:
     asleep: {fileID: 21300000, guid: 86da2c6855ee52c4ba77fc2096db3840, type: 3}
     awake: {fileID: 21300000, guid: 4d7815cb53749d947b9f782f0d4cf2be, type: 3}
     attacking: {fileID: 21300000, guid: 36a85d757c14a4c4c9210d51b137f45a, type: 3}
+    named: []
     stages: []
   stretchPart: {fileID: 4629676481224857604}
   stretchRiders:

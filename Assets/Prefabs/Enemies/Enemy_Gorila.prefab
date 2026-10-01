@@ -196,6 +196,7 @@ MonoBehaviour:
     attacks: []
     builtInAttack: 1
     builtInWeight: 1
+    defences: []
     meleeHitboxSize: {x: 2.69, y: 3.01}
     meleeHitboxOffset: {x: 1.64, y: 0.18}
     selfDestruct: 0

@@ -1,6 +1,12 @@
 {
   "_comment": "Calificaciones y notas de los sonidos, por id estable del registro. Lo escribe la pestaña Sounds.",
   "slots": {
+    "70d25f523f32864479851e50119cff00/ProceduralRig/gestures.Array.data[3].sound": {
+      "status": "Pending",
+      "notes": "",
+      "lastModified": "2026-10-01 23:30",
+      "removed": true
+    },
     "7fa4d2184cc2a6349add1c56424e9ca3/SystemSounds/menuMusic": {
       "status": "Bad",
       "notes": "Placeholder aceptado: un clip corto (Sly 2) en bucle como música de menú.",

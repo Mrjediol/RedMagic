@@ -440,8 +440,8 @@ Transform:
   m_GameObject: {fileID: 4655559755096861651}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.037903, y: 0.87642, z: 0}
+  m_LocalScale: {x: 0.38128, y: 0.38128, z: 0.38128}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8076603602689295315}
@@ -804,6 +804,11 @@ MonoBehaviour:
   followDamping: 8
   followMaxOffset: 1.9471
   moveGesture: Move
+  idle:
+    gestures: []
+    interval: 4
+    chance: 0.6
+    windup: 0.5
   aimPart: {fileID: 0}
   aimArtAngle: 0
   aimMaxAngle: 75
@@ -826,6 +831,7 @@ MonoBehaviour:
     asleep: {fileID: 0}
     awake: {fileID: 0}
     attacking: {fileID: 0}
+    named: []
     stages:
     - {fileID: 21300000, guid: 4b844fd8a1cf0214281fadfcb8fbb7b7, type: 3}
     - {fileID: 21300000, guid: 1c9a8f6c75a4e884ea9b18fcdaf7de3c, type: 3}
@@ -858,6 +864,19 @@ MonoBehaviour:
     strikeTime: 0.08
     recover: 0.4
     shake: 2
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   - name: Dash
     windup:
     - part: {fileID: 8076603602689295315}
@@ -880,6 +899,19 @@ MonoBehaviour:
     strikeTime: 0.1
     recover: 1.2
     shake: 2
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   - name: DashLoop
     windup:
     - part: {fileID: 8076603602689295315}
@@ -906,6 +938,19 @@ MonoBehaviour:
     strikeTime: 0.1
     recover: 0.35
     shake: 0
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   - name: Move
     windup:
     - part: {fileID: 8076603602689295315}
@@ -932,6 +977,19 @@ MonoBehaviour:
     strikeTime: 0.1
     recover: 0.3
     shake: 0
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   - name: GroundSlam
     windup:
     - part: {fileID: 8076603602689295315}
@@ -970,6 +1028,19 @@ MonoBehaviour:
     strikeTime: 0.07
     recover: 0.5
     shake: 2.5
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   - name: PickUP
     windup:
     - part: {fileID: 8076603602689295315}
@@ -992,6 +1063,19 @@ MonoBehaviour:
     strikeTime: 0.12
     recover: 0.35
     shake: 1
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   - name: Throw
     windup:
     - part: {fileID: 8076603602689295315}
@@ -1014,6 +1098,19 @@ MonoBehaviour:
     strikeTime: 0.08
     recover: 0.4
     shake: 1.5
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   drivenLease: 0.25
   drivenReturn: 0.35
   staggerStrength: 3

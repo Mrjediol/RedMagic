@@ -366,6 +366,7 @@ MonoBehaviour:
     attacks: []
     builtInAttack: 1
     builtInWeight: 1
+    defences: []
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
     selfDestruct: 0
@@ -549,6 +550,11 @@ MonoBehaviour:
   followDamping: 9
   followMaxOffset: 0.396
   moveGesture: 
+  idle:
+    gestures: []
+    interval: 4
+    chance: 0.6
+    windup: 0.5
   aimPart: {fileID: 6615454965093861272}
   aimArtAngle: 23.5
   aimMaxAngle: 70

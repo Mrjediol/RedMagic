@@ -112,6 +112,69 @@ namespace RedMagic.Rigging
     }
 
     /// <summary>
+    /// Las fases de un gesto, en orden: la carga (dura el aviso del ataque), el golpe
+    /// (<see cref="RigGesture.strikeTime"/>) y la vuelta al reposo (<see cref="RigGesture.recover"/>).
+    /// </summary>
+    public enum RigFxPhase
+    {
+        Windup,
+        Strike,
+        Recover,
+    }
+
+    /// <summary>De dónde cuelga un efecto de gesto.</summary>
+    public enum RigFxAnchor
+    {
+        /// <summary>Una pieza del cuerpo (<see cref="RigFx.part"/>).</summary>
+        Part,
+
+        /// <summary>La raíz visual (el cuerpo entero).</summary>
+        Body,
+
+        /// <summary>La boca del arma (<see cref="ProceduralRig.muzzle"/>); sin boca, la pieza que apunta.</summary>
+        Muzzle,
+
+        /// <summary>El suelo bajo el cuerpo: la base de su collider.</summary>
+        Feet,
+    }
+
+    /// <summary>
+    /// Un efecto enganchado a una fase de un gesto (las partículas de carga en la punta del arma, el
+    /// estallido al soltar). Sólo datos: lo lanza el <see cref="RigDriver"/>, siempre desde el pool.
+    /// </summary>
+    [Serializable]
+    public class RigFx
+    {
+        [Tooltip("Prefab del efecto (lo construye el importador desde la biblioteca web). Vacío = no hace nada.")]
+        public GameObject prefab;
+
+        [Tooltip("Fase del gesto en la que sale.")]
+        public RigFxPhase phase = RigFxPhase.Windup;
+
+        [Tooltip("Momento dentro de la fase: 0 = al empezar, 1 = al acabar.")]
+        [Range(0f, 1f)] public float at;
+
+        [Tooltip("De dónde cuelga.")]
+        public RigFxAnchor anchor = RigFxAnchor.Part;
+
+        [Tooltip("La pieza, cuando el ancla es 'Part'.")]
+        public Transform part;
+
+        [Tooltip("Desplazamiento desde el ancla, en sus unidades locales (se voltea con el cuerpo).")]
+        public Vector2 offset;
+
+        [Tooltip("Tamaño relativo al del prefab.")]
+        [Min(0.01f)] public float scale = 1f;
+
+        [Tooltip("Sigue al ancla mientras dura (posición y giro). Apagado = se queda donde salió.")]
+        public bool followsPart = true;
+
+        [Tooltip("Se repite durante lo que quede de fase y se apaga al acabarla (una carga). Apagado = " +
+                 "se reproduce una vez (un estallido).")]
+        public bool loop;
+    }
+
+    /// <summary>
     /// Un gesto con nombre (el <c>gesture</c> de un ataque de jefe: "Charge", "Slam"…): durante la
     /// carga el cuerpo va hacia <see cref="windup"/>, al soltar salta a <see cref="strike"/> y luego
     /// vuelve al reposo. Todo son datos: un gesto nuevo no necesita código.
@@ -129,6 +192,11 @@ namespace RedMagic.Rigging
         [Min(0.01f)] public float recover = 0.45f;
         [Tooltip("Temblor (grados) de la raíz visual en el último 30% de la carga.")]
         public float shake = 1.5f;
+
+        [Header("Efectos")]
+        [Tooltip("Efectos que salen en una fase del gesto, colgados de una pieza, la boca, el cuerpo o " +
+                 "los pies. Se editan en la web (Enemy Studio ▸ Gestos).")]
+        public List<RigFx> fx = new List<RigFx>();
 
         [Header("Sonido")]
         [Tooltip("Suena al lanzar este gesto, sea cual sea el ataque que lo use. Se asigna en la pestaña " +

@@ -372,6 +372,11 @@
       },
       "$comment": "ProceduralRig.gestures (los \"gesture\" de los ataques de jefe)."
     },
+    "artAssets": {
+      "$ref": "boss-config.schema.json#/properties/artAssets",
+      "description": "Arte de los efectos de gesto (gestures[].phases[].fx[].fx = {\"art\": \"<id>\"}). El mismo bloque que BossConfig.artAssets.",
+      "$comment": "Opcional. BossArtBuilder construye un prefab por entrada: kind \"fx\" = un solo uso (VfxOneShot), \"fxLoop\" = bucle que apaga el driver. Una 'folder' que no empieza por Assets/ es relativa a Assets/Art/RigImports/<name>/ (el bundle trae los frames en Art/<libraryId>/<State>/). Prefabs en Assets/Prefabs/Fx/Enemies/<name>/ (enemigo) o Fx/Bosses/<name>/ (jefe)."
+    },
     "bossLimbs": {
       "type": "object",
       "additionalProperties": false,
@@ -682,9 +687,116 @@
         },
         "shake": {
           "type": "number"
+        },
+        "phases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/gesturePhase"
+          },
+          "$comment": "RigGesture.fx agrupado por fase. Presente = sustituye los efectos del gesto; ausente = se conservan los que tuviera el prefab."
         }
       },
       "$comment": "RigGesture."
+    },
+    "gesturePhase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase"
+      ],
+      "properties": {
+        "phase": {
+          "enum": [
+            "windup",
+            "strike",
+            "recover"
+          ],
+          "$comment": "RigFxPhase. windup dura el aviso del ataque; strike, strikeTime; recover, recover."
+        },
+        "fx": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/gestureFx"
+          }
+        }
+      },
+      "$comment": "Una fase del gesto y lo que cuelga de ella. Hoy sólo efectos; las poses siguen en windup / strike."
+    },
+    "gestureFx": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fx"
+      ],
+      "properties": {
+        "fx": {
+          "description": "El efecto: {\"art\": \"<id de artAssets>\"} o la ruta de un prefab del proyecto.",
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "art"
+              ],
+              "properties": {
+                "art": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "at": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "$comment": "Momento dentro de la fase: 0 = al empezar, 1 = al acabar."
+        },
+        "anchor": {
+          "enum": [
+            "part",
+            "body",
+            "muzzle",
+            "feet"
+          ],
+          "default": "part",
+          "$comment": "RigFxAnchor. feet = base del collider de la raíz."
+        },
+        "part": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "$comment": "Ruta de la pieza bajo Visual, cuando anchor = part."
+        },
+        "offset": {
+          "$ref": "_shared.schema.json#/definitions/vector2"
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 1
+        },
+        "followsPart": {
+          "type": "boolean",
+          "default": true
+        },
+        "loop": {
+          "type": "boolean",
+          "default": false,
+          "$comment": "Bucle hasta el final de la fase (su arte debe ser kind fxLoop). false = un solo uso."
+        }
+      },
+      "$comment": "RigFx."
     }
   }
 }

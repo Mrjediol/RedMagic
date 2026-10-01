@@ -322,10 +322,29 @@ export function instantiateTemplate(template, take = {}) {
   state.gestures = withGestures ? (template.gestures || []).map((g) => ({
     name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake,
     windup: poses(g.windup), strike: poses(g.strike),
+    fx: fxIn(g.fx, (slotId) => uidOf.get(slotId)),
   })) : null;
   if (!withGestures) state.rig.moveGesture = '';
   return state;
 }
+
+// ============================================================ gesture effects by slot
+
+/** A gesture's effects with their part rewritten (uid → slot id when saving, back when using). */
+function fxMapped(list, mapPart, each = (f) => f) {
+  return (list || []).map((f) => {
+    const out = each({ ...f, offset: { x: f.offset?.x || 0, y: f.offset?.y || 0 } });
+    if (out.anchor === 'part') {
+      out.part = mapPart(f.part) || null;
+      if (!out.part) out.anchor = 'body';   // its part is not in this body: it hangs from the whole body
+    } else out.part = null;
+    return out;
+  });
+}
+const fxIn = (list, uidOfSlot, k = 1) => fxMapped(list, uidOfSlot, (f) => {
+  if (k !== 1) { f.offset = scaled(f.offset, k); f.scale = r4((f.scale > 0 ? f.scale : 1) * k); }
+  return f;
+});
 
 // ============================================================ document → template (user templates)
 
@@ -443,6 +462,7 @@ export function templateFromState(state, { label, description = '', bodyHeight =
     gestures: (state.gestures || []).map((g) => ({
       name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake,
       windup: poses(g.windup), strike: poses(g.strike),
+      fx: fxMapped(g.fx, (uid) => ids.get(uid)),   // effects travel by library id: same browser library
     })),
   };
   if (state.kind === 'boss') {
@@ -516,7 +536,8 @@ export function importGestures(state, template, bodyHeight = 0) {
   const list = state.gestures || (state.gestures = []);
   let added = 0, replaced = 0;
   (template.gestures || []).forEach((g) => {
-    const gesture = { name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake, windup: convert(g.windup), strike: convert(g.strike) };
+    const gesture = { name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake, windup: convert(g.windup), strike: convert(g.strike),
+      fx: fxIn(g.fx, (slotId) => map.get(slotId), k) };
     const i = list.findIndex((x) => x.name === g.name);
     if (i >= 0) { list[i] = gesture; replaced++; } else { list.push(gesture); added++; }
   });
@@ -611,7 +632,11 @@ export function fitLengths(state, bodyHeight) {
   const k = bodyHeight / state.template.height;
   state.parts.forEach((p) => { p.sway.move = scaled(p.sway.move, k); });
   RIG_LENGTHS.forEach((key) => { if (state.rig[key] !== undefined) state.rig[key] = scaled(state.rig[key], k); });
-  (state.gestures || []).forEach((g) => [...g.windup, ...g.strike].forEach((p) => { p.move = scaled(p.move, k); }));
+  (state.gestures || []).forEach((g) => {
+    [...g.windup, ...g.strike].forEach((p) => { p.move = scaled(p.move, k); });
+    // Effects grow with the body: where they sit on their anchor and how big they are.
+    (g.fx || []).forEach((f) => { f.offset = scaled(f.offset, k); f.scale = r4((f.scale > 0 ? f.scale : 1) * k); });
+  });
   state.template.height = bodyHeight;
   state.template.fitted = true;
   return k;

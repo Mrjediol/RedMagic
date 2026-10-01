@@ -187,7 +187,7 @@ Effects drawn in code from parameters and **baked into a normal frame sheet**, s
 
 ### Enemy Studio tab (🧬, one workflow from parts to a finished enemy)
 
-Plan and phases: `docs/web-enemy-studio-plan.md` (S1 built: the shell + templates). **It has no
+Plan and phases: `docs/web-enemy-studio-plan.md` (built: S1 shell + templates, S2 gesture effects). **It has no
 editor of its own**: the body is the one Rig Composer and the behaviour is the one Enemy Creator
 form. While the tab is visible it **moves their panels into its layout** (`mount`) and puts them
 back when another tab is shown (`unmount`) — one document, one form, whichever tab shows them. The
@@ -200,7 +200,7 @@ inspector — or, in step 4 of an enemy, the behaviour form.
 |---|---|---|
 | 1 Cuerpo | document, add parts, parts list | `#rigSidebarBody` |
 | 2 Plantilla | template in use, "Nuevo desde plantilla" (built-in + ★ saved), "Guardar como plantilla" | `#rigSidebarTemplate` |
-| 3 Efectos | the library's projectiles / fx (read-only list until S2 hooks them to gesture phases) | — (own) |
+| 3 Efectos | the library's projectiles / fx as a palette: ＋ (or drag onto a gesture card) hangs one from the phase that card shows | — (own) |
 | 4 Comportamiento | enemy: the Enemy Creator form (right) + validation / JSON (left); boss: the Boss Creator link | `#enemyFormPanel`, `#enemyPreviewPanel`, `#rigInspectorLinks` |
 | 5 Exportar | save, .zip, rig-config preview | `#rigInspectorExport` |
 
@@ -232,6 +232,18 @@ screen, matching parts by slot id → role (the aim part, the n-th limb…) → 
 Its panels are five hosts (`#rigSidebarBody`, `#rigSidebarTemplate`, `#rigInspectorMain`,
 `#rigInspectorLinks`, `#rigInspectorExport`) so Enemy Studio can borrow them; the scrolling element
 is whatever column holds them (class `scrollHost`).
+
+**Gesture effects** (`modules/rig-fx.js`, DOM-free): a gesture's `fx` list hangs library effects
+(kind `fx` / `projectile`) from its phases — `{ fx: libraryId, phase, at, anchor, part, offset, scale,
+followsPart, loop }`. `pickLane` decides which lane of the entry plays (loop → `Loop`/`Move`, burst →
+`Spawn`/`Impact`, else the first) for the preview **and** the export; `phaseTimes` / `activeFx` copy
+`RigDriverCode.GestureRoutine`'s timing; `fxArtAsset` writes the `artAssets` entry (kind `fx` or
+`fxLoop`, `worldWidth` = first frame's width at the rig's ppu). In `rig-composer.js`: the gesture
+card's phase tabs (`phaseTab`), `renderPhaseFx` / `renderFxFields`, `addFx`, "⌖ Colocar" (`placeFx`:
+canvas click → offset in the anchor's space via `fxAnchorMatrix`) and `fxOverlay` (what
+`RigCanvasView._drawFx` draws: the effects alive in "▶ Probar", or the one being edited).
+`buildRigExport(state, { entriesById })` needs the library to export them; `buildRigBundle` ships
+their frames in `Art/<libraryId>/`. Templates carry them by slot (`rig-templates.js` ▸ `fxMapped`).
 
 **Gestures** (inspector ▸ Gestos): `modules/rig-gestures.js` holds the data helpers
 (`createGesture`, `poseOf`, `pruneGesture`…) and the formulas copied from `RigDriverCode.cs`

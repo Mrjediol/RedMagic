@@ -158,6 +158,9 @@ namespace RedMagic.Rigging.EditorTools
             // --- 2) sprites: los del proyecto se usan tal cual; los del bundle se copian y se configuran.
             var sprites = ResolveSprites(config, nodes, source, name, report);
 
+            // --- 2b) arte de los efectos de gesto ('artAssets' del propio rig-config): prefabs del pool.
+            BuildGestureArt(config, source, name, boss, report);
+
             // --- 3) configs que acompañan al cuerpo.
             EnemyTuning tuning = null;
             EnemyDeckImporter.Deck deck = null;
@@ -271,6 +274,47 @@ namespace RedMagic.Rigging.EditorTools
             }
 
             Debug.Log($"[RigBundleImporter] {name}\n{log}");
+        }
+
+        /// <summary>
+        /// Los efectos de gesto (<c>gestures[].phases[].fx[].fx = {"art": id}</c>) apuntan al bloque
+        /// <c>artAssets</c> del rig-config, el mismo formato que el de jefes y enemigos. Sus frames
+        /// viajan en <c>Art/&lt;libraryId&gt;/</c> del bundle; aquí se copian junto a las piezas, se
+        /// construye un prefab por entrada (<see cref="BossArtBuilder"/>) y cada referencia se cambia
+        /// por la ruta de su prefab, que es lo que lee <see cref="WriteRig"/>.
+        /// </summary>
+        private static void BuildGestureArt(JObject config, string source, string name, bool boss, ConfigImportReport report)
+        {
+            if (!(config["gestures"] is JArray gestures)) return;
+            var artAssets = config["artAssets"] as JObject;
+
+            Dictionary<string, string> artMap = null;
+            if (artAssets != null && artAssets.Count > 0)
+            {
+                string artRoot = $"{RigConfigJson.ArtRoot}/{name}";
+                string artSource = Path.Combine(source, "Art");
+                if (Directory.Exists(artSource) &&
+                    !string.Equals(Path.GetFullPath(artSource), Path.GetFullPath($"{artRoot}/Art"), StringComparison.OrdinalIgnoreCase))
+                {
+                    int copied = 0, removed = 0;
+                    // La misma carpeta Art/ del bundle que copia la baraja del enemigo: lleva el arte de ambos.
+                    BossBundleImporter.Sync(artSource, Path.GetFullPath($"{artRoot}/Art"), ref copied, ref removed);
+                    AssetDatabase.Refresh();
+                }
+
+                foreach (var prop in artAssets.Properties())
+                    if (prop.Value is JObject entry && entry.Value<string>("folder") is string folder &&
+                        !folder.StartsWith("Assets/", StringComparison.Ordinal))
+                        entry["folder"] = $"{artRoot}/{folder.TrimStart('/')}";
+
+                var log = new StringBuilder();
+                string prefabFolder = boss ? null : $"{EnemyDeckImporter.ArtPrefabRoot}/{name}";
+                artMap = BossArtBuilder.Build(name, artAssets, log, prefabFolder);
+                foreach (var path in artMap.Values) report.Add(false, path);
+                if (log.Length > 0) report.Warnings.Add(log.ToString().TrimEnd());
+            }
+
+            BossArtBuilder.ResolveArtRefs(gestures, artMap, report.Warnings, "gestures");
         }
 
         private static Type DriverType(string driver)
@@ -769,7 +813,11 @@ namespace RedMagic.Rigging.EditorTools
                     gesture.recover = g.Value<float?>("recover") ?? gesture.recover;
                     gesture.shake = g.Value<float?>("shake") ?? gesture.shake;
 
+                    // Efectos: como las poses, vienen del JSON; sin la clave se conservan los que hubiera.
                     var previous = oldGestures.Find(o => o != null && o.name == gesture.name);
+                    if (g["phases"] is JArray phases) gesture.fx = GestureFx(phases, visual, $"gestures[{i}]", report);
+                    else if (previous != null) gesture.fx = previous.fx ?? new List<RigFx>();
+
                     if (previous != null)
                     {
                         gesture.sound = previous.sound;
@@ -797,6 +845,66 @@ namespace RedMagic.Rigging.EditorTools
             part.swayScale = ConfigJson.ReadVector2(sway["scale"], part.swayScale);
             part.swaySpeed = sway.Value<float?>("speed") ?? part.swaySpeed;
             part.swayPhase = sway.Value<float?>("phase") ?? part.swayPhase;
+        }
+
+        /// <summary><c>phases[].fx</c> → la lista plana de <see cref="RigFx"/> del gesto (cada uno con su fase).</summary>
+        private static List<RigFx> GestureFx(JArray phases, Transform visual, string ctx, ConfigImportReport report)
+        {
+            var list = new List<RigFx>();
+            for (int p = 0; p < phases.Count; p++)
+            {
+                if (!(phases[p] is JObject phaseJson)) continue;
+                string phaseName = phaseJson.Value<string>("phase");
+                if (!RigConfigJson.TryFxPhase(phaseName, out var phase))
+                {
+                    report.Warnings.Add($"{ctx}.phases[{p}]: fase '{phaseName}' desconocida (windup / strike / recover); se omite.");
+                    continue;
+                }
+
+                if (!(phaseJson["fx"] is JArray items)) continue;
+                for (int i = 0; i < items.Count; i++)
+                {
+                    if (!(items[i] is JObject item)) continue;
+                    string where = $"{ctx}.phases[{p}].fx[{i}]";
+
+                    // Tras BuildGestureArt, 'fx' es la ruta de un prefab (o null si su arte no se pudo construir).
+                    string prefabPath = item["fx"]?.Type == JTokenType.String ? item.Value<string>("fx") : null;
+                    var prefab = string.IsNullOrEmpty(prefabPath) ? null : AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+                    if (prefab == null)
+                    {
+                        report.Warnings.Add($"{where}: sin prefab de efecto ('{prefabPath}'); se omite.");
+                        continue;
+                    }
+
+                    var fx = new RigFx { prefab = prefab, phase = phase };
+                    fx.at = Mathf.Clamp01(item.Value<float?>("at") ?? 0f);
+                    string anchorName = item.Value<string>("anchor") ?? "part";
+                    if (!RigConfigJson.TryFxAnchor(anchorName, out fx.anchor))
+                    {
+                        report.Warnings.Add($"{where}: ancla '{anchorName}' desconocida; va al cuerpo.");
+                        fx.anchor = RigFxAnchor.Body;
+                    }
+
+                    string partPath = item.Value<string>("part");
+                    if (fx.anchor == RigFxAnchor.Part)
+                    {
+                        fx.part = string.IsNullOrEmpty(partPath) ? null : RigConfigJson.Find(visual, partPath);
+                        if (fx.part == null)
+                        {
+                            report.Warnings.Add($"{where}: la pieza '{partPath}' no existe; el efecto va al cuerpo.");
+                            fx.anchor = RigFxAnchor.Body;
+                        }
+                    }
+
+                    fx.offset = ConfigJson.ReadVector2(item["offset"], Vector2.zero);
+                    fx.scale = Mathf.Max(0.01f, item.Value<float?>("scale") ?? 1f);
+                    fx.followsPart = item.Value<bool?>("followsPart") ?? true;
+                    fx.loop = item.Value<bool?>("loop") ?? false;
+                    list.Add(fx);
+                }
+            }
+
+            return list;
         }
 
         private static List<RigPose> Poses(JArray array, Transform visual)

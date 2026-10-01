@@ -596,6 +596,19 @@ MonoBehaviour:
     strikeTime: 0.06
     recover: 0.3
     shake: 0
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   - name: Charge
     windup:
     - part: {fileID: 6615454965093861272}
@@ -622,6 +635,19 @@ MonoBehaviour:
     strikeTime: 0.08
     recover: 0.45
     shake: 1.5
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   - name: Sweep
     windup:
     - part: {fileID: 6615454965093861272}
@@ -644,6 +670,19 @@ MonoBehaviour:
     strikeTime: 0.14
     recover: 0.4
     shake: 0
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   drivenLease: 0.25
   drivenReturn: 0.35
   staggerStrength: 2.5

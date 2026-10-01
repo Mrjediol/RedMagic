@@ -42,6 +42,13 @@ them and compares every public field of `ProceduralRig` by reflection (plus the 
   (in a zip: `enemy-config.json` / `boss-config.json`). The exporter writes `X.enemy-config.json` (full
   `tuning` by reflection + `tier`, no `art`: in a rig bundle `art` is not used) and `bossBody.definition`
   (existing asset, linked when no boss-config comes along).
+- **Gesture effects** (additive, 2026-10-01): `gestures[].phases[]` = `{ phase: windup | strike | recover,
+  fx: [{ fx, at, anchor, part, offset, scale, followsPart, loop }] }` ↔ `RigGesture.fx` (a flat list of
+  `RigFx`, each with its `phase`; the JSON groups them by phase, in phase order). `fx` is
+  `{"art": "<id>"}` into the document's own `artAssets` (the BossConfig block, reused by `$ref`) or a
+  prefab path (what the exporter writes). New art kind **`fxLoop`** in `boss-config`'s `artAssets`
+  (flipbook that loops, no `VfxOneShot`). A config without `phases` imports exactly as before and
+  keeps the effects already on the prefab; `phases: []` clears them.
 - **Things that bite**: (1) tuning from a bundled `enemy-config.json` goes through
   `EnemyConfigImporter.ReadTuning`, so the `EnemyStats.OnValidate` clamps above apply unchanged;
   its `presence` block is ignored (the body/collider come from rig-config). (2) A bundled

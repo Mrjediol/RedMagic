@@ -15,12 +15,17 @@
 //    with rigPart:false;
 //  - `gestures` is only written when the document has them (today: the ones a body template brings,
 //    rig-templates.js). A present list replaces the gestures authored in Unity, an absent key keeps them;
+//  - a gesture's effects (rig-fx.js) go out as `gestures[].phases[].fx`, each pointing at an entry of
+//    the document's own `artAssets` (one per library effect and per loop / one-shot); their frames
+//    travel in Art/<libraryId>/, next to the deck's art. `phases` is always written with the gestures
+//    (empty = no effects), so removing one in the web removes it in Unity;
 //  - a template slot still empty is left out (unless a filled part hangs from it: then it stays as
 //    an empty node), and a required one is reported as a problem.
 
 import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot, isOpenSlot, feetY } from './rig-model.js';
 import { embedReferencedLibraryEntries, embedAttackArt } from './enemy-bundle.js';
 import { writeLanes } from './boss-bundle.js';
+import { FX_PHASES, fxArtId, fxArtAsset } from './rig-fx.js';
 
 const r5 = (v) => Math.round(v * 1e5) / 1e5;
 const v2 = (v) => ({ x: r5(v.x), y: r5(v.y) });
@@ -28,9 +33,12 @@ const scaleOut = (s) => (Math.abs(s.x - s.y) < 1e-6 ? r5(s.x) : v2(s));
 const safe = (name) => name.replace(/[^A-Za-z0-9_-]/g, '_') || 'pieza';
 
 /**
+ * @param {object} state
+ * @param {{entriesById?: Map<string, object>}} [ctx] - library records: needed to export the effects
+ *        hooked to gestures (an effect whose entry is not there is reported and left out).
  * @returns {{ doc: object, files: Array<{path: string, dataURL: string}>, problems: string[], notes: string[] }}
  */
-export function buildRigExport(state) {
+export function buildRigExport(state, ctx = {}) {
   const problems = [];
   const notes = [];
   const files = [];
@@ -164,10 +172,33 @@ export function buildRigExport(state) {
     const poses = (list) => (list || [])
       .map((p) => ({ part: p.part === 'Visual' ? 'Visual' : partPaths.get(p.part), move: v2(p.move), rotate: r5(p.rotate), scale: v2(p.scale) }))
       .filter((p) => p.part);   // poses of a part that is not there (empty optional slot, deleted) drop out
+    const artAssets = {};
+    const fxOut = (g, f) => {
+      const entry = ctx.entriesById?.get(f.fx);
+      const asset = entry ? fxArtAsset(entry, f.loop, ppu) : null;
+      if (!asset) { problems.push(`Gesto "${g.name}": un efecto ya no está en la biblioteca (o no tiene frames); quítalo o elige otro.`); return null; }
+      const id = fxArtId(f.fx, f.loop);
+      artAssets[id] = asset;
+      const out = { fx: { art: id }, at: r5(Math.min(1, Math.max(0, f.at || 0))), anchor: f.anchor };
+      if (f.anchor === 'part') {
+        out.part = partPaths.get(f.part) || null;
+        if (!out.part) { out.anchor = 'body'; delete out.part; notes.push(`Gesto "${g.name}": la pieza de un efecto no se exporta; el efecto cuelga del cuerpo.`); }
+      }
+      if (f.anchor === 'muzzle' && !muzzlePath) notes.push(`Gesto "${g.name}": un efecto cuelga de la boca pero no hay boca puesta; saldrá de la pieza que apunta o del cuerpo.`);
+      out.offset = v2(f.offset || { x: 0, y: 0 });
+      out.scale = r5(f.scale > 0 ? f.scale : 1);
+      out.followsPart = f.followsPart !== false;
+      out.loop = !!f.loop;
+      return out;
+    };
     doc.gestures = gestures.map((g) => ({
       name: g.name, windup: poses(g.windup), strike: poses(g.strike),
       strikeTime: r5(g.strikeTime), recover: r5(g.recover), shake: r5(g.shake),
+      phases: FX_PHASES
+        .map((phase) => ({ phase, fx: (g.fx || []).filter((f) => f.phase === phase).map((f) => fxOut(g, f)).filter(Boolean) }))
+        .filter((p) => p.fx.length),
     }));
+    if (Object.keys(artAssets).length) doc.artAssets = artAssets;
     if (doc.gestures.length) notes.push(`Gestos (${doc.gestures.map((g) => g.name).join(', ')}): al reimportar sustituyen a los del prefab.`);
     if (rig.moveGesture && !doc.gestures.some((g) => g.name === rig.moveGesture))
       notes.push(`El gesto al desplazarse "${rig.moveGesture}" no está entre los gestos exportados.`);
@@ -217,10 +248,11 @@ export function companionEnemyConfig(enemyConfig, name) {
  *                          bossEntry, entriesById: Map } (library records)
  */
 export async function buildRigBundle(state, { enemyConfig = null, bossEntry = null, entriesById = new Map() } = {}) {
-  const { doc, files } = buildRigExport(state);
+  const { doc, files } = buildRigExport(state, { entriesById });
   const zip = new window.JSZip();
   zip.file('rig-config.json', JSON.stringify(doc, null, 2));
   files.forEach((f) => zip.file(f.path, f.dataURL.split(',')[1], { base64: true }));
+  await embedAttackArt(zip, doc);   // frames of the gestures' effects → Art/<libraryId>/
 
   if (state.kind === 'enemy') {
     const cfg = companionEnemyConfig(enemyConfig, doc.name);

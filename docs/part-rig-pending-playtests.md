@@ -209,3 +209,46 @@ on every action was not liked. Decision: **one driver, `RigDriverCode`**; the DO
 
 **Known limits of S1**: step 3 only lists effects (attaching them to gesture phases is S2); a template keeps
 no art and no state sprites; a boss template does not keep the feet height.
+
+---
+
+## Enemy Studio S2 — effects on gesture phases (web + Unity)
+
+**What was added**
+- A gesture card now has three tabs — **Carga / Golpe / Vuelta** — each with its pose button, its timing and
+  its **effects**: library effects (✨ VFX Lab or Sprites) hung from a part, the muzzle, the body or the feet.
+- Per effect: when (start / end / a point of the phase), "En bucle hasta que acabe la fase" (a charge) or one
+  burst, "⌖ Colocar en el lienzo" (click where it goes), and folded: size, offset, "sigue a su ancla".
+- Enemy Studio ▸ step 3 **Efectos** is a palette: ＋ (or drag the row onto a gesture) adds it to the phase
+  that gesture is showing.
+- "▶ Probar" shows the effects at their moment, on the canvas.
+- Unity: the effects travel in the rig .zip, become pooled prefabs (`Assets/Prefabs/Fx/Enemies/<name>/`) and
+  the driver spawns them during the gesture. `ProceduralRig` inspector ▸ gesture ▸ "Efectos" lists them.
+- Templates keep the effects of their gestures.
+
+**Tests** (Ctrl+F5 first; needs at least one effect in the library, e.g. "Orbe cargándose" and "Impacto mágico"
+from ✨ VFX Lab)
+- [ ] ES10 · Open a caster rig in 🧬, open gesture `Charge`: tabs Carga / Golpe / Vuelta. Carga has "Posar
+      carga" + Temblor, Golpe has "Posar golpe" + Golpe (s), Vuelta has only its time. Posing still works.
+- [ ] ES11 · Step 3: with `Charge` open on Carga, press ＋ on the charging orb: it appears in the card and on
+      the canvas. "Cuelga de" ▸ Boca del arma, or "⌖ Colocar" and click the weapon tip. Then tab Golpe ▸
+      ＋ Efecto ▸ the impact, on the muzzle. Dragging a row from step 3 onto a gesture also works.
+- [ ] ES12 · "▶ Probar": the orb loops on the weapon tip during the charge and follows the arm, disappears at
+      release, the burst plays once. Sizes and positions read right? (say which defaults to change)
+- [ ] ES13 · Export, import in Unity (Conservarlo): no errors; prefabs in `Assets/Prefabs/Fx/Enemies/<name>/`;
+      the gesture in the `ProceduralRig` inspector lists 2 effects.
+- [ ] ES14 · Play, with an attack of the deck using that gesture: charge effect on the weapon tip for the whole
+      telegraph (following the arm, mirrored when the enemy faces left), gone at release; burst at the muzzle.
+      Same size and place as in the web preview? In front of the body?
+- [ ] ES15 · Kill the enemy mid-charge, and let it be interrupted (another attack / it falls asleep): no effect
+      stays on screen. Several enemies charging at once: each has its own.
+- [ ] ES16 · An effect on "Pies" with "sigue a su ancla" off in Vuelta (dust on landing): stays on the ground
+      where it appeared.
+- [ ] ES17 · Remove an effect in the web, re-export, reimport: it is gone in Unity. Change its size: follows.
+- [ ] ES18 · Regression: enemies and bosses without effects (Robot, Turret, BossIce2) animate as before.
+- [ ] ES19 · Save as template with effects, new enemy from it with other art: effects are on the same parts,
+      scaled with the body.
+
+**Known limits of S2**: effects always draw in front of the body; colours are baked; the enemy's built-in attack
+has no effects unless it is repeated with a gesture; a boss's held gestures (move / dash travel) only fire the
+effects set "al empezar" of Carga; an effect has no sound of its own.

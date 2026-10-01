@@ -13,6 +13,9 @@
 // (0.2 = 20% bigger). 'Visual' is the whole body. Only rig parts can be posed: the driver recomposes
 // those every frame, anything else would drift.
 //
+// A gesture can also carry EFFECTS per phase (`fx`, see rig-fx.js): the charge particles on the
+// weapon tip, the burst on release.
+//
 // The formulas copy RigDriverCode.cs (ApplyPoses, GestureRoutine, SettleRoutine): what the preview
 // plays is what Unity plays.
 
@@ -34,7 +37,7 @@ export function uniqueGestureName(state, wanted, except = null) {
 
 /** A new empty gesture, with RigGesture's own defaults. */
 export function createGesture(state, name = 'Gesto') {
-  return { name: uniqueGestureName(state, name), strikeTime: 0.08, recover: 0.45, shake: 1.5, windup: [], strike: [] };
+  return { name: uniqueGestureName(state, name), strikeTime: 0.08, recover: 0.45, shake: 1.5, windup: [], strike: [], fx: [] };
 }
 
 export function duplicateGesture(state, gesture) {
@@ -65,9 +68,13 @@ export function pruneGesture(gesture) {
   ['windup', 'strike'].forEach((phase) => { gesture[phase] = (gesture[phase] || []).filter((p) => !isRest(p)); });
 }
 
-/** A deleted part takes its poses with it. */
+/** A deleted part takes its poses with it; an effect that hung from it goes to the body. */
 export function dropPartFromGestures(state, uid) {
-  (state.gestures || []).forEach((g) => { removePose(g, 'windup', uid); removePose(g, 'strike', uid); });
+  (state.gestures || []).forEach((g) => {
+    removePose(g, 'windup', uid);
+    removePose(g, 'strike', uid);
+    (g.fx || []).forEach((f) => { if (f.anchor === 'part' && f.part === uid) { f.anchor = 'body'; f.part = null; } });
+  });
 }
 
 export function roundPose(pose) {

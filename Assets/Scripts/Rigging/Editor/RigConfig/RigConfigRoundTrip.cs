@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using RedMagic.Bosses;
+using RedMagic.Bosses.EditorTools;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -17,6 +18,9 @@ namespace RedMagic.Rigging.EditorTools
     /// nombre en una carpeta temporal y compara campo a campo (por reflexión) el
     /// <see cref="ProceduralRig"/>, la jerarquía bajo Visual y <see cref="BossLimbs"/>. Después borra
     /// lo importado. Un campo nuevo en ProceduralRig entra en la comparación solo.
+    ///
+    /// Los prefabs de referencia no llevan efectos de gesto (<see cref="RigFx"/>), así que hay un
+    /// cuarto caso sintético: una copia del primero con un gesto que usa todas las anclas y fases.
     /// </summary>
     public static class RigConfigRoundTrip
     {
@@ -69,6 +73,8 @@ namespace RedMagic.Rigging.EditorTools
                                                    : $"x {name}: {diffs.Count} diferencias");
                     foreach (var d in diffs) sb.AppendLine($"    {d}");
                 }
+
+                failures += GestureFxCase(sb);
             }
             finally
             {
@@ -80,6 +86,83 @@ namespace RedMagic.Rigging.EditorTools
 
             sb.Insert(0, failures == 0 ? "IDA Y VUELTA OK\n" : $"IDA Y VUELTA CON FALLOS ({failures})\n");
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Efectos de gesto: una copia temporal del primer prefab de referencia con un gesto cargado de
+        /// <see cref="RigFx"/> (cada ancla, cada fase, valores no por defecto) → JSON → reimport → comparar.
+        /// El JSON va a la carpeta Temp del proyecto, no a los fixtures.
+        /// </summary>
+        private static int GestureFxCase(StringBuilder sb)
+        {
+            const string caseName = "GestureFx";
+            string[] fxPrefabs = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs/Fx" });
+            if (fxPrefabs.Length == 0)
+            {
+                sb.AppendLine($"- {caseName}: no hay ningún prefab en Assets/Prefabs/Fx con el que probar; caso omitido.");
+                return 0;
+            }
+
+            var fxPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(fxPrefabs[0]));
+            BossAuthoring.EnsureFolder(TempFolder);
+            string sourcePath = $"{TempFolder}/{caseName}.prefab";
+            if (!AssetDatabase.CopyAsset($"{ProceduralEnemyPacks.Folder}/{Reference[0]}.prefab", sourcePath))
+            {
+                sb.AppendLine($"x {caseName}: no se pudo copiar {Reference[0]}.");
+                return 1;
+            }
+
+            var contents = PrefabUtility.LoadPrefabContents(sourcePath);
+            try
+            {
+                var rig = contents.GetComponent<ProceduralRig>();
+                Transform part = null;
+                foreach (var p in rig.parts)
+                    if (p?.part != null) { part = p.part; break; }
+
+                rig.gestures.Add(new RigGesture
+                {
+                    name = "FxRoundTrip",
+                    // En el orden de las fases: así los agrupa el JSON (phases[].fx).
+                    fx = new List<RigFx>
+                    {
+                        new RigFx { prefab = fxPrefab, phase = RigFxPhase.Windup, at = 0f, anchor = RigFxAnchor.Part, part = part,
+                                    offset = new Vector2(0.25f, -0.5f), scale = 1.5f, followsPart = true, loop = true },
+                        new RigFx { prefab = fxPrefab, phase = RigFxPhase.Windup, at = 0.7f, anchor = RigFxAnchor.Body,
+                                    offset = new Vector2(0f, 1f), scale = 1f, followsPart = true, loop = false },
+                        new RigFx { prefab = fxPrefab, phase = RigFxPhase.Strike, at = 0.5f, anchor = RigFxAnchor.Muzzle,
+                                    offset = Vector2.zero, scale = 0.75f, followsPart = false, loop = false },
+                        new RigFx { prefab = fxPrefab, phase = RigFxPhase.Recover, at = 1f, anchor = RigFxAnchor.Feet,
+                                    offset = new Vector2(-1f, 0f), scale = 2f, followsPart = true, loop = false },
+                    },
+                });
+                PrefabUtility.SaveAsPrefabAsset(contents, sourcePath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(contents);
+            }
+
+            string json = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Temp", "RigRoundTrip", $"{caseName}.rig-config.json"));
+            sb.AppendLine(RigConfigExporter.ExportToFile(sourcePath, json));
+
+            string copyName = caseName + "_RoundTrip";
+            string summary = RigBundleImporter.Import(json, new RigBundleImporter.Options { NameOverride = copyName, PrefabFolder = TempFolder });
+            var original = AssetDatabase.LoadAssetAtPath<GameObject>(sourcePath);
+            var copy = AssetDatabase.LoadAssetAtPath<GameObject>($"{TempFolder}/{copyName}.prefab");
+            if (copy == null)
+            {
+                sb.AppendLine($"x {caseName}: el import no produjo el prefab.\n{summary}");
+                return 1;
+            }
+
+            var diffs = Compare(original, copy);
+            int found = copy.GetComponent<ProceduralRig>().FindGesture("FxRoundTrip")?.fx?.Count ?? 0;
+            if (found != 4) diffs.Add($"el gesto reimportado tiene {found} efectos, no 4");
+            sb.AppendLine(diffs.Count == 0 ? $"✓ {caseName}: efectos de gesto (4 anclas, 3 fases) idénticos tras la ida y vuelta."
+                                           : $"x {caseName}: {diffs.Count} diferencias");
+            foreach (var d in diffs) sb.AppendLine($"    {d}");
+            return diffs.Count > 0 ? 1 : 0;
         }
 
         // ============================================================ comparación

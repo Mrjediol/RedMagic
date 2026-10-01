@@ -39,6 +39,7 @@ namespace RedMagic.Rigging
         {
             Rig = GetComponent<ProceduralRig>();
             Rig.CaptureRest();
+            CacheFxContext();
         }
 
         protected virtual void OnEnable()
@@ -49,6 +50,7 @@ namespace RedMagic.Rigging
 
         protected virtual void OnDisable()
         {
+            StopFx();
             Driven.Clear();
             Rig.RestorePose();
         }
@@ -233,6 +235,198 @@ namespace RedMagic.Rigging
         {
             if (gesture == null || gesture.soundMoment != moment || gesture.sound == null) return;
             if (AudioManager.Instance != null) AudioManager.Instance.Play(gesture.sound, transform.position);
+        }
+
+        // ============================================================ efectos de gesto (RigFx, siempre del pool)
+
+        /// <summary>Un efecto de gesto vivo: se le sigue la pista para moverlo con su ancla y apagarlo.</summary>
+        private struct LiveFx
+        {
+            public GameObject instance;
+            public RigFx data;
+
+            /// <summary>Lo apaga el motor (un bucle, o un prefab sin VfxOneShot). Si no, se apaga solo.</summary>
+            public bool owned;
+
+            /// <summary>Bucle: vive hasta que acaba su fase. Si no, segundos que le quedan.</summary>
+            public bool loop;
+            public float life;
+        }
+
+        private readonly List<LiveFx> _liveFx = new List<LiveFx>();
+        private static readonly List<SpriteRenderer> FxRenderers = new List<SpriteRenderer>();
+        private Collider2D _fxGround;
+        private int _fxSortingLayer, _fxSortingOrder;
+
+        /// <summary>Lo que no cambia en la vida del cuerpo: su collider (pies) y el orden de dibujado de sus efectos.</summary>
+        private void CacheFxContext()
+        {
+            _fxGround = GetComponent<Collider2D>();
+            _fxSortingOrder = 1;
+            if (Rig.body == null) return;
+
+            // Delante de todas las piezas, en su misma capa (0 quedaría detrás del fondo de la escena).
+            Rig.body.GetComponentsInChildren(true, FxRenderers);
+            foreach (var r in FxRenderers)
+            {
+                _fxSortingLayer = r.sortingLayerID;
+                _fxSortingOrder = Mathf.Max(_fxSortingOrder, r.sortingOrder + 1);
+            }
+
+            FxRenderers.Clear();
+        }
+
+        /// <summary>
+        /// Lanza los efectos de <paramref name="phase"/> cuyo momento cae en (<paramref name="from"/>,
+        /// <paramref name="to"/>]. El motor la llama cada frame con el avance de la fase: la primera vez
+        /// con <c>from</c> negativo (así entra el momento 0) y, al acabar, hasta 1.
+        /// </summary>
+        protected void FireFx(RigGesture gesture, RigFxPhase phase, float from, float to)
+        {
+            if (gesture?.fx == null) return;
+            for (int i = 0; i < gesture.fx.Count; i++)
+            {
+                var fx = gesture.fx[i];
+                if (fx == null || fx.prefab == null || fx.phase != phase || fx.at <= from || fx.at > to) continue;
+                SpawnFx(fx);
+            }
+        }
+
+        private void SpawnFx(RigFx fx)
+        {
+            FxPose(fx, out var position, out var rotation, out float mirror);
+            var instance = Core.PrefabPool.Spawn(fx.prefab, position, rotation);
+            if (instance == null) return;
+
+            // Tamaño: el del prefab × el del efecto × la escala del cuerpo (un enemigo a mitad de tamaño
+            // lleva sus efectos a mitad de tamaño). El pool reutiliza instancias: se parte del prefab.
+            float size = fx.scale * (Rig.body != null ? Mathf.Abs(Rig.body.lossyScale.y) : 1f);
+            var scale = fx.prefab.transform.localScale * Mathf.Max(0.01f, size);
+            scale.x = Mathf.Abs(scale.x) * mirror;
+            instance.transform.localScale = scale;
+
+            instance.GetComponentsInChildren(true, FxRenderers);
+            foreach (var r in FxRenderers)
+            {
+                r.sortingLayerID = _fxSortingLayer;
+                r.sortingOrder = _fxSortingOrder;
+            }
+
+            FxRenderers.Clear();
+
+            // Un prefab con VfxOneShot se devuelve solo al pool: el motor sólo lo acompaña (y deja de
+            // tocarlo un poco antes, para no mover una instancia que el pool ya haya dado a otro).
+            bool selfDespawns = instance.TryGetComponent(out Fx.VfxOneShot oneShot);
+            if (selfDespawns) oneShot.Restart();
+
+            float duration = 0.5f;
+            if (fx.prefab.TryGetComponent(out Gameplay.SpriteFlipbook flipbook) && flipbook.Duration > 0f)
+                duration = flipbook.Duration;
+
+            bool loop = fx.loop && !selfDespawns;
+            if (!loop && selfDespawns && !fx.followsPart) return;   // suelto y autónomo: nada que seguir
+
+            _liveFx.Add(new LiveFx
+            {
+                instance = instance,
+                data = fx,
+                owned = !selfDespawns,
+                loop = loop,
+                life = selfDespawns ? duration * 0.9f : duration,
+            });
+        }
+
+        /// <summary>
+        /// Dónde va un efecto ahora mismo. El desplazamiento está en el espacio del ancla, así que el
+        /// volteo del cuerpo lo refleja solo; <paramref name="mirror"/> (-1) refleja también el dibujo.
+        /// </summary>
+        private void FxPose(RigFx fx, out Vector3 position, out Quaternion rotation, out float mirror)
+        {
+            Transform anchor = null;
+            switch (fx.anchor)
+            {
+                case RigFxAnchor.Part: anchor = fx.part; break;
+                case RigFxAnchor.Muzzle: anchor = Rig.muzzle != null ? Rig.muzzle : Rig.aimPart; break;
+                case RigFxAnchor.Feet:
+                    Vector2 feet = _fxGround != null && _fxGround.enabled
+                        ? new Vector2(_fxGround.bounds.center.x, _fxGround.bounds.min.y)
+                        : (Vector2)transform.position;
+                    position = new Vector3(feet.x + fx.offset.x * Facing, feet.y + fx.offset.y, transform.position.z);
+                    rotation = Quaternion.identity;
+                    mirror = Facing;
+                    return;
+            }
+
+            if (anchor == null) anchor = Rig.body != null ? Rig.body : transform;
+
+            position = anchor.TransformPoint(fx.offset);
+            Vector2 right = anchor.TransformVector(Vector3.right);
+            Vector2 up = anchor.TransformVector(Vector3.up);
+            float angle = Mathf.Atan2(right.y, right.x) * Mathf.Rad2Deg;
+
+            // Ancla reflejada (cuerpo mirando a la izquierda): el dibujo se refleja en vez de quedar del revés.
+            mirror = right.x * up.y - right.y * up.x < 0f ? -1f : 1f;
+            rotation = Quaternion.Euler(0f, 0f, mirror < 0f ? angle + 180f : angle);
+        }
+
+        /// <summary>
+        /// Una vez por frame, <b>después</b> de componer el cuerpo: los efectos que siguen a su ancla
+        /// se recolocan, y los de un solo uso que apaga el motor se devuelven al pool al acabar.
+        /// </summary>
+        protected void TickFx(float dt)
+        {
+            for (int i = _liveFx.Count - 1; i >= 0; i--)
+            {
+                var live = _liveFx[i];
+                if (live.instance == null || !live.instance.activeSelf)
+                {
+                    _liveFx.RemoveAt(i);
+                    continue;
+                }
+
+                if (!live.loop)
+                {
+                    live.life -= dt;
+                    if (live.life <= 0f)
+                    {
+                        if (live.owned) Core.PrefabPool.Despawn(live.instance);
+                        _liveFx.RemoveAt(i);
+                        continue;
+                    }
+
+                    _liveFx[i] = live;
+                }
+
+                if (!live.data.followsPart) continue;
+                FxPose(live.data, out var position, out var rotation, out float mirror);
+                var t = live.instance.transform;
+                t.SetPositionAndRotation(position, rotation);
+                var scale = t.localScale;
+                scale.x = Mathf.Abs(scale.x) * mirror;
+                t.localScale = scale;
+            }
+        }
+
+        /// <summary>Fin de una fase: se apagan sus efectos en bucle.</summary>
+        protected void EndFxPhase(RigFxPhase phase)
+        {
+            for (int i = _liveFx.Count - 1; i >= 0; i--)
+            {
+                if (!_liveFx[i].loop || _liveFx[i].data.phase != phase) continue;
+                Core.PrefabPool.Despawn(_liveFx[i].instance);
+                _liveFx.RemoveAt(i);
+            }
+        }
+
+        /// <summary>
+        /// El gesto se corta (otro encima, muerte, vuelta al pool): los bucles se apagan ya; los de un
+        /// solo uso acaban donde están.
+        /// </summary>
+        protected void StopFx()
+        {
+            for (int i = 0; i < _liveFx.Count; i++)
+                if (_liveFx[i].owned) Core.PrefabPool.Despawn(_liveFx[i].instance);
+            _liveFx.Clear();
         }
 
         protected void RaiseFinished() => AttackFinished?.Invoke();

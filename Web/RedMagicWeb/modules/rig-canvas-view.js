@@ -300,7 +300,9 @@ export class RigCanvasView {
   /**
    * @param {object} state
    * @param {object} opts - { selectedUid, poses, visualMatrix, spriteState, stage, showCollider,
-   *                          showMarkers, ghostRest, requestRender }
+   *                          showMarkers, ghostRest, requestRender,
+   *                          fx: [{ sheet: dataURL, box: {x,y,w,h}, matrix, alpha, marked }] }
+   *                          (gesture effects: `matrix` maps the frame's centred pixels to Visual space)
    */
   render(state, opts = {}) {
     const ctx = this.ctx;
@@ -331,11 +333,39 @@ export class RigCanvasView {
     }
 
     drawParts(opts);
+    this._drawFx(opts);   // in front of every part, like the driver draws them
 
     this._drawSlots(state, opts);
     if (opts.showCollider !== false) { this._drawCollider(state, opts); this._drawFeet(state); }
     if (opts.showMarkers !== false) this._drawNodes(state, opts);
     if (opts.showMarkers !== false) this._drawMarkers(state, opts);
+  }
+
+  /** Gesture effects (rig-fx.js): one frame of a library sheet each, centred on its anchor point. */
+  _drawFx(opts) {
+    const ctx = this.ctx;
+    (opts.fx || []).forEach((f) => {
+      const e = this._entry({ dataURL: f.sheet }, opts.requestRender);
+      const m = multiply(this.camera, f.matrix);
+      if (e) {
+        ctx.save();
+        ctx.globalAlpha = f.alpha ?? 1;
+        ctx.transform(...m);
+        ctx.drawImage(e.img, f.box.x, f.box.y, f.box.w, f.box.h, -f.box.w / 2, -f.box.h / 2, f.box.w, f.box.h);
+        ctx.restore();
+      }
+      if (f.marked) {   // the one being edited: a cross on its anchor point
+        const p = apply(m, { x: 0, y: 0 });
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255,200,80,0.95)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(p.x - 7, p.y); ctx.lineTo(p.x + 7, p.y);
+        ctx.moveTo(p.x, p.y - 7); ctx.lineTo(p.x, p.y + 7);
+        ctx.stroke();
+        ctx.restore();
+      }
+    });
   }
 
   _drawGrid() {

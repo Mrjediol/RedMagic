@@ -1,6 +1,6 @@
 # Plan — Enemy Studio: one web flow from parts to a finished enemy
 
-Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Built so far: S1** (see Progress).
+Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Built so far: S1, S2** (see Progress).
 Goal, in the user's words: import the parts of an enemy, build body and gestures, save it as a
 **template**, create projectile / VFX effects in the VFX tab, and **attach those effects anywhere
 on the enemy** — plus defensive moves, idle gestures, and per-state sprites — in one comfortable
@@ -124,16 +124,27 @@ Order rationale: S1 gives the workflow shell the user asked for; S2 is the most 
   `Web/RedMagicWeb/ARCHITECTURE.md ▸ Enemy Studio tab`. Checked headless (jsdom + Ajv, 66 checks:
   template round-trip against the rig schema, the whole step flow, export zip, old tabs intact).
   **Not seen in a real browser yet** — layout and feel are in the pending-tests file (ES1…).
-- Step 3 (Efectos) is only a list of the library's effects until S2.
-- **Next: S2** (gesture phases + FX hooks). A user template must then also carry `phases[].fx`:
-  extend `templateFromState` / `instantiateTemplate` / `importGestures` together with the gesture.
+- **S2 — done (2026-10-01, same branch; web + Unity + schema).** A gesture has three fixed phases
+  (windup / strike / recover) and each carries effects: `RigFx` + pooled spawning in the base
+  `RigDriver`, `gestures[].phases[].fx` + `artAssets` in rig-config (art kind `fxLoop` added),
+  importer / exporter / round-trip case. Web: phase tabs in the gesture card (pose, timing, effects),
+  picker, "⌖ Colocar en el lienzo", preview in "▶ Probar"; step 3 is a palette (＋ / drag onto a
+  gesture); templates carry the effects by slot. Details: `procedural-rig.md ▸ Gesture effects`,
+  `Web/RedMagicWeb/ARCHITECTURE.md`. Checked: Unity compiles, `RigConfigRoundTrip` OK (4 cases), a
+  real bundle with effects imported through `RigBundleImporter` (loop / one-shot prefabs, missing art
+  warned), web headless 100 checks. **Never run in Play or seen in a browser** — tests ES10… .
+- Scope kept out of S2 on purpose: phases are the three fixed ones (no user-defined extra phases or
+  per-phase poses beyond windup / strike); effects always draw in front of the body; no sound per
+  effect (the gesture's own sound covers it); the built-in attack has no effects unless repeated with
+  a gesture.
+- **Next: S3** (state sprites: named states + per-attack override).
 
 ## Decisions
 - Template granularity (taken at S1): saved together (body + gestures + behaviour), each optional
   **on use** ("Con sus gestos" / "Con su comportamiento"). No art in a template.
-- Still open for S2: whether the Studio keeps a per-attack timeline view or just phases per gesture
-  (recommended: phases per gesture first; an attack's own timeline is its gesture's).
-- Still open for S2: effect anchors — part / muzzle / body / feet is enough; free world points later.
+- Taken at S2: phases per gesture, no per-attack timeline (an attack's timeline is its gesture's).
+- Taken at S2: anchors = part / muzzle / body / feet, plus an offset placed on the canvas and
+  "sigue a su ancla" off for a world-fixed effect. Free world points: not needed so far.
 
 ## Risks
 - Scope: S2/S3 touch schema + Unity + web at once; each must keep the round-trip test

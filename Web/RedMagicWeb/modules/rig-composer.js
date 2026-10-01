@@ -13,6 +13,10 @@
 // pose instead of the part itself (drag on empty space = the whole body) — and "▶ Probar" plays the
 // gesture with RigDriverCode's timing. Data and formulas: rig-gestures.js.
 //
+// A gesture card has one tab per PHASE (carga / golpe / vuelta): its pose, its timing and its EFFECTS
+// (rig-fx.js) — library effects hung from a part, the muzzle, the body or the feet, placed on the
+// canvas with "⌖ Colocar" and shown by "▶ Probar" with the driver's timing.
+//
 // "Nuevo desde plantilla" starts the document from a body shape (rig-templates.js): its slots show
 // up as empty parts to drop art on (parts list row, canvas placeholder, or a bulk drop by file name).
 //
@@ -36,6 +40,7 @@ import * as F from './enemy-form-fields.js';
 import { RIG_TEMPLATES, templateById, instantiateTemplate, openSlots, matchSlot, fillSlot, fitLengths, suggestedEnemyConfig,
   templateFromState, templateFromRecord, importGestures } from './rig-templates.js';
 import * as G from './rig-gestures.js';
+import * as FX from './rig-fx.js';
 
 const TOOLS = [
   { id: 'move', label: '✋ Mover', key: 'v', hint: 'Arrastra una pieza. Clic en vacío = deseleccionar.' },
@@ -80,6 +85,10 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   let posing = null;             // { index, phase: 'windup' | 'strike' } while a pose is being edited
   let gesturePlay = null;        // { index, t } while a gesture is playing
   let previewTelegraph = 0.6;    // seconds of windup used by "▶ Probar" (the attack's 'telegraph')
+  let phaseTab = 'windup';       // which phase tab the open gesture card shows
+  let fxIndex = -1;              // the effect of the open gesture being edited (index in gesture.fx), or -1
+  let fxPlacing = false;         // next canvas click = where that effect sits on its anchor
+  let fxEntries = new Map();     // library effects (kind fx / projectile, with frames) by id
 
   const POSE_TOOLS = ['move', 'rotate', 'scale'];
   const PHASE_LABELS = { windup: 'carga', strike: 'golpe' };
@@ -126,11 +135,83 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       spriteState: preview.spriteState,
       stage: preview.stage,
       ghostRest: !!posing && !gesturePlay,
+      fx: fxOverlay(anim),
       requestRender,
     });
   }
 
   function setStatus(text) { statusEl.textContent = text; }
+
+  // ============================================================ gesture effects on the canvas
+
+  const fxFramesOf = (f) => FX.fxFrames(fxEntries.get(f.fx), f.loop);
+
+  /**
+   * Visual-space matrix of an effect's anchor (its local space): a part, the muzzle on the aim part,
+   * the whole body, or the ground under it. `anim` = the poses on screen (null = rest).
+   */
+  function fxAnchorMatrix(f, anim) {
+    const visual = anim?.visual || M.IDENTITY;
+    const partMatrix = (part) => M.multiply(visual, M.worldMatrix(state, part, anim?.poses));
+    if (f.anchor === 'part') {
+      const part = M.byUid(state, f.part);
+      if (part) return partMatrix(part);
+    } else if (f.anchor === 'muzzle') {
+      const aim = M.byUid(state, state.roles.aim);
+      if (aim && state.roles.muzzle) return M.multiply(partMatrix(aim), M.trs(M.pixelToLocal(state, aim, state.roles.muzzle), 0, { x: 1, y: 1 }));
+      if (aim) return partMatrix(aim);
+    } else if (f.anchor === 'feet') {
+      const c = state.collider;
+      const half = c.type === 'circle' ? (c.radius || 0.5) : c.size.y / 2;
+      return M.trs({ x: c.offset.x, y: c.offset.y - half }, 0, { x: 1, y: 1 });
+    }
+    return visual;
+  }
+
+  /** Frame pixels (centred, y down) → Visual space, for an effect sitting on its anchor. */
+  function fxMatrix(f, anchorMatrix) {
+    const k = (f.scale > 0 ? f.scale : 1) / state.pixelsPerUnit;
+    return M.multiply(anchorMatrix, M.trs(f.offset || { x: 0, y: 0 }, 0, { x: k, y: -k }));
+  }
+
+  /** What the canvas draws of the gestures' effects: the ones alive in "▶ Probar", or the one being edited. */
+  function fxOverlay(anim) {
+    const list = state.gestures || [];
+    const out = [];
+    if (gesturePlay && list[gesturePlay.index]) {
+      const gesture = list[gesturePlay.index];
+      FX.activeFx(gesture, gesturePlay.t, previewTelegraph, fxFramesOf).forEach(({ fx, index, frame }) => {
+        const entry = fxEntries.get(fx.fx);
+        let anchor = fxAnchorMatrix(fx, anim);
+        // An effect that does not follow stays where it came out.
+        if (fx.followsPart === false) {
+          if (!gesturePlay.frozen.has(index)) gesturePlay.frozen.set(index, anchor);
+          anchor = gesturePlay.frozen.get(index);
+        }
+        out.push({ sheet: entry.sprite.sourceDataURL, box: fxFramesOf(fx).boxes[frame], matrix: fxMatrix(fx, anchor) });
+      });
+      return out;
+    }
+    const gesture = list[gestureIndex];
+    const f = gesture?.fx?.[fxIndex];
+    const frames = f && fxFramesOf(f);
+    if (frames) {
+      out.push({ sheet: fxEntries.get(f.fx).sprite.sourceDataURL, box: frames.boxes[0], matrix: fxMatrix(f, fxAnchorMatrix(f, anim)),
+        alpha: 0.85, marked: true });
+    }
+    return out;
+  }
+
+  /** "⌖ Colocar": the clicked point becomes the effect's offset on its anchor. */
+  function placeFx(pt) {
+    const f = state.gestures?.[gestureIndex]?.fx?.[fxIndex];
+    fxPlacing = false;
+    if (!f) return;
+    const local = M.apply(M.invert(fxAnchorMatrix(f, currentAnim())), pt);
+    f.offset = { x: Math.round(local.x * 1000) / 1000, y: Math.round(local.y * 1000) / 1000 };
+    changed();
+    setStatus('Efecto colocado. "▶ Probar" lo enseña en su momento.');
+  }
 
   // ============================================================ preview animation
 
@@ -272,6 +353,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const t = TOOLS.find((x) => x.key === e.key.toLowerCase());
     if (e.ctrlKey || e.metaKey) return;
     if (t) { tool = t.id; renderToolbar(); setStatus(t.hint); }
+    if (e.key === 'Escape' && fxPlacing) { fxPlacing = false; renderInspector(); setStatus('Colocar efecto: cancelado.'); return; }
     if (e.key === 'Escape' && posing) { stopPosing(); return; }
     if (e.key === 'Delete' || e.key === 'Supr') {
       // Posing: Supr takes the part out of the pose, never deletes the part.
@@ -347,6 +429,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   canvas.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     const pt = view.screenToVisual(e.clientX, e.clientY);
+    if (fxPlacing) { placeFx(pt); return; }
     if (posing) { beginPoseDrag(e, pt); return; }
     const hit = view.partAt(state, e.clientX, e.clientY);
     let part = selectedPart();
@@ -1073,8 +1156,23 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   }
 
   function playGesture(index) {
-    gesturePlay = { index, t: 0 };
+    gesturePlay = { index, t: 0, frozen: new Map() };
     startTicking();
+  }
+
+  /** Adds a library effect to a gesture, in the phase tab on screen, hung from the most likely anchor. */
+  function addFx(gestureAt, libraryId) {
+    const gesture = state.gestures?.[gestureAt];
+    if (!gesture || !fxEntries.has(libraryId)) return false;
+    const sel = selectedPart();
+    const anchor = sel?.rigPart ? 'part' : state.roles.aim && state.roles.muzzle ? 'muzzle' : 'body';
+    const f = FX.createFx(libraryId, phaseTab, anchor, sel?.uid || null);
+    f.loop = phaseTab === 'windup';   // a charge lasts its phase; a strike / recover effect is a burst
+    FX.fxList(gesture).push(f);
+    gestureIndex = gestureAt;
+    fxIndex = gesture.fx.length - 1;
+    changed();
+    return true;
   }
 
   /** Takes `target` (part uid or the body) out of the pose being edited. */
@@ -1089,7 +1187,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   function renderGesturesSection() {
     const list = state.gestures || [];
-    list.forEach((g) => { g.windup = g.windup || []; g.strike = g.strike || []; });   // documents saved by older versions
+    list.forEach((g) => { g.windup = g.windup || []; g.strike = g.strike || []; g.fx = g.fx || []; });   // documents saved by older versions
     if (posing && !list[posing.index]) posing = null;
     if (gestureIndex >= list.length) gestureIndex = list.length - 1;
 
@@ -1106,9 +1204,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       const card = el('div', `rigGesture${open ? ' open' : ''}${posing?.index === index ? ' posing' : ''}`);
       const head = el('div', 'rigGestureHead');
       const title = el('span', 'rigGestureName', `${open ? '▾' : '▸'} ${gesture.name}`);
-      title.onclick = () => { gestureIndex = open ? -1 : index; renderInspector(); };
+      title.onclick = () => { gestureIndex = open ? -1 : index; fxIndex = -1; fxPlacing = false; renderInspector(); requestRender(); if (hooks.onChange) hooks.onChange(); };
       head.appendChild(title);
-      head.appendChild(el('span', 'hint', `carga ${gesture.windup.length} · golpe ${gesture.strike.length}`));
+      head.appendChild(el('span', 'hint', `carga ${gesture.windup.length} · golpe ${gesture.strike.length}${gesture.fx.length ? ` · ✨ ${gesture.fx.length}` : ''}`));
       const play = el('button', 'small', '▶ Probar');
       play.title = 'Reproduce el gesto con los tiempos de RigDriverCode: carga → golpe → vuelta al reposo.';
       play.onclick = () => playGesture(index);
@@ -1116,6 +1214,15 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       card.appendChild(head);
 
       if (open) renderGestureCard(card, gesture, index);
+      // An effect dragged from Enemy Studio ▸ Efectos lands on the gesture it is dropped on.
+      card.addEventListener('dragover', (e) => { if (e.dataTransfer.types.includes('text/rig-fx')) { e.preventDefault(); card.classList.add('dropTarget'); } });
+      card.addEventListener('dragleave', () => card.classList.remove('dropTarget'));
+      card.addEventListener('drop', (e) => {
+        const id = e.dataTransfer.getData('text/rig-fx');
+        if (!id) return;
+        e.preventDefault();
+        if (addFx(index, id)) setStatus(`Efecto añadido a "${gesture.name}" (${FX.FX_PHASE_LABELS[phaseTab].toLowerCase()}).`);
+      });
       d.appendChild(card);
     });
 
@@ -1157,16 +1264,27 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     });
     card.appendChild(nameField.row);
 
+    // --- one tab per phase: its pose, its timing, its effects.
     const editing = posing?.index === index ? posing.phase : null;
+    const tabs = el('div', 'rigPhaseTabs');
+    FX.FX_PHASES.forEach((phase) => {
+      const n = gesture.fx.filter((f) => f.phase === phase).length;
+      const b = el('button', `small${phaseTab === phase ? ' active' : ''}`, `${FX.FX_PHASE_LABELS[phase]}${n ? ` ✨${n}` : ''}`);
+      b.title = { windup: 'La carga: dura el aviso del ataque.', strike: 'El golpe: el latigazo al soltar.', recover: 'La vuelta al reposo.' }[phase];
+      b.onclick = () => { phaseTab = phase; fxIndex = -1; fxPlacing = false; renderInspector(); requestRender(); };
+      tabs.appendChild(b);
+    });
+    card.appendChild(tabs);
+
     const acts = el('div', 'rigActions');
-    const phaseBtn = (phase, label, title) => {
-      const b = el('button', `small${editing === phase ? ' active' : ''}`, label);
-      b.title = title;
-      b.onclick = () => (editing === phase ? stopPosing() : startPosing(index, phase));
+    if (phaseTab !== 'recover') {
+      const b = el('button', `small${editing === phaseTab ? ' active' : ''}`, phaseTab === 'windup' ? '✋ Posar carga' : '✋ Posar golpe');
+      b.title = phaseTab === 'windup'
+        ? 'La pose a la que llega durante el aviso (justo antes de soltar).'
+        : 'La pose del latigazo, justo después de soltar. Vacía = carga que se deshace sin latigazo (una embestida).';
+      b.onclick = () => (editing === phaseTab ? stopPosing() : startPosing(index, phaseTab));
       acts.appendChild(b);
-    };
-    phaseBtn('windup', '✋ Posar carga', 'La pose a la que llega durante el aviso (justo antes de soltar).');
-    phaseBtn('strike', '✋ Posar golpe', 'La pose del latigazo, justo después de soltar. Vacía = carga que se deshace sin latigazo (una embestida).');
+    }
     if (editing) {
       const out = el('button', 'small', '■ Salir de posar');
       out.onclick = stopPosing;
@@ -1177,13 +1295,15 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     if (editing) renderPosePanel(card, gesture, editing);
 
     const grid = el('div', 'rigGestureGrid');
-    grid.appendChild(F.numberField({ label: 'Golpe (s)', value: gesture.strikeTime, min: 0.01, step: '0.01',
+    if (phaseTab === 'windup') grid.appendChild(F.numberField({ label: 'Temblor (°)', value: gesture.shake, step: '0.5',
+      hint: 'Tiembla el cuerpo en el último 30% de la carga. 0 = nada. La carga dura el aviso del ataque.', onChange: (v) => { gesture.shake = v; refreshExport(); } }).row);
+    if (phaseTab === 'strike') grid.appendChild(F.numberField({ label: 'Golpe (s)', value: gesture.strikeTime, min: 0.01, step: '0.01',
       hint: 'Lo que tarda en llegar a la pose de golpe tras soltar.', onChange: (v) => { gesture.strikeTime = Math.max(0.01, v); refreshExport(); } }).row);
-    grid.appendChild(F.numberField({ label: 'Vuelta al reposo (s)', value: gesture.recover, min: 0.01, step: '0.05',
+    if (phaseTab === 'recover') grid.appendChild(F.numberField({ label: 'Vuelta al reposo (s)', value: gesture.recover, min: 0.01, step: '0.05',
       onChange: (v) => { gesture.recover = Math.max(0.01, v); refreshExport(); } }).row);
-    grid.appendChild(F.numberField({ label: 'Temblor (°)', value: gesture.shake, step: '0.5',
-      hint: 'Tiembla el cuerpo en el último 30% de la carga. 0 = nada.', onChange: (v) => { gesture.shake = v; refreshExport(); } }).row);
     card.appendChild(grid);
+
+    renderPhaseFx(card, gesture, index);
 
     if (state.rig.moveGesture === gesture.name) card.appendChild(el('p', 'hint', 'Es el gesto al desplazarse (Tiempos del rig ▸ moveGesture): sólo usa su pose de carga, mantenida mientras se mueve.'));
 
@@ -1198,6 +1318,96 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     };
     more.append(dup, del);
     card.appendChild(more);
+  }
+
+  /** The effects of the phase tab on screen: a row each, the open one with its fields, and the picker. */
+  function renderPhaseFx(card, gesture, gestureAt) {
+    const box = el('div', 'rigFxBox');
+    const mine = gesture.fx.map((f, i) => [f, i]).filter(([f]) => f.phase === phaseTab);
+    box.appendChild(el('p', 'rigGroupTitle', `Efectos de ${FX.FX_PHASE_LABELS[phaseTab].toLowerCase()}`));
+
+    mine.forEach(([f, i]) => {
+      const entry = fxEntries.get(f.fx);
+      const open = i === fxIndex;
+      const row = el('div', `rigFxRow${open ? ' open' : ''}`);
+      const name = el('span', 'rigFxName', `${open ? '▾' : '▸'} ${entry ? entry.enemyName : '(efecto borrado de la biblioteca)'}`);
+      name.onclick = () => { fxIndex = open ? -1 : i; fxPlacing = false; renderInspector(); requestRender(); };
+      row.appendChild(name);
+      row.appendChild(el('span', 'hint', `${anchorLabel(f)}${f.loop ? ' · bucle' : ''}`));
+      const del = el('button', 'small danger', '✕');
+      del.title = 'Quitar este efecto del gesto.';
+      del.onclick = () => { gesture.fx.splice(i, 1); fxIndex = -1; fxPlacing = false; changed(); };
+      row.appendChild(del);
+      box.appendChild(row);
+      if (open) renderFxFields(box, gesture, f);
+    });
+    if (!mine.length) box.appendChild(el('p', 'hint', 'Ninguno. Un efecto de la biblioteca (✨ VFX Lab) colgado de una pieza, la boca, el cuerpo o los pies.'));
+
+    const options = [...fxEntries.values()];
+    const add = document.createElement('select');
+    add.appendChild(Object.assign(el('option', null, options.length ? '＋ Efecto…' : '＋ Efecto… (no hay ninguno en la biblioteca)'), { value: '' }));
+    options.forEach((e) => add.appendChild(Object.assign(el('option', null, e.enemyName), { value: e.id })));
+    add.disabled = !options.length;
+    add.onchange = () => { if (add.value) addFx(gestureAt, add.value); };
+    box.appendChild(add);
+    card.appendChild(box);
+  }
+
+  function anchorLabel(f) {
+    if (f.anchor === 'part') return M.byUid(state, f.part)?.name || 'pieza borrada';
+    return { body: 'cuerpo', muzzle: 'boca', feet: 'pies' }[f.anchor] || f.anchor;
+  }
+
+  function renderFxFields(box, gesture, f) {
+    const fields = el('div', 'rigFxFields');
+    const redraw = () => { requestRender(); refreshExport(); };
+    const entry = fxEntries.get(f.fx);
+    if (!entry) fields.appendChild(el('p', 'efSummaryError', 'Este efecto ya no está en la biblioteca: elige otro o quítalo.'));
+
+    fields.appendChild(F.enumField({ label: 'Efecto', value: f.fx,
+      options: [...(entry ? [] : [{ value: f.fx, label: '(borrado)' }]), ...[...fxEntries.values()].map((e) => ({ value: e.id, label: e.enemyName }))],
+      onChange: (v) => { f.fx = v; changed(); } }).row);
+
+    const anchors = [
+      ...state.parts.filter((p) => p.image || p.rigPart).map((p) => ({ value: `part:${p.uid}`, label: `Pieza: ${p.name}` })),
+      { value: 'muzzle', label: 'Boca del arma' }, { value: 'body', label: 'Cuerpo entero' }, { value: 'feet', label: 'Pies (suelo)' },
+    ];
+    fields.appendChild(F.enumField({ label: 'Cuelga de', value: f.anchor === 'part' ? `part:${f.part}` : f.anchor, options: anchors,
+      hint: f.anchor === 'muzzle' && !state.roles.muzzle ? 'No hay boca puesta (herramienta ◉ Boca): saldrá de la pieza que apunta.' : '',
+      onChange: (v) => {
+        if (v.startsWith('part:')) { f.anchor = 'part'; f.part = v.slice(5); } else { f.anchor = v; f.part = null; }
+        f.offset = { x: 0, y: 0 };   // the old offset was measured in the other anchor's space
+        changed();
+      } }).row);
+
+    const place = el('button', `small${fxPlacing ? ' active' : ''}`, fxPlacing ? '⌖ Haz clic en el lienzo…' : '⌖ Colocar en el lienzo');
+    place.title = 'Clic en el lienzo: el efecto se queda en ese punto de su ancla. Esc cancela.';
+    place.onclick = () => { fxPlacing = !fxPlacing; renderInspector(); if (fxPlacing) setStatus('Haz clic donde va el efecto (se guarda relativo a su ancla). Esc = cancelar.'); };
+    fields.appendChild(place);
+
+    fields.appendChild(F.enumField({ label: 'Momento', value: f.at <= 0 ? 'start' : f.at >= 1 ? 'end' : 'custom',
+      options: [{ value: 'start', label: 'Al empezar la fase' }, { value: 'end', label: 'Al acabarla' }, { value: 'custom', label: 'En un punto intermedio…' }],
+      onChange: (v) => { f.at = v === 'start' ? 0 : v === 'end' ? 1 : 0.5; changed(); } }).row);
+    if (f.at > 0 && f.at < 1) fields.appendChild(F.numberField({ label: 'Punto de la fase (0–1)', value: f.at, min: 0, step: '0.05',
+      onChange: (v) => { f.at = Math.min(1, Math.max(0, v)); refreshExport(); } }).row);
+
+    fields.appendChild(F.boolField({ label: 'En bucle hasta que acabe la fase', value: !!f.loop,
+      hint: 'Encendido = una carga que dura. Apagado = un estallido que se reproduce una vez.',
+      onChange: (v) => { f.loop = v; changed(); } }).row);
+
+    const more = el('details', 'efFold');
+    more.open = openSections.get('fxMore') || false;
+    more.addEventListener('toggle', () => openSections.set('fxMore', more.open));
+    more.appendChild(el('summary', null, 'Tamaño y ajuste fino'));
+    more.appendChild(F.numberField({ label: 'Tamaño (× el del efecto)', value: f.scale, min: 0.01, step: '0.1',
+      onChange: (v) => { f.scale = v > 0 ? v : 1; redraw(); } }).row);
+    more.appendChild(F.vector2Field({ label: 'Desplazamiento (u, en su ancla)', value: f.offset,
+      onChange: (v) => { f.offset = v; redraw(); } }).row);
+    more.appendChild(F.boolField({ label: 'Sigue a su ancla mientras dura', value: f.followsPart !== false,
+      hint: 'Apagado = se queda en el punto del mundo donde salió (un impacto en el suelo).',
+      onChange: (v) => { f.followsPart = v; refreshExport(); } }).row);
+    fields.appendChild(more);
+    box.appendChild(fields);
   }
 
   /** The pose being edited: what is in it, and the numbers of the part (or body) a drag would edit. */
@@ -1323,7 +1533,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     zip.onclick = exportZip;
     const json = el('button', 'small', '⬇ Sólo rig-config.json');
     json.onclick = () => {
-      const { doc } = buildRigExport(state);
+      const { doc } = buildRigExport(state, { entriesById: fxEntries });
       downloadBlob(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }), `${fileStem()}.rig-config.json`);
     };
     const reset = el('button', 'small danger', 'Nuevo (vaciar)');
@@ -1396,6 +1606,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     gestureIndex = -1;
     posing = null;
     gesturePlay = null;
+    fxIndex = -1;
+    fxPlacing = false;
   }
 
   const fileStem = () => (state.name.trim() || 'rig').replace(/[^A-Za-z0-9_-]/g, '_');
@@ -1407,7 +1619,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       recordHistory();
       if (hooks.onChange) hooks.onChange();
       if (!exportSummaryEl) return;
-      const { doc, problems, notes } = buildRigExport(state);
+      const { doc, problems, notes } = buildRigExport(state, { entriesById: fxEntries });
       const schemaErrors = validate ? validateConfig(validate, doc).errors : [];
       let html = '';
       if (!problems.length && !schemaErrors.length) html += '<p class="efSummaryOk">✓ Listo para exportar (rig-config.schema.json)</p>';
@@ -1434,7 +1646,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   async function saveToLibrary() {
     if (!state.name.trim()) { setStatus('Ponle nombre antes de guardar.'); return null; }
-    const { doc } = buildRigExport(state);
+    const { doc } = buildRigExport(state, { entriesById: fxEntries });
     const patch = { enemyName: state.name.trim(), thumbnail: await thumbnail(), config: doc, draft: clone(state) };
     try {
       const record = currentId && (await getEnemy(currentId))
@@ -1451,7 +1663,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   }
 
   async function exportZip() {
-    const { problems } = buildRigExport(state);
+    const { problems } = buildRigExport(state, { entriesById: fxEntries });
     if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Exportar igualmente?`)) return;
     if (hooks.beforeExport) await hooks.beforeExport();   // the behaviour form open in Enemy Studio, saved first
     const all = await listEntries(null);
@@ -1470,6 +1682,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     behaviour = currentId ? (await getEnemy(currentId))?.enemyConfig || null : null;
     bossEntries = (await listEntries('boss')).filter((e) => e.config);
     userTemplates = (await listEntries('rig-template')).map(templateFromRecord).filter(Boolean);
+    const effects = [...(await listEntries('fx')), ...(await listEntries('projectile'))].filter((e) => FX.fxFrames(e, false));
+    fxEntries = new Map(effects.map((e) => [e.id, e]));
     renderSidebar();
     renderInspector();
     if (hooks.onChange) hooks.onChange();
@@ -1507,6 +1721,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       hasArt: state.parts.some((p) => p.image),
       openRequired: openSlots(state, true).length,
       gestures: (state.gestures || []).length,
+      gestureFx: (state.gestures || []).reduce((n, g) => n + (g.fx || []).length, 0),
+      openGesture: state.gestures?.[gestureIndex]?.name || null,
       template: state.template ? state.template.label || findTemplate(state.template.id)?.label || null : null,
       behaviour: !!behaviour,
     };
@@ -1521,8 +1737,17 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     newFromTemplate(template.id);
   }
 
+  /** Enemy Studio ▸ Efectos ▸ "＋ al gesto": onto the gesture open in the inspector. */
+  function addFxToOpenGesture(libraryId) {
+    const gesture = state.gestures?.[gestureIndex];
+    if (!gesture) { setStatus('Abre antes un gesto (inspector ▸ Gestos) para colgarle el efecto.'); return false; }
+    if (!addFx(gestureIndex, libraryId)) { setStatus('Ese efecto no tiene frames.'); return false; }
+    setStatus(`Efecto añadido a "${gesture.name}" (${FX.FX_PHASE_LABELS[phaseTab].toLowerCase()}). Colócalo con "⌖ Colocar en el lienzo".`);
+    return true;
+  }
+
   return {
-    linkLibraryEntry, refreshLibraries, hooks, getStatus, useTemplateRecord,
+    linkLibraryEntry, refreshLibraries, hooks, getStatus, useTemplateRecord, addFxToOpenGesture,
     save: saveToLibrary,
     onShow: () => { refreshLibraries(); requestRender(); },
   };

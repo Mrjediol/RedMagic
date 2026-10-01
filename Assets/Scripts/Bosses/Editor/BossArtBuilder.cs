@@ -21,6 +21,8 @@ namespace RedMagic.Bosses.EditorTools
     /// <item><c>projectile</c> — Projectile + cuerpo + collider + estados (Move / Impact). Para
     /// <c>ProjectileSpec.prefab</c>.</item>
     /// <item><c>fx</c> — efecto de un solo uso (VfxOneShot + flipbook). Para los huecos de impacto.</item>
+    /// <item><c>fxLoop</c> — efecto en bucle (sólo flipbook, sin VfxOneShot): lo apaga quien lo lanza.
+    /// Para los efectos de gesto que duran una fase (<c>RigFx.loop</c>).</item>
     /// <item><c>warning</c> — aviso (FxTelegraph que se ajusta al ancho). Para los avisos del jefe.</item>
     /// <item><c>prop</c> — sólo dibujo (lo que el jefe sujeta).</item>
     /// </list>
@@ -33,6 +35,7 @@ namespace RedMagic.Bosses.EditorTools
     {
         public const string KindProjectile = "projectile";
         public const string KindFx = "fx";
+        public const string KindFxLoop = "fxLoop";
         public const string KindWarning = "warning";
         public const string KindProp = "prop";
 
@@ -98,6 +101,8 @@ namespace RedMagic.Bosses.EditorTools
 
                 bool single = kind != KindProjectile || states.Count == 1;
                 if (single) AddFlipbook(root, primary, oneShot: kind == KindFx && !primary.loop);
+                // Un bucle lo es aunque su tira venga marcada de una pasada: quien lo lanza decide cuándo acaba.
+                if (kind == KindFxLoop) LoopFlipbook(root);
                 else AddStateMachine(root, states, primary.name);
 
                 // Tamaño: el ancho del dibujo en el mundo. Los avisos no: los ajusta FxTelegraph.
@@ -115,6 +120,7 @@ namespace RedMagic.Bosses.EditorTools
                     case KindProjectile: DressProjectile(root, entry, primary); break;
                     case KindWarning: DressWarning(root, entry); break;
                     case KindProp: break;
+                    case KindFxLoop: break;   // sin VfxOneShot: no se devuelve solo al pool
                     default: DressFx(root, primary); break;
                 }
 
@@ -236,6 +242,15 @@ namespace RedMagic.Bosses.EditorTools
             so.FindProperty("pingPong").boolValue = false;
             so.FindProperty("randomStart").boolValue = false;
             so.FindProperty("oneShot").boolValue = oneShot;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void LoopFlipbook(GameObject root)
+        {
+            var flipbook = root.GetComponent<SpriteFlipbook>();
+            if (flipbook == null) return;
+            var so = new SerializedObject(flipbook);
+            so.FindProperty("oneShot").boolValue = false;
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 

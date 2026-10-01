@@ -46,6 +46,31 @@ sheet. Animation is code, not clips.
   / elastic bounce was tried there and rejected by the user as a default: keep recoil and bounce as
   opt-in numbers per enemy (`recoilDistance`, `bodyRecoil`, `wakeOvershoot` — 0 = none).
 
+## Gesture effects (`RigFx`)
+A `RigGesture` has three **phases** — `Windup` (lasts the attack's telegraph), `Strike`
+(`strikeTime`; zero-length when the gesture has no strike pose) and `Recover` — and `RigGesture.fx`
+hangs effects from them: `prefab`, `phase`, `at` (0–1 inside the phase), `anchor` (`Part` + `part`,
+`Body`, `Muzzle`, `Feet` = bottom of the root collider), `offset` (anchor-local, so facing mirrors
+it), `scale`, `followsPart`, `loop`. Data only, authored in the web (Enemy Studio ▸ Gestos).
+- **Who spawns**: the base `RigDriver` (`FireFx` / `TickFx` / `EndFxPhase` / `StopFx`), always through
+  `PrefabPool`, never parented (a pooled instance must not die with its enemy): a follower is
+  re-placed every `LateUpdate` **after** the body is composed. `RigDriverCode.GestureRoutine` reports
+  each phase's progress; a held pose (`HoldGesture`, the move gesture) only fires its `at = 0`
+  windup effects, once. Size = prefab × `scale` × the body's world scale; drawn one order above the
+  front-most part, same sorting layer.
+- **Lifetime**: `loop` = lives until its phase ends (or the gesture is cut: another gesture, death,
+  disable) and the driver despawns it — its prefab must have **no** `VfxOneShot` (art kind `fxLoop`).
+  Otherwise it plays once: a prefab with `VfxOneShot` (art kind `fx`) returns itself to the pool and
+  the driver only follows it; a prefab without one is despawned after its flipbook's duration.
+- **Pipeline**: `gestures[].phases[].fx` in rig-config + its own `artAssets` block (same format as a
+  boss's). `RigBundleImporter.BuildGestureArt` copies `Art/` next to the parts, builds one pooled
+  prefab per entry with `BossArtBuilder` (`Assets/Prefabs/Fx/Enemies/<name>/`, bosses
+  `Fx/Bosses/<name>/`) and swaps each `{"art": id}` for its prefab path; `phases` present replaces the
+  gesture's effects, absent keeps them. The exporter writes prefab paths. `RigConfigRoundTrip` has a
+  synthetic `GestureFx` case (every anchor and phase), since the reference prefabs carry none.
+- The built-in attack (`PlayAttack`) has no phases of its own: it keeps the muzzle flash. To put
+  effects on it, repeat it with a gesture (Enemy Creator ▸ "Repetir el ataque propio con otro gesto").
+
 ## Enemy integration
 - `EnemyAnimation` finds a `RigDriver` on the root; if present **it wins over Animator/flipbook**:
   every order is forwarded, and the driver's events play the role of the clip's

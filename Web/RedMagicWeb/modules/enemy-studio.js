@@ -2,6 +2,9 @@
 // -----------------------------------------------------------------------------
 // The 🧬 Enemy Studio tab: one workflow from loose part PNGs to a finished enemy, as steps.
 //
+// Step 3 (Efectos) is the library's effects as a palette: ＋ or drag one onto a gesture and it hangs
+// from the phase that gesture card is showing (the hooks themselves are the composer's, rig-fx.js).
+//
 //   left   — the steps, in the order of the work (one open at a time; the later ones unlock once
 //            the body is usable): 1 Cuerpo · 2 Plantilla · 3 Efectos · 4 Comportamiento · 5 Exportar
 //   centre — the Rig Composer's canvas
@@ -51,6 +54,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
   let mounted = false;
   let effects = [];              // library projectiles / fx (step 3)
   let behaviourNote = '';        // why the behaviour form is not on screen (step 4)
+  let effectsGesture = null;     // the open gesture step 3's hint was written for
 
   // ============================================================ layout (built once)
 
@@ -139,11 +143,13 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     const text = {
       body: usable(st) ? `${st.parts} piezas · ${st.gestures} gestos` : whyNotUsable(st),
       template: st.template || '',
-      effects: effects.length ? `${effects.length} en biblioteca` : '',
+      effects: st.gestureFx ? `${st.gestureFx} en gestos` : effects.length ? `${effects.length} en biblioteca` : '',
       behaviour: st.kind === 'boss' ? 'jefe' : st.behaviour ? 'configurado' : 'por defecto',
       export: st.id ? 'guardado' : 'sin guardar',
     };
-    const done = { body: usable(st), template: !!st.template, behaviour: st.behaviour, export: !!st.id };
+    const done = { body: usable(st), template: !!st.template, effects: st.gestureFx > 0, behaviour: st.behaviour, export: !!st.id };
+    // The hint of step 3 names the gesture open in the inspector: keep it current.
+    if (active === 'effects' && effectsGesture !== st.openGesture) { effectsGesture = st.openGesture; refreshEffects(); }
 
     STEPS.forEach(({ id }) => {
       const s = stepEls[id];
@@ -173,7 +179,10 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
   async function refreshEffects() {
     effects = [...(await listEntries('projectile')), ...(await listEntries('fx'))];
     effectsBox.innerHTML = '';
-    effectsBox.appendChild(el('p', 'hint', 'Proyectiles y efectos de la biblioteca. Hoy se eligen en los ataques (paso 4); engancharlos a las fases de un gesto es la siguiente fase del Studio.'));
+    const st = rig.getStatus();
+    effectsBox.appendChild(el('p', 'hint', st.openGesture
+      ? `Gesto abierto: "${st.openGesture}". Pulsa ＋ (o arrastra el efecto a un gesto) para colgarlo de la fase que tiene a la vista; luego colócalo en el lienzo.`
+      : 'Abre un gesto a la derecha (Gestos) y elige su fase: carga, golpe o vuelta. Después pulsa ＋ aquí, o arrastra el efecto al gesto.'));
     const list = el('div', 'studioFxList');
     effects.forEach((entry) => {
       const row = el('div', 'studioFxRow');
@@ -181,6 +190,12 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
       else row.appendChild(el('span', 'studioFxEmpty'));
       row.appendChild(el('span', null, entry.enemyName));
       row.appendChild(el('span', 'kind', kindOf(entry.kind).label));
+      row.draggable = true;
+      row.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/rig-fx', entry.id));
+      const add = el('button', 'small', '＋');
+      add.title = 'Colgarlo del gesto abierto, en la fase que tiene a la vista.';
+      add.onclick = () => { rig.addFxToOpenGesture(entry.id); };
+      row.appendChild(add);
       list.appendChild(row);
     });
     if (!effects.length) list.appendChild(el('p', 'hint', 'Todavía no hay ninguno.'));

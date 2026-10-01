@@ -166,6 +166,8 @@ export function createDefaultEnemyConfig() {
     //  - deckTouched: the deck was edited (or came with a saved config), so an EMPTY deck is still
     //    exported — that is what clears the attacks of an enemy already imported in Unity.
     deck: [],
+    // The enemy's OWN attack launched again with another gesture: [{ gesture, weight, minRange, maxRange, targetHeight }].
+    builtInVariants: [],
     attackArt: {},
     deckTouched: false,
   };

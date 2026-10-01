@@ -506,6 +506,20 @@ namespace RedMagic.Rigging.EditorTools
                     var array = new JArray();
                     foreach (var entry in deck)
                     {
+                        if (entry != null && entry.builtIn)
+                        {
+                            array.Add(new JObject
+                            {
+                                ["builtIn"] = true,
+                                ["gesture"] = entry.gesture ?? "",
+                                ["weight"] = RigConfigJson.Num(entry.weight),
+                                ["minRange"] = RigConfigJson.Num(entry.minRange),
+                                ["maxRange"] = RigConfigJson.Num(entry.maxRange),
+                                ["targetHeight"] = entry.targetHeight.ToString(),
+                            });
+                            continue;
+                        }
+
                         if (entry == null || entry.attack == null || !AssetDatabase.Contains(entry.attack)) continue;
                         array.Add(new JObject
                         {

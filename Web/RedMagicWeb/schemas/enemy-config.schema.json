@@ -240,8 +240,11 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["attack"],
+            "anyOf": [{ "required": ["attack"] }, { "required": ["builtIn"] }],
             "properties": {
+              "builtIn": { "type": "boolean", "default": false, "$comment": "EnemyDeckEntry.builtIn. True = this card is the enemy's OWN attack (its melee / shot / explosion from tuning) launched with 'gesture': the same attack again, with another gesture. No 'attack' then." },
+              "gesture": { "type": "string", "default": "", "$comment": "EnemyDeckEntry.gesture. Only with builtIn: the rig gesture (or Animator state) that telegraphs it. Empty = the normal attack animation." },
+              "weight": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyDeckEntry.weight. Only with builtIn: weight in the draw (a catalog card's weight is its own asset's)." },
               "attack": {
                 "type": "string",
                 "minLength": 1,

@@ -605,7 +605,7 @@ namespace RedMagic.Enemies
             // golpe y recuperación) y avisa al acabar; si no, el ataque propio por la animación.
             if (_attack != null && _attack.BeginChosen(_target)) return;
 
-            if (_animation != null) _animation.PlayAttack();
+            if (_animation != null) _animation.PlayAttack(_attack != null ? _attack.BuiltInGesture : null);
             else OnAttackFinished();
         }
 

@@ -69,6 +69,17 @@ namespace RedMagic.Enemies
                  "Animator) que hace de aviso.")]
         public BossAttack attack;
 
+        [Tooltip("En vez de un ataque del catálogo, repite el ATAQUE PROPIO del enemigo (su melé / " +
+                 "disparo de Tuning ▸ Ataque) con otro gesto: dos formas de lanzar el mismo ataque.")]
+        public bool builtIn;
+
+        [Tooltip("Sólo con 'builtIn': el gesto del rig (o estado del Animator) con el que se lanza. " +
+                 "Vacío = el ataque normal del cuerpo.")]
+        public string gesture;
+
+        [Tooltip("Sólo con 'builtIn': peso en el sorteo (en las demás lo da el 'weight' del ataque).")]
+        [Min(0.01f)] public float weight = 1f;
+
         [Tooltip("Distancia mínima al objetivo para que pueda salir. 0 = sin mínimo.")]
         [Min(0f)] public float minRange;
 
@@ -81,7 +92,7 @@ namespace RedMagic.Enemies
         /// <summary>True si a esta distancia y altura la carta puede salir (sin contar enfriamientos).</summary>
         public bool InReach(float distance, float heightDelta, float attackRange)
         {
-            if (attack == null || distance < minRange) return false;
+            if ((attack == null && !builtIn) || distance < minRange) return false;
             if (distance > (maxRange > 0f ? maxRange : attackRange)) return false;
 
             return targetHeight switch

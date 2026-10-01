@@ -46,6 +46,11 @@ How to report: per item, ✓ or what you saw (which enemy/attack, what happened,
 - [ ] D10 · "Sólo si está por encima": a ground enemy with a card set to TargetAbove only casts it
       when you stand on a ledge above it.
 
+- [ ] D11 · Enemy Creator ▸ Ataques ▸ Ataque propio ▸ "＋ Repetir el ataque propio con otro gesto":
+      pick a gesture (e.g. a pose made in Gestos), export, import: the enemy fires its normal shot
+      (same projectile) but telegraphs it with that gesture, and the shot leaves from the Muzzle at
+      the end of the windup. With peso 1 vs 1 it alternates both gestures.
+
 **Known limits of D (not bugs)**: enemy warnings use code placeholders unless prefabs are set on
 `EnemyAttackHost`; a sprite-sheet gesture plays at the clip's own speed; a `Static` non-sleeper
 needs the target within `verticalTolerance` before any card is considered.
@@ -90,6 +95,7 @@ needs the target within `verticalTolerance` before any card is considered.
 - Nothing new in Unity: it travels inside the enemy/boss .zip through the existing importers.
 
 **Tests**
+- [ ] F0 · (fixed after your report) the VFX Lab preview no longer covers the tab bar / step 2: reload the page (Ctrl+F5) and check the layout.
 - [ ] F1 · Web: the tab opens, each of the five effects previews animated (loops are seamless,
       one-shots play and pause), every slider/colour changes the preview at once. Do they LOOK
       right for the game? Note which need a different shape, more/less glow, other defaults.

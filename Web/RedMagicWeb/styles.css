@@ -316,3 +316,5 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .vfxSaved{display:flex;align-items:center;gap:8px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;margin:4px 0;}
 .vfxSaved.selected{outline:1px solid var(--accent);}
 .vfxSavedName{flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* VFX Lab: the global canvas rule (absolute, for the sheet editors) must not apply to previews */
+.vfxCanvas,.vfxSheet{position:static;display:block;}

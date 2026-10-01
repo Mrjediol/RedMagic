@@ -104,6 +104,14 @@ meant to be edited by hand.**
     `cooldownSeconds` — same rules as a boss). Nothing available = no attack this frame; the brain
     keeps approaching. A card with `maxRange` > `attackRange` fires while still approaching.
     `selfDestruct` ignores the deck. `minPhase` and punish windows do nothing on an enemy.
+  - **The own attack again, with another gesture.** A card with `builtIn = true` (no catalog attack)
+    repeats the enemy's OWN attack — same projectile / strike, same numbers — launched with its
+    `gesture` (and its own `weight`, ranges, height rule). It does not go through
+    `EnemyAttackHost`: `EnemyAttack.BuiltInGesture` → `EnemyAnimation.PlayAttack(gesture)` plays that
+    rig gesture (or Animator state) and the release/finish events flow to the normal `Execute`
+    (shot from the Muzzle at the frozen aim point). Web: Enemy Creator ▸ Ataques ▸ *Ataque propio* ▸
+    "＋ Repetir el ataque propio con otro gesto". Schema: `tuning.attacks[]` with `builtIn`,
+    `gesture`, `weight` (no `attack`).
   - **Who runs it.** `EnemyAttackHost` (the enemy's `IAttackHost`): telegraph (the card's
     `gesture`, else `telegraph` seconds) → `BossAttack.Run` → `recovery` → `DeckAttackFinished`,
     which the brain treats like the end of the built-in attack. It holds the shared FX slots

@@ -286,9 +286,11 @@ namespace RedMagic.Enemies
         }
 
         /// <summary>Lanza el ataque. El golpe sale luego, cuando lo diga el clip.</summary>
-        public void PlayAttack()
+        /// <param name="gesture">Gesto con el que se lanza el ataque propio (variante de la baraja); vacío = el normal.</param>
+        public void PlayAttack(string gesture = null)
         {
             _released = false;
+            bool custom = !string.IsNullOrWhiteSpace(gesture);
 
             if (HasRig)
             {
@@ -301,6 +303,19 @@ namespace RedMagic.Enemies
                 }
 
                 float speed = _stats != null ? _stats.Tuning.attackAnimSpeed : 1f;
+
+                // Mismo ataque, otro gesto: el rig hace ese gesto de aviso y suelta igual que el normal
+                // (el golpe sale de la boca, hacia el punto congelado, en el instante de la suelta).
+                var rigData = rig.GetComponent<ProceduralRig>();
+                float windupSeconds = (rigData != null ? rigData.windup : 0.4f) / Mathf.Max(0.01f, speed);
+                if (custom && rig.PlayGesture(gesture, windupSeconds))
+                {
+                    float seconds = windupSeconds + 1.5f;
+                    _fallbackRelease = Time.time + seconds;
+                    _fallbackFinish = Time.time + seconds + 1.5f;
+                    return;
+                }
+
                 rig.PlayAttack(_attack != null ? _attack.AimPoint : null, speed);
 
                 // Sólo red de seguridad (un rig que se apaga a mitad del gesto): el rig avisa él
@@ -309,6 +324,13 @@ namespace RedMagic.Enemies
                 float total = (data != null ? data.AttackDuration(speed) : 1f) + 1f;
                 _fallbackRelease = Time.time + total;
                 _fallbackFinish = Time.time + total;
+                return;
+            }
+
+            if (HasAnimator && custom && animator.HasState(0, Animator.StringToHash(gesture)))
+            {
+                animator.Play(Animator.StringToHash(gesture), 0, 0f);
+                ArmFallback(ClipLength(gesture, _stats != null ? _stats.Tuning.attackAnimSpeed : 1f));
                 return;
             }
 

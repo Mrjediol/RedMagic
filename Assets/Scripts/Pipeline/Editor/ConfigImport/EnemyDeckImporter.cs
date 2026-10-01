@@ -102,6 +102,24 @@ namespace RedMagic.Pipeline.EditorTools
             {
                 string ctx = $"{enemyName}.tuning.attacks[{i}]";
                 var entryJson = ConfigJson.AsObject(deckJson[i], ctx);
+
+                // Variante del ataque propio: sin ataque de catálogo, con su gesto y su peso.
+                if (entryJson.Value<bool?>("builtIn") == true)
+                {
+                    deck.Entries.Add(new EnemyDeckEntry
+                    {
+                        builtIn = true,
+                        gesture = entryJson.Value<string>("gesture") ?? "",
+                        weight = Mathf.Max(0.01f, entryJson.Value<float?>("weight") ?? 1f),
+                        minRange = Mathf.Max(0f, entryJson.Value<float?>("minRange") ?? 0f),
+                        maxRange = Mathf.Max(0f, entryJson.Value<float?>("maxRange") ?? 0f),
+                        targetHeight = entryJson["targetHeight"] != null
+                            ? ConfigJson.ParseEnum<AttackHeightRule>(entryJson["targetHeight"], $"{ctx}.targetHeight")
+                            : AttackHeightRule.Any,
+                    });
+                    continue;
+                }
+
                 string reference = ConfigJson.RequireString(entryJson, "attack", ctx);
 
                 BossAttack attack;

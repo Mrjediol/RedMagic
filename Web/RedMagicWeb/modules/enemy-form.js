@@ -260,6 +260,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     updateCombinedExportAvailability();
     await loadSavedBehaviour(picked);
     deckEditor.refreshGestures();
+    refreshVariantGestures();
     refresh();
   });
 
@@ -602,6 +603,93 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     onChange: (v) => { state.tuning.builtInWeight = v; state.deckTouched = true; refresh(); },
   }), () => state.tuning.builtInWeight).row);
 
+  // --- el mismo ataque propio, lanzado con otro gesto (varias formas de hacer el mismo ataque)
+  const variantsRoot = document.createElement('div');
+  builtInCard.appendChild(variantsRoot);
+
+  function renderVariants() {
+    variantsRoot.innerHTML = '';
+    const list = state.builtInVariants;
+    variantsRoot.appendChild(Object.assign(document.createElement('p'), {
+      className: 'efHint',
+      textContent: 'Variantes con otro gesto: el MISMO ataque propio (mismo proyectil / golpe y mismos números) lanzado con un gesto distinto del cuerpo. '
+        + 'Se sortean con su peso junto al resto.',
+    }));
+    list.forEach((v, index) => {
+      const card = document.createElement('div');
+      card.className = 'bcCard';
+      const head = document.createElement('div');
+      head.className = 'bcCardHead';
+      const title = document.createElement('span');
+      title.className = 'bcCardTitle';
+      title.textContent = `Ataque propio · variante ${index + 1}`;
+      const del = document.createElement('button');
+      del.className = 'small danger';
+      del.textContent = '✕';
+      del.onclick = () => { list.splice(index, 1); state.deckTouched = true; renderVariants(); refresh(); };
+      head.append(title, del);
+      card.appendChild(head);
+
+      const gestureRow = document.createElement('div');
+      gestureRow.className = 'efRow';
+      const label = document.createElement('label');
+      label.textContent = 'Gesto';
+      const select = document.createElement('select');
+      const fill = () => {
+        const names = bodyGestureNames();
+        const opts = [''].concat(names);
+        if (v.gesture && !names.includes(v.gesture)) opts.push(v.gesture);
+        select.innerHTML = '';
+        opts.forEach((n) => {
+          const o = document.createElement('option');
+          o.value = n;
+          o.textContent = n === '' ? (names.length ? '(el ataque normal del cuerpo)' : '(elige arriba el arte del enemigo)') : (names.includes(n) ? n : `${n} (no existe)`);
+          select.appendChild(o);
+        });
+        select.value = v.gesture || '';
+      };
+      fill();
+      select.onchange = () => { v.gesture = select.value; state.deckTouched = true; refresh(); };
+      select.dataset.variantGesture = '1';
+      select.refill = fill;
+      gestureRow.append(label, select);
+      card.appendChild(gestureRow);
+
+      const grid = document.createElement('div');
+      grid.className = 'bcGrid';
+      const num = (labelText, key, min, hint) => grid.appendChild(F.numberField({
+        label: labelText, value: v[key], min, hint,
+        onChange: (x) => { v[key] = x; state.deckTouched = true; refresh(); },
+      }).row);
+      num('Peso en el sorteo', 'weight', 0.01);
+      num('Distancia mínima (u)', 'minRange', 0, 'Más cerca que esto no sale. 0 = sin mínimo.');
+      num('Distancia máxima (u)', 'maxRange', 0, '0 = el "Rango de ataque" del enemigo.');
+      grid.appendChild(F.enumField({
+        label: 'Altura del objetivo', value: v.targetHeight,
+        options: [{ value: 'Any', label: 'Cualquiera' }, { value: 'TargetAbove', label: 'Sólo si está por encima' }, { value: 'TargetBelow', label: 'Sólo si está por debajo' }],
+        onChange: (x) => { v.targetHeight = x; state.deckTouched = true; refresh(); },
+      }).row);
+      card.appendChild(grid);
+      variantsRoot.appendChild(card);
+    });
+
+    const add = document.createElement('button');
+    add.className = 'small primary';
+    add.textContent = '＋ Repetir el ataque propio con otro gesto';
+    add.onclick = () => {
+      list.push({ gesture: '', weight: 1, minRange: 0, maxRange: 0, targetHeight: 'Any' });
+      state.deckTouched = true;
+      renderVariants();
+      refresh();
+    };
+    variantsRoot.appendChild(add);
+  }
+
+  /** The body's gestures changed (another art picked): refill the variants' gesture dropdowns. */
+  function refreshVariantGestures() {
+    variantsRoot.querySelectorAll('select[data-variant-gesture]').forEach((s) => s.refill && s.refill());
+  }
+
   function describeBuiltIn() {
     const t = state.tuning;
     const what = t.selfDestruct ? `explota (radio ${t.explosionRadius})`
@@ -717,6 +805,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     gestureNames: linkedEntry() ? bodyGestureNames() : null,
   });
 
+  renderVariants();
   deckReady = true;
   catalogReady.then(loadArtEntries).then(() => { deckEditor.render(); refresh(); });
 
@@ -808,7 +897,10 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     state.tuning.projectileSpec = { ...createDefaultProjectileSpec(), ...(projectile || {}) };
 
     const adopted = adoptAttacksFromConfig(config, catalog);
-    state.deck = (Array.isArray(deckJson) ? deckJson : []).map((e) => {
+    state.builtInVariants = (Array.isArray(deckJson) ? deckJson : []).filter((e) => e.builtIn).map((e) => ({
+      gesture: e.gesture || '', weight: e.weight ?? 1, minRange: e.minRange ?? 0, maxRange: e.maxRange ?? 0, targetHeight: e.targetHeight || 'Any',
+    }));
+    state.deck = (Array.isArray(deckJson) ? deckJson : []).filter((e) => !e.builtIn).map((e) => {
       const attack = adopted.byId[e.attack];
       if (!attack) return null;   // a card that points at a Unity asset: only editable there
       attack.deck = { minRange: e.minRange ?? 0, maxRange: e.maxRange ?? 0, targetHeight: e.targetHeight || 'Any' };
@@ -821,6 +913,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     setProjectileMode(state.tuning.projectileMode);
     updateRangedEmphasis();
     deckArtSignature = null;
+    renderVariants();
     deckEditor.render();
   }
 
@@ -935,6 +1028,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     setArtMode('library');
     await loadSavedBehaviour(libraryEntriesCache.find((e) => e.id === id));
     deckEditor.refreshGestures();
+    refreshVariantGestures();
     refresh();
   }
 
@@ -944,6 +1038,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     await catalogReady;
     await loadArtEntries();
     deckEditor.render();
+    refreshVariantGestures();
     refresh();
   }
 

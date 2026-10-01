@@ -67,19 +67,30 @@ export function buildExportObject(state, ctx) {
 export function buildEnemyExport(state, ctx = {}) {
   const doc = baseExport(state);
   const deck = state.deck || [];
+  const variants = state.builtInVariants || [];
 
   // No deck = exactly the document this form always exported: the classic import is untouched.
-  if (deck.length === 0 && !state.deckTouched) return { doc, art: [], problems: [], notes: [] };
+  if (deck.length === 0 && variants.length === 0 && !state.deckTouched) return { doc, art: [], problems: [], notes: [] };
 
   const ex = buildAttacksExport(deck, ctx.catalog || null, ctx.entriesById || new Map(),
     state.attackArt || {}, ctx.gestureNames ?? null);
 
-  doc.tuning.attacks = deck.map((a) => ({
-    attack: ex.idMap.get(a.id),
-    minRange: a.deck?.minRange ?? 0,
-    maxRange: a.deck?.maxRange ?? 0,
-    targetHeight: a.deck?.targetHeight || 'Any',
-  }));
+  doc.tuning.attacks = [
+    ...variants.map((v) => ({
+      builtIn: true,
+      gesture: (v.gesture || '').trim(),
+      weight: v.weight > 0 ? v.weight : 1,
+      minRange: v.minRange ?? 0,
+      maxRange: v.maxRange ?? 0,
+      targetHeight: v.targetHeight || 'Any',
+    })),
+    ...deck.map((a) => ({
+      attack: ex.idMap.get(a.id),
+      minRange: a.deck?.minRange ?? 0,
+      maxRange: a.deck?.maxRange ?? 0,
+      targetHeight: a.deck?.targetHeight || 'Any',
+    })),
+  ];
   doc.tuning.builtInAttack = state.tuning.builtInAttack !== false;
   doc.tuning.builtInWeight = state.tuning.builtInWeight > 0 ? state.tuning.builtInWeight : 1;
 
@@ -87,6 +98,11 @@ export function buildEnemyExport(state, ctx = {}) {
   if (Object.keys(ex.artAssets).length) doc.artAssets = ex.artAssets;
 
   const notes = [...ex.notes];
+  variants.forEach((v, i) => {
+    if (!(v.gesture || '').trim()) notes.push(`Variante ${i + 1} del ataque propio: sin gesto, sale igual que el ataque normal.`);
+    else if (ctx.gestureNames && !ctx.gestureNames.includes(v.gesture.trim()))
+      notes.push(`Variante ${i + 1} del ataque propio: el gesto "${v.gesture}" no existe en el cuerpo → sale con el ataque normal.`);
+  });
   if (state.tuning.selfDestruct && deck.length) notes.push('Kamikaze: su ataque es explotar, la baraja se ignora.');
   if (!doc.tuning.builtInAttack && deck.length === 0) notes.push('Sin baraja, el ataque propio sale siempre (aunque esté desmarcado).');
 

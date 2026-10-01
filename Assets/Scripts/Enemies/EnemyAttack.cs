@@ -59,6 +59,9 @@ namespace RedMagic.Enemies
         /// <summary>La carta que salió en el último <see cref="Choose"/>; null = el ataque propio.</summary>
         private EnemyDeckEntry _chosen;
 
+        /// <summary>El gesto con el que sale el ataque propio esta vez (variante de la baraja), o vacío.</summary>
+        public string BuiltInGesture { get; private set; }
+
         /// <summary>Ataques lanzados (propios y de la baraja), para 'cooldownInAttacks'.</summary>
         private int _launched;
 
@@ -162,7 +165,7 @@ namespace RedMagic.Enemies
 
             var deck = tuning.attacks;
             for (int i = 0; i < deck.Count; i++)
-                if (IsReady(deck[i], distance, heightDelta, tuning)) total += Mathf.Max(0.01f, deck[i].attack.Weight);
+                if (IsReady(deck[i], distance, heightDelta, tuning)) total += WeightOf(deck[i]);
 
             if (total <= 0f) return false;
 
@@ -174,17 +177,21 @@ namespace RedMagic.Enemies
                 if (!IsReady(deck[i], distance, heightDelta, tuning)) continue;
 
                 _chosen = deck[i];
-                roll -= Mathf.Max(0.01f, deck[i].attack.Weight);
+                roll -= WeightOf(deck[i]);
                 if (roll <= 0f) break;
             }
 
             return _chosen != null || builtInWeight > 0f;
         }
 
+        private static float WeightOf(EnemyDeckEntry entry) =>
+            Mathf.Max(0.01f, entry.builtIn ? entry.weight : entry.attack.Weight);
+
         /// <summary>Mismas reglas que un jefe: a su distancia, y cumplidos 'cooldownInAttacks' y 'cooldownSeconds'.</summary>
         private bool IsReady(EnemyDeckEntry entry, float distance, float heightDelta, EnemyTuning tuning)
         {
             if (entry == null || !entry.InReach(distance, heightDelta, tuning.attackRange)) return false;
+            if (entry.builtIn) return true;   // el ataque propio no tiene enfriamientos propios: manda attackCooldown
 
             var attack = entry.attack;
             if (_lastUsedAt.TryGetValue(attack, out int last) && _launched - last <= attack.CooldownInAttacks) return false;
@@ -202,8 +209,10 @@ namespace RedMagic.Enemies
         {
             var entry = _chosen;
             _chosen = null;
+            BuiltInGesture = entry != null && entry.builtIn ? entry.gesture : null;
 
-            if (entry == null || entry.attack == null || _host == null)
+            // Una variante del ataque propio (otro gesto) sale por la animación, como el propio.
+            if (entry == null || entry.builtIn || entry.attack == null || _host == null)
             {
                 _launched++;
                 return false;

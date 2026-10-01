@@ -121,30 +121,15 @@ gesture poses, effect defaults), then anything that does not behave as described
 
 ---
 
-## DOTween driver — `RigDriverTween` + the three copies (branch `task/rig-driver-tween`)
+## Rig driver — decision after the DOTween comparison
 
-**What was added**
-- `RigDriverTween`: the same rig, animated with DOTween sequences. Per-stretch eases, parts of a
-  gesture that overlap (`poseStagger`), punch/shake for hurt, charge tremble, anticipation squash
-  and a stretch on release. All tunable on the component.
-- `RigDriverCode` was opened for inheritance (fields `protected`, pose application split). Its
-  behaviour should be unchanged — T1 checks it.
-- Copies to compare: `Assets/Prefabs/Enemies/Procedural/RobotTween`, `TurretTween`,
-  `BossIce2Tween` (menu *Tools ▸ RedMagic ▸ Procedural ▸ Packs ▸ Copias con DOTween*).
-- Rig Composer: "Motor de animación" selector (exports `driver: dotween`).
+The user compared the DOTween copies in Play (2026-10-01): no clear difference, and the extra bounce
+on every action was not liked. Decision: **one driver, `RigDriverCode`**; the DOTween driver is in
+`Assets/Scripts/Legacy/`, its copies and pack are deleted.
 
-**Tests** (nothing here has run in Play)
-- [ ] T1 · Regression: the ORIGINAL `Robot`, `Turret` and `BossIce2` animate exactly as before
-      (idle sway, attack, hurt, wake/sleep, death, boss gestures).
-- [ ] T2 · `RobotTween` next to `Robot`: it aims and the shot leaves at the same moment as the
-      original; recoil kicks and settles with a spring; body squashes while charging and stretches
-      on release; hurt wobbles; dies breaking apart. No errors/warnings from DOTween in the console.
-- [ ] T3 · `TurretTween`: sleeps folded, unfolds with an elastic bounce and the eyes open, shoots,
-      folds back when you leave, wakes when hit.
-- [ ] T4 · `BossIce2Tween` (same fight as BossIce2): every attack still starts on its gesture's
-      release; in each gesture the parts arrive one after another (torso → fists) instead of in
-      block; charge → dash pose blends; phase change stagger; thrown fists return to the body.
-- [ ] T5 · Pause (menu / anything that stops the player acting) in the middle of an attack on each
-      copy: the gesture freezes and resumes, the shot does not leave while paused.
-- [ ] T6 · Verdict per character: Code or Tween? And which curves feel wrong (too bouncy on the
-      boss? too soft on the drone?) — they are fields on `RigDriverTween`.
+**Tests**
+- [ ] T1 · Regression: `Robot`, `Turret` and `BossIce2` animate exactly as before the experiment
+      (idle sway, attack, hurt, wake/sleep, death, boss gestures). `RigDriverCode` was only opened
+      for inheritance, nothing in its behaviour should have changed.
+- [ ] T2 · No missing-script or missing-prefab warnings in scenes where a `…Tween` copy was placed
+      for the comparison (remove those instances; the prefabs no longer exist).

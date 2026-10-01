@@ -5,6 +5,12 @@ using UnityEngine;
 namespace RedMagic.Rigging
 {
     /// <summary>
+    /// <b>LEGACY — sólo referencia, no usar.</b> Se construyó para comparar con <see cref="RigDriverCode"/>
+    /// (2026-10-01) y se retiró: en juego no se notó mejor ni peor, y cuesta más (un puñado de tweens
+    /// y closures por gesto, una dependencia, y un segundo motor que mantener en paralelo). El único
+    /// motor es <see cref="RigDriverCode"/>. Lo que queda aquí como idea reutilizable: un peso por
+    /// pieza de la pose con retraso (<see cref="poseStagger"/>) y curvas elegibles por tramo.
+    ///
     /// Motor del rig con <b>DOTween</b>. Hereda de <see cref="RigDriverCode"/> la composición (reposo +
     /// balanceo + capas, cada frame) y cambia <b>quién mueve los números</b> de esas capas: en vez de
     /// una corrutina por gesto con curvas escritas a mano, cada gesto es una <see cref="Sequence"/>.
@@ -29,6 +35,7 @@ namespace RedMagic.Rigging
     /// <c>GameStateManager.CanPlayerAct</c>, igual que las corrutinas del otro motor.
     /// </summary>
     [DisallowMultipleComponent]
+    [AddComponentMenu("")]   // legacy: fuera del menú Add Component
     public class RigDriverTween : RigDriverCode
     {
         [Header("Ataque propio (apuntar · coz)")]

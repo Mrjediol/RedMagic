@@ -150,6 +150,8 @@ namespace RedMagic.Rigging.EditorTools
             bool boss = kind == "boss";
 
             var driverType = DriverType(config.Value<string>("driver") ?? "code");
+            if (config.Value<string>("driver") == "dotween")
+                report.Warnings.Add("driver 'dotween': ese motor se retiró; el prefab lleva RigDriverCode (mismos datos, mismo resultado).");
             var nodes = ReadNodes(config);
             ValidateReferences(config, nodes);
 
@@ -273,13 +275,10 @@ namespace RedMagic.Rigging.EditorTools
 
         private static Type DriverType(string driver)
         {
-            if (driver == "code") return typeof(RigDriverCode);
-            if (driver != "dotween") throw new ConfigImportException($"driver: '{driver}' no es 'code' ni 'dotween'.");
-
-            var tween = TypeCache.GetTypesDerivedFrom<RigDriver>().FirstOrDefault(t => t.Name == "RigDriverTween");
-            if (tween == null)
-                throw new ConfigImportException("driver: 'dotween' pide RigDriverTween, que todavía no existe (ver procedural-rig.md). Usa 'code'.");
-            return tween;
+            // Un solo motor: RigDriverCode. 'dotween' se sigue aceptando (configs antiguos) pero el
+            // motor de DOTween se retiró tras compararlos (Legacy/RigDriverTween.cs): mismo resultado.
+            if (driver == "code" || driver == "dotween") return typeof(RigDriverCode);
+            throw new ConfigImportException($"driver: '{driver}' no es 'code'.");
         }
 
         private static void CreateEmptyPrefab(string name, string prefabPath)

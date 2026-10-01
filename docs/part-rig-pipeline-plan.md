@@ -104,11 +104,13 @@ importer, refactor: design matters and mistakes are expensive). **Medium** is en
 Order (updated 2026-09-30): C → D → E → F. D does not depend on C; E is what gives each of D's
 attacks its own gesture; F comes after the templates exist.
 
-Side track, **built 2026-10-01** (branch `task/rig-driver-tween`, on top of D–F): the **DOTween
-comparison**. `RigDriverTween` exists (see `procedural-rig.md`) and the three reference bodies have
-a DOTween copy each (`RobotTween`, `TurretTween`, `BossIce2Tween`, same `ProceduralRig` data).
-Pending: the user compares them in Play (tests T1–T6 in `part-rig-pending-playtests.md`) and picks
-a driver per character; the losing copies/driver get removed.
+Side track, **closed 2026-10-01**: the **DOTween comparison**. `RigDriverTween` was built, the
+three reference bodies got a DOTween copy each, and the user compared them in Play: no visible
+advantage either way, and the extra bounce on every small action (the turret's base moving when the
+neck rises, the drone's body bouncing on each shot) was not liked. **Decision: one driver,
+`RigDriverCode`.** The DOTween driver moved to `Assets/Scripts/Legacy/` as reference, the copies
+and their pack were deleted, `driver: "dotween"` in a config is accepted with a warning and gets
+`RigDriverCode`. Reasoning in `procedural-rig.md` ▸ *One driver*.
 
 ---
 

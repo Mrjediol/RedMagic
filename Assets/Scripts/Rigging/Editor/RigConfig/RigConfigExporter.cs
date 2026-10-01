@@ -162,12 +162,8 @@ namespace RedMagic.Rigging.EditorTools
 
         // ============================================================ raíz
 
-        /// <summary>El motor que lleva el prefab (code por defecto).</summary>
-        private static string Driver(GameObject root)
-        {
-            var driver = root.GetComponent<RigDriver>();
-            return driver != null && driver.GetType().Name == "RigDriverTween" ? "dotween" : "code";
-        }
+        /// <summary>El motor del prefab: hay uno solo (RigDriverCode).</summary>
+        private static string Driver(GameObject root) => "code";
 
         private static JObject Root(GameObject root)
         {

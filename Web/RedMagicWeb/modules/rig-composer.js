@@ -631,10 +631,6 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     doc.appendChild(F.numberField({ label: 'Escala en juego', value: state.rootScale, min: 0.01,
       hint: 'Escala de la raíz del prefab: 0.5 = la mitad del tamaño del dibujo.',
       onChange: (v) => { state.rootScale = v > 0 ? v : 1; refreshExport(); } }).row);
-    doc.appendChild(F.enumField({ label: 'Motor de animación', value: state.driver || 'code',
-      options: [{ value: 'code', label: 'Código (RigDriverCode)' }, { value: 'dotween', label: 'DOTween (RigDriverTween)' }],
-      hint: 'Mismos datos, distinto motor. DOTween: curvas elegibles, piezas que se solapan y rebotes; sus curvas se afinan en Unity (componente RigDriverTween).',
-      onChange: (v) => { state.driver = v; refreshExport(); } }).row);
     doc.appendChild(F.numberField({ label: 'Píxeles por unidad', value: state.pixelsPerUnit, min: 1,
       hint: 'De los PNG. Cambiarlo cambia el tamaño de todo; mejor fíjalo antes de colocar.',
       onChange: (v) => { state.pixelsPerUnit = v > 0 ? v : 100; requestRender(); refreshExport(); } }).row);

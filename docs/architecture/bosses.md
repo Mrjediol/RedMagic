@@ -266,6 +266,12 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
   (which already owns the camera position, so there's no LateUpdate ordering fight) and is
   reusable by anything, not just bosses.
 
+## FX of an imported rig boss
+`FxPlaceholderPack.EnsureForBoss(prefabPath)` (called by `RigBundleImporter`) fills only the **empty**
+FX slots of the `BossController`: inherited from another boss prefab using the same
+`BossDefinition` (same fight = same warnings), then the per-boss placeholder set
+(`Fx/Bosses/<Boss>/`). Slots set by hand are never touched.
+
 ## Pivot and feet (`BossController.feet`)
 The root (pivot) of a boss may sit at the **centre of its body**. `feet` is an empty child of the
 root placed at the bottom of the body: `snapToGround` plants *it* on the measured ground,

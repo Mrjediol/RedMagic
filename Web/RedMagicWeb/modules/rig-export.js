@@ -184,6 +184,11 @@ export function buildRigExport(state) {
     const body = { ...state.bossBody };
     const bodyPart = byUid(state, body.bodyRenderer);
     delete body.bodyRenderer;
+    // An existing Unity BossDefinition (asset path); the linked Boss Creator entry wins over it.
+    body.definition = (body.definition || '').trim();
+    if (!body.definition) delete body.definition;
+    if (!body.definition && !state.bossConfigId)
+      problems.push('Jefe sin ataques: enlaza un jefe de 👑 Boss Creator o escribe la ruta de una BossDefinition existente (inspector ▸ Ataques y fases). Sin ella, en Unity se queda quieto y sin barra de vida.');
     if (bodyPart?.image) body.bodyRenderer = partPaths.get(bodyPart.uid);
     else problems.push('Jefe: elige la pieza "cuerpo" (la que copia el aura de aviso).');
     doc.bossBody = body;

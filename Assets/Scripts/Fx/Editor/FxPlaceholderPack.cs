@@ -58,6 +58,78 @@ namespace RedMagic.FxTools
             ("anchorPrefab",    "Anchor"),
         };
 
+        /// <summary>Todos los visuales que un <see cref="BossController"/> referencia (los que se heredan de otro jefe con la misma pelea).</summary>
+        private static readonly string[] BossFxFields =
+        {
+            "fxSprite", "warnPrefab", "warnCirclePrefab", "warnArrowPrefab", "shockwavePrefab",
+            "sweepBeamPrefab", "hazardPrefab", "platformPrefab", "anchorPrefab",
+        };
+
+        /// <summary>
+        /// Deja a UN jefe con sus visuales, sin tocar los que ya tenga puestos: primero hereda los
+        /// de otro jefe que use su misma <see cref="BossDefinition"/> (misma pelea = mismos avisos:
+        /// las flechas y círculos con arte propio), y lo que siga vacío se llena con el juego de
+        /// placeholders de su carpeta (<c>Fx/Bosses/&lt;Jefe&gt;/</c>), creándolo si falta. Lo llama
+        /// el import de un jefe por partes; idempotente. Devuelve una línea de resumen.
+        /// </summary>
+        public static string EnsureForBoss(string prefabPath)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (prefab == null || prefab.GetComponent<BossController>() == null) return "";
+
+            string shortName = prefab.name.StartsWith("Boss_") ? prefab.name.Substring("Boss_".Length) : prefab.name;
+            EnsureFolder(ShapeFolder);
+            EnsureFolder(BossFxFolder);
+            var square = LoadShape("Square") ?? ShapeSprite("Square", (x, y) => true);
+            var disc = LoadShape("Disc") ?? ShapeSprite("Disc", (x, y) => x * x + y * y <= 1f);
+            BuildBossFxSet(shortName, square, disc);
+            AssetDatabase.SaveAssets();
+
+            // Tras crear assets, la referencia al prefab se vuelve a pedir.
+            var controller = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath).GetComponent<BossController>();
+            var so = new SerializedObject(controller);
+            int inherited = 0, placeholders = 0;
+            string donorName = null;
+
+            if (controller.Definition != null)
+            {
+                foreach (var other in DiscoverBosses())
+                {
+                    if (other.controller == controller || other.definition != controller.Definition) continue;
+
+                    var donor = new SerializedObject(other.controller);
+                    foreach (string field in BossFxFields)
+                    {
+                        var to = so.FindProperty(field);
+                        var from = donor.FindProperty(field);
+                        if (to == null || from == null || to.objectReferenceValue != null || from.objectReferenceValue == null) continue;
+                        to.objectReferenceValue = from.objectReferenceValue;
+                        inherited++;
+                    }
+
+                    donorName = other.controller.name;
+                    break;
+                }
+            }
+
+            foreach (var (field, suffix) in BossSlots)
+            {
+                var prop = so.FindProperty(field);
+                if (prop == null || prop.objectReferenceValue != null) continue;
+                var fx = LoadPrefab(BossPrefabRel(shortName, suffix));
+                if (fx == null) continue;
+                prop.objectReferenceValue = fx;
+                placeholders++;
+            }
+
+            if (inherited + placeholders == 0) return "";
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(controller);
+            AssetDatabase.SaveAssets();
+            return $"Visuales del jefe: {inherited} heredado(s){(donorName != null ? $" de '{donorName}' (misma BossDefinition)" : "")}, " +
+                   $"{placeholders} placeholder(s) de '{BossFolder(shortName)}'.";
+        }
+
         // ================================================================= menú
 
         [MenuItem("Tools/RedMagic/FX/1 · Generar prefabs placeholder")]

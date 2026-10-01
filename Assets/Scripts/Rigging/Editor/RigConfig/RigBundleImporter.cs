@@ -239,6 +239,14 @@ namespace RedMagic.Rigging.EditorTools
             ProceduralRigTool.EnsureDriver(prefabPath, driverType, log);
 
             AssetDatabase.SaveAssets();
+
+            // Un jefe sin avisos ni ondas no se puede leer: los hereda de otro con su misma pelea, o placeholders.
+            if (boss)
+            {
+                string fx = FxTools.FxPlaceholderPack.EnsureForBoss(prefabPath);
+                if (!string.IsNullOrEmpty(fx)) report.Warnings.Add(fx);
+            }
+
             Debug.Log($"[RigBundleImporter] {name}\n{log}");
         }
 

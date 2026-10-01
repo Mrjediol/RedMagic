@@ -881,6 +881,10 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       d.appendChild(F.enumField({ label: 'Jefe de la biblioteca', value: state.bossConfigId || '', options,
         hint: 'Su boss-config (ataques, fases, arte de ataques) viaja en el .zip sin su cuerpo: el cuerpo es este rig.',
         onChange: (v) => { state.bossConfigId = v || null; refreshExport(); } }).row);
+      d.appendChild(F.textField({ label: 'O una BossDefinition que ya existe en Unity', value: state.bossBody.definition || '',
+        placeholder: 'Assets/Resources/Bosses/Boss_ColosodeHielo2.asset',
+        hint: 'Ruta del asset (clic derecho ▸ Copy Path). Misma pelea que otro jefe: al importar hereda también sus avisos (flechas, círculos). Si eliges un jefe de la biblioteca arriba, manda ése.',
+        onChange: (v) => { state.bossBody.definition = v; refreshExport(); } }).row);
     } else {
       const t = behaviour?.tuning;
       const suggested = behaviour ? null : suggestedEnemyConfig(state);

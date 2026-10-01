@@ -279,7 +279,7 @@ Library/<id>/…            ← opcional: el proyectil de biblioteca del enemigo
   `ProceduralRig` entero, pila de enemigo (`ProceduralRigTool.Setup`) o de jefe
   (`BossBodyBuilder.AddBossStack` + `BossLimbs` + `SoundEmitter`, definición del `boss-config`
   enlazada), con su motor (`RigDriverCode`) en el propio prefab: un solo prefab, sin variantes
-  (`driver: "dotween"` falla alto: `RigDriverTween` no existe).
+  (`driver: "dotween"` pone `RigDriverTween`; sus curvas se afinan en Unity y se conservan al reimportar).
 - **Reimportar**: el **cuerpo** (nodos bajo Visual, collider, cadáver, `ProceduralRig`,
   `BossLimbs`) sale **siempre** del JSON: clave ausente = se queda lo que había, lista presente =
   sustituye a la entera, nodo que ya no está = se borra (con aviso). EnemyStats y la vida/arena del

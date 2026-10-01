@@ -12,6 +12,10 @@ namespace RedMagic.Rigging
     /// <c>reposo + balanceo + capas de gesto</c>. Los gestos no tocan transforms, sólo escriben
     /// unos pocos números (peso de apuntado, coz, inclinación…) y la composición los suma; así
     /// dos gestos a la vez (un golpe recibido en mitad de un disparo) nunca se pisan.
+    ///
+    /// La composición (este <c>LateUpdate</c>) es independiente de <b>quién mueve los números</b>:
+    /// aquí son corrutinas; <see cref="RigDriverTween"/> hereda la composición tal cual y los mueve
+    /// con DOTween. Por eso las capas de gesto son <c>protected</c>.
     /// </summary>
     [DisallowMultipleComponent]
     public class RigDriverCode : RigDriver
@@ -41,7 +45,7 @@ namespace RedMagic.Rigging
         private int _aimIndex = -1;
 
         // Reloj propio: sólo avanza con tiempo escalado, así que la pausa lo congela sin saltos.
-        private float _clock;
+        protected float _clock;
         private Vector3 _lastPosition;
         private float _lean;
 
@@ -49,33 +53,37 @@ namespace RedMagic.Rigging
         private Vector2 _followOffset, _followVelocity;
 
         // Capas de gesto que la composición suma.
-        private Vector2? _aimPoint;
-        private float _aimWeight;
-        private float _armRotation;   // anticipación + coz, grados
-        private float _armPush;       // retroceso a lo largo del cañón, unidades locales
-        private float _bodyTilt;      // grados hacia atrás
-        private float _bodyKick;      // unidades hacia atrás
+        protected Vector2? _aimPoint;
+        protected float _aimWeight;
+        protected float _armRotation;   // anticipación + coz, grados
+        protected float _armPush;       // retroceso a lo largo del cañón, unidades locales
+        protected float _bodyTilt;      // grados hacia atrás
+        protected float _bodyKick;      // unidades hacia atrás
         private float _hurtTime = -1f;
-        private float _hurtStrength = 1f;
+        protected float _hurtStrength = 1f;
+
+        /// <summary>Tambaleo (grados) y aplastamiento extra que suma un motor derivado al cuerpo.</summary>
+        protected virtual float ExtraTilt => 0f;
+        protected virtual float ExtraSquash => 0f;
 
         // Gesto con nombre (jefes): pesos de la pose de carga y de la de golpe.
-        private RigGesture _gesture;
-        private float _gestureWindup, _gestureStrike, _gestureShake;
+        protected RigGesture _gesture;
+        protected float _gestureWindup, _gestureStrike, _gestureShake;
         private Coroutine _gestureRoutine;
 
         // Gesto anterior desvaneciéndose: al encadenar gestos (la carga de la embestida y su pose de
         // viaje) el primero no desaparece de golpe, se funde con el nuevo.
-        private const float GestureCrossfade = 0.2f;
-        private RigGesture _fadeGesture;
-        private float _fadeWindup, _fadeStrike, _fadeTime;
+        protected const float GestureCrossfade = 0.2f;
+        protected RigGesture _fadeGesture;
+        protected float _fadeWindup, _fadeStrike, _fadeTime;
 
         // Despliegue: 0 plegado (dormido), 1 pose del prefab, >1 durante el rebote.
-        private float _unfold = 1f;
+        protected float _unfold = 1f;
         private Coroutine _fold;
         private Vector3 _stretchScale;
 
         private Coroutine _attack;
-        private bool _dead;
+        protected bool _dead;
         private readonly List<Piece> _pieces = new List<Piece>();
 
         protected override void Awake()
@@ -365,19 +373,9 @@ namespace RedMagic.Rigging
         }
 
         /// <summary>Suma las poses del gesto encima de todo lo compuesto este frame.</summary>
-        private void ApplyGesture()
+        protected virtual void ApplyGesture()
         {
-            if (_fadeGesture != null)
-            {
-                _fadeTime += Time.deltaTime;
-                float f = 1f - EaseInOut(_fadeTime / GestureCrossfade);
-                if (f <= 0f) _fadeGesture = null;
-                else
-                {
-                    ApplyPoses(_fadeGesture.windup, _fadeWindup * f);
-                    ApplyPoses(_fadeGesture.strike, _fadeStrike * f);
-                }
-            }
+            ApplyFadeGesture();
 
             if (_gesture == null) return;
 
@@ -389,27 +387,46 @@ namespace RedMagic.Rigging
                 body.localRotation *= Quaternion.Euler(0f, 0f, Mathf.Sin(_clock * 80f) * _gestureShake);
         }
 
-        private void ApplyPoses(List<RigPose> poses, float weight)
+        /// <summary>El gesto anterior, desvaneciéndose debajo del nuevo.</summary>
+        protected void ApplyFadeGesture()
         {
-            if (weight <= 0.0001f || poses == null) return;
+            if (_fadeGesture == null) return;
+
+            _fadeTime += Time.deltaTime;
+            float f = 1f - EaseInOut(_fadeTime / GestureCrossfade);
+            if (f <= 0f) _fadeGesture = null;
+            else
+            {
+                ApplyPoses(_fadeGesture.windup, _fadeWindup * f);
+                ApplyPoses(_fadeGesture.strike, _fadeStrike * f);
+            }
+        }
+
+        protected void ApplyPoses(List<RigPose> poses, float weight)
+        {
+            if (poses == null) return;
+            foreach (var pose in poses) ApplyPose(pose, weight);
+        }
+
+        /// <summary>Una pose a un peso. El peso puede pasarse de 1 o bajar de 0 (un easing con rebote).</summary>
+        protected void ApplyPose(RigPose pose, float weight)
+        {
+            if (Mathf.Abs(weight) <= 0.0001f) return;
 
             var body = Rig.body;
-            foreach (var pose in poses)
-            {
-                var t = pose?.part;
-                if (t == null || Driven.ContainsKey(t)) continue;
+            var t = pose?.part;
+            if (t == null || Driven.ContainsKey(t)) return;
 
-                // Sólo lo que se recompone cada frame: sumar sobre algo que no se reinicia lo haría derivar.
-                if (t != body && Rig.FindPart(t) == null) continue;
+            // Sólo lo que se recompone cada frame: sumar sobre algo que no se reinicia lo haría derivar.
+            if (t != body && Rig.FindPart(t) == null) return;
 
-                // La raíz visual cuelga de la raíz sin voltear: 'delante' y 'atrás' dependen del facing.
-                // Las partes cuelgan de ella ya volteadas, así que sus números valen tal cual.
-                float side = t == body ? Facing : 1f;
-                t.localPosition += new Vector3(pose.move.x * side, pose.move.y, 0f) * weight;
-                t.localRotation *= Quaternion.Euler(0f, 0f, pose.rotate * side * weight);
-                var s = t.localScale;
-                t.localScale = new Vector3(s.x * (1f + pose.scale.x * weight), s.y * (1f + pose.scale.y * weight), s.z);
-            }
+            // La raíz visual cuelga de la raíz sin voltear: 'delante' y 'atrás' dependen del facing.
+            // Las partes cuelgan de ella ya volteadas, así que sus números valen tal cual.
+            float side = t == body ? Facing : 1f;
+            t.localPosition += new Vector3(pose.move.x * side, pose.move.y, 0f) * weight;
+            t.localRotation *= Quaternion.Euler(0f, 0f, pose.rotate * side * weight);
+            var s = t.localScale;
+            t.localScale = new Vector3(s.x * (1f + pose.scale.x * weight), s.y * (1f + pose.scale.y * weight), s.z);
         }
 
         // ============================================================ plegar / desplegar
@@ -507,6 +524,7 @@ namespace RedMagic.Rigging
             if (_gestureRoutine != null) StopCoroutine(_gestureRoutine);
             _gestureRoutine = null;
             _gesture = null;
+            _aimWeight = _armRotation = _armPush = _bodyTilt = _bodyKick = 0f;
             Driven.Clear();
             _fadeGesture = null;
 
@@ -620,6 +638,8 @@ namespace RedMagic.Rigging
             Vector3 bob = rig.hoverBob * Mathf.Sin(_clock * rig.hoverSpeed);
             body.localPosition = _bodyPos + bob + new Vector3(-_bodyKick * Facing, 0f, 0f)
                                + transform.InverseTransformVector(_followOffset);
+            hurtTilt += ExtraTilt;
+            squash += ExtraSquash;
             body.localRotation = Quaternion.Euler(0f, 0f,
                 _bodyAngle + _lean + (_bodyTilt + hurtTilt) * Facing);
             body.localScale = new Vector3(Mathf.Abs(_bodyScale.x) * Facing * (1f + squash),
@@ -743,13 +763,13 @@ namespace RedMagic.Rigging
 
         // ============================================================ easing
 
-        private static float EaseOutCubic(float x)
+        protected static float EaseOutCubic(float x)
         {
             x = 1f - Mathf.Clamp01(x);
             return 1f - x * x * x;
         }
 
-        private static float EaseInOut(float x)
+        protected static float EaseInOut(float x)
         {
             x = Mathf.Clamp01(x);
             return x * x * (3f - 2f * x);

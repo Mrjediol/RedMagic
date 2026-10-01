@@ -33,7 +33,29 @@ sheet. Animation is code, not clips.
   comes from measured velocity (works for physics, boss AI or knockback alike). Death: pieces
   reparent to the root, fly with gravity, bounce on `breakGround` (Ground+Platform), then
   `Corpse` fades/destroys the whole enemy.
-- **`RigDriverTween`** — pass A (DOTween). *Not built yet.*
+- **`RigDriverTween`** — pass A (DOTween), built 2026-10-01. **Derives from `RigDriverCode`**: the
+  composition (`LateUpdate`: rest + sway + layers, lean, inertia, driven parts, death pieces) is
+  inherited as is; what changes is who moves the layer numbers — one DOTween `Sequence` per gesture
+  instead of a coroutine. Same contract (`AttackReleased` via `InsertCallback` exactly at the end
+  of the windup) and same `ProceduralRig` data. What it adds, all Inspector fields on the driver:
+  - an `Ease` per stretch (aim, recoil, settle, gesture windup / strike / recover, wake, sleep);
+  - **overlapping action**: one weight **per pose entry** instead of one per gesture, each starting
+    `poseStagger` seconds after the previous and arriving together at release — order the poses of
+    a gesture from the body outwards (torso, arm, hand) and the hand lags the arm;
+  - `DOTween.Punch` / `Shake` for the hurt wobble (`hurtVibrato`, `hurtElasticity`), the charge
+    tremble, an anticipation squash (`chargeSquash`) and a stretch on release (`releasePunch`);
+  - eases with overshoot/elastic on the strike and the return to rest (weights may pass 1 or dip
+    below 0 — `ApplyPose` allows it).
+  Rules that bite: every chained value uses `DOVirtual.Float` with an explicit *from* (two tweens
+  on the same number inside one Sequence must not depend on when DOTween reads the start value);
+  sequences are `SetTarget(this)` and paused/resumed from `Update` with
+  `GameStateManager.CanPlayerAct`; everything is killed in `OnDisable` (pool-safe, Domain Reload
+  off). The driver's ease fields are **not** in `rig-config.json`: they are tuned in Unity and
+  survive a reimport (`EnsureDriver` keeps an existing driver of the right type).
+  - Comparison copies: `Tools ▸ RedMagic ▸ Procedural ▸ Packs ▸ Copias con DOTween`
+    (`ProceduralTweenPack`) → `RobotTween`, `TurretTween`, `BossIce2Tween`: full copies of the three
+    reference prefabs with the driver swapped and its curves tuned per character. They exist to
+    compare side by side; once a driver is chosen, swap it on the real prefab and delete the copies.
 
 ## Enemy integration
 - `EnemyAnimation` finds a `RigDriver` on the root; if present **it wins over Animator/flipbook**:

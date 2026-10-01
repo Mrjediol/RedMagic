@@ -73,6 +73,18 @@ namespace RedMagic.Enemies.EditorTools
                 list.Add(p);
             }
 
+            // Los grupos de uso diario (los de 'openByDefault') primero y en ese orden; el resto detrás, como
+            // están declarados. Así lo que más se toca queda arriba, sin bajar por lo plegado.
+            if (openByDefault != null)
+            {
+                var priority = new List<string>(openByDefault);
+                int Rank(string h) { int i = priority.IndexOf(h); return i < 0 ? int.MaxValue : i; }
+                var indexed = new List<(string header, int declared)>();
+                for (int i = 0; i < order.Count; i++) indexed.Add((order[i], i));
+                indexed.Sort((x, y) => Rank(x.header) != Rank(y.header) ? Rank(x.header).CompareTo(Rank(y.header)) : x.declared.CompareTo(y.declared));
+                order = indexed.ConvertAll(t => t.header);
+            }
+
             foreach (string header in order)
             {
                 string key = $"FoldoutInspector.{owner.Name}.{header}";

@@ -9,10 +9,25 @@
 // [Header(...)] order — Tipo, Vida, Retroceso, Rangos, Movimiento, Dormido, Vuelo, Ataque,
 // Ataque·melé, Ataque·kamikaze, Ataque·a distancia, Contacto, Animación, Objetivo — this is
 // cosmetic labeling only, the exported JSON stays exactly as flat as the schema itself.
+//
+// "Ataques" (last section) is the enemy's DECK: its built-in attack plus any number of catalog
+// attacks — the same generic attacks bosses use, drawn with the shared cards of
+// modules/attack-cards.js and exported by modules/attack-export.js (top-level `attacks` /
+// `artAssets` + `tuning.attacks`). An enemy without catalog attacks exports exactly what it
+// always did.
+//
+// Picking (or being sent) a library entry that already has a saved behaviour loads it into the
+// form: adoptConfig() writes the state and every bound widget follows (bind() / syncers).
 
 import * as F from './enemy-form-fields.js';
 import { createDefaultEnemyConfig, createDefaultProjectileSpec, PROJECTILE_AIMING_FIELDS } from './enemy-defaults.js';
-import { buildExportObject } from './enemy-export.js';
+import { buildEnemyExport } from './enemy-export.js';
+import { createAttackEditor } from './attack-cards.js';
+import { adoptAttacksFromConfig } from './attack-export.js';
+import { createArtOptions } from './boss-defaults.js';
+import { framedLanes } from './boss-export.js';
+import { ART_KIND_NOTES } from './boss-catalog-notes.js';
+import { suggestedEnemyConfig } from './rig-templates.js';
 import { loadEnemyConfigValidator, validateEnemyConfig } from './enemy-config-schema.js';
 import { downloadBlob } from './export-manifest.js';
 import { listEntries, getEnemy, updateEnemy } from './enemy-library.js';
@@ -119,6 +134,44 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   const fieldErrorSetters = {}; // instancePath ('/tuning/archetype', etc.) -> setError()
   let validate = null;
 
+  // Unity's attack catalog (generated file; may be missing on a fresh checkout) and the library
+  // entries the deck's art slots can pick. Both only matter to the "Ataques" section.
+  let catalog = null;
+  let artEntries = [];
+  let artEntriesById = new Map();
+  const catalogReady = import('./boss-catalog.js')
+    .then((m) => { catalog = m.BOSS_CATALOG; })
+    .catch(() => { catalog = null; });
+
+  /**
+   * Widgets are built once, bound to the state's INITIAL values. bind() remembers how to write the
+   * current value back into a widget, so adoptConfig() can load a saved config into the form
+   * without rebuilding it.
+   */
+  const syncers = [];
+
+  // refresh() runs while the form is still being built (the projectile toggle calls it); the
+  // "Ataques" section — built last — only takes part once it exists.
+  let deckReady = false;
+
+  const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+
+  function bind(kind, built, get) {
+    syncers.push(() => {
+      const v = get();
+      if (kind === 'bool') built.input.checked = !!v;
+      else if (kind === 'vector2') { built.xInput.value = v?.x ?? 0; built.yInput.value = v?.y ?? 0; }
+      else if (kind === 'color') {
+        const hex = typeof v === 'string' && v.length >= 7 ? v : '#ffffffff';
+        built.colorInput.value = hex.slice(0, 7);
+        built.alphaInput.value = Math.round((parseInt(hex.slice(7, 9) || 'ff', 16) / 255) * 100);
+      } else if (built.input) built.input.value = v ?? '';
+    });
+    return built;
+  }
+
   loadEnemyConfigValidator()
     .then((v) => { validate = v; refresh(); })
     .catch((err) => {
@@ -137,6 +190,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     hint: 'Nombra el prefab: Enemy_<nombre>.prefab. Sólo letras/números/_, empezando por letra.',
     onChange: (v) => { state.enemyName = v; refresh(); },
   });
+  bind('text', nameField, () => state.enemyName);
   registerError('/enemyName', nameField.setError);
   topSection.appendChild(nameField.row);
 
@@ -171,6 +225,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     hint: 'Ruta al asset SpriteSheetRecipe (<Nombre>.sheet.asset) ya generado por el pipeline de sprites en una sesión anterior.',
     onChange: (v) => { state.art = v; refresh(); },
   });
+  bind('text', manualArtField, () => state.art);
   registerError('/art', manualArtField.setError);
   topSection.appendChild(manualArtField.row);
 
@@ -195,7 +250,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
       )).join('');
   }
 
-  artLibrarySelect.addEventListener('change', () => {
+  artLibrarySelect.addEventListener('change', async () => {
     state.artLibraryId = artLibrarySelect.value || null;
     const picked = libraryEntriesCache.find((e) => e.id === state.artLibraryId);
     if (picked && !state.enemyName.trim()) {
@@ -203,6 +258,8 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
       nameField.input.value = picked.enemyName;
     }
     updateCombinedExportAvailability();
+    await loadSavedBehaviour(picked);
+    deckEditor.refreshGestures();
     refresh();
   });
 
@@ -232,6 +289,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     hint: 'Sólo se aplica al importar el .zip combinado (sprites + config) — un enemigo cuya art ya apunta a una hoja existente ignora este campo.',
     onChange: (v) => { state.anchor = v; refresh(); },
   });
+  bind('enum', anchorField, () => state.anchor);
   registerError('/anchor', anchorField.setError);
   topSection.appendChild(anchorField.row);
 
@@ -240,6 +298,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     hint: 'Vacío = Assets/Prefabs/Enemies.',
     onChange: (v) => { state.prefabFolder = v; refresh(); },
   });
+  bind('text', prefabFolderField, () => state.prefabFolder);
   registerError('/prefabFolder', prefabFolderField.setError);
   topSection.appendChild(prefabFolderField.row);
 
@@ -249,6 +308,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     hint: 'Tabla de drop de moneda por tier (CurrencyConfig).',
     onChange: (v) => { state.tier = v; refresh(); },
   });
+  bind('enum', tierField, () => state.tier);
   registerError('/tier', tierField.setError);
   topSection.appendChild(tierField.row);
 
@@ -260,27 +320,27 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   presenceSection.className = 'efSection';
   presenceSection.innerHTML = '<h2>Presencia</h2>';
 
-  presenceSection.appendChild(F.numberField({
+  presenceSection.appendChild(bind('number', F.numberField({
     label: 'Escala del sprite', value: state.presence.spriteScale, min: 0.01,
     onChange: (v) => { state.presence.spriteScale = v; refresh(); },
-  }).row);
-  presenceSection.appendChild(F.vector2Field({
+  }), () => state.presence.spriteScale).row);
+  presenceSection.appendChild(bind('vector2', F.vector2Field({
     label: 'Tamaño del collider (0,0 = automático)', value: state.presence.colliderSize,
     onChange: (v) => { state.presence.colliderSize = v; refresh(); },
-  }).row);
-  presenceSection.appendChild(F.vector2Field({
+  }), () => state.presence.colliderSize).row);
+  presenceSection.appendChild(bind('vector2', F.vector2Field({
     label: 'Desfase del collider (0,0 = automático)', value: state.presence.colliderOffset,
     onChange: (v) => { state.presence.colliderOffset = v; refresh(); },
-  }).row);
-  presenceSection.appendChild(F.numberField({
+  }), () => state.presence.colliderOffset).row);
+  presenceSection.appendChild(bind('number', F.numberField({
     label: 'Orden de dibujado (sortingOrder)', value: state.presence.sortingOrder, step: 1,
     onChange: (v) => { state.presence.sortingOrder = Math.round(v); refresh(); },
-  }).row);
-  presenceSection.appendChild(F.textField({
+  }), () => state.presence.sortingOrder).row);
+  presenceSection.appendChild(bind('text', F.textField({
     label: 'Etiqueta (tag)', value: state.presence.tag,
     hint: '"Untagged" normal; "Enemy" para esbirros de un jefe.',
     onChange: (v) => { state.presence.tag = v; refresh(); },
-  }).row);
+  }), () => state.presence.tag).row);
 
   formRoot.appendChild(presenceSection);
 
@@ -290,15 +350,15 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   projectileArtSection.className = 'efSection';
   projectileArtSection.innerHTML = '<h2>Arte del proyectil <span class="efRangedBadge">sólo arquetipos a distancia</span></h2>';
 
-  projectileArtSection.appendChild(F.textField({
+  projectileArtSection.appendChild(bind('text', F.textField({
     label: 'Fila con el prop suelto (propState)', value: state.projectileArt.propState,
     hint: 'Fila de la lámina cuyo objeto suelto se convierte en el proyectil.',
     onChange: (v) => { state.projectileArt.propState = v; refresh(); },
-  }).row);
-  projectileArtSection.appendChild(F.numberField({
+  }), () => state.projectileArt.propState).row);
+  projectileArtSection.appendChild(bind('number', F.numberField({
     label: 'Escala del sprite del proyectil', value: state.projectileArt.scale, min: 0.01,
     onChange: (v) => { state.projectileArt.scale = v; refresh(); },
-  }).row);
+  }), () => state.projectileArt.scale).row);
 
   formRoot.appendChild(projectileArtSection);
 
@@ -317,6 +377,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     hint: 'Decide cómo se mueve y cómo ataca.',
     onChange: (v) => { state.tuning.archetype = v; updateRangedEmphasis(); applyRangedDefaultsIfUntouched(); refresh(); },
   });
+  bind('enum', archetypeField, () => state.tuning.archetype);
   registerError('/tuning/archetype', archetypeField.setError);
   tipoGroup.appendChild(archetypeField.row);
 
@@ -326,6 +387,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     hint: 'Sólo se usa si el arquetipo es Static.',
     onChange: (v) => { state.tuning.staticAttack = v; updateRangedEmphasis(); applyRangedDefaultsIfUntouched(); refresh(); },
   });
+  bind('enum', staticAttackField, () => state.tuning.staticAttack);
   registerError('/tuning/staticAttack', staticAttackField.setError);
   tipoGroup.appendChild(staticAttackField.row);
 
@@ -347,6 +409,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     else if (kind === 'vector2') built = F.vector2Field({ label, value: state.tuning[key], onChange });
     else if (kind === 'color') built = F.colorField({ label, value: state.tuning[key], onChange });
 
+    bind(kind, built, () => state.tuning[key]);
     registerError(`/tuning/${key}`, built.setError);
     group.appendChild(built.row);
     if (opts.rangedOnly) rangedRows.push(built.row);
@@ -494,15 +557,168 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
 
   // --- obstacleLayers / hitLayers ---
   const objetivoGroup = groupEls['Objetivo'];
-  objetivoGroup.appendChild(F.layerMaskField({
-    label: 'Capas que puede dañar (hitLayers)', value: state.tuning.hitLayers, knownLayers: KNOWN_LAYERS,
-    onChange: (v) => { state.tuning.hitLayers = v; refresh(); },
-  }).row);
-  objetivoGroup.appendChild(F.layerMaskField({
-    label: 'Capas de terreno (obstacleLayers)', value: state.tuning.obstacleLayers, knownLayers: KNOWN_LAYERS,
-    hint: 'Normalmente Ground + Platform — ver COMPATIBILITY.md sobre por qué faltar Platform rompe enemigos en puentes.',
-    onChange: (v) => { state.tuning.obstacleLayers = v; refresh(); },
-  }).row);
+
+  // A layerMask widget has no single input to write into: adopting a config rebuilds its row.
+  function layerMaskRow(key, label, hint) {
+    const build = () => F.layerMaskField({
+      label, value: state.tuning[key], knownLayers: KNOWN_LAYERS, hint,
+      onChange: (v) => { state.tuning[key] = v; refresh(); },
+    }).row;
+    let row = build();
+    objetivoGroup.appendChild(row);
+    syncers.push(() => { const next = build(); row.replaceWith(next); row = next; });
+  }
+  layerMaskRow('hitLayers', 'Capas que puede dañar (hitLayers)');
+  layerMaskRow('obstacleLayers', 'Capas de terreno (obstacleLayers)',
+    'Normalmente Ground + Platform — ver COMPATIBILITY.md sobre por qué faltar Platform rompe enemigos en puentes.');
+
+  // ============================================================ ataques (la baraja)
+
+  const deckSection = document.createElement('div');
+  deckSection.className = 'efSection';
+  deckSection.innerHTML = '<h2>Ataques</h2>';
+  formRoot.appendChild(deckSection);
+
+  const deckIntro = document.createElement('p');
+  deckIntro.className = 'efHint';
+  deckIntro.textContent = 'Un enemigo puede tener VARIOS ataques. Cada vez que le toca atacar (lo decide su rango y '
+    + '"Enfriamiento de ataque") se sortea uno, por peso, entre los que están a su distancia y fuera de '
+    + 'enfriamiento. Sin ataques de catálogo sale siempre el ataque propio, como hasta ahora.';
+  deckSection.appendChild(deckIntro);
+
+  // --- 1ª carta: el ataque propio (melé / disparo / explosión, los números de "Tuning ▸ Ataque").
+  const builtInCard = addGroup(deckSection, 'Ataque propio (el de Tuning ▸ Ataque)');
+  const builtInSummary = document.createElement('p');
+  builtInSummary.className = 'efHint';
+  builtInCard.appendChild(builtInSummary);
+  builtInCard.appendChild(bind('bool', F.boolField({
+    label: 'Entra en el sorteo', value: state.tuning.builtInAttack,
+    hint: 'Desmarcado = sólo ataca con los ataques de catálogo de abajo. Sin ninguno, el propio sale siempre.',
+    onChange: (v) => { state.tuning.builtInAttack = v; state.deckTouched = true; refresh(); },
+  }), () => state.tuning.builtInAttack).row);
+  builtInCard.appendChild(bind('number', F.numberField({
+    label: 'Peso en el sorteo', value: state.tuning.builtInWeight, min: 0.01,
+    hint: 'Frente al "weight" de cada ataque de catálogo (1 por defecto).',
+    onChange: (v) => { state.tuning.builtInWeight = v; state.deckTouched = true; refresh(); },
+  }), () => state.tuning.builtInWeight).row);
+
+  function describeBuiltIn() {
+    const t = state.tuning;
+    const what = t.selfDestruct ? `explota (radio ${t.explosionRadius})`
+      : isRangedNow() ? 'dispara su proyectil' : 'golpea de cerca (caja de melé)';
+    builtInSummary.textContent = `${what} · daño ${t.attackDamage} · a ${t.attackRange} u · gesto: el ataque del cuerpo (Attack / windup del rig).`;
+  }
+
+  // --- el resto: ataques del catálogo de Unity (los mismos que usan los jefes).
+  const deckRoot = document.createElement('div');
+  deckSection.appendChild(deckRoot);
+  const deckArtRoot = document.createElement('div');
+  deckSection.appendChild(deckArtRoot);
+
+  /** The linked art entry (a sprite-sheet enemy or a 🦴 rig), or null in manual-path mode. */
+  function linkedEntry() {
+    if (state.artMode !== 'library' || !state.artLibraryId) return null;
+    return libraryEntriesCache.find((e) => e.id === state.artLibraryId) || null;
+  }
+
+  /** Gestures the body can play: a rig's named gestures, or a sprite sheet's animation names. */
+  function bodyGestureNames() {
+    const entry = linkedEntry();
+    if (!entry) return [];
+    if (entry.kind === 'rig') return (entry.draft?.gestures || []).map((g) => g.name).filter(Boolean);
+    return framedLanes(entry).map((l) => l.name);
+  }
+
+  const deckEditor = createAttackEditor({
+    root: deckRoot,
+    getCatalog: () => catalog,
+    getAttacks: () => state.deck,
+    getEntries: () => artEntries,
+    gestureNames: bodyGestureNames,
+    noGesturesLabel: '(elige arriba el arte del enemigo: sus gestos salen de ahí)',
+    // Attacks that need a boss (phases, guard, adds, arena targets) are not offered to an enemy.
+    typeFilter: (a) => a.hosts !== 'boss',
+    // No phases and no punish windows on a normal enemy: these three do nothing there.
+    hiddenCommon: ['minPhase', 'vulnerableSeconds', 'vulnerableMultiplier'],
+    intro: 'Ataques de catálogo: tipos genéricos (los mismos de los jefes) con su gesto, sus números y su arte. '
+      + 'Cada uno puede usar un gesto distinto del cuerpo: tres hechizos desde la misma mano = tres ataques con tres gestos. '
+      + 'Lo que dejes vacío funciona con un placeholder.',
+    idHint: 'Nombra el asset en Unity. Letras, números, - y _. Se aplica al salir del campo.',
+    renderExtra: (attack, card) => {
+      attack.deck = { minRange: 0, maxRange: 0, targetHeight: 'Any', ...(attack.deck || {}) };
+      const grid = document.createElement('div');
+      grid.className = 'bcGrid';
+      grid.appendChild(F.numberField({
+        label: 'Distancia mínima (u)', value: attack.deck.minRange, min: 0,
+        hint: 'Más cerca que esto no sale. 0 = sin mínimo.',
+        onChange: (v) => { attack.deck.minRange = v; refresh(); },
+      }).row);
+      grid.appendChild(F.numberField({
+        label: 'Distancia máxima (u)', value: attack.deck.maxRange, min: 0,
+        hint: '0 = el "Rango de ataque" del enemigo. Mayor = lo lanza mientras aún se acerca.',
+        onChange: (v) => { attack.deck.maxRange = v; refresh(); },
+      }).row);
+      grid.appendChild(F.enumField({
+        label: 'Altura del objetivo', value: attack.deck.targetHeight,
+        options: [
+          { value: 'Any', label: 'Cualquiera' },
+          { value: 'TargetAbove', label: 'Sólo si está por encima' },
+          { value: 'TargetBelow', label: 'Sólo si está por debajo' },
+        ],
+        hint: 'Medio metro de margen respecto al centro del enemigo.',
+        onChange: (v) => { attack.deck.targetHeight = v; refresh(); },
+      }).row);
+      card.appendChild(grid);
+    },
+    onStructure: () => { state.deckTouched = true; },
+    onChange: () => refresh(),
+  });
+
+  /** Size/collider options of every library art the deck uses (same knobs as the Boss Creator). */
+  let deckArtSignature = null;
+  function renderDeckArt(art) {
+    const sig = art.map((a) => a.key).join('|') + `#${artEntries.length}`;
+    if (sig === deckArtSignature) return;
+    deckArtSignature = sig;
+
+    deckArtRoot.innerHTML = '';
+    if (art.length === 0) return;
+
+    const box = addGroup(deckArtRoot, 'Arte usado por los ataques');
+    art.forEach(({ id, key, kind, libraryId }) => {
+      const entry = artEntriesById.get(libraryId);
+      const opts = state.attackArt[key] || (state.attackArt[key] = createArtOptions(kind));
+      const title = document.createElement('p');
+      title.className = 'efHint';
+      title.textContent = `${id} — ${ART_KIND_NOTES[kind]?.label || kind} · ${entry?.enemyName || libraryId}`;
+      box.appendChild(title);
+      const grid = document.createElement('div');
+      grid.className = 'bcGrid';
+      if (kind !== 'warning') grid.appendChild(F.numberField({ label: 'Ancho en el mundo (u)', value: opts.worldWidth, min: 0.05, onChange: (v) => { opts.worldWidth = v; refresh(); } }).row);
+      if (kind === 'projectile') {
+        grid.appendChild(F.numberField({ label: 'Collider (× dibujo)', value: opts.colliderScale, min: 0.05, onChange: (v) => { opts.colliderScale = v; refresh(); } }).row);
+        grid.appendChild(F.boolField({ label: 'Gira hacia donde vuela', value: opts.faceTravelDirection, onChange: (v) => { opts.faceTravelDirection = v; refresh(); } }).row);
+      }
+      if (kind === 'warning') grid.appendChild(F.boolField({ label: 'Teñir con el color del ataque', value: opts.tint, onChange: (v) => { opts.tint = v; refresh(); } }).row);
+      box.appendChild(grid);
+    });
+  }
+
+  async function loadArtEntries() {
+    artEntries = (await listEntries()).filter((e) => e.sprite && e.kind !== 'boss');
+    artEntriesById = new Map(artEntries.map((e) => [e.id, e]));
+    deckArtSignature = null;
+  }
+
+  /** What every export of this form needs beyond the state itself. */
+  const exportContext = () => ({
+    catalog,
+    entriesById: artEntriesById,
+    gestureNames: linkedEntry() ? bodyGestureNames() : null,
+  });
+
+  deckReady = true;
+  catalogReady.then(loadArtEntries).then(() => { deckEditor.render(); refresh(); });
 
   function addGroup(parent, title) {
     const g = document.createElement('div');
@@ -539,24 +755,90 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   }
 
   async function refresh() {
-    const exportObj = buildExportObject(state);
+    const { doc: exportObj, art, problems, notes } = buildEnemyExport(state, deckReady ? exportContext() : {});
     previewEl.textContent = JSON.stringify(exportObj, null, 2);
+    if (deckReady) {
+      describeBuiltIn();
+      renderDeckArt(art);
+    }
 
     if (!validate) return; // still loading the schema
     clearAllErrors();
 
     const { valid, errors } = validateEnemyConfig(validate, exportObj);
-    exportBtn.disabled = !valid;
+    exportBtn.disabled = !valid || problems.length > 0;
+
+    // Only an enemy with a deck has anything to say here: without one this stays one line.
+    const deckHtml = (problems.length ? `<p class="efSummaryError">✗ Ataques:</p><ul>${problems.map((p) => `<li>${escapeHtml(p)}</li>`).join('')}</ul>` : '')
+      + (notes.length ? `<p class="efHint">Avisos de los ataques:</p><ul class="bcNotes">${notes.map((n) => `<li>${escapeHtml(n)}</li>`).join('')}</ul>` : '');
 
     if (valid) {
-      summaryEl.innerHTML = '<p class="efSummaryOk">✓ Válido según enemy-config.schema.json</p>';
+      summaryEl.innerHTML = '<p class="efSummaryOk">✓ Válido según enemy-config.schema.json</p>' + deckHtml;
       return;
     }
 
     errors.forEach((e) => { if (fieldErrorSetters[e.path]) fieldErrorSetters[e.path](e.message); });
     summaryEl.innerHTML =
       `<p class="efSummaryError">✗ ${errors.length} error${errors.length > 1 ? 'es' : ''} de validación:</p>` +
-      `<ul>${errors.map((e) => `<li><code>${e.path || '(raíz)'}</code> — ${e.message}</li>`).join('')}</ul>`;
+      `<ul>${errors.map((e) => `<li><code>${e.path || '(raíz)'}</code> — ${e.message}</li>`).join('')}</ul>` + deckHtml;
+  }
+
+  // ============================================================ cargar un comportamiento guardado
+
+  /**
+   * A saved EnemyConfig back into the form: state first, then every bound widget. Keys the config
+   * does not carry go back to the form's defaults — it is "open that enemy", not a merge.
+   */
+  function adoptConfig(config) {
+    if (!config) return;
+    const fresh = createDefaultEnemyConfig();
+    const t = config.tuning || {};
+    const { projectile, attacks: deckJson, ...flat } = t;
+
+    state.anchor = config.anchor || fresh.anchor;
+    state.prefabFolder = config.prefabFolder || fresh.prefabFolder;
+    state.tier = config.tier || fresh.tier;
+    state.presence = { ...fresh.presence, ...(config.presence || {}) };
+    state.projectileArt = { ...fresh.projectileArt, ...(config.projectileArt || {}) };
+
+    // In place: every onChange closure writes through state.tuning.
+    Object.keys(state.tuning).forEach((k) => delete state.tuning[k]);
+    Object.assign(state.tuning, fresh.tuning, flat);
+    state.tuning.projectileMode = projectile ? 'inline' : 'default';
+    state.tuning.projectileSpec = { ...createDefaultProjectileSpec(), ...(projectile || {}) };
+
+    const adopted = adoptAttacksFromConfig(config, catalog);
+    state.deck = (Array.isArray(deckJson) ? deckJson : []).map((e) => {
+      const attack = adopted.byId[e.attack];
+      if (!attack) return null;   // a card that points at a Unity asset: only editable there
+      attack.deck = { minRange: e.minRange ?? 0, maxRange: e.maxRange ?? 0, targetHeight: e.targetHeight || 'Any' };
+      return attack;
+    }).filter(Boolean);
+    state.attackArt = adopted.artOptions;
+    state.deckTouched = Array.isArray(deckJson);
+
+    syncers.forEach((sync) => sync());
+    setProjectileMode(state.tuning.projectileMode);
+    updateRangedEmphasis();
+    deckArtSignature = null;
+    deckEditor.render();
+  }
+
+  /**
+   * The behaviour already saved for a library entry, loaded into the form: an enemy record's own
+   * config, a rig's `enemyConfig`, or — for a rig made from a template and never configured here —
+   * the template's suggested behaviour. No saved behaviour = the form is left as it is.
+   */
+  async function loadSavedBehaviour(entry) {
+    if (!entry) return;
+    await catalogReady;
+    const saved = entry.kind === 'rig'
+      ? entry.enemyConfig || suggestedEnemyConfig(adoptRigState(entry.draft))
+      : entry.config;
+    if (!saved || saved.kind === 'boss' || !saved.tuning) return;
+    adoptConfig(saved);
+    summaryEl.insertAdjacentHTML('afterbegin',
+      `<p class="efHint">Cargado el comportamiento guardado de "${escapeHtml(entry.enemyName)}".</p>`);
   }
 
   /** Once a draft is linked to a library entry, every export also persists the config onto it —
@@ -573,7 +855,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   }
 
   exportBtn.addEventListener('click', async () => {
-    const exportObj = buildExportObject(state);
+    const exportObj = buildEnemyExport(state, exportContext()).doc;
     const name = (state.enemyName.trim() || 'Enemy').replace(/[^A-Za-z0-9_]/g, '_');
     const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
     downloadBlob(blob, `${name}.enemy.json`);
@@ -602,7 +884,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
         return;
       }
 
-      const exportObj = buildExportObject(state);
+      const exportObj = buildEnemyExport(state, exportContext()).doc;
       if (entry.kind === 'rig') {
         // Part-based: the rig's own .zip (parts + rig-config) with this behaviour as enemy-config.json.
         const all = await listEntries(null);
@@ -645,12 +927,25 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     await refreshArtLibraryOptions();
     state.artLibraryId = id;
     artLibrarySelect.value = id;
-    if (!state.enemyName.trim() && enemyName) {
+    // Editing THAT entry: its name, and whatever behaviour it already has saved.
+    if (enemyName) {
       state.enemyName = enemyName;
       nameField.input.value = enemyName;
     }
     setArtMode('library');
+    await loadSavedBehaviour(libraryEntriesCache.find((e) => e.id === id));
+    deckEditor.refreshGestures();
+    refresh();
   }
 
-  return { refreshLaneInfo, refreshArtLibrary: refreshArtLibraryOptions, linkLibraryEntry };
+  /** Called when the tab is shown: the library (art entries, gestures of a rig) may have changed. */
+  async function refreshArtLibrary() {
+    await refreshArtLibraryOptions();
+    await catalogReady;
+    await loadArtEntries();
+    deckEditor.render();
+    refresh();
+  }
+
+  return { refreshLaneInfo, refreshArtLibrary, linkLibraryEntry };
 }

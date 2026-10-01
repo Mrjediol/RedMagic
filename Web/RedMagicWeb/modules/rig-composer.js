@@ -892,9 +892,9 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       d.appendChild(el('p', behaviour || suggested ? 'efSummaryOk' : 'hint', behaviour
         ? `✓ ${t?.archetype || 'Melee'} · vida ${t?.maxHealth ?? 30} · ataque ${t?.attackRange ?? 1.6} u (de Enemy Creator)`
         : suggested
-          ? `✓ Sugerido por la plantilla: ${st.archetype}${st.sleepsUntilDetected ? ' dormido' : ''} · vida ${st.maxHealth} · ataque ${st.attackRange} u. Viaja en el .zip mientras no lo configures en Enemy Creator (allí se parte de sus valores por defecto: pon el arquetipo ${st.archetype}).`
+          ? `✓ Sugerido por la plantilla: ${st.archetype}${st.sleepsUntilDetected ? ' dormido' : ''} · vida ${st.maxHealth} · ataque ${st.attackRange} u. Viaja en el .zip mientras no lo configures en Enemy Creator (al abrirlo allí se cargan estos valores).`
           : 'Sin comportamiento todavía: se exportará con el tuning por defecto (Melee).'));
-      d.appendChild(el('p', 'hint', 'El comportamiento (volador o no, vida, rangos, daño, proyectil) se configura en 🧩 Enemy Creator eligiendo este rig como arte. Viaja en el .zip como enemy-config.json.'));
+      d.appendChild(el('p', 'hint', 'El comportamiento (volador o no, vida, rangos, daño, proyectil y sus ATAQUES: varios, cada uno con su gesto) se configura en 🧩 Enemy Creator eligiendo este rig como arte. Viaja en el .zip como enemy-config.json.'));
       const go = el('button', 'small', '🧩 Configurar en Enemy Creator');
       go.onclick = async () => {
         if (!state.name.trim()) { setStatus('Ponle nombre y guárdalo primero.'); return; }

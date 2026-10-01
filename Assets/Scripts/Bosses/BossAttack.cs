@@ -179,7 +179,7 @@ namespace RedMagic.Bosses
         private static void EmitWarn(in BossContext ctx, Vector2 position, Vector2 size, Color color,
                                      float duration, float rotationDegrees, float growTo)
         {
-            var prefab = ctx.Boss != null ? ctx.Boss.WarnPrefab : null;
+            var prefab = ctx.HasHost ? ctx.Host.WarnPrefab : null;
             float d = Mathf.Max(0.05f, duration);
 
             if (prefab != null)
@@ -215,7 +215,7 @@ namespace RedMagic.Bosses
             float d = Mathf.Max(0.05f, duration);
             float diameter = Mathf.Max(0.1f, radius * 2f);
 
-            var prefab = ctx.Boss != null ? ctx.Boss.WarnCirclePrefab : null;
+            var prefab = ctx.HasHost ? ctx.Host.WarnCirclePrefab : null;
             if (prefab != null)
             {
                 FxTelegraph.Spawn(prefab, groundPoint, new Vector2(diameter, radius), color, d, 0f, 1f,
@@ -245,7 +245,7 @@ namespace RedMagic.Bosses
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
             Vector2 center = from + direction * (len * 0.5f);
 
-            var prefab = ctx.Boss != null ? ctx.Boss.WarnArrowPrefab : null;
+            var prefab = ctx.HasHost ? ctx.Host.WarnArrowPrefab : null;
             if (prefab != null)
             {
                 FxTelegraph.Spawn(prefab, center, new Vector2(len, width), color, d, angle, 1f, ctx.Ability.Caster);

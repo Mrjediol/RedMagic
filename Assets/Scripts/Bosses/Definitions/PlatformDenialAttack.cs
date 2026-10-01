@@ -21,6 +21,7 @@ namespace RedMagic.Bosses
     /// tocar este archivo.
     /// </summary>
     [CreateAssetMenu(menuName = "RedMagic/Boss/Platform Denial Attack", fileName = "BossAttack_Denial")]
+    [BossOnly]
     public class PlatformDenialAttack : BossAttack
     {
         [Header("Proyectil")]
@@ -91,6 +92,8 @@ namespace RedMagic.Bosses
 
         public override IEnumerator Run(BossContext ctx)
         {
+            if (ctx.Boss == null) yield break;   // sólo jefes: blancos de arena y fuego hasta que muere
+
             var points = Targets(ctx, warn: true);
             if (points == null) yield break;
 
@@ -122,7 +125,7 @@ namespace RedMagic.Bosses
         /// <summary>El proyectil ha llegado: nace el fuego, salvo que el jefe ya haya caído.</summary>
         private void Ignite(BossContext ctx, Vector2 at)
         {
-            if (!ctx.IsValid || ctx.Boss.BossHealth == null || ctx.Boss.BossHealth.IsDead) return;
+            if (!ctx.IsValid || ctx.Boss == null || ctx.Boss.BossHealth == null || ctx.Boss.BossHealth.IsDead) return;
 
             VfxOneShot.Spawn(fireImpactFxPrefab, at);
 

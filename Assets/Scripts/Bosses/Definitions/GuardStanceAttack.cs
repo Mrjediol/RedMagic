@@ -21,6 +21,7 @@ namespace RedMagic.Bosses
     /// devuelvo con intereses", que es la lección completa.
     /// </summary>
     [CreateAssetMenu(menuName = "RedMagic/Boss/Guard Stance Attack", fileName = "BossAttack_Guard")]
+    [BossOnly]
     public class GuardStanceAttack : BossAttack
     {
         [Header("Guardia")]
@@ -64,7 +65,7 @@ namespace RedMagic.Bosses
 
         public override IEnumerator Run(BossContext ctx)
         {
-            if (!ctx.IsValid) yield break;
+            if (!ctx.IsValid || ctx.Boss == null) yield break;   // sólo jefes: la guardia es del BossController
 
             float seconds = ctx.Scaled(guardSeconds);
 

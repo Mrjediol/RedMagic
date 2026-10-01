@@ -48,7 +48,7 @@ namespace RedMagic.Bosses
         public static BossAnchor Spawn(in BossContext ctx, Vector2 position, Vector2 size,
                                        float maxHealth, Sprite sprite)
         {
-            var anchor = BossFxSpawn.FromPrefab<BossAnchor>(ctx.Boss != null ? ctx.Boss.AnchorPrefab : null);
+            var anchor = BossFxSpawn.FromPrefab<BossAnchor>(ctx.HasHost ? ctx.Host.AnchorPrefab : null);
             bool fromPrefab = anchor != null;
 
             if (anchor == null)

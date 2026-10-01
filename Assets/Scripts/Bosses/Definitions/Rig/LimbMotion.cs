@@ -25,7 +25,7 @@ namespace RedMagic.Bosses
         /// <summary>Las extremidades del jefe, o null si no tiene (entonces toca la versión sin pieza).</summary>
         public static BossLimbs Limbs(in BossContext ctx)
         {
-            var limbs = ctx.Boss != null ? ctx.Boss.GetComponent<BossLimbs>() : null;
+            var limbs = ctx.HasHost ? ctx.Host.gameObject.GetComponent<BossLimbs>() : null;
             return limbs != null && limbs.Usable ? limbs : null;
         }
 

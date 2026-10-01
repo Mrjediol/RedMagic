@@ -194,6 +194,9 @@ MonoBehaviour:
     attackKnockbackMultiplier: 1
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
+    attacks: []
+    builtInAttack: 1
+    builtInWeight: 1
     meleeHitboxSize: {x: 7.05, y: 4.67}
     meleeHitboxOffset: {x: 0.1, y: -0.84}
     selfDestruct: 0

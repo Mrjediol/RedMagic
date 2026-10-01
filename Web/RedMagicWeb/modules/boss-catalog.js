@@ -135,6 +135,7 @@ export const BOSS_CATALOG = {
       "type": "AnchorRitualAttack",
       "label": "Anchor Ritual",
       "category": "classic",
+      "hosts": "boss",
       "params": [
         {
           "name": "anchorCount",
@@ -239,6 +240,7 @@ export const BOSS_CATALOG = {
       "type": "BulletHellAttack",
       "label": "Bullet Hell",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "pattern",
@@ -589,6 +591,7 @@ export const BOSS_CATALOG = {
       "type": "ChargeDashAttack",
       "label": "Charge Dash",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "speed",
@@ -711,6 +714,7 @@ export const BOSS_CATALOG = {
       "type": "FistThrowAttack",
       "label": "Fist Throw",
       "category": "rig",
+      "hosts": "any",
       "params": [
         {
           "name": "impactFxPrefab",
@@ -1011,6 +1015,7 @@ export const BOSS_CATALOG = {
       "type": "GroundSlamAttack",
       "label": "Ground Slam",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "aimAtPlayer",
@@ -1124,6 +1129,7 @@ export const BOSS_CATALOG = {
       "type": "GuardStanceAttack",
       "label": "Guard Stance",
       "category": "classic",
+      "hosts": "boss",
       "params": [
         {
           "name": "guardSeconds",
@@ -1180,6 +1186,7 @@ export const BOSS_CATALOG = {
       "type": "HazardFieldAttack",
       "label": "Hazard Field",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "zonesPerWave",
@@ -1285,6 +1292,7 @@ export const BOSS_CATALOG = {
       "type": "LimbPincerAttack",
       "label": "Limb Pincer",
       "category": "rig",
+      "hosts": "any",
       "params": [
         {
           "name": "impactFxPrefab",
@@ -1414,6 +1422,7 @@ export const BOSS_CATALOG = {
       "type": "LimbSlamAttack",
       "label": "Limb Slam",
       "category": "rig",
+      "hosts": "any",
       "params": [
         {
           "name": "impactFxPrefab",
@@ -1730,6 +1739,7 @@ export const BOSS_CATALOG = {
       "type": "MeleeStrikeAttack",
       "label": "Melee Strike",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "hits",
@@ -1965,6 +1975,7 @@ export const BOSS_CATALOG = {
       "type": "OrbiterDiveAttack",
       "label": "Orbiter Dive",
       "category": "rig",
+      "hosts": "any",
       "params": [
         {
           "name": "impactFxPrefab",
@@ -2260,6 +2271,7 @@ export const BOSS_CATALOG = {
       "type": "OrbRingAttack",
       "label": "Orb Ring",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "orbCount",
@@ -2584,6 +2596,7 @@ export const BOSS_CATALOG = {
       "type": "PlatformDenialAttack",
       "label": "Platform Denial",
       "category": "classic",
+      "hosts": "boss",
       "params": [
         {
           "name": "boltPrefab",
@@ -2691,6 +2704,7 @@ export const BOSS_CATALOG = {
       "type": "PlatformFloodAttack",
       "label": "Platform Flood",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "platformCount",
@@ -2796,6 +2810,7 @@ export const BOSS_CATALOG = {
       "type": "QuakeSlamAttack",
       "label": "Quake Slam",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "impactDelay",
@@ -2855,6 +2870,7 @@ export const BOSS_CATALOG = {
       "type": "SafeZoneAttack",
       "label": "Safe Zone",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "safeSpots",
@@ -2957,6 +2973,7 @@ export const BOSS_CATALOG = {
       "type": "ShockwaveAttack",
       "label": "Shockwave",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "bandMin",
@@ -3063,6 +3080,7 @@ export const BOSS_CATALOG = {
       "type": "SummonAddsAttack",
       "label": "Summon Adds",
       "category": "classic",
+      "hosts": "boss",
       "params": [
         {
           "name": "prefabs",
@@ -3141,6 +3159,7 @@ export const BOSS_CATALOG = {
       "type": "SweepBeamAttack",
       "label": "Sweep Beam",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "pivotOffset",
@@ -3235,6 +3254,7 @@ export const BOSS_CATALOG = {
       "type": "ThrowProjectileAttack",
       "label": "Throw Projectile",
       "category": "classic",
+      "hosts": "any",
       "params": [
         {
           "name": "throwGesture",

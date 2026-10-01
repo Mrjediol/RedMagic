@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using RedMagic.Abilities;
+using RedMagic.Bosses;
 using UnityEngine;
 
 namespace RedMagic.Enemies
@@ -37,6 +39,60 @@ namespace RedMagic.Enemies
     {
         Melee,
         Ranged,
+    }
+
+    /// <summary>Cuándo puede salir un ataque de la baraja según la altura del objetivo.</summary>
+    public enum AttackHeightRule
+    {
+        /// <summary>Siempre.</summary>
+        Any,
+
+        /// <summary>Sólo con el objetivo claramente por encima (una cornisa, un salto).</summary>
+        TargetAbove,
+
+        /// <summary>Sólo con el objetivo claramente por debajo.</summary>
+        TargetBelow,
+    }
+
+    /// <summary>
+    /// Una carta de la baraja de un enemigo: un ataque del catálogo (el mismo asset
+    /// <see cref="BossAttack"/> que usan los jefes) más <b>cuándo</b> puede salir. El peso, los
+    /// enfriamientos, el aviso, la recuperación y el gesto van en el propio asset.
+    /// </summary>
+    [Serializable]
+    public class EnemyDeckEntry
+    {
+        /// <summary>Margen de altura para dar al objetivo por "encima" o "debajo".</summary>
+        public const float HeightMargin = 0.5f;
+
+        [Tooltip("El ataque del catálogo. Su 'gesture' es el gesto del rig (o el estado del " +
+                 "Animator) que hace de aviso.")]
+        public BossAttack attack;
+
+        [Tooltip("Distancia mínima al objetivo para que pueda salir. 0 = sin mínimo.")]
+        [Min(0f)] public float minRange;
+
+        [Tooltip("Distancia máxima al objetivo para que pueda salir. 0 = el 'attackRange' del enemigo.")]
+        [Min(0f)] public float maxRange;
+
+        [Tooltip("Sólo sale con el objetivo por encima / por debajo (medio metro de margen). Any = siempre.")]
+        public AttackHeightRule targetHeight = AttackHeightRule.Any;
+
+        /// <summary>True si a esta distancia y altura la carta puede salir (sin contar enfriamientos).</summary>
+        public bool InReach(float distance, float heightDelta, float attackRange)
+        {
+            if (attack == null || distance < minRange) return false;
+            if (distance > (maxRange > 0f ? maxRange : attackRange)) return false;
+
+            return targetHeight switch
+            {
+                AttackHeightRule.TargetAbove => heightDelta > HeightMargin,
+                AttackHeightRule.TargetBelow => heightDelta < -HeightMargin,
+                _ => true,
+            };
+        }
+
+        public EnemyDeckEntry Clone() => (EnemyDeckEntry)MemberwiseClone();
     }
 
     /// <summary>
@@ -163,6 +219,20 @@ namespace RedMagic.Enemies
 
         [Tooltip("Se queda quieto mientras ataca. Apagarlo deja que siga avanzando durante el golpe.")]
         public bool rootedWhileAttacking = true;
+
+        [Header("Ataque · baraja (ataques del catálogo)")]
+        [Tooltip("Ataques extra, los mismos assets que usan los jefes. Vacío = sólo el ataque " +
+                 "propio de arriba (melé / disparo), como siempre. Con cartas, cada vez que toca " +
+                 "atacar se sortea por peso entre las que están a su distancia y fuera de " +
+                 "enfriamiento; 'attackCooldown' sigue siendo la pausa entre un ataque y otro.")]
+        public List<EnemyDeckEntry> attacks = new List<EnemyDeckEntry>();
+
+        [Tooltip("El ataque propio (melé / disparo / explosión) entra también en el sorteo. " +
+                 "Apagado = sólo ataca con la baraja. Sin baraja se ignora: el propio sale siempre.")]
+        public bool builtInAttack = true;
+
+        [Tooltip("Peso del ataque propio en el sorteo, frente al 'weight' de cada carta.")]
+        [Min(0.01f)] public float builtInWeight = 1f;
 
         [Header("Ataque · melé")]
         [Tooltip("Caja de golpe, en unidades de mundo, medida desde el enemigo hacia donde mira.")]
@@ -294,11 +364,18 @@ namespace RedMagic.Enemies
         /// <summary>True si lleva la cuenta de detección/rendición: los que persiguen y los dormilones.</summary>
         public bool Detects => Moves || Sleeps;
 
+        /// <summary>True si tiene cartas del catálogo (un kamikaze las ignora: su ataque es explotar).</summary>
+        public bool HasDeck => !selfDestruct && attacks != null && attacks.Count > 0;
+
         /// <summary>Copia profunda: la ficha del pipeline no debe compartir instancia con el prefab.</summary>
         public EnemyTuning Clone()
         {
             var copy = (EnemyTuning)MemberwiseClone();
             copy.projectile = CloneSpec(projectile);
+            copy.attacks = new List<EnemyDeckEntry>();
+            if (attacks != null)
+                foreach (var entry in attacks)
+                    if (entry != null) copy.attacks.Add(entry.Clone());
             return copy;
         }
 

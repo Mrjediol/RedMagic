@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using RedMagic.Abilities;
 using RedMagic.Audio;
+using RedMagic.Bosses;
 using RedMagic.Combat;
 using RedMagic.Gameplay;
 using UnityEngine;
@@ -18,6 +20,12 @@ namespace RedMagic.Enemies
     /// El daño entra por <see cref="AbilityHit"/> y el proyectil por
     /// <see cref="ProjectileFactory"/>, que son los mismos caminos que usan jefes y armas: filtrado
     /// de objetivos, robo de vida y pooling ya resueltos en un solo sitio.
+    ///
+    /// <b>Varios ataques.</b> Además del ataque propio (melé / disparo / explosión) un enemigo
+    /// puede llevar una <b>baraja</b> de ataques del catálogo (<see cref="EnemyTuning.attacks"/>, los
+    /// mismos assets que los jefes). El cerebro sigue decidiendo <i>cuándo</i>; aquí se sortea
+    /// <i>cuál</i> (<see cref="Choose"/>) y, si sale una carta, la lanza el
+    /// <see cref="EnemyAttackHost"/>. Sin baraja nada cambia: sale siempre el propio.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(EnemyStats))]
@@ -46,6 +54,19 @@ namespace RedMagic.Enemies
         private Health _health;
         private Collider2D _collider;
         private Transform _muzzle;
+        private EnemyAttackHost _host;
+
+        /// <summary>La carta que salió en el último <see cref="Choose"/>; null = el ataque propio.</summary>
+        private EnemyDeckEntry _chosen;
+
+        /// <summary>Ataques lanzados (propios y de la baraja), para 'cooldownInAttacks'.</summary>
+        private int _launched;
+
+        private readonly Dictionary<BossAttack, int> _lastUsedAt = new Dictionary<BossAttack, int>();
+        private readonly Dictionary<BossAttack, float> _lastUsedTime = new Dictionary<BossAttack, float>();
+
+        /// <summary>Un ataque de la baraja ha terminado (aviso + golpe + recuperación). Lo escucha el cerebro.</summary>
+        public event System.Action DeckAttackFinished;
 
         /// <summary>
         /// <b>Punto</b> al que va el golpe, no dirección. Lo fija el cerebro al empezar el ataque y
@@ -66,6 +87,11 @@ namespace RedMagic.Enemies
             _health = GetComponent<Health>();
             _collider = GetComponent<Collider2D>();
             _muzzle = FindMuzzle(transform);
+
+            // Con baraja hace falta quien lance sus ataques; sin el componente en el prefab se
+            // añade aquí, con los avisos por defecto en código.
+            _host = GetComponent<EnemyAttackHost>();
+            if (_host == null && _stats.Tuning.HasDeck) _host = gameObject.AddComponent<EnemyAttackHost>();
         }
 
         /// <summary>
@@ -85,6 +111,11 @@ namespace RedMagic.Enemies
 
         private void OnEnable()
         {
+            _chosen = null;
+            _launched = 0;
+            _lastUsedAt.Clear();
+            _lastUsedTime.Clear();
+
             if (_animation != null) _animation.AttackReleased += Execute;
         }
 
@@ -106,6 +137,86 @@ namespace RedMagic.Enemies
 
         /// <summary>El punto congelado del próximo golpe, o null si aún no hay. Lo lee el rig para apuntar el brazo.</summary>
         public Vector2? AimPoint => _hasAim ? _aimPoint : null;
+
+        // ============================================================ baraja
+
+        /// <summary>
+        /// ¿Hay algún ataque que lanzar ahora? Sortea por peso entre el ataque propio (si el
+        /// objetivo está a <see cref="EnemyTuning.attackRange"/> y a su altura) y las cartas de la
+        /// baraja que están a su distancia y fuera de enfriamiento, y se queda con el que sale
+        /// hasta <see cref="BeginChosen"/>. False = ahora no hay nada que lanzar.
+        /// </summary>
+        /// <param name="distance">Distancia al objetivo, medida como la mide el cerebro.</param>
+        /// <param name="heightDelta">Altura del objetivo menos la del enemigo.</param>
+        /// <param name="reachable">El objetivo está al alcance vertical del ataque propio.</param>
+        public bool Choose(float distance, float heightDelta, bool reachable)
+        {
+            var tuning = _stats.Tuning;
+            _chosen = null;
+
+            bool builtIn = reachable && distance <= tuning.attackRange;
+            if (!tuning.HasDeck || _host == null) return builtIn;
+
+            float builtInWeight = builtIn && tuning.builtInAttack ? Mathf.Max(0.01f, tuning.builtInWeight) : 0f;
+            float total = builtInWeight;
+
+            var deck = tuning.attacks;
+            for (int i = 0; i < deck.Count; i++)
+                if (IsReady(deck[i], distance, heightDelta, tuning)) total += Mathf.Max(0.01f, deck[i].attack.Weight);
+
+            if (total <= 0f) return false;
+
+            float roll = Random.value * total - builtInWeight;
+            if (builtInWeight > 0f && roll <= 0f) return true;
+
+            for (int i = 0; i < deck.Count; i++)
+            {
+                if (!IsReady(deck[i], distance, heightDelta, tuning)) continue;
+
+                _chosen = deck[i];
+                roll -= Mathf.Max(0.01f, deck[i].attack.Weight);
+                if (roll <= 0f) break;
+            }
+
+            return _chosen != null || builtInWeight > 0f;
+        }
+
+        /// <summary>Mismas reglas que un jefe: a su distancia, y cumplidos 'cooldownInAttacks' y 'cooldownSeconds'.</summary>
+        private bool IsReady(EnemyDeckEntry entry, float distance, float heightDelta, EnemyTuning tuning)
+        {
+            if (entry == null || !entry.InReach(distance, heightDelta, tuning.attackRange)) return false;
+
+            var attack = entry.attack;
+            if (_lastUsedAt.TryGetValue(attack, out int last) && _launched - last <= attack.CooldownInAttacks) return false;
+
+            return attack.CooldownSeconds <= 0f || !_lastUsedTime.TryGetValue(attack, out float at) ||
+                   Time.time - at >= attack.CooldownSeconds;
+        }
+
+        /// <summary>
+        /// Lanza lo que salió en <see cref="Choose"/>. True si era una carta de la baraja: el ataque
+        /// corre por su cuenta y avisa con <see cref="DeckAttackFinished"/>. False = toca el ataque
+        /// propio, que el cerebro lanza por la animación como siempre.
+        /// </summary>
+        public bool BeginChosen(Transform target)
+        {
+            var entry = _chosen;
+            _chosen = null;
+
+            if (entry == null || entry.attack == null || _host == null)
+            {
+                _launched++;
+                return false;
+            }
+
+            _lastUsedAt[entry.attack] = _launched;
+            _lastUsedTime[entry.attack] = Time.time;
+            _launched++;
+
+            _host.Run(entry.attack, target, _hasAim ? _aimPoint : (Vector2)transform.position,
+                      () => DeckAttackFinished?.Invoke());
+            return true;
+        }
 
         /// <summary>Hacia dónde mira el golpe, desde donde nace de verdad.</summary>
         private Vector2 Direction(Vector2 origin)
@@ -129,6 +240,9 @@ namespace RedMagic.Enemies
         {
             var tuning = _stats.Tuning;
             if (_health != null && _health.IsDead) return;
+
+            // Un ataque de la baraja en marcha no es el propio: sus gestos no lo disparan.
+            if (_host != null && _host.Running) return;
 
             SoundTriggered?.Invoke(SoundTrigger.OnAttack);
 

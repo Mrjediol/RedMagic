@@ -37,7 +37,7 @@ namespace RedMagic.Bosses
     /// </summary>
     [RequireComponent(typeof(Health))]
     [DisallowMultipleComponent]
-    public class BossController : MonoBehaviour, ISoundEventSource, IEnemySoundFallbackUser
+    public class BossController : MonoBehaviour, IAttackHost, ISoundEventSource, IEnemySoundFallbackUser
     {
         /// <summary>OnActivate al empezar la presentación (rugido), OnVulnerable al abrir una ventana de castigo. Ver <see cref="SoundEmitter"/>.</summary>
         public event Action<SoundTrigger> SoundTriggered;
@@ -282,6 +282,9 @@ namespace RedMagic.Bosses
 
         /// <summary>Capa de animación del cuerpo, si la tiene (para ataques con más de un gesto).</summary>
         public BossAnimator BodyAnimator => _animator;
+
+        /// <summary>El mismo cuerpo, como lo ven los ataques (<see cref="IAttackHost"/>). Null real si no hay.</summary>
+        public IAttackBody Body => _animator != null ? _animator : null;
 
         /// <summary>
         /// Deja de girarse hacia el jugador mientras está a true: una embestida que le pasa por

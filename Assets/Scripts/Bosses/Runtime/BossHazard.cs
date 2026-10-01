@@ -48,7 +48,7 @@ namespace RedMagic.Bosses
         private bool _styled = true;
 
         private AbilityContext _ctx;
-        private BossController _owner;
+        private IAttackHost _owner;
         private Vector2 _size;
         private float _secondsLeft;
         private float _totalSeconds;
@@ -63,7 +63,7 @@ namespace RedMagic.Bosses
         /// <summary>Hazard con el prefab compartido del jefe (<see cref="BossController.HazardPrefab"/>) y el color de la fase.</summary>
         public static BossHazard Spawn(in BossContext ctx, Vector2 center, Vector2 size, float seconds,
                                        float damagePerTick, float tickInterval, float knockbackMultiplier) =>
-            Spawn(ctx, ctx.Boss != null ? ctx.Boss.HazardPrefab : null, ctx.Accent, center, size, seconds,
+            Spawn(ctx, ctx.HasHost ? ctx.Host.HazardPrefab : null, ctx.Accent, center, size, seconds,
                   damagePerTick, tickInterval, knockbackMultiplier);
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace RedMagic.Bosses
         }
 
         /// <summary>Recoge todos los hazards que dejó <paramref name="boss"/>. Lo llama al morir.</summary>
-        public static void ClearFrom(BossController boss)
+        public static void ClearFrom(IAttackHost boss)
         {
             for (int i = Active.Count - 1; i >= 0; i--)
             {
@@ -97,7 +97,7 @@ namespace RedMagic.Bosses
 
                 var hazard = Active[i];
                 if (hazard == null) { Active.RemoveAt(i); continue; }
-                if (hazard._owner == boss && !hazard._finished) hazard.Finish();
+                if (ReferenceEquals(hazard._owner, boss) && !hazard._finished) hazard.Finish();
             }
         }
 
@@ -116,7 +116,7 @@ namespace RedMagic.Bosses
             _styled = !_pooledPrefab || _style != null;
 
             _ctx = ctx.Ability;
-            _owner = ctx.Boss;
+            _owner = ctx.Host;
             _size = new Vector2(Mathf.Max(0.2f, size.x), Mathf.Max(0.2f, size.y));
             _permanent = float.IsPositiveInfinity(seconds);
             _totalSeconds = _permanent ? 1f : Mathf.Max(0.2f, seconds);

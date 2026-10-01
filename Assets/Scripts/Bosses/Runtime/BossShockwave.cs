@@ -58,7 +58,7 @@ namespace RedMagic.Bosses
                                           float bandMinY, float bandMaxY, float width, float speed,
                                           float distance, float damage, float knockbackMultiplier)
         {
-            var wave = BossFxSpawn.FromPrefab<BossShockwave>(ctx.Boss != null ? ctx.Boss.ShockwavePrefab : null);
+            var wave = BossFxSpawn.FromPrefab<BossShockwave>(ctx.HasHost ? ctx.Host.ShockwavePrefab : null);
             bool fromPrefab = wave != null;
 
             if (wave == null)

@@ -9,7 +9,7 @@ the schemas.
 
 | Schema | Runtime classes it populates | Changes required |
 |---|---|---|
-| EnemyConfig | `EnemyRecipe`, `EnemyTuning` | **None** |
+| EnemyConfig | `EnemyRecipe`, `EnemyTuning` (+ `EnemyDeckEntry`, `BossAttack` assets for its deck) | **None** — see "EnemyConfig deck" below |
 | ProjectileConfig | `ProjectileSpec` | **None** |
 | BossConfig | `BossDefinition`, `BossPhase`, `BossAttack` + subclasses | **None to the runtime classes**; one authoring-helper limitation, below |
 | RigConfig | `ProceduralRig`, `RigPart`, `RigSpriteSwap`, `RigGesture`/`RigPose`, `BossLimbs` (+ root collider, `Corpse`, boss stack) | **None** — see "RigConfig" below |
@@ -48,6 +48,30 @@ them and compares every public field of `ProceduralRig` by reflection (plus the 
   `boss-config.json` must not carry `body` (the rig *is* the body) — it is stripped with a warning.
   (3) Unassigned object fields on a loaded component are Unity "fake nulls": compare with Unity's
   `==`, never `is`/pattern matching (the round-trip comparer learned this).
+
+## EnemyConfig deck (`attacks`, `artAssets`, `tuning.attacks`) — several attacks per enemy
+
+Optional; a config without `tuning.attacks` imports exactly as before (`EnemyDeckImporter.Read`
+returns null and nothing else runs).
+
+- **`attacks` / `artAssets`** are the BossConfig blocks, by `$ref`
+  (`boss-config.schema.json#/definitions/attackEntry`, `#/properties/artAssets`) and by code
+  (`BossConfigImporter.ResolveAttackTypes` / `WriteAttacks`, `BossArtBuilder`): one definition of
+  an attack for bosses and enemies. Assets:
+  `Assets/ScriptableObjects/EnemyAttacks/<enemyName>/EnemyAttack_<enemyName>_<id>.asset`; art
+  prefabs `Assets/Prefabs/Fx/Enemies/<enemyName>/`. Relative art folders resolve against the
+  bundle's landing folder (`Assets/Art/EnemyImports/<name>/` or `Assets/Art/RigImports/<name>/`),
+  frames under `Art/<libraryId>/<State>/`.
+- **`tuning.attacks[]` → `EnemyTuning.attacks`** (`EnemyDeckEntry`): `minRange`, `maxRange`,
+  `targetHeight` map 1:1; `attack` is an id of the `attacks` block **or** an `Assets/…` path (what
+  `RigConfigExporter` writes). `tuning.builtInAttack` / `builtInWeight` map 1:1.
+- **Things that bite**: (1) the deck (cards + the two `builtIn*` scalars) is written on **every**
+  import, the rest of `tuning` only on first generation / reset. To clear a deck, export an empty
+  `tuning.attacks: []` (the web does once the deck was touched). (2) `[BossOnly]` types are
+  rejected with an error before any asset is written. (3) `minPhase`, `vulnerableSeconds` and
+  `vulnerableMultiplier` are accepted (shared definition) and ignored at runtime on an enemy.
+  (4) Each attack asset is saved right after it is written: creating the next asset in a
+  just-created folder could otherwise reload the previous one from its still-default file.
 
 ## Field-level mapping confirmations
 

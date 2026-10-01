@@ -36,7 +36,9 @@ namespace RedMagic.Rigging.EditorTools
     /// ProceduralRig) sale <b>siempre</b> del JSON: es lo que se edita en la web. Una clave ausente
     /// deja el valor que había; una lista presente sustituye a la entera. Lo afinado en el Inspector
     /// del resto (EnemyStats, vida/arena del jefe) sólo se pisa la primera vez o con
-    /// <see cref="Options.ResetTuning"/>. Para llevar a la web lo afinado en el rig, antes
+    /// <see cref="Options.ResetTuning"/> — salvo la <b>baraja de ataques</b> del enemigo
+    /// (<c>enemy-config.json</c> ▸ <c>attacks</c> + <c>tuning.attacks</c>), que también viene siempre
+    /// del JSON. Para llevar a la web lo afinado en el rig, antes
     /// <c>Exportar rig a JSON</c>.
     /// </summary>
     public static class RigBundleImporter
@@ -156,6 +158,7 @@ namespace RedMagic.Rigging.EditorTools
 
             // --- 3) configs que acompañan al cuerpo.
             EnemyTuning tuning = null;
+            EnemyDeckImporter.Deck deck = null;
             EnemyTier? tier = null;
             string enemyConfigPath = RigConfigJson.SiblingPath(configPath, RigConfigJson.EnemyConfigFile);
             string bossConfigPath = RigConfigJson.SiblingPath(configPath, RigConfigJson.BossConfigFile);
@@ -163,6 +166,21 @@ namespace RedMagic.Rigging.EditorTools
             {
                 var enemyJson = JObject.Parse(File.ReadAllText(enemyConfigPath));
                 tuning = EnemyConfigImporter.ReadTuning(enemyJson, report);
+
+                // Baraja de ataques del catálogo: su arte viaja en Art/ del bundle y se deja junto a
+                // los PNG de las piezas, donde lo busca EnemyDeckImporter.
+                string artSource = Path.Combine(source, "Art");
+                string artRoot = $"{RigConfigJson.ArtRoot}/{name}";
+                if (Directory.Exists(artSource) &&
+                    !string.Equals(Path.GetFullPath(artSource), Path.GetFullPath($"{artRoot}/Art"), StringComparison.OrdinalIgnoreCase))
+                {
+                    int copied = 0, removed = 0;
+                    BossBundleImporter.Sync(artSource, Path.GetFullPath($"{artRoot}/Art"), ref copied, ref removed);
+                    AssetDatabase.Refresh();
+                }
+
+                deck = EnemyDeckImporter.Read(enemyJson, name, artRoot, report);
+                if (deck != null) deck.ApplyTo(tuning);
                 if (enemyJson["tier"] != null) tier = ConfigJson.ParseEnum<EnemyTier>(enemyJson["tier"], "enemy-config.tier");
                 if (enemyJson["presence"] != null)
                     report.Warnings.Add("enemy-config.presence se ignora en un enemigo por partes: el cuerpo y el collider los define rig-config.");
@@ -230,6 +248,9 @@ namespace RedMagic.Rigging.EditorTools
                         var dropper = root.GetComponent<CurrencyDropper>();
                         if (dropper != null && tier.HasValue) new BossAuthoring.Fields(dropper).Set("tier", (int)tier.Value).Apply();
                     }
+
+                    // La baraja viene siempre del JSON (como el cuerpo): sus ataques se editan en la web.
+                    if (!boss && deck != null) EnemyDeckImporter.ApplyToRoot(root, deck);
                 },
                 enemyStack: !boss);
 

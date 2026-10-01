@@ -108,6 +108,11 @@ export function createDefaultEnemyTuning() {
     hitLayers: 'everything',
     obstacleLayers: ['Ground', 'Platform'],
 
+    // The deck's two scalars (EnemyTuning.builtInAttack / builtInWeight). Only exported together
+    // with tuning.attacks, i.e. once the enemy has catalog attacks — see enemy-export.js.
+    builtInAttack: true,
+    builtInWeight: 1,
+
     // Form-only state (stripped by buildExportObject, never sent to the validator/export as-is).
     projectileMode: 'default', // 'default' | 'inline'
     projectileSpec: createDefaultProjectileSpec(),
@@ -153,6 +158,16 @@ export function createDefaultEnemyConfig() {
     tier: 'Basic',
 
     tuning: createDefaultEnemyTuning(),
+
+    // Form-only state of the "Ataques" section (the deck of catalog attacks), translated by
+    // buildExportObject into the top-level `attacks` / `artAssets` blocks + `tuning.attacks`:
+    //  - deck: attack cards (modules/attack-cards.js's shape) + `deck: { minRange, maxRange, targetHeight }`
+    //  - attackArt: `${libraryId}:${artKind}` -> art options (size, collider…)
+    //  - deckTouched: the deck was edited (or came with a saved config), so an EMPTY deck is still
+    //    exported — that is what clears the attacks of an enemy already imported in Unity.
+    deck: [],
+    attackArt: {},
+    deckTouched: false,
   };
 }
 

@@ -19,7 +19,11 @@ namespace RedMagic.Bosses
     /// </summary>
     public readonly struct BossContext
     {
-        public readonly BossController Boss;
+        /// <summary>Quien lanza el ataque: un jefe o un enemigo normal.</summary>
+        public readonly IAttackHost Host;
+
+        /// <summary>El jefe, si quien ataca lo es; null en un enemigo normal. Sólo para ataques <see cref="BossOnlyAttribute"/>.</summary>
+        public BossController Boss => Host as BossController;
         public readonly Transform Player;
 
         /// <summary>Contexto de habilidad equivalente: es lo que se pasa a AbilityHit / ProjectileFactory.</summary>
@@ -56,12 +60,12 @@ namespace RedMagic.Bosses
         /// </summary>
         public float ArenaCenterX => float.IsNaN(_arenaCenterX) ? Origin.x : _arenaCenterX;
 
-        public BossContext(BossController boss, Transform player, in AbilityContext ability,
+        public BossContext(IAttackHost host, Transform player, in AbilityContext ability,
                            float groundY, float arenaHalfWidth, float arenaHeight,
                            float speedScale, Sprite fxSprite, Color accent,
                            float arenaCenterX = float.NaN)
         {
-            Boss = boss;
+            Host = host;
             Player = player;
             Ability = ability;
             GroundY = groundY;
@@ -73,13 +77,16 @@ namespace RedMagic.Bosses
             _arenaCenterX = arenaCenterX;
         }
 
-        public bool IsValid => Boss != null && Boss.gameObject.activeInHierarchy;
+        /// <summary>True si quien ataca sigue existiendo (un interfaz no pasa por el null de Unity).</summary>
+        public bool HasHost => Host is Object alive && alive != null;
+
+        public bool IsValid => HasHost && Host.gameObject.activeInHierarchy;
 
         /// <summary>
         /// Punto de apoyo del jefe (sus pies), no su pivote: las alturas de los ataques se miden
         /// desde aquí. Con la raíz en la base (sin <c>feet</c>) es la posición de la raíz.
         /// </summary>
-        public Vector2 Origin => Boss != null ? Boss.FeetPosition : Vector2.zero;
+        public Vector2 Origin => HasHost ? Host.FeetPosition : Vector2.zero;
 
         public Vector2 PlayerPosition => Player != null ? (Vector2)Player.position : Origin;
 
@@ -107,8 +114,8 @@ namespace RedMagic.Bosses
         {
             get
             {
-                if (Player == null || Boss == null) return 1;
-                return Player.position.x < Boss.transform.position.x ? -1 : 1;
+                if (Player == null || !HasHost) return 1;
+                return Player.position.x < Host.transform.position.x ? -1 : 1;
             }
         }
 

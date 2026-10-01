@@ -60,7 +60,7 @@ namespace RedMagic.Bosses
                                           float seconds, float length, float width, float damage,
                                           float knockbackMultiplier)
         {
-            var beam = BossFxSpawn.FromPrefab<BossSweepBeam>(ctx.Boss != null ? ctx.Boss.SweepBeamPrefab : null);
+            var beam = BossFxSpawn.FromPrefab<BossSweepBeam>(ctx.HasHost ? ctx.Host.SweepBeamPrefab : null);
             bool fromPrefab = beam != null;
 
             if (beam == null)

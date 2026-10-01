@@ -43,6 +43,12 @@ sheet. Animation is code, not clips.
   the projectile flies to. A **`Muzzle` nested under the aim part** is found recursively and its
   *world* position is used (a root-level `Muzzle` keeps the old mirrored-local behaviour).
 - Timings scale with `EnemyTuning.attackAnimSpeed` / `wakeAnimSpeed`.
+- **Named gestures on enemies too.** A catalog attack in the enemy's deck (`EnemyTuning.attacks`,
+  see `enemies.md`) names its `gesture`; `EnemyAnimation.PlayGesture` forwards it to
+  `RigDriver.PlayGesture`, so the body telegraphs each attack with its own `RigGesture` (the caster
+  template's `Flick` / `Charge` / `Sweep` on the same casting arm). The driver raises the same two
+  events for a gesture and for `PlayAttack`; `EnemyAnimation` keeps a gesture's to itself so they
+  never fire the built-in attack, and starting the built-in attack settles a gesture still recovering.
 
 ## Sleeping enemies (any archetype)
 `EnemyTuning.Sleeps` is now just `sleepsUntilDetected` (a sleeping `Static` = folded turret);

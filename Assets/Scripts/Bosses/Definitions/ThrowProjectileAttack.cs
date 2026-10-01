@@ -171,13 +171,13 @@ namespace RedMagic.Bosses
 
                 // --- en alto
                 float hold = ctx.Scaled(holdSeconds);
-                var prop = BossHeldProp.Spawn(heldPropPrefab, ctx.Boss.transform, heldOffset + Vector2.up * ctx.Boss.FeetHeight, heldSize * sizeScale,
+                var prop = BossHeldProp.Spawn(heldPropPrefab, ctx.Host.transform, heldOffset + Vector2.up * ctx.Host.FeetHeight, heldSize * sizeScale,
                                               ctx.Accent, ctx.FxSprite, hold * 3f + 2f);
                 if (prop != null) ScaleHeld(prop.gameObject);
                 AudioManager.Instance?.Play(pickupSound, HeldPoint(ctx));
 
                 // --- gesto de lanzar
-                var body = ctx.Boss.BodyAnimator;
+                var body = ctx.Host.Body;
                 if (body != null && body.PlayGesture(throwGesture, hold))
                 {
                     float timeout = Mathf.Max(hold, body.SecondsToRelease) + 0.5f;
@@ -208,7 +208,7 @@ namespace RedMagic.Bosses
 
         private IEnumerator RunWithLimbs(BossContext ctx, BossLimbs limbs)
         {
-            var body = ctx.Boss.BodyAnimator;
+            var body = ctx.Host.Body;
             for (int t = 0; t < throws; t++)
             {
                 if (!ctx.IsValid) yield break;

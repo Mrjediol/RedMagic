@@ -29,7 +29,7 @@ namespace RedMagic.Bosses
     /// gesto es un <c>RigGesture</c> con ese nombre y su aviso de suelta hace de AnimationEvent.
     /// </summary>
     [DisallowMultipleComponent]
-    public class BossAnimator : MonoBehaviour
+    public class BossAnimator : MonoBehaviour, IAttackBody
     {
         /// <summary>Evento que el pipeline clava en el frame de suelta (ver AnimClipBuilder).</summary>
         private const string ReleaseEvent = "OnAttackRelease";

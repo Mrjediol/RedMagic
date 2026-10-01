@@ -18,6 +18,7 @@ namespace RedMagic.Bosses
     /// <c>EnemyController</c> apaga sus colliders al morir y no tiene camino de vuelta.
     /// </summary>
     [CreateAssetMenu(menuName = "RedMagic/Boss/Summon Adds Attack", fileName = "BossAttack_Summon")]
+    [BossOnly]
     public class SummonAddsAttack : BossAttack
     {
         [Header("Esbirros")]
@@ -63,7 +64,7 @@ namespace RedMagic.Bosses
 
         public override IEnumerator Run(BossContext ctx)
         {
-            if (!ctx.IsValid || prefabs == null || prefabs.Length == 0) yield break;
+            if (!ctx.IsValid || ctx.Boss == null || prefabs == null || prefabs.Length == 0) yield break;
 
             int room = Mathf.Max(0, maxAlive - ctx.Boss.LiveAdds);
             int toSpawn = Mathf.Min(count, room);

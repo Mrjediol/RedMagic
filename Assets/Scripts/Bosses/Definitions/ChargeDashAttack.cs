@@ -112,11 +112,11 @@ namespace RedMagic.Bosses
                 if (!ctx.IsValid) yield break;
             }
 
-            var body = ctx.Boss.BodyAnimator;
+            var body = ctx.Host.Body;
             bool holding = body != null && body.Hold(travelState);
 
             // Mira hacia donde embiste todo el recorrido, aunque pase por encima del jugador.
-            ctx.Boss.FacingLocked = true;
+            ctx.Host.FacingLocked = true;
 
             Impact();
             VfxOneShot.Spawn(launchFxPrefab, new Vector3(start.x, ctx.GroundY, 0f), dir);
@@ -145,7 +145,7 @@ namespace RedMagic.Bosses
                                          brakeDistance > 0f ? Mathf.Clamp01(remaining / brakeDistance) : 1f);
                 float advance = step * Time.fixedDeltaTime * Mathf.Max(0.15f, factor);
                 x = dir > 0 ? Mathf.Min(x + advance, targetX) : Mathf.Max(x - advance, targetX);
-                ctx.Boss.MoveBody(new Vector2(x, y));
+                ctx.Host.MoveBody(new Vector2(x, y));
 
                 if (hit) continue;
 
@@ -159,7 +159,7 @@ namespace RedMagic.Bosses
                 }
             }
 
-            if (ctx.Boss != null) ctx.Boss.FacingLocked = false;
+            if (ctx.HasHost) ctx.Host.FacingLocked = false;
             if (holding && body != null) body.ReturnToRest();
         }
 

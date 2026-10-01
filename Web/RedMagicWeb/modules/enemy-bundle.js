@@ -10,6 +10,22 @@
 import { loadImageFromDataURL, getEnemy } from './enemy-library.js';
 import { populateSpriteZip } from './export-manifest.js';
 import { kindOf } from './entry-kinds.js';
+import { writeLanes } from './boss-bundle.js';
+
+/**
+ * The frames of every library entry the config's `artAssets` uses (the art of an enemy's catalog
+ * attacks), under `Art/<libraryId>/<State>/` — the same layout a boss bundle uses, read by
+ * BossArtBuilder.cs through EnemyDeckImporter.cs. A config without `artAssets` writes nothing.
+ */
+export async function embedAttackArt(zip, configObj) {
+  const written = new Set();
+  for (const asset of Object.values(configObj?.artAssets || {})) {
+    if (!asset?.libraryId || written.has(asset.libraryId)) continue;
+    written.add(asset.libraryId);
+    const entry = await getEnemy(asset.libraryId);
+    if (entry?.sprite) await writeLanes(zip.folder('Art').folder(asset.libraryId), entry);
+  }
+}
 
 /** Decodes a stored sheet snapshot back into a canvas `populateSpriteZip` can crop from. */
 async function sourceCanvas(sprite) {
@@ -112,6 +128,7 @@ export async function buildCombinedBundle({ enemyName, kind = 'enemy', libraryId
   zip.file(kindOf(kind).configFile || 'enemy-config.json', JSON.stringify(configObj, null, 2));
 
   await embedReferencedLibraryEntries(zip, configObj);
+  await embedAttackArt(zip, configObj);
 
   // Still resolves to the Blob and nothing else, so every existing `await buildCombinedBundle(...)`
   // call site keeps working unchanged.

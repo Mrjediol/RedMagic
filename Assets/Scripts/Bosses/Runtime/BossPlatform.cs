@@ -41,7 +41,7 @@ namespace RedMagic.Bosses
 
         public static BossPlatform Spawn(in BossContext ctx, Vector2 center, Vector2 size, float seconds)
         {
-            var platform = BossFxSpawn.FromPrefab<BossPlatform>(ctx.Boss != null ? ctx.Boss.PlatformPrefab : null);
+            var platform = BossFxSpawn.FromPrefab<BossPlatform>(ctx.HasHost ? ctx.Host.PlatformPrefab : null);
             bool fromPrefab = platform != null;
 
             if (platform == null)

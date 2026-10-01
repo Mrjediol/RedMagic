@@ -19,7 +19,7 @@
 //    an empty node), and a required one is reported as a problem.
 
 import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot, isOpenSlot, feetY } from './rig-model.js';
-import { embedReferencedLibraryEntries } from './enemy-bundle.js';
+import { embedReferencedLibraryEntries, embedAttackArt } from './enemy-bundle.js';
 import { writeLanes } from './boss-bundle.js';
 
 const r5 = (v) => Math.round(v * 1e5) / 1e5;
@@ -227,6 +227,7 @@ export async function buildRigBundle(state, { enemyConfig = null, bossEntry = nu
     if (cfg) {
       zip.file('enemy-config.json', JSON.stringify(cfg, null, 2));
       await embedReferencedLibraryEntries(zip, cfg);
+      await embedAttackArt(zip, cfg);   // art of the deck's attacks → Art/<libraryId>/
     }
   } else if (bossEntry?.config) {
     const cfg = JSON.parse(JSON.stringify(bossEntry.config));

@@ -91,6 +91,39 @@ meant to be edited by hand.**
   bosses. It aims at a **world point** frozen when the attack starts (the target collider's
   *centre*, not its pivot), and computes direction from the **muzzle** at release. Aiming
   pivot-to-pivot is the bug that makes a shot from hand height sail over the target's head.
+- **Several attacks per enemy — the deck** (`EnemyTuning.attacks`, a list of `EnemyDeckEntry`). A
+  normal enemy can launch **catalog attacks**: the same `BossAttack` assets bosses use (see
+  `bosses.md` ▸ *Who launches an attack*). Empty deck = only the built-in attack, exactly as before;
+  no sprite-sheet enemy needed migrating.
+  - **Who decides what.** `EnemyBrain` still decides *when* (`attackCooldown` is the pause between
+    two attacks, whichever they are); `EnemyAttack.Choose(distance, heightDelta, reachable)` draws
+    *which*, by weight, among: the built-in attack (if `builtInAttack` and the target is within
+    `attackRange` and vertical reach — weight `builtInWeight`) and every card that is in reach
+    (`minRange` … `maxRange`, 0 = `attackRange`; `targetHeight` Any / TargetAbove / TargetBelow with
+    a 0.5 u margin) and off cooldown (the asset's own `weight`, `cooldownInAttacks`,
+    `cooldownSeconds` — same rules as a boss). Nothing available = no attack this frame; the brain
+    keeps approaching. A card with `maxRange` > `attackRange` fires while still approaching.
+    `selfDestruct` ignores the deck. `minPhase` and punish windows do nothing on an enemy.
+  - **Who runs it.** `EnemyAttackHost` (the enemy's `IAttackHost`): telegraph (the card's
+    `gesture`, else `telegraph` seconds) → `BossAttack.Run` → `recovery` → `DeckAttackFinished`,
+    which the brain treats like the end of the built-in attack. It holds the shared FX slots
+    (warn / circle / arrow / shockwave / sweep / hazard / platform prefabs — empty = code
+    placeholders) and the attack "arena" (`arenaHalfWidth` / `arenaHeight`, centred on the enemy,
+    ground measured per cast with `obstacleLayers`). Feet = optional `feet` child, else the bottom
+    of the collider (root pivot is the body centre). `EnemyAttack` adds the component at runtime if
+    a prefab with a deck lacks it; the importers add it to the prefab.
+  - **Gestures.** `EnemyAnimation` is the enemy's `IAttackBody`: `PlayGesture(name, seconds)` plays
+    a `RigGesture` of that name (part-based body, timed to release at the end of the telegraph) or
+    the Animator state of that name (sprite sheet, released by its `OnAttackRelease` event at its own
+    speed). While a deck attack runs, releases belong to it and never fire the built-in attack
+    (`_inGesture` / `_rigGesture`). No such gesture = plain timed telegraph. Three spells from one
+    hand = three cards with three gestures.
+  - **Where it comes from.** Web 🧩 Enemy Creator ▸ *Ataques* → EnemyConfig `attacks` (+ `artAssets`)
+    and `tuning.attacks` → `EnemyDeckImporter` (used by both `EnemyConfigImporter` and
+    `RigBundleImporter`): one asset per attack in
+    `Assets/ScriptableObjects/EnemyAttacks/<Enemy>/EnemyAttack_<Enemy>_<id>.asset`, art prefabs in
+    `Assets/Prefabs/Fx/Enemies/<Enemy>/`. Unlike the rest of the tuning, **the deck is rewritten on
+    every import** (it is authored in the web, like a boss's attacks).
 - `EnemyController` (`Assets/Scripts/Gameplay/`) is the **older** system, still used by
   hand-built enemies and boss adds (`SummonAddsAttack`, `RunManager`, `WorldSceneGenerator`), so it
   stays. `EnemyFactory` strips it (and `RangedAttack`) from anything it generates — both write

@@ -57,15 +57,7 @@ namespace RedMagic.Bosses.EditorTools
 
             // --- Pase 1: resolver TODOS los tipos de ataque ANTES de tocar el AssetDatabase. -
             // 'fallar alto' significa fallar antes de escribir un asset, no a medio escribirlo.
-            var resolvedTypes = new Dictionary<string, Type>();
-            foreach (var prop in attacksJson.Properties())
-            {
-                var entry = ConfigJson.AsObject(prop.Value, $"attacks.{prop.Name}");
-                if (entry.ContainsKey("asset")) continue; // referencia a un asset existente: no crea nada
-
-                string typeName = ConfigJson.RequireString(entry, "type", $"attacks.{prop.Name}");
-                resolvedTypes[prop.Name] = ResolveAttackType(typeName, $"attacks.{prop.Name}");
-            }
+            var resolvedTypes = ResolveAttackTypes(attacksJson);
 
             // --- Arte de los ataques (opcional): se construye tras validar los tipos (fallar antes de escribir) y antes de los ataques, porque los ataques lo
             // referencian con {"art": "id"}, que aquí se cambia por la ruta del prefab construido.
@@ -82,32 +74,8 @@ namespace RedMagic.Bosses.EditorTools
             if (root["phases"] != null) BossArtBuilder.ResolveArtRefs(root["phases"], artMap, report.Warnings, "phases");
 
             // --- Pase 2: crear/actualizar cada BossAttack. -----------------------------------
-            SheetSlicer.EnsureFolder(BossFolder);
-            var attacksByKey = new Dictionary<string, BossAttack>();
-
-            foreach (var prop in attacksJson.Properties())
-            {
-                string id = prop.Name;
-                var entry = (JObject)prop.Value;
-                string ctx = $"attacks.{id}";
-
-                if (entry.TryGetValue("asset", out var assetToken))
-                {
-                    // Referencia a un asset ya existente: se usa tal cual, no se toca ni un campo
-                    // — así una carta afinada a mano no se revierte por estar en un deck.
-                    attacksByKey[id] = ConfigJson.ReadAsset<BossAttack>(assetToken, ctx);
-                    continue;
-                }
-
-                var type = resolvedTypes[id];
-                string assetPath = entry.TryGetValue("assetPath", out var apToken)
-                    ? apToken.Value<string>()
-                    : $"{BossFolder}/BossAttack_{id}.asset";
-
-                var attack = LoadOrCreateAttack(type, assetPath, ctx, report);
-                WriteAttackFields(attack, entry, projectileLibrary, ctx, report);
-                attacksByKey[id] = attack;
-            }
+            var attacksByKey = WriteAttacks(attacksJson, resolvedTypes, BossFolder,
+                                            id => $"BossAttack_{id}", projectileLibrary, report);
 
             // --- BossDefinition ---------------------------------------------------------------
             string definitionPath = $"{BossFolder}/Boss_{slug}.asset";
@@ -146,6 +114,72 @@ namespace RedMagic.Bosses.EditorTools
             }
 
             if (log.Length > 0) Debug.Log($"[BossConfigImporter] '{displayName}':\n{log}");
+        }
+
+        // ============================================================ bloque 'attacks' (jefes y enemigos)
+
+        /// <summary>
+        /// Pase 1 de un bloque <c>attacks</c>: el tipo C# de cada entrada que define un ataque
+        /// (las que referencian un <c>asset</c> existente no crean nada). Lanza si alguno no existe —
+        /// antes de escribir un solo asset. Compartido con la baraja de un enemigo
+        /// (<c>EnemyDeckImporter</c>), que lee el mismo bloque.
+        /// </summary>
+        internal static Dictionary<string, Type> ResolveAttackTypes(JObject attacksJson)
+        {
+            var resolvedTypes = new Dictionary<string, Type>();
+            foreach (var prop in attacksJson.Properties())
+            {
+                var entry = ConfigJson.AsObject(prop.Value, $"attacks.{prop.Name}");
+                if (entry.ContainsKey("asset")) continue; // referencia a un asset existente: no crea nada
+
+                string typeName = ConfigJson.RequireString(entry, "type", $"attacks.{prop.Name}");
+                resolvedTypes[prop.Name] = ResolveAttackType(typeName, $"attacks.{prop.Name}");
+            }
+
+            return resolvedTypes;
+        }
+
+        /// <summary>
+        /// Pase 2: crea/actualiza cada <see cref="BossAttack"/> del bloque en <paramref name="folder"/>
+        /// (<paramref name="fileName"/> da el nombre de archivo de cada id) y devuelve id → asset.
+        /// </summary>
+        internal static Dictionary<string, BossAttack> WriteAttacks(JObject attacksJson, Dictionary<string, Type> resolvedTypes,
+                                                                    string folder, Func<string, string> fileName,
+                                                                    Dictionary<string, JObject> projectileLibrary,
+                                                                    ConfigImportReport report)
+        {
+            SheetSlicer.EnsureFolder(folder);
+            var attacksByKey = new Dictionary<string, BossAttack>();
+
+            foreach (var prop in attacksJson.Properties())
+            {
+                string id = prop.Name;
+                var entry = (JObject)prop.Value;
+                string ctx = $"attacks.{id}";
+
+                if (entry.TryGetValue("asset", out var assetToken))
+                {
+                    // Referencia a un asset ya existente: se usa tal cual, no se toca ni un campo
+                    // — así una carta afinada a mano no se revierte por estar en un deck.
+                    attacksByKey[id] = ConfigJson.ReadAsset<BossAttack>(assetToken, ctx);
+                    continue;
+                }
+
+                var type = resolvedTypes[id];
+                string assetPath = entry.TryGetValue("assetPath", out var apToken)
+                    ? apToken.Value<string>()
+                    : $"{folder}/{fileName(id)}.asset";
+
+                var attack = LoadOrCreateAttack(type, assetPath, ctx, report);
+                WriteAttackFields(attack, entry, projectileLibrary, ctx, report);
+
+                // A disco ya: crear el SIGUIENTE asset en una carpeta recién creada puede hacer que
+                // Unity recargue éste desde su archivo, que aún tendría los valores por defecto.
+                AssetDatabase.SaveAssetIfDirty(attack);
+                attacksByKey[id] = attack;
+            }
+
+            return attacksByKey;
         }
 
         // ============================================================ resolución de tipo

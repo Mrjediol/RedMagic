@@ -115,6 +115,20 @@
       "$ref": "#/definitions/enemyTuning",
       "description": "The gameplay block. Identical to what ends up in the prefab's EnemyStats.",
       "$comment": "EnemyRecipe.tuning. Optional in full: 'new EnemyTuning()' is a valid melee enemy, so every key below is optional-with-default. The recipe SEEDS EnemyStats only on first generation or when the component is missing — hand-tuned Inspector values win on a re-run unless the importer is told to reset (EnemyFactory.Generate(resetTuning: true), i.e. Pipeline > 3b)."
+    },
+
+    "attacks": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_-]*$" },
+      "additionalProperties": { "$ref": "boss-config.schema.json#/definitions/attackEntry" },
+      "description": "Catalog attacks this enemy can launch, keyed by a local id that tuning.attacks references. The SAME block as BossConfig.attacks.",
+      "$comment": "Optional. Mirror of BossConfig.attacks on purpose: one attack definition (type + BossAttack base fields + params) read by one piece of code (BossConfigImporter.ResolveAttackTypes / WriteAttacks, called by EnemyDeckImporter). Each entry becomes a BossAttack asset at Assets/ScriptableObjects/EnemyAttacks/<enemyName>/EnemyAttack_<enemyName>_<id>.asset, rewritten on EVERY import (like a boss's). Types marked [BossOnly] in C# (catalog 'hosts': 'boss' — AnchorRitual, GuardStance, SummonAdds, PlatformDenial) are rejected: they need phases, guard, adds or arena targets. 'minPhase', 'vulnerableSeconds' and 'vulnerableMultiplier' are accepted but have no effect on an enemy (no phases, no punish windows)."
+    },
+
+    "artAssets": {
+      "$ref": "boss-config.schema.json#/properties/artAssets",
+      "description": "Art prefabs for the attacks above, built at import time and referenced with {\"art\": \"<id>\"}. Same block as BossConfig.artAssets.",
+      "$comment": "Optional. Built by BossArtBuilder into Assets/Prefabs/Fx/Enemies/<enemyName>/. A 'folder' not starting with Assets/ is relative to where the bundle's frames land: Assets/Art/EnemyImports/<enemyName>/ for a combined sprite bundle, Assets/Art/RigImports/<name>/ for a rig bundle — both ship the frames under Art/<libraryId>/<State>/."
     }
   },
 
@@ -217,6 +231,35 @@
           "$comment": "EnemyTuning.attackReleaseFallback. Only used when the attack clip carries no OnAttackRelease AnimationEvent. The pipeline normally plants one from SheetRow.releaseFrame, which makes this inert — leave it alone unless the sheet row sets releaseFrame to -1."
         },
         "rootedWhileAttacking": { "type": "boolean", "default": true, "$comment": "EnemyTuning.rootedWhileAttacking. False keeps it chasing through the attack clip (what a charging kamikaze wants)." },
+
+        "attacks": {
+          "type": "array",
+          "default": [],
+          "description": "The deck: catalog attacks this enemy draws from, on top of its built-in attack. Empty = only the built-in one, exactly as before.",
+          "$comment": "EnemyTuning.attacks -> List<EnemyDeckEntry>. EnemyBrain still decides WHEN to attack ('attackCooldown' stays the pause between two attacks); EnemyAttack.Choose draws WHICH by weight among the cards that are in range and off cooldown (the attack asset's own 'weight', 'cooldownInAttacks', 'cooldownSeconds' — same rules as a boss). Ignored when selfDestruct is true. UNLIKE the rest of 'tuning', the deck (with builtInAttack / builtInWeight) is written on EVERY import, not only on first generation: it is authored in the web, like a boss's attacks.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["attack"],
+            "properties": {
+              "attack": {
+                "type": "string",
+                "minLength": 1,
+                "$comment": "EnemyDeckEntry.attack. Either an id of the top-level 'attacks' block, or the Assets/… path of an existing BossAttack asset (what the rig exporter writes)."
+              },
+              "minRange": { "type": "number", "minimum": 0, "default": 0, "$comment": "EnemyDeckEntry.minRange. Distance to the target below which the card is not drawn. 0 = no minimum." },
+              "maxRange": { "type": "number", "minimum": 0, "default": 0, "$comment": "EnemyDeckEntry.maxRange. 0 = the enemy's own attackRange. A larger value lets the card fire while still approaching." },
+              "targetHeight": {
+                "type": "string",
+                "enum": ["Any", "TargetAbove", "TargetBelow"],
+                "default": "Any",
+                "$comment": "EnemyDeckEntry.targetHeight -> AttackHeightRule. Above/Below need the target more than 0.5 u (EnemyDeckEntry.HeightMargin) over/under the enemy's origin. Not bound by 'verticalTolerance', which only gates the built-in attack."
+              }
+            }
+          }
+        },
+        "builtInAttack": { "type": "boolean", "default": true, "$comment": "EnemyTuning.builtInAttack. The built-in attack (melee / shot / explosion) also enters the draw. False = attacks only with the deck. Ignored with an empty deck: the built-in one always fires." },
+        "builtInWeight": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyTuning.builtInWeight, [Min(0.01f)]. Weight of the built-in attack in the draw, against each card's own 'weight'." },
 
         "meleeHitboxSize": { "$ref": "_shared.schema.json#/definitions/vector2", "default": { "x": 1.2, "y": 1 }, "$comment": "EnemyTuning.meleeHitboxSize, world units. Read by EnemyAttack.Strike -> AbilityHit.DamageBox." },
         "meleeHitboxOffset": { "$ref": "_shared.schema.json#/definitions/vector2", "default": { "x": 0.8, "y": 0.5 }, "$comment": "EnemyTuning.meleeHitboxOffset. X is mirrored by facing, so the box goes where the swing points rather than away from the body." },

@@ -107,6 +107,24 @@ paso.
 **Caveats**: mismo aviso que arriba sobre no borrar la carpeta de entrada
 (`Assets/Art/EnemyImports/<Nombre>/`) después de importar.
 
+### Varios ataques por enemigo (la baraja)
+**Web app**: 🧩 *Enemy Creator* ▸ sección **Ataques** (la última). La primera carta es el **ataque
+propio** (melé / disparo / explosión, con los números de *Tuning ▸ Ataque*): se puede sacar del
+sorteo o cambiarle el peso. Debajo, **＋ Añadir ataque** añade ataques del catálogo — los mismos
+tipos genéricos de Boss Creator, menos los que son sólo de jefe —, cada uno con su **gesto** (los
+del rig o las animaciones de la hoja elegida como arte), su distancia mínima/máxima, la altura del
+objetivo, sus números y su arte de la biblioteca.
+
+- Viaja en el mismo `enemy-config.json`: `attacks` (+ `artAssets`) y `tuning.attacks`. El arte de
+  los ataques va en `Art/<libraryId>/` del .zip (el combinado de sprites y el de rig).
+- Unity: los imports de siempre (*Importar enemigo completo*, *Importar rig*, *Importar archivo*).
+  Sale un asset por ataque en `Assets/ScriptableObjects/EnemyAttacks/<Enemigo>/` y el prefab lleva
+  `EnemyAttackHost` (ahí se ponen los prefabs de aviso si se quiere arte en vez de placeholder).
+- **La baraja se reescribe en cada import**, aunque elijas conservar el resto del `EnemyStats`.
+- Sin ataques de catálogo el export es idéntico al de antes y el enemigo ataca como siempre.
+- Elegir en *Hoja de sprites* un enemigo (o 🦴 rig) que ya tiene comportamiento guardado **lo carga
+  en el formulario** (antes se partía siempre de los valores por defecto).
+
 ### Importar proyectil/VFX (.zip)... / (carpeta)...
 **Web app**: pestaña 🍄 *Sprites* con el **Tipo** puesto a *Proyectil* o *VFX* — botón
 "⬇ Descargar .zip"; o la pestaña 🔥 *Proyectil/VFX* — botón "⬇ Exportar todo junto (.zip)", que
@@ -231,10 +249,10 @@ Elige un `.zip` o el `rig-config.json` de una carpeta. El bundle lleva:
 ```
 rig-config.json          ← el cuerpo (obligatorio)
 Parts/<pieza>.png         ← PNG recortados; rutas tal como las nombra rig-config
-enemy-config.json         ← opcional (kind enemy): sólo se lee `tuning` y `tier`
+enemy-config.json         ← opcional (kind enemy): se lee `tuning`, `tier` y la baraja (`attacks`, `artAssets`)
                             (junto a un `X.rig-config.json` suelto: `X.enemy-config.json` / `X.boss-config.json`)
 boss-config.json          ← opcional (kind boss): ataques + definición, SIN 'body'
-Art/…                     ← opcional: arte de los ataques del jefe (como en el zip de jefe)
+Art/…                     ← opcional: arte de los ataques del jefe o del enemigo (como en el zip de jefe)
 Library/<id>/…            ← opcional: el proyectil de biblioteca del enemigo (va a su carpeta compartida)
 ```
 
@@ -249,8 +267,9 @@ Library/<id>/…            ← opcional: el proyectil de biblioteca del enemigo
 - **Reimportar**: el **cuerpo** (nodos bajo Visual, collider, cadáver, `ProceduralRig`,
   `BossLimbs`) sale **siempre** del JSON: clave ausente = se queda lo que había, lista presente =
   sustituye a la entera, nodo que ya no está = se borra (con aviso). EnemyStats y la vida/arena del
-  jefe sólo se escriben la primera vez o eligiendo **Resetear desde el JSON** en el diálogo. Si
-  afinaste el rig en el Inspector, expórtalo antes (abajo) o se pierde.
+  jefe sólo se escriben la primera vez o eligiendo **Resetear desde el JSON** en el diálogo — menos
+  la **baraja de ataques** del enemigo, que también viene siempre del JSON. Si afinaste el rig en
+  el Inspector, expórtalo antes (abajo) o se pierde.
 - Valida todo (nombres, padres, referencias a piezas, sprites, tipo de ataque) **antes** de escribir.
 - Los menús clásicos **Importar enemigo completo** e **Importar jefe completo (.zip)** reconocen un
   .zip de rig (lleva `rig-config.json`) y se lo pasan a este importador.

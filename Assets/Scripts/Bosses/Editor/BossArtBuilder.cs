@@ -40,12 +40,14 @@ namespace RedMagic.Bosses.EditorTools
         /// Construye todas las entradas. Devuelve id → ruta del prefab, que es lo que sustituye a
         /// cada <c>{"art": "id"}</c> del resto del JSON.
         /// </summary>
-        public static Dictionary<string, string> Build(string bossSlug, JObject artAssets, StringBuilder log)
+        /// <param name="folder">Carpeta de los prefabs. Vacío = la del jefe (<c>Fx/Bosses/&lt;Jefe&gt;</c>).</param>
+        public static Dictionary<string, string> Build(string bossSlug, JObject artAssets, StringBuilder log,
+                                                       string folder = null)
         {
             var result = new Dictionary<string, string>();
             if (artAssets == null) return result;
 
-            string folder = $"Assets/Prefabs/Fx/Bosses/{bossSlug}";
+            if (string.IsNullOrEmpty(folder)) folder = $"Assets/Prefabs/Fx/Bosses/{bossSlug}";
             SheetSlicer.EnsureFolder(folder);
 
             foreach (var prop in artAssets.Properties())

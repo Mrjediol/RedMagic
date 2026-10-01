@@ -11,6 +11,8 @@ attack or a new behaviour**. Once it exists, the web lists it and any enemy can 
 Done: Phases 0, A, B and **C** (2026-10-01), verified by the user: floating caster and limbed
 colossus made from templates, imported and playing (boss with centre pivot + `Feet`, attacks and
 warnings working). The folding sentry template has not been tried by the user yet.
+**Phase D** (2026-10-01) is implemented on branch `task/enemy-attack-deck` and **waiting for the
+user's playtest** (checklist at the end of the Phase D section); merge the branch after it.
 On top of B, decided with the user:
 - **Behaviour of a part-based enemy is authored in 🧩 Enemy Creator** (rigs show up in its art
   picker as "🦴 … (por partes)"); it is saved on the rig record as `enemyConfig` and travels in the
@@ -24,10 +26,10 @@ On top of B, decided with the user:
 
 **Next session, in this order** (details in each phase below):
 1. ~~Phase C — generic templates~~ done.
-2. **Phase D — attacks on normal enemies, SEVERAL per enemy** (Unity + web, high). Multi-attack is
-   the new core requirement; the "magical girl casting different spells from the same hand" is the
-   reference case (see Phase D).
-3. **Phase E — gesture pose editor** (web, medium). Needed by D to give each spell its own gesture.
+2. ~~Phase D — attacks on normal enemies, several per enemy~~ built; **playtest pending** (branch
+   `task/enemy-attack-deck`).
+3. **Phase E — gesture pose editor** (web, medium). Gives each of D's attacks its own hand-posed
+   gesture; until then the gestures are the template's.
 4. **Phase F — VFX preset library** (future, after C; see Phase F). Only planned, nothing built.
 
 Pending from the user side: nothing blocking. Their scratch files `Assets/Json/` and
@@ -39,7 +41,7 @@ Pending from the user side: nothing blocking. Their scratch files `Assets/Json/`
 > Lee `docs/part-rig-pipeline-plan.md` y ejecuta la **Fase N** (sólo esa). Sigue las reglas de la
 > sección "Reglas de trabajo".
 
-(Replace N with the next phase in the table below. **Next: Fase D**, then E, F — see "Where we left off".)
+(Replace N with the next phase in the table below. **Next: Fase E** (after D's playtest), then F — see "Where we left off".)
 
 **Model and effort:** use Claude Opus, with **high** effort for Phases 0, A and D (schema,
 importer, refactor: design matters and mistakes are expensive). **Medium** is enough for B, C and E
@@ -93,7 +95,7 @@ importer, refactor: design matters and mistakes are expensive). **Medium** is en
 | A | `rig-config` schema + round-trip exporter + **separate** `RigBundleImporter` (rebuilds Robot / Turret / BossIce2 from JSON) | no | high | ☑ |
 | B | New web tab **🦴 Rig Composer** (assemble parts, pivots, roles, state sprites, live sway preview, export) | yes | medium | ☑ |
 | C | Generic body templates in the Rig Composer (floating caster / folding sentry / limbed colossus) | yes | medium | ☑ |
-| D | `IAttackHost` refactor → catalog attacks on normal enemies, **several attacks per enemy** (deck + per-attack gesture) | yes (Enemy Creator) | high | ☐ |
+| D | `IAttackHost` refactor → catalog attacks on normal enemies, **several attacks per enemy** (deck + per-attack gesture) | yes (Enemy Creator) | high | ☑ (playtest pending) |
 | E | Gesture pose editor in the Rig Composer | yes | medium | ☐ |
 | F | **VFX preset library** (web): reusable, tweakable effects (size, colour, intensity…) that attacks/characters reference and that ship inside the enemy export | yes | medium | ☐ (future, after C) |
 
@@ -236,13 +238,12 @@ template in a web module), so a fourth one is data, not code.
   - Template lengths are written for a reference body height and rescaled to the real art when the
     last required slot is filled (and on demand: "Reajustar amplitudes").
   - **Gestures now export** when the document has them (the template's): caster `Flick` / `Charge`
-    / `Sweep` on the casting arm (three spells from one hand — waiting for Phase D to name them),
+    / `Sweep` on the casting arm (three spells from one hand — each deck attack picks one, Phase D),
     sentry `Nod`, colossus `Brace` / `Dash` / `DashLoop` / `Move` / `GroundSlam` / `PickUP` /
     `Throw` (the names the existing boss attacks use). They replace the prefab's on reimport.
   - Suggested behaviour: enemy templates carry a tuning (FlyingRanged / Static+Ranged sleeper) that
-    travels as `enemy-config.json` until Enemy Creator saves one. **Known gap:** the Enemy Creator
-    form does not preload it (it never preloads a saved config), so opening it there starts from
-    the form defaults — Phase D touches that form and is the place to fix it.
+    travels as `enemy-config.json` until Enemy Creator saves one. ~~Known gap: the Enemy Creator
+    form does not preload it~~ — fixed in Phase D: picking the rig there loads it.
   - After the user's first test (2026-10-01): caster draw order is lower → extra → casting arm →
     torso → head → free arm (far arm behind, near arm in front), an optional "Pieza extra" slot
     (ring, belt…) was added, and an **enemy's origin is the centre of its body** (templates are laid
@@ -285,6 +286,55 @@ gesture (a flick, a charged raise, a sweep) and its own cooldown / range / weigh
   Exported in the EnemyConfig (schema change: new optional `attacks` block, mirror of the boss
   one) and imported by `EnemyConfigImporter` / `RigBundleImporter` into attack assets.
 - A new attack afterwards = one C# class → compile → catalog → selectable for enemies and bosses.
+
+- **Done (Phase D outcome, 2026-10-01).** Branch `task/enemy-attack-deck`.
+  - **Runtime.** `IAttackHost` + `IAttackBody` (`Bosses/IAttackHost.cs`); `BossContext.Host`
+    replaces `.Boss` for everything generic (`.Boss` stays, null on an enemy, for the four
+    `[BossOnly]` attacks: AnchorRitual, GuardStance, SummonAdds, PlatformDenial). `BossController`
+    and the new `EnemyAttackHost` implement the host; `BossAnimator` and `EnemyAnimation` the body.
+    The feet origin the plan asked for is `IAttackHost.FeetPosition` (enemy: optional `feet` child,
+    else the collider's bottom).
+  - **Where the deck lives: `EnemyTuning.attacks`**, not a list on `EnemyAttack` as first written
+    above — `EnemyStats` is the one component edited by hand and the tuning block is what the
+    recipe/pipeline already copies, so sprite-sheet and part-based enemies both get it for free.
+    `EnemyAttack` draws (`Choose`) and `EnemyAttackHost` runs the attack. Built-in attack =
+    `builtInAttack` / `builtInWeight`; empty deck = unchanged behaviour.
+  - **Gestures.** Rig → `RigGesture` by name; sprite sheet → Animator state by name (released by
+    its `OnAttackRelease` event).
+  - **Data.** EnemyConfig gains `attacks` + `artAssets` (the BossConfig blocks, by `$ref`) and
+    `tuning.attacks` / `builtInAttack` / `builtInWeight`; `EnemyDeckImporter` (shared by
+    `EnemyConfigImporter` and `RigBundleImporter`) reuses `BossConfigImporter`'s attack writer and
+    `BossArtBuilder`. Catalog entries carry `hosts: boss|any`. The deck is rewritten on every import.
+  - **Web.** Enemy Creator ▸ *Ataques*: built-in card + catalog cards (new shared
+    `attack-cards.js` / `attack-export.js`; `boss-form.js` untouched, still its own copy). The
+    form now **loads the saved behaviour** of the entry picked as art (closes Phase C's known gap:
+    a template rig opens with its suggested tuning).
+  - **Checked by Claude (static, no Play):** compile clean; web export of a 3-attack caster valid
+    against the schema and identical after a save → reopen round trip; the form driven headless
+    (jsdom) end to end; `EnemyDeckImporter` and the full rig import with a deck (assets, cards,
+    `EnemyAttackHost`, reimport without reset replaces the deck and keeps the rest);
+    `RigConfigRoundTrip` OK. **Not checked:** anything in Play, the form in a real browser.
+  - **Known limits.** Enemy FX slots (`EnemyAttackHost` warn/shockwave… prefabs) start empty =
+    code placeholders, no auto-filled placeholder prefab set like a boss's. A Static non-sleeper
+    still needs the target within `verticalTolerance` before any card is considered. Deck attacks
+    do not raise the enemy's `OnAttack` sound (each attack has its own `sound`). A sprite-sheet
+    gesture plays at the clip's own speed (not retimed to `telegraph`).
+  - **Playtest checklist (user).**
+    1. Any existing enemy (sprite sheet and `Robot` / `Turret`), untouched: attacks exactly as
+       before. Any existing boss (BossIce2 + one sprite boss): every attack, warnings, charge,
+       thrown rock, hazards cleared on death — the refactor touched all of them.
+    2. Web ▸ Enemy Creator: pick the 🦴 caster rig as art → its saved/suggested behaviour loads.
+       *Ataques*: add 2–3 attacks (e.g. Lluvia/abanico with gesture `Sweep`, Corona de orbes with
+       `Charge`, Onda de choque with `Flick`), different distances, export the .zip.
+    3. Unity ▸ *Tools ▸ Web ▸ Rig ▸ Importar rig* (**Conservarlo** is enough): assets appear in
+       `Assets/ScriptableObjects/EnemyAttacks/<name>/`, `EnemyStats ▸ Ataque · baraja` lists them,
+       the prefab has `EnemyAttackHost`.
+    4. Play: the enemy alternates its built-in shot and the spells, each with its own arm gesture
+       and warning; ranges and "only when above/below" respected; `attackCooldown` between attacks;
+       killing it mid-attack leaves nothing behind.
+    5. A sprite-sheet enemy with one catalog attack whose gesture is one of its animations.
+    Report: which attack misbehaves (name + what you saw), whether a gesture fails to play, whether
+    the built-in attack fires at the wrong moment, anything left on screen after death.
 
 ### Phase F — VFX preset library (future, after C)
 Goal: stop making one effect per character. A library of **effect presets** in the web (e.g.

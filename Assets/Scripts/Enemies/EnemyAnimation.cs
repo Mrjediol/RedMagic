@@ -1,4 +1,5 @@
 using System;
+using RedMagic.Bosses;
 using RedMagic.Pipeline;
 using RedMagic.Rigging;
 using UnityEngine;
@@ -26,9 +27,14 @@ namespace RedMagic.Enemies
     ///
     /// Con un <see cref="RigDriver"/> (cuerpo hecho de sprites sueltos, ver <c>ProceduralRig</c>)
     /// manda el rig: cada orden se le reenvía y sus eventos hacen de <c>AnimationEvent</c>.
+    ///
+    /// También es el <see cref="IAttackBody"/> del enemigo: los ataques del catálogo (la baraja de
+    /// <c>EnemyTuning.attacks</c>) piden aquí su <b>gesto</b> por nombre — un <c>RigGesture</c> del
+    /// rig o un estado del Animator — y mientras dura, la suelta del gesto no dispara el ataque
+    /// propio.
     /// </summary>
     [DisallowMultipleComponent]
-    public class EnemyAnimation : MonoBehaviour
+    public class EnemyAnimation : MonoBehaviour, IAttackBody
     {
         public const string Idle = "Idle";
         public const string Walk = "Walk";
@@ -70,6 +76,24 @@ namespace RedMagic.Enemies
         private float _wakeFinish = -1f;
         private bool _released;
         private bool _hasWakeTrigger;
+
+        // --- gesto de un ataque del catálogo (IAttackBody)
+        private static readonly int IdleHash = Animator.StringToHash(Idle);
+
+        /// <summary>Hay un gesto de la baraja en marcha: las sueltas son suyas, no del ataque propio.</summary>
+        private bool _inGesture;
+
+        /// <summary>El rig está con un gesto con nombre: sus avisos de suelta/fin no son los de PlayAttack.</summary>
+        private bool _rigGesture;
+
+        private int _gestureHash;
+        private float _gestureReleaseAt = -1f;
+
+        /// <summary>True desde que el gesto en curso ha soltado su golpe.</summary>
+        public bool Released { get; private set; }
+
+        /// <summary>Segundos que tardará en soltar el último gesto lanzado.</summary>
+        public float SecondsToRelease { get; private set; }
 
         /// <summary>
         /// Qué parámetros de velocidad existen <b>de verdad</b> en este controller. No todos los
@@ -141,23 +165,41 @@ namespace RedMagic.Enemies
             _fallbackFinish = -1f;
             _wakeFinish = -1f;
             _released = false;
+            _inGesture = false;
+            _rigGesture = false;
+            _gestureReleaseAt = -1f;
+            Released = false;
 
             _dead = false;
             if (_frozen && animator != null) animator.speed = 1f;
             _frozen = false;
 
             if (rig == null) return;
-            rig.AttackReleased += Release;
-            rig.AttackFinished += Finish;
+            rig.AttackReleased += OnRigReleased;
+            rig.AttackFinished += OnRigFinished;
             rig.WakeFinished += OnRigWakeFinished;
         }
 
         private void OnDisable()
         {
             if (rig == null) return;
-            rig.AttackReleased -= Release;
-            rig.AttackFinished -= Finish;
+            rig.AttackReleased -= OnRigReleased;
+            rig.AttackFinished -= OnRigFinished;
             rig.WakeFinished -= OnRigWakeFinished;
+        }
+
+        // El rig avisa con los mismos dos eventos de un gesto con nombre y de PlayAttack: los de un
+        // gesto de la baraja se quedan aquí (sólo marcan la suelta) y no llegan al ataque propio.
+        private void OnRigReleased()
+        {
+            if (_rigGesture) Released = true;
+            else Release();
+        }
+
+        private void OnRigFinished()
+        {
+            if (_rigGesture) _rigGesture = false;
+            else Finish();
         }
 
         private void OnRigWakeFinished()
@@ -250,6 +292,14 @@ namespace RedMagic.Enemies
 
             if (HasRig)
             {
+                // La cola de un gesto de la baraja (su vuelta al reposo) no puede acabar avisando
+                // como si fuera este ataque: se suelta antes de empezar.
+                if (_rigGesture)
+                {
+                    _rigGesture = false;
+                    rig.ClearHold();
+                }
+
                 float speed = _stats != null ? _stats.Tuning.attackAnimSpeed : 1f;
                 rig.PlayAttack(_attack != null ? _attack.AimPoint : null, speed);
 
@@ -351,6 +401,125 @@ namespace RedMagic.Enemies
             else if (spriteRenderer != null) spriteRenderer.flipX = facing < 0;
         }
 
+        // ============================================================ gestos de la baraja (IAttackBody)
+
+        /// <summary>
+        /// Gesto de un ataque del catálogo: un <c>RigGesture</c> con ese nombre (se ajusta para
+        /// soltar en <paramref name="secondsToRelease"/>) o un estado del Animator (suelta en su
+        /// evento <c>OnAttackRelease</c>, a su velocidad). False si el cuerpo no lo tiene: quien
+        /// llama cae al aviso por tiempo.
+        /// </summary>
+        public bool PlayGesture(string state, float secondsToRelease)
+        {
+            if (_dead || string.IsNullOrWhiteSpace(state)) return false;
+
+            if (HasRig)
+            {
+                if (!rig.PlayGesture(state, secondsToRelease)) return false;
+
+                _rigGesture = true;
+                StartGesture(secondsToRelease, 0.3f);
+                return true;
+            }
+
+            if (!HasAnimator) return false;
+
+            int hash = Animator.StringToHash(state);
+            if (!animator.HasState(0, hash)) return false;
+
+            _gestureHash = hash;
+            animator.Play(hash, 0, 0f);
+            StartGesture(ReleaseTime(state, secondsToRelease), 0.1f);
+            return true;
+        }
+
+        private void StartGesture(float secondsToRelease, float slack)
+        {
+            _inGesture = true;
+            Released = false;
+            SecondsToRelease = secondsToRelease;
+            _gestureReleaseAt = Time.time + secondsToRelease + slack;   // sólo red de seguridad
+            _fallbackRelease = _fallbackFinish = -1f;
+        }
+
+        /// <summary>Mantiene una pose (el viaje de una embestida) hasta <see cref="ReturnToRest"/>.</summary>
+        public bool Hold(string state)
+        {
+            if (_dead || string.IsNullOrWhiteSpace(state)) return false;
+
+            if (HasRig)
+            {
+                _rigGesture = false;   // una pose mantenida no avisa de nada
+                return rig.HoldGesture(state);
+            }
+
+            if (!HasAnimator) return false;
+
+            int hash = Animator.StringToHash(state);
+            if (!animator.HasState(0, hash)) return false;
+
+            _gestureHash = hash;
+            animator.Play(hash, 0, 0f);
+            return true;
+        }
+
+        public void ClearHold() => ReturnToRest();
+
+        /// <summary>Suelta el gesto o la pose que hubiera y vuelve al reposo.</summary>
+        public void ReturnToRest()
+        {
+            if (_dead) return;
+
+            if (HasRig)
+            {
+                _rigGesture = false;
+                rig.ClearHold();
+                return;
+            }
+
+            if (!HasAnimator || _gestureHash == 0) return;
+
+            // Sólo si sigue en el estado del gesto: un Hurt o la muerte que lo cortaron mandan.
+            if (animator.GetCurrentAnimatorStateInfo(0).shortNameHash == _gestureHash && animator.HasState(0, IdleHash))
+                animator.Play(IdleHash, 0, 0f);
+            _gestureHash = 0;
+        }
+
+        /// <summary>
+        /// El ataque de la baraja ha terminado (o lo cortaron): las sueltas vuelven a ser del
+        /// ataque propio. El gesto de un rig acaba su vuelta al reposo él solo.
+        /// </summary>
+        public void EndGesture()
+        {
+            if (!_inGesture) return;
+
+            _inGesture = false;
+            _gestureReleaseAt = -1f;
+            if (!HasRig) ReturnToRest();
+        }
+
+        /// <summary>Cuándo suelta el clip de <paramref name="state"/> (su evento de suelta), a su velocidad.</summary>
+        private float ReleaseTime(string state, float fallback)
+        {
+            foreach (var clip in animator.runtimeAnimatorController.animationClips)
+            {
+                if (clip == null || !clip.name.EndsWith(state, StringComparison.Ordinal)) continue;
+
+                float release = clip.length;
+                foreach (var e in clip.events)
+                {
+                    if (e.functionName != nameof(OnAttackRelease)) continue;
+                    release = e.time;
+                    break;
+                }
+
+                float speed = state == Attack && _stats != null ? _stats.Tuning.attackAnimSpeed : 1f;
+                return release / Mathf.Max(0.01f, speed);
+            }
+
+            return fallback;
+        }
+
         // ============================================================ eventos del clip
 
         /// <summary>Lo llama el <c>AnimationEvent</c> del frame en que suelta el golpe.</summary>
@@ -361,6 +530,13 @@ namespace RedMagic.Enemies
 
         private void Release()
         {
+            // En un gesto de la baraja la suelta es la de ese ataque (la espera EnemyAttackHost).
+            if (_inGesture)
+            {
+                Released = true;
+                return;
+            }
+
             if (_released) return;
             _released = true;
             _fallbackRelease = -1f;
@@ -369,6 +545,8 @@ namespace RedMagic.Enemies
 
         private void Finish()
         {
+            if (_inGesture) return;   // el fin lo marca EnemyAttackHost (EndGesture)
+
             _fallbackFinish = -1f;
             // Un ataque cuya animación acaba sin haber soltado nada (evento mal puesto) suelta
             // aquí: mejor un golpe a destiempo que un enemigo que no ataca nunca.
@@ -391,6 +569,8 @@ namespace RedMagic.Enemies
 
         private void TickFallback()
         {
+            if (_inGesture && !Released && _gestureReleaseAt > 0f && Time.time >= _gestureReleaseAt) Released = true;
+
             if (_fallbackRelease > 0f && Time.time >= _fallbackRelease) Release();
             if (_fallbackFinish > 0f && Time.time >= _fallbackFinish) Finish();
 

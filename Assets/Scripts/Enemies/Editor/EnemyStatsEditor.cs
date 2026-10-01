@@ -33,6 +33,7 @@ namespace RedMagic.Enemies.EditorTools
 
             bool sleeps = tuning.FindPropertyRelative("sleepsUntilDetected").boolValue;
             bool explodes = tuning.FindPropertyRelative("selfDestruct").boolValue;
+            bool deck = tuning.FindPropertyRelative("attacks").arraySize > 0;
 
             EditorGUILayout.HelpBox(Describe(value), MessageType.Info);
             if (sleeps)
@@ -52,7 +53,7 @@ namespace RedMagic.Enemies.EditorTools
             while (iterator.NextVisible(first) && !SerializedProperty.EqualContents(iterator, end))
             {
                 first = false;
-                if (Hidden(iterator.name, flies, ranged && !explodes, moves, sleeps, explodes)) continue;
+                if (Hidden(iterator.name, flies, ranged && !explodes, moves, sleeps, explodes, deck)) continue;
 
                 EditorGUILayout.PropertyField(iterator, true);
             }
@@ -65,10 +66,19 @@ namespace RedMagic.Enemies.EditorTools
         }
 
         private static bool Hidden(string field, bool flies, bool ranged, bool moves, bool sleeps,
-                                   bool explodes)
+                                   bool explodes, bool deck)
         {
             switch (field)
             {
+                // Un kamikaze sólo explota: no lleva baraja. Y el peso del ataque propio sólo
+                // significa algo si hay cartas con las que sortearlo.
+                case "attacks":
+                    return explodes;
+
+                case "builtInAttack":
+                case "builtInWeight":
+                    return explodes || !deck;
+
                 case "wakeAnimSpeed":
                     return !sleeps;
 

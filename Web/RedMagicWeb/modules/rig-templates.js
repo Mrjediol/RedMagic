@@ -79,7 +79,8 @@ export const RIG_TEMPLATES = [
         sway: { move: [0, 0], rotate: 5, speed: 1.5 },
         match: ['offarm', 'leftarm', 'armleft', 'brazoizq', 'brazolibre', 'lefthand', 'manoizq'] },
     ],
-    // Until attacks name them (Phase D), these wait in the rig: three gestures on the same casting arm.
+    // Three gestures on the same casting arm: each catalog attack of the enemy's deck (Enemy Creator ▸
+    // Ataques) names the one it telegraphs with — three spells from one hand.
     gestures: [
       { name: 'Flick', strikeTime: 0.06, recover: 0.3, shake: 0,
         windup: [pose('castArm', [-0.1, 0], -18), pose('Visual', [0, 0], 2)],

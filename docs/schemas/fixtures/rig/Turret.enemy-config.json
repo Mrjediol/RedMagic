@@ -29,6 +29,8 @@
     "attackKnockbackMultiplier": 1.0,
     "attackReleaseFallback": 0.25,
     "rootedWhileAttacking": true,
+    "builtInAttack": true,
+    "builtInWeight": 1.0,
     "meleeHitboxSize": {
       "x": 1.2,
       "y": 1.0

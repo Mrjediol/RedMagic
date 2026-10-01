@@ -40,6 +40,12 @@ namespace RedMagic.Pipeline.EditorTools
             var tuning = BuildTuning(root["tuning"] as JObject, projectileLibrary, enemyName, report);
             ApplyEnemyStatsClamps(tuning, enemyName, report);
 
+            // Baraja de ataques del catálogo (opcional). Sin ella el import es el de siempre. El arte
+            // de sus ataques viaja en el bundle combinado, junto a los sprites del enemigo.
+            var deck = EnemyDeckImporter.Read(root, enemyName, $"Assets/Art/EnemyImports/{enemyName}",
+                                              report, projectileLibrary);
+            if (deck != null) deck.ApplyTo(tuning);
+
             string recipeFolder = $"Assets/Art/Characters/{enemyName}";
             string recipePath = $"{recipeFolder}/{enemyName}.enemy.asset";
 
@@ -77,6 +83,10 @@ namespace RedMagic.Pipeline.EditorTools
             if (prefabGo != null) report.Add(!prefabExistedBefore, prefabPath);
             else report.Errors.Add($"{enemyName}: EnemyFactory.Generate no produjo el prefab.");
 
+            // La baraja viene SIEMPRE del JSON, aunque el resto del EnemyStats se conserve: sus
+            // ataques se editan en la web, como los de un jefe.
+            if (prefabGo != null && deck != null) EnemyDeckImporter.ApplyToPrefab(prefabPath, deck);
+
             if (log.Length > 0) report.Warnings.Add(log.ToString().TrimEnd());
         }
 
@@ -91,7 +101,7 @@ namespace RedMagic.Pipeline.EditorTools
             string enemyName = root.Value<string>("enemyName") ?? "Enemy";
             var tuning = BuildTuning(root["tuning"] as JObject, projectileLibrary, enemyName, report);
             ApplyEnemyStatsClamps(tuning, enemyName, report);
-            return tuning;
+            return tuning;   // la baraja (tuning.attacks) la lee aparte EnemyDeckImporter.Read
         }
 
         // ============================================================ presencia / proyectil-art
@@ -159,6 +169,8 @@ namespace RedMagic.Pipeline.EditorTools
             SetF(json, "attackKnockbackMultiplier", v => t.attackKnockbackMultiplier = v);
             SetF(json, "attackReleaseFallback", v => t.attackReleaseFallback = v);
             SetB(json, "rootedWhileAttacking", v => t.rootedWhileAttacking = v);
+            SetB(json, "builtInAttack", v => t.builtInAttack = v);
+            SetF(json, "builtInWeight", v => t.builtInWeight = v);
 
             if (json.TryGetValue("meleeHitboxSize", out var mhs)) t.meleeHitboxSize = ConfigJson.ReadVector2(mhs, t.meleeHitboxSize);
             if (json.TryGetValue("meleeHitboxOffset", out var mho)) t.meleeHitboxOffset = ConfigJson.ReadVector2(mho, t.meleeHitboxOffset);

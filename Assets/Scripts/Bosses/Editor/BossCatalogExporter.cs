@@ -23,6 +23,8 @@ namespace RedMagic.Bosses.EditorTools
     /// reflexión. Así la web nunca mantiene una lista a mano: un ataque nuevo en C# aparece en la
     /// web al recompilar. Cada ataque lleva <c>category</c>: <c>rig</c> si hereda de
     /// <see cref="LimbAttack"/> (ataques de partes), si no <c>classic</c>. Sólo es de presentación.
+    /// Y <c>hosts</c>: <c>boss</c> si el tipo lleva <see cref="BossOnlyAttribute"/>, si no <c>any</c>
+    /// (lo puede lanzar también un enemigo normal desde su baraja).
     ///
     /// Se regenera solo tras cada compilación (sólo reescribe si cambia) y a mano desde
     /// Tools ▸ Web ▸ Exportar catálogo de jefes.
@@ -127,6 +129,9 @@ namespace RedMagic.Bosses.EditorTools
                         ["label"] = ObjectNames.NicifyVariableName(type.Name.EndsWith("Attack")
                             ? type.Name.Substring(0, type.Name.Length - 6) : type.Name),
                         ["category"] = typeof(LimbAttack).IsAssignableFrom(type) ? "rig" : "classic",
+                        // "boss" = necesita cosas que sólo tiene un jefe ([BossOnly]); la web no lo
+                        // ofrece en la baraja de un enemigo normal.
+                        ["hosts"] = type.IsDefined(typeof(BossOnlyAttribute), true) ? "boss" : "any",
                         ["params"] = parameters,
                     });
                 }

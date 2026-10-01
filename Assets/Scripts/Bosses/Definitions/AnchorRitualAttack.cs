@@ -24,6 +24,7 @@ namespace RedMagic.Bosses
     /// </list>
     /// </summary>
     [CreateAssetMenu(menuName = "RedMagic/Boss/Anchor Ritual Attack", fileName = "BossAttack_Ritual")]
+    [BossOnly]
     public class AnchorRitualAttack : BossAttack
     {
         [Header("Anclas")]
@@ -87,7 +88,7 @@ namespace RedMagic.Bosses
 
         public override IEnumerator Run(BossContext ctx)
         {
-            if (!ctx.IsValid) yield break;
+            if (!ctx.IsValid || ctx.Boss == null) yield break;   // sólo jefes: usa la armadura de la fase
 
             var spots = new float[Mathf.Max(1, anchorCount)];
             PickSpots(ctx, spots);

@@ -43,9 +43,25 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
   attack needs to know armour exists, and the floating number the player sees is already the real
   one. The window is signposted three ways: the boss's aura turns gold (`vulnerableAura`), the
   boss health bar's fill turns gold and its subtitle reads "¡EXPUESTO!".
-- **`BossContext`** — the per-cast bundle (boss, player, ground Y, arena size, phase pacing) that
+- **`BossContext`** — the per-cast bundle (host, player, ground Y, arena size, phase pacing) that
   carries an **`AbilityContext`** inside it, so boss attacks reuse `AbilityHit` for target
   filtering/damage and `ProjectileFactory` for **pooled** projectiles instead of a parallel system.
+- **Who launches an attack — `IAttackHost`** (`IAttackHost.cs`). An attack never talks to
+  `BossController` directly: `ctx.Host` is an `IAttackHost` (feet position/height, `Body`,
+  `FacingLocked`, `MoveBody`, the shared FX prefab slots). `BossController` implements it, and so
+  does `EnemyAttackHost` for normal enemies (see `enemies.md` ▸ the deck) — **a new attack class is
+  usable by bosses and enemies alike**. `ctx.HasHost` / `ctx.IsValid` are the null checks (an
+  interface does not go through Unity's fake null). The body is an **`IAttackBody`**
+  (`PlayGesture`, `Released`, `SecondsToRelease`, `Hold`, `ClearHold`, `ReturnToRest`):
+  `BossAnimator` for bosses, `EnemyAnimation` for enemies.
+  - **Boss-only attacks**: what needs phases, guard, adds or arena targets (`AnchorRitual`,
+    `GuardStance`, `SummonAdds`, `PlatformDenial`) is tagged **`[BossOnly]`** and reads
+    `ctx.Boss` (the `BossController`, null on an enemy → the attack does nothing). The catalog
+    exports `hosts: "boss"` for them (`"any"` otherwise): the web's Enemy Creator does not offer
+    them and `EnemyDeckImporter` rejects them. Writing a new attack: use `ctx.Host`; only reach for
+    `ctx.Boss` (and tag the class) if it truly needs boss-only state.
+  - `BossHazard` is owned by the host (`ClearFrom(IAttackHost)`): a boss's and an enemy's hazards
+    both die with whoever left them.
 - **Archetypes** — each one exists because it asks the player a *different question*; that is the
   bar a new archetype has to clear, otherwise it belongs as another asset of an existing one.
   - `ChargeDashAttack` has optional `accelerationSeconds` / `brakeSeconds` (0 = the old instant

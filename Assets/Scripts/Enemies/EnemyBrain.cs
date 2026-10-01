@@ -145,6 +145,8 @@ namespace RedMagic.Enemies
                 _animation.WakeFinished += OnWakeFinished;
             }
 
+            if (_attack != null) _attack.DeckAttackFinished += OnAttackFinished;
+
             if (_health == null) return;
 
             _health.Damaged += OnDamaged;
@@ -158,6 +160,8 @@ namespace RedMagic.Enemies
                 _animation.AttackFinished -= OnAttackFinished;
                 _animation.WakeFinished -= OnWakeFinished;
             }
+
+            if (_attack != null) _attack.DeckAttackFinished -= OnAttackFinished;
 
             if (_health == null) return;
 
@@ -251,8 +255,10 @@ namespace RedMagic.Enemies
             }
 
             // Atacar sólo si además está a alcance vertical: si no, un objetivo que salta pegado
-            // haría que el enemigo diera espadazos al aire.
-            if (reachable && distance <= T.attackRange && _cooldownTimer <= 0f)
+            // haría que el enemigo diera espadazos al aire. Con baraja (EnemyTuning.attacks) decide
+            // EnemyAttack qué hay disponible: una carta puede llegar más lejos que 'attackRange' o
+            // pedir justo que el objetivo esté por encima.
+            if (_cooldownTimer <= 0f && CanAttack(distance, toTarget.y, reachable))
             {
                 BeginAttack(toTarget);
                 return;
@@ -577,6 +583,14 @@ namespace RedMagic.Enemies
             Enter(State.Returning);
         }
 
+        /// <summary>
+        /// ¿Hay ataque que lanzar ahora? Sin <see cref="EnemyAttack"/> (o sin baraja) es la regla de
+        /// siempre: a tiro y a alcance vertical.
+        /// </summary>
+        private bool CanAttack(float distance, float heightDelta, bool reachable) =>
+            _attack != null ? _attack.Choose(distance, heightDelta, reachable)
+                            : reachable && distance <= T.attackRange;
+
         private void BeginAttack(Vector2 toTarget)
         {
             Enter(State.Attacking);
@@ -586,6 +600,10 @@ namespace RedMagic.Enemies
             // Apuntar antes de lanzar: el golpe saldrá luego, cuando lo diga el clip, pero el punto
             // se congela ahora para que no persiga al jugador a mitad del gesto.
             if (_attack != null) _attack.AimAt(AimPoint());
+
+            // Si salió una carta de la baraja, el ataque lo lleva EnemyAttackHost entero (aviso,
+            // golpe y recuperación) y avisa al acabar; si no, el ataque propio por la animación.
+            if (_attack != null && _attack.BeginChosen(_target)) return;
 
             if (_animation != null) _animation.PlayAttack();
             else OnAttackFinished();

@@ -9,6 +9,8 @@
 // This is the ONE place that state → JSON shape translation happens. Both the live preview panel
 // and the actual .json download call this same function, so they can never show different JSON.
 
+import { buildAttacksExport } from './attack-export.js';
+
 function omitEmpty(obj, keys) {
   const out = { ...obj };
   for (const k of keys) {
@@ -22,7 +24,8 @@ function buildProjectileExport(spec) {
 }
 
 function buildTuningExport(tuning) {
-  const { projectileMode, projectileSpec, ...rest } = tuning;
+  // builtInAttack / builtInWeight belong to the deck: buildEnemyExport adds them back with it.
+  const { projectileMode, projectileSpec, builtInAttack, builtInWeight, ...rest } = tuning;
   const out = omitEmpty(rest, ['projectileSprite']);
 
   if (projectileMode === 'inline') {
@@ -48,7 +51,49 @@ function libraryArtPath(enemyName) {
 }
 
 /** @param {object} state - the Enemy Creator's live form state (see enemy-defaults.js's shape). */
-export function buildExportObject(state) {
+export function buildExportObject(state, ctx) {
+  return buildEnemyExport(state, ctx).doc;
+}
+
+/**
+ * The export plus what is worth telling the user about it.
+ *
+ * @param {object} state
+ * @param {object} [ctx] - what the deck needs and the rest of the form does not:
+ *   { catalog: Unity's attack catalog, entriesById: Map of library records (art slots),
+ *     gestureNames: the body's gestures, or null when unknown }.
+ * @returns {{doc: object, art: Array<{id, libraryId, kind, key}>, problems: string[], notes: string[]}}
+ */
+export function buildEnemyExport(state, ctx = {}) {
+  const doc = baseExport(state);
+  const deck = state.deck || [];
+
+  // No deck = exactly the document this form always exported: the classic import is untouched.
+  if (deck.length === 0 && !state.deckTouched) return { doc, art: [], problems: [], notes: [] };
+
+  const ex = buildAttacksExport(deck, ctx.catalog || null, ctx.entriesById || new Map(),
+    state.attackArt || {}, ctx.gestureNames ?? null);
+
+  doc.tuning.attacks = deck.map((a) => ({
+    attack: ex.idMap.get(a.id),
+    minRange: a.deck?.minRange ?? 0,
+    maxRange: a.deck?.maxRange ?? 0,
+    targetHeight: a.deck?.targetHeight || 'Any',
+  }));
+  doc.tuning.builtInAttack = state.tuning.builtInAttack !== false;
+  doc.tuning.builtInWeight = state.tuning.builtInWeight > 0 ? state.tuning.builtInWeight : 1;
+
+  if (Object.keys(ex.attacks).length) doc.attacks = ex.attacks;
+  if (Object.keys(ex.artAssets).length) doc.artAssets = ex.artAssets;
+
+  const notes = [...ex.notes];
+  if (state.tuning.selfDestruct && deck.length) notes.push('Kamikaze: su ataque es explotar, la baraja se ignora.');
+  if (!doc.tuning.builtInAttack && deck.length === 0) notes.push('Sin baraja, el ataque propio sale siempre (aunque esté desmarcado).');
+
+  return { doc, art: ex.art, problems: ex.problems, notes };
+}
+
+function baseExport(state) {
   const art = state.artMode === 'library' && state.artLibraryId
     ? libraryArtPath(state.enemyName)
     : state.art.trim();

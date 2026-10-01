@@ -504,6 +504,25 @@ namespace RedMagic.Rigging.EditorTools
                 else if (ft == typeof(Color)) token = RigConfigJson.Hex((Color)value);
                 else if (ft.IsEnum) token = value.ToString();
                 else if (ft == typeof(LayerMask)) token = RigConfigJson.LayerNames((LayerMask)value);
+                else if (value is System.Collections.Generic.List<Enemies.EnemyDeckEntry> deck)
+                {
+                    // La baraja: cada carta apunta a su asset de ataque (ya existe en el proyecto).
+                    var array = new JArray();
+                    foreach (var entry in deck)
+                    {
+                        if (entry == null || entry.attack == null || !AssetDatabase.Contains(entry.attack)) continue;
+                        array.Add(new JObject
+                        {
+                            ["attack"] = AssetDatabase.GetAssetPath(entry.attack),
+                            ["minRange"] = RigConfigJson.Num(entry.minRange),
+                            ["maxRange"] = RigConfigJson.Num(entry.maxRange),
+                            ["targetHeight"] = entry.targetHeight.ToString(),
+                        });
+                    }
+
+                    if (array.Count > 0) token = array;
+                }
+                else if (ft.IsGenericType) continue;   // otras listas: no son parte del EnemyConfig
                 else if (typeof(Object).IsAssignableFrom(ft))
                 {
                     var asset = value as Object;

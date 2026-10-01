@@ -1,6 +1,6 @@
 // modules/rig-export.js
 // -----------------------------------------------------------------------------
-// Rig Composer state → `rig-config.json` (docs/schemas/rig-config.schema.json) and the .zip that
+// Rig composer state → `rig-config.json` (docs/schemas/rig-config.schema.json) and the .zip that
 // Unity's Tools ▸ Web ▸ Rig ▸ Importar rig reads (RigBundleImporter.cs):
 //
 //   rig-config.json

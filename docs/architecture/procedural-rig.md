@@ -153,10 +153,11 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
 - `RigConfigJson` — shared vocabulary: part refs are **paths relative to `Visual`** (`"Visual"` =
   body), sprites are `Assets/…` paths (used as-is) or bundle files (copied to
   `Assets/Art/RigImports/<name>/`, import settings from `sprites`).
-- Gestures are authored in the web too: Rig Composer ▸ *Gestos* poses `windup` / `strike` on the
+- Gestures are authored in the web too: 🧬 Enemy Studio ▸ *Gestos* poses `windup` / `strike` on the
   canvas and previews them with this driver's formulas (`rig-gestures.js` mirrors `ApplyPoses`,
   `GestureRoutine` and `SettleRoutine` — keep both in step).
-- Web side: the 🦴 Rig Composer authors the bundle; its **body templates** (floating caster / folding
+- Web side: 🧬 Enemy Studio authors the bundle (its body editor is `rig-composer.js`; the old 🦴 Rig
+  Composer tab was retired); its **body templates** (floating caster / folding
   sentry / limbed colossus — `Web/RedMagicWeb/modules/rig-templates.js`, data) are the generic
   versions of the three packs above and ship default gestures in `gestures`.
 - **Pivot = centre of the body**, for enemies and bosses: the web lays the body around the origin.

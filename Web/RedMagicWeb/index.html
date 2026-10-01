@@ -22,7 +22,6 @@
   <button class="tabBtn" data-tab="enemy">🧩 Enemy Creator</button>
   <button class="tabBtn" data-tab="fx">🔥 Proyectil/VFX</button>
   <button class="tabBtn" data-tab="boss">👑 Boss Creator</button>
-  <button class="tabBtn" data-tab="rig">🦴 Rig Composer</button>
   <button class="tabBtn" data-tab="vfx">✨ VFX Lab</button>
   <button class="tabBtn" data-tab="library">📚 Biblioteca</button>
   <button class="tabBtn" data-tab="map">🗺️ Map Tracer</button>
@@ -220,9 +219,9 @@
   <div id="enemyFormPanel">
     <h1>🧩 Enemy Creator</h1>
     <p class="hint">
-      Rellena un EnemyConfig y expórtalo como JSON — importable con
-      <code>Tools ▸ RedMagic ▸ Import Config...</code> en Unity. Un enemigo a la vez, sin gestión de
-      proyecto/biblioteca más allá de esta sesión.
+      Comportamiento de un enemigo de <strong>hoja de sprites</strong>: rellena su EnemyConfig y expórtalo —
+      importable con <code>Tools ▸ RedMagic ▸ Import Config...</code> en Unity. Los enemigos
+      <strong>por partes</strong> se hacen enteros (cuerpo y comportamiento) en 🧬 Enemy Studio.
     </p>
     <div id="enemyLaneInfo" class="hint" hidden></div>
     <div id="enemyFormRoot"></div>
@@ -276,30 +275,28 @@
   </div>
 </div>
 
-<!-- The composer's panels are separate hosts: 🧬 Enemy Studio borrows them (and the Enemy Creator
-     form) while it is the visible tab and lays them out as steps. One composer, one document. -->
-<div id="tab-rig" class="tabPanel" hidden>
-  <div id="rigSidebar" class="scrollHost">
+<!-- 🧬 Enemy Studio: the part-based body editor (modules/rig-composer.js renders into the rig* hosts)
+     laid out as workflow steps by modules/enemy-studio.js, which moves the five step hosts of
+     #rigHosts under its steps at start-up and borrows the Enemy Creator's panels for step 4. -->
+<div id="tab-studio" class="tabPanel" hidden>
+  <div id="studioSteps" class="scrollHost"></div>
+  <div id="studioCenter">
+    <div id="rigCenter">
+      <div id="rigToolbar"></div>
+      <div id="rigCanvasWrap"><canvas id="rigCanvas"></canvas></div>
+      <div id="rigStatus" class="hint"></div>
+    </div>
+  </div>
+  <div id="studioRight" class="scrollHost">
+    <div id="rigInspectorMain" class="rigInspHost"></div>
+  </div>
+  <div id="rigHosts" hidden>
     <div id="rigSidebarBody" class="rigSideHost"></div>
     <div id="rigSidebarTemplate" class="rigSideHost"></div>
-  </div>
-  <div id="rigCenter">
-    <div id="rigToolbar"></div>
-    <div id="rigCanvasWrap"><canvas id="rigCanvas"></canvas></div>
-    <div id="rigStatus" class="hint"></div>
-  </div>
-  <div id="rigInspector" class="scrollHost">
-    <div id="rigInspectorMain" class="rigInspHost"></div>
     <div id="rigInspectorStates" class="rigInspHost"></div>
     <div id="rigInspectorLinks" class="rigInspHost"></div>
     <div id="rigInspectorExport" class="rigInspHost"></div>
   </div>
-</div>
-
-<div id="tab-studio" class="tabPanel" hidden>
-  <div id="studioSteps" class="scrollHost"></div>
-  <div id="studioCenter"></div>
-  <div id="studioRight" class="scrollHost"></div>
 </div>
 
 <div id="tab-vfx" class="tabPanel" hidden>

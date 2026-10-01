@@ -1,6 +1,6 @@
 # Plan — Enemy Studio: one web flow from parts to a finished enemy
 
-Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Built so far: S1–S5** (see Progress).
+Next big task (proposed 2026-10-01, after the part-rig plan D–F). **All phases built (S1–S6)**; what is left is your test pass (`part-rig-pending-playtests.md`).
 Goal, in the user's words: import the parts of an enemy, build body and gestures, save it as a
 **template**, create projectile / VFX effects in the VFX tab, and **attach those effects anywhere
 on the enemy** — plus defensive moves, idle gestures, and per-state sprites — in one comfortable
@@ -155,7 +155,17 @@ Order rationale: S1 gives the workflow shell the user asked for; S2 is the most 
   enemies too (the tuning is shared). Checked: compile, round trip, headless 129, and **in Play by
   stepping**: an idle gesture plays and ends without the brain leaving Idle; near the player the alert
   sprite shows, the enemy holds the gesture, dashes exactly its distance decelerating and resumes.
-- **Next: S6** (polish: retire the two old tabs, one export, docs, templates gallery).
+- **S6 — done (2026-10-01, same branch; web).** The 🦴 Rig Composer tab is retired: the Studio is the
+  only place for part-based enemies and bosses (Biblioteca ▸ "Editar en Enemy Studio" opens them).
+  **Deviation from the plan, on purpose:** the 🧩 Enemy Creator tab is **kept**, for sprite-sheet
+  enemies only (the frame-based pipeline is still alive and the Studio has no sheet body); it no
+  longer lists part-based enemies and lets go of one the Studio left linked. One export = step 5
+  (body + behaviour + effects + state sprites in one .zip). Templates gallery (cards with
+  thumbnails). Canvas keeps its size in sync on every render. Checked: headless 132, and the new
+  layout in real Chrome.
+- **Open, for after your tests**: retune defaults from feel (effect sizes, burst follows muzzle or not,
+  idle interval, dash numbers); whether the Studio should also author sprite-sheet enemies (then 🧩
+  could go too); boss "alert" sprites and defensive moves.
 
 ## Decisions
 - Template granularity (taken at S1): saved together (body + gestures + behaviour), each optional

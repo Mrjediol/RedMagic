@@ -1,6 +1,6 @@
 // modules/rig-templates.js
 // -----------------------------------------------------------------------------
-// Body templates of the 🦴 Rig Composer: a template is a BODY SHAPE, not a character — a checklist
+// Body templates of the rig composer (Enemy Studio ▸ Plantilla): a template is a BODY SHAPE, not a character — a checklist
 // of slots (which parts, the role of each, who hangs from whom, draw order) plus default sway, lean,
 // timings, gestures and a suggested behaviour. The same template must fit very different art.
 //
@@ -485,7 +485,8 @@ export function templateFromState(state, { label, description = '', bodyHeight =
 export const USER_TEMPLATE_PREFIX = 'lib:';
 export function templateFromRecord(record) {
   if (!record?.draft?.slots) return null;
-  return { ...record.draft, id: USER_TEMPLATE_PREFIX + record.id, label: record.enemyName, user: true, recordId: record.id };
+  return { ...record.draft, id: USER_TEMPLATE_PREFIX + record.id, label: record.enemyName, user: true, recordId: record.id,
+    thumbnail: record.thumbnail || null };
 }
 
 // ============================================================ gestures onto an existing body

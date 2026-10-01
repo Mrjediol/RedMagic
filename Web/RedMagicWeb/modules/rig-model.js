@@ -1,6 +1,6 @@
 // modules/rig-model.js
 // -----------------------------------------------------------------------------
-// The 🦴 Rig Composer's geometry and part operations, independent of any DOM:
+// The rig composer's geometry and part operations, independent of any DOM:
 //   - 2D affine matrices (Unity space: units, y up) and each part's local/world transform,
 //   - reparenting and pivot moves that keep the art where it is on screen,
 //   - loading a PNG into a part image (auto background removal + trim), splitting a sheet of parts.

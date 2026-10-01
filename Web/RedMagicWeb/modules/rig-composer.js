@@ -1,7 +1,8 @@
 // modules/rig-composer.js
 // -----------------------------------------------------------------------------
-// The 🦴 Rig Composer tab: assemble an enemy or boss from separate part PNGs and export the
-// rig-config .zip Unity's Tools ▸ Web ▸ Rig ▸ Importar rig reads. Separate from every classic tab.
+// The rig composer — the BODY EDITOR of 🧬 Enemy Studio: assemble an enemy or boss from separate part
+// PNGs and export the rig-config .zip Unity's Tools ▸ Web ▸ Rig ▸ Importar rig reads. It has no tab
+// of its own any more (the 🦴 Rig Composer tab was retired): enemy-studio.js lays its hosts out.
 //
 //   left   — document (name, kind, scale), the parts list (draw order + parenting by drag)
 //   centre — canvas with tools: move / rotate / scale / pivot / centre / point / barrel / muzzle / grip
@@ -65,7 +66,7 @@ const el = (tag, cls, text) => {
   return e;
 };
 
-export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvasWrap, statusEl, inspector, statesHost, linksHost, exportHost, onEditBehaviour }) {
+export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvasWrap, statusEl, inspector, statesHost, linksHost, exportHost }) {
   // Set by whoever embeds the composer (Enemy Studio): beforeExport / afterSave(id) / onChange.
   const hooks = { beforeExport: null, afterSave: null, onChange: null };
   let userTemplates = [];        // library records of kind 'rig-template', as templates
@@ -778,8 +779,6 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   function renderSidebar() {
     sidebar.innerHTML = '';
-    sidebar.appendChild(el('h1', 'rigTabIntro', '🦴 Rig Composer'));
-    sidebar.appendChild(el('p', 'hint rigTabIntro', 'Enemigo o jefe hecho de piezas sueltas. Suelta PNG sobre el lienzo, colócalos y exporta el .zip. En Unity: Tools ▸ Web ▸ Rig ▸ Importar rig.'));
 
     const doc = el('div', 'rigBlock');
     doc.appendChild(F.textField({ label: 'Nombre (prefab)', value: state.name, placeholder: 'ej. TorretaHielo',
@@ -879,13 +878,20 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
     if (!findTemplate(templateChoice)) templateChoice = RIG_TEMPLATES[0].id;
     const kindLabel = (t) => (t.kind === 'boss' ? 'jefe' : 'enemigo');
-    const pick = F.enumField({ label: 'Nuevo desde plantilla', value: templateChoice,
-      options: [
-        ...userTemplates.map((t) => ({ value: t.id, label: `★ ${t.label} (${kindLabel(t)})` })),
-        ...RIG_TEMPLATES.map((t) => ({ value: t.id, label: `${t.label} (${kindLabel(t)})` })),
-      ],
-      onChange: (v) => { templateChoice = v; renderSidebar(); } });
-    block.appendChild(pick.row);
+    // The gallery: your saved templates first (with their thumbnail), then the built-in shapes.
+    block.appendChild(el('p', 'rigGroupTitle', 'Nuevo desde plantilla'));
+    const gallery = el('div', 'rigTplGallery');
+    [...userTemplates, ...RIG_TEMPLATES].forEach((t) => {
+      const card = el('button', `rigTplCard${t.id === templateChoice ? ' selected' : ''}`);
+      card.dataset.template = t.id;
+      if (t.thumbnail) { const img = el('img'); img.src = t.thumbnail; img.alt = ''; card.appendChild(img); }
+      else card.appendChild(el('span', 'rigTplIcon', t.kind === 'boss' ? '👑' : t.user ? '★' : '🧬'));
+      card.appendChild(el('span', 'rigTplName', `${t.user ? '★ ' : ''}${t.label}`));
+      card.appendChild(el('span', 'rigTplMeta', `${kindLabel(t)} · ${t.slots.filter((x) => !x.node).length} piezas · ${(t.gestures || []).length} gestos`));
+      card.onclick = () => { templateChoice = t.id; renderSidebar(); };
+      gallery.appendChild(card);
+    });
+    block.appendChild(gallery);
     const chosen = findTemplate(templateChoice);
     if (chosen.shape) block.appendChild(el('p', 'hint', chosen.shape));
     if (chosen.fits) block.appendChild(el('p', 'hint', `Sirve para: ${chosen.fits}`));
@@ -1599,37 +1605,20 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     }
   }
 
+  /** A boss takes its attacks and phases from a 👑 Boss Creator entry (an enemy's behaviour is step 4's form). */
   function renderLinksSection() {
-    const d = rememberedSection('links', state.kind === 'boss' ? 'Ataques y fases (Boss Creator)' : 'Números de juego (Enemy Creator)', true, linksHost);
-    if (state.kind === 'boss') {
-      const options = [{ value: '', label: '(ninguno: la definición se asigna en Unity)' }, ...bossEntries.map((e) => ({ value: e.id, label: e.enemyName }))];
-      const tpl = findTemplate(state.template?.id);
-      if (tpl?.behaviour?.summary) d.appendChild(el('p', 'hint', `Plantilla: ${tpl.behaviour.summary}`));
-      d.appendChild(F.enumField({ label: 'Jefe de la biblioteca', value: state.bossConfigId || '', options,
-        hint: 'Su boss-config (ataques, fases, arte de ataques) viaja en el .zip sin su cuerpo: el cuerpo es este rig.',
-        onChange: (v) => { state.bossConfigId = v || null; refreshExport(); } }).row);
-      d.appendChild(F.textField({ label: 'O una BossDefinition que ya existe en Unity', value: state.bossBody.definition || '',
-        placeholder: 'Assets/Resources/Bosses/Boss_ColosodeHielo2.asset',
-        hint: 'Ruta del asset (clic derecho ▸ Copy Path). Misma pelea que otro jefe: al importar hereda también sus avisos (flechas, círculos). Si eliges un jefe de la biblioteca arriba, manda ése.',
-        onChange: (v) => { state.bossBody.definition = v; refreshExport(); } }).row);
-    } else {
-      const t = behaviour?.tuning;
-      const suggested = behaviour ? null : suggestedEnemyConfig(state);
-      const st = suggested?.tuning;
-      d.appendChild(el('p', behaviour || suggested ? 'efSummaryOk' : 'hint', behaviour
-        ? `✓ ${t?.archetype || 'Melee'} · vida ${t?.maxHealth ?? 30} · ataque ${t?.attackRange ?? 1.6} u (de Enemy Creator)`
-        : suggested
-          ? `✓ Sugerido por la plantilla: ${st.archetype}${st.sleepsUntilDetected ? ' dormido' : ''} · vida ${st.maxHealth} · ataque ${st.attackRange} u. Viaja en el .zip mientras no lo configures en Enemy Creator (al abrirlo allí se cargan estos valores).`
-          : 'Sin comportamiento todavía: se exportará con el tuning por defecto (Melee).'));
-      d.appendChild(el('p', 'hint', 'El comportamiento (volador o no, vida, rangos, daño, proyectil y sus ATAQUES: varios, cada uno con su gesto) se configura en 🧩 Enemy Creator eligiendo este rig como arte. Viaja en el .zip como enemy-config.json.'));
-      const go = el('button', 'small rigEditBehaviour', '🧩 Configurar en Enemy Creator');
-      go.onclick = async () => {
-        if (!state.name.trim()) { setStatus('Ponle nombre y guárdalo primero.'); return; }
-        await saveToLibrary();
-        if (currentId && onEditBehaviour) onEditBehaviour(currentId, state.name.trim());
-      };
-      d.appendChild(go);
-    }
+    if (state.kind !== 'boss') return;
+    const d = rememberedSection('links', 'Ataques y fases (Boss Creator)', true, linksHost);
+    const options = [{ value: '', label: '(ninguno: la definición se asigna en Unity)' }, ...bossEntries.map((e) => ({ value: e.id, label: e.enemyName }))];
+    const tpl = findTemplate(state.template?.id);
+    if (tpl?.behaviour?.summary) d.appendChild(el('p', 'hint', `Plantilla: ${tpl.behaviour.summary}`));
+    d.appendChild(F.enumField({ label: 'Jefe de la biblioteca', value: state.bossConfigId || '', options,
+      hint: 'Su boss-config (ataques, fases, arte de ataques) viaja en el .zip sin su cuerpo: el cuerpo es este rig.',
+      onChange: (v) => { state.bossConfigId = v || null; refreshExport(); } }).row);
+    d.appendChild(F.textField({ label: 'O una BossDefinition que ya existe en Unity', value: state.bossBody.definition || '',
+      placeholder: 'Assets/Resources/Bosses/Boss_ColosodeHielo2.asset',
+      hint: 'Ruta del asset (clic derecho ▸ Copy Path). Misma pelea que otro jefe: al importar hereda también sus avisos (flechas, círculos). Si eliges un jefe de la biblioteca arriba, manda ése.',
+      onChange: (v) => { state.bossBody.definition = v; refreshExport(); } }).row);
   }
 
   let exportSummaryEl = null, exportPreviewEl = null;
@@ -1805,7 +1794,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   async function linkLibraryEntry(id) {
     const entry = await getEnemy(id);
-    if (!entry?.draft) { setStatus('Esa entrada no tiene el documento del Rig Composer.'); return; }
+    if (!entry?.draft) { setStatus('Esa entrada no tiene el documento del cuerpo por partes.'); return; }
     state = adopt(entry.draft);
     currentId = entry.id;
     selectedUid = null;

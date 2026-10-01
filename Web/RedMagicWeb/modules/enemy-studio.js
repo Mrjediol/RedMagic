@@ -7,13 +7,14 @@
 //
 //   left   — the steps, in the order of the work (one open at a time; the later ones unlock once
 //            the body is usable): 1 Cuerpo · 2 Plantilla · 3 Efectos · 4 Comportamiento · 5 Exportar
-//   centre — the Rig Composer's canvas
+//   centre — the composer's canvas
 //   right  — the inspector of what is selected; in step 4 (enemies) the behaviour form
 //
-// It owns NO editor of its own. The body is the one Rig Composer (rig-composer.js) and the behaviour
-// is the one Enemy Creator form (enemy-form.js): while this tab is visible their panels are MOVED
-// into its layout (mount), and put back when another tab is shown (unmount). So there is one
-// document and one form whichever tab shows them — nothing to keep in sync, nothing lost.
+// The body editor is the rig composer (rig-composer.js): it renders into hosts that live in this tab
+// — the canvas and the inspector in place, the rest (document + parts, templates, state sprites,
+// boss link, export) moved once under their step. The behaviour is the one Enemy Creator form
+// (enemy-form.js), which the 🧩 tab also uses for sprite-sheet enemies: while this tab is visible
+// its panels are BORROWED into step 4 (mount) and put back when another tab is shown (unmount).
 //
 // What the Studio adds on top: the step order and locks, and the glue that makes the two halves one
 // enemy — opening step 4 saves the body and links the form to it; the form is saved when the step is
@@ -21,7 +22,7 @@
 //
 // Plan and what each later phase adds to these steps: docs/web-enemy-studio-plan.md.
 
-import { listEntries } from './enemy-library.js';
+import { listEntries, getEnemy } from './enemy-library.js';
 import { kindOf } from './entry-kinds.js';
 
 const STEPS = [
@@ -46,7 +47,7 @@ const el = (tag, cls, text) => {
  * @param {object} o.rig - initRigComposer's API
  * @param {object} o.enemy - initEnemyCreator's API
  * @param {object} o.nodes - the borrowed panels: rigBody, rigTemplate, rigCenter, rigMain, rigStates, rigLinks,
- *                           rigExport (Rig Composer hosts), enemyForm, enemyPreview (Enemy Creator)
+ *                           rigExport (the composer's hosts), enemyForm, enemyPreview (Enemy Creator)
  * @param {(tab: string) => void} o.openTab - switches to another tab of the app
  */
 export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy, nodes, openTab }) {
@@ -100,7 +101,9 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
 
   // ============================================================ borrowing the panels
 
-  const order = Object.keys(slots);
+  // The composer's step hosts go under their steps for good; only the Enemy Creator's panels come and go.
+  ['rigBody', 'rigTemplate', 'rigStates', 'rigLinks', 'rigExport'].forEach((key) => slots[key].appendChild(nodes[key]));
+  const order = ['enemyPreview', 'enemyForm'];
   let homes = null;
 
   function mount() {
@@ -114,7 +117,6 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     if (!mounted) return;
     // Last one first: each `next` is then already back in place.
     [...homes].reverse().forEach(({ node, parent, next }) => parent.insertBefore(node, next && next.parentNode === parent ? next : null));
-    nodes.rigMain.hidden = false;
     nodes.enemyForm.hidden = false;
     nodes.enemyPreview.hidden = false;
     mounted = false;
@@ -261,9 +263,12 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     if (saving) await flushBehaviour(true);
   }
 
-  /** Biblioteca ▸ a saved body template ▸ "Editar en Enemy Studio": a new enemy from it. */
+  /** Biblioteca ▸ "Editar en Enemy Studio" (a part-based enemy: open it) / a body template (a new enemy from it). */
   async function linkLibraryEntry(id) {
-    await rig.useTemplateRecord(id);
+    const entry = await getEnemy(id);
+    if (active === 'behaviour') await flushBehaviour();
+    if (entry?.kind === 'rig-template') await rig.useTemplateRecord(id);
+    else await rig.linkLibraryEntry(id);
     active = 'body';
     render();
   }

@@ -244,9 +244,9 @@ Vía **separada** de la de sprite sheets: nada de arriba cambia. Esquema:
 `docs/schemas/rig-config.schema.json` (espejo en `Web/RedMagicWeb/schemas/`). Código:
 `Assets/Scripts/Rigging/Editor/RigConfig/`.
 
-El .zip lo genera la pestaña web **🦴 Rig Composer** (suelta los PNG de las piezas, colócalas,
+El .zip lo genera la pestaña web **🧬 Enemy Studio** (suelta los PNG de las piezas, colócalas,
 marca pivotes, roles y sprites por estado, enlaza un enemigo de Enemy Creator o un jefe de Boss
-Creator y exporta). Ver `Web/RedMagicWeb/ARCHITECTURE.md ▸ Rig Composer tab`.
+Creator y exporta). Ver `Web/RedMagicWeb/ARCHITECTURE.md ▸ Enemy Studio tab`.
 
 **Plantillas** ("Nuevo desde plantilla" en la barra izquierda): formas de cuerpo, no personajes —
 *Lanzador flotante* (torso + cabeza + brazo que lanza + brazo libre + parte baja; FlyingRanged),
@@ -294,7 +294,7 @@ Library/<id>/…            ← opcional: el proyectil de biblioteca del enemigo
   En la web es la línea naranja "pies" (por defecto, la base del collider).
 - **Jefe: ataques y visuales**. La definición sale del `boss-config.json` del zip (jefe de Boss
   Creator enlazado) o de `bossBody.definition` (ruta de una `BossDefinition` existente, campo del
-  Rig Composer); sin ninguna, el jefe se queda quieto y la web lo avisa al exportar. Tras importar,
+  Enemy Studio); sin ninguna, el jefe se queda quieto y la web lo avisa al exportar. Tras importar,
   `FxPlaceholderPack.EnsureForBoss` rellena los huecos de visuales **vacíos** del `BossController`:
   primero los hereda de otro jefe con la misma definición (flechas/círculos con arte), y el resto
   con placeholders en `Assets/Prefabs/Fx/Bosses/<Jefe>/`.

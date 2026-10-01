@@ -1,6 +1,6 @@
 // modules/rig-gestures.js
 // -----------------------------------------------------------------------------
-// The 🦴 Rig Composer's GESTURES, independent of any DOM: the data of a named gesture (RigGesture in
+// The rig composer's GESTURES, independent of any DOM: the data of a named gesture (RigGesture in
 // ProceduralRig.cs), how its poses are laid over the body, and how its weights move in time.
 //
 // A gesture is two poses — `windup` (reached with easing over the attack's telegraph) and `strike`

@@ -52,7 +52,7 @@ namespace RedMagic.Bosses.EditorTools
                 Directory.CreateDirectory(temp);
                 ZipFile.ExtractToDirectory(zipPath, temp);
 
-                // Un zip de jefe POR PARTES (Rig Composer) traído a este menú: su cuerpo es un rig, así
+                // Un zip de jefe POR PARTES (Enemy Studio) traído a este menú: su cuerpo es un rig, así
                 // que se lo pasa entero a su propio importador (igual que hace el import de enemigo).
                 if (File.Exists(Path.Combine(temp, Rigging.EditorTools.RigConfigJson.ConfigFile)))
                     return "Es un jefe por partes (rig-config.json): importado con Tools ▸ Web ▸ Rig ▸ Importar rig.\n\n" +

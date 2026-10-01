@@ -1,6 +1,6 @@
 // modules/rig-canvas-view.js
 // -----------------------------------------------------------------------------
-// The 🦴 Rig Composer's canvas: a camera over Visual space (Unity units, y up), drawing every part
+// The rig composer's canvas (Enemy Studio's body editor): a camera over Visual space (Unity units, y up), drawing every part
 // through its world matrix, pixel-accurate picking (alpha of the part's own art) and the editing
 // overlays (pivot, centre, point direction, muzzle, grips, collider, origin).
 //
@@ -45,7 +45,7 @@ export class RigCanvasView {
     }
   }
 
-  _resize() {
+  _resize(silent = false) {
     const dpr = window.devicePixelRatio || 1;
     const w = this.wrap.clientWidth, h = this.wrap.clientHeight;
     if (!w || !h) return;
@@ -53,7 +53,18 @@ export class RigCanvasView {
     this.canvas.height = Math.round(h * dpr);
     this.canvas.style.width = `${w}px`;
     this.canvas.style.height = `${h}px`;
-    this.onChange();
+    if (!silent) this.onChange();
+  }
+
+  /**
+   * The canvas follows its wrapper through a ResizeObserver, which the browser delays (or skips in
+   * a background window): a column that changes width, or the toolbar wrapping to another line,
+   * would leave one frame drawn at the old size. Checked on every render, so it never shows.
+   */
+  _syncSize() {
+    if (!(this.wrap instanceof Element) || this._dpr) return;
+    const w = this.wrap.clientWidth, h = this.wrap.clientHeight;
+    if (w && h && (this.canvas.style.width !== `${w}px` || this.canvas.style.height !== `${h}px`)) this._resize(true);
   }
 
   _onWheel(e) {
@@ -303,6 +314,7 @@ export class RigCanvasView {
    *                          (gesture effects: `matrix` maps the frame's centred pixels to Visual space)
    */
   render(state, opts = {}) {
+    this._syncSize();
     const ctx = this.ctx;
     const dpr = this._dpr || window.devicePixelRatio || 1;
     ctx.setTransform(1, 0, 0, 1, 0, 0);

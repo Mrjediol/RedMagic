@@ -1,6 +1,6 @@
 // modules/rig-defaults.js
 // -----------------------------------------------------------------------------
-// Defaults of the 🦴 Rig Composer: a new part, a new rig document, and the ProceduralRig scalar
+// Defaults of the rig composer (Enemy Studio's body editor): a new part, a new rig document, and the ProceduralRig scalar
 // fields with their C# initializers (Assets/Scripts/Rigging/ProceduralRig.cs) — so a web-authored
 // rig starts exactly where a hand-made one would. The Transform-typed rig fields (aimPart, muzzle,
 // stretchPart, stretchRiders) are NOT here: they are roles, set per part in the composer.

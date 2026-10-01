@@ -348,3 +348,22 @@ there is no "hide this part in this state".
 
 **Known limits of S5**: a walking enemy cannot sidestep (2D side view): "De lado" dashes away; bosses have no
 defensive moves (their movement is the Boss Creator's); it never interrupts its own attack to dodge.
+
+---
+
+## Enemy Studio S6 — polish (web)
+
+**What changed**
+- The **🦴 Rig Composer tab is gone**: part-based enemies and bosses are made in 🧬 Enemy Studio. In 📚 Biblioteca
+  their card says "Editar en Enemy Studio"; the filter is "Por partes".
+- **🧩 Enemy Creator stays, for sprite-sheet enemies**: its art picker no longer lists part-based enemies.
+- Step 2 is a **gallery**: your saved templates (★, with thumbnail) and the three built-in shapes as cards.
+- One export for a part-based enemy: step 5 (.zip with body, behaviour, effects, state sprites).
+
+**Tests**
+- [ ] ES34 · Open a part-based enemy saved before today from Biblioteca ▸ "Editar en Enemy Studio": parts,
+      gestures and behaviour are there.
+- [ ] ES35 · A sprite-sheet enemy in 🧩 Enemy Creator works as always (pick its sheet, edit, export combined);
+      after using the Studio's step 4 and coming back to 🧩, the picker is empty (not on the part-based one).
+- [ ] ES36 · Gallery: cards readable? Enough info on each? Want the built-in ones to show a schematic?
+- [ ] ES37 · Decide: keep 🧩 for sprite-sheet enemies as it is, or should the Studio absorb them too?

@@ -80,7 +80,7 @@ namespace RedMagic.Pipeline.EditorTools
 
                 string manifestPath = Path.Combine(tempExtractFolder, "manifest.json");
 
-                // Un zip de enemigo POR PARTES (Rig Composer) traído a este menú por error: no es un
+                // Un zip de enemigo POR PARTES (Enemy Studio) traído a este menú por error: no es un
                 // bundle de hoja de sprites, así que se lo pasa entero a su propio importador.
                 if (!File.Exists(manifestPath) &&
                     File.Exists(Path.Combine(tempExtractFolder, Rigging.EditorTools.RigConfigJson.ConfigFile)))

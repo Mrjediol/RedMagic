@@ -500,6 +500,9 @@ namespace RedMagic.Rigging.EditorTools
                 fields.SetObject("bodyRenderer", t != null ? t.GetComponent<SpriteRenderer>() : null);
             }
 
+            var feet = root.transform.Find(RigConfigJson.FeetName);
+            if (feet != null) fields.SetObject("feet", feet);
+
             fields.Apply();
         }
 
@@ -529,6 +532,19 @@ namespace RedMagic.Rigging.EditorTools
                 int layer = LayerMask.NameToLayer(json.Value<string>("layer"));
                 if (layer >= 0) root.layer = layer;
                 else report.Warnings.Add($"root.layer: la capa '{json.Value<string>("layer")}' no existe; se queda la que había.");
+            }
+
+            // Los pies de un jefe: un vacío hijo de la raíz (el pivote va en el centro del cuerpo).
+            if (json["feet"] != null)
+            {
+                var feet = root.transform.Find(RigConfigJson.FeetName);
+                if (feet == null)
+                {
+                    feet = new GameObject(RigConfigJson.FeetName).transform;
+                    feet.SetParent(root.transform, false);
+                }
+
+                feet.localPosition = (Vector3)ConfigJson.ReadVector2(json["feet"], Vector2.zero);
             }
         }
 

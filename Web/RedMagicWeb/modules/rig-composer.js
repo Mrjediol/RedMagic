@@ -248,7 +248,8 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     let part = selectedPart();
 
     if (tool === 'move') {
-      const target = hit || view.slotAt(state, e.clientX, e.clientY);
+      // The handle of an empty node first (a small target, usually under its children's art).
+      const target = view.nodeAt(state, e.clientX, e.clientY) || hit || view.slotAt(state, e.clientX, e.clientY);
       if (!target) { select(null); return; }
       select(target.uid);
       const parent = M.byUid(state, target.parent);
@@ -442,7 +443,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const b = view.bounds(state);
     if (!b) return false;
     const k = fitLengths(state, b.maxY - b.minY);
-    if (!force) { if (state.kind === 'enemy') centerOrigin(); fitCollider(); view.frame(state); }
+    if (!force) { centerOrigin(); fitCollider(); view.frame(state); }
     setStatus(`Plantilla completa: amplitudes (balanceo, flotar, retroceso, gestos) ajustadas ×${Math.round(k * 100) / 100} al tamaño del dibujo${force ? '' : ' y collider ajustado'}.`);
     return true;
   }
@@ -483,9 +484,9 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   }
 
   /**
-   * Moves the whole body so its centre sits on the origin (= the prefab root). An enemy's root is
-   * the centre of its body, not its feet: ranges and detection are measured from it, and standing
-   * on the ground is the collider's job.
+   * Moves the whole body so its centre sits on the origin (= the prefab root). The root of an enemy
+   * or boss is the centre of its body, not its feet: ranges and detection are measured from it;
+   * standing on the ground is the collider's job (enemy) or the boss's feet point (root.feet).
    */
   function centerOrigin() {
     const b = view.bounds(state);
@@ -494,6 +495,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     const r2 = (v) => Math.round(v * 100) / 100;
     state.parts.forEach((p) => { if (!p.parent) p.position = { x: p.position.x - c.x, y: p.position.y - c.y }; });
     state.collider.offset = { x: r2(state.collider.offset.x - c.x), y: r2(state.collider.offset.y - c.y) };
+    if (typeof state.feetY === 'number') state.feetY = r2(state.feetY - c.y);
     return true;
   }
 
@@ -692,12 +694,14 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       hint: 'Se queda donde está en pantalla; sólo cambia de qué pieza depende.',
       onChange: (v) => { M.reparent(state, part, v || null); changed(); } }).row);
 
-    s.appendChild(F.vector2Field({ label: 'Posición (u, en su padre)', value: part.position,
-      onChange: (v) => { part.position = v; requestRender(); refreshExport(); } }).row);
+    // Fine arrow steps: a whole unit per click is far too coarse to place a part.
+    const fine = (row, step = '0.05') => { row.querySelectorAll('input[type=number]').forEach((i) => { i.step = step; }); return row; };
+    s.appendChild(fine(F.vector2Field({ label: 'Posición (u, en su padre)', value: part.position,
+      onChange: (v) => { part.position = v; requestRender(); refreshExport(); } }).row));
     s.appendChild(F.numberField({ label: 'Giro (°)', value: part.rotation,
       onChange: (v) => { part.rotation = v; requestRender(); refreshExport(); } }).row);
-    s.appendChild(F.vector2Field({ label: 'Escala', value: part.scale,
-      onChange: (v) => { part.scale = v; requestRender(); refreshExport(); } }).row);
+    s.appendChild(fine(F.vector2Field({ label: 'Escala', value: part.scale,
+      onChange: (v) => { part.scale = v; requestRender(); refreshExport(); } }).row, '0.01'));
     s.appendChild(F.boolField({ label: 'Parte del rig (se balancea / sale despedida)', value: part.rigPart,
       hint: 'Apagado = sólo existe en la jerarquía (un pivote vacío, una pieza fija).',
       onChange: (v) => { part.rigPart = v; changed(); } }).row);
@@ -856,6 +860,12 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       const bb = state.bossBody;
       [['health', 'Vida'], ['arenaHalfWidth', 'Media anchura de la arena'], ['arenaHeight', 'Altura de la arena'], ['activationRadius', 'Radio de activación'], ['contactDamage', 'Daño por contacto']]
         .forEach(([k, l]) => b.appendChild(F.numberField({ label: l, value: bb[k], onChange: (v) => { bb[k] = v; refreshExport(); } }).row));
+      b.appendChild(F.numberField({ label: 'Pies: altura (Y)', value: Math.round(M.feetY(state) * 100) / 100, step: '0.05',
+        hint: 'La línea naranja: lo que se apoya en el suelo y desde donde los ataques miden alturas (el pivote va en el centro). Por defecto, la base del collider.',
+        onChange: (v) => { state.feetY = v; requestRender(); refreshExport(); } }).row);
+      const autoFeet = el('button', 'small', 'Pies = base del collider');
+      autoFeet.onclick = () => { state.feetY = null; changed(); };
+      b.appendChild(autoFeet);
       b.appendChild(F.numberField({ label: 'Radio de contacto de extremidad', value: state.bossLimbs.contactRadius, onChange: (v) => { state.bossLimbs.contactRadius = v; refreshExport(); } }).row);
       b.appendChild(F.numberField({ label: 'Radio de contacto de orbital', value: state.bossLimbs.orbiterRadius, onChange: (v) => { state.bossLimbs.orbiterRadius = v; refreshExport(); } }).row);
       b.appendChild(el('p', 'hint', 'Se escriben al crear el jefe en Unity (o reimportando con "Resetear").'));

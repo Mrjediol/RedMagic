@@ -197,7 +197,11 @@ that canvas puts it. When the last required slot is filled, `fitLengths` rescale
 (sway moves, hover, recoil, gesture moves) from the template's reference `height` to the real body
 height — once (`state.template.fitted`), or again from "Reajustar amplitudes". At that moment an
 enemy's body is also moved so its **centre sits on the origin** (the prefab root is the centre of
-the body, never the feet: ranges/detection are measured from it; toolbar "◎ Origen al centro" redoes it). Export: an empty
+the body, never the feet: ranges/detection are measured from it; toolbar "◎ Origen al centro" redoes it).
+Same for bosses; a boss also exports `root.feet` (`state.feetY`, null = bottom of the collider — the
+orange "pies" line), which Unity turns into `BossController.feet`. Empty nodes (pivots without art)
+are drawn as a diamond handle and picked by it (`nodeAt`). Exported `sortingOrder` = list index + 1
+(0 is behind the scene background). Export: an empty
 optional slot is left out, an empty required one is a problem. With no behaviour saved from Enemy
 Creator, an enemy template's `behaviour` travels in the zip as `enemy-config.json`
 (`suggestedEnemyConfig`); the Enemy Creator form does not preload it.

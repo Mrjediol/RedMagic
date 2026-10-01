@@ -75,7 +75,11 @@ namespace RedMagic.Bosses
 
         public bool IsValid => Boss != null && Boss.gameObject.activeInHierarchy;
 
-        public Vector2 Origin => Boss != null ? (Vector2)Boss.transform.position : Vector2.zero;
+        /// <summary>
+        /// Punto de apoyo del jefe (sus pies), no su pivote: las alturas de los ataques se miden
+        /// desde aquí. Con la raíz en la base (sin <c>feet</c>) es la posición de la raíz.
+        /// </summary>
+        public Vector2 Origin => Boss != null ? Boss.FeetPosition : Vector2.zero;
 
         public Vector2 PlayerPosition => Player != null ? (Vector2)Player.position : Origin;
 

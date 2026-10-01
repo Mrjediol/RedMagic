@@ -7,7 +7,7 @@
 // Pan: middle or right drag. Zoom: wheel, towards the cursor. Owns no document state: the composer
 // passes the state (and the preview poses) into render()/partAt() every time.
 
-import { multiply, invert, apply, applyVector, worldMatrix, byUid, variantPivot, isOpenSlot } from './rig-model.js';
+import { multiply, invert, apply, applyVector, worldMatrix, byUid, variantPivot, isOpenSlot, isEmptyNode, feetY } from './rig-model.js';
 
 const PICK_ALPHA = 10;
 
@@ -137,6 +137,65 @@ export class RigCanvasView {
     return null;
   }
 
+  /** Screen position of an empty node (a pivot without art). */
+  _nodeScreen(state, part, opts) {
+    let m = worldMatrix(state, part, opts.poses);
+    if (opts.visualMatrix) m = multiply(opts.visualMatrix, m);
+    return apply(multiply(this.camera, m), { x: 0, y: 0 });
+  }
+
+  /** Empty node whose handle is under the cursor, or null. */
+  nodeAt(state, clientX, clientY, opts = {}) {
+    const r = this.canvas.getBoundingClientRect();
+    const sx = clientX - r.left, sy = clientY - r.top;
+    for (let i = state.parts.length - 1; i >= 0; i--) {
+      const part = state.parts[i];
+      if (!isEmptyNode(part)) continue;
+      const p = this._nodeScreen(state, part, opts);
+      if (Math.hypot(p.x - sx, p.y - sy) <= 12) return part;
+    }
+    return null;
+  }
+
+  /** Empty nodes have no art to grab: a diamond handle with their name. */
+  _drawNodes(state, opts) {
+    const ctx = this.ctx;
+    state.parts.forEach((part) => {
+      if (!isEmptyNode(part)) return;
+      const p = this._nodeScreen(state, part, opts);
+      const selected = part.uid === opts.selectedUid;
+      ctx.save();
+      ctx.strokeStyle = selected ? 'rgba(90,170,255,1)' : 'rgba(255,255,255,0.75)';
+      ctx.fillStyle = selected ? 'rgba(90,170,255,0.35)' : 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y - 9); ctx.lineTo(p.x + 9, p.y); ctx.lineTo(p.x, p.y + 9); ctx.lineTo(p.x - 9, p.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.font = '11px sans-serif';
+      ctx.fillText(part.name, p.x + 13, p.y + 4);
+      ctx.restore();
+    });
+  }
+
+  /** A boss's feet: the line that is planted on the ground (root.feet). */
+  _drawFeet(state) {
+    if (state.kind !== 'boss') return;
+    const ctx = this.ctx;
+    const p = apply(this.camera, { x: 0, y: feetY(state) });
+    ctx.save();
+    ctx.strokeStyle = ctx.fillStyle = 'rgba(255,140,90,0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p.x - 40, p.y); ctx.lineTo(p.x + 40, p.y);
+    ctx.stroke();
+    ctx.font = '11px sans-serif';
+    ctx.fillText('pies (suelo)', p.x + 44, p.y + 4);
+    ctx.restore();
+  }
+
   /** Empty template slots: a dashed box where the part goes, with what to drop on it. */
   _drawSlots(state, opts) {
     const ctx = this.ctx;
@@ -261,7 +320,8 @@ export class RigCanvasView {
     });
 
     this._drawSlots(state, opts);
-    if (opts.showCollider !== false) this._drawCollider(state, opts);
+    if (opts.showCollider !== false) { this._drawCollider(state, opts); this._drawFeet(state); }
+    if (opts.showMarkers !== false) this._drawNodes(state, opts);
     if (opts.showMarkers !== false) this._drawMarkers(state, opts);
   }
 

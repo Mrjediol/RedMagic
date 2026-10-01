@@ -169,12 +169,22 @@ namespace RedMagic.Rigging.EditorTools
             return driver != null && driver.GetType().Name == "RigDriverTween" ? "dotween" : "code";
         }
 
-        private static JObject Root(GameObject root) => new JObject
+        private static JObject Root(GameObject root)
         {
-            ["scale"] = RigConfigJson.Scale(root.transform.localScale),
-            ["tag"] = root.tag,
-            ["layer"] = LayerMask.LayerToName(root.layer),
-        };
+            var o = new JObject
+            {
+                ["scale"] = RigConfigJson.Scale(root.transform.localScale),
+                ["tag"] = root.tag,
+                ["layer"] = LayerMask.LayerToName(root.layer),
+            };
+
+            var controller = root.GetComponent<BossController>();
+            var feet = controller != null
+                ? new SerializedObject(controller).FindProperty("feet").objectReferenceValue as Transform
+                : null;
+            if (feet != null) o["feet"] = RigConfigJson.V2(feet.localPosition);
+            return o;
+        }
 
         private static JObject Collider(GameObject root)
         {

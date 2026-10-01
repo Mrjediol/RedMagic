@@ -171,7 +171,7 @@ namespace RedMagic.Bosses
 
                 // --- en alto
                 float hold = ctx.Scaled(holdSeconds);
-                var prop = BossHeldProp.Spawn(heldPropPrefab, ctx.Boss.transform, heldOffset, heldSize * sizeScale,
+                var prop = BossHeldProp.Spawn(heldPropPrefab, ctx.Boss.transform, heldOffset + Vector2.up * ctx.Boss.FeetHeight, heldSize * sizeScale,
                                               ctx.Accent, ctx.FxSprite, hold * 3f + 2f);
                 if (prop != null) ScaleHeld(prop.gameObject);
                 AudioManager.Instance?.Play(pickupSound, HeldPoint(ctx));

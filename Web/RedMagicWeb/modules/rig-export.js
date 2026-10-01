@@ -18,7 +18,7 @@
 //  - a template slot still empty is left out (unless a filled part hangs from it: then it stays as
 //    an empty node), and a required one is reported as a problem.
 
-import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot, isOpenSlot } from './rig-model.js';
+import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot, isOpenSlot, feetY } from './rig-model.js';
 import { embedReferencedLibraryEntries } from './enemy-bundle.js';
 import { writeLanes } from './boss-bundle.js';
 
@@ -71,7 +71,7 @@ export function buildRigExport(state) {
     const node = { name: part.name, parent: part.parent ? partPaths.get(part.parent) : '' };
     if (part.image) {
       node.sprite = addFile(safe(part.name), part.image, part.pivot);
-      node.sortingOrder = index;
+      node.sortingOrder = index + 1;   // 0 is behind the scene's background: the back-most part is 1
     }
     node.position = v2(part.position);
     node.rotation = r5(part.rotation);
@@ -148,7 +148,8 @@ export function buildRigExport(state) {
     name: state.name.trim(),
     pixelsPerUnit: ppu,
     sprites,
-    root: { scale: r5(state.rootScale) },
+    // The root is the pivot = the centre of the body; a boss says where its feet are (BossController.feet).
+    root: state.kind === 'boss' ? { scale: r5(state.rootScale), feet: { x: 0, y: r5(feetY(state)) } } : { scale: r5(state.rootScale) },
     collider: state.collider.type === 'circle'
       ? { type: 'circle', radius: r5(state.collider.radius || 0.5), offset: v2(state.collider.offset) }
       : { type: state.collider.type, size: v2(state.collider.size), offset: v2(state.collider.offset) },

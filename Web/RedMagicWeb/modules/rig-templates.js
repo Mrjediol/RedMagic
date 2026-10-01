@@ -21,7 +21,7 @@
 //   barrel            fixed aimArtAngle (absent = computed pivot → muzzle when the slot is filled)
 //   at, size          schematic placement of the pivot in its parent and placeholder size (units of
 //                     a body `height` tall) — only how the empty checklist is drawn. The origin
-//                     (prefab root) is the CENTRE of an enemy's body, never its feet: ranges and
+//                     (prefab root) is the CENTRE of the body (enemy or boss), never its feet: ranges and
 //                     detection are measured from the root, and the ground is the collider's job
 //   sway, leanFollow, pointAngle, breaksOnDeath, rigPart     RigPart data
 //   states / stage    it wants asleep/awake/attacking sprites / a boss-phase sprite (hint only)
@@ -165,7 +165,7 @@ export const RIG_TEMPLATES = [
         match: ['lower', 'tip', 'punta', 'tail', 'cola', 'pedestal', 'base'] },
       { id: 'torso', name: 'Torso', roles: ['body'], stage: true,
         label: 'Torso', hint: 'El cuerpo: el aura de aviso copia este sprite. Para la fase 2, añádele una etapa (inspector ▸ Sprites por estado: torso agrietado).',
-        pivot: [0.5, 0.5], at: [0, 11], size: [8, 9],
+        pivot: [0.5, 0.5], at: [0, 0], size: [8, 9],
         sway: { move: [0, 0.08], rotate: 1.2, speed: 1.1, phase: 0 },
         match: ['torso', 'body', 'cuerpo', 'core', 'nucleo'] },
       { id: 'crown', name: 'Crown', parent: 'torso', node: true, breaksOnDeath: false, at: [0, 6],

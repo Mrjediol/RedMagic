@@ -83,10 +83,16 @@ namespace RedMagic.Bosses
         [Tooltip("Capas que cuentan como suelo al medir la altura de la arena.")]
         [SerializeField] private LayerMask groundLayers = 1 << 6;
 
-        [Tooltip("Planta al jefe sobre el suelo medido al empezar. Su origen es la base del sprite, " +
-                 "así que basta con dejarlo caído a ojo en la escena y él se coloca solo — igual " +
-                 "que hace GroundSnap con la tienda y la recompensa.")]
+        [Tooltip("Planta al jefe sobre el suelo medido al empezar: basta con dejarlo caído a ojo en " +
+                 "la escena y él se coloca solo — igual que hace GroundSnap con la tienda y la " +
+                 "recompensa. Lo que se apoya en el suelo son sus pies (abajo).")]
         [SerializeField] private bool snapToGround = true;
+
+        [Tooltip("Los pies del jefe: un objeto vacío hijo de la raíz, colocado en la parte baja del " +
+                 "cuerpo. Es lo que se planta sobre el suelo y desde donde los ataques miden sus " +
+                 "alturas, así que la raíz (el pivote) puede ir en el centro del cuerpo. " +
+                 "Vacío = la raíz es la base (jefes con el origen en los pies).")]
+        [SerializeField] private Transform feet;
 
         [Header("Objetivo")]
         [Tooltip("Etiqueta del objetivo. También es a quién daña al tocarlo.")]
@@ -290,8 +296,20 @@ namespace RedMagic.Bosses
         /// Desplaza el cuerpo del jefe (una embestida). Por el Rigidbody cinemático si lo tiene, para
         /// que la física lo vea moverse y el contacto siga funcionando.
         /// </summary>
+        /// <summary>Altura de los pies respecto a la raíz (≤ 0 con la raíz en el centro; 0 sin <c>feet</c>).</summary>
+        public float FeetHeight => feet != null ? feet.position.y - transform.position.y : 0f;
+
+        /// <summary>
+        /// Punto de apoyo del jefe: la X de la raíz a la altura de sus pies. Es el origen de los
+        /// ataques (<see cref="BossContext.Origin"/>): sus alturas se miden desde aquí, esté donde
+        /// esté el pivote.
+        /// </summary>
+        public Vector2 FeetPosition => new Vector2(transform.position.x, transform.position.y + FeetHeight);
+
+        /// <param name="position">Dónde poner los pies (<see cref="FeetPosition"/>), no la raíz.</param>
         public void MoveBody(Vector2 position)
         {
+            position.y -= FeetHeight;
             // Un jefe que se ha movido deja de llevarse la arena consigo: desde aquí se mide desde
             // donde empezó. Los jefes que nunca llaman a esto siguen exactamente como antes.
             _arenaAnchored = true;
@@ -499,9 +517,9 @@ namespace RedMagic.Bosses
         {
             _groundY = MeasureGroundY();
 
-            // El origen del prefab es la base del jefe, así que plantarlo es igualar la Y.
+            // Plantarlo es poner sus pies a la altura del suelo (sin 'feet', la raíz es la base).
             if (snapToGround)
-                transform.position = new Vector3(transform.position.x, _groundY, transform.position.z);
+                transform.position = new Vector3(transform.position.x, _groundY - FeetHeight, transform.position.z);
 
             // La arena se mide desde donde empieza el jefe. Con Mover se queda ahí aunque él se
             // mueva; sin Mover sigue siendo su posición (el jefe no se mueve), como siempre.
@@ -1246,7 +1264,7 @@ namespace RedMagic.Bosses
 
             // Sin suelo debajo (arena flotante o capa mal puesta): la base del sprite es la mejor
             // aproximación disponible, y es mejor que dejar los ataques a la altura del centro.
-            return _body != null ? _body.bounds.min.y : transform.position.y;
+            return _body != null ? _body.bounds.min.y : FeetPosition.y;
         }
 
         private void OnDrawGizmos()

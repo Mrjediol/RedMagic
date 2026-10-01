@@ -246,10 +246,16 @@ template in a web module), so a fourth one is data, not code.
     torso → head → free arm (far arm behind, near arm in front), an optional "Pieza extra" slot
     (ring, belt…) was added, and an **enemy's origin is the centre of its body** (templates are laid
     out around it and re-centred when completed; "◎ Origen al centro" in the toolbar).
+  - Second test (2026-10-01): `sortingOrder` exported from 1; empty nodes (`Crown`) have a canvas
+    handle and position fields step 0.05; the classic "Importar jefe completo" hands a rig .zip to
+    the rig importer; **bosses also pivot at the centre** — new `BossController.feet` (`root.feet`
+    in the schema, `Feet` child): planted on the ground and the origin of every attack
+    (`BossContext.Origin`), null = root is the base as before. Phase D's `IAttackHost` should expose
+    this feet origin for enemies too.
   - Simplifications vs the hand-made packs: the caster's lower part hangs from the torso (no
     separate `Base`); the sentry's stem is the stretch part itself with its pivot at the bottom (no
     `NeckPivot` wrapper — the joint is the sprite pivot); the colossus keeps an empty `Crown` node
-    for its orbiters. Boss `rootScale` and the body's height above the feet are left to the user.
+    for its orbiters. Boss `rootScale` is left to the user.
   - Checked: the three templates → `buildRigExport` → valid against `rig-config.schema.json`
     (ajv), required-only and fully filled, after a library round trip. Not checked by Claude: the
     UI in a browser and the Unity import of a template-made rig.

@@ -265,3 +265,12 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
 - **`CameraFollow.ShakeAll(amplitude, duration)`** — camera shake lives inside `CameraFollow`
   (which already owns the camera position, so there's no LateUpdate ordering fight) and is
   reusable by anything, not just bosses.
+
+## Pivot and feet (`BossController.feet`)
+The root (pivot) of a boss may sit at the **centre of its body**. `feet` is an empty child of the
+root placed at the bottom of the body: `snapToGround` plants *it* on the measured ground,
+`BossContext.Origin` is `FeetPosition` (root X, feet Y) so every attack's authored heights
+(`Origin + (0, 2.6)`, `hitboxOffset`, `muzzleOffset`…) keep meaning "above the ground", and
+`MoveBody` takes a feet position. `feet` empty = the root is the base, exactly as before (the
+sprite-sheet bosses and BossIce2). Rig bosses get it from `root.feet` in `rig-config.json` (child
+named `Feet`). A `Mover` still moves the root, so its heights are the centre's.

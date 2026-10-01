@@ -163,6 +163,7 @@ export function createDefaultRigState() {
     bossLimbs: { contactRadius: 0.9, orbiterRadius: 0.5 },
     bossBody: { health: 2500, arenaHalfWidth: 15, arenaHeight: 12, activationRadius: 18, contactDamage: 12, bodyRenderer: null },
     bossConfigId: null,            // library entry (kind boss) whose config travels in the zip
+    feetY: null,                   // boss: Y of its feet (root.feet); null = the bottom of the collider
     template: null,                // { id, height, fitted } when made from a body template (rig-templates.js)
     gestures: null,                // RigGesture list (poses by part uid | 'Visual'); null = not exported, Unity keeps its own
   };

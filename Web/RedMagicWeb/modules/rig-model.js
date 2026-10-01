@@ -76,6 +76,18 @@ export function isOpenSlot(part) {
   return !!part.slot && !part.image;
 }
 
+/** A plain empty node (a pivot other parts hang from): no art, not a slot. Drawn as a handle. */
+export function isEmptyNode(part) {
+  return !part.image && !part.slot;
+}
+
+/** Y of a boss's feet (root units): where it stands. `state.feetY` null = the bottom of the collider. */
+export function feetY(state) {
+  if (typeof state.feetY === 'number') return state.feetY;
+  const c = state.collider;
+  return c.offset.y - (c.type === 'circle' ? (c.radius || 0.5) : c.size.y / 2);
+}
+
 /** True if `uid` is `ancestorUid` or hangs from it. */
 export function isDescendant(state, uid, ancestorUid) {
   for (let p = byUid(state, uid); p; p = byUid(state, p.parent)) if (p.uid === ancestorUid) return true;

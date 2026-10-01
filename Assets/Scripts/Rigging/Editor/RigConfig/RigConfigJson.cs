@@ -21,6 +21,9 @@ namespace RedMagic.Rigging.EditorTools
         public const string EnemyConfigFile = "enemy-config.json";
         public const string BossConfigFile = "boss-config.json";
 
+        /// <summary>Hijo de la raíz que marca los pies de un jefe (<c>root.feet</c> ↔ BossController.feet).</summary>
+        public const string FeetName = "Feet";
+
         /// <summary>Referencia a la raíz visual (<c>ProceduralRig.body</c>) en poses y roles.</summary>
         public const string BodyToken = "Visual";
 

@@ -80,9 +80,13 @@
         },
         "layer": {
           "type": "string"
+        },
+        "feet": {
+          "$ref": "_shared.schema.json#/definitions/vector2",
+          "$comment": "Sólo jefes. Posición local (en la raíz) de un hijo vacío 'Feet' = BossController.feet: lo que se planta en el suelo y desde donde los ataques miden alturas, para que la raíz (pivote) vaya en el centro del cuerpo. Ausente = la raíz es la base."
         }
       },
-      "$comment": "Transform de la raíz del prefab (escala) + etiqueta y capa."
+      "$comment": "Transform de la raíz del prefab (escala) + etiqueta y capa. La raíz es el pivote: el centro del cuerpo."
     },
     "collider": {
       "type": "object",

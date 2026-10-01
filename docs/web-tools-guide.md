@@ -252,6 +252,12 @@ Library/<id>/…            ← opcional: el proyectil de biblioteca del enemigo
   jefe sólo se escriben la primera vez o eligiendo **Resetear desde el JSON** en el diálogo. Si
   afinaste el rig en el Inspector, expórtalo antes (abajo) o se pierde.
 - Valida todo (nombres, padres, referencias a piezas, sprites, tipo de ataque) **antes** de escribir.
+- Los menús clásicos **Importar enemigo completo** e **Importar jefe completo (.zip)** reconocen un
+  .zip de rig (lleva `rig-config.json`) y se lo pasan a este importador.
+- **Pivote**: la raíz es el centro del cuerpo. En un jefe, `root.feet` crea un hijo vacío `Feet`
+  (`BossController.feet`): es lo que se apoya en el suelo y desde donde los ataques miden alturas.
+  En la web es la línea naranja "pies" (por defecto, la base del collider).
+- **Orden de dibujo**: la web exporta `sortingOrder` desde 1 (el 0 queda detrás del fondo de la escena).
 
 ### Exportar rig a JSON…
 Clic derecho en un prefab con `ProceduralRig` ▸ **Exportar rig a JSON** (o el menú: usa la selección

@@ -8,8 +8,9 @@ attack or a new behaviour**. Once it exists, the web lists it and any enemy can 
 
 ## ⏸ Where we left off (2026-10-01)
 
-Done: Phases 0, A, B (verified by the user) and **C** (2026-10-01, built and checked statically —
-the user's browser + Unity test of the three templates is still pending, see Phase C outcome).
+Done: Phases 0, A, B and **C** (2026-10-01), verified by the user: floating caster and limbed
+colossus made from templates, imported and playing (boss with centre pivot + `Feet`, attacks and
+warnings working). The folding sentry template has not been tried by the user yet.
 On top of B, decided with the user:
 - **Behaviour of a part-based enemy is authored in 🧩 Enemy Creator** (rigs show up in its art
   picker as "🦴 … (por partes)"); it is saved on the rig record as `enemyConfig` and travels in the

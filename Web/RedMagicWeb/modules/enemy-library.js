@@ -138,6 +138,27 @@ export async function deleteEnemy(id) {
   await wrap(s.delete(id));
 }
 
+/** Every record exactly as stored (no normalisation): what a backup file holds. */
+export async function exportAllRecords() {
+  const s = await store('readonly');
+  return wrap(s.getAll());
+}
+
+/**
+ * Writes records back exactly as they are (ids and dates kept): restoring a backup. A record whose
+ * id already exists is replaced; everything else in the library is left alone.
+ */
+export async function restoreRecords(records) {
+  let count = 0;
+  for (const record of records || []) {
+    if (!record || !record.id) continue;
+    const s = await store('readwrite');
+    await wrap(s.put(record));
+    count++;
+  }
+  return count;
+}
+
 /** Merges `patch` onto the existing record (e.g. `{ config: exportObj }`) and saves it. */
 export async function updateEnemy(id, patch) {
   const existing = await getEnemy(id);

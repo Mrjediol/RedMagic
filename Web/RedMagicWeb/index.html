@@ -341,6 +341,18 @@
       sprites y, si ya pasaron por su Creator, su config enlazado) más los jefes montados en Boss
       Creator, que no tienen hoja propia y se apoyan en un enemigo base.
     </p>
+    <div class="libTools">
+      <input type="search" id="librarySearch" placeholder="Buscar por nombre…" aria-label="Buscar en la biblioteca">
+      <select id="librarySort" aria-label="Orden">
+        <option value="recent">Lo último guardado primero</option>
+        <option value="name">Por nombre (A → Z)</option>
+        <option value="kind">Por tipo</option>
+      </select>
+      <span class="tabSpacer"></span>
+      <button id="libraryBackupBtn" title="Descarga un archivo con TODO lo guardado (entradas, mapas y piezas). La biblioteca sólo vive en este navegador: guarda una copia de vez en cuando.">⬇ Copia de seguridad</button>
+      <button id="libraryRestoreBtn" title="Carga una copia de seguridad: añade lo que falte y sustituye lo que tenga el mismo id.">⬆ Restaurar copia…</button>
+      <input type="file" id="libraryRestoreInput" accept=".json,application/json" hidden>
+    </div>
     <div id="libraryFilterBar" class="libFilterBar"></div>
     <div id="libraryTabList" class="libList"></div>
   </div>

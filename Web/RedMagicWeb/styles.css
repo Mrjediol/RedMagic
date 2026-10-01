@@ -543,3 +543,30 @@ details > summary:hover{color:var(--text);}
 /* The small lists (Sprites, Map Tracer, the Lab) get the same slab without the niche. */
 .libCard{border-radius:8px;border-top-color:var(--border-lit);}
 .libCard:hover{border-color:var(--border-lit);}
+
+/* ---------------- shell tools: unsaved dot, toast, finder (Ctrl+K) ---------------- */
+.tabBtn.dirty::before{content:'';position:absolute;top:9px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--accent2);box-shadow:0 0 8px var(--accent2);}
+.shellToast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:60;max-width:min(680px,90vw);padding:10px 18px;border-radius:8px;font-size:15px;
+  color:var(--text);background:var(--raise);border:1px solid var(--accent-deep);border-left:4px solid var(--accent);box-shadow:0 10px 30px rgba(0,0,0,.5);pointer-events:none;}
+.shellToast[hidden]{display:none;}
+.shellToast[data-kind="info"]{border-color:var(--border-lit);border-left-color:var(--accent2);}
+.shellToast[data-kind="error"]{border-color:#8a3a3a;border-left-color:var(--danger);}
+.shellPalette{position:fixed;inset:0;z-index:70;display:flex;justify-content:center;align-items:flex-start;padding-top:12vh;background:rgba(4,10,11,.62);backdrop-filter:blur(2px);}
+.shellPalette[hidden]{display:none;}
+.shellPaletteBox{width:min(680px,92vw);max-height:68vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--border-lit);border-top:3px solid var(--accent);border-radius:10px;box-shadow:0 24px 60px rgba(0,0,0,.6);overflow:hidden;}
+.shellPaletteBox > input{border:none;border-bottom:1px solid var(--border);border-radius:0;padding:14px 16px;font-size:18px;background:var(--well);box-shadow:none;}
+.shellPaletteBox > input:focus-visible{outline:none;}
+.shellPaletteList{overflow-y:auto;padding:6px;}
+.shellPaletteGroup{padding:9px 10px 4px;font-size:13px;font-weight:700;color:var(--accent2);}
+.shellPaletteRow{display:flex;align-items:baseline;gap:12px;padding:7px 10px;border-radius:6px;cursor:pointer;font-size:15.5px;}
+.shellPaletteRow.active{background:var(--selected);box-shadow:inset 2px 0 0 var(--accent);}
+.shellPaletteLabel{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.shellPaletteHint{flex:none;color:var(--muted);font-size:13px;}
+.shellPaletteEmpty{padding:18px 12px;color:var(--muted);margin:0;}
+.shellPaletteFoot{padding:7px 14px;font-size:12.5px;color:var(--faint);border-top:1px solid var(--border);background:var(--well);}
+
+/* ---------------- Biblioteca: search, order, backup ---------------- */
+.libTools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px;}
+.libTools input[type=search]{width:320px;background:var(--well);border:1px solid var(--border);border-bottom-color:var(--border-lit);color:var(--text);border-radius:4px;padding:7px 9px;font-size:14px;font-family:var(--font-ui);box-shadow:inset 0 2px 4px rgba(0,0,0,.35);}
+.libTools select{width:auto;padding:7px 9px;font-size:14px;}
+.libTools button{margin:0;}

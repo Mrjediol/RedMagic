@@ -1263,7 +1263,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       head.appendChild(title);
       head.appendChild(el('span', 'hint', `carga ${gesture.windup.length} · golpe ${gesture.strike.length}${gesture.fx.length ? ` · ✨ ${gesture.fx.length}` : ''}${state.idle.gestures.includes(gesture.name) ? ' · 💤' : ''}`));
       const play = el('button', 'small', '▶ Probar');
-      play.title = 'Reproduce el gesto con los tiempos de RigDriverCode: carga → golpe → vuelta al reposo.';
+      play.dataset.action = 'gesturePlay';              // Space plays the OPEN gesture (app.js ▸ playActions)
+      if (open) play.dataset.open = '1';
+      play.title = 'Reproduce el gesto con los tiempos de RigDriverCode: carga → golpe → vuelta al reposo. Espacio = probar el gesto abierto.';
       play.onclick = () => playGesture(index);
       head.appendChild(play);
       card.appendChild(head);

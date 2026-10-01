@@ -19,7 +19,9 @@ import { initBossCreator } from './modules/boss-form.js';
 import { initVfxLab } from './modules/vfx-lab.js';
 import { initRigComposer } from './modules/rig-composer.js';
 import { initEnemyStudio } from './modules/enemy-studio.js';
-import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail } from './modules/enemy-library.js';
+import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail, exportAllRecords, restoreRecords } from './modules/enemy-library.js';
+import { initShellTools } from './modules/shell-tools.js';
+import { PRESETS as VFX_PRESETS, FAMILIES as VFX_FAMILIES } from './modules/vfx-presets.js';
 import { renderLibraryCards } from './modules/library-panel.js';
 import { buildCombinedBundle } from './modules/enemy-bundle.js';
 import { KINDS, KIND_IDS, SHEET_KIND_IDS, DEFAULT_KIND, kindOf, canonicalLanesFor, defaultLanesFor } from './modules/entry-kinds.js';
@@ -52,6 +54,7 @@ let bossCreator = null;
 let rigComposer = null;
 let enemyStudio = null;
 let vfxLab = null;
+let shell = null;                 // modules/shell-tools.js: toast, Ctrl+S, Ctrl+K, Space, unsaved dots
 
 /** The creator-tab API for a kind, or null for a kind nobody configures. See KINDS[…].creator. */
 function creatorFor(kind) {
@@ -1386,11 +1389,79 @@ function editActionFor(entry) {
   };
 }
 
+// ---- search, order, duplicate, backup
+
+const librarySearch = document.getElementById('librarySearch');
+const librarySort = document.getElementById('librarySort');
+librarySearch.addEventListener('input', () => renderLibraryTab());
+librarySort.addEventListener('change', () => renderLibraryTab());
+
+/** The entries of the current kind filter that match the search box, in the chosen order. */
+async function libraryEntriesShown() {
+  const words = librarySearch.value.toLowerCase().split(/\s+/).filter(Boolean);
+  const all = (await listEntries(libraryKindFilter)).filter((e) => {
+    const text = `${e.enemyName} ${kindOf(e.kind).label}`.toLowerCase();
+    return words.every((w) => text.includes(w));
+  });
+  if (librarySort.value === 'name') all.sort((a, b) => String(a.enemyName).localeCompare(String(b.enemyName), 'es', { sensitivity: 'base' }));
+  else if (librarySort.value === 'kind') all.sort((a, b) => KIND_IDS.indexOf(a.kind) - KIND_IDS.indexOf(b.kind) || b.updatedAt - a.updatedAt);
+  return all;     // 'recent' is how listEntries already returns them
+}
+
+/** A copy of an entry under a free name (<name>_copia, _copia2…): a variant to change without touching the original. */
+async function duplicateLibraryEntry(entry) {
+  const names = new Set((await listEntries(null)).map((e) => e.enemyName));
+  let name = `${entry.enemyName}_copia`;
+  for (let n = 2; names.has(name); n++) name = `${entry.enemyName}_copia${n}`;
+  const { id, createdAt, updatedAt, ...rest } = entry;
+  await saveEnemy({ ...rest, enemyName: name });
+  renderLibraryTab();
+  shell?.toast(`Duplicado como "${name}".`);
+}
+
+/** Everything saved in this browser (entries + maps + pieces) as one JSON file. */
+async function downloadLibraryBackup() {
+  const backup = {
+    format: 'redmagic-library-backup', version: 1, savedAt: new Date().toISOString(),
+    entries: await exportAllRecords(),
+    ...(await MapLibrary.exportAllMapRecords()),
+  };
+  const stamp = backup.savedAt.slice(0, 16).replace(/[:T]/g, '-');
+  downloadBlob(new Blob([JSON.stringify(backup)], { type: 'application/json' }), `redmagic-biblioteca-${stamp}.json`);
+  shell?.toast(`Copia descargada: ${backup.entries.length} entradas, ${backup.maps.length} mapas, ${backup.pieces.length} piezas.`);
+}
+
+async function restoreLibraryBackup(file) {
+  let backup;
+  try { backup = JSON.parse(await file.text()); } catch { shell?.toast('Ese archivo no es una copia de seguridad válida.', 'error'); return; }
+  if (backup?.format !== 'redmagic-library-backup' || !Array.isArray(backup.entries)) {
+    shell?.toast('Ese archivo no es una copia de seguridad de esta biblioteca.', 'error');
+    return;
+  }
+  const total = backup.entries.length + (backup.maps?.length || 0) + (backup.pieces?.length || 0);
+  if (!window.confirm(`Restaurar ${total} elementos de la copia del ${String(backup.savedAt).slice(0, 10)}.\n\nLo que ya exista con el mismo id se sustituye por lo de la copia; lo demás no se toca. ¿Continuar?`)) return;
+  const entries = await restoreRecords(backup.entries);
+  const maps = await MapLibrary.restoreMapRecords({ maps: backup.maps || [], pieces: backup.pieces || [] });
+  renderLibraryTab();
+  shell?.toast(`Restaurado: ${entries} entradas y ${maps} mapas / piezas.`);
+}
+
+document.getElementById('libraryBackupBtn').onclick = () => downloadLibraryBackup();
+const libraryRestoreInput = document.getElementById('libraryRestoreInput');
+document.getElementById('libraryRestoreBtn').onclick = () => libraryRestoreInput.click();
+libraryRestoreInput.addEventListener('change', async () => {
+  const file = libraryRestoreInput.files[0];
+  libraryRestoreInput.value = '';
+  if (file) await restoreLibraryBackup(file);
+});
+
 function renderLibraryTab() {
   renderLibraryFilterBar();
   renderLibraryCards(document.getElementById('libraryTabList'), {
-    fetchEntries: () => listEntries(libraryKindFilter),
-    emptyMessage: libraryKindFilter
+    fetchEntries: libraryEntriesShown,
+    emptyMessage: librarySearch.value.trim()
+      ? 'Nada guardado con ese nombre.'
+      : libraryKindFilter
       ? kindOf(libraryKindFilter).emptyMessage
       : 'Todavía no hay nada guardado. Autoriza una hoja en la pestaña Sprites y guárdala, o monta un jefe en Boss Creator.',
     getActions: (entry) => {
@@ -1447,6 +1518,7 @@ function renderLibraryTab() {
             downloadBlob(blob, `${e.enemyName.replace(/[^A-Za-z0-9_]/g, '_')}.${e.kind}.json`);
           },
         },
+        { label: 'Duplicar', className: 'small', title: 'Una copia con otro nombre, para hacer una variante sin tocar esta.', onClick: (e) => duplicateLibraryEntry(e) },
         { label: 'Eliminar', className: 'small danger', onClick: async (e) => { await deleteLibraryEntry(e); renderLibraryTab(); } },
       ];
     },
@@ -2066,6 +2138,64 @@ function renderMapLibraryLists() {
 
 renderMapAssetsList();
 renderMapInstancesList();
+
+// ============================================================ shell tools (Ctrl+S, Ctrl+K, Space, unsaved changes)
+
+const tabButtonOf = (tab) => document.querySelector(`.tabBtn[data-tab="${tab}"]`);
+const openTabById = (tab) => { const btn = tabButtonOf(tab); if (btn && !btn.disabled) btn.click(); };
+const clickSave = (btn) => { if (!btn || btn.disabled) return false; btn.click(); return undefined; };
+
+shell = initShellTools({
+  activeTab: () => document.querySelector('#tabBar .tabBtn.active')?.dataset.tab,
+  tabButton: tabButtonOf,
+  tabPanel: (tab) => document.getElementById(`tab-${tab}`),
+  // Only the tabs where an edit can be lost by closing: the rest either save as they go or only export.
+  dirtyTabs: ['studio', 'vfx', 'boss', 'enemy', 'fx'],
+  saveActions: {
+    studio: async () => { await rigComposer.save(); },
+    vfx: () => vfxLab.save(),
+    boss: () => clickSave(document.getElementById('bossSaveBtn')),
+    sprites: () => clickSave(saveToLibraryBtn),
+    map: () => clickSave(document.getElementById('mapSaveMapBtn')),
+    enemy: async () => ((await enemyCreator.persistLinked()) ? undefined : 'Enemy Creator guarda al exportar: usa "⬇ Exportar".'),
+    fx: () => 'Proyectil/VFX guarda al exportar: usa "⬇ Exportar".',
+  },
+  playActions: {
+    vfx: () => vfxLab.togglePlay(),
+    studio: () => {
+      const play = document.querySelector('#tab-studio [data-action="gesturePlay"][data-open]') || document.querySelector('#tab-studio [data-action="gesturePlay"]');
+      if (!play || !play.offsetParent) return false;
+      play.click();
+      return true;
+    },
+  },
+  paletteItems: async () => {
+    const items = [...document.querySelectorAll('#tabBar .tabBtn')].map((btn, i) => ({
+      group: 'Pestañas', label: btn.firstChild.textContent.trim(), hint: `Alt+${i + 1}`, run: () => btn.click(),
+    }));
+    items.push(
+      { group: 'Acciones', label: 'Guardar lo de esta pestaña', hint: 'Ctrl+S', run: () => shell.save() },
+      { group: 'Acciones', label: 'Copia de seguridad de la biblioteca', hint: 'descarga un archivo', run: () => downloadLibraryBackup() },
+      { group: 'Acciones', label: 'Restaurar una copia de seguridad…', run: () => { openTabById('library'); libraryRestoreInput.click(); } },
+    );
+    const entries = await listEntries(null);
+    entries.forEach((entry) => {
+      const edit = editActionFor(entry);
+      items.push({
+        group: 'Guardado', label: entry.enemyName, hint: `${kindOf(entry.kind).icon} ${kindOf(entry.kind).label}`,
+        run: () => (edit.disabled ? openTabById('library') : edit.onClick(entry)),
+      });
+    });
+    VFX_PRESETS.forEach((preset) => {
+      const family = VFX_FAMILIES.find((f) => f.id === preset.family);
+      items.push({
+        group: 'Efectos del VFX Lab', label: preset.label, hint: family ? family.label : '',
+        run: () => { openTabById('vfx'); vfxLab.selectPreset(preset.id); },
+      });
+    });
+    return items;
+  },
+});
 
 // ============================================================ tab shortcuts
 

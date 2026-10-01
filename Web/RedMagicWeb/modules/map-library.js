@@ -84,6 +84,27 @@ export function imageToDataURL(image) {
  * load), so `entry.instances` (which reference pieces by `assetId`) are stored with an
  * `assetIndex` (index into `assets`) instead — `loadMapAsSession` reverses this.
  */
+/** Maps and pieces exactly as stored: what a backup file holds. */
+export async function exportAllMapRecords() {
+  return {
+    maps: await wrap((await store(MAPS_STORE, 'readonly')).getAll()),
+    pieces: await wrap((await store(PIECES_STORE, 'readonly')).getAll()),
+  };
+}
+
+/** Writes maps / pieces back as they are (same id = replaced). Returns how many were written. */
+export async function restoreMapRecords({ maps = [], pieces = [] } = {}) {
+  let count = 0;
+  for (const [name, records] of [[MAPS_STORE, maps], [PIECES_STORE, pieces]]) {
+    for (const record of records) {
+      if (!record || !record.id) continue;
+      await wrap((await store(name, 'readwrite')).put(record));
+      count++;
+    }
+  }
+  return count;
+}
+
 export async function saveMap(entry) {
   const now = Date.now();
   const assetIndexById = new Map(entry.assets.map((a, i) => [a.id, i]));

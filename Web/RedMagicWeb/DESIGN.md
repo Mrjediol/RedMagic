@@ -53,3 +53,21 @@ step with `--accent` / `--accent2` if those ever change.
 - **The last open tab is remembered** (`localStorage`, `app.js ▸ restoreLastTab`).
 - Motion: none on its own. Hover and press feedback only.
 - Emoji in tab names and buttons are the tool's vernacular — they stay.
+
+## Keys and conveniences (`modules/shell-tools.js`, wired in `app.js`)
+
+| Key | Does |
+|---|---|
+| Alt+1…8 | opens the tab in that position |
+| Ctrl+S | saves what the open tab saves (`saveActions`) — a tab that only exports says so |
+| Ctrl+K | the finder: tabs, VFX Lab effects, saved entries, actions |
+| Space | "▶ Probar" of the open tab (VFX Lab; the open gesture in Enemy Studio) — never while typing in a field |
+
+- A tab with edits that were not saved shows an **amber dot**; closing the page with any pending asks first.
+  Saving or exporting (Ctrl+S, or any 💾 / ⬇ button of that tab) clears it. Mark view-only controls
+  `data-nodirty` so that looking is not counted as editing.
+- What a shortcut did is said in a **toast** (`shell.toast`), since nothing else on screen says it.
+- A new tab gets these by adding its entry to `saveActions` / `playActions` / `dirtyTabs` in `app.js` —
+  never its own key handler.
+- Biblioteca: search, order, **Duplicar** per entry, and **Copia de seguridad / Restaurar** (one JSON with
+  entries, maps and pieces; restore replaces same-id records and leaves the rest).

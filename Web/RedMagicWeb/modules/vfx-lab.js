@@ -128,6 +128,7 @@ export function initVfxLab({ formRoot, galleryRoot, previewRoot, listRoot, statu
         input.placeholder = `Buscar entre ${PRESETS.length} efectos: fuego, hielo, impacto…`;
         input.value = search;
         input.addEventListener('input', () => { search = input.value; applySearch(gallery); });
+        box.dataset.nodirty = '1';                       // searching is not editing
         box.appendChild(input);
         galleryRoot.append(box, gallery);
       }
@@ -415,5 +416,15 @@ export function initVfxLab({ formRoot, galleryRoot, previewRoot, listRoot, statu
     onShow: async () => { await refresh(); renderPreview(); },
     /** Opens a library entry made here (Biblioteca ▸ "Editar en VFX Lab"). */
     linkLibraryEntry: async (id) => { const entry = await getEnemy(id); if (entry) open(entry); },
+    /** Ctrl+S: saves over the open entry (or as a new one). Returns a message when it could not. */
+    save: async () => {
+      if (!validName()) return 'Ponle un nombre al efecto (letras, números y _) para guardarlo.';
+      await save(false);
+      return undefined;
+    },
+    /** The finder: shows that preset, as if its card had been clicked. */
+    selectPreset: (id) => { const next = presetById(id); if (next) chooseRef.current(next); },
+    /** Space: "▶ Probar" / stop. */
+    togglePlay: () => { if (stage.isPlaying()) stage.stop(); else stage.play(); return true; },
   };
 }

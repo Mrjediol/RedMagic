@@ -129,10 +129,11 @@ export function buildTimeline(preset, baked) {
 
 export function createStage({ createCanvas }) {
   const root = el('div', 'vfxStage');
+  root.dataset.nodirty = '1';                          // playing and the sound switch are not edits
   const head = el('div', 'vfxBar');
   const playBtn = el('button', 'primary', '▶ Probar');
   playBtn.dataset.action = 'stagePlay';
-  playBtn.title = 'Reproduce el efecto como en el juego: el proyectil vuela y choca; un efecto aparece, dura y se apaga. Con sus sonidos.';
+  playBtn.title = 'Reproduce el efecto como en el juego: el proyectil vuela y choca; un efecto aparece, dura y se apaga. Con sus sonidos. (Espacio)';
   const soundLabel = el('label', 'vfxSoundToggle');
   const soundBox = el('input');
   soundBox.type = 'checkbox';

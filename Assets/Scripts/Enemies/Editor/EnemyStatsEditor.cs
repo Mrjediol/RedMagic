@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,6 +16,13 @@ namespace RedMagic.Enemies.EditorTools
     [CustomEditor(typeof(EnemyStats))]
     public class EnemyStatsEditor : UnityEditor.Editor
     {
+        /// <summary>Grupos abiertos de entrada: lo que se toca a diario. El resto, plegado (pero ahí).</summary>
+        private static readonly string[] OpenGroups =
+        {
+            "Tipo", "Rangos", "Ataque", "Ataque · baraja (ataques del catálogo)",
+            "Ataque · melé", "Ataque · a distancia",
+        };
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -46,8 +54,10 @@ namespace RedMagic.Enemies.EditorTools
                                         "'explosionRadius' — y muere. Su clip de muerte es la " +
                                         "explosión.", MessageType.None);
 
+            // Un grupo plegable por cada [Header] de EnemyTuning (nada se esconde: se baja el ruido).
             var iterator = tuning.Copy();
             var end = iterator.GetEndProperty();
+            var visible = new List<SerializedProperty>();
             bool first = true;
 
             while (iterator.NextVisible(first) && !SerializedProperty.EqualContents(iterator, end))
@@ -55,8 +65,10 @@ namespace RedMagic.Enemies.EditorTools
                 first = false;
                 if (Hidden(iterator.name, flies, ranged && !explodes, moves, sleeps, explodes, deck)) continue;
 
-                EditorGUILayout.PropertyField(iterator, true);
+                visible.Add(iterator.Copy());
             }
+
+            FoldoutInspector.Draw(typeof(EnemyTuning), visible, OpenGroups);
 
             serializedObject.ApplyModifiedProperties();
 

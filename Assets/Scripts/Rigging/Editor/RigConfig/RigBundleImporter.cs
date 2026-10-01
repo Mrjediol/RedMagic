@@ -752,6 +752,9 @@ namespace RedMagic.Rigging.EditorTools
 
             if (config["gestures"] is JArray gestures)
             {
+                // El sonido de un gesto se asigna en Unity (pestaña Sounds), no viaja en el JSON: se
+                // conserva por nombre al rehacer la lista, o cada reimport lo borraría.
+                var oldGestures = rig.gestures ?? new List<RigGesture>();
                 rig.gestures = new List<RigGesture>();
                 for (int i = 0; i < gestures.Count; i++)
                 {
@@ -765,6 +768,14 @@ namespace RedMagic.Rigging.EditorTools
                     gesture.strikeTime = g.Value<float?>("strikeTime") ?? gesture.strikeTime;
                     gesture.recover = g.Value<float?>("recover") ?? gesture.recover;
                     gesture.shake = g.Value<float?>("shake") ?? gesture.shake;
+
+                    var previous = oldGestures.Find(o => o != null && o.name == gesture.name);
+                    if (previous != null)
+                    {
+                        gesture.sound = previous.sound;
+                        gesture.soundMoment = previous.soundMoment;
+                    }
+
                     rig.gestures.Add(gesture);
                 }
             }

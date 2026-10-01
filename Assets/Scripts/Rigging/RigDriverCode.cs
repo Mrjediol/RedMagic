@@ -296,6 +296,7 @@ namespace RedMagic.Rigging
         /// <summary>Carga (easing) → suelta (evento) → golpe (strikeTime) → vuelta al reposo.</summary>
         private IEnumerator GestureRoutine(RigGesture gesture, float windup)
         {
+            PlayGestureSound(gesture, GestureSoundMoment.Start);
             float from = _gestureWindup;
             for (float t = 0f; t < windup;)
             {
@@ -310,6 +311,7 @@ namespace RedMagic.Rigging
 
             _gestureWindup = 1f;
             _gestureShake = 0f;
+            PlayGestureSound(gesture, GestureSoundMoment.Release);
             RaiseReleased();
 
             // Sin pose de golpe (una carga que se mantiene, como la de la embestida): no hay latigazo,

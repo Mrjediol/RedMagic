@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -66,6 +67,33 @@ namespace RedMagic.Audio.EditorTools
                     name = $"Phase {phase} transition";
                     return;
                 }
+            }
+
+            // Sonido propio de un gesto del rig (ProceduralRig.gestures[i].sound): una fila por gesto.
+            if (slot.ComponentType == "ProceduralRig" && member.StartsWith("gestures.Array.data[", StringComparison.Ordinal))
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(slot.AssetPath);
+                string owner = Has(prefab, "BossController") ? $"Bosses/{Strip(asset, "Boss_")}" : $"Enemies/{Strip(asset, "Enemy_")}";
+                category = owner;
+
+                string gestureName = "?";
+                int open = member.IndexOf('['), close = member.IndexOf(']');
+                var rig = prefab != null ? prefab.GetComponent<RedMagic.Rigging.ProceduralRig>() : null;
+                if (rig != null && open >= 0 && close > open && int.TryParse(member.Substring(open + 1, close - open - 1), out int index) &&
+                    index >= 0 && index < rig.gestures.Count)
+                    gestureName = rig.gestures[index].name;
+
+                name = $"Gesture · {gestureName}";
+                return;
+            }
+
+            // Ataque de la baraja de un enemigo normal (EnemyAttack_<Enemy>_<id>.asset, una carpeta por enemigo).
+            if (IsEnemyAttack(slot.AssetPath, out string enemy))
+            {
+                category = $"Enemies/{enemy}";
+                string attack = Strip(asset, $"EnemyAttack_{enemy}_");
+                name = member == "sound" ? $"Attack · {attack}" : $"Attack · {attack} · {Pretty(member)}";
+                return;
             }
 
             if (IsBossAttack(slot.AssetPath, out string boss))
@@ -169,6 +197,21 @@ namespace RedMagic.Audio.EditorTools
                     break;
             }
             name = Pretty(member);
+        }
+
+        // Assets/ScriptableObjects/EnemyAttacks/<Enemy>/…: la carpeta dice de quién es (la crea EnemyDeckImporter).
+        private static bool IsEnemyAttack(string assetPath, out string enemy)
+        {
+            const string root = "Assets/ScriptableObjects/EnemyAttacks/";
+            enemy = null;
+            if (!assetPath.StartsWith(root, StringComparison.Ordinal)) return false;
+
+            string rest = assetPath.Substring(root.Length);
+            int slash = rest.IndexOf('/');
+            if (slash <= 0) return false;
+
+            enemy = rest.Substring(0, slash);
+            return true;
         }
 
         private static bool IsBossAttack(string assetPath, out string boss)

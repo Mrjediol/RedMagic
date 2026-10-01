@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RedMagic.Audio;
 using UnityEngine;
 
 namespace RedMagic.Rigging
@@ -100,6 +101,16 @@ namespace RedMagic.Rigging
         public Vector2 scale;
     }
 
+    /// <summary>En qué momento de un gesto suena su <see cref="RigGesture.sound"/>.</summary>
+    public enum GestureSoundMoment
+    {
+        /// <summary>Al empezar la carga (un cargador que zumba, un rugido de aviso).</summary>
+        Start,
+
+        /// <summary>Al soltar el golpe (el disparo, el impacto).</summary>
+        Release,
+    }
+
     /// <summary>
     /// Un gesto con nombre (el <c>gesture</c> de un ataque de jefe: "Charge", "Slam"…): durante la
     /// carga el cuerpo va hacia <see cref="windup"/>, al soltar salta a <see cref="strike"/> y luego
@@ -118,6 +129,14 @@ namespace RedMagic.Rigging
         [Min(0.01f)] public float recover = 0.45f;
         [Tooltip("Temblor (grados) de la raíz visual en el último 30% de la carga.")]
         public float shake = 1.5f;
+
+        [Header("Sonido")]
+        [Tooltip("Suena al lanzar este gesto, sea cual sea el ataque que lo use. Se asigna en la pestaña " +
+                 "Sounds (Enemies/<nombre>/Gestures). Vacío = silencio: el gesto no obliga a sonar.")]
+        public SoundCue sound = new SoundCue();
+
+        [Tooltip("Cuándo suena: al empezar la carga o al soltar el golpe.")]
+        public GestureSoundMoment soundMoment = GestureSoundMoment.Release;
     }
 
     /// <summary>

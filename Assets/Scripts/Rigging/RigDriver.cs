@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RedMagic.Abilities;
+using RedMagic.Audio;
 using RedMagic.Core;
 using UnityEngine;
 
@@ -226,6 +227,14 @@ namespace RedMagic.Rigging
 
             AttackReleased?.Invoke();
         }
+
+        /// <summary>El sonido propio de un gesto (si lo tiene y es de este momento), en la posición del cuerpo.</summary>
+        protected void PlayGestureSound(RigGesture gesture, GestureSoundMoment moment)
+        {
+            if (gesture == null || gesture.soundMoment != moment || gesture.sound == null) return;
+            if (AudioManager.Instance != null) AudioManager.Instance.Play(gesture.sound, transform.position);
+        }
+
         protected void RaiseFinished() => AttackFinished?.Invoke();
         protected void RaiseWakeFinished() => WakeFinished?.Invoke();
     }

@@ -529,9 +529,16 @@ namespace RedMagic.Bosses.EditorTools
         private readonly Dictionary<BossAttack, SerializedObject> _objects = new Dictionary<BossAttack, SerializedObject>();
         private GameObject _poseObject;
 
+        /// <summary>Grupos abiertos de entrada: lo que se toca a diario. El resto, plegado (pero ahí).</summary>
+        private static readonly string[] OpenGroups = { "Definición", "Arena", "Objetivo" };
+
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            // Un grupo plegable por cada [Header] del BossController (nada se esconde: se baja el ruido).
+            serializedObject.Update();
+            RedMagic.Enemies.EditorTools.FoldoutInspector.Draw(
+                typeof(BossController), RedMagic.Enemies.EditorTools.FoldoutInspector.TopLevel(serializedObject), OpenGroups);
+            serializedObject.ApplyModifiedProperties();
 
             var boss = (BossController)target;
             var definition = boss.Definition;

@@ -31,6 +31,21 @@ variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three 
   wherever it lives. `Tools ▸ RedMagic ▸ Audio ▸ 2 · Preparar huecos…` adds missing emitter entries and
   fills empty slots with `Assets/Audio/Test/generic_test.wav` (never touches a slot with a clip).
 - Import: anything under `Assets/Audio/` gets preload + mobile defaults (`SfxImportPostprocessor`).
+- **Part-based enemies and bosses (rig)**: sounds are per *action*, not per sprite animation.
+  - **Per gesture**: `RigGesture.sound` + `soundMoment` (Start of the windup / Release of the strike), played
+    by the driver (`RigDriver.PlayGestureSound`) whichever attack uses the gesture. Registry rows:
+    `Enemies|Bosses/<name>` ▸ "Gesture · <name>" (`SoundCategories`, from the `ProceduralRig` component's
+    `gestures[i].sound`). Empty = silent. The importer keeps them **by gesture name** when it rebuilds the
+    gesture list from `rig-config.json` (sounds never travel in the JSON — they are assigned in Unity).
+  - **Per attack of the deck**: each enemy-deck attack is a `BossAttack` asset in
+    `Assets/ScriptableObjects/EnemyAttacks/<Enemy>/`, whose `sound` is a normal cue → rows
+    `Enemies/<Enemy>` ▸ "Attack · <id>" (category by that folder convention, like boss attacks by their definition).
+  - **Per state**: wake / hurt / death / move / attack are the usual `SoundEmitter` moments, declared only
+    when they apply (Wake only if `sleepsUntilDetected`).
+  - A rig boss that shares a `BossDefinition` with another boss (BossIce2 / ColosodeHielo2) lists the
+    definition's attack sounds under the definition's name, not under itself.
+  - After an import, press **Regenerar registro** in the Sounds tab (a full scan opens scenes, so it is not
+    automatic); the new rows appear, empty ones silent until *Preparar huecos* or you assign clips.
 - **Generic enemy sounds**: `SystemSounds.enemyHurt/Death/Move/Attack`. An enemy (`EnemyStats` or
   `BossController`, marker `IEnemySoundFallbackUser`) whose `SoundEmitter` slot is empty plays them
   (`SoundEmitter.useGenericFallback`, default on). `EnemyFactory` stamps a `SoundEmitter` on every enemy,

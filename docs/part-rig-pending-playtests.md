@@ -128,6 +128,25 @@ presets yet.
 
 ---
 
+## Sounds and inspectors (after your 2026-10-01 note)
+
+**What was added**
+- `RigGesture` has its own sound (+ Start / Release moment); the Sounds tab lists it per gesture:
+  `Enemies/<name>` ▸ "Gesture · …" (and for rig bosses). Enemy-deck attacks list under
+  `Enemies/<name>` ▸ "Attack · …". Reimporting a rig keeps the gesture sounds.
+- Enemy and boss inspectors: one foldout per header, the useful ones open.
+
+**Tests**
+- [ ] S1 · Sounds tab ▸ Regenerar registro: `Enemies/koros` (or your rig enemy) now shows its gestures and
+      its deck attacks, besides the basic four. Assign a clip to a gesture and to an attack.
+- [ ] S2 · Play: the gesture sound plays at the chosen moment (Release by default; the field is on the gesture
+      in the `ProceduralRig` inspector: Start = at the windup), and the attack's own sound plays too.
+- [ ] S3 · Reimport the rig (Conservarlo): the gesture sounds are still assigned.
+- [ ] S4 · A sleeping rig enemy lists "Wake"; a non-sleeper does not.
+- [ ] S5 · Inspector of an enemy (`EnemyStats`) and of a boss (`BossController`): foldouts by group, ranges /
+      attack / projectile open, the rest closed; open state sticks. Tell me which groups you want open by default
+      or which fields still feel noisy. (Colliders are Unity's own components, not folded.)
+
 ## After the pass
 
 Bring back the list with ✓ / notes. Expected kinds of readjustment: numbers (ranges, telegraphs,

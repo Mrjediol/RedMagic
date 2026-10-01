@@ -790,6 +790,7 @@ namespace RedMagic.Rigging.EditorTools
                         awake = SpriteFor(s["awake"], sprites),
                         attacking = SpriteFor(s["attacking"], sprites),
                         stages = (s["stages"] as JArray ?? new JArray()).Select(st => SpriteFor(st, sprites)).ToList(),
+                        named = NamedSprites(s["named"] as JArray, sprites, $"spriteSwaps[{i}]", report),
                     });
                 }
             }
@@ -829,6 +830,40 @@ namespace RedMagic.Rigging.EditorTools
             }
 
             EditorUtility.SetDirty(rig);
+        }
+
+        /// <summary><c>spriteSwaps[].named</c>: los sprites de alerta / herido / muerto / por gesto de esa pieza.</summary>
+        private static List<RigNamedSprite> NamedSprites(JArray array, Dictionary<string, Sprite> sprites, string ctx,
+                                                         ConfigImportReport report)
+        {
+            var list = new List<RigNamedSprite>();
+            if (array == null) return list;
+            for (int i = 0; i < array.Count; i++)
+            {
+                if (!(array[i] is JObject item)) continue;
+                string stateName = item.Value<string>("state");
+                if (!RigConfigJson.TryNamedState(stateName, out var state))
+                {
+                    report.Warnings.Add($"{ctx}.named[{i}]: estado '{stateName}' desconocido (alert / hurt / dead / gesture); se omite.");
+                    continue;
+                }
+
+                var sprite = SpriteFor(item["sprite"], sprites);
+                if (sprite == null)
+                {
+                    report.Warnings.Add($"{ctx}.named[{i}]: sin sprite; se omite.");
+                    continue;
+                }
+
+                list.Add(new RigNamedSprite
+                {
+                    state = state,
+                    gesture = state == RigNamedState.Gesture ? item.Value<string>("gesture") ?? "" : "",
+                    sprite = sprite,
+                });
+            }
+
+            return list;
         }
 
         private static void ReadPart(RigPart part, JObject json)

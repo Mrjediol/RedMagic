@@ -340,14 +340,28 @@ namespace RedMagic.Rigging.EditorTools
                 if (s == null || s.renderer == null) continue;
                 var stages = new JArray();
                 foreach (var sprite in s.stages) stages.Add(RigConfigJson.SpriteRef(sprite));
-                swaps.Add(new JObject
+                var swap = new JObject
                 {
                     ["part"] = PathOrNull(visual, s.renderer.transform, "spriteSwaps", warnings),
                     ["asleep"] = RigConfigJson.SpriteRef(s.asleep),
                     ["awake"] = RigConfigJson.SpriteRef(s.awake),
                     ["attacking"] = RigConfigJson.SpriteRef(s.attacking),
                     ["stages"] = stages,
-                });
+                };
+
+                // Estados con nombre (alerta, herido, muerto, por gesto): sólo si hay alguno.
+                var named = new JArray();
+                if (s.named != null)
+                    foreach (var n in s.named)
+                    {
+                        if (n == null || n.sprite == null) continue;
+                        var item = new JObject { ["state"] = RigConfigJson.NamedStateName(n.state) };
+                        if (n.state == RigNamedState.Gesture) item["gesture"] = n.gesture ?? "";
+                        item["sprite"] = RigConfigJson.SpriteRef(n.sprite);
+                        named.Add(item);
+                    }
+                if (named.Count > 0) swap["named"] = named;
+                swaps.Add(swap);
             }
 
             return swaps;

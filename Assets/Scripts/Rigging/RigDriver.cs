@@ -98,6 +98,12 @@ namespace RedMagic.Rigging
 
         public void PlayHurt() => PlayHurt(1f);
 
+        /// <summary>
+        /// Ha detectado al objetivo (o lo ha perdido): los <see cref="RigSpriteSwap"/> con sprite de
+        /// alerta lo enseñan mientras dure. Sólo sprites: no hay gesto.
+        /// </summary>
+        public void SetAlert(bool alert) => Rig.SetAlertSprites(alert);
+
         /// <summary>Etapa visual (fase de un jefe): cambia los sprites por etapa. Sin animación: la tapa el tambaleo.</summary>
         public void SetStage(int stage) => Rig.SetStage(stage);
 

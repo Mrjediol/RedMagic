@@ -87,6 +87,11 @@ namespace RedMagic.Rigging.EditorTools
         public static string FxPhaseName(RigFxPhase phase) => phase.ToString().ToLowerInvariant();
         public static string FxAnchorName(RigFxAnchor anchor) => anchor.ToString().ToLowerInvariant();
 
+        public static string NamedStateName(RigNamedState state) => state.ToString().ToLowerInvariant();
+
+        public static bool TryNamedState(string name, out RigNamedState state) =>
+            Enum.TryParse(name, true, out state) && Enum.IsDefined(typeof(RigNamedState), state);
+
         public static bool TryFxPhase(string name, out RigFxPhase phase) =>
             Enum.TryParse(name, true, out phase) && Enum.IsDefined(typeof(RigFxPhase), phase);
 

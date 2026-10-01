@@ -45,7 +45,7 @@ const el = (tag, cls, text) => {
  * @param {HTMLElement} o.stepsEl / o.centerEl / o.rightEl - its three columns
  * @param {object} o.rig - initRigComposer's API
  * @param {object} o.enemy - initEnemyCreator's API
- * @param {object} o.nodes - the borrowed panels: rigBody, rigTemplate, rigCenter, rigMain, rigLinks,
+ * @param {object} o.nodes - the borrowed panels: rigBody, rigTemplate, rigCenter, rigMain, rigStates, rigLinks,
  *                           rigExport (Rig Composer hosts), enemyForm, enemyPreview (Enemy Creator)
  * @param {(tab: string) => void} o.openTab - switches to another tab of the app
  */
@@ -89,6 +89,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
   const slots = {
     rigBody: stepEls.body.body,
     rigTemplate: stepEls.template.body,
+    rigStates: stepEls.behaviour.body,
     rigLinks: stepEls.behaviour.body,
     enemyPreview: stepEls.behaviour.body,
     rigExport: stepEls.export.body,
@@ -144,7 +145,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
       body: usable(st) ? `${st.parts} piezas · ${st.gestures} gestos` : whyNotUsable(st),
       template: st.template || '',
       effects: st.gestureFx ? `${st.gestureFx} en gestos` : effects.length ? `${effects.length} en biblioteca` : '',
-      behaviour: st.kind === 'boss' ? 'jefe' : st.behaviour ? 'configurado' : 'por defecto',
+      behaviour: `${st.kind === 'boss' ? 'jefe' : st.behaviour ? 'configurado' : 'por defecto'}${st.stateSprites ? ` · ${st.stateSprites} sprites` : ''}`,
       export: st.id ? 'guardado' : 'sin guardar',
     };
     const done = { body: usable(st), template: !!st.template, effects: st.gestureFx > 0, behaviour: st.behaviour, export: !!st.id };

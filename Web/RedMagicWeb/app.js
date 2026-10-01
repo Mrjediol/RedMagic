@@ -1088,6 +1088,7 @@ rigComposer = initRigComposer({
   canvasWrap: document.getElementById('rigCanvasWrap'),
   statusEl: document.getElementById('rigStatus'),
   inspector: document.getElementById('rigInspectorMain'),
+  statesHost: document.getElementById('rigInspectorStates'),
   linksHost: document.getElementById('rigInspectorLinks'),
   exportHost: document.getElementById('rigInspectorExport'),
   onEditBehaviour: async (id, name) => {
@@ -1112,6 +1113,7 @@ enemyStudio = initEnemyStudio({
     rigTemplate: document.getElementById('rigSidebarTemplate'),
     rigCenter: document.getElementById('rigCenter'),
     rigMain: document.getElementById('rigInspectorMain'),
+    rigStates: document.getElementById('rigInspectorStates'),
     rigLinks: document.getElementById('rigInspectorLinks'),
     rigExport: document.getElementById('rigInspectorExport'),
     enemyForm: document.getElementById('enemyFormPanel'),

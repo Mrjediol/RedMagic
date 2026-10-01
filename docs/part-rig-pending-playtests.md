@@ -275,3 +275,31 @@ filling a template's optional slots one by one after the required ones leaves th
 ones ("Ajustar a las piezas" fixes it); the canvas is not re-framed when the toolbar wraps.
 Fixed from this run: a new effect now defaults to the weapon tip (not the selected part); effect prefabs are
 named after the effect (`Fx_<enemy>_gfx_<name>_<id>`); the gesture name no longer gets squeezed in its card.
+
+---
+
+## Enemy Studio S3 — sprites per state and per gesture (web + Unity)
+
+**What was added**
+- Each part can have a sprite for more states: **Detecta al objetivo**, **Herido**, **Muerto**, besides
+  Dormido / Despierto / Atacando — and one **per gesture** ("in the attack that uses gesture X, this arm
+  looks like this").
+- 🧬 step 4 ▸ **Sprites por estado**: choose the state (the canvas shows the body in it), then give each part
+  its sprite (button or drop the PNG on the row). The per-part section in the inspector has the same slots.
+- The toolbar's sprite selector previews every state; "▶ Probar" shows a gesture's sprites, "💥 Golpe" the hurt ones.
+- Unity: one rule decides the sprite (dead → hurt → gesture → attacking → alert → asleep/awake → stage → base).
+  A state you leave empty falls through to the next one.
+
+**Tests**
+- [ ] ES20 · Board: pick "detecta al objetivo", give the head another sprite: the canvas shows it; the thumbnail
+      gets a frame; ✕ removes it. Pick "gesto: Charge", give the arm a sprite; "▶ Probar" on Charge shows it only
+      during that gesture.
+- [ ] ES21 · Export / import / Play: the head changes when the enemy notices you and goes back when it gives
+      up; the hurt sprite shows while it flinches; the dead sprite at death; the arm sprite only in the attack
+      whose gesture is Charge, and it returns after the recover.
+- [ ] ES22 · Regression (rule changed): Turret eyes asleep / awake / attacking as before; BossIce2 torso changes
+      with the phase and keeps it after a hit and after an attack. Report any sprite that does not come back.
+- [ ] ES23 · Rename a gesture that has sprites: they follow. Delete it: the export note says nothing is lost silently.
+
+**Known limits of S3**: bosses have no "alert" (their brain does not report it); a state sprite is per part,
+there is no "hide this part in this state".

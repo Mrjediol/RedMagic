@@ -219,6 +219,7 @@ namespace RedMagic.Rigging
             // Un golpe flojo no pisa un tambaleo fuerte que aún está sonando.
             if (_hurtTime >= 0f && strength < _hurtStrength) return;
             _hurtTime = 0f;
+            Rig.SetHurtSprites(true);
             _hurtStrength = Mathf.Max(0.01f, strength);
         }
 
@@ -231,6 +232,7 @@ namespace RedMagic.Rigging
             if (gesture == null) return false;
 
             StartGesture(GestureRoutine(gesture, Mathf.Max(0.01f, secondsToRelease)), gesture);
+            Rig.ShowGestureSprites(gesture.name, isAttack: true);
             return true;
         }
 
@@ -245,7 +247,10 @@ namespace RedMagic.Rigging
             if (move == null) return;
 
             if (moving && (_gesture == null || _gesture == move))
+            {
                 StartGesture(HoldRoutine(), move, hold: true);
+                Rig.ShowGestureSprites(move.name, isAttack: false);
+            }
             else if (!moving && _gesture == move)
                 StartGesture(SettleRoutine(0.3f), move);
         }
@@ -257,6 +262,7 @@ namespace RedMagic.Rigging
             if (gesture == null) return false;
 
             StartGesture(HoldRoutine(), gesture, hold: true);
+            Rig.ShowGestureSprites(gesture.name, isAttack: false);
             return true;
         }
 
@@ -411,6 +417,7 @@ namespace RedMagic.Rigging
             _gestureWindup = _gestureStrike = 0f;
             _gesture = null;
             _gestureRoutine = null;
+            Rig.EndGestureSprites();   // los sprites propios del gesto duran hasta que el cuerpo vuelve al reposo
         }
 
         /// <summary>Suma las poses del gesto encima de todo lo compuesto este frame.</summary>
@@ -561,7 +568,7 @@ namespace RedMagic.Rigging
             _attack = null;
             if (_fold != null) StopCoroutine(_fold);
             _fold = null;
-            Rig.ShowSprites(RigSpriteState.Asleep);   // se apagan los ojos
+            Rig.ShowDeadSprites();   // su sprite de muerto, o se apagan los ojos (el de dormido)
             if (_gestureRoutine != null) StopCoroutine(_gestureRoutine);
             _gestureRoutine = null;
             _gesture = null;
@@ -667,7 +674,11 @@ namespace RedMagic.Rigging
             {
                 _hurtTime += dt;
                 float k = _hurtTime / (rig.hurtDuration * Mathf.Sqrt(_hurtStrength));
-                if (k >= 1f) _hurtTime = -1f;
+                if (k >= 1f)
+                {
+                    _hurtTime = -1f;
+                    Rig.SetHurtSprites(false);
+                }
                 else
                 {
                     float envelope = 1f - k;

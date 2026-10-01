@@ -99,7 +99,16 @@ export function buildRigExport(state, ctx = {}) {
     nodes.push(node);
 
     const v = part.variants || {};
-    const hasStates = v.asleep || v.awake || v.attacking;
+    // Named states: alert / hurt / dead, and one per gesture that still exists.
+    const gestureNames = new Set((Array.isArray(gestures) ? gestures : []).map((g) => g.name));
+    const named = [
+      ...['alert', 'hurt', 'dead'].filter((k) => v.named?.[k]).map((k) => ({ state: k, image: v.named[k], suffix: k })),
+      ...Object.entries(v.gestures || {}).filter(([name, img]) => img && gestureNames.has(name))
+        .map(([name, img]) => ({ state: 'gesture', gesture: name, image: img, suffix: `gesture_${safe(name)}` })),
+    ];
+    const orphan = Object.keys(v.gestures || {}).filter((name) => v.gestures[name] && !gestureNames.has(name));
+    if (orphan.length) notes.push(`"${part.name}": tiene sprite para gestos que ya no existen (${orphan.join(', ')}); no se exportan.`);
+    const hasStates = v.asleep || v.awake || v.attacking || named.length;
     const stages = (v.stages || []).filter(Boolean);
     if ((hasStates || stages.length) && !part.image) problems.push(`"${part.name}": los sprites por estado necesitan una imagen base.`);
     if ((hasStates || stages.length) && part.image) {
@@ -107,8 +116,9 @@ export function buildRigExport(state, ctx = {}) {
       const swap = { part: partPaths.get(part.uid), asleep: ref(v.asleep, 'asleep'), awake: ref(v.awake, 'awake'), attacking: ref(v.attacking, 'attacking'), stages: [] };
       // Stage 0 = the base sprite (the torso intact); variants.stages[i] = stage i+1 (phase i+2).
       if (stages.length) swap.stages = [node.sprite, ...v.stages.map((s, i) => (s ? ref(s, `stage${i + 1}`) : node.sprite))];
+      if (named.length) swap.named = named.map((n) => ({ state: n.state, ...(n.gesture ? { gesture: n.gesture } : {}), sprite: ref(n.image, n.suffix) }));
       swaps.push(swap);
-      [v.asleep, v.awake, v.attacking, ...(v.stages || [])].forEach((img) => {
+      [v.asleep, v.awake, v.attacking, ...(v.stages || []), ...named.map((n) => n.image)].forEach((img) => {
         if (img && (img.origW !== part.image.origW || img.origH !== part.image.origH))
           notes.push(`"${part.name}": un sprite de estado no tiene el tamaño de archivo de la pieza; se alinea por su centro.`);
       });

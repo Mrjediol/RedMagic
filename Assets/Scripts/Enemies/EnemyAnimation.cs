@@ -271,6 +271,15 @@ namespace RedMagic.Enemies
         // ============================================================ órdenes del cerebro
 
         /// <summary>Andar o estar quieto. Sin clip de andar se queda en reposo, que es lo correcto.</summary>
+        /// <summary>
+        /// Enganchado a un objetivo (o ya no). Sólo lo usa un cuerpo por partes: sus sprites de "alerta"
+        /// (<c>RigNamedState.Alert</c>). Con Animator no hay nada que cambiar.
+        /// </summary>
+        public void SetAlert(bool alert)
+        {
+            if (HasRig) rig.SetAlert(alert);
+        }
+
         public void SetMoving(bool moving)
         {
             if (HasRig)

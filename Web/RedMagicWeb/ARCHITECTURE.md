@@ -187,7 +187,7 @@ Effects drawn in code from parameters and **baked into a normal frame sheet**, s
 
 ### Enemy Studio tab (🧬, one workflow from parts to a finished enemy)
 
-Plan and phases: `docs/web-enemy-studio-plan.md` (built: S1 shell + templates, S2 gesture effects). **It has no
+Plan and phases: `docs/web-enemy-studio-plan.md` (built: S1 shell + templates, S2 gesture effects, S3 state sprites). **It has no
 editor of its own**: the body is the one Rig Composer and the behaviour is the one Enemy Creator
 form. While the tab is visible it **moves their panels into its layout** (`mount`) and puts them
 back when another tab is shown (`unmount`) — one document, one form, whichever tab shows them. The
@@ -201,7 +201,7 @@ inspector — or, in step 4 of an enemy, the behaviour form.
 | 1 Cuerpo | document, add parts, parts list | `#rigSidebarBody` |
 | 2 Plantilla | template in use, "Nuevo desde plantilla" (built-in + ★ saved), "Guardar como plantilla" | `#rigSidebarTemplate` |
 | 3 Efectos | the library's projectiles / fx as a palette: ＋ (or drag onto a gesture card) hangs one from the phase that card shows | — (own) |
-| 4 Comportamiento | enemy: the Enemy Creator form (right) + validation / JSON (left); boss: the Boss Creator link | `#enemyFormPanel`, `#enemyPreviewPanel`, `#rigInspectorLinks` |
+| 4 Comportamiento | the state-sprites board; enemy: the Enemy Creator form (right) + validation / JSON (left); boss: the Boss Creator link | `#rigInspectorStates`, `#enemyFormPanel`, `#enemyPreviewPanel`, `#rigInspectorLinks` |
 | 5 Exportar | save, .zip, rig-config preview | `#rigInspectorExport` |
 
 Steps 3–5 are locked until the body is usable (a name, at least one part with art, no required
@@ -229,9 +229,18 @@ screen, matching parts by slot id → role (the aim part, the n-th limb…) → 
 
 ### Rig Composer tab (🦴, part-based enemies and bosses)
 
-Its panels are five hosts (`#rigSidebarBody`, `#rigSidebarTemplate`, `#rigInspectorMain`,
-`#rigInspectorLinks`, `#rigInspectorExport`) so Enemy Studio can borrow them; the scrolling element
+Its panels are six hosts (`#rigSidebarBody`, `#rigSidebarTemplate`, `#rigInspectorMain`,
+`#rigInspectorStates`, `#rigInspectorLinks`, `#rigInspectorExport`) so Enemy Studio can borrow them; the scrolling element
 is whatever column holds them (class `scrollHost`).
+
+**State sprites** : per part, `variants = { asleep, awake, attacking, stages, named: { alert, hurt, dead },
+gestures: { <gesture name>: image } }`. `rig-model.js` owns the vocabulary and the rule: `SPRITE_STATES`,
+`variantOf` / `setVariant`, `stateImage` (the fallback chain, a copy of `ProceduralRig.RefreshSprites`),
+`renameGestureSprites`. The **board** (`rig-composer.js` ▸ `renderStatesBoard`, host `#rigInspectorStates`,
+shown in Enemy Studio's step 4): pick a state — the canvas shows the body in it — and give each part its
+sprite; the per-part section "Sprites por estado / etapa" edits the same data plus the boss stages. The
+canvas shows a gesture's sprites while it plays and the hurt ones during "💥 Golpe". Export:
+`spriteSwaps[].named` (a sprite for a gesture that no longer exists is reported and left out).
 
 **Gesture effects** (`modules/rig-fx.js`, DOM-free): a gesture's `fx` list hangs library effects
 (kind `fx` / `projectile`) from its phases — `{ fx: libraryId, phase, at, anchor, part, offset, scale,

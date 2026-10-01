@@ -23,7 +23,8 @@
 // The panels are several HOSTS rather than two columns, so 🧬 Enemy Studio (enemy-studio.js) can lay
 // the same single composer out as workflow steps: `sidebar` (document + parts), `templateHost`
 // (templates: new from one, save as one), `inspector` (the selected part, timings, gestures,
-// collider), `linksHost` (behaviour link) and `exportHost`. There is ONE composer and one document
+// collider), `statesHost` (the state-sprite board: which sprite each part shows asleep / alert /
+// attacking / hurt / dead / in each gesture), `linksHost` (behaviour link) and `exportHost`. There is ONE composer and one document
 // whichever tab shows it.
 //
 // Geometry and part operations: rig-model.js. Drawing and picking: rig-canvas-view.js. Export:
@@ -64,7 +65,7 @@ const el = (tag, cls, text) => {
   return e;
 };
 
-export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvasWrap, statusEl, inspector, linksHost, exportHost, onEditBehaviour }) {
+export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvasWrap, statusEl, inspector, statesHost, linksHost, exportHost, onEditBehaviour }) {
   // Set by whoever embeds the composer (Enemy Studio): beforeExport / afterSave(id) / onChange.
   const hooks = { beforeExport: null, afterSave: null, onChange: null };
   let userTemplates = [];        // library records of kind 'rig-template', as templates
@@ -126,13 +127,21 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     requestAnimationFrame(() => { renderQueued = false; draw(); });
   }
 
+  /** The sprite state on screen: the gesture being played, the hurt preview, else the one picked. */
+  function shownSpriteState() {
+    const playing = gesturePlay && (state.gestures || [])[gesturePlay.index];
+    if (playing) return M.gestureState(playing.name);
+    if (preview.hurt >= 0) return 'hurt';
+    return preview.spriteState;
+  }
+
   function draw() {
     const anim = currentAnim();
     view.render(state, {
       selectedUid,
       poses: anim?.poses,
       visualMatrix: anim?.visual,
-      spriteState: preview.spriteState,
+      spriteState: shownSpriteState(),
       stage: preview.stage,
       ghostRest: !!posing && !gesturePlay,
       fx: fxOverlay(anim),
@@ -328,12 +337,12 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     pv.appendChild(lean);
 
     const st = document.createElement('select');
-    [['', 'sprite base'], ['asleep', 'dormido'], ['awake', 'despierto'], ['attacking', 'atacando']].forEach(([v, l]) => {
+    spriteStateOptions().forEach(([v, l]) => {
       const o = el('option', null, l); o.value = v; st.appendChild(o);
     });
     st.value = preview.spriteState;
-    st.title = 'Qué sprite por estado enseñar.';
-    st.onchange = () => { preview.spriteState = st.value; requestRender(); };
+    st.title = 'Qué sprite por estado enseñar (el tablero "Sprites por estado" los asigna).';
+    st.onchange = () => { preview.spriteState = st.value; requestRender(); renderInspector(); };
     pv.appendChild(st);
 
     const maxStages = Math.max(0, ...state.parts.map((p) => (p.variants?.stages || []).length));
@@ -345,6 +354,12 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       pv.appendChild(sg);
     }
     toolbar.appendChild(pv);
+  }
+
+  /** Every sprite state of this document: the fixed ones plus one per gesture. */
+  function spriteStateOptions() {
+    return [['', 'sprite base'], ...M.SPRITE_STATES.map((s) => [s.id, s.label.toLowerCase()]),
+      ...(state.gestures || []).map((g) => [M.gestureState(g.name), `gesto: ${g.name}`])];
   }
 
   document.addEventListener('keydown', (e) => {
@@ -964,6 +979,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const scroller = inspector.closest('.scrollHost') || inspector;
     const scrollTop = scroller.scrollTop;
     inspector.innerHTML = '';
+    statesHost.innerHTML = '';
     linksHost.innerHTML = '';
     exportHost.innerHTML = '';
     const part = selectedPart();
@@ -972,6 +988,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     renderRigSection();
     renderGesturesSection();
     renderBodySection();
+    renderStatesBoard();
     renderLinksSection();
     renderExportSection();
     scroller.scrollTop = scrollTop;
@@ -1107,9 +1124,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       row.addEventListener('drop', async (e) => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (!f) return; const res = await M.importImage(f); if (res) { set(res.image); changed(); } });
       d.appendChild(row);
     };
-    slot('Dormido', () => v.asleep, (x) => { v.asleep = x; });
-    slot('Despierto', () => v.awake, (x) => { v.awake = x; });
-    slot('Atacando (aviso)', () => v.attacking, (x) => { v.attacking = x; });
+    M.SPRITE_STATES.forEach((s) => slot(s.label, () => M.variantOf(part, s.id), (x) => M.setVariant(part, s.id, x)));
+    (state.gestures || []).forEach((g) => slot(`Gesto: ${g.name}`, () => M.variantOf(part, M.gestureState(g.name)), (x) => M.setVariant(part, M.gestureState(g.name), x)));
     v.stages.forEach((_, i) => slot(`Etapa ${i + 1} (fase ${i + 2})`, () => v.stages[i], (x) => { if (x) v.stages[i] = x; else v.stages.splice(i, 1); }));
     const addStage = el('button', 'small', '＋ Etapa (fase del jefe)');
     addStage.onclick = () => { v.stages.push(null); changed(); };
@@ -1261,6 +1277,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       const old = gesture.name;
       gesture.name = G.uniqueGestureName(state, nameField.input.value, gesture);
       if (state.rig.moveGesture === old) state.rig.moveGesture = gesture.name;
+      M.renameGestureSprites(state, old, gesture.name);
+      if (preview.spriteState === M.gestureState(old)) preview.spriteState = M.gestureState(gesture.name);
       changed();
     });
     card.appendChild(nameField.row);
@@ -1313,6 +1331,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     dup.onclick = () => { state.gestures.splice(index + 1, 0, G.duplicateGesture(state, gesture)); gestureIndex = index + 1; posing = null; changed(); };
     const del = el('button', 'small danger', '🗑 Borrar gesto');
     del.onclick = () => {
+      M.renameGestureSprites(state, gesture.name, null);
+      if (preview.spriteState === M.gestureState(gesture.name)) preview.spriteState = '';
       state.gestures.splice(index, 1);
       posing = null; gesturePlay = null; gestureIndex = -1;
       changed();
@@ -1455,6 +1475,61 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       box.appendChild(clear);
     }
     card.appendChild(box);
+  }
+
+  // ============================================================ state sprites board
+
+  /**
+   * "Sprites por estado": pick a state (the canvas shows the body in it) and give each part the
+   * sprite it wears there. A part left empty keeps what the fallback gives it (rig-model.js ▸
+   * stateImage, the same order as Unity's ProceduralRig.RefreshSprites).
+   */
+  function renderStatesBoard() {
+    const withArt = state.parts.filter((p) => p.image);
+    const count = (id) => withArt.filter((p) => M.variantOf(p, id)).length;
+    const options = spriteStateOptions().filter(([v]) => v);
+    const total = options.reduce((n, [v]) => n + count(v), 0);
+    const d = rememberedSection('states', `Sprites por estado${total ? ` (${total})` : ''}`, false, statesHost);
+    if (!withArt.length) { d.appendChild(el('p', 'hint', 'Añade piezas con imagen primero.')); return; }
+    if (!options.some(([v]) => v === preview.spriteState)) preview.spriteState = '';
+
+    const boardState = preview.spriteState || 'alert';
+    const pick = document.createElement('select');
+    options.forEach(([v, l]) => { const o = el('option', null, `${l}${count(v) ? ` · ${count(v)}` : ''}`); o.value = v; pick.appendChild(o); });
+    pick.value = boardState;
+    pick.onchange = () => { preview.spriteState = pick.value; renderToolbar(); renderInspector(); requestRender(); };
+    d.appendChild(pick);
+    const meta = M.SPRITE_STATES.find((s) => s.id === boardState);
+    d.appendChild(el('p', 'hint', meta ? meta.hint : 'Mientras dura ese gesto (el ataque que lo usa): "en este ataque uso este brazo". Sin sprite propio, la pieza usa el de "Atacando".'));
+    if (preview.spriteState !== boardState) {
+      const show = el('button', 'small', '👁 Ver este estado en el lienzo');
+      show.onclick = () => { preview.spriteState = boardState; renderToolbar(); renderInspector(); requestRender(); };
+      d.appendChild(show);
+    }
+
+    [...withArt].reverse().forEach((part) => {
+      const row = el('div', `rigVariantRow${part.uid === selectedUid ? ' selected' : ''}`);
+      const own = M.variantOf(part, boardState);
+      const shown = own || M.stateImage(part, boardState, preview.stage) || part.image;
+      const t = document.createElement('img'); t.src = shown.dataURL; t.className = `rigVariantThumb${own ? ' own' : ''}`;
+      t.title = own ? 'Sprite propio de este estado.' : 'Sin sprite propio: es lo que se verá (el del estado anterior en la cadena, o el de la pieza).';
+      row.appendChild(t);
+      const name = el('span', 'rigVariantLabel', part.name);
+      name.onclick = () => select(part.uid);
+      row.appendChild(name);
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = 'image/*'; input.hidden = true;
+      const put = async (file) => { const res = file && await M.importImage(file); if (res) { M.setVariant(part, boardState, res.image); changed(); } };
+      input.onchange = () => put(input.files[0]);
+      const choose = el('button', 'small', own ? 'Cambiar' : 'Elegir…');
+      choose.onclick = () => input.click();
+      row.append(input, choose);
+      if (own) { const clr = el('button', 'small', '✕'); clr.title = 'Quitar: vuelve a lo que le toque por la cadena.'; clr.onclick = () => { M.setVariant(part, boardState, null); changed(); }; row.appendChild(clr); }
+      row.addEventListener('dragover', (e) => { if (e.dataTransfer.types.includes('Files')) e.preventDefault(); });
+      row.addEventListener('drop', (e) => { const f = e.dataTransfer.files?.[0]; if (f) { e.preventDefault(); put(f); } });
+      d.appendChild(row);
+    });
+    d.appendChild(el('p', 'hint', 'Mismo tamaño de archivo que la pieza = se alinea solo. También puedes soltar el PNG sobre la fila.'));
   }
 
   function renderBodySection() {
@@ -1723,6 +1798,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       openRequired: openSlots(state, true).length,
       gestures: (state.gestures || []).length,
       gestureFx: (state.gestures || []).reduce((n, g) => n + (g.fx || []).length, 0),
+      stateSprites: state.parts.reduce((n, p) => n + ['asleep', 'awake', 'attacking'].filter((k) => p.variants?.[k]).length
+        + Object.values(p.variants?.named || {}).filter(Boolean).length + Object.values(p.variants?.gestures || {}).filter(Boolean).length, 0),
       openGesture: state.gestures?.[gestureIndex]?.name || null,
       template: state.template ? state.template.label || findTemplate(state.template.id)?.label || null : null,
       behaviour: !!behaviour,

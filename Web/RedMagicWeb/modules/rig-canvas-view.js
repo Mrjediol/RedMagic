@@ -7,7 +7,7 @@
 // Pan: middle or right drag. Zoom: wheel, towards the cursor. Owns no document state: the composer
 // passes the state (and the preview poses) into render()/partAt() every time.
 
-import { multiply, invert, apply, applyVector, worldMatrix, byUid, variantPivot, isOpenSlot, isEmptyNode, feetY } from './rig-model.js';
+import { multiply, invert, apply, applyVector, worldMatrix, byUid, variantPivot, isOpenSlot, isEmptyNode, feetY, stateImage } from './rig-model.js';
 
 const PICK_ALPHA = 10;
 
@@ -262,10 +262,8 @@ export class RigCanvasView {
 
   /** The image a part shows right now (a state/stage sprite in the preview) and its pivot. */
   static shownImage(part, spriteState, stage) {
-    const v = part.variants || {};
-    let variant = null;
-    if (stage > 0 && v.stages?.[stage - 1]) variant = v.stages[stage - 1];
-    else if (spriteState && v[spriteState]) variant = v[spriteState];
+    // Same priority as Unity (ProceduralRig.RefreshSprites): the state's sprite, then the stage's, then the base.
+    const variant = part.image ? stateImage(part, spriteState, stage) : null;
     if (!variant) return { image: part.image, pivot: part.pivot };
     return { image: variant, pivot: variantPivot(part, variant) };
   }

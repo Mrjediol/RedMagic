@@ -290,6 +290,10 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .rigActions{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;}
 .rigVariantRow{display:flex;align-items:center;gap:6px;margin:4px 0;font-size:12px;}
 .rigVariantLabel{width:110px;flex-shrink:0;}
+.rigVariantThumb.own{outline:1px solid var(--accent);}
+.rigVariantRow.selected .rigVariantLabel{color:var(--accent);}
+.rigVariantRow .rigVariantLabel{cursor:pointer;flex:1;width:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#rigInspectorStates select{width:100%;}
 .rigVariantThumb{width:36px;height:36px;object-fit:contain;background:#0e0f11;border-radius:3px;}
 .rigExportSummary ul{margin:4px 0 6px 16px;padding:0;}
 .rigInspHost button{margin-top:4px;}

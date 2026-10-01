@@ -1,6 +1,6 @@
 # Plan — Enemy Studio: one web flow from parts to a finished enemy
 
-Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Built so far: S1, S2** (see Progress).
+Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Built so far: S1, S2, S3** (see Progress).
 Goal, in the user's words: import the parts of an enemy, build body and gestures, save it as a
 **template**, create projectile / VFX effects in the VFX tab, and **attach those effects anywhere
 on the enemy** — plus defensive moves, idle gestures, and per-state sprites — in one comfortable
@@ -137,7 +137,14 @@ Order rationale: S1 gives the workflow shell the user asked for; S2 is the most 
   per-phase poses beyond windup / strike); effects always draw in front of the body; no sound per
   effect (the gesture's own sound covers it); the built-in attack has no effects unless repeated with
   a gesture.
-- **Next: S3** (state sprites: named states + per-attack override).
+- **S3 — done (2026-10-01, same branch; web + Unity + schema).** State sprites beyond the three classic
+  ones: `alert` (has a target), `hurt`, `dead`, and one per **gesture** (the per-attack override: an
+  attack names its gesture, so "in attack 2 this arm" = a sprite for that gesture). Unity:
+  `RigSpriteSwap.named` + one resolver (`ProceduralRig.RefreshSprites`) with a fixed priority and
+  fall-through; `EnemyBrain` reports alert. Web: the board "Sprites por estado" (step 4) + canvas
+  preview per state. Checked: compile, round trip (named sprites in the synthetic case), headless 114.
+  Not run in Play yet (tests ES20…).
+- **Next: S4** (idle gestures).
 
 ## Decisions
 - Template granularity (taken at S1): saved together (body + gestures + behaviour), each optional

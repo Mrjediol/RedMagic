@@ -306,3 +306,64 @@ export function variantPivot(part, variant) {
   const aligned = variant.origW === part.image?.origW && variant.origH === part.image?.origH;
   return aligned ? part.pivot : { x: variant.cropX + variant.w / 2, y: variant.cropY + variant.h / 2 };
 }
+
+// ============================================================ state sprites
+
+/** The fixed sprite states, in the order the board lists them. `gesture:<name>` adds one per gesture. */
+export const SPRITE_STATES = [
+  { id: 'asleep', label: 'Dormido', hint: 'Mientras duerme (y muerto, si no tiene sprite de muerto).' },
+  { id: 'awake', label: 'Despierto', hint: 'En reposo, sin objetivo.' },
+  { id: 'alert', label: 'Detecta al objetivo', hint: 'Mientras va a por el jugador: persigue, se retira, ataca, enfría.' },
+  { id: 'attacking', label: 'Atacando', hint: 'Durante cualquier ataque (desde el aviso), salvo que el gesto de ese ataque tenga el suyo.' },
+  { id: 'hurt', label: 'Herido', hint: 'Mientras dura el golpe recibido.' },
+  { id: 'dead', label: 'Muerto', hint: 'Al morir.' },
+];
+
+export const gestureState = (name) => `gesture:${name}`;
+
+/** The image a part has for exactly that state (no fallback), or null. */
+export function variantOf(part, stateId) {
+  const v = part.variants || {};
+  if (!stateId) return null;
+  if (stateId.startsWith('gesture:')) return v.gestures?.[stateId.slice(8)] || null;
+  if (stateId === 'alert' || stateId === 'hurt' || stateId === 'dead') return v.named?.[stateId] || null;
+  return v[stateId] || null;
+}
+
+/** Sets (or clears, with null) the image of a part for a state. */
+export function setVariant(part, stateId, image) {
+  const v = part.variants;
+  if (stateId.startsWith('gesture:')) {
+    v.gestures = v.gestures || {};
+    if (image) v.gestures[stateId.slice(8)] = image; else delete v.gestures[stateId.slice(8)];
+  } else if (stateId === 'alert' || stateId === 'hurt' || stateId === 'dead') {
+    v.named = v.named || {};
+    v.named[stateId] = image;
+  } else v[stateId] = image;
+}
+
+/**
+ * The image a part shows in a state, with the same fallbacks as ProceduralRig.RefreshSprites — an
+ * empty state lets the next one through: its own → (a gesture: attacking) → (alert / attack / hurt:
+ * awake) → (dead: asleep) → the stage → the part's base image.
+ */
+export function stateImage(part, stateId, stage = 0) {
+  const v = part.variants || {};
+  const chain = [];
+  if (stateId) chain.push(variantOf(part, stateId));
+  if (stateId?.startsWith('gesture:')) chain.push(v.attacking);
+  if (stateId === 'dead') chain.push(v.asleep);
+  else if (stateId && stateId !== 'asleep') chain.push(v.awake);
+  if (stage > 0) chain.push(v.stages?.[Math.min(stage, v.stages.length) - 1]);
+  return chain.find(Boolean) || null;
+}
+
+/** A renamed / deleted gesture takes its state sprites along (`to` null = deleted). */
+export function renameGestureSprites(state, from, to) {
+  state.parts.forEach((p) => {
+    const g = p.variants?.gestures;
+    if (!g || !(from in g)) return;
+    if (to) g[to] = g[from];
+    delete g[from];
+  });
+}

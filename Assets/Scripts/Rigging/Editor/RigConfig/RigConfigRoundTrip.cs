@@ -20,7 +20,8 @@ namespace RedMagic.Rigging.EditorTools
     /// lo importado. Un campo nuevo en ProceduralRig entra en la comparación solo.
     ///
     /// Los prefabs de referencia no llevan efectos de gesto (<see cref="RigFx"/>), así que hay un
-    /// cuarto caso sintético: una copia del primero con un gesto que usa todas las anclas y fases.
+    /// cuarto caso sintético: una copia del primero con un gesto que usa todas las anclas y fases, y
+    /// sprites con nombre (alerta, herido, muerto, por gesto) en una de sus piezas.
     /// </summary>
     public static class RigConfigRoundTrip
     {
@@ -136,6 +137,32 @@ namespace RedMagic.Rigging.EditorTools
                                     offset = new Vector2(-1f, 0f), scale = 2f, followsPart = true, loop = false },
                     },
                 });
+                // Sprites por estado con nombre: cada estado, sobre el renderer de esa pieza (su propio sprite vale).
+                SpriteRenderer renderer = null;
+                foreach (var p in rig.parts)
+                {
+                    renderer = p?.part != null ? p.part.GetComponent<SpriteRenderer>() : null;
+                    if (renderer != null && renderer.sprite != null) break;
+                }
+
+                if (renderer != null && renderer.sprite != null)
+                {
+                    var swap = rig.spriteSwaps.Find(s => s != null && s.renderer == renderer);
+                    if (swap == null)
+                    {
+                        swap = new RigSpriteSwap { renderer = renderer };
+                        rig.spriteSwaps.Add(swap);
+                    }
+
+                    swap.named = new List<RigNamedSprite>
+                    {
+                        new RigNamedSprite { state = RigNamedState.Alert, sprite = renderer.sprite },
+                        new RigNamedSprite { state = RigNamedState.Hurt, sprite = renderer.sprite },
+                        new RigNamedSprite { state = RigNamedState.Dead, sprite = renderer.sprite },
+                        new RigNamedSprite { state = RigNamedState.Gesture, gesture = "FxRoundTrip", sprite = renderer.sprite },
+                    };
+                }
+
                 PrefabUtility.SaveAsPrefabAsset(contents, sourcePath);
             }
             finally
@@ -159,7 +186,10 @@ namespace RedMagic.Rigging.EditorTools
             var diffs = Compare(original, copy);
             int found = copy.GetComponent<ProceduralRig>().FindGesture("FxRoundTrip")?.fx?.Count ?? 0;
             if (found != 4) diffs.Add($"el gesto reimportado tiene {found} efectos, no 4");
-            sb.AppendLine(diffs.Count == 0 ? $"✓ {caseName}: efectos de gesto (4 anclas, 3 fases) idénticos tras la ida y vuelta."
+            int namedCount = 0;
+            foreach (var s in copy.GetComponent<ProceduralRig>().spriteSwaps) namedCount += s?.named?.Count ?? 0;
+            if (namedCount != 4) diffs.Add($"los sprites con nombre reimportados son {namedCount}, no 4");
+            sb.AppendLine(diffs.Count == 0 ? $"✓ {caseName}: efectos de gesto (4 anclas, 3 fases) y sprites con nombre (4 estados) idénticos tras la ida y vuelta."
                                            : $"x {caseName}: {diffs.Count} diferencias");
             foreach (var d in diffs) sb.AppendLine($"    {d}");
             return diffs.Count > 0 ? 1 : 0;

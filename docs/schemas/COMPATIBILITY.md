@@ -49,6 +49,10 @@ them and compares every public field of `ProceduralRig` by reflection (plus the 
   prefab path (what the exporter writes). New art kind **`fxLoop`** in `boss-config`'s `artAssets`
   (flipbook that loops, no `VfxOneShot`). A config without `phases` imports exactly as before and
   keeps the effects already on the prefab; `phases: []` clears them.
+- **Named state sprites** (additive, 2026-10-01): `spriteSwaps[].named[]` = `{ state: alert | hurt | dead |
+  gesture, gesture?, sprite }` ↔ `RigSpriteSwap.named` (`RigNamedSprite`). Absent = the three classic
+  states only, imported as before. Behaviour change that comes with it: a state without a sprite now falls
+  through to the next one (down to the prefab's sprite) instead of keeping whatever was shown.
 - **Things that bite**: (1) tuning from a bundled `enemy-config.json` goes through
   `EnemyConfigImporter.ReadTuning`, so the `EnemyStats.OnValidate` clamps above apply unchanged;
   its `presence` block is ignored (the body/collider come from rig-config). (2) A bundled

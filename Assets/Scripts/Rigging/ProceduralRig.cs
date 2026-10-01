@@ -63,9 +63,38 @@ namespace RedMagic.Rigging
         Attacking,
     }
 
+    /// <summary>Los estados con nombre de un <see cref="RigNamedSprite"/> (además de dormido / despierto / atacando).</summary>
+    public enum RigNamedState
+    {
+        /// <summary>Ha detectado al objetivo y va a por él (persigue, se retira, ataca, enfría).</summary>
+        Alert,
+
+        /// <summary>Mientras dura el golpe recibido.</summary>
+        Hurt,
+
+        /// <summary>Muerto (si falta, se usa el de dormido).</summary>
+        Dead,
+
+        /// <summary>Mientras dura el gesto <see cref="RigNamedSprite.gesture"/>: "en el ataque 2 uso este brazo".</summary>
+        Gesture,
+    }
+
+    /// <summary>El sprite de un renderer en un estado con nombre.</summary>
+    [Serializable]
+    public class RigNamedSprite
+    {
+        public RigNamedState state = RigNamedState.Alert;
+
+        [Tooltip("Nombre del gesto, cuando el estado es 'Gesture'.")]
+        public string gesture = "";
+
+        public Sprite sprite;
+    }
+
     /// <summary>
-    /// Sprites por estado para un renderer (ojos apagados / encendidos / disparando). Vacío = ese
-    /// estado no cambia el sprite.
+    /// Sprites por estado para un renderer (ojos apagados / encendidos / disparando). El sprite que se
+    /// ve en cada momento lo decide <see cref="ProceduralRig.RefreshSprites"/>: el del estado más
+    /// prioritario que lo tenga; un estado vacío deja pasar al siguiente, hasta el sprite del prefab.
     /// </summary>
     [Serializable]
     public class RigSpriteSwap
@@ -75,6 +104,23 @@ namespace RedMagic.Rigging
         public Sprite awake;
         [Tooltip("Aviso del ataque: se pone al empezar la carga y se quita tras la coz.")]
         public Sprite attacking;
+
+        [Tooltip("Más estados: detecta al objetivo, herido, muerto, y uno por gesto (ese ataque usa este sprite).")]
+        public List<RigNamedSprite> named = new List<RigNamedSprite>();
+
+        /// <summary>El sprite de un estado con nombre (para <see cref="RigNamedState.Gesture"/>, el de ese gesto), o null.</summary>
+        public Sprite Named(RigNamedState state, string gesture = null)
+        {
+            if (named == null) return null;
+            foreach (var n in named)
+            {
+                if (n == null || n.state != state || n.sprite == null) continue;
+                if (state != RigNamedState.Gesture || string.Equals(n.gesture, gesture, StringComparison.OrdinalIgnoreCase))
+                    return n.sprite;
+            }
+
+            return null;
+        }
 
         [Tooltip("Sprite por etapa (fase de un jefe): 0 = la primera. Al cambiar de etapa se pone el " +
                  "de esa etapa (el torso agrietado de la fase 2). Vacío = no cambia con la etapa.")]
@@ -422,23 +468,106 @@ namespace RedMagic.Rigging
         public void SetStage(int stage)
         {
             Stage = Mathf.Max(0, stage);
-            foreach (var swap in spriteSwaps)
+            RefreshSprites();
+        }
+
+        // ---- estado visual: de qué depende el sprite de cada RigSpriteSwap ahora mismo.
+        private RigSpriteState _spriteBase = RigSpriteState.Awake;   // dormido / despierto
+        private bool _spriteAttacking;       // un ataque en curso (el propio, o un gesto lanzado como ataque)
+        private string _spriteGesture;       // el gesto en curso, o null
+        private bool _spriteAlert, _spriteHurt, _spriteDead;
+
+        /// <summary>
+        /// Pone a cada <see cref="RigSpriteSwap"/> su sprite. Gana el primer estado activo que tenga
+        /// sprite, en este orden: muerto → herido → el gesto en curso → atacando → alerta → dormido /
+        /// despierto → la etapa (fase del jefe) → el sprite del prefab. Así un estado sin sprite nunca
+        /// deja "pegado" el del estado anterior.
+        /// </summary>
+        public void RefreshSprites()
+        {
+            CaptureRest();
+            for (int i = 0; i < spriteSwaps.Count; i++)
             {
-                if (swap?.renderer == null || swap.stages == null || swap.stages.Count == 0) continue;
-                var sprite = swap.stages[Mathf.Min(Stage, swap.stages.Count - 1)];
+                var swap = spriteSwaps[i];
+                if (swap?.renderer == null) continue;
+
+                Sprite sprite = null;
+                if (_spriteDead) sprite = swap.Named(RigNamedState.Dead) ?? swap.asleep;
+                if (sprite == null && !_spriteDead && _spriteHurt) sprite = swap.Named(RigNamedState.Hurt);
+                if (sprite == null && !_spriteDead && _spriteGesture != null) sprite = swap.Named(RigNamedState.Gesture, _spriteGesture);
+                if (sprite == null && !_spriteDead && _spriteAttacking) sprite = swap.attacking;
+                if (sprite == null && !_spriteDead && _spriteAlert && _spriteBase == RigSpriteState.Awake) sprite = swap.Named(RigNamedState.Alert);
+                if (sprite == null && !_spriteDead) sprite = _spriteBase == RigSpriteState.Asleep ? swap.asleep : swap.awake;
+                if (sprite == null && swap.stages != null && swap.stages.Count > 0) sprite = swap.stages[Mathf.Min(Stage, swap.stages.Count - 1)];
+                if (sprite == null && i < _restSprites.Count) sprite = _restSprites[i];
                 if (sprite != null) swap.renderer.sprite = sprite;
             }
         }
 
-        /// <summary>Pone a cada <see cref="RigSpriteSwap"/> el sprite del estado (si lo tiene).</summary>
+        /// <summary>Un gesto empieza: sus sprites propios y, si es un ataque, el de "atacando" donde no los haya.</summary>
+        public void ShowGestureSprites(string gesture, bool isAttack)
+        {
+            _spriteGesture = gesture;
+            _spriteAttacking = isAttack;
+            RefreshSprites();
+        }
+
+        /// <summary>El gesto (o el ataque propio) ha terminado.</summary>
+        public void EndGestureSprites()
+        {
+            if (_spriteGesture == null && !_spriteAttacking) return;
+            _spriteGesture = null;
+            _spriteAttacking = false;
+            RefreshSprites();
+        }
+
+        /// <summary>Ha detectado al objetivo / lo ha perdido.</summary>
+        public void SetAlertSprites(bool alert)
+        {
+            if (_spriteAlert == alert) return;
+            _spriteAlert = alert;
+            RefreshSprites();
+        }
+
+        /// <summary>Mientras dura un golpe recibido.</summary>
+        public void SetHurtSprites(bool hurt)
+        {
+            if (_spriteHurt == hurt) return;
+            _spriteHurt = hurt;
+            RefreshSprites();
+        }
+
+        /// <summary>Muerto: su sprite de muerto, o el de dormido (los ojos se apagan).</summary>
+        public void ShowDeadSprites()
+        {
+            _spriteDead = true;
+            RefreshSprites();
+        }
+
+        /// <summary>Vuelta al estado de recién creado (reutilización por pool): despierto, sin nada en curso.</summary>
+        public void ResetSprites()
+        {
+            _spriteBase = RigSpriteState.Awake;
+            _spriteAttacking = _spriteAlert = _spriteHurt = _spriteDead = false;
+            _spriteGesture = null;
+            RefreshSprites();
+        }
+
+        /// <summary>
+        /// Dormido / despierto fijan el estado de fondo (y dan por terminado cualquier ataque);
+        /// <see cref="RigSpriteState.Attacking"/> marca el aviso del ataque propio.
+        /// </summary>
         public void ShowSprites(RigSpriteState state)
         {
-            foreach (var swap in spriteSwaps)
+            if (state == RigSpriteState.Attacking) _spriteAttacking = true;
+            else
             {
-                if (swap?.renderer == null) continue;
-                var sprite = swap.Get(state);
-                if (sprite != null) swap.renderer.sprite = sprite;
+                _spriteBase = state;
+                _spriteAttacking = false;
+                _spriteGesture = null;
             }
+
+            RefreshSprites();
         }
 
         /// <summary>El gesto con ese nombre (sin distinguir mayúsculas), o null.</summary>
@@ -608,11 +737,7 @@ namespace RedMagic.Rigging
             }
 
             Stage = 0;
-            for (int i = 0; i < spriteSwaps.Count && i < _restSprites.Count; i++)
-            {
-                var renderer = spriteSwaps[i]?.renderer;
-                if (renderer != null && _restSprites[i] != null) renderer.sprite = _restSprites[i];
-            }
+            ResetSprites();
         }
 
         /// <summary>Pose de diseño de una parte capturada. False si no está en el rig.</summary>

@@ -12,8 +12,18 @@ sheet. Animation is code, not clips.
   on full canvases (1024² with the piece off-centre), so the sprite pivot can sit far from the
   piece; sway, scale pulse and death spin happen around `pivot` instead. **Art is never edited.**
 - **Sprite swaps** — `spriteSwaps` (`RigSpriteSwap`: renderer + `asleep`/`awake`/`attacking`
-  sprites, empty = unchanged). `Attacking` is the telegraph: set at windup start, back to `Awake`
-  after recover; death shows `Asleep`. Swaps are data, never hardcoded.
+  sprites + `named`: `RigNamedSprite` for `Alert` / `Hurt` / `Dead` / `Gesture` + gesture name).
+  The rig keeps the visual state (asleep|awake, attacking, gesture in course, alert, hurt, dead) and
+  **`ProceduralRig.RefreshSprites`** resolves each renderer: dead (`Dead` → `asleep`) → hurt → the
+  gesture in course → attacking → alert → asleep/awake → the stage → the prefab's sprite. **An empty
+  state lets the next one through** (it no longer leaves the previous sprite stuck). Who sets what:
+  `ShowSprites(Asleep|Awake|Attacking)` (sleep / wake / built-in attack, as before),
+  `ShowGestureSprites` / `EndGestureSprites` (driver: `PlayGesture` counts as an attack, so
+  `attacking` is the fallback; held gestures only use their own), `SetHurtSprites` (while the hurt
+  lasts), `ShowDeadSprites`, `SetAlertSprites` ← `RigDriver.SetAlert` ← `EnemyAnimation.SetAlert` ←
+  `EnemyBrain.Enter` (Approach / Retreat / Attacking / Cooldown / Waking). `RestorePose` resets it
+  (pool-safe). "In attack 2 this arm looks different" = a `Gesture` sprite on that part for the
+  gesture that attack names. Swaps are data, never hardcoded.
 - **Fold / unfold** (sleep/wake) — `stretchPart` scales Y from its pivot (`foldedStretch` when
   asleep), `stretchRiders` ride its tip (offset = rest distance × stretch, squashed to
   `foldedRiderScaleY`, `foldedRiderOffset`). Wake = OutBack with `wakeOvershoot` + eye flicker

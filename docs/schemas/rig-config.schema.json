@@ -626,9 +626,39 @@
               }
             ]
           }
+        },
+        "named": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "state",
+              "sprite"
+            ],
+            "properties": {
+              "state": {
+                "enum": [
+                  "alert",
+                  "hurt",
+                  "dead",
+                  "gesture"
+                ],
+                "$comment": "RigNamedState. alert = con objetivo; hurt = mientras dura el golpe; dead = muerto (si falta, asleep); gesture = mientras dura ese gesto."
+              },
+              "gesture": {
+                "type": "string",
+                "$comment": "Nombre del gesto, cuando state = gesture."
+              },
+              "sprite": {
+                "$ref": "#/definitions/spriteRef"
+              }
+            }
+          },
+          "$comment": "RigSpriteSwap.named (RigNamedSprite). Opcional: sin la clave, la pieza sólo tiene los tres estados de siempre."
         }
       },
-      "$comment": "RigSpriteSwap: renderer = el de la pieza \"part\"."
+      "$comment": "RigSpriteSwap: renderer = el de la pieza \"part\". Qué sprite se ve lo decide ProceduralRig.RefreshSprites: muerto → herido → gesto en curso → atacando → alerta → dormido/despierto → etapa → el sprite del prefab; un estado vacío deja pasar al siguiente."
     },
     "pose": {
       "type": "object",

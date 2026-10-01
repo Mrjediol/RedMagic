@@ -527,7 +527,11 @@ namespace RedMagic.Enemies
             Current = next;
 
             if (_animation != null)
+            {
                 _animation.SetMoving(next is State.Approach or State.Retreat or State.Returning);
+                // Con objetivo: lo persigue, se retira, ataca o enfría. Sin él: reposo, volver a su sitio, muerto.
+                _animation.SetAlert(next is State.Approach or State.Retreat or State.Attacking or State.Cooldown or State.Waking);
+            }
         }
 
         /// <summary>

@@ -411,7 +411,7 @@ export function templateFromState(state, { label, description = '', bodyHeight =
     const key = slug(part.name).toLowerCase();
     slot.match = old.match?.length ? [...old.match] : (key.length >= 3 ? [key] : []);
     const v = part.variants || {};
-    if (old.states || v.asleep || v.awake || v.attacking) slot.states = true;
+    if (old.states || v.asleep || v.awake || v.attacking || Object.values(v.named || {}).some(Boolean) || Object.values(v.gestures || {}).some(Boolean)) slot.states = true;
     if (old.stage || v.stages?.length) slot.stage = true;
 
     if (!part.image) {   // a slot still empty: its guesses as they came

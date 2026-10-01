@@ -306,7 +306,7 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .rigGesture.open{border-color:var(--accent2);}
 .rigGesture.posing{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
 .rigGestureHead{display:flex;align-items:center;gap:8px;}
-.rigGestureName{font-weight:600;font-size:12px;color:var(--accent2);cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rigGestureName{min-width:64px;font-weight:600;font-size:12px;color:var(--accent2);cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rigGestureGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0 8px;}
 .rigPhaseTabs{display:flex;gap:2px;margin:6px 0 2px;border-bottom:1px solid var(--border);}
 .rigPhaseTabs button{flex:1;border-radius:4px 4px 0 0;border-bottom:none;margin-top:0;}

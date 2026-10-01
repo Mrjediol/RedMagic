@@ -1165,7 +1165,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const gesture = state.gestures?.[gestureAt];
     if (!gesture || !fxEntries.has(libraryId)) return false;
     const sel = selectedPart();
-    const anchor = sel?.rigPart ? 'part' : state.roles.aim && state.roles.muzzle ? 'muzzle' : 'body';
+    // The weapon tip when there is one (the usual place); else the selected part; else the body.
+    const anchor = state.roles.aim && state.roles.muzzle ? 'muzzle' : sel?.rigPart ? 'part' : 'body';
     const f = FX.createFx(libraryId, phaseTab, anchor, sel?.uid || null);
     f.loop = phaseTab === 'windup';   // a charge lasts its phase; a strike / recover effect is a burst
     FX.fxList(gesture).push(f);

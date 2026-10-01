@@ -98,9 +98,14 @@ export function activeFx(gesture, t, telegraph, framesOf) {
 
 // ============================================================ export (rig-config `artAssets`)
 
-/** A stable artAssets id for (entry, loop): letters / digits only, as the schema asks. */
-export function fxArtId(libraryId, loop) {
-  return `gfx_${String(libraryId).replace(/[^A-Za-z0-9]/g, '')}${loop ? '_loop' : ''}`;
+/**
+ * A stable artAssets id for (entry, loop). It names the prefab in Unity (Fx_<enemy>_<id>), so it
+ * reads: the effect's name + the start of its library id (two effects may share a name).
+ */
+export function fxArtId(entry, loop) {
+  const name = String(entry.enemyName || '').normalize('NFD').replace(/[^A-Za-z0-9]/g, '').slice(0, 24) || 'fx';
+  const short = String(entry.id).replace(/[^A-Za-z0-9]/g, '').slice(0, 8);
+  return `gfx_${name}_${short}${loop ? '_loop' : ''}`;
 }
 
 /**

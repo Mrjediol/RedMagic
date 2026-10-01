@@ -177,7 +177,7 @@ export function buildRigExport(state, ctx = {}) {
       const entry = ctx.entriesById?.get(f.fx);
       const asset = entry ? fxArtAsset(entry, f.loop, ppu) : null;
       if (!asset) { problems.push(`Gesto "${g.name}": un efecto ya no está en la biblioteca (o no tiene frames); quítalo o elige otro.`); return null; }
-      const id = fxArtId(f.fx, f.loop);
+      const id = fxArtId(entry, f.loop);
       artAssets[id] = asset;
       const out = { fx: { art: id }, at: r5(Math.min(1, Math.max(0, f.at || 0))), anchor: f.anchor };
       if (f.anchor === 'part') {

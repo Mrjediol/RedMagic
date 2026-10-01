@@ -252,3 +252,26 @@ from ✨ VFX Lab)
 **Known limits of S2**: effects always draw in front of the body; colours are baked; the enemy's built-in attack
 has no effects unless it is repeated with a gesture; a boss's held gestures (move / dash travel) only fire the
 effects set "al empezar" of Carga; an effect has no sound of its own.
+
+### Verified by Claude on 2026-10-01 (real Chrome + Unity Play Mode, with your permission)
+
+Run end to end with the Robot's part PNGs on the "Lanzador flotante" template and two VFX Lab effects:
+- **Web (ES1–ES3, ES5, ES8, ES10–ES12, ES19)**: the Studio lays out and works in Chrome; steps lock / unlock; step 4
+  form linked and its values kept (health 55 survived leaving the step, a reload, and travelled into the zip);
+  effects added from step 3 and from the card, shown on the canvas and in "▶ Probar" following the arm;
+  "Guardar como plantilla" → "★" entry → new enemy from it with gestures, effects and behaviour; the 🦴 and 🧩
+  tabs intact afterwards. No console errors.
+- **Unity import (ES4, ES13)**: the browser's .zip imports with no errors; health and the two effects are on
+  the prefab; effect prefabs built (loop without `VfxOneShot`, burst with it).
+- **Play (ES14, ES15)**, stepping frame by frame: the charge effect sits exactly on the muzzle every frame,
+  rotates with the arm, animates, and is mirrored when facing left; at release it is returned to the pool and
+  the burst appears, follows for its duration and returns itself; disabling the enemy or killing it mid-charge
+  despawns the effect at once; re-enabling reuses the pooled instance. Nothing is parented to the enemy.
+
+Still yours to judge (feel, not function): sizes / defaults of the effects against a body, whether a strike burst
+should follow the muzzle by default (it follows the whip of the arm; untick "Sigue a su ancla" to leave it where
+the shot left), layout comfort, and ES6, ES7, ES9, ES16–ES18 (not run). Two things seen and left as they are:
+filling a template's optional slots one by one after the required ones leaves the collider fitted to the first
+ones ("Ajustar a las piezas" fixes it); the canvas is not re-framed when the toolbar wraps.
+Fixed from this run: a new effect now defaults to the weapon tip (not the selected part); effect prefabs are
+named after the effect (`Fx_<enemy>_gfx_<name>_<id>`); the gesture name no longer gets squeezed in its card.

@@ -49,6 +49,9 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
   or invoke the private `Update`/coroutine method via reflection to force one step deterministically,
   or use `capture_game_view` (a real screenshot is unambiguous — see the ranged-enemy debugging in
   the pipeline doc for a worked example) rather than trusting polled state across an idle gap.
+  If `editor_focus` cannot take the foreground (frameCount stays put), pause and step: `eval`
+  `EditorApplication.isPaused = true`, then one `EditorApplication.Step()` per `eval` (0.02 s each) — deterministic.
+  `capture_game_view --save_path` must be inside the project and lands under `Assets/`: delete it afterwards.
 - **Tests**: `com.unity.test-framework` is in `Packages/manifest.json` but no test assembly or
   `Tests/` folder exists yet — there is nothing to run.
 

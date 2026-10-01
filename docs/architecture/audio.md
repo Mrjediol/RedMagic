@@ -68,3 +68,6 @@ variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three 
 - **Rule — sound state questions**: when the user asks about the state of the game's sounds, read
   `SoundRegistry.generated.json` and `SoundStatus.json` directly and answer from them. Never build a
   report file.
+- **Example clips from the VFX Lab**: `Assets/Audio/Sfx/VfxLab/*.wav` (+ `sounds.json`: label, loop, which effect each
+  was made for) are synthesised placeholders written by `Web/RedMagicWeb/tools/bake-sounds.mjs`. They are **assigned to
+  nothing**: they are just clips to pick in the Sounds tab. Assigning one is adding a sound → the grading rule applies.

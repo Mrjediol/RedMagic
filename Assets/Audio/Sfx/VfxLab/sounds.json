@@ -1,0 +1,448 @@
+{
+  "castFire": {
+    "label": "Fuego · lanzar",
+    "seconds": 0.45,
+    "loop": false,
+    "usedBy": [
+      "fireball"
+    ]
+  },
+  "castIce": {
+    "label": "Hielo · lanzar",
+    "seconds": 0.4,
+    "loop": false,
+    "usedBy": [
+      "iceShard"
+    ]
+  },
+  "castPoison": {
+    "label": "Veneno · lanzar",
+    "seconds": 0.4,
+    "loop": false,
+    "usedBy": [
+      "poisonGlob"
+    ]
+  },
+  "castZap": {
+    "label": "Rayo · lanzar",
+    "seconds": 0.3,
+    "loop": false,
+    "usedBy": [
+      "sparkBolt"
+    ]
+  },
+  "castArcane": {
+    "label": "Arcano · lanzar",
+    "seconds": 0.5,
+    "loop": false,
+    "usedBy": [
+      "orb",
+      "arcaneMissile"
+    ]
+  },
+  "castShadow": {
+    "label": "Sombra · lanzar",
+    "seconds": 0.55,
+    "loop": false,
+    "usedBy": [
+      "shadowOrb"
+    ]
+  },
+  "castRock": {
+    "label": "Roca · lanzar",
+    "seconds": 0.4,
+    "loop": false,
+    "usedBy": [
+      "rock"
+    ]
+  },
+  "castNeedle": {
+    "label": "Aguja · lanzar",
+    "seconds": 0.2,
+    "loop": false,
+    "usedBy": [
+      "bolt",
+      "needle"
+    ]
+  },
+  "castBlade": {
+    "label": "Cuchilla · lanzar",
+    "seconds": 0.45,
+    "loop": false,
+    "usedBy": [
+      "blade"
+    ]
+  },
+  "castHeavy": {
+    "label": "Orbe pesado · lanzar",
+    "seconds": 0.7,
+    "loop": false,
+    "usedBy": [
+      "heavyOrb"
+    ]
+  },
+  "castWisp": {
+    "label": "Fuego fatuo · lanzar",
+    "seconds": 0.5,
+    "loop": false,
+    "usedBy": [
+      "wisp"
+    ]
+  },
+  "hitFire": {
+    "label": "Fuego · impacto",
+    "seconds": 0.6,
+    "loop": false,
+    "usedBy": [
+      "fireball"
+    ]
+  },
+  "explosion": {
+    "label": "Explosión",
+    "seconds": 1.1,
+    "loop": false,
+    "usedBy": [
+      "explosion"
+    ]
+  },
+  "hitIce": {
+    "label": "Hielo · impacto",
+    "seconds": 0.55,
+    "loop": false,
+    "usedBy": [
+      "iceShard",
+      "iceShatter",
+      "hazardIce"
+    ]
+  },
+  "hitSplash": {
+    "label": "Salpicadura",
+    "seconds": 0.5,
+    "loop": false,
+    "usedBy": [
+      "poisonGlob",
+      "poisonSplash"
+    ]
+  },
+  "hitZap": {
+    "label": "Rayo · impacto",
+    "seconds": 0.45,
+    "loop": false,
+    "usedBy": [
+      "sparkBolt"
+    ]
+  },
+  "hitArcane": {
+    "label": "Arcano · impacto",
+    "seconds": 0.8,
+    "loop": false,
+    "usedBy": [
+      "orb",
+      "burst",
+      "charge",
+      "arcaneMissile",
+      "chargeVortex"
+    ]
+  },
+  "hitShadow": {
+    "label": "Sombra · impacto",
+    "seconds": 0.7,
+    "loop": false,
+    "usedBy": [
+      "shadowOrb"
+    ]
+  },
+  "hitRock": {
+    "label": "Roca · impacto",
+    "seconds": 0.55,
+    "loop": false,
+    "usedBy": [
+      "rock"
+    ]
+  },
+  "hitHeavy": {
+    "label": "Orbe pesado · impacto",
+    "seconds": 0.9,
+    "loop": false,
+    "usedBy": [
+      "heavyOrb"
+    ]
+  },
+  "hitWisp": {
+    "label": "Fuego fatuo · impacto",
+    "seconds": 0.5,
+    "loop": false,
+    "usedBy": [
+      "wisp"
+    ]
+  },
+  "hitSpark": {
+    "label": "Chispazo",
+    "seconds": 0.18,
+    "loop": false,
+    "usedBy": [
+      "bolt",
+      "needle",
+      "hitSpark"
+    ]
+  },
+  "hitSlash": {
+    "label": "Tajo",
+    "seconds": 0.28,
+    "loop": false,
+    "usedBy": [
+      "blade",
+      "slash"
+    ]
+  },
+  "thunder": {
+    "label": "Rayo caído",
+    "seconds": 1.3,
+    "loop": false,
+    "usedBy": [
+      "lightningStrike"
+    ]
+  },
+  "dust": {
+    "label": "Polvareda",
+    "seconds": 0.5,
+    "loop": false,
+    "usedBy": [
+      "dustBurst"
+    ]
+  },
+  "step": {
+    "label": "Pisada",
+    "seconds": 0.2,
+    "loop": false,
+    "usedBy": [
+      "footDust"
+    ]
+  },
+  "heal": {
+    "label": "Cura",
+    "seconds": 0.9,
+    "loop": false,
+    "usedBy": [
+      "healBurst"
+    ]
+  },
+  "shieldBreak": {
+    "label": "Escudo roto",
+    "seconds": 0.7,
+    "loop": false,
+    "usedBy": [
+      "shieldBreak"
+    ]
+  },
+  "shockwave": {
+    "label": "Onda de choque",
+    "seconds": 0.9,
+    "loop": false,
+    "usedBy": [
+      "warnZone",
+      "shockwave"
+    ]
+  },
+  "muzzle": {
+    "label": "Fogonazo",
+    "seconds": 0.22,
+    "loop": false,
+    "usedBy": [
+      "muzzleFlash"
+    ]
+  },
+  "puff": {
+    "label": "Nube",
+    "seconds": 0.5,
+    "loop": false,
+    "usedBy": [
+      "shield",
+      "summonCircle",
+      "smokePuff"
+    ]
+  },
+  "teleport": {
+    "label": "Teletransporte",
+    "seconds": 0.75,
+    "loop": false,
+    "usedBy": [
+      "teleport"
+    ]
+  },
+  "chargeUp": {
+    "label": "Carga · empezar",
+    "seconds": 0.85,
+    "loop": false,
+    "usedBy": [
+      "charge",
+      "chargeVortex"
+    ]
+  },
+  "buffUp": {
+    "label": "Mejora · empezar",
+    "seconds": 0.7,
+    "loop": false,
+    "usedBy": [
+      "buffAura"
+    ]
+  },
+  "shieldUp": {
+    "label": "Escudo · levantar",
+    "seconds": 0.55,
+    "loop": false,
+    "usedBy": [
+      "shield"
+    ]
+  },
+  "markLock": {
+    "label": "Marca · fijar",
+    "seconds": 0.4,
+    "loop": false,
+    "usedBy": [
+      "mark"
+    ]
+  },
+  "warn": {
+    "label": "Aviso",
+    "seconds": 0.5,
+    "loop": false,
+    "usedBy": [
+      "aura",
+      "warnZone"
+    ]
+  },
+  "summon": {
+    "label": "Invocación · abrir",
+    "seconds": 0.9,
+    "loop": false,
+    "usedBy": [
+      "summonCircle"
+    ]
+  },
+  "spikes": {
+    "label": "Púas · brotar",
+    "seconds": 0.45,
+    "loop": false,
+    "usedBy": [
+      "hazardIce"
+    ]
+  },
+  "beamStart": {
+    "label": "Rayo · abrir",
+    "seconds": 0.35,
+    "loop": false,
+    "usedBy": [
+      "beam"
+    ]
+  },
+  "beamEnd": {
+    "label": "Rayo · cerrar",
+    "seconds": 0.3,
+    "loop": false,
+    "usedBy": [
+      "beam"
+    ]
+  },
+  "loopFire": {
+    "label": "Fuego · bucle",
+    "seconds": 1.2,
+    "loop": true,
+    "usedBy": [
+      "burning",
+      "hazardFire"
+    ]
+  },
+  "loopFrost": {
+    "label": "Hielo · bucle",
+    "seconds": 1.5,
+    "loop": true,
+    "usedBy": [
+      "frozen",
+      "hazardIce"
+    ]
+  },
+  "loopPoison": {
+    "label": "Veneno · bucle",
+    "seconds": 1.5,
+    "loop": true,
+    "usedBy": [
+      "poisoned",
+      "hazardPoison"
+    ]
+  },
+  "loopCharge": {
+    "label": "Carga · bucle",
+    "seconds": 1,
+    "loop": true,
+    "usedBy": [
+      "charge",
+      "chargeVortex"
+    ]
+  },
+  "loopAura": {
+    "label": "Aura · bucle",
+    "seconds": 1.5,
+    "loop": true,
+    "usedBy": [
+      "buffAura"
+    ]
+  },
+  "loopShield": {
+    "label": "Escudo · bucle",
+    "seconds": 1,
+    "loop": true,
+    "usedBy": [
+      "shield"
+    ]
+  },
+  "loopBeam": {
+    "label": "Rayo · bucle",
+    "seconds": 1,
+    "loop": true,
+    "usedBy": [
+      "beam"
+    ]
+  },
+  "loopStun": {
+    "label": "Aturdido · bucle",
+    "seconds": 1,
+    "loop": true,
+    "usedBy": [
+      "stunned"
+    ]
+  },
+  "loopMark": {
+    "label": "Marca · bucle",
+    "seconds": 1,
+    "loop": true,
+    "usedBy": [
+      "mark"
+    ]
+  },
+  "loopDash": {
+    "label": "Dash · bucle",
+    "seconds": 1,
+    "loop": true,
+    "usedBy": [
+      "dashTrail"
+    ]
+  },
+  "loopZone": {
+    "label": "Zona de aviso · bucle",
+    "seconds": 1,
+    "loop": true,
+    "usedBy": [
+      "aura",
+      "warnZone"
+    ]
+  },
+  "loopSummon": {
+    "label": "Invocación · bucle",
+    "seconds": 1.5,
+    "loop": true,
+    "usedBy": [
+      "summonCircle"
+    ]
+  }
+}

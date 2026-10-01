@@ -429,3 +429,44 @@ on dark / ice / forest. **Not checked: any of them inside Unity** (the pipeline 
       aviso as a warning, Rayo continuo on a sweep): size and orientation right in game?
 - [ ] VFX8 · Defaults: frame 96 px, Nitidez 3 — sharp enough next to the 2048 px parts? Any effect whose default
       colours you would change?
+
+---
+
+## ✨ VFX Lab art in the game + "Probar" + example sounds (2026-10-02)
+
+**What was added**
+- The Lab's effects are now the art of: **Bola de Fuego**, **Ráfaga Arcana**, **Lanza Astral** (projectile + an impact
+  burst where they hit), **Granada Rúnica** (rune orb + a real explosion instead of the green square), **Rayo Arcano**
+  (beam + a charge spiral at the muzzle while holding), the **lifesteal heal** (burst on the player when HP is really
+  gained) and the **sweep beam of 9 bosses** (was a stretched square).
+- Left alone on purpose: Proyectil Recto and Escopeta Espectral (they already use your art), the ice explosion
+  (real art), boss warnings / hazards / bullets (a round effect stretched into a lane rectangle would look worse than
+  the clean rectangle — say so if you want them anyway), statuses (slow, gold mark).
+- ✨ VFX Lab ▸ **▶ Probar**: the projectile flies from a caster to a dummy and bursts on it; an effect appears, lasts
+  and ends. With **example sounds** (53, synthesised in code): each one can be heard alone and downloaded as .wav.
+- The same sounds are in the project as clips: `Assets/Audio/Sfx/VfxLab/` — **not assigned to anything**.
+
+**Honest status**: everything compiles, the generator ran clean and the assets are wired (checked in the files).
+**Nothing was seen running in the game, and nobody has heard the sounds** — I can check their numbers (length,
+level, loops closing), not how they sound.
+
+**Tests — in game**
+- [ ] VFX9 · Bola de Fuego: size of the ball vs. before, does it point where it flies (also to the left), does the
+      explosion burst appear exactly where it hits (enemy and wall)? Too big / small → say which.
+- [ ] VFX10 · Ráfaga Arcana (burst of shots) and Lanza Astral: same questions. Is the lance long enough?
+- [ ] VFX11 · Granada Rúnica: the orb in the arc, and the explosion — does its size match the area that hurts?
+- [ ] VFX12 · Rayo Arcano: the charge spiral grows while holding and disappears on release / cancel; the beam is a
+      beam (not a flat bar), reaches the wall and fades at the end. Too thin for its hitbox?
+- [ ] VFX13 · Lifesteal (Vampirismo 2): the green burst on the player when a kill heals — and NOT at full HP.
+      Too much on every kill?
+- [ ] VFX14 · A boss with a sweep (guadaña): is the beam better than the square? Colour (it takes the boss's)?
+- [ ] VFX15 · Gilded shots (gold set) on the new projectiles: the gold halo is now as big as the whole frame — ok?
+- [ ] VFX16 · With an Element item equipped (when there is one): the new projectiles keep their own colours
+      instead of taking the element's tint. Is that what you want, or should they be tinted?
+
+**Tests — web**
+- [ ] VFX17 · ▶ Probar on 4–5 projectiles and 4–5 effects: timing of flight / impact right? Dummy and caster useful?
+- [ ] VFX18 · **Sounds** — go through them in the Lab (▶ next to each). Per sound: keep as placeholder / redo /
+      delete. Worst offenders first. The loops (fire, beam, shield…): do they loop without a click?
+- [ ] VFX19 · Which of these sounds should be assigned to the game's slots (weapons' fire / impact / explosion /
+      beam loop / charge)? When they are, each one needs your grade (Perfect / Good / Bad / Horrible).

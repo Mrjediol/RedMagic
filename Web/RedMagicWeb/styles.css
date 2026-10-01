@@ -398,3 +398,13 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .vfxBar button[data-action="allFrames"]{margin-left:10px;}
 .vfxContact{display:flex;flex-direction:column;gap:3px;margin:8px 0;align-items:flex-start;max-width:100%;overflow-x:auto;}
 .vfxStrip{position:static;display:block;border:1px solid var(--border);border-radius:4px;}
+/* VFX Lab: the "Probar" stage and its sounds. */
+.vfxStage{margin:10px 0 14px;}
+.vfxStage .vfxBar button.primary{padding:5px 14px;}
+.vfxStageCanvas{position:static;display:block;width:100%;max-width:720px;height:auto;border:1px solid var(--border);border-radius:6px;}
+.vfxSoundToggle{font-size:12px;color:var(--text);display:flex;align-items:center;cursor:pointer;}
+.vfxSounds{display:flex;flex-direction:column;gap:3px;margin-top:6px;max-width:720px;}
+.vfxSound{display:flex;align-items:center;gap:8px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;font-size:12px;}
+.vfxSound button{margin:0;}
+.vfxSoundMoment{width:170px;flex:none;color:var(--accent2);}
+.vfxSoundName{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}

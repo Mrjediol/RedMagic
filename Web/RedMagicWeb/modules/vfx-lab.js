@@ -15,12 +15,15 @@ import * as F from './enemy-form-fields.js';
 // With dozens of presets the picker is a GALLERY grouped by family (vfx-presets.js ▸ FAMILIES), each
 // card a still of the effect. The preview can be judged over three backgrounds (dark, ice, forest —
 // the scenes the game has) and "Ver todos los frames" lays out every frame of every lane on all
-// three at once: the fastest way to spot a loop that jumps or a frame that clips.
+// three at once: the fastest way to spot a loop that jumps or a frame that clips. "▶ Probar"
+// (modules/vfx-stage.js) plays the effect as the game will — a projectile flies and hits, an effect
+// appears, lasts and ends — with its example sounds (modules/vfx-sounds.js).
 
 import { PRESETS, FAMILIES, presetById, paramsOf, defaultParams, normalizeParams, bakePreset, drawFrame, frameCount, laneFps } from './vfx-presets.js';
 import { saveEnemy, updateEnemy, getEnemy, listEntries, buildThumbnail } from './enemy-library.js';
 import { cropBox } from './export-manifest.js';
 import { kindOf } from './entry-kinds.js';
+import { createStage } from './vfx-stage.js';
 
 const el = (tag, cls, text) => {
   const e = document.createElement(tag);
@@ -57,6 +60,7 @@ function thumbOf(preset) {
 }
 
 export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved }) {
+  const stage = createStage({ createCanvas });   // "▶ Probar": the effect as the game plays it, with sounds
   let backdrop = BACKDROPS[0];
   let showAllFrames = false;
   let preset = PRESETS[0];
@@ -216,6 +220,8 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
     previewRoot.appendChild(row);
 
     const baked = bakePreset(preset, params, createCanvas);
+    stage.setEffect(preset, baked, backdrop);
+    previewRoot.appendChild(stage.el);
     if (showAllFrames) previewRoot.appendChild(contactSheet(baked));
     baked.canvas.className = 'vfxSheet';
     baked.canvas.style.background = backdrop.color;
@@ -261,7 +267,7 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
 
   function tick(now) {
     // Stops by itself when the tab is hidden; onShow() starts it again.
-    if (!previewRoot.isConnected || previewRoot.closest('.tabPanel')?.hidden) { running = false; return; }
+    if (!previewRoot.isConnected || previewRoot.closest('.tabPanel')?.hidden) { running = false; stage.stop(); return; }
     const dt = last ? Math.min(0.25, (now - last) / 1000) : 0;
     last = now;
     players.forEach((player) => {

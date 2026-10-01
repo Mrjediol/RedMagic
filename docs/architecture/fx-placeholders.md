@@ -82,3 +82,27 @@ swapping in real art is then: open the prefab, delete the shape sprite, drop the
   (URP Particles/Unlit + built-in Default-Particle texture), layer `Characters`. **Gotcha when
   verifying:** a paused Game view doesn't redraw particles — capture in slow motion
   (`Time.timeScale`), not paused.
+- **Art from the web's ✨ VFX Lab (`VfxLabArtPack`)** — the route by which the game's own visuals stop being
+  geometric shapes. Three pieces of data, no new code per effect:
+  1. `Web/RedMagicWeb/tools/vfx-bakes.json` — `{ name, preset, params, lanes? }`; `node bake-vfx.mjs` (once:
+     `npm install` in that folder) bakes each one to `Assets/Art/VfxLab/<name>/<Lane>/frame_000.png…` + `bake.json`.
+  2. `VfxLabArtPack.Prefabs` — which prefab comes out of which bake / lane, its kind (`ShotProjectile`, `OneShot`,
+     `Loop`, `ShotBeam`) and its width in world units. Prefabs land in `Assets/Prefabs/Fx/VfxLab/`. Sprites are
+     imported at **1 frame = 1 unit** (PPU = frame side), so the size in game is that width whatever "Nitidez" was
+     baked. A weapon projectile's origin is its **head** (the art hangs from an offset child): collider and impact
+     point are there.
+  3. `VfxLabArtPack.Assignments` — which field of which asset uses it.
+  Run **Tools ▸ RedMagic ▸ FX ▸ 5 · VFX Lab · Arte del juego**: idempotent, rebuilds prefabs in place (same GUID).
+  **It never replaces hand-made art**: a field is reassigned only if empty, pointing at a known geometric
+  placeholder (`ReplaceablePlaceholders`) or at a prefab of this pack — that is why `Weapon_ProyectilRecto` and
+  `Weapon_EscopetaEspectral` (their `Fx_Shot_Square` already carries real art) were left alone.
+  Wired today: Bola de Fuego, Ráfaga Arcana, Lanza Astral (projectile + impact), Granada Rúnica (projectile +
+  explosion), Rayo Arcano (beam + charge loop), the lifesteal heal burst (`SynergyTuning.healVfxPrefab`), and every
+  boss `Fx_<Boss>_SweepBeam` that was still a square (dressed in place with a looping beam segment; it keeps its
+  `FxPlaceholderStyle`, so the boss still stretches and tints it).
+- **New optional art slots on `BaseShot`** (null = exactly the old behaviour): `impactVfxPrefab` (a `VfxOneShot`
+  where the projectile hits a target or the terrain, mirrored by travel direction; not used by grenades),
+  `explosionVfxPrefab` (replaces the code flash of an exploding shot, `SpawnFitWidth` to the blast diameter) and
+  `chargeVfxPrefab` (a pooled loop at the muzzle while charging, scaled 0.35 → 1 of the prefab's size by charge).
+  A beam prefab keeps `FxPlaceholderStyle` on purpose: `ShotBeam` then tints it with the weapon / element colour and
+  fades it out — its art is baked near-white for that.

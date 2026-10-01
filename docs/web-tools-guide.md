@@ -249,6 +249,19 @@ Queda en la biblioteca como un **proyectil** o un **VFX** normal (una hoja de fr
 - sigue siendo editable: *Abrir* en la lista de la pestaña, cambia parámetros, *Guardar cambios* →
   misma entrada, y quien la use la recibe al volver a exportar. *Guardar como nuevo* = variante.
 
+**▶ Probar** (sobre la vista previa): reproduce el efecto como lo hará el juego — un proyectil sale
+de un lanzador, vuela y revienta contra un muñeco; un efecto aparece, dura un par de segundos y se
+apaga — con sus **sonidos de ejemplo** (sintetizados en código, 53). Debajo, cada sonido del efecto
+con ▶ para oírlo solo y **⬇ .wav** para descargarlo. Son provisionales: para juzgarlos y sustituirlos.
+
+**Arte y sonidos del Lab dentro del juego (sin navegador).** En `Web/RedMagicWeb/tools/`
+(`npm install` una vez):
+- `node bake-vfx.mjs` hornea los efectos de `vfx-bakes.json` a `Assets/Art/VfxLab/`; luego en Unity
+  **Tools ▸ RedMagic ▸ FX ▸ 5 · VFX Lab · Arte del juego** crea los prefabs y los asigna (armas, cura,
+  barridos de jefe). Nunca pisa arte puesto a mano. Detalle: `docs/architecture/fx-placeholders.md`.
+- `node bake-sounds.mjs` escribe los sonidos en `Assets/Audio/Sfx/VfxLab/` como clips normales. No
+  asigna nada: se ponen desde Biblioteca Jere ▸ Sounds (y entonces hay que puntuarlos).
+
 Color y tamaño van horneados en los frames (el tamaño en juego lo sigue mandando el "size" del
 proyectil o del ataque).
 

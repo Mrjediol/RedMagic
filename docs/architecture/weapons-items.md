@@ -101,5 +101,10 @@ Inspector wiring.
   `Economy.CurrencyDropModifiers`, `Economy.ShopLuck`, `ShopManager.Entered`,
   `CombatModifiers.SetDamageReduction` → `Health.FlatDamageReduction`/`DamageReduced`. Details:
   `ITEMS_PIPELINE.md` §6.
+- **Weapon art from the VFX Lab** — `BaseShot ▸ Arte` also has `impactVfxPrefab`, `explosionVfxPrefab` and
+  `chargeVfxPrefab` (all optional), and `SynergyTuning.healVfxPrefab` is the burst on a lifesteal heal. Five weapons
+  use baked Lab effects through `Tools ▸ RedMagic ▸ FX ▸ 5` (`VfxLabArtPack`); see `fx-placeholders.md`. That art
+  carries its own colours (`tint: false`), so an Element modifier does not recolour those projectiles — only the
+  beam is still tinted.
 - Projectiles never collide with other projectiles — pellets from one blast spawn on top of each
   other and would annihilate on frame one.

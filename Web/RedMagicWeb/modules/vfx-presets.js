@@ -17,7 +17,13 @@
 // the parameters, `rnd(i)` a stable pseudo-random 0..1 for particle i. A looping lane must draw the
 // same picture at k=0 and k=1. Adding a preset = one more entry in PRESETS, nothing else.
 //
+// The drawing helpers every preset shares live in modules/vfx-draw.js; the effects library (the
+// presets beyond the first five, grouped by FAMILY) in modules/vfx-effects.js.
+//
 // DOM-free apart from the canvas factory it is handed, so it can be exercised outside a browser.
+
+import { TAU, hash, glowDot, ring, sparkShape, core, burst, easeOut, easeIn } from './vfx-draw.js';
+import { EFFECTS } from './vfx-effects.js';
 
 // ============================================================ parameters
 
@@ -75,104 +81,25 @@ export function normalizeParams(preset, values = {}) {
   return out;
 }
 
-// ============================================================ drawing helpers
-
-const TAU = Math.PI * 2;
-
-function rgba(hex, alpha) {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${Math.max(0, Math.min(1, alpha))})`;
-}
-
-/** Stable pseudo-random 0..1 for (seed, index, channel). */
-function hash(seed, i, channel = 0) {
-  let t = (seed * 374761393 + i * 668265263 + channel * 2147483647) | 0;
-  t = Math.imul(t ^ (t >>> 13), 1274126177);
-  t ^= t >>> 16;
-  return ((t >>> 0) % 100000) / 100000;
-}
-
-/** Soft radial light. */
-function glowDot(ctx, x, y, r, color, alpha) {
-  if (r <= 0.001 || alpha <= 0.003) return;
-  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-  g.addColorStop(0, rgba(color, alpha));
-  g.addColorStop(0.45, rgba(color, alpha * 0.45));
-  g.addColorStop(1, rgba(color, 0));
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, TAU);
-  ctx.fill();
-}
-
-/** A ring of light (stroke with a soft halo). */
-function ring(ctx, x, y, r, width, color, alpha, squash = 1) {
-  if (r <= 0.001 || alpha <= 0.003) return;
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(1, squash);
-  ctx.lineWidth = width * 2.6;
-  ctx.strokeStyle = rgba(color, alpha * 0.25);
-  ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke();
-  ctx.lineWidth = width;
-  ctx.strokeStyle = rgba(color, alpha);
-  ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke();
-  ctx.restore();
-}
-
-function sparkShape(ctx, x, y, r, p, alpha, angle = 0) {
-  if (r <= 0.001 || alpha <= 0.003) return;
-  glowDot(ctx, x, y, r * 2.4, p.accent, alpha * 0.5 * p.intensity);
-  ctx.fillStyle = rgba(p.core, alpha);
-  if (p.spark === 'square') {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
-    ctx.fillRect(-r * 0.7, -r * 0.7, r * 1.4, r * 1.4);
-    ctx.restore();
-  } else if (p.spark === 'star') {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
-    ctx.beginPath();
-    for (let i = 0; i < 8; i++) {
-      const rr = i % 2 ? r * 0.32 : r * 1.25;
-      const a = (i / 8) * TAU;
-      if (i) ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); else ctx.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
-    }
-    ctx.closePath(); ctx.fill();
-    ctx.restore();
-  } else {
-    ctx.beginPath(); ctx.arc(x, y, r * 0.75, 0, TAU); ctx.fill();
-  }
-}
-
-/** The glowing ball every orb-like preset shares. */
-function core(ctx, x, y, r, p, alpha = 1) {
-  glowDot(ctx, x, y, r * 2.6, p.glow, 0.55 * alpha * p.intensity);
-  glowDot(ctx, x, y, r * 1.5, p.glow, 0.9 * alpha * p.intensity);
-  glowDot(ctx, x, y, r, p.core, alpha);
-  ctx.fillStyle = rgba(p.core, alpha);
-  ctx.beginPath(); ctx.arc(x, y, r * 0.45, 0, TAU); ctx.fill();
-}
-
-const easeOut = (k) => 1 - (1 - k) * (1 - k) * (1 - k);
-const easeIn = (k) => k * k;
-
-/** One-shot burst: flash, expanding ring, sparks thrown outwards. Shared by every "impact". */
-function burst(ctx, k, p, rnd, scale = 1) {
-  const out = easeOut(k);
-  const fade = 1 - easeIn(k);
-  core(ctx, 0, 0, 0.34 * scale * (1 - k * 0.85), p, fade);
-  ring(ctx, 0, 0, (0.18 + 0.66 * out) * scale, 0.07 * fade + 0.012, p.glow, fade * p.intensity);
-  for (let i = 0; i < p.particles; i++) {
-    const a = rnd(i, 1) * TAU;
-    const d = (0.15 + (0.45 + rnd(i, 2) * 0.4) * out) * scale;
-    sparkShape(ctx, Math.cos(a) * d, Math.sin(a) * d, (0.03 + rnd(i, 3) * 0.045) * (1 - k * 0.6), p, fade, a + k * 3);
-  }
-}
-
 // ============================================================ presets
+
+/**
+ * The families the Lab's picker groups the presets by (a preset's `family`). Display only: what an
+ * entry IS for the rest of the tool is its `kind` (projectile / fx) and its lane names.
+ */
+export const FAMILIES = [
+  { id: 'projectile', label: 'Proyectiles', hint: 'Vuelan (Move) y revientan al chocar (Impact). Apuntan a la derecha.' },
+  { id: 'burst', label: 'Impactos y estallidos', hint: 'De un solo uso: golpes, explosiones, caídas.' },
+  { id: 'aura', label: 'Cargas, auras y estados', hint: 'En bucle sobre un cuerpo o un arma: aparecen, se mantienen y se apagan.' },
+  { id: 'trail', label: 'Estelas y movimiento', hint: 'En bucle detrás de algo que se mueve.' },
+  { id: 'ground', label: 'Suelo y zonas', hint: 'Avisos, charcos, ondas y rayos: se estiran al tamaño de la zona.' },
+  { id: 'muzzle', label: 'Disparo y aparición', hint: 'De un solo uso en la boca del arma o al aparecer / desaparecer.' },
+];
 
 export const PRESETS = [
   {
     id: 'orb',
+    family: 'projectile',
     label: 'Orbe de hechizo',
     kind: 'projectile',
     description: 'Una bola de energía con chispas girando a su alrededor. Vuela y revienta al chocar.',
@@ -197,6 +124,7 @@ export const PRESETS = [
   },
   {
     id: 'bolt',
+    family: 'projectile',
     label: 'Disparo con estela',
     kind: 'projectile',
     description: 'Un proyectil alargado que apunta a la derecha (+X) y deja una estela. Para disparos rápidos.',
@@ -226,6 +154,7 @@ export const PRESETS = [
   },
   {
     id: 'burst',
+    family: 'burst',
     label: 'Impacto mágico',
     kind: 'fx',
     description: 'Un estallido de un solo uso: destello, anillo que se abre y chispas. Para impactos y golpes.',
@@ -237,6 +166,7 @@ export const PRESETS = [
   },
   {
     id: 'charge',
+    family: 'aura',
     label: 'Orbe cargándose',
     kind: 'fx',
     description: 'Las chispas acuden al centro y el orbe crece (Spawn), se mantiene cargado (Loop) y se deshace (End).',
@@ -269,6 +199,7 @@ export const PRESETS = [
   },
   {
     id: 'aura',
+    family: 'ground',
     label: 'Aura de aviso',
     kind: 'fx',
     description: 'Un anillo de luz en el suelo (visto de lado) que aparece, late y se apaga. Para avisos y zonas.',
@@ -304,6 +235,7 @@ export const PRESETS = [
         } },
     ],
   },
+  ...EFFECTS,
 ];
 
 export function presetById(id) {

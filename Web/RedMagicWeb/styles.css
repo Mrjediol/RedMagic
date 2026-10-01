@@ -382,3 +382,19 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 #tab-studio #enemyPreviewPanel{min-width:0;max-width:none;border-left:none;padding:0;display:block;}
 #tab-studio #enemyPreviewPanel > h2,#tab-studio #enemyExportCombinedBtn{display:none;}
 #tab-studio #enemyJsonPreview{max-height:220px;}
+/* VFX Lab: the preset gallery (by family), the backdrop bar and the contact sheet. */
+.vfxGallery{max-height:330px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:6px;background:#1a1d21;}
+.vfxFamily{font-size:11px;font-weight:600;color:var(--accent2);text-transform:uppercase;letter-spacing:.04em;margin:8px 2px 4px;}
+.vfxFamily:first-child{margin-top:0;}
+.vfxCards{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:5px;}
+.vfxCard{display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 3px;margin:0;background:#22262b;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text);font-size:11px;line-height:1.15;text-align:center;}
+.vfxCard:hover{background:#2a3037;}
+.vfxCard.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+.vfxCard img{width:56px;height:56px;background:#0d0f12;border-radius:4px;}
+.vfxChosen{margin:8px 0 2px;font-size:14px;font-weight:600;color:var(--accent);}
+.vfxBar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 2px;}
+.vfxBar button{margin:0;}
+.vfxBar button.selected{border-color:var(--accent);color:var(--accent);}
+.vfxBar button[data-action="allFrames"]{margin-left:10px;}
+.vfxContact{display:flex;flex-direction:column;gap:3px;margin:8px 0;align-items:flex-start;max-width:100%;overflow-x:auto;}
+.vfxStrip{position:static;display:block;border:1px solid var(--border);border-radius:4px;}

@@ -11,7 +11,13 @@
 // the new look on its next export). "Guardar como nuevo" makes a variant instead.
 
 import * as F from './enemy-form-fields.js';
-import { PRESETS, presetById, paramsOf, defaultParams, normalizeParams, bakePreset, drawFrame, frameCount, laneFps } from './vfx-presets.js';
+//
+// With dozens of presets the picker is a GALLERY grouped by family (vfx-presets.js ▸ FAMILIES), each
+// card a still of the effect. The preview can be judged over three backgrounds (dark, ice, forest —
+// the scenes the game has) and "Ver todos los frames" lays out every frame of every lane on all
+// three at once: the fastest way to spot a loop that jumps or a frame that clips.
+
+import { PRESETS, FAMILIES, presetById, paramsOf, defaultParams, normalizeParams, bakePreset, drawFrame, frameCount, laneFps } from './vfx-presets.js';
 import { saveEnemy, updateEnemy, getEnemy, listEntries, buildThumbnail } from './enemy-library.js';
 import { cropBox } from './export-manifest.js';
 import { kindOf } from './entry-kinds.js';
@@ -29,7 +35,30 @@ const createCanvas = (w, h) => {
   return c;
 };
 
+/** The scenes an effect has to read on: the preview's backgrounds. */
+const BACKDROPS = [
+  { id: 'dark', label: 'Oscuro', color: '#0d0f12' },
+  { id: 'ice', label: 'Hielo', color: '#a9d3e6' },
+  { id: 'forest', label: 'Bosque', color: '#4d7a45' },
+];
+
+const THUMB = 56;
+const thumbs = new Map();        // preset id → data URL of its gallery still
+
+/** A still of a preset at its defaults: the middle of its sustained lane (or of its only one-shot). */
+function thumbOf(preset) {
+  if (!thumbs.has(preset.id)) {
+    const lane = preset.lanes.find((l) => l.loop) || preset.lanes[0];
+    const canvas = createCanvas(THUMB, THUMB);
+    drawFrame(canvas.getContext('2d'), preset, lane, lane.loop ? 0.3 : 0.32, { ...defaultParams(preset), pixel: 1 }, 0, 0, THUMB, createCanvas);
+    thumbs.set(preset.id, canvas.toDataURL());
+  }
+  return thumbs.get(preset.id);
+}
+
 export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved }) {
+  let backdrop = BACKDROPS[0];
+  let showAllFrames = false;
   let preset = PRESETS[0];
   let params = defaultParams(preset);
   let name = '';
@@ -45,19 +74,38 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
 
     const pick = el('div', 'efSection');
     pick.appendChild(el('h2', null, 'Efecto'));
-    pick.appendChild(F.enumField({
-      label: 'Tipo de efecto', value: preset.id,
-      options: PRESETS.map((p) => ({ value: p.id, label: `${p.label} (${kindOf(p.kind).label})` })),
-      onChange: (v) => {
-        // Another preset keeps the look (colours, glow…) and takes its own extras and defaults.
-        const next = presetById(v);
-        const keep = currentId ? {} : params;
-        preset = next;
-        params = normalizeParams(next, { ...defaultParams(next), ...pickCommon(keep, next) });
-        if (currentId) { currentId = null; setStatus('Otro tipo de efecto: se guardará como una entrada nueva.'); }
-        renderForm(); renderPreview(); renderList();
-      },
-    }).row);
+    const choose = (next) => {
+      // Another preset keeps the look (colours, glow…) and takes its own extras and defaults.
+      const keep = currentId ? {} : params;
+      preset = next;
+      params = normalizeParams(next, { ...defaultParams(next), ...pickCommon(keep, next) });
+      if (currentId) { currentId = null; setStatus('Otro tipo de efecto: se guardará como una entrada nueva.'); }
+      renderForm(); renderPreview(); renderList();
+    };
+    const gallery = el('div', 'vfxGallery');
+    FAMILIES.forEach((family) => {
+      const members = PRESETS.filter((p) => p.family === family.id);
+      if (!members.length) return;
+      const head = el('div', 'vfxFamily', `${family.label} (${members.length})`);
+      head.title = family.hint;
+      gallery.appendChild(head);
+      const grid = el('div', 'vfxCards');
+      members.forEach((p) => {
+        const card = el('button', `vfxCard${p.id === preset.id ? ' selected' : ''}`);
+        card.type = 'button';
+        card.dataset.preset = p.id;
+        card.title = p.description;
+        const img = el('img');
+        img.alt = '';
+        img.src = thumbOf(p);
+        card.append(img, el('span', null, p.label));
+        card.onclick = () => choose(p);
+        grid.appendChild(card);
+      });
+      gallery.appendChild(grid);
+    });
+    pick.appendChild(gallery);
+    pick.appendChild(el('p', 'vfxChosen', preset.label));
     pick.appendChild(el('p', 'efHint', preset.description));
     pick.appendChild(el('p', 'efHint', `Se guarda como ${kindOf(preset.kind).label} con las animaciones ${preset.lanes.map((l) => l.name).join(' / ')}: `
       + (preset.kind === 'projectile'
@@ -138,11 +186,28 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
     players = [];
     const size = params.size;
 
+    // The scene behind the effect + the contact sheet switch.
+    const bar = el('div', 'vfxBar');
+    bar.appendChild(el('span', 'efHint', 'Fondo:'));
+    BACKDROPS.forEach((b) => {
+      const btn = el('button', `small${b.id === backdrop.id ? ' selected' : ''}`, b.label);
+      btn.dataset.backdrop = b.id;
+      btn.onclick = () => { backdrop = b; renderPreview(); };
+      bar.appendChild(btn);
+    });
+    const all = el('button', `small${showAllFrames ? ' selected' : ''}`, showAllFrames ? '▣ Ver todos los frames' : '▢ Ver todos los frames');
+    all.dataset.action = 'allFrames';
+    all.title = 'Todos los frames de cada animación, sobre los tres fondos: para ver si un bucle salta o algo se corta.';
+    all.onclick = () => { showAllFrames = !showAllFrames; renderPreview(); };
+    bar.appendChild(all);
+    previewRoot.appendChild(bar);
+
     const row = el('div', 'vfxLanes');
     preset.lanes.forEach((lane) => {
       const box = el('div', 'vfxLane');
       const canvas = createCanvas(size, size);
       canvas.className = 'vfxCanvas';
+      canvas.style.background = backdrop.color;
       box.appendChild(canvas);
       box.appendChild(el('span', 'efHint', `${lane.name} · ${frameCount(lane, params)} frames · ${laneFps(lane, params)} fps${lane.loop ? ' · bucle' : ' · una vez'}`));
       row.appendChild(box);
@@ -151,12 +216,40 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
     previewRoot.appendChild(row);
 
     const baked = bakePreset(preset, params, createCanvas);
+    if (showAllFrames) previewRoot.appendChild(contactSheet(baked));
     baked.canvas.className = 'vfxSheet';
+    baked.canvas.style.background = backdrop.color;
     previewRoot.appendChild(el('p', 'efHint', `Hoja que se guarda: ${baked.width}×${baked.height} px, ${baked.boxes.length} frames.`));
     previewRoot.appendChild(baked.canvas);
 
     players.forEach(paint);
     if (!running) { running = true; last = 0; requestAnimationFrame(tick); }
+  }
+
+  /**
+   * "Ver todos los frames": every frame of every lane of the baked sheet, in order, once per backdrop.
+   * A looping lane repeats its first frame at the end (dimmed) so the seam of the loop is on screen.
+   */
+  function contactSheet(baked) {
+    const CELL = 64;
+    const wrap = el('div', 'vfxContact');
+    baked.lanes.forEach((lane) => {
+      const frames = lane.frameBoxIndices.map((i) => baked.boxes[i]);
+      const shown = lane.loop ? [...frames, frames[0]] : frames;
+      wrap.appendChild(el('span', 'efHint', `${lane.name} · ${frames.length} frames${lane.loop ? ' · el último (atenuado) repite el primero: el bucle debe cerrar' : ''}`));
+      BACKDROPS.forEach((b) => {
+        const strip = createCanvas(shown.length * CELL, CELL);
+        strip.className = 'vfxStrip';
+        strip.style.background = b.color;
+        const ctx = strip.getContext('2d');
+        shown.forEach((box, i) => {
+          ctx.globalAlpha = lane.loop && i === shown.length - 1 ? 0.45 : 1;
+          ctx.drawImage(baked.canvas, box.x, box.y, box.w, box.h, i * CELL, 0, CELL, CELL);
+        });
+        wrap.appendChild(strip);
+      });
+    });
+    return wrap;
   }
 
   function paint(player) {

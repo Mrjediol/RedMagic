@@ -65,6 +65,9 @@ function creatorFor(kind) {
 
 // ============================================================ tab shell
 
+/** The tab that was open last time, reopened on load (restoreLastTab, at the end of this file). */
+const LAST_TAB_KEY = 'redmagic.lastTab';
+
 for (const btn of document.querySelectorAll('.tabBtn')) {
   btn.addEventListener('click', () => {
     if (btn.disabled) return;
@@ -72,6 +75,7 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     for (const panel of document.querySelectorAll('.tabPanel')) {
       panel.hidden = panel.id !== `tab-${btn.dataset.tab}`;
     }
+    try { localStorage.setItem(LAST_TAB_KEY, btn.dataset.tab); } catch { /* private window: nothing to remember */ }
     // Enemy Studio borrows the Enemy Creator's panels (its step 4) while it is on screen: first of
     // all, so the Enemy Creator tab finds them back where they belong.
     if (enemyStudio) {
@@ -506,7 +510,7 @@ function render() {
 
   boxes.forEach((b, i) => {
     const selected = selectedIndices.has(i);
-    ctx.strokeStyle = b.assignedLane ? '#5ec8a8' : (selected ? '#e8b04b' : '#e85b5b');
+    ctx.strokeStyle = b.assignedLane ? '#56e0b4' : (selected ? '#e3a850' : '#e85b5b');
     ctx.lineWidth = (selected ? 3 : 1.5) / view.scale; // keep stroke width constant on screen at any zoom
     ctx.strokeRect(b.x, b.y, b.w, b.h);
 
@@ -518,7 +522,7 @@ function render() {
 
     if (selected && primarySelected() === i) {
       const hs = 6 / view.scale;
-      ctx.fillStyle = '#e8b04b';
+      ctx.fillStyle = '#e3a850';
       [[b.x, b.y], [b.x + b.w, b.y], [b.x, b.y + b.h], [b.x + b.w, b.y + b.h]].forEach(([hx, hy]) => {
         ctx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
       });
@@ -614,7 +618,7 @@ canvas.addEventListener('mousemove', (e) => {
     render();
     const x = Math.min(dragState.startX, pos.x), y = Math.min(dragState.startY, pos.y);
     const w = Math.abs(pos.x - dragState.startX), h = Math.abs(pos.y - dragState.startY);
-    ctx.strokeStyle = '#e8b04b'; ctx.lineWidth = 2 / view.scale; ctx.setLineDash([4 / view.scale, 3 / view.scale]);
+    ctx.strokeStyle = '#e3a850'; ctx.lineWidth = 2 / view.scale; ctx.setLineDash([4 / view.scale, 3 / view.scale]);
     ctx.strokeRect(x, y, w, h); ctx.setLineDash([]);
   } else if (dragState.type === 'move') {
     dragState.box.x = pos.x - dragState.offX;
@@ -1072,6 +1076,7 @@ bossCreator = initBossCreator({
 
 vfxLab = initVfxLab({
   formRoot: document.getElementById('vfxFormRoot'),
+  galleryRoot: document.getElementById('vfxGalleryRoot'),
   previewRoot: document.getElementById('vfxPreviewRoot'),
   listRoot: document.getElementById('vfxListRoot'),
   statusEl: document.getElementById('vfxStatus'),
@@ -1562,7 +1567,7 @@ function renderMapCanvas() {
       const b = MapInstances.getInstanceBounds(inst, asset);
       mapCtx.drawImage(asset.image, b.x, b.y, b.w, b.h);
       if (selectedInstanceIds.has(inst.id)) {
-        mapCtx.strokeStyle = '#5ec8a8';
+        mapCtx.strokeStyle = '#56e0b4';
         mapCtx.lineWidth = 2 / mapView.scale;
         mapCtx.strokeRect(b.x, b.y, b.w, b.h);
       }
@@ -1572,10 +1577,10 @@ function renderMapCanvas() {
   if (selectedInstanceIds.size > 0) {
     const gb = MapInstances.getGroupBounds([...selectedInstanceIds], mapInstances, findMapAsset);
     const hs = 7 / mapView.scale;
-    mapCtx.strokeStyle = '#e8b04b';
+    mapCtx.strokeStyle = '#e3a850';
     mapCtx.lineWidth = 1.5 / mapView.scale;
     mapCtx.strokeRect(gb.x, gb.y, gb.w, gb.h);
-    mapCtx.fillStyle = '#e8b04b';
+    mapCtx.fillStyle = '#e3a850';
     [[gb.x, gb.y], [gb.x + gb.w, gb.y], [gb.x, gb.y + gb.h], [gb.x + gb.w, gb.y + gb.h]].forEach(([hx, hy]) => {
       mapCtx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
     });
@@ -2061,3 +2066,13 @@ function renderMapLibraryLists() {
 
 renderMapAssetsList();
 renderMapInstancesList();
+
+// ============================================================ reopen the last tab
+
+// Last thing of all: every tab is initialised by now, so clicking one runs its normal "on show" path.
+(function restoreLastTab() {
+  let last = null;
+  try { last = localStorage.getItem(LAST_TAB_KEY); } catch { /* no storage */ }
+  const btn = last && last !== 'sprites' ? document.querySelector(`.tabBtn[data-tab="${last}"]`) : null;
+  if (btn && !btn.disabled) btn.click();
+}());

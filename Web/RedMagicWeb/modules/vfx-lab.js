@@ -59,10 +59,12 @@ function thumbOf(preset) {
   return thumbs.get(preset.id);
 }
 
-export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved }) {
+export function initVfxLab({ formRoot, galleryRoot, previewRoot, listRoot, statusEl, onSaved }) {
+  let search = '';              // the gallery's filter text
   const stage = createStage({ createCanvas });   // "▶ Probar": the effect as the game plays it, with sounds
   let backdrop = BACKDROPS[0];
   let showAllFrames = false;
+  let sheetOpen = false;
   let preset = PRESETS[0];
   let params = defaultParams(preset);
   let name = '';
@@ -74,6 +76,12 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
   // ============================================================ form
 
   function renderForm() {
+    // Rebuilding the form must not move what the user was looking at: the gallery (its own scroll box)
+    // and the panel keep their scroll position.
+    // With a column of its own (galleryRoot) the gallery is only patched, never rebuilt, once it exists.
+    const galleryScroll = formRoot.querySelector('.vfxGallery')?.scrollTop || 0;
+    const panel = formRoot.closest('#vfxFormPanel') || formRoot.parentElement;
+    const panelScroll = panel ? panel.scrollTop : 0;
     formRoot.innerHTML = '';
 
     const pick = el('div', 'efSection');
@@ -86,8 +94,9 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
       if (currentId) { currentId = null; setStatus('Otro tipo de efecto: se guardará como una entrada nueva.'); }
       renderForm(); renderPreview(); renderList();
     };
-    const gallery = el('div', 'vfxGallery');
-    FAMILIES.forEach((family) => {
+    const existing = galleryRoot ? galleryRoot.querySelector('.vfxGallery') : null;
+    const gallery = existing || el('div', 'vfxGallery');
+    if (!existing) FAMILIES.forEach((family) => {
       const members = PRESETS.filter((p) => p.family === family.id);
       if (!members.length) return;
       const head = el('div', 'vfxFamily', `${family.label} (${members.length})`);
@@ -103,12 +112,28 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
         img.alt = '';
         img.src = thumbOf(p);
         card.append(img, el('span', null, p.label));
-        card.onclick = () => choose(p);
+        card.dataset.search = `${p.label} ${p.description} ${family.label}`.toLowerCase();
+        card.onclick = () => chooseRef.current(p);
         grid.appendChild(card);
       });
       gallery.appendChild(grid);
     });
-    pick.appendChild(gallery);
+    chooseRef.current = choose;
+    gallery.querySelectorAll('.vfxCard').forEach((card) => card.classList.toggle('selected', card.dataset.preset === preset.id));
+    if (galleryRoot) {
+      if (!existing) {
+        const box = el('div', 'vfxSearch');
+        const input = el('input');
+        input.type = 'text';
+        input.placeholder = `Buscar entre ${PRESETS.length} efectos: fuego, hielo, impacto…`;
+        input.value = search;
+        input.addEventListener('input', () => { search = input.value; applySearch(gallery); });
+        box.appendChild(input);
+        galleryRoot.append(box, gallery);
+      }
+    } else {
+      pick.appendChild(gallery);
+    }
     pick.appendChild(el('p', 'vfxChosen', preset.label));
     pick.appendChild(el('p', 'efHint', preset.description));
     pick.appendChild(el('p', 'efHint', `Se guarda como ${kindOf(preset.kind).label} con las animaciones ${preset.lanes.map((l) => l.name).join(' / ')}: `
@@ -157,6 +182,30 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
     actions.append(saveBtn, variantBtn, fresh);
     formRoot.appendChild(actions);
     updateButtons();
+    if (!galleryRoot) gallery.scrollTop = galleryScroll;
+    if (panel) panel.scrollTop = panelScroll;
+  }
+
+  // The gallery outlives renderForm (it is built once): its cards call whatever `choose` is current.
+  const chooseRef = { current: () => {} };
+
+  /** Hides the cards (and the families left empty) that do not contain every word typed. */
+  function applySearch(gallery) {
+    const words = search.toLowerCase().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    gallery.querySelectorAll('.vfxCards').forEach((grid) => {
+      let any = false;
+      grid.querySelectorAll('.vfxCard').forEach((card) => {
+        const match = words.every((w) => card.dataset.search.includes(w));
+        card.hidden = !match;
+        if (match) { any = true; shown++; }
+      });
+      grid.hidden = !any;
+      if (grid.previousElementSibling?.classList.contains('vfxFamily')) grid.previousElementSibling.hidden = !any;
+    });
+    let none = gallery.querySelector('.vfxNoMatch');
+    if (!shown && !none) { none = el('p', 'vfxNoMatch', 'Ningún efecto con ese nombre. Prueba con menos letras.'); gallery.appendChild(none); }
+    if (none) none.hidden = shown > 0;
   }
 
   /** The common parameters of `values` (look, not preset-specific extras), minus what `next` overrides. */
@@ -223,10 +272,15 @@ export function initVfxLab({ formRoot, previewRoot, listRoot, statusEl, onSaved 
     stage.setEffect(preset, baked, backdrop);
     previewRoot.appendChild(stage.el);
     if (showAllFrames) previewRoot.appendChild(contactSheet(baked));
+    // The sheet itself is what gets saved, but it is rarely what you want to look at: folded away.
     baked.canvas.className = 'vfxSheet';
     baked.canvas.style.background = backdrop.color;
-    previewRoot.appendChild(el('p', 'efHint', `Hoja que se guarda: ${baked.width}×${baked.height} px, ${baked.boxes.length} frames.`));
-    previewRoot.appendChild(baked.canvas);
+    const sheetBox = el('details', 'vfxSheetBox');
+    sheetBox.open = sheetOpen;
+    sheetBox.addEventListener('toggle', () => { sheetOpen = sheetBox.open; });
+    sheetBox.appendChild(el('summary', null, `Hoja que se guarda: ${baked.width}×${baked.height} px, ${baked.boxes.length} frames`));
+    sheetBox.appendChild(baked.canvas);
+    previewRoot.appendChild(sheetBox);
 
     players.forEach(paint);
     if (!running) { running = true; last = 0; requestAnimationFrame(tick); }

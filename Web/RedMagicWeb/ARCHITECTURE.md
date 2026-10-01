@@ -7,6 +7,8 @@ rules — see the bottom of this doc for a one-line server command).
 This file is the primary reference for "I want to change X" requests. **Keep it accurate**: when a
 module's responsibility shifts, update its row in the same change.
 
+**Look and layout rules** (tokens, type, tab groups, what a panel may and may not do): `DESIGN.md`.
+
 ## Module map
 
 | To change... | Edit | Function |
@@ -185,7 +187,7 @@ Effects drawn in code from parameters and **baked into a normal frame sheet**, s
 | Shared drawing helpers | `modules/vfx-draw.js` | light: `glowDot`, `ring`, `core`, `sparkShape`, `burst`, `shockRing`, `flare`, `cone`; shapes: `streak` (teardrop), `sliver`, `shard`, `crescent`, `boltPath` + `lightning`, `puff`, `flame`, `droplet`, `bubble`, `blob`, `chunk`; colour: `mix`, `shade`, `ramp(p, t)` (core → glow → dark edge); motion: `loopNoise` (periodic), `emit` (wrapping lifetimes), `bell`, `pop`, eases; `solid(ctx, fn)` = normal blending for dark / opaque shapes |
 | The parameters every preset shares (size, colours, glow, sparks, speed, length, pixelation, seed) | `modules/vfx-presets.js` | `COMMON_PARAMS`, `normalizeParams()` |
 | How a preset becomes a sheet (one row per lane, the Sprites tab's `sprite` block shape) | `modules/vfx-presets.js` | `bakePreset()`, `drawFrame()`, `frameCount()`, `laneFps()` |
-| The tab: gallery by family, form, live preview, backdrops, contact sheet, save / update in place / variant, the list of saved presets | `modules/vfx-lab.js` | `initVfxLab()` — `thumbOf` (gallery stills, cached), `BACKDROPS`, `contactSheet()` ("Ver todos los frames"); the record keeps `draft.vfxPreset = { id, params }` to be reopened |
+| The tab: gallery by family in its own column (`#vfxGalleryRoot`, built once, with a search box), form, live preview, backdrops, contact sheet, save / update in place / variant, the list of saved presets | `modules/vfx-lab.js` | `initVfxLab()` — `thumbOf` (gallery stills, cached), `BACKDROPS`, `contactSheet()` ("Ver todos los frames"); the record keeps `draft.vfxPreset = { id, params }` to be reopened |
 | "▶ Probar": the effect played as the game plays it (a projectile flies from a caster to a dummy and bursts on it; an fx runs Spawn → Loop → End), from the **baked** sheet, with its sounds | `modules/vfx-stage.js` | `buildTimeline(preset, baked)` (the segments: lane, seconds, positions, sound), `createStage()` (canvas, play / stop, the sounds list with ▶ and ⬇ .wav), `playSound` (Web Audio; no Web Audio = silent, no error) |
 | The example sounds (synthesised in code, DOM-free) and which moment of which preset plays which | `modules/vfx-sounds.js` | `SOUNDS` — `{ label, seconds, loop?, layers }`, layers = `tone` / `noise` (filtered, gliding) / `pings` / `clicks`; `PRESET_SOUNDS[preset] = { cast?, <Lane>: soundId }` (a looping lane needs a `loop` sound); `renderSound(id)` → samples, `encodeWav()` |
 | The game's own effects and sounds, baked without a browser | `tools/bake-vfx.mjs` + `tools/vfx-bakes.json`, `tools/bake-sounds.mjs` | node + `@napi-rs/canvas` (`npm install` in `tools/` once). Frames → `Assets/Art/VfxLab/<name>/`, then Unity's `VfxLabArtPack` builds and wires the prefabs (`docs/architecture/fx-placeholders.md`); sounds → `Assets/Audio/Sfx/VfxLab/*.wav`, assigned by hand |

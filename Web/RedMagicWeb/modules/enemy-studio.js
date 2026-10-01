@@ -1,0 +1,256 @@
+// modules/enemy-studio.js
+// -----------------------------------------------------------------------------
+// The 🧬 Enemy Studio tab: one workflow from loose part PNGs to a finished enemy, as steps.
+//
+//   left   — the steps, in the order of the work (one open at a time; the later ones unlock once
+//            the body is usable): 1 Cuerpo · 2 Plantilla · 3 Efectos · 4 Comportamiento · 5 Exportar
+//   centre — the Rig Composer's canvas
+//   right  — the inspector of what is selected; in step 4 (enemies) the behaviour form
+//
+// It owns NO editor of its own. The body is the one Rig Composer (rig-composer.js) and the behaviour
+// is the one Enemy Creator form (enemy-form.js): while this tab is visible their panels are MOVED
+// into its layout (mount), and put back when another tab is shown (unmount). So there is one
+// document and one form whichever tab shows them — nothing to keep in sync, nothing lost.
+//
+// What the Studio adds on top: the step order and locks, and the glue that makes the two halves one
+// enemy — opening step 4 saves the body and links the form to it; the form is saved when the step is
+// left and before the body is saved or exported (the composer's hooks).
+//
+// Plan and what each later phase adds to these steps: docs/web-enemy-studio-plan.md.
+
+import { listEntries } from './enemy-library.js';
+import { kindOf } from './entry-kinds.js';
+
+const STEPS = [
+  { id: 'body', title: 'Cuerpo' },
+  { id: 'template', title: 'Plantilla' },
+  { id: 'effects', title: 'Efectos' },
+  { id: 'behaviour', title: 'Comportamiento' },
+  { id: 'export', title: 'Exportar' },
+];
+
+const el = (tag, cls, text) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+};
+
+/**
+ * @param {object} o
+ * @param {HTMLElement} o.panel - #tab-studio
+ * @param {HTMLElement} o.stepsEl / o.centerEl / o.rightEl - its three columns
+ * @param {object} o.rig - initRigComposer's API
+ * @param {object} o.enemy - initEnemyCreator's API
+ * @param {object} o.nodes - the borrowed panels: rigBody, rigTemplate, rigCenter, rigMain, rigLinks,
+ *                           rigExport (Rig Composer hosts), enemyForm, enemyPreview (Enemy Creator)
+ * @param {(tab: string) => void} o.openTab - switches to another tab of the app
+ */
+export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy, nodes, openTab }) {
+  let active = 'body';
+  let mounted = false;
+  let effects = [];              // library projectiles / fx (step 3)
+  let behaviourNote = '';        // why the behaviour form is not on screen (step 4)
+
+  // ============================================================ layout (built once)
+
+  stepsEl.appendChild(el('h1', null, '🧬 Enemy Studio'));
+  const stepEls = {};
+  STEPS.forEach((step, i) => {
+    const box = el('div', 'studioStep');
+    const head = el('button', 'studioStepHead');
+    const state = el('span', 'studioStepState');
+    head.append(el('span', 'studioStepNum', String(i + 1)), el('span', 'studioStepTitle', step.title), state);
+    head.onclick = () => open(step.id);
+    const body = el('div', 'studioStepBody');
+    box.append(head, body);
+    stepsEl.appendChild(box);
+    stepEls[step.id] = { box, head, state, body };
+  });
+
+  // Where each borrowed panel goes, and the Studio's own bits around them.
+  const startHint = el('div', 'rigBlock');
+  startHint.appendChild(el('p', 'hint', 'Suelta los PNG de las piezas en el lienzo, o empieza de una forma ya hecha.'));
+  const startBtn = el('button', 'small', '🧬 Empezar desde una plantilla →');
+  startBtn.onclick = () => open('template');
+  startHint.appendChild(startBtn);
+  stepEls.body.body.appendChild(startHint);
+
+  const effectsBox = el('div');
+  stepEls.effects.body.appendChild(effectsBox);
+
+  const behaviourInfo = el('p', 'hint');
+  stepEls.behaviour.body.appendChild(behaviourInfo);
+
+  const slots = {
+    rigBody: stepEls.body.body,
+    rigTemplate: stepEls.template.body,
+    rigLinks: stepEls.behaviour.body,
+    enemyPreview: stepEls.behaviour.body,
+    rigExport: stepEls.export.body,
+    rigCenter: centerEl,
+    rigMain: rightEl,
+    enemyForm: rightEl,
+  };
+
+  // ============================================================ borrowing the panels
+
+  const order = Object.keys(slots);
+  let homes = null;
+
+  function mount() {
+    if (mounted) return;
+    homes = order.map((key) => ({ node: nodes[key], parent: nodes[key].parentNode, next: nodes[key].nextSibling }));
+    order.forEach((key) => slots[key].appendChild(nodes[key]));
+    mounted = true;
+  }
+
+  function unmount() {
+    if (!mounted) return;
+    // Last one first: each `next` is then already back in place.
+    [...homes].reverse().forEach(({ node, parent, next }) => parent.insertBefore(node, next && next.parentNode === parent ? next : null));
+    nodes.rigMain.hidden = false;
+    nodes.enemyForm.hidden = false;
+    nodes.enemyPreview.hidden = false;
+    mounted = false;
+  }
+
+  // ============================================================ steps: locks and state
+
+  function usable(st) { return !!st.name && st.hasArt && st.openRequired === 0; }
+
+  function whyNotUsable(st) {
+    if (!st.hasArt) return 'sin piezas';
+    if (st.openRequired) return `faltan ${st.openRequired} huecos`;
+    if (!st.name) return 'falta el nombre';
+    return '';
+  }
+
+  function locked(id, st = rig.getStatus()) {
+    return (id === 'effects' || id === 'behaviour' || id === 'export') && !usable(st);
+  }
+
+  function render() {
+    const st = rig.getStatus();
+    if (locked(active, st)) active = 'body';
+    panel.dataset.step = active;
+    panel.dataset.kind = st.kind;
+
+    const text = {
+      body: usable(st) ? `${st.parts} piezas · ${st.gestures} gestos` : whyNotUsable(st),
+      template: st.template || '',
+      effects: effects.length ? `${effects.length} en biblioteca` : '',
+      behaviour: st.kind === 'boss' ? 'jefe' : st.behaviour ? 'configurado' : 'por defecto',
+      export: st.id ? 'guardado' : 'sin guardar',
+    };
+    const done = { body: usable(st), template: !!st.template, behaviour: st.behaviour, export: !!st.id };
+
+    STEPS.forEach(({ id }) => {
+      const s = stepEls[id];
+      const isLocked = locked(id, st);
+      s.box.className = `studioStep${id === active ? ' open' : ''}${isLocked ? ' locked' : ''}${done[id] && !isLocked ? ' done' : ''}`;
+      s.head.title = isLocked ? `Primero el cuerpo (paso 1): ${whyNotUsable(st)}.` : '';
+      s.state.textContent = isLocked ? '🔒' : text[id];
+      s.body.hidden = id !== active;
+    });
+
+    startHint.hidden = st.parts > 0;
+
+    // Right column: the behaviour form in step 4 (enemies, once linked to this body), else the inspector.
+    const form = active === 'behaviour' && st.kind === 'enemy' && !!st.id && enemy.linkedId() === st.id;
+    nodes.enemyForm.hidden = !form;
+    nodes.rigMain.hidden = form;
+    nodes.enemyPreview.hidden = !form;
+    behaviourInfo.textContent = st.kind === 'boss'
+      ? 'Un jefe toma sus ataques y fases de 👑 Boss Creator: enlázalo aquí abajo.'
+      : form
+        ? 'El formulario está a la derecha. Se guarda solo al salir de este paso, al guardar y al exportar.'
+        : behaviourNote || 'Abriendo el comportamiento…';
+  }
+
+  // ============================================================ step 3: effects of the library
+
+  async function refreshEffects() {
+    effects = [...(await listEntries('projectile')), ...(await listEntries('fx'))];
+    effectsBox.innerHTML = '';
+    effectsBox.appendChild(el('p', 'hint', 'Proyectiles y efectos de la biblioteca. Hoy se eligen en los ataques (paso 4); engancharlos a las fases de un gesto es la siguiente fase del Studio.'));
+    const list = el('div', 'studioFxList');
+    effects.forEach((entry) => {
+      const row = el('div', 'studioFxRow');
+      if (entry.thumbnail) { const img = el('img'); img.src = entry.thumbnail; img.alt = ''; row.appendChild(img); }
+      else row.appendChild(el('span', 'studioFxEmpty'));
+      row.appendChild(el('span', null, entry.enemyName));
+      row.appendChild(el('span', 'kind', kindOf(entry.kind).label));
+      list.appendChild(row);
+    });
+    if (!effects.length) list.appendChild(el('p', 'hint', 'Todavía no hay ninguno.'));
+    effectsBox.appendChild(list);
+    const lab = el('button', 'small', '✨ Crear uno en VFX Lab');
+    lab.onclick = () => openTab('vfx');
+    effectsBox.appendChild(lab);
+    render();
+  }
+
+  // ============================================================ step 4: the behaviour form on this body
+
+  /** The form, if it is editing THIS body, saved onto its record (no download). */
+  async function flushBehaviour(force = false) {
+    if (!mounted && !force) return;   // on the old tabs the form is only saved by its own exports, as before
+    const id = rig.getStatus().id;
+    if (id && enemy.linkedId() === id) await enemy.persistLinked();
+  }
+
+  /** Saves the body (the form edits a library record) and points the form at it. */
+  async function enterBehaviour() {
+    const st = rig.getStatus();
+    if (st.kind !== 'enemy') { render(); return; }
+    behaviourNote = '';
+    const id = await rig.save();   // afterSave → flushBehaviour: a form already on this body is kept
+    if (!id) { behaviourNote = 'No se pudo guardar el cuerpo en la biblioteca: revisa el nombre en el paso 1.'; render(); return; }
+    if (enemy.linkedId() !== id) await enemy.linkLibraryEntry(id, st.name);
+    else { enemy.setEnemyName(st.name); await enemy.refreshArtLibrary(); }
+    render();
+  }
+
+  async function open(id) {
+    if (locked(id) || id === active) return;
+    const leftBehaviour = active === 'behaviour';
+    if (leftBehaviour) await flushBehaviour();
+    active = id;
+    if (leftBehaviour) await rig.refreshLibraries();   // the composer re-reads the behaviour just saved
+    render();
+    if (id === 'behaviour') await enterBehaviour();
+    else if (id === 'effects') await refreshEffects();
+  }
+
+  // ============================================================ glue with the composer
+
+  rig.hooks.beforeExport = () => flushBehaviour();
+  rig.hooks.afterSave = () => flushBehaviour();
+  rig.hooks.onChange = () => { if (mounted) render(); };
+
+  async function show() {
+    mount();
+    rig.onShow();
+    render();
+    if (active === 'behaviour') await enterBehaviour();
+    else if (active === 'effects') await refreshEffects();
+  }
+
+  async function hide() {
+    if (!mounted) return;
+    // Panels go back at once (the tab being shown needs them now); the form is saved meanwhile.
+    const saving = active === 'behaviour';
+    unmount();
+    if (saving) await flushBehaviour(true);
+  }
+
+  /** Biblioteca ▸ a saved body template ▸ "Editar en Enemy Studio": a new enemy from it. */
+  async function linkLibraryEntry(id) {
+    await rig.useTemplateRecord(id);
+    active = 'body';
+    render();
+  }
+
+  return { show, hide, open, linkLibraryEntry, isMounted: () => mounted };
+}

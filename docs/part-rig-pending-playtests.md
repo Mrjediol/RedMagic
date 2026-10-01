@@ -166,3 +166,46 @@ on every action was not liked. Decision: **one driver, `RigDriverCode`**; the DO
       for inheritance, nothing in its behaviour should have changed.
 - [ ] T2 · No missing-script or missing-prefab warnings in scenes where a `…Tween` copy was placed
       for the comparison (remove those instances; the prefabs no longer exist).
+
+---
+
+## Enemy Studio S1 — shell + templates (web only, branch `task/enemy-studio`)
+
+**What was added**
+- New web tab **🧬 Enemy Studio**: steps on the left (1 Cuerpo, 2 Plantilla, 3 Efectos, 4 Comportamiento,
+  5 Exportar), the Rig Composer canvas in the centre, the inspector on the right. Steps 3–5 unlock when the
+  body has a name and art. It uses the same composer and the same Enemy Creator form as the old tabs (both
+  still there): what you do in one is in the other.
+- Step 4 puts the Enemy Creator form next to the canvas, already linked to the body on screen. It is saved
+  when you leave the step, when you save and when you export.
+- **Templates**: "Guardar como plantilla" saves the body shape + gestures + behaviour (no art) to the library;
+  it appears with a ★ in "Nuevo desde plantilla", with "Con sus gestos" / "Con su comportamiento" checkboxes.
+  "Más ▸ Traer sólo sus gestos a este cuerpo" copies a template's gestures onto the enemy on screen.
+- Rig Composer tab: the template block is now below the parts list (same content plus the new buttons).
+- Fix: saving a rig where two parts use the same PNG no longer hangs.
+
+**Tests** (reload with Ctrl+F5 first)
+- [ ] ES1 · Open 🧬 Enemy Studio empty: 5 steps, 3–5 with a lock. Does the layout read well (widths, what is
+      at hand, anything noisy)?
+- [ ] ES2 · Step 2 ▸ Nuevo: Lanzador flotante, fill the slots in step 1, give it a name: steps unlock, step 1
+      shows "n piezas · 3 gestos". Gestures, poses and "▶ Probar" work as in Rig Composer.
+- [ ] ES3 · Step 4: the form appears on the right with the template's values (FlyingRanged, vida 30); name /
+      art rows are not shown. Change health and add an attack with a gesture; go to step 5 and back to 4: the
+      values are still there. Is the form comfortable at that width?
+- [ ] ES4 · Step 5 ▸ Exportar .zip, import in Unity (Importar rig): the enemy has the health and the deck you
+      set in step 4 without ever opening the Enemy Creator tab.
+- [ ] ES5 · Step 2 ▸ Guardar como plantilla (give it a name). It shows as "★ name" in the list and in
+      📚 Biblioteca ▸ Plantillas. Nuevo from it: same slots (pivots, boca, roles), same gestures, same
+      behaviour in step 4; drop DIFFERENT art in the slots: pivots land in sensible places, "▶ Probar" on a
+      gesture still reads right at the new size.
+- [ ] ES6 · Same template with "Con sus gestos" / "Con su comportamiento" unchecked: no gestures / default
+      behaviour.
+- [ ] ES7 · Open another saved rig (different part names, one part marked "apunta"), step 2 ▸ pick your
+      template ▸ Más ▸ Traer sólo sus gestos: the gestures appear and the arm poses move the part that aims;
+      the status line names the slots it could not match.
+- [ ] ES8 · Regression: 🦴 Rig Composer and 🧩 Enemy Creator tabs still work after visiting the Studio (panels
+      in place, export from each). Open a rig in Rig Composer, then click 🧬: same document.
+- [ ] ES9 · A boss rig in the Studio: step 4 shows the Boss Creator link (no enemy form); export as before.
+
+**Known limits of S1**: step 3 only lists effects (attaching them to gesture phases is S2); a template keeps
+no art and no state sprites; a boss template does not keep the feet height.

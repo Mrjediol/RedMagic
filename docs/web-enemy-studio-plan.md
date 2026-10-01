@@ -1,6 +1,6 @@
 # Plan — Enemy Studio: one web flow from parts to a finished enemy
 
-Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Nothing here is built yet.**
+Next big task (proposed 2026-10-01, after the part-rig plan D–F). **Built so far: S1** (see Progress).
 Goal, in the user's words: import the parts of an enemy, build body and gestures, save it as a
 **template**, create projectile / VFX effects in the VFX tab, and **attach those effects anywhere
 on the enemy** — plus defensive moves, idle gestures, and per-state sprites — in one comfortable
@@ -114,12 +114,26 @@ A single list of **reactions**, each = trigger → gesture → optional effect, 
 Order rationale: S1 gives the workflow shell the user asked for; S2 is the most visible new power
 (effects on phases); S3–S5 are independent and can swap order by the user's priority.
 
-## Decisions to take at S1 (not now)
-- Template granularity: body only, body + gestures, or body + gestures + behaviour (recommended:
-  all three optional on use, saved together).
-- Whether the Studio keeps a per-attack timeline view or just phases per gesture (recommended:
-  phases per gesture first; an attack's own timeline is its gesture's).
-- Effect anchors: part / muzzle / body / feet is enough; free world points later.
+## Progress
+- **S1 — done (2026-10-01, branch `task/enemy-studio`, web only, no Unity or schema change).**
+  New tab 🧬 Enemy Studio: 5 steps on the left, the composer's canvas, inspector on the right; the
+  Enemy Creator form is step 4. It borrows the panels of the two existing tabs (no second editor);
+  opening step 4 saves the body and links the form, leaving it / saving / exporting saves the form.
+  Templates: "Guardar como plantilla" (kind `rig-template`), listed with the built-ins, gestures by
+  slot, behaviour included; "Traer sólo sus gestos" onto another body by role. Details:
+  `Web/RedMagicWeb/ARCHITECTURE.md ▸ Enemy Studio tab`. Checked headless (jsdom + Ajv, 66 checks:
+  template round-trip against the rig schema, the whole step flow, export zip, old tabs intact).
+  **Not seen in a real browser yet** — layout and feel are in the pending-tests file (ES1…).
+- Step 3 (Efectos) is only a list of the library's effects until S2.
+- **Next: S2** (gesture phases + FX hooks). A user template must then also carry `phases[].fx`:
+  extend `templateFromState` / `instantiateTemplate` / `importGestures` together with the gesture.
+
+## Decisions
+- Template granularity (taken at S1): saved together (body + gestures + behaviour), each optional
+  **on use** ("Con sus gestos" / "Con su comportamiento"). No art in a template.
+- Still open for S2: whether the Studio keeps a per-attack timeline view or just phases per gesture
+  (recommended: phases per gesture first; an attack's own timeline is its gesture's).
+- Still open for S2: effect anchors — part / muzzle / body / feet is enough; free world points later.
 
 ## Risks
 - Scope: S2/S3 touch schema + Unity + web at once; each must keep the round-trip test

@@ -29,6 +29,14 @@
 //
 // Lengths (sway moves, hover, recoil, gesture moves…) are written for a body `height` units tall and
 // rescaled to the real art once the required slots are filled (fitLengths).
+//
+// USER TEMPLATES ("Guardar como plantilla", Enemy Studio ▸ Plantilla): the same data shape, made from
+// a composed document by templateFromState and stored as a library record of kind `rig-template`
+// (the template object is the record's `draft`; no art travels in it). Extra optional keys only a
+// user template writes: slot `rotation` / `scale`, `order` (riders / limbs / orbiters in role order),
+// `rootScale`, and `behaviour.config` (a whole EnemyConfig instead of the built-ins' partial tuning).
+// Gestures reference parts by SLOT ID, never by uid, so they survive into any body made from the
+// template — and importGestures lays them over an existing body by slot id → role → name.
 
 import { createDefaultRigState, createPart } from './rig-defaults.js';
 import { createDefaultEnemyConfig } from './enemy-defaults.js';
@@ -241,13 +249,23 @@ export function templateById(id) {
 // ============================================================ template → document
 
 const xy = (a, fallback = [0, 0]) => ({ x: (a || fallback)[0], y: (a || fallback)[1] });
+const r4 = (v) => Math.round(v * 1e4) / 1e4;
+const scaled = (v, k) => (typeof v === 'number' ? r4(v * k) : { x: r4(v.x * k), y: r4(v.y * k) });
 
-/** A new composer document with every slot of `template` as an empty part, roles and defaults set. */
-export function instantiateTemplate(template) {
+/**
+ * A new composer document with every slot of `template` as an empty part, roles and defaults set.
+ * `take` is what else comes along: its gestures, its behaviour (both on unless switched off).
+ */
+export function instantiateTemplate(template, take = {}) {
+  const withGestures = take.gestures !== false, withBehaviour = take.behaviour !== false;
   const state = createDefaultRigState();
   state.kind = template.kind;
   // `height`: the body height the document's lengths are written for right now (see fitLengths).
-  state.template = { id: template.id, height: template.height, fitted: false };
+  state.template = { id: template.id, label: template.label, height: template.height, fitted: false };
+  // A user template's behaviour is a whole EnemyConfig: it lives in the document (suggestedEnemyConfig).
+  if (!withBehaviour) state.template.noBehaviour = true;
+  else if (template.behaviour?.config) state.template.behaviour = JSON.parse(JSON.stringify(template.behaviour.config));
+  if (template.rootScale > 0) state.rootScale = template.rootScale;
   Object.assign(state.rig, JSON.parse(JSON.stringify(template.rig || {})));
   ['corpse', 'collider', 'bossLimbs', 'bossBody'].forEach((k) => {
     if (template[k]) Object.assign(state[k], JSON.parse(JSON.stringify(template[k])));
@@ -258,6 +276,8 @@ export function instantiateTemplate(template) {
     const part = createPart({ name: slot.name, index });
     uidOf.set(slot.id, part.uid);
     part.position = xy(slot.at);
+    if (slot.rotation) part.rotation = slot.rotation;
+    if (slot.scale) part.scale = xy(slot.scale, [1, 1]);
     if (slot.rigPart === false) part.rigPart = false;
     if (slot.sway) {
       const s = slot.sway;
@@ -290,15 +310,217 @@ export function instantiateTemplate(template) {
       else if (role === 'body') state.bossBody.bodyRenderer = uid;
     });
   });
+  // Role ORDER matters (first limb = the left one): a user template keeps the document's.
+  ['riders', 'limbs', 'orbiters'].forEach((k) => {
+    const order = template.order?.[k];
+    if (order) state.roles[k] = order.map((id) => uidOf.get(id)).filter(Boolean);
+  });
 
   const poses = (list) => (list || []).map((p) => ({
     part: p.part === 'Visual' ? 'Visual' : uidOf.get(p.part), move: xy(p.move), rotate: p.rotate || 0, scale: xy(p.scale),
   })).filter((p) => p.part);
-  state.gestures = (template.gestures || []).map((g) => ({
+  state.gestures = withGestures ? (template.gestures || []).map((g) => ({
     name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake,
     windup: poses(g.windup), strike: poses(g.strike),
-  }));
+  })) : null;
+  if (!withGestures) state.rig.moveGesture = '';
   return state;
+}
+
+// ============================================================ document → template (user templates)
+
+const slug = (name) => {
+  const s = String(name || '').normalize('NFD').replace(/[^A-Za-z0-9]/g, '');
+  return s ? s[0].toLowerCase() + s.slice(1) : '';
+};
+const pair = (v) => [r4(v.x), r4(v.y)];
+
+/** Original-canvas pixels → normalized in the TRIMMED image ([x from left, y from top]). */
+function normalized(image, px) {
+  return [r4((px.x - image.cropX) / image.w), r4((px.y - image.cropY) / image.h)];
+}
+
+/** The role names a part plays in `state` (the vocabulary of a slot's `roles`). */
+function rolesOfPart(state, part) {
+  const r = state.roles, out = [];
+  if (r.aim === part.uid) out.push('aim');
+  if (r.stretch === part.uid) out.push('stretch');
+  if (r.riders.includes(part.uid)) out.push('rider');
+  if (r.limbs.includes(part.uid)) out.push('limb');
+  if (r.orbiters.includes(part.uid)) out.push('orbiter');
+  if (state.bossBody.bodyRenderer === part.uid) out.push('body');
+  return out;
+}
+
+/**
+ * The composed document as a TEMPLATE: every part becomes a slot (placement, pivot / muzzle / grip /
+ * centre guesses taken from where they are on this art, roles, sway), the gestures are rewritten by
+ * slot id, and `behaviour` (an EnemyConfig, or null) is carried whole. No art is kept: a template is
+ * a body shape. `bodyHeight` = the body's height in units right now (lengths are written for it).
+ */
+export function templateFromState(state, { label, description = '', bodyHeight = 0, behaviour = null } = {}) {
+  const ppu = state.pixelsPerUnit;
+  const ids = new Map(), used = new Set();
+  state.parts.forEach((part) => {
+    const base = part.slot?.id || slug(part.name) || 'part';
+    let id = base, n = 2;
+    while (used.has(id)) id = `${base}${n++}`;
+    used.add(id);
+    ids.set(part.uid, id);
+  });
+
+  const slots = state.parts.map((part) => {
+    const slot = { id: ids.get(part.uid), name: part.name };
+    if (part.parent && ids.has(part.parent)) slot.parent = ids.get(part.parent);
+    const roles = rolesOfPart(state, part);
+    if (roles.length) slot.roles = roles;
+    slot.at = pair(part.position);
+    if (part.rotation) slot.rotation = part.rotation;
+    if (part.scale.x !== 1 || part.scale.y !== 1) slot.scale = pair(part.scale);
+    if (!part.rigPart) slot.rigPart = false;
+    slot.sway = { move: pair(part.sway.move), rotate: part.sway.rotate, scale: pair(part.sway.scale), speed: part.sway.speed, phase: part.sway.phase };
+    slot.leanFollow = part.leanFollow;
+    slot.pointAngle = part.pointAngle;
+    slot.breaksOnDeath = part.breaksOnDeath;
+
+    if (!part.image && !part.slot) { slot.node = true; return slot; }   // a plain pivot
+
+    const old = part.slot || {};
+    slot.label = old.label || part.name;
+    slot.hint = old.hint || '';
+    if (old.optional) slot.optional = true;
+    const key = slug(part.name).toLowerCase();
+    slot.match = old.match?.length ? [...old.match] : (key.length >= 3 ? [key] : []);
+    const v = part.variants || {};
+    if (old.states || v.asleep || v.awake || v.attacking) slot.states = true;
+    if (old.stage || v.stages?.length) slot.stage = true;
+
+    if (!part.image) {   // a slot still empty: its guesses as they came
+      slot.pivot = [...(old.pivot || [0.5, 0.5])];
+      slot.size = [...(old.size || [1, 1])];
+      ['muzzle', 'grip', 'center', 'barrel'].forEach((k) => { if (old[k] !== undefined) slot[k] = old[k]; });
+      return slot;
+    }
+
+    const img = part.image;
+    slot.pivot = normalized(img, part.pivot);
+    slot.size = [r4(img.w / ppu), r4(img.h / ppu)];
+    if (part.center) slot.center = normalized(img, part.center);
+    if (state.roles.aim === part.uid && state.roles.muzzle) {
+      slot.muzzle = normalized(img, state.roles.muzzle);
+      // The barrel is pivot → muzzle unless it was corrected by hand: only then is it fixed.
+      const local = pixelToLocal(state, part, state.roles.muzzle);
+      const auto = (Math.atan2(local.y, local.x) * 180) / Math.PI;
+      if (Math.abs(auto - state.rig.aimArtAngle) > 0.5) slot.barrel = state.rig.aimArtAngle;
+    }
+    if (state.roles.grips[part.uid]) slot.grip = normalized(img, state.roles.grips[part.uid]);
+    return slot;
+  });
+
+  const poses = (list) => (list || [])
+    .map((p) => ({ part: p.part === 'Visual' ? 'Visual' : ids.get(p.part), move: pair(p.move), rotate: p.rotate || 0, scale: pair(p.scale) }))
+    .filter((p) => p.part);
+
+  const copy = (o) => JSON.parse(JSON.stringify(o));
+  const template = {
+    id: null,                       // set from the library record when listed (templateFromRecord)
+    user: true,
+    label: (label || state.name || 'Plantilla').trim(),
+    kind: state.kind,
+    shape: description,
+    fits: '',
+    height: bodyHeight > 0 ? r4(bodyHeight) : (state.template?.height || 1),
+    rootScale: state.rootScale,
+    rig: copy(state.rig),
+    corpse: copy(state.corpse),
+    collider: copy(state.collider),
+    slots,
+    order: {
+      riders: state.roles.riders.map((u) => ids.get(u)).filter(Boolean),
+      limbs: state.roles.limbs.map((u) => ids.get(u)).filter(Boolean),
+      orbiters: state.roles.orbiters.map((u) => ids.get(u)).filter(Boolean),
+    },
+    gestures: (state.gestures || []).map((g) => ({
+      name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake,
+      windup: poses(g.windup), strike: poses(g.strike),
+    })),
+  };
+  if (state.kind === 'boss') {
+    template.bossLimbs = copy(state.bossLimbs);
+    const { bodyRenderer, definition, ...numbers } = state.bossBody;   // a uid and a Unity path: not a shape
+    template.bossBody = copy(numbers);
+  } else if (behaviour?.tuning) {
+    const t = behaviour.tuning;
+    template.behaviour = {
+      summary: `${t.archetype || 'Melee'} · vida ${t.maxHealth ?? 30} · ataque ${t.attackRange ?? 1.6} u${Array.isArray(t.attacks) ? ` · baraja de ${t.attacks.length}` : ''}`,
+      config: copy(behaviour),
+    };
+  }
+  return template;
+}
+
+/** A library record of kind `rig-template` as a template (id = USER_TEMPLATE_PREFIX + record id). */
+export const USER_TEMPLATE_PREFIX = 'lib:';
+export function templateFromRecord(record) {
+  if (!record?.draft?.slots) return null;
+  return { ...record.draft, id: USER_TEMPLATE_PREFIX + record.id, label: record.enemyName, user: true, recordId: record.id };
+}
+
+// ============================================================ gestures onto an existing body
+
+/** Template slot id → part uid of `state`: same slot id first, then the same role, then the same name. */
+export function matchSlotsToParts(state, template) {
+  const map = new Map(), taken = new Set();
+  const claim = (slotId, part) => {
+    if (!part || map.has(slotId) || taken.has(part.uid)) return;
+    map.set(slotId, part.uid);
+    taken.add(part.uid);
+  };
+  const slots = template.slots || [];
+  slots.forEach((slot) => claim(slot.id, state.parts.find((p) => p.slot?.id === slot.id)));
+
+  const withRole = (role) => template.order?.[`${role}s`] || slots.filter((s) => (s.roles || []).includes(role)).map((s) => s.id);
+  const r = state.roles;
+  slots.forEach((slot) => {
+    (slot.roles || []).forEach((role) => {
+      if (role === 'aim') claim(slot.id, byUid(state, r.aim));
+      else if (role === 'stretch') claim(slot.id, byUid(state, r.stretch));
+      else if (role === 'body') claim(slot.id, byUid(state, state.bossBody.bodyRenderer));
+      else {
+        const mine = { rider: r.riders, limb: r.limbs, orbiter: r.orbiters }[role] || [];
+        claim(slot.id, byUid(state, mine[withRole(role).indexOf(slot.id)]));
+      }
+    });
+  });
+
+  const same = (a, b) => String(a || '').toLowerCase() === String(b || '').toLowerCase();
+  slots.forEach((slot) => claim(slot.id, state.parts.find((p) => !taken.has(p.uid) && same(p.name, slot.name))));
+  return map;
+}
+
+/**
+ * Lays the template's gestures over the body already on screen (parts matched by slot id → role →
+ * name), lengths rescaled to `bodyHeight`. A gesture with the same name is replaced.
+ * @returns {{added: number, replaced: number, dropped: string[]}} dropped = slot ids with no part here.
+ */
+export function importGestures(state, template, bodyHeight = 0) {
+  const map = matchSlotsToParts(state, template);
+  const k = template.height > 0 && bodyHeight > 0 ? bodyHeight / template.height : 1;
+  const dropped = new Set();
+  const convert = (list) => (list || []).map((p) => {
+    const part = p.part === 'Visual' ? 'Visual' : map.get(p.part);
+    if (!part) { dropped.add(p.part); return null; }
+    return { part, move: scaled(xy(p.move), k), rotate: p.rotate || 0, scale: xy(p.scale) };
+  }).filter(Boolean);
+
+  const list = state.gestures || (state.gestures = []);
+  let added = 0, replaced = 0;
+  (template.gestures || []).forEach((g) => {
+    const gesture = { name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake, windup: convert(g.windup), strike: convert(g.strike) };
+    const i = list.findIndex((x) => x.name === g.name);
+    if (i >= 0) { list[i] = gesture; replaced++; } else { list.push(gesture); added++; }
+  });
+  return { added, replaced, dropped: [...dropped] };
 }
 
 // ============================================================ filling slots
@@ -378,8 +600,6 @@ export function fillSlot(state, part, image) {
 // ============================================================ lengths follow the art's size
 
 const RIG_LENGTHS = ['hoverBob', 'followMaxOffset', 'recoilDistance', 'bodyRecoil', 'foldedRiderOffset', 'muzzleFlashSize'];
-const r4 = (v) => Math.round(v * 1e4) / 1e4;
-const scaled = (v, k) => (typeof v === 'number' ? r4(v * k) : { x: r4(v.x * k), y: r4(v.y * k) });
 
 /**
  * Rescales every length of the document (part sway moves, the rig's distances, gesture moves) so a
@@ -401,10 +621,17 @@ export function fitLengths(state, bodyHeight) {
 
 /**
  * The EnemyConfig a template suggests (same shape Enemy Creator saves on the rig record), or null
- * (bosses: their behaviour is a Boss Creator entry). The projectile has no prefab: it is the
- * code-built placeholder until the user picks one in Enemy Creator.
+ * (bosses: their behaviour is a Boss Creator entry; or the template was used without its behaviour).
+ * The projectile has no prefab: it is the code-built placeholder until the user picks one in Enemy Creator.
  */
 export function suggestedEnemyConfig(state) {
+  if (state.kind !== 'enemy' || state.template?.noBehaviour) return null;
+  // A user template brought a whole EnemyConfig (deck included): that one, under this rig's name.
+  if (state.template?.behaviour?.tuning) {
+    const own = JSON.parse(JSON.stringify(state.template.behaviour));
+    own.enemyName = state.name.trim();
+    return own;
+  }
   const b = templateById(state.template?.id)?.behaviour;
   if (!b?.tuning || state.kind !== 'enemy') return null;
   const cfg = createDefaultEnemyConfig();

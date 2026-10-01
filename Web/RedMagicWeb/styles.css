@@ -265,8 +265,8 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 
 
 #rigSidebar{width:270px;flex-shrink:0;border-right:1px solid var(--border);padding:12px;overflow-y:auto;}
-#rigSidebar h1{font-size:16px;margin:0 0 6px;color:var(--accent);}
-#rigSidebar h2{font-size:13px;margin:12px 0 4px;}
+.rigSideHost h1{font-size:16px;margin:0 0 6px;color:var(--accent);}
+.rigSideHost h2{font-size:13px;margin:12px 0 4px;}
 #rigCenter{flex:1;min-width:0;display:flex;flex-direction:column;}
 #rigToolbar{display:flex;flex-direction:column;gap:4px;padding:6px 8px;border-bottom:1px solid var(--border);}
 .rigTools,.rigPreviewBar{display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
@@ -292,7 +292,7 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .rigVariantLabel{width:110px;flex-shrink:0;}
 .rigVariantThumb{width:36px;height:36px;object-fit:contain;background:#0e0f11;border-radius:3px;}
 .rigExportSummary ul{margin:4px 0 6px 16px;padding:0;}
-#rigInspector button{margin-top:4px;}
+.rigInspHost button{margin-top:4px;}
 .rigJsonPreview{max-height:300px;overflow:auto;font-size:10px;}
 /* Rig Composer — body templates (rig-templates.js): empty slots in the parts list */
 .rigTemplateBlock{border:1px solid var(--border);border-radius:6px;padding:8px;}
@@ -323,3 +323,37 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .vfxSavedName{flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 /* VFX Lab: the global canvas rule (absolute, for the sheet editors) must not apply to previews */
 .vfxCanvas,.vfxSheet{position:static;display:block;}
+
+/* ---------------- Enemy Studio tab (enemy-studio.js): steps · canvas · inspector ----------------
+   It borrows the Rig Composer's hosts and the Enemy Creator's panels while it is the visible tab. */
+#studioSteps{width:300px;flex-shrink:0;border-right:1px solid var(--border);padding:10px;overflow-y:auto;}
+#studioSteps h1{font-size:16px;margin:0 0 8px;color:var(--accent);}
+#studioCenter{flex:1;min-width:0;display:flex;}
+#studioRight{width:360px;flex-shrink:0;border-left:1px solid var(--border);padding:10px 12px;overflow-y:auto;}
+#tab-studio[data-step="behaviour"][data-kind="enemy"] #studioRight{width:460px;}
+.studioStep{border:1px solid var(--border);border-radius:6px;margin-bottom:6px;}
+.studioStep.open{border-color:var(--accent2);}
+.studioStepHead{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:var(--text);padding:8px 10px;font-size:13px;font-weight:600;cursor:pointer;text-align:left;border-radius:6px;}
+.studioStepHead:hover{background:#23282e;}
+.studioStep.open > .studioStepHead{color:var(--accent2);}
+.studioStep.locked > .studioStepHead{color:#5a5f66;cursor:default;}
+.studioStep.locked > .studioStepHead:hover{background:none;}
+.studioStepNum{width:20px;height:20px;border-radius:50%;background:#2a2f35;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.studioStep.done .studioStepNum{background:var(--accent);color:#111;}
+.studioStepTitle{flex:1;}
+.studioStepState{font-size:10px;font-weight:400;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.studioStepBody{padding:4px 10px 10px;}
+.studioStepBody[hidden]{display:none;}
+.studioFxList{display:flex;flex-direction:column;gap:4px;margin:6px 0;}
+.studioFxRow{display:flex;align-items:center;gap:8px;font-size:12px;background:#1a1d21;border-radius:4px;padding:3px 6px;}
+.studioFxRow img,.studioFxRow .studioFxEmpty{width:32px;height:32px;object-fit:contain;background:#0e0f11;border-radius:3px;flex-shrink:0;}
+.studioFxRow span.kind{margin-left:auto;font-size:10px;color:var(--muted);}
+#tab-studio .rigTabIntro{display:none;}
+#tab-studio .rigEditBehaviour{display:none;}
+#tab-studio[data-kind="enemy"] #rigInspectorLinks{display:none;}
+#tab-studio #enemyFormPanel{flex:none;padding:0;overflow:visible;}
+#tab-studio #enemyFormPanel > h1,#tab-studio #enemyFormPanel > p.hint,#tab-studio #enemyLaneInfo{display:none;}
+#tab-studio .efArtIdentity,#tab-studio .efSheetOnly{display:none;}
+#tab-studio #enemyPreviewPanel{min-width:0;max-width:none;border-left:none;padding:0;display:block;}
+#tab-studio #enemyPreviewPanel > h2,#tab-studio #enemyExportCombinedBtn{display:none;}
+#tab-studio #enemyJsonPreview{max-height:220px;}

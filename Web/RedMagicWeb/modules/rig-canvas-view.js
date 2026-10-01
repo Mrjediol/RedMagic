@@ -252,8 +252,11 @@ export class RigCanvasView {
 
   /** Resolves once every part image is decoded (a fresh view loads them lazily). */
   preload(state) {
-    return Promise.all(state.parts.filter((p) => p.image).map((p) => new Promise((resolve) => {
-      if (this._entry(p.image, resolve)) resolve();
+    // One wait per distinct image: _entry only takes a callback from the caller that starts the load,
+    // so two parts sharing a PNG (three equal orbiters) would leave the second one waiting forever.
+    const images = [...new Map(state.parts.filter((p) => p.image).map((p) => [p.image.dataURL, p.image])).values()];
+    return Promise.all(images.map((image) => new Promise((resolve) => {
+      if (this._entry(image, resolve)) resolve();
     })));
   }
 

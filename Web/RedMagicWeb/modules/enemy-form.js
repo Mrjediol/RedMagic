@@ -313,12 +313,16 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   registerError('/tier', tierField.setError);
   topSection.appendChild(tierField.row);
 
+  // Rows that only make sense for a sprite-sheet enemy picked by hand (name, which art, pivot,
+  // folder): 🧬 Enemy Studio hides them, there the body on screen IS the art.
+  [nameField.row, artModeRow, artLibraryRow, manualArtField.row, anchorField.row, prefabFolderField.row]
+    .forEach((row) => row.classList.add('efArtIdentity'));
   formRoot.appendChild(topSection);
 
   // ============================================================ presence
 
   const presenceSection = document.createElement('details');
-  presenceSection.className = 'efSection efFold';
+  presenceSection.className = 'efSection efFold efSheetOnly';
   presenceSection.innerHTML = '<summary>Presencia (escala, collider, orden de dibujado, etiqueta)</summary>';
 
   presenceSection.appendChild(bind('number', F.numberField({
@@ -348,7 +352,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   // ============================================================ projectileArt (de-emphasized unless ranged)
 
   const projectileArtSection = document.createElement('details');
-  projectileArtSection.className = 'efSection efFold';
+  projectileArtSection.className = 'efSection efFold efSheetOnly';
   projectileArtSection.innerHTML = '<summary>Arte del proyectil desde una hoja de sprites <span class="efRangedBadge">sólo arquetipos a distancia</span></summary>';
 
   projectileArtSection.appendChild(bind('text', F.textField({
@@ -1066,5 +1070,29 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     refresh();
   }
 
-  return { refreshLaneInfo, refreshArtLibrary, linkLibraryEntry };
+  /** The library entry this form is editing the behaviour of, or null. */
+  function linkedId() {
+    return state.artMode === 'library' ? state.artLibraryId || null : null;
+  }
+
+  /**
+   * Saves the form onto its linked entry WITHOUT downloading anything (🧬 Enemy Studio: the behaviour
+   * step is saved when it is left, and before the body is saved / exported).
+   */
+  async function persistLinked() {
+    if (!linkedId()) return null;
+    const exportObj = buildEnemyExport(state, exportContext()).doc;
+    await persistConfigToLibraryIfLinked(exportObj);
+    return exportObj;
+  }
+
+  /** The linked body was renamed outside the form. */
+  function setEnemyName(name) {
+    if (!name || state.enemyName === name) return;
+    state.enemyName = name;
+    nameField.input.value = name;
+    refresh();
+  }
+
+  return { refreshLaneInfo, refreshArtLibrary, linkLibraryEntry, linkedId, persistLinked, setEnemyName };
 }

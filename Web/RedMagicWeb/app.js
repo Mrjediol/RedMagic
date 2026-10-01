@@ -18,6 +18,7 @@ import { initFxCreator } from './modules/fx-form.js';
 import { initBossCreator } from './modules/boss-form.js';
 import { initVfxLab } from './modules/vfx-lab.js';
 import { initRigComposer } from './modules/rig-composer.js';
+import { initEnemyStudio } from './modules/enemy-studio.js';
 import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail } from './modules/enemy-library.js';
 import { renderLibraryCards } from './modules/library-panel.js';
 import { buildCombinedBundle } from './modules/enemy-bundle.js';
@@ -49,6 +50,7 @@ let enemyCreator = null;
 let fxCreator = null;
 let bossCreator = null;
 let rigComposer = null;
+let enemyStudio = null;
 let vfxLab = null;
 
 /** The creator-tab API for a kind, or null for a kind nobody configures. See KINDS[…].creator. */
@@ -58,6 +60,7 @@ function creatorFor(kind) {
   if (id === 'fx') return fxCreator;
   if (id === 'boss') return bossCreator;
   if (id === 'rig') return rigComposer;
+  if (id === 'studio') return enemyStudio;
   return null;
 }
 
@@ -69,6 +72,12 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     for (const b of document.querySelectorAll('.tabBtn')) b.classList.toggle('active', b === btn);
     for (const panel of document.querySelectorAll('.tabPanel')) {
       panel.hidden = panel.id !== `tab-${btn.dataset.tab}`;
+    }
+    // Enemy Studio borrows the Rig Composer's and Enemy Creator's panels while it is on screen:
+    // first of all, so every tab below finds its own panels back where they belong.
+    if (enemyStudio) {
+      if (btn.dataset.tab === 'studio') enemyStudio.show();
+      else enemyStudio.hide();
     }
     // Enemy Creator's lane cross-reference is read-only, display-only context from the Sprites
     // tab — refreshed on switching TO the tab rather than reactively, so the two tabs stay
@@ -1072,16 +1081,43 @@ vfxLab = initVfxLab({
 // ============================================================ Rig Composer tab (part-based enemies/bosses)
 
 rigComposer = initRigComposer({
-  sidebar: document.getElementById('rigSidebar'),
+  sidebar: document.getElementById('rigSidebarBody'),
+  templateHost: document.getElementById('rigSidebarTemplate'),
   toolbar: document.getElementById('rigToolbar'),
   canvas: document.getElementById('rigCanvas'),
   canvasWrap: document.getElementById('rigCanvasWrap'),
   statusEl: document.getElementById('rigStatus'),
-  inspector: document.getElementById('rigInspector'),
+  inspector: document.getElementById('rigInspectorMain'),
+  linksHost: document.getElementById('rigInspectorLinks'),
+  exportHost: document.getElementById('rigInspectorExport'),
   onEditBehaviour: async (id, name) => {
     document.querySelector('.tabBtn[data-tab="enemy"]').click();
     await enemyCreator.linkLibraryEntry(id, name);
   },
+});
+
+// ============================================================ Enemy Studio tab (body + behaviour as one workflow)
+
+// No editor of its own: it lays the composer above and the Enemy Creator form out as steps, by
+// moving their panels in while it is the visible tab (see modules/enemy-studio.js).
+enemyStudio = initEnemyStudio({
+  panel: document.getElementById('tab-studio'),
+  stepsEl: document.getElementById('studioSteps'),
+  centerEl: document.getElementById('studioCenter'),
+  rightEl: document.getElementById('studioRight'),
+  rig: rigComposer,
+  enemy: enemyCreator,
+  nodes: {
+    rigBody: document.getElementById('rigSidebarBody'),
+    rigTemplate: document.getElementById('rigSidebarTemplate'),
+    rigCenter: document.getElementById('rigCenter'),
+    rigMain: document.getElementById('rigInspectorMain'),
+    rigLinks: document.getElementById('rigInspectorLinks'),
+    rigExport: document.getElementById('rigInspectorExport'),
+    enemyForm: document.getElementById('enemyFormPanel'),
+    enemyPreview: document.getElementById('enemyPreviewPanel'),
+  },
+  openTab: (tab) => document.querySelector(`.tabBtn[data-tab="${tab}"]`).click(),
 });
 
 // ============================================================ shared enemy library (persistent, cross-tab)
@@ -1321,11 +1357,12 @@ function renderLibraryFilterBar() {
  * `KINDS[kind].creator` rather than an if-chain on the kind id, so a sixth kind with its own
  * creator needs nothing here — the same rule the Sprites tab already follows for its own labels.
  */
-const CREATOR_LABELS = { enemy: 'Enemy Creator', fx: 'Proyectil/VFX', boss: 'Boss Creator', rig: 'Rig Composer' };
+const CREATOR_LABELS = { enemy: 'Enemy Creator', fx: 'Proyectil/VFX', boss: 'Boss Creator', rig: 'Rig Composer', studio: 'Enemy Studio' };
 
 function editActionFor(entry) {
   const creatorId = kindOf(entry.kind).creator;
-  const label = creatorId ? `Editar en ${CREATOR_LABELS[creatorId]}` : 'Editar config';
+  // A kind whose "edit" is not editing (a body template: a NEW enemy from it) words it itself.
+  const label = kindOf(entry.kind).editLabel || (creatorId ? `Editar en ${CREATOR_LABELS[creatorId]}` : 'Editar config');
 
   // Disabled with the reason rather than hidden: a missing button reads as a bug, a disabled one
   // with a tooltip explains the model.
@@ -1358,7 +1395,9 @@ function renderLibraryTab() {
       // Everything sprite-shaped is gated on the kind owning a sheet at all: a boss entry has no
       // `sprite` block, so Cargar/Exportar zip/Exportar combinado would throw rather than misbehave.
       const hasSheet = kindOf(entry.kind).sheet;
-      const sheetOnlyTitle = entry.kind === 'rig'
+      const sheetOnlyTitle = entry.kind === 'rig-template'
+        ? 'Una plantilla es una forma de cuerpo: no tiene hoja ni se exporta a Unity.'
+        : entry.kind === 'rig'
         ? 'Un rig no tiene hoja: sus piezas se exportan desde Rig Composer.'
         : 'Un jefe no tiene hoja propia: su arte es la del enemigo base.';
 

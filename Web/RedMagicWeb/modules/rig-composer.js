@@ -16,6 +16,12 @@
 // "Nuevo desde plantilla" starts the document from a body shape (rig-templates.js): its slots show
 // up as empty parts to drop art on (parts list row, canvas placeholder, or a bulk drop by file name).
 //
+// The panels are several HOSTS rather than two columns, so 🧬 Enemy Studio (enemy-studio.js) can lay
+// the same single composer out as workflow steps: `sidebar` (document + parts), `templateHost`
+// (templates: new from one, save as one), `inspector` (the selected part, timings, gestures,
+// collider), `linksHost` (behaviour link) and `exportHost`. There is ONE composer and one document
+// whichever tab shows it.
+//
 // Geometry and part operations: rig-model.js. Drawing and picking: rig-canvas-view.js. Export:
 // rig-export.js. Preview formulas copy RigDriverCode.cs (sway, hover, lean, hurt).
 
@@ -24,10 +30,11 @@ import * as M from './rig-model.js';
 import { RigCanvasView } from './rig-canvas-view.js';
 import { buildRigExport, buildRigBundle } from './rig-export.js';
 import { loadValidator, validateConfig } from './config-schema.js';
-import { saveEnemy, updateEnemy, getEnemy, listEntries, buildThumbnail } from './enemy-library.js';
+import { saveEnemy, updateEnemy, getEnemy, deleteEnemy, listEntries, buildThumbnail } from './enemy-library.js';
 import { downloadBlob } from './export-manifest.js';
 import * as F from './enemy-form-fields.js';
-import { RIG_TEMPLATES, templateById, instantiateTemplate, openSlots, matchSlot, fillSlot, fitLengths, suggestedEnemyConfig } from './rig-templates.js';
+import { RIG_TEMPLATES, templateById, instantiateTemplate, openSlots, matchSlot, fillSlot, fitLengths, suggestedEnemyConfig,
+  templateFromState, templateFromRecord, importGestures } from './rig-templates.js';
 import * as G from './rig-gestures.js';
 
 const TOOLS = [
@@ -52,7 +59,10 @@ const el = (tag, cls, text) => {
   return e;
 };
 
-export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl, inspector, onEditBehaviour }) {
+export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvasWrap, statusEl, inspector, linksHost, exportHost, onEditBehaviour }) {
+  // Set by whoever embeds the composer (Enemy Studio): beforeExport / afterSave(id) / onChange.
+  const hooks = { beforeExport: null, afterSave: null, onChange: null };
+  let userTemplates = [];        // library records of kind 'rig-template', as templates
   let state = createDefaultRigState();
   let selectedUid = null;
   let tool = 'move';
@@ -507,12 +517,12 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   // ============================================================ templates
 
   /** Starts a new document from a body template: its slots become empty parts to drop art on. */
-  function newFromTemplate(id) {
-    const template = templateById(id);
+  function newFromTemplate(id, take = templateTake) {
+    const template = findTemplate(id);
     if (!template) return;
     if (state.parts.length && !confirm(`¿Empezar "${template.label}" desde cero? Lo no guardado se pierde.`)) return;
     const ppu = state.pixelsPerUnit;
-    state = instantiateTemplate(template);
+    state = instantiateTemplate(template, take);
     state.pixelsPerUnit = ppu;
     resetGestureUi();
     currentId = null;
@@ -522,6 +532,57 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     renderToolbar();
     view.frame(state);
     setStatus(`Plantilla "${template.label}": suelta cada PNG sobre su hueco (lista de piezas o lienzo). Todo se puede cambiar después.`);
+  }
+
+  /** A built-in template or one saved by the user (library, kind 'rig-template'). */
+  function findTemplate(id) {
+    return templateById(id) || userTemplates.find((t) => t.id === id) || null;
+  }
+
+  const bodyHeight = () => { const b = view.bounds(state); return b ? b.maxY - b.minY : 0; };
+
+  /**
+   * "Guardar como plantilla": this body's shape (slots, roles, pivots, sway), its gestures by slot
+   * and its behaviour, as a library record of kind 'rig-template'. Same name = that one is replaced.
+   */
+  async function saveAsTemplate(label) {
+    const name = (label || state.name).trim();
+    if (!name) { setStatus('Ponle nombre a la plantilla.'); return; }
+    if (!state.parts.length) { setStatus('No hay cuerpo que guardar: añade piezas primero.'); return; }
+    let behaviourCfg = null;
+    if (state.kind === 'enemy') {
+      if (hooks.beforeExport) await hooks.beforeExport();
+      behaviourCfg = (currentId && (await getEnemy(currentId))?.enemyConfig) || suggestedEnemyConfig(state);
+    }
+    const template = templateFromState(state, { label: name, bodyHeight: bodyHeight(), behaviour: behaviourCfg });
+    const existing = userTemplates.find((t) => t.label === name);
+    if (existing && !confirm(`Ya hay una plantilla "${name}". ¿Sustituirla?`)) return;
+    const patch = { enemyName: name, thumbnail: await thumbnail(), config: null, draft: template };
+    try {
+      const record = existing ? await updateEnemy(existing.recordId, patch) : await saveEnemy({ kind: 'rig-template', sprite: null, ...patch });
+      await refreshLibraries();
+      templateChoice = templateFromRecord(record).id;
+      renderSidebar();
+      setStatus(`Plantilla "${name}" guardada: ${template.slots.filter((x) => !x.node).length} huecos, ${template.gestures.length} gestos${template.behaviour ? ', con comportamiento' : ''}. Está en "Nuevo desde plantilla" y en 📚 Biblioteca.`);
+    } catch (e) { setStatus(`No se pudo guardar la plantilla: ${e.message}`); }
+  }
+
+  /** The chosen template's gestures onto the body already on screen (matched by slot → role → name). */
+  function importTemplateGestures(id) {
+    const template = findTemplate(id);
+    if (!template?.gestures?.length) { setStatus('Esa plantilla no tiene gestos.'); return; }
+    const res = importGestures(state, template, bodyHeight());
+    resetGestureUi();
+    changed();
+    setStatus(`Gestos de "${template.label}": ${res.added} nuevos, ${res.replaced} sustituidos${res.dropped.length ? `. Sin pieza equivalente aquí (se omiten sus poses): ${res.dropped.join(', ')}` : ''}.`);
+  }
+
+  async function deleteUserTemplate(template) {
+    if (!template?.recordId || !confirm(`¿Borrar la plantilla "${template.label}"? Los enemigos ya hechos con ella no cambian.`)) return;
+    await deleteEnemy(template.recordId);
+    templateChoice = RIG_TEMPLATES[0].id;
+    await refreshLibraries();
+    setStatus(`Plantilla "${template.label}" borrada.`);
   }
 
   /** One image into a part: a template slot gets its guesses (pivot, boca, agarre…), any other part just the art. */
@@ -619,8 +680,8 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
 
   function renderSidebar() {
     sidebar.innerHTML = '';
-    sidebar.appendChild(el('h1', null, '🦴 Rig Composer'));
-    sidebar.appendChild(el('p', 'hint', 'Enemigo o jefe hecho de piezas sueltas. Suelta PNG sobre el lienzo, colócalos y exporta el .zip. En Unity: Tools ▸ Web ▸ Rig ▸ Importar rig.'));
+    sidebar.appendChild(el('h1', 'rigTabIntro', '🦴 Rig Composer'));
+    sidebar.appendChild(el('p', 'hint rigTabIntro', 'Enemigo o jefe hecho de piezas sueltas. Suelta PNG sobre el lienzo, colócalos y exporta el .zip. En Unity: Tools ▸ Web ▸ Rig ▸ Importar rig.'));
 
     const doc = el('div', 'rigBlock');
     doc.appendChild(F.textField({ label: 'Nombre (prefab)', value: state.name, placeholder: 'ej. TorretaHielo',
@@ -648,7 +709,6 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     add.append(input, addBtn, emptyBtn);
     add.appendChild(el('p', 'hint', 'También puedes arrastrar los PNG al lienzo. El fondo liso se quita solo y cada pieza se recorta.'));
     sidebar.appendChild(add);
-    renderTemplateBlock();
 
     sidebar.appendChild(el('h2', null, 'Piezas'));
     sidebar.appendChild(el('p', 'hint', 'Arriba = delante. Arrastra una fila sobre otra para colgarla de ella; sobre "Visual" para soltarla.'));
@@ -696,33 +756,81 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
       }
     });
     sidebar.appendChild(list);
+    renderTemplateBlock();
   }
 
   let templateChoice = RIG_TEMPLATES[0].id;
+  const templateTake = { gestures: true, behaviour: true };   // what "Nuevo desde plantilla" brings along
+  let templateName = '';                                      // "Guardar como plantilla": empty = the rig's name
+
+  /** Templates (own host): the one in use, "Nuevo desde plantilla" (built-in + saved), "Guardar como plantilla". */
   function renderTemplateBlock() {
+    templateHost.innerHTML = '';
     const block = el('div', 'rigBlock rigTemplateBlock');
-    const current = templateById(state.template?.id);
-    if (current) {
+    if (state.template) {
+      const label = state.template.label || findTemplate(state.template.id)?.label || 'plantilla';
       const slots = state.parts.filter((p) => p.slot);
       const open = openSlots(state), required = openSlots(state, true);
       block.appendChild(el('p', required.length ? 'rigTemplateInfo' : 'efSummaryOk',
-        `Plantilla: ${current.label} — ${slots.length - open.length}/${slots.length} huecos${required.length ? `. Faltan: ${required.map((p) => p.slot.label).join(', ')}` : ''}`));
+        `Plantilla: ${label} — ${slots.length - open.length}/${slots.length} huecos${required.length ? `. Faltan: ${required.map((p) => p.slot.label).join(', ')}` : ''}`));
       const refit = el('button', 'small', '⤢ Reajustar amplitudes al tamaño');
       refit.title = 'Si has cambiado mucho el tamaño del cuerpo: reescala balanceos, flotar, retroceso y gestos a su altura actual.';
       refit.onclick = () => { if (fitTemplate(true)) changed(); else setStatus('Rellena antes los huecos que faltan.'); };
       block.appendChild(refit);
     }
+
+    if (!findTemplate(templateChoice)) templateChoice = RIG_TEMPLATES[0].id;
+    const kindLabel = (t) => (t.kind === 'boss' ? 'jefe' : 'enemigo');
     const pick = F.enumField({ label: 'Nuevo desde plantilla', value: templateChoice,
-      options: RIG_TEMPLATES.map((t) => ({ value: t.id, label: `${t.label} (${t.kind === 'boss' ? 'jefe' : 'enemigo'})` })),
+      options: [
+        ...userTemplates.map((t) => ({ value: t.id, label: `★ ${t.label} (${kindLabel(t)})` })),
+        ...RIG_TEMPLATES.map((t) => ({ value: t.id, label: `${t.label} (${kindLabel(t)})` })),
+      ],
       onChange: (v) => { templateChoice = v; renderSidebar(); } });
     block.appendChild(pick.row);
-    const chosen = templateById(templateChoice);
-    block.appendChild(el('p', 'hint', chosen.shape));
-    block.appendChild(el('p', 'hint', `Sirve para: ${chosen.fits}`));
-    const go = el('button', 'small', `＋ Nuevo: ${chosen.label}`);
+    const chosen = findTemplate(templateChoice);
+    if (chosen.shape) block.appendChild(el('p', 'hint', chosen.shape));
+    if (chosen.fits) block.appendChild(el('p', 'hint', `Sirve para: ${chosen.fits}`));
+    if (chosen.user) block.appendChild(el('p', 'hint', `Tuya: ${chosen.slots.filter((x) => !x.node).length} huecos · ${chosen.gestures.length} gestos${chosen.behaviour ? ` · ${chosen.behaviour.summary}` : ''}.`));
+
+    const hasBehaviour = chosen.kind === 'enemy' && !!(chosen.behaviour?.tuning || chosen.behaviour?.config);
+    if (chosen.gestures?.length) block.appendChild(F.boolField({ label: `Con sus gestos (${chosen.gestures.length})`, value: templateTake.gestures,
+      onChange: (v) => { templateTake.gestures = v; } }).row);
+    if (hasBehaviour) block.appendChild(F.boolField({ label: 'Con su comportamiento', value: templateTake.behaviour,
+      hint: chosen.behaviour.summary || '', onChange: (v) => { templateTake.behaviour = v; } }).row);
+
+    const go = el('button', 'small primary', `＋ Nuevo: ${chosen.label}`);
     go.onclick = () => newFromTemplate(templateChoice);
     block.appendChild(go);
-    sidebar.appendChild(block);
+
+    if (chosen.gestures?.length || chosen.user) {
+      const more = el('details', 'efFold');
+      more.appendChild(el('summary', null, 'Más'));
+      if (chosen.gestures?.length) {
+        const bring = el('button', 'small', '⇣ Traer sólo sus gestos a este cuerpo');
+        bring.title = 'No toca las piezas: copia los gestos de la plantilla emparejando cada pieza por su hueco, su rol (la que apunta, extremidades…) o su nombre. Un gesto con el mismo nombre se sustituye.';
+        bring.disabled = !state.parts.length;
+        bring.onclick = () => importTemplateGestures(templateChoice);
+        more.appendChild(bring);
+      }
+      if (chosen.user) {
+        const del = el('button', 'small danger', '🗑 Borrar esta plantilla');
+        del.onclick = () => deleteUserTemplate(chosen);
+        more.appendChild(del);
+      }
+      block.appendChild(more);
+    }
+    templateHost.appendChild(block);
+
+    const save = el('div', 'rigBlock rigTemplateBlock');
+    save.appendChild(F.textField({ label: 'Guardar como plantilla', value: templateName, placeholder: state.name.trim() || 'nombre de la plantilla',
+      hint: 'Guarda la forma del cuerpo (piezas, roles, pivotes, balanceo), sus gestos y su comportamiento. El arte no: otro enemigo pone el suyo.',
+      onChange: (v) => { templateName = v; } }).row);
+    const saveBtn = el('button', 'small', '💾 Guardar como plantilla');
+    saveBtn.disabled = !state.parts.length;
+    saveBtn.onclick = () => saveAsTemplate(templateName);
+    save.appendChild(saveBtn);
+    templateHost.appendChild(save);
   }
 
   function wireDrop(row, parentUid) {
@@ -753,24 +861,28 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
 
   // ============================================================ inspector
 
-  function section(title, open = true) {
+  function section(title, open = true, host = inspector) {
     const d = el('details', 'rigSection');
     d.open = open;
     d.appendChild(el('summary', null, title));
-    inspector.appendChild(d);
+    host.appendChild(d);
     return d;
   }
 
   const openSections = new Map();
-  function rememberedSection(key, title, def) {
-    const d = section(title, openSections.has(key) ? openSections.get(key) : def);
+  function rememberedSection(key, title, def, host = inspector) {
+    const d = section(title, openSections.has(key) ? openSections.get(key) : def, host);
     d.addEventListener('toggle', () => openSections.set(key, d.open));
     return d;
   }
 
   function renderInspector() {
-    const scrollTop = inspector.scrollTop;
+    // The hosts do not scroll themselves: the column they sit in does (it differs per tab).
+    const scroller = inspector.closest('.scrollHost') || inspector;
+    const scrollTop = scroller.scrollTop;
     inspector.innerHTML = '';
+    linksHost.innerHTML = '';
+    exportHost.innerHTML = '';
     const part = selectedPart();
     if (part) renderPartInspector(part);
     else inspector.appendChild(el('p', 'hint', 'Selecciona una pieza (clic en el lienzo o en la lista).'));
@@ -779,7 +891,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     renderBodySection();
     renderLinksSection();
     renderExportSection();
-    inspector.scrollTop = scrollTop;
+    scroller.scrollTop = scrollTop;
   }
 
   function renderPartInspector(part) {
@@ -1166,10 +1278,10 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   }
 
   function renderLinksSection() {
-    const d = rememberedSection('links', state.kind === 'boss' ? 'Ataques y fases (Boss Creator)' : 'Números de juego (Enemy Creator)', true);
+    const d = rememberedSection('links', state.kind === 'boss' ? 'Ataques y fases (Boss Creator)' : 'Números de juego (Enemy Creator)', true, linksHost);
     if (state.kind === 'boss') {
       const options = [{ value: '', label: '(ninguno: la definición se asigna en Unity)' }, ...bossEntries.map((e) => ({ value: e.id, label: e.enemyName }))];
-      const tpl = templateById(state.template?.id);
+      const tpl = findTemplate(state.template?.id);
       if (tpl?.behaviour?.summary) d.appendChild(el('p', 'hint', `Plantilla: ${tpl.behaviour.summary}`));
       d.appendChild(F.enumField({ label: 'Jefe de la biblioteca', value: state.bossConfigId || '', options,
         hint: 'Su boss-config (ataques, fases, arte de ataques) viaja en el .zip sin su cuerpo: el cuerpo es este rig.',
@@ -1188,7 +1300,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
           ? `✓ Sugerido por la plantilla: ${st.archetype}${st.sleepsUntilDetected ? ' dormido' : ''} · vida ${st.maxHealth} · ataque ${st.attackRange} u. Viaja en el .zip mientras no lo configures en Enemy Creator (al abrirlo allí se cargan estos valores).`
           : 'Sin comportamiento todavía: se exportará con el tuning por defecto (Melee).'));
       d.appendChild(el('p', 'hint', 'El comportamiento (volador o no, vida, rangos, daño, proyectil y sus ATAQUES: varios, cada uno con su gesto) se configura en 🧩 Enemy Creator eligiendo este rig como arte. Viaja en el .zip como enemy-config.json.'));
-      const go = el('button', 'small', '🧩 Configurar en Enemy Creator');
+      const go = el('button', 'small rigEditBehaviour', '🧩 Configurar en Enemy Creator');
       go.onclick = async () => {
         if (!state.name.trim()) { setStatus('Ponle nombre y guárdalo primero.'); return; }
         await saveToLibrary();
@@ -1200,7 +1312,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
 
   let exportSummaryEl = null, exportPreviewEl = null;
   function renderExportSection() {
-    const d = rememberedSection('export', 'Exportar', true);
+    const d = rememberedSection('export', 'Exportar', true, exportHost);
     exportSummaryEl = el('div', 'rigExportSummary');
     d.appendChild(exportSummaryEl);
     const save = el('button', 'primary', '💾 Guardar en biblioteca');
@@ -1293,6 +1405,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
     clearTimeout(exportTimer);
     exportTimer = setTimeout(() => {
       recordHistory();
+      if (hooks.onChange) hooks.onChange();
       if (!exportSummaryEl) return;
       const { doc, problems, notes } = buildRigExport(state);
       const schemaErrors = validate ? validateConfig(validate, doc).errors : [];
@@ -1320,7 +1433,7 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   }
 
   async function saveToLibrary() {
-    if (!state.name.trim()) { setStatus('Ponle nombre antes de guardar.'); return; }
+    if (!state.name.trim()) { setStatus('Ponle nombre antes de guardar.'); return null; }
     const { doc } = buildRigExport(state);
     const patch = { enemyName: state.name.trim(), thumbnail: await thumbnail(), config: doc, draft: clone(state) };
     try {
@@ -1328,13 +1441,19 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
         ? await updateEnemy(currentId, patch)
         : await saveEnemy({ kind: 'rig', sprite: null, ...patch });
       currentId = record.id;
+      if (hooks.afterSave) await hooks.afterSave(record.id);
+      behaviour = (await getEnemy(record.id))?.enemyConfig || null;
       setStatus(`Guardado "${record.enemyName}" en la biblioteca (${new Date(record.updatedAt).toLocaleTimeString()}).`);
+      if (hooks.onChange) hooks.onChange();
+      return record.id;
     } catch (e) { setStatus(`No se pudo guardar: ${e.message}`); }
+    return null;
   }
 
   async function exportZip() {
     const { problems } = buildRigExport(state);
     if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Exportar igualmente?`)) return;
+    if (hooks.beforeExport) await hooks.beforeExport();   // the behaviour form open in Enemy Studio, saved first
     const all = await listEntries(null);
     const entriesById = new Map(all.map((e) => [e.id, e]));
     const blob = await buildRigBundle(state, {
@@ -1350,7 +1469,10 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   async function refreshLibraries() {
     behaviour = currentId ? (await getEnemy(currentId))?.enemyConfig || null : null;
     bossEntries = (await listEntries('boss')).filter((e) => e.config);
+    userTemplates = (await listEntries('rig-template')).map(templateFromRecord).filter(Boolean);
+    renderSidebar();
     renderInspector();
+    if (hooks.onChange) hooks.onChange();
   }
 
   const adopt = adoptRigState;
@@ -1375,5 +1497,33 @@ export function initRigComposer({ sidebar, toolbar, canvas, canvasWrap, statusEl
   view.frame(state);
   setStatus(TOOLS[0].hint);
 
-  return { linkLibraryEntry, refreshLibraries, onShow: () => { refreshLibraries(); requestRender(); } };
+  /** What Enemy Studio needs to know to lock / tick its steps. */
+  function getStatus() {
+    return {
+      id: currentId,
+      name: state.name.trim(),
+      kind: state.kind,
+      parts: state.parts.length,
+      hasArt: state.parts.some((p) => p.image),
+      openRequired: openSlots(state, true).length,
+      gestures: (state.gestures || []).length,
+      template: state.template ? state.template.label || findTemplate(state.template.id)?.label || null : null,
+      behaviour: !!behaviour,
+    };
+  }
+
+  /** "Nuevo desde plantilla" from outside (Biblioteca ▸ a saved template's "Editar en…"). */
+  async function useTemplateRecord(recordId) {
+    await refreshLibraries();
+    const template = userTemplates.find((t) => t.recordId === recordId);
+    if (!template) { setStatus('Esa plantilla ya no existe.'); return; }
+    templateChoice = template.id;
+    newFromTemplate(template.id);
+  }
+
+  return {
+    linkLibraryEntry, refreshLibraries, hooks, getStatus, useTemplateRecord,
+    save: saveToLibrary,
+    onShow: () => { refreshLibraries(); requestRender(); },
+  };
 }

@@ -41,6 +41,8 @@ import { CANONICAL_ANIMATION_NAMES } from './animation-lanes.js';
  *                plain `config: true|false` boolean the moment a second creator tab existed:
  *                the Biblioteca tab's "Editar en …" action needs to know WHICH tab to switch to,
  *                not merely that some tab exists.
+ * - `editLabel`  (optional) the wording of the Biblioteca action that opens `creator`, for a kind
+ *                where it is not "Editar en …" (a body template starts a NEW enemy).
  * - `configFile` the file name that kind's config takes at the root of a combined bundle. Read by
  *                modules/enemy-bundle.js and matched on the Unity side by CombinedBundleImporter
  *                (`enemy-config.json`) / FxPrefabBuilder (`fx-config.json`).
@@ -155,6 +157,28 @@ export const KINDS = {
     projectileLanes: false,
     creator: 'rig',
     configFile: 'rig-config.json',
+  },
+
+  // A body template saved from 🧬 Enemy Studio ▸ Plantilla: a body SHAPE (slots, roles, sway), its
+  // gestures by slot and its behaviour — no art, no config, never exported to Unity. The template
+  // object is the record's `draft` (rig-templates.js ▸ templateFromState).
+  'rig-template': {
+    id: 'rig-template',
+    sheet: false,
+    label: 'Plantilla de cuerpo',
+    plural: 'Plantillas',
+    icon: '🧬',
+    nameLabel: 'Nombre de la plantilla',
+    namePlaceholder: 'ej. LanzadorDeHielo',
+    fallbackName: 'Plantilla',
+    saveLabel: '💾 Guardar como plantilla',
+    emptyMessage: 'Todavía no hay plantillas guardadas. Guárdalas en Enemy Studio ▸ Plantilla.',
+    lanes: [],
+    defaultLanes: [],
+    projectileLanes: false,
+    creator: 'studio',
+    editLabel: '＋ Nuevo enemigo desde esta plantilla',
+    configFile: null,
   },
 };
 

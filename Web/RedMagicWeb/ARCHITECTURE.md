@@ -49,7 +49,7 @@ module's responsibility shifts, update its row in the same change.
 | Rendering a library card grid (thumbnail/name/date/badges + caller-supplied action buttons) | `modules/library-panel.js` | `renderLibraryCards(container, {getActions, fetchEntries, getTitle, getBadges, emptyMessage})` — the ONE implementation shared by the Sprites-tab panel, the Biblioteca tab, and the Map Tracer tab's maps/pieces lists; defaults reproduce the original enemy-library-only behavior, so only `getActions` (and, for non-enemy entries, `fetchEntries`/`getTitle`/`getBadges`) differ per call site (`app.js`) |
 | Building the combined sprites+config zip (`manifest.json` + PNGs + `enemy-config.json` at root) | `modules/enemy-bundle.js` | `buildCombinedBundle({enemyName, sprite, configObj})` |
 | The "app.js failed to load" fallback banner (e.g. opened via `file://` instead of a server) | `index.html` | the inline classic `<script>` right before `<script type="module" src="app.js">`, and `#moduleFailBanner` in the CSS/HTML |
-| Tab switching (Sprites / Enemy Creator / Proyectil-VFX / Boss Creator / Rig Composer / VFX Lab / Biblioteca / Map Tracer) | `app.js` | top-of-file `.tabBtn` click wiring; `creatorFor(kind)` maps a kind to its creator-tab API via `KINDS[kind].creator` |
+| Tab switching (Sprites / Enemy Studio / Enemy Creator / Proyectil-VFX / Boss Creator / Rig Composer / VFX Lab / Biblioteca / Map Tracer) | `app.js` | top-of-file `.tabBtn` click wiring; `creatorFor(kind)` maps a kind to its creator-tab API via `KINDS[kind].creator` |
 | Detect-vs-grid sidebar mode switch | `app.js` | `setSpriteMode(next)` |
 | Canvas box click/drag/resize/create interaction | `app.js` | `canvas` `mousedown`/`mousemove`/`mouseup` listeners, `hitTestHandle`, `getPos` |
 | Box multi-select rules (click / ctrl+click / shift-range) | `app.js` | `applySelectionClick(i, ctrlKey, shiftKey)` — shared by the canvas and the unsorted grid |
@@ -185,7 +185,53 @@ Effects drawn in code from parameters and **baked into a normal frame sheet**, s
 | How a preset becomes a sheet (one row per lane, the Sprites tab's `sprite` block shape) | `modules/vfx-presets.js` | `bakePreset()`, `drawFrame()`, `frameCount()`, `laneFps()` |
 | The tab: form, live preview, save / update in place / variant, the list of saved presets | `modules/vfx-lab.js` | `initVfxLab()` — the record keeps `draft.vfxPreset = { id, params }` to be reopened |
 
+### Enemy Studio tab (🧬, one workflow from parts to a finished enemy)
+
+Plan and phases: `docs/web-enemy-studio-plan.md` (S1 built: the shell + templates). **It has no
+editor of its own**: the body is the one Rig Composer and the behaviour is the one Enemy Creator
+form. While the tab is visible it **moves their panels into its layout** (`mount`) and puts them
+back when another tab is shown (`unmount`) — one document, one form, whichever tab shows them. The
+🦴 and 🧩 tabs stay until phase S6 retires them.
+
+Layout: left = steps (one open at a time), centre = the composer's canvas, right = the composer's
+inspector — or, in step 4 of an enemy, the behaviour form.
+
+| Step | Shows | Borrowed panel |
+|---|---|---|
+| 1 Cuerpo | document, add parts, parts list | `#rigSidebarBody` |
+| 2 Plantilla | template in use, "Nuevo desde plantilla" (built-in + ★ saved), "Guardar como plantilla" | `#rigSidebarTemplate` |
+| 3 Efectos | the library's projectiles / fx (read-only list until S2 hooks them to gesture phases) | — (own) |
+| 4 Comportamiento | enemy: the Enemy Creator form (right) + validation / JSON (left); boss: the Boss Creator link | `#enemyFormPanel`, `#enemyPreviewPanel`, `#rigInspectorLinks` |
+| 5 Exportar | save, .zip, rig-config preview | `#rigInspectorExport` |
+
+Steps 3–5 are locked until the body is usable (a name, at least one part with art, no required
+template slot empty); step 2 is always open (it is also a way to start).
+
+| To change... | Edit | Function |
+|---|---|---|
+| Steps, their locks / ticks / state text, which panel the right column shows | `modules/enemy-studio.js` | `STEPS`, `locked`, `usable`, `render` |
+| Which panels are borrowed and where they go | `modules/enemy-studio.js` + `app.js` | `slots`, `mount` / `unmount`; the `nodes` passed by `app.js`. The tab-switch handler calls `enemyStudio.show()` / `hide()` **before** anything else |
+| The body ↔ behaviour glue | `modules/enemy-studio.js` | `enterBehaviour` (saves the body, links the form to its record), `flushBehaviour` (form → record's `enemyConfig`, no download) — also the composer's `hooks.beforeExport` / `afterSave`, only while the Studio is on screen |
+| What the composer / the form expose for it | `modules/rig-composer.js`, `modules/enemy-form.js` | composer: `hooks`, `getStatus()`, `save()`, `useTemplateRecord()`; form: `linkedId()`, `persistLinked()`, `setEnemyName()` |
+| What the Studio hides of the borrowed panels (tab titles, the form's sheet-only rows) | `styles.css` | the `#tab-studio …` rules (`.rigTabIntro`, `.efArtIdentity`, `.efSheetOnly`…) |
+
+**User templates** (`rig-template` kind): "Guardar como plantilla" turns the composed document into
+a template in the same data shape as the built-ins (`rig-templates.js` ▸ `templateFromState`): one
+slot per part (placement, pivot / muzzle / grip / centre guesses read from this art, roles, sway),
+gestures rewritten **by slot id**, and the behaviour (the rig record's `enemyConfig`) carried whole
+as `behaviour.config`. **No art is stored.** The template object is the record's `draft`; the record
+has no `config` and never goes to Unity. `templateFromRecord` gives it the id `lib:<record id>`.
+On use, "Con sus gestos" / "Con su comportamiento" choose what comes along
+(`instantiateTemplate(template, take)`); a user template's behaviour lives in the new document
+(`state.template.behaviour`) and is what `suggestedEnemyConfig` returns until the form saves its own.
+"Traer sólo sus gestos a este cuerpo" (`importGestures`) lays a template's gestures over the body on
+screen, matching parts by slot id → role (the aim part, the n-th limb…) → name, lengths rescaled.
+
 ### Rig Composer tab (🦴, part-based enemies and bosses)
+
+Its panels are five hosts (`#rigSidebarBody`, `#rigSidebarTemplate`, `#rigInspectorMain`,
+`#rigInspectorLinks`, `#rigInspectorExport`) so Enemy Studio can borrow them; the scrolling element
+is whatever column holds them (class `scrollHost`).
 
 **Gestures** (inspector ▸ Gestos): `modules/rig-gestures.js` holds the data helpers
 (`createGesture`, `poseOf`, `pruneGesture`…) and the formulas copied from `RigDriverCode.cs`
@@ -251,7 +297,7 @@ onto the rig record as `enemyConfig` (not `config`), and "Exportar todo junto" p
 `enemy-config.json` (`tuning` + `tier`, sprite-sheet keys stripped) plus its projectile's `Library/<id>/`; the boss link
 embeds a Boss Creator entry's config without `body` plus its `Art/`.
 
-### Entry kinds (enemy / projectile / fx / boss / rig)
+### Entry kinds (enemy / projectile / fx / boss / rig / rig-template)
 
 Every library entry has a **`kind`** — `enemy` (default), `projectile`, `fx` or `boss` — defined
 once in `modules/entry-kinds.js`. The Sprites tab's pipeline (background removal, detect/grid

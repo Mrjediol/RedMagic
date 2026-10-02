@@ -62,12 +62,11 @@
     },
     "trail": {
       "name": "ShroomTrail",
-      "preset": "moteTrail",
+      "preset": "dashStreaks",
       "params": {
         "core": "#ffffff",
         "glow": "#8fe61e",
-        "accent": "#e2ff8a",
-        "particles": 12
+        "accent": "#e2ff8a"
       }
     }
   },
@@ -376,7 +375,7 @@
         "at": 0,
         "anchor": "body",
         "loop": true,
-        "size": 2.2,
+        "size": 3,
         "layer": "behind"
       }
     ]

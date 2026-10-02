@@ -1042,7 +1042,7 @@ MonoBehaviour:
       anchor: 1
       part: {fileID: 0}
       offset: {x: 0, y: 0}
-      scale: 13.58
+      scale: 18.52
       followsPart: 1
       loop: 1
       untilStep: -1

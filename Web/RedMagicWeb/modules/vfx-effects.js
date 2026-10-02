@@ -1069,6 +1069,27 @@ const TRAILS = [
     ],
   },
   {
+    id: 'dashStreaks',
+    label: 'Estela de rayas',
+    description: 'Las rayas de velocidad de la estela de dash, sin el penacho ni el halo de luz: sólo trazos finos que se quedan atrás (izquierda).',
+    defaults: { core: '#ffffff', glow: '#58c8ff', accent: '#b8f0ff', particles: 4 },
+    params: [],
+    lanes: [
+      { name: 'Loop', loop: true, fps: 14, frames: 6,
+        draw(ctx, k, p, rnd) {
+          emit(11, k, rnd, (i, t) => {
+            const y = (rnd(i, 2) - 0.5) * 0.7;
+            const len = 0.45 + rnd(i, 3) * 0.5;
+            const x = 0.62 - t * 1.05;
+            sliver(ctx, x, y * (1 - t * 0.5), x - len * (1 - t * 0.4), y * (1 - t * 0.6), 0.05, i % 3 ? p.core : p.accent, bell(t));
+          });
+          emit(p.particles, k, rnd, (i, t) => {
+            sparkShape(ctx, 0.5 - t * 1.3, (rnd(i, 2) - 0.5) * 0.8 * (1 - t * 0.4), 0.02 + rnd(i, 3) * 0.02, p, bell(t) * 0.9, 0);
+          });
+        } },
+    ],
+  },
+  {
     id: 'moteTrail',
     label: 'Estela de motas',
     description: 'Sólo motas pequeñas que se quedan atrás (izquierda) y se apagan: sin penacho ni halo. Para un dash o un vuelo discreto.',

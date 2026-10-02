@@ -55,6 +55,16 @@ namespace RedMagic.Bosses
     }
 
     /// <summary>
+    /// Una lista con <b>una entrada por suelta del gesto</b> del ataque (<c>RigGesture.releases</c>).
+    /// El catálogo de la web la marca (<c>perRelease</c>) y su editor enseña un hueco por cada suelta
+    /// del gesto elegido en vez de una lista suelta.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field)]
+    public class PerReleaseAttribute : Attribute
+    {
+    }
+
+    /// <summary>
     /// Registro de las áreas de daño que los ataques acaban de usar, para verlas en Play
     /// (<see cref="BossController"/> ▸ "Ver hitboxes en Play"). Sólo en el editor; en un build no
     /// guarda nada.

@@ -2881,6 +2881,263 @@ export const BOSS_CATALOG = {
       ]
     },
     {
+      "type": "ReleaseAttack",
+      "label": "Release",
+      "category": "classic",
+      "hosts": "any",
+      "params": [
+        {
+          "name": "shots",
+          "label": "Shots",
+          "tooltip": "Una entrada por suelta del gesto, en orden. Si el gesto tiene más sueltas que entradas, las que sobran no lanzan nada.",
+          "header": "Qué sale en cada suelta del gesto",
+          "type": "objectList",
+          "fields": [
+            {
+              "name": "kind",
+              "label": "Kind",
+              "type": "enum",
+              "options": [
+                "Nothing",
+                "Projectile",
+                "Fan",
+                "Ring",
+                "Strike"
+              ],
+              "default": "Projectile"
+            },
+            {
+              "name": "aim",
+              "label": "Aim",
+              "type": "enum",
+              "options": [
+                "Frozen",
+                "Live",
+                "Forward"
+              ],
+              "default": "Frozen"
+            },
+            {
+              "name": "angle",
+              "label": "Angle",
+              "tooltip": "Grados que se suman a la dirección (con 'Forward', el ángulo desde el frente: 90 = hacia arriba).",
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "projectile",
+              "label": "Projectile",
+              "tooltip": "Cómo vuela cada proyectil de esta suelta. Sin arte = el placeholder (bola del color del ataque).",
+              "type": "object",
+              "fields": [
+                {
+                  "name": "prefab",
+                  "label": "Prefab",
+                  "tooltip": "Prefab con componente Projectile. Vacío = se construye uno en código con el sprite y el color de la habilidad.",
+                  "type": "art",
+                  "artKind": "projectile",
+                  "artLabel": "Projectile",
+                  "placeholder": "bola de color de la fase",
+                  "default": null
+                },
+                {
+                  "name": "speed",
+                  "label": "Speed",
+                  "min": 0.1,
+                  "type": "float",
+                  "default": 12.0
+                },
+                {
+                  "name": "lifetime",
+                  "label": "Lifetime",
+                  "tooltip": "Segundos de vuelo antes de desaparecer solo.",
+                  "min": 0.05,
+                  "type": "float",
+                  "default": 2.5
+                },
+                {
+                  "name": "size",
+                  "label": "Size",
+                  "tooltip": "Tamaño del proyectil en unidades del mundo. Con arte del importador de jefes (FxArtSize) manda el ANCHO (X) y el collider escala con él. Un prefab hecho a mano sin FxArtSize usa su propia escala.",
+                  "type": "vector2",
+                  "default": {
+                    "x": 0.35,
+                    "y": 0.35
+                  }
+                },
+                {
+                  "name": "muzzleOffset",
+                  "label": "Muzzle Offset",
+                  "tooltip": "Salida del disparo respecto al lanzador. La X se invierte según hacia dónde mira.",
+                  "type": "vector2",
+                  "default": {
+                    "x": 0.65,
+                    "y": 0.1
+                  }
+                },
+                {
+                  "name": "pierce",
+                  "label": "Pierce",
+                  "tooltip": "Objetivos que atraviesa antes de desaparecer.",
+                  "header": "Comportamiento",
+                  "min": 0.0,
+                  "type": "int",
+                  "default": 0
+                },
+                {
+                  "name": "homingTurnRate",
+                  "label": "Homing Turn Rate",
+                  "tooltip": "Grados/segundo de giro hacia el objetivo más cercano. 0 = va recto.",
+                  "min": 0.0,
+                  "type": "float",
+                  "default": 0.0
+                },
+                {
+                  "name": "homingRange",
+                  "label": "Homing Range",
+                  "min": 0.0,
+                  "type": "float",
+                  "default": 9.0
+                },
+                {
+                  "name": "arcGravity",
+                  "label": "Arc Gravity",
+                  "tooltip": "Caída en unidades/s². >0 = granada con trayectoria parabólica.",
+                  "min": 0.0,
+                  "type": "float",
+                  "default": 0.0
+                },
+                {
+                  "name": "impactRadius",
+                  "label": "Impact Radius",
+                  "header": "Explosión al terminar",
+                  "min": 0.0,
+                  "type": "float",
+                  "default": 0.0
+                },
+                {
+                  "name": "impactDamage",
+                  "label": "Impact Damage",
+                  "tooltip": "Daño de la explosión. Se suma al impacto directo sólo si el radio es > 0.",
+                  "min": 0.0,
+                  "type": "float",
+                  "default": 0.0
+                },
+                {
+                  "name": "faceDirection",
+                  "label": "Face Direction",
+                  "tooltip": "Rota el proyectil para que su punta (Facing Axis) mire hacia donde vuela, al salir y en cada paso (autoguiado, parábola). Apagado = decide el prefab (su casilla 'Face Travel Direction'), así los proyectiles que ya existían no cambian.",
+                  "header": "Aiming",
+                  "type": "bool",
+                  "default": false
+                },
+                {
+                  "name": "facingAxis",
+                  "label": "Facing Axis",
+                  "tooltip": "Lado del sprite que es la punta. Right = arte dibujado mirando a +X (convención).",
+                  "type": "enum",
+                  "options": [
+                    "Right",
+                    "Left",
+                    "Up",
+                    "Down"
+                  ],
+                  "default": "Right"
+                },
+                {
+                  "name": "aimMode",
+                  "label": "Aim Mode",
+                  "tooltip": "Fixed = la dirección que da quien dispara. MouseDirection / NearestEnemy sólo para el jugador (cursor / enemigo más cercano al salir, sin perseguir); en un enemigo equivalen a Fixed.",
+                  "type": "enum",
+                  "options": [
+                    "Fixed",
+                    "MouseDirection",
+                    "NearestEnemy"
+                  ],
+                  "default": "Fixed"
+                }
+              ],
+              "spec": "projectile"
+            },
+            {
+              "name": "count",
+              "label": "Count",
+              "tooltip": "Proyectiles del abanico o del anillo.",
+              "header": "Abanico / anillo",
+              "min": 1.0,
+              "type": "int",
+              "default": 5
+            },
+            {
+              "name": "arcDegrees",
+              "label": "Arc Degrees",
+              "tooltip": "Abanico: apertura total en grados.",
+              "min": 0.0,
+              "max": 360.0,
+              "type": "float",
+              "default": 50.0
+            },
+            {
+              "name": "spawnRadius",
+              "label": "Spawn Radius",
+              "tooltip": "Los proyectiles nacen a esta distancia del punto de salida, en su dirección.",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "strikeSize",
+              "label": "Strike Size",
+              "tooltip": "Golpe: tamaño de la caja de daño.",
+              "header": "Golpe",
+              "type": "vector2",
+              "default": {
+                "x": 1.4,
+                "y": 1.2
+              }
+            },
+            {
+              "name": "strikeOffset",
+              "label": "Strike Offset",
+              "tooltip": "Golpe: centro de la caja respecto al cuerpo, mirando a la derecha (la X se voltea).",
+              "type": "vector2",
+              "default": {
+                "x": 1.0,
+                "y": 0.0
+              }
+            },
+            {
+              "name": "damage",
+              "label": "Damage",
+              "tooltip": "Daño de esta suelta. 0 = el del ataque ('damage').",
+              "header": "Daño",
+              "min": 0.0,
+              "type": "float",
+              "default": 0.0
+            }
+          ],
+          "defaultCount": 1,
+          "perRelease": true
+        },
+        {
+          "name": "timeBetweenShots",
+          "label": "Time Between Shots",
+          "tooltip": "Segundos entre una entrada y la siguiente cuando el cuerpo no tiene una suelta para ella (sin gesto, o un cuerpo de sprite sheet, que suelta una sola vez).",
+          "min": 0.02,
+          "type": "float",
+          "default": 0.25
+        },
+        {
+          "name": "projectileSprite",
+          "label": "Projectile Sprite",
+          "tooltip": "Sprite de los proyectiles sin prefab propio. Vacío = el del dueño.",
+          "header": "Arte",
+          "type": "unity",
+          "unityType": "Sprite"
+        }
+      ]
+    },
+    {
       "type": "SafeZoneAttack",
       "label": "Safe Zone",
       "category": "classic",

@@ -101,7 +101,6 @@ namespace RedMagic.Pipeline.EditorTools
                     : null,
                 BuiltInAttack = tuningJson.Value<bool?>("builtInAttack") ?? true,
                 BuiltInWeight = Mathf.Max(0.01f, tuningJson.Value<float?>("builtInWeight") ?? 1f),
-                Defences = defencesJson != null ? ReadDefences(defencesJson, enemyName) : null,
             };
 
             // --- los ataques que define el config (los que apuntan a un asset existente no crean nada).
@@ -139,20 +138,13 @@ namespace RedMagic.Pipeline.EditorTools
                 string ctx = $"{enemyName}.tuning.attacks[{i}]";
                 var entryJson = ConfigJson.AsObject(deckJson[i], ctx);
 
-                // Variante del ataque propio: sin ataque de catálogo, con su gesto y su peso.
+                // Un config de antes (2026-10-02): "el ataque propio con otro gesto". Ya no existe como
+                // carta: es un ataque del catálogo (ReleaseAttack). La web lo convierte al abrir el enemigo.
                 if (entryJson.Value<bool?>("builtIn") == true)
                 {
-                    deck.Entries.Add(new EnemyDeckEntry
-                    {
-                        builtIn = true,
-                        gesture = entryJson.Value<string>("gesture") ?? "",
-                        weight = Mathf.Max(0.01f, entryJson.Value<float?>("weight") ?? 1f),
-                        minRange = Mathf.Max(0f, entryJson.Value<float?>("minRange") ?? 0f),
-                        maxRange = Mathf.Max(0f, entryJson.Value<float?>("maxRange") ?? 0f),
-                        targetHeight = entryJson["targetHeight"] != null
-                            ? ConfigJson.ParseEnum<AttackHeightRule>(entryJson["targetHeight"], $"{ctx}.targetHeight")
-                            : AttackHeightRule.Any,
-                    });
+                    report.Warnings.Add($"{ctx}: es una variante del ataque propio (formato antiguo) y se omite. " +
+                                        "Abre el enemigo en la web y vuelve a exportarlo: sale como un ataque " +
+                                        "\"Disparo por sueltas\" con ese gesto.");
                     continue;
                 }
 
@@ -185,12 +177,19 @@ namespace RedMagic.Pipeline.EditorTools
                 deck.Entries.Add(entry);
             }
 
+            // --- los movimientos defensivos, después de los ataques: uno puede lanzar un ataque de 'attacks'.
+            if (defencesJson != null) deck.Defences = ReadDefences(defencesJson, enemyName, attacksByKey);
+
             AssetDatabase.SaveAssets();
             return deck;
         }
 
-        /// <summary><c>tuning.defences</c>: cada entrada con los defaults de <see cref="EnemyDefence"/> para lo que falte.</summary>
-        public static List<EnemyDefence> ReadDefences(JArray array, string enemyName)
+        /// <summary>
+        /// <c>tuning.defences</c>: cada entrada con los defaults de <see cref="EnemyDefence"/> para lo que falte.
+        /// <c>attack</c> = el id de un ataque de <c>attacks</c> (o la ruta de un asset): lo que lanza al apartarse.
+        /// </summary>
+        public static List<EnemyDefence> ReadDefences(JArray array, string enemyName,
+                                                      Dictionary<string, BossAttack> attacksByKey = null)
         {
             var list = new List<EnemyDefence>();
             for (int i = 0; i < array.Count; i++)
@@ -209,6 +208,19 @@ namespace RedMagic.Pipeline.EditorTools
                 d.hopHeight = Mathf.Max(0f, json.Value<float?>("hopHeight") ?? d.hopHeight);
                 d.gesture = json.Value<string>("gesture") ?? "";
                 d.anticipation = Mathf.Max(0f, json.Value<float?>("anticipation") ?? d.anticipation);
+
+                string reference = json.Value<string>("attack");
+                if (!string.IsNullOrWhiteSpace(reference))
+                {
+                    if (reference.StartsWith("Assets/", StringComparison.Ordinal))
+                        d.attack = ConfigJson.ReadAsset<BossAttack>(json["attack"], $"{ctx}.attack");
+                    else if (attacksByKey == null || !attacksByKey.TryGetValue(reference, out d.attack))
+                        throw new ConfigImportException($"{ctx}.attack: '{reference}' no está en 'attacks'.");
+
+                    if (d.attack.GetType().IsDefined(typeof(BossOnlyAttribute), true))
+                        throw new ConfigImportException($"{ctx}.attack: '{d.attack.GetType().Name}' es sólo de jefes.");
+                }
+
                 list.Add(d);
             }
 

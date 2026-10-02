@@ -426,17 +426,17 @@ MonoBehaviour:
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
     attacks:
-    - attack: {fileID: 0}
-      builtIn: 1
-      gesture: Saltito
-      weight: 1
+    - attack: {fileID: 11400000, guid: 8142b162b6efa4448883d81efc663b61, type: 2}
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
       minRange: 0
       maxRange: 0
       targetHeight: 0
-    - attack: {fileID: 0}
-      builtIn: 1
-      gesture: Saltito
-      weight: 1
+    - attack: {fileID: 11400000, guid: 8142b162b6efa4448883d81efc663b61, type: 2}
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
       minRange: 0
       maxRange: 0
       targetHeight: 0

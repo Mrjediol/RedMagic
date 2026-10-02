@@ -69,16 +69,16 @@ namespace RedMagic.Enemies
                  "Animator) que hace de aviso.")]
         public BossAttack attack;
 
-        [Tooltip("En vez de un ataque del catálogo, repite el ATAQUE PROPIO del enemigo (su melé / " +
-                 "disparo de Tuning ▸ Ataque) con otro gesto: dos formas de lanzar el mismo ataque.")]
-        public bool builtIn;
-
-        [Tooltip("Sólo con 'builtIn': el gesto del rig (o estado del Animator) con el que se lanza. " +
-                 "Vacío = el ataque normal del cuerpo.")]
-        [GestureName] public string gesture;
-
-        [Tooltip("Sólo con 'builtIn': peso en el sorteo (en las demás lo da el 'weight' del ataque).")]
-        [Min(0.01f)] public float weight = 1f;
+        // Datos de antes (2026-10-02): una carta podía repetir el ATAQUE PROPIO con otro gesto en vez de
+        // llevar un ataque del catálogo. Eso es ahora un ReleaseAttack del catálogo (con su proyectil
+        // propio); estos tres campos sólo existen para que Tools ▸ Web ▸ Rig ▸ "Convertir variantes
+        // del ataque propio" los lea de los prefabs antiguos. Nada los usa al jugar.
+        [SerializeField, HideInInspector, UnityEngine.Serialization.FormerlySerializedAs("builtIn")]
+        internal bool legacyBuiltIn;
+        [SerializeField, HideInInspector, UnityEngine.Serialization.FormerlySerializedAs("gesture")]
+        internal string legacyGesture;
+        [SerializeField, HideInInspector, UnityEngine.Serialization.FormerlySerializedAs("weight")]
+        internal float legacyWeight = 1f;
 
         [Tooltip("Distancia mínima al objetivo para que pueda salir. 0 = sin mínimo.")]
         [Min(0f)] public float minRange;
@@ -92,7 +92,7 @@ namespace RedMagic.Enemies
         /// <summary>True si a esta distancia y altura la carta puede salir (sin contar enfriamientos).</summary>
         public bool InReach(float distance, float heightDelta, float attackRange)
         {
-            if ((attack == null && !builtIn) || distance < minRange) return false;
+            if (attack == null || distance < minRange) return false;
             if (distance > (maxRange > 0f ? maxRange : attackRange)) return false;
 
             return targetHeight switch

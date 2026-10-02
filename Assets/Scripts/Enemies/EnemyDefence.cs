@@ -69,6 +69,12 @@ namespace RedMagic.Enemies
         [Tooltip("Segundos quieto antes de moverse, con el gesto ya puesto: es el aviso para el jugador.")]
         [Min(0f)] public float anticipation = 0.12f;
 
+        [Tooltip("Ataque del catálogo que lanza MIENTRAS se aparta (\"esquiva y dispara al final\"). Su " +
+                 "gesto se reproduce entero durante la esquiva — en vez de la pose mantenida de 'gesture' — " +
+                 "y el ataque sale en sus sueltas: con un paso que 'dura el aviso', la primera cae justo " +
+                 "al acabar de apartarse. Vacío = sólo se aparta.")]
+        public RedMagic.Bosses.BossAttack attack;
+
         public EnemyDefence Clone() => (EnemyDefence)MemberwiseClone();
     }
 

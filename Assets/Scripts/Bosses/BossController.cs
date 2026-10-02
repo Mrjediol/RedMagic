@@ -284,6 +284,22 @@ namespace RedMagic.Bosses
         /// <summary>Capa de animación del cuerpo, si la tiene (para ataques con más de un gesto).</summary>
         public BossAnimator BodyAnimator => _animator;
 
+        /// <summary>
+        /// De dónde sale un conjuro: en un jefe por partes, el punto de la suelta del gesto en curso
+        /// (o la boca de su rig); si no tiene nada de eso, los pies, como siempre.
+        /// </summary>
+        public Vector2 CastPoint
+        {
+            get
+            {
+                if (!_rigLooked) { _rigData = GetComponent<RedMagic.Rigging.ProceduralRig>(); _rigLooked = true; }
+                return _rigData != null && _rigData.HasCastPoint ? _rigData.CastPosition : FeetPosition;
+            }
+        }
+
+        private RedMagic.Rigging.ProceduralRig _rigData;
+        private bool _rigLooked;
+
         /// <summary>El mismo cuerpo, como lo ven los ataques (<see cref="IAttackHost"/>). Null real si no hay.</summary>
         public IAttackBody Body => _animator != null ? _animator : null;
 

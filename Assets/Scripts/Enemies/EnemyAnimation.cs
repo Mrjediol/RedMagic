@@ -198,8 +198,6 @@ namespace RedMagic.Enemies
         {
             if (_rigGesture) { Released = true; return; }
 
-            // El ataque propio lanzado con un gesto: cada suelta del gesto es un golpe (un gesto con
-            // tres sueltas dispara tres veces). Sin el filtro de "ya ha soltado" de Release().
             if (_inGesture) return;
             _released = true;
             _fallbackRelease = -1f;
@@ -304,12 +302,10 @@ namespace RedMagic.Enemies
             flipbook.Play(moving && flipbook.Has(Walk) ? Walk : Idle);
         }
 
-        /// <summary>Lanza el ataque. El golpe sale luego, cuando lo diga el clip.</summary>
-        /// <param name="gesture">Gesto con el que se lanza el ataque propio (variante de la baraja); vacío = el normal.</param>
-        public void PlayAttack(string gesture = null)
+        /// <summary>Lanza el ataque propio. El golpe sale luego, cuando lo diga el clip (o el rig).</summary>
+        public void PlayAttack()
         {
             _released = false;
-            bool custom = !string.IsNullOrWhiteSpace(gesture);
 
             if (HasRig)
             {
@@ -322,20 +318,7 @@ namespace RedMagic.Enemies
                 }
 
                 float speed = _stats != null ? _stats.Tuning.attackAnimSpeed : 1f;
-
-                // Mismo ataque, otro gesto: el rig hace ese gesto de aviso y suelta igual que el normal
-                // (el golpe sale de la boca, hacia el punto congelado, en el instante de la suelta).
-                var rigData = rig.GetComponent<ProceduralRig>();
-                float windupSeconds = (rigData != null ? rigData.windup : 0.4f) / Mathf.Max(0.01f, speed);
                 rig.AimTarget = _attack != null ? _attack.AimPoint : null;
-                if (custom && rig.PlayGesture(gesture, windupSeconds))
-                {
-                    // Sólo red de seguridad: el gesto dura lo que digan sus pasos, no el aviso.
-                    _fallbackRelease = Time.time + rig.SecondsToRelease(gesture, windupSeconds) + 1.5f;
-                    _fallbackFinish = Time.time + rig.GestureSeconds(gesture, windupSeconds) + 1.5f;
-                    return;
-                }
-
                 rig.PlayAttack(_attack != null ? _attack.AimPoint : null, speed);
 
                 // Sólo red de seguridad (un rig que se apaga a mitad del gesto): el rig avisa él
@@ -344,13 +327,6 @@ namespace RedMagic.Enemies
                 float total = (data != null ? data.AttackDuration(speed) : 1f) + 1f;
                 _fallbackRelease = Time.time + total;
                 _fallbackFinish = Time.time + total;
-                return;
-            }
-
-            if (HasAnimator && custom && animator.HasState(0, Animator.StringToHash(gesture)))
-            {
-                animator.Play(Animator.StringToHash(gesture), 0, 0f);
-                ArmFallback(ClipLength(gesture, _stats != null ? _stats.Tuning.attackAnimSpeed : 1f));
                 return;
             }
 

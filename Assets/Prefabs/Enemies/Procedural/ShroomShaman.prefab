@@ -460,24 +460,24 @@ MonoBehaviour:
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
     attacks:
-    - attack: {fileID: 0}
-      builtIn: 1
-      gesture: Flick
-      weight: 1
+    - attack: {fileID: 11400000, guid: 457c8483e3d2e924eb870fd29e7121ec, type: 2}
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
       minRange: 0
       maxRange: 0
       targetHeight: 0
     - attack: {fileID: 11400000, guid: 22eaf64f132f1e54f8736a0052362360, type: 2}
-      builtIn: 0
-      gesture: 
-      weight: 1
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
       minRange: 3
       maxRange: 9
       targetHeight: 0
     - attack: {fileID: 11400000, guid: 720f33b6ea31aec49bea288f83c0780c, type: 2}
-      builtIn: 0
-      gesture: 
-      weight: 1
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
       minRange: 0
       maxRange: 7
       targetHeight: 0
@@ -495,6 +495,7 @@ MonoBehaviour:
       hopHeight: 0
       gesture: Dash
       anticipation: 0
+      attack: {fileID: 0}
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
     selfDestruct: 0

@@ -202,7 +202,10 @@ namespace RedMagic.Bosses.EditorTools
         /// <summary>
         /// Un campo como lo pinta la web. <c>type</c>: float, int, bool, string, vector2, color, enum,
         /// floatList, intList, art (GameObject → hueco de arte), object (clase anidada, con
-        /// <c>fields</c>) o unity (sólo se asigna en Unity; la web lo enseña pero no lo exporta).
+        /// <c>fields</c>), objectList (lista de una clase anidada: <c>fields</c> de cada elemento y
+        /// <c>defaultCount</c>; <c>perRelease</c> si lleva <see cref="PerReleaseAttribute"/> = una
+        /// entrada por suelta del gesto) o unity (sólo se asigna en Unity; la web lo enseña pero no
+        /// lo exporta).
         /// </summary>
         private static JObject Describe(FieldInfo field, object value, string path, HashSet<string> hidden,
                                         ArtSlotAttribute inheritedSlot, int depth)
@@ -273,6 +276,24 @@ namespace RedMagic.Bosses.EditorTools
                 o["type"] = "intList";
                 o["default"] = JArray.FromObject(((IEnumerable)value ?? Array.Empty<int>()).Cast<int>().ToArray());
             }
+            else if (ElementClass(ft) is Type element)
+            {
+                // Lista de una clase [Serializable] (las sueltas de un ReleaseAttack): la web edita cada
+                // elemento con los campos de esa clase, que nacen con sus valores por defecto.
+                object sample = SafeCreate(element);
+                var fields = new JArray();
+                if (sample != null)
+                    foreach (var child in SerializableFields(element))
+                    {
+                        var d = Describe(child, child.GetValue(sample), $"{path}[].{child.Name}", hidden, null, depth + 1);
+                        if (d != null) fields.Add(d);
+                    }
+
+                o["type"] = "objectList";
+                o["fields"] = fields;
+                o["defaultCount"] = value is ICollection list ? list.Count : 0;
+                if (field.IsDefined(typeof(PerReleaseAttribute), false)) o["perRelease"] = true;
+            }
             else if (ft.IsArray || (ft.IsGenericType && ft.GetGenericTypeDefinition() == typeof(List<>)))
             {
                 o["type"] = "unity";
@@ -306,6 +327,17 @@ namespace RedMagic.Bosses.EditorTools
             }
 
             return o;
+        }
+
+        /// <summary>El tipo de elemento de una lista / array de una clase [Serializable] propia, o null.</summary>
+        private static Type ElementClass(Type ft)
+        {
+            Type element = ft.IsArray ? ft.GetElementType()
+                : ft.IsGenericType && ft.GetGenericTypeDefinition() == typeof(List<>) ? ft.GetGenericArguments()[0]
+                : null;
+            if (element == null || !element.IsClass || element == typeof(string)) return null;
+            if (typeof(Object).IsAssignableFrom(element) || !element.IsDefined(typeof(SerializableAttribute), false)) return null;
+            return element;
         }
 
         private static ArtSlotKind InferKind(string fieldName, ArtSlotAttribute inherited)

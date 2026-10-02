@@ -274,10 +274,10 @@ MonoBehaviour:
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
     attacks:
-    - attack: {fileID: 0}
-      builtIn: 1
-      gesture: Disparo
-      weight: 1
+    - attack: {fileID: 11400000, guid: 625dee93f1b672d44ba30edbc0f6e667, type: 2}
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
       minRange: 0
       maxRange: 0
       targetHeight: 0
@@ -295,6 +295,7 @@ MonoBehaviour:
       hopHeight: 1.2
       gesture: Finger
       anticipation: 0.12
+      attack: {fileID: 0}
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
     selfDestruct: 0

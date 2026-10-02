@@ -87,6 +87,9 @@ namespace RedMagic.Enemies
         private int _evadeSide;
         private bool _evadeHopped;
         private float[] _defenceCooldowns = System.Array.Empty<float>();
+
+        /// <summary>La esquiva en curso lanzó un ataque (<see cref="EnemyDefence.attack"/>).</summary>
+        private bool _evadeAttack;
         private bool[] _lowHealthFired = System.Array.Empty<bool>();
 
         /// <summary>Segundos hasta volver a tirar el dado tras un intento fallido (para no tirar cada frame).</summary>
@@ -642,7 +645,7 @@ namespace RedMagic.Enemies
             // golpe y recuperación) y avisa al acabar; si no, el ataque propio por la animación.
             if (_attack != null && _attack.BeginChosen(_target)) return;
 
-            if (_animation != null) _animation.PlayAttack(_attack != null ? _attack.BuiltInGesture : null);
+            if (_animation != null) _animation.PlayAttack();
             else OnAttackFinished();
         }
 
@@ -716,8 +719,17 @@ namespace RedMagic.Enemies
             Stop();
             FaceTowards(toTarget);   // se aparta sin darle la espalda
 
-            // La pose se mantiene mientras dura (con sus efectos y sprites) y no avisa de ningún ataque.
-            if (_animation != null && !string.IsNullOrWhiteSpace(d.gesture)) _animation.Hold(d.gesture);
+            // Con ataque: su gesto se reproduce entero mientras se aparta y sale en sus sueltas (la
+            // primera, al acabar de apartarse). Sin él, la pose se mantiene mientras dura (con sus
+            // efectos y sprites) y no avisa de ningún ataque.
+            _evadeAttack = false;
+            if (d.attack != null && _attack != null)
+            {
+                _attack.AimAt(AimPoint());
+                _evadeAttack = _attack.RunDefenceAttack(d.attack, _target, Mathf.Max(0f, d.anticipation) + _evadeDuration);
+            }
+
+            if (!_evadeAttack && _animation != null && !string.IsNullOrWhiteSpace(d.gesture)) _animation.Hold(d.gesture);
             SoundTriggered?.Invoke(SoundTrigger.OnEvade);
             return true;
         }
@@ -769,10 +781,21 @@ namespace RedMagic.Enemies
         private void EndEvade()
         {
             bool hadGesture = _evade != null && !string.IsNullOrWhiteSpace(_evade.gesture);
+            bool attacking = _evadeAttack;
             _evade = null;
+            _evadeAttack = false;
             if (Current != State.Evading) return;
 
-            if (_animation != null && hadGesture) _animation.ReturnToRest();
+            // El ataque que lanzó al apartarse sigue en marcha (le quedan sueltas, o su recuperación):
+            // se queda quieto atacando hasta que acabe, como con cualquier ataque de la baraja.
+            if (attacking && _attack != null && _attack.HostRunning)
+            {
+                Stop();
+                Enter(State.Attacking);
+                return;
+            }
+
+            if (_animation != null && hadGesture && !attacking) _animation.ReturnToRest();
             Stop();
             Enter(State.Idle);   // el siguiente Update decide: perseguir, atacar, retirarse
         }

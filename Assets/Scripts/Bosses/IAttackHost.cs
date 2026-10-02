@@ -29,6 +29,15 @@ namespace RedMagic.Bosses
         /// </summary>
         Vector2 CastPoint => FeetPosition;
 
+        /// <summary>
+        /// El punto que se congeló al decidir el ataque en curso (a donde apunta el cuerpo durante el
+        /// aviso). Null = quien ataca no congela nada: los ataques apuntan al objetivo en vivo.
+        /// </summary>
+        Vector2? AimPoint => null;
+
+        /// <summary>Acaba de salir un golpe / disparo del ataque en curso (para el sonido propio del dueño).</summary>
+        void OnShotFired() { }
+
         /// <summary>El cuerpo que hace los gestos (rig o Animator). Null si no anima.</summary>
         IAttackBody Body { get; }
 

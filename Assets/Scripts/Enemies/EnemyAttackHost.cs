@@ -68,9 +68,20 @@ namespace RedMagic.Enemies
         private Health _health;
         private Collider2D _collider;
         private Rigidbody2D _rigidbody;
+        private EnemyAttack _attack;
         private Coroutine _routine;
+        private Vector2 _aimPoint;
 
         // ============================================================ IAttackHost
+
+        /// <summary>El punto que congeló el cerebro al decidir el ataque en curso.</summary>
+        public Vector2? AimPoint => _routine != null ? _aimPoint : (Vector2?)null;
+
+        /// <summary>Un golpe del ataque en curso: suena el "OnAttack" del enemigo, como con su ataque propio.</summary>
+        public void OnShotFired()
+        {
+            if (_attack != null) _attack.RaiseAttackSound();
+        }
 
         public GameObject WarnPrefab => warnPrefab;
         public GameObject WarnCirclePrefab => warnCirclePrefab;
@@ -134,6 +145,7 @@ namespace RedMagic.Enemies
         {
             _stats = GetComponent<EnemyStats>();
             _animation = GetComponent<EnemyAnimation>();
+            _attack = GetComponent<EnemyAttack>();
             _health = GetComponent<Health>();
             _collider = GetComponent<Collider2D>();
             _rigidbody = GetComponent<Rigidbody2D>();
@@ -164,8 +176,10 @@ namespace RedMagic.Enemies
         /// Lanza <paramref name="attack"/> contra <paramref name="target"/>: aviso (con su gesto, si el
         /// cuerpo lo tiene) → ataque → recuperación, y avisa con <paramref name="finished"/>.
         /// <paramref name="aimPoint"/> es el punto que congeló el cerebro al decidir atacar.
+        /// <paramref name="lead"/> = segundos de aviso en vez del <c>telegraph</c> del ataque (un ataque
+        /// lanzado desde una defensa: lo que dura apartarse); negativo = el suyo.
         /// </summary>
-        public void Run(BossAttack attack, Transform target, Vector2 aimPoint, Action finished)
+        public void Run(BossAttack attack, Transform target, Vector2 aimPoint, Action finished, float lead = -1f)
         {
             Cancel();
 
@@ -175,12 +189,13 @@ namespace RedMagic.Enemies
                 return;
             }
 
-            _routine = StartCoroutine(Routine(attack, target, aimPoint, finished));
+            _aimPoint = aimPoint;
+            _routine = StartCoroutine(Routine(attack, target, aimPoint, finished, lead));
         }
 
-        private IEnumerator Routine(BossAttack attack, Transform target, Vector2 aimPoint, Action finished)
+        private IEnumerator Routine(BossAttack attack, Transform target, Vector2 aimPoint, Action finished, float lead)
         {
-            float seconds = attack.Telegraph;
+            float seconds = lead >= 0f ? Mathf.Max(0.01f, lead) : attack.Telegraph;
             attack.OnTelegraph(BuildContext(attack, target, aimPoint));
 
             // --- aviso: el gesto del cuerpo si existe (el ataque arranca en su frame de suelta),

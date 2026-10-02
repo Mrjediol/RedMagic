@@ -916,6 +916,9 @@ namespace RedMagic.Rigging
 
         public void ClearCastPoint() => SetCastPoint(null, Vector2.zero);
 
+        /// <summary>True si hay de dónde sacar un ataque: una suelta con su punto, una boca o una pieza que apunta.</summary>
+        public bool HasCastPoint => _castPoint != null || muzzle != null || aimPart != null;
+
         /// <summary>
         /// Un gesto convertido desde el formato de fases que no tenía golpe pasa de "carga 0–1, vuelta
         /// 2–3" a "paso 0–1, vuelta 1–2": las ventanas de sus sprites de gesto bajan un tramo.

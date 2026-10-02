@@ -87,6 +87,15 @@ namespace RedMagic.Pipeline.EditorTools
                 case SerializedPropertyType.Generic when prop.isArray:
                     return TryWriteArray(prop, value, path, unresolved);
 
+                // Un ProjectileSpec anidado (el de cada suelta de un ReleaseAttack): entero, como el de
+                // primer nivel — con su arte de biblioteca ('libraryId') resuelto a prefab.
+                case SerializedPropertyType.Generic when prop.type == "ProjectileSpec":
+                    ProjectileConfigImporter.WriteInto(prop, ProjectileConfigImporter.Resolve(value, null, path));
+                    return true;
+
+                case SerializedPropertyType.Generic:
+                    return TryWriteObject(prop, value, path, unresolved);
+
                 default:
                     unresolved.Add($"{path}: tipo de campo no soportado por el importador ({prop.propertyType}).");
                     return false;
@@ -106,6 +115,36 @@ namespace RedMagic.Pipeline.EditorTools
 
             unresolved.Add($"{path}: '{name}' no es un valor válido ({string.Join(", ", prop.enumNames)}).");
             return false;
+        }
+
+        /// <summary>
+        /// Una clase [Serializable] anidada: cada clave del JSON a su campo. Un elemento recién crecido
+        /// de un array nace a ceros (Unity no llama a los inicializadores de C#), así que quien escribe
+        /// listas de objetos manda todos sus campos.
+        /// </summary>
+        private static bool TryWriteObject(SerializedProperty prop, JToken value, string path, List<string> unresolved)
+        {
+            if (!(value is JObject obj))
+            {
+                unresolved.Add($"{path}: se esperaba un objeto JSON.");
+                return false;
+            }
+
+            bool ok = true;
+            foreach (var p in obj.Properties())
+            {
+                var child = prop.FindPropertyRelative(p.Name);
+                if (child == null)
+                {
+                    unresolved.Add($"{path}.{p.Name}: el campo no existe en {prop.type}.");
+                    ok = false;
+                    continue;
+                }
+
+                ok &= TryWriteValue(child, p.Value, $"{path}.{p.Name}", unresolved);
+            }
+
+            return ok;
         }
 
         private static bool TryWriteArray(SerializedProperty prop, JToken value, string path, List<string> unresolved)

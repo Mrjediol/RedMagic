@@ -59,9 +59,6 @@ namespace RedMagic.Enemies
         /// <summary>La carta que salió en el último <see cref="Choose"/>; null = el ataque propio.</summary>
         private EnemyDeckEntry _chosen;
 
-        /// <summary>El gesto con el que sale el ataque propio esta vez (variante de la baraja), o vacío.</summary>
-        public string BuiltInGesture { get; private set; }
-
         /// <summary>Ataques lanzados (propios y de la baraja), para 'cooldownInAttacks'.</summary>
         private int _launched;
 
@@ -184,15 +181,12 @@ namespace RedMagic.Enemies
             return _chosen != null || builtInWeight > 0f;
         }
 
-        private static float WeightOf(EnemyDeckEntry entry) =>
-            Mathf.Max(0.01f, entry.builtIn ? entry.weight : entry.attack.Weight);
+        private static float WeightOf(EnemyDeckEntry entry) => Mathf.Max(0.01f, entry.attack.Weight);
 
         /// <summary>Mismas reglas que un jefe: a su distancia, y cumplidos 'cooldownInAttacks' y 'cooldownSeconds'.</summary>
         private bool IsReady(EnemyDeckEntry entry, float distance, float heightDelta, EnemyTuning tuning)
         {
             if (entry == null || !entry.InReach(distance, heightDelta, tuning.attackRange)) return false;
-            if (entry.builtIn) return true;   // el ataque propio no tiene enfriamientos propios: manda attackCooldown
-
             var attack = entry.attack;
             if (_lastUsedAt.TryGetValue(attack, out int last) && _launched - last <= attack.CooldownInAttacks) return false;
 
@@ -209,10 +203,7 @@ namespace RedMagic.Enemies
         {
             var entry = _chosen;
             _chosen = null;
-            BuiltInGesture = entry != null && entry.builtIn ? entry.gesture : null;
-
-            // Una variante del ataque propio (otro gesto) sale por la animación, como el propio.
-            if (entry == null || entry.builtIn || entry.attack == null || _host == null)
+            if (entry == null || entry.attack == null || _host == null)
             {
                 _launched++;
                 return false;
@@ -226,6 +217,28 @@ namespace RedMagic.Enemies
                       () => DeckAttackFinished?.Invoke());
             return true;
         }
+
+        /// <summary>True mientras hay un ataque del catálogo en marcha (de la baraja o de una defensa).</summary>
+        public bool HostRunning => _host != null && _host.Running;
+
+        /// <summary>
+        /// Lanza un ataque del catálogo <b>desde un movimiento defensivo</b> (<see cref="EnemyDefence.attack"/>):
+        /// su gesto se reproduce entero mientras el enemigo se aparta, con <paramref name="lead"/> segundos
+        /// hasta su primera suelta, y sale en sus sueltas. No cuenta para los enfriamientos de la baraja.
+        /// Avisa con <see cref="DeckAttackFinished"/>. False si no hay quien lo lance.
+        /// </summary>
+        public bool RunDefenceAttack(BossAttack attack, Transform target, float lead)
+        {
+            if (attack == null) return false;
+            if (_host == null) _host = GetComponent<EnemyAttackHost>() ?? gameObject.AddComponent<EnemyAttackHost>();
+
+            _host.Run(attack, target, _hasAim ? _aimPoint : (Vector2)transform.position,
+                      () => DeckAttackFinished?.Invoke(), lead);
+            return true;
+        }
+
+        /// <summary>El "OnAttack" del enemigo, para un golpe que no sale por <see cref="Execute"/> (un ataque del catálogo).</summary>
+        public void RaiseAttackSound() => SoundTriggered?.Invoke(SoundTrigger.OnAttack);
 
         /// <summary>Hacia dónde mira el golpe, desde donde nace de verdad.</summary>
         private Vector2 Direction(Vector2 origin)

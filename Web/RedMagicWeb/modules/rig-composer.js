@@ -90,6 +90,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   const head = { t: 0, playing: false, lead: null };   // the open gesture's playhead; lead = a warning only for this play
   let previewTelegraph = 0.6;    // seconds of warning the preview launches a gesture with (the attack's 'telegraph')
   let placing = null;            // { kind: 'fx' | 'release', index }: the next canvas click places it
+  let timelineFocus = false;     // the timeline was the last thing clicked (not the canvas / parts list): Supr removes its selection
+  timelineHost.addEventListener('mousedown', () => { timelineFocus = true; }, true);
+  sidebar.addEventListener('mousedown', () => { timelineFocus = false; }, true);
   let fxEntries = new Map();     // library effects (kind fx / projectile, with frames) by id
 
   const POSE_TOOLS = ['move', 'rotate', 'scale'];
@@ -478,7 +481,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     if (e.key === 'Escape' && placing) { placing = null; renderInspector(); setStatus('Colocar: cancelado.'); return; }
     if (e.key === 'Escape' && posing) { stopPosing(); return; }
     if (e.key === 'Delete' || e.key === 'Supr') {
-      // Posing: Supr takes the part out of the pose, never deletes the part.
+      // The last thing clicked is what Supr acts on: a step / release / effect of the timeline…
+      if (timelineFocus && timeline.selection) { e.preventDefault(); timeline.removeSelected(); return; }
+      // …else the canvas. Posing: Supr takes the part out of the pose, never deletes the part.
       if (posing) clearPose(poseTarget());
       else if (selectedUid) removePart(M.byUid(state, selectedUid));
     }
@@ -560,6 +565,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       drag = { kind: 'handle', item: handle.item, inv: M.invert(handle.matrix) };
       return;
     }
+    timelineFocus = false;   // a press on the body: Supr is about parts again
     if (posing) { beginPoseDrag(e, pt); return; }
     const hit = view.partAt(state, e.clientX, e.clientY);
     let part = selectedPart();

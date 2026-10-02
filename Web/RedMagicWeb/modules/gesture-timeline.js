@@ -147,6 +147,7 @@ export function createGestureTimeline(host) {
       sel = { kind: 'step', index: Math.min(s.index, g.steps.length - 1) };
     } else if (s.kind === 'release') { g.releases.splice(s.index, 1); sel = null; }
     else if (s.kind === 'fx') { g.fx.splice(s.index, 1); sel = null; }
+    else { host.status('La vuelta al reposo no se quita: sólo se cambia cuánto dura.'); return; }
     edited();
   }
 
@@ -617,7 +618,7 @@ export function createGestureTimeline(host) {
   }
 
   return {
-    renderDock, renderFields, updatePlayhead, select, reset, addFx,
+    renderDock, renderFields, updatePlayhead, select, reset, addFx, removeSelected,
     get selection() { return selection(); },
   };
 }

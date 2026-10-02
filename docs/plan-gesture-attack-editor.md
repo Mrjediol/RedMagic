@@ -72,6 +72,22 @@ Two copies would drift apart within weeks (the reason the audio tables and the i
 - Not done here, on purpose: the per-release attack picker (needs the engine work in Notes), sound.
 - Pending user test: `docs/plan-gesture-attack-editor-tests.md`.
 
+## Step 2 — how the user wants attacks to read (feedback 2026-10-02, after step 1)
+
+The attack list must be built around the gesture's releases; today nothing in "Ataques" mentions them.
+- **A plain "one projectile" attack in the catalog** ("Disparo simple"), with its OWN projectile picker
+  (placeholder by default, like every attack). "Ataque propio · variante" ("Repetir el ataque propio con
+  otro gesto", `builtInVariants`) is not that: it reuses the built-in shot's projectile and numbers and
+  cannot choose another. The user finds it confusing — replace it with the catalog attack, migrating the
+  variants ([[replace-systems-fully-no-coexistence]]): the built-in attack stays only as the default.
+- **Creating an attack = pick its gesture → the card shows one slot per release of that gesture** ("suelta
+  1", "suelta 2"…) and asks what leaves at each: a single projectile, a fan, a ring… or nothing. A release
+  is a spawn point of an attack, not necessarily of one bullet. Adding / removing a release in the
+  timeline adds / removes its slot.
+- Engine side = the `RigRelease` work in Notes below (each release launches its own attack).
+- Supr acts on what was clicked last: a timeline item when the timeline was (done), else the canvas.
+- Tests for the user: short, in the web only; ONE Unity import at the very end, never per step.
+
 ## Notes
 
 - **Several attacks inside one gesture — wanted (user, 2026-10-02).** Today several releases = the same

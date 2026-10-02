@@ -37,11 +37,16 @@
 // `rootScale`, and `behaviour.config` (a whole EnemyConfig instead of the built-ins' partial tuning).
 // Gestures reference parts by SLOT ID, never by uid, so they survive into any body made from the
 // template — and importGestures lays them over an existing body by slot id → role → name.
+//
+// A template gesture is written in either shape (rig-gestures.js): the built-ins keep the classic two
+// poses (`windup` / `strike` + `strikeTime` / `shake`), a user template saves the timeline
+// (`steps` / `releases`). Both become a timeline when they enter a document (gestureIn).
 
 import { createDefaultRigState, createPart } from './rig-defaults.js';
 import { createDefaultEnemyConfig } from './enemy-defaults.js';
 import { buildExportObject } from './enemy-export.js';
 import { byUid, childrenOf, worldMatrix, pixelToLocal, apply, invert, multiply, decompose, isOpenSlot } from './rig-model.js';
+import { normalizeGesture } from './rig-gestures.js';
 
 const pose = (part, move = [0, 0], rotate = 0, scale = [0, 0]) => ({ part, move, rotate, scale });
 
@@ -316,14 +321,7 @@ export function instantiateTemplate(template, take = {}) {
     if (order) state.roles[k] = order.map((id) => uidOf.get(id)).filter(Boolean);
   });
 
-  const poses = (list) => (list || []).map((p) => ({
-    part: p.part === 'Visual' ? 'Visual' : uidOf.get(p.part), move: xy(p.move), rotate: p.rotate || 0, scale: xy(p.scale),
-  })).filter((p) => p.part);
-  state.gestures = withGestures ? (template.gestures || []).map((g) => ({
-    name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake,
-    windup: poses(g.windup), strike: poses(g.strike),
-    fx: fxIn(g.fx, (slotId) => uidOf.get(slotId)),
-  })) : null;
+  state.gestures = withGestures ? (template.gestures || []).map((g) => gestureIn(g, (slotId) => uidOf.get(slotId))) : null;
   if (!withGestures) state.rig.moveGesture = '';
   else if (template.idle) state.idle = { ...state.idle, ...JSON.parse(JSON.stringify(template.idle)) };
   return state;
@@ -346,6 +344,29 @@ const fxIn = (list, uidOfSlot, k = 1) => fxMapped(list, uidOfSlot, (f) => {
   if (k !== 1) { f.offset = scaled(f.offset, k); f.scale = r4((f.scale > 0 ? f.scale : 1) * k); }
   return f;
 });
+
+const vec = (a) => (Array.isArray(a) ? xy(a) : { x: a?.x || 0, y: a?.y || 0 });
+
+/**
+ * A template gesture (classic or timeline, parts by slot id) → a document gesture: a timeline with
+ * its parts by uid, lengths × `k`. A pose whose slot has no part here is left out (`dropped` collects
+ * those slot ids); a release whose point is missing leaves from the muzzle.
+ */
+function gestureIn(g, uidOfSlot, k = 1, dropped = null) {
+  const src = JSON.parse(JSON.stringify(g));
+  normalizeGesture(src);
+  const poses = (list) => list.map((p) => {
+    const part = p.part === 'Visual' ? 'Visual' : uidOfSlot(p.part);
+    if (!part) { if (dropped) dropped.add(p.part); return null; }
+    return { part, move: scaled(vec(p.move), k), rotate: p.rotate || 0, scale: vec(p.scale) };
+  }).filter(Boolean);
+  return {
+    name: src.name, recover: src.recover,
+    steps: src.steps.map((s) => ({ ...s, poses: poses(s.poses) })),
+    releases: src.releases.map((r) => ({ step: r.step, at: r.at, point: (r.point && uidOfSlot(r.point)) || null, offset: scaled(vec(r.offset), k) })),
+    fx: fxIn(src.fx, uidOfSlot, k),
+  };
+}
 
 // ============================================================ document → template (user templates)
 
@@ -462,8 +483,9 @@ export function templateFromState(state, { label, description = '', bodyHeight =
     },
     idle: copy(state.idle || { gestures: [] }),
     gestures: (state.gestures || []).map((g) => ({
-      name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake,
-      windup: poses(g.windup), strike: poses(g.strike),
+      name: g.name, recover: g.recover,
+      steps: g.steps.map((s) => ({ name: s.name, duration: s.duration, ease: s.ease, stretch: !!s.stretch, shake: s.shake || 0, poses: poses(s.poses) })),
+      releases: g.releases.map((r) => ({ step: r.step, at: r.at, point: (r.point && ids.get(r.point)) || null, offset: pair(r.offset) })),
       fx: fxMapped(g.fx, (uid) => ids.get(uid)),   // effects travel by library id: same browser library
     })),
   };
@@ -530,17 +552,10 @@ export function importGestures(state, template, bodyHeight = 0) {
   const map = matchSlotsToParts(state, template);
   const k = template.height > 0 && bodyHeight > 0 ? bodyHeight / template.height : 1;
   const dropped = new Set();
-  const convert = (list) => (list || []).map((p) => {
-    const part = p.part === 'Visual' ? 'Visual' : map.get(p.part);
-    if (!part) { dropped.add(p.part); return null; }
-    return { part, move: scaled(xy(p.move), k), rotate: p.rotate || 0, scale: xy(p.scale) };
-  }).filter(Boolean);
-
   const list = state.gestures || (state.gestures = []);
   let added = 0, replaced = 0;
   (template.gestures || []).forEach((g) => {
-    const gesture = { name: g.name, strikeTime: g.strikeTime, recover: g.recover, shake: g.shake, windup: convert(g.windup), strike: convert(g.strike),
-      fx: fxIn(g.fx, (slotId) => map.get(slotId), k) };
+    const gesture = gestureIn(g, (slotId) => map.get(slotId), k, dropped);
     const i = list.findIndex((x) => x.name === g.name);
     if (i >= 0) { list[i] = gesture; replaced++; } else { list.push(gesture); added++; }
   });
@@ -636,7 +651,8 @@ export function fitLengths(state, bodyHeight) {
   state.parts.forEach((p) => { p.sway.move = scaled(p.sway.move, k); });
   RIG_LENGTHS.forEach((key) => { if (state.rig[key] !== undefined) state.rig[key] = scaled(state.rig[key], k); });
   (state.gestures || []).forEach((g) => {
-    [...g.windup, ...g.strike].forEach((p) => { p.move = scaled(p.move, k); });
+    g.steps.forEach((s) => s.poses.forEach((p) => { p.move = scaled(p.move, k); }));
+    g.releases.forEach((r) => { r.offset = scaled(r.offset, k); });   // where the attack leaves from, on its point
     // Effects grow with the body: where they sit on their anchor and how big they are.
     (g.fx || []).forEach((f) => { f.offset = scaled(f.offset, k); f.scale = r4((f.scale > 0 ? f.scale : 1) * k); });
   });

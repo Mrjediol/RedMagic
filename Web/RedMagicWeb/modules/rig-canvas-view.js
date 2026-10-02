@@ -310,8 +310,11 @@ export class RigCanvasView {
    * @param {object} state
    * @param {object} opts - { selectedUid, poses, visualMatrix, spriteState, stage, showCollider,
    *                          showMarkers, ghostRest, requestRender,
-   *                          fx: [{ sheet: dataURL, box: {x,y,w,h}, matrix, alpha, marked }] }
-   *                          (gesture effects: `matrix` maps the frame's centred pixels to Visual space)
+   *                          fx: [{ sheet: dataURL, box: {x,y,w,h}, matrix, alpha, marked, behind }],
+   *                          marks: [{ point: {x,y}, label, selected, fired }] }
+   *                          (gesture effects: `matrix` maps the frame's centred pixels to Visual space;
+   *                          `sheet` null = no art to show, only its cross. Marks: a gesture's releases —
+   *                          where the attack leaves from — as Visual-space points)
    */
   render(state, opts = {}) {
     this._syncSize();
@@ -342,20 +345,53 @@ export class RigCanvasView {
       ctx.restore();
     }
 
+    this._drawFx(opts, true);    // the effects layered behind the body
     drawParts(opts);
-    this._drawFx(opts);   // in front of every part, like the driver draws them
+    this._drawFx(opts, false);   // in front of every part, like the driver draws them
 
     this._drawSlots(state, opts);
     if (opts.showCollider !== false) { this._drawCollider(state, opts); this._drawFeet(state); }
     if (opts.showMarkers !== false) this._drawNodes(state, opts);
     if (opts.showMarkers !== false) this._drawMarkers(state, opts);
+    this._drawMarks(opts);
+  }
+
+  /** A gesture's releases: a target where the attack leaves from; a ring bursts when one fires. */
+  _drawMarks(opts) {
+    const ctx = this.ctx;
+    (opts.marks || []).forEach((mark) => {
+      const p = apply(this.camera, mark.point);
+      ctx.save();
+      if (mark.fired !== undefined) {   // 0 → 1 while the burst lasts
+        ctx.strokeStyle = `rgba(255,120,90,${1 - mark.fired})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 8 + mark.fired * 26, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        const r = mark.selected ? 9 : 6;
+        ctx.strokeStyle = mark.selected ? 'rgba(255,120,90,1)' : 'rgba(255,120,90,0.55)';
+        ctx.lineWidth = mark.selected ? 2 : 1.5;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.moveTo(p.x - r - 5, p.y); ctx.lineTo(p.x + r + 5, p.y);
+        ctx.moveTo(p.x, p.y - r - 5); ctx.lineTo(p.x, p.y + r + 5);
+        ctx.stroke();
+        if (mark.label) {
+          ctx.font = '13px sans-serif';
+          ctx.fillStyle = ctx.strokeStyle;
+          ctx.fillText(mark.label, p.x + r + 8, p.y - r - 2);
+        }
+      }
+      ctx.restore();
+    });
   }
 
   /** Gesture effects (rig-fx.js): one frame of a library sheet each, centred on its anchor point. */
-  _drawFx(opts) {
+  _drawFx(opts, behind = false) {
     const ctx = this.ctx;
-    (opts.fx || []).forEach((f) => {
-      const e = this._entry({ dataURL: f.sheet }, opts.requestRender);
+    (opts.fx || []).filter((f) => !!f.behind === behind).forEach((f) => {
+      const e = f.sheet ? this._entry({ dataURL: f.sheet }, opts.requestRender) : null;
       const m = multiply(this.camera, f.matrix);
       if (e) {
         ctx.save();

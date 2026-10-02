@@ -3,7 +3,7 @@
 // The 🧬 Enemy Studio tab: one workflow from loose part PNGs to a finished enemy, as steps.
 //
 // Step 3 (Efectos) is the library's effects as a palette: ＋ or drag one onto a gesture and it hangs
-// from the phase that gesture card is showing (the hooks themselves are the composer's, rig-fx.js).
+// at the instant its timeline's playhead is on (the hooks themselves are the composer's, rig-fx.js).
 //
 //   left   — the steps, in the order of the work (one open at a time; the later ones unlock once
 //            the body is usable): 1 Cuerpo · 2 Plantilla · 3 Efectos · 4 Comportamiento · 5 Exportar
@@ -184,8 +184,8 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     effectsBox.innerHTML = '';
     const st = rig.getStatus();
     effectsBox.appendChild(el('p', 'hint', st.openGesture
-      ? `Gesto abierto: "${st.openGesture}". Pulsa ＋ (o arrastra el efecto a un gesto) para colgarlo de la fase que tiene a la vista; luego colócalo en el lienzo.`
-      : 'Abre un gesto a la derecha (Gestos) y elige su fase: carga, golpe o vuelta. Después pulsa ＋ aquí, o arrastra el efecto al gesto.'));
+      ? `Gesto abierto: "${st.openGesture}". Pulsa ＋ para colgarlo en el instante donde está el cursor de su línea de tiempo (bajo el lienzo), o arrástralo a la línea de tiempo y suéltalo en el instante que quieras; luego colócalo en el lienzo.`
+      : 'Abre un gesto a la derecha (Gestos): su línea de tiempo aparece bajo el lienzo. Después pulsa ＋ aquí, o arrastra el efecto a la línea de tiempo.'));
     const list = el('div', 'studioFxList');
     effects.forEach((entry) => {
       const row = el('div', 'studioFxRow');
@@ -196,7 +196,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
       row.draggable = true;
       row.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/rig-fx', entry.id));
       const add = el('button', 'small', '＋');
-      add.title = 'Colgarlo del gesto abierto, en la fase que tiene a la vista.';
+      add.title = 'Colgarlo del gesto abierto, en el instante donde está el cursor de su línea de tiempo.';
       add.onclick = () => { rig.addFxToOpenGesture(entry.id); };
       row.appendChild(add);
       list.appendChild(row);

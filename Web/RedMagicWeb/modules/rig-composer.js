@@ -9,14 +9,15 @@
 //   right  — the selected part (transform, roles, sway, state sprites), rig timings, GESTURES,
 //            collider, links to an Enemy Creator / Boss Creator entry, validation and export
 //
-// GESTURES (inspector ▸ Gestos): named pose pairs an attack telegraphs with. "Posar carga / golpe"
-// turns the canvas into a pose editor — move / rotate / scale then write that part's OFFSET in the
-// pose instead of the part itself (drag on empty space = the whole body) — and "▶ Probar" plays the
-// gesture with RigDriverCode's timing. Data and formulas: rig-gestures.js.
-//
-// A gesture card has one tab per PHASE (carga / golpe / vuelta): its pose, its timing and its EFFECTS
-// (rig-fx.js) — library effects hung from a part, the muzzle, the body or the feet, placed on the
-// canvas with "⌖ Colocar" and shown by "▶ Probar" with the driver's timing.
+// GESTURES (inspector ▸ Gestos): the named timelines an attack telegraphs with. The open gesture's
+// TIMELINE sits under the canvas (gesture-timeline.js: steps, releases, effects, a playhead that stops
+// it at any instant); this file is its host — it owns the canvas side of it:
+//  - "✋ Posar este paso" turns the canvas into a pose editor: move / rotate / scale then write that
+//    part's OFFSET in the step's pose instead of the part itself (drag on empty space = the whole body);
+//  - the playhead decides what the canvas shows (the body, its effects, where the attack leaves from),
+//    with RigDriverCode's timing. Data and formulas: rig-gestures.js, rig-fx.js;
+//  - the selected release (a red target) and effect (a cross) are dragged on the canvas, or placed
+//    with "⌖ Colocar".
 //
 // "Nuevo desde plantilla" starts the document from a body shape (rig-templates.js): its slots show
 // up as empty parts to drop art on (parts list row, canvas placeholder, or a bulk drop by file name).
@@ -34,7 +35,7 @@
 import { createDefaultRigState, createPart, RIG_FIELD_GROUPS, createDefaultRigFields, adoptRigState } from './rig-defaults.js';
 import * as M from './rig-model.js';
 import { RigCanvasView } from './rig-canvas-view.js';
-import { buildRigExport, buildRigBundle } from './rig-export.js';
+import { buildRigExport, buildRigBundle, readRigGestures } from './rig-export.js';
 import { loadValidator, validateConfig } from './config-schema.js';
 import { saveEnemy, updateEnemy, getEnemy, deleteEnemy, listEntries, buildThumbnail } from './enemy-library.js';
 import { downloadBlob } from './export-manifest.js';
@@ -43,6 +44,7 @@ import { RIG_TEMPLATES, templateById, instantiateTemplate, openSlots, matchSlot,
   templateFromState, templateFromRecord, importGestures } from './rig-templates.js';
 import * as G from './rig-gestures.js';
 import * as FX from './rig-fx.js';
+import { createGestureTimeline } from './gesture-timeline.js';
 
 const TOOLS = [
   { id: 'move', label: '✋ Mover', key: 'v', hint: 'Arrastra una pieza. Clic en vacío = deseleccionar.' },
@@ -66,7 +68,7 @@ const el = (tag, cls, text) => {
   return e;
 };
 
-export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvasWrap, statusEl, inspector, statesHost, linksHost, exportHost }) {
+export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvasWrap, timelineHost, statusEl, inspector, statesHost, linksHost, exportHost }) {
   // Set by whoever embeds the composer (Enemy Studio): beforeExport / afterSave(id) / onChange.
   const hooks = { beforeExport: null, afterSave: null, onChange: null };
   let userTemplates = [];        // library records of kind 'rig-template', as templates
@@ -81,32 +83,79 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   // preview (RigDriverCode's formulas)
   const preview = { playing: false, clock: 0, lean: 0, speed: 0, hurt: -1, spriteState: '', stage: 0, last: 0 };
 
-  // gestures: which one is open in the inspector, whether one of its poses is being edited on the
-  // canvas, and the playback of "▶ Probar". UI state only — the gestures themselves are in `state`.
+  // gestures: which one is open, whether one of its steps' poses is being edited on the canvas, and
+  // the playhead of its timeline. UI state only — the gestures themselves are in `state`.
   let gestureIndex = -1;
-  let posing = null;             // { index, phase: 'windup' | 'strike' } while a pose is being edited
-  let gesturePlay = null;        // { index, t } while a gesture is playing
-  let previewTelegraph = 0.6;    // seconds of windup used by "▶ Probar" (the attack's 'telegraph')
-  let phaseTab = 'windup';       // which phase tab the open gesture card shows
-  let fxIndex = -1;              // the effect of the open gesture being edited (index in gesture.fx), or -1
-  let fxPlacing = false;         // next canvas click = where that effect sits on its anchor
+  let posing = null;             // { index, step } while a step's pose is being edited
+  const head = { t: 0, playing: false, lead: null };   // the open gesture's playhead; lead = a warning only for this play
+  let previewTelegraph = 0.6;    // seconds of warning the preview launches a gesture with (the attack's 'telegraph')
+  let placing = null;            // { kind: 'fx' | 'release', index }: the next canvas click places it
   let fxEntries = new Map();     // library effects (kind fx / projectile, with frames) by id
 
   const POSE_TOOLS = ['move', 'rotate', 'scale'];
-  const PHASE_LABELS = { windup: 'carga', strike: 'golpe' };
 
-  /** The gesture layered over the body right now (playing, or the pose being edited), or null. */
+  function openGesture() { return state.gestures?.[gestureIndex] || null; }
+  function lead() { return head.lead ?? previewTelegraph; }
+
+  // The timeline editor of the open gesture (the dock under the canvas + the selected thing's fields).
+  const timeline = createGestureTimeline({
+    gesture: openGesture,
+    lead,
+    setLead: (v) => { previewTelegraph = v; },
+    time: () => head.t,
+    playing: () => head.playing,
+    togglePlay,
+    seek: (t) => { head.playing = false; head.t = Math.max(0, t); timeline.updatePlayhead(); requestRender(); },
+    scrub: (t) => {
+      const wasPosing = !!posing;
+      if (wasPosing) stopPosing(true);
+      head.playing = false;
+      head.t = Math.max(0, t);
+      if (wasPosing) renderInspector(); else timeline.updatePlayhead();
+      requestRender();
+    },
+    posingStep: () => (posing && posing.index === gestureIndex ? posing.step : -1),
+    pose: (step) => (step < 0 ? stopPosing() : startPosing(gestureIndex, step)),
+    renderPose: (box, step) => renderPosePanel(box, openGesture(), step),
+    placing: () => placing,
+    place: (kind, index) => {
+      placing = placing?.kind === kind && placing.index === index ? null : { kind, index };
+      renderInspector();
+      if (placing) setStatus(kind === 'fx' ? 'Haz clic donde va el efecto (se guarda relativo a su ancla). Esc = cancelar.' : 'Haz clic en el punto del que sale el ataque. Esc = cancelar.');
+    },
+    parts: () => state.parts.filter((p) => p.image || p.rigPart).map((p) => ({ uid: p.uid, name: p.name })),
+    hasMuzzle: () => !!(state.roles.aim && state.roles.muzzle),
+    // The weapon tip when there is one (the usual place); else the selected part; else the body.
+    defaultAnchor: () => {
+      const sel = selectedPart();
+      const anchor = state.roles.aim && state.roles.muzzle ? 'muzzle' : sel?.rigPart ? 'part' : 'body';
+      return { anchor, part: anchor === 'part' ? sel.uid : null };
+    },
+    fxEntries: () => fxEntries,
+    changed: () => changed(),
+    refresh: () => { renderInspector(); requestRender(); if (hooks.onChange) hooks.onChange(); },
+    redraw: () => { requestRender(); refreshExport(); },
+    status: (text) => setStatus(text),
+  });
+
+  /**
+   * The gesture layered over the body right now — the pose being edited, or the instant the playhead
+   * is on: `{ gesture, weights[], shake, settling, moment }` — or null (the body at rest).
+   */
   function gestureLayer() {
-    const list = state.gestures || [];
-    if (gesturePlay && list[gesturePlay.index]) {
-      const gesture = list[gesturePlay.index];
-      const w = G.gestureWeights(gesture, gesturePlay.t, previewTelegraph);
-      return { gesture, windup: w.windup, strike: w.strike, shake: w.shake ? Math.sin(gesturePlay.t * 80) * w.shake : 0 };
+    const gesture = openGesture();
+    if (!gesture) return null;
+    if (posing && gesture.steps[posing.step]) {
+      return { gesture, weights: gesture.steps.map((_, i) => (i === posing.step ? 1 : 0)), shake: 0, settling: false, moment: null };
     }
-    if (posing && list[posing.index]) {
-      return { gesture: list[posing.index], windup: posing.phase === 'windup' ? 1 : 0, strike: posing.phase === 'strike' ? 1 : 0, shake: 0 };
-    }
+    if (head.playing || head.t > 0) return layerAt(gesture, head.t);
     return null;
+  }
+
+  /** The body `t` seconds into a gesture (RigDriverCode.GestureRoutine). */
+  function layerAt(gesture, t) {
+    const at = G.gestureAt(gesture, t, lead());
+    return { gesture, weights: at.weights, shake: at.shake ? Math.sin(t * 80) * at.shake : 0, settling: at.settling, moment: at.moment };
   }
 
   /** What the canvas shows right now (poses + Visual matrix), or null for the plain rest pose. */
@@ -128,36 +177,27 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     requestAnimationFrame(() => { renderQueued = false; draw(); });
   }
 
-  /** The sprite state on screen: the gesture being played, the hurt preview, else the one picked. */
-  function shownSpriteState() {
-    const playing = gesturePlay && (state.gestures || [])[gesturePlay.index];
-    if (playing) return M.gestureState(playing.name);
+  /** The sprite state on screen: the gesture the playhead is in, the hurt preview, else the one picked. */
+  function shownSpriteState(layer) {
+    if (layer && layer.moment !== null) return M.gestureState(layer.gesture.name);
     if (preview.hurt >= 0) return 'hurt';
     return preview.spriteState;
   }
 
-  /** Where the gesture being played is (0–1 windup, 1–2 strike, 2–3 recover), or null. */
-  function gestureMoment() {
-    const gesture = gesturePlay && (state.gestures || [])[gesturePlay.index];
-    if (!gesture) return null;
-    const times = FX.phaseTimes(gesture, previewTelegraph);
-    const t = gesturePlay.t;
-    if (t < times.strike.start) return t / times.windup.length;
-    if (times.strike.length > 0 && t < times.recover.start) return 1 + (t - times.strike.start) / times.strike.length;
-    return Math.min(3, 2 + (t - times.recover.start) / times.recover.length);
-  }
-
   function draw() {
+    const layer = gestureLayer();
     const anim = currentAnim();
     view.render(state, {
       selectedUid,
       poses: anim?.poses,
       visualMatrix: anim?.visual,
-      spriteState: shownSpriteState(),
-      gestureMoment: gestureMoment(),
+      spriteState: shownSpriteState(layer),
+      // Where the gesture is, in steps (0–1 the first… the last stretch is the way back), or null.
+      gestureMoment: layer ? layer.moment : null,
       stage: preview.stage,
-      ghostRest: !!posing && !gesturePlay,
+      ghostRest: !!posing,
       fx: fxOverlay(anim),
+      marks: releaseMarks(anim),
       requestRender,
     });
   }
@@ -190,54 +230,105 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     return visual;
   }
 
-  /** Frame pixels (centred, y down) → Visual space, for an effect sitting on its anchor. */
-  function fxMatrix(f, anchorMatrix) {
-    const k = (f.scale > 0 ? f.scale : 1) / state.pixelsPerUnit / FX.fxDensity(fxEntries.get(f.fx));
-    return M.multiply(anchorMatrix, M.trs(f.offset || { x: 0, y: 0 }, 0, { x: k, y: -k }));
+  /** Degrees the action points to for an effect ('direction' facing), with the body facing right. */
+  function fxDirection(f, anim) {
+    const aim = M.byUid(state, state.roles.aim);
+    if (f.anchor !== 'muzzle' || !aim || !state.roles.muzzle) return 0;
+    // At the muzzle: where the weapon points, pivot → muzzle.
+    const m = M.multiply(anim?.visual || M.IDENTITY, M.worldMatrix(state, aim, anim?.poses));
+    const from = M.apply(m, { x: 0, y: 0 }), to = M.apply(m, M.pixelToLocal(state, aim, state.roles.muzzle));
+    return (Math.atan2(to.y - from.y, to.x - from.x) * 180) / Math.PI;
   }
 
-  /** What the canvas draws of the gestures' effects: the ones alive in "▶ Probar", or the one being edited. */
+  /**
+   * Frame pixels (centred, y down) → Visual space, for an effect sitting on its anchor — RigDriver.FxPose:
+   * always AT its anchor's point; turned with the anchor, towards the action, or upright.
+   */
+  function fxMatrix(f, anchorMatrix, anim) {
+    const k = (f.scale > 0 ? f.scale : 1) / state.pixelsPerUnit / FX.fxDensity(fxEntries.get(f.fx));
+    const offset = f.offset || { x: 0, y: 0 };
+    const facing = f.facing || 'direction';
+    if (facing === 'anchor' && f.anchor !== 'feet') return M.multiply(anchorMatrix, M.trs(offset, f.angle || 0, { x: k, y: -k }));
+    const angle = (f.angle || 0) + (facing === 'direction' ? fxDirection(f, anim) : 0);
+    return M.trs(M.apply(anchorMatrix, offset), angle, { x: k, y: -k });
+  }
+
+  /** What the canvas draws of the open gesture's effects: the ones alive at the playhead, and the one selected. */
   function fxOverlay(anim) {
-    const list = state.gestures || [];
+    const gesture = openGesture();
     const out = [];
-    if (gesturePlay && list[gesturePlay.index]) {
-      const gesture = list[gesturePlay.index];
-      FX.activeFx(gesture, gesturePlay.t, previewTelegraph, fxFramesOf).forEach(({ fx, index, frame }) => {
-        const entry = fxEntries.get(fx.fx);
-        let anchor = fxAnchorMatrix(fx, anim);
-        // An effect that does not follow stays where it came out.
-        if (fx.followsPart === false) {
-          if (!gesturePlay.frozen.has(index)) gesturePlay.frozen.set(index, anchor);
-          anchor = gesturePlay.frozen.get(index);
-        }
-        out.push({ sheet: entry.sprite.sourceDataURL, box: fxFramesOf(fx).boxes[frame], matrix: fxMatrix(fx, anchor) });
+    if (!gesture) return out;
+    const chosen = timeline.selection?.kind === 'fx' ? timeline.selection.index : -1;
+    const shown = new Set();
+    if (!posing && (head.playing || head.t > 0)) {
+      const tl = G.timeline(gesture, lead());
+      FX.activeFx(gesture, head.t, lead(), fxFramesOf, tl).forEach(({ fx, index, frame }) => {
+        // An effect that does not follow stays where it came out: its anchor as the body was at that instant.
+        const at = fx.followsPart === false ? previewPoses(layerAt(gesture, G.timeOf(tl, fx.step, fx.at || 0))) : anim;
+        shown.add(index);
+        out.push({ sheet: fxEntries.get(fx.fx).sprite.sourceDataURL, box: fxFramesOf(fx).boxes[frame], matrix: fxMatrix(fx, fxAnchorMatrix(fx, at), at),
+          behind: fx.layer === 'behind', marked: index === chosen && !head.playing });
       });
-      return out;
     }
-    const gesture = list[gestureIndex];
-    const f = gesture?.fx?.[fxIndex];
-    const frames = f && fxFramesOf(f);
-    if (frames) {
-      out.push({ sheet: fxEntries.get(f.fx).sprite.sourceDataURL, box: frames.boxes[0], matrix: fxMatrix(f, fxAnchorMatrix(f, anim)),
-        alpha: 0.85, marked: true });
+    const f = gesture.fx?.[chosen];
+    if (f && !shown.has(chosen) && !head.playing) {   // the one being edited, even outside its moment
+      const frames = fxFramesOf(f);
+      out.push({ sheet: frames ? fxEntries.get(f.fx).sprite.sourceDataURL : null, box: frames?.boxes[0], matrix: fxMatrix(f, fxAnchorMatrix(f, anim), anim),
+        alpha: 0.85, marked: true, behind: f.layer === 'behind' });
     }
     return out;
   }
 
-  /** "⌖ Colocar": the clicked point becomes the effect's offset on its anchor. */
-  function placeFx(pt) {
-    const f = state.gestures?.[gestureIndex]?.fx?.[fxIndex];
-    fxPlacing = false;
-    if (!f) return;
-    const local = M.apply(M.invert(fxAnchorMatrix(f, currentAnim())), pt);
-    f.offset = { x: Math.round(local.x * 1000) / 1000, y: Math.round(local.y * 1000) / 1000 };
+  /** Visual-space matrix of the point a release leaves from: its part, or the muzzle (→ the aim part → the body). */
+  function releaseMatrix(r, anim) {
+    return fxAnchorMatrix(r.point ? { anchor: 'part', part: r.point } : { anchor: 'muzzle' }, anim);
+  }
+
+  /** Where the open gesture's attack leaves from: a target per release, a burst as each one fires. */
+  function releaseMarks(anim) {
+    const gesture = openGesture();
+    if (!gesture) return [];
+    const tl = G.timeline(gesture, lead());
+    const chosen = timeline.selection?.kind === 'release' ? timeline.selection.index : -1;
+    const out = [];
+    tl.releases.forEach((r, n) => {
+      const point = M.apply(releaseMatrix(r.release, anim), r.release.offset);
+      const age = head.t - r.time;
+      if (head.playing) { if (age >= 0 && age < 0.25) out.push({ point, fired: age / 0.25 }); }
+      else out.push({ point, label: tl.releases.length > 1 ? `suelta ${n + 1}` : 'suelta', selected: r.index >= 0 && r.index === chosen });
+    });
+    return out;
+  }
+
+  /** The thing selected on the timeline that sits on the canvas (a release, an effect): its anchor and its point. */
+  function canvasHandle(anim) {
+    const gesture = openGesture();
+    const sel = timeline.selection;
+    if (!gesture || !sel || (sel.kind !== 'fx' && sel.kind !== 'release')) return null;
+    const item = sel.kind === 'fx' ? gesture.fx[sel.index] : gesture.releases[sel.index];
+    const matrix = sel.kind === 'fx' ? fxAnchorMatrix(item, anim) : releaseMatrix(item, anim);
+    return { item, matrix, point: M.apply(matrix, item.offset || { x: 0, y: 0 }) };
+  }
+
+  const r3 = (v) => Math.round(v * 1000) / 1000;
+
+  /** "⌖ Colocar": the clicked point becomes the offset of the effect / release on its anchor. */
+  function placeAt(pt) {
+    const { kind, index } = placing;
+    placing = null;
+    const gesture = openGesture();
+    const item = kind === 'fx' ? gesture?.fx?.[index] : gesture?.releases?.[index];
+    if (!item) { renderInspector(); return; }
+    const anim = currentAnim();
+    const local = M.apply(M.invert(kind === 'fx' ? fxAnchorMatrix(item, anim) : releaseMatrix(item, anim)), pt);
+    item.offset = { x: r3(local.x), y: r3(local.y) };
     changed();
-    setStatus('Efecto colocado. "▶ Probar" lo enseña en su momento.');
+    setStatus(kind === 'fx' ? 'Efecto colocado. "▶ Probar" lo enseña en su momento.' : 'Punto de salida colocado: de ahí sale el ataque en esa suelta.');
   }
 
   // ============================================================ preview animation
 
-  function previewPoses() {
+  function previewPoses(layer = gestureLayer()) {
     const rig = state.rig;
     const poses = new Map();
     state.parts.forEach((part) => {
@@ -264,10 +355,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const body = { position: bob, rotation: preview.lean + hurtTilt, scale: { x: 1 + squash, y: 1 - squash } };
 
     // The gesture goes on top of everything else, like in the driver (additive layers).
-    const layer = gestureLayer();
     if (layer) {
-      G.applyPoses(layer.gesture.windup, layer.windup, poses, body);
-      G.applyPoses(layer.gesture.strike, layer.strike, poses, body);
+      G.applySteps(layer.gesture, layer.weights, poses, body, layer.settling);
       body.rotation += layer.shake;
     }
 
@@ -285,13 +374,18 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       preview.hurt += dt;
       if (preview.hurt >= rig.hurtDuration) preview.hurt = -1;
     }
-    if (gesturePlay) {
-      const gesture = (state.gestures || [])[gesturePlay.index];
-      gesturePlay.t += dt;
-      if (!gesture || gesturePlay.t >= G.gestureDuration(gesture, previewTelegraph)) gesturePlay = null;
+    if (head.playing) {
+      const gesture = openGesture();
+      head.t += dt;
+      if (!gesture || head.t >= G.gestureDuration(gesture, lead())) {   // done: the body back at rest, the playhead at the start
+        const borrowed = head.lead !== null;
+        stopHead();
+        if (borrowed) renderTimeline();   // it played with another warning (an idle gesture): the track goes back to its own
+      }
+      timeline.updatePlayhead();
     }
     draw();
-    if (preview.playing || preview.hurt >= 0 || gesturePlay || Math.abs(preview.lean) > 0.01) requestAnimationFrame(tick);
+    if (preview.playing || preview.hurt >= 0 || head.playing || Math.abs(preview.lean) > 0.01) requestAnimationFrame(tick);
     else { preview.running = false; preview.last = 0; preview.lean = 0; draw(); }
   }
 
@@ -381,7 +475,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const t = TOOLS.find((x) => x.key === e.key.toLowerCase());
     if (e.ctrlKey || e.metaKey) return;
     if (t) { tool = t.id; renderToolbar(); setStatus(t.hint); }
-    if (e.key === 'Escape' && fxPlacing) { fxPlacing = false; renderInspector(); setStatus('Colocar efecto: cancelado.'); return; }
+    if (e.key === 'Escape' && placing) { placing = null; renderInspector(); setStatus('Colocar: cancelado.'); return; }
     if (e.key === 'Escape' && posing) { stopPosing(); return; }
     if (e.key === 'Delete' || e.key === 'Supr') {
       // Posing: Supr takes the part out of the pose, never deletes the part.
@@ -427,7 +521,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const gesture = state.gestures?.[posing.index];
     if (!gesture) { stopPosing(); return; }
     if (!POSE_TOOLS.includes(tool)) { setStatus('Posando un gesto sólo valen Mover, Rotar y Escalar. "■ Salir de posar" para el resto de herramientas.'); return; }
-    gesturePlay = null;
+    head.playing = false;
 
     const anim = currentAnim();
     const hit = view.partAt(state, e.clientX, e.clientY, { poses: anim?.poses, visualMatrix: anim?.visual });
@@ -436,7 +530,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const part = selectedPart();
     if (part && !part.rigPart) { setStatus(`"${part.name}" no es parte del rig (inspector ▸ "Parte del rig"): un gesto no puede moverla.`); return; }
 
-    const pose = G.poseOf(gesture, posing.phase, poseTarget(), true);
+    const pose = G.poseOf(gesture, posing.step, poseTarget(), true);
+    if (!pose) { stopPosing(); return; }
     const visual = anim?.visual || M.IDENTITY;
     // Root space → the space the offset is measured in (the part's parent; the root for the body).
     const parent = part ? M.byUid(state, part.parent) : null;
@@ -451,13 +546,20 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     } else {
       drag = { kind: 'pose-scale', pose, pivot, d0: Math.max(1e-3, Math.hypot(pt.x - pivot.x, pt.y - pivot.y)), scale: { ...pose.scale } };
     }
-    setStatus(`Posando ${PHASE_LABELS[posing.phase]} de "${gesture.name}": ${part ? part.name : 'el cuerpo entero'}.`);
+    setStatus(`Posando "${stepLabel(gesture, posing.step)}" de "${gesture.name}": ${part ? part.name : 'el cuerpo entero'}.`);
   }
 
   canvas.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     const pt = view.screenToVisual(e.clientX, e.clientY);
-    if (fxPlacing) { placeFx(pt); return; }
+    if (placing) { placeAt(pt); return; }
+    // The selected release (its target) or effect (its cross): dragging it moves it on its anchor.
+    const handle = canvasHandle(currentAnim());
+    if (handle && Math.hypot(pt.x - handle.point.x, pt.y - handle.point.y) * view.zoom < 14) {
+      head.playing = false;
+      drag = { kind: 'handle', item: handle.item, inv: M.invert(handle.matrix) };
+      return;
+    }
     if (posing) { beginPoseDrag(e, pt); return; }
     const hit = view.partAt(state, e.clientX, e.clientY);
     let part = selectedPart();
@@ -531,7 +633,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     if (!drag) return;
     const pt = view.screenToVisual(e.clientX, e.clientY);
     const p = drag.part;
-    if (drag.kind === 'pose-move') {
+    if (drag.kind === 'handle') {
+      drag.item.offset = M.apply(drag.inv, pt);
+    } else if (drag.kind === 'pose-move') {
       const d = M.applyVector(drag.inv, { x: pt.x - drag.start.x, y: pt.y - drag.start.y });
       drag.pose.move = { x: drag.move.x + d.x, y: drag.move.y + d.y };
     } else if (drag.kind === 'pose-rotate') {
@@ -564,6 +668,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   window.addEventListener('mouseup', () => {
     if (!drag) return;
     if (drag.pose) G.roundPose(drag.pose);
+    if (drag.kind === 'handle') drag.item.offset = { x: r3(drag.item.offset.x), y: r3(drag.item.offset.y) };
     drag = null;
     changed();
   });
@@ -762,11 +867,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     part.sway.scale = { x: 0, y: 0 };
     part.leanFollow = 0;
     let removed = 0;
-    (state.gestures || []).forEach((g) => ['windup', 'strike'].forEach((phase) => {
-      const before = (g[phase] || []).length;
-      G.removePose(g, phase, part.uid);
-      removed += before - g[phase].length;
-    }));
+    (state.gestures || []).forEach((g) => g.steps.forEach((_, i) => { removed += G.removePose(g, i, part.uid); }));
     return removed;
   }
 
@@ -1025,6 +1126,14 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     renderLinksSection();
     renderExportSection();
     scroller.scrollTop = scrollTop;
+    renderTimeline();
+  }
+
+  /** The open gesture's timeline, docked under the canvas (hidden while none is open). */
+  function renderTimeline() {
+    const hidden = !openGesture();
+    if (timelineHost.hidden !== hidden) { timelineHost.hidden = hidden; requestRender(); }   // the canvas takes / gives the room
+    timeline.renderDock(timelineHost);
   }
 
   function renderPartInspector(part) {
@@ -1189,66 +1298,110 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     d.appendChild(reset);
   }
 
-  // ============================================================ gestures (pose editor)
+  // ============================================================ gestures (timeline host + pose editor)
 
-  function stopPosing() {
+  const stepLabel = (gesture, step) => gesture.steps[step]?.name || `Paso ${step + 1}`;
+
+  /** The playhead back at the start, the body at rest. */
+  function stopHead() {
+    head.playing = false;
+    head.t = 0;
+    head.lead = null;
+  }
+
+  /** Which gesture is open (-1 = none): nothing of the previous one stays selected, posing or playing. */
+  function openGestureAt(index) {
+    if (posing) stopPosing(true);
+    gestureIndex = index;
+    stopHead();
+    placing = null;
+    timeline.reset();
+  }
+
+  /** `quiet` = whoever calls re-renders. */
+  function stopPosing(quiet = false) {
     if (!posing) return;
     const gesture = state.gestures?.[posing.index];
     if (gesture) G.pruneGesture(gesture);
     posing = null;
+    if (quiet) return;
     changed();
     setStatus('Fuera del modo pose: las herramientas vuelven a mover las piezas.');
   }
 
-  function startPosing(index, phase) {
-    gesturePlay = null;
-    posing = { index, phase };
+  function startPosing(index, step) {
+    const gesture = state.gestures?.[index];
+    if (!gesture?.steps[step]) return;
+    if (posing) G.pruneGesture(gesture);
+    head.playing = false;
+    posing = { index, step };
     gestureIndex = index;
     if (!POSE_TOOLS.includes(tool)) { tool = 'move'; renderToolbar(); }
     changed();
-    setStatus(`Posando ${PHASE_LABELS[phase]} de "${state.gestures[index].name}": arrastra una pieza (Mover / Rotar / Escalar). En vacío = el cuerpo entero. Esc = salir.`);
+    setStatus(`Posando "${stepLabel(gesture, step)}" de "${gesture.name}": arrastra una pieza (Mover / Rotar / Escalar). En vacío = el cuerpo entero. Esc = salir.`);
   }
 
-  function playGesture(index) {
-    gesturePlay = { index, t: 0, frozen: new Map() };
+  /** "▶ Probar" of the dock: plays from the playhead (from the start if it is at the end), or pauses. */
+  function togglePlay() {
+    const gesture = openGesture();
+    if (!gesture) return;
+    if (head.playing) { head.playing = false; timeline.updatePlayhead(); requestRender(); return; }
+    const wasPosing = !!posing;
+    if (wasPosing) stopPosing(true);
+    if (head.t >= G.gestureDuration(gesture, lead()) - 1e-3) head.t = 0;
+    head.playing = true;
+    if (wasPosing) renderInspector(); else timeline.updatePlayhead();
     startTicking();
   }
 
-  /** Adds a library effect to a gesture, in the phase tab on screen, hung from the most likely anchor. */
-  function addFx(gestureAt, libraryId) {
-    const gesture = state.gestures?.[gestureAt];
-    if (!gesture || !fxEntries.has(libraryId)) return false;
-    const sel = selectedPart();
-    // The weapon tip when there is one (the usual place); else the selected part; else the body.
-    const anchor = state.roles.aim && state.roles.muzzle ? 'muzzle' : sel?.rigPart ? 'part' : 'body';
-    const f = FX.createFx(libraryId, phaseTab, anchor, sel?.uid || null);
-    f.loop = phaseTab === 'windup';   // a charge lasts its phase; a strike / recover effect is a burst
-    FX.fxList(gesture).push(f);
-    gestureIndex = gestureAt;
-    fxIndex = gesture.fx.length - 1;
-    changed();
-    return true;
+  /** Opens a gesture and plays it from the start. `withLead` = a warning only for this play (an idle gesture's). */
+  function playGesture(index, withLead = null) {
+    if (!state.gestures?.[index]) return;
+    if (gestureIndex !== index) openGestureAt(index);
+    else if (posing) stopPosing(true);
+    head.t = 0;
+    head.lead = withLead;
+    head.playing = true;
+    renderInspector();
+    startTicking();
   }
 
   /** Takes `target` (part uid or the body) out of the pose being edited. */
   function clearPose(target) {
     const gesture = posing && state.gestures?.[posing.index];
     if (!gesture) return;
-    G.removePose(gesture, posing.phase, target);
+    G.removePose(gesture, posing.step, target);
     changed();
   }
 
   const targetName = (target) => (target === G.BODY ? 'Cuerpo entero' : M.byUid(state, target)?.name || '(pieza borrada)');
 
+  /** Gestures of a rig-config.json (what Unity's Tools ▸ Web ▸ Rig exports) onto this body, by part path. */
+  async function importGestureFile(file) {
+    let doc;
+    try { doc = JSON.parse(await file.text()); } catch (e) { setStatus(`"${file.name}" no es un JSON válido.`); return; }
+    const res = readRigGestures(doc, state, { entriesById: fxEntries });
+    if (!res.gestures.length) { setStatus(`"${file.name}" no trae gestos (¿es un rig-config.json?).`); return; }
+    const list = state.gestures || (state.gestures = []);
+    let added = 0, replaced = 0;
+    res.gestures.forEach((g) => {
+      const i = list.findIndex((x) => x.name === g.name);
+      if (i >= 0) { list[i] = g; replaced++; } else { list.push(g); added++; }
+    });
+    if (res.idle) state.idle = { ...state.idle, ...res.idle };
+    resetGestureUi();
+    changed();
+    setStatus(`Gestos de "${file.name}": ${added} nuevos, ${replaced} sustituidos.${res.notes.length ? ` ${res.notes.join(' ')}` : ''}`);
+  }
+
   function renderGesturesSection() {
     const list = state.gestures || [];
-    list.forEach((g) => { g.windup = g.windup || []; g.strike = g.strike || []; g.fx = g.fx || []; });   // documents saved by older versions
-    if (posing && !list[posing.index]) posing = null;
-    if (gestureIndex >= list.length) gestureIndex = list.length - 1;
+    if (posing && !list[posing.index]?.steps[posing.step]) posing = null;
+    if (gestureIndex >= list.length) openGestureAt(list.length - 1);
 
     const d = rememberedSection('gestures', `Gestos (${list.length})`, true);
-    d.appendChild(el('p', 'hint', 'Un gesto es el aviso de un ataque: una pose de CARGA (se llega a ella durante el aviso) y una de GOLPE (latigazo al soltar). '
-      + 'Cada ataque elige el suyo por nombre (Enemy Creator ▸ Ataques, Boss Creator).'));
+    d.appendChild(el('p', 'hint', 'Un gesto es el aviso de un ataque, como línea de tiempo: los PASOS que recorre el cuerpo (cada uno una pose y un tiempo), las ◆ SUELTAS (cuándo y de dónde sale el ataque) y sus ✨ efectos. '
+      + 'Cada ataque elige el suyo por nombre (Enemy Creator ▸ Ataques, Boss Creator). Al abrir uno, su línea de tiempo aparece bajo el lienzo.'));
 
     if (state.gestures === null) {
       d.appendChild(el('p', 'hint', 'Este documento no exporta gestos: Unity conserva los que tenga el prefab. Al crear uno aquí, los de aquí sustituyen a los del prefab.'));
@@ -1257,28 +1410,29 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     list.forEach((gesture, index) => {
       const open = index === gestureIndex;
       const card = el('div', `rigGesture${open ? ' open' : ''}${posing?.index === index ? ' posing' : ''}`);
-      const head = el('div', 'rigGestureHead');
+      const row = el('div', 'rigGestureHead');
       const title = el('span', 'rigGestureName', `${open ? '▾' : '▸'} ${gesture.name}`);
-      title.onclick = () => { gestureIndex = open ? -1 : index; fxIndex = -1; fxPlacing = false; renderInspector(); requestRender(); if (hooks.onChange) hooks.onChange(); };
-      head.appendChild(title);
-      head.appendChild(el('span', 'hint', `carga ${gesture.windup.length} · golpe ${gesture.strike.length}${gesture.fx.length ? ` · ✨ ${gesture.fx.length}` : ''}${state.idle.gestures.includes(gesture.name) ? ' · 💤' : ''}`));
-      const play = el('button', 'small', '▶ Probar');
-      play.dataset.action = 'gesturePlay';              // Space plays the OPEN gesture (app.js ▸ playActions)
-      if (open) play.dataset.open = '1';
-      play.title = 'Reproduce el gesto con los tiempos de RigDriverCode: carga → golpe → vuelta al reposo. Espacio = probar el gesto abierto.';
+      title.onclick = () => { openGestureAt(open ? -1 : index); renderInspector(); requestRender(); if (hooks.onChange) hooks.onChange(); };
+      row.appendChild(title);
+      row.appendChild(el('span', 'hint', `${gesture.steps.length} paso${gesture.steps.length === 1 ? '' : 's'} · ◆ ${G.effectiveReleases(gesture).length}${gesture.fx.length ? ` · ✨ ${gesture.fx.length}` : ''}${state.idle.gestures.includes(gesture.name) ? ' · 💤' : ''}`));
+      const play = el('button', 'small', '▶');
+      play.dataset.action = 'gesturePlay';              // Space plays the open gesture's dock (app.js ▸ playActions); else the first of these
+      play.dataset.nodirty = '1';
+      play.title = 'Abre el gesto y lo reproduce con los tiempos del juego: sus pasos y la vuelta al reposo.';
       play.onclick = () => playGesture(index);
-      head.appendChild(play);
-      card.appendChild(head);
+      row.appendChild(play);
+      card.appendChild(row);
 
       if (open) renderGestureCard(card, gesture, index);
-      // An effect dragged from Enemy Studio ▸ Efectos lands on the gesture it is dropped on.
+      // An effect dragged from Enemy Studio ▸ Efectos lands on the gesture it is dropped on (on the timeline: at that instant).
       card.addEventListener('dragover', (e) => { if (e.dataTransfer.types.includes('text/rig-fx')) { e.preventDefault(); card.classList.add('dropTarget'); } });
       card.addEventListener('dragleave', () => card.classList.remove('dropTarget'));
       card.addEventListener('drop', (e) => {
         const id = e.dataTransfer.getData('text/rig-fx');
         if (!id) return;
         e.preventDefault();
-        if (addFx(index, id)) setStatus(`Efecto añadido a "${gesture.name}" (${FX.FX_PHASE_LABELS[phaseTab].toLowerCase()}).`);
+        if (gestureIndex !== index) openGestureAt(index);
+        if (timeline.addFx(id)) setStatus(`Efecto añadido a "${gesture.name}". Muévelo por la línea de tiempo y colócalo en el lienzo.`);
       });
       d.appendChild(card);
     });
@@ -1288,16 +1442,26 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     add.onclick = () => {
       if (!state.gestures) state.gestures = [];
       state.gestures.push(G.createGesture(state));
-      gestureIndex = state.gestures.length - 1;
+      openGestureAt(state.gestures.length - 1);
+      timeline.select('step', 0);
       changed();
     };
     acts.appendChild(add);
+
+    const bring = el('button', 'small', '⬆ Traer de un rig-config.json');
+    bring.title = 'Los gestos de un rig-config.json exportado por Unity (Tools ▸ Web ▸ Rig) o por esta web, sobre este cuerpo: las piezas se buscan por su nombre y de quién cuelgan. Un gesto con el mismo nombre se sustituye.';
+    const file = document.createElement('input');
+    file.type = 'file'; file.accept = '.json,application/json'; file.hidden = true;
+    file.onchange = () => { if (file.files[0]) importGestureFile(file.files[0]); file.value = ''; };
+    bring.onclick = () => file.click();
+    acts.append(bring, file);
+
     if (state.gestures) {
       const drop = el('button', 'small danger', 'No exportar gestos (conservar los de Unity)');
       drop.title = 'Borra los gestos de este documento: al importar, Unity se queda con los que ya tenga el prefab.';
       drop.onclick = () => {
         if (list.length && !confirm('¿Borrar los gestos de este documento? (Ctrl+Z los recupera)')) return;
-        posing = null; gesturePlay = null; gestureIndex = -1;
+        resetGestureUi();
         state.gestures = null;
         changed();
       };
@@ -1315,26 +1479,19 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
         hint: 'Más o menos: varía un ±25%.', onChange: (v) => { state.idle.interval = Math.max(0.2, v); refreshExport(); } }).row);
       grid.appendChild(F.numberField({ label: 'Probabilidad (0–1)', value: state.idle.chance, min: 0, step: '0.1',
         hint: 'De hacerlo en cada intento.', onChange: (v) => { state.idle.chance = Math.min(1, Math.max(0, v)); refreshExport(); } }).row);
-      grid.appendChild(F.numberField({ label: 'Carga (s)', value: state.idle.windup, min: 0.05, step: '0.1',
-        hint: 'Lo que tarda en llegar a la pose de carga (en un ataque es el aviso).', onChange: (v) => { state.idle.windup = Math.max(0.05, v); refreshExport(); } }).row);
+      grid.appendChild(F.numberField({ label: 'Aviso (s)', value: state.idle.windup, min: 0.05, step: '0.1',
+        hint: 'Lo que duran sus pasos marcados "dura el aviso" (en un ataque es el aviso del ataque).', onChange: (v) => { state.idle.windup = Math.max(0.05, v); refreshExport(); } }).row);
       idle.appendChild(grid);
       const tryIdle = el('button', 'small', '▶ Probar uno');
-      tryIdle.title = 'Reproduce uno de los gestos de reposo al azar, con esa carga.';
+      tryIdle.dataset.nodirty = '1';
+      tryIdle.title = 'Reproduce uno de los gestos de reposo al azar, con ese aviso.';
       tryIdle.onclick = () => {
         const names = state.idle.gestures.filter((n) => list.some((g) => g.name === n));
-        const index = list.findIndex((g) => g.name === names[Math.floor(Math.random() * names.length)]);
-        const keep = previewTelegraph;
-        previewTelegraph = state.idle.windup;
-        playGesture(index);
-        setTimeout(() => { previewTelegraph = keep; }, (G.gestureDuration(list[index], state.idle.windup) + 0.1) * 1000);
+        playGesture(list.findIndex((g) => g.name === names[Math.floor(Math.random() * names.length)]), state.idle.windup);
       };
       idle.appendChild(tryIdle);
       d.appendChild(idle);
     }
-
-    d.appendChild(F.numberField({ label: 'Aviso al probar (s)', value: previewTelegraph, min: 0.05, step: '0.05',
-      hint: 'Sólo para "▶ Probar": cuánto dura la carga. En el juego es el "telegraph" del ataque que use el gesto.',
-      onChange: (v) => { previewTelegraph = v > 0 ? v : 0.6; } }).row);
   }
 
   function renderGestureCard(card, gesture, index) {
@@ -1351,67 +1508,29 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     });
     card.appendChild(nameField.row);
 
-    // --- one tab per phase: its pose, its timing, its effects.
-    const editing = posing?.index === index ? posing.phase : null;
-    const tabs = el('div', 'rigPhaseTabs');
-    FX.FX_PHASES.forEach((phase) => {
-      const n = gesture.fx.filter((f) => f.phase === phase).length;
-      const b = el('button', `small${phaseTab === phase ? ' active' : ''}`, `${FX.FX_PHASE_LABELS[phase]}${n ? ` ✨${n}` : ''}`);
-      b.title = { windup: 'La carga: dura el aviso del ataque.', strike: 'El golpe: el latigazo al soltar.', recover: 'La vuelta al reposo.' }[phase];
-      b.onclick = () => { phaseTab = phase; fxIndex = -1; fxPlacing = false; renderInspector(); requestRender(); };
-      tabs.appendChild(b);
-    });
-    card.appendChild(tabs);
-
-    const acts = el('div', 'rigActions');
-    if (phaseTab !== 'recover') {
-      const b = el('button', `small${editing === phaseTab ? ' active' : ''}`, phaseTab === 'windup' ? '✋ Posar carga' : '✋ Posar golpe');
-      b.title = phaseTab === 'windup'
-        ? 'La pose a la que llega durante el aviso (justo antes de soltar).'
-        : 'La pose del latigazo, justo después de soltar. Vacía = carga que se deshace sin latigazo (una embestida).';
-      b.onclick = () => (editing === phaseTab ? stopPosing() : startPosing(index, phaseTab));
-      acts.appendChild(b);
-    }
-    if (editing) {
-      const out = el('button', 'small', '■ Salir de posar');
-      out.onclick = stopPosing;
-      acts.appendChild(out);
-    }
-    card.appendChild(acts);
-
-    if (editing) renderPosePanel(card, gesture, editing);
-
-    const grid = el('div', 'rigGestureGrid');
-    if (phaseTab === 'windup') grid.appendChild(F.numberField({ label: 'Temblor (°)', value: gesture.shake, step: '0.5',
-      hint: 'Tiembla el cuerpo en el último 30% de la carga. 0 = nada. La carga dura el aviso del ataque.', onChange: (v) => { gesture.shake = v; refreshExport(); } }).row);
-    if (phaseTab === 'strike') grid.appendChild(F.numberField({ label: 'Golpe (s)', value: gesture.strikeTime, min: 0.01, step: '0.01',
-      hint: 'Lo que tarda en llegar a la pose de golpe tras soltar.', onChange: (v) => { gesture.strikeTime = Math.max(0.01, v); refreshExport(); } }).row);
-    if (phaseTab === 'recover') grid.appendChild(F.numberField({ label: 'Vuelta al reposo (s)', value: gesture.recover, min: 0.01, step: '0.05',
-      onChange: (v) => { gesture.recover = Math.max(0.01, v); refreshExport(); } }).row);
-    card.appendChild(grid);
-
-    renderPhaseFx(card, gesture, index);
+    // What is selected on the timeline (under the canvas): a step and its pose, a release, an effect.
+    timeline.renderFields(card);
     renderGestureSprites(card, gesture);
 
     card.appendChild(F.boolField({ label: '💤 Gesto de reposo (lo hace solo de vez en cuando)', value: state.idle.gestures.includes(gesture.name),
-      hint: 'Sin objetivo, quieto y despierto. No avisa de nada ni lanza ningún ataque: sólo da vida. Cada cuánto, abajo.',
+      hint: 'Sin objetivo, quieto y despierto. No avisa de nada ni lanza ningún ataque (sus sueltas no cuentan): sólo da vida. Cada cuánto, abajo.',
       onChange: (v) => {
         state.idle.gestures = v ? [...new Set([...state.idle.gestures, gesture.name])] : state.idle.gestures.filter((n) => n !== gesture.name);
         changed();
       } }).row);
 
-    if (state.rig.moveGesture === gesture.name) card.appendChild(el('p', 'hint', 'Es el gesto al desplazarse (Tiempos del rig ▸ moveGesture): sólo usa su pose de carga, mantenida mientras se mueve.'));
+    if (state.rig.moveGesture === gesture.name) card.appendChild(el('p', 'hint', 'Es el gesto al desplazarse (Tiempos del rig ▸ moveGesture): sólo usa la pose de su primer paso, mantenida mientras se mueve.'));
 
     const more = el('div', 'rigActions');
     const dup = el('button', 'small', '⧉ Duplicar');
-    dup.onclick = () => { state.gestures.splice(index + 1, 0, G.duplicateGesture(state, gesture)); gestureIndex = index + 1; posing = null; changed(); };
+    dup.onclick = () => { state.gestures.splice(index + 1, 0, G.duplicateGesture(state, gesture)); openGestureAt(index + 1); changed(); };
     const del = el('button', 'small danger', '🗑 Borrar gesto');
     del.onclick = () => {
       M.renameGestureSprites(state, gesture.name, null);
       state.idle.gestures = state.idle.gestures.filter((n) => n !== gesture.name);
       if (preview.spriteState === M.gestureState(gesture.name)) preview.spriteState = '';
+      resetGestureUi();
       state.gestures.splice(index, 1);
-      posing = null; gesturePlay = null; gestureIndex = -1;
       changed();
     };
     more.append(dup, del);
@@ -1432,16 +1551,18 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       card.appendChild(box);
       return;
     }
+    const steps = gesture.steps.length;
+    const moments = M.gestureMoments(gesture);
     const momentSelect = (value, onChange) => {
       const s = document.createElement('select');
-      const options = M.GESTURE_MOMENTS.some(([m]) => Math.abs(m - value) < 1e-3) ? M.GESTURE_MOMENTS : [...M.GESTURE_MOMENTS, [value, `${value}`]];
+      const options = moments.some(([m]) => Math.abs(m - value) < 1e-3) ? moments : [...moments, [value, `${value}`]];
       options.forEach(([m, label]) => { const o = el('option', null, label); o.value = String(m); s.appendChild(o); });
       s.value = String(options.find(([m]) => Math.abs(m - value) < 1e-3)[0]);
       s.onchange = () => onChange(parseFloat(s.value));
       return s;
     };
     mine.forEach((part) => {
-      const w = M.gestureWindow(part, gesture.name);
+      const w = M.gestureWindow(part, gesture.name, steps);
       const row = el('div', 'rigSpriteWindow');
       const t = document.createElement('img'); t.src = M.variantOf(part, stateId).dataURL; t.className = 'rigVariantThumb own';
       row.appendChild(t);
@@ -1449,113 +1570,23 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       body.appendChild(el('span', 'rigFxName', part.name));
       const line = el('div', 'rigSpriteWindowLine');
       line.appendChild(el('span', 'hint', 'se ve desde'));
-      line.appendChild(momentSelect(w.from, (v) => { M.setGestureWindow(part, gesture.name, { from: v, to: Math.max(v, w.to) }); changed(); }));
+      line.appendChild(momentSelect(w.from, (v) => { M.setGestureWindow(part, gesture.name, { from: v, to: Math.max(v, w.to) }, steps); changed(); }));
       line.appendChild(el('span', 'hint', 'hasta'));
-      line.appendChild(momentSelect(w.to, (v) => { M.setGestureWindow(part, gesture.name, { from: Math.min(v, w.from), to: v }); changed(); }));
+      line.appendChild(momentSelect(w.to, (v) => { M.setGestureWindow(part, gesture.name, { from: Math.min(v, w.from), to: v }, steps); changed(); }));
       body.appendChild(line);
       row.appendChild(body);
       box.appendChild(row);
     });
-    box.appendChild(el('p', 'hint', 'Fuera de ese tramo la pieza lleva su sprite normal. "▶ Probar" lo enseña tal cual.'));
+    box.appendChild(el('p', 'hint', 'Fuera de ese tramo la pieza lleva su sprite normal. El cursor de la línea de tiempo lo enseña tal cual. Si luego añades o quitas pasos, revisa estos tramos: van por número de paso.'));
     card.appendChild(box);
-  }
-
-  /** The effects of the phase tab on screen: a row each, the open one with its fields, and the picker. */
-  function renderPhaseFx(card, gesture, gestureAt) {
-    const box = el('div', 'rigFxBox');
-    const mine = gesture.fx.map((f, i) => [f, i]).filter(([f]) => f.phase === phaseTab);
-    box.appendChild(el('p', 'rigGroupTitle', `Efectos de ${FX.FX_PHASE_LABELS[phaseTab].toLowerCase()}`));
-
-    mine.forEach(([f, i]) => {
-      const entry = fxEntries.get(f.fx);
-      const open = i === fxIndex;
-      const row = el('div', `rigFxRow${open ? ' open' : ''}`);
-      const name = el('span', 'rigFxName', `${open ? '▾' : '▸'} ${entry ? entry.enemyName : '(efecto borrado de la biblioteca)'}`);
-      name.onclick = () => { fxIndex = open ? -1 : i; fxPlacing = false; renderInspector(); requestRender(); };
-      row.appendChild(name);
-      row.appendChild(el('span', 'hint', `${anchorLabel(f)}${f.loop ? ' · bucle' : ''}`));
-      const del = el('button', 'small danger', '✕');
-      del.title = 'Quitar este efecto del gesto.';
-      del.onclick = () => { gesture.fx.splice(i, 1); fxIndex = -1; fxPlacing = false; changed(); };
-      row.appendChild(del);
-      box.appendChild(row);
-      if (open) renderFxFields(box, gesture, f);
-    });
-    if (!mine.length) box.appendChild(el('p', 'hint', 'Ninguno. Un efecto de la biblioteca (✨ VFX Lab) colgado de una pieza, la boca, el cuerpo o los pies.'));
-
-    const options = [...fxEntries.values()];
-    const add = document.createElement('select');
-    add.appendChild(Object.assign(el('option', null, options.length ? '＋ Efecto…' : '＋ Efecto… (no hay ninguno en la biblioteca)'), { value: '' }));
-    options.forEach((e) => add.appendChild(Object.assign(el('option', null, e.enemyName), { value: e.id })));
-    add.disabled = !options.length;
-    add.onchange = () => { if (add.value) addFx(gestureAt, add.value); };
-    box.appendChild(add);
-    card.appendChild(box);
-  }
-
-  function anchorLabel(f) {
-    if (f.anchor === 'part') return M.byUid(state, f.part)?.name || 'pieza borrada';
-    return { body: 'cuerpo', muzzle: 'boca', feet: 'pies' }[f.anchor] || f.anchor;
-  }
-
-  function renderFxFields(box, gesture, f) {
-    const fields = el('div', 'rigFxFields');
-    const redraw = () => { requestRender(); refreshExport(); };
-    const entry = fxEntries.get(f.fx);
-    if (!entry) fields.appendChild(el('p', 'efSummaryError', 'Este efecto ya no está en la biblioteca: elige otro o quítalo.'));
-
-    fields.appendChild(F.enumField({ label: 'Efecto', value: f.fx,
-      options: [...(entry ? [] : [{ value: f.fx, label: '(borrado)' }]), ...[...fxEntries.values()].map((e) => ({ value: e.id, label: e.enemyName }))],
-      onChange: (v) => { f.fx = v; changed(); } }).row);
-
-    const anchors = [
-      ...state.parts.filter((p) => p.image || p.rigPart).map((p) => ({ value: `part:${p.uid}`, label: `Pieza: ${p.name}` })),
-      { value: 'muzzle', label: 'Boca del arma' }, { value: 'body', label: 'Cuerpo entero' }, { value: 'feet', label: 'Pies (suelo)' },
-    ];
-    fields.appendChild(F.enumField({ label: 'Cuelga de', value: f.anchor === 'part' ? `part:${f.part}` : f.anchor, options: anchors,
-      hint: f.anchor === 'muzzle' && !state.roles.muzzle ? 'No hay boca puesta (herramienta ◉ Boca): saldrá de la pieza que apunta.' : '',
-      onChange: (v) => {
-        if (v.startsWith('part:')) { f.anchor = 'part'; f.part = v.slice(5); } else { f.anchor = v; f.part = null; }
-        f.offset = { x: 0, y: 0 };   // the old offset was measured in the other anchor's space
-        changed();
-      } }).row);
-
-    const place = el('button', `small${fxPlacing ? ' active' : ''}`, fxPlacing ? '⌖ Haz clic en el lienzo…' : '⌖ Colocar en el lienzo');
-    place.title = 'Clic en el lienzo: el efecto se queda en ese punto de su ancla. Esc cancela.';
-    place.onclick = () => { fxPlacing = !fxPlacing; renderInspector(); if (fxPlacing) setStatus('Haz clic donde va el efecto (se guarda relativo a su ancla). Esc = cancelar.'); };
-    fields.appendChild(place);
-
-    fields.appendChild(F.enumField({ label: 'Momento', value: f.at <= 0 ? 'start' : f.at >= 1 ? 'end' : 'custom',
-      options: [{ value: 'start', label: 'Al empezar la fase' }, { value: 'end', label: 'Al acabarla' }, { value: 'custom', label: 'En un punto intermedio…' }],
-      onChange: (v) => { f.at = v === 'start' ? 0 : v === 'end' ? 1 : 0.5; changed(); } }).row);
-    if (f.at > 0 && f.at < 1) fields.appendChild(F.numberField({ label: 'Punto de la fase (0–1)', value: f.at, min: 0, step: '0.05',
-      onChange: (v) => { f.at = Math.min(1, Math.max(0, v)); refreshExport(); } }).row);
-
-    fields.appendChild(F.boolField({ label: 'En bucle hasta que acabe la fase', value: !!f.loop,
-      hint: 'Encendido = una carga que dura. Apagado = un estallido que se reproduce una vez.',
-      onChange: (v) => { f.loop = v; changed(); } }).row);
-
-    const more = el('details', 'efFold');
-    more.open = openSections.get('fxMore') || false;
-    more.addEventListener('toggle', () => openSections.set('fxMore', more.open));
-    more.appendChild(el('summary', null, 'Tamaño y ajuste fino'));
-    more.appendChild(F.numberField({ label: 'Tamaño (× el del efecto)', value: f.scale, min: 0.01, step: '0.1',
-      onChange: (v) => { f.scale = v > 0 ? v : 1; redraw(); } }).row);
-    more.appendChild(F.vector2Field({ label: 'Desplazamiento (u, en su ancla)', value: f.offset,
-      onChange: (v) => { f.offset = v; redraw(); } }).row);
-    more.appendChild(F.boolField({ label: 'Sigue a su ancla mientras dura', value: f.followsPart !== false,
-      hint: 'Apagado = se queda en el punto del mundo donde salió (un impacto en el suelo).',
-      onChange: (v) => { f.followsPart = v; refreshExport(); } }).row);
-    fields.appendChild(more);
-    box.appendChild(fields);
   }
 
   /** The pose being edited: what is in it, and the numbers of the part (or body) a drag would edit. */
-  function renderPosePanel(card, gesture, phase) {
+  function renderPosePanel(card, gesture, step) {
     const box = el('div', 'rigPosePanel');
     const target = poseTarget();
     const part = selectedPart();
-    box.appendChild(el('p', 'rigTemplateInfo', `Posando ${PHASE_LABELS[phase].toUpperCase()} · ${targetName(target)}`));
+    box.appendChild(el('p', 'rigTemplateInfo', `Posando «${stepLabel(gesture, step)}» · ${targetName(target)}`));
 
     const chips = el('div', 'rigActions');
     const chip = (t) => {
@@ -1563,11 +1594,11 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       b.onclick = () => select(t === G.BODY ? null : t);
       chips.appendChild(b);
     };
-    const inPose = gesture[phase].map((p) => p.part);
+    const inPose = gesture.steps[step].poses.map((p) => p.part);
     if (!inPose.includes(G.BODY)) chip(G.BODY);
     inPose.forEach(chip);
     box.appendChild(chips);
-    box.appendChild(el('p', 'hint', 'En la pose: las piezas de arriba. Clic en una pieza del lienzo (o de la lista) para añadirla; sin pieza seleccionada se posa el cuerpo entero. La silueta tenue es el reposo.'));
+    box.appendChild(el('p', 'hint', 'En la pose: las piezas de arriba. Clic en una pieza del lienzo (o de la lista) para añadirla; sin pieza seleccionada se posa el cuerpo entero. La silueta tenue es el reposo: cada pose se mide desde él, no desde el paso anterior.'));
 
     if (part && !part.rigPart) {
       box.appendChild(el('p', 'efSummaryError', `"${part.name}" no es parte del rig: un gesto no puede moverla.`));
@@ -1575,13 +1606,14 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       return;
     }
 
-    const pose = G.poseOf(gesture, phase, target);
-    const edit = (fn) => { fn(G.poseOf(gesture, phase, target, true)); requestRender(); refreshExport(); };
-    const fine = (row, step) => { row.querySelectorAll('input[type=number]').forEach((i) => { i.step = step; }); return row; };
+    const pose = G.poseOf(gesture, step, target);
+    const edit = (fn) => { fn(G.poseOf(gesture, step, target, true)); requestRender(); refreshExport(); };
+    const fine = (row, by) => { row.querySelectorAll('input[type=number]').forEach((i) => { i.step = by; }); return row; };
     box.appendChild(fine(F.vector2Field({ label: 'Desplazamiento (u)', value: pose?.move || { x: 0, y: 0 },
       hint: target === G.BODY ? 'X positivo = hacia delante (se refleja al mirar a la izquierda).' : 'En el espacio de su pieza padre.',
       onChange: (v) => edit((p) => { p.move = v; }) }).row, '0.05'));
     box.appendChild(F.numberField({ label: 'Giro (°)', value: pose?.rotate || 0, step: '1',
+      hint: 'Una vuelta entera (360) es un giro completo: al volver al reposo no se deshace.',
       onChange: (v) => edit((p) => { p.rotate = v; }) }).row);
     box.appendChild(fine(F.vector2Field({ label: 'Escala (± relativa)', value: pose?.scale || { x: 0, y: 0 },
       hint: '0 = igual; 0.2 = un 20% más grande; −0.2 = un 20% más pequeña.',
@@ -1783,9 +1815,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   function resetGestureUi() {
     gestureIndex = -1;
     posing = null;
-    gesturePlay = null;
-    fxIndex = -1;
-    fxPlacing = false;
+    stopHead();
+    placing = null;
+    timeline.reset();
   }
 
   const fileStem = () => (state.name.trim() || 'rig').replace(/[^A-Za-z0-9_-]/g, '_');
@@ -1918,12 +1950,12 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     newFromTemplate(template.id);
   }
 
-  /** Enemy Studio ▸ Efectos ▸ "＋ al gesto": onto the gesture open in the inspector. */
+  /** Enemy Studio ▸ Efectos ▸ "＋ al gesto": onto the open gesture, at the instant its playhead is on. */
   function addFxToOpenGesture(libraryId) {
     const gesture = state.gestures?.[gestureIndex];
     if (!gesture) { setStatus('Abre antes un gesto (inspector ▸ Gestos) para colgarle el efecto.'); return false; }
-    if (!addFx(gestureIndex, libraryId)) { setStatus('Ese efecto no tiene frames.'); return false; }
-    setStatus(`Efecto añadido a "${gesture.name}" (${FX.FX_PHASE_LABELS[phaseTab].toLowerCase()}). Colócalo con "⌖ Colocar en el lienzo".`);
+    if (!timeline.addFx(libraryId)) { setStatus('Ese efecto no tiene frames.'); return false; }
+    setStatus(`Efecto añadido a "${gesture.name}" en el instante donde está el cursor de la línea de tiempo. Colócalo con "⌖ Colocar en el lienzo".`);
     return true;
   }
 

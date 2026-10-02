@@ -8,6 +8,8 @@
 // KEEP IN SYNC with ProceduralRig.cs's field initializers. The schema (schemas/rig-config.schema.json)
 // lists the names; this file only adds the default and the Spanish label shown in the form.
 
+import { normalizeGesture, convertWindow } from './rig-gestures.js';
+
 /** Grouped scalar fields of ProceduralRig, in the Inspector's order. type: number | vector2 | int | string | color | layers. */
 export const RIG_FIELD_GROUPS = [
   { title: 'Flotar', fields: [
@@ -141,6 +143,15 @@ export function adoptRigState(draft) {
   s.parts = (s.parts || []).map((p) => ({ ...createPart({ name: p.name }), ...p,
     variants: { asleep: null, awake: null, attacking: null, stages: [], gestures: {}, gestureWindows: {}, ...(p.variants || {}),
       named: { alert: null, hurt: null, dead: null, ...(p.variants?.named || {}) } } }));
+  // Gestures saved as two poses (windup / strike) become timelines. One that had no strike is now a
+  // single step: the windows of its gesture sprites move to that scale.
+  (s.gestures || []).forEach((g) => {
+    if (!normalizeGesture(g)) return;
+    s.parts.forEach((p) => {
+      const w = p.variants.gestureWindows?.[g.name];
+      if (w) p.variants.gestureWindows[g.name] = { from: convertWindow(w.from), to: convertWindow(w.to) };
+    });
+  });
   return s;
 }
 
@@ -177,6 +188,6 @@ export function createDefaultRigState() {
     template: null,                // { id, height, fitted } when made from a body template (rig-templates.js)
     // Gestures it does on its own while resting (ProceduralRig.idle): names from `gestures`.
     idle: createDefaultIdle(),
-    gestures: null,                // RigGesture list (poses by part uid | 'Visual'); null = not exported, Unity keeps its own
+    gestures: null,                // RigGesture list, timelines (rig-gestures.js; parts by uid | 'Visual'); null = not exported, Unity keeps its own
   };
 }

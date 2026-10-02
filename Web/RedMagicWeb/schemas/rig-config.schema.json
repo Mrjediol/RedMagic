@@ -769,6 +769,172 @@
             "$ref": "#/definitions/gesturePhase"
           },
           "$comment": "RigGesture.fx agrupado por fase. Presente = sustituye los efectos del gesto; ausente = se conservan los que tuviera el prefab."
+        },
+        "steps": {
+          "type": "array",
+          "description": "La línea de tiempo: los pasos del gesto, en orden. Presente = el gesto se lee así y windup / strike / strikeTime / shake / phases se ignoran.",
+          "$comment": "RigGesture.steps (RigGestureStep). La pose de un paso se mide desde el reposo; una pieza que no aparece vuelve a su reposo.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "default": ""
+              },
+              "duration": {
+                "type": "number",
+                "minimum": 0.01,
+                "default": 0.3
+              },
+              "ease": {
+                "enum": [
+                  "inout",
+                  "out",
+                  "in",
+                  "linear"
+                ],
+                "default": "inout"
+              },
+              "stretch": {
+                "type": "boolean",
+                "default": false,
+                "$comment": "Su duración la pone el aviso del ataque (telegraph) en vez de duration."
+              },
+              "shake": {
+                "type": "number",
+                "default": 0
+              },
+              "poses": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/pose"
+                }
+              }
+            }
+          }
+        },
+        "releases": {
+          "type": "array",
+          "description": "Los instantes en que sale el ataque (uno o varios) y desde dónde. Vacío = una vez, al acabar el último paso, desde la boca.",
+          "$comment": "RigGesture.releases (RigRelease).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "default": 0
+              },
+              "at": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "default": 1
+              },
+              "point": {
+                "type": "string",
+                "$comment": "Ruta de una pieza o nodo bajo Visual (\"Torso/CastArm/Muzzle\"). Ausente = la boca del rig."
+              },
+              "offset": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "fx": {
+          "type": "array",
+          "description": "Efectos de la línea de tiempo, cada uno con su paso y su momento. (La forma clásica los agrupa en phases[].fx.)",
+          "$comment": "RigGesture.fx (RigFx). step = nº de pasos → la vuelta al reposo. Con steps presentes se lee esto y no phases.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "fx": {},
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "default": 0
+              },
+              "at": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "default": 0
+              },
+              "anchor": {
+                "enum": [
+                  "part",
+                  "body",
+                  "muzzle",
+                  "feet"
+                ]
+              },
+              "part": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "offset": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
+              },
+              "scale": {
+                "type": "number",
+                "minimum": 0.01,
+                "default": 1
+              },
+              "followsPart": {
+                "type": "boolean",
+                "default": true
+              },
+              "loop": {
+                "type": "boolean",
+                "default": false
+              },
+              "untilStep": {
+                "type": "integer",
+                "default": -1,
+                "$comment": "Un bucle se apaga al acabar este paso; -1 = el suyo."
+              },
+              "facing": {
+                "enum": [
+                  "direction",
+                  "anchor",
+                  "world"
+                ],
+                "default": "direction",
+                "$comment": "direction = hacia donde va la acción (el disparo en la boca, el movimiento en el cuerpo). En phases[].fx el valor por defecto es anchor."
+              },
+              "angle": {
+                "type": "number",
+                "default": 0
+              },
+              "layer": {
+                "enum": [
+                  "front",
+                  "behind"
+                ],
+                "default": "front"
+              }
+            }
+          }
         }
       },
       "$comment": "RigGesture."

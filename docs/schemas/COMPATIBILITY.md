@@ -42,6 +42,11 @@ them and compares every public field of `ProceduralRig` by reflection (plus the 
   (in a zip: `enemy-config.json` / `boss-config.json`). The exporter writes `X.enemy-config.json` (full
   `tuning` by reflection + `tier`, no `art`: in a rig bundle `art` is not used) and `bossBody.definition`
   (existing asset, linked when no boss-config comes along).
+- **Gestures as timelines from the web** (2026-10-02): the web (Enemy Studio, `make-enemy.mjs`) now writes
+  `gestures[]` as `{ name, steps[], releases[], recover, fx[] }` — the shape `RigConfigExporter` already
+  wrote — instead of `windup` / `strike` / `phases[]`. The importer reads both; nothing changes for a
+  rig-config written before. A gesture effect's `fx` may be `{"art": id}` (web library) or a prefab path
+  (read back from a Unity export and written as it came).
 - **Gesture effects** (additive, 2026-10-01): `gestures[].phases[]` = `{ phase: windup | strike | recover,
   fx: [{ fx, at, anchor, part, offset, scale, followsPart, loop }] }` ↔ `RigGesture.fx` (a flat list of
   `RigFx`, each with its `phase`; the JSON groups them by phase, in phase order). `fx` is

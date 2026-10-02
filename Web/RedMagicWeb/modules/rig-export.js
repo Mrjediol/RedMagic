@@ -13,11 +13,13 @@
 //  - each part's joint IS its sprite's pivot (written in `sprites`), so RigPart.pivot exports as 0;
 //  - muzzle and grips become ordinary nodes ('Muzzle' under the aim part, 'Grip' under each limb)
 //    with rigPart:false;
-//  - `gestures` is only written when the document has them (today: the ones a body template brings,
-//    rig-templates.js). A present list replaces the gestures authored in Unity, an absent key keeps them;
-//  - a gesture's effects (rig-fx.js) go out as `gestures[].phases[].fx`, each pointing at an entry of
-//    the document's own `artAssets` (one per library effect and per loop / one-shot); their frames
-//    travel in Art/<libraryId>/, next to the deck's art. `phases` is always written with the gestures
+//  - `gestures` is only written when the document has them. A present list replaces the gestures
+//    authored in Unity, an absent key keeps them. Each one is a TIMELINE — `{ name, steps[],
+//    releases[], recover, fx[] }`, the shape RigConfigExporter writes — and `readRigGestures` reads
+//    that shape (and the classic windup / strike one) back into a document;
+//  - a gesture's effects (rig-fx.js) go out as `gestures[].fx`, each pointing at an entry of the
+//    document's own `artAssets` (one per library effect and per loop / one-shot); their frames
+//    travel in Art/<libraryId>/, next to the deck's art. `fx` is always written with the gesture
 //    (empty = no effects), so removing one in the web removes it in Unity;
 //  - a template slot still empty is left out (unless a filled part hangs from it: then it stays as
 //    an empty node), and a required one is reported as a problem.
@@ -25,7 +27,8 @@
 import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot, isOpenSlot, feetY } from './rig-model.js';
 import { embedReferencedLibraryEntries, embedAttackArt } from './enemy-bundle.js';
 import { writeLanes } from './boss-bundle.js';
-import { FX_PHASES, fxArtId, fxArtAsset } from './rig-fx.js';
+import { fxArtId, fxArtAsset, createFx } from './rig-fx.js';
+import { normalizeGesture, createRelease, EASES } from './rig-gestures.js';
 
 const r5 = (v) => Math.round(v * 1e5) / 1e5;
 const v2 = (v) => ({ x: r5(v.x), y: r5(v.y) });
@@ -185,12 +188,18 @@ export function buildRigExport(state, ctx = {}) {
       .filter((p) => p.part);   // poses of a part that is not there (empty optional slot, deleted) drop out
     const artAssets = {};
     const fxOut = (g, f) => {
-      const entry = ctx.entriesById?.get(f.fx);
-      const asset = entry ? fxArtAsset(entry, f.loop, ppu) : null;
-      if (!asset) { problems.push(`Gesto "${g.name}": un efecto ya no está en la biblioteca (o no tiene frames); quítalo o elige otro.`); return null; }
-      const id = fxArtId(entry, f.loop);
-      artAssets[id] = asset;
-      const out = { fx: { art: id }, at: r5(Math.min(1, Math.max(0, f.at || 0))), anchor: f.anchor };
+      let ref = f.prefab || null;   // a prefab Unity already has (read back from its export): as it came
+      if (!ref) {
+        const entry = ctx.entriesById?.get(f.fx);
+        const asset = entry ? fxArtAsset(entry, f.loop, ppu) : null;
+        if (!asset) { problems.push(`Gesto "${g.name}": un efecto ya no está en la biblioteca (o no tiene frames); quítalo o elige otro.`); return null; }
+        const id = fxArtId(entry, f.loop);
+        artAssets[id] = asset;
+        ref = { art: id };
+      }
+      const count = g.steps.length;
+      const step = Math.min(count, Math.max(0, Math.round(f.step || 0)));
+      const out = { fx: ref, step, at: r5(Math.min(1, Math.max(0, f.at || 0))), anchor: f.anchor };
       if (f.anchor === 'part') {
         out.part = partPaths.get(f.part) || null;
         if (!out.part) { out.anchor = 'body'; delete out.part; notes.push(`Gesto "${g.name}": la pieza de un efecto no se exporta; el efecto cuelga del cuerpo.`); }
@@ -200,14 +209,33 @@ export function buildRigExport(state, ctx = {}) {
       out.scale = r5(f.scale > 0 ? f.scale : 1);
       out.followsPart = f.followsPart !== false;
       out.loop = !!f.loop;
+      out.untilStep = f.loop && f.untilStep >= 0 ? Math.min(count, Math.round(f.untilStep)) : -1;
+      out.facing = f.facing || 'direction';
+      out.angle = r5(f.angle || 0);
+      out.layer = f.layer || 'front';
+      return out;
+    };
+    const releaseOut = (g, r) => {
+      const out = { step: Math.min(g.steps.length - 1, Math.max(0, Math.round(r.step || 0))), at: r5(Math.min(1, Math.max(0, r.at ?? 1))) };
+      let offset = r.offset || { x: 0, y: 0 };
+      if (r.point) {
+        const path = partPaths.get(r.point);
+        if (path) out.point = path;
+        else {   // its offset was measured on that part: it means nothing on the muzzle
+          offset = { x: 0, y: 0 };
+          notes.push(`Gesto "${g.name}": la pieza de la que salía una suelta no se exporta; sale de la boca.`);
+        }
+      }
+      out.offset = v2(offset);
       return out;
     };
     doc.gestures = gestures.map((g) => ({
-      name: g.name, windup: poses(g.windup), strike: poses(g.strike),
-      strikeTime: r5(g.strikeTime), recover: r5(g.recover), shake: r5(g.shake),
-      phases: FX_PHASES
-        .map((phase) => ({ phase, fx: (g.fx || []).filter((f) => f.phase === phase).map((f) => fxOut(g, f)).filter(Boolean) }))
-        .filter((p) => p.fx.length),
+      name: g.name,
+      steps: g.steps.map((s) => ({ name: s.name || '', duration: r5(Math.max(0.01, s.duration || 0.3)), ease: EASES.includes(s.ease) ? s.ease : 'inout',
+        stretch: !!s.stretch, shake: r5(s.shake || 0), poses: poses(s.poses) })),
+      releases: (g.releases || []).map((r) => releaseOut(g, r)),
+      recover: r5(Math.max(0.01, g.recover)),
+      fx: (g.fx || []).map((f) => fxOut(g, f)).filter(Boolean),
     }));
     if (Object.keys(artAssets).length) doc.artAssets = artAssets;
 
@@ -249,6 +277,107 @@ export function buildRigExport(state, ctx = {}) {
   }
 
   return { doc, files, problems, notes };
+}
+
+// ============================================================ rig-config → document (gestures)
+
+/**
+ * The gestures of a rig-config — the one Unity exports (RigConfigExporter) or one written here —
+ * as document gestures over the body in `state`: parts found by their path under Visual. Both JSON
+ * shapes are read: the timeline (`steps` / `releases` / `fx`) and the classic one (`windup` /
+ * `strike` / `phases`), converted like the importer converts it.
+ *
+ * An effect comes back as a library hook when its `artAssets` entry names a library effect that is
+ * in `ctx.entriesById`; otherwise it keeps the prefab path Unity gave (`prefab`) and is exported as
+ * it came, without a preview.
+ *
+ * @returns {{ gestures: object[], idle: object | null, notes: string[] }}
+ */
+export function readRigGestures(doc, state, ctx = {}) {
+  const notes = [];
+  const uidOf = new Map(state.parts.map((p) => [pathOf(state, p), p.uid]));
+  const aim = byUid(state, state.roles.aim);
+  const muzzlePath = aim ? `${pathOf(state, aim)}/Muzzle` : null;
+  const vec = (v) => ({ x: Number(v?.x) || 0, y: Number(v?.y) || 0 });
+  const missing = new Set();
+  // A helper node (Muzzle, Grip) is not a part of the document: what hung from it hangs from its part.
+  const partOf = (path) => {
+    for (let p = path; p; p = p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '') if (uidOf.has(p)) return uidOf.get(p);
+    return null;
+  };
+
+  const poses = (list) => (Array.isArray(list) ? list : []).map((p) => {
+    const part = p.part === 'Visual' ? 'Visual' : uidOf.get(p.part);
+    if (!part) { missing.add(p.part); return null; }
+    return { part, move: vec(p.move), rotate: Number(p.rotate) || 0, scale: vec(p.scale) };
+  }).filter(Boolean);
+
+  const hook = (item, gestureName) => {
+    const artId = item.fx && typeof item.fx === 'object' ? item.fx.art : null;
+    const asset = artId ? doc.artAssets?.[artId] : null;
+    const libraryId = asset?.libraryId && ctx.entriesById?.has(asset.libraryId) ? asset.libraryId : null;
+    const prefab = typeof item.fx === 'string' ? item.fx : null;
+    if (!libraryId && !prefab) { notes.push(`Gesto "${gestureName}": un efecto no está en la biblioteca ni trae prefab; se omite.`); return null; }
+    const f = createFx(libraryId, 0, Math.min(1, Math.max(0, Number(item.at) || 0)), item.anchor || 'body');
+    if (!libraryId) f.prefab = prefab;
+    if (f.anchor === 'part') {
+      f.part = partOf(item.part || '');
+      if (!f.part) { f.anchor = 'body'; missing.add(item.part); }
+    }
+    f.offset = vec(item.offset);
+    f.scale = item.scale > 0 ? item.scale : 1;
+    f.followsPart = item.followsPart !== false;
+    f.loop = asset ? asset.kind === 'fxLoop' : !!item.loop;
+    if (Number.isInteger(item.untilStep)) f.untilStep = item.untilStep;
+    if (item.facing) f.facing = item.facing;
+    f.angle = Number(item.angle) || 0;
+    if (item.layer) f.layer = item.layer;
+    return f;
+  };
+
+  const gestures = (Array.isArray(doc.gestures) ? doc.gestures : []).filter((g) => g?.name).map((g) => {
+    let gesture;
+    if (Array.isArray(g.steps)) {
+      gesture = {
+        name: g.name, recover: g.recover,
+        steps: g.steps.map((s) => ({ name: s.name || '', duration: s.duration, ease: s.ease, stretch: !!s.stretch, shake: s.shake || 0, poses: poses(s.poses) })),
+        releases: (g.releases || []).map((r) => {
+          const release = createRelease(r.step || 0, r.at ?? 1);
+          if (r.point && r.point !== muzzlePath) {
+            release.point = partOf(r.point);
+            if (!release.point) missing.add(r.point);
+          }
+          release.offset = vec(r.offset);
+          return release;
+        }),
+        fx: (g.fx || []).map((item) => {
+          const f = hook(item, g.name);
+          if (f) f.step = Math.max(0, Math.round(item.step || 0));
+          return f;
+        }).filter(Boolean),
+      };
+    } else {
+      gesture = {
+        name: g.name, recover: g.recover, strikeTime: g.strikeTime ?? 0.08, shake: g.shake ?? 1.5,
+        windup: poses(g.windup), strike: poses(g.strike),
+        fx: (g.phases || []).flatMap((ph) => (ph.fx || []).map((item) => {
+          const f = hook(item, g.name);
+          if (f) { f.phase = ph.phase; f.facing = item.facing || 'anchor'; }
+          return f;
+        })).filter(Boolean),
+      };
+    }
+    normalizeGesture(gesture);
+    return gesture;
+  });
+
+  if (missing.size) notes.push(`Piezas del archivo que este cuerpo no tiene (sus poses se omiten): ${[...missing].filter(Boolean).join(', ')}.`);
+  const names = new Set(gestures.map((g) => g.name));
+  const idle = doc.idleGestures ? {
+    gestures: (doc.idleGestures.gestures || []).filter((n) => names.has(n)),
+    interval: doc.idleGestures.interval ?? 4, chance: doc.idleGestures.chance ?? 0.6, windup: doc.idleGestures.windup ?? 0.5,
+  } : null;
+  return { gestures, idle, notes };
 }
 
 /** The Enemy Creator config authored for this rig, trimmed to what a part-based enemy reads (tuning + tier). */

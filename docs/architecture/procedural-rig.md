@@ -93,9 +93,15 @@ This replaces the fixed "wind-up → release → strike" everywhere below: where
   by phase; `RigGesture.OnAfterDeserialize` converts them on load (effects keep `facing = Anchor`) and
   *Tools ▸ Web ▸ Rig ▸ Convertir gestos a pasos* re-saves the prefabs (done for the five that existed).
   The classic gesture is `RigGesture.Classic(…)`: step 0 `stretch`, release at its end, step 1 the strike.
-- **JSON**: `gestures[]` = `{ name, steps[], releases[], recover, fx[] }` (what Unity exports and
-  `tools/comfy/make-enemy.mjs` writes). The classic shape (`windup` / `strike` / `phases[].fx`, what the
-  web's Enemy Studio still exports) is read and converted by the importer.
+- **JSON**: `gestures[]` = `{ name, steps[], releases[], recover, fx[] }` — what Unity exports and what
+  the web writes (Enemy Studio and `tools/comfy/make-enemy.mjs`, both through `rig-export.js`; `fx` is
+  always present, so removing an effect in the web removes it in Unity). The classic shape (`windup` /
+  `strike` / `phases[].fx`, old web exports) is still read and converted by the importer.
+- **Web editor**: the timeline is authored in 🧬 Enemy Studio ▸ *Gestos* (`gesture-timeline.js`, a dock
+  under the canvas: steps, releases, effects, a playhead). `rig-gestures.js` mirrors `Durations`,
+  `EffectiveReleases`, `GestureRoutine`, `SettleRoutine` and `ApplyPose`; `rig-fx.js` mirrors
+  `FireFx` / `EndFxStep` — **change both sides together**. `rig-export.js ▸ readRigGestures` reads a
+  rig-config's gestures (Unity's export included) back onto a body in the web, by part path.
 - `Legacy/RigDriverTween.cs` no longer compiles (guarded by `#if`): it spoke of the two fixed poses.
 
 ## Gesture effects (`RigFx`)
@@ -195,9 +201,8 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
 - `RigConfigJson` — shared vocabulary: part refs are **paths relative to `Visual`** (`"Visual"` =
   body), sprites are `Assets/…` paths (used as-is) or bundle files (copied to
   `Assets/Art/RigImports/<name>/`, import settings from `sprites`).
-- Gestures are authored in the web too: 🧬 Enemy Studio ▸ *Gestos* poses `windup` / `strike` on the
-  canvas and previews them with this driver's formulas (`rig-gestures.js` mirrors `ApplyPoses`,
-  `GestureRoutine` and `SettleRoutine` — keep both in step).
+- Gestures are authored in the web too: 🧬 Enemy Studio ▸ *Gestos* edits each one as a timeline and
+  previews it with this driver's formulas (see "A gesture is a timeline ▸ Web editor").
 - Web side: 🧬 Enemy Studio authors the bundle (its body editor is `rig-composer.js`; the old 🦴 Rig
   Composer tab was retired); its **body templates** (floating caster / folding
   sentry / limbed colossus — `Web/RedMagicWeb/modules/rig-templates.js`, data) are the generic

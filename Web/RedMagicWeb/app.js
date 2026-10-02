@@ -1095,6 +1095,7 @@ rigComposer = initRigComposer({
   toolbar: document.getElementById('rigToolbar'),
   canvas: document.getElementById('rigCanvas'),
   canvasWrap: document.getElementById('rigCanvasWrap'),
+  timelineHost: document.getElementById('rigTimeline'),
   statusEl: document.getElementById('rigStatus'),
   inspector: document.getElementById('rigInspectorMain'),
   statesHost: document.getElementById('rigInspectorStates'),

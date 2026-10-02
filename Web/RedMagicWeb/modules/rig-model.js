@@ -344,26 +344,39 @@ export function setVariant(part, stateId, image) {
 
 /**
  * WHEN, inside its gesture, a part's gesture sprite shows: `{ from, to }` on one scale for the whole
- * gesture — 0–1 the windup, 1–2 the strike, 2–3 the recover (1 = the release). Default: all of it.
- * "Stretch the hand, show the finger, hide it, pull the hand back" = from ¾ of the windup to
- * halfway through the recover. Same numbers as RigNamedSprite.showFrom / showTo.
+ * gesture, in STEPS — 0–1 the first step, 1–2 the second… and the last stretch (`steps` to
+ * `steps + 1`) is the way back to rest. Default: all of it. "Stretch the hand, show the finger, hide
+ * it, pull the hand back" = from ¾ of the first step to halfway through the way back. Same numbers
+ * as RigNamedSprite.showFrom / showTo (whose "to the end" is 99).
  */
-export const WHOLE_GESTURE = { from: 0, to: 3 };
-export const GESTURE_MOMENTS = [
-  [0, 'inicio de la carga'], [0.25, '¼ de la carga'], [0.5, 'mitad de la carga'], [0.75, '¾ de la carga'],
-  [1, 'al soltar (fin de la carga)'], [2, 'fin del golpe'],
-  [2.25, '¼ de la vuelta'], [2.5, 'mitad de la vuelta'], [2.75, '¾ de la vuelta'], [3, 'final del gesto'],
-];
+export const WHOLE_GESTURE = { from: 0, to: 99 };
 
-export function gestureWindow(part, gestureName) {
-  return { ...WHOLE_GESTURE, ...(part.variants?.gestureWindows?.[gestureName] || {}) };
+/** The instants a window can start / end on, for a gesture's steps: `[[moment, label], …]`. */
+export function gestureMoments(gesture) {
+  const steps = gesture?.steps || [];
+  const out = [];
+  steps.forEach((s, i) => {
+    const name = `«${s.name || `paso ${i + 1}`}»`;
+    out.push([i, `inicio de ${name}`], [i + 0.25, `¼ de ${name}`], [i + 0.5, `mitad de ${name}`], [i + 0.75, `¾ de ${name}`]);
+  });
+  const n = steps.length;
+  out.push([n, 'fin del último paso'], [n + 0.25, '¼ de la vuelta'], [n + 0.5, 'mitad de la vuelta'], [n + 0.75, '¾ de la vuelta'], [n + 1, 'final del gesto']);
+  return out;
 }
 
-export function setGestureWindow(part, gestureName, window) {
+/** A part's window in a gesture with `steps` steps (its end shown as the gesture's own end). */
+export function gestureWindow(part, gestureName, steps = null) {
+  const w = { ...WHOLE_GESTURE, ...(part.variants?.gestureWindows?.[gestureName] || {}) };
+  return steps === null ? w : { from: Math.min(w.from, steps + 1), to: Math.min(w.to, steps + 1) };
+}
+
+/** `steps` = how many steps the gesture has: a window that covers it all is not stored. */
+export function setGestureWindow(part, gestureName, window, steps) {
   const v = part.variants;
   v.gestureWindows = v.gestureWindows || {};
-  const from = Math.min(3, Math.max(0, window.from)), to = Math.min(3, Math.max(from, window.to));
-  if (from <= 0 && to >= 3) delete v.gestureWindows[gestureName];
+  const end = steps + 1;
+  const from = Math.min(end, Math.max(0, window.from)), to = Math.min(end, Math.max(from, window.to));
+  if (from <= 0 && to >= end) delete v.gestureWindows[gestureName];
   else v.gestureWindows[gestureName] = { from, to };
 }
 
@@ -371,7 +384,7 @@ export function setGestureWindow(part, gestureName, window) {
  * The image a part shows in a state, with the same fallbacks as ProceduralRig.RefreshSprites — an
  * empty state lets the next one through: its own → (a gesture: attacking) → (alert / attack / hurt:
  * awake) → (dead: asleep) → the stage → the part's base image.
- * `moment` (0–3, only while a gesture PLAYS): its own sprite counts only inside its window.
+ * `moment` (step + progress, only while a gesture PLAYS): its own sprite counts only inside its window.
  */
 export function stateImage(part, stateId, stage = 0, moment = null) {
   const v = part.variants || {};

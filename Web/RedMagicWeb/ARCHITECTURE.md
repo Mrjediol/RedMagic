@@ -227,7 +227,7 @@ inspector — or, in step 4 of an enemy, the behaviour form.
 |---|---|---|
 | 1 Cuerpo | document, add parts, parts list | `#rigSidebarBody` |
 | 2 Plantilla | template in use, "Nuevo desde plantilla" (built-in + ★ saved), "Guardar como plantilla" | `#rigSidebarTemplate` |
-| 3 Efectos | the library's projectiles / fx as a palette: ＋ (or drag onto a gesture card) hangs one from the phase that card shows | — (own) |
+| 3 Efectos | the library's projectiles / fx as a palette: ＋ hangs one at the instant the open gesture's playhead is on; dragged onto the timeline, at the instant it is dropped | — (own) |
 | 4 Comportamiento | the state-sprites board; enemy: the Enemy Creator form (right) + validation / JSON (left); boss: the Boss Creator link | `#rigInspectorStates`, `#enemyFormPanel`, `#enemyPreviewPanel`, `#rigInspectorLinks` |
 | 5 Exportar | save, .zip, rig-config preview | `#rigInspectorExport` |
 
@@ -276,11 +276,13 @@ canvas shows a gesture's sprites while it plays and the hurt ones during "💥 G
 "💤 En reposo" fold under the list has the three numbers and "▶ Probar uno". Renaming / deleting a
 gesture keeps the list in step; export = `idleGestures` (names that no longer exist drop out).
 
-**When a gesture sprite shows**: `variants.gestureWindows[<gesture>] = { from, to }` (0–1 windup, 1–2
-strike, 2–3 recover; absent = the whole gesture) — `rig-model.js` ▸ `gestureWindow` / `setGestureWindow` /
-`GESTURE_MOMENTS`, honoured by `stateImage(…, moment)`. UI: "Sprites de este gesto" in the gesture card
-(`renderGestureSprites`), two dropdowns per part; the canvas gets the moment of the gesture being played
-(`gestureMoment()` → `opts.gestureMoment`). Export: `named[].from` / `to`.
+**When a gesture sprite shows**: `variants.gestureWindows[<gesture>] = { from, to }` in **steps** (0–1 the
+first step, 1–2 the second… the last stretch, `steps` → `steps + 1`, is the way back; absent = the whole
+gesture) — `rig-model.js` ▸ `gestureWindow` / `setGestureWindow` / `gestureMoments(gesture)`, honoured by
+`stateImage(…, moment)`. UI: "Sprites de este gesto" in the gesture card (`renderGestureSprites`), two
+dropdowns per part; the canvas gets the moment the playhead is on (`gestureLayer().moment` →
+`opts.gestureMoment`). Export: `named[].from` / `to`. A draft saved with the old 0–3 scale is converted on
+load (`adoptRigState`, same rule as `ProceduralRig.FixConvertedWindows`).
 
 **Effect resolution**: VFX Lab's "Nitidez" (`detail`) bakes `density` times more pixels per frame for the
 same effect (`bakePreset`, capped at 512 px a frame) and stores `sprite.density`; everything that sizes an
@@ -290,27 +292,24 @@ preview). Re-save an old effect in the Lab to rebake it sharper; its size does n
 **"⏹ Dejar quieta"** (part inspector ▸ Balanceo): `makeStill` zeroes the part's sway, scale pulse and lean
 follow and takes it out of every gesture pose — for a template slot that is not a flame / tail in this enemy.
 
-**Gesture effects** (`modules/rig-fx.js`, DOM-free): a gesture's `fx` list hangs library effects
-(kind `fx` / `projectile`) from its phases — `{ fx: libraryId, phase, at, anchor, part, offset, scale,
-followsPart, loop }`. `pickLane` decides which lane of the entry plays (loop → `Loop`/`Move`, burst →
-`Spawn`/`Impact`, else the first) for the preview **and** the export; `phaseTimes` / `activeFx` copy
-`RigDriverCode.GestureRoutine`'s timing; `fxArtAsset` writes the `artAssets` entry (kind `fx` or
-`fxLoop`, `worldWidth` = first frame's width at the rig's ppu). In `rig-composer.js`: the gesture
-card's phase tabs (`phaseTab`), `renderPhaseFx` / `renderFxFields`, `addFx`, "⌖ Colocar" (`placeFx`:
-canvas click → offset in the anchor's space via `fxAnchorMatrix`) and `fxOverlay` (what
-`RigCanvasView._drawFx` draws: the effects alive in "▶ Probar", or the one being edited).
-`buildRigExport(state, { entriesById })` needs the library to export them; `buildRigBundle` ships
-their frames in `Art/<libraryId>/`. Templates carry them by slot (`rig-templates.js` ▸ `fxMapped`).
+**Gestures are timelines** (the same shape as Unity's `RigGesture`):
+`{ name, recover, steps: [{ name, duration, ease, stretch, shake, poses[] }], releases: [{ step, at, point, offset }], fx[] }`.
 
-**Gestures** (inspector ▸ Gestos): `modules/rig-gestures.js` holds the data helpers
-(`createGesture`, `poseOf`, `pruneGesture`…) and the formulas copied from `RigDriverCode.cs`
-(`applyPoses`, `gestureWeights`, `gestureDuration`) — DOM-free. The UI is in
-`modules/rig-composer.js`: `renderGesturesSection` / `renderGestureCard` / `renderPosePanel`,
-the pose-mode drags in `beginPoseDrag` (+ the `pose-move` / `pose-rotate` / `pose-scale` branches
-of the `mousemove` handler), and `gestureLayer()` → `previewPoses()` for what the canvas shows
-(the pose being edited, or "▶ Probar"). The rest-pose ghost is `rig-canvas-view.js`'s
-`ghostRest` render option. Changing how a gesture plays in Unity = change both
-`RigDriverCode.cs` and `rig-gestures.js`.
+| To change... | Edit | Function |
+|---|---|---|
+| The data, its defaults, the old two-pose shape → timeline | `modules/rig-gestures.js` | `createGesture` / `createStep` / `createRelease`, `normalizeGesture` (= `RigGesture.OnAfterDeserialize`), `insertStep` / `removeStep` / `moveStep` (keep releases and effects on their step) |
+| How a gesture runs in time | `modules/rig-gestures.js` | `stepDurations` (= `RigGesture.Durations`: stretch steps share the warning up to the first release), `timeline`, `gestureAt` (weights per step = `GestureRoutine` / `SettleRoutine`), `applySteps` (= `ApplyPose`, short turns on the way back), `instantAt` / `timeOf` |
+| Effects: the hook, which lane plays, when it is alive, its `artAssets` entry | `modules/rig-fx.js` | `createFx`, `pickLane`, `activeFx` (= `FireFx` / `EndFxStep`), `fxArtAsset`; `fxDensity` |
+| **The timeline editor** (dock under the canvas + the selected thing's fields): step blocks (click, drag to reorder, drag the edge = duration), ◆ releases and ✨ effects dragged along time, scrub ruler, ▶ | `modules/gesture-timeline.js` | `createGestureTimeline(host)` → `renderDock`, `renderFields`, `updatePlayhead`, `addFx`, `select`. **Canvas-agnostic**: everything about the body goes through `host` (documented at the top of the file), so it can be mounted elsewhere |
+| What the canvas does with it (the host) | `modules/rig-composer.js` | the `createGestureTimeline({...})` call; `head` (playhead) / `gestureLayer` / `layerAt`; pose editing `startPosing` / `beginPoseDrag` / `renderPosePanel`; `fxOverlay` + `fxMatrix` (facing direction / anchor / world, layer behind); `releaseMarks` / `releaseMatrix`; `canvasHandle` (drag the selected release / effect on the canvas) and `placeAt` ("⌖ Colocar") |
+| Drawing effects behind / in front and the release targets | `modules/rig-canvas-view.js` | `_drawFx(opts, behind)`, `_drawMarks` |
+| rig-config ⇄ gestures | `modules/rig-export.js` | `buildRigExport` writes `steps / releases / recover / fx`; `readRigGestures(doc, state)` reads them back by part path (Unity's export, an old classic export) — Gestos ▸ "⬆ Traer de un rig-config.json" |
+
+Rules: a step's pose is measured from **rest**, not from the previous step. An effect whose `fx` is null carries a
+Unity prefab path in `prefab` (read back from Unity): exported as it came, no preview. Templates carry gestures by
+slot id (`rig-templates.js` ▸ `gestureIn` / `fxMapped`); the built-in ones are still written as two poses and are
+converted when they enter a document. The dock's DOM id is `#rigTimeline` (hidden while no gesture is open).
+Changing how a gesture plays in Unity = change `RigDriverCode.cs` / `RigDriver.cs` **and** `rig-gestures.js` / `rig-fx.js`.
 
 Assembles an enemy or boss from **separate part PNGs** and exports the `.zip` that Unity's
 **Tools ▸ Web ▸ Rig ▸ Importar rig** reads (`Assets/Scripts/Rigging/Editor/RigConfig/RigBundleImporter.cs`).
@@ -355,8 +354,8 @@ Undo/redo (Ctrl+Z / Ctrl+Y) snapshots the document after every settled edit (ima
 Model rules: a part's **pivot is its joint and becomes the sprite's own pivot** (exported in
 `sprites`, normalized), so `RigPart.pivot` is always 0; geometry is kept in each file's original
 pixels (`cropX/cropY/origW/origH`). Muzzle and grips are exported as `Muzzle` / `Grip` nodes with
-`rigPart:false`. `gestures` is exported only when the document has them (`state.gestures`, today the
-ones a template brings — no editor until Phase E; poses reference parts by uid or `'Visual'`): a
+`rigPart:false`. `gestures` is exported only when the document has them (`state.gestures`; poses,
+release points and effect anchors reference parts by uid or `'Visual'`): a
 present list replaces Unity's, an absent key (`null`) keeps them. Library kind
 `rig` (sheetless, like `boss`): the whole document incl. part images is the record's `draft`,
 `config` is the last rig-config and `enemyConfig` its **behaviour**: Enemy Studio links the behaviour

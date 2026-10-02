@@ -2,16 +2,15 @@
 
 Agreed with the user 2026-10-02. The engine side is done and merged (`docs/architecture/procedural-rig.md ▸
 A gesture is a timeline`): a gesture is any number of steps, with attack releases and effects at any instant.
-What is missing is a comfortable place to author that. Nothing here is built yet.
+What is missing is a comfortable place to author that. **Step 1 is built (2026-10-02); next: Step 2.**
 
 ## ▶ How to start (after /clear)
 
-> Lee `docs/plan-gesture-attack-editor.md` y ejecuta el Paso 1.
+> Lee `docs/plan-gesture-attack-editor.md` y ejecuta el Paso 2.
 
 Read first: `CLAUDE.md`, this file, `docs/architecture/procedural-rig.md` (the timeline section),
 `Web/RedMagicWeb/ARCHITECTURE.md ▸ Rig composer / Enemy Studio`, `modules/rig-gestures.js`, `rig-fx.js`,
-`rig-export.js`, `attack-cards.js`, `vfx-stage.js`, and `tools/comfy/make-enemy.mjs` (it already writes
-the timeline JSON: the shape to match).
+`gesture-timeline.js`, `rig-export.js`, `attack-cards.js`, `vfx-stage.js`, and `tools/comfy/make-enemy.mjs`.
 
 ## What the user asked for
 
@@ -39,7 +38,7 @@ Two copies would drift apart within weeks (the reason the audio tables and the i
 
 ## Steps (one per session)
 
-1. **Timeline editor** as a module (`modules/gesture-timeline.js`), mounted in Enemy Studio ▸ Gestos:
+1. ✅ **Timeline editor** as a module (`modules/gesture-timeline.js`), mounted in Enemy Studio ▸ Gestos:
    steps, scrubber, releases, effects. The document's gesture becomes the timeline shape; `rig-export.js`
    writes `steps / releases / fx` (what `make-enemy.mjs` writes today) and reads back what Unity exports
    (`RigConfigExporter` already writes the new shape — until this step the Studio cannot reopen it).
@@ -55,6 +54,23 @@ Two copies would drift apart within weeks (the reason the audio tables and the i
    build). Unity ▸ Inspector button opens the browser on the focused tab with the enemy loaded (body, parts,
    gestures, the attack, its sound clip); saving posts the gestures / attack back and they are written
    into the prefab and the attack asset. Decide then who wins when the prefab has unsaved Inspector changes.
+
+## Step 1 — what was built, and what Step 2 starts from
+
+- `modules/gesture-timeline.js` = the editor: a dock under the canvas (▶ / scrub ruler / step blocks /
+  ◆ releases / one lane per ✨ effect / playhead) + the fields of what is selected. It knows nothing of the
+  canvas: `rig-composer.js` is its **host** (the `host` interface at the top of the module) and owns pose
+  editing, the playhead's effect on the body, and dragging the release target / effect cross on the canvas.
+  The focused tab (step 3) mounts it by providing the same host.
+- The document's gesture IS the timeline (`rig-gestures.js`); old drafts and built-in templates convert on
+  load / instantiate (`normalizeGesture`). Export writes `steps / releases / fx`; `readRigGestures` reads a
+  rig-config back (Gestos ▸ "⬆ Traer de un rig-config.json"). `make-enemy.mjs` authors timelines through the
+  document — no conversion of its own any more (ShroomShaman's rig-config came out identical).
+- The preview "fires" nothing yet: a release only flashes a ring where the attack leaves. Step 2 hangs the
+  attack from there — `rig-composer.js ▸ releaseMarks` is the point where each release's instant, position
+  (`releaseMatrix`) and direction are known.
+- Not done here, on purpose: the per-release attack picker (needs the engine work in Notes), sound.
+- Pending user test: `docs/plan-gesture-attack-editor-tests.md`.
 
 ## Notes
 

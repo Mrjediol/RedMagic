@@ -465,10 +465,11 @@ namespace RedMagic.Rigging
         private float NextIdleDelay() => Mathf.Max(0.2f, Rig.idle != null ? Rig.idle.interval : 4f) * Random.Range(0.75f, 1.25f);
 
         /// <summary>
-        /// En reposo — vivo, despierto y desplegado, sin moverse, sin gesto ni ataque en curso, sin
-        /// piezas prestadas a un ataque, y sin objetivo salvo <c>idle.whileAlert</c> (entonces también
-        /// entre ataque y ataque: un enemigo que duerme hasta detectar nunca está despierto sin
-        /// objetivo, y sin esto no los haría jamás) — cada <c>idle.interval</c> segundos tira
+        /// En reposo de verdad — vivo, sin objetivo (el jugador fuera de su detección), sin moverse,
+        /// sin gesto ni ataque en curso, sin piezas prestadas a un ataque — cada <c>idle.interval</c>
+        /// segundos tira. Un enemigo que duerme hasta detectar ESTÁ en reposo mientras duerme: los hace
+        /// también dormido, salvo que su cuerpo se pliegue al dormir (plegado no hay gesto que valga).
+        /// Con objetivo nunca: lo de entre ataque y ataque sería otra cosa (gestos de transición). Tira
         /// el dado y, si sale, hace uno de sus gestos de reposo (nunca el mismo dos veces seguidas si
         /// hay más). En cuanto deja de estar en reposo la cuenta vuelve a empezar; un gesto de verdad
         /// (ataque, moverse) lo sustituye con el fundido de siempre.
@@ -478,7 +479,7 @@ namespace RedMagic.Rigging
             var idle = Rig.idle;
             if (idle?.gestures == null || idle.gestures.Count == 0) return;
 
-            bool resting = !Paused && (!Alert || idle.whileAlert) && !_moving && !_asleep && _fold == null && _gesture == null &&
+            bool resting = !Paused && !Alert && !_moving && (!_asleep || !Rig.CanFold) && _fold == null && _gesture == null &&
                            _attack == null && _hurtTime < 0f && Driven.Count == 0;
             if (!resting)
             {

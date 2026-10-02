@@ -1016,8 +1016,6 @@ namespace RedMagic.Rigging.EditorTools
                 idle.interval = Mathf.Max(0.2f, idleJson.Value<float?>("interval") ?? idle.interval);
                 idle.chance = Mathf.Clamp01(idleJson.Value<float?>("chance") ?? idle.chance);
                 idle.windup = Mathf.Max(0.05f, idleJson.Value<float?>("windup") ?? idle.windup);
-                // La web no lo edita: sin la clave se conserva el del prefab.
-                idle.whileAlert = idleJson.Value<bool?>("whileAlert") ?? rig.idle?.whileAlert ?? idle.whileAlert;
                 foreach (var n in idle.gestures)
                     if (rig.FindGesture(n) == null)
                         report.Warnings.Add($"idleGestures: el gesto '{n}' no está entre los gestos del rig; se ignora al jugar.");

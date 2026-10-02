@@ -732,6 +732,7 @@ MonoBehaviour:
     interval: 4
     chance: 0.6
     windup: 0.5
+    whileAlert: 1
   aimPart: {fileID: 6900074087791025692}
   aimArtAngle: 72.1
   aimMaxAngle: 70

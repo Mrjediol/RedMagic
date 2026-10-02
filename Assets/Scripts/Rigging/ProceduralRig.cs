@@ -548,10 +548,6 @@ namespace RedMagic.Rigging
 
         [Tooltip("Segundos que tarda en llegar a la pose de carga del gesto (en un ataque es el aviso).")]
         [Min(0.05f)] public float windup = 0.5f;
-
-        [Tooltip("También con objetivo: los hace entre ataque y ataque, mientras no se mueve. Apagado = sólo " +
-                 "despierto y sin objetivo (un enemigo que duerme hasta detectar entonces no los hace nunca).")]
-        public bool whileAlert = true;
     }
 
     /// <summary>

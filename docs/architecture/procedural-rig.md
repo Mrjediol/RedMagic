@@ -139,10 +139,11 @@ it), `scale`, `followsPart`, `loop`. Data only, authored in the web (Enemy Studi
 ## Idle gestures (`ProceduralRig.idle`)
 `RigIdleGestures`: a pool of gesture **names**, `interval`, `chance`, `windup`. `RigDriverCode.TickIdle`
 plays one at random (never the same twice in a row) every `interval` ±25% s with probability `chance`,
-only while resting: alive, awake and unfolded, not moving (`SetMoving`), no gesture / attack / hurt in
-course, no part lent to an attack — and, with `whileAlert` off, no target (`RigDriver.SetAlert`).
-`whileAlert` (default on, Inspector only) lets them play between attacks: an enemy that sleeps until it
-detects is never awake without a target, so without it its idle gestures could never play. It runs the ordinary
+only while truly resting: alive, no target (`RigDriver.SetAlert` — the player out of its detection), not
+moving (`SetMoving`), no gesture / attack / hurt in course, no part lent to an attack. An enemy that sleeps
+until it detects IS resting while asleep, so it plays them asleep too — unless its body folds to sleep
+(`ProceduralRig.CanFold`). Never with a target: a gesture between attacks would be a *transition* gesture,
+a separate feature (not built). It runs the ordinary
 `GestureRoutine` in **silent** mode — same poses, effects, sprites and sound, but **no
 `AttackReleased` / `AttackFinished` and no muzzle flash**, so nothing can mistake it for an attack. Any
 real gesture replaces it with the usual cross-fade; falling asleep settles it. JSON: `idleGestures`

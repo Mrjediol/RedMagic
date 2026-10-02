@@ -20,7 +20,8 @@ Pending: the user's test pass (`docs/plan-gesture-attack-editor-tests.md ▸ E`)
   the Inspector buttons themselves, sound playback by ear.
 - Fixed after the first user test (2026-10-02): a save that carried new library art mirrored `Art/` and
   deleted the frames of every art the bundle did not bring (invisible projectiles) — now merged, never pruned.
-  Idle gestures never played on an enemy that sleeps until it detects — `RigIdleGestures.whileAlert`.
+  Idle gestures never played on an enemy that sleeps until it detects — they now play while it sleeps
+  (when its body does not fold). Idea noted by the user: *transition* gestures between attacks (not built).
 - Known limits: clearing an art slot in the web does not clear it in Unity (an absent key keeps the value);
   a card deleted in the web leaves its asset in the project, out of the deck.
 

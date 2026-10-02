@@ -78,6 +78,12 @@ namespace RedMagic.Enemies
         private bool _retreating;
         private bool _retreatBlocked;
 
+        // Retirada de un volador que no avanza (ver RetreatStalled): dónde estaba el paso anterior y
+        // cuánto lleva sin moverse.
+        private Vector2 _retreatFrom;
+        private bool _retreatTracked;
+        private float _retreatStall;
+
         // Movimiento defensivo en curso (EnemyTuning.defences): cuál, por dónde va (negativo = aún en
         // el aviso), cuánto dura, hacia dónde, y el enfriamiento de cada uno.
         private EnemyDefence _evade;
@@ -106,6 +112,12 @@ namespace RedMagic.Enemies
 
         /// <summary>Distancia a <see cref="_home"/> a la que se da por llegado.</summary>
         private const float HomeArrival = 0.15f;
+
+        /// <summary>Un volador en retirada que avanza menos de esta fracción de su paso está atascado…</summary>
+        private const float RetreatStallFraction = 0.25f;
+
+        /// <summary>…y tras este tiempo seguido así deja de retroceder y pelea.</summary>
+        private const float RetreatStallTime = 0.2f;
 
         /// <summary>El suelo bajo los pies, medido una vez por paso de física. Vacío en un volador.</summary>
         private GroundContact _ground;
@@ -378,7 +390,7 @@ namespace RedMagic.Enemies
                 case State.Retreat:
                     // Si no consigue moverse (borde o pared detrás) lo marca para que el cerebro
                     // pase a atacar en vez de dejarlo temblando contra el obstáculo.
-                    _retreatBlocked = !MoveToward(Target(), -T.retreatSpeed);
+                    _retreatBlocked = !MoveToward(Target(), -T.retreatSpeed) || RetreatStalled();
                     break;
 
                 case State.Returning:
@@ -418,6 +430,27 @@ namespace RedMagic.Enemies
             if (target == null) { Stop(); return false; }
 
             return MoveAlong((Vector2)target.position - (Vector2)transform.position, speed, T.hoverOffset);
+        }
+
+        /// <summary>
+        /// ¿Un volador en retirada no consigue alejarse? Va recto y no sondea nada (ver
+        /// <see cref="MoveAlong"/>): contra el suelo o una pared lo para la física y el paso "sale"
+        /// igual, así que se quedaría empujando contra lo macizo sin disparar mientras el objetivo
+        /// siga dentro de <see cref="EnemyTuning.personalSpace"/> — justo lo que pasa con el objetivo
+        /// encima o debajo. Se mide lo que se movió de verdad desde el paso anterior.
+        /// </summary>
+        private bool RetreatStalled()
+        {
+            if (!T.Flies) return false;
+
+            Vector2 now = _body.position;
+            float expected = T.retreatSpeed * SlowStatus.SpeedScale(this) * Time.fixedDeltaTime * RetreatStallFraction;
+            bool stuck = _retreatTracked && (now - _retreatFrom).sqrMagnitude < expected * expected;
+
+            _retreatFrom = now;
+            _retreatTracked = true;
+            _retreatStall = stuck ? _retreatStall + Time.fixedDeltaTime : 0f;
+            return _retreatStall >= RetreatStallTime;
         }
 
         /// <summary>
@@ -560,6 +593,8 @@ namespace RedMagic.Enemies
         {
             if (Current == next) return;
             Current = next;
+            _retreatTracked = false;
+            _retreatStall = 0f;
 
             if (_animation != null)
             {

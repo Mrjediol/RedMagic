@@ -40,7 +40,10 @@ meant to be edited by hand.**
     melee enemy chases and hits — it never backs off, even if it carries a stale `personalSpace`
     from a previous archetype (which the inspector hides and the gizmo no longer draws). `Retreat`
     has a hysteresis band (`retreatReleaseFactor`) and, if it backs into a wall, gives up retreating
-    and fights instead of freezing.
+    and fights instead of freezing. A walker knows from its ledge / wall probe; **a flyer probes nothing**
+    (physics stops it), so `EnemyBrain.RetreatStalled` measures its real displacement: under 25% of its
+    step for 0.2 s = blocked. Without it a flyer with the target right above / below (inside
+    `personalSpace`) pushed against the ground forever and never fired.
   - **Sleepers and kamikazes** — two orthogonal `EnemyTuning` flags. `sleepsUntilDetected` (any
     archetype — a sleeping `Static` wakes on `detectionRange` and folds back in place; see
     `procedural-rig.md`):

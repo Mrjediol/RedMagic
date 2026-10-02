@@ -441,14 +441,14 @@ MonoBehaviour:
     knockbackVertical: 3
     knockbackDuration: 0.18
     knockbackResistance: 0
-    detectionRange: 9
+    detectionRange: 15
     loseInterestGrace: 1
-    attackRange: 6
-    personalSpace: 3
+    attackRange: 11
+    personalSpace: 7
     retreatReleaseFactor: 1.35
     verticalTolerance: 3
-    moveSpeed: 2.5
-    retreatSpeed: 2.2
+    moveSpeed: 6
+    retreatSpeed: 2
     stopAtLedges: 1
     ledgeProbeDepth: 0.6
     gravityScale: 3
@@ -476,7 +476,18 @@ MonoBehaviour:
       targetHeight: 0
     builtInAttack: 1
     builtInWeight: 1
-    defences: []
+    defences:
+    - trigger: 0
+      distance: 5
+      healthFraction: 0
+      chance: 1
+      cooldown: 0
+      move: 0
+      moveDistance: 5
+      moveDuration: 1
+      hopHeight: 0
+      gesture: 
+      anticipation: 0
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
     selfDestruct: 0

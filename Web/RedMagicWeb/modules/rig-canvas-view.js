@@ -311,7 +311,10 @@ export class RigCanvasView {
    * @param {object} opts - { selectedUid, poses, visualMatrix, spriteState, stage, showCollider,
    *                          showMarkers, ghostRest, requestRender,
    *                          fx: [{ sheet: dataURL, box: {x,y,w,h}, matrix, alpha, marked, behind }],
-   *                          marks: [{ point: {x,y}, label, selected, fired }] }
+   *                          marks: [{ point: {x,y}, label, selected, fired }],
+   *                          shapes: [{ type: 'dot' | 'box' | 'target', x, y, w, h, color, alpha }] }
+   *                          (shapes: the test stage, in Visual units — placeholder projectiles, a
+   *                          strike's box, the target the attack aims at)
    *                          (gesture effects: `matrix` maps the frame's centred pixels to Visual space;
    *                          `sheet` null = no art to show, only its cross. Marks: a gesture's releases —
    *                          where the attack leaves from — as Visual-space points)
@@ -354,6 +357,50 @@ export class RigCanvasView {
     if (opts.showMarkers !== false) this._drawNodes(state, opts);
     if (opts.showMarkers !== false) this._drawMarkers(state, opts);
     this._drawMarks(opts);
+    this._drawShapes(opts);
+  }
+
+  /** The test stage: placeholder projectiles (discs), strike boxes, the aim target. */
+  _drawShapes(opts) {
+    const ctx = this.ctx;
+    (opts.shapes || []).forEach((s) => {
+      const p = apply(this.camera, { x: s.x, y: s.y });
+      ctx.save();
+      if (s.type === 'target') {
+        ctx.strokeStyle = 'rgba(227,168,80,0.95)';
+        ctx.fillStyle = 'rgba(227,168,80,0.95)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 11, 0, Math.PI * 2);
+        ctx.moveTo(p.x + 4, p.y); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.moveTo(p.x - 17, p.y); ctx.lineTo(p.x + 17, p.y);
+        ctx.moveTo(p.x, p.y - 17); ctx.lineTo(p.x, p.y + 17);
+        ctx.stroke();
+        ctx.font = '13px sans-serif';
+        ctx.fillText('objetivo (arrástralo)', p.x + 16, p.y - 14);
+      } else {
+        const w = Math.max(3, s.w * this.zoom), h = Math.max(3, s.h * this.zoom);
+        const color = String(s.color || '#8ce666').slice(0, 7);
+        ctx.globalAlpha = s.alpha ?? 1;
+        if (s.type === 'box') {
+          ctx.fillStyle = color;
+          ctx.globalAlpha *= 0.45;
+          ctx.fillRect(p.x - w / 2, p.y - h / 2, w, h);
+          ctx.globalAlpha = s.alpha ?? 1;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(p.x - w / 2, p.y - h / 2, w, h);
+        } else {
+          ctx.fillStyle = color;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, w / 2, h / 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    });
   }
 
   /** A gesture's releases: a target where the attack leaves from; a ring bursts when one fires. */

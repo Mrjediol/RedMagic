@@ -23,11 +23,12 @@ import * as F from './enemy-form-fields.js';
 import { createDefence } from './enemy-defaults.js';
 import { createDefaultEnemyConfig, createDefaultProjectileSpec, PROJECTILE_AIMING_FIELDS } from './enemy-defaults.js';
 import { buildEnemyExport } from './enemy-export.js';
-import { createAttackEditor } from './attack-cards.js';
+import { createAttackEditor, newAttack } from './attack-cards.js';
+import { normalizeGesture, effectiveReleases } from './rig-gestures.js';
 import { adoptAttacksFromConfig } from './attack-export.js';
-import { createArtOptions } from './boss-defaults.js';
+import { createArtOptions, defaultsOf as defaultsOfFields } from './boss-defaults.js';
 import { framedLanes } from './boss-export.js';
-import { ART_KIND_NOTES } from './boss-catalog-notes.js';
+import { ART_KIND_NOTES, attackLabel } from './boss-catalog-notes.js';
 import { suggestedEnemyConfig } from './rig-templates.js';
 import { loadEnemyConfigValidator, validateEnemyConfig } from './enemy-config-schema.js';
 import { downloadBlob } from './export-manifest.js';
@@ -262,7 +263,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     updateCombinedExportAvailability();
     await loadSavedBehaviour(picked);
     deckEditor.refreshGestures();
-    refreshVariantGestures();
+    renderDefences();
     refresh();
   });
 
@@ -615,99 +616,12 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     onChange: (v) => { state.tuning.builtInWeight = v; state.deckTouched = true; refresh(); },
   }), () => state.tuning.builtInWeight).row);
 
-  // --- el mismo ataque propio, lanzado con otro gesto (varias formas de hacer el mismo ataque)
-  const variantsRoot = document.createElement('div');
-  builtInCard.appendChild(variantsRoot);
-
-  function renderVariants() {
-    variantsRoot.innerHTML = '';
-    const list = state.builtInVariants;
-    variantsRoot.appendChild(Object.assign(document.createElement('p'), {
-      className: 'efHint',
-      textContent: 'Variantes con otro gesto: el MISMO ataque propio (mismo proyectil / golpe y mismos números) lanzado con un gesto distinto del cuerpo. '
-        + 'Se sortean con su peso junto al resto.',
-    }));
-    list.forEach((v, index) => {
-      const card = document.createElement('div');
-      card.className = 'bcCard';
-      const head = document.createElement('div');
-      head.className = 'bcCardHead';
-      const title = document.createElement('span');
-      title.className = 'bcCardTitle';
-      title.textContent = `Ataque propio · variante ${index + 1}`;
-      const del = document.createElement('button');
-      del.className = 'small danger';
-      del.textContent = '✕';
-      del.onclick = () => { list.splice(index, 1); state.deckTouched = true; renderVariants(); refresh(); };
-      head.append(title, del);
-      card.appendChild(head);
-
-      const gestureRow = document.createElement('div');
-      gestureRow.className = 'efRow';
-      const label = document.createElement('label');
-      label.textContent = 'Gesto';
-      const select = document.createElement('select');
-      const fill = () => {
-        const names = bodyGestureNames();
-        const opts = [''].concat(names);
-        if (v.gesture && !names.includes(v.gesture)) opts.push(v.gesture);
-        select.innerHTML = '';
-        opts.forEach((n) => {
-          const o = document.createElement('option');
-          o.value = n;
-          o.textContent = n === '' ? (names.length ? '(el ataque normal del cuerpo)' : '(elige arriba el arte del enemigo)') : (names.includes(n) ? n : `${n} (no existe)`);
-          select.appendChild(o);
-        });
-        select.value = v.gesture || '';
-      };
-      fill();
-      select.onchange = () => { v.gesture = select.value; state.deckTouched = true; refresh(); };
-      select.dataset.variantGesture = '1';
-      select.refill = fill;
-      gestureRow.append(label, select);
-      card.appendChild(gestureRow);
-
-      const grid = document.createElement('div');
-      grid.className = 'bcGrid';
-      const num = (labelText, key, min, hint) => grid.appendChild(F.numberField({
-        label: labelText, value: v[key], min, hint,
-        onChange: (x) => { v[key] = x; state.deckTouched = true; refresh(); },
-      }).row);
-      num('Peso en el sorteo', 'weight', 0.01);
-      num('Distancia mínima (u)', 'minRange', 0, 'Más cerca que esto no sale. 0 = sin mínimo.');
-      num('Distancia máxima (u)', 'maxRange', 0, '0 = el "Rango de ataque" del enemigo.');
-      grid.appendChild(F.enumField({
-        label: 'Altura del objetivo', value: v.targetHeight,
-        options: [{ value: 'Any', label: 'Cualquiera' }, { value: 'TargetAbove', label: 'Sólo si está por encima' }, { value: 'TargetBelow', label: 'Sólo si está por debajo' }],
-        onChange: (x) => { v.targetHeight = x; state.deckTouched = true; refresh(); },
-      }).row);
-      card.appendChild(grid);
-      variantsRoot.appendChild(card);
-    });
-
-    const add = document.createElement('button');
-    add.className = 'small primary';
-    add.textContent = '＋ Repetir el ataque propio con otro gesto';
-    add.onclick = () => {
-      list.push({ gesture: '', weight: 1, minRange: 0, maxRange: 0, targetHeight: 'Any' });
-      state.deckTouched = true;
-      renderVariants();
-      refresh();
-    };
-    variantsRoot.appendChild(add);
-  }
-
-  /** The body's gestures changed (another art picked): refill the variants' gesture dropdowns. */
-  function refreshVariantGestures() {
-    renderDefences();
-    variantsRoot.querySelectorAll('select[data-variant-gesture]').forEach((s) => s.refill && s.refill());
-  }
-
   function describeBuiltIn() {
     const t = state.tuning;
     const what = t.selfDestruct ? `explota (radio ${t.explosionRadius})`
       : isRangedNow() ? 'dispara su proyectil' : 'golpea de cerca (caja de melé)';
-    builtInSummary.textContent = `${what} · daño ${t.attackDamage} · a ${t.attackRange} u · gesto: el ataque del cuerpo (Attack / windup del rig).`;
+    builtInSummary.textContent = `${what} · daño ${t.attackDamage} · a ${t.attackRange} u · gesto: el ataque del cuerpo (Attack / windup del rig). `
+      + 'Para otro disparo o golpe con SU gesto y SU proyectil, añade abajo un "Disparo / golpe (por sueltas del gesto)".';
   }
 
   // --- el resto: ataques del catálogo de Unity (los mismos que usan los jefes).
@@ -722,13 +636,63 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     return libraryEntriesCache.find((e) => e.id === state.artLibraryId) || null;
   }
 
+  // The gestures of the body, live: 🧬 Enemy Studio hands in the composer's own list while it is on
+  // screen (setGestureSource), so a release added on the timeline shows up here at once. Otherwise
+  // they are read from the linked rig's saved document.
+  let gestureSource = null;
+
+  /** The body's gestures as timelines (rig-gestures.js), or [] (a sprite sheet has animations, not gestures). */
+  function bodyGestures() {
+    if (gestureSource) return gestureSource() || [];
+    const entry = linkedEntry();
+    if (entry?.kind !== 'rig') return [];
+    return (entry.draft?.gestures || []).map((g) => { const copy = JSON.parse(JSON.stringify(g)); normalizeGesture(copy); return copy; });
+  }
+
   /** Gestures the body can play: a rig's named gestures, or a sprite sheet's animation names. */
   function bodyGestureNames() {
     const entry = linkedEntry();
+    if (gestureSource || entry?.kind === 'rig') return bodyGestures().map((g) => g.name).filter(Boolean);
     if (!entry) return [];
-    if (entry.kind === 'rig') return (entry.draft?.gestures || []).map((g) => g.name).filter(Boolean);
     return framedLanes(entry).map((l) => l.name);
   }
+
+  /** What a gesture releases — one label per release — or null (not a rig gesture: one release, by its clip). */
+  function gestureInfo(name) {
+    const g = bodyGestures().find((x) => x.name === name);
+    if (!g) return null;
+    return {
+      releases: effectiveReleases(g).map((r) => {
+        const step = g.steps[Math.min(r.step, g.steps.length - 1)];
+        const label = `«${step?.name || `paso ${r.step + 1}`}»`;
+        return r.at >= 1 ? `al acabar ${label}` : r.at <= 0 ? `al empezar ${label}` : `${label} al ${Math.round(r.at * 100)}%`;
+      }),
+    };
+  }
+
+  const releaseListOf = (attack) => (catalog?.attacks.find((t) => t.type === attack.type)?.params || [])
+    .find((p) => p.type === 'objectList' && p.perRelease) || null;
+
+  /**
+   * Every per-release list of the deck gets exactly one entry per release of its attack's gesture
+   * (the same rule the card applies when it is drawn) — so the export is right even for a card that
+   * was never opened after its gesture gained or lost a release.
+   */
+  function syncReleaseSlots() {
+    state.deck.forEach((attack) => {
+      const field = releaseListOf(attack);
+      const info = field ? gestureInfo((attack.common.gesture || '').trim()) : null;
+      if (!info) return;
+      const list = Array.isArray(attack.params[field.name]) ? attack.params[field.name] : (attack.params[field.name] = []);
+      while (list.length < info.releases.length) list.push(defaultsOfFields(field.fields));
+      if (list.length > info.releases.length) list.length = info.releases.length;
+    });
+  }
+
+  // What mirrors the deck somewhere else (the gesture card of Enemy Studio) redraws when the cards do.
+  let onDeckRendered = null;
+  // …and what only reads its numbers (the Studio's test stage: an attack's telegraph, its shots) is told of every edit.
+  let onDeckChanged = null;
 
   const deckEditor = createAttackEditor({
     root: deckRoot,
@@ -736,6 +700,12 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     getAttacks: () => state.deck,
     getEntries: () => artEntries,
     gestureNames: bodyGestureNames,
+    gestureInfo,
+    defaultType: 'ReleaseAttack',
+    onRendered: () => { if (onDeckRendered) onDeckRendered(); },
+    onRemoved: (attack) => { state.defences.forEach((d) => { if (d.attack === attack.id) d.attack = ''; }); renderDefences(); },
+    onRenamed: (oldId, newId) => { state.defences.forEach((d) => { if (d.attack === oldId) d.attack = newId; }); renderDefences(); },
+    onAdded: () => { renderDefences(); },
     noGesturesLabel: '(elige arriba el arte del enemigo: sus gestos salen de ahí)',
     // Attacks that need a boss (phases, guard, adds, arena targets) are not offered to an enemy.
     typeFilter: (a) => a.hosts !== 'boss',
@@ -746,7 +716,13 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
       + 'Lo que dejes vacío funciona con un placeholder.',
     idHint: 'Nombra el asset en Unity. Letras, números, - y _. Se aplica al salir del campo.',
     renderExtra: (attack, card) => {
-      attack.deck = { minRange: 0, maxRange: 0, targetHeight: 'Any', ...(attack.deck || {}) };
+      attack.deck = { minRange: 0, maxRange: 0, targetHeight: 'Any', defenceOnly: false, ...(attack.deck || {}) };
+      card.appendChild(F.boolField({
+        label: 'Sólo desde una defensa (no entra en el sorteo)', value: !!attack.deck.defenceOnly,
+        hint: 'Para el ataque que lanza al apartarse ("esquiva y dispara"): elígelo en Defensa ▸ "Ataque que lanza".',
+        onChange: (v) => { attack.deck.defenceOnly = v; state.deckTouched = true; deckEditor.render(); refresh(); },
+      }).row);
+      if (attack.deck.defenceOnly) return;
       const grid = document.createElement('div');
       grid.className = 'bcGrid';
       grid.appendChild(F.numberField({
@@ -772,7 +748,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
       card.appendChild(grid);
     },
     onStructure: () => { state.deckTouched = true; },
-    onChange: () => refresh(),
+    onChange: () => { state.deckTouched = true; refresh(); if (onDeckChanged) onDeckChanged(); },
   });
 
   /** Size/collider options of every library art the deck uses (same knobs as the Boss Creator). */
@@ -881,8 +857,16 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
         ...names.map((n) => ({ value: n, label: n }))];
       if (d.gesture && !names.includes(d.gesture)) opts.push({ value: d.gesture, label: `${d.gesture} (no existe)` });
       grid.appendChild(F.enumField({ label: 'Gesto mientras se aparta', value: d.gesture || '', options: opts,
-        hint: 'Mantiene su pose de carga (con sus efectos y sprites) durante el movimiento.',
+        hint: d.attack ? 'Con un ataque elegido manda el gesto del ataque: éste no se usa.' : 'Mantiene su pose de carga (con sus efectos y sprites) durante el movimiento.',
         onChange: (x) => { d.gesture = x; touch(); } }).row);
+
+      const attackOpts = [{ value: '', label: '(ninguno: sólo se aparta)' },
+        ...state.deck.map((a) => ({ value: a.id, label: `${a.id}${a.common.gesture ? ` · gesto ${a.common.gesture}` : ''}` }))];
+      if (d.attack && !state.deck.some((a) => a.id === d.attack)) attackOpts.push({ value: d.attack, label: `${d.attack} (no existe)` });
+      grid.appendChild(F.enumField({ label: 'Ataque que lanza al apartarse', value: d.attack || '', options: attackOpts,
+        hint: 'Uno de los ataques de arriba. Su gesto se reproduce ENTERO mientras se aparta y el ataque sale en sus sueltas: '
+          + 'con un paso que "dura el aviso", la primera cae justo al acabar de apartarse. Márcalo "sólo desde una defensa" si no debe salir en el sorteo.',
+        onChange: (x) => { d.attack = x; renderDefences(); touch(); } }).row);
       card.appendChild(grid);
 
       const more = document.createElement('details');
@@ -928,7 +912,6 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   importOptions.append(anchorField.row, prefabFolderField.row);
   groupEls['Vida'].appendChild(tierField.row);
 
-  renderVariants();
   deckReady = true;
   catalogReady.then(loadArtEntries).then(() => { deckEditor.render(); refresh(); });
 
@@ -969,6 +952,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   }
 
   async function refresh() {
+    if (deckReady) syncReleaseSlots();
     const { doc: exportObj, art, problems, notes } = buildEnemyExport(state, deckReady ? exportContext() : {});
     previewEl.textContent = JSON.stringify(exportObj, null, 2);
     if (deckReady) {
@@ -1024,25 +1008,77 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     state.tuning.projectileSpec = { ...createDefaultProjectileSpec(), ...(projectile || {}) };
 
     const adopted = adoptAttacksFromConfig(config, catalog);
-    state.builtInVariants = (Array.isArray(deckJson) ? deckJson : []).filter((e) => e.builtIn).map((e) => ({
-      gesture: e.gesture || '', weight: e.weight ?? 1, minRange: e.minRange ?? 0, maxRange: e.maxRange ?? 0, targetHeight: e.targetHeight || 'Any',
-    }));
-    state.deck = (Array.isArray(deckJson) ? deckJson : []).filter((e) => !e.builtIn).map((e) => {
-      const attack = adopted.byId[e.attack];
-      if (!attack) return null;   // a card that points at a Unity asset: only editable there
-      attack.deck = { minRange: e.minRange ?? 0, maxRange: e.maxRange ?? 0, targetHeight: e.targetHeight || 'Any' };
-      return attack;
-    }).filter(Boolean);
     state.attackArt = adopted.artOptions;
+    const cards = Array.isArray(deckJson) ? deckJson : [];
+    const inDraw = new Set(cards.map((e) => e.attack));
+    state.deck = [];
+    cards.forEach((e) => {
+      // A config saved before 2026-10-02: "the own attack again with another gesture". It is now a
+      // catalog attack that fires the same thing at each release of that gesture.
+      if (e.builtIn) { state.deck.push(attackFromVariant(e)); return; }
+      const attack = adopted.byId[e.attack];
+      if (!attack) return;   // a card that points at a Unity asset: only editable there
+      attack.deck = { minRange: e.minRange ?? 0, maxRange: e.maxRange ?? 0, targetHeight: e.targetHeight || 'Any', defenceOnly: false };
+      state.deck.push(attack);
+    });
+    // Attacks of the config that are not cards of the draw: the ones a defence launches.
+    Object.entries(adopted.byId).forEach(([id, attack]) => {
+      if (inDraw.has(id) || state.deck.includes(attack)) return;
+      attack.deck = { minRange: 0, maxRange: 0, targetHeight: 'Any', defenceOnly: true };
+      state.deck.push(attack);
+    });
     state.deckTouched = Array.isArray(deckJson);
 
     syncers.forEach((sync) => sync());
     setProjectileMode(state.tuning.projectileMode);
     updateRangedEmphasis();
     deckArtSignature = null;
+    syncReleaseSlots();
     renderDefences();
-    renderVariants();
     deckEditor.render();
+  }
+
+  /**
+   * The old "own attack with another gesture" card as a ReleaseAttack: the same projectile (or melee
+   * box) and numbers the own attack has, at every release of that gesture.
+   */
+  function attackFromVariant(v) {
+    const t = state.tuning;
+    const gesture = (v.gesture || '').trim();
+    const attack = newAttack(catalog, 'ReleaseAttack', state.deck.map((a) => a.id));
+    let id = `Propio${gesture.replace(/[^A-Za-z0-9_-]/g, '')}`, n = 2;
+    while (state.deck.some((a) => a.id === id)) id = `Propio${gesture.replace(/[^A-Za-z0-9_-]/g, '')}${n++}`;
+    attack.id = id;
+    attack.open = false;
+    const rig = linkedEntry()?.draft?.rig || {};
+    const found = bodyGestures().find((g) => g.name === gesture);
+    Object.assign(attack.common, {
+      gesture, weight: v.weight > 0 ? v.weight : 1, cooldownInAttacks: 0,
+      telegraph: rig.windup ?? 0.4, recovery: found?.recover ?? rig.recover ?? 0.45,
+      damage: t.attackDamage, knockbackMultiplier: t.attackKnockbackMultiplier ?? 1,
+      accent: t.projectileTint || attack.common.accent,
+    });
+    ['weight', 'cooldownInAttacks', 'telegraph', 'recovery', 'damage', 'knockbackMultiplier', 'accent'].forEach((k) => { attack.edited[k] = true; });
+
+    const field = releaseListOf(attack);
+    const ranged = isRangedNow();
+    const spec = t.projectileSpec || {};
+    const shot = () => {
+      const s = defaultsOfFields(field.fields);
+      s.kind = ranged ? 'Projectile' : 'Strike';
+      s.aim = t.aimAtTarget === false ? 'Forward' : 'Frozen';
+      // The own projectile, when the form has one configured (its art is a library entry).
+      if (t.projectileMode === 'inline') {
+        Object.keys(s.projectile).forEach((k) => { if (k !== 'prefab' && spec[k] !== undefined) s.projectile[k] = JSON.parse(JSON.stringify(spec[k])); });
+        s.projectile.prefab = spec.libraryId || '';
+      }
+      if (t.meleeHitboxSize) s.strikeSize = { ...t.meleeHitboxSize };
+      if (t.meleeHitboxOffset) s.strikeOffset = { ...t.meleeHitboxOffset };
+      return s;
+    };
+    if (field) attack.params[field.name] = Array.from({ length: Math.max(1, found ? effectiveReleases(found).length : 1) }, shot);
+    attack.deck = { minRange: v.minRange ?? 0, maxRange: v.maxRange ?? 0, targetHeight: v.targetHeight || 'Any', defenceOnly: false };
+    return attack;
   }
 
   /**
@@ -1148,7 +1184,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     setArtMode('library');
     await loadSavedBehaviour(libraryEntriesCache.find((e) => e.id === id));
     deckEditor.refreshGestures();
-    refreshVariantGestures();
+    renderDefences();
     refresh();
   }
 
@@ -1158,8 +1194,121 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     await catalogReady;
     await loadArtEntries();
     deckEditor.render();
-    refreshVariantGestures();
+    renderDefences();
     refresh();
+  }
+
+  // ============================================================ the deck seen from a gesture (🧬 Enemy Studio)
+  //
+  // The Studio edits a gesture and the attacks that use it side by side: the timeline's gesture card
+  // shows, for each attack launched with that gesture, one slot per release. It is this same deck —
+  // the same state, the same field renderer — drawn a second time in another place.
+
+  let previewAttackId = null;   // which of the attacks of a gesture the Studio's test stage fires
+
+  /** Enemy Studio: where the live gestures come from (null = back to the linked record's saved ones). */
+  function setGestureSource(source) {
+    gestureSource = source || null;
+  }
+
+  /** Enemy Studio: called when the cards are rebuilt, to redraw their mirror. */
+  function setDeckMirror(callback, onValue = null) {
+    onDeckRendered = callback || null;
+    onDeckChanged = onValue || null;
+  }
+
+  /** The gestures of the body changed (a release added, a gesture renamed): slots and dropdowns follow. */
+  function gesturesChanged() {
+    if (!deckReady) return;
+    syncReleaseSlots();
+    deckEditor.render();
+    renderDefences();
+    refresh();
+  }
+
+  const attacksUsing = (gestureName) => state.deck.filter((a) => (a.common.gesture || '').trim() === gestureName);
+
+  /** The attack of that gesture the test stage fires: the one picked, else the first. */
+  function previewAttackOf(gestureName) {
+    const using = attacksUsing(gestureName);
+    return using.find((a) => a.id === previewAttackId) || using[0] || null;
+  }
+
+  /**
+   * What the test stage needs to fire a gesture's attack: `{ id, telegraph, accent, shots, artOptions }`
+   * (`shots` = its per-release list, null for an attack that is not made of them), or null.
+   */
+  function gestureShots(gestureName) {
+    const attack = previewAttackOf(gestureName);
+    if (!attack) return null;
+    const field = releaseListOf(attack);
+    return {
+      id: attack.id,
+      telegraph: attack.common.telegraph,
+      accent: attack.common.accent,
+      shots: field ? attack.params[field.name] || [] : null,
+      artOptions: state.attackArt,
+    };
+  }
+
+  /**
+   * The attacks launched with `gestureName`, editable in place: per attack, what leaves at each
+   * release, and its three main numbers. `rerender` redraws the host after a structural change.
+   */
+  function renderGestureAttacks(host, gestureName, rerender) {
+    const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+    const box = mk('div', 'rigFxBox gaBox');
+    const using = attacksUsing(gestureName);
+    box.appendChild(mk('p', 'rigGroupTitle', `⚔ Ataques que usan este gesto (${using.length})`));
+    if (!catalog) { box.appendChild(mk('p', 'hint', 'Falta el catálogo de ataques de Unity (modules/boss-catalog.js).')); host.appendChild(box); return; }
+    if (!using.length) box.appendChild(mk('p', 'hint', 'Ninguno todavía. Un ataque hecho con este gesto lanza algo en cada ◆ suelta: un proyectil, un abanico, un anillo, un golpe… o nada.'));
+
+    const chosen = previewAttackOf(gestureName);
+    using.forEach((attack) => {
+      const typeEntry = catalog.attacks.find((t) => t.type === attack.type);
+      const card = mk('div', `bcCard gaCard${attack === chosen ? ' chosen' : ''}`);
+      const head = mk('div', 'bcCardHead');
+      head.appendChild(mk('span', 'bcCardTitle', `${attack.id} · ${attackLabel(attack.type, typeEntry)}`));
+      if (using.length > 1) {
+        const pick = mk('button', `small${attack === chosen ? ' active' : ''}`, attack === chosen ? '▶ se prueba éste' : '▶ probar éste');
+        pick.dataset.nodirty = '1';
+        pick.title = 'Cuál de los ataques de este gesto dispara "▶ Probar".';
+        pick.onclick = () => { previewAttackId = attack.id; rerender(); };
+        head.appendChild(pick);
+      }
+      card.appendChild(head);
+
+      const field = releaseListOf(attack);
+      const ctx = { edited: attack.edited || (attack.edited = {}), attack };
+      if (field) {
+        const slots = mk('div', 'bcParams');
+        deckEditor.renderFields(slots, [{ ...field, header: undefined }], attack.params, ctx);
+        card.appendChild(slots);
+      } else {
+        card.appendChild(mk('p', 'hint', 'Este tipo de ataque sale en la primera suelta del gesto; sus parámetros están en el paso 4 (Comportamiento ▸ Ataques).'));
+      }
+
+      const numbers = mk('div', 'bcGrid');
+      const main = ['damage', 'telegraph', 'recovery'];
+      deckEditor.renderFields(numbers, (catalog.common || []).filter((f) => main.includes(f.name)).map((f) => ({ ...f, header: undefined })), attack.common, ctx);
+      card.appendChild(numbers);
+      box.appendChild(card);
+    });
+
+    const add = mk('button', 'small primary', '＋ Ataque con este gesto');
+    add.title = 'Un "Disparo / golpe (por sueltas del gesto)" nuevo que usa este gesto. Rango, peso y enfriamiento, en el paso 4 (Comportamiento ▸ Ataques).';
+    add.onclick = () => {
+      const attack = newAttack(catalog, 'ReleaseAttack', state.deck.map((a) => a.id));
+      attack.common.gesture = gestureName;
+      attack.open = false;
+      attack.deck = { minRange: 0, maxRange: 0, targetHeight: 'Any', defenceOnly: false };
+      state.deck.push(attack);
+      state.deckTouched = true;
+      previewAttackId = attack.id;
+      gesturesChanged();   // slots to its releases, cards redrawn (→ the mirror too)
+    };
+    box.appendChild(add);
+    host.appendChild(box);
   }
 
   /** The library entry this form is editing the behaviour of, or null. */
@@ -1200,5 +1349,6 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     refresh();
   }
 
-  return { refreshLaneInfo, refreshArtLibrary, linkLibraryEntry, linkedId, persistLinked, setEnemyName, unlinkRig };
+  return { refreshLaneInfo, refreshArtLibrary, linkLibraryEntry, linkedId, persistLinked, setEnemyName, unlinkRig,
+    setGestureSource, setDeckMirror, gesturesChanged, gestureShots, renderGestureAttacks };
 }

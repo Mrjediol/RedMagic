@@ -18,7 +18,7 @@
 
 import * as F from './enemy-form-fields.js';
 import { defaultsOf, withDefaults, clone } from './boss-defaults.js';
-import { ATTACK_NOTES, ART_KIND_NOTES, attackLabel, attackGroup } from './boss-catalog-notes.js';
+import { ATTACK_NOTES, ART_KIND_NOTES, FIELD_NOTES, attackLabel, attackGroup } from './boss-catalog-notes.js';
 import { framedLanes } from './boss-export.js';
 
 const el = (tag, cls, text) => {
@@ -55,6 +55,11 @@ export function newAttack(catalog, type, takenIds = []) {
  * @param {() => object[]} o.getAttacks - the attack states (edited in place).
  * @param {() => object[]} o.getEntries - library entries that own a sheet (art slot pickers).
  * @param {() => string[]} o.gestureNames - gestures the body has (rig gestures / animation names).
+ * @param {(name: string) => ({releases: string[]} | null)} [o.gestureInfo] - what a gesture releases:
+ *        one label per release ("paso «Gira» · 0.75 s"), or null when the body's gestures are unknown.
+ *        A list field the catalog marks `perRelease` (a ReleaseAttack's shots) then shows exactly one
+ *        slot per release of the attack's gesture, instead of a free list.
+ * @param {string} [o.defaultType] - the type the "＋ Añadir" picker starts on.
  * @param {string} [o.noGesturesLabel] - the empty option's text when the body has none.
  * @param {(a: object) => boolean} [o.typeFilter] - which catalog types are offered.
  * @param {string[]} [o.mainCommon] - base fields shown up front; the rest go in a folded block.
@@ -64,6 +69,7 @@ export function newAttack(catalog, type, takenIds = []) {
  * @param {string} [o.idHint] - hint under the id field.
  * @param {() => void} o.onChange - a value changed (refresh preview/validation).
  * @param {() => void} [o.onStructure] - the list changed shape (already re-rendered).
+ * @param {() => void} [o.onRendered] - the list was rebuilt (whoever mirrors a card elsewhere redraws it).
  * @param {(attack: object) => void} [o.onAdded]
  * @param {(attack: object) => void} [o.onRemoved]
  * @param {(oldId: string, newId: string) => void} [o.onRenamed]
@@ -107,12 +113,22 @@ export function createAttackEditor(o) {
     return row;
   }
 
-  /** The body's gestures changed (another art picked): refill every gesture dropdown in place. */
+  /**
+   * The body's gestures changed (another art picked, a release added): the gesture dropdowns and the
+   * per-release slots follow. A rebuild — never called while the user types in a card.
+   */
   function refreshGestures() {
-    const names = o.gestureNames();
-    gestureSelects = gestureSelects.filter((s) => s.select.isConnected);
-    gestureSelects.forEach(({ select, get }) => fillGesture(select, names, get()));
+    render();
   }
+
+  /** The releases of the attack's gesture as slot labels, or null (unknown body / no such gesture). */
+  function releasesOf(attack) {
+    const name = (attack?.common?.gesture || '').trim();
+    return name && o.gestureInfo ? o.gestureInfo(name)?.releases || null : null;
+  }
+
+  const notePath = (prefix, name) => `${prefix}${name}`.replace(/\.\d+\./g, '.');
+  const labelOf = (f, prefix) => FIELD_NOTES[notePath(prefix, f.name)]?.label || f.label;
 
   const looksLikeGesture = (f) => f.type === 'string' && /(gesture|state)$/i.test(f.name);
 
@@ -167,10 +183,20 @@ export function createAttackEditor(o) {
 
   /** Renders a catalog field list into `container`, editing `values` in place. */
   function renderFields(container, fields, values, ctx, prefix = '') {
-    fields.forEach((f) => {
+    fields.forEach((source) => {
+      // A field that only counts for some values of another one of the same block ("the arc only in a fan").
+      if (source.showIf && !source.showIf.values.includes(values[source.showIf.field])) return;
+      const f = { ...source, label: labelOf(source, prefix) };
+      if (f.label !== source.label && f.type === 'art') f.artLabel = f.label;   // a named slot keeps its Spanish name
       if (f.header) container.appendChild(el('h4', 'bcH4', f.header));
       const hint = f.tooltip || '';
-      const set = (v) => { values[f.name] = v; if (ctx.edited) ctx.edited[`${prefix}${f.name}`] = true; changed(); };
+      // Changing a field others depend on (showIf) changes which fields exist: the list is rebuilt.
+      const drives = fields.some((g) => g.showIf?.field === f.name);
+      const set = (v) => {
+        values[f.name] = v;
+        if (ctx.edited) ctx.edited[`${prefix}${f.name}`] = true;
+        if (drives) { render(); o.onChange(); } else changed();
+      };
 
       switch (f.type) {
         case 'float':
@@ -194,12 +220,14 @@ export function createAttackEditor(o) {
         case 'color':
           container.appendChild(F.colorField({ label: f.label, value: values[f.name], hint, onChange: set }).row);
           break;
-        case 'enum':
+        case 'enum': {
+          const names = FIELD_NOTES[notePath(prefix, f.name)]?.options || {};
           container.appendChild(F.enumField({
             label: f.label, value: values[f.name], hint,
-            options: f.options.map((v) => ({ value: v, label: v })), onChange: set,
+            options: f.options.map((v) => ({ value: v, label: names[v] || v })), onChange: set,
           }).row);
           break;
+        }
         case 'floatList':
         case 'intList':
           container.appendChild(F.textField({
@@ -213,17 +241,91 @@ export function createAttackEditor(o) {
           break;
         case 'object': {
           const box = el('div', 'bcObject');
-          box.appendChild(el('div', 'bcObjectTitle', f.artLabel ? `${f.label} — ${f.artLabel}` : f.label));
+          box.appendChild(el('div', 'bcObjectTitle', f.artLabel && !ctx.compact ? `${f.label} — ${f.artLabel}` : f.label));
           if (hint) box.appendChild(el('p', 'efHint', hint));
           values[f.name] = values[f.name] || {};
-          renderFields(box, f.fields, values[f.name], ctx, `${prefix}${f.name}.`);
+          // Inside a list item a projectile shows what is usually touched; the rest folds away.
+          const main = ctx.compact && f.spec === 'projectile' ? ['prefab', 'speed', 'lifetime', 'size'] : null;
+          renderFields(box, main ? f.fields.filter((c) => main.includes(c.name)).map((c) => ({ ...c, header: undefined })) : f.fields,
+            values[f.name], ctx, `${prefix}${f.name}.`);
+          if (main) {
+            const more = el('details', 'bcDetails bcWide');
+            more.appendChild(el('summary', null, 'Más del proyectil (perforar, guiado, parábola, explosión…)'));
+            const grid = el('div', 'bcGrid');
+            renderFields(grid, f.fields.filter((c) => !main.includes(c.name)).map((c) => ({ ...c, header: undefined })),
+              values[f.name], ctx, `${prefix}${f.name}.`);
+            more.appendChild(grid);
+            box.appendChild(more);
+          }
           container.appendChild(box);
           break;
         }
+        case 'objectList':
+          renderList(container, f, values, ctx, prefix);
+          break;
         default:
           container.appendChild(el('p', 'efHint', `${f.label}: se asigna en Unity (${f.unityType || 'asset'}).`));
       }
     });
+  }
+
+  /**
+   * A list of objects. Marked `perRelease` and with the gesture's releases known: exactly one slot
+   * per release, named after it (slots are added / dropped to match the gesture). Otherwise a free
+   * list with ＋ / ✕.
+   */
+  function renderList(container, f, values, ctx, prefix) {
+    const list = Array.isArray(values[f.name]) ? values[f.name] : (values[f.name] = []);
+    const releases = f.perRelease ? releasesOf(ctx.attack) : null;
+    const touch = () => { if (ctx.edited) ctx.edited[`${prefix}${f.name}`] = true; };
+
+    if (releases) {
+      while (list.length < releases.length) list.push(defaultsOf(f.fields));
+      if (list.length > releases.length) list.length = releases.length;
+    }
+
+    const wrap = el('div', 'bcList bcWide bcSlots');
+    if (f.header) wrap.appendChild(el('h4', 'bcH4', f.header));
+    if (f.perRelease) {
+      wrap.appendChild(el('p', 'efHint', releases
+        ? `El gesto "${ctx.attack.common.gesture}" suelta ${releases.length} ${releases.length === 1 ? 'vez' : 'veces'}: di qué sale en cada una. Las sueltas se añaden, quitan y mueven en la línea de tiempo del gesto (◆).`
+        : 'Elige arriba un gesto: saldrá un hueco por cada una de sus sueltas (◆ en su línea de tiempo). Sin gesto, las entradas salen una tras otra, por tiempo.'));
+    } else if (f.tooltip) wrap.appendChild(el('p', 'efHint', f.tooltip));
+
+    list.forEach((item, i) => {
+      list[i] = withDefaults(f.fields, item || {});
+      const slot = el('div', 'bcSlot');
+      const head = el('div', 'bcSlotHead');
+      head.appendChild(el('span', 'bcSlotTitle', releases ? `◆ Suelta ${i + 1}${releases[i] ? ` · ${releases[i]}` : ''}` : `${f.perRelease ? 'Entrada' : f.label} ${i + 1}`));
+      if (!releases) {
+        const del = el('button', 'small danger', '✕');
+        del.title = 'Quitar';
+        del.disabled = list.length <= 1 && f.perRelease;
+        del.onclick = () => { list.splice(i, 1); touch(); structure(); };
+        head.appendChild(del);
+      }
+      slot.appendChild(head);
+      const grid = el('div', 'bcParams');
+      renderFields(grid, f.fields, list[i], { ...ctx, compact: true }, `${prefix}${f.name}.${i}.`);
+      slot.appendChild(grid);
+      wrap.appendChild(slot);
+    });
+
+    if (!releases) {
+      const add = el('button', 'small', f.perRelease ? '＋ Otra entrada' : `＋ ${f.label}`);
+      add.onclick = () => { list.push(defaultsOf(f.fields)); touch(); structure(); };
+      wrap.appendChild(add);
+    }
+    container.appendChild(wrap);
+  }
+
+  /** One line of what a perRelease list launches: "proyectil · nada · abanico ×5". */
+  function slotsSummary(attack, typeEntry) {
+    const f = (typeEntry?.params || []).find((p) => p.type === 'objectList' && p.perRelease);
+    const list = f ? attack.params?.[f.name] : null;
+    if (!Array.isArray(list) || !list.length) return '';
+    const names = FIELD_NOTES[`${f.name}.kind`]?.options || {};
+    return list.map((s) => (names[s.kind] || s.kind || '?').replace(/ \(.*\)$/, '').toLowerCase()).join(' · ');
   }
 
   // ============================================================ tipos
@@ -303,8 +405,11 @@ export function createAttackEditor(o) {
 
     const slots = artSlotsOf(typeEntry?.params);
     const gestureTxt = attack.common.gesture ? `gesto ${attack.common.gesture}` : 'sin gesto';
-    card.appendChild(el('p', 'efHint', `${ATTACK_NOTES[attack.type]?.note || ''} · ${gestureTxt} · daño ${attack.common.damage ?? '?'}`
-      + (slots.length ? ` · arte: ${slots.map((s) => s.label).join(', ')}` : '')));
+    const summary = slotsSummary(attack, typeEntry);
+    card.appendChild(el('p', 'efHint', attack.open
+      ? `${ATTACK_NOTES[attack.type]?.note || ''}`
+      : `${gestureTxt} · daño ${attack.common.damage ?? '?'}${summary ? ` · ${summary}` : ''}`
+        + (slots.length ? ` · arte: ${slots.map((s) => s.label).join(', ')}` : '')));
 
     if (!attack.open) return card;
 
@@ -345,9 +450,11 @@ export function createAttackEditor(o) {
     typeRow.appendChild(ts);
     grid.appendChild(typeRow);
 
+    const perRelease = (typeEntry?.params || []).some((p) => p.type === 'objectList' && p.perRelease);
     grid.appendChild(gestureField('Gesto (el aviso del cuerpo)', attack.common.gesture,
-      'El gesto que hace de aviso: el ataque sale cuando el gesto suelta.',
-      (v) => { attack.common.gesture = v; changed(); }));
+      perRelease ? 'El gesto que hace este ataque: sale algo en cada una de sus sueltas (abajo).'
+        : 'El gesto que hace de aviso: el ataque sale cuando el gesto suelta.',
+      (v) => { attack.common.gesture = v; if (perRelease) { render(); o.onChange(); } else changed(); }));
     card.appendChild(grid);
 
     if (o.renderExtra) o.renderExtra(attack, card);
@@ -378,7 +485,7 @@ export function createAttackEditor(o) {
       params.open = true;
       params.appendChild(el('summary', null, `Parámetros de ${attackLabel(attack.type, typeEntry)}`));
       const box = el('div', 'bcParams');
-      renderFields(box, typeEntry.params, attack.params, { edited: attack.edited });
+      renderFields(box, typeEntry.params, attack.params, { edited: attack.edited, attack });
       params.appendChild(box);
       card.appendChild(params);
     } else if (catalog) {
@@ -410,7 +517,7 @@ export function createAttackEditor(o) {
     o.root.appendChild(list);
 
     const add = el('div', 'bcAddRow');
-    const typeSelect = typeSelector('');
+    const typeSelect = typeSelector(o.defaultType || '');
     add.appendChild(el('span', 'efHint', 'Nuevo:'));
     const addBtn = el('button', 'small primary', '＋ Añadir ataque');
     addBtn.onclick = () => {
@@ -422,7 +529,8 @@ export function createAttackEditor(o) {
     add.appendChild(typeSelect);
     add.appendChild(addBtn);
     o.root.appendChild(add);
+    if (o.onRendered) o.onRendered();
   }
 
-  return { render, refreshGestures };
+  return { render, refreshGestures, renderFields };
 }

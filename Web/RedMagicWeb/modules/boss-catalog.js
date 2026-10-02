@@ -2909,6 +2909,15 @@ export const BOSS_CATALOG = {
             {
               "name": "aim",
               "label": "Aim",
+              "tooltip": "Hacia dónde sale: a donde estaba el objetivo al empezar el ataque (se puede esquivar), a donde está en el instante de esta suelta, o recto hacia delante.",
+              "showIf": {
+                "field": "kind",
+                "values": [
+                  "Projectile",
+                  "Fan",
+                  "Ring"
+                ]
+              },
               "type": "enum",
               "options": [
                 "Frozen",
@@ -2921,6 +2930,59 @@ export const BOSS_CATALOG = {
               "name": "angle",
               "label": "Angle",
               "tooltip": "Grados que se suman a la dirección (con 'Forward', el ángulo desde el frente: 90 = hacia arriba).",
+              "showIf": {
+                "field": "kind",
+                "values": [
+                  "Projectile",
+                  "Fan",
+                  "Ring"
+                ]
+              },
+              "type": "float",
+              "default": 0.0
+            },
+            {
+              "name": "count",
+              "label": "Count",
+              "tooltip": "Proyectiles del abanico o del anillo.",
+              "min": 1.0,
+              "showIf": {
+                "field": "kind",
+                "values": [
+                  "Fan",
+                  "Ring"
+                ]
+              },
+              "type": "int",
+              "default": 5
+            },
+            {
+              "name": "arcDegrees",
+              "label": "Arc Degrees",
+              "tooltip": "Abanico: apertura total en grados.",
+              "min": 0.0,
+              "max": 360.0,
+              "showIf": {
+                "field": "kind",
+                "values": [
+                  "Fan"
+                ]
+              },
+              "type": "float",
+              "default": 50.0
+            },
+            {
+              "name": "spawnRadius",
+              "label": "Spawn Radius",
+              "tooltip": "Los proyectiles nacen a esta distancia del punto de salida, en su dirección.",
+              "min": 0.0,
+              "showIf": {
+                "field": "kind",
+                "values": [
+                  "Fan",
+                  "Ring"
+                ]
+              },
               "type": "float",
               "default": 0.0
             },
@@ -2928,6 +2990,14 @@ export const BOSS_CATALOG = {
               "name": "projectile",
               "label": "Projectile",
               "tooltip": "Cómo vuela cada proyectil de esta suelta. Sin arte = el placeholder (bola del color del ataque).",
+              "showIf": {
+                "field": "kind",
+                "values": [
+                  "Projectile",
+                  "Fan",
+                  "Ring"
+                ]
+              },
               "type": "object",
               "fields": [
                 {
@@ -3060,36 +3130,15 @@ export const BOSS_CATALOG = {
               "spec": "projectile"
             },
             {
-              "name": "count",
-              "label": "Count",
-              "tooltip": "Proyectiles del abanico o del anillo.",
-              "header": "Abanico / anillo",
-              "min": 1.0,
-              "type": "int",
-              "default": 5
-            },
-            {
-              "name": "arcDegrees",
-              "label": "Arc Degrees",
-              "tooltip": "Abanico: apertura total en grados.",
-              "min": 0.0,
-              "max": 360.0,
-              "type": "float",
-              "default": 50.0
-            },
-            {
-              "name": "spawnRadius",
-              "label": "Spawn Radius",
-              "tooltip": "Los proyectiles nacen a esta distancia del punto de salida, en su dirección.",
-              "min": 0.0,
-              "type": "float",
-              "default": 0.0
-            },
-            {
               "name": "strikeSize",
               "label": "Strike Size",
               "tooltip": "Golpe: tamaño de la caja de daño.",
-              "header": "Golpe",
+              "showIf": {
+                "field": "kind",
+                "values": [
+                  "Strike"
+                ]
+              },
               "type": "vector2",
               "default": {
                 "x": 1.4,
@@ -3100,6 +3149,12 @@ export const BOSS_CATALOG = {
               "name": "strikeOffset",
               "label": "Strike Offset",
               "tooltip": "Golpe: centro de la caja respecto al cuerpo, mirando a la derecha (la X se voltea).",
+              "showIf": {
+                "field": "kind",
+                "values": [
+                  "Strike"
+                ]
+              },
               "type": "vector2",
               "default": {
                 "x": 1.0,
@@ -3110,8 +3165,16 @@ export const BOSS_CATALOG = {
               "name": "damage",
               "label": "Damage",
               "tooltip": "Daño de esta suelta. 0 = el del ataque ('damage').",
-              "header": "Daño",
               "min": 0.0,
+              "showIf": {
+                "field": "kind",
+                "values": [
+                  "Projectile",
+                  "Fan",
+                  "Ring",
+                  "Strike"
+                ]
+              },
               "type": "float",
               "default": 0.0
             }

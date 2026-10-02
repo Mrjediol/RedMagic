@@ -50,33 +50,41 @@ namespace RedMagic.Bosses
     {
         public ReleaseShotKind kind = ReleaseShotKind.Projectile;
 
+        [Tooltip("Hacia dónde sale: a donde estaba el objetivo al empezar el ataque (se puede esquivar), " +
+                 "a donde está en el instante de esta suelta, o recto hacia delante.")]
+        [ShowIf("kind", "Projectile", "Fan", "Ring")]
         public ReleaseAim aim = ReleaseAim.Frozen;
 
         [Tooltip("Grados que se suman a la dirección (con 'Forward', el ángulo desde el frente: 90 = hacia arriba).")]
+        [ShowIf("kind", "Projectile", "Fan", "Ring")]
         public float angle;
 
-        [Tooltip("Cómo vuela cada proyectil de esta suelta. Sin arte = el placeholder (bola del color del ataque).")]
-        public ProjectileSpec projectile = new ProjectileSpec();
-
-        [Header("Abanico / anillo")]
         [Tooltip("Proyectiles del abanico o del anillo.")]
+        [ShowIf("kind", "Fan", "Ring")]
         [Min(1)] public int count = 5;
 
         [Tooltip("Abanico: apertura total en grados.")]
+        [ShowIf("kind", "Fan")]
         [Range(0f, 360f)] public float arcDegrees = 50f;
 
         [Tooltip("Los proyectiles nacen a esta distancia del punto de salida, en su dirección.")]
+        [ShowIf("kind", "Fan", "Ring")]
         [Min(0f)] public float spawnRadius;
 
-        [Header("Golpe")]
+        [Tooltip("Cómo vuela cada proyectil de esta suelta. Sin arte = el placeholder (bola del color del ataque).")]
+        [ShowIf("kind", "Projectile", "Fan", "Ring")]
+        public ProjectileSpec projectile = new ProjectileSpec();
+
         [Tooltip("Golpe: tamaño de la caja de daño.")]
+        [ShowIf("kind", "Strike")]
         public Vector2 strikeSize = new Vector2(1.4f, 1.2f);
 
         [Tooltip("Golpe: centro de la caja respecto al cuerpo, mirando a la derecha (la X se voltea).")]
+        [ShowIf("kind", "Strike")]
         public Vector2 strikeOffset = new Vector2(1f, 0f);
 
-        [Header("Daño")]
         [Tooltip("Daño de esta suelta. 0 = el del ataque ('damage').")]
+        [ShowIf("kind", "Projectile", "Fan", "Ring", "Strike")]
         [Min(0f)] public float damage;
     }
 

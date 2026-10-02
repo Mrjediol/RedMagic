@@ -240,11 +240,8 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "anyOf": [{ "required": ["attack"] }, { "required": ["builtIn"] }],
+            "required": ["attack"],
             "properties": {
-              "builtIn": { "type": "boolean", "default": false, "$comment": "EnemyDeckEntry.builtIn. True = this card is the enemy's OWN attack (its melee / shot / explosion from tuning) launched with 'gesture': the same attack again, with another gesture. No 'attack' then." },
-              "gesture": { "type": "string", "default": "", "$comment": "EnemyDeckEntry.gesture. Only with builtIn: the rig gesture (or Animator state) that telegraphs it. Empty = the normal attack animation." },
-              "weight": { "type": "number", "minimum": 0.01, "default": 1, "$comment": "EnemyDeckEntry.weight. Only with builtIn: weight in the draw (a catalog card's weight is its own asset's)." },
               "attack": {
                 "type": "string",
                 "minLength": 1,
@@ -282,7 +279,8 @@
               "moveDuration": { "type": "number", "minimum": 0.05, "default": 0.3, "$comment": "A ground HopBack lasts its jump instead (from hopHeight and gravity)." },
               "hopHeight": { "type": "number", "minimum": 0, "default": 1.2 },
               "gesture": { "type": "string", "default": "" },
-              "anticipation": { "type": "number", "minimum": 0, "default": 0.12, "$comment": "Seconds standing still with the gesture on before moving: the tell." }
+              "anticipation": { "type": "number", "minimum": 0, "default": 0.12, "$comment": "Seconds standing still with the gesture on before moving: the tell." },
+              "attack": { "type": "string", "minLength": 1, "$comment": "EnemyDefence.attack. A catalog attack launched WHILE it moves away: an id of the top-level attacks block (it need not be a card of tuning.attacks), or the Assets/… path of an existing BossAttack asset. Its gesture plays whole during the move (instead of the held pose of 'gesture'), with anticipation + the move's duration as its lead, and the attack leaves at its releases. Absent = it only moves." }
             }
           }
         },

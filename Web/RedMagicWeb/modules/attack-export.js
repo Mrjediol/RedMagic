@@ -9,7 +9,8 @@
 //    values that DIFFER from the type's default are written (or that were edited in the web), so
 //    re-importing does not undo what was tuned by hand in Unity on fields the web never touched.
 //    A ProjectileSpec is the exception: Unity rebuilds it whole, so once anything in it changes it
-//    is written in full.
+//    is written in full. A LIST of objects (a ReleaseAttack's shots) is always written whole, every
+//    field of every item: Unity grows the array with zeroed elements, not with the C# defaults.
 //  - art picked from the library -> `{ "art": "<id>" }`, and `artAssets.<id>` says which frames
 //    build that prefab. Folders are RELATIVE ("Art/<libraryId>"): the importer resolves them
 //    against the folder where the bundle's frames land.
@@ -58,11 +59,31 @@ export function buildAttacksExport(attackStates, catalog, entriesById, artOption
     return { art: artByKey.get(key).id };
   }
 
+  /** Every field of an object, defaults included (items of a list; a ProjectileSpec). */
+  function fullFields(fields, values, where) {
+    const out = {};
+    fields.forEach((f) => {
+      const v = values?.[f.name];
+      if (f.type === 'unity') return;
+      if (f.type === 'art') {
+        const ref = artRef(v, f.artKind, `${where} · ${f.artLabel || f.label}`);
+        if (ref) out[f.name] = ref;
+      } else if (f.type === 'object') out[f.name] = fullFields(f.fields, v || {}, where);
+      else if (f.type === 'objectList') out[f.name] = (v || []).map((item, i) => fullFields(f.fields, item, `${where} · ${f.label} ${i + 1}`));
+      else out[f.name] = clone(v === undefined ? f.default : v);
+    });
+    return out;
+  }
+
   function exportFields(fields, values, where, edited, prefix) {
     const out = {};
     fields.forEach((f) => {
       const v = values[f.name];
       if (f.type === 'unity') return;
+      if (f.type === 'objectList') {
+        out[f.name] = (v || []).map((item, i) => fullFields(f.fields, item, `${where} · suelta ${i + 1}`));
+        return;
+      }
       if (f.type === 'art') {
         const ref = artRef(v, f.artKind, `${where} · ${f.artLabel || f.label}`);
         if (ref) out[f.name] = ref;
@@ -191,6 +212,7 @@ export function adoptAttacksFromConfig(config, catalog) {
   /** `{art: id}` -> the library id the form's art pickers hold. */
   const unArt = (v) => {
     if (isArtRef(v)) return artAssets[v.art]?.libraryId || '';
+    if (Array.isArray(v)) return v.map(unArt);
     if (v && typeof v === 'object' && !Array.isArray(v)) {
       const out = {};
       Object.entries(v).forEach(([k, x]) => { out[k] = unArt(x); });

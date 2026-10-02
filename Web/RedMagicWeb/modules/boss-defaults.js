@@ -33,6 +33,8 @@ export function defaultsOf(fields = []) {
   const out = {};
   fields.forEach((f) => {
     if (f.type === 'object') out[f.name] = defaultsOf(f.fields);
+    // A list of objects (a ReleaseAttack's shots): `defaultCount` items, each with its fields' defaults.
+    else if (f.type === 'objectList') out[f.name] = Array.from({ length: f.defaultCount || 0 }, () => defaultsOf(f.fields));
     else if (f.type === 'art') out[f.name] = '';
     else if (f.type === 'unity') return;
     else out[f.name] = clone(f.default);
@@ -46,6 +48,9 @@ export function withDefaults(fields = [], values = {}) {
   fields.forEach((f) => {
     if (f.type === 'unity') return;
     if (f.type === 'object') out[f.name] = withDefaults(f.fields, values[f.name] || {});
+    else if (f.type === 'objectList') {
+      out[f.name] = Array.isArray(values[f.name]) ? values[f.name].map((item) => withDefaults(f.fields, item || {})) : defaultsOf([f])[f.name];
+    }
     else if (!(f.name in out)) out[f.name] = f.type === 'art' ? '' : clone(f.default);
   });
   return out;

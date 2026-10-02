@@ -21,7 +21,8 @@
     "attackDamage": 7,
     "attackCooldown": 1.8,
     "projectileTint": "#ffffffff",
-    "moveSoundInterval": 0.9
+    "moveSoundInterval": 0.9,
+    "builtInAttack": false
   },
   "effects": {
     "spore": {
@@ -80,6 +81,40 @@
     }
   },
   "attacks": [
+    {
+      "id": "SporeShot",
+      "type": "ReleaseAttack",
+      "common": {
+        "displayName": "Espora",
+        "telegraph": 0.4,
+        "recovery": 0.3,
+        "damage": 7,
+        "gesture": "Flick",
+        "cooldownInAttacks": 0,
+        "weight": 1,
+        "accent": "#ffffffff"
+      },
+      "shots": [
+        {
+          "kind": "Projectile",
+          "aim": "Frozen",
+          "effect": "spore",
+          "worldWidth": 0.55,
+          "projectile": {
+            "speed": 8,
+            "lifetime": 2.5,
+            "size": {
+              "x": 0.55,
+              "y": 0.55
+            }
+          }
+        }
+      ],
+      "deck": {
+        "minRange": 0,
+        "maxRange": 0
+      }
+    },
     {
       "id": "SporeFan",
       "type": "BulletHellAttack",
@@ -380,12 +415,6 @@
       }
     ]
   },
-  "builtIn": [
-    {
-      "gesture": "Flick",
-      "weight": 1
-    }
-  ],
   "defences": [
     {
       "trigger": "TargetNear",

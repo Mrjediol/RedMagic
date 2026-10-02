@@ -161,17 +161,17 @@ export function createDefaultEnemyConfig() {
 
     // Form-only state of the "Ataques" section (the deck of catalog attacks), translated by
     // buildExportObject into the top-level `attacks` / `artAssets` blocks + `tuning.attacks`:
-    //  - deck: attack cards (modules/attack-cards.js's shape) + `deck: { minRange, maxRange, targetHeight }`
+    //  - deck: attack cards (modules/attack-cards.js's shape) + `deck: { minRange, maxRange, targetHeight,
+    //    defenceOnly }` (defenceOnly = not in the draw: only a defensive move launches it)
     //  - attackArt: `${libraryId}:${artKind}` -> art options (size, collider…)
     //  - deckTouched: the deck was edited (or came with a saved config), so an EMPTY deck is still
     //    exported — that is what clears the attacks of an enemy already imported in Unity.
     deck: [],
-    // The enemy's OWN attack launched again with another gesture: [{ gesture, weight, minRange, maxRange, targetHeight }].
-    builtInVariants: [],
     attackArt: {},
     deckTouched: false,
     // Defensive moves (EnemyTuning.defences): [{ trigger, distance, healthFraction, chance, cooldown, move,
-    // moveDistance, moveDuration, hopHeight, gesture, anticipation }]. defencesTouched = edited (or came with a
+    // moveDistance, moveDuration, hopHeight, gesture, anticipation, attack }] (attack = the id of a deck card
+    // it launches while it moves away, or ''). defencesTouched = edited (or came with a
     // saved config), so an EMPTY list is still exported: that is what removes them in Unity.
     defences: [],
     defencesTouched: false,
@@ -181,7 +181,7 @@ export function createDefaultEnemyConfig() {
 /** A new defensive move with EnemyDefence's own defaults. */
 export function createDefence() {
   return { trigger: 'TargetNear', distance: 2.5, healthFraction: 0.35, chance: 1, cooldown: 3, move: 'DashAway',
-    moveDistance: 3, moveDuration: 0.3, hopHeight: 1.2, gesture: '', anticipation: 0.12 };
+    moveDistance: 3, moveDuration: 0.3, hopHeight: 1.2, gesture: '', anticipation: 0.12, attack: '' };
 }
 
 /** ProjectileSpec.facingAxis values, in schema order — the dropdown options of both creators. */

@@ -11,6 +11,7 @@
 //
 //   gesture()                 the gesture being edited (null = none open)
 //   lead() / setLead(s)       seconds of warning the preview launches it with (the attack's telegraph)
+//   leadNote()                (optional) why the warning cannot be typed here — an attack sets it — or null
 //   time()                    where the playhead is (s)
 //   playing() / togglePlay()  playback
 //   seek(t)                   playhead to t, paused (keeps a pose being edited)
@@ -185,6 +186,8 @@ export function createGestureTimeline(host) {
     lead.type = 'number'; lead.min = '0.05'; lead.step = '0.05'; lead.value = String(host.lead());
     lead.dataset.nodirty = '1';
     lead.onchange = () => { host.setLead(parseFloat(lead.value) > 0 ? parseFloat(lead.value) : 0.6); host.refresh(); };
+    const note = host.leadNote ? host.leadNote() : null;
+    if (note) { lead.disabled = true; leadWrap.title = note; }
     leadWrap.append(lead, ' s');
     bar.appendChild(leadWrap);
 

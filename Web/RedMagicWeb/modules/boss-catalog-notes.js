@@ -6,6 +6,7 @@
 // does not simply shows its C# name — nothing breaks, so a new archetype needs no edit here.
 
 export const ATTACK_NOTES = {
+  ReleaseAttack: { label: 'Disparo / golpe (por sueltas del gesto)', note: 'Lo que sale en cada suelta de su gesto: un proyectil, un abanico, un anillo, un golpe… o nada. El disparo simple es este ataque con una suelta.', group: 'Básicos' },
   MeleeStrikeAttack: { label: 'Golpe cuerpo a cuerpo', note: 'Caja de daño delante del jefe. Puede soltar un proyectil a la vez (puñetazo + onda).', group: 'Básicos' },
   ChargeDashAttack: { label: 'Embestida', note: 'Avisa con una flecha y cruza la arena en línea recta hacia el jugador.', group: 'Básicos' },
   ThrowProjectileAttack: { label: 'Coger y lanzar', note: 'Coge algo, lo sostiene y lo lanza en parábola a donde estabas. Marca la caída.', group: 'Básicos' },
@@ -28,6 +29,28 @@ export const ATTACK_NOTES = {
   LimbSlamAttack: { label: 'Mazazo', note: 'Los puños se estampan contra el suelo (a la vez o alternos), con ondas opcionales.' },
   LimbPincerAttack: { label: 'Tenaza', note: 'Dos puños a tus lados que se cierran en una franja baja: salta o sal.' },
   OrbiterDiveAttack: { label: 'Esquirlas en picado', note: 'Las piezas pequeñas forman un anillo y caen una a una sobre ti.' },
+};
+
+/**
+ * Spanish label of a field and of its enum values, by the field's path inside the attack's params
+ * (list indexes left out: 'shots.kind'). Cosmetic too: a path not listed shows the C# names.
+ */
+export const FIELD_NOTES = {
+  'shots.kind': { label: 'Qué sale', options: { Nothing: 'Nada (un amago)', Projectile: 'Un proyectil', Fan: 'Un abanico de proyectiles', Ring: 'Un anillo de proyectiles', Strike: 'Un golpe (caja de daño)' } },
+  'shots.aim': { label: 'Hacia dónde', options: { Frozen: 'A donde estaba el jugador al empezar (esquivable)', Live: 'A donde está el jugador al salir', Forward: 'Recto hacia delante' } },
+  'shots.angle': { label: 'Ángulo extra (°)' },
+  'shots.count': { label: 'Cuántos proyectiles' },
+  'shots.arcDegrees': { label: 'Apertura del abanico (°)' },
+  'shots.spawnRadius': { label: 'Nacen a (u) del punto' },
+  'shots.projectile': { label: 'Proyectil' },
+  'shots.projectile.prefab': { label: 'Arte' },
+  'shots.projectile.speed': { label: 'Velocidad (u/s)' },
+  'shots.projectile.lifetime': { label: 'Vida (s)' },
+  'shots.projectile.size': { label: 'Tamaño (u)' },
+  'shots.strikeSize': { label: 'Tamaño del golpe (u)' },
+  'shots.strikeOffset': { label: 'Centro del golpe (u, desde el cuerpo)' },
+  'shots.damage': { label: 'Daño (0 = el del ataque)' },
+  timeBetweenShots: { label: 'Segundos entre entradas sin suelta' },
 };
 
 /** What each art kind has to be, for the "qué arte necesita" line under every slot. */

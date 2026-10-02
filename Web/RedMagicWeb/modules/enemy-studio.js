@@ -111,6 +111,11 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     homes = order.map((key) => ({ node: nodes[key], parent: nodes[key].parentNode, next: nodes[key].nextSibling }));
     order.forEach((key) => slots[key].appendChild(nodes[key]));
     mounted = true;
+    // While the Studio is on screen the form's attacks hang from the composer's LIVE gestures, and
+    // the gesture card mirrors the cards of the attacks that use it.
+    enemy.setGestureSource(() => rig.getGestures());
+    enemy.setDeckMirror(() => rig.refreshInspector(), () => rig.refreshStage());
+    gestureSignature = signatureOf(rig.getGestures());
   }
 
   function unmount() {
@@ -120,7 +125,54 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     nodes.enemyForm.hidden = false;
     nodes.enemyPreview.hidden = false;
     mounted = false;
+    enemy.setGestureSource(null);
+    enemy.setDeckMirror(null);
   }
+
+  // ============================================================ gestures ⇄ attacks
+  //
+  // An attack is made with a gesture and launches something at each of its releases. The gestures
+  // are the composer's, the attacks the behaviour form's: this is where the two meet.
+
+  let gestureSignature = '';
+
+  /** What of the gestures the attacks depend on: names and how many times each releases, and where. */
+  function signatureOf(gestures) {
+    return gestures.map((g) => `${g.name}:${(g.releases || []).map((r) => `${r.step}@${r.at}`).join(',')}:${g.steps.map((s) => s.name).join(',')}`).join('|');
+  }
+
+  /** The body form is editing THIS body (so its attacks are this enemy's). */
+  const linked = (st = rig.getStatus()) => st.kind === 'enemy' && !!st.id && enemy.linkedId() === st.id;
+
+  /** Points the form at this body's record. `save` = save the body first if it has no record yet. */
+  async function ensureLinked(save) {
+    const st = rig.getStatus();
+    if (st.kind !== 'enemy') return false;
+    let id = st.id;
+    if (!id) {
+      if (!save) return false;
+      id = await rig.save();
+      if (!id) return false;
+    }
+    if (enemy.linkedId() !== id) await enemy.linkLibraryEntry(id, st.name);
+    return true;
+  }
+
+  rig.hooks.gestureAttacks = {
+    render(host, gestureName, rerender) {
+      const st = rig.getStatus();
+      if (st.kind !== 'enemy') return;   // a boss takes its attacks from 👑 Boss Creator
+      if (linked(st)) { enemy.renderGestureAttacks(host, gestureName, rerender); return; }
+      const box = el('div', 'rigFxBox');
+      box.appendChild(el('p', 'rigGroupTitle', '⚔ Ataques que usan este gesto'));
+      const go = el('button', 'small', st.id ? 'Ver sus ataques' : '💾 Guardar el enemigo para darle ataques');
+      go.title = 'Los ataques son del enemigo guardado en la biblioteca: cada uno se hace con un gesto y lanza algo en cada suelta.';
+      go.onclick = async () => { if (await ensureLinked(true)) { rerender(); render(); } };
+      box.appendChild(go);
+      host.appendChild(box);
+    },
+    shots: (gestureName) => (linked() ? enemy.gestureShots(gestureName) : null),
+  };
 
   // ============================================================ steps: locks and state
 
@@ -245,11 +297,21 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
 
   rig.hooks.beforeExport = () => flushBehaviour();
   rig.hooks.afterSave = () => flushBehaviour();
-  rig.hooks.onChange = () => { if (mounted) render(); };
+  rig.hooks.onChange = () => {
+    if (!mounted) return;
+    // A release added / moved / removed, a gesture renamed: the attacks' slots follow.
+    const signature = signatureOf(rig.getGestures());
+    if (signature !== gestureSignature) {
+      gestureSignature = signature;
+      if (linked()) enemy.gesturesChanged();
+    }
+    render();
+  };
 
   async function show() {
     mount();
     rig.onShow();
+    await ensureLinked(false);   // an enemy opened from the library: its attacks, beside its gestures
     render();
     if (active === 'behaviour') await enterBehaviour();
     else if (active === 'effects') await refreshEffects();
@@ -257,10 +319,10 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
 
   async function hide() {
     if (!mounted) return;
-    // Panels go back at once (the tab being shown needs them now); the form is saved meanwhile.
-    const saving = active === 'behaviour';
+    // Panels go back at once (the tab being shown needs them now); the form is saved meanwhile —
+    // whichever step is open: attacks are also edited from a gesture's card.
     unmount();
-    if (saving) await flushBehaviour(true);
+    await flushBehaviour(true);
   }
 
   /** Biblioteca ▸ "Editar en Enemy Studio" (a part-based enemy: open it) / a body template (a new enemy from it). */
@@ -270,6 +332,9 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     if (entry?.kind === 'rig-template') await rig.useTemplateRecord(id);
     else await rig.linkLibraryEntry(id);
     active = 'body';
+    await ensureLinked(false);
+    gestureSignature = signatureOf(rig.getGestures());
+    rig.refreshInspector();
     render();
   }
 

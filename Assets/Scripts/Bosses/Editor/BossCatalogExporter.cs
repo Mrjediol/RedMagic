@@ -228,6 +228,10 @@ namespace RedMagic.Bosses.EditorTools
             var range = field.GetCustomAttribute<RangeAttribute>();
             if (range != null) { o["min"] = Math.Round((double)range.min, 4); o["max"] = Math.Round((double)range.max, 4); }
 
+            var showIf = field.GetCustomAttribute<ShowIfAttribute>();
+            if (showIf != null)
+                o["showIf"] = new JObject { ["field"] = showIf.Field, ["values"] = JArray.FromObject(showIf.Values) };
+
             var slot = field.GetCustomAttribute<ArtSlotAttribute>();
 
             if (ft == typeof(float)) { o["type"] = "float"; o["default"] = Math.Round((double)(float)value, 4); }

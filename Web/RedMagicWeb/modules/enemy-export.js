@@ -67,31 +67,20 @@ export function buildExportObject(state, ctx) {
 export function buildEnemyExport(state, ctx = {}) {
   const doc = baseExport(state);
   const deck = state.deck || [];
-  const variants = state.builtInVariants || [];
-  const defenceNotes = applyDefences(doc, state, ctx);
-
-  // No deck = exactly the document this form always exported: the classic import is untouched.
-  if (deck.length === 0 && variants.length === 0 && !state.deckTouched) return { doc, art: [], problems: [], notes: defenceNotes };
-
   const ex = buildAttacksExport(deck, ctx.catalog || null, ctx.entriesById || new Map(),
     state.attackArt || {}, ctx.gestureNames ?? null);
+  const defenceNotes = applyDefences(doc, state, ctx, ex.idMap);
 
-  doc.tuning.attacks = [
-    ...variants.map((v) => ({
-      builtIn: true,
-      gesture: (v.gesture || '').trim(),
-      weight: v.weight > 0 ? v.weight : 1,
-      minRange: v.minRange ?? 0,
-      maxRange: v.maxRange ?? 0,
-      targetHeight: v.targetHeight || 'Any',
-    })),
-    ...deck.map((a) => ({
-      attack: ex.idMap.get(a.id),
-      minRange: a.deck?.minRange ?? 0,
-      maxRange: a.deck?.maxRange ?? 0,
-      targetHeight: a.deck?.targetHeight || 'Any',
-    })),
-  ];
+  // No deck = exactly the document this form always exported: the classic import is untouched.
+  if (deck.length === 0 && !state.deckTouched) return { doc, art: [], problems: [], notes: defenceNotes };
+
+  // A card marked "only from a defence" is an attack of the enemy but not a card of the draw.
+  doc.tuning.attacks = deck.filter((a) => !a.deck?.defenceOnly).map((a) => ({
+    attack: ex.idMap.get(a.id),
+    minRange: a.deck?.minRange ?? 0,
+    maxRange: a.deck?.maxRange ?? 0,
+    targetHeight: a.deck?.targetHeight || 'Any',
+  }));
   doc.tuning.builtInAttack = state.tuning.builtInAttack !== false;
   doc.tuning.builtInWeight = state.tuning.builtInWeight > 0 ? state.tuning.builtInWeight : 1;
 
@@ -99,13 +88,12 @@ export function buildEnemyExport(state, ctx = {}) {
   if (Object.keys(ex.artAssets).length) doc.artAssets = ex.artAssets;
 
   const notes = [...ex.notes, ...defenceNotes];
-  variants.forEach((v, i) => {
-    if (!(v.gesture || '').trim()) notes.push(`Variante ${i + 1} del ataque propio: sin gesto, sale igual que el ataque normal.`);
-    else if (ctx.gestureNames && !ctx.gestureNames.includes(v.gesture.trim()))
-      notes.push(`Variante ${i + 1} del ataque propio: el gesto "${v.gesture}" no existe en el cuerpo → sale con el ataque normal.`);
+  const launched = new Set((state.defences || []).map((d) => d.attack).filter(Boolean));
+  deck.forEach((a) => {
+    if (a.deck?.defenceOnly && !launched.has(a.id)) notes.push(`Ataque ${a.id}: está marcado "sólo desde una defensa" pero ninguna defensa lo lanza → no sale nunca.`);
   });
   if (state.tuning.selfDestruct && deck.length) notes.push('Kamikaze: su ataque es explotar, la baraja se ignora.');
-  if (!doc.tuning.builtInAttack && deck.length === 0) notes.push('Sin baraja, el ataque propio sale siempre (aunque esté desmarcado).');
+  if (!doc.tuning.builtInAttack && doc.tuning.attacks.length === 0) notes.push('Sin baraja, el ataque propio sale siempre (aunque esté desmarcado).');
 
   return { doc, art: ex.art, problems: ex.problems, notes };
 }
@@ -114,12 +102,14 @@ export function buildEnemyExport(state, ctx = {}) {
  * `tuning.defences`: written when there are any, or when the list was edited (an empty one removes
  * them in Unity). An enemy that never had any exports exactly the old document.
  */
-function applyDefences(doc, state, ctx) {
+function applyDefences(doc, state, ctx, idMap) {
   const list = state.defences || [];
   const notes = [];
   if (!list.length && !state.defencesTouched) return notes;
   const num = (v, fallback, min = 0) => (typeof v === 'number' && !Number.isNaN(v) ? Math.max(min, v) : fallback);
   doc.tuning.defences = list.map((d) => ({
+    // The attack it launches while it moves away: the exported id of one of this enemy's attacks.
+    ...(d.attack && idMap?.has(d.attack) ? { attack: idMap.get(d.attack) } : {}),
     trigger: d.trigger || 'TargetNear',
     distance: num(d.distance, 2.5),
     healthFraction: Math.min(1, num(d.healthFraction, 0.35)),
@@ -136,6 +126,7 @@ function applyDefences(doc, state, ctx) {
   list.forEach((d, i) => {
     const g = (d.gesture || '').trim();
     if (g && ctx.gestureNames && !ctx.gestureNames.includes(g)) notes.push(`Defensa ${i + 1}: el gesto "${g}" no existe en el cuerpo → se aparta sin gesto.`);
+    if (d.attack && !idMap?.has(d.attack)) notes.push(`Defensa ${i + 1}: el ataque "${d.attack}" ya no existe → sólo se aparta.`);
   });
   return notes;
 }

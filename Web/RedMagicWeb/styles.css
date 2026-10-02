@@ -279,6 +279,17 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .bcFrame.release{outline:2px solid var(--accent2);border-color:var(--accent2);}
 .bcFrame.release::after{content:'💥';position:absolute;right:1px;bottom:0;font-size:14px;}
 .bcDetails{margin:8px 0;}
+/* A list of objects in an attack card (a ReleaseAttack's shots): one slot per release of its gesture. */
+.bcWide{grid-column:1/-1;}
+.bcSlots{margin:4px 0 8px;gap:8px;}
+.bcSlot{border:1px solid var(--border);border-left:3px solid var(--danger);border-radius:6px;padding:6px 10px 2px;background:var(--well);}
+.bcSlotHead{display:flex;align-items:center;gap:8px;margin-bottom:2px;}
+.bcSlotTitle{flex:1;font-size:14px;font-weight:600;color:var(--text);}
+.bcSlotHead button{margin-top:0;padding:0 7px;}
+/* The attacks of a gesture, in its card (Enemy Studio). */
+.gaBox .gaCard{margin:6px 0;padding:8px 10px;}
+.gaCard.chosen{border-color:var(--accent2);}
+.gaCard .bcCardHead button.active{background:var(--accent);color:var(--on-accent);outline:none;}
 .bcDetails>summary{cursor:pointer;font-size:14px;color:var(--muted);margin-bottom:6px;}
 .bcSubCard{background:var(--well);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin:8px 0;}
 .bcH3{font-size:14px;color:var(--accent2);margin:0 0 8px;}

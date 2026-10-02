@@ -22,6 +22,11 @@
 //   projectile    the built-in shot: { effect: <key>, …ProjectileSpec overrides }
 //   attacks       the deck: [{ id, type, effect?, worldWidth?, common: {…}, params: {…}, deck: { minRange, maxRange } }]
 //                 (types and fields = Unity's attack catalog, boss-catalog.js)
+//                 type 'ReleaseAttack' = what leaves at each release of its gesture (common.gesture):
+//                 `shots: [{ kind: 'Projectile'|'Fan'|'Ring'|'Strike'|'Nothing', aim: 'Frozen'|'Live'|'Forward',
+//                 effect: <key>, worldWidth, projectile: {…ProjectileSpec}, count, arcDegrees, damage }]`, one per
+//                 release (fewer = the last one repeats). The plain "its own shot, with this gesture" is this
+//                 attack with one Projectile shot. `deck.defenceOnly` = not drawn: only a defence launches it.
 //   gestures      gestures of its own, as TIMELINES (any number of steps): [{ name, recover,
 //                 steps: [{ name, duration, ease: 'inout'|'out'|'in'|'linear', stretch, shake,
 //                           poses: [[slotId | 'Visual', [moveX, moveY], rotate]] }],
@@ -36,8 +41,8 @@
 //                 size (world units), anchor: 'muzzle'|'body'|'feet', facing: 'direction'|'anchor'|'world',
 //                 layer: 'front'|'behind', angle, followsPart }] }   (step = number of steps → the way back to rest)
 //                 A gesture with an effect has no placeholder flash: the effect IS the flash.
-//   builtIn       the enemy's own shot / melee launched with a gesture: [{ gesture, weight }]
-//   defences      EnemyDefence entries (enemy-defaults.js createDefence): how it gets out of the way
+//   defences      EnemyDefence entries (enemy-defaults.js createDefence): how it gets out of the way;
+//                 `attack: <attack id>` = it launches that attack while it moves (its gesture plays whole)
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -61,6 +66,8 @@ const { buildEnemyExport } = await mod('enemy-export.js');
 const { createDefaultEnemyConfig, createDefence } = await mod('enemy-defaults.js');
 const { BOSS_CATALOG } = await mod('boss-catalog.js');
 const { newAttack } = await mod('attack-cards.js');
+const { defaultsOf } = await mod('boss-defaults.js');
+const G = await mod('rig-gestures.js');
 const { populateSpriteZip, cropToDataURL } = await mod('export-manifest.js');
 const { framedLanes, laneFolder } = await mod('boss-export.js');
 const V = await mod('vfx-presets.js');
@@ -246,24 +253,37 @@ for (const a of brief.attacks || []) {
       Object.keys(v).forEach((sub) => { card.edited[`${k}.${sub}`] = true; });
     } else { card.params[k] = v; card.edited[k] = true; }
   }
-  if (a.effect) {
-    const id = effectId[a.effect];
-    if (!id) problems.push(`attack '${a.id}': no effect '${a.effect}'`);
-    else {
-      card.params.projectile.prefab = id;
-      cfg.attackArt[`${id}:projectile`] = { worldWidth: a.worldWidth ?? 1, colliderScale: 0.7, faceTravelDirection: true };
-    }
+  const artFor = (key, worldWidth) => {
+    const id = effectId[key];
+    if (!id) { problems.push(`attack '${a.id}': no effect '${key}'`); return ''; }
+    cfg.attackArt[`${id}:projectile`] = { worldWidth: worldWidth ?? 1, colliderScale: 0.7, faceTravelDirection: true };
+    return id;
+  };
+  if (a.effect && card.params.projectile) card.params.projectile.prefab = artFor(a.effect, a.worldWidth);
+
+  // What leaves at each release of its gesture: one entry per release.
+  const list = BOSS_CATALOG.attacks.find((t) => t.type === card.type)?.params.find((p) => p.type === 'objectList' && p.perRelease);
+  if (list) {
+    const gesture = (state.gestures || []).find((g) => g.name === card.common.gesture);
+    if (!gesture) problems.push(`attack '${a.id}': no gesture '${card.common.gesture}'`);
+    const releases = gesture ? G.effectiveReleases(gesture).length : 1;
+    const given = a.shots?.length ? a.shots : [{}];
+    if (given.length > releases) problems.push(`attack '${a.id}': ${given.length} shots, the gesture releases ${releases} time(s)`);
+    card.params[list.name] = Array.from({ length: releases }, (_, i) => {
+      const { effect, worldWidth, projectile, ...rest } = given[Math.min(i, given.length - 1)];
+      const shot = { ...defaultsOf(list.fields), ...rest };
+      Object.assign(shot.projectile, projectile || {});
+      if (effect) shot.projectile.prefab = artFor(effect, worldWidth);
+      return shot;
+    });
+    card.edited[list.name] = true;
   }
   card.deck = { minRange: 0, maxRange: 0, targetHeight: 'Any', ...(a.deck || {}) };
   cfg.deck.push(card);
 }
 cfg.deckTouched = true;
 
-// The enemy's own attack launched with a gesture (so its effects play instead of the placeholder flash).
-if (brief.builtIn) {
-  cfg.builtInVariants = [].concat(brief.builtIn).map((v) => ({ gesture: v.gesture, weight: v.weight ?? 1, minRange: v.minRange ?? 0, maxRange: v.maxRange ?? 0, targetHeight: 'Any' }));
-  cfg.tuning.builtInAttack = false;   // only through its variants
-}
+if (brief.builtIn) problems.push("brief.builtIn is gone: write it as an attack of type 'ReleaseAttack' with that gesture (see the header)");
 if (brief.defences) {
   cfg.defences = brief.defences.map((d) => ({ ...createDefence(), ...d }));
   cfg.defencesTouched = true;

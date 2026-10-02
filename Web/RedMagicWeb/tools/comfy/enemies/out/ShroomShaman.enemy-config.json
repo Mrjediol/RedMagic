@@ -97,9 +97,7 @@
     ],
     "attacks": [
       {
-        "builtIn": true,
-        "gesture": "Flick",
-        "weight": 1,
+        "attack": "SporeShot",
         "minRange": 0,
         "maxRange": 0,
         "targetHeight": "Any"
@@ -121,6 +119,62 @@
     "builtInWeight": 1
   },
   "attacks": {
+    "SporeShot": {
+      "type": "ReleaseAttack",
+      "displayName": "Espora",
+      "accent": "#ffffffff",
+      "telegraph": 0.4,
+      "recovery": 0.3,
+      "weight": 1,
+      "cooldownInAttacks": 0,
+      "damage": 7,
+      "gesture": "Flick",
+      "params": {
+        "shots": [
+          {
+            "kind": "Projectile",
+            "aim": "Frozen",
+            "angle": 0,
+            "count": 5,
+            "arcDegrees": 50,
+            "spawnRadius": 0,
+            "projectile": {
+              "prefab": {
+                "art": "ShroomSpore_Projectile"
+              },
+              "speed": 8,
+              "lifetime": 2.5,
+              "size": {
+                "x": 0.55,
+                "y": 0.55
+              },
+              "muzzleOffset": {
+                "x": 0.65,
+                "y": 0.1
+              },
+              "pierce": 0,
+              "homingTurnRate": 0,
+              "homingRange": 9,
+              "arcGravity": 0,
+              "impactRadius": 0,
+              "impactDamage": 0,
+              "faceDirection": false,
+              "facingAxis": "Right",
+              "aimMode": "Fixed"
+            },
+            "strikeSize": {
+              "x": 1.4,
+              "y": 1.2
+            },
+            "strikeOffset": {
+              "x": 1,
+              "y": 0
+            },
+            "damage": 0
+          }
+        ]
+      }
+    },
     "SporeFan": {
       "type": "BulletHellAttack",
       "displayName": "Abanico de esporas",

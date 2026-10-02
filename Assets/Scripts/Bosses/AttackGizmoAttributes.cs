@@ -65,6 +65,24 @@ namespace RedMagic.Bosses
     }
 
     /// <summary>
+    /// Este campo sólo cuenta cuando otro campo del mismo bloque (<see cref="Field"/>, un enum) vale
+    /// alguno de <see cref="Values"/>: "el arco sólo en un abanico". El catálogo de la web lo exporta
+    /// (<c>showIf</c>) y su editor esconde el campo en los demás casos; en Unity no cambia nada.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field)]
+    public class ShowIfAttribute : Attribute
+    {
+        public readonly string Field;
+        public readonly string[] Values;
+
+        public ShowIfAttribute(string field, params string[] values)
+        {
+            Field = field;
+            Values = values ?? Array.Empty<string>();
+        }
+    }
+
+    /// <summary>
     /// Registro de las áreas de daño que los ataques acaban de usar, para verlas en Play
     /// (<see cref="BossController"/> ▸ "Ver hitboxes en Play"). Sólo en el editor; en un build no
     /// guarda nada.

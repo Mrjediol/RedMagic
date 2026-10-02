@@ -19,6 +19,12 @@
 //  - the selected release (a red target) and effect (a cross) are dragged on the canvas, or placed
 //    with "⌖ Colocar".
 //
+// THE TEST STAGE: when an attack uses the open gesture (`hooks.gestureAttacks`, set by Enemy Studio —
+// the attacks themselves belong to the behaviour form), "▶ Probar" also fires it: at each release
+// what that attack launches there leaves from the release's point towards a draggable target 🎯 —
+// a projectile, a fan, a ring, a strike box. Position, instant and direction are the game's; the
+// flight is a plain re-implementation (speed, lifetime, gravity), enough to read the attack.
+//
 // "Nuevo desde plantilla" starts the document from a body shape (rig-templates.js): its slots show
 // up as empty parts to drop art on (parts list row, canvas placeholder, or a bulk drop by file name).
 //
@@ -70,7 +76,8 @@ const el = (tag, cls, text) => {
 
 export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvasWrap, timelineHost, statusEl, inspector, statesHost, linksHost, exportHost }) {
   // Set by whoever embeds the composer (Enemy Studio): beforeExport / afterSave(id) / onChange.
-  const hooks = { beforeExport: null, afterSave: null, onChange: null };
+  // gestureAttacks: { render(host, gestureName, rerender), shots(gestureName) } — the attacks launched with a gesture.
+  const hooks = { beforeExport: null, afterSave: null, onChange: null, gestureAttacks: null };
   let userTemplates = [];        // library records of kind 'rig-template', as templates
   let state = createDefaultRigState();
   let selectedUid = null;
@@ -98,22 +105,37 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   const POSE_TOOLS = ['move', 'rotate', 'scale'];
 
   function openGesture() { return state.gestures?.[gestureIndex] || null; }
-  function lead() { return head.lead ?? previewTelegraph; }
+  /** The attack the test stage fires with the open gesture (hooks.gestureAttacks), or null. */
+  function stageAttack() {
+    const gesture = openGesture();
+    return gesture && hooks.gestureAttacks ? hooks.gestureAttacks.shots(gesture.name) : null;
+  }
+
+  // Seconds of warning the open gesture plays with: an idle preview's own, else the telegraph of the
+  // attack that uses it (that IS its warning in the game), else the number typed in the dock.
+  function lead() { return head.lead ?? stageAttack()?.telegraph ?? previewTelegraph; }
+
+  // The test stage: what is flying, and the target the attack aims at (Visual space).
+  let shots = [];
+  let stageTarget = null;        // { x, y }; null = not placed yet (defaultTarget)
+  const stage = { fired: new Set(), frozen: null };   // releases already fired this play; the target when it began
 
   // The timeline editor of the open gesture (the dock under the canvas + the selected thing's fields).
   const timeline = createGestureTimeline({
     gesture: openGesture,
     lead,
     setLead: (v) => { previewTelegraph = v; },
+    leadNote: () => { const a = stageAttack(); return a && head.lead === null ? `Lo pone el ataque "${a.id}" (su aviso / telegraph): cámbialo en su tarjeta.` : null; },
     time: () => head.t,
     playing: () => head.playing,
     togglePlay,
-    seek: (t) => { head.playing = false; head.t = Math.max(0, t); timeline.updatePlayhead(); requestRender(); },
+    seek: (t) => { head.playing = false; head.t = Math.max(0, t); shots = []; timeline.updatePlayhead(); requestRender(); },
     scrub: (t) => {
       const wasPosing = !!posing;
       if (wasPosing) stopPosing(true);
       head.playing = false;
       head.t = Math.max(0, t);
+      shots = [];
       if (wasPosing) renderInspector(); else timeline.updatePlayhead();
       requestRender();
     },
@@ -199,8 +221,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       gestureMoment: layer ? layer.moment : null,
       stage: preview.stage,
       ghostRest: !!posing,
-      fx: fxOverlay(anim),
+      fx: [...fxOverlay(anim), ...shotSprites()],
       marks: releaseMarks(anim),
+      shapes: stageShapes(),
       requestRender,
     });
   }
@@ -315,6 +338,111 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   const r3 = (v) => Math.round(v * 1000) / 1000;
 
+  // ============================================================ the test stage (the gesture's attack, fired)
+
+  /** World units → Visual units: the body is drawn at 1, in the game at `rootScale`. */
+  const stageScale = () => 1 / (state.rootScale > 0 ? state.rootScale : 1);
+
+  /** Where the target starts: beside the body, at its mid height, a body and a half away. */
+  function targetPoint() {
+    if (stageTarget) return stageTarget;
+    const b = view.bounds(state);
+    if (!b) return { x: 4, y: 0 };
+    return { x: b.maxX + (b.maxX - b.minX) * 1.5, y: (b.minY + b.maxY) / 2 };
+  }
+
+  /** A fresh play: nothing in the air, nothing fired; the releases behind the playhead do not fire again. */
+  function armStage(gesture) {
+    shots = [];
+    stage.frozen = { ...targetPoint() };
+    stage.fired = new Set();
+    G.timeline(gesture, lead()).releases.forEach((r, n) => { if (r.time < head.t - 1e-6) stage.fired.add(n); });
+  }
+
+  /** While it plays: each release the playhead has reached fires what the attack launches there. */
+  function fireReleases(gesture) {
+    const attack = stageAttack();
+    if (!attack?.shots) return;
+    G.timeline(gesture, lead()).releases.forEach((r, n) => {
+      if (stage.fired.has(n) || head.t < r.time) return;
+      stage.fired.add(n);
+      const shot = attack.shots[n];
+      if (shot && shot.kind !== 'Nothing') fireShot(shot, attack, r.release, previewPoses(layerAt(gesture, r.time)));
+    });
+  }
+
+  /** ReleaseAttack.Fire, in Visual space with the body facing right. */
+  function fireShot(shot, attack, release, anim) {
+    const k = stageScale();
+    const color = attack.accent || '#8ce666ff';
+
+    if (shot.kind === 'Strike') {
+      shots.push({ box: true, x: (shot.strikeOffset?.x || 0) * k, y: (shot.strikeOffset?.y || 0) * k,
+        w: (shot.strikeSize?.x || 1) * k, h: (shot.strikeSize?.y || 1) * k, age: 0, life: 0.25, color });
+      return;
+    }
+
+    const origin = M.apply(releaseMatrix(release, anim), release.offset);
+    const aimAt = shot.aim === 'Live' ? targetPoint() : stage.frozen || targetPoint();
+    const dx = aimAt.x - origin.x, dy = aimAt.y - origin.y;
+    const base = shot.aim === 'Forward' ? (shot.angle || 0)
+      : (Math.atan2(dy, dx) * 180) / Math.PI + (shot.angle || 0) * (dx >= 0 ? 1 : -1);
+
+    const count = shot.kind === 'Projectile' ? 1 : Math.max(1, Math.round(shot.count || 1));
+    const ring = shot.kind === 'Ring';
+    const arc = ring ? 360 : shot.arcDegrees || 0;
+    const step = ring ? 360 / count : count > 1 ? arc / (count - 1) : 0;
+    const start = ring || count === 1 ? base : base - arc / 2;
+
+    const spec = shot.projectile || {};
+    const entry = fxEntries.get(spec.prefab);
+    const frames = entry ? FX.fxFrames(entry, true) : null;
+    const faces = spec.faceDirection || (attack.artOptions?.[`${spec.prefab}:projectile`]?.faceTravelDirection ?? true);
+    for (let i = 0; i < count; i++) {
+      const a = ((start + step * i) * Math.PI) / 180;
+      const dir = { x: Math.cos(a), y: Math.sin(a) };
+      shots.push({
+        x: origin.x + dir.x * (shot.spawnRadius || 0) * k, y: origin.y + dir.y * (shot.spawnRadius || 0) * k,
+        vx: dir.x * (spec.speed || 12) * k, vy: dir.y * (spec.speed || 12) * k, gravity: (spec.arcGravity || 0) * k,
+        age: 0, life: spec.lifetime || 2.5, color, faces,
+        w: (spec.size?.x || 0.35) * k, h: (spec.size?.y || 0.35) * k,
+        entry: frames ? entry : null, frames,
+      });
+    }
+  }
+
+  function tickShots(dt) {
+    shots.forEach((s) => {
+      s.age += dt;
+      if (s.box) return;
+      s.vy -= s.gravity * dt;
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+    });
+    shots = shots.filter((s) => s.age < s.life);
+  }
+
+  /** The projectiles that have library art, as frames of their sheet (the canvas draws them like effects). */
+  function shotSprites() {
+    return shots.filter((s) => s.entry).map((s) => {
+      const box = s.frames.boxes[Math.floor(s.age * s.frames.fps) % s.frames.boxes.length];
+      const k = s.w / box.w;   // with art, the projectile's WIDTH is what its size sets (FxArtSize.FitWidth)
+      const angle = s.faces ? (Math.atan2(s.vy, s.vx) * 180) / Math.PI : 0;
+      return { sheet: s.entry.sprite.sourceDataURL, box, matrix: M.trs({ x: s.x, y: s.y }, angle, { x: k, y: -k }) };
+    });
+  }
+
+  /** The rest of the stage: placeholder projectiles, strike boxes, and the target while there is an attack to aim. */
+  function stageShapes() {
+    const out = [];
+    shots.forEach((s) => {
+      if (s.box) out.push({ type: 'box', x: s.x, y: s.y, w: s.w, h: s.h, color: s.color, alpha: 1 - s.age / s.life });
+      else if (!s.entry) out.push({ type: 'dot', x: s.x, y: s.y, w: s.w, h: s.h, color: s.color });
+    });
+    if (stageAttack()?.shots) out.push({ type: 'target', ...targetPoint() });
+    return out;
+  }
+
   /** "⌖ Colocar": the clicked point becomes the offset of the effect / release on its anchor. */
   function placeAt(pt) {
     const { kind, index } = placing;
@@ -380,6 +508,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     if (head.playing) {
       const gesture = openGesture();
       head.t += dt;
+      if (gesture) fireReleases(gesture);
       if (!gesture || head.t >= G.gestureDuration(gesture, lead())) {   // done: the body back at rest, the playhead at the start
         const borrowed = head.lead !== null;
         stopHead();
@@ -387,8 +516,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       }
       timeline.updatePlayhead();
     }
+    tickShots(dt);   // what was fired keeps flying after the gesture is over
     draw();
-    if (preview.playing || preview.hurt >= 0 || head.playing || Math.abs(preview.lean) > 0.01) requestAnimationFrame(tick);
+    if (preview.playing || preview.hurt >= 0 || head.playing || shots.length || Math.abs(preview.lean) > 0.01) requestAnimationFrame(tick);
     else { preview.running = false; preview.last = 0; preview.lean = 0; draw(); }
   }
 
@@ -558,6 +688,11 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     if (e.button !== 0) return;
     const pt = view.screenToVisual(e.clientX, e.clientY);
     if (placing) { placeAt(pt); return; }
+    // The test stage's target: dragging it moves where the attack aims.
+    if (stageAttack()?.shots) {
+      const target = targetPoint();
+      if (Math.hypot(pt.x - target.x, pt.y - target.y) * view.zoom < 16) { drag = { kind: 'target' }; return; }
+    }
     // The selected release (its target) or effect (its cross): dragging it moves it on its anchor.
     const handle = canvasHandle(currentAnim());
     if (handle && Math.hypot(pt.x - handle.point.x, pt.y - handle.point.y) * view.zoom < 14) {
@@ -639,7 +774,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     if (!drag) return;
     const pt = view.screenToVisual(e.clientX, e.clientY);
     const p = drag.part;
-    if (drag.kind === 'handle') {
+    if (drag.kind === 'target') {
+      stageTarget = { x: pt.x, y: pt.y };
+    } else if (drag.kind === 'handle') {
       drag.item.offset = M.apply(drag.inv, pt);
     } else if (drag.kind === 'pose-move') {
       const d = M.applyVector(drag.inv, { x: pt.x - drag.start.x, y: pt.y - drag.start.y });
@@ -673,6 +810,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   window.addEventListener('mouseup', () => {
     if (!drag) return;
+    if (drag.kind === 'target') { drag = null; requestRender(); return; }   // where the test aims is not part of the document
     if (drag.pose) G.roundPose(drag.pose);
     if (drag.kind === 'handle') drag.item.offset = { x: r3(drag.item.offset.x), y: r3(drag.item.offset.y) };
     drag = null;
@@ -1355,6 +1493,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const wasPosing = !!posing;
     if (wasPosing) stopPosing(true);
     if (head.t >= G.gestureDuration(gesture, lead()) - 1e-3) head.t = 0;
+    armStage(gesture);
     head.playing = true;
     if (wasPosing) renderInspector(); else timeline.updatePlayhead();
     startTicking();
@@ -1367,6 +1506,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     else if (posing) stopPosing(true);
     head.t = 0;
     head.lead = withLead;
+    armStage(state.gestures[index]);
     head.playing = true;
     renderInspector();
     startTicking();
@@ -1516,6 +1656,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
     // What is selected on the timeline (under the canvas): a step and its pose, a release, an effect.
     timeline.renderFields(card);
+    // The attacks launched with this gesture, next to it: what leaves at each release (Enemy Studio).
+    if (hooks.gestureAttacks) hooks.gestureAttacks.render(card, gesture.name, () => { renderInspector(); requestRender(); });
     renderGestureSprites(card, gesture);
 
     card.appendChild(F.boolField({ label: '💤 Gesto de reposo (lo hace solo de vez en cuando)', value: state.idle.gestures.includes(gesture.name),
@@ -1822,6 +1964,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     gestureIndex = -1;
     posing = null;
     stopHead();
+    shots = [];
+    stageTarget = null;
     placing = null;
     timeline.reset();
   }
@@ -1968,6 +2112,11 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   return {
     linkLibraryEntry, refreshLibraries, hooks, getStatus, useTemplateRecord, addFxToOpenGesture,
     save: saveToLibrary,
+    // The live gestures (timelines) — what the behaviour form's attacks hang their per-release slots from.
+    getGestures: () => state.gestures || [],
+    refreshInspector: () => { renderInspector(); requestRender(); },
+    // An attack's numbers changed (its telegraph is the open gesture's warning): the track and the canvas, not the panels.
+    refreshStage: () => { renderTimeline(); requestRender(); },
     onShow: () => { refreshLibraries(); requestRender(); },
   };
 }

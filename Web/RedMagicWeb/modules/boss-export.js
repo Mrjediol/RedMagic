@@ -194,7 +194,7 @@ export function buildBossExport(state, catalog, entriesById) {
     const out = {};
     fields.forEach((f) => {
       const v = values[f.name];
-      if (f.type === 'unity') return;
+      if (f.type === 'unity' || f.type === 'objectList') return;   // lists of objects: only the deck cards edit them (attack-cards.js)
       if (f.type === 'art') {
         const ref = artRef(v, f.artKind, `${where} · ${f.artLabel || f.label}`);
         if (ref) out[f.name] = ref;

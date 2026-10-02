@@ -12,6 +12,7 @@
 //   GET  /ping                         → { project, unity, bridge, playing }
 //   GET  /enemy?prefab=                → { name, kind, prefab, revision, rigConfig, enemyConfig, sprites, sounds, artLibrary, warnings }
 //   GET  /file?path=Assets/…           → raw bytes (png / wav / ogg / mp3 of the project)
+//   GET  /sounds                       → { clips: [asset paths] } — every audio clip of the project
 //   POST /gestures?prefab=&revision=[&force=1]   body = the partial .zip (rig-export.js ▸ buildGesturesBundle)
 //                                      → { ok, summary, errors, warnings, revision } · 409 { reason, error, revision }
 //
@@ -71,6 +72,9 @@ export const ping = () => json('/ping');
 
 /** The enemy as it is SAVED in Unity. */
 export const fetchEnemy = (prefab = bridge.prefab) => json('/enemy', { prefab });
+
+/** The project's audio clips (asset paths): what a gesture's sound can be. */
+export const fetchSounds = async () => (await json('/sounds')).clips || [];
 
 /** A project file (png / wav / ogg / mp3) as a Blob. */
 export async function fetchFile(path) {

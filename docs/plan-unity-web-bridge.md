@@ -22,6 +22,12 @@ Pending: the user's test pass (`docs/plan-gesture-attack-editor-tests.md ▸ E`)
   deleted the frames of every art the bundle did not bring (invisible projectiles) — now merged, never pruned.
   Idle gestures never played on an enemy that sleeps until it detects — they now play while it sleeps
   (when its body does not fold). Idea noted by the user: *transition* gestures between attacks (not built).
+- Second round (2026-10-03, user feedback): the gesture's sound is **editable** in the web (a 🔊 lane: clips from
+  `GET /sounds`, volume, pitch, its own instant — `GestureSoundMoment.At`); the timeline gained zoom, frame
+  keys, duplicate (Ctrl+D) and split (Ctrl+B); the selection's fields moved to a panel in the left column; a
+  gesture no attack uses shows no ghost release; **transition gestures** (`ProceduralRig.transition`) built.
+  Bridge bug fixed: after a domain reload the listener hopped to the next port and the open tab got "Unity no
+  responde" — it now resumes on the same port.
 - Known limits: clearing an art slot in the web does not clear it in Unity (an absent key keeps the value);
   a card deleted in the web leaves its asset in the project, out of the deck.
 

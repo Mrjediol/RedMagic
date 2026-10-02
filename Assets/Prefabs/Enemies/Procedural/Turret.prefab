@@ -468,6 +468,10 @@ MonoBehaviour:
     interval: 4
     chance: 0.6
     windup: 0.5
+  transition:
+    gestures: []
+    chance: 0.5
+    windup: 0.3
   aimPart: {fileID: 3290079735764205417}
   aimArtAngle: 0
   aimMaxAngle: 22

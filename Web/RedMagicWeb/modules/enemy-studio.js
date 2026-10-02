@@ -35,7 +35,7 @@
 
 import { listEntries, getEnemy, saveEnemy, updateEnemy } from './enemy-library.js';
 import { kindOf } from './entry-kinds.js';
-import { bridge, fetchEnemy, fetchFile, fetchDataURL, saveGestures, BridgeError } from './unity-bridge.js';
+import { bridge, fetchEnemy, fetchFile, fetchDataURL, fetchSounds, saveGestures, BridgeError } from './unity-bridge.js';
 import { readRigDocument } from './rig-export.js';
 import { decodeAudio, playBuffer } from './vfx-stage.js';
 
@@ -117,6 +117,10 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
   toStudio.onclick = () => openTab('studio');
   pickRow.appendChild(toStudio);
   focusEl.appendChild(pickRow);
+  const focusSelection = el('div');
+  focusEl.appendChild(focusSelection);
+  const fullSelection = el('div');
+  stepsEl.appendChild(fullSelection);
   const focusStates = el('div');
   const focusExport = el('div');
   const focusPreview = el('div');
@@ -146,6 +150,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
   /** The hosts that change column with the mode: state sprites, export, the form's validation. */
   function placeHosts() {
     const focus = mode === 'focus';
+    (focus ? focusSelection : fullSelection).appendChild(rig.selectionPanel);
     (focus ? focusStates : slots.rigStates).appendChild(nodes.rigStates);
     (focus ? focusExport : slots.rigExport).appendChild(nodes.rigExport);
     if (mounted) (focus ? focusPreview : slots.enemyPreview).appendChild(nodes.enemyPreview);
@@ -254,7 +259,8 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     result: null,      // { ok, summary, warnings[], errors[] } | { error }
     conflict: null,    // { message } — "Cambió en Unity": reload or overwrite
     notes: [],         // what the readers had to say when it was opened
-    sounds: new Map(), // gesture name -> { moment, volume, pitchMin, pitchMax, buffers[] }
+    clips: null,       // the project's audio clips (asset paths): what a gesture's sound can be
+    buffers: new Map(),// clip path -> Promise<AudioBuffer | null>
   };
 
   /** The enemy on screen is the one Unity sent. */
@@ -297,7 +303,10 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
       if (data.kind === 'enemy') await enemy.linkLibraryEntry(record.id, data.name);
 
       Object.assign(unity, { id: record.id, prefab: data.prefab, name: data.name, kind: data.kind, revision: data.revision, notes });
-      loadUnitySounds(data.sounds || []);
+      // Each gesture's own sound, as the prefab has it (its clips, volume, pitch and instant); and what it can be changed to.
+      rig.applyUnitySounds(data.sounds || []);
+      unity.clips = await fetchSounds().catch(() => null);
+      (data.sounds || []).forEach((s) => (s.clips || []).forEach(clipBuffer));
       gestureSignature = signatureOf(rig.getGestures());
       await rig.save();   // the library copy (thumbnail included) is now what Unity has
       await refreshPicker();
@@ -341,27 +350,22 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     }
   }
 
-  /** The gestures' own sounds (assigned and graded in Unity): fetched once, played by the test stage. */
-  function loadUnitySounds(list) {
-    unity.sounds = new Map();
-    list.forEach((s) => {
-      const sound = { moment: s.moment || 'release', volume: s.volume ?? 1, pitchMin: s.pitchMin ?? 1, pitchMax: s.pitchMax ?? 1, buffers: [], clips: s.clips || [s.clip] };
-      unity.sounds.set(s.gesture, sound);
-      sound.clips.filter(Boolean).forEach(async (clip) => {
-        try {
-          const buffer = await decodeAudio(await (await fetchFile(clip)).arrayBuffer());
-          if (buffer) sound.buffers.push(buffer);
-        } catch { /* a clip the browser cannot decode: that gesture stays silent here */ }
-      });
-    });
+  /** A project clip, fetched and decoded once (null = the browser cannot play it: that gesture stays silent here). */
+  function clipBuffer(path) {
+    if (!unity.buffers.has(path)) {
+      unity.buffers.set(path, fetchFile(path).then((blob) => blob.arrayBuffer()).then(decodeAudio).catch(() => null));
+    }
+    return unity.buffers.get(path);
   }
 
-  rig.hooks.gestureSound = (gestureName, moment) => {
-    const sound = onUnityEnemy() ? unity.sounds.get(gestureName) : null;
-    if (!sound || sound.moment !== moment || !sound.buffers.length) return;
-    const buffer = sound.buffers[Math.floor(Math.random() * sound.buffers.length)];
-    playBuffer(buffer, { gain: sound.volume, rate: sound.pitchMin + Math.random() * (sound.pitchMax - sound.pitchMin) });
+  // The gestures' sounds are files of the project: they can be heard and changed only with Unity on the other end.
+  rig.hooks.soundClips = () => (onUnityEnemy() ? unity.clips : null);
+  rig.hooks.playClip = (path, o) => {
+    if (!bridge.active || !path) return;
+    clipBuffer(path).then((buffer) => { if (buffer) playBuffer(buffer, o); });
   };
+
+  const soundCount = () => rig.getGestures().filter((g) => g.sound?.clips?.length).length;
 
   /** Above the save / export buttons of the focused tab: the banner, "Guardar en Unity", Unity's answer. */
   rig.hooks.focusExtras = (host) => {
@@ -381,12 +385,12 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     box.appendChild(el('p', 'unityBanner', `🔌 Unity · ${unity.name}`));
     const st = rig.getStatus();
     box.appendChild(el('p', 'hint', `${unity.prefab}. ${st.unityBody ? 'El cuerpo se ha leído de Unity (sólo para verlo y posarlo).' : 'El cuerpo es el de tu biblioteca; los gestos'
-      + (unity.kind === 'enemy' ? ' y los ataques' : '') + ' son los del prefab.'}${unity.sounds.size ? ` Suenan ${unity.sounds.size} gesto(s) al probarlos.` : ''}`));
+      + (unity.kind === 'enemy' ? ' y los ataques' : '') + ' son los del prefab.'}${soundCount() ? ` ${soundCount()} gesto(s) con sonido: suena al probarlos, y se edita en su pista 🔊 de la línea de tiempo.` : ''}`));
 
     const save = el('button', 'primary', unity.busy || '💾 Guardar en Unity');
     save.style.width = '100%';
     save.disabled = !!unity.busy;
-    save.title = 'Escribe en el prefab sus gestos (con efectos y sprites por estado)' + (unity.kind === 'enemy' ? ', sus ataques y sus defensas' : '') + '. No toca el cuerpo ni lo demás afinado en el Inspector.';
+    save.title = 'Escribe en el prefab sus gestos (con efectos, sonido y sprites por estado)' + (unity.kind === 'enemy' ? ', sus ataques y sus defensas' : '') + '. No toca el cuerpo ni lo demás afinado en el Inspector.';
     save.onclick = () => saveToUnity(false);
     const reload = el('button', 'small', '↻ Recargar desde Unity');
     reload.disabled = !!unity.busy;

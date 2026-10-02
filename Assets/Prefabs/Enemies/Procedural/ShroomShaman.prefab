@@ -732,7 +732,10 @@ MonoBehaviour:
     interval: 4
     chance: 0.6
     windup: 0.5
-    whileAlert: 1
+  transition:
+    gestures: []
+    chance: 0.5
+    windup: 0.3
   aimPart: {fileID: 6900074087791025692}
   aimArtAngle: 72.1
   aimMaxAngle: 70
@@ -840,7 +843,9 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
-    soundMoment: 1
+    soundMoment: 2
+    soundStep: 0
+    soundAt: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -928,7 +933,9 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
-    soundMoment: 1
+    soundMoment: 2
+    soundStep: 1
+    soundAt: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1012,7 +1019,9 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
-    soundMoment: 1
+    soundMoment: 2
+    soundStep: 1
+    soundAt: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1071,7 +1080,9 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
-    soundMoment: 1
+    soundMoment: 2
+    soundStep: 0
+    soundAt: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1196,7 +1207,9 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
-    soundMoment: 1
+    soundMoment: 2
+    soundStep: 1
+    soundAt: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1

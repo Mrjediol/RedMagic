@@ -247,6 +247,11 @@ export function buildRigExport(state, ctx = {}) {
       releases: (g.releases || []).map((r) => releaseOut(g, r)),
       recover: r5(Math.max(0.01, g.recover)),
       fx: (g.fx || []).map((f) => fxOut(g, f)).filter(Boolean),
+      // Its own sound: only when the document knows it (read from Unity, or set here). null = it has none.
+      ...(g.sound === undefined ? {} : { sound: g.sound && g.sound.clips.length ? {
+        clips: [...g.sound.clips], volume: r5(g.sound.volume ?? 1), pitchMin: r5(g.sound.pitchMin ?? 1), pitchMax: r5(Math.max(g.sound.pitchMin ?? 1, g.sound.pitchMax ?? 1)),
+        step: Math.min(g.steps.length - 1, Math.max(0, Math.round(g.sound.step || 0))), at: r5(Math.min(1, Math.max(0, g.sound.at || 0))),
+      } : null }),
     }));
     if (Object.keys(artAssets).length) doc.artAssets = artAssets;
 
@@ -257,6 +262,13 @@ export function buildRigExport(state, ctx = {}) {
       interval: r5(Math.max(0.2, idle.interval || 4)),
       chance: r5(Math.min(1, Math.max(0, idle.chance ?? 0.6))),
       windup: r5(Math.max(0.05, idle.windup || 0.5)),
+    };
+    // …and so do the transition ones (between attacks).
+    const transition = state.transition || {};
+    doc.transitionGestures = {
+      gestures: (transition.gestures || []).filter((name) => gestures.some((g) => g.name === name)),
+      chance: r5(Math.min(1, Math.max(0, transition.chance ?? 0.5))),
+      windup: r5(Math.max(0.05, transition.windup || 0.3)),
     };
     if (doc.gestures.length) notes.push(`Gestos (${doc.gestures.map((g) => g.name).join(', ')}): al reimportar sustituyen a los del prefab.`);
     if (rig.moveGesture && !doc.gestures.some((g) => g.name === rig.moveGesture))
@@ -393,7 +405,11 @@ export function readRigGestures(doc, state, ctx = {}) {
     gestures: (doc.idleGestures.gestures || []).filter((n) => names.has(n)),
     interval: doc.idleGestures.interval ?? 4, chance: doc.idleGestures.chance ?? 0.6, windup: doc.idleGestures.windup ?? 0.5,
   } : null;
-  return { gestures, idle, notes };
+  const transition = doc.transitionGestures ? {
+    gestures: (doc.transitionGestures.gestures || []).filter((n) => names.has(n)),
+    chance: doc.transitionGestures.chance ?? 0.5, windup: doc.transitionGestures.windup ?? 0.3,
+  } : null;
+  return { gestures, idle, transition, notes };
 }
 
 // ============================================================ rig-config → document (the whole body)
@@ -624,6 +640,7 @@ export async function readRigDocument(doc, { sprites = {}, fetchDataURL, entries
   const read = readRigGestures(doc, state, { entriesById, artLibrary, muzzlePath: rig.muzzle || null });
   state.gestures = read.gestures;
   if (read.idle) state.idle = read.idle;
+  if (read.transition) state.transition = read.transition;
   notes.push(...read.notes);
   return { state, notes };
 }
@@ -644,7 +661,7 @@ export function buildGesturesExport(state, ctx = {}) {
   const doc = { partial: true, kind: full.doc.kind, name: full.doc.name, pixelsPerUnit: full.doc.pixelsPerUnit };
   doc.sprites = Object.fromEntries(Object.entries(full.doc.sprites).filter(([path]) => used.has(path)));
   doc.spriteSwaps = swaps;
-  ['gestures', 'idleGestures', 'artAssets'].forEach((k) => { if (full.doc[k] !== undefined) doc[k] = full.doc[k]; });
+  ['gestures', 'idleGestures', 'transitionGestures', 'artAssets'].forEach((k) => { if (full.doc[k] !== undefined) doc[k] = full.doc[k]; });
 
   // Only what concerns this bundle: the body's own problems (an empty slot, no collider…) are not its business.
   const problems = full.problems.filter((p) => /^Gesto |^Ponle nombre/i.test(p));

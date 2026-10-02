@@ -45,4 +45,20 @@ Con la web servida en `http://localhost:3000` y Unity abierto.
     Pulsa ▶ Probar en un gesto: ¿suena su sonido?
 18. Cierra Unity y pulsa Guardar en Unity en la web: debe decir "Unity no responde", sin perder nada.
 
+## F · Sonido, línea de tiempo y gestos de transición
+
+**Antes: cierra y vuelve a abrir Unity una vez** (el puerto del puente se quedó atascado en mis pruebas).
+
+19. ShroomShaman ▸ **🌐 Editar…** ▸ abre un gesto. Bajo el lienzo hay una pista **🔊** con su sonido. Haz clic en
+    ella: a la izquierda sale el panel **"🔊 Salida de audio"** (clip, volumen, tono, momento).
+20. Arrastra el 🔊 a otro instante y pulsa ▶ Probar: ¿suena ahí? Cambia el clip en el desplegable (hay un filtro
+    por nombre) y el tono: ¿suena distinto?
+21. Línea de tiempo: **+ / −** (o Ctrl+rueda) para el zoom; **← / →** mueven el cursor un frame; elige un efecto y
+    **Ctrl+← / →** lo mueve; **Ctrl+D** lo duplica; cursor a mitad de un paso + **Ctrl+B** lo divide.
+22. Quita la ◆ suelta de un gesto que no use ningún ataque: ya no debe quedar el rombo transparente.
+23. En un gesto corto marca **🔁 Gesto de transición** (derecha, en su tarjeta) ▸ Guardar en Unity ▸ juega: ¿lo
+    hace a veces entre ataque y ataque? (Sólo sale si el gesto entero cabe en el `attackCooldown` del enemigo;
+    la probabilidad está en "🔁 Entre ataques".)
+24. Guarda en Unity y juega: ¿el sonido suena en el instante nuevo?
+
 Dime sólo lo que falle o resulte incómodo.

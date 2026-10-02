@@ -360,7 +360,14 @@ Con la web servida (`npx serve Web/RedMagicWeb`) y Unity abierto:
 - La dirección de la web se cambia en **Biblioteca Jere, abajo a la derecha ("Web")**; por defecto
   `http://localhost:3000`. Si no hay nada ahí, Unity te da el comando para arrancarla.
 - No hay claves ni nada que configurar. Si abres la web a mano (sin el botón), el puente simplemente no está.
-- Los sonidos de los gestos se siguen asignando y graduando en Unity (pestaña Sounds).
+- El **sonido de un gesto** se edita en su pista 🔊 de la línea de tiempo (clip, variantes, volumen, tono y el
+  instante en que suena, arrastrándolo). Un clip que no sonaba antes en el juego se sigue puntuando en Unity
+  (Biblioteca Jere ▸ Sounds).
+- **Línea de tiempo**: − / + o Ctrl+rueda = zoom · ← / → = un frame (Mayús: diez) · Ctrl+← / → mueve lo
+  elegido · Ctrl+D duplica · Ctrl+B divide el paso bajo el cursor · Supr quita. Los campos de lo elegido salen
+  en el panel de la izquierda.
+- **Gestos de transición** (entre ataque y ataque): casilla "🔁 Gesto de transición" en la tarjeta del gesto.
+  Sólo salen si el gesto entero cabe en el enfriamiento del enemigo (`attackCooldown`).
 - `Tools ▸ Web ▸ Puente ▸ Apagar el puente con la web` lo para hasta que vuelvas a pulsar el botón.
 
 ### Probar ida y vuelta (Robot · Turret · BossIce2)

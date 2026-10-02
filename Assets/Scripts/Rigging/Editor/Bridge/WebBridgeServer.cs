@@ -76,11 +76,15 @@ namespace RedMagic.Rigging.EditorTools
             AssemblyReloadEvents.beforeAssemblyReload += Stop;
             EditorApplication.quitting += Stop;
             // Tras recompilar: sigue en marcha sólo si lo estaba (la pestaña de la web sigue abierta).
-            if (SessionState.GetBool(RunningKey, false)) EditorApplication.delayCall += () => Start();
+            // Lo rearranca el vigilante de Drain, en el MISMO puerto: la web abierta lo lleva en su URL.
         }
 
-        /// <summary>Arranca el listener (si no lo está). False si no hay puerto libre.</summary>
-        public static bool Start()
+        /// <summary>
+        /// Arranca el listener (si no lo está). False si no hay puerto libre. <paramref name="samePortOnly"/>
+        /// = sólo el puerto de antes (tras una recarga de dominio el socket viejo tarda un instante en
+        /// soltarse: saltar a otro puerto dejaría sorda a la pestaña de la web que ya está abierta).
+        /// </summary>
+        public static bool Start(bool samePortOnly = false)
         {
             if (Running) return true;
 
@@ -96,8 +100,9 @@ namespace RedMagic.Rigging.EditorTools
             // El mismo puerto de antes primero: la web abierta lo lleva en su URL.
             int first = SessionState.GetInt(PortKey, DefaultPort);
             var candidates = new List<int> { first };
-            for (int p = DefaultPort; p < DefaultPort + PortTries; p++)
-                if (p != first) candidates.Add(p);
+            if (!samePortOnly)
+                for (int p = DefaultPort; p < DefaultPort + PortTries; p++)
+                    if (p != first) candidates.Add(p);
 
             foreach (int port in candidates)
             {
@@ -123,7 +128,7 @@ namespace RedMagic.Rigging.EditorTools
                 return true;
             }
 
-            Debug.LogWarning($"[WebBridge] Ningún puerto libre entre {DefaultPort} y {DefaultPort + PortTries - 1}.");
+            if (!samePortOnly) Debug.LogWarning($"[WebBridge] Ningún puerto libre entre {DefaultPort} y {DefaultPort + PortTries - 1}.");
             return false;
         }
 
@@ -133,7 +138,8 @@ namespace RedMagic.Rigging.EditorTools
             var listener = _listener;
             _listener = null;
             if (listener == null) return;
-            try { listener.Close(); } catch { /* ya cerrado */ }
+            // Abort, no Close: suelta el puerto ya, sin esperar a las peticiones a medias.
+            try { listener.Abort(); } catch { /* ya cerrado */ }
         }
 
         /// <summary>Lo apaga del todo (menú): no vuelve tras recompilar hasta que se pulse otra vez el botón.</summary>
@@ -219,8 +225,25 @@ namespace RedMagic.Rigging.EditorTools
 
         // ============================================================ hilo principal
 
+        private static double _nextCheck;
+        private static int _resumeTries;
+        private const int ResumeTriesSamePort = 40;   // ×0,25 s = 10 s insistiendo en el mismo puerto
+
         private static void Drain()
         {
+            // Vigilante: si debería estar en marcha y no lo está (tras una recarga de dominio), vuelve a
+            // arrancar — en su mismo puerto, insistiendo mientras el socket viejo se libera; sólo si no hay
+            // manera prueba otros. Sólo 'Shutdown' lo apaga de verdad.
+            if (_listener == null && EditorApplication.timeSinceStartup >= _nextCheck)
+            {
+                _nextCheck = EditorApplication.timeSinceStartup + 0.25;
+                if (SessionState.GetBool(RunningKey, false) && !EditorApplication.isCompiling)
+                {
+                    if (Start(samePortOnly: _resumeTries < ResumeTriesSamePort)) _resumeTries = 0;
+                    else _resumeTries++;
+                }
+            }
+
             while (Pending.TryDequeue(out var context))
             {
                 try

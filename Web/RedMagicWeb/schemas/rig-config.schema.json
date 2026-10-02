@@ -378,6 +378,16 @@
       },
       "$comment": "ProceduralRig.gestures (los \"gesture\" de los ataques de jefe)."
     },
+    "transitionGestures": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "ProceduralRig.transition: gestos que hace entre ataque y ataque, mientras dura el enfriamiento (sólo los que caben en él). No son ataques.",
+      "properties": {
+        "gestures": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "chance": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.5 },
+        "windup": { "type": "number", "minimum": 0.05, "default": 0.3 }
+      }
+    },
     "idleGestures": {
       "type": "object",
       "additionalProperties": false,
@@ -762,6 +772,19 @@
         },
         "strikeTime": {
           "type": "number"
+        },
+        "sound": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "$comment": "RigGesture.sound + su instante (soundMoment = At). Presente = sustituye al del prefab; null = lo quita; ausente = se conserva.",
+          "properties": {
+            "clips": { "type": "array", "items": { "type": "string", "pattern": "^Assets/" } },
+            "volume": { "type": "number", "minimum": 0, "maximum": 1 },
+            "pitchMin": { "type": "number", "minimum": 0.1, "maximum": 3 },
+            "pitchMax": { "type": "number", "minimum": 0.1, "maximum": 3 },
+            "step": { "type": "integer", "minimum": 0 },
+            "at": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
         },
         "recover": {
           "type": "number"

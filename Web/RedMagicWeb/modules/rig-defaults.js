@@ -140,6 +140,7 @@ export function adoptRigState(draft) {
   s.bossLimbs = { ...base.bossLimbs, ...(draft.bossLimbs || {}) };
   s.bossBody = { ...base.bossBody, ...(draft.bossBody || {}) };
   s.idle = { ...base.idle, ...(draft.idle || {}), gestures: [...(draft.idle?.gestures || [])] };
+  s.transition = { ...base.transition, ...(draft.transition || {}), gestures: [...(draft.transition?.gestures || [])] };
   s.parts = (s.parts || []).map((p) => ({ ...createPart({ name: p.name }), ...p,
     variants: { asleep: null, awake: null, attacking: null, stages: [], gestures: {}, gestureWindows: {}, ...(p.variants || {}),
       named: { alert: null, hurt: null, dead: null, ...(p.variants?.named || {}) } } }));
@@ -158,6 +159,11 @@ export function adoptRigState(draft) {
 /** RigIdleGestures' own defaults. */
 export function createDefaultIdle() {
   return { gestures: [], interval: 4, chance: 0.6, windup: 0.5 };
+}
+
+/** RigTransitionGestures' own defaults: what it does between attacks, while the cooldown lasts. */
+export function createDefaultTransition() {
+  return { gestures: [], chance: 0.5, windup: 0.3 };
 }
 
 /** A whole composer document — also what is stored as the library record's `draft`. */
@@ -188,6 +194,8 @@ export function createDefaultRigState() {
     template: null,                // { id, height, fitted } when made from a body template (rig-templates.js)
     // Gestures it does on its own while resting (ProceduralRig.idle): names from `gestures`.
     idle: createDefaultIdle(),
+    // Gestures it does between attacks (ProceduralRig.transition): names from `gestures`.
+    transition: createDefaultTransition(),
     gestures: null,                // RigGesture list, timelines (rig-gestures.js; parts by uid | 'Visual'); null = not exported, Unity keeps its own
   };
 }

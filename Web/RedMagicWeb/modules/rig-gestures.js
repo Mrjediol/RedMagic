@@ -73,6 +73,15 @@ export function createRelease(step = 0, at = 1) {
   return { step, at, point: null, offset: zero() };
 }
 
+/**
+ * A gesture's own sound (RigGesture.sound + its instant): project clips by asset path — one is picked
+ * at random —, volume, pitch range, and WHEN it plays (step + moment, like an effect). `gesture.sound`
+ * absent = unknown (Unity keeps what it has); null = it has none.
+ */
+export function createSound(step = 0, at = 0) {
+  return { clips: [], volume: 1, pitchMin: 1, pitchMax: 1, step, at };
+}
+
 /** A new gesture: one step that lasts the attack's telegraph, and the attack leaves at its end. */
 export function createGesture(state, name = 'Gesto') {
   return { name: uniqueGestureName(state, name), recover: 0.45,
@@ -180,6 +189,7 @@ export function insertStep(gesture, after, step = createStep()) {
   gesture.steps.splice(at, 0, step);
   const shift = (i) => (i >= at ? i + 1 : i);
   gesture.releases.forEach((r) => { r.step = shift(r.step); });
+  if (gesture.sound) gesture.sound.step = shift(Math.min(gesture.sound.step, count - 1));
   (gesture.fx || []).forEach((f) => {
     const recover = f.step >= count;
     f.step = recover ? count + 1 : shift(f.step);
@@ -200,6 +210,7 @@ export function removeStep(gesture, index) {
     item[key] = shift(item[key]);
   };
   gesture.releases.forEach((r) => { r.step = Math.min(r.step, count - 1); land(r, 'step'); });
+  if (gesture.sound) { gesture.sound.step = Math.min(gesture.sound.step, count - 1); land(gesture.sound, 'step'); }
   (gesture.fx || []).forEach((f) => {
     land(f, 'step');
     if (f.untilStep >= 0) f.untilStep = Math.max(f.step, shift(f.untilStep));
@@ -216,9 +227,52 @@ export function moveStep(gesture, from, to) {
   const next = (i) => (i >= count ? i : order.indexOf(i));
   gesture.steps = order.map((i) => gesture.steps[i]);
   gesture.releases.forEach((r) => { r.step = next(Math.min(r.step, count - 1)); });
+  if (gesture.sound) gesture.sound.step = next(Math.min(gesture.sound.step, count - 1));
   (gesture.fx || []).forEach((f) => {
     f.step = next(f.step);
     if (f.untilStep >= 0) f.untilStep = Math.max(f.step, next(f.untilStep));
+  });
+  return true;
+}
+
+/**
+ * Cuts step `index` in two at fraction `k` of it (0–1). The first half ends in the pose the body has
+ * at that instant (between the previous step's pose and this one's, by its easing); the second keeps
+ * the pose and takes the rest of the time. What was on the step stays at the same instant.
+ */
+export function splitStep(gesture, index, k) {
+  const step = gesture.steps[index];
+  if (!step || !(k > 0.02 && k < 0.98)) return false;
+  const count = gesture.steps.length;
+  const w = ease(step.ease, k);
+  const before = index > 0 ? gesture.steps[index - 1].poses : [];
+  const blank = { move: zero(), rotate: 0, scale: zero() };
+  const poseIn = (list, part) => list.find((p) => p.part === part) || blank;
+  const mix = (a, b) => a + (b - a) * w;
+  const poses = [...new Set([...before, ...step.poses].map((p) => p.part))].map((part) => {
+    const a = poseIn(before, part), b = poseIn(step.poses, part);
+    const pose = { part, move: { x: mix(a.move.x, b.move.x), y: mix(a.move.y, b.move.y) }, rotate: mix(a.rotate, b.rotate),
+      scale: { x: mix(a.scale.x, b.scale.x), y: mix(a.scale.y, b.scale.y) } };
+    roundPose(pose);
+    return pose;
+  });
+  const first = { ...JSON.parse(JSON.stringify(step)), poses, duration: Math.max(MIN, step.duration * k), shake: 0 };
+  step.duration = Math.max(MIN, step.duration * (1 - k));
+  gesture.steps.splice(index, 0, first);
+
+  const carry = (item, max) => {
+    const s = Math.min(item.step, max);
+    if (s > index) item.step = s + 1;
+    else if (s === index) {
+      if (item.at <= k) item.at = clamp01(item.at / k);
+      else { item.step = index + 1; item.at = clamp01((item.at - k) / (1 - k)); }
+    }
+  };
+  gesture.releases.forEach((r) => carry(r, count - 1));
+  if (gesture.sound) carry(gesture.sound, count - 1);
+  (gesture.fx || []).forEach((f) => {
+    carry(f, count);
+    if (f.untilStep >= index) f.untilStep += 1;
   });
   return true;
 }

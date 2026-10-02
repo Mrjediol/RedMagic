@@ -79,8 +79,11 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   // Set by whoever embeds the composer (Enemy Studio): beforeExport / afterSave(id) / onChange.
   // gestureAttacks: { render(host, gestureName, rerender), shots(gestureName) } — the attacks launched with a gesture.
   // focusExtras(host): what the "Gestos y ataques" tab adds above its save / export buttons (the Unity bridge).
-  // gestureSound(name, moment): the gesture's own sound ('start' | 'release'), when Unity sent one.
-  const hooks = { beforeExport: null, afterSave: null, onChange: null, gestureAttacks: null, focusExtras: null, gestureSound: null };
+  // soundClips(): the project's audio clips (asset paths) or null · playClip(path, { gain, rate }): plays one —
+  // both only exist when the enemy was opened from Unity (the clips are files of the project).
+  const hooks = { beforeExport: null, afterSave: null, onChange: null, gestureAttacks: null, focusExtras: null, soundClips: null, playClip: null };
+  // The fields of what is selected on the timeline: one panel, placed by whoever embeds the composer (the left column).
+  const selectionEl = el('div', 'rigSelection');
   let userTemplates = [];        // library records of kind 'rig-template', as templates
   let state = createDefaultRigState();
   let selectedUid = null;
@@ -170,6 +173,10 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       return { anchor, part: anchor === 'part' ? sel.uid : null };
     },
     fxEntries: () => fxEntries,
+    // An attack launches the open gesture: only then does "no release" mean "it leaves at the end".
+    attackUses: () => !!stageAttack(),
+    soundClips: () => (hooks.soundClips ? hooks.soundClips() : null),
+    playClip: (path, o) => { if (hooks.playClip) hooks.playClip(path, o); },
     changed: () => changed(),
     refresh: () => { renderInspector(); requestRender(); if (hooks.onChange) hooks.onChange(); },
     redraw: () => { requestRender(); refreshExport(); },
@@ -371,17 +378,20 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     stage.fired = new Set();
     const releases = G.timeline(gesture, lead()).releases;
     releases.forEach((r, n) => { if (r.time < head.t - 1e-6) stage.fired.add(n); });
-    // The gesture's sound (RigGesture.sound): at its start or at its first release — not again when resumed past it.
-    const first = releases.length ? Math.min(...releases.map((r) => r.time)) : null;
-    stage.sound = { start: head.t > 1e-6, release: first === null || first < head.t - 1e-6, at: first };
+    // The gesture's own sound, at its instant — not again when the play resumes past it.
+    const a = gesture.sound;
+    const tl = G.timeline(gesture, lead());
+    const at = a && a.clips.length ? G.timeOf(tl, Math.min(a.step, tl.count - 1), a.at) : null;
+    stage.sound = at === null ? null : { at, fired: at < head.t - 1e-6 };
   }
 
-  /** The sound of the gesture that is playing, at the two moments Unity can play it. */
+  /** The sound of the gesture that is playing, when the playhead reaches it (one of its clips, at random). */
   function playGestureSound(gesture) {
-    const s = stage.sound;
-    if (!s || !hooks.gestureSound) return;
-    if (!s.start) { s.start = true; hooks.gestureSound(gesture.name, 'start'); }
-    if (!s.release && head.t >= s.at) { s.release = true; hooks.gestureSound(gesture.name, 'release'); }
+    const s = stage.sound, a = gesture.sound;
+    if (!s || s.fired || head.t < s.at || !a || !hooks.playClip) return;
+    s.fired = true;
+    hooks.playClip(a.clips[Math.floor(Math.random() * a.clips.length)],
+      { gain: a.volume ?? 1, rate: (a.pitchMin ?? 1) + Math.random() * ((a.pitchMax ?? 1) - (a.pitchMin ?? 1)) });
   }
 
   /** While it plays: each release the playhead has reached fires what the attack launches there. */
@@ -1334,7 +1344,24 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       renderExportSection();
     }
     scroller.scrollTop = scrollTop;
+    renderSelection();
     renderTimeline();
+  }
+
+  const SELECTION_TITLES = { step: '▭ Paso de la línea de tiempo', release: '◆ Salida de ataque', fx: '✨ Salida de efecto',
+    sound: '🔊 Salida de audio', recover: '↩ Vuelta al reposo' };
+
+  /** The fields of what is selected on the open gesture's timeline, in their own panel (the left column). */
+  function renderSelection() {
+    const top = selectionEl.scrollTop;
+    selectionEl.innerHTML = '';
+    const gesture = openGesture();
+    selectionEl.hidden = !gesture;
+    if (!gesture) return;
+    const s = timeline.selection;
+    selectionEl.appendChild(el('h3', null, s ? SELECTION_TITLES[s.kind] : `🎬 Línea de tiempo · ${gesture.name}`));
+    timeline.renderFields(selectionEl);
+    selectionEl.scrollTop = top;
   }
 
   /** The open gesture's timeline, docked under the canvas (hidden while none is open). */
@@ -1702,6 +1729,27 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       idle.appendChild(tryIdle);
       d.appendChild(idle);
     }
+
+    // Transition gestures: the numbers of "between attacks".
+    const between = state.transition.gestures.filter((n) => list.some((g) => g.name === n));
+    if (between.length) {
+      const fold = el('details', 'efFold');
+      fold.open = openSections.get('transition') ?? true;
+      fold.addEventListener('toggle', () => openSections.set('transition', fold.open));
+      fold.appendChild(el('summary', null, `🔁 Entre ataques (${between.join(', ')})`));
+      const grid = el('div', 'rigGestureGrid');
+      grid.appendChild(F.numberField({ label: 'Probabilidad (0–1)', value: state.transition.chance, min: 0, step: '0.1',
+        hint: 'De hacer uno al acabar cada ataque.', onChange: (v) => { state.transition.chance = Math.min(1, Math.max(0, v)); refreshExport(); } }).row);
+      grid.appendChild(F.numberField({ label: 'Aviso (s)', value: state.transition.windup, min: 0.05, step: '0.1',
+        hint: 'Lo que duran sus pasos marcados "dura el aviso". El gesto entero tiene que caber en el enfriamiento del enemigo (attackCooldown) o no sale.',
+        onChange: (v) => { state.transition.windup = Math.max(0.05, v); refreshExport(); } }).row);
+      fold.appendChild(grid);
+      const tryIt = el('button', 'small', '▶ Probar uno');
+      tryIt.dataset.nodirty = '1';
+      tryIt.onclick = () => playGesture(list.findIndex((g) => g.name === between[Math.floor(Math.random() * between.length)]), state.transition.windup);
+      fold.appendChild(tryIt);
+      d.appendChild(fold);
+    }
   }
 
   function renderGestureCard(card, gesture, index) {
@@ -1713,13 +1761,13 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       if (state.rig.moveGesture === old) state.rig.moveGesture = gesture.name;
       M.renameGestureSprites(state, old, gesture.name);
       state.idle.gestures = state.idle.gestures.map((n) => (n === old ? gesture.name : n));
+      state.transition.gestures = state.transition.gestures.map((n) => (n === old ? gesture.name : n));
       if (preview.spriteState === M.gestureState(old)) preview.spriteState = M.gestureState(gesture.name);
       changed();
     });
     card.appendChild(nameField.row);
 
-    // What is selected on the timeline (under the canvas): a step and its pose, a release, an effect.
-    timeline.renderFields(card);
+    card.appendChild(el('p', 'hint', 'Su línea de tiempo está bajo el lienzo; los campos de lo que elijas en ella (paso, salida de ataque, efecto, sonido), en el panel de la izquierda.'));
     // The attacks launched with this gesture, next to it: what leaves at each release (Enemy Studio).
     if (hooks.gestureAttacks) hooks.gestureAttacks.render(card, gesture.name, () => { renderInspector(); requestRender(); });
     renderGestureSprites(card, gesture);
@@ -1728,6 +1776,13 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       hint: 'Sin objetivo, quieto y despierto. No avisa de nada ni lanza ningún ataque (sus sueltas no cuentan): sólo da vida. Cada cuánto, abajo.',
       onChange: (v) => {
         state.idle.gestures = v ? [...new Set([...state.idle.gestures, gesture.name])] : state.idle.gestures.filter((n) => n !== gesture.name);
+        changed();
+      } }).row);
+
+    card.appendChild(F.boolField({ label: '🔁 Gesto de transición (entre ataque y ataque)', value: state.transition.gestures.includes(gesture.name),
+      hint: 'Al acabar un ataque, mientras dura su enfriamiento, puede hacer uno de éstos (sólo si cabe en ese tiempo). No lanza nada. Probabilidad, abajo.',
+      onChange: (v) => {
+        state.transition.gestures = v ? [...new Set([...state.transition.gestures, gesture.name])] : state.transition.gestures.filter((n) => n !== gesture.name);
         changed();
       } }).row);
 
@@ -1740,6 +1795,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     del.onclick = () => {
       M.renameGestureSprites(state, gesture.name, null);
       state.idle.gestures = state.idle.gestures.filter((n) => n !== gesture.name);
+      state.transition.gestures = state.transition.gestures.filter((n) => n !== gesture.name);
       if (preview.spriteState === M.gestureState(gesture.name)) preview.spriteState = '';
       resetGestureUi();
       state.gestures.splice(index, 1);
@@ -2222,9 +2278,23 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const res = readRigGestures(doc, state, { entriesById: fxEntries, artLibrary });
     state.gestures = res.gestures;
     if (res.idle) state.idle = res.idle;
+    if (res.transition) state.transition = res.transition;
     resetGestureUi();
     changed();
     return res.notes;
+  }
+
+  /**
+   * The bridge: each gesture's own sound as Unity has it (`[{ gesture, clips, volume, pitchMin, pitchMax,
+   * step, at }]`). A gesture not in the list has none (null): from here on the document knows, and exports it.
+   */
+  function applyUnitySounds(list) {
+    const by = new Map((list || []).map((s) => [s.gesture, s]));
+    (state.gestures || []).forEach((g) => {
+      const s = by.get(g.name);
+      g.sound = s ? { clips: [...(s.clips || [])], volume: s.volume ?? 1, pitchMin: s.pitchMin ?? 1, pitchMax: s.pitchMax ?? 1, step: s.step || 0, at: s.at || 0 } : null;
+    });
+    changed();
   }
 
   /** Opens the gesture of that name (a deep link from Unity). False if the body has none called that. */
@@ -2240,7 +2310,8 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   return {
     linkLibraryEntry, refreshLibraries, hooks, getStatus, useTemplateRecord, addFxToOpenGesture,
-    applyUnityGestures, openGestureNamed, buildGesturesZip,
+    applyUnityGestures, applyUnitySounds, openGestureNamed, buildGesturesZip,
+    selectionPanel: selectionEl,
     getFxEntries: () => fxEntries,
     setStatus,
     save: saveToLibrary,

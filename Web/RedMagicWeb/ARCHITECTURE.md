@@ -298,16 +298,16 @@ loads that enemy **from the project** and gains "💾 Guardar en Unity". Opened 
 |---|---|---|
 | The calls to Unity (`/ping`, `/enemy`, `/file`, `/gestures`), the query params, the one retry | `modules/unity-bridge.js` | `bridge`, `fetchEnemy`, `fetchFile` / `fetchDataURL`, `saveGestures`, `BridgeError` (`status` 0 = no answer, 409 + `reason`) |
 | Opening straight on 🎬 | `app.js` | `restoreLastTab` (`bridge.active` → `enemyStudio.openFromUnity()`) |
-| What is loaded and from where; the banner, the save button, Unity's report, "Cambió en Unity" | `modules/enemy-studio.js` | `openFromUnity`, `saveToUnity`, `rig.hooks.focusExtras`, `loadUnitySounds` / `rig.hooks.gestureSound` |
+| What is loaded and from where; the banner, the save button, Unity's report, "Cambió en Unity" | `modules/enemy-studio.js` | `openFromUnity`, `saveToUnity`, `rig.hooks.focusExtras` |
 | A body drawn from Unity's rig-config (nodes, sprites, pivots, roles, state sprites) | `modules/rig-export.js` | `readRigDocument` — the document is marked `unityBody` (a full export of it is refused) and every image keeps `unityRef`, which the partial export writes back instead of a PNG |
 | Unity's gestures over a library body; opening a gesture by name; the zip that is posted | `modules/rig-composer.js` | `applyUnityGestures`, `openGestureNamed`, `buildGesturesZip`; the sound moments: `armStage` / `playGestureSound` |
 | Art that is a prefab of the project (`unity:<path>` in a card, `{ "project": … }` in JSON) and its library preview | `modules/unity-art.js` (+ `attack-export.js`, `attack-cards.js`) | `unityArtValue`, `artLibraryId`, `unityArtRef`; `adoptAttacksFromConfig` keeps each card's `assetPath` so it is saved into the same asset |
-| Playing a clip file | `modules/vfx-stage.js` | `decodeAudio`, `playBuffer` |
+| Playing a clip file; the project's clips | `modules/vfx-stage.js`, `modules/unity-bridge.js`, `modules/enemy-studio.js` | `decodeAudio`, `playBuffer`; `fetchSounds`; `clipBuffer`, `rig.hooks.soundClips` / `playClip`, `rig.applyUnitySounds` |
 
 Rules: Unity owns what it has — on open, gestures and the deck always come from the prefab, even when the library
 has the enemy (the library record is then updated to match). The body comes from the library record of that
-name when it was authored here, else from Unity. Saving never touches the body or the rest of the tuning. Sounds
-are read-only here. The effect of a gesture that is a Unity prefab keeps its path (`fx.prefab`) and is exported
+name when it was authored here, else from Unity. Saving never touches the body or the rest of the tuning. A
+gesture's sound is edited here (clips, volume, pitch, instant) and saved with the gesture. The effect of a gesture that is a Unity prefab keeps its path (`fx.prefab`) and is exported
 as it came; when Unity says which library entry it was built from, that entry is only its preview.
 
 ### Rig composer (the body editor of Enemy Studio — part-based enemies and bosses)
@@ -358,6 +358,20 @@ follow and takes it out of every gesture pose — for a template slot that is no
 | What the canvas does with it (the host) | `modules/rig-composer.js` | the `createGestureTimeline({...})` call; `head` (playhead) / `gestureLayer` / `layerAt`; pose editing `startPosing` / `beginPoseDrag` / `renderPosePanel`; `fxOverlay` + `fxMatrix` (facing direction / anchor / world, layer behind); `releaseMarks` / `releaseMatrix`; `canvasHandle` (drag the selected release / effect on the canvas) and `placeAt` ("⌖ Colocar") |
 | Drawing effects behind / in front and the release targets | `modules/rig-canvas-view.js` | `_drawFx(opts, behind)`, `_drawMarks` |
 | rig-config ⇄ gestures | `modules/rig-export.js` | `buildRigExport` writes `steps / releases / recover / fx`; `readRigGestures(doc, state)` reads them back by part path (Unity's export, an old classic export) — Gestos ▸ "⬆ Traer de un rig-config.json" |
+
+**The timeline behaves like a video editor's** (`gesture-timeline.js`): − / + or Ctrl+wheel zoom the track (it
+scrolls; drags and the clock go down to the millisecond), ← / → move the playhead one frame of 1/60 s (Shift:
+ten), Ctrl+← / → move what is selected, Ctrl+D duplicates it (`duplicateSelected`), Ctrl+B cuts the step under
+the playhead in two (`splitAtPlayhead` → `rig-gestures.js` ▸ `splitStep`: the first half ends in the pose
+the body has at that instant), Supr removes it. **The fields of what is selected are a panel of their own**
+(`rig-composer.js` ▸ `renderSelection`, the element `selectionPanel`; Enemy Studio puts it in the left column
+of both doors), titled by kind: step, ◆ attack output, ✨ effect output, 🔊 audio output. **The sound of a
+gesture** is a lane with one marker (`gesture.sound = { clips, volume, pitchMin, pitchMax, step, at }`,
+`createSound`; absent = unknown, null = none), dragged like an effect; its clips are files of the Unity
+project, so picking / hearing them needs the bridge (`host.soundClips` / `host.playClip`). **A gesture with no
+release written shows no release** unless an attack uses it (`host.attackUses`): idle, defence and transition
+gestures release nothing. **Transition gestures** (`state.transition`, `createDefaultTransition`): the "🔁"
+checkbox on a gesture card and the "🔁 Entre ataques" fold; export `transitionGestures`.
 
 Rules: a step's pose is measured from **rest**, not from the previous step. An effect whose `fx` is null carries a
 Unity prefab path in `prefab` (read back from Unity): exported as it came, no preview. Templates carry gestures by

@@ -407,6 +407,7 @@ namespace RedMagic.Bosses
             float seconds = attack.Telegraph / pace;
             attack.OnTelegraph(ctx);
 
+            if (_animator != null) _animator.AimAt(ctx.PlayerCenter);
             if (_animator != null && _animator.PlayGesture(attack.Gesture, seconds))
             {
                 // Seguro por si el Animator no llega a soltar (clip sin evento, estado cortado):

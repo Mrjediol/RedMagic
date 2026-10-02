@@ -327,6 +327,7 @@ namespace RedMagic.Enemies
                 // (el golpe sale de la boca, hacia el punto congelado, en el instante de la suelta).
                 var rigData = rig.GetComponent<ProceduralRig>();
                 float windupSeconds = (rigData != null ? rigData.windup : 0.4f) / Mathf.Max(0.01f, speed);
+                rig.AimTarget = _attack != null ? _attack.AimPoint : null;
                 if (custom && rig.PlayGesture(gesture, windupSeconds))
                 {
                     // Sólo red de seguridad: el gesto dura lo que digan sus pasos, no el aviso.
@@ -450,6 +451,12 @@ namespace RedMagic.Enemies
         /// evento <c>OnAttackRelease</c>, a su velocidad). False si el cuerpo no lo tiene: quien
         /// llama cae al aviso por tiempo.
         /// </summary>
+        /// <summary>Hacia dónde va el ataque del catálogo que se va a lanzar: orienta los efectos de disparo del rig.</summary>
+        public void AimAt(Vector2 point)
+        {
+            if (HasRig) rig.AimTarget = point;
+        }
+
         public bool PlayGesture(string state, float secondsToRelease)
         {
             if (_dead || string.IsNullOrWhiteSpace(state)) return false;

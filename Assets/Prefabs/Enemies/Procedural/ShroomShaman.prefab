@@ -479,7 +479,7 @@ MonoBehaviour:
       gesture: 
       weight: 1
       minRange: 0
-      maxRange: 4
+      maxRange: 7
       targetHeight: 0
     builtInAttack: 0
     builtInWeight: 1

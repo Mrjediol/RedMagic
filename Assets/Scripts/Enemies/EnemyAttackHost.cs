@@ -186,6 +186,7 @@ namespace RedMagic.Enemies
             // --- aviso: el gesto del cuerpo si existe (el ataque arranca en su frame de suelta),
             // o el tiempo de 'telegraph' a secas.
             var body = Body;
+            if (body != null) body.AimAt(aimPoint);
             if (body != null && body.PlayGesture(attack.Gesture, seconds))
             {
                 float timeout = Mathf.Max(seconds, body.SecondsToRelease) + 0.5f;

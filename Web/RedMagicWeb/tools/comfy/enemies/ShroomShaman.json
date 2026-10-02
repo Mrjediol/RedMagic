@@ -131,7 +131,7 @@
         "recovery": 1,
         "damage": 5,
         "gesture": "Twirl",
-        "cooldownInAttacks": 2
+        "cooldownInAttacks": 1
       },
       "params": {
         "pattern": "Radial",
@@ -151,7 +151,7 @@
       },
       "deck": {
         "minRange": 0,
-        "maxRange": 4
+        "maxRange": 7
       }
     }
   ],

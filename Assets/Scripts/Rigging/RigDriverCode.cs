@@ -168,6 +168,7 @@ namespace RedMagic.Rigging
         public override void PlayAttack(Vector2? aimPoint, float speed)
         {
             Rig.ClearCastPoint();   // el ataque propio sale de la boca
+            AimTarget = aimPoint;
             ReleasesFired = 0;
             ReleaseTotal = 1;
             if (_dead) return;

@@ -29,6 +29,13 @@ namespace RedMagic.Rigging
 
         protected ProceduralRig Rig { get; private set; }
 
+        /// <summary>
+        /// El punto al que va el ataque en curso (lo dice quien lo lanza). Los efectos de la boca que
+        /// miran "hacia la acción" apuntan ahí — por donde sale el tiro —, no hacia donde esté girada
+        /// el arma en ese instante del gesto. Null = sin objetivo: hacia donde apunta el arma.
+        /// </summary>
+        public Vector2? AimTarget { get; set; }
+
         /// <summary>Sueltas que ha dado ya el gesto en curso, y cuántas tiene en total.</summary>
         public int ReleasesFired { get; protected set; }
         public int ReleaseTotal { get; protected set; }
@@ -72,6 +79,7 @@ namespace RedMagic.Rigging
         {
             Facing = 1;
             Alert = false;
+            AimTarget = null;
             Rig.RestorePose();
         }
 
@@ -470,11 +478,19 @@ namespace RedMagic.Rigging
 
         /// <summary>
         /// Hacia dónde va la acción para ese efecto (<see cref="RigFxFacing.Direction"/>): en la boca,
-        /// hacia donde apunta el arma — del pivote de la pieza que apunta a su boca, que es por donde
-        /// sale el disparo —; en lo demás, hacia donde se mueve el cuerpo, o hacia donde mira si está quieto.
+        /// hacia el objetivo del ataque (<see cref="AimTarget"/>: por ahí sale el tiro, esté como esté
+        /// girada el arma) y, sin objetivo, hacia donde apunta el arma — del pivote de la pieza que
+        /// apunta a su boca —; en lo demás, hacia donde se mueve el cuerpo, o hacia donde mira si está quieto.
         /// </summary>
         protected virtual Vector2 FxDirection(RigFx fx)
         {
+            if (fx.anchor == RigFxAnchor.Muzzle && AimTarget.HasValue)
+            {
+                Vector2 from = Rig.CastPosition;
+                Vector2 shot = AimTarget.Value - from;
+                if (shot.sqrMagnitude > 0.0001f) return shot.normalized;
+            }
+
             if (fx.anchor == RigFxAnchor.Muzzle && Rig.muzzle != null && Rig.aimPart != null)
             {
                 Vector2 barrel = Rig.muzzle.position - Rig.aimPart.position;

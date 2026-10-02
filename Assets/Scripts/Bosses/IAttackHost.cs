@@ -59,6 +59,12 @@ namespace RedMagic.Bosses
         /// <summary>Lanza el gesto para soltar en <paramref name="secondsToRelease"/>. False si no existe.</summary>
         bool PlayGesture(string state, float secondsToRelease);
 
+        /// <summary>
+        /// Hacia dónde va el ataque que se va a lanzar (el punto al que apunta). El cuerpo lo usa para
+        /// orientar sus efectos de disparo hacia el tiro. Se llama antes de <see cref="PlayGesture"/>.
+        /// </summary>
+        void AimAt(Vector2 point) { }
+
         /// <summary>True desde que el gesto en curso ha soltado su golpe (su primera suelta).</summary>
         bool Released { get; }
 

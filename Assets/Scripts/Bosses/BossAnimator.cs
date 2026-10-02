@@ -201,6 +201,12 @@ namespace RedMagic.Bosses
         /// <paramref name="secondsToRelease"/> segundos. Devuelve false si no hay Animator o el
         /// estado no existe: el controlador cae entonces al aviso por tiempo de siempre.
         /// </summary>
+        /// <summary>Hacia dónde va el ataque que se va a lanzar: orienta los efectos de disparo del rig.</summary>
+        public void AimAt(Vector2 point)
+        {
+            if (HasRig) rig.AimTarget = point;
+        }
+
         public bool PlayGesture(string state, float secondsToRelease)
         {
             if (HasRig)

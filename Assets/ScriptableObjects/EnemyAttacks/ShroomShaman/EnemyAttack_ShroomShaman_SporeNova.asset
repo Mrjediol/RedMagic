@@ -18,7 +18,7 @@ MonoBehaviour:
   telegraph: 0.75
   recovery: 1
   weight: 1
-  cooldownInAttacks: 2
+  cooldownInAttacks: 1
   cooldownSeconds: 0
   minPhase: 1
   damage: 5

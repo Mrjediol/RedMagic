@@ -113,7 +113,7 @@
       {
         "attack": "SporeNova",
         "minRange": 0,
-        "maxRange": 4,
+        "maxRange": 7,
         "targetHeight": "Any"
       }
     ],
@@ -168,7 +168,7 @@
       "displayName": "Nova de esporas",
       "telegraph": 0.75,
       "recovery": 1,
-      "cooldownInAttacks": 2,
+      "cooldownInAttacks": 1,
       "damage": 5,
       "gesture": "Twirl",
       "params": {

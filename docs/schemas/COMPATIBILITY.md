@@ -42,6 +42,14 @@ them and compares every public field of `ProceduralRig` by reflection (plus the 
   (in a zip: `enemy-config.json` / `boss-config.json`). The exporter writes `X.enemy-config.json` (full
   `tuning` by reflection + `tier`, no `art`: in a rig bundle `art` is not used) and `bossBody.definition`
   (existing asset, linked when no boss-config comes along).
+- **Attacks at releases, partial bundles** (2026-10-02): (1) new attack type `ReleaseAttack`: `params.shots`
+  is a list of objects, one per release of its gesture (written whole by the web). (2) `tuning.attacks[]`
+  entries with `builtIn` (the own attack with another gesture) are gone from the schema; the importer skips
+  one with a warning — reopen the enemy in the web and export again (it becomes a `ReleaseAttack`). (3)
+  `tuning.defences[].attack` (optional): an id of `attacks` launched while the defence moves; such an
+  attack need not be a card of `tuning.attacks`. (4) rig-config `"partial": true` + an enemy-config with
+  only `attacks` / `artAssets` / `tuning.attacks` / `tuning.defences`: applied over an existing prefab,
+  only gestures, state sprites, deck and defences are written.
 - **Gestures as timelines from the web** (2026-10-02): the web (Enemy Studio, `make-enemy.mjs`) now writes
   `gestures[]` as `{ name, steps[], releases[], recover, fx[] }` — the shape `RigConfigExporter` already
   wrote — instead of `windup` / `strike` / `phases[]`. The importer reads both; nothing changes for a

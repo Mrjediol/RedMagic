@@ -256,6 +256,34 @@ On use, "Con sus gestos" / "Con su comportamiento" choose what comes along
 "Traer sólo sus gestos a este cuerpo" (`importGestures`) lays a template's gestures over the body on
 screen, matching parts by slot id → role (the aim part, the n-th limb…) → name, lengths rescaled.
 
+**Gestures ⇄ attacks** (2026-10-02). An attack is made with a gesture and launches something at each of its
+releases. The gestures are the composer's document, the attacks the behaviour form's state: `enemy-studio.js`
+is where they meet.
+
+| To change... | Edit | Function |
+|---|---|---|
+| A list of objects in an attack card; **one slot per release** of the attack's gesture (`perRelease`); fields that show only for some values of another (`showIf`) | `modules/attack-cards.js` | `renderList`, `releasesOf`, `renderFields` (`o.gestureInfo(name)` → `{ releases: [label…] }`). Spanish labels: `boss-catalog-notes.js` ▸ `FIELD_NOTES` (by path, `'shots.kind'`) |
+| Lists in defaults / export / reopening a config | `modules/boss-defaults.js`, `modules/attack-export.js` | `defaultsOf` / `withDefaults` (`objectList`), `fullFields` (a list is always exported whole) |
+| What a gesture releases, and keeping every card's slots at that count | `modules/enemy-form.js` | `bodyGestures` (live from the Studio via `setGestureSource`, else the record's draft), `gestureInfo`, `syncReleaseSlots` (also run before every export) |
+| The attacks of a gesture inside its card (Gestos ▸ a gesture ▸ "⚔ Ataques que usan este gesto") | `modules/enemy-form.js` + `modules/enemy-studio.js` | `renderGestureAttacks` (the deck's own field renderer, drawn a second time), `gestureShots`; the Studio's `rig.hooks.gestureAttacks`, `ensureLinked`, `signatureOf` (a release added → `enemy.gesturesChanged()`) |
+| **The test stage**: "▶ Probar" fires the gesture's attack at each release towards a draggable target | `modules/rig-composer.js` | `stageAttack`, `armStage`, `fireReleases`, `fireShot` (= `ReleaseAttack.Fire`), `tickShots`, `stageShapes`; `lead()` = the attack's telegraph. Drawing: `rig-canvas-view.js` ▸ `_drawShapes`. Units: the body is drawn at 1 and plays at `rootScale`, so world numbers are × `1 / rootScale` |
+| The old "own attack with another gesture" cards of a saved config → a `ReleaseAttack` | `modules/enemy-form.js` | `attackFromVariant` (in `adoptConfig`) |
+| A defence that launches an attack; a card that is "only from a defence" | `modules/enemy-form.js`, `modules/enemy-export.js` | `renderDefences` (`d.attack`), `attack.deck.defenceOnly`; `buildEnemyExport` |
+
+Not simulated on the stage: homing, pierce, impact explosions, and the catalog attacks that are not made of
+shots (they start at the first release; their numbers are edited in step 4). No sound in the web: a
+gesture's sound is assigned in Unity.
+
+**The second door — 🎬 "Gestos y ataques"** (tab id `gestures`, no panel of its own: `app.js` ▸ `TAB_PANELS`
+shows `#tab-studio`). `enemyStudio.show('focus')`: the steps are hidden, the left column is `#studioFocus`
+(enemy picker, state sprites, save / export), the composer is in **focus mode** (`rig-composer.js` ▸
+`setFocusMode`: parts cannot be moved, added or deleted; only pose tools; the inspector is the Gestures
+section) and the right column shows the gestures with the form's *Ataques* and *Defensa* sections under them
+(CSS: `#tab-studio[data-mode="focus"] …`). Its export is **partial** — `rig-export.js` ▸ `buildGesturesExport` /
+`buildGesturesBundle` / `partialEnemyConfig` (`"partial": true`; only gestures, idle gestures, state sprites,
+deck, defences) — read by `RigBundleImporter.ImportPartial` over an existing prefab. Nothing is implemented
+twice: same composer, same timeline, same form.
+
 ### Rig composer (the body editor of Enemy Studio — part-based enemies and bosses)
 
 No tab of its own. Its panels are six hosts (`#rigSidebarBody`, `#rigSidebarTemplate`, `#rigInspectorMain`,

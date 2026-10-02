@@ -21,6 +21,13 @@
 // left and before the body is saved or exported (the composer's hooks).
 //
 // Plan and what each later phase adds to these steps: docs/web-enemy-studio-plan.md.
+//
+// TWO DOORS (docs/plan-gesture-attack-editor.md): the same panel is also the 🎬 "Gestos y ataques" tab
+// — `show('focus')` — for an enemy that already exists: no steps, no body building. The left column
+// becomes a short panel (which enemy, its state sprites, save / partial export), the composer goes
+// into focus mode (rig-composer.js ▸ setFocusMode: only gestures are edited) and the right column
+// shows the gestures with, under them, the form's Ataques and Defensa sections. Same editors, same
+// document: nothing is implemented twice.
 
 import { listEntries, getEnemy } from './enemy-library.js';
 import { kindOf } from './entry-kinds.js';
@@ -52,6 +59,7 @@ const el = (tag, cls, text) => {
  */
 export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy, nodes, openTab }) {
   let active = 'body';
+  let mode = 'full';             // 'full' = the workflow steps · 'focus' = the "Gestos y ataques" tab
   let mounted = false;
   let effects = [];              // library projectiles / fx (step 3)
   let behaviourNote = '';        // why the behaviour form is not on screen (step 4)
@@ -86,6 +94,55 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
 
   const behaviourInfo = el('p', 'hint');
   stepEls.behaviour.body.appendChild(behaviourInfo);
+
+  // --- the focus mode's left column: which enemy, its state sprites, save / export.
+  const focusEl = el('div', 'studioFocus');
+  focusEl.id = 'studioFocus';
+  focusEl.appendChild(el('h1', null, '🎬 Gestos y ataques'));
+  focusEl.appendChild(el('p', 'hint', 'Añadir o cambiar gestos y ataques de un enemigo que ya existe. El cuerpo no se toca: para eso, 🧬 Enemy Studio.'));
+  const pickRow = el('div', 'rigBlock');
+  const picker = document.createElement('select');
+  picker.dataset.nodirty = '1';
+  pickRow.appendChild(picker);
+  const focusInfo = el('p', 'hint');
+  pickRow.appendChild(focusInfo);
+  const toStudio = el('button', 'small', '🧬 Abrirlo en Enemy Studio (cuerpo, comportamiento, export completo)');
+  toStudio.onclick = () => openTab('studio');
+  pickRow.appendChild(toStudio);
+  focusEl.appendChild(pickRow);
+  const focusStates = el('div');
+  const focusExport = el('div');
+  const focusPreview = el('div');
+  focusEl.append(focusStates, focusExport, focusPreview);
+  stepsEl.appendChild(focusEl);
+
+  picker.onchange = async () => {
+    if (!picker.value) return;
+    await flushBehaviour(true);
+    await rig.linkLibraryEntry(picker.value);
+    await ensureLinked(false);
+    gestureSignature = signatureOf(rig.getGestures());
+    rig.refreshInspector();
+    render();
+  };
+
+  /** The part-based enemies of the library, in the picker. */
+  async function refreshPicker() {
+    const rigs = (await listEntries('rig')).filter((e) => e.draft);
+    const current = rig.getStatus().id;
+    picker.innerHTML = '';
+    picker.appendChild(Object.assign(el('option', null, rigs.length ? '— elige un enemigo —' : '(no hay enemigos por partes en la biblioteca)'), { value: '' }));
+    rigs.forEach((e) => picker.appendChild(Object.assign(el('option', null, `${e.enemyName}${e.draft.kind === 'boss' ? ' (jefe)' : ''}`), { value: e.id })));
+    picker.value = rigs.some((e) => e.id === current) ? current : '';
+  }
+
+  /** The hosts that change column with the mode: state sprites, export, the form's validation. */
+  function placeHosts() {
+    const focus = mode === 'focus';
+    (focus ? focusStates : slots.rigStates).appendChild(nodes.rigStates);
+    (focus ? focusExport : slots.rigExport).appendChild(nodes.rigExport);
+    if (mounted) (focus ? focusPreview : slots.enemyPreview).appendChild(nodes.enemyPreview);
+  }
 
   const slots = {
     rigBody: stepEls.body.body,
@@ -191,9 +248,24 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
 
   function render() {
     const st = rig.getStatus();
+    panel.dataset.mode = mode;
+    panel.dataset.kind = st.kind;
+
+    if (mode === 'focus') {
+      // No steps: the gestures on the right, and under them the form's attacks (once it is on this enemy).
+      const form = linked(st);
+      nodes.rigMain.hidden = false;
+      nodes.enemyForm.hidden = !form;
+      nodes.enemyPreview.hidden = !form;
+      focusInfo.textContent = !st.id
+        ? (st.parts ? 'El enemigo en pantalla no está guardado: guárdalo desde Enemy Studio para darle ataques.' : 'Elige arriba el enemigo.')
+        : st.kind === 'boss' ? `"${st.name}" es un jefe: aquí sus gestos; sus ataques, en 👑 Boss Creator.`
+          : `"${st.name}": ${st.gestures} gesto(s). Abre uno a la derecha: su línea de tiempo aparece bajo el lienzo.`;
+      return;
+    }
+
     if (locked(active, st)) active = 'body';
     panel.dataset.step = active;
-    panel.dataset.kind = st.kind;
 
     const text = {
       body: usable(st) ? `${st.parts} piezas · ${st.gestures} gestos` : whyNotUsable(st),
@@ -308,11 +380,19 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     render();
   };
 
-  async function show() {
+  /** `as` = 'full' (🧬 Enemy Studio, the steps) or 'focus' (🎬 Gestos y ataques). */
+  async function show(as = 'full') {
+    // From the behaviour step straight to the other door: what was typed there is saved first.
+    if (mounted && as !== mode && active === 'behaviour') await flushBehaviour();
+    mode = as;
     mount();
+    placeHosts();
+    rig.setFocusMode(mode === 'focus');
+    if (mode === 'focus') await refreshPicker();
     rig.onShow();
     await ensureLinked(false);   // an enemy opened from the library: its attacks, beside its gestures
     render();
+    if (mode === 'focus') return;
     if (active === 'behaviour') await enterBehaviour();
     else if (active === 'effects') await refreshEffects();
   }

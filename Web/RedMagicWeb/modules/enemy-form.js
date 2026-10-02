@@ -589,7 +589,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   // ============================================================ ataques (la baraja)
 
   const deckSection = document.createElement('div');
-  deckSection.className = 'efSection';
+  deckSection.className = 'efSection efDeck';
   deckSection.innerHTML = '<h2>Ataques</h2>';
   formRoot.appendChild(deckSection);
 
@@ -797,7 +797,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   // ============================================================ defensa (movimientos defensivos)
 
   const defenceSection = document.createElement('div');
-  defenceSection.className = 'efSection';
+  defenceSection.className = 'efSection efDefence';
   defenceSection.innerHTML = '<h2>Defensa</h2>';
   const defenceIntro = document.createElement('p');
   defenceIntro.className = 'efHint';

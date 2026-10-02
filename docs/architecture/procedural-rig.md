@@ -79,7 +79,8 @@ This replaces the fixed "wind-up → release → strike" everywhere below: where
   the last step. Who listens: the built-in attack fires once per release (from `CastPosition`); a catalog
   attack starts at the first one (`IAttackBody.Released`) and can follow the rest through
   `ReleaseCount` / `ReleaseTotal` — `BulletHellAttack.volleyPerRelease` fires one volley per release.
-  `IAttackHost.CastPoint` = `CastPosition`.
+  `IAttackHost.CastPoint` = `CastPosition`. **`ReleaseAttack`** is the attack built on this: one entry per
+  release — what leaves there (projectile / fan / ring / strike / nothing), see `enemies.md`.
 - **Effects** (`RigFx`): `step` + `at` instead of a phase; a loop lives until the end of `untilStep`
   (-1 = its own step). `facing`: **Direction** (default — at the muzzle, where the weapon points, pivot →
   muzzle; on the body / feet, where the body is moving, else where it faces), **Anchor** (turns with its
@@ -127,7 +128,7 @@ it), `scale`, `followsPart`, `loop`. Data only, authored in the web (Enemy Studi
   gesture's effects, absent keeps them. The exporter writes prefab paths. `RigConfigRoundTrip` has a
   synthetic `GestureFx` case (every anchor and phase), since the reference prefabs carry none.
 - The built-in attack (`PlayAttack`) has no phases of its own: it keeps the muzzle flash. To put
-  effects on it, repeat it with a gesture (Enemy Creator ▸ "Repetir el ataque propio con otro gesto").
+  effects on it, make it a catalog attack with a gesture (a `ReleaseAttack`, see `enemies.md`).
 
 ## Idle gestures (`ProceduralRig.idle`)
 `RigIdleGestures`: a pool of gesture **names**, `interval`, `chance`, `windup`. `RigDriverCode.TickIdle`
@@ -198,6 +199,11 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
   rig. Optional `enemy-config.json` (tuning via `EnemyConfigImporter.ReadTuning`) or
   `boss-config.json` (`BossConfigImporter`, no `body`). Body = always from JSON; EnemyStats / boss
   stack only first time or with *reset*.
+- **Partial import** (`"partial": true` in rig-config — the web's "🎬 Gestos y ataques" export):
+  `RigBundleImporter.ImportPartial` applies it over an **existing** prefab and writes only `gestures` /
+  `idleGestures` / `spriteSwaps` (`WriteSwapsAndGestures`) and, from `enemy-config.json`, the deck and the
+  defences. Body, rig fields, EnemyStats and the Inspector's tuning are not touched; it never goes through
+  `ResetTuning`. A part the JSON names that the prefab lacks is an error (the body changed: export it whole).
 - `RigConfigJson` — shared vocabulary: part refs are **paths relative to `Visual`** (`"Visual"` =
   body), sprites are `Assets/…` paths (used as-is) or bundle files (copied to
   `Assets/Art/RigImports/<name>/`, import settings from `sprites`).

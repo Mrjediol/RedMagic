@@ -108,14 +108,18 @@ meant to be edited by hand.**
     `cooldownSeconds` — same rules as a boss). Nothing available = no attack this frame; the brain
     keeps approaching. A card with `maxRange` > `attackRange` fires while still approaching.
     `selfDestruct` ignores the deck. `minPhase` and punish windows do nothing on an enemy.
-  - **The own attack again, with another gesture.** A card with `builtIn = true` (no catalog attack)
-    repeats the enemy's OWN attack — same projectile / strike, same numbers — launched with its
-    `gesture` (and its own `weight`, ranges, height rule). It does not go through
-    `EnemyAttackHost`: `EnemyAttack.BuiltInGesture` → `EnemyAnimation.PlayAttack(gesture)` plays that
-    rig gesture (or Animator state) and the release/finish events flow to the normal `Execute`
-    (shot from the Muzzle at the frozen aim point). Web: Enemy Creator ▸ Ataques ▸ *Ataque propio* ▸
-    "＋ Repetir el ataque propio con otro gesto". Schema: `tuning.attacks[]` with `builtIn`,
-    `gesture`, `weight` (no `attack`).
+  - **A shot / strike with its own gesture = `ReleaseAttack`** (catalog, `Bosses/Definitions/ReleaseAttack.cs`;
+    web label "Disparo / golpe (por sueltas del gesto)"). Its gesture is the telegraph and `shots` has **one
+    entry per release of that gesture** (`RigGesture.releases`): `Nothing` (a feint) / `Projectile` / `Fan` /
+    `Ring` / `Strike`, each with its **own** `ProjectileSpec` (art included, placeholder when empty), aim
+    (`Frozen` = the point frozen when the attack began, `Live`, `Forward`) and optional damage. Each one
+    leaves from that release's point (`IAttackHost.CastPoint`). A body with fewer releases than entries
+    (sprite sheet, no gesture) fires the rest `timeBetweenShots` apart. The plain "one projectile" attack is
+    this with one entry. **It replaced the "own attack with another gesture" cards** (`EnemyDeckEntry.builtIn`,
+    removed 2026-10-02): existing prefabs were converted (*Tools ▸ Web ▸ Rig ▸ Convertir variantes del ataque
+    propio*, `BuiltInVariantMigration`), the web converts old saved configs on load, and the importer skips
+    a `builtIn` card with a warning. The enemy's built-in attack itself is unchanged (the default).
+    Sound: each shot raises the enemy's `SoundTrigger.OnAttack` (`IAttackHost.OnShotFired`), like its own attack.
   - **Who runs it.** `EnemyAttackHost` (the enemy's `IAttackHost`): telegraph (the card's
     `gesture`, else `telegraph` seconds) → `BossAttack.Run` → `recovery` → `DeckAttackFinished`,
     which the brain treats like the end of the built-in attack. It holds the shared FX slots
@@ -149,6 +153,14 @@ meant to be edited by hand.**
     velocity each physics step, then back to `Idle` for the next decision. It never interrupts an attack, a
     wake or another evade; a failed roll waits 1 s before rolling again; a ground enemy does not start (or
     continue) over a ledge (`CanAdvance`); knockback pauses it; `Static` enemies ignore the list.
+  - **A defence that attacks** (`EnemyDefence.attack`, a catalog attack — "dash away and shoot at the end"):
+    `BeginEvade` → `EnemyAttack.RunDefenceAttack` runs it through `EnemyAttackHost` with
+    `anticipation + move duration` as its lead, so its gesture plays **whole** while the enemy moves (instead of
+    the held pose) and the attack leaves at its releases — with a "lasts the warning" step, the first one lands
+    as the move ends. If it is still running when the move ends, the brain waits in `Attacking` until
+    `DeckAttackFinished`. It does not count for the deck's cooldowns. Web: Defensa ▸ "Ataque que lanza al
+    apartarse" (one of the deck's cards; "Sólo desde una defensa" keeps it out of the draw —
+    `attacks` has it, `tuning.attacks` does not, `tuning.defences[].attack` names it).
   - **Body**: `EnemyAnimation.Hold(gesture)` while it lasts (the gesture's windup pose, its `at = 0` effects
     and its sprites — never an attack event), `ReturnToRest` at the end. Sound: `SoundTrigger.OnEvade`.
   - **Pipeline**: `tuning.defences` in enemy-config, read by `EnemyDeckImporter.ReadDefences` and, like the

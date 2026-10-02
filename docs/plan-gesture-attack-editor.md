@@ -2,11 +2,13 @@
 
 Agreed with the user 2026-10-02. The engine side is done and merged (`docs/architecture/procedural-rig.md ▸
 A gesture is a timeline`): a gesture is any number of steps, with attack releases and effects at any instant.
-What is missing is a comfortable place to author that. **Step 1 is built (2026-10-02); next: Step 2.**
+What is missing is a comfortable place to author that. **Steps 1–3 are built (2026-10-02), on branch
+`task/gesture-attack-editor`. Next: the user's test pass (`plan-gesture-attack-editor-tests.md`), fixes
+from it, then Step 4 (the bridge).**
 
 ## ▶ How to start (after /clear)
 
-> Lee `docs/plan-gesture-attack-editor.md` y ejecuta el Paso 2.
+> Lee `docs/plan-gesture-attack-editor.md` y ejecuta el Paso 4.   (after the test pass)
 
 Read first: `CLAUDE.md`, this file, `docs/architecture/procedural-rig.md` (the timeline section),
 `Web/RedMagicWeb/ARCHITECTURE.md ▸ Rig composer / Enemy Studio`, `modules/rig-gestures.js`, `rig-fx.js`,
@@ -43,11 +45,11 @@ Two copies would drift apart within weeks (the reason the audio tables and the i
    writes `steps / releases / fx` (what `make-enemy.mjs` writes today) and reads back what Unity exports
    (`RigConfigExporter` already writes the new shape — until this step the Studio cannot reopen it).
    Templates (`rig-templates.js`) keep their two-step gestures, converted on instantiate.
-2. **Attack + gesture together, and the test stage**: the attack card beside the timeline; the stage plays
+2. ✅ **Attack + gesture together, and the test stage**: the attack card beside the timeline; the stage plays
    the body through the gesture and fires at each release. Faithful for position, instant and direction;
    the pattern is re-implemented in JS only for the projectile attacks (shot, fan, ring) — the other
    catalog types get a simplified view. The real feel is still judged in the game.
-3. **The focused tab** ("Gestos y ataques"): the same module on an existing enemy, with "añadir PNG de
+3. ✅ **The focused tab** ("Gestos y ataques"): the same module on an existing enemy, with "añadir PNG de
    estado" for a part. Export = only gestures + attacks (a partial rig-config the importer merges), never
    the body or the Inspector's tuning.
 4. **The bridge**: a small local server inside the Unity editor (idle until called; editor-only, not in the
@@ -88,9 +90,33 @@ The attack list must be built around the gesture's releases; today nothing in "A
 - Supr acts on what was clicked last: a timeline item when the timeline was (done), else the canvas.
 - Tests for the user: short, in the web only; ONE Unity import at the very end, never per step.
 
+## Steps 2–3 — what was built
+
+- **Engine**: `ReleaseAttack` (catalog): one entry per release of its gesture — nothing / projectile / fan /
+  ring / strike, each with its own projectile, aim (frozen / live / forward) and damage. It replaced the "own
+  attack with another gesture" cards (removed; IceRobot, koros and ShroomShaman were converted).
+  `EnemyDefence.attack`: a defence launches a catalog attack while it moves, its gesture played whole.
+  Details: `docs/architecture/enemies.md`.
+- **Web**: an attack card shows one slot per release of its gesture; a gesture's card lists the attacks that
+  use it; "▶ Probar" fires them at a draggable target; the 🎬 "Gestos y ataques" tab is the same editors on
+  an existing enemy, with a partial export (`*.gestos.zip`) Unity applies over the prefab. Details:
+  `Web/RedMagicWeb/ARCHITECTURE.md ▸ Gestures ⇄ attacks`.
+- **How "each release launches its own attack" was solved**: the mapping lives on the ATTACK (its `shots`
+  list), not on `RigRelease` — the same gesture can serve two attacks with different payloads, and nothing
+  in the rig had to change. A release cannot launch an arbitrary other catalog attack (a `BulletHell`
+  rain, a slam): only the five shot kinds. If that is wanted later, a sixth kind "another attack" is the place.
+- **Not done**: sound on the web stage (gesture sounds live in Unity; the bridge brings them); the Boss
+  Creator's card does not edit `shots` (bosses keep the default single projectile unless set in Unity);
+  the stage does not simulate homing / pierce / explosions.
+- **For Step 4 (the bridge)**: the partial bundle is already the payload — `buildGesturesBundle` builds it and
+  `RigBundleImporter.ImportPartial` applies it. The bridge needs: Unity → web (the enemy's record: today the
+  web needs the enemy in its own library, with its part PNGs; `readRigGestures` already reads Unity's
+  gestures by part path) and web → Unity (post the partial zip instead of downloading it).
+
 ## Notes
 
-- **Several attacks inside one gesture — wanted (user, 2026-10-02).** Today several releases = the same
+- **Several attacks inside one gesture — wanted (user, 2026-10-02) — DONE as `ReleaseAttack` + `EnemyDefence.attack`
+  (see "Steps 2–3"); what follows is the original analysis.** Before, several releases = the same
   attack fires several times. The user wants each release to be able to launch its OWN attack, and
   gestures that are not attacks to fire too. Their examples:
   - "shoots twice fast, seems to jam on the third, then attacks again": releases 1, 2 and 4 fire; the third

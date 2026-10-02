@@ -72,18 +72,23 @@ function creatorFor(kind) {
 /** The tab that was open last time, reopened on load (restoreLastTab, at the end of this file). */
 const LAST_TAB_KEY = 'redmagic.lastTab';
 
+// A tab without a panel of its own shows another tab's: 🎬 Gestos y ataques is Enemy Studio's panel in
+// its focused mode (the same editors on an existing enemy — modules/enemy-studio.js ▸ show('focus')).
+const TAB_PANELS = { gestures: 'studio' };
+const panelOf = (tab) => TAB_PANELS[tab] || tab;
+
 for (const btn of document.querySelectorAll('.tabBtn')) {
   btn.addEventListener('click', () => {
     if (btn.disabled) return;
     for (const b of document.querySelectorAll('.tabBtn')) b.classList.toggle('active', b === btn);
     for (const panel of document.querySelectorAll('.tabPanel')) {
-      panel.hidden = panel.id !== `tab-${btn.dataset.tab}`;
+      panel.hidden = panel.id !== `tab-${panelOf(btn.dataset.tab)}`;
     }
     try { localStorage.setItem(LAST_TAB_KEY, btn.dataset.tab); } catch { /* private window: nothing to remember */ }
     // Enemy Studio borrows the Enemy Creator's panels (its step 4) while it is on screen: first of
     // all, so the Enemy Creator tab finds them back where they belong.
     if (enemyStudio) {
-      if (btn.dataset.tab === 'studio') enemyStudio.show();
+      if (panelOf(btn.dataset.tab) === 'studio') enemyStudio.show(btn.dataset.tab === 'gestures' ? 'focus' : 'full');
       else enemyStudio.hide();
     }
     // Enemy Creator's lane cross-reference is read-only, display-only context from the Sprites
@@ -2148,14 +2153,23 @@ const tabButtonOf = (tab) => document.querySelector(`.tabBtn[data-tab="${tab}"]`
 const openTabById = (tab) => { const btn = tabButtonOf(tab); if (btn && !btn.disabled) btn.click(); };
 const clickSave = (btn) => { if (!btn || btn.disabled) return false; btn.click(); return undefined; };
 
+/** Space in Enemy Studio (either door): "▶ Probar" of the open gesture's timeline, else of the first gesture. */
+function playOpenGesture() {
+  const play = document.querySelector('#tab-studio [data-action="gesturePlay"][data-open]') || document.querySelector('#tab-studio [data-action="gesturePlay"]');
+  if (!play || !play.offsetParent) return false;
+  play.click();
+  return true;
+}
+
 shell = initShellTools({
   activeTab: () => document.querySelector('#tabBar .tabBtn.active')?.dataset.tab,
   tabButton: tabButtonOf,
-  tabPanel: (tab) => document.getElementById(`tab-${tab}`),
+  tabPanel: (tab) => document.getElementById(`tab-${panelOf(tab)}`),
   // Only the tabs where an edit can be lost by closing: the rest either save as they go or only export.
   dirtyTabs: ['studio', 'vfx', 'boss', 'enemy', 'fx'],
   saveActions: {
     studio: async () => { await rigComposer.save(); },
+    gestures: async () => { await rigComposer.save(); },
     vfx: () => vfxLab.save(),
     boss: () => clickSave(document.getElementById('bossSaveBtn')),
     sprites: () => clickSave(saveToLibraryBtn),
@@ -2165,12 +2179,8 @@ shell = initShellTools({
   },
   playActions: {
     vfx: () => vfxLab.togglePlay(),
-    studio: () => {
-      const play = document.querySelector('#tab-studio [data-action="gesturePlay"][data-open]') || document.querySelector('#tab-studio [data-action="gesturePlay"]');
-      if (!play || !play.offsetParent) return false;
-      play.click();
-      return true;
-    },
+    studio: playOpenGesture,
+    gestures: playOpenGesture,
   },
   paletteItems: async () => {
     const items = [...document.querySelectorAll('#tabBar .tabBtn')].map((btn, i) => ({

@@ -463,6 +463,16 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .studioFxRow{cursor:grab;}
 .studioFxRow button{padding:0 7px;}
 #tab-studio[data-kind="enemy"] #rigInspectorLinks{display:none;}
+/* The focused door (🎬 Gestos y ataques, data-mode="focus"): no steps; gestures on the right with the
+   form's Ataques / Defensa under them. */
+#studioFocus{display:none;}
+#tab-studio[data-mode="focus"] #studioFocus{display:block;}
+#tab-studio[data-mode="focus"] #studioSteps > h1,
+#tab-studio[data-mode="focus"] .studioStep{display:none;}
+#studioFocus select{margin:4px 0 6px;}
+#tab-studio[data-mode="focus"] #studioRight{width:520px;}
+#tab-studio[data-mode="focus"] #enemyFormPanel .efSection:not(.efDeck):not(.efDefence){display:none;}
+#tab-studio[data-mode="focus"] #enemyJsonPreview,#tab-studio[data-mode="focus"] #enemyExportBtn{display:none;}
 #tab-studio #enemyFormPanel{flex:none;padding:0;overflow:visible;}
 #tab-studio #enemyFormPanel > h1,#tab-studio #enemyFormPanel > p.hint,#tab-studio #enemyLaneInfo{display:none;}
 #tab-studio .efArtIdentity,#tab-studio .efSheetOnly{display:none;}

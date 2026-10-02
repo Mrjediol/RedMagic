@@ -41,7 +41,7 @@
 import { createDefaultRigState, createPart, RIG_FIELD_GROUPS, createDefaultRigFields, adoptRigState } from './rig-defaults.js';
 import * as M from './rig-model.js';
 import { RigCanvasView } from './rig-canvas-view.js';
-import { buildRigExport, buildRigBundle, readRigGestures } from './rig-export.js';
+import { buildRigExport, buildRigBundle, buildGesturesExport, buildGesturesBundle, readRigGestures } from './rig-export.js';
 import { loadValidator, validateConfig } from './config-schema.js';
 import { saveEnemy, updateEnemy, getEnemy, deleteEnemy, listEntries, buildThumbnail } from './enemy-library.js';
 import { downloadBlob } from './export-manifest.js';
@@ -97,6 +97,10 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   const head = { t: 0, playing: false, lead: null };   // the open gesture's playhead; lead = a warning only for this play
   let previewTelegraph = 0.6;    // seconds of warning the preview launches a gesture with (the attack's 'telegraph')
   let placing = null;            // { kind: 'fx' | 'release', index }: the next canvas click places it
+  // FOCUS MODE (the "Gestos y ataques" tab): the body is given — an enemy that already exists. Only
+  // gestures (poses, releases, effects) and state sprites are edited; parts cannot be moved, added or
+  // deleted, and the export is the partial one.
+  let focusMode = false;
   let timelineFocus = false;     // the timeline was the last thing clicked (not the canvas / parts list): Supr removes its selection
   timelineHost.addEventListener('mousedown', () => { timelineFocus = true; }, true);
   sidebar.addEventListener('mousedown', () => { timelineFocus = false; }, true);
@@ -534,7 +538,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   function renderToolbar() {
     toolbar.innerHTML = '';
     const tools = el('div', 'rigTools');
-    TOOLS.forEach((t) => {
+    TOOLS.filter((t) => !focusMode || POSE_TOOLS.includes(t.id)).forEach((t) => {
       const b = el('button', `small${tool === t.id ? ' active' : ''}`, t.label);
       b.title = `${t.hint} (tecla ${t.key.toUpperCase()})`;
       b.onclick = () => { tool = t.id; renderToolbar(); setStatus(t.hint); };
@@ -551,7 +555,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const centre = el('button', 'small', '◎ Origen al centro');
     centre.title = 'Mueve el cuerpo entero para que su centro quede en el origen (la raíz del prefab): desde ahí se miden rangos y detección.';
     centre.onclick = () => { if (centerOrigin()) { changed(); setStatus('Origen (raíz del prefab) en el centro del cuerpo.'); } };
-    tools.appendChild(centre);
+    if (!focusMode) tools.appendChild(centre);
     const frame = el('button', 'small', '⌖ Encuadrar');
     frame.onclick = () => view.frame(state);
     tools.appendChild(frame);
@@ -605,7 +609,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   document.addEventListener('keydown', (e) => {
     if (canvas.closest('.tabPanel')?.hidden) return;
     if ((e.target instanceof Element && e.target.closest('input, textarea, select'))) return;
-    const t = TOOLS.find((x) => x.key === e.key.toLowerCase());
+    const t = TOOLS.find((x) => x.key === e.key.toLowerCase() && (!focusMode || POSE_TOOLS.includes(x.id)));
     if (e.ctrlKey || e.metaKey) return;
     if (t) { tool = t.id; renderToolbar(); setStatus(t.hint); }
     if (e.key === 'Escape' && placing) { placing = null; renderInspector(); setStatus('Colocar: cancelado.'); return; }
@@ -615,7 +619,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       if (timelineFocus && timeline.selection) { e.preventDefault(); timeline.removeSelected(); return; }
       // …else the canvas. Posing: Supr takes the part out of the pose, never deletes the part.
       if (posing) clearPose(poseTarget());
-      else if (selectedUid) removePart(M.byUid(state, selectedUid));
+      else if (selectedUid && !focusMode) removePart(M.byUid(state, selectedUid));
     }
   });
 
@@ -704,6 +708,12 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     if (posing) { beginPoseDrag(e, pt); return; }
     const hit = view.partAt(state, e.clientX, e.clientY);
     let part = selectedPart();
+    // The body is not edited here: a press only selects (the part a new effect / pose would use).
+    if (focusMode) {
+      select(hit ? hit.uid : null);
+      if (hit) setStatus(`"${hit.name}". El cuerpo no se edita en esta pestaña: para mover sus piezas en un gesto, "✋ Posar este paso".`);
+      return;
+    }
 
     if (tool === 'move') {
       // The handle of an empty node first (a small target, usually under its children's art).
@@ -822,6 +832,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   canvasWrap.addEventListener('drop', (e) => {
     if (!e.dataTransfer?.files?.length) return;
     e.preventDefault();
+    if (focusMode) { setStatus('Aquí no se añaden piezas. Un PNG de estado se suelta sobre su casilla en "Sprites por estado".'); return; }
     const files = [...e.dataTransfer.files];
     const slot = files.length === 1 ? view.slotAt(state, e.clientX, e.clientY) : null;
     if (slot) fillFromFile(slot, files[0]);
@@ -1261,14 +1272,20 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     linksHost.innerHTML = '';
     exportHost.innerHTML = '';
     const part = selectedPart();
-    if (part) renderPartInspector(part);
-    else inspector.appendChild(el('p', 'hint', 'Selecciona una pieza (clic en el lienzo o en la lista).'));
-    renderRigSection();
-    renderGesturesSection();
-    renderBodySection();
-    renderStatesBoard();
-    renderLinksSection();
-    renderExportSection();
+    if (focusMode) {
+      renderGesturesSection();
+      renderStatesBoard();
+      renderFocusExport();
+    } else {
+      if (part) renderPartInspector(part);
+      else inspector.appendChild(el('p', 'hint', 'Selecciona una pieza (clic en el lienzo o en la lista).'));
+      renderRigSection();
+      renderGesturesSection();
+      renderBodySection();
+      renderStatesBoard();
+      renderLinksSection();
+      renderExportSection();
+    }
     scroller.scrollTop = scrollTop;
     renderTimeline();
   }
@@ -1905,6 +1922,38 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     refreshExport();
   }
 
+  /** Focus mode: save, and the export of only what this tab edits. */
+  function renderFocusExport() {
+    const d = rememberedSection('focusExport', 'Guardar y llevar a Unity', true, exportHost);
+    exportSummaryEl = el('div', 'rigExportSummary');
+    d.appendChild(exportSummaryEl);
+    exportPreviewEl = null;
+    const save = el('button', 'primary', '💾 Guardar en biblioteca');
+    save.style.width = '100%';
+    save.onclick = saveToLibrary;
+    const zip = el('button', null, '⬇ Exportar sólo gestos y ataques (.zip)');
+    zip.style.width = '100%';
+    zip.title = 'Para un enemigo que Unity ya tiene: sus gestos (con efectos y sprites por estado), sus ataques y sus defensas. No toca el cuerpo ni lo afinado en el Inspector. En Unity: Tools ▸ Web ▸ Rig ▸ Importar rig.';
+    zip.onclick = exportGesturesZip;
+    d.append(save, zip);
+    d.appendChild(el('p', 'hint', 'El enemigo tiene que estar ya importado en Unity (con el .zip completo de Enemy Studio). Este .zip sólo le cambia gestos y ataques.'));
+    refreshExport();
+  }
+
+  async function exportGesturesZip() {
+    const { problems } = buildGesturesExport(state, { entriesById: fxEntries });
+    if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Exportar igualmente?`)) return;
+    if (hooks.beforeExport) await hooks.beforeExport();   // the attacks edited beside the gestures, saved first
+    const all = await listEntries(null);
+    const blob = await buildGesturesBundle(state, {
+      enemyConfig: (currentId && (await getEnemy(currentId))?.enemyConfig) || null,
+      entriesById: new Map(all.map((e) => [e.id, e])),
+    });
+    downloadBlob(blob, `${fileStem()}.gestos.zip`);
+    setStatus('Exportado (sólo gestos y ataques). En Unity: Tools ▸ Web ▸ Rig ▸ Importar rig (.zip · carpeta)…');
+    if (currentId) saveToLibrary();
+  }
+
   // ============================================================ undo / redo
 
   const history = [];
@@ -1979,10 +2028,10 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       recordHistory();
       if (hooks.onChange) hooks.onChange();
       if (!exportSummaryEl) return;
-      const { doc, problems, notes } = buildRigExport(state, { entriesById: fxEntries });
-      const schemaErrors = validate ? validateConfig(validate, doc).errors : [];
+      const { doc, problems, notes } = (focusMode ? buildGesturesExport : buildRigExport)(state, { entriesById: fxEntries });
+      const schemaErrors = validate && !focusMode ? validateConfig(validate, doc).errors : [];   // a partial document is not a whole rig-config
       let html = '';
-      if (!problems.length && !schemaErrors.length) html += '<p class="efSummaryOk">✓ Listo para exportar (rig-config.schema.json)</p>';
+      if (!problems.length && !schemaErrors.length) html += `<p class="efSummaryOk">✓ Listo para exportar${focusMode ? ' (sólo gestos y ataques)' : ' (rig-config.schema.json)'}</p>`;
       if (problems.length) html += `<p class="efSummaryError">✗ Falta:</p><ul>${problems.map((p) => `<li>${p}</li>`).join('')}</ul>`;
       if (schemaErrors.length) html += `<p class="efSummaryError">✗ Esquema:</p><ul>${schemaErrors.map((e) => `<li><code>${e.path || '(raíz)'}</code> — ${e.message}</li>`).join('')}</ul>`;
       if (notes.length) html += `<ul class="hint">${notes.map((n) => `<li>${n}</li>`).join('')}</ul>`;
@@ -2117,6 +2166,17 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     refreshInspector: () => { renderInspector(); requestRender(); },
     // An attack's numbers changed (its telegraph is the open gesture's warning): the track and the canvas, not the panels.
     refreshStage: () => { renderTimeline(); requestRender(); },
+    /** The "Gestos y ataques" tab: the body is given, only gestures / state sprites are edited. */
+    setFocusMode: (on) => {
+      if (focusMode === !!on) return;
+      focusMode = !!on;
+      if (posing) stopPosing(true);
+      if (focusMode && !POSE_TOOLS.includes(tool)) tool = 'move';
+      renderToolbar();
+      renderSidebar();
+      renderInspector();
+      requestRender();
+    },
     onShow: () => { refreshLibraries(); requestRender(); },
   };
 }

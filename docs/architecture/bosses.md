@@ -54,6 +54,16 @@ fields, registering tags, planting the prefab on the scene's ground) lives once 
   interface does not go through Unity's fake null). The body is an **`IAttackBody`**
   (`PlayGesture`, `Released`, `SecondsToRelease`, `Hold`, `ClearHold`, `ReturnToRest`):
   `BossAnimator` for bosses, `EnemyAnimation` for enemies.
+  - **`ReleaseAttack`** (any host): what leaves at each release of its gesture — see `enemies.md` ▸ the deck.
+    On a rig boss each shot leaves from the release's point (`BossController.CastPoint` = the rig's cast
+    position when it has a muzzle / aim part / a release point; else the feet). `IAttackHost.AimPoint` is null
+    on a boss, so `Frozen` aims live. The Boss Creator's own (older) card does not edit its `shots` list yet:
+    there it keeps the default (one projectile).
+  - **Catalog fields for lists**: a `List<T>` of a `[Serializable]` class is exported as `objectList`
+    (`fields` of T, `defaultCount`); `[PerRelease]` on it → `perRelease` (the web shows one slot per
+    release of the attack's gesture); `[ShowIf("field", values…)]` on a field → `showIf` (the web hides it
+    otherwise). `SerializedFieldWriter` writes nested objects and lists of them (a nested `ProjectileSpec`
+    whole) — the web always sends list items complete, since Unity grows arrays with zeroed elements.
   - **Boss-only attacks**: what needs phases, guard, adds or arena targets (`AnchorRitual`,
     `GuardStance`, `SummonAdds`, `PlatformDenial`) is tagged **`[BossOnly]`** and reads
     `ctx.Boss` (the `BossController`, null on an enemy → the attack does nothing). The catalog

@@ -14,6 +14,12 @@
     "$schema": {
       "type": "string"
     },
+    "partial": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sólo gestos y ataques: se aplica sobre un prefab que YA existe y sólo escribe gestures / idleGestures / spriteSwaps (y, del enemy-config.json que lo acompañe, la baraja y las defensas).",
+      "$comment": "RigBundleImporter.ImportPartial. Con partial = true 'parts' no hace falta (no se valida como un rig-config completo: la web no lo pasa por este esquema). El cuerpo, el resto del rig y lo afinado en el Inspector no se tocan."
+    },
     "kind": {
       "type": "string",
       "enum": [

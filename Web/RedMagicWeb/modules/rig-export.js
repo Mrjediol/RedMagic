@@ -9,6 +9,12 @@
 //   Library/<libraryId>/…        (its projectile's art, same as a combined enemy bundle)
 //   boss-config.json + Art/…     (kind boss, optional: a linked Boss Creator entry, without 'body')
 //
+// A second, PARTIAL bundle (`buildGesturesBundle`, the "Gestos y ataques" tab): only what that tab
+// edits, for an enemy Unity already has — rig-config.json with `"partial": true` and just `gestures` /
+// `idleGestures` / `spriteSwaps` (+ their PNGs and effects), and an enemy-config.json with just the
+// deck (`attacks`, `tuning.attacks`, `tuning.defences`). RigBundleImporter.ImportPartial applies it
+// over the existing prefab and touches nothing else (never the body, never the Inspector's tuning).
+//
 // Decisions that mirror the importer (see docs/web-tools-guide.md ▸ Rig):
 //  - each part's joint IS its sprite's pivot (written in `sprites`), so RigPart.pivot exports as 0;
 //  - muzzle and grips become ordinary nodes ('Muzzle' under the aim part, 'Grip' under each limb)
@@ -378,6 +384,57 @@ export function readRigGestures(doc, state, ctx = {}) {
     interval: doc.idleGestures.interval ?? 4, chance: doc.idleGestures.chance ?? 0.6, windup: doc.idleGestures.windup ?? 0.5,
   } : null;
   return { gestures, idle, notes };
+}
+
+// ============================================================ only gestures + attacks (partial)
+
+/**
+ * The part of the rig-config the "Gestos y ataques" tab owns: gestures, idle gestures, state sprites.
+ * @returns {{ doc: object, files: Array<{path, dataURL}>, problems: string[], notes: string[] }}
+ */
+export function buildGesturesExport(state, ctx = {}) {
+  const full = buildRigExport(state, ctx);
+  const swaps = full.doc.spriteSwaps || [];
+  const used = new Set();
+  swaps.forEach((s) => [s.asleep, s.awake, s.attacking, ...(s.stages || []), ...(s.named || []).map((n) => n.sprite)]
+    .forEach((ref) => { if (ref) used.add(ref); }));
+
+  const doc = { partial: true, kind: full.doc.kind, name: full.doc.name, pixelsPerUnit: full.doc.pixelsPerUnit };
+  doc.sprites = Object.fromEntries(Object.entries(full.doc.sprites).filter(([path]) => used.has(path)));
+  doc.spriteSwaps = swaps;
+  ['gestures', 'idleGestures', 'artAssets'].forEach((k) => { if (full.doc[k] !== undefined) doc[k] = full.doc[k]; });
+
+  // Only what concerns this bundle: the body's own problems (an empty slot, no collider…) are not its business.
+  const problems = full.problems.filter((p) => /^Gesto |nombre/i.test(p));
+  if (!Array.isArray(doc.gestures)) full.notes.push('Este documento no exporta gestos: Unity conserva los que tenga el prefab.');
+  return { doc, files: full.files.filter((f) => used.has(f.path)), problems, notes: full.notes.filter((n) => /gest|sprite/i.test(n)) };
+}
+
+/** The deck part of an EnemyConfig: its attacks, the cards of the draw, the defences. Null = it has none. */
+export function partialEnemyConfig(enemyConfig, name) {
+  const t = enemyConfig?.tuning;
+  if (!t || (!Array.isArray(t.attacks) && !Array.isArray(t.defences))) return null;
+  const cfg = { kind: 'enemy', partial: true, enemyName: name, tuning: {} };
+  if (enemyConfig.attacks) cfg.attacks = JSON.parse(JSON.stringify(enemyConfig.attacks));
+  if (enemyConfig.artAssets) cfg.artAssets = JSON.parse(JSON.stringify(enemyConfig.artAssets));
+  ['attacks', 'builtInAttack', 'builtInWeight', 'defences'].forEach((k) => { if (t[k] !== undefined) cfg.tuning[k] = JSON.parse(JSON.stringify(t[k])); });
+  return cfg;
+}
+
+/** The partial .zip: only gestures (+ state sprites, effects) and the enemy's attacks. */
+export async function buildGesturesBundle(state, { enemyConfig = null, entriesById = new Map() } = {}) {
+  const { doc, files } = buildGesturesExport(state, { entriesById });
+  const zip = new window.JSZip();
+  zip.file('rig-config.json', JSON.stringify(doc, null, 2));
+  files.forEach((f) => zip.file(f.path, f.dataURL.split(',')[1], { base64: true }));
+  await embedAttackArt(zip, doc);   // frames of the gestures' effects → Art/<libraryId>/
+
+  const cfg = state.kind === 'enemy' ? partialEnemyConfig(enemyConfig, doc.name) : null;
+  if (cfg) {
+    zip.file('enemy-config.json', JSON.stringify(cfg, null, 2));
+    await embedAttackArt(zip, cfg);   // art of the deck's attacks → Art/<libraryId>/
+  }
+  return zip.generateAsync({ type: 'blob' });
 }
 
 /** The Enemy Creator config authored for this rig, trimmed to what a part-based enemy reads (tuning + tier). */

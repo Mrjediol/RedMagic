@@ -40,6 +40,12 @@ namespace RedMagic.Rigging.EditorTools
     /// (<c>enemy-config.json</c> ▸ <c>attacks</c> + <c>tuning.attacks</c>), que también viene siempre
     /// del JSON. Para llevar a la web lo afinado en el rig, antes
     /// <c>Exportar rig a JSON</c>.
+    ///
+    /// <b>Sólo gestos y ataques</b> (<c>"partial": true</c>, lo que exporta la pestaña "Gestos y ataques"
+    /// de la web): se aplica sobre un prefab que <b>ya existe</b> y sólo escribe sus gestos (con sus
+    /// efectos y sus gestos de reposo), sus sprites por estado y — de <c>enemy-config.json</c> — su
+    /// baraja de ataques y sus defensas. El cuerpo, el resto del rig y lo afinado en el Inspector no
+    /// se tocan; nunca pasa por <see cref="Options.ResetTuning"/>.
     /// </summary>
     public static class RigBundleImporter
     {
@@ -139,6 +145,12 @@ namespace RedMagic.Rigging.EditorTools
         private static void ImportConfig(JObject config, string source, string configPath, Options options,
                                          ConfigImportReport report)
         {
+            if (config.Value<bool?>("partial") == true)
+            {
+                ImportPartial(config, source, configPath, options, report);
+                return;
+            }
+
             // --- 1) validar TODO antes de escribir un solo asset.
             string name = options.NameOverride ?? ConfigJson.RequireString(config, "name", "RigConfig");
             if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || name.Contains("/"))
@@ -172,19 +184,8 @@ namespace RedMagic.Rigging.EditorTools
                 var enemyJson = JObject.Parse(File.ReadAllText(enemyConfigPath));
                 tuning = EnemyConfigImporter.ReadTuning(enemyJson, report);
 
-                // Baraja de ataques del catálogo: su arte viaja en Art/ del bundle y se deja junto a
-                // los PNG de las piezas, donde lo busca EnemyDeckImporter.
-                string artSource = Path.Combine(source, "Art");
-                string artRoot = $"{RigConfigJson.ArtRoot}/{name}";
-                if (Directory.Exists(artSource) &&
-                    !string.Equals(Path.GetFullPath(artSource), Path.GetFullPath($"{artRoot}/Art"), StringComparison.OrdinalIgnoreCase))
-                {
-                    int copied = 0, removed = 0;
-                    BossBundleImporter.Sync(artSource, Path.GetFullPath($"{artRoot}/Art"), ref copied, ref removed);
-                    AssetDatabase.Refresh();
-                }
-
-                deck = EnemyDeckImporter.Read(enemyJson, name, artRoot, report);
+                // Baraja de ataques del catálogo: su arte viaja en Art/ del bundle.
+                deck = ReadDeck(enemyJson, source, name, report);
                 if (deck != null) deck.ApplyTo(tuning);
                 if (enemyJson["tier"] != null) tier = ConfigJson.ParseEnum<EnemyTier>(enemyJson["tier"], "enemy-config.tier");
                 if (enemyJson["presence"] != null)
@@ -274,6 +275,98 @@ namespace RedMagic.Rigging.EditorTools
             }
 
             Debug.Log($"[RigBundleImporter] {name}\n{log}");
+        }
+
+        /// <summary>
+        /// Un bundle de <b>sólo gestos y ataques</b> sobre un prefab que ya existe: gestos, gestos de
+        /// reposo y sprites por estado del rig-config; baraja y defensas del enemy-config. Nada más.
+        /// </summary>
+        private static void ImportPartial(JObject config, string source, string configPath, Options options,
+                                          ConfigImportReport report)
+        {
+            string name = options.NameOverride ?? ConfigJson.RequireString(config, "name", "RigConfig");
+            string folder = options.PrefabFolder ?? ProceduralEnemyPacks.Folder;
+            string prefabPath = $"{folder}/{name}.prefab";
+            var existing = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (existing == null)
+                throw new ConfigImportException(
+                    $"'{prefabPath}' no existe: un export de sólo gestos y ataques se aplica sobre un enemigo ya " +
+                    "importado. Exporta antes el enemigo entero desde Enemy Studio (paso 5).");
+
+            bool boss = existing.GetComponent<BossController>() != null;
+            if (existing.GetComponent<ProceduralRig>() == null)
+                throw new ConfigImportException($"'{prefabPath}' no es un cuerpo por partes (no tiene ProceduralRig).");
+
+            // Las piezas que nombran las poses, las sueltas, los efectos y los sprites tienen que estar
+            // en el prefab: el cuerpo no viaja en este bundle.
+            var have = existing.transform.Find(ProceduralRigTool.VisualName);
+            var missing = new SortedSet<string>();
+            void Check(JToken token)
+            {
+                string path = token?.Type == JTokenType.String ? token.Value<string>() : null;
+                if (!string.IsNullOrEmpty(path) && RigConfigJson.Find(have, path) == null) missing.Add(path);
+            }
+
+            if (config["gestures"] is JArray gestureList)
+                foreach (var g in gestureList)
+                {
+                    if (g["steps"] is JArray steps)
+                        foreach (var step in steps)
+                            if (step["poses"] is JArray poses) foreach (var p in poses) Check(p["part"]);
+                    if (g["releases"] is JArray releases) foreach (var r in releases) Check(r["point"]);
+                    if (g["fx"] is JArray fx) foreach (var f in fx) Check(f["part"]);
+                }
+            if (config["spriteSwaps"] is JArray swapList) foreach (var sw in swapList) Check(sw["part"]);
+            if (missing.Count > 0)
+                throw new ConfigImportException(
+                    $"El cuerpo de '{prefabPath}' no tiene estas piezas: {string.Join(", ", missing)}. Cambió en " +
+                    "la web después del último export completo: exporta el enemigo entero desde Enemy Studio.");
+
+            var nodes = new List<Node>();
+            var sprites = ResolveSprites(config, nodes, source, name, report);
+            BuildGestureArt(config, source, name, boss, report);
+
+            EnemyDeckImporter.Deck deck = null;
+            string enemyConfigPath = RigConfigJson.SiblingPath(configPath, RigConfigJson.EnemyConfigFile);
+            if (!boss && File.Exists(enemyConfigPath))
+                deck = ReadDeck(JObject.Parse(File.ReadAllText(enemyConfigPath)), source, name, report);
+
+            var root = PrefabUtility.LoadPrefabContents(prefabPath);
+            try
+            {
+                var rig = root.GetComponent<ProceduralRig>();
+                var visual = root.transform.Find(ProceduralRigTool.VisualName);
+                WriteRig(rig, visual, nodes, config, sprites, report, partial: true);
+                if (deck != null) EnemyDeckImporter.ApplyToRoot(root, deck);
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+
+            report.Add(false, prefabPath);
+            report.Warnings.Add("Sólo gestos y ataques: el cuerpo, el resto del rig y lo afinado en el Inspector no se han tocado.");
+            AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// La baraja (y las defensas) de un enemy-config, con el arte de sus ataques ya copiado junto a
+        /// las piezas, donde lo busca <see cref="EnemyDeckImporter"/>.
+        /// </summary>
+        private static EnemyDeckImporter.Deck ReadDeck(JObject enemyJson, string source, string name, ConfigImportReport report)
+        {
+            string artSource = Path.Combine(source, "Art");
+            string artRoot = $"{RigConfigJson.ArtRoot}/{name}";
+            if (Directory.Exists(artSource) &&
+                !string.Equals(Path.GetFullPath(artSource), Path.GetFullPath($"{artRoot}/Art"), StringComparison.OrdinalIgnoreCase))
+            {
+                int copied = 0, removed = 0;
+                BossBundleImporter.Sync(artSource, Path.GetFullPath($"{artRoot}/Art"), ref copied, ref removed);
+                AssetDatabase.Refresh();
+            }
+
+            return EnemyDeckImporter.Read(enemyJson, name, artRoot, report);
         }
 
         /// <summary>
@@ -753,8 +846,17 @@ namespace RedMagic.Rigging.EditorTools
 
         // ============================================================ rig
 
+        /// <param name="partial">Sólo gestos, gestos de reposo y sprites por estado: las partes y los campos del rig se quedan como están.</param>
         private static void WriteRig(ProceduralRig rig, Transform visual, List<Node> nodes, JObject config,
-                                     Dictionary<string, Sprite> sprites, ConfigImportReport report)
+                                     Dictionary<string, Sprite> sprites, ConfigImportReport report, bool partial = false)
+        {
+            if (!partial) WriteBody(rig, visual, nodes, config, sprites, report);
+            WriteSwapsAndGestures(rig, visual, config, sprites, report);
+        }
+
+        /// <summary>Las partes (en el orden del JSON) y los campos del rig.</summary>
+        private static void WriteBody(ProceduralRig rig, Transform visual, List<Node> nodes, JObject config,
+                                      Dictionary<string, Sprite> sprites, ConfigImportReport report)
         {
             rig.body = visual;
 
@@ -777,6 +879,11 @@ namespace RedMagic.Rigging.EditorTools
             rig.parts = parts;
 
             if (config["rig"] is JObject block) WriteRigFields(rig, visual, block, sprites, report);
+        }
+
+        private static void WriteSwapsAndGestures(ProceduralRig rig, Transform visual, JObject config,
+                                                  Dictionary<string, Sprite> sprites, ConfigImportReport report)
+        {
 
             if (config["spriteSwaps"] is JArray swaps)
             {

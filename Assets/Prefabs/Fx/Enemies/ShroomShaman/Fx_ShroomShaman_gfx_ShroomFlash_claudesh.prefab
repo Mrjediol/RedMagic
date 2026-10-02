@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.3678161, y: 0.3678161, z: 0.3678161}
+  m_LocalScale: {x: 0.41201717, y: 0.41201717, z: 0.41201717}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -89,7 +89,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.61, y: 1.9}
+  m_Size: {x: 2.33, y: 2.22}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -111,6 +111,7 @@ MonoBehaviour:
   - {fileID: 8115644005664255767, guid: c34b0e56cd79d5342af656a1eb27b286, type: 3}
   - {fileID: -1974267942269126528, guid: 829f96cbf750f1649bee98fee110177f, type: 3}
   - {fileID: 2536910936557558875, guid: 8ab7477e4f85a0a439f4e566e352fff8, type: 3}
+  - {fileID: 1399413676680894907, guid: 0f2ffa609a545a743a6b3b4bc8acbb21, type: 3}
   framesPerSecond: 18
   pingPong: 0
   randomStart: 0
@@ -134,6 +135,7 @@ MonoBehaviour:
     - {fileID: 8115644005664255767, guid: c34b0e56cd79d5342af656a1eb27b286, type: 3}
     - {fileID: -1974267942269126528, guid: 829f96cbf750f1649bee98fee110177f, type: 3}
     - {fileID: 2536910936557558875, guid: 8ab7477e4f85a0a439f4e566e352fff8, type: 3}
+    - {fileID: 1399413676680894907, guid: 0f2ffa609a545a743a6b3b4bc8acbb21, type: 3}
     fps: 18
     loop: 0
   defaultState: Spawn
@@ -149,6 +151,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01b16eff02ca3da45bbdfce009d2f81b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Fx.VfxOneShot
-  lifetime: 0.22222222
+  lifetime: 0.2777778
   extraTime: 0.05
   unscaledTime: 0

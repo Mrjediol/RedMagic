@@ -820,7 +820,7 @@ MonoBehaviour:
       followsPart: 1
       loop: 0
       untilStep: -1
-      facing: 0
+      facing: 2
       angle: 0
       layer: 0
       legacyPhase: -1
@@ -906,7 +906,7 @@ MonoBehaviour:
       followsPart: 1
       loop: 0
       untilStep: -1
-      facing: 0
+      facing: 2
       angle: 0
       layer: 0
       legacyPhase: -1
@@ -988,7 +988,7 @@ MonoBehaviour:
       followsPart: 1
       loop: 0
       untilStep: -1
-      facing: 0
+      facing: 2
       angle: 0
       layer: 0
       legacyPhase: -1
@@ -1036,27 +1036,13 @@ MonoBehaviour:
     releases: []
     recover: 0.25
     fx:
-    - prefab: {fileID: 3207392457270353278, guid: 54eddeb34b5998843bbe18276c7eeead, type: 3}
-      step: 0
-      at: 0
-      anchor: 1
-      part: {fileID: 0}
-      offset: {x: 0, y: 0}
-      scale: 14.82
-      followsPart: 0
-      loop: 0
-      untilStep: -1
-      facing: 2
-      angle: 0
-      layer: 1
-      legacyPhase: -1
     - prefab: {fileID: 124225125635676202, guid: aa0bec1bc441b6845bbb8eb27dd12e2a, type: 3}
       step: 0
       at: 0
       anchor: 1
       part: {fileID: 0}
       offset: {x: 0, y: 0}
-      scale: 18.52
+      scale: 13.58
       followsPart: 1
       loop: 1
       untilStep: -1
@@ -1168,7 +1154,7 @@ MonoBehaviour:
       followsPart: 1
       loop: 0
       untilStep: -1
-      facing: 0
+      facing: 2
       angle: 0
       layer: 0
       legacyPhase: -1
@@ -1182,7 +1168,7 @@ MonoBehaviour:
       followsPart: 1
       loop: 0
       untilStep: -1
-      facing: 0
+      facing: 2
       angle: 0
       layer: 0
       legacyPhase: -1

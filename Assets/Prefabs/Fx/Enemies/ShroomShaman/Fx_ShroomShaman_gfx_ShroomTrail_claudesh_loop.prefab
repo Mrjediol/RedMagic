@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.4050633, y: 0.4050633, z: 0.4050633}
+  m_LocalScale: {x: 0.5614035, y: 0.5614035, z: 0.5614035}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -87,7 +87,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.37, y: 1.28}
+  m_Size: {x: 1.71, y: 1.42}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -111,6 +111,8 @@ MonoBehaviour:
   - {fileID: 2536910936557558875, guid: b3d02b3e6191cd44d872a66b21a49097, type: 3}
   - {fileID: 1399413676680894907, guid: bcd7f6481e5cadc49ae57763a4b03c86, type: 3}
   - {fileID: 6636361135747025162, guid: 2db1d3653a1fba0489a81655e8c3d2df, type: 3}
+  - {fileID: -3229540774608315921, guid: 59e2e4251c915a0498be03a4e5924d50, type: 3}
+  - {fileID: -8556153337439913670, guid: 4f32172a706c868478d05701b7307562, type: 3}
   framesPerSecond: 14
   pingPong: 0
   randomStart: 0

@@ -458,7 +458,7 @@
           "followsPart": true,
           "loop": false,
           "untilStep": -1,
-          "facing": "direction",
+          "facing": "world",
           "angle": 0,
           "layer": "front"
         }
@@ -592,7 +592,7 @@
           "followsPart": true,
           "loop": false,
           "untilStep": -1,
-          "facing": "direction",
+          "facing": "world",
           "angle": 0,
           "layer": "front"
         }
@@ -714,7 +714,7 @@
           "followsPart": true,
           "loop": false,
           "untilStep": -1,
-          "facing": "direction",
+          "facing": "world",
           "angle": 0,
           "layer": "front"
         }
@@ -786,25 +786,6 @@
       "fx": [
         {
           "fx": {
-            "art": "gfx_ShroomPuff_claudesh"
-          },
-          "step": 0,
-          "at": 0,
-          "anchor": "body",
-          "offset": {
-            "x": 0,
-            "y": 0
-          },
-          "scale": 14.82,
-          "followsPart": false,
-          "loop": false,
-          "untilStep": -1,
-          "facing": "world",
-          "angle": 0,
-          "layer": "behind"
-        },
-        {
-          "fx": {
             "art": "gfx_ShroomTrail_claudesh_loop"
           },
           "step": 0,
@@ -814,7 +795,7 @@
             "x": 0,
             "y": 0
           },
-          "scale": 18.52,
+          "scale": 13.58,
           "followsPart": true,
           "loop": true,
           "untilStep": -1,
@@ -1005,7 +986,7 @@
           "followsPart": true,
           "loop": false,
           "untilStep": -1,
-          "facing": "direction",
+          "facing": "world",
           "angle": 0,
           "layer": "front"
         },
@@ -1024,7 +1005,7 @@
           "followsPart": true,
           "loop": false,
           "untilStep": -1,
-          "facing": "direction",
+          "facing": "world",
           "angle": 0,
           "layer": "front"
         }
@@ -1056,20 +1037,6 @@
           "folder": "Loop",
           "fps": 12,
           "loop": true
-        }
-      },
-      "worldWidth": 0.96
-    },
-    "gfx_ShroomPuff_claudesh": {
-      "kind": "fx",
-      "folder": "Art/claude-shroomshaman-puff",
-      "libraryId": "claude-shroomshaman-puff",
-      "entryName": "ShroomPuff",
-      "states": {
-        "Spawn": {
-          "folder": "Spawn",
-          "fps": 14,
-          "loop": false
         }
       },
       "worldWidth": 0.96

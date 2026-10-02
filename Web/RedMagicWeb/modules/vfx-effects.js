@@ -1069,6 +1069,24 @@ const TRAILS = [
     ],
   },
   {
+    id: 'moteTrail',
+    label: 'Estela de motas',
+    description: 'Sólo motas pequeñas que se quedan atrás (izquierda) y se apagan: sin penacho ni halo. Para un dash o un vuelo discreto.',
+    defaults: { core: '#ffffff', glow: '#58c8ff', accent: '#b8f0ff', particles: 14 },
+    params: [],
+    lanes: [
+      { name: 'Loop', loop: true, fps: 14, frames: 8,
+        draw(ctx, k, p, rnd) {
+          // Each mote is born near the body (right), drifts back and a little up or down, and fades.
+          emit(p.particles, k, rnd, (i, t) => {
+            const y = (rnd(i, 2) - 0.5) * 0.9;
+            sparkShape(ctx, 0.55 - t * (0.7 + rnd(i, 4) * 0.6), y * (1 - t * 0.3) + (rnd(i, 5) - 0.5) * 0.25 * t,
+              0.018 + rnd(i, 3) * 0.022, p, bell(t) * 0.95, 0);
+          });
+        } },
+    ],
+  },
+  {
     id: 'footDust',
     label: 'Polvo de pisada',
     description: 'Una nubecita que se queda atrás y se deshace. Para pasos, arranques y frenazos.',

@@ -918,10 +918,33 @@ namespace RedMagic.Rigging
         /// <summary>Giro hacia el objetivo + anticipación + coz, encima del balanceo.</summary>
         private float AimRotation()
         {
-            float aim = _aimPoint.HasValue && _aimWeight > 0f
-                ? Rig.AimOffsetTowards(_aimPoint.Value, _aimPos, _aimAngle) * _aimWeight
+            // El ataque propio apunta con su peso; un gesto, con el de sus pasos marcados 'aim' (hacia el
+            // objetivo que le dio quien lo lanzó, AimTarget).
+            float weight = _aimWeight;
+            Vector2? point = _aimPoint;
+            float gesture = GestureAimWeight();
+            if (gesture > weight && AimTarget.HasValue)
+            {
+                weight = gesture;
+                point = AimTarget;
+            }
+
+            float aim = point.HasValue && weight > 0f
+                ? Rig.AimOffsetTowards(point.Value, _aimPos, _aimAngle) * weight
                 : 0f;
             return aim + _armRotation;
+        }
+
+        /// <summary>Cuánto apunta el gesto en curso: la suma de los pesos de sus pasos <see cref="RigGestureStep.aim"/>.</summary>
+        private float GestureAimWeight()
+        {
+            var steps = _gesture?.steps;
+            if (steps == null) return 0f;
+
+            float weight = 0f;
+            for (int i = 0; i < steps.Count && i < _weights.Count; i++)
+                if (steps[i] != null && steps[i].aim) weight += _weights[i];
+            return Mathf.Clamp01(weight);
         }
 
         /// <summary>Retroceso a lo largo del cañón tal como apunta ahora.</summary>

@@ -128,8 +128,14 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   const timeline = createGestureTimeline({
     gesture: openGesture,
     lead,
-    setLead: (v) => { previewTelegraph = v; },
-    leadNote: () => { const a = stageAttack(); return a && head.lead === null ? `Lo pone el ataque "${a.id}" (su aviso / telegraph): cámbialo en su tarjeta.` : null; },
+    // The warning belongs to the attack that uses the gesture, when there is one: typed or dragged here, it is its telegraph.
+    setLead: (v) => {
+      const gesture = openGesture();
+      if (stageAttack() && hooks.gestureAttacks.setTelegraph) hooks.gestureAttacks.setTelegraph(gesture.name, v);
+      else previewTelegraph = v;
+    },
+    leadNote: () => { const a = stageAttack(); return a && head.lead === null ? `Es el aviso (telegraph) del ataque "${a.id}": cambiarlo aquí lo cambia en el ataque.` : null; },
+    hasAimPart: () => !!M.byUid(state, state.roles.aim),
     time: () => head.t,
     playing: () => head.playing,
     togglePlay,
@@ -443,8 +449,14 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       if (s.box) out.push({ type: 'box', x: s.x, y: s.y, w: s.w, h: s.h, color: s.color, alpha: 1 - s.age / s.life });
       else if (!s.entry) out.push({ type: 'dot', x: s.x, y: s.y, w: s.w, h: s.h, color: s.color });
     });
-    if (stageAttack()?.shots) out.push({ type: 'target', ...targetPoint() });
+    if (stageHasTarget()) out.push({ type: 'target', ...targetPoint() });
     return out;
+  }
+
+  /** The target is on stage when something uses it: an attack to fire, or a step that ends aiming at it. */
+  function stageHasTarget() {
+    const gesture = openGesture();
+    return !!gesture && (!!stageAttack()?.shots || gesture.steps.some((s) => s.aim));
   }
 
   /** "⌖ Colocar": the clicked point becomes the offset of the effect / release on its anchor. */
@@ -488,6 +500,24 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
     const bob = { x: rig.hoverBob.x * Math.sin(preview.clock * rig.hoverSpeed), y: rig.hoverBob.y * Math.sin(preview.clock * rig.hoverSpeed) };
     const body = { position: bob, rotation: preview.lean + hurtTilt, scale: { x: 1 + squash, y: 1 - squash } };
+
+    // A step marked "ends aiming": the weapon turns towards the target by that step's weight —
+    // ProceduralRig.AimOffsetTowards, before the gesture's poses go on top (they add to it).
+    const aimPart = layer ? M.byUid(state, state.roles.aim) : null;
+    const aiming = aimPart && poses.has(aimPart.uid) ? G.aimWeight(layer.gesture, layer.weights) : 0;
+    if (aiming > 0) {
+      const parent = M.byUid(state, aimPart.parent);
+      const frame = M.multiply(M.trs(body.position, body.rotation, body.scale), parent ? M.worldMatrix(state, parent, poses) : M.IDENTITY);
+      const from = M.apply(frame, aimPart.position);
+      const target = (head.playing && stage.frozen) || targetPoint();
+      const local = M.applyVector(M.invert(frame), { x: target.x - from.x, y: target.y - from.y });
+      if (local.x * local.x + local.y * local.y > 1e-6) {
+        const wanted = (Math.atan2(local.y, local.x) * 180) / Math.PI - (rig.aimArtAngle || 0);
+        const delta = ((((wanted - aimPart.rotation) % 360) + 540) % 360) - 180;
+        const max = rig.aimMaxAngle ?? 75;
+        poses.get(aimPart.uid).rotation += Math.min(max, Math.max(-max, delta)) * aiming;
+      }
+    }
 
     // The gesture goes on top of everything else, like in the driver (additive layers).
     if (layer) {
@@ -693,7 +723,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const pt = view.screenToVisual(e.clientX, e.clientY);
     if (placing) { placeAt(pt); return; }
     // The test stage's target: dragging it moves where the attack aims.
-    if (stageAttack()?.shots) {
+    if (stageHasTarget()) {
       const target = targetPoint();
       if (Math.hypot(pt.x - target.x, pt.y - target.y) * view.zoom < 16) { drag = { kind: 'target' }; return; }
     }

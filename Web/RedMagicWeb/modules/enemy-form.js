@@ -1251,6 +1251,16 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     };
   }
 
+  /** The warning of the attack the stage fires with that gesture, set from the timeline (its "Aviso"). */
+  function setGestureTelegraph(gestureName, seconds) {
+    const attack = previewAttackOf(gestureName);
+    if (!attack) return;
+    attack.common.telegraph = seconds;
+    (attack.edited || (attack.edited = {})).telegraph = true;
+    state.deckTouched = true;
+    refresh();
+  }
+
   /**
    * The attacks launched with `gestureName`, editable in place: per attack, what leaves at each
    * release, and its three main numbers. `rerender` redraws the host after a structural change.
@@ -1350,5 +1360,5 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   }
 
   return { refreshLaneInfo, refreshArtLibrary, linkLibraryEntry, linkedId, persistLinked, setEnemyName, unlinkRig,
-    setGestureSource, setDeckMirror, gesturesChanged, gestureShots, renderGestureAttacks };
+    setGestureSource, setDeckMirror, gesturesChanged, gestureShots, setGestureTelegraph, renderGestureAttacks };
 }

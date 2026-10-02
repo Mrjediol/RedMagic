@@ -69,6 +69,10 @@ This replaces the fixed "wind-up → release → strike" everywhere below: where
   not listed returns to rest), a `duration`, an `ease` (InOut / Out / In / Linear) and a `shake`. The body
   holds **one weight per step** (`RigDriverCode._weights`) and each step blends from wherever it was to
   "only this pose"; `recover` blends everything to rest. A cut cross-fades the old gesture underneath, as before.
+- **`aim`** on a step: it ends with the aim part (`rig.aimPart`, the weapon) pointing at the attack's target
+  (`RigDriver.AimTarget`, the point the host froze). `RigDriverCode.AimRotation` adds the rotation towards it
+  weighted by the sum of the weights of the `aim` steps (`GestureAimWeight`), under the gesture's poses — the
+  part's own rotation in the pose adds to it. To keep aiming through the next step, mark that one too.
 - **`stretch`** on a step: its duration is given by whoever launches the gesture (the attack's `telegraph`)
   so one gesture serves attacks with different warnings — the stretch steps share what is left for the
   FIRST release to land exactly at that time (`RigGesture.Durations`). No stretch step = the gesture

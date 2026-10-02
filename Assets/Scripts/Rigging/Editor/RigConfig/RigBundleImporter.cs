@@ -939,6 +939,7 @@ namespace RedMagic.Rigging.EditorTools
                                 poses = Poses(sj["poses"] as JArray, visual),
                                 stretch = sj.Value<bool?>("stretch") ?? false,
                                 shake = sj.Value<float?>("shake") ?? 0f,
+                                aim = sj.Value<bool?>("aim") ?? false,
                             };
                             step.duration = Mathf.Max(0.01f, sj.Value<float?>("duration") ?? step.duration);
                             string easeName = sj.Value<string>("ease");

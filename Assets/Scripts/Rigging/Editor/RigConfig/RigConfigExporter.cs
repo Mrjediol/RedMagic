@@ -392,6 +392,7 @@ namespace RedMagic.Rigging.EditorTools
                         ["ease"] = RigConfigJson.EnumName(s.ease),
                         ["stretch"] = s.stretch,
                         ["shake"] = RigConfigJson.Num(s.shake),
+                        ["aim"] = s.aim,
                         ["poses"] = Poses(s.poses, visual),
                     });
                 }

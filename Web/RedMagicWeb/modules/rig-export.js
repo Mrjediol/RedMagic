@@ -238,7 +238,7 @@ export function buildRigExport(state, ctx = {}) {
     doc.gestures = gestures.map((g) => ({
       name: g.name,
       steps: g.steps.map((s) => ({ name: s.name || '', duration: r5(Math.max(0.01, s.duration || 0.3)), ease: EASES.includes(s.ease) ? s.ease : 'inout',
-        stretch: !!s.stretch, shake: r5(s.shake || 0), poses: poses(s.poses) })),
+        stretch: !!s.stretch, shake: r5(s.shake || 0), aim: !!s.aim, poses: poses(s.poses) })),
       releases: (g.releases || []).map((r) => releaseOut(g, r)),
       recover: r5(Math.max(0.01, g.recover)),
       fx: (g.fx || []).map((f) => fxOut(g, f)).filter(Boolean),
@@ -346,7 +346,7 @@ export function readRigGestures(doc, state, ctx = {}) {
     if (Array.isArray(g.steps)) {
       gesture = {
         name: g.name, recover: g.recover,
-        steps: g.steps.map((s) => ({ name: s.name || '', duration: s.duration, ease: s.ease, stretch: !!s.stretch, shake: s.shake || 0, poses: poses(s.poses) })),
+        steps: g.steps.map((s) => ({ name: s.name || '', duration: s.duration, ease: s.ease, stretch: !!s.stretch, shake: s.shake || 0, aim: !!s.aim, poses: poses(s.poses) })),
         releases: (g.releases || []).map((r) => {
           const release = createRelease(r.step || 0, r.at ?? 1);
           if (r.point && r.point !== muzzlePath) {

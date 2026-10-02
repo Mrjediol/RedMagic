@@ -811,6 +811,11 @@
                 "type": "number",
                 "default": 0
               },
+              "aim": {
+                "type": "boolean",
+                "default": false,
+                "$comment": "RigGestureStep.aim. Al acabar el paso la pieza que apunta (rig.aimPart) queda girada hacia el objetivo del ataque; su giro en la pose se suma."
+              },
               "poses": {
                 "type": "array",
                 "items": {

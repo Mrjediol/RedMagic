@@ -270,6 +270,11 @@ is where they meet.
 | The old "own attack with another gesture" cards of a saved config → a `ReleaseAttack` | `modules/enemy-form.js` | `attackFromVariant` (in `adoptConfig`) |
 | A defence that launches an attack; a card that is "only from a defence" | `modules/enemy-form.js`, `modules/enemy-export.js` | `renderDefences` (`d.attack`), `attack.deck.defenceOnly`; `buildEnemyExport` |
 
+A step marked **`aim`** ("🎯 Acaba apuntando al objetivo") turns the aim part towards the stage's target by that
+step's weight (`rig-composer.js` ▸ `previewPoses`, = `ProceduralRig.AimOffsetTowards`; `rig-gestures.js` ▸ `aimWeight`).
+A step that "lasts the warning" has no time of its own: its field and its edge edit the **warning** — the
+telegraph of the attack that uses the gesture when there is one (`host.setLead` → `enemy.setGestureTelegraph`).
+
 Not simulated on the stage: homing, pierce, impact explosions, and the catalog attacks that are not made of
 shots (they start at the first release; their numbers are edited in step 4). No sound in the web: a
 gesture's sound is assigned in Unity.

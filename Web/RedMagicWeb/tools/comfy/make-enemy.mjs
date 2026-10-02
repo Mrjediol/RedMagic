@@ -28,7 +28,7 @@
 //                 release (fewer = the last one repeats). The plain "its own shot, with this gesture" is this
 //                 attack with one Projectile shot. `deck.defenceOnly` = not drawn: only a defence launches it.
 //   gestures      gestures of its own, as TIMELINES (any number of steps): [{ name, recover,
-//                 steps: [{ name, duration, ease: 'inout'|'out'|'in'|'linear', stretch, shake,
+//                 steps: [{ name, duration, ease: 'inout'|'out'|'in'|'linear', stretch, shake, aim,
 //                           poses: [[slotId | 'Visual', [moveX, moveY], rotate]] }],
 //                 releases: [{ step, at, point: slotId | 'Muzzle', offset: [x, y] }] }]
 //                 A step's pose is measured from rest; moves and release offsets are in the template's
@@ -111,7 +111,7 @@ const briefRelease = (r) => ({ step: r.step ?? 0, at: r.at ?? 1, point: point(r.
 const template = { ...baseTemplate, gestures: [...(baseTemplate.gestures || []),
   ...(brief.gestures || []).map((g) => ({
     name: g.name, recover: g.recover ?? 0.3,
-    steps: g.steps.map((st) => ({ name: st.name || '', duration: st.duration ?? 0.3, ease: st.ease || 'inout', stretch: !!st.stretch, shake: st.shake || 0,
+    steps: g.steps.map((st) => ({ name: st.name || '', duration: st.duration ?? 0.3, ease: st.ease || 'inout', stretch: !!st.stretch, shake: st.shake || 0, aim: !!st.aim,
       poses: (st.poses || []).map(([part, move = [0, 0], rotate = 0, scale = [0, 0]]) => ({ part, move, rotate, scale })) })),
     releases: (g.releases || []).map(briefRelease),
   }))] };

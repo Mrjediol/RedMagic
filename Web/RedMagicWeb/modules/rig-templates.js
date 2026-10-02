@@ -484,7 +484,7 @@ export function templateFromState(state, { label, description = '', bodyHeight =
     idle: copy(state.idle || { gestures: [] }),
     gestures: (state.gestures || []).map((g) => ({
       name: g.name, recover: g.recover,
-      steps: g.steps.map((s) => ({ name: s.name, duration: s.duration, ease: s.ease, stretch: !!s.stretch, shake: s.shake || 0, poses: poses(s.poses) })),
+      steps: g.steps.map((s) => ({ name: s.name, duration: s.duration, ease: s.ease, stretch: !!s.stretch, shake: s.shake || 0, aim: !!s.aim, poses: poses(s.poses) })),
       releases: g.releases.map((r) => ({ step: r.step, at: r.at, point: (r.point && ids.get(r.point)) || null, offset: pair(r.offset) })),
       fx: fxMapped(g.fx, (uid) => ids.get(uid)),   // effects travel by library id: same browser library
     })),

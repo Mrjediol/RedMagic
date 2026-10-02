@@ -236,6 +236,11 @@ namespace RedMagic.Rigging
 
         [Tooltip("Temblor (grados) de la raíz visual en el último 30% del paso.")]
         public float shake;
+
+        [Tooltip("Al acabar este paso el arma (la pieza que apunta) queda apuntando al objetivo del ataque: " +
+                 "gira hacia él a medida que llega la pose, y se le suma el giro que tenga en la pose. " +
+                 "Para que siga apuntando en el paso siguiente, márcalo también en él.")]
+        public bool aim;
     }
 
     /// <summary>

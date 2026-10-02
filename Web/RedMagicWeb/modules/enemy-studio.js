@@ -229,6 +229,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
       host.appendChild(box);
     },
     shots: (gestureName) => (linked() ? enemy.gestureShots(gestureName) : null),
+    setTelegraph: (gestureName, seconds) => enemy.setGestureTelegraph(gestureName, seconds),
   };
 
   // ============================================================ steps: locks and state

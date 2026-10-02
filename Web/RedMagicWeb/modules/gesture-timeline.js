@@ -11,7 +11,9 @@
 //
 //   gesture()                 the gesture being edited (null = none open)
 //   lead() / setLead(s)       seconds of warning the preview launches it with (the attack's telegraph)
-//   leadNote()                (optional) why the warning cannot be typed here — an attack sets it — or null
+//   leadNote()                (optional) whose warning it is — "the telegraph of attack X" — or null (a number
+//                             only for the preview). setLead writes wherever it belongs.
+//   hasAimPart()              the body has a part that aims (a step can end pointing it at the target)
 //   time()                    where the playhead is (s)
 //   playing() / togglePlay()  playback
 //   seek(t)                   playhead to t, paused (keeps a pose being edited)
@@ -187,7 +189,7 @@ export function createGestureTimeline(host) {
     lead.dataset.nodirty = '1';
     lead.onchange = () => { host.setLead(parseFloat(lead.value) > 0 ? parseFloat(lead.value) : 0.6); host.refresh(); };
     const note = host.leadNote ? host.leadNote() : null;
-    if (note) { lead.disabled = true; leadWrap.title = note; }
+    if (note) leadWrap.title = note;
     leadWrap.append(lead, ' s');
     bar.appendChild(leadWrap);
 
@@ -254,15 +256,18 @@ export function createGestureTimeline(host) {
         host.seek(G.timeOf(timelineOf(g), i, 1));
         edited();
       });
-      if (!stretched) {   // its right edge: drag = its duration
-        const edge = el('span', 'gtEdge');
-        edge.title = 'Arrastra: cuánto dura el paso.';
-        edge.addEventListener('mousedown', (e) => {
-          e.preventDefault(); e.stopPropagation();
-          drag = { kind: 'duration', target: step, key: 'duration', x0: e.clientX, d0: tl.durations[i], perPx: tl.total / Math.max(1, track.getBoundingClientRect().width) };
-        });
-        block.appendChild(edge);
-      }
+      // Its right edge: drag = how long it lasts. A step that lasts the warning has no time of its own:
+      // dragging it changes the warning (the attack's telegraph when an attack uses the gesture).
+      const edge = el('span', 'gtEdge');
+      edge.title = stretched ? 'Arrastra: el aviso del ataque (lo que dura este paso).' : 'Arrastra: cuánto dura el paso.';
+      edge.addEventListener('mousedown', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const perPx = tl.total / Math.max(1, track.getBoundingClientRect().width);
+        drag = stretched ? { kind: 'lead', x0: e.clientX, d0: host.lead(), perPx }
+          : { kind: 'duration', target: step, key: 'duration', x0: e.clientX, d0: tl.durations[i], perPx };
+      });
+      block.appendChild(edge);
+      if (step.aim) block.appendChild(el('span', 'gtAim', '🎯'));
       steps.appendChild(block);
     });
     const back = el('div', `gtStep gtRecover${s?.kind === 'recover' ? ' selected' : ''}`);
@@ -385,6 +390,8 @@ export function createGestureTimeline(host) {
 
     if (drag.kind === 'duration') {
       drag.target[drag.key] = Math.max(0.01, r2(drag.d0 + (e.clientX - drag.x0) * drag.perPx));
+    } else if (drag.kind === 'lead') {
+      host.setLead(Math.max(0.05, r2(drag.d0 + (e.clientX - drag.x0) * drag.perPx)));
     } else if (drag.kind === 'release') {
       // On the timeline as it was when the drag began: moving the first release restretches the steps under it.
       const r = g.releases[drag.index];
@@ -463,14 +470,27 @@ export function createGestureTimeline(host) {
       onChange: (v) => { step.stretch = v; edited(); } }).row);
 
     const grid = el('div', 'rigGestureGrid');
-    grid.appendChild(F.numberField({ label: 'Duración (s)', value: step.duration, min: 0.01, step: '0.05',
-      hint: step.stretch && !tooLate ? `Ahora la pone el aviso: ${secs(tl.durations[index])}.` : '',
-      onChange: (v) => { step.duration = Math.max(0.01, v); refreshDock(); } }).row);
+    if (step.stretch && !tooLate) {
+      // It has no time of its own: what is typed here IS the warning (the attack's telegraph).
+      const note = host.leadNote ? host.leadNote() : null;
+      grid.appendChild(F.numberField({ label: 'Aviso (s)', value: host.lead(), min: 0.05, step: '0.05',
+        hint: `${note || 'Sólo para probar: en el juego es el aviso (telegraph) del ataque que use el gesto.'} Este paso dura ${secs(tl.durations[index])}. Para darle un tiempo fijo, desmarca "Dura el aviso del ataque".`,
+        onChange: (v) => { host.setLead(v > 0 ? Math.max(0.05, v) : 0.6); refreshDock(); } }).row);
+    } else {
+      grid.appendChild(F.numberField({ label: 'Duración (s)', value: step.duration, min: 0.01, step: '0.05',
+        onChange: (v) => { step.duration = Math.max(0.01, v); refreshDock(); } }).row);
+    }
     grid.appendChild(F.enumField({ label: 'Cómo llega', value: step.ease, options: G.EASES.map((e) => ({ value: e, label: G.EASE_LABELS[e] })),
       onChange: (v) => { step.ease = v; host.redraw(); } }).row);
     grid.appendChild(F.numberField({ label: 'Temblor (°)', value: step.shake, step: '0.5',
       hint: 'Tiembla el cuerpo en el último 30% del paso. 0 = nada.', onChange: (v) => { step.shake = v; host.redraw(); } }).row);
     box.appendChild(grid);
+
+    box.appendChild(F.boolField({ label: '🎯 Acaba apuntando al objetivo', value: !!step.aim,
+      hint: host.hasAimPart && !host.hasAimPart()
+        ? 'Este cuerpo no tiene pieza que apunte (inspector ▸ Roles ▸ "Apunta al objetivo"): no hará nada.'
+        : 'Al llegar a esta pose el arma queda apuntando al objetivo (el 🎯 del lienzo; en el juego, el jugador). El giro que tenga el arma en la pose se le suma. Márcalo también en el paso siguiente si debe seguir apuntando al disparar.',
+      onChange: (v) => { step.aim = v; edited(); } }).row);
 
     const more = el('div', 'rigActions');
     const left = el('button', 'small', '◀');

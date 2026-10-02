@@ -6,7 +6,7 @@
 // A gesture is a TIMELINE: any number of steps the body goes through in order, then back to rest.
 //
 //   { name, recover,
-//     steps:    [{ name, duration, ease: 'inout'|'out'|'in'|'linear', stretch, shake, poses: [pose] }],
+//     steps:    [{ name, duration, ease: 'inout'|'out'|'in'|'linear', stretch, shake, aim, poses: [pose] }],
 //     releases: [{ step, at: 0..1, point: <part uid> | null (= the muzzle), offset: {x, y} }],
 //     fx:       [hook]   (rig-fx.js) }
 //
@@ -17,6 +17,9 @@
 // `move` is in the part's parent space (units), `rotate` adds to its rotation, `scale` is relative
 // (0.2 = 20% bigger). 'Visual' is the whole body. Only rig parts can be posed: the driver recomposes
 // those every frame, anything else would drift.
+//
+// `aim` on a step = it ends with the aim part (the weapon) pointing at the attack's target; the part's
+// own rotation in the pose adds to it.
 //
 // `stretch` on a step = whoever launches the gesture gives its duration (the attack's telegraph): the
 // stretch steps share what is left for the FIRST release to land exactly at that time. A release is
@@ -62,7 +65,7 @@ export function uniqueGestureName(state, wanted, except = null) {
 
 /** A new step with RigGestureStep's defaults. */
 export function createStep(name = '', over = {}) {
-  return { name, duration: 0.3, ease: 'inout', stretch: false, shake: 0, poses: [], ...over };
+  return { name, duration: 0.3, ease: 'inout', stretch: false, shake: 0, aim: false, poses: [], ...over };
 }
 
 /** A new release with RigRelease's defaults: the end of `step`, from the muzzle. */
@@ -353,6 +356,11 @@ export function applyPoses(list, weight, poses, visual, shortTurns = false) {
     t.rotation += (shortTurns ? shortAngle(pose.rotate) : pose.rotate) * weight;
     t.scale = { x: t.scale.x * (1 + pose.scale.x * weight), y: t.scale.y * (1 + pose.scale.y * weight) };
   });
+}
+
+/** How much the gesture aims right now: the weights of its `aim` steps (RigDriverCode.GestureAimWeight). */
+export function aimWeight(gesture, weights) {
+  return clamp01(gesture.steps.reduce((sum, step, i) => sum + (step.aim ? weights[i] || 0 : 0), 0));
 }
 
 /** Every step's pose at its weight: the blend the body is in (RigDriverCode.ApplySteps). */

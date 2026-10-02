@@ -8,7 +8,7 @@ from it, then Step 4 (the bridge).**
 
 ## ▶ How to start (after /clear)
 
-> Lee `docs/plan-gesture-attack-editor.md` y ejecuta el Paso 4.   (after the test pass)
+> Lee `docs/plan-unity-web-bridge.md` y ejecuta la Fase A.   (Step 4 has its own plan, in three phases)
 
 Read first: `CLAUDE.md`, this file, `docs/architecture/procedural-rig.md` (the timeline section),
 `Web/RedMagicWeb/ARCHITECTURE.md ▸ Rig composer / Enemy Studio`, `modules/rig-gestures.js`, `rig-fx.js`,
@@ -56,6 +56,7 @@ Two copies would drift apart within weeks (the reason the audio tables and the i
    build). Unity ▸ Inspector button opens the browser on the focused tab with the enemy loaded (body, parts,
    gestures, the attack, its sound clip); saving posts the gestures / attack back and they are written
    into the prefab and the attack asset. Decide then who wins when the prefab has unsaved Inspector changes.
+   **Detailed plan (phases A–C, decisions, endpoints): `docs/plan-unity-web-bridge.md`.**
 
 ## Step 1 — what was built, and what Step 2 starts from
 

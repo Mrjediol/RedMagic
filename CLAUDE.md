@@ -95,7 +95,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 | Localization, display presets | `docs/architecture/localization.md` |
 | Vendored packs | `docs/architecture/vendored.md` |
 
-Other: `docs/part-rig-pipeline-plan.md` (pending plan: web-authored part-based enemies, one phase per session), `docs/plan-gesture-attack-editor.md` (gesture / attack editor: steps 1–3 built, bridge pending; tests in `…-tests.md`), `docs/GDD.md` (game design: loop, worlds, enemies, bosses, art direction — read before design decisions), `docs/schemas/` (JSON configs + `COMPATIBILITY.md`), `docs/web-tools-guide.md` (web tool), `docs/RedMagic — Roadmap al prototipo.md`.
+Other: `docs/part-rig-pipeline-plan.md` (pending plan: web-authored part-based enemies, one phase per session), `docs/plan-gesture-attack-editor.md` (gesture / attack editor: steps 1–3 built; tests in `…-tests.md`), `docs/plan-unity-web-bridge.md` (its step 4, the Unity ⇄ web bridge: pending, phases A–C), `docs/GDD.md` (game design: loop, worlds, enemies, bosses, art direction — read before design decisions), `docs/schemas/` (JSON configs + `COMPATIBILITY.md`), `docs/web-tools-guide.md` (web tool), `docs/RedMagic — Roadmap al prototipo.md`.
 
 ## Git (Claude Code handles it)
 

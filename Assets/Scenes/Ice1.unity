@@ -684,30 +684,27 @@ MonoBehaviour:
   waves:
   - startDelay: 0.5
     enemies:
-    - enemyPrefab: {fileID: 8953631198253205537, guid: df03e960fcd6b8442b4e6820d5dd5c41, type: 3}
-      spawnPoint: {fileID: 1301341701}
-      spawnDelay: 0
-    - enemyPrefab: {fileID: 5399576135711702000, guid: ac3f483dadeed734b963e9b32ecbecd2, type: 3}
-      spawnPoint: {fileID: 1763919390}
-      spawnDelay: 0
-    - enemyPrefab: {fileID: 5399576135711702000, guid: ac3f483dadeed734b963e9b32ecbecd2, type: 3}
-      spawnPoint: {fileID: 906569765}
-      spawnDelay: 0
-    - enemyPrefab: {fileID: 8953631198253205537, guid: df03e960fcd6b8442b4e6820d5dd5c41, type: 3}
+    - enemyPrefab: {fileID: 4064262479858925375, guid: b9d04b6a93c95534498068b28e5c43d4, type: 3}
       spawnPoint: {fileID: 1015222936}
       spawnDelay: 0
-    - enemyPrefab: {fileID: 2481406930132061474, guid: ce87219c18126694ab002c379730c605, type: 3}
+    - enemyPrefab: {fileID: 4074207443637217106, guid: b7b738613f12540478432615be1dbff6, type: 3}
       spawnPoint: {fileID: 2130440600}
+      spawnDelay: 0
+    - enemyPrefab: {fileID: 1744773434637354618, guid: 70d25f523f32864479851e50119cff00, type: 3}
+      spawnPoint: {fileID: 1763919390}
+      spawnDelay: 0
+    - enemyPrefab: {fileID: 993704669555814581, guid: 7116cf21cf3670b44a2d253afd4e1e97, type: 3}
+      spawnPoint: {fileID: 1301341701}
       spawnDelay: 0
   - startDelay: 0.5
     enemies:
-    - enemyPrefab: {fileID: 8953631198253205537, guid: df03e960fcd6b8442b4e6820d5dd5c41, type: 3}
+    - enemyPrefab: {fileID: 4655559755096861651, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
       spawnPoint: {fileID: 1301341701}
       spawnDelay: 0
-    - enemyPrefab: {fileID: 5399576135711702000, guid: ac3f483dadeed734b963e9b32ecbecd2, type: 3}
+    - enemyPrefab: {fileID: 4064262479858925375, guid: b9d04b6a93c95534498068b28e5c43d4, type: 3}
       spawnPoint: {fileID: 1224045022}
       spawnDelay: 0
-    - enemyPrefab: {fileID: 2481406930132061474, guid: ce87219c18126694ab002c379730c605, type: 3}
+    - enemyPrefab: {fileID: 4064262479858925375, guid: b9d04b6a93c95534498068b28e5c43d4, type: 3}
       spawnPoint: {fileID: 1763919390}
       spawnDelay: 0
   startOnLoad: 1
@@ -1002,63 +999,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &470240512
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2005207657442734828, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -16.696133
-      objectReference: {fileID: 0}
-    - target: {fileID: 2005207657442734828, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 6.8090897
-      objectReference: {fileID: 0}
-    - target: {fileID: 2005207657442734828, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2005207657442734828, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2005207657442734828, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2005207657442734828, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2005207657442734828, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2005207657442734828, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2005207657442734828, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2005207657442734828, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4655559755096861651, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
-      propertyPath: m_Name
-      value: BossCenter2
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
 --- !u!1 &531506961
 GameObject:
   m_ObjectHideFlags: 0
@@ -2888,4 +2828,3 @@ SceneRoots:
   - {fileID: 540111717}
   - {fileID: 288224743}
   - {fileID: 891035240}
-  - {fileID: 470240512}

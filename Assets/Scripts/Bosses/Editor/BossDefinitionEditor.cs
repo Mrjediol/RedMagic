@@ -534,6 +534,10 @@ namespace RedMagic.Bosses.EditorTools
 
         public override void OnInspectorGUI()
         {
+            // Jefe por partes: sus gestos se editan en la web, que guarda aquí (su baraja es su BossDefinition).
+            if (targets.Length == 1)
+                RedMagic.Rigging.EditorTools.WebBridgeMenu.DrawInspector(((BossController)target).gameObject);
+
             // Un grupo plegable por cada [Header] del BossController (nada se esconde: se baja el ruido).
             serializedObject.Update();
             RedMagic.Enemies.EditorTools.FoldoutInspector.Draw(

@@ -50,6 +50,7 @@ import { RIG_TEMPLATES, templateById, instantiateTemplate, openSlots, matchSlot,
   templateFromState, templateFromRecord, importGestures } from './rig-templates.js';
 import * as G from './rig-gestures.js';
 import * as FX from './rig-fx.js';
+import { artLibraryId } from './unity-art.js';
 import { createGestureTimeline } from './gesture-timeline.js';
 
 const TOOLS = [
@@ -77,7 +78,9 @@ const el = (tag, cls, text) => {
 export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvasWrap, timelineHost, statusEl, inspector, statesHost, linksHost, exportHost }) {
   // Set by whoever embeds the composer (Enemy Studio): beforeExport / afterSave(id) / onChange.
   // gestureAttacks: { render(host, gestureName, rerender), shots(gestureName) } — the attacks launched with a gesture.
-  const hooks = { beforeExport: null, afterSave: null, onChange: null, gestureAttacks: null };
+  // focusExtras(host): what the "Gestos y ataques" tab adds above its save / export buttons (the Unity bridge).
+  // gestureSound(name, moment): the gesture's own sound ('start' | 'release'), when Unity sent one.
+  const hooks = { beforeExport: null, afterSave: null, onChange: null, gestureAttacks: null, focusExtras: null, gestureSound: null };
   let userTemplates = [];        // library records of kind 'rig-template', as templates
   let state = createDefaultRigState();
   let selectedUid = null;
@@ -122,7 +125,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   // The test stage: what is flying, and the target the attack aims at (Visual space).
   let shots = [];
   let stageTarget = null;        // { x, y }; null = not placed yet (defaultTarget)
-  const stage = { fired: new Set(), frozen: null };   // releases already fired this play; the target when it began
+  const stage = { fired: new Set(), frozen: null, sound: null };   // releases already fired this play; the target when it began
 
   // The timeline editor of the open gesture (the dock under the canvas + the selected thing's fields).
   const timeline = createGestureTimeline({
@@ -366,7 +369,19 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     shots = [];
     stage.frozen = { ...targetPoint() };
     stage.fired = new Set();
-    G.timeline(gesture, lead()).releases.forEach((r, n) => { if (r.time < head.t - 1e-6) stage.fired.add(n); });
+    const releases = G.timeline(gesture, lead()).releases;
+    releases.forEach((r, n) => { if (r.time < head.t - 1e-6) stage.fired.add(n); });
+    // The gesture's sound (RigGesture.sound): at its start or at its first release — not again when resumed past it.
+    const first = releases.length ? Math.min(...releases.map((r) => r.time)) : null;
+    stage.sound = { start: head.t > 1e-6, release: first === null || first < head.t - 1e-6, at: first };
+  }
+
+  /** The sound of the gesture that is playing, at the two moments Unity can play it. */
+  function playGestureSound(gesture) {
+    const s = stage.sound;
+    if (!s || !hooks.gestureSound) return;
+    if (!s.start) { s.start = true; hooks.gestureSound(gesture.name, 'start'); }
+    if (!s.release && head.t >= s.at) { s.release = true; hooks.gestureSound(gesture.name, 'release'); }
   }
 
   /** While it plays: each release the playhead has reached fires what the attack launches there. */
@@ -405,9 +420,10 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const start = ring || count === 1 ? base : base - arc / 2;
 
     const spec = shot.projectile || {};
-    const entry = fxEntries.get(spec.prefab);
+    const artId = artLibraryId(spec.prefab);   // a prefab of the Unity project shows the library entry it was built from
+    const entry = fxEntries.get(artId);
     const frames = entry ? FX.fxFrames(entry, true) : null;
-    const faces = spec.faceDirection || (attack.artOptions?.[`${spec.prefab}:projectile`]?.faceTravelDirection ?? true);
+    const faces = spec.faceDirection || (attack.artOptions?.[`${artId}:projectile`]?.faceTravelDirection ?? true);
     for (let i = 0; i < count; i++) {
       const a = ((start + step * i) * Math.PI) / 180;
       const dir = { x: Math.cos(a), y: Math.sin(a) };
@@ -541,8 +557,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     }
     if (head.playing) {
       const gesture = openGesture();
+      if (gesture) playGestureSound(gesture);   // before the step: 'start' sounds on the first frame
       head.t += dt;
-      if (gesture) fireReleases(gesture);
+      if (gesture) { fireReleases(gesture); playGestureSound(gesture); }
       if (!gesture || head.t >= G.gestureDuration(gesture, lead())) {   // done: the body back at rest, the playhead at the start
         const borrowed = head.lead !== null;
         stopHead();
@@ -1955,6 +1972,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   /** Focus mode: save, and the export of only what this tab edits. */
   function renderFocusExport() {
     const d = rememberedSection('focusExport', 'Guardar y llevar a Unity', true, exportHost);
+    if (hooks.focusExtras) hooks.focusExtras(d);   // opened from Unity: the banner and "Guardar en Unity"
     exportSummaryEl = el('div', 'rigExportSummary');
     d.appendChild(exportSummaryEl);
     exportPreviewEl = null;
@@ -1970,15 +1988,21 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     refreshExport();
   }
 
-  async function exportGesturesZip() {
+  /** The partial bundle (gestures + attacks) of the document on screen, or null if the user backed out. */
+  async function buildGesturesZip() {
     const { problems } = buildGesturesExport(state, { entriesById: fxEntries });
-    if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Exportar igualmente?`)) return;
+    if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Continuar igualmente?`)) return null;
     if (hooks.beforeExport) await hooks.beforeExport();   // the attacks edited beside the gestures, saved first
     const all = await listEntries(null);
-    const blob = await buildGesturesBundle(state, {
+    return buildGesturesBundle(state, {
       enemyConfig: (currentId && (await getEnemy(currentId))?.enemyConfig) || null,
       entriesById: new Map(all.map((e) => [e.id, e])),
     });
+  }
+
+  async function exportGesturesZip() {
+    const blob = await buildGesturesZip();
+    if (!blob) return;
     downloadBlob(blob, `${fileStem()}.gestos.zip`);
     setStatus('Exportado (sólo gestos y ataques). En Unity: Tools ▸ Web ▸ Rig ▸ Importar rig (.zip · carpeta)…');
     if (currentId) saveToLibrary();
@@ -2102,6 +2126,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   }
 
   async function exportZip() {
+    if (state.unityBody) { setStatus('Este cuerpo se leyó de Unity: sólo se guardan sus gestos y ataques (🎬 Gestos y ataques ▸ Guardar en Unity).'); return; }
     const { problems } = buildRigExport(state, { entriesById: fxEntries });
     if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Exportar igualmente?`)) return;
     if (hooks.beforeExport) await hooks.beforeExport();   // the behaviour form open in Enemy Studio, saved first
@@ -2167,6 +2192,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       idleGestures: (state.idle?.gestures || []).length,
       template: state.template ? state.template.label || findTemplate(state.template.id)?.label || null : null,
       behaviour: !!behaviour,
+      unityBody: !!state.unityBody,
     };
   }
 
@@ -2188,8 +2214,35 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     return true;
   }
 
+  /**
+   * The bridge: Unity's gestures (its rig-config) laid over the body on screen — what the prefab has
+   * wins over what the library record had. Returns the reader's notes.
+   */
+  function applyUnityGestures(doc, artLibrary = {}) {
+    const res = readRigGestures(doc, state, { entriesById: fxEntries, artLibrary });
+    state.gestures = res.gestures;
+    if (res.idle) state.idle = res.idle;
+    resetGestureUi();
+    changed();
+    return res.notes;
+  }
+
+  /** Opens the gesture of that name (a deep link from Unity). False if the body has none called that. */
+  function openGestureNamed(name) {
+    const index = (state.gestures || []).findIndex((g) => g.name === name);
+    if (index < 0) return false;
+    openGestureAt(index);
+    renderInspector();
+    requestRender();
+    if (hooks.onChange) hooks.onChange();
+    return true;
+  }
+
   return {
     linkLibraryEntry, refreshLibraries, hooks, getStatus, useTemplateRecord, addFxToOpenGesture,
+    applyUnityGestures, openGestureNamed, buildGesturesZip,
+    getFxEntries: () => fxEntries,
+    setStatus,
     save: saveToLibrary,
     // The live gestures (timelines) — what the behaviour form's attacks hang their per-release slots from.
     getGestures: () => state.gestures || [],

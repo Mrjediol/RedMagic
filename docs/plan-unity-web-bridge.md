@@ -3,6 +3,24 @@
 Written 2026-10-02, to be executed in the next session(s). Parent plan:
 `docs/plan-gesture-attack-editor.md` (steps 1–3 built, on branch `task/gesture-attack-editor`).
 
+## Status — built (2026-10-02): phases A, B and C
+
+Pending: the user's test pass (`docs/plan-gesture-attack-editor-tests.md ▸ E`). What differs from the plan below:
+
+- **Body**: a library record of that name authored in the web is still preferred (it has the original canvases);
+  otherwise the body is read from Unity (`readRigDocument`) into a record marked `unityBody`, never exported whole.
+- **Art in attacks** comes from Unity always as `{ "project": path, "libraryId"? }` and goes back the same way:
+  the library entry is only a preview, the prefab is never rebuilt unless another art is picked in the web.
+- **Revision** = hash of gestures, idle gestures, state sprites, deck cards (full), defences. A change elsewhere
+  on the prefab (e.g. move speed) is not a conflict: the save does not touch it.
+- **Deep links**: one "Abrir la web en…" foldout under the button (a "✎ web" per gesture and per card), not a
+  drawer per row.
+- Verified live: open (both body sources), save with no edits = prefab and attack assets unchanged, 409 +
+  overwrite, the domain reload (same port and token). Not verified by hand: Prefab Mode reload after a save,
+  the Inspector buttons themselves, sound playback by ear.
+- Known limits: clearing an art slot in the web does not clear it in Unity (an absent key keeps the value);
+  a card deleted in the web leaves its asset in the project, out of the deck.
+
 ## ▶ How to start (after /clear)
 
 > Lee `docs/plan-unity-web-bridge.md` y ejecuta la Fase A.

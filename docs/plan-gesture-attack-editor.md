@@ -52,7 +52,7 @@ Two copies would drift apart within weeks (the reason the audio tables and the i
 3. ✅ **The focused tab** ("Gestos y ataques"): the same module on an existing enemy, with "añadir PNG de
    estado" for a part. Export = only gestures + attacks (a partial rig-config the importer merges), never
    the body or the Inspector's tuning.
-4. **The bridge**: a small local server inside the Unity editor (idle until called; editor-only, not in the
+4. ✅ **The bridge**: a small local server inside the Unity editor (idle until called; editor-only, not in the
    build). Unity ▸ Inspector button opens the browser on the focused tab with the enemy loaded (body, parts,
    gestures, the attack, its sound clip); saving posts the gestures / attack back and they are written
    into the prefab and the attack asset. Decide then who wins when the prefab has unsaved Inspector changes.

@@ -30,7 +30,8 @@
 //  - a template slot still empty is left out (unless a filled part hangs from it: then it stays as
 //    an empty node), and a required one is reported as a problem.
 
-import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot, isOpenSlot, feetY } from './rig-model.js';
+import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot, isOpenSlot, feetY, setPivot, worldMatrix, multiply, invert, apply, loadImage } from './rig-model.js';
+import { createDefaultRigState, createPart } from './rig-defaults.js';
 import { embedReferencedLibraryEntries, embedAttackArt } from './enemy-bundle.js';
 import { writeLanes } from './boss-bundle.js';
 import { fxArtId, fxArtAsset, createFx } from './rig-fx.js';
@@ -57,6 +58,8 @@ export function buildRigExport(state, ctx = {}) {
   const used = new Set();
 
   if (!state.name.trim()) problems.push('Ponle nombre (será el del prefab).');
+  // A body read back from Unity is only good for gestures and attacks: it lost its original canvases.
+  if (state.unityBody) problems.push('Este cuerpo se leyó de Unity para editar sus gestos y ataques: no se exporta entero (el prefab ya tiene su cuerpo). Usa "Guardar en Unity" o el export de sólo gestos y ataques.');
   if (state.parts.length === 0) problems.push('Añade al menos una pieza.');
 
   // Template slots without art: out of the export, unless something filled hangs from them.
@@ -72,6 +75,8 @@ export function buildRigExport(state, ctx = {}) {
   state = { ...state, parts: state.parts.filter(hasContent) };
 
   function addFile(stem, image, pivot) {
+    // Read from Unity (readRigDocument): the sprite is already in the project — its reference, no PNG.
+    if (image.unityRef) return image.unityRef;
     let path = `Parts/${stem}.png`;
     for (let n = 2; used.has(path); n++) path = `Parts/${stem}_${n}.png`;
     used.add(path);
@@ -295,7 +300,8 @@ export function buildRigExport(state, ctx = {}) {
  *
  * An effect comes back as a library hook when its `artAssets` entry names a library effect that is
  * in `ctx.entriesById`; otherwise it keeps the prefab path Unity gave (`prefab`) and is exported as
- * it came, without a preview.
+ * it came — with a preview when `ctx.artLibrary` (prefab path → library id) knows which entry it was
+ * built from. `ctx.muzzlePath` = the rig's muzzle node when it is not "<aim part>/Muzzle".
  *
  * @returns {{ gestures: object[], idle: object | null, notes: string[] }}
  */
@@ -303,7 +309,7 @@ export function readRigGestures(doc, state, ctx = {}) {
   const notes = [];
   const uidOf = new Map(state.parts.map((p) => [pathOf(state, p), p.uid]));
   const aim = byUid(state, state.roles.aim);
-  const muzzlePath = aim ? `${pathOf(state, aim)}/Muzzle` : null;
+  const muzzlePath = ctx.muzzlePath !== undefined ? ctx.muzzlePath : aim ? `${pathOf(state, aim)}/Muzzle` : null;
   const vec = (v) => ({ x: Number(v?.x) || 0, y: Number(v?.y) || 0 });
   const missing = new Set();
   // A helper node (Muzzle, Grip) is not a part of the document: what hung from it hangs from its part.
@@ -321,11 +327,15 @@ export function readRigGestures(doc, state, ctx = {}) {
   const hook = (item, gestureName) => {
     const artId = item.fx && typeof item.fx === 'object' ? item.fx.art : null;
     const asset = artId ? doc.artAssets?.[artId] : null;
-    const libraryId = asset?.libraryId && ctx.entriesById?.has(asset.libraryId) ? asset.libraryId : null;
     const prefab = typeof item.fx === 'string' ? item.fx : null;
+    // A prefab of the project whose library entry is known (the bridge's artLibrary): that entry is its
+    // preview, and the prefab path stays — it is exported as it came.
+    const previewId = prefab ? ctx.artLibrary?.[prefab] : null;
+    const libraryId = asset?.libraryId && ctx.entriesById?.has(asset.libraryId) ? asset.libraryId
+      : previewId && ctx.entriesById?.has(previewId) ? previewId : null;
     if (!libraryId && !prefab) { notes.push(`Gesto "${gestureName}": un efecto no está en la biblioteca ni trae prefab; se omite.`); return null; }
     const f = createFx(libraryId, 0, Math.min(1, Math.max(0, Number(item.at) || 0)), item.anchor || 'body');
-    if (!libraryId) f.prefab = prefab;
+    if (prefab) f.prefab = prefab;
     if (f.anchor === 'part') {
       f.part = partOf(item.part || '');
       if (!f.part) { f.anchor = 'body'; missing.add(item.part); }
@@ -386,6 +396,238 @@ export function readRigGestures(doc, state, ctx = {}) {
   return { gestures, idle, notes };
 }
 
+// ============================================================ rig-config → document (the whole body)
+
+/**
+ * A rig-config written by UNITY (RigConfigExporter, through the bridge) → a composer document, for
+ * the "Gestos y ataques" tab: enough to DRAW and POSE the body (nodes, sprites, pivots, draw order,
+ * roles, rig fields, state sprites) and its gestures. The inverse of `buildRigExport` for what focus
+ * mode needs; the body is read-only there, so this never has to round-trip one — the document is
+ * marked `unityBody` and a full export of it is refused (`buildRigExport`).
+ *
+ * Every image keeps the project sprite it came from (`image.unityRef`): the partial export writes
+ * that reference back instead of a new PNG, so a state sprite nobody changed is not re-imported.
+ *
+ * @param {object} doc - the rig-config.
+ * @param {object} o
+ * @param {object} o.sprites - per sprite reference: { file, rect, pivot, ppu, texW, texH } (WebBridgeRoutes ▸ SpriteInfo).
+ * @param {(file: string) => Promise<string>} o.fetchDataURL - a project PNG as a data URL.
+ * @param {Map<string, object>} [o.entriesById] - library effects (gesture effects that have a preview).
+ * @param {object} [o.artLibrary] - effect prefab path → library id (the preview of a Unity prefab).
+ * @returns {Promise<{ state: object, notes: string[] }>}
+ */
+export async function readRigDocument(doc, { sprites = {}, fetchDataURL, entriesById = new Map(), artLibrary = {} } = {}) {
+  const notes = [];
+  const state = createDefaultRigState();
+  state.name = doc.name || '';
+  state.kind = doc.kind === 'boss' ? 'boss' : 'enemy';
+  state.unityBody = true;
+  const vec = (v) => ({ x: Number(v?.x) || 0, y: Number(v?.y) || 0 });
+  const scaleIn = (s) => (typeof s === 'number' ? { x: s, y: s } : s && typeof s === 'object' ? { x: s.x ?? 1, y: s.y ?? 1 } : { x: 1, y: 1 });
+
+  // ---- images: one decode per file, one crop per sprite.
+  const files = new Map();
+  const fileImage = (file) => {
+    if (!files.has(file)) files.set(file, fetchDataURL(file).then(loadImage));
+    return files.get(file);
+  };
+  const nodes = Array.isArray(doc.parts) ? doc.parts : [];
+  // The document has ONE pixels-per-unit: the first sprite's. Any other is resampled to it.
+  let ppu = 0;
+  for (const n of nodes) {
+    const info = n.sprite ? sprites[n.sprite] : null;
+    if (!info) continue;
+    const img = await fileImage(info.file).catch(() => null);
+    if (img) { ppu = info.ppu * (img.naturalWidth / info.texW); break; }
+  }
+  state.pixelsPerUnit = ppu > 0 ? ppu : 100;
+
+  /** A project sprite as a part image + where its own pivot is in it (pixels, y down). */
+  async function spriteImage(ref, look = {}) {
+    const info = ref ? sprites[ref] : null;
+    if (!info) return null;
+    let img;
+    try { img = await fileImage(info.file); } catch { notes.push(`No se pudo leer "${info.file}".`); return null; }
+    const kx = img.naturalWidth / info.texW, ky = img.naturalHeight / info.texH;   // the PNG may be bigger than its import
+    const k = state.pixelsPerUnit / (info.ppu * kx);
+    const sw = info.rect.w * kx, sh = info.rect.h * ky;
+    const w = Math.max(1, Math.round(sw * k)), h = Math.max(1, Math.round(sh * k));
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    ctx.translate(look.flipX ? w : 0, look.flipY ? h : 0);
+    ctx.scale(look.flipX ? -1 : 1, look.flipY ? -1 : 1);
+    ctx.drawImage(img, info.rect.x * kx, (info.texH - info.rect.y - info.rect.h) * ky, sw, sh, 0, 0, w, h);
+    ctx.restore();
+    if (look.tint && !/^#?f{6}(ff)?$/i.test(look.tint)) {   // SpriteRenderer.color multiplies the sprite
+      const plain = document.createElement('canvas');
+      plain.width = w; plain.height = h;
+      plain.getContext('2d').drawImage(canvas, 0, 0);
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = look.tint.slice(0, 7);
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'destination-in';   // the multiply filled the transparent pixels too
+      ctx.drawImage(plain, 0, 0);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    let px = info.pivot.x * kx * k, py = h - info.pivot.y * ky * k;
+    if (look.flipX) px = w - px;
+    if (look.flipY) py = h - py;
+    return {
+      image: { dataURL: canvas.toDataURL('image/png'), w, h, origW: w, origH: h, cropX: 0, cropY: 0, unityRef: ref },
+      pivot: { x: px, y: py },
+    };
+  }
+
+  // ---- nodes → parts (same hierarchy, same names: the paths of the export are Unity's).
+  const pathOfNode = (n) => (n.parent ? `${n.parent}/${n.name}` : n.name);
+  const partAt = new Map();      // path -> part
+  const origin = new Map();      // part uid -> its transform origin in the image (pixels) = the sprite's pivot
+  const looks = new Map();       // part uid -> { flipX, flipY, tint }
+  const joints = new Map();      // part uid -> RigPart.pivot (local units), applied at the end
+  const order = new Map();       // part uid -> sortingOrder
+  const swapped = new Set((doc.spriteSwaps || []).map((s) => s.part));
+  for (const [i, n] of nodes.entries()) {
+    const part = createPart({ name: n.name, index: i });
+    part.rigPart = n.rigPart !== false;
+    part.position = vec(n.position);
+    part.rotation = Number(n.rotation) || 0;
+    part.scale = scaleIn(n.scale);
+    if (typeof n.sortingOrder === 'number') order.set(part.uid, n.sortingOrder);
+    const look = { flipX: !!n.flipX, flipY: !!n.flipY, tint: n.color || null };
+    looks.set(part.uid, look);
+    // A node switched off in the prefab is not drawn — unless it has state sprites (they need its image).
+    const loaded = n.sprite && (n.active !== false || swapped.has(pathOfNode(n))) ? await spriteImage(n.sprite, look) : null;
+    part.image = loaded?.image || null;
+    part.pivot = loaded?.pivot || { x: 0, y: 0 };
+    origin.set(part.uid, { ...part.pivot });
+    if (part.rigPart) {
+      const c = vec(n.center);
+      part.center = c.x || c.y ? { x: part.pivot.x + c.x * state.pixelsPerUnit, y: part.pivot.y - c.y * state.pixelsPerUnit } : null;
+      part.pointAngle = Number(n.pointAngle) || 0;
+      part.leanFollow = Number(n.leanFollow) || 0;
+      if (n.sway) part.sway = { move: vec(n.sway.move), rotate: Number(n.sway.rotate) || 0, scale: vec(n.sway.scale), speed: Number(n.sway.speed) || 0, phase: Number(n.sway.phase) || 0 };
+      part.breaksOnDeath = n.breaksOnDeath !== false;
+      joints.set(part.uid, vec(n.pivot));
+    } else {
+      part.sway = { move: { x: 0, y: 0 }, rotate: 0, scale: { x: 0, y: 0 }, speed: 0, phase: 0 };
+    }
+    partAt.set(pathOfNode(n), part);
+    state.parts.push(part);
+  }
+  for (const n of nodes) partAt.get(pathOfNode(n)).parent = partAt.get(n.parent)?.uid || null;
+
+  const uidAt = (path) => partAt.get(path)?.uid || null;
+  /** Where a node sits, as a pixel of another part's image. */
+  const pixelIn = (host, node) => {
+    const p = apply(multiply(invert(worldMatrix(state, host)), worldMatrix(state, node)), { x: 0, y: 0 });
+    const o = origin.get(host.uid);
+    return { x: o.x + p.x * state.pixelsPerUnit, y: o.y - p.y * state.pixelsPerUnit };
+  };
+  /** A helper node (a point: no art, not a rig part, nothing hanging from it) is not a part of the document. */
+  const dropHelper = (part) => {
+    if (part.image || part.rigPart || state.parts.some((c) => c.parent === part.uid)) return;
+    state.parts = state.parts.filter((p) => p !== part);
+  };
+
+  // ---- rig block: scalars by name, the Transform fields as roles.
+  const rig = doc.rig || {};
+  Object.keys(state.rig).forEach((k) => { if (rig[k] !== undefined && rig[k] !== null) state.rig[k] = rig[k]; });
+  const roles = state.roles;
+  const aim = partAt.get(rig.aimPart);
+  const muzzle = partAt.get(rig.muzzle);
+  if (aim) roles.aim = aim.uid;
+  if (aim && muzzle) { roles.muzzle = pixelIn(aim, muzzle); dropHelper(muzzle); }
+  roles.stretch = uidAt(rig.stretchPart);
+  roles.riders = (rig.stretchRiders || []).map(uidAt).filter(Boolean);
+
+  if (doc.bossLimbs) {
+    roles.limbs = (doc.bossLimbs.limbs || []).map(uidAt).filter(Boolean);
+    roles.orbiters = (doc.bossLimbs.orbiters || []).map(uidAt).filter(Boolean);
+    (doc.bossLimbs.grips || []).forEach((path) => {
+      const grip = partAt.get(path);
+      const limb = grip ? state.parts.find((p) => p.uid === grip.parent) : null;
+      if (!limb || !roles.limbs.includes(limb.uid)) return;
+      roles.grips[limb.uid] = pixelIn(limb, grip);
+      dropHelper(grip);
+    });
+    state.bossLimbs = { contactRadius: doc.bossLimbs.contactRadius ?? state.bossLimbs.contactRadius, orbiterRadius: doc.bossLimbs.orbiterRadius ?? state.bossLimbs.orbiterRadius };
+  }
+  if (doc.bossBody) {
+    const { bodyRenderer, movement, ...numbers } = doc.bossBody;
+    state.bossBody = { ...state.bossBody, ...numbers, bodyRenderer: uidAt(bodyRenderer) };
+  }
+
+  // ---- state sprites: each one lined up on the part's transform origin (its own pivot in Unity).
+  for (const swap of doc.spriteSwaps || []) {
+    const part = partAt.get(swap.part);
+    if (!part?.image) continue;
+    const o = origin.get(part.uid);
+    const variant = async (ref) => {
+      const loaded = await spriteImage(ref, looks.get(part.uid));
+      if (!loaded) return null;
+      return { ...loaded.image, origW: part.image.origW, origH: part.image.origH, cropX: o.x - loaded.pivot.x, cropY: o.y - loaded.pivot.y };
+    };
+    const v = part.variants;
+    v.asleep = await variant(swap.asleep);
+    v.awake = await variant(swap.awake);
+    v.attacking = await variant(swap.attacking);
+    // Stage 0 is the part's own sprite; variants.stages[i] = stage i + 1.
+    v.stages = [];
+    for (const ref of (swap.stages || []).slice(1)) v.stages.push(ref && ref !== part.image.unityRef ? await variant(ref) : null);
+    for (const n of swap.named || []) {
+      const image = await variant(n.sprite);
+      if (!image) continue;
+      if (n.state === 'gesture') {
+        if (!n.gesture) continue;
+        v.gestures[n.gesture] = image;
+        const from = Number(n.from) || 0, to = n.to ?? 99;
+        if (from > 0 || to < 99) v.gestureWindows[n.gesture] = { from, to };
+      } else if (n.state in v.named) v.named[n.state] = image;
+    }
+  }
+
+  // ---- the real joint (RigPart.pivot): moved there now that roles and variants are placed.
+  state.parts.forEach((part) => {
+    const j = joints.get(part.uid);
+    if (!j || (!j.x && !j.y)) return;
+    const o = origin.get(part.uid);
+    setPivot(state, part, { x: o.x + j.x * state.pixelsPerUnit, y: o.y - j.y * state.pixelsPerUnit });
+  });
+
+  // ---- draw order = Unity's sorting order (a node without art stays next to what precedes it).
+  let last = -Infinity;
+  const keyed = state.parts.map((part, i) => {
+    if (part.image && order.has(part.uid)) last = order.get(part.uid);
+    return { part, key: part.image && order.has(part.uid) ? order.get(part.uid) : last, i };
+  });
+  keyed.sort((a, b) => a.key - b.key || a.i - b.i);
+  state.parts = keyed.map((k) => k.part);
+
+  // ---- root: the body is drawn in Visual's space; the collider is the root's.
+  const rootScale = scaleIn(doc.root?.scale);
+  const visual = { position: vec(doc.visual?.position), scale: scaleIn(doc.visual?.scale) };
+  const vs = Math.abs(visual.scale.x) || 1;
+  state.rootScale = (Math.abs(rootScale.x) || 1) * vs;
+  const inVisual = (p) => ({ x: (p.x - visual.position.x) / vs, y: (p.y - visual.position.y) / vs });
+  if (doc.collider) {
+    const c = doc.collider;
+    state.collider = c.type === 'circle'
+      ? { type: 'circle', radius: (c.radius || 0.5) / vs, size: { x: 1, y: 1 }, offset: inVisual(vec(c.offset)) }
+      : { type: c.type === 'capsule' ? 'capsule' : 'box', size: { x: (c.size?.x || 1) / vs, y: (c.size?.y || 1) / vs }, offset: inVisual(vec(c.offset)) };
+  }
+  if (doc.corpse) state.corpse = { linger: doc.corpse.linger ?? state.corpse.linger, fadeDuration: doc.corpse.fadeDuration ?? state.corpse.fadeDuration };
+  if (doc.root?.feet) state.feetY = inVisual(vec(doc.root.feet)).y;
+
+  // ---- gestures, over the body just built.
+  const read = readRigGestures(doc, state, { entriesById, artLibrary, muzzlePath: rig.muzzle || null });
+  state.gestures = read.gestures;
+  if (read.idle) state.idle = read.idle;
+  notes.push(...read.notes);
+  return { state, notes };
+}
+
 // ============================================================ only gestures + attacks (partial)
 
 /**
@@ -405,7 +647,7 @@ export function buildGesturesExport(state, ctx = {}) {
   ['gestures', 'idleGestures', 'artAssets'].forEach((k) => { if (full.doc[k] !== undefined) doc[k] = full.doc[k]; });
 
   // Only what concerns this bundle: the body's own problems (an empty slot, no collider…) are not its business.
-  const problems = full.problems.filter((p) => /^Gesto |nombre/i.test(p));
+  const problems = full.problems.filter((p) => /^Gesto |^Ponle nombre/i.test(p));
   if (!Array.isArray(doc.gestures)) full.notes.push('Este documento no exporta gestos: Unity conserva los que tenga el prefab.');
   return { doc, files: full.files.filter((f) => used.has(f.path)), problems, notes: full.notes.filter((n) => /gest|sprite/i.test(n)) };
 }

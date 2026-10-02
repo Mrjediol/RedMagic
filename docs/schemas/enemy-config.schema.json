@@ -337,6 +337,12 @@
           "default": "everything",
           "$comment": "EnemyTuning.hitLayers. C# default is ~0 = every layer, expressed here as the 'everything' sentinel. Flows into AbilityContext.HitLayers and from there into Projectile.hitLayers, so it governs both the melee box and the shot."
         },
+        "flyThroughLayers": {
+          "$ref": "_shared.schema.json#/definitions/layerMask",
+          "default": ["Platform"],
+          "description": "Terrain an airborne enemy passes through (the rest of obstacleLayers still stops it).",
+          "$comment": "EnemyTuning.flyThroughLayers. Written by RigConfigExporter.EnemyConfig (it exports the whole tuning by reflection), so a config read back from Unity — the bridge — carries it."
+        },
         "obstacleLayers": {
           "$ref": "_shared.schema.json#/definitions/layerMask",
           "default": ["Ground", "Platform"],

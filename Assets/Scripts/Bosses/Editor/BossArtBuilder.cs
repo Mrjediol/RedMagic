@@ -284,7 +284,10 @@ namespace RedMagic.Bosses.EditorTools
         /// <summary>
         /// Cambia, en todo el árbol, cada <c>{"art": "id"}</c> por la ruta de su prefab, para que el
         /// resto del importador (que ya sabe leer rutas de assets) no tenga que saber nada de esto.
-        /// Un id que no existe se queda sin resolver y se avisa.
+        /// Un id que no existe se queda sin resolver y se avisa. Un <c>{"project": "Assets/…prefab"}</c>
+        /// — arte que ya está en el proyecto y que la web devuelve <b>tal cual llegó</b> (lo escribe
+        /// <see cref="BossAttackExporter"/>; puede traer además <c>libraryId</c>, que aquí no pinta
+        /// nada) — se queda en su ruta: la referencia no cambia y nada se regenera.
         /// </summary>
         public static void ResolveArtRefs(JToken token, Dictionary<string, string> artMap, List<string> warnings,
                                           string context = "")
@@ -293,6 +296,12 @@ namespace RedMagic.Bosses.EditorTools
             {
                 foreach (var prop in obj.Properties().ToList())
                 {
+                    if (ProjectRef(prop.Value) is string project)
+                    {
+                        prop.Value = new JValue(project);
+                        continue;
+                    }
+
                     if (prop.Value is JObject child && child.Count == 1 && child["art"] != null &&
                         child["art"].Type == JTokenType.String)
                     {
@@ -313,6 +322,12 @@ namespace RedMagic.Bosses.EditorTools
             {
                 for (int i = 0; i < array.Count; i++)
                 {
+                    if (ProjectRef(array[i]) is string project)
+                    {
+                        array[i] = new JValue(project);
+                        continue;
+                    }
+
                     if (array[i] is JObject element && element.Count == 1 && element["art"] != null &&
                         element["art"].Type == JTokenType.String)
                     {
@@ -330,5 +345,10 @@ namespace RedMagic.Bosses.EditorTools
                 }
             }
         }
+
+        private static string ProjectRef(JToken token) =>
+            token is JObject o && o["project"] != null && o["project"].Type == JTokenType.String
+                ? o.Value<string>("project")
+                : null;
     }
 }

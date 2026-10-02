@@ -187,6 +187,13 @@ public class WebLibraryWindow : EditorWindow
         }
 
         GUILayout.FlexibleSpace();
+
+        // Where the user serves the web tool: the bridge ("Editar en la web") opens the browser there.
+        GUILayout.Label(new GUIContent("Web", "Dónde sirves la web (npx serve Web/RedMagicWeb). \"Editar en la web\" abre el navegador ahí."),
+                        GUILayout.Width(30), GUILayout.Height(24));
+        string webUrl = RedMagic.Rigging.EditorTools.WebBridgeServer.WebUrl;
+        string typed = EditorGUILayout.DelayedTextField(webUrl, GUILayout.Width(170), GUILayout.Height(20));
+        if (typed != webUrl) RedMagic.Rigging.EditorTools.WebBridgeServer.WebUrl = typed;
         EditorGUILayout.EndHorizontal();
     }
 
@@ -622,6 +629,8 @@ public class WebLibraryWindow : EditorWindow
 
             var entry = new Entry { id = guid, name = name, previewPath = path, dragPath = path };
             entry.actions.Add(("Abrir prefab", () => OpenPrefab(path)));
+            // The Unity ⇄ web bridge: opens the web's 🎬 tab on this enemy; saving there writes this prefab.
+            entry.actions.Add(("Editar en la web", () => RedMagic.Rigging.EditorTools.WebBridgeMenu.Open(path)));
             entry.actions.Add(("Eliminar enemigo", () => DeleteWithConfirm("Eliminar enemigo", name, paths, refreshCategory: Category.EnemiesParts)));
             result.Add(entry);
         }
@@ -645,6 +654,9 @@ public class WebLibraryWindow : EditorWindow
             var entry = new Entry { name = name, previewPath = hasPrefab ? prefabPath : defPath, dragPath = hasPrefab ? prefabPath : null };
             entry.actions.Add(("Abrir definición", () => PingAndSelect(defPath)));
             if (hasPrefab) entry.actions.Add(("Abrir prefab", () => OpenPrefab(prefabPath)));
+            // A part-based boss: its gestures are edited in the web through the bridge (its deck is its BossDefinition).
+            if (hasPrefab && AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath).GetComponent<RedMagic.Rigging.ProceduralRig>() != null)
+                entry.actions.Add(("Editar gestos en la web", () => RedMagic.Rigging.EditorTools.WebBridgeMenu.Open(prefabPath)));
             result.Add(entry);
         }
         return result.OrderBy(e => e.name, StringComparer.OrdinalIgnoreCase).ToList();

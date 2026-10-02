@@ -210,6 +210,21 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
   `idleGestures` / `spriteSwaps` (`WriteSwapsAndGestures`) and, from `enemy-config.json`, the deck and the
   defences. Body, rig fields, EnemyStats and the Inspector's tuning are not touched; it never goes through
   `ResetTuning`. A part the JSON names that the prefab lacks is an error (the body changed: export it whole).
+- **The bridge** (a third way in, next to import / export — `Rigging/Editor/Bridge/`, plan and decisions in
+  `docs/plan-unity-web-bridge.md`): the web's 🎬 tab reads an enemy from the project and saves into it over
+  HTTP, no files. `WebBridgeServer` = `HttpListener` on `127.0.0.1:7810` (next free port), idle until the
+  button is pressed, restarted after a domain reload only if it was running (`SessionState`), per-session
+  token in the URL Unity opens (never typed), CORS limited to the web URL (`EditorPrefs`, edited in Biblioteca
+  Jere ▸ "Web"), requests drained on the main thread. `WebBridgeRoutes`: `GET /ping`, `GET /enemy`
+  (`RigConfigExporter.Export` + `EnemyConfig` with the deck's full cards from `BossAttackExporter.FillDeck`,
+  + per-sprite rect / pivot / ppu, gesture sounds, effect prefab → library id, `revision`), `GET /file`
+  (png / wav / ogg / mp3 under `Assets/`), `POST /gestures` (the partial zip → `ImportWithReport`; **409** when
+  the prefab changed since it was read, is dirty in Prefab Mode, or Unity is playing — `force=1` overwrites).
+  `WebBridgeMenu.Open(prefab, gesture, attack)` is the one entry point: the button on `EnemyStats` /
+  `BossController` (with a "✎ web" per gesture and per deck card), `ProceduralRig ▸ ⋮`, Biblioteca Jere.
+  `BossAttackExporter` = a `BossAttack` asset → its card JSON, by reflection over the fields
+  `BossCatalogExporter` publishes; art comes out as `{ "project": "<prefab path>" }` and
+  `BossArtBuilder.ResolveArtRefs` reads that form back as the same reference (nothing is rebuilt).
 - `RigConfigJson` — shared vocabulary: part refs are **paths relative to `Visual`** (`"Visual"` =
   body), sprites are `Assets/…` paths (used as-is) or bundle files (copied to
   `Assets/Art/RigImports/<name>/`, import settings from `sprites`).
@@ -225,6 +240,8 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
 - `RigConfigRoundTrip` — static acceptance test (no Play): Robot / Turret / BossIce2 → fixtures in
   `docs/schemas/fixtures/rig/` → reimport → reflection compare → cleanup. Rerun after touching
   `ProceduralRig` or either side of the pipeline. The packs above stay as the hand-written reference.
+  Its last case is the **deck**: every attack asset of every part-based enemy → card JSON → written back
+  into the same asset → must be identical (what the bridge does on every save).
 
 ## Enemies
 - **Robot** (TestProcedural art) — FlyingRanged drone; `RightArm` is the gun (`aimArtAngle` 11.5°).

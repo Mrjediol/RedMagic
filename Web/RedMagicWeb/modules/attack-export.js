@@ -14,9 +14,13 @@
 //  - art picked from the library -> `{ "art": "<id>" }`, and `artAssets.<id>` says which frames
 //    build that prefab. Folders are RELATIVE ("Art/<libraryId>"): the importer resolves them
 //    against the folder where the bundle's frames land.
+//  - art that is a prefab of the Unity project (read through the bridge: a `unity:<path>` value,
+//    unity-art.js) -> `{ "project": "<path>" }`, exactly as it came: nothing is rebuilt.
+//  - an attack read from Unity carries `assetPath`: it is written back into that same asset.
 
 import { defaultsOf, clone } from './boss-defaults.js';
 import { framedLanes, laneFolder } from './boss-export.js';
+import { isUnityArt, unityArtRef, unityArtValue, isProjectRef } from './unity-art.js';
 
 function safeId(raw, fallback) {
   const cleaned = (raw || '').trim().replace(/[^A-Za-z0-9_-]/g, '_');
@@ -45,6 +49,7 @@ export function buildAttacksExport(attackStates, catalog, entriesById, artOption
 
   function artRef(libraryId, kind, where) {
     if (!libraryId) return null;
+    if (isUnityArt(libraryId)) return unityArtRef(libraryId);   // a prefab of the project: as it came
     const entry = entriesById.get(libraryId);
     if (!entry) { notes.push(`${where}: el arte elegido ya no está en la biblioteca → se usa el de por defecto.`); return null; }
     if (framedLanes(entry).length === 0) { notes.push(`${where}: '${entry.enemyName}' no tiene frames → por defecto.`); return null; }
@@ -133,12 +138,15 @@ export function buildAttacksExport(attackStates, catalog, entriesById, artOption
     const typeEntry = catalog?.attacks.find((a) => a.type === attack.type);
     const where = `Ataque ${id}`;
     const out = { type: attack.type };
+    // Read from Unity (the bridge): saved back into the asset it came from, while it is still that type.
+    if (attack.assetPath && attack.unityType === attack.type) out.assetPath = attack.assetPath;
 
     // Base fields: only what differs from the default (gesture/displayName whenever set).
     const edited = attack.edited || {};
     Object.entries(attack.common || {}).forEach(([k, v]) => {
       if (k === 'gesture') {
-        if (typeof v === 'string' && v.trim()) out[k] = v.trim();
+        // An attack read from Unity writes it even when empty: clearing it here has to clear it there.
+        if (typeof v === 'string' && (v.trim() || attack.assetPath)) out[k] = v.trim();
         return;
       }
       if (k === 'displayName') {
@@ -211,6 +219,7 @@ export function adoptAttacksFromConfig(config, catalog) {
 
   /** `{art: id}` -> the library id the form's art pickers hold. */
   const unArt = (v) => {
+    if (isProjectRef(v)) return unityArtValue(v.project, v.libraryId || null);
     if (isArtRef(v)) return artAssets[v.art]?.libraryId || '';
     if (Array.isArray(v)) return v.map(unArt);
     if (v && typeof v === 'object' && !Array.isArray(v)) {
@@ -232,7 +241,7 @@ export function adoptAttacksFromConfig(config, catalog) {
 
   const markEdited = (values, prefix, edited) => {
     Object.entries(values || {}).forEach(([k, v]) => {
-      if (isArtRef(v)) return;
+      if (isArtRef(v) || isProjectRef(v)) return;
       if (v && typeof v === 'object' && !Array.isArray(v) && !('x' in v && 'y' in v)) markEdited(v, `${prefix}${k}.`, edited);
       else edited[`${prefix}${k}`] = true;
     });
@@ -254,6 +263,7 @@ export function adoptAttacksFromConfig(config, catalog) {
     markEdited(a.params, '', edited);
     byId[id] = {
       id, type: a.type, open: false, common, edited,
+      ...(a.assetPath ? { assetPath: a.assetPath, unityType: a.type } : {}),
       params: merge(defaultsOf(typeEntry?.params || []), unArt(a.params || {})),
     };
   });

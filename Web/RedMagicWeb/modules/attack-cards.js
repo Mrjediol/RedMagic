@@ -20,6 +20,7 @@ import * as F from './enemy-form-fields.js';
 import { defaultsOf, withDefaults, clone } from './boss-defaults.js';
 import { ATTACK_NOTES, ART_KIND_NOTES, FIELD_NOTES, attackLabel, attackGroup } from './boss-catalog-notes.js';
 import { framedLanes } from './boss-export.js';
+import { isUnityArt, artLibraryId, unityArtLabel } from './unity-art.js';
 
 const el = (tag, cls, text) => {
   const e = document.createElement(tag);
@@ -154,7 +155,13 @@ export function createAttackEditor(o) {
       });
       select.appendChild(group);
     });
-    select.value = entries.some((e) => e.id === value) ? value : '';
+    // A prefab of the Unity project (the attack was read through the bridge): kept as it came.
+    if (isUnityArt(value)) {
+      const opt = el('option', null, `🎮 Arte de Unity: ${unityArtLabel(value)}${artLibraryId(value) && entries.some((e) => e.id === artLibraryId(value)) ? '' : ' (sin vista previa)'}`);
+      opt.value = value;
+      select.insertBefore(opt, select.children[1] || null);
+    }
+    select.value = isUnityArt(value) || entries.some((e) => e.id === value) ? value : '';
   }
 
   /** Library picker for one art slot. Empty = the attack's own placeholder in Unity. */
@@ -168,7 +175,7 @@ export function createAttackEditor(o) {
     const select = document.createElement('select');
     entryOptions(select, value, kindNote.kinds, `(por defecto: ${f.placeholder || 'placeholder'})`);
     const paint = () => {
-      const e = entriesById().get(select.value);
+      const e = entriesById().get(artLibraryId(select.value));
       thumb.style.backgroundImage = e?.thumbnail ? `url(${e.thumbnail})` : '';
       thumb.classList.toggle('empty', !e);
     };

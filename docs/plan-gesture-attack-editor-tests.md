@@ -30,4 +30,19 @@ Todo en la web menos el bloque final. Un único import en Unity, al final. Rama:
 12. Juega contra **ShroomShaman**, **koros** e **IceRobot** (convertidos automáticamente): ¿atacan como antes?
     Fíjate sobre todo en si su disparo suena y si apunta igual.
 
+## E · El puente Unity ⇄ web (sin exportar ni importar)
+
+Con la web servida en `http://localhost:3000` y Unity abierto.
+
+13. Unity ▸ selecciona el prefab **IceRobot2** ▸ Inspector ▸ EnemyStats ▸ **🌐 Editar gestos y ataques en la web**
+    (arriba del todo). Se abre el navegador en 🎬 con IceRobot2 y el recuadro **🔌 Unity · IceRobot2** a la izquierda.
+14. Cambia la duración de un paso ▸ **💾 Guardar en Unity** (mismo recuadro): sale "✓ Guardado en Unity" con el
+    informe. En Unity, ProceduralRig ▸ Gestures: ¿tiene el valor nuevo y conserva su sonido?
+15. En Unity cambia algo de un **gesto** en el Inspector del prefab y guarda. En la web, sin recargar, pulsa
+    Guardar en Unity: debe decir **"Cambió en Unity"** con *Recargar desde Unity* / *Sobrescribir*.
+16. En el Inspector, despliega **"Abrir la web en…"** y pulsa **✎ web** en un ataque: ¿se abre con ese ataque y su gesto?
+17. Haz lo mismo con **ShroomShaman** (no está en tu biblioteca web: el cuerpo se lee de Unity). ¿Se ve bien montado?
+    Pulsa ▶ Probar en un gesto: ¿suena su sonido?
+18. Cierra Unity y pulsa Guardar en Unity en la web: debe decir "Unity no responde", sin perder nada.
+
 Dime sólo lo que falle o resulte incómodo.

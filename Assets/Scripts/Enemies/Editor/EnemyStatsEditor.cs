@@ -25,6 +25,10 @@ namespace RedMagic.Enemies.EditorTools
 
         public override void OnInspectorGUI()
         {
+            // Enemigo por partes: sus gestos y ataques se editan en la web, que guarda aquí (el puente).
+            if (targets.Length == 1)
+                RedMagic.Rigging.EditorTools.WebBridgeMenu.DrawInspector(((EnemyStats)target).gameObject);
+
             serializedObject.Update();
 
             var tuning = serializedObject.FindProperty("tuning");

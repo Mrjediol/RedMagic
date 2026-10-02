@@ -20,6 +20,7 @@ import { initVfxLab } from './modules/vfx-lab.js';
 import { initGameSoundsPanel } from './modules/game-sounds-panel.js';
 import { initRigComposer } from './modules/rig-composer.js';
 import { initEnemyStudio } from './modules/enemy-studio.js';
+import { bridge } from './modules/unity-bridge.js';
 import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail, exportAllRecords, restoreRecords } from './modules/enemy-library.js';
 import { initShellTools } from './modules/shell-tools.js';
 import { PRESETS as VFX_PRESETS, FAMILIES as VFX_FAMILIES } from './modules/vfx-presets.js';
@@ -2240,8 +2241,10 @@ shell = initShellTools({
 (function restoreLastTab() {
   let last = null;
   try { last = localStorage.getItem(LAST_TAB_KEY); } catch { /* no storage */ }
+  // Opened from Unity (the bridge, modules/unity-bridge.js): straight to 🎬 with that enemy loaded.
   // First visit: the tab used most. (Sprites is the one the page loads on, so it needs no click.)
-  const wanted = last || 'studio';
+  const wanted = bridge.active ? 'gestures' : last || 'studio';
   const btn = wanted !== 'sprites' ? document.querySelector(`.tabBtn[data-tab="${wanted}"]`) : null;
   if (btn && !btn.disabled) btn.click();
+  if (bridge.active) enemyStudio.openFromUnity();
 }());

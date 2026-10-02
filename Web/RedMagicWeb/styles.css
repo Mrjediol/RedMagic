@@ -471,6 +471,12 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 #tab-studio[data-mode="focus"] #studioSteps > h1,
 #tab-studio[data-mode="focus"] .studioStep{display:none;}
 #studioFocus select{margin:4px 0 6px;}
+/* The Unity bridge (opened from Unity): banner, "Guardar en Unity", Unity's answer. */
+.unityBridge{border:1px solid #3b6ea5;border-radius:6px;padding:8px;margin:0 0 10px;background:rgba(59,110,165,.12);}
+.unityBridge .unityBanner{font-weight:700;margin:0 0 4px;}
+.unityBridge button{margin:4px 4px 0 0;}
+.unityBridge .unityConflict{border-top:1px solid rgba(255,255,255,.15);margin-top:8px;padding-top:6px;}
+.unityBridge .unityReport{max-height:180px;overflow:auto;white-space:pre-wrap;font-size:11px;margin:6px 0 0;padding:6px;background:rgba(0,0,0,.25);border-radius:4px;}
 #tab-studio[data-mode="focus"] #studioRight{width:520px;}
 #tab-studio[data-mode="focus"] #enemyFormPanel .efSection:not(.efDeck):not(.efDefence){display:none;}
 #tab-studio[data-mode="focus"] #enemyJsonPreview,#tab-studio[data-mode="focus"] #enemyExportBtn{display:none;}

@@ -173,7 +173,7 @@ namespace RedMagic.Bosses.EditorTools
         }
 
         /// <summary>Campos que Unity serializa, de la clase base a la derivada, en orden de declaración.</summary>
-        private static IEnumerable<FieldInfo> SerializableFields(Type type)
+        internal static IEnumerable<FieldInfo> SerializableFields(Type type)
         {
             var chain = new List<Type>();
             for (var t = type; t != null && t != typeof(ScriptableObject) && t != typeof(object) &&
@@ -334,7 +334,7 @@ namespace RedMagic.Bosses.EditorTools
         }
 
         /// <summary>El tipo de elemento de una lista / array de una clase [Serializable] propia, o null.</summary>
-        private static Type ElementClass(Type ft)
+        internal static Type ElementClass(Type ft)
         {
             Type element = ft.IsArray ? ft.GetElementType()
                 : ft.IsGenericType && ft.GetGenericTypeDefinition() == typeof(List<>) ? ft.GetGenericArguments()[0]

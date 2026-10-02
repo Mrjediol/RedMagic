@@ -28,9 +28,16 @@
 // into focus mode (rig-composer.js ▸ setFocusMode: only gestures are edited) and the right column
 // shows the gestures with, under them, the form's Ataques and Defensa sections. Same editors, same
 // document: nothing is implemented twice.
+//
+// THE UNITY BRIDGE (docs/plan-unity-web-bridge.md): when Unity opens the page (`?bridge=…`, unity-bridge.js)
+// the focused tab loads that enemy FROM the project and gains "💾 Guardar en Unity" — see "the Unity
+// bridge" below. Opened by hand, none of it shows.
 
-import { listEntries, getEnemy } from './enemy-library.js';
+import { listEntries, getEnemy, saveEnemy, updateEnemy } from './enemy-library.js';
 import { kindOf } from './entry-kinds.js';
+import { bridge, fetchEnemy, fetchFile, fetchDataURL, saveGestures, BridgeError } from './unity-bridge.js';
+import { readRigDocument } from './rig-export.js';
+import { decodeAudio, playBuffer } from './vfx-stage.js';
 
 const STEPS = [
   { id: 'body', title: 'Cuerpo' },
@@ -232,6 +239,190 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     setTelegraph: (gestureName, seconds) => enemy.setGestureTelegraph(gestureName, seconds),
   };
 
+  // ============================================================ the Unity bridge (opened from Unity)
+  //
+  // docs/plan-unity-web-bridge.md. Unity opens this tab with an enemy of the PROJECT: what the prefab
+  // has (gestures, state sprites, the deck with its attacks' real numbers, the sound of each gesture) is
+  // what is edited, and "Guardar en Unity" writes it back — no export / import. The body is drawn from
+  // the library record of that name when the enemy was made here, else read from Unity (read-only).
+
+  const unity = {
+    id: null,          // the library record the enemy on screen was loaded into
+    prefab: '', name: '', kind: 'enemy',
+    revision: '',      // what Unity had when it was read: sent back on save (409 if it changed since)
+    busy: '',          // 'Leyendo de Unity…' / 'Guardando en Unity…'
+    result: null,      // { ok, summary, warnings[], errors[] } | { error }
+    conflict: null,    // { message } — "Cambió en Unity": reload or overwrite
+    notes: [],         // what the readers had to say when it was opened
+    sounds: new Map(), // gesture name -> { moment, volume, pitchMin, pitchMax, buffers[] }
+  };
+
+  /** The enemy on screen is the one Unity sent. */
+  const onUnityEnemy = () => !!unity.id && rig.getStatus().id === unity.id;
+
+  /** Reads the enemy from Unity and puts it on screen. `select` = { gesture, attack } (a deep link). */
+  async function openFromUnity(prefab = bridge.prefab, select = { gesture: bridge.gesture, attack: bridge.attack }) {
+    if (!bridge.active || !prefab) return;
+    await showing;
+    unity.busy = 'Leyendo de Unity…';
+    unity.result = null;
+    unity.conflict = null;
+    rig.refreshInspector();
+    try {
+      const data = await fetchEnemy(prefab);
+      await flushBehaviour(true);       // whatever was open before is saved first
+      await rig.refreshLibraries();     // the library's effects: a Unity prefab built from one gets its preview
+
+      // The body: the library's when this enemy was made in the web (its original canvases), else Unity's.
+      const records = (await listEntries('rig')).filter((e) => e.draft && e.enemyName === data.name);
+      let record = records.find((e) => !e.draft.unityBody) || null;
+      const notes = [...(data.warnings || [])];
+      if (!record) {
+        const read = await readRigDocument(data.rigConfig, {
+          sprites: data.sprites, fetchDataURL, entriesById: rig.getFxEntries(), artLibrary: data.artLibrary,
+        });
+        read.state.unityPrefab = data.prefab;
+        notes.push(...read.notes);
+        const previous = records.find((e) => e.draft.unityBody);
+        record = previous
+          ? await updateEnemy(previous.id, { draft: read.state })
+          : await saveEnemy({ kind: 'rig', sprite: null, enemyName: data.name, draft: read.state });
+      }
+      // The behaviour is Unity's: its deck with every attack's numbers as they are in the assets.
+      if (data.enemyConfig) await updateEnemy(record.id, { enemyConfig: data.enemyConfig });
+
+      await rig.linkLibraryEntry(record.id);
+      // A body from the library keeps its parts; its gestures are the prefab's (Unity owns what it has).
+      if (!record.draft.unityBody) notes.push(...rig.applyUnityGestures(data.rigConfig, data.artLibrary));
+      if (data.kind === 'enemy') await enemy.linkLibraryEntry(record.id, data.name);
+
+      Object.assign(unity, { id: record.id, prefab: data.prefab, name: data.name, kind: data.kind, revision: data.revision, notes });
+      loadUnitySounds(data.sounds || []);
+      gestureSignature = signatureOf(rig.getGestures());
+      await rig.save();   // the library copy (thumbnail included) is now what Unity has
+      await refreshPicker();
+
+      // Deep link: a card of the deck opens its gesture too; a gesture, just itself.
+      const card = select?.attack >= 0 ? enemy.focusAttack(select.attack) : null;
+      const gesture = select?.gesture || card?.gesture || '';
+      if (gesture && !rig.openGestureNamed(gesture)) notes.push(`El gesto "${gesture}" no está en el prefab.`);
+      rig.setStatus(`Abierto "${data.name}" desde Unity.`);
+    } catch (e) {
+      unity.result = { error: e.message };
+    } finally {
+      unity.busy = '';
+      rig.refreshInspector();
+      render();
+    }
+  }
+
+  /** Writes gestures + attacks into the prefab. `force` = overwrite what changed in Unity meanwhile. */
+  async function saveToUnity(force = false) {
+    if (unity.busy || !onUnityEnemy()) return;
+    unity.busy = 'Guardando en Unity…';
+    unity.result = null;
+    unity.conflict = null;
+    rig.refreshInspector();
+    try {
+      const blob = await rig.buildGesturesZip();   // saves the form first (hooks.beforeExport)
+      if (!blob) return;
+      const res = await saveGestures(blob, { prefab: unity.prefab, revision: unity.revision, force });
+      if (res.revision) unity.revision = res.revision;
+      unity.result = res;
+      if (res.ok) await rig.save();
+      rig.setStatus(res.ok ? `Guardado en Unity: ${unity.prefab}` : 'Unity no pudo aplicarlo: mira el informe.');
+    } catch (e) {
+      // 409 = Unity refused to write: it changed there (two choices), or it is in Play Mode (just a message).
+      if (e instanceof BridgeError && e.status === 409 && e.reason !== 'playmode') unity.conflict = { message: e.message };
+      else unity.result = { error: e.message };
+    } finally {
+      unity.busy = '';
+      rig.refreshInspector();
+    }
+  }
+
+  /** The gestures' own sounds (assigned and graded in Unity): fetched once, played by the test stage. */
+  function loadUnitySounds(list) {
+    unity.sounds = new Map();
+    list.forEach((s) => {
+      const sound = { moment: s.moment || 'release', volume: s.volume ?? 1, pitchMin: s.pitchMin ?? 1, pitchMax: s.pitchMax ?? 1, buffers: [], clips: s.clips || [s.clip] };
+      unity.sounds.set(s.gesture, sound);
+      sound.clips.filter(Boolean).forEach(async (clip) => {
+        try {
+          const buffer = await decodeAudio(await (await fetchFile(clip)).arrayBuffer());
+          if (buffer) sound.buffers.push(buffer);
+        } catch { /* a clip the browser cannot decode: that gesture stays silent here */ }
+      });
+    });
+  }
+
+  rig.hooks.gestureSound = (gestureName, moment) => {
+    const sound = onUnityEnemy() ? unity.sounds.get(gestureName) : null;
+    if (!sound || sound.moment !== moment || !sound.buffers.length) return;
+    const buffer = sound.buffers[Math.floor(Math.random() * sound.buffers.length)];
+    playBuffer(buffer, { gain: sound.volume, rate: sound.pitchMin + Math.random() * (sound.pitchMax - sound.pitchMin) });
+  };
+
+  /** Above the save / export buttons of the focused tab: the banner, "Guardar en Unity", Unity's answer. */
+  rig.hooks.focusExtras = (host) => {
+    if (!bridge.active) return;
+    const box = el('div', 'unityBridge');
+    if (!onUnityEnemy()) {
+      box.appendChild(el('p', 'unityBanner', '🔌 Unity'));
+      if (unity.busy) box.appendChild(el('p', 'hint', unity.busy));
+      else if (unity.result?.error) box.appendChild(el('p', 'efSummaryError', `✗ ${unity.result.error}`));
+      const again = el('button', 'small', '↻ Abrir el enemigo de Unity');
+      again.onclick = () => openFromUnity(unity.prefab || bridge.prefab, {});
+      box.appendChild(again);
+      host.appendChild(box);
+      return;
+    }
+
+    box.appendChild(el('p', 'unityBanner', `🔌 Unity · ${unity.name}`));
+    const st = rig.getStatus();
+    box.appendChild(el('p', 'hint', `${unity.prefab}. ${st.unityBody ? 'El cuerpo se ha leído de Unity (sólo para verlo y posarlo).' : 'El cuerpo es el de tu biblioteca; los gestos'
+      + (unity.kind === 'enemy' ? ' y los ataques' : '') + ' son los del prefab.'}${unity.sounds.size ? ` Suenan ${unity.sounds.size} gesto(s) al probarlos.` : ''}`));
+
+    const save = el('button', 'primary', unity.busy || '💾 Guardar en Unity');
+    save.style.width = '100%';
+    save.disabled = !!unity.busy;
+    save.title = 'Escribe en el prefab sus gestos (con efectos y sprites por estado)' + (unity.kind === 'enemy' ? ', sus ataques y sus defensas' : '') + '. No toca el cuerpo ni lo demás afinado en el Inspector.';
+    save.onclick = () => saveToUnity(false);
+    const reload = el('button', 'small', '↻ Recargar desde Unity');
+    reload.disabled = !!unity.busy;
+    reload.title = 'Vuelve a leer el prefab guardado: lo que no hayas guardado aquí se pierde.';
+    reload.onclick = () => openFromUnity(unity.prefab, {});
+    box.append(save, reload);
+
+    if (unity.conflict) {
+      const c = el('div', 'unityConflict');
+      c.appendChild(el('p', 'efSummaryError', '⚠ Cambió en Unity'));
+      c.appendChild(el('p', 'hint', `${unity.conflict.message} No se ha escrito nada.`));
+      const take = el('button', 'small', '↻ Recargar desde Unity');
+      take.title = 'Te quedas con lo de Unity: lo cambiado aquí se pierde.';
+      take.onclick = () => openFromUnity(unity.prefab, {});
+      const over = el('button', 'small danger', 'Sobrescribir');
+      over.title = 'Lo de aquí pisa los gestos y ataques que tenga ahora el prefab.';
+      over.onclick = () => saveToUnity(true);
+      c.append(take, over);
+      box.appendChild(c);
+    }
+
+    const r = unity.result;
+    if (r?.error) box.appendChild(el('p', 'efSummaryError', `✗ ${r.error}`));
+    else if (r) {
+      box.appendChild(el('p', r.ok ? 'efSummaryOk' : 'efSummaryError', r.ok ? '✓ Guardado en Unity' : '✗ Unity no pudo aplicarlo'));
+      const pre = el('pre', 'unityReport', r.summary || '');
+      box.appendChild(pre);
+    }
+    if (unity.notes.length) {
+      const list = el('ul', 'hint');
+      unity.notes.forEach((n) => list.appendChild(el('li', null, n)));
+      box.appendChild(list);
+    }
+    host.appendChild(box);
+  };
+
   // ============================================================ steps: locks and state
 
   function usable(st) { return !!st.name && st.hasArt && st.openRequired === 0; }
@@ -258,7 +449,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
       nodes.rigMain.hidden = false;
       nodes.enemyForm.hidden = !form;
       nodes.enemyPreview.hidden = !form;
-      focusInfo.textContent = !st.id
+      focusInfo.textContent = unity.busy ? unity.busy : !st.id
         ? (st.parts ? 'El enemigo en pantalla no está guardado: guárdalo desde Enemy Studio para darle ataques.' : 'Elige arriba el enemigo.')
         : st.kind === 'boss' ? `"${st.name}" es un jefe: aquí sus gestos; sus ataques, en 👑 Boss Creator.`
           : `"${st.name}": ${st.gestures} gesto(s). Abre uno a la derecha: su línea de tiempo aparece bajo el lienzo.`;
@@ -381,8 +572,15 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     render();
   };
 
+  let showing = Promise.resolve();   // the last show(): openFromUnity waits for its panels
+
   /** `as` = 'full' (🧬 Enemy Studio, the steps) or 'focus' (🎬 Gestos y ataques). */
-  async function show(as = 'full') {
+  function show(as = 'full') {
+    showing = showNow(as).catch((e) => console.warn('[enemy-studio]', e));
+    return showing;
+  }
+
+  async function showNow(as) {
     // From the behaviour step straight to the other door: what was typed there is saved first.
     if (mounted && as !== mode && active === 'behaviour') await flushBehaviour();
     mode = as;
@@ -419,5 +617,5 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     render();
   }
 
-  return { show, hide, open, linkLibraryEntry, isMounted: () => mounted };
+  return { show, hide, open, linkLibraryEntry, openFromUnity, isMounted: () => mounted };
 }

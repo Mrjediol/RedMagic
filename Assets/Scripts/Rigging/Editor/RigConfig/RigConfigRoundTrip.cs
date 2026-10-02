@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using Newtonsoft.Json.Linq;
 using RedMagic.Bosses;
 using RedMagic.Bosses.EditorTools;
+using RedMagic.Pipeline.EditorTools;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -76,6 +78,7 @@ namespace RedMagic.Rigging.EditorTools
                 }
 
                 failures += GestureFxCase(sb);
+                failures += DeckCase(sb);
             }
             finally
             {
@@ -88,6 +91,66 @@ namespace RedMagic.Rigging.EditorTools
 
             sb.Insert(0, failures == 0 ? "IDA Y VUELTA OK\n" : $"IDA Y VUELTA CON FALLOS ({failures})\n");
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// La baraja de cada enemigo por partes, ida y vuelta (lo que hace el puente web): cada asset de
+        /// ataque → su carta JSON (<see cref="BossAttackExporter"/>) → escrita de nuevo en el MISMO asset
+        /// con el importador de siempre. El asset tiene que quedar idéntico; si no, se restaura y se avisa.
+        /// </summary>
+        private static int DeckCase(StringBuilder sb)
+        {
+            int failures = 0, cards = 0;
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { ProceduralEnemyPacks.Folder }))
+            {
+                string prefabPath = AssetDatabase.GUIDToAssetPath(guid);
+                var root = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+                if (root == null || root.GetComponent<ProceduralRig>() == null) continue;
+
+                var config = RigConfigExporter.EnemyConfig(root, root.name);
+                if (config == null) continue;
+                BossAttackExporter.FillDeck(root, config);
+                if (!(config["attacks"] is JObject attacks) || attacks.Count == 0) continue;
+
+                var before = new Dictionary<string, string>();
+                string folder = null;
+                foreach (var prop in attacks.Properties())
+                {
+                    string path = prop.Value.Value<string>("assetPath");
+                    before[path] = EditorJsonUtility.ToJson(AssetDatabase.LoadAssetAtPath<BossAttack>(path));
+                    folder = folder ?? Path.GetDirectoryName(path).Replace('\\', '/');
+                }
+
+                var report = new ConfigImportReport(root.name);
+                var diffs = new List<string>();
+                try
+                {
+                    BossArtBuilder.ResolveArtRefs(attacks, null, report.Warnings, "attacks");
+                    BossConfigImporter.WriteAttacks(attacks, BossConfigImporter.ResolveAttackTypes(attacks), folder,
+                                                    id => id, null, report);
+                }
+                catch (Exception e) { diffs.Add($"excepción: {e.Message}"); }
+
+                diffs.AddRange(report.UnresolvedParams);
+                foreach (var pair in before)
+                {
+                    var asset = AssetDatabase.LoadAssetAtPath<BossAttack>(pair.Key);
+                    if (EditorJsonUtility.ToJson(asset) == pair.Value) continue;
+                    diffs.Add($"{pair.Key}: el asset cambió al reescribirlo (restaurado).");
+                    EditorJsonUtility.FromJsonOverwrite(pair.Value, asset);
+                    EditorUtility.SetDirty(asset);
+                }
+
+                cards += before.Count;
+                failures += diffs.Count > 0 ? 1 : 0;
+                sb.AppendLine(diffs.Count == 0 ? $"✓ baraja de {root.name}: {before.Count} ataques, asset → carta → asset idénticos."
+                                               : $"x baraja de {root.name}: {diffs.Count} diferencias");
+                foreach (var d in diffs) sb.AppendLine($"    {d}");
+            }
+
+            AssetDatabase.SaveAssets();
+            if (cards == 0) sb.AppendLine("· barajas: ningún enemigo por partes tiene ataques del catálogo.");
+            return failures;
         }
 
         /// <summary>

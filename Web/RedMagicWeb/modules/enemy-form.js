@@ -1321,6 +1321,19 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     host.appendChild(box);
   }
 
+  /**
+   * A deep link from Unity ("✎ web" on a card of the deck): opens the `index`-th card of the draw and
+   * makes it the one the test stage fires. Returns `{ id, gesture }`, or null if there is no such card.
+   */
+  function focusAttack(index) {
+    const attack = state.deck.filter((a) => !a.deck?.defenceOnly)[index];
+    if (!attack) return null;
+    state.deck.forEach((a) => { a.open = a === attack; });
+    previewAttackId = attack.id;
+    deckEditor.render();
+    return { id: attack.id, gesture: (attack.common.gesture || '').trim() };
+  }
+
   /** The library entry this form is editing the behaviour of, or null. */
   function linkedId() {
     return state.artMode === 'library' ? state.artLibraryId || null : null;
@@ -1360,5 +1373,5 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   }
 
   return { refreshLaneInfo, refreshArtLibrary, linkLibraryEntry, linkedId, persistLinked, setEnemyName, unlinkRig,
-    setGestureSource, setDeckMirror, gesturesChanged, gestureShots, setGestureTelegraph, renderGestureAttacks };
+    setGestureSource, setDeckMirror, gesturesChanged, gestureShots, setGestureTelegraph, renderGestureAttacks, focusAttack };
 }

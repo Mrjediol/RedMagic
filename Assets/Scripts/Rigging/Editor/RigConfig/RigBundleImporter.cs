@@ -81,7 +81,10 @@ namespace RedMagic.Rigging.EditorTools
         }
 
         /// <summary>Import completo. Nunca lanza: todo va al resumen (mismo patrón que los otros importadores).</summary>
-        public static string Import(string path, Options options = null)
+        public static string Import(string path, Options options = null) => ImportWithReport(path, options).BuildSummary();
+
+        /// <summary>Lo mismo, con el informe entero (el puente web necesita saber si hubo errores).</summary>
+        public static ConfigImportReport ImportWithReport(string path, Options options = null)
         {
             options = options ?? new Options();
             var report = new ConfigImportReport(Path.GetFileName(path));
@@ -130,7 +133,7 @@ namespace RedMagic.Rigging.EditorTools
                 }
             }
 
-            return report.BuildSummary();
+            return report;
         }
 
         // ============================================================ import
@@ -573,7 +576,9 @@ namespace RedMagic.Rigging.EditorTools
             // El config viaja con sus PNG: reimportar la carpeta después encuentra las mismas rutas.
             string configTarget = Path.GetFullPath($"{artFolder}/{RigConfigJson.ConfigFile}");
             string configSource = Path.Combine(source, RigConfigJson.ConfigFile);
-            if (File.Exists(configSource) && !string.Equals(Path.GetFullPath(configSource), configTarget, StringComparison.OrdinalIgnoreCase))
+            // (Uno parcial no: pisaría el config entero del cuerpo con uno de sólo gestos.)
+            if (config.Value<bool?>("partial") != true &&
+                File.Exists(configSource) && !string.Equals(Path.GetFullPath(configSource), configTarget, StringComparison.OrdinalIgnoreCase))
                 File.Copy(configSource, configTarget, true);
 
             AssetDatabase.Refresh();

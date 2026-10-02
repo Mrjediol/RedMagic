@@ -70,8 +70,14 @@ namespace RedMagic.Pipeline.EditorTools
                 }
 
                 case SerializedPropertyType.Color:
-                    prop.colorValue = ConfigJson.ReadColor(value, prop.colorValue);
+                {
+                    // Un hex tiene 8 bits por canal: si es el mismo color que ya hay, no se reescribe
+                    // (guardar desde la web sin tocarlo no debe redondear el del asset).
+                    var color = ConfigJson.ReadColor(value, prop.colorValue);
+                    if (ColorUtility.ToHtmlStringRGBA(color) != ColorUtility.ToHtmlStringRGBA(prop.colorValue))
+                        prop.colorValue = color;
                     return true;
+                }
 
                 case SerializedPropertyType.LayerMask:
                     prop.intValue = ConfigJson.ReadLayerMask(value, prop.intValue, path);

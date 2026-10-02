@@ -50,6 +50,26 @@ function audioContext() {
   return audio;
 }
 
+/** An audio FILE (wav / ogg / mp3 bytes) decoded for `playBuffer`, or null without Web Audio. */
+export async function decodeAudio(arrayBuffer) {
+  const ctx = audioContext();
+  return ctx ? ctx.decodeAudioData(arrayBuffer) : null;
+}
+
+/** Plays a decoded clip once (a gesture's own sound, read from Unity through the bridge). */
+export function playBuffer(buffer, { gain = 1, rate = 1 } = {}) {
+  const ctx = audioContext();
+  if (!ctx || !buffer) return;
+  if (ctx.state === 'suspended') ctx.resume();
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.playbackRate.value = rate > 0 ? rate : 1;
+  const volume = ctx.createGain();
+  volume.gain.value = gain;
+  source.connect(volume).connect(ctx.destination);
+  source.start();
+}
+
 /**
  * Plays a sound now. Returns a function that stops it (needed for loops). No Web Audio = no sound, no error.
  * `samples` = already rendered samples of a sound that is not one of the Lab's (the game's palette).

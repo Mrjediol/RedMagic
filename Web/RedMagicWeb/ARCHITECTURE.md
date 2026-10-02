@@ -277,8 +277,8 @@ A step that "lasts the warning" has no time of its own: its field and its edge e
 telegraph of the attack that uses the gesture when there is one (`host.setLead` → `enemy.setGestureTelegraph`).
 
 Not simulated on the stage: homing, pierce, impact explosions, and the catalog attacks that are not made of
-shots (they start at the first release; their numbers are edited in step 4). No sound in the web: a
-gesture's sound is assigned in Unity.
+shots (they start at the first release; their numbers are edited in step 4). A gesture's sound is assigned in
+Unity; the stage plays it only for an enemy opened through the bridge (below).
 
 **The second door — 🎬 "Gestos y ataques"** (tab id `gestures`, no panel of its own: `app.js` ▸ `TAB_PANELS`
 shows `#tab-studio`). `enemyStudio.show('focus')`: the steps are hidden, the left column is `#studioFocus`
@@ -289,6 +289,26 @@ section) and the right column shows the gestures with the form's *Ataques* and *
 `buildGesturesBundle` / `partialEnemyConfig` (`"partial": true`; only gestures, idle gestures, state sprites,
 deck, defences) — read by `RigBundleImporter.ImportPartial` over an existing prefab. Nothing is implemented
 twice: same composer, same timeline, same form.
+
+**The Unity bridge** (plan: `docs/plan-unity-web-bridge.md`; Unity side: `Assets/Scripts/Rigging/Editor/Bridge/`).
+Unity opens the page with `?bridge=<port>&token=<t>&prefab=<asset path>[&gesture=][&attack=<index>]`: the 🎬 tab
+loads that enemy **from the project** and gains "💾 Guardar en Unity". Opened by hand, none of it exists.
+
+| To change... | Edit | Function |
+|---|---|---|
+| The calls to Unity (`/ping`, `/enemy`, `/file`, `/gestures`), the query params, the one retry | `modules/unity-bridge.js` | `bridge`, `fetchEnemy`, `fetchFile` / `fetchDataURL`, `saveGestures`, `BridgeError` (`status` 0 = no answer, 409 + `reason`) |
+| Opening straight on 🎬 | `app.js` | `restoreLastTab` (`bridge.active` → `enemyStudio.openFromUnity()`) |
+| What is loaded and from where; the banner, the save button, Unity's report, "Cambió en Unity" | `modules/enemy-studio.js` | `openFromUnity`, `saveToUnity`, `rig.hooks.focusExtras`, `loadUnitySounds` / `rig.hooks.gestureSound` |
+| A body drawn from Unity's rig-config (nodes, sprites, pivots, roles, state sprites) | `modules/rig-export.js` | `readRigDocument` — the document is marked `unityBody` (a full export of it is refused) and every image keeps `unityRef`, which the partial export writes back instead of a PNG |
+| Unity's gestures over a library body; opening a gesture by name; the zip that is posted | `modules/rig-composer.js` | `applyUnityGestures`, `openGestureNamed`, `buildGesturesZip`; the sound moments: `armStage` / `playGestureSound` |
+| Art that is a prefab of the project (`unity:<path>` in a card, `{ "project": … }` in JSON) and its library preview | `modules/unity-art.js` (+ `attack-export.js`, `attack-cards.js`) | `unityArtValue`, `artLibraryId`, `unityArtRef`; `adoptAttacksFromConfig` keeps each card's `assetPath` so it is saved into the same asset |
+| Playing a clip file | `modules/vfx-stage.js` | `decodeAudio`, `playBuffer` |
+
+Rules: Unity owns what it has — on open, gestures and the deck always come from the prefab, even when the library
+has the enemy (the library record is then updated to match). The body comes from the library record of that
+name when it was authored here, else from Unity. Saving never touches the body or the rest of the tuning. Sounds
+are read-only here. The effect of a gesture that is a Unity prefab keeps its path (`fx.prefab`) and is exported
+as it came; when Unity says which library entry it was built from, that entry is only its preview.
 
 ### Rig composer (the body editor of Enemy Studio — part-based enemies and bosses)
 

@@ -342,6 +342,27 @@ los sprites como rutas del proyecto (reimportable tal cual), más `<name>.enemy-
 `EnemyStats` entero (un jefe lleva su `BossDefinition` en `bossBody.definition`). Es cómo llevar a la web lo afinado en
 el Inspector.
 
+### Editar gestos y ataques en la web (el puente, sin exportar ni importar)
+Con la web servida (`npx serve Web/RedMagicWeb`) y Unity abierto:
+
+1. Selecciona un enemigo por partes (su prefab, o abierto en Prefab Mode) ▸ Inspector ▸ **EnemyStats** ▸
+   **🌐 Editar gestos y ataques en la web**. Debajo, "Abrir la web en…" tiene un **✎ web** por gesto y por
+   ataque de la baraja. También: `ProceduralRig ▸ ⋮ ▸ Editar gestos y ataques en la web`, y Biblioteca
+   Jere ▸ Enemies ▸ "Editar en la web". En un jefe por partes el botón está en su **BossController** (sólo gestos).
+2. Se abre el navegador en 🎬 *Gestos y ataques* con ese enemigo: sus gestos, sus ataques con los números
+   que tienen los assets, y el sonido de cada gesto (suena al pulsar ▶ Probar). El cuerpo es el de tu
+   biblioteca si el enemigo se hizo en la web; si no, se lee de Unity (sólo para verlo y posarlo).
+3. **💾 Guardar en Unity** escribe gestos, sprites por estado, ataques y defensas en el prefab y en los
+   mismos assets de ataque. El informe del import sale en el propio panel.
+
+- Si el prefab cambió en Unity desde que lo abriste (o está en Prefab Mode sin guardar): **"Cambió en
+  Unity"** → *Recargar desde Unity* o *Sobrescribir*. En Play Mode no se guarda.
+- La dirección de la web se cambia en **Biblioteca Jere, abajo a la derecha ("Web")**; por defecto
+  `http://localhost:3000`. Si no hay nada ahí, Unity te da el comando para arrancarla.
+- No hay claves ni nada que configurar. Si abres la web a mano (sin el botón), el puente simplemente no está.
+- Los sonidos de los gestos se siguen asignando y graduando en Unity (pestaña Sounds).
+- `Tools ▸ Web ▸ Puente ▸ Apagar el puente con la web` lo para hasta que vuelvas a pulsar el botón.
+
 ### Probar ida y vuelta (Robot · Turret · BossIce2)
 Sin Play: exporta los tres prefabs de referencia a `docs/schemas/fixtures/rig/` (los fixtures del
 repo), los reimporta con otro nombre en una carpeta temporal, compara por reflexión

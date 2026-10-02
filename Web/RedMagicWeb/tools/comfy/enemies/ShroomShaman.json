@@ -5,39 +5,271 @@
   "parts": "claude/shroom/final",
   "height": 2.8,
   "slots": {
-    "castArm": { "pivot": [0.3, 0.85], "muzzle": [0.72, 0.1] }
+    "castArm": {
+      "pivot": [
+        0.3,
+        0.85
+      ],
+      "muzzle": [
+        0.72,
+        0.1
+      ]
+    }
   },
   "tuning": {
     "maxHealth": 28,
     "attackDamage": 7,
     "attackCooldown": 1.8,
-    "projectileTint": "#ffffffff"
+    "projectileTint": "#ffffffff",
+    "moveSoundInterval": 0.9
   },
   "effects": {
-    "spore": { "name": "ShroomSpore", "preset": "poisonGlob", "params": { "core": "#f6ffd0", "glow": "#8fe61e", "accent": "#d6ff7a" } },
-    "mote": { "name": "ShroomMote", "preset": "wisp", "params": { "core": "#ffffff", "glow": "#b4f03c", "accent": "#f0ffc0" } }
+    "spore": {
+      "name": "ShroomSpore",
+      "preset": "poisonGlob",
+      "params": {
+        "core": "#f6ffd0",
+        "glow": "#8fe61e",
+        "accent": "#d6ff7a"
+      }
+    },
+    "mote": {
+      "name": "ShroomMote",
+      "preset": "wisp",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#b4f03c",
+        "accent": "#f0ffc0"
+      }
+    },
+    "charge": {
+      "name": "ShroomCharge",
+      "preset": "chargeVortex",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#8fe61e",
+        "accent": "#e2ff8a"
+      }
+    },
+    "flash": {
+      "name": "ShroomFlash",
+      "preset": "muzzleFlash",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#8fe61e",
+        "accent": "#e2ff8a"
+      }
+    },
+    "puff": {
+      "name": "ShroomPuff",
+      "preset": "smokePuff",
+      "params": {
+        "core": "#f4ffd0",
+        "glow": "#9fd65a",
+        "accent": "#d8f0a0"
+      }
+    },
+    "trail": {
+      "name": "ShroomTrail",
+      "preset": "dashTrail",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#8fe61e",
+        "accent": "#e2ff8a"
+      }
+    }
   },
-  "projectile": { "effect": "spore", "speed": 8, "lifetime": 2.5, "size": { "x": 0.55, "y": 0.55 } },
+  "projectile": {
+    "effect": "spore",
+    "speed": 8,
+    "lifetime": 2.5,
+    "size": {
+      "x": 0.55,
+      "y": 0.55
+    }
+  },
   "attacks": [
     {
       "id": "SporeFan",
       "type": "BulletHellAttack",
       "effect": "spore",
       "worldWidth": 0.5,
-      "common": { "displayName": "Abanico de esporas", "telegraph": 0.7, "recovery": 0.8, "damage": 6, "gesture": "Charge", "cooldownInAttacks": 1 },
-      "params": { "pattern": "Fan", "volleys": 1, "bulletsPerVolley": 5, "arcDegrees": 50, "aimAtPlayer": true,
-        "originOffset": { "x": 0, "y": 0.4 }, "spawnRadius": 0.6, "projectile": { "speed": 7, "lifetime": 2.5 } },
-      "deck": { "minRange": 3, "maxRange": 9 }
+      "common": {
+        "displayName": "Abanico de esporas",
+        "telegraph": 0.7,
+        "recovery": 0.8,
+        "damage": 6,
+        "gesture": "Charge",
+        "cooldownInAttacks": 1
+      },
+      "params": {
+        "pattern": "Fan",
+        "volleys": 1,
+        "bulletsPerVolley": 5,
+        "arcDegrees": 50,
+        "aimAtPlayer": true,
+        "spawnRadius": 0.15,
+        "projectile": {
+          "speed": 7,
+          "lifetime": 2.5
+        },
+        "fromCastPoint": true
+      },
+      "deck": {
+        "minRange": 3,
+        "maxRange": 9
+      }
     },
     {
       "id": "SporeNova",
       "type": "BulletHellAttack",
       "effect": "mote",
       "worldWidth": 0.4,
-      "common": { "displayName": "Nova de esporas", "telegraph": 0.8, "recovery": 1, "damage": 5, "gesture": "Sweep", "cooldownInAttacks": 2 },
-      "params": { "pattern": "Radial", "volleys": 2, "timeBetweenVolleys": 0.4, "bulletsPerVolley": 10, "arcDegrees": 360, "spinPerVolley": 18,
-        "aimAtPlayer": false, "originOffset": { "x": 0, "y": 0 }, "spawnRadius": 0.5, "projectile": { "speed": 5, "lifetime": 1.8 } },
-      "deck": { "minRange": 0, "maxRange": 4 }
+      "common": {
+        "displayName": "Nova de esporas",
+        "telegraph": 0.8,
+        "recovery": 1,
+        "damage": 5,
+        "gesture": "Sweep",
+        "cooldownInAttacks": 2
+      },
+      "params": {
+        "pattern": "Radial",
+        "volleys": 2,
+        "timeBetweenVolleys": 0.4,
+        "bulletsPerVolley": 10,
+        "arcDegrees": 360,
+        "spinPerVolley": 18,
+        "aimAtPlayer": false,
+        "spawnRadius": 0.3,
+        "projectile": {
+          "speed": 5,
+          "lifetime": 1.8
+        },
+        "fromCastPoint": true
+      },
+      "deck": {
+        "minRange": 0,
+        "maxRange": 4
+      }
+    }
+  ],
+  "rig": {
+    "muzzleFlashSize": 0
+  },
+  "gestures": [
+    {
+      "name": "Dash",
+      "strikeTime": 0.06,
+      "recover": 0.25,
+      "shake": 0,
+      "windup": [
+        [
+          "Visual",
+          [
+            0,
+            0
+          ],
+          -14
+        ],
+        [
+          "head",
+          [
+            0,
+            0
+          ],
+          -8
+        ],
+        [
+          "lower",
+          [
+            0,
+            0
+          ],
+          22
+        ],
+        [
+          "offArm",
+          [
+            0,
+            0
+          ],
+          25
+        ]
+      ],
+      "strike": []
+    }
+  ],
+  "gestureFx": {
+    "Flick": [
+      {
+        "effect": "flash",
+        "phase": "strike",
+        "size": 0.9
+      }
+    ],
+    "Charge": [
+      {
+        "effect": "charge",
+        "phase": "windup",
+        "loop": true,
+        "size": 1.3
+      },
+      {
+        "effect": "flash",
+        "phase": "strike",
+        "size": 1.2
+      }
+    ],
+    "Sweep": [
+      {
+        "effect": "charge",
+        "phase": "windup",
+        "loop": true,
+        "size": 1.6
+      },
+      {
+        "effect": "flash",
+        "phase": "strike",
+        "size": 1.5
+      }
+    ],
+    "Dash": [
+      {
+        "effect": "puff",
+        "phase": "windup",
+        "anchor": "body",
+        "size": 1.6,
+        "followsPart": false
+      },
+      {
+        "effect": "trail",
+        "phase": "windup",
+        "anchor": "body",
+        "loop": true,
+        "size": 1.8
+      }
+    ]
+  },
+  "builtIn": [
+    {
+      "gesture": "Flick",
+      "weight": 1
+    }
+  ],
+  "defences": [
+    {
+      "trigger": "TargetNear",
+      "distance": 5,
+      "healthFraction": 0,
+      "chance": 1,
+      "cooldown": 0,
+      "move": "DashAway",
+      "moveDistance": 5,
+      "moveDuration": 1,
+      "hopHeight": 0,
+      "gesture": "Dash",
+      "anticipation": 0
     }
   ]
 }

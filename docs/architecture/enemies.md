@@ -157,3 +157,17 @@ meant to be edited by hand.**
   hand-built enemies and boss adds (`SummonAddsAttack`, `RunManager`, `WorldSceneGenerator`), so it
   stays. `EnemyFactory` strips it (and `RangedAttack`) from anything it generates — both write
   `Rigidbody2D.linearVelocity` every `FixedUpdate`, so they'd fight over the body.
+
+## Flyers and solid ground · gesture pickers · cast point (2026-10-02)
+- **A flyer goes through platforms only.** `EnemyTuning.flyThroughLayers` (default `Platform`) is what an airborne
+  enemy's colliders exclude (`EnemyStats.Apply` → `GroundMotion.PhaseThroughTerrain`); `Ground` stops it, flying or
+  evading (`DashAway` used to carry it out of the map). `obstacleLayers` is still "what counts as terrain".
+- **`[GestureName]`** on a string field (`EnemyDefence.gesture`, `EnemyDeckEntry.gesture`): the Inspector shows a
+  dropdown with the gestures of the `ProceduralRig` on the same object (`GestureNameDrawer`); no rig = text field.
+- **Cast point**: `IAttackHost.CastPoint` (default = feet; `EnemyAttackHost` = the rig's muzzle, which moves with
+  the gesture), `BossContext.CastPoint`. `BulletHellAttack.fromCastPoint` makes Radial / Fan leave from it and
+  skips the warning mark — the charge gesture and its effects are the telegraph. A catalog attack measures from
+  the feet unless it says otherwise.
+- The coloured square at an attack is always a **placeholder**: the warning mark of an attack with no
+  `WarnPrefab`, or the rig's muzzle flash when the gesture that fires has no effect of its own (`RigGesture.fx`).
+  A finished enemy has effects on its gestures (and `muzzleFlashSize` 0).

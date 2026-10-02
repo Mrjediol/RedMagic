@@ -452,9 +452,8 @@ namespace RedMagic.Enemies
 
             if (T.Flies)
             {
-                // Para un volador el terreno no existe: va recto al objetivo. Ya no esquiva nada
-                // porque ya no choca con nada (EnemyStats le excluye la capa de terreno), y el
-                // esquive por rayos que había aquí sólo servía para bordear plataformas.
+                // Va recto al objetivo: las plataformas no existen para él (EnemyStats se las
+                // excluye) y contra lo macizo lo para la física, sin esquive por rayos.
                 Vector2 desired = toTarget + Vector2.up * hover;
                 if (desired.sqrMagnitude < 0.0001f) { Stop(); return false; }
 

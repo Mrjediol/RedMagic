@@ -64,7 +64,7 @@ namespace RedMagic.Enemies
 
         [Tooltip("Gesto del cuerpo (RigGesture o estado del Animator) que mantiene mientras se aparta: " +
                  "su pose de carga, sus efectos y sus sprites. Vacío = sin gesto.")]
-        public string gesture = "";
+        [GestureName] public string gesture = "";
 
         [Tooltip("Segundos quieto antes de moverse, con el gesto ya puesto: es el aviso para el jugador.")]
         [Min(0f)] public float anticipation = 0.12f;

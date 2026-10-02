@@ -53,8 +53,21 @@ Write `enemies/<Name>.json` (copy `ShroomShaman.json`): template, parts folder, 
 held diagonally: pivot at the hand, muzzle at the tip), `tuning`, `effects` (VFX Lab presets + colours
 — `vfx-presets.js`), `projectile`, `attacks` (types / fields = `boss-catalog.js`; `gesture` = a template
 gesture: Flick / Charge / Sweep).
+**A finished enemy has no placeholder squares** — always fill these too:
+- `effects`: besides the projectiles, a `chargeVortex` (charge), a `muzzleFlash` (release), and for a dash a
+  `smokePuff` + `dashTrail`, in the enemy's colours.
+- `gestureFx`: charge looping on `windup` + flash on `strike` for every gesture an attack uses (anchor `muzzle`,
+  `size` in world units ≈ 0.9–1.6).
+- `builtIn: [{ "gesture": "Flick" }]` so the normal shot goes through a gesture with effects, and `rig: { "muzzleFlashSize": 0 }`.
+- attacks cast from a wand / cannon: `params.fromCastPoint: true` (BulletHell) — otherwise they leave from the feet
+  and paint a square warning.
+- `defences` (e.g. `DashAway`) with a `gesture` of their own, added under `gestures` (poses by slot id).
+- `tuning.moveSoundInterval` ≈ 0.9 for a flyer.
+
 `node make-enemy.mjs enemies/<Name>.json` → `enemies/out/<Name>.zip`. Then:
 `unity command eval --timeout 600 --code 'return RedMagic.Rigging.EditorTools.RigBundleImporter.Import(@"<abs zip>", new RedMagic.Rigging.EditorTools.RigBundleImporter.Options { ResetTuning = true });'`
+`ResetTuning = true` overwrites what the user tuned by hand in the Inspector (EnemyStats): on a RE-import first
+copy their changes into the brief (deck, defences, numbers), or import with `ResetTuning = false`.
 (the call may time out at 5 s while Unity keeps working: poll with a cheap `eval` until it answers).
 
 ## 6 · Sounds

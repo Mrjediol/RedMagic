@@ -66,11 +66,13 @@ namespace RedMagic.Enemies
             var body = GetComponent<Rigidbody2D>();
             if (body != null) body.gravityScale = tuning.Flies ? 0f : tuning.gravityScale;
 
-            // Para un volador las plataformas no existen: atraviesa el terreno. Se hace con el
-            // excludeLayers del propio collider — ni capas nuevas ni tocar la matriz de colisiones
-            // del proyecto — y sólo con la capa de terreno, así que sigue chocando con el jugador y
-            // el daño por contacto no cambia. En uno de suelo se quita, por si cambia de arquetipo.
-            GroundMotion.PhaseThroughTerrain(gameObject, tuning.obstacleLayers, tuning.Airborne);
+            // Para un volador las plataformas no existen, pero lo macizo sí: atraviesa sólo
+            // 'flyThroughLayers'. Se hace con el excludeLayers del propio collider — ni capas nuevas
+            // ni tocar la matriz de colisiones del proyecto —, así que sigue chocando con el jugador
+            // y el daño por contacto no cambia. Primero se limpia todo el terreno (por si cambia de
+            // arquetipo, o venía atravesándolo todo) y luego se excluye lo que toca.
+            GroundMotion.PhaseThroughTerrain(gameObject, tuning.obstacleLayers, false);
+            if (tuning.Airborne) GroundMotion.PhaseThroughTerrain(gameObject, tuning.flyThroughLayers, true);
         }
 
 #if UNITY_EDITOR

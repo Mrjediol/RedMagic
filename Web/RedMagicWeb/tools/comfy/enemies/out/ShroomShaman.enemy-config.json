@@ -57,6 +57,7 @@
       "Ground",
       "Platform"
     ],
+    "moveSoundInterval": 0.9,
     "projectile": {
       "speed": 8,
       "lifetime": 2.5,
@@ -79,7 +80,30 @@
       "aimMode": "Fixed",
       "libraryId": "claude-shroomshaman-spore"
     },
+    "defences": [
+      {
+        "trigger": "TargetNear",
+        "distance": 5,
+        "healthFraction": 0,
+        "chance": 1,
+        "cooldown": 0,
+        "move": "DashAway",
+        "moveDistance": 5,
+        "moveDuration": 1,
+        "hopHeight": 0,
+        "gesture": "Dash",
+        "anticipation": 0
+      }
+    ],
     "attacks": [
+      {
+        "builtIn": true,
+        "gesture": "Flick",
+        "weight": 1,
+        "minRange": 0,
+        "maxRange": 0,
+        "targetHeight": "Any"
+      },
       {
         "attack": "SporeFan",
         "minRange": 3,
@@ -93,7 +117,7 @@
         "targetHeight": "Any"
       }
     ],
-    "builtInAttack": true,
+    "builtInAttack": false,
     "builtInWeight": 1
   },
   "attacks": {
@@ -135,11 +159,8 @@
         "bulletsPerVolley": 5,
         "arcDegrees": 50,
         "aimAtPlayer": true,
-        "originOffset": {
-          "x": 0,
-          "y": 0.4
-        },
-        "spawnRadius": 0.6
+        "fromCastPoint": true,
+        "spawnRadius": 0.15
       }
     },
     "SporeNova": {
@@ -182,11 +203,8 @@
         "arcDegrees": 360,
         "spinPerVolley": 18,
         "aimAtPlayer": false,
-        "originOffset": {
-          "x": 0,
-          "y": 0
-        },
-        "spawnRadius": 0.5
+        "fromCastPoint": true,
+        "spawnRadius": 0.3
       }
     }
   },

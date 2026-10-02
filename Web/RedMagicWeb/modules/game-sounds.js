@@ -337,6 +337,11 @@ export const GAME_SOUNDS = {
     N('lp', [700, 180], { dur: 0.3, a: 0.002, curve: 2, gain: 0.7 }),
     T('sine', [300, 90], { dur: 0.35, a: 0.004, curve: 1.8, gain: 0.5, vib: [26, 0.07] }),
     P(9, [400, 1300], { t0: 0.05, spread: 0.5, dur: 0.06, gain: 0.3, rise: 1.7 }) ]),
+  enemy_move_air: S('enemy', 'Se mueve · volador (aire suave)', 0.3, [
+    N('bp', [500, 900], { q: 0.9, dur: 0.28, a: 0.1, curve: 1.4, gain: 0.8 }),
+    N('lp', [300, 220], { dur: 0.26, a: 0.1, curve: 1.6, gain: 0.4 }) ]),
+  enemy_move_air_2: S('enemy', 'Se mueve · volador · opción 2 (aleteo)', 0.24, [
+    N('bp', [700, 1300], { q: 0.8, dur: 0.22, a: 0.05, curve: 1.6, gain: 0.8, trem: [16, 0.6] }) ]),
   enemy_wake: S('enemy', 'Despierta', 0.45, [
     T('sine', [140, 300], { dur: 0.4, a: 0.08, curve: 1.6, gain: 0.7 }),
     N('bp', [500, 1600], { q: 0.7, dur: 0.38, a: 0.1, curve: 1.6, gain: 0.5 }) ]),
@@ -702,7 +707,8 @@ export const GAME_SOUNDS = {
 //
 // A rule matches a slot of the sound registry by regular expressions (case-insensitive, all the
 // ones present must match): `category` and `name` are the Sounds tab's folder and row, `component`
-// the owner's type, `member` the field or trigger, `asset` the owner's file name.
+// the owner's type, `member` the field or trigger, `asset` the owner's file name, `archetype` the
+// enemy's archetype (EnemyStats — "Flying…" for the ones that have no steps).
 // `clip` = the sound; `pitch: [min, max]` and `volume` are written on the cue with it.
 // Ordered: the first match wins, so the specific goes before the general.
 // The assigner never touches a slot that holds a real clip, a silenced one or a removed one.
@@ -808,6 +814,9 @@ export const GAME_ASSIGN = [
   R({ category: '^Enemies/', name: '^Death$', asset: 'Spirit|Ghost|Wisp' }, 'enemy_death_spirit', vary),
   R({ category: '^Enemies/', name: '^Hurt$', asset: 'Shroom|Mushroom|Seta|Plant|Bloom|Vine|Root' }, 'enemy_hurt_plant', wide),
   R({ category: '^Enemies/', name: '^Death$', asset: 'Shroom|Mushroom|Seta|Plant|Bloom|Vine|Root' }, 'enemy_death_plant', vary),
+  // A flyer does not step: a soft, quiet breath of air instead of the generic footsteps. With many
+  // enemies on screen, movement has to stay under everything else.
+  R({ category: '^Enemies/', name: '^Move$', archetype: '^Flying' }, 'enemy_move_air', { ...wide, volume: 0.22 }),
   R({ category: '^Enemies/', name: '^Wake$', asset: 'Robot|Turret|Mech' }, 'enemy_wake_metal', vary),
   R({ category: '^Enemies/', name: '^Wake$' }, 'enemy_wake', vary),
   R({ category: '^Enemies/', name: '^Evade$' }, 'enemy_evade', wide),

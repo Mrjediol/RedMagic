@@ -317,7 +317,7 @@
     "recoilDistance": 0.83,
     "bodyRecoil": 0.415,
     "muzzleFlashColor": "#8cffffe6",
-    "muzzleFlashSize": 1.5217,
+    "muzzleFlashSize": 0,
     "muzzleFlashTime": 0.1,
     "foldedStretch": 0.05,
     "foldedRiderScaleY": 0.6,
@@ -418,7 +418,27 @@
       "strikeTime": 0.06,
       "recover": 0.3,
       "shake": 0,
-      "phases": []
+      "phases": [
+        {
+          "phase": "strike",
+          "fx": [
+            {
+              "fx": {
+                "art": "gfx_ShroomFlash_claudesh"
+              },
+              "at": 0,
+              "anchor": "muzzle",
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "scale": 5.56,
+              "followsPart": true,
+              "loop": false
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Charge",
@@ -489,7 +509,46 @@
       "strikeTime": 0.08,
       "recover": 0.45,
       "shake": 1.5,
-      "phases": []
+      "phases": [
+        {
+          "phase": "windup",
+          "fx": [
+            {
+              "fx": {
+                "art": "gfx_ShroomCharge_claudesh_loop"
+              },
+              "at": 0,
+              "anchor": "muzzle",
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "scale": 8.03,
+              "followsPart": true,
+              "loop": true
+            }
+          ]
+        },
+        {
+          "phase": "strike",
+          "fx": [
+            {
+              "fx": {
+                "art": "gfx_ShroomFlash_claudesh"
+              },
+              "at": 0,
+              "anchor": "muzzle",
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "scale": 7.41,
+              "followsPart": true,
+              "loop": false
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Sweep",
@@ -548,9 +607,198 @@
       "strikeTime": 0.14,
       "recover": 0.4,
       "shake": 0,
-      "phases": []
+      "phases": [
+        {
+          "phase": "windup",
+          "fx": [
+            {
+              "fx": {
+                "art": "gfx_ShroomCharge_claudesh_loop"
+              },
+              "at": 0,
+              "anchor": "muzzle",
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "scale": 9.88,
+              "followsPart": true,
+              "loop": true
+            }
+          ]
+        },
+        {
+          "phase": "strike",
+          "fx": [
+            {
+              "fx": {
+                "art": "gfx_ShroomFlash_claudesh"
+              },
+              "at": 0,
+              "anchor": "muzzle",
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "scale": 9.26,
+              "followsPart": true,
+              "loop": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dash",
+      "windup": [
+        {
+          "part": "Visual",
+          "move": {
+            "x": 0,
+            "y": 0
+          },
+          "rotate": -14,
+          "scale": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "part": "Torso/Head",
+          "move": {
+            "x": 0,
+            "y": 0
+          },
+          "rotate": -8,
+          "scale": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "part": "Torso/Lower",
+          "move": {
+            "x": 0,
+            "y": 0
+          },
+          "rotate": 22,
+          "scale": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "part": "Torso/OffArm",
+          "move": {
+            "x": 0,
+            "y": 0
+          },
+          "rotate": 25,
+          "scale": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "strike": [],
+      "strikeTime": 0.06,
+      "recover": 0.25,
+      "shake": 0,
+      "phases": [
+        {
+          "phase": "windup",
+          "fx": [
+            {
+              "fx": {
+                "art": "gfx_ShroomPuff_claudesh"
+              },
+              "at": 0,
+              "anchor": "body",
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "scale": 9.88,
+              "followsPart": false,
+              "loop": false
+            },
+            {
+              "fx": {
+                "art": "gfx_ShroomTrail_claudesh_loop"
+              },
+              "at": 0,
+              "anchor": "body",
+              "offset": {
+                "x": 0,
+                "y": 0
+              },
+              "scale": 11.11,
+              "followsPart": true,
+              "loop": true
+            }
+          ]
+        }
+      ]
     }
   ],
+  "artAssets": {
+    "gfx_ShroomFlash_claudesh": {
+      "kind": "fx",
+      "folder": "Art/claude-shroomshaman-flash",
+      "libraryId": "claude-shroomshaman-flash",
+      "entryName": "ShroomFlash",
+      "states": {
+        "Spawn": {
+          "folder": "Spawn",
+          "fps": 18,
+          "loop": false
+        }
+      },
+      "worldWidth": 0.96
+    },
+    "gfx_ShroomCharge_claudesh_loop": {
+      "kind": "fxLoop",
+      "folder": "Art/claude-shroomshaman-charge",
+      "libraryId": "claude-shroomshaman-charge",
+      "entryName": "ShroomCharge",
+      "states": {
+        "Loop": {
+          "folder": "Loop",
+          "fps": 12,
+          "loop": true
+        }
+      },
+      "worldWidth": 0.96
+    },
+    "gfx_ShroomPuff_claudesh": {
+      "kind": "fx",
+      "folder": "Art/claude-shroomshaman-puff",
+      "libraryId": "claude-shroomshaman-puff",
+      "entryName": "ShroomPuff",
+      "states": {
+        "Spawn": {
+          "folder": "Spawn",
+          "fps": 14,
+          "loop": false
+        }
+      },
+      "worldWidth": 0.96
+    },
+    "gfx_ShroomTrail_claudesh_loop": {
+      "kind": "fxLoop",
+      "folder": "Art/claude-shroomshaman-trail",
+      "libraryId": "claude-shroomshaman-trail",
+      "entryName": "ShroomTrail",
+      "states": {
+        "Loop": {
+          "folder": "Loop",
+          "fps": 14,
+          "loop": true
+        }
+      },
+      "worldWidth": 0.96
+    }
+  },
   "idleGestures": {
     "gestures": [],
     "interval": 4,

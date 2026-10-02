@@ -280,7 +280,7 @@ BoxCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 320
+    m_Bits: 256
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -441,14 +441,14 @@ MonoBehaviour:
     knockbackVertical: 3
     knockbackDuration: 0.18
     knockbackResistance: 0
-    detectionRange: 15
+    detectionRange: 9
     loseInterestGrace: 1
-    attackRange: 11
-    personalSpace: 7
+    attackRange: 6
+    personalSpace: 3
     retreatReleaseFactor: 1.35
     verticalTolerance: 3
-    moveSpeed: 6
-    retreatSpeed: 2
+    moveSpeed: 2.5
+    retreatSpeed: 2.2
     stopAtLedges: 1
     ledgeProbeDepth: 0.6
     gravityScale: 3
@@ -460,6 +460,13 @@ MonoBehaviour:
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
     attacks:
+    - attack: {fileID: 0}
+      builtIn: 1
+      gesture: Flick
+      weight: 1
+      minRange: 0
+      maxRange: 0
+      targetHeight: 0
     - attack: {fileID: 11400000, guid: 22eaf64f132f1e54f8736a0052362360, type: 2}
       builtIn: 0
       gesture: 
@@ -474,7 +481,7 @@ MonoBehaviour:
       minRange: 0
       maxRange: 4
       targetHeight: 0
-    builtInAttack: 1
+    builtInAttack: 0
     builtInWeight: 1
     defences:
     - trigger: 0
@@ -486,7 +493,7 @@ MonoBehaviour:
       moveDistance: 5
       moveDuration: 1
       hopHeight: 0
-      gesture: 
+      gesture: Dash
       anticipation: 0
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
@@ -514,7 +521,7 @@ MonoBehaviour:
     contactDamage: 0
     contactDamageCooldown: 1
     contactKnockbackMultiplier: 1
-    moveSoundInterval: 0.4
+    moveSoundInterval: 0.9
     idleAnimSpeed: 1
     moveAnimSpeed: 1
     attackAnimSpeed: 1
@@ -528,6 +535,9 @@ MonoBehaviour:
     obstacleLayers:
       serializedVersion: 2
       m_Bits: 320
+    flyThroughLayers:
+      serializedVersion: 2
+      m_Bits: 256
 --- !u!114 &3057012500549902182
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -604,6 +614,34 @@ MonoBehaviour:
       pitchMax: 1.12
       noRepeatLast: 1
       priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 20
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 7ed4b222498e86e4d8e6c32bdaf026b6, type: 3}
+      volume: 1
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 15
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 8d4bf13e780e9244490a4b91b6f8a128, type: 3}
+      volume: 0.22
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 0
       positional: 1
       rolloffStart: 10
       rolloffEnd: 32
@@ -708,7 +746,7 @@ MonoBehaviour:
   muzzle: {fileID: 44334648227457594}
   muzzleFlashSprite: {fileID: 0}
   muzzleFlashColor: {r: 0.54901963, g: 1, b: 1, a: 0.9019608}
-  muzzleFlashSize: 1.5217
+  muzzleFlashSize: 0
   muzzleFlashTime: 0.1
   spriteSwaps:
   - renderer: {fileID: 4209665353783553412}
@@ -757,7 +795,16 @@ MonoBehaviour:
     strikeTime: 0.06
     recover: 0.3
     shake: 0
-    fx: []
+    fx:
+    - prefab: {fileID: 7163286177311694479, guid: b7e5d80dc403a334fb5667bd3efd9949, type: 3}
+      phase: 1
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 5.56
+      followsPart: 1
+      loop: 0
     sound:
       clips:
       - {fileID: 8300000, guid: 095d38506108de84cbd41257142714dc, type: 3}
@@ -797,7 +844,25 @@ MonoBehaviour:
     strikeTime: 0.08
     recover: 0.45
     shake: 1.5
-    fx: []
+    fx:
+    - prefab: {fileID: 349799312545736993, guid: 592bf4b6ce130ae4da7d325d8a0d0f81, type: 3}
+      phase: 0
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 8.03
+      followsPart: 1
+      loop: 1
+    - prefab: {fileID: 7163286177311694479, guid: b7e5d80dc403a334fb5667bd3efd9949, type: 3}
+      phase: 1
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 7.41
+      followsPart: 1
+      loop: 0
     sound:
       clips:
       - {fileID: 8300000, guid: 326f5227355d669429b0402684827d50, type: 3}
@@ -833,10 +898,82 @@ MonoBehaviour:
     strikeTime: 0.14
     recover: 0.4
     shake: 0
-    fx: []
+    fx:
+    - prefab: {fileID: 349799312545736993, guid: 592bf4b6ce130ae4da7d325d8a0d0f81, type: 3}
+      phase: 0
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 9.88
+      followsPart: 1
+      loop: 1
+    - prefab: {fileID: 7163286177311694479, guid: b7e5d80dc403a334fb5667bd3efd9949, type: 3}
+      phase: 1
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 9.26
+      followsPart: 1
+      loop: 0
     sound:
       clips:
       - {fileID: 8300000, guid: b098aa75325a4ab47ae3c804d08c9551, type: 3}
+      volume: 0.7
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
+  - name: Dash
+    windup:
+    - part: {fileID: 2173594935518678915}
+      move: {x: 0, y: 0}
+      rotate: -14
+      scale: {x: 0, y: 0}
+    - part: {fileID: 8723019979262318165}
+      move: {x: 0, y: 0}
+      rotate: -8
+      scale: {x: 0, y: 0}
+    - part: {fileID: 2358434671863664159}
+      move: {x: 0, y: 0}
+      rotate: 22
+      scale: {x: 0, y: 0}
+    - part: {fileID: 7260944162130167161}
+      move: {x: 0, y: 0}
+      rotate: 25
+      scale: {x: 0, y: 0}
+    strike: []
+    strikeTime: 0.06
+    recover: 0.25
+    shake: 0
+    fx:
+    - prefab: {fileID: 3207392457270353278, guid: 54eddeb34b5998843bbe18276c7eeead, type: 3}
+      phase: 0
+      at: 0
+      anchor: 1
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 9.88
+      followsPart: 0
+      loop: 0
+    - prefab: {fileID: 124225125635676202, guid: aa0bec1bc441b6845bbb8eb27dd12e2a, type: 3}
+      phase: 0
+      at: 0
+      anchor: 1
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 11.11
+      followsPart: 1
+      loop: 1
+    sound:
+      clips:
+      - {fileID: 8300000, guid: 91d294181ef0de0439d09c67e74ce503, type: 3}
       volume: 0.7
       pitchMin: 0.94
       pitchMax: 1.06

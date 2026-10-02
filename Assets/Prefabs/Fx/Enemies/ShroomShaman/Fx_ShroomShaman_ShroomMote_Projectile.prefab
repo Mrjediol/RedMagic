@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 5003849947234641703}
   - component: {fileID: 5441563146239639509}
   - component: {fileID: 2179121815137069377}
-  - component: {fileID: 9029554122980745489}
+  - component: {fileID: 6585365690579807372}
   m_Layer: 0
   m_Name: Fx_ShroomShaman_ShroomMote_Projectile
   m_TagString: Untagged
@@ -238,7 +238,7 @@ MonoBehaviour:
   arcGravity: 0
   impactRadius: 0
   impactDamage: 0
---- !u!114 &9029554122980745489
+--- !u!114 &6585365690579807372
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

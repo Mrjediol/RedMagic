@@ -23,6 +23,12 @@ namespace RedMagic.Bosses
         /// <summary>Altura de los pies respecto a la raíz (≤ 0 con la raíz en el centro del cuerpo).</summary>
         float FeetHeight { get; }
 
+        /// <summary>
+        /// De dónde sale un conjuro: la punta del arma del cuerpo (la boca de un rig), si la tiene.
+        /// Por defecto, los pies — el origen de siempre de los ataques.
+        /// </summary>
+        Vector2 CastPoint => FeetPosition;
+
         /// <summary>El cuerpo que hace los gestos (rig o Animator). Null si no anima.</summary>
         IAttackBody Body { get; }
 

@@ -83,6 +83,11 @@ namespace RedMagic.Bosses
         [SerializeField] private bool aimAtPlayer = true;
 
         [Header("Origen (Radial / Fan)")]
+        [Tooltip("El patrón nace en la punta del arma del lanzador (la boca de su rig) en vez de en " +
+                 "'originOffset'. Para un conjuro que sale de una varita o un cañón: el gesto es el " +
+                 "aviso, así que no pinta la marca de aviso. Sin boca, sale de los pies.")]
+        [SerializeField] private bool fromCastPoint;
+
         [Tooltip("Desplazamiento del centro del patrón respecto al jefe. No se voltea con la mirada.")]
         [SerializeField] private Vector2 originOffset = new Vector2(0f, 2.2f);
 
@@ -173,6 +178,9 @@ namespace RedMagic.Bosses
                 return;
             }
 
+            // Desde la punta del arma el aviso es el gesto de carga (con sus efectos), no una marca.
+            if (fromCastPoint) return;
+
             Warn(ctx, ctx.Origin + originOffset, Vector2.one * (spawnRadius * 2.2f), ctx.Scaled(Telegraph));
         }
 
@@ -201,7 +209,7 @@ namespace RedMagic.Bosses
 
         private void FireVolley(in BossContext ctx, int volley)
         {
-            Vector2 center = ctx.Origin + originOffset;
+            Vector2 center = fromCastPoint ? ctx.CastPoint : ctx.Origin + originOffset;
 
             float baseAngle = aimAtPlayer
                 ? Mathf.Atan2(ctx.AimAtPlayer.y, ctx.AimAtPlayer.x) * Mathf.Rad2Deg

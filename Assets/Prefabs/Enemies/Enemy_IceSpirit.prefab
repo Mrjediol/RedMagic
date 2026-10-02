@@ -148,6 +148,9 @@ MonoBehaviour:
     obstacleLayers:
       serializedVersion: 2
       m_Bits: 320
+    flyThroughLayers:
+      serializedVersion: 2
+      m_Bits: 256
 --- !u!50 &8647198858209707732
 Rigidbody2D:
   serializedVersion: 5
@@ -403,10 +406,11 @@ MonoBehaviour:
     silent: 0
   - trigger: 15
     cue:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      clips:
+      - {fileID: 8300000, guid: 8d4bf13e780e9244490a4b91b6f8a128, type: 3}
+      volume: 0.22
+      pitchMin: 0.88
+      pitchMax: 1.12
       noRepeatLast: 1
       priority: 0
       positional: 1

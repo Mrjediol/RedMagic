@@ -75,7 +75,7 @@ namespace RedMagic.Enemies
 
         [Tooltip("Sólo con 'builtIn': el gesto del rig (o estado del Animator) con el que se lanza. " +
                  "Vacío = el ataque normal del cuerpo.")]
-        public string gesture;
+        [GestureName] public string gesture;
 
         [Tooltip("Sólo con 'builtIn': peso en el sorteo (en las demás lo da el 'weight' del ataque).")]
         [Min(0.01f)] public float weight = 1f;
@@ -330,6 +330,11 @@ namespace RedMagic.Enemies
                  "enemigo se planta al borde de un puente creyendo que es un precipicio, y en la " +
                  "rampa no encuentra suelo que seguir.")]
         public LayerMask obstacleLayers = (1 << 6) | (1 << 8);   // 'Ground' + 'Platform'
+
+        [Tooltip("Sólo voladores: las capas de terreno que ATRAVIESA. Por defecto 'Platform' " +
+                 "(plataformas y puentes); lo macizo ('Ground': suelo, paredes, techo) lo para, así " +
+                 "que ni volando ni esquivando se sale del mapa.")]
+        public LayerMask flyThroughLayers = 1 << 8;   // 'Platform'
 
         // ============================================================ derivados
 

@@ -459,10 +459,17 @@ export const BOSS_CATALOG = {
           "default": true
         },
         {
+          "name": "fromCastPoint",
+          "label": "From Cast Point",
+          "tooltip": "El patrón nace en la punta del arma del lanzador (la boca de su rig) en vez de en 'originOffset'. Para un conjuro que sale de una varita o un cañón: el gesto es el aviso, así que no pinta la marca de aviso. Sin boca, sale de los pies.",
+          "header": "Origen (Radial / Fan)",
+          "type": "bool",
+          "default": false
+        },
+        {
           "name": "originOffset",
           "label": "Origin Offset",
           "tooltip": "Desplazamiento del centro del patrón respecto al jefe. No se voltea con la mirada.",
-          "header": "Origen (Radial / Fan)",
           "type": "vector2",
           "default": {
             "x": 0.0,

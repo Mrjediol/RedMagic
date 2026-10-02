@@ -494,3 +494,16 @@ projectile, deck of 2 attacks, sound slots; compiles). Nothing was seen moving.
 - [ ] SH8 · Death: parts break apart and fall; hurt flash.
 - [ ] SH9 · Sounds (grade them in Biblioteca Jere ▸ Sounds ▸ Enemies/ShroomShaman and the three Shroom projectiles):
       hurt / death (new: plant), spore launch / hit (new), gestures, the two attacks.
+
+**Second pass (2026-10-02, after the first playtest)** — rebuilt and re-imported; again checked statically only.
+- [ ] SH10 · No coloured squares: the crystal of the wand shows a lime charge swirl while it winds up and a flash
+      when it fires (normal shot, Spore Fan, Spore Nova). Size of both vs. the crystal — too big / small?
+- [ ] SH11 · Spore Fan and Spore Nova leave **from the crystal** (the nova is a ring around the wand tip now, not
+      around the body — if you preferred it around the body, say so).
+- [ ] SH12 · Dash away (your defence, now with the gesture "Dash": leans back, a puff and a trail): it must stop at
+      walls / floor / ceiling (Ground) and still cross platforms. Does normal flight get stuck on a wall chasing you?
+- [ ] SH13 · Other flyers (IceRobot, IceSpirit, koros, the sprite-sheet ones): same rule now — any of them stuck
+      somewhere it used to fly through?
+- [ ] SH14 · Inspector ▸ EnemyStats ▸ Defensa / baraja: "Gesture" is a dropdown with the gestures of the body.
+- [ ] SH15 · Movement sound: a soft breath of air, quiet (flyers), and the generic footsteps at 0.3 volume. Still
+      too present with several enemies on screen? Option to try: `enemy_move_air_2`.

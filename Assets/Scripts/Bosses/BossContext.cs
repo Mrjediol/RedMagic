@@ -88,6 +88,9 @@ namespace RedMagic.Bosses
         /// </summary>
         public Vector2 Origin => HasHost ? Host.FeetPosition : Vector2.zero;
 
+        /// <summary>La punta del arma del lanzador (<see cref="IAttackHost.CastPoint"/>); sin ella, <see cref="Origin"/>.</summary>
+        public Vector2 CastPoint => HasHost ? Host.CastPoint : Vector2.zero;
+
         public Vector2 PlayerPosition => Player != null ? (Vector2)Player.position : Origin;
 
         /// <summary>

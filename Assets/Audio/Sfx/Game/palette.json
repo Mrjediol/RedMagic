@@ -636,6 +636,20 @@
       "loop": false,
       "assigned": true
     },
+    "enemy_move_air": {
+      "family": "enemy",
+      "label": "Se mueve · volador (aire suave)",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_move_air_2": {
+      "family": "enemy",
+      "label": "Se mueve · volador · opción 2 (aleteo)",
+      "seconds": 0.24,
+      "loop": false,
+      "assigned": false
+    },
     "enemy_wake": {
       "family": "enemy",
       "label": "Despierta",
@@ -2003,6 +2017,17 @@
         0.94,
         1.06
       ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Move$",
+      "archetype": "^Flying",
+      "clip": "enemy_move_air",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.22
     },
     {
       "category": "^Enemies/",

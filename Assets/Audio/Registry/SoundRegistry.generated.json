@@ -1314,14 +1314,16 @@
       "category": "Enemies/IceRobot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnMove",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[4].cue"
       }
     },
     {
@@ -1400,8 +1402,10 @@
       "category": "Enemies/IceSpirit",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
         "guid": "ac3f483dadeed734b963e9b32ecbecd2",
@@ -1481,6 +1485,24 @@
       }
     },
     {
+      "id": "b9d04b6a93c95534498068b28e5c43d4/SoundEmitter/OnEvade",
+      "name": "Evade",
+      "category": "Enemies/ShroomShaman",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "guid": "b9d04b6a93c95534498068b28e5c43d4",
+        "component": "SoundEmitter",
+        "member": "OnEvade",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
       "id": "b9d04b6a93c95534498068b28e5c43d4/ProceduralRig/gestures.Array.data[1].sound",
       "name": "Gesture · Charge",
       "category": "Enemies/ShroomShaman",
@@ -1496,6 +1518,24 @@
         "component": "ProceduralRig",
         "member": "gestures.Array.data[1].sound",
         "property": "gestures.Array.data[1].sound"
+      }
+    },
+    {
+      "id": "b9d04b6a93c95534498068b28e5c43d4/ProceduralRig/gestures.Array.data[3].sound",
+      "name": "Gesture · Dash",
+      "category": "Enemies/ShroomShaman",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_dash.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "guid": "b9d04b6a93c95534498068b28e5c43d4",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[3].sound",
+        "property": "gestures.Array.data[3].sound"
       }
     },
     {
@@ -1558,14 +1598,16 @@
       "category": "Enemies/ShroomShaman",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "SoundEmitter",
         "member": "OnMove",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -1800,14 +1842,16 @@
       "category": "Enemies/koros",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
         "component": "SoundEmitter",
         "member": "OnMove",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {

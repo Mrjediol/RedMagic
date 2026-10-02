@@ -15,8 +15,9 @@ namespace RedMagic.Audio.EditorTools
     /// La paleta (clips + reglas "qué hueco recibe qué clip") no vive aquí: la escribe la web
     /// (<c>Web/RedMagicWeb/modules/game-sounds.js</c> → <c>tools/bake-sounds.mjs</c>) en
     /// <see cref="PalettePath"/>. Una regla casa un hueco del registro por expresiones regulares (sin
-    /// distinguir mayúsculas) sobre su carpeta, su nombre, el tipo del dueño, el campo/momento y el
-    /// nombre del asset; gana la primera que casa. Añadir contenido nuevo (otro jefe, otro proyectil)
+    /// distinguir mayúsculas) sobre su carpeta, su nombre, el tipo del dueño, el campo/momento, el
+    /// nombre del asset y — si el dueño es un enemigo — su arquetipo (<c>archetype</c>: "Flying…"
+    /// separa a los que vuelan, que no dan pasos); gana la primera que casa. Añadir contenido nuevo (otro jefe, otro proyectil)
     /// no pide regla nueva si su tipo de ataque o su nombre ya dicen qué es.
     ///
     /// Idempotente y conservador: sólo escribe en un hueco vacío, con el clip de prueba genérico o que
@@ -32,16 +33,32 @@ namespace RedMagic.Audio.EditorTools
 
         private sealed class Rule
         {
-            public Regex Category, Name, Component, Member, Asset;
+            public Regex Category, Name, Component, Member, Asset, Archetype;
             public string Clip;          // null = regla que deja el hueco como está
             public float Volume = 1f;
             public float PitchMin = 1f, PitchMax = 1f;
 
             public bool Matches(SoundRegistryEntry e, string asset) =>
                 Ok(Category, e.Category) && Ok(Name, e.Name) && Ok(Component, e.Slot.ComponentType) &&
-                Ok(Member, e.Slot.Member) && Ok(Asset, asset);
+                Ok(Member, e.Slot.Member) && Ok(Asset, asset) &&
+                (Archetype == null || Archetype.IsMatch(ArchetypeOf(e.Slot.AssetPath)));
 
             private static bool Ok(Regex regex, string value) => regex == null || regex.IsMatch(value ?? "");
+        }
+
+        // Arquetipo del enemigo dueño del hueco (EnemyStats.tuning.archetype), "" si no es un enemigo.
+        private static readonly Dictionary<string, string> Archetypes = new Dictionary<string, string>();
+
+        private static string ArchetypeOf(string assetPath)
+        {
+            if (string.IsNullOrEmpty(assetPath)) return "";
+            if (Archetypes.TryGetValue(assetPath, out string known)) return known;
+
+            string archetype = "";
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+            var stats = prefab != null ? prefab.GetComponent<RedMagic.Enemies.EnemyStats>() : null;
+            if (stats != null) archetype = stats.Tuning.archetype.ToString();
+            return Archetypes[assetPath] = archetype;
         }
 
         [MenuItem(Menu + "4 · Asignar paleta de sonidos del juego")]
@@ -53,6 +70,7 @@ namespace RedMagic.Audio.EditorTools
         /// <summary>Aplica la paleta (o sólo informa, con <paramref name="dryRun"/>). Devuelve el informe.</summary>
         public static string Run(bool dryRun)
         {
+            Archetypes.Clear();
             if (!LoadPalette(out var rules, out var clipPaths, out string error))
             {
                 Debug.LogError("[SoundPalette] " + error);
@@ -173,6 +191,7 @@ namespace RedMagic.Audio.EditorTools
                     Component = Pattern(o, "component"),
                     Member = Pattern(o, "member"),
                     Asset = Pattern(o, "asset"),
+                    Archetype = Pattern(o, "archetype"),
                     Clip = (string)o["clip"],
                     Volume = (float?)o["volume"] ?? 1f,
                 };

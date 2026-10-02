@@ -76,7 +76,8 @@ variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three 
   family's length budget).
   - **`Tools ▸ RedMagic ▸ Audio ▸ 4 · Asignar paleta…`** (`SoundPaletteAssigner`; `4b` = dry run) applies the rules
     through `SoundSlotEditor`. A rule matches by regex on the row's category / name, the owner's type, the
-    field / trigger and the asset name — by *what the thing is* (attack type, "Rock" / "Laser" / "Ice" in a
+    field / trigger, the asset name and an enemy's archetype (`archetype: '^Flying'` → a quiet breath of air on Move instead of
+    the generic footsteps) — by *what the thing is* (attack type, "Rock" / "Laser" / "Ice" in a
     projectile's name, "Robot" / "Golem" / "Spirit" in an enemy's), so new content gets its sounds with no new rule.
     It only writes into a slot that is empty, on `generic_test` or on the enemy fallback; never one with a real
     clip, a silenced one or one removed in the Sounds tab. Idempotent: run it again after adding content.

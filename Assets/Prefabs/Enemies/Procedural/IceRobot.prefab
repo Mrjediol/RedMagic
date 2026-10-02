@@ -335,6 +335,9 @@ MonoBehaviour:
     obstacleLayers:
       serializedVersion: 2
       m_Bits: 320
+    flyThroughLayers:
+      serializedVersion: 2
+      m_Bits: 256
 --- !u!114 &5738210551993171275
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -439,6 +442,20 @@ MonoBehaviour:
       pitchMax: 1.06
       noRepeatLast: 1
       priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 15
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 8d4bf13e780e9244490a4b91b6f8a128, type: 3}
+      volume: 0.22
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 0
       positional: 1
       rolloffStart: 10
       rolloffEnd: 32

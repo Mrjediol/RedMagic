@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 7212593260287332635}
   - component: {fileID: 5025025248717756672}
   - component: {fileID: 3401455641907784790}
-  - component: {fileID: 1711319723401982418}
+  - component: {fileID: 2261881133020503503}
   m_Layer: 0
   m_Name: Fx_ShroomShaman_ShroomSpore_Projectile
   m_TagString: Untagged
@@ -238,7 +238,7 @@ MonoBehaviour:
   arcGravity: 0
   impactRadius: 0
   impactDamage: 0
---- !u!114 &1711319723401982418
+--- !u!114 &2261881133020503503
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

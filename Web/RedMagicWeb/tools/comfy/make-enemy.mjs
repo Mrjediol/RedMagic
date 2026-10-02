@@ -22,6 +22,13 @@
 //   projectile    the built-in shot: { effect: <key>, …ProjectileSpec overrides }
 //   attacks       the deck: [{ id, type, effect?, worldWidth?, common: {…}, params: {…}, deck: { minRange, maxRange } }]
 //                 (types and fields = Unity's attack catalog, boss-catalog.js)
+//   gestures      extra gestures on top of the template's: [{ name, strikeTime, recover, shake,
+//                 windup: [[slotId | 'Visual', [moveX, moveY], rotate]], strike: […] }]
+//   gestureFx     effects per gesture: { <Gesture>: [{ effect: <key>, phase: 'windup'|'strike'|'recover',
+//                 loop, size (world units), anchor: 'muzzle'|'body'|'feet' }] }
+//                 A gesture with an effect has no placeholder flash: the effect IS the flash.
+//   builtIn       the enemy's own shot / melee launched with a gesture: [{ gesture, weight }]
+//   defences      EnemyDefence entries (enemy-defaults.js createDefence): how it gets out of the way
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -42,7 +49,7 @@ const T = await mod('rig-templates.js');
 const M = await mod('rig-model.js');
 const { buildRigExport, companionEnemyConfig } = await mod('rig-export.js');
 const { buildEnemyExport } = await mod('enemy-export.js');
-const { createDefaultEnemyConfig } = await mod('enemy-defaults.js');
+const { createDefaultEnemyConfig, createDefence } = await mod('enemy-defaults.js');
 const { BOSS_CATALOG } = await mod('boss-catalog.js');
 const { newAttack } = await mod('attack-cards.js');
 const { populateSpriteZip, cropToDataURL } = await mod('export-manifest.js');
@@ -79,8 +86,12 @@ const pngs = fs.readdirSync(partsDir).filter((f) => f.endsWith('.png') && !f.sta
 
 // ============================================================ the body
 
-const template = T.templateById(brief.template);
-if (!template) { console.error(`✗ no template '${brief.template}'`); process.exit(1); }
+const baseTemplate = T.templateById(brief.template);
+if (!baseTemplate) { console.error(`✗ no template '${brief.template}'`); process.exit(1); }
+// The brief's own gestures join the template's (same shape: poses name a slot id, or 'Visual').
+const pose = ([part, move = [0, 0], rotate = 0, scale = [0, 0]]) => ({ part, move, rotate, scale });
+const template = { ...baseTemplate, gestures: [...(baseTemplate.gestures || []),
+  ...(brief.gestures || []).map((g) => ({ strikeTime: 0.08, recover: 0.3, shake: 0, ...g, windup: (g.windup || []).map(pose), strike: (g.strike || []).map(pose) }))] };
 const state = T.instantiateTemplate(template);
 state.name = brief.name;
 
@@ -151,6 +162,23 @@ for (const [key, fx] of Object.entries(brief.effects || {})) {
     sprite: { lanes: baked.lanes, boxes: baked.boxes, width: baked.width, height: baked.height, density: baked.density } });
 }
 
+// Effects on the gestures: the charge at the wand's tip while it winds up, the flash when it lets go.
+// `size` is in world units; the hook's scale is worked out from the effect's own frame.
+for (const [gestureName, hooks] of Object.entries(brief.gestureFx || {})) {
+  const gesture = (state.gestures || []).find((g) => g.name === gestureName);
+  if (!gesture) { problems.push(`gestureFx: no gesture '${gestureName}'`); continue; }
+  gesture.fx = gesture.fx || [];
+  for (const hook of hooks) {
+    const id = effectId[hook.effect];
+    const entry = entriesById.get(id);
+    if (!entry) { problems.push(`gestureFx ${gestureName}: no effect '${hook.effect}'`); continue; }
+    const nominal = entry.sprite.boxes[0].w / (entry.sprite.density || 1) / state.pixelsPerUnit;   // units at scale 1
+    gesture.fx.push({ fx: id, phase: hook.phase || 'windup', at: hook.at ?? 0, anchor: hook.anchor || 'muzzle', part: null,
+      offset: { x: 0, y: 0 }, scale: Math.round(((hook.size ?? 1) / state.rootScale / nominal) * 100) / 100,
+      followsPart: hook.followsPart !== false, loop: !!hook.loop });
+  }
+}
+
 // ============================================================ behaviour, projectile, deck
 
 const cfg = createDefaultEnemyConfig();
@@ -191,6 +219,16 @@ for (const a of brief.attacks || []) {
   cfg.deck.push(card);
 }
 cfg.deckTouched = true;
+
+// The enemy's own attack launched with a gesture (so its effects play instead of the placeholder flash).
+if (brief.builtIn) {
+  cfg.builtInVariants = [].concat(brief.builtIn).map((v) => ({ gesture: v.gesture, weight: v.weight ?? 1, minRange: v.minRange ?? 0, maxRange: v.maxRange ?? 0, targetHeight: 'Any' }));
+  cfg.tuning.builtInAttack = false;   // only through its variants
+}
+if (brief.defences) {
+  cfg.defences = brief.defences.map((d) => ({ ...createDefence(), ...d }));
+  cfg.defencesTouched = true;
+}
 
 const enemy = buildEnemyExport(cfg, { catalog: BOSS_CATALOG, entriesById, gestureNames });
 const rig = buildRigExport(state, { entriesById });

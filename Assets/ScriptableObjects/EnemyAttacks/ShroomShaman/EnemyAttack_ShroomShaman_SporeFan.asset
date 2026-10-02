@@ -65,8 +65,9 @@ MonoBehaviour:
   alternateSpin: 0
   randomSpread: 0
   aimAtPlayer: 1
+  fromCastPoint: 1
   originOffset: {x: 0, y: 0.4}
-  spawnRadius: 0.6
+  spawnRadius: 0.15
   rainSpan: 1
   rainCenterOffset: 0
   rainRandomX: 0

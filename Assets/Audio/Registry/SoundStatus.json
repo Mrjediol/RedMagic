@@ -12,15 +12,26 @@
       "notes": "Placeholder aceptado: un clip corto (Sly 2) en bucle como música de menú.",
       "lastModified": "2026-09-27 17:42"
     },
+    "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/Footstep": {
+      "status": "Bad",
+      "notes": "",
+      "lastModified": "2026-10-02 11:17"
+    },
     "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnAttack": {
       "status": "Bad",
       "notes": "Placeholder migrado de la tabla antigua: enemydmg1 (daño a enemigo) a pitch 0.38. Hay que sustituirlo.",
       "lastModified": "2026-09-27 17:42"
     },
+    "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnDash": {
+      "status": "Bad",
+      "notes": "",
+      "lastModified": "2026-10-02 11:17"
+    },
     "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnHit": {
       "status": "Bad",
       "notes": "Placeholder migrado de la tabla antigua: usa enemydmg1, un clip de daño a enemigo. Hay que sustituirlo.",
-      "lastModified": "2026-09-27 17:42"
+      "lastModified": "2026-10-02 11:05",
+      "removed": true
     }
   }
 }

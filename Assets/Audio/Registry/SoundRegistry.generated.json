@@ -2,538 +2,6 @@
   "_comment": "GENERADO por Tools > RedMagic > Audio > 3. No editar a mano: se sobrescribe. Calificaciones y notas: SoundStatus.json. Huecos sin momento aún: SoundDeclared.json.",
   "slots": [
     {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/SoundEmitter/OnActivate",
-      "name": "Activation",
-      "category": "Bosses/BossCenter",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "SoundEmitter",
-        "member": "OnActivate",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Bosses/BossCenter",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/ProceduralRig/gestures.Array.data[0].sound",
-      "name": "Gesture · Brace",
-      "category": "Bosses/BossCenter",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[0].sound",
-        "property": "gestures.Array.data[0].sound"
-      }
-    },
-    {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/ProceduralRig/gestures.Array.data[1].sound",
-      "name": "Gesture · Dash",
-      "category": "Bosses/BossCenter",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[1].sound",
-        "property": "gestures.Array.data[1].sound"
-      }
-    },
-    {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/ProceduralRig/gestures.Array.data[2].sound",
-      "name": "Gesture · DashLoop",
-      "category": "Bosses/BossCenter",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[2].sound",
-        "property": "gestures.Array.data[2].sound"
-      }
-    },
-    {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/ProceduralRig/gestures.Array.data[4].sound",
-      "name": "Gesture · GroundSlam",
-      "category": "Bosses/BossCenter",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[4].sound",
-        "property": "gestures.Array.data[4].sound"
-      }
-    },
-    {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/ProceduralRig/gestures.Array.data[3].sound",
-      "name": "Gesture · Move",
-      "category": "Bosses/BossCenter",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[3].sound",
-        "property": "gestures.Array.data[3].sound"
-      }
-    },
-    {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/ProceduralRig/gestures.Array.data[5].sound",
-      "name": "Gesture · PickUP",
-      "category": "Bosses/BossCenter",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[5].sound",
-        "property": "gestures.Array.data[5].sound"
-      }
-    },
-    {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/ProceduralRig/gestures.Array.data[6].sound",
-      "name": "Gesture · Throw",
-      "category": "Bosses/BossCenter",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[6].sound",
-        "property": "gestures.Array.data[6].sound"
-      }
-    },
-    {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Bosses/BossCenter",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/SoundEmitter/OnVulnerable",
-      "name": "Vulnerable window",
-      "category": "Bosses/BossCenter",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "SoundEmitter",
-        "member": "OnVulnerable",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/SoundEmitter/OnActivate",
-      "name": "Activation",
-      "category": "Bosses/BossCenter2",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "SoundEmitter",
-        "member": "OnActivate",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Bosses/BossCenter2",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[0].sound",
-      "name": "Gesture · Brace",
-      "category": "Bosses/BossCenter2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[0].sound",
-        "property": "gestures.Array.data[0].sound"
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[1].sound",
-      "name": "Gesture · Dash",
-      "category": "Bosses/BossCenter2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[1].sound",
-        "property": "gestures.Array.data[1].sound"
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[2].sound",
-      "name": "Gesture · DashLoop",
-      "category": "Bosses/BossCenter2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[2].sound",
-        "property": "gestures.Array.data[2].sound"
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[4].sound",
-      "name": "Gesture · GroundSlam",
-      "category": "Bosses/BossCenter2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[4].sound",
-        "property": "gestures.Array.data[4].sound"
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[3].sound",
-      "name": "Gesture · Move",
-      "category": "Bosses/BossCenter2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[3].sound",
-        "property": "gestures.Array.data[3].sound"
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[5].sound",
-      "name": "Gesture · PickUP",
-      "category": "Bosses/BossCenter2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[5].sound",
-        "property": "gestures.Array.data[5].sound"
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[6].sound",
-      "name": "Gesture · Throw",
-      "category": "Bosses/BossCenter2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[6].sound",
-        "property": "gestures.Array.data[6].sound"
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Bosses/BossCenter2",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/SoundEmitter/OnVulnerable",
-      "name": "Vulnerable window",
-      "category": "Bosses/BossCenter2",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "SoundEmitter",
-        "member": "OnVulnerable",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/SoundEmitter/OnActivate",
-      "name": "Activation",
-      "category": "Bosses/BossIce2",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "GenericTest",
-      "clips": [
-        "Assets/Audio/Test/generic_test.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "SoundEmitter",
-        "member": "OnActivate",
-        "property": "soundEvents.Array.data[0].cue"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Bosses/BossIce2",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "property": "soundEvents.Array.data[1].cue"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/ProceduralRig/gestures.Array.data[0].sound",
-      "name": "Gesture · Brace",
-      "category": "Bosses/BossIce2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[0].sound",
-        "property": "gestures.Array.data[0].sound"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/ProceduralRig/gestures.Array.data[1].sound",
-      "name": "Gesture · Dash",
-      "category": "Bosses/BossIce2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[1].sound",
-        "property": "gestures.Array.data[1].sound"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/ProceduralRig/gestures.Array.data[2].sound",
-      "name": "Gesture · DashLoop",
-      "category": "Bosses/BossIce2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[2].sound",
-        "property": "gestures.Array.data[2].sound"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/ProceduralRig/gestures.Array.data[3].sound",
-      "name": "Gesture · GroundSlam",
-      "category": "Bosses/BossIce2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[3].sound",
-        "property": "gestures.Array.data[3].sound"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/ProceduralRig/gestures.Array.data[6].sound",
-      "name": "Gesture · Move",
-      "category": "Bosses/BossIce2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[6].sound",
-        "property": "gestures.Array.data[6].sound"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/ProceduralRig/gestures.Array.data[4].sound",
-      "name": "Gesture · PickUP",
-      "category": "Bosses/BossIce2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[4].sound",
-        "property": "gestures.Array.data[4].sound"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/ProceduralRig/gestures.Array.data[5].sound",
-      "name": "Gesture · Throw",
-      "category": "Bosses/BossIce2",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[5].sound",
-        "property": "gestures.Array.data[5].sound"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Bosses/BossIce2",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "property": "soundEvents.Array.data[2].cue"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/SoundEmitter/OnVulnerable",
-      "name": "Vulnerable window",
-      "category": "Bosses/BossIce2",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "GenericTest",
-      "clips": [
-        "Assets/Audio/Test/generic_test.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "SoundEmitter",
-        "member": "OnVulnerable",
-        "property": "soundEvents.Array.data[3].cue"
-      }
-    },
-    {
       "id": "56fb851934fd63542ac2ea35df703eb9/SoundEmitter/OnActivate",
       "name": "Activation",
       "category": "Bosses/ColosodeHielo",
@@ -952,6 +420,182 @@
       }
     },
     {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/SoundEmitter/OnActivate",
+      "name": "Activation",
+      "category": "Bosses/IceBoss2",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "SoundEmitter",
+        "member": "OnActivate",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Bosses/IceBoss2",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[0].sound",
+      "name": "Gesture · Brace",
+      "category": "Bosses/IceBoss2",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[0].sound",
+        "property": "gestures.Array.data[0].sound"
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[1].sound",
+      "name": "Gesture · Dash",
+      "category": "Bosses/IceBoss2",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[1].sound",
+        "property": "gestures.Array.data[1].sound"
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[2].sound",
+      "name": "Gesture · DashLoop",
+      "category": "Bosses/IceBoss2",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[2].sound",
+        "property": "gestures.Array.data[2].sound"
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[4].sound",
+      "name": "Gesture · GroundSlam",
+      "category": "Bosses/IceBoss2",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[4].sound",
+        "property": "gestures.Array.data[4].sound"
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[3].sound",
+      "name": "Gesture · Move",
+      "category": "Bosses/IceBoss2",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[3].sound",
+        "property": "gestures.Array.data[3].sound"
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[5].sound",
+      "name": "Gesture · PickUP",
+      "category": "Bosses/IceBoss2",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[5].sound",
+        "property": "gestures.Array.data[5].sound"
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/ProceduralRig/gestures.Array.data[6].sound",
+      "name": "Gesture · Throw",
+      "category": "Bosses/IceBoss2",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[6].sound",
+        "property": "gestures.Array.data[6].sound"
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Bosses/IceBoss2",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/SoundEmitter/OnVulnerable",
+      "name": "Vulnerable window",
+      "category": "Bosses/IceBoss2",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
+        "component": "SoundEmitter",
+        "member": "OnVulnerable",
+        "entryMissing": true
+      }
+    },
+    {
       "id": "f601d572303009c4b9ada9aab10e20a2/SoundEmitter/OnActivate",
       "name": "Activation",
       "category": "Bosses/TreeBoss",
@@ -1323,118 +967,6 @@
         "component": "SystemSounds",
         "member": "soulFragmentGained",
         "property": "soulFragmentGained"
-      }
-    },
-    {
-      "id": "91d8287b7359c93448cc5980bd159997/SoundEmitter/OnAttack",
-      "name": "Attack",
-      "category": "Enemies/Aquato",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Aquato.prefab",
-        "guid": "91d8287b7359c93448cc5980bd159997",
-        "component": "SoundEmitter",
-        "member": "OnAttack",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "91d8287b7359c93448cc5980bd159997/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Enemies/Aquato",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Aquato.prefab",
-        "guid": "91d8287b7359c93448cc5980bd159997",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "91d8287b7359c93448cc5980bd159997/ProceduralRig/gestures.Array.data[1].sound",
-      "name": "Gesture · Charge",
-      "category": "Enemies/Aquato",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Aquato.prefab",
-        "guid": "91d8287b7359c93448cc5980bd159997",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[1].sound",
-        "property": "gestures.Array.data[1].sound"
-      }
-    },
-    {
-      "id": "91d8287b7359c93448cc5980bd159997/ProceduralRig/gestures.Array.data[0].sound",
-      "name": "Gesture · Flick",
-      "category": "Enemies/Aquato",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Aquato.prefab",
-        "guid": "91d8287b7359c93448cc5980bd159997",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[0].sound",
-        "property": "gestures.Array.data[0].sound"
-      }
-    },
-    {
-      "id": "91d8287b7359c93448cc5980bd159997/ProceduralRig/gestures.Array.data[2].sound",
-      "name": "Gesture · Sweep",
-      "category": "Enemies/Aquato",
-      "kind": "CueField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Aquato.prefab",
-        "guid": "91d8287b7359c93448cc5980bd159997",
-        "component": "ProceduralRig",
-        "member": "gestures.Array.data[2].sound",
-        "property": "gestures.Array.data[2].sound"
-      }
-    },
-    {
-      "id": "91d8287b7359c93448cc5980bd159997/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Enemies/Aquato",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Aquato.prefab",
-        "guid": "91d8287b7359c93448cc5980bd159997",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "91d8287b7359c93448cc5980bd159997/SoundEmitter/OnMove",
-      "name": "Move",
-      "category": "Enemies/Aquato",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Aquato.prefab",
-        "guid": "91d8287b7359c93448cc5980bd159997",
-        "component": "SoundEmitter",
-        "member": "OnMove",
-        "entryMissing": true
       }
     },
     {
@@ -1814,198 +1346,6 @@
         "component": "SoundEmitter",
         "member": "OnMove",
         "property": "soundEvents.Array.data[3].cue"
-      }
-    },
-    {
-      "id": "aa079bd0fd418bd4886866a60160dc79/SoundEmitter/OnAttack",
-      "name": "Attack",
-      "category": "Enemies/Newworl",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_Newworl.prefab",
-        "guid": "aa079bd0fd418bd4886866a60160dc79",
-        "component": "SoundEmitter",
-        "member": "OnAttack",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "aa079bd0fd418bd4886866a60160dc79/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Enemies/Newworl",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_Newworl.prefab",
-        "guid": "aa079bd0fd418bd4886866a60160dc79",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "aa079bd0fd418bd4886866a60160dc79/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Enemies/Newworl",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_Newworl.prefab",
-        "guid": "aa079bd0fd418bd4886866a60160dc79",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "aa079bd0fd418bd4886866a60160dc79/SoundEmitter/OnMove",
-      "name": "Move",
-      "category": "Enemies/Newworl",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_Newworl.prefab",
-        "guid": "aa079bd0fd418bd4886866a60160dc79",
-        "component": "SoundEmitter",
-        "member": "OnMove",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "5a12a1f273b336d49a50b150fe202483/SoundEmitter/OnAttack",
-      "name": "Attack",
-      "category": "Enemies/Robot",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Robot.prefab",
-        "guid": "5a12a1f273b336d49a50b150fe202483",
-        "component": "SoundEmitter",
-        "member": "OnAttack",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "5a12a1f273b336d49a50b150fe202483/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Enemies/Robot",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Robot.prefab",
-        "guid": "5a12a1f273b336d49a50b150fe202483",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "5a12a1f273b336d49a50b150fe202483/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Enemies/Robot",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Robot.prefab",
-        "guid": "5a12a1f273b336d49a50b150fe202483",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "5a12a1f273b336d49a50b150fe202483/SoundEmitter/OnMove",
-      "name": "Move",
-      "category": "Enemies/Robot",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Robot.prefab",
-        "guid": "5a12a1f273b336d49a50b150fe202483",
-        "component": "SoundEmitter",
-        "member": "OnMove",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "f7348d5c2150d14449ef094b8ac222e2/SoundEmitter/OnAttack",
-      "name": "Attack",
-      "category": "Enemies/RobotAgua",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/RobotAgua.prefab",
-        "guid": "f7348d5c2150d14449ef094b8ac222e2",
-        "component": "SoundEmitter",
-        "member": "OnAttack",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "f7348d5c2150d14449ef094b8ac222e2/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Enemies/RobotAgua",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/RobotAgua.prefab",
-        "guid": "f7348d5c2150d14449ef094b8ac222e2",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "f7348d5c2150d14449ef094b8ac222e2/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Enemies/RobotAgua",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/RobotAgua.prefab",
-        "guid": "f7348d5c2150d14449ef094b8ac222e2",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "entryMissing": true
-      }
-    },
-    {
-      "id": "f7348d5c2150d14449ef094b8ac222e2/SoundEmitter/OnMove",
-      "name": "Move",
-      "category": "Enemies/RobotAgua",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/RobotAgua.prefab",
-        "guid": "f7348d5c2150d14449ef094b8ac222e2",
-        "component": "SoundEmitter",
-        "member": "OnMove",
-        "entryMissing": true
       }
     },
     {
@@ -2614,54 +1954,6 @@
       }
     },
     {
-      "id": "3d3de594c21d7c74c92f2828bd74ede3/BossController/music",
-      "name": "Boss override · BossCenter",
-      "category": "Music",
-      "kind": "MusicField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter.prefab",
-        "guid": "3d3de594c21d7c74c92f2828bd74ede3",
-        "component": "BossController",
-        "member": "music",
-        "property": "music"
-      }
-    },
-    {
-      "id": "a7ccfe0086e6bab498620e3f22e06007/BossController/music",
-      "name": "Boss override · BossCenter2",
-      "category": "Music",
-      "kind": "MusicField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossCenter2.prefab",
-        "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "BossController",
-        "member": "music",
-        "property": "music"
-      }
-    },
-    {
-      "id": "f5a6d7d0a2df58840a15833144436b47/BossController/music",
-      "name": "Boss override · BossIce2",
-      "category": "Music",
-      "kind": "MusicField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BossIce2.prefab",
-        "guid": "f5a6d7d0a2df58840a15833144436b47",
-        "component": "BossController",
-        "member": "music",
-        "property": "music"
-      }
-    },
-    {
       "id": "56fb851934fd63542ac2ea35df703eb9/BossController/music",
       "name": "Boss override · ColosodeHielo",
       "category": "Music",
@@ -2672,6 +1964,22 @@
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
         "guid": "56fb851934fd63542ac2ea35df703eb9",
+        "component": "BossController",
+        "member": "music",
+        "property": "music"
+      }
+    },
+    {
+      "id": "a7ccfe0086e6bab498620e3f22e06007/BossController/music",
+      "name": "Boss override · IceBoss2",
+      "category": "Music",
+      "kind": "MusicField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "BossController",
         "member": "music",
         "property": "music"
@@ -3031,10 +2339,8 @@
       "category": "Player/Health",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/enemydmg1.wav"
-      ],
+      "clipSource": "None",
+      "clips": [],
       "owner": {
         "asset": "Assets/Prefabs/Player.prefab",
         "guid": "d17a89dc0989ba9428e9443f056f2fbb",

@@ -425,7 +425,7 @@ GameObject:
   - component: {fileID: 7696002551418309049}
   - component: {fileID: 7076613620291425850}
   m_Layer: 0
-  m_Name: BossCenter2
+  m_Name: IceBoss2
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1465,7 +1465,7 @@ Transform:
   m_GameObject: {fileID: 8402100828489480732}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -7.875, z: 0}
+  m_LocalPosition: {x: 0.57, y: -12.01, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

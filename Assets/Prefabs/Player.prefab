@@ -468,6 +468,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
   - trigger: 5
     cue:
       clips:
@@ -481,6 +482,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
   - trigger: 6
     cue:
       clips:
@@ -494,6 +496,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
   - trigger: 7
     cue:
       clips:
@@ -509,10 +512,10 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
   - trigger: 1
     cue:
-      clips:
-      - {fileID: 8300000, guid: 9d0864ce49035c8418b3f129ad3d8be1, type: 3}
+      clips: []
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -522,6 +525,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 1
   - trigger: 3
     cue:
       clips:
@@ -535,6 +539,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
   - trigger: 2
     cue:
       clips:
@@ -548,6 +553,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
   - trigger: 17
     cue:
       clips:
@@ -561,6 +567,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
   - trigger: 12
     cue:
       clips:
@@ -574,6 +581,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
   - trigger: 11
     cue:
       clips:
@@ -587,6 +595,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
   - trigger: 18
     cue:
       clips:
@@ -600,6 +609,7 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
   - trigger: 13
     cue:
       clips:
@@ -613,6 +623,8 @@ MonoBehaviour:
       rolloffStart: 8
       rolloffEnd: 24
       initialized: 1
+    silent: 0
+  useGenericFallback: 1
 --- !u!1 &5936975751486156930
 GameObject:
   m_ObjectHideFlags: 0

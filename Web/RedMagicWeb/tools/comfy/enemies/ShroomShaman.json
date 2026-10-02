@@ -1,0 +1,43 @@
+{
+  "name": "ShroomShaman",
+  "request": "Chamán seta del bosque: flota, mantiene distancia y lanza esporas con su varita de cristal.",
+  "template": "floatingCaster",
+  "parts": "claude/shroom/final",
+  "height": 2.8,
+  "slots": {
+    "castArm": { "pivot": [0.3, 0.85], "muzzle": [0.72, 0.1] }
+  },
+  "tuning": {
+    "maxHealth": 28,
+    "attackDamage": 7,
+    "attackCooldown": 1.8,
+    "projectileTint": "#ffffffff"
+  },
+  "effects": {
+    "spore": { "name": "ShroomSpore", "preset": "poisonGlob", "params": { "core": "#f6ffd0", "glow": "#8fe61e", "accent": "#d6ff7a" } },
+    "mote": { "name": "ShroomMote", "preset": "wisp", "params": { "core": "#ffffff", "glow": "#b4f03c", "accent": "#f0ffc0" } }
+  },
+  "projectile": { "effect": "spore", "speed": 8, "lifetime": 2.5, "size": { "x": 0.55, "y": 0.55 } },
+  "attacks": [
+    {
+      "id": "SporeFan",
+      "type": "BulletHellAttack",
+      "effect": "spore",
+      "worldWidth": 0.5,
+      "common": { "displayName": "Abanico de esporas", "telegraph": 0.7, "recovery": 0.8, "damage": 6, "gesture": "Charge", "cooldownInAttacks": 1 },
+      "params": { "pattern": "Fan", "volleys": 1, "bulletsPerVolley": 5, "arcDegrees": 50, "aimAtPlayer": true,
+        "originOffset": { "x": 0, "y": 0.4 }, "spawnRadius": 0.6, "projectile": { "speed": 7, "lifetime": 2.5 } },
+      "deck": { "minRange": 3, "maxRange": 9 }
+    },
+    {
+      "id": "SporeNova",
+      "type": "BulletHellAttack",
+      "effect": "mote",
+      "worldWidth": 0.4,
+      "common": { "displayName": "Nova de esporas", "telegraph": 0.8, "recovery": 1, "damage": 5, "gesture": "Sweep", "cooldownInAttacks": 2 },
+      "params": { "pattern": "Radial", "volleys": 2, "timeBetweenVolleys": 0.4, "bulletsPerVolley": 10, "arcDegrees": 360, "spinPerVolley": 18,
+        "aimAtPlayer": false, "originOffset": { "x": 0, "y": 0 }, "spawnRadius": 0.5, "projectile": { "speed": 5, "lifetime": 1.8 } },
+      "deck": { "minRange": 0, "maxRange": 4 }
+    }
+  ]
+}

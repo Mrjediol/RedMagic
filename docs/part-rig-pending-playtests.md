@@ -470,3 +470,27 @@ level, loops closing), not how they sound.
       delete. Worst offenders first. The loops (fire, beam, shield…): do they loop without a click?
 - [ ] VFX19 · Which of these sounds should be assigned to the game's slots (weapons' fire / impact / explosion /
       beam loop / charge)? When they are, each one needs your grade (Perfect / Good / Bad / Horrible).
+
+---
+
+## ShroomShaman — first enemy made end to end by Claude (2026-10-02)
+
+Art from ComfyUI (Qwen Image 2.1), body from the `floatingCaster` template, built and imported with
+`Web/RedMagicWeb/tools/comfy/make-enemy.mjs` (brief: `enemies/ShroomShaman.json`). Process: `.claude/skills/make-enemy`.
+Prefab: `Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab`. **Checked statically only** (components, sprites,
+projectile, deck of 2 attacks, sound slots; compiles). Nothing was seen moving.
+
+- [ ] SH1 · Drop the prefab in a section. Size next to the player (meant to be 2.8 units tall) — too big / small?
+- [ ] SH2 · Does it float, keep its distance and face the player? Parts in the right order (wand arm behind the
+      body, leaf in front)? Any part visibly detached or overlapping badly at rest?
+- [ ] SH3 · The wand arm aims at the player and the spore leaves **from the crystal**. If it leaves from elsewhere
+      or the arm points wrong, say where — it is `slots.castArm.pivot / muzzle` in the brief.
+- [ ] SH4 · Sway: head nods on its neck (does the flat top of the stem show under it?), roots trail behind.
+- [ ] SH5 · State sprites: eyes angry + crystal lit while attacking; `> <` eyes when hit. Any pop / jump of the part
+      when the sprite changes?
+- [ ] SH6 · Built-in shot (spore): size, speed, colour; impact burst on the player and on walls.
+- [ ] SH7 · Spore Fan (5 spores at range 3–9, gesture Charge) and Spore Nova (two rings when you are within 4,
+      gesture Sweep): readable, dodgeable, too much / too little? The nova's motes vs. the fan's spores: different enough?
+- [ ] SH8 · Death: parts break apart and fall; hurt flash.
+- [ ] SH9 · Sounds (grade them in Biblioteca Jere ▸ Sounds ▸ Enemies/ShroomShaman and the three Shroom projectiles):
+      hurt / death (new: plant), spore launch / hit (new), gestures, the two attacks.

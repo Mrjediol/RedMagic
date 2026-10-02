@@ -1411,6 +1411,164 @@
       }
     },
     {
+      "id": "b9d04b6a93c95534498068b28e5c43d4/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/ShroomShaman",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "guid": "b9d04b6a93c95534498068b28e5c43d4",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "22eaf64f132f1e54f8736a0052362360/BulletHellAttack/sound",
+      "name": "Attack · SporeFan",
+      "category": "Enemies/ShroomShaman",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_bullet_burst.wav"
+      ],
+      "owner": {
+        "asset": "Assets/ScriptableObjects/EnemyAttacks/ShroomShaman/EnemyAttack_ShroomShaman_SporeFan.asset",
+        "guid": "22eaf64f132f1e54f8736a0052362360",
+        "component": "BulletHellAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "720f33b6ea31aec49bea288f83c0780c/BulletHellAttack/sound",
+      "name": "Attack · SporeNova",
+      "category": "Enemies/ShroomShaman",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_bullet_burst.wav"
+      ],
+      "owner": {
+        "asset": "Assets/ScriptableObjects/EnemyAttacks/ShroomShaman/EnemyAttack_ShroomShaman_SporeNova.asset",
+        "guid": "720f33b6ea31aec49bea288f83c0780c",
+        "component": "BulletHellAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "b9d04b6a93c95534498068b28e5c43d4/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/ShroomShaman",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_death_plant.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "guid": "b9d04b6a93c95534498068b28e5c43d4",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "b9d04b6a93c95534498068b28e5c43d4/ProceduralRig/gestures.Array.data[1].sound",
+      "name": "Gesture · Charge",
+      "category": "Enemies/ShroomShaman",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_charge.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "guid": "b9d04b6a93c95534498068b28e5c43d4",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[1].sound",
+        "property": "gestures.Array.data[1].sound"
+      }
+    },
+    {
+      "id": "b9d04b6a93c95534498068b28e5c43d4/ProceduralRig/gestures.Array.data[0].sound",
+      "name": "Gesture · Flick",
+      "category": "Enemies/ShroomShaman",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_flick.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "guid": "b9d04b6a93c95534498068b28e5c43d4",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[0].sound",
+        "property": "gestures.Array.data[0].sound"
+      }
+    },
+    {
+      "id": "b9d04b6a93c95534498068b28e5c43d4/ProceduralRig/gestures.Array.data[2].sound",
+      "name": "Gesture · Sweep",
+      "category": "Enemies/ShroomShaman",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_sweep.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "guid": "b9d04b6a93c95534498068b28e5c43d4",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[2].sound",
+        "property": "gestures.Array.data[2].sound"
+      }
+    },
+    {
+      "id": "b9d04b6a93c95534498068b28e5c43d4/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/ShroomShaman",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_hurt_plant.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "guid": "b9d04b6a93c95534498068b28e5c43d4",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "b9d04b6a93c95534498068b28e5c43d4/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/ShroomShaman",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "guid": "b9d04b6a93c95534498068b28e5c43d4",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "entryMissing": true
+      }
+    },
+    {
       "id": "7116cf21cf3670b44a2d253afd4e1e97/SoundEmitter/OnAttack",
       "name": "Attack",
       "category": "Enemies/Turret",
@@ -3136,6 +3294,222 @@
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile.prefab",
         "guid": "59fcad6a052333a4e9c612af15a3feeb",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "b91ba62833584424cb9c51fbbcd5c80c/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/ShroomShaman_ShroomMote_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ShroomShaman/Fx_ShroomShaman_ShroomMote_Projectile.prefab",
+        "guid": "b91ba62833584424cb9c51fbbcd5c80c",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "b91ba62833584424cb9c51fbbcd5c80c/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/ShroomShaman_ShroomMote_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_spore.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ShroomShaman/Fx_ShroomShaman_ShroomMote_Projectile.prefab",
+        "guid": "b91ba62833584424cb9c51fbbcd5c80c",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "b91ba62833584424cb9c51fbbcd5c80c/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/ShroomShaman_ShroomMote_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_spore.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ShroomShaman/Fx_ShroomShaman_ShroomMote_Projectile.prefab",
+        "guid": "b91ba62833584424cb9c51fbbcd5c80c",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "b91ba62833584424cb9c51fbbcd5c80c/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/ShroomShaman_ShroomMote_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_spore.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ShroomShaman/Fx_ShroomShaman_ShroomMote_Projectile.prefab",
+        "guid": "b91ba62833584424cb9c51fbbcd5c80c",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "60087827303b18a468a2d8811f99c9e9/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/ShroomShaman_ShroomSpore_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ShroomShaman/Fx_ShroomShaman_ShroomSpore_Projectile.prefab",
+        "guid": "60087827303b18a468a2d8811f99c9e9",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "60087827303b18a468a2d8811f99c9e9/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/ShroomShaman_ShroomSpore_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_spore.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ShroomShaman/Fx_ShroomShaman_ShroomSpore_Projectile.prefab",
+        "guid": "60087827303b18a468a2d8811f99c9e9",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "60087827303b18a468a2d8811f99c9e9/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/ShroomShaman_ShroomSpore_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_spore.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ShroomShaman/Fx_ShroomShaman_ShroomSpore_Projectile.prefab",
+        "guid": "60087827303b18a468a2d8811f99c9e9",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "60087827303b18a468a2d8811f99c9e9/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/ShroomShaman_ShroomSpore_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_spore.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ShroomShaman/Fx_ShroomShaman_ShroomSpore_Projectile.prefab",
+        "guid": "60087827303b18a468a2d8811f99c9e9",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "c21fd61b95c9e30448747773038e9c49/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/ShroomSpore",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Projectiles/ShroomSpore/Fx_ShroomSpore.prefab",
+        "guid": "c21fd61b95c9e30448747773038e9c49",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "c21fd61b95c9e30448747773038e9c49/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/ShroomSpore",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_spore.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Projectiles/ShroomSpore/Fx_ShroomSpore.prefab",
+        "guid": "c21fd61b95c9e30448747773038e9c49",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "c21fd61b95c9e30448747773038e9c49/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/ShroomSpore",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_spore.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Projectiles/ShroomSpore/Fx_ShroomSpore.prefab",
+        "guid": "c21fd61b95c9e30448747773038e9c49",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "c21fd61b95c9e30448747773038e9c49/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/ShroomSpore",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_spore.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Projectiles/ShroomSpore/Fx_ShroomSpore.prefab",
+        "guid": "c21fd61b95c9e30448747773038e9c49",
         "component": "SoundEmitter",
         "member": "OnSpawn",
         "property": "soundEvents.Array.data[3].cue"

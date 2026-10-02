@@ -244,6 +244,10 @@ export const GAME_SOUNDS = {
     T('sine', [2200, 500], { dur: 0.2, a: 0.002, curve: 1.8, gain: 0.4 }) ]),
   proj_launch_leaf: S('projectile', 'Lanzar · hoja', 0.2, [
     N('bp', [2600, 3800], { q: 0.4, dur: 0.18, a: 0.02, curve: 1.6, gain: 0.7, trem: [30, 0.6] }) ]),
+  proj_launch_spore: S('projectile', 'Lanzar · espora / veneno', 0.22, [
+    T('sine', [300, 760], { dur: 0.12, a: 0.004, curve: 1.8, gain: 0.7 }),
+    N('lp', [900, 380], { dur: 0.18, a: 0.01, curve: 2, gain: 0.5 }),
+    P(2, [600, 1200], { t0: 0.04, spread: 0.1, dur: 0.05, gain: 0.25, rise: 1.5 }) ]),
   proj_launch_wave: S('projectile', 'Lanzar · onda', 0.4, [
     T('sine', [160, 60], { dur: 0.36, a: 0.004, curve: 1.6, gain: 0.9 }),
     N('bp', [400, 1400], { q: 0.7, dur: 0.34, a: 0.04, curve: 1.6, gain: 0.5 }) ]),
@@ -261,6 +265,13 @@ export const GAME_SOUNDS = {
   proj_hit_leaf: S('projectile', 'Impacto en el jugador · hoja', 0.16, [
     N('hp', [5200, 2400], { q: 0.6, dur: 0.1, a: 0.002, curve: 2, gain: 0.8 }),
     T('sine', [300, 140], { dur: 0.08, a: 0.001, curve: 2.4, gain: 0.4 }) ]),
+  proj_hit_spore: S('projectile', 'Impacto en el jugador · espora', 0.3, [
+    N('bp', [1100, 320], { q: 0.7, dur: 0.22, a: 0.003, curve: 1.6, gain: 0.9 }),
+    T('sine', [240, 100], { dur: 0.16, a: 0.002, curve: 2.2, gain: 0.5 }),
+    P(5, [350, 1200], { t0: 0.04, spread: 0.22, dur: 0.06, gain: 0.35, rise: 1.8 }) ]),
+  proj_terrain_spore: S('projectile', 'Impacto en terreno · espora', 0.2, [
+    N('bp', [900, 300], { q: 0.8, dur: 0.16, a: 0.004, curve: 1.8, gain: 0.8 }),
+    P(3, [400, 1000], { t0: 0.02, spread: 0.12, dur: 0.05, gain: 0.3, rise: 1.7 }) ]),
   proj_terrain_soft: S('projectile', 'Impacto en terreno · energía', 0.16, [
     N('bp', [1200, 500], { q: 0.8, dur: 0.12, a: 0.002, curve: 2.2, gain: 0.8 }),
     T('sine', [400, 200], { dur: 0.08, a: 0.002, curve: 2.4, gain: 0.3 }) ]),
@@ -317,6 +328,15 @@ export const GAME_SOUNDS = {
     T('sine', [380, 190], { dur: 0.5, a: 0.01, curve: 1.8, gain: 0.35 }),
     N('hp', [3200, 6000], { q: 0.8, dur: 0.7, a: 0.1, curve: 1.6, gain: 0.3 }),
     P(6, [2200, 4400], { t0: 0.15, spread: 0.5, dur: 0.08, gain: 0.14 }) ]),
+  enemy_hurt_plant: S('enemy', 'Herido · planta / seta (blando)', 0.2, [
+    N('lp', [900, 260], { dur: 0.16, a: 0.002, curve: 2, gain: 0.9 }),
+    T('sine', [340, 150], { dur: 0.14, a: 0.002, curve: 2.2, gain: 0.5, vib: [38, 0.08] }),
+    P(2, [500, 1000], { t0: 0.02, spread: 0.08, dur: 0.05, gain: 0.25, rise: 1.6 }) ]),
+  enemy_death_plant: S('enemy', 'Muere · planta / seta (nube de esporas)', 0.7, [
+    N('bp', [500, 1400], { q: 0.7, dur: 0.6, a: 0.02, curve: 1.5, gain: 0.9 }),
+    N('lp', [700, 180], { dur: 0.3, a: 0.002, curve: 2, gain: 0.7 }),
+    T('sine', [300, 90], { dur: 0.35, a: 0.004, curve: 1.8, gain: 0.5, vib: [26, 0.07] }),
+    P(9, [400, 1300], { t0: 0.05, spread: 0.5, dur: 0.06, gain: 0.3, rise: 1.7 }) ]),
   enemy_wake: S('enemy', 'Despierta', 0.45, [
     T('sine', [140, 300], { dur: 0.4, a: 0.08, curve: 1.6, gain: 0.7 }),
     N('bp', [500, 1600], { q: 0.7, dur: 0.38, a: 0.1, curve: 1.6, gain: 0.5 }) ]),
@@ -725,15 +745,18 @@ export const GAME_ASSIGN = [
   R({ category: '^Projectiles/', name: '^Launch$', asset: 'Laser' }, 'proj_launch_laser', { ...vary, volume: 0.6 }),
   R({ category: '^Projectiles/', name: '^Launch$', asset: 'Leaf' }, 'proj_launch_leaf', { ...wide, volume: 0.5 }),
   R({ category: '^Projectiles/', name: '^Launch$', asset: 'Wave' }, 'proj_launch_wave', { ...vary, volume: 0.7 }),
+  R({ category: '^Projectiles/', name: '^Launch$', asset: 'Spore|Mote|Glob|Poison|Veneno|Espora' }, 'proj_launch_spore', { ...wide, volume: 0.6 }),
   R({ category: '^Projectiles/', name: '^Launch$', asset: 'Ice|Hielo' }, 'proj_launch_ice', { ...wide, volume: 0.6 }),
   R({ category: '^Projectiles/', name: '^Launch$' }, 'proj_launch_energy', { ...wide, volume: 0.5 }),
   R({ category: '^Projectiles/', name: '^Hit target$', asset: 'Boulder|Rock|Wave' }, 'proj_hit_rock', vary),
   R({ category: '^Projectiles/', name: '^Hit target$', asset: 'Leaf' }, 'proj_hit_leaf', vary),
   R({ category: '^Projectiles/', name: '^Hit target$', asset: 'Laser' }, 'proj_hit_energy', vary),
+  R({ category: '^Projectiles/', name: '^Hit target$', asset: 'Spore|Mote|Glob|Poison|Veneno|Espora' }, 'proj_hit_spore', vary),
   R({ category: '^Projectiles/', name: '^Hit target$', asset: 'Ice|Hielo' }, 'proj_hit_ice', vary),
   R({ category: '^Projectiles/', name: '^Hit target$' }, 'proj_hit_energy', vary),
   R({ category: '^Projectiles/', name: '^Hit terrain$', asset: 'Boulder|Rock|Wave' }, 'proj_terrain_rock', { ...wide, volume: 0.7 }),
   R({ category: '^Projectiles/', name: '^Hit terrain$', asset: 'Laser|Leaf' }, 'proj_terrain_soft', { ...wide, volume: 0.5 }),
+  R({ category: '^Projectiles/', name: '^Hit terrain$', asset: 'Spore|Mote|Glob|Poison|Veneno|Espora' }, 'proj_terrain_spore', { ...wide, volume: 0.5 }),
   R({ category: '^Projectiles/', name: '^Hit terrain$', asset: 'Ice|Hielo' }, 'proj_terrain_ice', { ...wide, volume: 0.6 }),
   R({ category: '^Projectiles/', name: '^Hit terrain$' }, 'proj_terrain_soft', { ...wide, volume: 0.5 }),
   R({ category: '^Projectiles/', name: '^Expire$' }, 'proj_expire', { ...wide, volume: 0.4 }),
@@ -783,6 +806,8 @@ export const GAME_ASSIGN = [
   R({ category: '^Enemies/', name: '^Death$', asset: 'Robot|Turret|Mech' }, 'enemy_death_metal', vary),
   R({ category: '^Enemies/', name: '^Hurt$', asset: 'Spirit|Ghost|Wisp' }, 'enemy_hurt_spirit', wide),
   R({ category: '^Enemies/', name: '^Death$', asset: 'Spirit|Ghost|Wisp' }, 'enemy_death_spirit', vary),
+  R({ category: '^Enemies/', name: '^Hurt$', asset: 'Shroom|Mushroom|Seta|Plant|Bloom|Vine|Root' }, 'enemy_hurt_plant', wide),
+  R({ category: '^Enemies/', name: '^Death$', asset: 'Shroom|Mushroom|Seta|Plant|Bloom|Vine|Root' }, 'enemy_death_plant', vary),
   R({ category: '^Enemies/', name: '^Wake$', asset: 'Robot|Turret|Mech' }, 'enemy_wake_metal', vary),
   R({ category: '^Enemies/', name: '^Wake$' }, 'enemy_wake', vary),
   R({ category: '^Enemies/', name: '^Evade$' }, 'enemy_evade', wide),

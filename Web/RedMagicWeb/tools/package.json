@@ -9,6 +9,7 @@
     "check-sounds": "node check-sounds.mjs"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.60"
+    "@napi-rs/canvas": "^0.1.60",
+    "jszip": "^3.10.2"
   }
 }

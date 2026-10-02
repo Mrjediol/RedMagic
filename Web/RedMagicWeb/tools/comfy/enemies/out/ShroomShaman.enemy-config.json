@@ -1,0 +1,237 @@
+{
+  "kind": "enemy",
+  "enemyName": "ShroomShaman",
+  "tier": "Basic",
+  "tuning": {
+    "archetype": "FlyingRanged",
+    "staticAttack": "Ranged",
+    "maxHealth": 28,
+    "invulnerabilityDuration": 0,
+    "knockbackHorizontal": 6,
+    "knockbackVertical": 3,
+    "knockbackDuration": 0.18,
+    "knockbackResistance": 0,
+    "detectionRange": 9,
+    "loseInterestGrace": 1,
+    "attackRange": 6,
+    "personalSpace": 3,
+    "retreatReleaseFactor": 1.35,
+    "verticalTolerance": 3,
+    "moveSpeed": 2.5,
+    "retreatSpeed": 2.2,
+    "stopAtLedges": true,
+    "ledgeProbeDepth": 0.6,
+    "gravityScale": 3,
+    "sleepsUntilDetected": false,
+    "hoverOffset": 1.2,
+    "attackDamage": 7,
+    "attackCooldown": 1.8,
+    "attackKnockbackMultiplier": 1,
+    "attackReleaseFallback": 0.25,
+    "rootedWhileAttacking": true,
+    "meleeHitboxSize": {
+      "x": 1.2,
+      "y": 1
+    },
+    "meleeHitboxOffset": {
+      "x": 0.8,
+      "y": 0.5
+    },
+    "selfDestruct": false,
+    "explosionRadius": 1.7,
+    "explosionShake": 0.2,
+    "aimAtTarget": true,
+    "projectileTint": "#ffffffff",
+    "contactDamage": 0,
+    "contactDamageCooldown": 1,
+    "contactKnockbackMultiplier": 1,
+    "idleAnimSpeed": 1,
+    "moveAnimSpeed": 1,
+    "attackAnimSpeed": 1,
+    "hurtAnimSpeed": 1,
+    "deathAnimSpeed": 1,
+    "wakeAnimSpeed": 1,
+    "targetTag": "Player",
+    "hitLayers": "everything",
+    "obstacleLayers": [
+      "Ground",
+      "Platform"
+    ],
+    "projectile": {
+      "speed": 8,
+      "lifetime": 2.5,
+      "size": {
+        "x": 0.55,
+        "y": 0.55
+      },
+      "muzzleOffset": {
+        "x": 0.65,
+        "y": 0.1
+      },
+      "pierce": 0,
+      "homingTurnRate": 0,
+      "homingRange": 9,
+      "arcGravity": 0,
+      "impactRadius": 0,
+      "impactDamage": 0,
+      "faceDirection": false,
+      "facingAxis": "Right",
+      "aimMode": "Fixed",
+      "libraryId": "claude-shroomshaman-spore"
+    },
+    "attacks": [
+      {
+        "attack": "SporeFan",
+        "minRange": 3,
+        "maxRange": 9,
+        "targetHeight": "Any"
+      },
+      {
+        "attack": "SporeNova",
+        "minRange": 0,
+        "maxRange": 4,
+        "targetHeight": "Any"
+      }
+    ],
+    "builtInAttack": true,
+    "builtInWeight": 1
+  },
+  "attacks": {
+    "SporeFan": {
+      "type": "BulletHellAttack",
+      "displayName": "Abanico de esporas",
+      "telegraph": 0.7,
+      "recovery": 0.8,
+      "cooldownInAttacks": 1,
+      "damage": 6,
+      "gesture": "Charge",
+      "params": {
+        "pattern": "Fan",
+        "projectile": {
+          "prefab": {
+            "art": "ShroomSpore_Projectile"
+          },
+          "speed": 7,
+          "lifetime": 2.5,
+          "size": {
+            "x": 0.35,
+            "y": 0.35
+          },
+          "muzzleOffset": {
+            "x": 0.65,
+            "y": 0.1
+          },
+          "pierce": 0,
+          "homingTurnRate": 0,
+          "homingRange": 9,
+          "arcGravity": 0,
+          "impactRadius": 0,
+          "impactDamage": 0,
+          "faceDirection": false,
+          "facingAxis": "Right",
+          "aimMode": "Fixed"
+        },
+        "volleys": 1,
+        "bulletsPerVolley": 5,
+        "arcDegrees": 50,
+        "aimAtPlayer": true,
+        "originOffset": {
+          "x": 0,
+          "y": 0.4
+        },
+        "spawnRadius": 0.6
+      }
+    },
+    "SporeNova": {
+      "type": "BulletHellAttack",
+      "displayName": "Nova de esporas",
+      "telegraph": 0.8,
+      "recovery": 1,
+      "cooldownInAttacks": 2,
+      "damage": 5,
+      "gesture": "Sweep",
+      "params": {
+        "pattern": "Radial",
+        "projectile": {
+          "prefab": {
+            "art": "ShroomMote_Projectile"
+          },
+          "speed": 5,
+          "lifetime": 1.8,
+          "size": {
+            "x": 0.35,
+            "y": 0.35
+          },
+          "muzzleOffset": {
+            "x": 0.65,
+            "y": 0.1
+          },
+          "pierce": 0,
+          "homingTurnRate": 0,
+          "homingRange": 9,
+          "arcGravity": 0,
+          "impactRadius": 0,
+          "impactDamage": 0,
+          "faceDirection": false,
+          "facingAxis": "Right",
+          "aimMode": "Fixed"
+        },
+        "volleys": 2,
+        "timeBetweenVolleys": 0.4,
+        "bulletsPerVolley": 10,
+        "arcDegrees": 360,
+        "spinPerVolley": 18,
+        "aimAtPlayer": false,
+        "originOffset": {
+          "x": 0,
+          "y": 0
+        },
+        "spawnRadius": 0.5
+      }
+    }
+  },
+  "artAssets": {
+    "ShroomSpore_Projectile": {
+      "kind": "projectile",
+      "folder": "Art/claude-shroomshaman-spore",
+      "libraryId": "claude-shroomshaman-spore",
+      "entryName": "ShroomSpore",
+      "states": {
+        "Move": {
+          "folder": "Move",
+          "fps": 12,
+          "loop": true
+        },
+        "Impact": {
+          "folder": "Impact",
+          "fps": 14,
+          "loop": false
+        }
+      },
+      "worldWidth": 0.5,
+      "colliderScale": 0.7,
+      "faceTravelDirection": true
+    },
+    "ShroomMote_Projectile": {
+      "kind": "projectile",
+      "folder": "Art/claude-shroomshaman-mote",
+      "libraryId": "claude-shroomshaman-mote",
+      "entryName": "ShroomMote",
+      "states": {
+        "Move": {
+          "folder": "Move",
+          "fps": 12,
+          "loop": true
+        },
+        "Impact": {
+          "folder": "Impact",
+          "fps": 14,
+          "loop": false
+        }
+      },
+      "worldWidth": 0.4,
+      "colliderScale": 0.7,
+      "faceTravelDirection": true
+    }
+  }
+}

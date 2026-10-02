@@ -461,6 +461,13 @@
       "loop": false,
       "assigned": true
     },
+    "proj_launch_spore": {
+      "family": "projectile",
+      "label": "Lanzar · espora / veneno",
+      "seconds": 0.22,
+      "loop": false,
+      "assigned": true
+    },
     "proj_launch_wave": {
       "family": "projectile",
       "label": "Lanzar · onda",
@@ -493,6 +500,20 @@
       "family": "projectile",
       "label": "Impacto en el jugador · hoja",
       "seconds": 0.16,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_hit_spore": {
+      "family": "projectile",
+      "label": "Impacto en el jugador · espora",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_terrain_spore": {
+      "family": "projectile",
+      "label": "Impacto en terreno · espora",
+      "seconds": 0.2,
       "loop": false,
       "assigned": true
     },
@@ -598,6 +619,20 @@
       "family": "enemy",
       "label": "Muere · espíritu (se disipa)",
       "seconds": 0.8,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_hurt_plant": {
+      "family": "enemy",
+      "label": "Herido · planta / seta (blando)",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_death_plant": {
+      "family": "enemy",
+      "label": "Muere · planta / seta (nube de esporas)",
+      "seconds": 0.7,
       "loop": false,
       "assigned": true
     },
@@ -1473,6 +1508,17 @@
     {
       "category": "^Projectiles/",
       "name": "^Launch$",
+      "asset": "Spore|Mote|Glob|Poison|Veneno|Espora",
+      "clip": "proj_launch_spore",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.6
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Launch$",
       "asset": "Ice|Hielo",
       "clip": "proj_launch_ice",
       "pitch": [
@@ -1524,6 +1570,16 @@
     {
       "category": "^Projectiles/",
       "name": "^Hit target$",
+      "asset": "Spore|Mote|Glob|Poison|Veneno|Espora",
+      "clip": "proj_hit_spore",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit target$",
       "asset": "Ice|Hielo",
       "clip": "proj_hit_ice",
       "pitch": [
@@ -1556,6 +1612,17 @@
       "name": "^Hit terrain$",
       "asset": "Laser|Leaf",
       "clip": "proj_terrain_soft",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.5
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit terrain$",
+      "asset": "Spore|Mote|Glob|Poison|Veneno|Espora",
+      "clip": "proj_terrain_spore",
       "pitch": [
         0.88,
         1.12
@@ -1912,6 +1979,26 @@
       "name": "^Death$",
       "asset": "Spirit|Ghost|Wisp",
       "clip": "enemy_death_spirit",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Hurt$",
+      "asset": "Shroom|Mushroom|Seta|Plant|Bloom|Vine|Root",
+      "clip": "enemy_hurt_plant",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Death$",
+      "asset": "Shroom|Mushroom|Seta|Plant|Bloom|Vine|Root",
+      "clip": "enemy_death_plant",
       "pitch": [
         0.94,
         1.06

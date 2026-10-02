@@ -1,0 +1,22 @@
+{
+  "enemyName": "IceRobot",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "Move",
+      "fps": 14,
+      "loop": true,
+      "frameCount": 9,
+      "projectile": null
+    },
+    {
+      "name": "Impact",
+      "fps": 16,
+      "loop": false,
+      "frameCount": 9,
+      "projectile": null
+    }
+  ],
+  "projectiles": [],
+  "libraryId": "6e4fe0b9-2fdf-494e-b671-5592b0429735"
+}

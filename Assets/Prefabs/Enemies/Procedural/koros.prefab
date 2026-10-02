@@ -80,7 +80,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 3
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 466c8e1cb7703da4b9eb4c0188543d09, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -171,7 +171,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 4
+  m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 15d893cfba7260640a7982d250a43ce3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -206,6 +206,7 @@ GameObject:
   - component: {fileID: 2174908227020721442}
   - component: {fileID: 8791272096769605100}
   - component: {fileID: 7962582455677081753}
+  - component: {fileID: 4306713314739425280}
   m_Layer: 0
   m_Name: koros
   m_TagString: Untagged
@@ -222,8 +223,8 @@ Transform:
   m_GameObject: {fileID: 4074207443637217106}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.67296, y: 0.67296, z: 0.67296}
+  m_LocalPosition: {x: 0.32, y: -0.00000088508, z: 0}
+  m_LocalScale: {x: 0.46967, y: 0.46967, z: 0.46967}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 172768294981139038}
@@ -424,20 +425,35 @@ MonoBehaviour:
     attackKnockbackMultiplier: 1
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
-    attacks: []
+    attacks:
+    - attack: {fileID: 0}
+      builtIn: 1
+      gesture: Saltito
+      weight: 1
+      minRange: 0
+      maxRange: 0
+      targetHeight: 0
+    - attack: {fileID: 0}
+      builtIn: 1
+      gesture: Saltito
+      weight: 1
+      minRange: 0
+      maxRange: 0
+      targetHeight: 0
     builtInAttack: 1
     builtInWeight: 1
+    defences: []
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
     selfDestruct: 0
     explosionRadius: 1.7
     explosionShake: 0.2
     projectile:
-      prefab: {fileID: 0}
+      prefab: {fileID: 3039328402396721735, guid: 512f48ba21bed8f4c8b15ef1cec3c36e, type: 3}
       speed: 9
       lifetime: 2.5
       size: {x: 0.4, y: 0.4}
-      muzzleOffset: {x: 0.65, y: 0.1}
+      muzzleOffset: {x: 0.7, y: 1}
       pierce: 0
       homingTurnRate: 0
       homingRange: 9
@@ -610,6 +626,11 @@ MonoBehaviour:
   followDamping: 9
   followMaxOffset: 0.396
   moveGesture: 
+  idle:
+    gestures: []
+    interval: 4
+    chance: 0.6
+    windup: 0.5
   aimPart: {fileID: 7928205777592599540}
   aimArtAngle: 22.9
   aimMaxAngle: 70
@@ -657,6 +678,19 @@ MonoBehaviour:
     strikeTime: 0.06
     recover: 0.3
     shake: 0
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   - name: Charge
     windup:
     - part: {fileID: 7928205777592599540}
@@ -683,6 +717,19 @@ MonoBehaviour:
     strikeTime: 0.08
     recover: 0.45
     shake: 1.5
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   - name: Sweep
     windup:
     - part: {fileID: 7928205777592599540}
@@ -705,6 +752,46 @@ MonoBehaviour:
     strikeTime: 0.14
     recover: 0.4
     shake: 0
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
+  - name: Saltito
+    windup:
+    - part: {fileID: 980318115569924195}
+      move: {x: 0.988, y: 3.257}
+      rotate: -2.8
+      scale: {x: 0, y: 0}
+    - part: {fileID: 7928205777592599540}
+      move: {x: 0.003, y: -0.071}
+      rotate: -37.1
+      scale: {x: 0, y: 0}
+    strike: []
+    strikeTime: 0.08
+    recover: 0.45
+    shake: 0
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
   drivenLease: 0.25
   drivenReturn: 0.35
   staggerStrength: 2.5
@@ -731,6 +818,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e6fc707acbe7884cb21f94e3272ee9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Rigging.RigDriverCode
+--- !u!114 &4306713314739425280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4074207443637217106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4729294e7f94484395dbcd86d60406a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Enemies.EnemyAttackHost
+  arenaHalfWidth: 10
+  arenaHeight: 8
+  feet: {fileID: 0}
+  fxSprite: {fileID: 0}
+  warnPrefab: {fileID: 0}
+  warnCirclePrefab: {fileID: 0}
+  warnArrowPrefab: {fileID: 0}
+  shockwavePrefab: {fileID: 0}
+  sweepBeamPrefab: {fileID: 0}
+  hazardPrefab: {fileID: 0}
+  platformPrefab: {fileID: 0}
 --- !u!1 &4259022980746432649
 GameObject:
   m_ObjectHideFlags: 0
@@ -815,7 +925,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 4
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 93097c8e591a3a847b7937ed54c97361, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -937,7 +1047,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 5
+  m_SortingOrder: 6
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 88f977f432a258948ab04cfea609e322, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -974,7 +1084,7 @@ Transform:
   m_GameObject: {fileID: 6191441919771362119}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.86, y: 0, z: 0}
+  m_LocalPosition: {x: 1, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1060,7 +1170,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 3b282dd688ea5704192e64111928353a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1151,7 +1261,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 3844d939133d2174dbdc4c1059d0b5b1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

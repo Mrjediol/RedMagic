@@ -1,0 +1,22 @@
+{
+  "enemyName": "BlueBullet",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "Move",
+      "fps": 14,
+      "loop": true,
+      "frameCount": 11,
+      "projectile": null
+    },
+    {
+      "name": "Impact",
+      "fps": 16,
+      "loop": false,
+      "frameCount": 11,
+      "projectile": null
+    }
+  ],
+  "projectiles": [],
+  "libraryId": "a316a812-d0ff-422e-945f-944e23a00598"
+}

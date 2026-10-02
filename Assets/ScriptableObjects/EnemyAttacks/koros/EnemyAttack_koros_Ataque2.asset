@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2525450634218674ab5451d6a8b81c8f, type: 3}
+  m_Name: EnemyAttack_koros_Ataque2
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BulletHellAttack
+  displayName: Ataque2
+  description: 
+  accent: {r: 0.55, g: 0.9, b: 0.4, a: 1}
+  telegraph: 0.8
+  recovery: 1.1
+  weight: 1
+  cooldownInAttacks: 1
+  cooldownSeconds: 0
+  minPhase: 1
+  damage: 18
+  knockbackMultiplier: 1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: 
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  shakeAmplitude: 0
+  shakeDuration: 0.25
+  pattern: 0
+  projectile:
+    prefab: {fileID: 0}
+    speed: 12
+    lifetime: 2.5
+    size: {x: 0.35, y: 0.35}
+    muzzleOffset: {x: 0.65, y: 0.1}
+    pierce: 0
+    homingTurnRate: 0
+    homingRange: 9
+    arcGravity: 0
+    impactRadius: 0
+    impactDamage: 0
+    faceDirection: 0
+    facingAxis: 0
+    aimMode: 0
+  volleys: 3
+  timeBetweenVolleys: 0.35
+  bulletsPerVolley: 12
+  arcDegrees: 360
+  startAngle: 0
+  spinPerVolley: 11
+  alternateSpin: 0
+  randomSpread: 0
+  aimAtPlayer: 1
+  originOffset: {x: 0, y: 2.2}
+  spawnRadius: 1.2
+  rainSpan: 1
+  rainCenterOffset: 0
+  rainRandomX: 0
+  rainDropStagger: 0
+  rainMarkerSeconds: 0.5
+  rainJitter: 0.8
+  rainMarkerSize: {x: 1, y: 0.35}
+  stormSeconds: 5
+  stormPerSecond: 7
+  stormAngleRange: 18
+  stormWind: 0
+  stormMarkLanding: 1
+  projectileSprite: {fileID: 0}

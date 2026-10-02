@@ -1,0 +1,43 @@
+{
+  "enemyName": "Newworl",
+  "kind": "enemy",
+  "animations": [
+    {
+      "name": "Idle",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Walk",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Attack",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Hurt",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    },
+    {
+      "name": "Death",
+      "fps": 8,
+      "loop": true,
+      "frameCount": 5,
+      "projectile": null
+    }
+  ],
+  "projectiles": [],
+  "libraryId": "040d51b1-7225-46bf-9a96-6e53e37c372a"
+}

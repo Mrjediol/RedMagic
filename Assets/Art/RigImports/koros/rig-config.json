@@ -78,7 +78,7 @@
       "name": "Lower",
       "parent": "Torso",
       "sprite": "Parts/Lower.png",
-      "sortingOrder": 0,
+      "sortingOrder": 1,
       "position": {
         "x": -0.07907,
         "y": -0.87611
@@ -115,7 +115,7 @@
       "name": "Accessory",
       "parent": "Torso",
       "sprite": "Parts/Accessory.png",
-      "sortingOrder": 1,
+      "sortingOrder": 2,
       "position": {
         "x": -0.12432,
         "y": -1.06453
@@ -152,7 +152,7 @@
       "name": "CastArm",
       "parent": "Torso",
       "sprite": "Parts/CastArm.png",
-      "sortingOrder": 2,
+      "sortingOrder": 3,
       "position": {
         "x": 1.11264,
         "y": 0.71439
@@ -189,7 +189,7 @@
       "name": "Torso",
       "parent": "",
       "sprite": "Parts/Torso.png",
-      "sortingOrder": 3,
+      "sortingOrder": 4,
       "position": {
         "x": -0.91281,
         "y": -0.36714
@@ -226,7 +226,7 @@
       "name": "Head",
       "parent": "Torso",
       "sprite": "Parts/Head.png",
-      "sortingOrder": 4,
+      "sortingOrder": 5,
       "position": {
         "x": 0.22298,
         "y": 0.68746
@@ -263,7 +263,7 @@
       "name": "OffArm",
       "parent": "Torso",
       "sprite": "Parts/OffArm.png",
-      "sortingOrder": 5,
+      "sortingOrder": 6,
       "position": {
         "x": -1.05262,
         "y": 0.68771
@@ -540,6 +540,39 @@
       ],
       "strikeTime": 0.14,
       "recover": 0.4,
+      "shake": 0
+    },
+    {
+      "name": "Saltito",
+      "windup": [
+        {
+          "part": "Torso",
+          "move": {
+            "x": 0.988,
+            "y": 3.257
+          },
+          "rotate": -2.8,
+          "scale": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "part": "Torso/CastArm",
+          "move": {
+            "x": 0.003,
+            "y": -0.071
+          },
+          "rotate": -37.1,
+          "scale": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "strike": [],
+      "strikeTime": 0.08,
+      "recover": 0.45,
       "shake": 0
     }
   ]

@@ -15,6 +15,8 @@
 //       --upscale           ×4 with the upscale model, then down to 16 MP, before cutting
 //       --no-cut            skip the background removal
 //       --name prefix       file prefix under output/claude/ (default: "sheet")
+//   node claude-workflow.mjs finish --ref image --name prefix [--megapixels 4]
+//                           an approved image → upscaled (<prefix>_up) and with its background cut (<prefix>_cut)
 //   env COMFY_URL (default http://127.0.0.1:8188). Comfy Desktop must be open.
 //
 // The chain:  models → [references] → prompt → sample → decode → save raw → [upscale] → cut background → save cut
@@ -92,7 +94,7 @@ export function claudeGraph(o = {}) {
       { id: 60, type: 'RMBG', pos: [2100, 760], size: [340, 360], bypass: !!o.noCut,
         values: { model: 'RMBG-2.0', sensitivity: 1, process_res: 2048, mask_blur: 0, mask_offset: -2, invert_output: false, refine_foreground: false, background: 'Alpha' },
         links: { image: [52, 0] } },
-      { id: 61, type: 'SaveImage', pos: [2480, 760], size: [520, 560], title: 'Guardar · recortado (PNG con alfa)', values: { filename_prefix: `${prefix}_cut` }, links: { images: [60, 0] } },
+      { id: 61, type: 'SaveImage', pos: [2480, 760], size: [520, 560], bypass: !!o.noCut, title: 'Guardar · recortado (PNG con alfa)', values: { filename_prefix: `${prefix}_cut` }, links: { images: [60, 0] } },
     ],
     groups: [
       { title: '1 · Modelos (Qwen Image 2.1)', bounding: [20, -20, 460, 640], color: '#3f789e' },
@@ -101,6 +103,27 @@ export function claudeGraph(o = {}) {
       { title: '4 · Generar', bounding: [1700, -20, 940, 660], color: '#b58b2a' },
       { title: '5 · Ampliar ×4 — opcional (Ctrl+B)', bounding: [1700, 680, 340, 450], color: '#88a' },
       { title: '6 · Recortar fondo', bounding: [2080, 680, 940, 660], color: '#b06634' },
+    ],
+  };
+}
+
+/**
+ * Finishing an approved image: upscale it, then cut its background. No generation.
+ * Saves `<name>_up` (upscaled, still on its background) and `<name>_cut` (with alpha), both `megapixels` big.
+ */
+export function finishGraph({ image, name, megapixels = 4 }) {
+  return {
+    nodes: [
+      { id: 1, type: "LoadImage", pos: [0, 0], size: [310, 330], values: { image } },
+      { id: 2, type: "SplitImageWithAlpha", pos: [0, 0], size: [300, 60], links: { image: [1, 0] } },
+      { id: 3, type: "UpscaleModelLoader", pos: [0, 0], size: [300, 60], values: { model_name: "RealESRGAN_x4plus_anime_6B.pth" } },
+      { id: 4, type: "ImageUpscaleWithModel", pos: [0, 0], size: [300, 60], links: { upscale_model: [3, 0], image: [2, 0] } },
+      { id: 5, type: "ImageScaleToTotalPixels", pos: [0, 0], size: [300, 110], values: { upscale_method: "lanczos", megapixels, resolution_steps: 1 }, links: { image: [4, 0] } },
+      { id: 6, type: "SaveImage", pos: [0, 0], size: [300, 300], values: { filename_prefix: `claude/${name}_up` }, links: { images: [5, 0] } },
+      { id: 7, type: "RMBG", pos: [0, 0], size: [340, 360],
+        values: { model: "RMBG-2.0", sensitivity: 1, process_res: 2048, mask_blur: 0, mask_offset: -2, invert_output: false, refine_foreground: false, background: "Alpha" },
+        links: { image: [5, 0] } },
+      { id: 8, type: "SaveImage", pos: [0, 0], size: [300, 300], values: { filename_prefix: `claude/${name}_cut` }, links: { images: [7, 0] } },
     ],
   };
 }
@@ -157,6 +180,7 @@ function options(argv) {
     else if (flag === '--upscale') o.upscale = true;
     else if (flag === '--no-cut') o.noCut = true;
     else if (flag === '--name') o.name = value();
+    else if (flag === '--megapixels') o.megapixels = Number(value());
     else throw new Error(`unknown option ${flag}`);
   }
   return o;
@@ -173,10 +197,10 @@ async function main() {
     return;
   }
 
-  if (command === 'run') {
+  if (command === 'run' || command === 'finish') {
     const o = options(rest);
     if (o.seed === undefined) o.seed = Math.floor(Math.random() * 2 ** 48);
-    const prompt = toApi(claudeGraph(o), defs);
+    const prompt = toApi(command === 'finish' ? finishGraph({ image: o.refs[0], name: o.name, megapixels: o.megapixels }) : claudeGraph(o), defs);
     const started = Date.now();
     const { prompt_id: id } = await (await api('/prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, client_id: 'claude-workflow' }) })).json();
     console.log(`queued ${id} (seed ${o.seed})`);

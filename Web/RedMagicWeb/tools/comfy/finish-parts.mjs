@@ -71,6 +71,46 @@ function keepMainIsland(alpha, w, h) {
   return { islands: sizes.length - 1, dropped };
 }
 
+/**
+ * The cutter sometimes leaves a sliver of the white backdrop outside the black outline. The backdrop
+ * is known (white) and every piece is closed by a dark outline, so: from the transparent area, eat
+ * inwards through every pixel that is still backdrop-light, and stop at the first dark one. White
+ * INSIDE a piece (an eye, a lit crystal) is never reached — the outline is in the way.
+ * The pixels left on the rim get their alpha from how dark they are (outline blended with backdrop).
+ * Returns how many pixels were eaten.
+ */
+function eatWhiteFringe(alpha, rgb, w, h) {
+  const light = (p) => Math.min(rgb[p * 4], rgb[p * 4 + 1], rgb[p * 4 + 2]);
+  const queue = [];
+  const around = (p) => { const x = p % w; return [p - w, p + w, x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1]; };
+  for (let p = 0; p < w * h; p++) if (!alpha[p]) queue.push(p);
+  let eaten = 0;
+  while (queue.length) {
+    const p = queue.pop();
+    for (const r of around(p)) {
+      if (r < 0 || r >= w * h || !alpha[r] || light(r) < 200) continue;
+      alpha[r] = 0;
+      eaten++;
+      queue.push(r);
+    }
+  }
+  for (let p = 0; p < w * h; p++) {
+    if (!alpha[p] || !around(p).some((r) => r >= 0 && r < w * h && !alpha[r])) continue;
+    alpha[p] = Math.min(alpha[p], Math.round(255 * Math.max(0.15, Math.min(1, (215 - light(p)) / 150))));
+  }
+  return eaten;
+}
+
+// An image viewer that has the old file open locks it for a moment: wait and try again.
+async function save(file, canvas) {
+  for (let attempt = 0; ; attempt++) {
+    try { fs.writeFileSync(file, canvas.toBuffer('image/png')); return; } catch (err) {
+      if (attempt >= 20) throw new Error(`${path.basename(file)} is open in another program: close it and run again`);
+      await new Promise((r) => setTimeout(r, 500));
+    }
+  }
+}
+
 const out = path.join(folder, 'final');
 fs.mkdirSync(out, { recursive: true });
 const finals = {};
@@ -83,6 +123,7 @@ for (const part of parts) {
   canvasSize ||= `${w}x${h}`;
   const alpha = new Uint8ClampedArray(w * h);
   for (let p = 0; p < w * h; p++) { const a = cut.d[p * 4 + 3]; alpha[p] = a >= 250 ? 255 : a <= 8 ? 0 : a; }
+  const fringe = eatWhiteFringe(alpha, (await read(takes[part].up)).d, w, h);
   const { islands, dropped } = keepMainIsland(alpha, w, h);
   let x0 = w, y0 = h, x1 = -1, y1 = -1;
   for (let p = 0; p < w * h; p++) if (alpha[p]) { const x = p % w, y = (p / w) | 0; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
@@ -105,11 +146,11 @@ for (const part of parts) {
       image.data[i + 3] = a;
     }
     ctx.putImageData(image, 0, 0);
-    fs.writeFileSync(path.join(out, `${name}.png`), canvas.toBuffer('image/png'));
+    await save(path.join(out, `${name}.png`), canvas);
     finals[name] = canvas;
 
     if (name === part) {
-      Object.assign(line, { box: `${x1 - x0 + 1}x${y1 - y0 + 1} at ${x0},${y0}`, islands, crumbsDeleted: dropped, ...(touches ? { problem: 'touches the canvas edge' } : {}) });
+      Object.assign(line, { box: `${x1 - x0 + 1}x${y1 - y0 + 1} at ${x0},${y0}`, islands, crumbsDeleted: dropped, whiteFringeEaten: fringe, ...(touches ? { problem: 'touches the canvas edge' } : {}) });
     } else {
       // A state against its part. The model redraws the whole piece and lets lines drift a pixel or
       // two everywhere; only where the change is DENSE is it the state (the eyes, the crystal). Those
@@ -150,7 +191,7 @@ for (const part of parts) {
         }
       }
       ctx.putImageData(image, 0, 0);
-      fs.writeFileSync(path.join(out, `${name}.png`), canvas.toBuffer('image/png'));
+      await save(path.join(out, `${name}.png`), canvas);
       Object.assign(line, { sameSilhouetteAs: part, drawnDifferent: `${(100 * raw / inside).toFixed(1)}%`, keptAsTheState: `${(100 * changed / inside).toFixed(1)}%`,
         where: changed ? `${cx1 - cx0 + 1}x${cy1 - cy0 + 1} at ${cx0},${cy0}` : 'nothing', ...(changed ? {} : { problem: 'no change survived: the state is the same as its part' }) });
     }

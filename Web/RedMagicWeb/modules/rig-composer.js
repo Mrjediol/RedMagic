@@ -51,6 +51,8 @@ import { RIG_TEMPLATES, templateById, instantiateTemplate, openSlots, matchSlot,
 import * as G from './rig-gestures.js';
 import * as FX from './rig-fx.js';
 import { artLibraryId } from './unity-art.js';
+import { isLibraryClip, libraryClipId, libraryClip, pickAndSaveSounds, soundArrayBuffer, soundFileName } from './sound-library.js';
+import { decodeAudio, playBuffer } from './vfx-stage.js';
 import { createGestureTimeline } from './gesture-timeline.js';
 
 const TOOLS = [
@@ -111,6 +113,39 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   timelineHost.addEventListener('mousedown', () => { timelineFocus = true; }, true);
   sidebar.addEventListener('mousedown', () => { timelineFocus = false; }, true);
   let fxEntries = new Map();     // library effects (kind fx / projectile, with frames) by id
+  let soundEntries = new Map();  // library sounds (kind sound) by id
+  const soundBuffers = new Map();   // library sound id -> Promise<AudioBuffer | null>
+  /** What the exporters need of the library: the effects' frames and the sounds' files. */
+  const exportCtx = () => ({ entriesById: fxEntries, soundsById: soundEntries });
+
+  /** What a gesture's sound can be: the library's sounds, then the Unity project's clips (the bridge). */
+  function soundClips() {
+    const unityClips = hooks.soundClips ? hooks.soundClips() || [] : [];
+    return [
+      ...[...soundEntries.values()].map((e) => ({ value: libraryClip(e.id), label: `${e.enemyName}  ·  biblioteca`, group: 'Biblioteca' })),
+      ...unityClips.map((p) => ({ value: p, label: `${p.split('/').pop().replace(/\.(wav|ogg|mp3)$/i, '')}  ·  ${p.split('/').slice(-2, -1)[0] || ''}`, group: 'Unity' })),
+    ];
+  }
+
+  /** Plays a clip: a library sound from its own file, a project clip through whoever has Unity on the line. */
+  function playClip(value, o = {}) {
+    if (!value) return;
+    if (!isLibraryClip(value)) { if (hooks.playClip) hooks.playClip(value, o); return; }
+    const id = libraryClipId(value);
+    const record = soundEntries.get(id);
+    if (!record) return;
+    if (!soundBuffers.has(id)) soundBuffers.set(id, soundArrayBuffer(record).then(decodeAudio).catch(() => null));
+    soundBuffers.get(id).then((buffer) => { if (buffer) playBuffer(buffer, o); });
+  }
+
+  /** "Subir archivo…": audio files into the library, returned as clip values. */
+  async function uploadSound() {
+    const saved = await pickAndSaveSounds();
+    if (!saved.length) return [];
+    await refreshLibraries();
+    setStatus(`${saved.length} sonido(s) guardado(s) en la biblioteca: ${saved.map((r) => soundFileName(r)).join(', ')}.`);
+    return saved.map((r) => libraryClip(r.id));
+  }
 
   const POSE_TOOLS = ['move', 'rotate', 'scale'];
 
@@ -175,8 +210,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     fxEntries: () => fxEntries,
     // An attack launches the open gesture: only then does "no release" mean "it leaves at the end".
     attackUses: () => !!stageAttack(),
-    soundClips: () => (hooks.soundClips ? hooks.soundClips() : null),
-    playClip: (path, o) => { if (hooks.playClip) hooks.playClip(path, o); },
+    soundClips,
+    playClip,
+    uploadSound,
     changed: () => changed(),
     refresh: () => { renderInspector(); requestRender(); if (hooks.onChange) hooks.onChange(); },
     redraw: () => { requestRender(); refreshExport(); },
@@ -388,9 +424,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   /** The sound of the gesture that is playing, when the playhead reaches it (one of its clips, at random). */
   function playGestureSound(gesture) {
     const s = stage.sound, a = gesture.sound;
-    if (!s || s.fired || head.t < s.at || !a || !hooks.playClip) return;
+    if (!s || s.fired || head.t < s.at || !a) return;
     s.fired = true;
-    hooks.playClip(a.clips[Math.floor(Math.random() * a.clips.length)],
+    playClip(a.clips[Math.floor(Math.random() * a.clips.length)],
       { gain: a.volume ?? 1, rate: (a.pitchMin ?? 1) + Math.random() * ((a.pitchMax ?? 1) - (a.pitchMin ?? 1)) });
   }
 
@@ -1617,7 +1653,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   async function importGestureFile(file) {
     let doc;
     try { doc = JSON.parse(await file.text()); } catch (e) { setStatus(`"${file.name}" no es un JSON válido.`); return; }
-    const res = readRigGestures(doc, state, { entriesById: fxEntries });
+    const res = readRigGestures(doc, state, exportCtx());
     if (!res.gestures.length) { setStatus(`"${file.name}" no trae gestos (¿es un rig-config.json?).`); return; }
     const list = state.gestures || (state.gestures = []);
     let added = 0, replaced = 0;
@@ -2011,7 +2047,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     zip.onclick = exportZip;
     const json = el('button', 'small', '⬇ Sólo rig-config.json');
     json.onclick = () => {
-      const { doc } = buildRigExport(state, { entriesById: fxEntries });
+      const { doc } = buildRigExport(state, exportCtx());
       downloadBlob(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }), `${fileStem()}.rig-config.json`);
     };
     const reset = el('button', 'small danger', 'Nuevo (vaciar)');
@@ -2046,7 +2082,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   /** The partial bundle (gestures + attacks) of the document on screen, or null if the user backed out. */
   async function buildGesturesZip() {
-    const { problems } = buildGesturesExport(state, { entriesById: fxEntries });
+    const { problems } = buildGesturesExport(state, exportCtx());
     if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Continuar igualmente?`)) return null;
     if (hooks.beforeExport) await hooks.beforeExport();   // the attacks edited beside the gestures, saved first
     const all = await listEntries(null);
@@ -2138,7 +2174,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       recordHistory();
       if (hooks.onChange) hooks.onChange();
       if (!exportSummaryEl) return;
-      const { doc, problems, notes } = (focusMode ? buildGesturesExport : buildRigExport)(state, { entriesById: fxEntries });
+      const { doc, problems, notes } = (focusMode ? buildGesturesExport : buildRigExport)(state, exportCtx());
       const schemaErrors = validate && !focusMode ? validateConfig(validate, doc).errors : [];   // a partial document is not a whole rig-config
       let html = '';
       if (!problems.length && !schemaErrors.length) html += `<p class="efSummaryOk">✓ Listo para exportar${focusMode ? ' (sólo gestos y ataques)' : ' (rig-config.schema.json)'}</p>`;
@@ -2165,7 +2201,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   async function saveToLibrary() {
     if (!state.name.trim()) { setStatus('Ponle nombre antes de guardar.'); return null; }
-    const { doc } = buildRigExport(state, { entriesById: fxEntries });
+    const { doc } = buildRigExport(state, exportCtx());
     const patch = { enemyName: state.name.trim(), thumbnail: await thumbnail(), config: doc, draft: clone(state) };
     try {
       const record = currentId && (await getEnemy(currentId))
@@ -2183,7 +2219,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   async function exportZip() {
     if (state.unityBody) { setStatus('Este cuerpo se leyó de Unity: sólo se guardan sus gestos y ataques (🎬 Gestos y ataques ▸ Guardar en Unity).'); return; }
-    const { problems } = buildRigExport(state, { entriesById: fxEntries });
+    const { problems } = buildRigExport(state, exportCtx());
     if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Exportar igualmente?`)) return;
     if (hooks.beforeExport) await hooks.beforeExport();   // the behaviour form open in Enemy Studio, saved first
     const all = await listEntries(null);
@@ -2204,6 +2240,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     userTemplates = (await listEntries('rig-template')).map(templateFromRecord).filter(Boolean);
     const effects = [...(await listEntries('fx')), ...(await listEntries('projectile'))].filter((e) => FX.fxFrames(e, false));
     fxEntries = new Map(effects.map((e) => [e.id, e]));
+    soundEntries = new Map((await listEntries('sound')).filter((e) => e.draft?.dataURL).map((e) => [e.id, e]));
     renderSidebar();
     renderInspector();
     if (hooks.onChange) hooks.onChange();

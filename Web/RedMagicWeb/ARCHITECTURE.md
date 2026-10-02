@@ -373,6 +373,15 @@ release written shows no release** unless an attack uses it (`host.attackUses`):
 gestures release nothing. **Transition gestures** (`state.transition`, `createDefaultTransition`): the "🔁"
 checkbox on a gesture card and the "🔁 Entre ataques" fold; export `transitionGestures`.
 
+**Lane heads**: a narrow column at the left of the track names each lane (⏱ Tiempo, ▭ Pasos, ◆ Ataque, 🔊 Sonido,
+✨ VFX n) — `renderDock` ▸ `head()`, CSS `.gtHeads` / `.gtHead` (each head reuses its lane's class, so the heights
+match). The 🔊 lane is always there: empty, it is the "add a sound" button. **Library sounds** (kind `sound`,
+`modules/sound-library.js`): an audio file uploaded from 📚 Biblioteca ▸ "⬆ Subir sonidos…" or from the sound
+panel's "⬆ Subir archivo…". A gesture's clip is an asset path of the Unity project or `lib:<record id>`; the
+picker lists both (`rig-composer.js` ▸ `soundClips`, `playClip`, `uploadSound`). On export a library clip is
+written into the bundle as `Audio/<file>` (`rig-export.js` ▸ `clipOut`) and Unity copies it into
+`Assets/Audio/Sfx/Enemies/<name>/` (`RigBundleImporter.CopyBundleAudio`) — through the bridge or a .zip alike.
+
 Rules: a step's pose is measured from **rest**, not from the previous step. An effect whose `fx` is null carries a
 Unity prefab path in `prefab` (read back from Unity): exported as it came, no preview. Templates carry gestures by
 slot id (`rig-templates.js` ▸ `gestureIn` / `fxMapped`); the built-in ones are still written as two poses and are

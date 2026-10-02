@@ -175,6 +175,7 @@ namespace RedMagic.Rigging.EditorTools
 
             // --- 2b) arte de los efectos de gesto ('artAssets' del propio rig-config): prefabs del pool.
             BuildGestureArt(config, source, name, boss, report);
+            CopyBundleAudio(config, source, name, report);
 
             // --- 3) configs que acompañan al cuerpo.
             EnemyTuning tuning = null;
@@ -328,6 +329,7 @@ namespace RedMagic.Rigging.EditorTools
             var nodes = new List<Node>();
             var sprites = ResolveSprites(config, nodes, source, name, report);
             BuildGestureArt(config, source, name, boss, report);
+            CopyBundleAudio(config, source, name, report);
 
             EnemyDeckImporter.Deck deck = null;
             string enemyConfigPath = RigConfigJson.SiblingPath(configPath, RigConfigJson.EnemyConfigFile);
@@ -351,6 +353,47 @@ namespace RedMagic.Rigging.EditorTools
             report.Add(false, prefabPath);
             report.Warnings.Add("Sólo gestos y ataques: el cuerpo, el resto del rig y lo afinado en el Inspector no se han tocado.");
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Donde quedan los sonidos que un bundle trae consigo (los subidos en la web), por enemigo.</summary>
+        public const string AudioRoot = "Assets/Audio/Sfx/Enemies";
+
+        /// <summary>
+        /// Los clips de <c>gestures[].sound.clips</c> que son archivos del bundle (<c>Audio/&lt;archivo&gt;</c>,
+        /// un sonido subido en la web): se copian a <see cref="AudioRoot"/>/&lt;nombre&gt;/ y en el JSON se
+        /// cambian por su ruta del proyecto, que es lo que lee <see cref="ReadGestureSound"/>. Antes de
+        /// tocar el prefab: importar un asset con sus contenidos abiertos no es buena idea.
+        /// </summary>
+        private static void CopyBundleAudio(JObject config, string source, string name, ConfigImportReport report)
+        {
+            if (!(config["gestures"] is JArray gestures)) return;
+            bool copied = false;
+            foreach (var g in gestures)
+            {
+                if (!(g["sound"] is JObject sound) || !(sound["clips"] is JArray clips)) continue;
+                for (int i = 0; i < clips.Count; i++)
+                {
+                    string reference = clips[i].Type == JTokenType.String ? clips[i].Value<string>().Replace('\\', '/') : null;
+                    if (string.IsNullOrEmpty(reference) || RigConfigJson.IsProjectRef(reference)) continue;
+                    if (reference.Contains("..") || Path.IsPathRooted(reference))
+                        throw new ConfigImportException($"sonido '{reference}': ruta no válida (relativa al bundle, sin '..').");
+
+                    string file = Path.Combine(source, reference);
+                    if (!File.Exists(file)) throw new ConfigImportException($"sonido '{reference}': el bundle no trae ese archivo.");
+
+                    string assetPath = $"{AudioRoot}/{name}/{Path.GetFileName(reference)}";
+                    string target = Path.GetFullPath(assetPath);
+                    Directory.CreateDirectory(Path.GetDirectoryName(target));
+                    bool isNew = !File.Exists(target);
+                    File.Copy(file, target, true);
+                    clips[i] = assetPath;
+                    copied = true;
+                    report.Add(isNew, assetPath);
+                    if (isNew) report.Warnings.Add($"Sonido nuevo en el juego: '{assetPath}'. Puntúalo en Biblioteca Jere ▸ Sounds.");
+                }
+            }
+
+            if (copied) AssetDatabase.Refresh();
         }
 
         /// <summary>

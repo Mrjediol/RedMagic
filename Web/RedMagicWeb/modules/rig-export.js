@@ -36,6 +36,7 @@ import { embedReferencedLibraryEntries, embedAttackArt } from './enemy-bundle.js
 import { writeLanes } from './boss-bundle.js';
 import { fxArtId, fxArtAsset, createFx } from './rig-fx.js';
 import { normalizeGesture, createRelease, EASES } from './rig-gestures.js';
+import { isLibraryClip, libraryClipId, soundFileName } from './sound-library.js';
 
 const r5 = (v) => Math.round(v * 1e5) / 1e5;
 const v2 = (v) => ({ x: r5(v.x), y: r5(v.y) });
@@ -240,6 +241,16 @@ export function buildRigExport(state, ctx = {}) {
       out.offset = v2(offset);
       return out;
     };
+    // A clip of the library (`lib:<id>`) travels in the bundle as Audio/<file>; one of the project, by its path.
+    const sounds = ctx.soundsById || ctx.entriesById;
+    const clipOut = (g, clip) => {
+      if (!isLibraryClip(clip)) return clip;
+      const record = sounds?.get(libraryClipId(clip));
+      if (!record?.draft?.dataURL) { problems.push(`Gesto "${g.name}": un sonido ya no está en la biblioteca; elige otro o quítalo.`); return null; }
+      const path = `Audio/${soundFileName(record)}`;
+      if (!files.some((f) => f.path === path)) files.push({ path, dataURL: record.draft.dataURL });
+      return path;
+    };
     doc.gestures = gestures.map((g) => ({
       name: g.name,
       steps: g.steps.map((s) => ({ name: s.name || '', duration: r5(Math.max(0.01, s.duration || 0.3)), ease: EASES.includes(s.ease) ? s.ease : 'inout',
@@ -249,7 +260,7 @@ export function buildRigExport(state, ctx = {}) {
       fx: (g.fx || []).map((f) => fxOut(g, f)).filter(Boolean),
       // Its own sound: only when the document knows it (read from Unity, or set here). null = it has none.
       ...(g.sound === undefined ? {} : { sound: g.sound && g.sound.clips.length ? {
-        clips: [...g.sound.clips], volume: r5(g.sound.volume ?? 1), pitchMin: r5(g.sound.pitchMin ?? 1), pitchMax: r5(Math.max(g.sound.pitchMin ?? 1, g.sound.pitchMax ?? 1)),
+        clips: g.sound.clips.map((c) => clipOut(g, c)).filter(Boolean), volume: r5(g.sound.volume ?? 1), pitchMin: r5(g.sound.pitchMin ?? 1), pitchMax: r5(Math.max(g.sound.pitchMin ?? 1, g.sound.pitchMax ?? 1)),
         step: Math.min(g.steps.length - 1, Math.max(0, Math.round(g.sound.step || 0))), at: r5(Math.min(1, Math.max(0, g.sound.at || 0))),
       } : null }),
     }));
@@ -666,7 +677,7 @@ export function buildGesturesExport(state, ctx = {}) {
   // Only what concerns this bundle: the body's own problems (an empty slot, no collider…) are not its business.
   const problems = full.problems.filter((p) => /^Gesto |^Ponle nombre/i.test(p));
   if (!Array.isArray(doc.gestures)) full.notes.push('Este documento no exporta gestos: Unity conserva los que tenga el prefab.');
-  return { doc, files: full.files.filter((f) => used.has(f.path)), problems, notes: full.notes.filter((n) => /gest|sprite/i.test(n)) };
+  return { doc, files: full.files.filter((f) => used.has(f.path) || f.path.startsWith('Audio/')), problems, notes: full.notes.filter((n) => /gest|sprite/i.test(n)) };
 }
 
 /** The deck part of an EnemyConfig: its attacks, the cards of the draw, the defences. Null = it has none. */

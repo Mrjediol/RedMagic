@@ -31,6 +31,8 @@ function defaultBadges(entry) {
     const t = entry.draft;
     badges.push(`${(t.slots || []).filter((s) => !s.node).length} huecos`, `${(t.gestures || []).length} gestos`, t.kind === 'boss' ? 'jefe' : 'enemigo');
     if (t.behaviour) badges.push({ text: 'comportamiento', accent: true });
+  } else if (entry.kind === 'sound') {
+    badges.push(entry.draft?.fileName || 'audio');
   } else if (entry.kind === 'rig' && entry.config) {
     badges.push(`${(entry.config.parts || []).filter((p) => p.sprite).length} piezas`, entry.config.kind === 'boss' ? 'jefe' : 'enemigo');
     if (entry.enemyConfig) badges.push({ text: entry.enemyConfig.tuning?.archetype || 'comportamiento', accent: true });

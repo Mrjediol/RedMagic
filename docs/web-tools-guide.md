@@ -363,8 +363,11 @@ Con la web servida (`npx serve Web/RedMagicWeb`) y Unity abierto:
 - El **sonido de un gesto** se edita en su pista 🔊 de la línea de tiempo (clip, variantes, volumen, tono y el
   instante en que suena, arrastrándolo). Un clip que no sonaba antes en el juego se sigue puntuando en Unity
   (Biblioteca Jere ▸ Sounds).
-- **Línea de tiempo**: − / + o Ctrl+rueda = zoom · ← / → = un frame (Mayús: diez) · Ctrl+← / → mueve lo
-  elegido · Ctrl+D duplica · Ctrl+B divide el paso bajo el cursor · Supr quita. Los campos de lo elegido salen
+- **Sonidos propios**: en el panel del sonido, "⬆ Subir archivo…" (wav / ogg / mp3) lo guarda en la biblioteca
+  (📚 ▸ Sonidos, donde también hay "⬆ Subir sonidos…") y lo usa; al guardar en Unity o exportar el .zip el
+  archivo se copia a `Assets/Audio/Sfx/Enemies/<nombre>/`.
+- **Línea de tiempo**: − / + o Ctrl+rueda = zoom · ← / → = un frame (Mayús: diez) · Ctrl+← / → alarga o acorta el paso elegido (o mueve la
+  salida, el efecto o el sonido elegido) · Ctrl+D duplica · Ctrl+B divide el paso bajo el cursor · Supr quita. Los campos de lo elegido salen
   en el panel de la izquierda.
 - **Gestos de transición** (entre ataque y ataque): casilla "🔁 Gesto de transición" en la tarjeta del gesto.
   Sólo salen si el gesto entero cabe en el enfriamiento del enemigo (`attackCooldown`).

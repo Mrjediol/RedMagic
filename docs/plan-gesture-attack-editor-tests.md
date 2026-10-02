@@ -61,4 +61,10 @@ Con la web servida en `http://localhost:3000` y Unity abierto.
     la probabilidad está en "🔁 Entre ataques".)
 24. Guarda en Unity y juega: ¿el sonido suena en el instante nuevo?
 
+25. La línea de tiempo tiene a su izquierda el nombre de cada pista (Tiempo, Pasos, Ataque, Sonido, VFX). En un
+    gesto SIN sonido, haz clic en la pista **🔊 Sonido** (o en su nombre): a la izquierda, **⬆ Subir archivo…** ▸
+    elige un wav / mp3 de tu ordenador ▸ ▶ Probar: ¿suena? ▸ Guardar en Unity ▸ ¿suena en el juego?
+26. 📚 Biblioteca ▸ **⬆ Subir sonidos…**: sube uno; debe aparecer en el filtro "🔊 Sonidos" con **▶ Oír**, y luego
+    en el desplegable de clips de cualquier gesto (grupo "Biblioteca").
+
 Dime sólo lo que falle o resulte incómodo.

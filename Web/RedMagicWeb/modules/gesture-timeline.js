@@ -33,8 +33,9 @@
 //   status(text)
 //   attackUses()              (optional) an attack launches this gesture: only then is "no release written" shown
 //                             as the attack leaving at the end (an idle / defence / transition gesture releases nothing)
-//   soundClips()              (optional) the project's audio clips (asset paths) a gesture's sound can use, or null
-//   playClip(path, {gain, rate})   (optional) plays one of them
+//   soundClips()              (optional) what a gesture's sound can be: [{ value, label, group: 'Biblioteca' | 'Unity' }]
+//   playClip(value, {gain, rate})  (optional) plays one of them
+//   uploadSound()             (optional) asks for audio files, saves them in the library → their clip values
 //
 // Like a video editor: Ctrl+wheel (or − / +) zooms the track, ← / → move the playhead one frame (Shift: ten),
 // Ctrl+← / → move what is selected, Ctrl+D duplicates it, Ctrl+B cuts the step under the playhead in two.
@@ -163,12 +164,10 @@ export function createGestureTimeline(host) {
       const inst = G.instantAt(tl, Math.min(host.time(), tl.recoverStart));
       const step = Math.min(inst.step, tl.count - 1);
       g.sound = G.createSound(step, host.time() <= 0 ? 0 : inst.step > step ? 1 : r2(inst.at));
-      const clips = host.soundClips ? host.soundClips() : null;
-      if (clips?.length) g.sound.clips = [clips[0]];
       edited();
     }
     select('sound', 0);
-    host.status('Sonido del gesto: elige el clip a la izquierda y arrástralo por la línea de tiempo al instante en que suena.');
+    host.status('Sonido del gesto: a la izquierda, sube un archivo o elige un clip; arrástralo por la línea de tiempo al instante en que suena.');
   }
 
   function removeSelected() {
@@ -271,6 +270,14 @@ export function createGestureTimeline(host) {
     }, { passive: false });
     const track = el('div', 'gtTrack');
     track.style.width = `${zoom * 100}%`;
+    // What each lane is, in a narrow column at its left (it does not scroll with the track).
+    const heads = el('div', 'gtHeads');
+    const head = (cls, text, title, onClick = null) => {
+      const h = el('div', `gtHead ${cls}`, text);
+      h.title = title;
+      if (onClick) { h.classList.add('clickable'); h.onclick = onClick; }
+      heads.appendChild(h);
+    };
     const timeAt = (clientX) => timeAtX(clientX, tl.total);
 
     // ruler: a tick every 0.1 / 0.25 / 0.5 / 1 s, whichever leaves room to read them
@@ -284,6 +291,7 @@ export function createGestureTimeline(host) {
     ruler.title = 'Arrastra para parar el gesto en cualquier instante.';
     ruler.addEventListener('mousedown', (e) => { e.preventDefault(); drag = { kind: 'scrub' }; host.scrub(timeAt(e.clientX)); });
     track.appendChild(ruler);
+    head('gtRuler', '⏱ Tiempo', 'Segundos del gesto. Arrastra sobre la regla para mover el cursor.');
 
     // steps
     const first = tl.releases.reduce((a, b) => (!a || b.time < a.time ? b : a), null);
@@ -342,6 +350,7 @@ export function createGestureTimeline(host) {
     back.appendChild(backEdge);
     steps.appendChild(back);
     track.appendChild(steps);
+    head('gtLane gtSteps', '▭ Pasos', 'Las poses del cuerpo, una tras otra, y la vuelta al reposo.');
 
     // releases
     const releases = el('div', 'gtLane gtReleases');
@@ -369,15 +378,23 @@ export function createGestureTimeline(host) {
       releases.appendChild(mark);
     });
     track.appendChild(releases);
+    head('gtLane gtReleases', '◆ Ataque', 'Salidas de ataque: los instantes en que el gesto suelta el ataque que lo usa. "◆ Suelta" añade una.', addRelease);
 
-    // the gesture's sound: a marker at the instant it plays
-    if (g.sound) {
+    // the gesture's sound: a marker at the instant it plays (the lane is always there: click it to add one)
+    head('gtLane gtFxLane', '🔊 Sonido', g.sound ? 'El sonido propio del gesto: clic para editarlo.' : 'Este gesto no tiene sonido: clic para añadirlo (subiendo un archivo o eligiendo uno).', addSound);
+    if (!g.sound) {
+      const lane = el('div', 'gtLane gtFxLane gtSoundLane empty');
+      lane.appendChild(el('span', 'gtLaneHint', '＋ añadir sonido'));
+      lane.title = 'Clic: añade el sonido del gesto en el instante donde está el cursor.';
+      lane.onclick = addSound;
+      track.appendChild(lane);
+    } else {
       const a = g.sound;
       const when = G.timeOf(tl, Math.min(a.step, tl.count - 1), a.at);
       const lane = el('div', 'gtLane gtFxLane gtSoundLane');
       const mark = el('div', `gtFx gtSound${s?.kind === 'sound' ? ' selected' : ''}${a.clips.length ? '' : ' missing'}`);
       mark.style.left = pct(when);
-      mark.appendChild(el('span', null, `🔊 ${a.clips.length ? clipName(a.clips[0]) + (a.clips.length > 1 ? ` +${a.clips.length - 1}` : '') : '(sin clip)'}`));
+      mark.appendChild(el('span', null, `🔊 ${a.clips.length ? clipLabel(a.clips[0]) + (a.clips.length > 1 ? ` +${a.clips.length - 1}` : '') : '(sin clip)'}`));
       mark.title = `El sonido del gesto — suena a los ${secs(when)}. Arrástralo para moverlo.`;
       mark.addEventListener('mousedown', (e) => {
         e.preventDefault(); e.stopPropagation();
@@ -414,6 +431,7 @@ export function createGestureTimeline(host) {
       });
       lane.appendChild(mark);
       track.appendChild(lane);
+      head('gtLane gtFxLane', (g.fx || []).length > 1 ? `✨ VFX ${i + 1}` : '✨ VFX', `Efecto: ${fxName(f)}. Clic para editarlo.`, () => select('fx', i));
     });
 
     // an effect dragged from the library list lands at the instant it is dropped on
@@ -432,7 +450,9 @@ export function createGestureTimeline(host) {
     const playhead = el('div', 'gtPlayhead');
     track.appendChild(playhead);
     scroll.appendChild(track);
-    root.appendChild(scroll);
+    const body = el('div', 'gtBody');
+    body.append(heads, scroll);
+    root.appendChild(body);
     scroll.scrollLeft = scrollLeft;
 
     dock = { root, scroll, track, playhead, time, play, total: tl.total };
@@ -616,7 +636,7 @@ export function createGestureTimeline(host) {
     const box = el('div', 'gtFields');
     if (!s) {
       box.appendChild(el('p', 'hint', 'Elige algo en la línea de tiempo (bajo el lienzo) y sus campos salen aquí: un paso (su pose y su tiempo), una ◆ salida de ataque, un ✨ efecto o el 🔊 sonido.'));
-      box.appendChild(el('p', 'hint', '← / → mueven el cursor un frame (Mayús: diez) · Ctrl+← / → mueven lo elegido · Ctrl+D lo duplica · Ctrl+B divide el paso bajo el cursor · Supr lo quita · Ctrl+rueda = zoom.'));
+      box.appendChild(el('p', 'hint', '← / → mueven el cursor un frame (Mayús: diez) · Ctrl+← / → alargan o acortan el paso elegido (o mueven la salida, el efecto o el sonido elegido) · Ctrl+D lo duplica · Ctrl+B divide el paso bajo el cursor · Supr lo quita · Ctrl+rueda = zoom.'));
       root.appendChild(box);
       return;
     }
@@ -749,50 +769,75 @@ export function createGestureTimeline(host) {
   }
 
   const clipName = (path) => (path || '').split('/').pop().replace(/\.(wav|ogg|mp3)$/i, '');
+  /** A clip as the user knows it: a library sound by its name, a project clip by its file name. */
+  const clipLabel = (value) => (host.soundClips ? host.soundClips() : []).find((c) => c.value === value)?.label.split('  ·  ')[0] || clipName(value);
 
   /** The gesture's own sound: which clips (one is picked at random), how loud, what pitch, and WHEN. */
   function soundFields(box, g) {
     const s = g.sound;
-    const catalog = host.soundClips ? host.soundClips() : null;
+    // What a clip can be: a sound of the library (uploaded here) or a clip of the Unity project (the bridge).
+    const catalog = host.soundClips ? host.soundClips() : [];
+    const labelOf = (value) => catalog.find((c) => c.value === value)?.label || clipName(value);
     box.appendChild(el('p', 'rigGroupTitle', '🔊 Sonido del gesto'));
-    if (!catalog) box.appendChild(el('p', 'hint', 'Los clips son archivos del proyecto de Unity: para oírlos o cambiarlos, abre el enemigo desde Unity ("Editar en la web"). Cuándo suena, volumen y tono sí se pueden cambiar aquí.'));
 
-    if (catalog) {
-      const filter = document.createElement('input');
-      filter.type = 'search';
-      filter.placeholder = 'Filtrar clips por nombre…';
-      filter.value = clipFilter;
-      filter.dataset.nodirty = '1';
-      filter.onchange = () => { clipFilter = filter.value.trim().toLowerCase(); host.refresh(); };
-      box.appendChild(filter);
-    }
-    const shown = (catalog || []).filter((p) => !clipFilter || p.toLowerCase().includes(clipFilter));
+    const filter = document.createElement('input');
+    filter.type = 'search';
+    filter.placeholder = 'Filtrar clips por nombre…';
+    filter.value = clipFilter;
+    filter.dataset.nodirty = '1';
+    filter.onchange = () => { clipFilter = filter.value.trim().toLowerCase(); host.refresh(); };
+    if (catalog.length > 12) box.appendChild(filter);
+
+    const shown = catalog.filter((c) => !clipFilter || c.label.toLowerCase().includes(clipFilter));
+    const fill = (select, current) => {
+      if (current && !catalog.some((c) => c.value === current)) select.appendChild(Object.assign(el('option', null, `${clipName(current)} (no disponible aquí)`), { value: current }));
+      ['Biblioteca', 'Unity'].forEach((group) => {
+        // The one in use always stays in its list, whatever the filter says.
+        const list = catalog.filter((c) => c.group === group && (c.value === current || shown.includes(c)));
+        if (!list.length) return;
+        const og = document.createElement('optgroup');
+        og.label = group === 'Unity' ? 'Proyecto de Unity' : 'Biblioteca (subidos aquí)';
+        list.forEach((c) => og.appendChild(Object.assign(el('option', null, c.label), { value: c.value })));
+        select.appendChild(og);
+      });
+    };
+
     s.clips.forEach((clip, i) => {
       const row = el('div', 'gtClipRow');
       const pick = document.createElement('select');
-      [...new Set([clip, ...shown])].forEach((p) => pick.appendChild(Object.assign(el('option', null, `${clipName(p)}  ·  ${p.split('/').slice(-2, -1)[0] || ''}`), { value: p })));
+      fill(pick, clip);
       pick.value = clip;
-      pick.disabled = !catalog;
-      pick.title = clip;
+      pick.title = labelOf(clip);
       pick.onchange = () => { s.clips[i] = pick.value; edited(); if (host.playClip) host.playClip(pick.value, { gain: s.volume, rate: s.pitchMin }); };
       const hear = el('button', 'small', '▶');
       hear.dataset.nodirty = '1';
       hear.title = 'Oír este clip, con su volumen y su tono.';
-      hear.disabled = !host.playClip || !catalog;
-      hear.onclick = () => host.playClip(clip, { gain: s.volume, rate: s.pitchMin + Math.random() * (s.pitchMax - s.pitchMin) });
+      hear.onclick = () => host.playClip && host.playClip(clip, { gain: s.volume, rate: s.pitchMin + Math.random() * (s.pitchMax - s.pitchMin) });
       const drop = el('button', 'small danger', '✕');
       drop.title = 'Quitar esta variante.';
       drop.onclick = () => { s.clips.splice(i, 1); edited(); };
       row.append(pick, hear, drop);
       box.appendChild(row);
     });
-    if (catalog) {
-      const add = el('button', 'small', s.clips.length ? '＋ Otra variante' : '＋ Elegir clip');
-      add.title = 'Con varias variantes se elige una al azar cada vez que suena.';
-      add.disabled = !shown.length;
-      add.onclick = () => { s.clips.push(shown[0]); edited(); };
-      box.appendChild(add);
-    }
+    if (!s.clips.length) box.appendChild(el('p', 'efSummaryError', 'Sin clip todavía: sube un archivo o elige uno.'));
+
+    const acts = el('div', 'rigActions');
+    const upload = el('button', 'small primary', '⬆ Subir archivo…');
+    upload.title = 'Un wav / ogg / mp3 de tu ordenador: se guarda en la biblioteca (📚 ▸ Sonidos) y se usa aquí. Viaja a Unity al guardar o exportar.';
+    upload.onclick = async () => {
+      const values = host.uploadSound ? await host.uploadSound() : [];
+      if (!values.length) return;
+      s.clips.push(...values);
+      edited();
+      if (host.playClip) host.playClip(values[0], { gain: s.volume, rate: s.pitchMin });
+    };
+    const add = el('button', 'small', s.clips.length ? '＋ Otra variante' : '＋ Elegir uno existente');
+    add.title = 'De la biblioteca o del proyecto de Unity. Con varias variantes se elige una al azar cada vez que suena.';
+    add.disabled = !shown.length;
+    add.onclick = () => { s.clips.push(shown[0].value); edited(); };
+    acts.append(upload, add);
+    box.appendChild(acts);
+    if (!catalog.some((c) => c.group === 'Unity')) box.appendChild(el('p', 'hint', 'Los clips del proyecto de Unity sólo aparecen (y se oyen) si abres el enemigo desde Unity con "Editar en la web".'));
 
     const grid = el('div', 'rigGestureGrid');
     grid.appendChild(F.enumField({ label: 'Suena en', value: String(Math.min(s.step, g.steps.length - 1)), options: stepOptions(g, false),

@@ -47,7 +47,7 @@ import { CANONICAL_ANIMATION_NAMES } from './animation-lanes.js';
  *                modules/enemy-bundle.js and matched on the Unity side by CombinedBundleImporter
  *                (`enemy-config.json`) / FxPrefabBuilder (`fx-config.json`).
  */
-export const KINDS = {
+export const KINDS = {   // (`sound` is added below the literal)
   enemy: {
     id: 'enemy',
     sheet: true,
@@ -180,6 +180,27 @@ export const KINDS = {
     editLabel: '＋ Nuevo enemigo desde esta plantilla',
     configFile: null,
   },
+};
+
+// An audio file (wav / ogg / mp3) uploaded to reuse it: the sound of a gesture today. No sheet, no
+// config; the file is the record's `draft` (sound-library.js). It reaches Unity inside the bundle of
+// whatever uses it.
+KINDS.sound = {
+  id: 'sound',
+  sheet: false,
+  label: 'Sonido',
+  plural: 'Sonidos',
+  icon: '🔊',
+  nameLabel: 'Nombre del sonido',
+  namePlaceholder: 'ej. DisparoHielo',
+  fallbackName: 'Sonido',
+  saveLabel: '💾 Guardar sonido',
+  emptyMessage: 'Todavía no hay sonidos guardados. Súbelos con "⬆ Subir sonidos…" aquí arriba, o desde la pista 🔊 de un gesto.',
+  lanes: [],
+  defaultLanes: [],
+  projectileLanes: false,
+  creator: null,
+  configFile: null,
 };
 
 /** Kind ids in display order. */

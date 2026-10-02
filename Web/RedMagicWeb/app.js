@@ -21,6 +21,8 @@ import { initGameSoundsPanel } from './modules/game-sounds-panel.js';
 import { initRigComposer } from './modules/rig-composer.js';
 import { initEnemyStudio } from './modules/enemy-studio.js';
 import { bridge } from './modules/unity-bridge.js';
+import { pickAndSaveSounds, soundArrayBuffer } from './modules/sound-library.js';
+import { decodeAudio, playBuffer } from './modules/vfx-stage.js';
 import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail, exportAllRecords, restoreRecords } from './modules/enemy-library.js';
 import { initShellTools } from './modules/shell-tools.js';
 import { PRESETS as VFX_PRESETS, FAMILIES as VFX_FAMILIES } from './modules/vfx-presets.js';
@@ -1455,6 +1457,21 @@ async function restoreLibraryBackup(file) {
   shell?.toast(`Restaurado: ${entries} entradas y ${maps} mapas / piezas.`);
 }
 
+document.getElementById('librarySoundBtn').onclick = async () => {
+  const saved = await pickAndSaveSounds();
+  if (!saved.length) return;
+  libraryKindFilter = 'sound';
+  renderLibraryTab();
+  shell?.toast(`${saved.length} sonido(s) guardado(s) en la biblioteca.`);
+};
+
+/** A library sound, played once (the Biblioteca card's ▶). */
+async function playLibrarySound(entry) {
+  const buffer = await decodeAudio(await soundArrayBuffer(entry)).catch(() => null);
+  if (buffer) playBuffer(buffer);
+  else shell?.toast('El navegador no puede reproducir ese archivo.', 'error');
+}
+
 document.getElementById('libraryBackupBtn').onclick = () => downloadLibraryBackup();
 const libraryRestoreInput = document.getElementById('libraryRestoreInput');
 document.getElementById('libraryRestoreBtn').onclick = () => libraryRestoreInput.click();
@@ -1482,6 +1499,13 @@ function renderLibraryTab() {
         : entry.kind === 'rig'
         ? 'Un enemigo por partes no tiene hoja: se exporta desde Enemy Studio.'
         : 'Un jefe no tiene hoja propia: su arte es la del enemigo base.';
+
+      // A sound is just its file: hear it, copy it, delete it.
+      if (entry.kind === 'sound') return [
+        { label: '▶ Oír', className: 'small', onClick: (e) => playLibrarySound(e) },
+        { label: 'Duplicar', className: 'small', onClick: (e) => duplicateLibraryEntry(e) },
+        { label: 'Eliminar', className: 'small danger', onClick: async (e) => { await deleteLibraryEntry(e); renderLibraryTab(); } },
+      ];
 
       return [
         {

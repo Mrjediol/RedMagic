@@ -45,6 +45,9 @@ attack and gesture loaded, sound included; saving in the web writes it into Unit
    itself after a domain reload only if it was running (`SessionState`). CORS: `Access-Control-Allow-Origin`
    = the configured web origin, `OPTIONS` preflight answered (incl. `Access-Control-Allow-Private-Network`),
    and a random per-session token required on every call — so no other page can write into the project.
+   **The token is invisible**: Unity generates it and puts it in the URL it opens; the user never sees,
+   types or configures anything (user, 2026-10-02: no passwords, no prompts). If the web is opened by hand
+   without it, the bridge is simply off — never a "enter your key" field.
 3. **Requests are executed on the main thread** (`EditorApplication.update` drains a queue): `AssetDatabase`
    and `PrefabUtility` are not callable from the listener's thread.
 4. **Unity is the source of truth for what it owns**: on open, gestures always come from the prefab

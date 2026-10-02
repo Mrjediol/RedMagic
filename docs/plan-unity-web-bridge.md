@@ -5,7 +5,7 @@ Written 2026-10-02, to be executed in the next session(s). Parent plan:
 
 ## Status — built (2026-10-02): phases A, B and C
 
-Pending: the user's test pass (`docs/plan-gesture-attack-editor-tests.md ▸ E`). What differs from the plan below:
+Pending: the user's feedback from playing it (in chat — test steps are given in the reply, never written in docs). What differs from the plan below:
 
 - **Body**: a library record of that name authored in the web is still preferred (it has the original canvases);
   otherwise the body is read from Unity (`readRigDocument`) into a record marked `unityBody`, never exported whole.
@@ -165,7 +165,7 @@ Inspector is overwritten by the web's version on save — the banner says so unt
 - `RigBundleImporter.Import` shows no dialogs on the partial path — confirm, a modal would hang the request.
 - Library record ↔ prefab are matched **by name**; a renamed prefab will not be found (Phase B makes this moot).
 
-## Test pass for the user (one, at the end of Phase A — append to `plan-gesture-attack-editor-tests.md`)
+## What to verify (Claude's notes; the user gets their checklist in the chat)
 
 1. Unity ▸ select IceRobot2 ▸ Inspector ▸ "Editar gestos y ataques en la web": the browser opens on
    🎬 with IceRobot2 loaded and the banner "🔌 Unity".

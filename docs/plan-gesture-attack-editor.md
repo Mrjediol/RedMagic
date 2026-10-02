@@ -3,8 +3,7 @@
 Agreed with the user 2026-10-02. The engine side is done and merged (`docs/architecture/procedural-rig.md ▸
 A gesture is a timeline`): a gesture is any number of steps, with attack releases and effects at any instant.
 What is missing is a comfortable place to author that. **Steps 1–3 are built (2026-10-02), on branch
-`task/gesture-attack-editor`. Next: the user's test pass (`plan-gesture-attack-editor-tests.md`), fixes
-from it, then Step 4 (the bridge).**
+`task/gesture-attack-editor`. Step 4 (the bridge) is built too. Next: the user's feedback from playing it (given in chat), and fixes.**
 
 ## ▶ How to start (after /clear)
 
@@ -73,7 +72,7 @@ Two copies would drift apart within weeks (the reason the audio tables and the i
   attack from there — `rig-composer.js ▸ releaseMarks` is the point where each release's instant, position
   (`releaseMatrix`) and direction are known.
 - Not done here, on purpose: the per-release attack picker (needs the engine work in Notes), sound.
-- Pending user test: `docs/plan-gesture-attack-editor-tests.md`.
+- Pending: the user's own play test (they report in chat).
 
 ## Step 2 — how the user wants attacks to read (feedback 2026-10-02, after step 1)
 

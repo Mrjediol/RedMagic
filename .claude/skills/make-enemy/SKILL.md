@@ -84,6 +84,7 @@ New material → add sounds + a rule keyed on a word of the asset name in `modul
 Usually nothing is needed: gestures, attack types and projectile materials already have rules.
 
 ## 7 · Close
-Compile check (`unity command recompile_status`), no Play Mode. Commit. Add a numbered checklist to
-`docs/part-rig-pending-playtests.md`; the user grades the new sounds in Biblioteca Jere ▸ Sounds.
+Compile check (`unity command recompile_status`), no Play Mode. Commit. Give the user a short numbered
+checklist IN THE REPLY (never in a repo file — they don't read docs for test steps); they grade the new sounds in
+Biblioteca Jere ▸ Sounds.
 Never overwrite an existing enemy: new name.

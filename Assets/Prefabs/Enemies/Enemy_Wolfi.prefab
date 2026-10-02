@@ -238,6 +238,9 @@ MonoBehaviour:
     obstacleLayers:
       serializedVersion: 2
       m_Bits: 320
+    flyThroughLayers:
+      serializedVersion: 2
+      m_Bits: 256
 --- !u!50 &7729302930499052459
 Rigidbody2D:
   serializedVersion: 5

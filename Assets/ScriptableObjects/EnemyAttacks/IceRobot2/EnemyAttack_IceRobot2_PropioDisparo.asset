@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff2ad65c14e4d3040affc70968d16c7a, type: 3}
+  m_Name: EnemyAttack_IceRobot2_PropioDisparo
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.ReleaseAttack
+  displayName: PropioDisparo
+  description: 
+  accent: {r: 0.4509804, g: 1, b: 1, a: 1}
+  telegraph: 0.4
+  recovery: 1
+  weight: 1
+  cooldownInAttacks: 0
+  cooldownSeconds: 0
+  minPhase: 1
+  damage: 8
+  knockbackMultiplier: 1
+  vulnerableSeconds: 0
+  vulnerableMultiplier: 2.5
+  gesture: Disparo
+  sound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  shakeAmplitude: 0
+  shakeDuration: 0.25
+  shots:
+  - kind: 1
+    aim: 0
+    angle: 0
+    count: 5
+    arcDegrees: 50
+    spawnRadius: 0
+    projectile:
+      prefab: {fileID: 7323844176782104163, guid: dcda088c0076b5a4aa30f4c915576737, type: 3}
+      speed: 9
+      lifetime: 2.5
+      size: {x: 0.4, y: 0.4}
+      muzzleOffset: {x: 0.7, y: 1}
+      pierce: 0
+      homingTurnRate: 0
+      homingRange: 9
+      arcGravity: 0
+      impactRadius: 0
+      impactDamage: 0
+      faceDirection: 1
+      facingAxis: 0
+      aimMode: 0
+    strikeSize: {x: 1.2, y: 1}
+    strikeOffset: {x: 0.8, y: 0.5}
+    damage: 0
+  - kind: 2
+    aim: 0
+    angle: 0
+    count: 5
+    arcDegrees: 50
+    spawnRadius: 0
+    projectile:
+      prefab: {fileID: 6180770505033374491, guid: ccf0c1cac4ab92941bd18c062c12a7d2, type: 3}
+      speed: 9
+      lifetime: 2.5
+      size: {x: 0.4, y: 0.4}
+      muzzleOffset: {x: 0.7, y: 1}
+      pierce: 0
+      homingTurnRate: 0
+      homingRange: 9
+      arcGravity: 0
+      impactRadius: 0
+      impactDamage: 0
+      faceDirection: 1
+      facingAxis: 0
+      aimMode: 0
+    strikeSize: {x: 1.2, y: 1}
+    strikeOffset: {x: 0.8, y: 0.5}
+    damage: 0
+  timeBetweenShots: 0.25
+  projectileSprite: {fileID: 0}

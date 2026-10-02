@@ -693,6 +693,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 0
+      aim: 0
     - name: Golpe
       poses:
       - part: {fileID: 7928205777592599540}
@@ -703,6 +704,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
+      aim: 0
     releases:
     - step: 0
       at: 1
@@ -747,6 +749,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 1.5
+      aim: 0
     - name: Golpe
       poses:
       - part: {fileID: 7928205777592599540}
@@ -761,6 +764,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
+      aim: 0
     releases:
     - step: 0
       at: 1
@@ -801,6 +805,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 0
+      aim: 0
     - name: Golpe
       poses:
       - part: {fileID: 7928205777592599540}
@@ -815,6 +820,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
+      aim: 0
     releases:
     - step: 0
       at: 1
@@ -855,6 +861,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 0
+      aim: 0
     releases:
     - step: 0
       at: 1

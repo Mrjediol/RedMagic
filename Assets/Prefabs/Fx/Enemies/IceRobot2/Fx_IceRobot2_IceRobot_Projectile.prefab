@@ -1,0 +1,242 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6180770505033374491
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5552769745894678286}
+  - component: {fileID: 2207296290930853252}
+  - component: {fileID: 1185737377710147123}
+  - component: {fileID: 5387214129015902924}
+  - component: {fileID: 2025485665925858645}
+  - component: {fileID: 2084472385168001780}
+  - component: {fileID: 6707884522032760116}
+  m_Layer: 0
+  m_Name: Fx_IceRobot2_IceRobot_Projectile
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5552769745894678286
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6180770505033374491}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.84745765, y: 0.84745765, z: 0.84745765}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &2207296290930853252
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6180770505033374491}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 6
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: -1808982527863717971, guid: b6dceabb9835eb048a732d5da05bf889, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1.77, y: 1.1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
+--- !u!114 &1185737377710147123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6180770505033374491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19f694e9a926403418b92831a055839f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.SpriteStateMachine
+  states:
+  - name: Move
+    frames:
+    - {fileID: -1808982527863717971, guid: b6dceabb9835eb048a732d5da05bf889, type: 3}
+    - {fileID: 8115644005664255767, guid: 7bcc7587eeca99248ad71688c5de8fa8, type: 3}
+    - {fileID: -1974267942269126528, guid: 30f37677e6b2ac9408aa8bcee62f6206, type: 3}
+    - {fileID: 2536910936557558875, guid: a71ef47a878fc284a929fa5e4dbbef71, type: 3}
+    - {fileID: 1399413676680894907, guid: e35b06e475b4d9b47be19dcee577c031, type: 3}
+    - {fileID: 6636361135747025162, guid: 95bfbbce6abaf4f46bbdceca7ce7ee59, type: 3}
+    - {fileID: -3229540774608315921, guid: 8a282a507558bfc469c36836f6654a99, type: 3}
+    - {fileID: -8556153337439913670, guid: 9c9f18e2a3c300c4ebc1aa26a18649f8, type: 3}
+    - {fileID: 6806514638545688161, guid: 20c6ed39659937d4d8fc566974826b9e, type: 3}
+    fps: 14
+    loop: 1
+  - name: Impact
+    frames:
+    - {fileID: -1808982527863717971, guid: 28296671d6d361e42b3113e6b2c69a10, type: 3}
+    - {fileID: 8115644005664255767, guid: 54fc60bd37834ee4e8232bce602cc453, type: 3}
+    - {fileID: -1974267942269126528, guid: d68a563aff8de2e449ac34d26e640b34, type: 3}
+    - {fileID: 2536910936557558875, guid: 7579e336c7e5ab44a8c63518d961785d, type: 3}
+    - {fileID: 1399413676680894907, guid: 9021c072ad95e8d4cadf4450b4581d40, type: 3}
+    - {fileID: 6636361135747025162, guid: c354348c661ba9249ad0b5282f30ba83, type: 3}
+    - {fileID: -3229540774608315921, guid: 466a0de1227d8ae4e97951c7be5eff4c, type: 3}
+    - {fileID: -8556153337439913670, guid: 8561892780810e5408b067ba4b5b14e2, type: 3}
+    - {fileID: 6806514638545688161, guid: 9a633262a4450d44d9d76cfa4f14a324, type: 3}
+    fps: 16
+    loop: 0
+  defaultState: Move
+--- !u!114 &5387214129015902924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6180770505033374491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31f69b0d11160cb4f85c198865e3946d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Fx.FxArtSize
+--- !u!50 &2025485665925858645
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6180770505033374491}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 1
+  m_SleepingMode: 1
+  m_CollisionDetection: 1
+  m_Constraints: 4
+--- !u!58 &2084472385168001780
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6180770505033374491}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Radius: 0.44000003
+--- !u!114 &6707884522032760116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6180770505033374491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4849aeb21e5dd4940bc5ce82cab757f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.Projectile
+  speed: 14
+  lifetime: 3
+  faceTravelDirection: 1
+  damage: 10
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  knockbackMultiplier: 1
+  destroyWhenDone: 0
+  impactEffect: {fileID: 0}
+  impactEffectOffset: {x: 0, y: 0}
+  pierceCount: 0
+  homingTurnRate: 0
+  homingRange: 9
+  arcGravity: 0
+  impactRadius: 0
+  impactDamage: 0

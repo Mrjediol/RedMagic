@@ -58,7 +58,24 @@ Two copies would drift apart within weeks (the reason the audio tables and the i
 
 ## Notes
 
-- Several DIFFERENT attacks inside one gesture is not supported by the engine yet (several releases = the
-  same attack fires several times). Ask the user if it is wanted before step 2.
+- **Several attacks inside one gesture — wanted (user, 2026-10-02).** Today several releases = the same
+  attack fires several times. The user wants each release to be able to launch its OWN attack, and
+  gestures that are not attacks to fire too. Their examples:
+  - "shoots twice fast, seems to jam on the third, then attacks again": releases 1, 2 and 4 fire; the third
+    beat is a step with a pose and an effect / sound (the jam) and no release — or a release that fires nothing.
+  - "a defensive dash that shoots at the end": a defence's gesture (`EnemyDefence.gesture`, held today,
+    silent) with a release at its end that launches an attack.
+  What it needs in the ENGINE, before or with step 2 (it is engine work, not web):
+  - `RigRelease` names what it launches: empty = the attack that launched the gesture (today's behaviour),
+    or a specific attack (the enemy's own shot / melee, or a catalog `BossAttack`), or nothing (a feint).
+  - Whoever plays the gesture resolves it: `EnemyAttackHost` / `BossController` run that attack at that
+    release, from that release's point, aimed at the target of that instant (not the one frozen at the start).
+  - A gesture played by a defence or a move (not by an attack) must be able to release: today `Hold` poses
+    never run the timeline past step 0 and idle gestures are silent. A defence needs "play the whole gesture
+    while moving", with its releases live.
+  - Attacks launched this way skip their own telegraph (the gesture IS the telegraph) and must not restart
+    the gesture; cooldowns and `Running` have to count the whole gesture as one attack.
+  In the editor (step 2): each release marker on the timeline gets an "attack" picker (this attack / own
+  shot / another catalog attack / nothing), and the test stage fires each one.
 - `ResetTuning` on re-import wipes hand tuning: the focused export must never go through it.
 - Placeholder squares, effect direction and layers: see `docs/architecture/enemies.md`.

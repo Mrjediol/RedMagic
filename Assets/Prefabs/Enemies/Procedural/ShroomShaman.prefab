@@ -491,7 +491,7 @@ MonoBehaviour:
       cooldown: 0
       move: 0
       moveDistance: 5
-      moveDuration: 1
+      moveDuration: 0.3
       hopHeight: 0
       gesture: Dash
       anticipation: 0

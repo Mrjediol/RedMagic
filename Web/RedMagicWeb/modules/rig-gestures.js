@@ -18,8 +18,8 @@
 // (0.2 = 20% bigger). 'Visual' is the whole body. Only rig parts can be posed: the driver recomposes
 // those every frame, anything else would drift.
 //
-// `aim` on a step = it ends with the aim part (the weapon) pointing at the attack's target; the part's
-// own rotation in the pose adds to it.
+// `aim` on a step = it ends with the aim part's barrel (pivot → muzzle) on the attack's target, wherever
+// the poses left the part: it overrides the part's own rotation in the pose.
 //
 // `stretch` on a step = whoever launches the gesture gives its duration (the attack's telegraph): the
 // stretch steps share what is left for the FIRST release to land exactly at that time. A release is

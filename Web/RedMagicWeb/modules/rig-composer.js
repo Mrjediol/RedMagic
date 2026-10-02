@@ -501,28 +501,28 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     const bob = { x: rig.hoverBob.x * Math.sin(preview.clock * rig.hoverSpeed), y: rig.hoverBob.y * Math.sin(preview.clock * rig.hoverSpeed) };
     const body = { position: bob, rotation: preview.lean + hurtTilt, scale: { x: 1 + squash, y: 1 - squash } };
 
-    // A step marked "ends aiming": the weapon turns towards the target by that step's weight —
-    // ProceduralRig.AimOffsetTowards, before the gesture's poses go on top (they add to it).
-    const aimPart = layer ? M.byUid(state, state.roles.aim) : null;
-    const aiming = aimPart && poses.has(aimPart.uid) ? G.aimWeight(layer.gesture, layer.weights) : 0;
-    if (aiming > 0) {
-      const parent = M.byUid(state, aimPart.parent);
-      const frame = M.multiply(M.trs(body.position, body.rotation, body.scale), parent ? M.worldMatrix(state, parent, poses) : M.IDENTITY);
-      const from = M.apply(frame, aimPart.position);
-      const target = (head.playing && stage.frozen) || targetPoint();
-      const local = M.applyVector(M.invert(frame), { x: target.x - from.x, y: target.y - from.y });
-      if (local.x * local.x + local.y * local.y > 1e-6) {
-        const wanted = (Math.atan2(local.y, local.x) * 180) / Math.PI - (rig.aimArtAngle || 0);
-        const delta = ((((wanted - aimPart.rotation) % 360) + 540) % 360) - 180;
-        const max = rig.aimMaxAngle ?? 75;
-        poses.get(aimPart.uid).rotation += Math.min(max, Math.max(-max, delta)) * aiming;
-      }
-    }
-
     // The gesture goes on top of everything else, like in the driver (additive layers).
     if (layer) {
       G.applySteps(layer.gesture, layer.weights, poses, body, layer.settling);
       body.rotation += layer.shake;
+    }
+
+    // A step marked "ends aiming": last of all, the weapon turns from wherever the poses left it until
+    // its barrel (pivot → muzzle) passes through the target, by that step's weight —
+    // RigDriverCode.ApplyGestureAim. Measured from its pivot as posed, so at full weight it is exact.
+    const aimPart = layer ? M.byUid(state, state.roles.aim) : null;
+    const aimPose = aimPart ? poses.get(aimPart.uid) : null;
+    const aiming = aimPose ? G.aimWeight(layer.gesture, layer.weights) : 0;
+    if (aiming > 0) {
+      const parent = M.byUid(state, aimPart.parent);
+      const frame = M.multiply(M.trs(body.position, body.rotation, body.scale), parent ? M.worldMatrix(state, parent, poses) : M.IDENTITY);
+      const from = M.apply(frame, aimPose.position);
+      const target = (head.playing && stage.frozen) || targetPoint();
+      const local = M.applyVector(M.invert(frame), { x: target.x - from.x, y: target.y - from.y });
+      if (local.x * local.x + local.y * local.y > 1e-6) {
+        const wanted = (Math.atan2(local.y, local.x) * 180) / Math.PI - (rig.aimArtAngle || 0);
+        aimPose.rotation += (((((wanted - aimPose.rotation) % 360) + 540) % 360) - 180) * aiming;
+      }
     }
 
     return { poses, visual: M.trs(body.position, body.rotation, body.scale) };

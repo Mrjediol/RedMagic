@@ -784,6 +784,7 @@ namespace RedMagic.Rigging
             ComposeBody(dt);
             ComposeParts();
             ApplyGesture();
+            ApplyGestureAim();
             TickFx(dt);   // después de componer: los efectos de gesto siguen a su ancla ya colocada
         }
 
@@ -918,21 +919,37 @@ namespace RedMagic.Rigging
         /// <summary>Giro hacia el objetivo + anticipación + coz, encima del balanceo.</summary>
         private float AimRotation()
         {
-            // El ataque propio apunta con su peso; un gesto, con el de sus pasos marcados 'aim' (hacia el
-            // objetivo que le dio quien lo lanzó, AimTarget).
-            float weight = _aimWeight;
-            Vector2? point = _aimPoint;
-            float gesture = GestureAimWeight();
-            if (gesture > weight && AimTarget.HasValue)
-            {
-                weight = gesture;
-                point = AimTarget;
-            }
-
-            float aim = point.HasValue && weight > 0f
-                ? Rig.AimOffsetTowards(point.Value, _aimPos, _aimAngle) * weight
+            // Sólo el ataque propio: un gesto apunta después de sus poses (ApplyGestureAim).
+            float aim = _aimPoint.HasValue && _aimWeight > 0f
+                ? Rig.AimOffsetTowards(_aimPoint.Value, _aimPos, _aimAngle) * _aimWeight
                 : 0f;
             return aim + _armRotation;
+        }
+
+        /// <summary>
+        /// Los pasos marcados <see cref="RigGestureStep.aim"/>: lo último del frame, el arma gira desde donde
+        /// la dejaron las poses hasta que su cañón (pivote → boca) pasa por el objetivo
+        /// (<see cref="RigDriver.AimTarget"/>), por el peso de esos pasos. Se mide desde el pivote tal como
+        /// está colocado, así que a peso completo es exacto; <see cref="ProceduralRig.aimMaxAngle"/> no lo
+        /// limita (ese tope es del ataque propio).
+        /// </summary>
+        private void ApplyGestureAim()
+        {
+            var arm = Rig.aimPart;
+            if (arm == null || arm.parent == null || !AimTarget.HasValue || Driven.ContainsKey(arm)) return;
+
+            float weight = GestureAimWeight();
+            if (weight <= 0f) return;
+
+            Vector3 pivot = _aimIndex >= 0 ? (Vector3)_parts[_aimIndex].data.pivot : Vector3.zero;
+            Vector3 joint = arm.TransformPoint(pivot);
+            Vector2 local = arm.parent.InverseTransformVector((Vector3)AimTarget.Value - joint);
+            if (local.sqrMagnitude < 0.0001f) return;
+
+            float wanted = Mathf.Atan2(local.y, local.x) * Mathf.Rad2Deg - Rig.aimArtAngle;
+            float turn = Mathf.DeltaAngle(arm.localEulerAngles.z, wanted) * weight;
+            arm.localRotation *= Quaternion.Euler(0f, 0f, turn);
+            arm.position += joint - arm.TransformPoint(pivot);   // gira sobre su pivote, no sobre el del sprite
         }
 
         /// <summary>Cuánto apunta el gesto en curso: la suma de los pesos de sus pasos <see cref="RigGestureStep.aim"/>.</summary>

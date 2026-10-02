@@ -489,7 +489,7 @@ export function createGestureTimeline(host) {
     box.appendChild(F.boolField({ label: '🎯 Acaba apuntando al objetivo', value: !!step.aim,
       hint: host.hasAimPart && !host.hasAimPart()
         ? 'Este cuerpo no tiene pieza que apunte (inspector ▸ Roles ▸ "Apunta al objetivo"): no hará nada.'
-        : 'Al llegar a esta pose el arma queda apuntando al objetivo (el 🎯 del lienzo; en el juego, el jugador). El giro que tenga el arma en la pose se le suma. Márcalo también en el paso siguiente si debe seguir apuntando al disparar.',
+        : 'Al llegar a esta pose la línea pivote → boca del arma pasa por el objetivo (el 🎯 del lienzo; en el juego, el jugador), esté donde esté. Manda sobre el giro que tenga el arma en la pose. Márcalo también en el paso siguiente si debe seguir apuntando al disparar.',
       onChange: (v) => { step.aim = v; edited(); } }).row);
 
     const more = el('div', 'rigActions');

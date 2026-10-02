@@ -78,7 +78,34 @@ reviews and playtests. Success is judged on **three enemies in a row** made this
 
 ## Findings
 
-(to be written in Phase 0)
+### Before Phase 0 — how Claude drives Comfy, and the workflow (2026-10-02)
+
+- **Control = ComfyUI's HTTP API, nothing installed.** Comfy Desktop (ComfyUI 0.37.4) listens on
+  `http://127.0.0.1:8188` and must be open. `POST /prompt` (API-format graph) → poll `/history/<id>` →
+  files in `%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/output/`. Workflows the editor lists are
+  `GET/POST /userdata/workflows%2F<name>.json`. MCP servers (`comfyui-mcp`) wrap this same API and add
+  nothing needed here; driving the desktop by screenshots is the last resort.
+- **The workflow is data in the repo**: `Web/RedMagicWeb/tools/comfy/claude-workflow.mjs` (the graph) +
+  `comfy-graph.mjs` (one graph → the editor's format AND the API format).
+  `node claude-workflow.mjs install` writes Comfy's `workflows/Claude.json`; `… run [--prompt … --ref …
+  --keep-size --size WxH --seed N --upscale --no-cut --name x]` queues the same graph and prints the files.
+- **Models on the machine** (RTX 5070 Ti, 16 GB): Qwen Image 2.1 (int8) and Z-Image Turbo; RMBG, SAM2/SAM3,
+  GroundingDINO nodes. **Qwen Image 2.1 draws from text AND takes up to 10 reference images** (`<image1>`…
+  in the prompt; image_1 is the one edited) and is native to 2048 px — so no LoRA / ControlNet / IP-Adapter
+  is needed for style references or for editing one part.
+- **Added**: one upscale model, `upscale_models/RealESRGAN_x4plus_anime_6B.pth` (the "digital-art" model the
+  user was already using in Upscayl). Off by default: a 2048 px sheet gives parts of 400–900 px, the size of
+  the parts already in the game (`Assets/Art/RigImports/`: 200–700 px, a boss torso ≈ 1400).
+- **One real run** (the example prompt, seed 7): a five-part ice-golem sheet in the house style, parts apart
+  on white; ≈ 95 s cold at 2048², 25 steps. Upscale ×4 → 4096 + RMBG-2.0 cut: ≈ 27 s more, clean edges.
+  Two things learnt: Qwen 2.1 decodes to **RGBA with an opaque alpha** (the upscaler needs the "Sólo RGB"
+  node); RMBG leaves the inside of a part at alpha **254**, not 255 — the parts tool must snap ≥ 250 to 255.
+- **Not checked**: the editor copy (`Claude.json`) was generated in the saved-workflow format copied from the
+  user's own file, but Claude could not open the editor to look at it (Chrome showed an error page for the
+  local address). The API side of the same graph is what ran.
+- **Open for Phase 0 proper**: prompt skeleton per template so the sheet has exactly the template's slots,
+  joints with rounded hidden ends, left/right pairs, style match against a game part as `<image1>`, tries
+  per usable sheet. Qwen-Image-Layered (3 more model files) only if the sheet route fails.
 
 ## Decisions
 

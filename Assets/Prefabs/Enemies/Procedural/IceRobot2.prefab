@@ -765,8 +765,9 @@ MonoBehaviour:
   followMaxOffset: 1.7141
   moveGesture: 
   idle:
-    gestures: []
-    interval: 4
+    gestures:
+    - Gesto
+    interval: 2
     chance: 0.6
     windup: 0.5
   aimPart: {fileID: 5622017293435551601}
@@ -1238,6 +1239,133 @@ MonoBehaviour:
       angle: 0
       layer: 0
       legacyPhase: -1
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
+  - name: Gesto
+    steps:
+    - name: Carga
+      poses: []
+      duration: 0.3
+      ease: 0
+      stretch: 1
+      shake: 0
+      aim: 0
+    - name: Paso 2
+      poses: []
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 0
+    - name: Paso 3
+      poses:
+      - part: {fileID: 4506994055157047099}
+        move: {x: -2.397, y: 4.605}
+        rotate: 208.4
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5622017293435551601}
+        move: {x: 1.041, y: 5.047}
+        rotate: 94.7
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2309095630751161943}
+        move: {x: -0.023, y: -0.082}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      - part: {fileID: 1402791059787875373}
+        move: {x: -0.011, y: 0.526}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 0
+    - name: Paso 3
+      poses:
+      - part: {fileID: 4506994055157047099}
+        move: {x: -2.776, y: 6.908}
+        rotate: 208.4
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5622017293435551601}
+        move: {x: 1.167, y: 2.965}
+        rotate: 94.7
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2309095630751161943}
+        move: {x: -0.023, y: -0.082}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      - part: {fileID: 1402791059787875373}
+        move: {x: -0.034, y: 1.063}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 0
+    - name: Paso 3
+      poses:
+      - part: {fileID: 4506994055157047099}
+        move: {x: -2.933, y: -0.947}
+        rotate: 208.4
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5622017293435551601}
+        move: {x: 1.104, y: -1.009}
+        rotate: 94.7
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2309095630751161943}
+        move: {x: -0.023, y: -0.082}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      - part: {fileID: 1402791059787875373}
+        move: {x: 0.013, y: 0.188}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 0
+    - name: Paso 3
+      poses:
+      - part: {fileID: 4506994055157047099}
+        move: {x: -2.649, y: -5.71}
+        rotate: 208.4
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5622017293435551601}
+        move: {x: 0.883, y: -6.056}
+        rotate: 94.7
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2309095630751161943}
+        move: {x: -0.023, y: -0.082}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      - part: {fileID: 1402791059787875373}
+        move: {x: -0.01, y: 0.667}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 0
+    releases: []
+    recover: 0.45
+    fx: []
     sound:
       clips: []
       volume: 1

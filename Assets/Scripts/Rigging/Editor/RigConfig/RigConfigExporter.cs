@@ -431,6 +431,7 @@ namespace RedMagic.Rigging.EditorTools
                 ["interval"] = RigConfigJson.Num(idle.interval),
                 ["chance"] = RigConfigJson.Num(idle.chance),
                 ["windup"] = RigConfigJson.Num(idle.windup),
+                ["whileAlert"] = idle.whileAlert,
             };
         }
 

@@ -365,7 +365,9 @@ namespace RedMagic.Rigging.EditorTools
                 !string.Equals(Path.GetFullPath(artSource), Path.GetFullPath($"{artRoot}/Art"), StringComparison.OrdinalIgnoreCase))
             {
                 int copied = 0, removed = 0;
-                BossBundleImporter.Sync(artSource, Path.GetFullPath($"{artRoot}/Art"), ref copied, ref removed);
+                // Sin borrar: el arte que un ataque ya tiene en el proyecto (`{"project": …}`, lo que manda
+                // el puente web) no viaja en el bundle, y sus frames son los de esta misma carpeta.
+                BossBundleImporter.Sync(artSource, Path.GetFullPath($"{artRoot}/Art"), ref copied, ref removed, prune: false);
                 AssetDatabase.Refresh();
             }
 
@@ -394,7 +396,7 @@ namespace RedMagic.Rigging.EditorTools
                 {
                     int copied = 0, removed = 0;
                     // La misma carpeta Art/ del bundle que copia la baraja del enemigo: lleva el arte de ambos.
-                    BossBundleImporter.Sync(artSource, Path.GetFullPath($"{artRoot}/Art"), ref copied, ref removed);
+                    BossBundleImporter.Sync(artSource, Path.GetFullPath($"{artRoot}/Art"), ref copied, ref removed, prune: false);
                     AssetDatabase.Refresh();
                 }
 
@@ -1014,6 +1016,8 @@ namespace RedMagic.Rigging.EditorTools
                 idle.interval = Mathf.Max(0.2f, idleJson.Value<float?>("interval") ?? idle.interval);
                 idle.chance = Mathf.Clamp01(idleJson.Value<float?>("chance") ?? idle.chance);
                 idle.windup = Mathf.Max(0.05f, idleJson.Value<float?>("windup") ?? idle.windup);
+                // La web no lo edita: sin la clave se conserva el del prefab.
+                idle.whileAlert = idleJson.Value<bool?>("whileAlert") ?? rig.idle?.whileAlert ?? idle.whileAlert;
                 foreach (var n in idle.gestures)
                     if (rig.FindGesture(n) == null)
                         report.Warnings.Add($"idleGestures: el gesto '{n}' no está entre los gestos del rig; se ignora al jugar.");

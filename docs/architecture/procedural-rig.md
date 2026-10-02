@@ -139,8 +139,10 @@ it), `scale`, `followsPart`, `loop`. Data only, authored in the web (Enemy Studi
 ## Idle gestures (`ProceduralRig.idle`)
 `RigIdleGestures`: a pool of gesture **names**, `interval`, `chance`, `windup`. `RigDriverCode.TickIdle`
 plays one at random (never the same twice in a row) every `interval` ±25% s with probability `chance`,
-only while truly resting: alive, awake and unfolded, no target (`RigDriver.SetAlert`), not moving
-(`SetMoving`), no gesture / attack / hurt in course, no part lent to an attack. It runs the ordinary
+only while resting: alive, awake and unfolded, not moving (`SetMoving`), no gesture / attack / hurt in
+course, no part lent to an attack — and, with `whileAlert` off, no target (`RigDriver.SetAlert`).
+`whileAlert` (default on, Inspector only) lets them play between attacks: an enemy that sleeps until it
+detects is never awake without a target, so without it its idle gestures could never play. It runs the ordinary
 `GestureRoutine` in **silent** mode — same poses, effects, sprites and sound, but **no
 `AttackReleased` / `AttackFinished` and no muzzle flash**, so nothing can mistake it for an attack. Any
 real gesture replaces it with the usual cross-fade; falling asleep settles it. JSON: `idleGestures`
@@ -225,6 +227,8 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
   `BossAttackExporter` = a `BossAttack` asset → its card JSON, by reflection over the fields
   `BossCatalogExporter` publishes; art comes out as `{ "project": "<prefab path>" }` and
   `BossArtBuilder.ResolveArtRefs` reads that form back as the same reference (nothing is rebuilt).
+  For the same reason a rig bundle's `Art/` is **merged** into `Assets/Art/RigImports/<name>/Art`, never
+  mirrored (`BossBundleImporter.Sync(prune: false)`): art the bundle does not carry is still in use.
 - `RigConfigJson` — shared vocabulary: part refs are **paths relative to `Visual`** (`"Visual"` =
   body), sprites are `Assets/…` paths (used as-is) or bundle files (copied to
   `Assets/Art/RigImports/<name>/`, import settings from `sprites`).

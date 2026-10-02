@@ -43,6 +43,9 @@ MonoBehaviour:
   - kind: 1
     aim: 0
     angle: 0
+    count: 5
+    arcDegrees: 50
+    spawnRadius: 0
     projectile:
       prefab: {fileID: 2669538149930495810, guid: 579a38a7c7840614a844d788e6f2c53c, type: 3}
       speed: 9
@@ -58,9 +61,6 @@ MonoBehaviour:
       faceDirection: 1
       facingAxis: 0
       aimMode: 0
-    count: 5
-    arcDegrees: 50
-    spawnRadius: 0
     strikeSize: {x: 1.2, y: 1}
     strikeOffset: {x: 0.8, y: 0.5}
     damage: 0

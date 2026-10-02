@@ -281,6 +281,13 @@ MonoBehaviour:
       minRange: 0
       maxRange: 0
       targetHeight: 0
+    - attack: {fileID: 11400000, guid: cef0cbf60cb8d994ba65faec9a6bdb07, type: 2}
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
+      minRange: 0
+      maxRange: 0
+      targetHeight: 0
     builtInAttack: 1
     builtInWeight: 1
     defences:
@@ -542,8 +549,9 @@ MonoBehaviour:
   followMaxOffset: 1.7141
   moveGesture: 
   idle:
-    gestures: []
-    interval: 4
+    gestures:
+    - baile
+    interval: 1
     chance: 0.6
     windup: 0.5
   aimPart: {fileID: 5520972963685871920}
@@ -574,7 +582,12 @@ MonoBehaviour:
     asleep: {fileID: 21300000, guid: 59a37796afaf51a4f9e26d4d5cf5c78d, type: 3}
     awake: {fileID: 21300000, guid: 706e6e633126b41469f932ed6c89d37b, type: 3}
     attacking: {fileID: 0}
-    named: []
+    named:
+    - state: 3
+      gesture: Finger
+      sprite: {fileID: 21300000, guid: ce47f8a06b7f91447ad8b66829312fd1, type: 3}
+      showFrom: 0
+      showTo: 99
     stages: []
   stretchPart: {fileID: 0}
   stretchRiders: []
@@ -863,6 +876,178 @@ MonoBehaviour:
       volume: 0.7
       pitchMin: 0.94
       pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
+  - name: Gesto
+    steps:
+    - name: Carga
+      poses: []
+      duration: 0.3
+      ease: 0
+      stretch: 1
+      shake: 0
+      aim: 1
+    - name: Paso 2
+      poses:
+      - part: {fileID: 5520972963685871920}
+        move: {x: 3.915, y: 0.056}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 1
+    - name: Paso 2
+      poses:
+      - part: {fileID: 5520972963685871920}
+        move: {x: 3.915, y: 0.056}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 0
+    releases:
+    - step: 2
+      at: 0
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
+    recover: 0.45
+    fx:
+    - prefab: {fileID: 6932651637232143773, guid: c60a6fcf8641ae74d84e3988e0070590, type: 3}
+      step: 2
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 0
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
+  - name: baile
+    steps:
+    - name: Carga
+      poses: []
+      duration: 0.3
+      ease: 0
+      stretch: 1
+      shake: 0
+      aim: 0
+    - name: Paso 2
+      poses:
+      - part: {fileID: 7823707452359455860}
+        move: {x: -2.867, y: 1.283}
+        rotate: -36.7
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5520972963685871920}
+        move: {x: 4.21, y: 0.762}
+        rotate: 44.5
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 0
+    - name: Paso 2
+      poses:
+      - part: {fileID: 7823707452359455860}
+        move: {x: -4.511, y: -1.564}
+        rotate: 6.5
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5520972963685871920}
+        move: {x: 4.19, y: 3.508}
+        rotate: 89.2
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5185665941681384822}
+        move: {x: 0, y: 0}
+        rotate: 19.3
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 0
+    - name: Paso 2
+      poses:
+      - part: {fileID: 7823707452359455860}
+        move: {x: -5.774, y: 0.882}
+        rotate: 288.2
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5520972963685871920}
+        move: {x: 6.936, y: 0.441}
+        rotate: 6.4
+        scale: {x: 0, y: 0}
+      - part: {fileID: 3027945306626787834}
+        move: {x: 0, y: 0}
+        rotate: -14.6
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5506076843372719937}
+        move: {x: -0.14, y: 3.087}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 0
+    - name: Paso 2
+      poses:
+      - part: {fileID: 7823707452359455860}
+        move: {x: -2.406, y: 4.21}
+        rotate: 228.7
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5520972963685871920}
+        move: {x: 3.729, y: -2.486}
+        rotate: -68.9
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5185665941681384822}
+        move: {x: -0.06, y: 2.005}
+        rotate: 6.1
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+      aim: 0
+    releases: []
+    recover: 0.45
+    fx: []
+    sound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
       noRepeatLast: 1
       priority: 1
       positional: 0

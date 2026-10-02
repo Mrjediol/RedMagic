@@ -106,8 +106,10 @@ namespace RedMagic.Bosses.EditorTools
         /// <summary>
         /// Deja <paramref name="to"/> igual que <paramref name="from"/> en PNGs: copia encima (el
         /// .meta del archivo se conserva, así que el sprite mantiene su GUID) y borra lo que sobra.
+        /// Con <paramref name="prune"/> apagado sólo copia: lo que ya había se queda (un bundle que no
+        /// trae TODO el arte — el de un enemigo cuyo arte ya está en el proyecto — no debe borrar el resto).
         /// </summary>
-        internal static void Sync(string from, string to, ref int copied, ref int removed)
+        internal static void Sync(string from, string to, ref int copied, ref int removed, bool prune = true)
         {
             Directory.CreateDirectory(to);
             var incoming = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -121,6 +123,8 @@ namespace RedMagic.Bosses.EditorTools
                 incoming.Add(Path.GetFullPath(target));
                 copied++;
             }
+
+            if (!prune) return;
 
             foreach (var file in Directory.GetFiles(to, "*.png", SearchOption.AllDirectories))
             {

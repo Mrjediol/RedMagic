@@ -18,6 +18,9 @@ Pending: the user's test pass (`docs/plan-gesture-attack-editor-tests.md ▸ E`)
 - Verified live: open (both body sources), save with no edits = prefab and attack assets unchanged, 409 +
   overwrite, the domain reload (same port and token). Not verified by hand: Prefab Mode reload after a save,
   the Inspector buttons themselves, sound playback by ear.
+- Fixed after the first user test (2026-10-02): a save that carried new library art mirrored `Art/` and
+  deleted the frames of every art the bundle did not bring (invisible projectiles) — now merged, never pruned.
+  Idle gestures never played on an enemy that sleeps until it detects — `RigIdleGestures.whileAlert`.
 - Known limits: clearing an art slot in the web does not clear it in Unity (an absent key keeps the value);
   a card deleted in the web leaves its asset in the project, out of the deck.
 

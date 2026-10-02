@@ -998,12 +998,33 @@ namespace RedMagic.Rigging.EditorTools
                     {
                         gesture.sound = previous.sound;
                         gesture.soundMoment = previous.soundMoment;
+                        gesture.soundStep = previous.soundStep;
+                        gesture.soundAt = previous.soundAt;
                     }
+
+                    // 'sound' presente (lo escribe la web cuando viene del puente): manda sobre el que había.
+                    // null = quitarlo; sin la clave se conserva (un export sin sonido no debe borrarlo).
+                    if (g.TryGetValue("sound", out var soundToken)) ReadGestureSound(gesture, soundToken, $"gestures[{i}].sound", report);
 
                     rig.gestures.Add(gesture);
                 }
 
                 rig.FixConvertedWindows();
+            }
+
+            // Gestos de transición (entre ataque y ataque): igual que los de reposo.
+            if (config["transitionGestures"] is JObject transitionJson)
+            {
+                var transition = new RigTransitionGestures();
+                transition.gestures = (transitionJson["gestures"] as JArray ?? new JArray())
+                    .Select(t => t.Type == JTokenType.String ? t.Value<string>() : null)
+                    .Where(n => !string.IsNullOrWhiteSpace(n)).ToList();
+                transition.chance = Mathf.Clamp01(transitionJson.Value<float?>("chance") ?? transition.chance);
+                transition.windup = Mathf.Max(0.05f, transitionJson.Value<float?>("windup") ?? transition.windup);
+                foreach (var n in transition.gestures)
+                    if (rig.FindGesture(n) == null)
+                        report.Warnings.Add($"transitionGestures: el gesto '{n}' no está entre los gestos del rig; se ignora al jugar.");
+                rig.transition = transition;
             }
 
             // Gestos en reposo: presentes = sustituyen; sin la clave se conservan los del prefab.
@@ -1023,6 +1044,48 @@ namespace RedMagic.Rigging.EditorTools
             }
 
             EditorUtility.SetDirty(rig);
+        }
+
+        /// <summary>
+        /// <c>gestures[].sound</c>: clips (rutas del proyecto), volumen, tono y su instante (paso + momento).
+        /// El resto del SoundCue (prioridad, posicional…) se conserva del que hubiera.
+        /// </summary>
+        private static void ReadGestureSound(RigGesture gesture, JToken token, string ctx, ConfigImportReport report)
+        {
+            var cue = gesture.sound ?? new Audio.SoundCue();
+            if (!(token is JObject json))
+            {
+                cue.clips = Array.Empty<AudioClip>();
+                gesture.sound = cue;
+                return;
+            }
+
+            var clips = new List<AudioClip>();
+            foreach (var c in json["clips"] as JArray ?? new JArray())
+            {
+                string path = c.Type == JTokenType.String ? c.Value<string>() : null;
+                var clip = string.IsNullOrEmpty(path) ? null : AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+                if (clip != null) clips.Add(clip);
+                else report.Warnings.Add($"{ctx}: '{path}' no es un clip de audio del proyecto; se omite.");
+            }
+
+            // Una copia: el SoundCue anterior puede ser el mismo objeto que el del gesto que se sustituye.
+            gesture.sound = new Audio.SoundCue
+            {
+                clips = clips.ToArray(),
+                volume = Mathf.Clamp01(json.Value<float?>("volume") ?? cue.volume),
+                pitchMin = Mathf.Clamp(json.Value<float?>("pitchMin") ?? cue.pitchMin, 0.1f, 3f),
+                pitchMax = Mathf.Clamp(json.Value<float?>("pitchMax") ?? cue.pitchMax, 0.1f, 3f),
+                noRepeatLast = cue.noRepeatLast,
+                priority = cue.priority,
+                positional = cue.positional,
+                rolloffStart = cue.rolloffStart,
+                rolloffEnd = cue.rolloffEnd,
+            };
+            if (gesture.sound.pitchMax < gesture.sound.pitchMin) gesture.sound.pitchMax = gesture.sound.pitchMin;
+            gesture.soundMoment = GestureSoundMoment.At;
+            gesture.soundStep = Mathf.Max(0, json.Value<int?>("step") ?? 0);
+            gesture.soundAt = Mathf.Clamp01(json.Value<float?>("at") ?? 0f);
         }
 
         /// <summary><c>spriteSwaps[].named</c>: los sprites de alerta / herido / muerto / por gesto de esa pieza.</summary>

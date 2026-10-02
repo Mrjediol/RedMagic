@@ -26,6 +26,7 @@ namespace RedMagic.Rigging.EditorTools
     /// para que la web dibuje el cuerpo), <c>sounds</c> (el sonido de cada gesto), <c>artLibrary</c>
     /// (prefab de efecto → id de la biblioteca web) y <c>revision</c>.</item>
     /// <item><c>GET /file?path=Assets/…</c> → los bytes de un png / wav / ogg / mp3 del proyecto.</item>
+    /// <item><c>GET /sounds</c> → <c>{ clips: [rutas] }</c>: los clips de audio del proyecto (para elegir el de un gesto).</item>
     /// <item><c>POST /gestures?prefab=&amp;revision=[&amp;force=1]</c>, cuerpo = el .zip parcial de la web
     /// (<c>rig-export.js ▸ buildGesturesBundle</c>) → <see cref="RigBundleImporter.ImportWithReport"/>.
     /// Si el prefab cambió desde que la web lo leyó (otra <c>revision</c>), o está abierto en Prefab
@@ -59,6 +60,7 @@ namespace RedMagic.Rigging.EditorTools
 
             if (method == "GET" && route == "/enemy") { Enemy(context, request.QueryString["prefab"]); return; }
             if (method == "GET" && route == "/file") { SendFile(context, request.QueryString["path"]); return; }
+            if (method == "GET" && route == "/sounds") { WebBridgeServer.Reply(context, 200, new JObject { ["clips"] = AudioClips() }); return; }
             if (method == "POST" && route == "/gestures") { SaveGestures(context); return; }
 
             Fail(context, 404, $"Ruta desconocida: {method} {route}");
@@ -108,7 +110,7 @@ namespace RedMagic.Rigging.EditorTools
                 ["name"] = rigConfig.Value<string>("name"),
                 ["kind"] = rigConfig.Value<string>("kind"),
                 ["prefab"] = prefabPath,
-                ["revision"] = RevisionOf(rigConfig, enemyConfig),
+                ["revision"] = RevisionOf(rigConfig, enemyConfig, GestureSounds(rig)),
                 ["rigConfig"] = rigConfig,
                 ["enemyConfig"] = enemyConfig,
                 ["sprites"] = SpriteInfo(rigConfig),
@@ -139,13 +141,15 @@ namespace RedMagic.Rigging.EditorTools
         /// Huella de lo que la web edita (gestos, sprites por estado, baraja, defensas): si cambia entre
         /// que la web abre el enemigo y lo guarda, alguien lo tocó en Unity.
         /// </summary>
-        private static string RevisionOf(JObject rigConfig, JObject enemyConfig)
+        private static string RevisionOf(JObject rigConfig, JObject enemyConfig, JArray sounds)
         {
             var tuning = enemyConfig?["tuning"] as JObject;
             var watched = new JObject
             {
                 ["gestures"] = rigConfig["gestures"],
                 ["idleGestures"] = rigConfig["idleGestures"],
+                ["transitionGestures"] = rigConfig["transitionGestures"],
+                ["sounds"] = sounds,
                 ["spriteSwaps"] = rigConfig["spriteSwaps"],
                 ["attacks"] = enemyConfig?["attacks"],
                 ["deck"] = tuning?["attacks"],
@@ -169,7 +173,7 @@ namespace RedMagic.Rigging.EditorTools
             var root = LoadRigPrefab(prefabPath, out _);
             if (root == null) return null;
             return Snapshot(root, prefabPath, new List<string>(), out var rigConfig, out var enemyConfig)
-                ? RevisionOf(rigConfig, enemyConfig)
+                ? RevisionOf(rigConfig, enemyConfig, GestureSounds(root.GetComponent<ProceduralRig>()))
                 : null;
         }
 
@@ -227,17 +231,27 @@ namespace RedMagic.Rigging.EditorTools
                     if (clip != null && AssetDatabase.Contains(clip)) clips.Add(AssetDatabase.GetAssetPath(clip));
                 if (clips.Count == 0) continue;
 
-                list.Add(new JObject
-                {
-                    ["gesture"] = g.name,
-                    ["moment"] = RigConfigJson.EnumName(g.soundMoment),
-                    ["clip"] = clips[0],
-                    ["clips"] = clips,
-                    ["volume"] = RigConfigJson.Num(g.sound.volume),
-                    ["pitch"] = RigConfigJson.Num((g.sound.pitchMin + g.sound.pitchMax) * 0.5f),
-                    ["pitchMin"] = RigConfigJson.Num(g.sound.pitchMin),
-                    ["pitchMax"] = RigConfigJson.Num(g.sound.pitchMax),
-                });
+                var sound = RigConfigExporter.GestureSound(g);
+                if (sound == null) continue;
+                sound["gesture"] = g.name;
+                list.Add(sound);
+            }
+
+            return list;
+        }
+
+        /// <summary>Todos los clips de audio del proyecto (menos los packs de terceros): lo que la web deja elegir.</summary>
+        private static JArray AudioClips()
+        {
+            var list = new JArray();
+            foreach (string guid in AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (path.StartsWith("Assets/Brackeys/", StringComparison.Ordinal) || path.StartsWith("Assets/Cainos/", StringComparison.Ordinal) ||
+                    path.StartsWith("Assets/Dragon Warrior Files/", StringComparison.Ordinal) || path.StartsWith("Assets/_Reference/", StringComparison.Ordinal))
+                    continue;
+                if (!FileTypes.ContainsKey(Path.GetExtension(path).ToLowerInvariant())) continue;
+                list.Add(path);
             }
 
             return list;

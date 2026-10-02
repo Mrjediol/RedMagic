@@ -288,6 +288,15 @@ namespace RedMagic.Enemies
             if (HasRig) rig.SetAlert(alert);
         }
 
+        /// <summary>
+        /// Entre ataque y ataque (quedan <paramref name="seconds"/> de enfriamiento): un cuerpo por partes
+        /// puede hacer uno de sus gestos de transición. Con Animator no hay nada que hacer.
+        /// </summary>
+        public void PlayTransition(float seconds)
+        {
+            if (HasRig) rig.PlayTransition(seconds);
+        }
+
         public void SetMoving(bool moving)
         {
             if (HasRig)

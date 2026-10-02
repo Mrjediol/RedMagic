@@ -437,6 +437,12 @@ namespace RedMagic.Rigging
                               float from, float to, bool silent, ref bool sounded)
         {
             FireFx(gesture, step, from, to);
+
+            // El sonido con instante propio ('At'): como un efecto, en su paso y su momento.
+            if (gesture.soundMoment == GestureSoundMoment.At && Mathf.Min(gesture.soundStep, count - 1) == step &&
+                gesture.soundAt > from && gesture.soundAt <= to)
+                PlayGestureSound(gesture, GestureSoundMoment.At);
+
             for (int i = 0; i < releases.Count; i++)
             {
                 var r = releases[i];
@@ -500,6 +506,38 @@ namespace RedMagic.Rigging
             _idleLast = index;
             StartGesture(GestureRoutine(gesture, Mathf.Max(0.05f, idle.windup), silent: true), gesture);
             Rig.ShowGestureSprites(gesture.name, isAttack: false);
+        }
+
+        // ============================================================ gestos de transición
+
+        private int _transitionLast = -1;
+        private readonly List<int> _transitionFits = new List<int>();
+
+        public override bool PlayTransition(float seconds)
+        {
+            var transition = Rig.transition;
+            if (_dead || _asleep || transition?.gestures == null || transition.gestures.Count == 0) return false;
+            if (Random.value > transition.chance) return false;
+
+            // Sólo los que caben en el enfriamiento: uno cortado a medias por el ataque siguiente se lee como un fallo.
+            float lead = Mathf.Max(0.05f, transition.windup);
+            _transitionFits.Clear();
+            for (int i = 0; i < transition.gestures.Count; i++)
+            {
+                var candidate = Rig.FindGesture(transition.gestures[i]);
+                if (candidate != null && candidate.TotalSeconds(lead) <= seconds) _transitionFits.Add(i);
+            }
+
+            if (_transitionFits.Count == 0) return false;
+            int pick = _transitionFits[Random.Range(0, _transitionFits.Count)];
+            if (pick == _transitionLast && _transitionFits.Count > 1)
+                pick = _transitionFits[(_transitionFits.IndexOf(pick) + 1) % _transitionFits.Count];
+
+            _transitionLast = pick;
+            var gesture = Rig.FindGesture(transition.gestures[pick]);
+            StartGesture(GestureRoutine(gesture, lead, silent: true), gesture);
+            Rig.ShowGestureSprites(gesture.name, isAttack: false);
+            return true;
         }
 
         /// <summary>Llega a la pose del primer paso y se queda ahí hasta <see cref="ClearHold"/>.</summary>

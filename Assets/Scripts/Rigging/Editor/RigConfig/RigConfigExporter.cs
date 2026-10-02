@@ -153,6 +153,7 @@ namespace RedMagic.Rigging.EditorTools
             json["spriteSwaps"] = Swaps(rig, visual, warnings);
             json["gestures"] = Gestures(rig, visual);
             json["idleGestures"] = IdleGestures(rig);
+            json["transitionGestures"] = TransitionGestures(rig);
 
             var limbs = root.GetComponent<BossLimbs>();
             if (limbs != null) json["bossLimbs"] = Limbs(limbs, visual);
@@ -431,6 +432,49 @@ namespace RedMagic.Rigging.EditorTools
                 ["interval"] = RigConfigJson.Num(idle.interval),
                 ["chance"] = RigConfigJson.Num(idle.chance),
                 ["windup"] = RigConfigJson.Num(idle.windup),
+            };
+        }
+
+        private static JObject TransitionGestures(ProceduralRig rig)
+        {
+            var transition = rig.transition ?? new RigTransitionGestures();
+            return new JObject
+            {
+                ["gestures"] = new JArray(transition.gestures ?? new List<string>()),
+                ["chance"] = RigConfigJson.Num(transition.chance),
+                ["windup"] = RigConfigJson.Num(transition.windup),
+            };
+        }
+
+        /// <summary>
+        /// El sonido de un gesto: sus clips (rutas del proyecto), volumen, tono y CUÁNDO suena (paso +
+        /// momento; 'Start' y 'Release' salen ya como su instante). Null si no tiene clips.
+        /// </summary>
+        public static JObject GestureSound(RigGesture g)
+        {
+            if (g?.sound?.clips == null) return null;
+            var clips = new JArray();
+            foreach (var clip in g.sound.clips)
+                if (clip != null && AssetDatabase.Contains(clip)) clips.Add(AssetDatabase.GetAssetPath(clip));
+            if (clips.Count == 0) return null;
+
+            int step = 0;
+            float at = 0f;
+            if (g.soundMoment == GestureSoundMoment.At) { step = g.soundStep; at = g.soundAt; }
+            else if (g.soundMoment == GestureSoundMoment.Release)
+            {
+                var releases = g.EffectiveReleases;
+                if (releases.Count > 0 && releases[0] != null) { step = releases[0].step; at = releases[0].at; }
+            }
+
+            return new JObject
+            {
+                ["clips"] = clips,
+                ["volume"] = RigConfigJson.Num(g.sound.volume),
+                ["pitchMin"] = RigConfigJson.Num(g.sound.pitchMin),
+                ["pitchMax"] = RigConfigJson.Num(g.sound.pitchMax),
+                ["step"] = Mathf.Clamp(step, 0, Mathf.Max(0, (g.steps?.Count ?? 1) - 1)),
+                ["at"] = RigConfigJson.Num(Mathf.Clamp01(at)),
             };
         }
 

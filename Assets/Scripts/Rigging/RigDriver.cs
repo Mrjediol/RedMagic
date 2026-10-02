@@ -162,6 +162,13 @@ namespace RedMagic.Rigging
         /// <summary>Mantiene la pose de carga de un gesto hasta <see cref="ClearHold"/> (el viaje de una embestida).</summary>
         public virtual bool HoldGesture(string gestureName) => false;
 
+        /// <summary>
+        /// Acaba de terminar un ataque y quedan <paramref name="seconds"/> de enfriamiento: con la
+        /// probabilidad de <see cref="ProceduralRig.transition"/> hace uno de sus gestos de transición
+        /// que quepa en ese tiempo. False = no hizo ninguno.
+        /// </summary>
+        public virtual bool PlayTransition(float seconds) => false;
+
         /// <summary>Suelta un gesto en curso o mantenido y vuelve al reposo, sin avisar de nada.</summary>
         public virtual void ClearHold() { }
 

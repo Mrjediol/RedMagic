@@ -841,6 +841,7 @@ namespace RedMagic.Enemies
 
             _cooldownTimer = T.attackCooldown;
             Enter(State.Cooldown);
+            if (_animation != null) _animation.PlayTransition(_cooldownTimer);
         }
 
         /// <summary>

@@ -169,6 +169,12 @@ namespace RedMagic.Rigging
 
         /// <summary>Al soltar el golpe (el disparo, el impacto).</summary>
         Release,
+
+        /// <summary>
+        /// En un instante propio del gesto (<see cref="RigGesture.soundStep"/> + <see cref="RigGesture.soundAt"/>):
+        /// es lo que escribe la línea de tiempo de la web, donde el sonido se arrastra como un efecto.
+        /// </summary>
+        At,
     }
 
     /// <summary>Cómo se llega a la pose de un paso.</summary>
@@ -370,6 +376,22 @@ namespace RedMagic.Rigging
         [Tooltip("Cuándo suena: al empezar el gesto o en su primera suelta.")]
         public GestureSoundMoment soundMoment = GestureSoundMoment.Release;
 
+        [Tooltip("Con 'At': el paso en el que suena (0 = el primero).")]
+        [Min(0)] public int soundStep;
+
+        [Tooltip("Con 'At': el momento dentro de ese paso (0 = al empezar, 1 = al acabar).")]
+        [Range(0f, 1f)] public float soundAt;
+
+        /// <summary>Segundos que dura entero (pasos + vuelta) lanzado con <paramref name="lead"/> de aviso.</summary>
+        public float TotalSeconds(float lead)
+        {
+            var durations = new List<float>();
+            Durations(lead, durations);
+            float total = Mathf.Max(0.01f, recover);
+            foreach (float d in durations) total += d;
+            return total;
+        }
+
         // ------------------------------------------------------------ lectura
 
         private static readonly List<RigRelease> NoReleases = new List<RigRelease>();
@@ -551,6 +573,24 @@ namespace RedMagic.Rigging
     }
 
     /// <summary>
+    /// Gestos de <b>transición</b>: los que hace entre ataque y ataque, mientras dura su enfriamiento
+    /// (un respiro, recargar, sacudirse). Como los de reposo, son nombres de la lista de gestos y no
+    /// son ataques (no sueltan nada). No es obligatorio tener ninguno.
+    /// </summary>
+    [Serializable]
+    public class RigTransitionGestures
+    {
+        [Tooltip("Nombres de gestos de la lista de gestos. Tras cada ataque se elige uno al azar. Vacío = ninguno.")]
+        public List<string> gestures = new List<string>();
+
+        [Tooltip("Probabilidad de hacer uno al acabar un ataque.")]
+        [Range(0f, 1f)] public float chance = 0.5f;
+
+        [Tooltip("Segundos que tarda en llegar a la pose de carga del gesto (en un ataque es el aviso).")]
+        [Min(0.05f)] public float windup = 0.3f;
+    }
+
+    /// <summary>
     /// Los <b>datos</b> de un cuerpo animado por partes: qué partes hay, cómo se balancean, y los
     /// tiempos y amplitudes de cada gesto (apuntar, retroceso, golpe, muerte…).
     ///
@@ -604,6 +644,9 @@ namespace RedMagic.Rigging
 
         [Tooltip("Gestos que hace solo en reposo: sin objetivo, sin moverse, sin atacar y despierto.")]
         public RigIdleGestures idle = new RigIdleGestures();
+
+        [Tooltip("Gestos que hace entre ataque y ataque, mientras dura el enfriamiento. Sólo los que caben en él.")]
+        public RigTransitionGestures transition = new RigTransitionGestures();
 
         [Header("Apuntar (brazo-arma)")]
         [Tooltip("La parte que gira hacia el objetivo. Vacío = no apunta.")]

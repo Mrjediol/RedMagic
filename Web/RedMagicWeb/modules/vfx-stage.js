@@ -50,11 +50,14 @@ function audioContext() {
   return audio;
 }
 
-/** Plays a sound now. Returns a function that stops it (needed for loops). No Web Audio = no sound, no error. */
-function playSound(id, { loop = false, gain = 0.8 } = {}) {
+/**
+ * Plays a sound now. Returns a function that stops it (needed for loops). No Web Audio = no sound, no error.
+ * `samples` = already rendered samples of a sound that is not one of the Lab's (the game's palette).
+ */
+export function playSound(id, { loop = false, gain = 0.8, samples = null } = {}) {
   const ctx = audioContext();
-  const samples = ctx ? renderSound(id) : null;
-  if (!samples) return () => {};
+  if (ctx && !samples) samples = renderSound(id);
+  if (!ctx || !samples) return () => {};
   if (ctx.state === 'suspended') ctx.resume();
   if (!buffers.has(id)) {
     const buffer = ctx.createBuffer(1, samples.length, SAMPLE_RATE);
@@ -77,8 +80,7 @@ function playSound(id, { loop = false, gain = 0.8 } = {}) {
   };
 }
 
-function downloadWav(id) {
-  const samples = renderSound(id);
+export function downloadWav(id, samples = renderSound(id)) {
   if (!samples) return;
   const url = URL.createObjectURL(new Blob([encodeWav(samples)], { type: 'audio/wav' }));
   const a = document.createElement('a');

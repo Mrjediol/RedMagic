@@ -261,6 +261,14 @@ con ▶ para oírlo solo y **⬇ .wav** para descargarlo. Son provisionales: par
   barridos de jefe). Nunca pisa arte puesto a mano. Detalle: `docs/architecture/fx-placeholders.md`.
 - `node bake-sounds.mjs` escribe los sonidos en `Assets/Audio/Sfx/VfxLab/` como clips normales. No
   asigna nada: se ponen desde Biblioteca Jere ▸ Sounds (y entonces hay que puntuarlos).
+  El mismo comando escribe la **paleta de sonidos del juego** (`modules/game-sounds.js`) en
+  `Assets/Audio/Sfx/Game/<familia>/` + `palette.json`; esos sí se asignan solos, en Unity, con
+  **Tools ▸ RedMagic ▸ Audio ▸ 4 · Asignar paleta de sonidos del juego** (sólo huecos vacíos o con el clip
+  de prueba; `4b` enseña lo que haría sin tocar nada).
+
+**🔊 Sonidos del juego** (botón en la pestaña VFX Lab). Lista toda la paleta por familia con ▶ para oírla.
+"asignado" = está puesto en algún hueco; "opción" = toma alternativa (`player_jump_2`, `ui_click_3`…)
+que no está puesta en nada: para probarla, asígnala en Biblioteca Jere ▸ Sounds.
 
 Color y tamaño van horneados en los frames (el tamaño en juego lo sigue mandando el "size" del
 proyectil o del ataque).

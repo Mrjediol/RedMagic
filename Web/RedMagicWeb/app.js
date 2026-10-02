@@ -17,6 +17,7 @@ import { initEnemyCreator } from './modules/enemy-form.js';
 import { initFxCreator } from './modules/fx-form.js';
 import { initBossCreator } from './modules/boss-form.js';
 import { initVfxLab } from './modules/vfx-lab.js';
+import { initGameSoundsPanel } from './modules/game-sounds-panel.js';
 import { initRigComposer } from './modules/rig-composer.js';
 import { initEnemyStudio } from './modules/enemy-studio.js';
 import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail, exportAllRecords, restoreRecords } from './modules/enemy-library.js';
@@ -1084,6 +1085,7 @@ vfxLab = initVfxLab({
   listRoot: document.getElementById('vfxListRoot'),
   statusEl: document.getElementById('vfxStatus'),
 });
+initGameSoundsPanel({ button: document.getElementById('gameSoundsBtn') });
 
 // ============================================================ Rig composer (the body editor of Enemy Studio: part-based enemies/bosses)
 

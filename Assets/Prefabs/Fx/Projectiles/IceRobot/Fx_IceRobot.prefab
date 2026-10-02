@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 7590819758388547835}
   - component: {fileID: 4976309595355635088}
   - component: {fileID: 3632652731513985815}
+  - component: {fileID: 720432060883783269}
   m_Layer: 0
   m_Name: Fx_IceRobot
   m_TagString: Untagged
@@ -260,3 +261,73 @@ MonoBehaviour:
   libraryId: 6e4fe0b9-2fdf-494e-b671-5592b0429735
   kind: projectile
   sourceFolder: Assets/Art/WebLibrary/projectile/6e4fe0b9-2fdf-494e-b671-5592b0429735
+--- !u!114 &720432060883783269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2669538149930495810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 459e413f26938254eabe1442e15c540d, type: 3}
+      volume: 0.4
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 1
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 599b56756eec70943b987d3f2d8bc9d6, type: 3}
+      volume: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 14
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 25c084d1c235fd043b1168dd6d4afbb8, type: 3}
+      volume: 0.6
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 0
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 0554e5215f81c3d4aae4d4d6b5934c54, type: 3}
+      volume: 0.6
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 0
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  useGenericFallback: 1

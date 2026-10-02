@@ -7,9 +7,9 @@
       "category": "Bosses/ColosodeHielo",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/boss/boss_activate.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
@@ -25,8 +25,10 @@
       "category": "Bosses/ColosodeHielo",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/boss/boss_death.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
         "guid": "56fb851934fd63542ac2ea35df703eb9",
@@ -41,8 +43,10 @@
       "category": "Bosses/ColosodeHielo",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/boss/boss_hurt.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
         "guid": "56fb851934fd63542ac2ea35df703eb9",
@@ -57,9 +61,9 @@
       "category": "Bosses/ColosodeHielo",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/boss/boss_phase.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/Boss_ColosodeHielo.asset",
@@ -75,9 +79,9 @@
       "category": "Bosses/ColosodeHielo",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/boss/boss_vulnerable.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
@@ -93,9 +97,9 @@
       "category": "Bosses/ColosodeHielo/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_dash.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_HieloEmbestida.asset",
@@ -111,9 +115,9 @@
       "category": "Bosses/ColosodeHielo/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_shockwave.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_HieloGolpeSuelo.asset",
@@ -129,9 +133,9 @@
       "category": "Bosses/ColosodeHielo/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_throw.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_HieloLanzarRoca.asset",
@@ -147,9 +151,9 @@
       "category": "Bosses/ColosodeHielo/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_pickup.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_HieloLanzarRoca.asset",
@@ -165,9 +169,9 @@
       "category": "Bosses/ColosodeHielo/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_throw.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_HieloLanzarRocas.asset",
@@ -183,9 +187,9 @@
       "category": "Bosses/ColosodeHielo/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_pickup.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_HieloLanzarRocas.asset",
@@ -201,9 +205,9 @@
       "category": "Bosses/ColosodeHielo/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_melee_heavy.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_HieloPunoPotente.asset",
@@ -219,9 +223,9 @@
       "category": "Bosses/ColosodeHielo/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_melee_heavy.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_HieloRafagaPunos.asset",
@@ -237,9 +241,9 @@
       "category": "Bosses/ColosodeHielo2",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/boss/boss_phase.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/Boss_ColosodeHielo2.asset",
@@ -255,8 +259,10 @@
       "category": "Bosses/ColosodeHielo2/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_slam.wav"
+      ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_Hielo2_DobleMazazo.asset",
         "guid": "f56354bbb60ae6541917b487f9007ca2",
@@ -271,9 +277,9 @@
       "category": "Bosses/ColosodeHielo2/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_dash.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_Hielo2_Embestida.asset",
@@ -289,8 +295,10 @@
       "category": "Bosses/ColosodeHielo2/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_shard_dive.wav"
+      ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_Hielo2_Esquirlas.asset",
         "guid": "603bd64b063c0564eae4a3d6eee7e607",
@@ -305,8 +313,10 @@
       "category": "Bosses/ColosodeHielo2/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_throw.wav"
+      ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_Hielo2_LanzarPuno.asset",
         "guid": "c30b79f83484d3147b4f065d74b7e3c6",
@@ -321,9 +331,9 @@
       "category": "Bosses/ColosodeHielo2/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_throw.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_Hielo2_LanzarRoca.asset",
@@ -339,9 +349,9 @@
       "category": "Bosses/ColosodeHielo2/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_pickup.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_Hielo2_LanzarRoca.asset",
@@ -357,9 +367,9 @@
       "category": "Bosses/ColosodeHielo2/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_throw.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_Hielo2_LanzarRocas.asset",
@@ -375,9 +385,9 @@
       "category": "Bosses/ColosodeHielo2/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_pickup.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_Hielo2_LanzarRocas.asset",
@@ -393,8 +403,10 @@
       "category": "Bosses/ColosodeHielo2/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_slam.wav"
+      ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_Hielo2_RafagaMazazos.asset",
         "guid": "09b083c2feb492642a538ae79af18193",
@@ -409,8 +421,10 @@
       "category": "Bosses/ColosodeHielo2/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_pincer.wav"
+      ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_Hielo2_Tenaza.asset",
         "guid": "0271832c75597e34694ad629aee26208",
@@ -425,14 +439,16 @@
       "category": "Bosses/IceBoss2",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/boss/boss_activate.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "SoundEmitter",
         "member": "OnActivate",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -441,14 +457,16 @@
       "category": "Bosses/IceBoss2",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/boss/boss_death.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -457,8 +475,10 @@
       "category": "Bosses/IceBoss2",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_charge.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
@@ -473,8 +493,10 @@
       "category": "Bosses/IceBoss2",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_dash.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
@@ -505,8 +527,10 @@
       "category": "Bosses/IceBoss2",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_slam.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
@@ -521,8 +545,10 @@
       "category": "Bosses/IceBoss2",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_step.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
@@ -537,8 +563,10 @@
       "category": "Bosses/IceBoss2",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_pickup.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
@@ -553,8 +581,10 @@
       "category": "Bosses/IceBoss2",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_throw.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
@@ -569,14 +599,16 @@
       "category": "Bosses/IceBoss2",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/boss/boss_hurt.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[2].cue"
       }
     },
     {
@@ -585,14 +617,16 @@
       "category": "Bosses/IceBoss2",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/boss/boss_vulnerable.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "SoundEmitter",
         "member": "OnVulnerable",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -601,9 +635,9 @@
       "category": "Bosses/TreeBoss",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/boss/boss_activate.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
@@ -619,8 +653,10 @@
       "category": "Bosses/TreeBoss",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/boss/boss_death.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
         "guid": "f601d572303009c4b9ada9aab10e20a2",
@@ -635,8 +671,10 @@
       "category": "Bosses/TreeBoss",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/boss/boss_hurt.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
         "guid": "f601d572303009c4b9ada9aab10e20a2",
@@ -651,9 +689,9 @@
       "category": "Bosses/TreeBoss",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/boss/boss_phase.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/Boss_TreeBoss.asset",
@@ -669,9 +707,9 @@
       "category": "Bosses/TreeBoss",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/boss/boss_vulnerable.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
@@ -687,9 +725,9 @@
       "category": "Bosses/TreeBoss/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_spikes.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_BosqueDeEspinas.asset",
@@ -705,9 +743,9 @@
       "category": "Bosses/TreeBoss/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_spikes.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_EspinasDeRaiz.asset",
@@ -723,9 +761,9 @@
       "category": "Bosses/TreeBoss/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_quake.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_EstallidoDeRaices.asset",
@@ -741,9 +779,9 @@
       "category": "Bosses/TreeBoss/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_cast.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_FuegoVerde.asset",
@@ -759,9 +797,9 @@
       "category": "Bosses/TreeBoss/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_fire_loop.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_FuegoVerde.asset",
@@ -777,9 +815,9 @@
       "category": "Bosses/TreeBoss/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_ignite.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_FuegoVerde.asset",
@@ -795,9 +833,9 @@
       "category": "Bosses/TreeBoss/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_orb_ring.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_OrbesDeSavia.asset",
@@ -813,9 +851,9 @@
       "category": "Bosses/TreeBoss/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_bullet_burst.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_TormentaDeHojas.asset",
@@ -831,9 +869,9 @@
       "category": "Bosses/TreeBoss/Attacks",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/attack/attack_orb_ring.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Bosses/BossAttack_TormentaDeSavia.asset",
@@ -849,9 +887,9 @@
       "category": "Build & Status",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/status/status_gold_mark.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -867,9 +905,9 @@
       "category": "Build & Status",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/status/status_slow.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -885,9 +923,9 @@
       "category": "Build & Status",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/status/synergy_tier.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -903,9 +941,9 @@
       "category": "Economy",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/economy/coin_diamond.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -921,9 +959,9 @@
       "category": "Economy",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/economy/coin_gold.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -939,9 +977,9 @@
       "category": "Economy",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/economy/coin_skull.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -957,9 +995,9 @@
       "category": "Economy",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/economy/coin_soul.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -1066,8 +1104,10 @@
       "category": "Enemies/IceGolem",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_death_ice.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Enemy_IceGolem.prefab",
         "guid": "df03e960fcd6b8442b4e6820d5dd5c41",
@@ -1082,8 +1122,10 @@
       "category": "Enemies/IceGolem",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_hurt_ice.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Enemy_IceGolem.prefab",
         "guid": "df03e960fcd6b8442b4e6820d5dd5c41",
@@ -1130,14 +1172,16 @@
       "category": "Enemies/IceRobot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_death_metal.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -1146,14 +1190,16 @@
       "category": "Enemies/IceRobot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnEvade",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -1162,8 +1208,10 @@
       "category": "Enemies/IceRobot",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_charge.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
@@ -1178,8 +1226,10 @@
       "category": "Enemies/IceRobot",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_shoot.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
@@ -1210,8 +1260,10 @@
       "category": "Enemies/IceRobot",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_flick.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
@@ -1226,8 +1278,10 @@
       "category": "Enemies/IceRobot",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_sweep.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
@@ -1242,14 +1296,16 @@
       "category": "Enemies/IceRobot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_hurt_metal.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[2].cue"
       }
     },
     {
@@ -1274,14 +1330,16 @@
       "category": "Enemies/IceRobot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_wake_metal.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnWake",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -1306,8 +1364,10 @@
       "category": "Enemies/IceSpirit",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_death_spirit.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
         "guid": "ac3f483dadeed734b963e9b32ecbecd2",
@@ -1322,8 +1382,10 @@
       "category": "Enemies/IceSpirit",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_hurt_spirit.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
         "guid": "ac3f483dadeed734b963e9b32ecbecd2",
@@ -1370,14 +1432,16 @@
       "category": "Enemies/Turret",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_death_metal.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/Turret.prefab",
         "guid": "7116cf21cf3670b44a2d253afd4e1e97",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -1386,14 +1450,16 @@
       "category": "Enemies/Turret",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_hurt_metal.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/Turret.prefab",
         "guid": "7116cf21cf3670b44a2d253afd4e1e97",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -1402,14 +1468,16 @@
       "category": "Enemies/Turret",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_wake_metal.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/Turret.prefab",
         "guid": "7116cf21cf3670b44a2d253afd4e1e97",
         "component": "SoundEmitter",
         "member": "OnWake",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[2].cue"
       }
     },
     {
@@ -1434,8 +1502,10 @@
       "category": "Enemies/koros",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_bullet_burst.wav"
+      ],
       "owner": {
         "asset": "Assets/ScriptableObjects/EnemyAttacks/koros/EnemyAttack_koros_Ataque1.asset",
         "guid": "16ca4e8750343fd4dac9922f62d36523",
@@ -1450,8 +1520,10 @@
       "category": "Enemies/koros",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_bullet_burst.wav"
+      ],
       "owner": {
         "asset": "Assets/ScriptableObjects/EnemyAttacks/koros/EnemyAttack_koros_Ataque2.asset",
         "guid": "fa82790bedd368445a3961aaf689c496",
@@ -1482,8 +1554,10 @@
       "category": "Enemies/koros",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_charge.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
@@ -1498,8 +1572,10 @@
       "category": "Enemies/koros",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_flick.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
@@ -1514,8 +1590,10 @@
       "category": "Enemies/koros",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_hop.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
@@ -1530,8 +1608,10 @@
       "category": "Enemies/koros",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_sweep.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
@@ -1578,9 +1658,9 @@
       "category": "Interactables/Anvil",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/world/anvil_use.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Eviroment/Anvil.prefab",
@@ -1596,9 +1676,9 @@
       "category": "Interactables/BookLectern",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/world/book_open.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Eviroment/BookLectern.prefab",
@@ -1614,9 +1694,9 @@
       "category": "Interactables/BookLectern",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/world/loot_take.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Eviroment/BookLectern.prefab",
@@ -1632,14 +1712,16 @@
       "category": "Interactables/Fx_BossCenter2_Anchor",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/world/prop_break.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Anchor.prefab",
         "guid": "921951d32e0acd147a18643794bb67c2",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -1648,14 +1730,16 @@
       "category": "Interactables/Fx_BossCenter2_Anchor",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/world/prop_hit.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Anchor.prefab",
         "guid": "921951d32e0acd147a18643794bb67c2",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -1664,14 +1748,16 @@
       "category": "Interactables/Fx_BossCenter_Anchor",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/world/prop_break.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter/Fx_BossCenter_Anchor.prefab",
         "guid": "ebe7b982c580a534cbf7d0b20b924b26",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -1680,14 +1766,16 @@
       "category": "Interactables/Fx_BossCenter_Anchor",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/world/prop_hit.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter/Fx_BossCenter_Anchor.prefab",
         "guid": "ebe7b982c580a534cbf7d0b20b924b26",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -1696,9 +1784,9 @@
       "category": "Interactables/GoldChest",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/world/chest_open.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Eviroment/GoldChest.prefab",
@@ -1714,9 +1802,9 @@
       "category": "Interactables/GoldChest",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/world/loot_take.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Eviroment/GoldChest.prefab",
@@ -1732,9 +1820,9 @@
       "category": "Interactables/Mirror",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/world/mirror_use.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Eviroment/Mirror.prefab",
@@ -1750,9 +1838,9 @@
       "category": "Interactables/Target",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/world/prop_hit.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Eviroment/Target.prefab",
@@ -1768,9 +1856,9 @@
       "category": "Interactables/Wardrobe",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/world/wardrobe_open.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Eviroment/Wardrobe.prefab",
@@ -1786,9 +1874,9 @@
       "category": "Interactables/Wardrobe",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/world/loot_take.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Eviroment/Wardrobe.prefab",
@@ -1804,9 +1892,9 @@
       "category": "Legendary Passives",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/passive/passive_slow.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
@@ -1822,9 +1910,9 @@
       "category": "Legendary Passives",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/passive/passive_gold_drop.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
@@ -1840,9 +1928,9 @@
       "category": "Legendary Passives",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/passive/passive_choice.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
@@ -1858,9 +1946,9 @@
       "category": "Legendary Passives",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/passive/passive_revive.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
@@ -1876,9 +1964,9 @@
       "category": "Legendary Passives",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/passive/passive_shield.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
@@ -1894,9 +1982,9 @@
       "category": "Legendary Passives",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/passive/passive_drop.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
@@ -1912,9 +2000,9 @@
       "category": "Legendary Passives",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/passive/passive_land.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/PassiveDropCinematicSettings.asset",
@@ -1941,9 +2029,9 @@
       "category": "Legendary Passives",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/passive/passive_upgrade.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/LegendaryPassiveTuning.asset",
@@ -2141,9 +2229,9 @@
       "category": "Player/Attack",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/player/player_shoot.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Player.prefab",
@@ -2159,9 +2247,9 @@
       "category": "Player/Attack/BolaDeFuego",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_fire_fireball.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
@@ -2177,9 +2265,9 @@
       "category": "Player/Attack/EscopetaEspectral",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_fire_shotgun.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
@@ -2195,9 +2283,9 @@
       "category": "Player/Attack/GranadaRunica",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_fire_grenade.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
@@ -2213,9 +2301,9 @@
       "category": "Player/Attack/LanzaAstral",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_fire_lance.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
@@ -2231,9 +2319,9 @@
       "category": "Player/Attack/ProyectilRecto",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_fire_bolt.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
@@ -2249,9 +2337,9 @@
       "category": "Player/Attack/RafagaArcana",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_fire_burst.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
@@ -2267,9 +2355,9 @@
       "category": "Player/Attack/RayoArcano",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_charge.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
@@ -2285,9 +2373,9 @@
       "category": "Player/Attack/RayoArcano",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_fire_beam.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
@@ -2303,9 +2391,9 @@
       "category": "Player/Health",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/player/player_death.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Player.prefab",
@@ -2321,9 +2409,9 @@
       "category": "Player/Health",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/player/player_heal.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Player.prefab",
@@ -2355,9 +2443,9 @@
       "category": "Player/Health",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/player/player_low_health.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Player.prefab",
@@ -2447,9 +2535,9 @@
       "category": "Player/Movement",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/player/player_land.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Player.prefab",
@@ -2465,9 +2553,9 @@
       "category": "Player/Pickup",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/player/pickup_item.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Player.prefab",
@@ -2483,14 +2571,16 @@
       "category": "Projectiles/BlueBullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/BlueBullet/Fx_BlueBullet.prefab",
         "guid": "512f48ba21bed8f4c8b15ef1cec3c36e",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -2499,14 +2589,16 @@
       "category": "Projectiles/BlueBullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/BlueBullet/Fx_BlueBullet.prefab",
         "guid": "512f48ba21bed8f4c8b15ef1cec3c36e",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -2515,14 +2607,16 @@
       "category": "Projectiles/BlueBullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/BlueBullet/Fx_BlueBullet.prefab",
         "guid": "512f48ba21bed8f4c8b15ef1cec3c36e",
         "component": "SoundEmitter",
         "member": "OnHitTerrain",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[2].cue"
       }
     },
     {
@@ -2531,14 +2625,16 @@
       "category": "Projectiles/BlueBullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/BlueBullet/Fx_BlueBullet.prefab",
         "guid": "512f48ba21bed8f4c8b15ef1cec3c36e",
         "component": "SoundEmitter",
         "member": "OnSpawn",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -2547,14 +2643,16 @@
       "category": "Projectiles/BossCenter2_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Bullet.prefab",
         "guid": "d5d101c8c3e40834697a1a33c65e0ed2",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -2563,14 +2661,16 @@
       "category": "Projectiles/BossCenter2_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Bullet.prefab",
         "guid": "d5d101c8c3e40834697a1a33c65e0ed2",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -2579,14 +2679,16 @@
       "category": "Projectiles/BossCenter2_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Bullet.prefab",
         "guid": "d5d101c8c3e40834697a1a33c65e0ed2",
         "component": "SoundEmitter",
         "member": "OnHitTerrain",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[2].cue"
       }
     },
     {
@@ -2595,14 +2697,16 @@
       "category": "Projectiles/BossCenter2_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Bullet.prefab",
         "guid": "d5d101c8c3e40834697a1a33c65e0ed2",
         "component": "SoundEmitter",
         "member": "OnSpawn",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -2611,14 +2715,16 @@
       "category": "Projectiles/BossCenter_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter/Fx_BossCenter_Bullet.prefab",
         "guid": "964f5833b9501ad45bd27733dc536a21",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -2627,14 +2733,16 @@
       "category": "Projectiles/BossCenter_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter/Fx_BossCenter_Bullet.prefab",
         "guid": "964f5833b9501ad45bd27733dc536a21",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -2643,14 +2751,16 @@
       "category": "Projectiles/BossCenter_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter/Fx_BossCenter_Bullet.prefab",
         "guid": "964f5833b9501ad45bd27733dc536a21",
         "component": "SoundEmitter",
         "member": "OnHitTerrain",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[2].cue"
       }
     },
     {
@@ -2659,14 +2769,16 @@
       "category": "Projectiles/BossCenter_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter/Fx_BossCenter_Bullet.prefab",
         "guid": "964f5833b9501ad45bd27733dc536a21",
         "component": "SoundEmitter",
         "member": "OnSpawn",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -2675,9 +2787,9 @@
       "category": "Projectiles/ColosodeHielo_Boulder",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_Boulder.prefab",
@@ -2693,9 +2805,9 @@
       "category": "Projectiles/ColosodeHielo_Boulder",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_rock.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_Boulder.prefab",
@@ -2711,9 +2823,9 @@
       "category": "Projectiles/ColosodeHielo_Boulder",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_rock.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_Boulder.prefab",
@@ -2729,9 +2841,9 @@
       "category": "Projectiles/ColosodeHielo_Boulder",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_rock.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_Boulder.prefab",
@@ -2747,9 +2859,9 @@
       "category": "Projectiles/ColosodeHielo_PunchWave",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_PunchWave.prefab",
@@ -2765,9 +2877,9 @@
       "category": "Projectiles/ColosodeHielo_PunchWave",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_rock.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_PunchWave.prefab",
@@ -2783,9 +2895,9 @@
       "category": "Projectiles/ColosodeHielo_PunchWave",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_rock.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_PunchWave.prefab",
@@ -2801,9 +2913,9 @@
       "category": "Projectiles/ColosodeHielo_PunchWave",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_wave.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/ColosodeHielo/Fx_ColosodeHielo_PunchWave.prefab",
@@ -2819,14 +2931,16 @@
       "category": "Projectiles/IceRobot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/IceRobot/Fx_IceRobot.prefab",
         "guid": "579a38a7c7840614a844d788e6f2c53c",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -2835,14 +2949,16 @@
       "category": "Projectiles/IceRobot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_ice.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/IceRobot/Fx_IceRobot.prefab",
         "guid": "579a38a7c7840614a844d788e6f2c53c",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -2851,14 +2967,16 @@
       "category": "Projectiles/IceRobot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_ice.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/IceRobot/Fx_IceRobot.prefab",
         "guid": "579a38a7c7840614a844d788e6f2c53c",
         "component": "SoundEmitter",
         "member": "OnHitTerrain",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[2].cue"
       }
     },
     {
@@ -2867,14 +2985,16 @@
       "category": "Projectiles/IceRobot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_ice.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/IceRobot/Fx_IceRobot.prefab",
         "guid": "579a38a7c7840614a844d788e6f2c53c",
         "component": "SoundEmitter",
         "member": "OnSpawn",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -2883,9 +3003,9 @@
       "category": "Projectiles/IceSpiritShoot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/IceSpiritShoot/Fx_IceSpiritShoot.prefab",
@@ -2901,9 +3021,9 @@
       "category": "Projectiles/IceSpiritShoot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_ice.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/IceSpiritShoot/Fx_IceSpiritShoot.prefab",
@@ -2919,9 +3039,9 @@
       "category": "Projectiles/IceSpiritShoot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_ice.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/IceSpiritShoot/Fx_IceSpiritShoot.prefab",
@@ -2937,9 +3057,9 @@
       "category": "Projectiles/IceSpiritShoot",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_ice.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/IceSpiritShoot/Fx_IceSpiritShoot.prefab",
@@ -2955,14 +3075,16 @@
       "category": "Projectiles/Robot_Projectile",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile.prefab",
         "guid": "59fcad6a052333a4e9c612af15a3feeb",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -2971,14 +3093,16 @@
       "category": "Projectiles/Robot_Projectile",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile.prefab",
         "guid": "59fcad6a052333a4e9c612af15a3feeb",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -2987,14 +3111,16 @@
       "category": "Projectiles/Robot_Projectile",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile.prefab",
         "guid": "59fcad6a052333a4e9c612af15a3feeb",
         "component": "SoundEmitter",
         "member": "OnHitTerrain",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[2].cue"
       }
     },
     {
@@ -3003,14 +3129,16 @@
       "category": "Projectiles/Robot_Projectile",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile.prefab",
         "guid": "59fcad6a052333a4e9c612af15a3feeb",
         "component": "SoundEmitter",
         "member": "OnSpawn",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -3019,9 +3147,9 @@
       "category": "Projectiles/TreeBoss_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Bullet.prefab",
@@ -3037,9 +3165,9 @@
       "category": "Projectiles/TreeBoss_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Bullet.prefab",
@@ -3055,9 +3183,9 @@
       "category": "Projectiles/TreeBoss_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Bullet.prefab",
@@ -3073,9 +3201,9 @@
       "category": "Projectiles/TreeBoss_Bullet",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Bullet.prefab",
@@ -3091,9 +3219,9 @@
       "category": "Projectiles/TreeBoss_Leaf",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Leaf.prefab",
@@ -3109,9 +3237,9 @@
       "category": "Projectiles/TreeBoss_Leaf",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_leaf.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Leaf.prefab",
@@ -3127,9 +3255,9 @@
       "category": "Projectiles/TreeBoss_Leaf",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Leaf.prefab",
@@ -3145,9 +3273,9 @@
       "category": "Projectiles/TreeBoss_Leaf",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_leaf.wav"
       ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/TreeBoss/Fx_TreeBoss_Leaf.prefab",
@@ -3163,14 +3291,16 @@
       "category": "Projectiles/Turret_Laser",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/Turret/Fx_Turret_Laser.prefab",
         "guid": "bc0f500fa591c1449b49266faa729336",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -3179,14 +3309,16 @@
       "category": "Projectiles/Turret_Laser",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/Turret/Fx_Turret_Laser.prefab",
         "guid": "bc0f500fa591c1449b49266faa729336",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -3195,14 +3327,16 @@
       "category": "Projectiles/Turret_Laser",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/Turret/Fx_Turret_Laser.prefab",
         "guid": "bc0f500fa591c1449b49266faa729336",
         "component": "SoundEmitter",
         "member": "OnHitTerrain",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[2].cue"
       }
     },
     {
@@ -3211,14 +3345,16 @@
       "category": "Projectiles/Turret_Laser",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_laser.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/Turret/Fx_Turret_Laser.prefab",
         "guid": "bc0f500fa591c1449b49266faa729336",
         "component": "SoundEmitter",
         "member": "OnSpawn",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -3227,9 +3363,9 @@
       "category": "Projectiles/Weapons/BolaDeFuego",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_expire.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
@@ -3245,9 +3381,9 @@
       "category": "Projectiles/Weapons/BolaDeFuego",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_fire.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
@@ -3263,9 +3399,9 @@
       "category": "Projectiles/Weapons/BolaDeFuego",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_terrain.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
@@ -3281,9 +3417,9 @@
       "category": "Projectiles/Weapons/EscopetaEspectral",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_expire.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
@@ -3299,9 +3435,9 @@
       "category": "Projectiles/Weapons/EscopetaEspectral",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_spectral.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
@@ -3317,9 +3453,9 @@
       "category": "Projectiles/Weapons/EscopetaEspectral",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_terrain.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
@@ -3335,9 +3471,9 @@
       "category": "Projectiles/Weapons/GranadaRunica",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_explosion.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
@@ -3353,9 +3489,9 @@
       "category": "Projectiles/Weapons/GranadaRunica",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_grenade_bounce.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
@@ -3371,9 +3507,9 @@
       "category": "Projectiles/Weapons/LanzaAstral",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_expire.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
@@ -3389,9 +3525,9 @@
       "category": "Projectiles/Weapons/LanzaAstral",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_lance.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
@@ -3407,9 +3543,9 @@
       "category": "Projectiles/Weapons/LanzaAstral",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_terrain.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
@@ -3425,9 +3561,9 @@
       "category": "Projectiles/Weapons/ProyectilRecto",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_expire.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
@@ -3443,9 +3579,9 @@
       "category": "Projectiles/Weapons/ProyectilRecto",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_arcane.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
@@ -3461,9 +3597,9 @@
       "category": "Projectiles/Weapons/ProyectilRecto",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_terrain.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
@@ -3479,9 +3615,9 @@
       "category": "Projectiles/Weapons/RafagaArcana",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_expire.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
@@ -3497,9 +3633,9 @@
       "category": "Projectiles/Weapons/RafagaArcana",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_arcane.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
@@ -3515,9 +3651,9 @@
       "category": "Projectiles/Weapons/RafagaArcana",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_terrain.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
@@ -3533,9 +3669,9 @@
       "category": "Projectiles/Weapons/RayoArcano",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_beam_loop.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
@@ -3551,9 +3687,9 @@
       "category": "Projectiles/Weapons/RayoArcano",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/weapon/weapon_hit_beam.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
@@ -3569,14 +3705,16 @@
       "category": "Projectiles/koros_BearRock_Projectile",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/koros/Fx_koros_BearRock_Projectile.prefab",
         "guid": "724ceeb5a7b973a4582f48bf84b3218c",
         "component": "SoundEmitter",
         "member": "OnDeath",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -3585,14 +3723,16 @@
       "category": "Projectiles/koros_BearRock_Projectile",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_rock.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/koros/Fx_koros_BearRock_Projectile.prefab",
         "guid": "724ceeb5a7b973a4582f48bf84b3218c",
         "component": "SoundEmitter",
         "member": "OnHit",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -3601,14 +3741,16 @@
       "category": "Projectiles/koros_BearRock_Projectile",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_rock.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/koros/Fx_koros_BearRock_Projectile.prefab",
         "guid": "724ceeb5a7b973a4582f48bf84b3218c",
         "component": "SoundEmitter",
         "member": "OnHitTerrain",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[2].cue"
       }
     },
     {
@@ -3617,14 +3759,16 @@
       "category": "Projectiles/koros_BearRock_Projectile",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_rock.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/koros/Fx_koros_BearRock_Projectile.prefab",
         "guid": "724ceeb5a7b973a4582f48bf84b3218c",
         "component": "SoundEmitter",
         "member": "OnSpawn",
-        "entryMissing": true
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -3633,9 +3777,9 @@
       "category": "Run Flow",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/run/reward_appear.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3651,9 +3795,9 @@
       "category": "Run Flow",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/run/door_locked.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3669,9 +3813,9 @@
       "category": "Run Flow",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/run/enemy_spawn.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3687,9 +3831,9 @@
       "category": "Run Flow",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/run/run_complete.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3705,9 +3849,9 @@
       "category": "Run Flow",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/run/run_over.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3723,9 +3867,9 @@
       "category": "Run Flow",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/run/run_start.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3741,9 +3885,9 @@
       "category": "Run Flow",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/run/section_clear.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3759,9 +3903,9 @@
       "category": "Run Flow",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/run/section_enter.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3777,9 +3921,9 @@
       "category": "Run Flow",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/run/wave_start.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3813,9 +3957,9 @@
       "category": "Shop",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_deny.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3831,9 +3975,9 @@
       "category": "Shop",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/shop_reroll.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3849,9 +3993,9 @@
       "category": "Shop",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/shop_enter.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3867,9 +4011,9 @@
       "category": "UI",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_back.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3885,9 +4029,9 @@
       "category": "UI",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_click.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3903,9 +4047,9 @@
       "category": "UI",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_deny.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3921,9 +4065,9 @@
       "category": "UI",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_focus.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3957,9 +4101,9 @@
       "category": "UI/Menu actions",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_upgrade.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3975,9 +4119,9 @@
       "category": "UI/Menu actions",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_upgrade.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -3993,9 +4137,9 @@
       "category": "UI/Menu actions",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_level_up.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4011,9 +4155,9 @@
       "category": "UI/Menus/Item",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_close.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4029,9 +4173,9 @@
       "category": "UI/Menus/Item",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_open.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4047,9 +4191,9 @@
       "category": "UI/Menus/Main",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_close.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4065,9 +4209,9 @@
       "category": "UI/Menus/Main",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_open.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4083,9 +4227,9 @@
       "category": "UI/Menus/Mirror",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_close.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4101,9 +4245,9 @@
       "category": "UI/Menus/Mirror",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_open.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4119,9 +4263,9 @@
       "category": "UI/Menus/Options",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_close.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4137,9 +4281,9 @@
       "category": "UI/Menus/Options",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_open.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4155,9 +4299,9 @@
       "category": "UI/Menus/Pause",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_close.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4173,9 +4317,9 @@
       "category": "UI/Menus/Pause",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_open.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4191,9 +4335,9 @@
       "category": "UI/Menus/Upgrade",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_close.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4209,9 +4353,9 @@
       "category": "UI/Menus/Upgrade",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_open.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4227,9 +4371,9 @@
       "category": "UI/Menus/Weapon choice",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_close.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4245,9 +4389,9 @@
       "category": "UI/Menus/Weapon choice",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_open.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4263,9 +4407,9 @@
       "category": "UI/Menus/Weapon forge",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_close.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",
@@ -4281,9 +4425,9 @@
       "category": "UI/Menus/Weapon forge",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "GenericTest",
+      "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Test/generic_test.wav"
+        "Assets/Audio/Sfx/Game/ui/ui_menu_open.wav"
       ],
       "owner": {
         "asset": "Assets/Resources/AudioManager.prefab",

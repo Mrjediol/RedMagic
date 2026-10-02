@@ -68,6 +68,24 @@ variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three 
 - **Rule — sound state questions**: when the user asks about the state of the game's sounds, read
   `SoundRegistry.generated.json` and `SoundStatus.json` directly and answer from them. Never build a
   report file.
+- **The game's synthesised palette** (`Assets/Audio/Sfx/Game/<family>/<id>.wav` + `palette.json`): every slot
+  without a recording of its own is filled from one small palette, defined as data in
+  `Web/RedMagicWeb/modules/game-sounds.js` (`GAME_SOUNDS` — same synthesiser as the Lab's — and `GAME_ASSIGN`,
+  the ordered rules "which slot gets which clip") and written by `tools/bake-sounds.mjs` (which refuses to write
+  if `check-sounds.mjs` finds a broken sound: silent, clicking, cut off, loop that does not close, over its
+  family's length budget).
+  - **`Tools ▸ RedMagic ▸ Audio ▸ 4 · Asignar paleta…`** (`SoundPaletteAssigner`; `4b` = dry run) applies the rules
+    through `SoundSlotEditor`. A rule matches by regex on the row's category / name, the owner's type, the
+    field / trigger and the asset name — by *what the thing is* (attack type, "Rock" / "Laser" / "Ice" in a
+    projectile's name, "Robot" / "Golem" / "Spirit" in an enemy's), so new content gets its sounds with no new rule.
+    It only writes into a slot that is empty, on `generic_test` or on the enemy fallback; never one with a real
+    clip, a silenced one or one removed in the Sounds tab. Idempotent: run it again after adding content.
+  - Per-owner variation is the cue's pitch range / volume (written by the rule), never a new clip.
+  - **Options**: a sound heard all run long has alternative takes `<id>_2`, `<id>_3`… that are assigned to
+    nothing; try one by assigning it in the Sounds tab. Web ▸ VFX Lab ▸ "🔊 Sonidos del juego" plays them all.
+  - Enemy Move / Attack (and koros' Hurt / Death) have no rule on purpose: they stay on the generic fallback.
+    Music is out of the palette (a synthesiser of tones and noise does not write music).
+  - Changing a sound = edit its entry, `npm run bake-sounds` (same file name → same GUID → every slot follows).
 - **Example clips from the VFX Lab**: `Assets/Audio/Sfx/VfxLab/*.wav` (+ `sounds.json`: label, loop, which effect each
   was made for) are synthesised placeholders written by `Web/RedMagicWeb/tools/bake-sounds.mjs`. They are **assigned to
   nothing**: they are just clips to pick in the Sounds tab. Assigning one is adding a sound → the grading rule applies.

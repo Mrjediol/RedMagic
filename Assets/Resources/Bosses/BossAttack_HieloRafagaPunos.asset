@@ -28,10 +28,10 @@ MonoBehaviour:
   gesture: FistBarrage
   sound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: a0b1a9713b5e15f41b9f5ae38fb3dc4c, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.88
+    pitchMax: 1.12
     noRepeatLast: 1
     priority: 1
     positional: 0

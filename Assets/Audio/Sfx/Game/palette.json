@@ -1,0 +1,2210 @@
+{
+  "_comment": "GENERADO por Web/RedMagicWeb/tools/bake-sounds.mjs desde modules/game-sounds.js. No editar a mano. Clip de un sonido: <esta carpeta>/<family>/<id>.wav. Las reglas las aplica Tools > RedMagic > Audio > 4.",
+  "families": {
+    "player": {
+      "label": "Jugador",
+      "max": 1.3
+    },
+    "weapon": {
+      "label": "Armas del jugador",
+      "max": 1.2
+    },
+    "projectile": {
+      "label": "Proyectiles enemigos",
+      "max": 0.6
+    },
+    "enemy": {
+      "label": "Enemigos",
+      "max": 0.9
+    },
+    "gesture": {
+      "label": "Gestos del rig",
+      "max": 0.6
+    },
+    "boss": {
+      "label": "Jefes",
+      "max": 1.8
+    },
+    "attack": {
+      "label": "Ataques (jefes y enemigos)",
+      "max": 1.3
+    },
+    "world": {
+      "label": "Interactuables",
+      "max": 0.9
+    },
+    "economy": {
+      "label": "Economía",
+      "max": 0.5
+    },
+    "run": {
+      "label": "Flujo de la run",
+      "max": 1.8
+    },
+    "passive": {
+      "label": "Pasivas legendarias",
+      "max": 1.3
+    },
+    "status": {
+      "label": "Build y estados",
+      "max": 0.8
+    },
+    "ui": {
+      "label": "UI y tienda",
+      "max": 0.4
+    }
+  },
+  "sounds": {
+    "player_jump_2": {
+      "family": "player",
+      "label": "Salto · opción 2 (soplo)",
+      "seconds": 0.22,
+      "loop": false,
+      "assigned": false
+    },
+    "player_jump_3": {
+      "family": "player",
+      "label": "Salto · opción 3 (muelle)",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": false
+    },
+    "player_jump_4": {
+      "family": "player",
+      "label": "Salto · opción 4 (tela)",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": false
+    },
+    "player_air_jump": {
+      "family": "player",
+      "label": "Salto en el aire",
+      "seconds": 0.24,
+      "loop": false,
+      "assigned": false
+    },
+    "player_air_jump_2": {
+      "family": "player",
+      "label": "Salto en el aire · opción 2 (chispa)",
+      "seconds": 0.28,
+      "loop": false,
+      "assigned": false
+    },
+    "player_dash_2": {
+      "family": "player",
+      "label": "Dash · opción 2 (ráfaga)",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": false
+    },
+    "player_dash_3": {
+      "family": "player",
+      "label": "Dash · opción 3 (corte)",
+      "seconds": 0.24,
+      "loop": false,
+      "assigned": false
+    },
+    "player_dash_4": {
+      "family": "player",
+      "label": "Dash · opción 4 (arcano)",
+      "seconds": 0.32,
+      "loop": false,
+      "assigned": false
+    },
+    "player_footstep_2": {
+      "family": "player",
+      "label": "Pisada · opción 2 (piedra)",
+      "seconds": 0.12,
+      "loop": false,
+      "assigned": false
+    },
+    "player_footstep_3": {
+      "family": "player",
+      "label": "Pisada · opción 3 (blanda)",
+      "seconds": 0.14,
+      "loop": false,
+      "assigned": false
+    },
+    "player_footstep_4": {
+      "family": "player",
+      "label": "Pisada · opción 4 (seca)",
+      "seconds": 0.09,
+      "loop": false,
+      "assigned": false
+    },
+    "player_land": {
+      "family": "player",
+      "label": "Aterrizar",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": true
+    },
+    "player_land_2": {
+      "family": "player",
+      "label": "Aterrizar · opción 2 (polvo)",
+      "seconds": 0.26,
+      "loop": false,
+      "assigned": false
+    },
+    "player_land_3": {
+      "family": "player",
+      "label": "Aterrizar · opción 3 (golpe seco)",
+      "seconds": 0.14,
+      "loop": false,
+      "assigned": false
+    },
+    "player_melee": {
+      "family": "player",
+      "label": "Ataque cuerpo a cuerpo",
+      "seconds": 0.22,
+      "loop": false,
+      "assigned": false
+    },
+    "player_melee_2": {
+      "family": "player",
+      "label": "Ataque cuerpo a cuerpo · opción 2 (pesado)",
+      "seconds": 0.28,
+      "loop": false,
+      "assigned": false
+    },
+    "player_melee_3": {
+      "family": "player",
+      "label": "Ataque cuerpo a cuerpo · opción 3 (filo)",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": false
+    },
+    "player_shoot": {
+      "family": "player",
+      "label": "Disparo",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": true
+    },
+    "player_shoot_2": {
+      "family": "player",
+      "label": "Disparo · opción 2 (seco)",
+      "seconds": 0.14,
+      "loop": false,
+      "assigned": false
+    },
+    "player_shoot_3": {
+      "family": "player",
+      "label": "Disparo · opción 3 (mágico)",
+      "seconds": 0.24,
+      "loop": false,
+      "assigned": false
+    },
+    "player_hurt": {
+      "family": "player",
+      "label": "Daño recibido",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": false
+    },
+    "player_hurt_2": {
+      "family": "player",
+      "label": "Daño recibido · opción 2 (golpe)",
+      "seconds": 0.22,
+      "loop": false,
+      "assigned": false
+    },
+    "player_death": {
+      "family": "player",
+      "label": "Muerte",
+      "seconds": 1.2,
+      "loop": false,
+      "assigned": true
+    },
+    "player_heal": {
+      "family": "player",
+      "label": "Cura",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "player_low_health": {
+      "family": "player",
+      "label": "Vida baja",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "pickup_item": {
+      "family": "player",
+      "label": "Recoger objeto",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "pickup_item_2": {
+      "family": "player",
+      "label": "Recoger objeto · opción 2 (pop)",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": false
+    },
+    "weapon_fire_bolt": {
+      "family": "weapon",
+      "label": "Disparo · proyectil recto",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_fire_bolt_2": {
+      "family": "weapon",
+      "label": "Disparo · proyectil recto · opción 2 (pew)",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": false
+    },
+    "weapon_fire_bolt_3": {
+      "family": "weapon",
+      "label": "Disparo · proyectil recto · opción 3 (soplo)",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": false
+    },
+    "weapon_fire_burst": {
+      "family": "weapon",
+      "label": "Disparo · ráfaga arcana",
+      "seconds": 0.16,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_fire_burst_2": {
+      "family": "weapon",
+      "label": "Disparo · ráfaga arcana · opción 2 (tic)",
+      "seconds": 0.1,
+      "loop": false,
+      "assigned": false
+    },
+    "weapon_fire_fireball": {
+      "family": "weapon",
+      "label": "Disparo · bola de fuego",
+      "seconds": 0.42,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_fire_shotgun": {
+      "family": "weapon",
+      "label": "Disparo · escopeta espectral",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_fire_grenade": {
+      "family": "weapon",
+      "label": "Lanzar · granada rúnica",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_fire_lance": {
+      "family": "weapon",
+      "label": "Disparo · lanza astral",
+      "seconds": 0.38,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_charge": {
+      "family": "weapon",
+      "label": "Cargar · rayo arcano",
+      "seconds": 0.8,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_fire_beam": {
+      "family": "weapon",
+      "label": "Disparo · rayo arcano",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_beam_loop": {
+      "family": "weapon",
+      "label": "Rayo arcano · bucle",
+      "seconds": 1,
+      "loop": true,
+      "assigned": true
+    },
+    "weapon_hit_arcane": {
+      "family": "weapon",
+      "label": "Impacto · arcano",
+      "seconds": 0.22,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_hit_arcane_2": {
+      "family": "weapon",
+      "label": "Impacto · arcano · opción 2 (golpe)",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": false
+    },
+    "weapon_hit_arcane_3": {
+      "family": "weapon",
+      "label": "Impacto · arcano · opción 3 (chispa)",
+      "seconds": 0.16,
+      "loop": false,
+      "assigned": false
+    },
+    "weapon_hit_fire": {
+      "family": "weapon",
+      "label": "Impacto · fuego",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_hit_spectral": {
+      "family": "weapon",
+      "label": "Impacto · espectral",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_hit_lance": {
+      "family": "weapon",
+      "label": "Impacto · lanza",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_hit_beam": {
+      "family": "weapon",
+      "label": "Impacto · rayo (tic)",
+      "seconds": 0.12,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_grenade_bounce": {
+      "family": "weapon",
+      "label": "Granada · rebote",
+      "seconds": 0.14,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_explosion": {
+      "family": "weapon",
+      "label": "Explosión",
+      "seconds": 0.95,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_hit_terrain": {
+      "family": "weapon",
+      "label": "Impacto en terreno",
+      "seconds": 0.16,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_hit_terrain_2": {
+      "family": "weapon",
+      "label": "Impacto en terreno · opción 2 (tac)",
+      "seconds": 0.1,
+      "loop": false,
+      "assigned": false
+    },
+    "weapon_expire": {
+      "family": "weapon",
+      "label": "Proyectil se apaga",
+      "seconds": 0.16,
+      "loop": false,
+      "assigned": true
+    },
+    "weapon_expire_2": {
+      "family": "weapon",
+      "label": "Proyectil se apaga · opción 2 (pof)",
+      "seconds": 0.14,
+      "loop": false,
+      "assigned": false
+    },
+    "proj_launch_energy": {
+      "family": "projectile",
+      "label": "Lanzar · energía",
+      "seconds": 0.22,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_launch_energy_2": {
+      "family": "projectile",
+      "label": "Lanzar · energía · opción 2 (zap)",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": false
+    },
+    "proj_launch_ice": {
+      "family": "projectile",
+      "label": "Lanzar · hielo",
+      "seconds": 0.26,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_launch_rock": {
+      "family": "projectile",
+      "label": "Lanzar · roca",
+      "seconds": 0.34,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_launch_laser": {
+      "family": "projectile",
+      "label": "Lanzar · láser",
+      "seconds": 0.24,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_launch_leaf": {
+      "family": "projectile",
+      "label": "Lanzar · hoja",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_launch_wave": {
+      "family": "projectile",
+      "label": "Lanzar · onda",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_hit_energy": {
+      "family": "projectile",
+      "label": "Impacto en el jugador · energía",
+      "seconds": 0.24,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_hit_ice": {
+      "family": "projectile",
+      "label": "Impacto en el jugador · hielo",
+      "seconds": 0.34,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_hit_rock": {
+      "family": "projectile",
+      "label": "Impacto en el jugador · roca",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_hit_leaf": {
+      "family": "projectile",
+      "label": "Impacto en el jugador · hoja",
+      "seconds": 0.16,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_terrain_soft": {
+      "family": "projectile",
+      "label": "Impacto en terreno · energía",
+      "seconds": 0.16,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_terrain_ice": {
+      "family": "projectile",
+      "label": "Impacto en terreno · hielo",
+      "seconds": 0.24,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_terrain_rock": {
+      "family": "projectile",
+      "label": "Impacto en terreno · roca",
+      "seconds": 0.36,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_expire": {
+      "family": "projectile",
+      "label": "Proyectil se apaga",
+      "seconds": 0.14,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_hurt_2": {
+      "family": "enemy",
+      "label": "Enemigo herido · opción 2 (chasquido)",
+      "seconds": 0.16,
+      "loop": false,
+      "assigned": false
+    },
+    "enemy_hurt_3": {
+      "family": "enemy",
+      "label": "Enemigo herido · opción 3 (carne)",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": false
+    },
+    "enemy_hurt_4": {
+      "family": "enemy",
+      "label": "Enemigo herido · opción 4 (quejido)",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": false
+    },
+    "enemy_death_2": {
+      "family": "enemy",
+      "label": "Enemigo muere · opción 2 (estallido)",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": false
+    },
+    "enemy_death_3": {
+      "family": "enemy",
+      "label": "Enemigo muere · opción 3 (desvanece)",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": false
+    },
+    "enemy_hurt_ice": {
+      "family": "enemy",
+      "label": "Herido · hielo / piedra",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_death_ice": {
+      "family": "enemy",
+      "label": "Muere · hielo / piedra (se rompe)",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_hurt_metal": {
+      "family": "enemy",
+      "label": "Herido · metal",
+      "seconds": 0.24,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_death_metal": {
+      "family": "enemy",
+      "label": "Muere · metal (se apaga)",
+      "seconds": 0.75,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_hurt_spirit": {
+      "family": "enemy",
+      "label": "Herido · espíritu",
+      "seconds": 0.26,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_death_spirit": {
+      "family": "enemy",
+      "label": "Muere · espíritu (se disipa)",
+      "seconds": 0.8,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_wake": {
+      "family": "enemy",
+      "label": "Despierta",
+      "seconds": 0.45,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_wake_metal": {
+      "family": "enemy",
+      "label": "Despierta · máquina",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_evade": {
+      "family": "enemy",
+      "label": "Esquiva",
+      "seconds": 0.22,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_charge": {
+      "family": "gesture",
+      "label": "Gesto · preparar",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_flick": {
+      "family": "gesture",
+      "label": "Gesto · latigazo corto",
+      "seconds": 0.14,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_sweep": {
+      "family": "gesture",
+      "label": "Gesto · barrido",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_shoot": {
+      "family": "gesture",
+      "label": "Gesto · disparo",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_hop": {
+      "family": "gesture",
+      "label": "Gesto · saltito",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_dash": {
+      "family": "gesture",
+      "label": "Gesto · embestir",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_slam": {
+      "family": "gesture",
+      "label": "Gesto · golpe al suelo",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_step": {
+      "family": "gesture",
+      "label": "Gesto · paso pesado",
+      "seconds": 0.26,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_pickup": {
+      "family": "gesture",
+      "label": "Gesto · coger (arrancar del suelo)",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_throw": {
+      "family": "gesture",
+      "label": "Gesto · lanzar",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "boss_activate": {
+      "family": "boss",
+      "label": "Jefe · aparece",
+      "seconds": 1.4,
+      "loop": false,
+      "assigned": true
+    },
+    "boss_hurt": {
+      "family": "boss",
+      "label": "Jefe · herido",
+      "seconds": 0.26,
+      "loop": false,
+      "assigned": true
+    },
+    "boss_hurt_2": {
+      "family": "boss",
+      "label": "Jefe · herido · opción 2 (crujido)",
+      "seconds": 0.22,
+      "loop": false,
+      "assigned": false
+    },
+    "boss_death": {
+      "family": "boss",
+      "label": "Jefe · muere",
+      "seconds": 1.8,
+      "loop": false,
+      "assigned": true
+    },
+    "boss_phase": {
+      "family": "boss",
+      "label": "Jefe · cambio de fase",
+      "seconds": 1.2,
+      "loop": false,
+      "assigned": true
+    },
+    "boss_vulnerable": {
+      "family": "boss",
+      "label": "Jefe · ventana vulnerable",
+      "seconds": 0.7,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_cast": {
+      "family": "attack",
+      "label": "Ataque · conjuro (genérico)",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_dash": {
+      "family": "attack",
+      "label": "Ataque · embestida",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_shockwave": {
+      "family": "attack",
+      "label": "Ataque · onda de choque",
+      "seconds": 0.9,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_throw": {
+      "family": "attack",
+      "label": "Ataque · lanzar",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_pickup": {
+      "family": "attack",
+      "label": "Ataque · arrancar la roca",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_melee_heavy": {
+      "family": "attack",
+      "label": "Ataque · puñetazo",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_slam": {
+      "family": "attack",
+      "label": "Ataque · mazazo",
+      "seconds": 0.7,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_pincer": {
+      "family": "attack",
+      "label": "Ataque · tenaza",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_shard_dive": {
+      "family": "attack",
+      "label": "Ataque · esquirlas en picado",
+      "seconds": 0.55,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_spikes": {
+      "family": "attack",
+      "label": "Ataque · espinas / raíces brotan",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_quake": {
+      "family": "attack",
+      "label": "Ataque · temblor",
+      "seconds": 1.2,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_ignite": {
+      "family": "attack",
+      "label": "Ataque · prender",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_fire_loop": {
+      "family": "attack",
+      "label": "Ataque · fuego · bucle",
+      "seconds": 1.2,
+      "loop": true,
+      "assigned": true
+    },
+    "attack_orb_ring": {
+      "family": "attack",
+      "label": "Ataque · anillo de orbes",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "attack_bullet_burst": {
+      "family": "attack",
+      "label": "Ataque · lluvia de balas",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "interact_use": {
+      "family": "world",
+      "label": "Usar (genérico)",
+      "seconds": 0.22,
+      "loop": false,
+      "assigned": true
+    },
+    "anvil_use": {
+      "family": "world",
+      "label": "Yunque",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "book_open": {
+      "family": "world",
+      "label": "Libro · abrir",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "chest_open": {
+      "family": "world",
+      "label": "Cofre · abrir",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "wardrobe_open": {
+      "family": "world",
+      "label": "Armario · abrir",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "mirror_use": {
+      "family": "world",
+      "label": "Espejo",
+      "seconds": 0.8,
+      "loop": false,
+      "assigned": true
+    },
+    "loot_take": {
+      "family": "world",
+      "label": "Coger el botín",
+      "seconds": 0.35,
+      "loop": false,
+      "assigned": true
+    },
+    "prop_hit": {
+      "family": "world",
+      "label": "Objeto golpeado",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": true
+    },
+    "prop_break": {
+      "family": "world",
+      "label": "Objeto destruido",
+      "seconds": 0.55,
+      "loop": false,
+      "assigned": true
+    },
+    "coin_gold": {
+      "family": "economy",
+      "label": "Oro",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": true
+    },
+    "coin_gold_2": {
+      "family": "economy",
+      "label": "Oro · opción 2 (tintineo)",
+      "seconds": 0.16,
+      "loop": false,
+      "assigned": false
+    },
+    "coin_gold_3": {
+      "family": "economy",
+      "label": "Oro · opción 3 (blip)",
+      "seconds": 0.12,
+      "loop": false,
+      "assigned": false
+    },
+    "coin_diamond": {
+      "family": "economy",
+      "label": "Diamante",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "coin_skull": {
+      "family": "economy",
+      "label": "Calavera",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "coin_soul": {
+      "family": "economy",
+      "label": "Fragmento de alma",
+      "seconds": 0.45,
+      "loop": false,
+      "assigned": true
+    },
+    "run_start": {
+      "family": "run",
+      "label": "Empieza la run",
+      "seconds": 1.1,
+      "loop": false,
+      "assigned": true
+    },
+    "run_over": {
+      "family": "run",
+      "label": "Fin de la run (muerte)",
+      "seconds": 1.6,
+      "loop": false,
+      "assigned": true
+    },
+    "run_complete": {
+      "family": "run",
+      "label": "Run completada",
+      "seconds": 1.6,
+      "loop": false,
+      "assigned": true
+    },
+    "section_enter": {
+      "family": "run",
+      "label": "Entrar en una sección",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "section_clear": {
+      "family": "run",
+      "label": "Sección superada",
+      "seconds": 0.8,
+      "loop": false,
+      "assigned": true
+    },
+    "wave_start": {
+      "family": "run",
+      "label": "Empieza una oleada",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_spawn": {
+      "family": "run",
+      "label": "Aparece un enemigo",
+      "seconds": 0.35,
+      "loop": false,
+      "assigned": true
+    },
+    "enemy_spawn_2": {
+      "family": "run",
+      "label": "Aparece un enemigo · opción 2 (pof)",
+      "seconds": 0.26,
+      "loop": false,
+      "assigned": false
+    },
+    "enemy_spawn_3": {
+      "family": "run",
+      "label": "Aparece un enemigo · opción 3 (portal)",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": false
+    },
+    "door_locked": {
+      "family": "run",
+      "label": "Puerta cerrada",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "reward_appear": {
+      "family": "run",
+      "label": "Aparece la recompensa del jefe",
+      "seconds": 1,
+      "loop": false,
+      "assigned": true
+    },
+    "passive_land": {
+      "family": "passive",
+      "label": "Pasiva · cae al suelo",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "passive_drop": {
+      "family": "passive",
+      "label": "Pasiva · suelta un objeto",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "passive_gold_drop": {
+      "family": "passive",
+      "label": "Pasiva · lluvia de oro",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "passive_choice": {
+      "family": "passive",
+      "label": "Pasiva · elegir",
+      "seconds": 0.7,
+      "loop": false,
+      "assigned": true
+    },
+    "passive_revive": {
+      "family": "passive",
+      "label": "Pasiva · revivir",
+      "seconds": 1.3,
+      "loop": false,
+      "assigned": true
+    },
+    "passive_shield": {
+      "family": "passive",
+      "label": "Pasiva · escudo",
+      "seconds": 0.55,
+      "loop": false,
+      "assigned": true
+    },
+    "passive_slow": {
+      "family": "passive",
+      "label": "Pasiva · ralentizar",
+      "seconds": 0.6,
+      "loop": false,
+      "assigned": true
+    },
+    "passive_upgrade": {
+      "family": "passive",
+      "label": "Pasiva · mejora",
+      "seconds": 0.7,
+      "loop": false,
+      "assigned": true
+    },
+    "status_slow": {
+      "family": "status",
+      "label": "Estado · ralentizado",
+      "seconds": 0.35,
+      "loop": false,
+      "assigned": true
+    },
+    "status_gold_mark": {
+      "family": "status",
+      "label": "Estado · marca de oro",
+      "seconds": 0.35,
+      "loop": false,
+      "assigned": true
+    },
+    "synergy_tier": {
+      "family": "status",
+      "label": "Sinergia · nuevo nivel",
+      "seconds": 0.8,
+      "loop": false,
+      "assigned": true
+    },
+    "ui_click": {
+      "family": "ui",
+      "label": "Click",
+      "seconds": 0.08,
+      "loop": false,
+      "assigned": true
+    },
+    "ui_click_2": {
+      "family": "ui",
+      "label": "Click · opción 2 (madera)",
+      "seconds": 0.07,
+      "loop": false,
+      "assigned": false
+    },
+    "ui_click_3": {
+      "family": "ui",
+      "label": "Click · opción 3 (cristal)",
+      "seconds": 0.1,
+      "loop": false,
+      "assigned": false
+    },
+    "ui_hover_2": {
+      "family": "ui",
+      "label": "Hover · opción 2 (tic)",
+      "seconds": 0.05,
+      "loop": false,
+      "assigned": false
+    },
+    "ui_hover_3": {
+      "family": "ui",
+      "label": "Hover · opción 3 (soplo)",
+      "seconds": 0.07,
+      "loop": false,
+      "assigned": false
+    },
+    "ui_focus": {
+      "family": "ui",
+      "label": "Foco (navegación)",
+      "seconds": 0.06,
+      "loop": false,
+      "assigned": true
+    },
+    "ui_focus_2": {
+      "family": "ui",
+      "label": "Foco · opción 2 (grave)",
+      "seconds": 0.06,
+      "loop": false,
+      "assigned": false
+    },
+    "ui_back": {
+      "family": "ui",
+      "label": "Atrás",
+      "seconds": 0.12,
+      "loop": false,
+      "assigned": true
+    },
+    "ui_deny": {
+      "family": "ui",
+      "label": "Denegado",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": true
+    },
+    "ui_menu_open": {
+      "family": "ui",
+      "label": "Menú · abrir",
+      "seconds": 0.2,
+      "loop": false,
+      "assigned": true
+    },
+    "ui_menu_open_2": {
+      "family": "ui",
+      "label": "Menú · abrir · opción 2 (dos notas)",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": false
+    },
+    "ui_menu_close": {
+      "family": "ui",
+      "label": "Menú · cerrar",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": true
+    },
+    "ui_menu_close_2": {
+      "family": "ui",
+      "label": "Menú · cerrar · opción 2 (dos notas)",
+      "seconds": 0.18,
+      "loop": false,
+      "assigned": false
+    },
+    "ui_upgrade": {
+      "family": "ui",
+      "label": "Mejora comprada",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "ui_level_up": {
+      "family": "ui",
+      "label": "Arma sube de nivel",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "shop_enter": {
+      "family": "ui",
+      "label": "Tienda · entrar",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "shop_reroll": {
+      "family": "ui",
+      "label": "Tienda · reroll",
+      "seconds": 0.35,
+      "loop": false,
+      "assigned": true
+    }
+  },
+  "rules": [
+    {
+      "category": "^Player/Movement$",
+      "name": "^Land$",
+      "clip": "player_land",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.8
+    },
+    {
+      "category": "^Player/Attack$",
+      "name": "^Ranged",
+      "clip": "player_shoot",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Player/Health$",
+      "name": "^Death$",
+      "clip": "player_death"
+    },
+    {
+      "category": "^Player/Health$",
+      "name": "^Heal$",
+      "clip": "player_heal"
+    },
+    {
+      "category": "^Player/Health$",
+      "name": "^Low health$",
+      "clip": "player_low_health"
+    },
+    {
+      "category": "^Player/Pickup$",
+      "clip": "pickup_item",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^chargeSound$",
+      "clip": "weapon_charge"
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^beamLoopSound$",
+      "clip": "weapon_beam_loop",
+      "volume": 0.6
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^explosionSound$",
+      "clip": "weapon_explosion",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^terrainImpactSound$",
+      "clip": "weapon_hit_terrain",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.7
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^expireSound$",
+      "clip": "weapon_expire",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.5
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^fireSound$",
+      "asset": "Fuego|Fire",
+      "clip": "weapon_fire_fireball",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^fireSound$",
+      "asset": "Escopeta|Shotgun",
+      "clip": "weapon_fire_shotgun",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^fireSound$",
+      "asset": "Granada|Grenade",
+      "clip": "weapon_fire_grenade",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^fireSound$",
+      "asset": "Lanza|Lance",
+      "clip": "weapon_fire_lance",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^fireSound$",
+      "asset": "Rafaga|Burst",
+      "clip": "weapon_fire_burst",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^fireSound$",
+      "asset": "Rayo|Beam",
+      "clip": "weapon_fire_beam"
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^fireSound$",
+      "clip": "weapon_fire_bolt",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^impactSound$",
+      "asset": "Fuego|Fire",
+      "clip": "weapon_hit_fire",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^impactSound$",
+      "asset": "Escopeta|Espectral",
+      "clip": "weapon_hit_spectral",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^impactSound$",
+      "asset": "Granada|Grenade",
+      "clip": "weapon_grenade_bounce",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^impactSound$",
+      "asset": "Lanza|Lance",
+      "clip": "weapon_hit_lance",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^impactSound$",
+      "asset": "Rayo|Beam",
+      "clip": "weapon_hit_beam",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.6
+    },
+    {
+      "component": "^WeaponDefinition$",
+      "member": "^impactSound$",
+      "clip": "weapon_hit_arcane",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Launch$",
+      "asset": "Boulder|Rock",
+      "clip": "proj_launch_rock",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.7
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Launch$",
+      "asset": "Laser",
+      "clip": "proj_launch_laser",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.6
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Launch$",
+      "asset": "Leaf",
+      "clip": "proj_launch_leaf",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.5
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Launch$",
+      "asset": "Wave",
+      "clip": "proj_launch_wave",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.7
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Launch$",
+      "asset": "Ice|Hielo",
+      "clip": "proj_launch_ice",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.6
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Launch$",
+      "clip": "proj_launch_energy",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.5
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit target$",
+      "asset": "Boulder|Rock|Wave",
+      "clip": "proj_hit_rock",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit target$",
+      "asset": "Leaf",
+      "clip": "proj_hit_leaf",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit target$",
+      "asset": "Laser",
+      "clip": "proj_hit_energy",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit target$",
+      "asset": "Ice|Hielo",
+      "clip": "proj_hit_ice",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit target$",
+      "clip": "proj_hit_energy",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit terrain$",
+      "asset": "Boulder|Rock|Wave",
+      "clip": "proj_terrain_rock",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.7
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit terrain$",
+      "asset": "Laser|Leaf",
+      "clip": "proj_terrain_soft",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.5
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit terrain$",
+      "asset": "Ice|Hielo",
+      "clip": "proj_terrain_ice",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.6
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit terrain$",
+      "clip": "proj_terrain_soft",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.5
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Expire$",
+      "clip": "proj_expire",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.4
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "DashLoop|Loop$",
+      "clip": null
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "Charge|Brace|Windup",
+      "clip": "gesture_charge",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.6
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "Disparo|Shoot|Fire",
+      "clip": "gesture_shoot",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.7
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "Flick|Finger",
+      "clip": "gesture_flick",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.6
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "Sweep|Swipe",
+      "clip": "gesture_sweep",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.7
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "Saltito|Jump|Hop",
+      "clip": "gesture_hop",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.6
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "Slam",
+      "clip": "gesture_slam",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.8
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "Dash",
+      "clip": "gesture_dash",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.7
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "Move|Walk|Step",
+      "clip": "gesture_step",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.6
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "Pick",
+      "clip": "gesture_pickup",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.7
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "Throw",
+      "clip": "gesture_throw",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.7
+    },
+    {
+      "component": "^ChargeDashAttack$",
+      "clip": "attack_dash",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^ShockwaveAttack$",
+      "clip": "attack_shockwave",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^ThrowProjectileAttack$",
+      "member": "^pickupSound$",
+      "clip": "attack_pickup",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^ThrowProjectileAttack$",
+      "clip": "attack_throw",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^FistThrowAttack$",
+      "clip": "attack_throw",
+      "pitch": [
+        0.78,
+        0.88
+      ]
+    },
+    {
+      "component": "^MeleeStrikeAttack$",
+      "clip": "attack_melee_heavy",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "component": "^LimbSlamAttack$",
+      "clip": "attack_slam",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "component": "^LimbPincerAttack$",
+      "clip": "attack_pincer",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^OrbiterDiveAttack$",
+      "clip": "attack_shard_dive",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^GroundSlamAttack$",
+      "clip": "attack_spikes",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^QuakeSlamAttack$",
+      "clip": "attack_quake",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^PlatformDenialAttack$",
+      "member": "^igniteSound$",
+      "clip": "attack_ignite",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^PlatformDenialAttack$",
+      "member": "^fireLoopSound$",
+      "clip": "attack_fire_loop",
+      "volume": 0.6
+    },
+    {
+      "component": "^OrbRingAttack$",
+      "clip": "attack_orb_ring",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^BulletHellAttack$",
+      "clip": "attack_bullet_burst",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "Attack$",
+      "member": "^sound$",
+      "clip": "attack_cast",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Bosses/[^/]+$",
+      "name": "^Activation$",
+      "clip": "boss_activate"
+    },
+    {
+      "category": "^Bosses/[^/]+$",
+      "name": "^Death$",
+      "clip": "boss_death"
+    },
+    {
+      "category": "^Bosses/[^/]+$",
+      "name": "^Hurt$",
+      "clip": "boss_hurt",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.8
+    },
+    {
+      "category": "^Bosses/[^/]+$",
+      "name": "transition$",
+      "clip": "boss_phase"
+    },
+    {
+      "category": "^Bosses/[^/]+$",
+      "name": "^Vulnerable",
+      "clip": "boss_vulnerable"
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Hurt$",
+      "asset": "Golem|Stone|Rock",
+      "clip": "enemy_hurt_ice",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Death$",
+      "asset": "Golem|Stone|Rock",
+      "clip": "enemy_death_ice",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Hurt$",
+      "asset": "Robot|Turret|Mech",
+      "clip": "enemy_hurt_metal",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Death$",
+      "asset": "Robot|Turret|Mech",
+      "clip": "enemy_death_metal",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Hurt$",
+      "asset": "Spirit|Ghost|Wisp",
+      "clip": "enemy_hurt_spirit",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Death$",
+      "asset": "Spirit|Ghost|Wisp",
+      "clip": "enemy_death_spirit",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Wake$",
+      "asset": "Robot|Turret|Mech",
+      "clip": "enemy_wake_metal",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Wake$",
+      "clip": "enemy_wake",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Enemies/",
+      "name": "^Evade$",
+      "clip": "enemy_evade",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "category": "^Interactables/",
+      "name": "^Take$",
+      "clip": "loot_take"
+    },
+    {
+      "category": "^Interactables/",
+      "name": "^Hurt$",
+      "clip": "prop_hit",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "category": "^Interactables/",
+      "name": "^Death$",
+      "clip": "prop_break",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Interactables/",
+      "asset": "Anvil",
+      "clip": "anvil_use",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Interactables/",
+      "asset": "Book|Lectern",
+      "clip": "book_open"
+    },
+    {
+      "category": "^Interactables/",
+      "asset": "Chest",
+      "clip": "chest_open"
+    },
+    {
+      "category": "^Interactables/",
+      "asset": "Wardrobe",
+      "clip": "wardrobe_open"
+    },
+    {
+      "category": "^Interactables/",
+      "asset": "Mirror",
+      "clip": "mirror_use"
+    },
+    {
+      "category": "^Interactables/",
+      "name": "^(Use|Open)$",
+      "clip": "interact_use"
+    },
+    {
+      "component": "^PassiveDropCinematicSettings$",
+      "clip": "passive_land"
+    },
+    {
+      "component": "^LegendaryPassiveTuning$",
+      "member": "Slow",
+      "clip": "passive_slow"
+    },
+    {
+      "component": "^LegendaryPassiveTuning$",
+      "member": "Aurum",
+      "clip": "passive_gold_drop"
+    },
+    {
+      "component": "^LegendaryPassiveTuning$",
+      "member": "Choice",
+      "clip": "passive_choice"
+    },
+    {
+      "component": "^LegendaryPassiveTuning$",
+      "member": "Revive",
+      "clip": "passive_revive"
+    },
+    {
+      "component": "^LegendaryPassiveTuning$",
+      "member": "Shield",
+      "clip": "passive_shield"
+    },
+    {
+      "component": "^LegendaryPassiveTuning$",
+      "member": "Upgrade",
+      "clip": "passive_upgrade"
+    },
+    {
+      "component": "^LegendaryPassiveTuning$",
+      "member": "Drop",
+      "clip": "passive_drop"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^goldMarkApplied$",
+      "clip": "status_gold_mark"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^slowApplied$",
+      "clip": "status_slow",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^synergyTierReached$",
+      "clip": "synergy_tier"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^goldGained$",
+      "clip": "coin_gold",
+      "pitch": [
+        0.88,
+        1.12
+      ]
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^diamondGained$",
+      "clip": "coin_diamond",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^skullGained$",
+      "clip": "coin_skull",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^soulFragmentGained$",
+      "clip": "coin_soul",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^runStart$",
+      "clip": "run_start"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^runOver$",
+      "clip": "run_over"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^runComplete$",
+      "clip": "run_complete"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^sectionEnter$",
+      "clip": "section_enter"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^sectionClear$",
+      "clip": "section_clear"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^waveStart$",
+      "clip": "wave_start"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^enemySpawn$",
+      "clip": "enemy_spawn",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.6
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^doorLocked$",
+      "clip": "door_locked"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^bossRewardAppear$",
+      "clip": "reward_appear"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^shopEnter$",
+      "clip": "shop_enter"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^shopReroll$",
+      "clip": "shop_reroll"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^(shopDeny|uiDeny)$",
+      "clip": "ui_deny"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^uiClick$",
+      "clip": "ui_click"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^uiFocus$",
+      "clip": "ui_focus",
+      "volume": 0.6
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^uiBack$",
+      "clip": "ui_back"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^upgradeBought$",
+      "clip": "ui_upgrade"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^mirrorPassiveUpgraded$",
+      "clip": "ui_upgrade",
+      "pitch": [
+        1.12,
+        1.12
+      ]
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "^weaponLevelUp$",
+      "clip": "ui_level_up"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "\\.open$",
+      "clip": "ui_menu_open"
+    },
+    {
+      "component": "^SystemSounds$",
+      "member": "\\.close$",
+      "clip": "ui_menu_close"
+    }
+  ]
+}

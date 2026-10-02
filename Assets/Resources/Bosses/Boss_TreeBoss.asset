@@ -62,7 +62,7 @@ MonoBehaviour:
     transitionShake: 0.9
     transitionSound:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: cedd2e064a8dc884fbb11c10401e50de, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1

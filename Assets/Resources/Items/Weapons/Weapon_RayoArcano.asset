@@ -62,7 +62,7 @@ MonoBehaviour:
   universalTag: 102
   chargeSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 69503e5fb2d186c4298871e500970020, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -74,7 +74,7 @@ MonoBehaviour:
     initialized: 1
   fireSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 8532fb000c31fc74a86d846b19ae375a, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -86,10 +86,10 @@ MonoBehaviour:
     initialized: 1
   impactSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-    volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    - {fileID: 8300000, guid: 2268a4b300d9b84408ac3ce5e43c90fd, type: 3}
+    volume: 0.6
+    pitchMin: 0.88
+    pitchMax: 1.12
     noRepeatLast: 1
     priority: 1
     positional: 1
@@ -131,8 +131,8 @@ MonoBehaviour:
     initialized: 1
   beamLoopSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-    volume: 1
+    - {fileID: 8300000, guid: 1c946503116cad64cb5124c5fbbaa865, type: 3}
+    volume: 0.6
     pitchMin: 1
     pitchMax: 1
     noRepeatLast: 1

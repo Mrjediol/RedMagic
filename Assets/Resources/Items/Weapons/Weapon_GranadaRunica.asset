@@ -73,10 +73,10 @@ MonoBehaviour:
     initialized: 1
   fireSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 25a90a654be504446b16364863267853, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 0
@@ -85,10 +85,10 @@ MonoBehaviour:
     initialized: 1
   impactSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: e05ecf90ec501d8448fa2a04f7c5d5cb, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.88
+    pitchMax: 1.12
     noRepeatLast: 1
     priority: 1
     positional: 1
@@ -119,10 +119,10 @@ MonoBehaviour:
     initialized: 1
   explosionSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 8789cab898fcb92498aabed687b2ed9b, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 2
     positional: 1

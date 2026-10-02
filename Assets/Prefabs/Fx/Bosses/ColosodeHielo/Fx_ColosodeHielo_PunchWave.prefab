@@ -226,53 +226,57 @@ MonoBehaviour:
   - trigger: 2
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      - {fileID: 8300000, guid: 459e413f26938254eabe1442e15c540d, type: 3}
+      volume: 0.4
+      pitchMin: 0.88
+      pitchMax: 1.12
       noRepeatLast: 1
       priority: 2
       positional: 1
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   - trigger: 1
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: 0fea13d7b6902d4418a9718ea7c169f9, type: 3}
       volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
       noRepeatLast: 1
       priority: 1
       positional: 1
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   - trigger: 14
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      - {fileID: 8300000, guid: 4ce576555033a664f8283eca2d078392, type: 3}
+      volume: 0.7
+      pitchMin: 0.88
+      pitchMax: 1.12
       noRepeatLast: 1
       priority: 1
       positional: 1
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   - trigger: 0
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      - {fileID: 8300000, guid: f25b7204c4536d5499b7f35dbb8eb5fe, type: 3}
+      volume: 0.7
+      pitchMin: 0.94
+      pitchMax: 1.06
       noRepeatLast: 1
       priority: 0
       positional: 1
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   useGenericFallback: 1

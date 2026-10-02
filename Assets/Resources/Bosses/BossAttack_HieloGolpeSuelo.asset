@@ -28,10 +28,10 @@ MonoBehaviour:
   gesture: GroundSlam
   sound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 8a339428cc4a5c240b82e46050353125, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 0

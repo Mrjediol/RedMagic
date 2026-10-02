@@ -31,7 +31,7 @@ MonoBehaviour:
   chestWeaponUpgrades: 2
   codexAurumDropSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: bd8b0f98c5811e842b19ba430e2ac49c, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -43,7 +43,7 @@ MonoBehaviour:
     initialized: 1
   manuscritoDropSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 191a4b80b1a45404a859922fe493dc29, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -55,7 +55,7 @@ MonoBehaviour:
     initialized: 1
   grimorioChoiceSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 7a598d3d9719d0949ac4dee3e74d3383, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -67,7 +67,7 @@ MonoBehaviour:
     initialized: 1
   tomoRotoUpgradeSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 00fca3279027d0b4ea1cf22bf5d1d5c9, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -79,7 +79,7 @@ MonoBehaviour:
     initialized: 1
   libroReviveSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: ee28e20c1dc6faa4282cd19257a46eef, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -91,7 +91,7 @@ MonoBehaviour:
     initialized: 1
   libroShieldSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: ced8b63a9364f4e4285787ac31d264a3, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -103,7 +103,7 @@ MonoBehaviour:
     initialized: 1
   analesSlowSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 36219dcfe2574c644a42f27e80440995, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1

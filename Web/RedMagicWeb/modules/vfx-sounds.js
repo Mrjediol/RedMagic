@@ -17,19 +17,22 @@
 //
 // Layers (times in seconds; `f: [from, to]` glides exponentially over the layer):
 //   tone   { wave: 'sine' | 'tri' | 'saw' | 'square', f, t0, dur, a (attack), curve (decay shape), gain, vib: [Hz, depth], trem: [Hz, depth] }
+//          + fm: [ratio, depth]   a modulator at f × ratio bends the phase (metal, bells, coins); it fades with the layer
 //   noise  { filter: 'lp' | 'bp' | 'hp', f, q, t0, dur, a, curve, gain, trem }
 //   pings  { count, f: [low, high], t0, spread, dur, gain, rise }   short sine pings at random times / pitches
 //   clicks { count, t0, spread, gain }                              tiny noise impulses (crackle, debris)
 // In a `loop` sound every layer is sustained (no envelope) and the end is cross-faded into the start.
 //
 // Adding a sound = one entry in SOUNDS; giving it to an effect = one entry in PRESET_SOUNDS.
+// The GAME's sounds (modules/game-sounds.js) are the same data rendered by this same synthesiser:
+// `renderSound(id, def)` takes a definition that lives outside SOUNDS.
 
 export const SAMPLE_RATE = 44100;
 
-const T = (wave, f, o = {}) => ({ type: 'tone', wave, f, ...o });
-const N = (filter, f, o = {}) => ({ type: 'noise', filter, f, ...o });
-const P = (count, f, o = {}) => ({ type: 'pings', count, f, ...o });
-const C = (count, o = {}) => ({ type: 'clicks', count, ...o });
+export const T = (wave, f, o = {}) => ({ type: 'tone', wave, f, ...o });
+export const N = (filter, f, o = {}) => ({ type: 'noise', filter, f, ...o });
+export const P = (count, f, o = {}) => ({ type: 'pings', count, f, ...o });
+export const C = (count, o = {}) => ({ type: 'clicks', count, ...o });
 
 // ============================================================ the sounds
 
@@ -381,12 +384,17 @@ function renderLayer(layer, out, total, sr, sustained, rnd) {
 
   if (layer.type === 'tone') {
     const wave = WAVES[layer.wave] || WAVES.sine;
-    let phase = 0;
+    let phase = 0, mod = 0;
     for (let i = 0; i < n; i++) {
       let f = glide(i);
       if (layer.vib) f *= 1 + layer.vib[1] * Math.sin((i / sr) * layer.vib[0] * TAU);
       phase += f / sr;
-      out[start + i] += wave(phase) * amp(i);
+      let at = phase;
+      if (layer.fm) {
+        mod += (f * layer.fm[0]) / sr;
+        at += 8 + layer.fm[1] * (sustained ? 1 : 1 - i / n) * Math.sin(mod * TAU);   // + 8: the phase stays positive
+      }
+      out[start + i] += wave(at) * amp(i);
     }
   } else if (layer.type === 'noise') {
     // Chamberlin state-variable filter: one pass gives low / band / high at a cutoff that can glide.
@@ -436,10 +444,12 @@ function renderLayer(layer, out, total, sr, sustained, rnd) {
 
 const cache = new Map();
 
-/** The samples of a sound (mono, SAMPLE_RATE, peak ≈ 0.85). Cached. Null for an unknown id. */
-export function renderSound(id) {
+/**
+ * The samples of a sound (mono, SAMPLE_RATE, peak ≈ 0.85). Cached by id. Null for an unknown id.
+ * `def` = a definition that lives outside SOUNDS (the game's sounds, modules/game-sounds.js).
+ */
+export function renderSound(id, def = SOUNDS[id]) {
   if (cache.has(id)) return cache.get(id);
-  const def = SOUNDS[id];
   if (!def) return null;
 
   const sr = SAMPLE_RATE;

@@ -235,6 +235,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Bosses.BossAnimator
   animator: {fileID: 0}
+  rig: {fileID: 0}
   idleState: Idle
   moveState: Walk
   staggerState: Hurt
@@ -266,6 +267,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   snapToGround: 1
+  feet: {fileID: 0}
   targetTag: Player
   activationRadius: 18
   faceTarget: 1
@@ -285,6 +287,9 @@ MonoBehaviour:
   platformPrefab: {fileID: 3898860960097354949, guid: 8df3f4c5029aa7347822f321300edc64, type: 3}
   anchorPrefab: {fileID: 4016458707093371503, guid: d3d2905929a28b843a9567c2148c83c8, type: 3}
   showTelegraphAura: 1
+  bodyRenderer: {fileID: 0}
+  debugAttack: {fileID: 0}
+  debugHoldDeck: 1
   auraScale: 1.06
   vulnerableAura: {r: 1, g: 0.86, b: 0.35, a: 1}
   guardAura: {r: 0.45, g: 0.72, b: 1, a: 1}
@@ -321,7 +326,7 @@ MonoBehaviour:
   - trigger: 9
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: aae6d8c792a27cf45bb46fe31aa8ef5c, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -331,9 +336,11 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   - trigger: 2
     cue:
-      clips: []
+      clips:
+      - {fileID: 8300000, guid: 38281d69eb018af4aa34694fe4df7505, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -343,22 +350,25 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   - trigger: 1
     cue:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      clips:
+      - {fileID: 8300000, guid: e1d29fd6c32805e408a4946c4c09027d, type: 3}
+      volume: 0.8
+      pitchMin: 0.88
+      pitchMax: 1.12
       noRepeatLast: 1
       priority: 1
       positional: 1
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   - trigger: 19
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: 13590224f8d4b364fb9e7aa5f09b1d77, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -368,6 +378,7 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
+    silent: 0
   useGenericFallback: 1
 --- !u!1 &7202850004514677547
 GameObject:

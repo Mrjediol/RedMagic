@@ -691,7 +691,63 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
-  soundEvents: []
+  soundEvents:
+  - trigger: 9
+    cue:
+      clips:
+      - {fileID: 8300000, guid: aae6d8c792a27cf45bb46fe31aa8ef5c, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 38281d69eb018af4aa34694fe4df7505, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 1
+    cue:
+      clips:
+      - {fileID: 8300000, guid: e1d29fd6c32805e408a4946c4c09027d, type: 3}
+      volume: 0.8
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 19
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 13590224f8d4b364fb9e7aa5f09b1d77, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
   useGenericFallback: 1
 --- !u!114 &3504087807240094233
 MonoBehaviour:
@@ -866,10 +922,11 @@ MonoBehaviour:
     shake: 2
     fx: []
     sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      clips:
+      - {fileID: 8300000, guid: 326f5227355d669429b0402684827d50, type: 3}
+      volume: 0.6
+      pitchMin: 0.94
+      pitchMax: 1.06
       noRepeatLast: 1
       priority: 1
       positional: 0
@@ -901,10 +958,11 @@ MonoBehaviour:
     shake: 2
     fx: []
     sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      clips:
+      - {fileID: 8300000, guid: 91d294181ef0de0439d09c67e74ce503, type: 3}
+      volume: 0.7
+      pitchMin: 0.94
+      pitchMax: 1.06
       noRepeatLast: 1
       priority: 1
       positional: 0
@@ -979,10 +1037,11 @@ MonoBehaviour:
     shake: 0
     fx: []
     sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      clips:
+      - {fileID: 8300000, guid: 29ba727c44dd723428682940dca70759, type: 3}
+      volume: 0.6
+      pitchMin: 0.88
+      pitchMax: 1.12
       noRepeatLast: 1
       priority: 1
       positional: 0
@@ -1030,10 +1089,11 @@ MonoBehaviour:
     shake: 2.5
     fx: []
     sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      clips:
+      - {fileID: 8300000, guid: 9dbc4c3c392d41e41a2dbf19ed3d4bd0, type: 3}
+      volume: 0.8
+      pitchMin: 0.94
+      pitchMax: 1.06
       noRepeatLast: 1
       priority: 1
       positional: 0
@@ -1065,10 +1125,11 @@ MonoBehaviour:
     shake: 1
     fx: []
     sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      clips:
+      - {fileID: 8300000, guid: 276a5a0b183d8984d874490c9b09353b, type: 3}
+      volume: 0.7
+      pitchMin: 0.94
+      pitchMax: 1.06
       noRepeatLast: 1
       priority: 1
       positional: 0
@@ -1100,10 +1161,11 @@ MonoBehaviour:
     shake: 1.5
     fx: []
     sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      clips:
+      - {fileID: 8300000, guid: c63183ff2cba25544b6d2458ebe430c6, type: 3}
+      volume: 0.7
+      pitchMin: 0.94
+      pitchMax: 1.06
       noRepeatLast: 1
       priority: 1
       positional: 0

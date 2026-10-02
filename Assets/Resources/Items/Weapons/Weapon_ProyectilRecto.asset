@@ -41,6 +41,9 @@ MonoBehaviour:
     impactDamage: 0
     projectilePrefab: {fileID: 3544784464265721044, guid: d1669616c6c7c3d4bbd98cef2be270ac, type: 3}
     beamPrefab: {fileID: 0}
+    impactVfxPrefab: {fileID: 0}
+    explosionVfxPrefab: {fileID: 0}
+    chargeVfxPrefab: {fileID: 0}
     faceDirection: 1
     facingAxis: 0
     aimMode: 2
@@ -68,10 +71,10 @@ MonoBehaviour:
     initialized: 1
   fireSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: be5de29d3f895c542a6353f57fd1b629, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 0
@@ -80,10 +83,10 @@ MonoBehaviour:
     initialized: 1
   impactSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 0e63c77e3ae117b4183dc3f909302fe4, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.88
+    pitchMax: 1.12
     noRepeatLast: 1
     priority: 1
     positional: 1
@@ -92,10 +95,10 @@ MonoBehaviour:
     initialized: 1
   terrainImpactSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-    volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    - {fileID: 8300000, guid: 7fa3252acdfed4f4890d929fb722aeaf, type: 3}
+    volume: 0.7
+    pitchMin: 0.88
+    pitchMax: 1.12
     noRepeatLast: 1
     priority: 1
     positional: 1
@@ -104,10 +107,10 @@ MonoBehaviour:
     initialized: 1
   expireSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-    volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    - {fileID: 8300000, guid: c3f4c978312879943b8f4254cde1c364, type: 3}
+    volume: 0.5
+    pitchMin: 0.88
+    pitchMax: 1.12
     noRepeatLast: 1
     priority: 0
     positional: 1

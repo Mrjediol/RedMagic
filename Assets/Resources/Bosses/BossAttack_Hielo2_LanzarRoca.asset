@@ -28,10 +28,10 @@ MonoBehaviour:
   gesture: PickUP
   sound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: a87a644470398db48a84a4c2816b2682, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 0
@@ -40,11 +40,6 @@ MonoBehaviour:
     initialized: 1
   shakeAmplitude: 0.3
   shakeDuration: 0.25
-  impactFxPrefab: {fileID: 0}
-  impactFxWidth: 2.2
-  tremble: 0.06
-  arrowLength: 1.6
-  targetMarkScale: 0.9
   throwGesture: Throw
   holdSeconds: 0.5
   flightSeconds: 1.1
@@ -73,6 +68,7 @@ MonoBehaviour:
   heldSize: {x: 6, y: 6}
   useLimbs: 1
   limbPick: 0
+  tremble: 0.06
   pickupReach: 2.5
   raisedOffset: {x: -1, y: 6.5}
   reachSeconds: 0.4
@@ -83,10 +79,10 @@ MonoBehaviour:
   limbReturnSeconds: 0.45
   pickupSound:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: edc25f5ec8dbdc34abd15d7fc50a15b5, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 1

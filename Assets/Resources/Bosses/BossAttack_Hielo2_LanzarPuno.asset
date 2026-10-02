@@ -28,10 +28,11 @@ MonoBehaviour:
   vulnerableMultiplier: 2.5
   gesture: Brace
   sound:
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: a87a644470398db48a84a4c2816b2682, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.78
+    pitchMax: 0.88
     noRepeatLast: 1
     priority: 1
     positional: 0
@@ -43,13 +44,16 @@ MonoBehaviour:
   impactFxPrefab: {fileID: 0}
   impactFxWidth: 2.2
   tremble: 0.06
+  arrowLength: 1.6
+  targetMarkScale: 0.9
+  arrowLengthRange: {x: 2.2, y: 5}
+  targetMarkRange: {x: 1.1, y: 2.5}
   throws: 1
   timeBetweenThrows: 0.2
   pick: 1
   windup: 0.6
   pullBack: 1.2
   pullUp: 0.6
-  windupSpin: -25
   flightSeconds: 0.32
   overshoot: 1.5
   embedSeconds: 0.45

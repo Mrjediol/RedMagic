@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 7952358772888478860}
   - component: {fileID: 8031454960241709574}
   - component: {fileID: 6030699065838323943}
+  - component: {fileID: 6607279690872873709}
   m_Layer: 0
   m_Name: Fx_BlueBullet
   m_TagString: Untagged
@@ -264,3 +265,73 @@ MonoBehaviour:
   libraryId: a316a812-d0ff-422e-945f-944e23a00598
   kind: projectile
   sourceFolder: Assets/Art/WebLibrary/projectile/a316a812-d0ff-422e-945f-944e23a00598
+--- !u!114 &6607279690872873709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3039328402396721735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 459e413f26938254eabe1442e15c540d, type: 3}
+      volume: 0.4
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 1
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 4ab27629e72cd0b418969e75288a3891, type: 3}
+      volume: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 14
+    cue:
+      clips:
+      - {fileID: 8300000, guid: a0aa8ee15837e404786c5df242e90027, type: 3}
+      volume: 0.5
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 0
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 88a60afce2bf5d949b8a9a28d037bff4, type: 3}
+      volume: 0.5
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 0
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  useGenericFallback: 1

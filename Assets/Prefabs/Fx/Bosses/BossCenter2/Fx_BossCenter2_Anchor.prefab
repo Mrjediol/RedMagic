@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7147317278906940169}
   - component: {fileID: 2238819263302970529}
   - component: {fileID: 8669897071629311811}
+  - component: {fileID: 8068231198714634916}
   m_Layer: 0
   m_Name: Fx_BossCenter2_Anchor
   m_TagString: Untagged
@@ -206,3 +207,45 @@ MonoBehaviour:
   resize: 1
   matchSorting: 1
   scaleColliderToSprite: 0
+--- !u!114 &8068231198714634916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1244067611587218285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 693316ea0f8cf924285f7f60b3cb97f3, type: 3}
+      volume: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 1
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9e859cee224e1c543aea21c27e167a6f, type: 3}
+      volume: 1
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  useGenericFallback: 1

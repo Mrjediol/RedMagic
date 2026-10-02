@@ -543,7 +543,7 @@ MonoBehaviour:
   - trigger: 2
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: 4d3e953ba54855b469a9f0078cc4d68b, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -557,7 +557,7 @@ MonoBehaviour:
   - trigger: 17
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: 9899a8b842353ac41875f7e28f5189f9, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -571,10 +571,10 @@ MonoBehaviour:
   - trigger: 12
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      - {fileID: 8300000, guid: 040621a3f54421044b827597bea43977, type: 3}
+      volume: 0.8
+      pitchMin: 0.88
+      pitchMax: 1.12
       noRepeatLast: 1
       priority: 0
       positional: 0
@@ -585,10 +585,10 @@ MonoBehaviour:
   - trigger: 11
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: 401dd408598fab949994b690ab50f2c0, type: 3}
       volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
       noRepeatLast: 1
       priority: 1
       positional: 0
@@ -599,7 +599,7 @@ MonoBehaviour:
   - trigger: 18
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: 9bc5a46246705544fae004eacc7902d1, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -613,10 +613,10 @@ MonoBehaviour:
   - trigger: 13
     cue:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: 54291057a172f0043b5e5d492a4e9720, type: 3}
       volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
       noRepeatLast: 1
       priority: 1
       positional: 0

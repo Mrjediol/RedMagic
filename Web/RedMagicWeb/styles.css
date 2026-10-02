@@ -449,6 +449,20 @@ input.bcTiny{width:56px !important;padding:3px 4px !important;}
 .vfxSound button{margin:0;}
 .vfxSoundMoment{width:170px;flex:none;color:var(--accent2);}
 .vfxSoundName{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* "Sonidos del juego": the palette of modules/game-sounds.js, to audition by family. */
+#gameSoundsBtn{margin:0 0 10px;}
+.gameSounds{width:min(900px,94vw);max-height:88vh;padding:0;border:1px solid var(--border-lit);border-radius:10px;background:var(--panel);color:var(--text);font-family:var(--font-ui);font-size:15px;}
+.gameSounds::backdrop{background:rgba(0,0,0,.6);}
+.gameSoundsHead{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--border);}
+.gameSoundsHead h2{margin:0;flex:none;font-size:19px;}
+.gameSoundsHead input[type=search]{flex:1;min-width:120px;}
+.gameSoundsHead button{margin:0;}
+.gameSoundsBody{padding:6px 14px 14px;}
+.gameSoundsBody summary{cursor:pointer;padding:8px 0 4px;color:var(--accent2);font-weight:700;font-size:16px;}
+.gameSoundsBody .vfxSounds{max-width:none;margin:0 0 6px;}
+.gameSoundId{width:210px;flex:none;font-family:Consolas,monospace;font-size:13px;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gameSoundTag{flex:none;width:76px;text-align:center;font-size:12px;padding:1px 6px;border-radius:9px;border:1px solid var(--border);color:var(--muted);}
+.gameSoundTag.assigned{color:var(--accent);border-color:var(--accent-deep);}
 
 /* ---------------- theme: focus, scrollbars, panels ---------------- */
 :focus-visible{outline:2px solid var(--accent);outline-offset:1px;}

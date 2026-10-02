@@ -375,10 +375,11 @@ MonoBehaviour:
     silent: 0
   - trigger: 2
     cue:
-      clips: []
+      clips:
+      - {fileID: 8300000, guid: 86c6a53192ad5734486bbd70aab2a815, type: 3}
       volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
       noRepeatLast: 1
       priority: 2
       positional: 1
@@ -388,10 +389,11 @@ MonoBehaviour:
     silent: 0
   - trigger: 1
     cue:
-      clips: []
+      clips:
+      - {fileID: 8300000, guid: 8a46cf6b1fa3e2646b900917cd5326c1, type: 3}
       volume: 1
-      pitchMin: 1
-      pitchMax: 1
+      pitchMin: 0.88
+      pitchMax: 1.12
       noRepeatLast: 1
       priority: 1
       positional: 1

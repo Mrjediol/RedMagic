@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 2320598312304873122}
   - component: {fileID: 7806231517386329411}
   - component: {fileID: 3975740099748895319}
+  - component: {fileID: 5968012884129305813}
   m_Layer: 0
   m_Name: Fx_koros_BearRock_Projectile
   m_TagString: Untagged
@@ -232,3 +233,73 @@ MonoBehaviour:
   arcGravity: 0
   impactRadius: 0
   impactDamage: 0
+--- !u!114 &5968012884129305813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1660296675190198302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 459e413f26938254eabe1442e15c540d, type: 3}
+      volume: 0.4
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 1
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 0fea13d7b6902d4418a9718ea7c169f9, type: 3}
+      volume: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 14
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 4ce576555033a664f8283eca2d078392, type: 3}
+      volume: 0.7
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 0
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 6b07a2634a7dfeb4fa7b1cf526d96776, type: 3}
+      volume: 0.7
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 0
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  useGenericFallback: 1

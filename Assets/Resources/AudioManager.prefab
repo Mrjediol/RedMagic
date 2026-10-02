@@ -88,8 +88,8 @@ MonoBehaviour:
     initialized: 1
   uiFocus:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-    volume: 1
+    - {fileID: 8300000, guid: 4b65bfc04c428e647b8ebcd61dde2c6e, type: 3}
+    volume: 0.6
     pitchMin: 1
     pitchMax: 1
     noRepeatLast: 1
@@ -100,7 +100,7 @@ MonoBehaviour:
     initialized: 1
   uiClick:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: f8ff8d72d21fa6145bb4197f3b4a5f03, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -112,7 +112,7 @@ MonoBehaviour:
     initialized: 1
   uiBack:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 6fafadd9d172222479ff048ae4c24a5c, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -124,7 +124,7 @@ MonoBehaviour:
     initialized: 1
   uiDeny:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 1835a74c59e581e48ad91832425c7c9d, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -149,7 +149,7 @@ MonoBehaviour:
     initialized: 1
   shopDeny:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 1835a74c59e581e48ad91832425c7c9d, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -161,7 +161,7 @@ MonoBehaviour:
     initialized: 1
   shopReroll:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: ba0c99ca2a964ef4e84a01f3f1571718, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -174,7 +174,7 @@ MonoBehaviour:
   mainMenu:
     open:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e806f0e8b38169c43a660807d684425d, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -186,7 +186,7 @@ MonoBehaviour:
       initialized: 1
     close:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e95934fde5d24154081306aff5b6acf2, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -199,7 +199,7 @@ MonoBehaviour:
   pauseMenu:
     open:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e806f0e8b38169c43a660807d684425d, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -211,7 +211,7 @@ MonoBehaviour:
       initialized: 1
     close:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e95934fde5d24154081306aff5b6acf2, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -224,7 +224,7 @@ MonoBehaviour:
   optionsMenu:
     open:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e806f0e8b38169c43a660807d684425d, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -236,7 +236,7 @@ MonoBehaviour:
       initialized: 1
     close:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e95934fde5d24154081306aff5b6acf2, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -249,7 +249,7 @@ MonoBehaviour:
   itemMenu:
     open:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e806f0e8b38169c43a660807d684425d, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -261,7 +261,7 @@ MonoBehaviour:
       initialized: 1
     close:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e95934fde5d24154081306aff5b6acf2, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -274,7 +274,7 @@ MonoBehaviour:
   upgradeMenu:
     open:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e806f0e8b38169c43a660807d684425d, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -286,7 +286,7 @@ MonoBehaviour:
       initialized: 1
     close:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e95934fde5d24154081306aff5b6acf2, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -299,7 +299,7 @@ MonoBehaviour:
   mirrorMenu:
     open:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e806f0e8b38169c43a660807d684425d, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -311,7 +311,7 @@ MonoBehaviour:
       initialized: 1
     close:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e95934fde5d24154081306aff5b6acf2, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -324,7 +324,7 @@ MonoBehaviour:
   weaponForgeMenu:
     open:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e806f0e8b38169c43a660807d684425d, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -336,7 +336,7 @@ MonoBehaviour:
       initialized: 1
     close:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e95934fde5d24154081306aff5b6acf2, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -349,7 +349,7 @@ MonoBehaviour:
   weaponChoiceMenu:
     open:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e806f0e8b38169c43a660807d684425d, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -361,7 +361,7 @@ MonoBehaviour:
       initialized: 1
     close:
       clips:
-      - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+      - {fileID: 8300000, guid: e95934fde5d24154081306aff5b6acf2, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -373,7 +373,7 @@ MonoBehaviour:
       initialized: 1
   upgradeBought:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 7a51aadcca3ab4344b95a7ea8fc08cc1, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -385,7 +385,7 @@ MonoBehaviour:
     initialized: 1
   weaponLevelUp:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 38dd6ff3586df22488358a44cf1cb477, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -397,10 +397,10 @@ MonoBehaviour:
     initialized: 1
   mirrorPassiveUpgraded:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 7a51aadcca3ab4344b95a7ea8fc08cc1, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 1.12
+    pitchMax: 1.12
     noRepeatLast: 1
     priority: 1
     positional: 0
@@ -409,7 +409,7 @@ MonoBehaviour:
     initialized: 1
   runStart:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 378a5b42a2418b448887619cc79fdf36, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -421,7 +421,7 @@ MonoBehaviour:
     initialized: 1
   sectionEnter:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 76930aeff2ac1bd4b80cf162c307ae73, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -433,7 +433,7 @@ MonoBehaviour:
     initialized: 1
   waveStart:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 1c85b959cf553ab489318fdf3bcb85c3, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -445,10 +445,10 @@ MonoBehaviour:
     initialized: 1
   enemySpawn:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
-    volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    - {fileID: 8300000, guid: de1caa026c5db284097ff9bc976aee27, type: 3}
+    volume: 0.6
+    pitchMin: 0.88
+    pitchMax: 1.12
     noRepeatLast: 1
     priority: 1
     positional: 1
@@ -457,7 +457,7 @@ MonoBehaviour:
     initialized: 1
   sectionClear:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 2baf1f057b61078479a2172529294048, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -469,7 +469,7 @@ MonoBehaviour:
     initialized: 1
   shopEnter:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 61937c480fda5f14e8caf252ea3d77aa, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -481,7 +481,7 @@ MonoBehaviour:
     initialized: 1
   runOver:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 9d0c7b8816bb4a240b1d3c167216f9cc, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -493,7 +493,7 @@ MonoBehaviour:
     initialized: 1
   runComplete:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 7c2977d321887b54086e76c47259c806, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -505,7 +505,7 @@ MonoBehaviour:
     initialized: 1
   bossRewardAppear:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: a767e6e2b1b9d024a91937b32cc7452d, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -517,7 +517,7 @@ MonoBehaviour:
     initialized: 1
   doorLocked:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 9e95570e1c343d94c8b0967108d0a533, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -529,10 +529,10 @@ MonoBehaviour:
     initialized: 1
   goldGained:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: a754f7e46850d6141a3a5045820c86b0, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.88
+    pitchMax: 1.12
     noRepeatLast: 1
     priority: 1
     positional: 0
@@ -541,10 +541,10 @@ MonoBehaviour:
     initialized: 1
   diamondGained:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: a38ca30e6190c174a84c67eec2afb6c2, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 0
@@ -553,10 +553,10 @@ MonoBehaviour:
     initialized: 1
   soulFragmentGained:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 54e7e35a0e963024bbc90f8ee854d281, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 0
@@ -565,10 +565,10 @@ MonoBehaviour:
     initialized: 1
   skullGained:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: feacda1ebf6e18645b01a0d66d34a682, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 0
@@ -626,7 +626,7 @@ MonoBehaviour:
     initialized: 1
   synergyTierReached:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 52a09a5f008a5d14fa5a677b92eda8d2, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -638,10 +638,10 @@ MonoBehaviour:
     initialized: 1
   slowApplied:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 8e6bdb44fba59964b8dff02044d0d554, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 0
     positional: 0
@@ -650,7 +650,7 @@ MonoBehaviour:
     initialized: 1
   goldMarkApplied:
     clips:
-    - {fileID: 8300000, guid: 9a1ef3242adddfe4f8a61c459788fc93, type: 3}
+    - {fileID: 8300000, guid: 9a0a85b0a1b373043bea312c473b6663, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1

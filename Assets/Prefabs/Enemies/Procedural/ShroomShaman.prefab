@@ -211,7 +211,7 @@ Transform:
   m_GameObject: {fileID: 3746698309192057759}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.7, y: 6.41, z: 0}
+  m_LocalPosition: {x: 2.2134, y: 6.8475, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -764,7 +764,7 @@ MonoBehaviour:
       gesture: 
       sprite: {fileID: 21300000, guid: d8ed9c7e8c5c0564d81ecf8a537cd776, type: 3}
       showFrom: 0
-      showTo: 3
+      showTo: 99
     stages: []
   stretchPart: {fileID: 0}
   stretchRiders: []
@@ -778,33 +778,52 @@ MonoBehaviour:
   wakeFlickerPortion: 0.4
   gestures:
   - name: Flick
-    windup:
-    - part: {fileID: 6900074087791025692}
-      move: {x: -0.2767, y: 0}
-      rotate: -18
-      scale: {x: 0, y: 0}
-    - part: {fileID: 2173594935518678915}
-      move: {x: 0, y: 0}
-      rotate: 2
-      scale: {x: 0, y: 0}
-    strike:
-    - part: {fileID: 6900074087791025692}
-      move: {x: 0.415, y: 0}
-      rotate: 14
-      scale: {x: 0, y: 0}
-    strikeTime: 0.06
+    steps:
+    - name: Carga
+      poses:
+      - part: {fileID: 6900074087791025692}
+        move: {x: -0.2767, y: 0}
+        rotate: -18
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2173594935518678915}
+        move: {x: 0, y: 0}
+        rotate: 2
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 1
+      shake: 0
+    - name: Golpe
+      poses:
+      - part: {fileID: 6900074087791025692}
+        move: {x: 0.415, y: 0}
+        rotate: 14
+        scale: {x: 0, y: 0}
+      duration: 0.06
+      ease: 1
+      stretch: 0
+      shake: 0
+    releases:
+    - step: 0
+      at: 1
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
     recover: 0.3
-    shake: 0
     fx:
     - prefab: {fileID: 7163286177311694479, guid: b7e5d80dc403a334fb5667bd3efd9949, type: 3}
-      phase: 1
-      at: 0
+      step: 0
+      at: 1
       anchor: 2
       part: {fileID: 0}
       offset: {x: 0, y: 0}
       scale: 5.56
       followsPart: 1
       loop: 0
+      untilStep: -1
+      facing: 0
+      angle: 0
+      layer: 0
+      legacyPhase: -1
     sound:
       clips:
       - {fileID: 8300000, guid: 095d38506108de84cbd41257142714dc, type: 3}
@@ -818,51 +837,79 @@ MonoBehaviour:
       rolloffEnd: 32
       initialized: 1
     soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   - name: Charge
-    windup:
-    - part: {fileID: 6900074087791025692}
-      move: {x: -0.5533, y: 0.83}
-      rotate: 55
-      scale: {x: 0, y: 0}
-    - part: {fileID: 2173594935518678915}
-      move: {x: -0.415, y: 0.2767}
-      rotate: 6
-      scale: {x: 0, y: 0}
-    - part: {fileID: 8723019979262318165}
-      move: {x: 0, y: 0}
-      rotate: 6
-      scale: {x: 0, y: 0}
-    strike:
-    - part: {fileID: 6900074087791025692}
-      move: {x: 0.83, y: 0}
-      rotate: -20
-      scale: {x: 0, y: 0}
-    - part: {fileID: 2173594935518678915}
-      move: {x: 0.415, y: 0}
-      rotate: -5
-      scale: {x: 0, y: 0}
-    strikeTime: 0.08
+    steps:
+    - name: Carga
+      poses:
+      - part: {fileID: 6900074087791025692}
+        move: {x: -0.5533, y: 0.83}
+        rotate: 55
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2173594935518678915}
+        move: {x: -0.415, y: 0.2767}
+        rotate: 6
+        scale: {x: 0, y: 0}
+      - part: {fileID: 8723019979262318165}
+        move: {x: 0, y: 0}
+        rotate: 6
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 1
+      shake: 1.5
+    - name: Golpe
+      poses:
+      - part: {fileID: 6900074087791025692}
+        move: {x: 0.83, y: 0}
+        rotate: -20
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2173594935518678915}
+        move: {x: 0.415, y: 0}
+        rotate: -5
+        scale: {x: 0, y: 0}
+      duration: 0.08
+      ease: 1
+      stretch: 0
+      shake: 0
+    releases:
+    - step: 1
+      at: 1
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
     recover: 0.45
-    shake: 1.5
     fx:
     - prefab: {fileID: 349799312545736993, guid: 592bf4b6ce130ae4da7d325d8a0d0f81, type: 3}
-      phase: 0
-      at: 0
-      anchor: 2
-      part: {fileID: 0}
-      offset: {x: 0, y: 0}
-      scale: 8.03
-      followsPart: 1
-      loop: 1
-    - prefab: {fileID: 7163286177311694479, guid: b7e5d80dc403a334fb5667bd3efd9949, type: 3}
-      phase: 1
+      step: 0
       at: 0
       anchor: 2
       part: {fileID: 0}
       offset: {x: 0, y: 0}
       scale: 7.41
       followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 7163286177311694479, guid: b7e5d80dc403a334fb5667bd3efd9949, type: 3}
+      step: 1
+      at: 1
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 7.41
+      followsPart: 1
       loop: 0
+      untilStep: -1
+      facing: 0
+      angle: 0
+      layer: 0
+      legacyPhase: -1
     sound:
       clips:
       - {fileID: 8300000, guid: 326f5227355d669429b0402684827d50, type: 3}
@@ -876,47 +923,75 @@ MonoBehaviour:
       rolloffEnd: 32
       initialized: 1
     soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   - name: Sweep
-    windup:
-    - part: {fileID: 6900074087791025692}
-      move: {x: 0, y: 0.5533}
-      rotate: 40
-      scale: {x: 0, y: 0}
-    - part: {fileID: 2173594935518678915}
-      move: {x: 0, y: 0}
-      rotate: 4
-      scale: {x: 0, y: 0}
-    strike:
-    - part: {fileID: 6900074087791025692}
-      move: {x: 0.2767, y: -0.5533}
-      rotate: -45
-      scale: {x: 0, y: 0}
-    - part: {fileID: 2173594935518678915}
-      move: {x: 0, y: 0}
-      rotate: -4
-      scale: {x: 0, y: 0}
-    strikeTime: 0.14
+    steps:
+    - name: Carga
+      poses:
+      - part: {fileID: 6900074087791025692}
+        move: {x: 0, y: 0.5533}
+        rotate: 40
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2173594935518678915}
+        move: {x: 0, y: 0}
+        rotate: 4
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 1
+      shake: 0
+    - name: Golpe
+      poses:
+      - part: {fileID: 6900074087791025692}
+        move: {x: 0.2767, y: -0.5533}
+        rotate: -45
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2173594935518678915}
+        move: {x: 0, y: 0}
+        rotate: -4
+        scale: {x: 0, y: 0}
+      duration: 0.14
+      ease: 1
+      stretch: 0
+      shake: 0
+    releases:
+    - step: 1
+      at: 1
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
     recover: 0.4
-    shake: 0
     fx:
     - prefab: {fileID: 349799312545736993, guid: 592bf4b6ce130ae4da7d325d8a0d0f81, type: 3}
-      phase: 0
+      step: 0
       at: 0
       anchor: 2
       part: {fileID: 0}
       offset: {x: 0, y: 0}
-      scale: 9.88
+      scale: 8.64
       followsPart: 1
       loop: 1
+      untilStep: 1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
     - prefab: {fileID: 7163286177311694479, guid: b7e5d80dc403a334fb5667bd3efd9949, type: 3}
-      phase: 1
-      at: 0
+      step: 1
+      at: 1
       anchor: 2
       part: {fileID: 0}
       offset: {x: 0, y: 0}
-      scale: 9.26
+      scale: 8.64
       followsPart: 1
       loop: 0
+      untilStep: -1
+      facing: 0
+      angle: 0
+      layer: 0
+      legacyPhase: -1
     sound:
       clips:
       - {fileID: 8300000, guid: b098aa75325a4ab47ae3c804d08c9551, type: 3}
@@ -930,47 +1005,65 @@ MonoBehaviour:
       rolloffEnd: 32
       initialized: 1
     soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   - name: Dash
-    windup:
-    - part: {fileID: 2173594935518678915}
-      move: {x: 0, y: 0}
-      rotate: -14
-      scale: {x: 0, y: 0}
-    - part: {fileID: 8723019979262318165}
-      move: {x: 0, y: 0}
-      rotate: -8
-      scale: {x: 0, y: 0}
-    - part: {fileID: 2358434671863664159}
-      move: {x: 0, y: 0}
-      rotate: 22
-      scale: {x: 0, y: 0}
-    - part: {fileID: 7260944162130167161}
-      move: {x: 0, y: 0}
-      rotate: 25
-      scale: {x: 0, y: 0}
-    strike: []
-    strikeTime: 0.06
+    steps:
+    - name: Huye
+      poses:
+      - part: {fileID: 2173594935518678915}
+        move: {x: 0, y: 0}
+        rotate: -14
+        scale: {x: 0, y: 0}
+      - part: {fileID: 8723019979262318165}
+        move: {x: 0, y: 0}
+        rotate: -8
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2358434671863664159}
+        move: {x: 0, y: 0}
+        rotate: 22
+        scale: {x: 0, y: 0}
+      - part: {fileID: 7260944162130167161}
+        move: {x: 0, y: 0}
+        rotate: 25
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 1
+      stretch: 1
+      shake: 0
+    releases: []
     recover: 0.25
-    shake: 0
     fx:
     - prefab: {fileID: 3207392457270353278, guid: 54eddeb34b5998843bbe18276c7eeead, type: 3}
-      phase: 0
+      step: 0
       at: 0
       anchor: 1
       part: {fileID: 0}
       offset: {x: 0, y: 0}
-      scale: 9.88
+      scale: 14.82
       followsPart: 0
       loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 1
+      legacyPhase: -1
     - prefab: {fileID: 124225125635676202, guid: aa0bec1bc441b6845bbb8eb27dd12e2a, type: 3}
-      phase: 0
+      step: 0
       at: 0
       anchor: 1
       part: {fileID: 0}
       offset: {x: 0, y: 0}
-      scale: 11.11
+      scale: 18.52
       followsPart: 1
       loop: 1
+      untilStep: -1
+      facing: 0
+      angle: 0
+      layer: 1
+      legacyPhase: -1
     sound:
       clips:
       - {fileID: 8300000, guid: 91d294181ef0de0439d09c67e74ce503, type: 3}
@@ -984,6 +1077,132 @@ MonoBehaviour:
       rolloffEnd: 32
       initialized: 1
     soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
+  - name: Twirl
+    steps:
+    - name: Alza
+      poses:
+      - part: {fileID: 6900074087791025692}
+        move: {x: 0, y: 0.83}
+        rotate: 50
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2173594935518678915}
+        move: {x: -0.2767, y: 0.2767}
+        rotate: 5
+        scale: {x: 0, y: 0}
+      - part: {fileID: 8723019979262318165}
+        move: {x: 0, y: 0}
+        rotate: 6
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 0
+      shake: 0
+    - name: Gira
+      poses:
+      - part: {fileID: 6900074087791025692}
+        move: {x: 0, y: 0.83}
+        rotate: 410
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2173594935518678915}
+        move: {x: 0, y: 0.2767}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      - part: {fileID: 8723019979262318165}
+        move: {x: 0, y: 0}
+        rotate: -4
+        scale: {x: 0, y: 0}
+      duration: 0.45
+      ease: 0
+      stretch: 0
+      shake: 0
+    - name: Remata
+      poses:
+      - part: {fileID: 6900074087791025692}
+        move: {x: 0.83, y: 0}
+        rotate: 340
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2173594935518678915}
+        move: {x: 0.415, y: 0}
+        rotate: -5
+        scale: {x: 0, y: 0}
+      duration: 0.12
+      ease: 1
+      stretch: 0
+      shake: 0
+    releases:
+    - step: 1
+      at: 1
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
+    - step: 2
+      at: 1
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
+    recover: 0.4
+    fx:
+    - prefab: {fileID: 349799312545736993, guid: 592bf4b6ce130ae4da7d325d8a0d0f81, type: 3}
+      step: 0
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 8.64
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 7163286177311694479, guid: b7e5d80dc403a334fb5667bd3efd9949, type: 3}
+      step: 1
+      at: 1
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 8.03
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 0
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 7163286177311694479, guid: b7e5d80dc403a334fb5667bd3efd9949, type: 3}
+      step: 2
+      at: 1
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 9.88
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 0
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    sound:
+      clips:
+      - {fileID: 8300000, guid: b098aa75325a4ab47ae3c804d08c9551, type: 3}
+      volume: 0.7
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   drivenLease: 0.25
   drivenReturn: 0.35
   staggerStrength: 2.5

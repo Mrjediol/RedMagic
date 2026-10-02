@@ -364,6 +364,9 @@ MonoBehaviour:
     obstacleLayers:
       serializedVersion: 2
       m_Bits: 320
+    flyThroughLayers:
+      serializedVersion: 2
+      m_Bits: 256
 --- !u!114 &4565506182212960148
 MonoBehaviour:
   m_ObjectHideFlags: 0

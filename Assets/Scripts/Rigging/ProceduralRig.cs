@@ -90,12 +90,14 @@ namespace RedMagic.Rigging
 
         public Sprite sprite;
 
-        [Tooltip("Sólo 'Gesture': desde qué momento del gesto se ve. 0–1 = la carga, 1–2 = el golpe, " +
-                 "2–3 = la vuelta al reposo (1 = justo al soltar). 0 y 3 = todo el gesto.")]
-        [Range(0f, 3f)] public float showFrom;
+        [Tooltip("Sólo 'Gesture': desde qué momento del gesto se ve. La escala son los pasos del gesto: " +
+                 "0–1 = el primero, 1–2 = el segundo… y el último tramo (nº de pasos → +1) es la vuelta " +
+                 "al reposo. En un gesto clásico de carga + golpe: 0–1 carga, 1–2 golpe, 2–3 vuelta.")]
+        [Min(0f)] public float showFrom;
 
-        [Tooltip("Sólo 'Gesture': hasta qué momento del gesto se ve (misma escala que 'showFrom').")]
-        [Range(0f, 3f)] public float showTo = 3f;
+        [Tooltip("Sólo 'Gesture': hasta qué momento del gesto se ve (misma escala que 'showFrom'). " +
+                 "Un valor mayor que el final = hasta que acaba.")]
+        [Min(0f)] public float showTo = 99f;
     }
 
     /// <summary>
@@ -117,7 +119,7 @@ namespace RedMagic.Rigging
 
         /// <summary>
         /// El sprite de un estado con nombre, o null. Para <see cref="RigNamedState.Gesture"/>: el de ese
-        /// gesto y sólo si <paramref name="moment"/> (0–3, ver <see cref="RigNamedSprite.showFrom"/>) cae
+        /// gesto y sólo si <paramref name="moment"/> (en pasos, ver <see cref="RigNamedSprite.showFrom"/>) cae
         /// en su ventana — "estira la mano, enseña el dedo, lo quita y la recoge".
         /// </summary>
         public Sprite Named(RigNamedState state, string gesture = null, float moment = 0f)
@@ -169,15 +171,91 @@ namespace RedMagic.Rigging
         Release,
     }
 
-    /// <summary>
-    /// Las fases de un gesto, en orden: la carga (dura el aviso del ataque), el golpe
-    /// (<see cref="RigGesture.strikeTime"/>) y la vuelta al reposo (<see cref="RigGesture.recover"/>).
-    /// </summary>
-    public enum RigFxPhase
+    /// <summary>Cómo se llega a la pose de un paso.</summary>
+    public enum RigEase
     {
-        Windup,
-        Strike,
-        Recover,
+        /// <summary>Arranca y frena suave (una carga, un movimiento con peso).</summary>
+        InOut,
+
+        /// <summary>Sale de golpe y frena (un latigazo, un disparo).</summary>
+        Out,
+
+        /// <summary>Arranca despacio y acaba a toda velocidad (coger impulso).</summary>
+        In,
+
+        Linear,
+    }
+
+    /// <summary>Hacia dónde mira un efecto de gesto.</summary>
+    public enum RigFxFacing
+    {
+        /// <summary>
+        /// Hacia donde va la acción: en la boca, hacia donde apunta el arma (por donde sale el
+        /// disparo); en el cuerpo o los pies, hacia donde se mueve el enemigo (o hacia donde mira, si
+        /// está quieto). Es lo normal: un fogonazo apunta al tiro, una estela sigue al movimiento.
+        /// </summary>
+        Direction,
+
+        /// <summary>Gira con su ancla (pegado a la pieza, como una pegatina).</summary>
+        Anchor,
+
+        /// <summary>Siempre derecho, sin girar (sólo se refleja con el cuerpo).</summary>
+        World,
+    }
+
+    /// <summary>Delante o detrás del cuerpo.</summary>
+    public enum RigFxLayer
+    {
+        Front,
+        Behind,
+    }
+
+    /// <summary>
+    /// Un paso de un gesto: la pose a la que llega el cuerpo y cuánto tarda. Un gesto es una lista de
+    /// pasos, tantos como haga falta ("lanza el arma al aire, la recoge, apunta, dispara").
+    /// </summary>
+    [Serializable]
+    public class RigGestureStep
+    {
+        [Tooltip("Sólo para reconocerlo en el editor (\"Carga\", \"Lanza\", \"Recoge\"…).")]
+        public string name = "";
+
+        [Tooltip("La pose al final del paso, medida desde el reposo. Una pieza que no aparece vuelve a su reposo.")]
+        public List<RigPose> poses = new List<RigPose>();
+
+        [Tooltip("Segundos que tarda en llegar.")]
+        [Min(0.01f)] public float duration = 0.3f;
+
+        public RigEase ease = RigEase.InOut;
+
+        [Tooltip("Su duración la pone quien lanza el gesto en vez de 'duration': el aviso ('telegraph') " +
+                 "del ataque, para que el mismo gesto sirva a ataques con avisos distintos. Con varios " +
+                 "pasos así, se reparten ese tiempo. Apagado en todos = el gesto dura lo que diga él, " +
+                 "y el ataque sale cuando lleguen sus sueltas.")]
+        public bool stretch;
+
+        [Tooltip("Temblor (grados) de la raíz visual en el último 30% del paso.")]
+        public float shake;
+    }
+
+    /// <summary>
+    /// Un instante del gesto en el que SALE el ataque (el disparo, el golpe, la salva). Un gesto puede
+    /// tener varios: dispara varias veces. Sin ninguno, suelta al acabar el último paso.
+    /// </summary>
+    [Serializable]
+    public class RigRelease
+    {
+        [Tooltip("Paso en el que sale (0 = el primero).")]
+        [Min(0)] public int step;
+
+        [Tooltip("Momento dentro del paso: 0 = al empezar, 1 = al acabar.")]
+        [Range(0f, 1f)] public float at = 1f;
+
+        [Tooltip("De dónde sale: una pieza o un nodo del cuerpo. Vacío = la boca del rig.")]
+        public Transform point;
+
+        [Tooltip("Desplazamiento desde ese punto, en sus unidades locales.")]
+        public Vector2 offset;
     }
 
     /// <summary>De dónde cuelga un efecto de gesto.</summary>
@@ -206,10 +284,10 @@ namespace RedMagic.Rigging
         [Tooltip("Prefab del efecto (lo construye el importador desde la biblioteca web). Vacío = no hace nada.")]
         public GameObject prefab;
 
-        [Tooltip("Fase del gesto en la que sale.")]
-        public RigFxPhase phase = RigFxPhase.Windup;
+        [Tooltip("Paso del gesto en el que sale (0 = el primero). El número de pasos = la vuelta al reposo.")]
+        [Min(0)] public int step;
 
-        [Tooltip("Momento dentro de la fase: 0 = al empezar, 1 = al acabar.")]
+        [Tooltip("Momento dentro del paso: 0 = al empezar, 1 = al acabar.")]
         [Range(0f, 1f)] public float at;
 
         [Tooltip("De dónde cuelga.")]
@@ -227,32 +305,55 @@ namespace RedMagic.Rigging
         [Tooltip("Sigue al ancla mientras dura (posición y giro). Apagado = se queda donde salió.")]
         public bool followsPart = true;
 
-        [Tooltip("Se repite durante lo que quede de fase y se apaga al acabarla (una carga). Apagado = " +
-                 "se reproduce una vez (un estallido).")]
+        [Tooltip("Se repite y se apaga al acabar un paso (una carga). Apagado = se reproduce una vez (un estallido).")]
         public bool loop;
+
+        [Tooltip("Sólo en bucle: el paso al acabar el cual se apaga. -1 = el mismo en el que salió.")]
+        public int untilStep = -1;
+
+        [Tooltip("Hacia dónde mira. Por defecto, hacia donde va la acción (el disparo, el movimiento).")]
+        public RigFxFacing facing = RigFxFacing.Direction;
+
+        [Tooltip("Giro extra, en grados, sobre esa orientación.")]
+        public float angle;
+
+        [Tooltip("Delante o detrás del cuerpo.")]
+        public RigFxLayer layer = RigFxLayer.Front;
+
+        // Dato antiguo (fase fija carga / golpe / vuelta): sólo para convertirlo al cargar. -1 = no hay.
+        [SerializeField, HideInInspector, UnityEngine.Serialization.FormerlySerializedAs("phase")]
+        internal int legacyPhase = -1;
+
+        /// <summary>El paso al acabar el cual se apaga, si es un bucle.</summary>
+        public int EndStep => untilStep >= 0 ? Mathf.Max(untilStep, step) : step;
     }
 
     /// <summary>
-    /// Un gesto con nombre (el <c>gesture</c> de un ataque de jefe: "Charge", "Slam"…): durante la
-    /// carga el cuerpo va hacia <see cref="windup"/>, al soltar salta a <see cref="strike"/> y luego
-    /// vuelve al reposo. Todo son datos: un gesto nuevo no necesita código.
+    /// Un gesto con nombre (el <c>gesture</c> de un ataque: "Charge", "Slam"…): una <b>línea de
+    /// tiempo</b>. El cuerpo recorre sus <see cref="steps"/> en orden (cada uno una pose y un tiempo),
+    /// y luego vuelve al reposo en <see cref="recover"/>. Por el camino, en el instante que se quiera:
+    /// el ataque sale en cada <see cref="releases"/> (una o varias veces, desde el punto que se diga) y
+    /// los <see cref="fx"/> aparecen. Todo son datos: un gesto nuevo no necesita código.
+    ///
+    /// El gesto clásico es el caso de dos pasos: carga (lo que dure el aviso del ataque,
+    /// <see cref="RigGestureStep.stretch"/>) → suelta → golpe.
     /// </summary>
     [Serializable]
-    public class RigGesture
+    public class RigGesture : ISerializationCallbackReceiver
     {
         public string name = "Charge";
-        [Tooltip("Pose al final de la carga (llega con easing).")]
-        public List<RigPose> windup = new List<RigPose>();
-        [Tooltip("Pose del golpe: se alcanza en 'strikeTime' tras soltar.")]
-        public List<RigPose> strike = new List<RigPose>();
-        [Min(0.01f)] public float strikeTime = 0.08f;
-        [Tooltip("Segundos de vuelta al reposo tras el golpe.")]
+
+        [Tooltip("Los pasos, en orden. Cada uno: la pose a la que llega y cuánto tarda.")]
+        public List<RigGestureStep> steps = new List<RigGestureStep>();
+
+        [Tooltip("Cuándo y desde dónde sale el ataque. Vacío = una vez, al acabar el último paso, desde la boca.")]
+        public List<RigRelease> releases = new List<RigRelease>();
+
+        [Tooltip("Segundos de vuelta al reposo tras el último paso.")]
         [Min(0.01f)] public float recover = 0.45f;
-        [Tooltip("Temblor (grados) de la raíz visual en el último 30% de la carga.")]
-        public float shake = 1.5f;
 
         [Header("Efectos")]
-        [Tooltip("Efectos que salen en una fase del gesto, colgados de una pieza, la boca, el cuerpo o " +
+        [Tooltip("Efectos que salen en un instante del gesto, colgados de una pieza, la boca, el cuerpo o " +
                  "los pies. Se editan en la web (Enemy Studio ▸ Gestos).")]
         public List<RigFx> fx = new List<RigFx>();
 
@@ -261,8 +362,167 @@ namespace RedMagic.Rigging
                  "Sounds (Enemies/<nombre>/Gestures). Vacío = silencio: el gesto no obliga a sonar.")]
         public SoundCue sound = new SoundCue();
 
-        [Tooltip("Cuándo suena: al empezar la carga o al soltar el golpe.")]
+        [Tooltip("Cuándo suena: al empezar el gesto o en su primera suelta.")]
         public GestureSoundMoment soundMoment = GestureSoundMoment.Release;
+
+        // ------------------------------------------------------------ lectura
+
+        private static readonly List<RigRelease> NoReleases = new List<RigRelease>();
+        [NonSerialized] private List<RigRelease> _implicitRelease;
+
+        /// <summary>
+        /// Las sueltas del gesto. Sin ninguna escrita, una al acabar el último paso desde la boca: un
+        /// gesto que lanza un ataque siempre lo suelta. Sin pasos, ninguna (quien lo lanza suelta por tiempo).
+        /// </summary>
+        public List<RigRelease> EffectiveReleases
+        {
+            get
+            {
+                if (releases != null && releases.Count > 0) return releases;
+                if (steps == null || steps.Count == 0) return NoReleases;
+                if (_implicitRelease == null) _implicitRelease = new List<RigRelease> { new RigRelease() };
+                _implicitRelease[0].step = steps.Count - 1;
+                _implicitRelease[0].at = 1f;
+                return _implicitRelease;
+            }
+        }
+
+        /// <summary>
+        /// Segundos de cada paso para un gesto lanzado con <paramref name="lead"/> segundos de aviso:
+        /// los pasos <see cref="RigGestureStep.stretch"/> se reparten lo que falte para que la PRIMERA
+        /// suelta caiga justo a <paramref name="lead"/>; los demás duran lo suyo.
+        /// </summary>
+        public void Durations(float lead, List<float> into)
+        {
+            into.Clear();
+            if (steps == null) return;
+
+            var first = FirstRelease();
+            int lastStretch = first != null ? Mathf.Min(first.step, steps.Count - 1) : steps.Count - 1;
+
+            float fixedTime = 0f;
+            int stretched = 0;
+            for (int i = 0; i <= lastStretch; i++)
+            {
+                var s = steps[i];
+                if (s == null) continue;
+                bool releaseStep = first != null && i == first.step;
+                if (s.stretch) stretched++;
+                else fixedTime += Mathf.Max(0.01f, s.duration) * (releaseStep ? first.at : 1f);
+            }
+
+            float share = stretched > 0 ? Mathf.Max(0.01f, (lead - fixedTime) / stretched) : 0f;
+            for (int i = 0; i < steps.Count; i++)
+            {
+                var s = steps[i];
+                if (s == null) { into.Add(0.01f); continue; }
+
+                if (!s.stretch || i > lastStretch) { into.Add(Mathf.Max(0.01f, s.duration)); continue; }
+
+                // El paso en el que cae la suelta: lo que se estira es el tramo HASTA ella.
+                bool releaseStep = first != null && i == first.step;
+                into.Add(releaseStep && first.at > 0.01f ? share / first.at : share);
+            }
+        }
+
+        /// <summary>Segundos desde que arranca hasta su primera suelta, lanzado con ese aviso.</summary>
+        public float SecondsToFirstRelease(float lead)
+        {
+            var first = FirstRelease();
+            if (first == null) return Mathf.Max(0.01f, lead);
+
+            Durations(lead, Scratch);
+            float time = 0f;
+            for (int i = 0; i < Scratch.Count && i <= first.step; i++)
+                time += Scratch[i] * (i == first.step ? first.at : 1f);
+            return Mathf.Max(0.01f, time);
+        }
+
+        private static readonly List<float> Scratch = new List<float>();
+
+        private RigRelease FirstRelease()
+        {
+            RigRelease first = null;
+            foreach (var r in EffectiveReleases)
+                if (r != null && (first == null || r.step < first.step || (r.step == first.step && r.at < first.at))) first = r;
+            return first;
+        }
+
+        // ------------------------------------------------------------ el gesto clásico
+
+        /// <summary>
+        /// El gesto clásico de carga + golpe como línea de tiempo: la carga dura el aviso del ataque
+        /// (<see cref="RigGestureStep.stretch"/>), suelta al acabarla y el golpe llega en
+        /// <paramref name="strikeTime"/>. Sin pose de golpe, un solo paso.
+        /// </summary>
+        public static RigGesture Classic(string name, List<RigPose> windup, List<RigPose> strike,
+                                         float strikeTime, float recover, float shake)
+        {
+            var gesture = new RigGesture { name = name, recover = recover };
+            gesture.SetClassic(windup, strike, strikeTime, shake);
+            return gesture;
+        }
+
+        private void SetClassic(List<RigPose> windup, List<RigPose> strike, float strikeTime, float shake)
+        {
+            steps = new List<RigGestureStep>
+            {
+                new RigGestureStep { name = "Carga", poses = windup ?? new List<RigPose>(), stretch = true, ease = RigEase.InOut, shake = shake },
+            };
+            if (strike != null && strike.Count > 0)
+                steps.Add(new RigGestureStep { name = "Golpe", poses = strike, duration = Mathf.Max(0.01f, strikeTime), ease = RigEase.Out });
+            releases = new List<RigRelease> { new RigRelease { step = 0, at = 1f } };
+        }
+
+        // ------------------------------------------------------------ datos de antes de los pasos
+        //
+        // Un prefab guardado antes de la línea de tiempo trae 'windup' / 'strike' / 'strikeTime' /
+        // 'shake' y efectos por fase. Se convierten al cargar (y quedan convertidos en cuanto el prefab
+        // se guarda: Tools ▸ Web ▸ Rig ▸ Convertir gestos a pasos). 'strikeTime' > 0 = hay dato antiguo.
+
+        [SerializeField, HideInInspector, UnityEngine.Serialization.FormerlySerializedAs("windup")]
+        private List<RigPose> legacyWindup;
+        [SerializeField, HideInInspector, UnityEngine.Serialization.FormerlySerializedAs("strike")]
+        private List<RigPose> legacyStrike;
+        [SerializeField, HideInInspector, UnityEngine.Serialization.FormerlySerializedAs("strikeTime")]
+        private float legacyStrikeTime = -1f;
+        [SerializeField, HideInInspector, UnityEngine.Serialization.FormerlySerializedAs("shake")]
+        private float legacyShake;
+
+        /// <summary>True si este gesto se acaba de convertir desde el formato de fases y NO tenía golpe (un solo paso).</summary>
+        [NonSerialized] public bool convertedSingleStep;
+
+        /// <summary>True si lo que hay en disco es todavía el formato antiguo.</summary>
+        public bool HasLegacyData => legacyStrikeTime > 0f;
+
+        public void OnBeforeSerialize() { }
+
+        public void OnAfterDeserialize()
+        {
+            if (legacyStrikeTime <= 0f || (steps != null && steps.Count > 0)) { legacyStrikeTime = -1f; return; }
+
+            bool hasStrike = legacyStrike != null && legacyStrike.Count > 0;
+            SetClassic(legacyWindup, hasStrike ? legacyStrike : null, legacyStrikeTime, legacyShake);
+            convertedSingleStep = !hasStrike;
+
+            // Efectos: Windup → paso 0; Strike → el paso del golpe (sin golpe salían todos al soltar);
+            // Recover → la vuelta. Y siguen girando con su ancla, como estaban puestos.
+            if (fx != null)
+                foreach (var f in fx)
+                {
+                    if (f == null || f.legacyPhase < 0) continue;
+                    if (f.legacyPhase == 0) f.step = 0;
+                    else if (f.legacyPhase == 1) { f.step = hasStrike ? 1 : 0; if (!hasStrike) f.at = 1f; }
+                    else f.step = steps.Count;
+                    f.facing = RigFxFacing.Anchor;
+                    f.legacyPhase = -1;
+                }
+
+            legacyWindup = null;
+            legacyStrike = null;
+            legacyStrikeTime = -1f;
+            legacyShake = 0f;
+        }
     }
 
     /// <summary>
@@ -552,13 +812,13 @@ namespace RedMagic.Rigging
         }
 
         /// <summary>
-        /// Por dónde va el gesto en curso (0–1 carga, 1–2 golpe, 2–3 vuelta). Lo dice el motor cada
-        /// frame; los sprites sólo se recalculan cuando alguno entra o sale de su ventana.
+        /// Por dónde va el gesto en curso, en pasos (0–1 el primero… y el último tramo, la vuelta). Lo
+        /// dice el motor cada frame; los sprites sólo se recalculan cuando alguno entra o sale de su ventana.
         /// </summary>
         public void SetGestureMoment(float moment)
         {
             if (_spriteGesture == null) return;
-            _spriteMoment = Mathf.Clamp(moment, 0f, 3f);
+            _spriteMoment = Mathf.Max(0f, moment);
             int windows = ActiveGestureWindows();
             if (windows == _spriteWindows) return;
             _spriteWindows = windows;
@@ -640,6 +900,58 @@ namespace RedMagic.Rigging
             }
 
             RefreshSprites();
+        }
+
+        // ------------------------------------------------------------ de dónde sale el ataque
+
+        [NonSerialized] private Transform _castPoint;
+        [NonSerialized] private Vector2 _castOffset;
+
+        /// <summary>El motor lo fija en cada suelta del gesto (<see cref="RigRelease.point"/>).</summary>
+        public void SetCastPoint(Transform point, Vector2 offset)
+        {
+            _castPoint = point;
+            _castOffset = offset;
+        }
+
+        public void ClearCastPoint() => SetCastPoint(null, Vector2.zero);
+
+        /// <summary>
+        /// Un gesto convertido desde el formato de fases que no tenía golpe pasa de "carga 0–1, vuelta
+        /// 2–3" a "paso 0–1, vuelta 1–2": las ventanas de sus sprites de gesto bajan un tramo.
+        /// </summary>
+        public void FixConvertedWindows()
+        {
+            foreach (var g in gestures)
+            {
+                if (g == null || !g.convertedSingleStep) continue;
+                g.convertedSingleStep = false;
+                foreach (var swap in spriteSwaps)
+                {
+                    if (swap?.named == null) continue;
+                    foreach (var n in swap.named)
+                    {
+                        if (n == null || n.state != RigNamedState.Gesture ||
+                            !string.Equals(n.gesture, g.name, StringComparison.OrdinalIgnoreCase)) continue;
+                        if (n.showFrom >= 2f) n.showFrom -= 1f; else if (n.showFrom > 1f) n.showFrom = 1f;
+                        if (n.showTo >= 2f) n.showTo -= 1f; else if (n.showTo > 1f) n.showTo = 1f;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// De dónde sale el ataque ahora mismo: el punto de la suelta en curso; si no lo dice, la boca;
+        /// sin boca, la pieza que apunta; sin ella, el cuerpo.
+        /// </summary>
+        public Vector2 CastPosition
+        {
+            get
+            {
+                if (_castPoint != null) return _castPoint.TransformPoint(_castOffset);
+                var t = muzzle != null ? muzzle : aimPart != null ? aimPart : body != null ? body : transform;
+                return t.TransformPoint(_castOffset);
+            }
         }
 
         /// <summary>El gesto con ese nombre (sin distinguir mayúsculas), o null.</summary>

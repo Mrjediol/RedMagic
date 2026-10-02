@@ -467,6 +467,13 @@ export const BOSS_CATALOG = {
           "default": false
         },
         {
+          "name": "volleyPerRelease",
+          "label": "Volley Per Release",
+          "tooltip": "Cada salva sale en una suelta del gesto: un gesto con tres sueltas dispara tres salvas, cada una en su instante y desde su punto. Las salvas que sobren (más 'volleys' que sueltas) siguen con 'timeBetweenVolleys'. Apagado = todas a ritmo de 'timeBetweenVolleys'.",
+          "type": "bool",
+          "default": false
+        },
+        {
           "name": "originOffset",
           "label": "Origin Offset",
           "tooltip": "Desplazamiento del centro del patrón respecto al jefe. No se voltea con la mirada.",

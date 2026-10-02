@@ -166,11 +166,11 @@
     "SporeNova": {
       "type": "BulletHellAttack",
       "displayName": "Nova de esporas",
-      "telegraph": 0.8,
+      "telegraph": 0.75,
       "recovery": 1,
       "cooldownInAttacks": 2,
       "damage": 5,
-      "gesture": "Sweep",
+      "gesture": "Twirl",
       "params": {
         "pattern": "Radial",
         "projectile": {
@@ -204,6 +204,7 @@
         "spinPerVolley": 18,
         "aimAtPlayer": false,
         "fromCastPoint": true,
+        "volleyPerRelease": true,
         "spawnRadius": 0.3
       }
     }

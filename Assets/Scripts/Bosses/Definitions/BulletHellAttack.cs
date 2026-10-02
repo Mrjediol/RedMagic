@@ -88,6 +88,11 @@ namespace RedMagic.Bosses
                  "aviso, así que no pinta la marca de aviso. Sin boca, sale de los pies.")]
         [SerializeField] private bool fromCastPoint;
 
+        [Tooltip("Cada salva sale en una suelta del gesto: un gesto con tres sueltas dispara tres salvas, " +
+                 "cada una en su instante y desde su punto. Las salvas que sobren (más 'volleys' que " +
+                 "sueltas) siguen con 'timeBetweenVolleys'. Apagado = todas a ritmo de 'timeBetweenVolleys'.")]
+        [SerializeField] private bool volleyPerRelease;
+
         [Tooltip("Desplazamiento del centro del patrón respecto al jefe. No se voltea con la mirada.")]
         [SerializeField] private Vector2 originOffset = new Vector2(0f, 2.2f);
 
@@ -202,8 +207,23 @@ namespace RedMagic.Bosses
                 Impact();
                 FireVolley(ctx, volley);
 
-                if (volley < volleys - 1)
+                if (volley >= volleys - 1) continue;
+
+                // La siguiente salva espera a la siguiente suelta del gesto, si le queda alguna.
+                var body = volleyPerRelease && ctx.HasHost ? ctx.Host.Body : null;
+                if (body != null && body.ReleaseTotal > volley + 1)
+                {
+                    float timeout = 6f;
+                    while (ctx.IsValid && body.ReleaseCount <= volley + 1 && timeout > 0f)
+                    {
+                        timeout -= Time.deltaTime;
+                        yield return null;
+                    }
+                }
+                else
+                {
                     yield return new WaitForSeconds(ctx.Scaled(timeBetweenVolleys));
+                }
             }
         }
 

@@ -380,17 +380,41 @@ namespace RedMagic.Rigging.EditorTools
             foreach (var g in rig.gestures)
             {
                 if (g == null) continue;
+                // La línea de tiempo: pasos, sueltas y efectos (cada uno con su paso y su momento).
+                var steps = new JArray();
+                foreach (var s in g.steps)
+                {
+                    if (s == null) continue;
+                    steps.Add(new JObject
+                    {
+                        ["name"] = s.name ?? "",
+                        ["duration"] = RigConfigJson.Num(s.duration),
+                        ["ease"] = RigConfigJson.EnumName(s.ease),
+                        ["stretch"] = s.stretch,
+                        ["shake"] = RigConfigJson.Num(s.shake),
+                        ["poses"] = Poses(s.poses, visual),
+                    });
+                }
+
+                var releases = new JArray();
+                foreach (var r in g.releases)
+                {
+                    if (r == null) continue;
+                    var release = new JObject { ["step"] = r.step, ["at"] = RigConfigJson.Num(r.at) };
+                    if (r.point != null) release["point"] = RigConfigJson.PathOf(visual, r.point);
+                    release["offset"] = RigConfigJson.V2(r.offset);
+                    releases.Add(release);
+                }
+
                 var json = new JObject
                 {
                     ["name"] = g.name,
-                    ["windup"] = Poses(g.windup, visual),
-                    ["strike"] = Poses(g.strike, visual),
-                    ["strikeTime"] = RigConfigJson.Num(g.strikeTime),
+                    ["steps"] = steps,
+                    ["releases"] = releases,
                     ["recover"] = RigConfigJson.Num(g.recover),
-                    ["shake"] = RigConfigJson.Num(g.shake),
                 };
-                var phases = Phases(g, visual);
-                if (phases.Count > 0) json["phases"] = phases;   // sin efectos, el gesto se exporta como siempre
+                var fx = Fx(g, visual);
+                if (fx.Count > 0) json["fx"] = fx;
                 gestures.Add(json);
             }
 
@@ -409,37 +433,36 @@ namespace RedMagic.Rigging.EditorTools
             };
         }
 
-        /// <summary>Los efectos de un gesto agrupados por fase (<c>phases[].fx</c>), en el orden de las fases.</summary>
-        private static JArray Phases(RigGesture gesture, Transform visual)
+        /// <summary>Los efectos de un gesto (<c>fx[]</c>), cada uno con su paso y su momento.</summary>
+        private static JArray Fx(RigGesture gesture, Transform visual)
         {
-            var phases = new JArray();
-            if (gesture.fx == null) return phases;
+            var list = new JArray();
+            if (gesture.fx == null) return list;
 
-            foreach (RigFxPhase phase in Enum.GetValues(typeof(RigFxPhase)))
+            foreach (var fx in gesture.fx)
             {
-                var list = new JArray();
-                foreach (var fx in gesture.fx)
+                if (fx == null) continue;
+                var item = new JObject
                 {
-                    if (fx == null || fx.phase != phase) continue;
-                    var item = new JObject
-                    {
-                        ["fx"] = fx.prefab != null ? AssetDatabase.GetAssetPath(fx.prefab) : null,
-                        ["at"] = RigConfigJson.Num(fx.at),
-                        ["anchor"] = RigConfigJson.FxAnchorName(fx.anchor),
-                    };
-                    if (fx.anchor == RigFxAnchor.Part)
-                        item["part"] = fx.part != null ? RigConfigJson.PathOf(visual, fx.part) : null;
-                    item["offset"] = RigConfigJson.V2(fx.offset);
-                    item["scale"] = RigConfigJson.Num(fx.scale);
-                    item["followsPart"] = fx.followsPart;
-                    item["loop"] = fx.loop;
-                    list.Add(item);
-                }
-
-                if (list.Count > 0) phases.Add(new JObject { ["phase"] = RigConfigJson.FxPhaseName(phase), ["fx"] = list });
+                    ["fx"] = fx.prefab != null ? AssetDatabase.GetAssetPath(fx.prefab) : null,
+                    ["step"] = fx.step,
+                    ["at"] = RigConfigJson.Num(fx.at),
+                    ["anchor"] = RigConfigJson.FxAnchorName(fx.anchor),
+                };
+                if (fx.anchor == RigFxAnchor.Part)
+                    item["part"] = fx.part != null ? RigConfigJson.PathOf(visual, fx.part) : null;
+                item["offset"] = RigConfigJson.V2(fx.offset);
+                item["scale"] = RigConfigJson.Num(fx.scale);
+                item["followsPart"] = fx.followsPart;
+                item["loop"] = fx.loop;
+                item["untilStep"] = fx.untilStep;
+                item["facing"] = RigConfigJson.EnumName(fx.facing);
+                item["angle"] = RigConfigJson.Num(fx.angle);
+                item["layer"] = RigConfigJson.EnumName(fx.layer);
+                list.Add(item);
             }
 
-            return phases;
+            return list;
         }
 
         private static JArray Poses(List<RigPose> poses, Transform visual)

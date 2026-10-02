@@ -26,12 +26,12 @@ namespace RedMagic.Rigging.EditorTools
     public static class RigConfigRoundTrip
     {
         private const string TempFolder = ProceduralEnemyPacks.Folder + "/_RoundTrip";
-        private static readonly string[] Reference = { "Robot", "Turret", "BossIce2" };
+        private static readonly string[] Reference = { "IceRobot", "Turret", "IceBoss2" };
 
         public static string FixtureFolder =>
             Path.GetFullPath(Path.Combine(Application.dataPath, "..", "docs", "schemas", "fixtures", "rig"));
 
-        [MenuItem("Tools/Web/Rig/Probar ida y vuelta (Robot · Turret · BossIce2)")]
+        [MenuItem("Tools/Web/Rig/Probar ida y vuelta (IceRobot · Turret · IceBoss2)")]
         private static void RunMenu()
         {
             string result = Run();
@@ -82,7 +82,8 @@ namespace RedMagic.Rigging.EditorTools
                 AssetDatabase.DeleteAsset(TempFolder);
 
                 // El import de un jefe también deja sus visuales por jefe (Fx/Bosses/<Nombre>_RoundTrip).
-                AssetDatabase.DeleteAsset("Assets/Prefabs/Fx/Bosses/BossIce2_RoundTrip");
+                foreach (var name in Reference)
+                    AssetDatabase.DeleteAsset($"Assets/Prefabs/Fx/Bosses/{name}_RoundTrip");
             }
 
             sb.Insert(0, failures == 0 ? "IDA Y VUELTA OK\n" : $"IDA Y VUELTA CON FALLOS ({failures})\n");
@@ -124,17 +125,32 @@ namespace RedMagic.Rigging.EditorTools
                 rig.gestures.Add(new RigGesture
                 {
                     name = "FxRoundTrip",
-                    // En el orden de las fases: así los agrupa el JSON (phases[].fx).
+                    // Una línea de tiempo de tres pasos con dos sueltas (una desde una pieza) y un
+                    // efecto en cada tramo, vuelta al reposo incluida (paso 3).
+                    steps = new List<RigGestureStep>
+                    {
+                        new RigGestureStep { name = "Lanza", duration = 0.4f, ease = RigEase.Out, shake = 1f,
+                                             poses = new List<RigPose> { new RigPose { part = part, move = new Vector2(0f, 0.5f), rotate = 180f } } },
+                        new RigGestureStep { name = "Recoge", duration = 0.3f, ease = RigEase.In, stretch = true,
+                                             poses = new List<RigPose> { new RigPose { part = part, rotate = 360f } } },
+                        new RigGestureStep { name = "Dispara", duration = 0.1f, ease = RigEase.Linear },
+                    },
+                    releases = new List<RigRelease>
+                    {
+                        new RigRelease { step = 1, at = 0.5f, point = part, offset = new Vector2(0.2f, 0.1f) },
+                        new RigRelease { step = 2, at = 1f },
+                    },
                     fx = new List<RigFx>
                     {
-                        new RigFx { prefab = fxPrefab, phase = RigFxPhase.Windup, at = 0f, anchor = RigFxAnchor.Part, part = part,
-                                    offset = new Vector2(0.25f, -0.5f), scale = 1.5f, followsPart = true, loop = true },
-                        new RigFx { prefab = fxPrefab, phase = RigFxPhase.Windup, at = 0.7f, anchor = RigFxAnchor.Body,
-                                    offset = new Vector2(0f, 1f), scale = 1f, followsPart = true, loop = false },
-                        new RigFx { prefab = fxPrefab, phase = RigFxPhase.Strike, at = 0.5f, anchor = RigFxAnchor.Muzzle,
+                        new RigFx { prefab = fxPrefab, step = 0, at = 0f, anchor = RigFxAnchor.Part, part = part,
+                                    offset = new Vector2(0.25f, -0.5f), scale = 1.5f, followsPart = true, loop = true, untilStep = 1,
+                                    facing = RigFxFacing.Anchor, layer = RigFxLayer.Behind },
+                        new RigFx { prefab = fxPrefab, step = 0, at = 0.7f, anchor = RigFxAnchor.Body,
+                                    offset = new Vector2(0f, 1f), scale = 1f, followsPart = true, loop = false, angle = 30f },
+                        new RigFx { prefab = fxPrefab, step = 2, at = 0.5f, anchor = RigFxAnchor.Muzzle,
                                     offset = Vector2.zero, scale = 0.75f, followsPart = false, loop = false },
-                        new RigFx { prefab = fxPrefab, phase = RigFxPhase.Recover, at = 1f, anchor = RigFxAnchor.Feet,
-                                    offset = new Vector2(-1f, 0f), scale = 2f, followsPart = true, loop = false },
+                        new RigFx { prefab = fxPrefab, step = 3, at = 1f, anchor = RigFxAnchor.Feet,
+                                    offset = new Vector2(-1f, 0f), scale = 2f, followsPart = true, loop = false, facing = RigFxFacing.World },
                     },
                 });
                 rig.idle = new RigIdleGestures { gestures = new List<string> { "FxRoundTrip" }, interval = 2.5f, chance = 0.35f, windup = 0.8f };
@@ -273,6 +289,8 @@ namespace RedMagic.Rigging.EditorTools
                           visA, visB, diffs);
             }
 
+            // El sonido de un gesto se asigna en Unity (pestaña Sounds) y no viaja en el JSON: la copia nace sin él.
+            diffs.RemoveAll(d => d.StartsWith("rig.gestures[") && d.Contains("].sound."));
             return diffs;
         }
 

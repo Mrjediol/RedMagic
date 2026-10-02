@@ -112,6 +112,10 @@ namespace RedMagic.Bosses
         /// <summary>Segundos que tardará en soltar el último gesto lanzado, ya con su velocidad.</summary>
         public float SecondsToRelease { get; private set; }
 
+        /// <summary>Sueltas que lleva / que tiene el gesto en curso (un rig puede soltar varias veces).</summary>
+        public int ReleaseCount => HasRig ? rig.ReleasesFired : (Released ? 1 : 0);
+        public int ReleaseTotal => HasRig ? Mathf.Max(1, rig.ReleaseTotal) : 1;
+
         private void Awake()
         {
             if (animator == null) animator = GetComponent<Animator>();
@@ -205,6 +209,8 @@ namespace RedMagic.Bosses
 
                 _holding = false;
                 _inGesture = true;
+                // Un gesto con tiempos propios suelta cuando digan sus pasos, no a 'secondsToRelease'.
+                secondsToRelease = rig.SecondsToRelease(state, secondsToRelease);
                 Released = false;
                 SecondsToRelease = secondsToRelease;
                 _releaseAt = Time.time + secondsToRelease + 0.3f;   // sólo red de seguridad

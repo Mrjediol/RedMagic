@@ -1711,7 +1711,7 @@
     },
     {
       "component": "^ProceduralRig$",
-      "name": "Sweep|Swipe",
+      "name": "Sweep|Swipe|Twirl|Spin|Giro",
       "clip": "gesture_sweep",
       "pitch": [
         0.94,

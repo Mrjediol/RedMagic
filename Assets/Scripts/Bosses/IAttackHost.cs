@@ -59,8 +59,15 @@ namespace RedMagic.Bosses
         /// <summary>Lanza el gesto para soltar en <paramref name="secondsToRelease"/>. False si no existe.</summary>
         bool PlayGesture(string state, float secondsToRelease);
 
-        /// <summary>True desde que el gesto en curso ha soltado su golpe.</summary>
+        /// <summary>True desde que el gesto en curso ha soltado su golpe (su primera suelta).</summary>
         bool Released { get; }
+
+        /// <summary>
+        /// Un gesto puede soltar varias veces (dispara tres veces, lanza y remata): cuántas sueltas
+        /// lleva el gesto en curso y cuántas tiene en total. Un cuerpo de un solo golpe: 0/1 → 1/1.
+        /// </summary>
+        int ReleaseCount => Released ? 1 : 0;
+        int ReleaseTotal => 1;
 
         /// <summary>Segundos que tardará en soltar el último gesto lanzado.</summary>
         float SecondsToRelease { get; }

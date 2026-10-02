@@ -62,6 +62,42 @@ sheet. Animation is code, not clips.
   / elastic bounce was tried there and rejected by the user as a default: keep recoil and bounce as
   opt-in numbers per enemy (`recoilDistance`, `bodyRecoil`, `wakeOvershoot` — 0 = none).
 
+## A gesture is a timeline (2026-10-02)
+This replaces the fixed "wind-up → release → strike" everywhere below: where the older sections say
+*phase* read *step* (`Windup` = step 0, `Strike` = step 1, `Recover` = the stretch after the last step).
+- **`RigGesture.steps`** (`RigGestureStep`): any number of steps, each a pose (measured from rest; a part
+  not listed returns to rest), a `duration`, an `ease` (InOut / Out / In / Linear) and a `shake`. The body
+  holds **one weight per step** (`RigDriverCode._weights`) and each step blends from wherever it was to
+  "only this pose"; `recover` blends everything to rest. A cut cross-fades the old gesture underneath, as before.
+- **`stretch`** on a step: its duration is given by whoever launches the gesture (the attack's `telegraph`)
+  so one gesture serves attacks with different warnings — the stretch steps share what is left for the
+  FIRST release to land exactly at that time (`RigGesture.Durations`). No stretch step = the gesture
+  keeps its own clock and the attack waits for it (`RigDriver.SecondsToRelease` is what the hosts wait on).
+- **`RigGesture.releases`** (`RigRelease`: step, `at`, `point`, `offset`): the instants the attack LEAVES
+  — one or several per gesture — and from where (a part or node; empty = the muzzle). At each one the
+  driver sets `ProceduralRig.CastPosition` and raises `AttackReleased`. None written = once, at the end of
+  the last step. Who listens: the built-in attack fires once per release (from `CastPosition`); a catalog
+  attack starts at the first one (`IAttackBody.Released`) and can follow the rest through
+  `ReleaseCount` / `ReleaseTotal` — `BulletHellAttack.volleyPerRelease` fires one volley per release.
+  `IAttackHost.CastPoint` = `CastPosition`.
+- **Effects** (`RigFx`): `step` + `at` instead of a phase; a loop lives until the end of `untilStep`
+  (-1 = its own step). `facing`: **Direction** (default — at the muzzle, where the weapon points, pivot →
+  muzzle; on the body / feet, where the body is moving, else where it faces), **Anchor** (turns with its
+  part, the old behaviour) or **World**; `angle` adds to it. `layer`: Front / **Behind** the body (the
+  parts are lifted one sorting step once, in `RigDriver.CacheFxContext`, since 0 is behind the scene).
+- **A full turn does not unwind**: on the way back to rest (and in the cross-fade layer) pose rotations
+  go the short way (`_settling`), so a step that leaves a part at 360° is already at rest to the eye.
+- **Gesture sprite windows** (`showFrom` / `showTo`) are in steps: 0–1 the first… and the last stretch
+  is the recover. For the classic two-step gesture the numbers are the old 0–3.
+- **Old data**: a prefab saved before this carries `windup` / `strike` / `strikeTime` / `shake` and effects
+  by phase; `RigGesture.OnAfterDeserialize` converts them on load (effects keep `facing = Anchor`) and
+  *Tools ▸ Web ▸ Rig ▸ Convertir gestos a pasos* re-saves the prefabs (done for the five that existed).
+  The classic gesture is `RigGesture.Classic(…)`: step 0 `stretch`, release at its end, step 1 the strike.
+- **JSON**: `gestures[]` = `{ name, steps[], releases[], recover, fx[] }` (what Unity exports and
+  `tools/comfy/make-enemy.mjs` writes). The classic shape (`windup` / `strike` / `phases[].fx`, what the
+  web's Enemy Studio still exports) is read and converted by the importer.
+- `Legacy/RigDriverTween.cs` no longer compiles (guarded by `#if`): it spoke of the two fixed poses.
+
 ## Gesture effects (`RigFx`)
 A `RigGesture` has three **phases** — `Windup` (lasts the attack's telegraph), `Strike`
 (`strikeTime`; zero-length when the gesture has no strike pose) and `Recover` — and `RigGesture.fx`

@@ -1,3 +1,5 @@
+#if RIG_DRIVER_TWEEN_REFERENCE   // Legacy: sólo para leer. No compila desde que un gesto es una línea de tiempo de pasos
+                                  // (2026-10-02): sus corrutinas hablan de carga / golpe fijos.
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
@@ -588,3 +590,4 @@ namespace RedMagic.Rigging
         }
     }
 }
+#endif

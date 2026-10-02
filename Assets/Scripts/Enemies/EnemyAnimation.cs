@@ -95,6 +95,10 @@ namespace RedMagic.Enemies
         /// <summary>Segundos que tardará en soltar el último gesto lanzado.</summary>
         public float SecondsToRelease { get; private set; }
 
+        /// <summary>Sueltas que lleva / que tiene el gesto de la baraja en curso (un rig puede soltar varias veces).</summary>
+        public int ReleaseCount => HasRig && _rigGesture ? rig.ReleasesFired : (Released ? 1 : 0);
+        public int ReleaseTotal => HasRig && _rigGesture ? Mathf.Max(1, rig.ReleaseTotal) : 1;
+
         /// <summary>
         /// Qué parámetros de velocidad existen <b>de verdad</b> en este controller. No todos los
         /// estados los tienen: un Static no genera clip de "Walk", así que su controller nunca
@@ -192,8 +196,14 @@ namespace RedMagic.Enemies
         // gesto de la baraja se quedan aquí (sólo marcan la suelta) y no llegan al ataque propio.
         private void OnRigReleased()
         {
-            if (_rigGesture) Released = true;
-            else Release();
+            if (_rigGesture) { Released = true; return; }
+
+            // El ataque propio lanzado con un gesto: cada suelta del gesto es un golpe (un gesto con
+            // tres sueltas dispara tres veces). Sin el filtro de "ya ha soltado" de Release().
+            if (_inGesture) return;
+            _released = true;
+            _fallbackRelease = -1f;
+            AttackReleased?.Invoke();
         }
 
         private void OnRigFinished()
@@ -319,9 +329,9 @@ namespace RedMagic.Enemies
                 float windupSeconds = (rigData != null ? rigData.windup : 0.4f) / Mathf.Max(0.01f, speed);
                 if (custom && rig.PlayGesture(gesture, windupSeconds))
                 {
-                    float seconds = windupSeconds + 1.5f;
-                    _fallbackRelease = Time.time + seconds;
-                    _fallbackFinish = Time.time + seconds + 1.5f;
+                    // Sólo red de seguridad: el gesto dura lo que digan sus pasos, no el aviso.
+                    _fallbackRelease = Time.time + rig.SecondsToRelease(gesture, windupSeconds) + 1.5f;
+                    _fallbackFinish = Time.time + rig.GestureSeconds(gesture, windupSeconds) + 1.5f;
                     return;
                 }
 
@@ -448,8 +458,9 @@ namespace RedMagic.Enemies
             {
                 if (!rig.PlayGesture(state, secondsToRelease)) return false;
 
+                // Un gesto con tiempos propios suelta cuando digan sus pasos, no a 'secondsToRelease'.
                 _rigGesture = true;
-                StartGesture(secondsToRelease, 0.3f);
+                StartGesture(rig.SecondsToRelease(state, secondsToRelease), 0.3f);
                 return true;
             }
 

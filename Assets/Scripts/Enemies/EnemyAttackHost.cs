@@ -99,13 +99,16 @@ namespace RedMagic.Enemies
 
         public Vector2 FeetPosition => new Vector2(transform.position.x, transform.position.y + FeetHeight);
 
-        /// <summary>La boca del rig (la punta del arma, que se mueve con el gesto); sin rig o sin boca, los pies.</summary>
+        /// <summary>
+        /// De dónde sale el ataque en un cuerpo por partes: el punto de la suelta del gesto en curso
+        /// (<c>RigRelease.point</c>) o, si no dice nada, la boca del rig. Sin rig, los pies.
+        /// </summary>
         public Vector2 CastPoint
         {
             get
             {
                 if (!_rigLooked) { _rig = GetComponent<RedMagic.Rigging.ProceduralRig>(); _rigLooked = true; }
-                return _rig != null && _rig.muzzle != null ? (Vector2)_rig.muzzle.position : FeetPosition;
+                return _rig != null ? _rig.CastPosition : FeetPosition;
             }
         }
 

@@ -678,23 +678,37 @@ MonoBehaviour:
   wakeFlickerPortion: 0.4
   gestures:
   - name: Flick
-    windup:
-    - part: {fileID: 7928205777592599540}
-      move: {x: -0.066, y: 0}
-      rotate: -18
-      scale: {x: 0, y: 0}
-    - part: {fileID: 172768294981139038}
-      move: {x: 0, y: 0}
-      rotate: 2
-      scale: {x: 0, y: 0}
-    strike:
-    - part: {fileID: 7928205777592599540}
-      move: {x: 0.099, y: 0}
-      rotate: 14
-      scale: {x: 0, y: 0}
-    strikeTime: 0.06
+    steps:
+    - name: Carga
+      poses:
+      - part: {fileID: 7928205777592599540}
+        move: {x: -0.066, y: 0}
+        rotate: -18
+        scale: {x: 0, y: 0}
+      - part: {fileID: 172768294981139038}
+        move: {x: 0, y: 0}
+        rotate: 2
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 1
+      shake: 0
+    - name: Golpe
+      poses:
+      - part: {fileID: 7928205777592599540}
+        move: {x: 0.099, y: 0}
+        rotate: 14
+        scale: {x: 0, y: 0}
+      duration: 0.06
+      ease: 1
+      stretch: 0
+      shake: 0
+    releases:
+    - step: 0
+      at: 1
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
     recover: 0.3
-    shake: 0
     fx: []
     sound:
       clips:
@@ -709,32 +723,50 @@ MonoBehaviour:
       rolloffEnd: 32
       initialized: 1
     soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   - name: Charge
-    windup:
-    - part: {fileID: 7928205777592599540}
-      move: {x: -0.132, y: 0.198}
-      rotate: 55
-      scale: {x: 0, y: 0}
-    - part: {fileID: 172768294981139038}
-      move: {x: -0.099, y: 0.066}
-      rotate: 6
-      scale: {x: 0, y: 0}
-    - part: {fileID: 1608849882970432955}
-      move: {x: 0, y: 0}
-      rotate: 6
-      scale: {x: 0, y: 0}
-    strike:
-    - part: {fileID: 7928205777592599540}
-      move: {x: 0.198, y: 0}
-      rotate: -20
-      scale: {x: 0, y: 0}
-    - part: {fileID: 172768294981139038}
-      move: {x: 0.099, y: 0}
-      rotate: -5
-      scale: {x: 0, y: 0}
-    strikeTime: 0.08
+    steps:
+    - name: Carga
+      poses:
+      - part: {fileID: 7928205777592599540}
+        move: {x: -0.132, y: 0.198}
+        rotate: 55
+        scale: {x: 0, y: 0}
+      - part: {fileID: 172768294981139038}
+        move: {x: -0.099, y: 0.066}
+        rotate: 6
+        scale: {x: 0, y: 0}
+      - part: {fileID: 1608849882970432955}
+        move: {x: 0, y: 0}
+        rotate: 6
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 1
+      shake: 1.5
+    - name: Golpe
+      poses:
+      - part: {fileID: 7928205777592599540}
+        move: {x: 0.198, y: 0}
+        rotate: -20
+        scale: {x: 0, y: 0}
+      - part: {fileID: 172768294981139038}
+        move: {x: 0.099, y: 0}
+        rotate: -5
+        scale: {x: 0, y: 0}
+      duration: 0.08
+      ease: 1
+      stretch: 0
+      shake: 0
+    releases:
+    - step: 0
+      at: 1
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
     recover: 0.45
-    shake: 1.5
     fx: []
     sound:
       clips:
@@ -749,28 +781,46 @@ MonoBehaviour:
       rolloffEnd: 32
       initialized: 1
     soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   - name: Sweep
-    windup:
-    - part: {fileID: 7928205777592599540}
-      move: {x: 0, y: 0.132}
-      rotate: 40
-      scale: {x: 0, y: 0}
-    - part: {fileID: 172768294981139038}
-      move: {x: 0, y: 0}
-      rotate: 4
-      scale: {x: 0, y: 0}
-    strike:
-    - part: {fileID: 7928205777592599540}
-      move: {x: 0.066, y: -0.132}
-      rotate: -45
-      scale: {x: 0, y: 0}
-    - part: {fileID: 172768294981139038}
-      move: {x: 0, y: 0}
-      rotate: -4
-      scale: {x: 0, y: 0}
-    strikeTime: 0.14
+    steps:
+    - name: Carga
+      poses:
+      - part: {fileID: 7928205777592599540}
+        move: {x: 0, y: 0.132}
+        rotate: 40
+        scale: {x: 0, y: 0}
+      - part: {fileID: 172768294981139038}
+        move: {x: 0, y: 0}
+        rotate: 4
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 1
+      shake: 0
+    - name: Golpe
+      poses:
+      - part: {fileID: 7928205777592599540}
+        move: {x: 0.066, y: -0.132}
+        rotate: -45
+        scale: {x: 0, y: 0}
+      - part: {fileID: 172768294981139038}
+        move: {x: 0, y: 0}
+        rotate: -4
+        scale: {x: 0, y: 0}
+      duration: 0.14
+      ease: 1
+      stretch: 0
+      shake: 0
+    releases:
+    - step: 0
+      at: 1
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
     recover: 0.4
-    shake: 0
     fx: []
     sound:
       clips:
@@ -785,20 +835,32 @@ MonoBehaviour:
       rolloffEnd: 32
       initialized: 1
     soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   - name: Saltito
-    windup:
-    - part: {fileID: 980318115569924195}
-      move: {x: 0.988, y: 3.257}
-      rotate: -2.8
-      scale: {x: 0, y: 0}
-    - part: {fileID: 7928205777592599540}
-      move: {x: 0.003, y: -0.071}
-      rotate: -37.1
-      scale: {x: 0, y: 0}
-    strike: []
-    strikeTime: 0.08
+    steps:
+    - name: Carga
+      poses:
+      - part: {fileID: 980318115569924195}
+        move: {x: 0.988, y: 3.257}
+        rotate: -2.8
+        scale: {x: 0, y: 0}
+      - part: {fileID: 7928205777592599540}
+        move: {x: 0.003, y: -0.071}
+        rotate: -37.1
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 0
+      stretch: 1
+      shake: 0
+    releases:
+    - step: 0
+      at: 1
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
     recover: 0.45
-    shake: 0
     fx: []
     sound:
       clips:
@@ -813,6 +875,10 @@ MonoBehaviour:
       rolloffEnd: 32
       initialized: 1
     soundMoment: 1
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   drivenLease: 0.25
   drivenReturn: 0.35
   staggerStrength: 2.5

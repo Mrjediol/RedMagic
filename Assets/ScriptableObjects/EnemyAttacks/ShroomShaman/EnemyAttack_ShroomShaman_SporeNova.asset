@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Nova de esporas
   description: 
   accent: {r: 0.55, g: 0.9, b: 0.4, a: 1}
-  telegraph: 0.8
+  telegraph: 0.75
   recovery: 1
   weight: 1
   cooldownInAttacks: 2
@@ -25,7 +25,7 @@ MonoBehaviour:
   knockbackMultiplier: 1
   vulnerableSeconds: 0
   vulnerableMultiplier: 2.5
-  gesture: Sweep
+  gesture: Twirl
   sound:
     clips:
     - {fileID: 8300000, guid: 821fdccc01b3f4142b7b74a9c6f47ab1, type: 3}
@@ -66,6 +66,7 @@ MonoBehaviour:
   randomSpread: 0
   aimAtPlayer: 0
   fromCastPoint: 1
+  volleyPerRelease: 1
   originOffset: {x: 0, y: 0}
   spawnRadius: 0.3
   rainSpan: 1

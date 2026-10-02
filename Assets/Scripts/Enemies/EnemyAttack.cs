@@ -302,10 +302,16 @@ namespace RedMagic.Enemies
         /// apunta al sitio real (la boca del dragón), sea cual sea la proporción del personaje. Sin
         /// ese hijo cae al número tal cual, sin cambiar nada para los enemigos existentes.
         /// </summary>
+        private RedMagic.Rigging.ProceduralRig _rig;
+        private bool _rigLooked;
+
         private Vector2 MuzzleOrigin(EnemyTuning tuning, int facing)
         {
-            // Anidado (brazo de un rig): su posición en el mundo ya es la buena — el brazo apunta
-            // y la raíz visual está volteada —, así que no se refleja nada a mano.
+            // Un cuerpo por partes: el disparo sale de donde diga la suelta del gesto en curso
+            // (RigRelease.point), y si no dice nada, de la boca. En el mundo ya es la buena posición
+            // — el brazo apunta y la raíz visual está volteada —, así que no se refleja nada a mano.
+            if (!_rigLooked) { _rig = GetComponent<RedMagic.Rigging.ProceduralRig>(); _rigLooked = true; }
+            if (_rig != null && (_rig.muzzle != null || _rig.aimPart != null)) return _rig.CastPosition;
             if (_muzzle != null && _muzzle.parent != transform) return _muzzle.position;
 
             Vector2 offset = _muzzle != null

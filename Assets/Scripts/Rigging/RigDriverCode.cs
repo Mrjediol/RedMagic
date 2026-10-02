@@ -66,16 +66,24 @@ namespace RedMagic.Rigging
         protected virtual float ExtraTilt => 0f;
         protected virtual float ExtraSquash => 0f;
 
-        // Gesto con nombre (jefes): pesos de la pose de carga y de la de golpe.
+        // Gesto con nombre: el peso de la pose de cada uno de sus pasos (el cuerpo está en la mezcla).
         protected RigGesture _gesture;
-        protected float _gestureWindup, _gestureStrike, _gestureShake;
+        protected readonly List<float> _weights = new List<float>();
+        protected float _gestureShake;
         private Coroutine _gestureRoutine;
+        private readonly List<float> _from = new List<float>();        // pesos al empezar el tramo en curso
+        private readonly List<float> _durations = new List<float>();   // segundos de cada paso de este lanzamiento
+
+        // Volviendo al reposo: los giros de las poses se toman por el camino corto. Un paso que deja
+        // una pieza a 360° (un giro completo) ya está, a la vista, en reposo — no se desenrosca.
+        private bool _settling;
 
         // Gesto anterior desvaneciéndose: al encadenar gestos (la carga de la embestida y su pose de
         // viaje) el primero no desaparece de golpe, se funde con el nuevo.
         protected const float GestureCrossfade = 0.2f;
         protected RigGesture _fadeGesture;
-        protected float _fadeWindup, _fadeStrike, _fadeTime;
+        protected readonly List<float> _fadeWeights = new List<float>();
+        protected float _fadeTime;
 
         // Despliegue: 0 plegado (dormido), 1 pose del prefab, >1 durante el rebote.
         protected float _unfold = 1f;
@@ -129,7 +137,8 @@ namespace RedMagic.Rigging
             _hurtTime = -1f;
             _hurtStrength = 1f;
             _gesture = null;
-            _gestureWindup = _gestureStrike = _gestureShake = 0f;
+            _weights.Clear();
+            _gestureShake = 0f;
             _gestureRoutine = null;
             _fadeGesture = null;
             _attack = null;
@@ -158,6 +167,9 @@ namespace RedMagic.Rigging
 
         public override void PlayAttack(Vector2? aimPoint, float speed)
         {
+            Rig.ClearCastPoint();   // el ataque propio sale de la boca
+            ReleasesFired = 0;
+            ReleaseTotal = 1;
             if (_dead) return;
             if (_attack != null) StopCoroutine(_attack);
             _attack = StartCoroutine(AttackRoutine(aimPoint, Mathf.Max(0.01f, speed)));
@@ -299,88 +311,152 @@ namespace RedMagic.Rigging
             // arranca de cero; el mismo gesto sigue desde donde estaba.
             if (_gesture != gesture)
             {
-                if (_gesture != null && (_gestureWindup > 0.001f || _gestureStrike > 0.001f))
+                if (_gesture != null && AnyWeight())
                 {
                     _fadeGesture = _gesture;
-                    _fadeWindup = _gestureWindup;
-                    _fadeStrike = _gestureStrike;
+                    _fadeWeights.Clear();
+                    _fadeWeights.AddRange(_weights);
                     _fadeTime = 0f;
                 }
 
-                _gestureWindup = _gestureStrike = 0f;
+                _weights.Clear();
             }
             _gesture = gesture;
+            _settling = false;
+            Fit(_weights, gesture.steps != null ? gesture.steps.Count : 0);
             _gestureShake = 0f;
-            // Una pose mantenida no tiene final de carga: sólo salen los efectos del arranque.
-            if (hold && fresh) FireFx(gesture, RigFxPhase.Windup, -1f, 0f);
+            // Una pose mantenida no acaba su primer paso: sólo salen los efectos del arranque.
+            if (hold && fresh) FireFx(gesture, 0, -1f, 0f);
             _gestureRoutine = StartCoroutine(routine);
         }
 
+        private static void Fit(List<float> weights, int count)
+        {
+            while (weights.Count < count) weights.Add(0f);
+            if (weights.Count > count) weights.RemoveRange(count, weights.Count - count);
+        }
+
+        private bool AnyWeight()
+        {
+            foreach (float w in _weights) if (Mathf.Abs(w) > 0.001f) return true;
+            return false;
+        }
+
+        /// <summary>Los pesos de ahora: el punto de partida del tramo que empieza.</summary>
+        private void Snapshot()
+        {
+            _from.Clear();
+            _from.AddRange(_weights);
+        }
+
+        /// <summary>De donde estaba a "sólo la pose de <paramref name="step"/>" (-1 = el reposo), en <paramref name="k"/> (0–1).</summary>
+        private void BlendTo(int step, float k)
+        {
+            for (int i = 0; i < _weights.Count && i < _from.Count; i++)
+                _weights[i] = Mathf.LerpUnclamped(_from[i], i == step ? 1f : 0f, k);
+        }
+
+        private static float Ease(RigEase ease, float x)
+        {
+            x = Mathf.Clamp01(x);
+            switch (ease)
+            {
+                case RigEase.Out: return EaseOutCubic(x);
+                case RigEase.In: return x * x * x;
+                case RigEase.Linear: return x;
+                default: return EaseInOut(x);
+            }
+        }
+
         /// <summary>
-        /// Carga (easing) → suelta (evento) → golpe (strikeTime) → vuelta al reposo.
+        /// La línea de tiempo del gesto: paso a paso (cada uno llega a su pose con su easing), luego la
+        /// vuelta al reposo. Por el camino salen sus efectos y, en cada <see cref="RigRelease"/>, el
+        /// ataque: se fija de dónde sale y se avisa (<c>AttackReleased</c>), tantas veces como sueltas haya.
+        /// <paramref name="lead"/> = el aviso de quien lo lanza: lo que duran sus pasos 'stretch'.
         /// <paramref name="silent"/> = un gesto de reposo: mismas poses, efectos y sonido, pero no avisa
         /// de nada (ni <c>AttackReleased</c> ni <c>AttackFinished</c> ni fogonazo): no es un ataque.
         /// </summary>
-        private IEnumerator GestureRoutine(RigGesture gesture, float windup, bool silent = false)
+        private IEnumerator GestureRoutine(RigGesture gesture, float lead, bool silent = false)
         {
             PlayGestureSound(gesture, GestureSoundMoment.Start);
-            float from = _gestureWindup;
-            float fxFrom = -1f;   // avance de la fase ya recorrido por sus efectos (RigFx.at)
-            for (float t = 0f; t < windup;)
-            {
-                float k = t / windup;
-                _gestureWindup = Mathf.Lerp(from, 1f, EaseInOut(k));
-                _gestureStrike = Mathf.Lerp(_gestureStrike, 0f, k);
-                _gestureShake = k > 0.7f ? gesture.shake : 0f;
-                FireFx(gesture, RigFxPhase.Windup, fxFrom, k);
-                fxFrom = k;
-                Rig.SetGestureMoment(k);
+            Rig.ClearCastPoint();
 
-                yield return null;
-                if (!Paused) t += Time.deltaTime;
+            var steps = gesture.steps;
+            int count = steps != null ? steps.Count : 0;
+            var releases = gesture.EffectiveReleases;
+            gesture.Durations(lead, _durations);
+            ReleasesFired = 0;
+            ReleaseTotal = silent ? 0 : Mathf.Max(1, releases.Count);
+            bool sounded = false;
+
+            // Sin pasos no hay pose que recorrer: espera el aviso y suelta.
+            if (count == 0)
+            {
+                for (float t = 0f; t < lead;)
+                {
+                    yield return null;
+                    if (!Paused) t += Time.deltaTime;
+                }
+
+                Release(gesture, null, silent, ref sounded);
             }
 
-            _gestureWindup = 1f;
-            _gestureShake = 0f;
-            FireFx(gesture, RigFxPhase.Windup, fxFrom, 1f);
-            EndFxPhase(RigFxPhase.Windup);
-            PlayGestureSound(gesture, GestureSoundMoment.Release);
-            Rig.SetGestureMoment(1f);
-            if (!silent) RaiseReleased(gesture);
-
-            // Sin pose de golpe (una carga que se mantiene, como la de la embestida): no hay latigazo,
-            // la pose de carga se deshace despacio en 'recover' y se funde con lo que venga detrás.
-            // (Sus efectos de golpe salen todos al soltar: la fase no dura nada.)
-            if (gesture.strike == null || gesture.strike.Count == 0)
+            for (int s = 0; s < count; s++)
             {
-                FireFx(gesture, RigFxPhase.Strike, -1f, 1f);
-                EndFxPhase(RigFxPhase.Strike);
-                yield return SettleRoutine(gesture.recover, gesture);
-                if (!silent) RaiseFinished();
-                yield break;
+                var step = steps[s];
+                float duration = _durations[s];
+                float done = -1f;   // avance del paso ya recorrido por sus efectos y sueltas
+                Snapshot();
+                for (float t = 0f; t < duration;)
+                {
+                    float progress = t / duration;
+                    BlendTo(s, Ease(step != null ? step.ease : RigEase.InOut, progress));
+                    _gestureShake = step != null && progress > 0.7f ? step.shake : 0f;
+                    FireStep(gesture, releases, s, count, done, progress, silent, ref sounded);
+                    done = progress;
+                    Rig.SetGestureMoment(s + progress);
+
+                    yield return null;
+                    if (!Paused) t += Time.deltaTime;
+                }
+
+                BlendTo(s, 1f);
+                _gestureShake = 0f;
+                FireStep(gesture, releases, s, count, done, 1f, silent, ref sounded);
+                EndFxStep(s);
+                Rig.SetGestureMoment(s + 1f);
             }
 
-            fxFrom = -1f;
-            for (float t = 0f; t < gesture.strikeTime;)
-            {
-                float k = EaseOutCubic(t / gesture.strikeTime);
-                _gestureStrike = k;
-                _gestureWindup = 1f - k;
-                float progress = t / gesture.strikeTime;
-                FireFx(gesture, RigFxPhase.Strike, fxFrom, progress);
-                fxFrom = progress;
-                Rig.SetGestureMoment(1f + progress);
-
-                yield return null;
-                if (!Paused) t += Time.deltaTime;
-            }
-
-            _gestureStrike = 1f;
-            _gestureWindup = 0f;
-            FireFx(gesture, RigFxPhase.Strike, fxFrom, 1f);
-            EndFxPhase(RigFxPhase.Strike);
             yield return SettleRoutine(gesture.recover, gesture);
             if (!silent) RaiseFinished();
+        }
+
+        /// <summary>Lo que cae en el tramo (<paramref name="from"/>, <paramref name="to"/>] del paso: efectos y sueltas.</summary>
+        private void FireStep(RigGesture gesture, List<RigRelease> releases, int step, int count,
+                              float from, float to, bool silent, ref bool sounded)
+        {
+            FireFx(gesture, step, from, to);
+            for (int i = 0; i < releases.Count; i++)
+            {
+                var r = releases[i];
+                if (r == null || Mathf.Min(r.step, count - 1) != step || r.at <= from || r.at > to) continue;
+                Release(gesture, r, silent, ref sounded);
+            }
+        }
+
+        private void Release(RigGesture gesture, RigRelease release, bool silent, ref bool sounded)
+        {
+            if (!sounded)
+            {
+                sounded = true;
+                PlayGestureSound(gesture, GestureSoundMoment.Release);
+            }
+
+            if (silent) return;
+
+            if (release != null) Rig.SetCastPoint(release.point, release.offset);
+            ReleasesFired++;
+            RaiseReleased(gesture);
         }
 
         // ============================================================ gestos en reposo
@@ -422,20 +498,20 @@ namespace RedMagic.Rigging
             Rig.ShowGestureSprites(gesture.name, isAttack: false);
         }
 
-        /// <summary>Llega a la pose de carga y se queda ahí hasta <see cref="ClearHold"/>.</summary>
+        /// <summary>Llega a la pose del primer paso y se queda ahí hasta <see cref="ClearHold"/>.</summary>
         private IEnumerator HoldRoutine()
         {
-            float from = _gestureWindup;
+            Snapshot();
             const float blend = GestureCrossfade;
             for (float t = 0f; t < blend;)
             {
-                Rig.SetGestureMoment(t / blend);   // una pose mantenida recorre la carga y se queda en su final
-                _gestureWindup = Mathf.Lerp(from, 1f, EaseInOut(t / blend));
+                Rig.SetGestureMoment(t / blend);   // una pose mantenida recorre su primer paso y se queda en su final
+                BlendTo(0, EaseInOut(t / blend));
                 yield return null;
                 if (!Paused) t += Time.deltaTime;
             }
 
-            _gestureWindup = 1f;
+            BlendTo(0, 1f);
             Rig.SetGestureMoment(1f);
             _gestureRoutine = null;
         }
@@ -446,19 +522,21 @@ namespace RedMagic.Rigging
         /// </summary>
         private IEnumerator SettleRoutine(float seconds, RigGesture recovering = null)
         {
-            float windup = _gestureWindup, strike = _gestureStrike;
+            Snapshot();
+            _settling = true;
+            // La vuelta es el tramo que sigue al último paso: ahí caen sus efectos y sus sprites.
+            var current = recovering ?? _gesture;
+            int last = current?.steps != null ? current.steps.Count : 0;
             float fxFrom = -1f;
             _gestureShake = 0f;
             for (float t = 0f; t < seconds;)
             {
                 float k = t / seconds;
-                float e = 1f - EaseInOut(k);
-                _gestureWindup = windup * e;
-                _gestureStrike = strike * e;
-                Rig.SetGestureMoment(2f + k);   // la vuelta al reposo, sea el final del gesto o un corte
+                BlendTo(-1, EaseInOut(k));
+                Rig.SetGestureMoment(last + k);   // la vuelta al reposo, sea el final del gesto o un corte
                 if (recovering != null)
                 {
-                    FireFx(recovering, RigFxPhase.Recover, fxFrom, k);
+                    FireFx(recovering, last, fxFrom, k);
                     fxFrom = k;
                 }
 
@@ -468,11 +546,13 @@ namespace RedMagic.Rigging
 
             if (recovering != null)
             {
-                FireFx(recovering, RigFxPhase.Recover, fxFrom, 1f);
-                EndFxPhase(RigFxPhase.Recover);
+                FireFx(recovering, last, fxFrom, 1f);
+                EndFxStep(last);
             }
 
-            _gestureWindup = _gestureStrike = 0f;
+            _weights.Clear();
+            _settling = false;
+            Rig.ClearCastPoint();
             _gesture = null;
             _gestureRoutine = null;
             Rig.EndGestureSprites();   // los sprites propios del gesto duran hasta que el cuerpo vuelve al reposo
@@ -485,8 +565,7 @@ namespace RedMagic.Rigging
 
             if (_gesture == null) return;
 
-            ApplyPoses(_gesture.windup, _gestureWindup);
-            ApplyPoses(_gesture.strike, _gestureStrike);
+            ApplySteps(_gesture, _weights, 1f, _settling);
 
             var body = Rig.body;
             if (_gestureShake > 0f && body != null)
@@ -503,19 +582,28 @@ namespace RedMagic.Rigging
             if (f <= 0f) _fadeGesture = null;
             else
             {
-                ApplyPoses(_fadeGesture.windup, _fadeWindup * f);
-                ApplyPoses(_fadeGesture.strike, _fadeStrike * f);
+                ApplySteps(_fadeGesture, _fadeWeights, f, true);
             }
         }
 
-        protected void ApplyPoses(List<RigPose> poses, float weight)
+        /// <summary>La pose de cada paso a su peso (× <paramref name="scale"/>): la mezcla en la que está el cuerpo.</summary>
+        /// <param name="shortTurns">Los giros, por el camino corto (ver <see cref="_settling"/>).</param>
+        protected void ApplySteps(RigGesture gesture, List<float> weights, float scale, bool shortTurns = false)
+        {
+            var steps = gesture.steps;
+            if (steps == null) return;
+            for (int i = 0; i < steps.Count && i < weights.Count; i++)
+                if (steps[i] != null) ApplyPoses(steps[i].poses, weights[i] * scale, shortTurns);
+        }
+
+        protected void ApplyPoses(List<RigPose> poses, float weight, bool shortTurns = false)
         {
             if (poses == null) return;
-            foreach (var pose in poses) ApplyPose(pose, weight);
+            foreach (var pose in poses) ApplyPose(pose, weight, shortTurns);
         }
 
         /// <summary>Una pose a un peso. El peso puede pasarse de 1 o bajar de 0 (un easing con rebote).</summary>
-        protected void ApplyPose(RigPose pose, float weight)
+        protected void ApplyPose(RigPose pose, float weight, bool shortTurns = false)
         {
             if (Mathf.Abs(weight) <= 0.0001f) return;
 
@@ -530,7 +618,8 @@ namespace RedMagic.Rigging
             // Las partes cuelgan de ella ya volteadas, así que sus números valen tal cual.
             float side = t == body ? Facing : 1f;
             t.localPosition += new Vector3(pose.move.x * side, pose.move.y, 0f) * weight;
-            t.localRotation *= Quaternion.Euler(0f, 0f, pose.rotate * side * weight);
+            float turn = shortTurns ? Mathf.DeltaAngle(0f, pose.rotate) : pose.rotate;
+            t.localRotation *= Quaternion.Euler(0f, 0f, turn * side * weight);
             var s = t.localScale;
             t.localScale = new Vector3(s.x * (1f + pose.scale.x * weight), s.y * (1f + pose.scale.y * weight), s.z);
         }

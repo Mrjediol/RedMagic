@@ -63,6 +63,12 @@ gesture: Flick / Charge / Sweep).
   and paint a square warning.
 - `defences` (e.g. `DashAway`) with a `gesture` of their own, added under `gestures` (poses by slot id).
 - `tuning.moveSoundInterval` ≈ 0.9 for a flyer.
+- **Gestures are timelines.** A template gesture is step 0 (wind-up, lasts the telegraph) + step 1 (strike). The
+  attack leaves at a *release*: put it where the motion delivers — `releases: { "Charge": [{ "step": 1, "at": 1 }] }`
+  = at the end of the strike, not at the end of the wind-up. Own gestures (`gestures`) take any number of
+  `steps` and several releases; with `params.volleyPerRelease` a BulletHell fires one volley per release.
+- Effect hooks: `step` / `at`, `untilStep` for a loop that spans steps, `facing` (default `direction`: the shot at
+  the muzzle, the movement on the body; a round charge swirl = `world`), `layer: "behind"` for clouds and trails.
 
 `node make-enemy.mjs enemies/<Name>.json` → `enemies/out/<Name>.zip`. Then:
 `unity command eval --timeout 600 --code 'return RedMagic.Rigging.EditorTools.RigBundleImporter.Import(@"<abs zip>", new RedMagic.Rigging.EditorTools.RigBundleImporter.Options { ResetTuning = true });'`

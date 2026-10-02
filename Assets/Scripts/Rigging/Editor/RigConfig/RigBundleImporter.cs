@@ -397,9 +397,16 @@ namespace RedMagic.Rigging.EditorTools
 
             if (config["gestures"] is JArray gestures)
                 for (int i = 0; i < gestures.Count; i++)
+                {
                     foreach (var key in new[] { "windup", "strike" })
                         if (gestures[i][key] is JArray poses)
                             for (int j = 0; j < poses.Count; j++) Check(poses[j]["part"], $"gestures[{i}].{key}[{j}].part");
+
+                    if (gestures[i]["steps"] is JArray steps)
+                        for (int s = 0; s < steps.Count; s++)
+                            if (steps[s]["poses"] is JArray poses)
+                                for (int j = 0; j < poses.Count; j++) Check(poses[j]["part"], $"gestures[{i}].steps[{s}].poses[{j}].part");
+                }
 
             if (config["bossLimbs"] is JObject limbs)
                 foreach (var key in new[] { "limbs", "orbiters", "grips" })
@@ -806,19 +813,70 @@ namespace RedMagic.Rigging.EditorTools
                 for (int i = 0; i < gestures.Count; i++)
                 {
                     var g = ConfigJson.AsObject(gestures[i], $"gestures[{i}]");
-                    var gesture = new RigGesture
+                    string gestureName = ConfigJson.RequireString(g, "name", $"gestures[{i}]");
+
+                    // Dos formas en el JSON: la línea de tiempo ('steps' + 'releases' + 'fx') y la
+                    // clásica de carga + golpe ('windup' / 'strike' + 'phases'), que se convierte a pasos.
+                    RigGesture gesture;
+                    bool timeline = g["steps"] is JArray;
+                    if (timeline)
                     {
-                        name = ConfigJson.RequireString(g, "name", $"gestures[{i}]"),
-                        windup = Poses(g["windup"] as JArray, visual),
-                        strike = Poses(g["strike"] as JArray, visual),
-                    };
-                    gesture.strikeTime = g.Value<float?>("strikeTime") ?? gesture.strikeTime;
+                        gesture = new RigGesture { name = gestureName };
+                        var stepsJson = (JArray)g["steps"];
+                        for (int s = 0; s < stepsJson.Count; s++)
+                        {
+                            if (!(stepsJson[s] is JObject sj)) continue;
+                            var step = new RigGestureStep
+                            {
+                                name = sj.Value<string>("name") ?? "",
+                                poses = Poses(sj["poses"] as JArray, visual),
+                                stretch = sj.Value<bool?>("stretch") ?? false,
+                                shake = sj.Value<float?>("shake") ?? 0f,
+                            };
+                            step.duration = Mathf.Max(0.01f, sj.Value<float?>("duration") ?? step.duration);
+                            string easeName = sj.Value<string>("ease");
+                            if (!string.IsNullOrEmpty(easeName) && !RigConfigJson.TryEnum(easeName, out step.ease))
+                                report.Warnings.Add($"gestures[{i}].steps[{s}]: ease '{easeName}' desconocido (inout / out / in / linear); queda inout.");
+                            gesture.steps.Add(step);
+                        }
+
+                        if (g["releases"] is JArray releasesJson)
+                            for (int r = 0; r < releasesJson.Count; r++)
+                            {
+                                if (!(releasesJson[r] is JObject rj)) continue;
+                                var release = new RigRelease
+                                {
+                                    step = Mathf.Max(0, rj.Value<int?>("step") ?? 0),
+                                    at = Mathf.Clamp01(rj.Value<float?>("at") ?? 1f),
+                                    offset = ConfigJson.ReadVector2(rj["offset"], Vector2.zero),
+                                };
+                                string pointPath = rj.Value<string>("point");
+                                if (!string.IsNullOrEmpty(pointPath))
+                                {
+                                    release.point = RigConfigJson.Find(visual, pointPath);
+                                    if (release.point == null)
+                                        report.Warnings.Add($"gestures[{i}].releases[{r}]: el punto '{pointPath}' no existe; sale de la boca.");
+                                }
+
+                                gesture.releases.Add(release);
+                            }
+                    }
+                    else
+                    {
+                        var classic = new RigGesture();   // sólo por sus valores por defecto
+                        gesture = RigGesture.Classic(gestureName, Poses(g["windup"] as JArray, visual), Poses(g["strike"] as JArray, visual),
+                                                     g.Value<float?>("strikeTime") ?? 0.08f, classic.recover, g.Value<float?>("shake") ?? 1.5f);
+                        // Sin golpe queda en un paso: las ventanas de sus sprites de gesto (escritas
+                        // en la escala carga / golpe / vuelta) se recolocan al final, con FixConvertedWindows.
+                        gesture.convertedSingleStep = gesture.steps.Count == 1;
+                    }
+
                     gesture.recover = g.Value<float?>("recover") ?? gesture.recover;
-                    gesture.shake = g.Value<float?>("shake") ?? gesture.shake;
 
                     // Efectos: como las poses, vienen del JSON; sin la clave se conservan los que hubiera.
                     var previous = oldGestures.Find(o => o != null && o.name == gesture.name);
-                    if (g["phases"] is JArray phases) gesture.fx = GestureFx(phases, visual, $"gestures[{i}]", report);
+                    if (g["fx"] is JArray flat) gesture.fx = GestureFx(flat, gesture, visual, $"gestures[{i}].fx", report);
+                    else if (g["phases"] is JArray phases) gesture.fx = PhaseFx(phases, gesture, visual, $"gestures[{i}]", report);
                     else if (previous != null) gesture.fx = previous.fx ?? new List<RigFx>();
 
                     if (previous != null)
@@ -829,6 +887,8 @@ namespace RedMagic.Rigging.EditorTools
 
                     rig.gestures.Add(gesture);
                 }
+
+                rig.FixConvertedWindows();
             }
 
             // Gestos en reposo: presentes = sustituyen; sin la clave se conservan los del prefab.
@@ -878,8 +938,8 @@ namespace RedMagic.Rigging.EditorTools
                     state = state,
                     gesture = state == RigNamedState.Gesture ? item.Value<string>("gesture") ?? "" : "",
                     sprite = sprite,
-                    showFrom = Mathf.Clamp(item.Value<float?>("from") ?? 0f, 0f, 3f),
-                    showTo = Mathf.Clamp(item.Value<float?>("to") ?? 3f, 0f, 3f),
+                    showFrom = Mathf.Max(0f, item.Value<float?>("from") ?? 0f),
+                    showTo = Mathf.Max(0f, item.Value<float?>("to") ?? 99f),
                 });
             }
 
@@ -902,15 +962,20 @@ namespace RedMagic.Rigging.EditorTools
             part.swayPhase = sway.Value<float?>("phase") ?? part.swayPhase;
         }
 
-        /// <summary><c>phases[].fx</c> → la lista plana de <see cref="RigFx"/> del gesto (cada uno con su fase).</summary>
-        private static List<RigFx> GestureFx(JArray phases, Transform visual, string ctx, ConfigImportReport report)
+        /// <summary>
+        /// La forma clásica: <c>phases[].fx</c> (carga / golpe / vuelta) → efectos con su paso. La carga
+        /// es el paso 0; el golpe, el 1 (sin pose de golpe salen al soltar: paso 0, momento 1); la vuelta,
+        /// el tramo que sigue al último paso. Siguen girando con su ancla, como se colocaron.
+        /// </summary>
+        private static List<RigFx> PhaseFx(JArray phases, RigGesture gesture, Transform visual, string ctx, ConfigImportReport report)
         {
             var list = new List<RigFx>();
+            bool hasStrike = gesture.steps.Count > 1;
             for (int p = 0; p < phases.Count; p++)
             {
                 if (!(phases[p] is JObject phaseJson)) continue;
-                string phaseName = phaseJson.Value<string>("phase");
-                if (!RigConfigJson.TryFxPhase(phaseName, out var phase))
+                string phaseName = (phaseJson.Value<string>("phase") ?? "").ToLowerInvariant();
+                if (phaseName != "windup" && phaseName != "strike" && phaseName != "recover")
                 {
                     report.Warnings.Add($"{ctx}.phases[{p}]: fase '{phaseName}' desconocida (windup / strike / recover); se omite.");
                     continue;
@@ -920,46 +985,86 @@ namespace RedMagic.Rigging.EditorTools
                 for (int i = 0; i < items.Count; i++)
                 {
                     if (!(items[i] is JObject item)) continue;
-                    string where = $"{ctx}.phases[{p}].fx[{i}]";
+                    var fx = ReadFx(item, visual, $"{ctx}.phases[{p}].fx[{i}]", RigFxFacing.Anchor, report);
+                    if (fx == null) continue;
 
-                    // Tras BuildGestureArt, 'fx' es la ruta de un prefab (o null si su arte no se pudo construir).
-                    string prefabPath = item["fx"]?.Type == JTokenType.String ? item.Value<string>("fx") : null;
-                    var prefab = string.IsNullOrEmpty(prefabPath) ? null : AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-                    if (prefab == null)
-                    {
-                        report.Warnings.Add($"{where}: sin prefab de efecto ('{prefabPath}'); se omite.");
-                        continue;
-                    }
-
-                    var fx = new RigFx { prefab = prefab, phase = phase };
-                    fx.at = Mathf.Clamp01(item.Value<float?>("at") ?? 0f);
-                    string anchorName = item.Value<string>("anchor") ?? "part";
-                    if (!RigConfigJson.TryFxAnchor(anchorName, out fx.anchor))
-                    {
-                        report.Warnings.Add($"{where}: ancla '{anchorName}' desconocida; va al cuerpo.");
-                        fx.anchor = RigFxAnchor.Body;
-                    }
-
-                    string partPath = item.Value<string>("part");
-                    if (fx.anchor == RigFxAnchor.Part)
-                    {
-                        fx.part = string.IsNullOrEmpty(partPath) ? null : RigConfigJson.Find(visual, partPath);
-                        if (fx.part == null)
-                        {
-                            report.Warnings.Add($"{where}: la pieza '{partPath}' no existe; el efecto va al cuerpo.");
-                            fx.anchor = RigFxAnchor.Body;
-                        }
-                    }
-
-                    fx.offset = ConfigJson.ReadVector2(item["offset"], Vector2.zero);
-                    fx.scale = Mathf.Max(0.01f, item.Value<float?>("scale") ?? 1f);
-                    fx.followsPart = item.Value<bool?>("followsPart") ?? true;
-                    fx.loop = item.Value<bool?>("loop") ?? false;
+                    if (phaseName == "windup") fx.step = 0;
+                    else if (phaseName == "strike") { fx.step = hasStrike ? 1 : 0; if (!hasStrike) fx.at = 1f; }
+                    else fx.step = gesture.steps.Count;
                     list.Add(fx);
                 }
             }
 
             return list;
+        }
+
+        /// <summary>La línea de tiempo: <c>fx[]</c>, cada efecto con su paso (<c>step</c>) y su momento (<c>at</c>).</summary>
+        private static List<RigFx> GestureFx(JArray items, RigGesture gesture, Transform visual, string ctx, ConfigImportReport report)
+        {
+            var list = new List<RigFx>();
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (!(items[i] is JObject item)) continue;
+                var fx = ReadFx(item, visual, $"{ctx}[{i}]", RigFxFacing.Direction, report);
+                if (fx == null) continue;
+
+                fx.step = Mathf.Clamp(item.Value<int?>("step") ?? 0, 0, gesture.steps.Count);
+                fx.untilStep = item.Value<int?>("untilStep") ?? -1;
+                list.Add(fx);
+            }
+
+            return list;
+        }
+
+        /// <summary>Un efecto de gesto sin su paso (lo pone quien llama). Null si no tiene prefab.</summary>
+        private static RigFx ReadFx(JObject item, Transform visual, string where, RigFxFacing defaultFacing, ConfigImportReport report)
+        {
+            // Tras BuildGestureArt, 'fx' es la ruta de un prefab (o null si su arte no se pudo construir).
+            string prefabPath = item["fx"]?.Type == JTokenType.String ? item.Value<string>("fx") : null;
+            var prefab = string.IsNullOrEmpty(prefabPath) ? null : AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (prefab == null)
+            {
+                report.Warnings.Add($"{where}: sin prefab de efecto ('{prefabPath}'); se omite.");
+                return null;
+            }
+
+            var fx = new RigFx { prefab = prefab, facing = defaultFacing };
+            fx.at = Mathf.Clamp01(item.Value<float?>("at") ?? 0f);
+            string anchorName = item.Value<string>("anchor") ?? "part";
+            if (!RigConfigJson.TryFxAnchor(anchorName, out fx.anchor))
+            {
+                report.Warnings.Add($"{where}: ancla '{anchorName}' desconocida; va al cuerpo.");
+                fx.anchor = RigFxAnchor.Body;
+            }
+
+            string partPath = item.Value<string>("part");
+            if (fx.anchor == RigFxAnchor.Part)
+            {
+                fx.part = string.IsNullOrEmpty(partPath) ? null : RigConfigJson.Find(visual, partPath);
+                if (fx.part == null)
+                {
+                    report.Warnings.Add($"{where}: la pieza '{partPath}' no existe; el efecto va al cuerpo.");
+                    fx.anchor = RigFxAnchor.Body;
+                }
+            }
+
+            fx.offset = ConfigJson.ReadVector2(item["offset"], Vector2.zero);
+            fx.scale = Mathf.Max(0.01f, item.Value<float?>("scale") ?? 1f);
+            fx.followsPart = item.Value<bool?>("followsPart") ?? true;
+            fx.loop = item.Value<bool?>("loop") ?? false;
+            fx.angle = item.Value<float?>("angle") ?? 0f;
+
+            string facingName = item.Value<string>("facing");
+            if (!string.IsNullOrEmpty(facingName) && !RigConfigJson.TryEnum(facingName, out fx.facing))
+            {
+                report.Warnings.Add($"{where}: facing '{facingName}' desconocido (direction / anchor / world).");
+                fx.facing = defaultFacing;
+            }
+
+            string layerName = item.Value<string>("layer");
+            if (!string.IsNullOrEmpty(layerName) && !RigConfigJson.TryEnum(layerName, out fx.layer))
+                report.Warnings.Add($"{where}: layer '{layerName}' desconocida (front / behind); va delante.");
+            return fx;
         }
 
         private static List<RigPose> Poses(JArray array, Transform visual)

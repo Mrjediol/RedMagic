@@ -772,7 +772,7 @@ export const GAME_ASSIGN = [
   R({ component: '^ProceduralRig$', name: 'Charge|Brace|Windup' }, 'gesture_charge', { ...vary, volume: 0.6 }),
   R({ component: '^ProceduralRig$', name: 'Disparo|Shoot|Fire' }, 'gesture_shoot', { ...vary, volume: 0.7 }),
   R({ component: '^ProceduralRig$', name: 'Flick|Finger' }, 'gesture_flick', { ...wide, volume: 0.6 }),
-  R({ component: '^ProceduralRig$', name: 'Sweep|Swipe' }, 'gesture_sweep', { ...vary, volume: 0.7 }),
+  R({ component: '^ProceduralRig$', name: 'Sweep|Swipe|Twirl|Spin|Giro' }, 'gesture_sweep', { ...vary, volume: 0.7 }),
   R({ component: '^ProceduralRig$', name: 'Saltito|Jump|Hop' }, 'gesture_hop', { ...wide, volume: 0.6 }),
   R({ component: '^ProceduralRig$', name: 'Slam' }, 'gesture_slam', { ...vary, volume: 0.8 }),
   R({ component: '^ProceduralRig$', name: 'Dash' }, 'gesture_dash', { ...vary, volume: 0.7 }),

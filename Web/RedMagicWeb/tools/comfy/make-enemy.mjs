@@ -22,10 +22,18 @@
 //   projectile    the built-in shot: { effect: <key>, …ProjectileSpec overrides }
 //   attacks       the deck: [{ id, type, effect?, worldWidth?, common: {…}, params: {…}, deck: { minRange, maxRange } }]
 //                 (types and fields = Unity's attack catalog, boss-catalog.js)
-//   gestures      extra gestures on top of the template's: [{ name, strikeTime, recover, shake,
-//                 windup: [[slotId | 'Visual', [moveX, moveY], rotate]], strike: […] }]
-//   gestureFx     effects per gesture: { <Gesture>: [{ effect: <key>, phase: 'windup'|'strike'|'recover',
-//                 loop, size (world units), anchor: 'muzzle'|'body'|'feet' }] }
+//   gestures      gestures of its own, as TIMELINES (any number of steps): [{ name, recover,
+//                 steps: [{ name, duration, ease: 'inout'|'out'|'in'|'linear', stretch, shake,
+//                           poses: [[slotId | 'Visual', [moveX, moveY], rotate]] }],
+//                 releases: [{ step, at, point: slotId | 'Muzzle', offset: [x, y] }] }]
+//                 A step's pose is measured from rest; moves are in the template's units (they scale
+//                 with the body). `stretch` = that step lasts the attack's telegraph. A release = the
+//                 instant the attack leaves (several = it fires several times); none = end of the last step.
+//   releases      the same, for a gesture of the template: { <Gesture>: [{ step, at, point }] }
+//                 (a template gesture is step 0 = wind-up, step 1 = strike; default: end of step 0)
+//   gestureFx     effects per gesture: { <Gesture>: [{ effect: <key>, step, at, loop, untilStep,
+//                 size (world units), anchor: 'muzzle'|'body'|'feet', facing: 'direction'|'anchor'|'world',
+//                 layer: 'front'|'behind', angle, followsPart }] }   (step = number of steps → the way back to rest)
 //                 A gesture with an effect has no placeholder flash: the effect IS the flash.
 //   builtIn       the enemy's own shot / melee launched with a gesture: [{ gesture, weight }]
 //   defences      EnemyDefence entries (enemy-defaults.js createDefence): how it gets out of the way
@@ -89,9 +97,10 @@ const pngs = fs.readdirSync(partsDir).filter((f) => f.endsWith('.png') && !f.sta
 const baseTemplate = T.templateById(brief.template);
 if (!baseTemplate) { console.error(`✗ no template '${brief.template}'`); process.exit(1); }
 // The brief's own gestures join the template's (same shape: poses name a slot id, or 'Visual').
-const pose = ([part, move = [0, 0], rotate = 0, scale = [0, 0]]) => ({ part, move, rotate, scale });
+// The brief's own gestures enter the document as empty stubs (so their effects get their art like any
+// other gesture's); their timeline is written into the export at the end.
 const template = { ...baseTemplate, gestures: [...(baseTemplate.gestures || []),
-  ...(brief.gestures || []).map((g) => ({ strikeTime: 0.08, recover: 0.3, shake: 0, ...g, windup: (g.windup || []).map(pose), strike: (g.strike || []).map(pose) }))] };
+  ...(brief.gestures || []).map((g) => ({ name: g.name, strikeTime: 0.08, recover: g.recover ?? 0.3, shake: 0, windup: [], strike: [] }))] };
 const state = T.instantiateTemplate(template);
 state.name = brief.name;
 
@@ -138,7 +147,7 @@ function bounds() {
 // centred on the root (an enemy's origin is its body centre), the collider around it.
 const r2 = (v) => Math.round(v * 100) / 100;
 let b = bounds();
-T.fitLengths(state, b.h);
+const lengthScale = T.fitLengths(state, b.h);   // template units → this body's units
 const centre = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
 state.parts.forEach((p) => { if (!p.parent) p.position = { x: p.position.x - centre.x, y: p.position.y - centre.y }; });
 b = bounds();
@@ -168,12 +177,13 @@ for (const [gestureName, hooks] of Object.entries(brief.gestureFx || {})) {
   const gesture = (state.gestures || []).find((g) => g.name === gestureName);
   if (!gesture) { problems.push(`gestureFx: no gesture '${gestureName}'`); continue; }
   gesture.fx = gesture.fx || [];
-  for (const hook of hooks) {
+  for (const [index, hook] of hooks.entries()) {
     const id = effectId[hook.effect];
     const entry = entriesById.get(id);
     if (!entry) { problems.push(`gestureFx ${gestureName}: no effect '${hook.effect}'`); continue; }
     const nominal = entry.sprite.boxes[0].w / (entry.sprite.density || 1) / state.pixelsPerUnit;   // units at scale 1
-    gesture.fx.push({ fx: id, phase: hook.phase || 'windup', at: hook.at ?? 0, anchor: hook.anchor || 'muzzle', part: null,
+    // Through the document only for its art; `at` carries the hook's index so it is found again in the export.
+    gesture.fx.push({ fx: id, phase: 'windup', at: (index + 1) / 1000, anchor: hook.anchor || 'muzzle', part: null,
       offset: { x: 0, y: 0 }, scale: Math.round(((hook.size ?? 1) / state.rootScale / nominal) * 100) / 100,
       followsPart: hook.followsPart !== false, loop: !!hook.loop });
   }
@@ -235,6 +245,47 @@ const rig = buildRigExport(state, { entriesById });
 problems.push(...(rig.problems || []), ...(enemy.problems || []));
 notes.push(...(rig.notes || []), ...(enemy.notes || []));
 const enemyDoc = companionEnemyConfig(enemy.doc, rig.doc.name);
+
+// ============================================================ gestures → timelines
+//
+// The document exports a gesture as wind-up + strike with effects per phase; Unity reads a timeline
+// (steps, releases, effects by step). Every gesture goes out as a timeline here: a template gesture is
+// its two steps, a gesture of the brief is whatever steps it says.
+const pathOf = {};
+rig.doc.parts.forEach((p) => { pathOf[p.name] = p.parent ? `${p.parent}/${p.name}` : p.name; });
+const slotPath = (id) => {
+  if (id === 'Visual') return 'Visual';
+  if (id === 'Muzzle') return rig.doc.rig.muzzle;
+  const part = state.parts.find((p) => p.slot?.id === id || p.name === id);
+  if (!part || !pathOf[part.name]) { problems.push(`gestures: no part '${id}'`); return null; }
+  return pathOf[part.name];
+};
+const r4 = (v) => Math.round(v * 1e4) / 1e4;
+
+rig.doc.gestures = rig.doc.gestures.map((g) => {
+  const own = (brief.gestures || []).find((x) => x.name === g.name);
+  const steps = own
+    ? own.steps.map((st) => ({ name: st.name || '', duration: st.duration ?? 0.3, ease: st.ease || 'inout', stretch: !!st.stretch, shake: st.shake || 0,
+      poses: (st.poses || []).map(([part, move = [0, 0], rotate = 0, scale = [0, 0]]) => ({ part: slotPath(part),
+        move: { x: r4(move[0] * lengthScale), y: r4(move[1] * lengthScale) }, rotate, scale: { x: scale[0], y: scale[1] } })).filter((p) => p.part) }))
+    : [{ name: 'Carga', duration: 0.3, ease: 'inout', stretch: true, shake: g.shake || 0, poses: g.windup || [] },
+      ...((g.strike || []).length ? [{ name: 'Golpe', duration: g.strikeTime, ease: 'out', stretch: false, shake: 0, poses: g.strike }] : [])];
+
+  const releases = (own?.releases || brief.releases?.[g.name] || (own ? [] : [{ step: 0, at: 1 }])).map((r) => ({
+    step: r.step ?? 0, at: r.at ?? 1, ...(r.point ? { point: slotPath(r.point) } : {}), offset: { x: r.offset?.[0] || 0, y: r.offset?.[1] || 0 } }));
+  releases.forEach((r) => { if (r.step >= steps.length) problems.push(`gesture ${g.name}: a release on step ${r.step}, it has ${steps.length}`); });
+
+  const hooks = brief.gestureFx?.[g.name] || [];
+  const fx = (g.phases || []).flatMap((ph) => ph.fx).map((item) => {
+    const hook = hooks[Math.round(item.at * 1000) - 1];
+    if (!hook) return null;
+    return { fx: item.fx, step: Math.min(hook.step ?? 0, steps.length), at: hook.at ?? 0, anchor: item.anchor, offset: item.offset, scale: item.scale,
+      followsPart: item.followsPart, loop: item.loop, untilStep: hook.untilStep ?? -1, facing: hook.facing || 'direction',
+      angle: hook.angle || 0, layer: hook.layer || 'front' };
+  }).filter(Boolean);
+
+  return { name: g.name, steps, releases, recover: own?.recover ?? g.recover, ...(fx.length ? { fx } : {}) };
+});
 
 // ============================================================ the zip
 

@@ -335,8 +335,8 @@ namespace RedMagic.Rigging.EditorTools
             foreach (var gesture in rig.gestures)
             {
                 if (gesture == null) continue;
-                foreach (var pose in gesture.windup) if (pose != null && pose.part == null) pose.part = crown;
-                foreach (var pose in gesture.strike) if (pose != null && pose.part == null) pose.part = crown;
+                foreach (var step in gesture.steps)
+                    foreach (var pose in step.poses) if (pose != null && pose.part == null) pose.part = crown;
             }
 
             var limbs = root.GetComponent<BossLimbs>();
@@ -592,14 +592,6 @@ namespace RedMagic.Rigging.EditorTools
 
         private static RigGesture Gesture(string name, float strikeTime, float recover, float shake,
                                           RigPose[] windup, RigPose[] strike) =>
-            new RigGesture
-            {
-                name = name,
-                strikeTime = strikeTime,
-                recover = recover,
-                shake = shake,
-                windup = new List<RigPose>(windup),
-                strike = new List<RigPose>(strike),
-            };
+            RigGesture.Classic(name, new List<RigPose>(windup), new List<RigPose>(strike), strikeTime, recover, shake);
     }
 }

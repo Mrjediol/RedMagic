@@ -1575,6 +1575,24 @@
       }
     },
     {
+      "id": "b9d04b6a93c95534498068b28e5c43d4/ProceduralRig/gestures.Array.data[4].sound",
+      "name": "Gesture · Twirl",
+      "category": "Enemies/ShroomShaman",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_sweep.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "guid": "b9d04b6a93c95534498068b28e5c43d4",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[4].sound",
+        "property": "gestures.Array.data[4].sound"
+      }
+    },
+    {
       "id": "b9d04b6a93c95534498068b28e5c43d4/SoundEmitter/OnHit",
       "name": "Hurt",
       "category": "Enemies/ShroomShaman",

@@ -127,10 +127,10 @@
       "worldWidth": 0.4,
       "common": {
         "displayName": "Nova de esporas",
-        "telegraph": 0.8,
+        "telegraph": 0.75,
         "recovery": 1,
         "damage": 5,
-        "gesture": "Sweep",
+        "gesture": "Twirl",
         "cooldownInAttacks": 2
       },
       "params": {
@@ -146,7 +146,8 @@
           "speed": 5,
           "lifetime": 1.8
         },
-        "fromCastPoint": true
+        "fromCastPoint": true,
+        "volleyPerRelease": true
       },
       "deck": {
         "minRange": 0,
@@ -160,94 +161,236 @@
   "gestures": [
     {
       "name": "Dash",
-      "strikeTime": 0.06,
       "recover": 0.25,
-      "shake": 0,
-      "windup": [
-        [
-          "Visual",
-          [
-            0,
-            0
-          ],
-          -14
-        ],
-        [
-          "head",
-          [
-            0,
-            0
-          ],
-          -8
-        ],
-        [
-          "lower",
-          [
-            0,
-            0
-          ],
-          22
-        ],
-        [
-          "offArm",
-          [
-            0,
-            0
-          ],
-          25
-        ]
+      "steps": [
+        {
+          "name": "Huye",
+          "stretch": true,
+          "ease": "out",
+          "poses": [
+            [
+              "Visual",
+              [
+                0,
+                0
+              ],
+              -14
+            ],
+            [
+              "head",
+              [
+                0,
+                0
+              ],
+              -8
+            ],
+            [
+              "lower",
+              [
+                0,
+                0
+              ],
+              22
+            ],
+            [
+              "offArm",
+              [
+                0,
+                0
+              ],
+              25
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Twirl",
+      "recover": 0.4,
+      "steps": [
+        {
+          "name": "Alza",
+          "duration": 0.3,
+          "ease": "inout",
+          "poses": [
+            [
+              "castArm",
+              [
+                0,
+                0.3
+              ],
+              50
+            ],
+            [
+              "Visual",
+              [
+                -0.1,
+                0.1
+              ],
+              5
+            ],
+            [
+              "head",
+              [
+                0,
+                0
+              ],
+              6
+            ]
+          ]
+        },
+        {
+          "name": "Gira",
+          "duration": 0.45,
+          "ease": "inout",
+          "poses": [
+            [
+              "castArm",
+              [
+                0,
+                0.3
+              ],
+              410
+            ],
+            [
+              "Visual",
+              [
+                0,
+                0.1
+              ],
+              0
+            ],
+            [
+              "head",
+              [
+                0,
+                0
+              ],
+              -4
+            ]
+          ]
+        },
+        {
+          "name": "Remata",
+          "duration": 0.12,
+          "ease": "out",
+          "poses": [
+            [
+              "castArm",
+              [
+                0.3,
+                0
+              ],
+              340
+            ],
+            [
+              "Visual",
+              [
+                0.15,
+                0
+              ],
+              -5
+            ]
+          ]
+        }
       ],
-      "strike": []
+      "releases": [
+        {
+          "step": 1,
+          "at": 1
+        },
+        {
+          "step": 2,
+          "at": 1
+        }
+      ]
     }
   ],
   "gestureFx": {
     "Flick": [
       {
         "effect": "flash",
-        "phase": "strike",
+        "step": 0,
+        "at": 1,
         "size": 0.9
       }
     ],
     "Charge": [
       {
         "effect": "charge",
-        "phase": "windup",
+        "step": 0,
+        "at": 0,
         "loop": true,
-        "size": 1.3
+        "untilStep": 1,
+        "size": 1.2,
+        "facing": "world"
       },
       {
         "effect": "flash",
-        "phase": "strike",
+        "step": 1,
+        "at": 1,
         "size": 1.2
       }
     ],
     "Sweep": [
       {
         "effect": "charge",
-        "phase": "windup",
+        "step": 0,
+        "at": 0,
         "loop": true,
-        "size": 1.6
+        "untilStep": 1,
+        "size": 1.4,
+        "facing": "world"
       },
       {
         "effect": "flash",
-        "phase": "strike",
-        "size": 1.5
+        "step": 1,
+        "at": 1,
+        "size": 1.4
+      }
+    ],
+    "Twirl": [
+      {
+        "effect": "charge",
+        "step": 0,
+        "at": 0,
+        "loop": true,
+        "untilStep": 1,
+        "size": 1.4,
+        "facing": "world"
+      },
+      {
+        "effect": "flash",
+        "step": 1,
+        "at": 1,
+        "size": 1.3
+      },
+      {
+        "effect": "flash",
+        "step": 2,
+        "at": 1,
+        "size": 1.6
       }
     ],
     "Dash": [
       {
         "effect": "puff",
-        "phase": "windup",
+        "step": 0,
+        "at": 0,
         "anchor": "body",
-        "size": 1.6,
-        "followsPart": false
+        "size": 2.4,
+        "followsPart": false,
+        "layer": "behind",
+        "facing": "world"
       },
       {
         "effect": "trail",
-        "phase": "windup",
+        "step": 0,
+        "at": 0,
         "anchor": "body",
         "loop": true,
-        "size": 1.8
+        "size": 3,
+        "layer": "behind"
       }
     ]
   },
@@ -271,5 +414,19 @@
       "gesture": "Dash",
       "anticipation": 0
     }
-  ]
+  ],
+  "releases": {
+    "Charge": [
+      {
+        "step": 1,
+        "at": 1
+      }
+    ],
+    "Sweep": [
+      {
+        "step": 1,
+        "at": 1
+      }
+    ]
+  }
 }

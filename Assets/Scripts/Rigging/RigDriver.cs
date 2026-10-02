@@ -13,8 +13,8 @@ namespace RedMagic.Rigging
     /// (<c>EnemyAnimation</c>, el animador de un jefe) no sabe cuál tiene delante.
     ///
     /// El contrato importante son los eventos: <see cref="AttackReleased"/> sale <b>en el
-    /// instante</b> en que el gesto suelta el golpe (fin de la carga), igual que el
-    /// <c>AnimationEvent</c> de un clip de sprites; <see cref="AttackFinished"/> al volver al
+    /// instante</b> de cada suelta del gesto (<see cref="RigRelease"/>: una o varias por gesto), igual
+    /// que el <c>AnimationEvent</c> de un clip de sprites; <see cref="AttackFinished"/> al volver al
     /// reposo; <see cref="WakeFinished"/> al acabar de despertar.
     ///
     /// Pausa: los gestos sólo avanzan con <see cref="GameStateManager.CanPlayerAct"/> y con tiempo
@@ -29,6 +29,31 @@ namespace RedMagic.Rigging
 
         protected ProceduralRig Rig { get; private set; }
 
+        /// <summary>Sueltas que ha dado ya el gesto en curso, y cuántas tiene en total.</summary>
+        public int ReleasesFired { get; protected set; }
+        public int ReleaseTotal { get; protected set; }
+
+        /// <summary>Segundos que dura ese gesto entero (pasos + vuelta), lanzado con ese aviso. -1 = no existe.</summary>
+        public float GestureSeconds(string gestureName, float lead)
+        {
+            var gesture = GetComponent<ProceduralRig>().FindGesture(gestureName);
+            if (gesture == null) return -1f;
+
+            gesture.Durations(lead, TotalScratch);
+            float total = gesture.recover;
+            foreach (float d in TotalScratch) total += d;
+            return total;
+        }
+
+        private static readonly List<float> TotalScratch = new List<float>();
+
+        /// <summary>Segundos desde que arranca ese gesto hasta su primera suelta, lanzado con ese aviso. -1 = no existe.</summary>
+        public float SecondsToRelease(string gestureName, float lead)
+        {
+            var gesture = GetComponent<ProceduralRig>().FindGesture(gestureName);
+            return gesture != null ? gesture.SecondsToFirstRelease(lead) : -1f;
+        }
+
         /// <summary>1 mira a la derecha, -1 a la izquierda.</summary>
         protected int Facing { get; private set; } = 1;
 
@@ -38,6 +63,7 @@ namespace RedMagic.Rigging
         protected virtual void Awake()
         {
             Rig = GetComponent<ProceduralRig>();
+            Rig.FixConvertedWindows();
             Rig.CaptureRest();
             CacheFxContext();
         }
@@ -271,51 +297,71 @@ namespace RedMagic.Rigging
             /// <summary>Lo apaga el motor (un bucle, o un prefab sin VfxOneShot). Si no, se apaga solo.</summary>
             public bool owned;
 
-            /// <summary>Bucle: vive hasta que acaba su fase. Si no, segundos que le quedan.</summary>
+            /// <summary>Bucle: vive hasta que acaba el paso <see cref="endStep"/>. Si no, segundos que le quedan.</summary>
             public bool loop;
+            public int endStep;
             public float life;
         }
 
         private readonly List<LiveFx> _liveFx = new List<LiveFx>();
         private static readonly List<SpriteRenderer> FxRenderers = new List<SpriteRenderer>();
         private Collider2D _fxGround;
-        private int _fxSortingLayer, _fxSortingOrder;
+        private Rigidbody2D _fxBody;
+        private int _fxSortingLayer, _fxSortingOrder, _fxBehindOrder;
 
         /// <summary>Lo que no cambia en la vida del cuerpo: su collider (pies) y el orden de dibujado de sus efectos.</summary>
         private void CacheFxContext()
         {
             _fxGround = GetComponent<Collider2D>();
+            _fxBody = GetComponent<Rigidbody2D>();
             _fxSortingOrder = 1;
+            _fxBehindOrder = 1;
             if (Rig.body == null) return;
 
             // Delante de todas las piezas, en su misma capa (0 quedaría detrás del fondo de la escena).
             Rig.body.GetComponentsInChildren(true, FxRenderers);
+            int lowest = int.MaxValue;
+            foreach (var r in FxRenderers) lowest = Mathf.Min(lowest, r.sortingOrder);
+
+            // Un efecto DETRÁS del cuerpo necesita un hueco por debajo de la pieza más al fondo, y el
+            // 0 no vale (queda detrás del fondo): las piezas suben un puesto, en bloque, una sola vez.
+            bool behind = false;
+            foreach (var g in Rig.gestures)
+                if (g?.fx != null)
+                    foreach (var fx in g.fx)
+                        if (fx != null && fx.layer == RigFxLayer.Behind) behind = true;
+            int lift = behind && lowest < 2 ? 2 - lowest : 0;
+
             foreach (var r in FxRenderers)
             {
+                r.sortingOrder += lift;
                 _fxSortingLayer = r.sortingLayerID;
                 _fxSortingOrder = Mathf.Max(_fxSortingOrder, r.sortingOrder + 1);
             }
 
+            if (FxRenderers.Count > 0) _fxBehindOrder = Mathf.Max(1, lowest + lift - 1);
             FxRenderers.Clear();
         }
 
         /// <summary>
-        /// Lanza los efectos de <paramref name="phase"/> cuyo momento cae en (<paramref name="from"/>,
-        /// <paramref name="to"/>]. El motor la llama cada frame con el avance de la fase: la primera vez
-        /// con <c>from</c> negativo (así entra el momento 0) y, al acabar, hasta 1.
+        /// Lanza los efectos del paso <paramref name="step"/> cuyo momento cae en (<paramref name="from"/>,
+        /// <paramref name="to"/>]. El motor la llama cada frame con el avance del paso: la primera vez
+        /// con <c>from</c> negativo (así entra el momento 0) y, al acabar, hasta 1. El paso número
+        /// "cuántos pasos tiene" es la vuelta al reposo; un efecto puesto más allá sale en ella.
         /// </summary>
-        protected void FireFx(RigGesture gesture, RigFxPhase phase, float from, float to)
+        protected void FireFx(RigGesture gesture, int step, float from, float to)
         {
             if (gesture?.fx == null) return;
+            int last = gesture.steps != null ? gesture.steps.Count : 0;
             for (int i = 0; i < gesture.fx.Count; i++)
             {
                 var fx = gesture.fx[i];
-                if (fx == null || fx.prefab == null || fx.phase != phase || fx.at <= from || fx.at > to) continue;
-                SpawnFx(fx);
+                if (fx == null || fx.prefab == null || Mathf.Min(fx.step, last) != step || fx.at <= from || fx.at > to) continue;
+                SpawnFx(fx, last);
             }
         }
 
-        private void SpawnFx(RigFx fx)
+        private void SpawnFx(RigFx fx, int lastStep)
         {
             FxPose(fx, out var position, out var rotation, out float mirror);
             var instance = Core.PrefabPool.Spawn(fx.prefab, position, rotation);
@@ -332,7 +378,7 @@ namespace RedMagic.Rigging
             foreach (var r in FxRenderers)
             {
                 r.sortingLayerID = _fxSortingLayer;
-                r.sortingOrder = _fxSortingOrder;
+                r.sortingOrder = fx.layer == RigFxLayer.Behind ? _fxBehindOrder : _fxSortingOrder;
             }
 
             FxRenderers.Clear();
@@ -355,6 +401,7 @@ namespace RedMagic.Rigging
                 data = fx,
                 owned = !selfDespawns,
                 loop = loop,
+                endStep = Mathf.Min(fx.EndStep, lastStep),
                 life = selfDespawns ? duration * 0.9f : duration,
             });
         }
@@ -375,21 +422,67 @@ namespace RedMagic.Rigging
                         ? new Vector2(_fxGround.bounds.center.x, _fxGround.bounds.min.y)
                         : (Vector2)transform.position;
                     position = new Vector3(feet.x + fx.offset.x * Facing, feet.y + fx.offset.y, transform.position.z);
-                    rotation = Quaternion.identity;
-                    mirror = Facing;
+                    if (fx.facing == RigFxFacing.Direction) Towards(FxDirection(fx), fx.angle, out rotation, out mirror);
+                    else
+                    {
+                        mirror = Facing;
+                        rotation = Quaternion.Euler(0f, 0f, fx.angle * Facing);
+                    }
                     return;
             }
 
             if (anchor == null) anchor = Rig.body != null ? Rig.body : transform;
 
             position = anchor.TransformPoint(fx.offset);
+
+            if (fx.facing == RigFxFacing.Direction)
+            {
+                Towards(FxDirection(fx), fx.angle, out rotation, out mirror);
+                return;
+            }
+
+            if (fx.facing == RigFxFacing.World)
+            {
+                mirror = Facing;
+                rotation = Quaternion.Euler(0f, 0f, fx.angle * Facing);
+                return;
+            }
+
             Vector2 right = anchor.TransformVector(Vector3.right);
             Vector2 up = anchor.TransformVector(Vector3.up);
             float angle = Mathf.Atan2(right.y, right.x) * Mathf.Rad2Deg;
 
             // Ancla reflejada (cuerpo mirando a la izquierda): el dibujo se refleja en vez de quedar del revés.
             mirror = right.x * up.y - right.y * up.x < 0f ? -1f : 1f;
-            rotation = Quaternion.Euler(0f, 0f, mirror < 0f ? angle + 180f : angle);
+            rotation = Quaternion.Euler(0f, 0f, (mirror < 0f ? angle + 180f : angle) + fx.angle * mirror);
+        }
+
+        /// <summary>
+        /// Gira un efecto dibujado mirando a +X para que mire a <paramref name="direction"/>. Hacia la
+        /// izquierda se refleja en vez de quedar cabeza abajo.
+        /// </summary>
+        private static void Towards(Vector2 direction, float extraAngle, out Quaternion rotation, out float mirror)
+        {
+            mirror = direction.x < 0f ? -1f : 1f;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            rotation = Quaternion.Euler(0f, 0f, (mirror < 0f ? angle + 180f : angle) + extraAngle * mirror);
+        }
+
+        /// <summary>
+        /// Hacia dónde va la acción para ese efecto (<see cref="RigFxFacing.Direction"/>): en la boca,
+        /// hacia donde apunta el arma — del pivote de la pieza que apunta a su boca, que es por donde
+        /// sale el disparo —; en lo demás, hacia donde se mueve el cuerpo, o hacia donde mira si está quieto.
+        /// </summary>
+        protected virtual Vector2 FxDirection(RigFx fx)
+        {
+            if (fx.anchor == RigFxAnchor.Muzzle && Rig.muzzle != null && Rig.aimPart != null)
+            {
+                Vector2 barrel = Rig.muzzle.position - Rig.aimPart.position;
+                if (barrel.sqrMagnitude > 0.0001f) return barrel.normalized;
+            }
+
+            if (_fxBody != null && _fxBody.linearVelocity.sqrMagnitude > 0.04f) return _fxBody.linearVelocity.normalized;
+            return new Vector2(Facing, 0f);
         }
 
         /// <summary>
@@ -430,12 +523,12 @@ namespace RedMagic.Rigging
             }
         }
 
-        /// <summary>Fin de una fase: se apagan sus efectos en bucle.</summary>
-        protected void EndFxPhase(RigFxPhase phase)
+        /// <summary>Fin de un paso: se apagan los efectos en bucle que duraban hasta él.</summary>
+        protected void EndFxStep(int step)
         {
             for (int i = _liveFx.Count - 1; i >= 0; i--)
             {
-                if (!_liveFx[i].loop || _liveFx[i].data.phase != phase) continue;
+                if (!_liveFx[i].loop || _liveFx[i].endStep > step) continue;
                 Core.PrefabPool.Despawn(_liveFx[i].instance);
                 _liveFx.RemoveAt(i);
             }

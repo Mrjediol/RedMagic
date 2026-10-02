@@ -84,16 +84,17 @@ namespace RedMagic.Rigging.EditorTools
         public static double Num(float v) => Math.Round((double)v, 5);
 
         // Fases y anclas de los efectos de gesto: los nombres del JSON (minúscula) ↔ los enums.
-        public static string FxPhaseName(RigFxPhase phase) => phase.ToString().ToLowerInvariant();
+        /// <summary>El nombre de un valor de enum en el JSON: en minúscula ("inOut" → "inout").</summary>
+        public static string EnumName(Enum value) => value.ToString().ToLowerInvariant();
+
+        public static bool TryEnum<T>(string name, out T value) where T : struct, Enum =>
+            Enum.TryParse(name, true, out value) && Enum.IsDefined(typeof(T), value);
         public static string FxAnchorName(RigFxAnchor anchor) => anchor.ToString().ToLowerInvariant();
 
         public static string NamedStateName(RigNamedState state) => state.ToString().ToLowerInvariant();
 
         public static bool TryNamedState(string name, out RigNamedState state) =>
             Enum.TryParse(name, true, out state) && Enum.IsDefined(typeof(RigNamedState), state);
-
-        public static bool TryFxPhase(string name, out RigFxPhase phase) =>
-            Enum.TryParse(name, true, out phase) && Enum.IsDefined(typeof(RigFxPhase), phase);
 
         public static bool TryFxAnchor(string name, out RigFxAnchor anchor) =>
             Enum.TryParse(name, true, out anchor) && Enum.IsDefined(typeof(RigFxAnchor), anchor);

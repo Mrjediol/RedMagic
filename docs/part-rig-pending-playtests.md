@@ -507,3 +507,18 @@ projectile, deck of 2 attacks, sound slots; compiles). Nothing was seen moving.
 - [ ] SH14 · Inspector ▸ EnemyStats ▸ Defensa / baraja: "Gesture" is a dropdown with the gestures of the body.
 - [ ] SH15 · Movement sound: a soft breath of air, quiet (flyers), and the generic footsteps at 0.3 volume. Still
       too present with several enemies on screen? Option to try: `enemy_move_air_2`.
+
+**Third pass — gestures as timelines (2026-10-02, branch `task/gesture-timeline`)** — engine change; compiled,
+the five rig prefabs converted, round trip OK. **Not seen running.** Regressions matter most here: every rig
+enemy and boss now runs on the new gesture code.
+- [ ] GT1 · IceRobot, koros, Turret, IceBoss2 — every attack and gesture looks and times as before (they were
+      converted, not re-authored). Anything firing earlier / later, a pose that snaps, an effect turned wrong?
+- [ ] GT2 · IceRobot's "Finger" sprite on its gesture still shows in the same window.
+- [ ] GT3 · ShroomShaman · Spore Fan: the spores now leave at the END of the strike (arm forward), from the crystal.
+- [ ] GT4 · ShroomShaman · Spore Nova uses a three-step gesture "Twirl" (raise → full spin of the wand → finish)
+      with TWO releases: a ring at the end of the spin, a second at the finish. Does the wand spin a whole turn
+      and come back to rest without unwinding? Rings on time?
+- [ ] GT5 · Effects: the flash points where the shot goes (also facing left); the dash trail points along the
+      movement and both it and the puff are BEHIND the body; dash effects bigger than before. Sizes ok?
+- [ ] GT6 · Bosses with sprite-sheet bodies (TreeBoss, ColosodeHielo): unchanged? (their gestures are Animator
+      states, but the attack-host code they share was touched.)

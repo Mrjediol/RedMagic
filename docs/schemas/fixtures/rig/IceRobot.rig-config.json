@@ -1,0 +1,696 @@
+{
+  "kind": "enemy",
+  "driver": "code",
+  "name": "IceRobot",
+  "root": {
+    "scale": 0.24713,
+    "tag": "Untagged",
+    "layer": "Default"
+  },
+  "collider": {
+    "type": "box",
+    "size": {
+      "x": 5.64,
+      "y": 11.14
+    },
+    "offset": {
+      "x": 0.0,
+      "y": -1.0
+    }
+  },
+  "corpse": {
+    "linger": 1.1,
+    "fadeDuration": 0.4
+  },
+  "visual": {
+    "position": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "rotation": 0.0,
+    "scale": 1.0
+  },
+  "parts": [
+    {
+      "name": "Lower",
+      "parent": "Torso",
+      "sprite": "Assets/Art/RigImports/IceRobot/Parts/Lower.png",
+      "sortingOrder": 1,
+      "position": {
+        "x": -0.24751,
+        "y": -1.1275
+      },
+      "rotation": 0.0,
+      "scale": 1.0,
+      "pivot": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "center": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "pointAngle": 0.0,
+      "leanFollow": 0.6,
+      "sway": {
+        "move": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "rotate": 0.0,
+        "scale": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "speed": 6.0,
+        "phase": 0.0
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "CastArm",
+      "parent": "Torso",
+      "sprite": "Assets/Art/RigImports/IceRobot/Parts/CastArm.png",
+      "sortingOrder": 2,
+      "position": {
+        "x": 3.80886,
+        "y": -1.10071
+      },
+      "rotation": 0.0,
+      "scale": 1.0,
+      "pivot": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "center": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "pointAngle": 0.0,
+      "leanFollow": 0.0,
+      "sway": {
+        "move": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "rotate": 6.0,
+        "scale": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "speed": 1.5,
+        "phase": 3.14
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Torso",
+      "parent": "",
+      "sprite": "Assets/Art/RigImports/IceRobot/Parts/Torso.png",
+      "sortingOrder": 3,
+      "position": {
+        "x": 0.11748,
+        "y": 0.08304
+      },
+      "rotation": 0.0,
+      "scale": 1.0,
+      "pivot": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "center": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "pointAngle": 0.0,
+      "leanFollow": 0.0,
+      "sway": {
+        "move": {
+          "x": 0.0,
+          "y": 0.1428
+        },
+        "rotate": 0.0,
+        "scale": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "speed": 1.5,
+        "phase": 0.91669
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Head",
+      "parent": "Torso",
+      "sprite": "Assets/Art/RigImports/IceRobot/Parts/Head.png",
+      "sortingOrder": 4,
+      "position": {
+        "x": 0.71906,
+        "y": 1.45627
+      },
+      "rotation": 0.0,
+      "scale": 1.0,
+      "pivot": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "center": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "pointAngle": 0.0,
+      "leanFollow": 0.0,
+      "sway": {
+        "move": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "rotate": 3.0,
+        "scale": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "speed": 1.5,
+        "phase": 3.31665
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "OffArm",
+      "parent": "Torso",
+      "sprite": "Assets/Art/RigImports/IceRobot/Parts/OffArm.png",
+      "sortingOrder": 5,
+      "position": {
+        "x": -3.29167,
+        "y": -0.22048
+      },
+      "rotation": -34.0,
+      "scale": 1.0,
+      "pivot": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "center": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "pointAngle": 0.0,
+      "leanFollow": 0.3,
+      "sway": {
+        "move": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "rotate": 5.0,
+        "scale": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "speed": 1.5,
+        "phase": 5.71661
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Muzzle",
+      "parent": "Torso/CastArm",
+      "position": {
+        "x": 5.768,
+        "y": -1.262
+      },
+      "rotation": 0.0,
+      "scale": 1.0,
+      "rigPart": false
+    }
+  ],
+  "rig": {
+    "hoverBob": {
+      "x": 0.0,
+      "y": 0.3428
+    },
+    "hoverSpeed": 0.0,
+    "leanDegrees": 14.0,
+    "leanFullSpeed": 2.5,
+    "leanResponse": 8.0,
+    "followStiffness": 0.0,
+    "followDamping": 9.0,
+    "followMaxOffset": 1.7141,
+    "moveGesture": "",
+    "aimPart": "Torso/CastArm",
+    "aimArtAngle": -12.3,
+    "aimMaxAngle": 70.0,
+    "windup": 0.4,
+    "recover": 0.45,
+    "windupPullAngle": 10.0,
+    "windupBodyTilt": 6.0,
+    "recoilDelay": 0.06,
+    "recoilKick": 0.09,
+    "recoilAngle": 15.0,
+    "recoilDistance": 0.857,
+    "bodyRecoil": 0.4285,
+    "muzzle": "Torso/CastArm/Muzzle",
+    "muzzleFlashSprite": null,
+    "muzzleFlashColor": "#8cffffe6",
+    "muzzleFlashSize": 1.5712,
+    "muzzleFlashTime": 0.1,
+    "stretchPart": null,
+    "stretchRiders": [],
+    "foldedStretch": 0.05,
+    "foldedRiderScaleY": 0.6,
+    "foldedRiderOffset": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "wakeDuration": 0.8,
+    "sleepDuration": 0.55,
+    "wakeOvershoot": 2.2,
+    "wakeFlickers": 0,
+    "wakeFlickerPortion": 0.4,
+    "drivenLease": 0.25,
+    "drivenReturn": 0.35,
+    "staggerStrength": 2.5,
+    "hurtDuration": 0.28,
+    "hurtTilt": 14.0,
+    "hurtSquash": 0.12,
+    "breakImpulse": 3.5,
+    "breakUpward": 4.0,
+    "breakSpin": 540.0,
+    "breakGravity": 20.0,
+    "breakBounce": 0.35,
+    "breakGround": [
+      "Ground",
+      "Platform"
+    ]
+  },
+  "spriteSwaps": [
+    {
+      "part": "Torso/Head",
+      "asleep": "Assets/Art/RigImports/IceRobot/Parts/Head__asleep.png",
+      "awake": "Assets/Art/RigImports/IceRobot/Parts/Head__awake.png",
+      "attacking": "Assets/Art/RigImports/IceRobot/Parts/Head__attacking.png",
+      "stages": []
+    },
+    {
+      "part": "Torso/OffArm",
+      "asleep": "Assets/Art/RigImports/IceRobot/Parts/OffArm__asleep.png",
+      "awake": "Assets/Art/RigImports/IceRobot/Parts/OffArm__awake.png",
+      "attacking": null,
+      "stages": []
+    }
+  ],
+  "gestures": [
+    {
+      "name": "Flick",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 0.0,
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": -0.2857,
+                "y": 0.0
+              },
+              "rotate": -18.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "rotate": 2.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Golpe",
+          "duration": 0.2,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0.0,
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 0.4285,
+                "y": 0.0
+              },
+              "rotate": 14.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 0,
+          "at": 1.0,
+          "offset": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "recover": 0.3,
+      "fx": [
+        {
+          "fx": "Assets/Prefabs/Fx/Enemies/IceRobot/Fx_IceRobot_gfx_IceRobotImpact_b45b8c07.prefab",
+          "step": 1,
+          "at": 0.0,
+          "anchor": "muzzle",
+          "offset": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "scale": 1.0,
+          "followsPart": true,
+          "loop": false,
+          "untilStep": -1,
+          "facing": "anchor",
+          "angle": 0.0,
+          "layer": "front"
+        }
+      ]
+    },
+    {
+      "name": "Charge",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 1.5,
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": -0.5714,
+                "y": 0.857
+              },
+              "rotate": 55.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": -0.4285,
+                "y": 0.2857
+              },
+              "rotate": 6.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "rotate": 6.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Golpe",
+          "duration": 0.08,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0.0,
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 0.857,
+                "y": 0.0
+              },
+              "rotate": -20.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0.4285,
+                "y": 0.0
+              },
+              "rotate": -5.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 0,
+          "at": 1.0,
+          "offset": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "recover": 0.45
+    },
+    {
+      "name": "Sweep",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 0.0,
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 0.0,
+                "y": 0.5714
+              },
+              "rotate": 40.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "rotate": 4.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Golpe",
+          "duration": 0.14,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0.0,
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 0.2857,
+                "y": -0.5714
+              },
+              "rotate": -45.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "rotate": -4.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 0,
+          "at": 1.0,
+          "offset": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "recover": 0.4
+    },
+    {
+      "name": "Finger",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 0.0,
+          "poses": [
+            {
+              "part": "Torso/OffArm",
+              "move": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "rotate": 103.6,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Golpe",
+          "duration": 1.0,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0.0,
+          "poses": [
+            {
+              "part": "Torso/OffArm",
+              "move": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "rotate": 103.6,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 0,
+          "at": 1.0,
+          "offset": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "recover": 0.5
+    },
+    {
+      "name": "Disparo",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 0.0,
+          "poses": []
+        },
+        {
+          "name": "Golpe",
+          "duration": 0.4,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0.0,
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "rotate": 24.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 0,
+          "at": 1.0,
+          "offset": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "recover": 1.0,
+      "fx": [
+        {
+          "fx": "Assets/Prefabs/Fx/Enemies/IceRobot/Fx_IceRobot_gfx_IceRobotImpact_b45b8c07.prefab",
+          "step": 1,
+          "at": 0.0,
+          "anchor": "muzzle",
+          "offset": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "scale": 1.0,
+          "followsPart": true,
+          "loop": false,
+          "untilStep": -1,
+          "facing": "anchor",
+          "angle": 0.0,
+          "layer": "front"
+        }
+      ]
+    }
+  ],
+  "idleGestures": {
+    "gestures": [],
+    "interval": 4.0,
+    "chance": 0.6,
+    "windup": 0.5
+  }
+}

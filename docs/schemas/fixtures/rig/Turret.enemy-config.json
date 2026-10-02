@@ -82,6 +82,9 @@
     "obstacleLayers": [
       "Ground",
       "Platform"
+    ],
+    "flyThroughLayers": [
+      "Platform"
     ]
   }
 }

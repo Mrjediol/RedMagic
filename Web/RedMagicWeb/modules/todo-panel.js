@@ -226,24 +226,6 @@ export function initTodoPanel({ root, statusEl, toolbar, toast = () => {} }) {
     renderToolbar();
   }
 
-  function exportJson() {
-    const url = URL.createObjectURL(new Blob([writeDocument(phases)], { type: 'application/json' }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = FILE_NAME;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
-  function importJson(file) {
-    file.text().then((text) => {
-      const loaded = readDocument(text);
-      if (!loaded) { toast('Ese archivo no tiene el formato de la lista'); return; }
-      mut(() => { phases = loaded; });
-      toast('Lista importada');
-    });
-  }
-
   // ------------------------------------------------------------ render
 
   function mut(fn) { fn(); render(); queueSave(); }
@@ -257,8 +239,6 @@ export function initTodoPanel({ root, statusEl, toolbar, toast = () => {} }) {
     toolbar.innerHTML = `${linked}
       <button data-act="hide-done" aria-pressed="${hideDone}" class="${hideDone ? 'active' : ''}">Ocultar hechas</button>
       <span class="tabSpacer"></span>
-      <button data-act="export" title="Descarga la lista como todo.json">⬇ Exportar</button>
-      <button data-act="import" title="Carga una lista (todo.json) sustituyendo la actual">⬆ Importar…</button>
       <button data-act="reset" class="${confirmKey === 'reset' ? 'danger' : ''}">${confirmKey === 'reset' ? '¿Seguro? Se pierden tus cambios' : 'Restaurar lista original'}</button>`;
   }
 
@@ -399,19 +379,10 @@ export function initTodoPanel({ root, statusEl, toolbar, toast = () => {} }) {
     mut(() => phases.push({ id: uid(), name: v, tag: '', tasks: [] }));
   });
 
-  const importInput = document.createElement('input');
-  importInput.type = 'file';
-  importInput.accept = '.json,application/json';
-  importInput.hidden = true;
-  importInput.onchange = () => { if (importInput.files[0]) importJson(importInput.files[0]); importInput.value = ''; };
-  toolbar.after(importInput);
-
   const TOOLBAR = {
     link: linkFile,
     reconnect,
     unlink,
-    export: exportJson,
-    import: () => importInput.click(),
     'hide-done': () => { hideDone = !hideDone; render(); },
     reset: () => {
       if (confirmKey !== 'reset') { arm('reset'); return; }

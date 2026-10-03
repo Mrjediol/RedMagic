@@ -122,7 +122,9 @@ function phoneUrl() {
   try {
     const st = JSON.parse(execFileSync('tailscale', ['status', '--json'], { encoding: 'utf8', timeout: 4000, windowsHide: true }));
     const name = st?.Self?.DNSName?.replace(/\.$/, '');
-    if (name) tailscaleUrl = `https://${name}`;
+    // only once `tailscale serve` is set up: without it the https name does not answer (the 100.x link is shown instead)
+    const serve = JSON.parse(execFileSync('tailscale', ['serve', 'status', '--json'], { encoding: 'utf8', timeout: 4000, windowsHide: true }) || '{}');
+    if (name && (serve.Web || serve.TCP)) tailscaleUrl = `https://${name}`;
   } catch { /* no Tailscale */ }
   return tailscaleUrl;
 }
@@ -183,7 +185,7 @@ async function api(req, res, url) {
   if (!local && !sameKey(cookieOf(req, COOKIE))) return send(res, 401, { error: 'movil' });
   if (route === 'GET /api/movil') {
     if (!local) return send(res, 403, { error: 'solo desde el PC' });
-    const lan = config.listen === '127.0.0.1' ? [] : Object.values(os.networkInterfaces()).flat().filter((i) => i && i.family === 'IPv4' && !i.internal && !i.address.startsWith('169.254.')).map((i) => `http://${i.address}:${config.port}`);
+    const lan = config.listen === '127.0.0.1' ? [] : Object.values(os.networkInterfaces()).flat().filter((i) => i && i.family === 'IPv4' && !i.internal && !i.address.startsWith('169.254.')).map((i) => i.address).sort((a, b) => Number(b.startsWith('100.')) - Number(a.startsWith('100.'))).map((a) => `http://${a}:${config.port}`);
     return send(res, 200, { key: phoneKey, url: phoneUrl(), lan });
   }
   if (route === 'GET /api/hello') return send(res, 200, { token, project: path.basename(projectRoot) });

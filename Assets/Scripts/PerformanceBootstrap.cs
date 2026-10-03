@@ -31,14 +31,18 @@ namespace RedMagic.Core
             // tiene efecto.
             QualitySettings.vSyncCount = 0;
 
-            // En el Editor y en PC se deja correr libre (-1): limitarlo ahí sólo estorbaría al
-            // perfilado y a ver el framerate real de cada cambio. !UNITY_EDITOR es obligatorio:
-            // con el build target en Android, UNITY_ANDROID también está definido en el Editor y
-            // lo dejaba clavado a 60 (con tirones, porque sin vSync el límite se hace durmiendo).
+            // En PC se deja correr libre (-1). !UNITY_EDITOR es obligatorio: con el build target en
+            // Android, UNITY_ANDROID también está definido en el Editor y lo dejaba clavado a 60 (con
+            // tirones, porque sin vSync el límite se hace durmiendo).
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             Application.targetFrameRate = MobileTargetFrameRate;
 #else
             Application.targetFrameRate = -1;
+#endif
+#if UNITY_EDITOR
+            // En el Editor, al refresco del monitor (vSync): por encima no se ve nada más y la GPU
+            // trabaja al 100% para nada. Con vSync, no durmiendo: no da tirones.
+            QualitySettings.vSyncCount = 1;
 #endif
         }
     }

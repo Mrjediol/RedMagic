@@ -26,7 +26,7 @@ namespace RedMagic.EditorTools
     /// con la del Play anterior: lo que crece de una sesión a otra es lo que se acumula.</item>
     /// </list>
     /// Escribe <c>Logs/PlayModeProbe/&lt;n&gt;_*.txt</c> (Logs no va a git) y una línea de resumen en la consola.
-    /// Apagar/encender: Tools ▸ RedMagic ▸ Sonda de rendimiento (Play).
+    /// Apagada por defecto (la grabación a los 8 s da un tirón): encender en Tools ▸ RedMagic ▸ Sonda de rendimiento (Play).
     /// </summary>
     [InitializeOnLoad]
     public static class PlayModeProbe
@@ -54,7 +54,7 @@ namespace RedMagic.EditorTools
 
         public static bool Enabled
         {
-            get => EditorPrefs.GetBool(EnabledPref, true);
+            get => EditorPrefs.GetBool(EnabledPref, false);
             set => EditorPrefs.SetBool(EnabledPref, value);
         }
 

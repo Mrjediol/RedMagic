@@ -761,3 +761,58 @@ textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .todoQuick summary{cursor:pointer;font-weight:600;color:var(--accent);padding:4px 0;}
 .todoQuick form{display:grid;gap:8px;margin:8px 0 6px;}
 .todoQuick textarea{min-height:58px;resize:vertical;}
+
+/* ---------------- 👾 Enemigos (modules/enemies-panel.js) ---------------- */
+#enemiesPanel{flex:1;min-width:0;padding:18px 24px 40px;overflow-y:auto;}
+#enemiesPanel > .hint,#enemiesPanel > h1{max-width:1120px;}
+.enSection{margin-top:22px;max-width:1500px;}
+.enSection > h2{display:flex;align-items:baseline;gap:10px;}
+.enHint{font-size:13px;font-weight:400;color:var(--faint);}
+.enEmpty{color:var(--faint);font-size:14px;margin:6px 0 0;}
+.enGroup{margin-top:10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:0 14px;}
+.enGroup[open]{padding-bottom:14px;}
+.enGroup > summary{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;cursor:pointer;padding:10px 0;list-style:none;}
+.enGroup > summary::-webkit-details-marker{display:none;}
+.enGroup > summary::before{content:'▸';color:var(--muted);width:12px;flex:none;}
+.enGroup[open] > summary::before{content:'▾';}
+.enGroupTitle{font-size:16.5px;font-weight:700;color:var(--accent2);}
+.enCount{font-size:14px;color:var(--text);background:var(--selected);border:1px solid var(--border);border-radius:4px;padding:0 8px;}
+.enGroupSub{font-size:13.5px;color:var(--muted);}
+.enGroup .enGroup{background:var(--well);}
+.enGroupBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0 10px;border-top:1px solid var(--border);}
+.enGroupBar button{margin:0;}
+.enSel{font-size:14px;color:var(--accent);font-weight:600;}
+.enSep{width:1px;align-self:stretch;background:var(--border);margin:0 4px;}
+.enCards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;}
+.enCard{position:relative;display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--raise);border:1px solid var(--border);border-top-color:var(--border-lit);border-radius:8px;}
+.enCard.selected{border-color:var(--accent);box-shadow:var(--glow);background:var(--selected);}
+.enCard[data-status="discarded"],.enCard[data-status="descartado"]{opacity:.45;}
+.enCard[data-status="accepted"]{border-color:var(--accent-deep);}
+.enArt{display:block;padding:0;margin:0;border:none;border-radius:6px;background:var(--pit);aspect-ratio:1;overflow:hidden;cursor:pointer;}
+.enArt img{width:100%;height:100%;object-fit:contain;display:block;}
+.enCard.selected .enArt{outline:2px solid var(--accent);}
+.enZoom{position:absolute;top:12px;right:12px;margin:0;opacity:.75;}
+.enCard:hover .enZoom{opacity:1;}
+.enNote{font-size:13px;color:var(--muted);line-height:1.35;margin:0;}
+.enName{width:100%;background:var(--well);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font:inherit;font-size:14.5px;font-weight:600;box-shadow:inset 0 1px 2px rgba(0,0,0,.4);}
+.enName.fixed{background:none;border-color:transparent;box-shadow:none;padding:5px 0;}
+.enName:focus-visible{outline:none;border-color:var(--accent);box-shadow:var(--glow);}
+.enBtns{display:flex;align-items:center;gap:6px;}
+.enBtns button{margin:0;}
+.enBtns .enOk{flex:1;color:var(--accent);font-weight:600;}
+.enBadge{flex:1;font-size:13px;color:var(--muted);}
+.enBadge.ok{color:var(--accent);}
+.enErr{font-size:13px;color:var(--danger);line-height:1.35;}
+.enViewer{position:fixed;inset:0;z-index:65;display:flex;align-items:center;justify-content:center;background:rgba(4,10,11,.82);backdrop-filter:blur(2px);}
+.enViewer[hidden]{display:none;}
+.enViewerBox{display:flex;flex-direction:column;gap:10px;width:min(900px,94vw);max-height:94vh;padding:14px 16px;background:var(--panel);border:1px solid var(--border-lit);border-top:3px solid var(--accent);border-radius:10px;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+.enViewerHead{display:flex;align-items:baseline;gap:12px;}
+.enViewerHead b{font-size:18px;color:var(--accent);}
+.enViewerHead span{flex:1;color:var(--muted);font-size:14px;}
+.enViewerHead button{margin:0;}
+.enViewerStage{display:flex;align-items:center;gap:8px;min-height:0;}
+.enViewerBox img{flex:1;min-width:0;max-height:72vh;object-fit:contain;background:var(--pit);border-radius:6px;}
+.enViewerNav{margin:0;font-size:26px;padding:8px 12px;}
+.enViewerBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.enViewerBar button{margin:0;}
+.enViewerBar .efHint{margin-left:auto;}

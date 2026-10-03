@@ -1,0 +1,78 @@
+{
+  "title": "Bases de hielo (prueba de la galería)",
+  "request": "Prueba: bases de la zona de hielo, para probar la galería",
+  "createdAt": "2026-10-03T12:00:00.000Z",
+  "demo": true,
+  "items": [
+    {
+      "id": "1",
+      "name": "FrostTank",
+      "image": "comfy:claude/base_frosttank_raw_00001_.png",
+      "note": "",
+      "status": "pending"
+    },
+    {
+      "id": "2",
+      "name": "GlacierGolem",
+      "image": "comfy:claude/base_ggolem_raw_00001_.png",
+      "note": "",
+      "status": "pending"
+    },
+    {
+      "id": "3",
+      "name": "GlacierKnight",
+      "image": "comfy:claude/base_gknight_raw_00001_.png",
+      "note": "",
+      "status": "pending"
+    },
+    {
+      "id": "4",
+      "name": "GlacierPenguin",
+      "image": "comfy:claude/base_gpenguin_raw_00001_.png",
+      "note": "",
+      "status": "pending"
+    },
+    {
+      "id": "5",
+      "name": "GlacierSkeleton",
+      "image": "comfy:claude/base_gskel_raw_00001_.png",
+      "note": "",
+      "status": "pending"
+    },
+    {
+      "id": "6",
+      "name": "GlacierSnowman",
+      "image": "comfy:claude/base_gsnowman_raw_00001_.png",
+      "note": "",
+      "status": "pending"
+    },
+    {
+      "id": "7",
+      "name": "IceSnail",
+      "image": "comfy:claude/base_icesnail_raw_00001_.png",
+      "note": "",
+      "status": "pending"
+    },
+    {
+      "id": "8",
+      "name": "Penguin",
+      "image": "comfy:claude/base_penguin_raw_00001_.png",
+      "note": "",
+      "status": "pending"
+    },
+    {
+      "id": "9",
+      "name": "Walrus",
+      "image": "comfy:claude/base_walrus_raw_00001_.png",
+      "note": "",
+      "status": "pending"
+    },
+    {
+      "id": "10",
+      "name": "YetiCub",
+      "image": "comfy:claude/base_yeticub_raw_00001_.png",
+      "note": "",
+      "status": "pending"
+    }
+  ]
+}

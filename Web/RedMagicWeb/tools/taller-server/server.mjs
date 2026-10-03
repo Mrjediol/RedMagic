@@ -9,6 +9,9 @@
 //   GET  /api/status                → { rev, running, waiting, queue, apps }
 //   POST /api/run    { taskId, stepId?, followUp?, force? }   → queue a run (runner.mjs)
 //   POST /api/cancel { taskId }     POST /api/force { taskId }   POST /api/open { app: 'comfy'|'unity' }
+//   GET  /api/enemigos              → { lotes, enemigos }   docs/enemigos/ (enemigos.mjs)
+//   GET  /api/img?src=comfy:…|docs/enemigos/…   → the image (only those two roots)
+//   POST /api/enemigos/review { loteId, itemIds, decision: accept|discard|pending, names }  → { errors }
 //
 // Only 127.0.0.1. Anything that changes something needs the token header (a custom header forces a CORS
 // preflight, which this server never answers, so no other page can send it) and a same-origin Host.
@@ -23,6 +26,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { Store } from './store.mjs';
 import { Runner } from './runner.mjs';
+import { Enemigos } from './enemigos.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(here, '../..');
@@ -36,6 +40,7 @@ const DEFAULTS = {
   disallowedTools: ['Bash(git push:*)', 'Bash(git reset:*)', 'Bash(git rebase:*)', 'Bash(git clean:*)', 'Bash(git branch -D:*)', 'Bash(git checkout --:*)'],
   claudeExe: null,
   comfyExe: null,
+  comfyOutput: path.join(process.env.LOCALAPPDATA || '', 'Comfy-Desktop', 'ComfyUI-Shared', 'output'),   // where Comfy saves images
 };
 const configFile = path.join(here, 'config.json');
 const config = { ...DEFAULTS, ...(fs.existsSync(configFile) ? JSON.parse(fs.readFileSync(configFile, 'utf8')) : {}) };
@@ -64,6 +69,7 @@ const store = new Store(path.join(projectRoot, 'docs', 'tareas', 'todo.json'));
 const runner = new Runner(store, {
   projectRoot, logDir: path.join(projectRoot, 'Logs', 'Taller'), claudeExe: findClaude(), comfyExe: findComfy(), config,
 });
+const enemigos = new Enemigos({ projectRoot, comfyOutput: path.resolve(config.comfyOutput) });
 const token = crypto.randomBytes(24).toString('hex');
 
 // ============================================================ apps (cached: checking Unity runs a CLI)
@@ -103,6 +109,8 @@ async function api(req, res, url) {
   const route = `${req.method} ${url.pathname}`;
   if (route === 'GET /api/hello') return send(res, 200, { token, project: path.basename(projectRoot) });
   if (route === 'GET /api/todo') return send(res, 200, { rev: store.rev, doc: store.doc });
+  if (route === 'GET /api/enemigos') return send(res, 200, enemigos.list());
+  if (route === 'GET /api/img') return serveFile(res, enemigos.resolveImage(url.searchParams.get('src')), 'no-cache');
   if (route === 'GET /api/status') return send(res, 200, { rev: store.rev, ...runner.status(), apps: await refreshApps() });
 
   // Everything below changes something.
@@ -119,6 +127,10 @@ async function api(req, res, url) {
   if (route === 'POST /api/run') {
     const error = runner.enqueue(body);
     return send(res, error ? 409 : 200, error ? { error } : { ok: true, rev: store.rev });
+  }
+  if (route === 'POST /api/enemigos/review') {
+    if (!body.loteId || !Array.isArray(body.itemIds)) return send(res, 400, { error: 'loteId / itemIds' });
+    return send(res, 200, enemigos.review(body));
   }
   if (route === 'POST /api/cancel') { runner.cancel(body.taskId); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/force') { runner.forceStart(body.taskId); return send(res, 200, { ok: true }); }
@@ -138,9 +150,14 @@ function serveStatic(req, res, url) {
   if (!file.startsWith(webRoot + path.sep) && file !== webRoot) return send(res, 403, 'no', 'text/plain');
   // The server's own folder is not part of the web.
   if (file.startsWith(here + path.sep)) return send(res, 404, 'no', 'text/plain');
+  serveFile(res, file, 'no-cache');
+}
+
+function serveFile(res, file, cache) {
+  if (!file) return send(res, 403, 'no', 'text/plain');
   fs.stat(file, (err, st) => {
     if (err || !st.isFile()) return send(res, 404, 'no encontrado', 'text/plain; charset=utf-8');
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream', 'Cache-Control': cache });
     fs.createReadStream(file).pipe(res);
   });
 }

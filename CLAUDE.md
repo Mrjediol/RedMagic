@@ -91,6 +91,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 | Main Hub, tombs, interactables | `docs/architecture/hub.md` |
 | Audio, `SoundEmitter` | `docs/architecture/audio.md` |
 | To-do, task queue, 📋 Tareas, `taller-server` | `docs/architecture/tareas.md` |
+| Web 👾 Enemigos, design batches, `docs/enemigos/` | `docs/architecture/enemigos-web.md` |
 | Input System | `docs/architecture/input.md` |
 | UI Toolkit | `docs/architecture/ui.md` |
 | Localization, display presets | `docs/architecture/localization.md` |

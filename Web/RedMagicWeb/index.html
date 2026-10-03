@@ -35,6 +35,7 @@
   <button class="tabBtn" data-tab="vfx" title="Efectos hechos con parámetros, con sus sonidos">✨ VFX Lab</button>
   <button class="tabBtn" data-tab="boss" title="Un jefe con sus ataques y fases">👑 Boss Creator</button>
   <button class="tabBtn" data-tab="library" title="Todo lo guardado en este navegador">📚 Biblioteca</button>
+  <button class="tabBtn" data-tab="enemies" title="Diseños por revisar y la biblioteca de enemigos (docs/enemigos/)">👾 Enemigos</button>
   <button class="tabBtn" data-tab="todo" title="Lo que falta por hacer, por fases: se guarda en docs/tareas/todo.json para que Claude lo lea">📋 Tareas</button>
   <span class="tabSep"></span>
   <button class="tabBtn active" data-tab="sprites" title="Cortar una hoja de sprites en animaciones">🍄 Sprites</button>
@@ -334,6 +335,18 @@
     <div id="vfxStatus" class="hint"></div>
     <div id="vfxPreviewRoot"></div>
     <div id="vfxListRoot"></div>
+  </div>
+</div>
+
+<div id="tab-enemies" class="tabPanel" hidden>
+  <div id="enemiesPanel">
+    <h1>👾 Enemigos</h1>
+    <p class="hint">
+      Los diseños que genera una tarea llegan aquí para que elijas: clic en una tarjeta para seleccionarla, ⤢ para
+      verla en grande. Lo que aceptas pasa a la biblioteca de enemigos (<code>docs/enemigos/</code>), pendiente de montar.
+    </p>
+    <div id="enemiesRoot"></div>
+    <p id="enemiesStatus" class="efHint"></p>
   </div>
 </div>
 

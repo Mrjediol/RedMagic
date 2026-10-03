@@ -34,4 +34,7 @@ de tarjetas plegables de la Biblioteca (Proyectiles (13), Impactos…).
 
 ## Estado
 
-Nada hecho. Plan acordado, esperando el "adelante" del usuario con Opus.
+- **Fase 1 hecha** (2026-10-03): pestaña 👾 Enemigos, lotes en `docs/enemigos/lotes/`, biblioteca en
+  `docs/enemigos/<Name>/`. Diseño técnico: `docs/architecture/enemigos-web.md`. Dos lotes de prueba (`demo: true`).
+  Al aceptar, el enemigo queda `por-montar` en la biblioteca (la tarea make-enemy desde ahí = fase 3).
+- Siguiente: fase 2.

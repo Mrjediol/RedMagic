@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-03T18:44:06.075Z",
+  "updated": "2026-10-03T20:23:08.374Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -291,6 +291,30 @@
           "text": "Revisar el golpe de Finger al final del dash en IceRobot e IceRobot2",
           "note": "Las defensas ahora reproducen su gesto entero.",
           "done": false
+        }
+      ]
+    },
+    {
+      "id": "enemies",
+      "name": "👾 Enemigos",
+      "tag": "Web",
+      "tasks": [
+        {
+          "id": "rkky6cl",
+          "note": "",
+          "done": false,
+          "text": "FrostKnight: gesto (1 pendiente)",
+          "prompt": "Enemigo existente FrostKnight (prefab: Assets/Prefabs/Enemies/Procedural/FrostKnight.prefab). Ficha: docs/enemigos/FrostKnight/enemigo.json.\nResuelve estos pendientes que ha apuntado el usuario:\n- [Gesto] DarkOrb demasiado fuerte (id uncf5lk)\n\nReglas del proyecto (CLAUDE.md): lo genérico primero; lee la doc de arquitectura que toque (enemies.md, procedural-rig.md, combat.md…).\nSi hace falta arte nuevo (un sprite, el estado de una pieza para un gesto) usa la skill make-enemy (pasos 3–4) con ComfyUI.\nAl acabar, en la ficha: cada pendiente resuelto con \"estado\": \"hecho\" y \"resumen\"; el que no se pudo, \"estado\": \"abierto\" y \"nota\" con el porqué.\nSi todos quedan hechos, el enemigo pasa a \"estado\": \"por-aprobar\"; si no, se queda en \"con-pendientes\".\nDespués de editar la ficha, refresca su imagen para la web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'",
+          "needs": [
+            "unity",
+            "comfy"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "FrostKnight",
+          "status": "running",
+          "lastRunId": "2026-10-03T20-23-08-373Z_rkky6cl",
+          "sessionId": "b8f17568-ff1a-43ba-bf7e-4f86e5f89fe8"
         }
       ]
     }

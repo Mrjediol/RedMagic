@@ -38,7 +38,7 @@
       "kind": "fx",
       "name": "FrostBurst",
       "note": "Explosión azul para el impacto",
-      "status": "pending",
+      "status": "accepted",
       "vfx": {
         "preset": "explosion",
         "params": {
@@ -46,22 +46,24 @@
           "accent": "#e0f6ff",
           "core": "#ffffff"
         }
-      }
+      },
+      "libraryId": "3abf79fe-819f-45fc-82b5-e9d3c4b3c072"
     },
     {
       "id": "4",
       "kind": "fx",
       "name": "IceChargeVortex",
       "note": "Carga en remolino helada",
-      "status": "pending",
+      "status": "accepted",
       "vfx": {
         "preset": "chargeVortex",
         "params": {
           "glow": "#7fd8ff",
           "accent": "#ffffff"
         }
-      }
+      },
+      "libraryId": "3bebd928-3ecf-402e-9f23-bf7e818255fa"
     }
   ],
-  "reviewedAt": "2026-10-03T18:31:00.278Z"
+  "reviewedAt": "2026-10-03T20:14:56.243Z"
 }

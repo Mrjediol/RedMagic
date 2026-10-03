@@ -1,13 +1,14 @@
 {
   "name": "FrostKnight",
-  "estado": "con-pendientes",
+  "estado": "por-aprobar",
   "prefab": "Assets/Prefabs/Enemies/Procedural/FrostKnight.prefab",
   "pendientes": [
     {
       "id": "uncf5lk",
       "tipo": "gesto",
       "texto": "DarkOrb demasiado fuerte",
-      "estado": "en-curso",
+      "estado": "hecho",
+      "resumen": "DarkOrb suavizado: 5→3 orbes, daño 9→6, velocidad 7→5.5, abanico 50°→36°, aviso 0.6→0.8s, no se repite hasta pasar 2 ataques.",
       "createdAt": "2026-10-03T18:43:33.391Z",
       "tarea": "rkky6cl"
     }

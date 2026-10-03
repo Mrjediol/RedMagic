@@ -68,3 +68,11 @@ same list, the repo file linked once with the File System Access API (no launchi
 Phase 3 — a gallery of generated sprites (Comfy output) to pick from and send back as a task. Phase 4 — phone
 access (Tailscale + token, the server already speaks a token) and a notification when the queue empties (ntfy /
 Telegram).
+
+## Plan usage (Pro plan: no dollars)
+
+The CLI's `rate_limit_event` carries the real 5 h / weekly utilisation. `Runner._noteUsage` keeps the latest in
+`Logs/Taller/usage.json`; `/api/status` returns it as `usage`, and the toolbar shows two bars (`usageChip` in
+`todo-panel.js`). The web no longer shows `$` (the CLI's `total_cost_usd` is list price, not a charge; it is still stored in
+`result.costUsd`). `config.json → pauseAtWeekly` (default 0.85, 0 = off): above it the head of the queue waits
+(rechecks every 5 min) unless "Lanzar igualmente". Data only updates when the queue runs a task.

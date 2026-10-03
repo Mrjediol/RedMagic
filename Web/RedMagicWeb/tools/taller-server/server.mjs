@@ -33,6 +33,7 @@ const DEFAULTS = {
   defaultModel: 'sonnet',
   defaultEffort: 'medium',
   maxBudgetUsd: null,
+  pauseAtWeekly: 0.85,   // the queue holds back new runs above this share of the weekly plan limit (0 = never)
   disallowedTools: ['Bash(git push:*)', 'Bash(git reset:*)', 'Bash(git rebase:*)', 'Bash(git clean:*)', 'Bash(git branch -D:*)', 'Bash(git checkout --:*)'],
   claudeExe: null,
   comfyExe: null,

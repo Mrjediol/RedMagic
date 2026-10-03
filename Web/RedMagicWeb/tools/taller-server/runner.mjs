@@ -30,6 +30,7 @@ export class Runner {
     this.children = new Set();    // PIDs of the sessions we started (not "interactive")
     this.force = new Set();       // task ids allowed to start with a terminal session open
     this._timer = null;
+    this.usage = this._loadUsage();   // { fiveHour, sevenDay: { utilization, resetsAt }, at } — the plan's real limits
     // A run that was going when the server stopped did not finish.
     for (const p of store.doc.phases) for (const t of p.tasks) {
       if (t.status === 'running') { t.status = 'failed'; t.result = { ok: false, text: 'Interrumpida: el servidor se cerró mientras trabajaba.', at: new Date().toISOString() }; }
@@ -104,6 +105,13 @@ export class Runner {
       if (open.length) return this._wait(head, `Claude está abierto en una terminal (${open.length}). Ciérralo o pulsa "Lanzar igualmente".`, 15000);
     }
 
+    // 1b · plan limit: do not start more work when the week is nearly spent (the user can still force it)
+    const cap = this.opts.config.pauseAtWeekly;
+    const week = this.usage?.sevenDay?.utilization;
+    if (cap && week != null && week >= cap && !this.force.has(head.taskId)) {
+      return this._wait(head, `Límite semanal del plan al ${Math.round(week * 100)} % (tope ${Math.round(cap * 100)} %). Pulsa "Lanzar igualmente" o espera al reinicio.`, 5 * 60e3);
+    }
+
     // 2 · what it needs, opened if closed
     const needs = found.task.needs || [];
     for (const app of needs) {
@@ -171,6 +179,7 @@ export class Runner {
         try {
           const e = JSON.parse(line);
           if (e.type === 'result') final = e;
+          else if (e.type === 'rate_limit_event') this._noteUsage(e.rate_limit_info);
           else this._activity(e);
         } catch { /* not JSON: keep it in the log only */ }
       }
@@ -204,6 +213,20 @@ export class Runner {
       sessionId: result.sessionId,
       ...(step ? {} : { result }),
     });
+  }
+
+  _usageFile() { return path.join(this.opts.logDir, 'usage.json'); }
+
+  _loadUsage() {
+    try { return JSON.parse(fs.readFileSync(this._usageFile(), 'utf8')); } catch { return null; }
+  }
+
+  /** The CLI reports the plan's limits in a `rate_limit_event`; keep the latest so the web can show it. */
+  _noteUsage(info) {
+    const w = info?.unifiedWindows;
+    if (!w) return;
+    this.usage = { fiveHour: w.five_hour || null, sevenDay: w.seven_day || null, at: Date.now() };
+    try { fs.mkdirSync(this.opts.logDir, { recursive: true }); fs.writeFileSync(this._usageFile(), JSON.stringify(this.usage)); } catch { /* cosmetic */ }
   }
 
   _activity(e) {
@@ -312,6 +335,8 @@ export class Runner {
     return {
       running: cur ? { taskId: cur.taskId, stepId: cur.stepId, title: cur.title, step: cur.step, startedAt: cur.startedAt, runId: cur.runId, activity: cur.activity.slice(-12) } : null,
       waiting: this.waiting,
+      usage: this.usage,
+      pauseAtWeekly: this.opts.config.pauseAtWeekly,
       queue: this.store.doc.queue.map((q) => ({ taskId: q.taskId, stepId: q.stepId, followUp: !!q.followUp })),
     };
   }

@@ -326,13 +326,28 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
     return `<span class="todoApp ${up ? 'up' : ''}" title="${up ? 'Abierto' : 'Cerrado'}">${up ? '●' : '○'} ${label}${up ? '' : ` <button class="small" data-act="open-app" data-id="${app}">Abrir</button>`}</span>`;
   }
 
+  /** Real plan usage (5 h and weekly windows) as the CLI reports it after each run — not dollars. */
+  function usageChip() {
+    const u = live?.usage;
+    if (!u) return '<span class="todoUsage" title="Se rellena tras la primera tarea de la cola">Plan: sin datos aún</span>';
+    const part = (label, w) => {
+      if (!w) return '';
+      const pct = Math.round(w.utilization * 100);
+      const reset = w.resetsAt ? new Date(w.resetsAt * 1000).toLocaleString('es', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+      const cls = pct >= 85 ? 'hot' : pct >= 70 ? 'warm' : '';
+      return `<span class="todoUsageBar ${cls}" title="${label}: reinicia ${esc(reset)}"><i style="width:${Math.min(100, pct)}%"></i><b>${label} ${pct} %</b></span>`;
+    };
+    const age = Math.round((Date.now() - u.at) / 60000);
+    return `<span class="todoUsage" title="Último dato hace ${age} min (se actualiza al trabajar la cola)">${part('5 h', u.fiveHour)}${part('Semana', u.sevenDay)}</span>`;
+  }
+
   function renderToolbar() {
     let left;
     if (server) {
       const q = live?.queue?.length || 0;
       const state = !live ? '<span class="todoServer off">⚠ servidor sin respuesta</span>'
         : `<span class="todoServer">🟢 Servidor del taller · ${live.running ? 'trabajando' : q ? 'en cola' : 'libre'}${q ? ` · ${q} en cola` : ''}</span>`;
-      left = `${state}${live ? appChip('comfy', 'ComfyUI') + appChip('unity', 'Unity') : ''}`;
+      left = `${state}${live ? appChip('comfy', 'ComfyUI') + appChip('unity', 'Unity') + usageChip() : ''}`;
     } else if (handle) {
       left = needsPermission
         ? '<button data-act="reconnect" class="primary" title="El navegador pide permiso otra vez en cada sesión">🔓 Reconectar con el archivo</button>'
@@ -392,7 +407,7 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
 
   function resultBlock(r, label = 'Informe') {
     if (!r) return '';
-    const meta = [when(r.at), r.durationMs ? minutes(r.durationMs) : '', r.costUsd != null ? `${r.costUsd.toFixed(2)} $` : ''].filter(Boolean).join(' · ');
+    const meta = [when(r.at), r.durationMs ? minutes(r.durationMs) : ''].filter(Boolean).join(' · ');
     return `<div class="todoResult ${r.ok ? '' : 'bad'}">
       <div class="todoResultHead"><b>${label}</b><span>${esc(meta)}</span></div>
       ${r.reply ? `<div class="todoReply">↩ ${esc(r.reply)}</div>` : ''}

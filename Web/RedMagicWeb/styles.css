@@ -748,6 +748,12 @@ textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .todoLive ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted);font-family:ui-monospace,Consolas,monospace;max-height:200px;overflow-y:auto;}
 .todoServer{font-size:14px;color:var(--accent);}
 .todoServer.off{color:var(--danger);}
+.todoUsage{display:inline-flex;gap:8px;align-items:center;font-size:13px;}
+.todoUsageBar{position:relative;display:inline-block;min-width:110px;height:20px;border:1px solid var(--border,#555);border-radius:4px;overflow:hidden;}
+.todoUsageBar i{position:absolute;inset:0 auto 0 0;background:var(--accent);opacity:.35;}
+.todoUsageBar.warm i{background:#d9a400;opacity:.5;}
+.todoUsageBar.hot i{background:var(--danger);opacity:.55;}
+.todoUsageBar b{position:relative;display:block;padding:0 6px;line-height:20px;font-weight:600;}
 .todoApp{font-size:13.5px;color:var(--faint);display:inline-flex;gap:6px;align-items:center;}
 .todoApp.up{color:var(--accent);}
 .todoNoServer{flex-basis:100%;margin:0;}

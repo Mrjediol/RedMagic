@@ -9,9 +9,9 @@
 //   GET  /api/status                → { rev, running, waiting, queue, apps }
 //   POST /api/run    { taskId, stepId?, followUp?, force? }   → queue a run (runner.mjs)
 //   POST /api/cancel { taskId }     POST /api/force { taskId }   POST /api/open { app: 'comfy'|'unity' }
-//   GET  /api/enemigos              → { lotes, enemigos }   docs/enemigos/ (enemigos.mjs)
-//   GET  /api/img?src=comfy:…|docs/enemigos/…   → the image (only those two roots)
-//   POST /api/enemigos/review { loteId, itemIds, decision: accept|discard|pending, names }  → { errors }
+//   GET  /api/disenos               → { lotes, enemigos }   docs/disenos/ + docs/enemigos/ (disenos.mjs)
+//   GET  /api/img?src=comfy:…|docs/…  → an image (only Comfy's output and docs/)
+//   POST /api/disenos/review { loteId, itemIds, decision: accept|discard|pending, names, libraryIds }  → { errors }
 //
 // Only 127.0.0.1. Anything that changes something needs the token header (a custom header forces a CORS
 // preflight, which this server never answers, so no other page can send it) and a same-origin Host.
@@ -26,7 +26,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { Store } from './store.mjs';
 import { Runner } from './runner.mjs';
-import { Enemigos } from './enemigos.mjs';
+import { Disenos } from './disenos.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(here, '../..');
@@ -69,7 +69,7 @@ const store = new Store(path.join(projectRoot, 'docs', 'tareas', 'todo.json'));
 const runner = new Runner(store, {
   projectRoot, logDir: path.join(projectRoot, 'Logs', 'Taller'), claudeExe: findClaude(), comfyExe: findComfy(), config,
 });
-const enemigos = new Enemigos({ projectRoot, comfyOutput: path.resolve(config.comfyOutput) });
+const disenos = new Disenos({ projectRoot, comfyOutput: path.resolve(config.comfyOutput) });
 const token = crypto.randomBytes(24).toString('hex');
 
 // ============================================================ apps (cached: checking Unity runs a CLI)
@@ -109,8 +109,8 @@ async function api(req, res, url) {
   const route = `${req.method} ${url.pathname}`;
   if (route === 'GET /api/hello') return send(res, 200, { token, project: path.basename(projectRoot) });
   if (route === 'GET /api/todo') return send(res, 200, { rev: store.rev, doc: store.doc });
-  if (route === 'GET /api/enemigos') return send(res, 200, enemigos.list());
-  if (route === 'GET /api/img') return serveFile(res, enemigos.resolveImage(url.searchParams.get('src')), 'no-cache');
+  if (route === 'GET /api/disenos') return send(res, 200, disenos.list());
+  if (route === 'GET /api/img') return serveFile(res, disenos.resolveImage(url.searchParams.get('src')), 'no-cache');
   if (route === 'GET /api/status') return send(res, 200, { rev: store.rev, ...runner.status(), apps: await refreshApps() });
 
   // Everything below changes something.
@@ -128,9 +128,9 @@ async function api(req, res, url) {
     const error = runner.enqueue(body);
     return send(res, error ? 409 : 200, error ? { error } : { ok: true, rev: store.rev });
   }
-  if (route === 'POST /api/enemigos/review') {
+  if (route === 'POST /api/disenos/review') {
     if (!body.loteId || !Array.isArray(body.itemIds)) return send(res, 400, { error: 'loteId / itemIds' });
-    return send(res, 200, enemigos.review(body));
+    return send(res, 200, await disenos.review(body));
   }
   if (route === 'POST /api/cancel') { runner.cancel(body.taskId); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/force') { runner.forceStart(body.taskId); return send(res, 200, { ok: true }); }

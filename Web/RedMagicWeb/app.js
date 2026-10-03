@@ -26,7 +26,7 @@ import { decodeAudio, playBuffer } from './modules/vfx-stage.js';
 import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail, exportAllRecords, restoreRecords } from './modules/enemy-library.js';
 import { initShellTools } from './modules/shell-tools.js';
 import { initTodoPanel } from './modules/todo-panel.js';
-import { initEnemiesPanel } from './modules/enemies-panel.js';
+import { initDesignsPanel } from './modules/designs-panel.js';
 import { PRESETS as VFX_PRESETS, FAMILIES as VFX_FAMILIES } from './modules/vfx-presets.js';
 import { renderLibraryCards } from './modules/library-panel.js';
 import { buildCombinedBundle } from './modules/enemy-bundle.js';
@@ -111,7 +111,7 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     if (btn.dataset.tab === 'vfx' && vfxLab) vfxLab.onShow();
     if (btn.dataset.tab === 'library') renderLibraryTab();
     if (btn.dataset.tab === 'todo') todoPanel?.onShow();
-    if (btn.dataset.tab === 'enemies') enemiesPanel?.onShow();
+    if (btn.dataset.tab === 'designs') designsPanel?.onShow();
     if (btn.dataset.tab === 'map') { renderMapLibraryLists(); mapView.frameToFit(); }
   });
 }
@@ -2186,9 +2186,9 @@ const todoPanel = initTodoPanel({
   toast: (text) => shell?.toast(text),
 });
 
-const enemiesPanel = initEnemiesPanel({
-  root: document.getElementById('enemiesRoot'),
-  statusEl: document.getElementById('enemiesStatus'),
+const designsPanel = initDesignsPanel({
+  root: document.getElementById('designsRoot'),
+  statusEl: document.getElementById('designsStatus'),
   toast: (text) => shell?.toast(text),
 });
 

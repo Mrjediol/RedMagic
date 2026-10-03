@@ -35,7 +35,7 @@
   <button class="tabBtn" data-tab="vfx" title="Efectos hechos con parámetros, con sus sonidos">✨ VFX Lab</button>
   <button class="tabBtn" data-tab="boss" title="Un jefe con sus ataques y fases">👑 Boss Creator</button>
   <button class="tabBtn" data-tab="library" title="Todo lo guardado en este navegador">📚 Biblioteca</button>
-  <button class="tabBtn" data-tab="enemies" title="Diseños por revisar y la biblioteca de enemigos (docs/enemigos/)">👾 Enemigos</button>
+  <button class="tabBtn" data-tab="designs" title="Lo que una tarea propuso (enemigos, proyectiles, efectos, sonidos), por aprobar; y la biblioteca de enemigos">🎨 Designs</button>
   <button class="tabBtn" data-tab="todo" title="Lo que falta por hacer, por fases: se guarda en docs/tareas/todo.json para que Claude lo lea">📋 Tareas</button>
   <span class="tabSep"></span>
   <button class="tabBtn active" data-tab="sprites" title="Cortar una hoja de sprites en animaciones">🍄 Sprites</button>
@@ -338,15 +338,16 @@
   </div>
 </div>
 
-<div id="tab-enemies" class="tabPanel" hidden>
-  <div id="enemiesPanel">
-    <h1>👾 Enemigos</h1>
+<div id="tab-designs" class="tabPanel" hidden>
+  <div id="designsPanel">
+    <h1>🎨 Designs</h1>
     <p class="hint">
-      Los diseños que genera una tarea llegan aquí para que elijas: clic en una tarjeta para seleccionarla, ⤢ para
-      verla en grande. Lo que aceptas pasa a la biblioteca de enemigos (<code>docs/enemigos/</code>), pendiente de montar.
+      Lo que una tarea propone — enemigos, proyectiles, efectos y sonidos — espera aquí tu decisión: clic en una tarjeta
+      para seleccionarla, ⤢ para verla en grande, ▶ para oírla. Al aceptar, cada cosa va a su sitio: un enemigo a la
+      biblioteca de enemigos (pendiente de montar), un proyectil o efecto a 📚 Biblioteca, un sonido a la paleta del juego.
     </p>
-    <div id="enemiesRoot"></div>
-    <p id="enemiesStatus" class="efHint"></p>
+    <div id="designsRoot"></div>
+    <p id="designsStatus" class="efHint"></p>
   </div>
 </div>
 

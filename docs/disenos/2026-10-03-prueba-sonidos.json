@@ -1,0 +1,120 @@
+{
+  "title": "Sonidos de tortuga (prueba)",
+  "request": "Prueba: golpe de caparazón",
+  "createdAt": "2026-10-03T13:30:00.000Z",
+  "demo": true,
+  "kind": "sound",
+  "items": [
+    {
+      "id": "1",
+      "name": "enemy_shell_hit",
+      "note": "Golpe seco de caparazón",
+      "status": "pending",
+      "sound": {
+        "family": "enemy",
+        "label": "Caparazón · golpe seco",
+        "seconds": 0.2,
+        "layers": [
+          {
+            "type": "noise",
+            "filter": "bp",
+            "f": [
+              900,
+              300
+            ],
+            "q": 1.2,
+            "dur": 0.12,
+            "a": 0.002,
+            "curve": 2.2,
+            "gain": 0.9
+          },
+          {
+            "type": "tone",
+            "wave": "sine",
+            "f": [
+              180,
+              90
+            ],
+            "dur": 0.16,
+            "a": 0.003,
+            "curve": 2,
+            "gain": 0.6
+          }
+        ]
+      },
+      "kind": "sound"
+    },
+    {
+      "id": "2",
+      "name": "enemy_shell_hit_2",
+      "note": "Más hueco, como madera",
+      "status": "pending",
+      "sound": {
+        "family": "enemy",
+        "label": "Caparazón · hueco",
+        "seconds": 0.22,
+        "layers": [
+          {
+            "type": "tone",
+            "wave": "tri",
+            "f": [
+              420,
+              260
+            ],
+            "dur": 0.12,
+            "a": 0.002,
+            "curve": 2.4,
+            "gain": 0.7
+          },
+          {
+            "type": "noise",
+            "filter": "lp",
+            "f": [
+              1600,
+              500
+            ],
+            "dur": 0.08,
+            "a": 0.002,
+            "curve": 2.5,
+            "gain": 0.5
+          }
+        ]
+      },
+      "kind": "sound"
+    },
+    {
+      "id": "3",
+      "name": "enemy_shell_spin",
+      "note": "Bucle de caparazón girando",
+      "status": "pending",
+      "sound": {
+        "family": "enemy",
+        "label": "Caparazón · giro (bucle)",
+        "seconds": 0.6,
+        "loop": true,
+        "layers": [
+          {
+            "type": "noise",
+            "filter": "bp",
+            "f": [
+              700,
+              700
+            ],
+            "q": 2,
+            "dur": 0.6,
+            "a": 0.05,
+            "curve": 1,
+            "gain": 0.4
+          },
+          {
+            "type": "clicks",
+            "count": 6,
+            "gain": 0.3
+          }
+        ]
+      },
+      "kind": "sound"
+    }
+  ],
+  "reviewedAt": "2026-10-03T18:30:35.957Z"
+}

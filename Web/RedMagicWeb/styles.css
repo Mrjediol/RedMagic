@@ -762,9 +762,9 @@ textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .todoQuick form{display:grid;gap:8px;margin:8px 0 6px;}
 .todoQuick textarea{min-height:58px;resize:vertical;}
 
-/* ---------------- 👾 Enemigos (modules/enemies-panel.js) ---------------- */
-#enemiesPanel{flex:1;min-width:0;padding:18px 24px 40px;overflow-y:auto;}
-#enemiesPanel > .hint,#enemiesPanel > h1{max-width:1120px;}
+/* ---------------- 🎨 Designs (modules/designs-panel.js) ---------------- */
+#designsPanel{flex:1;min-width:0;padding:18px 24px 40px;overflow-y:auto;}
+#designsPanel > .hint,#designsPanel > h1{max-width:1120px;}
 .enSection{margin-top:22px;max-width:1500px;}
 .enSection > h2{display:flex;align-items:baseline;gap:10px;}
 .enHint{font-size:13px;font-weight:400;color:var(--faint);}
@@ -789,7 +789,12 @@ textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .enCard[data-status="discarded"],.enCard[data-status="descartado"]{opacity:.45;}
 .enCard[data-status="accepted"]{border-color:var(--accent-deep);}
 .enArt{display:block;padding:0;margin:0;border:none;border-radius:6px;background:var(--pit);aspect-ratio:1;overflow:hidden;cursor:pointer;}
-.enArt img{width:100%;height:100%;object-fit:contain;display:block;}
+.enArt img,.enArt canvas{width:100%;height:100%;object-fit:contain;display:block;}
+.enKind{position:absolute;top:12px;left:12px;font-size:15px;pointer-events:none;text-shadow:0 1px 3px #000;}
+.enFilter{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;}
+.enFilter button{margin:0;}
+.enFilter button.selected{border-color:var(--accent);color:var(--accent);background:var(--selected);}
+.enCard[data-kind="sound"] .enArt canvas{object-fit:fill;}
 .enCard.selected .enArt{outline:2px solid var(--accent);}
 .enZoom{position:absolute;top:12px;right:12px;margin:0;opacity:.75;}
 .enCard:hover .enZoom{opacity:1;}
@@ -811,7 +816,9 @@ textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .enViewerHead span{flex:1;color:var(--muted);font-size:14px;}
 .enViewerHead button{margin:0;}
 .enViewerStage{display:flex;align-items:center;gap:8px;min-height:0;}
-.enViewerBox img{flex:1;min-width:0;max-height:72vh;object-fit:contain;background:var(--pit);border-radius:6px;}
+.enViewerBox img,.enViewerArt{flex:1;min-width:0;max-height:72vh;object-fit:contain;background:var(--pit);border-radius:6px;}
+.enViewerArt{display:flex;align-items:center;justify-content:center;}
+.enViewerArt canvas{max-width:100%;max-height:72vh;}
 .enViewerNav{margin:0;font-size:26px;padding:8px 12px;}
 .enViewerBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .enViewerBar button{margin:0;}

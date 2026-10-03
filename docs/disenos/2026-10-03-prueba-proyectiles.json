@@ -1,0 +1,67 @@
+{
+  "title": "Proyectiles y efectos de hielo (prueba)",
+  "request": "Prueba: variantes de presets del VFX Lab",
+  "createdAt": "2026-10-03T13:00:00.000Z",
+  "demo": true,
+  "items": [
+    {
+      "id": "1",
+      "kind": "projectile",
+      "name": "FrostBolt",
+      "note": "Bola de fuego teñida de hielo",
+      "status": "pending",
+      "vfx": {
+        "preset": "fireball",
+        "params": {
+          "core": "#ffffff",
+          "glow": "#58c8ff",
+          "accent": "#c8f4ff"
+        }
+      }
+    },
+    {
+      "id": "2",
+      "kind": "projectile",
+      "name": "VenomNeedle",
+      "note": "Aguja verde venenosa",
+      "status": "pending",
+      "vfx": {
+        "preset": "needle",
+        "params": {
+          "glow": "#6cff6c",
+          "accent": "#d8ffb0"
+        }
+      }
+    },
+    {
+      "id": "3",
+      "kind": "fx",
+      "name": "FrostBurst",
+      "note": "Explosión azul para el impacto",
+      "status": "pending",
+      "vfx": {
+        "preset": "explosion",
+        "params": {
+          "glow": "#58c8ff",
+          "accent": "#e0f6ff",
+          "core": "#ffffff"
+        }
+      }
+    },
+    {
+      "id": "4",
+      "kind": "fx",
+      "name": "IceChargeVortex",
+      "note": "Carga en remolino helada",
+      "status": "pending",
+      "vfx": {
+        "preset": "chargeVortex",
+        "params": {
+          "glow": "#7fd8ff",
+          "accent": "#ffffff"
+        }
+      }
+    }
+  ],
+  "reviewedAt": "2026-10-03T18:31:00.278Z"
+}

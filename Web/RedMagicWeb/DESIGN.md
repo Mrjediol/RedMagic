@@ -42,7 +42,7 @@ step with `--accent` / `--accent2` if those ever change.
 - **One primary button per decision.** Secondary actions are stone buttons.
 - **Carved type (Cinzel) only for names of things** (the brand, a tab's title, the selected effect).
   Never for body text, labels or buttons.
-- **Tabs are ordered by use**: the used-most ones first (Enemy Studio, Gestos y ataques, VFX Lab, Boss Creator, Biblioteca, 👾 Enemigos, 📋 Tareas),
+- **Tabs are ordered by use**: the used-most ones first (Enemy Studio, Gestos y ataques, VFX Lab, Boss Creator, Biblioteca, 🎨 Designs, 📋 Tareas),
   a divider, then the rest. **Alt+1…8** opens the tab in that position and each tab shows its number
   (`app.js ▸ tabShortcuts`); the order of the buttons in `index.html` is the only place that mapping lives.
   Ctrl+number belongs to the browser and cannot be used.

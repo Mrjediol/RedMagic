@@ -1,4 +1,4 @@
-# Pestaña Enemigos de la web: pendientes, diseño y make-enemy
+# Pestaña 🎨 Designs de la web: propuestas por aprobar, enemigos con pendientes y make-enemy
 
 Decisiones del usuario (2026-10-03). Se hace en la misma sesión, con Opus, en 4 fases (una por sesión/commit).
 
@@ -24,17 +24,21 @@ de tarjetas plegables de la Biblioteca (Proyectiles (13), Impactos…).
 - **Pendientes por enemigo**: archivo aparte (`docs/enemigos/<nombre>.json`), no en `todo.json`.
 - **Visual**: solo el sprite general del enemigo; los gestos/ataques los prueba el usuario en Unity.
 - **Modelo**: Opus para arquitectura (fase 1 y esqueleto); Sonnet para retoques.
+- **Pestaña aparte "🎨 Designs"** (no dentro de Tareas). Las propuestas por revisar son de 4 tipos: enemigos,
+  proyectiles, efectos VFX y sonidos. Al aceptar: enemigo → biblioteca de enemigos (por montar); proyectil/efecto →
+  📚 Biblioteca de la web; sonido → paleta del juego (Biblioteca Jere ▸ Sounds, para calificarlo).
 
 ## Fases
 
 1. Galería de resultados (salida de Comfy) con aceptar/descartar individual y masivo; aceptados → biblioteca.
-2. Flujo Diseño: formulario (condiciones + cantidad + modo), prompt automático con las reglas, lanza la tarea.
+2. Flujo Diseño: formulario (tipo: enemigo / proyectil / efecto / sonido + condiciones + cantidad + modo), prompt
+   automático con las reglas de cada tipo, lanza la tarea; la tarea acaba escribiendo un lote en `docs/disenos/`.
 3. Flujo Funcional: tarea make-enemy, estado "esperando aprobación", aprobar / descartar / con pendientes.
 4. Lista de enemigos existentes con pendientes (plegable, tarjetas, lanzar tarea desde la tarjeta).
 
 ## Estado
 
-- **Fase 1 hecha** (2026-10-03): pestaña 👾 Enemigos, lotes en `docs/enemigos/lotes/`, biblioteca en
-  `docs/enemigos/<Name>/`. Diseño técnico: `docs/architecture/enemigos-web.md`. Dos lotes de prueba (`demo: true`).
-  Al aceptar, el enemigo queda `por-montar` en la biblioteca (la tarea make-enemy desde ahí = fase 3).
+- **Fase 1 hecha** (2026-10-03): pestaña 🎨 Designs, lotes en `docs/disenos/` con los 4 tipos, biblioteca de
+  enemigos en `docs/enemigos/<Name>/`. Diseño técnico y formato del lote: `docs/architecture/designs.md`. Cuatro lotes
+  de prueba (`demo: true`). Al aceptar, el enemigo queda `por-montar` (la tarea make-enemy desde ahí = fase 3).
 - Siguiente: fase 2.

@@ -71,7 +71,8 @@ variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three 
   report file.
 - **The game's synthesised palette** (`Assets/Audio/Sfx/Game/<family>/<id>.wav` + `palette.json`): every slot
   without a recording of its own is filled from one small palette, defined as data in
-  `Web/RedMagicWeb/modules/game-sounds.js` (`GAME_SOUNDS` — same synthesiser as the Lab's — and `GAME_ASSIGN`,
+  `Web/RedMagicWeb/modules/game-sounds.js` (+ `game-sounds-added.js`: sounds accepted in the web's 🎨 Designs,
+  written by the taller server — `docs/architecture/designs.md`) (`GAME_SOUNDS` — same synthesiser as the Lab's — and `GAME_ASSIGN`,
   the ordered rules "which slot gets which clip") and written by `tools/bake-sounds.mjs` (which refuses to write
   if `check-sounds.mjs` finds a broken sound: silent, clicking, cut off, loop that does not close, over its
   family's length budget).

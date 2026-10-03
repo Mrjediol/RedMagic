@@ -21,6 +21,7 @@
 // Adding a sound = one entry here (+ a rule if it should be assigned) → `npm run bake-sounds`.
 
 import { T, N, P, C, renderSound } from './vfx-sounds.js';
+import { ADDED_SOUNDS } from './game-sounds-added.js';
 
 export const GAME_FAMILIES = {
   player: { label: 'Jugador', max: 1.3 },
@@ -871,6 +872,9 @@ export const GAME_ASSIGN = [
   R({ component: '^SystemSounds$', member: '\\.open$' }, 'ui_menu_open'),
   R({ component: '^SystemSounds$', member: '\\.close$' }, 'ui_menu_close'),
 ];
+
+// Sounds accepted in 🎨 Designs (game-sounds-added.js, written by the taller server); an id already here wins.
+for (const [id, def] of Object.entries(ADDED_SOUNDS)) if (!GAME_SOUNDS[id]) GAME_SOUNDS[id] = def;
 
 /** The samples of a game sound (same synthesiser and cache as the Lab's). Null for an unknown id. */
 export function renderGameSound(id) {

@@ -1,7 +1,68 @@
 {
   "v": 1,
-  "updated": "2026-10-03T16:13:47.926Z",
+  "updated": "2026-10-03T16:47:01.679Z",
   "phases": [
+    {
+      "id": "mrieeoe",
+      "name": "Taller y cola de tareas",
+      "tag": "Ahora",
+      "tasks": [
+        {
+          "id": "s4z2823",
+          "text": "Prueba de coste: variante verde del FrostKnight, terminal frente a cola web",
+          "note": "Mismo prompt y modelo (Sonnet, esfuerzo medio) en los dos lados; medir tokens exactos y comparar.",
+          "done": false,
+          "doc": "docs/tareas/prueba-coste.md",
+          "model": "sonnet",
+          "effort": "medium",
+          "needs": [
+            "unity"
+          ],
+          "steps": [
+            {
+              "id": "7qjiaqy",
+              "text": "Lado 1: pedirlo en la terminal tras /clear (rama task/prueba-terminal)",
+              "done": false
+            },
+            {
+              "id": "0ha56et",
+              "text": "Lado 2: lanzarlo desde la web (rama task/prueba-web)",
+              "done": false
+            },
+            {
+              "id": "fafzo3f",
+              "text": "Medir con session-usage.mjs y escribir la comparación",
+              "done": false
+            }
+          ]
+        },
+        {
+          "id": "oujdsd5",
+          "text": "Ajustar la cola al plan Pro: mostrar uso real, parar por umbral, Sonnet por defecto",
+          "note": "Quitar los dólares de los informes; leer el % de 5 h y semanal; parar la cola al 85 % semanal.",
+          "done": false,
+          "doc": "docs/tareas/sistema-tareas-web.md"
+        },
+        {
+          "id": "hlixg39",
+          "text": "Quitar Bash(git push) de .claude/settings.json (contradice CLAUDE.md)",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "4r1espk",
+          "text": "Fase 3: galería de sprites para elegir y mandar de vuelta como tarea",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "9bq8d94",
+          "text": "Fase 4: acceso desde el móvil (Tailscale + token) y aviso al vaciarse la cola",
+          "note": "",
+          "done": false
+        }
+      ]
+    },
     {
       "id": "p1",
       "name": "Contenido del prototipo",
@@ -162,6 +223,44 @@
           "id": "t17",
           "text": "Buscar excusas temáticas para la mecánica de waves",
           "note": "",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "jielpi3",
+      "name": "FrostKnight: pulido pendiente",
+      "tag": "Después",
+      "tasks": [
+        {
+          "id": "mxzqv0k",
+          "text": "Orbe oscuro: variante de la mano más sutil y efecto de carga visible",
+          "note": "El cambio de color es muy fuerte; el remolino de carga sale con escala 1 y casi no se ve.",
+          "done": false,
+          "doc": "docs/tareas/sistema-tareas-web.md"
+        },
+        {
+          "id": "xeow5t7",
+          "text": "Sonido de pasos sincronizado con las pisadas",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "j3c0upi",
+          "text": "Previsualizar el andar (gait) en la web",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "pa0kysj",
+          "text": "Guardar el cuerpo desde Enemy Studio sobre un enemigo que ya existe",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "vj1l3b3",
+          "text": "Revisar el golpe de Finger al final del dash en IceRobot e IceRobot2",
+          "note": "Las defensas ahora reproducen su gesto entero.",
           "done": false
         }
       ]

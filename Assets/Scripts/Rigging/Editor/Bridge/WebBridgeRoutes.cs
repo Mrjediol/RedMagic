@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -31,7 +33,14 @@ namespace RedMagic.Rigging.EditorTools
     /// (<c>rig-export.js ▸ buildGesturesBundle</c>) → <see cref="RigBundleImporter.ImportWithReport"/>.
     /// Si el prefab cambió desde que la web lo leyó (otra <c>revision</c>), o está abierto en Prefab
     /// Mode con cambios sin guardar, o Unity está en Play → <b>409</b> y no se escribe nada.</item>
+    /// <item><c>GET /enemies</c> → <c>{ enemies: [{ prefab, name, kind }] }</c>: los prefabs por partes del
+    /// proyecto (lo que la web abierta a mano deja abrir).</item>
+    /// <item><c>POST /rig[?prefab=&amp;revision=][&amp;force=1]</c>, cuerpo = el .zip COMPLETO de Enemy Studio
+    /// (<c>rig-export.js ▸ buildRigBundle</c>) → <see cref="RigBundleImporter.ImportWithReport"/>: crea el
+    /// prefab o lo actualiza (cuerpo incluido; lo afinado en el Inspector se conserva). Sin <c>prefab</c> va
+    /// a la carpeta de siempre por su nombre, y si ya hay uno ahí → <b>409</b> <c>exists</c> (salvo force).</item>
     /// </list>
+    /// <c>GET /hello</c> (el token, para la web abierta a mano) lo contesta <see cref="WebBridgeServer"/> en su hilo.
     /// </summary>
     public static class WebBridgeRoutes
     {
@@ -62,6 +71,8 @@ namespace RedMagic.Rigging.EditorTools
             if (method == "GET" && route == "/file") { SendFile(context, request.QueryString["path"]); return; }
             if (method == "GET" && route == "/sounds") { WebBridgeServer.Reply(context, 200, new JObject { ["clips"] = AudioClips() }); return; }
             if (method == "POST" && route == "/gestures") { SaveGestures(context); return; }
+            if (method == "GET" && route == "/enemies") { WebBridgeServer.Reply(context, 200, new JObject { ["enemies"] = RigPrefabs() }); return; }
+            if (method == "POST" && route == "/rig") { SaveRig(context); return; }
 
             Fail(context, 404, $"Ruta desconocida: {method} {route}");
         }
@@ -331,23 +342,11 @@ namespace RedMagic.Rigging.EditorTools
             // "Sobrescribir": lo no guardado del Prefab Mode se descarta, o al guardarlo después pisaría esto.
             if (dirty) stage.ClearDirtiness();
 
-            string folder = Path.Combine(Path.GetFullPath("Temp"), "WebBridge");
-            Directory.CreateDirectory(folder);
-            string file = Path.Combine(folder, $"{Guid.NewGuid():N}.zip");
-            ConfigImportReport report;
-            try
+            var report = ImportZip(zip, new RigBundleImporter.Options
             {
-                File.WriteAllBytes(file, zip);
-                report = RigBundleImporter.ImportWithReport(file, new RigBundleImporter.Options
-                {
-                    NameOverride = Path.GetFileNameWithoutExtension(prefabPath),
-                    PrefabFolder = Path.GetDirectoryName(prefabPath).Replace('\\', '/'),
-                });
-            }
-            finally
-            {
-                try { File.Delete(file); } catch { /* Temp/ se limpia sola */ }
-            }
+                NameOverride = Path.GetFileNameWithoutExtension(prefabPath),
+                PrefabFolder = Path.GetDirectoryName(prefabPath).Replace('\\', '/'),
+            });
 
             string summary = report.BuildSummary();
             Debug.Log($"[WebBridge] Guardado desde la web → {prefabPath}\n{summary}");
@@ -362,6 +361,165 @@ namespace RedMagic.Rigging.EditorTools
                 ["warnings"] = new JArray(report.Warnings.ToArray()),
                 ["revision"] = CurrentRevision(prefabPath),
             });
+        }
+
+        // ============================================================ GET /enemies
+
+        private static readonly string[] SkipFolders =
+            { "Assets/Brackeys/", "Assets/Cainos/", "Assets/Dragon Warrior Files/", "Assets/_Reference/", "Assets/Scripts/Legacy/" };
+
+        /// <summary>
+        /// Los prefabs con <see cref="ProceduralRig"/> (enemigos y jefes por partes), por nombre. Se buscan
+        /// por el guid del script en el texto del prefab: sin cargar cada uno.
+        /// </summary>
+        private static JArray RigPrefabs()
+        {
+            string rigGuid = ScriptGuid(typeof(ProceduralRig));
+            string bossGuid = ScriptGuid(typeof(BossController));
+            var list = new List<JObject>();
+            if (string.IsNullOrEmpty(rigGuid)) return new JArray();
+
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (SkipFolders.Any(f => path.StartsWith(f, StringComparison.Ordinal))) continue;
+                string text;
+                try { text = File.ReadAllText(Path.GetFullPath(path)); }
+                catch (Exception) { continue; }
+                if (!text.Contains($"guid: {rigGuid}")) continue;
+
+                bool boss = !string.IsNullOrEmpty(bossGuid) && text.Contains($"guid: {bossGuid}");
+                list.Add(new JObject
+                {
+                    ["prefab"] = path,
+                    ["name"] = Path.GetFileNameWithoutExtension(path),
+                    ["kind"] = boss ? "boss" : "enemy",
+                });
+            }
+
+            return new JArray(list.OrderBy(o => o.Value<string>("name"), StringComparer.OrdinalIgnoreCase));
+        }
+
+        private static string ScriptGuid(Type type)
+        {
+            foreach (string guid in AssetDatabase.FindAssets($"t:MonoScript {type.Name}"))
+            {
+                var script = AssetDatabase.LoadAssetAtPath<MonoScript>(AssetDatabase.GUIDToAssetPath(guid));
+                if (script != null && script.GetClass() == type) return guid;
+            }
+
+            return null;
+        }
+
+        // ============================================================ POST /rig
+
+        /// <summary>
+        /// El enemigo entero (el .zip de Enemy Studio), sin exportar ni importar a mano. Con <c>prefab</c>
+        /// (uno que la web ya abrió o guardó) escribe en ése; sin él, en la carpeta de los enemigos por
+        /// partes con el nombre del config — y si ya existe, 409 <c>exists</c> hasta que se confirme.
+        /// </summary>
+        private static void SaveRig(HttpListenerContext context)
+        {
+            var query = context.Request.QueryString;
+            string prefabPath = query["prefab"];
+            bool force = query["force"] == "1";
+            byte[] zip = WebBridgeServer.ReadBody(context);
+
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                Fail(context, 409, "Unity está en Play Mode: sal de Play Mode y vuelve a guardar.", new JObject { ["reason"] = "playmode" });
+                return;
+            }
+
+            if (zip.Length == 0) { Fail(context, 400, "La petición no trae el .zip."); return; }
+
+            string name;
+            try { name = ConfigName(zip); }
+            catch (Exception e) { Fail(context, 400, $"El .zip no es un enemigo de Enemy Studio: {e.Message}"); return; }
+
+            var options = new RigBundleImporter.Options();
+            if (!string.IsNullOrEmpty(prefabPath))
+            {
+                if (LoadRigPrefab(prefabPath, out string problem) == null) { Fail(context, 404, problem); return; }
+                options.NameOverride = Path.GetFileNameWithoutExtension(prefabPath);
+                options.PrefabFolder = Path.GetDirectoryName(prefabPath).Replace('\\', '/');
+            }
+            else
+            {
+                prefabPath = $"{ProceduralEnemyPacks.Folder}/{name}.prefab";
+                if (!force && AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) != null)
+                {
+                    Fail(context, 409, $"Ya hay un '{name}' en Unity ({prefabPath}).",
+                         new JObject { ["reason"] = "exists", ["prefab"] = prefabPath, ["revision"] = CurrentRevision(prefabPath) });
+                    return;
+                }
+            }
+
+            var stage = PrefabStageUtility.GetCurrentPrefabStage();
+            bool open = stage != null && stage.assetPath == prefabPath;
+            bool dirty = open && stage.scene.isDirty;
+            bool exists = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) != null;
+            string current = exists ? CurrentRevision(prefabPath) : "";
+            string expected = query["revision"];
+            if (!force && (dirty || (exists && !string.IsNullOrEmpty(expected) && current != expected)))
+            {
+                Fail(context, 409,
+                     dirty ? "El prefab está abierto en Unity con cambios sin guardar."
+                           : "El prefab cambió en Unity desde que se abrió en la web.",
+                     new JObject { ["reason"] = dirty ? "dirty" : "changed", ["prefab"] = prefabPath, ["revision"] = current });
+                return;
+            }
+
+            // "Sobrescribir": lo no guardado del Prefab Mode se descarta, o al guardarlo después pisaría esto.
+            if (dirty) stage.ClearDirtiness();
+            var report = ImportZip(zip, options);
+            string summary = report.BuildSummary();
+            Debug.Log($"[WebBridge] Enemigo guardado desde la web → {prefabPath}\n{summary}");
+            if (!report.HasErrors) AfterSave(prefabPath, open);
+
+            WebBridgeServer.Reply(context, 200, new JObject
+            {
+                ["ok"] = !report.HasErrors,
+                ["summary"] = summary,
+                ["errors"] = new JArray(report.Errors.ToArray()),
+                ["warnings"] = new JArray(report.Warnings.ToArray()),
+                ["prefab"] = prefabPath,
+                ["created"] = !exists,
+                ["revision"] = report.HasErrors ? current : CurrentRevision(prefabPath),
+            });
+        }
+
+        /// <summary>El <c>name</c> del rig-config.json del .zip (a dónde irá el prefab).</summary>
+        private static string ConfigName(byte[] zip)
+        {
+            using (var archive = new ZipArchive(new MemoryStream(zip), ZipArchiveMode.Read))
+            {
+                var entry = archive.GetEntry(RigConfigJson.ConfigFile) ?? throw new Exception($"no trae {RigConfigJson.ConfigFile}.");
+                using (var reader = new StreamReader(entry.Open()))
+                {
+                    string name = JObject.Parse(reader.ReadToEnd()).Value<string>("name")?.Trim();
+                    if (string.IsNullOrEmpty(name) || name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                        throw new Exception($"nombre no válido ('{name}').");
+                    return name;
+                }
+            }
+        }
+
+        /// <summary>El .zip a un archivo temporal → el importador de siempre.</summary>
+        private static ConfigImportReport ImportZip(byte[] zip, RigBundleImporter.Options options)
+        {
+            string folder = Path.Combine(Path.GetFullPath("Temp"), "WebBridge");
+            Directory.CreateDirectory(folder);
+            string file = Path.Combine(folder, $"{Guid.NewGuid():N}.zip");
+            try
+            {
+                File.WriteAllBytes(file, zip);
+                return RigBundleImporter.ImportWithReport(file, options);
+            }
+            finally
+            {
+                try { File.Delete(file); } catch { /* Temp/ se limpia sola */ }
+            }
         }
 
         /// <summary>Tras guardar: el prefab se señala en el Project y, si está abierto en Prefab Mode, se recarga.</summary>

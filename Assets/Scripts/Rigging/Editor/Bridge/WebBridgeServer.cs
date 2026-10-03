@@ -19,13 +19,14 @@ namespace RedMagic.Rigging.EditorTools
     ///
     /// <list type="bullet">
     /// <item><b>Es una API, no un host</b>: la web la sigue sirviendo el usuario (su biblioteca vive en
-    /// IndexedDB, por origen). Unity sólo abre el navegador en esa URL (<see cref="WebUrl"/>) con el
-    /// puerto, el token y el prefab en la query.</item>
+    /// IndexedDB, por origen). Unity abre el navegador en esa URL (<see cref="WebUrl"/>) con el
+    /// puerto, el token y el prefab en la query; o la web, abierta a mano, lo encuentra sola (<c>/hello</c>).</item>
     /// <item><b>Sólo <c>127.0.0.1</c></b>, puerto <see cref="DefaultPort"/> (el siguiente libre si está
-    /// ocupado). <b>Parado hasta que se usa</b>: arranca la primera vez que se pulsa el botón y, tras
-    /// una recarga de dominio, sólo si ya estaba en marcha (<see cref="SessionState"/>).</item>
-    /// <item><b>Token por sesión, invisible</b>: lo genera Unity y viaja en la URL que abre. Toda
-    /// llamada lo lleva; sin él la respuesta es 401. Nadie lo escribe ni lo ve.</item>
+    /// ocupado). <b>Arranca con el editor</b> (salvo que se apague en Tools ▸ Web ▸ Puente: queda
+    /// apagado, también en las siguientes sesiones, hasta que se vuelva a pulsar un botón de la web).</item>
+    /// <item><b>Token por sesión, invisible</b>: lo genera Unity y viaja en la URL que abre, o lo da
+    /// <c>GET /hello</c> — sólo a la web configurada (cabecera Origin + CORS: otra página no puede leerlo).
+    /// Toda otra llamada lo lleva; sin él la respuesta es 401. Nadie lo escribe ni lo ve.</item>
     /// <item><b>CORS</b>: sólo el origen de la web configurada (o su gemelo de loopback), con el
     /// preflight contestado (incluido <c>Access-Control-Allow-Private-Network</c>).</item>
     /// <item><b>Las peticiones se atienden en el hilo principal</b> (<see cref="EditorApplication.update"/>
@@ -44,6 +45,7 @@ namespace RedMagic.Rigging.EditorTools
         private const string RunningKey = "RedMagic.WebBridge.Running";
         private const string TokenKey = "RedMagic.WebBridge.Token";
         private const string PortKey = "RedMagic.WebBridge.Port";
+        private const string DisabledPref = "RedMagic.WebBridge.Disabled";
         private const int PortTries = 20;
 
         private static HttpListener _listener;
@@ -53,6 +55,7 @@ namespace RedMagic.Rigging.EditorTools
         // Leídos desde el hilo del listener: copias de lo que sólo se puede consultar en el principal.
         private static volatile string _token = "";
         private static volatile string _webOrigin = "";
+        private static volatile string _project = "";
 
         public static bool Running => _listener != null && _listener.IsListening;
         public static int Port { get; private set; }
@@ -75,8 +78,9 @@ namespace RedMagic.Rigging.EditorTools
             EditorApplication.update += Drain;
             AssemblyReloadEvents.beforeAssemblyReload += Stop;
             EditorApplication.quitting += Stop;
-            // Tras recompilar: sigue en marcha sólo si lo estaba (la pestaña de la web sigue abierta).
-            // Lo rearranca el vigilante de Drain, en el MISMO puerto: la web abierta lo lleva en su URL.
+            // Arranca con el editor (la web abierta a mano lo encuentra sola), salvo que se haya apagado.
+            // Lo arranca el vigilante de Drain; tras recompilar, en el MISMO puerto: la web abierta lo lleva.
+            if (!EditorPrefs.GetBool(DisabledPref, false)) SessionState.SetBool(RunningKey, true);
         }
 
         /// <summary>
@@ -87,6 +91,7 @@ namespace RedMagic.Rigging.EditorTools
         public static bool Start(bool samePortOnly = false)
         {
             if (Running) return true;
+            EditorPrefs.SetBool(DisabledPref, false);
 
             _token = SessionState.GetString(TokenKey, "");
             if (string.IsNullOrEmpty(_token))
@@ -96,6 +101,7 @@ namespace RedMagic.Rigging.EditorTools
             }
 
             _webOrigin = OriginOf(WebUrl);
+            _project = Application.productName;
 
             // El mismo puerto de antes primero: la web abierta lo lleva en su URL.
             int first = SessionState.GetInt(PortKey, DefaultPort);
@@ -142,11 +148,12 @@ namespace RedMagic.Rigging.EditorTools
             try { listener.Abort(); } catch { /* ya cerrado */ }
         }
 
-        /// <summary>Lo apaga del todo (menú): no vuelve tras recompilar hasta que se pulse otra vez el botón.</summary>
+        /// <summary>Lo apaga del todo (menú): no vuelve (ni al abrir el editor) hasta que se pulse otra vez un botón de la web.</summary>
         public static void Shutdown()
         {
             Stop();
             SessionState.SetBool(RunningKey, false);
+            EditorPrefs.SetBool(DisabledPref, true);
         }
 
         // ============================================================ hilo del listener
@@ -175,6 +182,17 @@ namespace RedMagic.Rigging.EditorTools
                     if (!OriginAllowed(context.Request.Headers["Origin"]))
                     {
                         Reply(context, 403, new JObject { ["error"] = "origen no permitido" });
+                        continue;
+                    }
+
+                    // La web abierta a mano se presenta: le da el token. Sólo con Origin (el de la web
+                    // configurada, ya comprobado): el navegador no deja leer la respuesta a otra página.
+                    if (context.Request.HttpMethod == "GET" && context.Request.Url.AbsolutePath.TrimEnd('/') == "/hello")
+                    {
+                        if (string.IsNullOrEmpty(context.Request.Headers["Origin"]))
+                            Reply(context, 403, new JObject { ["error"] = "sólo para la web" });
+                        else
+                            Reply(context, 200, new JObject { ["token"] = _token, ["project"] = _project, ["bridge"] = 1 });
                         continue;
                     }
 

@@ -291,14 +291,19 @@ deck, defences) — read by `RigBundleImporter.ImportPartial` over an existing p
 twice: same composer, same timeline, same form.
 
 **The Unity bridge** (plan: `docs/plan-unity-web-bridge.md`; Unity side: `Assets/Scripts/Rigging/Editor/Bridge/`).
-Unity opens the page with `?bridge=<port>&token=<t>&prefab=<asset path>[&gesture=][&attack=<index>]`: the 🎬 tab
-loads that enemy **from the project** and gains "💾 Guardar en Unity". Opened by hand, none of it exists.
+Unity opens the page with `?bridge=<port>&token=<t>&prefab=<asset path>[&gesture=][&attack=<index>]` (`bridge.linked`):
+the 🎬 tab loads that enemy **from the project** and gains "💾 Guardar en Unity". Opened by hand, the page finds
+Unity by itself (`connect`: `GET /hello` on ports 7810–7819 at once, the first that answers; again after a 401
+or a dropped connection) and then: 🎬 lists the project's prefabs (`listEnemies` → `prefabPicker`, plus "Abrir
+… de Unity" when the library enemy on screen has a prefab of its name), and Enemy Studio ▸ Exportar gains
+"💾 Guardar en Unity" for the whole enemy (`rig.buildRigZip` → `saveRig` → `POST /rig`; 409 `exists` asks
+before updating a prefab of that name). Unity not found: a "↻ Conectar con Unity" row, and the .zip buttons.
 
 | To change... | Edit | Function |
 |---|---|---|
-| The calls to Unity (`/ping`, `/enemy`, `/file`, `/gestures`), the query params, the one retry | `modules/unity-bridge.js` | `bridge`, `fetchEnemy`, `fetchFile` / `fetchDataURL`, `saveGestures`, `BridgeError` (`status` 0 = no answer, 409 + `reason`) |
-| Opening straight on 🎬 | `app.js` | `restoreLastTab` (`bridge.active` → `enemyStudio.openFromUnity()`) |
-| What is loaded and from where; the banner, the save button, Unity's report, "Cambió en Unity" | `modules/enemy-studio.js` | `openFromUnity`, `saveToUnity`, `rig.hooks.focusExtras` |
+| The calls to Unity (`/hello`, `/ping`, `/enemies`, `/enemy`, `/file`, `/gestures`, `/rig`), finding it, the query params, the retry | `modules/unity-bridge.js` | `bridge`, `connect`, `onBridgeChange`, `listEnemies`, `fetchEnemy`, `fetchFile` / `fetchDataURL`, `saveGestures`, `saveRig`, `BridgeError` (`status` 0 = no answer, 409 + `reason`) |
+| Opening straight on 🎬 | `app.js` | `restoreLastTab` (`bridge.linked` → `enemyStudio.openFromUnity()`) |
+| What is loaded and from where; the banner, the save buttons, Unity's report, "Cambió en Unity" / "Ya hay uno" | `modules/enemy-studio.js` | `refreshUnity`, `openFromUnity`, `saveToUnity` (gestures), `saveWholeToUnity` (the whole enemy), `rig.hooks.focusExtras` / `exportExtras` |
 | A body drawn from Unity's rig-config (nodes, sprites, pivots, roles, state sprites) | `modules/rig-export.js` | `readRigDocument` — the document is marked `unityBody` (a full export of it is refused) and every image keeps `unityRef`, which the partial export writes back instead of a PNG |
 | Unity's gestures over a library body; opening a gesture by name; the zip that is posted | `modules/rig-composer.js` | `applyUnityGestures`, `openGestureNamed`, `buildGesturesZip`; the sound moments: `armStage` / `playGestureSounds` |
 | Art that is a prefab of the project (`unity:<path>` in a card, `{ "project": … }` in JSON) and its library preview | `modules/unity-art.js` (+ `attack-export.js`, `attack-cards.js`) | `unityArtValue`, `artLibraryId`, `unityArtRef`; `adoptAttacksFromConfig` keeps each card's `assetPath` so it is saved into the same asset |

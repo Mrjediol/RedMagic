@@ -80,10 +80,11 @@ const el = (tag, cls, text) => {
 export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvasWrap, timelineHost, statusEl, inspector, statesHost, linksHost, exportHost }) {
   // Set by whoever embeds the composer (Enemy Studio): beforeExport / afterSave(id) / onChange.
   // gestureAttacks: { render(host, gestureName, rerender), shots(gestureName) } — the attacks launched with a gesture.
-  // focusExtras(host): what the "Gestos y ataques" tab adds above its save / export buttons (the Unity bridge).
+  // focusExtras(host) / exportExtras(host): what the "Gestos y ataques" tab / Enemy Studio's export step add above
+  // their save / export buttons (the Unity bridge: "Guardar en Unity").
   // soundClips(): the project's audio clips (asset paths) or null · playClip(path, { gain, rate }): plays one —
-  // both only exist when the enemy was opened from Unity (the clips are files of the project).
-  const hooks = { beforeExport: null, afterSave: null, onChange: null, gestureAttacks: null, focusExtras: null, soundClips: null, playClip: null };
+  // both only with Unity connected (the clips are files of the project).
+  const hooks = { beforeExport: null, afterSave: null, onChange: null, gestureAttacks: null, focusExtras: null, exportExtras: null, soundClips: null, playClip: null };
   // The fields of what is selected on the timeline: one panel, placed by whoever embeds the composer (the left column).
   const selectionEl = el('div', 'rigSelection');
   let userTemplates = [];        // library records of kind 'rig-template', as templates
@@ -2040,6 +2041,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   let exportSummaryEl = null, exportPreviewEl = null;
   function renderExportSection() {
     const d = rememberedSection('export', 'Exportar', true, exportHost);
+    if (hooks.exportExtras) hooks.exportExtras(d);   // Unity connected: "Guardar en Unity" (the whole enemy)
     exportSummaryEl = el('div', 'rigExportSummary');
     d.appendChild(exportSummaryEl);
     const save = el('button', 'primary', '💾 Guardar en biblioteca');
@@ -2220,18 +2222,24 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     return null;
   }
 
-  async function exportZip() {
-    if (state.unityBody) { setStatus('Este cuerpo se leyó de Unity: sólo se guardan sus gestos y ataques (🎬 Gestos y ataques ▸ Guardar en Unity).'); return; }
+  /** The whole bundle (body, gestures, behaviour) of the document on screen, or null if it cannot / the user backed out. */
+  async function buildRigZip() {
+    if (state.unityBody) { setStatus('Este cuerpo se leyó de Unity: sólo se guardan sus gestos y ataques (🎬 Gestos y ataques ▸ Guardar en Unity).'); return null; }
     const { problems } = buildRigExport(state, exportCtx());
-    if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Exportar igualmente?`)) return;
+    if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Continuar igualmente?`)) return null;
     if (hooks.beforeExport) await hooks.beforeExport();   // the behaviour form open in Enemy Studio, saved first
     const all = await listEntries(null);
     const entriesById = new Map(all.map((e) => [e.id, e]));
-    const blob = await buildRigBundle(state, {
+    return buildRigBundle(state, {
       enemyConfig: (currentId && (await getEnemy(currentId))?.enemyConfig) || suggestedEnemyConfig(state),
       bossEntry: entriesById.get(state.bossConfigId) || null,
       entriesById,
     });
+  }
+
+  async function exportZip() {
+    const blob = await buildRigZip();
+    if (!blob) return;
     downloadBlob(blob, `${fileStem()}.rig.zip`);
     setStatus('Exportado. En Unity: Tools ▸ Web ▸ Rig ▸ Importar rig (.zip · carpeta)…');
     if (currentId) saveToLibrary();
@@ -2350,7 +2358,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   return {
     linkLibraryEntry, refreshLibraries, hooks, getStatus, useTemplateRecord, addFxToOpenGesture,
-    applyUnityGestures, applyUnitySounds, openGestureNamed, buildGesturesZip,
+    applyUnityGestures, applyUnitySounds, openGestureNamed, buildGesturesZip, buildRigZip,
     selectionPanel: selectionEl,
     getFxEntries: () => fxEntries,
     setStatus,

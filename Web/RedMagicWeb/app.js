@@ -2267,8 +2267,8 @@ shell = initShellTools({
   try { last = localStorage.getItem(LAST_TAB_KEY); } catch { /* no storage */ }
   // Opened from Unity (the bridge, modules/unity-bridge.js): straight to 🎬 with that enemy loaded.
   // First visit: the tab used most. (Sprites is the one the page loads on, so it needs no click.)
-  const wanted = bridge.active ? 'gestures' : last || 'studio';
+  const wanted = bridge.linked ? 'gestures' : last || 'studio';
   const btn = wanted !== 'sprites' ? document.querySelector(`.tabBtn[data-tab="${wanted}"]`) : null;
   if (btn && !btn.disabled) btn.click();
-  if (bridge.active) enemyStudio.openFromUnity();
+  if (bridge.linked) enemyStudio.openFromUnity();
 }());

@@ -343,7 +343,17 @@ los sprites como rutas del proyecto (reimportable tal cual), más `<name>.enemy-
 el Inspector.
 
 ### Editar gestos y ataques en la web (el puente, sin exportar ni importar)
-Con la web servida (`npx serve Web/RedMagicWeb`) y Unity abierto:
+Con la web servida (`npx serve Web/RedMagicWeb`) y Unity abierto, la web se conecta sola (arriba de
+"Guardar y llevar a Unity" pone **🔌 Unity**). Así, sin pasar por Unity:
+
+- 🎬 *Gestos y ataques* ▸ **🔌 Abrir un prefab de Unity…**: cualquier enemigo o jefe por partes del proyecto.
+  Se edita y se guarda con **💾 Guardar en Unity**. Si el enemigo elegido de la biblioteca también está en
+  Unity, sale "🔌 Abrir … de Unity".
+- 🧬 *Enemy Studio* ▸ 5 Exportar ▸ **💾 Guardar en Unity**: crea el prefab del enemigo (o lo actualiza, cuerpo
+  incluido; lo afinado a mano en el Inspector se conserva). Si ya hay uno con ese nombre, pregunta antes.
+- Sin Unity abierto, "↻ Conectar con Unity" y los botones de .zip de siempre.
+
+O desde Unity:
 
 1. Selecciona un enemigo por partes (su prefab, o abierto en Prefab Mode) ▸ Inspector ▸ **EnemyStats** ▸
    **🌐 Editar gestos y ataques en la web**. Debajo, "Abrir la web en…" tiene un **✎ web** por gesto y por
@@ -359,7 +369,7 @@ Con la web servida (`npx serve Web/RedMagicWeb`) y Unity abierto:
   Unity"** → *Recargar desde Unity* o *Sobrescribir*. En Play Mode no se guarda.
 - La dirección de la web se cambia en **Biblioteca Jere, abajo a la derecha ("Web")**; por defecto
   `http://localhost:3000`. Si no hay nada ahí, Unity te da el comando para arrancarla.
-- No hay claves ni nada que configurar. Si abres la web a mano (sin el botón), el puente simplemente no está.
+- No hay claves ni nada que configurar: el puente arranca con Unity y la web lo encuentra.
 - Los **sonidos de un gesto** se editan en sus pistas 🔊 de la línea de tiempo, una por sonido (clip, variantes,
   volumen, tono y el instante en que suena, arrastrándolo). "🔊 Sonido" (barra de la línea de tiempo) o
   "＋ Otro sonido" (panel del sonido) añaden otro en el instante del cursor; Ctrl+D duplica el elegido. Un clip que no sonaba antes en el juego se sigue puntuando en Unity
@@ -372,7 +382,8 @@ Con la web servida (`npx serve Web/RedMagicWeb`) y Unity abierto:
   en el panel de la izquierda.
 - **Gestos de transición** (entre ataque y ataque): casilla "🔁 Gesto de transición" en la tarjeta del gesto.
   Sólo salen si el gesto entero cabe en el enfriamiento del enemigo (`attackCooldown`).
-- `Tools ▸ Web ▸ Puente ▸ Apagar el puente con la web` lo para hasta que vuelvas a pulsar el botón.
+- `Tools ▸ Web ▸ Puente ▸ Apagar el puente con la web` lo para (también en las siguientes sesiones) hasta
+  `Encender el puente con la web` o un botón de "Editar en la web".
 
 ### Probar ida y vuelta (Robot · Turret · BossIce2)
 Sin Play: exporta los tres prefabs de referencia a `docs/schemas/fixtures/rig/` (los fixtures del

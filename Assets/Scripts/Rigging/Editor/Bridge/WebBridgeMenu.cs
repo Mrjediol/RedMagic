@@ -38,6 +38,15 @@ namespace RedMagic.Rigging.EditorTools
         [MenuItem("Tools/Web/Puente/Apagar el puente con la web", true)]
         private static bool CanShutdown() => WebBridgeServer.Running;
 
+        [MenuItem("Tools/Web/Puente/Encender el puente con la web")]
+        private static void StartMenu()
+        {
+            if (WebBridgeServer.Start()) Debug.Log($"[WebBridge] En marcha en 127.0.0.1:{WebBridgeServer.Port}: la web abierta lo encuentra sola.");
+        }
+
+        [MenuItem("Tools/Web/Puente/Encender el puente con la web", true)]
+        private static bool CanStart() => !WebBridgeServer.Running;
+
         /// <summary>
         /// El prefab (asset) al que pertenece un objeto: él mismo si es un asset, el que está abierto en
         /// Prefab Mode, o el de la instancia de una escena. Null si no viene de un prefab.

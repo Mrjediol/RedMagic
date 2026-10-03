@@ -28,6 +28,10 @@ Pending: the user's feedback from playing it (in chat — test steps are given i
   gesture no attack uses shows no ghost release; **transition gestures** (`ProceduralRig.transition`) built.
   Bridge bug fixed: after a domain reload the listener hopped to the next port and the open tab got "Unity no
   responde" — it now resumes on the same port.
+- Third round (2026-10-03): the bridge starts with the editor and the page opened by hand finds it
+  (`GET /hello`, token only to the configured origin); 🎬 lists the project's prefabs (`GET /enemies`) and
+  Enemy Studio saves a whole enemy into Unity (`POST /rig`) — no .zip for new enemies either. Decision 2's
+  "idle until called" is superseded.
 - Known limits: clearing an art slot in the web does not clear it in Unity (an absent key keeps the value);
   a card deleted in the web leaves its asset in the project, out of the deck.
 

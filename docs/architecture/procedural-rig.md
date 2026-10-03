@@ -236,14 +236,20 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
   `ResetTuning`. A part the JSON names that the prefab lacks is an error (the body changed: export it whole).
 - **The bridge** (a third way in, next to import / export — `Rigging/Editor/Bridge/`, plan and decisions in
   `docs/plan-unity-web-bridge.md`): the web's 🎬 tab reads an enemy from the project and saves into it over
-  HTTP, no files. `WebBridgeServer` = `HttpListener` on `127.0.0.1:7810` (next free port), idle until the
-  button is pressed, restarted after a domain reload only if it was running (`SessionState`), per-session
-  token in the URL Unity opens (never typed), CORS limited to the web URL (`EditorPrefs`, edited in Biblioteca
+  HTTP, no files; Enemy Studio saves a whole enemy (new or existing) the same way. `WebBridgeServer` =
+  `HttpListener` on `127.0.0.1:7810` (next free port), **started with the editor** unless turned off in
+  Tools ▸ Web ▸ Puente (`EditorPrefs`, persists across sessions; any web button or "Encender" turns it back
+  on), per-session token in the URL Unity opens or handed out by `GET /hello` (answered on the listener
+  thread, only to a request whose `Origin` is the configured web — the browser lets no other page read it;
+  never typed), CORS limited to the web URL (`EditorPrefs`, edited in Biblioteca
   Jere ▸ "Web"), requests drained on the main thread. `WebBridgeRoutes`: `GET /ping`, `GET /enemy`
   (`RigConfigExporter.Export` + `EnemyConfig` with the deck's full cards from `BossAttackExporter.FillDeck`,
   + per-sprite rect / pivot / ppu, gesture sounds, effect prefab → library id, `revision`), `GET /file`
   (png / wav / ogg / mp3 under `Assets/`), `POST /gestures` (the partial zip → `ImportWithReport`; **409** when
-  the prefab changed since it was read, is dirty in Prefab Mode, or Unity is playing — `force=1` overwrites).
+  the prefab changed since it was read, is dirty in Prefab Mode, or Unity is playing — `force=1` overwrites),
+  `GET /enemies` (every prefab with `ProceduralRig`, found by script guid in the prefab text, skipping vendored /
+  legacy folders), `POST /rig` (the WHOLE Enemy Studio zip → the normal full import: with `prefab` into that
+  one, else `ProceduralEnemyPacks.Folder/<name>.prefab` — **409 `exists`** if already there, until `force`).
   After a domain reload the listener comes back **on the same port** (the watchdog in `Drain` retries it
   while the old socket is released — hopping ports would leave the open web tab talking to nobody).
   `WebBridgeMenu.Open(prefab, gesture, attack)` is the one entry point: the button on `EnemyStats` /

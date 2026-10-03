@@ -29,13 +29,15 @@
 // shows the gestures with, under them, the form's Ataques and Defensa sections. Same editors, same
 // document: nothing is implemented twice.
 //
-// THE UNITY BRIDGE (docs/plan-unity-web-bridge.md): when Unity opens the page (`?bridge=…`, unity-bridge.js)
-// the focused tab loads that enemy FROM the project and gains "💾 Guardar en Unity" — see "the Unity
-// bridge" below. Opened by hand, none of it shows.
+// THE UNITY BRIDGE (docs/plan-unity-web-bridge.md): with the Unity editor open the page connects by itself
+// (unity-bridge.js ▸ connect). The focused tab then lists the project's part-based prefabs and opens one
+// FROM the project, with "💾 Guardar en Unity" (gestures and attacks); Enemy Studio's export step saves the
+// WHOLE enemy into Unity (a new prefab, or the existing one) — no .zip to export and import. When Unity
+// opens the page (`?bridge=…`) it goes straight to that enemy. Without Unity, only the .zip buttons.
 
 import { listEntries, getEnemy, saveEnemy, updateEnemy } from './enemy-library.js';
 import { kindOf } from './entry-kinds.js';
-import { bridge, fetchEnemy, fetchFile, fetchDataURL, fetchSounds, saveGestures, BridgeError } from './unity-bridge.js';
+import { bridge, connect, onBridgeChange, listEnemies, fetchEnemy, fetchFile, fetchDataURL, fetchSounds, saveGestures, saveRig, BridgeError } from './unity-bridge.js';
 import { readRigDocument } from './rig-export.js';
 import { decodeAudio, playBuffer } from './vfx-stage.js';
 
@@ -261,6 +263,141 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     notes: [],         // what the readers had to say when it was opened
     clips: null,       // the project's audio clips (asset paths): what a gesture's sound can be
     buffers: new Map(),// clip path -> Promise<AudioBuffer | null>
+    prefabs: null,     // the project's part-based prefabs [{ prefab, name, kind }]: what can be opened
+    exists: null,      // a whole save that found a prefab of that name already there: { message, prefab }
+  };
+
+  /** Unity came or went: what it offers (its prefabs, its clips) is read again, and the panels redrawn. */
+  async function refreshUnity() {
+    if (bridge.active) {
+      [unity.prefabs, unity.clips] = await Promise.all([listEnemies().catch(() => null), fetchSounds().catch(() => null)]);
+    }
+    rig.refreshInspector();
+    render();
+  }
+  onBridgeChange(refreshUnity);
+  if (bridge.linked) refreshUnity(); else connect();
+
+  /** "Abrir un prefab de Unity…": the project's part-based prefabs, enemies then bosses. */
+  function prefabPicker(current) {
+    const pick = document.createElement('select');
+    pick.dataset.nodirty = '1';
+    pick.appendChild(Object.assign(el('option', null, unity.prefabs?.length ? '🔌 Abrir un prefab de Unity…' : '(Unity no tiene enemigos por partes)'), { value: '' }));
+    ['enemy', 'boss'].forEach((kind) => {
+      const list = (unity.prefabs || []).filter((p) => p.kind === kind);
+      if (!list.length) return;
+      const og = document.createElement('optgroup');
+      og.label = kind === 'boss' ? 'Jefes' : 'Enemigos';
+      list.forEach((p) => og.appendChild(Object.assign(el('option', null, p.name), { value: p.prefab, title: p.prefab })));
+      pick.appendChild(og);
+    });
+    pick.value = current && unity.prefabs?.some((p) => p.prefab === current) ? current : '';
+    pick.disabled = !!unity.busy;
+    pick.title = 'Lee el prefab guardado en Unity (gestos, ataques, sonidos) para editarlo aquí y guardarlo de vuelta.';
+    pick.onchange = () => { if (pick.value && pick.value !== current) openFromUnity(pick.value, {}); };
+    return pick;
+  }
+
+  /** Not connected: why, and a way to try again. */
+  function connectRow(host) {
+    const row = el('div', 'unityBridge');
+    row.appendChild(el('p', 'hint', '🔌 Unity no está conectado. Con el editor de Unity abierto en el proyecto se conecta solo (y "Guardar en Unity" sustituye al .zip).'));
+    const again = el('button', 'small', '↻ Conectar con Unity');
+    again.onclick = () => connect({ force: true });
+    row.appendChild(again);
+    host.appendChild(row);
+  }
+
+  /**
+   * Enemy Studio ▸ Exportar ▸ "💾 Guardar en Unity": the WHOLE enemy (body included) into the project — a
+   * new prefab, or the one it already is. `force` = the user confirmed replacing what Unity has.
+   */
+  async function saveWholeToUnity(force = false) {
+    const st = rig.getStatus();
+    if (unity.busy || !st.name) return;
+    unity.busy = 'Guardando en Unity…';
+    unity.result = null;
+    unity.conflict = null;
+    unity.exists = null;
+    rig.refreshInspector();
+    try {
+      const blob = await rig.buildRigZip();   // saves the behaviour form first (hooks.beforeExport)
+      if (!blob) return;
+      // The prefab this record already is in Unity (opened from there or saved before): written in place.
+      const known = st.id && unity.id === st.id ? unity : null;
+      const res = await saveRig(blob, { prefab: known?.prefab || '', revision: known?.revision || '', force });
+      unity.result = res;
+      if (res.ok) {
+        const id = await rig.save();
+        Object.assign(unity, { id: id || st.id, prefab: res.prefab, name: st.name, kind: st.kind, revision: res.revision, notes: [] });
+        unity.prefabs = await listEnemies().catch(() => unity.prefabs);
+      }
+      rig.setStatus(res.ok ? `${res.created ? 'Creado' : 'Actualizado'} en Unity: ${res.prefab}` : 'Unity no pudo aplicarlo: mira el informe.');
+    } catch (e) {
+      if (e instanceof BridgeError && e.status === 409 && e.reason === 'exists') unity.exists = { message: e.message, prefab: e.data?.prefab || '' };
+      else if (e instanceof BridgeError && e.status === 409 && e.reason !== 'playmode') unity.conflict = { message: e.message };
+      else unity.result = { error: e.message };
+    } finally {
+      unity.busy = '';
+      rig.refreshInspector();
+    }
+  }
+
+  /** Unity's answer to the last save: ✓ / ✗ and the importer's report. */
+  function resultBlock(box) {
+    const r = unity.result;
+    if (r?.error) box.appendChild(el('p', 'efSummaryError', `✗ ${r.error}`));
+    else if (r) {
+      box.appendChild(el('p', r.ok ? 'efSummaryOk' : 'efSummaryError', r.ok ? `✓ Guardado en Unity${r.prefab ? `: ${r.prefab}` : ''}` : '✗ Unity no pudo aplicarlo'));
+      box.appendChild(el('pre', 'unityReport', r.summary || ''));
+    }
+  }
+
+  /** Enemy Studio's export step: "💾 Guardar en Unity" above the .zip buttons. */
+  rig.hooks.exportExtras = (host) => {
+    if (!bridge.active) { connectRow(host); return; }
+    const st = rig.getStatus();
+    const box = el('div', 'unityBridge');
+    const known = st.id && unity.id === st.id;
+    box.appendChild(el('p', 'unityBanner', `🔌 Unity${bridge.project ? ` · ${bridge.project}` : ''}`));
+    if (st.unityBody) {
+      box.appendChild(el('p', 'hint', 'Este cuerpo se leyó de Unity: aquí sólo se guardan sus gestos y ataques (🎬 Gestos y ataques ▸ Guardar en Unity).'));
+      host.appendChild(box);
+      return;
+    }
+    const save = el('button', 'primary', unity.busy || '💾 Guardar en Unity');
+    save.style.width = '100%';
+    save.disabled = !!unity.busy || !st.name || !st.parts;
+    save.title = known
+      ? `Actualiza ${unity.prefab}: cuerpo, gestos, sonidos, ataques. Lo afinado a mano en el Inspector se conserva.`
+      : 'Crea el prefab en Unity (o lo actualiza si ya hay uno con este nombre: te lo pregunta). Sin exportar ni importar el .zip.';
+    save.onclick = () => saveWholeToUnity(false);
+    box.appendChild(save);
+    box.appendChild(el('p', 'hint', known ? `En Unity: ${unity.prefab}` : `Irá a Assets/Prefabs/Enemies/Procedural/${st.name || '<nombre>'}.prefab`));
+
+    if (unity.exists) {
+      const c = el('div', 'unityConflict');
+      c.appendChild(el('p', 'efSummaryError', `⚠ ${unity.exists.message}`));
+      c.appendChild(el('p', 'hint', 'Actualizarlo reescribe su cuerpo, gestos y ataques con los de aquí; lo afinado a mano en su Inspector (vida, velocidad…) se conserva.'));
+      const over = el('button', 'small danger', 'Actualizarlo');
+      over.onclick = () => saveWholeToUnity(true);
+      const cancel = el('button', 'small', 'Cancelar');
+      cancel.onclick = () => { unity.exists = null; rig.refreshInspector(); };
+      c.append(over, cancel);
+      box.appendChild(c);
+    }
+    if (unity.conflict) {
+      const c = el('div', 'unityConflict');
+      c.appendChild(el('p', 'efSummaryError', '⚠ Cambió en Unity'));
+      c.appendChild(el('p', 'hint', `${unity.conflict.message} No se ha escrito nada.`));
+      const over = el('button', 'small danger', 'Sobrescribir');
+      over.title = 'Lo de aquí pisa lo que tenga ahora el prefab.';
+      over.onclick = () => saveWholeToUnity(true);
+      box.append(c);
+      c.appendChild(over);
+    }
+    resultBlock(box);
+    host.appendChild(box);
   };
 
   /** The enemy on screen is the one Unity sent. */
@@ -358,8 +495,8 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     return unity.buffers.get(path);
   }
 
-  // The gestures' sounds are files of the project: they can be heard and changed only with Unity on the other end.
-  rig.hooks.soundClips = () => (onUnityEnemy() ? unity.clips : null);
+  // The project's clips can be picked and heard only with Unity on the other end.
+  rig.hooks.soundClips = () => (bridge.active ? unity.clips : null);
   rig.hooks.playClip = (path, o) => {
     if (!bridge.active || !path) return;
     clipBuffer(path).then((buffer) => { if (buffer) playBuffer(buffer, o); });
@@ -369,20 +506,29 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
 
   /** Above the save / export buttons of the focused tab: the banner, "Guardar en Unity", Unity's answer. */
   rig.hooks.focusExtras = (host) => {
-    if (!bridge.active) return;
+    if (!bridge.active) { connectRow(host); return; }
     const box = el('div', 'unityBridge');
     if (!onUnityEnemy()) {
-      box.appendChild(el('p', 'unityBanner', '🔌 Unity'));
+      box.appendChild(el('p', 'unityBanner', `🔌 Unity${bridge.project ? ` · ${bridge.project}` : ''}`));
+      // The library enemy on screen is in Unity too: open THAT one (its gestures and attacks as the prefab has them).
+      const same = unity.prefabs?.find((p) => p.name === rig.getStatus().name);
+      if (same) {
+        const take = el('button', 'primary', `🔌 Abrir "${same.name}" de Unity`);
+        take.style.width = '100%';
+        take.title = `${same.prefab}: sus gestos y ataques tal como están en el prefab. Lo no guardado aquí se pierde.`;
+        take.onclick = () => openFromUnity(same.prefab, {});
+        box.appendChild(take);
+      }
+      box.appendChild(prefabPicker(''));
+      box.appendChild(el('p', 'hint', 'Ábrelo de aquí para guardarlo de vuelta en Unity ("💾 Guardar en Unity"). Uno elegido arriba, de la biblioteca, sólo se exporta en .zip.'));
       if (unity.busy) box.appendChild(el('p', 'hint', unity.busy));
       else if (unity.result?.error) box.appendChild(el('p', 'efSummaryError', `✗ ${unity.result.error}`));
-      const again = el('button', 'small', '↻ Abrir el enemigo de Unity');
-      again.onclick = () => openFromUnity(unity.prefab || bridge.prefab, {});
-      box.appendChild(again);
       host.appendChild(box);
       return;
     }
 
     box.appendChild(el('p', 'unityBanner', `🔌 Unity · ${unity.name}`));
+    box.appendChild(prefabPicker(unity.prefab));
     const st = rig.getStatus();
     box.appendChild(el('p', 'hint', `${unity.prefab}. ${st.unityBody ? 'El cuerpo se ha leído de Unity (sólo para verlo y posarlo).' : 'El cuerpo es el de tu biblioteca; los gestos'
       + (unity.kind === 'enemy' ? ' y los ataques' : '') + ' son los del prefab.'}${soundCount() ? ` ${soundCount()} gesto(s) con sonido: suenan al probarlos, y se editan en sus pistas 🔊 de la línea de tiempo.` : ''}`));

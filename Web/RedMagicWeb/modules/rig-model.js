@@ -411,3 +411,24 @@ export function renameGestureSprites(state, from, to) {
     delete g[from];
   });
 }
+
+// ============================================================ gait (ProceduralRig.gait)
+
+const GAIT_NUMBERS = { stride: 0.8, fullSpeed: 2.2, minStride: 0.4, duty: 0.55, lift: 0.18, footTilt: 16, bodyBob: 0.05, maxSpeed: 4, settleTime: 0.15 };
+
+/**
+ * A gait with its parts rewritten by `mapPart` (slot id → uid in a template, uid → path in an export, path → uid
+ * when read back). A part that maps to nothing drops out; numbers keep their defaults when missing.
+ */
+export function mapGait(gait, mapPart) {
+  if (!gait) return null;
+  const out = {};
+  for (const [k, v] of Object.entries(GAIT_NUMBERS)) out[k] = typeof gait[k] === 'number' ? gait[k] : v;
+  out.feet = (gait.feet || []).map((f) => ({ part: mapPart(f.part), phase: f.phase || 0 })).filter((f) => f.part);
+  out.layers = (gait.layers || []).map((l) => ({
+    part: mapPart(l.part), phase: l.phase || 0,
+    swing: Array.isArray(l.swing) ? { x: l.swing[0] || 0, y: l.swing[1] || 0 } : { x: l.swing?.x || 0, y: l.swing?.y || 0 },
+    bob: l.bob || 0, rotate: l.rotate || 0,
+  })).filter((l) => l.part);
+  return out;
+}

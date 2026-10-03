@@ -598,6 +598,92 @@ namespace RedMagic.Rigging
         [Min(0.05f)] public float windup = 0.3f;
     }
 
+    /// <summary>Un pie que pisa: dónde va en el ciclo de paso.</summary>
+    [Serializable]
+    public class RigGaitFoot
+    {
+        [Tooltip("La pieza del pie. Debe colgar directamente de la raíz visual (Visual), no del torso. Su pivote (RigPart) va en la suela.")]
+        public Transform part;
+
+        [Tooltip("Desfase en el ciclo (0–1). Dos pies: 0 y 0.5, uno pisa mientras el otro avanza.")]
+        [Range(0f, 1f)] public float phase;
+    }
+
+    /// <summary>
+    /// Una pieza que acompaña a los pasos (manos a contrapié, capa que ondea, cabeza que llega tarde).
+    /// Se suma encima de su balanceo de reposo; todo escala con la amplitud del paso, así que parado no hace nada.
+    /// </summary>
+    [Serializable]
+    public class RigGaitLayer
+    {
+        public Transform part;
+
+        [Tooltip("Desfase en el ciclo (0–1). Igual que el de un pie = va con ese pie (al pie le toca 0 en su apoyo).")]
+        [Range(0f, 1f)] public float phase;
+
+        [Tooltip("Vaivén (unidades de mundo; x = hacia delante), una vez por ciclo.")]
+        public Vector2 swing;
+
+        [Tooltip("Bote vertical (unidades de mundo), dos veces por ciclo: máximo a mitad de cada paso. Negativo = se hunde.")]
+        public float bob;
+
+        [Tooltip("Giro (grados; positivo = hacia delante y arriba), una vez por ciclo, sobre su pivote.")]
+        public float rotate;
+    }
+
+    /// <summary>
+    /// <b>Andar</b>: pies que pisan el suelo sin patinar. Cada pie va en espacio de la raíz (no del cuerpo): mientras
+    /// apoya retrocede exactamente lo que avanza el cuerpo, en el aire traza un arco (despega de punta, aterriza de
+    /// talón). El ciclo avanza con la <b>distancia</b> recorrida, no con el tiempo: más rápido = más cadencia, hacia
+    /// atrás = camina hacia atrás. Más rápido que <see cref="maxSpeed"/> (un dash, un empujón) no es andar: los pies
+    /// dejan de ciclar y mandan los gestos. Sin pies = no hace nada.
+    /// </summary>
+    [Serializable]
+    public class RigGait
+    {
+        public List<RigGaitFoot> feet = new List<RigGaitFoot>();
+
+        [Tooltip("Largo de un paso (unidades de mundo que recorre el pie apoyado) a velocidad plena.")]
+        [Min(0.05f)] public float stride = 0.8f;
+
+        [Tooltip("Velocidad (u/s) a la que el paso es completo. Más despacio, pasos más cortos.")]
+        [Min(0.01f)] public float fullSpeed = 2.2f;
+
+        [Tooltip("El paso más corto, en fracción del largo (andando muy despacio).")]
+        [Range(0.1f, 1f)] public float minStride = 0.4f;
+
+        [Tooltip("Parte del ciclo con el pie apoyado. >0.5 = hay un momento con los dos pies en el suelo (pesado).")]
+        [Range(0.3f, 0.8f)] public float duty = 0.55f;
+
+        [Tooltip("Altura del pie en el aire (unidades de mundo).")]
+        [Min(0f)] public float lift = 0.18f;
+
+        [Tooltip("Grados que gira el pie en el aire: punta abajo al despegar, punta arriba al aterrizar.")]
+        public float footTilt = 16f;
+
+        [Tooltip("Bote del cuerpo (unidades de mundo): sube a mitad de cada paso, baja al apoyar.")]
+        public float bodyBob = 0.05f;
+
+        [Tooltip("Por encima de esta velocidad (u/s) no anda: los pies se recogen y mandan los gestos (dash, empujón).")]
+        [Min(0.1f)] public float maxSpeed = 4f;
+
+        [Tooltip("Segundos en recoger los pies al parar (y en abrir el paso al arrancar).")]
+        [Min(0.01f)] public float settleTime = 0.15f;
+
+        [Tooltip("Piezas que acompañan a los pasos.")]
+        public List<RigGaitLayer> layers = new List<RigGaitLayer>();
+
+        public bool HasFeet
+        {
+            get
+            {
+                if (feet == null) return false;
+                foreach (var f in feet) if (f?.part != null) return true;
+                return false;
+            }
+        }
+    }
+
     /// <summary>
     /// Los <b>datos</b> de un cuerpo animado por partes: qué partes hay, cómo se balancean, y los
     /// tiempos y amplitudes de cada gesto (apuntar, retroceso, golpe, muerte…).
@@ -655,6 +741,10 @@ namespace RedMagic.Rigging
 
         [Tooltip("Gestos que hace entre ataque y ataque, mientras dura el enfriamiento. Sólo los que caben en él.")]
         public RigTransitionGestures transition = new RigTransitionGestures();
+
+        [Header("Andar (pies que pisan)")]
+        [Tooltip("Ciclo de paso: pies plantados sin patinar + piezas que acompañan. Sin pies = no anda (flota o está fijo).")]
+        public RigGait gait = new RigGait();
 
         [Header("Apuntar (brazo-arma)")]
         [Tooltip("La parte que gira hacia el objetivo. Vacío = no apunta.")]

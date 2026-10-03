@@ -45,7 +45,7 @@
 import { createDefaultRigState, createPart } from './rig-defaults.js';
 import { createDefaultEnemyConfig } from './enemy-defaults.js';
 import { buildExportObject } from './enemy-export.js';
-import { byUid, childrenOf, worldMatrix, pixelToLocal, apply, invert, multiply, decompose, isOpenSlot } from './rig-model.js';
+import { byUid, childrenOf, worldMatrix, pixelToLocal, apply, invert, multiply, decompose, isOpenSlot, mapGait } from './rig-model.js';
 import { normalizeGesture } from './rig-gestures.js';
 
 const pose = (part, move = [0, 0], rotate = 0, scale = [0, 0]) => ({ part, move, rotate, scale });
@@ -166,7 +166,23 @@ export const RIG_TEMPLATES = [
     shape: 'Un humanoide fracturado que anda por el suelo: casco, peto, faldón, dos manos y dos pies sueltos, flotando con huecos entre ellos (estilo Rayman), y una capa. Los pies cuelgan del cuerpo, no del torso: son los que pisan.',
     fits: 'Un caballero de armadura vacía, un esqueleto sin huesos que los unan, un gólem pequeño a pie, un bandido de piezas sueltas…',
     height: 6,
-    rig: { hoverBob: { x: 0, y: 0 }, leanDegrees: 6, aimMaxAngle: 60 },
+    rig: { hoverBob: { x: 0, y: 0 }, leanDegrees: 6, aimMaxAngle: 60, followStiffness: 60, followDamping: 10, followMaxOffset: 0.25 },
+    // The walk (ProceduralRig.gait, world units): the feet plant and step — two of them, half a cycle apart —
+    // and the rest goes with the steps: the hand far from the camera with the near foot (and the other way
+    // round), the skirt and the cape sway, the chest counter-turns a little, the head arrives late.
+    gait: {
+      stride: 0.7, fullSpeed: 2.2, minStride: 0.4, duty: 0.55, lift: 0.2, footTilt: 14, bodyBob: 0.06,
+      maxSpeed: 3.5, settleTime: 0.15,
+      feet: [{ part: 'backFoot', phase: 0 }, { part: 'frontFoot', phase: 0.5 }],
+      layers: [
+        { part: 'backHand', phase: 0.5, swing: [0.14, 0], rotate: 10 },
+        { part: 'weaponHand', phase: 0, swing: [0.07, 0], rotate: 4 },
+        { part: 'hips', phase: 0, rotate: 2.5 },
+        { part: 'torso', phase: 0.5, rotate: -1.5 },
+        { part: 'head', phase: 0.08, bob: -0.02, rotate: 1.5 },
+        { part: 'cape', phase: 0.25, rotate: 5 },
+      ],
+    },
     slots: [
       { id: 'cape', name: 'Cape', parent: 'torso', optional: true,
         label: 'Capa', hint: 'Cuelga de la espalda del peto, detrás de todo. Pivote arriba, donde se ata: ondea y se queda atrás al moverse.',
@@ -383,6 +399,8 @@ export function instantiateTemplate(template, take = {}) {
   state.gestures = withGestures ? (template.gestures || []).map((g) => gestureIn(g, (slotId) => uidOf.get(slotId))) : null;
   if (!withGestures) state.rig.moveGesture = '';
   else if (template.idle) state.idle = { ...state.idle, ...JSON.parse(JSON.stringify(template.idle)) };
+  // The walk (feet that plant, parts that go with the steps): its numbers are world units, nothing to fit.
+  if (template.gait) state.gait = mapGait(template.gait, (slotId) => uidOf.get(slotId) || null);
   return state;
 }
 

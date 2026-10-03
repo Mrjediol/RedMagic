@@ -30,7 +30,7 @@
 //  - a template slot still empty is left out (unless a filled part hangs from it: then it stays as
 //    an empty node), and a required one is reported as a problem.
 
-import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot, isOpenSlot, feetY, setPivot, worldMatrix, multiply, invert, apply, loadImage } from './rig-model.js';
+import { byUid, pathOf, pixelToLocal, normalizedPivot, variantPivot, isOpenSlot, feetY, setPivot, worldMatrix, multiply, invert, apply, loadImage, mapGait } from './rig-model.js';
 import { createDefaultRigState, createPart } from './rig-defaults.js';
 import { embedReferencedLibraryEntries, embedAttackArt } from './enemy-bundle.js';
 import { writeLanes } from './boss-bundle.js';
@@ -265,6 +265,9 @@ export function buildRigExport(state, ctx = {}) {
       })) }),
     }));
     if (Object.keys(artAssets).length) doc.artAssets = artAssets;
+
+    // The walk: only when the body has one (absent = Unity keeps the prefab's).
+    if (state.gait) doc.gait = mapGait(state.gait, (uid) => partPaths.get(uid) || null);
 
     // Idle gestures travel with the gestures they name (a name that is gone drops out).
     const idle = state.idle || {};
@@ -654,6 +657,7 @@ export async function readRigDocument(doc, { sprites = {}, fetchDataURL, entries
   const read = readRigGestures(doc, state, { entriesById, artLibrary, muzzlePath: rig.muzzle || null });
   state.gestures = read.gestures;
   if (read.idle) state.idle = read.idle;
+  if (doc.gait) state.gait = mapGait(doc.gait, uidAt);
   if (read.transition) state.transition = read.transition;
   notes.push(...read.notes);
   return { state, notes };

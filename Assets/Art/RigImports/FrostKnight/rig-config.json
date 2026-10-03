@@ -426,9 +426,9 @@
     "leanDegrees": 6,
     "leanFullSpeed": 2.5,
     "leanResponse": 8,
-    "followStiffness": 0,
-    "followDamping": 9,
-    "followMaxOffset": 1.481,
+    "followStiffness": 60,
+    "followDamping": 10,
+    "followMaxOffset": 0.6171,
     "moveGesture": "",
     "aimArtAngle": 0,
     "aimMaxAngle": 60,
@@ -495,6 +495,89 @@
     }
   ],
   "gestures": [],
+  "gait": {
+    "stride": 0.8,
+    "fullSpeed": 2.2,
+    "minStride": 0.4,
+    "duty": 0.55,
+    "lift": 0.2,
+    "footTilt": 14,
+    "bodyBob": 0.06,
+    "maxSpeed": 3.5,
+    "settleTime": 0.15,
+    "feet": [
+      {
+        "part": "BackFoot",
+        "phase": 0
+      },
+      {
+        "part": "FrontFoot",
+        "phase": 0.5
+      }
+    ],
+    "layers": [
+      {
+        "part": "Torso/BackHand",
+        "phase": 0.5,
+        "swing": {
+          "x": 0.14,
+          "y": 0
+        },
+        "bob": 0,
+        "rotate": 10
+      },
+      {
+        "part": "Torso/WeaponHand",
+        "phase": 0,
+        "swing": {
+          "x": 0.07,
+          "y": 0
+        },
+        "bob": 0,
+        "rotate": 4
+      },
+      {
+        "part": "Hips",
+        "phase": 0,
+        "swing": {
+          "x": 0,
+          "y": 0
+        },
+        "bob": 0,
+        "rotate": 2.5
+      },
+      {
+        "part": "Torso",
+        "phase": 0.5,
+        "swing": {
+          "x": 0,
+          "y": 0
+        },
+        "bob": 0,
+        "rotate": -1.5
+      },
+      {
+        "part": "Torso/Head",
+        "phase": 0.08,
+        "swing": {
+          "x": 0,
+          "y": 0
+        },
+        "bob": -0.02,
+        "rotate": 1.5
+      },
+      {
+        "part": "Torso/Cape",
+        "phase": 0.25,
+        "swing": {
+          "x": 0,
+          "y": 0
+        },
+        "bob": 0,
+        "rotate": 5
+      }
+    ]
+  },
   "idleGestures": {
     "gestures": [],
     "interval": 4,

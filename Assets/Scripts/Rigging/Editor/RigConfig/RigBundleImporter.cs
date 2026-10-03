@@ -1084,6 +1084,9 @@ namespace RedMagic.Rigging.EditorTools
                 rig.idle = idle;
             }
 
+            // Ciclo de paso: presente = sustituye; sin la clave se conserva el del prefab.
+            if (config["gait"] is JObject gaitJson) rig.gait = ReadGait(gaitJson, visual, report);
+
             EditorUtility.SetDirty(rig);
         }
 
@@ -1092,6 +1095,58 @@ namespace RedMagic.Rigging.EditorTools
         /// (paso + momento). El resto de cada SoundCue (prioridad, posicional…) se conserva del que estaba en
         /// el mismo puesto.
         /// </summary>
+        /// <summary><c>gait</c>: números + pies y piezas que acompañan, por ruta. Una ruta que el cuerpo no tiene se avisa y se salta.</summary>
+        private static RigGait ReadGait(JObject json, Transform visual, ConfigImportReport report)
+        {
+            var gait = new RigGait();
+            Transform Part(JToken token, string ctx)
+            {
+                string path = token?.Type == JTokenType.String ? token.Value<string>() : null;
+                var t = RigConfigJson.Find(visual, path);
+                if (t == null) report.Warnings.Add($"{ctx}: no hay pieza '{path}'; se ignora.");
+                return t;
+            }
+
+            if (json["feet"] is JArray feet)
+                for (int i = 0; i < feet.Count; i++)
+                {
+                    if (!(feet[i] is JObject f)) continue;
+                    var part = Part(f["part"], $"gait.feet[{i}]");
+                    if (part == null) continue;
+                    if (part.parent != visual)
+                        report.Warnings.Add($"gait.feet[{i}]: '{part.name}' no cuelga de {visual.name}; no pisará (el pie debe colgar del cuerpo, no del torso).");
+                    gait.feet.Add(new RigGaitFoot { part = part, phase = Mathf.Repeat(f.Value<float?>("phase") ?? 0f, 1f) });
+                }
+
+            gait.stride = Mathf.Max(0.05f, json.Value<float?>("stride") ?? gait.stride);
+            gait.fullSpeed = Mathf.Max(0.01f, json.Value<float?>("fullSpeed") ?? gait.fullSpeed);
+            gait.minStride = Mathf.Clamp(json.Value<float?>("minStride") ?? gait.minStride, 0.1f, 1f);
+            gait.duty = Mathf.Clamp(json.Value<float?>("duty") ?? gait.duty, 0.3f, 0.8f);
+            gait.lift = Mathf.Max(0f, json.Value<float?>("lift") ?? gait.lift);
+            gait.footTilt = json.Value<float?>("footTilt") ?? gait.footTilt;
+            gait.bodyBob = json.Value<float?>("bodyBob") ?? gait.bodyBob;
+            gait.maxSpeed = Mathf.Max(0.1f, json.Value<float?>("maxSpeed") ?? gait.maxSpeed);
+            gait.settleTime = Mathf.Max(0.01f, json.Value<float?>("settleTime") ?? gait.settleTime);
+
+            if (json["layers"] is JArray layers)
+                for (int i = 0; i < layers.Count; i++)
+                {
+                    if (!(layers[i] is JObject l)) continue;
+                    var part = Part(l["part"], $"gait.layers[{i}]");
+                    if (part == null) continue;
+                    gait.layers.Add(new RigGaitLayer
+                    {
+                        part = part,
+                        phase = Mathf.Repeat(l.Value<float?>("phase") ?? 0f, 1f),
+                        swing = ConfigJson.ReadVector2(l["swing"], Vector2.zero),
+                        bob = l.Value<float?>("bob") ?? 0f,
+                        rotate = l.Value<float?>("rotate") ?? 0f,
+                    });
+                }
+
+            return gait;
+        }
+
         private static void ReadGestureSounds(RigGesture gesture, JToken token, string ctx, ConfigImportReport report)
         {
             var old = gesture.sounds ?? new List<RigGestureSound>();

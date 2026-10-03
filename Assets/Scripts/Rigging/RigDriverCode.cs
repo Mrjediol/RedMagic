@@ -95,6 +95,20 @@ namespace RedMagic.Rigging
         private int _idleLast = -1;
         private bool _moving, _asleep;
 
+        // Andar (ProceduralRig.gait): por dónde va el ciclo, cuánto paso da, cuánto manda la marcha.
+        private struct GaitFoot
+        {
+            public int index;          // en _parts
+            public int entry;          // en gait.feet
+            public Vector2 rest;       // su pivote (la suela) en espacio de la raíz, mirando a la derecha
+        }
+
+        private GaitFoot[] _feet = new GaitFoot[0];
+        private float _gaitPhase, _gaitAmp, _gaitSpeed, _gaitWeight;
+        private float _gaitVy;
+        private Vector3[] _footPos = new Vector3[0];   // pose de cada pie antes de los gestos: lo que el gesto le
+        private float[] _footAngle = new float[0];     // suma a ESE pie se conserva; lo que mueve el cuerpo, no
+
         private Coroutine _attack;
         protected bool _dead;
         private readonly List<Piece> _pieces = new List<Piece>();
@@ -123,6 +137,50 @@ namespace RedMagic.Rigging
 
             if (rig.aimPart != null) rig.TryGetRest(rig.aimPart, out _aimPos, out _aimAngle, out _);
             if (rig.stretchPart != null) rig.TryGetRest(rig.stretchPart, out _, out _, out _stretchScale);
+            CacheFeet();
+        }
+
+        /// <summary>
+        /// Dónde pisa cada pie en reposo, en espacio de la raíz y mirando a la derecha. Todos a la altura del más
+        /// bajo: el suelo es uno (el dibujo puede traer un pie un poco más alto que otro).
+        /// </summary>
+        private void CacheFeet()
+        {
+            var rig = Rig;
+            var feet = new List<GaitFoot>();
+            if (rig.gait != null && rig.gait.HasFeet && rig.body != null)
+            {
+                var bodyRest = Matrix4x4.TRS(_bodyPos, Quaternion.Euler(0f, 0f, _bodyAngle),
+                                             new Vector3(Mathf.Abs(_bodyScale.x), _bodyScale.y, _bodyScale.z));
+                for (int e = 0; e < rig.gait.feet.Count; e++)
+                {
+                    var foot = rig.gait.feet[e];
+                    int index = System.Array.FindIndex(_parts, p => p.data?.part != null && p.data.part == foot?.part);
+                    if (index < 0) continue;
+                    if (foot.part.parent != rig.body)
+                    {
+                        Debug.LogWarning($"[RigDriverCode] {name}: el pie '{foot.part.name}' no cuelga de '{rig.body.name}'; no pisa.", this);
+                        continue;
+                    }
+
+                    var pose = _parts[index];
+                    var local = Matrix4x4.TRS(pose.position, Quaternion.Euler(0f, 0f, pose.angle), pose.scale);
+                    feet.Add(new GaitFoot { index = index, entry = e, rest = (bodyRest * local).MultiplyPoint3x4(pose.data.pivot) });
+                }
+
+                float ground = float.MaxValue;
+                foreach (var f in feet) ground = Mathf.Min(ground, f.rest.y);
+                for (int i = 0; i < feet.Count; i++)
+                {
+                    var f = feet[i];
+                    f.rest.y = ground;
+                    feet[i] = f;
+                }
+            }
+
+            _feet = feet.ToArray();
+            _footPos = new Vector3[_feet.Length];
+            _footAngle = new float[_feet.Length];
         }
 
         protected override void OnEnable()
@@ -150,6 +208,8 @@ namespace RedMagic.Rigging
             _idleTimer = NextIdleDelay();
             _pieces.Clear();
             _lastPosition = transform.position;
+            _gaitPhase = _gaitAmp = _gaitSpeed = _gaitVy = 0f;
+            _gaitWeight = 1f;
         }
 
         protected override void OnDisable()
@@ -798,9 +858,15 @@ namespace RedMagic.Rigging
 
         // ============================================================ composición
 
-        private void LateUpdate()
+        private void LateUpdate() => Step(Time.deltaTime);
+
+        /// <summary>
+        /// Un frame de composición con un <paramref name="dt"/> dado. El juego lo llama en cada <c>LateUpdate</c>; una
+        /// vista previa del editor (<c>RigFilmstrip</c>), a mano y a paso fijo. Las corrutinas de los gestos no
+        /// avanzan con esto: sólo la composición (reposo, inclinación, inercia, andar).
+        /// </summary>
+        public void Step(float dt)
         {
-            float dt = Time.deltaTime;
 
             if (_dead)
             {
@@ -817,6 +883,7 @@ namespace RedMagic.Rigging
             // IA de un jefe o un empujón.
             Vector3 position = transform.position;
             float vx = dt > 0f ? (position.x - _lastPosition.x) / dt : 0f;
+            float vy = dt > 0f ? (position.y - _lastPosition.y) / dt : 0f;
             UpdateFollow((Vector2)(position - _lastPosition), dt);
             _lastPosition = position;
 
@@ -824,9 +891,12 @@ namespace RedMagic.Rigging
             float leanTarget = -Mathf.Clamp(vx / rig.leanFullSpeed, -1f, 1f) * rig.leanDegrees;
             _lean = Mathf.Lerp(_lean, leanTarget, 1f - Mathf.Exp(-rig.leanResponse * dt));
 
+            TickGait(vx, vy, dt);
             ComposeBody(dt);
             ComposeParts();
+            CaptureFeet();
             ApplyGesture();
+            ApplyGait();
             ApplyGestureAim();
             TickFx(dt);   // después de componer: los efectos de gesto siguen a su ancla ya colocada
         }
@@ -885,7 +955,8 @@ namespace RedMagic.Rigging
 
             // Hacia atrás = contra el facing. La raíz visual cuelga de la raíz sin voltear, así que
             // su posición y su giro están en espacio de mundo (no reflejado).
-            Vector3 bob = rig.hoverBob * Mathf.Sin(_clock * rig.hoverSpeed);
+            Vector3 bob = (Vector3)(rig.hoverBob * Mathf.Sin(_clock * rig.hoverSpeed))
+                        + transform.InverseTransformVector(new Vector3(0f, GaitBodyBob(), 0f));
             body.localPosition = _bodyPos + bob + new Vector3(-_bodyKick * Facing, 0f, 0f)
                                + transform.InverseTransformVector(_followOffset);
             hurtTilt += ExtraTilt;
@@ -1014,6 +1085,124 @@ namespace RedMagic.Rigging
 
             float barrel = (angle + Rig.aimArtAngle) * Mathf.Deg2Rad;
             arm.localPosition -= new Vector3(Mathf.Cos(barrel), Mathf.Sin(barrel), 0f) * _armPush;
+        }
+
+        // ============================================================ andar
+
+        /// <summary>
+        /// El ciclo de paso: avanza con la distancia recorrida hacia delante (con signo: hacia atrás camina hacia
+        /// atrás), así el pie apoyado retrocede lo mismo que avanza el cuerpo. Parado, en el aire o más rápido que
+        /// <see cref="RigGait.maxSpeed"/>, el paso se recoge en <see cref="RigGait.settleTime"/>.
+        /// </summary>
+        private void TickGait(float vx, float vy, float dt)
+        {
+            if (_feet.Length == 0 || dt <= 0f) return;
+
+            var gait = Rig.gait;
+            // La velocidad medida por frame tiembla (física a paso fijo, frames a otro): se suaviza un poco.
+            float k = 1f - Mathf.Exp(-14f * dt);
+            _gaitSpeed = Mathf.Lerp(_gaitSpeed, vx * Facing, k);
+            _gaitVy = Mathf.Lerp(_gaitVy, vy, k);
+            float speed = Mathf.Abs(_gaitSpeed);
+
+            bool tooFast = speed > gait.maxSpeed;
+            bool airborne = Mathf.Abs(_gaitVy) > 2.5f;
+            bool walking = speed > 0.05f && !tooFast && !airborne;
+
+            float rate = dt / gait.settleTime;
+            _gaitWeight = Mathf.MoveTowards(_gaitWeight, tooFast ? 0f : 1f, rate);
+            float amp = walking ? Mathf.Clamp(speed / gait.fullSpeed, gait.minStride, 1f) : 0f;
+            _gaitAmp = Mathf.MoveTowards(_gaitAmp, amp, rate);
+
+            if (walking && _gaitAmp > 0.001f)
+            {
+                // Un ciclo = lo que avanza el cuerpo mientras un pie recorre su paso apoyado (duty del ciclo).
+                float cycle = gait.stride * _gaitAmp / gait.duty;
+                _gaitPhase = Mathf.Repeat(_gaitPhase + _gaitSpeed * dt / cycle, 1f);
+            }
+        }
+
+        /// <summary>Lo que sube el cuerpo ahora: nada al apoyar un pie, lo más a mitad de cada paso.</summary>
+        private float GaitBodyBob()
+        {
+            if (_feet.Length == 0) return 0f;
+            return Rig.gait.bodyBob * _gaitAmp * _gaitWeight * (0.5f - 0.5f * Mathf.Cos(4f * Mathf.PI * _gaitPhase));
+        }
+
+        /// <summary>
+        /// Los pies, en espacio de la raíz (no del cuerpo): ni el bote, ni la inclinación, ni la inercia, ni el
+        /// golpe recibido los despegan del suelo. Luego las piezas que acompañan a los pasos. Va antes de los
+        /// gestos: sus poses se suman encima (un dash mueve los pies desde aquí).
+        /// </summary>
+        /// <summary>La pose de cada pie tal como la deja la composición, antes de los gestos.</summary>
+        private void CaptureFeet()
+        {
+            for (int f = 0; f < _feet.Length; f++)
+            {
+                var t = _parts[_feet[f].index].data.part;
+                _footPos[f] = t.localPosition;
+                _footAngle[f] = t.localEulerAngles.z;
+            }
+        }
+
+        private void ApplyGait()
+        {
+            if (_feet.Length == 0) return;
+
+            var rig = Rig;
+            var gait = rig.gait;
+            float stride = gait.stride * _gaitAmp * _gaitWeight;
+            float lifted = _gaitAmp * _gaitWeight;
+            float bodyTurn = Mathf.DeltaAngle(_bodyAngle, rig.body.localEulerAngles.z);
+
+            for (int f = 0; f < _feet.Length; f++)
+            {
+                var foot = _feet[f];
+                var pose = _parts[foot.index];
+                var t = pose.data.part;
+                if (Driven.ContainsKey(t)) continue;
+
+                float u = Mathf.Repeat(_gaitPhase + gait.feet[foot.entry].phase, 1f);
+                float forward, up = 0f, tilt = 0f;
+                if (u < gait.duty)
+                    forward = stride * (0.5f - u / gait.duty);   // apoyado: retrocede lo que avanza el cuerpo
+                else
+                {
+                    float s = (u - gait.duty) / (1f - gait.duty);
+                    forward = stride * (EaseInOut(s) - 0.5f);
+                    up = gait.lift * lifted * Mathf.Sin(Mathf.PI * s);
+                    tilt = -gait.footTilt * lifted * Mathf.Sin(2f * Mathf.PI * s);   // punta abajo al despegar, arriba al aterrizar
+                }
+
+                // Lo que un gesto le ha hecho a este pie (no al cuerpo) se conserva, medido desde el suelo.
+                Vector3 gestureMove = rig.body.TransformVector(t.localPosition - _footPos[f]);
+                float gestureTurn = Mathf.DeltaAngle(_footAngle[f], t.localEulerAngles.z);
+
+                // Sin la inclinación del cuerpo (el pie no se tuerce con él); el reflejo del facing lo da el padre.
+                t.localRotation = Quaternion.Euler(0f, 0f, _footAngle[f] + gestureTurn + tilt - bodyTurn * Facing);
+                // El reposo está en espacio de la raíz (que puede venir escalada); paso y altura, en unidades de mundo.
+                Vector3 target = transform.TransformPoint(new Vector3(foot.rest.x * Facing, foot.rest.y, 0f))
+                               + new Vector3(forward * Facing, up, 0f);
+                t.position += target + gestureMove - t.TransformPoint(pose.data.pivot);
+            }
+
+            if (gait.layers == null || lifted <= 0.0001f) return;
+            foreach (var layer in gait.layers)
+            {
+                var t = layer?.part;
+                if (t == null || Driven.ContainsKey(t)) continue;
+                var data = rig.FindPart(t);
+                if (data == null) continue;
+
+                float a = 2f * Mathf.PI * (_gaitPhase + layer.phase);
+                float once = Mathf.Cos(a) * lifted;
+                float twice = (0.5f - 0.5f * Mathf.Cos(2f * a)) * lifted;
+
+                Vector3 joint = t.TransformPoint(data.pivot);
+                t.localRotation *= Quaternion.Euler(0f, 0f, layer.rotate * once);
+                t.position += joint - t.TransformPoint(data.pivot);   // gira sobre su pivote
+                t.position += new Vector3(layer.swing.x * once * Facing, layer.swing.y * once + layer.bob * twice, 0f);
+            }
         }
 
         // ============================================================ piezas sueltas

@@ -154,6 +154,7 @@ namespace RedMagic.Rigging.EditorTools
             json["gestures"] = Gestures(rig, visual);
             json["idleGestures"] = IdleGestures(rig);
             json["transitionGestures"] = TransitionGestures(rig);
+            json["gait"] = Gait(rig, visual, warnings);
 
             var limbs = root.GetComponent<BossLimbs>();
             if (limbs != null) json["bossLimbs"] = Limbs(limbs, visual);
@@ -432,6 +433,43 @@ namespace RedMagic.Rigging.EditorTools
                 ["interval"] = RigConfigJson.Num(idle.interval),
                 ["chance"] = RigConfigJson.Num(idle.chance),
                 ["windup"] = RigConfigJson.Num(idle.windup),
+            };
+        }
+
+        /// <summary>El ciclo de paso: números + pies y piezas que acompañan, por ruta.</summary>
+        private static JObject Gait(ProceduralRig rig, Transform visual, List<string> warnings)
+        {
+            var gait = rig.gait ?? new RigGait();
+            var feet = new JArray();
+            foreach (var f in gait.feet ?? new List<RigGaitFoot>())
+                if (f?.part != null)
+                    feet.Add(new JObject { ["part"] = PathOrNull(visual, f.part, "gait.feet", warnings), ["phase"] = RigConfigJson.Num(f.phase) });
+
+            var layers = new JArray();
+            foreach (var l in gait.layers ?? new List<RigGaitLayer>())
+                if (l?.part != null)
+                    layers.Add(new JObject
+                    {
+                        ["part"] = PathOrNull(visual, l.part, "gait.layers", warnings),
+                        ["phase"] = RigConfigJson.Num(l.phase),
+                        ["swing"] = RigConfigJson.V2(l.swing),
+                        ["bob"] = RigConfigJson.Num(l.bob),
+                        ["rotate"] = RigConfigJson.Num(l.rotate),
+                    });
+
+            return new JObject
+            {
+                ["feet"] = feet,
+                ["stride"] = RigConfigJson.Num(gait.stride),
+                ["fullSpeed"] = RigConfigJson.Num(gait.fullSpeed),
+                ["minStride"] = RigConfigJson.Num(gait.minStride),
+                ["duty"] = RigConfigJson.Num(gait.duty),
+                ["lift"] = RigConfigJson.Num(gait.lift),
+                ["footTilt"] = RigConfigJson.Num(gait.footTilt),
+                ["bodyBob"] = RigConfigJson.Num(gait.bodyBob),
+                ["maxSpeed"] = RigConfigJson.Num(gait.maxSpeed),
+                ["settleTime"] = RigConfigJson.Num(gait.settleTime),
+                ["layers"] = layers,
             };
         }
 

@@ -1157,9 +1157,9 @@ MonoBehaviour:
   leanDegrees: 6
   leanFullSpeed: 2.5
   leanResponse: 8
-  followStiffness: 0
-  followDamping: 9
-  followMaxOffset: 1.481
+  followStiffness: 60
+  followDamping: 10
+  followMaxOffset: 0.6171
   moveGesture: 
   idle:
     gestures: []
@@ -1170,6 +1170,52 @@ MonoBehaviour:
     gestures: []
     chance: 0.5
     windup: 0.3
+  gait:
+    feet:
+    - part: {fileID: 2057716768670220663}
+      phase: 0
+    - part: {fileID: 3879765092180717300}
+      phase: 0.5
+    stride: 0.8
+    fullSpeed: 2.2
+    minStride: 0.4
+    duty: 0.55
+    lift: 0.2
+    footTilt: 14
+    bodyBob: 0.06
+    maxSpeed: 3.5
+    settleTime: 0.15
+    layers:
+    - part: {fileID: 8665614036920043683}
+      phase: 0.5
+      swing: {x: 0.14, y: 0}
+      bob: 0
+      rotate: 10
+    - part: {fileID: 2372894938230679781}
+      phase: 0
+      swing: {x: 0.07, y: 0}
+      bob: 0
+      rotate: 4
+    - part: {fileID: 3093732911173462987}
+      phase: 0
+      swing: {x: 0, y: 0}
+      bob: 0
+      rotate: 2.5
+    - part: {fileID: 4487633521310099114}
+      phase: 0.5
+      swing: {x: 0, y: 0}
+      bob: 0
+      rotate: -1.5
+    - part: {fileID: 4529766552454094514}
+      phase: 0.08
+      swing: {x: 0, y: 0}
+      bob: -0.02
+      rotate: 1.5
+    - part: {fileID: 4126884136722977586}
+      phase: 0.25
+      swing: {x: 0, y: 0}
+      bob: 0
+      rotate: 5
   aimPart: {fileID: 2372894938230679781}
   aimArtAngle: 0
   aimMaxAngle: 60

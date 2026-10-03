@@ -38,6 +38,7 @@ namespace RedMagic.Rigging.EditorTools
         {
             nameof(ProceduralRig.body), nameof(ProceduralRig.parts), nameof(ProceduralRig.spriteSwaps),
             nameof(ProceduralRig.gestures), nameof(ProceduralRig.idle), nameof(ProceduralRig.transition),
+            nameof(ProceduralRig.gait),
         };
 
         /// <summary>Campos serializados de ProceduralRig que viajan en el bloque <c>rig</c>, en orden de declaración.</summary>

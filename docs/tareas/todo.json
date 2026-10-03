@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-03T20:26:13.964Z",
+  "updated": "2026-10-03T21:28:23.744Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -108,13 +108,13 @@
           "id": "wydn8ik",
           "text": "Puedes ver esta tarea , claude?",
           "note": "",
-          "done": false
+          "done": true
         },
         {
           "id": "tnua5yz",
           "text": "Prueba/web",
           "note": "",
-          "done": false,
+          "done": true,
           "prompt": "Crea una variante del enemigo FrostKnight de color rojo, llamada FrostKnightRed. Solo teñirlo en Unity: no regeneres arte ni pidas sprites; reutiliza las piezas existentes con un tinte rojo (en los SpriteRenderer o con el mecanismo que ya tenga el proyecto). Prefab nuevo en Assets/Prefabs/Enemies/Procedural/, con el mismo comportamiento, ataques y animaciones. Compila, haz commit y dime qué has hecho y cómo probarlo.",
           "needs": [
             "unity"
@@ -331,6 +331,23 @@
           },
           "sessionId": "b8f17568-ff1a-43ba-bf7e-4f86e5f89fe8",
           "lastRunId": "2026-10-03T20-23-08-373Z_rkky6cl"
+        },
+        {
+          "id": "xmyi2w0",
+          "note": "",
+          "done": false,
+          "text": "Montar BloomSentry (make-enemy)",
+          "prompt": "Usa la skill make-enemy (.claude/skills/make-enemy/SKILL.md) para montar el enemigo BloomSentry a partir de su diseño aprobado.\nFicha: docs/enemigos/BloomSentry/enemigo.json. Petición original: «Prueba: bases ya generadas el 2026-10-02, para probar la galería». Nota del diseño: «Torreta vegetal en maceta».\nEl diseño YA está aprobado: sáltate el paso 1 (Base). La base es la imagen de Comfy \"claude/base_bloom_raw_00001_.png\" (es el --ref de los pasos 2 y 3); hay una copia en docs/enemigos/BloomSentry/diseno.png.\nNadie va a contestar: donde la skill dice \"stop: the user picks / checks\", elige tú lo mejor con una hoja de contacto y sigue. El usuario aprueba al final desde la web.\nAl acabar, en la ficha: \"estado\": \"por-aprobar\", \"prefab\": \"<ruta del prefab en Assets>\", \"montaje\": { \"fecha\": \"<ISO>\", \"resumen\": \"<2–3 frases>\" }.\nDespués de editar la ficha, refresca su imagen para la web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nSi no puedes terminarlo: \"estado\": \"por-montar\" y explica en el informe qué falló y qué falta.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "BloomSentry",
+          "status": "running",
+          "lastRunId": "2026-10-03T21-28-23-743Z_xmyi2w0",
+          "sessionId": "52d02f4e-735e-4735-9a13-5f1edbc1f08a"
         }
       ]
     },
@@ -354,7 +371,23 @@
             "lote": "2026-10-03-enemigo-tipo-slime-de-hielo",
             "kind": "enemy"
           },
-          "status": "running",
+          "status": "done",
+          "result": {
+            "ok": true,
+            "text": "Añadí 3 propuestas de enemigo a `docs/disenos/2026-10-03-enemigo-tipo-slime-de-hielo.json`. `check-design-batch` dice \"Lote correcto: 3 propuesta(s)\". No compilé porque solo cambié JSON y nada va a Unity hasta que apruebes. Está commiteado (`dea6da4`).\n\n- **FrostSlimeKing**: slime azul pálido enfadado con corona de cristal de hielo, puños de baba cian y un charco plano de base. Tiene un trocito suelto bajo el torso que habría que limpiar.\n- **GlacierOoze**: gota gelatinosa azul marino con placa de hielo, máscara de copo de nieve con ojos brillantes, mano de pinchos y manopla de escarcha, sobre un bloque de hielo dentado. Es la más limpia de las tres.\n- **MintSnowSlime**: slime pequeño y simpático verde menta con gotas de carámbano, cabeza con gorro de nieve, puños y base de bola de nieve. Tiene 5 piezas claras.\n\nLos nombres son PascalCase y no coinciden con ningún prefab existente. Las imágenes están en `claude/des_iceslime_{1,2,3}_raw_0000{3,2,3}_.png` de ComfyUI, y la hoja de contactos en `claude/sheet_iceslime.png`.\n\n**Decisiones**\n- Los primeros intentos salieron con piezas de más: piernas, trozos del torso y gotas sueltas. Rehíce los tres, y el 1 y el 3 una segunda vez.\n- Añadí `STYLE` y `BACKDROP` explícitos al prompt, porque sin ellos el contorno salía fino.\n- Usé el template `floatingCaster` como guía de partes: torso, cabeza, dos manos y pieza inferior. No hay `Accessory`.\n- Antes de este lote hice un commit `wip: pre-task snapshot` con los cambios que ya había sin commitear (`todo.json` y `docs/enemigos/`).\n- No editó `todo.json` ni creó doc de tarea, porque la tarea no tiene documento.\n\n**Qué probar**\n- Abre la pestaña 🎨 Designs y mira las 3 imágenes.\n- Fíjate sobre todo en si hay piezas sueltas de más: el trocito de FrostSlimeKing, y la unión entre el torso y la cabeza de MintSnowSlime.\n- Acepta o rechaza cada una.",
+            "at": "2026-10-03T20:27:25.695Z",
+            "durationMs": 210193,
+            "costUsd": 0.33843160000000005,
+            "tokens": {
+              "input": 28,
+              "cacheWrite": 39773,
+              "cacheRead": 577768,
+              "output": 6373,
+              "calls": 18
+            },
+            "runId": "2026-10-03T20-23-55-502Z_l584zvh",
+            "sessionId": "eef9dbc0-4c23-4ea0-8b76-59e72dfb7eae"
+          },
           "sessionId": "eef9dbc0-4c23-4ea0-8b76-59e72dfb7eae",
           "lastRunId": "2026-10-03T20-23-55-502Z_l584zvh"
         }

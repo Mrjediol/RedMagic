@@ -9,7 +9,7 @@
       "id": "1",
       "name": "enemy_shell_hit",
       "note": "Golpe seco de caparazón",
-      "status": "pending",
+      "status": "discarded",
       "sound": {
         "family": "enemy",
         "label": "Caparazón · golpe seco",
@@ -48,7 +48,7 @@
       "id": "2",
       "name": "enemy_shell_hit_2",
       "note": "Más hueco, como madera",
-      "status": "pending",
+      "status": "discarded",
       "sound": {
         "family": "enemy",
         "label": "Caparazón · hueco",
@@ -86,7 +86,7 @@
       "id": "3",
       "name": "enemy_shell_spin",
       "note": "Bucle de caparazón girando",
-      "status": "pending",
+      "status": "discarded",
       "sound": {
         "family": "enemy",
         "label": "Caparazón · giro (bucle)",
@@ -116,5 +116,5 @@
       "kind": "sound"
     }
   ],
-  "reviewedAt": "2026-10-03T18:30:35.957Z"
+  "reviewedAt": "2026-10-03T21:22:12.163Z"
 }

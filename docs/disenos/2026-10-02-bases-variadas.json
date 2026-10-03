@@ -9,7 +9,7 @@
       "name": "MossTotem",
       "image": "comfy:claude/base_totem_raw_00001_.png",
       "note": "Tótem de madera y piedra con raíces",
-      "status": "pending",
+      "status": "discarded",
       "kind": "enemy"
     },
     {
@@ -17,7 +17,7 @@
       "name": "MushroomMage",
       "image": "comfy:claude/base_shroom_raw_00001_.png",
       "note": "Seta con bastón (base de ShroomShaman)",
-      "status": "pending",
+      "status": "discarded",
       "kind": "enemy"
     },
     {
@@ -25,7 +25,7 @@
       "name": "ForgeCauldron",
       "image": "comfy:claude/base_forge_raw_00001_.png",
       "note": "Caldero de lava con puños",
-      "status": "pending",
+      "status": "discarded",
       "kind": "enemy"
     },
     {
@@ -33,7 +33,7 @@
       "name": "FrostLantern",
       "image": "comfy:claude/base_frost_raw_00001_.png",
       "note": "Encapuchado de hielo con farol",
-      "status": "pending",
+      "status": "discarded",
       "kind": "enemy"
     },
     {
@@ -46,5 +46,5 @@
       "enemy": "BloomSentry"
     }
   ],
-  "reviewedAt": "2026-10-03T20:21:04.877Z"
+  "reviewedAt": "2026-10-03T21:21:53.907Z"
 }

@@ -9,7 +9,7 @@
       "kind": "projectile",
       "name": "FrostBolt",
       "note": "Bola de fuego teñida de hielo",
-      "status": "pending",
+      "status": "accepted",
       "vfx": {
         "preset": "fireball",
         "params": {
@@ -17,21 +17,23 @@
           "glow": "#58c8ff",
           "accent": "#c8f4ff"
         }
-      }
+      },
+      "libraryId": "31aea1c2-e6b1-4d70-bfa1-2884713871be"
     },
     {
       "id": "2",
       "kind": "projectile",
       "name": "VenomNeedle",
       "note": "Aguja verde venenosa",
-      "status": "pending",
+      "status": "accepted",
       "vfx": {
         "preset": "needle",
         "params": {
           "glow": "#6cff6c",
           "accent": "#d8ffb0"
         }
-      }
+      },
+      "libraryId": "c03a0562-5773-44e6-a309-845ddf29e1e9"
     },
     {
       "id": "3",
@@ -65,5 +67,5 @@
       "libraryId": "3bebd928-3ecf-402e-9f23-bf7e818255fa"
     }
   ],
-  "reviewedAt": "2026-10-03T20:14:56.243Z"
+  "reviewedAt": "2026-10-03T21:22:02.512Z"
 }

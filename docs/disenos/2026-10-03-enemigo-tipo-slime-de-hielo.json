@@ -14,7 +14,7 @@
       "kind": "enemy",
       "name": "FrostSlimeKing",
       "note": "Slime azul pálido enfadado con corona de cristal de hielo, puños de baba cian y charco plano abajo",
-      "status": "pending",
+      "status": "discarded",
       "image": "comfy:claude/des_iceslime_1_raw_00003_.png"
     },
     {
@@ -22,7 +22,7 @@
       "kind": "enemy",
       "name": "GlacierOoze",
       "note": "Gota gelatinosa azul marino con placa de hielo, máscara de copo de nieve y base de bloque de hielo dentado",
-      "status": "pending",
+      "status": "discarded",
       "image": "comfy:claude/des_iceslime_2_raw_00002_.png"
     },
     {
@@ -30,8 +30,9 @@
       "kind": "enemy",
       "name": "MintSnowSlime",
       "note": "Slime pequeño y simpático verde menta con gotas de carámbano, puños y base de bola de nieve",
-      "status": "pending",
+      "status": "discarded",
       "image": "comfy:claude/des_iceslime_3_raw_00003_.png"
     }
-  ]
+  ],
+  "reviewedAt": "2026-10-03T20:28:00.407Z"
 }

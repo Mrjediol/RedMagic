@@ -1,6 +1,6 @@
 {
   "name": "BloomSentry",
-  "estado": "por-montar",
+  "estado": "montando",
   "diseno": {
     "image": "docs/enemigos/BloomSentry/diseno.png",
     "source": "comfy:claude/base_bloom_raw_00001_.png",
@@ -9,6 +9,15 @@
     "request": "Prueba: bases ya generadas el 2026-10-02, para probar la galería",
     "note": "Torreta vegetal en maceta"
   },
-  "pendientes": [],
-  "createdAt": "2026-10-03T20:21:04.876Z"
+  "pendientes": [
+    {
+      "id": "u7k1dms",
+      "tipo": "comportamiento",
+      "texto": "enemigo tipo torreta, se mantiene escondido con la cabeza recogida sin que se le vea la cara, las hojas lo tapan, y cuando detecta al player despierta, 2 frames de trancision entre la cara dormida y la cara despierta, para que sea mas suave la animacion de despertarse, y al despertarse estira el cuello para quedarse como en esta foto, mientras esta dormido tiene la cabeza apoyada en la base y no se le ve el cuello, dispara un orbe de energia verde, y primero que nada hay que limpiarle la parte de abajo del diseño haciendo que sea simplemente roca, no se vea el verde ni musgo, ya que si no coincide exacto el verde con el del mapa del juego quedaria mal",
+      "estado": "abierto",
+      "createdAt": "2026-10-03T21:28:08.332Z"
+    }
+  ],
+  "createdAt": "2026-10-03T20:21:04.876Z",
+  "tarea": "xmyi2w0"
 }

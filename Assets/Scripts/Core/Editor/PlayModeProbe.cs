@@ -132,6 +132,7 @@ namespace RedMagic.EditorTools
             try
             {
                 File.WriteAllText(Path.Combine(_dir, $"{_stamp}_top.txt"), TopMarkers(_captureStart, _captureEnd));
+                File.WriteAllText(Path.Combine(_dir, $"{_stamp}_spikes.txt"), Spikes(_captureStart, _captureEnd));
             }
             catch (Exception e)
             {
@@ -204,6 +205,37 @@ namespace RedMagic.EditorTools
             foreach (var kv in total.OrderByDescending(kv => kv.Value).Take(40))
                 sb.AppendLine($"{kv.Value / frames,8:0.000}  {kv.Key}");
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Los tirones: de los frames grabados, los que duran más de <paramref name="thresholdMs"/> (los que hacen bajar
+        /// el "min" de fps aunque la media sea alta), y en cada uno lo que más tiempo propio se llevó.
+        /// </summary>
+        public static string Spikes(int first, int last, float thresholdMs = 12f, int perFrame = 12)
+        {
+            var sb = new StringBuilder();
+            int count = 0, frames = 0;
+            var children = new List<int>();
+            for (int f = first; f <= last; f++)
+            {
+                using (var view = ProfilerDriver.GetHierarchyFrameDataView(f, 0, HierarchyFrameDataView.ViewModes.MergeSamplesWithTheSameName,
+                                                                          HierarchyFrameDataView.columnSelfTime, false))
+                {
+                    if (view == null || !view.valid) continue;
+                    frames++;
+                    float ms = view.frameTimeMs;
+                    if (ms < thresholdMs) continue;
+                    count++;
+                    var self = new Dictionary<string, double>();
+                    var total = new Dictionary<string, double>();
+                    Walk(view, view.GetRootItemID(), "", 0, self, total, children);
+                    sb.AppendLine($"\n== frame {f}: {ms:0.0} ms");
+                    foreach (var kv in self.OrderByDescending(kv => kv.Value).Take(perFrame))
+                        sb.AppendLine($"{kv.Value,8:0.00}  {kv.Key}");
+                }
+            }
+
+            return $"Tirones (> {thresholdMs} ms): {count} de {frames} frames grabados.\n" + sb;
         }
 
         private static void Walk(HierarchyFrameDataView view, int id, string path, int depth,

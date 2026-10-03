@@ -7,11 +7,13 @@
       "id": "uncf5lk",
       "tipo": "gesto",
       "texto": "DarkOrb demasiado fuerte",
-      "estado": "abierto",
-      "createdAt": "2026-10-03T18:43:33.391Z"
+      "estado": "en-curso",
+      "createdAt": "2026-10-03T18:43:33.391Z",
+      "tarea": "rkky6cl"
     }
   ],
   "createdAt": "2026-10-03T18:43:33.148Z",
   "origen": "web",
-  "imagen": "docs/enemigos/FrostKnight/preview.png"
+  "imagen": "docs/enemigos/FrostKnight/preview.png",
+  "tarea": "rkky6cl"
 }

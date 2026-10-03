@@ -81,6 +81,16 @@ export class Store {
     return null;
   }
 
+  /** Adds a task made by the server (🎨 Designs) to a phase, creating the phase the first time; saves. */
+  addTask({ id, name, tag = '' }, task) {
+    let phase = this.doc.phases.find((p) => p.id === id);
+    if (!phase) { phase = { id, name, tag, tasks: [] }; this.doc.phases.push(phase); }
+    const full = { id: uid(), note: '', done: false, ...task };
+    phase.tasks.push(full);
+    this.save();
+    return full;
+  }
+
   /** Changes the run state of a task (or of one of its steps) and saves. */
   setRun(taskId, stepId, fields) {
     const found = this.find(taskId);

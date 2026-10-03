@@ -41,4 +41,8 @@ de tarjetas plegables de la Biblioteca (Proyectiles (13), Impactos…).
 - **Fase 1 hecha** (2026-10-03): pestaña 🎨 Designs, lotes en `docs/disenos/` con los 4 tipos, biblioteca de
   enemigos en `docs/enemigos/<Name>/`. Diseño técnico y formato del lote: `docs/architecture/designs.md`. Cuatro lotes
   de prueba (`demo: true`). Al aceptar, el enemigo queda `por-montar` (la tarea make-enemy desde ahí = fase 3).
-- Siguiente: fase 2.
+- **Fases 2–4 hechas** (2026-10-03, sin parar, a la espera de la prueba del usuario): formulario "Pedir propuestas"
+  (tipo, condiciones, cantidad, una tarea o una por propuesta, modelo/esfuerzo) + skill `design-proposals` + comprobador
+  `check-design-batch.mjs`; enemigos con estados (montar con make-enemy, aprobar, descartar, con pendientes), ficha con
+  pendientes y lanzar tarea; "＋ Enemigo existente" y Unity ▸ Tools ▸ RedMagic ▸ Enemigos ▸ Pendiente para la web.
+- Pendiente: el feedback del usuario y la 2ª prueba de coste (pedir enemigos: una tarea con 5 frente a 5 tareas).

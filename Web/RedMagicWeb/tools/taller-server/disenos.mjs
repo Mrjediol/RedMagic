@@ -22,15 +22,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { designPrompt, KIND_LABEL } from './design-prompts.mjs';
 
 const run = promisify(execFile);
 const KINDS = ['enemy', 'projectile', 'fx', 'sound'];
 const PASCAL = /^[A-Z][A-Za-z0-9]{2,40}$/;
 const SNAKE = /^[a-z][a-z0-9_]{2,40}$/;
-const LIBRARY_NAME = /^[A-Za-z][A-Za-z0-9_]{1,40}$/;
 
 export class Disenos {
-  constructor({ projectRoot, comfyOutput }) {
+  constructor({ projectRoot, comfyOutput, store, runner }) {
+    this.store = store;
+    this.runner = runner;
     this.projectRoot = projectRoot;
     this.dir = path.join(projectRoot, 'docs', 'disenos');
     this.enemiesDir = path.join(projectRoot, 'docs', 'enemigos');
@@ -44,9 +46,37 @@ export class Disenos {
   list() {
     const lotes = readDir(this.dir).filter((f) => f.endsWith('.json')).map((f) => this._readLote(f.slice(0, -5))).filter(Boolean)
       .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
-    const enemigos = readDir(this.enemiesDir).map((d) => readJson(path.join(this.enemiesDir, d, 'enemigo.json'))).filter(Boolean)
-      .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
-    return { lotes, enemigos };
+    return lotes;
+  }
+
+  // ------------------------------------------------------------ asking for proposals (a task, or one per proposal)
+
+  /** Creates the batch file (empty) and the task(s) that fill it, and queues them. */
+  request({ kind, request, count = 1, mode = 'one', model, effort }) {
+    if (!KINDS.includes(kind)) throw new Error('tipo inválido');
+    request = String(request || '').trim();
+    if (!request) throw new Error('Escribe qué quieres');
+    count = Math.max(1, Math.min(10, Math.round(Number(count) || 1)));
+    const slug = strip(request).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || kind;
+    let id = `${new Date().toISOString().slice(0, 10)}-${slug}`;
+    for (let n = 2; fs.existsSync(this._lotePath(id)); n++) id = `${new Date().toISOString().slice(0, 10)}-${slug}-${n}`;
+    const loteFile = `docs/disenos/${id}.json`;
+    const lote = { title: `${count} × ${KIND_LABEL[kind]}: ${request}`.slice(0, 120), request, kind, count, mode, createdAt: new Date().toISOString(), taskIds: [], items: [] };
+    const each = mode === 'each' && count > 1;
+    const tasks = (each ? Array.from({ length: count }, (_, i) => i + 1) : [null]).map((index) => this.store.addTask(
+      { id: 'designs', name: '🎨 Designs', tag: 'Web' },
+      {
+        text: `Diseños · ${KIND_LABEL[kind]}${index ? ` ${index}/${count}` : ` × ${count}`}: ${request}`.slice(0, 140),
+        prompt: designPrompt({ kind, request, count, loteFile, index }),
+        needs: kind === 'enemy' ? ['comfy'] : [],
+        ...(model ? { model } : {}), ...(effort ? { effort } : {}),
+        design: { lote: id, kind },
+      },
+    ));
+    lote.taskIds = tasks.map((t) => t.id);
+    writeJson(this._lotePath(id), lote);
+    const errors = tasks.map((t) => this.runner.enqueue({ taskId: t.id })).filter(Boolean);
+    return { loteId: id, taskIds: lote.taskIds, errors };
   }
 
   _readLote(id) {
@@ -221,6 +251,7 @@ export const ADDED_SOUNDS = /* BEGIN */${JSON.stringify(sounds, null, 2)}/* END 
   }
 }
 
+const strip = (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 function readDir(dir) { try { return fs.readdirSync(dir); } catch { return []; } }
 function readJson(file) { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; } }
 function writeJson(file, obj) {

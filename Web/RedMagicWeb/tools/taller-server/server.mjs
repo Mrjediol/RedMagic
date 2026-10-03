@@ -9,9 +9,14 @@
 //   GET  /api/status                → { rev, running, waiting, queue, apps }
 //   POST /api/run    { taskId, stepId?, followUp?, force? }   → queue a run (runner.mjs)
 //   POST /api/cancel { taskId }     POST /api/force { taskId }   POST /api/open { app: 'comfy'|'unity' }
-//   GET  /api/disenos               → { lotes, enemigos }   docs/disenos/ + docs/enemigos/ (disenos.mjs)
+//   GET  /api/disenos               → { lotes, enemigos, tasks }   docs/disenos/ (disenos.mjs) + docs/enemigos/ (enemigos.mjs)
 //   GET  /api/img?src=comfy:…|docs/…  → an image (only Comfy's output and docs/)
 //   POST /api/disenos/review { loteId, itemIds, decision: accept|discard|pending, names, libraryIds }  → { errors }
+//   POST /api/disenos/request { kind, request, count, mode: one|each, model, effort }  → { loteId, taskIds }   (queues the task(s))
+//   GET  /api/enemigos/prefabs      → [{ name, prefab }]   enemy prefabs not in the library yet
+//   POST /api/enemigos/update { name, op: estado|add-pendiente|edit-pendiente|remove-pendiente, … }
+//   POST /api/enemigos/build { name, model, effort }   POST /api/enemigos/work { name, ids?, model, effort }   (queue a task)
+//   POST /api/enemigos/add { prefab }   POST /api/enemigos/picture { name }   (the picture comes from Unity)
 //
 // Only 127.0.0.1. Anything that changes something needs the token header (a custom header forces a CORS
 // preflight, which this server never answers, so no other page can send it) and a same-origin Host.
@@ -27,6 +32,7 @@ import { fileURLToPath } from 'node:url';
 import { Store } from './store.mjs';
 import { Runner } from './runner.mjs';
 import { Disenos } from './disenos.mjs';
+import { Enemigos } from './enemigos.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(here, '../..');
@@ -69,7 +75,8 @@ const store = new Store(path.join(projectRoot, 'docs', 'tareas', 'todo.json'));
 const runner = new Runner(store, {
   projectRoot, logDir: path.join(projectRoot, 'Logs', 'Taller'), claudeExe: findClaude(), comfyExe: findComfy(), config,
 });
-const disenos = new Disenos({ projectRoot, comfyOutput: path.resolve(config.comfyOutput) });
+const disenos = new Disenos({ projectRoot, comfyOutput: path.resolve(config.comfyOutput), store, runner });
+const enemigos = new Enemigos({ projectRoot, store, runner });
 const token = crypto.randomBytes(24).toString('hex');
 
 // ============================================================ apps (cached: checking Unity runs a CLI)
@@ -109,7 +116,13 @@ async function api(req, res, url) {
   const route = `${req.method} ${url.pathname}`;
   if (route === 'GET /api/hello') return send(res, 200, { token, project: path.basename(projectRoot) });
   if (route === 'GET /api/todo') return send(res, 200, { rev: store.rev, doc: store.doc });
-  if (route === 'GET /api/disenos') return send(res, 200, disenos.list());
+  if (route === 'GET /api/disenos') {
+    const lotes = disenos.list();
+    const list = enemigos.list();
+    const ids = [...lotes.flatMap((l) => l.taskIds || []), ...list.flatMap((e) => [e.tarea, ...e.pendientes.map((p) => p.tarea)])];
+    return send(res, 200, { lotes, enemigos: list, tasks: enemigos.taskStates(ids) });
+  }
+  if (route === 'GET /api/enemigos/prefabs') return send(res, 200, enemigos.prefabs());
   if (route === 'GET /api/img') return serveFile(res, disenos.resolveImage(url.searchParams.get('src')), 'no-cache');
   if (route === 'GET /api/status') return send(res, 200, { rev: store.rev, ...runner.status(), apps: await refreshApps() });
 
@@ -132,6 +145,12 @@ async function api(req, res, url) {
     if (!body.loteId || !Array.isArray(body.itemIds)) return send(res, 400, { error: 'loteId / itemIds' });
     return send(res, 200, await disenos.review(body));
   }
+  if (route === 'POST /api/disenos/request') return send(res, 200, disenos.request(body));
+  if (route === 'POST /api/enemigos/update') return send(res, 200, enemigos.update(body));
+  if (route === 'POST /api/enemigos/build') return send(res, 200, enemigos.build(body));
+  if (route === 'POST /api/enemigos/work') return send(res, 200, enemigos.work(body));
+  if (route === 'POST /api/enemigos/add') return send(res, 200, enemigos.addExisting(body));
+  if (route === 'POST /api/enemigos/picture') { enemigos.refreshPicture(body.name); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/cancel') { runner.cancel(body.taskId); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/force') { runner.forceStart(body.taskId); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/open') {

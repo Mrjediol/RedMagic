@@ -10,7 +10,13 @@
 //   · Accepting: an enemy → the enemy library (docs/enemigos/<Name>/, "por montar"); a sound → the game's
 //     palette (server); a projectile / effect → baked HERE into the 📚 Biblioteca (IndexedDB, the same record
 //     the VFX Lab saves), then the server records its libraryId.
-//   · Biblioteca de enemigos — the accepted enemies, folded by estado. · Lotes revisados — folded.
+//   · Pedir propuestas — kind + what you want + how many + one task or one per proposal → the server makes the
+//     (empty) batch and queues the task(s) with a short prompt; the rules are in the design-proposals skill.
+//     A batch whose tasks are still running shows as "generándose".
+//   · Enemigos — the library (docs/enemigos/), folded by estado. A card opens its sheet: build it (make-enemy),
+//     approve / discard it, note its pendientes (also from Unity: Tools ▸ RedMagic ▸ Enemigos) and launch a task
+//     for them. "＋ Enemigo existente" adds a prefab that did not come from a design.
+//   · Lotes revisados — folded.
 
 import { presetById, normalizeParams, bakePreset, drawFrame, frameCount, laneFps } from './vfx-presets.js';
 import { saveEnemy, deleteEnemy, listEntries, buildThumbnail } from './enemy-library.js';
@@ -28,14 +34,25 @@ const KIND = {
   fx: { icon: '✨', label: 'Efectos VFX', one: 'efecto', accepted: '✓ En 📚 Biblioteca' },
   sound: { icon: '🔊', label: 'Sonidos', one: 'sonido', accepted: '✓ En la paleta de sonidos' },
 };
+// In the order the library shows them: what needs the user first.
 const ESTADOS = {
-  'por-montar': { label: 'Por montar', hint: 'diseño aprobado; falta montarlo en Unity (make-enemy)' },
-  montando: { label: 'Montándose', hint: 'una tarea lo está montando' },
-  'por-aprobar': { label: 'Esperando tu aprobación', hint: 'montado en Unity; pruébalo' },
-  'con-pendientes': { label: 'Con pendientes', hint: 'existe, pero le faltan cosas' },
-  aprobado: { label: 'Aprobados', hint: 'terminados' },
-  descartado: { label: 'Descartados', hint: '' },
+  'por-aprobar': { label: 'Esperando tu aprobación', one: 'Por aprobar', hint: 'montado en Unity: pruébalo y apruébalo, o apunta lo que falta' },
+  'con-pendientes': { label: 'Con pendientes', one: 'Con pendientes', hint: 'existe, pero le faltan cosas' },
+  'por-montar': { label: 'Por montar', one: 'Por montar', hint: 'diseño aprobado; falta montarlo en Unity (make-enemy)' },
+  montando: { label: 'Montándose', one: 'Montándose', hint: 'una tarea lo está montando' },
+  aprobado: { label: 'Aprobados', one: 'Aprobado', hint: 'terminados' },
+  descartado: { label: 'Descartados', one: 'Descartado', hint: 'el prefab sigue en Unity si llegó a montarse' },
 };
+const PENDING_TYPES = { comportamiento: 'Comportamiento', sprite: 'Sprite', gesto: 'Gesto', ataque: 'Ataque', bug: 'Bug', otro: 'Otro' };
+const TASK_STATE = { queued: '⏳ en la cola', waiting: '⏳ esperando', running: '⚙️ trabajando', failed: '✗ falló', cancelled: '✗ cancelada', interrupted: '✗ interrumpida' };
+const ASK_HINT = {
+  enemy: 'Ej.: tortuga voladora que lanza su caparazón. Genera bases 1024 en ComfyUI (la cola lo abre) con el estilo Fracture del juego.',
+  projectile: 'Ej.: bola de hielo con estela de copos. Variantes de los presets del VFX Lab.',
+  fx: 'Ej.: explosión verde de veneno para el impacto. Variantes de los presets del VFX Lab.',
+  sound: 'Ej.: golpe seco de caparazón al chocar. Sonidos sintetizados como los de la paleta del juego.',
+};
+const MODELS = [['sonnet', 'Sonnet'], ['opus', 'Opus'], ['haiku', 'Haiku']];
+const EFFORTS = [['low', 'bajo'], ['medium', 'medio'], ['high', 'alto']];
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const imgUrl = (src) => `/api/img?src=${encodeURIComponent(src)}`;
@@ -57,13 +74,21 @@ export function initDesignsPanel({ root, statusEl, toast }) {
   const names = new Map();                  // "loteId:itemId" → name typed in the card
   const errors = new Map();                 // "loteId:itemId" → last error
   const closed = new Set(JSON.parse(sessionStorage.getItem(CLOSED_KEY) || '[]'));
-  let viewer = null;                        // { list: [key…], i } | { enemy }
+  let viewer = null;                        // { list: [key…], i } | { enemy: name }
   let stopSound = () => {};
+  const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium' };   // the request form
+  const run = { model: 'sonnet', effort: 'medium' };                 // model of the tasks launched from an enemy
+  const draft = { tipo: 'comportamiento', texto: '' };               // the pendiente being written in a sheet
+  let adding = null;                        // null | [{ name, prefab }] while "＋ Enemigo existente" is open
 
   const setStatus = (t) => { statusEl.textContent = t; };
   const keyOf = (lote, item) => `${lote.id}:${item.id}`;
   const nameOf = (lote, item) => names.get(keyOf(lote, item)) ?? item.name;
-  const focusedHere = () => root.contains(document.activeElement) && document.activeElement.tagName === 'INPUT';
+  const typing = (scope) => scope.contains(document.activeElement) && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+  const focusedHere = () => typing(root);
+  const enemyByName = (name) => (data?.enemigos || []).find((e) => e.name === name);
+  const taskOf = (id) => (id ? data?.tasks?.[id] : null);
+  const active = (t) => t && ['queued', 'waiting', 'running'].includes(t.status);
   const lotes = () => data?.lotes || [];
   const shown = (item) => filter === 'all' || item.kind === filter;
   const pendingOf = (lote) => lote.items.filter((i) => i.status === 'pending');
@@ -89,6 +114,17 @@ export function initDesignsPanel({ root, statusEl, toast }) {
     if (res.status === 403 && out.error === 'token') token = null;   // the server restarted
     if (!res.ok) throw new Error(out.error || `HTTP ${res.status}`);
     return out;
+  }
+
+  /** A change through the server, then a fresh read; the error (if any) goes to a toast. */
+  async function post(route, body, done) {
+    try {
+      const out = await api('POST', route, body);
+      if (done) toast(typeof done === 'function' ? done(out) : done);
+      dataText = '';
+      await poll();
+      return out;
+    } catch (e) { toast(e.message); return null; }
   }
 
   async function poll() {
@@ -315,21 +351,92 @@ export function initDesignsPanel({ root, statusEl, toast }) {
         <button class="small" data-act="clear-sel" data-lote="${esc(lote.id)}">Quitar selección</button><span class="enSep"></span>` : ''}
       <button class="small" data-act="accept-all" data-lote="${esc(lote.id)}">✓ Aceptar todos (${pend.length})</button>
       <button class="small danger" data-act="discard-all" data-lote="${esc(lote.id)}">✕ Descartar todos (${pend.length})</button>` : '';
-    const kinds = [...new Set(items.map((i) => i.kind))].map((k) => KIND[k].icon).join(' ');
-    const count = pend.length ? `${pend.length} por revisar de ${items.length}` : `${accepted} aceptado${accepted === 1 ? '' : 's'} de ${items.length}`;
-    return group(`lote:${lote.id}`, `${kinds} ${lote.title || lote.id}`, count,
-      `<div class="enCards">${items.map((i) => itemCard(lote, i)).join('')}</div>`,
-      { actions, sub: [lote.request && lote.request !== lote.title ? lote.request : '', when(lote.createdAt)].filter(Boolean).join(' · '), defaultOpen });
+    const kinds = [...new Set((items.length ? items : [{ kind: lote.kind || 'enemy' }]).map((i) => i.kind))].map((k) => KIND[k]?.icon || '').join(' ');
+    const tasks = (lote.taskIds || []).map(taskOf).filter(Boolean);
+    const working = tasks.filter(active).length;
+    const failed = tasks.filter((t) => /failed|cancelled|interrupted/.test(t.status)).length;
+    const progress = tasks.length > 1 || working
+      ? `${working ? '⏳ generándose · ' : ''}${tasks.filter((t) => t.status === 'done').length}/${tasks.length} tarea${tasks.length === 1 ? '' : 's'} hecha${tasks.length === 1 ? '' : 's'}` : '';
+    const count = working && !items.length ? 'generándose…'
+      : pend.length ? `${pend.length} por revisar de ${items.length}` : `${accepted} aceptado${accepted === 1 ? '' : 's'} de ${items.length}`;
+    const body = items.length ? `<div class="enCards">${items.map((i) => itemCard(lote, i)).join('')}</div>`
+      : `<p class="enEmpty">${working ? 'La tarea está trabajando: sus propuestas aparecerán aquí al terminar (el progreso, en 📋 Tareas ▸ 🎨 Designs).'
+        : failed ? 'La tarea no dejó propuestas: mira su informe en 📋 Tareas ▸ 🎨 Designs.' : 'Sin propuestas.'}</p>`;
+    return group(`lote:${lote.id}`, `${kinds} ${lote.title || lote.id}`, count, body, {
+      actions,
+      sub: [progress, failed ? `✗ ${failed} fallida${failed === 1 ? '' : 's'}` : '', lote.request && lote.request !== lote.title ? lote.request : '', when(lote.createdAt)].filter(Boolean).join(' · '),
+      defaultOpen,
+    });
+  }
+
+  // ------------------------------------------------------------ the request form
+
+  function askForm() {
+    const opt = (list, value) => list.map(([v, l]) => `<option value="${v}" ${v === value ? 'selected' : ''}>${l}</option>`).join('');
+    return group('ask', '＋ Pedir propuestas', KIND[ask.kind].label.toLowerCase(), `
+      <form class="enAsk" data-form="ask">
+        <div class="enFilter">${Object.entries(KIND).map(([k, v]) => `<button type="button" class="small${ask.kind === k ? ' selected' : ''}" data-act="ask-kind" data-kind="${k}">${v.icon} ${v.label}</button>`).join('')}</div>
+        <label class="enLabel">Qué quieres <span class="efHint">solo las condiciones: las reglas de arte del juego las pone la skill design-proposals</span></label>
+        <textarea data-ask="request" rows="3" placeholder="${esc(ASK_HINT[ask.kind])}">${esc(ask.request)}</textarea>
+        <div class="enAskRow">
+          <label>Cantidad <input type="number" data-ask="count" min="1" max="10" value="${ask.count}"></label>
+          <label><input type="radio" name="askMode" data-ask="mode" value="one" ${ask.mode === 'one' ? 'checked' : ''}> Una tarea con todas</label>
+          <label><input type="radio" name="askMode" data-ask="mode" value="each" ${ask.mode === 'each' ? 'checked' : ''}> Una tarea por propuesta</label>
+          <label>Modelo <select data-ask="model">${opt(MODELS, ask.model)}</select></label>
+          <label>Esfuerzo <select data-ask="effort">${opt(EFFORTS, ask.effort)}</select></label>
+          <button type="submit" class="primary">▶ Pedir ${ask.count} ${ask.count === 1 ? KIND[ask.kind].one : `${KIND[ask.kind].label.toLowerCase()}`}</button>
+        </div>
+        <p class="efHint">Va a la cola de 📋 Tareas (fase 🎨 Designs). "Una tarea por propuesta" = conversaciones más cortas; compara el coste
+          con <code>session-usage.mjs</code> o con los ↓ tokens de cada informe.</p>
+      </form>`, { defaultOpen: true });
+  }
+
+  // ------------------------------------------------------------ the enemy library
+
+  const enemyImage = (e) => e.imagen || e.diseno?.image || '';
+  const openPendientes = (e) => e.pendientes.filter((p) => p.estado !== 'hecho');
+
+  function taskLine(e) {
+    const t = taskOf(e.tarea);
+    if (!t || t.status === 'done') return '';
+    return `<div class="enTask ${active(t) ? '' : 'bad'}">${TASK_STATE[t.status] || t.status}${active(t) ? '' : ' · mira el informe en 📋 Tareas'}</div>`;
+  }
+
+  function enemyButtons(e) {
+    const t = taskOf(e.tarea);
+    const n = openPendientes(e).filter((p) => p.estado === 'abierto').length;
+    const name = esc(e.name);
+    switch (e.estado) {
+      case 'por-montar': return `<button class="small enOk" data-act="build" data-name="${name}" title="make-enemy: lo monta en Unity a partir del diseño">▶ Montar</button>`;
+      case 'montando': return active(t) ? '' : `<button class="small" data-act="build" data-name="${name}">▶ Reintentar</button><button class="small" data-act="estado" data-estado="por-montar" data-name="${name}">↶</button>`;
+      case 'por-aprobar': return `<button class="small enOk" data-act="estado" data-estado="aprobado" data-name="${name}">✓ Aprobar</button>
+        <button class="small" data-act="sheet" data-name="${name}" title="Apuntar lo que le falta">⚠ Pendientes</button>`;
+      case 'con-pendientes': return n ? `<button class="small enOk" data-act="work" data-name="${name}" title="Una tarea con los pendientes abiertos">▶ Arreglar (${n})</button>`
+        : `<button class="small" data-act="sheet" data-name="${name}">＋ Pendiente</button>`;
+      case 'descartado': return `<button class="small" data-act="estado" data-estado="${e.prefab ? 'con-pendientes' : 'por-montar'}" data-name="${name}">↶ Recuperar</button>`;
+      default: return `<button class="small" data-act="sheet" data-name="${name}">＋ Pendiente</button>`;
+    }
   }
 
   function enemyCard(e) {
-    const st = ESTADOS[e.estado] || { label: e.estado };
-    return `<div class="enCard" data-status="${esc(e.estado)}">
-      <button class="enArt" data-act="view-enemy" data-name="${esc(e.name)}" title="Ver en grande"><img src="${imgUrl(e.diseno?.image || '')}" alt="${esc(e.name)}" loading="lazy"></button>
+    const st = ESTADOS[e.estado] || { one: e.estado };
+    const open = openPendientes(e);
+    const tipos = Object.entries(open.reduce((acc, p) => ({ ...acc, [p.tipo]: (acc[p.tipo] || 0) + 1 }), {}));
+    const img = enemyImage(e);
+    return `<div class="enCard enEnemy" data-status="${esc(e.estado)}">
+      <button class="enArt" data-act="sheet" data-name="${esc(e.name)}" title="Abrir su ficha">${img ? `<img src="${imgUrl(img)}" alt="${esc(e.name)}" loading="lazy">` : '<span class="enNoArt">👾<br>sin imagen</span>'}</button>
       <div class="enName fixed">${esc(e.name)}</div>
-      ${e.diseno?.request ? `<div class="enNote">${esc(e.diseno.request)}</div>` : ''}
-      <div class="enBtns"><span class="enBadge">${esc(st.label)}</span></div>
+      <div class="enChips"><span class="enChip estado" data-estado="${esc(e.estado)}">${esc(st.one)}</span>${tipos.map(([t, k]) => `<span class="enChip">${esc(PENDING_TYPES[t] || t)}${k > 1 ? ` ×${k}` : ''}</span>`).join('')}</div>
+      ${taskLine(e)}
+      <div class="enBtns">${enemyButtons(e)}</div>
     </div>`;
+  }
+
+  function addExistingRow() {
+    if (!adding) return '<div class="enGroupBar"><button class="small" data-act="add-open" title="Un enemigo que ya está en Unity y no salió de un diseño">＋ Enemigo existente</button><span class="efHint">o desde Unity: Tools ▸ RedMagic ▸ Enemigos ▸ Pendiente para la web…</span></div>';
+    return `<div class="enGroupBar"><select data-add="prefab">${adding.length ? adding.map((p) => `<option value="${esc(p.prefab)}">${esc(p.name)} — ${esc(p.prefab.replace('Assets/Prefabs/Enemies/', ''))}</option>`).join('') : '<option value="">(todos están ya en la biblioteca)</option>'}</select>
+      <button class="small primary" data-act="add-confirm" ${adding.length ? '' : 'disabled'}>Añadir</button><button class="small" data-act="add-cancel">Cancelar</button>
+      <span class="efHint">su imagen la hace Unity (si está abierto)</span></div>`;
   }
 
   function filterBar() {
@@ -344,25 +451,28 @@ export function initDesignsPanel({ root, statusEl, toast }) {
     if (!data) return;
     const panel = root.closest('#designsPanel');
     const scroll = panel?.scrollTop;
-    const visible = lotes().filter((l) => l.items.some(shown));
-    const toReview = visible.filter((l) => l.items.some((i) => shown(i) && i.status === 'pending'));
+    const loteKind = (l) => filter === 'all' || (l.kind || 'enemy') === filter;
+    const visible = lotes().filter((l) => l.items.some(shown) || (!l.items.length && loteKind(l)));
+    const running = (l) => (l.taskIds || []).some((id) => active(taskOf(id)));
+    const toReview = visible.filter((l) => l.items.some((i) => shown(i) && i.status === 'pending') || running(l) || !l.items.length);
     const reviewed = visible.filter((l) => !toReview.includes(l));
     const enemigos = data.enemigos || [];
 
     const reviewHtml = toReview.length
       ? toReview.map((l) => loteGroup(l, true)).join('')
-      : '<p class="enEmpty">Nada por revisar. Cuando una tarea de diseño termine, sus propuestas aparecen aquí.</p>';
+      : '<p class="enEmpty">Nada por revisar. Pide propuestas arriba: cuando la tarea termine, aparecen aquí.</p>';
     const byEstado = Object.keys(ESTADOS).concat([...new Set(enemigos.map((e) => e.estado))].filter((s) => !ESTADOS[s]))
       .map((s) => [s, enemigos.filter((e) => e.estado === s)]).filter(([, list]) => list.length);
     const libraryHtml = byEstado.length
       ? byEstado.map(([s, list]) => group(`estado:${s}`, ESTADOS[s]?.label || s, list.length,
         `<div class="enCards">${list.map(enemyCard).join('')}</div>`, { sub: ESTADOS[s]?.hint || '', defaultOpen: s !== 'descartado' && s !== 'aprobado' })).join('')
-      : '<p class="enEmpty">Aún no hay enemigos: acepta el diseño de uno para empezar.</p>';
+      : '<p class="enEmpty">Aún no hay enemigos: acepta el diseño de uno, o añade uno que ya exista.</p>';
     const showLibrary = filter === 'all' || filter === 'enemy';
 
-    root.innerHTML = `${filterBar()}
+    root.innerHTML = `<section class="enSection">${askForm()}</section>
+      ${filterBar()}
       <section class="enSection"><h2>Por revisar</h2>${reviewHtml}</section>
-      ${showLibrary ? `<section class="enSection"><h2>Biblioteca de enemigos <span class="enHint">docs/enemigos/ · proyectiles y efectos aceptados van a 📚 Biblioteca; sonidos, a la paleta del juego</span></h2>${libraryHtml}</section>` : ''}
+      ${showLibrary ? `<section class="enSection"><h2>Enemigos <span class="enHint">docs/enemigos/ · proyectiles y efectos aceptados van a 📚 Biblioteca; sonidos, a la paleta del juego</span></h2>${addExistingRow()}${libraryHtml}</section>` : ''}
       ${reviewed.length ? `<section class="enSection">${group('revisados', 'Lotes revisados', reviewed.length, reviewed.map((l) => loteGroup(l, false)).join(''), { defaultOpen: false })}</section>` : ''}`;
     paintWaves(root);
     if (panel && scroll != null) panel.scrollTop = scroll;
@@ -390,11 +500,63 @@ export function initDesignsPanel({ root, statusEl, toast }) {
     renderViewer();
   }
 
+  /** An enemy's sheet: its picture, what it came from, its estado buttons and its pendientes. */
+  function renderSheet(e) {
+    const st = ESTADOS[e.estado] || { one: e.estado };
+    const opt = (list, value) => list.map(([v, l]) => `<option value="${v}" ${v === value ? 'selected' : ''}>${l}</option>`).join('');
+    const img = enemyImage(e);
+    const open = e.pendientes.filter((p) => p.estado === 'abierto');
+    const t = taskOf(e.tarea);
+    const v = (action, label, cls = '', extra = '') => `<button class="small ${cls}" data-v="${action}" ${extra}>${label}</button>`;
+    const estadoButtons = [
+      e.estado === 'por-montar' ? v('build', '▶ Montar (make-enemy)', 'primary') : '',
+      e.estado === 'montando' && !active(t) ? v('build', '▶ Reintentar el montaje') : '',
+      e.estado === 'por-aprobar' ? v('estado', '✓ Aprobar', 'primary', 'data-estado="aprobado"') : '',
+      ['por-aprobar', 'aprobado'].includes(e.estado) ? v('estado', '⚠ Tiene pendientes', '', 'data-estado="con-pendientes"') : '',
+      e.estado === 'descartado' ? v('estado', '↶ Recuperar', '', `data-estado="${e.prefab ? 'con-pendientes' : 'por-montar'}"`) : v('estado', '✕ Descartar', 'danger', 'data-estado="descartado"'),
+      e.prefab ? v('picture', '🖼 Rehacer imagen', '', 'title="Unity la vuelve a hacer desde el prefab"') : '',
+    ].join('');
+    const rows = e.pendientes.map((p) => `<li class="enPend" data-estado="${esc(p.estado)}">
+        <span class="enChip">${esc(PENDING_TYPES[p.tipo] || p.tipo)}</span>
+        <div class="enPendText">${esc(p.texto)}${p.resumen ? `<div class="efHint">✓ ${esc(p.resumen)}</div>` : ''}${p.nota ? `<div class="efHint">⚠ ${esc(p.nota)}</div>` : ''}</div>
+        <span class="enPendState">${p.estado === 'en-curso' ? (TASK_STATE[taskOf(p.tarea)?.status] || 'en curso') : p.estado === 'hecho' ? '✓ hecho' : 'abierto'}</span>
+        ${v('pend-done', p.estado === 'hecho' ? '↶' : '✓', '', `data-id="${esc(p.id)}" title="${p.estado === 'hecho' ? 'Reabrir' : 'Marcar hecho'}"`)}
+        ${v('pend-del', '🗑', '', `data-id="${esc(p.id)}" title="Borrar"`)}
+      </li>`).join('');
+    overlay.innerHTML = `<div class="enViewerBox enSheet">
+      <div class="enViewerHead"><b>${esc(e.name)}</b><span><span class="enChip estado" data-estado="${esc(e.estado)}">${esc(st.one)}</span> ${esc(ESTADOS[e.estado]?.hint || '')}</span>
+        <button class="small" data-v="close" aria-label="Cerrar">✕</button></div>
+      <div class="enSheetBody">
+        <div class="enSheetArt">${img ? `<img src="${imgUrl(img)}" alt="">` : '<span class="enNoArt">👾<br>sin imagen</span>'}</div>
+        <div class="enSheetInfo">
+          ${e.prefab ? `<div><span class="efHint">Prefab</span> <code>${esc(e.prefab)}</code></div>` : ''}
+          ${e.diseno?.request ? `<div><span class="efHint">Pedido</span> ${esc(e.diseno.request)}${e.diseno.note ? ` — ${esc(e.diseno.note)}` : ''}</div>` : ''}
+          ${e.montaje?.resumen ? `<div><span class="efHint">Montaje</span> ${esc(e.montaje.resumen)}</div>` : ''}
+          ${taskLine(e)}
+          <div class="enBtns wrap">${estadoButtons}</div>
+          <h3>Pendientes</h3>
+          ${rows ? `<ul class="enPends">${rows}</ul>` : '<p class="enEmpty">Nada apuntado.</p>'}
+          <div class="enPendAdd">
+            <select data-draft="tipo">${opt(Object.entries(PENDING_TYPES), draft.tipo)}</select>
+            <textarea data-draft="texto" rows="2" placeholder="Qué le falta o qué falla (ej.: el ataque de caparazón no rebota en las paredes)">${esc(draft.texto)}</textarea>
+            ${v('pend-add', '＋ Apuntar')}
+          </div>
+          <div class="enBtns wrap">
+            <label class="efHint">Modelo <select data-run="model">${opt(MODELS, run.model)}</select></label>
+            <label class="efHint">Esfuerzo <select data-run="effort">${opt(EFFORTS, run.effort)}</select></label>
+            ${v('work', `▶ Lanzar tarea con los abiertos (${open.length})`, 'primary', open.length ? '' : 'disabled')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+    overlay.hidden = false;
+  }
+
   function renderViewer() {
     if (viewer.enemy) {
-      overlay.innerHTML = `<div class="enViewerBox"><div class="enViewerHead"><b>${esc(viewer.enemy.name)}</b><span>${esc(ESTADOS[viewer.enemy.estado]?.label || viewer.enemy.estado)}</span>
-        <button class="small" data-v="close" aria-label="Cerrar">✕</button></div><div class="enViewerStage"><img src="${imgUrl(viewer.enemy.diseno?.image || '')}" alt=""></div></div>`;
-      overlay.hidden = false;
+      const e = enemyByName(viewer.enemy);
+      if (!e) { closeViewer(); return; }
+      if (!typing(overlay)) renderSheet(e);
       return;
     }
     const found = findItem(viewer.list[viewer.i]);
@@ -442,10 +604,41 @@ export function initDesignsPanel({ root, statusEl, toast }) {
     else if (v === 'accept') decideInViewer('accept');
     else if (v === 'discard') decideInViewer('discard');
     else if (v === 'hear') { const f = findItem(viewer.list[viewer.i]); if (f) hear(f.lote, f.item); }
+    else if (viewer?.enemy) sheetAction(v, ev.target.closest('[data-v]'));
   });
+
+  /** The buttons of an enemy's sheet. */
+  function sheetAction(v, btn) {
+    const name = viewer.enemy;
+    const upd = (body, msg) => post('enemigos/update', { name, ...body }, msg);
+    if (v === 'build') post('enemigos/build', { name, ...run }, `${name}: a la cola (make-enemy)`);
+    else if (v === 'estado') upd({ op: 'estado', estado: btn.dataset.estado }, `${name}: ${ESTADOS[btn.dataset.estado]?.one || btn.dataset.estado}`);
+    else if (v === 'picture') post('enemigos/picture', { name }, 'Unity está haciendo la imagen (unos segundos)');
+    else if (v === 'pend-add') {
+      if (!draft.texto.trim()) { toast('Escribe qué le falta'); return; }
+      upd({ op: 'add-pendiente', tipo: draft.tipo, texto: draft.texto }, 'Pendiente apuntado').then((ok) => { if (ok) { draft.texto = ''; renderViewer(); } });
+    } else if (v === 'pend-done') {
+      const p = enemyByName(name)?.pendientes.find((x) => x.id === btn.dataset.id);
+      if (p) upd({ op: 'edit-pendiente', id: p.id, estado: p.estado === 'hecho' ? 'abierto' : 'hecho' });
+    } else if (v === 'pend-del') upd({ op: 'remove-pendiente', id: btn.dataset.id }, 'Pendiente borrado');
+    else if (v === 'work') post('enemigos/work', { name, ...run }, `${name}: tarea a la cola con sus pendientes`);
+  }
+
+  overlay.addEventListener('input', (ev) => {
+    const d = ev.target.dataset || {};
+    if (d.draft) draft[d.draft] = ev.target.value;
+    if (d.run) run[d.run] = ev.target.value;
+  });
+  overlay.addEventListener('focusout', () => { setTimeout(() => { if (viewer?.enemy && !typing(overlay)) renderViewer(); }, 0); });
   document.addEventListener('keydown', (ev) => {
     if (overlay.hidden || ev.ctrlKey || ev.altKey || ev.metaKey) return;
     const k = ev.key.toLowerCase();
+    if (viewer?.enemy) {   // a sheet: only Esc (out of a field first)
+      if (k !== 'escape') return;
+      if (typing(overlay)) document.activeElement.blur(); else closeViewer();
+      ev.preventDefault();
+      return;
+    }
     if (k === 'escape') closeViewer();
     else if (k === 'arrowleft') step(-1);
     else if (k === 'arrowright') step(1);
@@ -475,7 +668,17 @@ export function initDesignsPanel({ root, statusEl, toast }) {
       render();
     } else if (act === 'view') openViewer(key);
     else if (act === 'hear') { const f = findItem(key); if (f) hear(f.lote, f.item); }
-    else if (act === 'view-enemy') { const e = (data?.enemigos || []).find((x) => x.name === btn.dataset.name); if (e) { viewer = { enemy: e }; renderViewer(); } }
+    else if (act === 'sheet') { viewer = { enemy: btn.dataset.name }; renderViewer(); }
+    else if (act === 'build') post('enemigos/build', { name: btn.dataset.name, ...run }, `${btn.dataset.name}: a la cola (make-enemy)`);
+    else if (act === 'work') post('enemigos/work', { name: btn.dataset.name, ...run }, `${btn.dataset.name}: tarea a la cola con sus pendientes`);
+    else if (act === 'estado') post('enemigos/update', { name: btn.dataset.name, op: 'estado', estado: btn.dataset.estado }, `${btn.dataset.name}: ${ESTADOS[btn.dataset.estado]?.one || btn.dataset.estado}`);
+    else if (act === 'add-open') api('GET', 'enemigos/prefabs').then((list) => { adding = list; render(); }).catch((e) => toast(e.message));
+    else if (act === 'add-cancel') { adding = null; render(); }
+    else if (act === 'add-confirm') {
+      const prefab = root.querySelector('[data-add="prefab"]')?.value;
+      if (prefab) post('enemigos/add', { prefab }, (e) => `${e.name} añadido: ábrelo para apuntar sus pendientes`).then((e) => { adding = null; if (e) { viewer = { enemy: e.name }; renderViewer(); } });
+    }
+    else if (act === 'ask-kind') { ask.kind = btn.dataset.kind; render(); }
     else if (act === 'filter') { filter = btn.dataset.filter; sessionStorage.setItem(FILTER_KEY, filter); render(); }
     else if (act === 'accept') review(loteId, [itemId], 'accept');
     else if (act === 'discard') review(loteId, [itemId], 'discard');
@@ -490,6 +693,17 @@ export function initDesignsPanel({ root, statusEl, toast }) {
   root.addEventListener('input', (ev) => {
     const key = ev.target.dataset?.name;
     if (key) names.set(key, ev.target.value);
+    const field = ev.target.dataset?.ask;
+    if (field) ask[field] = field === 'count' ? Math.max(1, Math.min(10, Number(ev.target.value) || 1)) : ev.target.value;
+  });
+  root.addEventListener('submit', async (ev) => {
+    if (ev.target.dataset.form !== 'ask') return;
+    ev.preventDefault();
+    if (!ask.request.trim()) { toast('Escribe qué quieres'); return; }
+    document.activeElement?.blur?.();
+    const out = await post('disenos/request', { ...ask }, (o) => (o.errors?.length ? o.errors.join(' · ')
+      : `${o.taskIds.length} tarea${o.taskIds.length === 1 ? '' : 's'} en la cola: las propuestas aparecerán en "Por revisar"`));
+    if (out) { ask.request = ''; render(); }
   });
   root.addEventListener('change', (ev) => {
     const key = ev.target.dataset?.name;

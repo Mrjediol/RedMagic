@@ -25,10 +25,40 @@ Plan and phases: `docs/tareas/enemigos-web.md`. Server-only: it goes through `to
 `por-montar`), the sound is taken out of the palette with its `.wav`, the library entry is deleted.
 Batches with `demo: true` are test data made from older Comfy outputs.
 
+## Asking for proposals (the form at the top of the tab)
+
+Kind + what the user wants + how many (1–10) + **one task with all** or **one task per proposal** (to compare costs)
++ model / effort → `POST /api/disenos/request` creates the empty batch (`taskIds`, `count`, `mode`) and the
+task(s) in 📋 Tareas ▸ phase **🎨 Designs** (`design: { lote, kind }`, `needs: comfy` for enemies) and queues them.
+The prompt is a few lines (`tools/taller-server/design-prompts.mjs`): the rules are the
+**`design-proposals` skill** (`.claude/skills/design-proposals/SKILL.md`, which reuses make-enemy §0–1 for enemies),
+and the task ends by running **`tools/check-design-batch.mjs <batch>`** (formats, image exists, preset exists and is
+of that kind, sound passes check-sounds and its id is free). While its tasks run the batch shows "generándose".
+
 ## An enemy (`docs/enemigos/<Name>/enemigo.json`)
 
-`{ name, estado, diseno: { image, source, lote, item, request, note }, pendientes: [], createdAt }` — estado
-`por-montar` → `montando` → `por-aprobar` (built, the user tests it) → `aprobado` · `con-pendientes` · `descartado`.
+`{ name, estado, prefab?, imagen?, diseno?: { image, source, lote, item, request, note }, pendientes: [Pendiente],
+tarea?, montaje?: { fecha, resumen }, origen?, createdAt }` — `Pendiente = { id, tipo: comportamiento|sprite|gesto|ataque|bug|otro,
+texto, estado: abierto|en-curso|hecho, tarea?, resumen?, nota? }`.
+
+| estado | means | the card / sheet offers |
+|---|---|---|
+| `por-montar` | design accepted | ▶ Montar → a **make-enemy** task (`needs: comfy, unity`; skips step 1, the design's Comfy image is the base; decides the "stop" points itself) → `montando` |
+| `montando` | a task is building it | its task state; ▶ Reintentar if it failed |
+| `por-aprobar` | built: the user tests it in Unity | ✓ Aprobar · ⚠ Tiene pendientes |
+| `con-pendientes` | exists, things to do | ▶ Arreglar (n) → ONE task with the open pendientes (`needs: unity` + comfy for sprite/gesto); they go `en-curso` |
+| `aprobado` · `descartado` | done · dropped (the prefab stays) | ＋ Pendiente · ↶ Recuperar |
+
+The tasks edit the record themselves when they end (prompts in `design-prompts.mjs`): estado `por-aprobar` (or back),
+`prefab`, `montaje`, each pendiente `hecho` + `resumen` or `abierto` + `nota`, and refresh the picture.
+Their tasks live in 📋 Tareas ▸ phase **👾 Enemigos** (`enemy: <Name>`).
+
+**Existing enemies** (not from a design): web "＋ Enemigo existente" (a prefab of `Assets/Prefabs/Enemies/**` not in
+the library; name = file name without `Enemy_` / `Boss_`) or Unity **Tools ▸ RedMagic ▸ Enemigos ▸ Pendiente para
+la web…** (pick the prefab, type, text). **Pictures** come from Unity: `EnemyPreviewExporter.Export(prefab, png)`
+(`Assets/Scripts/Enemies/Editor/EnemyPreviewExporter.cs`, renders the prefab's sprites on transparent) →
+`docs/enemigos/<Name>/preview.png` (`imagen`); the server calls it through `unity command eval` when Unity is open;
+`Mark(prefab)` does record + picture; **Tools ▸ RedMagic ▸ Enemigos ▸ Actualizar imágenes de la web** redoes them all.
 
 ## Server (`tools/taller-server/disenos.mjs`, routes in `server.mjs`)
 
@@ -37,11 +67,16 @@ Batches with `demo: true` are test data made from older Comfy outputs.
   `%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/output`) or `docs/`.
 - `POST /api/disenos/review { loteId, itemIds, decision: accept|discard|pending, names, libraryIds }` → `{ errors }`
   per item: one bad item never blocks the rest.
+- `POST /api/disenos/request` (above). `GET /api/disenos` also returns `tasks`: the state of every task a batch or an
+  enemy points at.
+- `tools/taller-server/enemigos.mjs`: `GET /api/enemigos/prefabs`, `POST /api/enemigos/update` (estado, add / edit /
+  remove pendiente), `/build`, `/work`, `/add`, `/picture`. Tasks are added with `store.addTask(phase, task)` and
+  queued with `runner.enqueue`.
 
 ## Web (`modules/designs-panel.js`, markup `#tab-designs`, styles `/* 🎨 Designs */`)
 
-Filter chips by kind (pending counts); **Por revisar** (a foldable group per batch), **Biblioteca de enemigos**
-(foldable by estado), **Lotes revisados** (folded). Previews: the image, the effect playing live (one
+**＋ Pedir propuestas** (the form, state kept while the list re-renders); filter chips by kind (pending counts); **Por revisar** (a foldable group per batch), **Enemigos** (foldable by estado, needs-the-user first; a card opens its **sheet**: picture,
+estado buttons, pendientes list + add + launch with model / effort), **Lotes revisados** (folded). Previews: the image, the effect playing live (one
 `requestAnimationFrame` loop draws every `canvas[data-vfx]` with `drawFrame`), the sound's waveform + ▶.
 Card click = select (a sound also plays); group bar = accept/discard the selection or all that are left;
 ⤢ = viewer (← → move, A accept, D discard, Space play, Esc). Polls every 5 s while visible; never re-renders while a

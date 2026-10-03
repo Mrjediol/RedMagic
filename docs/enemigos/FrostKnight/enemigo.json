@@ -1,0 +1,17 @@
+{
+  "name": "FrostKnight",
+  "estado": "con-pendientes",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/FrostKnight.prefab",
+  "pendientes": [
+    {
+      "id": "uncf5lk",
+      "tipo": "gesto",
+      "texto": "DarkOrb demasiado fuerte",
+      "estado": "abierto",
+      "createdAt": "2026-10-03T18:43:33.391Z"
+    }
+  ],
+  "createdAt": "2026-10-03T18:43:33.148Z",
+  "origen": "web",
+  "imagen": "docs/enemigos/FrostKnight/preview.png"
+}

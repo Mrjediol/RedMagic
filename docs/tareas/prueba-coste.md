@@ -6,30 +6,26 @@ compensa con conversaciones cortas, una por tarea.
 
 ## La tarea
 
-Variante verde del caballero, **solo teñida en Unity**, sin regenerar arte:
+Variante teñida del caballero, **solo teñida en Unity**, sin regenerar arte. Lado 1 (terminal) la pide **verde**, lado 2
+(web) **roja**: mismo trabajo, distinto color y distinto nombre, así que no se pisan y **no hace falta tocar ramas de git**.
 
-> Crea una variante del enemigo FrostKnight de color verde, llamada FrostKnightGreen. Solo teñirlo en Unity: no
-> regeneres arte ni pidas sprites; reutiliza las piezas existentes con un tinte verde (en los SpriteRenderer o con el
-> mecanismo que ya tenga el proyecto). Prefab nuevo en Assets/Prefabs/Enemies/Procedural/, con el mismo comportamiento,
-> ataques y animaciones. Compila, haz commit y dime qué has hecho y cómo probarlo.
+Lado 1 (terminal):
+> Crea una variante del enemigo FrostKnight de color verde, llamada FrostKnightGreen. Solo teñirlo en Unity: no regeneres arte ni pidas sprites; reutiliza las piezas existentes con un tinte verde (en los SpriteRenderer o con el mecanismo que ya tenga el proyecto). Prefab nuevo en Assets/Prefabs/Enemies/Procedural/, con el mismo comportamiento, ataques y animaciones. Compila, haz commit y dime qué has hecho y cómo probarlo.
 
-Misma frase en los dos lados (la cola le añade su propio encabezado y las reglas de informe: es parte de lo que se mide).
+Lado 2 (web):
+> Crea una variante del enemigo FrostKnight de color rojo, llamada FrostKnightRed. Solo teñirlo en Unity: no regeneres arte ni pidas sprites; reutiliza las piezas existentes con un tinte rojo (en los SpriteRenderer o con el mecanismo que ya tenga el proyecto). Prefab nuevo en Assets/Prefabs/Enemies/Procedural/, con el mismo comportamiento, ataques y animaciones. Compila, haz commit y dime qué has hecho y cómo probarlo.
+
+(La cola le añade su encabezado y las reglas de informe: es parte de lo que se mide. Si el lado 2 reutiliza lo que hizo el
+lado 1, es otra diferencia a anotar.)
 
 ## Condiciones iguales
 
-- **Mismo modelo y esfuerzo**: Sonnet 5.5, esfuerzo medio (`/model sonnet`, `/effort medium` en la terminal; en la web,
+- **Mismo modelo y esfuerzo**: Sonnet 5.5, esfuerzo medio (`/model sonnet` y `/effort medium` en la terminal; en la web,
   Modelo "Sonnet", Esfuerzo "medio").
-- **Mismo punto de partida**: la **base** es el último commit de la rama `task/humanoid-walker` en el momento de empezar.
-  Cada lado en su rama desde la base, para que el segundo no vea el resultado del primero:
-  - Lado 1 (terminal): `git switch -c task/prueba-terminal`, trabajar, commit.
-  - Vuelve a la base: `git switch task/humanoid-walker`.
-  - Lado 2 (web): `git switch -c task/prueba-web`, lanzar la tarea desde la web (la cola trabaja en la rama actual).
-  - Al final el usuario decide qué rama conserva; no se borra ninguna (CLAUDE.md: nunca borrar ramas).
-- **Unity abierto** en los dos lados (en la web, marcar "necesita Unity"; en la terminal ya está).
-- **Sin `/clear` previo cargado de contexto**: el lado 1 es una sesión recién limpiada que solo lee lo imprescindible
-  (CLAUDE.md, memoria) y esta tarea. No se le da este documento ni el traspaso antes de pedírsela.
-- Mientras se hace el lado 2, la terminal de Claude debe estar cerrada (la cola espera si no; "Lanzar igualmente" existe
-  pero ensucia la medida).
+- **Unity abierto** en los dos lados (en la web, marcar "necesita Unity").
+- **Lado 1 = sesión recién limpiada** (`/clear` o terminal nueva) que no ha leído este documento ni el traspaso.
+- **Orden**: primero el lado 1; al acabar, cierra todas las terminales de Claude (la cola espera si hay una abierta) y
+  lanza el lado 2 desde la web. Misma rama (`task/humanoid-walker`), un commit por lado.
 
 ## Cómo se mide (exacto)
 

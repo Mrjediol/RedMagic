@@ -67,7 +67,7 @@ function tidyName(kind, s) {
   return strip(s).replace(/[^A-Za-z0-9_]+/g, '_');
 }
 
-export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges = () => {} }) {
+export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges = () => {}, mobile = false }) {
   const roots = [root, enemiesRoot];
   let token = null;
   let data = null, dataText = '';
@@ -185,6 +185,8 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
       names.set(key, name);
       try {
         if (item.kind === 'projectile' || item.kind === 'fx') {
+          // movil.html: the 📚 Biblioteca is the PC browser's IndexedDB — baking here would save it on the phone.
+          if (mobile && (decision === 'accept' || item.status === 'accepted')) throw new Error('Proyectiles y efectos: acéptalos desde el PC (van a la 📚 Biblioteca de su navegador)');
           if (decision === 'accept' && item.status !== 'accepted') libraryIds[id] = await saveToLibrary(item, name);
           if (decision !== 'accept' && item.status === 'accepted' && item.libraryId) await deleteEnemy(item.libraryId);
         }

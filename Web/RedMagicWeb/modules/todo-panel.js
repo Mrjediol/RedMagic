@@ -155,9 +155,10 @@ async function kvSet(key, value) {
  *   toolbar: HTMLElement, quick: HTMLElement, toast?: (text: string) => void }} ctx
  *   root = the apuntes list; rail / detail = left index and right drawer; extraTalleres = where the "por definir"
  *   talleres go. Everything inside a `[data-designs]` element belongs to designs-panel.js and is left alone.
+ *   mobile = movil.html (no file mode, no reset, no 📱 pairing button).
  * @returns {{ onShow(): void, flush(): Promise<void>, setBadges(b: Record<string, number>): void }}
  */
-export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, toolbar, quick, toast = () => {} }) {
+export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, toolbar, quick, toast = () => {}, mobile = false }) {
   const tab = root.closest('.tabPanel') || root.parentElement;
   let phases = clone(DEFAULT_PHASES);
   let extra = {};                          // top-level fields of the file other than phases (the queue…), kept
@@ -392,7 +393,8 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     toolbar.innerHTML = `${left}
       <button data-act="hide-done" class="${hideDone ? 'active' : ''}">Ocultar hechas</button>
       <span class="tabSpacer"></span>
-      <button data-act="reset" class="${confirmKey === 'reset' ? 'danger' : ''}">${confirmKey === 'reset' ? '¿Seguro? Se pierden tus cambios' : 'Restaurar lista original'}</button>
+      ${server && !mobile ? '<button data-act="phone" title="Usar este tab desde el móvil: enlace y QR para emparejarlo">📱 Móvil</button>' : ''}
+      ${mobile ? '' : `<button data-act="reset" class="${confirmKey === 'reset' ? 'danger' : ''}">${confirmKey === 'reset' ? '¿Seguro? Se pierden tus cambios' : 'Restaurar lista original'}</button>`}
       ${server ? '' : '<p class="efHint todoNoServer">Para lanzar tareas a Claude, abre la web con <code>Web/RedMagicWeb/tools/taller-server/start.cmd</code> en vez de <code>npx serve</code>.</p>'}`;
   }
 
@@ -489,6 +491,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
           : `<button class="primary" data-act="run" data-id="${t.id}">▶ Lanzar${steps.length ? ' (los pasos sin hacer)' : ''}</button>`)
           : '<span class="efHint">Para lanzarla, abre la web desde tools/taller-server/start.cmd.</span>'}
         <button data-act="toggle" data-id="${t.id}">${t.done ? '↶ Reabrir' : '✓ Hecha'}</button>
+        <button class="${confirmKey === `dt${t.id}` ? 'danger' : ''}" data-act="del-task" data-id="${t.id}">${confirmKey === `dt${t.id}` ? '¿Borrar la tarea?' : '🗑'}</button>
       </div>
       ${resultBlock(t.result)}
       ${t.history?.length ? `<details class="todoHistory"><summary>Informes anteriores (${t.history.length})</summary>${t.history.map((r) => resultBlock(r, 'Anterior')).join('')}</details>` : ''}
@@ -649,11 +652,52 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     focusId = null;
   }
 
+  // On a narrow screen the drawer covers the list: the phone's Back button closes it (a history entry per opening).
+  const narrow = () => window.matchMedia('(max-width: 760px)').matches;
+  let pushed = false;
   function select(id) {
+    if (id && !sel && narrow() && !pushed) { history.pushState({ todoSel: true }, ''); pushed = true; }
+    if (!id && pushed) { pushed = false; history.back(); }
     sel = id;
     if (id) sessionStorage.setItem(SEL_KEY, id); else sessionStorage.removeItem(SEL_KEY);
     render();
-    if (id) detail.querySelector('.todoDetailNote')?.focus({ preventScroll: true });
+    if (id && !narrow()) detail.querySelector('.todoDetailNote')?.focus({ preventScroll: true });
+    if (id && narrow()) detail.scrollTop = 0;
+  }
+  window.addEventListener('popstate', () => { if (pushed) { pushed = false; select(null); } });
+
+  /** 📱 Móvil: the pairing link (with the key) as text + QR, and how to reach the PC from the phone. */
+  async function showPhone() {
+    let info;
+    try { info = await api('GET', 'movil'); } catch (e) { toast(e.message); return; }
+    const base = info.url || info.lan[0] || '';
+    const link = base ? `${base}/movil.html#k=${info.key}` : '';
+    const dlg = document.createElement('dialog');
+    dlg.className = 'todoPhone';
+    dlg.innerHTML = `<h2>📱 Tareas en el móvil</h2>
+      ${link ? `<p>Abre este enlace en el móvil una vez (o escanea el QR): queda emparejado. Luego, añádelo a la pantalla de inicio.</p>
+        <div class="todoPhoneQr" data-qr></div>
+        <p><input type="text" readonly value="${esc(link)}" data-link> <button data-copy>Copiar</button></p>
+        ${info.url ? '<p class="efHint">Si no abre: en el PC, una vez, <code>tailscale serve --bg 3000</code> (y Tailscale conectado en el móvil).</p>' : ''}
+        ${info.lan.length > 1 ? `<p class="efHint">Otras direcciones de este PC: ${info.lan.slice(1).map(esc).join(' · ')}</p>` : ''}`
+      : `<p><b>El móvil aún no llega a este PC.</b> Lo más fácil, y funciona fuera de casa:</p>
+        <ol><li>Instala <b>Tailscale</b> en el PC y en el móvil y entra con la misma cuenta.</li>
+          <li>En el PC, una vez: <code>tailscale serve --bg 3000</code> (si pide activar HTTPS, acepta).</li>
+          <li>Vuelve a pulsar 📱 Móvil: aquí saldrá el enlace con su QR.</li></ol>
+        <p class="efHint">Solo en casa, sin Tailscale: <code>"listen": "0.0.0.0"</code> en tools/taller-server/config.json y reinicia start.cmd.</p>`}
+      <p class="efHint">El enlace lleva la clave del móvil: no lo compartas. Borrar <code>Logs/Taller/movil-key.txt</code> (y reiniciar) desempareja todos.</p>
+      <form method="dialog"><button>Cerrar</button></form>`;
+    document.body.appendChild(dlg);
+    dlg.addEventListener('close', () => dlg.remove());
+    dlg.querySelector('[data-copy]')?.addEventListener('click', () => { navigator.clipboard?.writeText(link).then(() => toast('Enlace copiado')); });
+    dlg.showModal();
+    const qr = dlg.querySelector('[data-qr]');
+    if (qr) {
+      try {
+        if (!window.QRCode) await new Promise((ok, fail) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; sc.onload = ok; sc.onerror = fail; document.head.appendChild(sc); });
+        new window.QRCode(qr, { text: link, width: 220, height: 220 });
+      } catch { qr.textContent = '(sin conexión para dibujar el QR: copia el enlace)'; }
+    }
   }
 
   /** Unfolds a phase or a taller and scrolls to it (the rail, and links into a taller). */
@@ -889,6 +933,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
   });
 
   const TOOLBAR = {
+    phone: showPhone,
     link: linkFile,
     reconnect: async () => {
       try { if ((await handle.requestPermission({ mode: 'readwrite' })) === 'granted') { needsPermission = false; await pullFile(true); } }

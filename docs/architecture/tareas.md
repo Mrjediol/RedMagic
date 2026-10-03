@@ -50,11 +50,31 @@ bridge keeps trusting the web. Serves `Web/RedMagicWeb` and the API (see the hea
   4. the final message is the task's `result`; the whole stream → `Logs/Taller/<run>.jsonl` (not in git);
      what it is doing (last tool calls) → `/api/status` → the live box in the web.
   A run that was going when the server stopped is marked "interrumpida" at the next start.
-- **Security**: 127.0.0.1 only; Host must be localhost / 127.0.0.1 (DNS rebinding); anything that changes
-  something needs the per-start token from `GET /api/hello` in `X-Taller-Token` — a custom header forces a CORS
-  preflight the server never answers, so no other page can send it.
+- **Security**: a request is LOCAL only from loopback, with Host localhost / 127.0.0.1 and no proxy headers
+  (`X-Forwarded-For`, `Tailscale-User-Login`); anything else is REMOTE and every `/api/` call needs the phone's
+  pairing cookie (see Phone) — that also covers DNS rebinding. Anything that changes something needs the per-start
+  token from `GET /api/hello` in `X-Taller-Token` — a custom header forces a CORS preflight the server never
+  answers, so no other page can send it — and a same-origin Origin (http or https).
 - `config.json` (optional, next to `server.mjs`): `port`, `defaultModel`, `defaultEffort`, `maxBudgetUsd`,
-  `disallowedTools`, `claudeExe`, `comfyExe`. `TALLER_PORT` overrides the port (tests).
+  `disallowedTools`, `claudeExe`, `comfyExe`, `listen`, `ntfy`. `TALLER_PORT` overrides the port (tests).
+
+## Phone (`movil.html` + `modules/movil.js`)
+
+The same tab on the phone, with the PC on and `start.cmd` running: apuntes, descriptions, launching, replying,
+accepting / discarding proposals, enemies. `movil.js` takes `#tab-todo` from `index.html` itself (no copy of the
+markup) and runs `todo-panel.js` / `designs-panel.js` with `mobile: true` (no file mode, no reset, no 📱 button;
+projectiles / effects can't be accepted there — the 📚 Biblioteca is the PC browser's IndexedDB). Under 760 px the
+rail is a chip strip and the drawer covers the screen (the phone's Back closes it). `movil.webmanifest` = "add to
+home screen".
+- **Reaching the PC**: `tailscale serve --bg 3000` on the PC (once; Tailscale on PC and phone, same account) →
+  `https://<pc>.<tailnet>.ts.net/movil.html`, works outside home, the server stays on 127.0.0.1. Home-only
+  alternative: `"listen": "0.0.0.0"` in config.json (LAN).
+- **Pairing**: the key is `Logs/Taller/movil-key.txt` (made on the first start; delete it + restart = un-pair all).
+  PC: Tareas ▸ **📱 Móvil** (`GET /api/movil`, local only) shows the link `…/movil.html#k=<key>` + a QR (qrcodejs from
+  cdnjs). The phone posts it to `/api/pair` → `HttpOnly; SameSite=Strict` cookie for a year; the hash is wiped.
+- **Push** (optional): `"ntfy": "https://ntfy.sh/<long secret topic>"` → `runner.opts.onFinish` posts the task title
+  and ok / failed when each run ends (nothing else leaves the PC); subscribe to that topic in the ntfy app.
+- A task launched from the phone still WAITS while a Claude terminal is open on the PC (task `cola-terminal`).
 
 ## The web (`modules/todo-panel.js`, markup `#tab-todo`)
 
@@ -82,9 +102,7 @@ repo file linked once with the File System Access API (no launching).
 **Apunte → taller link** (task `apunte-taller`, `docs/tareas/apunte-taller.md`): an apunte like "15 enemigos" taking
 you to the taller that does it and showing its progress.
 
-Phase 3 — a gallery of generated sprites (Comfy output) to pick from and send back as a task. Phase 4 — phone
-access (Tailscale + token, the server already speaks a token) and a notification when the queue empties (ntfy /
-Telegram).
+Phase 3 — a gallery of generated sprites (Comfy output) to pick from and send back as a task.
 
 ## Plan usage (Pro plan: no dollars)
 

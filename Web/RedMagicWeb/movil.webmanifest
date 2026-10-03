@@ -1,0 +1,9 @@
+{
+  "name": "RedMagic · Tareas",
+  "short_name": "Tareas",
+  "start_url": "movil.html",
+  "display": "standalone",
+  "background_color": "#0f191b",
+  "theme_color": "#221a12",
+  "icons": [{ "src": "assets/favicon.png", "sizes": "any", "type": "image/png" }]
+}

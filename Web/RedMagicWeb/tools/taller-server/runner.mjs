@@ -207,6 +207,7 @@ export class Runner {
       sessionId: result.sessionId,
       ...(step ? {} : { result }),
     });
+    try { this.opts.onFinish?.(fresh || task, result); } catch (e) { console.error('[onFinish]', e); }
   }
 
   _usageFile() { return path.join(this.opts.logDir, 'usage.json'); }

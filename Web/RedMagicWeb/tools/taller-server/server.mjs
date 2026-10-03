@@ -18,13 +18,20 @@
 //   POST /api/enemigos/build { name, model, effort }   POST /api/enemigos/work { name, ids?, model, effort }   (queue a task)
 //   POST /api/enemigos/add { prefab }   POST /api/enemigos/picture { name }   (the picture comes from Unity)
 //
-// Only 127.0.0.1. Anything that changes something needs the token header (a custom header forces a CORS
-// preflight, which this server never answers, so no other page can send it) and a same-origin Host.
+//   GET  /api/movil                 → { key, url }   (this PC only) the phone's pairing link
+//   POST /api/pair   { key }        → sets the phone's cookie
+//
+// LOCAL = a request from this PC to localhost / 127.0.0.1 (no proxy headers). Anything else is REMOTE — the phone
+// through `tailscale serve` (or the LAN with config.listen) — and every /api/ call needs the pairing cookie
+// (key in Logs/Taller/movil-key.txt), which also stops DNS rebinding. Anything that changes something needs the
+// token header (a custom header forces a CORS preflight, which this server never answers, so no other page can
+// send it) and a same-origin Origin. docs/architecture/tareas.md ▸ Phone.
 //
 //   node server.mjs            (or start.cmd)        config: config.json next to this file (optional)
 
 import http from 'node:http';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -47,6 +54,8 @@ const DEFAULTS = {
   claudeExe: null,
   comfyExe: null,
   comfyOutput: path.join(process.env.LOCALAPPDATA || '', 'Comfy-Desktop', 'ComfyUI-Shared', 'output'),   // where Comfy saves images
+  listen: '127.0.0.1',   // '0.0.0.0' = also the LAN (phone on the same Wi-Fi); with `tailscale serve` keep 127.0.0.1
+  ntfy: null,            // e.g. "https://ntfy.sh/<a long secret topic>": a push to the phone when a task ends
 };
 const configFile = path.join(here, 'config.json');
 const config = { ...DEFAULTS, ...(fs.existsSync(configFile) ? JSON.parse(fs.readFileSync(configFile, 'utf8')) : {}) };
@@ -72,12 +81,63 @@ function findComfy() {
 }
 
 const store = new Store(path.join(projectRoot, 'docs', 'tareas', 'todo.json'));
+const logDir = path.join(projectRoot, 'Logs', 'Taller');
 const runner = new Runner(store, {
-  projectRoot, logDir: path.join(projectRoot, 'Logs', 'Taller'), claudeExe: findClaude(), comfyExe: findComfy(), config,
+  projectRoot, logDir, claudeExe: findClaude(), comfyExe: findComfy(), config, onFinish: notify,
 });
 const disenos = new Disenos({ projectRoot, comfyOutput: path.resolve(config.comfyOutput), store, runner });
 const enemigos = new Enemigos({ projectRoot, store, runner });
 const token = crypto.randomBytes(24).toString('hex');
+
+// ============================================================ the phone
+
+/** The pairing key: made once, kept out of git (Logs/). Deleting the file un-pairs every phone. */
+const keyFile = path.join(logDir, 'movil-key.txt');
+const phoneKey = (() => {
+  try { const k = fs.readFileSync(keyFile, 'utf8').trim(); if (k.length >= 20) return k; } catch { /* first start */ }
+  const k = crypto.randomBytes(18).toString('base64url');
+  fs.mkdirSync(logDir, { recursive: true });
+  fs.writeFileSync(keyFile, k);
+  return k;
+})();
+const COOKIE = 'taller_movil';
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+const localHost = (host) => host === `localhost:${config.port}` || host === `127.0.0.1:${config.port}`;
+/** This PC's own browser: loopback, a localhost Host, no proxy in between. */
+const isLocal = (req) => LOOPBACK.has(req.socket.remoteAddress) && localHost(req.headers.host || '')
+  && !req.headers['x-forwarded-for'] && !req.headers['tailscale-user-login'];
+function cookieOf(req, name) {
+  for (const part of String(req.headers.cookie || '').split(';')) {
+    const [k, ...v] = part.trim().split('=');
+    if (k === name) return decodeURIComponent(v.join('='));
+  }
+  return '';
+}
+const sameKey = (k) => { const a = Buffer.from(String(k)), b = Buffer.from(phoneKey); return a.length === b.length && crypto.timingSafeEqual(a, b); };
+
+/** The address the phone opens: the Tailscale name of this PC if `tailscale serve` is set up, else null. */
+let tailscaleUrl = null;   // cached once found; looked up again while missing (Tailscale installed later)
+function phoneUrl() {
+  if (tailscaleUrl) return tailscaleUrl;
+  try {
+    const st = JSON.parse(execFileSync('tailscale', ['status', '--json'], { encoding: 'utf8', timeout: 4000, windowsHide: true }));
+    const name = st?.Self?.DNSName?.replace(/\.$/, '');
+    if (name) tailscaleUrl = `https://${name}`;
+  } catch { /* no Tailscale */ }
+  return tailscaleUrl;
+}
+
+/** ntfy push when a task ends (config.ntfy): title + ok / failed, nothing else leaves the PC. */
+function notify(task, result) {
+  if (!config.ntfy || !task) return;
+  try {
+    const u = new URL(config.ntfy);   // JSON publishing (UTF-8 titles): POST to the server root with the topic inside
+    fetch(u.origin, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+      topic: u.pathname.replace(/^\/+/, ''), title: task.text.slice(0, 120), tags: [result.ok ? 'white_check_mark' : 'x'],
+      message: result.ok ? 'Terminada: mira el informe en Tareas' : 'Falló o se canceló: mira el informe',
+    }) }).catch((e) => console.error('[ntfy]', e.message));
+  } catch (e) { console.error('[ntfy] config.ntfy no es una URL:', e.message); }
+}
 
 // ============================================================ apps (cached: checking Unity runs a CLI)
 
@@ -93,7 +153,8 @@ async function refreshApps() {
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.webp': 'image/webp',
-  '.gif': 'image/gif', '.ico': 'image/x-icon', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.md': 'text/markdown; charset=utf-8' };
+  '.gif': 'image/gif', '.ico': 'image/x-icon', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.md': 'text/markdown; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8' };
 
 function send(res, status, body, type = 'application/json; charset=utf-8') {
   const data = typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body);
@@ -110,10 +171,21 @@ async function readJson(req) {
   return body ? JSON.parse(body) : {};
 }
 
-const allowedHost = (host) => host === `localhost:${config.port}` || host === `127.0.0.1:${config.port}`;
-
 async function api(req, res, url) {
   const route = `${req.method} ${url.pathname}`;
+  const local = isLocal(req);
+  if (route === 'POST /api/pair') {   // the phone, once: the key from the link becomes a cookie for every later call
+    const body = await readJson(req);
+    if (!sameKey(body.key)) return send(res, 403, { error: 'clave' });
+    res.setHeader('Set-Cookie', `${COOKIE}=${encodeURIComponent(phoneKey)}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Strict`);
+    return send(res, 200, { ok: true });
+  }
+  if (!local && !sameKey(cookieOf(req, COOKIE))) return send(res, 401, { error: 'movil' });
+  if (route === 'GET /api/movil') {
+    if (!local) return send(res, 403, { error: 'solo desde el PC' });
+    const lan = config.listen === '127.0.0.1' ? [] : Object.values(os.networkInterfaces()).flat().filter((i) => i && i.family === 'IPv4' && !i.internal && !i.address.startsWith('169.254.')).map((i) => `http://${i.address}:${config.port}`);
+    return send(res, 200, { key: phoneKey, url: phoneUrl(), lan });
+  }
   if (route === 'GET /api/hello') return send(res, 200, { token, project: path.basename(projectRoot) });
   if (route === 'GET /api/todo') return send(res, 200, { rev: store.rev, doc: store.doc });
   if (route === 'GET /api/disenos') {
@@ -129,7 +201,7 @@ async function api(req, res, url) {
   // Everything below changes something.
   if (req.headers['x-taller-token'] !== token) return send(res, 403, { error: 'token' });
   const origin = req.headers.origin;
-  if (origin && origin !== `http://${req.headers.host}`) return send(res, 403, { error: 'origin' });
+  if (origin && origin !== `http://${req.headers.host}` && origin !== `https://${req.headers.host}`) return send(res, 403, { error: 'origin' });
   const body = await readJson(req);
 
   if (route === 'PUT /api/todo') {
@@ -183,8 +255,7 @@ function serveFile(res, file, cache) {
 
 const server = http.createServer(async (req, res) => {
   try {
-    // DNS rebinding: only this machine's own names reach the API.
-    if (!allowedHost(req.headers.host || '')) return send(res, 403, 'host', 'text/plain');
+    // DNS rebinding: a page that renamed itself to this PC is REMOTE (isLocal) and has no pairing cookie for the API.
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname.startsWith('/api/')) return await api(req, res, url);
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'no', 'text/plain');
@@ -201,9 +272,11 @@ server.on('error', (e) => {
   process.exit(1);
 });
 
-server.listen(config.port, '127.0.0.1', () => {
+server.listen(config.port, config.listen, () => {
   console.log(`\nTaller de RedMagic → http://localhost:${config.port}/`);
   console.log(`  tareas: docs/tareas/todo.json · registros: Logs/Taller/ · modelo por defecto: ${config.defaultModel} (${config.defaultEffort})`);
   console.log(`  ComfyUI: ${runner.opts.comfyExe || 'no encontrado (config.json → comfyExe)'}`);
+  const phone = phoneUrl();
+  console.log(`  móvil: ${phone ? `${phone}/movil.html (Tailscale)` : "sin Tailscale"}${config.listen !== '127.0.0.1' ? ` · red local en el puerto ${config.port}` : ''} — el enlace para emparejarlo, en Tareas ▸ 📱`);
   console.log('  Ctrl+C para parar. Si se para con una tarea a medias, queda marcada como interrumpida.\n');
 });

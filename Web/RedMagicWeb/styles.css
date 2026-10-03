@@ -904,3 +904,39 @@ textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .enPendAdd textarea{flex:1;min-width:0;background:var(--well);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:6px 8px;font:inherit;font-size:14px;resize:vertical;}
 .enPendAdd button{margin:0;}
 @media (max-width:760px){.enSheetBody{grid-template-columns:1fr;}}
+
+/* ---------------- 📱 Tareas on a narrow screen + movil.html (modules/movil.js) ---------------- */
+.todoPhone{width:min(520px,94vw);padding:16px 20px;border:1px solid var(--border-lit);border-radius:10px;background:var(--panel);color:var(--text);font-family:var(--font-ui);}
+.todoPhone::backdrop{background:rgba(4,10,11,.75);}
+.todoPhone h2{margin:0 0 8px;font-family:var(--font-carved);font-size:18px;}
+.todoPhone p{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.todoPhone [data-link]{flex:1;min-width:0;font-family:Consolas,monospace;font-size:12.5px;}
+.todoPhoneQr{display:flex;justify-content:center;padding:12px;background:#fff;border-radius:8px;width:fit-content;margin:6px auto;}
+body.movil{height:100dvh;}
+body.movil #tab-todo{flex:1;}
+.movilGate{flex:1;display:flex;flex-direction:column;justify-content:center;padding:24px;font-size:16px;line-height:1.5;color:var(--muted);}
+.movilGate[hidden]{display:none;}
+.movilGate b{color:var(--text);}
+.movilToast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:90;max-width:92vw;background:var(--bark);border:1px solid var(--accent2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
+.movilToast[hidden]{display:none;}
+@media (max-width:760px){
+  #tab-todo{flex-direction:column;}
+  .todoRail{width:auto;display:flex;gap:6px;overflow-x:auto;padding:8px 10px;border-right:0;border-bottom:1px solid var(--border);flex:none;scrollbar-width:none;}
+  .todoRail h2{display:none;}
+  .todoRailItem{width:auto;flex:none;white-space:nowrap;background:var(--raise);border:1px solid var(--border);padding:7px 11px;font-size:14px;}
+  #todoPanel{padding:12px 12px 90px;}
+  #todoPanel > h1{display:none;}
+  .todoZone{margin-top:18px;}
+  .todoPhase{padding:4px 10px 10px;}
+  .todoTask{grid-template-columns:28px minmax(0,1fr);padding:11px 6px;margin:0 -6px;}
+  .todoTask .todoTools{display:none;}
+  .todoCheck{width:26px;height:26px;}
+  .todoTallerBody{padding:2px 10px 12px;}
+  .todoTaller > summary{padding:12px 12px;}
+  .todoDetail{position:fixed;inset:0;width:auto;z-index:60;border-left:0;padding:12px 14px calc(70px + env(safe-area-inset-bottom));}
+  .todoDetailHead .small{padding:8px 14px;font-size:15px;}
+  .todoAdd input,.todoDetail input,.todoDetail textarea,.todoDetail select,#todoQuick input,#todoQuick textarea{font-size:16px !important;}   /* iOS: no zoom on focus */
+  .enCards{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+  .enAskRow{gap:10px;}
+  .todoToolbar{gap:6px;font-size:13px;}
+}

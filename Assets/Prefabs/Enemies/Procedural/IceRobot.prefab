@@ -1055,6 +1055,21 @@ MonoBehaviour:
       moment: 2
       step: 2
       at: 0.038
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: 35fd9a54c326f014690e298bc41ff9f9, type: 3}
+        volume: 1
+        pitchMin: 1
+        pitchMax: 1
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 2
+      step: 3
+      at: 0.429
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1

@@ -1,0 +1,15 @@
+{
+  "name": "FrostKnight",
+  "request": "Caballero de escarcha: armadura vacía de piezas sueltas que anda por el suelo, tajo con espada de hielo, orbe oscuro desde la mano izquierda y dash hacia atrás.",
+  "template": "groundHumanoid",
+  "parts": "claude/knight/final",
+  "height": 3.2,
+  "colliderFill": [0.42, 1.0],
+  "rig": { "muzzleFlashSize": 0 },
+  "tuning": {
+    "maxHealth": 40,
+    "attackDamage": 10,
+    "attackCooldown": 1.4,
+    "moveSoundInterval": 0.45
+  }
+}

@@ -266,8 +266,10 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
   previews it with this driver's formulas (see "A gesture is a timeline ▸ Web editor").
 - Web side: 🧬 Enemy Studio authors the bundle (its body editor is `rig-composer.js`; the old 🦴 Rig
   Composer tab was retired); its **body templates** (floating caster / folding
-  sentry / limbed colossus — `Web/RedMagicWeb/modules/rig-templates.js`, data) are the generic
-  versions of the three packs above and ship default gestures in `gestures`.
+  sentry / limbed colossus / ground humanoid — `Web/RedMagicWeb/modules/rig-templates.js`, data) are the generic
+  versions of the three packs above and ship default gestures in `gestures`. **`groundHumanoid`** (2026-10-03) is
+  the first walker: Cape, BackHand, BackFoot, Hips, Torso, Head, FrontFoot, WeaponHand — fracture-style floating
+  parts; the two feet hang from `Visual` (not the torso) so a gait can plant them. First body: `FrostKnight`.
 - **Pivot = centre of the body**, for enemies and bosses: the web lays the body around the origin.
   A boss also carries `root.feet` → a `Feet` child wired to `BossController.feet` (see `bosses.md`).
   Web-exported `sortingOrder` starts at **1** (0 draws behind the scene background).

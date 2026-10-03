@@ -255,7 +255,7 @@ MonoBehaviour:
     knockbackVertical: 3
     knockbackDuration: 0.18
     knockbackResistance: 0
-    detectionRange: 13
+    detectionRange: 10
     loseInterestGrace: 1
     attackRange: 8
     personalSpace: 3
@@ -555,7 +555,8 @@ MonoBehaviour:
     chance: 0.6
     windup: 0.5
   transition:
-    gestures: []
+    gestures:
+    - baile
     chance: 0.5
     windup: 0.3
   aimPart: {fileID: 5520972963685871920}
@@ -665,9 +666,9 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
-    soundMoment: 1
+    soundMoment: 2
     soundStep: 0
-    soundAt: 0
+    soundAt: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -727,9 +728,9 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
-    soundMoment: 1
+    soundMoment: 2
     soundStep: 0
-    soundAt: 0
+    soundAt: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -785,9 +786,9 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
-    soundMoment: 1
+    soundMoment: 2
     soundStep: 0
-    soundAt: 0
+    soundAt: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -894,9 +895,9 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
-    soundMoment: 1
+    soundMoment: 2
     soundStep: 0
-    soundAt: 0
+    soundAt: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1060,7 +1061,9 @@ MonoBehaviour:
     recover: 0.45
     fx: []
     sound:
-      clips: []
+      clips:
+      - {fileID: 8300000, guid: edc25f5ec8dbdc34abd15d7fc50a15b5, type: 3}
+      - {fileID: 8300000, guid: d3e757a025413c94e90ea0e03da52195, type: 3}
       volume: 1
       pitchMin: 1
       pitchMax: 1
@@ -1070,9 +1073,9 @@ MonoBehaviour:
       rolloffStart: 10
       rolloffEnd: 32
       initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    soundMoment: 2
+    soundStep: 2
+    soundAt: 0.038
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1

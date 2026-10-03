@@ -19,6 +19,13 @@ batch** (`contact-sheet.mjs`), never at single full-size images. Trust the measu
 - Body: prefer floaters / rooted turrets made of **separate rigid parts** (GDD, `docs/idea-fracture.md`).
   Pick the template first (`rig-templates.js`: `floatingCaster` = Torso, Head, CastArm, OffArm, Lower,
   Accessory · `foldingSentry` = Base, Stem, Head) and describe exactly those parts.
+- **Fracture look (never skip — the base must already read as parts):** every base prompt says *"A fractured
+  creature made of separate floating rigid parts with small clear empty gaps between them, like a Rayman
+  character: no arms, no legs, no neck joining the parts, the hands float detached beside the body."* and ends
+  *"Each part is one simple chunky closed shape with its own complete black outline, no part overlapping
+  another."* Describe ONE shape per template slot and nothing more (extra chunks = extra islands with no slot).
+  Ground enemy: the `Lower` slot is one piece resting on the floor (a bottom snowball, boots fused into one
+  armored skirt, an ice slab) — say "the lower part rests flat on the floor". Reference: ShroomShaman.
 
 ## 1 · Base (stop: the user picks)
 `node claude-workflow.mjs run --no-cut --size 1024x1024 --seed N --name base_<x> --prompt "A 2D game enemy

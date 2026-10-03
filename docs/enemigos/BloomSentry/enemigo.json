@@ -1,0 +1,14 @@
+{
+  "name": "BloomSentry",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/BloomSentry/diseno.png",
+    "source": "comfy:claude/base_bloom_raw_00001_.png",
+    "lote": "2026-10-02-bases-variadas",
+    "item": "5",
+    "request": "Prueba: bases ya generadas el 2026-10-02, para probar la galería",
+    "note": "Torreta vegetal en maceta"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-03T20:21:04.876Z"
+}

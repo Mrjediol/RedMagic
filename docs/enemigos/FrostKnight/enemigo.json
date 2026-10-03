@@ -1,6 +1,6 @@
 {
   "name": "FrostKnight",
-  "estado": "por-aprobar",
+  "estado": "aprobado",
   "prefab": "Assets/Prefabs/Enemies/Procedural/FrostKnight.prefab",
   "pendientes": [
     {

@@ -559,6 +559,18 @@ MonoBehaviour:
     - baile
     chance: 0.5
     windup: 0.3
+  gait:
+    feet: []
+    stride: 0.8
+    fullSpeed: 2.2
+    minStride: 0.4
+    duty: 0.55
+    lift: 0.18
+    footTilt: 16
+    bodyBob: 0.05
+    maxSpeed: 4
+    settleTime: 0.15
+    layers: []
   aimPart: {fileID: 5520972963685871920}
   aimArtAngle: -12.3
   aimMaxAngle: 70
@@ -622,6 +634,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 0
+      aimParts: []
     - name: Golpe
       poses:
       - part: {fileID: 5520972963685871920}
@@ -633,6 +646,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 0
       at: 1
@@ -695,6 +709,7 @@ MonoBehaviour:
       stretch: 1
       shake: 1.5
       aim: 0
+      aimParts: []
     - name: Golpe
       poses:
       - part: {fileID: 5520972963685871920}
@@ -710,6 +725,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 0
       at: 1
@@ -754,6 +770,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 0
+      aimParts: []
     - name: Golpe
       poses:
       - part: {fileID: 5520972963685871920}
@@ -769,6 +786,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 0
       at: 1
@@ -809,6 +827,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 0
+      aimParts: []
     - name: Golpe
       poses:
       - part: {fileID: 7823707452359455860}
@@ -820,6 +839,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 0
       at: 1
@@ -841,6 +861,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 0
+      aimParts: []
     - name: Golpe
       poses:
       - part: {fileID: 5520972963685871920}
@@ -852,6 +873,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 0
       at: 1
@@ -902,6 +924,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 1
+      aimParts: []
     - name: Paso 2
       poses:
       - part: {fileID: 5520972963685871920}
@@ -913,6 +936,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 1
+      aimParts: []
     - name: Paso 2
       poses:
       - part: {fileID: 5520972963685871920}
@@ -924,6 +948,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 2
       at: 0
@@ -959,6 +984,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 0
+      aimParts: []
     - name: Paso 2
       poses:
       - part: {fileID: 7823707452359455860}
@@ -974,6 +1000,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     - name: Paso 2
       poses:
       - part: {fileID: 7823707452359455860}
@@ -993,6 +1020,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     - name: Paso 2
       poses:
       - part: {fileID: 7823707452359455860}
@@ -1016,6 +1044,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     - name: Paso 2
       poses:
       - part: {fileID: 7823707452359455860}
@@ -1035,6 +1064,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases: []
     recover: 0.45
     fx: []

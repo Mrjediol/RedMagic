@@ -811,6 +811,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 0
+      aimParts: []
     - name: Golpe
       poses:
       - part: {fileID: 6900074087791025692}
@@ -822,6 +823,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 0
       at: 1
@@ -884,6 +886,7 @@ MonoBehaviour:
       stretch: 1
       shake: 1.5
       aim: 0
+      aimParts: []
     - name: Golpe
       poses:
       - part: {fileID: 6900074087791025692}
@@ -899,6 +902,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 1
       at: 1
@@ -971,6 +975,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 0
+      aimParts: []
     - name: Golpe
       poses:
       - part: {fileID: 6900074087791025692}
@@ -986,6 +991,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 1
       at: 1
@@ -1066,6 +1072,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 0
+      aimParts: []
     releases: []
     recover: 0.25
     fx:
@@ -1124,6 +1131,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     - name: Gira
       poses:
       - part: {fileID: 6900074087791025692}
@@ -1143,6 +1151,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     - name: Remata
       poses:
       - part: {fileID: 6900074087791025692}
@@ -1158,6 +1167,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 1
       at: 1

@@ -34,9 +34,12 @@ contact sheet, the user chooses.
 
 ## 2 · Parts, in place
 One edit per template slot, `--keep-size --ref "claude/base_<x>_raw_00001_.png [output]" --no-cut
---name <e>_<Slot>`: *"Keep only the <part> of <image1>: … drawn complete with a closed rounded end where
-it joined. Remove <every other part by name>. Same position, same size, same shapes, same colors and
-same black outline as in <image1>. Erase everything else to pure flat white background."*
+--name <e>_<Slot>`: *"Erase from image1 <every other part by name, with position words>, painting pure flat white
+where they were. Leave only <the part, with position words>, untouched, in its exact place, same size, same shape,
+same colors and same black outline, drawn complete with a closed end where it was cut. The result shows one single
+object on a pure flat white background."* — listing what to ERASE works far better than "keep only X" (Knight
+2026-10-03: "keep only" failed 5 of 8 parts — kept others or moved the part; "erase …" was clean 15 of 15).
+Run 2–3 seeds per part and pick from one sheet.
 The part stays where it was on the canvas → the parts assemble themselves. If the model keeps other
 parts, name each thing to delete and say "the single … at the far left".
 Check: `contact-sheet.mjs out.png --under claude/base… <parts>` (each part over the faded base).

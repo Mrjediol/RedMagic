@@ -8,6 +8,10 @@
 //     canvas     same size or not
 //     changed    % of the part's pixels that differ, and the box they sit in (as % of the part's box)
 //     outline    how far the silhouette moved: pixels that are ink in one and background in the other
+//   node compare-variant.mjs --part-of <base.png> <part.png> [<part.png> …]
+//     a PART against the drawing it was cut from: did it stay in place, same size, same colours?
+//     matchPct  % of the part's drawn pixels that sit on drawn base pixels of the same colour (≥ 90 = in place)
+//     offPct    % of the part drawn where the base has background (it moved / grew / gained something)
 //   Works on images with a flat light background (before the cut) or with alpha (after it).
 //   Names are relative to Comfy's output folder unless absolute.
 
@@ -54,7 +58,32 @@ export async function compare(partFile, variantFile) {
   };
 }
 
+/** A part against the base drawing it was cut from: same place, same size, same colours. */
+export async function comparePart(baseFile, partFile) {
+  const a = await pixels(baseFile), b = await pixels(partFile);
+  if (a.w !== b.w || a.h !== b.h) return { sameCanvas: false, note: `${a.w}x${a.h} vs ${b.w}x${b.h}` };
+  const n = a.w * a.h, inB = new Uint8Array(n);
+  let drawn = 0, match = 0, off = 0;
+  for (let p = 0; p < n; p++) {
+    const i = p * 4;
+    if (!solid(b.d, i)) continue;
+    inB[p] = 1; drawn++;
+    if (!solid(a.d, i)) { off++; continue; }
+    const diff = Math.abs(a.d[i] - b.d[i]) + Math.abs(a.d[i + 1] - b.d[i + 1]) + Math.abs(a.d[i + 2] - b.d[i + 2]);
+    if (diff <= 90) match++;
+  }
+  const part = box(inB, b.w, b.h);
+  return { partBox: drawn ? `${part.w}x${part.h} at ${part.x0},${part.y0}` : 'empty',
+    matchPct: drawn ? +(100 * match / drawn).toFixed(1) : 0, offPct: drawn ? +(100 * off / drawn).toFixed(1) : 0 };
+}
+
 if (process.argv[1]?.endsWith('compare-variant.mjs')) {
-  const [part, ...variants] = process.argv.slice(2);
+  const argv = process.argv.slice(2);
+  if (argv[0] === '--part-of') {
+    const [, base, ...parts] = argv;
+    for (const p of parts) console.log(p.replace(/^.*[\/]/, ''), JSON.stringify(await comparePart(base, p)));
+    process.exit(0);
+  }
+  const [part, ...variants] = argv;
   for (const v of variants) console.log(v.replace(/^.*[\\/]/, ''), JSON.stringify(await compare(part, v)));
 }

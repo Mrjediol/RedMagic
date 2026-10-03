@@ -35,8 +35,7 @@
   <button class="tabBtn" data-tab="vfx" title="Efectos hechos con parámetros, con sus sonidos">✨ VFX Lab</button>
   <button class="tabBtn" data-tab="boss" title="Un jefe con sus ataques y fases">👑 Boss Creator</button>
   <button class="tabBtn" data-tab="library" title="Todo lo guardado en este navegador">📚 Biblioteca</button>
-  <button class="tabBtn" data-tab="designs" title="Lo que una tarea propuso (enemigos, proyectiles, efectos, sonidos), por aprobar; y la biblioteca de enemigos">🎨 Designs</button>
-  <button class="tabBtn" data-tab="todo" title="Lo que falta por hacer, por fases: se guarda en docs/tareas/todo.json para que Claude lo lea">📋 Tareas</button>
+  <button class="tabBtn" data-tab="todo" title="Apuntes (lo que falta por hacer) y talleres (diseños, enemigos…) con la cola de Claude">📋 Tareas</button>
   <span class="tabSep"></span>
   <button class="tabBtn active" data-tab="sprites" title="Cortar una hoja de sprites en animaciones">🍄 Sprites</button>
   <button class="tabBtn" data-tab="enemy" title="Comportamiento de un enemigo de hoja de sprites">🧩 Enemy Creator</button>
@@ -338,36 +337,56 @@
   </div>
 </div>
 
-<div id="tab-designs" class="tabPanel" hidden>
-  <div id="designsPanel">
-    <h1>🎨 Designs</h1>
-    <p class="hint">
-      Lo que una tarea propone — enemigos, proyectiles, efectos y sonidos — espera aquí tu decisión: clic en una tarjeta
-      para seleccionarla, ⤢ para verla en grande, ▶ para oírla. Al aceptar, cada cosa va a su sitio: un enemigo a la
-      biblioteca de enemigos (pendiente de montar), un proyectil o efecto a 📚 Biblioteca, un sonido a la paleta del juego.
-    </p>
-    <div id="designsRoot"></div>
-    <p id="designsStatus" class="efHint"></p>
-  </div>
-</div>
-
 <div id="tab-todo" class="tabPanel" hidden>
+  <nav id="todoRail" class="todoRail" aria-label="Secciones de Tareas"></nav>
   <div id="todoPanel">
     <h1>📋 Tareas</h1>
-    <p class="hint">
-      Lo que falta por hacer, por fases, en <code>docs/tareas/todo.json</code>: Claude la lee para saber qué hay
-      pendiente. Despliega una tarea (▸) para darle prompt y pasos y lanzarla a la cola; su informe aparece debajo.
-    </p>
-    <div id="todoMeter" class="todoMeter" aria-label="Progreso">
-      <div class="todoMeterRow"><span><b data-m="done">0</b> de <b data-m="total">0</b> hechas</span><b data-m="pct">0%</b></div>
-      <div class="todoBar"><i data-m="fill"></i></div>
-    </div>
     <div id="todoToolbar" class="todoToolbar"></div>
-    <div id="todoQuick"></div>
-    <div id="todoRoot"></div>
-    <form id="todoPhaseForm" class="todoAdd todoAddPhase"><input id="todoNewPhase" type="text" placeholder="Nueva fase" aria-label="Nueva fase" autocomplete="off"><button type="submit">Añadir fase</button></form>
+
+    <section class="todoZone" id="todoZoneApuntes">
+      <div class="todoZoneHead"><h2>📝 Apuntes</h2>
+        <span class="efHint">Lo que falta por hacer, en <code>docs/tareas/todo.json</code> (Claude lo lee). Clic en una tarea para abrirla: descripción, pasos, lanzarla.</span></div>
+      <div id="todoMeter" class="todoMeter" aria-label="Progreso">
+        <div class="todoMeterRow"><span><b data-m="done">0</b> de <b data-m="total">0</b> hechas</span><b data-m="pct">0%</b></div>
+        <div class="todoBar"><i data-m="fill"></i></div>
+      </div>
+      <div id="todoQuick"></div>
+      <div id="todoRoot"></div>
+      <form id="todoPhaseForm" class="todoAdd todoAddPhase"><input id="todoNewPhase" type="text" placeholder="Nueva fase" aria-label="Nueva fase" autocomplete="off"><button type="submit">Añadir fase</button></form>
+    </section>
+
+    <section class="todoZone" id="todoZoneTalleres">
+      <div class="todoZoneHead"><h2>⚙ Talleres</h2>
+        <span class="efHint">La parte mecánica: cada taller con su formulario, su skill y sus tareas en la cola.</span></div>
+
+      <details class="todoTaller" id="taller-disenos" data-taller="disenos">
+        <summary><span class="todoTallerName">🎨 Diseños</span><span class="todoTag">propuestas</span><span class="todoTallerMeta" data-taller-meta="disenos"></span></summary>
+        <div class="todoTallerBody">
+          <p class="efHint">Propuestas para aprobar: enemigos, proyectiles, efectos y sonidos. Skill <code>design-proposals</code>. Clic en una tarjeta para
+            seleccionarla, ⤢ para verla en grande, ▶ para oírla.</p>
+          <div id="designsRoot" data-designs></div>
+          <h3 class="todoTallerSub">Tareas</h3>
+          <ul class="todoTasks" data-taller-tasks="disenos"></ul>
+        </div>
+      </details>
+
+      <details class="todoTaller" id="taller-enemigos" data-taller="enemigos">
+        <summary><span class="todoTallerName">👾 Enemigos</span><span class="todoTag">montaje</span><span class="todoTallerMeta" data-taller-meta="enemigos"></span></summary>
+        <div class="todoTallerBody">
+          <p class="efHint">Diseño aceptado → ▶ Montar (skill <code>make-enemy</code>) → probar en Unity → aprobar o apuntar pendientes. Clic en un enemigo para abrir su ficha.</p>
+          <div id="enemiesRoot" data-designs></div>
+          <h3 class="todoTallerSub">Tareas</h3>
+          <ul class="todoTasks" data-taller-tasks="enemigos"></ul>
+        </div>
+      </details>
+
+      <div id="todoTalleresExtra"></div>
+    </section>
+
     <p id="todoStatus" class="efHint"></p>
+    <p id="designsStatus" class="efHint"></p>
   </div>
+  <aside id="todoDetail" class="todoDetail" aria-label="Tarea abierta" hidden></aside>
 </div>
 
 <div id="tab-library" class="tabPanel" hidden>

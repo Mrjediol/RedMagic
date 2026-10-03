@@ -1,6 +1,8 @@
 // modules/designs-panel.js
 // -----------------------------------------------------------------------------
-// 🎨 Designs: review what a task proposed — enemies, projectiles, effects, sounds — and the enemy library.
+// 🎨 Diseños + 👾 Enemigos: review what a task proposed — enemies, projectiles, effects, sounds — and the enemy
+// library. Lives inside 📋 Tareas ▸ Talleres with two roots (`root` = the Diseños taller, `enemiesRoot` = Enemigos);
+// todo-panel.js leaves anything under [data-designs] to this module.
 //
 // The batches are docs/disenos/<id>.json in the repo and go through tools/taller-server (disenos.mjs), so
 // this tab only works with the web served by start.cmd. Full design: docs/architecture/designs.md.
@@ -65,7 +67,8 @@ function tidyName(kind, s) {
   return strip(s).replace(/[^A-Za-z0-9_]+/g, '_');
 }
 
-export function initDesignsPanel({ root, statusEl, toast }) {
+export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges = () => {} }) {
+  const roots = [root, enemiesRoot];
   let token = null;
   let data = null, dataText = '';
   let pollTimer = null, pendingRender = false, busy = false;
@@ -85,7 +88,7 @@ export function initDesignsPanel({ root, statusEl, toast }) {
   const keyOf = (lote, item) => `${lote.id}:${item.id}`;
   const nameOf = (lote, item) => names.get(keyOf(lote, item)) ?? item.name;
   const typing = (scope) => scope.contains(document.activeElement) && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
-  const focusedHere = () => typing(root);
+  const focusedHere = () => roots.some(typing);
   const enemyByName = (name) => (data?.enemigos || []).find((e) => e.name === name);
   const taskOf = (id) => (id ? data?.tasks?.[id] : null);
   const active = (t) => t && ['queued', 'waiting', 'running'].includes(t.status);
@@ -360,8 +363,8 @@ export function initDesignsPanel({ root, statusEl, toast }) {
     const count = working && !items.length ? 'generándose…'
       : pend.length ? `${pend.length} por revisar de ${items.length}` : `${accepted} aceptado${accepted === 1 ? '' : 's'} de ${items.length}`;
     const body = items.length ? `<div class="enCards">${items.map((i) => itemCard(lote, i)).join('')}</div>`
-      : `<p class="enEmpty">${working ? 'La tarea está trabajando: sus propuestas aparecerán aquí al terminar (el progreso, en 📋 Tareas ▸ 🎨 Designs).'
-        : failed ? 'La tarea no dejó propuestas: mira su informe en 📋 Tareas ▸ 🎨 Designs.' : 'Sin propuestas.'}</p>`;
+      : `<p class="enEmpty">${working ? 'La tarea está trabajando: sus propuestas aparecerán aquí al terminar (el progreso, en las tareas de este taller).'
+        : failed ? 'La tarea no dejó propuestas: mira su informe en las tareas de este taller.' : 'Sin propuestas.'}</p>`;
     return group(`lote:${lote.id}`, `${kinds} ${lote.title || lote.id}`, count, body, {
       actions,
       sub: [progress, failed ? `✗ ${failed} fallida${failed === 1 ? '' : 's'}` : '', lote.request && lote.request !== lote.title ? lote.request : '', when(lote.createdAt)].filter(Boolean).join(' · '),
@@ -386,7 +389,7 @@ export function initDesignsPanel({ root, statusEl, toast }) {
           <label>Esfuerzo <select data-ask="effort">${opt(EFFORTS, ask.effort)}</select></label>
           <button type="submit" class="primary">▶ Pedir ${ask.count} ${ask.count === 1 ? KIND[ask.kind].one : `${KIND[ask.kind].label.toLowerCase()}`}</button>
         </div>
-        <p class="efHint">Va a la cola de 📋 Tareas (fase 🎨 Designs). "Una tarea por propuesta" = conversaciones más cortas; compara el coste
+        <p class="efHint">Va a la cola: la tarea aparece abajo, en las tareas de este taller. "Una tarea por propuesta" = conversaciones más cortas; compara el coste
           con <code>session-usage.mjs</code> o con los ↓ tokens de cada informe.</p>
       </form>`, { defaultOpen: true });
   }
@@ -399,7 +402,7 @@ export function initDesignsPanel({ root, statusEl, toast }) {
   function taskLine(e) {
     const t = taskOf(e.tarea);
     if (!t || t.status === 'done') return '';
-    return `<div class="enTask ${active(t) ? '' : 'bad'}">${TASK_STATE[t.status] || t.status}${active(t) ? '' : ' · mira el informe en 📋 Tareas'}</div>`;
+    return `<div class="enTask ${active(t) ? '' : 'bad'}">${TASK_STATE[t.status] || t.status}${active(t) ? '' : ' · mira el informe en las tareas del taller'}</div>`;
   }
 
   function enemyButtons(e) {
@@ -449,7 +452,7 @@ export function initDesignsPanel({ root, statusEl, toast }) {
   function render() {
     pendingRender = false;
     if (!data) return;
-    const panel = root.closest('#designsPanel');
+    const panel = root.closest('#todoPanel');
     const scroll = panel?.scrollTop;
     const loteKind = (l) => filter === 'all' || (l.kind || 'enemy') === filter;
     const visible = lotes().filter((l) => l.items.some(shown) || (!l.items.length && loteKind(l)));
@@ -467,13 +470,15 @@ export function initDesignsPanel({ root, statusEl, toast }) {
       ? byEstado.map(([s, list]) => group(`estado:${s}`, ESTADOS[s]?.label || s, list.length,
         `<div class="enCards">${list.map(enemyCard).join('')}</div>`, { sub: ESTADOS[s]?.hint || '', defaultOpen: s !== 'descartado' && s !== 'aprobado' })).join('')
       : '<p class="enEmpty">Aún no hay enemigos: acepta el diseño de uno, o añade uno que ya exista.</p>';
-    const showLibrary = filter === 'all' || filter === 'enemy';
-
     root.innerHTML = `<section class="enSection">${askForm()}</section>
       ${filterBar()}
-      <section class="enSection"><h2>Por revisar</h2>${reviewHtml}</section>
-      ${showLibrary ? `<section class="enSection"><h2>Enemigos <span class="enHint">docs/enemigos/ · proyectiles y efectos aceptados van a 📚 Biblioteca; sonidos, a la paleta del juego</span></h2>${addExistingRow()}${libraryHtml}</section>` : ''}
+      <section class="enSection"><h2>Por revisar <span class="enHint">al aceptar: un enemigo va a 👾 Enemigos (por montar); un proyectil o efecto, a 📚 Biblioteca; un sonido, a la paleta del juego</span></h2>${reviewHtml}</section>
       ${reviewed.length ? `<section class="enSection">${group('revisados', 'Lotes revisados', reviewed.length, reviewed.map((l) => loteGroup(l, false)).join(''), { defaultOpen: false })}</section>` : ''}`;
+    enemiesRoot.innerHTML = `<section class="enSection"><h2>Biblioteca <span class="enHint">docs/enemigos/</span></h2>${addExistingRow()}${libraryHtml}</section>`;
+    onBadges({
+      disenos: lotes().reduce((n, l) => n + pendingOf(l).length, 0),
+      enemigos: enemigos.filter((e) => e.estado === 'por-aprobar').length,
+    });
     paintWaves(root);
     if (panel && scroll != null) panel.scrollTop = scroll;
     if (viewer) renderViewer();
@@ -652,7 +657,9 @@ export function initDesignsPanel({ root, statusEl, toast }) {
 
   // ------------------------------------------------------------ events
 
-  root.addEventListener('click', (ev) => {
+  const on = (type, fn, capture) => roots.forEach((r) => r.addEventListener(type, fn, capture));
+
+  on('click', (ev) => {
     const btn = ev.target.closest('[data-act]');
     if (!btn) return;
     const act = btn.dataset.act;
@@ -675,7 +682,7 @@ export function initDesignsPanel({ root, statusEl, toast }) {
     else if (act === 'add-open') api('GET', 'enemigos/prefabs').then((list) => { adding = list; render(); }).catch((e) => toast(e.message));
     else if (act === 'add-cancel') { adding = null; render(); }
     else if (act === 'add-confirm') {
-      const prefab = root.querySelector('[data-add="prefab"]')?.value;
+      const prefab = enemiesRoot.querySelector('[data-add="prefab"]')?.value;
       if (prefab) post('enemigos/add', { prefab }, (e) => `${e.name} añadido: ábrelo para apuntar sus pendientes`).then((e) => { adding = null; if (e) { viewer = { enemy: e.name }; renderViewer(); } });
     }
     else if (act === 'ask-kind') { ask.kind = btn.dataset.kind; render(); }
@@ -690,13 +697,13 @@ export function initDesignsPanel({ root, statusEl, toast }) {
     else if (act === 'discard-all') review(loteId, pendIds, 'discard');
   });
 
-  root.addEventListener('input', (ev) => {
+  on('input', (ev) => {
     const key = ev.target.dataset?.name;
     if (key) names.set(key, ev.target.value);
     const field = ev.target.dataset?.ask;
     if (field) ask[field] = field === 'count' ? Math.max(1, Math.min(10, Number(ev.target.value) || 1)) : ev.target.value;
   });
-  root.addEventListener('submit', async (ev) => {
+  on('submit', async (ev) => {
     if (ev.target.dataset.form !== 'ask') return;
     ev.preventDefault();
     if (!ask.request.trim()) { toast('Escribe qué quieres'); return; }
@@ -705,13 +712,13 @@ export function initDesignsPanel({ root, statusEl, toast }) {
       : `${o.taskIds.length} tarea${o.taskIds.length === 1 ? '' : 's'} en la cola: las propuestas aparecerán en "Por revisar"`));
     if (out) { ask.request = ''; render(); }
   });
-  root.addEventListener('change', (ev) => {
+  on('change', (ev) => {
     const key = ev.target.dataset?.name;
     const found = key && findItem(key);
     if (found) { const t = tidyName(found.item.kind, ev.target.value); names.set(key, t); ev.target.value = t; }
   });
-  root.addEventListener('focusout', () => { setTimeout(() => { if (pendingRender && !focusedHere()) render(); }, 0); });
-  root.addEventListener('keydown', (ev) => {
+  on('focusout', () => { setTimeout(() => { if (pendingRender && !focusedHere()) render(); }, 0); });
+  on('keydown', (ev) => {
     if (ev.key === 'Enter' && ev.target.dataset?.name) {
       const [loteId, itemId] = ev.target.dataset.name.split(':');
       names.set(ev.target.dataset.name, ev.target.value);
@@ -719,7 +726,7 @@ export function initDesignsPanel({ root, statusEl, toast }) {
       review(loteId, [itemId], 'accept');
     }
   });
-  root.addEventListener('toggle', (ev) => {
+  on('toggle', (ev) => {
     const d = ev.target;
     if (!d.matches?.('details.enGroup')) return;
     const k = d.dataset.key;

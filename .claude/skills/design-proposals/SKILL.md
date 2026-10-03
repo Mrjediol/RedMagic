@@ -1,9 +1,9 @@
 ---
 name: design-proposals
-description: Generate N proposals for RedMagic (enemy designs, projectiles, VFX effects or sounds) for the user to approve in the web's 🎨 Designs tab, written as a batch in docs/disenos/. Use when a task from the web asks for "propuestas" / "diseños" of a kind, or the user asks for options to choose from.
+description: Generate N proposals for RedMagic (enemy designs, projectiles, VFX effects or sounds) for the user to approve in the web's 📋 Tareas ▸ 🎨 Diseños taller, written as a batch in docs/disenos/. Use when a task from the web asks for "propuestas" / "diseños" of a kind, or the user asks for options to choose from.
 ---
 
-# design-proposals — options for the user to pick from in 🎨 Designs
+# design-proposals — options for the user to pick from in 📋 Tareas ▸ 🎨 Diseños
 
 The user only wrote what they want ("tortuga voladora"); the rules of the game's art and data are here.
 Output = proposals appended to the batch file the task names (`docs/disenos/<id>.json`, it already exists —

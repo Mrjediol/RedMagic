@@ -90,8 +90,8 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 | Currency, shop, reroll | `docs/architecture/economy.md` |
 | Main Hub, tombs, interactables | `docs/architecture/hub.md` |
 | Audio, `SoundEmitter` | `docs/architecture/audio.md` |
-| To-do, task queue, 📋 Tareas, `taller-server` | `docs/architecture/tareas.md` |
-| Web 🎨 Designs, proposals to approve (`docs/disenos/`), enemy library (`docs/enemigos/`) | `docs/architecture/designs.md` |
+| To-do, task queue, 📋 Tareas (apuntes + talleres), `taller-server` | `docs/architecture/tareas.md` |
+| Web 📋 Tareas ▸ 🎨 Diseños / 👾 Enemigos talleres, proposals to approve (`docs/disenos/`), enemy library (`docs/enemigos/`) | `docs/architecture/designs.md` |
 | Input System | `docs/architecture/input.md` |
 | UI Toolkit | `docs/architecture/ui.md` |
 | Localization, display presets | `docs/architecture/localization.md` |

@@ -110,8 +110,7 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     if (btn.dataset.tab === 'boss' && bossCreator) bossCreator.refreshLibraries();
     if (btn.dataset.tab === 'vfx' && vfxLab) vfxLab.onShow();
     if (btn.dataset.tab === 'library') renderLibraryTab();
-    if (btn.dataset.tab === 'todo') todoPanel?.onShow();
-    if (btn.dataset.tab === 'designs') designsPanel?.onShow();
+    if (btn.dataset.tab === 'todo') { todoPanel?.onShow(); designsPanel?.onShow(); }
     if (btn.dataset.tab === 'map') { renderMapLibraryLists(); mapView.frameToFit(); }
   });
 }
@@ -2178,8 +2177,12 @@ renderMapInstancesList();
 
 // ============================================================ shell tools (Ctrl+S, Ctrl+K, Space, unsaved changes)
 
+// 📋 Tareas: apuntes + talleres; the Diseños / Enemigos talleres host the designs panel.
 const todoPanel = initTodoPanel({
   root: document.getElementById('todoRoot'),
+  rail: document.getElementById('todoRail'),
+  detail: document.getElementById('todoDetail'),
+  extraTalleres: document.getElementById('todoTalleresExtra'),
   statusEl: document.getElementById('todoStatus'),
   toolbar: document.getElementById('todoToolbar'),
   quick: document.getElementById('todoQuick'),
@@ -2188,6 +2191,8 @@ const todoPanel = initTodoPanel({
 
 const designsPanel = initDesignsPanel({
   root: document.getElementById('designsRoot'),
+  enemiesRoot: document.getElementById('enemiesRoot'),
+  onBadges: (b) => todoPanel.setBadges(b),
   statusEl: document.getElementById('designsStatus'),
   toast: (text) => shell?.toast(text),
 });
@@ -2286,6 +2291,7 @@ shell = initShellTools({
   try { last = localStorage.getItem(LAST_TAB_KEY); } catch { /* no storage */ }
   // Opened from Unity (the bridge, modules/unity-bridge.js): straight to 🎬 with that enemy loaded.
   // First visit: the tab used most. (Sprites is the one the page loads on, so it needs no click.)
+  if (last === 'designs') last = 'todo';   // 🎨 Designs now lives inside 📋 Tareas ▸ Talleres
   const wanted = bridge.linked ? 'gestures' : last || 'studio';
   const btn = wanted !== 'sprites' ? document.querySelector(`.tabBtn[data-tab="${wanted}"]`) : null;
   if (btn && !btn.disabled) btn.click();

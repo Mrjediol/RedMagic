@@ -1,7 +1,7 @@
-# 🎨 Designs — proposals to approve (web tab + `docs/disenos/`) and the enemy library (`docs/enemigos/`)
+# 🎨 Diseños — proposals to approve (📋 Tareas ▸ Talleres + `docs/disenos/`) and the enemy library (`docs/enemigos/`)
 
 A task that generates options (enemy designs, projectiles, effects, sounds) leaves them in a **batch**; the
-user accepts or discards them in the web's 🎨 Designs tab, and each accepted one goes where that kind lives.
+user accepts or discards them in the web's 📋 Tareas ▸ ⚙ Talleres ▸ 🎨 Diseños, and each accepted one goes where that kind lives.
 Plan and phases: `docs/tareas/enemigos-web.md`. Server-only: it goes through `tools/taller-server`
 (`start.cmd`, http://localhost:3000); served any other way the tab says so.
 
@@ -29,7 +29,7 @@ Batches with `demo: true` are test data made from older Comfy outputs.
 
 Kind + what the user wants + how many (1–10) + **one task with all** or **one task per proposal** (to compare costs)
 + model / effort → `POST /api/disenos/request` creates the empty batch (`taskIds`, `count`, `mode`) and the
-task(s) in 📋 Tareas ▸ phase **🎨 Designs** (`design: { lote, kind }`, `needs: comfy` for enemies) and queues them.
+task(s) in phase **`designs`** — the 🎨 Diseños taller's task list (`design: { lote, kind }`, `needs: comfy` for enemies) and queues them.
 The prompt is a few lines (`tools/taller-server/design-prompts.mjs`): the rules are the
 **`design-proposals` skill** (`.claude/skills/design-proposals/SKILL.md`, which reuses make-enemy §0–1 for enemies),
 and the task ends by running **`tools/check-design-batch.mjs <batch>`** (formats, image exists, preset exists and is
@@ -51,7 +51,7 @@ texto, estado: abierto|en-curso|hecho, tarea?, resumen?, nota? }`.
 
 The tasks edit the record themselves when they end (prompts in `design-prompts.mjs`): estado `por-aprobar` (or back),
 `prefab`, `montaje`, each pendiente `hecho` + `resumen` or `abierto` + `nota`, and refresh the picture.
-Their tasks live in 📋 Tareas ▸ phase **👾 Enemigos** (`enemy: <Name>`).
+Their tasks live in phase **`enemies`** (`enemy: <Name>`) — the 👾 Enemigos taller's task list.
 
 **Existing enemies** (not from a design): web "＋ Enemigo existente" (a prefab of `Assets/Prefabs/Enemies/**` not in
 the library; name = file name without `Enemy_` / `Boss_`) or Unity **Tools ▸ RedMagic ▸ Enemigos ▸ Pendiente para
@@ -73,7 +73,10 @@ la web…** (pick the prefab, type, text). **Pictures** come from Unity: `EnemyP
   remove pendiente), `/build`, `/work`, `/add`, `/picture`. Tasks are added with `store.addTask(phase, task)` and
   queued with `runner.enqueue`.
 
-## Web (`modules/designs-panel.js`, markup `#tab-designs`, styles `/* 🎨 Designs */`)
+## Web (`modules/designs-panel.js`, inside 📋 Tareas — see `tareas.md` ▸ The web)
+
+Two roots: `#designsRoot` (🎨 Diseños taller: form, filter, Por revisar, Lotes revisados) and `#enemiesRoot` (👾 Enemigos
+taller: the library); `onBadges` reports what waits for the user (pending proposals, enemies por aprobar) to the rail.
 
 **＋ Pedir propuestas** (the form, state kept while the list re-renders); filter chips by kind (pending counts); **Por revisar** (a foldable group per batch), **Enemigos** (foldable by estado, needs-the-user first; a card opens its **sheet**: picture,
 estado buttons, pendientes list + add + launch with model / effort), **Lotes revisados** (folded). Previews: the image, the effect playing live (one

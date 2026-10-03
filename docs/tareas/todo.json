@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-03T22:27:19.212Z",
+  "updated": "2026-10-03T22:52:34.184Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -60,6 +60,25 @@
           "text": "Fase 4: acceso desde el móvil (Tailscale + token) y aviso al vaciarse la cola",
           "note": "",
           "done": false
+        },
+        {
+          "id": "apunte-taller",
+          "text": "Tareas: conectar un apunte con el taller que lo hace (p. ej. 15 enemigos → Diseños → Montar)",
+          "note": "El tab ya está unificado (apuntes + talleres). Falta decidir y construir el vínculo apunte → taller y su progreso. Preguntas abiertas en el documento.",
+          "done": false,
+          "doc": "docs/tareas/apunte-taller.md",
+          "steps": [
+            {
+              "id": "s1",
+              "text": "Decidir con el usuario el vínculo y cómo se cuenta el progreso",
+              "done": false
+            },
+            {
+              "id": "s2",
+              "text": "Construirlo en todo-panel.js (y el formulario de Diseños con from)",
+              "done": false
+            }
+          ]
         }
       ]
     },

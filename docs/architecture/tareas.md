@@ -56,14 +56,31 @@ bridge keeps trusting the web. Serves `Web/RedMagicWeb` and the API (see the hea
 - `config.json` (optional, next to `server.mjs`): `port`, `defaultModel`, `defaultEffort`, `maxBudgetUsd`,
   `disallowedTools`, `claudeExe`, `comfyExe`. `TALLER_PORT` overrides the port (tests).
 
-## The web (`modules/todo-panel.js`)
+## The web (`modules/todo-panel.js`, markup `#tab-todo`)
+
+One tab, three columns: a **left rail** (jump to any phase / taller, with counts: a gold badge = something waits for
+the user), the **list**, and a **right drawer** with the open task (click anywhere on a row; Esc / ✕ closes it):
+title, **description** (`note`, always visible), steps (▶ each), launch / cancel / ✓ hecha, report + earlier reports,
+reply, and a fold with prompt / needs / model / document. The list has two zones:
+
+- **📝 Apuntes** — the user's phases (the to-do): each folds on its header (folded set in `localStorage`; open by
+  default), progress bar, "＋ Tarea para Claude" form, add phase.
+- **⚙ Talleres** — `TALLERES` in `todo-panel.js`: one `<details>` per kind of work (folded by default). A phase
+  belongs to a taller by `phase.taller` or by its id (`designs` → 🎨 Diseños, `enemies` → 👾 Enemigos; the server
+  makes those two). **Diseños** and **Enemigos** are static markup in `index.html` hosting `designs-panel.js`
+  (`#designsRoot` / `#enemiesRoot`, marked `[data-designs]`: todo-panel ignores events there) plus their task list.
+  The rest (Mapas, Ataques del jugador, Items, Mecánicas nuevas, Bugs) are **por definir**: free tasks only, kept in
+  phase `taller-<id>` (made with the first task). A new taller = an entry in `TALLERES`; when it gets its own form /
+  skill / prompt, give it static markup like Diseños.
 
 Served by the server → **server mode**: list through the API, polled (2 s while something runs, else 5 s),
-re-rendered only when you are not typing in it; each task unfolds (▸) into prompt / needs / model / document /
-steps (▶ each) / report + earlier reports / reply / launch-cancel. Served by anything else → **file mode**: the
-same list, the repo file linked once with the File System Access API (no launching).
+re-rendered only when you are not typing in the tab. Served by anything else → **file mode**: the same list, the
+repo file linked once with the File System Access API (no launching).
 
 ## Not built yet
+
+**Apunte → taller link** (task `apunte-taller`, `docs/tareas/apunte-taller.md`): an apunte like "15 enemigos" taking
+you to the taller that does it and showing its progress.
 
 Phase 3 — a gallery of generated sprites (Comfy output) to pick from and send back as a task. Phase 4 — phone
 access (Tailscale + token, the server already speaks a token) and a notification when the queue empties (ntfy /

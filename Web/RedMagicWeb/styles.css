@@ -667,8 +667,47 @@ details > summary:hover{color:var(--text);}
 .libTools button{margin:0;}
 
 /* ---------------- 📋 Tareas (modules/todo-panel.js) ---------------- */
-#todoPanel{flex:1;min-width:0;padding:18px 24px 40px;overflow-y:auto;}
-#todoPanel > *{max-width:860px;}
+#todoPanel{flex:1;min-width:0;padding:18px 26px 60px;overflow-y:auto;}
+#todoPanel > *{max-width:1180px;}
+/* left index: every apuntes phase and every taller, with what waits for the user */
+.todoRail{width:224px;flex:none;background:var(--panel);border-right:1px solid var(--border);padding:16px 10px;overflow-y:auto;}
+.todoRail h2{font-family:var(--font-carved);font-size:12px;letter-spacing:.12em;color:var(--accent2);margin:18px 8px 6px;text-transform:uppercase;}
+.todoRail h2:first-child{margin-top:0;}
+.todoRailItem{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;box-shadow:none;padding:6px 8px;border-radius:5px;color:var(--muted);font-size:14.5px;text-align:left;}
+.todoRailItem:hover{background:var(--raise);color:var(--text);}
+.todoRailItem b{margin-left:auto;font-weight:500;font-size:12.5px;color:var(--faint);font-variant-numeric:tabular-nums;}
+.todoRailItem b.hot{color:var(--on-accent);background:var(--accent2);border-radius:9px;padding:0 7px;font-weight:700;}
+.todoRailItem b.run{color:var(--accent);}
+.todoRailItem.soon{opacity:.6;}
+/* right drawer: the open task */
+.todoDetail{width:440px;flex:none;background:var(--panel);border-left:1px solid var(--border);padding:14px 18px 40px;overflow-y:auto;}
+.todoDetail[hidden]{display:none;}
+.todoDetailHead{display:flex;align-items:center;gap:8px;}
+.todoDetailHead .efHint{flex:1;margin:0;}
+.todoDetailTitle{margin-top:10px;font-size:17px !important;font-weight:700;}
+.todoDetailNote{min-height:130px;resize:vertical;font-size:14.5px !important;line-height:1.45;margin-top:4px;}
+.todoDetail .todoDetails{margin:12px 0 0;}
+.todoAdv summary{cursor:pointer;font-size:13.5px;color:var(--muted);padding:4px 0;}
+.todoAdv[open]{display:grid;gap:8px;}
+.todoLaunch{margin-top:4px;}
+/* the two zones and the talleres */
+.todoZone{margin-top:26px;}
+.todoZoneHead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--border-lit);padding-bottom:6px;}
+.todoZoneHead h2{font-family:var(--font-carved);font-size:20px;margin:0;color:var(--text);letter-spacing:.04em;}
+.todoZoneHead .efHint{margin:0;}
+.todoTaller{margin-top:12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;}
+.todoTaller > summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;cursor:pointer;padding:11px 16px;list-style:none;}
+.todoTaller > summary::-webkit-details-marker{display:none;}
+.todoTaller > summary::before{content:'▸';color:var(--muted);width:12px;flex:none;transition:transform .15s;}
+.todoTaller[open] > summary::before{transform:rotate(90deg);}
+.todoTaller > summary:hover{background:rgba(255,255,255,.025);}
+.todoTallerName{font-size:18px;font-weight:700;color:var(--accent2);}
+.todoTallerMeta{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.todoTallerBody{padding:2px 16px 16px;border-top:1px solid var(--border);}
+.todoTallerSub{font-size:15px;margin:22px 0 4px;color:var(--text);}
+.todoPill{font-size:12.5px;border-radius:9px;padding:0 8px;border:1px solid var(--border);}
+.todoPill.you{border-color:#8a6a2c;color:var(--accent2);}
+.todoPill.run{border-color:var(--accent-deep);color:var(--accent);}
 .todoMeter{margin-top:14px;display:grid;gap:7px;}
 .todoMeterRow{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--muted);}
 .todoMeterRow b{color:var(--text);font-weight:600;}
@@ -677,9 +716,14 @@ details > summary:hover{color:var(--text);}
 .todoToolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;}
 .todoToolbar .tabSpacer{flex:1;}
 .todoPhase{margin-top:22px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 16px 14px;}
-.todoPhaseHead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0 8px;border-bottom:1px solid var(--border);}
-.todoPhaseName{background:none;border:0;box-shadow:none;padding:0;font-size:18px;font-weight:700;color:var(--accent2);text-align:left;}
-.todoPhaseName:hover{background:none;color:var(--text);}
+.todoPhaseHead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0 8px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;}
+.todoPhase.folded{padding-bottom:6px;}
+.todoPhase.folded .todoPhaseHead{border-bottom:0;}
+.todoChev{color:var(--muted);width:12px;flex:none;transition:transform .15s;transform:rotate(90deg);}
+.todoPhase.folded .todoChev{transform:none;}
+.todoPhaseName{font-size:18px;font-weight:700;color:var(--accent2);}
+.todoPen{opacity:0;padding:1px 6px;}
+.todoPhaseHead:hover .todoPen{opacity:.8;}
 .todoTag{background:var(--selected);border:1px solid var(--border);border-radius:4px;padding:1px 9px;font-size:13px;color:var(--text);}
 .todoTag.empty{background:none;border-style:dashed;color:var(--faint);}
 .todoCount{margin-left:auto;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;}
@@ -687,19 +731,19 @@ details > summary:hover{color:var(--text);}
 .todoTools.always{opacity:1;}
 .todoTask:hover .todoTools,.todoTask:focus-within .todoTools{opacity:1;}
 .todoTasks{list-style:none;margin:0;padding:0;}
-.todoTask{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:12px;align-items:start;padding:9px 0;border-bottom:1px solid var(--border);}
+.todoTask{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:12px;align-items:start;padding:9px 8px;margin:0 -8px;border-bottom:1px solid var(--border);border-radius:6px;cursor:pointer;}
+.todoTask[data-open]:hover{background:var(--raise);}
+.todoTask.sel{background:var(--selected);box-shadow:inset 3px 0 0 var(--accent);}
 .todoTask:last-child{border-bottom:0;}
 .todoCheck{width:24px;height:24px;padding:0;margin-top:1px;border-radius:6px;background:var(--well);box-shadow:inset 0 1px 2px rgba(0,0,0,.45);color:transparent;font-size:15px;line-height:1;}
 .todoCheck:hover{border-color:var(--accent);background:var(--well);}
 .todoCheck[aria-pressed="true"]{background:var(--accent-deep);border-color:var(--accent);color:var(--on-accent);}
 .todoBody{min-width:0;}
 .todoText,.todoNote{display:block;width:100%;background:none;border:0;box-shadow:none;padding:0;text-align:left;}
-.todoText:hover,.todoNote:hover{background:none;}
+button.todoText:hover{background:none;}
 .todoText{font-size:15px;line-height:1.4;color:var(--text);}
 .todoTask.done .todoText{text-decoration:line-through;color:var(--faint);}
-.todoNote{font-size:13.5px;color:var(--muted);margin-top:2px;line-height:1.4;}
-.todoNote.add{opacity:0;font-size:13px;}
-.todoTask:hover .todoNote.add,.todoTask:focus-within .todoNote.add{opacity:1;}
+.todoNote{font-size:13.5px;color:var(--muted);margin-top:2px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line;}
 .todoEdit{width:100%;font:inherit;background:var(--well);color:var(--text);border:1px solid var(--accent);border-radius:5px;padding:6px 8px;box-shadow:var(--glow);}
 textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .todoPhaseEdit{flex:1;min-width:160px;font-size:17px;font-weight:700;}
@@ -762,9 +806,7 @@ textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .todoQuick form{display:grid;gap:8px;margin:8px 0 6px;}
 .todoQuick textarea{min-height:58px;resize:vertical;}
 
-/* ---------------- 🎨 Designs (modules/designs-panel.js) ---------------- */
-#designsPanel{flex:1;min-width:0;padding:18px 24px 40px;overflow-y:auto;}
-#designsPanel > .hint,#designsPanel > h1{max-width:1120px;}
+/* ---------------- 🎨 Diseños / 👾 Enemigos talleres inside 📋 Tareas (modules/designs-panel.js) ---------------- */
 .enSection{margin-top:22px;max-width:1500px;}
 .enSection > h2{display:flex;align-items:baseline;gap:10px;}
 .enHint{font-size:13px;font-weight:400;color:var(--faint);}

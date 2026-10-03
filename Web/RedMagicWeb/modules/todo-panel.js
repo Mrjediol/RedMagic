@@ -2,6 +2,13 @@
 // -----------------------------------------------------------------------------
 // 📋 Tareas: the project's to-do / roadmap, and the door to Claude's task queue.
 //
+// Two zones in one tab (docs/architecture/tareas.md ▸ The web):
+//   · 📝 Apuntes — the user's phases: notes / ideas / goals, each task with its description. Folded per phase.
+//   · ⚙ Talleres — the "mechanical" side: one foldable section per kind of work (TALLERES). A phase belongs to a
+//     taller by `phase.taller` or by its id (`designs`, `enemies` — made by the server). Diseños and Enemigos also
+//     host modules/designs-panel.js (their own roots); the rest are "por definir" and take free tasks.
+// A left rail jumps to every phase / taller; clicking a task opens it in the right-hand drawer.
+//
 // The list is `docs/tareas/todo.json` in the repo — Claude reads it to know what is pending and may edit it.
 // Two ways to reach it:
 //   · SERVER  — the page is served by tools/taller-server (start.cmd, http://localhost:3000): the list goes
@@ -18,7 +25,25 @@ export const DATA_VERSION = 1;
 export const FILE_NAME = 'todo.json';
 const LS_KEY = 'redmagic.todo.v1';
 const DB_NAME = 'redmagic-todo';
-const OPEN_KEY = 'redmagic.todo.open';
+const SEL_KEY = 'redmagic.todo.sel';
+const FOLD_KEY = 'redmagic.todo.folded';        // apuntes phases the user folded (open by default)
+const TALLER_KEY = 'redmagic.todo.talleres';    // talleres the user unfolded (folded by default)
+
+/** The workshops. `phase` = the todo.json phase that holds its tasks (created with its first task). */
+export const TALLERES = [
+  { id: 'disenos', icon: '🎨', name: 'Diseños', phase: 'designs', tag: 'propuestas', built: true },
+  { id: 'enemigos', icon: '👾', name: 'Enemigos', phase: 'enemies', tag: 'montaje', built: true },
+  { id: 'mapas', icon: '🗺️', name: 'Mapas', phase: 'taller-mapas', hint: 'el método nuevo para obtener mapas aún no está decidido' },
+  { id: 'ataques', icon: '⚔️', name: 'Ataques del jugador', phase: 'taller-ataques' },
+  { id: 'items', icon: '🎒', name: 'Items', phase: 'taller-items' },
+  { id: 'mecanicas', icon: '⚙️', name: 'Mecánicas nuevas', phase: 'taller-mecanicas' },
+  { id: 'bugs', icon: '🐞', name: 'Bugs', phase: 'taller-bugs' },
+];
+const tallerById = (id) => TALLERES.find((t) => t.id === id);
+/** The taller a phase belongs to, or null (= an apunte phase). */
+export const tallerOf = (p) => (p.taller && tallerById(p.taller)) || TALLERES.find((t) => t.phase === p.id) || null;
+const loadSet = (store, key) => { try { return new Set(JSON.parse(store.getItem(key) || '[]')); } catch { return new Set(); } };
+const saveSet = (store, key, set) => { try { store.setItem(key, JSON.stringify([...set])); } catch { /* private window */ } };
 
 export const DEFAULT_PHASES = [
   { id: 'p1', name: 'Contenido del prototipo', tag: 'Corto plazo', tasks: [
@@ -126,10 +151,14 @@ async function kvSet(key, value) {
 // ============================================================ the panel
 
 /**
- * @param {{ root: HTMLElement, statusEl: HTMLElement, toolbar: HTMLElement, quick: HTMLElement, toast?: (text: string) => void }} ctx
- * @returns {{ onShow(): void, flush(): Promise<void> }}
+ * @param {{ root: HTMLElement, rail: HTMLElement, detail: HTMLElement, extraTalleres: HTMLElement, statusEl: HTMLElement,
+ *   toolbar: HTMLElement, quick: HTMLElement, toast?: (text: string) => void }} ctx
+ *   root = the apuntes list; rail / detail = left index and right drawer; extraTalleres = where the "por definir"
+ *   talleres go. Everything inside a `[data-designs]` element belongs to designs-panel.js and is left alone.
+ * @returns {{ onShow(): void, flush(): Promise<void>, setBadges(b: Record<string, number>): void }}
  */
-export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {} }) {
+export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, toolbar, quick, toast = () => {} }) {
+  const tab = root.closest('.tabPanel') || root.parentElement;
   let phases = clone(DEFAULT_PHASES);
   let extra = {};                          // top-level fields of the file other than phases (the queue…), kept
 
@@ -146,7 +175,11 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
 
   let editing = null, confirmKey = null, confirmTimer = null, focusId = null, hideDone = false;
   let dirty = false, saving = false, saveTimer = null;
-  const open = new Set(JSON.parse(sessionStorage.getItem(OPEN_KEY) || '[]'));
+  let sel = sessionStorage.getItem(SEL_KEY) || null;   // the task open in the drawer
+  let advOpen = false;                                 // the drawer's "prompt, modelo…" fold
+  let badges = {};                                     // taller id → count that needs the user (designs-panel)
+  const folded = loadSet(localStorage, FOLD_KEY);
+  const tallerOpen = loadSet(localStorage, TALLER_KEY);
 
   const setStatus = (text) => { statusEl.textContent = text; };
   const allTasks = () => phases.flatMap((p) => p.tasks);
@@ -159,7 +192,8 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
   };
   const phaseIdx = (pid) => phases.findIndex((p) => p.id === pid);
   const remember = () => { known = { tasks: allTasks().map((t) => t.id), phases: phases.map((p) => p.id) }; };
-  const focusedHere = () => root.contains(document.activeElement) && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)
+  const ours = (el) => tab.contains(el) && !el.closest('[data-designs]');
+  const focusedHere = () => ours(document.activeElement) && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)
     || quick.contains(document.activeElement);
 
   // ------------------------------------------------------------ server
@@ -434,6 +468,7 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
     </li>`;
   }
 
+  /** The drawer's body below title + description: live state, steps, launch, reports, then the advanced fold. */
   function details(t) {
     const running = live?.running?.taskId === t.id ? live.running : null;
     const waiting = live?.waiting?.taskId === t.id ? live.waiting : null;
@@ -445,36 +480,60 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
         <ul>${running.activity.map((a) => `<li>${esc(a.line)}</li>`).join('') || '<li>arrancando…</li>'}</ul></div>` : ''}
       ${waiting || t.waiting ? `<div class="todoLive wait">⏳ ${esc(waiting?.reason || t.waiting)}
         ${/terminal/.test(waiting?.reason || t.waiting || '') ? `<button class="small" data-act="force" data-id="${t.id}">Lanzar igualmente</button>` : ''}</div>` : ''}
-      <label class="todoLabel">Prompt <span class="efHint">lo que se le pide a Claude; vacío = título, descripción y pasos</span></label>
-      <textarea class="todoPrompt" data-field="prompt" data-id="${t.id}" placeholder="Ej.: genera 10 bases de enemigos de hielo así y así, déjame la hoja de contacto">${esc(t.prompt || '')}</textarea>
-      <div class="todoRow">
-        <label><input type="checkbox" data-need="comfy" data-id="${t.id}" ${needs.includes('comfy') ? 'checked' : ''}> necesita ComfyUI</label>
-        <label><input type="checkbox" data-need="unity" data-id="${t.id}" ${needs.includes('unity') ? 'checked' : ''}> necesita Unity</label>
-        ${modelSelects(t.model || '', t.effort || '', t.id)}
-      </div>
-      <label class="todoLabel">Documento <span class="efHint">el que Claude deja con el estado al aparcar una tarea; lo lee primero</span></label>
-      <input class="todoDoc" type="text" data-field="doc" data-id="${t.id}" value="${esc(t.doc || '')}" placeholder="docs/tareas/…md" autocomplete="off">
       <label class="todoLabel">Pasos</label>
       <ul class="todoSteps">${steps.map((s, i) => stepRow(t, s, i)).join('')}</ul>
       <form class="todoAdd" data-form="addstep" data-id="${t.id}"><input id="todoStep-${t.id}" type="text" placeholder="Añadir paso" autocomplete="off"><button type="submit">Añadir</button></form>
-      ${resultBlock(t.result)}
-      ${t.history?.length ? `<details class="todoHistory"><summary>Informes anteriores (${t.history.length})</summary>${t.history.map((r) => resultBlock(r, "Anterior")).join("")}</details>` : ""}
-      ${server && t.sessionId && !active ? `<div class="todoRow todoReplyBox">
-        <textarea data-reply="${t.id}" placeholder="Responder: sigue la misma sesión (ej.: adelante con el 3 y el 7, así y así)"></textarea>
-        <button data-act="reply" data-id="${t.id}">↩ Responder</button></div>` : ''}
-      <div class="todoRow">
+      <div class="todoRow todoLaunch">
         ${server ? (active
           ? `<button class="danger" data-act="cancel" data-id="${t.id}">⏹ ${t.status === 'running' ? 'Parar' : 'Quitar de la cola'}</button>`
           : `<button class="primary" data-act="run" data-id="${t.id}">▶ Lanzar${steps.length ? ' (los pasos sin hacer)' : ''}</button>`)
           : '<span class="efHint">Para lanzarla, abre la web desde tools/taller-server/start.cmd.</span>'}
+        <button data-act="toggle" data-id="${t.id}">${t.done ? '↶ Reabrir' : '✓ Hecha'}</button>
       </div>
+      ${resultBlock(t.result)}
+      ${t.history?.length ? `<details class="todoHistory"><summary>Informes anteriores (${t.history.length})</summary>${t.history.map((r) => resultBlock(r, 'Anterior')).join('')}</details>` : ''}
+      ${server && t.sessionId && !active ? `<div class="todoRow todoReplyBox">
+        <textarea data-reply="${t.id}" placeholder="Responder: sigue la misma sesión (ej.: adelante con el 3 y el 7, así y así)"></textarea>
+        <button data-act="reply" data-id="${t.id}">↩ Responder</button></div>` : ''}
+      <details class="todoAdv" ${advOpen ? 'open' : ''}><summary>Prompt, modelo, qué necesita, documento</summary>
+        <label class="todoLabel">Prompt <span class="efHint">vacío = título, descripción y pasos</span></label>
+        <textarea class="todoPrompt" data-field="prompt" data-id="${t.id}" placeholder="Ej.: genera 10 bases de enemigos de hielo así y así, déjame la hoja de contacto">${esc(t.prompt || '')}</textarea>
+        <div class="todoRow">
+          <label><input type="checkbox" data-need="comfy" data-id="${t.id}" ${needs.includes('comfy') ? 'checked' : ''}> necesita ComfyUI</label>
+          <label><input type="checkbox" data-need="unity" data-id="${t.id}" ${needs.includes('unity') ? 'checked' : ''}> necesita Unity</label>
+          ${modelSelects(t.model || '', t.effort || '', t.id)}
+        </div>
+        <label class="todoLabel">Documento <span class="efHint">el que Claude deja al aparcar una tarea; lo lee primero</span></label>
+        <input class="todoDoc" type="text" data-field="doc" data-id="${t.id}" value="${esc(t.doc || '')}" placeholder="docs/tareas/…md" autocomplete="off">
+      </details>
     </div>`;
   }
 
-  function render() {
+  /** One task in a list: the whole row opens it in the drawer; the check and the tools act in place. */
+  function taskRow(t) {
+    const dbtn = confirmKey === `dt${t.id}`
+      ? `<button class="small danger" data-act="del-task" data-id="${t.id}">¿Borrar?</button>`
+      : `<button class="small" data-act="del-task" data-id="${t.id}" aria-label="Borrar tarea" title="Borrar tarea">×</button>`;
+    const marks = [t.steps?.length ? `<span class="todoMark" title="Pasos">☰ ${t.steps.filter((s) => s.done).length}/${t.steps.length}</span>` : '',
+      t.doc ? '<span class="todoMark" title="Tiene documento">📄</span>' : '',
+      t.prompt ? '<span class="todoMark" title="Tiene prompt">💬</span>' : ''].join('');
+    const note = t.note ? `<span class="todoNote">${esc(t.note)}</span>` : '';
+    return `<li class="todoTask${t.done ? ' done' : ''}${sel === t.id ? ' sel' : ''}" data-open="${t.id}" title="Abrir">
+      <button class="todoCheck" data-act="toggle" data-id="${t.id}" aria-pressed="${t.done}" aria-label="Marcar como hecha">✓</button>
+      <div class="todoBody"><span class="todoText">${esc(t.text)}</span>${note}<div class="todoMarks">${statusBadge(t)}${marks}</div></div>
+      <div class="todoTools"><button class="small" data-act="up-task" data-id="${t.id}" aria-label="Subir">↑</button><button class="small" data-act="down-task" data-id="${t.id}" aria-label="Bajar">↓</button>${dbtn}</div>
+    </li>`;
+  }
+
+  const visibleTasks = (p) => p.tasks.filter((t) => !(hideDone && t.done));
+  const apuntes = () => phases.filter((p) => !tallerOf(p));
+  const tallerPhase = (tl) => phases.find((p) => tallerOf(p) === tl);
+  const isRunning = (t) => ACTIVE.has(t.status);
+
+  function renderList() {
     pendingRender = false;
     let total = 0, done = 0;
-    phases.forEach((p) => p.tasks.forEach((t) => { total++; if (t.done) done++; }));
+    apuntes().forEach((p) => p.tasks.forEach((t) => { total++; if (t.done) done++; }));
     const pct = total ? Math.round((done / total) * 100) : 0;
     const meter = document.getElementById('todoMeter');
     if (meter) {
@@ -484,56 +543,129 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
       meter.querySelector('[data-m="fill"]').style.width = `${pct}%`;
     }
 
-    root.innerHTML = phases.map((p) => {
+    root.innerHTML = apuntes().map((p) => {
       const pd = p.tasks.filter((t) => t.done).length;
+      const isFolded = folded.has(p.id);
       const name = editing?.kind === 'pname' && editing.id === p.id
         ? `<input class="todoEdit todoPhaseEdit" data-edit data-focus aria-label="Nombre de la fase" value="${esc(p.name)}">`
-        : `<button class="todoPhaseName" data-act="edit-pname" data-id="${p.id}" title="Editar nombre">${esc(p.name)}</button>`;
+        : `<span class="todoPhaseName">${esc(p.name)}</span><button class="small todoPen" data-act="edit-pname" data-id="${p.id}" title="Renombrar" aria-label="Renombrar">✎</button>`;
       const tag = editing?.kind === 'ptag' && editing.id === p.id
         ? `<input class="todoEdit todoTagEdit" data-edit data-focus aria-label="Etiqueta de la fase" value="${esc(p.tag)}">`
         : `<button class="todoTag${p.tag ? '' : ' empty'}" data-act="edit-ptag" data-id="${p.id}" title="Editar etiqueta">${p.tag ? esc(p.tag) : '+ etiqueta'}</button>`;
       const del = confirmKey === `dp${p.id}`
         ? `<button class="small danger" data-act="del-phase" data-id="${p.id}">¿Borrar fase?</button>`
         : `<button class="small" data-act="del-phase" data-id="${p.id}" aria-label="Borrar fase" title="Borrar fase">×</button>`;
-
-      let rows = p.tasks.filter((t) => !(hideDone && t.done)).map((t) => {
-        const isOpen = open.has(t.id);
-        const text = editing?.kind === 'text' && editing.id === t.id
-          ? `<input class="todoEdit" data-edit data-focus aria-label="Texto de la tarea" value="${esc(t.text)}">`
-          : `<button class="todoText" data-act="edit-text" data-id="${t.id}" title="Editar">${esc(t.text)}</button>`;
-        let note;
-        if (editing?.kind === 'note' && editing.id === t.id) note = `<textarea class="todoEdit" data-edit data-focus aria-label="Nota de la tarea">${esc(t.note)}</textarea>`;
-        else if (t.note) note = `<button class="todoNote" data-act="edit-note" data-id="${t.id}">${esc(t.note)}</button>`;
-        else note = `<button class="todoNote add" data-act="edit-note" data-id="${t.id}">+ nota</button>`;
-        const dbtn = confirmKey === `dt${t.id}`
-          ? `<button class="small danger" data-act="del-task" data-id="${t.id}">¿Borrar?</button>`
-          : `<button class="small" data-act="del-task" data-id="${t.id}" aria-label="Borrar tarea" title="Borrar tarea">×</button>`;
-        const marks = [t.steps?.length ? `<span class="todoMark" title="Pasos">☰ ${t.steps.filter((s) => s.done).length}/${t.steps.length}</span>` : '',
-          t.doc ? '<span class="todoMark" title="Tiene documento">📄</span>' : '',
-          t.prompt ? '<span class="todoMark" title="Tiene prompt">💬</span>' : ''].join('');
-        return `<li class="todoTask${t.done ? ' done' : ''}${isOpen ? ' open' : ''}">
-          <button class="todoCheck" data-act="toggle" data-id="${t.id}" aria-pressed="${t.done}" aria-label="Marcar como hecha">✓</button>
-          <div class="todoBody">${text}${note}<div class="todoMarks">${statusBadge(t)}${marks}</div></div>
-          <div class="todoTools"><button class="small" data-act="expand" data-id="${t.id}" aria-expanded="${isOpen}" title="Prompt, pasos, lanzar e informe">${isOpen ? '▾' : '▸'}</button><button class="small" data-act="up-task" data-id="${t.id}" aria-label="Subir">↑</button><button class="small" data-act="down-task" data-id="${t.id}" aria-label="Bajar">↓</button>${dbtn}</div>
-          ${isOpen ? details(t) : ''}
-        </li>`;
-      }).join('');
+      let rows = visibleTasks(p).map(taskRow).join('');
       if (!rows) rows = `<li class="todoEmpty">${p.tasks.length ? 'Todo hecho en esta fase.' : 'Sin tareas todavía. Añade la primera abajo.'}</li>`;
-
-      return `<section class="todoPhase">
-        <div class="todoPhaseHead">${name}${tag}<span class="todoCount">${pd}/${p.tasks.length}</span>
+      return `<section class="todoPhase${isFolded ? ' folded' : ''}" id="todoPhase-${p.id}">
+        <div class="todoPhaseHead" data-fold="${p.id}"><span class="todoChev" aria-hidden="true">▸</span>${name}${tag}<span class="todoCount">${pd}/${p.tasks.length}</span>
           <div class="todoTools always"><button class="small" data-act="up-phase" data-id="${p.id}" aria-label="Subir fase">↑</button><button class="small" data-act="down-phase" data-id="${p.id}" aria-label="Bajar fase">↓</button>${del}</div></div>
-        <ul class="todoTasks">${rows}</ul>
-        <form class="todoAdd" data-form="addtask" data-id="${p.id}"><input id="todoAdd-${p.id}" type="text" placeholder="Añadir tarea" aria-label="Nueva tarea en ${esc(p.name)}" autocomplete="off"><button type="submit">Añadir</button></form>
+        ${isFolded ? '' : `<ul class="todoTasks">${rows}</ul>
+        <form class="todoAdd" data-form="addtask" data-id="${p.id}"><input id="todoAdd-${p.id}" type="text" placeholder="Apuntar en ${esc(p.name)}" aria-label="Nueva tarea en ${esc(p.name)}" autocomplete="off"><button type="submit">Añadir</button></form>`}
       </section>`;
     }).join('');
 
-    const f = root.querySelector('[data-focus]');
+    // Talleres: the built ones are static markup (index.html, with designs-panel inside) — only their task list
+    // and summary meta are ours; the "por definir" ones are drawn whole here.
+    TALLERES.forEach((tl) => {
+      const ph = tallerPhase(tl);
+      const list = ph ? visibleTasks(ph) : [];
+      const meta = tallerMeta(tl, ph);
+      if (tl.built) {
+        const ul = tab.querySelector(`[data-taller-tasks="${tl.id}"]`);
+        if (ul) ul.innerHTML = list.map(taskRow).join('') || '<li class="todoEmpty">Ninguna tarea todavía.</li>';
+        const m = tab.querySelector(`[data-taller-meta="${tl.id}"]`);
+        if (m) m.innerHTML = meta;
+      }
+    });
+    extraTalleres.innerHTML = TALLERES.filter((tl) => !tl.built).map((tl) => {
+      const ph = tallerPhase(tl);
+      const rows = (ph ? visibleTasks(ph) : []).map(taskRow).join('');
+      return `<details class="todoTaller" id="taller-${tl.id}" data-taller="${tl.id}" ${tallerOpen.has(tl.id) ? 'open' : ''}>
+        <summary><span class="todoTallerName">${tl.icon} ${esc(tl.name)}</span><span class="todoTag empty">por definir</span><span class="todoTallerMeta">${tallerMeta(tl, ph)}</span></summary>
+        <div class="todoTallerBody">
+          <p class="efHint">Taller por definir${tl.hint ? ` (${esc(tl.hint)})` : ''}: aún sin formulario ni skill propios. Mientras tanto, apunta aquí tareas libres y lánzalas desde su ficha.</p>
+          <ul class="todoTasks">${rows || '<li class="todoEmpty">Ninguna tarea todavía.</li>'}</ul>
+          <form class="todoAdd" data-form="tallertask" data-id="${tl.id}"><input id="todoTaller-${tl.id}" type="text" placeholder="Nueva tarea en ${esc(tl.name)}" autocomplete="off"><button type="submit">Añadir</button></form>
+        </div></details>`;
+    }).join('');
+  }
+
+  function tallerMeta(tl, ph) {
+    const tasks = ph?.tasks || [];
+    const run = tasks.filter(isRunning).length;
+    const open = tasks.filter((t) => !t.done).length;
+    return [badges[tl.id] ? `<span class="todoPill you" title="Esperan tu decisión">${badges[tl.id]} te esperan</span>` : '',
+      run ? `<span class="todoPill run">${run} en cola</span>` : '',
+      open ? `<span class="todoCount">${open} tarea${open === 1 ? '' : 's'}</span>` : ''].join('');
+  }
+
+  function renderRail() {
+    const item = (jump, label, count, cls = '') => `<button class="todoRailItem ${cls}" data-jump="${jump}">${label}${count}</button>`;
+    rail.innerHTML = `<h2>📝 Apuntes</h2>${apuntes().map((p) => {
+      const left = p.tasks.filter((t) => !t.done).length;
+      return item(`phase:${p.id}`, esc(p.name), left ? `<b>${left}</b>` : '');
+    }).join('')}
+      <h2>⚙ Talleres</h2>${TALLERES.map((tl) => {
+      const ph = tallerPhase(tl);
+      const run = (ph?.tasks || []).some(isRunning);
+      const count = badges[tl.id] ? `<b class="hot" title="Esperan tu decisión">${badges[tl.id]}</b>` : run ? '<b class="run" title="Trabajando">●</b>' : '';
+      return item(`taller:${tl.id}`, `${tl.icon} ${esc(tl.name)}`, count, tl.built ? '' : 'soon');
+    }).join('')}`;
+  }
+
+  /** Where a task lives, for the drawer's header. */
+  function whereOf(r) {
+    const tl = tallerOf(r.ph);
+    return tl ? `⚙ ${tl.icon} ${tl.name}` : `📝 ${r.ph.name}`;
+  }
+
+  function renderDetail() {
+    const r = sel ? find(sel) : null;
+    if (!r) {   // sel is kept: on a reload the list arrives from the server after the first render
+      detail.hidden = true;
+      detail.innerHTML = '';
+      return;
+    }
+    const t = r.t;
+    detail.hidden = false;
+    detail.innerHTML = `<div class="todoDetailHead"><span class="efHint">${esc(whereOf(r))}</span>${statusBadge(t)}
+        <button class="small" data-act="close-detail" aria-label="Cerrar" title="Cerrar (Esc)">✕</button></div>
+      <input class="todoDetailTitle" type="text" data-field="text" data-id="${t.id}" value="${esc(t.text)}" aria-label="Título" autocomplete="off">
+      <label class="todoLabel">Descripción</label>
+      <textarea class="todoDetailNote" data-field="note" data-id="${t.id}" placeholder="Apunta la idea, el contexto, lo que tenga que saber Claude…">${esc(t.note)}</textarea>
+      ${details(t)}`;
+  }
+
+  function render() {
+    renderList();
+    renderRail();
+    renderDetail();
+    renderToolbar();
+    renderQuick();
+    const f = tab.querySelector('[data-focus]');
     if (f) { f.focus(); f.select?.(); }
     else if (focusId) document.getElementById(focusId)?.focus();
     focusId = null;
-    renderToolbar();
-    renderQuick();
+  }
+
+  function select(id) {
+    sel = id;
+    if (id) sessionStorage.setItem(SEL_KEY, id); else sessionStorage.removeItem(SEL_KEY);
+    render();
+    if (id) detail.querySelector('.todoDetailNote')?.focus({ preventScroll: true });
+  }
+
+  /** Unfolds a phase or a taller and scrolls to it (the rail, and links into a taller). */
+  function jump(target) {
+    const [kind, id] = target.split(':');
+    if (kind === 'phase') {
+      if (folded.delete(id)) { saveSet(localStorage, FOLD_KEY, folded); renderList(); }
+      document.getElementById(`todoPhase-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      const el = document.getElementById(`taller-${id}`);
+      if (el) { el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    }
   }
 
   function mut(fn) { fn(); render(); queueSave(); }
@@ -575,22 +707,32 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
     return r && i >= 0 ? { ...r, si: i, s: r.t.steps[i] } : null;
   };
 
+  /** Moves an apunte phase past its apunte neighbour (taller phases are not in that list). */
+  function movePhase(id, d) {
+    const list = apuntes();
+    const k = list.findIndex((p) => p.id === id);
+    const other = list[k + d];
+    if (k < 0 || !other) return;
+    mut(() => swap(phases, phaseIdx(id), phaseIdx(other.id)));
+  }
+
+  /** The phase that holds a taller's tasks, made the first time. */
+  function tallerPhaseFor(tl) {
+    let ph = tallerPhase(tl);
+    if (!ph) { ph = { id: tl.phase, name: `${tl.icon} ${tl.name}`, tag: 'Taller', taller: tl.id, tasks: [] }; phases.push(ph); }
+    return ph;
+  }
+
   const ACTIONS = {
     toggle: (id) => { const r = find(id); if (r) mut(() => { r.t.done = !r.t.done; }); },
-    expand: (id) => {
-      if (open.has(id)) open.delete(id); else open.add(id);
-      sessionStorage.setItem(OPEN_KEY, JSON.stringify([...open]));
-      render();
-    },
-    'edit-text': (id) => { editing = { kind: 'text', id }; render(); },
-    'edit-note': (id) => { editing = { kind: 'note', id }; render(); },
+    'close-detail': () => select(null),
     'edit-pname': (id) => { editing = { kind: 'pname', id }; render(); },
     'edit-ptag': (id) => { editing = { kind: 'ptag', id }; render(); },
     'edit-step': (id) => { editing = { kind: 'step', id }; render(); },
     'up-task': (id) => { const r = find(id); if (r) mut(() => swap(r.ph.tasks, r.i, r.i - 1)); },
     'down-task': (id) => { const r = find(id); if (r) mut(() => swap(r.ph.tasks, r.i, r.i + 1)); },
-    'up-phase': (id) => { const i = phaseIdx(id); mut(() => swap(phases, i, i - 1)); },
-    'down-phase': (id) => { const i = phaseIdx(id); mut(() => swap(phases, i, i + 1)); },
+    'up-phase': (id) => movePhase(id, -1),
+    'down-phase': (id) => movePhase(id, 1),
     'del-task': (id) => {
       if (confirmKey !== `dt${id}`) { arm(`dt${id}`); return; }
       const r = find(id);
@@ -614,7 +756,7 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
     run: (id) => launch(id),
     'step-run': (id) => { const r = stepOf(id); if (r) launch(r.t.id, { stepId: r.s.id }); },
     reply: (id) => {
-      const box = root.querySelector(`[data-reply="${id}"]`);
+      const box = detail.querySelector(`[data-reply="${id}"]`);
       const text = box?.value.trim();
       if (!text) { toast('Escribe la respuesta primero'); return; }
       launch(id, { followUp: text });
@@ -623,23 +765,50 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
     force: (id) => serverAction('force', { taskId: id }, 'Lanzando aunque haya una terminal abierta'),
   };
 
-  root.addEventListener('click', (e) => {
+  // One set of listeners for the whole tab (apuntes, talleres, rail, drawer); designs-panel's areas are skipped.
+  tab.addEventListener('click', (e) => {
+    if (!ours(e.target)) return;
     const b = e.target.closest('[data-act]');
-    if (b && ACTIONS[b.dataset.act]) ACTIONS[b.dataset.act](b.dataset.id);
+    if (b && ACTIONS[b.dataset.act]) { ACTIONS[b.dataset.act](b.dataset.id); return; }
+    if (b || e.target.closest('input, textarea, select, form, a')) return;
+    const j = e.target.closest('[data-jump]');
+    if (j) { jump(j.dataset.jump); return; }
+    const row = e.target.closest('[data-open]');
+    if (row) { select(sel === row.dataset.open ? null : row.dataset.open); return; }
+    const head = e.target.closest('[data-fold]');
+    if (head) {
+      const id = head.dataset.fold;
+      if (!folded.delete(id)) folded.add(id);
+      saveSet(localStorage, FOLD_KEY, folded);
+      renderList();
+    }
   });
-  root.addEventListener('keydown', (e) => {
+  tab.addEventListener('toggle', (e) => {
+    const d = e.target;
+    if (d.matches?.('details.todoTaller')) {
+      if (d.open) tallerOpen.add(d.dataset.taller); else tallerOpen.delete(d.dataset.taller);
+      saveSet(localStorage, TALLER_KEY, tallerOpen);
+    } else if (d.matches?.('details.todoAdv')) advOpen = d.open;
+  }, true);
+  tab.addEventListener('keydown', (e) => {
     const t = e.target;
+    if (!ours(t)) return;
+    if (e.key === 'Escape' && sel && !t.hasAttribute?.('data-edit') && !/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) { select(null); return; }
+    if (e.key === 'Enter' && t.dataset?.field === 'text') { e.preventDefault(); t.blur(); return; }
     if (!t.hasAttribute?.('data-edit')) return;
     if (e.key === 'Escape') { editing = null; render(); }
     else if (e.key === 'Enter' && (t.tagName === 'INPUT' || !e.shiftKey)) { e.preventDefault(); commit(t.value); }
   });
-  root.addEventListener('focusout', (e) => {
+  tab.addEventListener('focusout', (e) => {
+    if (!ours(e.target)) return;
     if (e.target.hasAttribute?.('data-edit')) commit(e.target.value);
     else if (pendingRender) setTimeout(() => { if (!focusedHere() && pendingRender) render(); }, 0);
   });
-  // Detail fields (prompt, doc, model, needs): saved when they change, without re-rendering under your cursor.
-  root.addEventListener('change', (e) => {
+  // Drawer fields (title, description, prompt, doc, model, needs): saved when they change; only the list is
+  // redrawn, never the drawer under your cursor.
+  tab.addEventListener('change', (e) => {
     const el = e.target;
+    if (!ours(el)) return;
     const r = el.dataset.id ? find(el.dataset.id) : null;
     if (!r) return;
     if (el.dataset.need) {
@@ -647,15 +816,22 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
       if (el.checked) needs.add(el.dataset.need); else needs.delete(el.dataset.need);
       r.t.needs = [...needs];
       if (!r.t.needs.length) delete r.t.needs;
-    } else if (el.dataset.field) {
+    } else if (el.dataset.field === 'text') {
+      const v = el.value.trim();
+      if (v) r.t.text = v; else el.value = r.t.text;
+    } else if (el.dataset.field === 'note') r.t.note = el.value.trim();
+    else if (el.dataset.field) {
       const v = el.value.trim();
       if (v) r.t[el.dataset.field] = v; else delete r.t[el.dataset.field];
     } else return;
+    renderList();
+    renderRail();
     queueSave();
   });
-  root.addEventListener('submit', (e) => {
-    e.preventDefault();
+  tab.addEventListener('submit', (e) => {
     const f = e.target;
+    if (!ours(f) || !['addtask', 'addstep', 'tallertask'].includes(f.dataset.form)) return;
+    e.preventDefault();
     const v = f.querySelector('input').value.trim();
     if (!v) return;
     if (f.dataset.form === 'addtask') {
@@ -663,6 +839,12 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
       if (i < 0) return;
       focusId = `todoAdd-${f.dataset.id}`;
       mut(() => phases[i].tasks.push({ id: uid(), text: v, note: '', done: false }));
+    } else if (f.dataset.form === 'tallertask') {
+      const tl = tallerById(f.dataset.id);
+      if (!tl) return;
+      const task = { id: uid(), text: v, note: '', done: false };
+      mut(() => tallerPhaseFor(tl).tasks.push(task));
+      select(task.id);   // straight to its sheet: write the description, then launch
     } else if (f.dataset.form === 'addstep') {
       const r = find(f.dataset.id);
       if (!r) return;
@@ -687,8 +869,8 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
     if (data.get('effort')) task.effort = String(data.get('effort'));
     const andLaunch = e.submitter?.dataset.quick === 'launch';
     phases[i].tasks.push(task);
-    open.add(task.id);
-    sessionStorage.setItem(OPEN_KEY, JSON.stringify([...open]));
+    sel = task.id;
+    sessionStorage.setItem(SEL_KEY, sel);
     form.reset();
     render();
     dirty = true;
@@ -732,6 +914,7 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
   // ------------------------------------------------------------ start
 
   (async function start() {
+    tab.querySelectorAll('details.todoTaller').forEach((d) => { d.open = tallerOpen.has(d.dataset.taller); });
     try {
       const raw = localStorage.getItem(LS_KEY);
       const stored = raw ? readDocument(raw) : null;
@@ -754,5 +937,12 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
   return {
     onShow: () => { if (server) poll(); else pullFile(); },
     flush: async () => { dirty = true; await flush(); },
+    /** What waits for the user in a taller (designs-panel: proposals to review, enemies to approve). */
+    setBadges: (b) => {
+      if (JSON.stringify(b) === JSON.stringify(badges)) return;
+      badges = { ...b };
+      renderRail();
+      TALLERES.forEach((tl) => { const m = tl.built && tab.querySelector(`[data-taller-meta="${tl.id}"]`); if (m) m.innerHTML = tallerMeta(tl, tallerPhase(tl)); });
+    },
   };
 }

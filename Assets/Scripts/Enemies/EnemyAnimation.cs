@@ -499,6 +499,26 @@ namespace RedMagic.Enemies
 
         public void ClearHold() => ReturnToRest();
 
+        /// <summary>
+        /// Un movimiento (una esquiva) que dura <paramref name="seconds"/>: un cuerpo por partes reproduce el gesto
+        /// entero, ajustado a ese tiempo, y vuelve al reposo solo; un Animator mantiene el estado (<see cref="Hold"/>)
+        /// hasta <see cref="EndMotion"/>.
+        /// </summary>
+        public bool PlayMotion(string state, float seconds)
+        {
+            if (_dead || string.IsNullOrWhiteSpace(state)) return false;
+            if (!HasRig) return Hold(state);
+
+            _rigGesture = false;   // no avisa de nada
+            return rig.PlayMotion(state, seconds);
+        }
+
+        /// <summary>El movimiento ha terminado. El gesto de un rig acaba su vuelta al reposo él solo.</summary>
+        public void EndMotion()
+        {
+            if (!HasRig) ReturnToRest();
+        }
+
         /// <summary>Suelta el gesto o la pose que hubiera y vuelve al reposo.</summary>
         public void ReturnToRest()
         {

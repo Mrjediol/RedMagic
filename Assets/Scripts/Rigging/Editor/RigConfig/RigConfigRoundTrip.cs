@@ -218,6 +218,17 @@ namespace RedMagic.Rigging.EditorTools
                 });
                 rig.idle = new RigIdleGestures { gestures = new List<string> { "FxRoundTrip" }, interval = 2.5f, chance = 0.35f, windup = 0.8f };
 
+                // Andar: un pie (una pieza que cuelga de Visual) y una capa (otra pieza), con números que no son los de serie.
+                var foot = rig.parts.Find(p => p?.part != null && p.part.parent == rig.body)?.part;
+                var layered = rig.parts.Find(p => p?.part != null && p.part != foot)?.part;
+                rig.gait = new RigGait
+                {
+                    feet = new List<RigGaitFoot> { new RigGaitFoot { part = foot, phase = 0.25f } },
+                    stride = 0.9f, fullSpeed = 3f, minStride = 0.3f, duty = 0.6f, lift = 0.22f, footTilt = 11f,
+                    bodyBob = 0.04f, maxSpeed = 5f, settleTime = 0.2f,
+                    layers = new List<RigGaitLayer> { new RigGaitLayer { part = layered, phase = 0.5f, swing = new Vector2(0.1f, 0.02f), bob = -0.01f, rotate = 6f } },
+                };
+
                 // Sprites por estado con nombre: cada estado, sobre el renderer de esa pieza (su propio sprite vale).
                 SpriteRenderer renderer = null;
                 foreach (var p in rig.parts)

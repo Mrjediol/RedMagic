@@ -18,6 +18,13 @@
         "y": 0.85
       }
     },
+    "Parts/BackHand__gesture_DarkOrb.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.45,
+        "y": 0.85
+      }
+    },
     "Parts/BackFoot.png": {
       "pixelsPerUnit": 100,
       "pivot": {
@@ -75,6 +82,13 @@
       }
     },
     "Parts/WeaponHand.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.15,
+        "y": 0.5
+      }
+    },
+    "Parts/WeaponHand__gesture_Slash.png": {
       "pixelsPerUnit": 100,
       "pivot": {
         "x": 0.15,
@@ -477,6 +491,20 @@
   },
   "spriteSwaps": [
     {
+      "part": "Torso/BackHand",
+      "asleep": null,
+      "awake": null,
+      "attacking": null,
+      "stages": [],
+      "named": [
+        {
+          "state": "gesture",
+          "gesture": "DarkOrb",
+          "sprite": "Parts/BackHand__gesture_DarkOrb.png"
+        }
+      ]
+    },
+    {
       "part": "Torso/Head",
       "asleep": null,
       "awake": null,
@@ -492,11 +520,1030 @@
           "sprite": "Parts/Head__dead.png"
         }
       ]
+    },
+    {
+      "part": "Torso/WeaponHand",
+      "asleep": null,
+      "awake": null,
+      "attacking": null,
+      "stages": [],
+      "named": [
+        {
+          "state": "gesture",
+          "gesture": "Slash",
+          "sprite": "Parts/WeaponHand__gesture_Slash.png"
+        }
+      ]
     }
   ],
-  "gestures": [],
+  "gestures": [
+    {
+      "name": "Slash",
+      "steps": [
+        {
+          "name": "Alza",
+          "duration": 0.3,
+          "ease": "out",
+          "stretch": true,
+          "shake": 0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Torso/WeaponHand",
+              "move": {
+                "x": -3.9493,
+                "y": 4.6898
+              },
+              "rotate": 95,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/BackHand",
+              "move": {
+                "x": 0.7405,
+                "y": 0.4937
+              },
+              "rotate": 8,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 7,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 5,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": -0.2962,
+                "y": 0
+              },
+              "rotate": 5,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "FrontFoot",
+              "move": {
+                "x": 0.3702,
+                "y": 0
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Cape",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 6,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Corta",
+          "duration": 0.1,
+          "ease": "in",
+          "stretch": false,
+          "shake": 0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Torso/WeaponHand",
+              "move": {
+                "x": 1.7278,
+                "y": 1.3576
+              },
+              "rotate": 5,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/BackHand",
+              "move": {
+                "x": -0.8639,
+                "y": -0.2468
+              },
+              "rotate": -12,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -6,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -6,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0.8639,
+                "y": -0.2962
+              },
+              "rotate": -5,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "FrontFoot",
+              "move": {
+                "x": 1.1107,
+                "y": 0
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Cape",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 22,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sigue",
+          "duration": 0.14,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Torso/WeaponHand",
+              "move": {
+                "x": 1.481,
+                "y": 0.8639
+              },
+              "rotate": -15,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/BackHand",
+              "move": {
+                "x": -0.7405,
+                "y": -0.2468
+              },
+              "rotate": -10,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -5,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0.7405,
+                "y": -0.2962
+              },
+              "rotate": -4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "FrontFoot",
+              "move": {
+                "x": 1.1107,
+                "y": 0
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Cape",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 12,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 1,
+          "at": 0.6,
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "recover": 0.35,
+      "fx": [
+        {
+          "fx": {
+            "art": "gfx_FrostKnightSwordCharge_claudefr_loop"
+          },
+          "step": 0,
+          "at": 0,
+          "anchor": "muzzle",
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1,
+          "followsPart": true,
+          "loop": true,
+          "untilStep": -1,
+          "facing": "world",
+          "angle": 0,
+          "layer": "front"
+        },
+        {
+          "fx": {
+            "art": "gfx_FrostKnightSlash_claudefr"
+          },
+          "step": 1,
+          "at": 0.4,
+          "anchor": "body",
+          "offset": {
+            "x": 4.63,
+            "y": -0.69
+          },
+          "scale": 1,
+          "followsPart": true,
+          "loop": false,
+          "untilStep": -1,
+          "facing": "direction",
+          "angle": 0,
+          "layer": "front"
+        }
+      ]
+    },
+    {
+      "name": "DarkOrb",
+      "steps": [
+        {
+          "name": "Reúne",
+          "duration": 0.3,
+          "ease": "out",
+          "stretch": true,
+          "shake": 1,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Torso/BackHand",
+              "move": {
+                "x": 5.4303,
+                "y": 1.2342
+              },
+              "rotate": 18,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/WeaponHand",
+              "move": {
+                "x": -0.8639,
+                "y": -0.6171
+              },
+              "rotate": -25,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": -0.2468,
+                "y": 0
+              },
+              "rotate": 4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 5,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 3,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Cape",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lanza",
+          "duration": 0.09,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Torso/BackHand",
+              "move": {
+                "x": 7.1582,
+                "y": 0.9873
+              },
+              "rotate": -12,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/WeaponHand",
+              "move": {
+                "x": -1.1107,
+                "y": -0.6171
+              },
+              "rotate": -30,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0.543,
+                "y": 0
+              },
+              "rotate": -6,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Cape",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 10,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 1,
+          "at": 1,
+          "point": "Torso/BackHand",
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "recover": 0.35,
+      "fx": [
+        {
+          "fx": {
+            "art": "gfx_FrostKnightOrbCharge_claudefr_loop"
+          },
+          "step": 0,
+          "at": 0,
+          "anchor": "part",
+          "part": "Torso/BackHand",
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1,
+          "followsPart": true,
+          "loop": true,
+          "untilStep": -1,
+          "facing": "world",
+          "angle": 0,
+          "layer": "front"
+        },
+        {
+          "fx": {
+            "art": "gfx_FrostKnightOrbFlash_claudefr"
+          },
+          "step": 1,
+          "at": 1,
+          "anchor": "part",
+          "part": "Torso/BackHand",
+          "offset": {
+            "x": 0.93,
+            "y": 0
+          },
+          "scale": 1,
+          "followsPart": true,
+          "loop": false,
+          "untilStep": -1,
+          "facing": "direction",
+          "angle": 0,
+          "layer": "front"
+        }
+      ]
+    },
+    {
+      "name": "BackDash",
+      "steps": [
+        {
+          "name": "Agacha",
+          "duration": 0.16,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0,
+                "y": -1.1107
+              },
+              "rotate": -5,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/WeaponHand",
+              "move": {
+                "x": -0.4937,
+                "y": -0.2468
+              },
+              "rotate": 10,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/BackHand",
+              "move": {
+                "x": 0.2468,
+                "y": -0.3702
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0,
+                "y": -0.1234
+              },
+              "rotate": -3,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "FrontFoot",
+              "move": {
+                "x": 0.2962,
+                "y": 0
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "BackFoot",
+              "move": {
+                "x": -0.1975,
+                "y": 0
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Cape",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Salta atrás",
+          "duration": 0.3,
+          "ease": "out",
+          "stretch": true,
+          "shake": 0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0.8639,
+                "y": 0.2468
+              },
+              "rotate": -14,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/WeaponHand",
+              "move": {
+                "x": 1.1107,
+                "y": 0.3702
+              },
+              "rotate": -20,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/BackHand",
+              "move": {
+                "x": 1.3576,
+                "y": 0.7405
+              },
+              "rotate": -14,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0.2468,
+                "y": 0
+              },
+              "rotate": -6,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "FrontFoot",
+              "move": {
+                "x": -1.2342,
+                "y": 0.1975
+              },
+              "rotate": 15,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "BackFoot",
+              "move": {
+                "x": -1.481,
+                "y": 0.1975
+              },
+              "rotate": 15,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Cape",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 50,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Aterriza",
+          "duration": 0.18,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0,
+                "y": -0.6911
+              },
+              "rotate": 3,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/WeaponHand",
+              "move": {
+                "x": 0.2468,
+                "y": -0.3702
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/BackHand",
+              "move": {
+                "x": 0.2468,
+                "y": -0.3702
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0,
+                "y": -0.1481
+              },
+              "rotate": 2,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "FrontFoot",
+              "move": {
+                "x": 0.2468,
+                "y": 0
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "BackFoot",
+              "move": {
+                "x": -0.2468,
+                "y": 0
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Cape",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -10,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 1,
+          "at": 1,
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "recover": 0.25,
+      "fx": [
+        {
+          "fx": {
+            "art": "gfx_FrostKnightSnowPuff_claudefr"
+          },
+          "step": 1,
+          "at": 0,
+          "anchor": "feet",
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1,
+          "followsPart": true,
+          "loop": false,
+          "untilStep": -1,
+          "facing": "direction",
+          "angle": 0,
+          "layer": "front"
+        },
+        {
+          "fx": {
+            "art": "gfx_FrostKnightDashTrail_claudefr_loop"
+          },
+          "step": 1,
+          "at": 0,
+          "anchor": "body",
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1,
+          "followsPart": true,
+          "loop": true,
+          "untilStep": 1,
+          "facing": "direction",
+          "angle": 0,
+          "layer": "behind"
+        },
+        {
+          "fx": {
+            "art": "gfx_FrostKnightSnowPuff_claudefr"
+          },
+          "step": 2,
+          "at": 0,
+          "anchor": "feet",
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1,
+          "followsPart": true,
+          "loop": false,
+          "untilStep": -1,
+          "facing": "direction",
+          "angle": 0,
+          "layer": "front"
+        }
+      ]
+    }
+  ],
+  "artAssets": {
+    "gfx_FrostKnightSwordCharge_claudefr_loop": {
+      "kind": "fxLoop",
+      "folder": "Art/claude-frostknight-swordcharge",
+      "libraryId": "claude-frostknight-swordcharge",
+      "entryName": "FrostKnightSwordCharge",
+      "states": {
+        "Loop": {
+          "folder": "Loop",
+          "fps": 12,
+          "loop": true
+        }
+      },
+      "worldWidth": 0.96
+    },
+    "gfx_FrostKnightSlash_claudefr": {
+      "kind": "fx",
+      "folder": "Art/claude-frostknight-slash",
+      "libraryId": "claude-frostknight-slash",
+      "entryName": "FrostKnightSlash",
+      "states": {
+        "Spawn": {
+          "folder": "Spawn",
+          "fps": 18,
+          "loop": false
+        }
+      },
+      "worldWidth": 0.96
+    },
+    "gfx_FrostKnightOrbCharge_claudefr_loop": {
+      "kind": "fxLoop",
+      "folder": "Art/claude-frostknight-orbcharge",
+      "libraryId": "claude-frostknight-orbcharge",
+      "entryName": "FrostKnightOrbCharge",
+      "states": {
+        "Loop": {
+          "folder": "Loop",
+          "fps": 12,
+          "loop": true
+        }
+      },
+      "worldWidth": 0.96
+    },
+    "gfx_FrostKnightOrbFlash_claudefr": {
+      "kind": "fx",
+      "folder": "Art/claude-frostknight-orbflash",
+      "libraryId": "claude-frostknight-orbflash",
+      "entryName": "FrostKnightOrbFlash",
+      "states": {
+        "Spawn": {
+          "folder": "Spawn",
+          "fps": 18,
+          "loop": false
+        }
+      },
+      "worldWidth": 0.96
+    },
+    "gfx_FrostKnightSnowPuff_claudefr": {
+      "kind": "fx",
+      "folder": "Art/claude-frostknight-smoke",
+      "libraryId": "claude-frostknight-smoke",
+      "entryName": "FrostKnightSnowPuff",
+      "states": {
+        "Spawn": {
+          "folder": "Spawn",
+          "fps": 14,
+          "loop": false
+        }
+      },
+      "worldWidth": 0.96
+    },
+    "gfx_FrostKnightDashTrail_claudefr_loop": {
+      "kind": "fxLoop",
+      "folder": "Art/claude-frostknight-trail",
+      "libraryId": "claude-frostknight-trail",
+      "entryName": "FrostKnightDashTrail",
+      "states": {
+        "Loop": {
+          "folder": "Loop",
+          "fps": 14,
+          "loop": true
+        }
+      },
+      "worldWidth": 0.96
+    }
+  },
   "gait": {
-    "stride": 0.8,
+    "stride": 0.7,
     "fullSpeed": 2.2,
     "minStride": 0.4,
     "duty": 0.55,

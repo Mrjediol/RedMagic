@@ -295,7 +295,16 @@
       "asleep": "Assets/Art/RigImports/IceRobot/Parts/OffArm__asleep.png",
       "awake": "Assets/Art/RigImports/IceRobot/Parts/OffArm__awake.png",
       "attacking": null,
-      "stages": []
+      "stages": [],
+      "named": [
+        {
+          "state": "gesture",
+          "gesture": "Finger",
+          "from": 0.0,
+          "to": 99.0,
+          "sprite": "Assets/Art/RigImports/IceRobot/Parts/OffArm__gesture_Finger.png"
+        }
+      ]
     }
   ],
   "gestures": [
@@ -308,6 +317,7 @@
           "ease": "inout",
           "stretch": true,
           "shake": 0.0,
+          "aim": false,
           "poses": [
             {
               "part": "Torso/CastArm",
@@ -341,6 +351,7 @@
           "ease": "out",
           "stretch": false,
           "shake": 0.0,
+          "aim": false,
           "poses": [
             {
               "part": "Torso/CastArm",
@@ -397,6 +408,7 @@
           "ease": "inout",
           "stretch": true,
           "shake": 1.5,
+          "aim": false,
           "poses": [
             {
               "part": "Torso/CastArm",
@@ -442,6 +454,7 @@
           "ease": "out",
           "stretch": false,
           "shake": 0.0,
+          "aim": false,
           "poses": [
             {
               "part": "Torso/CastArm",
@@ -491,6 +504,7 @@
           "ease": "inout",
           "stretch": true,
           "shake": 0.0,
+          "aim": false,
           "poses": [
             {
               "part": "Torso/CastArm",
@@ -524,6 +538,7 @@
           "ease": "out",
           "stretch": false,
           "shake": 0.0,
+          "aim": false,
           "poses": [
             {
               "part": "Torso/CastArm",
@@ -573,6 +588,7 @@
           "ease": "inout",
           "stretch": true,
           "shake": 0.0,
+          "aim": false,
           "poses": [
             {
               "part": "Torso/OffArm",
@@ -594,6 +610,7 @@
           "ease": "out",
           "stretch": false,
           "shake": 0.0,
+          "aim": false,
           "poses": [
             {
               "part": "Torso/OffArm",
@@ -631,6 +648,7 @@
           "ease": "inout",
           "stretch": true,
           "shake": 0.0,
+          "aim": false,
           "poses": []
         },
         {
@@ -639,6 +657,7 @@
           "ease": "out",
           "stretch": false,
           "shake": 0.0,
+          "aim": false,
           "poses": [
             {
               "part": "Torso/CastArm",
@@ -685,12 +704,322 @@
           "layer": "front"
         }
       ]
+    },
+    {
+      "name": "Gesto",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 0.0,
+          "aim": true,
+          "poses": []
+        },
+        {
+          "name": "Paso 2",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": false,
+          "shake": 0.0,
+          "aim": true,
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 3.915,
+                "y": 0.056
+              },
+              "rotate": 0.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paso 2",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": false,
+          "shake": 0.0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 3.915,
+                "y": 0.056
+              },
+              "rotate": 0.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 2,
+          "at": 0.0,
+          "offset": {
+            "x": 0.0,
+            "y": 0.0
+          }
+        }
+      ],
+      "recover": 0.45,
+      "fx": [
+        {
+          "fx": "Assets/Prefabs/Fx/Enemies/IceRobot/Fx_IceRobot_gfx_IceRobotImpact_b45b8c07.prefab",
+          "step": 2,
+          "at": 0.0,
+          "anchor": "muzzle",
+          "offset": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "scale": 1.0,
+          "followsPart": true,
+          "loop": false,
+          "untilStep": -1,
+          "facing": "direction",
+          "angle": 0.0,
+          "layer": "front"
+        }
+      ]
+    },
+    {
+      "name": "baile",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 0.0,
+          "aim": false,
+          "poses": []
+        },
+        {
+          "name": "Paso 2",
+          "duration": 0.17,
+          "ease": "inout",
+          "stretch": false,
+          "shake": 0.0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Torso/OffArm",
+              "move": {
+                "x": -2.867,
+                "y": 1.283
+              },
+              "rotate": -36.7,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 4.21,
+                "y": 0.762
+              },
+              "rotate": 44.5,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paso 2",
+          "duration": 0.21,
+          "ease": "inout",
+          "stretch": false,
+          "shake": 0.0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Torso/OffArm",
+              "move": {
+                "x": -4.511,
+                "y": -1.564
+              },
+              "rotate": 6.5,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 4.19,
+                "y": 3.508
+              },
+              "rotate": 89.2,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Torso",
+              "move": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "rotate": 19.3,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paso 2",
+          "duration": 0.14,
+          "ease": "inout",
+          "stretch": false,
+          "shake": 0.0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Torso/OffArm",
+              "move": {
+                "x": -5.774,
+                "y": 0.882
+              },
+              "rotate": 288.20001,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 6.936,
+                "y": 0.441
+              },
+              "rotate": 6.4,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Torso/Lower",
+              "move": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "rotate": -14.6,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": -0.14,
+                "y": 3.087
+              },
+              "rotate": 0.0,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paso 2",
+          "duration": 0.18,
+          "ease": "inout",
+          "stretch": false,
+          "shake": 0.0,
+          "aim": false,
+          "poses": [
+            {
+              "part": "Torso/OffArm",
+              "move": {
+                "x": -2.406,
+                "y": 4.21
+              },
+              "rotate": 228.7,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 3.729,
+                "y": -2.486
+              },
+              "rotate": -68.9,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            },
+            {
+              "part": "Torso",
+              "move": {
+                "x": -0.06,
+                "y": 2.005
+              },
+              "rotate": 6.1,
+              "scale": {
+                "x": 0.0,
+                "y": 0.0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [],
+      "recover": 0.45
     }
   ],
   "idleGestures": {
-    "gestures": [],
-    "interval": 4.0,
+    "gestures": [
+      "baile"
+    ],
+    "interval": 1.0,
     "chance": 0.6,
     "windup": 0.5
+  },
+  "transitionGestures": {
+    "gestures": [
+      "baile"
+    ],
+    "chance": 0.5,
+    "windup": 0.3
+  },
+  "gait": {
+    "feet": [],
+    "stride": 0.8,
+    "fullSpeed": 2.2,
+    "minStride": 0.4,
+    "duty": 0.55,
+    "lift": 0.18,
+    "footTilt": 16.0,
+    "bodyBob": 0.05,
+    "maxSpeed": 4.0,
+    "settleTime": 0.15,
+    "layers": []
   }
 }

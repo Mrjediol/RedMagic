@@ -38,7 +38,7 @@
 //   releases      the same, for a gesture of the template: { <Gesture>: [{ step, at, point }] }
 //                 (a template gesture is step 0 = wind-up, step 1 = strike; default: end of step 0)
 //   gestureFx     effects per gesture: { <Gesture>: [{ effect: <key>, step, at, loop, untilStep,
-//                 size (world units), anchor: 'muzzle'|'body'|'feet', facing: 'direction'|'anchor'|'world',
+//                 size (world units), anchor: 'muzzle'|'body'|'feet' (or part: <slot id>), offset: [x, y] (world units), facing: 'direction'|'anchor'|'world',
 //                 layer: 'front'|'behind', angle, followsPart }] }   (step = number of steps → the way back to rest)
 //                 A gesture with an effect has no placeholder flash: the effect IS the flash.
 //   defences      EnemyDefence entries (enemy-defaults.js createDefence): how it gets out of the way;
@@ -218,8 +218,10 @@ for (const [gestureName, hooks] of Object.entries(brief.gestureFx || {})) {
     const entry = entriesById.get(id);
     if (!entry) { problems.push(`gestureFx ${gestureName}: no effect '${hook.effect}'`); continue; }
     const nominal = entry.sprite.boxes[0].w / (entry.sprite.density || 1) / state.pixelsPerUnit;   // units at scale 1
-    gesture.fx.push({ fx: id, step: Math.min(hook.step ?? 0, gesture.steps.length), at: hook.at ?? 0, anchor: hook.anchor || 'muzzle', part: null,
-      offset: { x: 0, y: 0 }, scale: Math.round(((hook.size ?? 1) / state.rootScale / nominal) * 100) / 100,
+    unknown(hook.part, `gestureFx ${gestureName}`);
+    const part = hook.part ? uidOfSlot(hook.part) : null;
+    gesture.fx.push({ fx: id, step: Math.min(hook.step ?? 0, gesture.steps.length), at: hook.at ?? 0, anchor: part ? 'part' : hook.anchor || 'muzzle', part,
+      offset: { x: Math.round((hook.offset?.[0] || 0) / state.rootScale * 100) / 100, y: Math.round((hook.offset?.[1] || 0) / state.rootScale * 100) / 100 },   // world units, like size scale: Math.round(((hook.size ?? 1) / state.rootScale / nominal) * 100) / 100,
       followsPart: hook.followsPart !== false, loop: !!hook.loop, untilStep: hook.untilStep ?? -1, facing: hook.facing || 'direction',
       angle: hook.angle || 0, layer: hook.layer || 'front' });
   }

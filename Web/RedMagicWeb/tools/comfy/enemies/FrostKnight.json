@@ -4,12 +4,782 @@
   "template": "groundHumanoid",
   "parts": "claude/knight/final",
   "height": 3.2,
-  "colliderFill": [0.42, 1.0],
-  "rig": { "muzzleFlashSize": 0 },
+  "colliderFill": [
+    0.42,
+    1
+  ],
+  "rig": {
+    "muzzleFlashSize": 0
+  },
   "tuning": {
     "maxHealth": 40,
-    "attackDamage": 10,
-    "attackCooldown": 1.4,
-    "moveSoundInterval": 0.45
-  }
+    "attackRange": 1.7,
+    "attackDamage": 12,
+    "attackCooldown": 1.3,
+    "moveSoundInterval": 0.45,
+    "builtInAttack": false
+  },
+  "effects": {
+    "orb": {
+      "name": "FrostKnightOrb",
+      "preset": "shadowOrb",
+      "params": {
+        "core": "#f4d8ff",
+        "glow": "#8a2be2",
+        "accent": "#ff4fd8"
+      }
+    },
+    "orbCharge": {
+      "name": "FrostKnightOrbCharge",
+      "preset": "chargeVortex",
+      "params": {
+        "core": "#f4d8ff",
+        "glow": "#8a2be2",
+        "accent": "#ff4fd8"
+      }
+    },
+    "orbFlash": {
+      "name": "FrostKnightOrbFlash",
+      "preset": "muzzleFlash",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#a03cff",
+        "accent": "#ff4fd8"
+      }
+    },
+    "swordCharge": {
+      "name": "FrostKnightSwordCharge",
+      "preset": "chargeVortex",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#5fd8ff",
+        "accent": "#c8f4ff"
+      }
+    },
+    "slash": {
+      "name": "FrostKnightSlash",
+      "preset": "slash",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#5fd8ff",
+        "accent": "#c8f4ff"
+      }
+    },
+    "smoke": {
+      "name": "FrostKnightSnowPuff",
+      "preset": "smokePuff",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#d8f2ff",
+        "accent": "#a8d8f0"
+      }
+    },
+    "trail": {
+      "name": "FrostKnightDashTrail",
+      "preset": "dashTrail",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#5fd8ff",
+        "accent": "#c8f4ff"
+      }
+    }
+  },
+  "gestures": [
+    {
+      "name": "Slash",
+      "recover": 0.35,
+      "steps": [
+        {
+          "name": "Alza",
+          "stretch": true,
+          "ease": "out",
+          "poses": [
+            [
+              "weaponHand",
+              [
+                -1.6,
+                1.9
+              ],
+              95
+            ],
+            [
+              "backHand",
+              [
+                0.3,
+                0.2
+              ],
+              8
+            ],
+            [
+              "torso",
+              [
+                0,
+                0
+              ],
+              7
+            ],
+            [
+              "head",
+              [
+                0,
+                0
+              ],
+              5
+            ],
+            [
+              "Visual",
+              [
+                -0.12,
+                0
+              ],
+              5
+            ],
+            [
+              "frontFoot",
+              [
+                0.15,
+                0
+              ],
+              0
+            ],
+            [
+              "cape",
+              [
+                0,
+                0
+              ],
+              6
+            ]
+          ]
+        },
+        {
+          "name": "Corta",
+          "duration": 0.1,
+          "ease": "in",
+          "poses": [
+            [
+              "weaponHand",
+              [
+                0.7,
+                0.55
+              ],
+              5
+            ],
+            [
+              "backHand",
+              [
+                -0.35,
+                -0.1
+              ],
+              -12
+            ],
+            [
+              "torso",
+              [
+                0,
+                0
+              ],
+              -6
+            ],
+            [
+              "head",
+              [
+                0,
+                0
+              ],
+              -6
+            ],
+            [
+              "Visual",
+              [
+                0.35,
+                -0.12
+              ],
+              -5
+            ],
+            [
+              "frontFoot",
+              [
+                0.45,
+                0
+              ],
+              0
+            ],
+            [
+              "cape",
+              [
+                0,
+                0
+              ],
+              22
+            ]
+          ]
+        },
+        {
+          "name": "Sigue",
+          "duration": 0.14,
+          "ease": "out",
+          "poses": [
+            [
+              "weaponHand",
+              [
+                0.6,
+                0.35
+              ],
+              -15
+            ],
+            [
+              "backHand",
+              [
+                -0.3,
+                -0.1
+              ],
+              -10
+            ],
+            [
+              "torso",
+              [
+                0,
+                0
+              ],
+              -5
+            ],
+            [
+              "head",
+              [
+                0,
+                0
+              ],
+              -4
+            ],
+            [
+              "Visual",
+              [
+                0.3,
+                -0.12
+              ],
+              -4
+            ],
+            [
+              "frontFoot",
+              [
+                0.45,
+                0
+              ],
+              0
+            ],
+            [
+              "cape",
+              [
+                0,
+                0
+              ],
+              12
+            ]
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 1,
+          "at": 0.6
+        }
+      ]
+    },
+    {
+      "name": "DarkOrb",
+      "recover": 0.35,
+      "steps": [
+        {
+          "name": "Reúne",
+          "stretch": true,
+          "ease": "out",
+          "shake": 1,
+          "poses": [
+            [
+              "backHand",
+              [
+                2.2,
+                0.5
+              ],
+              18
+            ],
+            [
+              "weaponHand",
+              [
+                -0.35,
+                -0.25
+              ],
+              -25
+            ],
+            [
+              "Visual",
+              [
+                -0.1,
+                0
+              ],
+              4
+            ],
+            [
+              "head",
+              [
+                0,
+                0
+              ],
+              5
+            ],
+            [
+              "torso",
+              [
+                0,
+                0
+              ],
+              3
+            ],
+            [
+              "cape",
+              [
+                0,
+                0
+              ],
+              4
+            ]
+          ]
+        },
+        {
+          "name": "Lanza",
+          "duration": 0.09,
+          "ease": "out",
+          "poses": [
+            [
+              "backHand",
+              [
+                2.9,
+                0.4
+              ],
+              -12
+            ],
+            [
+              "weaponHand",
+              [
+                -0.45,
+                -0.25
+              ],
+              -30
+            ],
+            [
+              "Visual",
+              [
+                0.22,
+                0
+              ],
+              -6
+            ],
+            [
+              "head",
+              [
+                0,
+                0
+              ],
+              -4
+            ],
+            [
+              "torso",
+              [
+                0,
+                0
+              ],
+              -4
+            ],
+            [
+              "cape",
+              [
+                0,
+                0
+              ],
+              10
+            ]
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 1,
+          "at": 1,
+          "point": "backHand",
+          "offset": [
+            0.25,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "BackDash",
+      "recover": 0.25,
+      "steps": [
+        {
+          "name": "Agacha",
+          "duration": 0.16,
+          "ease": "out",
+          "poses": [
+            [
+              "Visual",
+              [
+                0,
+                -0.45
+              ],
+              -5
+            ],
+            [
+              "weaponHand",
+              [
+                -0.2,
+                -0.1
+              ],
+              10
+            ],
+            [
+              "backHand",
+              [
+                0.1,
+                -0.15
+              ],
+              0
+            ],
+            [
+              "head",
+              [
+                0,
+                -0.05
+              ],
+              -3
+            ],
+            [
+              "frontFoot",
+              [
+                0.12,
+                0
+              ],
+              0
+            ],
+            [
+              "backFoot",
+              [
+                -0.08,
+                0
+              ],
+              0
+            ],
+            [
+              "cape",
+              [
+                0,
+                0
+              ],
+              -4
+            ]
+          ]
+        },
+        {
+          "name": "Salta atrás",
+          "stretch": true,
+          "ease": "out",
+          "poses": [
+            [
+              "Visual",
+              [
+                0.35,
+                0.1
+              ],
+              -14
+            ],
+            [
+              "weaponHand",
+              [
+                0.45,
+                0.15
+              ],
+              -20
+            ],
+            [
+              "backHand",
+              [
+                0.55,
+                0.3
+              ],
+              -14
+            ],
+            [
+              "head",
+              [
+                0.1,
+                0
+              ],
+              -6
+            ],
+            [
+              "frontFoot",
+              [
+                -0.5,
+                0.08
+              ],
+              15
+            ],
+            [
+              "backFoot",
+              [
+                -0.6,
+                0.08
+              ],
+              15
+            ],
+            [
+              "cape",
+              [
+                0,
+                0
+              ],
+              50
+            ]
+          ]
+        },
+        {
+          "name": "Aterriza",
+          "duration": 0.18,
+          "ease": "out",
+          "poses": [
+            [
+              "Visual",
+              [
+                0,
+                -0.28
+              ],
+              3
+            ],
+            [
+              "weaponHand",
+              [
+                0.1,
+                -0.15
+              ],
+              0
+            ],
+            [
+              "backHand",
+              [
+                0.1,
+                -0.15
+              ],
+              0
+            ],
+            [
+              "head",
+              [
+                0,
+                -0.06
+              ],
+              2
+            ],
+            [
+              "frontFoot",
+              [
+                0.1,
+                0
+              ],
+              0
+            ],
+            [
+              "backFoot",
+              [
+                -0.1,
+                0
+              ],
+              0
+            ],
+            [
+              "cape",
+              [
+                0,
+                0
+              ],
+              -10
+            ]
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 1,
+          "at": 1
+        }
+      ]
+    }
+  ],
+  "gestureFx": {
+    "Slash": [
+      {
+        "effect": "swordCharge",
+        "step": 0,
+        "at": 0,
+        "loop": true,
+        "size": 0.9,
+        "anchor": "muzzle",
+        "facing": "world"
+      },
+      {
+        "effect": "slash",
+        "step": 1,
+        "at": 0.4,
+        "size": 2.2,
+        "anchor": "body",
+        "offset": [
+          1,
+          -0.15
+        ],
+        "facing": "direction"
+      }
+    ],
+    "DarkOrb": [
+      {
+        "effect": "orbCharge",
+        "step": 0,
+        "at": 0,
+        "loop": true,
+        "size": 1.1,
+        "part": "backHand",
+        "facing": "world"
+      },
+      {
+        "effect": "orbFlash",
+        "step": 1,
+        "at": 1,
+        "size": 1.2,
+        "part": "backHand",
+        "offset": [
+          0.2,
+          0
+        ]
+      }
+    ],
+    "BackDash": [
+      {
+        "effect": "smoke",
+        "step": 1,
+        "at": 0,
+        "size": 1.3,
+        "anchor": "feet",
+        "facing": "direction"
+      },
+      {
+        "effect": "trail",
+        "step": 1,
+        "at": 0,
+        "loop": true,
+        "untilStep": 1,
+        "size": 1.6,
+        "anchor": "body",
+        "layer": "behind",
+        "facing": "direction"
+      },
+      {
+        "effect": "smoke",
+        "step": 2,
+        "at": 0,
+        "size": 1,
+        "anchor": "feet",
+        "facing": "direction"
+      }
+    ]
+  },
+  "attacks": [
+    {
+      "id": "IceSlash",
+      "type": "ReleaseAttack",
+      "common": {
+        "displayName": "Tajo helado",
+        "telegraph": 0.45,
+        "recovery": 0.35,
+        "damage": 12,
+        "gesture": "Slash",
+        "cooldownInAttacks": 0,
+        "weight": 2,
+        "accent": "#5fd8ffff"
+      },
+      "shots": [
+        {
+          "kind": "Strike",
+          "strikeSize": {
+            "x": 1.8,
+            "y": 1.6
+          },
+          "strikeOffset": {
+            "x": 1.1,
+            "y": -0.2
+          }
+        }
+      ],
+      "deck": {
+        "minRange": 0,
+        "maxRange": 2
+      }
+    },
+    {
+      "id": "DarkOrb",
+      "type": "ReleaseAttack",
+      "common": {
+        "displayName": "Orbe oscuro",
+        "telegraph": 0.6,
+        "recovery": 0.4,
+        "damage": 9,
+        "gesture": "DarkOrb",
+        "cooldownInAttacks": 1,
+        "weight": 1,
+        "accent": "#a03cffff"
+      },
+      "shots": [
+        {
+          "kind": "Projectile",
+          "aim": "Frozen",
+          "effect": "orb",
+          "worldWidth": 0.7,
+          "projectile": {
+            "speed": 7,
+            "lifetime": 2.6,
+            "size": {
+              "x": 0.7,
+              "y": 0.7
+            }
+          }
+        }
+      ],
+      "deck": {
+        "minRange": 2.5,
+        "maxRange": 8
+      }
+    }
+  ],
+  "defences": [
+    {
+      "trigger": "TargetNear",
+      "distance": 1.2,
+      "chance": 0.5,
+      "cooldown": 4,
+      "move": "DashAway",
+      "moveDistance": 2.4,
+      "moveDuration": 0.3,
+      "anticipation": 0.16,
+      "gesture": "BackDash"
+    },
+    {
+      "trigger": "OnHit",
+      "chance": 0.3,
+      "cooldown": 5,
+      "move": "DashAway",
+      "moveDistance": 2.8,
+      "moveDuration": 0.32,
+      "anticipation": 0.12,
+      "gesture": "BackDash"
+    }
+  ]
 }

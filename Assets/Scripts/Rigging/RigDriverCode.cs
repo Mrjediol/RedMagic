@@ -337,6 +337,17 @@ namespace RedMagic.Rigging
                 StartGesture(SettleRoutine(0.3f), move);
         }
 
+        public override bool PlayMotion(string gestureName, float seconds)
+        {
+            if (_dead) return false;
+            var gesture = Rig.FindGesture(gestureName);
+            if (gesture == null) return false;
+
+            StartGesture(GestureRoutine(gesture, Mathf.Max(0.01f, seconds), silent: true), gesture);
+            Rig.ShowGestureSprites(gesture.name, isAttack: false);
+            return true;
+        }
+
         public override bool HoldGesture(string gestureName)
         {
             if (_dead) return false;

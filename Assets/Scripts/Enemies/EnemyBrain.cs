@@ -755,8 +755,8 @@ namespace RedMagic.Enemies
             FaceTowards(toTarget);   // se aparta sin darle la espalda
 
             // Con ataque: su gesto se reproduce entero mientras se aparta y sale en sus sueltas (la
-            // primera, al acabar de apartarse). Sin él, la pose se mantiene mientras dura (con sus
-            // efectos y sprites) y no avisa de ningún ataque.
+            // primera, al acabar de apartarse). Sin él, el gesto también se reproduce entero (sus pasos
+            // "dura el aviso" llenan aviso + movimiento), en silencio: no avisa de ningún ataque.
             _evadeAttack = false;
             if (d.attack != null && _attack != null)
             {
@@ -764,7 +764,8 @@ namespace RedMagic.Enemies
                 _evadeAttack = _attack.RunDefenceAttack(d.attack, _target, Mathf.Max(0f, d.anticipation) + _evadeDuration);
             }
 
-            if (!_evadeAttack && _animation != null && !string.IsNullOrWhiteSpace(d.gesture)) _animation.Hold(d.gesture);
+            if (!_evadeAttack && _animation != null && !string.IsNullOrWhiteSpace(d.gesture))
+                _animation.PlayMotion(d.gesture, Mathf.Max(0f, d.anticipation) + _evadeDuration);
             SoundTriggered?.Invoke(SoundTrigger.OnEvade);
             return true;
         }
@@ -830,7 +831,7 @@ namespace RedMagic.Enemies
                 return;
             }
 
-            if (_animation != null && hadGesture && !attacking) _animation.ReturnToRest();
+            if (_animation != null && hadGesture && !attacking) _animation.EndMotion();
             Stop();
             Enter(State.Idle);   // el siguiente Update decide: perseguir, atacar, retirarse
         }

@@ -11,7 +11,7 @@
     "knockbackVertical": 3.0,
     "knockbackDuration": 0.18,
     "knockbackResistance": 0.0,
-    "detectionRange": 13.0,
+    "detectionRange": 10.0,
     "loseInterestGrace": 1.0,
     "attackRange": 8.0,
     "personalSpace": 3.0,
@@ -31,9 +31,13 @@
     "rootedWhileAttacking": true,
     "attacks": [
       {
-        "builtIn": true,
-        "gesture": "Disparo",
-        "weight": 1.0,
+        "attack": "Assets/ScriptableObjects/EnemyAttacks/IceRobot/EnemyAttack_IceRobot_PropioDisparo.asset",
+        "minRange": 0.0,
+        "maxRange": 0.0,
+        "targetHeight": "Any"
+      },
+      {
+        "attack": "Assets/ScriptableObjects/EnemyAttacks/IceRobot/EnemyAttack_IceRobot_Ataque1.asset",
         "minRange": 0.0,
         "maxRange": 0.0,
         "targetHeight": "Any"

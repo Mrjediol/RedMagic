@@ -136,6 +136,30 @@ it), `scale`, `followsPart`, `loop`. Data only, authored in the web (Enemy Studi
 - The built-in attack (`PlayAttack`) has no phases of its own: it keeps the muzzle flash. To put
   effects on it, make it a catalog attack with a gesture (a `ReleaseAttack`, see `enemies.md`).
 
+## Walking (`ProceduralRig.gait`, 2026-10-03)
+`RigGait`: `feet` (`RigGaitFoot`: part + `phase`) and `layers` (`RigGaitLayer`: part + `phase`, `swing` world
+x/y once per cycle, `bob` twice per cycle, `rotate` once per cycle around its pivot), plus `stride`, `fullSpeed`,
+`minStride`, `duty`, `lift`, `footTilt`, `bodyBob`, `maxSpeed`, `settleTime` — all world units. No feet = nothing.
+- **Feet are placed in root space**, not body space (`RigDriverCode.ApplyGait`): each foot's rest pivot (its sole =
+  `RigPart.pivot`) is cached at `Awake` in root space, all at the lowest one's height (one ground). A planted foot
+  slides back exactly what the body moves, so it does not skate; in the air it arcs (`lift`) and tilts toe-down at
+  take-off, toe-up at landing. Lean, body bob, follow spring and hurt squash never lift it. **A foot must hang
+  straight from `Visual`** (the importer warns otherwise). The root may be scaled: rest goes through
+  `TransformPoint`, stride / lift are added in world units.
+- **The cycle advances with distance** (`TickGait`: measured `vx × Facing`, smoothed): faster = more cadence,
+  backwards = walks backwards. Stopped, airborne (`|vy| > 2.5`) or faster than `maxSpeed` (a dash, knockback) the
+  step closes in `settleTime` (`_gaitAmp`, `_gaitWeight`). Step length scales with speed (`minStride`…1), and the
+  cycle length with it, so slow steps are short and still exact.
+- **Order in `Step`**: `TickGait` → body (+ `GaitBodyBob`) → parts → `CaptureFeet` → gestures → `ApplyGait` → aim.
+  A gesture's pose ON a foot is kept (measured from the ground); a pose on `Visual` no longer drags the feet.
+- **`RigDriverCode.Step(dt)`** is the frame composition (`LateUpdate` calls it with `Time.deltaTime`): editor
+  previews call it at a fixed step. **`RigFilmstrip`** (Editor) uses it: `Walk(prefab, png, speed, cells, …)` = a
+  strip of a body walking with a world ground ruler (a planted foot stays on its tick), `Poses(prefab, png, gesture)`
+  = rest + each step (and the midpoint) of a gesture, still. Call them with `unity command eval`; no Play Mode.
+- JSON: `gait` block (exporter / importer, present = replaces, absent = kept); web: `mapGait` (rig-model.js), the
+  template's `gait` by slot id → document by uid → export by path, read back by `readRigDocument`. The web does
+  not preview it yet. `RigConfigRoundTrip`'s synthetic case carries one.
+
 ## Idle gestures (`ProceduralRig.idle`)
 `RigIdleGestures`: a pool of gesture **names**, `interval`, `chance`, `windup`. `RigDriverCode.TickIdle`
 plays one at random (never the same twice in a row) every `interval` ±25% s with probability `chance`,

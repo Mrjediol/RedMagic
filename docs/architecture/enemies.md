@@ -164,8 +164,12 @@ meant to be edited by hand.**
     `DeckAttackFinished`. It does not count for the deck's cooldowns. Web: Defensa ▸ "Ataque que lanza al
     apartarse" (one of the deck's cards; "Sólo desde una defensa" keeps it out of the draw —
     `attacks` has it, `tuning.attacks` does not, `tuning.defences[].attack` names it).
-  - **Body**: `EnemyAnimation.Hold(gesture)` while it lasts (the gesture's windup pose, its `at = 0` effects
-    and its sprites — never an attack event), `ReturnToRest` at the end. Sound: `SoundTrigger.OnEvade`.
+  - **Body** (2026-10-03): `EnemyAnimation.PlayMotion(gesture, anticipation + move duration)` → a part-based body
+    plays the gesture **whole, as a timeline, silently** (`RigDriver.PlayMotion`: its "lasts the warning" steps fill
+    that time, the steps after it play after, then it settles by itself — e.g. crouch → push → land); `EndMotion` at
+    the end does nothing for a rig. An Animator body still holds the state (`Hold` / `ReturnToRest`). Before this a
+    rig only held the windup pose: a defence gesture with a strike step (IceRobot's `Finger`) now also plays its
+    strike as the move ends. Never an attack event. Sound: `SoundTrigger.OnEvade`.
   - **Pipeline**: `tuning.defences` in enemy-config, read by `EnemyDeckImporter.ReadDefences` and, like the
     deck, **rewritten on every import** when present. Web: Enemy Creator / Studio step 4 ▸ *Defensa*.
 - `EnemyController` (`Assets/Scripts/Gameplay/`) is the **older** system, still used by

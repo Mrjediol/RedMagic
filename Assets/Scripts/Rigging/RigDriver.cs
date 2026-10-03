@@ -163,6 +163,13 @@ namespace RedMagic.Rigging
         public virtual bool HoldGesture(string gestureName) => false;
 
         /// <summary>
+        /// Un <b>movimiento</b> (una esquiva): el gesto entero, como línea de tiempo, en silencio — sus pasos
+        /// "dura el aviso" se reparten <paramref name="seconds"/> (lo que dura el movimiento), luego sigue con los
+        /// demás y vuelve al reposo él solo. No avisa de ningún ataque. Sin línea de tiempo propia = mantiene la pose.
+        /// </summary>
+        public virtual bool PlayMotion(string gestureName, float seconds) => HoldGesture(gestureName);
+
+        /// <summary>
         /// Acaba de terminar un ataque y quedan <paramref name="seconds"/> de enfriamiento: con la
         /// probabilidad de <see cref="ProceduralRig.transition"/> hace uno de sus gestos de transición
         /// que quepa en ese tiempo. False = no hizo ninguno.

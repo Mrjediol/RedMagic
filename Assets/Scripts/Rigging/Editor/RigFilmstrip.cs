@@ -90,6 +90,104 @@ namespace RedMagic.Rigging.EditorTools
             }
         }
 
+        /// <summary>
+        /// Las poses de un gesto, quietas: el reposo, luego cada paso a peso completo con el punto medio entre uno y
+        /// otro delante (la mezcla por la que pasa). Sin efectos (son del pool, en juego). Para ver de un vistazo si un
+        /// paso deja una pieza donde debe — la mano delante del torso, la espada arriba — sin jugar.
+        /// </summary>
+        public static string Poses(string prefabPath, string outPng, string gestureName, int facing = 1)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (prefab == null) return $"no hay prefab en {prefabPath}";
+            var rigData = prefab.GetComponent<ProceduralRig>();
+            var gesture = rigData != null ? rigData.FindGesture(gestureName) : null;
+            if (gesture?.steps == null || gesture.steps.Count == 0) return $"no hay gesto '{gestureName}' con pasos";
+
+            var origin = new Vector3(9000f, 9000f, 0f);
+            var inst = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            var camGo = new GameObject("RigFilmstripCam");
+            var rt = new RenderTexture(CellW, CellH, 24);
+            try
+            {
+                inst.hideFlags = HideFlags.HideAndDontSave;
+                camGo.hideFlags = HideFlags.HideAndDontSave;
+                inst.transform.position = origin;
+                var driver = inst.GetComponent<RigDriverCode>();
+                if (driver == null) return "el prefab no tiene RigDriverCode";
+                Call(driver, "Awake");
+                Call(driver, "OnEnable");
+                driver.SetFacing(facing);
+                var live = inst.GetComponent<ProceduralRig>().FindGesture(gestureName);
+
+                var col = inst.GetComponent<Collider2D>();
+                Physics2D.SyncTransforms();
+                float groundY = col != null ? col.bounds.min.y - origin.y : -1.5f;
+                float height = col != null ? col.bounds.size.y : 3f;
+                var cam = MakeCamera(camGo, rt, height);
+
+                // Pesos de cada viñeta: reposo, (medio, paso) por cada paso.
+                int n = live.steps.Count;
+                var frames = new System.Collections.Generic.List<float[]> { new float[n] };
+                for (int s = 0; s < n; s++)
+                {
+                    var prev = frames[frames.Count - 1];
+                    var full = new float[n];
+                    full[s] = 1f;
+                    var mid = new float[n];
+                    for (int i = 0; i < n; i++) mid[i] = (prev[i] + full[i]) * 0.5f;
+                    frames.Add(mid);
+                    frames.Add(full);
+                }
+
+                var gestureField = typeof(RigDriverCode).GetField("_gesture", BindingFlags.Instance | BindingFlags.NonPublic);
+                var weights = (System.Collections.Generic.List<float>)typeof(RigDriverCode)
+                    .GetField("_weights", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(driver);
+
+                var strip = new Texture2D(CellW * frames.Count, CellH, TextureFormat.RGB24, false);
+                var cell = new Texture2D(CellW, CellH, TextureFormat.RGB24, false);
+                for (int f = 0; f < frames.Count; f++)
+                {
+                    gestureField.SetValue(driver, f == 0 ? null : live);
+                    weights.Clear();
+                    weights.AddRange(frames[f]);
+                    driver.Step(1f / 60f);
+
+                    var root = inst.transform.position;
+                    cam.transform.position = new Vector3(root.x, root.y + height * 0.05f, root.z - 10f);
+                    cam.Render();
+                    RenderTexture.active = rt;
+                    cell.ReadPixels(new Rect(0, 0, CellW, CellH), 0, 0);
+                    RenderTexture.active = null;
+                    DrawRuler(cell, cam, root.y + groundY);
+                    strip.SetPixels(f * CellW, 0, CellW, CellH, cell.GetPixels());
+                }
+
+                strip.Apply();
+                System.IO.File.WriteAllBytes(outPng, strip.EncodeToPNG());
+                Object.DestroyImmediate(strip);
+                Object.DestroyImmediate(cell);
+                return $"{gestureName}: reposo + {n} pasos (con su punto medio) → {outPng}";
+            }
+            finally
+            {
+                RenderTexture.active = null;
+                Object.DestroyImmediate(camGo);
+                Object.DestroyImmediate(rt);
+                Object.DestroyImmediate(inst);
+            }
+        }
+
+        private static Camera MakeCamera(GameObject go, RenderTexture rt, float height)
+        {
+            var cam = go.AddComponent<Camera>();
+            cam.orthographic = true;
+            cam.orthographicSize = height * 0.6f;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.12f, 0.19f, 0.22f, 1f);
+            cam.targetTexture = rt;
+            return cam;
+        }
+
         private const int CellW = 420, CellH = 380;
 
         private static void Call(object target, string method)

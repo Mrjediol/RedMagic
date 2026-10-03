@@ -178,6 +178,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     },
     leadNote: () => { const a = stageAttack(); return a && head.lead === null ? `Es el aviso (telegraph) del ataque "${a.id}": cambiarlo aquí lo cambia en el ataque.` : null; },
     hasAimPart: () => !!M.byUid(state, state.roles.aim),
+    // The body's aim part (what an aim step with no parts of its own turns) and the barrel a part starts with.
+    aimPart: () => M.byUid(state, state.roles.aim)?.name || null,
+    barrelOf: (uid) => (uid === state.roles.aim ? state.rig.aimArtAngle || 0 : M.byUid(state, uid)?.pointAngle || 0),
     time: () => head.t,
     playing: () => head.playing,
     togglePlay,
@@ -280,9 +283,20 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
       ghostRest: !!posing,
       fx: [...fxOverlay(anim), ...shotSprites()],
       marks: releaseMarks(anim),
+      // The barrels of the parts the open gesture aims with (each step's own list): the line that turns to the target.
+      aimBarrels: aimBarrels(openGesture()),
       shapes: stageShapes(),
       requestRender,
     });
+  }
+
+  /** Every part an aim step of `gesture` lists, once, with its barrel angle (the first step that names it wins). */
+  function aimBarrels(gesture) {
+    const out = [];
+    (gesture?.steps || []).forEach((s) => {
+      if (s.aim) (s.aimParts || []).forEach((a) => { if (!out.some((b) => b.part === a.part)) out.push({ part: a.part, angle: a.angle || 0 }); });
+    });
+    return out;
   }
 
   function setStatus(text) { statusEl.textContent = text; }
@@ -576,18 +590,20 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     // A step marked "ends aiming": last of all, the weapon turns from wherever the poses left it until
     // its barrel (pivot → muzzle) passes through the target, by that step's weight —
     // RigDriverCode.ApplyGestureAim. Measured from its pivot as posed, so at full weight it is exact.
-    const aimPart = layer ? M.byUid(state, state.roles.aim) : null;
-    const aimPose = aimPart ? poses.get(aimPart.uid) : null;
-    const aiming = aimPose ? G.aimWeight(layer.gesture, layer.weights) : 0;
-    if (aiming > 0) {
+    // Every part an aim step lists (each with its own barrel angle), or the body's aim part when it lists none.
+    const fallback = state.roles.aim ? { part: state.roles.aim, angle: rig.aimArtAngle || 0 } : null;
+    for (const aim of layer ? G.aimTargets(layer.gesture, layer.weights, fallback) : []) {
+      const aimPart = M.byUid(state, aim.part);
+      const aimPose = aimPart ? poses.get(aimPart.uid) : null;
+      if (!aimPose || aim.weight <= 0) continue;
       const parent = M.byUid(state, aimPart.parent);
       const frame = M.multiply(M.trs(body.position, body.rotation, body.scale), parent ? M.worldMatrix(state, parent, poses) : M.IDENTITY);
       const from = M.apply(frame, aimPose.position);
       const target = (head.playing && stage.frozen) || targetPoint();
       const local = M.applyVector(M.invert(frame), { x: target.x - from.x, y: target.y - from.y });
       if (local.x * local.x + local.y * local.y > 1e-6) {
-        const wanted = (Math.atan2(local.y, local.x) * 180) / Math.PI - (rig.aimArtAngle || 0);
-        aimPose.rotation += (((((wanted - aimPose.rotation) % 360) + 540) % 360) - 180) * aiming;
+        const wanted = (Math.atan2(local.y, local.x) * 180) / Math.PI - aim.angle;
+        aimPose.rotation += (((((wanted - aimPose.rotation) % 360) + 540) % 360) - 180) * aim.weight;
       }
     }
 

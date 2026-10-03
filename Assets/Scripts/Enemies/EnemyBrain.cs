@@ -96,6 +96,7 @@ namespace RedMagic.Enemies
 
         /// <summary>La esquiva en curso lanzó un ataque (<see cref="EnemyDefence.attack"/>).</summary>
         private bool _evadeAttack;
+        private bool _evadeShown;   // el gesto de la esquiva ya arrancó (en su primer paso de física, no al decidirla)
         private bool[] _lowHealthFired = System.Array.Empty<bool>();
 
         /// <summary>Segundos hasta volver a tirar el dado tras un intento fallido (para no tirar cada frame).</summary>
@@ -764,8 +765,9 @@ namespace RedMagic.Enemies
                 _evadeAttack = _attack.RunDefenceAttack(d.attack, _target, Mathf.Max(0f, d.anticipation) + _evadeDuration);
             }
 
-            if (!_evadeAttack && _animation != null && !string.IsNullOrWhiteSpace(d.gesture))
-                _animation.PlayMotion(d.gesture, Mathf.Max(0f, d.anticipation) + _evadeDuration);
+            // Sin ataque, el gesto arranca con el primer paso de la esquiva (EvadeStep), no aquí: tras un golpe el
+            // empujón la retrasa, y un gesto lanzado ya habría acabado cuando el cuerpo por fin se aparta.
+            _evadeShown = _evadeAttack;
             SoundTriggered?.Invoke(SoundTrigger.OnEvade);
             return true;
         }
@@ -774,6 +776,13 @@ namespace RedMagic.Enemies
         private void EvadeStep()
         {
             if (_evade == null) { EndEvade(); return; }
+
+            if (!_evadeShown)
+            {
+                _evadeShown = true;
+                if (_animation != null && !string.IsNullOrWhiteSpace(_evade.gesture))
+                    _animation.PlayMotion(_evade.gesture, Mathf.Max(0f, -_evadeTime) + _evadeDuration);
+            }
 
             if (_evadeTime < 0f)
             {

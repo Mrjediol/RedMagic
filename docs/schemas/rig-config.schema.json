@@ -378,6 +378,49 @@
       },
       "$comment": "ProceduralRig.gestures (los \"gesture\" de los ataques de jefe)."
     },
+    "gait": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "ProceduralRig.gait (RigGait): andar con pies que pisan. Unidades de mundo. Presente = sustituye; ausente = se conserva el del prefab.",
+      "properties": {
+        "feet": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["part"],
+            "properties": {
+              "part": { "type": "string", "$comment": "Ruta relativa a Visual; debe colgar directamente de Visual." },
+              "phase": { "type": "number", "minimum": 0, "maximum": 1, "default": 0 }
+            }
+          }
+        },
+        "stride": { "type": "number", "minimum": 0.05, "default": 0.8 },
+        "fullSpeed": { "type": "number", "minimum": 0.01, "default": 2.2 },
+        "minStride": { "type": "number", "minimum": 0.1, "maximum": 1, "default": 0.4 },
+        "duty": { "type": "number", "minimum": 0.3, "maximum": 0.8, "default": 0.55 },
+        "lift": { "type": "number", "minimum": 0, "default": 0.18 },
+        "footTilt": { "type": "number", "default": 16 },
+        "bodyBob": { "type": "number", "default": 0.05 },
+        "maxSpeed": { "type": "number", "minimum": 0.1, "default": 4 },
+        "settleTime": { "type": "number", "minimum": 0.01, "default": 0.15 },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["part"],
+            "properties": {
+              "part": { "type": "string" },
+              "phase": { "type": "number", "minimum": 0, "maximum": 1, "default": 0 },
+              "swing": { "$ref": "_shared.schema.json#/definitions/vector2" },
+              "bob": { "type": "number", "default": 0 },
+              "rotate": { "type": "number", "default": 0 }
+            }
+          }
+        }
+      }
+    },
     "transitionGestures": {
       "type": "object",
       "additionalProperties": false,
@@ -841,6 +884,19 @@
                 "type": "boolean",
                 "default": false,
                 "$comment": "RigGestureStep.aim. Al acabar el paso la pieza que apunta (rig.aimPart) queda girada hacia el objetivo del ataque; su giro en la pose se suma."
+              },
+              "aimParts": {
+                "type": "array",
+                "$comment": "RigGestureStep.aimParts: qué piezas apuntan en este paso (con aim). Vacío = rig.aimPart con rig.aimArtAngle.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["part"],
+                  "properties": {
+                    "part": { "type": "string", "$comment": "Ruta relativa a Visual." },
+                    "angle": { "type": "number", "default": 0, "$comment": "Dirección del cañón en el dibujo sin girar (grados, 0 = derecha), desde el pivote de la pieza." }
+                  }
+                }
               },
               "poses": {
                 "type": "array",

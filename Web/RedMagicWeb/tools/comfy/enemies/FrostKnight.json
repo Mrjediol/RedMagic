@@ -344,6 +344,13 @@
               ],
               4
             ]
+          ],
+          "aim": true,
+          "aimParts": [
+            [
+              "backHand",
+              -90
+            ]
           ]
         },
         {
@@ -399,17 +406,24 @@
               ],
               10
             ]
+          ],
+          "aim": true,
+          "aimParts": [
+            [
+              "backHand",
+              -90
+            ]
           ]
         }
       ],
       "releases": [
         {
           "step": 1,
-          "at": 1,
+          "at": 0.95,
           "point": "backHand",
           "offset": [
-            0.25,
-            0
+            -0.05,
+            -0.7
           ]
         }
       ]
@@ -762,9 +776,9 @@
   "defences": [
     {
       "trigger": "TargetNear",
-      "distance": 1.2,
-      "chance": 0.5,
-      "cooldown": 4,
+      "distance": 1.6,
+      "chance": 0.45,
+      "cooldown": 5,
       "move": "DashAway",
       "moveDistance": 2.4,
       "moveDuration": 0.3,
@@ -773,13 +787,25 @@
     },
     {
       "trigger": "OnHit",
-      "chance": 0.3,
-      "cooldown": 5,
+      "chance": 0.45,
+      "cooldown": 4,
       "move": "DashAway",
       "moveDistance": 2.8,
       "moveDuration": 0.32,
       "anticipation": 0.12,
       "gesture": "BackDash"
+    },
+    {
+      "trigger": "LowHealth",
+      "healthFraction": 0.5,
+      "chance": 1,
+      "cooldown": 0,
+      "move": "DashAway",
+      "moveDistance": 3,
+      "moveDuration": 0.34,
+      "anticipation": 0.16,
+      "gesture": "BackDash"
     }
-  ]
+  ],
+  "notes": "2026-10-03: the user added in the web (saved into the prefab) an impact effect at the sword tip in Slash (IceRobotImpact prefab, step 1 at 1, part WeaponHand). A full re-import of this brief drops it: re-add it or import partial."
 }

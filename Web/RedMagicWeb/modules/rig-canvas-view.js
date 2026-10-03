@@ -526,6 +526,14 @@ export class RigCanvasView {
       if (limb && pt) this._dot(this._screenOf(state, limb, pt, opts).p, '#ffb347', 'agarre');
     });
 
+    // Parts the open gesture aims with: their barrel from the pivot (RigGestureStep.aimParts).
+    (opts.aimBarrels || []).forEach((b) => {
+      const p = byUid(state, b.part);
+      if (!p) return;
+      const { p: at, m: bm } = this._screenOf(state, p, p.pivot, opts);
+      this._arrow(at, this._screenDir(bm, b.angle), 56, '#5ae0ff', 'cañón');
+    });
+
     const part = byUid(state, opts.selectedUid);
     if (!part) return;
 

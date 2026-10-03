@@ -65,7 +65,7 @@ export function uniqueGestureName(state, wanted, except = null) {
 
 /** A new step with RigGestureStep's defaults. */
 export function createStep(name = '', over = {}) {
-  return { name, duration: 0.3, ease: 'inout', stretch: false, shake: 0, aim: false, poses: [], ...over };
+  return { name, duration: 0.3, ease: 'inout', stretch: false, shake: 0, aim: false, aimParts: [], poses: [], ...over };
 }
 
 /** A new release with RigRelease's defaults: the end of `step`, from the muzzle. */
@@ -121,7 +121,8 @@ export function normalizeGesture(g) {
     single = !hasStrike;
   }
   g.recover = g.recover > 0 ? g.recover : 0.45;
-  g.steps = g.steps.map((s) => ({ ...createStep(), ...s, poses: s.poses || [] }));
+  g.steps = g.steps.map((s) => ({ ...createStep(), ...s, poses: s.poses || [],
+    aimParts: (s.aimParts || []).map((a) => ({ part: a.part, angle: Number(a.angle) || 0 })).filter((a) => a.part) }));
   g.releases = (g.releases || []).map((r) => ({ ...createRelease(), ...r, point: r.point || null, offset: { ...zero(), ...(r.offset || {}) } }));
   g.fx = g.fx || [];
   // A draft saved with one sound (`sound`, null = none) has a list of them now.
@@ -417,9 +418,26 @@ export function applyPoses(list, weight, poses, visual, shortTurns = false) {
   });
 }
 
-/** How much the gesture aims right now: the weights of its `aim` steps (RigDriverCode.GestureAimWeight). */
-export function aimWeight(gesture, weights) {
-  return clamp01(gesture.steps.reduce((sum, step, i) => sum + (step.aim ? weights[i] || 0 : 0), 0));
+/**
+ * Who aims right now and how much (RigDriverCode.ApplyGestureAim): every part listed by an `aim` step
+ * (`aimParts`, each with its barrel angle), or `fallback` ({ part, angle } = the body's aim part) for a step
+ * that lists none; the same part in two steps adds its weights. → [{ part, angle, weight (0–1) }].
+ */
+export function aimTargets(gesture, weights, fallback) {
+  const out = [];
+  const add = (part, angle, w) => {
+    if (!part) return;
+    const found = out.find((a) => a.part === part);
+    if (found) found.weight += w; else out.push({ part, angle, weight: w });
+  };
+  gesture.steps.forEach((step, i) => {
+    const w = weights[i] || 0;
+    if (!step.aim || w <= 0) return;
+    if (step.aimParts?.length) step.aimParts.forEach((a) => add(a.part, a.angle || 0, w));
+    else if (fallback) add(fallback.part, fallback.angle || 0, w);
+  });
+  out.forEach((a) => { a.weight = clamp01(a.weight); });
+  return out;
 }
 
 /** Every step's pose at its weight: the blend the body is in (RigDriverCode.ApplySteps). */

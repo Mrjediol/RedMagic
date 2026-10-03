@@ -41,7 +41,7 @@ MonoBehaviour:
   shakeDuration: 0.25
   shots:
   - kind: 1
-    aim: 0
+    aim: 1
     angle: 0
     count: 5
     arcDegrees: 50

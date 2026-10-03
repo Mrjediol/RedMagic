@@ -247,6 +247,20 @@ namespace RedMagic.Rigging
                  "gira hacia él a medida que llega la pose, y se le suma el giro que tenga en la pose. " +
                  "Para que siga apuntando en el paso siguiente, márcalo también en él.")]
         public bool aim;
+
+        [Tooltip("Qué piezas apuntan en este paso (con 'aim'). Vacío = la pieza que apunta del rig (aimPart). " +
+                 "Varias = todas a la vez (las dos manos).")]
+        public List<RigAimPart> aimParts = new List<RigAimPart>();
+    }
+
+    /// <summary>Una pieza que apunta en un paso de gesto, y hacia dónde mira su "cañón" en el dibujo sin girar.</summary>
+    [Serializable]
+    public class RigAimPart
+    {
+        public Transform part;
+
+        [Tooltip("Dirección (grados, espacio local de la pieza sin girar; 0 = derecha) que se gira hacia el objetivo, desde su pivote.")]
+        public float angle;
     }
 
     /// <summary>

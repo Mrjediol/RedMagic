@@ -29,6 +29,7 @@
 //                 attack with one Projectile shot. `deck.defenceOnly` = not drawn: only a defence launches it.
 //   gestures      gestures of its own, as TIMELINES (any number of steps): [{ name, recover,
 //                 steps: [{ name, duration, ease: 'inout'|'out'|'in'|'linear', stretch, shake, aim,
+//                           aimParts: [[slotId, barrelAngle]] (with aim: those parts turn to the target; none = the aim part),
 //                           poses: [[slotId | 'Visual', [moveX, moveY], rotate]] }],
 //                 releases: [{ step, at, point: slotId | 'Muzzle', offset: [x, y] }] }]
 //                 A step's pose is measured from rest; moves and release offsets are in the template's
@@ -112,6 +113,7 @@ const template = { ...baseTemplate, gestures: [...(baseTemplate.gestures || []),
   ...(brief.gestures || []).map((g) => ({
     name: g.name, recover: g.recover ?? 0.3,
     steps: g.steps.map((st) => ({ name: st.name || '', duration: st.duration ?? 0.3, ease: st.ease || 'inout', stretch: !!st.stretch, shake: st.shake || 0, aim: !!st.aim,
+      aimParts: (st.aimParts || []).map(([part, angle = 0]) => ({ part, angle })),
       poses: (st.poses || []).map(([part, move = [0, 0], rotate = 0, scale = [0, 0]]) => ({ part, move, rotate, scale })) })),
     releases: (g.releases || []).map(briefRelease),
   }))] };
@@ -120,6 +122,7 @@ const known = new Set(['Visual', ...baseTemplate.slots.flatMap((s) => [s.id, s.n
 const unknown = (id, where) => { if (id && !known.has(id)) problems.push(`${where}: no part '${id}'`); };
 (brief.gestures || []).forEach((g) => {
   g.steps.forEach((st) => (st.poses || []).forEach(([part]) => unknown(part, `gesture ${g.name}`)));
+  g.steps.forEach((st) => (st.aimParts || []).forEach(([part]) => unknown(part, `gesture ${g.name} aimParts`)));
   (g.releases || []).forEach((r) => {
     unknown(point(r.point), `gesture ${g.name}`);
     if ((r.step ?? 0) >= g.steps.length) problems.push(`gesture ${g.name}: a release on step ${r.step}, it has ${g.steps.length}`);

@@ -1052,41 +1052,69 @@ namespace RedMagic.Rigging
         }
 
         /// <summary>
-        /// Los pasos marcados <see cref="RigGestureStep.aim"/>: lo último del frame, el arma gira desde donde
-        /// la dejaron las poses hasta que su cañón (pivote → boca) pasa por el objetivo
-        /// (<see cref="RigDriver.AimTarget"/>), por el peso de esos pasos. Se mide desde el pivote tal como
-        /// está colocado, así que a peso completo es exacto; <see cref="ProceduralRig.aimMaxAngle"/> no lo
-        /// limita (ese tope es del ataque propio).
+        /// Los pasos marcados <see cref="RigGestureStep.aim"/>: lo último del frame, cada pieza que apunta en ellos
+        /// (<see cref="RigGestureStep.aimParts"/>; ninguna = el arma del rig, <see cref="ProceduralRig.aimPart"/>, con
+        /// su <see cref="ProceduralRig.aimArtAngle"/>) gira desde donde la dejaron las poses hasta que su cañón (desde
+        /// su pivote) pasa por el objetivo (<see cref="RigDriver.AimTarget"/>), por el peso de esos pasos. Varias piezas
+        /// = todas a la vez. Se mide desde el pivote tal como está colocado, así que a peso completo es exacto;
+        /// <see cref="ProceduralRig.aimMaxAngle"/> no lo limita (ese tope es del ataque propio).
         /// </summary>
         private void ApplyGestureAim()
         {
-            var arm = Rig.aimPart;
-            if (arm == null || arm.parent == null || !AimTarget.HasValue || Driven.ContainsKey(arm)) return;
+            var steps = _gesture?.steps;
+            if (steps == null || !AimTarget.HasValue) return;
 
-            float weight = GestureAimWeight();
-            if (weight <= 0f) return;
+            _aiming.Clear();
+            for (int i = 0; i < steps.Count && i < _weights.Count; i++)
+            {
+                var step = steps[i];
+                if (step == null || !step.aim || _weights[i] <= 0f) continue;
+                if (step.aimParts == null || step.aimParts.Count == 0) AddAim(Rig.aimPart, Rig.aimArtAngle, _weights[i]);
+                else foreach (var a in step.aimParts) if (a != null) AddAim(a.part, a.angle, _weights[i]);
+            }
 
-            Vector3 pivot = _aimIndex >= 0 ? (Vector3)_parts[_aimIndex].data.pivot : Vector3.zero;
-            Vector3 joint = arm.TransformPoint(pivot);
-            Vector2 local = arm.parent.InverseTransformVector((Vector3)AimTarget.Value - joint);
-            if (local.sqrMagnitude < 0.0001f) return;
-
-            float wanted = Mathf.Atan2(local.y, local.x) * Mathf.Rad2Deg - Rig.aimArtAngle;
-            float turn = Mathf.DeltaAngle(arm.localEulerAngles.z, wanted) * weight;
-            arm.localRotation *= Quaternion.Euler(0f, 0f, turn);
-            arm.position += joint - arm.TransformPoint(pivot);   // gira sobre su pivote, no sobre el del sprite
+            foreach (var a in _aiming) AimPart(a.part, a.angle, Mathf.Clamp01(a.weight));
         }
 
-        /// <summary>Cuánto apunta el gesto en curso: la suma de los pesos de sus pasos <see cref="RigGestureStep.aim"/>.</summary>
-        private float GestureAimWeight()
+        private struct Aiming
         {
-            var steps = _gesture?.steps;
-            if (steps == null) return 0f;
+            public Transform part;
+            public float angle, weight;
+        }
 
-            float weight = 0f;
-            for (int i = 0; i < steps.Count && i < _weights.Count; i++)
-                if (steps[i] != null && steps[i].aim) weight += _weights[i];
-            return Mathf.Clamp01(weight);
+        private readonly List<Aiming> _aiming = new List<Aiming>();
+
+        /// <summary>Junta los pesos de una misma pieza (dos pasos seguidos que apuntan con ella).</summary>
+        private void AddAim(Transform part, float angle, float weight)
+        {
+            if (part == null) return;
+            for (int i = 0; i < _aiming.Count; i++)
+            {
+                if (_aiming[i].part != part) continue;
+                var a = _aiming[i];
+                a.weight += weight;
+                _aiming[i] = a;
+                return;
+            }
+
+            _aiming.Add(new Aiming { part = part, angle = angle, weight = weight });
+        }
+
+        /// <summary>Gira <paramref name="part"/> sobre su pivote hasta que su dirección <paramref name="artAngle"/> pase por el objetivo.</summary>
+        private void AimPart(Transform part, float artAngle, float weight)
+        {
+            if (part == null || part.parent == null || weight <= 0f || Driven.ContainsKey(part)) return;
+
+            var data = Rig.FindPart(part);
+            Vector3 pivot = data != null ? (Vector3)data.pivot : Vector3.zero;
+            Vector3 joint = part.TransformPoint(pivot);
+            Vector2 local = part.parent.InverseTransformVector((Vector3)AimTarget.Value - joint);
+            if (local.sqrMagnitude < 0.0001f) return;
+
+            float wanted = Mathf.Atan2(local.y, local.x) * Mathf.Rad2Deg - artAngle;
+            float turn = Mathf.DeltaAngle(part.localEulerAngles.z, wanted) * weight;
+            part.localRotation *= Quaternion.Euler(0f, 0f, turn);
+            part.position += joint - part.TransformPoint(pivot);   // gira sobre su pivote, no sobre el del sprite
         }
 
         /// <summary>Retroceso a lo largo del cañón tal como apunta ahora.</summary>

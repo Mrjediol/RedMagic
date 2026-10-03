@@ -75,6 +75,13 @@ This replaces the fixed "wind-up → release → strike" everywhere below: where
   through the target — weighted by the sum of the weights of the `aim` steps (`GestureAimWeight`), exact at
   full weight, overriding the part's own rotation in the pose and **not limited by `aimMaxAngle`** (that limit
   is the native attack's, `AimRotation`). To keep aiming through the next step, mark that one too.
+  **Which parts aim is the step's own data** (2026-10-03): `RigGestureStep.aimParts` (`RigAimPart`: part + `angle` =
+  its barrel in its unrotated art, from its `RigPart.pivot`); empty = `rig.aimPart` with `aimArtAngle`, as before.
+  Several = all at once (both hands), each gesture its own (the knight's sword in `Slash`, its left hand in
+  `DarkOrb`). It travels inside the gesture (JSON `steps[].aimParts: [{ part: path, angle }]`), so 🎬 *Gestos y
+  ataques ▸ Guardar en Unity* carries it without touching the body — the body's single aim role (built-in attack,
+  muzzle tool) only lives in a full Enemy Studio save. Web: the step's 🎯 box lists the parts with a "Cañón (°)"
+  each (`aimPartsBox`, gesture-timeline.js), the canvas draws each barrel, `G.aimTargets` mirrors the driver.
 - **`stretch`** on a step: its duration is given by whoever launches the gesture (the attack's `telegraph`)
   so one gesture serves attacks with different warnings — the stretch steps share what is left for the
   FIRST release to land exactly at that time (`RigGesture.Durations`). No stretch step = the gesture

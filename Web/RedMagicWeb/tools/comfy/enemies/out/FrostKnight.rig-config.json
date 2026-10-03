@@ -547,6 +547,7 @@
           "stretch": true,
           "shake": 0,
           "aim": false,
+          "aimParts": [],
           "poses": [
             {
               "part": "Torso/WeaponHand",
@@ -641,6 +642,7 @@
           "stretch": false,
           "shake": 0,
           "aim": false,
+          "aimParts": [],
           "poses": [
             {
               "part": "Torso/WeaponHand",
@@ -735,6 +737,7 @@
           "stretch": false,
           "shake": 0,
           "aim": false,
+          "aimParts": [],
           "poses": [
             {
               "part": "Torso/WeaponHand",
@@ -884,7 +887,13 @@
           "ease": "out",
           "stretch": true,
           "shake": 1,
-          "aim": false,
+          "aim": true,
+          "aimParts": [
+            {
+              "part": "Torso/BackHand",
+              "angle": -90
+            }
+          ],
           "poses": [
             {
               "part": "Torso/BackHand",
@@ -966,7 +975,13 @@
           "ease": "out",
           "stretch": false,
           "shake": 0,
-          "aim": false,
+          "aim": true,
+          "aimParts": [
+            {
+              "part": "Torso/BackHand",
+              "angle": -90
+            }
+          ],
           "poses": [
             {
               "part": "Torso/BackHand",
@@ -1046,7 +1061,7 @@
       "releases": [
         {
           "step": 1,
-          "at": 1,
+          "at": 0.95,
           "point": "Torso/BackHand",
           "offset": {
             "x": 0,
@@ -1108,6 +1123,7 @@
           "stretch": false,
           "shake": 0,
           "aim": false,
+          "aimParts": [],
           "poses": [
             {
               "part": "Visual",
@@ -1202,6 +1218,7 @@
           "stretch": true,
           "shake": 0,
           "aim": false,
+          "aimParts": [],
           "poses": [
             {
               "part": "Visual",
@@ -1296,6 +1313,7 @@
           "stretch": false,
           "shake": 0,
           "aim": false,
+          "aimParts": [],
           "poses": [
             {
               "part": "Visual",

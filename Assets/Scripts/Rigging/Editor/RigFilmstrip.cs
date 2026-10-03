@@ -95,7 +95,8 @@ namespace RedMagic.Rigging.EditorTools
         /// otro delante (la mezcla por la que pasa). Sin efectos (son del pool, en juego). Para ver de un vistazo si un
         /// paso deja una pieza donde debe — la mano delante del torso, la espada arriba — sin jugar.
         /// </summary>
-        public static string Poses(string prefabPath, string outPng, string gestureName, int facing = 1)
+        /// <param name="target">Dónde está el objetivo respecto a la raíz (mirando a la derecha), para los pasos que apuntan.</param>
+        public static string Poses(string prefabPath, string outPng, string gestureName, int facing = 1, Vector2? target = null)
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
             if (prefab == null) return $"no hay prefab en {prefabPath}";
@@ -118,6 +119,8 @@ namespace RedMagic.Rigging.EditorTools
                 Call(driver, "OnEnable");
                 driver.SetFacing(facing);
                 var live = inst.GetComponent<ProceduralRig>().FindGesture(gestureName);
+                var aimAt = target ?? new Vector2(3f, 0.4f);
+                driver.AimTarget = (Vector2)origin + new Vector2(aimAt.x * facing, aimAt.y);
 
                 var col = inst.GetComponent<Collider2D>();
                 Physics2D.SyncTransforms();

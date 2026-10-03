@@ -395,6 +395,7 @@ namespace RedMagic.Rigging.EditorTools
                         ["stretch"] = s.stretch,
                         ["shake"] = RigConfigJson.Num(s.shake),
                         ["aim"] = s.aim,
+                        ["aimParts"] = AimParts(s, visual),
                         ["poses"] = Poses(s.poses, visual),
                     });
                 }
@@ -434,6 +435,20 @@ namespace RedMagic.Rigging.EditorTools
                 ["chance"] = RigConfigJson.Num(idle.chance),
                 ["windup"] = RigConfigJson.Num(idle.windup),
             };
+        }
+
+        /// <summary>Las piezas que apuntan en un paso, por ruta, con el ángulo de su cañón. Vacío = la pieza que apunta del rig.</summary>
+        private static JArray AimParts(RigGestureStep step, Transform visual)
+        {
+            var list = new JArray();
+            if (step.aimParts == null) return list;
+            foreach (var a in step.aimParts)
+            {
+                string path = a?.part != null ? RigConfigJson.PathOf(visual, a.part) : null;
+                if (path != null) list.Add(new JObject { ["part"] = path, ["angle"] = RigConfigJson.Num(a.angle) });
+            }
+
+            return list;
         }
 
         /// <summary>El ciclo de paso: números + pies y piezas que acompañan, por ruta.</summary>

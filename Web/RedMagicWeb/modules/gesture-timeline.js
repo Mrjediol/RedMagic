@@ -704,7 +704,8 @@ export function createGestureTimeline(host) {
       hint: host.hasAimPart && !host.hasAimPart()
         ? 'Este cuerpo no tiene pieza que apunte (inspector ▸ Roles ▸ "Apunta al objetivo"): no hará nada.'
         : 'Al llegar a esta pose la línea pivote → boca del arma pasa por el objetivo (el 🎯 del lienzo; en el juego, el jugador), esté donde esté. Manda sobre el giro que tenga el arma en la pose. Márcalo también en el paso siguiente si debe seguir apuntando al disparar.',
-      onChange: (v) => { step.aim = v; edited(); } }).row);
+      onChange: (v) => { step.aim = v; edited(); refreshDock(); } }).row);
+    if (step.aim && host.parts) box.appendChild(aimPartsBox(step));
 
     const more = el('div', 'rigActions');
     const left = el('button', 'small', '◀');
@@ -872,6 +873,32 @@ export function createGestureTimeline(host) {
   function seekTo(g, step, at) { host.seek(G.timeOf(timelineOf(g), step, at)); }
 
   /** After a number that changes the layout of the track but not which fields are shown. */
+  /**
+   * Which parts turn to the target in this aim step (RigGestureStep.aimParts), each with the direction of its barrel
+   * in its own unrotated art (0 = right, 90 = up). None ticked = the body's aim part. The barrel shows on the canvas.
+   */
+  function aimPartsBox(step) {
+    const box = el('div', 'gtAimParts');
+    const fallback = host.aimPart ? host.aimPart() : null;
+    box.appendChild(el('div', 'hint', step.aimParts.length
+      ? 'Apuntan las marcadas, todas a la vez. "Cañón" = hacia dónde mira la pieza en su dibujo sin girar (0 = derecha, 90 = arriba, −90 = abajo): esa línea pasa por el objetivo.'
+      : `Ninguna marcada = apunta la pieza que apunta del cuerpo${fallback ? ` (${fallback})` : ' (no hay: marca alguna)'}. Marca otras para que apunten ellas — o varias a la vez.`));
+    host.parts().forEach((p) => {
+      const entry = step.aimParts.find((a) => a.part === p.uid);
+      const row = el('div', 'rigActions');
+      row.appendChild(F.boolField({ label: `🎯 ${p.name}`, value: !!entry, onChange: (v) => {
+        if (v && !entry) step.aimParts.push({ part: p.uid, angle: host.barrelOf ? host.barrelOf(p.uid) : 0 });
+        if (!v) step.aimParts = step.aimParts.filter((a) => a.part !== p.uid);
+        edited();
+        refreshDock();
+      } }).row);
+      if (entry) row.appendChild(F.numberField({ label: 'Cañón (°)', value: entry.angle, step: '5',
+        onChange: (v) => { entry.angle = Number(v) || 0; host.redraw(); } }).row);
+      box.appendChild(row);
+    });
+    return box;
+  }
+
   function refreshDock() {
     if (dock) renderDock(dock.root);
     host.redraw();

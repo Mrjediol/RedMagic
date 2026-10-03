@@ -61,10 +61,10 @@
     "defences": [
       {
         "trigger": "TargetNear",
-        "distance": 1.2,
+        "distance": 1.6,
         "healthFraction": 0.35,
-        "chance": 0.5,
-        "cooldown": 4,
+        "chance": 0.45,
+        "cooldown": 5,
         "move": "DashAway",
         "moveDistance": 2.4,
         "moveDuration": 0.3,
@@ -76,14 +76,27 @@
         "trigger": "OnHit",
         "distance": 2.5,
         "healthFraction": 0.35,
-        "chance": 0.3,
-        "cooldown": 5,
+        "chance": 0.45,
+        "cooldown": 4,
         "move": "DashAway",
         "moveDistance": 2.8,
         "moveDuration": 0.32,
         "hopHeight": 1.2,
         "gesture": "BackDash",
         "anticipation": 0.12
+      },
+      {
+        "trigger": "LowHealth",
+        "distance": 2.5,
+        "healthFraction": 0.5,
+        "chance": 1,
+        "cooldown": 0,
+        "move": "DashAway",
+        "moveDistance": 3,
+        "moveDuration": 0.34,
+        "hopHeight": 1.2,
+        "gesture": "BackDash",
+        "anticipation": 0.16
       }
     ],
     "attacks": [

@@ -79,7 +79,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 7
+  m_SortingOrder: 3
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 3467824035391bc4a9dfb988e3b22c58, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -170,7 +170,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 7
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 2a3a2c5d14a477146a39b3153cff4f32, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -969,10 +969,10 @@ MonoBehaviour:
     builtInWeight: 1
     defences:
     - trigger: 0
-      distance: 1.2
+      distance: 1.6
       healthFraction: 0.35
-      chance: 0.5
-      cooldown: 4
+      chance: 0.45
+      cooldown: 5
       move: 0
       moveDistance: 2.4
       moveDuration: 0.3
@@ -983,14 +983,26 @@ MonoBehaviour:
     - trigger: 1
       distance: 2.5
       healthFraction: 0.35
-      chance: 0.3
-      cooldown: 5
+      chance: 0.45
+      cooldown: 4
       move: 0
       moveDistance: 2.8
       moveDuration: 0.32
       hopHeight: 1.2
       gesture: BackDash
       anticipation: 0.12
+      attack: {fileID: 0}
+    - trigger: 2
+      distance: 1.6
+      healthFraction: 0.5
+      chance: 1
+      cooldown: 0
+      move: 0
+      moveDistance: 3
+      moveDuration: 0.34
+      hopHeight: 1.2
+      gesture: BackDash
+      anticipation: 0.16
       attack: {fileID: 0}
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
@@ -1359,6 +1371,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 0
+      aimParts: []
     - name: Corta
       poses:
       - part: {fileID: 2372894938230679781}
@@ -1394,6 +1407,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     - name: Sigue
       poses:
       - part: {fileID: 2372894938230679781}
@@ -1429,6 +1443,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 1
       at: 0.6
@@ -1456,6 +1471,20 @@ MonoBehaviour:
       anchor: 1
       part: {fileID: 0}
       offset: {x: 4.63, y: -0.69}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 0
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 4601139412715398604, guid: 0cc717d85cfb8c649b34305d6465e117, type: 3}
+      step: 1
+      at: 1
+      anchor: 0
+      part: {fileID: 2372894938230679781}
+      offset: {x: 3.445, y: -0.257}
       scale: 1
       followsPart: 1
       loop: 0
@@ -1501,7 +1530,10 @@ MonoBehaviour:
       ease: 1
       stretch: 1
       shake: 1
-      aim: 0
+      aim: 1
+      aimParts:
+      - part: {fileID: 8665614036920043683}
+        angle: -90
     - name: Lanza
       poses:
       - part: {fileID: 8665614036920043683}
@@ -1532,12 +1564,15 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
-      aim: 0
+      aim: 1
+      aimParts:
+      - part: {fileID: 8665614036920043683}
+        angle: -90
     releases:
     - step: 1
-      at: 1
+      at: 0.95
       point: {fileID: 8665614036920043683}
-      offset: {x: 0, y: 0}
+      offset: {x: -0.123, y: -1.744}
     recover: 0.35
     fx:
     - prefab: {fileID: 806403570795862197, guid: 26464c0e485f70e4bb29fe9348519ef5, type: 3}
@@ -1610,6 +1645,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     - name: "Salta atr\xE1s"
       poses:
       - part: {fileID: 5240361511915906602}
@@ -1645,6 +1681,7 @@ MonoBehaviour:
       stretch: 1
       shake: 0
       aim: 0
+      aimParts: []
     - name: Aterriza
       poses:
       - part: {fileID: 5240361511915906602}
@@ -1680,6 +1717,7 @@ MonoBehaviour:
       stretch: 0
       shake: 0
       aim: 0
+      aimParts: []
     releases:
     - step: 1
       at: 1

@@ -995,6 +995,14 @@ namespace RedMagic.Rigging.EditorTools
                                 shake = sj.Value<float?>("shake") ?? 0f,
                                 aim = sj.Value<bool?>("aim") ?? false,
                             };
+                            if (sj["aimParts"] is JArray aimJson)
+                                foreach (var a in aimJson.OfType<JObject>())
+                                {
+                                    string path = a.Value<string>("part");
+                                    var part = RigConfigJson.Find(visual, path);
+                                    if (part == null) report.Warnings.Add($"gestures[{i}].steps[{s}].aimParts: no hay pieza '{path}'; se ignora.");
+                                    else step.aimParts.Add(new RigAimPart { part = part, angle = a.Value<float?>("angle") ?? 0f });
+                                }
                             step.duration = Mathf.Max(0.01f, sj.Value<float?>("duration") ?? step.duration);
                             string easeName = sj.Value<string>("ease");
                             if (!string.IsNullOrEmpty(easeName) && !RigConfigJson.TryEnum(easeName, out step.ease))

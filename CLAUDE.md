@@ -90,12 +90,20 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 | Currency, shop, reroll | `docs/architecture/economy.md` |
 | Main Hub, tombs, interactables | `docs/architecture/hub.md` |
 | Audio, `SoundEmitter` | `docs/architecture/audio.md` |
+| To-do, task queue, 📋 Tareas, `taller-server` | `docs/architecture/tareas.md` |
 | Input System | `docs/architecture/input.md` |
 | UI Toolkit | `docs/architecture/ui.md` |
 | Localization, display presets | `docs/architecture/localization.md` |
 | Vendored packs | `docs/architecture/vendored.md` |
 
 Other: `docs/part-rig-pipeline-plan.md` (pending plan: web-authored part-based enemies, one phase per session), `docs/plan-gesture-attack-editor.md` (gesture / attack editor: steps 1–4 built), `docs/plan-unity-web-bridge.md` (its step 4, the Unity ⇄ web bridge: built, phases A–C — `Rigging/Editor/Bridge/` + `modules/unity-bridge.js`; details in `procedural-rig.md`), `docs/GDD.md` (game design: loop, worlds, enemies, bosses, art direction — read before design decisions), `docs/schemas/` (JSON configs + `COMPATIBILITY.md`), `docs/web-tools-guide.md` (web tool), `docs/RedMagic — Roadmap al prototipo.md`.
+
+## Pending work
+
+`docs/tareas/todo.json` (web 📋 Tareas) is the project to-do: check it for what is pending and warn the user when a
+request collides with a task there. "Déjalo pendiente" = write `docs/tareas/<task id>.md` (state, what is done, what is
+left, decisions) and put the task in `todo.json` with `doc` + `steps` (format: `docs/architecture/tareas.md`). Never touch
+the run-state fields (`status`, `result`…): the queue owns them.
 
 ## Git (Claude Code handles it)
 

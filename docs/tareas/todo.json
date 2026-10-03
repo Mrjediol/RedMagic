@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-03T15:50:00.045Z",
+  "updated": "2026-10-03T16:13:47.926Z",
   "phases": [
     {
       "id": "p1",
@@ -40,6 +40,12 @@
         {
           "id": "t6",
           "text": "Probar nuevos sistemas, integración y optimización de Claude",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "wydn8ik",
+          "text": "Puedes ver esta tarea , claude?",
           "note": "",
           "done": false
         }
@@ -160,5 +166,6 @@
         }
       ]
     }
-  ]
+  ],
+  "queue": []
 }

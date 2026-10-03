@@ -341,14 +341,15 @@
   <div id="todoPanel">
     <h1>📋 Tareas</h1>
     <p class="hint">
-      Lo que falta por hacer, por fases. Enlaza <code>docs/tareas/todo.json</code> y la lista queda en el repo:
-      Claude la lee para saber qué hay pendiente y la tabla se recarga si él la cambia.
+      Lo que falta por hacer, por fases, en <code>docs/tareas/todo.json</code>: Claude la lee para saber qué hay
+      pendiente. Despliega una tarea (▸) para darle prompt y pasos y lanzarla a la cola; su informe aparece debajo.
     </p>
     <div id="todoMeter" class="todoMeter" aria-label="Progreso">
       <div class="todoMeterRow"><span><b data-m="done">0</b> de <b data-m="total">0</b> hechas</span><b data-m="pct">0%</b></div>
       <div class="todoBar"><i data-m="fill"></i></div>
     </div>
     <div id="todoToolbar" class="todoToolbar"></div>
+    <div id="todoQuick"></div>
     <div id="todoRoot"></div>
     <form id="todoPhaseForm" class="todoAdd todoAddPhase"><input id="todoNewPhase" type="text" placeholder="Nueva fase" aria-label="Nueva fase" autocomplete="off"><button type="submit">Añadir fase</button></form>
     <p id="todoStatus" class="efHint"></p>

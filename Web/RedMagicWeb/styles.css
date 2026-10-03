@@ -708,3 +708,50 @@ textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .todoAdd{display:flex;gap:8px;margin-top:12px;}
 .todoAdd input{flex:1;min-width:0;background:var(--well);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:7px 10px;font:inherit;box-shadow:inset 0 1px 2px rgba(0,0,0,.4);}
 .todoAddPhase{margin-top:22px;}
+.todoTask.open{background:linear-gradient(180deg,rgba(86,224,180,.04),transparent 120px);}
+.todoDetails{grid-column:1/-1;display:grid;gap:8px;margin:4px 0 6px 38px;padding:12px 14px;background:var(--well);border:1px solid var(--border);border-radius:7px;box-shadow:inset 0 1px 3px rgba(0,0,0,.4);}
+.todoDetails .todoAdd{margin-top:0;}
+.todoLabel{font-size:14px;color:var(--accent2);font-weight:600;margin-top:4px;}
+.todoLabel .efHint{display:inline;font-weight:400;margin-left:6px;}
+.todoPrompt,.todoDoc,.todoReplyBox textarea,.todoQuick input,.todoQuick textarea,.todoDetails select,.todoQuick select{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:7px 9px;font:inherit;font-size:14px;}
+.todoPrompt{min-height:70px;resize:vertical;width:100%;}
+.todoDoc{width:100%;font-family:ui-monospace,Consolas,monospace;font-size:13px;}
+.todoRow{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;font-size:14px;color:var(--muted);}
+.todoRow label{display:inline-flex;gap:6px;align-items:center;}
+.todoMarks{display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;}
+.todoMarks:empty{display:none;}
+.todoMark{font-size:12.5px;color:var(--muted);}
+.todoBadge{font-size:12.5px;padding:1px 8px;border-radius:10px;border:1px solid var(--border);color:var(--muted);}
+.todoBadge.queued{color:var(--accent2);border-color:#6d5226;}
+.todoBadge.waiting{color:var(--accent2);border-color:var(--accent2);}
+.todoBadge.running{color:var(--on-accent);background:var(--accent);border-color:var(--accent);box-shadow:var(--glow);}
+.todoBadge.done{color:var(--accent);border-color:var(--accent-deep);}
+.todoBadge.failed{color:var(--danger);border-color:var(--danger);}
+.todoSteps{list-style:none;margin:0;padding:0;display:grid;gap:2px;}
+.todoSteps:empty{display:none;}
+.todoStep{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:start;padding:5px 0;border-bottom:1px solid var(--border);}
+.todoStep .todoCheck{width:20px;height:20px;font-size:13px;}
+.todoStep.done .todoText{text-decoration:line-through;color:var(--faint);}
+.todoHistory summary{cursor:pointer;font-size:13.5px;color:var(--muted);}
+.todoHistory .todoResult{margin-top:6px;opacity:.85;}
+.todoStepResult summary{cursor:pointer;font-size:13px;color:var(--muted);margin-top:3px;}
+.todoResult{border:1px solid var(--accent-deep);border-radius:6px;background:var(--panel);padding:9px 12px;}
+.todoResult.bad{border-color:var(--danger);}
+.todoResultHead{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted);margin-bottom:6px;}
+.todoResultHead b{color:var(--accent);}
+.todoResult.bad .todoResultHead b{color:var(--danger);}
+.todoResultText{white-space:pre-wrap;font-size:14.5px;line-height:1.5;max-height:420px;overflow-y:auto;}
+.todoReply{font-size:13.5px;color:var(--accent2);margin-bottom:6px;white-space:pre-wrap;}
+.todoReplyBox textarea{flex:1;min-width:240px;min-height:52px;resize:vertical;}
+.todoLive{border:1px solid var(--accent);border-radius:6px;padding:8px 12px;font-size:14px;box-shadow:var(--glow);}
+.todoLive.wait{border-color:var(--accent2);box-shadow:none;color:var(--accent2);}
+.todoLive ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted);font-family:ui-monospace,Consolas,monospace;max-height:200px;overflow-y:auto;}
+.todoServer{font-size:14px;color:var(--accent);}
+.todoServer.off{color:var(--danger);}
+.todoApp{font-size:13.5px;color:var(--faint);display:inline-flex;gap:6px;align-items:center;}
+.todoApp.up{color:var(--accent);}
+.todoNoServer{flex-basis:100%;margin:0;}
+.todoQuick{margin-top:14px;background:var(--panel);border:1px solid var(--border-lit);border-radius:8px;padding:8px 14px;}
+.todoQuick summary{cursor:pointer;font-weight:600;color:var(--accent);padding:4px 0;}
+.todoQuick form{display:grid;gap:8px;margin:8px 0 6px;}
+.todoQuick textarea{min-height:58px;resize:vertical;}

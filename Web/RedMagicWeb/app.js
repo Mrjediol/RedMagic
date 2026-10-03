@@ -2180,6 +2180,7 @@ const todoPanel = initTodoPanel({
   root: document.getElementById('todoRoot'),
   statusEl: document.getElementById('todoStatus'),
   toolbar: document.getElementById('todoToolbar'),
+  quick: document.getElementById('todoQuick'),
   toast: (text) => shell?.toast(text),
 });
 

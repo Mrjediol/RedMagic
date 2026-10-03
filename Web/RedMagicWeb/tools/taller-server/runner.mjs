@@ -198,7 +198,8 @@ export class Runner {
     const denials = (final?.permission_denials || []).map((d) => d.tool_name + (d.tool_input?.command ? `: ${String(d.tool_input.command).slice(0, 120)}` : ''));
     const result = {
       ok: !!ok, text, at: new Date().toISOString(), durationMs: Date.now() - startedAt,
-      costUsd: final?.total_cost_usd ?? null, runId, sessionId: final?.session_id || sessionId,
+      costUsd: final?.total_cost_usd ?? null,
+      tokens: final?.usage ? { input: final.usage.input_tokens, cacheWrite: final.usage.cache_creation_input_tokens, cacheRead: final.usage.cache_read_input_tokens, output: final.usage.output_tokens, calls: final.num_turns } : undefined, runId, sessionId: final?.session_id || sessionId,
       ...(item.followUp ? { reply: item.followUp } : {}),
       ...(denials.length ? { denied: denials } : {}),
     };
@@ -218,7 +219,20 @@ export class Runner {
   _usageFile() { return path.join(this.opts.logDir, 'usage.json'); }
 
   _loadUsage() {
-    try { return JSON.parse(fs.readFileSync(this._usageFile(), 'utf8')); } catch { return null; }
+    try { return JSON.parse(fs.readFileSync(this._usageFile(), 'utf8')); } catch { /* none yet: look in the run logs */ }
+    // First start: take the newest rate_limit_event from the logs of earlier runs so the bars are not empty.
+    try {
+      const files = fs.readdirSync(this.opts.logDir).filter((f) => f.endsWith('.jsonl')).sort().reverse();
+      for (const f of files) {
+        const lines = fs.readFileSync(path.join(this.opts.logDir, f), "utf8").split(String.fromCharCode(10)).reverse();
+        for (const l of lines) {
+          if (!l.includes('rate_limit_event')) continue;
+          const w = JSON.parse(l).rate_limit_info?.unifiedWindows;
+          if (w) return { fiveHour: w.five_hour || null, sevenDay: w.seven_day || null, at: fs.statSync(path.join(this.opts.logDir, f)).mtimeMs };
+        }
+      }
+    } catch { /* nothing usable */ }
+    return null;
   }
 
   /** The CLI reports the plan's limits in a `rate_limit_event`; keep the latest so the web can show it. */

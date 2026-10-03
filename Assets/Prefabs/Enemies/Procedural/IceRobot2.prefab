@@ -874,20 +874,7 @@ MonoBehaviour:
       angle: 0
       layer: 0
       legacyPhase: -1
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -935,20 +922,7 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.45
     fx: []
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -992,20 +966,7 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.4
     fx: []
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1041,20 +1002,7 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.5
     fx: []
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1126,20 +1074,7 @@ MonoBehaviour:
       angle: 0
       layer: 0
       legacyPhase: -1
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1185,20 +1120,7 @@ MonoBehaviour:
       angle: 0
       layer: 0
       legacyPhase: -1
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1255,20 +1177,7 @@ MonoBehaviour:
       angle: 0
       layer: 0
       legacyPhase: -1
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1384,20 +1293,7 @@ MonoBehaviour:
     releases: []
     recover: 0.45
     fx: []
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1

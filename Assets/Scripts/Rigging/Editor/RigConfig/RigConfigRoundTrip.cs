@@ -352,8 +352,8 @@ namespace RedMagic.Rigging.EditorTools
                           visA, visB, diffs);
             }
 
-            // El sonido de un gesto se asigna en Unity (pestaña Sounds) y no viaja en el JSON: la copia nace sin él.
-            diffs.RemoveAll(d => d.StartsWith("rig.gestures[") && d.Contains("].sound."));
+            // Los sonidos de un gesto no viajan en el export a archivo (sólo por el puente): la copia nace sin ellos.
+            diffs.RemoveAll(d => d.StartsWith("rig.gestures[") && d.Contains("].sounds"));
             return diffs;
         }
 

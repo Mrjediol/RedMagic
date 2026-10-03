@@ -379,7 +379,7 @@ namespace RedMagic.Rigging
         /// </summary>
         private IEnumerator GestureRoutine(RigGesture gesture, float lead, bool silent = false)
         {
-            PlayGestureSound(gesture, GestureSoundMoment.Start);
+            PlayGestureSounds(gesture, GestureSoundMoment.Start);
             Rig.ClearCastPoint();
 
             var steps = gesture.steps;
@@ -438,10 +438,12 @@ namespace RedMagic.Rigging
         {
             FireFx(gesture, step, from, to);
 
-            // El sonido con instante propio ('At'): como un efecto, en su paso y su momento.
-            if (gesture.soundMoment == GestureSoundMoment.At && Mathf.Min(gesture.soundStep, count - 1) == step &&
-                gesture.soundAt > from && gesture.soundAt <= to)
-                PlayGestureSound(gesture, GestureSoundMoment.At);
+            // Los sonidos con instante propio ('At'): como un efecto, cada uno en su paso y su momento.
+            if (gesture.sounds != null)
+                foreach (var a in gesture.sounds)
+                    if (a != null && a.moment == GestureSoundMoment.At && Mathf.Min(a.step, count - 1) == step &&
+                        a.at > from && a.at <= to)
+                        PlayGestureSound(a);
 
             for (int i = 0; i < releases.Count; i++)
             {
@@ -456,7 +458,7 @@ namespace RedMagic.Rigging
             if (!sounded)
             {
                 sounded = true;
-                PlayGestureSound(gesture, GestureSoundMoment.Release);
+                PlayGestureSounds(gesture, GestureSoundMoment.Release);
             }
 
             if (silent) return;

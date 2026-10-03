@@ -359,18 +359,21 @@ namespace RedMagic.Rigging.EditorTools
         public const string AudioRoot = "Assets/Audio/Sfx/Enemies";
 
         /// <summary>
-        /// Los clips de <c>gestures[].sound.clips</c> que son archivos del bundle (<c>Audio/&lt;archivo&gt;</c>,
+        /// Los clips de <c>gestures[].sounds[].clips</c> que son archivos del bundle (<c>Audio/&lt;archivo&gt;</c>,
         /// un sonido subido en la web): se copian a <see cref="AudioRoot"/>/&lt;nombre&gt;/ y en el JSON se
-        /// cambian por su ruta del proyecto, que es lo que lee <see cref="ReadGestureSound"/>. Antes de
+        /// cambian por su ruta del proyecto, que es lo que lee <see cref="ReadGestureSounds"/>. Antes de
         /// tocar el prefab: importar un asset con sus contenidos abiertos no es buena idea.
         /// </summary>
         private static void CopyBundleAudio(JObject config, string source, string name, ConfigImportReport report)
         {
             if (!(config["gestures"] is JArray gestures)) return;
             bool copied = false;
-            foreach (var g in gestures)
+            var done = new HashSet<string>();   // el mismo archivo en dos sonidos se copia una vez
+            var clipLists = gestures.OfType<JObject>()
+                .SelectMany(g => g["sounds"] as JArray ?? new JArray())
+                .Select(s => s["clips"] as JArray).Where(c => c != null);
+            foreach (var clips in clipLists)
             {
-                if (!(g["sound"] is JObject sound) || !(sound["clips"] is JArray clips)) continue;
                 for (int i = 0; i < clips.Count; i++)
                 {
                     string reference = clips[i].Type == JTokenType.String ? clips[i].Value<string>().Replace('\\', '/') : null;
@@ -382,11 +385,12 @@ namespace RedMagic.Rigging.EditorTools
                     if (!File.Exists(file)) throw new ConfigImportException($"sonido '{reference}': el bundle no trae ese archivo.");
 
                     string assetPath = $"{AudioRoot}/{name}/{Path.GetFileName(reference)}";
+                    clips[i] = assetPath;
+                    if (!done.Add(assetPath)) continue;
                     string target = Path.GetFullPath(assetPath);
                     Directory.CreateDirectory(Path.GetDirectoryName(target));
                     bool isNew = !File.Exists(target);
                     File.Copy(file, target, true);
-                    clips[i] = assetPath;
                     copied = true;
                     report.Add(isNew, assetPath);
                     if (isNew) report.Warnings.Add($"Sonido nuevo en el juego: '{assetPath}'. Puntúalo en Biblioteca Jere ▸ Sounds.");
@@ -1037,17 +1041,11 @@ namespace RedMagic.Rigging.EditorTools
                     else if (g["phases"] is JArray phases) gesture.fx = PhaseFx(phases, gesture, visual, $"gestures[{i}]", report);
                     else if (previous != null) gesture.fx = previous.fx ?? new List<RigFx>();
 
-                    if (previous != null)
-                    {
-                        gesture.sound = previous.sound;
-                        gesture.soundMoment = previous.soundMoment;
-                        gesture.soundStep = previous.soundStep;
-                        gesture.soundAt = previous.soundAt;
-                    }
+                    if (previous?.sounds != null) gesture.sounds = new List<RigGestureSound>(previous.sounds);
 
-                    // 'sound' presente (lo escribe la web cuando viene del puente): manda sobre el que había.
-                    // null = quitarlo; sin la clave se conserva (un export sin sonido no debe borrarlo).
-                    if (g.TryGetValue("sound", out var soundToken)) ReadGestureSound(gesture, soundToken, $"gestures[{i}].sound", report);
+                    // 'sounds' presente (lo escribe la web cuando viene del puente): manda sobre los que había.
+                    // [] o null = quitarlos; sin la clave se conservan (un export sin sonidos no debe borrarlos).
+                    if (g.TryGetValue("sounds", out var soundsToken)) ReadGestureSounds(gesture, soundsToken, $"gestures[{i}].sounds", report);
 
                     rig.gestures.Add(gesture);
                 }
@@ -1090,45 +1088,53 @@ namespace RedMagic.Rigging.EditorTools
         }
 
         /// <summary>
-        /// <c>gestures[].sound</c>: clips (rutas del proyecto), volumen, tono y su instante (paso + momento).
-        /// El resto del SoundCue (prioridad, posicional…) se conserva del que hubiera.
+        /// <c>gestures[].sounds[]</c>: de cada sonido sus clips (rutas del proyecto), volumen, tono y su instante
+        /// (paso + momento). El resto de cada SoundCue (prioridad, posicional…) se conserva del que estaba en
+        /// el mismo puesto.
         /// </summary>
-        private static void ReadGestureSound(RigGesture gesture, JToken token, string ctx, ConfigImportReport report)
+        private static void ReadGestureSounds(RigGesture gesture, JToken token, string ctx, ConfigImportReport report)
         {
-            var cue = gesture.sound ?? new Audio.SoundCue();
-            if (!(token is JObject json))
-            {
-                cue.clips = Array.Empty<AudioClip>();
-                gesture.sound = cue;
-                return;
-            }
+            var old = gesture.sounds ?? new List<RigGestureSound>();
+            gesture.sounds = new List<RigGestureSound>();
+            if (!(token is JArray array)) return;
 
-            var clips = new List<AudioClip>();
-            foreach (var c in json["clips"] as JArray ?? new JArray())
+            for (int j = 0; j < array.Count; j++)
             {
-                string path = c.Type == JTokenType.String ? c.Value<string>() : null;
-                var clip = string.IsNullOrEmpty(path) ? null : AssetDatabase.LoadAssetAtPath<AudioClip>(path);
-                if (clip != null) clips.Add(clip);
-                else report.Warnings.Add($"{ctx}: '{path}' no es un clip de audio del proyecto; se omite.");
-            }
+                if (!(array[j] is JObject json)) continue;
+                var clips = new List<AudioClip>();
+                foreach (var c in json["clips"] as JArray ?? new JArray())
+                {
+                    string path = c.Type == JTokenType.String ? c.Value<string>() : null;
+                    var clip = string.IsNullOrEmpty(path) ? null : AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+                    if (clip != null) clips.Add(clip);
+                    else report.Warnings.Add($"{ctx}[{j}]: '{path}' no es un clip de audio del proyecto; se omite.");
+                }
 
-            // Una copia: el SoundCue anterior puede ser el mismo objeto que el del gesto que se sustituye.
-            gesture.sound = new Audio.SoundCue
-            {
-                clips = clips.ToArray(),
-                volume = Mathf.Clamp01(json.Value<float?>("volume") ?? cue.volume),
-                pitchMin = Mathf.Clamp(json.Value<float?>("pitchMin") ?? cue.pitchMin, 0.1f, 3f),
-                pitchMax = Mathf.Clamp(json.Value<float?>("pitchMax") ?? cue.pitchMax, 0.1f, 3f),
-                noRepeatLast = cue.noRepeatLast,
-                priority = cue.priority,
-                positional = cue.positional,
-                rolloffStart = cue.rolloffStart,
-                rolloffEnd = cue.rolloffEnd,
-            };
-            if (gesture.sound.pitchMax < gesture.sound.pitchMin) gesture.sound.pitchMax = gesture.sound.pitchMin;
-            gesture.soundMoment = GestureSoundMoment.At;
-            gesture.soundStep = Mathf.Max(0, json.Value<int?>("step") ?? 0);
-            gesture.soundAt = Mathf.Clamp01(json.Value<float?>("at") ?? 0f);
+                if (clips.Count == 0) continue;
+
+                // Una copia: el SoundCue anterior puede ser el mismo objeto que el del gesto que se sustituye.
+                var cue = (j < old.Count ? old[j]?.sound : null) ?? new Audio.SoundCue();
+                var sound = new Audio.SoundCue
+                {
+                    clips = clips.ToArray(),
+                    volume = Mathf.Clamp01(json.Value<float?>("volume") ?? cue.volume),
+                    pitchMin = Mathf.Clamp(json.Value<float?>("pitchMin") ?? cue.pitchMin, 0.1f, 3f),
+                    pitchMax = Mathf.Clamp(json.Value<float?>("pitchMax") ?? cue.pitchMax, 0.1f, 3f),
+                    noRepeatLast = cue.noRepeatLast,
+                    priority = cue.priority,
+                    positional = cue.positional,
+                    rolloffStart = cue.rolloffStart,
+                    rolloffEnd = cue.rolloffEnd,
+                };
+                if (sound.pitchMax < sound.pitchMin) sound.pitchMax = sound.pitchMin;
+                gesture.sounds.Add(new RigGestureSound
+                {
+                    sound = sound,
+                    moment = GestureSoundMoment.At,
+                    step = Mathf.Max(0, json.Value<int?>("step") ?? 0),
+                    at = Mathf.Clamp01(json.Value<float?>("at") ?? 0f),
+                });
+            }
         }
 
         /// <summary><c>spriteSwaps[].named</c>: los sprites de alerta / herido / muerto / por gesto de esa pieza.</summary>

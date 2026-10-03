@@ -219,22 +219,18 @@ namespace RedMagic.Rigging.EditorTools
             return info;
         }
 
-        /// <summary>El sonido de cada gesto que lo tiene. Sólo lectura en la web: se asignan y se gradúan en Unity.</summary>
+        /// <summary>Los sonidos de los gestos, uno por fila con el nombre de su gesto (un gesto puede tener varios).</summary>
         private static JArray GestureSounds(ProceduralRig rig)
         {
             var list = new JArray();
             foreach (var g in rig.gestures)
             {
-                if (g == null || g.sound == null || g.sound.clips == null) continue;
-                var clips = new JArray();
-                foreach (var clip in g.sound.clips)
-                    if (clip != null && AssetDatabase.Contains(clip)) clips.Add(AssetDatabase.GetAssetPath(clip));
-                if (clips.Count == 0) continue;
-
-                var sound = RigConfigExporter.GestureSound(g);
-                if (sound == null) continue;
-                sound["gesture"] = g.name;
-                list.Add(sound);
+                if (g == null) continue;
+                foreach (var sound in RigConfigExporter.GestureSounds(g))
+                {
+                    sound["gesture"] = g.name;
+                    list.Add(sound);
+                }
             }
 
             return list;

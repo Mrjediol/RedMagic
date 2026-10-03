@@ -84,7 +84,7 @@ export function createGestureTimeline(host) {
   function selection() {
     const g = gesture();
     if (!g || !sel) return null;
-    const list = { step: g.steps, release: g.releases, fx: g.fx || [], sound: g.sound ? [g.sound] : [] }[sel.kind];
+    const list = { step: g.steps, release: g.releases, fx: g.fx || [], sound: g.sounds || [] }[sel.kind];
     if (list && !list[sel.index]) sel = null;
     return sel;
   }
@@ -103,7 +103,7 @@ export function createGestureTimeline(host) {
       if (wasPosing) host.pose(-1);
       if (kind === 'release') host.seek(G.timeOf(tl, Math.min(g.releases[index].step, tl.count - 1), g.releases[index].at));
       else if (kind === 'fx') host.seek(G.timeOf(tl, g.fx[index].step, g.fx[index].at));
-      else if (kind === 'sound') host.seek(G.timeOf(tl, Math.min(g.sound.step, tl.count - 1), g.sound.at));
+      else if (kind === 'sound') host.seek(G.timeOf(tl, Math.min(g.sounds[index].step, tl.count - 1), g.sounds[index].at));
       else if (kind === 'recover') host.seek(tl.recoverStart);
     }
     host.refresh();
@@ -155,19 +155,18 @@ export function createGestureTimeline(host) {
     return true;
   }
 
-  /** The gesture's sound, at the playhead (the first release when the playhead is at rest). */
+  /** One more sound for the gesture, at the playhead (the start of the gesture when the playhead is at rest). */
   function addSound() {
     const g = gesture();
     if (!g) return;
-    if (!g.sound) {
-      const tl = timelineOf(g);
-      const inst = G.instantAt(tl, Math.min(host.time(), tl.recoverStart));
-      const step = Math.min(inst.step, tl.count - 1);
-      g.sound = G.createSound(step, host.time() <= 0 ? 0 : inst.step > step ? 1 : r2(inst.at));
-      edited();
-    }
-    select('sound', 0);
-    host.status('Sonido del gesto: a la izquierda, sube un archivo o elige un clip; arrástralo por la línea de tiempo al instante en que suena.');
+    const tl = timelineOf(g);
+    const inst = G.instantAt(tl, Math.min(host.time(), tl.recoverStart));
+    const step = Math.min(inst.step, tl.count - 1);
+    if (!g.sounds) g.sounds = [];
+    g.sounds.push(G.createSound(step, host.time() <= 0 ? 0 : inst.step > step ? 1 : r2(inst.at)));
+    edited();
+    select('sound', g.sounds.length - 1);
+    host.status('Sonido añadido al gesto: a la izquierda, sube un archivo o elige un clip; arrástralo por la línea de tiempo al instante en que suena.');
   }
 
   function removeSelected() {
@@ -180,7 +179,7 @@ export function createGestureTimeline(host) {
       sel = { kind: 'step', index: Math.min(s.index, g.steps.length - 1) };
     } else if (s.kind === 'release') { g.releases.splice(s.index, 1); sel = null; }
     else if (s.kind === 'fx') { g.fx.splice(s.index, 1); sel = null; }
-    else if (s.kind === 'sound') { g.sound = null; sel = null; }
+    else if (s.kind === 'sound') { g.sounds.splice(s.index, 1); sel = null; }
     else { host.status('La vuelta al reposo no se quita: sólo se cambia cuánto dura.'); return; }
     edited();
   }
@@ -232,7 +231,7 @@ export function createGestureTimeline(host) {
     addR.title = 'Un instante en el que sale el ataque, donde está el cursor. Varias = dispara varias veces.';
     addR.onclick = addRelease;
     const addA = el('button', 'small', '🔊 Sonido');
-    addA.title = g.sound ? 'El sonido de este gesto (está en su pista, abajo).' : 'El sonido propio del gesto, en el instante donde está el cursor.';
+    addA.title = 'Un sonido más para el gesto, en el instante donde está el cursor. Puede tener varios, cada uno en su pista.';
     addA.onclick = addSound;
     bar.append(addS, addR, addA);
 
@@ -380,33 +379,35 @@ export function createGestureTimeline(host) {
     track.appendChild(releases);
     head('gtLane gtReleases', '◆ Ataque', 'Salidas de ataque: los instantes en que el gesto suelta el ataque que lo usa. "◆ Suelta" añade una.', addRelease);
 
-    // the gesture's sound: a marker at the instant it plays (the lane is always there: click it to add one)
-    head('gtLane gtFxLane', '🔊 Sonido', g.sound ? 'El sonido propio del gesto: clic para editarlo.' : 'Este gesto no tiene sonido: clic para añadirlo (subiendo un archivo o eligiendo uno).', addSound);
-    if (!g.sound) {
+    // the gesture's sounds: a lane each, a marker at the instant it plays; with none, one empty lane that adds the first
+    const sounds = g.sounds || [];
+    if (!sounds.length) {
+      head('gtLane gtFxLane', '🔊 Sonido', 'Este gesto no tiene sonido: clic para añadir uno (subiendo un archivo o eligiendo uno).', addSound);
       const lane = el('div', 'gtLane gtFxLane gtSoundLane empty');
       lane.appendChild(el('span', 'gtLaneHint', '＋ añadir sonido'));
-      lane.title = 'Clic: añade el sonido del gesto en el instante donde está el cursor.';
+      lane.title = 'Clic: añade un sonido al gesto en el instante donde está el cursor.';
       lane.onclick = addSound;
       track.appendChild(lane);
-    } else {
-      const a = g.sound;
+    }
+    sounds.forEach((a, i) => {
       const when = G.timeOf(tl, Math.min(a.step, tl.count - 1), a.at);
       const lane = el('div', 'gtLane gtFxLane gtSoundLane');
-      const mark = el('div', `gtFx gtSound${s?.kind === 'sound' ? ' selected' : ''}${a.clips.length ? '' : ' missing'}`);
+      const mark = el('div', `gtFx gtSound${s?.kind === 'sound' && s.index === i ? ' selected' : ''}${a.clips.length ? '' : ' missing'}`);
       mark.style.left = pct(when);
       mark.appendChild(el('span', null, `🔊 ${a.clips.length ? clipLabel(a.clips[0]) + (a.clips.length > 1 ? ` +${a.clips.length - 1}` : '') : '(sin clip)'}`));
-      mark.title = `El sonido del gesto — suena a los ${secs(when)}. Arrástralo para moverlo.`;
+      mark.title = `Sonido ${i + 1} del gesto — suena a los ${secs(when)}. Arrástralo para moverlo.`;
       mark.addEventListener('mousedown', (e) => {
         e.preventDefault(); e.stopPropagation();
-        sel = { kind: 'sound', index: 0 };
+        sel = { kind: 'sound', index: i };
         if (host.posingStep() >= 0) host.pose(-1);
-        drag = { kind: 'sound', tl, grab: timeAt(e.clientX) - when, moved: false };
+        drag = { kind: 'sound', index: i, tl, grab: timeAt(e.clientX) - when, moved: false };
         host.seek(when);
         host.refresh();
       });
       lane.appendChild(mark);
       track.appendChild(lane);
-    }
+      head('gtLane gtFxLane', sounds.length > 1 ? `🔊 Sonido ${i + 1}` : '🔊 Sonido', 'Sonido del gesto: clic para editarlo. "🔊 Sonido" (arriba) añade otro.', () => select('sound', i));
+    });
 
     // effects: one thin row each (a loop is a bar until it goes out, a burst lasts its frames)
     (g.fx || []).forEach((f, i) => {
@@ -515,7 +516,7 @@ export function createGestureTimeline(host) {
       if (f.untilStep >= 0 && f.untilStep < f.step) f.untilStep = -1;
       host.seek(G.timeOf(timelineOf(g), f.step, f.at));
     } else if (drag.kind === 'sound') {
-      const a = g.sound;
+      const a = g.sounds[drag.index];
       const inst = G.instantAt(drag.tl, Math.min(timeAtX(e.clientX, drag.tl.total) - drag.grab, drag.tl.recoverStart));
       a.step = Math.min(inst.step, drag.tl.count - 1);
       a.at = inst.step > a.step ? 1 : r3(inst.at);
@@ -549,7 +550,10 @@ export function createGestureTimeline(host) {
     } else if (s.kind === 'release') {
       g.releases.splice(s.index + 1, 0, JSON.parse(JSON.stringify(g.releases[s.index])));
       sel = { kind: 'release', index: s.index + 1 };
-    } else { host.status('Eso no se duplica (un gesto tiene un solo sonido y una sola vuelta).'); return; }
+    } else if (s.kind === 'sound') {
+      g.sounds.splice(s.index + 1, 0, JSON.parse(JSON.stringify(g.sounds[s.index])));
+      sel = { kind: 'sound', index: s.index + 1 };
+    } else { host.status('Eso no se duplica (un gesto tiene una sola vuelta).'); return; }
     edited();
     host.status('Duplicado. Arrástralo (o Ctrl+← / →) para separarlo del original.');
   }
@@ -581,7 +585,7 @@ export function createGestureTimeline(host) {
       else step.duration = Math.max(0.01, r3(tl.durations[s.index] + dt));
     } else if (s.kind === 'recover') g.recover = Math.max(0.01, r3(g.recover + dt));
     else {
-      const item = s.kind === 'release' ? g.releases[s.index] : s.kind === 'fx' ? g.fx[s.index] : g.sound;
+      const item = s.kind === 'release' ? g.releases[s.index] : s.kind === 'fx' ? g.fx[s.index] : g.sounds[s.index];
       const limit = s.kind === 'fx' ? tl.total : tl.recoverStart;
       const inst = G.instantAt(tl, Math.min(limit, Math.max(0, G.timeOf(tl, Math.min(item.step, s.kind === 'fx' ? tl.count : tl.count - 1), item.at) + dt)));
       item.step = s.kind === 'fx' ? inst.step : Math.min(inst.step, tl.count - 1);
@@ -643,7 +647,7 @@ export function createGestureTimeline(host) {
     if (s.kind === 'step') stepFields(box, g, s.index);
     else if (s.kind === 'release') releaseFields(box, g, s.index);
     else if (s.kind === 'fx') fxFields(box, g, s.index);
-    else if (s.kind === 'sound') soundFields(box, g);
+    else if (s.kind === 'sound') soundFields(box, g, s.index);
     else recoverFields(box, g);
     root.appendChild(box);
   }
@@ -772,13 +776,13 @@ export function createGestureTimeline(host) {
   /** A clip as the user knows it: a library sound by its name, a project clip by its file name. */
   const clipLabel = (value) => (host.soundClips ? host.soundClips() : []).find((c) => c.value === value)?.label.split('  ·  ')[0] || clipName(value);
 
-  /** The gesture's own sound: which clips (one is picked at random), how loud, what pitch, and WHEN. */
-  function soundFields(box, g) {
-    const s = g.sound;
+  /** One of the gesture's sounds: which clips (one is picked at random), how loud, what pitch, and WHEN. */
+  function soundFields(box, g, index) {
+    const s = g.sounds[index];
     // What a clip can be: a sound of the library (uploaded here) or a clip of the Unity project (the bridge).
     const catalog = host.soundClips ? host.soundClips() : [];
     const labelOf = (value) => catalog.find((c) => c.value === value)?.label || clipName(value);
-    box.appendChild(el('p', 'rigGroupTitle', '🔊 Sonido del gesto'));
+    box.appendChild(el('p', 'rigGroupTitle', g.sounds.length > 1 ? `🔊 Sonido ${index + 1} del gesto` : '🔊 Sonido del gesto'));
 
     const filter = document.createElement('input');
     filter.type = 'search';
@@ -855,9 +859,14 @@ export function createGestureTimeline(host) {
     box.appendChild(grid);
     box.appendChild(el('p', 'hint', 'Un clip que no sonaba antes en el juego hay que puntuarlo en Unity: Biblioteca Jere ▸ Sounds.'));
 
-    const del = el('button', 'small danger', '🗑 Quitar el sonido');
+    const foot = el('div', 'rigActions');
+    const more = el('button', 'small', '＋ Otro sonido');
+    more.title = 'Otro sonido para este gesto, en el instante donde está el cursor (con su propia pista).';
+    more.onclick = addSound;
+    const del = el('button', 'small danger', '🗑 Quitar este sonido');
     del.onclick = removeSelected;
-    box.appendChild(del);
+    foot.append(more, del);
+    box.appendChild(foot);
   }
 
   function seekTo(g, step, at) { host.seek(G.timeOf(timelineOf(g), step, at)); }

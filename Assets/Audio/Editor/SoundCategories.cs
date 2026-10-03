@@ -69,7 +69,7 @@ namespace RedMagic.Audio.EditorTools
                 }
             }
 
-            // Sonido propio de un gesto del rig (ProceduralRig.gestures[i].sound): una fila por gesto.
+            // Sonidos propios de un gesto del rig (ProceduralRig.gestures[i].sounds[j].sound): una fila por sonido.
             if (slot.ComponentType == "ProceduralRig" && member.StartsWith("gestures.Array.data[", StringComparison.Ordinal))
             {
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(slot.AssetPath);
@@ -83,7 +83,10 @@ namespace RedMagic.Audio.EditorTools
                     index >= 0 && index < rig.gestures.Count)
                     gestureName = rig.gestures[index].name;
 
-                name = $"Gesture · {gestureName}";
+                // El segundo índice (el sonido dentro del gesto): el primero sin número, los demás "· 2", "· 3"…
+                int open2 = member.IndexOf('[', close + 1), close2 = open2 >= 0 ? member.IndexOf(']', open2) : -1;
+                int nth = open2 >= 0 && close2 > open2 && int.TryParse(member.Substring(open2 + 1, close2 - open2 - 1), out int n) ? n : 0;
+                name = nth > 0 ? $"Gesture · {gestureName} · {nth + 1}" : $"Gesture · {gestureName}";
                 return;
             }
 

@@ -654,21 +654,22 @@ MonoBehaviour:
       angle: 0
       layer: 0
       legacyPhase: -1
-    sound:
-      clips:
-      - {fileID: 8300000, guid: 095d38506108de84cbd41257142714dc, type: 3}
-      volume: 0.6
-      pitchMin: 0.88
-      pitchMax: 1.12
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 2
-    soundStep: 0
-    soundAt: 1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: 095d38506108de84cbd41257142714dc, type: 3}
+        volume: 0.6
+        pitchMin: 0.88
+        pitchMax: 1.12
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 2
+      step: 0
+      at: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -716,21 +717,22 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.45
     fx: []
-    sound:
-      clips:
-      - {fileID: 8300000, guid: 326f5227355d669429b0402684827d50, type: 3}
-      volume: 0.6
-      pitchMin: 0.94
-      pitchMax: 1.06
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 2
-    soundStep: 0
-    soundAt: 1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: 326f5227355d669429b0402684827d50, type: 3}
+        volume: 0.6
+        pitchMin: 0.94
+        pitchMax: 1.06
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 2
+      step: 0
+      at: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -774,21 +776,22 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.4
     fx: []
-    sound:
-      clips:
-      - {fileID: 8300000, guid: b098aa75325a4ab47ae3c804d08c9551, type: 3}
-      volume: 0.7
-      pitchMin: 0.94
-      pitchMax: 1.06
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 2
-    soundStep: 0
-    soundAt: 1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: b098aa75325a4ab47ae3c804d08c9551, type: 3}
+        volume: 0.7
+        pitchMin: 0.94
+        pitchMax: 1.06
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 2
+      step: 0
+      at: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -824,20 +827,7 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.5
     fx: []
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -883,21 +873,22 @@ MonoBehaviour:
       angle: 0
       layer: 0
       legacyPhase: -1
-    sound:
-      clips:
-      - {fileID: 8300000, guid: 1d219669e3e8a2f4cb4a563f1afab85f, type: 3}
-      volume: 0.7
-      pitchMin: 0.94
-      pitchMax: 1.06
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 2
-    soundStep: 0
-    soundAt: 1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: 1d219669e3e8a2f4cb4a563f1afab85f, type: 3}
+        volume: 0.7
+        pitchMin: 0.94
+        pitchMax: 1.06
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 2
+      step: 0
+      at: 1
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -954,20 +945,7 @@ MonoBehaviour:
       angle: 0
       layer: 0
       legacyPhase: -1
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
-    soundStep: 0
-    soundAt: 0
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -991,7 +969,7 @@ MonoBehaviour:
         move: {x: 4.21, y: 0.762}
         rotate: 44.5
         scale: {x: 0, y: 0}
-      duration: 0.3
+      duration: 0.17
       ease: 0
       stretch: 0
       shake: 0
@@ -1010,7 +988,7 @@ MonoBehaviour:
         move: {x: 0, y: 0}
         rotate: 19.3
         scale: {x: 0, y: 0}
-      duration: 0.3
+      duration: 0.21
       ease: 0
       stretch: 0
       shake: 0
@@ -1033,7 +1011,7 @@ MonoBehaviour:
         move: {x: -0.14, y: 3.087}
         rotate: 0
         scale: {x: 0, y: 0}
-      duration: 0.3
+      duration: 0.14
       ease: 0
       stretch: 0
       shake: 0
@@ -1052,7 +1030,7 @@ MonoBehaviour:
         move: {x: -0.06, y: 2.005}
         rotate: 6.1
         scale: {x: 0, y: 0}
-      duration: 0.3
+      duration: 0.18
       ease: 0
       stretch: 0
       shake: 0
@@ -1060,22 +1038,23 @@ MonoBehaviour:
     releases: []
     recover: 0.45
     fx: []
-    sound:
-      clips:
-      - {fileID: 8300000, guid: edc25f5ec8dbdc34abd15d7fc50a15b5, type: 3}
-      - {fileID: 8300000, guid: d3e757a025413c94e90ea0e03da52195, type: 3}
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 2
-    soundStep: 2
-    soundAt: 0.038
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: edc25f5ec8dbdc34abd15d7fc50a15b5, type: 3}
+        - {fileID: 8300000, guid: d3e757a025413c94e90ea0e03da52195, type: 3}
+        volume: 1
+        pitchMin: 1
+        pitchMax: 1
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 2
+      step: 2
+      at: 0.038
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1

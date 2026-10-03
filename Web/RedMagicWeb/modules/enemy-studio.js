@@ -365,7 +365,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     clipBuffer(path).then((buffer) => { if (buffer) playBuffer(buffer, o); });
   };
 
-  const soundCount = () => rig.getGestures().filter((g) => g.sound?.clips?.length).length;
+  const soundCount = () => rig.getGestures().filter((g) => (g.sounds || []).some((a) => a.clips?.length)).length;
 
   /** Above the save / export buttons of the focused tab: the banner, "Guardar en Unity", Unity's answer. */
   rig.hooks.focusExtras = (host) => {
@@ -385,7 +385,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     box.appendChild(el('p', 'unityBanner', `🔌 Unity · ${unity.name}`));
     const st = rig.getStatus();
     box.appendChild(el('p', 'hint', `${unity.prefab}. ${st.unityBody ? 'El cuerpo se ha leído de Unity (sólo para verlo y posarlo).' : 'El cuerpo es el de tu biblioteca; los gestos'
-      + (unity.kind === 'enemy' ? ' y los ataques' : '') + ' son los del prefab.'}${soundCount() ? ` ${soundCount()} gesto(s) con sonido: suena al probarlos, y se edita en su pista 🔊 de la línea de tiempo.` : ''}`));
+      + (unity.kind === 'enemy' ? ' y los ataques' : '') + ' son los del prefab.'}${soundCount() ? ` ${soundCount()} gesto(s) con sonido: suenan al probarlos, y se editan en sus pistas 🔊 de la línea de tiempo.` : ''}`));
 
     const save = el('button', 'primary', unity.busy || '💾 Guardar en Unity');
     save.style.width = '100%';

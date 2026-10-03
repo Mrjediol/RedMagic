@@ -161,7 +161,7 @@ namespace RedMagic.Rigging
         public Vector2 scale;
     }
 
-    /// <summary>En qué momento de un gesto suena su <see cref="RigGesture.sound"/>.</summary>
+    /// <summary>En qué momento de un gesto suena uno de sus <see cref="RigGesture.sounds"/>.</summary>
     public enum GestureSoundMoment
     {
         /// <summary>Al empezar la carga (un cargador que zumba, un rugido de aviso).</summary>
@@ -171,7 +171,7 @@ namespace RedMagic.Rigging
         Release,
 
         /// <summary>
-        /// En un instante propio del gesto (<see cref="RigGesture.soundStep"/> + <see cref="RigGesture.soundAt"/>):
+        /// En un instante propio del gesto (<see cref="RigGestureSound.step"/> + <see cref="RigGestureSound.at"/>):
         /// es lo que escribe la línea de tiempo de la web, donde el sonido se arrastra como un efecto.
         /// </summary>
         At,
@@ -339,6 +339,23 @@ namespace RedMagic.Rigging
         public int EndStep => untilStep >= 0 ? Mathf.Max(untilStep, step) : step;
     }
 
+    /// <summary>Un sonido de un gesto: qué suena (<see cref="sound"/>) y cuándo. Un gesto puede tener varios.</summary>
+    [Serializable]
+    public class RigGestureSound
+    {
+        [Tooltip("Variantes, volumen y tono. Vacío = no suena.")]
+        public SoundCue sound = new SoundCue();
+
+        [Tooltip("Cuándo suena: al empezar el gesto, en su primera suelta o en un instante propio (paso + momento).")]
+        public GestureSoundMoment moment = GestureSoundMoment.At;
+
+        [Tooltip("Con 'At': el paso en el que suena (0 = el primero).")]
+        [Min(0)] public int step;
+
+        [Tooltip("Con 'At': el momento dentro de ese paso (0 = al empezar, 1 = al acabar).")]
+        [Range(0f, 1f)] public float at;
+    }
+
     /// <summary>
     /// Un gesto con nombre (el <c>gesture</c> de un ataque: "Charge", "Slam"…): una <b>línea de
     /// tiempo</b>. El cuerpo recorre sus <see cref="steps"/> en orden (cada uno una pose y un tiempo),
@@ -369,18 +386,9 @@ namespace RedMagic.Rigging
         public List<RigFx> fx = new List<RigFx>();
 
         [Header("Sonido")]
-        [Tooltip("Suena al lanzar este gesto, sea cual sea el ataque que lo use. Se asigna en la pestaña " +
-                 "Sounds (Enemies/<nombre>/Gestures). Vacío = silencio: el gesto no obliga a sonar.")]
-        public SoundCue sound = new SoundCue();
-
-        [Tooltip("Cuándo suena: al empezar el gesto o en su primera suelta.")]
-        public GestureSoundMoment soundMoment = GestureSoundMoment.Release;
-
-        [Tooltip("Con 'At': el paso en el que suena (0 = el primero).")]
-        [Min(0)] public int soundStep;
-
-        [Tooltip("Con 'At': el momento dentro de ese paso (0 = al empezar, 1 = al acabar).")]
-        [Range(0f, 1f)] public float soundAt;
+        [Tooltip("Suenan al lanzar este gesto, sea cual sea el ataque que lo use, cada uno en su instante. " +
+                 "Se editan en la web (Enemy Studio ▸ Gestos, pista 🔊) o en la pestaña Sounds. Vacío = silencio.")]
+        public List<RigGestureSound> sounds = new List<RigGestureSound>();
 
         /// <summary>Segundos que dura entero (pasos + vuelta) lanzado con <paramref name="lead"/> de aviso.</summary>
         public float TotalSeconds(float lead)

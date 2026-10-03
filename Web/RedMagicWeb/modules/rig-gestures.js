@@ -74,9 +74,9 @@ export function createRelease(step = 0, at = 1) {
 }
 
 /**
- * A gesture's own sound (RigGesture.sound + its instant): project clips by asset path — one is picked
- * at random —, volume, pitch range, and WHEN it plays (step + moment, like an effect). `gesture.sound`
- * absent = unknown (Unity keeps what it has); null = it has none.
+ * One of a gesture's own sounds (RigGesture.sounds[]): clips — one is picked at random —, volume, pitch
+ * range, and WHEN it plays (step + moment, like an effect). A gesture may have several. `gesture.sounds`
+ * absent = unknown (Unity keeps what it has); [] = it has none.
  */
 export function createSound(step = 0, at = 0) {
   return { clips: [], volume: 1, pitchMin: 1, pitchMax: 1, step, at };
@@ -124,6 +124,11 @@ export function normalizeGesture(g) {
   g.steps = g.steps.map((s) => ({ ...createStep(), ...s, poses: s.poses || [] }));
   g.releases = (g.releases || []).map((r) => ({ ...createRelease(), ...r, point: r.point || null, offset: { ...zero(), ...(r.offset || {}) } }));
   g.fx = g.fx || [];
+  // A draft saved with one sound (`sound`, null = none) has a list of them now.
+  if ('sound' in g) {
+    if (g.sounds === undefined) g.sounds = g.sound ? [g.sound] : [];
+    delete g.sound;
+  }
   return single;
 }
 
@@ -189,7 +194,7 @@ export function insertStep(gesture, after, step = createStep()) {
   gesture.steps.splice(at, 0, step);
   const shift = (i) => (i >= at ? i + 1 : i);
   gesture.releases.forEach((r) => { r.step = shift(r.step); });
-  if (gesture.sound) gesture.sound.step = shift(Math.min(gesture.sound.step, count - 1));
+  (gesture.sounds || []).forEach((a) => { a.step = shift(Math.min(a.step, count - 1)); });
   (gesture.fx || []).forEach((f) => {
     const recover = f.step >= count;
     f.step = recover ? count + 1 : shift(f.step);
@@ -210,7 +215,7 @@ export function removeStep(gesture, index) {
     item[key] = shift(item[key]);
   };
   gesture.releases.forEach((r) => { r.step = Math.min(r.step, count - 1); land(r, 'step'); });
-  if (gesture.sound) { gesture.sound.step = Math.min(gesture.sound.step, count - 1); land(gesture.sound, 'step'); }
+  (gesture.sounds || []).forEach((a) => { a.step = Math.min(a.step, count - 1); land(a, 'step'); });
   (gesture.fx || []).forEach((f) => {
     land(f, 'step');
     if (f.untilStep >= 0) f.untilStep = Math.max(f.step, shift(f.untilStep));
@@ -227,7 +232,7 @@ export function moveStep(gesture, from, to) {
   const next = (i) => (i >= count ? i : order.indexOf(i));
   gesture.steps = order.map((i) => gesture.steps[i]);
   gesture.releases.forEach((r) => { r.step = next(Math.min(r.step, count - 1)); });
-  if (gesture.sound) gesture.sound.step = next(Math.min(gesture.sound.step, count - 1));
+  (gesture.sounds || []).forEach((a) => { a.step = next(Math.min(a.step, count - 1)); });
   (gesture.fx || []).forEach((f) => {
     f.step = next(f.step);
     if (f.untilStep >= 0) f.untilStep = Math.max(f.step, next(f.untilStep));
@@ -269,7 +274,7 @@ export function splitStep(gesture, index, k) {
     }
   };
   gesture.releases.forEach((r) => carry(r, count - 1));
-  if (gesture.sound) carry(gesture.sound, count - 1);
+  (gesture.sounds || []).forEach((a) => carry(a, count - 1));
   (gesture.fx || []).forEach((f) => {
     carry(f, count);
     if (f.untilStep >= index) f.untilStep += 1;

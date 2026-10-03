@@ -294,11 +294,18 @@ namespace RedMagic.Rigging
             AttackReleased?.Invoke();
         }
 
-        /// <summary>El sonido propio de un gesto (si lo tiene y es de este momento), en la posición del cuerpo.</summary>
-        protected void PlayGestureSound(RigGesture gesture, GestureSoundMoment moment)
+        /// <summary>Los sonidos propios de un gesto de este momento ('Start' o 'Release'), en la posición del cuerpo.</summary>
+        protected void PlayGestureSounds(RigGesture gesture, GestureSoundMoment moment)
         {
-            if (gesture == null || gesture.soundMoment != moment || gesture.sound == null) return;
-            if (AudioManager.Instance != null) AudioManager.Instance.Play(gesture.sound, transform.position);
+            if (gesture?.sounds == null) return;
+            foreach (var s in gesture.sounds)
+                if (s != null && s.moment == moment) PlayGestureSound(s);
+        }
+
+        /// <summary>Un sonido de gesto, en la posición del cuerpo.</summary>
+        protected void PlayGestureSound(RigGestureSound s)
+        {
+            if (s?.sound != null && AudioManager.Instance != null) AudioManager.Instance.Play(s.sound, transform.position);
         }
 
         // ============================================================ efectos de gesto (RigFx, siempre del pool)

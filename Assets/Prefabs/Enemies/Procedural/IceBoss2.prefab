@@ -865,6 +865,10 @@ MonoBehaviour:
     interval: 4
     chance: 0.6
     windup: 0.5
+  transition:
+    gestures: []
+    chance: 0.5
+    windup: 0.3
   aimPart: {fileID: 0}
   aimArtAngle: 0
   aimMaxAngle: 75
@@ -918,6 +922,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 2
+      aim: 0
     - name: Golpe
       poses:
       - part: {fileID: 8076603602689295315}
@@ -928,6 +933,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
+      aim: 0
     releases:
     - step: 0
       at: 1
@@ -935,19 +941,22 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.4
     fx: []
-    sound:
-      clips:
-      - {fileID: 8300000, guid: 326f5227355d669429b0402684827d50, type: 3}
-      volume: 0.6
-      pitchMin: 0.94
-      pitchMax: 1.06
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: 326f5227355d669429b0402684827d50, type: 3}
+        volume: 0.6
+        pitchMin: 0.94
+        pitchMax: 1.06
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 1
+      step: 0
+      at: 0
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -976,6 +985,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 2
+      aim: 0
     releases:
     - step: 0
       at: 1
@@ -983,19 +993,22 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 1.2
     fx: []
-    sound:
-      clips:
-      - {fileID: 8300000, guid: 91d294181ef0de0439d09c67e74ce503, type: 3}
-      volume: 0.7
-      pitchMin: 0.94
-      pitchMax: 1.06
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: 91d294181ef0de0439d09c67e74ce503, type: 3}
+        volume: 0.7
+        pitchMin: 0.94
+        pitchMax: 1.06
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 1
+      step: 0
+      at: 0
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1028,6 +1041,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 0
+      aim: 0
     releases:
     - step: 0
       at: 1
@@ -1035,18 +1049,7 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.35
     fx: []
-    sound:
-      clips: []
-      volume: 1
-      pitchMin: 1
-      pitchMax: 1
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
+    sounds: []
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1079,6 +1082,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 0
+      aim: 0
     releases:
     - step: 0
       at: 1
@@ -1086,19 +1090,22 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.3
     fx: []
-    sound:
-      clips:
-      - {fileID: 8300000, guid: 29ba727c44dd723428682940dca70759, type: 3}
-      volume: 0.6
-      pitchMin: 0.88
-      pitchMax: 1.12
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: 29ba727c44dd723428682940dca70759, type: 3}
+        volume: 0.6
+        pitchMin: 0.88
+        pitchMax: 1.12
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 1
+      step: 0
+      at: 0
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1127,6 +1134,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 2.5
+      aim: 0
     - name: Golpe
       poses:
       - part: {fileID: 8076603602689295315}
@@ -1149,6 +1157,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
+      aim: 0
     releases:
     - step: 0
       at: 1
@@ -1156,19 +1165,22 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.5
     fx: []
-    sound:
-      clips:
-      - {fileID: 8300000, guid: 9dbc4c3c392d41e41a2dbf19ed3d4bd0, type: 3}
-      volume: 0.8
-      pitchMin: 0.94
-      pitchMax: 1.06
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: 9dbc4c3c392d41e41a2dbf19ed3d4bd0, type: 3}
+        volume: 0.8
+        pitchMin: 0.94
+        pitchMax: 1.06
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 1
+      step: 0
+      at: 0
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1189,6 +1201,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 1
+      aim: 0
     - name: Golpe
       poses:
       - part: {fileID: 8076603602689295315}
@@ -1203,6 +1216,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
+      aim: 0
     releases:
     - step: 0
       at: 1
@@ -1210,19 +1224,22 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.35
     fx: []
-    sound:
-      clips:
-      - {fileID: 8300000, guid: 276a5a0b183d8984d874490c9b09353b, type: 3}
-      volume: 0.7
-      pitchMin: 0.94
-      pitchMax: 1.06
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: 276a5a0b183d8984d874490c9b09353b, type: 3}
+        volume: 0.7
+        pitchMin: 0.94
+        pitchMax: 1.06
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 1
+      step: 0
+      at: 0
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1
@@ -1243,6 +1260,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 1.5
+      aim: 0
     - name: Golpe
       poses:
       - part: {fileID: 8076603602689295315}
@@ -1257,6 +1275,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
+      aim: 0
     releases:
     - step: 0
       at: 1
@@ -1264,19 +1283,22 @@ MonoBehaviour:
       offset: {x: 0, y: 0}
     recover: 0.4
     fx: []
-    sound:
-      clips:
-      - {fileID: 8300000, guid: c63183ff2cba25544b6d2458ebe430c6, type: 3}
-      volume: 0.7
-      pitchMin: 0.94
-      pitchMax: 1.06
-      noRepeatLast: 1
-      priority: 1
-      positional: 0
-      rolloffStart: 10
-      rolloffEnd: 32
-      initialized: 1
-    soundMoment: 1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: c63183ff2cba25544b6d2458ebe430c6, type: 3}
+        volume: 0.7
+        pitchMin: 0.94
+        pitchMax: 1.06
+        noRepeatLast: 1
+        priority: 1
+        positional: 0
+        rolloffStart: 10
+        rolloffEnd: 32
+        initialized: 1
+      moment: 1
+      step: 0
+      at: 0
     legacyWindup: []
     legacyStrike: []
     legacyStrikeTime: -1

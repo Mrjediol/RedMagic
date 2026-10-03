@@ -258,11 +258,11 @@ export function buildRigExport(state, ctx = {}) {
       releases: (g.releases || []).map((r) => releaseOut(g, r)),
       recover: r5(Math.max(0.01, g.recover)),
       fx: (g.fx || []).map((f) => fxOut(g, f)).filter(Boolean),
-      // Its own sound: only when the document knows it (read from Unity, or set here). null = it has none.
-      ...(g.sound === undefined ? {} : { sound: g.sound && g.sound.clips.length ? {
-        clips: g.sound.clips.map((c) => clipOut(g, c)).filter(Boolean), volume: r5(g.sound.volume ?? 1), pitchMin: r5(g.sound.pitchMin ?? 1), pitchMax: r5(Math.max(g.sound.pitchMin ?? 1, g.sound.pitchMax ?? 1)),
-        step: Math.min(g.steps.length - 1, Math.max(0, Math.round(g.sound.step || 0))), at: r5(Math.min(1, Math.max(0, g.sound.at || 0))),
-      } : null }),
+      // Its own sounds: only when the document knows them (read from Unity, or set here). [] = it has none.
+      ...(g.sounds === undefined ? {} : { sounds: g.sounds.filter((a) => a.clips.length).map((a) => ({
+        clips: a.clips.map((c) => clipOut(g, c)).filter(Boolean), volume: r5(a.volume ?? 1), pitchMin: r5(a.pitchMin ?? 1), pitchMax: r5(Math.max(a.pitchMin ?? 1, a.pitchMax ?? 1)),
+        step: Math.min(g.steps.length - 1, Math.max(0, Math.round(a.step || 0))), at: r5(Math.min(1, Math.max(0, a.at || 0))),
+      })) }),
     }));
     if (Object.keys(artAssets).length) doc.artAssets = artAssets;
 
@@ -394,6 +394,9 @@ export function readRigGestures(doc, state, ctx = {}) {
           if (f) f.step = Math.max(0, Math.round(item.step || 0));
           return f;
         }).filter(Boolean),
+        // Its sounds, when the file brings them (absent = unknown: Unity keeps what it has).
+        ...(Array.isArray(g.sounds) ? { sounds: g.sounds.map((a) => ({ clips: [...(a.clips || [])], volume: a.volume ?? 1,
+          pitchMin: a.pitchMin ?? 1, pitchMax: a.pitchMax ?? 1, step: a.step || 0, at: a.at || 0 })) } : {}),
       };
     } else {
       gesture = {

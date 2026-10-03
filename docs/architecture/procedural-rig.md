@@ -158,15 +158,16 @@ idle gesture (no `AttackReleased`). Optional: an empty list does nothing. Enemie
 between attacks does not call it). JSON: `transitionGestures`. Web: the "🔁 Gesto de transición" checkbox on a
 gesture card + the "🔁 Entre ataques" fold.
 
-## A gesture's sound
-`RigGesture.sound` (`SoundCue`) plays at `soundMoment`: `Start`, `Release` (the first release) or **`At`** —
-its own instant, `soundStep` + `soundAt`, fired in `FireStep` like an effect. `At` is what the web writes:
-through the bridge a gesture carries `sound = { clips[], volume, pitchMin, pitchMax, step, at }`
-(`RigConfigExporter.GestureSound` → `/enemy` ▸ `sounds`; `RigBundleImporter.ReadGestureSound`: present =
-replaces, `null` = clears, absent = kept by name). Clips are project asset paths (`GET /sounds` lists them)
+## A gesture's sounds
+`RigGesture.sounds` — any number of `RigGestureSound` (`SoundCue` + `moment`): each plays at `Start`, `Release`
+(the first release) or **`At`** — its own instant, `step` + `at`, fired in `FireStep` like an effect. `At` is
+what the web writes: through the bridge a gesture carries `sounds = [{ clips[], volume, pitchMin, pitchMax, step,
+at }]` (`RigConfigExporter.GestureSounds` → `/enemy` ▸ `sounds`, a flat row per sound with its `gesture`;
+`RigBundleImporter.ReadGestureSounds`: present = replaces, `[]`/`null` = clears, absent = kept by name; each
+keeps the priority / rolloff of the cue that was in the same place). Clips are project asset paths (`GET /sounds` lists them)
 or files the bundle brings (`Audio/<file>`, a sound uploaded in the web): `RigBundleImporter.CopyBundleAudio`
 copies those into `Assets/Audio/Sfx/Enemies/<name>/` before the prefab is touched and reports each new one.
-A file export (`Exportar rig a JSON`) does not write it. A clip new to the game still has to be graded in
+A file export (`Exportar rig a JSON`) does not write them. A clip new to the game still has to be graded in
 the Sounds tab.
 
 ## Enemy integration

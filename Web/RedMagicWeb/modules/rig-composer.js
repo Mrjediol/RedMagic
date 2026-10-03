@@ -163,7 +163,7 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   // The test stage: what is flying, and the target the attack aims at (Visual space).
   let shots = [];
   let stageTarget = null;        // { x, y }; null = not placed yet (defaultTarget)
-  const stage = { fired: new Set(), frozen: null, sound: null };   // releases already fired this play; the target when it began
+  const stage = { fired: new Set(), frozen: null, sounds: [] };   // releases already fired this play; the target when it began
 
   // The timeline editor of the open gesture (the dock under the canvas + the selected thing's fields).
   const timeline = createGestureTimeline({
@@ -414,20 +414,23 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     stage.fired = new Set();
     const releases = G.timeline(gesture, lead()).releases;
     releases.forEach((r, n) => { if (r.time < head.t - 1e-6) stage.fired.add(n); });
-    // The gesture's own sound, at its instant — not again when the play resumes past it.
-    const a = gesture.sound;
+    // The gesture's own sounds, each at its instant — not again when the play resumes past it.
     const tl = G.timeline(gesture, lead());
-    const at = a && a.clips.length ? G.timeOf(tl, Math.min(a.step, tl.count - 1), a.at) : null;
-    stage.sound = at === null ? null : { at, fired: at < head.t - 1e-6 };
+    stage.sounds = (gesture.sounds || []).filter((a) => a.clips.length).map((a) => {
+      const at = G.timeOf(tl, Math.min(a.step, tl.count - 1), a.at);
+      return { sound: a, at, fired: at < head.t - 1e-6 };
+    });
   }
 
-  /** The sound of the gesture that is playing, when the playhead reaches it (one of its clips, at random). */
-  function playGestureSound(gesture) {
-    const s = stage.sound, a = gesture.sound;
-    if (!s || s.fired || head.t < s.at || !a) return;
-    s.fired = true;
-    playClip(a.clips[Math.floor(Math.random() * a.clips.length)],
-      { gain: a.volume ?? 1, rate: (a.pitchMin ?? 1) + Math.random() * ((a.pitchMax ?? 1) - (a.pitchMin ?? 1)) });
+  /** The sounds of the gesture that is playing, as the playhead reaches each (one of its clips, at random). */
+  function playGestureSounds() {
+    stage.sounds.forEach((s) => {
+      if (s.fired || head.t < s.at) return;
+      s.fired = true;
+      const a = s.sound;
+      playClip(a.clips[Math.floor(Math.random() * a.clips.length)],
+        { gain: a.volume ?? 1, rate: (a.pitchMin ?? 1) + Math.random() * ((a.pitchMax ?? 1) - (a.pitchMin ?? 1)) });
+    });
   }
 
   /** While it plays: each release the playhead has reached fires what the attack launches there. */
@@ -603,9 +606,9 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
     }
     if (head.playing) {
       const gesture = openGesture();
-      if (gesture) playGestureSound(gesture);   // before the step: 'start' sounds on the first frame
+      if (gesture) playGestureSounds();   // before the step: 'start' sounds on the first frame
       head.t += dt;
-      if (gesture) { fireReleases(gesture); playGestureSound(gesture); }
+      if (gesture) { fireReleases(gesture); playGestureSounds(); }
       if (!gesture || head.t >= G.gestureDuration(gesture, lead())) {   // done: the body back at rest, the playhead at the start
         const borrowed = head.lead !== null;
         stopHead();
@@ -2322,14 +2325,14 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
   }
 
   /**
-   * The bridge: each gesture's own sound as Unity has it (`[{ gesture, clips, volume, pitchMin, pitchMax,
-   * step, at }]`). A gesture not in the list has none (null): from here on the document knows, and exports it.
+   * The bridge: the gestures' own sounds as Unity has them (`[{ gesture, clips, volume, pitchMin, pitchMax,
+   * step, at }]`, a row per sound — a gesture may have several). A gesture not in the list has none ([]):
+   * from here on the document knows, and exports them.
    */
   function applyUnitySounds(list) {
-    const by = new Map((list || []).map((s) => [s.gesture, s]));
     (state.gestures || []).forEach((g) => {
-      const s = by.get(g.name);
-      g.sound = s ? { clips: [...(s.clips || [])], volume: s.volume ?? 1, pitchMin: s.pitchMin ?? 1, pitchMax: s.pitchMax ?? 1, step: s.step || 0, at: s.at || 0 } : null;
+      g.sounds = (list || []).filter((s) => s.gesture === g.name).map((s) => ({ clips: [...(s.clips || [])],
+        volume: s.volume ?? 1, pitchMin: s.pitchMin ?? 1, pitchMax: s.pitchMax ?? 1, step: s.step || 0, at: s.at || 0 }));
     });
     changed();
   }

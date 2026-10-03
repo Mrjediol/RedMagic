@@ -447,35 +447,42 @@ namespace RedMagic.Rigging.EditorTools
         }
 
         /// <summary>
-        /// El sonido de un gesto: sus clips (rutas del proyecto), volumen, tono y CUÁNDO suena (paso +
-        /// momento; 'Start' y 'Release' salen ya como su instante). Null si no tiene clips.
+        /// Los sonidos de un gesto: de cada uno sus clips (rutas del proyecto), volumen, tono y CUÁNDO suena
+        /// (paso + momento; 'Start' y 'Release' salen ya como su instante). Los que no tienen clips no salen.
         /// </summary>
-        public static JObject GestureSound(RigGesture g)
+        public static JArray GestureSounds(RigGesture g)
         {
-            if (g?.sound?.clips == null) return null;
-            var clips = new JArray();
-            foreach (var clip in g.sound.clips)
-                if (clip != null && AssetDatabase.Contains(clip)) clips.Add(AssetDatabase.GetAssetPath(clip));
-            if (clips.Count == 0) return null;
-
-            int step = 0;
-            float at = 0f;
-            if (g.soundMoment == GestureSoundMoment.At) { step = g.soundStep; at = g.soundAt; }
-            else if (g.soundMoment == GestureSoundMoment.Release)
+            var list = new JArray();
+            if (g?.sounds == null) return list;
+            foreach (var s in g.sounds)
             {
-                var releases = g.EffectiveReleases;
-                if (releases.Count > 0 && releases[0] != null) { step = releases[0].step; at = releases[0].at; }
+                if (s?.sound?.clips == null) continue;
+                var clips = new JArray();
+                foreach (var clip in s.sound.clips)
+                    if (clip != null && AssetDatabase.Contains(clip)) clips.Add(AssetDatabase.GetAssetPath(clip));
+                if (clips.Count == 0) continue;
+
+                int step = 0;
+                float at = 0f;
+                if (s.moment == GestureSoundMoment.At) { step = s.step; at = s.at; }
+                else if (s.moment == GestureSoundMoment.Release)
+                {
+                    var releases = g.EffectiveReleases;
+                    if (releases.Count > 0 && releases[0] != null) { step = releases[0].step; at = releases[0].at; }
+                }
+
+                list.Add(new JObject
+                {
+                    ["clips"] = clips,
+                    ["volume"] = RigConfigJson.Num(s.sound.volume),
+                    ["pitchMin"] = RigConfigJson.Num(s.sound.pitchMin),
+                    ["pitchMax"] = RigConfigJson.Num(s.sound.pitchMax),
+                    ["step"] = Mathf.Clamp(step, 0, Mathf.Max(0, (g.steps?.Count ?? 1) - 1)),
+                    ["at"] = RigConfigJson.Num(Mathf.Clamp01(at)),
+                });
             }
 
-            return new JObject
-            {
-                ["clips"] = clips,
-                ["volume"] = RigConfigJson.Num(g.sound.volume),
-                ["pitchMin"] = RigConfigJson.Num(g.sound.pitchMin),
-                ["pitchMax"] = RigConfigJson.Num(g.sound.pitchMax),
-                ["step"] = Mathf.Clamp(step, 0, Mathf.Max(0, (g.steps?.Count ?? 1) - 1)),
-                ["at"] = RigConfigJson.Num(Mathf.Clamp01(at)),
-            };
+            return list;
         }
 
         /// <summary>Los efectos de un gesto (<c>fx[]</c>), cada uno con su paso y su momento.</summary>

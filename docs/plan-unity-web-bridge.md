@@ -56,7 +56,7 @@ attack and gesture loaded, sound included; saving in the web writes it into Unit
 | Web document from a rig-config (body) | — | **missing**: today the body only comes from the web library record |
 | The focused tab | `enemy-studio.js ▸ show('focus')`, `rig-composer.js ▸ setFocusMode / linkLibraryEntry` | done — picks an enemy from the library |
 | Attack catalog (types + fields, by reflection) | `BossCatalogExporter` → `boss-catalog.js`; import: `BossConfigImporter`, `EnemyDeckImporter` | done one way (web → asset); **asset → card JSON missing** |
-| Gesture sound | `RigGesture.sound` (`SoundCue`) + `soundMoment`; not in rig-config, not in the web | Unity-only today |
+| Gesture sounds | `RigGesture.sounds` (list of `RigGestureSound`); not in the file rig-config | Edited in the web, travel through the bridge (`gestures[].sounds`) |
 | Inspector hooks | `EnemyStatsEditor` (`[CustomEditor(typeof(EnemyStats))]`), `BossDefinitionEditor` (BossController); `ProceduralRig` has no custom editor | — |
 | Web hosting | static server the user starts (`npx serve Web/RedMagicWeb`); the library is IndexedDB = **per origin** | — |
 | Unity CLI | already listens on port 7800 | pick another port |

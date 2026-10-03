@@ -350,7 +350,7 @@ Con la web servida (`npx serve Web/RedMagicWeb`) y Unity abierto:
    ataque de la baraja. También: `ProceduralRig ▸ ⋮ ▸ Editar gestos y ataques en la web`, y Biblioteca
    Jere ▸ Enemies ▸ "Editar en la web". En un jefe por partes el botón está en su **BossController** (sólo gestos).
 2. Se abre el navegador en 🎬 *Gestos y ataques* con ese enemigo: sus gestos, sus ataques con los números
-   que tienen los assets, y el sonido de cada gesto (suena al pulsar ▶ Probar). El cuerpo es el de tu
+   que tienen los assets, y los sonidos de cada gesto (suenan al pulsar ▶ Probar). El cuerpo es el de tu
    biblioteca si el enemigo se hizo en la web; si no, se lee de Unity (sólo para verlo y posarlo).
 3. **💾 Guardar en Unity** escribe gestos, sprites por estado, ataques y defensas en el prefab y en los
    mismos assets de ataque. El informe del import sale en el propio panel.
@@ -360,8 +360,9 @@ Con la web servida (`npx serve Web/RedMagicWeb`) y Unity abierto:
 - La dirección de la web se cambia en **Biblioteca Jere, abajo a la derecha ("Web")**; por defecto
   `http://localhost:3000`. Si no hay nada ahí, Unity te da el comando para arrancarla.
 - No hay claves ni nada que configurar. Si abres la web a mano (sin el botón), el puente simplemente no está.
-- El **sonido de un gesto** se edita en su pista 🔊 de la línea de tiempo (clip, variantes, volumen, tono y el
-  instante en que suena, arrastrándolo). Un clip que no sonaba antes en el juego se sigue puntuando en Unity
+- Los **sonidos de un gesto** se editan en sus pistas 🔊 de la línea de tiempo, una por sonido (clip, variantes,
+  volumen, tono y el instante en que suena, arrastrándolo). "🔊 Sonido" (barra de la línea de tiempo) o
+  "＋ Otro sonido" (panel del sonido) añaden otro en el instante del cursor; Ctrl+D duplica el elegido. Un clip que no sonaba antes en el juego se sigue puntuando en Unity
   (Biblioteca Jere ▸ Sounds).
 - **Sonidos propios**: en el panel del sonido, "⬆ Subir archivo…" (wav / ogg / mp3) lo guarda en la biblioteca
   (📚 ▸ Sonidos, donde también hay "⬆ Subir sonidos…") y lo usa; al guardar en Unity o exportar el .zip el

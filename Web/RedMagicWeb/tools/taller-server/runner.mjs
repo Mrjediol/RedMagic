@@ -254,38 +254,39 @@ export class Runner {
     }
   }
 
+  // In English: it is what Claude reads. The user's own words (task text, notes, replies) go in as written.
   _prompt(phase, task, step) {
     const lines = [
-      'Tarea lanzada desde la web del proyecto (pestaña 📋 Tareas, cola del servidor del taller).',
-      'Trabajas sin supervisión: no puedes hacer preguntas. Si algo no está claro, toma la decisión razonable y apúntala en el informe final.',
-      'No edites docs/tareas/todo.json: el servidor guarda tu informe en la tarea.',
+      'Task launched from the project web (📋 Tareas tab, taller server queue).',
+      'You work unattended: you cannot ask questions. If something is unclear, make the reasonable decision and note it in the final report.',
+      'Do not edit docs/tareas/todo.json: the server stores your report in the task.',
       '',
-      `Fase: ${phase.name}${phase.tag ? ` (${phase.tag})` : ''}`,
-      `Tarea: ${task.text}`,
+      `Phase: ${phase.name}${phase.tag ? ` (${phase.tag})` : ''}`,
+      `Task: ${task.text}`,
     ];
-    if (task.note) lines.push(`Descripción: ${task.note}`);
-    if (task.doc) lines.push(`Documento de la tarea (léelo primero: estado, instrucciones y lo ya hecho): ${task.doc}`);
+    if (task.note) lines.push(`Description: ${task.note}`);
+    if (task.doc) lines.push(`Task document (read it first: state, instructions and what is already done): ${task.doc}`);
     if (task.steps?.length) {
-      lines.push('', 'Pasos:');
-      task.steps.forEach((s, i) => lines.push(`${i + 1}. ${s.done ? '[hecho] ' : ''}${s.text}${s.result?.text ? `\n   Resultado anterior: ${s.result.text.slice(0, 600)}` : ''}`));
+      lines.push('', 'Steps:');
+      task.steps.forEach((s, i) => lines.push(`${i + 1}. ${s.done ? '[done] ' : ''}${s.text}${s.result?.text ? `\n   Previous result: ${s.result.text.slice(0, 600)}` : ''}`));
     }
     if (step) {
       const n = task.steps.indexOf(step) + 1;
-      lines.push('', `Haz SOLO el paso ${n}: ${step.text}`);
+      lines.push('', `Do ONLY step ${n}: ${step.text}`);
     } else if (task.steps?.length) {
-      lines.push('', 'Haz los pasos que no están hechos, en orden.');
+      lines.push('', 'Do the steps that are not done, in order.');
     }
-    if (task.prompt) lines.push('', 'Instrucciones:', task.prompt);
-    if (task.needs?.length) lines.push('', `Ya están abiertos: ${task.needs.map((n) => (n === 'unity' ? 'Unity (editor del proyecto)' : 'ComfyUI')).join(', ')}.`);
+    if (task.prompt) lines.push('', 'Instructions:', task.prompt);
+    if (task.needs?.length) lines.push('', `Already open: ${task.needs.map((n) => (n === 'unity' ? 'Unity (the project editor)' : 'ComfyUI')).join(', ')}.`);
     lines.push('',
-      'Al acabar: compila y haz commit como dice CLAUDE.md; si la tarea tiene documento, actualízalo con el estado y lo que falta.',
-      'Tu ÚLTIMO mensaje es el informe que el usuario leerá en la web, bajo la tarea: qué has hecho, conclusiones, decisiones tomadas, dónde está cada cosa y una lista corta de qué probar. En español, conciso, como cuando hablamos en la terminal.');
+      'When done: compile and commit as CLAUDE.md says; if the task has a document, update it with the state and what is left.',
+      'Your LAST message is the report the user reads on the web, under the task: what you did, conclusions, decisions taken, where each thing is and a short list of what to test. Write it in Spanish, concise, as in the terminal.');
     return lines.join('\n');
   }
 
   _followUpPrompt(task, reply) {
-    return [`Respuesta del usuario desde la web (📋 Tareas) sobre la tarea "${task.text}":`, '', reply, '',
-      'Sigues sin supervisión. Al acabar, commit como dice CLAUDE.md y tu último mensaje es el informe para la web.'].join('\n');
+    return [`The user's reply from the web (📋 Tareas) about the task "${task.text}":`, '', reply, '',
+      'You are still unattended. When done, commit as CLAUDE.md says; your last message is the report for the web (in Spanish).'].join('\n');
   }
 
   _kill(child) {

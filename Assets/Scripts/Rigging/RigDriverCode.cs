@@ -1004,6 +1004,8 @@ namespace RedMagic.Rigging
                                         pose.scale.y * (1f + data.swayScale.y * s), pose.scale.z);
                 if (i == _aimIndex) angle += AimRotation();
                 if (rider) scale.y *= rig.RiderScaleY(_unfold);
+                // El cuello es una parte más (make-enemy): se plegaría arriba y esta línea lo desplegaría.
+                if (rig.CanFold && t == rig.stretchPart) scale.y *= stretch;
 
                 var position = pose.position + (Vector3)(data.swayMove * s)
                              + ProceduralRig.PivotCorrection(data.pivot, pose.angle, pose.scale, angle, scale);

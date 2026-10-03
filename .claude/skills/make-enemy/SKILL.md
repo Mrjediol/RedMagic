@@ -26,6 +26,15 @@ batch** (`contact-sheet.mjs`), never at single full-size images. Trust the measu
   another."* Describe ONE shape per template slot and nothing more (extra chunks = extra islands with no slot).
   Ground enemy: the `Lower` slot is one piece resting on the floor (a bottom snowball, boots fused into one
   armored skirt, an ice slab) — say "the lower part rests flat on the floor". Reference: ShroomShaman.
+- **One depth per part (never skip):** a part is drawn whole in front of or whole behind each neighbour — the rig
+  has one sorting order per part. Never design a part that goes INTO another (a neck in a pot's mouth, a body in a
+  cup, an arm through a ring): it would have to be in front of the back rim and behind the front one. BloomSentry
+  (2026-10-03, a stem in a flower pot) failed exactly there.
+- **foldingSentry:** the Base is a CLOSED solid seen from the side — a rock, a stump, a crate with its lid on, a
+  mound — never a pot / vase / cup / well with a visible opening. Say *"the stem stands behind the base, its foot
+  hidden behind the base's top edge"*. Draw order is fixed: Stem behind, Head, Base in front (asleep, the stem shrinks
+  to its foot behind the base and the head rests on the base). If an already approved design has an open container,
+  close it in the Base edit of step 2: *"…the opening of the pot is covered by a flat stone lid, a closed top"*.
 
 ## 1 · Base (stop: the user picks)
 `node claude-workflow.mjs run --no-cut --size 1024x1024 --seed N --name base_<x> --prompt "A 2D game enemy
@@ -49,6 +58,11 @@ Edit the PART (`--ref` its raw, `--keep-size`): *"Change only the <eyes> of <ima
 else identical… No glow, no halo outside the black outline."* Name: `<e>_<Slot>__<state>`
 (`asleep | awake | alert | attacking | hurt | dead | gesture_<Name>`).
 Measure: `node compare-variant.mjs <part> <variants…>` — `outlinePct` high = it moved, redo with another seed.
+A state may be drawn SMALLER than its part (a mouth closed, leaves folded shut) but never bigger: the part's
+silhouette is its outer limit (finish-parts cuts the rest and eats the state's own white backdrop). For a closed
+state say *"the same outline as image1, only the opening is closed"*, not "a closed bud" (a new, rounder shape).
+A folding rider's `asleep` sprite IS the folded look: make-enemy then turns off the rig's squash
+(`foldedRiderScaleY` = 1) — do not set it back in the brief.
 
 ## 4 · Finish (stop the first time: the user checks the parts)
 Per approved image: `node claude-workflow.mjs finish --ref "claude/<e>_<Slot>_raw_0000N_.png [output]"
@@ -56,6 +70,7 @@ Per approved image: `node claude-workflow.mjs finish --ref "claude/<e>_<Slot>_ra
 Lower,CastArm,Torso,Head,OffArm` → `claude/<e>/final/*.png` + `_assembled.png`, `_parts.png`.
 It guarantees: same canvas, a state has its part's silhouette and differs only where the change is
 dense, one island per part, white fringe eaten, alpha snapped. Read its ✓/✗ lines.
+Look at `_parts.png` on magenta: a white rim around any state = redo that state (it cannot pass to Unity).
 
 ## 5 · Brief → Unity
 Write `enemies/<Name>.json` (copy `ShroomShaman.json`): template, parts folder, `height` (world units,

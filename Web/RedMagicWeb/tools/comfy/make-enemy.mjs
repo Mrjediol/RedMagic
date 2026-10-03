@@ -193,6 +193,9 @@ b = bounds();
 state.collider.size = { x: r2(b.w * (brief.colliderFill?.[0] ?? 0.6)), y: r2(b.h * (brief.colliderFill?.[1] ?? 0.85)) };
 state.collider.offset = { x: 0, y: 0 };
 state.rootScale = Math.round((brief.height / b.h) * 1e4) / 1e4;
+// A folding body squashes its riders while asleep (foldedRiderScaleY) — a stand-in for art that has no
+// asleep drawing. A rider WITH an asleep sprite is already drawn folded: squashing it only deforms it.
+if (state.parts.some((p) => p.slot?.roles?.includes('rider') && p.variants?.asleep)) state.rig.foldedRiderScaleY = 1;
 Object.assign(state.rig, brief.rig || {});
 
 // ============================================================ effects (VFX Lab presets, baked here)

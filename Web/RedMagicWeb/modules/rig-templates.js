@@ -138,7 +138,7 @@ export const RIG_TEMPLATES = [
         sway: { move: [0, 0.04], rotate: 1.5, speed: 1.3 },
         match: ['head', 'cabeza', 'eye', 'ojo', 'flower', 'flor', 'awake'] },
       { id: 'base', name: 'Base', breaksOnDeath: false,
-        label: 'Base', hint: 'Fija en el suelo, delante de todo: plegado se lee como una caja cerrada. No sale despedida al morir.',
+        label: 'Base', hint: 'Fija en el suelo, delante de todo: plegado se lee como una caja cerrada. Un sólido cerrado (roca, tocón, caja con tapa), nunca una maceta con boca: el tallo va entero detrás. No sale despedida al morir.',
         pivot: [0.5, 1], at: [0, -2], size: [2.4, 1],
         sway: { move: [0, 0], rotate: 0 },
         match: ['base', 'pot', 'maceta', 'box', 'caja', 'stand', 'pie'] },

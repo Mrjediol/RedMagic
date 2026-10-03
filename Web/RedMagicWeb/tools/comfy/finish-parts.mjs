@@ -9,8 +9,8 @@
 //
 //   · colour  = the image's own `_up`, with the white backdrop taken out of the soft edge pixels
 //   · alpha   = the PART's cut, also for its states (`Head__asleep` uses Head's): a state can never
-//               have a different silhouette than its part. Snapped: ≥ 250 → 255, ≤ 8 → 0
-//               (the cutter leaves the inside of a piece at 254).
+//               be BIGGER than its part. Snapped: ≥ 250 → 255, ≤ 8 → 0 (the cutter leaves the inside
+//               of a piece at 254). A state drawn smaller (a mouth closed) loses its own white backdrop.
 //   · checks  = canvas sizes equal, one island per part (loose crumbs are deleted and counted),
 //               nothing touching the canvas edge, state vs part: how much changed.
 //   Writes <folder>/final/<Name>.png, plus _assembled.png (the parts stacked, on a dark backdrop) and
@@ -190,9 +190,21 @@ for (const part of parts) {
           if (x < cx0) cx0 = x; if (x > cx1) cx1 = x; if (y < cy0) cy0 = y; if (y > cy1) cy1 = y;
         }
       }
+      // The state may be drawn SMALLER than its part (a mouth closed, leaves folded in): inside the part's
+      // silhouette that leaves the state's white backdrop, a white rim in the game. Eat it like the part's
+      // own fringe, on the composed colours (the part's rim is already clean, so only the state's goes).
+      const own = alpha.slice();
+      const shrunk = eatWhiteFringe(own, image.data, w, h);
+      keepMainIsland(own, w, h);
+      for (let p = 0; p < w * h; p++) {
+        if (own[p] === alpha[p]) continue;
+        const i = p * 4, k = own[p] / 255;
+        image.data[i + 3] = own[p];
+        if (own[p]) for (let c = 0; c < 3; c++) image.data[i + c] = Math.max(0, Math.min(255, (up.d[i + c] - (1 - k) * 255) / k));
+      }
       ctx.putImageData(image, 0, 0);
       await save(path.join(out, `${name}.png`), canvas);
-      Object.assign(line, { sameSilhouetteAs: part, drawnDifferent: `${(100 * raw / inside).toFixed(1)}%`, keptAsTheState: `${(100 * changed / inside).toFixed(1)}%`,
+      Object.assign(line, { sameSilhouetteAs: part, whiteBackdropEaten: shrunk, drawnDifferent: `${(100 * raw / inside).toFixed(1)}%`, keptAsTheState: `${(100 * changed / inside).toFixed(1)}%`,
         where: changed ? `${cx1 - cx0 + 1}x${cy1 - cy0 + 1} at ${cx0},${cy0}` : 'nothing', ...(changed ? {} : { problem: 'no change survived: the state is the same as its part' }) });
     }
     report.push(line);

@@ -1,0 +1,37 @@
+{
+  "title": "3 × enemigo: enemigo tipo slime de hielo",
+  "request": "enemigo tipo slime de hielo",
+  "kind": "enemy",
+  "count": 3,
+  "mode": "one",
+  "createdAt": "2026-10-03T20:23:55.150Z",
+  "taskIds": [
+    "l584zvh"
+  ],
+  "items": [
+    {
+      "id": "1",
+      "kind": "enemy",
+      "name": "FrostSlimeKing",
+      "note": "Slime azul pálido enfadado con corona de cristal de hielo, puños de baba cian y charco plano abajo",
+      "status": "pending",
+      "image": "comfy:claude/des_iceslime_1_raw_00003_.png"
+    },
+    {
+      "id": "2",
+      "kind": "enemy",
+      "name": "GlacierOoze",
+      "note": "Gota gelatinosa azul marino con placa de hielo, máscara de copo de nieve y base de bloque de hielo dentado",
+      "status": "pending",
+      "image": "comfy:claude/des_iceslime_2_raw_00002_.png"
+    },
+    {
+      "id": "3",
+      "kind": "enemy",
+      "name": "MintSnowSlime",
+      "note": "Slime pequeño y simpático verde menta con gotas de carámbano, puños y base de bola de nieve",
+      "status": "pending",
+      "image": "comfy:claude/des_iceslime_3_raw_00003_.png"
+    }
+  ]
+}

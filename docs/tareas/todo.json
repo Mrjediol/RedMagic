@@ -1,0 +1,164 @@
+{
+  "v": 1,
+  "updated": "2026-10-03T15:50:00.045Z",
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Contenido del prototipo",
+      "tag": "Corto plazo",
+      "tasks": [
+        {
+          "id": "t1",
+          "text": "15 enemigos: 5 por zona en las 3 primeras zonas",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "t2",
+          "text": "15 mapas: 5 por zona (4 normales y 1 de boss)",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "t3",
+          "text": "Probar un nuevo método para obtener mapas",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "t4",
+          "text": "4 full sets: hielo, oro y 2 más",
+          "note": "Faltan por decidir los 2 últimos",
+          "done": false
+        },
+        {
+          "id": "t5",
+          "text": "5 armas base para el jugador",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "t6",
+          "text": "Probar nuevos sistemas, integración y optimización de Claude",
+          "note": "",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Interfaz del player en partida",
+      "tag": "Pronto",
+      "tasks": [
+        {
+          "id": "t7",
+          "text": "Diseñar e implementar la interfaz del player mientras juega (HUD)",
+          "note": "Los menús ya están hechos",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Sonidos y efectos",
+      "tag": "Después",
+      "tasks": [
+        {
+          "id": "t8",
+          "text": "Añadir sonidos y efectos a todo lo anterior",
+          "note": "Enemigos, mapas, sets y armas",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "Balanceo básico",
+      "tag": "Después",
+      "tasks": [
+        {
+          "id": "t9",
+          "text": "Primer balanceo para el prototipo",
+          "note": "Números, daños, pasivas, upgrades, vidas y coste en tiendas",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "Bugs y rendimiento",
+      "tag": "Después",
+      "tasks": [
+        {
+          "id": "t10",
+          "text": "Arreglar bugs, como los atascamientos de movimiento",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "t11",
+          "text": "Comprobar la optimización de FPS",
+          "note": "Ya conseguido",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "p6",
+      "name": "Rework del player",
+      "tag": "Al final · la más importante",
+      "tasks": [
+        {
+          "id": "t12",
+          "text": "Buen diseño y buenas animaciones, que se sienta fluido y divertido",
+          "note": "Solo cuando el prototipo esté balanceado y listo",
+          "done": false
+        },
+        {
+          "id": "t13",
+          "text": "Que pueda hacer parry",
+          "note": "",
+          "done": false
+        },
+        {
+          "id": "t14",
+          "text": "Idea: las armas pasan a ser poderes",
+          "note": "Mete la mano en un pozo, siente una energía fluyendo y la mano cambia de color. Cada poder tiene una mano distinta, con efectos y animaciones personalizadas.",
+          "done": false
+        },
+        {
+          "id": "t15",
+          "text": "Idea: la otra mano lleva el cristal del parry",
+          "note": "Con mejoras que también cambien su aspecto visual",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "p7",
+      "name": "Cinemática inicial",
+      "tag": "Tras el prototipo",
+      "tasks": [
+        {
+          "id": "t16",
+          "text": "Hacer pruebas de la cinemática inicial",
+          "note": "Cuando todo el prototipo esté acabado",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "p8",
+      "name": "Ideas sueltas",
+      "tag": "Pendiente",
+      "tasks": [
+        {
+          "id": "t17",
+          "text": "Buscar excusas temáticas para la mecánica de waves",
+          "note": "",
+          "done": false
+        }
+      ]
+    }
+  ]
+}

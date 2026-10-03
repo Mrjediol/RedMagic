@@ -665,3 +665,46 @@ details > summary:hover{color:var(--text);}
 .libTools input[type=search]{width:320px;background:var(--well);border:1px solid var(--border);border-bottom-color:var(--border-lit);color:var(--text);border-radius:4px;padding:7px 9px;font-size:14px;font-family:var(--font-ui);box-shadow:inset 0 2px 4px rgba(0,0,0,.35);}
 .libTools select{width:auto;padding:7px 9px;font-size:14px;}
 .libTools button{margin:0;}
+
+/* ---------------- 📋 Tareas (modules/todo-panel.js) ---------------- */
+#todoPanel{flex:1;min-width:0;padding:18px 24px 40px;overflow-y:auto;}
+#todoPanel > *{max-width:860px;}
+.todoMeter{margin-top:14px;display:grid;gap:7px;}
+.todoMeterRow{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--muted);}
+.todoMeterRow b{color:var(--text);font-weight:600;}
+.todoBar{height:7px;background:var(--well);border:1px solid var(--border);border-radius:4px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.4);}
+.todoBar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent-deep),var(--accent));transition:width .2s ease;}
+.todoToolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;}
+.todoToolbar .tabSpacer{flex:1;}
+.todoPhase{margin-top:22px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 16px 14px;}
+.todoPhaseHead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 0 8px;border-bottom:1px solid var(--border);}
+.todoPhaseName{background:none;border:0;box-shadow:none;padding:0;font-size:18px;font-weight:700;color:var(--accent2);text-align:left;}
+.todoPhaseName:hover{background:none;color:var(--text);}
+.todoTag{background:var(--selected);border:1px solid var(--border);border-radius:4px;padding:1px 9px;font-size:13px;color:var(--text);}
+.todoTag.empty{background:none;border-style:dashed;color:var(--faint);}
+.todoCount{margin-left:auto;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;}
+.todoTools{display:flex;gap:3px;opacity:.5;}
+.todoTools.always{opacity:1;}
+.todoTask:hover .todoTools,.todoTask:focus-within .todoTools{opacity:1;}
+.todoTasks{list-style:none;margin:0;padding:0;}
+.todoTask{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:12px;align-items:start;padding:9px 0;border-bottom:1px solid var(--border);}
+.todoTask:last-child{border-bottom:0;}
+.todoCheck{width:24px;height:24px;padding:0;margin-top:1px;border-radius:6px;background:var(--well);box-shadow:inset 0 1px 2px rgba(0,0,0,.45);color:transparent;font-size:15px;line-height:1;}
+.todoCheck:hover{border-color:var(--accent);background:var(--well);}
+.todoCheck[aria-pressed="true"]{background:var(--accent-deep);border-color:var(--accent);color:var(--on-accent);}
+.todoBody{min-width:0;}
+.todoText,.todoNote{display:block;width:100%;background:none;border:0;box-shadow:none;padding:0;text-align:left;}
+.todoText:hover,.todoNote:hover{background:none;}
+.todoText{font-size:15px;line-height:1.4;color:var(--text);}
+.todoTask.done .todoText{text-decoration:line-through;color:var(--faint);}
+.todoNote{font-size:13.5px;color:var(--muted);margin-top:2px;line-height:1.4;}
+.todoNote.add{opacity:0;font-size:13px;}
+.todoTask:hover .todoNote.add,.todoTask:focus-within .todoNote.add{opacity:1;}
+.todoEdit{width:100%;font:inherit;background:var(--well);color:var(--text);border:1px solid var(--accent);border-radius:5px;padding:6px 8px;box-shadow:var(--glow);}
+textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
+.todoPhaseEdit{flex:1;min-width:160px;font-size:17px;font-weight:700;}
+.todoTagEdit{width:200px;font-size:13px;}
+.todoEmpty{padding:12px 0 4px;color:var(--faint);font-size:14px;}
+.todoAdd{display:flex;gap:8px;margin-top:12px;}
+.todoAdd input{flex:1;min-width:0;background:var(--well);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:7px 10px;font:inherit;box-shadow:inset 0 1px 2px rgba(0,0,0,.4);}
+.todoAddPhase{margin-top:22px;}

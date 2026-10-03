@@ -25,6 +25,7 @@ import { pickAndSaveSounds, soundArrayBuffer } from './modules/sound-library.js'
 import { decodeAudio, playBuffer } from './modules/vfx-stage.js';
 import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail, exportAllRecords, restoreRecords } from './modules/enemy-library.js';
 import { initShellTools } from './modules/shell-tools.js';
+import { initTodoPanel } from './modules/todo-panel.js';
 import { PRESETS as VFX_PRESETS, FAMILIES as VFX_FAMILIES } from './modules/vfx-presets.js';
 import { renderLibraryCards } from './modules/library-panel.js';
 import { buildCombinedBundle } from './modules/enemy-bundle.js';
@@ -108,6 +109,7 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     if (btn.dataset.tab === 'boss' && bossCreator) bossCreator.refreshLibraries();
     if (btn.dataset.tab === 'vfx' && vfxLab) vfxLab.onShow();
     if (btn.dataset.tab === 'library') renderLibraryTab();
+    if (btn.dataset.tab === 'todo') todoPanel?.onShow();
     if (btn.dataset.tab === 'map') { renderMapLibraryLists(); mapView.frameToFit(); }
   });
 }
@@ -2174,6 +2176,13 @@ renderMapInstancesList();
 
 // ============================================================ shell tools (Ctrl+S, Ctrl+K, Space, unsaved changes)
 
+const todoPanel = initTodoPanel({
+  root: document.getElementById('todoRoot'),
+  statusEl: document.getElementById('todoStatus'),
+  toolbar: document.getElementById('todoToolbar'),
+  toast: (text) => shell?.toast(text),
+});
+
 const tabButtonOf = (tab) => document.querySelector(`.tabBtn[data-tab="${tab}"]`);
 const openTabById = (tab) => { const btn = tabButtonOf(tab); if (btn && !btn.disabled) btn.click(); };
 const clickSave = (btn) => { if (!btn || btn.disabled) return false; btn.click(); return undefined; };
@@ -2201,6 +2210,7 @@ shell = initShellTools({
     map: () => clickSave(document.getElementById('mapSaveMapBtn')),
     enemy: async () => ((await enemyCreator.persistLinked()) ? undefined : 'Enemy Creator guarda al exportar: usa "⬇ Exportar".'),
     fx: () => 'Proyectil/VFX guarda al exportar: usa "⬇ Exportar".',
+    todo: async () => { await todoPanel.flush(); return 'La lista se guarda sola; ahora mismo, guardada.'; },
   },
   playActions: {
     vfx: () => vfxLab.togglePlay(),

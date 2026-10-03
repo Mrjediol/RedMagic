@@ -35,6 +35,7 @@
   <button class="tabBtn" data-tab="vfx" title="Efectos hechos con parámetros, con sus sonidos">✨ VFX Lab</button>
   <button class="tabBtn" data-tab="boss" title="Un jefe con sus ataques y fases">👑 Boss Creator</button>
   <button class="tabBtn" data-tab="library" title="Todo lo guardado en este navegador">📚 Biblioteca</button>
+  <button class="tabBtn" data-tab="todo" title="Lo que falta por hacer, por fases: se guarda en docs/tareas/todo.json para que Claude lo lea">📋 Tareas</button>
   <span class="tabSep"></span>
   <button class="tabBtn active" data-tab="sprites" title="Cortar una hoja de sprites en animaciones">🍄 Sprites</button>
   <button class="tabBtn" data-tab="enemy" title="Comportamiento de un enemigo de hoja de sprites">🧩 Enemy Creator</button>
@@ -333,6 +334,24 @@
     <div id="vfxStatus" class="hint"></div>
     <div id="vfxPreviewRoot"></div>
     <div id="vfxListRoot"></div>
+  </div>
+</div>
+
+<div id="tab-todo" class="tabPanel" hidden>
+  <div id="todoPanel">
+    <h1>📋 Tareas</h1>
+    <p class="hint">
+      Lo que falta por hacer, por fases. Enlaza <code>docs/tareas/todo.json</code> y la lista queda en el repo:
+      Claude la lee para saber qué hay pendiente y la tabla se recarga si él la cambia.
+    </p>
+    <div id="todoMeter" class="todoMeter" aria-label="Progreso">
+      <div class="todoMeterRow"><span><b data-m="done">0</b> de <b data-m="total">0</b> hechas</span><b data-m="pct">0%</b></div>
+      <div class="todoBar"><i data-m="fill"></i></div>
+    </div>
+    <div id="todoToolbar" class="todoToolbar"></div>
+    <div id="todoRoot"></div>
+    <form id="todoPhaseForm" class="todoAdd todoAddPhase"><input id="todoNewPhase" type="text" placeholder="Nueva fase" aria-label="Nueva fase" autocomplete="off"><button type="submit">Añadir fase</button></form>
+    <p id="todoStatus" class="efHint"></p>
   </div>
 </div>
 

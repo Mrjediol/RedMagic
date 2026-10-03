@@ -1,0 +1,48 @@
+{
+  "name": "BloomSentry",
+  "request": "Torreta vegetal en maceta: duerme con la cabeza cerrada apoyada en la maceta de piedra y, al detectar, estira el cuello y dispara orbes verdes.",
+  "template": "foldingSentry",
+  "parts": "claude/bloom/final",
+  "height": 4,
+  "slots": {
+    "head": { "pivot": [0.5, 0.5], "muzzle": [0.62, 0.42] }
+  },
+  "tuning": {
+    "maxHealth": 40,
+    "attackDamage": 8,
+    "attackCooldown": 2,
+    "projectileTint": "#ffffffff",
+    "builtInAttack": false
+  },
+  "effects": {
+    "orb": { "name": "BloomOrb", "preset": "poisonGlob", "params": { "core": "#e8ffd0", "glow": "#2fe03a", "accent": "#9cff6a" } },
+    "charge": { "name": "BloomCharge", "preset": "chargeVortex", "params": { "core": "#ffffff", "glow": "#2fe03a", "accent": "#9cff6a" } },
+    "flash": { "name": "BloomFlash", "preset": "hitSpark", "params": { "core": "#ffffff", "glow": "#2fe03a", "accent": "#9cff6a" } }
+  },
+  "projectile": { "effect": "orb", "speed": 7, "lifetime": 2.5, "size": { "x": 0.6, "y": 0.6 } },
+  "attacks": [
+    {
+      "id": "OrbShot",
+      "type": "ReleaseAttack",
+      "common": { "displayName": "Orbe verde", "telegraph": 0.6, "recovery": 0.4, "damage": 8, "gesture": "Nod", "cooldownInAttacks": 0, "weight": 1, "accent": "#ffffffff" },
+      "shots": [ { "kind": "Projectile", "aim": "Frozen", "effect": "orb", "worldWidth": 0.6, "projectile": { "speed": 7, "lifetime": 2.5, "size": { "x": 0.6, "y": 0.6 } } } ],
+      "deck": { "minRange": 0, "maxRange": 0 }
+    },
+    {
+      "id": "OrbFan",
+      "type": "BulletHellAttack",
+      "effect": "orb",
+      "worldWidth": 0.5,
+      "common": { "displayName": "Abanico de orbes", "telegraph": 0.8, "recovery": 0.8, "damage": 6, "gesture": "Nod", "cooldownInAttacks": 1 },
+      "params": { "pattern": "Fan", "volleys": 1, "bulletsPerVolley": 3, "arcDegrees": 40, "aimAtPlayer": true, "spawnRadius": 0.15, "projectile": { "speed": 6, "lifetime": 2.5 }, "fromCastPoint": true },
+      "deck": { "minRange": 2, "maxRange": 9 }
+    }
+  ],
+  "rig": { "muzzleFlashSize": 0 },
+  "gestureFx": {
+    "Nod": [
+      { "effect": "charge", "step": 0, "at": 0, "loop": true, "untilStep": 1, "size": 1.0, "facing": "world" },
+      { "effect": "flash", "step": 1, "at": 1, "size": 1.2, "facing": "world" }
+    ]
+  }
+}

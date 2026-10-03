@@ -1,0 +1,22 @@
+{
+  "enemyName": "BloomOrb",
+  "kind": "projectile",
+  "animations": [
+    {
+      "name": "Move",
+      "fps": 12,
+      "loop": true,
+      "frameCount": 8,
+      "projectile": null
+    },
+    {
+      "name": "Impact",
+      "fps": 14,
+      "loop": false,
+      "frameCount": 7,
+      "projectile": null
+    }
+  ],
+  "projectiles": [],
+  "libraryId": "claude-bloomsentry-orb"
+}

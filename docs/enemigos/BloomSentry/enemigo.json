@@ -1,6 +1,6 @@
 {
   "name": "BloomSentry",
-  "estado": "montando",
+  "estado": "por-aprobar",
   "diseno": {
     "image": "docs/enemigos/BloomSentry/diseno.png",
     "source": "comfy:claude/base_bloom_raw_00001_.png",
@@ -19,5 +19,11 @@
     }
   ],
   "createdAt": "2026-10-03T20:21:04.876Z",
-  "tarea": "xmyi2w0"
+  "tarea": "xmyi2w0",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/BloomSentry.prefab",
+  "montaje": {
+    "fecha": "2026-10-03T21:34:39.644Z",
+    "resumen": "Montado con la plantilla foldingSentry: Base (maceta de piedra limpia, sin musgo), Stem y Head con sprites dormido/despierto. Dispara orbes verdes (OrbShot y OrbFan) con gesto Nod y efectos verdes propios. Faltan los 2 frames de transición del despertar (el rig solo admite dormido/despierto)."
+  },
+  "imagen": "docs/enemigos/BloomSentry/preview.png"
 }

@@ -1,0 +1,222 @@
+{
+  "kind": "enemy",
+  "enemyName": "BloomSentry",
+  "tier": "Basic",
+  "tuning": {
+    "archetype": "Static",
+    "staticAttack": "Ranged",
+    "maxHealth": 40,
+    "invulnerabilityDuration": 0,
+    "knockbackHorizontal": 6,
+    "knockbackVertical": 3,
+    "knockbackDuration": 0.18,
+    "knockbackResistance": 1,
+    "detectionRange": 8,
+    "loseInterestGrace": 1.5,
+    "attackRange": 7.5,
+    "personalSpace": 0,
+    "retreatReleaseFactor": 1.35,
+    "verticalTolerance": 4,
+    "moveSpeed": 2.5,
+    "retreatSpeed": 2.5,
+    "stopAtLedges": true,
+    "ledgeProbeDepth": 0.6,
+    "gravityScale": 3,
+    "sleepsUntilDetected": true,
+    "hoverOffset": 0.5,
+    "attackDamage": 8,
+    "attackCooldown": 2,
+    "attackKnockbackMultiplier": 1,
+    "attackReleaseFallback": 0.25,
+    "rootedWhileAttacking": true,
+    "meleeHitboxSize": {
+      "x": 1.2,
+      "y": 1
+    },
+    "meleeHitboxOffset": {
+      "x": 0.8,
+      "y": 0.5
+    },
+    "selfDestruct": false,
+    "explosionRadius": 1.7,
+    "explosionShake": 0.2,
+    "aimAtTarget": true,
+    "projectileTint": "#ffffffff",
+    "contactDamage": 0,
+    "contactDamageCooldown": 1,
+    "contactKnockbackMultiplier": 1,
+    "idleAnimSpeed": 1,
+    "moveAnimSpeed": 1,
+    "attackAnimSpeed": 1,
+    "hurtAnimSpeed": 1,
+    "deathAnimSpeed": 1,
+    "wakeAnimSpeed": 1,
+    "targetTag": "Player",
+    "hitLayers": "everything",
+    "obstacleLayers": [
+      "Ground",
+      "Platform"
+    ],
+    "projectile": {
+      "speed": 7,
+      "lifetime": 2.5,
+      "size": {
+        "x": 0.6,
+        "y": 0.6
+      },
+      "muzzleOffset": {
+        "x": 0.65,
+        "y": 0.1
+      },
+      "pierce": 0,
+      "homingTurnRate": 0,
+      "homingRange": 9,
+      "arcGravity": 0,
+      "impactRadius": 0,
+      "impactDamage": 0,
+      "faceDirection": true,
+      "facingAxis": "Right",
+      "aimMode": "Fixed",
+      "libraryId": "claude-bloomsentry-orb"
+    },
+    "attacks": [
+      {
+        "attack": "OrbShot",
+        "minRange": 0,
+        "maxRange": 0,
+        "targetHeight": "Any"
+      },
+      {
+        "attack": "OrbFan",
+        "minRange": 2,
+        "maxRange": 9,
+        "targetHeight": "Any"
+      }
+    ],
+    "builtInAttack": false,
+    "builtInWeight": 1
+  },
+  "attacks": {
+    "OrbShot": {
+      "type": "ReleaseAttack",
+      "displayName": "Orbe verde",
+      "accent": "#ffffffff",
+      "telegraph": 0.6,
+      "recovery": 0.4,
+      "weight": 1,
+      "cooldownInAttacks": 0,
+      "damage": 8,
+      "gesture": "Nod",
+      "params": {
+        "shots": [
+          {
+            "kind": "Projectile",
+            "aim": "Frozen",
+            "angle": 0,
+            "count": 5,
+            "arcDegrees": 50,
+            "spawnRadius": 0,
+            "projectile": {
+              "prefab": {
+                "art": "BloomOrb_Projectile"
+              },
+              "speed": 7,
+              "lifetime": 2.5,
+              "size": {
+                "x": 0.6,
+                "y": 0.6
+              },
+              "muzzleOffset": {
+                "x": 0.65,
+                "y": 0.1
+              },
+              "pierce": 0,
+              "homingTurnRate": 0,
+              "homingRange": 9,
+              "arcGravity": 0,
+              "impactRadius": 0,
+              "impactDamage": 0,
+              "faceDirection": false,
+              "facingAxis": "Right",
+              "aimMode": "Fixed"
+            },
+            "strikeSize": {
+              "x": 1.4,
+              "y": 1.2
+            },
+            "strikeOffset": {
+              "x": 1,
+              "y": 0
+            },
+            "damage": 0
+          }
+        ]
+      }
+    },
+    "OrbFan": {
+      "type": "BulletHellAttack",
+      "displayName": "Abanico de orbes",
+      "telegraph": 0.8,
+      "recovery": 0.8,
+      "cooldownInAttacks": 1,
+      "damage": 6,
+      "gesture": "Nod",
+      "params": {
+        "pattern": "Fan",
+        "projectile": {
+          "prefab": {
+            "art": "BloomOrb_Projectile"
+          },
+          "speed": 6,
+          "lifetime": 2.5,
+          "size": {
+            "x": 0.35,
+            "y": 0.35
+          },
+          "muzzleOffset": {
+            "x": 0.65,
+            "y": 0.1
+          },
+          "pierce": 0,
+          "homingTurnRate": 0,
+          "homingRange": 9,
+          "arcGravity": 0,
+          "impactRadius": 0,
+          "impactDamage": 0,
+          "faceDirection": false,
+          "facingAxis": "Right",
+          "aimMode": "Fixed"
+        },
+        "volleys": 1,
+        "bulletsPerVolley": 3,
+        "arcDegrees": 40,
+        "aimAtPlayer": true,
+        "fromCastPoint": true,
+        "spawnRadius": 0.15
+      }
+    }
+  },
+  "artAssets": {
+    "BloomOrb_Projectile": {
+      "kind": "projectile",
+      "folder": "Art/claude-bloomsentry-orb",
+      "libraryId": "claude-bloomsentry-orb",
+      "entryName": "BloomOrb",
+      "states": {
+        "Move": {
+          "folder": "Move",
+          "fps": 12,
+          "loop": true
+        },
+        "Impact": {
+          "folder": "Impact",
+          "fps": 14,
+          "loop": false
+        }
+      },
+      "worldWidth": 0.5,
+      "colliderScale": 0.7,
+      "faceTravelDirection": true
+    }
+  }
+}

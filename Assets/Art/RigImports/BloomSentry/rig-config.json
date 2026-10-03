@@ -1,0 +1,400 @@
+{
+  "kind": "enemy",
+  "driver": "code",
+  "name": "BloomSentry",
+  "pixelsPerUnit": 100,
+  "sprites": {
+    "Parts/Stem.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0
+      }
+    },
+    "Parts/Head.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Parts/Head__asleep.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Parts/Base.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0
+      }
+    }
+  },
+  "root": {
+    "scale": 0.2497
+  },
+  "collider": {
+    "type": "box",
+    "size": {
+      "x": 4.33,
+      "y": 13.62
+    },
+    "offset": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "corpse": {
+    "linger": 1.1,
+    "fadeDuration": 0.4
+  },
+  "visual": {
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "rotation": 0,
+    "scale": 1
+  },
+  "parts": [
+    {
+      "name": "Stem",
+      "parent": "",
+      "sprite": "Parts/Stem.png",
+      "sortingOrder": 1,
+      "position": {
+        "x": -0.81,
+        "y": -4.65
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0
+        },
+        "rotate": 0,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.6,
+        "phase": 0
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Head",
+      "parent": "",
+      "sprite": "Parts/Head.png",
+      "sortingOrder": 2,
+      "position": {
+        "x": 0.315,
+        "y": 5.18
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.1602
+        },
+        "rotate": 1.5,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.3,
+        "phase": 2.39996
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Base",
+      "parent": "",
+      "sprite": "Parts/Base.png",
+      "sortingOrder": 3,
+      "position": {
+        "x": -0.795,
+        "y": -8.01
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0
+        },
+        "rotate": 0,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 2.3,
+        "phase": 4.79992
+      },
+      "breaksOnDeath": false
+    },
+    {
+      "name": "Muzzle",
+      "parent": "Head",
+      "position": {
+        "x": 0.7908,
+        "y": 0.4528
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": false
+    }
+  ],
+  "rig": {
+    "hoverBob": {
+      "x": 0,
+      "y": 0
+    },
+    "hoverSpeed": 2.2,
+    "leanDegrees": 0,
+    "leanFullSpeed": 2.5,
+    "leanResponse": 8,
+    "followStiffness": 0,
+    "followDamping": 9,
+    "followMaxOffset": 2.403,
+    "moveGesture": "",
+    "aimArtAngle": 0,
+    "aimMaxAngle": 22,
+    "windup": 0.65,
+    "recover": 0.5,
+    "windupPullAngle": 4,
+    "windupBodyTilt": 0,
+    "recoilDelay": 0.06,
+    "recoilKick": 0.09,
+    "recoilAngle": 9,
+    "recoilDistance": 1.2015,
+    "bodyRecoil": 0,
+    "muzzleFlashColor": "#8cffffe6",
+    "muzzleFlashSize": 0,
+    "muzzleFlashTime": 0.1,
+    "foldedStretch": 0.05,
+    "foldedRiderScaleY": 0.6,
+    "foldedRiderOffset": {
+      "x": 0,
+      "y": -0.2002
+    },
+    "wakeDuration": 0.8,
+    "sleepDuration": 0.55,
+    "wakeOvershoot": 2.2,
+    "wakeFlickers": 0,
+    "wakeFlickerPortion": 0.4,
+    "drivenLease": 0.25,
+    "drivenReturn": 0.35,
+    "staggerStrength": 2.5,
+    "hurtDuration": 0.28,
+    "hurtTilt": 5,
+    "hurtSquash": 0.12,
+    "breakImpulse": 3.5,
+    "breakUpward": 4,
+    "breakSpin": 540,
+    "breakGravity": 20,
+    "breakBounce": 0.35,
+    "breakGround": [
+      "Ground",
+      "Platform"
+    ],
+    "aimPart": "Head",
+    "muzzle": "Head/Muzzle",
+    "stretchPart": "Stem",
+    "stretchRiders": [
+      "Head"
+    ]
+  },
+  "spriteSwaps": [
+    {
+      "part": "Head",
+      "asleep": "Parts/Head__asleep.png",
+      "awake": null,
+      "attacking": null,
+      "stages": []
+    }
+  ],
+  "gestures": [
+    {
+      "name": "Nod",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 1,
+          "aim": false,
+          "aimParts": [],
+          "poses": [
+            {
+              "part": "Head",
+              "move": {
+                "x": 0,
+                "y": 0.6008
+              },
+              "rotate": -6,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Golpe",
+          "duration": 0.08,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0,
+          "aim": false,
+          "aimParts": [],
+          "poses": [
+            {
+              "part": "Head",
+              "move": {
+                "x": 0,
+                "y": -0.4005
+              },
+              "rotate": 5,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 0,
+          "at": 1,
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "recover": 0.4,
+      "fx": [
+        {
+          "fx": {
+            "art": "gfx_BloomCharge_claudebl_loop"
+          },
+          "step": 0,
+          "at": 0,
+          "anchor": "muzzle",
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1,
+          "followsPart": true,
+          "loop": true,
+          "untilStep": 1,
+          "facing": "world",
+          "angle": 0,
+          "layer": "front"
+        },
+        {
+          "fx": {
+            "art": "gfx_BloomFlash_claudebl"
+          },
+          "step": 1,
+          "at": 1,
+          "anchor": "muzzle",
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "scale": 1,
+          "followsPart": true,
+          "loop": false,
+          "untilStep": -1,
+          "facing": "world",
+          "angle": 0,
+          "layer": "front"
+        }
+      ]
+    }
+  ],
+  "artAssets": {
+    "gfx_BloomCharge_claudebl_loop": {
+      "kind": "fxLoop",
+      "folder": "Art/claude-bloomsentry-charge",
+      "libraryId": "claude-bloomsentry-charge",
+      "entryName": "BloomCharge",
+      "states": {
+        "Loop": {
+          "folder": "Loop",
+          "fps": 12,
+          "loop": true
+        }
+      },
+      "worldWidth": 0.96
+    },
+    "gfx_BloomFlash_claudebl": {
+      "kind": "fx",
+      "folder": "Art/claude-bloomsentry-flash",
+      "libraryId": "claude-bloomsentry-flash",
+      "entryName": "BloomFlash",
+      "states": {
+        "Spawn": {
+          "folder": "Spawn",
+          "fps": 18,
+          "loop": false
+        }
+      },
+      "worldWidth": 0.96
+    }
+  },
+  "idleGestures": {
+    "gestures": [],
+    "interval": 4,
+    "chance": 0.6,
+    "windup": 0.5
+  },
+  "transitionGestures": {
+    "gestures": [],
+    "chance": 0.5,
+    "windup": 0.3
+  }
+}

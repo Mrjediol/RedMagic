@@ -48,4 +48,23 @@ tarea en cada lado (¿quedó igual de bien? ¿compila? ¿se ve verde en Unity?) 
 
 ## Resultados
 
-_(pendiente)_
+Medido con `session-usage.mjs --last 3` (2026-10-03). Sonnet 5.5, esfuerzo medio, Unity abierto.
+
+| | Terminal (verde) | Web (rojo) |
+|---|---|---|
+| Sesión | `eb06e43b` | `d6d48ba9` |
+| Duración | 1,3 min | 0,4 min |
+| Llamadas a la API | 14 | 6 |
+| Entrada nueva | 28 | 12 |
+| Caché escrita | 39.671 | 32.773 |
+| Caché leída | 778.086 | 191.437 |
+| Salida | 3.746 | 2.241 |
+| **Unidades equivalentes** | **146.155** | **71.327** |
+
+- La web gastó ~49 % de la terminal. La cola no añadió coste extra apreciable por su arranque en frío.
+- La diferencia sale de la caché leída: más llamadas = más relecturas del contexto.
+- Sesgos: la terminal hizo además el commit `wip: pre-task snapshot` y un resumen más largo; es una sola muestra por lado.
+- Los % de uso del plan (46→47 % 5 h, 78→79 % semanal) son demasiado gruesos para comparar tareas pequeñas.
+- Resultado de la tarea: ambos prefabs creados y commiteados (`FrostKnightGreen` 058662c, `FrostKnightRed` 86b9256).
+  Falta que el usuario compruebe en Unity que se ven bien.
+- Conclusión: para tareas pequeñas, lanzarlas desde la web no cuesta más que la terminal. Confirmar con 2–3 tareas más.

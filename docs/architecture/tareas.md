@@ -74,5 +74,4 @@ Telegram).
 The CLI's `rate_limit_event` carries the real 5 h / weekly utilisation. `Runner._noteUsage` keeps the latest in
 `Logs/Taller/usage.json`; `/api/status` returns it as `usage`, and the toolbar shows two bars (`usageChip` in
 `todo-panel.js`). The web no longer shows `$` (the CLI's `total_cost_usd` is list price, not a charge; it is still stored in
-`result.costUsd`). `config.json → pauseAtWeekly` (default 0.85, 0 = off): above it the head of the queue waits
-(rechecks every 5 min) unless "Lanzar igualmente". Data only updates when the queue runs a task.
+`result.costUsd`). The queue never pauses on usage (the weekly cap was removed on purpose). Data only updates when the queue runs a task.

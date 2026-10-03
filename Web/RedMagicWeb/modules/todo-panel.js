@@ -409,7 +409,8 @@ export function initTodoPanel({ root, statusEl, toolbar, quick, toast = () => {}
     if (!r) return '';
     const n = (v) => Number(v || 0).toLocaleString('es');
     const tok = r.tokens ? `entrada ${n(r.tokens.input)} · caché escrita ${n(r.tokens.cacheWrite)} · caché leída ${n(r.tokens.cacheRead)} · salida ${n(r.tokens.output)}` : '';
-    const meta = [when(r.at), r.durationMs ? minutes(r.durationMs) : '', tok].filter(Boolean).join(' · ');
+    const out = r.tokens ? `↓ ${(r.tokens.output / 1000).toFixed(1).replace('.', ',')}k tokens` : '';
+    const meta = [when(r.at), r.durationMs ? minutes(r.durationMs) : '', out, tok].filter(Boolean).join(' · ');
     return `<div class="todoResult ${r.ok ? '' : 'bad'}">
       <div class="todoResultHead"><b>${label}</b><span>${esc(meta)}</span></div>
       ${r.reply ? `<div class="todoReply">↩ ${esc(r.reply)}</div>` : ''}

@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-03T17:06:03.252Z",
+  "updated": "2026-10-03T17:44:19.579Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -21,18 +21,18 @@
           "steps": [
             {
               "id": "7qjiaqy",
-              "text": "Lado 1: pedirlo en la terminal tras /clear (rama task/prueba-terminal)",
-              "done": false
+              "text": "Lado 1: pedirlo en la terminal tras /clear (FrostKnightGreen)",
+              "done": true
             },
             {
               "id": "0ha56et",
-              "text": "Lado 2: lanzarlo desde la web (rama task/prueba-web)",
-              "done": false
+              "text": "Lado 2: lanzarlo desde la web (FrostKnightRed)",
+              "done": true
             },
             {
               "id": "fafzo3f",
               "text": "Medir con session-usage.mjs y escribir la comparación",
-              "done": false
+              "done": true
             }
           ]
         },
@@ -109,6 +109,35 @@
           "text": "Puedes ver esta tarea , claude?",
           "note": "",
           "done": false
+        },
+        {
+          "id": "tnua5yz",
+          "text": "Prueba/web",
+          "note": "",
+          "done": false,
+          "prompt": "Crea una variante del enemigo FrostKnight de color rojo, llamada FrostKnightRed. Solo teñirlo en Unity: no regeneres arte ni pidas sprites; reutiliza las piezas existentes con un tinte rojo (en los SpriteRenderer o con el mecanismo que ya tenga el proyecto). Prefab nuevo en Assets/Prefabs/Enemies/Procedural/, con el mismo comportamiento, ataques y animaciones. Compila, haz commit y dime qué has hecho y cómo probarlo.",
+          "needs": [
+            "unity"
+          ],
+          "status": "done",
+          "result": {
+            "ok": true,
+            "text": "Creé el prefab `FrostKnightRed` en `Assets/Prefabs/Enemies/Procedural/FrostKnightRed.prefab`, pero no he comprobado que Unity lo importe. Tampoco lo he abierto ni lo he jugado.\n\n- **Tinte:** es una copia de `FrostKnightGreen` con el tinte cambiado. Los 8 `SpriteRenderer` pasan a color `(1, 0.5, 0.5)`. No hay arte nuevo y se reutilizan las mismas piezas.\n- **Comportamiento:** stats, ataques, rig y animaciones son idénticos a `FrostKnight`.\n- **Flash de daño:** `HitFlash` toma el color del renderer como color base, así que el flash debería respetar el tinte rojo. Esto lo deduzco del commit de `FrostKnightGreen`, no lo he verificado.\n- **Meta:** el `.meta` es nuevo, con un GUID distinto al del Green.\n- **Compilación:** `recompile_status` da limpio. La tarea no toca código C#, así que eso no prueba nada sobre el prefab.\n- **Importación:** mi intento de forzarla falló por un parámetro mal puesto. Si Unity no recoge el prefab, haz `Reimport` sobre él.\n- **Commit:** `86b9256`, solo con el prefab y su `.meta`. `docs/tareas/todo.json` sigue modificado y sin commitear, porque es del servidor.\n- **Decisión:** usé el mismo mecanismo que el Green (tinte en los `SpriteRenderer`) y un rojo suave `(1, 0.5, 0.5)` para que no tape el detalle del arte.\n\n**Qué probar**\n- Abre el prefab: debe verse rojizo.\n- Ponlo en una sala de prueba junto a `FrostKnight` y `FrostKnightGreen`. Debe moverse y atacar igual.\n- Golpéalo: el flash de daño no debe dejarlo blanco ni verde.",
+            "at": "2026-10-03T17:17:06.018Z",
+            "durationMs": 30641,
+            "costUsd": 0.19181340000000002,
+            "tokens": {
+              "input": 12,
+              "cacheWrite": 32773,
+              "cacheRead": 191437,
+              "output": 2241,
+              "calls": 6
+            },
+            "runId": "2026-10-03T17-16-35-375Z_tnua5yz",
+            "sessionId": "d6d48ba9-6bb6-416c-9961-4dcf4a5a2890"
+          },
+          "sessionId": "d6d48ba9-6bb6-416c-9961-4dcf4a5a2890",
+          "lastRunId": "2026-10-03T17-16-35-375Z_tnua5yz"
         }
       ]
     },

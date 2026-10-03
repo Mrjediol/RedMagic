@@ -105,13 +105,6 @@ export class Runner {
       if (open.length) return this._wait(head, `Claude está abierto en una terminal (${open.length}). Ciérralo o pulsa "Lanzar igualmente".`, 15000);
     }
 
-    // 1b · plan limit: do not start more work when the week is nearly spent (the user can still force it)
-    const cap = this.opts.config.pauseAtWeekly;
-    const week = this.usage?.sevenDay?.utilization;
-    if (cap && week != null && week >= cap && !this.force.has(head.taskId)) {
-      return this._wait(head, `Límite semanal del plan al ${Math.round(week * 100)} % (tope ${Math.round(cap * 100)} %). Pulsa "Lanzar igualmente" o espera al reinicio.`, 5 * 60e3);
-    }
-
     // 2 · what it needs, opened if closed
     const needs = found.task.needs || [];
     for (const app of needs) {
@@ -350,7 +343,6 @@ export class Runner {
       running: cur ? { taskId: cur.taskId, stepId: cur.stepId, title: cur.title, step: cur.step, startedAt: cur.startedAt, runId: cur.runId, activity: cur.activity.slice(-12) } : null,
       waiting: this.waiting,
       usage: this.usage,
-      pauseAtWeekly: this.opts.config.pauseAtWeekly,
       queue: this.store.doc.queue.map((q) => ({ taskId: q.taskId, stepId: q.stepId, followUp: !!q.followUp })),
     };
   }

@@ -8,5 +8,67 @@
   "taskIds": [
     "bibgpad"
   ],
-  "items": []
+  "items": [
+    {
+      "id": "1",
+      "kind": "projectile",
+      "name": "MagmaCore",
+      "note": "Bola de fuego magma: núcleo blanco-amarillo, contorno naranja marcado y explosión grande con humo",
+      "status": "pending",
+      "vfx": {
+        "preset": "fireball",
+        "params": {
+          "size": 128,
+          "detail": 4,
+          "core": "#fff4c2",
+          "glow": "#ff5a0a",
+          "accent": "#ffc23a",
+          "intensity": 1.15,
+          "particles": 10,
+          "tail": 0.8,
+          "length": 1.5
+        }
+      }
+    },
+    {
+      "id": "2",
+      "kind": "projectile",
+      "name": "GlacierLance",
+      "note": "Cristal de hielo afilado y limpio, borde cian nítido; impacto que revienta en añicos",
+      "status": "pending",
+      "vfx": {
+        "preset": "iceShard",
+        "params": {
+          "size": 128,
+          "detail": 4,
+          "core": "#ffffff",
+          "glow": "#2fa8ff",
+          "accent": "#e6fbff",
+          "intensity": 1.2,
+          "particles": 6,
+          "length": 1.5
+        }
+      }
+    },
+    {
+      "id": "3",
+      "kind": "projectile",
+      "name": "CrimsonMeteor",
+      "note": "Orbe pesado carmesí, silueta redonda y contundente; explosión épica roja y dorada",
+      "status": "pending",
+      "vfx": {
+        "preset": "heavyOrb",
+        "params": {
+          "size": 128,
+          "detail": 4,
+          "core": "#fff0f0",
+          "glow": "#e0143c",
+          "accent": "#ffb347",
+          "intensity": 1.2,
+          "particles": 8,
+          "length": 1.5
+        }
+      }
+    }
+  ]
 }

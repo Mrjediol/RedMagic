@@ -81,6 +81,28 @@ function shatter(ctx, k, p, rnd, scale = 1) {
   }
 }
 
+/** Fire lance: a flash, then burning fragments of the lance flung out, tumbling and trailing sparks. */
+function lanceBurst(ctx, k, p, rnd, scale = 1) {
+  const out = easeOut(k), fade = 1 - easeIn(k);
+  glowDot(ctx, 0, 0, 0.62 * scale * (1 - k * 0.5), p.glow, 0.55 * fade * p.intensity);
+  shockRing(ctx, 0, 0, (0.15 + 0.55 * out) * scale, 0.12 * scale, p.accent, fade * 0.5 * p.intensity);
+  flare(ctx, 0, 0, 0.7 * scale * (1 - k * 0.5), p.core, clamp01(1 - k * 1.6), 4, 0.2, 0.14);
+  const n = Math.round(p.frags);
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU + rnd(i, 91) * 0.5;
+    const d = (0.1 + (0.4 + rnd(i, 92) * 0.3) * out) * scale;
+    const x = Math.cos(a) * d, y = Math.sin(a) * d - 0.12 * k * k * scale;
+    const len = (0.2 + rnd(i, 93) * 0.2) * scale * (1 - k * 0.35);
+    streak(ctx, x, y, x - Math.cos(a) * len * 0.9, y - Math.sin(a) * len * 0.9, len * 0.3, p.glow, 0.5 * fade * p.intensity);
+    shard(ctx, x, y, len, len * 0.34, a + (rnd(i, 94) - 0.5) * k * 3, p, clamp01(fade * 1.3), rnd(i, 95) * 0.6);
+  }
+  for (let i = 0; i < p.particles; i++) {
+    const a = rnd(i, 1) * TAU;
+    const d = (0.12 + (0.4 + rnd(i, 2) * 0.35) * out) * scale;
+    sparkShape(ctx, Math.cos(a) * d, Math.sin(a) * d - 0.2 * k * k * scale, (0.02 + rnd(i, 3) * 0.025) * (1 - k * 0.5), p, fade, a + k * 3);
+  }
+}
+
 /** Liquid: the glob flattens and droplets arc out and fall. */
 function splash(ctx, k, p, rnd, scale = 1) {
   const out = easeOut(k), fade = 1 - easeIn(k);
@@ -215,6 +237,35 @@ const PROJECTILES = [
           flare(ctx, -0.35 + 1.05 * k, 0.03, 0.26, p.core, bell(k), 4, 0, 0.12);
         } },
       { name: 'Impact', loop: false, fps: 14, frames: 7, draw: (ctx, k, p, rnd) => shatter(ctx, k, p, rnd, 0.95) },
+    ],
+  },
+  {
+    id: 'fireLance',
+    label: 'Lanza de fuego',
+    description: 'Una lanza larga de metal al rojo con llamas detrás y ascuas. Al chocar revienta en fragmentos ardiendo.',
+    defaults: { core: '#fff4c2', glow: '#ff6a12', accent: '#ffd04a', particles: 8 },
+    params: [TAIL(0.9), { key: 'frags', label: 'Fragmentos al impactar', type: 'float', min: 4, max: 14, step: 1, default: 9 }],
+    lanes: [
+      { name: 'Move', loop: true, fps: 12, frames: 8,
+        draw(ctx, k, p, rnd) {
+          for (let i = 8; i >= 1; i--) {
+            const t = i / 8;
+            glowDot(ctx, 0.2 - t * p.tail, loopNoise(k + t * 0.5, 3) * 0.04 * t, 0.3 * (1 - t * 0.6), ramp(p, 0.5 + t * 0.5), 0.4 * (1 - t) * p.intensity);
+          }
+          for (let i = 0; i < 4; i++) {
+            const side = i % 2 ? 1 : -1;
+            const len = p.tail * (0.5 + 0.4 * rnd(i, 2)) * (0.8 + 0.2 * loopNoise(k, 10 + i));
+            streak(ctx, -0.1, side * 0.06, -0.1 - len, side * (0.12 + 0.12 * rnd(i, 4)) + loopNoise(k, 20 + i) * 0.05, 0.22, p.glow, 0.7 * p.intensity);
+          }
+          glowDot(ctx, 0.3, 0, 0.55, p.glow, 0.35 * p.intensity);
+          shard(ctx, 0.22, 0, 1.3, 0.3, 0, p);
+          streak(ctx, 0.78, 0, -0.3, 0, 0.1, p.core, 0.95);
+          core(ctx, 0.72, 0, 0.16 * (1 + 0.06 * Math.sin(k * TAU)), p);
+          emit(p.particles, k, rnd, (i, t) => {
+            sparkShape(ctx, -0.2 - t * p.tail, (rnd(i, 2) - 0.5) * 0.4 * (0.3 + t), 0.02 + rnd(i, 3) * 0.02, p, (1 - t) * 0.9, t * 6);
+          });
+        } },
+      { name: 'Impact', loop: false, fps: 14, frames: 8, draw: (ctx, k, p, rnd) => lanceBurst(ctx, k, p, rnd, 1) },
     ],
   },
   {

@@ -1,0 +1,15 @@
+{
+  "name": "IceCannonOrb",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/IceCannonOrb/diseno.png",
+    "source": "docs/disenos/img/2026-10-05-robot-azul-simple-brazo-como-canon-de-en__1.png",
+    "zone": "ice",
+    "lote": "2026-10-05-robot-azul-simple-brazo-como-canon-de-en",
+    "item": "1",
+    "request": "robot azul simple, brazo como cañon de energia",
+    "note": "Sphere body with a single cannon arm; the simplest read."
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-05T20:07:51.756Z"
+}

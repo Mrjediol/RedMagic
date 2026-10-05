@@ -1,0 +1,15 @@
+{
+  "name": "SnowDroneGun",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/SnowDroneGun/diseno.png",
+    "source": "docs/disenos/img/2026-10-05-robot-azul-simple-brazo-como-canon-de-en__3.png",
+    "zone": "ice",
+    "lote": "2026-10-05-robot-azul-simple-brazo-como-canon-de-en",
+    "item": "3",
+    "request": "robot azul simple, brazo como cañon de energia",
+    "note": "Tall capsule with antenna head and a big shoulder cannon arm."
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-05T20:07:49.685Z"
+}

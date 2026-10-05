@@ -1,0 +1,15 @@
+{
+  "name": "PolarTurretBot",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/PolarTurretBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-05-robot-azul-simple-brazo-como-canon-de-en__4.png",
+    "zone": "ice",
+    "lote": "2026-10-05-robot-azul-simple-brazo-como-canon-de-en",
+    "item": "4",
+    "request": "robot azul simple, brazo como cañon de energia",
+    "note": "Wide low turret-like body, twin-ring cannon with coils."
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-05T20:07:52.780Z"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "FrostBoxBot",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/FrostBoxBot/diseno.jpg",
+    "source": "docs/disenos/img/2026-10-05-robot-azul-simple-brazo-como-canon-de-en__2.jpg",
+    "zone": "ice",
+    "lote": "2026-10-05-robot-azul-simple-brazo-como-canon-de-en",
+    "item": "2",
+    "request": "robot azul simple, brazo como cañon de energia",
+    "note": "Boxy cube body, long cannon arm, cone thruster."
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-05T20:07:52.216Z"
+}

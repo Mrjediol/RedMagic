@@ -4,7 +4,9 @@
 // design or was added from Unity / the web as "existing, with things to do". Full design: docs/architecture/designs.md.
 //
 //   { name, estado, prefab?, imagen?, diseno?: { image, source, lote, item, request, note }, pendientes: [Pendiente],
-//     tarea?: <todo task id of the last build / fix run>, montaje?, createdAt }
+//     tarea?: <todo task id of the last build / fix run>, montaje?, createdAt,
+//     cuerpo?: { fecha, plantilla, partes, brief, resumen }  (by steps: the body built in step 1),
+//     paso2?: { tipo | plantilla, proyectil|sonidos|efectos: { origen: biblioteca|nuevo, texto }, notas } }
 //   Pendiente = { id, tipo: comportamiento|sprite|gesto|ataque|bug|otro, texto, estado: abierto|en-curso|hecho,
 //                 tarea?, resumen?, nota? }
 //
@@ -14,9 +16,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
-import { buildPrompt, pendingPrompt, PENDING_TYPES } from './design-prompts.mjs';
+import { buildPrompt, bodyPrompt, restPrompt, pendingPrompt, PENDING_TYPES, BEHAVIORS } from './design-prompts.mjs';
 
-const ESTADOS = ['por-montar', 'montando', 'por-aprobar', 'con-pendientes', 'aprobado', 'descartado'];
+const ESTADOS = ['por-montar', 'montando-cuerpo', 'cuerpo-por-aprobar', 'cuerpo-aprobado', 'montando', 'por-aprobar', 'con-pendientes', 'aprobado', 'descartado'];
 const PHASE = { id: 'enemies', name: '👾 Enemigos', tag: 'Web' };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
@@ -81,6 +83,46 @@ export class Enemigos {
     if (!e.diseno?.source) throw new Error('Este enemigo no tiene diseño del que partir');
     const task = this.store.addTask(PHASE, {
       text: `Montar ${name} (make-enemy)`, prompt: buildPrompt(e), needs: ['comfy', 'unity'],
+      model: model || 'sonnet', effort: effort || 'medium', enemy: name,
+    });
+    e.estado = 'montando';
+    e.tarea = task.id;
+    this._put(e);
+    return this._queue(task);
+  }
+
+  /**
+   * By steps, step 1: only the body (parts + assembly + a body-only prefab) → "montando-cuerpo" until the task writes
+   * "cuerpo-por-aprobar". Also redoes the body (sprite pendientes are the notes).
+   */
+  buildBody({ name, model, effort }) {
+    const e = this._get(name);
+    if (!e.diseno?.source) throw new Error('Este enemigo no tiene diseño del que partir');
+    const task = this.store.addTask(PHASE, {
+      text: `Cuerpo de ${name} (make-enemy, paso 1)`, prompt: bodyPrompt(e), needs: ['comfy', 'unity'],
+      model: model || 'sonnet', effort: effort || 'medium', enemy: name,
+    });
+    e.estado = 'montando-cuerpo';
+    e.tarea = task.id;
+    this._put(e);
+    return this._queue(task);
+  }
+
+  /**
+   * By steps, step 3: the user approved the body and chose the kind of enemy and where its assets come from.
+   * `paso2` = { tipo | plantilla, proyectil|sonidos|efectos: { origen, texto }, notas } → "montando".
+   */
+  buildRest({ name, paso2, model, effort }) {
+    const e = this._get(name);
+    if (!['cuerpo-aprobado', 'montando'].includes(e.estado)) throw new Error('Aprueba primero el cuerpo');
+    const p = paso2 || {};
+    const heir = String(p.plantilla || '').trim();
+    if (heir) this._get(heir);   // it has to exist in the library
+    else if (!BEHAVIORS[p.tipo]) throw new Error('Elige el tipo de enemigo (o una plantilla de la que heredar)');
+    const asset = (a) => ({ origen: a?.origen === 'nuevo' ? 'nuevo' : 'biblioteca', texto: String(a?.texto || '').trim() });
+    e.paso2 = { ...(heir ? { plantilla: heir } : { tipo: p.tipo }), proyectil: asset(p.proyectil), sonidos: asset(p.sonidos), efectos: asset(p.efectos), notas: String(p.notas || '').trim() };
+    const task = this.store.addTask(PHASE, {
+      text: `Terminar ${name} (make-enemy, paso 3)`, prompt: restPrompt(e), needs: ['comfy', 'unity'],
       model: model || 'sonnet', effort: effort || 'medium', enemy: name,
     });
     e.estado = 'montando';

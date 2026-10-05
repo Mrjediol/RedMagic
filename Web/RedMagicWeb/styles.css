@@ -902,6 +902,11 @@ textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .enPendAdd{display:flex;gap:8px;align-items:flex-start;}
 .enPendAdd select{width:auto;}
 .enPendAdd textarea{flex:1;min-width:0;background:var(--well);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:6px 8px;font:inherit;font-size:14px;resize:vertical;}
+.enP2{display:flex;flex-direction:column;gap:8px;}
+.enP2Asset{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;}
+.enP2Asset b{min-width:96px;}
+.enP2Asset select{width:auto;}
+.enP2 textarea,.enP2Asset textarea{flex:1;min-width:200px;background:var(--well);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:6px 8px;font:inherit;font-size:14px;resize:vertical;}
 .enPendAdd button{margin:0;}
 @media (max-width:760px){.enSheetBody{grid-template-columns:1fr;}}
 

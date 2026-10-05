@@ -41,6 +41,22 @@ batch** (`contact-sheet.mjs`), never at single full-size images. Trust the measu
   to its foot behind the base and the head rests on the base). If an already approved design has an open container,
   close it in the Base edit of step 2: *"…the opening of the pot is covered by a flat stone lid, a closed top"*.
 
+## Por pasos (the web's ▶ Por pasos — for enemies the user doubts; ▶ Montar completo stays for simple ones)
+The 🎨 Diseños sheet splits the build in three, with the user in between (sheet: `docs/enemigos/<Name>/enemigo.json`):
+- **Paso 1 · cuerpo** (task from `bodyPrompt`): step 0–1 skipped (the design is the base), step 2 (parts in place) and 4 (finish), a
+  brief with NO attacks / effects / gestures of its own, `make-enemy.mjs`, import → a body-only prefab. Not steps 3, 5, 6.
+  Ends with estado `cuerpo-por-aprobar`, `prefab`, `cuerpo: { fecha, plantilla, partes, brief, resumen }` and the assembled
+  picture at `docs/enemigos/<Name>/cuerpo.png`. The user looks at it and, if proportions / distances / layers are off, adjusts it
+  in 🧬 Enemy Studio (open from the Unity project, 💾 Guardar en Unity) → `cuerpo-aprobado`. A sprite pendiente + ↻ Rehacer = redo it.
+- **Paso 2** (the user, in the sheet): the kind of enemy (flyingRanged, flyingMelee, groundRanged, groundMelee, turret, floatingCaster) OR a
+  template enemy to inherit behaviour + animation from, and per asset (projectile, sounds, effects) "de mi biblioteca" or "nuevo" + a
+  description (empty = you decide). Stored as `paso2`.
+- **Paso 3 · el resto** (task from `restPrompt`): behaviour, deck, gestures, effects, sounds on THAT body. **Never re-import the full zip**
+  (it would undo the user's adjustments): write the brief as in step 5 and run `node make-enemy.mjs <brief> --partial` →
+  `out/<Name>.partial.zip` (gestures + effects + deck only); import it with `ResetTuning = false`. Movement / EnemyStats tuning is not in
+  the partial: set it on the prefab. A template to inherit = copy its brief / prefab's tuning, deck, gestures, retargeted to this body's slots.
+  Ends with estado `por-aprobar` and `montaje`.
+
 ## 1 · Base (stop: the user picks)
 The user's best bases come from **Gemini** (pasted by hand in the Gemini app): give them the prompt of
 `base-prompt-gemini.md` (fixed block + the slot list of the template + the creature). They save the image and

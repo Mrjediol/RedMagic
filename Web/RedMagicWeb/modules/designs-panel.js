@@ -38,9 +38,12 @@ const KIND = {
 };
 // In the order the library shows them: what needs the user first.
 const ESTADOS = {
+  'cuerpo-por-aprobar': { label: 'Cuerpo por aprobar', one: 'Cuerpo por aprobar', hint: 'paso 1: mira el cuerpo montado; ajústalo en 🧬 Enemy Studio si hace falta' },
+  'cuerpo-aprobado': { label: 'Cuerpo aprobado: elige el resto', one: 'Cuerpo aprobado', hint: 'paso 2: di qué tipo de enemigo es y de dónde salen sus proyectiles, sonidos y efectos' },
   'por-aprobar': { label: 'Esperando tu aprobación', one: 'Por aprobar', hint: 'montado en Unity: pruébalo y apruébalo, o apunta lo que falta' },
   'con-pendientes': { label: 'Con pendientes', one: 'Con pendientes', hint: 'existe, pero le faltan cosas' },
   'por-montar': { label: 'Por montar', one: 'Por montar', hint: 'diseño aprobado; falta montarlo en Unity (make-enemy)' },
+  'montando-cuerpo': { label: 'Montando el cuerpo', one: 'Montando cuerpo', hint: 'paso 1: una tarea separa las piezas y monta el cuerpo' },
   montando: { label: 'Montándose', one: 'Montándose', hint: 'una tarea lo está montando' },
   aprobado: { label: 'Aprobados', one: 'Aprobado', hint: 'terminados' },
   descartado: { label: 'Descartados', one: 'Descartado', hint: 'el prefab sigue en Unity si llegó a montarse' },
@@ -83,6 +86,8 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   let stopSound = () => {};
   const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium', generator: 'prompt', zone: '', body: '', attack: '', images: [] };   // the request form
   const run = { model: 'sonnet', effort: 'medium' };                 // model of the tasks launched from an enemy
+  const p2 = {};                            // enemy name → the step-2 form (kind of enemy + where the assets come from)
+  const p2Of = (name) => (p2[name] ||= { via: 'flyingRanged', proyectil: { origen: 'biblioteca', texto: '' }, sonidos: { origen: 'biblioteca', texto: '' }, efectos: { origen: 'biblioteca', texto: '' }, notas: '' });
   const draft = { tipo: 'comportamiento', texto: '' };               // the pendiente being written in a sheet
   let adding = null;                        // null | [{ name, prefab }] while "＋ Enemigo existente" is open
 
@@ -421,7 +426,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
 
   // ------------------------------------------------------------ the enemy library
 
-  const enemyImage = (e) => e.imagen || e.diseno?.image || '';
+  const enemyImage = (e) => e.imagen || (e.cuerpo ? `docs/enemigos/${e.name}/cuerpo.png` : '') || e.diseno?.image || '';
   const openPendientes = (e) => e.pendientes.filter((p) => p.estado !== 'hecho');
 
   function taskLine(e) {
@@ -435,7 +440,11 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const n = openPendientes(e).filter((p) => p.estado === 'abierto').length;
     const name = esc(e.name);
     switch (e.estado) {
-      case 'por-montar': return `<button class="small enOk" data-act="build" data-name="${name}" title="make-enemy: lo monta en Unity a partir del diseño">▶ Montar</button>`;
+      case 'por-montar': return `<button class="small enOk" data-act="build" data-name="${name}" title="make-enemy completo, de una vez: para enemigos simples">▶ Montar</button>
+        <button class="small" data-act="build-body" data-name="${name}" title="Primero solo el cuerpo: lo ves y lo ajustas antes de seguir">▶ Por pasos</button>`;
+      case 'montando-cuerpo': return active(t) ? '' : `<button class="small" data-act="build-body" data-name="${name}">▶ Reintentar cuerpo</button><button class="small" data-act="estado" data-estado="por-montar" data-name="${name}">↶</button>`;
+      case 'cuerpo-por-aprobar': return `<button class="small enOk" data-act="sheet" data-name="${name}" title="Ver el cuerpo y aprobarlo">👁 Revisar cuerpo</button>`;
+      case 'cuerpo-aprobado': return `<button class="small enOk" data-act="sheet" data-name="${name}" title="Elegir tipo, proyectiles, sonidos y efectos">▶ Paso 2</button>`;
       case 'montando': return active(t) ? '' : `<button class="small" data-act="build" data-name="${name}">▶ Reintentar</button><button class="small" data-act="estado" data-estado="por-montar" data-name="${name}">↶</button>`;
       case 'por-aprobar': return `<button class="small enOk" data-act="estado" data-estado="aprobado" data-name="${name}">✓ Aprobar</button>
         <button class="small" data-act="sheet" data-name="${name}" title="Apuntar lo que le falta">⚠ Pendientes</button>`;
@@ -502,7 +511,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     enemiesRoot.innerHTML = `<section class="enSection"><h2>Biblioteca <span class="enHint">docs/enemigos/</span></h2>${addExistingRow()}${libraryHtml}</section>`;
     onBadges({
       disenos: lotes().reduce((n, l) => n + pendingOf(l).length, 0),
-      enemigos: enemigos.filter((e) => e.estado === 'por-aprobar').length,
+      enemigos: enemigos.filter((e) => ['por-aprobar', 'cuerpo-por-aprobar', 'cuerpo-aprobado'].includes(e.estado)).length,
     });
     paintWaves(root);
     if (panel && scroll != null) panel.scrollTop = scroll;
@@ -530,6 +539,31 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     renderViewer();
   }
 
+  /** Step 2 of "por pasos": the kind of enemy (or a template to inherit) and where each asset comes from. */
+  function step2Form(e) {
+    const opt = (list, value) => list.map(([v, l]) => `<option value="${v}" ${v === value ? 'selected' : ''}>${l}</option>`).join('');
+    const f = p2Of(e.name);
+    const heirs = (data?.enemigos || []).filter((x) => x.name !== e.name && x.prefab && ['por-aprobar', 'aprobado', 'con-pendientes'].includes(x.estado));
+    const kinds = (data?.comportamientos || []).map((b) => `<option value="${esc(b.id)}" ${f.via === b.id ? 'selected' : ''}>${esc(b.label)}</option>`).join('');
+    const heirOpts = heirs.map((x) => `<option value="plantilla:${esc(x.name)}" ${f.via === `plantilla:${x.name}` ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
+    const asset = (key, label, ph) => `<div class="enP2Asset"><b>${label}</b>
+        <select data-p2="${key}.origen"><option value="biblioteca" ${f[key].origen === 'biblioteca' ? 'selected' : ''}>De mi biblioteca</option><option value="nuevo" ${f[key].origen === 'nuevo' ? 'selected' : ''}>Que Claude lo cree nuevo</option></select>
+        <textarea data-p2="${key}.texto" rows="2" placeholder="${esc(ph)}">${esc(f[key].texto)}</textarea></div>`;
+    return `<h3>Paso 2 · qué tipo de enemigo es</h3>
+      <div class="enP2">
+        <label class="efHint">Tipo <select data-p2="via"><optgroup label="Tipo de enemigo">${kinds}</optgroup>${heirs.length ? `<optgroup label="Heredar comportamiento y animación de…">${heirOpts}</optgroup>` : ''}</select></label>
+        ${asset('proyectil', '🎯 Proyectil', 'Vacío: Claude elige (de la biblioteca) o inventa (nuevo) el que le pegue. O descríbelo / nómbralo.')}
+        ${asset('sonidos', '🔊 Sonidos', 'Vacío: Claude decide. O describe cómo suena.')}
+        ${asset('efectos', '✨ Efectos', 'Vacío: Claude decide (carga, disparo, impacto, estela…).')}
+        <textarea data-p2="notas" rows="2" placeholder="Notas extra para el montaje (opcional)">${esc(f.notas)}</textarea>
+        <div class="enBtns wrap">
+          <label class="efHint">Modelo <select data-run="model">${opt(MODELS, run.model)}</select></label>
+          <label class="efHint">Esfuerzo <select data-run="effort">${opt(EFFORTS, run.effort)}</select></label>
+          <button class="small primary" data-v="build-rest">▶ Montar el resto</button>
+        </div>
+      </div>`;
+  }
+
   /** An enemy's sheet: its picture, what it came from, its estado buttons and its pendientes. */
   function renderSheet(e) {
     const st = ESTADOS[e.estado] || { one: e.estado };
@@ -539,7 +573,10 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const t = taskOf(e.tarea);
     const v = (action, label, cls = '', extra = '') => `<button class="small ${cls}" data-v="${action}" ${extra}>${label}</button>`;
     const estadoButtons = [
-      e.estado === 'por-montar' ? v('build', '▶ Montar (make-enemy)', 'primary') : '',
+      e.estado === 'por-montar' ? v('build-body', '▶ Montar por pasos (cuerpo primero)', 'primary') + v('build', '▶ Montar completo (make-enemy)') : '',
+      e.estado === 'montando-cuerpo' && !active(t) ? v('build-body', '▶ Reintentar el cuerpo') : '',
+      e.estado === 'cuerpo-por-aprobar' ? v('estado', '✓ Aprobar cuerpo', 'primary', 'data-estado="cuerpo-aprobado"') + v('build-body', '↻ Rehacer el cuerpo') : '',
+      e.estado === 'cuerpo-aprobado' ? v('build-body', '↻ Rehacer el cuerpo') + v('estado', '↶ Volver a revisar', '', 'data-estado="cuerpo-por-aprobar"') : '',
       e.estado === 'montando' && !active(t) ? v('build', '▶ Reintentar el montaje') : '',
       e.estado === 'por-aprobar' ? v('estado', '✓ Aprobar', 'primary', 'data-estado="aprobado"') : '',
       ['por-aprobar', 'aprobado'].includes(e.estado) ? v('estado', '⚠ Tiene pendientes', '', 'data-estado="con-pendientes"') : '',
@@ -563,6 +600,9 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
           ${e.diseno?.request ? `<div><span class="efHint">Pedido</span> ${esc(e.diseno.request)}${e.diseno.note ? ` — ${esc(e.diseno.note)}` : ''}</div>` : ''}
           ${e.montaje?.resumen ? `<div><span class="efHint">Montaje</span> ${esc(e.montaje.resumen)}</div>` : ''}
           ${taskLine(e)}
+          ${e.cuerpo?.resumen ? `<div><span class="efHint">Cuerpo</span> ${esc(e.cuerpo.resumen)}</div>` : ''}
+          ${e.estado === 'cuerpo-por-aprobar' ? '<p class="efHint">Mira el cuerpo montado. Si las proporciones, distancias o capas no cuadran: 🧬 Enemy Studio (con Unity abierto: abrirlo desde el proyecto, ajustar, 💾 Guardar en Unity). Si hay que rehacerlo, apunta un Pendiente de tipo Sprite y pulsa Rehacer.</p>' : ''}
+          ${e.estado === 'cuerpo-aprobado' ? step2Form(e) : ''}
           <div class="enBtns wrap">${estadoButtons}</div>
           <h3>Pendientes</h3>
           ${rows ? `<ul class="enPends">${rows}</ul>` : '<p class="enEmpty">Nada apuntado.</p>'}
@@ -642,6 +682,12 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const name = viewer.enemy;
     const upd = (body, msg) => post('enemigos/update', { name, ...body }, msg);
     if (v === 'build') post('enemigos/build', { name, ...run }, `${name}: a la cola (make-enemy)`);
+    else if (v === 'build-body') post('enemigos/build-body', { name, ...run }, `${name}: a la cola (paso 1, cuerpo)`);
+    else if (v === 'build-rest') {
+      const f = p2Of(name);
+      const paso2 = { proyectil: f.proyectil, sonidos: f.sonidos, efectos: f.efectos, notas: f.notas, ...(f.via.startsWith('plantilla:') ? { plantilla: f.via.slice(10) } : { tipo: f.via }) };
+      post('enemigos/build-rest', { name, paso2, ...run }, `${name}: a la cola (paso 3, el resto)`);
+    }
     else if (v === 'estado') upd({ op: 'estado', estado: btn.dataset.estado }, `${name}: ${ESTADOS[btn.dataset.estado]?.one || btn.dataset.estado}`);
     else if (v === 'picture') post('enemigos/picture', { name }, 'Unity está haciendo la imagen (unos segundos)');
     else if (v === 'pend-add') {
@@ -658,6 +704,11 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const d = ev.target.dataset || {};
     if (d.draft) draft[d.draft] = ev.target.value;
     if (d.run) run[d.run] = ev.target.value;
+    if (d.p2 && viewer?.enemy) {
+      const f = p2Of(viewer.enemy);
+      const [k, sub] = d.p2.split('.');
+      if (sub) f[k][sub] = ev.target.value; else f[k] = ev.target.value;
+    }
   });
   overlay.addEventListener('focusout', () => { setTimeout(() => { if (viewer?.enemy && !typing(overlay)) renderViewer(); }, 0); });
   document.addEventListener('keydown', (ev) => {
@@ -705,6 +756,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     else if (act === 'hear') { const f = findItem(key); if (f) hear(f.lote, f.item); }
     else if (act === 'sheet') { viewer = { enemy: btn.dataset.name }; renderViewer(); }
     else if (act === 'build') post('enemigos/build', { name: btn.dataset.name, ...run }, `${btn.dataset.name}: a la cola (make-enemy)`);
+    else if (act === 'build-body') post('enemigos/build-body', { name: btn.dataset.name, ...run }, `${btn.dataset.name}: a la cola (paso 1, cuerpo)`);
     else if (act === 'work') post('enemigos/work', { name: btn.dataset.name, ...run }, `${btn.dataset.name}: tarea a la cola con sus pendientes`);
     else if (act === 'estado') post('enemigos/update', { name: btn.dataset.name, op: 'estado', estado: btn.dataset.estado }, `${btn.dataset.name}: ${ESTADOS[btn.dataset.estado]?.one || btn.dataset.estado}`);
     else if (act === 'add-open') api('GET', 'enemigos/prefabs').then((list) => { adding = list; render(); }).catch((e) => toast(e.message));

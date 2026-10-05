@@ -48,12 +48,16 @@ of that kind, sound passes check-sounds and its id is free). While its tasks run
 ## An enemy (`docs/enemigos/<Name>/enemigo.json`)
 
 `{ name, estado, prefab?, imagen?, diseno?: { image, source, lote, item, request, note }, pendientes: [Pendiente],
-tarea?, montaje?: { fecha, resumen }, origen?, createdAt }` — `Pendiente = { id, tipo: comportamiento|sprite|gesto|ataque|bug|otro,
+tarea?, montaje?: { fecha, resumen }, cuerpo?: { fecha, plantilla, partes, brief, resumen }, paso2?: { tipo | plantilla, proyectil|sonidos|efectos: { origen: biblioteca|nuevo, texto }, notas }, origen?, createdAt }` — `Pendiente = { id, tipo: comportamiento|sprite|gesto|ataque|bug|otro,
 texto, estado: abierto|en-curso|hecho, tarea?, resumen?, nota? }`.
 
 | estado | means | the card / sheet offers |
 |---|---|---|
 | `por-montar` | design accepted | ▶ Montar → a **make-enemy** task (`needs: comfy, unity`; skips step 1, the design's Comfy image is the base; decides the "stop" points itself) → `montando` |
+| `por-montar` ▶ Por pasos | same estado: **▶ Por pasos** (body first) instead of ▶ Montar | a **body** task (`needs: comfy, unity`, `bodyPrompt`) → `montando-cuerpo` |
+| `montando-cuerpo` | step 1 task running (parts + a body-only prefab) | its task state; ▶ Reintentar |
+| `cuerpo-por-aprobar` | body built: the user looks at it (`cuerpo.png`, the picture) and may adjust it in 🧬 Enemy Studio | ✓ Aprobar cuerpo · ↻ Rehacer (sprite pendientes = notes) |
+| `cuerpo-aprobado` | body approved | **Paso 2** form: kind of enemy (`BEHAVIORS` in `design-prompts.mjs`) or a template enemy to inherit; per asset (proyectil / sonidos / efectos) *de mi biblioteca* or *nuevo* + a description (empty = Claude decides) + notes → ▶ Montar el resto (`restPrompt`, stored as `paso2`) → `montando` |
 | `montando` | a task is building it | its task state; ▶ Reintentar if it failed |
 | `por-aprobar` | built: the user tests it in Unity | ✓ Aprobar · ⚠ Tiene pendientes |
 | `con-pendientes` | exists, things to do | ▶ Arreglar (n) → ONE task with the open pendientes (`needs: unity` + comfy for sprite/gesto); they go `en-curso` |
@@ -61,6 +65,7 @@ texto, estado: abierto|en-curso|hecho, tarea?, resumen?, nota? }`.
 
 The tasks edit the record themselves when they end (prompts in `design-prompts.mjs`): estado `por-aprobar` (or back),
 `prefab`, `montaje`, each pendiente `hecho` + `resumen` or `abierto` + `nota`, and refresh the picture.
+**By steps** (▶ Por pasos): step 3 never re-imports the full body (the user may have adjusted it in Enemy Studio): `make-enemy.mjs <brief> --partial` writes `out/<Name>.partial.zip` (gestures + effects + deck only) which the importer applies on the existing prefab. ▶ Montar (everything at once) stays for simple enemies; make-enemy's "Por pasos" section has the rules.
 Their tasks live in phase **`enemies`** (`enemy: <Name>`) — the 👾 Enemigos taller's task list.
 
 **Existing enemies** (not from a design): web "＋ Enemigo existente" (a prefab of `Assets/Prefabs/Enemies/**` not in
@@ -80,7 +85,7 @@ la web…** (pick the prefab, type, text). **Pictures** come from Unity: `EnemyP
 - `POST /api/disenos/request` (above). `GET /api/disenos` also returns `tasks`: the state of every task a batch or an
   enemy points at.
 - `tools/taller-server/enemigos.mjs`: `GET /api/enemigos/prefabs`, `POST /api/enemigos/update` (estado, add / edit /
-  remove pendiente), `/build`, `/work`, `/add`, `/picture`. Tasks are added with `store.addTask(phase, task)` and
+  remove pendiente), `/build`, `/build-body` (step 1), `/build-rest` (step 3, `paso2`), `/work`, `/add`, `/picture`. Tasks are added with `store.addTask(phase, task)` and
   queued with `runner.enqueue`.
 
 ## Web (`modules/designs-panel.js`, inside 📋 Tareas — see `tareas.md` ▸ The web)

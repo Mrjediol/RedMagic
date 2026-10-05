@@ -7,6 +7,10 @@
 // have written for the same choices — and it can still be opened and adjusted there.
 //
 //   node make-enemy.mjs <brief.json>          → <brief folder>/out/<name>.zip  (+ the JSONs, to read)
+//   node make-enemy.mjs <brief.json> --partial → <brief folder>/out/<name>.partial.zip: ONLY gestures, effects and the
+//                 deck (rig-export.js ▸ buildGesturesExport + partialEnemyConfig). For an enemy whose BODY is already in
+//                 Unity (built by steps, maybe adjusted by hand in 🧬 Enemy Studio): the importer changes only those
+//                 and leaves the body as it is. The brief still names the same template and parts folder.
 //
 // The brief (see enemies/*.json):
 //   name          prefab name
@@ -62,7 +66,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const mod = (name) => import(pathToFileURL(path.join(here, '../../modules', name)).href);
 const T = await mod('rig-templates.js');
 const M = await mod('rig-model.js');
-const { buildRigExport, companionEnemyConfig } = await mod('rig-export.js');
+const { buildRigExport, companionEnemyConfig, buildGesturesExport, partialEnemyConfig } = await mod('rig-export.js');
 const { buildEnemyExport } = await mod('enemy-export.js');
 const { createDefaultEnemyConfig, createDefence } = await mod('enemy-defaults.js');
 const { BOSS_CATALOG } = await mod('boss-catalog.js');
@@ -73,7 +77,8 @@ const { populateSpriteZip, cropToDataURL } = await mod('export-manifest.js');
 const { framedLanes, laneFolder } = await mod('boss-export.js');
 const V = await mod('vfx-presets.js');
 
-const briefPath = path.resolve(process.argv[2] || '');
+const partialMode = process.argv.includes('--partial');
+const briefPath = path.resolve(process.argv.slice(2).find((a) => !a.startsWith('--')) || '');
 if (!fs.existsSync(briefPath)) { console.error('usage: node make-enemy.mjs <brief.json>'); process.exit(1); }
 const brief = JSON.parse(fs.readFileSync(briefPath, 'utf8'));
 const problems = [], notes = [];
@@ -306,9 +311,17 @@ const enemyDoc = companionEnemyConfig(enemy.doc, rig.doc.name);
 // ============================================================ the zip
 
 const zip = new JSZip();
-zip.file('rig-config.json', JSON.stringify(rig.doc, null, 2));
-rig.files.forEach((f) => zip.file(f.path, f.dataURL.split(',')[1], { base64: true }));
-zip.file('enemy-config.json', JSON.stringify(enemyDoc, null, 2));
+// --partial: the rig part is only gestures / state sprites / effect art, the enemy part only the deck.
+const partialRig = partialMode ? buildGesturesExport(state, { entriesById }) : null;
+const partialEnemy = partialMode ? partialEnemyConfig(enemyDoc, rig.doc.name) : null;
+if (partialMode) problems.push(...partialRig.problems);
+const rigDoc = partialRig ? partialRig.doc : rig.doc;
+const rigFiles = partialRig ? partialRig.files : rig.files;
+const enemyOut = partialMode ? partialEnemy : enemyDoc;
+zip.file('rig-config.json', JSON.stringify(rigDoc, null, 2));
+rigFiles.forEach((f) => zip.file(f.path, f.dataURL.split(',')[1], { base64: true }));
+if (enemyOut) zip.file('enemy-config.json', JSON.stringify(enemyOut, null, 2));
+else if (partialMode) problems.push('--partial: the brief has no attacks / defences to send');
 
 const frames = (folder, entry) => framedLanes(entry).forEach((lane) => {
   const dir = folder.folder(laneFolder(lane.name));
@@ -316,10 +329,10 @@ const frames = (folder, entry) => framedLanes(entry).forEach((lane) => {
     cropToDataURL(entry.baked.canvas, entry.sprite.boxes[box]).split(',')[1], { base64: true }));
 });
 // Art of the deck's attacks and of the gestures' effects → Art/<libraryId>/<Lane>/.
-const artIds = new Set([...Object.values(enemyDoc.artAssets || {}), ...Object.values(rig.doc.artAssets || {})].map((a) => a.libraryId));
+const artIds = new Set([...Object.values(enemyOut?.artAssets || {}), ...Object.values(rigDoc.artAssets || {})].map((a) => a.libraryId));
 artIds.forEach((id) => { if (entriesById.has(id)) frames(zip.folder('Art').folder(id), entriesById.get(id)); });
 // The built-in projectile is a library entry → Library/<id>/ (manifest + frames): the import builds its prefab.
-const shot = enemyDoc.tuning?.projectile?.libraryId;
+const shot = partialMode ? null : enemyDoc.tuning?.projectile?.libraryId;   // the built-in shot is body-side tuning: a partial import does not carry it
 if (shot && entriesById.has(shot)) {
   const entry = entriesById.get(shot);
   const folder = zip.folder('Library').folder(shot);
@@ -329,10 +342,12 @@ if (shot && entriesById.has(shot)) {
 
 const outDir = path.join(path.dirname(briefPath), 'out');
 fs.mkdirSync(outDir, { recursive: true });
-const zipPath = path.join(outDir, `${brief.name}.zip`);
+const zipPath = path.join(outDir, `${brief.name}${partialMode ? '.partial' : ''}.zip`);
 fs.writeFileSync(zipPath, await zip.generateAsync({ type: 'nodebuffer' }));
-fs.writeFileSync(path.join(outDir, `${brief.name}.rig-config.json`), JSON.stringify(rig.doc, null, 2));
-fs.writeFileSync(path.join(outDir, `${brief.name}.enemy-config.json`), JSON.stringify(enemyDoc, null, 2));
+if (!partialMode) {
+  fs.writeFileSync(path.join(outDir, `${brief.name}.rig-config.json`), JSON.stringify(rig.doc, null, 2));
+  fs.writeFileSync(path.join(outDir, `${brief.name}.enemy-config.json`), JSON.stringify(enemyDoc, null, 2));
+}
 
 const drawn = state.parts.filter((p) => p.image);
 console.log(`${brief.name}: ${drawn.length} parts (${drawn.map((p) => p.name).join(', ')}), ${rig.files.length} sprites, `

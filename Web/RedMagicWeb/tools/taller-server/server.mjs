@@ -16,7 +16,7 @@
 //   POST /api/disenos/imagen { loteId, itemId, type, data: <base64> } → { image }   a picture pasted on a proposal's card (docs/disenos/img/)
 //   GET  /api/enemigos/prefabs      → [{ name, prefab }]   enemy prefabs not in the library yet
 //   POST /api/enemigos/update { name, op: estado|add-pendiente|edit-pendiente|remove-pendiente, … }
-//   POST /api/enemigos/build { name, model, effort }   POST /api/enemigos/work { name, ids?, model, effort }   (queue a task)
+//   POST /api/enemigos/build { name, model, effort }   POST /api/enemigos/build-body { name, … } (step 1)   POST /api/enemigos/build-rest { name, paso2, … } (step 3)   POST /api/enemigos/work { name, ids?, model, effort }   (queue a task)
 //   POST /api/enemigos/add { prefab }   POST /api/enemigos/picture { name }   (the picture comes from Unity)
 //
 //   POST /api/adjunto { name, type, data: <base64> } → { id, name }   a reference image for a task's prompt (Logs/Taller/adjuntos/)
@@ -43,6 +43,7 @@ import { Store } from './store.mjs';
 import { Runner } from './runner.mjs';
 import { Disenos } from './disenos.mjs';
 import { Enemigos } from './enemigos.mjs';
+import { BEHAVIORS } from './design-prompts.mjs';
 import { loadZones, loadTypes } from '../enemy-prompt.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -207,7 +208,7 @@ async function api(req, res, url) {
     const lotes = disenos.list();
     const list = enemigos.list();
     const ids = [...lotes.flatMap((l) => l.taskIds || []), ...list.flatMap((e) => [e.tarea, ...e.pendientes.map((p) => p.tarea)])];
-    return send(res, 200, { lotes, enemigos: list, tasks: enemigos.taskStates(ids), zonas: loadZones(), tipos: loadTypes() });
+    return send(res, 200, { lotes, enemigos: list, tasks: enemigos.taskStates(ids), zonas: loadZones(), tipos: loadTypes(), comportamientos: Object.entries(BEHAVIORS).map(([id, b]) => ({ id, label: b.label })) });
   }
   if (route === 'GET /api/enemigos/prefabs') return send(res, 200, enemigos.prefabs());
   if (route === 'GET /api/img') return serveFile(res, disenos.resolveImage(url.searchParams.get('src')), 'no-cache');
@@ -249,6 +250,8 @@ async function api(req, res, url) {
   if (route === 'POST /api/disenos/request') return send(res, 200, disenos.request(body));
   if (route === 'POST /api/enemigos/update') return send(res, 200, enemigos.update(body));
   if (route === 'POST /api/enemigos/build') return send(res, 200, enemigos.build(body));
+  if (route === 'POST /api/enemigos/build-body') return send(res, 200, enemigos.buildBody(body));
+  if (route === 'POST /api/enemigos/build-rest') return send(res, 200, enemigos.buildRest(body));
   if (route === 'POST /api/enemigos/work') return send(res, 200, enemigos.work(body));
   if (route === 'POST /api/enemigos/add') return send(res, 200, enemigos.addExisting(body));
   if (route === 'POST /api/enemigos/picture') { enemigos.refreshPicture(body.name); return send(res, 200, { ok: true }); }

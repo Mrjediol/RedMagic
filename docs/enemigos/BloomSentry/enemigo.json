@@ -1,6 +1,6 @@
 {
   "name": "BloomSentry",
-  "estado": "por-aprobar",
+  "estado": "descartado",
   "diseno": {
     "image": "docs/enemigos/BloomSentry/diseno.png",
     "source": "comfy:claude/base_bloom_raw_00001_.png",

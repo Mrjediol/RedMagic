@@ -14,7 +14,7 @@
       "kind": "projectile",
       "name": "MagmaCore",
       "note": "Bola de fuego magma: núcleo blanco-amarillo, contorno naranja marcado y explosión grande con humo",
-      "status": "pending",
+      "status": "accepted",
       "vfx": {
         "preset": "fireball",
         "params": {
@@ -28,14 +28,15 @@
           "tail": 0.8,
           "length": 1.5
         }
-      }
+      },
+      "libraryId": "2247f6e4-19f9-45e6-b96d-0eaca98c94d5"
     },
     {
       "id": "2",
       "kind": "projectile",
       "name": "GlacierLance",
       "note": "Cristal de hielo afilado y limpio, borde cian nítido; impacto que revienta en añicos",
-      "status": "pending",
+      "status": "accepted",
       "vfx": {
         "preset": "iceShard",
         "params": {
@@ -48,14 +49,15 @@
           "particles": 6,
           "length": 1.5
         }
-      }
+      },
+      "libraryId": "e542e66f-f1d6-4043-b40b-223d94731b0c"
     },
     {
       "id": "3",
       "kind": "projectile",
       "name": "CrimsonMeteor",
       "note": "Orbe pesado carmesí, silueta redonda y contundente; explosión épica roja y dorada",
-      "status": "pending",
+      "status": "accepted",
       "vfx": {
         "preset": "heavyOrb",
         "params": {
@@ -68,7 +70,9 @@
           "particles": 8,
           "length": 1.5
         }
-      }
+      },
+      "libraryId": "3984da3b-b1f0-4576-8077-768eef92e9fa"
     }
-  ]
+  ],
+  "reviewedAt": "2026-10-04T00:08:59.845Z"
 }

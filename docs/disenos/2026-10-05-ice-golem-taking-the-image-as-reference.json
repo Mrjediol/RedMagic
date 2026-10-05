@@ -18,7 +18,7 @@
       "kind": "enemy",
       "name": "FrostbriteColossus",
       "note": "Golem de hielo pálido fiel a la referencia: torso con dos cristales cian, puño enorme flotante y falda-botas de hielo; hombrera nevada suelta",
-      "status": "pending",
+      "status": "discarded",
       "image": "comfy:claude/des_icegolem_1_raw_00002_.png"
     },
     {
@@ -26,7 +26,7 @@
       "kind": "enemy",
       "name": "GlacierBrute",
       "note": "Golem azul glaciar oscuro: torso azul intenso con cristal cian, cabeza verde-azulada con corona de carámbanos, puños translúcidos y base de bloques de hielo apilados",
-      "status": "pending",
+      "status": "discarded",
       "image": "comfy:claude/des_icegolem_2_raw_00003_.png"
     },
     {
@@ -34,7 +34,7 @@
       "kind": "enemy",
       "name": "VioletRimeWarden",
       "note": "Golem de piedra helada índigo-violeta con núcleo de cristal rosa, cabeza esférica agrietada con ojo magenta, puño enorme de cristales erizados y losa de hielo lila",
-      "status": "pending",
+      "status": "discarded",
       "image": "comfy:claude/des_icegolem_3_raw_00002_.png"
     },
     {
@@ -42,7 +42,7 @@
       "kind": "enemy",
       "name": "EmberheartIceGolem",
       "note": "Golem de hielo verde-azulado con cristal ámbar/naranja en el pecho (contraste cálido), cabeza cuadrada oscura con cuernos de hielo, dos puños flotantes y losa baja",
-      "status": "pending",
+      "status": "discarded",
       "image": "comfy:claude/des_icegolem_4b_raw_00002_.png"
     },
     {
@@ -50,8 +50,9 @@
       "kind": "enemy",
       "name": "SnowpackSentinel",
       "note": "Golem de nieve compacta redondeado: torso de bola de nieve con parches de piedra gris y dos cristales turquesa, cabeza de carbón con ojos blancos, puños-bola de nieve flotantes y losa con carámbanos",
-      "status": "pending",
+      "status": "discarded",
       "image": "comfy:claude/des_icegolem_5_raw_00001_.png"
     }
-  ]
+  ],
+  "reviewedAt": "2026-10-05T16:37:41.213Z"
 }

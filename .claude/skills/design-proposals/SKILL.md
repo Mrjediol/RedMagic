@@ -16,10 +16,10 @@ different>", "status": "pending", …proposal }`. Proposals in a batch must be c
 must print "Lote correcto". Commit the batch (and any new preset code). Report: one line per proposal.
 
 ## enemy — a base design (make-enemy step 1 only)
-Read `.claude/skills/make-enemy/SKILL.md` §0 and §1 and follow them: the Fracture look (separate floating rigid
-parts with gaps, Rayman-style, one shape per template slot), the template first (`rig-templates.js`), the
-prompt words (`STYLE` + `BACKDROP` of `claude-workflow.mjs`: cartoon vector, cel shading, thick black outline,
-pure white background). Fit the zone if the request implies one (GDD: `docs/GDD.md`).
+Read `.claude/skills/make-enemy/SKILL.md` §0 and §1 and follow them: every part fully visible (no part hidden behind
+another; a connected body is fine), the template first (`rig-templates.js`), and the Gemini prompt of
+`.claude/skills/make-enemy/base-prompt-gemini.md` (cartoon vector, thick black outline, pure white background).
+Fit the zone if the request implies one (GDD: `docs/GDD.md`).
 - One image per proposal, 1024×1024, with the generator the task names (none named = `gemini`):
   - **gemini** (default): `cd Web/RedMagicWeb/tools/gemini && node gemini-image.mjs --name des_<slug>_<n> --prompt "…"`
     (+ `--ref <abs path>,…` for the user's attached images when they ask for "like this"). ComfyUI is not needed.

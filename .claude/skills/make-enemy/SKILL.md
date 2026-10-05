@@ -19,13 +19,15 @@ batch** (`contact-sheet.mjs`), never at single full-size images. Trust the measu
 - Body: prefer floaters / rooted turrets made of **separate rigid parts** (GDD, `docs/idea-fracture.md`).
   Pick the template first (`rig-templates.js`: `floatingCaster` = Torso, Head, CastArm, OffArm, Lower,
   Accessory · `foldingSentry` = Base, Stem, Head) and describe exactly those parts.
-- **Fracture look (never skip — the base must already read as parts):** every base prompt says *"A fractured
-  creature made of separate floating rigid parts with small clear empty gaps between them, like a Rayman
-  character: no arms, no legs, no neck joining the parts, the hands float detached beside the body."* and ends
-  *"Each part is one simple chunky closed shape with its own complete black outline, no part overlapping
-  another."* Describe ONE shape per template slot and nothing more (extra chunks = extra islands with no slot).
-  Ground enemy: the `Lower` slot is one piece resting on the floor (a bottom snowball, boots fused into one
-  armored skirt, an ice slab) — say "the lower part rests flat on the floor". Reference: ShroomShaman.
+- **The base must show every part whole (never skip).** The base does NOT need floating parts: a connected
+  body (the robot, the turret) is fine. What matters is that **no part is hidden behind another**: a hidden
+  part does not exist in the pixels, so step 2 cannot cut it (2026-10-05 test, Gemini art: the bee, whose parts
+  are all visible, separated first time; the golem — fists in front of the legs and the other arm, an arm behind the
+  chest — and the robot — a forearm behind its cannon — came out with half an arm / half a leg). So the base
+  prompt uses the template in `base-prompt-gemini.md`: neutral pose, arms held away from the torso, hands never
+  covering legs or arms, legs apart with a visible gap, each part one closed shape with its own full outline.
+  One shape per template slot, nothing more (extra chunks = extra islands with no slot). Ground enemy: the `Lower`/
+  `Hips`/feet pieces rest on the floor.
 - **One depth per part (never skip):** a part is drawn whole in front of or whole behind each neighbour — the rig
   has one sorting order per part. Never design a part that goes INTO another (a neck in a pot's mouth, a body in a
   cup, an arm through a ring): it would have to be in front of the back rim and behind the front one. BloomSentry
@@ -37,18 +39,31 @@ batch** (`contact-sheet.mjs`), never at single full-size images. Trust the measu
   close it in the Base edit of step 2: *"…the opening of the pot is covered by a flat stone lid, a closed top"*.
 
 ## 1 · Base (stop: the user picks)
-`node claude-workflow.mjs run --no-cut --size 1024x1024 --seed N --name base_<x> --prompt "A 2D game enemy
-sprite, full body, side view facing right, centered… <parts> … STYLE BACKDROP"` — 5 candidates, one
-contact sheet, the user chooses.
+The user's best bases come from **Gemini** (pasted by hand in the Gemini app): give them the prompt of
+`base-prompt-gemini.md` (fixed block + the slot list of the template + the creature). They save the image and
+copy it into Comfy's `input` folder (root, no subfolders: `LoadImage` does not list them).
+In ComfyUI instead: `node claude-workflow.mjs run --no-cut --size 1024x1024 --seed N --name base_<x> --prompt "…"`
+with the same words — 5 candidates, one contact sheet, the user chooses.
+**The art faces right.** If the base comes out facing left (the 2026-10-05 robot did), mirror every final part
+horizontally before the brief (same canvas, so they stay assembled) and set `pivot` / `muzzle` for the flipped art.
 
 ## 2 · Parts, in place
 One edit per template slot, `--keep-size --ref "claude/base_<x>_raw_00001_.png [output]" --no-cut
 --name <e>_<Slot>`: *"Erase from image1 <every other part by name, with position words>, painting pure flat white
-where they were. Leave only <the part, with position words>, untouched, in its exact place, same size, same shape,
-same colors and same black outline, drawn complete with a closed end where it was cut. The result shows one single
-object on a pure flat white background."* — listing what to ERASE works far better than "keep only X" (Knight
-2026-10-03: "keep only" failed 5 of 8 parts — kept others or moved the part; "erase …" was clean 15 of 15).
-Run 2–3 seeds per part and pick from one sheet.
+where they were. Leave only <the part, with position words>, drawn COMPLETE: <what it is made of, from end to end>.
+<If something hides it:> Parts of it are hidden behind <the neighbour> in image1: redraw the hidden parts so the
+whole part is visible (do not draw <the neighbour>). Same size, same colors, same black outline, in its exact
+place on the canvas. The result shows one single object on a pure flat white background."* — listing what to ERASE
+works far better than "keep only X" (Knight 2026-10-03: "keep only" failed 5 of 8 parts; "erase …" was clean 15 of 15).
+- **Say "COMPLETE" and name what hides the part.** The old ending ("drawn complete with a closed end where it was cut")
+  only closes the cut, it does not rebuild what was hidden: the 2026-10-05 golem arm and leg stayed half. With the
+  new clause + the hidden piece named, the same parts came out whole in 3 of 3 seeds (arm, forearm sleeve) and 2 of 3
+  (leg). Do it from the start for every part that touches another in the base.
+- **Name the part by what it IS, not left/right.** "the leg on the left" returned the same leg for both feet; use
+  colour / object ("the right leg, under the dark blue fist"), and ERASE the neighbours by those words too.
+- **2 seeds per part, ONE contact sheet for the whole enemy** (`contact-sheet.mjs --cell 300`, ~1 look): 10 runs ≈ 3 min.
+  Retry only the parts that failed, with 3 seeds. Name seeds in the file (`<e>_<Slot>_s<N>`).
+  (Writing the shell loop: do not reuse `$s` for both the seed and the timer; the names then carry the clock.)
 The part stays where it was on the canvas → the parts assemble themselves. If the model keeps other
 parts, name each thing to delete and say "the single … at the far left".
 Check: `contact-sheet.mjs out.png --under claude/base… <parts>` (each part over the faded base).

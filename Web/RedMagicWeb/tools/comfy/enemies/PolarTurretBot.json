@@ -4,5 +4,295 @@
   "template": "floatingCaster",
   "parts": "claude/PolarTurretBot/final",
   "height": 2.8,
-  "slots": { "castArm": { "pivot": [0.15, 0.55], "muzzle": [0.99, 0.58] } }
+  "slots": {
+    "castArm": {
+      "pivot": [
+        0.15,
+        0.55
+      ],
+      "muzzle": [
+        0.99,
+        0.58
+      ]
+    }
+  },
+  "tuning": {
+    "maxHealth": 30,
+    "detectionRange": 15,
+    "attackRange": 11,
+    "moveSpeed": 5,
+    "attackCooldown": 1.6,
+    "moveSoundInterval": 0.9,
+    "builtInAttack": false
+  },
+  "effects": {
+    "bolt": {
+      "name": "PolarBotBolt",
+      "preset": "sparkBolt",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#3fb4ff",
+        "accent": "#bfeaff"
+      }
+    },
+    "big": {
+      "name": "PolarBotBigOrb",
+      "preset": "heavyOrb",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#3fb4ff",
+        "accent": "#bfeaff"
+      }
+    },
+    "charge": {
+      "name": "PolarBotCharge",
+      "preset": "chargeVortex",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#3fb4ff",
+        "accent": "#bfeaff"
+      }
+    },
+    "flash": {
+      "name": "PolarBotFlash",
+      "preset": "muzzleFlash",
+      "params": {
+        "core": "#ffffff",
+        "glow": "#3fb4ff",
+        "accent": "#bfeaff"
+      }
+    }
+  },
+  "rig": {
+    "muzzleFlashSize": 0
+  },
+  "attacks": [
+    {
+      "id": "TripleBurst",
+      "type": "ReleaseAttack",
+      "common": {
+        "displayName": "Ráfaga de 3",
+        "telegraph": 0.35,
+        "recovery": 0.5,
+        "damage": 5,
+        "gesture": "Burst",
+        "cooldownInAttacks": 0,
+        "weight": 1
+      },
+      "shots": [
+        {
+          "kind": "Projectile",
+          "aim": "Frozen",
+          "effect": "bolt",
+          "worldWidth": 0.4,
+          "projectile": {
+            "speed": 12,
+            "lifetime": 2.2,
+            "size": {
+              "x": 0.4,
+              "y": 0.4
+            }
+          }
+        },
+        {
+          "kind": "Projectile",
+          "aim": "Frozen",
+          "effect": "bolt",
+          "worldWidth": 0.4,
+          "projectile": {
+            "speed": 12,
+            "lifetime": 2.2,
+            "size": {
+              "x": 0.4,
+              "y": 0.4
+            }
+          }
+        },
+        {
+          "kind": "Projectile",
+          "aim": "Frozen",
+          "effect": "bolt",
+          "worldWidth": 0.4,
+          "projectile": {
+            "speed": 12,
+            "lifetime": 2.2,
+            "size": {
+              "x": 0.4,
+              "y": 0.4
+            }
+          }
+        }
+      ],
+      "deck": {
+        "minRange": 0,
+        "maxRange": 0
+      }
+    },
+    {
+      "id": "ChargedShot",
+      "type": "ReleaseAttack",
+      "common": {
+        "displayName": "Disparo cargado",
+        "telegraph": 1.1,
+        "recovery": 0.8,
+        "damage": 14,
+        "gesture": "Charge",
+        "cooldownInAttacks": 1,
+        "weight": 1
+      },
+      "shots": [
+        {
+          "kind": "Projectile",
+          "aim": "Frozen",
+          "effect": "big",
+          "worldWidth": 1.1,
+          "projectile": {
+            "speed": 8,
+            "lifetime": 2.2,
+            "size": {
+              "x": 1.1,
+              "y": 1.1
+            }
+          }
+        }
+      ],
+      "deck": {
+        "minRange": 0,
+        "maxRange": 0
+      }
+    }
+  ],
+  "gestures": [
+    {
+      "name": "Burst",
+      "recover": 0.3,
+      "steps": [
+        {
+          "name": "Apunta",
+          "duration": 0.25,
+          "ease": "out",
+          "poses": [
+            [
+              "castArm",
+              [
+                0,
+                0.05
+              ],
+              6
+            ]
+          ]
+        },
+        {
+          "name": "Tiro1",
+          "duration": 0.12,
+          "ease": "out",
+          "poses": [
+            [
+              "castArm",
+              [
+                -0.12,
+                0
+              ],
+              10
+            ]
+          ]
+        },
+        {
+          "name": "Tiro2",
+          "duration": 0.12,
+          "ease": "out",
+          "poses": [
+            [
+              "castArm",
+              [
+                -0.12,
+                0
+              ],
+              10
+            ]
+          ]
+        },
+        {
+          "name": "Tiro3",
+          "duration": 0.12,
+          "ease": "out",
+          "poses": [
+            [
+              "castArm",
+              [
+                -0.18,
+                0
+              ],
+              12
+            ]
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 1,
+          "at": 0
+        },
+        {
+          "step": 2,
+          "at": 0
+        },
+        {
+          "step": 3,
+          "at": 0
+        }
+      ]
+    }
+  ],
+  "gestureFx": {
+    "Burst": [
+      {
+        "effect": "flash",
+        "step": 1,
+        "at": 0,
+        "size": 0.7,
+        "facing": "world"
+      },
+      {
+        "effect": "flash",
+        "step": 2,
+        "at": 0,
+        "size": 0.7,
+        "facing": "world"
+      },
+      {
+        "effect": "flash",
+        "step": 3,
+        "at": 0,
+        "size": 0.8,
+        "facing": "world"
+      }
+    ],
+    "Charge": [
+      {
+        "effect": "charge",
+        "step": 0,
+        "at": 0,
+        "loop": true,
+        "untilStep": 1,
+        "size": 2.4,
+        "facing": "world"
+      },
+      {
+        "effect": "flash",
+        "step": 1,
+        "at": 1,
+        "size": 2,
+        "facing": "world"
+      }
+    ]
+  },
+  "releases": {
+    "Charge": [
+      {
+        "step": 1,
+        "at": 1
+      }
+    ]
+  }
 }

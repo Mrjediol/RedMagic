@@ -1,6 +1,6 @@
 {
   "name": "PolarTurretBot",
-  "estado": "con-pendientes",
+  "estado": "por-aprobar",
   "diseno": {
     "image": "docs/enemigos/PolarTurretBot/diseno.png",
     "source": "docs/disenos/img/2026-10-05-robot-azul-simple-brazo-como-canon-de-en__4.png",
@@ -15,17 +15,19 @@
       "id": "e2azvo3",
       "tipo": "comportamiento",
       "texto": "2 tipos de ataque, uno que dispara 3 bolas de energia rapidas, y otro donde  carga mas el ataque, el efecto de carga de energia es mas grande y sale 1 solo projectil mas grande",
-      "estado": "en-curso",
+      "estado": "hecho",
       "createdAt": "2026-10-05T20:51:14.887Z",
-      "tarea": "u10nnxh"
+      "tarea": "u10nnxh",
+      "resumen": "Dos ataques en el mazo: «Ráfaga de 3» (3 bolas rápidas, 0.4 de tamaño, vel. 12, gesto Burst con 3 disparos y retroceso del cañón) y «Disparo cargado» (carga de 1.1 s con vórtice grande, 1 proyectil de 1.1 de tamaño, vel. 8, daño 14). Se sortean por peso; el cargado tiene cooldown de 1 ataque. Efectos placeholder azules (sparkBolt/heavyOrb/chargeVortex/muzzleFlash)."
     },
     {
       "id": "k8kymyi",
       "tipo": "comportamiento",
       "texto": "15 rango detencion, 11 rango de ataque, 5 velocidad de movimiento",
-      "estado": "en-curso",
+      "estado": "hecho",
       "createdAt": "2026-10-05T20:52:44.895Z",
-      "tarea": "u10nnxh"
+      "tarea": "u10nnxh",
+      "resumen": "Detención 15, ataque 11, velocidad 5 fijados en el prefab (EnemyStats). Ataque propio desactivado: solo el mazo."
     }
   ],
   "createdAt": "2026-10-05T20:07:52.78Z",

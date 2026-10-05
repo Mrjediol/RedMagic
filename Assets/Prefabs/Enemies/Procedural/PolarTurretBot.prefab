@@ -422,6 +422,7 @@ GameObject:
   - component: {fileID: 4961867072567105853}
   - component: {fileID: 586288075595875220}
   - component: {fileID: 948899308483785337}
+  - component: {fileID: 6099762880431548452}
   m_Layer: 0
   m_Name: PolarTurretBot
   m_TagString: Untagged
@@ -622,13 +623,13 @@ MonoBehaviour:
     knockbackVertical: 3
     knockbackDuration: 0.18
     knockbackResistance: 0
-    detectionRange: 9
+    detectionRange: 15
     loseInterestGrace: 1
-    attackRange: 6
+    attackRange: 11
     personalSpace: 3
     retreatReleaseFactor: 1.35
     verticalTolerance: 3
-    moveSpeed: 2.5
+    moveSpeed: 5
     retreatSpeed: 2.2
     stopAtLedges: 1
     ledgeProbeDepth: 0.6
@@ -640,8 +641,22 @@ MonoBehaviour:
     attackKnockbackMultiplier: 1
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
-    attacks: []
-    builtInAttack: 1
+    attacks:
+    - attack: {fileID: 11400000, guid: 6501ab2896c72494f9b910404f70a469, type: 2}
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
+      minRange: 0
+      maxRange: 0
+      targetHeight: 0
+    - attack: {fileID: 11400000, guid: d36bf2757cdb13b4f8b71550b77e594d, type: 2}
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
+      minRange: 0
+      maxRange: 0
+      targetHeight: 0
+    builtInAttack: 0
     builtInWeight: 1
     defences: []
     meleeHitboxSize: {x: 1.2, y: 1}
@@ -935,12 +950,40 @@ MonoBehaviour:
       aim: 0
       aimParts: []
     releases:
-    - step: 0
+    - step: 1
       at: 1
       point: {fileID: 0}
       offset: {x: 0, y: 0}
     recover: 0.45
-    fx: []
+    fx:
+    - prefab: {fileID: 4776155290473436506, guid: 665b9ada5fe385d409ab243ec785be97, type: 3}
+      step: 0
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 4129524453415267327, guid: 134d186509cacdf499ede27bad6f92aa, type: 3}
+      step: 1
+      at: 1
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
     sounds: []
     legacyWindup: []
     legacyStrike: []
@@ -992,6 +1035,118 @@ MonoBehaviour:
     legacyStrike: []
     legacyStrikeTime: -1
     legacyShake: 0
+  - name: Burst
+    steps:
+    - name: Apunta
+      poses:
+      - part: {fileID: 523862328049130214}
+        move: {x: 0, y: 0.1024}
+        rotate: 6
+        scale: {x: 0, y: 0}
+      duration: 0.25
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 0
+      aimParts: []
+    - name: Tiro1
+      poses:
+      - part: {fileID: 523862328049130214}
+        move: {x: -0.2458, y: 0}
+        rotate: 10
+        scale: {x: 0, y: 0}
+      duration: 0.12
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 0
+      aimParts: []
+    - name: Tiro2
+      poses:
+      - part: {fileID: 523862328049130214}
+        move: {x: -0.2458, y: 0}
+        rotate: 10
+        scale: {x: 0, y: 0}
+      duration: 0.12
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 0
+      aimParts: []
+    - name: Tiro3
+      poses:
+      - part: {fileID: 523862328049130214}
+        move: {x: -0.3687, y: 0}
+        rotate: 12
+        scale: {x: 0, y: 0}
+      duration: 0.12
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 0
+      aimParts: []
+    releases:
+    - step: 1
+      at: 0
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
+    - step: 2
+      at: 0
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
+    - step: 3
+      at: 0
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
+    recover: 0.3
+    fx:
+    - prefab: {fileID: 4129524453415267327, guid: 134d186509cacdf499ede27bad6f92aa, type: 3}
+      step: 1
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 4129524453415267327, guid: 134d186509cacdf499ede27bad6f92aa, type: 3}
+      step: 2
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 4129524453415267327, guid: 134d186509cacdf499ede27bad6f92aa, type: 3}
+      step: 3
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    sounds: []
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   drivenLease: 0.25
   drivenReturn: 0.35
   staggerStrength: 2.5
@@ -1018,6 +1173,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e6fc707acbe7884cb21f94e3272ee9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Rigging.RigDriverCode
+--- !u!114 &6099762880431548452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7495333354011070827}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4729294e7f94484395dbcd86d60406a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Enemies.EnemyAttackHost
+  arenaHalfWidth: 10
+  arenaHeight: 8
+  feet: {fileID: 0}
+  fxSprite: {fileID: 0}
+  warnPrefab: {fileID: 0}
+  warnCirclePrefab: {fileID: 0}
+  warnArrowPrefab: {fileID: 0}
+  shockwavePrefab: {fileID: 0}
+  sweepBeamPrefab: {fileID: 0}
+  hazardPrefab: {fileID: 0}
+  platformPrefab: {fileID: 0}
 --- !u!1 &7884991060858611096
 GameObject:
   m_ObjectHideFlags: 0

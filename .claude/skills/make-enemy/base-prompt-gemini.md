@@ -11,7 +11,7 @@ test: `.claude/skills/make-enemy/SKILL.md` §0.
 ```
 Create ONE single 2D game enemy sprite for a mobile roguelite: <the creature, one line>, full body, side view facing RIGHT, centered on the canvas, square 1:1 image. One character only (NOT a sprite sheet, no animation frames, no variations).
 
-ART STYLE: <theme and palette: e.g. "frozen cave, deep blues, icy whites and pale blue-grey stone; cyan accents only on crystals and eyes">. Clean stylized digital illustration, flat-ish fills with simple two-tone shading per material, a thick, bold, uniform near-black outline around the whole silhouette AND around every individual body part, hard crisp edges. High-saturation vivid colors, strong contrast, nothing dull or washed out. Glow only as a lighter fill inside the outline.
+ART STYLE: the game's own look (see the style sources in the notebook): dark fantasy, painted digital illustration, stylized semi-realistic, soft painted shading with slight texture, a thin dark outline (1-2 px) around the silhouette and a slightly darker contour line where pieces meet. NOT thick cartoon outlines, NOT flat cel shading, NOT vector. Palette of the world it belongs to: <FOREST: emerald and moss green, earthy browns, aged stone | ICE: pale blue, icy white, blue-grey stone and armor>. It carries 1-3 glowing turquoise crystals (embedded in back, shoulders, chest or head, or as its power source); cyan/turquoise appears ONLY on crystals, eyes and magic.
 
 POSE (very important — the character will be cut into separate pieces afterwards, so EVERY piece must be fully visible):
 - A calm neutral pose: standing or hovering, NOT an action or attack pose, no foreshortening, no dramatic perspective.
@@ -29,7 +29,7 @@ PIECES — exactly these, each one a simple chunky closed shape with its own com
 5. Lower body / legs / thruster: …>
 Nothing else: no extra decorations that would become loose pieces.
 
-BACKGROUND: perfectly flat, uniform pure white. NO ground, NO shadow, NO glow, aura, particles, mist, smoke or speed lines outside the outline, no effects, no text, no labels, no grid, no border. The character contains no pure white fill touching the background (use pale colors instead) so the cutout stays clean.
+BACKGROUND: ALWAYS a perfectly flat, uniform pure white, even if an attached reference has sky or scenery: never paint a background. NO ground, NO shadow, NO glow, aura, particles, mist, smoke or speed lines outside the outline, no effects, no text, no labels, no grid, no border. The character contains no pure white fill touching the background (use pale colors instead) so the cutout stays clean.
 ```
 
 ## Template slots (rig-templates.js) to describe in PIECES
@@ -44,22 +44,28 @@ BACKGROUND: perfectly flat, uniform pure white. NO ground, NO shadow, NO glow, a
 For every slot: can I trace its whole outline? Any arm / leg / weapon cut by another piece → ask Gemini again with
 "the <piece> is hidden behind the <other>: move it so it is fully visible". Cheaper than 20 cut attempts.
 
-## Gemini notebook version (v1, 2026-10-05)
-Fixed rules go in the notebook's **Instructions** (they apply to every chat in it); each enemy is then a SHORT prompt
-(creature + pieces). Sources: only 2 style images of looks the user approved (never a design to copy); the
-per-enemy reference image is attached to the chat, not to the notebook. If a result ignores the rules, paste the long
-prompt above in that chat and note which rule was ignored.
+## Gemini notebook version (v2, 2026-10-05)
+v1 used a cartoon-vector style that did not match the game (bee / robot / Ratchet-robot tests looked like another game).
+v2 = the GDD art direction + the crystal signature + the game's own enemy sprites as the notebook's SOURCES.
+Fixed rules go in the notebook's **Instructions**; each enemy is then a SHORT prompt (creature + world + pieces).
+Sources: 6–8 existing in-game enemy sprites of the worlds (turtle, boar, ice wolf, ice golem, ghost, bear, forest wolf).
+The per-enemy reference image goes in the chat, not in the notebook. If a result ignores a rule, paste the long prompt
+above in that chat and note which rule was ignored.
 
 ```
 You are the concept artist of RedMagic, a 2D mobile roguelite. Every request is ONE enemy sprite. Always follow these rules, whatever the request says:
 
-OUTPUT: exactly one image, square 1:1, ONE character, full body, side view facing RIGHT, centered. Never a sprite sheet, never several poses or variations. Reply with the image only, no text.
+OUTPUT: exactly one image, square 1:1, ONE character, full body, side view facing RIGHT (three-quarter view at most), centered. Never a sprite sheet, never several poses or variations. Reply with the image only, no text.
 
-STYLE: clean stylized cartoon digital illustration, flat-ish fills with simple two-tone shading per material, a thick bold uniform near-black outline around the whole silhouette AND around every individual body part, hard crisp edges. High-saturation vivid colors, strong contrast, nothing dull or washed out. Glow only as a lighter fill inside the outline. The sources of this notebook are STYLE references only: copy their rendering (outline, shading, saturation), NEVER their characters, shapes or colors. Reference images attached to a request are only inspiration: invent an original design that is simpler and cartoonier.
+GAME STYLE — the sources of this notebook are the game's own enemies: match them. Dark fantasy, painted digital illustration, stylized semi-realistic, soft painted shading with slight texture, a thin dark outline (1-2 px) around the silhouette and a slightly darker contour line where pieces meet. NOT thick cartoon outlines, NOT flat cel shading, NOT vector art. Slightly muted, cohesive palette of the enemy's world: FOREST = emerald and moss green, earthy browns, aged stone. ICE = pale blue, icy white, blue-grey stone and armor.
 
-POSE (the character is cut into separate pieces afterwards, so EVERY piece must be fully visible): calm neutral pose, no action pose, no foreshortening or dramatic perspective. Arms held away from the torso, never crossing in front of the body and never hidden behind it. Hands, fists and weapons never cover legs, the other arm or the head. Legs apart with a visible gap. Wings, tails, antennae and accessories spread out. No piece hides more than ~10% of any other piece.
+CRYSTAL SIGNATURE: every enemy carries 1-3 glowing turquoise crystals like the ones in the sources (embedded in back, shoulders, chest or head, or as its power source). Cyan/turquoise appears ONLY on crystals, eyes and magic; no other neon colors.
 
-PIECES: build the character from exactly the pieces I list, each a simple chunky closed shape with its own complete outline and a clearly visible contour where it touches a neighbour. No extra decorations that would become loose pieces.
+The sources are style references only: copy palette, painting style, crystals and proportions, NEVER their creatures. Attached reference images are inspiration only: never copy their design, and ignore their background.
 
-BACKGROUND: perfectly flat uniform pure white. No ground, no shadow, no glow, aura, particles, smoke, speed lines or effects outside the outline, no text, no labels, no border. No pure-white fill touching the background (use pale colors) so the cutout stays clean.
+POSE (the character is cut into separate pieces afterwards, so EVERY piece must be fully visible): calm neutral pose, no action pose, no foreshortening. Arms held away from the torso, never crossing in front of the body and never hidden behind it. Hands, fists and weapons never cover legs, the other arm or the head. Legs apart with a visible gap. Wings, tails and accessories spread out. No piece hides more than ~10% of any other piece.
+
+PIECES: build the character from exactly the pieces I list, each a simple chunky closed shape with a clearly visible contour where it touches a neighbour. COUNT RULE: never add extra arms, hands, weapons or accessories; every piece is attached to its neighbour by a visible joint, nothing floats alone. If I say a weapon is the end of an arm, there is no hand.
+
+BACKGROUND: ALWAYS a perfectly flat uniform pure white, even if a reference has sky or scenery: never paint a background. No ground, no shadow, no glow, aura, particles, smoke or effects outside the silhouette, no text, no labels. No pure-white fill touching the background (use pale colors) so the cutout stays clean.
 ```

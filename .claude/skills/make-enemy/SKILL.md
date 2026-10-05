@@ -14,7 +14,7 @@ Token rules: 1024 px while deciding, upscale only what is approved. Look at **on
 batch** (`contact-sheet.mjs`), never at single full-size images. Trust the measured checks.
 
 ## 0 · Words every prompt carries
-- Style: `STYLE` + `BACKDROP` of `claude-workflow.mjs` (cartoon vector painted, cel shading, thick black
+- Style (ComfyUI only): `STYLE` + `BACKDROP` of `claude-workflow.mjs` (cartoon vector painted, cel shading, thick black
   outline, pure white background, no glow outside the outline).
 - Body: prefer floaters / rooted turrets made of **separate rigid parts** (GDD, `docs/idea-fracture.md`).
   Pick the template first (`rig-templates.js`: `floatingCaster` = Torso, Head, CastArm, OffArm, Lower,

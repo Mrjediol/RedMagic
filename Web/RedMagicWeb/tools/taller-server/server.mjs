@@ -186,11 +186,7 @@ async function api(req, res, url) {
   const route = `${req.method} ${url.pathname}`;
   const local = isLocal(req);
   if (route === 'POST /api/pair') {   // the phone, once: the key from the link becomes a cookie for every later call
-    if (route === 'POST /api/disenos/imagen') {   // a picture pasted on a proposal's card
-    const b = await readJson(req, 16e6);
-    try { return send(res, 200, disenos.attachImage(b)); } catch (err) { return send(res, 400, { error: err.message }); }
-  }
-  const body = await readJson(req);
+    const body = await readJson(req);
     if (!sameKey(body.key)) return send(res, 403, { error: 'clave' });
     res.setHeader('Set-Cookie', `${COOKIE}=${encodeURIComponent(phoneKey)}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Strict`);
     return send(res, 200, { ok: true });
@@ -221,6 +217,10 @@ async function api(req, res, url) {
   if (req.headers['x-taller-token'] !== token) return send(res, 403, { error: 'token' });
   const origin = req.headers.origin;
   if (origin && origin !== `http://${req.headers.host}` && origin !== `https://${req.headers.host}`) return send(res, 403, { error: 'origin' });
+  if (route === 'POST /api/disenos/imagen') {   // a picture pasted on a proposal's card
+    const b = await readJson(req, 16e6);
+    try { return send(res, 200, disenos.attachImage(b)); } catch (err) { return send(res, 400, { error: err.message }); }
+  }
   if (route === 'POST /api/adjunto') {
     const b = await readJson(req, 16e6);   // base64 of up to ~12 MB
     const ext = IMAGE_EXT[b.type];

@@ -1,36 +1,38 @@
-# Base prompt for Gemini (make-enemy step 1) — v3, 2026-10-05
+# Base prompt for Gemini (make-enemy step 1) — v4, 2026-10-05
 
-Paste into the Gemini app (new chat, or the notebook — see the notebook A/B). Fill `<…>`. Result goes to
-`Assets/Art/Test/` or Comfy's `input` folder (root).
+Self-contained: the game's look is IN the prompt (no notebook sources — Gemini copied the sources' creatures).
+Paste it in a new chat of the Gemini notebook whose Instructions are only the minimal block at the end.
+Fill `<…>`. Save the image into Comfy's `input` folder (root).
 
-Why these rules (test of 2026-10-05, bee / robot / golem): parts hidden behind other parts are not in the picture
-and cannot be cut out later. The bee, every part visible, separated first time; the golem (fists in front of the
-legs, one arm behind the chest) and the robot (forearm behind its cannon) came out incomplete. Details of the
-test: `.claude/skills/make-enemy/SKILL.md` §0.
+The ART STYLE / EDGE RULES wording is the one that made the game's existing enemies (ice wolf, forest bears…):
+painted semi-realistic, crystals, cyan only on crystals and eyes, thin outline, no glow outside. v1–v3 used a
+"cartoon vector, thick outline" style borrowed from the ComfyUI tests and the bee / robot looked like another game.
+POSE / PIECES come from the 2026-10-05 separation test: hidden parts cannot be cut out later (SKILL §0).
 
 ```
-Create ONE single 2D game enemy sprite for a mobile roguelite: <the creature, one line>, full body, side view facing RIGHT, centered on the canvas, square 1:1 image. One character only (NOT a sprite sheet, no animation frames, no variations).
+Generate ONE 2D game enemy sprite for a dark fantasy mobile roguelite: <creature, one line>. Side view facing right, full body, centered, SQUARE 1:1 image. One single character only: NOT a sprite sheet, no animation frames, no variations.
 
-ART STYLE: the game's own look (see the style sources in the notebook): dark fantasy, painted digital illustration, stylized semi-realistic, soft painted shading with slight texture, a thin dark outline (1-2 px) around the silhouette and a slightly darker contour line where pieces meet. NOT thick cartoon outlines, NOT flat cel shading, NOT vector. Palette of the world it belongs to: <FOREST: emerald and moss green, earthy browns, aged stone | ICE: pale blue, icy white, blue-grey stone and armor>. It carries 1-3 glowing turquoise crystals (embedded in back, shoulders, chest or head, or as its power source); cyan/turquoise appears ONLY on crystals, eyes and magic.
+ART STYLE: Dark fantasy <WORLD THEME>. <WORLD PALETTE>. Cyan/turquoise accents only on crystals and eyes. Painted digital illustration, stylized semi-realistic, slight texture, no grain/haze outside the character.
 
-POSE (very important — the character will be cut into separate pieces afterwards, so EVERY piece must be fully visible):
-- A calm neutral pose: standing or hovering, NOT an action or attack pose, no foreshortening, no dramatic perspective.
-- Arms held slightly away from the torso, never crossing in front of the body and never hidden behind it. Hands/fists/weapons never cover the legs, the other arm or the head.
-- Legs apart with a visible gap between them; neither leg hides the other.
-- Wings, tails, antennae and accessories spread out so none is covered by another piece.
-- No piece hides more than about 10% of any other piece.
+CHARACTER: <design: materials, colors, shapes, personality>. <1-3 glowing turquoise crystals: where they grow or what they power>.
 
-PIECES — exactly these, each one a simple chunky closed shape with its own complete outline and a clearly visible contour where it touches a neighbour:
-<one line per template slot, with its position, e.g.
-1. Head: …
-2. Torso: …
-3. Weapon arm (nearest to the viewer, extended forward): …
-4. Other arm (away from the viewer, hanging beside the body, fist fully visible): …
-5. Lower body / legs / thruster: …>
-Nothing else: no extra decorations that would become loose pieces.
+POSE (the character will be cut into separate pieces afterwards, so EVERY piece must be fully visible): calm neutral pose, not an action pose, no foreshortening. Arms held away from the torso, never crossing in front of the body and never hidden behind it. Hands, weapons and fists never cover the legs, the other arm or the head. Legs apart with a visible gap. Wings, tails and accessories spread out. No piece hides more than about 10% of another.
 
-BACKGROUND: ALWAYS a perfectly flat, uniform pure white, even if an attached reference has sky or scenery: never paint a background. NO ground, NO shadow, NO glow, aura, particles, mist, smoke or speed lines outside the outline, no effects, no text, no labels, no grid, no border. The character contains no pure white fill touching the background (use pale colors instead) so the cutout stays clean.
+PIECES — exactly these, no more (no extra arms, hands, weapons or loose parts; each piece joins its neighbour at a visible joint and has a clearly visible contour where they touch):
+1. <slot>: …
+2. <slot>: …
+
+EDGE RULES (critical):
+- Clean, crisp, hard silhouette with a 2px near-black outline all around, and a slightly darker contour line where pieces meet.
+- NO glow, aura, halo, bloom, particles, snow, frost mist, dust, smoke, blur or soft edges outside the outline. Crystal glow stays inside the silhouette.
+- ABSOLUTELY NO effects of any kind: no impact bursts, no energy beams, no motion lines. NO cast shadows, NO ground.
+- Background: perfectly flat, uniform pure white, zero gradient or noise, even if an attached reference image has sky or scenery. The character contains no pure white fill touching the background (use pale colors).
 ```
+
+## World blocks (copy into ART STYLE)
+- **ICE**: `Dark fantasy frozen cave and ice crystal theme. Cold saturated palette of deep blues, icy whites, pale blue-grey stone.`
+- **FOREST**: `Dark fantasy magical forest and crystal theme. Saturated emerald and moss green, earthy browns, aged stone.`
+- New world: take its palette from `docs/GDD.md` ▸ Art direction and the existing enemies of that world.
 
 ## Template slots (rig-templates.js) to describe in PIECES
 - `floatingCaster`: Head, Torso, CastArm (aims and fires — holds the weapon, forearm fully visible), OffArm, Lower
@@ -39,33 +41,15 @@ BACKGROUND: ALWAYS a perfectly flat, uniform pure white, even if an attached ref
   FrontFoot and BackFoot (each leg whole: thigh, knee, boot), Cape (optional).
 - `foldingSentry`: Base (closed solid), Stem, Head.
 - Insects / creatures with wings: put each wing in a slot (OffArm, Accessory), the abdomen in CastArm or Lower.
+- Name arms by the side of the IMAGE ("the arm on the LEFT of the image"): Gemini reads "front / back arm" as left / right.
+- A flame / glow that belongs to the body: one flat color, say so.
 
 ## Check the image before spending ComfyUI time (≈ 30 s)
-For every slot: can I trace its whole outline? Any arm / leg / weapon cut by another piece → ask Gemini again with
-"the <piece> is hidden behind the <other>: move it so it is fully visible". Cheaper than 20 cut attempts.
+For every slot: can I trace its whole outline? Any arm / leg / weapon cut by another piece, an extra limb, or a
+background → ask Gemini to fix THAT ("the <piece> is hidden behind the <other>: move it so it is fully visible",
+"remove the extra …", "pure white background") in the same chat. Cheaper than 20 cut attempts.
 
-## Gemini notebook version (v2, 2026-10-05)
-v1 used a cartoon-vector style that did not match the game (bee / robot / Ratchet-robot tests looked like another game).
-v2 = the GDD art direction + the crystal signature + the game's own enemy sprites as the notebook's SOURCES.
-Fixed rules go in the notebook's **Instructions**; each enemy is then a SHORT prompt (creature + world + pieces).
-Sources: 6–8 existing in-game enemy sprites of the worlds (turtle, boar, ice wolf, ice golem, ghost, bear, forest wolf).
-The per-enemy reference image goes in the chat, not in the notebook. If a result ignores a rule, paste the long prompt
-above in that chat and note which rule was ignored.
-
+## Notebook Instructions (minimal, no sources)
 ```
-You are the concept artist of RedMagic, a 2D mobile roguelite. Every request is ONE enemy sprite. Always follow these rules, whatever the request says:
-
-OUTPUT: exactly one image, square 1:1, ONE character, full body, side view facing RIGHT (three-quarter view at most), centered. Never a sprite sheet, never several poses or variations. Reply with the image only, no text.
-
-GAME STYLE — the sources of this notebook are the game's own enemies: match them. Dark fantasy, painted digital illustration, stylized semi-realistic, soft painted shading with slight texture, a thin dark outline (1-2 px) around the silhouette and a slightly darker contour line where pieces meet. NOT thick cartoon outlines, NOT flat cel shading, NOT vector art. Slightly muted, cohesive palette of the enemy's world: FOREST = emerald and moss green, earthy browns, aged stone. ICE = pale blue, icy white, blue-grey stone and armor.
-
-CRYSTAL SIGNATURE: every enemy carries 1-3 glowing turquoise crystals like the ones in the sources (embedded in back, shoulders, chest or head, or as its power source). Cyan/turquoise appears ONLY on crystals, eyes and magic; no other neon colors.
-
-The sources are style references only: copy palette, painting style, crystals and proportions, NEVER their creatures. Attached reference images are inspiration only: never copy their design, and ignore their background.
-
-POSE (the character is cut into separate pieces afterwards, so EVERY piece must be fully visible): calm neutral pose, no action pose, no foreshortening. Arms held away from the torso, never crossing in front of the body and never hidden behind it. Hands, fists and weapons never cover legs, the other arm or the head. Legs apart with a visible gap. Wings, tails and accessories spread out. No piece hides more than ~10% of any other piece.
-
-PIECES: build the character from exactly the pieces I list, each a simple chunky closed shape with a clearly visible contour where it touches a neighbour. COUNT RULE: never add extra arms, hands, weapons or accessories; every piece is attached to its neighbour by a visible joint, nothing floats alone. If I say a weapon is the end of an arm, there is no hand.
-
-BACKGROUND: ALWAYS a perfectly flat uniform pure white, even if a reference has sky or scenery: never paint a background. No ground, no shadow, no glow, aura, particles, smoke or effects outside the silhouette, no text, no labels. No pure-white fill touching the background (use pale colors) so the cutout stays clean.
+Every request is ONE enemy sprite for the RedMagic game. Follow each request's rules exactly. Reply with the image only, no text. Never reuse the design of an earlier chat in this notebook: each request is a new, original creature.
 ```

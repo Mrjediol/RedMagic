@@ -1,0 +1,53 @@
+{
+  "_doc": "Tipos de enemigo para los prompts de base (🎨 Diseños ▸ Pedir ▸ Cuerpo y Ataque, y tools/enemy-prompt.mjs --body --attack). Cada cuerpo da SU anatomía, su pose y sus piezas: una regla de un cuerpo (brazos, piernas) nunca se aplica a otro. 'libre' no dicta nada del cuerpo. Un cuerpo nuevo = una entrada en body (sale solo en la web). Textos en inglés: es lo que leen Gemini y ComfyUI. Orden de las claves = orden en el desplegable.",
+  "common": "Every piece of the body must be fully visible: no piece hides more than about 10% of another, and nothing covers a limb, the head or a joint. Each piece is one closed shape with its own full outline and a clearly visible contour where it touches the next one (the character is cut into separate pieces afterwards). Name sides by the image (the one on the LEFT / RIGHT of the image).",
+  "body": {
+    "humanoid": {
+      "label": "🧍 Humanoide",
+      "anatomy": "Upright humanoid anatomy: two arms, two legs, a torso and a head, standing on two legs.",
+      "pose": "Calm neutral standing pose, not an action pose, no foreshortening. Arms held away from the torso, never crossing in front of the body and never hidden behind it. Hands and fists never cover the legs, the other arm or the head. Legs apart with a visible gap.",
+      "pieces": ["Head", "Torso", "Upper arm (one on each side)", "Forearm with hand (one on each side)", "Leg (one on each side, feet resting on the floor)"]
+    },
+    "quadruped": {
+      "label": "🐾 Cuadrúpedo",
+      "anatomy": "Four-legged animal anatomy, standing on all fours with the body horizontal, side view. NO arms, NO hands, NOT upright, NOT bipedal, NOT humanoid: it moves on four legs like a real animal of its kind.",
+      "pose": "Calm neutral standing pose on four legs, body horizontal, head forward (to the RIGHT of the image). The four legs are visible and apart: the near legs do not hide the far legs. Tail spread out, not tucked under the body.",
+      "pieces": ["Head (with neck)", "Body (torso)", "Front leg (near and far)", "Hind leg (near and far)", "Tail"]
+    },
+    "flying": {
+      "label": "🪽 Volador (con alas)",
+      "anatomy": "A winged creature that flies: it has wings and is airborne. NO standing on the ground; legs, if its kind has them, hang or tuck under the body. No arms unless the kind naturally has them.",
+      "pose": "Calm airborne pose, wings fully spread out to the sides and open, never folded or hidden behind the body, each wing one clear shape. Body in the middle, head forward (to the RIGHT of the image).",
+      "pieces": ["Head", "Body (torso)", "Wing (near side)", "Wing (far side)", "Legs or tail (only if its kind has them)"]
+    },
+    "floating": {
+      "label": "🛸 Flotador (robot con propulsor)",
+      "anatomy": "A robotic floating machine, metal and mechanical (never an organic animal): it hovers because of a hover device (a thruster, jet or ring that blasts fire, vapour or energy downward). NO legs, NO feet, nothing touches the ground, it is airborne.",
+      "pose": "Calm hovering pose, the body in the middle with the hover device clearly visible below or around it. The hover device is its own closed shape and is not hidden behind the body.",
+      "pieces": ["Body (torso, the machine's shell)", "Head or sensor (only if the design has one)", "Hover device (the thruster, jet or ring that holds it up; its flame, if any, is ONE flat colour inside its own outline)"]
+    },
+    "libre": {
+      "label": "✨ Libre (sin reglas de cuerpo)",
+      "anatomy": "",
+      "pose": "Draw it in whatever pose and anatomy suit the creature described. The only rule: every part of its body fully visible, none hidden behind another.",
+      "pieces": []
+    }
+  },
+  "attack": {
+    "weapon": {
+      "label": "🔫 Arma",
+      "text": "It attacks with a WEAPON that fires its projectile (a cannon, gun, bow, launcher, blaster…). The weapon is its own separate piece, fully visible, held or mounted away from the other pieces, with the muzzle clearly visible and pointing to the RIGHT of the image. A weapon that is the end of an arm has no hand.",
+      "piece": "Weapon (the part that fires the projectile; muzzle clearly visible, pointing right)"
+    },
+    "magic": {
+      "label": "🔮 Magia",
+      "text": "It attacks with MAGIC, but the picture shows NO weapon, NO staff, nothing held and NO spell effect: just the plain creature in its calm idle form. The part it casts with (hand, mouth, horn…) is drawn normally, closed or relaxed; a different version of that part will be drawn later to cast.",
+      "piece": ""
+    },
+    "none": {
+      "label": "👊 Cuerpo a cuerpo",
+      "text": "It attacks in melee with its own body (claws, teeth, fists, horns…). NO weapon, NO ranged attack, nothing held.",
+      "piece": ""
+    }
+  }
+}

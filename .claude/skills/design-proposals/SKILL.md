@@ -20,9 +20,15 @@ The task names a **mode** and a **zone** (`docs/zonas.json`: ice, volcano, fores
 Read `.claude/skills/make-enemy/SKILL.md` §0–§1 and `base-prompt-gemini.md` (why the rules exist). The prompt of EVERY
 proposal is built by `Web/RedMagicWeb/tools/enemy-prompt.mjs` (zone look, crystal signature, pose / pieces / edge rules);
 you only write what changes per proposal:
-- `--creature` one line (what it is), `--design` materials / colours / shapes in the zone's palette, `--crystals` where its
-  1–3 crystals grow or what they power (the game's signature), and one `--piece "Name: …"` per slot of the template —
-  pick the template first (`rig-templates.js`: floatingCaster, groundHumanoid, foldingSentry…) and describe exactly its slots.
+- The task names a **body type** and an **attack type** (`docs/tipos-enemigo.json`; the user picked them in the web): pass them as
+  `--body humanoid|quadruped|flying|floating|libre --attack weapon|magic|none`. They carry the anatomy, pose and default pieces —
+  never write pieces by hand unless the design needs different ones, and never contradict them (no arms on a quadruped, no legs
+  on a floater). `floating` = a robot held up by a thruster. `weapon` = a separate piece that fires the projectile; `magic` = the plain
+  creature, NO weapon, and `--cast "<part that casts: hand, mouth…>"` (drawn idle, a casting version is made later); `none` = melee.
+  `libre` = the prompt dictates nothing about the body.
+- `--creature` one line (what it is), `--design` shapes / colours / personality, `--crystals` where its 1–3 crystals grow or what
+  they power (the game's signature). The zone gives the COLOUR PALETTE only: the creature is not covered in the zone's material
+  (a robot stays metal, a forest creature need not be covered in leaves). Optional `--piece "Name: …"` overrides the default pieces.
 - Every piece must be fully visible (no fist in front of a leg, no arm behind the chest, no weapon hiding a forearm); name
   the sides by the image ("the arm on the LEFT of the image"); a weapon that is the end of an arm has no hand; ONE flat
   colour for a flame. A user's reference image is inspiration only: invent something original, simpler, in the zone's look.

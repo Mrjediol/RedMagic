@@ -81,7 +81,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   const closed = new Set(JSON.parse(sessionStorage.getItem(CLOSED_KEY) || '[]'));
   let viewer = null;                        // { list: [key…], i } | { enemy: name }
   let stopSound = () => {};
-  const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium', generator: 'prompt', zone: '', images: [] };   // the request form
+  const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium', generator: 'prompt', zone: '', body: '', attack: '', images: [] };   // the request form
   const run = { model: 'sonnet', effort: 'medium' };                 // model of the tasks launched from an enemy
   const draft = { tipo: 'comportamiento', texto: '' };               // the pendiente being written in a sheet
   let adding = null;                        // null | [{ name, prefab }] while "＋ Enemigo existente" is open
@@ -387,6 +387,9 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const opt = (list, value) => list.map(([v, l]) => `<option value="${v}" ${v === value ? 'selected' : ''}>${l}</option>`).join('');
     const zonas = data?.zonas || [];
     if (!zonas.some((z) => z.id === ask.zone)) ask.zone = zonas[0]?.id || '';
+    const tipos = data?.tipos || { body: {}, attack: {} };
+    if (!tipos.body[ask.body]) ask.body = Object.keys(tipos.body)[0] || '';
+    if (!tipos.attack[ask.attack]) ask.attack = Object.keys(tipos.attack)[0] || '';
     return group('ask', '＋ Pedir propuestas', KIND[ask.kind].label.toLowerCase(), `
       <form class="enAsk" data-form="ask">
         <div class="enFilter">${Object.entries(KIND).map(([k, v]) => `<button type="button" class="small${ask.kind === k ? ' selected' : ''}" data-act="ask-kind" data-kind="${k}">${v.icon} ${v.label}</button>`).join('')}</div>
@@ -403,6 +406,8 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
           <label><input type="radio" name="askMode" data-ask="mode" value="one" ${ask.mode === 'one' ? 'checked' : ''}> Una tarea con todas</label>
           <label><input type="radio" name="askMode" data-ask="mode" value="each" ${ask.mode === 'each' ? 'checked' : ''}> Una tarea por propuesta</label>
           ${ask.kind === 'enemy' ? `<label title="Define la paleta, los cristales y el estilo del enemigo">Zona <select data-ask="zone">${opt(zonas.map((z) => [z.id, z.label]), ask.zone)}</select></label>
+          <label title="Anatomía y piezas del enemigo: cada tipo trae SUS reglas (un cuadrúpedo no lleva brazos, un flotador no lleva piernas). Libre = el prompt no dicta nada del cuerpo">Cuerpo <select data-ask="body">${opt(Object.entries(tipos.body).map(([k, v]) => [k, v.label]), ask.body)}</select></label>
+          <label title="Arma: es una pieza aparte que dispara el proyectil. Magia: el sprite es la criatura normal, sin arma (la parte que lanza se dibuja después). Cuerpo a cuerpo: sin arma">Ataque <select data-ask="attack">${opt(Object.entries(tipos.attack).map(([k, v]) => [k, v.label]), ask.attack)}</select></label>
           <label title="Prompt: te devuelve el texto para pegar en la app de Gemini y luego pegas la imagen en la tarjeta. ComfyUI: la tarea dibuja la imagen como hasta ahora">Cómo <select data-ask="generator">${opt(GENERATORS, ask.generator)}</select></label>` : ''}
           <label>Modelo <select data-ask="model">${opt(MODELS, ask.model)}</select></label>
           <label>Esfuerzo <select data-ask="effort">${opt(EFFORTS, ask.effort)}</select></label>
@@ -410,7 +415,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
         </div>
         <p class="efHint">Va a la cola: la tarea aparece abajo, en las tareas de este taller. "Una tarea por propuesta" = conversaciones más cortas; compara el coste
           con <code>session-usage.mjs</code> o con los ↓ tokens de cada informe. <b>Prompt</b> (enemigos): la tarea solo escribe el texto —no necesita ComfyUI—;
-          cópialo en Gemini y pega la imagen que te dé en la tarjeta (Ctrl+V). Las zonas se editan en <code>docs/zonas.json</code>.</p>
+          cópialo en Gemini y pega la imagen que te dé en la tarjeta (Ctrl+V). Las zonas (solo paleta) se editan en <code>docs/zonas.json</code> y los tipos de cuerpo / ataque en <code>docs/tipos-enemigo.json</code>.</p>
       </form>`, { defaultOpen: true });
   }
 

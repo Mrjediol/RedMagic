@@ -28,12 +28,12 @@ Batches with `demo: true` are test data made from older Comfy outputs.
 ## Asking for proposals (the form at the top of the tab)
 
 Kind + what the user wants + how many (1–10) + **one task with all** or **one task per proposal** (to compare costs)
-+ (enemy) **Zona** (`docs/zonas.json`: ice, volcano, forest… una zona nueva = una entrada; da paleta, color de los cristales y materiales) + **Cómo**:
++ (enemy) **Zona** (`docs/zonas.json`: ice, volcano, forest… una zona nueva = una entrada; da paleta y color de los cristales; solo la paleta, nunca materiales) + **Cuerpo** (`docs/tipos-enemigo.json` ▸ body: humanoid, quadruped, flying, floating, libre — cada uno trae SU anatomía, pose y piezas) + **Ataque** (▸ attack: weapon = pieza aparte que dispara, magic = criatura normal sin arma, none = cuerpo a cuerpo) + **Cómo**:
 **📋 Prompt para Gemini** (por defecto) o **🎨 Enemigo con ComfyUI** + model / effort → `POST /api/disenos/request` creates the empty batch
-(`taskIds`, `count`, `mode`, `zone`, `generator: prompt|comfy`) and the task(s) in phase **`designs`** — the 🎨 Diseños taller's task list
+(`taskIds`, `count`, `mode`, `zone`, `body`, `attack`, `generator: prompt|comfy`) and the task(s) in phase **`designs`** — the 🎨 Diseños taller's task list
 (`design: { lote, kind }`, `needs: comfy` only in ComfyUI mode) and queues them.
 
-**Enemy modes** (both build the base prompt with `tools/enemy-prompt.mjs`: zone look + crystal signature + pose / pieces / edge rules;
+**Enemy modes** (both build the base prompt with `tools/enemy-prompt.mjs`: zone palette + crystal signature + body-type anatomy / pose / pieces + attack type + edge rules (a body type's rules never reach another: `--body`, `--attack`, `--cast`);
 the task only writes creature, design, crystals and pieces):
 - **Prompt**: the item carries `prompt` and no `image`. The card shows the text (📋 Copiar prompt, ↗ Abrir Gemini); the user pastes it in the Gemini app
 and brings the picture back with 🖼 / Ctrl+V on the card (`POST /api/disenos/imagen` → `docs/disenos/img/<lote>__<item>.<ext>`, sets `item.image`;

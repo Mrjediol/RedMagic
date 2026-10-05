@@ -12,7 +12,7 @@
 //   GET  /api/disenos               → { lotes, enemigos, tasks }   docs/disenos/ (disenos.mjs) + docs/enemigos/ (enemigos.mjs)
 //   GET  /api/img?src=comfy:…|docs/…  → an image (only Comfy's output and docs/)
 //   POST /api/disenos/review { loteId, itemIds, decision: accept|discard|pending, names, libraryIds }  → { errors }
-//   POST /api/disenos/request { kind, request, count, mode: one|each, model, effort, zone, generator: prompt|comfy (enemy) }  → { loteId, taskIds }   (queues the task(s))
+//   POST /api/disenos/request { kind, request, count, mode: one|each, model, effort, zone, body, attack, generator: prompt|comfy (enemy) }  → { loteId, taskIds }   (queues the task(s))
 //   POST /api/disenos/imagen { loteId, itemId, type, data: <base64> } → { image }   a picture pasted on a proposal's card (docs/disenos/img/)
 //   GET  /api/enemigos/prefabs      → [{ name, prefab }]   enemy prefabs not in the library yet
 //   POST /api/enemigos/update { name, op: estado|add-pendiente|edit-pendiente|remove-pendiente, … }
@@ -43,7 +43,7 @@ import { Store } from './store.mjs';
 import { Runner } from './runner.mjs';
 import { Disenos } from './disenos.mjs';
 import { Enemigos } from './enemigos.mjs';
-import { loadZones } from '../enemy-prompt.mjs';
+import { loadZones, loadTypes } from '../enemy-prompt.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(here, '../..');
@@ -207,7 +207,7 @@ async function api(req, res, url) {
     const lotes = disenos.list();
     const list = enemigos.list();
     const ids = [...lotes.flatMap((l) => l.taskIds || []), ...list.flatMap((e) => [e.tarea, ...e.pendientes.map((p) => p.tarea)])];
-    return send(res, 200, { lotes, enemigos: list, tasks: enemigos.taskStates(ids), zonas: loadZones() });
+    return send(res, 200, { lotes, enemigos: list, tasks: enemigos.taskStates(ids), zonas: loadZones(), tipos: loadTypes() });
   }
   if (route === 'GET /api/enemigos/prefabs') return send(res, 200, enemigos.prefabs());
   if (route === 'GET /api/img') return serveFile(res, disenos.resolveImage(url.searchParams.get('src')), 'no-cache');

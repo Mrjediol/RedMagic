@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-05T16:39:45.933Z",
+  "updated": "2026-10-05T19:29:40.715Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -774,6 +774,74 @@
               "done": true
             }
           ]
+        },
+        {
+          "id": "g7c0at1",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 2: tortuga robotica",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «tortuga robotica»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: ice (docs/zonas.json): every proposal belongs to it (palette, crystals).\nCount: 2 proposals, different from each other.\nBatch: docs/disenos/2026-10-05-tortuga-robotica.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-05-tortuga-robotica",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "lastRunId": "2026-10-05T19-20-58-963Z_g7c0at1",
+          "sessionId": "995a3048-f19f-437f-8b24-a67a805edf66",
+          "result": {
+            "ok": true,
+            "text": "Añadí 2 propuestas de tortuga robótica (zona hielo, modo Prompt) a `docs/disenos/2026-10-05-tortuga-robotica.json`. `check-design-batch.mjs` dio \"Lote correcto: 2 propuesta(s)\". Está commiteado (`bda6902d`). No cambié código C#, así que no hubo nada que compilar, y no toqué `todo.json`.\n\n- **1 · ShellTurretTurtle** (plantilla `foldingSentry`): torreta que se esconde en un caparazón cerrado de acero oscuro con escarcha. Saca un cuello de periscopio con una cabeza-cañón. Tiene un cristal grande en la cúpula y uno pequeño en la boca del cañón.\n- **2 · HoverShellTurtle** (plantilla `floatingCaster`): dron volador con caparazón de cúpula de piedra azul-gris y acero plateado. Flota sobre un chorro de vapor frío. Una aleta es un cañón (sin mano) y la otra es una aleta lisa. Tiene un cristal grande en el lomo y uno pequeño en la punta del cañón.\n\n**Decisiones:**\n- Elegí las dos plantillas porque son las más distintas entre sí: una estática que duerme y otra que vuela.\n- En la torreta, la base es un caparazón sólido y cerrado, sin boca. El cuello queda entero detrás, como pide la regla de la plantilla.\n- Los prompts salen de `enemy-prompt.mjs --target gemini`, sin editar a mano.\n- Ninguna propuesta tiene imagen: las pegas tú en la tarjeta.\n\n**A probar (en la web, 📋 Tareas ▸ 🎨 Diseños):**\n1. Abre el lote y comprueba que se ven las 2 tarjetas con su prompt.\n2. Pega cada prompt en Gemini y revisa que salga una sola tortuga, fondo blanco y todas las piezas visibles.\n3. En la 1, mira que el cuello no salga ya dentro del caparazón. En la 2, que el chorro sea de un solo color plano y la aleta-cañón no tape el cuerpo.\n4. Pega la imagen en la tarjeta (🖼 / Ctrl+V) y acepta o rechaza cada propuesta.",
+            "at": "2026-10-05T19:21:45.924Z",
+            "durationMs": 46960,
+            "costUsd": 0.2585062,
+            "tokens": {
+              "input": 16,
+              "cacheWrite": 39699,
+              "cacheRead": 307941,
+              "output": 3809,
+              "calls": 9
+            },
+            "runId": "2026-10-05T19-20-58-963Z_g7c0at1",
+            "sessionId": "995a3048-f19f-437f-8b24-a67a805edf66"
+          }
+        },
+        {
+          "id": "mwbg274",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 2: tortuga robotica",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «tortuga robotica»\nMode: COMFY MODE — draw each base image with ComfyUI (tools/comfy/claude-workflow.mjs) — the skill's \"comfy\" recipe. Zone: ice (docs/zonas.json): every proposal belongs to it (palette, crystals).\nCount: 2 proposals, different from each other.\nBatch: docs/disenos/2026-10-05-tortuga-robotica-2.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [
+            "comfy"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-05-tortuga-robotica-2",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "lastRunId": "2026-10-05T19-24-04-239Z_mwbg274",
+          "sessionId": "a72818e0-2d5f-4760-8cf7-28087953519c",
+          "result": {
+            "ok": true,
+            "text": "Añadí 2 propuestas de tortuga robótica (zona hielo) al lote `docs/disenos/2026-10-05-tortuga-robotica-2.json`. El verificador del lote dice \"Lote correcto: 2 propuesta(s)\".\n\n**Propuestas** (1 semilla cada una, las dos pasaron a la primera, ComfyUI):\n1. **FrostShellSentry** (plantilla `foldingSentry`): torreta con caparazón de cúpula cerrado, cuello de pistón y cabeza-cañón con ojo de cristal. Imagen: `claude/des_tortuga_1_raw_00001_.png`, semilla 4101.\n2. **GlacierTortoiseGunner** (plantilla `groundHumanoid`): tortuga bípeda erguida con cabeza de pico y cañón de escarcha en un brazo. Imagen: `claude/des_tortuga_2_raw_00001_.png`, semilla 4202.\n\n**Decisiones y riesgos**\n- Las dos usan el mismo prompt base de hielo, pero con forma, plantilla e idea distintas.\n- La 1 trae patas bajo el caparazón, que no son ranuras de `foldingSentry`. Si la apruebas, hay que quitarlas o tratarlas como parte de la Base.\n- En la 2 el borde del caparazón roza el hombro y la cabeza. Al separar piezas puede salir algo tapado.\n- No usé `docs/tareas/todo.json`, como pediste. No hay documento de tarea que actualizar.\n\n**Commits:** hice dos. El primero subió el lote sin las propuestas por un fallo mío con las rutas. El segundo (`9eb3df6b`) las añade, y ese es el bueno.\n\n**Para probar**\n- Abre 📋 Tareas ▸ 🎨 Diseños y mira las dos tarjetas con su imagen.\n- Aprueba o rechaza cada una.\n- Si apruebas, el siguiente paso es separar piezas con `make-enemy`.",
+            "at": "2026-10-05T19:25:25.526Z",
+            "durationMs": 81286,
+            "costUsd": 0.29373580000000005,
+            "tokens": {
+              "input": 18,
+              "cacheWrite": 42557,
+              "cacheRead": 379109,
+              "output": 4765,
+              "calls": 10
+            },
+            "runId": "2026-10-05T19-24-04-239Z_mwbg274",
+            "sessionId": "a72818e0-2d5f-4760-8cf7-28087953519c"
+          }
         }
       ]
     }

@@ -20,12 +20,13 @@ const PICTURE = 'After editing the enemy sheet, refresh its picture for the web:
   + `unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@"<prefab>");'`;
 
 /** A design task: `index` (1-based) when the batch is split into one task per proposal. */
-export function designPrompt({ kind, request, count, loteFile, index = null, generator = null, zone = null }) {
+export function designPrompt({ kind, request, count, loteFile, index = null, generator = null, zone = null, body = null, attack = null }) {
   const lines = [
     `Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: ${kind} (${KIND_EN[kind]}).`,
     `What the user asked for (their words): «${request}»`,
   ];
   if (generator) lines.push(`Mode: ${GENERATOR_EN[generator]} — the skill's "${generator}" recipe. Zone: ${zone} (docs/zonas.json): every proposal belongs to it (palette, crystals).`);
+  if (generator && body) lines.push(`Body type: ${body}, attack type: ${attack} (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body ${body} --attack ${attack}${attack === 'magic' ? ' --cast <the body part that casts: hand, mouth…>' : ''}: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.`);
   if (index) {
     lines.push(`This task makes ONE proposal: number ${index} of ${count}. Read the batch before starting and make one different from those already in it.`);
   } else {

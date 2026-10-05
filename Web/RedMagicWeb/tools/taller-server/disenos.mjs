@@ -23,7 +23,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { designPrompt, KIND_LABEL } from './design-prompts.mjs';
-import { loadZones } from '../enemy-prompt.mjs';
+import { loadZones, loadTypes } from '../enemy-prompt.mjs';
 
 const run = promisify(execFile);
 const KINDS = ['enemy', 'projectile', 'fx', 'sound'];
@@ -55,13 +55,16 @@ export class Disenos {
   // ------------------------------------------------------------ asking for proposals (a task, or one per proposal)
 
   /** Creates the batch file (empty) and the task(s) that fill it, and queues them. */
-  request({ kind, request, count = 1, mode = 'one', model, effort, images = [], generator, zone }) {
+  request({ kind, request, count = 1, mode = 'one', model, effort, images = [], generator, zone, body, attack }) {
     images = (Array.isArray(images) ? images : []).filter((i) => i && /^[0-9a-f]{32}.(png|jpg|webp|gif)$/.test(String(i.id)))
       .map((i) => ({ id: i.id, name: String(i.name || '').slice(0, 80) }));
     if (!KINDS.includes(kind)) throw new Error('tipo inválido');
     generator = kind !== 'enemy' ? null : GENERATORS.includes(generator) ? generator : GENERATORS[0];
     const zones = loadZones();
     zone = kind !== 'enemy' ? null : zones.some((z) => z.id === zone) ? zone : zones[0]?.id || null;
+    const types = loadTypes();   // enemy: body type (anatomy, pose, pieces) and attack type (weapon / magic / none), docs/tipos-enemigo.json
+    body = kind !== 'enemy' ? null : types.body[body] ? body : Object.keys(types.body)[0];
+    attack = kind !== 'enemy' ? null : types.attack[attack] ? attack : Object.keys(types.attack)[0];
     request = String(request || '').trim();
     if (!request) throw new Error('Escribe qué quieres');
     count = Math.max(1, Math.min(10, Math.round(Number(count) || 1)));
@@ -69,13 +72,13 @@ export class Disenos {
     let id = `${new Date().toISOString().slice(0, 10)}-${slug}`;
     for (let n = 2; fs.existsSync(this._lotePath(id)); n++) id = `${new Date().toISOString().slice(0, 10)}-${slug}-${n}`;
     const loteFile = `docs/disenos/${id}.json`;
-    const lote = { title: `${count} × ${KIND_LABEL[kind]}: ${request}`.slice(0, 120), request, kind, count, mode, createdAt: new Date().toISOString(), ...(generator ? { generator, zone } : {}), taskIds: [], items: [] };
+    const lote = { title: `${count} × ${KIND_LABEL[kind]}: ${request}`.slice(0, 120), request, kind, count, mode, createdAt: new Date().toISOString(), ...(generator ? { generator, zone, body, attack } : {}), taskIds: [], items: [] };
     const each = mode === 'each' && count > 1;
     const tasks = (each ? Array.from({ length: count }, (_, i) => i + 1) : [null]).map((index) => this.store.addTask(
       { id: 'designs', name: '🎨 Designs', tag: 'Web' },
       {
         text: `Diseños · ${KIND_LABEL[kind]}${index ? ` ${index}/${count}` : ` × ${count}`}: ${request}`.slice(0, 140),
-        prompt: designPrompt({ kind, request, count, loteFile, index, generator, zone }),
+        prompt: designPrompt({ kind, request, count, loteFile, index, generator, zone, body, attack }),
         needs: generator === 'comfy' ? ['comfy'] : [],
         ...(images.length ? { images } : {}),
         ...(model ? { model } : {}), ...(effort ? { effort } : {}),

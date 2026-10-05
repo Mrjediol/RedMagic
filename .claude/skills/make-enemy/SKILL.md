@@ -25,8 +25,10 @@ batch** (`contact-sheet.mjs`), never at single full-size images. Trust the measu
   part does not exist in the pixels, so step 2 cannot cut it (2026-10-05 test, Gemini art: the bee, whose parts
   are all visible, separated first time; the golem — fists in front of the legs and the other arm, an arm behind the
   chest — and the robot — a forearm behind its cannon — came out with half an arm / half a leg). So the base
-  prompt uses the template in `base-prompt-gemini.md`: neutral pose, arms held away from the torso, hands never
-  covering legs or arms, legs apart with a visible gap, each part one closed shape with its own full outline.
+  prompt (built by `enemy-prompt.mjs --body … --attack …`, rules per body type in `docs/tipos-enemigo.json`) asks for a neutral pose
+  where no part hides another, each part one closed shape with its own full outline. The arms / legs wording applies ONLY to
+  `humanoid`; a quadruped has no arms, a floater no legs, a flyer spread wings (2026-10-05: the humanoid wording made wolves, wisps and
+  spirits come out as humanoids).
   One shape per template slot, nothing more (extra chunks = extra islands with no slot). Ground enemy: the `Lower`/
   `Hips`/feet pieces rest on the floor.
 - **One depth per part (never skip):** a part is drawn whole in front of or whole behind each neighbour — the rig

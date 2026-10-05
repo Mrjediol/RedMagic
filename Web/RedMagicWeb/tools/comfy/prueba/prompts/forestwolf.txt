@@ -1,0 +1,20 @@
+cine1p, A 2D game enemy sprite for a dark fantasy mobile roguelite, full body, side view facing right, centered, one single character on a square canvas (not a sprite sheet, no variations): a forest wolf.
+
+ART STYLE: Dark fantasy magical forest and crystal theme. Saturated emerald and moss green, earthy browns, aged stone, bark and soft golden highlights. Emerald/turquoise accents only on crystals and eyes. Hand-drawn 2D cartoon game art, flat cel-shaded colors, bold thick outlines, simplified chunky shapes, like a polished mobile game sprite, NOT realistic, no grain/haze outside the character.
+
+CHARACTER: Lean wolf with dark green-brown fur grown over with moss, bark-like patches on the back, amber eyes, hunting posture. Built from moss, bark, roots, leaves, mushrooms, mossy stone, fur. It carries 1-3 glowing emerald-turquoise forest crystals: one on the shoulder, one on the back. It looks like it belongs to the same world as the zone's cave.
+
+POSE (the character will be cut into separate pieces afterwards, so EVERY piece must be fully visible): calm neutral pose, not an action pose, no foreshortening. Arms held away from the torso, never crossing in front of the body and never hidden behind it. Hands, weapons and fists never cover the legs, the other arm or the head. Legs apart with a visible gap. Wings, tails and accessories spread out. No piece hides more than about 10% of another. Name sides by the image (the arm on the LEFT / RIGHT of the image).
+
+PIECES — exactly these 5, no more (no extra arms, hands, weapons or loose parts; each piece joins its neighbour at a visible joint and has a clearly visible contour where they touch):
+1. Head with snout pointing right
+2. Torso
+3. Front leg (one)
+4. Hind leg (one)
+5. Tail
+
+EDGE RULES (critical):
+- Clean, crisp, hard silhouette with a 2px near-black outline all around, and a slightly darker contour line where pieces meet.
+- NO glow, aura, halo, bloom, particles, snow, frost mist, dust, smoke, embers, blur or soft edges outside the outline. Crystal glow stays inside the silhouette.
+- ABSOLUTELY NO effects of any kind: no energy beams, no muzzle flashes, no impact bursts, no motion lines. NO cast shadows, NO ground. A flame or glow that belongs to the body is one flat color inside its own outline.
+- Background: perfectly flat, uniform pure white, zero gradient or noise, even if an attached reference image has sky or scenery. The character contains no pure white fill touching the background (use pale colors).

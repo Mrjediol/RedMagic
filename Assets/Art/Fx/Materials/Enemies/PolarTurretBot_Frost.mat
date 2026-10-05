@@ -44,10 +44,10 @@ Material:
     - _Brightness: 1
     - _EnableExternalAlpha: 0
     - _GlowPulse: 2.2
-    - _GlowThreshold: 0.45
+    - _GlowThreshold: 0.55
     - _Gradient: 0.12
     - _Hue: 0
-    - _RimWidth: 45
+    - _RimWidth: 14
     - _Saturation: 1
     - _ShadowRadius: 0
     - _ShadowSquash: 0.7

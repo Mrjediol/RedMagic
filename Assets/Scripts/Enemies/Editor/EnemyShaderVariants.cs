@@ -135,22 +135,22 @@ namespace RedMagic.Enemies.EditorTools
                 m.SetFloat("_SheenWidth", 0.22f);
                 m.SetFloat("_SheenPause", 1.8f);
                 m.SetColor("_GlowColor", new Color(0.3f, 1.2f, 2f, 1f));
-                m.SetFloat("_GlowThreshold", 0.45f);
+                m.SetFloat("_GlowThreshold", 0.55f);
                 m.SetFloat("_GlowPulse", 2.2f);
                 m.SetColor("_RimColor", new Color(0.7f, 1.2f, 1.6f, 1f));
-                m.SetFloat("_RimWidth", 45f);
+                m.SetFloat("_RimWidth", 14f);
             });
 
             // Infernal: tono hacia naranja, más saturado, brasas que pulsan.
             Create(basePath, "Inferno", m =>
             {
-                m.SetFloat("_Hue", 0.42f);
+                m.SetFloat("_Hue", 0.47f);
                 m.SetFloat("_Saturation", 1.3f);
-                m.SetColor("_GlowColor", new Color(2.2f, 0.7f, 0.1f, 1f));
-                m.SetFloat("_GlowThreshold", 0.4f);
+                m.SetColor("_GlowColor", new Color(2.2f, 0.7f, 0.1f, 0.8f));
+                m.SetFloat("_GlowThreshold", 0.62f);
                 m.SetFloat("_GlowPulse", 4f);
                 m.SetColor("_RimColor", new Color(2f, 0.5f, 0.05f, 1f));
-                m.SetFloat("_RimWidth", 50f);
+                m.SetFloat("_RimWidth", 14f);
             });
 
             // Vacío: violeta, apagado, contorno interior que brilla.
@@ -160,9 +160,9 @@ namespace RedMagic.Enemies.EditorTools
                 m.SetFloat("_Saturation", 0.8f);
                 m.SetFloat("_Brightness", 0.7f);
                 m.SetColor("_RimColor", new Color(1.6f, 0.5f, 2.4f, 1f));
-                m.SetFloat("_RimWidth", 60f);
+                m.SetFloat("_RimWidth", 16f);
                 m.SetColor("_GlowColor", new Color(1.5f, 0.4f, 2.2f, 1f));
-                m.SetFloat("_GlowThreshold", 0.45f);
+                m.SetFloat("_GlowThreshold", 0.55f);
                 m.SetFloat("_GlowPulse", 1.2f);
             });
 

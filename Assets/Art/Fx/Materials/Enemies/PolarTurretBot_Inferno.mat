@@ -44,10 +44,10 @@ Material:
     - _Brightness: 1
     - _EnableExternalAlpha: 0
     - _GlowPulse: 4
-    - _GlowThreshold: 0.4
+    - _GlowThreshold: 0.62
     - _Gradient: 0.12
-    - _Hue: 0.42
-    - _RimWidth: 50
+    - _Hue: 0.47
+    - _RimWidth: 14
     - _Saturation: 1.3
     - _ShadowRadius: 0
     - _ShadowSquash: 0.7
@@ -58,7 +58,7 @@ Material:
     - _ZWrite: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _GlowColor: {r: 2.2, g: 0.7, b: 0.1, a: 1}
+    - _GlowColor: {r: 2.2, g: 0.7, b: 0.1, a: 0.8}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor: {r: 2, g: 0.5, b: 0.05, a: 1}
     - _ShadowPos: {r: 0, g: 0, b: 0, a: 0}

@@ -1,0 +1,119 @@
+{
+  "kind": "enemy",
+  "enemyName": "TestGolem",
+  "tier": "Basic",
+  "tuning": {
+    "archetype": "Melee",
+    "staticAttack": "Ranged",
+    "maxHealth": 60,
+    "invulnerabilityDuration": 0,
+    "knockbackHorizontal": 6,
+    "knockbackVertical": 3,
+    "knockbackDuration": 0.18,
+    "knockbackResistance": 0,
+    "detectionRange": 9,
+    "loseInterestGrace": 1,
+    "attackRange": 1.8,
+    "personalSpace": 0,
+    "retreatReleaseFactor": 1.35,
+    "verticalTolerance": 3,
+    "moveSpeed": 2.2,
+    "retreatSpeed": 2.5,
+    "stopAtLedges": true,
+    "ledgeProbeDepth": 0.6,
+    "gravityScale": 3,
+    "sleepsUntilDetected": false,
+    "hoverOffset": 0.5,
+    "attackDamage": 14,
+    "attackCooldown": 1.6,
+    "attackKnockbackMultiplier": 1,
+    "attackReleaseFallback": 0.25,
+    "rootedWhileAttacking": true,
+    "meleeHitboxSize": {
+      "x": 1.2,
+      "y": 1
+    },
+    "meleeHitboxOffset": {
+      "x": 0.8,
+      "y": 0.5
+    },
+    "selfDestruct": false,
+    "explosionRadius": 1.7,
+    "explosionShake": 0.2,
+    "aimAtTarget": false,
+    "projectileTint": "#ffffffff",
+    "contactDamage": 6,
+    "contactDamageCooldown": 1,
+    "contactKnockbackMultiplier": 1,
+    "idleAnimSpeed": 1,
+    "moveAnimSpeed": 1,
+    "attackAnimSpeed": 1,
+    "hurtAnimSpeed": 1,
+    "deathAnimSpeed": 1,
+    "wakeAnimSpeed": 1,
+    "targetTag": "Player",
+    "hitLayers": "everything",
+    "obstacleLayers": [
+      "Ground",
+      "Platform"
+    ],
+    "moveSoundInterval": 0.6,
+    "attacks": [
+      {
+        "attack": "Punch",
+        "minRange": 0,
+        "maxRange": 5,
+        "targetHeight": "Any"
+      }
+    ],
+    "builtInAttack": false,
+    "builtInWeight": 1
+  },
+  "attacks": {
+    "Punch": {
+      "type": "MeleeStrikeAttack",
+      "displayName": "Puñetazo",
+      "telegraph": 0.7,
+      "recovery": 0.9,
+      "weight": 1,
+      "cooldownInAttacks": 0,
+      "damage": 14,
+      "gesture": "Punch",
+      "params": {
+        "hits": 1,
+        "hitboxOffset": {
+          "x": 1.4,
+          "y": 1.3
+        },
+        "hitboxSize": {
+          "x": 1.8,
+          "y": 1.6
+        },
+        "warnHitbox": true,
+        "launchProjectile": true,
+        "aimAtPlayer": false,
+        "projectile": {
+          "speed": 12,
+          "lifetime": 0.6,
+          "size": {
+            "x": 2,
+            "y": 2
+          },
+          "muzzleOffset": {
+            "x": 3,
+            "y": 1.8
+          },
+          "pierce": 0,
+          "homingTurnRate": 0,
+          "homingRange": 9,
+          "arcGravity": 0,
+          "impactRadius": 0,
+          "impactDamage": 0,
+          "faceDirection": false,
+          "facingAxis": "Right",
+          "aimMode": "Fixed"
+        }
+      }
+    }
+  }
+}

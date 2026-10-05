@@ -1,0 +1,671 @@
+{
+  "kind": "enemy",
+  "driver": "code",
+  "name": "TestGolem",
+  "pixelsPerUnit": 100,
+  "sprites": {
+    "Parts/BackHand.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.45,
+        "y": 0.85
+      }
+    },
+    "Parts/BackFoot.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.45,
+        "y": 0.05
+      }
+    },
+    "Parts/Hips.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.7
+      }
+    },
+    "Parts/Torso.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.4
+      }
+    },
+    "Parts/Head.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.45,
+        "y": 0.1
+      }
+    },
+    "Parts/FrontFoot.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.45,
+        "y": 0.05
+      }
+    },
+    "Parts/WeaponHand.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.15,
+        "y": 0.5
+      }
+    }
+  },
+  "root": {
+    "scale": 0.2195
+  },
+  "collider": {
+    "type": "box",
+    "size": {
+      "x": 7.83,
+      "y": 16.4
+    },
+    "offset": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "corpse": {
+    "linger": 1.1,
+    "fadeDuration": 0.4
+  },
+  "visual": {
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "rotation": 0,
+    "scale": 1
+  },
+  "parts": [
+    {
+      "name": "BackHand",
+      "parent": "Torso",
+      "sprite": "Parts/BackHand.png",
+      "sortingOrder": 1,
+      "position": {
+        "x": -6.863,
+        "y": -1.0235
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0.3,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.082
+        },
+        "rotate": 4,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.6,
+        "phase": 3.14
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "BackFoot",
+      "parent": "",
+      "sprite": "Parts/BackFoot.png",
+      "sortingOrder": 2,
+      "position": {
+        "x": -3.0735,
+        "y": -7.904
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0
+        },
+        "rotate": 0,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1,
+        "phase": 4.79992
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Hips",
+      "parent": "",
+      "sprite": "Parts/Hips.png",
+      "sortingOrder": 3,
+      "position": {
+        "x": -0.455,
+        "y": -2.101
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.0547
+        },
+        "rotate": 0,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.5,
+        "phase": 0.91669
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Torso",
+      "parent": "",
+      "sprite": "Parts/Torso.png",
+      "sortingOrder": 4,
+      "position": {
+        "x": 0.31,
+        "y": 1.924
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.1093
+        },
+        "rotate": 0,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.5,
+        "phase": 3.31665
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Head",
+      "parent": "Torso",
+      "sprite": "Parts/Head.png",
+      "sortingOrder": 5,
+      "position": {
+        "x": 0.8035,
+        "y": 1.349
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.0547
+        },
+        "rotate": 2,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.5,
+        "phase": 0.6
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "FrontFoot",
+      "parent": "",
+      "sprite": "Parts/FrontFoot.png",
+      "sortingOrder": 6,
+      "position": {
+        "x": 2.3855,
+        "y": -7.907
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0
+        },
+        "rotate": 0,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1,
+        "phase": 1.83339
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "WeaponHand",
+      "parent": "Torso",
+      "sprite": "Parts/WeaponHand.png",
+      "sortingOrder": 7,
+      "position": {
+        "x": 2.623,
+        "y": -1.594
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.082
+        },
+        "rotate": 3,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.6,
+        "phase": 4.23335
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Muzzle",
+      "parent": "Torso/WeaponHand",
+      "position": {
+        "x": 6.2416,
+        "y": 0
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": false
+    }
+  ],
+  "rig": {
+    "hoverBob": {
+      "x": 0,
+      "y": 0
+    },
+    "hoverSpeed": 2.2,
+    "leanDegrees": 6,
+    "leanFullSpeed": 2.5,
+    "leanResponse": 8,
+    "followStiffness": 60,
+    "followDamping": 10,
+    "followMaxOffset": 0.6833,
+    "moveGesture": "",
+    "aimArtAngle": 0,
+    "aimMaxAngle": 60,
+    "windup": 0.4,
+    "recover": 0.45,
+    "windupPullAngle": 10,
+    "windupBodyTilt": 6,
+    "recoilDelay": 0.06,
+    "recoilKick": 0.09,
+    "recoilAngle": 15,
+    "recoilDistance": 0.82,
+    "bodyRecoil": 0.41,
+    "muzzleFlashColor": "#8cffffe6",
+    "muzzleFlashSize": 0,
+    "muzzleFlashTime": 0.1,
+    "foldedStretch": 0.05,
+    "foldedRiderScaleY": 0.6,
+    "foldedRiderOffset": {
+      "x": 0,
+      "y": 0
+    },
+    "wakeDuration": 0.8,
+    "sleepDuration": 0.55,
+    "wakeOvershoot": 2.2,
+    "wakeFlickers": 0,
+    "wakeFlickerPortion": 0.4,
+    "drivenLease": 0.25,
+    "drivenReturn": 0.35,
+    "staggerStrength": 2.5,
+    "hurtDuration": 0.28,
+    "hurtTilt": 14,
+    "hurtSquash": 0.12,
+    "breakImpulse": 3.5,
+    "breakUpward": 4,
+    "breakSpin": 540,
+    "breakGravity": 20,
+    "breakBounce": 0.35,
+    "breakGround": [
+      "Ground",
+      "Platform"
+    ],
+    "aimPart": "Torso/WeaponHand",
+    "muzzle": "Torso/WeaponHand/Muzzle",
+    "stretchPart": null,
+    "stretchRiders": []
+  },
+  "spriteSwaps": [],
+  "gestures": [
+    {
+      "name": "Punch",
+      "steps": [
+        {
+          "name": "Echa atrás",
+          "duration": 0.3,
+          "ease": "out",
+          "stretch": true,
+          "shake": 0,
+          "aim": false,
+          "aimParts": [],
+          "poses": [
+            {
+              "part": "Torso/WeaponHand",
+              "move": {
+                "x": -2.46,
+                "y": 0.5467
+              },
+              "rotate": -25,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/BackHand",
+              "move": {
+                "x": 0.2733,
+                "y": 0.2733
+              },
+              "rotate": 5,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 6,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": -0.328,
+                "y": 0
+              },
+              "rotate": 4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Golpea",
+          "duration": 0.12,
+          "ease": "in",
+          "stretch": false,
+          "shake": 0,
+          "aim": false,
+          "aimParts": [],
+          "poses": [
+            {
+              "part": "Torso/WeaponHand",
+              "move": {
+                "x": 3.0067,
+                "y": 0
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/BackHand",
+              "move": {
+                "x": -0.82,
+                "y": 0
+              },
+              "rotate": -8,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -6,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Torso/Head",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 1.0933,
+                "y": 0
+              },
+              "rotate": -4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "FrontFoot",
+              "move": {
+                "x": 0.9567,
+                "y": 0
+              },
+              "rotate": 0,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 1,
+          "at": 0.6,
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "recover": 0.4,
+      "fx": []
+    }
+  ],
+  "gait": {
+    "stride": 0.7,
+    "fullSpeed": 2.2,
+    "minStride": 0.4,
+    "duty": 0.55,
+    "lift": 0.2,
+    "footTilt": 14,
+    "bodyBob": 0.06,
+    "maxSpeed": 3.5,
+    "settleTime": 0.15,
+    "feet": [
+      {
+        "part": "BackFoot",
+        "phase": 0
+      },
+      {
+        "part": "FrontFoot",
+        "phase": 0.5
+      }
+    ],
+    "layers": [
+      {
+        "part": "Torso/BackHand",
+        "phase": 0.5,
+        "swing": {
+          "x": 0.14,
+          "y": 0
+        },
+        "bob": 0,
+        "rotate": 10
+      },
+      {
+        "part": "Torso/WeaponHand",
+        "phase": 0,
+        "swing": {
+          "x": 0.07,
+          "y": 0
+        },
+        "bob": 0,
+        "rotate": 4
+      },
+      {
+        "part": "Hips",
+        "phase": 0,
+        "swing": {
+          "x": 0,
+          "y": 0
+        },
+        "bob": 0,
+        "rotate": 2.5
+      },
+      {
+        "part": "Torso",
+        "phase": 0.5,
+        "swing": {
+          "x": 0,
+          "y": 0
+        },
+        "bob": 0,
+        "rotate": -1.5
+      },
+      {
+        "part": "Torso/Head",
+        "phase": 0.08,
+        "swing": {
+          "x": 0,
+          "y": 0
+        },
+        "bob": -0.02,
+        "rotate": 1.5
+      }
+    ]
+  },
+  "idleGestures": {
+    "gestures": [],
+    "interval": 4,
+    "chance": 0.6,
+    "windup": 0.5
+  },
+  "transitionGestures": {
+    "gestures": [],
+    "chance": 0.5,
+    "windup": 0.3
+  }
+}

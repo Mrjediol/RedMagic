@@ -1,0 +1,147 @@
+{
+  "kind": "enemy",
+  "enemyName": "TestRobot",
+  "tier": "Basic",
+  "tuning": {
+    "archetype": "FlyingRanged",
+    "staticAttack": "Ranged",
+    "maxHealth": 30,
+    "invulnerabilityDuration": 0,
+    "knockbackHorizontal": 6,
+    "knockbackVertical": 3,
+    "knockbackDuration": 0.18,
+    "knockbackResistance": 0,
+    "detectionRange": 9,
+    "loseInterestGrace": 1,
+    "attackRange": 6,
+    "personalSpace": 3,
+    "retreatReleaseFactor": 1.35,
+    "verticalTolerance": 3,
+    "moveSpeed": 2.5,
+    "retreatSpeed": 2.2,
+    "stopAtLedges": true,
+    "ledgeProbeDepth": 0.6,
+    "gravityScale": 3,
+    "sleepsUntilDetected": false,
+    "hoverOffset": 1.2,
+    "attackDamage": 8,
+    "attackCooldown": 1.8,
+    "attackKnockbackMultiplier": 1,
+    "attackReleaseFallback": 0.25,
+    "rootedWhileAttacking": true,
+    "meleeHitboxSize": {
+      "x": 1.2,
+      "y": 1
+    },
+    "meleeHitboxOffset": {
+      "x": 0.8,
+      "y": 0.5
+    },
+    "selfDestruct": false,
+    "explosionRadius": 1.7,
+    "explosionShake": 0.2,
+    "aimAtTarget": true,
+    "projectileTint": "#73ffffff",
+    "contactDamage": 0,
+    "contactDamageCooldown": 1,
+    "contactKnockbackMultiplier": 1,
+    "idleAnimSpeed": 1,
+    "moveAnimSpeed": 1,
+    "attackAnimSpeed": 1,
+    "hurtAnimSpeed": 1,
+    "deathAnimSpeed": 1,
+    "wakeAnimSpeed": 1,
+    "targetTag": "Player",
+    "hitLayers": "everything",
+    "obstacleLayers": [
+      "Ground",
+      "Platform"
+    ],
+    "moveSoundInterval": 0.9,
+    "projectile": {
+      "speed": 9,
+      "lifetime": 2.5,
+      "size": {
+        "x": 0.4,
+        "y": 0.4
+      },
+      "muzzleOffset": {
+        "x": 0.65,
+        "y": 0.1
+      },
+      "pierce": 0,
+      "homingTurnRate": 0,
+      "homingRange": 9,
+      "arcGravity": 0,
+      "impactRadius": 0,
+      "impactDamage": 0,
+      "faceDirection": false,
+      "facingAxis": "Right",
+      "aimMode": "Fixed"
+    },
+    "attacks": [
+      {
+        "attack": "Shot",
+        "minRange": 0,
+        "maxRange": 0,
+        "targetHeight": "Any"
+      }
+    ],
+    "builtInAttack": false,
+    "builtInWeight": 1
+  },
+  "attacks": {
+    "Shot": {
+      "type": "ReleaseAttack",
+      "displayName": "Disparo",
+      "telegraph": 0.4,
+      "recovery": 0.8,
+      "weight": 1,
+      "cooldownInAttacks": 0,
+      "damage": 8,
+      "gesture": "Flick",
+      "params": {
+        "shots": [
+          {
+            "kind": "Projectile",
+            "aim": "Frozen",
+            "angle": 0,
+            "count": 5,
+            "arcDegrees": 50,
+            "spawnRadius": 0,
+            "projectile": {
+              "speed": 9,
+              "lifetime": 2.5,
+              "size": {
+                "x": 0.4,
+                "y": 0.4
+              },
+              "muzzleOffset": {
+                "x": 0.65,
+                "y": 0.1
+              },
+              "pierce": 0,
+              "homingTurnRate": 0,
+              "homingRange": 9,
+              "arcGravity": 0,
+              "impactRadius": 0,
+              "impactDamage": 0,
+              "faceDirection": false,
+              "facingAxis": "Right",
+              "aimMode": "Fixed"
+            },
+            "strikeSize": {
+              "x": 1.4,
+              "y": 1.2
+            },
+            "strikeOffset": {
+              "x": 1,
+              "y": 0
+            },
+            "damage": 0
+          }
+        ]
+      }
+    }
+  }
+}

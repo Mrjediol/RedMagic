@@ -1,0 +1,11 @@
+{
+  "name": "TestBee",
+  "request": "Prueba de separación: abeja kamikaze del bosque (arte de Gemini, una sola imagen).",
+  "template": "floatingCaster",
+  "parts": "claude/bee/final",
+  "height": 2.4,
+  "slots": { "castArm": { "pivot": [0.6, 0.1], "muzzle": [0.5, 0.95] } },
+  "tuning": { "archetype": "FlyingMelee", "selfDestruct": true, "maxHealth": 18, "attackRange": 1.4, "attackDamage": 14,
+    "explosionRadius": 2, "attackCooldown": 1, "moveSpeed": 3.6, "personalSpace": 0, "hoverOffset": 0.4, "moveSoundInterval": 0.5 },
+  "rig": { "muzzleFlashSize": 0 }
+}

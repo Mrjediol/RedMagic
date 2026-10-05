@@ -1,0 +1,16 @@
+{
+  "name": "TestRobot",
+  "request": "Prueba de separación: robot volador con cañón de energía (arte de Gemini, una sola imagen).",
+  "template": "floatingCaster",
+  "parts": "claude/robot/final",
+  "height": 2.8,
+  "slots": { "castArm": { "pivot": [0.2, 0.6], "muzzle": [0.98, 0.42] } },
+  "tuning": { "maxHealth": 30, "attackDamage": 8, "attackCooldown": 1.8, "moveSoundInterval": 0.9, "builtInAttack": false },
+  "attacks": [
+    { "id": "Shot", "type": "ReleaseAttack",
+      "common": { "displayName": "Disparo", "telegraph": 0.4, "recovery": 0.8, "damage": 8, "gesture": "Flick", "cooldownInAttacks": 0, "weight": 1 },
+      "shots": [ { "kind": "Projectile", "aim": "Frozen", "projectile": { "speed": 9, "lifetime": 2.5, "size": { "x": 0.4, "y": 0.4 } } } ],
+      "deck": { "minRange": 0, "maxRange": 0 } }
+  ],
+  "rig": { "muzzleFlashSize": 0 }
+}

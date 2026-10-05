@@ -23,7 +23,8 @@ namespace RedMagic.Rigging.EditorTools
     /// </summary>
     public static class WebBridgeMenu
     {
-        private const string ServeCommand = "npx serve Web/RedMagicWeb";
+        // El servidor de la web es el del taller (sirve la web y la API de 📋 Tareas): docs/architecture/tareas.md.
+        private const string ServeCommand = "Web\\RedMagicWeb\\tools\\taller-server\\start.cmd";
 
         [MenuItem("CONTEXT/ProceduralRig/Editar gestos y ataques en la web")]
         private static void OpenFromContext(MenuCommand command)
@@ -96,7 +97,7 @@ namespace RedMagic.Rigging.EditorTools
             {
                 string command = ServeCommandFor(WebBridgeServer.WebUrl);
                 int choice = EditorUtility.DisplayDialogComplex("La web no responde",
-                    $"No hay nada en {WebBridgeServer.WebUrl}.\n\nArráncala desde la carpeta del proyecto con:\n\n    {command}\n\n" +
+                    $"No hay nada en {WebBridgeServer.WebUrl}.\n\nArráncala (doble clic, o desde la carpeta del proyecto):\n\n    {command}\n\n" +
                     "(Si la sirves en otra dirección, cámbiala en Biblioteca Jere, abajo: \"Web\".)",
                     "Copiar el comando", "Cancelar", "Abrir igualmente");
                 if (choice == 0) { EditorGUIUtility.systemCopyBuffer = command; return; }
@@ -106,8 +107,7 @@ namespace RedMagic.Rigging.EditorTools
             Application.OpenURL(WebBridgeServer.BuildUrl(prefabPath, gesture, attack));
         }
 
-        private static string ServeCommandFor(string url) =>
-            Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Port != 3000 ? $"{ServeCommand} -l {uri.Port}" : ServeCommand;
+        private static string ServeCommandFor(string url) => ServeCommand;
 
         private static bool WebAnswers(string url)
         {

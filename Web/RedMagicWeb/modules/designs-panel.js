@@ -72,7 +72,7 @@ function tidyName(kind, s) {
   return strip(s).replace(/[^A-Za-z0-9_]+/g, '_');
 }
 
-export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges = () => {}, mobile = false }) {
+export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges = () => {}, onEditBody = null, mobile = false }) {
   const roots = [root, enemiesRoot];
   let token = null;
   let data = null, dataText = '';
@@ -575,8 +575,8 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const estadoButtons = [
       e.estado === 'por-montar' ? v('build-body', '▶ Montar por pasos (cuerpo primero)', 'primary') + v('build', '▶ Montar completo (make-enemy)') : '',
       e.estado === 'montando-cuerpo' && !active(t) ? v('build-body', '▶ Reintentar el cuerpo') : '',
-      e.estado === 'cuerpo-por-aprobar' ? v('estado', '✓ Aprobar cuerpo', 'primary', 'data-estado="cuerpo-aprobado"') + v('build-body', '↻ Rehacer el cuerpo') : '',
-      e.estado === 'cuerpo-aprobado' ? v('build-body', '↻ Rehacer el cuerpo') + v('estado', '↶ Volver a revisar', '', 'data-estado="cuerpo-por-aprobar"') : '',
+      e.estado === 'cuerpo-por-aprobar' ? v('estado', '✓ Aprobar cuerpo', 'primary', 'data-estado="cuerpo-aprobado"') + v('edit-body', '✎ Editar cuerpo', '', 'title="Lo abre en Enemy Studio, leído de Unity: ajusta tamaños, capas y distancias, guarda en Unity y vuelve aquí"') + v('build-body', '↻ Rehacer el cuerpo') : '',
+      e.estado === 'cuerpo-aprobado' ? v('edit-body', '✎ Editar cuerpo') + v('build-body', '↻ Rehacer el cuerpo') + v('estado', '↶ Volver a revisar', '', 'data-estado="cuerpo-por-aprobar"') : '',
       e.estado === 'montando' && !active(t) ? v('build', '▶ Reintentar el montaje') : '',
       e.estado === 'por-aprobar' ? v('estado', '✓ Aprobar', 'primary', 'data-estado="aprobado"') : '',
       ['por-aprobar', 'aprobado'].includes(e.estado) ? v('estado', '⚠ Tiene pendientes', '', 'data-estado="con-pendientes"') : '',
@@ -601,7 +601,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
           ${e.montaje?.resumen ? `<div><span class="efHint">Montaje</span> ${esc(e.montaje.resumen)}</div>` : ''}
           ${taskLine(e)}
           ${e.cuerpo?.resumen ? `<div><span class="efHint">Cuerpo</span> ${esc(e.cuerpo.resumen)}</div>` : ''}
-          ${e.estado === 'cuerpo-por-aprobar' ? '<p class="efHint">Mira el cuerpo montado. Si las proporciones, distancias o capas no cuadran: 🧬 Enemy Studio (con Unity abierto: abrirlo desde el proyecto, ajustar, 💾 Guardar en Unity). Si hay que rehacerlo, apunta un Pendiente de tipo Sprite y pulsa Rehacer.</p>' : ''}
+          ${e.estado === 'cuerpo-por-aprobar' ? '<p class="efHint">Mira el cuerpo montado. Si las proporciones, distancias o capas no cuadran: ✎ Editar cuerpo (se abre en Enemy Studio; ajusta, 💾 Guardar en Unity y vuelves aquí; hace falta Unity abierto). Si hay que rehacerlo, apunta un Pendiente de tipo Sprite y pulsa Rehacer.</p>' : ''}
           ${e.estado === 'cuerpo-aprobado' ? step2Form(e) : ''}
           <div class="enBtns wrap">${estadoButtons}</div>
           <h3>Pendientes</h3>
@@ -682,6 +682,10 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const name = viewer.enemy;
     const upd = (body, msg) => post('enemigos/update', { name, ...body }, msg);
     if (v === 'build') post('enemigos/build', { name, ...run }, `${name}: a la cola (make-enemy)`);
+    else if (v === 'edit-body') {
+      const e = enemyByName(name);
+      if (e?.prefab && onEditBody) { closeViewer(); onEditBody(e); }
+    }
     else if (v === 'build-body') post('enemigos/build-body', { name, ...run }, `${name}: a la cola (paso 1, cuerpo)`);
     else if (v === 'build-rest') {
       const f = p2Of(name);
@@ -863,5 +867,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
 
   return {
     onShow: () => { dataText = ''; poll(); },
+    /** Back from Enemy Studio: the enemy's sheet again, with its picture redone from the saved prefab. */
+    reopenSheet: (name) => { viewer = { enemy: name }; renderViewer(); post('enemigos/picture', { name }); },
   };
 }

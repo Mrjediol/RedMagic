@@ -2193,6 +2193,12 @@ const designsPanel = initDesignsPanel({
   root: document.getElementById('designsRoot'),
   enemiesRoot: document.getElementById('enemiesRoot'),
   onBadges: (b) => todoPanel.setBadges(b),
+  // ✎ Editar cuerpo: the enemy, read from Unity, in Enemy Studio; its "volver" button comes back to the sheet.
+  onEditBody: (e) => {
+    enemyStudio.setBack({ label: `← Volver a la ficha de ${e.name}`, go: () => { openTabById('todo'); designsPanel.reopenSheet(e.name); } });
+    openTabById('studio');
+    enemyStudio.openFromUnity(e.prefab, {});
+  },
   statusEl: document.getElementById('designsStatus'),
   toast: (text) => shell?.toast(text),
 });

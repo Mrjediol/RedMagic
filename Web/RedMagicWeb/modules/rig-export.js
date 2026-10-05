@@ -59,8 +59,6 @@ export function buildRigExport(state, ctx = {}) {
   const used = new Set();
 
   if (!state.name.trim()) problems.push('Ponle nombre (será el del prefab).');
-  // A body read back from Unity is only good for gestures and attacks: it lost its original canvases.
-  if (state.unityBody) problems.push('Este cuerpo se leyó de Unity para editar sus gestos y ataques: no se exporta entero (el prefab ya tiene su cuerpo). Usa "Guardar en Unity" o el export de sólo gestos y ataques.');
   if (state.parts.length === 0) problems.push('Añade al menos una pieza.');
 
   // Template slots without art: out of the export, unless something filled hangs from them.
@@ -101,7 +99,9 @@ export function buildRigExport(state, ctx = {}) {
     node.scale = scaleOut(part.scale);
     node.rigPart = part.rigPart;
     if (part.rigPart) {
-      node.pivot = { x: 0, y: 0 };
+      // A part read from Unity keeps its project sprite: its joint is written as the offset from that sprite's pivot.
+      const o = part.image?.unityRef ? part.image.unityOrigin : null;
+      node.pivot = o ? { x: r5((part.pivot.x - o.x) / ppu), y: r5(-(part.pivot.y - o.y) / ppu) } : { x: 0, y: 0 };
       node.center = part.center ? v2(pixelToLocal(state, part, part.center)) : { x: 0, y: 0 };
       node.pointAngle = r5(part.pointAngle);
       node.leanFollow = r5(part.leanFollow);
@@ -444,7 +444,8 @@ export function readRigGestures(doc, state, ctx = {}) {
  * the "Gestos y ataques" tab: enough to DRAW and POSE the body (nodes, sprites, pivots, draw order,
  * roles, rig fields, state sprites) and its gestures. The inverse of `buildRigExport` for what focus
  * mode needs; the body is read-only there, so this never has to round-trip one — the document is
- * marked `unityBody` and a full export of it is refused (`buildRigExport`).
+ * marked `unityBody`; a full export writes each part's project sprite back by reference (no new PNG)
+ * and its joint as the offset from `image.unityOrigin`.
  *
  * Every image keeps the project sprite it came from (`image.unityRef`): the partial export writes
  * that reference back instead of a new PNG, so a state sprite nobody changed is not re-imported.
@@ -543,6 +544,7 @@ export async function readRigDocument(doc, { sprites = {}, fetchDataURL, entries
     part.image = loaded?.image || null;
     part.pivot = loaded?.pivot || { x: 0, y: 0 };
     origin.set(part.uid, { ...part.pivot });
+    if (part.image) part.image.unityOrigin = { ...part.pivot };   // the sprite's own pivot: the joint is saved relative to it
     if (part.rigPart) {
       const c = vec(n.center);
       part.center = c.x || c.y ? { x: part.pivot.x + c.x * state.pixelsPerUnit, y: part.pivot.y - c.y * state.pixelsPerUnit } : null;

@@ -353,6 +353,16 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     }
   }
 
+  /** Where "✎ Editar cuerpo" of a Tareas sheet came from: { label, go }. Cleared once used. */
+  let back = null;
+  function backButton() {
+    if (!back) return null;
+    const b = el('button', 'small', back.label);
+    b.style.width = '100%';
+    b.onclick = () => { const { go } = back; back = null; go(); };
+    return b;
+  }
+
   /** Enemy Studio's export step: "💾 Guardar en Unity" above the .zip buttons. */
   rig.hooks.exportExtras = (host) => {
     if (!bridge.active) { connectRow(host); return; }
@@ -360,11 +370,6 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     const box = el('div', 'unityBridge');
     const known = st.id && unity.id === st.id;
     box.appendChild(el('p', 'unityBanner', `🔌 Unity${bridge.project ? ` · ${bridge.project}` : ''}`));
-    if (st.unityBody) {
-      box.appendChild(el('p', 'hint', 'Este cuerpo se leyó de Unity: aquí sólo se guardan sus gestos y ataques (🎬 Gestos y ataques ▸ Guardar en Unity).'));
-      host.appendChild(box);
-      return;
-    }
     const save = el('button', 'primary', unity.busy || '💾 Guardar en Unity');
     save.style.width = '100%';
     save.disabled = !!unity.busy || !st.name || !st.parts;
@@ -397,6 +402,8 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
       c.appendChild(over);
     }
     resultBlock(box);
+    const home = backButton();
+    if (home) box.appendChild(home);
     host.appendChild(box);
   };
 
@@ -405,7 +412,13 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
 
   /** Reads the enemy from Unity and puts it on screen. `select` = { gesture, attack } (a deep link). */
   async function openFromUnity(prefab = bridge.prefab, select = { gesture: bridge.gesture, attack: bridge.attack }) {
-    if (!bridge.active || !prefab) return;
+    if (!prefab) return;
+    if (!bridge.active && !(await connect())) {
+      unity.result = { error: 'Unity no está conectado: ábrelo con el proyecto (el puente arranca solo) y vuelve a pulsar ✎ Editar cuerpo.' };
+      await showing;
+      rig.refreshInspector();
+      return;
+    }
     await showing;
     unity.busy = 'Leyendo de Unity…';
     unity.result = null;
@@ -530,7 +543,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     box.appendChild(el('p', 'unityBanner', `🔌 Unity · ${unity.name}`));
     box.appendChild(prefabPicker(unity.prefab));
     const st = rig.getStatus();
-    box.appendChild(el('p', 'hint', `${unity.prefab}. ${st.unityBody ? 'El cuerpo se ha leído de Unity (sólo para verlo y posarlo).' : 'El cuerpo es el de tu biblioteca; los gestos'
+    box.appendChild(el('p', 'hint', `${unity.prefab}. ${st.unityBody ? 'El cuerpo se ha leído de Unity (cuerpo, gestos y ataques se guardan de vuelta).' : 'El cuerpo es el de tu biblioteca; los gestos'
       + (unity.kind === 'enemy' ? ' y los ataques' : '') + ' son los del prefab.'}${soundCount() ? ` ${soundCount()} gesto(s) con sonido: suenan al probarlos, y se editan en sus pistas 🔊 de la línea de tiempo.` : ''}`));
 
     const save = el('button', 'primary', unity.busy || '💾 Guardar en Unity');
@@ -767,5 +780,5 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
     render();
   }
 
-  return { show, hide, open, linkLibraryEntry, openFromUnity, isMounted: () => mounted };
+  return { show, hide, open, linkLibraryEntry, openFromUnity, setBack: (value) => { back = value; }, isMounted: () => mounted };
 }

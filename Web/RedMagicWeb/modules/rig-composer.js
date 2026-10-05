@@ -2240,7 +2240,6 @@ export function initRigComposer({ sidebar, templateHost, toolbar, canvas, canvas
 
   /** The whole bundle (body, gestures, behaviour) of the document on screen, or null if it cannot / the user backed out. */
   async function buildRigZip() {
-    if (state.unityBody) { setStatus('Este cuerpo se leyó de Unity: sólo se guardan sus gestos y ataques (🎬 Gestos y ataques ▸ Guardar en Unity).'); return null; }
     const { problems } = buildRigExport(state, exportCtx());
     if (problems.length && !confirm(`Hay avisos:\n- ${problems.join('\n- ')}\n\n¿Continuar igualmente?`)) return null;
     if (hooks.beforeExport) await hooks.beforeExport();   // the behaviour form open in Enemy Studio, saved first

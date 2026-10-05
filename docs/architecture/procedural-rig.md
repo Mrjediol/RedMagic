@@ -378,3 +378,7 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
   LeftFist / RightFist, crown split into an empty `Crown` + `left`/`center`/`right` crystals
   (each bobs on its own; they are `BossLimbs` orbiters), fists drawn in front of the torso; 6 gestures (Brace, Dash, DashLoop, GroundSlam, PickUP, Throw — the last
   five match the ice attacks' gesture names, so the shared attack assets animate unchanged).
+
+## Editing a Unity-read body in Enemy Studio (whole save)
+
+A body read from Unity (`readRigDocument`, `state.unityBody`) CAN be saved whole with Enemy Studio ▸ Exportar ▸ 💾 Guardar en Unity (`POST /rig`, updates the prefab in place). Parts keep their project sprite by reference (`image.unityRef`, no new PNG); the joint is written as `node.pivot` = offset from the sprite's own pivot (`image.unityOrigin`, set on read). Entry point from the web: 📋 Tareas ▸ Enemigos ▸ sheet ▸ **✎ Editar cuerpo** (`designs-panel.js` `onEditBody` → `enemyStudio.openFromUnity`; the export box then shows "← Volver a la ficha", which reopens the sheet and redoes its picture). Unity needs to be open only for the bridge — nothing is done in Unity.

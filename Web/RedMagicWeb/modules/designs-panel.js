@@ -90,6 +90,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   const p2Of = (name) => (p2[name] ||= { via: 'flyingRanged', proyectil: { origen: 'biblioteca', texto: '', elegidos: [] }, sonidos: { origen: 'biblioteca', texto: '', elegidos: [] }, efectos: { origen: 'biblioteca', texto: '', elegidos: [] }, notas: '' });
   /** The library's entries a step-2 asset can be picked from (loaded once). */
   let lib = null, libLoading = false;
+  const openGroups = new Set();
   const LIB_KINDS = { proyectil: 'projectile', sonidos: 'sound', efectos: 'fx' };
   async function loadLib() {
     libLoading = true;
@@ -558,16 +559,26 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const kinds = (data?.comportamientos || []).map((b) => `<option value="${esc(b.id)}" ${f.via === b.id ? 'selected' : ''}>${esc(b.label)}</option>`).join('');
     const heirOpts = heirs.map((x) => `<option value="plantilla:${esc(x.name)}" ${f.via === `plantilla:${x.name}` ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
     if (!lib && !libLoading) loadLib();
+    // Library groups: everything is in "General" for now; "Placeholder" is the first group to split off later.
+    const GROUPS = [['general', 'General'], ['placeholder', 'Placeholder']];
     const picks = (key) => {
       if (f[key].origen !== 'biblioteca') return '';
       const list = lib?.[key];
       if (!list) return '<div class="efHint">Leyendo tu biblioteca…</div>';
-      if (!list.length) return '<div class="efHint">Tu biblioteca no tiene ninguno todavía.</div>';
-      return `<div class="enP2Picks">${list.map((x) => `<label><input type="checkbox" data-p2pick="${key}" data-id="${esc(x.id)}" data-name="${esc(x.name)}" ${f[key].elegidos.some((c) => c.id === x.id) ? 'checked' : ''}> ${esc(x.name)}</label>`).join('')}</div>`;
+      const groupOf = () => 'general';
+      return GROUPS.map(([g, label]) => {
+        const items = list.filter((x) => groupOf(x) === g);
+        const marked = items.filter((x) => f[key].elegidos.some((c) => c.id === x.id)).length;
+        const rows = items.map((x) => `<label><input type="checkbox" data-p2pick="${key}" data-id="${esc(x.id)}" data-name="${esc(x.name)}" ${f[key].elegidos.some((c) => c.id === x.id) ? 'checked' : ''}> ${esc(x.name)}</label>`).join('');
+        return `<details class="enP2Group" data-group="${key}.${g}" ${openGroups.has(`${key}.${g}`) ? 'open' : ''}><summary>${label} <span class="efHint">${marked ? `${marked} marcados de ` : ''}${items.length}</span></summary>${rows ? `<div class="enP2Picks">${rows}</div>` : '<div class="efHint">Vacío.</div>'}</details>`;
+      }).join('');
     };
     const asset = (key, label, ph) => `<div class="enP2Asset"><b>${label}</b>
-        <select data-p2="${key}.origen"><option value="biblioteca" ${f[key].origen === 'biblioteca' ? 'selected' : ''}>De mi biblioteca</option><option value="nuevo" ${f[key].origen === 'nuevo' ? 'selected' : ''}>Que Claude lo cree nuevo</option></select>
-        <textarea data-p2="${key}.texto" rows="2" placeholder="${esc(ph)}">${esc(f[key].texto)}</textarea>${picks(key)}</div>`;
+        <div class="enP2Body">
+          <select data-p2="${key}.origen"><option value="biblioteca" ${f[key].origen === 'biblioteca' ? 'selected' : ''}>De mi biblioteca</option><option value="nuevo" ${f[key].origen === 'nuevo' ? 'selected' : ''}>Que Claude lo cree nuevo</option></select>
+          ${picks(key)}
+          <textarea data-p2="${key}.texto" rows="2" placeholder="${esc(ph)}">${esc(f[key].texto)}</textarea>
+        </div></div>`;
     return `<h3>Paso 2 · qué tipo de enemigo es</h3>
       <div class="enP2">
         <label class="efHint">Tipo <select data-p2="via"><optgroup label="Tipo de enemigo">${kinds}</optgroup>${heirs.length ? `<optgroup label="Heredar comportamiento y animación de…">${heirOpts}</optgroup>` : ''}</select></label>
@@ -744,6 +755,10 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     if (ev.target.checked && i < 0) list.push({ id: d.id, name: d.name });
     else if (!ev.target.checked && i >= 0) list.splice(i, 1);
   });
+  overlay.addEventListener('toggle', (ev) => {
+    const g = ev.target.dataset?.group;
+    if (g) { if (ev.target.open) openGroups.add(g); else openGroups.delete(g); }
+  }, true);
   overlay.addEventListener('focusout', () => { setTimeout(() => { if (viewer?.enemy && !typing(overlay)) renderViewer(); }, 0); });
   document.addEventListener('keydown', (ev) => {
     if (overlay.hidden || ev.ctrlKey || ev.altKey || ev.metaKey) return;

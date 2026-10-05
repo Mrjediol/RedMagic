@@ -20,6 +20,14 @@
       "note": "Golem de hielo pálido fiel a la referencia: torso con dos cristales cian, puño enorme flotante y falda-botas de hielo; hombrera nevada suelta",
       "status": "pending",
       "image": "comfy:claude/des_icegolem_1_raw_00002_.png"
+    },
+    {
+      "id": "2",
+      "kind": "enemy",
+      "name": "GlacierBrute",
+      "note": "Golem azul glaciar oscuro: torso azul intenso con cristal cian, cabeza verde-azulada con corona de carámbanos, puños translúcidos y base de bloques de hielo apilados",
+      "status": "pending",
+      "image": "comfy:claude/des_icegolem_2_raw_00003_.png"
     }
   ]
 }

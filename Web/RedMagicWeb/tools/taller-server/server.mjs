@@ -18,7 +18,9 @@
 //   POST /api/enemigos/build { name, model, effort }   POST /api/enemigos/work { name, ids?, model, effort }   (queue a task)
 //   POST /api/enemigos/add { prefab }   POST /api/enemigos/picture { name }   (the picture comes from Unity)
 //
-//   GET  /api/movil                 → { key, url }   (this PC only) the phone's pairing link
+//   POST /api/adjunto { name, type, data: <base64> } → { id, name }   a reference image for a task's prompt (Logs/Taller/adjuntos/)
+//   GET  /api/adjunto?id=<id>       → that image
+//   GET  /api/movil                → { key, url }   (this PC only) the phone's pairing link
 //   POST /api/pair   { key }        → sets the phone's cookie
 //
 // LOCAL = a request from this PC to localhost / 127.0.0.1 (no proxy headers). Anything else is REMOTE — the phone
@@ -101,6 +103,11 @@ const phoneKey = (() => {
   return k;
 })();
 const COOKIE = 'taller_movil';
+
+/** Reference images attached to tasks: kept out of git (Logs/), named by a random id so the id is the only handle. */
+const attachDir = path.join(logDir, 'adjuntos');
+const IMAGE_EXT = { 'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp', 'image/gif': '.gif' };
+const ATTACH_ID = /^[0-9a-f]{32}\.(png|jpg|webp|gif)$/;
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 const localHost = (host) => host === `localhost:${config.port}` || host === `127.0.0.1:${config.port}`;
 /** This PC's own browser: loopback, a localhost Host, no proxy in between. */
@@ -164,11 +171,11 @@ function send(res, status, body, type = 'application/json; charset=utf-8') {
   res.end(data);
 }
 
-async function readJson(req) {
+async function readJson(req, limit = 5e6) {
   let body = '';
   for await (const chunk of req) {
     body += chunk;
-    if (body.length > 5e6) throw new Error('demasiado grande');
+    if (body.length > limit) throw new Error('demasiado grande');
   }
   return body ? JSON.parse(body) : {};
 }
@@ -188,6 +195,10 @@ async function api(req, res, url) {
     const lan = config.listen === '127.0.0.1' ? [] : Object.values(os.networkInterfaces()).flat().filter((i) => i && i.family === 'IPv4' && !i.internal && !i.address.startsWith('169.254.')).map((i) => i.address).sort((a, b) => Number(b.startsWith('100.')) - Number(a.startsWith('100.'))).map((a) => `http://${a}:${config.port}`);
     return send(res, 200, { key: phoneKey, url: phoneUrl(), lan });
   }
+  if (route === 'GET /api/adjunto') {
+    const id = url.searchParams.get('id') || '';
+    return serveFile(res, ATTACH_ID.test(id) ? path.join(attachDir, id) : null, 'private, max-age=86400');
+  }
   if (route === 'GET /api/hello') return send(res, 200, { token, project: path.basename(projectRoot) });
   if (route === 'GET /api/todo') return send(res, 200, { rev: store.rev, doc: store.doc });
   if (route === 'GET /api/disenos') {
@@ -204,6 +215,16 @@ async function api(req, res, url) {
   if (req.headers['x-taller-token'] !== token) return send(res, 403, { error: 'token' });
   const origin = req.headers.origin;
   if (origin && origin !== `http://${req.headers.host}` && origin !== `https://${req.headers.host}`) return send(res, 403, { error: 'origin' });
+  if (route === 'POST /api/adjunto') {
+    const b = await readJson(req, 16e6);   // base64 of up to ~12 MB
+    const ext = IMAGE_EXT[b.type];
+    const bytes = Buffer.from(String(b.data || ''), 'base64');
+    if (!ext || !bytes.length || bytes.length > 12e6) return send(res, 400, { error: 'imagen no válida (png, jpg, webp o gif, hasta 12 MB)' });
+    const id = crypto.randomBytes(16).toString('hex') + ext;
+    fs.mkdirSync(attachDir, { recursive: true });
+    fs.writeFileSync(path.join(attachDir, id), bytes);
+    return send(res, 200, { id, name: String(b.name || 'imagen').slice(0, 80) });
+  }
   const body = await readJson(req);
 
   if (route === 'PUT /api/todo') {

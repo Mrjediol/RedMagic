@@ -278,11 +278,19 @@ export class Runner {
       lines.push('', 'Do the steps that are not done, in order.');
     }
     if (task.prompt) lines.push('', 'Instructions:', task.prompt);
+    const images = this._imagePaths(task);
+    if (images.length) lines.push('', 'Reference images attached by the user (look at them with the Read tool before starting):', ...images.map((f) => `- ${f}`));
     if (task.needs?.length) lines.push('', `Already open: ${task.needs.map((n) => (n === 'unity' ? 'Unity (the project editor)' : 'ComfyUI')).join(', ')}.`);
     lines.push('',
       'When done: compile and commit as CLAUDE.md says; if the task has a document, update it with the state and what is left.',
       'Your LAST message is the report the user reads on the web, under the task: what you did, conclusions, decisions taken, where each thing is and a short list of what to test. Write it in Spanish, concise, as in the terminal.');
     return lines.join('\n');
+  }
+
+  /** Absolute paths of the task's attached reference images (server.mjs saves them in Logs/Taller/adjuntos/). */
+  _imagePaths(task) {
+    return (task.images || []).map((i) => String(i.id || '')).filter((id) => /^[0-9a-f]{32}\.(png|jpg|webp|gif)$/.test(id))
+      .map((id) => path.join(this.opts.logDir, 'adjuntos', id)).filter((f) => fs.existsSync(f));
   }
 
   _followUpPrompt(task, reply) {

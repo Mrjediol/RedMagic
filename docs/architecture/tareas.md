@@ -16,6 +16,7 @@ one as unattended Claude Code sessions and writes each report under its task.
 | `doc` | Claude | `docs/tareas/<id>.md`: state, instructions, what is done — read FIRST when it runs |
 | `steps[{ id, text, done }]` | the user / Claude | ordered steps; each can be launched alone |
 | `needs: ['comfy','unity']` | the user | the queue opens them before running |
+| `images[{ id, name }]` | the user | reference images for the prompt: picked (🖼 button) or pasted (Ctrl+V) in the quick form or the drawer's prompt fold; `POST /api/adjunto` saves them in `Logs/Taller/adjuntos/<id>` (not in git), `GET /api/adjunto?id=` shows them; `Runner._prompt` lists their absolute paths for Claude to Read |
 | `model`, `effort` | the user | per task; default `sonnet` / `medium` (`config.json`) |
 | `status`, `waiting`, `result`, `history`, `sessionId`, `lastRunId`; on steps `status`, `result` | **the queue only** | run state; a save from the web never overwrites it |
 

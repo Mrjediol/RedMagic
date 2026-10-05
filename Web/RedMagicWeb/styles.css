@@ -940,3 +940,11 @@ body.movil #tab-todo{flex:1;}
   .enAskRow{gap:10px;}
   .todoToolbar{gap:6px;font-size:13px;}
 }
+
+/* Reference images attached to a task's prompt (todo-panel.js ▸ imageStrip) */
+.todoImages{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:4px 0;}
+.todoImg{position:relative;display:inline-block;}
+.todoImg img{display:block;height:72px;max-width:140px;object-fit:cover;border:1px solid var(--border-lit);border-radius:6px;background:var(--panel);}
+.todoImg button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;padding:0;line-height:1;border-radius:50%;}
+.todoImgAdd{cursor:pointer;background:var(--panel);border:1px dashed var(--border-lit);border-radius:6px;padding:8px 12px;font-size:14px;color:var(--accent);}
+.todoImgAdd:hover{border-color:var(--accent);}

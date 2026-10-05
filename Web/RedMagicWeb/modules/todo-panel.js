@@ -18,7 +18,7 @@
 //               System Access API (handle in IndexedDB), localStorage always as a fallback.
 //
 // A task: { id, text, note, done } + optional { prompt, doc, steps[{ id, text, done }], needs['comfy'|'unity'],
-// model, effort } written by you, + { status, waiting, result, sessionId } written by the queue. Unknown
+// model, effort, images[{ id, name }] (reference images for the prompt, saved by the server) } written by you, + { status, waiting, result, sessionId } written by the queue. Unknown
 // fields are kept as they came.
 
 export const DATA_VERSION = 1;
@@ -196,6 +196,60 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
   const ours = (el) => tab.contains(el) && !el.closest('[data-designs]');
   const focusedHere = () => ours(document.activeElement) && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)
     || quick.contains(document.activeElement);
+
+  // ------------------------------------------------------------ reference images (prompt attachments)
+
+  let quickImages = [];                    // attached in the "＋ Tarea para Claude" form, before the task exists
+  const IMG_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+
+  const toBase64 = (file) => new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1] || '');
+    r.onerror = () => reject(new Error('no se pudo leer la imagen'));
+    r.readAsDataURL(file);
+  });
+
+  /** Uploads picked / pasted image files to the server; returns [{ id, name }]. */
+  async function uploadImages(files) {
+    const out = [];
+    for (const f of files) {
+      if (!IMG_TYPES.includes(f.type)) { toast(`${f.name || 'Archivo'}: solo png, jpg, webp o gif`); continue; }
+      if (f.size > 10e6) { toast(`${f.name || 'Imagen'}: pesa más de 10 MB`); continue; }
+      try { out.push(await api('POST', 'adjunto', { name: f.name || 'captura.png', type: f.type, data: await toBase64(f) })); }
+      catch (e) { toast(e.message); }
+    }
+    return out;
+  }
+
+  /** Thumbnails with ✕, then the file button. `owner` = a task id, or '' for the quick form. */
+  function imageStrip(images, owner) {
+    return `<div class="todoImages" data-images="${owner}">
+      ${images.map((im) => `<span class="todoImg"><a href="/api/adjunto?id=${im.id}" target="_blank" rel="noopener" title="${esc(im.name)}"><img src="/api/adjunto?id=${im.id}" alt="${esc(im.name)}"></a>
+        <button type="button" class="small" data-act="img-del" data-id="${owner}:${im.id}" aria-label="Quitar imagen">×</button></span>`).join('')}
+      ${server ? `<label class="todoImgAdd small" title="Elegir imágenes de referencia (también puedes pegar con Ctrl+V)">🖼 Añadir imagen<input type="file" accept="image/*" multiple hidden data-attach="${owner}"></label>
+        <span class="efHint">o pega una captura con Ctrl+V</span>` : ''}</div>`;
+  }
+
+  async function attach(owner, files) {
+    if (!server) { toast('Las imágenes necesitan el servidor del taller (start.cmd)'); return; }
+    const added = await uploadImages(files);
+    if (!added.length) return;
+    if (!owner) {
+      quickImages.push(...added);
+      renderQuickImages();
+    } else {
+      const r = find(owner);
+      if (!r) return;
+      (r.t.images ||= []).push(...added);
+      mut(() => {});
+    }
+    toast(added.length === 1 ? 'Imagen adjunta' : `${added.length} imágenes adjuntas`);
+  }
+
+  function renderQuickImages() {
+    const box = quick.querySelector('[data-images=""]');
+    if (box) box.outerHTML = imageStrip(quickImages, '');
+  }
 
   // ------------------------------------------------------------ server
 
@@ -405,6 +459,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       sel.innerHTML = phases.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
       if (phases.some((p) => p.id === value)) sel.value = value;
       quick.querySelector('[data-quick="launch"]').disabled = !server;
+      renderQuickImages();   // the file button only exists once the server answered
       return;
     }
     quick.dataset.built = '1';
@@ -414,6 +469,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
         <input name="text" type="text" placeholder="Título" required autocomplete="off">
         <textarea name="note" placeholder="Descripción (para ti y para Claude)"></textarea>
         <textarea name="prompt" placeholder="Prompt: lo que se le pide a Claude. Vacío = título y descripción." class="todoPrompt"></textarea>
+        ${imageStrip(quickImages, '')}
         <div class="todoRow">
           <label>Fase <select name="phase">${phases.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select></label>
           <label><input type="checkbox" name="comfy"> necesita ComfyUI</label>
@@ -501,6 +557,8 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       <details class="todoAdv" ${advOpen ? 'open' : ''}><summary>Prompt, modelo, qué necesita, documento</summary>
         <label class="todoLabel">Prompt <span class="efHint">vacío = título, descripción y pasos</span></label>
         <textarea class="todoPrompt" data-field="prompt" data-id="${t.id}" placeholder="Ej.: genera 10 bases de enemigos de hielo así y así, déjame la hoja de contacto">${esc(t.prompt || '')}</textarea>
+        <label class="todoLabel">Imágenes de referencia <span class="efHint">Claude las mira antes de empezar</span></label>
+        ${imageStrip(t.images || [], t.id)}
         <div class="todoRow">
           <label><input type="checkbox" data-need="comfy" data-id="${t.id}" ${needs.includes('comfy') ? 'checked' : ''}> necesita ComfyUI</label>
           <label><input type="checkbox" data-need="unity" data-id="${t.id}" ${needs.includes('unity') ? 'checked' : ''}> necesita Unity</label>
@@ -519,7 +577,8 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       : `<button class="small" data-act="del-task" data-id="${t.id}" aria-label="Borrar tarea" title="Borrar tarea">×</button>`;
     const marks = [t.steps?.length ? `<span class="todoMark" title="Pasos">☰ ${t.steps.filter((s) => s.done).length}/${t.steps.length}</span>` : '',
       t.doc ? '<span class="todoMark" title="Tiene documento">📄</span>' : '',
-      t.prompt ? '<span class="todoMark" title="Tiene prompt">💬</span>' : ''].join('');
+      t.prompt ? '<span class="todoMark" title="Tiene prompt">💬</span>' : '',
+      t.images?.length ? `<span class="todoMark" title="Imágenes de referencia">🖼 ${t.images.length}</span>` : ''].join('');
     const note = t.note ? `<span class="todoNote">${esc(t.note)}</span>` : '';
     return `<li class="todoTask${t.done ? ' done' : ''}${sel === t.id ? ' sel' : ''}" data-open="${t.id}" title="Abrir">
       <button class="todoCheck" data-act="toggle" data-id="${t.id}" aria-pressed="${t.done}" aria-label="Marcar como hecha">✓</button>
@@ -806,6 +865,15 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       launch(id, { followUp: text });
     },
     cancel: (id) => serverAction('cancel', { taskId: id }, 'Cancelada'),
+    'img-del': (id) => {
+      const [owner, imgId] = [id.slice(0, id.lastIndexOf(':')), id.slice(id.lastIndexOf(':') + 1)];
+      if (!owner) { quickImages = quickImages.filter((im) => im.id !== imgId); renderQuickImages(); return; }
+      const r = find(owner);
+      if (!r) return;
+      r.t.images = (r.t.images || []).filter((im) => im.id !== imgId);
+      if (!r.t.images.length) delete r.t.images;
+      mut(() => {});
+    },
     force: (id) => serverAction('force', { taskId: id }, 'Lanzando aunque haya una terminal abierta'),
   };
 
@@ -853,6 +921,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
   tab.addEventListener('change', (e) => {
     const el = e.target;
     if (!ours(el)) return;
+    if (el.dataset.attach !== undefined) { const files = [...el.files]; el.value = ''; attach(el.dataset.attach, files); return; }
     const r = el.dataset.id ? find(el.dataset.id) : null;
     if (!r) return;
     if (el.dataset.need) {
@@ -897,6 +966,17 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     }
   });
 
+  // Ctrl+V with an image on the clipboard: into the quick form if the cursor is there, else into the open task.
+  document.addEventListener('paste', (e) => {
+    if (root.closest('[hidden]') || !ours(e.target)) return;
+    const files = [...(e.clipboardData?.files || [])].filter((f) => IMG_TYPES.includes(f.type));
+    if (!files.length) return;               // plain text: let the field take it
+    const owner = quick.contains(e.target) ? '' : detail.contains(e.target) && sel ? sel : null;
+    if (owner === null) return;
+    e.preventDefault();
+    attach(owner, files);
+  });
+
   quick.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -907,6 +987,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     const task = { id: uid(), text, note: String(data.get('note') || '').trim(), done: false };
     const prompt = String(data.get('prompt') || '').trim();
     if (prompt) task.prompt = prompt;
+    if (quickImages.length) task.images = quickImages;
     const needs = ['comfy', 'unity'].filter((n) => data.get(n));
     if (needs.length) task.needs = needs;
     if (data.get('model')) task.model = String(data.get('model'));
@@ -916,6 +997,8 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     sel = task.id;
     sessionStorage.setItem(SEL_KEY, sel);
     form.reset();
+    quickImages = [];
+    renderQuickImages();
     render();
     dirty = true;
     await flush();

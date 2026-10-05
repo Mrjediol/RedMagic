@@ -19,6 +19,7 @@ swapping in real art is then: open the prefab, delete the shape sprite, drop the
 - **`Bosses.BossFxSpawn`** — the shared "prefab or code pool" branch + release routing for the
   five pooled boss runtime types.
 - Prefab slots: `BaseShot.projectilePrefab` / `beamPrefab` (weapons), `ProjectileSpec.prefab`
+- **Projectile rule: clean, no outer bloom.** VFX Lab common param `clean` (0–1) cuts the soft halo at bake; `defaultParams` sets it to 1 for every `kind: projectile` preset. Re-bake an old projectile to apply it.
   (boss bullets / ability projectiles — restyle-aware now), `BossController.{warnPrefab,
   shockwavePrefab, sweepBeamPrefab, hazardPrefab, platformPrefab, anchorPrefab}`.
 - **Boss FX are one folder per boss**: `Assets/Prefab/Fx/Bosses/<BossName>/` holds every visual

@@ -23,11 +23,65 @@ namespace RedMagic.Enemies.EditorTools
             "Ataque · melé", "Ataque · a distancia",
         };
 
+        private List<string> _fx;
+        private List<string> _attacks;
+        private bool _showFx = true;
+
+        private void OnEnable() => _fx = null;
+
+        /// <summary>
+        /// Atajo a todo lo que el enemigo suelta: proyectiles y efectos (Prefabs/Fx) y los ataques del
+        /// catálogo. Sale de las dependencias del prefab, así que cubre barajas, gestos y rig sin
+        /// cablear nada por tipo.
+        /// </summary>
+        private void DrawShortcuts()
+        {
+            if (_fx == null)
+            {
+                _fx = new List<string>();
+                _attacks = new List<string>();
+                var go = ((EnemyStats)target).gameObject;
+                var path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go);
+                if (string.IsNullOrEmpty(path)) path = AssetDatabase.GetAssetPath(go);
+                if (!string.IsNullOrEmpty(path))
+                    foreach (var dep in AssetDatabase.GetDependencies(path, true))
+                    {
+                        if (dep.EndsWith(".prefab") && dep.StartsWith("Assets/Prefabs/Fx/")) _fx.Add(dep);
+                        else if (dep.EndsWith(".asset") && dep.StartsWith("Assets/ScriptableObjects/EnemyAttacks/"))
+                            _attacks.Add(dep);
+                    }
+            }
+
+            _showFx = EditorGUILayout.Foldout(_showFx,
+                $"Proyectiles y efectos ({_fx.Count}) · Ataques ({_attacks.Count})", true);
+            if (!_showFx) return;
+
+            EditorGUI.indentLevel++;
+            foreach (var list in new[] { _attacks, _fx })
+                foreach (var path in list)
+                {
+                    var rect = EditorGUI.IndentedRect(EditorGUILayout.GetControlRect());
+                    var icon = AssetDatabase.GetCachedIcon(path);
+                    var label = new GUIContent(" " + System.IO.Path.GetFileNameWithoutExtension(path), icon, path);
+                    if (GUI.Button(rect, label, EditorStyles.objectField))
+                    {
+                        var asset = AssetDatabase.LoadMainAssetAtPath(path);
+                        EditorGUIUtility.PingObject(asset);
+                        if (Event.current.clickCount == 2) Selection.activeObject = asset;
+                    }
+                }
+            EditorGUI.indentLevel--;
+            if (GUILayout.Button("Refrescar lista", EditorStyles.miniButton)) _fx = null;
+            EditorGUILayout.Space(4f);
+        }
+
         public override void OnInspectorGUI()
         {
             // Enemigo por partes: sus gestos y ataques se editan en la web, que guarda aquí (el puente).
             if (targets.Length == 1)
                 RedMagic.Rigging.EditorTools.WebBridgeMenu.DrawInspector(((EnemyStats)target).gameObject);
+
+            if (targets.Length == 1) DrawShortcuts();
 
             serializedObject.Update();
 

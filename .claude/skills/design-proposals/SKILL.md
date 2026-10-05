@@ -54,6 +54,7 @@ projectile, burst, aura, trail, ground, muzzle). Prefer an EXISTING preset of th
 Only when nothing fits, add a new preset to `vfx-effects.js` in its family (same shape as its neighbours; a looping
 lane draws the same picture at k=0 and k=1) and use it.
 - Item: `"vfx": { "preset": "<id>", "params": { … } }`, `name` letters/numbers/_ (`FrostBolt`).
+- **Projectiles are clean: no outer halo / bloom.** Every `kind: projectile` preset bakes with `clean: 1` (VFX Lab "Limpiar halo"); never lower it or pass `clean: 0` for a projectile. Sharp silhouette, glow only inside it.
 
 ## sound — a synthesised sound in the game's palette shape
 Same shape as `Web/RedMagicWeb/modules/game-sounds.js` (`{ family, label, seconds, loop?, layers }`, layers made of

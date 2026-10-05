@@ -213,7 +213,7 @@ export function initVfxLab({ formRoot, galleryRoot, previewRoot, listRoot, statu
   function pickCommon(values, next) {
     const out = {};
     const own = new Set(Object.keys(next.defaults || {}));
-    ['size', 'intensity', 'speed', 'length', 'spark', 'pixel', 'seed', 'core', 'glow', 'accent', 'particles'].forEach((k) => {
+    ['size', 'intensity', 'speed', 'length', 'spark', 'pixel', 'seed', 'clean', 'core', 'glow', 'accent', 'particles'].forEach((k) => {
       if (k in values && !own.has(k)) out[k] = values[k];
     });
     return out;

@@ -46,6 +46,8 @@ export const COMMON_PARAMS = [
     options: [['round', 'Punto'], ['star', 'Estrella'], ['square', 'Cuadrado']] },
   { key: 'pixel', label: 'Pixelado (px)', type: 'int', min: 1, max: 8, step: 1, default: 1,
     hint: '1 = suave. 2–4 = aspecto de pixel art.' },
+  { key: 'clean', label: 'Limpiar halo (0 = con bloom)', type: 'float', min: 0, max: 1, step: 0.05, default: 0,
+    hint: 'Recorta el brillo difuso exterior y deja el contorno nítido. Los proyectiles lo llevan a 1 por defecto: sin bloom externo.' },
   { key: 'seed', label: 'Semilla', type: 'int', min: 1, max: 999, step: 1, default: 7,
     hint: 'Otra semilla = otra colocación de las chispas.' },
 ];
@@ -62,6 +64,7 @@ export function paramsOf(preset) {
 export function defaultParams(preset) {
   const out = {};
   paramsOf(preset).forEach((d) => { out[d.key] = d.default; });
+  if (preset.kind === 'projectile') out.clean = 1;   // rule: a projectile is clean, no outer bloom
   return { ...out, ...(preset.defaults || {}) };
 }
 
@@ -258,6 +261,18 @@ export function laneFps(lane, p) {
  * Paints one frame of a lane on `ctx` (cleared first), filling a `size`×`size` square at (x, y).
  * `k` = progress 0..1. With `p.pixel` > 1 the frame is drawn small and scaled up without smoothing.
  */
+/** Removes the soft outer glow: alpha below a cut-off vanishes, the rest is re-ramped to a crisp edge. */
+function cleanHalo(ctx, x, y, size, clean) {
+  const lo = 0.35 * clean * 255, hi = lo + 0.2 * 255;
+  const img = ctx.getImageData(x, y, size, size);
+  const d = img.data;
+  for (let i = 3; i < d.length; i += 4) {
+    const a = d[i];
+    d[i] = a <= lo ? 0 : a >= hi ? 255 : Math.round(((a - lo) / (hi - lo)) * 255);
+  }
+  ctx.putImageData(img, x, y);
+}
+
 export function drawFrame(ctx, preset, lane, k, p, x, y, size, createCanvas) {
   const pixel = Math.max(1, p.pixel | 0);
   const rnd = (i, channel = 0) => hash(p.seed, i, channel);
@@ -278,6 +293,7 @@ export function drawFrame(ctx, preset, lane, k, p, x, y, size, createCanvas) {
     ctx.translate(x, y);
     paint(ctx, size);
     ctx.restore();
+    if (p.clean > 0) cleanHalo(ctx, x, y, size, p.clean);
     return;
   }
 
@@ -288,6 +304,7 @@ export function drawFrame(ctx, preset, lane, k, p, x, y, size, createCanvas) {
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(tmp, x, y, size, size);
   ctx.restore();
+  if (p.clean > 0) cleanHalo(ctx, x, y, size, p.clean);
 }
 
 /**

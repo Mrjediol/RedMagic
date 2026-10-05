@@ -118,6 +118,7 @@ held diagonally: pivot at the hand, muzzle at the tip), `tuning`, `effects` (VFX
 gesture: Flick / Charge / Sweep).
 **A finished enemy has no placeholder squares** — always fill these too:
 - `effects`: besides the projectiles, a `chargeVortex` (charge), a `muzzleFlash` (release), and for a dash a
+- Projectiles are clean: no outer halo / bloom around them. Keep the `clean` param at its default (1) on every projectile effect; never set it to 0.
   `smokePuff` + `dashTrail`, in the enemy's colours.
 - `gestureFx`: charge looping on `windup` + flash on `strike` for every gesture an attack uses (anchor `muzzle`,
   `size` in world units ≈ 0.9–1.6).

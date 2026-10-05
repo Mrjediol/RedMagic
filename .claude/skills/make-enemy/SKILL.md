@@ -61,8 +61,12 @@ works far better than "keep only X" (Knight 2026-10-03: "keep only" failed 5 of 
   (leg). Do it from the start for every part that touches another in the base.
 - **Name the part by what it IS, not left/right.** "the leg on the left" returned the same leg for both feet; use
   colour / object ("the right leg, under the dark blue fist"), and ERASE the neighbours by those words too.
-- **2 seeds per part, ONE contact sheet for the whole enemy** (`contact-sheet.mjs --cell 300`, ~1 look): 10 runs ≈ 3 min.
-  Retry only the parts that failed, with 3 seeds. Name seeds in the file (`<e>_<Slot>_s<N>`).
+- **ONE seed per part, ONE contact sheet for the whole enemy** (`contact-sheet.mjs --cell 300`, ~1 look): 5–7 runs ≈ 2 min.
+  A part that passes the check (whole, only that part, outline closed, nothing left over) is DONE: never run more seeds
+  of it "for comparison" — in the 2026-10-05 test the first seed of the robot arm and the golem arm was the best one and
+  extra seeds only got worse or identical (seeds barely change a part; the prompt does). A part that FAILS: change the
+  prompt (say what was kept / what is missing, name it by what it is) and run ONE seed; at most 2 retries, then fix the
+  base image instead (Gemini, see `base-prompt-gemini.md`). Name seeds in the file (`<e>_<Slot>_s<N>`).
   (Writing the shell loop: do not reuse `$s` for both the seed and the timer; the names then carry the clock.)
 The part stays where it was on the canvas → the parts assemble themselves. If the model keeps other
 parts, name each thing to delete and say "the single … at the far left".

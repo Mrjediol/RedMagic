@@ -1,6 +1,6 @@
 {
   "name": "PolarTurretBot",
-  "estado": "cuerpo-por-aprobar",
+  "estado": "con-pendientes",
   "diseno": {
     "image": "docs/enemigos/PolarTurretBot/diseno.png",
     "source": "docs/disenos/img/2026-10-05-robot-azul-simple-brazo-como-canon-de-en__4.png",
@@ -10,9 +10,26 @@
     "request": "robot azul simple, brazo como cañon de energia",
     "note": "Wide low turret-like body, twin-ring cannon with coils."
   },
-  "pendientes": [],
+  "pendientes": [
+    {
+      "id": "e2azvo3",
+      "tipo": "comportamiento",
+      "texto": "2 tipos de ataque, uno que dispara 3 bolas de energia rapidas, y otro donde  carga mas el ataque, el efecto de carga de energia es mas grande y sale 1 solo projectil mas grande",
+      "estado": "en-curso",
+      "createdAt": "2026-10-05T20:51:14.887Z",
+      "tarea": "u10nnxh"
+    },
+    {
+      "id": "k8kymyi",
+      "tipo": "comportamiento",
+      "texto": "15 rango detencion, 11 rango de ataque, 5 velocidad de movimiento",
+      "estado": "en-curso",
+      "createdAt": "2026-10-05T20:52:44.895Z",
+      "tarea": "u10nnxh"
+    }
+  ],
   "createdAt": "2026-10-05T20:07:52.78Z",
-  "tarea": "d4x6u6w",
+  "tarea": "u10nnxh",
   "prefab": "Assets/Prefabs/Enemies/Procedural/PolarTurretBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-05T20:27:58.287Z",

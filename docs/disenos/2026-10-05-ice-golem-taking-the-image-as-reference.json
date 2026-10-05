@@ -1,0 +1,25 @@
+{
+  "title": "5 × enemigo: ice Golem taking the image as reference",
+  "request": "ice Golem taking the image as reference",
+  "kind": "enemy",
+  "count": 5,
+  "mode": "each",
+  "createdAt": "2026-10-05T16:23:23.676Z",
+  "taskIds": [
+    "x4odco5",
+    "po2czkl",
+    "gvq9rj7",
+    "1npmmx6",
+    "w1eww2o"
+  ],
+  "items": [
+    {
+      "id": "1",
+      "kind": "enemy",
+      "name": "FrostbriteColossus",
+      "note": "Golem de hielo pálido fiel a la referencia: torso con dos cristales cian, puño enorme flotante y falda-botas de hielo; hombrera nevada suelta",
+      "status": "pending",
+      "image": "comfy:claude/des_icegolem_1_raw_00002_.png"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "title": "2 × enemigo: tortuga robotica",
+  "request": "tortuga robotica",
+  "kind": "enemy",
+  "count": 2,
+  "mode": "one",
+  "createdAt": "2026-10-05T19:24:03.855Z",
+  "generator": "comfy",
+  "zone": "ice",
+  "taskIds": [
+    "mwbg274"
+  ],
+  "items": []
+}

@@ -14,6 +14,7 @@
 //       --seed N  --steps N
 //       --upscale           ×4 with the upscale model, then down to 16 MP, before cutting
 //       --no-cut            skip the background removal
+//       --lora file.safetensors [--lora-strength 0.8]   style LoRA (file in Comfy's models/loras)
 //       --name prefix       file prefix under output/claude/ (default: "sheet")
 //   node claude-workflow.mjs finish --ref image --name prefix [--megapixels 4]
 //                           an approved image → upscaled (<prefix>_up) and with its background cut (<prefix>_cut)
@@ -61,7 +62,9 @@ export function claudeGraph(o = {}) {
       { id: 10, type: 'UNETLoader', pos: [40, 60], size: [420, 90], values: { unet_name: 'qwen_image_2.1_int8_convrot.safetensors' } },
       { id: 11, type: 'CLIPLoader', pos: [40, 200], size: [420, 120], values: { clip_name: 'qwen3vl_8b_int8_convrot.safetensors', type: 'qwen_image' } },
       { id: 12, type: 'VAELoader', pos: [40, 370], size: [420, 70], values: { vae_name: 'qwen_image_2.1_vae_bf16.safetensors' } },
-      { id: 13, type: 'QwenImage21Cache', pos: [40, 490], size: [420, 100], links: { model: [10, 0] } },
+      // Optional style LoRA (--lora file [--lora-strength 0.8]): between the model and its cache.
+      ...(o.lora ? [{ id: 14, type: 'LoraLoaderModelOnly', pos: [40, 620], size: [420, 100], title: 'LoRA de estilo', values: { lora_name: o.lora, strength_model: o.loraStrength ?? 0.8 }, links: { model: [10, 0] } }] : []),
+      { id: 13, type: 'QwenImage21Cache', pos: [40, 490], size: [420, 100], links: { model: o.lora ? [14, 0] : [10, 0] } },
 
       // ---- 2 · references (off until one is needed)
       ...refNodes,
@@ -180,6 +183,8 @@ function options(argv) {
     else if (flag === '--upscale') o.upscale = true;
     else if (flag === '--no-cut') o.noCut = true;
     else if (flag === '--name') o.name = value();
+    else if (flag === '--lora') o.lora = value();
+    else if (flag === '--lora-strength') o.loraStrength = Number(value());
     else if (flag === '--megapixels') o.megapixels = Number(value());
     else throw new Error(`unknown option ${flag}`);
   }

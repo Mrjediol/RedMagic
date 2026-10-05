@@ -101,8 +101,9 @@ export function restPrompt(enemy) {
   const asset = (k) => {
     const a = p2[k] || {};
     const text = String(a.texto || '').trim();
-    if (a.origen === 'biblioteca') return `- ${ASSET_KEYS[k]}: USE WHAT THE LIBRARY ALREADY HAS (📚 Biblioteca / sound palette) — ${text ? `the user asks for: «${text}»` : 'pick the best fit for this enemy yourself'}. Do not create new ones; if nothing fits, say so in the report.`;
-    return `- ${ASSET_KEYS[k]}: CREATE NEW ones — ${text ? `the user describes them (their words): «${text}»` : 'the user left it empty: design them to fit this enemy'}.`;
+    const chosen = (a.elegidos || []).map((c) => `«${c.name}» (library id ${c.id})`);
+    if (a.origen === 'biblioteca') return `- ${ASSET_KEYS[k]} (there can be SEVERAL): USE WHAT THE LIBRARY ALREADY HAS (📚 Biblioteca / sound palette) — ${chosen.length ? `the user PICKED these, use all of them: ${chosen.join(', ')}${text ? `; and also: «${text}»` : ''}` : text ? `the user asks for: «${text}»` : 'pick the best fit for this enemy yourself'}. Do not create new ones; if nothing fits, say so in the report.`;
+    return `- ${ASSET_KEYS[k]}: CREATE NEW ones (several if described, one per line) — ${text ? `the user describes them (their words): «${text}»` : 'the user left it empty: design them to fit this enemy'}.`;
   };
   const open = (enemy.pendientes || []).filter((p) => p.estado !== 'hecho' && p.tipo !== 'sprite');
   return [

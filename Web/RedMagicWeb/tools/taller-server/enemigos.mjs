@@ -119,7 +119,8 @@ export class Enemigos {
     const heir = String(p.plantilla || '').trim();
     if (heir) this._get(heir);   // it has to exist in the library
     else if (!BEHAVIORS[p.tipo]) throw new Error('Elige el tipo de enemigo (o una plantilla de la que heredar)');
-    const asset = (a) => ({ origen: a?.origen === 'nuevo' ? 'nuevo' : 'biblioteca', texto: String(a?.texto || '').trim() });
+    const asset = (a) => ({ origen: a?.origen === 'nuevo' ? 'nuevo' : 'biblioteca', texto: String(a?.texto || '').trim(),
+      elegidos: (Array.isArray(a?.elegidos) ? a.elegidos : []).map((c) => ({ id: String(c.id || ''), name: String(c.name || '') })).filter((c) => c.id) });
     e.paso2 = { ...(heir ? { plantilla: heir } : { tipo: p.tipo }), proyectil: asset(p.proyectil), sonidos: asset(p.sonidos), efectos: asset(p.efectos), notas: String(p.notas || '').trim() };
     const task = this.store.addTask(PHASE, {
       text: `Terminar ${name} (make-enemy, paso 3)`, prompt: restPrompt(e), needs: ['comfy', 'unity'],

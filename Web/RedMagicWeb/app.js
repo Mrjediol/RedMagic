@@ -2195,7 +2195,7 @@ const designsPanel = initDesignsPanel({
   onBadges: (b) => todoPanel.setBadges(b),
   // ✎ Editar cuerpo: the enemy, read from Unity, in Enemy Studio; its "volver" button comes back to the sheet.
   onEditBody: (e) => {
-    enemyStudio.setBack({ label: `← Volver a la ficha de ${e.name}`, go: () => { openTabById('todo'); designsPanel.reopenSheet(e.name); } });
+    enemyStudio.setBack({ label: `← Volver a la ficha de ${e.name}`, go: () => { openTabById('todo'); designsPanel.reopenSheet(e.name); }, saved: () => designsPanel.refreshPicture(e.name) });
     openTabById('studio');
     enemyStudio.openFromUnity(e.prefab, {});
   },

@@ -328,6 +328,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
       const res = await saveRig(blob, { prefab: known?.prefab || '', revision: known?.revision || '', force });
       unity.result = res;
       if (res.ok) {
+        back?.saved?.();
         const id = await rig.save();
         Object.assign(unity, { id: id || st.id, prefab: res.prefab, name: st.name, kind: st.kind, revision: res.revision, notes: [] });
         unity.prefabs = await listEnemies().catch(() => unity.prefabs);

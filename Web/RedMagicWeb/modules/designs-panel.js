@@ -87,7 +87,18 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium', generator: 'prompt', zone: '', body: '', attack: '', images: [] };   // the request form
   const run = { model: 'sonnet', effort: 'medium' };                 // model of the tasks launched from an enemy
   const p2 = {};                            // enemy name → the step-2 form (kind of enemy + where the assets come from)
-  const p2Of = (name) => (p2[name] ||= { via: 'flyingRanged', proyectil: { origen: 'biblioteca', texto: '' }, sonidos: { origen: 'biblioteca', texto: '' }, efectos: { origen: 'biblioteca', texto: '' }, notas: '' });
+  const p2Of = (name) => (p2[name] ||= { via: 'flyingRanged', proyectil: { origen: 'biblioteca', texto: '', elegidos: [] }, sonidos: { origen: 'biblioteca', texto: '', elegidos: [] }, efectos: { origen: 'biblioteca', texto: '', elegidos: [] }, notas: '' });
+  /** The library's entries a step-2 asset can be picked from (loaded once). */
+  let lib = null, libLoading = false;
+  const LIB_KINDS = { proyectil: 'projectile', sonidos: 'sound', efectos: 'fx' };
+  async function loadLib() {
+    libLoading = true;
+    const out = {};
+    for (const [k, kind] of Object.entries(LIB_KINDS)) out[k] = (await listEntries(kind)).map((x) => ({ id: x.id, name: x.enemyName || x.id }));
+    lib = out;
+    libLoading = false;
+    if (viewer?.enemy && !typing(overlay)) renderViewer();
+  }
   const draft = { tipo: 'comportamiento', texto: '' };               // the pendiente being written in a sheet
   let adding = null;                        // null | [{ name, prefab }] while "＋ Enemigo existente" is open
 
@@ -546,15 +557,23 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const heirs = (data?.enemigos || []).filter((x) => x.name !== e.name && x.prefab && ['por-aprobar', 'aprobado', 'con-pendientes'].includes(x.estado));
     const kinds = (data?.comportamientos || []).map((b) => `<option value="${esc(b.id)}" ${f.via === b.id ? 'selected' : ''}>${esc(b.label)}</option>`).join('');
     const heirOpts = heirs.map((x) => `<option value="plantilla:${esc(x.name)}" ${f.via === `plantilla:${x.name}` ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
+    if (!lib && !libLoading) loadLib();
+    const picks = (key) => {
+      if (f[key].origen !== 'biblioteca') return '';
+      const list = lib?.[key];
+      if (!list) return '<div class="efHint">Leyendo tu biblioteca…</div>';
+      if (!list.length) return '<div class="efHint">Tu biblioteca no tiene ninguno todavía.</div>';
+      return `<div class="enP2Picks">${list.map((x) => `<label><input type="checkbox" data-p2pick="${key}" data-id="${esc(x.id)}" data-name="${esc(x.name)}" ${f[key].elegidos.some((c) => c.id === x.id) ? 'checked' : ''}> ${esc(x.name)}</label>`).join('')}</div>`;
+    };
     const asset = (key, label, ph) => `<div class="enP2Asset"><b>${label}</b>
         <select data-p2="${key}.origen"><option value="biblioteca" ${f[key].origen === 'biblioteca' ? 'selected' : ''}>De mi biblioteca</option><option value="nuevo" ${f[key].origen === 'nuevo' ? 'selected' : ''}>Que Claude lo cree nuevo</option></select>
-        <textarea data-p2="${key}.texto" rows="2" placeholder="${esc(ph)}">${esc(f[key].texto)}</textarea></div>`;
+        <textarea data-p2="${key}.texto" rows="2" placeholder="${esc(ph)}">${esc(f[key].texto)}</textarea>${picks(key)}</div>`;
     return `<h3>Paso 2 · qué tipo de enemigo es</h3>
       <div class="enP2">
         <label class="efHint">Tipo <select data-p2="via"><optgroup label="Tipo de enemigo">${kinds}</optgroup>${heirs.length ? `<optgroup label="Heredar comportamiento y animación de…">${heirOpts}</optgroup>` : ''}</select></label>
-        ${asset('proyectil', '🎯 Proyectil', 'Vacío: Claude elige (de la biblioteca) o inventa (nuevo) el que le pegue. O descríbelo / nómbralo.')}
-        ${asset('sonidos', '🔊 Sonidos', 'Vacío: Claude decide. O describe cómo suena.')}
-        ${asset('efectos', '✨ Efectos', 'Vacío: Claude decide (carga, disparo, impacto, estela…).')}
+        ${asset('proyectil', '🎯 Proyectil', 'Marca los de tu biblioteca (puedes varios) o descríbelos. Vacío: Claude decide. Con "nuevo": uno por línea.')}
+        ${asset('sonidos', '🔊 Sonidos', 'Marca los de tu biblioteca (varios) o descríbelos, uno por línea. Vacío: Claude decide.')}
+        ${asset('efectos', '✨ Efectos', 'Marca los de tu biblioteca (varios) o descríbelos, uno por línea (carga, disparo, impacto, estela…). Vacío: Claude decide.')}
         <textarea data-p2="notas" rows="2" placeholder="Notas extra para el montaje (opcional)">${esc(f.notas)}</textarea>
         <div class="enBtns wrap">
           <label class="efHint">Modelo <select data-run="model">${opt(MODELS, run.model)}</select></label>
@@ -576,7 +595,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
       e.estado === 'por-montar' ? v('build-body', '▶ Montar por pasos (cuerpo primero)', 'primary') + v('build', '▶ Montar completo (make-enemy)') : '',
       e.estado === 'montando-cuerpo' && !active(t) ? v('build-body', '▶ Reintentar el cuerpo') : '',
       e.estado === 'cuerpo-por-aprobar' ? v('estado', '✓ Aprobar cuerpo', 'primary', 'data-estado="cuerpo-aprobado"') + v('edit-body', '✎ Editar cuerpo', '', 'title="Lo abre en Enemy Studio, leído de Unity: ajusta tamaños, capas y distancias, guarda en Unity y vuelve aquí"') + v('build-body', '↻ Rehacer el cuerpo') : '',
-      e.estado === 'cuerpo-aprobado' ? v('edit-body', '✎ Editar cuerpo') + v('build-body', '↻ Rehacer el cuerpo') + v('estado', '↶ Volver a revisar', '', 'data-estado="cuerpo-por-aprobar"') : '',
+      e.estado === 'cuerpo-aprobado' ? v('estado', '↶ Volver al paso 1', '', 'data-estado="cuerpo-por-aprobar" title="Vuelve a revisar el cuerpo"') + v('edit-body', '✎ Editar cuerpo') + v('build-body', '↻ Rehacer el cuerpo') : '',
       e.estado === 'montando' && !active(t) ? v('build', '▶ Reintentar el montaje') : '',
       e.estado === 'por-aprobar' ? v('estado', '✓ Aprobar', 'primary', 'data-estado="aprobado"') : '',
       ['por-aprobar', 'aprobado'].includes(e.estado) ? v('estado', '⚠ Tiene pendientes', '', 'data-estado="con-pendientes"') : '',
@@ -692,7 +711,10 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
       const paso2 = { proyectil: f.proyectil, sonidos: f.sonidos, efectos: f.efectos, notas: f.notas, ...(f.via.startsWith('plantilla:') ? { plantilla: f.via.slice(10) } : { tipo: f.via }) };
       post('enemigos/build-rest', { name, paso2, ...run }, `${name}: a la cola (paso 3, el resto)`);
     }
-    else if (v === 'estado') upd({ op: 'estado', estado: btn.dataset.estado }, `${name}: ${ESTADOS[btn.dataset.estado]?.one || btn.dataset.estado}`);
+    else if (v === 'estado') {
+      if (btn.dataset.estado === 'cuerpo-aprobado' && enemyByName(name)?.prefab) post('enemigos/picture', { name });   // the picture of what is in Unity now
+      upd({ op: 'estado', estado: btn.dataset.estado }, `${name}: ${ESTADOS[btn.dataset.estado]?.one || btn.dataset.estado}`);
+    }
     else if (v === 'picture') post('enemigos/picture', { name }, 'Unity está haciendo la imagen (unos segundos)');
     else if (v === 'pend-add') {
       if (!draft.texto.trim()) { toast('Escribe qué le falta'); return; }
@@ -713,6 +735,14 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
       const [k, sub] = d.p2.split('.');
       if (sub) f[k][sub] = ev.target.value; else f[k] = ev.target.value;
     }
+  });
+  overlay.addEventListener('change', (ev) => {
+    const d = ev.target.dataset || {};
+    if (!d.p2pick || !viewer?.enemy) return;
+    const list = p2Of(viewer.enemy)[d.p2pick].elegidos;
+    const i = list.findIndex((c) => c.id === d.id);
+    if (ev.target.checked && i < 0) list.push({ id: d.id, name: d.name });
+    else if (!ev.target.checked && i >= 0) list.splice(i, 1);
   });
   overlay.addEventListener('focusout', () => { setTimeout(() => { if (viewer?.enemy && !typing(overlay)) renderViewer(); }, 0); });
   document.addEventListener('keydown', (ev) => {
@@ -868,6 +898,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   return {
     onShow: () => { dataText = ''; poll(); },
     /** Back from Enemy Studio: the enemy's sheet again, with its picture redone from the saved prefab. */
-    reopenSheet: (name) => { viewer = { enemy: name }; renderViewer(); post('enemigos/picture', { name }); },
+    reopenSheet: (name) => { viewer = { enemy: name }; renderViewer(); },
+    refreshPicture: (name) => post('enemigos/picture', { name }),
   };
 }

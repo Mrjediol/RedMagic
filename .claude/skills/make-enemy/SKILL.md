@@ -14,8 +14,9 @@ Token rules: 1024 px while deciding, upscale only what is approved. Look at **on
 batch** (`contact-sheet.mjs`), never at single full-size images. Trust the measured checks.
 
 ## 0 · Words every prompt carries
-- Style (ComfyUI only): `STYLE` + `BACKDROP` of `claude-workflow.mjs` (cartoon vector painted, cel shading, thick black
-  outline, pure white background, no glow outside the outline).
+- Style: the game's look — painted digital, stylized semi-realistic, thin 2px dark outline, the ZONE's palette (`docs/zonas.json`)
+  and 1–3 glowing crystals of the zone's colour. Never write it by hand: `Web/RedMagicWeb/tools/enemy-prompt.mjs --zone <id>
+  --target gemini|comfy …` builds the whole base prompt (zone, crystals, pose, pieces, edge rules, white background).
 - Body: prefer floaters / rooted turrets made of **separate rigid parts** (GDD, `docs/idea-fracture.md`).
   Pick the template first (`rig-templates.js`: `floatingCaster` = Torso, Head, CastArm, OffArm, Lower,
   Accessory · `foldingSentry` = Base, Stem, Head) and describe exactly those parts.
@@ -42,8 +43,8 @@ batch** (`contact-sheet.mjs`), never at single full-size images. Trust the measu
 The user's best bases come from **Gemini** (pasted by hand in the Gemini app): give them the prompt of
 `base-prompt-gemini.md` (fixed block + the slot list of the template + the creature). They save the image and
 copy it into Comfy's `input` folder (root, no subfolders: `LoadImage` does not list them).
-In ComfyUI instead: `node claude-workflow.mjs run --no-cut --size 1024x1024 --seed N --name base_<x> --prompt "…"`
-with the same words — 5 candidates, one contact sheet, the user chooses.
+In ComfyUI instead: `node claude-workflow.mjs run --no-cut --size 1024x1024 --seed N --name base_<x> --prompt "<enemy-prompt.mjs --target comfy …>"`
+— ONE seed, look at it, redo only with a changed prompt (the web's 🎨 Diseños does both: Prompt mode or ComfyUI mode).
 **The art faces right.** If the base comes out facing left (the 2026-10-05 robot did), mirror every final part
 horizontally before the brief (same canvas, so they stay assembled) and set `pivot` / `muzzle` for the flipped art.
 

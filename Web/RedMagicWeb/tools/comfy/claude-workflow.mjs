@@ -28,8 +28,8 @@ import { toUi, toApi } from './comfy-graph.mjs';
 const COMFY = process.env.COMFY_URL || 'http://127.0.0.1:8188';
 
 // The house style, as the user has been prompting it. Kept apart so every request shares it.
-export const STYLE = 'Cartoon vector painted style, flat fills with two-tone cel shading per material, thick bold near-black outline '
-  + 'of uniform thickness on every shape, hard clean edges, saturated vivid palette. Glow only as flat lighter fill inside the outline.';
+export const STYLE = 'Painted digital illustration, stylized semi-realistic, slight texture, soft painted shading, dark fantasy. Clean crisp hard silhouette with a 2px near-black outline all around and a slightly darker contour line where pieces meet. '
+  + 'Glow only as a lighter fill inside the outline. Zone palette + glowing crystals: build the full prompt with tools/enemy-prompt.mjs --target comfy.';
 export const BACKDROP = 'Pure flat white background, no shadow, no ground, no glow outside the outline, no particles, no text, no labels, nothing else.';
 
 const EXAMPLE = 'A parts sheet for a 2D game enemy, side view facing right: an ice golem taken apart, its body parts laid out separately '

@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { checkSound } from './check-sounds.mjs';
+import { REQUIRED } from './enemy-prompt.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const load = (file) => import(pathToFileURL(path.join(here, '../modules', file)).href);
@@ -45,7 +46,12 @@ for (const item of lote.items || []) {
   if (kind === 'enemy') {
     const src = String(item.image || '');
     const abs = src.startsWith('comfy:') ? path.join(comfy, src.slice(6)) : path.join(repo, src);
-    if (!src) issues.push('falta image');
+    if (item.prompt !== undefined) {   // prompt mode: the user brings the picture later (pasted on the card)
+      const text = String(item.prompt);
+      const missing = REQUIRED.filter((w) => !text.includes(w));
+      if (missing.length) issues.push(`al prompt le faltan bloques: ${missing.join(', ')} (hazlo con tools/enemy-prompt.mjs)`);
+      if (src && !fs.existsSync(abs)) issues.push(`no existe la imagen ${abs}`);
+    } else if (!src) issues.push('falta image (o prompt)');
     else if (!fs.existsSync(abs)) issues.push(`no existe la imagen ${abs}`);
   } else if (kind === 'projectile' || kind === 'fx') {
     const preset = presetById(item.vfx?.preset);

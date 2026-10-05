@@ -751,27 +751,27 @@
             {
               "id": "do1bhfv",
               "text": "Servidor: zona, modo prompt, subir imagen, aceptar",
-              "done": false
+              "done": true
             },
             {
               "id": "5u10r25",
               "text": "check-design-batch para items con prompt",
-              "done": false
+              "done": true
             },
             {
               "id": "wefuye3",
               "text": "Web: formulario y tarjeta (copiar, abrir Gemini, pegar imagen)",
-              "done": false
+              "done": true
             },
             {
               "id": "n5pjc9p",
               "text": "Skill design-proposals + STYLE de ComfyUI con enemy-prompt.mjs",
-              "done": false
+              "done": true
             },
             {
               "id": "24tfchr",
               "text": "Quitar tools/gemini, docs, pruebas y commit",
-              "done": false
+              "done": true
             }
           ]
         }

@@ -16,7 +16,7 @@ Plan and phases: `docs/tareas/enemigos-web.md`. Server-only: it goes through `to
 
 | kind | proposal | name | accept does |
 |---|---|---|---|
-| `enemy` | `image`: `comfy:<path under Comfy's output>` (e.g. `comfy:claude/base_x_raw_00001_.png`) or a `docs/…` path | PascalCase, not an existing prefab | `docs/enemigos/<Name>/` = `enemigo.json` + `diseno.png` (library, estado `por-montar`) |
+| `enemy` | `image`: `comfy:<path under Comfy's output>` (e.g. `comfy:claude/base_x_raw_00001_.png`) or a `docs/…` path; in Prompt mode `prompt` (no image yet; the user pastes it) | PascalCase, not an existing prefab | `docs/enemigos/<Name>/` = `enemigo.json` + `diseno.png` (library, estado `por-montar`) |
 | `projectile` / `fx` | `vfx: { preset, params }` — a ✨ VFX Lab preset (`vfx-presets.js` / `vfx-effects.js`) + its parameters; prefer an existing preset with new params | letters, numbers, `_` | the **browser** bakes it into 📚 Biblioteca (same record as VFX Lab ▸ Guardar), then the server stores its `libraryId` |
 | `sound` | `sound: { family, label, seconds, loop?, layers }` — the shape of `game-sounds.js` (family = a `GAME_FAMILIES` key) | snake_case id, not used yet | `modules/game-sounds-added.js` (merged into `GAME_SOUNDS`) + `bake-sounds.mjs <id>` → `Assets/Audio/Sfx/Game/<family>/<id>.wav`, an unassigned option; the user grades it in Biblioteca Jere ▸ Sounds |
 
@@ -28,17 +28,18 @@ Batches with `demo: true` are test data made from older Comfy outputs.
 ## Asking for proposals (the form at the top of the tab)
 
 Kind + what the user wants + how many (1–10) + **one task with all** or **one task per proposal** (to compare costs)
-+ (enemy) **Imágenes: Gemini | ComfyUI** + model / effort → `POST /api/disenos/request` creates the empty batch (`taskIds`, `count`, `mode`,
-`generator`) and the task(s) in phase **`designs`** — the 🎨 Diseños taller's task list (`design: { lote, kind }`, `needs: comfy` only
-for a ComfyUI enemy batch) and queues them.
++ (enemy) **Zona** (`docs/zonas.json`: ice, volcano, forest… una zona nueva = una entrada; da paleta, color de los cristales y materiales) + **Cómo**:
+**📋 Prompt para Gemini** (por defecto) o **🎨 Enemigo con ComfyUI** + model / effort → `POST /api/disenos/request` creates the empty batch
+(`taskIds`, `count`, `mode`, `zone`, `generator: prompt|comfy`) and the task(s) in phase **`designs`** — the 🎨 Diseños taller's task list
+(`design: { lote, kind }`, `needs: comfy` only in ComfyUI mode) and queues them.
 
-**Generators** (enemy only; `GENERATORS` in `disenos.mjs`, the first is the default):
-- `gemini` (default) — `tools/gemini/gemini-image.mjs`: Google's Gemini image API (`gemini-3-pro-image-preview`, falls to
-  `gemini-2.5-flash-image` on 404; env `GEMINI_IMAGE_MODEL` overrides). Key: env `GEMINI_API_KEY` or
-  `tools/gemini/api-key.txt` (git-ignored). Takes the user's attached images as `--ref`. Saves the PNG **in Comfy's
-  output folder** (`claude/<name>.png`), so the item is still `comfy:…` and make-enemy (▶ Montar) uses it unchanged —
-  the later steps (parts, states, cut) still run in ComfyUI.
-- `comfy` — `claude-workflow.mjs run` (Qwen Image), needs ComfyUI open.
+**Enemy modes** (both build the base prompt with `tools/enemy-prompt.mjs`: zone look + crystal signature + pose / pieces / edge rules;
+the task only writes creature, design, crystals and pieces):
+- **Prompt**: the item carries `prompt` and no `image`. The card shows the text (📋 Copiar prompt, ↗ Abrir Gemini); the user pastes it in the Gemini app
+and brings the picture back with 🖼 / Ctrl+V on the card (`POST /api/disenos/imagen` → `docs/disenos/img/<lote>__<item>.<ext>`, sets `item.image`;
+also replaces a ComfyUI image while the item is pending). Accept needs the image. No paid Gemini plan or API: it is by hand on purpose.
+- **ComfyUI**: as before (`claude-workflow.mjs`, `image: comfy:…`), with the same prompt (`--target comfy`).
+An accepted enemy keeps its `zone` in `diseno`; ▶ Montar copies a non-Comfy picture to Comfy's `input` folder for make-enemy.
 The prompt is a few lines (`tools/taller-server/design-prompts.mjs`): the rules are the
 **`design-proposals` skill** (`.claude/skills/design-proposals/SKILL.md`, which reuses make-enemy §0–1 for enemies),
 and the task ends by running **`tools/check-design-batch.mjs <batch>`** (formats, image exists, preset exists and is

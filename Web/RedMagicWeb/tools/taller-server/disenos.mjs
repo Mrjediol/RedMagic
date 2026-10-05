@@ -23,10 +23,12 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { designPrompt, KIND_LABEL } from './design-prompts.mjs';
+import { loadZones } from '../enemy-prompt.mjs';
 
 const run = promisify(execFile);
 const KINDS = ['enemy', 'projectile', 'fx', 'sound'];
-const GENERATORS = ['gemini', 'comfy'];   // who draws an enemy proposal; the first is the default
+const GENERATORS = ['prompt', 'comfy'];   // enemy: 'prompt' = a prompt for Gemini (the user pastes the picture back), 'comfy' = ComfyUI draws it; the first is the default
+const IMG_EXT = { 'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp', 'image/gif': '.gif' };
 const PASCAL = /^[A-Z][A-Za-z0-9]{2,40}$/;
 const SNAKE = /^[a-z][a-z0-9_]{2,40}$/;
 
@@ -53,11 +55,13 @@ export class Disenos {
   // ------------------------------------------------------------ asking for proposals (a task, or one per proposal)
 
   /** Creates the batch file (empty) and the task(s) that fill it, and queues them. */
-  request({ kind, request, count = 1, mode = 'one', model, effort, images = [], generator }) {
+  request({ kind, request, count = 1, mode = 'one', model, effort, images = [], generator, zone }) {
     images = (Array.isArray(images) ? images : []).filter((i) => i && /^[0-9a-f]{32}.(png|jpg|webp|gif)$/.test(String(i.id)))
       .map((i) => ({ id: i.id, name: String(i.name || '').slice(0, 80) }));
     if (!KINDS.includes(kind)) throw new Error('tipo inválido');
     generator = kind !== 'enemy' ? null : GENERATORS.includes(generator) ? generator : GENERATORS[0];
+    const zones = loadZones();
+    zone = kind !== 'enemy' ? null : zones.some((z) => z.id === zone) ? zone : zones[0]?.id || null;
     request = String(request || '').trim();
     if (!request) throw new Error('Escribe qué quieres');
     count = Math.max(1, Math.min(10, Math.round(Number(count) || 1)));
@@ -65,13 +69,13 @@ export class Disenos {
     let id = `${new Date().toISOString().slice(0, 10)}-${slug}`;
     for (let n = 2; fs.existsSync(this._lotePath(id)); n++) id = `${new Date().toISOString().slice(0, 10)}-${slug}-${n}`;
     const loteFile = `docs/disenos/${id}.json`;
-    const lote = { title: `${count} × ${KIND_LABEL[kind]}: ${request}`.slice(0, 120), request, kind, count, mode, createdAt: new Date().toISOString(), ...(generator ? { generator } : {}), taskIds: [], items: [] };
+    const lote = { title: `${count} × ${KIND_LABEL[kind]}: ${request}`.slice(0, 120), request, kind, count, mode, createdAt: new Date().toISOString(), ...(generator ? { generator, zone } : {}), taskIds: [], items: [] };
     const each = mode === 'each' && count > 1;
     const tasks = (each ? Array.from({ length: count }, (_, i) => i + 1) : [null]).map((index) => this.store.addTask(
       { id: 'designs', name: '🎨 Designs', tag: 'Web' },
       {
         text: `Diseños · ${KIND_LABEL[kind]}${index ? ` ${index}/${count}` : ` × ${count}`}: ${request}`.slice(0, 140),
-        prompt: designPrompt({ kind, request, count, loteFile, index, generator }),
+        prompt: designPrompt({ kind, request, count, loteFile, index, generator, zone }),
         needs: generator === 'comfy' ? ['comfy'] : [],
         ...(images.length ? { images } : {}),
         ...(model ? { model } : {}), ...(effort ? { effort } : {}),
@@ -82,6 +86,27 @@ export class Disenos {
     writeJson(this._lotePath(id), lote);
     const errors = tasks.map((t) => this.runner.enqueue({ taskId: t.id })).filter(Boolean);
     return { loteId: id, taskIds: lote.taskIds, errors };
+  }
+
+  /** A picture pasted on a card (the one Gemini drew from the prompt, or a replacement): docs/disenos/img/<lote>__<item>.<ext>. */
+  attachImage({ loteId, itemId, type, data }) {
+    const lote = this._readLote(loteId);
+    if (!lote) throw new Error('No encuentro ese lote');
+    const raw = readJson(this._lotePath(loteId));
+    const item = (raw.items || []).find((i) => String(i.id) === String(itemId));
+    if (!item) throw new Error('No encuentro esa propuesta');
+    if (item.status === 'accepted') throw new Error('Ya está aceptada: deshazla antes de cambiar la imagen');
+    const ext = IMG_EXT[type];
+    const bytes = Buffer.from(String(data || ''), 'base64');
+    if (!ext || !bytes.length || bytes.length > 12e6) throw new Error('imagen no válida (png, jpg, webp o gif, hasta 12 MB)');
+    const dir = path.join(this.dir, 'img');
+    fs.mkdirSync(dir, { recursive: true });
+    for (const f of readDir(dir).filter((f) => f.startsWith(`${loteId}__${item.id}.`))) fs.rmSync(path.join(dir, f), { force: true });
+    const rel = `docs/disenos/img/${loteId}__${item.id}${ext}`;
+    fs.writeFileSync(path.join(this.projectRoot, rel), bytes);
+    item.image = rel;
+    writeJson(this._lotePath(loteId), raw);
+    return { image: rel };
   }
 
   _readLote(id) {
@@ -178,6 +203,7 @@ export class Disenos {
     if (fs.existsSync(dir)) throw new Error(`Ya hay un enemigo ${name} en la biblioteca`);
     if (this._prefabExists(name)) throw new Error(`Ya existe un prefab ${name} en Unity`);
     const src = this.resolveImage(item.image);
+    if (!item.image) throw new Error('Falta la imagen: pega la que has sacado con el prompt (Ctrl+V sobre la tarjeta)');
     if (!src || !fs.existsSync(src)) throw new Error('No encuentro la imagen del diseño');
     const ext = path.extname(src).toLowerCase() || '.png';
     fs.mkdirSync(dir, { recursive: true });
@@ -185,7 +211,7 @@ export class Disenos {
     writeJson(path.join(dir, 'enemigo.json'), {
       name,
       estado: 'por-montar',
-      diseno: { image: `docs/enemigos/${name}/diseno${ext}`, source: item.image, lote: lote.id, item: item.id, request: lote.request || lote.title || '', note: item.note || '' },
+      diseno: { image: `docs/enemigos/${name}/diseno${ext}`, source: item.image, ...(lote.zone ? { zone: lote.zone } : {}), lote: lote.id, item: item.id, request: lote.request || lote.title || '', note: item.note || '' },
       pendientes: [],
       createdAt: new Date().toISOString(),
     });

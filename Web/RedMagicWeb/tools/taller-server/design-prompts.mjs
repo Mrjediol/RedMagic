@@ -10,19 +10,22 @@
 export const KIND_LABEL = { enemy: 'enemigo', projectile: 'proyectil', fx: 'efecto VFX', sound: 'sonido' };
 export const PENDING_TYPES = { comportamiento: 'Comportamiento', sprite: 'Sprite', gesto: 'Gesto', ataque: 'Ataque', bug: 'Bug', otro: 'Otro' };
 const KIND_EN = { enemy: 'enemy', projectile: 'projectile', fx: 'VFX effect', sound: 'sound' };
-const GENERATOR_EN = { gemini: 'Gemini (tools/gemini/gemini-image.mjs; ComfyUI is not needed)', comfy: 'ComfyUI (tools/comfy/claude-workflow.mjs)' };
+const GENERATOR_EN = {
+  prompt: 'PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back)',
+  comfy: 'COMFY MODE — draw each base image with ComfyUI (tools/comfy/claude-workflow.mjs)',
+};
 const PENDING_EN = { comportamiento: 'Behaviour', sprite: 'Sprite', gesto: 'Gesture', ataque: 'Attack', bug: 'Bug', otro: 'Other' };
 
 const PICTURE = 'After editing the enemy sheet, refresh its picture for the web: '
   + `unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@"<prefab>");'`;
 
 /** A design task: `index` (1-based) when the batch is split into one task per proposal. */
-export function designPrompt({ kind, request, count, loteFile, index = null, generator = null }) {
+export function designPrompt({ kind, request, count, loteFile, index = null, generator = null, zone = null }) {
   const lines = [
     `Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: ${kind} (${KIND_EN[kind]}).`,
     `What the user asked for (their words): «${request}»`,
   ];
-  if (generator) lines.push(`Image generator: ${GENERATOR_EN[generator]} — the skill's "${generator}" recipe.`);
+  if (generator) lines.push(`Mode: ${GENERATOR_EN[generator]} — the skill's "${generator}" recipe. Zone: ${zone} (docs/zonas.json): every proposal belongs to it (palette, crystals).`);
   if (index) {
     lines.push(`This task makes ONE proposal: number ${index} of ${count}. Read the batch before starting and make one different from those already in it.`);
   } else {
@@ -35,12 +38,17 @@ export function designPrompt({ kind, request, count, loteFile, index = null, gen
 /** make-enemy from an approved design. */
 export function buildPrompt(enemy) {
   const d = enemy.diseno || {};
+  const fromComfy = String(d.source || '').startsWith('comfy:');
   const base = String(d.source || '').replace(/^comfy:/, '');
+  const ext = (String(d.image || '').match(/.[a-z]+$/i) || ['.png'])[0].toLowerCase();
   const open = (enemy.pendientes || []).filter((p) => p.estado !== 'hecho');
   return [
     `Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md) to build the enemy ${enemy.name} from its approved design.`,
     `Enemy sheet: docs/enemigos/${enemy.name}/enemigo.json. Original request (user's words): «${d.request || ''}»${d.note ? `. Design note: «${d.note}»` : ''}.`,
-    `The design is ALREADY approved: skip step 1 (Base). The base is the Comfy image "${base}" (the --ref of steps 2 and 3); a copy is at ${d.image}.`,
+    ...(fromComfy
+      ? [`The design is ALREADY approved: skip step 1 (Base). The base is the Comfy image "${base}" (the --ref of steps 2 and 3); a copy is at ${d.image}.`]
+      : [`The design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is ${d.image}. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/${enemy.name}_base${ext}; no subfolders) and use "${enemy.name}_base${ext}" as the --ref of steps 2 and 3 (no " [output]"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.`]),
+    ...(d.zone ? [`Zone: ${d.zone} (docs/zonas.json): palette and crystal colour of its effects / projectile tints follow it.`] : []),
     ...(open.length ? [
       'The user also wrote these notes for this enemy (their words) — they are part of the brief, honour them:',
       ...open.map((p) => `- [${PENDING_EN[p.tipo] || p.tipo}] ${p.texto} (id ${p.id})`),

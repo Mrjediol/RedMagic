@@ -95,5 +95,3 @@ crashlytics-build.properties
 # Node-side web tools (Web/RedMagicWeb/tools): dependencies are installed locally, never committed
 /Web/RedMagicWeb/tools/node_modules/
 
-# Gemini API key for tools/gemini/gemini-image.mjs (🎨 Diseños)
-Web/RedMagicWeb/tools/gemini/api-key.txt

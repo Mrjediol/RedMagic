@@ -12,7 +12,8 @@
 //   GET  /api/disenos               → { lotes, enemigos, tasks }   docs/disenos/ (disenos.mjs) + docs/enemigos/ (enemigos.mjs)
 //   GET  /api/img?src=comfy:…|docs/…  → an image (only Comfy's output and docs/)
 //   POST /api/disenos/review { loteId, itemIds, decision: accept|discard|pending, names, libraryIds }  → { errors }
-//   POST /api/disenos/request { kind, request, count, mode: one|each, model, effort, generator: gemini|comfy (enemy) }  → { loteId, taskIds }   (queues the task(s))
+//   POST /api/disenos/request { kind, request, count, mode: one|each, model, effort, zone, generator: prompt|comfy (enemy) }  → { loteId, taskIds }   (queues the task(s))
+//   POST /api/disenos/imagen { loteId, itemId, type, data: <base64> } → { image }   a picture pasted on a proposal's card (docs/disenos/img/)
 //   GET  /api/enemigos/prefabs      → [{ name, prefab }]   enemy prefabs not in the library yet
 //   POST /api/enemigos/update { name, op: estado|add-pendiente|edit-pendiente|remove-pendiente, … }
 //   POST /api/enemigos/build { name, model, effort }   POST /api/enemigos/work { name, ids?, model, effort }   (queue a task)
@@ -42,6 +43,7 @@ import { Store } from './store.mjs';
 import { Runner } from './runner.mjs';
 import { Disenos } from './disenos.mjs';
 import { Enemigos } from './enemigos.mjs';
+import { loadZones } from '../enemy-prompt.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(here, '../..');
@@ -184,7 +186,11 @@ async function api(req, res, url) {
   const route = `${req.method} ${url.pathname}`;
   const local = isLocal(req);
   if (route === 'POST /api/pair') {   // the phone, once: the key from the link becomes a cookie for every later call
-    const body = await readJson(req);
+    if (route === 'POST /api/disenos/imagen') {   // a picture pasted on a proposal's card
+    const b = await readJson(req, 16e6);
+    try { return send(res, 200, disenos.attachImage(b)); } catch (err) { return send(res, 400, { error: err.message }); }
+  }
+  const body = await readJson(req);
     if (!sameKey(body.key)) return send(res, 403, { error: 'clave' });
     res.setHeader('Set-Cookie', `${COOKIE}=${encodeURIComponent(phoneKey)}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Strict`);
     return send(res, 200, { ok: true });
@@ -205,7 +211,7 @@ async function api(req, res, url) {
     const lotes = disenos.list();
     const list = enemigos.list();
     const ids = [...lotes.flatMap((l) => l.taskIds || []), ...list.flatMap((e) => [e.tarea, ...e.pendientes.map((p) => p.tarea)])];
-    return send(res, 200, { lotes, enemigos: list, tasks: enemigos.taskStates(ids) });
+    return send(res, 200, { lotes, enemigos: list, tasks: enemigos.taskStates(ids), zonas: loadZones() });
   }
   if (route === 'GET /api/enemigos/prefabs') return send(res, 200, enemigos.prefabs());
   if (route === 'GET /api/img') return serveFile(res, disenos.resolveImage(url.searchParams.get('src')), 'no-cache');

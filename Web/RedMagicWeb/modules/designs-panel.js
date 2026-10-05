@@ -55,7 +55,8 @@ const ASK_HINT = {
 };
 const MODELS = [['sonnet', 'Sonnet'], ['opus', 'Opus'], ['haiku', 'Haiku']];
 const EFFORTS = [['low', 'bajo'], ['medium', 'medio'], ['high', 'alto']];
-const GENERATORS = [['gemini', 'Gemini'], ['comfy', 'ComfyUI']];   // who draws an enemy proposal (the server's default: the first)
+const GENERATORS = [['prompt', '📋 Prompt para Gemini'], ['comfy', '🎨 Enemigo con ComfyUI']];   // enemy: a prompt to paste in Gemini, or ComfyUI draws it (the server's default: the first)
+const GEMINI_URL = 'https://gemini.google.com/app';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const imgUrl = (src) => `/api/img?src=${encodeURIComponent(src)}`;
@@ -80,7 +81,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   const closed = new Set(JSON.parse(sessionStorage.getItem(CLOSED_KEY) || '[]'));
   let viewer = null;                        // { list: [key…], i } | { enemy: name }
   let stopSound = () => {};
-  const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium', generator: 'gemini', images: [] };   // the request form
+  const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium', generator: 'prompt', zone: '', images: [] };   // the request form
   const run = { model: 'sonnet', effort: 'medium' };                 // model of the tasks launched from an enemy
   const draft = { tipo: 'comportamiento', texto: '' };               // the pendiente being written in a sheet
   let adding = null;                        // null | [{ name, prefab }] while "＋ Enemigo existente" is open
@@ -294,7 +295,8 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
 
   function art(lote, item, big = false) {
     const key = keyOf(lote, item);
-    if (item.kind === 'enemy') return `<img src="${imgUrl(item.image)}" alt="${esc(item.name)}" loading="lazy">`;
+    if (item.kind === 'enemy') return item.image ? `<img src="${imgUrl(item.image)}" alt="${esc(item.name)}" loading="lazy">`
+      : '<span class="enNoArt">🖼<br>Falta la imagen<br><small>pégala con Ctrl+V</small></span>';
     if (item.kind === 'sound') return `<canvas data-wave="${esc(key)}" width="${big ? 800 : 256}" height="${big ? 240 : 256}"></canvas>`;
     return `<canvas data-vfx="${esc(key)}" width="${big ? 512 : 256}" height="${big ? 512 : 256}"></canvas>`;
   }
@@ -325,7 +327,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     let foot;
     if (item.status === 'pending') {
       foot = `<input class="enName" data-name="${esc(key)}" value="${esc(name)}" aria-label="Nombre" spellcheck="false" autocomplete="off">
-        <div class="enBtns"><button class="small enOk" data-act="accept" data-key="${esc(key)}" title="Aceptar">✓ Aceptar</button>
+        <div class="enBtns">${item.kind === 'enemy' ? `<label class="small enImgBtn" title="${item.image ? 'Cambiar la imagen' : 'Elegir la imagen'} (o pégala con Ctrl+V sobre la tarjeta)">🖼<input type="file" accept="image/*" hidden data-card-file="${esc(key)}"></label>` : ''}<button class="small enOk" data-act="accept" data-key="${esc(key)}" title="${item.kind === 'enemy' && !item.image ? 'Falta la imagen' : 'Aceptar'}" ${item.kind === 'enemy' && !item.image ? 'disabled' : ''}>✓ Aceptar</button>
         <button class="small" data-act="discard" data-key="${esc(key)}" title="Descartar">✕</button></div>`;
     } else {
       foot = `<div class="enName fixed">${esc(item.status === 'accepted' ? item.name : name)}</div>
@@ -335,11 +337,15 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const corner = item.kind === 'sound'
       ? `<button class="enZoom small" data-act="hear" data-key="${esc(key)}" title="Escuchar" aria-label="Escuchar">▶</button>`
       : `<button class="enZoom small" data-act="view" data-key="${esc(key)}" title="Ver en grande" aria-label="Ver en grande">⤢</button>`;
-    return `<div class="enCard${sel ? ' selected' : ''}" data-status="${item.status}" data-kind="${item.kind}">
+    return `<div class="enCard${sel ? ' selected' : ''}" data-status="${item.status}" data-kind="${item.kind}" data-key="${esc(key)}">
       <button class="enArt" data-act="${item.status === 'pending' ? 'select' : item.kind === 'sound' ? 'hear' : 'view'}" data-key="${esc(key)}"
         title="${item.status === 'pending' ? 'Clic: seleccionar' : ''}">${art(lote, item)}</button>
       ${corner}<span class="enKind" title="${KIND[item.kind].label}">${KIND[item.kind].icon}</span>
       ${item.note ? `<div class="enNote">${esc(item.note)}</div>` : ''}
+      ${item.kind === 'enemy' && item.prompt ? `<details class="enPrompt" ${item.image ? '' : 'open'}><summary>Prompt para Gemini</summary>
+        <textarea readonly rows="6" aria-label="Prompt">${esc(item.prompt)}</textarea>
+        <div class="enBtns"><button class="small enOk" data-act="copy-prompt" data-key="${esc(key)}" title="Copia el prompt">📋 Copiar prompt</button>
+        <a class="small" href="${GEMINI_URL}" target="_blank" rel="noopener" title="Abre la app web de Gemini">↗ Abrir Gemini</a></div></details>` : ''}
       ${foot}
       ${err ? `<div class="enErr">${esc(err)}</div>` : ''}
     </div>`;
@@ -379,6 +385,8 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
 
   function askForm() {
     const opt = (list, value) => list.map(([v, l]) => `<option value="${v}" ${v === value ? 'selected' : ''}>${l}</option>`).join('');
+    const zonas = data?.zonas || [];
+    if (!zonas.some((z) => z.id === ask.zone)) ask.zone = zonas[0]?.id || '';
     return group('ask', '＋ Pedir propuestas', KIND[ask.kind].label.toLowerCase(), `
       <form class="enAsk" data-form="ask">
         <div class="enFilter">${Object.entries(KIND).map(([k, v]) => `<button type="button" class="small${ask.kind === k ? ' selected' : ''}" data-act="ask-kind" data-kind="${k}">${v.icon} ${v.label}</button>`).join('')}</div>
@@ -394,13 +402,15 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
           <label>Cantidad <input type="number" data-ask="count" min="1" max="10" value="${ask.count}"></label>
           <label><input type="radio" name="askMode" data-ask="mode" value="one" ${ask.mode === 'one' ? 'checked' : ''}> Una tarea con todas</label>
           <label><input type="radio" name="askMode" data-ask="mode" value="each" ${ask.mode === 'each' ? 'checked' : ''}> Una tarea por propuesta</label>
-          ${ask.kind === 'enemy' ? `<label title="Quién dibuja las imágenes. Gemini no necesita ComfyUI abierto">Imágenes <select data-ask="generator">${opt(GENERATORS, ask.generator)}</select></label>` : ''}
+          ${ask.kind === 'enemy' ? `<label title="Define la paleta, los cristales y el estilo del enemigo">Zona <select data-ask="zone">${opt(zonas.map((z) => [z.id, z.label]), ask.zone)}</select></label>
+          <label title="Prompt: te devuelve el texto para pegar en la app de Gemini y luego pegas la imagen en la tarjeta. ComfyUI: la tarea dibuja la imagen como hasta ahora">Cómo <select data-ask="generator">${opt(GENERATORS, ask.generator)}</select></label>` : ''}
           <label>Modelo <select data-ask="model">${opt(MODELS, ask.model)}</select></label>
           <label>Esfuerzo <select data-ask="effort">${opt(EFFORTS, ask.effort)}</select></label>
           <button type="submit" class="primary">▶ Pedir ${ask.count} ${ask.count === 1 ? KIND[ask.kind].one : `${KIND[ask.kind].label.toLowerCase()}`}</button>
         </div>
         <p class="efHint">Va a la cola: la tarea aparece abajo, en las tareas de este taller. "Una tarea por propuesta" = conversaciones más cortas; compara el coste
-          con <code>session-usage.mjs</code> o con los ↓ tokens de cada informe.</p>
+          con <code>session-usage.mjs</code> o con los ↓ tokens de cada informe. <b>Prompt</b> (enemigos): la tarea solo escribe el texto —no necesita ComfyUI—;
+          cópialo en Gemini y pega la imagen que te dé en la tarjeta (Ctrl+V). Las zonas se editan en <code>docs/zonas.json</code>.</p>
       </form>`, { defaultOpen: true });
   }
 
@@ -683,6 +693,9 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
       const found = findItem(key);
       if (found?.item.kind === 'sound' && selected.has(key)) hear(found.lote, found.item);
       render();
+    } else if (act === 'copy-prompt') {
+      const f = findItem(key);
+      if (f?.item.prompt) navigator.clipboard.writeText(f.item.prompt).then(() => toast('Prompt copiado: pégalo en Gemini'), () => toast('No pude copiar: selecciona el texto a mano'));
     } else if (act === 'view') openViewer(key);
     else if (act === 'hear') { const f = findItem(key); if (f) hear(f.lote, f.item); }
     else if (act === 'sheet') { viewer = { enemy: btn.dataset.name }; renderViewer(); }
@@ -732,7 +745,23 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     }
     if (n) { render(); toast(n === 1 ? 'Imagen adjunta' : `${n} imágenes adjuntas`); }
   }
+  /** A picture for a proposal's card (the one Gemini drew, or a replacement): the server keeps it in docs/disenos/img/. */
+  async function attachCardImage(key, file) {
+    if (!IMG_TYPES.includes(file.type)) { toast('Solo png, jpg, webp o gif'); return; }
+    if (file.size > 10e6) { toast('La imagen pesa más de 10 MB'); return; }
+    const [loteId, itemId] = key.split(':');
+    try {
+      await post('disenos/imagen', { loteId, itemId, type: file.type, data: await toBase64(file) }, 'Imagen puesta en la tarjeta');
+    } catch (e) { toast(e.message); }
+  }
   document.addEventListener('paste', (ev) => {
+    const files0 = [...(ev.clipboardData?.files || [])].filter((f) => IMG_TYPES.includes(f.type));
+    if (files0.length && !ev.target.closest?.('[data-form="ask"]') && !typing(root)) {
+      // inside a card → that card; else the one enemy card selected
+      let key = ev.target.closest?.('.enCard[data-kind="enemy"]')?.dataset.key;
+      if (!key) { const sel = [...selected].filter((k) => findItem(k)?.item.kind === 'enemy'); if (sel.length === 1) key = sel[0]; }
+      if (key) { ev.preventDefault(); attachCardImage(key, files0[0]); return; }
+    }
     if (!ev.target.closest?.('[data-form="ask"]')) return;
     const files = [...(ev.clipboardData?.files || [])].filter((f) => IMG_TYPES.includes(f.type));
     if (!files.length) return;               // plain text: the field takes it
@@ -749,6 +778,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     if (out) { ask.request = ''; ask.images = []; render(); }
   });
   on('change', (ev) => {
+    if (ev.target.dataset?.cardFile) { const f = ev.target.files[0]; const k = ev.target.dataset.cardFile; ev.target.value = ''; if (f) attachCardImage(k, f); return; }
     if (ev.target.dataset?.askFile !== undefined) { const files = [...ev.target.files]; ev.target.value = ''; attachImages(files); return; }
     const key = ev.target.dataset?.name;
     const found = key && findItem(key);

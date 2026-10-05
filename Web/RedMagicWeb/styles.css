@@ -948,3 +948,10 @@ body.movil #tab-todo{flex:1;}
 .todoImg button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;padding:0;line-height:1;border-radius:50%;}
 .todoImgAdd{cursor:pointer;background:var(--panel);border:1px dashed var(--border-lit);border-radius:6px;padding:8px 12px;font-size:14px;color:var(--accent);}
 .todoImgAdd:hover{border-color:var(--accent);}
+.enPrompt{font-size:12px;}
+.enPrompt summary{cursor:pointer;color:var(--faint);padding:2px 0;}
+.enPrompt textarea{width:100%;box-sizing:border-box;font:11px/1.35 ui-monospace,Consolas,monospace;resize:vertical;background:var(--pit);color:var(--text, inherit);border:1px solid var(--border);border-radius:6px;padding:6px;margin:4px 0;}
+.enPrompt .enBtns{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.enPrompt a.small{display:inline-block;text-decoration:none;}
+.enImgBtn{cursor:pointer;display:inline-flex;align-items:center;}
+.enNoArt small{opacity:.7;}

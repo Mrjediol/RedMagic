@@ -1,6 +1,6 @@
 # Prompts de enemigos por zona + modo "Prompt para Gemini" en 🎨 Diseños
 
-Estado: **en curso** (2026-10-05). Actualizar tras cada hito.
+Estado: **terminada, pendiente de que el usuario la pruebe** (2026-10-05). Reiniciar el taller-server (start.cmd) para que cargue el código nuevo.
 
 ## Qué se pidió (palabras del usuario, resumidas)
 - En 🎨 Diseños ▸ ＋ Pedir propuestas ▸ Enemigo: elegir **zona** (hielo / volcán / bosque, y las que vengan) y **modo**:
@@ -23,25 +23,17 @@ Estado: **en curso** (2026-10-05). Actualizar tras cada hito.
 - (Obsoleto, a quitar) `tools/gemini/gemini-image.mjs` = llamada por API a Gemini; el usuario NO tiene plan de pago,
   la vía real es pegar a mano. Hay que quitarlo con su línea de `.gitignore` y su sección en `designs.md`.
 
-## Falta (en este orden)
-1. **Servidor** (`tools/taller-server/disenos.mjs`, `design-prompts.mjs`, `server.mjs`): `request({zone, generator:
-   'prompt'|'comfy'})` (hoy `generator` es `gemini|comfy`: renombrar a `prompt`); la tarea de modo prompt NO necesita
-   ComfyUI; `GET /api/disenos` devuelve también `zonas`; `POST /api/disenos/imagen {loteId,itemId,name,type,data}` guarda
-   en `docs/disenos/img/<lote>__<item>.<ext>` y pone `item.image`; `_acceptEnemy` pide imagen (error claro si falta) y
-   guarda `zone` en `diseno`.
-2. **`tools/check-design-batch.mjs`**: un item enemy puede no tener `image` si trae `prompt` (con los bloques de
-   `REQUIRED` de enemy-prompt.mjs); si hay `image`, que exista.
-3. **Web `modules/designs-panel.js`**: el formulario (selector de zona + modo, hoy hay `GENERATORS` gemini|comfy),
-   tarjeta de item enemy en modo prompt: texto del prompt, 📋 Copiar, "Abrir Gemini" (https://gemini.google.com/app),
-   zona de pegado (Ctrl+V sobre la tarjeta + botón de archivo) y "Cambiar imagen" también en las de ComfyUI.
-4. **Skill `design-proposals`** (sección enemy): modo prompt = el item lleva `prompt` armado con
-   `enemy-prompt.mjs --target gemini`; modo comfy = `enemy-prompt.mjs --target comfy` + `claude-workflow.mjs`.
-   Actualizar `STYLE`/`BACKDROP` de `claude-workflow.mjs` y `design-prompts.mjs` (enemigo aprobado → make-enemy: línea de
-   zona).
-5. Quitar lo obsoleto (arriba), actualizar `docs/architecture/designs.md`, `node --check`, probar el servidor con un lote
-   de prueba (curl), commit.
-6. Resumen en el chat con la lista de pruebas para el usuario (web: pedir prompt de cada zona, copiar, pegar imagen,
-   aceptar; modo ComfyUI sigue igual).
+## Hecho también (pasos 1-5)
+- Servidor: request({zone, generator prompt|comfy}), GET /api/disenos devuelve zonas, POST /api/disenos/imagen, aceptar exige imagen y guarda zone; buildPrompt (▶ Montar) copia una imagen no-Comfy a Comfy input.
+- check-design-batch acepta items con prompt (bloques REQUIRED de enemy-prompt.mjs).
+- Web: selector Zona + Cómo (Prompt / ComfyUI), tarjeta con prompt (📋 Copiar, ↗ Abrir Gemini), 🖼 / Ctrl+V para la imagen.
+- Skill design-proposals (modos prompt / comfy con enemy-prompt.mjs), STYLE de claude-workflow.mjs = estilo del juego, make-enemy §0/§1.
+- Quitado tools/gemini (API) y su línea de .gitignore; designs.md al día.
+- Probado con stubs: request→lote con zone, aceptar sin imagen da error claro, attachImage, aceptar con imagen guarda zone. NO probado en el navegador.
+
+## Falta
+- Que el usuario pruebe la web (lista en el chat) y diga qué ajustar.
+- Aún sin hacer: cortar el robot de hielo con metralletas (imagen de Gemini del usuario) siguiendo la skill (1 seed por pieza).
 
 ## Decisiones
 - Un solo generador de texto (`enemy-prompt.mjs`) para Gemini y ComfyUI: lo variable (criatura, diseño, piezas) lo

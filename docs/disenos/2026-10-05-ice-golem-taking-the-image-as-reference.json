@@ -44,6 +44,14 @@
       "note": "Golem de hielo verde-azulado con cristal ámbar/naranja en el pecho (contraste cálido), cabeza cuadrada oscura con cuernos de hielo, dos puños flotantes y losa baja",
       "status": "pending",
       "image": "comfy:claude/des_icegolem_4b_raw_00002_.png"
+    },
+    {
+      "id": "5",
+      "kind": "enemy",
+      "name": "SnowpackSentinel",
+      "note": "Golem de nieve compacta redondeado: torso de bola de nieve con parches de piedra gris y dos cristales turquesa, cabeza de carbón con ojos blancos, puños-bola de nieve flotantes y losa con carámbanos",
+      "status": "pending",
+      "image": "comfy:claude/des_icegolem_5_raw_00001_.png"
     }
   ]
 }

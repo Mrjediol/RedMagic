@@ -43,7 +43,12 @@ namespace RedMagic.Enemies.EditorTools
                 var go = ((EnemyStats)target).gameObject;
                 var path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go);
                 if (string.IsNullOrEmpty(path)) path = AssetDatabase.GetAssetPath(go);
-                if (!string.IsNullOrEmpty(path))
+                if (string.IsNullOrEmpty(path))  // Prefab Mode: el objeto es de la etapa, no del asset
+                {
+                    var stage = UnityEditor.SceneManagement.PrefabStageUtility.GetPrefabStage(go);
+                    if (stage != null) path = stage.assetPath;
+                }
+                if (string.IsNullOrEmpty(path)) { _fx = null; return; }
                     foreach (var dep in AssetDatabase.GetDependencies(path, true))
                     {
                         if (dep.EndsWith(".prefab") && dep.StartsWith("Assets/Prefabs/Fx/")) _fx.Add(dep);

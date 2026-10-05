@@ -737,6 +737,43 @@
             "runId": "2026-10-05T16-38-41-887Z_bhyafiz",
             "sessionId": "13a04134-c830-4b58-945d-e70ef1daecf4"
           }
+        },
+        {
+          "id": "yceteqo",
+          "text": "Diseños: zona + modo Prompt para Gemini + pegar imagen en la tarjeta",
+          "note": "Selector de zona (hielo/volcán/bosque…), modo Enemigo (ComfyUI) o Prompt (Gemini), pegar imagen; prompts de ComfyUI al día. Estado en el doc.",
+          "done": false,
+          "doc": "docs/tareas/gemini-prompts-zonas.md",
+          "model": "opus",
+          "effort": "medium",
+          "needs": [],
+          "steps": [
+            {
+              "id": "do1bhfv",
+              "text": "Servidor: zona, modo prompt, subir imagen, aceptar",
+              "done": false
+            },
+            {
+              "id": "5u10r25",
+              "text": "check-design-batch para items con prompt",
+              "done": false
+            },
+            {
+              "id": "wefuye3",
+              "text": "Web: formulario y tarjeta (copiar, abrir Gemini, pegar imagen)",
+              "done": false
+            },
+            {
+              "id": "n5pjc9p",
+              "text": "Skill design-proposals + STYLE de ComfyUI con enemy-prompt.mjs",
+              "done": false
+            },
+            {
+              "id": "24tfchr",
+              "text": "Quitar tools/gemini, docs, pruebas y commit",
+              "done": false
+            }
+          ]
         }
       ]
     }

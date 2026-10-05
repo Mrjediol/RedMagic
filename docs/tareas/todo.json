@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-05T20:04:08.986Z",
+  "updated": "2026-10-05T20:24:56.713Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -383,6 +383,23 @@
           },
           "sessionId": "52d02f4e-735e-4735-9a13-5f1edbc1f08a",
           "lastRunId": "2026-10-03T21-28-23-743Z_xmyi2w0"
+        },
+        {
+          "id": "d4x6u6w",
+          "note": "",
+          "done": false,
+          "text": "Cuerpo de PolarTurretBot (make-enemy, paso 1)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), section \"Por pasos ▸ Paso 1 (cuerpo)\", to build ONLY THE BODY of the enemy PolarTurretBot from its approved design.\nEnemy sheet: docs/enemigos/PolarTurretBot/enemigo.json. Original request (user's words): «robot azul simple, brazo como cañon de energia». Design note: «Wide low turret-like body, twin-ring cannon with coils.».\nThe design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is docs/enemigos/PolarTurretBot/diseno.png. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/PolarTurretBot_base.png; no subfolders) and use \"PolarTurretBot_base.png\" as the --ref of step 2 (no \" [output]\"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.\nZone: ice (docs/zonas.json).\nDo: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), `make-enemy.mjs`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 3 (states), 5 (attacks), 6 (sounds): the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).\nNobody will answer: where the skill says \"stop\", pick the best yourself from a contact sheet and go on.\nCopy the assembled picture to docs/enemigos/PolarTurretBot/cuerpo.png (the sheet shows it) and write in the sheet: \"estado\": \"cuerpo-por-aprobar\", \"prefab\": \"<prefab path under Assets>\", \"cuerpo\": { \"fecha\": \"<ISO>\", \"plantilla\": \"<rig template id>\", \"partes\": \"<folder of the final parts>\", \"brief\": \"<brief path>\", \"resumen\": \"<2–3 sentences, in Spanish: which parts, anything dubious about proportions / layers>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"por-montar\" and explain in the report what failed.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "PolarTurretBot",
+          "status": "running",
+          "lastRunId": "2026-10-05T20-24-56-713Z_d4x6u6w",
+          "sessionId": "b53d3b2c-fa25-4baa-9dfe-0d6e274c0c13"
         }
       ]
     },

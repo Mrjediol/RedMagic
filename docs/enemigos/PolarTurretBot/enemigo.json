@@ -1,6 +1,6 @@
 {
   "name": "PolarTurretBot",
-  "estado": "por-montar",
+  "estado": "cuerpo-por-aprobar",
   "diseno": {
     "image": "docs/enemigos/PolarTurretBot/diseno.png",
     "source": "docs/disenos/img/2026-10-05-robot-azul-simple-brazo-como-canon-de-en__4.png",
@@ -11,5 +11,15 @@
     "note": "Wide low turret-like body, twin-ring cannon with coils."
   },
   "pendientes": [],
-  "createdAt": "2026-10-05T20:07:52.780Z"
+  "createdAt": "2026-10-05T20:07:52.78Z",
+  "tarea": "d4x6u6w",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/PolarTurretBot.prefab",
+  "cuerpo": {
+    "fecha": "2026-10-05T20:27:58.287Z",
+    "plantilla": "floatingCaster",
+    "partes": "Web/RedMagicWeb/tools/comfy/ (Comfy output) claude/PolarTurretBot/final",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/PolarTurretBot.json",
+    "resumen": "4 piezas: Torso (platillo con ojo y cristal), CastArm (cañón con 3 anillos y soporte de piedra con cristal), Lower (llama del propulsor) y Accessory (anillo metálico). Dudoso: el soporte del cañón queda detrás del platillo por el orden de capas de la plantilla (en el dibujo iba delante) y el Torso salió algo más oscuro que la base; ajusta capas y pivote del cañón en Enemy Studio."
+  },
+  "imagen": "docs/enemigos/PolarTurretBot/preview.png"
 }

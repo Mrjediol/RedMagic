@@ -1,0 +1,8 @@
+{
+  "name": "PolarTurretBot",
+  "request": "Robot azul simple, brazo como cañón de energía (cuerpo solo, paso 1).",
+  "template": "floatingCaster",
+  "parts": "claude/PolarTurretBot/final",
+  "height": 2.8,
+  "slots": { "castArm": { "pivot": [0.15, 0.55], "muzzle": [0.99, 0.58] } }
+}

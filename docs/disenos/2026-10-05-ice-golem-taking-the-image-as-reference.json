@@ -28,6 +28,14 @@
       "note": "Golem azul glaciar oscuro: torso azul intenso con cristal cian, cabeza verde-azulada con corona de carámbanos, puños translúcidos y base de bloques de hielo apilados",
       "status": "pending",
       "image": "comfy:claude/des_icegolem_2_raw_00003_.png"
+    },
+    {
+      "id": "3",
+      "kind": "enemy",
+      "name": "VioletRimeWarden",
+      "note": "Golem de piedra helada índigo-violeta con núcleo de cristal rosa, cabeza esférica agrietada con ojo magenta, puño enorme de cristales erizados y losa de hielo lila",
+      "status": "pending",
+      "image": "comfy:claude/des_icegolem_3_raw_00002_.png"
     }
   ]
 }

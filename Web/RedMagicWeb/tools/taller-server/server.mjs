@@ -12,7 +12,7 @@
 //   GET  /api/disenos               → { lotes, enemigos, tasks }   docs/disenos/ (disenos.mjs) + docs/enemigos/ (enemigos.mjs)
 //   GET  /api/img?src=comfy:…|docs/…  → an image (only Comfy's output and docs/)
 //   POST /api/disenos/review { loteId, itemIds, decision: accept|discard|pending, names, libraryIds }  → { errors }
-//   POST /api/disenos/request { kind, request, count, mode: one|each, model, effort }  → { loteId, taskIds }   (queues the task(s))
+//   POST /api/disenos/request { kind, request, count, mode: one|each, model, effort, generator: gemini|comfy (enemy) }  → { loteId, taskIds }   (queues the task(s))
 //   GET  /api/enemigos/prefabs      → [{ name, prefab }]   enemy prefabs not in the library yet
 //   POST /api/enemigos/update { name, op: estado|add-pendiente|edit-pendiente|remove-pendiente, … }
 //   POST /api/enemigos/build { name, model, effort }   POST /api/enemigos/work { name, ids?, model, effort }   (queue a task)

@@ -10,17 +10,19 @@
 export const KIND_LABEL = { enemy: 'enemigo', projectile: 'proyectil', fx: 'efecto VFX', sound: 'sonido' };
 export const PENDING_TYPES = { comportamiento: 'Comportamiento', sprite: 'Sprite', gesto: 'Gesto', ataque: 'Ataque', bug: 'Bug', otro: 'Otro' };
 const KIND_EN = { enemy: 'enemy', projectile: 'projectile', fx: 'VFX effect', sound: 'sound' };
+const GENERATOR_EN = { gemini: 'Gemini (tools/gemini/gemini-image.mjs; ComfyUI is not needed)', comfy: 'ComfyUI (tools/comfy/claude-workflow.mjs)' };
 const PENDING_EN = { comportamiento: 'Behaviour', sprite: 'Sprite', gesto: 'Gesture', ataque: 'Attack', bug: 'Bug', otro: 'Other' };
 
 const PICTURE = 'After editing the enemy sheet, refresh its picture for the web: '
   + `unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@"<prefab>");'`;
 
 /** A design task: `index` (1-based) when the batch is split into one task per proposal. */
-export function designPrompt({ kind, request, count, loteFile, index = null }) {
+export function designPrompt({ kind, request, count, loteFile, index = null, generator = null }) {
   const lines = [
     `Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: ${kind} (${KIND_EN[kind]}).`,
     `What the user asked for (their words): «${request}»`,
   ];
+  if (generator) lines.push(`Image generator: ${GENERATOR_EN[generator]} — the skill's "${generator}" recipe.`);
   if (index) {
     lines.push(`This task makes ONE proposal: number ${index} of ${count}. Read the batch before starting and make one different from those already in it.`);
   } else {

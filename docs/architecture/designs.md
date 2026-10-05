@@ -28,8 +28,17 @@ Batches with `demo: true` are test data made from older Comfy outputs.
 ## Asking for proposals (the form at the top of the tab)
 
 Kind + what the user wants + how many (1–10) + **one task with all** or **one task per proposal** (to compare costs)
-+ model / effort → `POST /api/disenos/request` creates the empty batch (`taskIds`, `count`, `mode`) and the
-task(s) in phase **`designs`** — the 🎨 Diseños taller's task list (`design: { lote, kind }`, `needs: comfy` for enemies) and queues them.
++ (enemy) **Imágenes: Gemini | ComfyUI** + model / effort → `POST /api/disenos/request` creates the empty batch (`taskIds`, `count`, `mode`,
+`generator`) and the task(s) in phase **`designs`** — the 🎨 Diseños taller's task list (`design: { lote, kind }`, `needs: comfy` only
+for a ComfyUI enemy batch) and queues them.
+
+**Generators** (enemy only; `GENERATORS` in `disenos.mjs`, the first is the default):
+- `gemini` (default) — `tools/gemini/gemini-image.mjs`: Google's Gemini image API (`gemini-3-pro-image-preview`, falls to
+  `gemini-2.5-flash-image` on 404; env `GEMINI_IMAGE_MODEL` overrides). Key: env `GEMINI_API_KEY` or
+  `tools/gemini/api-key.txt` (git-ignored). Takes the user's attached images as `--ref`. Saves the PNG **in Comfy's
+  output folder** (`claude/<name>.png`), so the item is still `comfy:…` and make-enemy (▶ Montar) uses it unchanged —
+  the later steps (parts, states, cut) still run in ComfyUI.
+- `comfy` — `claude-workflow.mjs run` (Qwen Image), needs ComfyUI open.
 The prompt is a few lines (`tools/taller-server/design-prompts.mjs`): the rules are the
 **`design-proposals` skill** (`.claude/skills/design-proposals/SKILL.md`, which reuses make-enemy §0–1 for enemies),
 and the task ends by running **`tools/check-design-batch.mjs <batch>`** (formats, image exists, preset exists and is

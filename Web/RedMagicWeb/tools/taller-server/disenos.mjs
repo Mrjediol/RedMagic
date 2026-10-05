@@ -26,6 +26,7 @@ import { designPrompt, KIND_LABEL } from './design-prompts.mjs';
 
 const run = promisify(execFile);
 const KINDS = ['enemy', 'projectile', 'fx', 'sound'];
+const GENERATORS = ['gemini', 'comfy'];   // who draws an enemy proposal; the first is the default
 const PASCAL = /^[A-Z][A-Za-z0-9]{2,40}$/;
 const SNAKE = /^[a-z][a-z0-9_]{2,40}$/;
 
@@ -52,10 +53,11 @@ export class Disenos {
   // ------------------------------------------------------------ asking for proposals (a task, or one per proposal)
 
   /** Creates the batch file (empty) and the task(s) that fill it, and queues them. */
-  request({ kind, request, count = 1, mode = 'one', model, effort, images = [] }) {
+  request({ kind, request, count = 1, mode = 'one', model, effort, images = [], generator }) {
     images = (Array.isArray(images) ? images : []).filter((i) => i && /^[0-9a-f]{32}.(png|jpg|webp|gif)$/.test(String(i.id)))
       .map((i) => ({ id: i.id, name: String(i.name || '').slice(0, 80) }));
     if (!KINDS.includes(kind)) throw new Error('tipo inválido');
+    generator = kind !== 'enemy' ? null : GENERATORS.includes(generator) ? generator : GENERATORS[0];
     request = String(request || '').trim();
     if (!request) throw new Error('Escribe qué quieres');
     count = Math.max(1, Math.min(10, Math.round(Number(count) || 1)));
@@ -63,14 +65,14 @@ export class Disenos {
     let id = `${new Date().toISOString().slice(0, 10)}-${slug}`;
     for (let n = 2; fs.existsSync(this._lotePath(id)); n++) id = `${new Date().toISOString().slice(0, 10)}-${slug}-${n}`;
     const loteFile = `docs/disenos/${id}.json`;
-    const lote = { title: `${count} × ${KIND_LABEL[kind]}: ${request}`.slice(0, 120), request, kind, count, mode, createdAt: new Date().toISOString(), taskIds: [], items: [] };
+    const lote = { title: `${count} × ${KIND_LABEL[kind]}: ${request}`.slice(0, 120), request, kind, count, mode, createdAt: new Date().toISOString(), ...(generator ? { generator } : {}), taskIds: [], items: [] };
     const each = mode === 'each' && count > 1;
     const tasks = (each ? Array.from({ length: count }, (_, i) => i + 1) : [null]).map((index) => this.store.addTask(
       { id: 'designs', name: '🎨 Designs', tag: 'Web' },
       {
         text: `Diseños · ${KIND_LABEL[kind]}${index ? ` ${index}/${count}` : ` × ${count}`}: ${request}`.slice(0, 140),
-        prompt: designPrompt({ kind, request, count, loteFile, index }),
-        needs: kind === 'enemy' ? ['comfy'] : [],
+        prompt: designPrompt({ kind, request, count, loteFile, index, generator }),
+        needs: generator === 'comfy' ? ['comfy'] : [],
         ...(images.length ? { images } : {}),
         ...(model ? { model } : {}), ...(effort ? { effort } : {}),
         design: { lote: id, kind },

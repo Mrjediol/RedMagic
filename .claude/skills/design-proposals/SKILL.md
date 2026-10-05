@@ -20,12 +20,17 @@ Read `.claude/skills/make-enemy/SKILL.md` §0 and §1 and follow them: the Fract
 parts with gaps, Rayman-style, one shape per template slot), the template first (`rig-templates.js`), the
 prompt words (`STYLE` + `BACKDROP` of `claude-workflow.mjs`: cartoon vector, cel shading, thick black outline,
 pure white background). Fit the zone if the request implies one (GDD: `docs/GDD.md`).
-- One image per proposal, 1024×1024: `cd Web/RedMagicWeb/tools/comfy && node claude-workflow.mjs run --no-cut
-  --size 1024x1024 --seed <N> --name des_<slug>_<n> --prompt "…"` (ComfyUI is open).
-- Look at ONE contact sheet of the batch (`node contact-sheet.mjs …`), never single full-size images. Redo (new
-  seed / clearer prompt) a proposal whose parts touch, that has arms/legs/neck joining parts, or that is not on white.
-- Item: `"image": "comfy:claude/des_<slug>_<n>_raw_00001_.png"`, `name` PascalCase English (`FlyingTurtle`), not an
-  existing prefab name (`Assets/Prefabs/Enemies/**`).
+- One image per proposal, 1024×1024, with the generator the task names (none named = `gemini`):
+  - **gemini** (default): `cd Web/RedMagicWeb/tools/gemini && node gemini-image.mjs --name des_<slug>_<n> --prompt "…"`
+    (+ `--ref <abs path>,…` for the user's attached images when they ask for "like this"). ComfyUI is not needed.
+    Saves `output/claude/des_<slug>_<n>.png` in Comfy's output folder → item `"image": "comfy:claude/des_<slug>_<n>.png"`.
+    Gemini follows long prompts well: describe each part and the gaps explicitly, then `STYLE` + `BACKDROP`.
+    A run that ends `✗ no Gemini key` / `403` / quota: stop and report it (do not fall back to ComfyUI on your own).
+  - **comfy**: `cd Web/RedMagicWeb/tools/comfy && node claude-workflow.mjs run --no-cut --size 1024x1024 --seed <N>
+    --name des_<slug>_<n> --prompt "…"` (ComfyUI is open) → item `"image": "comfy:claude/des_<slug>_<n>_raw_00001_.png"`.
+- Look at ONE contact sheet of the batch (`cd ../comfy && node contact-sheet.mjs …`), never single full-size images. Redo
+  (new seed / run / clearer prompt) a proposal whose parts touch, that has arms/legs/neck joining parts, or that is not on white.
+- Item: `name` PascalCase English (`FlyingTurtle`), not an existing prefab name (`Assets/Prefabs/Enemies/**`).
 
 ## projectile / fx — a ✨ VFX Lab preset with its parameters
 The game's effects are procedural presets (`Web/RedMagicWeb/modules/vfx-presets.js` + `vfx-effects.js`; families:

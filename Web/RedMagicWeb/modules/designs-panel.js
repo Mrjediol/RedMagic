@@ -55,6 +55,7 @@ const ASK_HINT = {
 };
 const MODELS = [['sonnet', 'Sonnet'], ['opus', 'Opus'], ['haiku', 'Haiku']];
 const EFFORTS = [['low', 'bajo'], ['medium', 'medio'], ['high', 'alto']];
+const GENERATORS = [['gemini', 'Gemini'], ['comfy', 'ComfyUI']];   // who draws an enemy proposal (the server's default: the first)
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const imgUrl = (src) => `/api/img?src=${encodeURIComponent(src)}`;
@@ -79,7 +80,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   const closed = new Set(JSON.parse(sessionStorage.getItem(CLOSED_KEY) || '[]'));
   let viewer = null;                        // { list: [key…], i } | { enemy: name }
   let stopSound = () => {};
-  const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium', images: [] };   // the request form
+  const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium', generator: 'gemini', images: [] };   // the request form
   const run = { model: 'sonnet', effort: 'medium' };                 // model of the tasks launched from an enemy
   const draft = { tipo: 'comportamiento', texto: '' };               // the pendiente being written in a sheet
   let adding = null;                        // null | [{ name, prefab }] while "＋ Enemigo existente" is open
@@ -393,6 +394,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
           <label>Cantidad <input type="number" data-ask="count" min="1" max="10" value="${ask.count}"></label>
           <label><input type="radio" name="askMode" data-ask="mode" value="one" ${ask.mode === 'one' ? 'checked' : ''}> Una tarea con todas</label>
           <label><input type="radio" name="askMode" data-ask="mode" value="each" ${ask.mode === 'each' ? 'checked' : ''}> Una tarea por propuesta</label>
+          ${ask.kind === 'enemy' ? `<label title="Quién dibuja las imágenes. Gemini no necesita ComfyUI abierto">Imágenes <select data-ask="generator">${opt(GENERATORS, ask.generator)}</select></label>` : ''}
           <label>Modelo <select data-ask="model">${opt(MODELS, ask.model)}</select></label>
           <label>Esfuerzo <select data-ask="effort">${opt(EFFORTS, ask.effort)}</select></label>
           <button type="submit" class="primary">▶ Pedir ${ask.count} ${ask.count === 1 ? KIND[ask.kind].one : `${KIND[ask.kind].label.toLowerCase()}`}</button>

@@ -1,0 +1,21 @@
+{
+  "title": "1 × enemigo: i want the exact same desing enemy",
+  "request": "i want the exact same desing enemy",
+  "kind": "enemy",
+  "count": 1,
+  "mode": "one",
+  "createdAt": "2026-10-05T16:38:41.563Z",
+  "taskIds": [
+    "bhyafiz"
+  ],
+  "items": [
+    {
+      "id": "1",
+      "kind": "enemy",
+      "name": "FrostStoneGolem",
+      "note": "Réplica fiel del golem de piedra y hielo de la referencia (hombros nevados, cristales cian), fracturado en partes flotantes",
+      "status": "pending",
+      "image": "comfy:claude/des_icegolem_exact_1_raw_00001_.png"
+    }
+  ]
+}

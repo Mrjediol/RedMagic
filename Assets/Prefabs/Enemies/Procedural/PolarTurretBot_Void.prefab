@@ -15,7 +15,7 @@ PrefabInstance:
     - target: {fileID: 2078408592273890420, guid: cd3f669cbe8146148880945b7e5b54c2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 497b396c45a82cf4dae905e2e7fd3361, type: 2}
+      objectReference: {fileID: 2100000, guid: 5f1e0399facc7fb47a1b69adfa3b17a0, type: 2}
     - target: {fileID: 2222317332001861554, guid: cd3f669cbe8146148880945b7e5b54c2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -68,8 +68,32 @@ PrefabInstance:
       propertyPath: m_Name
       value: PolarTurretBot_Void
       objectReference: {fileID: 0}
+    - target: {fileID: 8482748762267684950, guid: cd3f669cbe8146148880945b7e5b54c2, type: 3}
+      propertyPath: rig
+      value: 
+      objectReference: {fileID: 3039668888251005110}
+    - target: {fileID: 8482748762267684950, guid: cd3f669cbe8146148880945b7e5b54c2, type: 3}
+      propertyPath: spriteRenderer
+      value: 
+      objectReference: {fileID: 4311006701820122811}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cd3f669cbe8146148880945b7e5b54c2, type: 3}
+--- !u!114 &3039668888251005110 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 948899308483785337, guid: cd3f669cbe8146148880945b7e5b54c2, type: 3}
+  m_PrefabInstance: {fileID: 2811434033006496463}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e6fc707acbe7884cb21f94e3272ee9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Rigging.RigDriverCode
+--- !u!212 &4311006701820122811 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 2078408592273890420, guid: cd3f669cbe8146148880945b7e5b54c2, type: 3}
+  m_PrefabInstance: {fileID: 2811434033006496463}
+  m_PrefabAsset: {fileID: 0}

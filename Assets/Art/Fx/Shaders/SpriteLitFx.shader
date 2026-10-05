@@ -15,9 +15,16 @@ Shader "RedMagic/Sprite Lit FX"
         _Saturation("Saturación", Range(0, 2)) = 1
         _Brightness("Brillo", Range(0, 2)) = 1
 
+        [Header(Volumen y apoyo)]
+        _Gradient("Luz arriba / sombra abajo", Range(0, 0.6)) = 0
+        _ShadowPos("Sombra de contacto: centro (espacio local de la pieza)", Vector) = (0, 0, 0, 0)
+        _ShadowRadius("Sombra de contacto: radio", Range(0, 4)) = 0
+        _ShadowStrength("Sombra de contacto: fuerza", Range(0, 1)) = 0.5
+        _ShadowSquash("Sombra de contacto: aplastado vertical", Range(0.2, 1.5)) = 0.7
+
         [Header(Borde interior)]
         [HDR] _RimColor("Color", Color) = (0, 0, 0, 0)
-        _RimWidth("Grosor (texels)", Range(1, 40)) = 8
+        _RimWidth("Grosor (texels)", Range(1, 200)) = 40
 
         [Header(Brillo propio en zonas claras)]
         [HDR] _GlowColor("Color", Color) = (0, 0, 0, 0)
@@ -72,6 +79,7 @@ Shader "RedMagic/Sprite Lit FX"
                 COMMON_2D_LIT_OUTPUTS
                 half4 color        : COLOR;
                 float2 worldXY     : TEXCOORD7;
+                float2 localXY     : TEXCOORD6;
             };
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Lit2DCommon.hlsl"
@@ -87,6 +95,9 @@ Shader "RedMagic/Sprite Lit FX"
                 half _GlowThreshold, _GlowPulse;
                 half4 _SheenColor;
                 half _SheenSpeed, _SheenWidth, _SheenPause;
+                half _Gradient;
+                float4 _ShadowPos;
+                half _ShadowRadius, _ShadowStrength, _ShadowSquash;
             CBUFFER_END
 
             Varyings LitVertex(Attributes input)
@@ -98,6 +109,7 @@ Shader "RedMagic/Sprite Lit FX"
                 Varyings o = CommonLitVertex(input);
                 o.color = input.color * _Color * unity_SpriteColor;
                 o.worldXY = TransformObjectToWorld(input.positionOS).xy;
+                o.localXY = input.positionOS.xy;
                 return o;
             }
 
@@ -122,6 +134,17 @@ Shader "RedMagic/Sprite Lit FX"
                 main.rgb = HueShift(main.rgb, _Hue);
                 half lum = dot(main.rgb, half3(0.299, 0.587, 0.114));
                 main.rgb = lerp(lum.xxx, main.rgb, _Saturation) * _Brightness;
+
+                // Volumen: luz desde arriba, sombra abajo.
+                main.rgb *= 1 + _Gradient * (input.uv.y * 2 - 1);
+
+                // Sombra de contacto: oscurece esta pieza alrededor de donde se apoya otra encima.
+                if (_ShadowRadius > 0.001)
+                {
+                    float2 d = (input.localXY - _ShadowPos.xy) / float2(_ShadowRadius, _ShadowRadius * _ShadowSquash);
+                    half sh = saturate(1 - dot(d, d));
+                    main.rgb *= 1 - _ShadowStrength * sh * sh * (3 - 2 * sh);
+                }
 
                 // Borde interior: alfa propio menos el del vecino más transparente.
                 half rim = 0;
@@ -211,6 +234,9 @@ Shader "RedMagic/Sprite Lit FX"
                 half _GlowThreshold, _GlowPulse;
                 half4 _SheenColor;
                 half _SheenSpeed, _SheenWidth, _SheenPause;
+                half _Gradient;
+                float4 _ShadowPos;
+                half _ShadowRadius, _ShadowStrength, _ShadowSquash;
             CBUFFER_END
 
             Varyings UnlitVertex(Attributes input)

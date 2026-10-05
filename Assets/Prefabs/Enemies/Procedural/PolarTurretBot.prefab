@@ -58,7 +58,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 7ae38a94e234c6343ad7fb689c45eda5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -152,7 +152,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: d8b105d921e31b34aba9c8ba6a8e467e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -244,7 +244,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 7ae38a94e234c6343ad7fb689c45eda5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -335,7 +335,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 7ae38a94e234c6343ad7fb689c45eda5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -931,7 +931,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 1.5
-      aim: 0
+      aim: 1
       aimParts: []
     - name: Golpe
       poses:
@@ -947,7 +947,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
-      aim: 0
+      aim: 1
       aimParts: []
     releases:
     - step: 1
@@ -1005,7 +1005,7 @@ MonoBehaviour:
       ease: 0
       stretch: 1
       shake: 0
-      aim: 0
+      aim: 1
       aimParts: []
     - name: Golpe
       poses:
@@ -1021,7 +1021,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
-      aim: 0
+      aim: 1
       aimParts: []
     releases:
     - step: 0
@@ -1047,7 +1047,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
-      aim: 0
+      aim: 1
       aimParts: []
     - name: Tiro1
       poses:
@@ -1059,7 +1059,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
-      aim: 0
+      aim: 1
       aimParts: []
     - name: Tiro2
       poses:
@@ -1071,7 +1071,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
-      aim: 0
+      aim: 1
       aimParts: []
     - name: Tiro3
       poses:
@@ -1083,7 +1083,7 @@ MonoBehaviour:
       ease: 1
       stretch: 0
       shake: 0
-      aim: 0
+      aim: 1
       aimParts: []
     releases:
     - step: 1

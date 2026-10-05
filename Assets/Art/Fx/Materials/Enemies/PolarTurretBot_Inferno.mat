@@ -44,19 +44,24 @@ Material:
     - _Brightness: 1
     - _EnableExternalAlpha: 0
     - _GlowPulse: 4
-    - _GlowThreshold: 0.55
-    - _Hue: -0.42
-    - _RimWidth: 7
+    - _GlowThreshold: 0.4
+    - _Gradient: 0.12
+    - _Hue: 0.42
+    - _RimWidth: 50
     - _Saturation: 1.3
+    - _ShadowRadius: 0
+    - _ShadowSquash: 0.7
+    - _ShadowStrength: 0.5
     - _SheenPause: 1.5
     - _SheenSpeed: 0.6
     - _SheenWidth: 0.25
     - _ZWrite: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _GlowColor: {r: 1.8, g: 0.6, b: 0.1, a: 0.8}
+    - _GlowColor: {r: 2.2, g: 0.7, b: 0.1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
-    - _RimColor: {r: 1.5, g: 0.35, b: 0.05, a: 0.7}
+    - _RimColor: {r: 2, g: 0.5, b: 0.05, a: 1}
+    - _ShadowPos: {r: 0, g: 0, b: 0, a: 0}
     - _SheenColor: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

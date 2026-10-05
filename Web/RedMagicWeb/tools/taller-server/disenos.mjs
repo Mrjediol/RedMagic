@@ -52,7 +52,9 @@ export class Disenos {
   // ------------------------------------------------------------ asking for proposals (a task, or one per proposal)
 
   /** Creates the batch file (empty) and the task(s) that fill it, and queues them. */
-  request({ kind, request, count = 1, mode = 'one', model, effort }) {
+  request({ kind, request, count = 1, mode = 'one', model, effort, images = [] }) {
+    images = (Array.isArray(images) ? images : []).filter((i) => i && /^[0-9a-f]{32}.(png|jpg|webp|gif)$/.test(String(i.id)))
+      .map((i) => ({ id: i.id, name: String(i.name || '').slice(0, 80) }));
     if (!KINDS.includes(kind)) throw new Error('tipo inválido');
     request = String(request || '').trim();
     if (!request) throw new Error('Escribe qué quieres');
@@ -69,6 +71,7 @@ export class Disenos {
         text: `Diseños · ${KIND_LABEL[kind]}${index ? ` ${index}/${count}` : ` × ${count}`}: ${request}`.slice(0, 140),
         prompt: designPrompt({ kind, request, count, loteFile, index }),
         needs: kind === 'enemy' ? ['comfy'] : [],
+        ...(images.length ? { images } : {}),
         ...(model ? { model } : {}), ...(effort ? { effort } : {}),
         design: { lote: id, kind },
       },

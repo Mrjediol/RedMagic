@@ -79,7 +79,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   const closed = new Set(JSON.parse(sessionStorage.getItem(CLOSED_KEY) || '[]'));
   let viewer = null;                        // { list: [key…], i } | { enemy: name }
   let stopSound = () => {};
-  const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium' };   // the request form
+  const ask = { kind: 'enemy', request: '', count: 5, mode: 'one', model: 'sonnet', effort: 'medium', images: [] };   // the request form
   const run = { model: 'sonnet', effort: 'medium' };                 // model of the tasks launched from an enemy
   const draft = { tipo: 'comportamiento', texto: '' };               // the pendiente being written in a sheet
   let adding = null;                        // null | [{ name, prefab }] while "＋ Enemigo existente" is open
@@ -383,6 +383,12 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
         <div class="enFilter">${Object.entries(KIND).map(([k, v]) => `<button type="button" class="small${ask.kind === k ? ' selected' : ''}" data-act="ask-kind" data-kind="${k}">${v.icon} ${v.label}</button>`).join('')}</div>
         <label class="enLabel">Qué quieres <span class="efHint">solo las condiciones: las reglas de arte del juego las pone la skill design-proposals</span></label>
         <textarea data-ask="request" rows="3" placeholder="${esc(ASK_HINT[ask.kind])}">${esc(ask.request)}</textarea>
+        <div class="todoImages">
+          ${ask.images.map((im) => `<span class="todoImg"><a href="/api/adjunto?id=${im.id}" target="_blank" rel="noopener" title="${esc(im.name)}"><img src="/api/adjunto?id=${im.id}" alt="${esc(im.name)}"></a>
+            <button type="button" class="small" data-act="ask-img-del" data-id="${im.id}" aria-label="Quitar imagen">×</button></span>`).join('')}
+          <label class="todoImgAdd small" title="Elegir imágenes de referencia (también puedes pegar con Ctrl+V)">🖼 Añadir imagen<input type="file" accept="image/*" multiple hidden data-ask-file></label>
+          <span class="efHint">o pega una captura con Ctrl+V; Claude las mira antes de empezar</span>
+        </div>
         <div class="enAskRow">
           <label>Cantidad <input type="number" data-ask="count" min="1" max="10" value="${ask.count}"></label>
           <label><input type="radio" name="askMode" data-ask="mode" value="one" ${ask.mode === 'one' ? 'checked' : ''}> Una tarea con todas</label>
@@ -687,6 +693,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
       const prefab = enemiesRoot.querySelector('[data-add="prefab"]')?.value;
       if (prefab) post('enemigos/add', { prefab }, (e) => `${e.name} añadido: ábrelo para apuntar sus pendientes`).then((e) => { adding = null; if (e) { viewer = { enemy: e.name }; renderViewer(); } });
     }
+    else if (act === 'ask-img-del') { ask.images = ask.images.filter((im) => im.id !== btn.dataset.id); render(); }
     else if (act === 'ask-kind') { ask.kind = btn.dataset.kind; render(); }
     else if (act === 'filter') { filter = btn.dataset.filter; sessionStorage.setItem(FILTER_KEY, filter); render(); }
     else if (act === 'accept') review(loteId, [itemId], 'accept');
@@ -705,6 +712,31 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const field = ev.target.dataset?.ask;
     if (field) ask[field] = field === 'count' ? Math.max(1, Math.min(10, Number(ev.target.value) || 1)) : ev.target.value;
   });
+  const IMG_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+  const toBase64 = (file) => new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1] || '');
+    r.onerror = () => reject(new Error('no se pudo leer la imagen'));
+    r.readAsDataURL(file);
+  });
+  /** Picked / pasted images go to the server now; the request carries their ids (tareas.md ▸ images). */
+  async function attachImages(files) {
+    let n = 0;
+    for (const f of files) {
+      if (!IMG_TYPES.includes(f.type)) { toast(`${f.name || 'Archivo'}: solo png, jpg, webp o gif`); continue; }
+      if (f.size > 10e6) { toast(`${f.name || 'Imagen'}: pesa más de 10 MB`); continue; }
+      try { ask.images.push(await api('POST', 'adjunto', { name: f.name || 'captura.png', type: f.type, data: await toBase64(f) })); n++; }
+      catch (e) { toast(e.message); }
+    }
+    if (n) { render(); toast(n === 1 ? 'Imagen adjunta' : `${n} imágenes adjuntas`); }
+  }
+  document.addEventListener('paste', (ev) => {
+    if (!ev.target.closest?.('[data-form="ask"]')) return;
+    const files = [...(ev.clipboardData?.files || [])].filter((f) => IMG_TYPES.includes(f.type));
+    if (!files.length) return;               // plain text: the field takes it
+    ev.preventDefault();
+    attachImages(files);
+  });
   on('submit', async (ev) => {
     if (ev.target.dataset.form !== 'ask') return;
     ev.preventDefault();
@@ -712,9 +744,10 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     document.activeElement?.blur?.();
     const out = await post('disenos/request', { ...ask }, (o) => (o.errors?.length ? o.errors.join(' · ')
       : `${o.taskIds.length} tarea${o.taskIds.length === 1 ? '' : 's'} en la cola: las propuestas aparecerán en "Por revisar"`));
-    if (out) { ask.request = ''; render(); }
+    if (out) { ask.request = ''; ask.images = []; render(); }
   });
   on('change', (ev) => {
+    if (ev.target.dataset?.askFile !== undefined) { const files = [...ev.target.files]; ev.target.value = ''; attachImages(files); return; }
     const key = ev.target.dataset?.name;
     const found = key && findItem(key);
     if (found) { const t = tidyName(found.item.kind, ev.target.value); names.set(key, t); ev.target.value = t; }

@@ -60,7 +60,7 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _GlowColor: {r: 1.5, g: 0.4, b: 2.2, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
-    - _RimColor: {r: 1.6, g: 0.5, b: 2.4, a: 1}
+    - _RimColor: {r: 0, g: 0, b: 0, a: 0}
     - _ShadowPos: {r: 0, g: 0, b: 0, a: 0}
     - _SheenColor: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

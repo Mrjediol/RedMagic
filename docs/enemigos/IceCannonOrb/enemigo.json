@@ -13,7 +13,7 @@
   "pendientes": [],
   "createdAt": "2026-10-05T20:07:51.756Z",
   "tarea": "iv4ca0i",
-  "prefab": "Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
   "cuerpo": {
     "fecha": "2026-10-06T01:05:15.95Z",
     "plantilla": "floatingCaster",

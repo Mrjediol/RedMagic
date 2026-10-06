@@ -200,6 +200,11 @@ namespace RedMagic.Pipeline.EditorTools
                 if (json["trigger"] != null) d.trigger = ConfigJson.ParseEnum<DefenceTrigger>(json["trigger"], $"{ctx}.trigger");
                 if (json["move"] != null) d.move = ConfigJson.ParseEnum<DefenceMove>(json["move"], $"{ctx}.move");
                 if (json["direction"] != null) d.direction = ConfigJson.ParseEnum<DefenceDirection>(json["direction"], $"{ctx}.direction");
+                d.diagonalByTerrain = json.Value<bool?>("diagonalByTerrain") ?? d.diagonalByTerrain;
+                d.floorY = json.Value<float?>("floorY") ?? d.floorY;
+                d.ceilingY = json.Value<float?>("ceilingY") ?? d.ceilingY;
+                d.angle = Mathf.Clamp(json.Value<float?>("angle") ?? d.angle, 0f, 90f);
+                d.angleVariance = Mathf.Clamp(json.Value<float?>("angleVariance") ?? d.angleVariance, 0f, 45f);
                 d.distance = Mathf.Max(0f, json.Value<float?>("distance") ?? d.distance);
                 d.healthFraction = Mathf.Clamp01(json.Value<float?>("healthFraction") ?? d.healthFraction);
                 d.chance = Mathf.Clamp01(json.Value<float?>("chance") ?? d.chance);

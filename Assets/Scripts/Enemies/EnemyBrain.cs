@@ -740,12 +740,25 @@ namespace RedMagic.Enemies
             }
         }
 
+        /// <summary>
+        /// Diagonal de una propulsión: la X sale de <paramref name="horizontal"/> (hacia / lejos del objetivo) y la Y
+        /// del terreno — más cerca del techo baja, más cerca del suelo sube — con un ángulo de <c>angle</c> ± <c>angleVariance</c>.
+        /// </summary>
+        private Vector2 TerrainDiagonal(EnemyDefence d, float horizontal)
+        {
+            float x = horizontal >= 0f ? 1f : -1f;
+            float y = transform.position.y >= (d.floorY + d.ceilingY) * 0.5f ? -1f : 1f;
+            float angle = (d.angle + Random.Range(-d.angleVariance, d.angleVariance)) * Mathf.Deg2Rad;
+            return new Vector2(x * Mathf.Cos(angle), y * Mathf.Sin(angle));
+        }
+
         private bool BeginEvade(EnemyDefence d, int index)
         {
             Vector2 toTarget = (Vector2)_target.position - (Vector2)transform.position;
             Vector2 away = T.Flies ? -toTarget : new Vector2(-toTarget.x, 0f);
             away = away.sqrMagnitude > 0.0001f ? away.normalized : Vector2.left;
             if (GoesToward(d, Distance(toTarget))) away = -away;   // ofensivo: el mismo impulso, hacia el objetivo
+            if (T.Flies && d.diagonalByTerrain) away = TerrainDiagonal(d, away.x);
 
             // Uno de suelo no se tira por un borde: si detrás no hay suelo, no se aparta.
             if (!T.Flies && !CanAdvance(away.x >= 0f ? 1 : -1))

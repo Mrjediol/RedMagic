@@ -176,8 +176,11 @@ meant to be edited by hand.**
     in `Cooldown`), and `direction` (`Away` | `Toward` | `ByRange`) says which way it goes. `ByRange` = away if the target is closer to
     `attackRange` than to `personalSpace`, toward if it is closer to `personalSpace` (`EnemyBrain.GoesToward`). A "propulsion" is just a
     `DashAway` defence with a gesture (IceCannonOrb: `Propel`).
+  - **Diagonal by terrain (2026-10-06, flyers)**: `diagonalByTerrain` on an `EnemyDefence` makes the push a diagonal: X from `direction`
+    (toward / away), Y from the terrain (`EnemyBrain.TerrainDiagonal`: above the middle of `floorY`..`ceilingY` goes down, below goes up),
+    angle = `angle` ± `angleVariance` (45 ± 10 → 35–55°). IceCannonOrb: floor 0, ceiling 17.
 - **`HitShield`** (`Enemies/HitShield.cs`, any enemy): absorbs the first `hits` hits through `Health.HitAbsorber` (no damage, no knockback), aura
-  prefab while it lasts (pooled, follows the body, drawn over its parts), break prefab + sounds when it goes; back at full on every `OnEnable`.
+  prefab while it lasts (pooled, follows the body, drawn over its parts, sorting re-applied every LateUpdate because the rig lifts the parts' order after OnEnable), break prefab + sounds when it goes; back at full on every `OnEnable`.
   Its art prefabs are the ones the importer builds from a gesture's `fx` (IceCannonOrb carries them on a dummy gesture `ShieldFx`).
 - `EnemyController` (`Assets/Scripts/Gameplay/`) is the **older** system, still used by
   hand-built enemies and boss adds (`SummonAddsAttack`, `RunManager`, `WorldSceneGenerator`), so it

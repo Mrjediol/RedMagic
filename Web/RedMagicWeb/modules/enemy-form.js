@@ -888,6 +888,15 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
       moreGrid.className = 'bcGrid';
       num(moreGrid, 'Probabilidad (0–1)', 'chance', 0, 'De hacerlo cuando se cumple la condición.', '0.1');
       num(moreGrid, 'Enfriamiento (s)', 'cooldown', 0, 'Hasta poder repetirlo.', '0.5');
+      moreGrid.appendChild(F.boolField({ label: 'Diagonal según el terreno (voladores)', value: !!d.diagonalByTerrain,
+        hint: 'Horizontal: según "Hacia dónde". Vertical: más cerca del techo baja, más cerca del suelo sube.',
+        onChange: (x) => { d.diagonalByTerrain = x; renderDefences(); touch(); } }).row);
+      if (d.diagonalByTerrain) {
+        num(moreGrid, 'Y del suelo', 'floorY', -1000, undefined, '0.5');
+        num(moreGrid, 'Y del techo', 'ceilingY', -1000, undefined, '0.5');
+        num(moreGrid, 'Ángulo (°)', 'angle', 0, '45 = diagonal limpia.', '5');
+        num(moreGrid, 'Varianza (± °)', 'angleVariance', 0, '10 con 45 = entre 35° y 55°.', '1');
+      }
       num(moreGrid, 'Recorrido (u)', 'moveDistance', 0, undefined, '0.5');
       if (d.move === 'HopBack') num(moreGrid, 'Altura del salto (u)', 'hopHeight', 0, 'En el suelo, el salto dura lo que tarde en caer.', '0.1');
       num(moreGrid, 'Duración (s)', 'moveDuration', 0.05, d.move === 'HopBack' ? 'Sólo voladores: en el suelo manda el salto.' : undefined, '0.05');

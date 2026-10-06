@@ -76,6 +76,22 @@ namespace RedMagic.Enemies
                  "está más cerca de attackRange que de personalSpace, y avanza si está más cerca de personalSpace.")]
         public DefenceDirection direction = DefenceDirection.Away;
 
+        [Tooltip("Voladores: el impulso es una diagonal. Horizontal según 'direction' (hacia / lejos del objetivo); " +
+                 "vertical según el terreno: más cerca del techo baja, más cerca del suelo sube.")]
+        public bool diagonalByTerrain;
+
+        [Tooltip("diagonalByTerrain: Y del mundo del suelo.")]
+        public float floorY = 0f;
+
+        [Tooltip("diagonalByTerrain: Y del mundo del techo.")]
+        public float ceilingY = 17f;
+
+        [Tooltip("diagonalByTerrain: ángulo con la horizontal, en grados (45 = diagonal limpia).")]
+        [Range(0f, 90f)] public float angle = 45f;
+
+        [Tooltip("diagonalByTerrain: varianza del ángulo, ± grados al azar (10 con 45 = entre 35 y 55).")]
+        [Range(0f, 45f)] public float angleVariance = 10f;
+
         [Tooltip("Unidades que recorre.")]
         [Min(0f)] public float moveDistance = 3f;
 

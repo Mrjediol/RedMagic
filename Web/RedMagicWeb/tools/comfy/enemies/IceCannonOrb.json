@@ -87,6 +87,7 @@
   },
   "defences": [
     { "trigger": "AfterAttack", "direction": "ByRange", "move": "DashAway", "chance": 1, "cooldown": 0,
+      "diagonalByTerrain": true, "floorY": 0, "ceilingY": 17, "angle": 45, "angleVariance": 10,
       "moveDistance": 4.5, "moveDuration": 0.45, "anticipation": 0.1, "gesture": "Propel" }
   ]
 }

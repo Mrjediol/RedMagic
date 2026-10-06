@@ -46,6 +46,7 @@ namespace RedMagic.Enemies
         private Health _health;
         private int _remaining;
         private GameObject _aura;
+        private static readonly System.Collections.Generic.List<SpriteRenderer> Parts = new System.Collections.Generic.List<SpriteRenderer>();
 
         /// <summary>Quedan golpes por absorber.</summary>
         public bool Active => _remaining > 0;
@@ -69,9 +70,13 @@ namespace RedMagic.Enemies
         }
 
         // Sin emparentar: devolver al pool un hijo que se está desactivando con su padre no se puede.
+        // El orden se rehace cada frame: el rig sube el de sus piezas DESPUÉS de OnEnable y, fijado una sola vez,
+        // el aura quedaba detrás del torso (se veía el estallido, que se pinta al romperse, pero no el aura).
         private void LateUpdate()
         {
-            if (_aura != null) _aura.transform.position = transform.position + (Vector3)offset;
+            if (_aura == null) return;
+            _aura.transform.position = transform.position + (Vector3)offset;
+            InFrontOfBody(_aura);
         }
 
         private void OnDisable()
@@ -119,17 +124,21 @@ namespace RedMagic.Enemies
         {
             if (fx == null) return;
 
-            var parts = GetComponentsInChildren<SpriteRenderer>();
-            if (parts.Length == 0) return;
+            GetComponentsInChildren(Parts);
+            if (Parts.Count == 0) return;
 
             int top = int.MinValue;
-            foreach (var part in parts) top = Mathf.Max(top, part.sortingOrder);
+            foreach (var part in Parts) top = Mathf.Max(top, part.sortingOrder);
+            int layer = Parts[0].sortingLayerID;
+            Parts.Clear();
 
-            foreach (var r in fx.GetComponentsInChildren<SpriteRenderer>(true))
+            fx.GetComponentsInChildren(true, Parts);
+            foreach (var r in Parts)
             {
-                r.sortingLayerID = parts[0].sortingLayerID;
+                r.sortingLayerID = layer;
                 r.sortingOrder = top + 1;
             }
+            Parts.Clear();
         }
 
         /// <summary>Escala la instancia en uniforme hasta que el dibujo mida <paramref name="width"/> de ancho en mundo.</summary>

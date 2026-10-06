@@ -117,6 +117,13 @@ function applyDefences(doc, state, ctx, idMap) {
     cooldown: num(d.cooldown, 3),
     move: d.move || 'DashAway',
     direction: d.direction || 'Away',
+    ...(d.diagonalByTerrain ? {
+      diagonalByTerrain: true,
+      floorY: typeof d.floorY === 'number' ? d.floorY : 0,
+      ceilingY: typeof d.ceilingY === 'number' ? d.ceilingY : 17,
+      angle: Math.min(90, num(d.angle, 45)),
+      angleVariance: Math.min(45, num(d.angleVariance, 10)),
+    } : {}),
     moveDistance: num(d.moveDistance, 3),
     moveDuration: num(d.moveDuration, 0.3, 0.05),
     hopHeight: num(d.hopHeight, 1.2),

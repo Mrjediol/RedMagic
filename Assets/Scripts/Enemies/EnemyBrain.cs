@@ -729,13 +729,13 @@ namespace RedMagic.Enemies
             return false;
         }
 
-        /// <summary>¿Este movimiento va hacia el objetivo? <see cref="DefenceDirection.ByRange"/>: si está más cerca de <c>personalSpace</c> que de <c>attackRange</c>.</summary>
+        /// <summary>¿Este movimiento va hacia el objetivo? <see cref="DefenceDirection.ByRange"/>: si está más cerca de <c>attackRange</c> que de <c>personalSpace</c> (lejos: avanza; cerca: huye).</summary>
         private bool GoesToward(EnemyDefence d, float distance)
         {
             switch (d.direction)
             {
                 case DefenceDirection.Toward: return true;
-                case DefenceDirection.ByRange: return Mathf.Abs(distance - T.personalSpace) < Mathf.Abs(distance - T.attackRange);
+                case DefenceDirection.ByRange: return Mathf.Abs(distance - T.attackRange) < Mathf.Abs(distance - T.personalSpace);
                 default: return false;
             }
         }

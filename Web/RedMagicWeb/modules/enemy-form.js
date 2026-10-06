@@ -816,7 +816,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
   const DEFENCE_DIRECTIONS = [
     { value: 'Away', label: 'Alejándose del jugador' },
     { value: 'Toward', label: 'Hacia el jugador' },
-    { value: 'ByRange', label: 'Según la distancia (lejos: se aparta; cerca: avanza)' },
+    { value: 'ByRange', label: 'Según la distancia (cerca: huye; lejos: avanza)' },
   ];
   const DEFENCE_MOVES = [
     { value: 'DashAway', label: 'Sale disparado hacia atrás' },
@@ -859,7 +859,7 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
         onChange: (x) => { d.move = x; renderDefences(); touch(); } }).row);
 
       grid.appendChild(F.enumField({ label: 'Hacia dónde', value: d.direction || 'Away', options: DEFENCE_DIRECTIONS,
-        hint: 'Según la distancia: si el jugador está más cerca del alcance de ataque que de la distancia de huida, se aparta; si está más cerca de la de huida, avanza.',
+        hint: 'Según la distancia: si el jugador está más cerca de la distancia de huida que del alcance de ataque, se aparta; si está más cerca del alcance, avanza.',
         onChange: (x) => { d.direction = x; touch(); } }).row);
 
       const names = bodyGestureNames();

@@ -29,8 +29,8 @@ namespace RedMagic.Enemies
         Toward,
 
         /// <summary>
-        /// Según dónde esté el objetivo: si está más cerca de <c>personalSpace</c> que de <c>attackRange</c>
-        /// avanza (ofensivo); si está más cerca de <c>attackRange</c>, se aparta (defensivo).
+        /// Según dónde esté el objetivo: si está más cerca de <c>personalSpace</c> que de <c>attackRange</c> se aparta
+        /// (huye); si está más cerca de <c>attackRange</c>, avanza (ofensivo).
         /// </summary>
         ByRange,
     }
@@ -73,7 +73,7 @@ namespace RedMagic.Enemies
         public DefenceMove move = DefenceMove.DashAway;
 
         [Tooltip("Hacia dónde: Away = alejándose, Toward = hacia el objetivo, ByRange = se aparta si el objetivo " +
-                 "está más cerca de attackRange que de personalSpace, y avanza si está más cerca de personalSpace.")]
+                 "está más cerca de personalSpace que de attackRange, y avanza si está más cerca de attackRange.")]
         public DefenceDirection direction = DefenceDirection.Away;
 
         [Tooltip("Voladores: el impulso es una diagonal. Horizontal según 'direction' (hacia / lejos del objetivo); " +

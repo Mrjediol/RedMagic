@@ -9,8 +9,9 @@ namespace RedMagic.Enemies
     /// <summary>
     /// Escudo de golpes de cualquier enemigo: absorbe los primeros <see cref="hits"/> golpes que recibe
     /// (no quitan vida, no empujan) y se rompe. Va por <see cref="Health.HitAbsorber"/>, el único sitio
-    /// por el que entra el daño, así que ningún arma ni ataque sabe que existe. Con un aura en bucle
-    /// mientras dura y un estallido + sonido al romperse; sin prefabs funciona igual, sólo que invisible.
+    /// por el que entra el daño, así que ningún arma ni ataque sabe que existe. El escudo es un GameObject hijo del enemigo
+    /// (<see cref="shield"/>): se coloca, escala y ordena a mano en el prefab; se enciende al nacer y se apaga
+    /// al romperse, con un estallido + sonido.
     /// Reaparece entero en cada nacimiento (<c>OnEnable</c>), también si el enemigo viene de un pool.
     /// </summary>
     [DisallowMultipleComponent]
@@ -21,20 +22,15 @@ namespace RedMagic.Enemies
         [Min(1)] [SerializeField] private int hits = 1;
 
         [Header("Efectos")]
-        [Tooltip("Aura que lo rodea mientras dura (en bucle). Vacío = escudo invisible.")]
-        [SerializeField] private GameObject auraPrefab;
+        [Tooltip("GameObject hijo del enemigo que ES el escudo (sprite / animación). Colócalo, escálalo y ordénalo " +
+                 "en el prefab: se enciende al nacer y se apaga al romperse. Vacío = escudo invisible.")]
+        [SerializeField] private GameObject shield;
 
-        [Tooltip("Estallido al romperse. Vacío = se rompe sin efecto.")]
+        [Tooltip("Estallido al romperse (nace donde está el escudo). Vacío = se rompe sin efecto.")]
         [SerializeField] private GameObject breakPrefab;
-
-        [Tooltip("Ancho en unidades de mundo del aura, para que envuelva el cuerpo.")]
-        [Min(0.1f)] [SerializeField] private float auraWidth = 3.4f;
 
         [Tooltip("Ancho en unidades de mundo del estallido al romperse.")]
         [Min(0.1f)] [SerializeField] private float breakWidth = 4f;
-
-        [Tooltip("Desplazamiento del aura y del estallido desde el centro del cuerpo (mundo).")]
-        [SerializeField] private Vector2 offset;
 
         [Header("Sonido")]
         [Tooltip("Suena al aparecer el escudo.")]
@@ -45,9 +41,6 @@ namespace RedMagic.Enemies
 
         private Health _health;
         private int _remaining;
-        private GameObject _aura;
-        private static readonly System.Collections.Generic.List<SpriteRenderer> Parts = new System.Collections.Generic.List<SpriteRenderer>();
-
         /// <summary>Quedan golpes por absorber.</summary>
         public bool Active => _remaining > 0;
 
@@ -60,23 +53,9 @@ namespace RedMagic.Enemies
             _health.HitAbsorber = Absorb;
             _health.Died += OnDied;
 
-            if (auraPrefab != null)
-            {
-                _aura = PrefabPool.Spawn(auraPrefab, transform.position + (Vector3)offset, Quaternion.identity);
-                if (_aura != null) { FitWidth(_aura, auraPrefab, auraWidth); InFrontOfBody(_aura); }
-            }
+            if (shield != null) shield.SetActive(true);
 
             PlayCue(upSound);
-        }
-
-        // Sin emparentar: devolver al pool un hijo que se está desactivando con su padre no se puede.
-        // El orden se rehace cada frame: el rig sube el de sus piezas DESPUÉS de OnEnable y, fijado una sola vez,
-        // el aura quedaba detrás del torso (se veía el estallido, que se pinta al romperse, pero no el aura).
-        private void LateUpdate()
-        {
-            if (_aura == null) return;
-            _aura.transform.position = transform.position + (Vector3)offset;
-            InFrontOfBody(_aura);
         }
 
         private void OnDisable()
@@ -87,7 +66,7 @@ namespace RedMagic.Enemies
                 _health.Died -= OnDied;
             }
 
-            ReleaseAura();
+            if (shield != null) shield.SetActive(false);
         }
 
         private bool Absorb(Health health, float amount)
@@ -97,20 +76,17 @@ namespace RedMagic.Enemies
             _remaining--;
             if (_remaining > 0) return true;
 
-            ReleaseAura();
+            Vector3 at = shield != null ? shield.transform.position : transform.position;
+            if (shield != null) shield.SetActive(false);
             if (breakPrefab != null)
-                InFrontOfBody(VfxOneShot.SpawnFitWidth(breakPrefab, transform.position + (Vector3)offset, breakWidth));
+                InFrontOfBody(VfxOneShot.SpawnFitWidth(breakPrefab, at, breakWidth));
             PlayCue(breakSound);
             return true;
         }
 
-        private void OnDied() => ReleaseAura();
-
-        private void ReleaseAura()
+        private void OnDied()
         {
-            if (_aura == null) return;
-            PrefabPool.Despawn(_aura);
-            _aura = null;
+            if (shield != null) shield.SetActive(false);
         }
 
         private void PlayCue(SoundCue cue)
@@ -124,33 +100,17 @@ namespace RedMagic.Enemies
         {
             if (fx == null) return;
 
-            GetComponentsInChildren(Parts);
-            if (Parts.Count == 0) return;
+            var parts = GetComponentsInChildren<SpriteRenderer>();
+            if (parts.Length == 0) return;
 
             int top = int.MinValue;
-            foreach (var part in Parts) top = Mathf.Max(top, part.sortingOrder);
-            int layer = Parts[0].sortingLayerID;
-            Parts.Clear();
+            foreach (var part in parts) top = Mathf.Max(top, part.sortingOrder);
 
-            fx.GetComponentsInChildren(true, Parts);
-            foreach (var r in Parts)
+            foreach (var r in fx.GetComponentsInChildren<SpriteRenderer>(true))
             {
-                r.sortingLayerID = layer;
+                r.sortingLayerID = parts[0].sortingLayerID;
                 r.sortingOrder = top + 1;
             }
-            Parts.Clear();
-        }
-
-        /// <summary>Escala la instancia en uniforme hasta que el dibujo mida <paramref name="width"/> de ancho en mundo.</summary>
-        private static void FitWidth(GameObject instance, GameObject prefab, float width)
-        {
-            var renderer = prefab.GetComponentInChildren<SpriteRenderer>(true);
-            if (renderer == null || renderer.sprite == null) return;
-
-            float natural = renderer.sprite.rect.width / renderer.sprite.pixelsPerUnit * Mathf.Abs(renderer.transform.lossyScale.x);
-            if (natural <= 0.0001f) return;
-
-            instance.transform.localScale = prefab.transform.localScale * (width / natural);
         }
     }
 }

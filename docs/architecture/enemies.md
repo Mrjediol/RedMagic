@@ -174,14 +174,14 @@ meant to be edited by hand.**
     deck, **rewritten on every import** when present. Web: Enemy Creator / Studio step 4 ▸ *Defensa*.
   - **Re-positioning (2026-10-06)**: `trigger: AfterAttack` fires when any attack ends (the brain calls it from `OnAttackFinished`, already
     in `Cooldown`), and `direction` (`Away` | `Toward` | `ByRange`) says which way it goes. `ByRange` = away if the target is closer to
-    `attackRange` than to `personalSpace`, toward if it is closer to `personalSpace` (`EnemyBrain.GoesToward`). A "propulsion" is just a
+    `personalSpace` than to `attackRange` (too near: flee), toward if it is closer to `attackRange` (`EnemyBrain.GoesToward`). A "propulsion" is just a
     `DashAway` defence with a gesture (IceCannonOrb: `Propel`).
   - **Diagonal by terrain (2026-10-06, flyers)**: `diagonalByTerrain` on an `EnemyDefence` makes the push a diagonal: X from `direction`
     (toward / away), Y from the terrain (`EnemyBrain.TerrainDiagonal`: above the middle of `floorY`..`ceilingY` goes down, below goes up),
     angle = `angle` ± `angleVariance` (45 ± 10 → 35–55°). IceCannonOrb: floor 0, ceiling 17.
-- **`HitShield`** (`Enemies/HitShield.cs`, any enemy): absorbs the first `hits` hits through `Health.HitAbsorber` (no damage, no knockback), aura
-  prefab while it lasts (pooled, follows the body, drawn over its parts, sorting re-applied every LateUpdate because the rig lifts the parts' order after OnEnable), break prefab + sounds when it goes; back at full on every `OnEnable`.
-  Its art prefabs are the ones the importer builds from a gesture's `fx` (IceCannonOrb carries them on a dummy gesture `ShieldFx`).
+- **`HitShield`** (`Enemies/HitShield.cs`, any enemy): absorbs the first `hits` hits through `Health.HitAbsorber` (no damage, no knockback). The shield is a
+  **child GameObject of the enemy** (`shield` field: place / scale / sort it by hand in the prefab); it is enabled on every `OnEnable` and disabled when it
+  breaks (or on death). On break: `breakPrefab` burst at the shield's position + sounds. IceCannonOrb: child `Shield` (the baked shield loop sprite).
 - `EnemyController` (`Assets/Scripts/Gameplay/`) is the **older** system, still used by
   hand-built enemies and boss adds (`SummonAddsAttack`, `RunManager`, `WorldSceneGenerator`), so it
   stays. `EnemyFactory` strips it (and `RangedAttack`) from anything it generates — both write

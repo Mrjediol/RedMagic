@@ -1,6 +1,6 @@
 {
   "name": "IceCannonOrb",
-  "estado": "cuerpo-por-aprobar",
+  "estado": "montando",
   "diseno": {
     "image": "docs/enemigos/IceCannonOrb/diseno.png",
     "source": "docs/disenos/img/2026-10-05-robot-azul-simple-brazo-como-canon-de-en__1.png",
@@ -12,7 +12,7 @@
   },
   "pendientes": [],
   "createdAt": "2026-10-05T20:07:51.756Z",
-  "tarea": "iv4ca0i",
+  "tarea": "cmux865",
   "prefab": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
   "cuerpo": {
     "fecha": "2026-10-06T01:05:15.95Z",
@@ -21,5 +21,38 @@
     "brief": "Web/RedMagicWeb/tools/comfy/enemies/IceCannonOrb.json",
     "resumen": "4 piezas: Torso (esfera con ventana y cristal), CastArm (cañón con collar y gema), Lower (tobera con llama) y Accessory (anillo fino). El arte mira a la derecha, sin espejar. Dudoso: el collar del cañón va sobre la esfera pero CastArm se dibuja detrás del torso por defecto; puede que haya que subirlo de capa en Enemy Studio. Pivote/boca del cañón estimados."
   },
-  "imagen": "docs/enemigos/IceCannonOrb/preview.png"
+  "imagen": "docs/enemigos/IceCannonOrb/preview.png",
+  "paso2": {
+    "tipo": "flyingRanged",
+    "proyectil": {
+      "origen": "biblioteca",
+      "texto": "",
+      "elegidos": [
+        {
+          "id": "4e1284c0-4471-4a11-aff7-d4dad0e7aa69",
+          "name": "ProjectilEjeBot"
+        }
+      ]
+    },
+    "sonidos": {
+      "origen": "biblioteca",
+      "texto": "",
+      "elegidos": []
+    },
+    "efectos": {
+      "origen": "biblioteca",
+      "texto": "",
+      "elegidos": [
+        {
+          "id": "9e3c9d36-20b5-4d7b-baa5-e6fd35cad50e",
+          "name": "EscudoRotoEjeBot"
+        },
+        {
+          "id": "0e89a897-6315-405c-bd89-d2f3059dff13",
+          "name": "EscudoEjeBot"
+        }
+      ]
+    },
+    "notas": "tengo 1 projectile, y 2 efectos de escudo con el nombre EyeBot en la biblioteca, usalos\nAtaque : Dispara a distancia el projectile que tiene su nombre EyeBot\nEl cuerpo esta separado en 2 partidas, cabeza+Cañon y Anillo+llama, cuando va a atacar, la cabeza entera gira pocisionando el cañon para apuntar al player, el cañon no se mueve, solo la cabeza, y este personaje va a estar  \"propulsionandose\" para repocisionarse constantemente entre ataques, la distancia de ataque es 14, la distancia de huir del player sera 6, despues de un ataque el enemigo chekeara a que distancia esta del player, si esta mas cerca de la distancia de ataque que de la distancia de retirada, el \"dash\" sera defensivo, es decir lado contrario del jugador, si en cambio esta mas cerca de la retirada que del ataque, hara el \"dash\" ofensivo, los efectos del dash deben ser nuevos, y mas que un dash debe verse como una propulsion, con su sonido tambien. Y este enemigo aparece con un escudo, que le protege del primer golpe que reciba y se rompe."
+  }
 }

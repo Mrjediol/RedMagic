@@ -48,9 +48,9 @@ MonoBehaviour:
     spawnRadius: 0
     projectile:
       prefab: {fileID: 8998334995557783262, guid: 6e749e35d0a12714e81d9a56bdf96f60, type: 3}
-      speed: 12
+      speed: 16
       lifetime: 2.2
-      size: {x: 0.4, y: 0.4}
+      size: {x: 1, y: 1}
       muzzleOffset: {x: 0.65, y: 0.1}
       pierce: 0
       homingTurnRate: 0
@@ -72,9 +72,9 @@ MonoBehaviour:
     spawnRadius: 0
     projectile:
       prefab: {fileID: 8998334995557783262, guid: 6e749e35d0a12714e81d9a56bdf96f60, type: 3}
-      speed: 12
+      speed: 16
       lifetime: 2.2
-      size: {x: 0.4, y: 0.4}
+      size: {x: 1, y: 1}
       muzzleOffset: {x: 0.65, y: 0.1}
       pierce: 0
       homingTurnRate: 0
@@ -96,9 +96,9 @@ MonoBehaviour:
     spawnRadius: 0
     projectile:
       prefab: {fileID: 8998334995557783262, guid: 6e749e35d0a12714e81d9a56bdf96f60, type: 3}
-      speed: 12
+      speed: 16
       lifetime: 2.2
-      size: {x: 0.4, y: 0.4}
+      size: {x: 1, y: 1}
       muzzleOffset: {x: 0.65, y: 0.1}
       pierce: 0
       homingTurnRate: 0

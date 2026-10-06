@@ -27,10 +27,11 @@ MonoBehaviour:
   vulnerableMultiplier: 2.5
   gesture: Nod
   sound:
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 821fdccc01b3f4142b7b74a9c6f47ab1, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 0

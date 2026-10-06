@@ -111,7 +111,8 @@ Additive (2026-10-01). `tuning.defences[]` ↔ `EnemyTuning.defences` (`EnemyDef
 `trigger` and `move` are the C# enum member names. Read by `EnemyDeckImporter.ReadDefences` (both
 importers), **not** by `BuildTuning`: like the deck it is applied on every import when the key is present
 (`[]` removes them, an absent key keeps the prefab's). A config without the key is the same document as
-before. The rig exporter always writes the list (the two enemy fixtures gained `"defences": []`).
+before. `trigger` also takes `AfterAttack` and `direction` (`Away` | `Toward` | `ByRange`, default `Away`) is additive (2026-10-06).
+The rig exporter always writes the list (the two enemy fixtures gained `"defences": []`).
 
 ## Field-level mapping confirmations
 

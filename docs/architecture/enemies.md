@@ -172,6 +172,13 @@ meant to be edited by hand.**
     strike as the move ends. Never an attack event. Sound: `SoundTrigger.OnEvade`.
   - **Pipeline**: `tuning.defences` in enemy-config, read by `EnemyDeckImporter.ReadDefences` and, like the
     deck, **rewritten on every import** when present. Web: Enemy Creator / Studio step 4 ▸ *Defensa*.
+  - **Re-positioning (2026-10-06)**: `trigger: AfterAttack` fires when any attack ends (the brain calls it from `OnAttackFinished`, already
+    in `Cooldown`), and `direction` (`Away` | `Toward` | `ByRange`) says which way it goes. `ByRange` = away if the target is closer to
+    `attackRange` than to `personalSpace`, toward if it is closer to `personalSpace` (`EnemyBrain.GoesToward`). A "propulsion" is just a
+    `DashAway` defence with a gesture (IceCannonOrb: `Propel`).
+- **`HitShield`** (`Enemies/HitShield.cs`, any enemy): absorbs the first `hits` hits through `Health.HitAbsorber` (no damage, no knockback), aura
+  prefab while it lasts (pooled, follows the body, drawn over its parts), break prefab + sounds when it goes; back at full on every `OnEnable`.
+  Its art prefabs are the ones the importer builds from a gesture's `fx` (IceCannonOrb carries them on a dummy gesture `ShieldFx`).
 - `EnemyController` (`Assets/Scripts/Gameplay/`) is the **older** system, still used by
   hand-built enemies and boss adds (`SummonAddsAttack`, `RunManager`, `WorldSceneGenerator`), so it
   stays. `EnemyFactory` strips it (and `RangedAttack`) from anything it generates — both write

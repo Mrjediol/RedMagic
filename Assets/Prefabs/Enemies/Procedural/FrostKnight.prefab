@@ -974,6 +974,7 @@ MonoBehaviour:
       chance: 0.45
       cooldown: 5
       move: 0
+      direction: 0
       moveDistance: 2.4
       moveDuration: 0.3
       hopHeight: 1.2
@@ -986,6 +987,7 @@ MonoBehaviour:
       chance: 0.45
       cooldown: 4
       move: 0
+      direction: 0
       moveDistance: 2.8
       moveDuration: 0.32
       hopHeight: 1.2
@@ -998,6 +1000,7 @@ MonoBehaviour:
       chance: 1
       cooldown: 0
       move: 0
+      direction: 0
       moveDistance: 3
       moveDuration: 0.34
       hopHeight: 1.2
@@ -1099,7 +1102,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
-  soundEvents: []
+  soundEvents:
+  - trigger: 20
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 7ed4b222498e86e4d8e6c32bdaf026b6, type: 3}
+      volume: 1
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
   useGenericFallback: 1
 --- !u!114 &5503043271968367267
 MonoBehaviour:

@@ -1,8 +1,92 @@
 {
   "name": "IceCannonOrb",
-  "request": "robot azul simple, brazo como cañon de energia (cuerpo solo, paso 1).",
+  "request": "robot azul simple, brazo como cañon de energia. Volador a distancia: gira la cabeza entera para apuntar, se propulsa entre ataques, escudo de un golpe.",
   "template": "floatingCaster",
   "parts": "claude/IceCannonOrb/final",
   "height": 2.8,
-  "slots": { "castArm": { "pivot": [0.12, 0.5], "muzzle": [0.97, 0.5] } }
+  "parents": { "accessory": null, "lower": "accessory" },
+  "slots": { "castArm": { "pivot": [0.12, 0.5], "muzzle": [0.97, 0.5] } },
+  "tuning": {
+    "archetype": "FlyingRanged",
+    "maxHealth": 30,
+    "detectionRange": 20,
+    "attackRange": 14,
+    "personalSpace": 6,
+    "moveSpeed": 3.5,
+    "retreatSpeed": 3,
+    "attackDamage": 8,
+    "attackCooldown": 1.2,
+    "moveSoundInterval": 0.9,
+    "builtInAttack": false
+  },
+  "effects": {
+    "bolt": { "name": "OrbBolt", "preset": "sparkBolt", "params": { "core": "#ffffff", "glow": "#3fb4ff", "accent": "#bfeaff" } },
+    "charge": { "name": "OrbCharge", "preset": "chargeVortex", "params": { "core": "#ffffff", "glow": "#3fb4ff", "accent": "#bfeaff" } },
+    "flash": { "name": "OrbFlash", "preset": "muzzleFlash", "params": { "core": "#ffffff", "glow": "#3fb4ff", "accent": "#bfeaff" } },
+    "jet": { "name": "OrbJet", "preset": "dashTrail", "params": { "core": "#ffffff", "glow": "#7fe3ff", "accent": "#e6fbff", "particles": 8 } },
+    "jetPuff": { "name": "OrbJetPuff", "preset": "smokePuff", "params": { "core": "#ffffff", "glow": "#9fdcff", "accent": "#e6fbff" } },
+    "streaks": { "name": "OrbStreaks", "preset": "dashStreaks", "params": { "core": "#ffffff", "glow": "#7fe3ff", "accent": "#e6fbff" } },
+    "shield": { "name": "OrbShield", "preset": "shield", "params": { "core": "#ffffff", "glow": "#3fb4ff", "accent": "#bfeaff" } },
+    "shieldBreak": { "name": "OrbShieldBreak", "preset": "shieldBreak", "params": { "core": "#ffffff", "glow": "#3fb4ff", "accent": "#bfeaff" } }
+  },
+  "rig": { "muzzleFlashSize": 0 },
+  "attacks": [
+    {
+      "id": "Shot",
+      "type": "ReleaseAttack",
+      "common": { "displayName": "Disparo", "telegraph": 0.5, "recovery": 0.3, "damage": 8, "gesture": "Aim", "cooldownInAttacks": 0, "weight": 1 },
+      "shots": [
+        { "kind": "Projectile", "aim": "Frozen", "effect": "bolt", "worldWidth": 0.55,
+          "projectile": { "speed": 11, "lifetime": 2.6, "size": { "x": 0.55, "y": 0.55 } } }
+      ],
+      "deck": { "minRange": 0, "maxRange": 0 }
+    }
+  ],
+  "gestures": [
+    {
+      "name": "Aim",
+      "recover": 0.35,
+      "steps": [
+        { "name": "Apunta", "duration": 0.4, "ease": "out", "stretch": true, "aim": true, "aimParts": [["torso", 0.7]],
+          "poses": [["Visual", [-0.08, 0], 0]] },
+        { "name": "Disparo", "duration": 0.14, "ease": "out", "aim": true, "aimParts": [["torso", 0.7]],
+          "poses": [["Visual", [-0.3, 0], 0]] }
+      ],
+      "releases": [{ "step": 1, "at": 0 }]
+    },
+    {
+      "name": "Propel",
+      "recover": 0.2,
+      "steps": [
+        { "name": "Ignicion", "duration": 0.1, "ease": "out",
+          "poses": [["lower", [0, 0], 0, [0.2, 0.4]], ["Visual", [0, 0.05], 0]] },
+        { "name": "Empuje", "duration": 0.3, "ease": "out", "stretch": true,
+          "poses": [["lower", [0, 0], 0, [0.35, 0.9]], ["accessory", [0, 0], 0, [0.08, 0]]] }
+      ]
+    },
+    {
+      "name": "ShieldFx",
+      "recover": 0.1,
+      "steps": [{ "name": "Escudo", "duration": 0.1, "ease": "out", "poses": [] }]
+    }
+  ],
+  "gestureFx": {
+    "Aim": [
+      { "effect": "charge", "step": 0, "at": 0, "loop": true, "untilStep": 1, "size": 1.5, "facing": "world" },
+      { "effect": "flash", "step": 1, "at": 0, "size": 1.3, "facing": "world" }
+    ],
+    "Propel": [
+      { "effect": "jetPuff", "step": 0, "at": 0, "part": "lower", "size": 1.8, "facing": "world", "layer": "behind" },
+      { "effect": "jet", "step": 0, "at": 0, "loop": true, "untilStep": 1, "part": "lower", "size": 2.6, "layer": "behind" },
+      { "effect": "streaks", "step": 1, "at": 0, "loop": true, "untilStep": 1, "anchor": "body", "size": 3, "layer": "behind" }
+    ],
+    "ShieldFx": [
+      { "effect": "shield", "step": 0, "at": 0, "loop": true, "untilStep": 0, "anchor": "body", "size": 3.4, "facing": "world" },
+      { "effect": "shieldBreak", "step": 0, "at": 0, "anchor": "body", "size": 4, "facing": "world" }
+    ]
+  },
+  "defences": [
+    { "trigger": "AfterAttack", "direction": "ByRange", "move": "DashAway", "chance": 1, "cooldown": 0,
+      "moveDistance": 4.5, "moveDuration": 0.45, "anticipation": 0.1, "gesture": "Propel" }
+  ]
 }

@@ -116,6 +116,7 @@ function applyDefences(doc, state, ctx, idMap) {
     chance: Math.min(1, num(d.chance, 1)),
     cooldown: num(d.cooldown, 3),
     move: d.move || 'DashAway',
+    direction: d.direction || 'Away',
     moveDistance: num(d.moveDistance, 3),
     moveDuration: num(d.moveDuration, 0.3, 0.05),
     hopHeight: num(d.hopHeight, 1.2),

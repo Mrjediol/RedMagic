@@ -19,6 +19,9 @@
 //                 `<Slot name>.png` fills the slot; `<Slot name>__<state>.png` is that part's sprite for
 //                 a state (asleep | awake | alert | attacking | hurt | dead | gesture_<Name>).
 //   height        how tall the enemy is in the world (units); the art is scaled to it
+//   parents       optional { <slot id>: <parent slot id> | null }: the hierarchy of a body adjusted by hand in Enemy Studio
+//   parents       optional { <slot id>: <parent slot id> | null }: the hierarchy of a body whose tree was changed by
+//                 hand in Enemy Studio (gesture paths follow it, so a --partial brief must say it too)
 //   slots         optional per slot id: { pivot: [x, y], muzzle: [x, y] } normalised on the part's own
 //                 box (x from the left, y from the top), when the template's guess does not fit the art
 //   tuning        EnemyTuning overrides on top of the template's behaviour
@@ -135,6 +138,15 @@ const unknown = (id, where) => { if (id && !known.has(id)) problems.push(`${wher
 });
 const state = T.instantiateTemplate(template);
 state.name = brief.name;
+// `parents`: { <slot id>: <parent slot id> | null } — a body whose hierarchy was changed by hand in 🧬 Enemy Studio
+// (IceCannonOrb: the ring + flame hang from the root, not from the torso). Gesture paths follow the hierarchy, so a
+// --partial brief has to say it too. Only the tree changes: positions are not touched (a partial export carries none).
+for (const [slotId, parentId] of Object.entries(brief.parents || {})) {
+  const child = state.parts.find((p) => p.slot?.id === slotId);
+  const parent = parentId ? state.parts.find((p) => p.slot?.id === parentId) : null;
+  if (!child || (parentId && !parent)) { problems.push(`parents: no part '${!child ? slotId : parentId}'`); continue; }
+  child.parent = parent ? parent.uid : null;
+}
 // Releases the brief gives to a gesture of the template (default: the end of its wind-up).
 const uidOfSlot = (id) => state.parts.find((p) => p.slot?.id === id || p.name === id)?.uid || null;
 for (const [gestureName, list] of Object.entries(brief.releases || {})) {

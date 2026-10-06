@@ -180,7 +180,7 @@ export function createDefaultEnemyConfig() {
 
 /** A new defensive move with EnemyDefence's own defaults. */
 export function createDefence() {
-  return { trigger: 'TargetNear', distance: 2.5, healthFraction: 0.35, chance: 1, cooldown: 3, move: 'DashAway',
+  return { trigger: 'TargetNear', distance: 2.5, healthFraction: 0.35, chance: 1, cooldown: 3, move: 'DashAway', direction: 'Away',
     moveDistance: 3, moveDuration: 0.3, hopHeight: 1.2, gesture: '', anticipation: 0.12, attack: '' };
 }
 

@@ -729,11 +729,23 @@ namespace RedMagic.Enemies
             return false;
         }
 
+        /// <summary>¿Este movimiento va hacia el objetivo? <see cref="DefenceDirection.ByRange"/>: si está más cerca de <c>personalSpace</c> que de <c>attackRange</c>.</summary>
+        private bool GoesToward(EnemyDefence d, float distance)
+        {
+            switch (d.direction)
+            {
+                case DefenceDirection.Toward: return true;
+                case DefenceDirection.ByRange: return Mathf.Abs(distance - T.personalSpace) < Mathf.Abs(distance - T.attackRange);
+                default: return false;
+            }
+        }
+
         private bool BeginEvade(EnemyDefence d, int index)
         {
             Vector2 toTarget = (Vector2)_target.position - (Vector2)transform.position;
             Vector2 away = T.Flies ? -toTarget : new Vector2(-toTarget.x, 0f);
             away = away.sqrMagnitude > 0.0001f ? away.normalized : Vector2.left;
+            if (GoesToward(d, Distance(toTarget))) away = -away;   // ofensivo: el mismo impulso, hacia el objetivo
 
             // Uno de suelo no se tira por un borde: si detrás no hay suelo, no se aparta.
             if (!T.Flies && !CanAdvance(away.x >= 0f ? 1 : -1))
@@ -852,6 +864,9 @@ namespace RedMagic.Enemies
             _cooldownTimer = T.attackCooldown;
             Enter(State.Cooldown);
             if (_animation != null) _animation.PlayTransition(_cooldownTimer);
+
+            // Movimiento "al acabar un ataque" (propulsión de reposicionado): ya en Cooldown, que no lo bloquea.
+            TryDefend(DefenceTrigger.AfterAttack);
         }
 
         /// <summary>

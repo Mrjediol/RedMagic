@@ -27,10 +27,11 @@ MonoBehaviour:
   vulnerableMultiplier: 2.5
   gesture: Disparo
   sound:
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: e55b225f6c6ca3c4cad0e2c6f3abfdc4, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 0

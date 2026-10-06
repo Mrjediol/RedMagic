@@ -297,6 +297,7 @@ MonoBehaviour:
       chance: 1
       cooldown: 3
       move: 0
+      direction: 0
       moveDistance: 5
       moveDuration: 0.5
       hopHeight: 1.2

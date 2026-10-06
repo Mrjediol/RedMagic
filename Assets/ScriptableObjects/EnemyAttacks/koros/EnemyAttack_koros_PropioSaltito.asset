@@ -27,10 +27,11 @@ MonoBehaviour:
   vulnerableMultiplier: 2.5
   gesture: Saltito
   sound:
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: e55b225f6c6ca3c4cad0e2c6f3abfdc4, type: 3}
     volume: 1
-    pitchMin: 1
-    pitchMax: 1
+    pitchMin: 0.94
+    pitchMax: 1.06
     noRepeatLast: 1
     priority: 1
     positional: 0
@@ -43,6 +44,9 @@ MonoBehaviour:
   - kind: 1
     aim: 0
     angle: 0
+    count: 5
+    arcDegrees: 50
+    spawnRadius: 0
     projectile:
       prefab: {fileID: 3039328402396721735, guid: 512f48ba21bed8f4c8b15ef1cec3c36e, type: 3}
       speed: 9
@@ -58,9 +62,6 @@ MonoBehaviour:
       faceDirection: 0
       facingAxis: 0
       aimMode: 0
-    count: 5
-    arcDegrees: 50
-    spawnRadius: 0
     strikeSize: {x: 1.2, y: 1}
     strikeOffset: {x: 0.8, y: 0.5}
     damage: 0

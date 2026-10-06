@@ -14,6 +14,25 @@ namespace RedMagic.Enemies
 
         /// <summary>Al bajar de <see cref="EnemyDefence.healthFraction"/> de vida (una vez por vida).</summary>
         LowHealth,
+
+        /// <summary>Al acabar cualquier ataque (reposicionarse entre ataques: una propulsión).</summary>
+        AfterAttack,
+    }
+
+    /// <summary>Hacia dónde va el movimiento respecto al objetivo.</summary>
+    public enum DefenceDirection
+    {
+        /// <summary>Alejándose (lo de siempre: defensivo).</summary>
+        Away,
+
+        /// <summary>Acercándose (ofensivo).</summary>
+        Toward,
+
+        /// <summary>
+        /// Según dónde esté el objetivo: si está más cerca de <c>personalSpace</c> que de <c>attackRange</c>
+        /// avanza (ofensivo); si está más cerca de <c>attackRange</c>, se aparta (defensivo).
+        /// </summary>
+        ByRange,
     }
 
     /// <summary>Cómo se aparta.</summary>
@@ -52,6 +71,10 @@ namespace RedMagic.Enemies
         [Min(0f)] public float cooldown = 3f;
 
         public DefenceMove move = DefenceMove.DashAway;
+
+        [Tooltip("Hacia dónde: Away = alejándose, Toward = hacia el objetivo, ByRange = se aparta si el objetivo " +
+                 "está más cerca de attackRange que de personalSpace, y avanza si está más cerca de personalSpace.")]
+        public DefenceDirection direction = DefenceDirection.Away;
 
         [Tooltip("Unidades que recorre.")]
         [Min(0f)] public float moveDistance = 3f;

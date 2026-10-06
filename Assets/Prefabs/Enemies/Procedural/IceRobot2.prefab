@@ -583,6 +583,7 @@ MonoBehaviour:
       chance: 1
       cooldown: 3
       move: 0
+      direction: 0
       moveDistance: 5
       moveDuration: 0.5
       hopHeight: 1.2
@@ -684,7 +685,77 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
-  soundEvents: []
+  soundEvents:
+  - trigger: 2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: e12b1c3b4010bd34aa9417456feae2a9, type: 3}
+      volume: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 2
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 20
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 7ed4b222498e86e4d8e6c32bdaf026b6, type: 3}
+      volume: 1
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 1
+    cue:
+      clips:
+      - {fileID: 8300000, guid: e5a84bf62d976b64b8f310cc79b34186, type: 3}
+      volume: 1
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 15
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 8d4bf13e780e9244490a4b91b6f8a128, type: 3}
+      volume: 0.22
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 0
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 16
+    cue:
+      clips:
+      - {fileID: 8300000, guid: e89979f985d454c4c915f8d399eb6d1d, type: 3}
+      volume: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
   useGenericFallback: 1
 --- !u!114 &3972111196947740134
 MonoBehaviour:

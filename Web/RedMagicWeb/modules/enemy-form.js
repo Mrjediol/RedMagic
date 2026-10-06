@@ -811,6 +811,12 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
     { value: 'TargetNear', label: 'Si el jugador se acerca a menos de…' },
     { value: 'OnHit', label: 'Al recibir un golpe' },
     { value: 'LowHealth', label: 'Al quedarle poca vida (una vez)' },
+    { value: 'AfterAttack', label: 'Al acabar un ataque (reposicionarse)' },
+  ];
+  const DEFENCE_DIRECTIONS = [
+    { value: 'Away', label: 'Alejándose del jugador' },
+    { value: 'Toward', label: 'Hacia el jugador' },
+    { value: 'ByRange', label: 'Según la distancia (lejos: se aparta; cerca: avanza)' },
   ];
   const DEFENCE_MOVES = [
     { value: 'DashAway', label: 'Sale disparado hacia atrás' },
@@ -851,6 +857,10 @@ export function initEnemyCreator({ formRoot, laneInfoEl, previewEl, summaryEl, e
       if (d.trigger === 'LowHealth') num(grid, 'Vida (0–1)', 'healthFraction', 0, '0.35 = al bajar del 35%.', '0.05');
       grid.appendChild(F.enumField({ label: 'Cómo', value: d.move, options: DEFENCE_MOVES,
         onChange: (x) => { d.move = x; renderDefences(); touch(); } }).row);
+
+      grid.appendChild(F.enumField({ label: 'Hacia dónde', value: d.direction || 'Away', options: DEFENCE_DIRECTIONS,
+        hint: 'Según la distancia: si el jugador está más cerca del alcance de ataque que de la distancia de huida, se aparta; si está más cerca de la de huida, avanza.',
+        onChange: (x) => { d.direction = x; touch(); } }).row);
 
       const names = bodyGestureNames();
       const opts = [{ value: '', label: names.length ? '(sin gesto)' : '(elige arriba el arte del enemigo)' },

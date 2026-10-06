@@ -421,6 +421,8 @@ GameObject:
   - component: {fileID: 2931108762156701388}
   - component: {fileID: 7873465359784718411}
   - component: {fileID: 4105278914059893608}
+  - component: {fileID: 8156748501288130755}
+  - component: {fileID: 7095730615705296195}
   m_Layer: 0
   m_Name: IceCannonOrb
   m_TagString: Untagged
@@ -621,28 +623,48 @@ MonoBehaviour:
     knockbackVertical: 3
     knockbackDuration: 0.18
     knockbackResistance: 0
-    detectionRange: 9
+    detectionRange: 20
     loseInterestGrace: 1
-    attackRange: 6
-    personalSpace: 3
+    attackRange: 14
+    personalSpace: 6
     retreatReleaseFactor: 1.35
     verticalTolerance: 3
-    moveSpeed: 2.5
-    retreatSpeed: 2.2
+    moveSpeed: 3.5
+    retreatSpeed: 3
     stopAtLedges: 1
     ledgeProbeDepth: 0.6
     gravityScale: 3
     sleepsUntilDetected: 0
     hoverOffset: 1.2
     attackDamage: 8
-    attackCooldown: 1.6
+    attackCooldown: 1.2
     attackKnockbackMultiplier: 1
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
-    attacks: []
-    builtInAttack: 1
+    attacks:
+    - attack: {fileID: 11400000, guid: da0fc9f64a6c56b468cd961d1f2aa4a6, type: 2}
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
+      minRange: 0
+      maxRange: 0
+      targetHeight: 0
+    builtInAttack: 0
     builtInWeight: 1
-    defences: []
+    defences:
+    - trigger: 3
+      distance: 2.5
+      healthFraction: 0.35
+      chance: 1
+      cooldown: 0
+      move: 0
+      direction: 2
+      moveDistance: 4.5
+      moveDuration: 0.45
+      hopHeight: 1.2
+      gesture: Propel
+      anticipation: 0.1
+      attack: {fileID: 0}
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
     selfDestruct: 0
@@ -669,7 +691,7 @@ MonoBehaviour:
     contactDamage: 0
     contactDamageCooldown: 1
     contactKnockbackMultiplier: 1
-    moveSoundInterval: 0.4
+    moveSoundInterval: 0.9
     idleAnimSpeed: 1
     moveAnimSpeed: 1
     attackAnimSpeed: 1
@@ -738,7 +760,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
-  soundEvents: []
+  soundEvents:
+  - trigger: 20
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 7ed4b222498e86e4d8e6c32bdaf026b6, type: 3}
+      volume: 1
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 15
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 8d4bf13e780e9244490a4b91b6f8a128, type: 3}
+      volume: 0.22
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 0
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
   useGenericFallback: 1
 --- !u!114 &7873465359784718411
 MonoBehaviour:
@@ -991,6 +1041,221 @@ MonoBehaviour:
     legacyStrike: []
     legacyStrikeTime: -1
     legacyShake: 0
+  - name: Aim
+    steps:
+    - name: Apunta
+      poses:
+      - part: {fileID: 9161817101181771857}
+        move: {x: -0.1901, y: 0}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.4
+      ease: 1
+      stretch: 1
+      shake: 0
+      aim: 1
+      aimParts:
+      - part: {fileID: 3177378160809959610}
+        angle: 0.7
+    - name: Disparo
+      poses:
+      - part: {fileID: 9161817101181771857}
+        move: {x: -0.713, y: 0}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.14
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 1
+      aimParts:
+      - part: {fileID: 3177378160809959610}
+        angle: 0.7
+    releases:
+    - step: 1
+      at: 0
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
+    recover: 0.35
+    fx:
+    - prefab: {fileID: 6764126390589522322, guid: 6cb106defefc1c54f8d4373f25b9d603, type: 3}
+      step: 0
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 3281649884429524314, guid: ac6d1dc0c6d4bd54a9bb5d4cda87e589, type: 3}
+      step: 1
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    sounds: []
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
+  - name: Propel
+    steps:
+    - name: Ignicion
+      poses:
+      - part: {fileID: 843866305119600430}
+        move: {x: 0, y: 0}
+        rotate: 0
+        scale: {x: 0.2, y: 0.4}
+      - part: {fileID: 9161817101181771857}
+        move: {x: 0, y: 0.1188}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.1
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 0
+      aimParts: []
+    - name: Empuje
+      poses:
+      - part: {fileID: 843866305119600430}
+        move: {x: 0, y: 0}
+        rotate: 0
+        scale: {x: 0.35, y: 0.9}
+      - part: {fileID: 2533137892729880595}
+        move: {x: 0, y: 0}
+        rotate: 0
+        scale: {x: 0.08, y: 0}
+      duration: 0.3
+      ease: 1
+      stretch: 1
+      shake: 0
+      aim: 0
+      aimParts: []
+    releases: []
+    recover: 0.2
+    fx:
+    - prefab: {fileID: 713616749444493148, guid: d4a5079a7c26d384c91ec3afc6858609, type: 3}
+      step: 0
+      at: 0
+      anchor: 0
+      part: {fileID: 843866305119600430}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    - prefab: {fileID: 1543073481673135165, guid: 06b0fbcf0be448d438cc879f5376fe6d, type: 3}
+      step: 0
+      at: 0
+      anchor: 0
+      part: {fileID: 843866305119600430}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 0
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    - prefab: {fileID: 1418655767114678527, guid: fcf81a6abf0b660449651bbd252cd8b9, type: 3}
+      step: 1
+      at: 0
+      anchor: 1
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 0
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    sounds:
+    - sound:
+        clips:
+        - {fileID: 8300000, guid: 91d294181ef0de0439d09c67e74ce503, type: 3}
+        volume: 0.7
+        pitchMin: 0
+        pitchMax: 0
+        noRepeatLast: 0
+        priority: 0
+        positional: 1
+        rolloffStart: 0
+        rolloffEnd: 0
+        initialized: 0
+      moment: 0
+      step: 0
+      at: 0
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
+  - name: ShieldFx
+    steps:
+    - name: Escudo
+      poses: []
+      duration: 0.1
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 0
+      aimParts: []
+    releases: []
+    recover: 0.1
+    fx:
+    - prefab: {fileID: 4227021715102157585, guid: b49a2d43962de444b8278a505041b099, type: 3}
+      step: 0
+      at: 0
+      anchor: 1
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 0
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 1738280004735315385, guid: cee74b15df577a34e91661f73afabe2d, type: 3}
+      step: 0
+      at: 0
+      anchor: 1
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    sounds: []
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   drivenLease: 0.25
   drivenReturn: 0.35
   staggerStrength: 2.5
@@ -1017,6 +1282,71 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e6fc707acbe7884cb21f94e3272ee9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Rigging.RigDriverCode
+--- !u!114 &8156748501288130755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7018523485113919345}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4729294e7f94484395dbcd86d60406a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Enemies.EnemyAttackHost
+  arenaHalfWidth: 10
+  arenaHeight: 8
+  feet: {fileID: 0}
+  fxSprite: {fileID: 0}
+  warnPrefab: {fileID: 0}
+  warnCirclePrefab: {fileID: 0}
+  warnArrowPrefab: {fileID: 0}
+  shockwavePrefab: {fileID: 0}
+  sweepBeamPrefab: {fileID: 0}
+  hazardPrefab: {fileID: 0}
+  platformPrefab: {fileID: 0}
+--- !u!114 &7095730615705296195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7018523485113919345}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9905d8386cb0d9549affa03830de1aef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Enemies.HitShield
+  hits: 1
+  auraPrefab: {fileID: 4227021715102157585, guid: b49a2d43962de444b8278a505041b099, type: 3}
+  breakPrefab: {fileID: 1738280004735315385, guid: cee74b15df577a34e91661f73afabe2d, type: 3}
+  auraWidth: 3.4
+  breakWidth: 4
+  offset: {x: 0, y: 0}
+  upSound:
+    clips:
+    - {fileID: 8300000, guid: 0440ec4a38906b740b5d6ad107be5b34, type: 3}
+    volume: 0.6
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  breakSound:
+    clips:
+    - {fileID: 8300000, guid: 5b103b0b7dfaf8b4aa71dea43886c2b9, type: 3}
+    volume: 0.8
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
 --- !u!1 &8355137890676609156
 GameObject:
   m_ObjectHideFlags: 0

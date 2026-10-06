@@ -1,0 +1,8 @@
+{
+  "name": "IceCannonOrb",
+  "request": "robot azul simple, brazo como cañon de energia (cuerpo solo, paso 1).",
+  "template": "floatingCaster",
+  "parts": "claude/IceCannonOrb/final",
+  "height": 2.8,
+  "slots": { "castArm": { "pivot": [0.12, 0.5], "muzzle": [0.97, 0.5] } }
+}

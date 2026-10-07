@@ -1,0 +1,25 @@
+{
+  "name": "SeedPodBot",
+  "estado": "cuerpo-por-aprobar",
+  "diseno": {
+    "image": "docs/enemigos/SeedPodBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robot__p5.png",
+    "zone": "forest",
+    "lote": "2026-10-07-robot",
+    "item": "p5",
+    "request": "robot",
+    "note": "Robot vaina redondo con tubo de semillas"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T03:45:25.414Z",
+  "tarea": "dlgnt71",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab",
+  "cuerpo": {
+    "fecha": "2026-10-07T04:03:16.904Z",
+    "plantilla": "floatingCaster",
+    "partes": "Web/RedMagicWeb/tools/comfy (output) claude/SeedPodBot/final",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/SeedPodBot.json",
+    "resumen": "5 piezas: Torso (bloque de piedra), Head (casco con ojo), CastArm (cañón con soporte), OffArm (cristales y soporte de madera, detrás del torso) y Lower (propulsor con anillo y llama). La Head salió algo recortada y con el ojo poco marcado; pivote/boca del cañón estimados, revisar en Enemy Studio."
+  },
+  "imagen": "docs/enemigos/SeedPodBot/preview.png"
+}

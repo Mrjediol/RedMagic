@@ -1,0 +1,12 @@
+{
+  "name": "SeedPodBot",
+  "request": "robot. Robot vaina redondo con tubo de semillas (solo cuerpo, sin ataques).",
+  "template": "floatingCaster",
+  "parts": "claude/SeedPodBot/final",
+  "height": 2.4,
+  "slots": {
+    "castArm": { "pivot": [0.15, 0.45], "muzzle": [0.98, 0.4] }
+  },
+  "tuning": { "archetype": "FlyingRanged", "moveSoundInterval": 0.9, "builtInAttack": false },
+  "rig": { "muzzleFlashSize": 0 }
+}

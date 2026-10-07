@@ -66,7 +66,23 @@ namespace RedMagic.UI
             keyLabel.style.paddingTop = 2;
             keyLabel.style.paddingBottom = 2;
             HudStyle.Radius(keyLabel, 5f);
-            row.Add(keyLabel);
+
+            // Arte (HudSkin): tecla de piedra. Va en una caja aparte porque la capa del marco es un
+            // hijo y UI Toolkit pinta los hijos encima del texto del propio Label.
+            var skin = HudSkin.Current;
+            if (skin != null && skin.keyCap.IsSet)
+            {
+                var keyBox = new VisualElement { pickingMode = PickingMode.Ignore };
+                keyBox.style.width = 104;
+                keyBox.style.flexShrink = 0;
+                skin.keyCap.Dress(keyBox);
+                keyLabel.style.width = StyleKeyword.Auto;
+                keyLabel.style.flexGrow = 1;
+                keyLabel.style.backgroundColor = Color.clear;
+                keyBox.Add(keyLabel);
+                row.Add(keyBox);
+            }
+            else row.Add(keyLabel);
 
             var actionLabel = new Label { pickingMode = PickingMode.Ignore };
             LocalizedUi.Bind(actionLabel, action);

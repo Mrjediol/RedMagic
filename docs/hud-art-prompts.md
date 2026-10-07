@@ -79,7 +79,7 @@ Style: use the attached reference images ONLY for the colour palette and materia
 
 ---
 
-## Qué pasa después (paso 3)
+## Paso 3 (hecho, 2026-10-08)
 
 Con las imágenes en `Assets/Ui/HudSprites/`: receta `HudSprites.uikit.asset` + `HudUiPack` →
 `Resources/HudSkin.asset` (mismo pipeline que los menús, `UI_ART_PIPELINE.md`), y el HUD se viste

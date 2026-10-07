@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90780ae0e37e0a34886a6db21f0a3709, type: 3}
+  m_Name: Hud.uikit
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.UiArtKitRecipe
+  outputFolder: Assets/Art/UI/Hud
+  prefix: Hud_
+  backgroundTolerance: 0.12
+  softOpaqueAt: 0.55
+  minEnclosedArea: 0.01
+  margin: 2
+  pieces:
+  - name: HealthFrame
+    source: {fileID: 2800000, guid: 7b01fb3be24646e43a7880654e8aa25a, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 4
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: EnemyFrame
+    source: {fileID: 2800000, guid: 72c9993f9099bac4ebc5b10d3358183c, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 24
+    keyEnclosed: 1
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: Ring
+    source: {fileID: 2800000, guid: 8e925b6948701584db115210179b08f0, type: 3}
+    columns: 2
+    rows: 1
+    cellNames:
+    - Ring
+    - Ring_Ready
+    trimGroup: 0
+    softEdge: 48
+    keyEnclosed: 1
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: Icon
+    source: {fileID: 2800000, guid: 25b04a64f2c31d047b6769fd7f531db8, type: 3}
+    columns: 3
+    rows: 1
+    cellNames:
+    - Icon_Attack
+    - Icon_Dash
+    - Icon_Parry
+    trimGroup: 0
+    softEdge: 32
+    keyEnclosed: 0
+    slice: 0
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+  - name: Plaque
+    source: {fileID: 2800000, guid: 4ba8eb5eb4a0493478170f22b70b6c28, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 4
+    keyEnclosed: 0
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 135
+      y: 412
+      width: 762
+      height: 200
+  - name: KeyCap
+    source: {fileID: 2800000, guid: 7fbcc2d034fca6e42ae96a0355189fd9, type: 3}
+    columns: 1
+    rows: 1
+    cellNames: []
+    trimGroup: 0
+    softEdge: 4
+    keyEnclosed: 0
+    slice: 1
+    stretchSearch: {x: 0.12, y: 0.42}
+    interior:
+      x: 30
+      y: 402
+      width: 514
+      height: 189

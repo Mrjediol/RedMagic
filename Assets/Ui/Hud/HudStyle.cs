@@ -52,7 +52,7 @@ namespace RedMagic.UI
         {
             CooldownSlot.Attack => new Color(1f, 0.70f, 0.32f, 1f),
             CooldownSlot.Dash => new Color(0.42f, 0.86f, 1f, 1f),
-            CooldownSlot.Parry => new Color(0.86f, 0.74f, 1f, 1f),
+            CooldownSlot.Parry => new Color(0.62f, 1f, 0.35f, 1f),   // verde lima, como su icono
             _ => Gold,
         };
 
@@ -116,6 +116,28 @@ namespace RedMagic.UI
             label.style.paddingLeft = 0;
             label.style.paddingRight = 0;
             return label;
+        }
+
+        /// <summary>
+        /// Viste una barra con un aro hueco del <see cref="HudSkin"/>: quita el borde vectorial del
+        /// marco, mete la pista por dentro (bajo el aro, no fuera de él), le da extremos redondos
+        /// como el hueco del arte y pone el aro delante. Devuelve la capa del aro (para teñirla) o
+        /// null si no hay arte — entonces la barra se queda como estaba.
+        /// </summary>
+        public static VisualElement SkinBar(VisualElement frame, VisualElement track, UiFrame art, float rim, float height)
+        {
+            if (art == null || !art.IsSet) return null;
+
+            frame.style.backgroundColor = Color.clear;
+            Border(frame, 0f, Color.clear);
+            // El relleno llega a 6/10 del aro: sus esquinas quedan tapadas por la piedra.
+            float inset = height * rim * 0.6f;
+            frame.style.paddingLeft = inset;
+            frame.style.paddingRight = inset;
+            frame.style.paddingTop = inset;
+            frame.style.paddingBottom = inset;
+            Radius(track, (height - inset * 2f) * 0.5f);
+            return art.Overlay(frame);
         }
 
         public static float Smooth(float current, float target, float sharpness, float dt) =>

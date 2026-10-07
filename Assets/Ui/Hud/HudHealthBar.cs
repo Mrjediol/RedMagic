@@ -105,7 +105,13 @@ namespace RedMagic.UI
             _label = HudStyle.OutlinedLabel("value", HudStyle.HealthFont);
             HudStyle.Fill(_label);
             _frame.Add(_label);
+
+            // Arte (HudSkin): aro hueco delante del relleno. Sin skin, el marco vectorial de arriba.
+            var skin = HudSkin.Current;
+            if (skin != null) _rimLayer = HudStyle.SkinBar(_frame, track, skin.healthFrame, skin.healthRim, HudStyle.HealthHeight);
         }
+
+        private readonly VisualElement _rimLayer;
 
         private static VisualElement Bar(string name, Color color)
         {
@@ -186,7 +192,8 @@ namespace RedMagic.UI
             bool low = target > 0f && target <= health.LowHealthThreshold;
             float pulse = low ? 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 7f) : 0f;
             _fill.style.backgroundColor = low ? Color.Lerp(HudStyle.HealthFill, HudStyle.HealthFillLow, pulse) : HudStyle.HealthFill;
-            HudStyle.BorderColor(_frame, low ? Color.Lerp(HudStyle.Frame, new Color(1f, 0.3f, 0.25f, 1f), pulse) : HudStyle.Frame);
+            if (_rimLayer != null) UiFrame.TintLayer(_rimLayer, low ? Color.Lerp(Color.white, new Color(1f, 0.45f, 0.4f, 1f), pulse) : Color.white);
+            else HudStyle.BorderColor(_frame, low ? Color.Lerp(HudStyle.Frame, new Color(1f, 0.3f, 0.25f, 1f), pulse) : HudStyle.Frame);
 
             if (_flashValue > 0f)
             {

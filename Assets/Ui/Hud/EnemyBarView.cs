@@ -96,6 +96,10 @@ namespace RedMagic.UI
             _strips = new VisualElement { name = "cooldowns", pickingMode = PickingMode.Ignore };
             _strips.style.flexDirection = FlexDirection.Column;
             Add(_strips);
+
+            // Arte (HudSkin): aro hueco de enemigo delante del relleno.
+            var skin = HudSkin.Current;
+            if (skin != null) HudStyle.SkinBar(frame, track, skin.enemyFrame, skin.enemyRim, _barHeight);
         }
 
         private static VisualElement Bar(Color color)

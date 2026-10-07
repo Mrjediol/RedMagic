@@ -110,6 +110,20 @@ Dos cosas que este kit obliga a hacer bien y que valen para cualquier otro:
   tolerancia de color y quedándose con su caja; la comprobación de que la medida es buena es que
   los márgenes salen **simétricos** (izq≈der, arriba≈abajo).
 
+## 3-quater. HUD de juego (`HudUiPack` → `Resources/HudSkin.asset`)
+
+| Fuente (`Assets/Ui/HudSprites/`) | Pieza | Uso |
+|---|---|---|
+| `HealthBarFrame` | `HealthFrame` (quad, **hueco**) | aro de la barra de vida, DELANTE del relleno (`UiFrame.Overlay`) |
+| `EnemyBarFrame` | `EnemyFrame` (quad, hueco) | aro de las barras de enemigo (flotante, foco, lista) |
+| `AbilitySlot` (2×1) | `Ring` / `Ring_Ready` | aro de las casillas de habilidad, apagado / lista |
+| `AbilityIcons` (3×1) | `Icon_Attack` / `_Dash` / `_Parry` | iconos por defecto de las casillas (el del arma manda) |
+| `CurrencyPlaque` | `Plaque` (quad + interior) | chapa de cada moneda |
+| `KeyCap_Wide.png` | `KeyCap` (quad + interior) | tecla de la chuleta. **Recorte** de `KeyCap.jpeg` (x ≥ 347): las dos teclas venían pegadas |
+
+Los marcos huecos se piden con el interior **blanco** (`keyEnclosed` lo quita) y finos; los prompts están en
+`docs/hud-art-prompts.md`.
+
 ## 3-ter. Retocar los menús ya vestidos — lo que hay que saber
 
 Las cuatro pantallas vestidas con `MenuSkin` y **dónde se toca cada cosa**:

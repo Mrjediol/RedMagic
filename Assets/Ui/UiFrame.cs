@@ -61,6 +61,52 @@ namespace RedMagic.UI
                 layer.RegisterCallback<GeometryChangedEvent>(_ => Fit(layer));
             }
 
+            Build(layer);
+
+            host.style.backgroundColor = Color.clear;
+            MenuStyle.SetBorder(host, 0, Color.clear, 0);
+            host.style.paddingLeft = padding.left;
+            host.style.paddingRight = padding.right;
+            host.style.paddingTop = padding.top;
+            host.style.paddingBottom = padding.bottom;
+
+            Fit(layer);
+            return true;
+        }
+
+        /// <summary>
+        /// Marco <b>hueco</b> por encima de todo el contenido de <paramref name="host"/> (la barra
+        /// de vida del HUD: el relleno lo pinta el código y el aro va delante, tapando sus bordes).
+        /// No toca el relleno ni el fondo del host. Devuelve la capa (para teñirla), o null sin sprites.
+        /// </summary>
+        public VisualElement Overlay(VisualElement host)
+        {
+            if (!IsSet) return null;
+
+            const string overlayName = LayerName + "-overlay";
+            var layer = host.Q<VisualElement>(overlayName);
+            if (layer == null)
+            {
+                layer = new VisualElement { name = overlayName, pickingMode = PickingMode.Ignore };
+                MenuStyle.FillParent(layer);
+                layer.RegisterCallback<GeometryChangedEvent>(_ => Fit(layer));
+            }
+
+            host.Add(layer);   // siempre el último: delante del contenido
+            Build(layer);
+            Fit(layer);
+            return layer;
+        }
+
+        /// <summary>Tiñe una capa devuelta por <see cref="Overlay"/>.</summary>
+        public static void TintLayer(VisualElement layer, Color tint)
+        {
+            if (layer == null) return;
+            foreach (var q in layer.Children()) q.style.unityBackgroundImageTintColor = tint;
+        }
+
+        private void Build(VisualElement layer)
+        {
             layer.Clear();
             for (int i = 0; i < 4; i++)
             {
@@ -93,16 +139,6 @@ namespace RedMagic.UI
             }
 
             layer.userData = this;
-
-            host.style.backgroundColor = Color.clear;
-            MenuStyle.SetBorder(host, 0, Color.clear, 0);
-            host.style.paddingLeft = padding.left;
-            host.style.paddingRight = padding.right;
-            host.style.paddingTop = padding.top;
-            host.style.paddingBottom = padding.bottom;
-
-            Fit(layer);
-            return true;
         }
 
         /// <summary>Tiñe el marco de <paramref name="host"/> (resaltado de estado). Blanco = arte tal cual.</summary>

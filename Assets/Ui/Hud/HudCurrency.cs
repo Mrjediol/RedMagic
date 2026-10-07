@@ -265,6 +265,10 @@ namespace RedMagic.UI
             amount.style.unityTextAlign = TextAnchor.MiddleLeft;
             root.Add(amount);
 
+            // Arte (HudSkin): chapa de piedra detrás del icono y el número.
+            var skin = HudSkin.Current;
+            if (skin != null) skin.currencyPlaque.Dress(root);
+
             return new Entry { Root = root, Icon = icon, Amount = amount };
         }
     }

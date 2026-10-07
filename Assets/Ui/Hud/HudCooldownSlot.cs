@@ -22,6 +22,8 @@ namespace RedMagic.UI
         private readonly SlotGlyph _glyph;
         private readonly CooldownDial _dial;
         private readonly Label _seconds;
+        private readonly Image _ring;              // aro del HudSkin (null sin arte)
+        private readonly HudSkin _skin;
 
         private ICooldownSource _source;
         private float _popT = 1f;
@@ -60,9 +62,32 @@ namespace RedMagic.UI
             _dial.Used += () => Pop(0.86f);
             Add(_dial);
 
+            // Arte (HudSkin): aro de piedra delante (apagado / encendido) y el barrido por dentro de él.
+            _skin = HudSkin.Current;
+            if (_skin != null && _skin.abilityRing.IsSet)
+            {
+                HudStyle.Border(_body, 0f, Color.clear);
+                Inset(_body, _skin.abilityRingInset * 0.5f);
+                Inset(_dial, _skin.abilityRingInset);
+                _ring = new Image { name = "ring", scaleMode = ScaleMode.ScaleToFit, pickingMode = PickingMode.Ignore };
+                _ring.sprite = _skin.abilityRing.normal;
+                Inset(_ring, -_skin.abilityRingOverflow);
+                Add(_ring);
+            }
+
             _seconds = HudStyle.OutlinedLabel("seconds", HudStyle.SlotFont);
             HudStyle.Fill(_seconds);
             Add(_seconds);
+
+            SetIcon(ResolveIcon(null));
+        }
+
+        /// <summary>El icono de la fuente (el del arma), si no el del skin, si no ninguno (glifo vectorial).</summary>
+        private Sprite ResolveIcon(ICooldownSource source)
+        {
+            var own = source?.CooldownIcon;
+            if (own != null) return own;
+            return _skin != null ? _skin.IconFor(_slot) : null;
         }
 
         private static void Inset(VisualElement e, float fraction)
@@ -82,13 +107,13 @@ namespace RedMagic.UI
             {
                 _source = source;
                 _dial.ResetState();
-                SetIcon(source != null ? source.CooldownIcon : null);
+                SetIcon(ResolveIcon(source));
             }
 
             if (source == null) return false;
 
             // El icono del arma cambia al cambiar de arma sin cambiar de fuente.
-            var icon = source.CooldownIcon;
+            var icon = ResolveIcon(source);
             if (icon != _icon.sprite) SetIcon(icon);
 
             var state = source.Cooldown;
@@ -99,7 +124,13 @@ namespace RedMagic.UI
             _icon.tintColor = tint;
             _glyph.Tint = ready ? HudStyle.Accent(_slot) : tint * HudStyle.Accent(_slot);
 
-            HudStyle.BorderColor(_body, ready ? HudStyle.Frame : new Color(0.3f, 0.23f, 0.17f, 0.9f));
+            if (_ring != null)
+            {
+                var ringSprite = _skin.abilityRing.Get(ready);
+                if (_ring.sprite != ringSprite) _ring.sprite = ringSprite;
+                _ring.tintColor = state.Blocked ? new Color(0.6f, 0.6f, 0.6f, 0.8f) : Color.white;
+            }
+            else HudStyle.BorderColor(_body, ready ? HudStyle.Frame : new Color(0.3f, 0.23f, 0.17f, 0.9f));
 
             string text = !state.Blocked && state.Remaining > 0f && state.Duration >= MinDurationForNumber
                 ? (state.Remaining >= 10f ? Mathf.CeilToInt(state.Remaining).ToString() : state.Remaining.ToString("0.0"))
@@ -114,7 +145,7 @@ namespace RedMagic.UI
             {
                 _popT = Mathf.Min(1f, _popT + dt / 0.28f);
                 float s = HudStyle.Punch(_popT, _popPeak);
-                _body.style.scale = new Scale(new Vector3(s, s, 1f));
+                style.scale = new Scale(new Vector3(s, s, 1f));   // la casilla entera: cuerpo, aro y barrido
             }
 
             return true;

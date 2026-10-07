@@ -94,8 +94,14 @@ The cooldown animation is **`CooldownDial`** (Painter2D: shrinking clockwise pie
 ring with bright tip, outer charge ring, expanding "ready" ring + flash — skipped for cooldowns
 < 0.7 s so the basic attack doesn't strobe). Both the HUD slots and the touch buttons host the same
 dial, so they look identical; on touch the HUD hides its slot row. Sizes/colours live in `HudStyle`.
-Everything is vector placeholder art today; supplied art (frames, icons) will dress it through the
-UI art-kit pipeline the same way menus are, falling back to this look.
+**Art** (`HudSkin`, `Resources/HudSkin.asset`, built by **Tools ▸ RedMagic ▸ UI ▸ HUD · Procesar kit de arte** =
+`HudUiPack` from `Assets/Ui/HudSprites/`, prompts in `docs/hud-art-prompts.md`): bar frames are **hollow** rims
+(interior keyed out) drawn **in front** of the code-drawn fill with `UiFrame.Overlay` — `HudStyle.SkinBar` drops the
+vector border, insets the track to 6/10 of the rim and rounds it like the hole; low HP tints the rim
+(`UiFrame.TintLayer`). Ability slots overlay a ring `Image` (idle / ready sprite, `abilityRingOverflow` = halo room,
+`abilityRingInset` = sweep drawn inside); icons = source icon (weapon) → skin icon → vector glyph. Currency plaques
+and legend keycaps use the normal `UiFrame.Dress` (keycap in its own box: frame children cover a Label's text).
+Every piece is optional: missing art falls back to the vector look of `HudStyle`.
 
 Runtime UI Toolkit panels don't appear in `screenshot` or `capture_game_view --source camera`.
 What does work is **`capture_game_view --source screen`, Play Mode only**. Rendering a cloned

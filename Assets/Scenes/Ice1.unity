@@ -669,7 +669,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 288224741}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a6c58ee934e505a45a51d66664a83d39, type: 3}
   m_Name: 
@@ -1488,6 +1488,10 @@ PrefabInstance:
     - target: {fileID: 4405591265249646544, guid: d17a89dc0989ba9428e9443f056f2fbb, type: 3}
       propertyPath: m_Offset.y
       value: 0.09083438
+      objectReference: {fileID: 0}
+    - target: {fileID: 4447773840029447090, guid: d17a89dc0989ba9428e9443f056f2fbb, type: 3}
+      propertyPath: reflectDamage
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4486680268914706177, guid: d17a89dc0989ba9428e9443f056f2fbb, type: 3}
       propertyPath: m_Name

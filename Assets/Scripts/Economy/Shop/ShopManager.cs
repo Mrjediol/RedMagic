@@ -267,7 +267,7 @@ namespace RedMagic.Economy
             // Efecto de compra (el altar queda vacío ya; el juego sigue) + el oro del HUD bajando.
             altar.PlayPurchase(_player);
             var fx = ShopFxConfig.Current;
-            CurrencyHud.PlaySpend(Currency.Gold, goldBefore, wallet.Get(Currency.Gold),
+            GameHud.PlaySpend(Currency.Gold, goldBefore, wallet.Get(Currency.Gold),
                                   fx.goldTickDuration, fx.goldShakeAmplitude, fx.goldShakeDuration);
             SetFocus(null);
         }

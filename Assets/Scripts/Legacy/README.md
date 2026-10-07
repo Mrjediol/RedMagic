@@ -56,3 +56,11 @@ sistema de items.
 Se queda fuera de esta carpeta lo que el juego actual sí usa: `AbilityContext` / `AbilityHit`
 (filtrado de objetivos y daño, lo reusan las armas y los jefes), `AbilityFx`, `ProjectileSpec` /
 `ProjectileFactory` y `Projectile` (los jefes disparan con ellos).
+
+## `Ui/CurrencyHud`, `Ui/ControlsLegendHud`, `Ui/ItemBuffHud` — el HUD de tres piezas sueltas
+
+Tres paneles persistentes independientes (monedas + rerolls, chuleta de teclas, chapas de items),
+cada uno con su `UIDocument` y su autocreación. Sustituidos por **`UI.GameHud`**
+(`Assets/Ui/Hud/`), un único panel que además trae la barra de vida/escudo y los cooldowns; su
+lógica se portó a `HudCurrency`, `HudControlsLegend` y `HudBuffRow`. Aquí ya no se autocrean (se
+quitó el `RuntimeInitializeOnLoadMethod`), así que no corren: sólo referencia.

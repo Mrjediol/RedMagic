@@ -37,6 +37,34 @@ all of which bit during that pass:
 - **Multi-state pieces of the same drawing share `trimGroup` *and* `interior`** (the three button
   states do), or the hover's glow shrinks its fill and the button jumps on mouse-over.
 
+## In-game HUD (`Assets/Ui/Hud/`)
+One persistent, self-bootstrapping panel, **`GameHud`** (`Resources/CurrencyHudPanelSettings`,
+sort 15: above touch buttons, below menus), code-built from widget classes that each animate in a
+`Tick(dt)` on unscaled time:
+- **Top-left**: `HudHealthBar` (fill + delayed "ghost" trail on damage, green lead on heal, white
+  flash + shake on hit, low-HP pulse, optional shield bar on top — pips for ≤12 hits, continuous
+  otherwise) and a row of `HudCooldownSlot`s, one per `CooldownSlot` enum value.
+- **Top-right**: `HudCurrency` (gain counts up + pop, `GameHud.PlaySpend` for the shop's
+  count-down, reroll counter only while `ShopManager.Current`) and `HudBuffRow` (`BuffIndicators`).
+- **Bottom-left**: `HudControlsLegend`, keyboard/mouse only, hidden by Options ▸
+  `HudSettings.ShowControls` (`PlayerPrefs`).
+
+Data comes from the player through **interfaces, not wiring** (`Gameplay/CooldownSource.cs`):
+`ICooldownSource` (slot, `CooldownActive`, `CooldownState` {remaining, duration, blocked, charge},
+icon) — implemented by `WeaponUser`, `PlayerAttack` (both `Attack`; the active one wins) and
+`PlayerMovement` (`Dash`, blocked when air dashes are spent) — and `IShieldSource`
+(`LegendaryPassivePlayerHook`). `HudPlayer` finds the player by tag (re-searched when the hub/run
+instance changes) and collects them with `GetComponents`. **New ability with a cooldown (parry)**:
+implement `ICooldownSource` on a player component with a new `CooldownSlot` value; the slot appears
+by itself, and on touch add one `AttachDial(button, slot)` line in `TouchControlsController`.
+
+The cooldown animation is **`CooldownDial`** (Painter2D: shrinking clockwise pie, accent progress
+ring with bright tip, outer charge ring, expanding "ready" ring + flash — skipped for cooldowns
+< 0.7 s so the basic attack doesn't strobe). Both the HUD slots and the touch buttons host the same
+dial, so they look identical; on touch the HUD hides its slot row. Sizes/colours live in `HudStyle`.
+Everything is vector placeholder art today; supplied art (frames, icons) will dress it through the
+UI art-kit pipeline the same way menus are, falling back to this look.
+
 Runtime UI Toolkit panels don't appear in `screenshot` or `capture_game_view --source camera`.
 What does work is **`capture_game_view --source screen`, Play Mode only**. Rendering a cloned
 `PanelSettings` into a `RenderTexture` does *not* work in Edit Mode — an offscreen panel never

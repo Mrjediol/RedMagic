@@ -29,6 +29,8 @@ options.muted = Muted
 options.resolution = Display
 options.resolution_value = {0} · {1}
 options.language = Language
+options.controls_legend = On-screen controls guide
+options.show = Show
 settings.resolution.pc = PC
 settings.resolution.mobile = Mobile
 

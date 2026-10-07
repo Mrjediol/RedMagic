@@ -48,7 +48,7 @@ namespace RedMagic.UI
         private bool _built;
         private bool _visible;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        // LEGACY: sustituido por UI.GameHud; ya no se auto-crea.
         private static void Bootstrap()
         {
             if (Instance != null) return;

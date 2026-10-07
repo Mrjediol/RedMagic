@@ -27,6 +27,7 @@ namespace RedMagic.UI
         private Button _backButton;
         private Button _resolutionPrev, _resolutionNext, _languagePrev, _languageNext;
         private Label _resolutionValue, _languageValue;
+        private Toggle _controlsToggle;
 
         private bool _hidden = true;
         private bool _open;
@@ -67,6 +68,13 @@ namespace RedMagic.UI
             _languagePrev = _root.Q<Button>("languagePrev");
             _languageNext = _root.Q<Button>("languageNext");
             _languageValue = _root.Q<Label>("languageValue");
+            _controlsToggle = _root.Q<Toggle>("controlsToggle");
+
+            if (_controlsToggle != null)
+            {
+                _controlsToggle.SetValueWithoutNotify(HudSettings.ShowControls);
+                _controlsToggle.RegisterValueChangedCallback(OnControlsToggled);
+            }
 
             WireGroup(_masterSlider, _masterMute, AudioManager.Master);
             WireGroup(_musicSlider, _musicMute, AudioManager.Music);
@@ -110,6 +118,7 @@ namespace RedMagic.UI
             MenuSkinDresser.DressToggle(_masterMute, skin);
             MenuSkinDresser.DressToggle(_musicMute, skin);
             MenuSkinDresser.DressToggle(_sfxMute, skin);
+            MenuSkinDresser.DressToggle(_controlsToggle, skin);
 
             MenuSkinDresser.DressButton(_backButton, skin, Color.white);
         }
@@ -119,6 +128,7 @@ namespace RedMagic.UI
             UnwireGroup(_masterSlider, _masterMute);
             UnwireGroup(_musicSlider, _musicMute);
             UnwireGroup(_sfxSlider, _sfxMute);
+            _controlsToggle?.UnregisterValueChangedCallback(OnControlsToggled);
 
             if (_backButton != null)
             {
@@ -131,6 +141,10 @@ namespace RedMagic.UI
             UnwireArrow(_languageNext, NextLanguage);
             Loc.Changed -= OnLanguageChanged;
         }
+
+        // ------------------------------------------------------------------ HUD
+
+        private static void OnControlsToggled(ChangeEvent<bool> evt) => HudSettings.ShowControls = evt.newValue;
 
         // ------------------------------------------------------------------ resolución e idioma
 

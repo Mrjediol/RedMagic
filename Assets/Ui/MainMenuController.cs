@@ -20,7 +20,7 @@ namespace RedMagic.UI
     {
         /// <summary>
         /// True mientras la escena del menú principal está activa (aunque esté mostrando el
-        /// submenú de Opciones encima). Otros HUD persistentes (<see cref="CurrencyHud"/>) lo usan
+        /// submenú de Opciones encima). Otros HUD persistentes (<see cref="GameHud"/>) lo usan
         /// para no enseñarse aquí — no hay moneda que contar todavía.
         /// </summary>
         public static bool IsOpen { get; private set; }

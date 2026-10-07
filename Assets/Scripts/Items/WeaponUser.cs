@@ -31,7 +31,7 @@ namespace RedMagic.Items
     /// genérica: cualquier arma futura (haz o proyectil) puede usarla.
     /// </summary>
     [DisallowMultipleComponent]
-    public class WeaponUser : MonoBehaviour, ISoundEventSource
+    public class WeaponUser : MonoBehaviour, ISoundEventSource, ICooldownSource
     {
         /// <summary>OnLoot al recoger un item del suelo (<see cref="ItemPickup"/>). Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
@@ -82,6 +82,7 @@ namespace RedMagic.Items
         private InputAction _attackAction;
 
         private float _cooldownTimer;
+        private float _cooldownDuration;
 
         private bool _charging;
         private float _charge;
@@ -126,6 +127,30 @@ namespace RedMagic.Items
                 return _charging && time > 0f ? Mathf.Clamp01(_charge / time) : 0f;
             }
         }
+
+        // ------------------------------------------------------------------ HUD (ICooldownSource)
+
+        public CooldownSlot Slot => CooldownSlot.Attack;
+
+        /// <summary>El arma lleva el botón de atacar mientras hay una equipada y ninguna habilidad la pisa.</summary>
+        public bool CooldownActive => Weapon != null && (_abilityUser == null || _abilityUser.Equipped == null);
+
+        public CooldownState Cooldown
+        {
+            get
+            {
+                // En segundos reales: el temporizador corre más deprisa con los items de enfriamiento.
+                float rate = Mathf.Max(0.01f, PlayerStats.Multiplier(PlayerStat.CooldownRate));
+                return new CooldownState
+                {
+                    Remaining = CooldownRemaining / rate,
+                    Duration = _cooldownDuration / rate,
+                    Charge = ChargeFraction,
+                };
+            }
+        }
+
+        public Sprite CooldownIcon => Weapon != null ? Weapon.Icon : null;
 
         private void Awake()
         {
@@ -315,6 +340,7 @@ namespace RedMagic.Items
         private void Fire(WeaponDefinition weapon, float chargeFraction)
         {
             _cooldownTimer = weapon.BaseCooldown;
+            _cooldownDuration = weapon.BaseCooldown;
             if (_animator != null) _animator.TriggerAttack();
 
             if (releaseDelay <= 0f)

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using RedMagic.Core;
+using RedMagic.Gameplay;
 using RedMagic.Localization;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -13,6 +15,9 @@ namespace RedMagic.UI
     ///  - El contenedor <c>touchControls</c> lleva la clase USS <c>touch-only</c>: el componente
     ///    <see cref="TouchOnlyUI"/> del mismo GameObject lo oculta cuando hay un mando activo.
     ///  - Este script oculta la capa interior mientras el juego está en pausa.
+    ///  - Pinta el cooldown de cada acción (<see cref="CooldownDial"/>) sobre su botón: en táctil
+    ///    el HUD no enseña casillas, el pulgar ya está aquí. Un botón nuevo con cooldown (parry) =
+    ///    una línea <c>AttachDial</c>.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class TouchControlsController : MonoBehaviour
@@ -27,6 +32,9 @@ namespace RedMagic.UI
         private Button _downButton;
         private Button _dashButton;
         private Button _fireballButton;
+
+        // Cooldown pintado sobre el botón que lanza cada acción (el mismo dial que el HUD de PC).
+        private readonly List<(CooldownSlot slot, CooldownDial dial)> _dials = new();
 
         private void OnEnable()
         {
@@ -75,7 +83,35 @@ namespace RedMagic.UI
                 OnPausedChanged(GameStateManager.Instance.IsPaused);
             }
 
+            AttachDial(_attackButton, CooldownSlot.Attack);
+            AttachDial(_dashButton, CooldownSlot.Dash);
+
             TouchInput.Clear();
+        }
+
+        // ------------------------------------------------------------------ cooldowns
+
+        private void AttachDial(Button button, CooldownSlot slot)
+        {
+            if (button == null || button.Q<CooldownDial>() != null) return;   // OnEnable puede repetirse
+            var dial = new CooldownDial { Accent = HudStyle.Accent(slot), RingWidth = 7f };
+            button.Add(dial);
+            _dials.Add((slot, dial));
+        }
+
+        private void Update()
+        {
+            float dt = Time.unscaledDeltaTime;
+            foreach (var (slot, dial) in _dials)
+            {
+                var source = HudPlayer.Cooldown(slot);
+                if (source == null)
+                {
+                    if (!dial.Ready) dial.ResetState();
+                    continue;
+                }
+                dial.Tick(source.Cooldown, dt);
+            }
         }
 
         private void OnDisable()

@@ -35,7 +35,7 @@ namespace RedMagic.UI
 
         private readonly List<(BuffIndicators.Indicator data, VisualElement chip, Image icon, Label text)> _chips = new();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        // LEGACY: sustituido por UI.GameHud; ya no se auto-crea.
         private static void Bootstrap()
         {
             if (Instance != null) return;

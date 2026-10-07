@@ -36,7 +36,7 @@ namespace RedMagic.Gameplay
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(Collider2D))]
     [DisallowMultipleComponent]
-    public class PlayerMovement : MonoBehaviour, IKnockbackReceiver, ISoundEventSource
+    public class PlayerMovement : MonoBehaviour, IKnockbackReceiver, ISoundEventSource, ICooldownSource
     {
         /// <summary>OnJump / OnAirJump / OnDash / Footstep / OnLand. Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
@@ -123,6 +123,22 @@ namespace RedMagic.Gameplay
 
         /// <summary>Lo que dura un dash ahora mismo (el de base por el multiplicador de distancia de los items).</summary>
         public float DashDuration => dashDuration * PlayerStats.Multiplier(PlayerStat.DashDistance);
+
+        // ---------------------------------------------------------------- HUD (ICooldownSource: el dash)
+
+        public CooldownSlot Slot => CooldownSlot.Dash;
+
+        public bool CooldownActive => allowDash;
+
+        /// <summary>Bloqueado = en el aire sin dashes aéreos que gastar (se recarga al tocar suelo).</summary>
+        public CooldownState Cooldown => new CooldownState
+        {
+            Remaining = Mathf.Max(0f, _dashCooldownTimer),
+            Duration = _dashCooldownDuration,
+            Blocked = !_colDown && _airDashesUsed >= maxAirDashes,
+        };
+
+        public Sprite CooldownIcon => null;
 
         // ---------------------------------------------------------------- Input Actions + táctil
 
@@ -327,6 +343,7 @@ namespace RedMagic.Gameplay
         private float _knockbackTimer;
         private float _dashTimer;
         private float _dashCooldownTimer;
+        private float _dashCooldownDuration;
         private int _dashDirection = 1;
 
         private FrameInput _input;
@@ -1224,6 +1241,7 @@ namespace RedMagic.Gameplay
             float duration = DashDuration;
             _dashTimer = duration;
             _dashCooldownTimer = dashCooldown + duration;
+            _dashCooldownDuration = _dashCooldownTimer;
 
             SoundTriggered?.Invoke(SoundTrigger.OnDash);
             Dashed?.Invoke(_dashDirection);

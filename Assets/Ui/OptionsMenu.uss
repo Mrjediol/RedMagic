@@ -44,6 +44,12 @@
     color: #ecdfbf;
 }
 
+/* Fila sin slider (chuleta de controles): la etiqueta ocupa el hueco y el toggle queda a la derecha. */
+.option-label--wide {
+    width: auto;
+    flex-grow: 1;
+}
+
 .option-slider {
     flex-grow: 1;
     min-height: 34px;

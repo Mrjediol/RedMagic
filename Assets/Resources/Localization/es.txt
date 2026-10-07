@@ -29,6 +29,8 @@ options.muted = Silenciado
 options.resolution = Pantalla
 options.resolution_value = {0} · {1}
 options.language = Idioma
+options.controls_legend = Chuleta de controles en pantalla
+options.show = Mostrar
 settings.resolution.pc = PC
 settings.resolution.mobile = Móvil
 

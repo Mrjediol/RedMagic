@@ -39,7 +39,7 @@ namespace RedMagic.UI
         private int _rerollShown = -1;
         private Coroutine _rerollPunch;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        // LEGACY: sustituido por UI.GameHud; ya no se auto-crea.
         private static void Bootstrap()
         {
             if (Instance != null) return;

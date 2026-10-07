@@ -21,7 +21,7 @@ namespace RedMagic.Gameplay
     /// </summary>
     [RequireComponent(typeof(PlayerMovement))]
     [DisallowMultipleComponent]
-    public class PlayerAttack : MonoBehaviour, ISoundEventSource
+    public class PlayerAttack : MonoBehaviour, ISoundEventSource, ICooldownSource
     {
         /// <summary>OnAttack al iniciar el golpe. Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
@@ -85,6 +85,17 @@ namespace RedMagic.Gameplay
         /// Silenciado no consume la cola táctil: esas pulsaciones son para quien esté al mando.
         /// </summary>
         public bool Suppressed { get; set; }
+
+        // ------------------------------------------------------------------ HUD (ICooldownSource)
+
+        public CooldownSlot Slot => CooldownSlot.Attack;
+
+        /// <summary>La espada sólo ocupa la casilla de ataque cuando nadie la silencia (sin arma equipada).</summary>
+        public bool CooldownActive => !Suppressed;
+
+        public CooldownState Cooldown => new CooldownState { Remaining = Mathf.Max(0f, _cooldownTimer), Duration = cooldown };
+
+        public Sprite CooldownIcon => null;
 
         private void Awake()
         {

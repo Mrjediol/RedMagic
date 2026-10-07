@@ -40,6 +40,10 @@
                     <ui:Button name="languageNext" text="&gt;" class="option-arrow"/>
                 </ui:VisualElement>
             </ui:VisualElement>
+            <ui:VisualElement name="controlsRow" class="option-row">
+                <ui:Label text="#options.controls_legend" class="option-label option-label--wide"/>
+                <ui:Toggle name="controlsToggle" label="#options.show" class="option-mute"/>
+            </ui:VisualElement>
             <ui:Button name="backButton" text="#common.back" class="menu-button back-button"/>
         </ui:VisualElement>
     </ui:VisualElement>

@@ -87,7 +87,7 @@ public sealed class MiEfecto : ItemEffect
 | "donde impacte ese disparo" | en `Casting`: `args.OnFirstImpact(point => …)` — salta una vez con el primer impacto (enemigo → centro del cuerpo; terreno / fin de vida / punta del haz si no toca a nadie) |
 | tocar el cooldown | `WeaponUser.Current.ResetCooldown()` / `ReduceCooldown(s)`; ritmo: `PlayerStats` `PlayerStat.CooldownRate` |
 | daño extra por golpe / expuesto al ralentizar / atravesar al matar | `CombatModifiers.SetHitBonus` / `SetSlowVulnerability` / `SetPierceOnKill` (clave = context) |
-| chapa en el HUD | `BuffIndicators.Set(context, icon, text, highlight, accent)` → `UI.ItemBuffHud` la pinta. **Sólo si el jugador tiene algo que decidir** (carga que se acumula, "listo"); un efecto automático no lleva chapa |
+| chapa en el HUD | `BuffIndicators.Set(context, icon, text, highlight, accent)` → `UI.HudBuffRow` (en `UI.GameHud`) la pinta. **Sólo si el jugador tiene algo que decidir** (carga que se acumula, "listo"); un efecto automático no lleva chapa |
 | área de hielo | `IceBurst.Detonate(center, radius, damage, prefab, applySlow)` |
 
 - **Todo daño del jugador pasa por `PlayerHit.Deal`** (proyectil, haz, espada, habilidades antiguas).

@@ -23,12 +23,17 @@ namespace RedMagic.Gameplay
     /// </summary>
     [RequireComponent(typeof(Health))]
     [DisallowMultipleComponent]
-    public class LegendaryPassivePlayerHook : MonoBehaviour
+    public class LegendaryPassivePlayerHook : MonoBehaviour, IShieldSource
     {
         private Health _health;
         private SpriteRenderer _bodyRenderer;
         private SpriteRenderer _shield;
         private int _shieldHits;
+        private int _shieldMax;
+
+        // HUD: el escudo de golpes se pinta sobre la barra de vida, un segmento por golpe.
+        public float Shield => _shieldHits;
+        public float ShieldMax => _shieldHits > 0 ? Mathf.Max(_shieldMax, _shieldHits) : 0f;
 
         private void Awake()
         {
@@ -91,7 +96,11 @@ namespace RedMagic.Gameplay
             RewardPopupUi.Show(passive != null ? passive.icon : null, Loc.Get("reward.revived"),
                                passive != null ? passive.DisplayName : "", new Color(0.3f, 1f, 0.9f));
 
-            if (level >= 2) SetShield(tuning.reviveShieldHits);
+            if (level >= 2)
+            {
+                _shieldMax = tuning.reviveShieldHits;
+                SetShield(tuning.reviveShieldHits);
+            }
             return true;
         }
 

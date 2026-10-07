@@ -44,7 +44,6 @@ GameObject:
   - component: {fileID: 4405591265249646544}
   - component: {fileID: 8253735097509097905}
   - component: {fileID: 7988243875702620455}
-  - component: {fileID: 1554761320480808340}
   - component: {fileID: 5235430162202321716}
   - component: {fileID: 8182171875400212576}
   - component: {fileID: 5468658681699711123}
@@ -240,29 +239,6 @@ MonoBehaviour:
   snapToGround: 1
   groundSkin: 0.01
   solverSkin: 0.06
---- !u!114 &1554761320480808340
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4486680268914706177}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7602759935582e842946b33b9bbe424a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.UI.HealthBarUI
-  healthBarOffset: {x: 0, y: 1.32}
-  barWidth: 1
-  barHeight: 0.14
-  borderThickness: 0.02
-  borderColor: {r: 0.05, g: 0.03, b: 0.05, a: 0.9}
-  backgroundColor: {r: 0.18, g: 0.06, b: 0.08, a: 0.9}
-  fillColor: {r: 0.35, g: 0.78, b: 0.35, a: 1}
-  health: {fileID: 8253735097509097905}
-  hideWhenFull: 0
-  hideOnDeath: 1
-  sortingOrder: 100
 --- !u!114 &5235430162202321716
 MonoBehaviour:
   m_ObjectHideFlags: 0

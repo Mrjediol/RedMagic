@@ -5,7 +5,7 @@ namespace RedMagic.Items
 {
     /// <summary>
     /// Chapas del HUD de efectos de item (contador del Yelmo, "×3" del Bastón…). Un efecto pone la
-    /// suya con su propia clave y la quita cuando ya no aplica; <c>UI.ItemBuffHud</c> las pinta todas.
+    /// suya con su propia clave y la quita cuando ya no aplica; <c>UI.HudBuffRow</c> (en <c>UI.GameHud</c>) las pinta todas.
     /// Así un efecto nuevo que necesita indicador sólo llama a <see cref="Set"/>, sin tocar la UI.
     /// </summary>
     public static class BuffIndicators

@@ -40,7 +40,18 @@
   Escena de parry** (`Test/Editor/ParryTestSceneBuilder`, additive — never closes your open
   scenes): managers moved from Ice2, Player prefab instance, closed arena + high ledge, five
   `ProjectileTestEmitter`s (sides, high diagonals, top; `Health` + `TrainingDummy`), a `TestGolem`
-  set Static + Melee with `TrainingDummy`, and `TestAutoHeal`.
+  set Static + Melee with `TrainingDummy`, and `TestAutoHeal`. **The user then hand-edited it into
+  the parry mini game** (climb to the top platform by mid-air parries on diagonal emitters), so the
+  generator now asks before overwriting it. `Test/ParryMinigame` on it: three floor pads set
+  `PlayerParry.Window` (Easy 0.15 / Medium 0.10 / Hard 0.05 s) and reset the score; an attempt
+  starts with the first mid-air parry and is lost on landing back on the floor; standing above
+  `goalHeight` → congratulations panel (difficulty, attempts, % parry windows landed, counted via
+  `PlayerParry.WindowOpened`/`WindowClosed`), `SystemSounds.runComplete`, back to spawn after
+  `returnDelay`. Player can't die there (`Health.DeathGuard`). UI Toolkit built in code on
+  `CurrencyHudPanelSettings`; keys `parrygame.*`. **Tools ▸ RedMagic ▸ Test ▸ Build minijuego de
+  parry (Windows)** (`ParryMinigameBuild`) builds only that scene to `Builds/ParryMinigame/` + zip
+  `Builds/RedMagicParry.zip` without touching Build Settings (`/Builds/` is git-ignored). From the
+  CLI run it with `unity command eval --detach` (a build blows the 5 s main-thread limit).
 - **`Health`** — the only place damage is applied. Exposes instance `Damaged`/`HealthChanged`/`Died`
   events plus a **static `AnyDamaged(Health, float)`** — the global feed `DamagePopups` subscribes to
   once instead of hooking every character. `TakeDamage(amount)` **returns false when the

@@ -54,6 +54,12 @@
                         <ui:Label name="hurtValue" text="60%" class="option-value"/>
                         <ui:Toggle name="hurtToggle" label="#options.enabled" class="option-mute"/>
                     </ui:VisualElement>
+                    <ui:VisualElement name="healRow" class="option-row">
+                        <ui:Label text="#options.hud.heal" class="option-label option-label--hud"/>
+                        <ui:Slider name="healSlider" low-value="0" high-value="1" class="option-slider"/>
+                        <ui:Label name="healValue" text="50%" class="option-value"/>
+                        <ui:Toggle name="healToggle" label="#options.enabled" class="option-mute"/>
+                    </ui:VisualElement>
                     <ui:VisualElement name="lowHealthRow" class="option-row">
                         <ui:Label text="#options.hud.low_health" class="option-label option-label--hud"/>
                         <ui:Slider name="lowHealthSlider" low-value="0" high-value="1" class="option-slider"/>

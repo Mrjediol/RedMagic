@@ -28,6 +28,9 @@ namespace RedMagic.Fx
         /// <summary>Efecto de un solo uso sobre quien recupera vida (lo expone <c>SynergyTuning</c>); null = sólo motas.</summary>
         public static GameObject HealVfx;
 
+        /// <summary>Segundos que <see cref="HealVfx"/> sigue al jugador: más que lo que dura el efecto (~1,9 s).</summary>
+        private const float HealVfxFollowSeconds = 3f;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void ResetStatics()
         {
@@ -68,7 +71,9 @@ namespace RedMagic.Fx
         public static void Heal(Transform target, int count = 5, GameObject sortingReference = null)
         {
             if (target == null) return;
-            if (HealVfx != null) VfxOneShot.Spawn(HealVfx, BodyCenter(target));
+            // Pegado al jugador mientras dura (no en el punto donde se curó, que se quedaba atrás al correr).
+            if (HealVfx != null)
+                VfxOneShot.SpawnFollowing(HealVfx, target, BodyCenter(target) - (Vector2)target.position, 1, HealVfxFollowSeconds);
             for (int i = 0; i < count; i++)
             {
                 var mote = Get(sortingReference);

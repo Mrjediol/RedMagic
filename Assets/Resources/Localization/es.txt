@@ -36,6 +36,7 @@ options.disabled = Desactivado
 options.tab.general = General
 options.tab.interface = Interfaz
 options.hud.hurt = Bordes rojos al recibir daño
+options.hud.heal = Bordes verdes al curarte
 options.hud.low_health = Aviso de vida baja
 options.hud.place = Colocar elementos
 options.hud.reset_layout = Posiciones por defecto

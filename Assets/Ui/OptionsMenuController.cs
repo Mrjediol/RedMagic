@@ -36,9 +36,9 @@ namespace RedMagic.UI
         // Pestaña Interfaz
         private Button _generalTab, _interfaceTab;
         private VisualElement _generalPage, _interfacePage;
-        private Slider _hurtSlider, _lowHealthSlider;
-        private Label _hurtValue, _lowHealthValue;
-        private Toggle _hurtToggle, _lowHealthToggle;
+        private Slider _hurtSlider, _healSlider, _lowHealthSlider;
+        private Label _hurtValue, _healValue, _lowHealthValue;
+        private Toggle _hurtToggle, _healToggle, _lowHealthToggle;
         private Button _layoutButton, _layoutResetButton;
         private Button _enemyModePrev, _enemyModeNext;
         private Label _enemyModeValue;
@@ -92,6 +92,9 @@ namespace RedMagic.UI
             _hurtSlider = _root.Q<Slider>("hurtSlider");
             _hurtValue = _root.Q<Label>("hurtValue");
             _hurtToggle = _root.Q<Toggle>("hurtToggle");
+            _healSlider = _root.Q<Slider>("healSlider");
+            _healValue = _root.Q<Label>("healValue");
+            _healToggle = _root.Q<Toggle>("healToggle");
             _lowHealthSlider = _root.Q<Slider>("lowHealthSlider");
             _lowHealthValue = _root.Q<Label>("lowHealthValue");
             _lowHealthToggle = _root.Q<Toggle>("lowHealthToggle");
@@ -150,6 +153,7 @@ namespace RedMagic.UI
             MenuSkinDresser.DressToggle(_sfxMute, skin);
             MenuSkinDresser.DressToggle(_controlsToggle, skin);
             MenuSkinDresser.DressToggle(_hurtToggle, skin);
+            MenuSkinDresser.DressToggle(_healToggle, skin);
             MenuSkinDresser.DressToggle(_lowHealthToggle, skin);
             MenuSkinDresser.DressToggle(_enemyNumbersToggle, skin);
             MenuSkinDresser.DressToggle(_enemyCooldownsToggle, skin);
@@ -201,6 +205,8 @@ namespace RedMagic.UI
 
             _hurtSlider?.RegisterValueChangedCallback(OnHurtSlider);
             _hurtToggle?.RegisterValueChangedCallback(OnHurtToggle);
+            _healSlider?.RegisterValueChangedCallback(OnHealSlider);
+            _healToggle?.RegisterValueChangedCallback(OnHealToggle);
             _lowHealthSlider?.RegisterValueChangedCallback(OnLowHealthSlider);
             _lowHealthToggle?.RegisterValueChangedCallback(OnLowHealthToggle);
             _controlsToggle?.RegisterValueChangedCallback(OnControlsToggled);
@@ -223,6 +229,8 @@ namespace RedMagic.UI
 
             _hurtSlider?.UnregisterValueChangedCallback(OnHurtSlider);
             _hurtToggle?.UnregisterValueChangedCallback(OnHurtToggle);
+            _healSlider?.UnregisterValueChangedCallback(OnHealSlider);
+            _healToggle?.UnregisterValueChangedCallback(OnHealToggle);
             _lowHealthSlider?.UnregisterValueChangedCallback(OnLowHealthSlider);
             _lowHealthToggle?.UnregisterValueChangedCallback(OnLowHealthToggle);
             _controlsToggle?.UnregisterValueChangedCallback(OnControlsToggled);
@@ -267,6 +275,8 @@ namespace RedMagic.UI
         {
             _hurtSlider?.SetValueWithoutNotify(HudSettings.HurtIntensity);
             _hurtToggle?.SetValueWithoutNotify(HudSettings.HurtEffect);
+            _healSlider?.SetValueWithoutNotify(HudSettings.HealIntensity);
+            _healToggle?.SetValueWithoutNotify(HudSettings.HealEffect);
             _lowHealthSlider?.SetValueWithoutNotify(HudSettings.LowHealthIntensity);
             _lowHealthToggle?.SetValueWithoutNotify(HudSettings.LowHealthEffect);
             _controlsToggle?.SetValueWithoutNotify(HudSettings.ShowControls);
@@ -276,6 +286,7 @@ namespace RedMagic.UI
             _enemyNumbersToggle?.SetEnabled(HudSettings.EnemyHealth != EnemyHealthMode.Off);
             _enemyCooldownsToggle?.SetEnabled(HudSettings.EnemyHealth != EnemyHealthMode.Off);
             RefreshEffectRow(_hurtSlider, _hurtValue, HudSettings.HurtEffect, HudSettings.HurtIntensity);
+            RefreshEffectRow(_healSlider, _healValue, HudSettings.HealEffect, HudSettings.HealIntensity);
             RefreshEffectRow(_lowHealthSlider, _lowHealthValue, HudSettings.LowHealthEffect, HudSettings.LowHealthIntensity);
         }
 
@@ -296,6 +307,18 @@ namespace RedMagic.UI
         {
             HudSettings.HurtEffect = evt.newValue;
             RefreshEffectRow(_hurtSlider, _hurtValue, evt.newValue, HudSettings.HurtIntensity);
+        }
+
+        private void OnHealSlider(ChangeEvent<float> evt)
+        {
+            HudSettings.HealIntensity = evt.newValue;
+            RefreshEffectRow(_healSlider, _healValue, HudSettings.HealEffect, evt.newValue);
+        }
+
+        private void OnHealToggle(ChangeEvent<bool> evt)
+        {
+            HudSettings.HealEffect = evt.newValue;
+            RefreshEffectRow(_healSlider, _healValue, evt.newValue, HudSettings.HealIntensity);
         }
 
         private void OnLowHealthSlider(ChangeEvent<float> evt)

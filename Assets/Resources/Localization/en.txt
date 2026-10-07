@@ -36,6 +36,7 @@ options.disabled = Off
 options.tab.general = General
 options.tab.interface = Interface
 options.hud.hurt = Red edges when hit
+options.hud.heal = Green edges when healed
 options.hud.low_health = Low health warning
 options.hud.place = Place elements
 options.hud.reset_layout = Default positions

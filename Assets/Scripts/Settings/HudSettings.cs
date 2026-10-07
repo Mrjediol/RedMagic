@@ -85,6 +85,20 @@ namespace RedMagic.Settings
             set => SetFloat("hurtIntensity", value);
         }
 
+        /// <summary>Bordes de la pantalla en verde al curarse.</summary>
+        public static bool HealEffect
+        {
+            get => GetBool("healEffect", true);
+            set => SetBool("healEffect", value);
+        }
+
+        /// <summary>0..1, cuánto se tiñen los bordes al curarse.</summary>
+        public static float HealIntensity
+        {
+            get => GetFloat("healIntensity", 0.5f);
+            set => SetFloat("healIntensity", value);
+        }
+
         /// <summary>Latido rojo sutil en los bordes con poca vida.</summary>
         public static bool LowHealthEffect
         {

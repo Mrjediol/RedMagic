@@ -50,9 +50,10 @@ spot in brackets):
   count-down, reroll counter only while `ShopManager.Current`) with `HudBuffRow` (`BuffIndicators`) under it.
 - **Controls** (bottom-left): `HudControlsLegend`, keyboard/mouse only, `HudSettings.ShowControls`.
 
-Behind them, **`HudScreenFx`**: a code-generated red vignette (centre always clear) — a flash on
-`Health.Damaged` scaled by hit size, and a soft double-pulse "heartbeat" under the low-health
-threshold, both faded in/out, each with on/off + intensity in `HudSettings`.
+Behind them, **`HudScreenFx`**: code-generated vignettes (centre always clear) — a red flash on
+`Health.Damaged` scaled by hit size, a green glow on `Health.Healed` (only real `Heal()`, not revive/reset),
+and a soft red double-pulse "heartbeat" under the low-health threshold, all faded in/out, each with on/off +
+intensity in `HudSettings`.
 
 **Enemy health** (`HudEnemyBars`, mode in `HudSettings.EnemyHealth`: Off / Overhead / Focus / List,
 default List): `HudEnemies` builds the "in combat" set each frame from `Health.Active` (a static set

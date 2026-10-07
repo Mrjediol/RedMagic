@@ -120,6 +120,9 @@ namespace RedMagic.Combat
         /// <summary>Cantidad de daño efectivamente recibido.</summary>
         public event Action<float> Damaged;
 
+        /// <summary>Vida recuperada de verdad con <see cref="Heal"/> (no al revivir ni al resetear). Lo usa el borde verde del HUD.</summary>
+        public event Action<float> Healed;
+
         /// <summary>
         /// Versión global de <see cref="Damaged"/>: <c>(quién lo recibe, cuánto)</c> para
         /// <b>cualquier</b> <see cref="Health"/>. Un oyente único (números de daño flotantes, feed
@@ -382,7 +385,9 @@ namespace RedMagic.Combat
             float before = currentHealth;
             currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
             HealthChanged?.Invoke(currentHealth, maxHealth);
-            if (currentHealth > before) SoundTriggered?.Invoke(SoundTrigger.OnHeal);
+            if (currentHealth <= before) return;
+            SoundTriggered?.Invoke(SoundTrigger.OnHeal);
+            Healed?.Invoke(currentHealth - before);
         }
 
         /// <summary>Mata al personaje inmediatamente. Es idempotente.</summary>

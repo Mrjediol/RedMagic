@@ -6,15 +6,17 @@ using UnityEngine.UIElements;
 namespace RedMagic.UI
 {
     /// <summary>
-    /// "Efectos de interfaz" a pantalla completa, detrás de las piezas del HUD: una viñeta roja en
-    /// los bordes (el centro, donde se juega, queda siempre limpio).
+    /// "Efectos de interfaz" a pantalla completa, detrás de las piezas del HUD: una viñeta en los
+    /// bordes (el centro, donde se juega, queda siempre limpio).
     /// <list type="bullet">
     /// <item><b>Golpe</b>: destello en los bordes al encajar daño, más fuerte cuanto mayor el golpe,
     /// que se apaga en ~0,7 s.</item>
+    /// <item><b>Curación</b> (verde): un resplandor suave al recuperar vida (<see cref="Health.Healed"/>),
+    /// más intenso cuanto más se cura, que se apaga en ~0,9 s.</item>
     /// <item><b>Poca vida</b> (bajo <see cref="Health.LowHealthThreshold"/>): latido doble muy suave,
     /// como un pulso, que entra y sale con fundido.</item>
     /// </list>
-    /// Los dos se activan y se dosifican en Opciones ▸ Interfaz (<see cref="HudSettings"/>). La viñeta
+    /// Los tres se activan y se dosifican en Opciones ▸ Interfaz (<see cref="HudSettings"/>). La viñeta
     /// es una textura generada en código (no hay arte que importar).
     /// </summary>
     public class HudScreenFx : VisualElement
@@ -23,12 +25,15 @@ namespace RedMagic.UI
         private const float HurtMaxAlpha = 0.85f;
         private const float LowMaxAlpha = 0.42f;
         private const float HurtFadeTime = 0.7f;
+        private const float HealMaxAlpha = 0.6f;
+        private const float HealFadeTime = 0.9f;
 
-        private static Texture2D _vignette;
+        private static Texture2D _red, _green;
 
-        private readonly VisualElement _hurt, _low;
+        private readonly VisualElement _hurt, _low, _heal;
         private Health _health;
         private float _hurtLevel;
+        private float _healLevel;
         private float _lowLevel;
         private float _beatTime;
 
@@ -38,15 +43,16 @@ namespace RedMagic.UI
             pickingMode = PickingMode.Ignore;
             HudStyle.Fill(this);
 
-            _low = Layer("low-health");
-            _hurt = Layer("hurt");
+            _low = Layer("low-health", Red);
+            _heal = Layer("heal", Green);
+            _hurt = Layer("hurt", Red);
         }
 
-        private VisualElement Layer(string layerName)
+        private VisualElement Layer(string layerName, Texture2D texture)
         {
             var layer = new VisualElement { name = layerName, pickingMode = PickingMode.Ignore };
             HudStyle.Fill(layer);
-            layer.style.backgroundImage = new StyleBackground(Vignette);
+            layer.style.backgroundImage = new StyleBackground(texture);
             layer.style.unityBackgroundImageTintColor = new Color(1f, 1f, 1f, 0f);
             layer.style.display = DisplayStyle.None;
             Add(layer);
@@ -55,7 +61,11 @@ namespace RedMagic.UI
 
         public void Unbind()
         {
-            if (_health != null) _health.Damaged -= OnDamaged;
+            if (_health != null)
+            {
+                _health.Damaged -= OnDamaged;
+                _health.Healed -= OnHealed;
+            }
             _health = null;
         }
 
@@ -66,14 +76,23 @@ namespace RedMagic.UI
             {
                 Unbind();
                 _health = health;
-                if (health != null) health.Damaged += OnDamaged;
+                if (health != null)
+                {
+                    health.Damaged += OnDamaged;
+                    health.Healed += OnHealed;
+                }
                 _hurtLevel = 0f;
+                _healLevel = 0f;
             }
 
             // --- golpe
             if (_hurtLevel > 0f) _hurtLevel = Mathf.Max(0f, _hurtLevel - dt / HurtFadeTime);
             float hurtAlpha = HudSettings.HurtEffect ? _hurtLevel * _hurtLevel * HurtMaxAlpha * HudSettings.HurtIntensity : 0f;
             Apply(_hurt, hurtAlpha);
+
+            // --- curación: se apaga en línea recta, más suave que el golpe.
+            if (_healLevel > 0f) _healLevel = Mathf.Max(0f, _healLevel - dt / HealFadeTime);
+            Apply(_heal, HudSettings.HealEffect ? _healLevel * HealMaxAlpha * HudSettings.HealIntensity : 0f);
 
             // --- poca vida: entra y sale con fundido, nunca de golpe.
             bool low = health != null && !health.IsDead && health.Normalized <= health.LowHealthThreshold;
@@ -95,6 +114,16 @@ namespace RedMagic.UI
             // Un golpe del 10 % de la vida ya se nota entero; los pequeños, a medias.
             float strength = Mathf.Lerp(0.55f, 1f, Mathf.Clamp01(amount / _health.MaxHealth / 0.1f));
             _hurtLevel = Mathf.Max(_hurtLevel, strength);
+        }
+
+        private void OnHealed(float amount)
+        {
+            if (_health == null || _health.MaxHealth <= 0f) return;
+
+            // Igual que el golpe: curar un 10 % ya se ve entero. Varias curas seguidas (las motas de
+            // una baja) no se suman: se queda la mayor.
+            float strength = Mathf.Lerp(0.5f, 1f, Mathf.Clamp01(amount / _health.MaxHealth / 0.1f));
+            _healLevel = Mathf.Max(_healLevel, strength);
         }
 
         private static void Apply(VisualElement layer, float alpha)
@@ -122,41 +151,40 @@ namespace RedMagic.UI
 
         // ---------------------------------------------------------------- textura
 
-        /// <summary>Viñeta roja: transparente en el centro, opaca en los bordes (elíptica, se estira a la pantalla).</summary>
-        private static Texture2D Vignette
+        private static Texture2D Red => _red != null ? _red
+            : _red = MakeVignette("HudVignetteRed", new Color(0.95f, 0.08f, 0.06f), new Color(0.55f, 0.02f, 0.03f));
+
+        private static Texture2D Green => _green != null ? _green
+            : _green = MakeVignette("HudVignetteGreen", new Color(0.45f, 1f, 0.5f), new Color(0.08f, 0.55f, 0.2f));
+
+        /// <summary>Viñeta: transparente en el centro, opaca en los bordes (elíptica, se estira a la pantalla).</summary>
+        private static Texture2D MakeVignette(string textureName, Color bright, Color deep)
         {
-            get
+            const int size = 128;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
             {
-                if (_vignette != null) return _vignette;
+                name = textureName,
+                wrapMode = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear,
+                hideFlags = HideFlags.HideAndDontSave,
+            };
 
-                const int size = 128;
-                _vignette = new Texture2D(size, size, TextureFormat.RGBA32, false)
-                {
-                    name = "HudVignette",
-                    wrapMode = TextureWrapMode.Clamp,
-                    filterMode = FilterMode.Bilinear,
-                    hideFlags = HideFlags.HideAndDontSave,
-                };
-
-                var pixels = new Color32[size * size];
-                var deep = new Color(0.55f, 0.02f, 0.03f);
-                var bright = new Color(0.95f, 0.08f, 0.06f);
-                for (int y = 0; y < size; y++)
-                for (int x = 0; x < size; x++)
-                {
-                    float u = (x + 0.5f) / size * 2f - 1f;
-                    float v = (y + 0.5f) / size * 2f - 1f;
-                    // Mezcla de elipse y "cuadrado redondeado": cubre también las esquinas sin comerse el centro.
-                    float d = Mathf.Lerp(Mathf.Sqrt(u * u + v * v) / 1.41f, Mathf.Max(Mathf.Abs(u), Mathf.Abs(v)), 0.55f);
-                    float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.58f, 1f, d));
-                    var c = Color.Lerp(bright, deep, a);
-                    pixels[y * size + x] = new Color(c.r, c.g, c.b, a * a * 0.9f + a * 0.1f);
-                }
-
-                _vignette.SetPixels32(pixels);
-                _vignette.Apply(false, true);
-                return _vignette;
+            var pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float u = (x + 0.5f) / size * 2f - 1f;
+                float v = (y + 0.5f) / size * 2f - 1f;
+                // Mezcla de elipse y "cuadrado redondeado": cubre también las esquinas sin comerse el centro.
+                float d = Mathf.Lerp(Mathf.Sqrt(u * u + v * v) / 1.41f, Mathf.Max(Mathf.Abs(u), Mathf.Abs(v)), 0.55f);
+                float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.58f, 1f, d));
+                var c = Color.Lerp(bright, deep, a);
+                pixels[y * size + x] = new Color(c.r, c.g, c.b, a * a * 0.9f + a * 0.1f);
             }
+
+            texture.SetPixels32(pixels);
+            texture.Apply(false, true);
+            return texture;
         }
     }
 }

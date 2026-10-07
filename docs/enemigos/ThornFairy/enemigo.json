@@ -1,0 +1,32 @@
+{
+  "name": "ThornFairy",
+  "estado": "cuerpo-por-aprobar",
+  "diseno": {
+    "image": "docs/enemigos/ThornFairy/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-hada__3.png",
+    "zone": "forest",
+    "lote": "2026-10-07-hada",
+    "item": "3",
+    "request": "hada",
+    "note": "Hada espinosa: vestido de hojas, corona de espinas, porte altivo"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T14:31:42.696Z",
+  "instrucciones": [
+    {
+      "paso": "cuerpo",
+      "texto": "cuando le separes las partes, quiero una cabeza con la cara enfada y el cystal de la corona rojo, que se use en los ataques, y una mano que acabe con la palma de la mano hacia delante , para que salgan sus projectiles desde ahi",
+      "fecha": "2026-10-07T14:34:42.328Z"
+    }
+  ],
+  "tarea": "8xyu1jh",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+  "cuerpo": {
+    "fecha": "2026-10-07T14:39:56.768Z",
+    "plantilla": "floatingCaster",
+    "partes": "claude/ThornFairy/final",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/ThornFairy.json",
+    "resumen": "6 partes: Lower (falda+piernas), Accesorio (alas unidas), Torso, Head (cara enfadada, cristal rojo), OffArm, CastArm (rehecho horizontal, palma hacia delante). Dudoso: pivote/boca del CastArm por ajustar en Enemy Studio; el brazo sobresale hacia atrás del hombro."
+  },
+  "imagen": "docs/enemigos/ThornFairy/preview.png"
+}

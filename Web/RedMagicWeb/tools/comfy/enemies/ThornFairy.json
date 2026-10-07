@@ -1,0 +1,11 @@
+{
+  "name": "ThornFairy",
+  "request": "hada (cuerpo solo, paso 1)",
+  "template": "floatingCaster",
+  "parts": "claude/ThornFairy/final",
+  "height": 3.2,
+  "front": ["castArm"],
+  "slots": { "castArm": { "pivot": [0.36, 0.65], "muzzle": [0.93, 0.25] } },
+  "tuning": { "maxHealth": 30, "moveSoundInterval": 0.9, "builtInAttack": false },
+  "rig": { "muzzleFlashSize": 0 }
+}

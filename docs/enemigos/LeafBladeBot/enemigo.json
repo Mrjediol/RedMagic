@@ -1,0 +1,25 @@
+{
+  "name": "LeafBladeBot",
+  "estado": "cuerpo-por-aprobar",
+  "diseno": {
+    "image": "docs/enemigos/LeafBladeBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robot__p3.png",
+    "zone": "forest",
+    "lote": "2026-10-07-robot",
+    "item": "p3",
+    "request": "robot",
+    "note": "Robot afilado en forma de hoja con cañón doble fino"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T03:45:25.394Z",
+  "tarea": "2fyvohh",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab",
+  "cuerpo": {
+    "fecha": "2026-10-07T03:54:52.565Z",
+    "plantilla": "floatingCaster",
+    "partes": "Web/RedMagicWeb/tools/comfy → output/claude/LeafBladeBot/final (Torso, Head, CastArm, Lower)",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/LeafBladeBot.json",
+    "resumen": "4 piezas, una semilla cada una, limpias a la primera: Torso (hoja con gema), Head (casco frontal con ojo y cristal), CastArm (cañón doble con soporte de madera) y Lower (anillo propulsor con llama). Dudoso: la hoja es muy alargada (cuerpo ~18.8x7.6 u a escala 1.8 de alto), quizá ajustar altura; pivote/boca del cañón estimados; el anillo y la llama van juntos en Lower."
+  },
+  "imagen": "docs/enemigos/LeafBladeBot/preview.png"
+}

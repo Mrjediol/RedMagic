@@ -1,0 +1,12 @@
+{
+  "name": "LeafBladeBot",
+  "request": "robot. Robot afilado en forma de hoja con cañón doble fino (solo cuerpo, sin ataques).",
+  "template": "floatingCaster",
+  "parts": "claude/LeafBladeBot/final",
+  "height": 1.8,
+  "slots": {
+    "castArm": { "pivot": [0.2, 0.5], "muzzle": [1.0, 0.38] }
+  },
+  "tuning": { "archetype": "FlyingRanged", "moveSoundInterval": 0.9, "builtInAttack": false },
+  "rig": { "muzzleFlashSize": 0 }
+}

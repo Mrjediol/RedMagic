@@ -25,6 +25,7 @@
 // fields are kept as they came.
 
 import { pressGuard } from './press-guard.js';
+import { announceFinished, cycleNotifyMode, notifyMode, NOTIFY_LABEL } from './task-notify.js';
 
 export const DATA_VERSION = 1;
 export const FILE_NAME = 'todo.json';
@@ -181,13 +182,13 @@ async function kvSet(key, value) {
 
 /**
  * @param {{ root: HTMLElement, rail: HTMLElement, detail: HTMLElement, extraTalleres: HTMLElement, statusEl: HTMLElement,
- *   toolbar: HTMLElement, quick: HTMLElement, toast?: (text: string) => void }} ctx
+ *   toolbar: HTMLElement, quick: HTMLElement, toast?: (text: string) => void, reveal?: () => void }} ctx
  *   root = the apuntes list; rail / detail = left index and right drawer; extraTalleres = where the "por definir"
  *   talleres go. Everything inside a `[data-designs]` element belongs to designs-panel.js and is left alone.
  *   mobile = movil.html (no file mode, no reset, no 📱 pairing button).
  * @returns {{ onShow(): void, flush(): Promise<void>, setBadges(b: Record<string, number>): void }}
  */
-export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, toolbar, quick, toast = () => {}, mobile = false }) {
+export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, toolbar, quick, toast = () => {}, reveal = () => {}, mobile = false }) {
   const tab = root.closest('.tabPanel') || root.parentElement;
   const press = pressGuard(() => [tab, toolbar, rail, detail, quick]);   // no redraw under a held button: it would eat the click
   let phases = clone(DEFAULT_PHASES);
@@ -335,6 +336,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     if (!server) return;
     try {
       live = await api('GET', 'status');
+      announceFinished(live.finished, { toast, open: (id) => { reveal(); if (find(id)) select(id); } });
       if (live.rev !== rev && !dirty && !saving && !editing) await pull();
       else { renderToolbar(); renderLive(); }   // only the live parts: nothing under the cursor is redrawn
       setStatus(`Guardado · docs/tareas/todo.json (servidor del taller)`);
@@ -489,6 +491,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       left = `<button data-act="link" class="${hasFileApi() ? 'primary' : ''}" ${hasFileApi() ? '' : 'disabled'} title="Elige docs/tareas/todo.json del repo">🔗 Enlazar docs/tareas/todo.json…</button>`;
     }
     toolbar.innerHTML = `${left}
+      ${server ? `<button data-act="notify" class="${notifyMode() === 'off' ? '' : 'active'}" title="Aviso del sistema (y sonido, si lo eliges) cuando termina una tarea de la cola. Clic: no → sí → con sonido">${NOTIFY_LABEL[notifyMode()]}</button>` : ''}
       <button data-act="hide-done" class="${hideDone ? 'active' : ''}">Ocultar hechas</button>
       <span class="tabSpacer"></span>
       ${server && !mobile ? '<button data-act="phone" title="Usar este tab desde el móvil: enlace y QR para emparejarlo">📱 Móvil</button>' : ''}
@@ -1218,6 +1221,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       renderToolbar();
     },
     unlink: async () => { handle = null; needsPermission = false; await kvSet('handle', undefined); setStatus('Guardado · solo este navegador'); renderToolbar(); },
+    notify: async () => { toast(await cycleNotifyMode()); renderToolbar(); },
     'hide-done': () => { hideDone = !hideDone; render(); },
     'open-app': (app) => serverAction('open', { app }, app === 'unity' ? 'Abriendo Unity…' : 'Abriendo ComfyUI…'),
     reset: () => {

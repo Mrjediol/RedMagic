@@ -115,6 +115,8 @@ in; a focusout towards a button never re-renders (it used to swallow the click).
   montaje completo, cuerpo, resto, pendientes, each taller, apunte), estado, order by date / total tokens / output tokens /
   time. Click = open it at the top. The talleres' own task lists are folded ("Tareas de este taller").
 
+**🔔 Avisos** (toolbar, server mode; `modules/task-notify.js`): click cycles no → system notification → notification + chime (WebAudio, rising = ok, falling = failed); per browser (`localStorage`). The runner keeps the last 20 ended runs in `status().finished` (`runId`, task, ok / cancelled / stuck); each poll announces the runIds not seen yet (the first list is only remembered), clicking the notification opens the task. Android Chrome has no `new Notification` outside a service worker: there only the toast (use ntfy for the phone).
+
 Served by the server → **server mode**: list through the API, polled (2 s while something runs, else 5 s),
 re-rendered only when you are not typing in the tab. Served by anything else → **file mode**: the same list, the
 repo file linked once with the File System Access API (no launching).

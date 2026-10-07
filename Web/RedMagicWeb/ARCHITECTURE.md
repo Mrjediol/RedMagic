@@ -7,7 +7,7 @@ rules — see the bottom of this doc for a one-line server command).
 This file is the primary reference for "I want to change X" requests. **Keep it accurate**: when a
 module's responsibility shifts, update its row in the same change.
 
-**Shell conveniences** (Ctrl+S, Ctrl+K finder, Space = Probar, unsaved-changes dot, toast): `modules/shell-tools.js` — it knows no tab; `app.js` hands it one function per tab (`saveActions`, `playActions`, `paletteItems`, `dirtyTabs`). Library backup: `enemy-library.js ▸ exportAllRecords / restoreRecords`, `map-library.js ▸ exportAllMapRecords / restoreMapRecords`.
+**Shell conveniences** (Ctrl+S, Ctrl+K finder, Space = Probar, unsaved-changes dot + "● Sin guardar" chip listing what was touched per tab — field label, section, when; also opened when you answer "stay" to the browser's leave box —, toast): `modules/shell-tools.js` — it knows no tab; `app.js` hands it one function per tab (`saveActions`, `playActions`, `paletteItems`, `dirtyTabs`). Library backup: `enemy-library.js ▸ exportAllRecords / restoreRecords`, `map-library.js ▸ exportAllMapRecords / restoreMapRecords`.
 
 **Look and layout rules** (tokens, type, tab groups, what a panel may and may not do): `DESIGN.md`.
 

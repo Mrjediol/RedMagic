@@ -2187,6 +2187,7 @@ const todoPanel = initTodoPanel({
   toolbar: document.getElementById('todoToolbar'),
   quick: document.getElementById('todoQuick'),
   toast: (text) => shell?.toast(text),
+  reveal: () => openTabById('todo'),
 });
 
 const designsPanel = initDesignsPanel({

@@ -6,7 +6,7 @@
 //   GET  /api/hello                 → { token, project }   (readable only by this origin: no CORS headers)
 //   GET  /api/todo                  → { rev, doc }          docs/tareas/todo.json
 //   PUT  /api/todo   { phases, knownTaskIds, knownPhaseIds }  → { rev, doc }   (merged, see store.mjs)
-//   GET  /api/status                → { rev, running, waiting, queue, apps }
+//   GET  /api/status                → { rev, running, waiting, queue, usage, finished, apps }
 //   POST /api/run    { taskId, stepId?, followUp?, force? }   → queue a run (runner.mjs); followUp = an instruction (resumes its session)
 //   POST /api/cancel { taskId }     POST /api/unqueue { qid }   POST /api/force { taskId }   POST /api/open { app: 'comfy'|'unity' }
 //   GET  /api/disenos               → { lotes, enemigos, tasks }   docs/disenos/ (disenos.mjs) + docs/enemigos/ (enemigos.mjs)

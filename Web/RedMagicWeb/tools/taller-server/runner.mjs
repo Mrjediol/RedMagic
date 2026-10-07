@@ -41,6 +41,7 @@ export class Runner {
     this.opts = opts;
     this.current = null;          // { taskId, stepId, runId, child, startedAt, activity: [] }
     this.waiting = null;          // { taskId, reason } — the head of the queue cannot start yet
+    this.finished = [];           // the last runs that ended, newest first: the web's 🔔 Avisos (status().finished)
     this.children = new Set();    // PIDs of the sessions we started (not "interactive")
     this.force = new Set();       // task ids allowed to start with a terminal session open
     this._timer = null;
@@ -260,6 +261,8 @@ export class Runner {
       sessionId: result.sessionId,
       result,
     });
+    this.finished = [{ runId, taskId: task.id, title: (fresh || task).text, step: step?.text, reply: !!item.followUp,
+      ok: !!ok, cancelled: !!cancelled, stuck: !!stuck, at: result.at }, ...this.finished].slice(0, 20);
     try { this.opts.onFinish?.(fresh || task, result); } catch (e) { console.error('[onFinish]', e); }
   }
 
@@ -445,6 +448,7 @@ export class Runner {
       running: cur ? { taskId: cur.taskId, stepId: cur.stepId, title: cur.title, step: cur.step, followUp: cur.followUp, startedAt: cur.startedAt, runId: cur.runId, activity: cur.activity.slice(-30) } : null,
       waiting: this.waiting,
       usage: this.usage,
+      finished: this.finished,
       queue: this.store.doc.queue.map((q) => ({ qid: q.qid, taskId: q.taskId, stepId: q.stepId, followUp: q.followUp ? String(q.followUp).slice(0, 400) : null })),
     };
   }

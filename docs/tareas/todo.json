@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-07T16:50:21.333Z",
+  "updated": "2026-10-07T16:56:32.731Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -611,8 +611,6 @@
           "effort": "medium",
           "enemy": "FrostBoxBot",
           "status": "done",
-          "lastRunId": "2026-10-07T03-18-46-098Z_xp0mziu",
-          "sessionId": "a984b36b-3c58-406c-934d-31bae69346cc",
           "result": {
             "ok": true,
             "text": "Cuerpo de FrostBoxBot montado y importado como prefab. Estado: `cuerpo-por-aprobar`. No probé nada en Play Mode.\n\n**Hecho**\n- Base: `diseno.jpg` copiada a Comfy como `FrostBoxBot_base.jpg`. Mira a la derecha, así que no hubo que espejar.\n- Plantilla `floatingCaster`, cuatro piezas con una semilla por pieza:\n  - **Torso:** el cubo con la placa trasera.\n  - **Head:** el casco con visor.\n  - **CastArm:** el cañón con anillo, tubo, cristales y boca de cono.\n  - **Lower:** el propulsor cónico con la llama.\n- Head falló a la primera: conservó el cañón. Repetí con un prompt que nombra qué borrar y salió limpia.\n- `finish-parts` dio ✓ en las cuatro: una isla por pieza y sin borde blanco.\n- Brief sin ataques, efectos ni gestos propios, `ResetTuning = true`. `recompile_status` está en idle. No consulté los errores de la consola de Unity.\n- Hoja actualizada con el estado, el prefab y el bloque `cuerpo`. Marqué la vista previa con `EnemyPreviewExporter.Mark`.\n- Commit `feat: FrostBoxBot — cuerpo (paso 1)`. Antes hice el snapshot `wip: pre-task snapshot`.\n\n**Decisiones**\n- Accessory y OffArm quedan vacíos. La placa trasera va dentro del Torso para no crear una isla sin hueco en la plantilla.\n- Pivote del cañón `[0.1, 0.58]`, boca `[0.97, 0.58]`, calculados sobre el arte.\n\n**Dudoso, para ajustar en Enemy Studio**\n- El cañón está delante del torso en el arte, pero la plantilla lo pone detrás. Hay que subirlo de capa.\n- El casco queda detrás del borde superior del torso. Si se ve raro, hay que revisar su capa.\n- El pivote del cañón puede necesitar retoque.\n\n**Dónde está**\n- Prefab: `Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab`\n- Sprites: `Assets/Art/RigImports/FrostBoxBot/`\n- Brief: `Web/RedMagicWeb/tools/comfy/enemies/FrostBoxBot.json`\n- Imagen ensamblada: `docs/enemigos/FrostBoxBot/cuerpo.png`\n- Hoja: `docs/enemigos/FrostBoxBot/enemigo.json`\n\n**Para probar**\n1. Abre el prefab en 🧬 Enemy Studio y mira proporciones y capas: cañón delante del torso, casco, propulsor.\n2. Mueve el pivote del cañón si no gira desde el anillo.\n3. Guarda en Unity y pasa el estado a `cuerpo-aprobado`.",
@@ -628,7 +626,9 @@
             },
             "runId": "2026-10-07T03-18-46-098Z_xp0mziu",
             "sessionId": "a984b36b-3c58-406c-934d-31bae69346cc"
-          }
+          },
+          "sessionId": "a984b36b-3c58-406c-934d-31bae69346cc",
+          "lastRunId": "2026-10-07T03-18-46-098Z_xp0mziu"
         },
         {
           "id": "ddqrvz5",
@@ -643,8 +643,6 @@
           "effort": "medium",
           "enemy": "FrostBoxBot",
           "status": "done",
-          "lastRunId": "2026-10-07T03-23-59-630Z_ddqrvz5",
-          "sessionId": "d9208141-7fbe-4916-9b7d-f06844ce5cd0",
           "result": {
             "ok": true,
             "text": "FrostBoxBot ya tiene ojos luminosos cian y se ponen rojos cuando ataca. Lo he comprobado solo en el preview estático y no he probado el cambio a rojo en el juego.\n\n**Qué hice**\n- **Pieza nueva `Eyes`:** es hija de `Head` en el prefab, con dos ojos rectangulares con brillo. Va en `Visual/Torso/Head/Eyes`, con orden de capa 5 (por encima de la cabeza).\n- **Arte:** `Parts/Eyes.png` (cian) y `Parts/EyesRed.png` (rojo), en `Assets/Art/RigImports/FrostBoxBot/Parts/`. Tienen el mismo lienzo, pivote y PPU que `Head.png`, así que no hay offsets que ajustar.\n- **Cambio de color:** un intercambio de sprites (`RigSpriteSwap`) pone el sprite rojo en el estado `attacking`. Los gestos también cuentan como ataque, así que `Flick`, `Charge` y `Sweep` salen con los ojos rojos.\n- **Otros archivos:** actualicé `rig-config.json` para que un guardado completo desde Enemy Studio no pierda los ojos, y la ficha del enemigo. El punto `8jkate9` está en \"hecho\" y el enemigo en \"por-aprobar\". Refresqué el preview y compilé sin errores. El commit es `af8009c2`.\n\n**Decisiones**\n- **Arte hecho por código:** generé los ojos con un script de node, no con ComfyUI, porque son dos formas simples con brillo y la cabeza no tenía visor.\n- **Rojo solo al atacar:** no lo puse en alerta, porque pediste rojo \"para los ataques\".\n- **Ojos al morir:** quedan cian, porque el estado muerto cae al sprite de reposo.\n\n**Para probar**\n- En Play, el robot en reposo y al perseguir debe llevar ojos cian sobre la cara clara de la cabeza.\n- Al telegrafiar y disparar debe verlos rojos, y volver a cian al terminar el ataque.\n- Revisa que los ojos sigan a la cabeza en el vaivén y que no se vean al revés cuando el robot se gira.\n- Si te gusta el diseño pero quieres otro tamaño o posición, se retoca en Enemy Studio ▸ ✎ Editar cuerpo.",
@@ -660,7 +658,9 @@
             },
             "runId": "2026-10-07T03-23-59-630Z_ddqrvz5",
             "sessionId": "d9208141-7fbe-4916-9b7d-f06844ce5cd0"
-          }
+          },
+          "sessionId": "d9208141-7fbe-4916-9b7d-f06844ce5cd0",
+          "lastRunId": "2026-10-07T03-23-59-630Z_ddqrvz5"
         },
         {
           "id": "gchk87h",
@@ -675,8 +675,6 @@
           "effort": "medium",
           "enemy": "FrostBoxBot",
           "status": "done",
-          "lastRunId": "2026-10-07T03-26-25-165Z_gchk87h",
-          "sessionId": "44c3b787-7f7b-4479-86ab-149bcaad9699",
           "result": {
             "ok": true,
             "text": "Pendiente 8jkate9 (ojos luminosos) resuelto: FrostBoxBot pasa a `por-aprobar`.\n\n- **Qué ya existía:** el commit `af8009c2` ya había añadido la pieza `Eyes`, hija de `Head`. La ficha se había reabierto con esta tarea, así que no hizo falta más cambio de arte ni de código.\n- **Comportamiento:** ojos cian en reposo y alerta, rojos al atacar. El rojo sale del sprite de estado `attacking` (`Parts/EyesRed.png`) del intercambio de sprites. Los gestos cuentan como ataque.\n- **Verificación:** la pieza `Eyes` está en el prefab y en `rig-config.json`. La recompilación está al día y la consola no tiene errores. No probé en Play Mode.\n- **Ficha:** pendiente marcado `hecho` con su resumen, enemigo en `por-aprobar` y preview refrescada. Commit de la ficha: `docs: FrostBoxBot — ojos verificados, por-aprobar`.\n\nQué probar:\n1. Abrir `FrostBoxBot.prefab` o la preview y ver los ojos cian en la cabeza.\n2. En Play Mode, comprobar que los ojos se ponen rojos durante un ataque o gesto y vuelven a cian después.\n3. Revisar que los ojos no tapan ni desplazan la cabeza al voltear el sprite.",
@@ -692,7 +690,9 @@
             },
             "runId": "2026-10-07T03-26-25-165Z_gchk87h",
             "sessionId": "44c3b787-7f7b-4479-86ab-149bcaad9699"
-          }
+          },
+          "sessionId": "44c3b787-7f7b-4479-86ab-149bcaad9699",
+          "lastRunId": "2026-10-07T03-26-25-165Z_gchk87h"
         },
         {
           "id": "zpi421a",
@@ -708,8 +708,6 @@
           "effort": "medium",
           "enemy": "CrystalOrbBot",
           "status": "done",
-          "lastRunId": "2026-10-07T03-36-05-737Z_zpi421a",
-          "sessionId": "c76e3522-9e02-4e96-ac7f-aa527d5ef69b",
           "result": {
             "ok": true,
             "text": "CrystalOrbBot tiene el cuerpo montado como prefab y está en `cuerpo-por-aprobar`. No hice Play Mode ni probé el prefab dentro del juego. Solo compilé, y `recompile_status` dice `up_to_date`.\n\n**Qué hice**\n- Copié `diseno.png` a Comfy como `CrystalOrbBot_base.png`. Mira a la derecha, así que no hubo que espejar nada.\n- Plantilla `floatingCaster`, con una semilla por parte:\n  - **Torso**: esfera con el ojo y la banda.\n  - **Lower**: tobera y llama de hielo.\n  - **CastArm**: la antena de aguja con su anillo.\n  - **Accessory**: el cristal.\n- La antena salió mal la primera vez: la dibujó demasiado larga y le sobresalía por debajo de la esfera. Repetí esa pieza una vez con el prompt corregido y quedó bien. Las otras tres pasaron a la primera.\n- `finish-parts` dio ✓ en las cuatro: una isla por pieza, mismo lienzo, sin halo blanco.\n- Brief sin ataques, efectos ni gestos propios, solo plantilla por defecto. Con `make-enemy.mjs` generé el zip y lo importé con `ResetTuning = true`.\n- Copié la imagen ensamblada a `docs/enemigos/CrystalOrbBot/cuerpo.png`, rellené la ficha y refresqué la vista previa web con `EnemyPreviewExporter.Mark`.\n- Commit `7254cc5d`.\n\n**Dónde está**\n- Prefab: `Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab`\n- Partes en Unity: `Assets/Art/RigImports/CrystalOrbBot/Parts/`\n- Partes finales en Comfy: `output/claude/CrystalOrbBot/final`\n- Brief: `Web/RedMagicWeb/tools/comfy/enemies/CrystalOrbBot.json`\n\n**Decisiones**\n- La antena es la pieza `CastArm`: el rayo láser saldrá de su punta. Puse el pivote en la base y la boca en la punta. Como la dibujé vertical, el importador la giró 90° para el apuntado, y eso hay que revisarlo.\n- El cristal es `Accessory`. No usé `Head`, porque es opcional.\n- En la ficha, `partes` apunta a la carpeta de Comfy. Las copias que usa Unity están en `Assets/Art/RigImports/CrystalOrbBot/Parts/`.\n\n**Dudas sobre el cuerpo**\n- El cristal queda un poco suelto del torso y se dibuja delante de él.\n- La antena apunta hacia arriba, no a la derecha como espera la plantilla.\n\n**Para probar**\n1. Abre `CrystalOrbBot.prefab` en 🧬 Enemy Studio y mira que las capas sean: llama detrás, antena detrás de la esfera, cristal delante.\n2. Comprueba que la antena sale de su collar y que la esfera no deja un hueco con la tobera.\n3. Revisa la proporción general (altura 2.8) y mueve la distancia del cristal si lo ves suelto.\n4. Mueve el apuntado en Studio y mira cómo gira la antena.\n5. Si todo está bien, apruébalo para pasar al paso 2.",
@@ -725,7 +723,9 @@
             },
             "runId": "2026-10-07T03-36-05-737Z_zpi421a",
             "sessionId": "c76e3522-9e02-4e96-ac7f-aa527d5ef69b"
-          }
+          },
+          "sessionId": "c76e3522-9e02-4e96-ac7f-aa527d5ef69b",
+          "lastRunId": "2026-10-07T03-36-05-737Z_zpi421a"
         },
         {
           "id": "ml6hdb2",
@@ -741,8 +741,6 @@
           "effort": "medium",
           "enemy": "MossLanternBot",
           "status": "done",
-          "lastRunId": "2026-10-07T03-45-49-779Z_ml6hdb2",
-          "sessionId": "e6585738-659f-4484-adf6-81833f11d313",
           "result": {
             "ok": true,
             "text": "MossLanternBot está montado y comprometido (`6f7d2db4`). No lo vi en Play Mode, así que ninguna parte se ha probado en juego. Compila limpio y la ficha queda en `por-aprobar`.\n\n- **Prefab:** `Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab`.\n- **Preview:** marcado con `EnemyPreviewExporter` para la web. La consola muestra un error de timeout de 5 s de la importación; el prefab y la ficha quedaron bien.\n- **Piezas (una semilla cada una, las 4 limpias a la primera):**\n  - Torso: barril con cristal y las hombreras de musgo.\n  - Head: cúpula con lente y cristal.\n  - CastArm: ballesta.\n  - Lower: copa propulsora con llama verde.\n  - La base miraba a la derecha, así que no hubo que espejar nada.\n- **Comportamiento:**\n  - Es un volador a distancia que dispara un virote verde con el gesto `Aim`, tras un `Propel` que lo hace retroceder.\n  - Tiene 32 de vida y 9 de daño.\n  - Los efectos van en verde de bosque.\n- **Decisiones:**\n  - No usé OffArm ni Accessory: las hombreras van dentro del torso.\n  - No puse escudo.\n  - Copié el comportamiento de `IceCannonOrb` con colores y números propios.\n- **Brief y arte:** el brief está en `Web/RedMagicWeb/tools/comfy/enemies/MossLanternBot.json`. Las piezas en Comfy están en `claude/MossLanternBot/final`.\n\n**A probar:**\n1. Abrir el prefab y comprobar las capas. La ballesta se dibujó delante del barril, pero la plantilla la pone detrás; puede que haya que subirla en Enemy Studio.\n2. Revisar que el pivote y la boca de la ballesta estén bien: el virote debe salir de la boca.\n3. Con el enemigo en una sala, mirar si se mueve, apunta y dispara.\n4. Fijarse en el efecto de carga, el fogonazo, el chorro del propulsor y la estela del retroceso. Ninguno debe verse como un cuadrado.\n5. Comprobar que la llama de Lower se mece bien y no se separa del torso.\n6. Comprobar que el virote verde se ve limpio, sin halo.",
@@ -758,7 +756,9 @@
             },
             "runId": "2026-10-07T03-45-49-779Z_ml6hdb2",
             "sessionId": "e6585738-659f-4484-adf6-81833f11d313"
-          }
+          },
+          "sessionId": "e6585738-659f-4484-adf6-81833f11d313",
+          "lastRunId": "2026-10-07T03-45-49-779Z_ml6hdb2"
         },
         {
           "id": "2fyvohh",
@@ -774,8 +774,6 @@
           "effort": "medium",
           "enemy": "LeafBladeBot",
           "status": "done",
-          "lastRunId": "2026-10-07T03-52-13-180Z_2fyvohh",
-          "sessionId": "22a53787-57df-44c4-bfd8-b68a80e20372",
           "result": {
             "ok": true,
             "text": "Cuerpo de LeafBladeBot montado: prefab en `Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab`, estado `cuerpo-por-aprobar`. Compila limpio (`recompile_status`: up_to_date) y está commiteado (`b8c10e21`). No probé nada en Play Mode.\n\n- **Piezas:** 4, plantilla `floatingCaster`, una semilla por pieza y todas salieron limpias a la primera:\n  - Torso: la hoja con la gema.\n  - Head: el casco frontal con el ojo y el cristal.\n  - CastArm: el cañón doble con su soporte de madera.\n  - Lower: el anillo propulsor junto con la llama.\n- **Orientación:** la base ya mira a la derecha, así que no espejé nada.\n- **Brief:** solo con los valores por defecto de la plantilla, sin ataques, efectos ni gestos. Importé con `ResetTuning = true`.\n- **Archivos:**\n  - Imagen ensamblada: `docs/enemigos/LeafBladeBot/cuerpo.png`.\n  - Hoja del enemigo: `enemigo.json`, con `estado`, `prefab` y `cuerpo` rellenos, más la imagen marcada para la web con `EnemyPreviewExporter.Mark`.\n  - Brief: `Web/RedMagicWeb/tools/comfy/enemies/LeafBladeBot.json`.\n  - Piezas finales: `output/claude/LeafBladeBot/final` en la carpeta de Comfy.\n\n**Decisiones por mi cuenta:**\n- **Altura:** puse `height` en 1.8 en vez de 2.8. La hoja es muy alargada y con 2.8 habría salido de unas 10 unidades de ancho. Con 1.8 el cuerpo mide unas 18.8 × 7.6 unidades, antes de la escala de la raíz (0.2359).\n- **Pivote y boca del cañón:** son estimados. Pivote en (0.2, 0.5), boca en (1.0, 0.38).\n- **Anillo y llama:** van juntos en `Lower`. Esto está sin comprobar; si prefieres el anillo suelto, hay que separarlo en una pieza `Accessory`.\n\n**A probar en 🧬 Enemy Studio:**\n1. Abrir el prefab y comprobar que la altura y la proporción de la hoja son las que quieres.\n2. Revisar el orden de capas: Head delante del Torso, cañón detrás del torso y propulsor detrás.\n3. Comprobar que la boca del cañón queda en la punta de los dos tubos.\n4. Si todo está bien, 💾 Guardar en Unity y pasar a `cuerpo-aprobado`.",
@@ -791,7 +789,9 @@
             },
             "runId": "2026-10-07T03-52-13-180Z_2fyvohh",
             "sessionId": "22a53787-57df-44c4-bfd8-b68a80e20372"
-          }
+          },
+          "sessionId": "22a53787-57df-44c4-bfd8-b68a80e20372",
+          "lastRunId": "2026-10-07T03-52-13-180Z_2fyvohh"
         },
         {
           "id": "t35tyrl",
@@ -807,8 +807,6 @@
           "effort": "medium",
           "enemy": "BarkDrumBot",
           "status": "done",
-          "lastRunId": "2026-10-07T03-56-11-467Z_t35tyrl",
-          "sessionId": "355a4d66-b913-424f-bd29-ba9bc5e4eaa6",
           "result": {
             "ok": true,
             "text": "Cuerpo de BarkDrumBot listo y commiteado. El prefab está en `Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab` y compila limpio. No lo he probado en Play Mode.\n\n- **Base:** copiada a Comfy como `BarkDrumBot_base.png`. Mira a la derecha, así que no hubo que espejar nada.\n- **Piezas:** plantilla `floatingCaster` con 4 piezas, una semilla por pieza:\n  - Torso: el barril.\n  - Head: la cúpula, con el cilindro verde lateral incluido.\n  - CastArm: el tubo lanzacohetes.\n  - Lower: la tobera con su llama.\n- **Reintento del CastArm:** salió desplazado hacia abajo con la primera semilla. Repetí con una semilla nueva y una posición explícita en el prompt, y quedó en su sitio.\n- **Brief:** `Web/RedMagicWeb/tools/comfy/enemies/BarkDrumBot.json`. Alto 2.4, sin ataques, efectos ni gestos propios. Pivote del CastArm `[0.1, 0.4]` y boca `[0.98, 0.4]`.\n- **Importación:** hecha con `ResetTuning = true`. Las piezas están en `Assets/Art/RigImports/BarkDrumBot/`. El preview web ya está marcado.\n- **Hoja del enemigo:** `estado` = `cuerpo-por-aprobar`, con `prefab` y `cuerpo` rellenos. La imagen ensamblada está en `docs/enemigos/BarkDrumBot/cuerpo.png`.\n\nDecisiones:\n- No hay OffArm. El cilindro verde trasero va pegado a la cabeza porque estaba medio oculto tras ella.\n- El CastArm va detrás de la cabeza, como en el diseño.\n\nQué probar en 🧬 Enemy Studio:\n1. Abrir el prefab y ver que las 4 piezas encajan como en `cuerpo.png`.\n2. Comprobar la tobera: salió algo más alta que en el diseño, quizá haya que bajarla.\n3. Comprobar que el tubo asoma por detrás de la cabeza sin cortes.\n4. Comprobar que la boca del tubo está en la punta derecha, que es de donde saldrá el proyectil.\n5. Si algo falla, ajustar proporciones, distancias y capas, guardar en Unity y aprobar el cuerpo. Una pieza concreta se rehace con ↻ Rehacer.",
@@ -824,7 +822,9 @@
             },
             "runId": "2026-10-07T03-56-11-467Z_t35tyrl",
             "sessionId": "355a4d66-b913-424f-bd29-ba9bc5e4eaa6"
-          }
+          },
+          "sessionId": "355a4d66-b913-424f-bd29-ba9bc5e4eaa6",
+          "lastRunId": "2026-10-07T03-56-11-467Z_t35tyrl"
         },
         {
           "id": "dlgnt71",
@@ -840,8 +840,6 @@
           "effort": "medium",
           "enemy": "SeedPodBot",
           "status": "done",
-          "lastRunId": "2026-10-07T04-00-13-857Z_dlgnt71",
-          "sessionId": "bc71219a-4643-4ca9-b7c8-d06c9401659f",
           "result": {
             "ok": true,
             "text": "Cuerpo de SeedPodBot montado e importado como prefab, sin ataques, efectos ni gestos propios. Compila sin errores y está commiteado. No hice Play Mode.\n\n- **Piezas:** 5 con un seed cada una, todas pasaron el chequeo a la primera: Torso (bloque de piedra), Head (casco con ojo), CastArm (cañón con soporte), OffArm (cristales y soporte de madera, detrás del torso) y Lower (propulsor con anillo y llama). La base mira a la derecha, así que no hubo que espejar. `finish-parts` dio un solo bloque por pieza y sin fleco blanco.\n- **Plantilla y brief:** `floatingCaster`, altura 2.4, `archetype` FlyingRanged. El brief está en `Web/RedMagicWeb/tools/comfy/enemies/SeedPodBot.json`.\n- **Prefab:** `Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab`, con las piezas en `Assets/Art/RigImports/SeedPodBot/`. Importé con `ResetTuning = true`.\n- **Ficha:** `docs/enemigos/SeedPodBot/enemigo.json` con `estado: cuerpo-por-aprobar`, `prefab` y `cuerpo`. La imagen ensamblada está en `docs/enemigos/SeedPodBot/cuerpo.png` y marqué el preview con `EnemyPreviewExporter.Mark`.\n- **Decisiones:**\n  - Usé el slot opcional `OffArm` para los cristales y el soporte de madera, que son una sola pieza.\n  - El pivote (`[0.15,0.45]`) y la boca del cañón (`[0.98,0.4]`) son estimados a partir de BarkDrumBot, no medidos.\n- **Dudoso:** la Head salió algo recortada y con el ojo poco marcado.\n- **Campo `partes`:** en la ficha puse el texto «Web/RedMagicWeb/tools/comfy (output) claude/SeedPodBot/final», que no es una ruta exacta. Las partes finales están en `%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/output/claude/SeedPodBot/final`.\n\n**Para probar:**\n1. En 🧬 Enemy Studio, abre el prefab y mira que las piezas encajen sin huecos (Head sobre Torso, Lower debajo).\n2. Capas: Lower y OffArm detrás, Torso en medio, Head y CastArm delante.\n3. Pivote y boca del cañón: ajústalos si hace falta y guarda con 💾 Guardar en Unity.\n4. Si todo está bien, pasa la ficha a `cuerpo-aprobado`. Si no, usa ↻ Rehacer en la pieza que falle.",
@@ -857,7 +855,9 @@
             },
             "runId": "2026-10-07T04-00-13-857Z_dlgnt71",
             "sessionId": "bc71219a-4643-4ca9-b7c8-d06c9401659f"
-          }
+          },
+          "sessionId": "bc71219a-4643-4ca9-b7c8-d06c9401659f",
+          "lastRunId": "2026-10-07T04-00-13-857Z_dlgnt71"
         },
         {
           "id": "05wa22t",
@@ -873,8 +873,6 @@
           "effort": "medium",
           "enemy": "LensCannonBot",
           "status": "done",
-          "lastRunId": "2026-10-07T04-19-30-789Z_05wa22t",
-          "sessionId": "f7c34a07-1f03-4006-9a3b-c51e952d18ea",
           "result": {
             "ok": true,
             "text": "Cuerpo de LensCannonBot montado e importado en Unity; queda pendiente que lo revises (`estado: cuerpo-por-aprobar`). Compila sin errores y está commiteado. No probé nada en Play Mode.\n\n- **Piezas:** plantilla `floatingCaster`, 4 piezas, una semilla por pieza.\n  - Torso: tambor con lente y coraza de piedra.\n  - Head: visera con ojos y cristales.\n  - CastArm: anillo con púas más el cañón.\n  - Lower: propulsor con llama.\n  - Omití Accessory y OffArm, que son opcionales.\n- **Reintento:** el primer CastArm movió el anillo encima de la lente. Repetí esa pieza una vez con otra semilla y otro prompt, y ya quedó en su sitio.\n- **Orientación:** el diseño mira a la derecha, así que no hubo que espejar nada.\n- **Capas:** el cañón cruza el torso y debe dibujarse delante, pero en la plantilla CastArm va detrás. Añadí la opción `front: [slot]` a `make-enemy.mjs` y el brief usa `\"front\": [\"castArm\"]`.\n- **Brief:** sin ataques, efectos ni gestos propios, solo los de la plantilla. Importé con `ResetTuning = true`.\n- **Dudoso:** el anillo del cañón forma parte de CastArm, que gira al apuntar. Al girar puede despegarse un poco del tambor.\n- **Hoja:** actualizada con `estado`, `prefab`, `cuerpo` y `cuerpo.png`, y refresqué su imagen para la web con `EnemyPreviewExporter.Mark`.\n\nUbicaciones:\n- Prefab: `Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab`\n- Brief: `Web/RedMagicWeb/tools/comfy/enemies/LensCannonBot.json`\n- Partes finales: `claude/LensCannonBot/final` en la carpeta de salida de Comfy\n- Imagen ensamblada: `docs/enemigos/LensCannonBot/cuerpo.png`\n\nQué probar:\n1. En 🎨 Diseños, mira `cuerpo.png` y compáralo con el diseño. Debe verse la lente a la izquierda y el cañón delante del torso.\n2. Abre el prefab en 🧬 Enemy Studio y revisa el orden de capas: Lower, Torso, Head, CastArm.\n3. En Enemy Studio, comprueba que el pivote del cañón (en el anillo) y la boca (punta del cañón) están bien.\n4. Ajusta proporciones y distancias si hace falta, guarda en Unity y aprueba (`cuerpo-aprobado`).",
@@ -890,7 +888,9 @@
             },
             "runId": "2026-10-07T04-19-30-789Z_05wa22t",
             "sessionId": "f7c34a07-1f03-4006-9a3b-c51e952d18ea"
-          }
+          },
+          "sessionId": "f7c34a07-1f03-4006-9a3b-c51e952d18ea",
+          "lastRunId": "2026-10-07T04-19-30-789Z_05wa22t"
         },
         {
           "id": "fvist42",
@@ -906,8 +906,6 @@
           "effort": "medium",
           "enemy": "MawDomeBot",
           "status": "done",
-          "lastRunId": "2026-10-07T04-24-01-174Z_fvist42",
-          "sessionId": "13305da9-283a-4c19-ae87-b165c02e77a2",
           "result": {
             "ok": true,
             "text": "El cuerpo de MawDomeBot está montado y importado como prefab. No lo he probado en Play Mode; el compile check sale limpio (`up_to_date`). El cañón no quedó como en el diseño y conviene revisarlo.\n\n**Qué hice**\n- Copié `diseno.png` a la carpeta input de Comfy como `MawDomeBot_base.png`. Mira a la derecha, así que no espejé nada.\n- Dibujé 5 piezas en su sitio con la plantilla `floatingCaster`:\n  - Torso: la cúpula en forma de campana.\n  - Head: la bola con el ojo.\n  - CastArm: el cañón.\n  - Lower: la llama.\n  - Accessory: el anillo con soportes.\n- Terminé las piezas (×2, 2048 px) con `finish-parts`: una isla por pieza y sin restos de fondo blanco.\n- Hice un brief sin ataques, efectos ni gestos propios, con el cañón dibujado delante del torso. Eso significa que no se ve la parte del cañón que \"entra\" en la campana.\n- Importé el zip con `ResetTuning = true`.\n\n**Dónde está cada cosa**\n- Prefab: `Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab`\n- Piezas importadas: `Assets/Art/RigImports/MawDomeBot/`\n- Piezas finales: `claude/MawDomeBot/final` (en la carpeta output de Comfy)\n- Brief: `Web/RedMagicWeb/tools/comfy/enemies/MawDomeBot.json`\n- Imagen: `docs/enemigos/MawDomeBot/cuerpo.png`\n- La ficha `enemigo.json` queda en `cuerpo-por-aprobar` y la miniatura está refrescada. Commit `0821b2e5`.\n\n**Decisiones**\n- **Cañón:** necesitó 3 intentos y ninguno quedó igual que en el diseño. El elegido (s13) es más largo y más bajo que el original, con la misma inclinación. Lo acepté sin más intentos porque ya había gastado los 2 reintentos permitidos y puede ajustarse en Enemy Studio.\n- **Torso, Lower y Accessory:** pasaron a la primera.\n- **Head:** salió bien a la segunda.\n- **Accessory:** los soportes salieron algo distintos de los del diseño.\n\n**Qué probar**\n1. Abre MawDomeBot en 🧬 Enemy Studio y mira que el cañón esté delante de la campana y bien colocado (longitud y altura).\n2. Mira que la boca del cañón (la punta derecha) quede donde saldrá el disparo.\n3. Mira la cabeza sobre la campana y el anillo con soportes detrás de la campana, encima de la llama.\n4. Si algo está mal, ajústalo en Studio y pulsa 💾 Guardar en Unity. Si el cañón no se arregla, usa ↻ Rehacer sobre esa pieza.",
@@ -923,7 +921,9 @@
             },
             "runId": "2026-10-07T04-24-01-174Z_fvist42",
             "sessionId": "13305da9-283a-4c19-ae87-b165c02e77a2"
-          }
+          },
+          "sessionId": "13305da9-283a-4c19-ae87-b165c02e77a2",
+          "lastRunId": "2026-10-07T04-24-01-174Z_fvist42"
         },
         {
           "id": "8xyu1jh",
@@ -940,8 +940,6 @@
           "enemy": "ThornFairy",
           "kind": "cuerpo",
           "status": "done",
-          "lastRunId": "2026-10-07T14-49-48-482Z_8xyu1jh",
-          "sessionId": "a0739404-473e-4778-82ff-ea1b9a6930fd",
           "result": {
             "ok": true,
             "text": "Rehecho: las 6 partes vuelven a salir del dibujo original, y la cabeza y la mano enfadadas son ahora variantes de estado. Importé el prefab en Unity (`Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab`) y lo comprobé compilando, no en Play Mode. Commit `af304c66`; la imagen del cuerpo está actualizada en `docs/enemigos/ThornFairy/cuerpo.png`.\n\n- **Partes originales:** Head, CastArm y OffArm vuelven a ser las del dibujo, con la cara neutra y el cristal verde. Torso, Lower y Accessory (alas) no se tocaron.\n- **OffArm:** ahora sale completo, del hombro a la mano, con el mismo grosor que el otro brazo.\n- **Variantes de estado `__attacking`:** `Head__attacking` tiene la cara enfadada y los cristales rojos. `CastArm__attacking` tiene la mano con la palma hacia delante.\n- **Decisión mía:** el sprite de `CastArm__attacking` conserva su silueta propia, porque la normal recortaba la mano abierta. Añadí `tools/comfy/fix-state-own-alpha.mjs` para eso.\n- **Dudoso:** esa mano sigue colgando hacia abajo, no apunta al frente.\n- **Por probar en Enemy Studio:**\n  1. Que la figura montada coincide con el original.\n  2. El pivote y la boca del CastArm (puse el pivote en el hombro y la boca en la palma).\n  3. Que `Head__attacking` y `CastArm__attacking` aparecen como sprites de estado.\n  4. El orden de capas del brazo respecto a las alas.",
@@ -976,7 +974,9 @@
               "runId": "2026-10-07T14-34-43-365Z_8xyu1jh",
               "sessionId": "a0739404-473e-4778-82ff-ea1b9a6930fd"
             }
-          ]
+          ],
+          "sessionId": "a0739404-473e-4778-82ff-ea1b9a6930fd",
+          "lastRunId": "2026-10-07T14-49-48-482Z_8xyu1jh"
         },
         {
           "id": "1g4wg9o",
@@ -993,8 +993,6 @@
           "enemy": "ThornFairy",
           "kind": "resto",
           "status": "done",
-          "lastRunId": "2026-10-07T15-09-14-119Z_1g4wg9o",
-          "sessionId": "6be7aaaf-425d-498f-8d6b-579a380076b8",
           "result": {
             "ok": true,
             "text": "ThornFairy está montada y en `por-aprobar` en la hoja del enemigo. Compila sin errores, pero no la he probado en Play ni he revisado el aleteo a ojo. Dos cosas quedan sin hacer: no usé tu orbe de la biblioteca y no separé las alas.\n\n- **Orbe:** `OrbeHada` está en la biblioteca del navegador (IndexedDB) y desde aquí no se puede leer. Creé un orbe verde nuevo (`sparkBolt`, «FairyOrb») y lo uso como disparo. Cambiarlo por `OrbeHada` es sustituir ese prefab en la carta `Shot`.\n- **Ataque y dash:** el ataque `Shot` es un orbe verde que sale de la mano, con carga y destello. Tiene dos dashes: uno hacia atrás cuando el jugador se acerca a menos de 3,5, y otro hacia delante con un 35 % de probabilidad al recibir un golpe.\n- **Alas:** siguen siendo una sola pieza. Aletean con escala y giro, y la pose cambia al avanzar (`FlyFwd`, alas atrás) y al retirarse (`FlyBack`, alas abiertas). Los dashes tienen gestos propios (`DashFwd`, `DashBack`).\n- **Cambio de código:** añadí `moveBackGesture` en `ProceduralRig` para el vuelo de espaldas. Es un campo solo del prefab; el JSON y la web aún no lo llevan.\n- **Sonidos:** tres nuevos (aleteo, impulso, lanzamiento del orbe). Faltan por puntuar en Biblioteca Jere ▸ Sounds.\n\nPara probar:\n1. Ver si el aleteo se lee bien (velocidad, amplitud).\n2. Acercarse a la hada para comprobar el dash atrás, y golpearla para ver el dash adelante.\n3. Ver que va de espaldas al retirarse.\n4. Ver que el orbe sale de la palma.\n5. Decidir si hay que separar las alas en 2 partes (es un cambio de plantilla).\n\nCommit `ee7e5b97`.",
@@ -1010,7 +1008,9 @@
             },
             "runId": "2026-10-07T15-09-14-119Z_1g4wg9o",
             "sessionId": "6be7aaaf-425d-498f-8d6b-579a380076b8"
-          }
+          },
+          "sessionId": "6be7aaaf-425d-498f-8d6b-579a380076b8",
+          "lastRunId": "2026-10-07T15-09-14-119Z_1g4wg9o"
         },
         {
           "id": "cd96jly",
@@ -1027,8 +1027,6 @@
           "enemy": "ProtonSentry",
           "kind": "cuerpo",
           "status": "done",
-          "lastRunId": "2026-10-07T16-06-47-802Z_cd96jly",
-          "sessionId": "ec3a8efd-7ae5-476e-9681-40ac7032db5f",
           "result": {
             "ok": true,
             "text": "Cuerpo de ProtonSentry montado en Unity y en estado `cuerpo-por-aprobar`; compila sin errores y está commiteado.\n\n- **Prefab:** `Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab`, con la plantilla `floatingCaster`, sin ataques, efectos ni gestos propios.\n- **Piezas:** Head (domo con ojo, cristal y antena), Torso, CastArm (el cañón) y Lower (cono con llama). Una semilla por pieza, todas pasaron a la primera.\n- **Archivos:** `docs/enemigos/ProtonSentry/cuerpo.png`, brief en `Web/RedMagicWeb/tools/comfy/enemies/ProtonSentry.json`, y la ficha ya refrescada para la web.\n- **Decisiones mías:** el arte mira a la derecha, así que no hubo que espejar. Puse el pivote del cañón en el centro (0.5, 0.5) y la boca en (0.97, 0.4); ajústalo en Enemy Studio si no cuadra.\n- **Dudoso:** el Torso salió algo más bajo por arriba, y el cañón se alarga hacia dentro del torso, donde queda detrás.\n\n**Qué probar:**\n1. Mira `cuerpo.png` en la ficha.\n2. Abre el prefab en 🧬 Enemy Studio y revisa proporciones, distancias y capas (cañón detrás del torso, cabeza delante).\n3. Comprueba el pivote del hombro del cañón y la boca.",
@@ -1044,7 +1042,9 @@
             },
             "runId": "2026-10-07T16-06-47-802Z_cd96jly",
             "sessionId": "ec3a8efd-7ae5-476e-9681-40ac7032db5f"
-          }
+          },
+          "sessionId": "ec3a8efd-7ae5-476e-9681-40ac7032db5f",
+          "lastRunId": "2026-10-07T16-06-47-802Z_cd96jly"
         },
         {
           "id": "zl37h4o",
@@ -1061,8 +1061,6 @@
           "enemy": "CinderKettleBot",
           "kind": "cuerpo",
           "status": "done",
-          "lastRunId": "2026-10-07T16-16-30-448Z_zl37h4o",
-          "sessionId": "b6120835-cbe0-45b0-89f7-f74f68d09376",
           "result": {
             "ok": true,
             "text": "Cuerpo de CinderKettleBot montado como prefab, en estado `cuerpo-por-aprobar`; compila y está commiteado. No lo he probado en Play Mode.\n\n- **Prefab:** `Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab` (plantilla floatingCaster, `only` head/torso/accessory/lower/castArm). Brief: `Web/RedMagicWeb/tools/comfy/enemies/CinderKettleBot.json`. Imagen: `docs/enemigos/CinderKettleBot/cuerpo.png`.\n- **Piezas:** Torso lleva la olla con chimenea y asa. Accessory es el anillo-rejilla y Lower la llama. CastArm es el cañón con la mano. La base miraba a la derecha, así que no hubo espejo.\n- **⚠ Head:** la separé mal 3 veces. El seed 1 se quedó con toda la olla, el 2 salió pequeño y movido, y el 3 salió vacío. Usé el seed 2 y lo reescalé y recoloco por código sobre el hueco del diseño. Puede quedar algo desajustado, así que revisa su tamaño y posición en Enemy Studio.\n- **Estados:** `Head__attacking` (ojos rojos, rig state attacking) y `CastArm__extra_Caliente` (cañón al rojo) están hechos y marcados en la ficha. Caliente no encaja con ningún estado del rig, así que queda solo en la carpeta de partes. Unity aún no reproduce transiciones, por eso el enfriado gradual no está.\n- **Decisión mía:** pivote del cañón en [0.1, 0.6] y boca en [0.97, 0.3]. Sin ataques ni efectos, solo los valores por defecto de la plantilla.\n\nPara probar:\n1. Abre el prefab o Enemy Studio y comprueba que el cuerpo montado se parece a `cuerpo.png`.\n2. Mira la cabeza: tamaño y posición, y que quede delante de la olla.\n3. Mira el orden de capas: la llama detrás del anillo, el cañón detrás del torso.\n4. Mira si el cañón apunta bien al apuntar (el arte tiene unos 10° de inclinación).",
@@ -1078,7 +1076,9 @@
             },
             "runId": "2026-10-07T16-16-30-448Z_zl37h4o",
             "sessionId": "b6120835-cbe0-45b0-89f7-f74f68d09376"
-          }
+          },
+          "sessionId": "b6120835-cbe0-45b0-89f7-f74f68d09376",
+          "lastRunId": "2026-10-07T16-16-30-448Z_zl37h4o"
         },
         {
           "id": "7c4x7fj",
@@ -1094,25 +1094,44 @@
           "effort": "medium",
           "enemy": "CinderKettleBot",
           "kind": "resto",
-          "status": "running",
-          "lastRunId": "2026-10-07T16-50-21-333Z_7c4x7fj",
-          "sessionId": "d0b9f7a9-e5d9-47c3-b876-8658b99b5f34",
+          "status": "done",
           "result": {
             "ok": true,
-            "text": "CinderKettleBot montado y commiteado (`fbf24eb2`), estado `por-aprobar`. Compila sin errores, pero no probé nada en Play Mode.\n\n- **Ataque:** volador a distancia que dispara una roca fundida de 0,4 u (el tamaño de la boca del cañón, medido a ojo sobre la imagen) cada 3,5 s. La suelta lleva una explosión y un fogonazo. Importé el zip parcial con `ResetTuning=false` y puse el tuning a mano en el prefab.\n- **Calentamiento (nuevo, genérico):** `HeatGlow.cs` más `_Heat` y `_HeatColor` en el shader Sprite Lit FX. Al disparar, el cañón se pone al rojo-naranja al 100 % y baja a 0 en `cooldown − 0,5 s` (con 3,5 s son 3 s). Lo apliqué al CastArm con el material `CinderKettleBot_Heat.mat`. Está documentado en `enemies.md`.\n- **Sonidos:** 3 nuevos (lanzar, impacto en jugador, impacto en terreno), con reglas para las proyectiles cuyo nombre contenga \"Molten\" o \"Magma\". Falta puntuarlos en Biblioteca Jere ▸ Sounds.\n- **Decisiones mías:** vida 34, daño 10, rango de ataque 12 y proyectil a velocidad 9. Para el cañón puse un gesto `Shoot` de apuntar y soltar.\n- **Pendiente:** el cooldown cuenta desde que acaba el ataque, así que el enfriado puede quedar unas décimas antes de lo exacto. El sprite `CastArm__extra_Caliente` queda sin usar, porque el shader lo sustituye.\n\n**Qué probar:**\n1. El cañón se pone al rojo justo al disparar y vuelve a la normalidad unos 0,5 s antes del siguiente tiro.\n2. La roca sale de la boca del cañón con su explosión, y se oyen el disparo y el impacto.\n3. Mantiene la distancia y orbita, sin pegarse al jugador.\n4. El cuerpo no ha cambiado.",
-            "at": "2026-10-07T16:35:23.389Z",
-            "durationMs": 239796,
-            "costUsd": 0.982995,
+            "text": "- `HeatGlow` ahora se añade solo al GameObject del sprite del arma (`Assets/Scripts/Enemies/HeatGlow.cs`). Compila limpio y no probé Play Mode.\n- Busca `EnemyStats` y `EnemyAttack` en los padres. Se calienta al disparar y baja a 0 en cooldown − 0,5 s.\n- Si el sprite no tiene el shader `Sprite Lit FX`, le pone un material con él. Ya no hay lista de `targets`.\n- Para un arma fuera de un enemigo, llama a `Ignite()` y fija `cooldownOverride`. Esto último lo añadí yo, no lo pediste.\n- En CinderKettleBot quité `HeatGlow` de la raíz y lo puse en el `CastArm`. Lo cambié en el prefab con eval, sin tocar partes ni layout.\n- Documentado en `docs/architecture/enemies.md`. Commit `97ed5ec8`.\n- El commit incluye otros prefabs (IceCannonOrb, PolarTurretBot, `Ice1.unity`, `EditorBuildSettings`) que ya estaban modificados antes y entraron con `git add -A`.\n- Para probar:\n  1. Que el cañón se ponga rojo al disparar y vuelva a normal 0,5 s antes del siguiente tiro (cooldown 3,5 s).\n  2. Que se vea igual al arrastrar `HeatGlow` a otro sprite de arma.\n  3. Que suenen los 3 sonidos de la roca fundida: disparo, impacto en el jugador e impacto en terreno. Hay que puntuarlos en Biblioteca Jere ▸ Sounds.",
+            "at": "2026-10-07T16:51:36.673Z",
+            "durationMs": 75341,
+            "costUsd": 1.1433769999999996,
             "tokens": {
-              "input": 54,
-              "cacheWrite": 102157,
-              "cacheRead": 2110595,
-              "output": 15214,
-              "calls": 31
+              "input": 8,
+              "cacheWrite": 7107,
+              "cacheRead": 468340,
+              "output": 3827,
+              "calls": 4
             },
-            "runId": "2026-10-07T16-31-23-592Z_7c4x7fj",
-            "sessionId": "d0b9f7a9-e5d9-47c3-b876-8658b99b5f34"
-          }
+            "runId": "2026-10-07T16-50-21-333Z_7c4x7fj",
+            "sessionId": "d0b9f7a9-e5d9-47c3-b876-8658b99b5f34",
+            "reply": "Vale ahora que has hecho la mecanica de enfriamiento y he visto que funciona, quiero que esta mecanica se pueda añadir con facilidad a cualquier arma, simplemente añadiendole el script de enfriamiento al gameobject que contiene el sprite del arma, asique ajusta la logica del enemigo y el enfriamiento para que funcione asi."
+          },
+          "history": [
+            {
+              "ok": true,
+              "text": "CinderKettleBot montado y commiteado (`fbf24eb2`), estado `por-aprobar`. Compila sin errores, pero no probé nada en Play Mode.\n\n- **Ataque:** volador a distancia que dispara una roca fundida de 0,4 u (el tamaño de la boca del cañón, medido a ojo sobre la imagen) cada 3,5 s. La suelta lleva una explosión y un fogonazo. Importé el zip parcial con `ResetTuning=false` y puse el tuning a mano en el prefab.\n- **Calentamiento (nuevo, genérico):** `HeatGlow.cs` más `_Heat` y `_HeatColor` en el shader Sprite Lit FX. Al disparar, el cañón se pone al rojo-naranja al 100 % y baja a 0 en `cooldown − 0,5 s` (con 3,5 s son 3 s). Lo apliqué al CastArm con el material `CinderKettleBot_Heat.mat`. Está documentado en `enemies.md`.\n- **Sonidos:** 3 nuevos (lanzar, impacto en jugador, impacto en terreno), con reglas para las proyectiles cuyo nombre contenga \"Molten\" o \"Magma\". Falta puntuarlos en Biblioteca Jere ▸ Sounds.\n- **Decisiones mías:** vida 34, daño 10, rango de ataque 12 y proyectil a velocidad 9. Para el cañón puse un gesto `Shoot` de apuntar y soltar.\n- **Pendiente:** el cooldown cuenta desde que acaba el ataque, así que el enfriado puede quedar unas décimas antes de lo exacto. El sprite `CastArm__extra_Caliente` queda sin usar, porque el shader lo sustituye.\n\n**Qué probar:**\n1. El cañón se pone al rojo justo al disparar y vuelve a la normalidad unos 0,5 s antes del siguiente tiro.\n2. La roca sale de la boca del cañón con su explosión, y se oyen el disparo y el impacto.\n3. Mantiene la distancia y orbita, sin pegarse al jugador.\n4. El cuerpo no ha cambiado.",
+              "at": "2026-10-07T16:35:23.389Z",
+              "durationMs": 239796,
+              "costUsd": 0.982995,
+              "tokens": {
+                "input": 54,
+                "cacheWrite": 102157,
+                "cacheRead": 2110595,
+                "output": 15214,
+                "calls": 31
+              },
+              "runId": "2026-10-07T16-31-23-592Z_7c4x7fj",
+              "sessionId": "d0b9f7a9-e5d9-47c3-b876-8658b99b5f34"
+            }
+          ],
+          "sessionId": "d0b9f7a9-e5d9-47c3-b876-8658b99b5f34",
+          "lastRunId": "2026-10-07T16-50-21-333Z_7c4x7fj"
         }
       ]
     },
@@ -1620,8 +1639,6 @@
             "kind": "enemy"
           },
           "status": "done",
-          "lastRunId": "2026-10-07T03-29-22-718Z_jegxwgh",
-          "sessionId": "9f927c46-26aa-4944-92c8-56f56c0ca39d",
           "result": {
             "ok": true,
             "text": "Añadí 5 propuestas de robot flotante con antena al lote `docs/disenos/2026-10-07-robor-lanzador-flotante-con-una-antena-d.json`. `check-design-batch.mjs` dice \"Lote correcto: 5 propuesta(s)\" y está commiteado (38b334a1). No hay imágenes todavía: pega cada prompt en Gemini y trae la imagen a la tarjeta (🖼 / Ctrl+V).\n\nLos 5 prompts salen de `enemy-prompt.mjs --zone ice --body floating --attack magic --target gemini`, con `--cast` puesto en la antena. Los 5 incluyen una línea que dice que la antena está en reposo y que no se dibuje ningún rayo ni luz.\n\n1. **FrostPylonBot**: torre alta y delgada, con una antena recta larga que termina en una bolita.\n2. **IceDishBot**: platillo redondo con una antena parabólica; el cristal grande va en el centro del plato.\n3. **SnowCrabBot**: caja achaparrada con una antena en V, de dos puntas, y un cristal en cada punta.\n4. **CrystalOrbBot**: esfera lisa con una antena de aguja con un anillo en la base.\n5. **IceLanternBot**: tubo cónico tipo linterna con una antena en espiral y tres cristales a lo largo de la espiral.\n\n- **Decisiones:** puse la antena como la parte que lanza porque el rayo sale de ahí; el robot mantiene el metal y la paleta de hielo, sin cubrirse de hielo; ninguno de los nombres coincide con prefabs existentes.\n- **Documento:** la tarea no tiene documento, así que no actualicé ninguno.\n\nPara probar:\n- Pega cada prompt en Gemini y comprueba que no dibuje patas ni arma, y que no haya rayo saliendo de la antena.\n- Mira si los 5 se ven distintos entre sí.\n- Aprueba o descarta en 🎨 Diseños.",
@@ -1637,7 +1654,9 @@
             },
             "runId": "2026-10-07T03-29-22-718Z_jegxwgh",
             "sessionId": "9f927c46-26aa-4944-92c8-56f56c0ca39d"
-          }
+          },
+          "sessionId": "9f927c46-26aa-4944-92c8-56f56c0ca39d",
+          "lastRunId": "2026-10-07T03-29-22-718Z_jegxwgh"
         },
         {
           "id": "rwrju01",
@@ -1653,8 +1672,6 @@
             "kind": "enemy"
           },
           "status": "done",
-          "lastRunId": "2026-10-07T03-39-29-338Z_rwrju01",
-          "sessionId": "d796b2f1-9e21-4f3e-92cb-0874ce039afa",
           "result": {
             "ok": true,
             "text": "Añadí 5 propuestas de robot flotante con arma a `docs/disenos/2026-10-07-robot.json`. Todas están en estado `pending` y son del bosque. `check-design-batch.mjs` imprime \"Lote correcto: 5 propuesta(s)\", y el commit es `718e7514`.\n\nCada propuesta lleva solo el prompt de Gemini, sin imagen. Los prompts los generó `enemy-prompt.mjs` con `--body floating --attack weapon --target gemini`. Solo revisé que el lote pasara el chequeo; no leí los prompts generados completos.\n\n- **p1 MossLanternBot**: farol de latón con musgo, un ojo-lente grande y ballesta corta al frente.\n- **p2 BarkDrumBot**: tambor achaparrado de corteza con 3 cristales turquesa en fila y un lanzacohetes de un tubo encima.\n- **p3 LeafBladeBot**: casco esbelto en forma de hoja, ojo de rendija y cañón doble fino bajo el casco.\n- **p4 StoneSentryBot**: centinela de bloques de piedra con musgo, cristales en la espalda y cañón pesado.\n- **p5 SeedPodBot**: vaina ovoide dorada, pequeña y simpática, con cristal verde en el vientre y tubo lanzasemillas.\n\n**Decisiones:**\n- Usé `--note` para describir cada arma en vez de `--piece`, para no pisar las piezas por defecto del tipo `floating`. Es el punto más probable de fallo en el resultado de Gemini.\n- Los nombres no chocan con ningún prefab existente.\n- No toqué `todo.json`.\n\n**Qué probar:**\n- Pegar cada prompt en Gemini y comprobar que el robot no tiene patas ni brazos.\n- Comprobar que el arma es una pieza separada y se ve entera.\n- Pegar la imagen en la tarjeta con 🖼 o Ctrl+V y aprobar la que guste.",
@@ -1670,7 +1687,9 @@
             },
             "runId": "2026-10-07T03-39-29-338Z_rwrju01",
             "sessionId": "d796b2f1-9e21-4f3e-92cb-0874ce039afa"
-          }
+          },
+          "sessionId": "d796b2f1-9e21-4f3e-92cb-0874ce039afa",
+          "lastRunId": "2026-10-07T03-39-29-338Z_rwrju01"
         },
         {
           "id": "lax7vl0",
@@ -1686,8 +1705,6 @@
             "kind": "enemy"
           },
           "status": "done",
-          "lastRunId": "2026-10-07T04-04-25-890Z_lax7vl0",
-          "sessionId": "ceed9dcb-36ab-41df-8ada-18ece438f452",
           "result": {
             "ok": true,
             "text": "Añadí 3 propuestas de robot flotante (volcano, arma) a `docs/disenos/2026-10-07-robot-2.json`. `check-design-batch.mjs` dice \"Lote correcto: 3 propuesta(s)\" y el commit es `e8a46eb0`. Son prompts de Gemini, sin imagen: hay que pegar cada imagen en su tarjeta.\n\n- **p1 AnvilForgeBot**: cuerpo ancho en forma de yunque de hierro negro con ranura de horno naranja, y un cañón-martillo. Es pesado e industrial.\n- **p2 ObsidianSpikeBot**: cuerpo alto y angular de obsidiana con vetas de lava y un solo ojo rojo, y un lanzador tipo ballesta. Es afilado y siniestro.\n- **p3 CinderKettleBot**: tetera de cobre redonda con chimenea y dos ojos amarillos, y un mortero corto. Es redondeada y de aire cómico.\n\nTodos los prompts salen de `enemy-prompt.mjs --zone volcano --body floating --attack weapon --target gemini`. El arma y los cristales los describí en `--design` y `--crystals`. No usé `--piece`, porque reemplaza las piezas por defecto y dejaría el prompt con solo el arma. Así conserva las 4 piezas del tipo flotante: cuerpo, cabeza, propulsor y arma.\n\nLos nombres no chocan con los prefabs ni con `docs/enemigos`. No toqué `todo.json` ni las propuestas que ya había en el lote, y no hay documento de tarea que actualizar.\n\n**Qué probar**\n- Pega cada prompt en Gemini y comprueba que salen 4 piezas visibles y separables, con el propulsor como forma cerrada.\n- Revisa que el arma apunte a la derecha y no aparezca humo ni llamas en el fondo.\n- Pega la imagen con 🖼 o Ctrl+V en la tarjeta y aprueba la que prefieras.",
@@ -1703,7 +1720,9 @@
             },
             "runId": "2026-10-07T04-04-25-890Z_lax7vl0",
             "sessionId": "ceed9dcb-36ab-41df-8ada-18ece438f452"
-          }
+          },
+          "sessionId": "ceed9dcb-36ab-41df-8ada-18ece438f452",
+          "lastRunId": "2026-10-07T04-04-25-890Z_lax7vl0"
         },
         {
           "id": "entonsg",
@@ -1719,8 +1738,6 @@
             "kind": "enemy"
           },
           "status": "done",
-          "lastRunId": "2026-10-07T04-05-17-423Z_entonsg",
-          "sessionId": "e078ceda-9ac8-48a3-a24a-db527205f041",
           "result": {
             "ok": true,
             "text": "Añadí 3 propuestas de robot flotante cuerpo a cuerpo (zona volcán) a `docs/disenos/2026-10-07-robot-mele.json`. `check-design-batch` dice \"Lote correcto: 3 propuesta(s)\" y quedó commiteado. No dibujé nada: son solo prompts para Gemini.\n\n- **p1 MagmaRamBot:** casco en cuña negro basalto con espolón romo a la derecha, vetas naranjas y un cristal grande en la punta. Dos cristales pequeños van en el lomo.\n- **p2 EmberSawBot:** cuerpo en disco de hierro oscuro con un anillo de sierra dentado de filo al rojo. El eje de la sierra es un cristal y hay otro pequeño arriba.\n- **p3 AnvilHeadBot:** torso alto y estrecho de metal rojo-marrón forjado, con una cabeza enorme en forma de yunque. Dos cristales salen de la parte trasera de la cabeza y uno brilla en el pecho.\n\n**Decisiones:**\n- Generé los prompts con `enemy-prompt.mjs --body floating --attack none --target gemini`. Las piezas son las de por defecto: Cuerpo, Cabeza o sensor y Propulsor.\n- Como el ataque `none` es cuerpo a cuerpo \"con su propio cuerpo\", el arma melé (espolón, sierra, yunque) va fusionada al casco y no como pieza suelta.\n- La zona solo aporta la paleta; los tres robots siguen siendo de metal.\n- El primer commit salió con el lote vacío por un error de ruta en mi script. El segundo lo corrige y es el que tiene las propuestas.\n- No toqué `todo.json` ni creé documento de tarea.\n\n**Para probar:**\n1. Abre 📋 Tareas ▸ 🎨 Diseños y comprueba que el lote muestra las 3 tarjetas con su prompt.\n2. Pega cada prompt en Gemini y pon la imagen en la tarjeta (🖼 o Ctrl+V).\n3. En p2, mira si Gemini deja la sierra como pieza cerrada y no tapa el cuerpo ni el propulsor; es la más propensa a ocultar piezas.\n4. Revisa que ningún robot salga con piernas ni brazos, y que el fondo sea blanco liso.",
@@ -1736,7 +1753,9 @@
             },
             "runId": "2026-10-07T04-05-17-423Z_entonsg",
             "sessionId": "e078ceda-9ac8-48a3-a24a-db527205f041"
-          }
+          },
+          "sessionId": "e078ceda-9ac8-48a3-a24a-db527205f041",
+          "lastRunId": "2026-10-07T04-05-17-423Z_entonsg"
         },
         {
           "id": "nuwzrq9",
@@ -1752,8 +1771,6 @@
             "kind": "enemy"
           },
           "status": "done",
-          "lastRunId": "2026-10-07T04-15-23-853Z_nuwzrq9",
-          "sessionId": "93b0d3a2-bf0f-4387-96e4-dd9647c18795",
           "result": {
             "ok": true,
             "text": "Añadí 2 propuestas al lote `docs/disenos/2026-10-07-robot-con-arma-incoporada-en-su-cuerpo.json` y el chequeo del lote da \"Lote correcto: 2 propuesta(s)\". Quedó commiteado (`aefecde5`). Solo toqué ese archivo; no hubo cambios de código, así que no hubo que compilar.\n\nSon prompts de Gemini, sin imagen, hechos con `enemy-prompt.mjs --zone ice --body floating --attack magic --target gemini`. Pegas el prompt en Gemini y traes la imagen a la tarjeta.\n\n- **p1 `LensCannonBot`**: el torso entero es un cañón. Es un tambor de acero con aletas y una gran lente de cristal azul pálido en el pecho, que es lo que lanza el hechizo. Lleva dos cristales pequeños de antena y un propulsor debajo. `--cast`: la lente del pecho.\n- **p2 `MawDomeBot`**: cabeza-cúpula gris claro con una ranura-boca brillante, que es el arma, y un cuerpo corto. Tiene dos cristales a modo de cuernos y uno dentro de la boca. `--cast`: la ranura-boca.\n\n**Decisión:** pediste \"arma incorporada\", pero el tipo de ataque es mágico, que no admite arma como pieza aparte. Interpreté \"incorporada\" como que el propio cuerpo es el arma: lente de pecho y boca-cañón. No hay ninguna pieza de arma separada. Es lo que el tipo mágico permite.\n\n**Qué probar:**\n- Pega cada prompt en Gemini y comprueba que salen 3 piezas visibles enteras: cuerpo, cabeza o sensor, y propulsor.\n- Comprueba que no salen piernas, arma separada ni efectos, y que el fondo es blanco liso.\n- Comprueba que la lente (p1) y la boca (p2) se ven cerradas o en reposo, como pide la regla de lanzar después.",
@@ -1769,7 +1786,9 @@
             },
             "runId": "2026-10-07T04-15-23-853Z_nuwzrq9",
             "sessionId": "93b0d3a2-bf0f-4387-96e4-dd9647c18795"
-          }
+          },
+          "sessionId": "93b0d3a2-bf0f-4387-96e4-dd9647c18795",
+          "lastRunId": "2026-10-07T04-15-23-853Z_nuwzrq9"
         },
         {
           "id": "qgmylge",
@@ -1785,8 +1804,6 @@
             "kind": "enemy"
           },
           "status": "done",
-          "lastRunId": "2026-10-07T04-15-57-245Z_qgmylge",
-          "sessionId": "ed8dabdb-02d9-4916-9b2d-ffa4de292a78",
           "result": {
             "ok": true,
             "text": "Añadí 2 propuestas de robot flotante con arma (hielo) al lote `docs/disenos/2026-10-07-robot-con-arma.json`. `check-design-batch` dio \"Lote correcto\" y quedó commiteado (`7f2298d0`).\n\nAmbas son modo prompt: no hay imagen, solo el prompt de Gemini. Los generé con `enemy-prompt.mjs --zone ice --body floating --attack weapon --target gemini`.\n\n1. **SleetMortarBot**: cuerpo de campana invertida azul marino, cabeza redonda con visor cian, mortero corto de boca ancha como pieza aparte, y cristal grande arriba y uno pequeño en la boca.\n2. **HarpoonManta**: placa hexagonal plana gris pizarra tipo manta, lanzarrejones largo y fino con punta de garfios, y dos cristales pequeños como aletas más uno en la recámara.\n\n**Decisiones**\n- Usé las 4 piezas por defecto de flotante+arma (cuerpo, cabeza, propulsor, arma), sin `--piece`.\n- Los nombres no chocan con prefabs ni con otros lotes.\n- No toqué `todo.json`, no compilé Unity (solo JSON) y no hay documento de tarea que actualizar.\n\n**Para probar**\n- En 📋 Tareas ▸ 🎨 Diseños, abre el lote y copia cada prompt a Gemini.\n- Comprueba que salen 4 piezas visibles, sin patas, con el arma apuntando a la derecha y fondo blanco.\n- Pega la imagen en la tarjeta (🖼 / Ctrl+V) y aprueba o rechaza.",
@@ -1802,7 +1819,9 @@
             },
             "runId": "2026-10-07T04-15-57-245Z_qgmylge",
             "sessionId": "ed8dabdb-02d9-4916-9b2d-ffa4de292a78"
-          }
+          },
+          "sessionId": "ed8dabdb-02d9-4916-9b2d-ffa4de292a78",
+          "lastRunId": "2026-10-07T04-15-57-245Z_qgmylge"
         },
         {
           "id": "jpuqj7g",
@@ -1818,8 +1837,6 @@
             "kind": "enemy"
           },
           "status": "done",
-          "lastRunId": "2026-10-07T04-16-29-088Z_jpuqj7g",
-          "sessionId": "f0e5df14-2280-4bd9-86a3-c238a25f18d9",
           "result": {
             "ok": true,
             "text": "Añadí 2 propuestas de robot mele flotante (hielo) a `docs/disenos/2026-10-07-robot-mele-2.json`. `check-design-batch.mjs` dio \"Lote correcto\" y el commit es `630309c6`.\n\nModo prompt: no dibujé nada. Cada `prompt` es la salida de `enemy-prompt.mjs --target gemini --zone ice --body floating --attack none`.\n\n- **1 · RamBulwarkBot**: bajo y ancho, casco en forma de barril de acero gris pizarra con ribetes azul hielo. Lleva una placa-ariete frontal con dos pinchos romos y un ojo-visor único en una cúpula pequeña. Un cristal grande arriba alimenta el propulsor.\n- **2 · HornCrusherBot**: alto y angular, con placas blanco-hielo y azul grisáceo. Cabeza en cuña de toro con dos cuernos metálicos curvos y visor estrecho, y propulsor en anillo bajo el torso. Dos cristales pequeños en el pecho, uno a cada lado de un núcleo central.\n\nDecisión: el ataque `none` es cuerpo a cuerpo, así que los \"pinchos\" y \"cuernos\" son parte del casco y no un arma separada. El prompt resultante pide 3 piezas: cuerpo, cabeza o sensor, y propulsor.\n\nNo toqué `todo.json`. Compilar no aplica: solo cambié un JSON, sin código.\n\nPara probar en la web (📋 Tareas ▸ 🎨 Diseños):\n- Pega cada prompt en Gemini y revisa que el robot no tenga piernas ni arma.\n- Comprueba que se vean enteras las 3 piezas, sin cuernos ni pinchos que tapen otras piezas.\n- Comprueba que el fondo sea blanco puro.\n- Sube la imagen a cada tarjeta con 🖼 o Ctrl+V.",
@@ -1835,7 +1852,9 @@
             },
             "runId": "2026-10-07T04-16-29-088Z_jpuqj7g",
             "sessionId": "f0e5df14-2280-4bd9-86a3-c238a25f18d9"
-          }
+          },
+          "sessionId": "f0e5df14-2280-4bd9-86a3-c238a25f18d9",
+          "lastRunId": "2026-10-07T04-16-29-088Z_jpuqj7g"
         },
         {
           "id": "0egt00p",
@@ -1851,8 +1870,6 @@
             "kind": "enemy"
           },
           "status": "done",
-          "lastRunId": "2026-10-07T14-25-54-253Z_0egt00p",
-          "sessionId": "cf83729c-029a-4c49-842d-dfe9fc212744",
           "result": {
             "ok": true,
             "text": "Añadí 3 propuestas de hada en `docs/disenos/2026-10-07-hada.json`. Cada una trae su prompt para Gemini, sin imagen. `check-design-batch` dio \"Lote correcto\" y el lote está commiteado.\n- **1 MothFairy**: hada polilla con alas grandes con ojos y antenas con cristal. Lanza con las manos.\n- **2 CapFairy**: hada seta con sombrero moteado azul-verdoso y alas de libélula. Lanza con la boca.\n- **3 ThornFairy**: hada espinosa con vestido de hojas y corona de espinas. Lanza con la mano.\n- Los prompts salen de `enemy-prompt.mjs` con `--zone forest --body flying --attack magic`. Dejé las piezas por defecto.\n- Evité los nombres de `Enemy_ForestFairy` y `Enemy_HadaEle`, que ya existen.\n- No toqué `todo.json` ni Unity, y no hubo compilación porque no cambié código.\n- **Para probar:** pega cada prompt en Gemini y trae la imagen a la tarjeta (Ctrl+V). Mira que las alas se vean enteras y que no salga arma ni piernas.",
@@ -1868,7 +1885,9 @@
             },
             "runId": "2026-10-07T14-25-54-253Z_0egt00p",
             "sessionId": "cf83729c-029a-4c49-842d-dfe9fc212744"
-          }
+          },
+          "sessionId": "cf83729c-029a-4c49-842d-dfe9fc212744",
+          "lastRunId": "2026-10-07T14-25-54-253Z_0egt00p"
         },
         {
           "id": "oaiaiuj",
@@ -1884,8 +1903,6 @@
             "kind": "enemy"
           },
           "status": "done",
-          "lastRunId": "2026-10-07T16-04-56-029Z_oaiaiuj",
-          "sessionId": "d653467a-7dc5-4f57-91ee-9532636a7e8d",
           "result": {
             "ok": true,
             "text": "Añadí 2 propuestas con su prompt de Gemini a `docs/disenos/2026-10-07-robot-con-rayo-de-protones.json`. `check-design-batch` dice \"Lote correcto: 2 propuesta(s)\" y está commiteado. Hay un commit anterior con el lote vacío, porque el primer intento falló al leer los prompts.\n\n- **ProtonSentry:** centinela achaparrado con un ojo-visor redondo, antena de cristal y cañón grueso al lado. Gris acero con ribetes azul hielo.\n- **ProtonLancer:** cápsula alta y angular con cabina de cristal, placa de hombro ancha y emisor de dos puntas. Azul marino y gris escarcha con acentos turquesa.\n\nAmbos salen de `enemy-prompt.mjs --body floating --attack weapon` en zona ice. Las 4 piezas son cuerpo, cabeza, propulsor y arma. Cambié \"blanco\" por \"gris escarcha\" en el segundo para no chocar con la regla de fondo blanco.\n\nA probar: pegar cada prompt en Gemini y revisar que el arma salga separada y apunte a la derecha, que no haya efectos de rayo en la imagen y que las 4 piezas se vean enteras. Luego traer la imagen a la tarjeta (Ctrl+V).",
@@ -1901,7 +1918,9 @@
             },
             "runId": "2026-10-07T16-04-56-029Z_oaiaiuj",
             "sessionId": "d653467a-7dc5-4f57-91ee-9532636a7e8d"
-          }
+          },
+          "sessionId": "d653467a-7dc5-4f57-91ee-9532636a7e8d",
+          "lastRunId": "2026-10-07T16-04-56-029Z_oaiaiuj"
         }
       ]
     }

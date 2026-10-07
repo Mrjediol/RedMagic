@@ -942,7 +942,7 @@ MonoBehaviour:
   readyMargin: 0.5
   cooldownOverride: 0
   minDuration: 0.2
-  peak: 1
+  peak: 0.46
 --- !u!1 &2708877225761612205
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,0 +1,25 @@
+{
+  "name": "LensCannonBot",
+  "estado": "cuerpo-por-aprobar",
+  "diseno": {
+    "image": "docs/enemigos/LensCannonBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robot-con-arma-incoporada-en-su-cuerpo__p1.png",
+    "zone": "ice",
+    "lote": "2026-10-07-robot-con-arma-incoporada-en-su-cuerpo",
+    "item": "p1",
+    "request": "robot con arma incoporada en su cuerpo",
+    "note": "El torso entero es un cañón: tambor de acero con una gran lente de cristal en el pecho que dispara."
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T04:19:24.487Z",
+  "tarea": "05wa22t",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab",
+  "cuerpo": {
+    "fecha": "2026-10-07T04:23:46.373Z",
+    "plantilla": "floatingCaster",
+    "partes": "claude/LensCannonBot/final",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/LensCannonBot.json",
+    "resumen": "4 piezas: Torso (tambor con lente y coraza de piedra), Head (visera con cristales), CastArm (anillo con púas + cañón, dibujado delante del torso) y Lower (propulsor con llama). Dudoso: el cañón va en el slot CastArm, que gira al apuntar; el anillo gira con él y puede despegarse del tambor. Pivote del cañón en el anillo."
+  },
+  "imagen": "docs/enemigos/LensCannonBot/preview.png"
+}

@@ -22,6 +22,7 @@
 //   parents       optional { <slot id>: <parent slot id> | null }: the hierarchy of a body adjusted by hand in Enemy Studio
 //   parents       optional { <slot id>: <parent slot id> | null }: the hierarchy of a body whose tree was changed by
 //                 hand in Enemy Studio (gesture paths follow it, so a --partial brief must say it too)
+//   front         optional [slot id…]: parts drawn in front of every other (e.g. a barrel that crosses the body)
 //   slots         optional per slot id: { pivot: [x, y], muzzle: [x, y] } normalised on the part's own
 //                 box (x from the left, y from the top), when the template's guess does not fit the art
 //   tuning        EnemyTuning overrides on top of the template's behaviour
@@ -180,6 +181,11 @@ for (const part of order) {
     if (!id.startsWith('gesture:') && !M.SPRITE_STATES.some((s) => s.id === id)) { problems.push(`${variant}: unknown state '${stateName}'`); continue; }
     M.setVariant(part, id, await imageRecord(path.join(partsDir, variant)));
   }
+}
+// `front`: slot ids drawn in front of every other part (a barrel that crosses the body): last in the draw order.
+for (const id of brief.front || []) {
+  const i = state.parts.findIndex((p) => p.slot?.id === id);
+  if (i >= 0) state.parts.push(...state.parts.splice(i, 1));
 }
 // Optional slots with no art leave the document: an empty slot is not a part.
 state.parts = state.parts.filter((p) => p.image || !p.slot || !p.slot.optional);

@@ -154,3 +154,56 @@
     background-color: rgba(122, 26, 34, 0.9);
     border-color: var(--color-btn-border-hover);
 }
+
+/* ---- Pestañas (General / Interfaz) ---- */
+.option-tabs {
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.option-tab {
+    min-width: 260px;
+    height: 64px;
+    margin: 0 10px;
+    padding: 0 24px;
+    font-size: 30px;
+    -unity-font-style: bold;
+    color: rgba(236, 223, 191, 0.6);
+    background-color: rgba(0, 0, 0, 0.35);
+    border-width: 2px;
+    border-color: rgba(150, 112, 74, 0.35);
+    border-radius: 10px;
+}
+
+.option-tab:hover {
+    color: #ffe6a8;
+    border-color: rgba(150, 112, 74, 0.8);
+}
+
+.option-tab--active {
+    color: #ffe6a8;
+    background-color: rgba(122, 26, 34, 0.85);
+    border-color: var(--color-btn-border-hover);
+}
+
+/* Las dos páginas comparten alto mínimo: cambiar de pestaña no hace saltar el panel. */
+.option-pages {
+    min-height: 470px;
+}
+
+.option-label--hud {
+    width: 330px;
+}
+
+.option-row--buttons {
+    justify-content: center;
+    margin-top: 26px;
+}
+
+.option-wide-button {
+    width: 470px;
+    height: 84px;
+    margin: 0 14px;
+    font-size: 30px;
+}

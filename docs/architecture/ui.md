@@ -39,15 +39,32 @@ all of which bit during that pass:
 
 ## In-game HUD (`Assets/Ui/Hud/`)
 One persistent, self-bootstrapping panel, **`GameHud`** (`Resources/CurrencyHudPanelSettings`,
-sort 15: above touch buttons, below menus), code-built from widget classes that each animate in a
-`Tick(dt)` on unscaled time:
-- **Top-left**: `HudHealthBar` (fill + delayed "ghost" trail on damage, green lead on heal, white
-  flash + shake on hit, low-HP pulse, optional shield bar on top — pips for ≤12 hits, continuous
-  otherwise) and a row of `HudCooldownSlot`s, one per `CooldownSlot` enum value.
-- **Top-right**: `HudCurrency` (gain counts up + pop, `GameHud.PlaySpend` for the shop's
-  count-down, reroll counter only while `ShopManager.Current`) and `HudBuffRow` (`BuffIndicators`).
-- **Bottom-left**: `HudControlsLegend`, keyboard/mouse only, hidden by Options ▸
-  `HudSettings.ShowControls` (`PlayerPrefs`).
+sort 15: above touch buttons and Options, below Pause), code-built from widget classes that each
+animate in a `Tick(dt)` on unscaled time. Four **movable pieces** (`Settings.HudElement`; factory
+spot in brackets):
+- **Health** (top-left): `HudHealthBar` (fill + delayed "ghost" trail on damage, green lead on heal,
+  white flash + shake on hit, pulse under `Health.LowHealthThreshold`, shield bar floating above it —
+  pips for ≤12 hits, continuous otherwise — positioned absolutely so a shield never resizes the piece).
+- **Cooldowns** (under health): a row of `HudCooldownSlot`s, one per `CooldownSlot` enum value.
+- **Currency** (top-right): `HudCurrency` (gain counts up + pop, `GameHud.PlaySpend` for the shop's
+  count-down, reroll counter only while `ShopManager.Current`) with `HudBuffRow` (`BuffIndicators`) under it.
+- **Controls** (bottom-left): `HudControlsLegend`, keyboard/mouse only, `HudSettings.ShowControls`.
+
+Behind them, **`HudScreenFx`**: a code-generated red vignette (centre always clear) — a flash on
+`Health.Damaged` scaled by hit size, and a soft double-pulse "heartbeat" under the low-health
+threshold, both faded in/out, each with on/off + intensity in `HudSettings`.
+
+**Placement**: each piece is absolutely positioned from a `HudAnchor` (pivot 0/½/1 per axis + screen
+fraction), saved per piece in `PlayerPrefs` by `HudSettings`; unset = `GameHud.DefaultAnchor`. On drop
+the pivot is picked by the screen third the piece lands in, so a right-docked piece grows inward.
+**`HudLayoutEditor`** (Options ▸ Interfaz ▸ Colocar elementos → `GameHud.BeginLayoutEdit`) dims the
+screen, draws a 48×24 grid (gold centre lines) and a draggable handle per piece; dragging snaps the
+nearest of start/centre/end edge to a grid line (cyan guide), drop saves. Options hides itself while
+editing; Escape / Done (`GameHud.EndLayoutEdit`) returns to it. While editing every piece is forced
+visible (preview health bar in the main menu).
+
+**Options** has two tabs, General (audio, display, language) and Interfaz (the `HudSettings` above,
+place / reset positions); `ShowTab` toggles the pages, `.option-pages` min-height keeps the panel from jumping.
 
 Data comes from the player through **interfaces, not wiring** (`Gameplay/CooldownSource.cs`):
 `ICooldownSource` (slot, `CooldownActive`, `CooldownState` {remaining, duration, blocked, charge},

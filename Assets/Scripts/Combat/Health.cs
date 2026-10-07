@@ -60,6 +60,9 @@ namespace RedMagic.Combat
             if (before > limit && currentHealth <= limit) SoundTriggered?.Invoke(SoundTrigger.OnLowHealth);
         }
 
+        /// <summary>Fracción de vida bajo la que se considera "poca vida" (sonido OnLowHealth, aviso del HUD).</summary>
+        public float LowHealthThreshold => lowHealthThreshold;
+
         public float MaxHealth => maxHealth;
         public float CurrentHealth => currentHealth;
 

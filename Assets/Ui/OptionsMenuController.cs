@@ -11,6 +11,10 @@ namespace RedMagic.UI
     /// Conecta los sliders y toggles de OptionsMenu.uxml con el AudioManager, y los selectores de
     /// resolución (<see cref="DisplaySettings"/>) e idioma (<see cref="Loc"/>). Se abre desde otra
     /// pantalla (menú principal o pausa) con <see cref="Open"/> y el botón Volver regresa a esa pantalla.
+    ///
+    /// Dos pestañas: <b>General</b> (audio, pantalla, idioma) e <b>Interfaz</b> (<see cref="HudSettings"/>:
+    /// efectos de golpe y de poca vida, chuleta de controles y "Colocar elementos", que abre la
+    /// cuadrícula de <see cref="GameHud"/>).
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class OptionsMenuController : MonoBehaviour, IMenuScreen
@@ -28,6 +32,14 @@ namespace RedMagic.UI
         private Button _resolutionPrev, _resolutionNext, _languagePrev, _languageNext;
         private Label _resolutionValue, _languageValue;
         private Toggle _controlsToggle;
+
+        // Pestaña Interfaz
+        private Button _generalTab, _interfaceTab;
+        private VisualElement _generalPage, _interfacePage;
+        private Slider _hurtSlider, _lowHealthSlider;
+        private Label _hurtValue, _lowHealthValue;
+        private Toggle _hurtToggle, _lowHealthToggle;
+        private Button _layoutButton, _layoutResetButton;
 
         private bool _hidden = true;
         private bool _open;
@@ -70,11 +82,21 @@ namespace RedMagic.UI
             _languageValue = _root.Q<Label>("languageValue");
             _controlsToggle = _root.Q<Toggle>("controlsToggle");
 
-            if (_controlsToggle != null)
-            {
-                _controlsToggle.SetValueWithoutNotify(HudSettings.ShowControls);
-                _controlsToggle.RegisterValueChangedCallback(OnControlsToggled);
-            }
+            _generalTab = _root.Q<Button>("generalTab");
+            _interfaceTab = _root.Q<Button>("interfaceTab");
+            _generalPage = _root.Q<VisualElement>("generalPage");
+            _interfacePage = _root.Q<VisualElement>("interfacePage");
+            _hurtSlider = _root.Q<Slider>("hurtSlider");
+            _hurtValue = _root.Q<Label>("hurtValue");
+            _hurtToggle = _root.Q<Toggle>("hurtToggle");
+            _lowHealthSlider = _root.Q<Slider>("lowHealthSlider");
+            _lowHealthValue = _root.Q<Label>("lowHealthValue");
+            _lowHealthToggle = _root.Q<Toggle>("lowHealthToggle");
+            _layoutButton = _root.Q<Button>("layoutButton");
+            _layoutResetButton = _root.Q<Button>("layoutResetButton");
+
+            WireInterfaceTab();
+            ShowTab(false);
 
             WireGroup(_masterSlider, _masterMute, AudioManager.Master);
             WireGroup(_musicSlider, _musicMute, AudioManager.Music);
@@ -119,8 +141,12 @@ namespace RedMagic.UI
             MenuSkinDresser.DressToggle(_musicMute, skin);
             MenuSkinDresser.DressToggle(_sfxMute, skin);
             MenuSkinDresser.DressToggle(_controlsToggle, skin);
+            MenuSkinDresser.DressToggle(_hurtToggle, skin);
+            MenuSkinDresser.DressToggle(_lowHealthToggle, skin);
 
             MenuSkinDresser.DressButton(_backButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_layoutButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_layoutResetButton, skin, Color.white);
         }
 
         private void OnDisable()
@@ -128,7 +154,7 @@ namespace RedMagic.UI
             UnwireGroup(_masterSlider, _masterMute);
             UnwireGroup(_musicSlider, _musicMute);
             UnwireGroup(_sfxSlider, _sfxMute);
-            _controlsToggle?.UnregisterValueChangedCallback(OnControlsToggled);
+            UnwireInterfaceTab();
 
             if (_backButton != null)
             {
@@ -142,9 +168,107 @@ namespace RedMagic.UI
             Loc.Changed -= OnLanguageChanged;
         }
 
-        // ------------------------------------------------------------------ HUD
+        // ------------------------------------------------------------------ pestañas
+
+        private void OnGeneralTab() => ShowTab(false);
+        private void OnInterfaceTab() => ShowTab(true);
+
+        private void ShowTab(bool interfaceTab)
+        {
+            if (_generalPage != null) _generalPage.style.display = interfaceTab ? DisplayStyle.None : DisplayStyle.Flex;
+            if (_interfacePage != null) _interfacePage.style.display = interfaceTab ? DisplayStyle.Flex : DisplayStyle.None;
+            _generalTab?.EnableInClassList("option-tab--active", !interfaceTab);
+            _interfaceTab?.EnableInClassList("option-tab--active", interfaceTab);
+            if (interfaceTab) RefreshInterfaceTab();
+        }
+
+        // ------------------------------------------------------------------ pestaña Interfaz (HudSettings)
+
+        private void WireInterfaceTab()
+        {
+            if (_generalTab != null) _generalTab.clicked += OnGeneralTab;
+            if (_interfaceTab != null) _interfaceTab.clicked += OnInterfaceTab;
+
+            _hurtSlider?.RegisterValueChangedCallback(OnHurtSlider);
+            _hurtToggle?.RegisterValueChangedCallback(OnHurtToggle);
+            _lowHealthSlider?.RegisterValueChangedCallback(OnLowHealthSlider);
+            _lowHealthToggle?.RegisterValueChangedCallback(OnLowHealthToggle);
+            _controlsToggle?.RegisterValueChangedCallback(OnControlsToggled);
+
+            if (_layoutButton != null) _layoutButton.clicked += OnPlaceHud;
+            if (_layoutResetButton != null) _layoutResetButton.clicked += HudSettings.ResetAnchors;
+
+            RefreshInterfaceTab();
+        }
+
+        private void UnwireInterfaceTab()
+        {
+            if (_generalTab != null) _generalTab.clicked -= OnGeneralTab;
+            if (_interfaceTab != null) _interfaceTab.clicked -= OnInterfaceTab;
+
+            _hurtSlider?.UnregisterValueChangedCallback(OnHurtSlider);
+            _hurtToggle?.UnregisterValueChangedCallback(OnHurtToggle);
+            _lowHealthSlider?.UnregisterValueChangedCallback(OnLowHealthSlider);
+            _lowHealthToggle?.UnregisterValueChangedCallback(OnLowHealthToggle);
+            _controlsToggle?.UnregisterValueChangedCallback(OnControlsToggled);
+
+            if (_layoutButton != null) _layoutButton.clicked -= OnPlaceHud;
+            if (_layoutResetButton != null) _layoutResetButton.clicked -= HudSettings.ResetAnchors;
+        }
+
+        private void RefreshInterfaceTab()
+        {
+            _hurtSlider?.SetValueWithoutNotify(HudSettings.HurtIntensity);
+            _hurtToggle?.SetValueWithoutNotify(HudSettings.HurtEffect);
+            _lowHealthSlider?.SetValueWithoutNotify(HudSettings.LowHealthIntensity);
+            _lowHealthToggle?.SetValueWithoutNotify(HudSettings.LowHealthEffect);
+            _controlsToggle?.SetValueWithoutNotify(HudSettings.ShowControls);
+            RefreshEffectRow(_hurtSlider, _hurtValue, HudSettings.HurtEffect, HudSettings.HurtIntensity);
+            RefreshEffectRow(_lowHealthSlider, _lowHealthValue, HudSettings.LowHealthEffect, HudSettings.LowHealthIntensity);
+        }
+
+        // Apagado: el slider se atenúa y el valor dice "Desactivado".
+        private static void RefreshEffectRow(Slider slider, Label value, bool on, float intensity)
+        {
+            slider?.SetEnabled(on);
+            if (value != null) value.text = on ? Mathf.RoundToInt(intensity * 100f) + "%" : Loc.Get("options.disabled");
+        }
+
+        private void OnHurtSlider(ChangeEvent<float> evt)
+        {
+            HudSettings.HurtIntensity = evt.newValue;
+            RefreshEffectRow(_hurtSlider, _hurtValue, HudSettings.HurtEffect, evt.newValue);
+        }
+
+        private void OnHurtToggle(ChangeEvent<bool> evt)
+        {
+            HudSettings.HurtEffect = evt.newValue;
+            RefreshEffectRow(_hurtSlider, _hurtValue, evt.newValue, HudSettings.HurtIntensity);
+        }
+
+        private void OnLowHealthSlider(ChangeEvent<float> evt)
+        {
+            HudSettings.LowHealthIntensity = evt.newValue;
+            RefreshEffectRow(_lowHealthSlider, _lowHealthValue, HudSettings.LowHealthEffect, evt.newValue);
+        }
+
+        private void OnLowHealthToggle(ChangeEvent<bool> evt)
+        {
+            HudSettings.LowHealthEffect = evt.newValue;
+            RefreshEffectRow(_lowHealthSlider, _lowHealthValue, evt.newValue, HudSettings.LowHealthIntensity);
+        }
 
         private static void OnControlsToggled(ChangeEvent<bool> evt) => HudSettings.ShowControls = evt.newValue;
+
+        /// <summary>
+        /// "Colocar elementos": Opciones se aparta (sigue abierto y el juego en pausa) y el HUD
+        /// enseña su cuadrícula; al pulsar Listo (o Escape) vuelve aquí.
+        /// </summary>
+        private void OnPlaceHud()
+        {
+            if (!GameHud.BeginLayoutEdit(() => SetVisible(true))) return;
+            SetVisible(false);
+        }
 
         // ------------------------------------------------------------------ resolución e idioma
 
@@ -189,6 +313,7 @@ namespace RedMagic.UI
         private void OnLanguageChanged()
         {
             RefreshFromAudioManager(); // "Silenciado" / "Muted"
+            RefreshInterfaceTab();     // "Desactivado" / "Off"
             RefreshSelectors();
         }
 
@@ -217,6 +342,7 @@ namespace RedMagic.UI
             SystemSounds.Play(s => s.optionsMenu.open);
 
             RefreshFromAudioManager();
+            ShowTab(false);   // siempre se abre por General
             SetVisible(true);
 
             // Con mando: dar foco para poder navegar los sliders/toggles con el d-pad.
@@ -306,7 +432,17 @@ namespace RedMagic.UI
         }
 
         /// <summary>Vuelve a la pantalla que abrió Opciones (botón Volver o Escape/Atrás). Suena el cierre del menú.</summary>
-        public void GoBack() => Close();
+        public void GoBack()
+        {
+            // Colocando el HUD, Escape / Atrás es "Listo": vuelve a Opciones, no lo cierra.
+            if (GameHud.IsEditingLayout)
+            {
+                GameHud.EndLayoutEdit();
+                return;
+            }
+
+            Close();
+        }
 
         private void Close()
         {

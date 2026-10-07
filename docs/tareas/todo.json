@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-07T19:14:03.343Z",
+  "updated": "2026-10-07T21:27:26.481Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -197,6 +197,13 @@
           "text": "Diseñar e implementar la interfaz del player mientras juega (HUD)",
           "note": "Los menús ya están hechos",
           "done": false
+        },
+        {
+          "id": "hudvida",
+          "text": "Vida cerca de la vista sin tapar el mapa",
+          "note": "Pensar formas de que la vida se lea sin mirar a la esquina (ideas en el doc).",
+          "done": false,
+          "doc": "docs/tareas/hud-vida-cerca.md"
         }
       ]
     },

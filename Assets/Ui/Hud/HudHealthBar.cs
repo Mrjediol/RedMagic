@@ -18,7 +18,7 @@ namespace RedMagic.UI
     /// </summary>
     public class HudHealthBar : VisualElement
     {
-        private const float LowHealth = 0.3f;
+
         private const float GhostHold = 0.45f;
         private const int MaxShieldPips = 12;
 
@@ -42,8 +42,13 @@ namespace RedMagic.UI
             style.width = HudStyle.HealthWidth;
             style.flexDirection = FlexDirection.Column;
 
-            // --- escudo (encima de la vida)
+            // --- escudo: flotando justo encima de la barra, sin cambiar el tamaño de la pieza (que
+            // el jugador coloca a mano: aparecer un escudo no debe mover nada).
             _shieldRow = new VisualElement { name = "shield", pickingMode = PickingMode.Ignore };
+            _shieldRow.style.position = Position.Absolute;
+            _shieldRow.style.left = 0;
+            _shieldRow.style.right = 0;
+            _shieldRow.style.bottom = Length.Percent(100f);
             _shieldRow.style.height = HudStyle.ShieldHeight;
             _shieldRow.style.marginBottom = 5;
             _shieldRow.style.flexDirection = FlexDirection.Row;
@@ -127,6 +132,17 @@ namespace RedMagic.UI
             return true;
         }
 
+        /// <summary>Barra llena de muestra, para colocarla en Opciones cuando no hay jugador (menú principal).</summary>
+        public void ShowPreview()
+        {
+            _health = null;
+            Snap(1f);
+            _fill.style.width = _heal.style.width = _ghost.style.width = Length.Percent(100f);
+            _text = "100 / 100";
+            _label.text = _text;
+            _shieldRow.style.display = DisplayStyle.None;
+        }
+
         private void Snap(float value)
         {
             _fillValue = _ghostValue = _healValue = value;
@@ -167,7 +183,7 @@ namespace RedMagic.UI
             _ghost.style.width = Length.Percent(_ghostValue * 100f);
 
             // Poca vida: el relleno y el marco laten.
-            bool low = target > 0f && target <= LowHealth;
+            bool low = target > 0f && target <= health.LowHealthThreshold;
             float pulse = low ? 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 7f) : 0f;
             _fill.style.backgroundColor = low ? Color.Lerp(HudStyle.HealthFill, HudStyle.HealthFillLow, pulse) : HudStyle.HealthFill;
             HudStyle.BorderColor(_frame, low ? Color.Lerp(HudStyle.Frame, new Color(1f, 0.3f, 0.25f, 1f), pulse) : HudStyle.Frame);

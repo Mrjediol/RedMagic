@@ -1,6 +1,6 @@
 {
   "name": "CinderKettleBot",
-  "estado": "montando-cuerpo",
+  "estado": "cuerpo-por-aprobar",
   "diseno": {
     "image": "docs/enemigos/CinderKettleBot/diseno.png",
     "source": "docs/disenos/img/2026-10-07-robot-2__p3.png",
@@ -20,9 +20,10 @@
       "texto": "igual pero ojos rojos",
       "uso": "attacking",
       "frames": 1,
-      "estado": "en-curso",
+      "estado": "hecho",
       "createdAt": "2026-10-07T16:13:18.418Z",
-      "tarea": "zl37h4o"
+      "tarea": "zl37h4o",
+      "resumen": "Head__attacking.png (ojos rojos, rig state attacking)"
     },
     {
       "id": "9kc780g",
@@ -31,9 +32,10 @@
       "texto": "el cañon que se vea caliente despues de disparar durante el tiempo de cooldown, con una trancision que hace que nada mas disparar se vea muy caliente y se vaya volviendo a la normalidad poco a poco y ya sea normal 0.5 segundos antes de poder disparar",
       "uso": "",
       "frames": 1,
-      "estado": "en-curso",
+      "estado": "hecho",
       "createdAt": "2026-10-07T16:15:52.739Z",
-      "tarea": "zl37h4o"
+      "tarea": "zl37h4o",
+      "resumen": "CastArm__extra_Caliente.png (cañón al rojo); queda en la carpeta, sin estado de rig: la transición de enfriado no está en Unity"
     }
   ],
   "piezas": {
@@ -61,5 +63,14 @@
       }
     ]
   },
-  "tarea": "zl37h4o"
+  "tarea": "zl37h4o",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
+  "cuerpo": {
+    "fecha": "2026-10-07T16:22:17.033Z",
+    "plantilla": "floatingCaster",
+    "partes": "Web/RedMagicWeb/tools/comfy → output/claude/CinderKettleBot/final (copiadas a Assets/Art/RigImports/CinderKettleBot)",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/CinderKettleBot.json",
+    "resumen": "5 piezas: Head, Torso (olla+chimenea+asa), Accessory (anillo rejilla), Lower (llama), CastArm (cañón+mano). La cabeza salió mal 3 veces: se reescaló/recolocó a mano su mejor intento sobre el diseño."
+  },
+  "imagen": "docs/enemigos/CinderKettleBot/preview.png"
 }

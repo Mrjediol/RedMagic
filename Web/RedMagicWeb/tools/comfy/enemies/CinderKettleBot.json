@@ -1,0 +1,10 @@
+{
+  "name": "CinderKettleBot",
+  "request": "robot (solo cuerpo)",
+  "template": "floatingCaster",
+  "parts": "claude/CinderKettleBot/final",
+  "only": ["head", "torso", "accessory", "lower", "castArm"],
+  "height": 2.8,
+  "slots": { "castArm": { "pivot": [0.1, 0.6], "muzzle": [0.97, 0.3] } },
+  "tuning": { "moveSoundInterval": 0.9 }
+}

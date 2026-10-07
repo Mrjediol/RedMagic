@@ -640,18 +640,19 @@ MonoBehaviour:
   reflectFromProjectiles: 1
   reflectFromMelee: 1
   reflectKnockback: 1
-  reflectTravelTime: 0.12
   parryEffect: {fileID: 0}
   successEffect: {fileID: 0}
   reflectEffect: {fileID: 0}
   effectOffset: {x: 0.55, y: 0.1}
-  placeholderColor: {r: 0.62, g: 1, b: 0.35, a: 1}
+  auraColor: {r: 1, g: 0.12, b: 0.16, a: 1}
+  silhouetteMaterial: {fileID: 2100000, guid: 1a802b8bc803db243a2a1f259799ceab, type: 2}
   glowMaterial: {fileID: 2100000, guid: 4d69835d7ad47404f90aee19723a5f8b, type: 2}
-  threadMaterial: {fileID: 2100000, guid: 8a0545a3779747040bd7991b7520ec93, type: 2}
-  rimScale: 1.18
-  glowFade: 0.12
-  threadWidth: 0.09
-  threadJitter: 0.18
+  outlineWidth: 0.07
+  auraSize: 3.2
+  auraIntensity: 0.75
+  bodyTint: 0.35
+  visualHold: 0.18
+  visualFade: 0.3
   drawGizmo: 1
 --- !u!1 &5936975751486156930
 GameObject:

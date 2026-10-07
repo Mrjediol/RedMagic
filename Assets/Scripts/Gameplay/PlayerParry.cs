@@ -21,13 +21,14 @@ namespace RedMagic.Gameplay
     /// (<see cref="catchRadius"/>): así el parry es omnidireccional y no exige que la bala ya esté
     /// dentro del collider.
     ///
-    /// <b>Visual</b> (no hay sprite de parry, el jugador aún es por sprite-sheet): la silueta del
-    /// propio jugador se ilumina (copias aditivas de su sprite actual, el aura ciñe el cuerpo y no es
-    /// una burbuja, así que convive con un escudo esférico). Al acertar, destello en el punto de
-    /// contacto; si devuelve daño, un <b>hilo carmesí</b> sale de ese punto hasta quien lanzó el golpe
-    /// y el daño entra cuando llega: la magia del ataque vuelve por el mismo vínculo que la trajo, que
-    /// es la excusa para hacer daño a distancia. Todo se puede sustituir por prefabs
-    /// (<see cref="parryEffect"/>, <see cref="successEffect"/>, <see cref="reflectEffect"/>).
+    /// <b>Visual</b> (no hay sprite de parry, el jugador aún es por sprite-sheet): un <b>borde rojo</b>
+    /// sólido que ciñe la silueta del frame actual (8 copias planas desplazadas detrás del cuerpo,
+    /// material <c>Fx_SpriteSilhouette</c>), un <b>aura roja</b> difusa alrededor y un ligero tinte rojo
+    /// del cuerpo. Sigue la forma del cuerpo, no es una burbuja: convive con un escudo esférico. Dura
+    /// al menos <see cref="visualHold"/> aunque la ventana real sea más corta, y se desvanece en
+    /// <see cref="visualFade"/>. Al acertar pasa a blanco un instante y sale un destello en el punto de
+    /// contacto. El daño devuelto entra al instante, sin nada que viaje hasta el enemigo. Todo se puede
+    /// sustituir por prefabs (<see cref="parryEffect"/>, <see cref="successEffect"/>, <see cref="reflectEffect"/>).
     /// </summary>
     [RequireComponent(typeof(PlayerMovement))]
     [DisallowMultipleComponent]
@@ -106,8 +107,8 @@ namespace RedMagic.Gameplay
         [Min(0f)]
         [SerializeField] private float airBounce = 0f;
 
-        [Header("Devolver daño (hilo carmesí)")]
-        [Tooltip("El golpe bloqueado vuelve por un hilo de magia y hace daño a quien lo lanzó. Un " +
+        [Header("Devolver daño")]
+        [Tooltip("El golpe bloqueado hace daño a quien lo lanzó, al instante. Un " +
                  "proyectil del entorno (sin dueño) no devuelve nada.")]
         [SerializeField] private bool reflectDamage = false;
         [Tooltip("Daño devuelto = daño del golpe bloqueado × esto. 0.1, 2, 10…")]
@@ -118,39 +119,42 @@ namespace RedMagic.Gameplay
         [Tooltip("Empujón del daño devuelto (multiplica el Knockback del enemigo). 0 = no empuja.")]
         [Min(0f)]
         [SerializeField] private float reflectKnockback = 1f;
-        [Tooltip("Segundos (reales) que tarda el hilo en llegar al enemigo; el daño entra al llegar. 0 = al instante.")]
-        [Min(0f)]
-        [SerializeField] private float reflectTravelTime = 0.12f;
 
         [Header("Visual — prefabs (vacío = placeholder en código)")]
-        [Tooltip("Efecto sobre el jugador al pulsar. Vacío = la silueta del jugador se ilumina.")]
+        [Tooltip("Efecto sobre el jugador al pulsar. Vacío = borde y aura rojos alrededor del jugador.")]
         [SerializeField] private GameObject parryEffect;
         [Tooltip("Efecto en el punto de contacto al bloquear. Vacío = destello de anillo.")]
         [SerializeField] private GameObject successEffect;
-        [Tooltip("Efecto sobre el enemigo cuando le llega el daño devuelto. Vacío = el mismo destello.")]
+        [Tooltip("Efecto sobre el enemigo al que se le devuelve el daño. Vacío = ninguno (sólo su número de daño).")]
         [SerializeField] private GameObject reflectEffect;
         [Tooltip("Posición del efecto de parry respecto al jugador. La X se invierte según hacia dónde se mira.")]
         [SerializeField] private Vector2 effectOffset = new Vector2(0f, 0.1f);
 
-        [Header("Visual — placeholder")]
-        [Tooltip("Color del reflejo (silueta, destello e hilo).")]
-        [SerializeField] private Color placeholderColor = new Color(1f, 0.18f, 0.22f, 1f);
-        [Tooltip("Material aditivo para la silueta y el destello (Fx_SpriteAdditive). Vacío = sprite normal teñido.")]
+        [Header("Visual — borde y aura (placeholder)")]
+        [Tooltip("Color del borde, del aura y del destello.")]
+        [SerializeField] private Color auraColor = new Color(1f, 0.12f, 0.16f, 1f);
+        [Tooltip("Material de silueta plana para el borde (Fx_SpriteSilhouette). Vacío = no hay borde.")]
+        [SerializeField] private Material silhouetteMaterial;
+        [Tooltip("Material aditivo para el aura y el destello (Fx_SpriteAdditive). Vacío = sprite normal.")]
         [SerializeField] private Material glowMaterial;
-        [Tooltip("Material del hilo (Fx_ParticleAdditive: color por vértice). Vacío = el de por defecto.")]
-        [SerializeField] private Material threadMaterial;
-        [Tooltip("Cuánto más grande que el cuerpo es el halo de la silueta.")]
-        [Min(1f)]
-        [SerializeField] private float rimScale = 1.18f;
-        [Tooltip("Segundos de desvanecido de la silueta tras cerrarse la ventana.")]
+        [Tooltip("Grosor del borde rojo alrededor de la silueta, en unidades de mundo.")]
         [Min(0f)]
-        [SerializeField] private float glowFade = 0.12f;
-        [Tooltip("Grosor del hilo en unidades de mundo.")]
-        [Min(0.005f)]
-        [SerializeField] private float threadWidth = 0.09f;
-        [Tooltip("Cuánto zigzaguea el hilo (unidades). 0 = recto.")]
+        [SerializeField] private float outlineWidth = 0.07f;
+        [Tooltip("Diámetro del aura roja difusa alrededor del jugador, en unidades de mundo. 0 = sin aura.")]
         [Min(0f)]
-        [SerializeField] private float threadJitter = 0.18f;
+        [SerializeField] private float auraSize = 3.2f;
+        [Range(0f, 1f)]
+        [SerializeField] private float auraIntensity = 0.75f;
+        [Tooltip("Cuánto se tiñe de rojo el propio cuerpo (0 = nada).")]
+        [Range(0f, 1f)]
+        [SerializeField] private float bodyTint = 0.35f;
+        [Tooltip("Segundos que el efecto se queda a tope desde que se pulsa, aunque la ventana sea más corta. " +
+                 "Sólo visual: la ventana real de parry no cambia.")]
+        [Min(0f)]
+        [SerializeField] private float visualHold = 0.18f;
+        [Tooltip("Segundos de desvanecido después.")]
+        [Min(0f)]
+        [SerializeField] private float visualFade = 0.3f;
 
         [Header("Depuración")]
         [SerializeField] private bool drawGizmo = true;
@@ -172,19 +176,26 @@ namespace RedMagic.Gameplay
         private Coroutine _hitStop;
         private bool _hitStopOwnsTimeScale;
 
-        // Placeholder: halo + brillo del cuerpo (copias del sprite actual) y un destello, hijos del
-        // jugador y reutilizados; los hilos, uno por golpe devuelto a la vez, se reutilizan también.
-        private SpriteRenderer _rim;
-        private SpriteRenderer _sheen;
+        // Placeholder, hijos del jugador creados una vez y reutilizados: 8 copias planas de la silueta
+        // desplazadas detrás del cuerpo (= borde), un aura difusa, un tinte encima del cuerpo y un
+        // destello en el punto de contacto.
+        private static readonly Vector2[] OutlineDirections =
+        {
+            new Vector2(1f, 0f), new Vector2(-1f, 0f), new Vector2(0f, 1f), new Vector2(0f, -1f),
+            new Vector2(0.71f, 0.71f), new Vector2(-0.71f, 0.71f), new Vector2(0.71f, -0.71f), new Vector2(-0.71f, -0.71f),
+        };
+        private readonly List<SpriteRenderer> _outline = new List<SpriteRenderer>();
+        private SpriteRenderer _aura;
+        private SpriteRenderer _tint;
         private SpriteRenderer _flash;
-        private float _glowAlpha;
+        private bool _visualOn;
+        private float _visualTime;        // segundos (reales) desde que se encendió
+        private float _fadeTime;          // segundos (reales) que lleva desvaneciéndose
         private float _whiteTimer;
         private float _flashTimer;
-        private const float FlashTime = 0.18f;
-        private const float WhiteTime = 0.1f;
-        private const int ThreadPoints = 8;
-        private const float ThreadFade = 0.15f;
-        private readonly List<LineRenderer> _threads = new List<LineRenderer>();
+        private const float FlashTime = 0.22f;
+        private const float WhiteTime = 0.12f;
+        private const float PopTime = 0.06f;
 
         private static readonly List<Collider2D> CatchBuffer = new List<Collider2D>(32);
         private static readonly HashSet<Projectile> CatchSeen = new HashSet<Projectile>();
@@ -236,12 +247,9 @@ namespace RedMagic.Gameplay
             // No se desactiva la acción: el InputActionAsset es compartido (ver PlayerAttack.Suppressed).
             CloseWindow(notifyMiss: false);
             EndHitStop();
-            _glowAlpha = 0f;
             _flashTimer = 0f;
-            if (_rim != null) _rim.enabled = false;
-            if (_sheen != null) _sheen.enabled = false;
+            SetVisual(false);
             if (_flash != null) _flash.enabled = false;
-            foreach (var thread in _threads) thread.enabled = false;
         }
 
         private void Update()
@@ -381,35 +389,9 @@ namespace RedMagic.Gameplay
             var target = hit.Attacker.GetComponentInParent<Health>();
             if (target == null || target == _health || target.IsDead || Teams.Allied(gameObject, target)) return;
 
-            StartCoroutine(ReflectRoutine(target, hit.Point, hit.Damage * reflectMultiplier));
-        }
-
-        /// <summary>El hilo viaja del punto de contacto al enemigo; el daño entra al llegar.</summary>
-        private IEnumerator ReflectRoutine(Health target, Vector2 from, float amount)
-        {
-            var thread = GetThread();
-            Vector2 seed = Random.insideUnitCircle * 100f;   // forma del zigzag, fija para este hilo
-
-            for (float t = 0f; t < reflectTravelTime; t += Time.unscaledDeltaTime)
-            {
-                if (target == null || target.IsDead) { thread.enabled = false; yield break; }
-                DrawThread(thread, from, BodyCenter(target), t / reflectTravelTime, seed, 1f);
-                yield return null;
-            }
-
-            if (target == null || target.IsDead) { thread.enabled = false; yield break; }
-
-            Vector2 to = BodyCenter(target);
-            if (Items.PlayerHit.Deal(target, amount, from, reflectKnockback, Items.HitKind.Parry))
-                ShowReflectEffect(to);
-
-            for (float t = 0f; t < ThreadFade; t += Time.unscaledDeltaTime)
-            {
-                DrawThread(thread, from, to, 1f, seed, 1f - t / ThreadFade);
-                yield return null;
-            }
-
-            thread.enabled = false;
+            if (Items.PlayerHit.Deal(target, hit.Damage * reflectMultiplier, hit.Point, reflectKnockback,
+                                     Items.HitKind.Parry) && reflectEffect != null)
+                VfxOneShot.Spawn(reflectEffect, BodyCenter(target), Facing, null, Scale);
         }
 
         // ------------------------------------------------------------------ hit-stop
@@ -462,21 +444,14 @@ namespace RedMagic.Gameplay
                 return;
             }
 
-            if (_rim == null || _bodySprite == null) return;
-            _glowAlpha = 1f;
-            _rim.enabled = true;
-            _sheen.enabled = true;
+            SetVisual(true);
         }
 
         private void ShowSuccessEffect(Vector2 point)
         {
-            _whiteTimer = WhiteTime;   // la silueta pasa a blanco un instante con el acierto
-            if (parryEffect == null && _rim != null && _bodySprite != null)
-            {
-                _glowAlpha = 1f;
-                _rim.enabled = true;
-                _sheen.enabled = true;
-            }
+            // Con el acierto el borde y el aura vuelven a tope y pasan a blanco un instante.
+            _whiteTimer = WhiteTime;
+            if (parryEffect == null) SetVisual(true, restart: false);
 
             if (successEffect != null)
             {
@@ -490,97 +465,82 @@ namespace RedMagic.Gameplay
             _flash.enabled = true;
         }
 
-        private void ShowReflectEffect(Vector2 point)
+        /// <summary>Enciende (desde cero o, sin <paramref name="restart"/>, reavivando a tope) o apaga el borde y el aura.</summary>
+        private void SetVisual(bool on, bool restart = true)
         {
-            var prefab = reflectEffect != null ? reflectEffect : successEffect;
-            if (prefab != null) VfxOneShot.Spawn(prefab, point, Facing, null, Scale);
+            if (on && _bodySprite == null) return;
+
+            if (on && (restart || !_visualOn)) _visualTime = 0f;
+            else if (on) _visualTime = Mathf.Min(_visualTime, PopTime);   // reavivar sin volver a crecer
+            _visualOn = on;
+
+            foreach (var copy in _outline) copy.enabled = on;
+            if (_aura != null) _aura.enabled = on && auraSize > 0f;
+            if (_tint != null) _tint.enabled = on && bodyTint > 0f;
         }
 
         private void BuildPlaceholders()
         {
-            int order = _bodySprite != null ? _bodySprite.sortingOrder : 0;
+            int order = _bodySprite != null ? _bodySprite.sortingOrder : 1;
 
-            _rim = MakeRenderer("ParryRim", order - 1);       // halo detrás del cuerpo
-            _sheen = MakeRenderer("ParrySheen", order + 1);   // brillo encima del cuerpo
-            _flash = MakeRenderer("ParryFlash", order + 5);
+            // El borde va justo detrás del cuerpo; el aura, detrás del borde.
+            if (silhouetteMaterial != null)
+                foreach (var _ in OutlineDirections)
+                    _outline.Add(MakeRenderer("ParryOutline", order - 1, silhouetteMaterial));
+
+            _aura = MakeRenderer("ParryAura", order - 2, glowMaterial);
+            _aura.sprite = ProceduralSprites.Glow;
+            _tint = MakeRenderer("ParryBodyTint", order + 1, silhouetteMaterial);
+            _flash = MakeRenderer("ParryFlash", order + 5, glowMaterial);
             _flash.sprite = ProceduralSprites.Ring;
         }
 
-        private SpriteRenderer MakeRenderer(string objectName, int sortingOrder)
+        private SpriteRenderer MakeRenderer(string objectName, int sortingOrder, Material material)
         {
             var go = new GameObject(objectName);
             go.transform.SetParent(transform, false);
             var renderer = go.AddComponent<SpriteRenderer>();
-            if (glowMaterial != null) renderer.sharedMaterial = glowMaterial;
+            if (material != null) renderer.sharedMaterial = material;
             if (_bodySprite != null) renderer.sortingLayerID = _bodySprite.sortingLayerID;
-            renderer.sortingOrder = Mathf.Max(1, sortingOrder);
+            renderer.sortingOrder = Mathf.Max(1, sortingOrder);   // nunca 0: quedaría detrás del fondo
             renderer.enabled = false;
             return renderer;
         }
 
-        private LineRenderer GetThread()
-        {
-            foreach (var existing in _threads)
-                if (!existing.enabled) { existing.enabled = true; return existing; }
-
-            var go = new GameObject("ParryThread");
-            go.transform.SetParent(transform, false);
-            var line = go.AddComponent<LineRenderer>();
-            line.useWorldSpace = true;
-            line.positionCount = ThreadPoints;
-            line.numCapVertices = 2;
-            line.textureMode = LineTextureMode.Stretch;
-            if (threadMaterial != null) line.sharedMaterial = threadMaterial;
-            if (_bodySprite != null) line.sortingLayerID = _bodySprite.sortingLayerID;
-            line.sortingOrder = (_bodySprite != null ? _bodySprite.sortingOrder : 0) + 4;
-            _threads.Add(line);
-            return line;
-        }
-
-        /// <summary>
-        /// Hilo de <paramref name="from"/> a <paramref name="to"/>, dibujado hasta la fracción
-        /// <paramref name="reach"/>: un zigzag fino que tiembla (ruido que cambia con el tiempo).
-        /// </summary>
-        private void DrawThread(LineRenderer line, Vector2 from, Vector2 to, float reach, Vector2 seed, float alpha)
-        {
-            Vector2 head = Vector2.Lerp(from, to, Mathf.Clamp01(reach));
-            Vector2 normal = Vector2.Perpendicular((to - from).normalized);
-            float time = Time.unscaledTime * 18f;
-
-            for (int i = 0; i < ThreadPoints; i++)
-            {
-                float u = i / (float)(ThreadPoints - 1);
-                bool end = i == 0 || i == ThreadPoints - 1;
-                float wave = end ? 0f : (Mathf.PerlinNoise(seed.x + u * 4f, seed.y + time) - 0.5f) * 2f * threadJitter * Scale;
-                line.SetPosition(i, Vector2.Lerp(from, head, u) + normal * wave);
-            }
-
-            float width = threadWidth * Scale;
-            line.startWidth = width;
-            line.endWidth = width * 1.6f;   // más gordo en la punta, que es donde va el golpe
-            var bright = Color.Lerp(placeholderColor, Color.white, 0.35f);
-            var c0 = placeholderColor; c0.a *= alpha;
-            var c1 = bright; c1.a *= alpha;
-            line.startColor = c0;
-            line.endColor = c1;
-        }
-
         private void TickPlaceholders(float dt)
         {
-            if (_rim != null && _rim.enabled)
+            if (_visualOn)
             {
+                // A tope mientras dura la ventana y al menos visualHold; luego se desvanece.
+                _visualTime += dt;
                 if (_whiteTimer > 0f) _whiteTimer -= dt;
-                if (!_windowOpen && _whiteTimer <= 0f)
-                    _glowAlpha -= glowFade > 0f ? dt / glowFade : 1f;
 
-                var color = _whiteTimer > 0f ? Color.Lerp(placeholderColor, Color.white, 0.7f) : placeholderColor;
-                CopyBody(_rim, rimScale, color, Mathf.Clamp01(_glowAlpha));
-                CopyBody(_sheen, 1f, color, Mathf.Clamp01(_glowAlpha) * 0.55f);
-
-                if (_glowAlpha <= 0f)
+                float alpha = 1f;
+                bool holding = _windowOpen || _visualTime < visualHold || _whiteTimer > 0f;
+                if (holding) _fadeTime = 0f;
+                else
                 {
-                    _rim.enabled = false;
-                    _sheen.enabled = false;
+                    _fadeTime += dt;
+                    alpha = visualFade > 0f ? 1f - _fadeTime / visualFade : 0f;
+                }
+
+                if (alpha <= 0f)
+                {
+                    SetVisual(false);
+                }
+                else
+                {
+                    float pop = Mathf.Clamp01(_visualTime / PopTime);
+                    pop = 1f - (1f - pop) * (1f - pop);                   // sale de golpe y frena
+                    var color = _whiteTimer > 0f ? Color.Lerp(auraColor, Color.white, 0.75f) : auraColor;
+                    DrawOutline(color, alpha, pop);
+                    DrawAura(color, alpha, pop);
+                    if (_tint != null && _tint.enabled)
+                    {
+                        CopyBody(_tint, Vector2.zero);
+                        var c = color; c.a = bodyTint * alpha;
+                        _tint.color = c;
+                    }
                 }
             }
 
@@ -588,20 +548,40 @@ namespace RedMagic.Gameplay
             {
                 _flashTimer -= dt;
                 float t = 1f - Mathf.Clamp01(_flashTimer / FlashTime);   // 0 → 1
-                float size = Mathf.Lerp(0.3f, 1.3f, t);
+                float size = Mathf.Lerp(0.4f, 1.8f, t);
                 _flash.transform.localScale = new Vector3(size, size, 1f);
-                var c = Color.Lerp(Color.white, placeholderColor, t);
+                var c = Color.Lerp(Color.white, auraColor, t);
                 c.a = 1f - t;
                 _flash.color = c;
                 if (_flashTimer <= 0f) _flash.enabled = false;
             }
         }
 
-        /// <summary>
-        /// Copia el frame actual del cuerpo en <paramref name="copy"/>, escalado alrededor del centro
-        /// del sprite (no del pivote de los pies), con el mismo volteo.
-        /// </summary>
-        private void CopyBody(SpriteRenderer copy, float scale, Color color, float alpha)
+        private void DrawOutline(Color color, float alpha, float pop)
+        {
+            float width = outlineWidth * Scale * Mathf.Lerp(2.2f, 1f, pop);   // empieza grueso y se asienta
+            var c = color; c.a = alpha;
+            for (int i = 0; i < _outline.Count; i++)
+            {
+                CopyBody(_outline[i], OutlineDirections[i] * width);
+                _outline[i].color = c;
+            }
+        }
+
+        private void DrawAura(Color color, float alpha, float pop)
+        {
+            if (_aura == null || !_aura.enabled) return;
+
+            // Centrado en el cuerpo; el tamaño es en mundo y sigue la escala del jugador (hijo suyo).
+            _aura.transform.position = _bodySprite.bounds.center;
+            float size = auraSize / ProceduralSprites.Glow.bounds.size.x * Mathf.Lerp(0.5f, 1f, pop);
+            _aura.transform.localScale = new Vector3(size, size, 1f);
+            var c = color; c.a = auraIntensity * alpha;
+            _aura.color = c;
+        }
+
+        /// <summary>Copia el frame actual del cuerpo en <paramref name="copy"/>, desplazado <paramref name="worldOffset"/>.</summary>
+        private void CopyBody(SpriteRenderer copy, Vector2 worldOffset)
         {
             copy.sprite = _bodySprite.sprite;
             copy.flipX = _bodySprite.flipX;
@@ -609,22 +589,10 @@ namespace RedMagic.Gameplay
 
             var body = _bodySprite.transform;
             var t = copy.transform;
-            t.SetPositionAndRotation(body.position, body.rotation);
-            t.localScale = Vector3.one;
-            var world = body.lossyScale * scale;
+            t.SetPositionAndRotation(body.position + (Vector3)worldOffset, body.rotation);
+            var world = body.lossyScale;
             var parent = transform.lossyScale;
             t.localScale = new Vector3(world.x / parent.x, world.y / parent.y, 1f);
-
-            if (scale != 1f && _bodySprite.sprite != null)
-            {
-                // Escalar desde el pivote desplaza el dibujo; se recoloca para que el centro coincida.
-                Vector3 center = _bodySprite.bounds.center;
-                Vector3 offset = center - body.position;
-                t.position = center - offset * scale;
-            }
-
-            color.a *= alpha;
-            copy.color = color;
         }
 
         private void OnDrawGizmosSelected()

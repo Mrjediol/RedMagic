@@ -1012,3 +1012,6 @@ body.movil #tab-todo{flex:1;}
 .enPrompt a.small{display:inline-block;text-decoration:none;}
 .enImgBtn{cursor:pointer;display:inline-flex;align-items:center;}
 .enNoArt small{opacity:.7;}
+.todoRun > summary{cursor:pointer;font-size:13.5px;color:var(--muted);padding:3px 0;}
+.todoRun[open] > summary{color:var(--accent);}
+.todoHistTable td.faintCell{color:var(--faint);}

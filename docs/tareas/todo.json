@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-07T14:06:28.011Z",
+  "updated": "2026-10-07T15:09:14.120Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -897,6 +897,77 @@
             "runId": "2026-10-07T04-24-01-174Z_fvist42",
             "sessionId": "13305da9-283a-4c19-ae87-b165c02e77a2"
           }
+        },
+        {
+          "id": "8xyu1jh",
+          "note": "",
+          "done": false,
+          "text": "Cuerpo de ThornFairy (make-enemy, paso 1)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), section \"Por pasos ▸ Paso 1 (cuerpo)\", to build ONLY THE BODY of the enemy ThornFairy from its approved design.\nEnemy sheet: docs/enemigos/ThornFairy/enemigo.json. Original request (user's words): «hada». Design note: «Hada espinosa: vestido de hojas, corona de espinas, porte altivo».\nThe design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is docs/enemigos/ThornFairy/diseno.png. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/ThornFairy_base.png; no subfolders) and use \"ThornFairy_base.png\" as the --ref of step 2 (no \" [output]\"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.\nZone: forest (docs/zonas.json).\nDo: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), `make-enemy.mjs`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 3 (states), 5 (attacks), 6 (sounds): the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).\nEXTRA INSTRUCTIONS from the user for THIS launch (their words). They override the design picture and this step's limits where they conflict (e.g. asked for extra part states — sleeping / awake / attack — make them here even if this step normally does not):\n«cuando le separes las partes, quiero una cabeza con la cara enfada y el cystal de la corona rojo, que se use en los ataques, y una mano que acabe con la palma de la mano hacia delante , para que salgan sus projectiles desde ahi»\nNobody will answer: where the skill says \"stop\", pick the best yourself from a contact sheet and go on.\nCopy the assembled picture to docs/enemigos/ThornFairy/cuerpo.png (the sheet shows it) and write in the sheet: \"estado\": \"cuerpo-por-aprobar\", \"prefab\": \"<prefab path under Assets>\", \"cuerpo\": { \"fecha\": \"<ISO>\", \"plantilla\": \"<rig template id>\", \"partes\": \"<folder of the final parts>\", \"brief\": \"<brief path>\", \"resumen\": \"<1–2 short sentences, Spanish: which parts, anything dubious>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"por-montar\" and explain in the report what failed.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "ThornFairy",
+          "kind": "cuerpo",
+          "status": "done",
+          "lastRunId": "2026-10-07T14-49-48-482Z_8xyu1jh",
+          "sessionId": "a0739404-473e-4778-82ff-ea1b9a6930fd",
+          "result": {
+            "ok": true,
+            "text": "Rehecho: las 6 partes vuelven a salir del dibujo original, y la cabeza y la mano enfadadas son ahora variantes de estado. Importé el prefab en Unity (`Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab`) y lo comprobé compilando, no en Play Mode. Commit `af304c66`; la imagen del cuerpo está actualizada en `docs/enemigos/ThornFairy/cuerpo.png`.\n\n- **Partes originales:** Head, CastArm y OffArm vuelven a ser las del dibujo, con la cara neutra y el cristal verde. Torso, Lower y Accessory (alas) no se tocaron.\n- **OffArm:** ahora sale completo, del hombro a la mano, con el mismo grosor que el otro brazo.\n- **Variantes de estado `__attacking`:** `Head__attacking` tiene la cara enfadada y los cristales rojos. `CastArm__attacking` tiene la mano con la palma hacia delante.\n- **Decisión mía:** el sprite de `CastArm__attacking` conserva su silueta propia, porque la normal recortaba la mano abierta. Añadí `tools/comfy/fix-state-own-alpha.mjs` para eso.\n- **Dudoso:** esa mano sigue colgando hacia abajo, no apunta al frente.\n- **Por probar en Enemy Studio:**\n  1. Que la figura montada coincide con el original.\n  2. El pivote y la boca del CastArm (puse el pivote en el hombro y la boca en la palma).\n  3. Que `Head__attacking` y `CastArm__attacking` aparecen como sprites de estado.\n  4. El orden de capas del brazo respecto a las alas.",
+            "at": "2026-10-07T14:55:06.532Z",
+            "durationMs": 318049,
+            "costUsd": 0.8559846,
+            "tokens": {
+              "input": 30,
+              "cacheWrite": 20793,
+              "cacheRead": 1167618,
+              "output": 9063,
+              "calls": 15
+            },
+            "runId": "2026-10-07T14-49-48-482Z_8xyu1jh",
+            "sessionId": "a0739404-473e-4778-82ff-ea1b9a6930fd",
+            "reply": "Esta mal, queria la imagen original separada por piezas, y despues de estar separada por piezas tener una version de la mano donde tiene la palma estirada, y una version de la cabeza como te he descrito para hacer las animaciones de ataque, en cambio has sustituido las partes originales por estas variantes de sprite por estado que te he dicho, y el off arm esta mal recortado, solucionalo"
+          },
+          "history": [
+            {
+              "ok": true,
+              "text": "Cuerpo de ThornFairy montado: prefab importado en `Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab`. Sin ataques ni efectos propios, solo los de la plantilla. Estado de la ficha: `cuerpo-por-aprobar`, con la imagen en `docs/enemigos/ThornFairy/cuerpo.png`. Commit `1d2befe8`. No comprobé el rig en Unity ni lo abrí en Enemy Studio. Importar el zip dio un timeout de 5 s en la consola de Unity, pero el prefab existe.\n\n- **Partes** (plantilla `floatingCaster`, 1 semilla por parte, todas pasaron a la primera): Lower (falda y piernas), Accessory (las 4 alas unidas en una sola pieza), Torso, Head, OffArm y CastArm. Las partes están en `claude/ThornFairy/final`.\n- **Cabeza:** cara enfadada y cristal de la corona rojo, como pediste.\n- **Mano:** el CastArm lo rehice horizontal, con la palma hacia delante y los dedos arriba. La boca del proyectil está en la palma (`muzzle` [0.93, 0.25]).\n- **Decisión mía:** el pivote del brazo lo puse en el hombro, aproximado (`pivot` [0.36, 0.65]).\n- **Dudoso:** el CastArm sobresale hacia atrás del hombro y se ve largo.\n- **Probar en Enemy Studio:**\n  1. Ajustar el pivote y la longitud del CastArm, y comprobar que el proyectil sale de la palma.\n  2. Revisar el orden de capas de las alas y del brazo.\n  3. Mirar la cara enfadada y el cristal rojo de la cabeza.",
+              "at": "2026-10-07T14:40:03.351Z",
+              "durationMs": 319985,
+              "costUsd": 0.448599,
+              "tokens": {
+                "input": 32,
+                "cacheWrite": 54737,
+                "cacheRead": 809585,
+                "output": 6767,
+                "calls": 20
+              },
+              "runId": "2026-10-07T14-34-43-365Z_8xyu1jh",
+              "sessionId": "a0739404-473e-4778-82ff-ea1b9a6930fd"
+            }
+          ]
+        },
+        {
+          "id": "1g4wg9o",
+          "note": "",
+          "done": false,
+          "text": "Terminar ThornFairy (make-enemy, paso 3)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), section \"Por pasos ▸ Paso 3 (el resto)\", to finish the enemy ThornFairy.\nEnemy sheet: docs/enemigos/ThornFairy/enemigo.json (see \"cuerpo\" and \"paso2\"). Its BODY is already built AND APPROVED by the user: prefab Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab. The user may have adjusted it by hand in 🧬 Enemy Studio (proportions, distances, layers): NEVER re-import the full body zip over it, never change the parts or their layout.\nBehaviour type: Volador a distancia — a flyer that keeps its distance and shoots (hover / strafe, ranged attacks). Design tuning, attacks, gestures and defences for it (SKILL step 5; generic-first rules of CLAUDE.md).\nAssets (the user's choice for each):\n- projectile (there can be SEVERAL): USE WHAT THE LIBRARY ALREADY HAS (📚 Biblioteca / sound palette) — the user PICKED these, use all of them: «OrbeHada» (library id 4e0cb8e6-e4c2-4f53-b3d9-a23aee642fbb). Do not create new ones; if nothing fits, say so in the report.\n- sounds: CREATE NEW ones (several if described, one per line) — the user left it empty: design them to fit this enemy.\n- effects (muzzle / charge / impact / trails, gestureFx): CREATE NEW ones (several if described, one per line) — the user left it empty: design them to fit this enemy.\nEXTRA INSTRUCTIONS from the user for THIS launch (their words). They override the design picture and this step's limits where they conflict (e.g. asked for extra part states — sleeping / awake / attack — make them here even if this step normally does not):\n«ataque simple que dispara el orbe verde, dash defensivo, este enemigo quiero que sea mi  primer enemigo volador con alas, asique centrate en hacer buena animacion de volar con las alas, animacion cuando va hacia el player, animacion de volar de espaldas cuando huya del player, animacion de dash hacia delante y hacia atras, sobretodo las alas son las que hacen la animacion, si necesitas separar las alas para la animacion, hazlo, ahora mismo las 4 alas son una misma parte»\nEarlier instructions for this enemy (their words; honour them where they still apply):\n- [step 1 (body)] «cuando le separes las partes, quiero una cabeza con la cara enfada y el cystal de la corona rojo, que se use en los ataques, y una mano que acabe con la palma de la mano hacia delante , para que salgan sus projectiles desde ahi»\nHow to apply it on the existing body: write the brief for the attacks / effects / gestures, run `node make-enemy.mjs <brief> --partial` (→ out/<Name>.partial.zip, only gestures + attacks + effects) and import THAT zip into Unity (RigBundleImporter.Import with the partial zip; ResetTuning = false). The body part of the brief must match the prefab's parts (same template, parts folder from the sheet's cuerpo.partes). The partial zip carries gestures, effects and the deck only: movement / EnemyStats tuning for the chosen behaviour type (flying vs ground, ranges, speeds, projectile spec) is NOT in it — set it on the prefab's EnemyStats (unity eval / prefab edit, see docs/architecture/enemies.md), starting from the body's template defaults.\nNobody will answer: pick the best yourself. The user approves at the end from the web.\nWhen done, in the sheet: \"estado\": \"por-aprobar\", \"montaje\": { \"fecha\": \"<ISO>\", \"resumen\": \"<1–2 short sentences, Spanish>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"cuerpo-aprobado\" and explain in the report what failed and what is left.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "ThornFairy",
+          "kind": "resto",
+          "status": "running",
+          "lastRunId": "2026-10-07T15-09-14-119Z_1g4wg9o",
+          "sessionId": "6be7aaaf-425d-498f-8d6b-579a380076b8"
         }
       ]
     },
@@ -1619,6 +1690,39 @@
             },
             "runId": "2026-10-07T04-16-29-088Z_jpuqj7g",
             "sessionId": "f0e5df14-2280-4bd9-86a3-c238a25f18d9"
+          }
+        },
+        {
+          "id": "0egt00p",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 3: hada",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «hada»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: forest (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: flying, attack type: magic (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body flying --attack magic --cast <the body part that casts: hand, mouth…>: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 3 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-hada.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-hada",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "lastRunId": "2026-10-07T14-25-54-253Z_0egt00p",
+          "sessionId": "cf83729c-029a-4c49-842d-dfe9fc212744",
+          "result": {
+            "ok": true,
+            "text": "Añadí 3 propuestas de hada en `docs/disenos/2026-10-07-hada.json`. Cada una trae su prompt para Gemini, sin imagen. `check-design-batch` dio \"Lote correcto\" y el lote está commiteado.\n- **1 MothFairy**: hada polilla con alas grandes con ojos y antenas con cristal. Lanza con las manos.\n- **2 CapFairy**: hada seta con sombrero moteado azul-verdoso y alas de libélula. Lanza con la boca.\n- **3 ThornFairy**: hada espinosa con vestido de hojas y corona de espinas. Lanza con la mano.\n- Los prompts salen de `enemy-prompt.mjs` con `--zone forest --body flying --attack magic`. Dejé las piezas por defecto.\n- Evité los nombres de `Enemy_ForestFairy` y `Enemy_HadaEle`, que ya existen.\n- No toqué `todo.json` ni Unity, y no hubo compilación porque no cambié código.\n- **Para probar:** pega cada prompt en Gemini y trae la imagen a la tarjeta (Ctrl+V). Mira que las alas se vean enteras y que no salga arma ni piernas.",
+            "at": "2026-10-07T14:26:28.419Z",
+            "durationMs": 34165,
+            "costUsd": 0.2415222,
+            "tokens": {
+              "input": 14,
+              "cacheWrite": 42025,
+              "cacheRead": 229021,
+              "output": 2759,
+              "calls": 8
+            },
+            "runId": "2026-10-07T14-25-54-253Z_0egt00p",
+            "sessionId": "cf83729c-029a-4c49-842d-dfe9fc212744"
           }
         }
       ]

@@ -103,8 +103,10 @@ const swap = (arr, i, j) => { if (j >= 0 && j < arr.length) [arr[i], arr[j]] = [
 const minutes = (ms) => { const s = Math.round(ms / 1000); return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${s % 60} s`; };
 const kTok = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1).replace('.', ',')}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n || 0));
 const firstLine = (s) => (String(s || '').split('\n').find((l) => l.trim()) || '').trim().slice(0, 160);
-/** Every token of a run: input + cache written + cache read + output. */
-const tokensOf = (r) => (r?.tokens ? (r.tokens.input || 0) + (r.tokens.cacheWrite || 0) + (r.tokens.cacheRead || 0) + (r.tokens.output || 0) : 0);
+/** The tokens a run WROTE (what each report's "↓" shows): the number to compare costs by. */
+const tokensOf = (r) => r?.tokens?.output || 0;
+/** Everything the run processed, cache reads included (they repeat the whole context every call, so it is huge). */
+const withCache = (r) => (r?.tokens ? (r.tokens.input || 0) + (r.tokens.cacheWrite || 0) + (r.tokens.cacheRead || 0) + (r.tokens.output || 0) : 0);
 /** A task's runs, oldest first: the earlier reports (`history`, newest first) and the latest (`result`). */
 const runsOf = (t) => [...(t.history || [])].reverse().concat(t.result ? [t.result] : []);
 
@@ -571,9 +573,12 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
   function thread(t) {
     const runs = runsOf(t);
     const one = (r) => `${runHead(r)}${resultBlock(r, r.ok ? 'Claude' : 'Claude · falló')}`;
-    const older = runs.slice(0, -3);
-    return `${older.length ? `<details class="todoHistory" data-keep="older:${t.id}" ${kept.has(`older:${t.id}`) ? 'open' : ''}><summary>${older.length} anterior${older.length === 1 ? '' : 'es'}</summary>${older.map(one).join('')}</details>` : ''}
-      ${runs.slice(-3).map(one).join('')}`;
+    // Every run shows what you asked; its report folds (only the latest starts open).
+    return runs.map((r, i) => {
+      const key = `run:${t.id}:${r.at}`;
+      const open = kept.has(key) || (i === runs.length - 1 && !kept.has(`-${key}`));
+      return `${runHead(r)}<details class="todoRun" data-keep="${esc(key)}" ${open ? 'open' : ''}><summary>${r.ok ? '' : '✗ '}${esc(when(r.at))} · ${r.durationMs ? minutes(r.durationMs) : ''} · ↓ ${kTok(tokensOf(r))} · ${esc(firstLine(r.text).slice(0, 90))}</summary>${resultBlock(r, r.ok ? 'Claude' : 'Claude · falló')}</details>`;
+    }).join('');
   }
 
   /** What is happening now: the console of the run, the wait, what is queued for this task (each can be taken out). */
@@ -769,7 +774,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
           ${details(t)}
         </div>
         <div class="todoConversation">
-          <label class="todoLabel">Claude ${runs.length ? `<span class="efHint">${runs.length} ejecución${runs.length === 1 ? '' : 'es'}${tok ? ` · ${kTok(tok)} tokens` : ''}</span>` : ''}</label>
+          <label class="todoLabel">Claude ${runs.length ? `<span class="efHint">${runs.length} ejecución${runs.length === 1 ? '' : 'es'}${tok ? ` · ${kTok(tok)} tokens de salida` : ''}</span>` : ''}</label>
           <div class="todoThread">${thread(t) || (active ? '' : '<p class="todoEmpty">Aún no se ha lanzado.</p>')}<div data-live="${t.id}">${liveBox(t)}</div></div>
           ${composer(t)}
         </div>
@@ -795,7 +800,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       const info = running ? `${minutes(Date.now() - running.startedAt)} · ${esc(running.activity.at(-1)?.line || 'arrancando…')}${n ? ` · +${n} en cola` : ''}`
         : t.status === 'waiting' ? esc(live?.waiting?.taskId === t.id ? live.waiting.reason : t.waiting || 'esperando')
         : ACTIVE.has(t.status) ? (n > 1 ? `${n} en cola` : 'en cola')
-        : `${esc(when(t.result.at))}${t.result.tokens ? ` · ${kTok(tokensOf(t.result))} tokens` : ''} · ${esc(firstLine(t.result.text))}`;
+        : `${esc(when(t.result.at))}${t.result.tokens ? ` · ↓ ${kTok(tokensOf(t.result))}` : ''} · ${esc(firstLine(t.result.text))}`;
       return `<li class="todoClaudeRow${sel === t.id ? ' sel' : ''}" data-open="${t.id}" title="Abrir">
         ${statusBadge(t.id === runningId ? { status: 'running' } : t)}<span class="todoClaudeTitle">${esc(t.text)}</span>
         <span class="todoClaudeWhere">${esc(whereOf({ ph }))}</span><span class="todoClaudeInfo">${info}</span>
@@ -829,7 +834,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       const runs = runsOf(t);
       if (!runs.length) continue;
       rows.push({ t, type: typeOf(t, ph), runs: runs.length, at: runs.at(-1).at, ok: runs.at(-1).ok,
-        tok: runs.reduce((n, x) => n + tokensOf(x), 0), out: runs.reduce((n, x) => n + (x.tokens?.output || 0), 0), ms: runs.reduce((n, x) => n + (x.durationMs || 0), 0) });
+        out: runs.reduce((n, x) => n + tokensOf(x), 0), tok: runs.reduce((n, x) => n + withCache(x), 0), ms: runs.reduce((n, x) => n + (x.durationMs || 0), 0) });
     }
     const types = Object.keys(TYPE_LABELS).concat([...new Set(rows.map((x) => x.type))]).filter((k, i, a) => a.indexOf(k) === i && rows.some((x) => x.type === k));
     if (hist.type !== 'all' && !types.includes(hist.type)) hist.type = 'all';
@@ -841,12 +846,12 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     historyEl.innerHTML = `<div class="todoHistBar">${chip('all', 'Todas', rows.length)}${types.map((k) => chip(k, typeLabel(k), rows.filter((x) => x.type === k).length)).join('')}</div>
       <div class="todoRow todoHistTools">
         <label>Estado <select data-hist="state">${opt('all', 'todas', hist.state)}${opt('ok', 'bien', hist.state)}${opt('bad', 'fallidas / canceladas', hist.state)}</select></label>
-        <label>Ordenar por <select data-hist="sort">${opt('recent', 'más reciente', hist.sort)}${opt('tokens', 'más tokens (total)', hist.sort)}${opt('output', 'más tokens de salida', hist.sort)}${opt('time', 'más tiempo', hist.sort)}</select></label>
-        <span class="efHint">${list.length} tarea${list.length === 1 ? '' : 's'} · ${kTok(list.reduce((n, x) => n + x.tok, 0))} tokens</span>
+        <label>Ordenar por <select data-hist="sort">${opt('recent', 'más reciente', hist.sort)}${opt('output', 'más tokens', hist.sort)}${opt('tokens', 'más tokens con caché', hist.sort)}${opt('time', 'más tiempo', hist.sort)}</select></label>
+        <span class="efHint">${list.length} tarea${list.length === 1 ? '' : 's'} · ${kTok(list.reduce((n, x) => n + x.out, 0))} tokens de salida</span>
       </div>
-      ${list.length ? `<div class="todoHistWrap"><table class="todoHistTable"><thead><tr><th>Última</th><th>Tipo</th><th>Tarea</th><th title="Lanzar, pasos e instrucciones">Ejec.</th><th>Tiempo</th><th title="Entrada + caché + salida, todas sus ejecuciones">Tokens</th><th>Salida</th></tr></thead>
+      ${list.length ? `<div class="todoHistWrap"><table class="todoHistTable"><thead><tr><th>Última</th><th>Tipo</th><th>Tarea</th><th title="Lanzar, pasos e instrucciones">Ejec.</th><th>Tiempo</th><th title="Lo que Claude escribió, sumando todas sus ejecuciones (el ↓ de cada informe)">Tokens</th><th title="Entrada + caché leída y escrita + salida: enorme porque cada llamada relee todo el contexto">Con caché</th></tr></thead>
         <tbody>${list.slice(0, 200).map((x) => `<tr data-open="${x.t.id}" class="${x.ok ? '' : 'bad'}${sel === x.t.id ? ' sel' : ''}" title="Abrir">
-          <td>${esc(when(x.at))}</td><td>${esc(typeLabel(x.type))}</td><td>${esc(x.t.text)}</td><td>${x.runs}</td><td>${x.ms ? minutes(x.ms) : ''}</td><td>${x.tok ? kTok(x.tok) : '—'}</td><td>${x.out ? kTok(x.out) : '—'}</td></tr>`).join('')}</tbody></table></div>`
+          <td>${esc(when(x.at))}</td><td>${esc(typeLabel(x.type))}</td><td>${esc(x.t.text)}</td><td>${x.runs}</td><td>${x.ms ? minutes(x.ms) : ''}</td><td>${x.out ? kTok(x.out) : '—'}</td><td class="faintCell">${x.tok ? kTok(x.tok) : '—'}</td></tr>`).join('')}</tbody></table></div>`
         : '<p class="todoEmpty">Nada con ese filtro.</p>'}`;
   }
 
@@ -1074,7 +1079,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       if (d.open) tallerOpen.add(d.dataset.taller); else tallerOpen.delete(d.dataset.taller);
       saveSet(localStorage, TALLER_KEY, tallerOpen);
     } else if (d.matches?.('details.todoAdv')) advOpen = d.open;
-    else if (d.dataset?.keep) { if (d.open) kept.add(d.dataset.keep); else kept.delete(d.dataset.keep); }
+    else if (d.dataset?.keep) { const k = d.dataset.keep; if (d.open) { kept.add(k); kept.delete(`-${k}`); } else { kept.delete(k); kept.add(`-${k}`); } }
   }, true);
   tab.addEventListener('input', (e) => { const id = e.target.dataset?.compose; if (id) drafts.set(id, e.target.value); });
   tab.addEventListener('keydown', (e) => {

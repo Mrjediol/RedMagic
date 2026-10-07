@@ -1,6 +1,6 @@
 {
   "name": "ThornFairy",
-  "estado": "cuerpo-por-aprobar",
+  "estado": "montando",
   "diseno": {
     "image": "docs/enemigos/ThornFairy/diseno.png",
     "source": "docs/disenos/img/2026-10-07-hada__3.png",
@@ -17,9 +17,14 @@
       "paso": "cuerpo",
       "texto": "cuando le separes las partes, quiero una cabeza con la cara enfada y el cystal de la corona rojo, que se use en los ataques, y una mano que acabe con la palma de la mano hacia delante , para que salgan sus projectiles desde ahi",
       "fecha": "2026-10-07T14:34:42.328Z"
+    },
+    {
+      "paso": "resto",
+      "texto": "ataque simple que dispara el orbe verde, dash defensivo, este enemigo quiero que sea mi  primer enemigo volador con alas, asique centrate en hacer buena animacion de volar con las alas, animacion cuando va hacia el player, animacion de volar de espaldas cuando huya del player, animacion de dash hacia delante y hacia atras, sobretodo las alas son las que hacen la animacion, si necesitas separar las alas para la animacion, hazlo, ahora mismo las 4 alas son una misma parte",
+      "fecha": "2026-10-07T15:09:13.092Z"
     }
   ],
-  "tarea": "8xyu1jh",
+  "tarea": "1g4wg9o",
   "prefab": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T14:55:00.154Z",
@@ -28,5 +33,29 @@
     "brief": "Web/RedMagicWeb/tools/comfy/enemies/ThornFairy.json",
     "resumen": "Partes originales separadas (Lower, Accessory, Torso, Head, CastArm, OffArm) + variantes: Head__attacking (cara enfadada, cristal rojo) y CastArm__attacking (palma hacia delante). Dudoso: la mano de ataque cuelga (no apunta al frente); pivote/boca de CastArm por ajustar en Enemy Studio."
   },
-  "imagen": "docs/enemigos/ThornFairy/preview.png"
+  "imagen": "docs/enemigos/ThornFairy/preview.png",
+  "paso2": {
+    "tipo": "flyingRanged",
+    "proyectil": {
+      "origen": "biblioteca",
+      "texto": "",
+      "elegidos": [
+        {
+          "id": "4e0cb8e6-e4c2-4f53-b3d9-a23aee642fbb",
+          "name": "OrbeHada"
+        }
+      ]
+    },
+    "sonidos": {
+      "origen": "nuevo",
+      "texto": "",
+      "elegidos": []
+    },
+    "efectos": {
+      "origen": "nuevo",
+      "texto": "",
+      "elegidos": []
+    },
+    "notas": ""
+  }
 }

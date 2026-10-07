@@ -1,0 +1,25 @@
+{
+  "name": "MawDomeBot",
+  "estado": "cuerpo-por-aprobar",
+  "diseno": {
+    "image": "docs/enemigos/MawDomeBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robot-con-arma-incoporada-en-su-cuerpo__p2.png",
+    "zone": "ice",
+    "lote": "2026-10-07-robot-con-arma-incoporada-en-su-cuerpo",
+    "item": "p2",
+    "request": "robot con arma incoporada en su cuerpo",
+    "note": "Cabeza-cúpula con una ranura-boca brillante que es el arma; cuerpo corto y cristales a modo de cuernos."
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T04:22:31.474Z",
+  "tarea": "fvist42",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab",
+  "imagen": "docs/enemigos/MawDomeBot/preview.png",
+  "cuerpo": {
+    "fecha": "2026-10-07T04:28:46.928Z",
+    "plantilla": "floatingCaster",
+    "partes": "claude/MawDomeBot/final",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/MawDomeBot.json",
+    "resumen": "5 piezas: Torso (campana), Head (bola con ojo), CastArm (cañón, dibujado delante), Lower (llama) y Accessory (anillo con soportes). El cañón salió algo más largo y más bajo que en el diseño tras 3 intentos: revisar su posición y longitud en Enemy Studio."
+  }
+}

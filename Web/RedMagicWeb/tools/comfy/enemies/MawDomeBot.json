@@ -1,0 +1,11 @@
+{
+  "name": "MawDomeBot",
+  "request": "robot con arma incoporada en su cuerpo (cuerpo solo, paso 1)",
+  "template": "floatingCaster",
+  "parts": "claude/MawDomeBot/final",
+  "height": 2.8,
+  "front": ["castArm"],
+  "slots": { "castArm": { "pivot": [0.12, 0.5], "muzzle": [0.97, 0.5] } },
+  "tuning": { "maxHealth": 30, "moveSoundInterval": 0.9, "builtInAttack": false },
+  "rig": { "muzzleFlashSize": 0 }
+}

@@ -7,16 +7,18 @@
 //   GET  /api/todo                  → { rev, doc }          docs/tareas/todo.json
 //   PUT  /api/todo   { phases, knownTaskIds, knownPhaseIds }  → { rev, doc }   (merged, see store.mjs)
 //   GET  /api/status                → { rev, running, waiting, queue, apps }
-//   POST /api/run    { taskId, stepId?, followUp?, force? }   → queue a run (runner.mjs)
-//   POST /api/cancel { taskId }     POST /api/force { taskId }   POST /api/open { app: 'comfy'|'unity' }
+//   POST /api/run    { taskId, stepId?, followUp?, force? }   → queue a run (runner.mjs); followUp = an instruction (resumes its session)
+//   POST /api/cancel { taskId }     POST /api/unqueue { qid }   POST /api/force { taskId }   POST /api/open { app: 'comfy'|'unity' }
 //   GET  /api/disenos               → { lotes, enemigos, tasks }   docs/disenos/ (disenos.mjs) + docs/enemigos/ (enemigos.mjs)
 //   GET  /api/img?src=comfy:…|docs/…  → an image (only Comfy's output and docs/)
 //   POST /api/disenos/review { loteId, itemIds, decision: accept|discard|pending, names, libraryIds }  → { errors }
 //   POST /api/disenos/request { kind, request, count, mode: one|each, model, effort, zone, body, attack, generator: prompt|comfy (enemy) }  → { loteId, taskIds }   (queues the task(s))
-//   POST /api/disenos/imagen { loteId, itemId, type, data: <base64> } → { image }   a picture pasted on a proposal's card (docs/disenos/img/)
+//   POST /api/disenos/imagen { loteId, itemId, type, data: <base64> } | { loteId, itemId, url } → { image }   a picture pasted on a
+//        proposal's card (docs/disenos/img/); `url` = an https image the clipboard only had as a link (copied from a web page)
 //   GET  /api/enemigos/prefabs      → [{ name, prefab }]   enemy prefabs not in the library yet
 //   POST /api/enemigos/update { name, op: estado|add-pendiente|edit-pendiente|remove-pendiente, … }
-//   POST /api/enemigos/build { name, model, effort }   POST /api/enemigos/build-body { name, … } (step 1)   POST /api/enemigos/build-rest { name, paso2, … } (step 3)   POST /api/enemigos/work { name, ids?, model, effort }   (queue a task)
+//   POST /api/enemigos/build { name, model, effort, instrucciones? }   POST /api/enemigos/build-body { name, …, instrucciones? } (step 1)
+//   POST /api/enemigos/build-rest { name, paso2, …, instrucciones? } (step 3)   POST /api/enemigos/work { name, ids?, model, effort }   (queue a task)
 //   POST /api/enemigos/add { prefab }   POST /api/enemigos/picture { name }   (the picture comes from Unity)
 //
 //   POST /api/adjunto { name, type, data: <base64> } → { id, name }   a reference image for a task's prompt (Logs/Taller/adjuntos/)
@@ -220,7 +222,10 @@ async function api(req, res, url) {
   if (origin && origin !== `http://${req.headers.host}` && origin !== `https://${req.headers.host}`) return send(res, 403, { error: 'origin' });
   if (route === 'POST /api/disenos/imagen') {   // a picture pasted on a proposal's card
     const b = await readJson(req, 16e6);
-    try { return send(res, 200, disenos.attachImage(b)); } catch (err) { return send(res, 400, { error: err.message }); }
+    try {
+      if (b.url) Object.assign(b, await downloadImage(b.url));
+      return send(res, 200, disenos.attachImage(b));
+    } catch (err) { return send(res, 400, { error: err.message }); }
   }
   if (route === 'POST /api/adjunto') {
     const b = await readJson(req, 16e6);   // base64 of up to ~12 MB
@@ -256,6 +261,7 @@ async function api(req, res, url) {
   if (route === 'POST /api/enemigos/add') return send(res, 200, enemigos.addExisting(body));
   if (route === 'POST /api/enemigos/picture') { enemigos.refreshPicture(body.name); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/cancel') { runner.cancel(body.taskId); return send(res, 200, { ok: true }); }
+  if (route === 'POST /api/unqueue') { runner.unqueue(String(body.qid || '')); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/force') { runner.forceStart(body.taskId); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/open') {
     if (!['comfy', 'unity'].includes(body.app)) return send(res, 400, { error: 'app' });
@@ -264,6 +270,23 @@ async function api(req, res, url) {
     return send(res, 200, { ok: true });
   }
   return send(res, 404, { error: 'ruta' });
+}
+
+/**
+ * An image the browser only got as a link (Ctrl+C on a picture in a web page copies its <img>, not the file):
+ * https only, an image type, 12 MB at most. → { type, data: <base64> } for attachImage.
+ */
+async function downloadImage(link) {
+  let u;
+  try { u = new URL(String(link)); } catch { throw new Error('enlace de imagen no válido'); }
+  if (u.protocol !== 'https:') throw new Error('solo imágenes https');
+  const r = await fetch(u, { signal: AbortSignal.timeout(20000), redirect: 'follow' }).catch(() => null);
+  if (!r?.ok) throw new Error('No pude bajar la imagen del enlace: en Gemini usa clic derecho ▸ Copiar imagen, o descárgala y súbela con 🖼');
+  const type = String(r.headers.get('content-type') || '').split(';')[0].trim();
+  if (!IMAGE_EXT[type]) throw new Error(`El enlace no es una imagen png / jpg / webp / gif (${type || 'sin tipo'})`);
+  const bytes = Buffer.from(await r.arrayBuffer());
+  if (bytes.length > 12e6) throw new Error('La imagen pesa más de 12 MB');
+  return { type, data: bytes.toString('base64') };
 }
 
 function serveStatic(req, res, url) {

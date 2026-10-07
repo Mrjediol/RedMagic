@@ -28,7 +28,7 @@ export function normalize(doc) {
       ...(Array.isArray(t.steps) ? { steps: t.steps.filter((s) => s && typeof s === 'object').map((s) => ({ ...s, id: s.id || uid(), text: String(s.text ?? ''), done: !!s.done })) } : {}),
     })),
   }));
-  const queue = (Array.isArray(doc?.queue) ? doc.queue : []).filter((q) => q && q.taskId);
+  const queue = (Array.isArray(doc?.queue) ? doc.queue : []).filter((q) => q && q.taskId).map((q) => (q.qid ? q : { ...q, qid: uid() }));
   return { v: doc?.v || 1, updated: doc?.updated || new Date().toISOString(), phases, queue };
 }
 

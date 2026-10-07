@@ -6,7 +6,8 @@
 //   { name, estado, prefab?, imagen?, diseno?: { image, source, lote, item, request, note }, pendientes: [Pendiente],
 //     tarea?: <todo task id of the last build / fix run>, montaje?, createdAt,
 //     cuerpo?: { fecha, plantilla, partes, brief, resumen }  (by steps: the body built in step 1),
-//     paso2?: { tipo | plantilla, proyectil|sonidos|efectos: { origen: biblioteca|nuevo, texto }, notas } }
+//     paso2?: { tipo | plantilla, proyectil|sonidos|efectos: { origen: biblioteca|nuevo, texto }, notas },
+//     instrucciones?: [{ paso: montaje|cuerpo|resto, texto, fecha }]  (the user's extra instructions, one per launch) }
 //   Pendiente = { id, tipo: comportamiento|sprite|gesto|ataque|bug|otro, texto, estado: abierto|en-curso|hecho,
 //                 tarea?, resumen?, nota? }
 //
@@ -78,13 +79,15 @@ export class Enemigos {
   // ------------------------------------------------------------ tasks
 
   /** make-enemy from the approved design → estado "montando" until the task writes "por-aprobar". */
-  build({ name, model, effort }) {
+  build({ name, model, effort, instrucciones }) {
     const e = this._get(name);
     if (!e.diseno?.source) throw new Error('Este enemigo no tiene diseño del que partir');
+    const now = clean(instrucciones);
     const task = this.store.addTask(PHASE, {
-      text: `Montar ${name} (make-enemy)`, prompt: buildPrompt(e), needs: ['comfy', 'unity'],
-      model: model || 'sonnet', effort: effort || 'medium', enemy: name,
+      text: `Montar ${name} (make-enemy)`, prompt: buildPrompt(e, now), needs: ['comfy', 'unity'],
+      model: model || 'sonnet', effort: effort || 'medium', enemy: name, kind: 'montaje',
     });
+    note(e, 'montaje', now);
     e.estado = 'montando';
     e.tarea = task.id;
     this._put(e);
@@ -95,13 +98,15 @@ export class Enemigos {
    * By steps, step 1: only the body (parts + assembly + a body-only prefab) → "montando-cuerpo" until the task writes
    * "cuerpo-por-aprobar". Also redoes the body (sprite pendientes are the notes).
    */
-  buildBody({ name, model, effort }) {
+  buildBody({ name, model, effort, instrucciones }) {
     const e = this._get(name);
     if (!e.diseno?.source) throw new Error('Este enemigo no tiene diseño del que partir');
+    const now = clean(instrucciones);
     const task = this.store.addTask(PHASE, {
-      text: `Cuerpo de ${name} (make-enemy, paso 1)`, prompt: bodyPrompt(e), needs: ['comfy', 'unity'],
-      model: model || 'sonnet', effort: effort || 'medium', enemy: name,
+      text: `Cuerpo de ${name} (make-enemy, paso 1)`, prompt: bodyPrompt(e, now), needs: ['comfy', 'unity'],
+      model: model || 'sonnet', effort: effort || 'medium', enemy: name, kind: 'cuerpo',
     });
+    note(e, 'cuerpo', now);
     e.estado = 'montando-cuerpo';
     e.tarea = task.id;
     this._put(e);
@@ -112,7 +117,7 @@ export class Enemigos {
    * By steps, step 3: the user approved the body and chose the kind of enemy and where its assets come from.
    * `paso2` = { tipo | plantilla, proyectil|sonidos|efectos: { origen, texto }, notas } → "montando".
    */
-  buildRest({ name, paso2, model, effort }) {
+  buildRest({ name, paso2, model, effort, instrucciones }) {
     const e = this._get(name);
     if (!['cuerpo-aprobado', 'montando'].includes(e.estado)) throw new Error('Aprueba primero el cuerpo');
     const p = paso2 || {};
@@ -122,10 +127,12 @@ export class Enemigos {
     const asset = (a) => ({ origen: a?.origen === 'nuevo' ? 'nuevo' : 'biblioteca', texto: String(a?.texto || '').trim(),
       elegidos: (Array.isArray(a?.elegidos) ? a.elegidos : []).map((c) => ({ id: String(c.id || ''), name: String(c.name || '') })).filter((c) => c.id) });
     e.paso2 = { ...(heir ? { plantilla: heir } : { tipo: p.tipo }), proyectil: asset(p.proyectil), sonidos: asset(p.sonidos), efectos: asset(p.efectos), notas: String(p.notas || '').trim() };
+    const now = clean(instrucciones);
     const task = this.store.addTask(PHASE, {
-      text: `Terminar ${name} (make-enemy, paso 3)`, prompt: restPrompt(e), needs: ['comfy', 'unity'],
-      model: model || 'sonnet', effort: effort || 'medium', enemy: name,
+      text: `Terminar ${name} (make-enemy, paso 3)`, prompt: restPrompt(e, now), needs: ['comfy', 'unity'],
+      model: model || 'sonnet', effort: effort || 'medium', enemy: name, kind: 'resto',
     });
+    note(e, 'resto', now);
     e.estado = 'montando';
     e.tarea = task.id;
     this._put(e);
@@ -140,7 +147,7 @@ export class Enemigos {
     const needs = ['unity', ...(items.some((p) => p.tipo === 'sprite' || p.tipo === 'gesto') ? ['comfy'] : [])];
     const task = this.store.addTask(PHASE, {
       text: `${name}: ${items.map((p) => PENDING_TYPES[p.tipo].toLowerCase()).filter((v, i, a) => a.indexOf(v) === i).join(', ')} (${items.length} pendiente${items.length === 1 ? '' : 's'})`,
-      prompt: pendingPrompt(e, items), needs, model: model || 'sonnet', effort: effort || 'medium', enemy: name,
+      prompt: pendingPrompt(e, items), needs, model: model || 'sonnet', effort: effort || 'medium', enemy: name, kind: 'pendientes',
     });
     items.forEach((p) => { p.estado = 'en-curso'; p.tarea = task.id; });
     e.estado = 'con-pendientes';
@@ -217,6 +224,12 @@ export class Enemigos {
 
 export function nameFromPrefab(file) {
   return path.basename(file, '.prefab').replace(/^(Enemy|Boss)_/, '');
+}
+
+const clean = (text) => String(text || '').trim().slice(0, 4000);
+/** Keeps a launch's extra instructions in the sheet: the later steps' prompts read them as context. */
+function note(e, paso, texto) {
+  if (texto) (e.instrucciones ||= []).push({ paso, texto, fecha: new Date().toISOString() });
 }
 
 function readDir(dir) { try { return fs.readdirSync(dir); } catch { return []; } }

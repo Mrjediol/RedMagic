@@ -7,7 +7,10 @@
 //   · ⚙ Talleres — the "mechanical" side: one foldable section per kind of work (TALLERES). A phase belongs to a
 //     taller by `phase.taller` or by its id (`designs`, `enemies` — made by the server). Diseños and Enemigos also
 //     host modules/designs-panel.js (their own roots); the rest are "por definir" and take free tasks.
-// A left rail jumps to every phase / taller; clicking a task opens it in the right-hand drawer.
+//   · 🤖 Claude — at the TOP: the open task (conversation with Claude: reports, live console, queued instructions and
+//     a composer that works like a Claude console), then what is running / queued / finished lately.
+//   · 🗂 Historial — every task that ran, filtered by type, sorted by tokens / time / date.
+// A left rail jumps to every zone / phase / taller; clicking a task anywhere opens it at the top.
 //
 // The list is `docs/tareas/todo.json` in the repo — Claude reads it to know what is pending and may edit it.
 // Two ways to reach it:
@@ -28,6 +31,8 @@ const DB_NAME = 'redmagic-todo';
 const SEL_KEY = 'redmagic.todo.sel';
 const FOLD_KEY = 'redmagic.todo.folded';        // apuntes phases the user folded (open by default)
 const TALLER_KEY = 'redmagic.todo.talleres';    // talleres the user unfolded (folded by default)
+const HIST_KEY = 'redmagic.todo.hist';          // the history's filter and order
+const DISMISS_KEY = 'redmagic.todo.dismissed';  // finished tasks taken out of 🤖 Claude (id → the result's date)
 
 /** The workshops. `phase` = the todo.json phase that holds its tasks (created with its first task). */
 export const TALLERES = [
@@ -96,6 +101,26 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const swap = (arr, i, j) => { if (j >= 0 && j < arr.length) [arr[i], arr[j]] = [arr[j], arr[i]]; };
 const minutes = (ms) => { const s = Math.round(ms / 1000); return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${s % 60} s`; };
+const kTok = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1).replace('.', ',')}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n || 0));
+const firstLine = (s) => (String(s || '').split('\n').find((l) => l.trim()) || '').trim().slice(0, 160);
+/** Every token of a run: input + cache written + cache read + output. */
+const tokensOf = (r) => (r?.tokens ? (r.tokens.input || 0) + (r.tokens.cacheWrite || 0) + (r.tokens.cacheRead || 0) + (r.tokens.output || 0) : 0);
+/** A task's runs, oldest first: the earlier reports (`history`, newest first) and the latest (`result`). */
+const runsOf = (t) => [...(t.history || [])].reverse().concat(t.result ? [t.result] : []);
+
+/** The kind of a task, for the history's filter: from what made it (server fields), else where it lives. */
+const TYPE_LABELS = { diseno: '🎨 Diseño', montaje: '👾 Montaje completo', cuerpo: '🦴 Cuerpo (paso 1)', resto: '🧩 Resto (paso 3)', pendientes: '🔧 Pendientes de enemigo', apunte: '📝 Apunte' };
+function typeOf(t, ph) {
+  if (t.design) return 'diseno';
+  if (t.enemy) return t.kind || (/^Cuerpo de/.test(t.text) ? 'cuerpo' : /^Terminar/.test(t.text) ? 'resto' : /^Montar/.test(t.text) ? 'montaje' : 'pendientes');
+  const tl = tallerOf(ph);
+  return tl ? `taller:${tl.id}` : 'apunte';
+}
+function typeLabel(k) {
+  if (TYPE_LABELS[k]) return TYPE_LABELS[k];
+  const tl = k.startsWith('taller:') && tallerById(k.slice(7));
+  return tl ? `${tl.icon} ${tl.name}` : k;
+}
 const when = (iso) => { try { return new Date(iso).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch { return ''; } };
 
 /** A document from anything that might be one (the file, the server, localStorage): phases or null. */
@@ -176,8 +201,19 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
 
   let editing = null, confirmKey = null, confirmTimer = null, focusId = null, hideDone = false;
   let dirty = false, saving = false, saveTimer = null;
-  let sel = sessionStorage.getItem(SEL_KEY) || null;   // the task open in the drawer
-  let advOpen = false;                                 // the drawer's "prompt, modelo…" fold
+  let sel = sessionStorage.getItem(SEL_KEY) || null;   // the task open at the top
+  let advOpen = false;                                 // the open task's "prompt, modelo…" fold
+  const kept = new Set();                              // other folds of the open task left open (data-keep)
+  const drafts = new Map();                            // task id → what is typed in its composer (survives re-renders)
+  let listScroll = null;                               // where the list was when a task opened at the top
+  let hist = { type: 'all', state: 'all', sort: 'recent' };
+  try { Object.assign(hist, JSON.parse(sessionStorage.getItem(HIST_KEY) || '{}')); } catch { /* defaults */ }
+  let dismissed = {};
+  try { dismissed = JSON.parse(localStorage.getItem(DISMISS_KEY) || '{}') || {}; } catch { /* none */ }
+  const panelEl = tab.querySelector('#todoPanel');
+  const claudeEl = tab.querySelector('#todoClaude');
+  const historyEl = tab.querySelector('#todoHistoryRoot');
+  let railHtml = '', claudeHtml = '';
   let badges = {};                                     // taller id → count that needs the user (designs-panel)
   const folded = loadSet(localStorage, FOLD_KEY);
   const tallerOpen = loadSet(localStorage, TALLER_KEY);
@@ -295,7 +331,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     try {
       live = await api('GET', 'status');
       if (live.rev !== rev && !dirty && !saving && !editing) await pull();
-      else renderSoon(true);
+      else { renderToolbar(); renderLive(); }   // only the live parts: nothing under the cursor is redrawn
       setStatus(`Guardado · docs/tareas/todo.json (servidor del taller)`);
     } catch {
       live = null;
@@ -317,7 +353,8 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     await flush();
     try {
       await api('POST', 'run', { taskId, stepId, followUp, force });
-      toast(followUp ? 'Respuesta enviada a la cola' : 'En la cola');
+      const busy = ACTIVE.has(find(taskId)?.t.status);
+      toast(followUp || stepId ? (busy ? 'En cola: lo hace al acabar lo que está haciendo' : 'Enviado') : 'En la cola');
     } catch (e) { toast(e.message); }
     poll();
   }
@@ -505,7 +542,6 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     const meta = [when(r.at), r.durationMs ? minutes(r.durationMs) : '', out, tok].filter(Boolean).join(' · ');
     return `<div class="todoResult ${r.ok ? '' : 'bad'}">
       <div class="todoResultHead"><b>${label}</b><span>${esc(meta)}</span></div>
-      ${r.reply ? `<div class="todoReply">↩ ${esc(r.reply)}</div>` : ''}
       <div class="todoResultText">${esc(r.text)}</div>
       ${r.denied?.length ? `<div class="efHint">Acciones que no se le permitieron: ${r.denied.map(esc).join(' · ')}</div>` : ''}
     </div>`;
@@ -521,39 +557,59 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       : `<button class="small" data-act="del-step" data-id="${t.id}:${s.id}" aria-label="Borrar paso">×</button>`;
     return `<li class="todoStep${s.done ? ' done' : ''}">
       <button class="todoCheck small" data-act="step-toggle" data-id="${t.id}:${s.id}" aria-pressed="${s.done}" aria-label="Marcar paso">✓</button>
-      <div class="todoBody">${text}${statusBadge(s)}${s.result ? `<details class="todoStepResult"><summary>Informe del paso</summary>${resultBlock(s.result, `Paso ${i + 1}`)}</details>` : ''}</div>
+      <div class="todoBody">${text}${statusBadge(s)}</div>
       <div class="todoTools always">${server ? `<button class="small" data-act="step-run" data-id="${t.id}:${s.id}" title="Lanzar sólo este paso" ${ACTIVE.has(s.status) ? 'disabled' : ''}>▶</button>` : ''}${del}</div>
     </li>`;
   }
 
-  /** The drawer's body below title + description: live state, steps, launch, reports, then the advanced fold. */
-  function details(t) {
+  const queueOf = (tid) => (live?.queue || []).filter((q) => q.taskId === tid);
+  const you = (html) => `<div class="todoMsg">${html}</div>`;
+  /** What started a run, as the user's line in the conversation. */
+  const runHead = (r) => (r.reply ? you(`↩ ${esc(r.reply)}`) : r.step ? you(`▶ Paso: ${esc(r.step)}`) : '');
+
+  /** The conversation: every run, oldest first (the older ones folded), each with what started it. */
+  function thread(t) {
+    const runs = runsOf(t);
+    const one = (r) => `${runHead(r)}${resultBlock(r, r.ok ? 'Claude' : 'Claude · falló')}`;
+    const older = runs.slice(0, -3);
+    return `${older.length ? `<details class="todoHistory" data-keep="older:${t.id}" ${kept.has(`older:${t.id}`) ? 'open' : ''}><summary>${older.length} anterior${older.length === 1 ? '' : 'es'}</summary>${older.map(one).join('')}</details>` : ''}
+      ${runs.slice(-3).map(one).join('')}`;
+  }
+
+  /** What is happening now: the console of the run, the wait, what is queued for this task (each can be taken out). */
+  function liveBox(t) {
     const running = live?.running?.taskId === t.id ? live.running : null;
     const waiting = live?.waiting?.taskId === t.id ? live.waiting : null;
+    const why = waiting?.reason || (t.status === 'waiting' ? t.waiting : '');
+    const stepText = (id) => t.steps?.find((s) => s.id === id)?.text || '';
+    return `${running ? `${running.followUp ? you(`↩ ${esc(running.followUp)}`) : running.step ? you(`▶ Paso: ${esc(running.step)}`) : ''}
+        <div class="todoLive"><b>⚙ Trabajando</b> · ${minutes(Date.now() - running.startedAt)}
+        <ul class="todoConsole">${running.activity.map((a) => `<li>${esc(a.line)}</li>`).join('') || '<li>arrancando…</li>'}</ul></div>` : ''}
+      ${why ? `<div class="todoLive wait">⏳ ${esc(why)}
+        ${/terminal/.test(why) ? `<button class="small" data-act="force" data-id="${t.id}">Lanzar igualmente</button>` : ''}</div>` : ''}
+      ${queueOf(t.id).map((q) => `<div class="todoMsg queued"><span>⏳ en cola · ${q.followUp ? esc(q.followUp) : q.stepId ? `Paso: ${esc(stepText(q.stepId))}` : 'lanzar la tarea'}</span>
+        ${q.qid ? `<button class="small" data-act="unqueue" data-id="${esc(q.qid)}" title="Quitar de la cola">×</button>` : ''}</div>`).join('')}`;
+  }
+
+  /** The box at the bottom of the conversation: type and Enter, like a Claude console. */
+  function composer(t) {
+    if (!server) return '<p class="efHint">Para lanzarla y hablar con Claude, abre la web desde tools/taller-server/start.cmd.</p>';
+    const ph = ACTIVE.has(t.status) ? 'Instrucción para cuando acabe lo que está haciendo (misma sesión)'
+      : t.sessionId ? 'Responde o pide lo siguiente (sigue la misma sesión)' : 'Instrucción extra: lanza la tarea con ella';
+    return `<div class="todoCompose">
+      <textarea data-compose="${t.id}" rows="2" placeholder="${esc(ph)} · Enter envía, Shift+Enter nueva línea">${esc(drafts.get(t.id) || '')}</textarea>
+      <button class="primary" data-act="compose" data-id="${t.id}" title="Enter">Enviar ↵</button></div>`;
+  }
+
+  /** The open task's side column below title + description: steps, then the advanced fold. */
+  function details(t) {
     const needs = t.needs || [];
     const steps = t.steps || [];
-    const active = ACTIVE.has(t.status);
+    const ran = server && (t.sessionId || t.status === 'running');
     return `<div class="todoDetails">
-      ${running ? `<div class="todoLive"><b>Trabajando${running.step ? ` · ${esc(running.step)}` : ''}</b> · ${minutes(Date.now() - running.startedAt)}
-        <ul>${running.activity.map((a) => `<li>${esc(a.line)}</li>`).join('') || '<li>arrancando…</li>'}</ul></div>` : ''}
-      ${waiting || t.waiting ? `<div class="todoLive wait">⏳ ${esc(waiting?.reason || t.waiting)}
-        ${/terminal/.test(waiting?.reason || t.waiting || '') ? `<button class="small" data-act="force" data-id="${t.id}">Lanzar igualmente</button>` : ''}</div>` : ''}
-      <label class="todoLabel">Pasos</label>
+      <label class="todoLabel">Pasos <span class="efHint">${ran ? 'uno nuevo se hace al acabar lo que esté haciendo, o ya si terminó' : '▶ Lanzar hace los que no estén hechos'}</span></label>
       <ul class="todoSteps">${steps.map((s, i) => stepRow(t, s, i)).join('')}</ul>
-      <form class="todoAdd" data-form="addstep" data-id="${t.id}"><input id="todoStep-${t.id}" type="text" placeholder="Añadir paso" autocomplete="off"><button type="submit">Añadir</button></form>
-      <div class="todoRow todoLaunch">
-        ${server ? (active
-          ? `<button class="danger" data-act="cancel" data-id="${t.id}">⏹ ${t.status === 'running' ? 'Parar' : 'Quitar de la cola'}</button>`
-          : `<button class="primary" data-act="run" data-id="${t.id}">▶ Lanzar${steps.length ? ' (los pasos sin hacer)' : ''}</button>`)
-          : '<span class="efHint">Para lanzarla, abre la web desde tools/taller-server/start.cmd.</span>'}
-        <button data-act="toggle" data-id="${t.id}">${t.done ? '↶ Reabrir' : '✓ Hecha'}</button>
-        <button class="${confirmKey === `dt${t.id}` ? 'danger' : ''}" data-act="del-task" data-id="${t.id}">${confirmKey === `dt${t.id}` ? '¿Borrar la tarea?' : '🗑'}</button>
-      </div>
-      ${resultBlock(t.result)}
-      ${t.history?.length ? `<details class="todoHistory"><summary>Informes anteriores (${t.history.length})</summary>${t.history.map((r) => resultBlock(r, 'Anterior')).join('')}</details>` : ''}
-      ${server && t.sessionId && !active ? `<div class="todoRow todoReplyBox">
-        <textarea data-reply="${t.id}" placeholder="Responder: sigue la misma sesión (ej.: adelante con el 3 y el 7, así y así)"></textarea>
-        <button data-act="reply" data-id="${t.id}">↩ Responder</button></div>` : ''}
+      <form class="todoAdd" data-form="addstep" data-id="${t.id}"><input id="todoStep-${t.id}" type="text" placeholder="${ran ? 'Nuevo paso (se lanza solo)' : 'Añadir paso'}" autocomplete="off"><button type="submit">Añadir</button></form>
       <details class="todoAdv" ${advOpen ? 'open' : ''}><summary>Prompt, modelo, qué necesita, documento</summary>
         <label class="todoLabel">Prompt <span class="efHint">vacío = título, descripción y pasos</span></label>
         <textarea class="todoPrompt" data-field="prompt" data-id="${t.id}" placeholder="Ej.: genera 10 bases de enemigos de hielo así y así, déjame la hoja de contacto">${esc(t.prompt || '')}</textarea>
@@ -664,7 +720,9 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
 
   function renderRail() {
     const item = (jump, label, count, cls = '') => `<button class="todoRailItem ${cls}" data-jump="${jump}">${label}${count}</button>`;
-    rail.innerHTML = `<h2>📝 Apuntes</h2>${apuntes().map((p) => {
+    const busy = allTasks().filter(isRunning).length;
+    const html = `${item('zone:claude', '🤖 Claude', busy ? `<b class="run" title="Trabajando o en cola">${busy}</b>` : '')}
+      <h2>📝 Apuntes</h2>${apuntes().map((p) => {
       const left = p.tasks.filter((t) => !t.done).length;
       return item(`phase:${p.id}`, esc(p.name), left ? `<b>${left}</b>` : '');
     }).join('')}
@@ -673,10 +731,12 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       const run = (ph?.tasks || []).some(isRunning);
       const count = badges[tl.id] ? `<b class="hot" title="Esperan tu decisión">${badges[tl.id]}</b>` : run ? '<b class="run" title="Trabajando">●</b>' : '';
       return item(`taller:${tl.id}`, `${tl.icon} ${esc(tl.name)}`, count, tl.built ? '' : 'soon');
-    }).join('')}`;
+    }).join('')}
+      <h2>🗂 Historial</h2>${item('zone:history', 'Todas las tareas', '')}`;
+    if (html !== railHtml) { rail.innerHTML = html; railHtml = html; }   // redrawn every poll: only when it changed
   }
 
-  /** Where a task lives, for the drawer's header. */
+  /** Where a task lives, for the open task's header. */
   function whereOf(r) {
     const tl = tallerOf(r.ph);
     return tl ? `⚙ ${tl.icon} ${tl.name}` : `📝 ${r.ph.name}`;
@@ -690,19 +750,112 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       return;
     }
     const t = r.t;
+    const active = ACTIVE.has(t.status);
+    const runs = runsOf(t);
+    const tok = runs.reduce((n, x) => n + tokensOf(x), 0);
+    const del = confirmKey === `dt${t.id}`;
     detail.hidden = false;
-    detail.innerHTML = `<div class="todoDetailHead"><span class="efHint">${esc(whereOf(r))}</span>${statusBadge(t)}
+    detail.innerHTML = `<div class="todoDetailHead"><span class="efHint">${esc(whereOf(r))} · ${esc(typeLabel(typeOf(t, r.ph)))}</span>${statusBadge(t)}
+        ${server ? (active ? `<button class="small danger" data-act="cancel" data-id="${t.id}">⏹ ${t.status === 'running' ? 'Parar' : 'Quitar de la cola'}</button>`
+          : `<button class="small primary" data-act="run" data-id="${t.id}" title="${t.sessionId ? 'Otra vez desde cero, en una sesión nueva' : 'Con su prompt'}${t.steps?.length ? ' (los pasos sin hacer)' : ''}">▶ ${t.sessionId ? 'Relanzar' : 'Lanzar'}</button>`) : ''}
+        <button class="small" data-act="toggle" data-id="${t.id}">${t.done ? '↶ Reabrir' : '✓ Hecha'}</button>
+        <button class="small ${del ? 'danger' : ''}" data-act="del-task" data-id="${t.id}">${del ? '¿Borrar la tarea?' : '🗑'}</button>
         <button class="small" data-act="close-detail" aria-label="Cerrar" title="Cerrar (Esc)">✕</button></div>
-      <input class="todoDetailTitle" type="text" data-field="text" data-id="${t.id}" value="${esc(t.text)}" aria-label="Título" autocomplete="off">
-      <label class="todoLabel">Descripción</label>
-      <textarea class="todoDetailNote" data-field="note" data-id="${t.id}" placeholder="Apunta la idea, el contexto, lo que tenga que saber Claude…">${esc(t.note)}</textarea>
-      ${details(t)}`;
+      <div class="todoDetailGrid">
+        <div class="todoDetailSide">
+          <input class="todoDetailTitle" type="text" data-field="text" data-id="${t.id}" value="${esc(t.text)}" aria-label="Título" autocomplete="off">
+          <label class="todoLabel">Descripción</label>
+          <textarea class="todoDetailNote" data-field="note" data-id="${t.id}" placeholder="Apunta la idea, el contexto, lo que tenga que saber Claude…">${esc(t.note)}</textarea>
+          ${details(t)}
+        </div>
+        <div class="todoConversation">
+          <label class="todoLabel">Claude ${runs.length ? `<span class="efHint">${runs.length} ejecución${runs.length === 1 ? '' : 'es'}${tok ? ` · ${kTok(tok)} tokens` : ''}</span>` : ''}</label>
+          <div class="todoThread">${thread(t) || (active ? '' : '<p class="todoEmpty">Aún no se ha lanzado.</p>')}<div data-live="${t.id}">${liveBox(t)}</div></div>
+          ${composer(t)}
+        </div>
+      </div>`;
+    const c = detail.querySelector('.todoConsole');
+    if (c) c.scrollTop = c.scrollHeight;
+  }
+
+  /** 🤖 Claude: what runs, waits or is queued, then what finished lately (× takes one out; the history keeps it). */
+  function renderClaude() {
+    if (!claudeEl) return;
+    if (!server) { claudeEl.innerHTML = '<p class="efHint">Con el servidor del taller (start.cmd) aquí ves lo que hace Claude.</p>'; return; }
+    const order = new Map((live?.queue || []).map((q, i) => [q.taskId, i]).reverse());   // first place of each task
+    const all = phases.flatMap((ph) => ph.tasks.map((t) => ({ ph, t })));
+    const runningId = live?.running?.taskId;
+    const rank = (t) => (t.id === runningId ? -2 : t.status === 'waiting' ? -1 : order.get(t.id) ?? 999);
+    const act = all.filter(({ t }) => ACTIVE.has(t.status) || t.id === runningId).sort((a, b) => rank(a.t) - rank(b.t));
+    const recent = all.filter(({ t }) => !act.some((x) => x.t === t) && t.result?.at && Date.now() - Date.parse(t.result.at) < 48 * 36e5 && dismissed[t.id] !== t.result.at)
+      .sort((a, b) => Date.parse(b.t.result.at) - Date.parse(a.t.result.at)).slice(0, 8);
+    const row = ({ ph, t }, isRecent) => {
+      const running = t.id === runningId ? live.running : null;
+      const n = queueOf(t.id).length;
+      const info = running ? `${minutes(Date.now() - running.startedAt)} · ${esc(running.activity.at(-1)?.line || 'arrancando…')}${n ? ` · +${n} en cola` : ''}`
+        : t.status === 'waiting' ? esc(live?.waiting?.taskId === t.id ? live.waiting.reason : t.waiting || 'esperando')
+        : ACTIVE.has(t.status) ? (n > 1 ? `${n} en cola` : 'en cola')
+        : `${esc(when(t.result.at))}${t.result.tokens ? ` · ${kTok(tokensOf(t.result))} tokens` : ''} · ${esc(firstLine(t.result.text))}`;
+      return `<li class="todoClaudeRow${sel === t.id ? ' sel' : ''}" data-open="${t.id}" title="Abrir">
+        ${statusBadge(t.id === runningId ? { status: 'running' } : t)}<span class="todoClaudeTitle">${esc(t.text)}</span>
+        <span class="todoClaudeWhere">${esc(whereOf({ ph }))}</span><span class="todoClaudeInfo">${info}</span>
+        ${isRecent ? `<button class="small" data-act="dismiss" data-id="${t.id}" title="Quitar de aquí (sigue en el historial)" aria-label="Quitar">×</button>` : ''}</li>`;
+    };
+    const html = act.length || recent.length
+      ? `<ul class="todoClaudeList">${act.map((x) => row(x, false)).join('')}${recent.length ? `<li class="todoClaudeSep">Terminadas hace poco</li>${recent.map((x) => row(x, true)).join('')}` : ''}</ul>`
+      : '<p class="todoEmpty">Claude no está haciendo nada.</p>';
+    if (html !== claudeHtml) { claudeEl.innerHTML = html; claudeHtml = html; }
+  }
+
+  /** The live parts only (every poll): 🤖 Claude, the open task's console / queue, the rail's counts. */
+  function renderLive() {
+    renderClaude();
+    renderRail();
+    const r = sel ? find(sel) : null;
+    const box = r && detail.querySelector(`[data-live="${sel}"]`);
+    if (!box) return;
+    const html = liveBox(r.t);
+    if (box.innerHTML === html) return;
+    box.innerHTML = html;
+    const c = box.querySelector('.todoConsole');
+    if (c) c.scrollTop = c.scrollHeight;
+  }
+
+  /** 🗂 Historial: one row per task that ran, its runs added up. */
+  function renderHistory() {
+    if (!historyEl) return;
+    const rows = [];
+    for (const ph of phases) for (const t of ph.tasks) {
+      const runs = runsOf(t);
+      if (!runs.length) continue;
+      rows.push({ t, type: typeOf(t, ph), runs: runs.length, at: runs.at(-1).at, ok: runs.at(-1).ok,
+        tok: runs.reduce((n, x) => n + tokensOf(x), 0), out: runs.reduce((n, x) => n + (x.tokens?.output || 0), 0), ms: runs.reduce((n, x) => n + (x.durationMs || 0), 0) });
+    }
+    const types = Object.keys(TYPE_LABELS).concat([...new Set(rows.map((x) => x.type))]).filter((k, i, a) => a.indexOf(k) === i && rows.some((x) => x.type === k));
+    if (hist.type !== 'all' && !types.includes(hist.type)) hist.type = 'all';
+    const list = rows.filter((x) => (hist.type === 'all' || x.type === hist.type) && (hist.state === 'all' || (hist.state === 'ok') === !!x.ok));
+    const by = { recent: (a, b) => String(b.at).localeCompare(String(a.at)), tokens: (a, b) => b.tok - a.tok, output: (a, b) => b.out - a.out, time: (a, b) => b.ms - a.ms };
+    list.sort(by[hist.sort] || by.recent);
+    const opt = (v, label, cur) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${label}</option>`;
+    const chip = (k, label, n) => `<button class="small${hist.type === k ? ' selected' : ''}" data-act="hist-type" data-id="${esc(k)}">${esc(label)} <span class="todoHistN">${n}</span></button>`;
+    historyEl.innerHTML = `<div class="todoHistBar">${chip('all', 'Todas', rows.length)}${types.map((k) => chip(k, typeLabel(k), rows.filter((x) => x.type === k).length)).join('')}</div>
+      <div class="todoRow todoHistTools">
+        <label>Estado <select data-hist="state">${opt('all', 'todas', hist.state)}${opt('ok', 'bien', hist.state)}${opt('bad', 'fallidas / canceladas', hist.state)}</select></label>
+        <label>Ordenar por <select data-hist="sort">${opt('recent', 'más reciente', hist.sort)}${opt('tokens', 'más tokens (total)', hist.sort)}${opt('output', 'más tokens de salida', hist.sort)}${opt('time', 'más tiempo', hist.sort)}</select></label>
+        <span class="efHint">${list.length} tarea${list.length === 1 ? '' : 's'} · ${kTok(list.reduce((n, x) => n + x.tok, 0))} tokens</span>
+      </div>
+      ${list.length ? `<div class="todoHistWrap"><table class="todoHistTable"><thead><tr><th>Última</th><th>Tipo</th><th>Tarea</th><th title="Lanzar, pasos e instrucciones">Ejec.</th><th>Tiempo</th><th title="Entrada + caché + salida, todas sus ejecuciones">Tokens</th><th>Salida</th></tr></thead>
+        <tbody>${list.slice(0, 200).map((x) => `<tr data-open="${x.t.id}" class="${x.ok ? '' : 'bad'}${sel === x.t.id ? ' sel' : ''}" title="Abrir">
+          <td>${esc(when(x.at))}</td><td>${esc(typeLabel(x.type))}</td><td>${esc(x.t.text)}</td><td>${x.runs}</td><td>${x.ms ? minutes(x.ms) : ''}</td><td>${x.tok ? kTok(x.tok) : '—'}</td><td>${x.out ? kTok(x.out) : '—'}</td></tr>`).join('')}</tbody></table></div>`
+        : '<p class="todoEmpty">Nada con ese filtro.</p>'}`;
   }
 
   function render() {
     renderList();
     renderRail();
     renderDetail();
+    renderClaude();
+    renderHistory();
     renderToolbar();
     renderQuick();
     const f = tab.querySelector('[data-focus]');
@@ -717,11 +870,16 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
   function select(id) {
     if (id && !sel && narrow() && !pushed) { history.pushState({ todoSel: true }, ''); pushed = true; }
     if (!id && pushed) { pushed = false; history.back(); }
+    const wasOpen = !!sel;
     sel = id;
     if (id) sessionStorage.setItem(SEL_KEY, id); else sessionStorage.removeItem(SEL_KEY);
     render();
-    if (id && !narrow()) detail.querySelector('.todoDetailNote')?.focus({ preventScroll: true });
-    if (id && narrow()) detail.scrollTop = 0;
+    if (narrow()) { if (id) detail.scrollTop = 0; return; }
+    // The open task lives at the top of the page: go up to it, and back to where you were when it closes.
+    if (id) {
+      if (!wasOpen) listScroll = panelEl?.scrollTop ?? null;
+      panelEl?.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (panelEl && listScroll != null) { panelEl.scrollTop = listScroll; listScroll = null; }
   }
   window.addEventListener('popstate', () => { if (pushed) { pushed = false; select(null); } });
 
@@ -762,7 +920,9 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
   /** Unfolds a phase or a taller and scrolls to it (the rail, and links into a taller). */
   function jump(target) {
     const [kind, id] = target.split(':');
-    if (kind === 'phase') {
+    if (kind === 'zone') {
+      document.getElementById(id === 'claude' ? 'todoZoneClaude' : 'todoZoneHistory')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (kind === 'phase') {
       if (folded.delete(id)) { saveSet(localStorage, FOLD_KEY, folded); renderList(); }
       document.getElementById(`todoPhase-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
@@ -858,12 +1018,23 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     },
     run: (id) => launch(id),
     'step-run': (id) => { const r = stepOf(id); if (r) launch(r.t.id, { stepId: r.s.id }); },
-    reply: (id) => {
-      const box = detail.querySelector(`[data-reply="${id}"]`);
-      const text = box?.value.trim();
-      if (!text) { toast('Escribe la respuesta primero'); return; }
+    compose: (id) => {
+      const box = detail.querySelector(`[data-compose="${id}"]`);
+      const text = (box?.value || drafts.get(id) || '').trim();
+      if (!text) { toast('Escribe la instrucción primero'); box?.focus(); return; }
+      drafts.delete(id);
+      if (box) { box.value = ''; box.blur(); }
       launch(id, { followUp: text });
     },
+    unqueue: (id) => serverAction('unqueue', { qid: id }, 'Quitado de la cola'),
+    dismiss: (id) => {
+      const r = find(id);
+      if (!r?.t.result) return;
+      dismissed[id] = r.t.result.at;
+      try { localStorage.setItem(DISMISS_KEY, JSON.stringify(dismissed)); } catch { /* private window */ }
+      renderClaude();
+    },
+    'hist-type': (id) => { hist.type = id; saveHist(); renderHistory(); },
     cancel: (id) => serverAction('cancel', { taskId: id }, 'Cancelada'),
     'img-del': (id) => {
       const [owner, imgId] = [id.slice(0, id.lastIndexOf(':')), id.slice(id.lastIndexOf(':') + 1)];
@@ -877,7 +1048,9 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     force: (id) => serverAction('force', { taskId: id }, 'Lanzando aunque haya una terminal abierta'),
   };
 
-  // One set of listeners for the whole tab (apuntes, talleres, rail, drawer); designs-panel's areas are skipped.
+  function saveHist() { try { sessionStorage.setItem(HIST_KEY, JSON.stringify(hist)); } catch { /* private window */ } }
+
+  // One set of listeners for the whole tab (apuntes, talleres, rail, the open task); designs-panel's areas are skipped.
   tab.addEventListener('click', (e) => {
     if (!ours(e.target)) return;
     const b = e.target.closest('[data-act]');
@@ -901,10 +1074,13 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       if (d.open) tallerOpen.add(d.dataset.taller); else tallerOpen.delete(d.dataset.taller);
       saveSet(localStorage, TALLER_KEY, tallerOpen);
     } else if (d.matches?.('details.todoAdv')) advOpen = d.open;
+    else if (d.dataset?.keep) { if (d.open) kept.add(d.dataset.keep); else kept.delete(d.dataset.keep); }
   }, true);
+  tab.addEventListener('input', (e) => { const id = e.target.dataset?.compose; if (id) drafts.set(id, e.target.value); });
   tab.addEventListener('keydown', (e) => {
     const t = e.target;
     if (!ours(t)) return;
+    if (t.dataset?.compose && e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); ACTIONS.compose(t.dataset.compose); return; }
     if (e.key === 'Escape' && sel && !t.hasAttribute?.('data-edit') && !/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) { select(null); return; }
     if (e.key === 'Enter' && t.dataset?.field === 'text') { e.preventDefault(); t.blur(); return; }
     if (!t.hasAttribute?.('data-edit')) return;
@@ -914,6 +1090,9 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
   tab.addEventListener('focusout', (e) => {
     if (!ours(e.target)) return;
     if (e.target.hasAttribute?.('data-edit')) commit(e.target.value);
+    // Leaving a field for a button of the tab (Enviar, ▶…): a re-render now would swap the button under the
+    // pointer and swallow the click — the action renders itself, or the next poll does.
+    else if (e.relatedTarget && tab.contains(e.relatedTarget) && e.relatedTarget.closest('button, summary, label')) return;
     else if (pendingRender) setTimeout(() => { if (!focusedHere() && pendingRender) render(); }, 0);
   });
   // Drawer fields (title, description, prompt, doc, model, needs): saved when they change; only the list is
@@ -921,6 +1100,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
   tab.addEventListener('change', (e) => {
     const el = e.target;
     if (!ours(el)) return;
+    if (el.dataset.hist) { hist[el.dataset.hist] = el.value; saveHist(); renderHistory(); return; }
     if (el.dataset.attach !== undefined) { const files = [...el.files]; el.value = ''; attach(el.dataset.attach, files); return; }
     const r = el.dataset.id ? find(el.dataset.id) : null;
     if (!r) return;
@@ -962,7 +1142,12 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
       const r = find(f.dataset.id);
       if (!r) return;
       focusId = `todoStep-${f.dataset.id}`;
-      mut(() => { (r.t.steps ||= []).push({ id: uid(), text: v, done: false }); });
+      const step = { id: uid(), text: v, done: false };
+      mut(() => { (r.t.steps ||= []).push(step); });
+      // A task that already ran (or runs): the new step is the next instruction — after the current run, or now.
+      // A full launch still queued will read it in its prompt anyway.
+      const fullQueued = queueOf(r.t.id).some((q) => !q.stepId && !q.followUp);
+      if (server && (r.t.status === 'running' || (r.t.sessionId && !fullQueued))) launch(r.t.id, { stepId: step.id });
     }
   });
 
@@ -994,12 +1179,10 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
     if (data.get('effort')) task.effort = String(data.get('effort'));
     const andLaunch = e.submitter?.dataset.quick === 'launch';
     phases[i].tasks.push(task);
-    sel = task.id;
-    sessionStorage.setItem(SEL_KEY, sel);
     form.reset();
     quickImages = [];
     renderQuickImages();
-    render();
+    select(task.id);
     dirty = true;
     await flush();
     if (andLaunch) launch(task.id);

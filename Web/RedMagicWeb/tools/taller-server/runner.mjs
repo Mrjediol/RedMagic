@@ -16,6 +16,13 @@ import crypto from 'node:crypto';
 import { spawn, execFile } from 'node:child_process';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const HISTORY_MAX = 40;   // earlier reports kept per task
+
+// Every run, resumed ones too: tokens are the plan's budget, so no narration and a short report.
+const TERSE = 'Unattended run from the project web. Save tokens: do not narrate, explain or teach while working; no text between tool calls '
+  + 'unless something blocks you; do not restate the task or summarise what you read. The only prose is the final report.';
+const REPORT = 'Your LAST message is the report the user reads on the web: Spanish, terse, at most ~8 short lines — what was done, where it is, '
+  + 'decisions you took on your own, what to test (short list). No preamble, no explanations, no recap of the task.';
 
 export class Runner {
   /**
@@ -43,21 +50,49 @@ export class Runner {
   // ------------------------------------------------------------ the queue
 
   /**
-   * Adds a run: the whole task, one step of it, or a reply to its last session (`followUp`).
+   * Adds a run: the whole task, one step of it, or an instruction for it (`followUp`). An instruction runs in the
+   * task's session (resumed) when it has one by then, else it starts the task with the instruction appended. While
+   * the task is running or queued, whatever is added goes right behind it — "do this when you finish", like typing
+   * in a Claude console.
    * @returns {string|null} an error for the user, or null
    */
   enqueue({ taskId, stepId = null, followUp = null, force = false }) {
     const found = this.store.find(taskId);
     if (!found) return 'No existe esa tarea.';
-    if (followUp && !found.task.sessionId) return 'Esta tarea aún no tiene una sesión a la que responder.';
-    if (this.store.doc.queue.some((q) => q.taskId === taskId && q.stepId === stepId && !q.followUp) && !followUp) return 'Ya está en la cola.';
-    this.store.doc.queue.push({ taskId, stepId, followUp, queuedAt: new Date().toISOString() });
+    followUp = followUp ? String(followUp).trim() || null : null;
+    const queue = this.store.doc.queue;
+    if (!followUp && queue.some((q) => q.taskId === taskId && q.stepId === stepId && !q.followUp)) return 'Ya está en la cola.';
+    const item = { qid: crypto.randomBytes(4).toString('hex'), taskId, stepId, followUp, queuedAt: new Date().toISOString() };
+    // Behind what this task already has queued (or first, if it is the one running): its session goes on before
+    // other tasks get in between.
+    let at = -1;
+    queue.forEach((q, i) => { if (q.taskId === taskId) at = i; });
+    if (at >= 0) queue.splice(at + 1, 0, item);
+    else if (this.current?.taskId === taskId) queue.unshift(item);
+    else queue.push(item);
     if (force) this.force.add(taskId);
     const target = stepId ? found.task.steps?.find((s) => s.id === stepId) : found.task;
     if (target && target.status !== 'running') target.status = 'queued';
     this.store.save();
     this.kick();
     return null;
+  }
+
+  /** Takes one queued run (an instruction, a step) out of the queue. */
+  unqueue(qid) {
+    const q = this.store.doc.queue.find((x) => x.qid === qid);
+    if (!q) return;
+    this.store.doc.queue = this.store.doc.queue.filter((x) => x !== q);
+    const found = this.store.find(q.taskId);
+    if (found) {
+      const step = q.stepId ? found.task.steps?.find((s) => s.id === q.stepId) : null;
+      if (step?.status === 'queued') step.status = 'cancelled';
+      const left = this.store.doc.queue.some((x) => x.taskId === q.taskId);
+      if (!left && this.current?.taskId !== q.taskId && found.task.status === 'queued') {
+        found.task.status = found.task.result ? (found.task.result.ok ? 'done' : 'failed') : 'cancelled';
+      }
+    }
+    this.store.save();
   }
 
   /** Takes a task out of the queue, or stops it if it is the one running. */
@@ -133,15 +168,18 @@ export class Runner {
   async _run(item, { phase, task }) {
     const step = item.stepId ? task.steps?.find((s) => s.id === item.stepId) : null;
     const runId = `${new Date().toISOString().replace(/[:.]/g, '-')}_${task.id}`;
-    const resume = !!item.followUp || (!!step && !!task.sessionId);
+    // An instruction or a step goes on in the task's session; without one (never launched) it starts the task.
+    const resume = !!task.sessionId && (!!item.followUp || !!step);
     const sessionId = resume ? task.sessionId : crypto.randomUUID();
-    const prompt = item.followUp ? this._followUpPrompt(task, item.followUp) : this._prompt(phase, task, step);
+    const prompt = item.followUp && resume ? this._followUpPrompt(task, item.followUp)
+      : this._prompt(phase, task, step) + (item.followUp ? `\n\nThe user's instruction for this run (their words; it overrides the above where they conflict):\n${item.followUp}` : '');
     const cfg = this.opts.config;
 
     const args = ['-p', '--output-format', 'stream-json', '--verbose',
       '--permission-mode', 'auto', '--permission-prompts', 'none',
       '--model', task.model || cfg.defaultModel, '--effort', task.effort || cfg.defaultEffort,
       '-n', `Tarea: ${task.text}`.slice(0, 80),
+      '--append-system-prompt', TERSE,
       '--disallowedTools', ...cfg.disallowedTools];
     if (resume) args.push('--resume', sessionId);
     else args.push('--session-id', sessionId);
@@ -157,7 +195,7 @@ export class Runner {
 
     const child = spawn(this.opts.claudeExe, args, { cwd: this.opts.projectRoot, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
     this.children.add(child.pid);
-    this.current = { taskId: task.id, stepId: step?.id || null, runId, child, startedAt, activity: [], title: task.text, step: step?.text || null };
+    this.current = { taskId: task.id, stepId: step?.id || null, runId, child, startedAt, activity: [], title: task.text, step: step?.text || null, followUp: item.followUp || null };
     child.stdin.end(prompt);
 
     let buffer = '', final = null, stderr = '';
@@ -194,18 +232,21 @@ export class Runner {
       costUsd: final?.total_cost_usd ?? null,
       tokens: final?.usage ? { input: final.usage.input_tokens, cacheWrite: final.usage.cache_creation_input_tokens, cacheRead: final.usage.cache_read_input_tokens, output: final.usage.output_tokens, calls: final.num_turns } : undefined, runId, sessionId: final?.session_id || sessionId,
       ...(item.followUp ? { reply: item.followUp } : {}),
+      ...(step ? { step: step.text, stepId: step.id } : {}),
       ...(denials.length ? { denied: denials } : {}),
     };
     if (step) this.store.setRun(task.id, step.id, { status: ok ? 'done' : cancelled ? 'cancelled' : 'failed', result });
-    // Earlier reports are kept (newest first, 10 at most): a reply must not wipe what came before it.
+    // Every run (the task, a step, an instruction) is the task's latest report; the earlier ones are kept, newest
+    // first: they are the conversation the web shows and the history's token totals.
     const fresh = this.store.find(task.id)?.task;
     const history = [...(fresh?.history || [])];
-    if (!step && fresh?.result) history.unshift(fresh.result);
+    if (fresh?.result) history.unshift(fresh.result);
+    const more = this.store.doc.queue.some((q) => q.taskId === task.id);
     this.store.setRun(task.id, null, {
-      history: history.length ? history.slice(0, 10) : undefined,
-      status: ok ? 'done' : cancelled ? 'cancelled' : 'failed',
+      history: history.length ? history.slice(0, HISTORY_MAX) : undefined,
+      status: more && !cancelled ? 'queued' : ok ? 'done' : cancelled ? 'cancelled' : 'failed',
       sessionId: result.sessionId,
-      ...(step ? {} : { result }),
+      result,
     });
     try { this.opts.onFinish?.(fresh || task, result); } catch (e) { console.error('[onFinish]', e); }
   }
@@ -269,7 +310,7 @@ export class Runner {
     if (task.doc) lines.push(`Task document (read it first: state, instructions and what is already done): ${task.doc}`);
     if (task.steps?.length) {
       lines.push('', 'Steps:');
-      task.steps.forEach((s, i) => lines.push(`${i + 1}. ${s.done ? '[done] ' : ''}${s.text}${s.result?.text ? `\n   Previous result: ${s.result.text.slice(0, 600)}` : ''}`));
+      task.steps.forEach((s, i) => lines.push(`${i + 1}. ${s.done || s.status === 'done' ? '[done] ' : ''}${s.text}${s.result?.text ? `\n   Previous result: ${s.result.text.slice(0, 600)}` : ''}`));
     }
     if (step) {
       const n = task.steps.indexOf(step) + 1;
@@ -281,9 +322,7 @@ export class Runner {
     const images = this._imagePaths(task);
     if (images.length) lines.push('', 'Reference images attached by the user (look at them with the Read tool before starting):', ...images.map((f) => `- ${f}`));
     if (task.needs?.length) lines.push('', `Already open: ${task.needs.map((n) => (n === 'unity' ? 'Unity (the project editor)' : 'ComfyUI')).join(', ')}.`);
-    lines.push('',
-      'When done: compile and commit as CLAUDE.md says; if the task has a document, update it with the state and what is left.',
-      'Your LAST message is the report the user reads on the web, under the task: what you did, conclusions, decisions taken, where each thing is and a short list of what to test. Write it in Spanish, concise, as in the terminal.');
+    lines.push('', 'When done: compile and commit as CLAUDE.md says; if the task has a document, update it with the state and what is left.', REPORT);
     return lines.join('\n');
   }
 
@@ -294,8 +333,8 @@ export class Runner {
   }
 
   _followUpPrompt(task, reply) {
-    return [`The user's reply from the web (📋 Tareas) about the task "${task.text}":`, '', reply, '',
-      'You are still unattended. When done, commit as CLAUDE.md says; your last message is the report for the web (in Spanish).'].join('\n');
+    return [`The user's next instruction from the web (📋 Tareas) for the task "${task.text}":`, '', reply, '',
+      'Still unattended. When done, commit as CLAUDE.md says.', REPORT].join('\n');
   }
 
   _kill(child) {
@@ -350,10 +389,10 @@ export class Runner {
   status() {
     const cur = this.current;
     return {
-      running: cur ? { taskId: cur.taskId, stepId: cur.stepId, title: cur.title, step: cur.step, startedAt: cur.startedAt, runId: cur.runId, activity: cur.activity.slice(-12) } : null,
+      running: cur ? { taskId: cur.taskId, stepId: cur.stepId, title: cur.title, step: cur.step, followUp: cur.followUp, startedAt: cur.startedAt, runId: cur.runId, activity: cur.activity.slice(-30) } : null,
       waiting: this.waiting,
       usage: this.usage,
-      queue: this.store.doc.queue.map((q) => ({ taskId: q.taskId, stepId: q.stepId, followUp: !!q.followUp })),
+      queue: this.store.doc.queue.map((q) => ({ qid: q.qid, taskId: q.taskId, stepId: q.stepId, followUp: q.followUp ? String(q.followUp).slice(0, 400) : null })),
     };
   }
 }

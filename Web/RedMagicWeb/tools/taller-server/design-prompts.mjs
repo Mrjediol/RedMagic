@@ -19,6 +19,20 @@ const PENDING_EN = { comportamiento: 'Behaviour', sprite: 'Sprite', gesto: 'Gest
 const PICTURE = 'After editing the enemy sheet, refresh its picture for the web: '
   + `unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@"<prefab>");'`;
 
+const PASO_EN = { montaje: 'the full build', cuerpo: 'step 1 (body)', resto: 'step 3 (the rest)' };
+
+/**
+ * The user's extra instructions: `now` = the text typed for THIS launch — it wins over the design and over this step's
+ * limits — then the earlier ones (enemigos.mjs keeps them in the sheet as `instrucciones`, one per launch) as context.
+ */
+function instructionLines(enemy, now) {
+  const before = (enemy.instrucciones || []).filter((i) => String(i.texto || '').trim());
+  return [
+    ...(now ? ['EXTRA INSTRUCTIONS from the user for THIS launch (their words). They override the design picture and this step\'s limits where they conflict (e.g. asked for extra part states — sleeping / awake / attack — make them here even if this step normally does not):', `«${now}»`] : []),
+    ...(before.length ? ['Earlier instructions for this enemy (their words; honour them where they still apply):', ...before.map((i) => `- [${PASO_EN[i.paso] || i.paso}] «${i.texto}»`)] : []),
+  ];
+}
+
 /** A design task: `index` (1-based) when the batch is split into one task per proposal. */
 export function designPrompt({ kind, request, count, loteFile, index = null, generator = null, zone = null, body = null, attack = null }) {
   const lines = [
@@ -37,7 +51,7 @@ export function designPrompt({ kind, request, count, loteFile, index = null, gen
 }
 
 /** make-enemy from an approved design. */
-export function buildPrompt(enemy) {
+export function buildPrompt(enemy, now = '') {
   const d = enemy.diseno || {};
   const fromComfy = String(d.source || '').startsWith('comfy:');
   const base = String(d.source || '').replace(/^comfy:/, '');
@@ -55,8 +69,9 @@ export function buildPrompt(enemy) {
       ...open.map((p) => `- [${PENDING_EN[p.tipo] || p.tipo}] ${p.texto} (id ${p.id})`),
       'In the sheet, mark each one you fully covered "estado": "hecho" with a "resumen"; one you could not, leave "abierto" with a "nota" saying why.',
     ] : []),
+    ...instructionLines(enemy, now),
     'Nobody will answer: where the skill says "stop: the user picks / checks", pick the best yourself from a contact sheet and go on. The user approves at the end from the web.',
-    `When done, in the sheet: "estado": "por-aprobar", "prefab": "<prefab path under Assets>", "montaje": { "fecha": "<ISO>", "resumen": "<2–3 sentences, in Spanish>" }.`,
+    `When done, in the sheet: "estado": "por-aprobar", "prefab": "<prefab path under Assets>", "montaje": { "fecha": "<ISO>", "resumen": "<1–2 short sentences, Spanish>" }.`,
     PICTURE,
     'If you cannot finish it: "estado": "por-montar" and explain in the report what failed and what is left.',
   ].join('\n');
@@ -78,7 +93,7 @@ export const BEHAVIORS = {
 const ASSET_KEYS = { proyectil: 'projectile', sonidos: 'sounds', efectos: 'effects (muzzle / charge / impact / trails, gestureFx)' };
 
 /** Step 1: the body only. */
-export function bodyPrompt(enemy) {
+export function bodyPrompt(enemy, now = '') {
   const d = enemy.diseno || {};
   const redo = (enemy.pendientes || []).filter((p) => p.estado !== 'hecho' && p.tipo === 'sprite');
   return [
@@ -88,15 +103,16 @@ export function bodyPrompt(enemy) {
     ...(d.zone ? [`Zone: ${d.zone} (docs/zonas.json).`] : []),
     'Do: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), `make-enemy.mjs`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 3 (states), 5 (attacks), 6 (sounds): the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).',
     ...(redo.length ? ['The user asked to redo the body with these notes (their words):', ...redo.map((p) => `- ${p.texto} (id ${p.id})`)] : []),
+    ...instructionLines(enemy, now),
     'Nobody will answer: where the skill says "stop", pick the best yourself from a contact sheet and go on.',
-    `Copy the assembled picture to docs/enemigos/${enemy.name}/cuerpo.png (the sheet shows it) and write in the sheet: "estado": "cuerpo-por-aprobar", "prefab": "<prefab path under Assets>", "cuerpo": { "fecha": "<ISO>", "plantilla": "<rig template id>", "partes": "<folder of the final parts>", "brief": "<brief path>", "resumen": "<2–3 sentences, in Spanish: which parts, anything dubious about proportions / layers>" }.`,
+    `Copy the assembled picture to docs/enemigos/${enemy.name}/cuerpo.png (the sheet shows it) and write in the sheet: "estado": "cuerpo-por-aprobar", "prefab": "<prefab path under Assets>", "cuerpo": { "fecha": "<ISO>", "plantilla": "<rig template id>", "partes": "<folder of the final parts>", "brief": "<brief path>", "resumen": "<1–2 short sentences, Spanish: which parts, anything dubious>" }.`,
     PICTURE,
     'If you cannot finish it: "estado": "por-montar" and explain in the report what failed.',
   ].join('\n');
 }
 
 /** Step 3: behaviour + attacks + effects + sounds on the approved body. */
-export function restPrompt(enemy) {
+export function restPrompt(enemy, now = '') {
   const p2 = enemy.paso2 || {};
   const asset = (k) => {
     const a = p2[k] || {};
@@ -115,10 +131,11 @@ export function restPrompt(enemy) {
     'Assets (the user\'s choice for each):',
     asset('proyectil'), asset('sonidos'), asset('efectos'),
     ...(p2.notas ? [`Extra notes from the user (their words): «${p2.notas}»`] : []),
+    ...instructionLines(enemy, now),
     ...(open.length ? ['Open notes in the sheet (their words) — part of the brief:', ...open.map((p) => `- [${PENDING_EN[p.tipo] || p.tipo}] ${p.texto} (id ${p.id})`), 'Mark each one you covered "estado": "hecho" + "resumen"; one you could not stays "abierto" + "nota".'] : []),
     `How to apply it on the existing body: write the brief for the attacks / effects / gestures, run \`node make-enemy.mjs <brief> --partial\` (→ out/<Name>.partial.zip, only gestures + attacks + effects) and import THAT zip into Unity (RigBundleImporter.Import with the partial zip; ResetTuning = false). The body part of the brief must match the prefab's parts (same template, parts folder from the sheet's cuerpo.partes). The partial zip carries gestures, effects and the deck only: movement / EnemyStats tuning for the chosen behaviour type (flying vs ground, ranges, speeds, projectile spec) is NOT in it — set it on the prefab's EnemyStats (unity eval / prefab edit, see docs/architecture/enemies.md), starting from the body's template defaults.`,
     'Nobody will answer: pick the best yourself. The user approves at the end from the web.',
-    `When done, in the sheet: "estado": "por-aprobar", "montaje": { "fecha": "<ISO>", "resumen": "<2–3 sentences, in Spanish>" }.`,
+    `When done, in the sheet: "estado": "por-aprobar", "montaje": { "fecha": "<ISO>", "resumen": "<1–2 short sentences, Spanish>" }.`,
     PICTURE,
     `If you cannot finish it: "estado": "cuerpo-aprobado" and explain in the report what failed and what is left.`,
   ].join('\n');
@@ -144,7 +161,7 @@ export function pendingPrompt(enemy, items) {
     '',
     'Project rules (CLAUDE.md): generic first; read the architecture doc it touches (enemies.md, procedural-rig.md, combat.md…).',
     'If new art is needed (a sprite, a part\'s state for a gesture) use the make-enemy skill (steps 3–4) with ComfyUI.',
-    'When done, in the sheet: each item resolved gets "estado": "hecho" and a "resumen" (in Spanish); one that could not be done stays "estado": "abierto" with a "nota" saying why.',
+    'When done, in the sheet: each item resolved gets "estado": "hecho" and a "resumen" (one short sentence, Spanish); one that could not be done stays "estado": "abierto" with a "nota" saying why.',
     'If all are done, the enemy goes to "estado": "por-aprobar"; otherwise it stays "con-pendientes".',
     PICTURE,
   ].join('\n');

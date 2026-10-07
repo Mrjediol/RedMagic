@@ -6,8 +6,10 @@
 //
 // The batches are docs/disenos/<id>.json in the repo and go through tools/taller-server (disenos.mjs), so
 // this tab only works with the web served by start.cmd. Full design: docs/architecture/designs.md.
-//   · Por revisar — one foldable group per batch. Click a card to select it; accept / discard one, the
-//     selection, or all that are left; ↶ undoes. Each kind previews as itself: the enemy's image, the effect
+//   · Por revisar — one foldable group per batch. Click a card to select it (only it; Ctrl+click adds / removes,
+//     Shift+click a range, Esc clears — as in the Windows explorer); accept / discard one, the selection, or all that
+//     are left; ↶ undoes. Ctrl+V puts a picture on an enemy card: the one the cursor is in, else the selected one,
+//     else the one under the mouse; then the next card without picture is selected. Each kind previews as itself: the enemy's image, the effect
 //     playing live (vfx-presets.js), the sound on ▶ (vfx-sounds.js).
 //   · Accepting: an enemy → the enemy library (docs/enemigos/<Name>/, "por montar"); a sound → the game's
 //     palette (server); a projectile / effect → baked HERE into the 📚 Biblioteca (IndexedDB, the same record
@@ -15,7 +17,8 @@
 //   · Pedir propuestas — kind + what you want + how many + one task or one per proposal → the server makes the
 //     (empty) batch and queues the task(s) with a short prompt; the rules are in the design-proposals skill.
 //     A batch whose tasks are still running shows as "generándose".
-//   · Enemigos — the library (docs/enemigos/), folded by estado. A card opens its sheet: build it (make-enemy),
+//   · Enemigos — the library (docs/enemigos/), folded by estado. A card opens its sheet: build it (make-enemy) —
+//     every launch (all at once, step 1, step 3, redo / retry) takes optional extra instructions for Claude —,
 //     approve / discard it, note its pendientes (also from Unity: Tools ▸ RedMagic ▸ Enemigos) and launch a task
 //     for them. "＋ Enemigo existente" adds a prefab that did not come from a design.
 //   · Lotes revisados — folded.
@@ -37,6 +40,7 @@ const KIND = {
   sound: { icon: '🔊', label: 'Sonidos', one: 'sonido', accepted: '✓ En la paleta de sonidos' },
 };
 // In the order the library shows them: what needs the user first.
+const PASO_LABEL = { montaje: 'Montaje completo', cuerpo: 'Paso 1 · cuerpo', resto: 'Paso 3 · el resto' };
 const ESTADOS = {
   'cuerpo-por-aprobar': { label: 'Cuerpo por aprobar', one: 'Cuerpo por aprobar', hint: 'paso 1: mira el cuerpo montado; ajústalo en 🧬 Enemy Studio si hace falta' },
   'cuerpo-aprobado': { label: 'Cuerpo aprobado: elige el resto', one: 'Cuerpo aprobado', hint: 'paso 2: di qué tipo de enemigo es y de dónde salen sus proyectiles, sonidos y efectos' },
@@ -79,6 +83,9 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   let pollTimer = null, pendingRender = false, busy = false;
   let filter = sessionStorage.getItem(FILTER_KEY) || 'all';
   const selected = new Set();               // "loteId:itemId"
+  let anchor = null;                        // the last card clicked: Shift+click selects from it, Ctrl+V prefers it
+  let hoverKey = null;                      // the pending enemy card under the mouse
+  const instr = {};                         // enemy name → extra instructions typed in its sheet (sent with the next launch)
   const names = new Map();                  // "loteId:itemId" → name typed in the card
   const errors = new Map();                 // "loteId:itemId" → last error
   const closed = new Set(JSON.parse(sessionStorage.getItem(CLOSED_KEY) || '[]'));
@@ -313,7 +320,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   function art(lote, item, big = false) {
     const key = keyOf(lote, item);
     if (item.kind === 'enemy') return item.image ? `<img src="${imgUrl(item.image)}" alt="${esc(item.name)}" loading="lazy">`
-      : '<span class="enNoArt">🖼<br>Falta la imagen<br><small>pégala con Ctrl+V</small></span>';
+      : '<span class="enNoArt">🖼<br>Falta la imagen<br><small>clic aquí y Ctrl+V</small></span>';
     if (item.kind === 'sound') return `<canvas data-wave="${esc(key)}" width="${big ? 800 : 256}" height="${big ? 240 : 256}"></canvas>`;
     return `<canvas data-vfx="${esc(key)}" width="${big ? 512 : 256}" height="${big ? 512 : 256}"></canvas>`;
   }
@@ -389,8 +396,8 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const count = working && !items.length ? 'generándose…'
       : pend.length ? `${pend.length} por revisar de ${items.length}` : `${accepted} aceptado${accepted === 1 ? '' : 's'} de ${items.length}`;
     const body = items.length ? `<div class="enCards">${items.map((i) => itemCard(lote, i)).join('')}</div>`
-      : `<p class="enEmpty">${working ? 'La tarea está trabajando: sus propuestas aparecerán aquí al terminar (el progreso, en las tareas de este taller).'
-        : failed ? 'La tarea no dejó propuestas: mira su informe en las tareas de este taller.' : 'Sin propuestas.'}</p>`;
+      : `<p class="enEmpty">${working ? 'La tarea está trabajando: sus propuestas aparecerán aquí al terminar (el progreso, arriba en 🤖 Claude).'
+        : failed ? 'La tarea no dejó propuestas: mira su informe en 🤖 Claude o en el 🗂 Historial.' : 'Sin propuestas.'}</p>`;
     return group(`lote:${lote.id}`, `${kinds} ${lote.title || lote.id}`, count, body, {
       actions,
       sub: [progress, failed ? `✗ ${failed} fallida${failed === 1 ? '' : 's'}` : '', lote.request && lote.request !== lote.title ? lote.request : '', when(lote.createdAt)].filter(Boolean).join(' · '),
@@ -430,9 +437,9 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
           <label>Esfuerzo <select data-ask="effort">${opt(EFFORTS, ask.effort)}</select></label>
           <button type="submit" class="primary">▶ Pedir ${ask.count} ${ask.count === 1 ? KIND[ask.kind].one : `${KIND[ask.kind].label.toLowerCase()}`}</button>
         </div>
-        <p class="efHint">Va a la cola: la tarea aparece abajo, en las tareas de este taller. "Una tarea por propuesta" = conversaciones más cortas; compara el coste
-          con <code>session-usage.mjs</code> o con los ↓ tokens de cada informe. <b>Prompt</b> (enemigos): la tarea solo escribe el texto —no necesita ComfyUI—;
-          cópialo en Gemini y pega la imagen que te dé en la tarjeta (Ctrl+V). Las zonas (solo paleta) se editan en <code>docs/zonas.json</code> y los tipos de cuerpo / ataque en <code>docs/tipos-enemigo.json</code>.</p>
+        <p class="efHint">Va a la cola: la tarea aparece arriba, en 🤖 Claude. "Una tarea por propuesta" = conversaciones más cortas; compara el coste
+          en el 🗂 Historial (ordena por tokens). <b>Prompt</b> (enemigos): la tarea solo escribe el texto —no necesita ComfyUI—;
+          cópialo en Gemini y pega la imagen que te dé en su tarjeta (clic en la tarjeta y Ctrl+V). Las zonas (solo paleta) se editan en <code>docs/zonas.json</code> y los tipos de cuerpo / ataque en <code>docs/tipos-enemigo.json</code>.</p>
       </form>`, { defaultOpen: true });
   }
 
@@ -444,7 +451,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   function taskLine(e) {
     const t = taskOf(e.tarea);
     if (!t || t.status === 'done') return '';
-    return `<div class="enTask ${active(t) ? '' : 'bad'}">${TASK_STATE[t.status] || t.status}${active(t) ? '' : ' · mira el informe en las tareas del taller'}</div>`;
+    return `<div class="enTask ${active(t) ? '' : 'bad'}">${TASK_STATE[t.status] || t.status}${active(t) ? '' : ' · mira el informe en 🤖 Claude'}</div>`;
   }
 
   function enemyButtons(e) {
@@ -452,12 +459,11 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const n = openPendientes(e).filter((p) => p.estado === 'abierto').length;
     const name = esc(e.name);
     switch (e.estado) {
-      case 'por-montar': return `<button class="small enOk" data-act="build" data-name="${name}" title="make-enemy completo, de una vez: para enemigos simples">▶ Montar</button>
-        <button class="small" data-act="build-body" data-name="${name}" title="Primero solo el cuerpo: lo ves y lo ajustas antes de seguir">▶ Por pasos</button>`;
-      case 'montando-cuerpo': return active(t) ? '' : `<button class="small" data-act="build-body" data-name="${name}">▶ Reintentar cuerpo</button><button class="small" data-act="estado" data-estado="por-montar" data-name="${name}">↶</button>`;
+      case 'por-montar': return `<button class="small enOk" data-act="sheet" data-name="${name}" title="Abre su ficha: instrucciones extra (opcional) y elige montarlo entero o por pasos">▶ Montar…</button>`;
+      case 'montando-cuerpo': return active(t) ? '' : `<button class="small" data-act="sheet" data-name="${name}" title="Abre su ficha para reintentarlo (con instrucciones si quieres)">▶ Reintentar…</button><button class="small" data-act="estado" data-estado="por-montar" data-name="${name}">↶</button>`;
       case 'cuerpo-por-aprobar': return `<button class="small enOk" data-act="sheet" data-name="${name}" title="Ver el cuerpo y aprobarlo">👁 Revisar cuerpo</button>`;
       case 'cuerpo-aprobado': return `<button class="small enOk" data-act="sheet" data-name="${name}" title="Elegir tipo, proyectiles, sonidos y efectos">▶ Paso 2</button>`;
-      case 'montando': return active(t) ? '' : `<button class="small" data-act="build" data-name="${name}">▶ Reintentar</button><button class="small" data-act="estado" data-estado="por-montar" data-name="${name}">↶</button>`;
+      case 'montando': return active(t) ? '' : `<button class="small" data-act="sheet" data-name="${name}" title="Abre su ficha para reintentarlo (con instrucciones si quieres)">▶ Reintentar…</button><button class="small" data-act="estado" data-estado="por-montar" data-name="${name}">↶</button>`;
       case 'por-aprobar': return `<button class="small enOk" data-act="estado" data-estado="aprobado" data-name="${name}">✓ Aprobar</button>
         <button class="small" data-act="sheet" data-name="${name}" title="Apuntar lo que le falta">⚠ Pendientes</button>`;
       case 'con-pendientes': return n ? `<button class="small enOk" data-act="work" data-name="${name}" title="Una tarea con los pendientes abiertos">▶ Arreglar (${n})</button>`
@@ -585,13 +591,24 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
         ${asset('proyectil', '🎯 Proyectil', 'Marca los de tu biblioteca (puedes varios) o descríbelos. Vacío: Claude decide. Con "nuevo": uno por línea.')}
         ${asset('sonidos', '🔊 Sonidos', 'Marca los de tu biblioteca (varios) o descríbelos, uno por línea. Vacío: Claude decide.')}
         ${asset('efectos', '✨ Efectos', 'Marca los de tu biblioteca (varios) o descríbelos, uno por línea (carga, disparo, impacto, estela…). Vacío: Claude decide.')}
-        <textarea data-p2="notas" rows="2" placeholder="Notas extra para el montaje (opcional)">${esc(f.notas)}</textarea>
+        ${instrBox(e)}
         <div class="enBtns wrap">
           <label class="efHint">Modelo <select data-run="model">${opt(MODELS, run.model)}</select></label>
           <label class="efHint">Esfuerzo <select data-run="effort">${opt(EFFORTS, run.effort)}</select></label>
           <button class="small primary" data-v="build-rest">▶ Montar el resto</button>
         </div>
       </div>`;
+  }
+
+  const LAUNCH_HINT = { 'por-montar': 'van con el montaje completo o con el paso 1 (cuerpo)', 'montando-cuerpo': 'van con el reintento del cuerpo',
+    'cuerpo-por-aprobar': 'van con ↻ Rehacer el cuerpo', 'cuerpo-aprobado': 'van con el paso 3 (o con ↻ Rehacer el cuerpo)', montando: 'van con el reintento' };
+  /** Extra instructions for the next launch from this sheet, and the ones sent before (the later steps read them too). */
+  function instrBox(e) {
+    if (!LAUNCH_HINT[e.estado]) return '';
+    const before = e.instrucciones || [];
+    return `<div class="enInstr"><label class="enLabel">✍ Instrucciones extra para Claude <span class="efHint">opcional; ${LAUNCH_HINT[e.estado]}</span></label>
+      <textarea data-instr rows="3" placeholder="Ej.: cambia el color del cañón a azul · al separar la cabeza, hazle 3 estados: dormida, despierta y modo ataque con los ojos rojos">${esc(instr[e.name] || '')}</textarea>
+      ${before.length ? `<details class="enInstrOld"><summary>Enviadas antes (${before.length})</summary><ul>${before.map((i) => `<li><span class="enChip">${esc(PASO_LABEL[i.paso] || i.paso)}</span> ${esc(i.texto)}</li>`).join('')}</ul></details>` : ''}</div>`;
   }
 
   /** An enemy's sheet: its picture, what it came from, its estado buttons and its pendientes. */
@@ -632,7 +649,10 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
           ${taskLine(e)}
           ${e.cuerpo?.resumen ? `<div><span class="efHint">Cuerpo</span> ${esc(e.cuerpo.resumen)}</div>` : ''}
           ${e.estado === 'cuerpo-por-aprobar' ? '<p class="efHint">Mira el cuerpo montado. Si las proporciones, distancias o capas no cuadran: ✎ Editar cuerpo (se abre en Enemy Studio; ajusta, 💾 Guardar en Unity y vuelves aquí; hace falta Unity abierto). Si hay que rehacerlo, apunta un Pendiente de tipo Sprite y pulsa Rehacer.</p>' : ''}
-          ${e.estado === 'cuerpo-aprobado' ? step2Form(e) : ''}
+          ${e.estado === 'cuerpo-aprobado' ? step2Form(e) : instrBox(e)}
+          ${e.estado === 'por-montar' || ((e.estado === 'montando' || e.estado === 'montando-cuerpo') && !active(t)) ? `<div class="enBtns wrap">
+            <label class="efHint">Modelo <select data-run="model">${opt(MODELS, run.model)}</select></label>
+            <label class="efHint">Esfuerzo <select data-run="effort">${opt(EFFORTS, run.effort)}</select></label></div>` : ''}
           <div class="enBtns wrap">${estadoButtons}</div>
           <h3>Pendientes</h3>
           ${rows ? `<ul class="enPends">${rows}</ul>` : '<p class="enEmpty">Nada apuntado.</p>'}
@@ -711,16 +731,18 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   function sheetAction(v, btn) {
     const name = viewer.enemy;
     const upd = (body, msg) => post('enemigos/update', { name, ...body }, msg);
-    if (v === 'build') post('enemigos/build', { name, ...run }, `${name}: a la cola (make-enemy)`);
+    // A launch carries the instructions typed in the sheet; they are cleared once the task is queued.
+    const launch = (route, body, msg) => post(route, { name, ...body, ...run, instrucciones: instr[name] || '' }, msg).then((ok) => { if (ok) { delete instr[name]; renderViewer(); } });
+    if (v === 'build') launch('enemigos/build', {}, `${name}: a la cola (make-enemy)`);
     else if (v === 'edit-body') {
       const e = enemyByName(name);
       if (e?.prefab && onEditBody) { closeViewer(); onEditBody(e); }
     }
-    else if (v === 'build-body') post('enemigos/build-body', { name, ...run }, `${name}: a la cola (paso 1, cuerpo)`);
+    else if (v === 'build-body') launch('enemigos/build-body', {}, `${name}: a la cola (paso 1, cuerpo)`);
     else if (v === 'build-rest') {
       const f = p2Of(name);
       const paso2 = { proyectil: f.proyectil, sonidos: f.sonidos, efectos: f.efectos, notas: f.notas, ...(f.via.startsWith('plantilla:') ? { plantilla: f.via.slice(10) } : { tipo: f.via }) };
-      post('enemigos/build-rest', { name, paso2, ...run }, `${name}: a la cola (paso 3, el resto)`);
+      launch('enemigos/build-rest', { paso2 }, `${name}: a la cola (paso 3, el resto)`);
     }
     else if (v === 'estado') {
       if (btn.dataset.estado === 'cuerpo-aprobado' && enemyByName(name)?.prefab) post('enemigos/picture', { name });   // the picture of what is in Unity now
@@ -740,6 +762,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   overlay.addEventListener('input', (ev) => {
     const d = ev.target.dataset || {};
     if (d.draft) draft[d.draft] = ev.target.value;
+    if (d.instr !== undefined && viewer?.enemy) instr[viewer.enemy] = ev.target.value;
     if (d.run) run[d.run] = ev.target.value;
     if (d.p2 && viewer?.enemy) {
       const f = p2Of(viewer.enemy);
@@ -794,7 +817,15 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     const pendIds = lote ? pendingOf(lote).filter(shown).map((i) => i.id) : [];
     const selIds = pendIds.filter((id) => selected.has(`${loteId}:${id}`));
     if (act === 'select') {
-      if (selected.has(key)) selected.delete(key); else selected.add(key);
+      // As in the Windows explorer: a click selects only that card, Ctrl+click adds / removes, Shift+click a range.
+      const range = ev.shiftKey && anchor && anchor.split(':')[0] === loteId
+        ? pendingOf(lote).filter(shown).map((i) => keyOf(lote, i)) : null;
+      if (ev.ctrlKey || ev.metaKey) { if (selected.has(key)) selected.delete(key); else selected.add(key); anchor = key; }
+      else if (range && range.includes(anchor) && range.includes(key)) {
+        const [a, b] = [range.indexOf(anchor), range.indexOf(key)].sort((x, y) => x - y);
+        selected.clear();
+        range.slice(a, b + 1).forEach((k) => selected.add(k));
+      } else { selected.clear(); selected.add(key); anchor = key; }
       const found = findItem(key);
       if (found?.item.kind === 'sound' && selected.has(key)) hear(found.lote, found.item);
       render();
@@ -803,9 +834,11 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
       if (f?.item.prompt) navigator.clipboard.writeText(f.item.prompt).then(() => toast('Prompt copiado: pégalo en Gemini'), () => toast('No pude copiar: selecciona el texto a mano'));
     } else if (act === 'view') openViewer(key);
     else if (act === 'hear') { const f = findItem(key); if (f) hear(f.lote, f.item); }
-    else if (act === 'sheet') { viewer = { enemy: btn.dataset.name }; renderViewer(); }
-    else if (act === 'build') post('enemigos/build', { name: btn.dataset.name, ...run }, `${btn.dataset.name}: a la cola (make-enemy)`);
-    else if (act === 'build-body') post('enemigos/build-body', { name: btn.dataset.name, ...run }, `${btn.dataset.name}: a la cola (paso 1, cuerpo)`);
+    else if (act === 'sheet') {
+      viewer = { enemy: btn.dataset.name };
+      renderViewer();
+      overlay.querySelector('[data-instr]')?.focus({ preventScroll: true });
+    }
     else if (act === 'work') post('enemigos/work', { name: btn.dataset.name, ...run }, `${btn.dataset.name}: tarea a la cola con sus pendientes`);
     else if (act === 'estado') post('enemigos/update', { name: btn.dataset.name, op: 'estado', estado: btn.dataset.estado }, `${btn.dataset.name}: ${ESTADOS[btn.dataset.estado]?.one || btn.dataset.estado}`);
     else if (act === 'add-open') api('GET', 'enemigos/prefabs').then((list) => { adding = list; render(); }).catch((e) => toast(e.message));
@@ -822,7 +855,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     else if (act === 'undo') review(loteId, [itemId], 'pending');
     else if (act === 'accept-sel') review(loteId, selIds, 'accept');
     else if (act === 'discard-sel') review(loteId, selIds, 'discard');
-    else if (act === 'clear-sel') { pendIds.forEach((id) => selected.delete(`${loteId}:${id}`)); render(); }
+    else if (act === 'clear-sel') { pendIds.forEach((id) => selected.delete(`${loteId}:${id}`)); anchor = null; render(); }
     else if (act === 'accept-all') review(loteId, pendIds, 'accept');
     else if (act === 'discard-all') review(loteId, pendIds, 'discard');
   });
@@ -853,27 +886,77 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   }
   /** A picture for a proposal's card (the one Gemini drew, or a replacement): the server keeps it in docs/disenos/img/. */
   async function attachCardImage(key, file) {
-    if (!IMG_TYPES.includes(file.type)) { toast('Solo png, jpg, webp o gif'); return; }
-    if (file.size > 10e6) { toast('La imagen pesa más de 10 MB'); return; }
+    if (!IMG_TYPES.includes(file.type)) { toast('Solo png, jpg, webp o gif'); return null; }
+    if (file.size > 10e6) { toast('La imagen pesa más de 10 MB'); return null; }
     const [loteId, itemId] = key.split(':');
     try {
-      await post('disenos/imagen', { loteId, itemId, type: file.type, data: await toBase64(file) }, 'Imagen puesta en la tarjeta');
-    } catch (e) { toast(e.message); }
+      return await post('disenos/imagen', { loteId, itemId, type: file.type, data: await toBase64(file) }, 'Imagen puesta en la tarjeta');
+    } catch (e) { toast(e.message); return null; }
   }
-  document.addEventListener('paste', (ev) => {
-    const files0 = [...(ev.clipboardData?.files || [])].filter((f) => IMG_TYPES.includes(f.type));
-    if (files0.length && !ev.target.closest?.('[data-form="ask"]') && !typing(root)) {
-      // inside a card → that card; else the one enemy card selected
-      let key = ev.target.closest?.('.enCard[data-kind="enemy"]')?.dataset.key;
-      if (!key) { const sel = [...selected].filter((k) => findItem(k)?.item.kind === 'enemy'); if (sel.length === 1) key = sel[0]; }
-      if (key) { ev.preventDefault(); attachCardImage(key, files0[0]); return; }
+
+  /**
+   * The image a paste carries, read at once (the clipboard is gone after the event): a file (Copy image, a
+   * screenshot — in `files` or only in `items`), else a link when the page copied its <img> (Ctrl+C on a selection).
+   */
+  function clipboardImage(dt) {
+    const files = [...(dt?.files || [])].filter((f) => IMG_TYPES.includes(f.type));
+    if (files.length) return { files };
+    for (const it of dt?.items || []) {
+      if (it.kind === 'file' && IMG_TYPES.includes(it.type)) { const f = it.getAsFile(); if (f) return { files: [f] }; }
     }
-    if (!ev.target.closest?.('[data-form="ask"]')) return;
-    const files = [...(ev.clipboardData?.files || [])].filter((f) => IMG_TYPES.includes(f.type));
-    if (!files.length) return;               // plain text: the field takes it
+    const src = (dt?.getData?.('text/html') || '').match(/<img[^>]+src=["']([^"']+)["']/i)?.[1]?.replace(/&amp;/g, '&');
+    if (src && /^(https:|data:image\/)/.test(src)) return { src };
+    return null;
+  }
+
+  const pendingEnemy = (k) => { const f = findItem(k); return f?.item.kind === 'enemy' && f.item.status === 'pending'; };
+  /** Which card a Ctrl+V goes to: the one the cursor is in, the one in the viewer, the selected one, the one under the mouse. */
+  function pasteTarget(ev) {
+    const inCard = ev.target.closest?.('.enCard[data-kind="enemy"][data-status="pending"]')?.dataset.key;
+    if (inCard) return inCard;
+    if (viewer?.list && !overlay.hidden && pendingEnemy(viewer.list[viewer.i])) return viewer.list[viewer.i];
+    const sel = [...selected].filter(pendingEnemy);
+    if (sel.length === 1) return sel[0];
+    if (anchor && sel.includes(anchor)) return anchor;
+    return hoverKey && pendingEnemy(hoverKey) ? hoverKey : null;
+  }
+
+  /** Puts the pasted picture on the card, then selects the next card of the batch still without one. */
+  async function pasteInto(key, got) {
+    const [loteId, itemId] = key.split(':');
+    let file = got.files?.[0] || null;
+    if (!file && got.src.startsWith('data:')) file = await fetch(got.src).then((r) => r.blob()).then((b) => new File([b], 'pegada', { type: b.type })).catch(() => null);
+    const ok = file ? await attachCardImage(key, file)
+      : await post('disenos/imagen', { loteId, itemId, url: got.src }, 'Imagen puesta en la tarjeta');
+    if (!ok) return;
+    const lote = lotes().find((l) => l.id === loteId);
+    const list = lote ? pendingOf(lote).filter((i) => i.kind === 'enemy' && shown(i)) : [];
+    const next = list.slice(list.findIndex((i) => i.id === itemId) + 1).find((i) => !i.image);
+    selected.clear();
+    anchor = next ? keyOf(lote, next) : null;
+    if (anchor) selected.add(anchor);
+    if (viewer?.list) renderViewer();
+    render();
+  }
+
+  document.addEventListener('paste', (ev) => {
+    if (root.closest('[hidden]') && overlay.hidden) return;
+    const got = clipboardImage(ev.clipboardData);
+    if (!got) return;                                         // plain text: the field takes it
+    if (ev.target.closest?.('[data-form="ask"]')) { if (got.files) { ev.preventDefault(); attachImages(got.files); } return; }
+    if (ev.target.closest?.('#todoDetail, #todoQuick')) return;   // todo-panel's own fields take their images
+    if (!got.files && /^(INPUT|TEXTAREA)$/.test(ev.target.tagName)) return;   // rich text into a field
+    const key = pasteTarget(ev);
+    if (!key) {
+      if (!root.closest('[hidden]') && [...selected].length > 1) toast('Hay varias seleccionadas: clic en la tarjeta donde va la imagen y Ctrl+V');
+      return;
+    }
     ev.preventDefault();
-    attachImages(files);
+    pasteInto(key, got);
   });
+  on('mouseover', (ev) => { hoverKey = ev.target.closest?.('.enCard[data-kind="enemy"][data-status="pending"]')?.dataset.key || null; });
+  on('mouseleave', () => { hoverKey = null; });
+  on('mousedown', (ev) => { if (ev.shiftKey && ev.target.closest('[data-act="select"]')) ev.preventDefault(); });   // no text selection on Shift+click
   on('submit', async (ev) => {
     if (ev.target.dataset.form !== 'ask') return;
     ev.preventDefault();
@@ -892,6 +975,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   });
   on('focusout', () => { setTimeout(() => { if (pendingRender && !focusedHere()) render(); }, 0); });
   on('keydown', (ev) => {
+    if (ev.key === 'Escape' && selected.size && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName)) { selected.clear(); anchor = null; render(); return; }
     if (ev.key === 'Enter' && ev.target.dataset?.name) {
       const [loteId, itemId] = ev.target.dataset.name.split(':');
       names.set(ev.target.dataset.name, ev.target.value);

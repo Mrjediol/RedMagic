@@ -343,6 +343,13 @@
     <h1>📋 Tareas</h1>
     <div id="todoToolbar" class="todoToolbar"></div>
 
+    <section class="todoZone todoClaudeZone" id="todoZoneClaude">
+      <div class="todoZoneHead"><h2>🤖 Claude</h2>
+        <span class="efHint">Lo que está haciendo, lo que espera en la cola y lo último que terminó. Clic para abrirla aquí arriba: informe, consola y responder.</span></div>
+      <aside id="todoDetail" class="todoDetail" aria-label="Tarea abierta" hidden></aside>
+      <div id="todoClaude"></div>
+    </section>
+
     <section class="todoZone" id="todoZoneApuntes">
       <div class="todoZoneHead"><h2>📝 Apuntes</h2>
         <span class="efHint">Lo que falta por hacer, en <code>docs/tareas/todo.json</code> (Claude lo lee). Clic en una tarea para abrirla: descripción, pasos, lanzarla.</span></div>
@@ -362,11 +369,11 @@
       <details class="todoTaller" id="taller-disenos" data-taller="disenos">
         <summary><span class="todoTallerName">🎨 Diseños</span><span class="todoTag">propuestas</span><span class="todoTallerMeta" data-taller-meta="disenos"></span></summary>
         <div class="todoTallerBody">
-          <p class="efHint">Propuestas para aprobar: enemigos, proyectiles, efectos y sonidos. Skill <code>design-proposals</code>. Clic en una tarjeta para
-            seleccionarla, ⤢ para verla en grande, ▶ para oírla.</p>
+          <p class="efHint">Propuestas para aprobar: enemigos, proyectiles, efectos y sonidos. Skill <code>design-proposals</code>. Clic: selecciona esa tarjeta (Ctrl / Mayús + clic: varias, Esc: ninguna);
+            imagen de Gemini: clic en su tarjeta y Ctrl+V; ⤢ para verla en grande, ▶ para oírla.</p>
           <div id="designsRoot" data-designs></div>
-          <h3 class="todoTallerSub">Tareas</h3>
-          <ul class="todoTasks" data-taller-tasks="disenos"></ul>
+          <details class="todoTallerTasks"><summary>Tareas de este taller</summary>
+            <ul class="todoTasks" data-taller-tasks="disenos"></ul></details>
         </div>
       </details>
 
@@ -375,18 +382,23 @@
         <div class="todoTallerBody">
           <p class="efHint">Diseño aceptado → ▶ Montar (skill <code>make-enemy</code>) → probar en Unity → aprobar o apuntar pendientes. Clic en un enemigo para abrir su ficha.</p>
           <div id="enemiesRoot" data-designs></div>
-          <h3 class="todoTallerSub">Tareas</h3>
-          <ul class="todoTasks" data-taller-tasks="enemigos"></ul>
+          <details class="todoTallerTasks"><summary>Tareas de este taller</summary>
+            <ul class="todoTasks" data-taller-tasks="enemigos"></ul></details>
         </div>
       </details>
 
       <div id="todoTalleresExtra"></div>
     </section>
 
+    <section class="todoZone" id="todoZoneHistory">
+      <div class="todoZoneHead"><h2>🗂 Historial</h2>
+        <span class="efHint">Todas las tareas que ha hecho Claude: filtra por tipo y ordena por tokens o tiempo. Clic para abrirla arriba.</span></div>
+      <div id="todoHistoryRoot"></div>
+    </section>
+
     <p id="todoStatus" class="efHint"></p>
     <p id="designsStatus" class="efHint"></p>
   </div>
-  <aside id="todoDetail" class="todoDetail" aria-label="Tarea abierta" hidden></aside>
 </div>
 
 <div id="tab-library" class="tabPanel" hidden>

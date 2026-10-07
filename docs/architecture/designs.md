@@ -37,7 +37,10 @@ Kind + what the user wants + how many (1–10) + **one task with all** or **one 
 the task only writes creature, design, crystals and pieces):
 - **Prompt**: the item carries `prompt` and no `image`. The card shows the text (📋 Copiar prompt, ↗ Abrir Gemini); the user pastes it in the Gemini app
 and brings the picture back with 🖼 / Ctrl+V on the card (`POST /api/disenos/imagen` → `docs/disenos/img/<lote>__<item>.<ext>`, sets `item.image`;
-also replaces a ComfyUI image while the item is pending). Accept needs the image. No paid Gemini plan or API: it is by hand on purpose.
+also replaces a ComfyUI image while the item is pending). Ctrl+V reads the file from `files` or `items`, else the `<img src>` of copied HTML
+(`data:` decoded in the browser, `https:` downloaded by the server: `{ url }`); it goes to the card the cursor is in, else the one in the
+viewer, the selected one (or the last clicked), else the one under the mouse — then the next card without picture is selected.
+Accept needs the image. No paid Gemini plan or API: it is by hand on purpose.
 - **ComfyUI**: as before (`claude-workflow.mjs`, `image: comfy:…`), with the same prompt (`--target comfy`).
 An accepted enemy keeps its `zone` in `diseno`; ▶ Montar copies a non-Comfy picture to Comfy's `input` folder for make-enemy.
 The prompt is a few lines (`tools/taller-server/design-prompts.mjs`): the rules are the
@@ -48,7 +51,7 @@ of that kind, sound passes check-sounds and its id is free). While its tasks run
 ## An enemy (`docs/enemigos/<Name>/enemigo.json`)
 
 `{ name, estado, prefab?, imagen?, diseno?: { image, source, lote, item, request, note }, pendientes: [Pendiente],
-tarea?, montaje?: { fecha, resumen }, cuerpo?: { fecha, plantilla, partes, brief, resumen }, paso2?: { tipo | plantilla, proyectil|sonidos|efectos: { origen: biblioteca|nuevo, texto }, notas }, origen?, createdAt }` — `Pendiente = { id, tipo: comportamiento|sprite|gesto|ataque|bug|otro,
+tarea?, montaje?: { fecha, resumen }, cuerpo?: { fecha, plantilla, partes, brief, resumen }, paso2?: { tipo | plantilla, proyectil|sonidos|efectos: { origen: biblioteca|nuevo, texto }, notas }, instrucciones?: [{ paso: montaje|cuerpo|resto, texto, fecha }], origen?, createdAt }` — `Pendiente = { id, tipo: comportamiento|sprite|gesto|ataque|bug|otro,
 texto, estado: abierto|en-curso|hecho, tarea?, resumen?, nota? }`.
 
 | estado | means | the card / sheet offers |
@@ -63,6 +66,10 @@ texto, estado: abierto|en-curso|hecho, tarea?, resumen?, nota? }`.
 | `con-pendientes` | exists, things to do | ▶ Arreglar (n) → ONE task with the open pendientes (`needs: unity` + comfy for sprite/gesto); they go `en-curso` |
 | `aprobado` · `descartado` | done · dropped (the prefab stays) | ＋ Pendiente · ↶ Recuperar |
 
+**Extra instructions**: every launch from the sheet (▶ Montar completo, ▶ Por pasos, ↻ Rehacer el cuerpo, ▶ Montar el resto, the retries)
+sends the sheet's "✍ Instrucciones extra" box as `instrucciones`; the prompt puts it first as overriding the design and the step's
+limits (e.g. extra part states in step 1), and lists the earlier ones (kept in the record) as context. The cards' ▶ Montar… /
+▶ Reintentar… open the sheet with that box focused.
 The tasks edit the record themselves when they end (prompts in `design-prompts.mjs`): estado `por-aprobar` (or back),
 `prefab`, `montaje`, each pendiente `hecho` + `resumen` or `abierto` + `nota`, and refresh the picture.
 **By steps** (▶ Por pasos): step 3 never re-imports the full body (the user may have adjusted it in Enemy Studio): `make-enemy.mjs <brief> --partial` writes `out/<Name>.partial.zip` (gestures + effects + deck only) which the importer applies on the existing prefab. ▶ Montar (everything at once) stays for simple enemies; make-enemy's "Por pasos" section has the rules.
@@ -96,6 +103,6 @@ taller: the library); `onBadges` reports what waits for the user (pending propos
 **＋ Pedir propuestas** (the form, state kept while the list re-renders); filter chips by kind (pending counts); **Por revisar** (a foldable group per batch), **Enemigos** (foldable by estado, needs-the-user first; a card opens its **sheet**: picture,
 estado buttons, pendientes list + add + launch with model / effort), **Lotes revisados** (folded). Previews: the image, the effect playing live (one
 `requestAnimationFrame` loop draws every `canvas[data-vfx]` with `drawFrame`), the sound's waveform + ▶.
-Card click = select (a sound also plays); group bar = accept/discard the selection or all that are left;
+Card click = select only it (Ctrl+click adds / removes, Shift+click a range, Esc clears; a sound also plays); group bar = accept/discard the selection or all that are left;
 ⤢ = viewer (← → move, A accept, D discard, Space play, Esc). Polls every 5 s while visible; never re-renders while a
 name is being typed.

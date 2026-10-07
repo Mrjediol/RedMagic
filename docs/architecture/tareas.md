@@ -18,10 +18,12 @@ one as unattended Claude Code sessions and writes each report under its task.
 | `needs: ['comfy','unity']` | the user | the queue opens them before running |
 | `images[{ id, name }]` | the user | reference images for the prompt (also from 🎨 Diseños ▸ Pedir propuestas, via `images` in `POST /api/disenos/request`): picked (🖼 button) or pasted (Ctrl+V) in the quick form or the drawer's prompt fold; `POST /api/adjunto` saves them in `Logs/Taller/adjuntos/<id>` (not in git), `GET /api/adjunto?id=` shows them; `Runner._prompt` lists their absolute paths for Claude to Read |
 | `model`, `effort` | the user | per task; default `sonnet` / `medium` (`config.json`) |
+| `enemy`, `kind` (`montaje`/`cuerpo`/`resto`/`pendientes`), `design` | the server (talleres) | what made the task; the 🗂 Historial filters by it |
 | `status`, `waiting`, `result`, `history`, `sessionId`, `lastRunId`; on steps `status`, `result` | **the queue only** | run state; a save from the web never overwrites it |
 
-`result = { ok, text (the report), at, durationMs, costUsd, runId, sessionId, reply?, denied? }`; `history` =
-the earlier reports (newest first, 10 at most).
+`result = { ok, text (the report), at, durationMs, costUsd, tokens, runId, sessionId, reply?, step?, stepId?, denied? }` — EVERY
+run (the task, a step, an instruction) becomes the task's `result`; `history` = the earlier ones (newest first, 40 at most).
+Together they are the conversation the web shows and the history's token totals.
 
 ## Parking a task ("déjalo pendiente")
 
@@ -47,7 +49,11 @@ bridge keeps trusting the web. Serves `Web/RedMagicWeb` and the API (see the hea
   3. `claude -p` with the prompt on stdin, `--output-format stream-json`, **`--permission-mode auto
      --permission-prompts none`** (risky actions refused, nothing can stop to ask) and a deny list (push, reset,
      rebase, clean, branch -D — `config.json ▸ disallowedTools`); `--session-id` new, or `--resume` for a step
-     of a task that already has a session and for a **reply** ("↩ Responder" = continue that session);
+     or an **instruction** (`followUp`, the composer) of a task that already has a session; an instruction for a task
+     never launched starts it with the instruction appended. **`--append-system-prompt`** (`TERSE`) + the `REPORT` line:
+     no narration while working, a report of ~8 lines (token budget);
+  Queue items have a `qid` (`POST /api/unqueue` takes one out). Whatever is added for a task that is running / queued
+  goes right behind it (before other tasks), so "send while it works" = "do this when you finish".
   4. the final message is the task's `result`; the whole stream → `Logs/Taller/<run>.jsonl` (not in git);
      what it is doing (last tool calls) → `/api/status` → the live box in the web.
   A run that was going when the server stopped is marked "interrumpida" at the next start.
@@ -79,10 +85,15 @@ home screen".
 
 ## The web (`modules/todo-panel.js`, markup `#tab-todo`)
 
-One tab, three columns: a **left rail** (jump to any phase / taller, with counts: a gold badge = something waits for
-the user), the **list**, and a **right drawer** with the open task (click anywhere on a row; Esc / ✕ closes it):
-title, **description** (`note`, always visible), steps (▶ each), launch / cancel / ✓ hecha, report + earlier reports,
-reply, and a fold with prompt / needs / model / document. The list has two zones:
+Two columns: a **left rail** (jump to 🤖 Claude, any phase / taller, 🗂 Historial; a gold badge = something waits for the
+user) and the page. At the **top, 🤖 Claude** (`#todoZoneClaude`): the **open task** (`#todoDetail`; a click on any task
+anywhere opens it here and scrolls up, ✕ / Esc closes it and scrolls back) — left: title, description, steps, fold with
+prompt / images / needs / model / document; right: the **conversation** (every run oldest first, each under what started
+it, older ones folded), the live **console** of the running run, the queued instructions (× each), and the **composer**
+(Enter sends, Shift+Enter new line: an instruction for the same session — queued after the current run, or now). A new
+step on a task that already ran is queued the same way. Below, the list of what runs / waits / is queued and what finished
+in the last 48 h (× hides one: `localStorage`). Polls only redraw these live parts (`renderLive`), never a field you type
+in; a focusout towards a button never re-renders (it used to swallow the click). Then the zones:
 
 - **📝 Apuntes** — the user's phases (the to-do): each folds on its header (folded set in `localStorage`; open by
   default), progress bar, "＋ Tarea para Claude" form, add phase.
@@ -93,6 +104,10 @@ reply, and a fold with prompt / needs / model / document. The list has two zones
   The rest (Mapas, Ataques del jugador, Items, Mecánicas nuevas, Bugs) are **por definir**: free tasks only, kept in
   phase `taller-<id>` (made with the first task). A new taller = an entry in `TALLERES`; when it gets its own form /
   skill / prompt, give it static markup like Diseños.
+
+- **🗂 Historial** (`#todoZoneHistory`) — one row per task that ran, its runs added up: type chips (`typeOf`: diseño,
+  montaje completo, cuerpo, resto, pendientes, each taller, apunte), estado, order by date / total tokens / output tokens /
+  time. Click = open it at the top. The talleres' own task lists are folded ("Tareas de este taller").
 
 Served by the server → **server mode**: list through the API, polled (2 s while something runs, else 5 s),
 re-rendered only when you are not typing in the tab. Served by anything else → **file mode**: the same list, the

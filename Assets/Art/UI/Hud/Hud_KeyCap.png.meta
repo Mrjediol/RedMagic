@@ -117,12 +117,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 129
-        width: 290
-        height: 129
+        y: 48
+        width: 112
+        height: 48
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 129, y: 19, z: 159, w: 108}
+      border: {x: 92, y: 30, z: 18, w: 16}
       customData: 
       outline: []
       physicsShape: []
@@ -138,13 +138,13 @@ TextureImporter:
       name: Hud_KeyCap_TR
       rect:
         serializedVersion: 2
-        x: 290
-        y: 129
-        width: 290
-        height: 129
+        x: 112
+        y: 48
+        width: 112
+        height: 48
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 74, y: 19, z: 214, w: 108}
+      border: {x: 25, y: 30, z: 85, w: 16}
       customData: 
       outline: []
       physicsShape: []
@@ -162,11 +162,11 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 290
-        height: 129
+        width: 112
+        height: 48
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 129, y: 89, z: 159, w: 38}
+      border: {x: 92, y: 41, z: 18, w: 5}
       customData: 
       outline: []
       physicsShape: []
@@ -182,13 +182,13 @@ TextureImporter:
       name: Hud_KeyCap_BR
       rect:
         serializedVersion: 2
-        x: 290
+        x: 112
         y: 0
-        width: 290
-        height: 129
+        width: 112
+        height: 48
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 74, y: 89, z: 214, w: 38}
+      border: {x: 25, y: 41, z: 85, w: 5}
       customData: 
       outline: []
       physicsShape: []
@@ -204,10 +204,10 @@ TextureImporter:
       name: Hud_KeyCap_Fill
       rect:
         serializedVersion: 2
-        x: 32
-        y: 55
-        width: 514
-        height: 189
+        x: 12
+        y: 18
+        width: 200
+        height: 73
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

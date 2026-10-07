@@ -45,7 +45,10 @@ CLI: `unity command run_script --file Assets/Scripts/Pipeline/Editor/ItemsUiPack
    talla del marco y se descartó.
 5. **Máscara** (`emitMask`): además emite `<pieza>_Mask`, la silueta exterior en blanco (hueco incluido) encogida
    `maskErode` px, con los mismos cortes Quad — para pintar un relleno con la forma exacta de un aro hueco.
-6. Importa como Sprite para UI: sin mipmaps (salvo `mipmaps`, para piezas que se ven muy reducidas), **malla FullRect** (UI Toolkit la necesita para el
+6. **Fuentes con alfa** (PNG ya recortado, p. ej. ComfyUI ▸ RMBG): si >1 % de la imagen es transparente, el fondo es
+   lo transparente y no se quita color. **`outputHeight`**: reduce cada celda aquí con promedio de área a ese alto
+   (~2× el de pantalla) — mucho más fino que la GPU reduciendo una imagen enorme; el `interior` se escala con ella.
+7. Importa como Sprite para UI: sin mipmaps (salvo `mipmaps`, para piezas que se ven muy reducidas), **malla FullRect** (UI Toolkit la necesita para el
    9-slice), bordes escritos en el sprite. GUIDs estables entre regeneraciones.
 
 ## 2. En runtime (`Assets/Ui/UiFrame.cs`)
@@ -123,8 +126,9 @@ Dos cosas que este kit obliga a hacer bien y que valen para cualquier otro:
 | `CurrencyPlaque` | `Plaque` (quad + interior) | chapa de cada moneda |
 | `KeyCap_Wide.png` | `KeyCap` (quad + interior) | tecla de la chuleta. **Recorte** de `KeyCap.jpeg` (x ≥ 347): las dos teclas venían pegadas |
 
-Los marcos huecos se piden con el interior **blanco** (`keyEnclosed` lo quita) y finos; los prompts están en
-`docs/hud-art-prompts.md`.
+Los marcos huecos se piden con el interior **blanco** y finos; los prompts están en `docs/hud-art-prompts.md`.
+Los JPG de Gemini se pasan por ComfyUI (`Web/RedMagicWeb/tools/comfy/claude-workflow.mjs finish --ref <img> --name hud/<X>`:
+×4 RealESRGAN anime → 4 MP → RMBG-2.0) y el PNG `_cut` va a `Assets/Ui/HudSprites/HD/`, que es la fuente del pack.
 
 ## 3-ter. Retocar los menús ya vestidos — lo que hay que saber
 

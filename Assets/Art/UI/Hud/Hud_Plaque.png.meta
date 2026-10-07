@@ -117,12 +117,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 126
-        width: 412
-        height: 126
+        y: 64
+        width: 211
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 320, y: 27, z: 90, w: 97}
+      border: {x: 83, y: 17, z: 126, w: 45}
       customData: 
       outline: []
       physicsShape: []
@@ -138,13 +138,13 @@ TextureImporter:
       name: Hud_Plaque_TR
       rect:
         serializedVersion: 2
-        x: 412
-        y: 126
-        width: 413
-        height: 126
+        x: 211
+        y: 64
+        width: 211
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 108, y: 27, z: 303, w: 97}
+      border: {x: 140, y: 17, z: 69, w: 45}
       customData: 
       outline: []
       physicsShape: []
@@ -162,11 +162,11 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 412
-        height: 126
+        width: 211
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 320, y: 99, z: 90, w: 25}
+      border: {x: 83, y: 31, z: 126, w: 31}
       customData: 
       outline: []
       physicsShape: []
@@ -182,13 +182,13 @@ TextureImporter:
       name: Hud_Plaque_BR
       rect:
         serializedVersion: 2
-        x: 412
+        x: 211
         y: 0
-        width: 413
-        height: 126
+        width: 211
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 108, y: 99, z: 303, w: 25}
+      border: {x: 140, y: 31, z: 69, w: 31}
       customData: 
       outline: []
       physicsShape: []
@@ -204,10 +204,10 @@ TextureImporter:
       name: Hud_Plaque_Fill
       rect:
         serializedVersion: 2
-        x: 35
-        y: 26
-        width: 762
-        height: 200
+        x: 17
+        y: 12
+        width: 392
+        height: 103
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

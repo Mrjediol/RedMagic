@@ -118,6 +118,12 @@ namespace RedMagic.Pipeline.EditorTools
             for (int y = 0; y < h; y++)
                 System.Array.Copy(bottomUp, (h - 1 - y) * w, px, y * w, w);
 
+            // Fuente que ya trae el fondo quitado (PNG con alfa, p. ej. de ComfyUI ▸ RMBG): el fondo es
+            // lo transparente y el borde suave es el suyo; no hay color que quitar.
+            int clear = 0;
+            foreach (var c in px) if (c.a < 8) clear++;
+            if (clear > px.Length / 100) return KeyByAlpha(piece, px, w, h, clear, log);
+
             var bg = BackgroundColor(px, w, h);
             float tol = recipe.backgroundTolerance;
 
@@ -187,6 +193,91 @@ namespace RedMagic.Pipeline.EditorTools
                            (holes > 0 ? $", {holes} hueco(s) encerrado(s) quitado(s)" : "") +
                            $", {piece.columns}×{piece.rows} celda(s).");
             return k;
+        }
+
+        private static Keyed KeyByAlpha(UiArtPiece piece, Color32[] px, int w, int h, int clear, StringBuilder log)
+        {
+            // Fondo de fuera = lo transparente conectado con el borde; un hueco transparente encerrado
+            // (el interior de un aro) es parte de la silueta, como en el camino por color.
+            var outerBg = new bool[px.Length];
+            var queue = new int[px.Length];
+            int head = 0, tail = 0;
+
+            void Seed(int i)
+            {
+                if (outerBg[i] || px[i].a >= 8) return;
+                outerBg[i] = true;
+                queue[tail++] = i;
+            }
+
+            for (int x = 0; x < w; x++) { Seed(x); Seed((h - 1) * w + x); }
+            for (int y = 0; y < h; y++) { Seed(y * w); Seed(y * w + w - 1); }
+            while (head < tail)
+            {
+                int i = queue[head++];
+                int x = i % w, y = i / w;
+                if (x > 0) Seed(i - 1);
+                if (x < w - 1) Seed(i + 1);
+                if (y > 0) Seed(i - w);
+                if (y < h - 1) Seed(i + w);
+            }
+
+            var outPx = new Color32[px.Length];
+            for (int i = 0; i < px.Length; i++)
+                outPx[i] = px[i].a < 8 ? new Color32(0, 0, 0, 0) : px[i];
+
+            var k = new Keyed
+            {
+                Piece = piece, Px = outPx, OuterBg = outerBg, W = w, H = h,
+                CellW = w / Mathf.Max(1, piece.columns),
+                CellH = h / Mathf.Max(1, piece.rows),
+                Cells = new Box[piece.columns * piece.rows],
+            };
+
+            for (int r = 0; r < piece.rows; r++)
+            for (int c = 0; c < piece.columns; c++)
+                k.Cells[r * piece.columns + c] = ContentBox(k, c, r);
+
+            log.AppendLine($"• {piece.name}: {w}×{h}, ya con alfa ({clear * 100 / px.Length}% transparente), " +
+                           $"{piece.columns}×{piece.rows} celda(s).");
+            return k;
+        }
+
+        /// <summary>
+        /// Reduce a <paramref name="dw"/>×<paramref name="dh"/> promediando el área que cubre cada pixel de
+        /// destino, con el alfa premultiplicado (un borde transparente no oscurece ni aclara el color).
+        /// </summary>
+        private static Color32[] Downsample(Color32[] src, int sw, int sh, int dw, int dh)
+        {
+            var dst = new Color32[dw * dh];
+            float fx = (float)sw / dw, fy = (float)sh / dh;
+            for (int y = 0; y < dh; y++)
+            {
+                float y0 = y * fy, y1 = y0 + fy;
+                for (int x = 0; x < dw; x++)
+                {
+                    float x0 = x * fx, x1 = x0 + fx;
+                    float r = 0, g = 0, b = 0, a = 0, area = 0;
+                    for (int sy = (int)y0; sy < Mathf.Min(sh, Mathf.CeilToInt(y1)); sy++)
+                    {
+                        float wy = Mathf.Min(sy + 1, y1) - Mathf.Max(sy, y0);
+                        for (int sx = (int)x0; sx < Mathf.Min(sw, Mathf.CeilToInt(x1)); sx++)
+                        {
+                            float wgt = wy * (Mathf.Min(sx + 1, x1) - Mathf.Max(sx, x0));
+                            var c = src[sy * sw + sx];
+                            float ca = c.a / 255f * wgt;
+                            r += c.r * ca; g += c.g * ca; b += c.b * ca; a += ca;
+                            area += wgt;
+                        }
+                    }
+                    if (a <= 0f || area <= 0f) continue;
+                    dst[y * dw + x] = new Color32((byte)Mathf.Clamp(Mathf.RoundToInt(r / a), 0, 255),
+                                                  (byte)Mathf.Clamp(Mathf.RoundToInt(g / a), 0, 255),
+                                                  (byte)Mathf.Clamp(Mathf.RoundToInt(b / a), 0, 255),
+                                                  (byte)Mathf.Clamp(Mathf.RoundToInt(a / area * 255f), 0, 255));
+                }
+            }
+            return dst;
         }
 
         /// <summary>
@@ -442,8 +533,19 @@ namespace RedMagic.Pipeline.EditorTools
                     }
                 }
 
+                // Reducción al alto pedido (piece.outputHeight): aquí, con promedio de área.
+                int ow = cw, oh = ch;
+                float scale = 1f;
+                if (piece.outputHeight > 0 && ch > piece.outputHeight)
+                {
+                    scale = (float)piece.outputHeight / ch;
+                    oh = piece.outputHeight;
+                    ow = Mathf.Max(1, Mathf.RoundToInt(cw * scale));
+                    crop = Downsample(crop, cw, ch, ow, oh);
+                }
+
                 string file = $"{recipe.outputFolder}/{recipe.prefix}{cellName}.png";
-                var tex = new Texture2D(cw, ch, TextureFormat.RGBA32, false);
+                var tex = new Texture2D(ow, oh, TextureFormat.RGBA32, false);
                 tex.SetPixels32(crop);
                 tex.Apply();
                 File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), file), tex.EncodeToPNG());
@@ -455,21 +557,26 @@ namespace RedMagic.Pipeline.EditorTools
                 SpriteRect[] quadRects = null;
                 if (piece.slice == UiSliceMode.Quad)
                 {
-                    quadRects = QuadRects(crop, cw, ch, piece.stretchSearch, piece.interior,
-                        col * k.CellW + x0, row * k.CellH + y0, $"{recipe.prefix}{cellName}", result.Log);
+                    // El interior viene en px de la fuente: a coordenadas del recorte y a la escala de salida.
+                    var inner = piece.interior.width <= 0 ? piece.interior : new RectInt(
+                        Mathf.RoundToInt((piece.interior.x - col * k.CellW - x0) * scale),
+                        Mathf.RoundToInt((piece.interior.y - row * k.CellH - y0) * scale),
+                        Mathf.RoundToInt(piece.interior.width * scale),
+                        Mathf.RoundToInt(piece.interior.height * scale));
+                    quadRects = QuadRects(crop, ow, oh, piece.stretchSearch, inner, 0, 0, $"{recipe.prefix}{cellName}", result.Log);
                     sprites = Import(file, quadRects, true, piece.mipmaps);
                 }
                 else
                 {
                     sprites = Import(file, new[]
                     {
-                        new SpriteRect { name = $"{recipe.prefix}{cellName}", rect = new Rect(0, 0, cw, ch), border = Vector4.zero },
+                        new SpriteRect { name = $"{recipe.prefix}{cellName}", rect = new Rect(0, 0, ow, oh), border = Vector4.zero },
                     }, false, piece.mipmaps);
                 }
 
                 result.Sprites[cellName] = sprites;
-                if (piece.emitMask) EmitMask(recipe, k, cellName, col, row, x0, y0, cw, ch, quadRects, result);
-                result.Log.AppendLine($"  → {file} ({cw}×{ch}){(piece.slice == UiSliceMode.Quad ? " · quad" : "")}");
+                if (piece.emitMask) EmitMask(recipe, k, cellName, col, row, x0, y0, cw, ch, ow, oh, quadRects, result);
+                result.Log.AppendLine($"  → {file} ({ow}×{oh}{(scale < 1f ? $", reducido de {cw}×{ch}" : "")}){(piece.slice == UiSliceMode.Quad ? " · quad" : "")}");
             }
         }
 
@@ -480,7 +587,7 @@ namespace RedMagic.Pipeline.EditorTools
         /// runtime, al mismo tamaño, cae al pixel debajo de ella.
         /// </summary>
         private static void EmitMask(UiArtKitRecipe recipe, Keyed k, string cellName, int col, int row,
-                                     int x0, int y0, int cw, int ch, SpriteRect[] quadRects, Result result)
+                                     int x0, int y0, int cw, int ch, int ow, int oh, SpriteRect[] quadRects, Result result)
         {
             var piece = k.Piece;
             var depth = Depth(k.OuterBg, k.W, k.H, piece.maskErode + 1);
@@ -499,9 +606,11 @@ namespace RedMagic.Pipeline.EditorTools
                 }
             }
 
+            if (ow != cw || oh != ch) crop = Downsample(crop, cw, ch, ow, oh);   // igual que la pieza: cae al pixel
+
             string maskName = cellName + "_Mask";
             string file = $"{recipe.outputFolder}/{recipe.prefix}{maskName}.png";
-            var tex = new Texture2D(cw, ch, TextureFormat.RGBA32, false);
+            var tex = new Texture2D(ow, oh, TextureFormat.RGBA32, false);
             tex.SetPixels32(crop);
             tex.Apply();
             File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), file), tex.EncodeToPNG());
@@ -525,7 +634,7 @@ namespace RedMagic.Pipeline.EditorTools
             {
                 sprites = Import(file, new[]
                 {
-                    new SpriteRect { name = $"{recipe.prefix}{maskName}", rect = new Rect(0, 0, cw, ch), border = Vector4.zero },
+                    new SpriteRect { name = $"{recipe.prefix}{maskName}", rect = new Rect(0, 0, ow, oh), border = Vector4.zero },
                 }, false, piece.mipmaps);
             }
 

@@ -70,6 +70,11 @@ namespace RedMagic.Pipeline
         [Tooltip("Generar mipmaps. Para piezas que se ven MUCHO más pequeñas que su imagen (iconos, aros " +
                  "del HUD): sin ellos la reducción a lo bruto deja bordes ásperos y píxeles sueltos.")]
         public bool mipmaps;
+
+        [Tooltip("Alto (px) del PNG de salida de cada celda; 0 = el de la fuente. La reducción se hace aquí con " +
+                 "promedio de área (alfa premultiplicado), que es mucho más fina que dejar que la GPU reduzca " +
+                 "una imagen enorme a 70 px. Pon ~2× el alto con el que se ve en pantalla.")]
+        [Min(0)] public int outputHeight;
     }
 
     /// <summary>

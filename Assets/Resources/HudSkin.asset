@@ -25,7 +25,7 @@ MonoBehaviour:
     - {fileID: -858900, guid: d44d4f751a244b14282119f63aa19597, type: 3}
     fill: {fileID: 0}
     fillCornerRadius: 36
-    maxScale: 0.17
+    maxScale: 0.27
     padding:
       left: 24
       right: 24
@@ -45,7 +45,7 @@ MonoBehaviour:
     - {fileID: -830528610, guid: d4124b7ce87032b4784a1ce4e7b3d652, type: 3}
     fill: {fileID: 0}
     fillCornerRadius: 36
-    maxScale: 0.2
+    maxScale: 0.42
     padding:
       left: 24
       right: 24
@@ -56,7 +56,7 @@ MonoBehaviour:
     normal: {fileID: 21300000, guid: 776608f1a64375549af9eab35c49ffe3, type: 3}
     hover: {fileID: 21300000, guid: 3b08610680dc86340a3d921f03d1cc4f, type: 3}
   abilityRingInset: 0.08
-  abilityRingOverflow: 0.04
+  abilityRingOverflow: 0.01
   iconAttack: {fileID: 21300000, guid: 7ec9072a6ab5c0143abf95be00c04bd0, type: 3}
   iconDash: {fileID: 21300000, guid: 56af4cceb2c6e074295eec5ca81111b5, type: 3}
   iconParry: {fileID: 21300000, guid: b388b0c79df7e874dab695fec2ab6092, type: 3}
@@ -68,8 +68,8 @@ MonoBehaviour:
     - {fileID: -1426431335, guid: 5410db960e6a45e4fbe1ca53d5f4de0a, type: 3}
     maskQuads: []
     fill: {fileID: -796331577, guid: 5410db960e6a45e4fbe1ca53d5f4de0a, type: 3}
-    fillCornerRadius: 20
-    maxScale: 0.24
+    fillCornerRadius: 10
+    maxScale: 0.47
     padding:
       left: 16
       right: 20
@@ -83,8 +83,8 @@ MonoBehaviour:
     - {fileID: -1891132998, guid: d86f4913284c9444fa0f078d099a9bdb, type: 3}
     maskQuads: []
     fill: {fileID: -1570374265, guid: d86f4913284c9444fa0f078d099a9bdb, type: 3}
-    fillCornerRadius: 24
-    maxScale: 0.14
+    fillCornerRadius: 9
+    maxScale: 0.375
     padding:
       left: 8
       right: 8

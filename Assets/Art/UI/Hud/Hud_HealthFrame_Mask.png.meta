@@ -117,12 +117,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 101
-        width: 467
-        height: 101
+        y: 64
+        width: 299
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 339, y: 14, z: 126, w: 85}
+      border: {x: 199, y: 11, z: 98, w: 51}
       customData: 
       outline: []
       physicsShape: []
@@ -138,13 +138,13 @@ TextureImporter:
       name: Hud_HealthFrame_Mask_TR
       rect:
         serializedVersion: 2
-        x: 467
-        y: 101
-        width: 467
-        height: 101
+        x: 299
+        y: 64
+        width: 300
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 201, y: 14, z: 264, w: 85}
+      border: {x: 121, y: 11, z: 177, w: 51}
       customData: 
       outline: []
       physicsShape: []
@@ -162,11 +162,11 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 467
-        height: 101
+        width: 299
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 339, y: 80, z: 126, w: 19}
+      border: {x: 199, y: 53, z: 98, w: 9}
       customData: 
       outline: []
       physicsShape: []
@@ -182,13 +182,13 @@ TextureImporter:
       name: Hud_HealthFrame_Mask_BR
       rect:
         serializedVersion: 2
-        x: 467
+        x: 299
         y: 0
-        width: 467
-        height: 101
+        width: 300
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 201, y: 80, z: 264, w: 19}
+      border: {x: 121, y: 53, z: 177, w: 9}
       customData: 
       outline: []
       physicsShape: []

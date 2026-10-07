@@ -20,7 +20,7 @@ MonoBehaviour:
   margin: 2
   pieces:
   - name: HealthFrame
-    source: {fileID: 2800000, guid: 7b01fb3be24646e43a7880654e8aa25a, type: 3}
+    source: {fileID: 2800000, guid: 564299635e9f9a042828a9132e67f003, type: 3}
     columns: 1
     rows: 1
     cellNames: []
@@ -35,10 +35,11 @@ MonoBehaviour:
       width: 0
       height: 0
     emitMask: 1
-    maskErode: 4
+    maskErode: 8
     mipmaps: 1
+    outputHeight: 128
   - name: EnemyFrame
-    source: {fileID: 2800000, guid: 72c9993f9099bac4ebc5b10d3358183c, type: 3}
+    source: {fileID: 2800000, guid: 3ae75b0c76e7bc54ba324f48a4393436, type: 3}
     columns: 1
     rows: 1
     cellNames: []
@@ -53,10 +54,11 @@ MonoBehaviour:
       width: 0
       height: 0
     emitMask: 1
-    maskErode: 4
+    maskErode: 8
     mipmaps: 1
+    outputHeight: 96
   - name: Ring
-    source: {fileID: 2800000, guid: 8e925b6948701584db115210179b08f0, type: 3}
+    source: {fileID: 2800000, guid: 911975b3e748bc543a00eeeea0f9b821, type: 3}
     columns: 2
     rows: 1
     cellNames:
@@ -75,8 +77,9 @@ MonoBehaviour:
     emitMask: 0
     maskErode: 4
     mipmaps: 1
+    outputHeight: 256
   - name: Icon
-    source: {fileID: 2800000, guid: 25b04a64f2c31d047b6769fd7f531db8, type: 3}
+    source: {fileID: 2800000, guid: 3f84e9d60f10eb34c814c80ea0ff2f24, type: 3}
     columns: 3
     rows: 1
     cellNames:
@@ -96,8 +99,9 @@ MonoBehaviour:
     emitMask: 0
     maskErode: 4
     mipmaps: 1
+    outputHeight: 160
   - name: Plaque
-    source: {fileID: 2800000, guid: 4ba8eb5eb4a0493478170f22b70b6c28, type: 3}
+    source: {fileID: 2800000, guid: 1bfb1677d80a373469d1ceb12cbaadce, type: 3}
     columns: 1
     rows: 1
     cellNames: []
@@ -107,15 +111,16 @@ MonoBehaviour:
     slice: 1
     stretchSearch: {x: 0.12, y: 0.42}
     interior:
-      x: 135
-      y: 412
-      width: 762
-      height: 200
+      x: 270
+      y: 824
+      width: 1524
+      height: 400
     emitMask: 0
     maskErode: 4
     mipmaps: 1
+    outputHeight: 128
   - name: KeyCap
-    source: {fileID: 2800000, guid: 7fbcc2d034fca6e42ae96a0355189fd9, type: 3}
+    source: {fileID: 2800000, guid: 150dec7cbdd6e834a8206e3afc46b7ec, type: 3}
     columns: 1
     rows: 1
     cellNames: []
@@ -125,10 +130,11 @@ MonoBehaviour:
     slice: 1
     stretchSearch: {x: 0.12, y: 0.42}
     interior:
-      x: 30
-      y: 402
-      width: 514
-      height: 189
+      x: 74
+      y: 989
+      width: 1264
+      height: 465
     emitMask: 0
     maskErode: 4
     mipmaps: 1
+    outputHeight: 96

@@ -9,9 +9,12 @@ namespace RedMagic.Pipeline.EditorTools
     /// escribe la receta (<c>Hud.uikit.asset</c>), la procesa con <see cref="UiArtKitProcessor"/> y
     /// cablea los sprites en <c>Resources/HudSkin.asset</c>.
     ///
-    /// Diferencia con los menús: los marcos de las barras son <b>huecos</b> (su interior blanco se
-    /// quita con <c>keyEnclosed</c>) y se pintan DELANTE del relleno que dibuja el código
-    /// (<see cref="UiFrame.Overlay"/>), no detrás del contenido.
+    /// Diferencia con los menús: los marcos de las barras son <b>huecos</b> y se pintan DELANTE del
+    /// relleno que dibuja el código (<see cref="UiFrame.Overlay"/>), que lleva su silueta (máscara).
+    ///
+    /// Las fuentes son las de <c>HD/</c> (ya con alfa) y cada pieza sale reducida aquí
+    /// (<see cref="UiArtPiece.outputHeight"/>, promedio de área) a ~2× su alto en pantalla: la GPU
+    /// reduciendo 2048 → 70 px a lo bruto es lo que pixelaba los bordes.
     ///
     /// <c>KeyCap_Wide.png</c> es un recorte de <c>KeyCap.jpeg</c> (la tecla ancha sola, x ≥ 347): las
     /// dos teclas venían pegadas y la rejilla 2×1 las habría partido. La ancha sirve para todas, porque
@@ -22,7 +25,12 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class HudUiPack
     {
-        private const string SourceFolder = "Assets/Ui/HudSprites";
+        /// <summary>
+        /// Las imágenes de Gemini pasadas por ComfyUI (<c>claude-workflow.mjs finish</c>: ×4 con
+        /// RealESRGAN anime, a 4 MP, fondo quitado con RMBG-2.0): PNG con alfa a ~2048 px. Los JPG
+        /// originales siguen en la carpeta de arriba.
+        /// </summary>
+        private const string SourceFolder = "Assets/Ui/HudSprites/HD";
         private const string OutputFolder = "Assets/Art/UI/Hud";
         private const string RecipePath = OutputFolder + "/Hud.uikit.asset";
         private const string SkinPath = "Assets/Resources/" + HudSkin.ResourcePath + ".asset";
@@ -62,45 +70,46 @@ namespace RedMagic.Pipeline.EditorTools
             recipe = ScriptableObject.CreateInstance<UiArtKitRecipe>();
             recipe.outputFolder = OutputFolder;
             recipe.prefix = "Hud_";
-            // Más estricto que los menús: estas piezas se ven muy reducidas y el halo semiblanco del JPG,
-            // si se vuelve opaco, sale como píxeles blancos sueltos en el borde.
+            // Las fuentes ya traen alfa (RMBG), así que la tolerancia de color sólo cuenta si alguna
+            // vuelve a ser un JPG sobre blanco: entonces, más estricta que la de los menús.
             recipe.backgroundTolerance = 0.16f;
             recipe.softOpaqueAt = 0.8f;
             recipe.margin = 2;
 
+            // outputHeight ≈ 2× el alto en pantalla; maskErode en px de la fuente HD (~2× la del JPG).
             recipe.pieces = new[]
             {
-                // Aros huecos: el interior blanco se quita (keyEnclosed) y deja ver el relleno.
                 // Con máscara: el relleno se pinta con la silueta exacta del aro y no asoma por las esquinas.
-                new UiArtPiece { name = "HealthFrame", source = Src("HealthBarFrame.jpeg"), slice = UiSliceMode.Quad, softEdge = 4, emitMask = true, mipmaps = true },
-                // Franja suave fina: una ancha (para el brillo de las muescas) dejaba el aro entero
-                // semitransparente y de color irregular.
-                new UiArtPiece { name = "EnemyFrame", source = Src("EnemyBarFrame.jpeg"), slice = UiSliceMode.Quad, softEdge = 4, emitMask = true, mipmaps = true },
+                new UiArtPiece { name = "HealthFrame", source = Src("HealthBarFrame.png"), slice = UiSliceMode.Quad, softEdge = 4,
+                                 emitMask = true, maskErode = 8, mipmaps = true, outputHeight = 128 },
+                new UiArtPiece { name = "EnemyFrame", source = Src("EnemyBarFrame.png"), slice = UiSliceMode.Quad, softEdge = 4,
+                                 emitMask = true, maskErode = 8, mipmaps = true, outputHeight = 96 },
 
-                // 2×1: apagado / encendido (halo cian: franja ancha para que se desvanezca).
+                // 2×1: apagado / encendido.
                 new UiArtPiece
                 {
-                    name = "Ring", source = Src("AbilitySlot.jpeg"), columns = 2, rows = 1,
-                    cellNames = new[] { "Ring", "Ring_Ready" }, softEdge = 48, mipmaps = true,
+                    name = "Ring", source = Src("AbilitySlot.png"), columns = 2, rows = 1,
+                    cellNames = new[] { "Ring", "Ring_Ready" }, softEdge = 48, mipmaps = true, outputHeight = 256,
                 },
 
-                // 3×1, sin huecos que quitar; los brillos se desvanecen.
                 new UiArtPiece
                 {
-                    name = "Icon", source = Src("AbilityIcons.jpeg"), columns = 3, rows = 1,
-                    cellNames = new[] { "Icon_Attack", "Icon_Dash", "Icon_Parry" }, softEdge = 32, keyEnclosed = false, mipmaps = true,
+                    name = "Icon", source = Src("AbilityIcons.png"), columns = 3, rows = 1,
+                    cellNames = new[] { "Icon_Attack", "Icon_Dash", "Icon_Parry" }, softEdge = 32, keyEnclosed = false,
+                    mipmaps = true, outputHeight = 160,
                 },
 
-                // Chapa y tecla: interior oscuro liso (no hueco), pintado de una pieza con `interior`.
+                // Chapa y tecla: interior oscuro liso, pintado de una pieza con 'interior' (medido en el
+                // JPG y pasado a la HD: ×2 la chapa, ×2.46 la tecla).
                 new UiArtPiece
                 {
-                    name = "Plaque", source = Src("CurrencyPlaque.jpeg"), slice = UiSliceMode.Quad, softEdge = 4,
-                    keyEnclosed = false, mipmaps = true, interior = new RectInt(135, 412, 762, 200),
+                    name = "Plaque", source = Src("CurrencyPlaque.png"), slice = UiSliceMode.Quad, softEdge = 4,
+                    keyEnclosed = false, mipmaps = true, outputHeight = 128, interior = new RectInt(270, 824, 1524, 400),
                 },
                 new UiArtPiece
                 {
                     name = "KeyCap", source = Src("KeyCap_Wide.png"), slice = UiSliceMode.Quad, softEdge = 4,
-                    keyEnclosed = false, mipmaps = true, interior = new RectInt(30, 402, 514, 189),
+                    keyEnclosed = false, mipmaps = true, outputHeight = 96, interior = new RectInt(74, 989, 1264, 465),
                 },
             };
 
@@ -123,19 +132,21 @@ namespace RedMagic.Pipeline.EditorTools
 
                 // Las barras: UiFrame.Fit baja la escala sola hasta que el aro cabe en el alto de la
                 // barra, así que maxScale sólo pone el techo.
-                // Por debajo del ajuste al alto el aro sale más fino (se estira la fila lisa del hueco).
-                skin.healthFrame.maxScale = 0.17f;
-                skin.enemyFrame.maxScale = 0.2f;
+                // Las escalas son px de UI por px del SPRITE (ya reducido a outputHeight). Por debajo del
+                // ajuste al alto, el aro sale más fino (se estira la fila lisa del hueco): la barra de vida
+                // (sprite de 128) se dibuja a ~34 px de alto natural dentro de sus 46.
+                skin.healthFrame.maxScale = 0.27f;
+                skin.enemyFrame.maxScale = 0.42f;
 
-                // Chapa de monedas (≈56 px de alto): el aro mide ~32 px de fuente → ~7 px en pantalla.
-                skin.currencyPlaque.maxScale = 0.24f;
+                // Chapa de monedas (≈56 px de alto): el aro queda en ~7 px.
+                skin.currencyPlaque.maxScale = 0.47f;
                 skin.currencyPlaque.padding = new UiInsets(16, 20, 8, 8);
-                skin.currencyPlaque.fillCornerRadius = 20f;
+                skin.currencyPlaque.fillCornerRadius = 10f;
 
                 // Tecla (≈30 px de alto): bisel inferior más grueso que el superior.
-                skin.keyCap.maxScale = 0.14f;
+                skin.keyCap.maxScale = 0.375f;
                 skin.keyCap.padding = new UiInsets(8, 8, 3, 6);
-                skin.keyCap.fillCornerRadius = 24f;
+                skin.keyCap.fillCornerRadius = 9f;
             }
 
             skin.healthFrame.quads = r.Quads("HealthFrame");

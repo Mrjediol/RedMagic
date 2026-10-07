@@ -38,7 +38,7 @@ namespace RedMagic.UI
 
         [Tooltip("Cuánto se sale el sprite del aro de la casilla por cada lado (fracción del lado): los dos estados " +
                  "reservan sitio para el halo del encendido, así que el aro en sí es más pequeño que el sprite.")]
-        [Range(0f, 0.3f)] public float abilityRingOverflow = 0.04f;
+        [Range(0f, 0.3f)] public float abilityRingOverflow = 0.01f;
 
         public Sprite iconAttack;
         public Sprite iconDash;

@@ -100,8 +100,10 @@ dial, so they look identical; on touch the HUD hides its slot row. Sizes/colours
 rim's **mask** (outer silhouette, eroded 4 px, same Quad cuts → `UiFrame.maskQuads`): every fill layer is a
 `HudStyle.BarLayer` = a `UiFrame.Mask` sized to the whole bar inside a width-% `overflow:hidden` clip, so the fill has
 the art's exact shape and never peeks past rounded ends (`PrepareSkinnedBar`; without a mask it falls back to an
-inset rounded track). Low HP tints the rim (`UiFrame.TintLayer`). HUD pieces are imported **with mipmaps**
-(`UiArtPiece.mipmaps`): shown 3-4× smaller than their image, without mips the edges alias into stray pixels. Ability slots overlay a ring `Image` (idle / ready sprite, `abilityRingOverflow` = halo room,
+inset rounded track). Low HP tints the rim (`UiFrame.TintLayer`). Sources are the Gemini JPGs upscaled + cut in ComfyUI (`HudSprites/HD/`, ~2048 px with alpha); the pack
+**downsamples each piece itself** (`UiArtPiece.outputHeight`, area average) to ~2× its on-screen height, because the
+UI Toolkit shader samples inside a branch and can't be trusted to use mipmaps — letting the GPU shrink 2048 → 70 px
+is what pixelated the edges. `HudSkin` scales are UI px per **output** sprite px. Ability slots overlay a ring `Image` (idle / ready sprite, `abilityRingOverflow` = halo room,
 `abilityRingInset` = sweep drawn inside); icons = source icon (weapon) → skin icon → vector glyph. Currency plaques
 and legend keycaps use the normal `UiFrame.Dress` (keycap in its own box: frame children cover a Label's text).
 Every piece is optional: missing art falls back to the vector look of `HudStyle`.

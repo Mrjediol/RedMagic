@@ -1,0 +1,544 @@
+{
+  "kind": "enemy",
+  "driver": "code",
+  "name": "CrystalOrbBot",
+  "pixelsPerUnit": 100,
+  "sprites": {
+    "Parts/Lower.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.95
+      }
+    },
+    "Parts/Accessory.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "Parts/CastArm.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.03
+      }
+    },
+    "Parts/Torso.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "root": {
+    "scale": 0.1607
+  },
+  "collider": {
+    "type": "box",
+    "size": {
+      "x": 5.71,
+      "y": 14.81
+    },
+    "offset": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  "corpse": {
+    "linger": 1.1,
+    "fadeDuration": 0.4
+  },
+  "visual": {
+    "position": {
+      "x": 0,
+      "y": 0
+    },
+    "rotation": 0,
+    "scale": 1
+  },
+  "parts": [
+    {
+      "name": "Lower",
+      "parent": "Torso",
+      "sprite": "Parts/Lower.png",
+      "sortingOrder": 1,
+      "position": {
+        "x": 0.02,
+        "y": -3.709
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0.6,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0
+        },
+        "rotate": 4,
+        "scale": {
+          "x": 0.06,
+          "y": 0.12
+        },
+        "speed": 6,
+        "phase": 0
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Accessory",
+      "parent": "Torso",
+      "sprite": "Parts/Accessory.png",
+      "sortingOrder": 2,
+      "position": {
+        "x": -3.405,
+        "y": 2.395
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.0871
+        },
+        "rotate": 2,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 2.3,
+        "phase": 2.39996
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "CastArm",
+      "parent": "Torso",
+      "sprite": "Parts/CastArm.png",
+      "sortingOrder": 3,
+      "position": {
+        "x": -0.04,
+        "y": 3.8022
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0
+        },
+        "rotate": 6,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.5,
+        "phase": 3.14
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Torso",
+      "parent": "",
+      "sprite": "Parts/Torso.png",
+      "sortingOrder": 4,
+      "position": {
+        "x": 0.2,
+        "y": -0.175
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": true,
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "pointAngle": 0,
+      "leanFollow": 0,
+      "sway": {
+        "move": {
+          "x": 0,
+          "y": 0.1452
+        },
+        "rotate": 0,
+        "scale": {
+          "x": 0,
+          "y": 0
+        },
+        "speed": 1.5,
+        "phase": 0.91669
+      },
+      "breaksOnDeath": true
+    },
+    {
+      "name": "Muzzle",
+      "parent": "Torso/CastArm",
+      "position": {
+        "x": 0,
+        "y": 5.0304
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": false
+    }
+  ],
+  "rig": {
+    "hoverBob": {
+      "x": 0,
+      "y": 0.3484
+    },
+    "hoverSpeed": 2.2,
+    "leanDegrees": 14,
+    "leanFullSpeed": 2.5,
+    "leanResponse": 8,
+    "followStiffness": 0,
+    "followDamping": 9,
+    "followMaxOffset": 1.742,
+    "moveGesture": "",
+    "aimArtAngle": 90,
+    "aimMaxAngle": 70,
+    "windup": 0.4,
+    "recover": 0.45,
+    "windupPullAngle": 10,
+    "windupBodyTilt": 6,
+    "recoilDelay": 0.06,
+    "recoilKick": 0.09,
+    "recoilAngle": 15,
+    "recoilDistance": 0.871,
+    "bodyRecoil": 0.4355,
+    "muzzleFlashColor": "#8cffffe6",
+    "muzzleFlashSize": 0,
+    "muzzleFlashTime": 0.1,
+    "foldedStretch": 0.05,
+    "foldedRiderScaleY": 0.6,
+    "foldedRiderOffset": {
+      "x": 0,
+      "y": 0
+    },
+    "wakeDuration": 0.8,
+    "sleepDuration": 0.55,
+    "wakeOvershoot": 2.2,
+    "wakeFlickers": 0,
+    "wakeFlickerPortion": 0.4,
+    "drivenLease": 0.25,
+    "drivenReturn": 0.35,
+    "staggerStrength": 2.5,
+    "hurtDuration": 0.28,
+    "hurtTilt": 14,
+    "hurtSquash": 0.12,
+    "breakImpulse": 3.5,
+    "breakUpward": 4,
+    "breakSpin": 540,
+    "breakGravity": 20,
+    "breakBounce": 0.35,
+    "breakGround": [
+      "Ground",
+      "Platform"
+    ],
+    "aimPart": "Torso/CastArm",
+    "muzzle": "Torso/CastArm/Muzzle",
+    "stretchPart": null,
+    "stretchRiders": []
+  },
+  "spriteSwaps": [],
+  "gestures": [
+    {
+      "name": "Flick",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 0,
+          "aim": false,
+          "aimParts": [],
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": -0.2903,
+                "y": 0
+              },
+              "rotate": -18,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 2,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Golpe",
+          "duration": 0.06,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0,
+          "aim": false,
+          "aimParts": [],
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 0.4355,
+                "y": 0
+              },
+              "rotate": 14,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 0,
+          "at": 1,
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "recover": 0.3,
+      "fx": []
+    },
+    {
+      "name": "Charge",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 1.5,
+          "aim": false,
+          "aimParts": [],
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": -0.5807,
+                "y": 0.871
+              },
+              "rotate": 55,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": -0.4355,
+                "y": 0.2903
+              },
+              "rotate": 6,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Golpe",
+          "duration": 0.08,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0,
+          "aim": false,
+          "aimParts": [],
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 0.871,
+                "y": 0
+              },
+              "rotate": -20,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0.4355,
+                "y": 0
+              },
+              "rotate": -5,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 0,
+          "at": 1,
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "recover": 0.45,
+      "fx": []
+    },
+    {
+      "name": "Sweep",
+      "steps": [
+        {
+          "name": "Carga",
+          "duration": 0.3,
+          "ease": "inout",
+          "stretch": true,
+          "shake": 0,
+          "aim": false,
+          "aimParts": [],
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 0,
+                "y": 0.5807
+              },
+              "rotate": 40,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": 4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "name": "Golpe",
+          "duration": 0.14,
+          "ease": "out",
+          "stretch": false,
+          "shake": 0,
+          "aim": false,
+          "aimParts": [],
+          "poses": [
+            {
+              "part": "Torso/CastArm",
+              "move": {
+                "x": 0.2903,
+                "y": -0.5807
+              },
+              "rotate": -45,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "part": "Visual",
+              "move": {
+                "x": 0,
+                "y": 0
+              },
+              "rotate": -4,
+              "scale": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          ]
+        }
+      ],
+      "releases": [
+        {
+          "step": 0,
+          "at": 1,
+          "offset": {
+            "x": 0,
+            "y": 0
+          }
+        }
+      ],
+      "recover": 0.4,
+      "fx": []
+    }
+  ],
+  "idleGestures": {
+    "gestures": [],
+    "interval": 4,
+    "chance": 0.6,
+    "windup": 0.5
+  },
+  "transitionGestures": {
+    "gestures": [],
+    "chance": 0.5,
+    "windup": 0.3
+  }
+}

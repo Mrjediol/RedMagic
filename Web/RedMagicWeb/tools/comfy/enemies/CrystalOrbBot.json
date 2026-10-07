@@ -1,0 +1,10 @@
+{
+  "name": "CrystalOrbBot",
+  "request": "Robot lanzador flotante con antena de la que saldrá un rayo láser (cuerpo solo, paso 1).",
+  "template": "floatingCaster",
+  "parts": "claude/CrystalOrbBot/final",
+  "height": 2.8,
+  "slots": { "castArm": { "pivot": [0.5, 0.97], "muzzle": [0.5, 0.01] } },
+  "tuning": { "maxHealth": 30, "moveSoundInterval": 0.9, "builtInAttack": false },
+  "rig": { "muzzleFlashSize": 0 }
+}

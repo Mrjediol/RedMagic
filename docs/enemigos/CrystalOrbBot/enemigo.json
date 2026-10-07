@@ -1,0 +1,25 @@
+{
+  "name": "CrystalOrbBot",
+  "estado": "cuerpo-por-aprobar",
+  "diseno": {
+    "image": "docs/enemigos/CrystalOrbBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robor-lanzador-flotante-con-una-antena-d__4.png",
+    "zone": "ice",
+    "lote": "2026-10-07-robor-lanzador-flotante-con-una-antena-d",
+    "item": "4",
+    "request": "robor lanzador flotante, con una antena de la que saldra un rayo lazer, pero no pidas el rayo laser en su sprite",
+    "note": "Esfera lisa con antena de aguja"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T03:34:26.371Z",
+  "tarea": "zpi421a",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab",
+  "cuerpo": {
+    "fecha": "2026-10-07T03:39:14.92Z",
+    "plantilla": "floatingCaster",
+    "partes": "Web/RedMagicWeb/output/claude/CrystalOrbBot/final (copia en Assets/Art/RigImports/CrystalOrbBot/Parts)",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/CrystalOrbBot.json",
+    "resumen": "4 partes: Torso (esfera con ojo y banda), Lower (tobera + llama de hielo), CastArm (antena de aguja con anillo, vertical: pivote en la base, boca en la punta; el importador la gira 90° para apuntar) y Accessory (cristal). Dudoso: el cristal queda algo suelto del torso y se dibuja delante; la antena apunta hacia arriba, no a la derecha, así que su apuntado hay que revisarlo en Enemy Studio."
+  },
+  "imagen": "docs/enemigos/CrystalOrbBot/preview.png"
+}

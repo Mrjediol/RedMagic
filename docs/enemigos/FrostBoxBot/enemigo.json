@@ -1,6 +1,6 @@
 {
   "name": "FrostBoxBot",
-  "estado": "cuerpo-por-aprobar",
+  "estado": "por-aprobar",
   "diseno": {
     "image": "docs/enemigos/FrostBoxBot/diseno.jpg",
     "source": "docs/disenos/img/2026-10-05-robot-azul-simple-brazo-como-canon-de-en__2.jpg",
@@ -10,9 +10,19 @@
     "request": "robot azul simple, brazo como cañon de energia",
     "note": "Boxy cube body, long cannon arm, cone thruster."
   },
-  "pendientes": [],
+  "pendientes": [
+    {
+      "id": "8jkate9",
+      "tipo": "comportamiento",
+      "texto": "no tiene \"ojos\" que tena una luz a modo de ojos, y una variante con los ojos rojos para los ataques",
+      "estado": "hecho",
+      "createdAt": "2026-10-07T03:23:54.23Z",
+      "tarea": "ddqrvz5",
+      "resumen": "Añadida la pieza Eyes (hija de Head, dos ojos rectangulares con brillo): cian en reposo/alerta y rojo mientras ataca (sprite de estado \"attacking\" del intercambio de sprites; los gestos cuentan como ataque). Arte: Parts/Eyes.png y Parts/EyesRed.png, mismo lienzo que la cabeza; generado por código, no con ComfyUI."
+    }
+  ],
   "createdAt": "2026-10-05T20:07:52.216Z",
-  "tarea": "xp0mziu",
+  "tarea": "ddqrvz5",
   "prefab": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T03:22:09.395Z",

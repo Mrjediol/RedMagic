@@ -31,6 +31,20 @@
         "x": 0.5,
         "y": 0.1
       }
+    },
+    "Parts/Eyes.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.1
+      }
+    },
+    "Parts/EyesRed.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.1
+      }
     }
   },
   "root": {
@@ -209,6 +223,19 @@
       "breaksOnDeath": true
     },
     {
+      "name": "Eyes",
+      "parent": "Torso/Head",
+      "sprite": "Parts/Eyes.png",
+      "sortingOrder": 5,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "rotation": 0,
+      "scale": 1,
+      "rigPart": false
+    },
+    {
       "name": "Muzzle",
       "parent": "Torso/CastArm",
       "position": {
@@ -278,7 +305,15 @@
     "stretchPart": null,
     "stretchRiders": []
   },
-  "spriteSwaps": [],
+  "spriteSwaps": [
+    {
+      "part": "Torso/Head/Eyes",
+      "asleep": "Parts/Eyes.png",
+      "awake": "Parts/Eyes.png",
+      "attacking": "Parts/EyesRed.png",
+      "stages": []
+    }
+  ],
   "gestures": [
     {
       "name": "Flick",

@@ -51,7 +51,7 @@ MonoBehaviour:
       prefab: {fileID: 1200812990498349432, guid: 2c7e6372a59081b42833cc05c4c2dba2, type: 3}
       speed: 9
       lifetime: 2.8
-      size: {x: 0.4, y: 0.4}
+      size: {x: 1.5, y: 1.5}
       muzzleOffset: {x: 0.65, y: 0.1}
       pierce: 0
       homingTurnRate: 0

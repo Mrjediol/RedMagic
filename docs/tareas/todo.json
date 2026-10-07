@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-07T16:31:23.593Z",
+  "updated": "2026-10-07T16:50:21.333Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -1095,8 +1095,24 @@
           "enemy": "CinderKettleBot",
           "kind": "resto",
           "status": "running",
-          "lastRunId": "2026-10-07T16-31-23-592Z_7c4x7fj",
-          "sessionId": "d0b9f7a9-e5d9-47c3-b876-8658b99b5f34"
+          "lastRunId": "2026-10-07T16-50-21-333Z_7c4x7fj",
+          "sessionId": "d0b9f7a9-e5d9-47c3-b876-8658b99b5f34",
+          "result": {
+            "ok": true,
+            "text": "CinderKettleBot montado y commiteado (`fbf24eb2`), estado `por-aprobar`. Compila sin errores, pero no probé nada en Play Mode.\n\n- **Ataque:** volador a distancia que dispara una roca fundida de 0,4 u (el tamaño de la boca del cañón, medido a ojo sobre la imagen) cada 3,5 s. La suelta lleva una explosión y un fogonazo. Importé el zip parcial con `ResetTuning=false` y puse el tuning a mano en el prefab.\n- **Calentamiento (nuevo, genérico):** `HeatGlow.cs` más `_Heat` y `_HeatColor` en el shader Sprite Lit FX. Al disparar, el cañón se pone al rojo-naranja al 100 % y baja a 0 en `cooldown − 0,5 s` (con 3,5 s son 3 s). Lo apliqué al CastArm con el material `CinderKettleBot_Heat.mat`. Está documentado en `enemies.md`.\n- **Sonidos:** 3 nuevos (lanzar, impacto en jugador, impacto en terreno), con reglas para las proyectiles cuyo nombre contenga \"Molten\" o \"Magma\". Falta puntuarlos en Biblioteca Jere ▸ Sounds.\n- **Decisiones mías:** vida 34, daño 10, rango de ataque 12 y proyectil a velocidad 9. Para el cañón puse un gesto `Shoot` de apuntar y soltar.\n- **Pendiente:** el cooldown cuenta desde que acaba el ataque, así que el enfriado puede quedar unas décimas antes de lo exacto. El sprite `CastArm__extra_Caliente` queda sin usar, porque el shader lo sustituye.\n\n**Qué probar:**\n1. El cañón se pone al rojo justo al disparar y vuelve a la normalidad unos 0,5 s antes del siguiente tiro.\n2. La roca sale de la boca del cañón con su explosión, y se oyen el disparo y el impacto.\n3. Mantiene la distancia y orbita, sin pegarse al jugador.\n4. El cuerpo no ha cambiado.",
+            "at": "2026-10-07T16:35:23.389Z",
+            "durationMs": 239796,
+            "costUsd": 0.982995,
+            "tokens": {
+              "input": 54,
+              "cacheWrite": 102157,
+              "cacheRead": 2110595,
+              "output": 15214,
+              "calls": 31
+            },
+            "runId": "2026-10-07T16-31-23-592Z_7c4x7fj",
+            "sessionId": "d0b9f7a9-e5d9-47c3-b876-8658b99b5f34"
+          }
         }
       ]
     },

@@ -202,7 +202,7 @@ meant to be edited by hand.**
   A finished enemy has effects on its gestures (and `muzzleFlashSize` 0).
 
 ## Calentamiento · `HeatGlow` (2026-10-07)
-`Enemies/HeatGlow.cs` (generic, any enemy with `EnemyStats` + `EnemyAttack`): on `SoundTrigger.OnAttack` sets `_Heat` = `peak` (1) via
-`MaterialPropertyBlock` on `targets`, then lowers it linearly to 0 in `max(minDuration, attackCooldown − readyMargin)` s (margin 0.5:
+`Enemies/HeatGlow.cs` — add it to the GameObject holding the weapon sprite (any weapon; finds `EnemyStats` + `EnemyAttack` in its parents, swaps in the shader material if missing; outside an enemy: call `Ignite()` + `cooldownOverride`). On `SoundTrigger.OnAttack` sets `_Heat` = `peak` (1) via
+`MaterialPropertyBlock` on its own SpriteRenderer, then lowers it linearly to 0 in `max(minDuration, attackCooldown − readyMargin)` s (margin 0.5:
 cooldown 2 → 1.5 s, 5 → 4.5 s). Targets need a material of shader `RedMagic/Sprite Lit FX` (props `_Heat`, `_HeatColor`: tint to red-orange + emissive).
 Reference: CinderKettleBot (castArm, material `Art/Fx/Materials/Enemies/CinderKettleBot_Heat.mat`, cooldown 3.5).

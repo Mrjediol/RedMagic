@@ -491,6 +491,11 @@ MonoBehaviour:
       cooldown: 0
       move: 0
       direction: 0
+      diagonalByTerrain: 0
+      floorY: 0
+      ceilingY: 17
+      angle: 45
+      angleVariance: 10
       moveDistance: 5
       moveDuration: 0.3
       hopHeight: 0

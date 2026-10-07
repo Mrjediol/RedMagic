@@ -42,16 +42,16 @@ MonoBehaviour:
   shakeDuration: 0.25
   shots:
   - kind: 1
-    aim: 0
+    aim: 1
     angle: 0
     count: 5
     arcDegrees: 50
     spawnRadius: 0
     projectile:
-      prefab: {fileID: 1349465023154791224, guid: 6617041b2013bea48abfd1269644f0a5, type: 3}
-      speed: 11
+      prefab: {fileID: 7940552799397235345, guid: b0208d870d7a76d4aa47fccbe778477e, type: 3}
+      speed: 15
       lifetime: 2.6
-      size: {x: 0.55, y: 0.55}
+      size: {x: 2, y: 2}
       muzzleOffset: {x: 0.65, y: 0.1}
       pierce: 0
       homingTurnRate: 0

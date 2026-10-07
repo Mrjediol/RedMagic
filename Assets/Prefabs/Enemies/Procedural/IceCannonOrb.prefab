@@ -638,10 +638,10 @@ MonoBehaviour:
     sleepsUntilDetected: 0
     hoverOffset: 1.2
     attackDamage: 8
-    attackCooldown: 1.2
+    attackCooldown: 1
     attackKnockbackMultiplier: 1
     attackReleaseFallback: 0.25
-    rootedWhileAttacking: 1
+    rootedWhileAttacking: 0
     attacks:
     - attack: {fileID: 11400000, guid: da0fc9f64a6c56b468cd961d1f2aa4a6, type: 2}
       legacyBuiltIn: 0
@@ -1201,15 +1201,15 @@ MonoBehaviour:
         clips:
         - {fileID: 8300000, guid: 91d294181ef0de0439d09c67e74ce503, type: 3}
         volume: 0.7
-        pitchMin: 0
-        pitchMax: 0
+        pitchMin: 0.1
+        pitchMax: 0.1
         noRepeatLast: 0
         priority: 0
         positional: 1
         rolloffStart: 0
         rolloffEnd: 0
-        initialized: 0
-      moment: 0
+        initialized: 1
+      moment: 2
       step: 0
       at: 0
     legacyWindup: []
@@ -1394,15 +1394,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2747693858395711307, guid: b49a2d43962de444b8278a505041b099, type: 3}
       propertyPath: m_LocalScale.x
-      value: 7.153558
+      value: 8.924924
       objectReference: {fileID: 0}
     - target: {fileID: 2747693858395711307, guid: b49a2d43962de444b8278a505041b099, type: 3}
       propertyPath: m_LocalScale.y
-      value: 7.153558
+      value: 8.924924
       objectReference: {fileID: 0}
     - target: {fileID: 2747693858395711307, guid: b49a2d43962de444b8278a505041b099, type: 3}
       propertyPath: m_LocalScale.z
-      value: 7.153558
+      value: 8.924924
       objectReference: {fileID: 0}
     - target: {fileID: 2747693858395711307, guid: b49a2d43962de444b8278a505041b099, type: 3}
       propertyPath: m_LocalPosition.x

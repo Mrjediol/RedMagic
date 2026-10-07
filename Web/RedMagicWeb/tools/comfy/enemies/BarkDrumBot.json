@@ -1,0 +1,12 @@
+{
+  "name": "BarkDrumBot",
+  "request": "robot. Robot tambor de corteza con lanzacohetes de un tubo (solo cuerpo, sin ataques).",
+  "template": "floatingCaster",
+  "parts": "claude/BarkDrumBot/final",
+  "height": 2.4,
+  "slots": {
+    "castArm": { "pivot": [0.1, 0.4], "muzzle": [0.98, 0.4] }
+  },
+  "tuning": { "archetype": "FlyingRanged", "moveSoundInterval": 0.9, "builtInAttack": false },
+  "rig": { "muzzleFlashSize": 0 }
+}

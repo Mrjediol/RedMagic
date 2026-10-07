@@ -1,0 +1,25 @@
+{
+  "name": "BarkDrumBot",
+  "estado": "cuerpo-por-aprobar",
+  "diseno": {
+    "image": "docs/enemigos/BarkDrumBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robot__p2.png",
+    "zone": "forest",
+    "lote": "2026-10-07-robot",
+    "item": "p2",
+    "request": "robot",
+    "note": "Robot tambor de corteza con lanzacohetes de un tubo"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T03:45:25.387Z",
+  "tarea": "t35tyrl",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab",
+  "cuerpo": {
+    "fecha": "2026-10-07T03:59:42.283Z",
+    "plantilla": "floatingCaster",
+    "partes": "claude/BarkDrumBot/final",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/BarkDrumBot.json",
+    "resumen": "4 piezas: Torso (barril), Head (cúpula con el cilindro lateral incluido), CastArm (tubo lanzacohetes, pivote atrás, boca a la derecha) y Lower (tobera con llama). Dudoso: el cilindro verde trasero va pegado a la cabeza (sin OffArm) y el CastArm queda detrás de la cabeza; la tobera salió algo más alta que en el diseño."
+  },
+  "imagen": "docs/enemigos/BarkDrumBot/preview.png"
+}

@@ -179,9 +179,7 @@ meant to be edited by hand.**
   - **Diagonal by terrain (2026-10-06, flyers)**: `diagonalByTerrain` on an `EnemyDefence` makes the push a diagonal: X from `direction`
     (toward / away), Y from the terrain (`EnemyBrain.TerrainDiagonal`: above the middle of `floorY`..`ceilingY` goes down, below goes up),
     angle = `angle` ± `angleVariance` (45 ± 10 → 35–55°). IceCannonOrb: floor 0, ceiling 17.
-- **`HitShield`** (`Enemies/HitShield.cs`, any enemy): absorbs the first `hits` hits through `Health.HitAbsorber` (no damage, no knockback). The shield is a
-  **child GameObject of the enemy** (`shield` field: place / scale / sort it by hand in the prefab); it is enabled on every `OnEnable` and disabled when it
-  breaks (or on death). On break: `breakPrefab` burst at the shield's position + sounds. IceCannonOrb: child `Shield` (the baked shield loop sprite).
+- **`HitShield`** (`Enemies/HitShield.cs`) — **a standalone prefab**: `Assets/Prefabs/Enemies/Shield/Shield.prefab`. **Drag it as a child of any enemy** (needs a `Health` in a parent; nothing else to wire). It absorbs the first `hits` hits through `Health.HitAbsorber` (no damage, no knockback). The drawing is the prefab's own `Visual` child (`shield` field; move / scale / sort it on the child instance); enabled on every `OnEnable`, disabled when it breaks (or on death). On break: `breakPrefab` burst at the shield's position + sounds. Tune `hits`, sounds, break FX on the instance (or make a prefab variant for another look). IceCannonOrb uses it as child `Shield`.
 - `EnemyController` (`Assets/Scripts/Gameplay/`) is the **older** system, still used by
   hand-built enemies and boss adds (`SummonAddsAttack`, `RunManager`, `WorldSceneGenerator`), so it
   stays. `EnemyFactory` strips it (and `RangedAttack`) from anything it generates — both write

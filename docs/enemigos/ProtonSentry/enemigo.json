@@ -1,0 +1,25 @@
+{
+  "name": "ProtonSentry",
+  "estado": "cuerpo-por-aprobar",
+  "diseno": {
+    "image": "docs/enemigos/ProtonSentry/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robot-con-rayo-de-protones__1.png",
+    "zone": "ice",
+    "lote": "2026-10-07-robot-con-rayo-de-protones",
+    "item": "1",
+    "request": "robot con rayo de protones",
+    "note": "Centinela achaparrado de un ojo, cañón grueso al lado"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T16:06:29.315Z",
+  "tarea": "cd96jly",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab",
+  "cuerpo": {
+    "fecha": "2026-10-07T16:09:40.036Z",
+    "plantilla": "floatingCaster",
+    "partes": "Web/RedMagicWeb/tools/comfy → claude/ProtonSentry/final (Comfy output); copia en Assets/Art/RigImports/ProtonSentry",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/ProtonSentry.json",
+    "resumen": "4 piezas: Head, Torso, CastArm (cañón), Lower (cono + llama). Torso salió algo más bajo en la parte superior; el cañón se alarga hacia dentro del torso (va detrás)."
+  },
+  "imagen": "docs/enemigos/ProtonSentry/preview.png"
+}

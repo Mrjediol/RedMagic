@@ -1,0 +1,9 @@
+{
+  "name": "ProtonSentry",
+  "request": "Centinela achaparrado de un ojo, flotante, con cañón grueso al lado (solo cuerpo).",
+  "template": "floatingCaster",
+  "parts": "claude/ProtonSentry/final",
+  "height": 2.8,
+  "slots": { "castArm": { "pivot": [0.5, 0.5], "muzzle": [0.97, 0.4] } },
+  "tuning": { "moveSoundInterval": 0.9 }
+}

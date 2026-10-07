@@ -46,6 +46,13 @@ namespace RedMagic.Test.Editor
         [MenuItem("Tools/RedMagic/Test/Escena de parry")]
         public static void Build()
         {
+            // La escena se ha convertido a mano en el minijuego de parry: regenerarla lo borraría.
+            if (File.Exists(OutputScene) &&
+                !EditorUtility.DisplayDialog("Escena de parry",
+                    $"{OutputScene} ya existe (ahora es el minijuego de parry, editado a mano). " +
+                    "Regenerarla la sobrescribe entera. ¿Seguro?", "Sobrescribir", "Cancelar"))
+                return;
+
             var previousActive = SceneManager.GetActiveScene();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);

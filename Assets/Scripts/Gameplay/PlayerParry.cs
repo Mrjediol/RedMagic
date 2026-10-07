@@ -204,6 +204,19 @@ namespace RedMagic.Gameplay
         /// <summary>True mientras la ventana de parry está abierta (ya pasado el startup).</summary>
         public bool IsParrying => _windowOpen && _startupTimer <= 0f;
 
+        /// <summary>Duración de la ventana. Escribible en caliente (dificultades de un minijuego, items).</summary>
+        public float Window
+        {
+            get => window;
+            set => window = Mathf.Max(0.01f, value);
+        }
+
+        /// <summary>Se ha pulsado parry y se abre una ventana.</summary>
+        public event System.Action WindowOpened;
+
+        /// <summary>La ventana se ha cerrado: true si bloqueó algo. No salta si se corta por pausa o muerte.</summary>
+        public event System.Action<bool> WindowClosed;
+
         // ------------------------------------------------------------------ HUD (ICooldownSource)
 
         public CooldownSlot Slot => CooldownSlot.Parry;
@@ -288,6 +301,9 @@ namespace RedMagic.Gameplay
 
         private void OpenWindow()
         {
+            // Re-pulsar con la ventana aún abierta (tras acertar el cooldown es 0): se cierra la anterior.
+            if (_windowOpen) CloseWindow(notifyMiss: true);
+
             _windowOpen = true;
             _succeededThisWindow = false;
             _startupTimer = startup;
@@ -299,13 +315,16 @@ namespace RedMagic.Gameplay
 
             SoundTriggered?.Invoke(SoundTrigger.OnParry);
             ShowParryEffect();
+            WindowOpened?.Invoke();
         }
 
         private void CloseWindow(bool notifyMiss)
         {
             if (!_windowOpen) return;
             _windowOpen = false;
-            if (notifyMiss && !_succeededThisWindow) Combat.Parry.RaiseMissed(_health);
+            if (!notifyMiss) return;
+            if (!_succeededThisWindow) Combat.Parry.RaiseMissed(_health);
+            WindowClosed?.Invoke(_succeededThisWindow);
         }
 
         /// <summary>Para los proyectiles enemigos que estén dentro del círculo antes de que toquen el cuerpo.</summary>

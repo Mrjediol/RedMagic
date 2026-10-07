@@ -426,3 +426,17 @@ item.amuleto_de_oro.name = Amuleto de Oro
 item.amuleto_de_oro.description = La suerte crece con tu riqueza: cuanto más oro llevas, mejores objetos ofrece la tienda.
 item.anillo_de_oro.name = Anillo de Oro
 item.anillo_de_oro.description = Otorga un reroll extra en cada tienda.
+
+# --- minijuego de parry (escena Test/ParryTest)
+parrygame.title = REFLEJO · MINIJUEGO
+parrygame.hint = Pisa una baldosa para elegir dificultad. Sube a la plataforma de arriba haciendo parry a las balas en el aire: cada parry en el aire te devuelve el doble salto y el dash.
+parrygame.controls = Parry: clic derecho / L / B (mando)  ·  Saltar: Espacio  ·  Dash: Shift
+parrygame.difficulty = Dificultad: {0}
+parrygame.window = ventana {0} s
+parrygame.attempts = Intentos: {0}
+parrygame.parries = Parrys acertados: {0}% ({1}/{2})
+parrygame.easy = Fácil
+parrygame.medium = Medio
+parrygame.hard = Difícil
+parrygame.win_title = ¡ENHORABUENA!
+parrygame.returning = Volviendo abajo…

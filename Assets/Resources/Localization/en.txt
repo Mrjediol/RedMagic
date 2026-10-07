@@ -426,3 +426,17 @@ item.amuleto_de_oro.name = Gold Amulet
 item.amuleto_de_oro.description = Luck rises with your wealth: the more gold you hold, the better the items offered in the shop.
 item.anillo_de_oro.name = Gold Ring
 item.anillo_de_oro.description = Grants an extra reroll in every shop.
+
+# --- parry mini game (scene Test/ParryTest)
+parrygame.title = REFLECT · MINI GAME
+parrygame.hint = Step on a tile to pick a difficulty. Reach the top platform by parrying bullets mid-air: every mid-air parry gives back your double jump and dash.
+parrygame.controls = Parry: right click / L / B (gamepad)  ·  Jump: Space  ·  Dash: Shift
+parrygame.difficulty = Difficulty: {0}
+parrygame.window = window {0} s
+parrygame.attempts = Attempts: {0}
+parrygame.parries = Parries landed: {0}% ({1}/{2})
+parrygame.easy = Easy
+parrygame.medium = Medium
+parrygame.hard = Hard
+parrygame.win_title = CONGRATULATIONS!
+parrygame.returning = Heading back down…

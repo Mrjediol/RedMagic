@@ -728,6 +728,64 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &288472736
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 288472738}
+  - component: {fileID: 288472737}
+  m_Layer: 0
+  m_Name: ParryMinigame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &288472737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 288472736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 739d5669cdf3bea468b7d076dba6ae07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Test.ParryMinigame
+  easyWindow: 0.15
+  mediumWindow: 0.1
+  hardWindow: 0.05
+  startDifficulty: 1
+  firstPadPosition: {x: 4, y: 0.05}
+  padSpacing: 4
+  padSize: {x: 3, y: 0.25}
+  easyColor: {r: 0.35, g: 0.85, b: 0.4, a: 1}
+  mediumColor: {r: 0.95, g: 0.8, b: 0.25, a: 1}
+  hardColor: {r: 0.95, g: 0.3, b: 0.3, a: 1}
+  spawnPoint: {x: 0, y: 1.2}
+  floorHeight: 2
+  goalHeight: 19.5
+  returnDelay: 4
+--- !u!4 &288472738
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 288472736}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &297221304
 GameObject:
   m_ObjectHideFlags: 0
@@ -4894,3 +4952,4 @@ SceneRoots:
   - {fileID: 1528761831}
   - {fileID: 1960246391}
   - {fileID: 909104574}
+  - {fileID: 288472738}

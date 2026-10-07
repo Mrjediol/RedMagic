@@ -31,7 +31,7 @@ namespace RedMagic.UI
     ///
     /// Se auto-crea antes de la primera escena y es persistente (DontDestroyOnLoad). Construye su
     /// <see cref="UIDocument"/> en código con <c>Resources/CurrencyHudPanelSettings</c> (orden 15:
-    /// sobre los botones táctiles y Opciones, bajo la pausa).
+    /// sobre los botones táctiles, bajo la pausa (20) y Opciones (25)).
     ///
     /// <b>Una acción nueva con cooldown</b> (el parry) no toca este script: implementa
     /// <see cref="ICooldownSource"/> en un componente del jugador y añade su valor a

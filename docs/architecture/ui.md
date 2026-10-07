@@ -39,7 +39,7 @@ all of which bit during that pass:
 
 ## In-game HUD (`Assets/Ui/Hud/`)
 One persistent, self-bootstrapping panel, **`GameHud`** (`Resources/CurrencyHudPanelSettings`,
-sort 15: above touch buttons and Options, below Pause), code-built from widget classes that each
+sort 15: above touch buttons, below Pause (20) and Options (25)), code-built from widget classes that each
 animate in a `Tick(dt)` on unscaled time. Four **movable pieces** (`Settings.HudElement`; factory
 spot in brackets):
 - **Health** (top-left): `HudHealthBar` (fill + delayed "ghost" trail on damage, green lead on heal,

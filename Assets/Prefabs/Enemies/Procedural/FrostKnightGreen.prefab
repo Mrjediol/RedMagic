@@ -975,6 +975,11 @@ MonoBehaviour:
       cooldown: 5
       move: 0
       direction: 0
+      diagonalByTerrain: 0
+      floorY: 0
+      ceilingY: 17
+      angle: 45
+      angleVariance: 10
       moveDistance: 2.4
       moveDuration: 0.3
       hopHeight: 1.2
@@ -988,6 +993,11 @@ MonoBehaviour:
       cooldown: 4
       move: 0
       direction: 0
+      diagonalByTerrain: 0
+      floorY: 0
+      ceilingY: 17
+      angle: 45
+      angleVariance: 10
       moveDistance: 2.8
       moveDuration: 0.32
       hopHeight: 1.2
@@ -1001,6 +1011,11 @@ MonoBehaviour:
       cooldown: 0
       move: 0
       direction: 0
+      diagonalByTerrain: 0
+      floorY: 0
+      ceilingY: 17
+      angle: 45
+      angleVariance: 10
       moveDistance: 3
       moveDuration: 0.34
       hopHeight: 1.2
@@ -1229,6 +1244,7 @@ MonoBehaviour:
   followDamping: 10
   followMaxOffset: 0.6171
   moveGesture: 
+  moveBackGesture: 
   idle:
     gestures: []
     interval: 4

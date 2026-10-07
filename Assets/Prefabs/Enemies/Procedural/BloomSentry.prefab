@@ -760,6 +760,7 @@ MonoBehaviour:
   followDamping: 9
   followMaxOffset: 2.403
   moveGesture: 
+  moveBackGesture: 
   idle:
     gestures: []
     interval: 4

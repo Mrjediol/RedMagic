@@ -1,0 +1,10 @@
+{
+  "name": "FrostBoxBot",
+  "request": "Robot azul simple, brazo como cañón de energía (cuerpo solo, paso 1).",
+  "template": "floatingCaster",
+  "parts": "claude/FrostBoxBot/final",
+  "height": 2.8,
+  "slots": { "castArm": { "pivot": [0.1, 0.58], "muzzle": [0.97, 0.58] } },
+  "tuning": { "maxHealth": 30, "moveSoundInterval": 0.9, "builtInAttack": false },
+  "rig": { "muzzleFlashSize": 0 }
+}

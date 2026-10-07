@@ -1,6 +1,6 @@
 {
   "name": "FrostBoxBot",
-  "estado": "montando-cuerpo",
+  "estado": "cuerpo-por-aprobar",
   "diseno": {
     "image": "docs/enemigos/FrostBoxBot/diseno.jpg",
     "source": "docs/disenos/img/2026-10-05-robot-azul-simple-brazo-como-canon-de-en__2.jpg",
@@ -12,5 +12,14 @@
   },
   "pendientes": [],
   "createdAt": "2026-10-05T20:07:52.216Z",
-  "tarea": "xp0mziu"
+  "tarea": "xp0mziu",
+  "prefab": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
+  "cuerpo": {
+    "fecha": "2026-10-07T03:22:09.395Z",
+    "plantilla": "floatingCaster",
+    "partes": "Web/RedMagicWeb/tools/comfy (Comfy output) claude/FrostBoxBot/final · Assets/Art/RigImports/FrostBoxBot",
+    "brief": "Web/RedMagicWeb/tools/comfy/enemies/FrostBoxBot.json",
+    "resumen": "4 piezas: Torso (cubo con la placa trasera), Head (casco con visor), CastArm (cañón con anillo, cristales y boca de cono) y Lower (propulsor cónico con llama). El brazo-cañón se dibujó delante del torso en el arte pero la plantilla lo pone detrás: hay que subirlo de capa en Enemy Studio. El casco queda detrás del borde superior del torso (torso por delante); revisar capas y pivote del cañón."
+  },
+  "imagen": "docs/enemigos/FrostBoxBot/preview.png"
 }

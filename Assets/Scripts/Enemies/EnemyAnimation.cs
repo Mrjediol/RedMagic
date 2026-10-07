@@ -297,6 +297,11 @@ namespace RedMagic.Enemies
             if (HasRig) rig.PlayTransition(seconds);
         }
 
+        public void SetMoveBackwards(bool backwards)
+        {
+            if (HasRig) rig.SetMoveBackwards(backwards);
+        }
+
         public void SetMoving(bool moving)
         {
             if (HasRig)

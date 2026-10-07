@@ -599,6 +599,7 @@ namespace RedMagic.Enemies
 
             if (_animation != null)
             {
+                _animation.SetMoveBackwards(next is State.Retreat);
                 _animation.SetMoving(next is State.Approach or State.Retreat or State.Returning);
                 // Con objetivo: lo persigue, se retira, ataca, enfría o se aparta. Sin él: reposo, volver a su sitio, muerto.
                 _animation.SetAlert(next is State.Approach or State.Retreat or State.Attacking or State.Cooldown

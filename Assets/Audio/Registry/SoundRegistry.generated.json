@@ -992,6 +992,72 @@
       }
     },
     {
+      "id": "b6748897f1308994bb03c84edc97cd7b/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/BarkDrumBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab",
+        "guid": "b6748897f1308994bb03c84edc97cd7b",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "b6748897f1308994bb03c84edc97cd7b/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/BarkDrumBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab",
+        "guid": "b6748897f1308994bb03c84edc97cd7b",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "b6748897f1308994bb03c84edc97cd7b/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/BarkDrumBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab",
+        "guid": "b6748897f1308994bb03c84edc97cd7b",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "b6748897f1308994bb03c84edc97cd7b/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/BarkDrumBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab",
+        "guid": "b6748897f1308994bb03c84edc97cd7b",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
       "id": "0cc705be6e8002c45b554607c163b8f2/SoundEmitter/OnAttack",
       "name": "Attack",
       "category": "Enemies/BloomSentry",
@@ -1095,6 +1161,138 @@
         "component": "SoundEmitter",
         "member": "OnWake",
         "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "6f3e0fda101b77348bd8b7fa06c6fb22/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/CrystalOrbBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab",
+        "guid": "6f3e0fda101b77348bd8b7fa06c6fb22",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "6f3e0fda101b77348bd8b7fa06c6fb22/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/CrystalOrbBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab",
+        "guid": "6f3e0fda101b77348bd8b7fa06c6fb22",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "6f3e0fda101b77348bd8b7fa06c6fb22/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/CrystalOrbBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab",
+        "guid": "6f3e0fda101b77348bd8b7fa06c6fb22",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "6f3e0fda101b77348bd8b7fa06c6fb22/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/CrystalOrbBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab",
+        "guid": "6f3e0fda101b77348bd8b7fa06c6fb22",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "e0451c03e0f2d8f4a9683c335855f80a/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/FrostBoxBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
+        "guid": "e0451c03e0f2d8f4a9683c335855f80a",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "e0451c03e0f2d8f4a9683c335855f80a/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/FrostBoxBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
+        "guid": "e0451c03e0f2d8f4a9683c335855f80a",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "e0451c03e0f2d8f4a9683c335855f80a/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/FrostBoxBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
+        "guid": "e0451c03e0f2d8f4a9683c335855f80a",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "e0451c03e0f2d8f4a9683c335855f80a/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/FrostBoxBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
+        "guid": "e0451c03e0f2d8f4a9683c335855f80a",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -1476,11 +1674,29 @@
       "origin": "Discovered",
       "clipSource": "Own",
       "clips": [
-        "Assets/Audio/Sfx/Game/attack/attack_cast.wav"
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
       ],
       "owner": {
         "asset": "Assets/ScriptableObjects/EnemyAttacks/IceCannonOrb/EnemyAttack_IceCannonOrb_Shot.asset",
         "guid": "da0fc9f64a6c56b468cd961d1f2aa4a6",
+        "component": "ReleaseAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "2edcea36d76f6aa4684f5242fb5f0279/ReleaseAttack/sound",
+      "name": "Attack · Shot 1",
+      "category": "Enemies/IceCannonOrb",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
+      ],
+      "owner": {
+        "asset": "Assets/ScriptableObjects/EnemyAttacks/IceCannonOrb/EnemyAttack_IceCannonOrb_Shot 1.asset",
+        "guid": "2edcea36d76f6aa4684f5242fb5f0279",
         "component": "ReleaseAttack",
         "member": "sound",
         "property": "sound"
@@ -1521,6 +1737,24 @@
       }
     },
     {
+      "id": "818737513e15ccc43b95ee95c01f9606/ProceduralRig/gestures.Array.data[4].sounds.Array.data[0].sound",
+      "name": "Gesture · Propel",
+      "category": "Enemies/IceCannonOrb",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_dash.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
+        "guid": "818737513e15ccc43b95ee95c01f9606",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[4].sounds.Array.data[0].sound",
+        "property": "gestures.Array.data[4].sounds.Array.data[0].sound"
+      }
+    },
+    {
       "id": "818737513e15ccc43b95ee95c01f9606/SoundEmitter/OnHit",
       "name": "Hurt",
       "category": "Enemies/IceCannonOrb",
@@ -1549,6 +1783,108 @@
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
         "guid": "818737513e15ccc43b95ee95c01f9606",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "d3d16ed1a0e9fa447a1f9041ec9a9f67/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/IceCannonOrb 1",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "d3d16ed1a0e9fa447a1f9041ec9a9f67/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/IceCannonOrb 1",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "d3d16ed1a0e9fa447a1f9041ec9a9f67/SoundEmitter/OnEvade",
+      "name": "Evade",
+      "category": "Enemies/IceCannonOrb 1",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
+        "component": "SoundEmitter",
+        "member": "OnEvade",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "d3d16ed1a0e9fa447a1f9041ec9a9f67/ProceduralRig/gestures.Array.data[4].sounds.Array.data[0].sound",
+      "name": "Gesture · Propel",
+      "category": "Enemies/IceCannonOrb 1",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/gesture/gesture_dash.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
+        "component": "ProceduralRig",
+        "member": "gestures.Array.data[4].sounds.Array.data[0].sound",
+        "property": "gestures.Array.data[4].sounds.Array.data[0].sound"
+      }
+    },
+    {
+      "id": "d3d16ed1a0e9fa447a1f9041ec9a9f67/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/IceCannonOrb 1",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "d3d16ed1a0e9fa447a1f9041ec9a9f67/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/IceCannonOrb 1",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
         "component": "SoundEmitter",
         "member": "OnMove",
         "property": "soundEvents.Array.data[1].cue"
@@ -2142,6 +2478,306 @@
       }
     },
     {
+      "id": "3f442e612330da84ea24cb5388888639/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/LeafBladeBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab",
+        "guid": "3f442e612330da84ea24cb5388888639",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "3f442e612330da84ea24cb5388888639/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/LeafBladeBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab",
+        "guid": "3f442e612330da84ea24cb5388888639",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "3f442e612330da84ea24cb5388888639/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/LeafBladeBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab",
+        "guid": "3f442e612330da84ea24cb5388888639",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "3f442e612330da84ea24cb5388888639/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/LeafBladeBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab",
+        "guid": "3f442e612330da84ea24cb5388888639",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "5a4e96081182fcb4d8d584c50930215c/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/LensCannonBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab",
+        "guid": "5a4e96081182fcb4d8d584c50930215c",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "5a4e96081182fcb4d8d584c50930215c/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/LensCannonBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab",
+        "guid": "5a4e96081182fcb4d8d584c50930215c",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "5a4e96081182fcb4d8d584c50930215c/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/LensCannonBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab",
+        "guid": "5a4e96081182fcb4d8d584c50930215c",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "5a4e96081182fcb4d8d584c50930215c/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/LensCannonBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab",
+        "guid": "5a4e96081182fcb4d8d584c50930215c",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "970d3a5aebe9d5e4e92e63af3e2fe408/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/MawDomeBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab",
+        "guid": "970d3a5aebe9d5e4e92e63af3e2fe408",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "970d3a5aebe9d5e4e92e63af3e2fe408/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/MawDomeBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab",
+        "guid": "970d3a5aebe9d5e4e92e63af3e2fe408",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "970d3a5aebe9d5e4e92e63af3e2fe408/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/MawDomeBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab",
+        "guid": "970d3a5aebe9d5e4e92e63af3e2fe408",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "970d3a5aebe9d5e4e92e63af3e2fe408/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/MawDomeBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab",
+        "guid": "970d3a5aebe9d5e4e92e63af3e2fe408",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "9cfd2b1cc8b6d42449f279c5a2608962/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/MossLanternBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+        "guid": "9cfd2b1cc8b6d42449f279c5a2608962",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "9c33397602dda444f85db5f21e7482a0/ReleaseAttack/sound",
+      "name": "Attack · Shot",
+      "category": "Enemies/MossLanternBot",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_cast.wav"
+      ],
+      "owner": {
+        "asset": "Assets/ScriptableObjects/EnemyAttacks/MossLanternBot/EnemyAttack_MossLanternBot_Shot.asset",
+        "guid": "9c33397602dda444f85db5f21e7482a0",
+        "component": "ReleaseAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "9cfd2b1cc8b6d42449f279c5a2608962/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/MossLanternBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+        "guid": "9cfd2b1cc8b6d42449f279c5a2608962",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "9cfd2b1cc8b6d42449f279c5a2608962/SoundEmitter/OnEvade",
+      "name": "Evade",
+      "category": "Enemies/MossLanternBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+        "guid": "9cfd2b1cc8b6d42449f279c5a2608962",
+        "component": "SoundEmitter",
+        "member": "OnEvade",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "9cfd2b1cc8b6d42449f279c5a2608962/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/MossLanternBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+        "guid": "9cfd2b1cc8b6d42449f279c5a2608962",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "9cfd2b1cc8b6d42449f279c5a2608962/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/MossLanternBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+        "guid": "9cfd2b1cc8b6d42449f279c5a2608962",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
       "id": "cd3f669cbe8146148880945b7e5b54c2/SoundEmitter/OnAttack",
       "name": "Attack",
       "category": "Enemies/PolarTurretBot",
@@ -2245,6 +2881,72 @@
         "component": "SoundEmitter",
         "member": "OnMove",
         "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "ba4ddf340e03a4544aec66b5b994e9b3/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/SeedPodBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab",
+        "guid": "ba4ddf340e03a4544aec66b5b994e9b3",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "ba4ddf340e03a4544aec66b5b994e9b3/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/SeedPodBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab",
+        "guid": "ba4ddf340e03a4544aec66b5b994e9b3",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "ba4ddf340e03a4544aec66b5b994e9b3/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/SeedPodBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab",
+        "guid": "ba4ddf340e03a4544aec66b5b994e9b3",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "ba4ddf340e03a4544aec66b5b994e9b3/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/SeedPodBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab",
+        "guid": "ba4ddf340e03a4544aec66b5b994e9b3",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -2717,6 +3419,108 @@
         "component": "SoundEmitter",
         "member": "OnMove",
         "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "4c328ff226ccb0843b659d79c0c821f0/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/ThornFairy",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+        "guid": "4c328ff226ccb0843b659d79c0c821f0",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "3e894e9400193c74ab602a20c2f62f83/ReleaseAttack/sound",
+      "name": "Attack · Shot",
+      "category": "Enemies/ThornFairy",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_cast.wav"
+      ],
+      "owner": {
+        "asset": "Assets/ScriptableObjects/EnemyAttacks/ThornFairy/EnemyAttack_ThornFairy_Shot.asset",
+        "guid": "3e894e9400193c74ab602a20c2f62f83",
+        "component": "ReleaseAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "4c328ff226ccb0843b659d79c0c821f0/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/ThornFairy",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+        "guid": "4c328ff226ccb0843b659d79c0c821f0",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "4c328ff226ccb0843b659d79c0c821f0/SoundEmitter/OnEvade",
+      "name": "Evade",
+      "category": "Enemies/ThornFairy",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+        "guid": "4c328ff226ccb0843b659d79c0c821f0",
+        "component": "SoundEmitter",
+        "member": "OnEvade",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "4c328ff226ccb0843b659d79c0c821f0/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/ThornFairy",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+        "guid": "4c328ff226ccb0843b659d79c0c821f0",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "4c328ff226ccb0843b659d79c0c821f0/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/ThornFairy",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+        "guid": "4c328ff226ccb0843b659d79c0c821f0",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -3535,13 +4339,51 @@
       "musicName": "World3-1"
     },
     {
+      "id": "d3d16ed1a0e9fa447a1f9041ec9a9f67/HitShield/breakSound",
+      "name": "IceCannonOrb 1 · Break",
+      "category": "Other/HitShield",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/VfxLab/shieldBreak.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
+        "component": "HitShield",
+        "member": "breakSound",
+        "property": "breakSound"
+      }
+    },
+    {
+      "id": "d3d16ed1a0e9fa447a1f9041ec9a9f67/HitShield/upSound",
+      "name": "IceCannonOrb 1 · Up",
+      "category": "Other/HitShield",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/VfxLab/shieldUp.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
+        "component": "HitShield",
+        "member": "upSound",
+        "property": "upSound"
+      }
+    },
+    {
       "id": "818737513e15ccc43b95ee95c01f9606/HitShield/breakSound",
       "name": "IceCannonOrb · Break",
       "category": "Other/HitShield",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/VfxLab/shieldBreak.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
         "guid": "818737513e15ccc43b95ee95c01f9606",
@@ -3556,8 +4398,10 @@
       "category": "Other/HitShield",
       "kind": "CueField",
       "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/VfxLab/shieldUp.wav"
+      ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
         "guid": "818737513e15ccc43b95ee95c01f9606",
@@ -5007,6 +5851,78 @@
       }
     },
     {
+      "id": "776b0d74c9b696f4483b111a73857a4c/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/MossLanternBot_MossBolt_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/MossLanternBot/Fx_MossLanternBot_MossBolt_Projectile.prefab",
+        "guid": "776b0d74c9b696f4483b111a73857a4c",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "776b0d74c9b696f4483b111a73857a4c/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/MossLanternBot_MossBolt_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/MossLanternBot/Fx_MossLanternBot_MossBolt_Projectile.prefab",
+        "guid": "776b0d74c9b696f4483b111a73857a4c",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "776b0d74c9b696f4483b111a73857a4c/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/MossLanternBot_MossBolt_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/MossLanternBot/Fx_MossLanternBot_MossBolt_Projectile.prefab",
+        "guid": "776b0d74c9b696f4483b111a73857a4c",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "776b0d74c9b696f4483b111a73857a4c/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/MossLanternBot_MossBolt_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/MossLanternBot/Fx_MossLanternBot_MossBolt_Projectile.prefab",
+        "guid": "776b0d74c9b696f4483b111a73857a4c",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
       "id": "b0208d870d7a76d4aa47fccbe778477e/SoundEmitter/OnDeath",
       "name": "Expire",
       "category": "Projectiles/PolarTurretBot_PolarBotBigOrb_Projectile",
@@ -5073,6 +5989,78 @@
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/PolarTurretBot/Fx_PolarTurretBot_PolarBotBigOrb_Projectile.prefab",
         "guid": "b0208d870d7a76d4aa47fccbe778477e",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "2bf1b8814e5d6fc44a8e03cc191ac47c/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/PolarTurretBot_PolarBotBigOrb_Projectile 1",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/PolarTurretBot/Fx_PolarTurretBot_PolarBotBigOrb_Projectile 1.prefab",
+        "guid": "2bf1b8814e5d6fc44a8e03cc191ac47c",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "2bf1b8814e5d6fc44a8e03cc191ac47c/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/PolarTurretBot_PolarBotBigOrb_Projectile 1",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/PolarTurretBot/Fx_PolarTurretBot_PolarBotBigOrb_Projectile 1.prefab",
+        "guid": "2bf1b8814e5d6fc44a8e03cc191ac47c",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "2bf1b8814e5d6fc44a8e03cc191ac47c/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/PolarTurretBot_PolarBotBigOrb_Projectile 1",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/PolarTurretBot/Fx_PolarTurretBot_PolarBotBigOrb_Projectile 1.prefab",
+        "guid": "2bf1b8814e5d6fc44a8e03cc191ac47c",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "2bf1b8814e5d6fc44a8e03cc191ac47c/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/PolarTurretBot_PolarBotBigOrb_Projectile 1",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/PolarTurretBot/Fx_PolarTurretBot_PolarBotBigOrb_Projectile 1.prefab",
+        "guid": "2bf1b8814e5d6fc44a8e03cc191ac47c",
         "component": "SoundEmitter",
         "member": "OnSpawn",
         "property": "soundEvents.Array.data[3].cue"
@@ -5433,6 +6421,78 @@
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/ShroomSpore/Fx_ShroomSpore.prefab",
         "guid": "c21fd61b95c9e30448747773038e9c49",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "639227a812da2044f95b466e154cf3fc/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/ThornFairy_FairyOrb_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ThornFairy/Fx_ThornFairy_FairyOrb_Projectile.prefab",
+        "guid": "639227a812da2044f95b466e154cf3fc",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "639227a812da2044f95b466e154cf3fc/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/ThornFairy_FairyOrb_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ThornFairy/Fx_ThornFairy_FairyOrb_Projectile.prefab",
+        "guid": "639227a812da2044f95b466e154cf3fc",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "639227a812da2044f95b466e154cf3fc/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/ThornFairy_FairyOrb_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ThornFairy/Fx_ThornFairy_FairyOrb_Projectile.prefab",
+        "guid": "639227a812da2044f95b466e154cf3fc",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "639227a812da2044f95b466e154cf3fc/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/ThornFairy_FairyOrb_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_fairy.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/ThornFairy/Fx_ThornFairy_FairyOrb_Projectile.prefab",
+        "guid": "639227a812da2044f95b466e154cf3fc",
         "component": "SoundEmitter",
         "member": "OnSpawn",
         "property": "soundEvents.Array.data[3].cue"

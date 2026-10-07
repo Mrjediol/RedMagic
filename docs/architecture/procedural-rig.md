@@ -332,6 +332,8 @@ pipeline. Code in `Rigging/Editor/RigConfig/`:
 - **Move gesture** — `moveGesture` names a gesture held (cross-faded) while `SetMoving(true)` and
   settled on stop; never overrides another gesture. BossIce2 `Move`: lean forward, fists/tip trail,
   crown drifts back.
+  `moveBackGesture` (2026-10-07): the same while retreating (`EnemyBrain` → `SetMoveBackwards` before `SetMoving`) — a flyer
+  flying backwards (ThornFairy `FlyFwd` / `FlyBack`). Prefab field only; the web/JSON does not carry it yet.
 - **Gesture cross-fade** — starting a different gesture moves the old one to a fade layer (0.2 s)
   instead of dropping its weights, so chained gestures blend (charge → travel pose). A gesture with
   an **empty `strike`** is a held charge: no whip at release, the windup settles over `recover`

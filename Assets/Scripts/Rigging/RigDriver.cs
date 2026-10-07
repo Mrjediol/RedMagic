@@ -105,6 +105,9 @@ namespace RedMagic.Rigging
         /// <summary>Se desplaza por su cuenta. La inclinación sale de la velocidad real; esto es opcional.</summary>
         public virtual void SetMoving(bool moving) { }
 
+        /// <summary>Lo que se desplaza va hacia atrás (se retira): usa <see cref="ProceduralRig.moveBackGesture"/>. Se llama antes de SetMoving.</summary>
+        public virtual void SetMoveBackwards(bool backwards) { }
+
         /// <summary>
         /// Voltea la raíz visual. Se aplica <b>en el acto</b> (no en el siguiente frame): el
         /// cerebro gira al enemigo justo antes de lanzar el ataque, y el apuntado se calcula con

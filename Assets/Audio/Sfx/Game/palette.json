@@ -664,6 +664,13 @@
       "loop": false,
       "assigned": true
     },
+    "proj_launch_fairy": {
+      "family": "projectile",
+      "label": "Orbe de hada · lanzamiento",
+      "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
     "enemy_evade": {
       "family": "enemy",
       "label": "Esquiva",
@@ -710,6 +717,20 @@
       "family": "gesture",
       "label": "Gesto · embestir",
       "seconds": 0.4,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_wing_flap": {
+      "family": "gesture",
+      "label": "Gesto · aleteo de hada",
+      "seconds": 0.3,
+      "loop": false,
+      "assigned": true
+    },
+    "gesture_fairy_dash": {
+      "family": "gesture",
+      "label": "Gesto · impulso de hada",
+      "seconds": 0.3,
       "loop": false,
       "assigned": true
     },
@@ -1478,6 +1499,17 @@
     {
       "category": "^Projectiles/",
       "name": "^Launch$",
+      "asset": "Hada|Fairy",
+      "clip": "proj_launch_fairy",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.55
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Launch$",
       "asset": "Boulder|Rock",
       "clip": "proj_launch_rock",
       "pitch": [
@@ -1678,6 +1710,26 @@
       "component": "^ProceduralRig$",
       "name": "DashLoop|Loop$",
       "clip": null
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "^Fly",
+      "clip": "gesture_wing_flap",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.45
+    },
+    {
+      "component": "^ProceduralRig$",
+      "name": "^Dash(Fwd|Back)",
+      "clip": "gesture_fairy_dash",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.6
     },
     {
       "component": "^ProceduralRig$",

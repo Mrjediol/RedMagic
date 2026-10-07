@@ -1,6 +1,6 @@
 {
   "name": "ThornFairy",
-  "estado": "montando",
+  "estado": "por-aprobar",
   "diseno": {
     "image": "docs/enemigos/ThornFairy/diseno.png",
     "source": "docs/disenos/img/2026-10-07-hada__3.png",
@@ -57,5 +57,9 @@
       "elegidos": []
     },
     "notas": ""
+  },
+  "montaje": {
+    "fecha": "2026-10-07T15:16:05.115Z",
+    "resumen": "Orbe verde, dash defensivo (adelante/atrás) y vuelo con aleteo: alas animadas como una pieza (escala/giro), pose distinta al avanzar y al retirarse. Dudoso: orbe de biblioteca (OrbeHada) no accesible desde script, usé un orbe verde nuevo; alas aún sin separar."
   }
 }

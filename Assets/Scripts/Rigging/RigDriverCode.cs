@@ -93,7 +93,7 @@ namespace RedMagic.Rigging
         // Gestos en reposo (ProceduralRig.idle): cuenta atrás hasta el siguiente intento, y por dónde va.
         private float _idleTimer;
         private int _idleLast = -1;
-        private bool _moving, _asleep;
+        private bool _moving, _movingBack, _asleep;
 
         // Andar (ProceduralRig.gait): por dónde va el ciclo, cuánto paso da, cuánto manda la marcha.
         private struct GaitFoot
@@ -203,7 +203,7 @@ namespace RedMagic.Rigging
             _fold = null;
             _unfold = 1f;
             _dead = false;
-            _moving = _asleep = false;
+            _moving = _movingBack = _asleep = false;
             _idleLast = -1;
             _idleTimer = NextIdleDelay();
             _pieces.Clear();
@@ -321,20 +321,25 @@ namespace RedMagic.Rigging
         /// Desplazándose: mantiene el gesto de moverse (<see cref="ProceduralRig.moveGesture"/>) fundido
         /// encima; al parar lo suelta. Nunca pisa otro gesto (un ataque manda).
         /// </summary>
+        public override void SetMoveBackwards(bool backwards) => _movingBack = backwards;
+
         public override void SetMoving(bool moving)
         {
             _moving = moving;
             if (_dead) return;
-            var move = Rig.FindGesture(Rig.moveGesture);
+            var forward = Rig.FindGesture(Rig.moveGesture);
+            var back = Rig.FindGesture(Rig.moveBackGesture);
+            var move = _movingBack && back != null ? back : forward;
             if (move == null) return;
 
-            if (moving && (_gesture == null || _gesture == move))
+            bool movingGesture = _gesture != null && (_gesture == forward || _gesture == back);
+            if (moving && (_gesture == null || movingGesture))
             {
                 StartGesture(HoldRoutine(), move, hold: true);
                 Rig.ShowGestureSprites(move.name, isAttack: false);
             }
-            else if (!moving && _gesture == move)
-                StartGesture(SettleRoutine(0.3f), move);
+            else if (!moving && movingGesture)
+                StartGesture(SettleRoutine(0.3f), _gesture);
         }
 
         public override bool PlayMotion(string gestureName, float seconds)

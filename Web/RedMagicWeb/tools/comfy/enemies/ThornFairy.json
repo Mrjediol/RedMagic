@@ -1,11 +1,84 @@
 {
   "name": "ThornFairy",
-  "request": "hada (cuerpo solo, paso 1)",
+  "request": "hada espinosa voladora: orbe verde, dash defensivo, alas que aletean",
   "template": "floatingCaster",
   "parts": "claude/ThornFairy/final",
   "height": 3.2,
   "front": ["castArm"],
   "slots": { "castArm": { "pivot": [0.8, 0.05], "muzzle": [0.3, 0.95] } },
-  "tuning": { "maxHealth": 30, "moveSoundInterval": 0.9, "builtInAttack": false },
-  "rig": { "muzzleFlashSize": 0 }
+  "tuning": {
+    "archetype": "FlyingRanged", "maxHealth": 30, "detectionRange": 14, "attackRange": 9, "personalSpace": 5,
+    "moveSpeed": 3.2, "retreatSpeed": 3.6, "hoverOffset": 1.6, "attackDamage": 8, "attackCooldown": 1.5,
+    "moveSoundInterval": 0.9, "builtInAttack": false
+  },
+  "effects": {
+    "orb": { "name": "FairyOrb", "preset": "sparkBolt", "params": { "core": "#f4ffe8", "glow": "#35e86a", "accent": "#b6ff8a" } },
+    "charge": { "name": "FairyCharge", "preset": "chargeVortex", "params": { "core": "#f4ffe8", "glow": "#35e86a", "accent": "#ff4a4a" } },
+    "flash": { "name": "FairyFlash", "preset": "muzzleFlash", "params": { "core": "#f4ffe8", "glow": "#35e86a", "accent": "#b6ff8a" } },
+    "trail": { "name": "FairyTrail", "preset": "dashTrail", "params": { "core": "#f4ffe8", "glow": "#6dff8f", "accent": "#d8ffb0", "particles": 8 } },
+    "puff": { "name": "FairyPuff", "preset": "smokePuff", "params": { "core": "#f4ffe8", "glow": "#8dff6a", "accent": "#d8ffb0" } },
+    "streaks": { "name": "FairyStreaks", "preset": "dashStreaks", "params": { "core": "#f4ffe8", "glow": "#6dff8f", "accent": "#d8ffb0" } }
+  },
+  "rig": { "muzzleFlashSize": 0 },
+  "attacks": [
+    {
+      "id": "Shot", "type": "ReleaseAttack",
+      "common": { "displayName": "Orbe", "telegraph": 0.5, "recovery": 0.3, "damage": 8, "gesture": "Shoot", "cooldownInAttacks": 0, "weight": 1 },
+      "shots": [{ "kind": "Projectile", "aim": "Frozen", "effect": "orb", "worldWidth": 0.6,
+        "projectile": { "speed": 10, "lifetime": 2.6, "size": { "x": 0.6, "y": 0.6 } } }],
+      "deck": { "minRange": 0, "maxRange": 0 }
+    }
+  ],
+  "gestures": [
+    { "name": "Shoot", "recover": 0.35,
+      "steps": [
+        { "name": "Apunta", "duration": 0.4, "ease": "out", "stretch": true, "aim": true, "aimParts": [["castArm", -104]],
+          "poses": [["Visual", [-0.05, 0], 0], ["accessory", [0, 0], 0, [0.12, 0.08]], ["head", [0, 0], -4]] },
+        { "name": "Suelta", "duration": 0.14, "ease": "out", "aim": true, "aimParts": [["castArm", -104]],
+          "poses": [["Visual", [-0.18, 0], 0], ["accessory", [0, 0], 0, [-0.2, 0]]] }
+      ],
+      "releases": [{ "step": 1, "at": 0 }] },
+    { "name": "FlyFwd", "recover": 0.3,
+      "steps": [{ "name": "Alas atras", "duration": 0.25, "ease": "out",
+        "poses": [["accessory", [-0.08, 0], 0, [-0.28, 0.04]], ["lower", [-0.05, 0], 4], ["offArm", [0, 0], 8]] }] },
+    { "name": "FlyBack", "recover": 0.3,
+      "steps": [{ "name": "Alas abiertas", "duration": 0.25, "ease": "out",
+        "poses": [["accessory", [0.1, 0.04], 0, [0.16, 0.14]], ["lower", [0.05, 0], -6], ["head", [0, 0], -4], ["offArm", [0, 0], -8]] }] },
+    { "name": "DashFwd", "recover": 0.25,
+      "steps": [
+        { "name": "Encoge", "duration": 0.1, "ease": "out", "poses": [["accessory", [0.05, 0], 0, [0.22, 0.14]], ["Visual", [-0.12, 0], 0]] },
+        { "name": "Impulso", "duration": 0.3, "ease": "out", "stretch": true,
+          "poses": [["accessory", [-0.12, 0], 0, [-0.45, 0.06]], ["Visual", [0.2, 0], 0], ["lower", [-0.08, 0], 6]] }
+      ] },
+    { "name": "DashBack", "recover": 0.25,
+      "steps": [
+        { "name": "Recoge", "duration": 0.1, "ease": "out", "poses": [["accessory", [-0.08, 0], 0, [-0.3, 0.04]], ["Visual", [0.1, 0], 0]] },
+        { "name": "Impulso", "duration": 0.3, "ease": "out", "stretch": true,
+          "poses": [["accessory", [0.12, 0.03], 0, [0.32, 0.2]], ["Visual", [-0.2, 0], 0], ["lower", [0.08, 0], -6], ["head", [0, 0], -5]] }
+      ] }
+  ],
+  "gestureFx": {
+    "Shoot": [
+      { "effect": "charge", "step": 0, "at": 0, "loop": true, "untilStep": 1, "size": 1.3, "facing": "world" },
+      { "effect": "flash", "step": 1, "at": 0, "size": 1.2, "facing": "world" }
+    ],
+    "FlyFwd": [{ "effect": "puff", "step": 0, "at": 0, "part": "accessory", "size": 1.2, "facing": "world", "layer": "behind" }],
+    "FlyBack": [{ "effect": "puff", "step": 0, "at": 0, "part": "accessory", "size": 1.2, "facing": "world", "layer": "behind" }],
+    "DashFwd": [
+      { "effect": "puff", "step": 0, "at": 0, "part": "accessory", "size": 1.8, "facing": "world", "layer": "behind" },
+      { "effect": "trail", "step": 1, "at": 0, "loop": true, "untilStep": 1, "part": "accessory", "size": 2.4, "layer": "behind" },
+      { "effect": "streaks", "step": 1, "at": 0, "loop": true, "untilStep": 1, "anchor": "body", "size": 2.6, "layer": "behind" }
+    ],
+    "DashBack": [
+      { "effect": "puff", "step": 0, "at": 0, "part": "accessory", "size": 1.8, "facing": "world", "layer": "behind" },
+      { "effect": "trail", "step": 1, "at": 0, "loop": true, "untilStep": 1, "part": "accessory", "size": 2.4, "layer": "behind" },
+      { "effect": "streaks", "step": 1, "at": 0, "loop": true, "untilStep": 1, "anchor": "body", "size": 2.6, "layer": "behind" }
+    ]
+  },
+  "defences": [
+    { "trigger": "TargetNear", "distance": 3.5, "move": "DashAway", "direction": "Away", "chance": 1, "cooldown": 2.5,
+      "moveDistance": 4.5, "moveDuration": 0.4, "anticipation": 0.1, "gesture": "DashBack" },
+    { "trigger": "OnHit", "move": "DashAway", "direction": "Toward", "chance": 0.35, "cooldown": 3.5,
+      "moveDistance": 3, "moveDuration": 0.35, "anticipation": 0.1, "gesture": "DashFwd" }
+  ]
 }

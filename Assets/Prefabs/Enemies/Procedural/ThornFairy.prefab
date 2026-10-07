@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 598896450888667334}
   - component: {fileID: 9003632904228949450}
   - component: {fileID: 6165033577384415635}
+  - component: {fileID: 4077867180818461022}
   m_Layer: 0
   m_Name: ThornFairy
   m_TagString: Untagged
@@ -223,28 +224,71 @@ MonoBehaviour:
     knockbackVertical: 3
     knockbackDuration: 0.18
     knockbackResistance: 0
-    detectionRange: 9
+    detectionRange: 14
     loseInterestGrace: 1
-    attackRange: 6
-    personalSpace: 3
+    attackRange: 9
+    personalSpace: 5
     retreatReleaseFactor: 1.35
     verticalTolerance: 3
-    moveSpeed: 2.5
-    retreatSpeed: 2.2
+    moveSpeed: 3.2
+    retreatSpeed: 3.6
     stopAtLedges: 1
     ledgeProbeDepth: 0.6
     gravityScale: 3
     sleepsUntilDetected: 0
-    hoverOffset: 1.2
+    hoverOffset: 1.6
     attackDamage: 8
-    attackCooldown: 1.6
+    attackCooldown: 1.5
     attackKnockbackMultiplier: 1
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
-    attacks: []
+    attacks:
+    - attack: {fileID: 11400000, guid: 3e894e9400193c74ab602a20c2f62f83, type: 2}
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
+      minRange: 0
+      maxRange: 0
+      targetHeight: 0
     builtInAttack: 0
     builtInWeight: 1
-    defences: []
+    defences:
+    - trigger: 0
+      distance: 3.5
+      healthFraction: 0.35
+      chance: 1
+      cooldown: 2.5
+      move: 0
+      direction: 0
+      diagonalByTerrain: 0
+      floorY: 0
+      ceilingY: 17
+      angle: 45
+      angleVariance: 10
+      moveDistance: 4.5
+      moveDuration: 0.4
+      hopHeight: 1.2
+      gesture: DashBack
+      anticipation: 0.1
+      attack: {fileID: 0}
+    - trigger: 1
+      distance: 2.5
+      healthFraction: 0.35
+      chance: 0.35
+      cooldown: 3.5
+      move: 0
+      direction: 1
+      diagonalByTerrain: 0
+      floorY: 0
+      ceilingY: 17
+      angle: 45
+      angleVariance: 10
+      moveDistance: 3
+      moveDuration: 0.35
+      hopHeight: 1.2
+      gesture: DashFwd
+      anticipation: 0.1
+      attack: {fileID: 0}
     meleeHitboxSize: {x: 1.2, y: 1}
     meleeHitboxOffset: {x: 0.8, y: 0.5}
     selfDestruct: 0
@@ -340,7 +384,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
-  soundEvents: []
+  soundEvents:
+  - trigger: 20
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 7ed4b222498e86e4d8e6c32bdaf026b6, type: 3}
+      volume: 1
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
+  - trigger: 15
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 8d4bf13e780e9244490a4b91b6f8a128, type: 3}
+      volume: 0.22
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 0
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
   useGenericFallback: 1
 --- !u!114 &9003632904228949450
 MonoBehaviour:
@@ -372,11 +444,11 @@ MonoBehaviour:
     center: {x: 0, y: 0}
     leanFollow: 0
     pointAngle: 0
-    swayMove: {x: 0, y: 0.0861}
-    swayRotate: 2
-    swayScale: {x: 0, y: 0}
-    swaySpeed: 2.3
-    swayPhase: 2.39996
+    swayMove: {x: 0, y: 0.06}
+    swayRotate: 3
+    swayScale: {x: 0.2, y: 0.07}
+    swaySpeed: 9
+    swayPhase: 0
     breaksOnDeath: 1
   - part: {fileID: 3005375795896911732}
     pivot: {x: 0, y: 0}
@@ -430,7 +502,8 @@ MonoBehaviour:
   followStiffness: 0
   followDamping: 9
   followMaxOffset: 1.723
-  moveGesture: 
+  moveGesture: FlyFwd
+  moveBackGesture: FlyBack
   idle:
     gestures: []
     interval: 4
@@ -474,6 +547,12 @@ MonoBehaviour:
     asleep: {fileID: 0}
     awake: {fileID: 0}
     attacking: {fileID: 21300000, guid: f96c24f26bd7ad24db08a7ed9251ac33, type: 3}
+    named: []
+    stages: []
+  - renderer: {fileID: 6034526436063144850}
+    asleep: {fileID: 0}
+    awake: {fileID: 0}
+    attacking: {fileID: 21300000, guid: 10f210cdddbad45469466d46f2ce2823, type: 3}
     named: []
     stages: []
   stretchPart: {fileID: 0}
@@ -625,6 +704,360 @@ MonoBehaviour:
     legacyStrike: []
     legacyStrikeTime: -1
     legacyShake: 0
+  - name: Shoot
+    steps:
+    - name: Apunta
+      poses:
+      - part: {fileID: 4431882401938667427}
+        move: {x: -0.1436, y: 0}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      - part: {fileID: 1487751302368282466}
+        move: {x: 0, y: 0}
+        rotate: 0
+        scale: {x: 0.12, y: 0.08}
+      - part: {fileID: 3983165919149200690}
+        move: {x: 0, y: 0}
+        rotate: -4
+        scale: {x: 0, y: 0}
+      duration: 0.4
+      ease: 1
+      stretch: 1
+      shake: 0
+      aim: 1
+      aimParts:
+      - part: {fileID: 3442156425862332470}
+        angle: -104
+    - name: Suelta
+      poses:
+      - part: {fileID: 4431882401938667427}
+        move: {x: -0.5169, y: 0}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      - part: {fileID: 1487751302368282466}
+        move: {x: 0, y: 0}
+        rotate: 0
+        scale: {x: -0.2, y: 0}
+      duration: 0.14
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 1
+      aimParts:
+      - part: {fileID: 3442156425862332470}
+        angle: -104
+    releases:
+    - step: 1
+      at: 0
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
+    recover: 0.35
+    fx:
+    - prefab: {fileID: 3135536596048141252, guid: 950e598506fe1b940b94fcbc2ffd1cfd, type: 3}
+      step: 0
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 2615242224111460210, guid: 11789870faf4adb409e4168b08087b3f, type: 3}
+      step: 1
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    sounds: []
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
+  - name: FlyFwd
+    steps:
+    - name: Alas atras
+      poses:
+      - part: {fileID: 1487751302368282466}
+        move: {x: -0.2297, y: 0}
+        rotate: 0
+        scale: {x: -0.28, y: 0.04}
+      - part: {fileID: 5944388595792785967}
+        move: {x: -0.1436, y: 0}
+        rotate: 4
+        scale: {x: 0, y: 0}
+      - part: {fileID: 3005375795896911732}
+        move: {x: 0, y: 0}
+        rotate: 8
+        scale: {x: 0, y: 0}
+      duration: 0.25
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 0
+      aimParts: []
+    releases: []
+    recover: 0.3
+    fx:
+    - prefab: {fileID: 4540781020954181284, guid: a444f3bf10822114d9bb24b8e1538799, type: 3}
+      step: 0
+      at: 0
+      anchor: 0
+      part: {fileID: 1487751302368282466}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    sounds: []
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
+  - name: FlyBack
+    steps:
+    - name: Alas abiertas
+      poses:
+      - part: {fileID: 1487751302368282466}
+        move: {x: 0.2872, y: 0.1149}
+        rotate: 0
+        scale: {x: 0.16, y: 0.14}
+      - part: {fileID: 5944388595792785967}
+        move: {x: 0.1436, y: 0}
+        rotate: -6
+        scale: {x: 0, y: 0}
+      - part: {fileID: 3983165919149200690}
+        move: {x: 0, y: 0}
+        rotate: -4
+        scale: {x: 0, y: 0}
+      - part: {fileID: 3005375795896911732}
+        move: {x: 0, y: 0}
+        rotate: -8
+        scale: {x: 0, y: 0}
+      duration: 0.25
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 0
+      aimParts: []
+    releases: []
+    recover: 0.3
+    fx:
+    - prefab: {fileID: 4540781020954181284, guid: a444f3bf10822114d9bb24b8e1538799, type: 3}
+      step: 0
+      at: 0
+      anchor: 0
+      part: {fileID: 1487751302368282466}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    sounds: []
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
+  - name: DashFwd
+    steps:
+    - name: Encoge
+      poses:
+      - part: {fileID: 1487751302368282466}
+        move: {x: 0.1436, y: 0}
+        rotate: 0
+        scale: {x: 0.22, y: 0.14}
+      - part: {fileID: 4431882401938667427}
+        move: {x: -0.3446, y: 0}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.1
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 0
+      aimParts: []
+    - name: Impulso
+      poses:
+      - part: {fileID: 1487751302368282466}
+        move: {x: -0.3446, y: 0}
+        rotate: 0
+        scale: {x: -0.45, y: 0.06}
+      - part: {fileID: 4431882401938667427}
+        move: {x: 0.5743, y: 0}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5944388595792785967}
+        move: {x: -0.2297, y: 0}
+        rotate: 6
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 1
+      stretch: 1
+      shake: 0
+      aim: 0
+      aimParts: []
+    releases: []
+    recover: 0.25
+    fx:
+    - prefab: {fileID: 4540781020954181284, guid: a444f3bf10822114d9bb24b8e1538799, type: 3}
+      step: 0
+      at: 0
+      anchor: 0
+      part: {fileID: 1487751302368282466}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    - prefab: {fileID: 9103287083601754836, guid: 9ca89d055cf82bf47a962fa050f2d1f5, type: 3}
+      step: 1
+      at: 0
+      anchor: 0
+      part: {fileID: 1487751302368282466}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 0
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    - prefab: {fileID: 2889220824720842800, guid: aa45e89d7cfdf474c8e5fd434914407e, type: 3}
+      step: 1
+      at: 0
+      anchor: 1
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 0
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    sounds: []
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
+  - name: DashBack
+    steps:
+    - name: Recoge
+      poses:
+      - part: {fileID: 1487751302368282466}
+        move: {x: -0.2297, y: 0}
+        rotate: 0
+        scale: {x: -0.3, y: 0.04}
+      - part: {fileID: 4431882401938667427}
+        move: {x: 0.2872, y: 0}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.1
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 0
+      aimParts: []
+    - name: Impulso
+      poses:
+      - part: {fileID: 1487751302368282466}
+        move: {x: 0.3446, y: 0.0861}
+        rotate: 0
+        scale: {x: 0.32, y: 0.2}
+      - part: {fileID: 4431882401938667427}
+        move: {x: -0.5743, y: 0}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      - part: {fileID: 5944388595792785967}
+        move: {x: 0.2297, y: 0}
+        rotate: -6
+        scale: {x: 0, y: 0}
+      - part: {fileID: 3983165919149200690}
+        move: {x: 0, y: 0}
+        rotate: -5
+        scale: {x: 0, y: 0}
+      duration: 0.3
+      ease: 1
+      stretch: 1
+      shake: 0
+      aim: 0
+      aimParts: []
+    releases: []
+    recover: 0.25
+    fx:
+    - prefab: {fileID: 4540781020954181284, guid: a444f3bf10822114d9bb24b8e1538799, type: 3}
+      step: 0
+      at: 0
+      anchor: 0
+      part: {fileID: 1487751302368282466}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    - prefab: {fileID: 9103287083601754836, guid: 9ca89d055cf82bf47a962fa050f2d1f5, type: 3}
+      step: 1
+      at: 0
+      anchor: 0
+      part: {fileID: 1487751302368282466}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 0
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    - prefab: {fileID: 2889220824720842800, guid: aa45e89d7cfdf474c8e5fd434914407e, type: 3}
+      step: 1
+      at: 0
+      anchor: 1
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 0
+      angle: 0
+      layer: 1
+      legacyPhase: -1
+    sounds: []
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   drivenLease: 0.25
   drivenReturn: 0.35
   staggerStrength: 2.5
@@ -651,6 +1084,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e6fc707acbe7884cb21f94e3272ee9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Rigging.RigDriverCode
+--- !u!114 &4077867180818461022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1635894124346542660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4729294e7f94484395dbcd86d60406a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Enemies.EnemyAttackHost
+  arenaHalfWidth: 10
+  arenaHeight: 8
+  feet: {fileID: 0}
+  fxSprite: {fileID: 0}
+  warnPrefab: {fileID: 0}
+  warnCirclePrefab: {fileID: 0}
+  warnArrowPrefab: {fileID: 0}
+  shockwavePrefab: {fileID: 0}
+  sweepBeamPrefab: {fileID: 0}
+  hazardPrefab: {fileID: 0}
+  platformPrefab: {fileID: 0}
 --- !u!1 &2704029475307413549
 GameObject:
   m_ObjectHideFlags: 0

@@ -351,6 +351,10 @@ export const GAME_SOUNDS = {
     T('square', [880, 880], { dur: 0.06, t0: 0.36, a: 0.002, curve: 1.2, gain: 0.18 }),
     T('sine', [1320, 1320], { dur: 0.1, t0: 0.4, a: 0.002, curve: 2, gain: 0.4 }),
     N('bp', [800, 2400], { q: 0.7, dur: 0.4, a: 0.1, curve: 1.4, gain: 0.35 }) ]),
+  proj_launch_fairy: S('projectile', 'Orbe de hada · lanzamiento', 0.4, [
+    T('sine', [1400, 700], { dur: 0.3, a: 0.003, curve: 2, gain: 0.5 }),
+    T('tri', [2800, 1400], { dur: 0.16, a: 0.002, curve: 2.4, gain: 0.2 }),
+    N('hp', [4500, 7000], { q: 0.8, dur: 0.2, a: 0.004, curve: 2.2, gain: 0.25 }) ]),
   enemy_evade: S('enemy', 'Esquiva', 0.22, [
     N('bp', [1400, 3600], { q: 0.6, dur: 0.2, a: 0.01, curve: 1.8, gain: 0.8 }) ]),
 
@@ -372,6 +376,15 @@ export const GAME_SOUNDS = {
   gesture_dash: S('gesture', 'Gesto · embestir', 0.4, [
     N('bp', [600, 2200], { q: 0.6, dur: 0.36, a: 0.03, curve: 1.5, gain: 0.9 }),
     T('sine', [120, 70], { dur: 0.3, a: 0.01, curve: 1.8, gain: 0.5 }) ]),
+  gesture_wing_flap: S('gesture', 'Gesto · aleteo de hada', 0.3, [
+    N('bp', [1800, 3600], { q: 0.9, dur: 0.07, a: 0.004, curve: 1.8, gain: 0.7 }),
+    N('bp', [1800, 3800], { q: 0.9, dur: 0.07, t0: 0.1, a: 0.004, curve: 1.8, gain: 0.6 }),
+    N('bp', [2000, 4000], { q: 0.9, dur: 0.07, t0: 0.2, a: 0.004, curve: 1.8, gain: 0.5 }),
+    T('sine', [900, 1300], { dur: 0.25, a: 0.02, curve: 1.6, gain: 0.12 }) ]),
+  gesture_fairy_dash: S('gesture', 'Gesto · impulso de hada', 0.3, [
+    N('bp', [1200, 4200], { q: 0.7, dur: 0.22, a: 0.01, curve: 1.6, gain: 0.8 }),
+    T('sine', [700, 1500], { dur: 0.18, a: 0.004, curve: 2, gain: 0.3 }),
+    T('sine', [2100, 3200], { dur: 0.14, t0: 0.05, a: 0.004, curve: 2.4, gain: 0.15 }) ]),
   gesture_slam: S('gesture', 'Gesto · golpe al suelo', 0.5, [
     T('sine', [120, 36], { dur: 0.42, a: 0.002, curve: 1.8, gain: 1 }),
     N('lp', [1200, 160], { dur: 0.42, a: 0.002, curve: 1.8, gain: 0.9 }),
@@ -748,6 +761,7 @@ export const GAME_ASSIGN = [
   R({ component: '^WeaponDefinition$', member: '^impactSound$' }, 'weapon_hit_arcane', wide),
 
   // ---- enemy projectiles (by what the projectile is made of, read from its name)
+  R({ category: '^Projectiles/', name: '^Launch$', asset: 'Hada|Fairy' }, 'proj_launch_fairy', { ...wide, volume: 0.55 }),
   R({ category: '^Projectiles/', name: '^Launch$', asset: 'Boulder|Rock' }, 'proj_launch_rock', { ...vary, volume: 0.7 }),
   R({ category: '^Projectiles/', name: '^Launch$', asset: 'Laser' }, 'proj_launch_laser', { ...vary, volume: 0.6 }),
   R({ category: '^Projectiles/', name: '^Launch$', asset: 'Leaf' }, 'proj_launch_leaf', { ...wide, volume: 0.5 }),
@@ -770,6 +784,8 @@ export const GAME_ASSIGN = [
 
   // ---- rig gestures (enemies and bosses): body foley, under the attack's own sound
   R({ component: '^ProceduralRig$', name: 'DashLoop|Loop$' }, null),
+  R({ component: '^ProceduralRig$', name: '^Fly' }, 'gesture_wing_flap', { ...wide, volume: 0.45 }),
+  R({ component: '^ProceduralRig$', name: '^Dash(Fwd|Back)' }, 'gesture_fairy_dash', { ...vary, volume: 0.6 }),
   R({ component: '^ProceduralRig$', name: 'Charge|Brace|Windup' }, 'gesture_charge', { ...vary, volume: 0.6 }),
   R({ component: '^ProceduralRig$', name: 'Disparo|Shoot|Fire' }, 'gesture_shoot', { ...vary, volume: 0.7 }),
   R({ component: '^ProceduralRig$', name: 'Flick|Finger' }, 'gesture_flick', { ...wide, volume: 0.6 }),

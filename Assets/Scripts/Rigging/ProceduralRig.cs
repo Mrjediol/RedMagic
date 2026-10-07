@@ -750,6 +750,9 @@ namespace RedMagic.Rigging
                  "piezas que se quedan atrás, cuerpo echado hacia delante. Vacío = ninguno.")]
         public string moveGesture;
 
+        [Tooltip("Como moveGesture, pero mientras se retira (va hacia atrás: vuelo de espaldas). Vacío = usa moveGesture.")]
+        public string moveBackGesture;
+
         [Tooltip("Gestos que hace solo en reposo: sin objetivo, sin moverse, sin atacar y despierto.")]
         public RigIdleGestures idle = new RigIdleGestures();
 

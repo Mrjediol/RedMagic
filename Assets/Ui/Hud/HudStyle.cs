@@ -119,25 +119,83 @@ namespace RedMagic.UI
         }
 
         /// <summary>
-        /// Viste una barra con un aro hueco del <see cref="HudSkin"/>: quita el borde vectorial del
-        /// marco, mete la pista por dentro (bajo el aro, no fuera de él), le da extremos redondos
-        /// como el hueco del arte y pone el aro delante. Devuelve la capa del aro (para teñirla) o
-        /// null si no hay arte — entonces la barra se queda como estaba.
+        /// Prepara una barra para el aro hueco del <see cref="HudSkin"/> (<paramref name="art"/>): quita el
+        /// borde vectorial del marco. Con máscara (lo normal) la pista ocupa el marco entero y cada capa
+        /// de relleno (<see cref="BarLayer"/>) lleva la silueta del arte, así que no asoma por ninguna
+        /// esquina; sin máscara, la pista se mete por dentro del aro con extremos redondos (aproximado).
+        /// El aro se añade luego, encima de todo, con <see cref="UiFrame.Overlay"/>.
+        /// Devuelve false si no hay arte (la barra se queda vectorial).
         /// </summary>
-        public static VisualElement SkinBar(VisualElement frame, VisualElement track, UiFrame art, float rim, float height)
+        public static bool PrepareSkinnedBar(VisualElement frame, VisualElement track, UiFrame art, float rim, float height)
         {
-            if (art == null || !art.IsSet) return null;
+            if (art == null || !art.IsSet) return false;
 
             frame.style.backgroundColor = Color.clear;
             Border(frame, 0f, Color.clear);
-            // El relleno llega a 6/10 del aro: sus esquinas quedan tapadas por la piedra.
-            float inset = height * rim * 0.6f;
+
+            float inset = art.HasMask ? 0f : height * rim * 0.6f;
             frame.style.paddingLeft = inset;
             frame.style.paddingRight = inset;
             frame.style.paddingTop = inset;
             frame.style.paddingBottom = inset;
-            Radius(track, (height - inset * 2f) * 0.5f);
-            return art.Overlay(frame);
+
+            if (art.HasMask)
+            {
+                track.style.backgroundColor = Color.clear;
+                Radius(track, 0f);
+                track.style.overflow = Overflow.Visible;   // cada capa recorta lo suyo
+            }
+            else Radius(track, (height - inset * 2f) * 0.5f);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Una capa de relleno de barra (pista, estela, curación, vida, brillo, destello): un rectángulo
+        /// de color, o —con un aro del skin que trae máscara— la silueta exacta del arte recortada a la
+        /// fracción. Se maneja igual en los dos casos: <see cref="SetFraction"/> y <see cref="SetColor"/>.
+        /// </summary>
+        public sealed class BarLayer
+        {
+            public readonly VisualElement Root;
+            private readonly VisualElement _mask;
+
+            private BarLayer(VisualElement root, VisualElement mask)
+            {
+                Root = root;
+                _mask = mask;
+            }
+
+            /// <param name="art">Aro del skin, o null para una capa plana.</param>
+            /// <param name="sizeFrom">Elemento cuyo tamaño tiene la barra entera (la pista).</param>
+            /// <param name="heightFraction">Sólo la parte de arriba (el brillo).</param>
+            public static BarLayer Create(string name, Color color, UiFrame art, VisualElement sizeFrom, float heightFraction = 1f)
+            {
+                var root = new VisualElement { name = name, pickingMode = PickingMode.Ignore };
+                Fill(root);
+                root.style.right = StyleKeyword.Auto;
+                root.style.width = Length.Percent(100f);
+                if (heightFraction < 1f) root.style.bottom = Length.Percent((1f - heightFraction) * 100f);
+
+                if (art != null && art.HasMask)
+                {
+                    root.style.overflow = Overflow.Hidden;
+                    var mask = art.Mask(sizeFrom, color);
+                    root.Add(mask);
+                    return new BarLayer(root, mask);
+                }
+
+                root.style.backgroundColor = color;
+                return new BarLayer(root, null);
+            }
+
+            public void SetFraction(float fraction) => Root.style.width = Length.Percent(Mathf.Clamp01(fraction) * 100f);
+
+            public void SetColor(Color color)
+            {
+                if (_mask != null) UiFrame.TintLayer(_mask, color);
+                else Root.style.backgroundColor = color;
+            }
         }
 
         public static float Smooth(float current, float target, float sharpness, float dt) =>

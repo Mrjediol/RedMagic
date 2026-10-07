@@ -58,6 +58,18 @@ namespace RedMagic.Pipeline
                  "cuadrantes en una sola pieza: sin él, el interior sale de estirar tiras y se ve partido en " +
                  "rectángulos. Se mide una vez sobre la imagen. Ancho 0 = sin relleno.")]
         public RectInt interior;
+
+        [Tooltip("Emitir además '<name>_Mask': la silueta exterior de la pieza en blanco (hueco incluido), " +
+                 "encogida 'maskErode' px, con los mismos cortes. Para pintar un relleno con la forma exacta " +
+                 "del arte (la barra de vida bajo su aro hueco) sin que asome por las esquinas.")]
+        public bool emitMask;
+
+        [Tooltip("Cuánto se encoge la máscara respecto al contorno exterior (px de la fuente).")]
+        [Min(0)] public int maskErode = 4;
+
+        [Tooltip("Generar mipmaps. Para piezas que se ven MUCHO más pequeñas que su imagen (iconos, aros " +
+                 "del HUD): sin ellos la reducción a lo bruto deja bordes ásperos y píxeles sueltos.")]
+        public bool mipmaps;
     }
 
     /// <summary>

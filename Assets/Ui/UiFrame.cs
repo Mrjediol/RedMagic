@@ -25,6 +25,14 @@ namespace RedMagic.UI
         [Tooltip("Cuadrantes TL, TR, BL, BR (UiArtKitProcessor, modo Quad).")]
         public Sprite[] quads = new Sprite[4];
 
+        [Tooltip("Silueta del marco (mismos cortes que 'quads'): un relleno pintado con ella tiene la forma " +
+                 "exacta del arte. Opcional; sólo la usan los marcos huecos (barras de vida).")]
+        public Sprite[] maskQuads = new Sprite[0];
+
+        public bool HasMask =>
+            maskQuads != null && maskQuads.Length == 4 && maskQuads[0] != null && maskQuads[1] != null &&
+            maskQuads[2] != null && maskQuads[3] != null;
+
         [Tooltip("El interior del marco en una sola pieza, pintado encima de los cuadrantes para que el " +
                  "panel liso no salga de estirar tiras. Vacío = sin relleno.")]
         public Sprite fill;
@@ -105,7 +113,40 @@ namespace RedMagic.UI
             foreach (var q in layer.Children()) q.style.unityBackgroundImageTintColor = tint;
         }
 
-        private void Build(VisualElement layer)
+        /// <summary>
+        /// Capa con la silueta del marco (<see cref="maskQuads"/>) teñida de <paramref name="tint"/>,
+        /// del tamaño de <paramref name="sizeFrom"/> en píxeles (no del padre): metida en un contenedor
+        /// estrecho con <c>overflow: hidden</c> sale el relleno parcial de una barra con la forma del arte.
+        /// Al mismo tamaño que el marco, sus cortes caen a la misma escala, así que encaja al pixel.
+        /// </summary>
+        public VisualElement Mask(VisualElement sizeFrom, Color tint)
+        {
+            if (!HasMask) return null;
+
+            var layer = new VisualElement { name = LayerName + "-mask", pickingMode = PickingMode.Ignore };
+            layer.style.position = Position.Absolute;
+            layer.style.left = 0;
+            layer.style.top = 0;
+            Build(layer, maskQuads, false);
+            TintLayer(layer, tint);
+
+            void Sync()
+            {
+                var r = sizeFrom.layout;
+                if (float.IsNaN(r.width) || r.width <= 0f) return;
+                layer.style.width = r.width;
+                layer.style.height = r.height;
+                FitSize(layer, r.width, r.height);
+            }
+
+            sizeFrom.RegisterCallback<GeometryChangedEvent>(_ => Sync());
+            Sync();
+            return layer;
+        }
+
+        private void Build(VisualElement layer) => Build(layer, quads, true);
+
+        private void Build(VisualElement layer, Sprite[] sprites, bool withFill)
         {
             layer.Clear();
             for (int i = 0; i < 4; i++)
@@ -118,7 +159,7 @@ namespace RedMagic.UI
                 q.style.top = bottom ? Length.Percent(50) : 0;
                 q.style.bottom = bottom ? 0 : Length.Percent(50);
 
-                var sprite = quads[i];
+                var sprite = sprites[i];
                 var b = sprite.border;   // (izq, abajo, der, arriba)
                 q.style.backgroundImage = new StyleBackground(sprite);
                 q.style.unitySliceLeft = Mathf.RoundToInt(b.x);
@@ -129,7 +170,7 @@ namespace RedMagic.UI
                 layer.Add(q);
             }
 
-            if (fill != null)
+            if (withFill && fill != null)
             {
                 var f = new VisualElement { name = "ui-frame-fill", pickingMode = PickingMode.Ignore };
                 f.style.position = Position.Absolute;
@@ -149,11 +190,11 @@ namespace RedMagic.UI
             foreach (var q in layer.Children()) q.style.unityBackgroundImageTintColor = tint;
         }
 
-        private static void Fit(VisualElement layer)
+        private static void Fit(VisualElement layer) => FitSize(layer, layer.layout.width, layer.layout.height);
+
+        private static void FitSize(VisualElement layer, float w, float h)
         {
             if (layer.userData is not UiFrame frame || !frame.IsSet) return;
-
-            float w = layer.layout.width, h = layer.layout.height;
             if (float.IsNaN(w) || float.IsNaN(h) || w <= 0f || h <= 0f) return;
 
             // Las partes fijas de cada cuadrante tienen que caber en su mitad.

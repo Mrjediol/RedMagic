@@ -9,7 +9,7 @@ TextureImporter:
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 0
+    enableMipMap: 1
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 2
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -117,12 +117,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 139
+        y: 129
         width: 290
-        height: 139
+        height: 129
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 129, y: 20, z: 159, w: 117}
+      border: {x: 129, y: 19, z: 159, w: 108}
       customData: 
       outline: []
       physicsShape: []
@@ -139,12 +139,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 290
-        y: 139
+        y: 129
         width: 290
-        height: 139
+        height: 129
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 65, y: 20, z: 223, w: 117}
+      border: {x: 74, y: 19, z: 214, w: 108}
       customData: 
       outline: []
       physicsShape: []
@@ -163,10 +163,10 @@ TextureImporter:
         x: 0
         y: 0
         width: 290
-        height: 139
+        height: 129
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 129, y: 108, z: 159, w: 29}
+      border: {x: 129, y: 89, z: 159, w: 38}
       customData: 
       outline: []
       physicsShape: []
@@ -185,10 +185,10 @@ TextureImporter:
         x: 290
         y: 0
         width: 290
-        height: 139
+        height: 129
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 65, y: 108, z: 223, w: 29}
+      border: {x: 74, y: 89, z: 214, w: 38}
       customData: 
       outline: []
       physicsShape: []
@@ -205,7 +205,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 32
-        y: 74
+        y: 55
         width: 514
         height: 189
       alignment: 0

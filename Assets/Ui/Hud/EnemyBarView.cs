@@ -20,7 +20,8 @@ namespace RedMagic.UI
         private const int MaxShieldPips = 12;
 
         private readonly float _barHeight, _stripHeight;
-        private readonly VisualElement _ghost, _fill, _flash, _shieldRow, _strips;
+        private readonly HudStyle.BarLayer _ghost, _fill, _flash;
+        private readonly VisualElement _shieldRow, _strips;
         private readonly Label _label;
         private readonly List<(VisualElement track, VisualElement fill)> _stripViews = new();
 
@@ -67,15 +68,20 @@ namespace RedMagic.UI
             HudStyle.Radius(track, _barHeight * 0.22f);
             frame.Add(track);
 
-            _ghost = Bar(HudStyle.HealthGhost);
-            _fill = Bar(HudStyle.EnemyFill);
-            track.Add(_ghost);
-            track.Add(_fill);
-            var shine = HudStyle.Layer("shine", new Color(1f, 1f, 1f, 0.16f));
-            shine.style.bottom = Length.Percent(58f);
-            track.Add(shine);
-            _flash = HudStyle.Layer("flash", new Color(1f, 1f, 1f, 0f));
-            track.Add(_flash);
+            // Arte (HudSkin): aro hueco de enemigo delante y relleno con su silueta.
+            var skin = HudSkin.Current;
+            var art = skin != null && HudStyle.PrepareSkinnedBar(frame, track, skin.enemyFrame, skin.enemyRim, _barHeight)
+                ? skin.enemyFrame : null;
+            if (art != null && art.HasMask)
+                track.Add(HudStyle.BarLayer.Create("track-bg", HudStyle.HealthTrack, art, track).Root);
+
+            _ghost = HudStyle.BarLayer.Create("ghost", HudStyle.HealthGhost, art, track);
+            _fill = HudStyle.BarLayer.Create("fill", HudStyle.EnemyFill, art, track);
+            track.Add(_ghost.Root);
+            track.Add(_fill.Root);
+            track.Add(HudStyle.BarLayer.Create("shine", new Color(1f, 1f, 1f, 0.16f), art, track, 0.42f).Root);
+            _flash = HudStyle.BarLayer.Create("flash", new Color(1f, 1f, 1f, 0f), art, track);
+            track.Add(_flash.Root);
 
             _label = HudStyle.OutlinedLabel("value", font);
             HudStyle.Fill(_label);
@@ -97,17 +103,7 @@ namespace RedMagic.UI
             _strips.style.flexDirection = FlexDirection.Column;
             Add(_strips);
 
-            // Arte (HudSkin): aro hueco de enemigo delante del relleno.
-            var skin = HudSkin.Current;
-            if (skin != null) HudStyle.SkinBar(frame, track, skin.enemyFrame, skin.enemyRim, _barHeight);
-        }
-
-        private static VisualElement Bar(Color color)
-        {
-            var bar = HudStyle.Layer("bar", color);
-            bar.style.right = StyleKeyword.Auto;
-            bar.style.width = Length.Percent(100f);
-            return bar;
+            if (art != null) art.Overlay(frame);
         }
 
         public void Bind(HudEnemies.Info info)
@@ -126,7 +122,8 @@ namespace RedMagic.UI
         public void ShowSample(float fraction, bool numbers, bool cooldowns)
         {
             Bind(null);
-            _fill.style.width = _ghost.style.width = Length.Percent(fraction * 100f);
+            _fill.SetFraction(fraction);
+            _ghost.SetFraction(fraction);
             SetText(numbers ? $"{Mathf.RoundToInt(fraction * 80f)} / 80" : "");
             _shieldRow.style.display = DisplayStyle.None;
             SyncStrips(cooldowns ? 1 : 0);
@@ -155,13 +152,13 @@ namespace RedMagic.UI
             else if (_ghostValue > _fillValue) _ghostValue = Mathf.Max(_fillValue, HudStyle.Smooth(_ghostValue, _fillValue - 0.02f, 5f, dt));
             if (_ghostValue < _fillValue) _ghostValue = _fillValue;
 
-            _fill.style.width = Length.Percent(_fillValue * 100f);
-            _ghost.style.width = Length.Percent(_ghostValue * 100f);
+            _fill.SetFraction(_fillValue);
+            _ghost.SetFraction(_ghostValue);
 
             if (_flashValue > 0f)
             {
                 _flashValue = Mathf.Max(0f, _flashValue - dt * 5f);
-                _flash.style.backgroundColor = new Color(1f, 1f, 1f, _flashValue * 0.6f);
+                _flash.SetColor(new Color(1f, 1f, 1f, _flashValue * 0.6f));
             }
 
             SetText(numbers ? $"{Mathf.CeilToInt(health.CurrentHealth)} / {Mathf.CeilToInt(health.MaxHealth)}" : "");

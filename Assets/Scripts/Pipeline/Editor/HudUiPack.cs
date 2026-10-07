@@ -62,40 +62,45 @@ namespace RedMagic.Pipeline.EditorTools
             recipe = ScriptableObject.CreateInstance<UiArtKitRecipe>();
             recipe.outputFolder = OutputFolder;
             recipe.prefix = "Hud_";
-            recipe.backgroundTolerance = 0.12f;   // JPG sobre blanco
+            // Más estricto que los menús: estas piezas se ven muy reducidas y el halo semiblanco del JPG,
+            // si se vuelve opaco, sale como píxeles blancos sueltos en el borde.
+            recipe.backgroundTolerance = 0.16f;
+            recipe.softOpaqueAt = 0.8f;
             recipe.margin = 2;
 
             recipe.pieces = new[]
             {
                 // Aros huecos: el interior blanco se quita (keyEnclosed) y deja ver el relleno.
-                new UiArtPiece { name = "HealthFrame", source = Src("HealthBarFrame.jpeg"), slice = UiSliceMode.Quad, softEdge = 4 },
-                // El de enemigo lleva un brillo ámbar en las muescas: franja suave más ancha.
-                new UiArtPiece { name = "EnemyFrame", source = Src("EnemyBarFrame.jpeg"), slice = UiSliceMode.Quad, softEdge = 24 },
+                // Con máscara: el relleno se pinta con la silueta exacta del aro y no asoma por las esquinas.
+                new UiArtPiece { name = "HealthFrame", source = Src("HealthBarFrame.jpeg"), slice = UiSliceMode.Quad, softEdge = 4, emitMask = true, mipmaps = true },
+                // Franja suave fina: una ancha (para el brillo de las muescas) dejaba el aro entero
+                // semitransparente y de color irregular.
+                new UiArtPiece { name = "EnemyFrame", source = Src("EnemyBarFrame.jpeg"), slice = UiSliceMode.Quad, softEdge = 4, emitMask = true, mipmaps = true },
 
                 // 2×1: apagado / encendido (halo cian: franja ancha para que se desvanezca).
                 new UiArtPiece
                 {
                     name = "Ring", source = Src("AbilitySlot.jpeg"), columns = 2, rows = 1,
-                    cellNames = new[] { "Ring", "Ring_Ready" }, softEdge = 48,
+                    cellNames = new[] { "Ring", "Ring_Ready" }, softEdge = 48, mipmaps = true,
                 },
 
                 // 3×1, sin huecos que quitar; los brillos se desvanecen.
                 new UiArtPiece
                 {
                     name = "Icon", source = Src("AbilityIcons.jpeg"), columns = 3, rows = 1,
-                    cellNames = new[] { "Icon_Attack", "Icon_Dash", "Icon_Parry" }, softEdge = 32, keyEnclosed = false,
+                    cellNames = new[] { "Icon_Attack", "Icon_Dash", "Icon_Parry" }, softEdge = 32, keyEnclosed = false, mipmaps = true,
                 },
 
                 // Chapa y tecla: interior oscuro liso (no hueco), pintado de una pieza con `interior`.
                 new UiArtPiece
                 {
                     name = "Plaque", source = Src("CurrencyPlaque.jpeg"), slice = UiSliceMode.Quad, softEdge = 4,
-                    keyEnclosed = false, interior = new RectInt(135, 412, 762, 200),
+                    keyEnclosed = false, mipmaps = true, interior = new RectInt(135, 412, 762, 200),
                 },
                 new UiArtPiece
                 {
                     name = "KeyCap", source = Src("KeyCap_Wide.png"), slice = UiSliceMode.Quad, softEdge = 4,
-                    keyEnclosed = false, interior = new RectInt(30, 402, 514, 189),
+                    keyEnclosed = false, mipmaps = true, interior = new RectInt(30, 402, 514, 189),
                 },
             };
 
@@ -118,8 +123,9 @@ namespace RedMagic.Pipeline.EditorTools
 
                 // Las barras: UiFrame.Fit baja la escala sola hasta que el aro cabe en el alto de la
                 // barra, así que maxScale sólo pone el techo.
-                skin.healthFrame.maxScale = 0.3f;
-                skin.enemyFrame.maxScale = 0.3f;
+                // Por debajo del ajuste al alto el aro sale más fino (se estira la fila lisa del hueco).
+                skin.healthFrame.maxScale = 0.17f;
+                skin.enemyFrame.maxScale = 0.2f;
 
                 // Chapa de monedas (≈56 px de alto): el aro mide ~32 px de fuente → ~7 px en pantalla.
                 skin.currencyPlaque.maxScale = 0.24f;
@@ -134,6 +140,8 @@ namespace RedMagic.Pipeline.EditorTools
 
             skin.healthFrame.quads = r.Quads("HealthFrame");
             skin.enemyFrame.quads = r.Quads("EnemyFrame");
+            skin.healthFrame.maskQuads = r.Quads("HealthFrame_Mask");
+            skin.enemyFrame.maskQuads = r.Quads("EnemyFrame_Mask");
             skin.currencyPlaque.quads = r.Quads("Plaque");
             skin.currencyPlaque.fill = r.Fill("Plaque");
             skin.keyCap.quads = r.Quads("KeyCap");
@@ -149,7 +157,7 @@ namespace RedMagic.Pipeline.EditorTools
             else EditorUtility.SetDirty(skin);
 
             string missing = "";
-            if (!skin.healthFrame.IsSet || !skin.enemyFrame.IsSet || !skin.currencyPlaque.IsSet ||
+            if (!skin.healthFrame.IsSet || !skin.enemyFrame.IsSet || !skin.healthFrame.HasMask || !skin.enemyFrame.HasMask || !skin.currencyPlaque.IsSet ||
                 !skin.keyCap.IsSet || !skin.abilityRing.IsSet || skin.abilityRing.hover == null ||
                 skin.iconAttack == null || skin.iconDash == null || skin.iconParry == null)
                 missing = "\n⚠ Faltan sprites en el skin (¿primera importación?): vuelve a ejecutar el pack.";

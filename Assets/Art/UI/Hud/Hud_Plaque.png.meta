@@ -9,7 +9,7 @@ TextureImporter:
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 0
+    enableMipMap: 1
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 2
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -117,12 +117,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 127
-        width: 413
+        y: 126
+        width: 412
         height: 126
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 321, y: 27, z: 90, w: 97}
+      border: {x: 320, y: 27, z: 90, w: 97}
       customData: 
       outline: []
       physicsShape: []
@@ -138,8 +138,8 @@ TextureImporter:
       name: Hud_Plaque_TR
       rect:
         serializedVersion: 2
-        x: 413
-        y: 127
+        x: 412
+        y: 126
         width: 413
         height: 126
       alignment: 0
@@ -162,11 +162,11 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 413
-        height: 127
+        width: 412
+        height: 126
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 321, y: 100, z: 90, w: 25}
+      border: {x: 320, y: 99, z: 90, w: 25}
       customData: 
       outline: []
       physicsShape: []
@@ -182,13 +182,13 @@ TextureImporter:
       name: Hud_Plaque_BR
       rect:
         serializedVersion: 2
-        x: 413
+        x: 412
         y: 0
         width: 413
-        height: 127
+        height: 126
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 108, y: 100, z: 303, w: 25}
+      border: {x: 108, y: 99, z: 303, w: 25}
       customData: 
       outline: []
       physicsShape: []
@@ -204,8 +204,8 @@ TextureImporter:
       name: Hud_Plaque_Fill
       rect:
         serializedVersion: 2
-        x: 36
-        y: 27
+        x: 35
+        y: 26
         width: 762
         height: 200
       alignment: 0

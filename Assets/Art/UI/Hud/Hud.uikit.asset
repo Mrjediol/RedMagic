@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Pipeline.UiArtKitRecipe
   outputFolder: Assets/Art/UI/Hud
   prefix: Hud_
-  backgroundTolerance: 0.12
-  softOpaqueAt: 0.55
+  backgroundTolerance: 0.16
+  softOpaqueAt: 0.8
   minEnclosedArea: 0.01
   margin: 2
   pieces:
@@ -34,13 +34,16 @@ MonoBehaviour:
       y: 0
       width: 0
       height: 0
+    emitMask: 1
+    maskErode: 4
+    mipmaps: 1
   - name: EnemyFrame
     source: {fileID: 2800000, guid: 72c9993f9099bac4ebc5b10d3358183c, type: 3}
     columns: 1
     rows: 1
     cellNames: []
     trimGroup: 0
-    softEdge: 24
+    softEdge: 4
     keyEnclosed: 1
     slice: 1
     stretchSearch: {x: 0.12, y: 0.42}
@@ -49,6 +52,9 @@ MonoBehaviour:
       y: 0
       width: 0
       height: 0
+    emitMask: 1
+    maskErode: 4
+    mipmaps: 1
   - name: Ring
     source: {fileID: 2800000, guid: 8e925b6948701584db115210179b08f0, type: 3}
     columns: 2
@@ -66,6 +72,9 @@ MonoBehaviour:
       y: 0
       width: 0
       height: 0
+    emitMask: 0
+    maskErode: 4
+    mipmaps: 1
   - name: Icon
     source: {fileID: 2800000, guid: 25b04a64f2c31d047b6769fd7f531db8, type: 3}
     columns: 3
@@ -84,6 +93,9 @@ MonoBehaviour:
       y: 0
       width: 0
       height: 0
+    emitMask: 0
+    maskErode: 4
+    mipmaps: 1
   - name: Plaque
     source: {fileID: 2800000, guid: 4ba8eb5eb4a0493478170f22b70b6c28, type: 3}
     columns: 1
@@ -99,6 +111,9 @@ MonoBehaviour:
       y: 412
       width: 762
       height: 200
+    emitMask: 0
+    maskErode: 4
+    mipmaps: 1
   - name: KeyCap
     source: {fileID: 2800000, guid: 7fbcc2d034fca6e42ae96a0355189fd9, type: 3}
     columns: 1
@@ -114,3 +129,6 @@ MonoBehaviour:
       y: 402
       width: 514
       height: 189
+    emitMask: 0
+    maskErode: 4
+    mipmaps: 1

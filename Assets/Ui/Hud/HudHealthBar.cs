@@ -23,7 +23,8 @@ namespace RedMagic.UI
         private const int MaxShieldPips = 12;
 
         private readonly VisualElement _frame;
-        private readonly VisualElement _ghost, _heal, _fill, _flash;
+        private readonly HudStyle.BarLayer _ghost, _heal, _fill, _flash;
+        private readonly VisualElement _rimLayer;   // aro del skin (null = marco vectorial)
         private readonly Label _label;
         private readonly VisualElement _shieldRow, _shieldBar, _shieldFill;
 
@@ -84,41 +85,38 @@ namespace RedMagic.UI
             HudStyle.Radius(track, 6f);
             _frame.Add(track);
 
-            _ghost = Bar("ghost", HudStyle.HealthGhost);
-            _heal = Bar("heal", HudStyle.HealthHeal);
-            _fill = Bar("fill", HudStyle.HealthFill);
-            track.Add(_ghost);
-            track.Add(_heal);
-            track.Add(_fill);
+            // Arte (HudSkin): aro hueco delante y relleno con su silueta. Sin skin, el marco vectorial.
+            var skin = HudSkin.Current;
+            var art = skin != null && HudStyle.PrepareSkinnedBar(_frame, track, skin.healthFrame, skin.healthRim, HudStyle.HealthHeight)
+                ? skin.healthFrame : null;
+
+            if (art != null && art.HasMask)
+                track.Add(HudStyle.BarLayer.Create("track-bg", HudStyle.HealthTrack, art, track).Root);
+
+            _ghost = HudStyle.BarLayer.Create("ghost", HudStyle.HealthGhost, art, track);
+            _heal = HudStyle.BarLayer.Create("heal", HudStyle.HealthHeal, art, track);
+            _fill = HudStyle.BarLayer.Create("fill", HudStyle.HealthFill, art, track);
+            track.Add(_ghost.Root);
+            track.Add(_heal.Root);
+            track.Add(_fill.Root);
 
             // Brillo: franja clara arriba, da volumen sin textura.
-            var shine = HudStyle.Layer("shine", new Color(1f, 1f, 1f, 0.16f));
-            shine.style.bottom = Length.Percent(58f);
-            track.Add(shine);
-            var shade = HudStyle.Layer("shade", new Color(0f, 0f, 0f, 0.18f));
-            shade.style.top = Length.Percent(70f);
-            track.Add(shade);
+            track.Add(HudStyle.BarLayer.Create("shine", new Color(1f, 1f, 1f, 0.16f), art, track, 0.42f).Root);
+            if (art == null || !art.HasMask)
+            {
+                var shade = HudStyle.Layer("shade", new Color(0f, 0f, 0f, 0.18f));
+                shade.style.top = Length.Percent(70f);
+                track.Add(shade);
+            }
 
-            _flash = HudStyle.Layer("flash", new Color(1f, 1f, 1f, 0f));
-            track.Add(_flash);
+            _flash = HudStyle.BarLayer.Create("flash", new Color(1f, 1f, 1f, 0f), art, track);
+            track.Add(_flash.Root);
 
             _label = HudStyle.OutlinedLabel("value", HudStyle.HealthFont);
             HudStyle.Fill(_label);
             _frame.Add(_label);
 
-            // Arte (HudSkin): aro hueco delante del relleno. Sin skin, el marco vectorial de arriba.
-            var skin = HudSkin.Current;
-            if (skin != null) _rimLayer = HudStyle.SkinBar(_frame, track, skin.healthFrame, skin.healthRim, HudStyle.HealthHeight);
-        }
-
-        private readonly VisualElement _rimLayer;
-
-        private static VisualElement Bar(string name, Color color)
-        {
-            var bar = HudStyle.Layer(name, color);
-            bar.style.right = StyleKeyword.Auto;
-            bar.style.width = Length.Percent(100f);
-            return bar;
+            if (art != null) _rimLayer = art.Overlay(_frame);
         }
 
         /// <summary>Lee la vida y el escudo del jugador actual y anima. Devuelve false si no hay jugador.</summary>
@@ -143,7 +141,9 @@ namespace RedMagic.UI
         {
             _health = null;
             Snap(1f);
-            _fill.style.width = _heal.style.width = _ghost.style.width = Length.Percent(100f);
+            _fill.SetFraction(1f);
+            _heal.SetFraction(1f);
+            _ghost.SetFraction(1f);
             _text = "100 / 100";
             _label.text = _text;
             _shieldRow.style.display = DisplayStyle.None;
@@ -184,21 +184,21 @@ namespace RedMagic.UI
                 _ghostValue = Mathf.Max(_fillValue, HudStyle.Smooth(_ghostValue, _fillValue - 0.02f, 5f, dt));
             if (_ghostValue < _fillValue) _ghostValue = _fillValue;
 
-            _fill.style.width = Length.Percent(_fillValue * 100f);
-            _heal.style.width = Length.Percent(_healValue * 100f);
-            _ghost.style.width = Length.Percent(_ghostValue * 100f);
+            _fill.SetFraction(_fillValue);
+            _heal.SetFraction(_healValue);
+            _ghost.SetFraction(_ghostValue);
 
             // Poca vida: el relleno y el marco laten.
             bool low = target > 0f && target <= health.LowHealthThreshold;
             float pulse = low ? 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 7f) : 0f;
-            _fill.style.backgroundColor = low ? Color.Lerp(HudStyle.HealthFill, HudStyle.HealthFillLow, pulse) : HudStyle.HealthFill;
+            _fill.SetColor(low ? Color.Lerp(HudStyle.HealthFill, HudStyle.HealthFillLow, pulse) : HudStyle.HealthFill);
             if (_rimLayer != null) UiFrame.TintLayer(_rimLayer, low ? Color.Lerp(Color.white, new Color(1f, 0.45f, 0.4f, 1f), pulse) : Color.white);
             else HudStyle.BorderColor(_frame, low ? Color.Lerp(HudStyle.Frame, new Color(1f, 0.3f, 0.25f, 1f), pulse) : HudStyle.Frame);
 
             if (_flashValue > 0f)
             {
                 _flashValue = Mathf.Max(0f, _flashValue - dt * 5f);
-                _flash.style.backgroundColor = new Color(1f, 1f, 1f, _flashValue * 0.6f);
+                _flash.SetColor(new Color(1f, 1f, 1f, _flashValue * 0.6f));
             }
 
             if (_shake > 0f)

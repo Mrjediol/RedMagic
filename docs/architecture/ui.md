@@ -96,9 +96,12 @@ ring with bright tip, outer charge ring, expanding "ready" ring + flash — skip
 dial, so they look identical; on touch the HUD hides its slot row. Sizes/colours live in `HudStyle`.
 **Art** (`HudSkin`, `Resources/HudSkin.asset`, built by **Tools ▸ RedMagic ▸ UI ▸ HUD · Procesar kit de arte** =
 `HudUiPack` from `Assets/Ui/HudSprites/`, prompts in `docs/hud-art-prompts.md`): bar frames are **hollow** rims
-(interior keyed out) drawn **in front** of the code-drawn fill with `UiFrame.Overlay` — `HudStyle.SkinBar` drops the
-vector border, insets the track to 6/10 of the rim and rounds it like the hole; low HP tints the rim
-(`UiFrame.TintLayer`). Ability slots overlay a ring `Image` (idle / ready sprite, `abilityRingOverflow` = halo room,
+(interior keyed out) drawn **in front** of the code-drawn fill with `UiFrame.Overlay`. The pack also emits each
+rim's **mask** (outer silhouette, eroded 4 px, same Quad cuts → `UiFrame.maskQuads`): every fill layer is a
+`HudStyle.BarLayer` = a `UiFrame.Mask` sized to the whole bar inside a width-% `overflow:hidden` clip, so the fill has
+the art's exact shape and never peeks past rounded ends (`PrepareSkinnedBar`; without a mask it falls back to an
+inset rounded track). Low HP tints the rim (`UiFrame.TintLayer`). HUD pieces are imported **with mipmaps**
+(`UiArtPiece.mipmaps`): shown 3-4× smaller than their image, without mips the edges alias into stray pixels. Ability slots overlay a ring `Image` (idle / ready sprite, `abilityRingOverflow` = halo room,
 `abilityRingInset` = sweep drawn inside); icons = source icon (weapon) → skin icon → vector glyph. Currency plaques
 and legend keycaps use the normal `UiFrame.Dress` (keycap in its own box: frame children cover a Label's text).
 Every piece is optional: missing art falls back to the vector look of `HudStyle`.

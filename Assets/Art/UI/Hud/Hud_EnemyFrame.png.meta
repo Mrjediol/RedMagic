@@ -9,7 +9,7 @@ TextureImporter:
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 0
+    enableMipMap: 1
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 2
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -118,11 +118,11 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 101
-        width: 471
+        width: 467
         height: 101
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 362, y: 27, z: 107, w: 72}
+      border: {x: 358, y: 26, z: 107, w: 73}
       customData: 
       outline: []
       physicsShape: []
@@ -138,13 +138,13 @@ TextureImporter:
       name: Hud_EnemyFrame_TR
       rect:
         serializedVersion: 2
-        x: 471
+        x: 467
         y: 101
-        width: 471
+        width: 468
         height: 101
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 166, y: 27, z: 303, w: 72}
+      border: {x: 166, y: 26, z: 300, w: 73}
       customData: 
       outline: []
       physicsShape: []
@@ -162,11 +162,11 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 471
+        width: 467
         height: 101
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 362, y: 71, z: 107, w: 28}
+      border: {x: 358, y: 73, z: 107, w: 26}
       customData: 
       outline: []
       physicsShape: []
@@ -182,13 +182,13 @@ TextureImporter:
       name: Hud_EnemyFrame_BR
       rect:
         serializedVersion: 2
-        x: 471
+        x: 467
         y: 0
-        width: 471
+        width: 468
         height: 101
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 166, y: 71, z: 303, w: 28}
+      border: {x: 166, y: 73, z: 300, w: 26}
       customData: 
       outline: []
       physicsShape: []

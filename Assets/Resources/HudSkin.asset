@@ -18,9 +18,14 @@ MonoBehaviour:
     - {fileID: -394511484, guid: e8a10f0065248644eb216ff0fab5404b, type: 3}
     - {fileID: -1657026, guid: e8a10f0065248644eb216ff0fab5404b, type: 3}
     - {fileID: 1142136683, guid: e8a10f0065248644eb216ff0fab5404b, type: 3}
+    maskQuads:
+    - {fileID: 1689721800, guid: d44d4f751a244b14282119f63aa19597, type: 3}
+    - {fileID: 1647142696, guid: d44d4f751a244b14282119f63aa19597, type: 3}
+    - {fileID: -449543981, guid: d44d4f751a244b14282119f63aa19597, type: 3}
+    - {fileID: -858900, guid: d44d4f751a244b14282119f63aa19597, type: 3}
     fill: {fileID: 0}
     fillCornerRadius: 36
-    maxScale: 0.3
+    maxScale: 0.17
     padding:
       left: 24
       right: 24
@@ -33,9 +38,14 @@ MonoBehaviour:
     - {fileID: -822899591, guid: ac5fe288bcb19414487aaf0fc200a681, type: 3}
     - {fileID: -809447931, guid: ac5fe288bcb19414487aaf0fc200a681, type: 3}
     - {fileID: -91799338, guid: ac5fe288bcb19414487aaf0fc200a681, type: 3}
+    maskQuads:
+    - {fileID: 725564918, guid: d4124b7ce87032b4784a1ce4e7b3d652, type: 3}
+    - {fileID: 1760006120, guid: d4124b7ce87032b4784a1ce4e7b3d652, type: 3}
+    - {fileID: 1559757693, guid: d4124b7ce87032b4784a1ce4e7b3d652, type: 3}
+    - {fileID: -830528610, guid: d4124b7ce87032b4784a1ce4e7b3d652, type: 3}
     fill: {fileID: 0}
     fillCornerRadius: 36
-    maxScale: 0.3
+    maxScale: 0.2
     padding:
       left: 24
       right: 24
@@ -56,6 +66,7 @@ MonoBehaviour:
     - {fileID: 1975433833, guid: 5410db960e6a45e4fbe1ca53d5f4de0a, type: 3}
     - {fileID: -1921764184, guid: 5410db960e6a45e4fbe1ca53d5f4de0a, type: 3}
     - {fileID: -1426431335, guid: 5410db960e6a45e4fbe1ca53d5f4de0a, type: 3}
+    maskQuads: []
     fill: {fileID: -796331577, guid: 5410db960e6a45e4fbe1ca53d5f4de0a, type: 3}
     fillCornerRadius: 20
     maxScale: 0.24
@@ -70,6 +81,7 @@ MonoBehaviour:
     - {fileID: 1833682685, guid: d86f4913284c9444fa0f078d099a9bdb, type: 3}
     - {fileID: 120376150, guid: d86f4913284c9444fa0f078d099a9bdb, type: 3}
     - {fileID: -1891132998, guid: d86f4913284c9444fa0f078d099a9bdb, type: 3}
+    maskQuads: []
     fill: {fileID: -1570374265, guid: d86f4913284c9444fa0f078d099a9bdb, type: 3}
     fillCornerRadius: 24
     maxScale: 0.14

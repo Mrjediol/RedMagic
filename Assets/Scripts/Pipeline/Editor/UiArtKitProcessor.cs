@@ -66,6 +66,7 @@ namespace RedMagic.Pipeline.EditorTools
         {
             public UiArtPiece Piece;
             public Color32[] Px;
+            public bool[] OuterBg;   // fondo de fuera (sin los huecos encerrados): la silueta es lo demás
             public int W, H;
             public int CellW, CellH;
             public Box[] Cells;   // contenido de cada celda, en coordenadas de celda
@@ -172,7 +173,7 @@ namespace RedMagic.Pipeline.EditorTools
 
             var k = new Keyed
             {
-                Piece = piece, Px = outPx, W = w, H = h,
+                Piece = piece, Px = outPx, OuterBg = outerBg, W = w, H = h,
                 CellW = w / Mathf.Max(1, piece.columns),
                 CellH = h / Mathf.Max(1, piece.rows),
                 Cells = new Box[piece.columns * piece.rows],
@@ -451,23 +452,85 @@ namespace RedMagic.Pipeline.EditorTools
                 AssetDatabase.ImportAsset(file, ImportAssetOptions.ForceSynchronousImport);
 
                 Sprite[] sprites;
+                SpriteRect[] quadRects = null;
                 if (piece.slice == UiSliceMode.Quad)
                 {
-                    var rects = QuadRects(crop, cw, ch, piece.stretchSearch, piece.interior,
+                    quadRects = QuadRects(crop, cw, ch, piece.stretchSearch, piece.interior,
                         col * k.CellW + x0, row * k.CellH + y0, $"{recipe.prefix}{cellName}", result.Log);
-                    sprites = Import(file, rects, true);
+                    sprites = Import(file, quadRects, true, piece.mipmaps);
                 }
                 else
                 {
                     sprites = Import(file, new[]
                     {
                         new SpriteRect { name = $"{recipe.prefix}{cellName}", rect = new Rect(0, 0, cw, ch), border = Vector4.zero },
-                    }, false);
+                    }, false, piece.mipmaps);
                 }
 
                 result.Sprites[cellName] = sprites;
+                if (piece.emitMask) EmitMask(recipe, k, cellName, col, row, x0, y0, cw, ch, quadRects, result);
                 result.Log.AppendLine($"  → {file} ({cw}×{ch}){(piece.slice == UiSliceMode.Quad ? " · quad" : "")}");
             }
+        }
+
+        /// <summary>
+        /// La silueta exterior de la celda (lo que no es fondo de fuera: el hueco de un aro cuenta como
+        /// dentro) en blanco opaco, encogida <see cref="UiArtPiece.maskErode"/> px para que nunca asome
+        /// por fuera del contorno del arte. Mismo recorte y mismos cortes Quad que la pieza, así que en
+        /// runtime, al mismo tamaño, cae al pixel debajo de ella.
+        /// </summary>
+        private static void EmitMask(UiArtKitRecipe recipe, Keyed k, string cellName, int col, int row,
+                                     int x0, int y0, int cw, int ch, SpriteRect[] quadRects, Result result)
+        {
+            var piece = k.Piece;
+            var depth = Depth(k.OuterBg, k.W, k.H, piece.maskErode + 1);
+            var crop = new Color32[cw * ch];
+            for (int y = 0; y < ch; y++)
+            {
+                int ly = y0 + y;
+                if (ly < 0 || ly >= k.CellH) continue;
+                for (int x = 0; x < cw; x++)
+                {
+                    int lx = x0 + x;
+                    if (lx < 0 || lx >= k.CellW) continue;
+                    int i = (row * k.CellH + ly) * k.W + col * k.CellW + lx;
+                    if (!k.OuterBg[i] && depth[i] > piece.maskErode)
+                        crop[(ch - 1 - y) * cw + x] = new Color32(255, 255, 255, 255);
+                }
+            }
+
+            string maskName = cellName + "_Mask";
+            string file = $"{recipe.outputFolder}/{recipe.prefix}{maskName}.png";
+            var tex = new Texture2D(cw, ch, TextureFormat.RGBA32, false);
+            tex.SetPixels32(crop);
+            tex.Apply();
+            File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), file), tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(file, ImportAssetOptions.ForceSynchronousImport);
+
+            Sprite[] sprites;
+            if (quadRects != null)
+            {
+                // Los mismos cuatro cuadrantes (sin el relleno interior), renombrados.
+                var rects = new List<SpriteRect>();
+                string from = $"{recipe.prefix}{cellName}", to = $"{recipe.prefix}{maskName}";
+                foreach (var r in quadRects)
+                {
+                    if (r.name.EndsWith("_Fill")) continue;
+                    rects.Add(new SpriteRect { name = to + r.name.Substring(from.Length), rect = r.rect, border = r.border });
+                }
+                sprites = Import(file, rects.ToArray(), true, piece.mipmaps);
+            }
+            else
+            {
+                sprites = Import(file, new[]
+                {
+                    new SpriteRect { name = $"{recipe.prefix}{maskName}", rect = new Rect(0, 0, cw, ch), border = Vector4.zero },
+                }, false, piece.mipmaps);
+            }
+
+            result.Sprites[maskName] = sprites;
+            result.Log.AppendLine($"  → {file} (máscara, encogida {piece.maskErode} px)");
         }
 
         /// <summary>
@@ -576,18 +639,19 @@ namespace RedMagic.Pipeline.EditorTools
         }
 
         /// <summary>
-        /// Importa como sprite(s) para UI: sin mipmaps, malla FullRect (UI Toolkit necesita el
-        /// rectángulo entero para el 9-slice) y los bordes escritos en el propio sprite.
+        /// Importa como sprite(s) para UI: malla FullRect (UI Toolkit necesita el rectángulo entero para
+        /// el 9-slice) y los bordes escritos en el propio sprite. Sin mipmaps salvo que la pieza los pida
+        /// (<see cref="UiArtPiece.mipmaps"/>: se ve muy reducida).
         /// </summary>
-        private static Sprite[] Import(string path, SpriteRect[] rects, bool multiple)
+        private static Sprite[] Import(string path, SpriteRect[] rects, bool multiple, bool mipmaps = false)
         {
             var importer = (TextureImporter)AssetImporter.GetAtPath(path);
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = multiple ? SpriteImportMode.Multiple : SpriteImportMode.Single;
             importer.alphaIsTransparency = true;
-            importer.mipmapEnabled = false;
+            importer.mipmapEnabled = mipmaps;
             importer.wrapMode = TextureWrapMode.Clamp;
-            importer.filterMode = FilterMode.Bilinear;
+            importer.filterMode = mipmaps ? FilterMode.Trilinear : FilterMode.Bilinear;
             importer.maxTextureSize = 2048;
             importer.textureCompression = TextureImporterCompression.CompressedHQ;
 

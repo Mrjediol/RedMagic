@@ -43,7 +43,9 @@ CLI: `unity command run_script --file Assets/Scripts/Pipeline/Editor/ItemsUiPack
    la imagen fuente (x, y, ancho, alto), justo dentro del bisel interior. Para medirlo, dibuja una
    rejilla cada 20 px sobre la fuente y léelo — la detección automática confundía el bisel con la
    talla del marco y se descartó.
-5. Importa como Sprite para UI: sin mipmaps, **malla FullRect** (UI Toolkit la necesita para el
+5. **Máscara** (`emitMask`): además emite `<pieza>_Mask`, la silueta exterior en blanco (hueco incluido) encogida
+   `maskErode` px, con los mismos cortes Quad — para pintar un relleno con la forma exacta de un aro hueco.
+6. Importa como Sprite para UI: sin mipmaps (salvo `mipmaps`, para piezas que se ven muy reducidas), **malla FullRect** (UI Toolkit la necesita para el
    9-slice), bordes escritos en el sprite. GUIDs estables entre regeneraciones.
 
 ## 2. En runtime (`Assets/Ui/UiFrame.cs`)

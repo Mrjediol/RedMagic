@@ -20,27 +20,8 @@ namespace RedMagic.Fx
         public static Sprite Ring => _ring != null ? _ring
             : _ring = Radial("ProceduralRing", r => Mathf.Exp(-Mathf.Pow((r - 0.86f) / 0.07f, 2f)));
 
-        private static Sprite _crescent;
-
-        /// <summary>
-        /// Media luna abierta hacia +X (un tajo / escudo de parry): banda gruesa cerca del borde,
-        /// llena en el centro del arco y afilándose hacia las puntas (±80°).
-        /// </summary>
-        public static Sprite Crescent => _crescent != null ? _crescent
-            : _crescent = Radial("ProceduralCrescent", (r, angle) =>
-            {
-                float tips = Mathf.Clamp01(1f - Mathf.Abs(angle) / 80f);
-                float width = 0.05f + 0.13f * tips;                     // más gruesa en el centro
-                float band = Mathf.Exp(-Mathf.Pow((r - 0.8f) / width, 2f));
-                return band * Mathf.Sqrt(tips);
-            });
-
         /// <summary>Sprite de 128 px (1.28 u a 100 ppu) con el alfa en función del radio normalizado.</summary>
-        private static Sprite Radial(string name, Func<float, float> alphaAt) =>
-            Radial(name, (r, _) => alphaAt(r));
-
-        /// <summary>Como el anterior, con también el ángulo en grados (0 = +X, −180…180).</summary>
-        private static Sprite Radial(string name, Func<float, float, float> alphaAt)
+        private static Sprite Radial(string name, Func<float, float> alphaAt)
         {
             const int size = 128;
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
@@ -55,8 +36,7 @@ namespace RedMagic.Fx
             for (int x = 0; x < size; x++)
             {
                 float r = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c)) / c;
-                float angle = Mathf.Atan2(y - c, x - c) * Mathf.Rad2Deg;
-                pixels[y * size + x] = new Color32(255, 255, 255, (byte)(Mathf.Clamp01(alphaAt(r, angle)) * 255f));
+                pixels[y * size + x] = new Color32(255, 255, 255, (byte)(Mathf.Clamp01(alphaAt(r)) * 255f));
             }
 
             tex.SetPixels32(pixels);

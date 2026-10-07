@@ -1,0 +1,15 @@
+{
+  "name": "CinderKettleBot",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/CinderKettleBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robot-2__p3.png",
+    "zone": "volcano",
+    "lote": "2026-10-07-robot-2",
+    "item": "p3",
+    "request": "robot",
+    "note": "Round pot/kettle body with chimney and a mortar tube; comic and rounded."
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T04:14:51.653Z"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "IceDishBot",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/IceDishBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robor-lanzador-flotante-con-una-antena-d__2.png",
+    "zone": "ice",
+    "lote": "2026-10-07-robor-lanzador-flotante-con-una-antena-d",
+    "item": "2",
+    "request": "robor lanzador flotante, con una antena de la que saldra un rayo lazer, pero no pidas el rayo laser en su sprite",
+    "note": "Platillo redondo con antena parabólica"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T03:34:35.704Z"
+}

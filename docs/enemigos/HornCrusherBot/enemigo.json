@@ -1,0 +1,15 @@
+{
+  "name": "HornCrusherBot",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/HornCrusherBot/diseno.jpg",
+    "source": "docs/disenos/img/2026-10-07-robot-mele-2__2.jpg",
+    "zone": "ice",
+    "lote": "2026-10-07-robot-mele-2",
+    "item": "2",
+    "request": "robot mele",
+    "note": "Alto y angular, cabeza de toro con dos cuernos curvos; propulsor en anillo"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T04:22:39.335Z"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "SleetMortarBot",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/SleetMortarBot/diseno.jpg",
+    "source": "docs/disenos/img/2026-10-07-robot-con-arma__1.jpg",
+    "zone": "ice",
+    "lote": "2026-10-07-robot-con-arma",
+    "item": "1",
+    "request": "robot con arma",
+    "note": "Cuerpo de campana invertida azul marino con mortero corto de boca ancha y cristal-badajo arriba"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T04:22:33.799Z"
+}

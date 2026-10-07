@@ -1,0 +1,15 @@
+{
+  "name": "AnvilHeadBot",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/AnvilHeadBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robot-mele__p3.png",
+    "zone": "volcano",
+    "lote": "2026-10-07-robot-mele",
+    "item": "p3",
+    "request": "robot mele",
+    "note": "Robot bruto de cabeza-yunque para golpear, torso estrecho y alto"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T04:11:11.014Z"
+}

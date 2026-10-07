@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-07T03:18:46.099Z",
+  "updated": "2026-10-07T13:25:44.333Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -583,9 +583,320 @@
           "model": "sonnet",
           "effort": "medium",
           "enemy": "FrostBoxBot",
-          "status": "running",
+          "status": "done",
           "lastRunId": "2026-10-07T03-18-46-098Z_xp0mziu",
-          "sessionId": "a984b36b-3c58-406c-934d-31bae69346cc"
+          "sessionId": "a984b36b-3c58-406c-934d-31bae69346cc",
+          "result": {
+            "ok": true,
+            "text": "Cuerpo de FrostBoxBot montado y importado como prefab. Estado: `cuerpo-por-aprobar`. No probé nada en Play Mode.\n\n**Hecho**\n- Base: `diseno.jpg` copiada a Comfy como `FrostBoxBot_base.jpg`. Mira a la derecha, así que no hubo que espejar.\n- Plantilla `floatingCaster`, cuatro piezas con una semilla por pieza:\n  - **Torso:** el cubo con la placa trasera.\n  - **Head:** el casco con visor.\n  - **CastArm:** el cañón con anillo, tubo, cristales y boca de cono.\n  - **Lower:** el propulsor cónico con la llama.\n- Head falló a la primera: conservó el cañón. Repetí con un prompt que nombra qué borrar y salió limpia.\n- `finish-parts` dio ✓ en las cuatro: una isla por pieza y sin borde blanco.\n- Brief sin ataques, efectos ni gestos propios, `ResetTuning = true`. `recompile_status` está en idle. No consulté los errores de la consola de Unity.\n- Hoja actualizada con el estado, el prefab y el bloque `cuerpo`. Marqué la vista previa con `EnemyPreviewExporter.Mark`.\n- Commit `feat: FrostBoxBot — cuerpo (paso 1)`. Antes hice el snapshot `wip: pre-task snapshot`.\n\n**Decisiones**\n- Accessory y OffArm quedan vacíos. La placa trasera va dentro del Torso para no crear una isla sin hueco en la plantilla.\n- Pivote del cañón `[0.1, 0.58]`, boca `[0.97, 0.58]`, calculados sobre el arte.\n\n**Dudoso, para ajustar en Enemy Studio**\n- El cañón está delante del torso en el arte, pero la plantilla lo pone detrás. Hay que subirlo de capa.\n- El casco queda detrás del borde superior del torso. Si se ve raro, hay que revisar su capa.\n- El pivote del cañón puede necesitar retoque.\n\n**Dónde está**\n- Prefab: `Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab`\n- Sprites: `Assets/Art/RigImports/FrostBoxBot/`\n- Brief: `Web/RedMagicWeb/tools/comfy/enemies/FrostBoxBot.json`\n- Imagen ensamblada: `docs/enemigos/FrostBoxBot/cuerpo.png`\n- Hoja: `docs/enemigos/FrostBoxBot/enemigo.json`\n\n**Para probar**\n1. Abre el prefab en 🧬 Enemy Studio y mira proporciones y capas: cañón delante del torso, casco, propulsor.\n2. Mueve el pivote del cañón si no gira desde el anillo.\n3. Guarda en Unity y pasa el estado a `cuerpo-aprobado`.",
+            "at": "2026-10-07T03:22:18.907Z",
+            "durationMs": 212808,
+            "costUsd": 0.5314412000000001,
+            "tokens": {
+              "input": 36,
+              "cacheWrite": 67948,
+              "cacheRead": 901286,
+              "output": 7932,
+              "calls": 22
+            },
+            "runId": "2026-10-07T03-18-46-098Z_xp0mziu",
+            "sessionId": "a984b36b-3c58-406c-934d-31bae69346cc"
+          }
+        },
+        {
+          "id": "ddqrvz5",
+          "note": "",
+          "done": false,
+          "text": "FrostBoxBot: comportamiento (1 pendiente)",
+          "prompt": "Existing enemy FrostBoxBot (prefab: Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab). Enemy sheet: docs/enemigos/FrostBoxBot/enemigo.json.\nResolve these open items the user wrote down (their words):\n- [Behaviour] no tiene \"ojos\" que tena una luz a modo de ojos, y una variante con los ojos rojos para los ataques (id 8jkate9)\n\nProject rules (CLAUDE.md): generic first; read the architecture doc it touches (enemies.md, procedural-rig.md, combat.md…).\nIf new art is needed (a sprite, a part's state for a gesture) use the make-enemy skill (steps 3–4) with ComfyUI.\nWhen done, in the sheet: each item resolved gets \"estado\": \"hecho\" and a \"resumen\" (in Spanish); one that could not be done stays \"estado\": \"abierto\" with a \"nota\" saying why.\nIf all are done, the enemy goes to \"estado\": \"por-aprobar\"; otherwise it stays \"con-pendientes\".\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'",
+          "needs": [
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "FrostBoxBot",
+          "status": "done",
+          "lastRunId": "2026-10-07T03-23-59-630Z_ddqrvz5",
+          "sessionId": "d9208141-7fbe-4916-9b7d-f06844ce5cd0",
+          "result": {
+            "ok": true,
+            "text": "FrostBoxBot ya tiene ojos luminosos cian y se ponen rojos cuando ataca. Lo he comprobado solo en el preview estático y no he probado el cambio a rojo en el juego.\n\n**Qué hice**\n- **Pieza nueva `Eyes`:** es hija de `Head` en el prefab, con dos ojos rectangulares con brillo. Va en `Visual/Torso/Head/Eyes`, con orden de capa 5 (por encima de la cabeza).\n- **Arte:** `Parts/Eyes.png` (cian) y `Parts/EyesRed.png` (rojo), en `Assets/Art/RigImports/FrostBoxBot/Parts/`. Tienen el mismo lienzo, pivote y PPU que `Head.png`, así que no hay offsets que ajustar.\n- **Cambio de color:** un intercambio de sprites (`RigSpriteSwap`) pone el sprite rojo en el estado `attacking`. Los gestos también cuentan como ataque, así que `Flick`, `Charge` y `Sweep` salen con los ojos rojos.\n- **Otros archivos:** actualicé `rig-config.json` para que un guardado completo desde Enemy Studio no pierda los ojos, y la ficha del enemigo. El punto `8jkate9` está en \"hecho\" y el enemigo en \"por-aprobar\". Refresqué el preview y compilé sin errores. El commit es `af8009c2`.\n\n**Decisiones**\n- **Arte hecho por código:** generé los ojos con un script de node, no con ComfyUI, porque son dos formas simples con brillo y la cabeza no tenía visor.\n- **Rojo solo al atacar:** no lo puse en alerta, porque pediste rojo \"para los ataques\".\n- **Ojos al morir:** quedan cian, porque el estado muerto cae al sprite de reposo.\n\n**Para probar**\n- En Play, el robot en reposo y al perseguir debe llevar ojos cian sobre la cara clara de la cabeza.\n- Al telegrafiar y disparar debe verlos rojos, y volver a cian al terminar el ataque.\n- Revisa que los ojos sigan a la cabeza en el vaivén y que no se vean al revés cuando el robot se gira.\n- Si te gusta el diseño pero quieres otro tamaño o posición, se retoca en Enemy Studio ▸ ✎ Editar cuerpo.",
+            "at": "2026-10-07T03:25:22.213Z",
+            "durationMs": 82583,
+            "costUsd": 0.48935339999999994,
+            "tokens": {
+              "input": 28,
+              "cacheWrite": 60675,
+              "cacheRead": 819287,
+              "output": 8274,
+              "calls": 17
+            },
+            "runId": "2026-10-07T03-23-59-630Z_ddqrvz5",
+            "sessionId": "d9208141-7fbe-4916-9b7d-f06844ce5cd0"
+          }
+        },
+        {
+          "id": "gchk87h",
+          "note": "",
+          "done": false,
+          "text": "FrostBoxBot: comportamiento (1 pendiente)",
+          "prompt": "Existing enemy FrostBoxBot (prefab: Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab). Enemy sheet: docs/enemigos/FrostBoxBot/enemigo.json.\nResolve these open items the user wrote down (their words):\n- [Behaviour] no tiene \"ojos\" que tena una luz a modo de ojos, y una variante con los ojos rojos para los ataques (id 8jkate9)\n\nProject rules (CLAUDE.md): generic first; read the architecture doc it touches (enemies.md, procedural-rig.md, combat.md…).\nIf new art is needed (a sprite, a part's state for a gesture) use the make-enemy skill (steps 3–4) with ComfyUI.\nWhen done, in the sheet: each item resolved gets \"estado\": \"hecho\" and a \"resumen\" (in Spanish); one that could not be done stays \"estado\": \"abierto\" with a \"nota\" saying why.\nIf all are done, the enemy goes to \"estado\": \"por-aprobar\"; otherwise it stays \"con-pendientes\".\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'",
+          "needs": [
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "FrostBoxBot",
+          "status": "done",
+          "lastRunId": "2026-10-07T03-26-25-165Z_gchk87h",
+          "sessionId": "44c3b787-7f7b-4479-86ab-149bcaad9699",
+          "result": {
+            "ok": true,
+            "text": "Pendiente 8jkate9 (ojos luminosos) resuelto: FrostBoxBot pasa a `por-aprobar`.\n\n- **Qué ya existía:** el commit `af8009c2` ya había añadido la pieza `Eyes`, hija de `Head`. La ficha se había reabierto con esta tarea, así que no hizo falta más cambio de arte ni de código.\n- **Comportamiento:** ojos cian en reposo y alerta, rojos al atacar. El rojo sale del sprite de estado `attacking` (`Parts/EyesRed.png`) del intercambio de sprites. Los gestos cuentan como ataque.\n- **Verificación:** la pieza `Eyes` está en el prefab y en `rig-config.json`. La recompilación está al día y la consola no tiene errores. No probé en Play Mode.\n- **Ficha:** pendiente marcado `hecho` con su resumen, enemigo en `por-aprobar` y preview refrescada. Commit de la ficha: `docs: FrostBoxBot — ojos verificados, por-aprobar`.\n\nQué probar:\n1. Abrir `FrostBoxBot.prefab` o la preview y ver los ojos cian en la cabeza.\n2. En Play Mode, comprobar que los ojos se ponen rojos durante un ataque o gesto y vuelven a cian después.\n3. Revisar que los ojos no tapan ni desplazan la cabeza al voltear el sprite.",
+            "at": "2026-10-07T03:26:52.086Z",
+            "durationMs": 26921,
+            "costUsd": 0.14994159999999998,
+            "tokens": {
+              "input": 10,
+              "cacheWrite": 25904,
+              "cacheRead": 153178,
+              "output": 1567,
+              "calls": 5
+            },
+            "runId": "2026-10-07T03-26-25-165Z_gchk87h",
+            "sessionId": "44c3b787-7f7b-4479-86ab-149bcaad9699"
+          }
+        },
+        {
+          "id": "zpi421a",
+          "note": "",
+          "done": false,
+          "text": "Cuerpo de CrystalOrbBot (make-enemy, paso 1)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), section \"Por pasos ▸ Paso 1 (cuerpo)\", to build ONLY THE BODY of the enemy CrystalOrbBot from its approved design.\nEnemy sheet: docs/enemigos/CrystalOrbBot/enemigo.json. Original request (user's words): «robor lanzador flotante, con una antena de la que saldra un rayo lazer, pero no pidas el rayo laser en su sprite». Design note: «Esfera lisa con antena de aguja».\nThe design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is docs/enemigos/CrystalOrbBot/diseno.png. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/CrystalOrbBot_base.png; no subfolders) and use \"CrystalOrbBot_base.png\" as the --ref of step 2 (no \" [output]\"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.\nZone: ice (docs/zonas.json).\nDo: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), `make-enemy.mjs`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 3 (states), 5 (attacks), 6 (sounds): the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).\nNobody will answer: where the skill says \"stop\", pick the best yourself from a contact sheet and go on.\nCopy the assembled picture to docs/enemigos/CrystalOrbBot/cuerpo.png (the sheet shows it) and write in the sheet: \"estado\": \"cuerpo-por-aprobar\", \"prefab\": \"<prefab path under Assets>\", \"cuerpo\": { \"fecha\": \"<ISO>\", \"plantilla\": \"<rig template id>\", \"partes\": \"<folder of the final parts>\", \"brief\": \"<brief path>\", \"resumen\": \"<2–3 sentences, in Spanish: which parts, anything dubious about proportions / layers>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"por-montar\" and explain in the report what failed.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "CrystalOrbBot",
+          "status": "done",
+          "lastRunId": "2026-10-07T03-36-05-737Z_zpi421a",
+          "sessionId": "c76e3522-9e02-4e96-ac7f-aa527d5ef69b",
+          "result": {
+            "ok": true,
+            "text": "CrystalOrbBot tiene el cuerpo montado como prefab y está en `cuerpo-por-aprobar`. No hice Play Mode ni probé el prefab dentro del juego. Solo compilé, y `recompile_status` dice `up_to_date`.\n\n**Qué hice**\n- Copié `diseno.png` a Comfy como `CrystalOrbBot_base.png`. Mira a la derecha, así que no hubo que espejar nada.\n- Plantilla `floatingCaster`, con una semilla por parte:\n  - **Torso**: esfera con el ojo y la banda.\n  - **Lower**: tobera y llama de hielo.\n  - **CastArm**: la antena de aguja con su anillo.\n  - **Accessory**: el cristal.\n- La antena salió mal la primera vez: la dibujó demasiado larga y le sobresalía por debajo de la esfera. Repetí esa pieza una vez con el prompt corregido y quedó bien. Las otras tres pasaron a la primera.\n- `finish-parts` dio ✓ en las cuatro: una isla por pieza, mismo lienzo, sin halo blanco.\n- Brief sin ataques, efectos ni gestos propios, solo plantilla por defecto. Con `make-enemy.mjs` generé el zip y lo importé con `ResetTuning = true`.\n- Copié la imagen ensamblada a `docs/enemigos/CrystalOrbBot/cuerpo.png`, rellené la ficha y refresqué la vista previa web con `EnemyPreviewExporter.Mark`.\n- Commit `7254cc5d`.\n\n**Dónde está**\n- Prefab: `Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab`\n- Partes en Unity: `Assets/Art/RigImports/CrystalOrbBot/Parts/`\n- Partes finales en Comfy: `output/claude/CrystalOrbBot/final`\n- Brief: `Web/RedMagicWeb/tools/comfy/enemies/CrystalOrbBot.json`\n\n**Decisiones**\n- La antena es la pieza `CastArm`: el rayo láser saldrá de su punta. Puse el pivote en la base y la boca en la punta. Como la dibujé vertical, el importador la giró 90° para el apuntado, y eso hay que revisarlo.\n- El cristal es `Accessory`. No usé `Head`, porque es opcional.\n- En la ficha, `partes` apunta a la carpeta de Comfy. Las copias que usa Unity están en `Assets/Art/RigImports/CrystalOrbBot/Parts/`.\n\n**Dudas sobre el cuerpo**\n- El cristal queda un poco suelto del torso y se dibuja delante de él.\n- La antena apunta hacia arriba, no a la derecha como espera la plantilla.\n\n**Para probar**\n1. Abre `CrystalOrbBot.prefab` en 🧬 Enemy Studio y mira que las capas sean: llama detrás, antena detrás de la esfera, cristal delante.\n2. Comprueba que la antena sale de su collar y que la esfera no deja un hueco con la tobera.\n3. Revisa la proporción general (altura 2.8) y mueve la distancia del cristal si lo ves suelto.\n4. Mueve el apuntado en Studio y mira cómo gira la antena.\n5. Si todo está bien, apruébalo para pasar al paso 2.",
+            "at": "2026-10-07T03:39:29.013Z",
+            "durationMs": 203277,
+            "costUsd": 0.4363204,
+            "tokens": {
+              "input": 30,
+              "cacheWrite": 52966,
+              "cacheRead": 722332,
+              "output": 7993,
+              "calls": 20
+            },
+            "runId": "2026-10-07T03-36-05-737Z_zpi421a",
+            "sessionId": "c76e3522-9e02-4e96-ac7f-aa527d5ef69b"
+          }
+        },
+        {
+          "id": "ml6hdb2",
+          "note": "",
+          "done": false,
+          "text": "Montar MossLanternBot (make-enemy)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md) to build the enemy MossLanternBot from its approved design.\nEnemy sheet: docs/enemigos/MossLanternBot/enemigo.json. Original request (user's words): «robot». Design note: «Robot-farol de latón y musgo con cañón de ballesta».\nThe design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is docs/enemigos/MossLanternBot/diseno.png. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/MossLanternBot_base.png; no subfolders) and use \"MossLanternBot_base.png\" as the --ref of steps 2 and 3 (no \" [output]\"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.\nZone: forest (docs/zonas.json): palette and crystal colour of its effects / projectile tints follow it.\nNobody will answer: where the skill says \"stop: the user picks / checks\", pick the best yourself from a contact sheet and go on. The user approves at the end from the web.\nWhen done, in the sheet: \"estado\": \"por-aprobar\", \"prefab\": \"<prefab path under Assets>\", \"montaje\": { \"fecha\": \"<ISO>\", \"resumen\": \"<2–3 sentences, in Spanish>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"por-montar\" and explain in the report what failed and what is left.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "MossLanternBot",
+          "status": "done",
+          "lastRunId": "2026-10-07T03-45-49-779Z_ml6hdb2",
+          "sessionId": "e6585738-659f-4484-adf6-81833f11d313",
+          "result": {
+            "ok": true,
+            "text": "MossLanternBot está montado y comprometido (`6f7d2db4`). No lo vi en Play Mode, así que ninguna parte se ha probado en juego. Compila limpio y la ficha queda en `por-aprobar`.\n\n- **Prefab:** `Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab`.\n- **Preview:** marcado con `EnemyPreviewExporter` para la web. La consola muestra un error de timeout de 5 s de la importación; el prefab y la ficha quedaron bien.\n- **Piezas (una semilla cada una, las 4 limpias a la primera):**\n  - Torso: barril con cristal y las hombreras de musgo.\n  - Head: cúpula con lente y cristal.\n  - CastArm: ballesta.\n  - Lower: copa propulsora con llama verde.\n  - La base miraba a la derecha, así que no hubo que espejar nada.\n- **Comportamiento:**\n  - Es un volador a distancia que dispara un virote verde con el gesto `Aim`, tras un `Propel` que lo hace retroceder.\n  - Tiene 32 de vida y 9 de daño.\n  - Los efectos van en verde de bosque.\n- **Decisiones:**\n  - No usé OffArm ni Accessory: las hombreras van dentro del torso.\n  - No puse escudo.\n  - Copié el comportamiento de `IceCannonOrb` con colores y números propios.\n- **Brief y arte:** el brief está en `Web/RedMagicWeb/tools/comfy/enemies/MossLanternBot.json`. Las piezas en Comfy están en `claude/MossLanternBot/final`.\n\n**A probar:**\n1. Abrir el prefab y comprobar las capas. La ballesta se dibujó delante del barril, pero la plantilla la pone detrás; puede que haya que subirla en Enemy Studio.\n2. Revisar que el pivote y la boca de la ballesta estén bien: el virote debe salir de la boca.\n3. Con el enemigo en una sala, mirar si se mueve, apunta y dispara.\n4. Fijarse en el efecto de carga, el fogonazo, el chorro del propulsor y la estela del retroceso. Ninguno debe verse como un cuadrado.\n5. Comprobar que la llama de Lower se mece bien y no se separa del torso.\n6. Comprobar que el virote verde se ve limpio, sin halo.",
+            "at": "2026-10-07T03:49:49.554Z",
+            "durationMs": 239775,
+            "costUsd": 0.47548880000000004,
+            "tokens": {
+              "input": 32,
+              "cacheWrite": 59782,
+              "cacheRead": 815634,
+              "output": 7317,
+              "calls": 19
+            },
+            "runId": "2026-10-07T03-45-49-779Z_ml6hdb2",
+            "sessionId": "e6585738-659f-4484-adf6-81833f11d313"
+          }
+        },
+        {
+          "id": "2fyvohh",
+          "note": "",
+          "done": false,
+          "text": "Cuerpo de LeafBladeBot (make-enemy, paso 1)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), section \"Por pasos ▸ Paso 1 (cuerpo)\", to build ONLY THE BODY of the enemy LeafBladeBot from its approved design.\nEnemy sheet: docs/enemigos/LeafBladeBot/enemigo.json. Original request (user's words): «robot». Design note: «Robot afilado en forma de hoja con cañón doble fino».\nThe design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is docs/enemigos/LeafBladeBot/diseno.png. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/LeafBladeBot_base.png; no subfolders) and use \"LeafBladeBot_base.png\" as the --ref of step 2 (no \" [output]\"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.\nZone: forest (docs/zonas.json).\nDo: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), `make-enemy.mjs`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 3 (states), 5 (attacks), 6 (sounds): the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).\nNobody will answer: where the skill says \"stop\", pick the best yourself from a contact sheet and go on.\nCopy the assembled picture to docs/enemigos/LeafBladeBot/cuerpo.png (the sheet shows it) and write in the sheet: \"estado\": \"cuerpo-por-aprobar\", \"prefab\": \"<prefab path under Assets>\", \"cuerpo\": { \"fecha\": \"<ISO>\", \"plantilla\": \"<rig template id>\", \"partes\": \"<folder of the final parts>\", \"brief\": \"<brief path>\", \"resumen\": \"<2–3 sentences, in Spanish: which parts, anything dubious about proportions / layers>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"por-montar\" and explain in the report what failed.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "LeafBladeBot",
+          "status": "done",
+          "lastRunId": "2026-10-07T03-52-13-180Z_2fyvohh",
+          "sessionId": "22a53787-57df-44c4-bfd8-b68a80e20372",
+          "result": {
+            "ok": true,
+            "text": "Cuerpo de LeafBladeBot montado: prefab en `Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab`, estado `cuerpo-por-aprobar`. Compila limpio (`recompile_status`: up_to_date) y está commiteado (`b8c10e21`). No probé nada en Play Mode.\n\n- **Piezas:** 4, plantilla `floatingCaster`, una semilla por pieza y todas salieron limpias a la primera:\n  - Torso: la hoja con la gema.\n  - Head: el casco frontal con el ojo y el cristal.\n  - CastArm: el cañón doble con su soporte de madera.\n  - Lower: el anillo propulsor junto con la llama.\n- **Orientación:** la base ya mira a la derecha, así que no espejé nada.\n- **Brief:** solo con los valores por defecto de la plantilla, sin ataques, efectos ni gestos. Importé con `ResetTuning = true`.\n- **Archivos:**\n  - Imagen ensamblada: `docs/enemigos/LeafBladeBot/cuerpo.png`.\n  - Hoja del enemigo: `enemigo.json`, con `estado`, `prefab` y `cuerpo` rellenos, más la imagen marcada para la web con `EnemyPreviewExporter.Mark`.\n  - Brief: `Web/RedMagicWeb/tools/comfy/enemies/LeafBladeBot.json`.\n  - Piezas finales: `output/claude/LeafBladeBot/final` en la carpeta de Comfy.\n\n**Decisiones por mi cuenta:**\n- **Altura:** puse `height` en 1.8 en vez de 2.8. La hoja es muy alargada y con 2.8 habría salido de unas 10 unidades de ancho. Con 1.8 el cuerpo mide unas 18.8 × 7.6 unidades, antes de la escala de la raíz (0.2359).\n- **Pivote y boca del cañón:** son estimados. Pivote en (0.2, 0.5), boca en (1.0, 0.38).\n- **Anillo y llama:** van juntos en `Lower`. Esto está sin comprobar; si prefieres el anillo suelto, hay que separarlo en una pieza `Accessory`.\n\n**A probar en 🧬 Enemy Studio:**\n1. Abrir el prefab y comprobar que la altura y la proporción de la hoja son las que quieres.\n2. Revisar el orden de capas: Head delante del Torso, cañón detrás del torso y propulsor detrás.\n3. Comprobar que la boca del cañón queda en la punta de los dos tubos.\n4. Si todo está bien, 💾 Guardar en Unity y pasar a `cuerpo-aprobado`.",
+            "at": "2026-10-07T03:55:01.144Z",
+            "durationMs": 167964,
+            "costUsd": 0.4273446,
+            "tokens": {
+              "input": 30,
+              "cacheWrite": 53569,
+              "cacheRead": 742593,
+              "output": 6449,
+              "calls": 18
+            },
+            "runId": "2026-10-07T03-52-13-180Z_2fyvohh",
+            "sessionId": "22a53787-57df-44c4-bfd8-b68a80e20372"
+          }
+        },
+        {
+          "id": "t35tyrl",
+          "note": "",
+          "done": false,
+          "text": "Cuerpo de BarkDrumBot (make-enemy, paso 1)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), section \"Por pasos ▸ Paso 1 (cuerpo)\", to build ONLY THE BODY of the enemy BarkDrumBot from its approved design.\nEnemy sheet: docs/enemigos/BarkDrumBot/enemigo.json. Original request (user's words): «robot». Design note: «Robot tambor de corteza con lanzacohetes de un tubo».\nThe design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is docs/enemigos/BarkDrumBot/diseno.png. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/BarkDrumBot_base.png; no subfolders) and use \"BarkDrumBot_base.png\" as the --ref of step 2 (no \" [output]\"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.\nZone: forest (docs/zonas.json).\nDo: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), `make-enemy.mjs`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 3 (states), 5 (attacks), 6 (sounds): the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).\nNobody will answer: where the skill says \"stop\", pick the best yourself from a contact sheet and go on.\nCopy the assembled picture to docs/enemigos/BarkDrumBot/cuerpo.png (the sheet shows it) and write in the sheet: \"estado\": \"cuerpo-por-aprobar\", \"prefab\": \"<prefab path under Assets>\", \"cuerpo\": { \"fecha\": \"<ISO>\", \"plantilla\": \"<rig template id>\", \"partes\": \"<folder of the final parts>\", \"brief\": \"<brief path>\", \"resumen\": \"<2–3 sentences, in Spanish: which parts, anything dubious about proportions / layers>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"por-montar\" and explain in the report what failed.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "BarkDrumBot",
+          "status": "done",
+          "lastRunId": "2026-10-07T03-56-11-467Z_t35tyrl",
+          "sessionId": "355a4d66-b913-424f-bd29-ba9bc5e4eaa6",
+          "result": {
+            "ok": true,
+            "text": "Cuerpo de BarkDrumBot listo y commiteado. El prefab está en `Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab` y compila limpio. No lo he probado en Play Mode.\n\n- **Base:** copiada a Comfy como `BarkDrumBot_base.png`. Mira a la derecha, así que no hubo que espejar nada.\n- **Piezas:** plantilla `floatingCaster` con 4 piezas, una semilla por pieza:\n  - Torso: el barril.\n  - Head: la cúpula, con el cilindro verde lateral incluido.\n  - CastArm: el tubo lanzacohetes.\n  - Lower: la tobera con su llama.\n- **Reintento del CastArm:** salió desplazado hacia abajo con la primera semilla. Repetí con una semilla nueva y una posición explícita en el prompt, y quedó en su sitio.\n- **Brief:** `Web/RedMagicWeb/tools/comfy/enemies/BarkDrumBot.json`. Alto 2.4, sin ataques, efectos ni gestos propios. Pivote del CastArm `[0.1, 0.4]` y boca `[0.98, 0.4]`.\n- **Importación:** hecha con `ResetTuning = true`. Las piezas están en `Assets/Art/RigImports/BarkDrumBot/`. El preview web ya está marcado.\n- **Hoja del enemigo:** `estado` = `cuerpo-por-aprobar`, con `prefab` y `cuerpo` rellenos. La imagen ensamblada está en `docs/enemigos/BarkDrumBot/cuerpo.png`.\n\nDecisiones:\n- No hay OffArm. El cilindro verde trasero va pegado a la cabeza porque estaba medio oculto tras ella.\n- El CastArm va detrás de la cabeza, como en el diseño.\n\nQué probar en 🧬 Enemy Studio:\n1. Abrir el prefab y ver que las 4 piezas encajan como en `cuerpo.png`.\n2. Comprobar la tobera: salió algo más alta que en el diseño, quizá haya que bajarla.\n3. Comprobar que el tubo asoma por detrás de la cabeza sin cortes.\n4. Comprobar que la boca del tubo está en la punta derecha, que es de donde saldrá el proyectil.\n5. Si algo falla, ajustar proporciones, distancias y capas, guardar en Unity y aprobar el cuerpo. Una pieza concreta se rehace con ↻ Rehacer.",
+            "at": "2026-10-07T03:59:55.650Z",
+            "durationMs": 224183,
+            "costUsd": 0.48058940000000006,
+            "tokens": {
+              "input": 38,
+              "cacheWrite": 52673,
+              "cacheRead": 946957,
+              "output": 8043,
+              "calls": 23
+            },
+            "runId": "2026-10-07T03-56-11-467Z_t35tyrl",
+            "sessionId": "355a4d66-b913-424f-bd29-ba9bc5e4eaa6"
+          }
+        },
+        {
+          "id": "dlgnt71",
+          "note": "",
+          "done": false,
+          "text": "Cuerpo de SeedPodBot (make-enemy, paso 1)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), section \"Por pasos ▸ Paso 1 (cuerpo)\", to build ONLY THE BODY of the enemy SeedPodBot from its approved design.\nEnemy sheet: docs/enemigos/SeedPodBot/enemigo.json. Original request (user's words): «robot». Design note: «Robot vaina redondo con tubo de semillas».\nThe design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is docs/enemigos/SeedPodBot/diseno.png. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/SeedPodBot_base.png; no subfolders) and use \"SeedPodBot_base.png\" as the --ref of step 2 (no \" [output]\"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.\nZone: forest (docs/zonas.json).\nDo: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), `make-enemy.mjs`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 3 (states), 5 (attacks), 6 (sounds): the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).\nNobody will answer: where the skill says \"stop\", pick the best yourself from a contact sheet and go on.\nCopy the assembled picture to docs/enemigos/SeedPodBot/cuerpo.png (the sheet shows it) and write in the sheet: \"estado\": \"cuerpo-por-aprobar\", \"prefab\": \"<prefab path under Assets>\", \"cuerpo\": { \"fecha\": \"<ISO>\", \"plantilla\": \"<rig template id>\", \"partes\": \"<folder of the final parts>\", \"brief\": \"<brief path>\", \"resumen\": \"<2–3 sentences, in Spanish: which parts, anything dubious about proportions / layers>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"por-montar\" and explain in the report what failed.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "SeedPodBot",
+          "status": "done",
+          "lastRunId": "2026-10-07T04-00-13-857Z_dlgnt71",
+          "sessionId": "bc71219a-4643-4ca9-b7c8-d06c9401659f",
+          "result": {
+            "ok": true,
+            "text": "Cuerpo de SeedPodBot montado e importado como prefab, sin ataques, efectos ni gestos propios. Compila sin errores y está commiteado. No hice Play Mode.\n\n- **Piezas:** 5 con un seed cada una, todas pasaron el chequeo a la primera: Torso (bloque de piedra), Head (casco con ojo), CastArm (cañón con soporte), OffArm (cristales y soporte de madera, detrás del torso) y Lower (propulsor con anillo y llama). La base mira a la derecha, así que no hubo que espejar. `finish-parts` dio un solo bloque por pieza y sin fleco blanco.\n- **Plantilla y brief:** `floatingCaster`, altura 2.4, `archetype` FlyingRanged. El brief está en `Web/RedMagicWeb/tools/comfy/enemies/SeedPodBot.json`.\n- **Prefab:** `Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab`, con las piezas en `Assets/Art/RigImports/SeedPodBot/`. Importé con `ResetTuning = true`.\n- **Ficha:** `docs/enemigos/SeedPodBot/enemigo.json` con `estado: cuerpo-por-aprobar`, `prefab` y `cuerpo`. La imagen ensamblada está en `docs/enemigos/SeedPodBot/cuerpo.png` y marqué el preview con `EnemyPreviewExporter.Mark`.\n- **Decisiones:**\n  - Usé el slot opcional `OffArm` para los cristales y el soporte de madera, que son una sola pieza.\n  - El pivote (`[0.15,0.45]`) y la boca del cañón (`[0.98,0.4]`) son estimados a partir de BarkDrumBot, no medidos.\n- **Dudoso:** la Head salió algo recortada y con el ojo poco marcado.\n- **Campo `partes`:** en la ficha puse el texto «Web/RedMagicWeb/tools/comfy (output) claude/SeedPodBot/final», que no es una ruta exacta. Las partes finales están en `%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/output/claude/SeedPodBot/final`.\n\n**Para probar:**\n1. En 🧬 Enemy Studio, abre el prefab y mira que las piezas encajen sin huecos (Head sobre Torso, Lower debajo).\n2. Capas: Lower y OffArm detrás, Torso en medio, Head y CastArm delante.\n3. Pivote y boca del cañón: ajústalos si hace falta y guarda con 💾 Guardar en Unity.\n4. Si todo está bien, pasa la ficha a `cuerpo-aprobado`. Si no, usa ↻ Rehacer en la pieza que falle.",
+            "at": "2026-10-07T04:03:26.331Z",
+            "durationMs": 192474,
+            "costUsd": 0.3384112,
+            "tokens": {
+              "input": 24,
+              "cacheWrite": 43459,
+              "cacheRead": 524986,
+              "output": 5953,
+              "calls": 15
+            },
+            "runId": "2026-10-07T04-00-13-857Z_dlgnt71",
+            "sessionId": "bc71219a-4643-4ca9-b7c8-d06c9401659f"
+          }
+        },
+        {
+          "id": "05wa22t",
+          "note": "",
+          "done": false,
+          "text": "Cuerpo de LensCannonBot (make-enemy, paso 1)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), section \"Por pasos ▸ Paso 1 (cuerpo)\", to build ONLY THE BODY of the enemy LensCannonBot from its approved design.\nEnemy sheet: docs/enemigos/LensCannonBot/enemigo.json. Original request (user's words): «robot con arma incoporada en su cuerpo». Design note: «El torso entero es un cañón: tambor de acero con una gran lente de cristal en el pecho que dispara.».\nThe design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is docs/enemigos/LensCannonBot/diseno.png. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/LensCannonBot_base.png; no subfolders) and use \"LensCannonBot_base.png\" as the --ref of step 2 (no \" [output]\"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.\nZone: ice (docs/zonas.json).\nDo: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), `make-enemy.mjs`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 3 (states), 5 (attacks), 6 (sounds): the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).\nNobody will answer: where the skill says \"stop\", pick the best yourself from a contact sheet and go on.\nCopy the assembled picture to docs/enemigos/LensCannonBot/cuerpo.png (the sheet shows it) and write in the sheet: \"estado\": \"cuerpo-por-aprobar\", \"prefab\": \"<prefab path under Assets>\", \"cuerpo\": { \"fecha\": \"<ISO>\", \"plantilla\": \"<rig template id>\", \"partes\": \"<folder of the final parts>\", \"brief\": \"<brief path>\", \"resumen\": \"<2–3 sentences, in Spanish: which parts, anything dubious about proportions / layers>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"por-montar\" and explain in the report what failed.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "LensCannonBot",
+          "status": "done",
+          "lastRunId": "2026-10-07T04-19-30-789Z_05wa22t",
+          "sessionId": "f7c34a07-1f03-4006-9a3b-c51e952d18ea",
+          "result": {
+            "ok": true,
+            "text": "Cuerpo de LensCannonBot montado e importado en Unity; queda pendiente que lo revises (`estado: cuerpo-por-aprobar`). Compila sin errores y está commiteado. No probé nada en Play Mode.\n\n- **Piezas:** plantilla `floatingCaster`, 4 piezas, una semilla por pieza.\n  - Torso: tambor con lente y coraza de piedra.\n  - Head: visera con ojos y cristales.\n  - CastArm: anillo con púas más el cañón.\n  - Lower: propulsor con llama.\n  - Omití Accessory y OffArm, que son opcionales.\n- **Reintento:** el primer CastArm movió el anillo encima de la lente. Repetí esa pieza una vez con otra semilla y otro prompt, y ya quedó en su sitio.\n- **Orientación:** el diseño mira a la derecha, así que no hubo que espejar nada.\n- **Capas:** el cañón cruza el torso y debe dibujarse delante, pero en la plantilla CastArm va detrás. Añadí la opción `front: [slot]` a `make-enemy.mjs` y el brief usa `\"front\": [\"castArm\"]`.\n- **Brief:** sin ataques, efectos ni gestos propios, solo los de la plantilla. Importé con `ResetTuning = true`.\n- **Dudoso:** el anillo del cañón forma parte de CastArm, que gira al apuntar. Al girar puede despegarse un poco del tambor.\n- **Hoja:** actualizada con `estado`, `prefab`, `cuerpo` y `cuerpo.png`, y refresqué su imagen para la web con `EnemyPreviewExporter.Mark`.\n\nUbicaciones:\n- Prefab: `Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab`\n- Brief: `Web/RedMagicWeb/tools/comfy/enemies/LensCannonBot.json`\n- Partes finales: `claude/LensCannonBot/final` en la carpeta de salida de Comfy\n- Imagen ensamblada: `docs/enemigos/LensCannonBot/cuerpo.png`\n\nQué probar:\n1. En 🎨 Diseños, mira `cuerpo.png` y compáralo con el diseño. Debe verse la lente a la izquierda y el cañón delante del torso.\n2. Abre el prefab en 🧬 Enemy Studio y revisa el orden de capas: Lower, Torso, Head, CastArm.\n3. En Enemy Studio, comprueba que el pivote del cañón (en el anillo) y la boca (punta del cañón) están bien.\n4. Ajusta proporciones y distancias si hace falta, guarda en Unity y aprueba (`cuerpo-aprobado`).",
+            "at": "2026-10-07T04:24:00.058Z",
+            "durationMs": 269268,
+            "costUsd": 0.6411222,
+            "tokens": {
+              "input": 44,
+              "cacheWrite": 66936,
+              "cacheRead": 1276451,
+              "output": 11800,
+              "calls": 27
+            },
+            "runId": "2026-10-07T04-19-30-789Z_05wa22t",
+            "sessionId": "f7c34a07-1f03-4006-9a3b-c51e952d18ea"
+          }
+        },
+        {
+          "id": "fvist42",
+          "note": "",
+          "done": false,
+          "text": "Cuerpo de MawDomeBot (make-enemy, paso 1)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), section \"Por pasos ▸ Paso 1 (cuerpo)\", to build ONLY THE BODY of the enemy MawDomeBot from its approved design.\nEnemy sheet: docs/enemigos/MawDomeBot/enemigo.json. Original request (user's words): «robot con arma incoporada en su cuerpo». Design note: «Cabeza-cúpula con una ranura-boca brillante que es el arma; cuerpo corto y cristales a modo de cuernos.».\nThe design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is docs/enemigos/MawDomeBot/diseno.png. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/MawDomeBot_base.png; no subfolders) and use \"MawDomeBot_base.png\" as the --ref of step 2 (no \" [output]\"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.\nZone: ice (docs/zonas.json).\nDo: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), `make-enemy.mjs`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 3 (states), 5 (attacks), 6 (sounds): the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).\nNobody will answer: where the skill says \"stop\", pick the best yourself from a contact sheet and go on.\nCopy the assembled picture to docs/enemigos/MawDomeBot/cuerpo.png (the sheet shows it) and write in the sheet: \"estado\": \"cuerpo-por-aprobar\", \"prefab\": \"<prefab path under Assets>\", \"cuerpo\": { \"fecha\": \"<ISO>\", \"plantilla\": \"<rig template id>\", \"partes\": \"<folder of the final parts>\", \"brief\": \"<brief path>\", \"resumen\": \"<2–3 sentences, in Spanish: which parts, anything dubious about proportions / layers>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"por-montar\" and explain in the report what failed.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "MawDomeBot",
+          "status": "done",
+          "lastRunId": "2026-10-07T04-24-01-174Z_fvist42",
+          "sessionId": "13305da9-283a-4c19-ae87-b165c02e77a2",
+          "result": {
+            "ok": true,
+            "text": "El cuerpo de MawDomeBot está montado y importado como prefab. No lo he probado en Play Mode; el compile check sale limpio (`up_to_date`). El cañón no quedó como en el diseño y conviene revisarlo.\n\n**Qué hice**\n- Copié `diseno.png` a la carpeta input de Comfy como `MawDomeBot_base.png`. Mira a la derecha, así que no espejé nada.\n- Dibujé 5 piezas en su sitio con la plantilla `floatingCaster`:\n  - Torso: la cúpula en forma de campana.\n  - Head: la bola con el ojo.\n  - CastArm: el cañón.\n  - Lower: la llama.\n  - Accessory: el anillo con soportes.\n- Terminé las piezas (×2, 2048 px) con `finish-parts`: una isla por pieza y sin restos de fondo blanco.\n- Hice un brief sin ataques, efectos ni gestos propios, con el cañón dibujado delante del torso. Eso significa que no se ve la parte del cañón que \"entra\" en la campana.\n- Importé el zip con `ResetTuning = true`.\n\n**Dónde está cada cosa**\n- Prefab: `Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab`\n- Piezas importadas: `Assets/Art/RigImports/MawDomeBot/`\n- Piezas finales: `claude/MawDomeBot/final` (en la carpeta output de Comfy)\n- Brief: `Web/RedMagicWeb/tools/comfy/enemies/MawDomeBot.json`\n- Imagen: `docs/enemigos/MawDomeBot/cuerpo.png`\n- La ficha `enemigo.json` queda en `cuerpo-por-aprobar` y la miniatura está refrescada. Commit `0821b2e5`.\n\n**Decisiones**\n- **Cañón:** necesitó 3 intentos y ninguno quedó igual que en el diseño. El elegido (s13) es más largo y más bajo que el original, con la misma inclinación. Lo acepté sin más intentos porque ya había gastado los 2 reintentos permitidos y puede ajustarse en Enemy Studio.\n- **Torso, Lower y Accessory:** pasaron a la primera.\n- **Head:** salió bien a la segunda.\n- **Accessory:** los soportes salieron algo distintos de los del diseño.\n\n**Qué probar**\n1. Abre MawDomeBot en 🧬 Enemy Studio y mira que el cañón esté delante de la campana y bien colocado (longitud y altura).\n2. Mira que la boca del cañón (la punta derecha) quede donde saldrá el disparo.\n3. Mira la cabeza sobre la campana y el anillo con soportes detrás de la campana, encima de la llama.\n4. Si algo está mal, ajústalo en Studio y pulsa 💾 Guardar en Unity. Si el cañón no se arregla, usa ↻ Rehacer sobre esa pieza.",
+            "at": "2026-10-07T04:28:55.962Z",
+            "durationMs": 294787,
+            "costUsd": 0.5072728000000001,
+            "tokens": {
+              "input": 36,
+              "cacheWrite": 56423,
+              "cacheRead": 914544,
+              "output": 9860,
+              "calls": 24
+            },
+            "runId": "2026-10-07T04-24-01-174Z_fvist42",
+            "sessionId": "13305da9-283a-4c19-ae87-b165c02e77a2"
+          }
         }
       ]
     },
@@ -1078,6 +1389,237 @@
           },
           "sessionId": "9d30cfe5-f29f-476a-ab7e-72f12fb3ee4a",
           "lastRunId": "2026-10-05T20-03-28-581Z_vxcdajp"
+        },
+        {
+          "id": "jegxwgh",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 5: robor lanzador flotante, con una antena de la que saldra un rayo lazer, pero no pidas el rayo laser en su sprite",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «robor lanzador flotante, con una antena de la que saldra un rayo lazer, pero no pidas el rayo laser en su sprite»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: ice (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: floating, attack type: magic (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body floating --attack magic --cast <the body part that casts: hand, mouth…>: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 5 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-robor-lanzador-flotante-con-una-antena-d.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-robor-lanzador-flotante-con-una-antena-d",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "lastRunId": "2026-10-07T03-29-22-718Z_jegxwgh",
+          "sessionId": "9f927c46-26aa-4944-92c8-56f56c0ca39d",
+          "result": {
+            "ok": true,
+            "text": "Añadí 5 propuestas de robot flotante con antena al lote `docs/disenos/2026-10-07-robor-lanzador-flotante-con-una-antena-d.json`. `check-design-batch.mjs` dice \"Lote correcto: 5 propuesta(s)\" y está commiteado (38b334a1). No hay imágenes todavía: pega cada prompt en Gemini y trae la imagen a la tarjeta (🖼 / Ctrl+V).\n\nLos 5 prompts salen de `enemy-prompt.mjs --zone ice --body floating --attack magic --target gemini`, con `--cast` puesto en la antena. Los 5 incluyen una línea que dice que la antena está en reposo y que no se dibuje ningún rayo ni luz.\n\n1. **FrostPylonBot**: torre alta y delgada, con una antena recta larga que termina en una bolita.\n2. **IceDishBot**: platillo redondo con una antena parabólica; el cristal grande va en el centro del plato.\n3. **SnowCrabBot**: caja achaparrada con una antena en V, de dos puntas, y un cristal en cada punta.\n4. **CrystalOrbBot**: esfera lisa con una antena de aguja con un anillo en la base.\n5. **IceLanternBot**: tubo cónico tipo linterna con una antena en espiral y tres cristales a lo largo de la espiral.\n\n- **Decisiones:** puse la antena como la parte que lanza porque el rayo sale de ahí; el robot mantiene el metal y la paleta de hielo, sin cubrirse de hielo; ninguno de los nombres coincide con prefabs existentes.\n- **Documento:** la tarea no tiene documento, así que no actualicé ninguno.\n\nPara probar:\n- Pega cada prompt en Gemini y comprueba que no dibuje patas ni arma, y que no haya rayo saliendo de la antena.\n- Mira si los 5 se ven distintos entre sí.\n- Aprueba o descarta en 🎨 Diseños.",
+            "at": "2026-10-07T03:29:51.867Z",
+            "durationMs": 29149,
+            "costUsd": 0.1865198,
+            "tokens": {
+              "input": 12,
+              "cacheWrite": 29713,
+              "cacheRead": 198519,
+              "output": 2794,
+              "calls": 7
+            },
+            "runId": "2026-10-07T03-29-22-718Z_jegxwgh",
+            "sessionId": "9f927c46-26aa-4944-92c8-56f56c0ca39d"
+          }
+        },
+        {
+          "id": "rwrju01",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 5: robot",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «robot»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: forest (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: floating, attack type: weapon (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body floating --attack weapon: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 5 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-robot.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-robot",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "lastRunId": "2026-10-07T03-39-29-338Z_rwrju01",
+          "sessionId": "d796b2f1-9e21-4f3e-92cb-0874ce039afa",
+          "result": {
+            "ok": true,
+            "text": "Añadí 5 propuestas de robot flotante con arma a `docs/disenos/2026-10-07-robot.json`. Todas están en estado `pending` y son del bosque. `check-design-batch.mjs` imprime \"Lote correcto: 5 propuesta(s)\", y el commit es `718e7514`.\n\nCada propuesta lleva solo el prompt de Gemini, sin imagen. Los prompts los generó `enemy-prompt.mjs` con `--body floating --attack weapon --target gemini`. Solo revisé que el lote pasara el chequeo; no leí los prompts generados completos.\n\n- **p1 MossLanternBot**: farol de latón con musgo, un ojo-lente grande y ballesta corta al frente.\n- **p2 BarkDrumBot**: tambor achaparrado de corteza con 3 cristales turquesa en fila y un lanzacohetes de un tubo encima.\n- **p3 LeafBladeBot**: casco esbelto en forma de hoja, ojo de rendija y cañón doble fino bajo el casco.\n- **p4 StoneSentryBot**: centinela de bloques de piedra con musgo, cristales en la espalda y cañón pesado.\n- **p5 SeedPodBot**: vaina ovoide dorada, pequeña y simpática, con cristal verde en el vientre y tubo lanzasemillas.\n\n**Decisiones:**\n- Usé `--note` para describir cada arma en vez de `--piece`, para no pisar las piezas por defecto del tipo `floating`. Es el punto más probable de fallo en el resultado de Gemini.\n- Los nombres no chocan con ningún prefab existente.\n- No toqué `todo.json`.\n\n**Qué probar:**\n- Pegar cada prompt en Gemini y comprobar que el robot no tiene patas ni brazos.\n- Comprobar que el arma es una pieza separada y se ve entera.\n- Pegar la imagen en la tarjeta con 🖼 o Ctrl+V y aprobar la que guste.",
+            "at": "2026-10-07T03:40:02.798Z",
+            "durationMs": 33460,
+            "costUsd": 0.1919356,
+            "tokens": {
+              "input": 12,
+              "cacheWrite": 30682,
+              "cacheRead": 201218,
+              "output": 2894,
+              "calls": 7
+            },
+            "runId": "2026-10-07T03-39-29-338Z_rwrju01",
+            "sessionId": "d796b2f1-9e21-4f3e-92cb-0874ce039afa"
+          }
+        },
+        {
+          "id": "lax7vl0",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 3: robot",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «robot»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: volcano (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: floating, attack type: weapon (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body floating --attack weapon: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 3 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-robot-2.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-robot-2",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "lastRunId": "2026-10-07T04-04-25-890Z_lax7vl0",
+          "sessionId": "ceed9dcb-36ab-41df-8ada-18ece438f452",
+          "result": {
+            "ok": true,
+            "text": "Añadí 3 propuestas de robot flotante (volcano, arma) a `docs/disenos/2026-10-07-robot-2.json`. `check-design-batch.mjs` dice \"Lote correcto: 3 propuesta(s)\" y el commit es `e8a46eb0`. Son prompts de Gemini, sin imagen: hay que pegar cada imagen en su tarjeta.\n\n- **p1 AnvilForgeBot**: cuerpo ancho en forma de yunque de hierro negro con ranura de horno naranja, y un cañón-martillo. Es pesado e industrial.\n- **p2 ObsidianSpikeBot**: cuerpo alto y angular de obsidiana con vetas de lava y un solo ojo rojo, y un lanzador tipo ballesta. Es afilado y siniestro.\n- **p3 CinderKettleBot**: tetera de cobre redonda con chimenea y dos ojos amarillos, y un mortero corto. Es redondeada y de aire cómico.\n\nTodos los prompts salen de `enemy-prompt.mjs --zone volcano --body floating --attack weapon --target gemini`. El arma y los cristales los describí en `--design` y `--crystals`. No usé `--piece`, porque reemplaza las piezas por defecto y dejaría el prompt con solo el arma. Así conserva las 4 piezas del tipo flotante: cuerpo, cabeza, propulsor y arma.\n\nLos nombres no chocan con los prefabs ni con `docs/enemigos`. No toqué `todo.json` ni las propuestas que ya había en el lote, y no hay documento de tarea que actualizar.\n\n**Qué probar**\n- Pega cada prompt en Gemini y comprueba que salen 4 piezas visibles y separables, con el propulsor como forma cerrada.\n- Revisa que el arma apunte a la derecha y no aparezca humo ni llamas en el fondo.\n- Pega la imagen con 🖼 o Ctrl+V en la tarjeta y aprueba la que prefieras.",
+            "at": "2026-10-07T04:05:05.074Z",
+            "durationMs": 39183,
+            "costUsd": 0.2231422,
+            "tokens": {
+              "input": 16,
+              "cacheWrite": 32530,
+              "cacheRead": 287301,
+              "output": 3553,
+              "calls": 9
+            },
+            "runId": "2026-10-07T04-04-25-890Z_lax7vl0",
+            "sessionId": "ceed9dcb-36ab-41df-8ada-18ece438f452"
+          }
+        },
+        {
+          "id": "entonsg",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 3: robot mele",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «robot mele»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: volcano (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: floating, attack type: none (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body floating --attack none: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 3 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-robot-mele.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-robot-mele",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "lastRunId": "2026-10-07T04-05-17-423Z_entonsg",
+          "sessionId": "e078ceda-9ac8-48a3-a24a-db527205f041",
+          "result": {
+            "ok": true,
+            "text": "Añadí 3 propuestas de robot flotante cuerpo a cuerpo (zona volcán) a `docs/disenos/2026-10-07-robot-mele.json`. `check-design-batch` dice \"Lote correcto: 3 propuesta(s)\" y quedó commiteado. No dibujé nada: son solo prompts para Gemini.\n\n- **p1 MagmaRamBot:** casco en cuña negro basalto con espolón romo a la derecha, vetas naranjas y un cristal grande en la punta. Dos cristales pequeños van en el lomo.\n- **p2 EmberSawBot:** cuerpo en disco de hierro oscuro con un anillo de sierra dentado de filo al rojo. El eje de la sierra es un cristal y hay otro pequeño arriba.\n- **p3 AnvilHeadBot:** torso alto y estrecho de metal rojo-marrón forjado, con una cabeza enorme en forma de yunque. Dos cristales salen de la parte trasera de la cabeza y uno brilla en el pecho.\n\n**Decisiones:**\n- Generé los prompts con `enemy-prompt.mjs --body floating --attack none --target gemini`. Las piezas son las de por defecto: Cuerpo, Cabeza o sensor y Propulsor.\n- Como el ataque `none` es cuerpo a cuerpo \"con su propio cuerpo\", el arma melé (espolón, sierra, yunque) va fusionada al casco y no como pieza suelta.\n- La zona solo aporta la paleta; los tres robots siguen siendo de metal.\n- El primer commit salió con el lote vacío por un error de ruta en mi script. El segundo lo corrige y es el que tiene las propuestas.\n- No toqué `todo.json` ni creé documento de tarea.\n\n**Para probar:**\n1. Abre 📋 Tareas ▸ 🎨 Diseños y comprueba que el lote muestra las 3 tarjetas con su prompt.\n2. Pega cada prompt en Gemini y pon la imagen en la tarjeta (🖼 o Ctrl+V).\n3. En p2, mira si Gemini deja la sierra como pieza cerrada y no tapa el cuerpo ni el propulsor; es la más propensa a ocultar piezas.\n4. Revisa que ningún robot salga con piernas ni brazos, y que el fondo sea blanco liso.",
+            "at": "2026-10-07T04:05:51.369Z",
+            "durationMs": 33946,
+            "costUsd": 0.21635320000000002,
+            "tokens": {
+              "input": 14,
+              "cacheWrite": 33564,
+              "cacheRead": 251696,
+              "output": 3173,
+              "calls": 8
+            },
+            "runId": "2026-10-07T04-05-17-423Z_entonsg",
+            "sessionId": "e078ceda-9ac8-48a3-a24a-db527205f041"
+          }
+        },
+        {
+          "id": "nuwzrq9",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 2: robot con arma incoporada en su cuerpo",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «robot con arma incoporada en su cuerpo»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: ice (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: floating, attack type: magic (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body floating --attack magic --cast <the body part that casts: hand, mouth…>: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 2 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-robot-con-arma-incoporada-en-su-cuerpo.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-robot-con-arma-incoporada-en-su-cuerpo",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "lastRunId": "2026-10-07T04-15-23-853Z_nuwzrq9",
+          "sessionId": "93b0d3a2-bf0f-4387-96e4-dd9647c18795",
+          "result": {
+            "ok": true,
+            "text": "Añadí 2 propuestas al lote `docs/disenos/2026-10-07-robot-con-arma-incoporada-en-su-cuerpo.json` y el chequeo del lote da \"Lote correcto: 2 propuesta(s)\". Quedó commiteado (`aefecde5`). Solo toqué ese archivo; no hubo cambios de código, así que no hubo que compilar.\n\nSon prompts de Gemini, sin imagen, hechos con `enemy-prompt.mjs --zone ice --body floating --attack magic --target gemini`. Pegas el prompt en Gemini y traes la imagen a la tarjeta.\n\n- **p1 `LensCannonBot`**: el torso entero es un cañón. Es un tambor de acero con aletas y una gran lente de cristal azul pálido en el pecho, que es lo que lanza el hechizo. Lleva dos cristales pequeños de antena y un propulsor debajo. `--cast`: la lente del pecho.\n- **p2 `MawDomeBot`**: cabeza-cúpula gris claro con una ranura-boca brillante, que es el arma, y un cuerpo corto. Tiene dos cristales a modo de cuernos y uno dentro de la boca. `--cast`: la ranura-boca.\n\n**Decisión:** pediste \"arma incorporada\", pero el tipo de ataque es mágico, que no admite arma como pieza aparte. Interpreté \"incorporada\" como que el propio cuerpo es el arma: lente de pecho y boca-cañón. No hay ninguna pieza de arma separada. Es lo que el tipo mágico permite.\n\n**Qué probar:**\n- Pega cada prompt en Gemini y comprueba que salen 3 piezas visibles enteras: cuerpo, cabeza o sensor, y propulsor.\n- Comprueba que no salen piernas, arma separada ni efectos, y que el fondo es blanco liso.\n- Comprueba que la lente (p1) y la boca (p2) se ven cerradas o en reposo, como pide la regla de lanzar después.",
+            "at": "2026-10-07T04:15:56.921Z",
+            "durationMs": 33068,
+            "costUsd": 0.21047059999999998,
+            "tokens": {
+              "input": 14,
+              "cacheWrite": 32354,
+              "cacheRead": 248233,
+              "output": 3138,
+              "calls": 8
+            },
+            "runId": "2026-10-07T04-15-23-853Z_nuwzrq9",
+            "sessionId": "93b0d3a2-bf0f-4387-96e4-dd9647c18795"
+          }
+        },
+        {
+          "id": "qgmylge",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 2: robot con arma",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «robot con arma»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: ice (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: floating, attack type: weapon (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body floating --attack weapon: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 2 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-robot-con-arma.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-robot-con-arma",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "lastRunId": "2026-10-07T04-15-57-245Z_qgmylge",
+          "sessionId": "ed8dabdb-02d9-4916-9b2d-ffa4de292a78",
+          "result": {
+            "ok": true,
+            "text": "Añadí 2 propuestas de robot flotante con arma (hielo) al lote `docs/disenos/2026-10-07-robot-con-arma.json`. `check-design-batch` dio \"Lote correcto\" y quedó commiteado (`7f2298d0`).\n\nAmbas son modo prompt: no hay imagen, solo el prompt de Gemini. Los generé con `enemy-prompt.mjs --zone ice --body floating --attack weapon --target gemini`.\n\n1. **SleetMortarBot**: cuerpo de campana invertida azul marino, cabeza redonda con visor cian, mortero corto de boca ancha como pieza aparte, y cristal grande arriba y uno pequeño en la boca.\n2. **HarpoonManta**: placa hexagonal plana gris pizarra tipo manta, lanzarrejones largo y fino con punta de garfios, y dos cristales pequeños como aletas más uno en la recámara.\n\n**Decisiones**\n- Usé las 4 piezas por defecto de flotante+arma (cuerpo, cabeza, propulsor, arma), sin `--piece`.\n- Los nombres no chocan con prefabs ni con otros lotes.\n- No toqué `todo.json`, no compilé Unity (solo JSON) y no hay documento de tarea que actualizar.\n\n**Para probar**\n- En 📋 Tareas ▸ 🎨 Diseños, abre el lote y copia cada prompt a Gemini.\n- Comprueba que salen 4 piezas visibles, sin patas, con el arma apuntando a la derecha y fondo blanco.\n- Pega la imagen en la tarjeta (🖼 / Ctrl+V) y aprueba o rechaza.",
+            "at": "2026-10-07T04:16:28.707Z",
+            "durationMs": 31462,
+            "costUsd": 0.23890279999999997,
+            "tokens": {
+              "input": 16,
+              "cacheWrite": 36290,
+              "cacheRead": 301754,
+              "output": 3336,
+              "calls": 9
+            },
+            "runId": "2026-10-07T04-15-57-245Z_qgmylge",
+            "sessionId": "ed8dabdb-02d9-4916-9b2d-ffa4de292a78"
+          }
+        },
+        {
+          "id": "jpuqj7g",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 2: robot mele",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «robot mele»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: ice (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: floating, attack type: none (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body floating --attack none: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 2 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-robot-mele-2.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-robot-mele-2",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "lastRunId": "2026-10-07T04-16-29-088Z_jpuqj7g",
+          "sessionId": "f0e5df14-2280-4bd9-86a3-c238a25f18d9",
+          "result": {
+            "ok": true,
+            "text": "Añadí 2 propuestas de robot mele flotante (hielo) a `docs/disenos/2026-10-07-robot-mele-2.json`. `check-design-batch.mjs` dio \"Lote correcto\" y el commit es `630309c6`.\n\nModo prompt: no dibujé nada. Cada `prompt` es la salida de `enemy-prompt.mjs --target gemini --zone ice --body floating --attack none`.\n\n- **1 · RamBulwarkBot**: bajo y ancho, casco en forma de barril de acero gris pizarra con ribetes azul hielo. Lleva una placa-ariete frontal con dos pinchos romos y un ojo-visor único en una cúpula pequeña. Un cristal grande arriba alimenta el propulsor.\n- **2 · HornCrusherBot**: alto y angular, con placas blanco-hielo y azul grisáceo. Cabeza en cuña de toro con dos cuernos metálicos curvos y visor estrecho, y propulsor en anillo bajo el torso. Dos cristales pequeños en el pecho, uno a cada lado de un núcleo central.\n\nDecisión: el ataque `none` es cuerpo a cuerpo, así que los \"pinchos\" y \"cuernos\" son parte del casco y no un arma separada. El prompt resultante pide 3 piezas: cuerpo, cabeza o sensor, y propulsor.\n\nNo toqué `todo.json`. Compilar no aplica: solo cambié un JSON, sin código.\n\nPara probar en la web (📋 Tareas ▸ 🎨 Diseños):\n- Pega cada prompt en Gemini y revisa que el robot no tenga piernas ni arma.\n- Comprueba que se vean enteras las 3 piezas, sin cuernos ni pinchos que tapen otras piezas.\n- Comprueba que el fondo sea blanco puro.\n- Sube la imagen a cada tarjeta con 🖼 o Ctrl+V.",
+            "at": "2026-10-07T04:16:55.053Z",
+            "durationMs": 25965,
+            "costUsd": 0.17378380000000002,
+            "tokens": {
+              "input": 10,
+              "cacheWrite": 29852,
+              "cacheRead": 160579,
+              "output": 2224,
+              "calls": 6
+            },
+            "runId": "2026-10-07T04-16-29-088Z_jpuqj7g",
+            "sessionId": "f0e5df14-2280-4bd9-86a3-c238a25f18d9"
+          }
         }
       ]
     }

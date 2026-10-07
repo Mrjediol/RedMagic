@@ -1,0 +1,15 @@
+{
+  "name": "ObsidianSpikeBot",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/ObsidianSpikeBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robot-2__p2.png",
+    "zone": "volcano",
+    "lote": "2026-10-07-robot-2",
+    "item": "p2",
+    "request": "robot",
+    "note": "Tall angular obsidian shard body with a crossbow-like launcher; sharp and menacing."
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T04:14:50.864Z"
+}

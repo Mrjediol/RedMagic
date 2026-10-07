@@ -1,0 +1,15 @@
+{
+  "name": "StoneSentryBot",
+  "estado": "por-montar",
+  "diseno": {
+    "image": "docs/enemigos/StoneSentryBot/diseno.png",
+    "source": "docs/disenos/img/2026-10-07-robot__p4.png",
+    "zone": "forest",
+    "lote": "2026-10-07-robot",
+    "item": "p4",
+    "request": "robot",
+    "note": "Centinela de piedra con cañón pesado"
+  },
+  "pendientes": [],
+  "createdAt": "2026-10-07T03:45:25.404Z"
+}

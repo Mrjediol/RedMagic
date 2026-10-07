@@ -51,8 +51,20 @@ of that kind, sound passes check-sounds and its id is free). While its tasks run
 ## An enemy (`docs/enemigos/<Name>/enemigo.json`)
 
 `{ name, estado, prefab?, imagen?, diseno?: { image, source, lote, item, request, note }, pendientes: [Pendiente],
-tarea?, montaje?: { fecha, resumen }, cuerpo?: { fecha, plantilla, partes, brief, resumen }, paso2?: { tipo | plantilla, proyectil|sonidos|efectos: { origen: biblioteca|nuevo, texto }, notas }, instrucciones?: [{ paso: montaje|cuerpo|resto, texto, fecha }], origen?, createdAt }` — `Pendiente = { id, tipo: comportamiento|sprite|gesto|ataque|bug|otro,
-texto, estado: abierto|en-curso|hecho, tarea?, resumen?, nota? }`.
+tarea?, montaje?: { fecha, resumen }, cuerpo?: { fecha, plantilla, partes, brief, resumen }, paso2?: { tipo | plantilla, proyectil|sonidos|efectos: { origen: biblioteca|nuevo, texto }, notas }, instrucciones?: [{ paso: montaje|cuerpo|resto|estados, texto, fecha }],
+piezas?: { modo: auto|manual, lista: [{ nombre, nota }] }, estados?: [Estado], origen?, createdAt }` — `Pendiente = { id, tipo: comportamiento|sprite|gesto|ataque|bug|otro,
+texto, estado: abierto|en-curso|hecho, tarea?, resumen?, nota? }` · `Estado = { id, pieza, nombre, texto, uso: ''|asleep|awake|alert|attacking|hurt|dead|gesto, frames, estado: abierto|en-curso|hecho, tarea?, resumen?, nota? }`.
+
+**🧩 Piezas** (sheet, while a launch cuts the body: por-montar … cuerpo-aprobado): *Que Claude decida* or *Las elijo yo* = a list
+(presets `PIECES` in `design-prompts.mjs`, sent by `GET /api/disenos` as `piezas`, or any typed name) + a note per piece. Sent with
+▶ Por pasos / ▶ Montar / ↻ Rehacer (`piezas` in the body) and stored. Meaning: the pieces to SEPARATE — whatever is not listed stays inside
+the piece that contains it, the assembled body always equals the design; one piece (`Body`) = not cut. make-enemy ▸ "Piezas elegidas"; the
+brief's `only` drops the template's other slots.
+**🎭 Estados de piezas** (sheet, every estado but descartado): an extra sprite of one part (angry face, open palm), never a change to the
+body; `frames` > 1 = a transition (make-enemy ▸ "Estados pedidos"; Unity does not play transitions yet: task `rigtrans`). Added with
+`update` op `add-estado` (also `edit-estado`, `remove-estado`); the open ones go with the next build / step task (`en-curso`), or on their own
+with ▶ Hacer estados once there is a prefab (`/states`, prompt `statesPrompt`). The extra-instructions wording tells Claude that a part's
+look is a state unless the user says to change the body.
 
 | estado | means | the card / sheet offers |
 |---|---|---|
@@ -92,7 +104,7 @@ la web…** (pick the prefab, type, text). **Pictures** come from Unity: `EnemyP
 - `POST /api/disenos/request` (above). `GET /api/disenos` also returns `tasks`: the state of every task a batch or an
   enemy points at.
 - `tools/taller-server/enemigos.mjs`: `GET /api/enemigos/prefabs`, `POST /api/enemigos/update` (estado, add / edit /
-  remove pendiente), `/build`, `/build-body` (step 1), `/build-rest` (step 3, `paso2`), `/work`, `/add`, `/picture`. Tasks are added with `store.addTask(phase, task)` and
+  remove pendiente, add / edit / remove estado), `/build`, `/build-body` (step 1; both take `piezas`), `/build-rest` (step 3, `paso2`), `/states`, `/work`, `/add`, `/picture`. Tasks are added with `store.addTask(phase, task)` and
   queued with `runner.enqueue`.
 
 ## Web (`modules/designs-panel.js`, inside 📋 Tareas — see `tareas.md` ▸ The web)
@@ -105,4 +117,6 @@ estado buttons, pendientes list + add + launch with model / effort), **Lotes rev
 `requestAnimationFrame` loop draws every `canvas[data-vfx]` with `drawFrame`), the sound's waveform + ▶.
 Card click = select only it (Ctrl+click adds / removes, Shift+click a range, Esc clears; a sound also plays); group bar = accept/discard the selection or all that are left;
 ⤢ = viewer (← → move, A accept, D discard, Space play, Esc). Polls every 5 s while visible; never re-renders while a
-name is being typed.
+name is being typed, nor while a mouse button is held inside it (`modules/press-guard.js`: a redraw between mousedown and
+mouseup swaps the button and the click is lost — it waits for the click; 📋 Tareas uses it too). A launch from a sheet is one
+at a time (a second click while it is on its way does nothing).

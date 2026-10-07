@@ -16,8 +16,9 @@
 //   POST /api/disenos/imagen { loteId, itemId, type, data: <base64> } | { loteId, itemId, url } → { image }   a picture pasted on a
 //        proposal's card (docs/disenos/img/); `url` = an https image the clipboard only had as a link (copied from a web page)
 //   GET  /api/enemigos/prefabs      → [{ name, prefab }]   enemy prefabs not in the library yet
-//   POST /api/enemigos/update { name, op: estado|add-pendiente|edit-pendiente|remove-pendiente, … }
-//   POST /api/enemigos/build { name, model, effort, instrucciones? }   POST /api/enemigos/build-body { name, …, instrucciones? } (step 1)
+//   POST /api/enemigos/update { name, op: estado|add-pendiente|edit-pendiente|remove-pendiente|add-estado|edit-estado|remove-estado, … }
+//   POST /api/enemigos/build { name, model, effort, instrucciones?, piezas? }   POST /api/enemigos/build-body { name, …, instrucciones?, piezas? } (step 1)
+//   POST /api/enemigos/states { name, model, effort, instrucciones? }   (a task for the open part states of a built enemy)
 //   POST /api/enemigos/build-rest { name, paso2, …, instrucciones? } (step 3)   POST /api/enemigos/work { name, ids?, model, effort }   (queue a task)
 //   POST /api/enemigos/add { prefab }   POST /api/enemigos/picture { name }   (the picture comes from Unity)
 //
@@ -45,7 +46,7 @@ import { Store } from './store.mjs';
 import { Runner } from './runner.mjs';
 import { Disenos } from './disenos.mjs';
 import { Enemigos } from './enemigos.mjs';
-import { BEHAVIORS } from './design-prompts.mjs';
+import { BEHAVIORS, PIECES } from './design-prompts.mjs';
 import { loadZones, loadTypes } from '../enemy-prompt.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -57,6 +58,7 @@ const DEFAULTS = {
   defaultModel: 'sonnet',
   defaultEffort: 'medium',
   maxBudgetUsd: null,
+  watchdog: { sameError: 4, sameBusyError: 20, errorsInARow: 8, sameCall: 20 },   // runner.mjs ▸ _watch: stops a run going in circles (0 = off)
   disallowedTools: ['Bash(git push:*)', 'Bash(git reset:*)', 'Bash(git rebase:*)', 'Bash(git clean:*)', 'Bash(git branch -D:*)', 'Bash(git checkout --:*)'],
   claudeExe: null,
   comfyExe: null,
@@ -210,7 +212,7 @@ async function api(req, res, url) {
     const lotes = disenos.list();
     const list = enemigos.list();
     const ids = [...lotes.flatMap((l) => l.taskIds || []), ...list.flatMap((e) => [e.tarea, ...e.pendientes.map((p) => p.tarea)])];
-    return send(res, 200, { lotes, enemigos: list, tasks: enemigos.taskStates(ids), zonas: loadZones(), tipos: loadTypes(), comportamientos: Object.entries(BEHAVIORS).map(([id, b]) => ({ id, label: b.label })) });
+    return send(res, 200, { lotes, enemigos: list, tasks: enemigos.taskStates(ids), zonas: loadZones(), tipos: loadTypes(), comportamientos: Object.entries(BEHAVIORS).map(([id, b]) => ({ id, label: b.label })), piezas: PIECES });
   }
   if (route === 'GET /api/enemigos/prefabs') return send(res, 200, enemigos.prefabs());
   if (route === 'GET /api/img') return serveFile(res, disenos.resolveImage(url.searchParams.get('src')), 'no-cache');
@@ -258,6 +260,7 @@ async function api(req, res, url) {
   if (route === 'POST /api/enemigos/build-body') return send(res, 200, enemigos.buildBody(body));
   if (route === 'POST /api/enemigos/build-rest') return send(res, 200, enemigos.buildRest(body));
   if (route === 'POST /api/enemigos/work') return send(res, 200, enemigos.work(body));
+  if (route === 'POST /api/enemigos/states') return send(res, 200, enemigos.states(body));
   if (route === 'POST /api/enemigos/add') return send(res, 200, enemigos.addExisting(body));
   if (route === 'POST /api/enemigos/picture') { enemigos.refreshPicture(body.name); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/cancel') { runner.cancel(body.taskId); return send(res, 200, { ok: true }); }

@@ -19,7 +19,7 @@ const PENDING_EN = { comportamiento: 'Behaviour', sprite: 'Sprite', gesto: 'Gest
 const PICTURE = 'After editing the enemy sheet, refresh its picture for the web: '
   + `unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@"<prefab>");'`;
 
-const PASO_EN = { montaje: 'the full build', cuerpo: 'step 1 (body)', resto: 'step 3 (the rest)' };
+const PASO_EN = { montaje: 'the full build', cuerpo: 'step 1 (body)', resto: 'step 3 (the rest)', estados: 'part states' };
 
 /**
  * The user's extra instructions: `now` = the text typed for THIS launch — it wins over the design and over this step's
@@ -28,8 +28,57 @@ const PASO_EN = { montaje: 'the full build', cuerpo: 'step 1 (body)', resto: 'st
 function instructionLines(enemy, now) {
   const before = (enemy.instrucciones || []).filter((i) => String(i.texto || '').trim());
   return [
-    ...(now ? ['EXTRA INSTRUCTIONS from the user for THIS launch (their words). They override the design picture and this step\'s limits where they conflict (e.g. asked for extra part states — sleeping / awake / attack — make them here even if this step normally does not):', `«${now}»`] : []),
+    ...(now ? ['EXTRA INSTRUCTIONS from the user for THIS launch (their words). They override this step\'s limits where they conflict. '
+      + 'Read them carefully: something that describes a LOOK of one part (an angry face, a sleeping face, an open palm, a stretched hand…) is a STATE — an extra sprite of that part for later animations (SKILL step 3) — and the base body / base parts stay exactly as the design. Only change the base body itself when they say so explicitly ("change the body", "make the cannon blue"). When unsure, it is a state.', `«${now}»`] : []),
     ...(before.length ? ['Earlier instructions for this enemy (their words; honour them where they still apply):', ...before.map((i) => `- [${PASO_EN[i.paso] || i.paso}] «${i.texto}»`)] : []),
+  ];
+}
+
+// ------------------------------------------------------------ the cut (🧩 Piezas) and part states (🎭 Estados)
+
+/** Pieces the sheet offers when the user chooses the cut; any other name can be typed. `slot` = the usual template slot. */
+export const PIECES = [
+  { id: 'Body', label: 'Cuerpo entero (sin separar)', en: 'the whole enemy as ONE piece: do not cut it', slot: 'torso' },
+  { id: 'Head', label: 'Cabeza', en: 'the head', slot: 'head' },
+  { id: 'Torso', label: 'Torso', en: 'the torso / main body', slot: 'torso' },
+  { id: 'Lower', label: 'Parte baja', en: 'the lower part (flame, skirt, thruster, tail end…)', slot: 'lower' },
+  { id: 'CastArm', label: 'Brazo que lanza / arma', en: 'the arm or weapon that aims and shoots', slot: 'castArm' },
+  { id: 'OffArm', label: 'Brazo libre', en: 'the arm that does not shoot', slot: 'offArm' },
+  { id: 'Legs', label: 'Piernas', en: 'the legs', slot: 'lower / hips' },
+  { id: 'Wings', label: 'Alas', en: 'the wings', slot: 'accessory' },
+  { id: 'Tail', label: 'Cola', en: 'the tail', slot: 'lower' },
+  { id: 'Accessory', label: 'Accesorio', en: 'an extra piece (ring, backpack, crest…)', slot: 'accessory' },
+];
+const pieceEn = (name) => PIECES.find((p) => p.id === name);
+/** When a part state shows (the rig's sprite states, make-enemy SKILL step 3). '' = Claude decides. */
+export const STATE_USES = { '': 'Claude decide', asleep: 'Dormido', awake: 'Despierto', alert: 'Alerta (ve al jugador)', attacking: 'Atacando', hurt: 'Herido', dead: 'Muerto', gesto: 'En un ataque concreto' };
+
+/** The user's cut (the sheet's 🧩 Piezas), or nothing when Claude decides. */
+function piecesLines(enemy) {
+  const pz = enemy.piezas;
+  if (pz?.modo !== 'manual' || !pz.lista?.length) return [];
+  const list = pz.lista.map((p) => `- ${p.nombre}${pieceEn(p.nombre) ? ` (${pieceEn(p.nombre).en}; usual slot ${pieceEn(p.nombre).slot})` : ''}${p.nota ? ` — the user says: «${p.nota}»` : ''}`);
+  const single = pz.lista.length === 1;
+  return [
+    'THE CUT IS DECIDED BY THE USER (make-enemy SKILL ▸ "Piezas elegidas"): separate EXACTLY these pieces, no more, no fewer:',
+    ...list,
+    single
+      ? 'ONE piece: do NOT cut the body. Only remove the background and finish it at 2k (SKILL step 4): that image is the single part AND the assembled body.'
+      : 'Everything not listed belongs to the listed piece that contains it (arms not listed = part of the torso, legs not listed = part of the lower piece). Nothing is removed: the assembled body must look exactly like the design.',
+    'Map each piece to a slot of the template (brief `only`: the slot ids used; the template\'s other slots are left out).',
+  ];
+}
+
+/** Part states the user asked for that are not done yet. */
+const openStates = (enemy) => (enemy.estados || []).filter((s) => s.estado !== 'hecho');
+
+/** The part states to make in this task (any step, or on their own). */
+function stateLines(items) {
+  if (!items.length) return [];
+  return [
+    'PART STATES requested by the user (make-enemy SKILL ▸ "Estados pedidos"). Each is an EXTRA SPRITE of one part for animations, NOT a change to the body: the base parts stay exactly as the design.',
+    ...items.map((s) => `- ${s.pieza} · «${s.nombre}»${s.texto ? ` — «${s.texto}»` : ''} · shows: ${s.uso === 'gesto' ? 'during one specific attack (a gesture sprite; until that gesture exists: extra_<name>)' : s.uso ? `rig state "${s.uso}"` : 'you decide (the closest rig state, else extra_<name>)'}${s.frames > 1 ? ` · TRANSITION of ${s.frames} frames from the normal part to this state` : ' · 1 sprite (direct swap)'} (id ${s.id})`),
+    'In the sheet, each state you made: "estado": "hecho" + "resumen" (files); one you could not: "estado": "abierto" + "nota" (why).',
   ];
 }
 
@@ -69,6 +118,8 @@ export function buildPrompt(enemy, now = '') {
       ...open.map((p) => `- [${PENDING_EN[p.tipo] || p.tipo}] ${p.texto} (id ${p.id})`),
       'In the sheet, mark each one you fully covered "estado": "hecho" with a "resumen"; one you could not, leave "abierto" with a "nota" saying why.',
     ] : []),
+    ...piecesLines(enemy),
+    ...stateLines(openStates(enemy)),
     ...instructionLines(enemy, now),
     'Nobody will answer: where the skill says "stop: the user picks / checks", pick the best yourself from a contact sheet and go on. The user approves at the end from the web.',
     `When done, in the sheet: "estado": "por-aprobar", "prefab": "<prefab path under Assets>", "montaje": { "fecha": "<ISO>", "resumen": "<1–2 short sentences, Spanish>" }.`,
@@ -101,7 +152,9 @@ export function bodyPrompt(enemy, now = '') {
     `Enemy sheet: docs/enemigos/${enemy.name}/enemigo.json. Original request (user's words): «${d.request || ''}»${d.note ? `. Design note: «${d.note}»` : ''}.`,
     designBase(enemy),
     ...(d.zone ? [`Zone: ${d.zone} (docs/zonas.json).`] : []),
-    'Do: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), `make-enemy.mjs`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 3 (states), 5 (attacks), 6 (sounds): the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).',
+    `Do: SKILL steps 2 and 4 (parts in place, finish) and a brief with NO attacks / effects / gestures of your own (template defaults only), \`make-enemy.mjs\`, import it into Unity so the body exists as a prefab (ResetTuning = true is fine: nothing is tuned yet). Do NOT do steps 5 (attacks), 6 (sounds)${openStates(enemy).length ? ', nor states other than the ones listed below' : ', nor 3 (states)'}: the user checks the body first and may adjust it in 🧬 Enemy Studio (proportions, distances, layers).`,
+    ...piecesLines(enemy),
+    ...stateLines(openStates(enemy)),
     ...(redo.length ? ['The user asked to redo the body with these notes (their words):', ...redo.map((p) => `- ${p.texto} (id ${p.id})`)] : []),
     ...instructionLines(enemy, now),
     'Nobody will answer: where the skill says "stop", pick the best yourself from a contact sheet and go on.',
@@ -131,6 +184,7 @@ export function restPrompt(enemy, now = '') {
     'Assets (the user\'s choice for each):',
     asset('proyectil'), asset('sonidos'), asset('efectos'),
     ...(p2.notas ? [`Extra notes from the user (their words): «${p2.notas}»`] : []),
+    ...stateLines(openStates(enemy)),
     ...instructionLines(enemy, now),
     ...(open.length ? ['Open notes in the sheet (their words) — part of the brief:', ...open.map((p) => `- [${PENDING_EN[p.tipo] || p.tipo}] ${p.texto} (id ${p.id})`), 'Mark each one you covered "estado": "hecho" + "resumen"; one you could not stays "abierto" + "nota".'] : []),
     `How to apply it on the existing body: write the brief for the attacks / effects / gestures, run \`node make-enemy.mjs <brief> --partial\` (→ out/<Name>.partial.zip, only gestures + attacks + effects) and import THAT zip into Unity (RigBundleImporter.Import with the partial zip; ResetTuning = false). The body part of the brief must match the prefab's parts (same template, parts folder from the sheet's cuerpo.partes). The partial zip carries gestures, effects and the deck only: movement / EnemyStats tuning for the chosen behaviour type (flying vs ground, ranges, speeds, projectile spec) is NOT in it — set it on the prefab's EnemyStats (unity eval / prefab edit, see docs/architecture/enemies.md), starting from the body's template defaults.`,
@@ -150,6 +204,19 @@ function designBase(enemy) {
   return fromComfy
     ? `The design is ALREADY approved: skip step 1 (Base). The base is the Comfy image "${base}" (the --ref of step 2); a copy is at ${d.image}.`
     : `The design is ALREADY approved: skip step 1 (Base). The base was drawn outside ComfyUI (Gemini); the picture is ${d.image}. Copy it to the ROOT of Comfy's input folder (%LOCALAPPDATA%/Comfy-Desktop/ComfyUI-Shared/input/${enemy.name}_base${ext}; no subfolders) and use "${enemy.name}_base${ext}" as the --ref of step 2 (no " [output]"). It faces right; if it faces left, mirror the final parts (SKILL step 1). Follow SKILL step 2's COMPLETE rule for every part that touches another; ONE seed per part.`;
+}
+
+/** Part states asked for on an enemy that already has a body (any estado after step 1, finished ones too). */
+export function statesPrompt(enemy, items, now = '') {
+  return [
+    `Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), sections "Estados pedidos" and 3–4, to add part states to the enemy ${enemy.name}${enemy.prefab ? ` (prefab: ${enemy.prefab})` : ''}.`,
+    `Enemy sheet: docs/enemigos/${enemy.name}/enemigo.json${enemy.cuerpo?.partes ? `; its final parts are in ${enemy.cuerpo.partes}` : ''}. The body is built (maybe adjusted by hand in 🧬 Enemy Studio): never re-import the full body zip, never change the base parts.`,
+    ...stateLines(items),
+    ...instructionLines(enemy, now),
+    'Wire into the prefab only the states that have a rig slot (asleep / awake / alert / attacking / hurt / dead, or a gesture the prefab already has: its RigSpriteSwap, see docs/architecture/procedural-rig.md); the rest stay as files for the step that uses them.',
+    'Nobody will answer: pick the best yourself from a contact sheet.',
+    PICTURE,
+  ].join('\n');
 }
 
 /** Fix the open "pendientes" of an existing enemy. */

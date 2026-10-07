@@ -44,7 +44,10 @@ batch** (`contact-sheet.mjs`), never at single full-size images. Trust the measu
 ## Por pasos (the web's ▶ Por pasos — for enemies the user doubts; ▶ Montar completo stays for simple ones)
 The 🎨 Diseños sheet splits the build in three, with the user in between (sheet: `docs/enemigos/<Name>/enemigo.json`):
 - **Paso 1 · cuerpo** (task from `bodyPrompt`): step 0–1 skipped (the design is the base), step 2 (parts in place) and 4 (finish), a
-  brief with NO attacks / effects / gestures of its own, `make-enemy.mjs`, import → a body-only prefab. Not steps 3, 5, 6.
+  brief with NO attacks / effects / gestures of its own, `make-enemy.mjs`, import → a body-only prefab. Not steps 5, 6;
+  step 3 only for the states the sheet asks for ("Estados pedidos"). The cut: "Piezas elegidas" if the user chose it.
+  (The prefab already shows EnemyBrain / attack components with placeholders: the importer adds them by default, no
+  tokens spent — leave them.)
   Ends with estado `cuerpo-por-aprobar`, `prefab`, `cuerpo: { fecha, plantilla, partes, brief, resumen }` and the assembled
   picture at `docs/enemigos/<Name>/cuerpo.png`. The user looks at it and, if proportions / distances / layers are off, adjusts it
   in 🧬 Enemy Studio (open from the Unity project, 💾 Guardar en Unity) → `cuerpo-aprobado`. A sprite pendiente + ↻ Rehacer = redo it.
@@ -56,6 +59,38 @@ The 🎨 Diseños sheet splits the build in three, with the user in between (she
   `out/<Name>.partial.zip` (gestures + effects + deck only); import it with `ResetTuning = false`. Movement / EnemyStats tuning is not in
   the partial: set it on the prefab. A template to inherit = copy its brief / prefab's tuning, deck, gestures, retargeted to this body's slots.
   Ends with estado `por-aprobar` and `montaje`.
+
+## Piezas elegidas (the sheet's 🧩 Piezas — when the prompt says "THE CUT IS DECIDED BY THE USER")
+The user lists the pieces to SEPARATE, not the anatomy. "Head, Torso, Lower" on a robot with arms and legs = three
+images: the arms are cut together with the torso, the legs with the lower piece. **Never drop anything**: the
+assembled body must match the design pixel for pixel. Step 2's edit for a piece erases only the OTHER listed pieces.
+A piece note («el torso es el cañón») says where it ends: follow it over your own reading of the picture.
+- One piece only (`Body`): no step 2. Remove the background + finish at 2k (step 4) → that single image is the part and
+  the assembled body.
+- Template: pick the one whose slots fit the pieces; map each piece to one slot and write `only: [slot ids]` in the
+  brief (the template's other slots are left out, even required ones). A piece that is the weapon / cannon goes in the
+  slot that shoots, or put `slots.<id>.muzzle` on the piece that has the mouth. A piece with no fitting slot: the closest
+  one (`accessory` for wings / crests) and say it in the report.
+
+## Estados pedidos (the sheet's 🎭 Estados — any step, finished enemies too)
+A state is an **extra sprite of one part** for animations (angry face, open palm). It never changes the base part
+or the body. Make it with step 3 on the FINISHED part's raw (`--ref` its raw, `--keep-size`), then step 4.
+- **Name**: the rig state when it fits (`uso` in the sheet: asleep | awake | alert | attacking | hurt | dead) →
+  `<Slot>__<state>.png`; during one attack → `<Slot>__gesture_<Gesture>.png` if that gesture exists, else
+  `<Slot>__extra_<name>.png` (kept in the folder; step 3 renames it to the gesture). make-enemy.mjs skips `extra_`.
+- **Transition (frames > 1)**: N drawings from the normal part to the state; the last one IS the state
+  (`<Slot>__<state>.png`), the others are `<Slot>__<state>.t1.png … .t<N-1>.png` (make-enemy.mjs skips them: Unity
+  does not play transitions yet — task `rigtrans` in todo.json). How:
+  1. Make the FINAL state first and check it (compare-variant: outline must not move).
+  2. Split the change into features and spread them over the frames — write it down before drawing. Angry, 4:
+     t1 brows start to lower · t2 brows lowered, eyes narrowing · t3 frown, eyes narrow, mouth tightening · final.
+     Never "a bit angry" for every frame: each frame says exactly which features moved and how far.
+  3. Each in-between is an edit of the PREVIOUS frame (t1 from the part, t2 from t1…) — *"Change only the <eyes,
+     brows> of image1: <this frame's amount>. Keep everything else identical, same outline…"* — so the sequence
+     stays continuous.
+  4. ONE contact sheet: part → t1 … final, in order. It must read as one smooth motion: no feature going back, no
+     jump bigger than the others, no colour / outline drift. Redo only the bad frame (≤ 2 retries); else keep the
+     best and note it in the sheet's `nota`.
 
 ## 1 · Base (stop: the user picks)
 The user's best bases come from **Gemini** (pasted by hand in the Gemini app): give them the prompt of
@@ -86,6 +121,9 @@ works far better than "keep only X" (Knight 2026-10-03: "keep only" failed 5 of 
   extra seeds only got worse or identical (seeds barely change a part; the prompt does). A part that FAILS: change the
   prompt (say what was kept / what is missing, name it by what it is) and run ONE seed; at most 2 retries, then fix the
   base image instead (Gemini, see `base-prompt-gemini.md`). Name seeds in the file (`<e>_<Slot>_s<N>`).
+  **Unattended (a web task): no Gemini.** After the 3rd failed try of a part, stop on it: keep the best attempt,
+  finish the rest of the enemy, and open the report with "No conseguí separar bien <part>: <what is wrong>" (and a
+  `nota` in the sheet). Same for a state. Never a 4th seed.
   (Writing the shell loop: do not reuse `$s` for both the seed and the timer; the names then carry the clock.)
 The part stays where it was on the canvas → the parts assemble themselves. If the model keeps other
 parts, name each thing to delete and say "the single … at the far left".
@@ -138,7 +176,9 @@ gesture: Flick / Charge / Sweep).
 `unity command eval --timeout 600 --code 'return RedMagic.Rigging.EditorTools.RigBundleImporter.Import(@"<abs zip>", new RedMagic.Rigging.EditorTools.RigBundleImporter.Options { ResetTuning = true });'`
 `ResetTuning = true` overwrites what the user tuned by hand in the Inspector (EnemyStats): on a RE-import first
 copy their changes into the brief (deck, defences, numbers), or import with `ResetTuning = false`.
-(the call may time out at 5 s while Unity keeps working: poll with a cheap `eval` until it answers).
+(the call may time out at 5 s while Unity keeps working: poll with a cheap `eval` until it answers — "Main thread
+operation timed out after 5000ms" is that, not a failure. If Unity has not answered after ~5 min of polling, or
+ComfyUI's API does not answer twice: stop, the report says where it stopped and what to restart.)
 
 ## 6 · Sounds
 New material → add sounds + a rule keyed on a word of the asset name in `modules/game-sounds.js`

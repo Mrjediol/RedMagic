@@ -50,8 +50,14 @@ bridge keeps trusting the web. Serves `Web/RedMagicWeb` and the API (see the hea
      --permission-prompts none`** (risky actions refused, nothing can stop to ask) and a deny list (push, reset,
      rebase, clean, branch -D — `config.json ▸ disallowedTools`); `--session-id` new, or `--resume` for a step
      or an **instruction** (`followUp`, the composer) of a task that already has a session; an instruction for a task
-     never launched starts it with the instruction appended. **`--append-system-prompt`** (`TERSE`) + the `REPORT` line:
-     no narration while working, a report of ~8 lines (token budget);
+     never launched starts it with the instruction appended. **`--append-system-prompt`** (`TERSE` + `STUCK`) + the `REPORT` line:
+     no narration while working, a report of ~8 lines (token budget); `STUCK` = the no-progress rule (CLAUDE.md): a piece that
+     fails 3× / a service that does not answer 2× is left noted, the rest done, and a stop is reported as "⛔ Bloqueada en: … Para seguir: …";
+  **Watchdog** (`runner.mjs ▸ _watch`, the safety net): reads the stream and kills a run going in circles — the same tool error
+     `sameError` times (numbers ignored; a "busy" error — Unity's 5 s timeout while importing, a refused connection — `sameBusyError` times, as polling looks like that), `errorsInARow` failing calls in a row, or the very same call `sameCall` times
+     (`config.json ▸ watchdog`, 0 = off; defaults 4 / 20 / 8 / 20). Never a clock: a long run that keeps doing different things goes on.
+     The result is `ok: false` + `stuck: { reason, last, at }` and a "⛔ Atascada" text with the last activity; the session is kept,
+     so an instruction from the composer ("sigue") resumes it where it stopped;
   Queue items have a `qid` (`POST /api/unqueue` takes one out). Whatever is added for a task that is running / queued
   goes right behind it (before other tasks), so "send while it works" = "do this when you finish".
   4. the final message is the task's `result`; the whole stream → `Logs/Taller/<run>.jsonl` (not in git);
@@ -62,7 +68,7 @@ bridge keeps trusting the web. Serves `Web/RedMagicWeb` and the API (see the hea
   pairing cookie (see Phone) — that also covers DNS rebinding. Anything that changes something needs the per-start
   token from `GET /api/hello` in `X-Taller-Token` — a custom header forces a CORS preflight the server never
   answers, so no other page can send it — and a same-origin Origin (http or https).
-- `config.json` (optional, next to `server.mjs`): `port`, `defaultModel`, `defaultEffort`, `maxBudgetUsd`,
+- `config.json` (optional, next to `server.mjs`): `port`, `defaultModel`, `defaultEffort`, `maxBudgetUsd`, `watchdog`,
   `disallowedTools`, `claudeExe`, `comfyExe`, `listen`, `ntfy`. `TALLER_PORT` overrides the port (tests).
 
 ## Phone (`movil.html` + `modules/movil.js`)

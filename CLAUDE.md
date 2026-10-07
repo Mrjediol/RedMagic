@@ -59,6 +59,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 ## Hard rules (always apply)
 
 - **Localization**: never hardcode player-facing text. Key in BOTH `es.txt` and `en.txt`; finish with *Auditar claves* = 0 missing. Details: `docs/architecture/localization.md`.
+- **No-progress stop**: the same thing failing 3× without improving, or Unity / ComfyUI / an API not answering 2× → stop that piece, do the rest, report where it stopped, why, and what the user can do to resume. Never retry the same thing hoping for a different result.
 - **No Play Mode testing** by default (slow, burns tokens). Compile-check only, then give user a checklist of what to try + what feedback to report.
 - **Pooling**: spawn-heavy objects never Instantiate/Destroy → `Pool<T>` / `PrefabPool`.
 - **Domain Reload is off**: statics survive Play sessions → reset state manually in `Awake`/`OnEnable`.

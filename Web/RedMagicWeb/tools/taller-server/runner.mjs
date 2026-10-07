@@ -9,6 +9,8 @@
 // refused by the classifier) + `--permission-prompts none` (nothing can stop to ask: it is denied) + an
 // explicit deny list (never push, never rewrite history — CLAUDE.md). What it prints at the end is the
 // task's result; the whole stream goes to Logs/Taller/<run>.jsonl.
+// Stuck runs: every run is told the no-progress rule (STUCK), and a watchdog (_watch) stops one that goes in circles
+// (same error / failing calls / same call over and over) with a "⛔ Atascada" report; an instruction resumes its session.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,7 +23,12 @@ const HISTORY_MAX = 40;   // earlier reports kept per task
 // Every run, resumed ones too: tokens are the plan's budget, so no narration and a short report.
 const TERSE = 'Unattended run from the project web. Save tokens: do not narrate, explain or teach while working; no text between tool calls '
   + 'unless something blocks you; do not restate the task or summarise what you read. The only prose is the final report.';
-const REPORT = 'Your LAST message is the report the user reads on the web: Spanish, terse, at most ~8 short lines — what was done, where it is, '
+// The no-progress rule (CLAUDE.md ▸ Hard rules), said to every run; the watchdog below is the safety net when it is not kept.
+const STUCK = 'No-progress rule: if the same thing fails 3 times without getting better (a part that will not separate, a fix that does not fix), '
+  + 'or a service (Unity, ComfyUI, an API) does not answer after 2 tries, STOP that piece: leave it noted, do the rest of the task, and say it in the report. '
+  + 'If it blocks everything, stop the task. Never retry the same thing hoping for a different result. A report after a stop starts with '
+  + '"⛔ Bloqueada en: <where>" + the cause + "Para seguir: <what the user can do>"; the user then sends an instruction and the session resumes there.';
+const REPORT ='Your LAST message is the report the user reads on the web: Spanish, terse, at most ~8 short lines — what was done, where it is, '
   + 'decisions you took on your own, what to test (short list). No preamble, no explanations, no recap of the task.';
 
 export class Runner {
@@ -179,7 +186,7 @@ export class Runner {
       '--permission-mode', 'auto', '--permission-prompts', 'none',
       '--model', task.model || cfg.defaultModel, '--effort', task.effort || cfg.defaultEffort,
       '-n', `Tarea: ${task.text}`.slice(0, 80),
-      '--append-system-prompt', TERSE,
+      '--append-system-prompt', `${TERSE}\n${STUCK}`,
       '--disallowedTools', ...cfg.disallowedTools];
     if (resume) args.push('--resume', sessionId);
     else args.push('--session-id', sessionId);
@@ -195,7 +202,8 @@ export class Runner {
 
     const child = spawn(this.opts.claudeExe, args, { cwd: this.opts.projectRoot, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
     this.children.add(child.pid);
-    this.current = { taskId: task.id, stepId: step?.id || null, runId, child, startedAt, activity: [], title: task.text, step: step?.text || null, followUp: item.followUp || null };
+    this.current = { taskId: task.id, stepId: step?.id || null, runId, child, startedAt, activity: [], title: task.text, step: step?.text || null, followUp: item.followUp || null,
+      watch: { calls: new Map(), errors: new Map(), inARow: 0 } };
     child.stdin.end(prompt);
 
     let buffer = '', final = null, stderr = '';
@@ -211,7 +219,7 @@ export class Runner {
           const e = JSON.parse(line);
           if (e.type === 'result') final = e;
           else if (e.type === 'rate_limit_event') this._noteUsage(e.rate_limit_info);
-          else this._activity(e);
+          else { this._activity(e); this._watch(e); }
         } catch { /* not JSON: keep it in the log only */ }
       }
     });
@@ -221,10 +229,13 @@ export class Runner {
     this.children.delete(child.pid);
     log.end();
     const cancelled = this.current?.cancelled;
+    const stuck = this.current?.stuck;
     this.current = null;
 
-    const ok = !cancelled && final && !final.is_error && code === 0;
+    const ok = !cancelled && !stuck && final && !final.is_error && code === 0;
     const text = cancelled ? 'Cancelada.'
+      : stuck ? `⛔ Atascada: la paró el vigilante de la cola — ${stuck.reason}.\nLo último que hacía:\n${stuck.last.map((l) => `· ${l}`).join('\n')}\n`
+        + 'Para seguir donde lo dejó: arregla la causa (abre / reinicia lo que no responda) y mándale una instrucción a esta tarea (p. ej. «sigue»): retoma su sesión.'
       : final?.result || (final?.is_error ? `Terminó con error (${final.subtype}).` : `Claude salió con código ${code}.${stderr ? `\n${stderr.slice(-800)}` : ''}`);
     const denials = (final?.permission_denials || []).map((d) => d.tool_name + (d.tool_input?.command ? `: ${String(d.tool_input.command).slice(0, 120)}` : ''));
     const result = {
@@ -234,6 +245,7 @@ export class Runner {
       ...(item.followUp ? { reply: item.followUp } : {}),
       ...(step ? { step: step.text, stepId: step.id } : {}),
       ...(denials.length ? { denied: denials } : {}),
+      ...(stuck ? { stuck } : {}),
     };
     if (step) this.store.setRun(task.id, step.id, { status: ok ? 'done' : cancelled ? 'cancelled' : 'failed', result });
     // Every run (the task, a step, an instruction) is the task's latest report; the earlier ones are kept, newest
@@ -294,6 +306,47 @@ export class Runner {
         if (this.current.activity.length > 40) this.current.activity.shift();
       }
     }
+  }
+
+  /**
+   * The watchdog: stops a run that is going round in circles — the same error again and again, a long row of failed
+   * tool calls, or the very same call repeated — before it burns the plan's tokens. It never looks at the clock: a
+   * long run that keeps getting different results goes on. Limits: config.json ▸ watchdog (0 = off).
+   */
+  _watch(e) {
+    const cur = this.current;
+    if (!cur || cur.stuck || !Array.isArray(e.message?.content)) return;
+    const lim = { sameError: 4, sameBusyError: 20, errorsInARow: 8, sameCall: 20, ...(this.opts.config.watchdog || {}) };
+    const w = cur.watch;
+    const bump = (map, key) => { const n = (map.get(key) || 0) + 1; map.set(key, n); return n; };
+    for (const block of e.message.content) {
+      if (e.type === 'assistant' && block.type === 'tool_use') {
+        const sig = `${block.name} ${JSON.stringify(block.input || {})}`.replace(/\s+/g, ' ').slice(0, 600);
+        const n = bump(w.calls, sig);
+        if (lim.sameCall && n >= lim.sameCall) return this._stuck(`la misma orden ${n} veces (${sig.slice(0, 140)})`);
+      } else if (e.type === 'user' && block.type === 'tool_result') {
+        if (!block.is_error) { w.inARow = 0; continue; }
+        const raw = Array.isArray(block.content) ? block.content.map((c) => c.text || '').join(' ') : String(block.content || '');
+        // Numbers out (times, ports, ids): the same failure with another timestamp is still the same failure.
+        const key = raw.replace(/\d+/g, '#').replace(/\s+/g, ' ').trim().slice(0, 200);
+        const n = bump(w.errors, key);
+        // "Busy" errors (Unity's 5 s main-thread timeout while it imports, a refused connection while an app starts)
+        // are what polling looks like: they get a longer rope and do not count as a row of failures.
+        const busy = /timed out|timeout|ECONNREFUSED|busy|not responding/i.test(raw);
+        const limit = busy ? lim.sameBusyError : lim.sameError;
+        if (!busy) w.inARow += 1;
+        if (limit && n >= limit) return this._stuck(`el mismo error ${n} veces: «${raw.replace(/\s+/g, ' ').trim().slice(0, 200)}»`);
+        if (lim.errorsInARow && w.inARow >= lim.errorsInARow) return this._stuck(`${w.inARow} órdenes seguidas fallando (la última: «${raw.replace(/\s+/g, ' ').trim().slice(0, 160)}»)`);
+      }
+    }
+  }
+
+  _stuck(reason) {
+    const cur = this.current;
+    cur.stuck = { reason, last: cur.activity.slice(-6).map((a) => a.line), at: new Date().toISOString() };
+    console.log(`[runner] ⛔ ${cur.title}: ${reason}`);
+    if (process.platform === 'win32') execFile('taskkill', ['/PID', String(cur.child.pid), '/T', '/F'], () => {});
+    else cur.child.kill('SIGTERM');
   }
 
   // In English: it is what Claude reads. The user's own words (task text, notes, replies) go in as written.

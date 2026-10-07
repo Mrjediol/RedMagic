@@ -28,6 +28,7 @@ import { saveEnemy, deleteEnemy, listEntries, buildThumbnail } from './enemy-lib
 import { cropBox } from './export-manifest.js';
 import { renderSound } from './vfx-sounds.js';
 import { playSound } from './vfx-stage.js';
+import { pressGuard } from './press-guard.js';
 
 const CLOSED_KEY = 'redmagic.designs.closed';
 const FILTER_KEY = 'redmagic.designs.filter';
@@ -40,7 +41,7 @@ const KIND = {
   sound: { icon: '🔊', label: 'Sonidos', one: 'sonido', accepted: '✓ En la paleta de sonidos' },
 };
 // In the order the library shows them: what needs the user first.
-const PASO_LABEL = { montaje: 'Montaje completo', cuerpo: 'Paso 1 · cuerpo', resto: 'Paso 3 · el resto' };
+const PASO_LABEL = { montaje: 'Montaje completo', cuerpo: 'Paso 1 · cuerpo', resto: 'Paso 3 · el resto', estados: 'Estados' };
 const ESTADOS = {
   'cuerpo-por-aprobar': { label: 'Cuerpo por aprobar', one: 'Cuerpo por aprobar', hint: 'paso 1: mira el cuerpo montado; ajústalo en 🧬 Enemy Studio si hace falta' },
   'cuerpo-aprobado': { label: 'Cuerpo aprobado: elige el resto', one: 'Cuerpo aprobado', hint: 'paso 2: di qué tipo de enemigo es y de dónde salen sus proyectiles, sonidos y efectos' },
@@ -53,6 +54,10 @@ const ESTADOS = {
   descartado: { label: 'Descartados', one: 'Descartado', hint: 'el prefab sigue en Unity si llegó a montarse' },
 };
 const PENDING_TYPES = { comportamiento: 'Comportamiento', sprite: 'Sprite', gesto: 'Gesto', ataque: 'Ataque', bug: 'Bug', otro: 'Otro' };
+// When a part state shows (the rig's sprite states; same keys as design-prompts.mjs ▸ STATE_USES).
+const STATE_USES = { '': 'Claude decide', asleep: 'Dormido', awake: 'Despierto', alert: 'Alerta (ve al jugador)', attacking: 'Atacando', hurt: 'Herido', dead: 'Muerto', gesto: 'En un ataque concreto' };
+// Where the sheet offers a launch that cuts the body (step 1, its redo / retry, the full build): the 🧩 Piezas box shows.
+const CUT_ESTADOS = ['por-montar', 'montando-cuerpo', 'montando', 'cuerpo-por-aprobar', 'cuerpo-aprobado'];
 const TASK_STATE = { queued: '⏳ en la cola', waiting: '⏳ esperando', running: '⚙️ trabajando', failed: '✗ falló', cancelled: '✗ cancelada', interrupted: '✗ interrumpida' };
 const ASK_HINT = {
   enemy: 'Ej.: tortuga voladora que lanza su caparazón. Genera bases 1024 en ComfyUI (la cola lo abre) con el estilo Fracture del juego.',
@@ -108,6 +113,12 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     if (viewer?.enemy && !typing(overlay)) renderViewer();
   }
   const draft = { tipo: 'comportamiento', texto: '' };               // the pendiente being written in a sheet
+  const pz = {};                            // enemy name → the cut chosen in its sheet { modo: auto|manual, lista: [{ nombre, nota }] }
+  const pzOf = (e) => (pz[e.name] ||= { modo: e.piezas?.modo === 'manual' ? 'manual' : 'auto', lista: (e.piezas?.lista || []).map((p) => ({ nombre: p.nombre, nota: p.nota || '' })) });
+  const stDraft = { pieza: '', nombre: '', texto: '', uso: '', frames: 1 };   // the part state being written in a sheet
+  let launching = false;                    // a launch is on its way: a second click must not queue it twice
+  let focusPiece = null;                    // the 🧩 row to focus after the redraw ("Otra…")
+  const press = pressGuard(() => [...roots, overlay]);   // no redraw under a held button: it would eat the click
   let adding = null;                        // null | [{ name, prefab }] while "＋ Enemigo existente" is open
 
   const setStatus = (t) => { statusEl.textContent = t; };
@@ -171,6 +182,7 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   }
 
   function renderSoon() {
+    if (press.busy()) { pendingRender = true; press.after(renderSoon); return; }
     if (focusedHere() || busy) { pendingRender = true; return; }
     render();
   }
@@ -611,6 +623,64 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
       ${before.length ? `<details class="enInstrOld"><summary>Enviadas antes (${before.length})</summary><ul>${before.map((i) => `<li><span class="enChip">${esc(PASO_LABEL[i.paso] || i.paso)}</span> ${esc(i.texto)}</li>`).join('')}</ul></details>` : ''}</div>`;
   }
 
+  /** 🧩 How step 1 cuts the body: Claude decides, or exactly the pieces listed here (each with an optional note). */
+  function piecesBox(e) {
+    if (!CUT_ESTADOS.includes(e.estado) || active(taskOf(e.tarea))) return '';
+    const f = pzOf(e);
+    const presets = data?.piezas || [];
+    const labelOf = (n) => presets.find((p) => p.id === n)?.label || '';
+    const rows = f.lista.map((p, i) => `<li class="enPz">
+        <div class="enPzHead"><input type="text" data-pz-name="${i}" value="${esc(p.nombre)}" list="enPzPresets" placeholder="Nombre (Head, Cannon, Wings…)" autocomplete="off">
+          <span class="efHint">${esc(labelOf(p.nombre))}</span><button class="small" data-v="pz-del" data-i="${i}" title="Quitar" aria-label="Quitar">✕</button></div>
+        <textarea data-pz-nota="${i}" rows="1" placeholder="Qué es y dónde acaba, si no es evidente (opcional). Ej.: el torso es el cañón entero, de la boca al engranaje">${esc(p.nota)}</textarea>
+      </li>`).join('');
+    const free = presets.filter((p) => !f.lista.some((x) => x.nombre === p.id));
+    return `<div class="enPieces"><label class="enLabel">🧩 Piezas a separar <span class="efHint">van con el paso 1 o el montaje</span></label>
+      <div class="enBtns wrap">
+        <label><input type="radio" name="enPzMode" data-pz-mode="auto" ${f.modo !== 'manual' ? 'checked' : ''}> Que Claude decida</label>
+        <label><input type="radio" name="enPzMode" data-pz-mode="manual" ${f.modo === 'manual' ? 'checked' : ''}> Las elijo yo</label>
+      </div>
+      ${f.modo === 'manual' ? `<p class="efHint">Solo se separan estas. Lo que no pongas va dentro de la pieza que lo contiene (brazos sin pieza propia = parte del torso): el cuerpo montado queda siempre igual que el diseño. Una sola pieza («Body») = no se corta.</p>
+        ${rows ? `<ul class="enPzList">${rows}</ul>` : '<p class="enEmpty">Ninguna todavía.</p>'}
+        <select data-pz-add><option value="">＋ Añadir pieza…</option>${free.map((p) => `<option value="${esc(p.id)}">${esc(p.label)} (${esc(p.id)})</option>`).join('')}<option value="__other">Otra (escribe su nombre)…</option></select>
+        <datalist id="enPzPresets">${presets.map((p) => `<option value="${esc(p.id)}">${esc(p.label)}</option>`).join('')}</datalist>` : ''}
+    </div>`;
+  }
+
+  /** 🎭 Part states (an angry face, an open palm…): extra sprites of one part, asked for at any step, finished enemies too. */
+  function statesBox(e) {
+    if (e.estado === 'descartado') return '';
+    const v = (action, label, cls = '', extra = '') => `<button class="small ${cls}" data-v="${action}" ${extra}>${label}</button>`;
+    const list = e.estados || [];
+    const open = list.filter((s) => s.estado !== 'hecho');
+    const busyTask = active(taskOf(e.tarea));
+    const f = pzOf(e);
+    const pieceNames = [...new Set([...(f.modo === 'manual' ? f.lista.map((p) => p.nombre) : []), ...(data?.piezas || []).map((p) => p.id).filter((id) => id !== 'Body')])].filter(Boolean);
+    const rows = list.map((s) => `<li class="enPend" data-estado="${esc(s.estado)}">
+        <span class="enChip">${esc(s.pieza)}</span>
+        <div class="enPendText"><b>${esc(s.nombre)}</b>${s.texto ? ` — ${esc(s.texto)}` : ''}
+          <span class="efHint">· ${s.frames > 1 ? `transición de ${s.frames} frames` : 'cambio directo'}${s.uso ? ` · ${esc(STATE_USES[s.uso] || s.uso)}` : ''}</span>
+          ${s.resumen ? `<div class="efHint">✓ ${esc(s.resumen)}</div>` : ''}${s.nota ? `<div class="efHint">⚠ ${esc(s.nota)}</div>` : ''}</div>
+        <span class="enPendState">${s.estado === 'en-curso' ? (TASK_STATE[taskOf(s.tarea)?.status] || 'en curso') : s.estado === 'hecho' ? '✓ hecho' : 'pedido'}</span>
+        ${v('st-done', s.estado === 'hecho' ? '↶' : '✓', '', `data-id="${esc(s.id)}" title="${s.estado === 'hecho' ? 'Pedirlo otra vez' : 'Marcar hecho'}"`)}
+        ${v('st-del', '🗑', '', `data-id="${esc(s.id)}" title="Borrar"`)}
+      </li>`).join('');
+    const uses = Object.entries(STATE_USES).map(([k, l]) => `<option value="${k}" ${stDraft.uso === k ? 'selected' : ''}>${esc(l)}</option>`).join('');
+    return `<h3>🎭 Estados de piezas <span class="efHint">${e.prefab ? 'lánzalos aquí o van con el próximo paso' : 'van con el paso 1 o el montaje'}</span></h3>
+      <p class="efHint">Un estado es un sprite extra de UNA pieza para las animaciones (cara enfadada, mano con la palma abierta…): el cuerpo original no cambia.</p>
+      ${rows ? `<ul class="enPends">${rows}</ul>` : ''}
+      <div class="enStAdd">
+        <label class="efHint">Pieza <input type="text" data-st="pieza" value="${esc(stDraft.pieza)}" list="enStPieces" placeholder="Head" autocomplete="off"></label>
+        <datalist id="enStPieces">${pieceNames.map((n) => `<option value="${esc(n)}"></option>`).join('')}</datalist>
+        <label class="efHint">Estado <input type="text" data-st="nombre" value="${esc(stDraft.nombre)}" placeholder="enfadada" autocomplete="off"></label>
+        <label class="efHint">Cuándo se ve <select data-st="uso">${uses}</select></label>
+        <label class="efHint" title="1 = cambia de golpe. 2 o más = frames de transición desde la pieza normal hasta este estado (el último es el estado)">Frames <input type="number" data-st="frames" min="1" max="12" value="${esc(stDraft.frames)}"></label>
+        <textarea data-st="texto" rows="2" placeholder="Cómo es (opcional). Ej.: ceño fruncido, ojos rojos entrecerrados, boca apretada">${esc(stDraft.texto)}</textarea>
+        ${v('st-add', '＋ Pedir estado')}
+      </div>
+      ${e.prefab ? `<div class="enBtns wrap">${v('states', `▶ Hacer estados (${open.length})`, 'primary', open.length && !busyTask ? '' : 'disabled')}</div>` : ''}`;
+  }
+
   /** An enemy's sheet: its picture, what it came from, its estado buttons and its pendientes. */
   function renderSheet(e) {
     const st = ESTADOS[e.estado] || { one: e.estado };
@@ -650,10 +720,12 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
           ${e.cuerpo?.resumen ? `<div><span class="efHint">Cuerpo</span> ${esc(e.cuerpo.resumen)}</div>` : ''}
           ${e.estado === 'cuerpo-por-aprobar' ? '<p class="efHint">Mira el cuerpo montado. Si las proporciones, distancias o capas no cuadran: ✎ Editar cuerpo (se abre en Enemy Studio; ajusta, 💾 Guardar en Unity y vuelves aquí; hace falta Unity abierto). Si hay que rehacerlo, apunta un Pendiente de tipo Sprite y pulsa Rehacer.</p>' : ''}
           ${e.estado === 'cuerpo-aprobado' ? step2Form(e) : instrBox(e)}
+          ${piecesBox(e)}
           ${e.estado === 'por-montar' || ((e.estado === 'montando' || e.estado === 'montando-cuerpo') && !active(t)) ? `<div class="enBtns wrap">
             <label class="efHint">Modelo <select data-run="model">${opt(MODELS, run.model)}</select></label>
             <label class="efHint">Esfuerzo <select data-run="effort">${opt(EFFORTS, run.effort)}</select></label></div>` : ''}
           <div class="enBtns wrap">${estadoButtons}</div>
+          ${statesBox(e)}
           <h3>Pendientes</h3>
           ${rows ? `<ul class="enPends">${rows}</ul>` : '<p class="enEmpty">Nada apuntado.</p>'}
           <div class="enPendAdd">
@@ -676,7 +748,9 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     if (viewer.enemy) {
       const e = enemyByName(viewer.enemy);
       if (!e) { closeViewer(); return; }
+      if (press.busy()) { press.after(renderViewer); return; }
       if (!typing(overlay)) renderSheet(e);
+      if (focusPiece != null) { overlay.querySelector(`[data-pz-name="${focusPiece}"]`)?.focus(); focusPiece = null; }
       return;
     }
     const found = findItem(viewer.list[viewer.i]);
@@ -731,14 +805,32 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   function sheetAction(v, btn) {
     const name = viewer.enemy;
     const upd = (body, msg) => post('enemigos/update', { name, ...body }, msg);
-    // A launch carries the instructions typed in the sheet; they are cleared once the task is queued.
-    const launch = (route, body, msg) => post(route, { name, ...body, ...run, instrucciones: instr[name] || '' }, msg).then((ok) => { if (ok) { delete instr[name]; renderViewer(); } });
-    if (v === 'build') launch('enemigos/build', {}, `${name}: a la cola (make-enemy)`);
+    // A launch carries the instructions typed in the sheet; they are cleared once the task is queued. One at a time:
+    // a second click while the first is on its way would queue the task twice.
+    const launch = (route, body, msg) => {
+      if (launching) return;
+      launching = true;
+      btn?.setAttribute('disabled', '');
+      post(route, { name, ...body, ...run, instrucciones: instr[name] || '' }, msg)
+        .then((ok) => { if (ok) { delete instr[name]; delete pz[name]; renderViewer(); } })
+        .finally(() => { launching = false; btn?.removeAttribute('disabled'); });
+    };
+    const piezas = () => { const e = enemyByName(name); return e ? pzOf(e) : undefined; };
+    if (v === 'build') launch('enemigos/build', { piezas: piezas() }, `${name}: a la cola (make-enemy)`);
     else if (v === 'edit-body') {
       const e = enemyByName(name);
       if (e?.prefab && onEditBody) { closeViewer(); onEditBody(e); }
     }
-    else if (v === 'build-body') launch('enemigos/build-body', {}, `${name}: a la cola (paso 1, cuerpo)`);
+    else if (v === 'build-body') launch('enemigos/build-body', { piezas: piezas() }, `${name}: a la cola (paso 1, cuerpo)`);
+    else if (v === 'states') launch('enemigos/states', {}, `${name}: a la cola (estados de piezas)`);
+    else if (v === 'pz-del') { pzOf(enemyByName(name)).lista.splice(Number(btn.dataset.i), 1); renderViewer(); }
+    else if (v === 'st-add') {
+      if (!stDraft.pieza.trim() || !stDraft.nombre.trim()) { toast('Pon la pieza y el nombre del estado'); return; }
+      upd({ op: 'add-estado', ...stDraft }, 'Estado pedido').then((ok) => { if (ok) { Object.assign(stDraft, { nombre: '', texto: '', frames: 1 }); renderViewer(); } });
+    } else if (v === 'st-done') {
+      const s = (enemyByName(name)?.estados || []).find((x) => x.id === btn.dataset.id);
+      if (s) upd({ op: 'edit-estado', id: s.id, estado: s.estado === 'hecho' ? 'abierto' : 'hecho' });
+    } else if (v === 'st-del') upd({ op: 'remove-estado', id: btn.dataset.id }, 'Estado borrado');
     else if (v === 'build-rest') {
       const f = p2Of(name);
       const paso2 = { proyectil: f.proyectil, sonidos: f.sonidos, efectos: f.efectos, notas: f.notas, ...(f.via.startsWith('plantilla:') ? { plantilla: f.via.slice(10) } : { tipo: f.via }) };
@@ -764,6 +856,11 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
     if (d.draft) draft[d.draft] = ev.target.value;
     if (d.instr !== undefined && viewer?.enemy) instr[viewer.enemy] = ev.target.value;
     if (d.run) run[d.run] = ev.target.value;
+    if (d.st) stDraft[d.st] = ev.target.value;
+    if ((d.pzName || d.pzNota) && viewer?.enemy) {
+      const row = pzOf(enemyByName(viewer.enemy)).lista[Number(d.pzName ?? d.pzNota)];
+      if (row) row[d.pzName != null ? 'nombre' : 'nota'] = d.pzName != null ? ev.target.value.trim() : ev.target.value;
+    }
     if (d.p2 && viewer?.enemy) {
       const f = p2Of(viewer.enemy);
       const [k, sub] = d.p2.split('.');
@@ -772,6 +869,17 @@ export function initDesignsPanel({ root, enemiesRoot, statusEl, toast, onBadges 
   });
   overlay.addEventListener('change', (ev) => {
     const d = ev.target.dataset || {};
+    if ((d.pzMode || d.pzAdd !== undefined) && viewer?.enemy) {
+      const f = pzOf(enemyByName(viewer.enemy));
+      if (d.pzMode) f.modo = d.pzMode;
+      else if (ev.target.value) {
+        f.lista.push({ nombre: ev.target.value === '__other' ? '' : ev.target.value, nota: '' });
+        if (ev.target.value === '__other') focusPiece = f.lista.length - 1;
+      }
+      ev.target.blur();   // a focused field holds the redraw back
+      renderViewer();
+      return;
+    }
     if (!d.p2pick || !viewer?.enemy) return;
     const list = p2Of(viewer.enemy)[d.p2pick].elegidos;
     const i = list.findIndex((c) => c.id === d.id);

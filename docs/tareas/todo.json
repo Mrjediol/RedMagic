@@ -79,6 +79,33 @@
               "done": false
             }
           ]
+        },
+        {
+          "id": "rigtrans",
+          "text": "Unity: reproducir las transiciones de estado de las piezas (frames .t1…)",
+          "note": "make-enemy ya genera <Slot>__<estado>.t1…t<N-1>.png + el estado final; make-enemy.mjs los salta. Falta que el rig los reproduzca al entrar en el estado.",
+          "done": false,
+          "doc": "docs/tareas/rigtrans.md",
+          "needs": [
+            "unity"
+          ],
+          "steps": [
+            {
+              "id": "rt1",
+              "text": "Formato: frames de transición en el bundle (rig-model variants + make-enemy.mjs) y en RigSpriteSwap",
+              "done": false
+            },
+            {
+              "id": "rt2",
+              "text": "ProceduralRig.RefreshSprites: al cambiar de sprite a un estado con frames, reproducirlos (y al revés al salir)",
+              "done": false
+            },
+            {
+              "id": "rt3",
+              "text": "Importer + Enemy Studio muestran / editan los frames",
+              "done": false
+            }
+          ]
         }
       ]
     },

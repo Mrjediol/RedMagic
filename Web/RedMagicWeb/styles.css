@@ -957,6 +957,20 @@ textarea.todoEdit{min-height:58px;resize:vertical;font-size:14px;}
 .enP2 .enBtns{align-items:flex-end;}
 .enP2 .enBtns label{display:flex;flex-direction:column;gap:2px;}
 .enPendAdd button{margin:0;}
+/* 🧩 Piezas (the cut of step 1) and 🎭 Estados de piezas (part states) in an enemy's sheet */
+.enPieces{display:grid;gap:6px;margin:10px 0 4px;}
+.enPieces select{width:auto;justify-self:start;}
+.enPzList{list-style:none;margin:0;padding:0;display:grid;gap:6px;}
+.enPz{display:grid;gap:4px;background:var(--well);border:1px solid var(--border);border-radius:6px;padding:6px 8px;}
+.enPzHead{display:flex;gap:8px;align-items:center;}
+.enPzHead input{flex:0 1 220px;min-width:0;}
+.enPzHead button{margin-left:auto;}
+.enPz textarea,.enStAdd textarea{width:100%;resize:vertical;background:var(--panel, var(--well));color:var(--text);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font:inherit;font-size:14px;}
+.enStAdd{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin:6px 0;}
+.enStAdd label{display:flex;flex-direction:column;gap:2px;}
+.enStAdd input[type=text]{width:130px;}
+.enStAdd input[type=number]{width:64px;}
+.enStAdd textarea{flex:1 1 100%;}
 @media (max-width:760px){.enSheetBody{grid-template-columns:1fr;}}
 
 /* ---------------- 📱 Tareas on a narrow screen + movil.html (modules/movil.js) ---------------- */

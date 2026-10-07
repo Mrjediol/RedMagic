@@ -7,7 +7,11 @@
 //     tarea?: <todo task id of the last build / fix run>, montaje?, createdAt,
 //     cuerpo?: { fecha, plantilla, partes, brief, resumen }  (by steps: the body built in step 1),
 //     paso2?: { tipo | plantilla, proyectil|sonidos|efectos: { origen: biblioteca|nuevo, texto }, notas },
-//     instrucciones?: [{ paso: montaje|cuerpo|resto, texto, fecha }]  (the user's extra instructions, one per launch) }
+//     instrucciones?: [{ paso: montaje|cuerpo|resto, texto, fecha }]  (the user's extra instructions, one per launch),
+//     piezas?: { modo: auto|manual, lista: [{ nombre, nota }] }  (the cut of step 1: Claude decides, or these pieces),
+//     estados?: [Estado] }  (part states asked for at any step)
+//   Estado = { id, pieza, nombre, texto, uso: ''|asleep|awake|alert|attacking|hurt|dead|gesto, frames (1 = swap, >1 = transition),
+//              estado: abierto|en-curso|hecho, tarea?, resumen?, nota? }
 //   Pendiente = { id, tipo: comportamiento|sprite|gesto|ataque|bug|otro, texto, estado: abierto|en-curso|hecho,
 //                 tarea?, resumen?, nota? }
 //
@@ -17,7 +21,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
-import { buildPrompt, bodyPrompt, restPrompt, pendingPrompt, PENDING_TYPES, BEHAVIORS } from './design-prompts.mjs';
+import { buildPrompt, bodyPrompt, restPrompt, pendingPrompt, statesPrompt, PENDING_TYPES, BEHAVIORS, STATE_USES } from './design-prompts.mjs';
 
 const ESTADOS = ['por-montar', 'montando-cuerpo', 'cuerpo-por-aprobar', 'cuerpo-aprobado', 'montando', 'por-aprobar', 'con-pendientes', 'aprobado', 'descartado'];
 const PHASE = { id: 'enemies', name: '👾 Enemigos', tag: 'Web' };
@@ -53,8 +57,8 @@ export class Enemigos {
 
   // ------------------------------------------------------------ what the web changes
 
-  /** op: estado | add-pendiente | edit-pendiente | remove-pendiente */
-  update({ name, op, estado, tipo, texto, id }) {
+  /** op: estado | add-pendiente | edit-pendiente | remove-pendiente | add-estado | edit-estado | remove-estado */
+  update({ name, op, estado, tipo, texto, id, pieza, nombre, uso, frames }) {
     const e = this._get(name);
     if (op === 'estado') {
       if (!ESTADOS.includes(estado)) throw new Error('estado inválido');
@@ -72,6 +76,17 @@ export class Enemigos {
       if (estado && ['abierto', 'hecho'].includes(estado)) p.estado = estado;
     } else if (op === 'remove-pendiente') {
       e.pendientes = e.pendientes.filter((x) => x.id !== id);
+    } else if (op === 'add-estado') {
+      if (!String(pieza || '').trim()) throw new Error('Elige la pieza');
+      if (!String(nombre || '').trim()) throw new Error('Ponle nombre al estado');
+      (e.estados ||= []).push({ id: uid(), pieza: String(pieza).trim().slice(0, 60), nombre: String(nombre).trim().slice(0, 60), texto: clean(texto),
+        uso: STATE_USES[uso] ? uso : '', frames: Math.max(1, Math.min(12, Math.round(Number(frames) || 1))), estado: 'abierto', createdAt: new Date().toISOString() });
+    } else if (op === 'edit-estado') {
+      const s = (e.estados || []).find((x) => x.id === id);
+      if (!s) throw new Error('No encuentro ese estado');
+      if (estado && ['abierto', 'hecho'].includes(estado)) s.estado = estado;
+    } else if (op === 'remove-estado') {
+      e.estados = (e.estados || []).filter((x) => x.id !== id);
     } else throw new Error('operación inválida');
     return this._put(e);
   }
@@ -79,15 +94,17 @@ export class Enemigos {
   // ------------------------------------------------------------ tasks
 
   /** make-enemy from the approved design → estado "montando" until the task writes "por-aprobar". */
-  build({ name, model, effort, instrucciones }) {
+  build({ name, model, effort, instrucciones, piezas }) {
     const e = this._get(name);
     if (!e.diseno?.source) throw new Error('Este enemigo no tiene diseño del que partir');
+    setPieces(e, piezas);
     const now = clean(instrucciones);
     const task = this.store.addTask(PHASE, {
       text: `Montar ${name} (make-enemy)`, prompt: buildPrompt(e, now), needs: ['comfy', 'unity'],
       model: model || 'sonnet', effort: effort || 'medium', enemy: name, kind: 'montaje',
     });
     note(e, 'montaje', now);
+    claimStates(e, task.id);
     e.estado = 'montando';
     e.tarea = task.id;
     this._put(e);
@@ -98,15 +115,17 @@ export class Enemigos {
    * By steps, step 1: only the body (parts + assembly + a body-only prefab) → "montando-cuerpo" until the task writes
    * "cuerpo-por-aprobar". Also redoes the body (sprite pendientes are the notes).
    */
-  buildBody({ name, model, effort, instrucciones }) {
+  buildBody({ name, model, effort, instrucciones, piezas }) {
     const e = this._get(name);
     if (!e.diseno?.source) throw new Error('Este enemigo no tiene diseño del que partir');
+    setPieces(e, piezas);
     const now = clean(instrucciones);
     const task = this.store.addTask(PHASE, {
       text: `Cuerpo de ${name} (make-enemy, paso 1)`, prompt: bodyPrompt(e, now), needs: ['comfy', 'unity'],
       model: model || 'sonnet', effort: effort || 'medium', enemy: name, kind: 'cuerpo',
     });
     note(e, 'cuerpo', now);
+    claimStates(e, task.id);
     e.estado = 'montando-cuerpo';
     e.tarea = task.id;
     this._put(e);
@@ -133,6 +152,7 @@ export class Enemigos {
       model: model || 'sonnet', effort: effort || 'medium', enemy: name, kind: 'resto',
     });
     note(e, 'resto', now);
+    claimStates(e, task.id);
     e.estado = 'montando';
     e.tarea = task.id;
     this._put(e);
@@ -151,6 +171,24 @@ export class Enemigos {
     });
     items.forEach((p) => { p.estado = 'en-curso'; p.tarea = task.id; });
     e.estado = 'con-pendientes';
+    e.tarea = task.id;
+    this._put(e);
+    return this._queue(task);
+  }
+
+  /** A task for the open part states of an enemy that already has a body; its estado does not change. */
+  states({ name, model, effort, instrucciones }) {
+    const e = this._get(name);
+    if (!e.prefab) throw new Error('Primero hay que montar el cuerpo (los estados van con el paso 1 o el montaje)');
+    const items = (e.estados || []).filter((s) => s.estado !== 'hecho');
+    if (!items.length) throw new Error('No hay estados pedidos');
+    const now = clean(instrucciones);
+    const task = this.store.addTask(PHASE, {
+      text: `${name}: estados (${items.map((s) => `${s.pieza} ${s.nombre}`).join(', ')})`.slice(0, 140),
+      prompt: statesPrompt(e, items, now), needs: ['comfy', 'unity'], model: model || 'sonnet', effort: effort || 'medium', enemy: name, kind: 'estados',
+    });
+    note(e, 'estados', now);
+    claimStates(e, task.id);
     e.tarea = task.id;
     this._put(e);
     return this._queue(task);
@@ -230,6 +268,19 @@ const clean = (text) => String(text || '').trim().slice(0, 4000);
 /** Keeps a launch's extra instructions in the sheet: the later steps' prompts read them as context. */
 function note(e, paso, texto) {
   if (texto) (e.instrucciones ||= []).push({ paso, texto, fecha: new Date().toISOString() });
+}
+
+/** The cut chosen in the sheet (step 1 / full build): Claude decides, or exactly these pieces. */
+function setPieces(e, piezas) {
+  if (!piezas) return;
+  const lista = (Array.isArray(piezas.lista) ? piezas.lista : [])
+    .map((p) => ({ nombre: String(p.nombre || '').trim().slice(0, 60), nota: clean(p.nota).slice(0, 500) })).filter((p) => p.nombre);
+  if (piezas.modo === 'manual' && !lista.length) throw new Error('Elige al menos una pieza (o deja que Claude decida)');
+  e.piezas = piezas.modo === 'manual' ? { modo: 'manual', lista } : { modo: 'auto', lista };
+}
+/** The open part states go with this task. */
+function claimStates(e, taskId) {
+  for (const s of e.estados || []) if (s.estado !== 'hecho') { s.estado = 'en-curso'; s.tarea = taskId; }
 }
 
 function readDir(dir) { try { return fs.readdirSync(dir); } catch { return []; } }

@@ -18,6 +18,8 @@
 //   parts         folder with the final PNGs (finish-parts.mjs), relative to Comfy's output or absolute.
 //                 `<Slot name>.png` fills the slot; `<Slot name>__<state>.png` is that part's sprite for
 //                 a state (asleep | awake | alert | attacking | hurt | dead | gesture_<Name>).
+//                 `<Slot>__<state>.t<k>.png` (transition frames) and `<Slot>__extra_<name>.png` are skipped.
+//   only          optional [slot id…]: the slots the user's cut uses; the template's other slots are left out
 //   height        how tall the enemy is in the world (units); the art is scaled to it
 //   parents       optional { <slot id>: <parent slot id> | null }: the hierarchy of a body adjusted by hand in Enemy Studio
 //   parents       optional { <slot id>: <parent slot id> | null }: the hierarchy of a body whose tree was changed by
@@ -163,6 +165,11 @@ for (const [gestureName, list] of Object.entries(brief.releases || {})) {
 
 // The slot that sizes the schematic goes first (the body), then the rest land where their canvas puts them.
 const slots = state.parts.filter((p) => p.slot);
+// `only`: the slot ids the user's cut uses (the web's 🧩 Piezas): every other slot of the template is left out.
+if (Array.isArray(brief.only) && brief.only.length) {
+  for (const id of brief.only) if (!slots.some((p) => p.slot.id === id)) problems.push(`only: no slot '${id}' in template ${brief.template}`);
+  for (const p of slots) if (!brief.only.includes(p.slot.id)) p.slot.optional = true;
+}
 const order = [...slots].sort((a, b) => (b.slot.id === 'torso' || b.slot.id === 'base') - (a.slot.id === 'torso' || a.slot.id === 'base'));
 for (const part of order) {
   const file = pngs.find((f) => f.toLowerCase() === `${part.name.toLowerCase()}.png`);
@@ -177,6 +184,9 @@ for (const part of order) {
 
   for (const variant of pngs.filter((f) => f.startsWith(`${part.name}__`))) {
     const stateName = variant.slice(part.name.length + 2, -4);
+    // Transition frames (`__<state>.t<k>`) and states with no rig slot yet (`__extra_<name>`) stay in the folder for
+    // later (Unity does not play transitions yet; an extra state becomes a gesture sprite in step 3): not in the zip.
+    if (/\.t\d+$/.test(stateName) || stateName.startsWith('extra_')) { notes.push(`${variant}: kept in the folder, not in the zip`); continue; }
     const id = stateName.startsWith('gesture_') ? M.gestureState(stateName.slice(8)) : stateName;
     if (!id.startsWith('gesture:') && !M.SPRITE_STATES.some((s) => s.id === id)) { problems.push(`${variant}: unknown state '${stateName}'`); continue; }
     M.setVariant(part, id, await imageRecord(path.join(partsDir, variant)));

@@ -24,6 +24,8 @@
 // model, effort, images[{ id, name }] (reference images for the prompt, saved by the server) } written by you, + { status, waiting, result, sessionId } written by the queue. Unknown
 // fields are kept as they came.
 
+import { pressGuard } from './press-guard.js';
+
 export const DATA_VERSION = 1;
 export const FILE_NAME = 'todo.json';
 const LS_KEY = 'redmagic.todo.v1';
@@ -187,6 +189,7 @@ async function kvSet(key, value) {
  */
 export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, toolbar, quick, toast = () => {}, mobile = false }) {
   const tab = root.closest('.tabPanel') || root.parentElement;
+  const press = pressGuard(() => [tab, toolbar, rail, detail, quick]);   // no redraw under a held button: it would eat the click
   let phases = clone(DEFAULT_PHASES);
   let extra = {};                          // top-level fields of the file other than phases (the queue…), kept
 
@@ -346,6 +349,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
 
   /** Re-render unless you are typing in the panel (then right after you leave the field). */
   function renderSoon(liveOnly = false) {
+    if (press.busy()) { pendingRender = true; press.after(renderSoon); return; }
     if (focusedHere()) { pendingRender = true; if (liveOnly) renderToolbar(); return; }
     render();
   }
@@ -470,6 +474,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
   }
 
   function renderToolbar() {
+    if (press.busy()) return;   // the next poll draws it
     let left;
     if (server) {
       const q = live?.queue?.length || 0;
@@ -814,6 +819,7 @@ export function initTodoPanel({ root, rail, detail, extraTalleres, statusEl, too
 
   /** The live parts only (every poll): 🤖 Claude, the open task's console / queue, the rail's counts. */
   function renderLive() {
+    if (press.busy()) return;   // the next poll draws it
     renderClaude();
     renderRail();
     const r = sel ? find(sel) : null;

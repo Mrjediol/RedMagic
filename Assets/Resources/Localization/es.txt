@@ -64,15 +64,18 @@ touch.down = ABAJO
 touch.dash = DASH
 touch.fire = FUEGO
 touch.attack = ATACAR
+touch.parry = PARRY
 touch.jump = SALTAR
 
 # --- chuleta de teclas (PC)
 legend.key_space = Espacio
 legend.key_left_click = Clic izq.
+legend.key_right_click = Clic der.
 legend.move = Moverse
 legend.jump = Saltar / doble salto
 legend.dash = Dash
 legend.shoot = Disparar
+legend.parry = Parry
 legend.interact = Interactuar
 legend.items = Items
 legend.options = Opciones

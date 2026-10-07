@@ -32,6 +32,7 @@ namespace RedMagic.UI
         private Button _downButton;
         private Button _dashButton;
         private Button _fireballButton;
+        private Button _parryButton;
 
         // Cooldown pintado sobre el botón que lanza cada acción (el mismo dial que el HUD de PC).
         private readonly List<(CooldownSlot slot, CooldownDial dial)> _dials = new();
@@ -52,6 +53,7 @@ namespace RedMagic.UI
             _downButton = _root.Q<Button>("downButton");
             _dashButton = _root.Q<Button>("dashButton");
             _fireballButton = _root.Q<Button>("fireballButton");
+            _parryButton = _root.Q<Button>("parryButton");
 
             WireHold(_leftButton, -1f);
             WireHold(_rightButton, 1f);
@@ -67,6 +69,9 @@ namespace RedMagic.UI
 
             if (_fireballButton != null)
                 _fireballButton.RegisterCallback<PointerDownEvent>(OnFireballDown);
+
+            if (_parryButton != null)
+                _parryButton.RegisterCallback<PointerDownEvent>(OnParryDown);
 
             if (_downButton != null)
             {
@@ -85,6 +90,7 @@ namespace RedMagic.UI
 
             AttachDial(_attackButton, CooldownSlot.Attack);
             AttachDial(_dashButton, CooldownSlot.Dash);
+            AttachDial(_parryButton, CooldownSlot.Parry);
 
             TouchInput.Clear();
         }
@@ -130,6 +136,9 @@ namespace RedMagic.UI
 
             if (_fireballButton != null)
                 _fireballButton.UnregisterCallback<PointerDownEvent>(OnFireballDown);
+
+            if (_parryButton != null)
+                _parryButton.UnregisterCallback<PointerDownEvent>(OnParryDown);
 
             if (_downButton != null)
             {
@@ -198,6 +207,8 @@ namespace RedMagic.UI
         private static void OnDashDown(PointerDownEvent evt) => TouchInput.QueueDash();
 
         private static void OnFireballDown(PointerDownEvent evt) => TouchInput.QueueFireball();
+
+        private static void OnParryDown(PointerDownEvent evt) => TouchInput.QueueParry();
 
         // ------------------------------------------------------------------ abajo (atravesar plataformas)
 

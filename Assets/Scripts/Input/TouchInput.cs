@@ -20,6 +20,18 @@ namespace RedMagic.Core
         private static bool _dashQueued;
         private static bool _fireballQueued;
         private static bool _interactQueued;
+        private static bool _parryQueued;
+
+        /// <summary>La UI táctil lo llama al pulsar el botón de parry.</summary>
+        public static void QueueParry() => _parryQueued = true;
+
+        /// <summary>Devuelve true una sola vez por pulsación de parry.</summary>
+        public static bool ConsumeParry()
+        {
+            if (!_parryQueued) return false;
+            _parryQueued = false;
+            return true;
+        }
 
         /// <summary>La UI táctil lo llama al pulsar el botón de salto.</summary>
         public static void QueueJump() => _jumpQueued = true;
@@ -85,6 +97,7 @@ namespace RedMagic.Core
             _dashQueued = false;
             _fireballQueued = false;
             _interactQueued = false;
+            _parryQueued = false;
         }
 
         // Con "Reload Domain" desactivado los estáticos sobreviven entre sesiones de Play.

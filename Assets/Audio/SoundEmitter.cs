@@ -31,7 +31,9 @@ namespace RedMagic.Audio
         OnHeal = 17,         // Health (jugador): recupera vida
         OnLowHealth = 18,    // Health (jugador): baja del umbral de vida baja
         OnVulnerable = 19,   // BossController: abre una ventana de castigo ("¡EXPUESTO!")
-        OnEvade = 20         // EnemyBrain: empieza un movimiento defensivo (esquiva, salto atrás)
+        OnEvade = 20,        // EnemyBrain: empieza un movimiento defensivo (esquiva, salto atrás)
+        OnParry = 21,        // PlayerParry: abre la ventana de parry
+        OnParrySuccess = 22  // PlayerParry: bloquea un golpe
     }
 
     /// <summary>

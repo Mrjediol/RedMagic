@@ -183,7 +183,7 @@ namespace RedMagic.Audio.EditorTools
         private static SoundPriority DefaultPriority(SoundTrigger trigger) => trigger switch
         {
             SoundTrigger.Footstep or SoundTrigger.OnMove or SoundTrigger.OnLand or SoundTrigger.OnSpawn => SoundPriority.Low,
-            SoundTrigger.OnDeath or SoundTrigger.OnActivate or SoundTrigger.OnVulnerable or SoundTrigger.OnLowHealth => SoundPriority.High,
+            SoundTrigger.OnDeath or SoundTrigger.OnActivate or SoundTrigger.OnVulnerable or SoundTrigger.OnLowHealth or SoundTrigger.OnParrySuccess => SoundPriority.High,
             _ => SoundPriority.Normal,
         };
 

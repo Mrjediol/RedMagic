@@ -112,7 +112,17 @@
     background-color: rgba(196, 66, 26, 0.85);
 }
 
-/* Con 7 botones el margen por defecto deja los clusters muy juntos. */
+.touch-button--parry {
+    font-size: 30px;
+    letter-spacing: 1px;
+    background-color: rgba(22, 40, 14, 0.5);
+}
+
+.touch-button--parry:active {
+    background-color: rgba(96, 160, 44, 0.85);
+}
+
+/* Con 8 botones el margen por defecto deja los clusters muy juntos. */
 .touch-controls-inner {
     padding: 0 48px 56px 48px;
 }

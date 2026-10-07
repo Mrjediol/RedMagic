@@ -12,7 +12,7 @@ namespace RedMagic.UI
     /// <see cref="GameHud"/>.
     ///
     /// <b>Las teclas se escriben a mano</b>: salen de <c>Settings/RedMagicControls.inputactions</c>
-    /// (Move WASD+flechas, Jump espacio, Attack clic izquierdo, Dash shift izq.) y de las que leen los
+    /// (Move WASD+flechas, Jump espacio, Attack clic izquierdo, Dash shift izq., Parry clic derecho) y de las que leen los
     /// scripts directamente (E interactuar, I items, Esc pausa). Si cambias un binding, cambia
     /// también <see cref="Rows"/>.
     /// </summary>
@@ -25,6 +25,7 @@ namespace RedMagic.UI
             ("legend.key_space", "legend.jump"),
             ("Shift", "legend.dash"),
             ("legend.key_left_click", "legend.shoot"),
+            ("legend.key_right_click", "legend.parry"),
             ("E", "legend.interact"),
             ("I", "legend.items"),
             ("Esc", "legend.options"),

@@ -9,6 +9,23 @@
   `Enemy`): pipeline enemies are born `Untagged`, so their friendly tag was empty, the filter
   filtered nothing, and one enemy's bullet crossing another killed it. The friendly tag still
   applies — this is an extra rule on top, not a replacement.
+- **Parry** — `Combat.Parry` (static hook) + `Gameplay.PlayerParry` (on `Player.prefab`). The only two
+  enemy → player damage paths, `Projectile.HandleHit` and `AbilityHit.Damage` (non-player caster), call
+  `Parry.TryParry(target, damage, attacker, point, kind)` right before `TakeDamage`; the target's
+  `IParryReceiver` answers. True = no damage (a projectile `Deflect()`s: despawns, no explosion; an
+  `AbilityHit` reports a miss). New enemy/boss attacks are parriable for free if they use those paths.
+  **Contact damage (`EnemyBrain`/`EnemyController`/`BossController` bodies) and `QuakeSlamAttack` do
+  not go through it on purpose.** `PlayerParry`: short window (`window`, default 0.12 s), long
+  `missCooldown` (4 s, starts on press), `successCooldown` (0) on a block; also catches enemy
+  `Projectile`s inside a front `catchZone` during the window (feels like a slash, not a body shield);
+  `graceAfterSuccess` silently blocks the rest of the same swing / a trailing bullet without rewards.
+  Air success → `PlayerMovement.RefundAirMoves` (+ optional `Bounce`). Optional reflect: damage ×
+  `reflectMultiplier` to the attacker via `PlayerHit.Deal(..., HitKind.Parry)` (no owner = no reflect).
+  Hit-stop only touches `Time.timeScale` when it is 1 and only restores it if still its own value
+  (never fights pause). Visual: `parryEffect`/`successEffect`/`reflectEffect` prefab slots
+  (`VfxOneShot`, e.g. the VFX Lab *Tajo*); empty = code placeholder (`ProceduralSprites.Crescent` +
+  ring, two reused child renderers). Item hooks: `Parry.Succeeded` / `Parry.Missed`. HUD slot
+  `CooldownSlot.Parry`; sounds `OnParry` / `OnParrySuccess`.
 - **`Health`** — the only place damage is applied. Exposes instance `Damaged`/`HealthChanged`/`Died`
   events plus a **static `AnyDamaged(Health, float)`** — the global feed `DamagePopups` subscribes to
   once instead of hooking every character. `TakeDamage(amount)` **returns false when the

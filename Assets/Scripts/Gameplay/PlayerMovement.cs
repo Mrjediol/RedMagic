@@ -1297,6 +1297,32 @@ namespace RedMagic.Gameplay
             if (velocity.y > 0f) _coyoteUsable = false;
         }
 
+        /// <summary>
+        /// Devuelve saltos y dashes aéreos ya gastados (recompensa del parry en el aire). Con
+        /// <paramref name="allowBeyondMax"/> se pueden acumular por encima del máximo normal hasta
+        /// tocar suelo; si no, como mucho se vuelve a tenerlos todos.
+        /// </summary>
+        public void RefundAirMoves(int jumps, int dashes, bool resetDashCooldown, bool allowBeyondMax)
+        {
+            int jumpFloor = allowBeyondMax ? -jumps : 0;
+            int dashFloor = allowBeyondMax ? -dashes : 0;
+            if (jumps > 0) _airJumpsUsed = Mathf.Max(jumpFloor, Mathf.Min(_airJumpsUsed, maxAirJumps) - jumps);
+            if (dashes > 0) _airDashesUsed = Mathf.Max(dashFloor, Mathf.Min(_airDashesUsed, maxAirDashes) - dashes);
+            if (resetDashCooldown && _dashTimer <= 0f) _dashCooldownTimer = 0f;
+        }
+
+        /// <summary>
+        /// Impulso vertical instantáneo (el rebote del parry en el aire). Sin la gravedad extra de
+        /// "salto soltado pronto" (<c>_endedJumpEarly</c>), que lo acortaría a la mitad.
+        /// </summary>
+        public void Bounce(float verticalSpeed)
+        {
+            if (verticalSpeed <= 0f) return;
+            _currentVerticalSpeed = Mathf.Max(_currentVerticalSpeed, verticalSpeed);
+            _endedJumpEarly = false;
+            _coyoteUsable = false;
+        }
+
         /// <summary>Corta el empujón y devuelve el control (muerte, respawn, cambio de sección).</summary>
         public void CancelKnockback()
         {

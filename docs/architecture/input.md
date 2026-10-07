@@ -27,3 +27,6 @@ Each mode shows its own on-screen help and nothing else:
   binding changes in `RedMagicControls.inputactions` (or in a script that reads keys directly, like
   E to interact or I for items), update `ControlsLegendHud.Rows` too.
 - **Gamepad** → neither, since the prompts would be wrong buttons.
+
+**Parry** (`Player/Parry`, read by `PlayerParry`): right mouse button, `L`, gamepad `buttonEast`;
+touch `parryButton` → `TouchInput.QueueParry/ConsumeParry`. Listed in `HudControlsLegend.Rows`.

@@ -54,6 +54,7 @@ GameObject:
   - component: {fileID: 1145223074590112823}
   - component: {fileID: 1232626756917567298}
   - component: {fileID: 5668994849381310021}
+  - component: {fileID: 4447773840029447090}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -601,6 +602,52 @@ MonoBehaviour:
       initialized: 1
     silent: 0
   useGenericFallback: 1
+--- !u!114 &4447773840029447090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4486680268914706177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 097f3ea27ea465644aed9d7d214232f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerParry
+  inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
+  actionMapName: Player
+  parryActionName: Parry
+  startup: 0
+  window: 0.12
+  missCooldown: 4
+  successCooldown: 0
+  parryProjectiles: 1
+  parryMelee: 1
+  frontOnly: 0
+  catchZoneOffset: {x: 0.55, y: 0.1}
+  catchZoneSize: {x: 1.3, y: 1.7}
+  hitStopDuration: 0.08
+  hitStopTimeScale: 0.05
+  graceAfterSuccess: 0.25
+  airReward: 1
+  airJumpsRefund: 1
+  airDashesRefund: 1
+  resetDashCooldown: 1
+  stackBeyondMax: 0
+  airBounce: 0
+  reflectDamage: 0
+  reflectMultiplier: 1
+  reflectFromProjectiles: 1
+  reflectFromMelee: 1
+  reflectKnockback: 1
+  parryEffect: {fileID: 0}
+  successEffect: {fileID: 0}
+  reflectEffect: {fileID: 0}
+  effectOffset: {x: 0.55, y: 0.1}
+  placeholderColor: {r: 0.62, g: 1, b: 0.35, a: 1}
+  placeholderSize: 1.7
+  placeholderFade: 0.12
+  drawGizmo: 1
 --- !u!1 &5936975751486156930
 GameObject:
   m_ObjectHideFlags: 0

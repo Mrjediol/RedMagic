@@ -106,6 +106,10 @@ namespace RedMagic.Abilities
 
             bool byPlayer = Teams.Of(ctx.Caster) == Team.Player;
 
+            // Golpe enemigo: el objetivo puede pararlo con un parry (ver Combat.Parry).
+            if (!byPlayer && Parry.TryParry(target, amount, ctx.Caster, sourcePosition, ParryHitKind.Melee))
+                return false;
+
             // Lo del jugador pasa por PlayerHit (bonos de items, ralentización, avisos de baja); lo
             // de enemigos y jefes va directo, como siempre.
             bool landed = byPlayer

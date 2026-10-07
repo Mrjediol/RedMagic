@@ -115,6 +115,7 @@ namespace RedMagic.Gameplay
         private float _lifesteal;
         private bool _despawning;
         private bool _impacted;   // acabó chocando (objetivo o terreno): entonces no suena OnDeath
+        private bool _deflected;  // lo ha parado un parry: sin explosión final
 
         /// <summary>Objetivos ya golpeados por este disparo (para que atravesar no golpee dos veces).</summary>
         private readonly System.Collections.Generic.HashSet<Health> _hitTargets =
@@ -146,6 +147,7 @@ namespace RedMagic.Gameplay
             // Reset para reutilización desde el pool.
             _despawning = false;
             _impacted = false;
+            _deflected = false;
             _lifeTimer = lifetime;
             _pierceLeft = pierceCount;
             _hitTargets.Clear();
@@ -231,6 +233,29 @@ namespace RedMagic.Gameplay
         /// vienen de ningún pool y quedarían acumulándose desactivados en la escena.
         /// </summary>
         public void DestroyWhenDone() => destroyWhenDone = true;
+
+        /// <summary>Quien lo disparó (null = del entorno).</summary>
+        public GameObject Owner => _owner;
+
+        /// <summary>Daño de impacto directo de este disparo.</summary>
+        public float Damage => damage;
+
+        /// <summary>
+        /// True si este disparo, ahora mismo, haría daño a <paramref name="target"/> al tocarlo. Lo usa
+        /// el parry para interceptar sólo balas que de verdad van contra el jugador.
+        /// </summary>
+        public bool CanHit(Health target) => !_despawning && IsEnemyTarget(target) && !_hitTargets.Contains(target);
+
+        /// <summary>
+        /// Bloqueado por un parry: desaparece sin hacer daño ni explotar (sí enseña su efecto de impacto).
+        /// </summary>
+        public void Deflect()
+        {
+            if (_despawning) return;
+            _deflected = true;
+            _impacted = true;
+            Despawn();
+        }
 
         /// <summary>Lanza el proyectil. <paramref name="owner"/> se ignora en las colisiones.</summary>
         public void Launch(Vector2 direction, GameObject owner = null)
@@ -391,6 +416,13 @@ namespace RedMagic.Gameplay
                 // Aliado o ya golpeado: se atraviesa sin gastar perforación ni terminar el disparo.
                 if (!IsEnemyTarget(health) || _hitTargets.Contains(health)) return;
 
+                // Parry: el objetivo lo bloquea (ver Combat.Parry) → ni daño ni perforación.
+                if (Parry.TryParry(health, damage, _owner, transform.position, ParryHitKind.Projectile))
+                {
+                    Deflect();
+                    return;
+                }
+
                 if (damage > 0f)
                 {
                     // El empujón sale del punto de impacto, así que empuja en el sentido en el que
@@ -479,7 +511,7 @@ namespace RedMagic.Gameplay
         /// </summary>
         private void ExplodeIfDue()
         {
-            if (impactRadius <= 0f || impactDamage <= 0f) return;
+            if (_deflected || impactRadius <= 0f || impactDamage <= 0f) return;
 
             var filter = new ContactFilter2D { useLayerMask = true, layerMask = hitLayers, useTriggers = true };
             int count = Physics2D.OverlapCircle(transform.position, impactRadius, filter, ImpactBuffer);

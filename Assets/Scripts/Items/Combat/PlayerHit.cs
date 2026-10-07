@@ -17,6 +17,8 @@ namespace RedMagic.Items
         Ability,
         /// <summary>Estallido de un item o sinergia (<see cref="IceBurst"/>).</summary>
         Burst,
+        /// <summary>Daño devuelto por un parry al que lanzó el golpe (<c>PlayerParry</c>).</summary>
+        Parry,
     }
 
     /// <summary>Un golpe del jugador que ha entrado.</summary>

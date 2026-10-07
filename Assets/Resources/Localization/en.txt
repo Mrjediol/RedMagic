@@ -64,15 +64,18 @@ touch.down = DOWN
 touch.dash = DASH
 touch.fire = FIRE
 touch.attack = ATTACK
+touch.parry = PARRY
 touch.jump = JUMP
 
 # --- key legend (PC)
 legend.key_space = Space
 legend.key_left_click = Left click
+legend.key_right_click = Right click
 legend.move = Move
 legend.jump = Jump / double jump
 legend.dash = Dash
 legend.shoot = Shoot
+legend.parry = Parry
 legend.interact = Interact
 legend.items = Items
 legend.options = Options

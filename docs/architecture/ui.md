@@ -87,7 +87,7 @@ Data comes from the player through **interfaces, not wiring** (`Gameplay/Cooldow
 icon) — implemented by `WeaponUser`, `PlayerAttack` (both `Attack`; the active one wins) and
 `PlayerMovement` (`Dash`, blocked when air dashes are spent) — and `IShieldSource`
 (`LegendaryPassivePlayerHook`). `HudPlayer` finds the player by tag (re-searched when the hub/run
-instance changes) and collects them with `GetComponents`. **New ability with a cooldown (parry)**:
+instance changes) and collects them with `GetComponents`. `PlayerParry` fills `Parry` (touch: `parryButton`). **New ability with a cooldown**:
 implement `ICooldownSource` on a player component with a new `CooldownSlot` value; the slot appears
 by itself, and on touch add one `AttachDial(button, slot)` line in `TouchControlsController`.
 

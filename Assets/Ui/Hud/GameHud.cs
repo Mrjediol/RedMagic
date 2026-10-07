@@ -20,6 +20,9 @@ namespace RedMagic.UI
     /// (<see cref="HudBuffRow"/>).</item>
     /// <item><b>Controles</b> (abajo izq.): <see cref="HudControlsLegend"/>, sólo con teclado y ratón.</item>
     /// </list>
+    /// Más dos piezas de enemigos, según el modo de Opciones (<see cref="HudEnemyBars"/>):
+    /// <b>Foco</b> (arriba al centro, bajo la del jefe) y <b>Lista</b> (derecha); el modo flotante va
+    /// en una capa que sigue a la cámara y no se recoloca.
     /// Detrás de todo, <see cref="HudScreenFx"/>: bordes rojos al recibir daño y con poca vida.
     ///
     /// Las posiciones salen de <see cref="HudSettings"/> (anclas relativas a la pantalla) y se
@@ -54,6 +57,7 @@ namespace RedMagic.UI
         private HudCurrency _currency;
         private HudBuffRow _buffs;
         private HudControlsLegend _legend;
+        private HudEnemyBars _enemyBars;
         private HudLayoutEditor _editor;
         private readonly Dictionary<HudElement, VisualElement> _movable = new();
 
@@ -164,6 +168,10 @@ namespace RedMagic.UI
             _currency.Tick(dt);
             _buffs.Tick();
 
+            var (enemyFocus, enemyList) = _enemyBars.Tick(dt, editing);
+            SetDisplay(_enemyBars.Focus, enemyFocus);
+            SetDisplay(_enemyBars.List, enemyList);
+
             // La chuleta: jugando (sin menú delante), con teclado y ratón, y si no está apagada.
             SetDisplay(_legend, editing || (HudSettings.ShowControls && InputDeviceManager.KeyboardMouseActive && GameStateManager.CanPlayerAct));
 
@@ -215,7 +223,11 @@ namespace RedMagic.UI
                 HudElement.Health => new HudAnchor(Vector2.zero, new Vector2(m / w, healthTop / h)),
                 HudElement.Cooldowns => new HudAnchor(Vector2.zero, new Vector2(m / w, (healthTop + HudStyle.HealthHeight + CooldownsGap) / h)),
                 HudElement.Currency => new HudAnchor(new Vector2(1f, 0f), new Vector2(1f - m / w, m / h)),
-                _ => new HudAnchor(new Vector2(0f, 1f), new Vector2(m / w, 1f - m / h)),
+                HudElement.Controls => new HudAnchor(new Vector2(0f, 1f), new Vector2(m / w, 1f - m / h)),
+                // Bajo la barra del jefe (arriba al centro), para que no se pisen en un combate con esbirros.
+                HudElement.EnemyFocus => new HudAnchor(new Vector2(0.5f, 0f), new Vector2(0.5f, 0.15f)),
+                // La lista crece hacia abajo desde su borde superior (añadir enemigos no la mueve).
+                _ => new HudAnchor(new Vector2(1f, 0f), new Vector2(1f - m / w, 0.3f)),
             };
         }
 
@@ -233,6 +245,9 @@ namespace RedMagic.UI
                 center < extent / 3f ? 0f : center > extent * 2f / 3f ? 1f : 0.5f;
 
             var pivot = new Vector2(PivotFor(placed.center.x, w), PivotFor(placed.center.y, h));
+            // La lista de enemigos cambia de alto con cada enemigo: en el centro se ancla por arriba,
+            // o crecería hacia los dos lados y bailaría.
+            if (element == HudElement.EnemyList && Mathf.Approximately(pivot.y, 0.5f)) pivot.y = 0f;
             var point = new Vector2(placed.x + pivot.x * placed.width, placed.y + pivot.y * placed.height);
             return new HudAnchor(pivot, new Vector2(point.x / w, point.y / h));
         }
@@ -262,6 +277,14 @@ namespace RedMagic.UI
             // Primero (detrás de todo): los bordes rojos.
             _screenFx = new HudScreenFx();
             _root.Add(_screenFx);
+
+            // Barras de enemigo: la capa flotante va detrás de las piezas del jugador.
+            _enemyBars = new HudEnemyBars();
+            _root.Add(_enemyBars.Overhead);
+            AddMovable(HudElement.EnemyFocus, _enemyBars.Focus);
+            AddMovable(HudElement.EnemyList, _enemyBars.List);
+            _enemyBars.Focus.style.display = DisplayStyle.None;
+            _enemyBars.List.style.display = DisplayStyle.None;
 
             _health = new HudHealthBar();
             AddMovable(HudElement.Health, _health);
@@ -297,6 +320,8 @@ namespace RedMagic.UI
             _editor.Register(HudElement.Cooldowns, _slotRow, "hud.element.cooldowns");
             _editor.Register(HudElement.Currency, _rightColumn, "hud.element.currency");
             _editor.Register(HudElement.Controls, _legend, "hud.element.controls");
+            _editor.Register(HudElement.EnemyFocus, _enemyBars.Focus, "hud.element.enemy_focus");
+            _editor.Register(HudElement.EnemyList, _enemyBars.List, "hud.element.enemy_list");
             _editor.Finished += EndLayoutEdit;
             _root.Add(_editor);
         }

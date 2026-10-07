@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using RedMagic.Audio;
 using UnityEngine;
 
@@ -173,7 +174,22 @@ namespace RedMagic.Combat
         public event Action<float> DamageReduced;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStaticEvents() => AnyStarted = null;
+        private static void ResetStaticEvents()
+        {
+            AnyStarted = null;
+            ActiveSet.Clear();
+        }
+
+        private static readonly HashSet<Health> ActiveSet = new();
+
+        /// <summary>
+        /// Todas las <see cref="Health"/> activas ahora mismo (vivas o no), sin escanear la escena.
+        /// La usa el HUD para las barras de vida de los enemigos; incluye las que salen de un pool.
+        /// </summary>
+        public static IReadOnlyCollection<Health> Active => ActiveSet;
+
+        /// <summary><c>Time.time</c> del último golpe que entró de verdad (−∞ si ninguno).</summary>
+        public float LastDamagedTime { get; private set; } = float.NegativeInfinity;
 
         /// <summary>
         /// Se dispara al llamar a <see cref="ResetHealth"/> mientras se estaba muerto. Es el
@@ -194,6 +210,14 @@ namespace RedMagic.Combat
         private float _invulnerabilityTimer;
         private float _statusDamageMultiplier = 1f;
         private Knockback _knockback;
+
+        private void OnEnable()
+        {
+            ActiveSet.Add(this);
+            LastDamagedTime = float.NegativeInfinity;   // un enemigo que vuelve de un pool no viene "en combate"
+        }
+
+        private void OnDisable() => ActiveSet.Remove(this);
 
         private void Awake()
         {
@@ -271,6 +295,7 @@ namespace RedMagic.Combat
                 InvulnerabilityChanged?.Invoke(true);
             }
 
+            LastDamagedTime = Time.time;
             Damaged?.Invoke(amount);
             AnyDamaged?.Invoke(this, amount);
             if (reduced > 0f) DamageReduced?.Invoke(reduced);

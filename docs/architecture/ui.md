@@ -54,6 +54,21 @@ Behind them, **`HudScreenFx`**: a code-generated red vignette (centre always cle
 `Health.Damaged` scaled by hit size, and a soft double-pulse "heartbeat" under the low-health
 threshold, both faded in/out, each with on/off + intensity in `HudSettings`.
 
+**Enemy health** (`HudEnemyBars`, mode in `HudSettings.EnemyHealth`: Off / Overhead / Focus / List,
+default List): `HudEnemies` builds the "in combat" set each frame from `Health.Active` (a static set
+every `Health` joins in `OnEnable`) — enemy = has `EnemyStats` / legacy `EnemyController` /
+`TrainingDummy` and no `BossController` above it (bosses keep `BossHealthBar`); in combat =
+`EnemyBrain.InCombat` or hit within 6 s (`Health.LastDamagedTime`); sorted by distance to the
+player. **Overhead** = pooled `EnemyBarView`s on a full-screen layer placed via
+`Camera.WorldToScreenPoint` → `RuntimePanelUtils.ScreenToPanel` at the collider's top; **Focus** =
+one big bar (last hit, else nearest), piece `EnemyFocus`, default top-centre under the boss bar;
+**List** = up to 6 rows + "+N", piece `EnemyList`, default right, anchored by its top so new rows
+don't move it. Bars fade in/out, show a ghost trail + flash, exact HP optional
+(`EnemyHealthNumbers`), `IShieldSource` children (`HitShield`) as pips, and — when
+`EnemyCooldownReveal.Granted` (for a future item: `Grant/Revoke(key)`) or the Options test toggle
+`EnemyCooldownsDebug` — one strip per `IEnemyCooldownSource` (`EnemyBrain` = attack cooldown;
+blinks while attacking). The old per-character uGUI `HealthBarUI` is in Legacy.
+
 **Placement**: each piece is absolutely positioned from a `HudAnchor` (pivot 0/½/1 per axis + screen
 fraction), saved per piece in `PlayerPrefs` by `HudSettings`; unset = `GameHud.DefaultAnchor`. On drop
 the pivot is picked by the screen third the piece lands in, so a right-docked piece grows inward.

@@ -64,3 +64,10 @@ cada uno con su `UIDocument` y su autocreación. Sustituidos por **`UI.GameHud`*
 (`Assets/Ui/Hud/`), un único panel que además trae la barra de vida/escudo y los cooldowns; su
 lógica se portó a `HudCurrency`, `HudControlsLegend` y `HudBuffRow`. Aquí ya no se autocrean (se
 quitó el `RuntimeInitializeOnLoadMethod`), así que no corren: sólo referencia.
+
+## `Ui/HealthBarUI` — barra de vida flotante por personaje (uGUI world-space)
+
+Cada personaje que la llevaba construía su propio Canvas encima de la cabeza. Sustituida por las
+barras de enemigo del HUD (`UI.HudEnemyBars`: flotante / foco / lista, a elegir en Opciones ▸
+Interfaz), que salen solas para todo enemigo sin tocar su prefab; la del jugador ya la había
+sustituido `UI.HudHealthBar`. Sin usos en prefabs ni escenas al moverla.

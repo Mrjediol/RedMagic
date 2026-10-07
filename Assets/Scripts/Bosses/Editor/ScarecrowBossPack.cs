@@ -452,7 +452,6 @@ namespace RedMagic.Bosses.EditorTools
             new BossAuthoring.Fields(knockback).Set("resistance", 0.6f).Apply();
 
             root.AddComponent<HitFlash>();
-            root.AddComponent<UI.HealthBarUI>();
 
             var corpse = root.AddComponent<Corpse>();
             new BossAuthoring.Fields(corpse).Set("linger", 0.35f).Set("fadeDuration", 0.3f).Apply();

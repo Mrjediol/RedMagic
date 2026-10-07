@@ -11,6 +11,24 @@ namespace RedMagic.Settings
         Cooldowns,
         Currency,
         Controls,
+        EnemyFocus,
+        EnemyList,
+    }
+
+    /// <summary>Cómo se enseña la vida de los enemigos con los que se pelea (Opciones ▸ Interfaz).</summary>
+    public enum EnemyHealthMode
+    {
+        /// <summary>No se enseña.</summary>
+        Off = 0,
+
+        /// <summary>Una barra pequeña encima de cada uno.</summary>
+        Overhead = 1,
+
+        /// <summary>Una barra grande, la del último golpeado (o el más cercano), como la de un jefe.</summary>
+        Focus = 2,
+
+        /// <summary>Una lista de barras, una por enemigo, ordenadas por cercanía (de fábrica, a la derecha).</summary>
+        List = 3,
     }
 
     /// <summary>
@@ -81,6 +99,42 @@ namespace RedMagic.Settings
             set => SetFloat("lowHealthIntensity", value);
         }
 
+        // ---------------------------------------------------------------- enemigos
+
+        /// <summary>Cómo se ve la vida de los enemigos. De fábrica, la lista lateral.</summary>
+        public static EnemyHealthMode EnemyHealth
+        {
+            get
+            {
+                int value = PlayerPrefs.GetInt(Prefix + "enemyHealthMode", (int)EnemyHealthMode.List);
+                return Enum.IsDefined(typeof(EnemyHealthMode), value) ? (EnemyHealthMode)value : EnemyHealthMode.List;
+            }
+            set
+            {
+                if (value == EnemyHealth) return;
+                PlayerPrefs.SetInt(Prefix + "enemyHealthMode", (int)value);
+                PlayerPrefs.Save();
+                Changed?.Invoke();
+            }
+        }
+
+        /// <summary>Escribir la vida exacta ("35 / 80") en las barras de enemigo, o sólo la barra.</summary>
+        public static bool EnemyHealthNumbers
+        {
+            get => GetBool("enemyHealthNumbers", true);
+            set => SetBool("enemyHealthNumbers", value);
+        }
+
+        /// <summary>
+        /// Pruebas: ver los cooldowns de los enemigos sin el item que lo concede
+        /// (<c>Gameplay.EnemyCooldownReveal</c>). Apagado de fábrica.
+        /// </summary>
+        public static bool EnemyCooldownsDebug
+        {
+            get => GetBool("enemyCooldownsDebug", false);
+            set => SetBool("enemyCooldownsDebug", value);
+        }
+
         // ---------------------------------------------------------------- posiciones
 
         /// <summary>Posición guardada de <paramref name="element"/>, o false si usa la de fábrica.</summary>
@@ -126,7 +180,9 @@ namespace RedMagic.Settings
             HudElement.Health => Prefix + "pos.health",
             HudElement.Cooldowns => Prefix + "pos.cooldowns",
             HudElement.Currency => Prefix + "pos.currency",
-            _ => Prefix + "pos.controls",
+            HudElement.Controls => Prefix + "pos.controls",
+            HudElement.EnemyFocus => Prefix + "pos.enemyFocus",
+            _ => Prefix + "pos.enemyList",
         };
 
         // ---------------------------------------------------------------- PlayerPrefs

@@ -47,7 +47,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement name="interfacePage" class="option-page">
+                <ui:VisualElement name="interfacePage" class="option-page option-page--compact">
                     <ui:VisualElement name="hurtRow" class="option-row">
                         <ui:Label text="#options.hud.hurt" class="option-label option-label--hud"/>
                         <ui:Slider name="hurtSlider" low-value="0" high-value="1" class="option-slider"/>
@@ -63,6 +63,22 @@
                     <ui:VisualElement name="controlsRow" class="option-row">
                         <ui:Label text="#options.controls_legend" class="option-label option-label--wide"/>
                         <ui:Toggle name="controlsToggle" label="#options.show" class="option-mute"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="enemyModeRow" class="option-row">
+                        <ui:Label text="#options.hud.enemy_health" class="option-label option-label--hud"/>
+                        <ui:VisualElement class="option-selector">
+                            <ui:Button name="enemyModePrev" text="&lt;" class="option-arrow"/>
+                            <ui:Label name="enemyModeValue" text="-" class="option-choice"/>
+                            <ui:Button name="enemyModeNext" text="&gt;" class="option-arrow"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="enemyNumbersRow" class="option-row">
+                        <ui:Label text="#options.hud.enemy_numbers" class="option-label option-label--wide"/>
+                        <ui:Toggle name="enemyNumbersToggle" label="#options.show" class="option-mute"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="enemyCooldownsRow" class="option-row">
+                        <ui:Label text="#options.hud.enemy_cooldowns" class="option-label option-label--wide"/>
+                        <ui:Toggle name="enemyCooldownsToggle" label="#options.show" class="option-mute"/>
                     </ui:VisualElement>
                     <ui:VisualElement name="layoutRow" class="option-row option-row--buttons">
                         <ui:Button name="layoutButton" text="#options.hud.place" class="menu-button option-wide-button"/>

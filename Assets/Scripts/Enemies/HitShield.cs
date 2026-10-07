@@ -14,7 +14,7 @@ namespace RedMagic.Enemies
     /// del propio prefab: se enciende al nacer y se apaga al romperse, con un estallido + sonido.
     /// Reaparece entero en cada nacimiento (<c>OnEnable</c>), también si el enemigo viene de un pool.
     /// </summary>
-    public class HitShield : MonoBehaviour
+    public class HitShield : MonoBehaviour, Gameplay.IShieldSource
     {
         [Tooltip("Golpes que aguanta antes de romperse.")]
         [Min(1)] [SerializeField] private int hits = 1;
@@ -41,6 +41,10 @@ namespace RedMagic.Enemies
         private int _remaining;
         /// <summary>Quedan golpes por absorber.</summary>
         public bool Active => _remaining > 0;
+
+        // HUD: los golpes que le quedan, como segmentos sobre su barra de vida.
+        public float Shield => _remaining;
+        public float ShieldMax => hits;
 
         private void Awake() => _health = GetComponentInParent<Health>();
 

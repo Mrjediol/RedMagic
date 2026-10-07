@@ -40,7 +40,9 @@ namespace RedMagic.UI
         public static readonly Color HealthGhost = new(1f, 0.86f, 0.74f, 0.95f);
         public static readonly Color HealthHeal = new(0.42f, 0.92f, 0.52f, 1f);
         public static readonly Color HealthTrack = new(0.16f, 0.05f, 0.07f, 1f);
-        public static readonly Color Shield = new(0.45f, 0.88f, 1f, 1f);
+        /// <summary>Relleno de las barras de enemigo: ámbar, para no confundirlas nunca con la del jugador.</summary>
+        public static readonly Color EnemyFill = new(0.93f, 0.50f, 0.16f, 1f);
+        public static readonly Color Shield =new(0.45f, 0.88f, 1f, 1f);
         public static readonly Color ShieldEmpty = new(0.08f, 0.14f, 0.18f, 0.9f);
 
         public static readonly Color CooldownShade = new(0.02f, 0.01f, 0.02f, 0.66f);

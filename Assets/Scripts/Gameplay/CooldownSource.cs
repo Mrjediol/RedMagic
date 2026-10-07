@@ -55,8 +55,52 @@ namespace RedMagic.Gameplay
         Sprite CooldownIcon { get; }
     }
 
+    /// <summary>Qué recarga un cooldown de enemigo (fija el color y el orden en su barra).</summary>
+    public enum EnemyCooldownKind
+    {
+        Attack = 0,
+        Shield = 10,
+    }
+
     /// <summary>
-    /// Lo implementa lo que pone un escudo al jugador. El HUD lo pinta como una barra fina sobre la
+    /// Lo implementa cualquier componente de un enemigo con un cooldown que el jugador podría querer
+    /// leer (su ataque, un escudo que se recarga…). Las barras de vida de enemigo del HUD lo pintan
+    /// como una tira fina bajo la vida, sólo si el jugador los ve (<see cref="EnemyCooldownReveal"/>).
+    /// </summary>
+    public interface IEnemyCooldownSource
+    {
+        EnemyCooldownKind Kind { get; }
+
+        /// <summary>
+        /// Estado del cooldown. <see cref="CooldownState.Charge"/> &gt; 0 = lo está usando ahora mismo
+        /// (el ataque en curso): la barra lo marca como aviso.
+        /// </summary>
+        CooldownState Cooldown { get; }
+    }
+
+    /// <summary>
+    /// Si el jugador ve los cooldowns de los enemigos. Lo encienden los items que den esa
+    /// información (<see cref="Grant"/> / <see cref="Revoke"/> con su propia clave, como
+    /// <c>BuffIndicators</c>) y, para probarlo sin el item, la casilla de pruebas de Opciones
+    /// (<c>Settings.HudSettings.EnemyCooldownsDebug</c>, que el HUD suma por su cuenta).
+    /// </summary>
+    public static class EnemyCooldownReveal
+    {
+        private static readonly System.Collections.Generic.HashSet<object> Sources = new();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => Sources.Clear();
+
+        /// <summary>Algún item lo concede ahora mismo.</summary>
+        public static bool Granted => Sources.Count > 0;
+
+        public static void Grant(object source) => Sources.Add(source);
+
+        public static void Revoke(object source) => Sources.Remove(source);
+    }
+
+    /// <summary>
+    /// Lo implementa lo que pone un escudo al jugador (o a un enemigo). El HUD lo pinta como una barra fina sobre la
     /// de vida, partida en segmentos si <see cref="ShieldMax"/> es un número pequeño de golpes.
     /// </summary>
     public interface IShieldSource

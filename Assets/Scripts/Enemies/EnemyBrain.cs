@@ -29,8 +29,26 @@ namespace RedMagic.Enemies
     [DisallowMultipleComponent]
     [RequireComponent(typeof(EnemyStats))]
     [RequireComponent(typeof(Rigidbody2D))]
-    public class EnemyBrain : MonoBehaviour, ISoundEventSource
+    public class EnemyBrain : MonoBehaviour, ISoundEventSource, IEnemyCooldownSource
     {
+        // ------------------------------------------------------------ HUD
+
+        /// <summary>
+        /// Peleando: persigue, ataca, se recarga, se retira o esquiva. Lo usan las barras de vida de
+        /// enemigo del HUD para saber con quién está peleando el jugador.
+        /// </summary>
+        public bool InCombat => Current is State.Approach or State.Attacking or State.Cooldown or State.Retreat or State.Evading;
+
+        public EnemyCooldownKind Kind => EnemyCooldownKind.Attack;
+
+        /// <summary>Recarga entre ataques; Charge = 1 mientras ataca (el HUD lo marca como aviso).</summary>
+        public CooldownState Cooldown => new CooldownState
+        {
+            Remaining = Mathf.Max(0f, _cooldownTimer),
+            Duration = _stats != null ? T.attackCooldown : 0f,
+            Charge = Current == State.Attacking ? 1f : 0f,
+        };
+
         /// <summary>OnMove cada paso mientras se desplaza, OnWake al despertar. Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
 

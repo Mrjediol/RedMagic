@@ -40,6 +40,9 @@ namespace RedMagic.UI
         private Label _hurtValue, _lowHealthValue;
         private Toggle _hurtToggle, _lowHealthToggle;
         private Button _layoutButton, _layoutResetButton;
+        private Button _enemyModePrev, _enemyModeNext;
+        private Label _enemyModeValue;
+        private Toggle _enemyNumbersToggle, _enemyCooldownsToggle;
 
         private bool _hidden = true;
         private bool _open;
@@ -94,6 +97,11 @@ namespace RedMagic.UI
             _lowHealthToggle = _root.Q<Toggle>("lowHealthToggle");
             _layoutButton = _root.Q<Button>("layoutButton");
             _layoutResetButton = _root.Q<Button>("layoutResetButton");
+            _enemyModePrev = _root.Q<Button>("enemyModePrev");
+            _enemyModeNext = _root.Q<Button>("enemyModeNext");
+            _enemyModeValue = _root.Q<Label>("enemyModeValue");
+            _enemyNumbersToggle = _root.Q<Toggle>("enemyNumbersToggle");
+            _enemyCooldownsToggle = _root.Q<Toggle>("enemyCooldownsToggle");
 
             WireInterfaceTab();
             ShowTab(false);
@@ -143,6 +151,8 @@ namespace RedMagic.UI
             MenuSkinDresser.DressToggle(_controlsToggle, skin);
             MenuSkinDresser.DressToggle(_hurtToggle, skin);
             MenuSkinDresser.DressToggle(_lowHealthToggle, skin);
+            MenuSkinDresser.DressToggle(_enemyNumbersToggle, skin);
+            MenuSkinDresser.DressToggle(_enemyCooldownsToggle, skin);
 
             MenuSkinDresser.DressButton(_backButton, skin, Color.white);
             MenuSkinDresser.DressButton(_layoutButton, skin, Color.white);
@@ -198,6 +208,11 @@ namespace RedMagic.UI
             if (_layoutButton != null) _layoutButton.clicked += OnPlaceHud;
             if (_layoutResetButton != null) _layoutResetButton.clicked += HudSettings.ResetAnchors;
 
+            WireArrow(_enemyModePrev, PrevEnemyMode);
+            WireArrow(_enemyModeNext, NextEnemyMode);
+            _enemyNumbersToggle?.RegisterValueChangedCallback(OnEnemyNumbersToggle);
+            _enemyCooldownsToggle?.RegisterValueChangedCallback(OnEnemyCooldownsToggle);
+
             RefreshInterfaceTab();
         }
 
@@ -214,7 +229,39 @@ namespace RedMagic.UI
 
             if (_layoutButton != null) _layoutButton.clicked -= OnPlaceHud;
             if (_layoutResetButton != null) _layoutResetButton.clicked -= HudSettings.ResetAnchors;
+
+            UnwireArrow(_enemyModePrev, PrevEnemyMode);
+            UnwireArrow(_enemyModeNext, NextEnemyMode);
+            _enemyNumbersToggle?.UnregisterValueChangedCallback(OnEnemyNumbersToggle);
+            _enemyCooldownsToggle?.UnregisterValueChangedCallback(OnEnemyCooldownsToggle);
         }
+
+        // Vida de enemigos: selector de modo con flechas, como resolución e idioma.
+        private static readonly EnemyHealthMode[] EnemyModes =
+            { EnemyHealthMode.Off, EnemyHealthMode.Overhead, EnemyHealthMode.Focus, EnemyHealthMode.List };
+
+        private void PrevEnemyMode() => StepEnemyMode(-1);
+        private void NextEnemyMode() => StepEnemyMode(1);
+
+        private void StepEnemyMode(int step)
+        {
+            int index = System.Array.IndexOf(EnemyModes, HudSettings.EnemyHealth);
+            HudSettings.EnemyHealth = EnemyModes[((index + step) % EnemyModes.Length + EnemyModes.Length) % EnemyModes.Length];
+            RefreshInterfaceTab();
+        }
+
+        // Claves literales (no "$prefix.{modo}") para que la auditoría de idiomas las vea.
+        private static string EnemyModeLabel(EnemyHealthMode mode) => mode switch
+        {
+            EnemyHealthMode.Overhead => Loc.Get("options.hud.enemy_mode.overhead"),
+            EnemyHealthMode.Focus => Loc.Get("options.hud.enemy_mode.focus"),
+            EnemyHealthMode.List => Loc.Get("options.hud.enemy_mode.list"),
+            _ => Loc.Get("options.disabled"),
+        };
+
+        private static void OnEnemyNumbersToggle(ChangeEvent<bool> evt) => HudSettings.EnemyHealthNumbers = evt.newValue;
+
+        private static void OnEnemyCooldownsToggle(ChangeEvent<bool> evt) => HudSettings.EnemyCooldownsDebug = evt.newValue;
 
         private void RefreshInterfaceTab()
         {
@@ -223,6 +270,11 @@ namespace RedMagic.UI
             _lowHealthSlider?.SetValueWithoutNotify(HudSettings.LowHealthIntensity);
             _lowHealthToggle?.SetValueWithoutNotify(HudSettings.LowHealthEffect);
             _controlsToggle?.SetValueWithoutNotify(HudSettings.ShowControls);
+            _enemyNumbersToggle?.SetValueWithoutNotify(HudSettings.EnemyHealthNumbers);
+            _enemyCooldownsToggle?.SetValueWithoutNotify(HudSettings.EnemyCooldownsDebug);
+            if (_enemyModeValue != null) _enemyModeValue.text = EnemyModeLabel(HudSettings.EnemyHealth);
+            _enemyNumbersToggle?.SetEnabled(HudSettings.EnemyHealth != EnemyHealthMode.Off);
+            _enemyCooldownsToggle?.SetEnabled(HudSettings.EnemyHealth != EnemyHealthMode.Off);
             RefreshEffectRow(_hurtSlider, _hurtValue, HudSettings.HurtEffect, HudSettings.HurtIntensity);
             RefreshEffectRow(_lowHealthSlider, _lowHealthValue, HudSettings.LowHealthEffect, HudSettings.LowHealthIntensity);
         }

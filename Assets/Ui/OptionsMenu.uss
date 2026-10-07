@@ -189,7 +189,7 @@
 
 /* Las dos páginas comparten alto mínimo: cambiar de pestaña no hace saltar el panel. */
 .option-pages {
-    min-height: 470px;
+    min-height: 640px;
 }
 
 .option-label--hud {
@@ -206,4 +206,13 @@
     height: 84px;
     margin: 0 14px;
     font-size: 30px;
+}
+
+/* Interfaz tiene más filas que General: algo más juntas para que quepa en el alto de referencia. */
+.option-page--compact .option-row {
+    margin: 4px 0;
+}
+
+.option-page--compact .option-row--buttons {
+    margin-top: 18px;
 }

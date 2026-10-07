@@ -32,6 +32,13 @@
         "y": 0.1
       }
     },
+    "Parts/Head__attacking.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.1
+      }
+    },
     "Parts/OffArm.png": {
       "pixelsPerUnit": 100,
       "pivot": {
@@ -42,8 +49,15 @@
     "Parts/CastArm.png": {
       "pixelsPerUnit": 100,
       "pivot": {
-        "x": 0.36,
-        "y": 0.35
+        "x": 0.8,
+        "y": 0.95
+      }
+    },
+    "Parts/CastArm__attacking.png": {
+      "pixelsPerUnit": 100,
+      "pivot": {
+        "x": 0.75733,
+        "y": 0.94633
       }
     }
   },
@@ -191,8 +205,8 @@
       "sprite": "Parts/Head.png",
       "sortingOrder": 4,
       "position": {
-        "x": -0.08,
-        "y": 1.519
+        "x": -0.085,
+        "y": 1.605
       },
       "rotation": 0,
       "scale": 1,
@@ -228,8 +242,8 @@
       "sprite": "Parts/OffArm.png",
       "sortingOrder": 5,
       "position": {
-        "x": 2.374,
-        "y": 0.394
+        "x": 2.532,
+        "y": 0.6205
       },
       "rotation": 0,
       "scale": 1,
@@ -265,8 +279,8 @@
       "sprite": "Parts/CastArm.png",
       "sortingOrder": 6,
       "position": {
-        "x": -1.9484,
-        "y": 1.238
+        "x": -1.096,
+        "y": 1.105
       },
       "rotation": 0,
       "scale": 1,
@@ -300,8 +314,8 @@
       "name": "Muzzle",
       "parent": "Torso/CastArm",
       "position": {
-        "x": 4.0242,
-        "y": 1.112
+        "x": -1.29,
+        "y": -5.22
       },
       "rotation": 0,
       "scale": 1,
@@ -321,7 +335,7 @@
     "followDamping": 9,
     "followMaxOffset": 1.723,
     "moveGesture": "",
-    "aimArtAngle": 15.4,
+    "aimArtAngle": -103.9,
     "aimMaxAngle": 70,
     "windup": 0.4,
     "recover": 0.45,
@@ -366,7 +380,22 @@
     "stretchPart": null,
     "stretchRiders": []
   },
-  "spriteSwaps": [],
+  "spriteSwaps": [
+    {
+      "part": "Torso/Head",
+      "asleep": null,
+      "awake": null,
+      "attacking": "Parts/Head__attacking.png",
+      "stages": []
+    },
+    {
+      "part": "Torso/CastArm",
+      "asleep": null,
+      "awake": null,
+      "attacking": "Parts/CastArm__attacking.png",
+      "stages": []
+    }
+  ],
   "gestures": [
     {
       "name": "Flick",

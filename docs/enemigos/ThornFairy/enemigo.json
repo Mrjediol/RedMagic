@@ -22,11 +22,11 @@
   "tarea": "8xyu1jh",
   "prefab": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
   "cuerpo": {
-    "fecha": "2026-10-07T14:39:56.768Z",
+    "fecha": "2026-10-07T14:55:00.154Z",
     "plantilla": "floatingCaster",
     "partes": "claude/ThornFairy/final",
     "brief": "Web/RedMagicWeb/tools/comfy/enemies/ThornFairy.json",
-    "resumen": "6 partes: Lower (falda+piernas), Accesorio (alas unidas), Torso, Head (cara enfadada, cristal rojo), OffArm, CastArm (rehecho horizontal, palma hacia delante). Dudoso: pivote/boca del CastArm por ajustar en Enemy Studio; el brazo sobresale hacia atrás del hombro."
+    "resumen": "Partes originales separadas (Lower, Accessory, Torso, Head, CastArm, OffArm) + variantes: Head__attacking (cara enfadada, cristal rojo) y CastArm__attacking (palma hacia delante). Dudoso: la mano de ataque cuelga (no apunta al frente); pivote/boca de CastArm por ajustar en Enemy Studio."
   },
   "imagen": "docs/enemigos/ThornFairy/preview.png"
 }

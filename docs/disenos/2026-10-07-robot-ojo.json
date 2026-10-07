@@ -1,0 +1,16 @@
+{
+  "title": "2 × enemigo: robot ojo",
+  "request": "robot ojo",
+  "kind": "enemy",
+  "count": 2,
+  "mode": "one",
+  "createdAt": "2026-10-07T17:13:45.173Z",
+  "generator": "prompt",
+  "zone": "ice",
+  "body": "floating",
+  "attack": "magic",
+  "taskIds": [
+    "88s1vj1"
+  ],
+  "items": []
+}

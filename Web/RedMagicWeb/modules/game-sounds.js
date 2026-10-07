@@ -240,6 +240,20 @@ export const GAME_SOUNDS = {
   proj_launch_rock: S('projectile', 'Lanzar · roca', 0.34, [
     N('lp', [420, 180], { dur: 0.3, a: 0.03, curve: 1.6, gain: 0.9 }),
     T('sine', [110, 60], { dur: 0.22, a: 0.005, curve: 2.2, gain: 0.7 }) ]),
+  proj_launch_magma: S('projectile', 'Lanzar · roca fundida', 0.42, [
+    N('lp', [900, 260], { dur: 0.34, a: 0.01, curve: 1.8, gain: 0.8 }),
+    T('sine', [140, 55], { dur: 0.3, a: 0.004, curve: 2, gain: 0.8 }),
+    N('bp', [2600, 900], { q: 0.6, dur: 0.18, a: 0.002, curve: 2.2, gain: 0.45 }) ]),
+  proj_hit_magma: S('projectile', 'Impacto en el jugador · roca fundida', 0.5, [
+    N('lp', [1300, 200], { dur: 0.28, a: 0.001, curve: 2, gain: 1 }),
+    T('sine', [110, 40], { dur: 0.34, a: 0.001, curve: 2.2, gain: 0.9 }),
+    N('hp', [5200, 2400], { q: 0.7, dur: 0.16, a: 0.001, curve: 2.4, gain: 0.4 }),
+    C(10, { t0: 0.04, spread: 0.3, gain: 0.35 }) ]),
+  proj_terrain_magma: S('projectile', 'Impacto en terreno · roca fundida', 0.44, [
+    N('lp', [1000, 220], { dur: 0.24, a: 0.001, curve: 2, gain: 1 }),
+    T('sine', [90, 42], { dur: 0.26, a: 0.001, curve: 2.2, gain: 0.7 }),
+    N('hp', [4800, 2200], { q: 0.7, dur: 0.14, a: 0.001, curve: 2.4, gain: 0.35 }),
+    C(8, { t0: 0.04, spread: 0.28, gain: 0.35 }) ]),
   proj_launch_laser: S('projectile', 'Lanzar · láser', 0.24, [
     T('saw', [2200, 500], { dur: 0.2, a: 0.002, curve: 1.8, gain: 0.35 }),
     T('sine', [2200, 500], { dur: 0.2, a: 0.002, curve: 1.8, gain: 0.4 }) ]),
@@ -761,6 +775,9 @@ export const GAME_ASSIGN = [
   R({ component: '^WeaponDefinition$', member: '^impactSound$' }, 'weapon_hit_arcane', wide),
 
   // ---- enemy projectiles (by what the projectile is made of, read from its name)
+  R({ category: '^Projectiles/', name: '^Launch$', asset: 'Molten|Magma' }, 'proj_launch_magma', { ...vary, volume: 0.75 }),
+  R({ category: '^Projectiles/', name: '^Hit target$', asset: 'Molten|Magma' }, 'proj_hit_magma', vary),
+  R({ category: '^Projectiles/', name: '^Hit terrain$', asset: 'Molten|Magma' }, 'proj_terrain_magma', { ...wide, volume: 0.7 }),
   R({ category: '^Projectiles/', name: '^Launch$', asset: 'Hada|Fairy' }, 'proj_launch_fairy', { ...wide, volume: 0.55 }),
   R({ category: '^Projectiles/', name: '^Launch$', asset: 'Boulder|Rock' }, 'proj_launch_rock', { ...vary, volume: 0.7 }),
   R({ category: '^Projectiles/', name: '^Launch$', asset: 'Laser' }, 'proj_launch_laser', { ...vary, volume: 0.6 }),

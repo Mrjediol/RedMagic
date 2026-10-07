@@ -1,6 +1,6 @@
 {
   "name": "CinderKettleBot",
-  "estado": "cuerpo-por-aprobar",
+  "estado": "por-aprobar",
   "diseno": {
     "image": "docs/enemigos/CinderKettleBot/diseno.png",
     "source": "docs/disenos/img/2026-10-07-robot-2__p3.png",
@@ -63,7 +63,7 @@
       }
     ]
   },
-  "tarea": "zl37h4o",
+  "tarea": "7c4x7fj",
   "prefab": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T16:22:17.033Z",
@@ -72,5 +72,35 @@
     "brief": "Web/RedMagicWeb/tools/comfy/enemies/CinderKettleBot.json",
     "resumen": "5 piezas: Head, Torso (olla+chimenea+asa), Accessory (anillo rejilla), Lower (llama), CastArm (cañón+mano). La cabeza salió mal 3 veces: se reescaló/recolocó a mano su mejor intento sobre el diseño."
   },
-  "imagen": "docs/enemigos/CinderKettleBot/preview.png"
+  "imagen": "docs/enemigos/CinderKettleBot/preview.png",
+  "paso2": {
+    "tipo": "flyingRanged",
+    "proyectil": {
+      "origen": "nuevo",
+      "texto": "roca de fuego fundida",
+      "elegidos": []
+    },
+    "sonidos": {
+      "origen": "nuevo",
+      "texto": "sonidos para el disparo de la roca, y del impacto de la roca",
+      "elegidos": []
+    },
+    "efectos": {
+      "origen": "nuevo",
+      "texto": "efecto de explosion para el release del disparo",
+      "elegidos": []
+    },
+    "notas": ""
+  },
+  "instrucciones": [
+    {
+      "paso": "resto",
+      "texto": "Añadir nuevo comportamiento para el juego \" Calentamiento\" cuando el arma dispara pasa a verse muy caliente, como con tonos mas rojos naranjas, aplicados con un shader, estos efectos van disminuyendo con una velocidad proporcional al cooldown de ataque de un enemigo, si un enemigo dispara cada 2 segundos, se ve 100% caliente justo despues de disparar, y baja hasta 0 % caliente (es decir volver a verse normal) justo a 0.5 antes del proximo disparo, asique en caso de cooldown de 2 segundos, es una transicion de 100 a 0 en 1.5 segundos, con un cooldown de 5 segundos, seria en 4.5 segundos, de 100% caliente a 0, asique este enemigo sera la prueba para ello, disparara una roca del tamaño de la salida de su cañon, cada 3.5 segundos es su cooldown de ataque,",
+      "fecha": "2026-10-07T16:31:22.543Z"
+    }
+  ],
+  "montaje": {
+    "fecha": "2026-10-07T16:35:13.668Z",
+    "resumen": "Volador a distancia: dispara una roca fundida (0,4 u) cada 3,5 s con explosión en la suelta y 3 sonidos nuevos. Nuevo «Calentamiento» (HeatGlow + _Heat en Sprite Lit FX): el cañón se pone al rojo al disparar y se enfría en cooldown−0,5 s."
+  }
 }

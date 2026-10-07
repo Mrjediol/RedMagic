@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-07T16:16:30.449Z",
+  "updated": "2026-10-07T16:31:23.593Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -1060,9 +1060,43 @@
           "effort": "medium",
           "enemy": "CinderKettleBot",
           "kind": "cuerpo",
-          "status": "running",
+          "status": "done",
           "lastRunId": "2026-10-07T16-16-30-448Z_zl37h4o",
-          "sessionId": "b6120835-cbe0-45b0-89f7-f74f68d09376"
+          "sessionId": "b6120835-cbe0-45b0-89f7-f74f68d09376",
+          "result": {
+            "ok": true,
+            "text": "Cuerpo de CinderKettleBot montado como prefab, en estado `cuerpo-por-aprobar`; compila y está commiteado. No lo he probado en Play Mode.\n\n- **Prefab:** `Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab` (plantilla floatingCaster, `only` head/torso/accessory/lower/castArm). Brief: `Web/RedMagicWeb/tools/comfy/enemies/CinderKettleBot.json`. Imagen: `docs/enemigos/CinderKettleBot/cuerpo.png`.\n- **Piezas:** Torso lleva la olla con chimenea y asa. Accessory es el anillo-rejilla y Lower la llama. CastArm es el cañón con la mano. La base miraba a la derecha, así que no hubo espejo.\n- **⚠ Head:** la separé mal 3 veces. El seed 1 se quedó con toda la olla, el 2 salió pequeño y movido, y el 3 salió vacío. Usé el seed 2 y lo reescalé y recoloco por código sobre el hueco del diseño. Puede quedar algo desajustado, así que revisa su tamaño y posición en Enemy Studio.\n- **Estados:** `Head__attacking` (ojos rojos, rig state attacking) y `CastArm__extra_Caliente` (cañón al rojo) están hechos y marcados en la ficha. Caliente no encaja con ningún estado del rig, así que queda solo en la carpeta de partes. Unity aún no reproduce transiciones, por eso el enfriado gradual no está.\n- **Decisión mía:** pivote del cañón en [0.1, 0.6] y boca en [0.97, 0.3]. Sin ataques ni efectos, solo los valores por defecto de la plantilla.\n\nPara probar:\n1. Abre el prefab o Enemy Studio y comprueba que el cuerpo montado se parece a `cuerpo.png`.\n2. Mira la cabeza: tamaño y posición, y que quede delante de la olla.\n3. Mira el orden de capas: la llama detrás del anillo, el cañón detrás del torso.\n4. Mira si el cañón apunta bien al apuntar (el arte tiene unos 10° de inclinación).",
+            "at": "2026-10-07T16:22:25.615Z",
+            "durationMs": 355166,
+            "costUsd": 0.6248280000000002,
+            "tokens": {
+              "input": 46,
+              "cacheWrite": 64115,
+              "cacheRead": 1291080,
+              "output": 11006,
+              "calls": 27
+            },
+            "runId": "2026-10-07T16-16-30-448Z_zl37h4o",
+            "sessionId": "b6120835-cbe0-45b0-89f7-f74f68d09376"
+          }
+        },
+        {
+          "id": "7c4x7fj",
+          "note": "",
+          "done": false,
+          "text": "Terminar CinderKettleBot (make-enemy, paso 3)",
+          "prompt": "Use the make-enemy skill (.claude/skills/make-enemy/SKILL.md), section \"Por pasos ▸ Paso 3 (el resto)\", to finish the enemy CinderKettleBot.\nEnemy sheet: docs/enemigos/CinderKettleBot/enemigo.json (see \"cuerpo\" and \"paso2\"). Its BODY is already built AND APPROVED by the user: prefab Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab. The user may have adjusted it by hand in 🧬 Enemy Studio (proportions, distances, layers): NEVER re-import the full body zip over it, never change the parts or their layout.\nBehaviour type: Volador a distancia — a flyer that keeps its distance and shoots (hover / strafe, ranged attacks). Design tuning, attacks, gestures and defences for it (SKILL step 5; generic-first rules of CLAUDE.md).\nAssets (the user's choice for each):\n- projectile: CREATE NEW ones (several if described, one per line) — the user describes them (their words): «roca de fuego fundida».\n- sounds: CREATE NEW ones (several if described, one per line) — the user describes them (their words): «sonidos para el disparo de la roca, y del impacto de la roca».\n- effects (muzzle / charge / impact / trails, gestureFx): CREATE NEW ones (several if described, one per line) — the user describes them (their words): «efecto de explosion para el release del disparo».\nEXTRA INSTRUCTIONS from the user for THIS launch (their words). They override this step's limits where they conflict. Read them carefully: something that describes a LOOK of one part (an angry face, a sleeping face, an open palm, a stretched hand…) is a STATE — an extra sprite of that part for later animations (SKILL step 3) — and the base body / base parts stay exactly as the design. Only change the base body itself when they say so explicitly (\"change the body\", \"make the cannon blue\"). When unsure, it is a state.\n«Añadir nuevo comportamiento para el juego \" Calentamiento\" cuando el arma dispara pasa a verse muy caliente, como con tonos mas rojos naranjas, aplicados con un shader, estos efectos van disminuyendo con una velocidad proporcional al cooldown de ataque de un enemigo, si un enemigo dispara cada 2 segundos, se ve 100% caliente justo despues de disparar, y baja hasta 0 % caliente (es decir volver a verse normal) justo a 0.5 antes del proximo disparo, asique en caso de cooldown de 2 segundos, es una transicion de 100 a 0 en 1.5 segundos, con un cooldown de 5 segundos, seria en 4.5 segundos, de 100% caliente a 0, asique este enemigo sera la prueba para ello, disparara una roca del tamaño de la salida de su cañon, cada 3.5 segundos es su cooldown de ataque,»\nHow to apply it on the existing body: write the brief for the attacks / effects / gestures, run `node make-enemy.mjs <brief> --partial` (→ out/<Name>.partial.zip, only gestures + attacks + effects) and import THAT zip into Unity (RigBundleImporter.Import with the partial zip; ResetTuning = false). The body part of the brief must match the prefab's parts (same template, parts folder from the sheet's cuerpo.partes). The partial zip carries gestures, effects and the deck only: movement / EnemyStats tuning for the chosen behaviour type (flying vs ground, ranges, speeds, projectile spec) is NOT in it — set it on the prefab's EnemyStats (unity eval / prefab edit, see docs/architecture/enemies.md), starting from the body's template defaults.\nNobody will answer: pick the best yourself. The user approves at the end from the web.\nWhen done, in the sheet: \"estado\": \"por-aprobar\", \"montaje\": { \"fecha\": \"<ISO>\", \"resumen\": \"<1–2 short sentences, Spanish>\" }.\nAfter editing the enemy sheet, refresh its picture for the web: unity command eval --timeout 60 --code 'return RedMagic.Enemies.EditorTools.EnemyPreviewExporter.Mark(@\"<prefab>\");'\nIf you cannot finish it: \"estado\": \"cuerpo-aprobado\" and explain in the report what failed and what is left.",
+          "needs": [
+            "comfy",
+            "unity"
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "enemy": "CinderKettleBot",
+          "kind": "resto",
+          "status": "running",
+          "lastRunId": "2026-10-07T16-31-23-592Z_7c4x7fj",
+          "sessionId": "d0b9f7a9-e5d9-47c3-b876-8658b99b5f34"
         }
       ]
     },

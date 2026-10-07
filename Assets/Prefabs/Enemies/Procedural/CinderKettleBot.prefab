@@ -23,6 +23,8 @@ GameObject:
   - component: {fileID: 4059343270054530462}
   - component: {fileID: 2470152973270833252}
   - component: {fileID: 7242489678968147225}
+  - component: {fileID: 2973014833774576309}
+  - component: {fileID: 3756956164560083765}
   m_Layer: 0
   m_Name: CinderKettleBot
   m_TagString: Untagged
@@ -217,32 +219,39 @@ MonoBehaviour:
   tuning:
     archetype: 4
     staticAttack: 1
-    maxHealth: 30
+    maxHealth: 34
     invulnerabilityDuration: 0
     knockbackHorizontal: 6
     knockbackVertical: 3
     knockbackDuration: 0.18
     knockbackResistance: 0
-    detectionRange: 9
+    detectionRange: 18
     loseInterestGrace: 1
-    attackRange: 6
-    personalSpace: 3
+    attackRange: 12
+    personalSpace: 5
     retreatReleaseFactor: 1.35
     verticalTolerance: 3
-    moveSpeed: 2.5
-    retreatSpeed: 2.2
+    moveSpeed: 2.8
+    retreatSpeed: 3
     stopAtLedges: 1
     ledgeProbeDepth: 0.6
     gravityScale: 3
     sleepsUntilDetected: 0
     hoverOffset: 1.2
-    attackDamage: 8
-    attackCooldown: 1.6
+    attackDamage: 10
+    attackCooldown: 3.5
     attackKnockbackMultiplier: 1
     attackReleaseFallback: 0.25
     rootedWhileAttacking: 1
-    attacks: []
-    builtInAttack: 1
+    attacks:
+    - attack: {fileID: 11400000, guid: fee1bd05850f39643bc4bdd13d7a1c56, type: 2}
+      legacyBuiltIn: 0
+      legacyGesture: 
+      legacyWeight: 1
+      minRange: 0
+      maxRange: 0
+      targetHeight: 0
+    builtInAttack: 0
     builtInWeight: 1
     defences: []
     meleeHitboxSize: {x: 1.2, y: 1}
@@ -340,7 +349,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
-  soundEvents: []
+  soundEvents:
+  - trigger: 15
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 8d4bf13e780e9244490a4b91b6f8a128, type: 3}
+      volume: 0.22
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 0
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    silent: 0
   useGenericFallback: 1
 --- !u!114 &2470152973270833252
 MonoBehaviour:
@@ -615,6 +638,94 @@ MonoBehaviour:
     legacyStrike: []
     legacyStrikeTime: -1
     legacyShake: 0
+  - name: Shoot
+    steps:
+    - name: Apunta
+      poses:
+      - part: {fileID: 8447858185039053300}
+        move: {x: -0.1253, y: 0}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      - part: {fileID: 2031150417944281215}
+        move: {x: 0, y: 0}
+        rotate: -3
+        scale: {x: 0, y: 0}
+      duration: 0.5
+      ease: 1
+      stretch: 1
+      shake: 0
+      aim: 1
+      aimParts:
+      - part: {fileID: 1083453550612372399}
+        angle: 0
+    - name: Suelta
+      poses:
+      - part: {fileID: 8447858185039053300}
+        move: {x: -0.6263, y: 0}
+        rotate: 0
+        scale: {x: 0, y: 0}
+      duration: 0.14
+      ease: 1
+      stretch: 0
+      shake: 0
+      aim: 1
+      aimParts:
+      - part: {fileID: 1083453550612372399}
+        angle: 0
+    releases:
+    - step: 1
+      at: 0
+      point: {fileID: 0}
+      offset: {x: 0, y: 0}
+    recover: 0.4
+    fx:
+    - prefab: {fileID: 4642084934451790831, guid: 9446dc1ed7990e04fb37057e9ca512cc, type: 3}
+      step: 0
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 1
+      untilStep: 1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 4489742141376257684, guid: ef98fbca044170b4e9b9211a11f7f024, type: 3}
+      step: 1
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    - prefab: {fileID: 8814660861025022145, guid: b7a7d9d539ab6264582f8e9b15d4157e, type: 3}
+      step: 1
+      at: 0
+      anchor: 2
+      part: {fileID: 0}
+      offset: {x: 0, y: 0}
+      scale: 1
+      followsPart: 1
+      loop: 0
+      untilStep: -1
+      facing: 2
+      angle: 0
+      layer: 0
+      legacyPhase: -1
+    sounds: []
+    legacyWindup: []
+    legacyStrike: []
+    legacyStrikeTime: -1
+    legacyShake: 0
   drivenLease: 0.25
   drivenReturn: 0.35
   staggerStrength: 2.5
@@ -641,6 +752,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e6fc707acbe7884cb21f94e3272ee9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Rigging.RigDriverCode
+--- !u!114 &2973014833774576309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2279822867127538992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4729294e7f94484395dbcd86d60406a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Enemies.EnemyAttackHost
+  arenaHalfWidth: 10
+  arenaHeight: 8
+  feet: {fileID: 0}
+  fxSprite: {fileID: 0}
+  warnPrefab: {fileID: 0}
+  warnCirclePrefab: {fileID: 0}
+  warnArrowPrefab: {fileID: 0}
+  shockwavePrefab: {fileID: 0}
+  sweepBeamPrefab: {fileID: 0}
+  hazardPrefab: {fileID: 0}
+  platformPrefab: {fileID: 0}
+--- !u!114 &3756956164560083765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2279822867127538992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76934793ccbb9364eaf0efe607f60d04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Enemies.HeatGlow
+  targets:
+  - {fileID: 6661102856445678007}
+  readyMargin: 0.5
+  minDuration: 0.2
+  peak: 1
 --- !u!1 &2359428556685806009
 GameObject:
   m_ObjectHideFlags: 0
@@ -700,7 +851,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: afaa96c8e5030ca4c94d1eab55700374, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -37,6 +37,10 @@ Shader "RedMagic/Sprite Lit FX"
         _SheenWidth("Ancho", Range(0.05, 1)) = 0.25
         _SheenPause("Pausa entre pasadas (s)", Range(0, 6)) = 1.5
 
+        [Header(Calentamiento)]
+        _Heat("Calor (0 = normal, 1 = al rojo)", Range(0, 1)) = 0
+        [HDR] _HeatColor("Color del calor", Color) = (1, 0.38, 0.06, 1)
+
         [HideInInspector] _Color("Tint", Color) = (1,1,1,1)
         [HideInInspector] _RendererColor("RendererColor", Color) = (1,1,1,1)
         [HideInInspector] _AlphaTex("External Alpha", 2D) = "white" {}
@@ -96,6 +100,8 @@ Shader "RedMagic/Sprite Lit FX"
                 half4 _SheenColor;
                 half _SheenSpeed, _SheenWidth, _SheenPause;
                 half _Gradient;
+                half _Heat;
+                half4 _HeatColor;
                 float4 _ShadowPos;
                 half _ShadowRadius, _ShadowStrength, _ShadowSquash;
             CBUFFER_END
@@ -135,6 +141,9 @@ Shader "RedMagic/Sprite Lit FX"
                 half lum = dot(main.rgb, half3(0.299, 0.587, 0.114));
                 main.rgb = lerp(lum.xxx, main.rgb, _Saturation) * _Brightness;
 
+                // Calentamiento: tiñe hacia rojo / naranja (se suma brillo propio abajo).
+                main.rgb = lerp(main.rgb, main.rgb * half3(1.5, 0.55, 0.3) + _HeatColor.rgb * 0.15, saturate(_Heat) * 0.85);
+
                 // Volumen: luz desde arriba, sombra abajo.
                 main.rgb *= 1 + _Gradient * (input.uv.y * 2 - 1);
 
@@ -172,7 +181,7 @@ Shader "RedMagic/Sprite Lit FX"
                 half4 result = CombinedShapeLightShared(surfaceData, inputData);
 
                 // Lo que sigue se suma después de la luz: brilla también en zonas oscuras.
-                half3 emit = rim * _RimColor.rgb;
+                half3 emit = rim * _RimColor.rgb + _HeatColor.rgb * (_Heat * _Heat * 0.5 + _Heat * 0.15);
 
                 if (_GlowColor.a > 0.001)
                 {
@@ -235,6 +244,8 @@ Shader "RedMagic/Sprite Lit FX"
                 half4 _SheenColor;
                 half _SheenSpeed, _SheenWidth, _SheenPause;
                 half _Gradient;
+                half _Heat;
+                half4 _HeatColor;
                 float4 _ShadowPos;
                 half _ShadowRadius, _ShadowStrength, _ShadowSquash;
             CBUFFER_END

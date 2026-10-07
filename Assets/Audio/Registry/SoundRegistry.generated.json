@@ -1164,6 +1164,90 @@
       }
     },
     {
+      "id": "dbdeff51b4cbc1d428db2e106274c342/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/CinderKettleBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
+        "guid": "dbdeff51b4cbc1d428db2e106274c342",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "fee1bd05850f39643bc4bdd13d7a1c56/ReleaseAttack/sound",
+      "name": "Attack · Shot",
+      "category": "Enemies/CinderKettleBot",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/attack/attack_cast.wav"
+      ],
+      "owner": {
+        "asset": "Assets/ScriptableObjects/EnemyAttacks/CinderKettleBot/EnemyAttack_CinderKettleBot_Shot.asset",
+        "guid": "fee1bd05850f39643bc4bdd13d7a1c56",
+        "component": "ReleaseAttack",
+        "member": "sound",
+        "property": "sound"
+      }
+    },
+    {
+      "id": "dbdeff51b4cbc1d428db2e106274c342/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/CinderKettleBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
+        "guid": "dbdeff51b4cbc1d428db2e106274c342",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "dbdeff51b4cbc1d428db2e106274c342/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/CinderKettleBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
+        "guid": "dbdeff51b4cbc1d428db2e106274c342",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "dbdeff51b4cbc1d428db2e106274c342/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/CinderKettleBot",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
+        "guid": "dbdeff51b4cbc1d428db2e106274c342",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
       "id": "6f3e0fda101b77348bd8b7fa06c6fb22/SoundEmitter/OnAttack",
       "name": "Attack",
       "category": "Enemies/CrystalOrbBot",
@@ -2881,6 +2965,72 @@
         "component": "SoundEmitter",
         "member": "OnMove",
         "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "6aaed22a8d4f4464fb2ed45045fb3c8b/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/ProtonSentry",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab",
+        "guid": "6aaed22a8d4f4464fb2ed45045fb3c8b",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "6aaed22a8d4f4464fb2ed45045fb3c8b/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/ProtonSentry",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab",
+        "guid": "6aaed22a8d4f4464fb2ed45045fb3c8b",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "6aaed22a8d4f4464fb2ed45045fb3c8b/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/ProtonSentry",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab",
+        "guid": "6aaed22a8d4f4464fb2ed45045fb3c8b",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "6aaed22a8d4f4464fb2ed45045fb3c8b/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/ProtonSentry",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab",
+        "guid": "6aaed22a8d4f4464fb2ed45045fb3c8b",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
@@ -5125,6 +5275,78 @@
       "owner": {
         "asset": "Assets/Prefabs/Fx/Bosses/BossCenter/Fx_BossCenter_Bullet.prefab",
         "guid": "964f5833b9501ad45bd27733dc536a21",
+        "component": "SoundEmitter",
+        "member": "OnSpawn",
+        "property": "soundEvents.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "2c7e6372a59081b42833cc05c4c2dba2/SoundEmitter/OnDeath",
+      "name": "Expire",
+      "category": "Projectiles/CinderKettleBot_MoltenRock_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/CinderKettleBot/Fx_CinderKettleBot_MoltenRock_Projectile.prefab",
+        "guid": "2c7e6372a59081b42833cc05c4c2dba2",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "2c7e6372a59081b42833cc05c4c2dba2/SoundEmitter/OnHit",
+      "name": "Hit target",
+      "category": "Projectiles/CinderKettleBot_MoltenRock_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_hit_magma.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/CinderKettleBot/Fx_CinderKettleBot_MoltenRock_Projectile.prefab",
+        "guid": "2c7e6372a59081b42833cc05c4c2dba2",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "2c7e6372a59081b42833cc05c4c2dba2/SoundEmitter/OnHitTerrain",
+      "name": "Hit terrain",
+      "category": "Projectiles/CinderKettleBot_MoltenRock_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_terrain_magma.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/CinderKettleBot/Fx_CinderKettleBot_MoltenRock_Projectile.prefab",
+        "guid": "2c7e6372a59081b42833cc05c4c2dba2",
+        "component": "SoundEmitter",
+        "member": "OnHitTerrain",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "2c7e6372a59081b42833cc05c4c2dba2/SoundEmitter/OnSpawn",
+      "name": "Launch",
+      "category": "Projectiles/CinderKettleBot_MoltenRock_Projectile",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/projectile/proj_launch_magma.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Fx/Enemies/CinderKettleBot/Fx_CinderKettleBot_MoltenRock_Projectile.prefab",
+        "guid": "2c7e6372a59081b42833cc05c4c2dba2",
         "component": "SoundEmitter",
         "member": "OnSpawn",
         "property": "soundEvents.Array.data[3].cue"

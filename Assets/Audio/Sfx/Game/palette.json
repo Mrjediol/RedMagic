@@ -447,6 +447,27 @@
       "loop": false,
       "assigned": true
     },
+    "proj_launch_magma": {
+      "family": "projectile",
+      "label": "Lanzar · roca fundida",
+      "seconds": 0.42,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_hit_magma": {
+      "family": "projectile",
+      "label": "Impacto en el jugador · roca fundida",
+      "seconds": 0.5,
+      "loop": false,
+      "assigned": true
+    },
+    "proj_terrain_magma": {
+      "family": "projectile",
+      "label": "Impacto en terreno · roca fundida",
+      "seconds": 0.44,
+      "loop": false,
+      "assigned": true
+    },
     "proj_launch_laser": {
       "family": "projectile",
       "label": "Lanzar · láser",
@@ -1495,6 +1516,38 @@
         0.88,
         1.12
       ]
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Launch$",
+      "asset": "Molten|Magma",
+      "clip": "proj_launch_magma",
+      "pitch": [
+        0.94,
+        1.06
+      ],
+      "volume": 0.75
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit target$",
+      "asset": "Molten|Magma",
+      "clip": "proj_hit_magma",
+      "pitch": [
+        0.94,
+        1.06
+      ]
+    },
+    {
+      "category": "^Projectiles/",
+      "name": "^Hit terrain$",
+      "asset": "Molten|Magma",
+      "clip": "proj_terrain_magma",
+      "pitch": [
+        0.88,
+        1.12
+      ],
+      "volume": 0.7
     },
     {
       "category": "^Projectiles/",

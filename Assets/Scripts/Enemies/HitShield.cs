@@ -7,23 +7,21 @@ using UnityEngine;
 namespace RedMagic.Enemies
 {
     /// <summary>
-    /// Escudo de golpes de cualquier enemigo: absorbe los primeros <see cref="hits"/> golpes que recibe
+    /// Escudo de golpes autónomo: vive en el prefab <c>Prefabs/Enemies/Shield/Shield</c>, que se arrastra como HIJO de
+    /// cualquier enemigo (con <see cref="Health"/> en algún padre) y ya está. Absorbe los primeros <see cref="hits"/> golpes
     /// (no quitan vida, no empujan) y se rompe. Va por <see cref="Health.HitAbsorber"/>, el único sitio
-    /// por el que entra el daño, así que ningún arma ni ataque sabe que existe. El escudo es un GameObject hijo del enemigo
-    /// (<see cref="shield"/>): se coloca, escala y ordena a mano en el prefab; se enciende al nacer y se apaga
-    /// al romperse, con un estallido + sonido.
+    /// por el que entra el daño, así que ningún arma ni ataque sabe que existe. El dibujo es el hijo <see cref="shield"/>
+    /// del propio prefab: se enciende al nacer y se apaga al romperse, con un estallido + sonido.
     /// Reaparece entero en cada nacimiento (<c>OnEnable</c>), también si el enemigo viene de un pool.
     /// </summary>
-    [DisallowMultipleComponent]
-    [RequireComponent(typeof(Health))]
     public class HitShield : MonoBehaviour
     {
         [Tooltip("Golpes que aguanta antes de romperse.")]
         [Min(1)] [SerializeField] private int hits = 1;
 
         [Header("Efectos")]
-        [Tooltip("GameObject hijo del enemigo que ES el escudo (sprite / animación). Colócalo, escálalo y ordénalo " +
-                 "en el prefab: se enciende al nacer y se apaga al romperse. Vacío = escudo invisible.")]
+        [Tooltip("Hijo de ESTE prefab que dibuja el escudo (sprite / animación). Escala y orden a mano; se enciende " +
+                 "al nacer y se apaga al romperse. Vacío = escudo invisible.")]
         [SerializeField] private GameObject shield;
 
         [Tooltip("Estallido al romperse (nace donde está el escudo). Vacío = se rompe sin efecto.")]
@@ -44,11 +42,17 @@ namespace RedMagic.Enemies
         /// <summary>Quedan golpes por absorber.</summary>
         public bool Active => _remaining > 0;
 
-        private void Awake() => _health = GetComponent<Health>();
+        private void Awake() => _health = GetComponentInParent<Health>();
 
         private void OnEnable()
         {
-            if (_health == null) _health = GetComponent<Health>();
+            if (_health == null) _health = GetComponentInParent<Health>();
+            if (_health == null)
+            {
+                Debug.LogWarning("HitShield: no hay Health en ningún padre; ponlo como hijo de un enemigo.", this);
+                enabled = false;
+                return;
+            }
             _remaining = hits;
             _health.HitAbsorber = Absorb;
             _health.Died += OnDied;
@@ -100,7 +104,7 @@ namespace RedMagic.Enemies
         {
             if (fx == null) return;
 
-            var parts = GetComponentsInChildren<SpriteRenderer>();
+            var parts = _health.GetComponentsInChildren<SpriteRenderer>();
             if (parts.Length == 0) return;
 
             int top = int.MinValue;

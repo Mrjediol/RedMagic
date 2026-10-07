@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-07T16:56:32.731Z",
+  "updated": "2026-10-07T19:14:03.343Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -11,7 +11,7 @@
           "id": "s4z2823",
           "text": "Prueba de coste: variante verde del FrostKnight, terminal frente a cola web",
           "note": "Mismo prompt y modelo (Sonnet, esfuerzo medio) en los dos lados; medir tokens exactos y comparar.",
-          "done": false,
+          "done": true,
           "doc": "docs/tareas/prueba-coste.md",
           "model": "sonnet",
           "effort": "medium",
@@ -1921,6 +1921,111 @@
           },
           "sessionId": "d653467a-7dc5-4f57-91ee-9532636a7e8d",
           "lastRunId": "2026-10-07T16-04-56-029Z_oaiaiuj"
+        },
+        {
+          "id": "7a0oe9o",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 5: robot con espada laser",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «robot con espada laser»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: ice (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: floating, attack type: none (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body floating --attack none: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 5 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-robot-con-espada-laser.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-robot-con-espada-laser",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "result": {
+            "ok": true,
+            "text": "Añadí 5 propuestas con su prompt de Gemini en `docs/disenos/2026-10-07-robot-con-espada-laser.json`. Están en estado `pending`, sin imagen. `check-design-batch` dice \"Lote correcto: 5\". Están commiteadas.\n\n1. **FrostBladeSentinel**: disco blindado con un brazo-espada a la derecha.\n2. **CrystalDuelistDrone**: casco esbelto en rombo con dos hojas gemelas.\n3. **IceSamuraiPod**: cápsula con cresta de casco samurái y katana curva.\n4. **SnowBrawlerMech**: bruto ancho con una espada láser enorme a la izquierda.\n5. **AuroraWispBlade**: orbe con un solo ojo y una hoja láser en un tallo.\n\n- **Decisión mía:** el ataque es `none` (\"nada sostenido\"), así que la hoja láser es el final fijo de un brazo, sin mano. Lo declaré en las piezas de cada prompt.\n- **Prompts:** los generé con `enemy-prompt.mjs --body floating --attack none`, zona hielo. Cada uno lleva su propia lista de piezas.\n- **Qué probar:** pega cada prompt en Gemini y trae la imagen a su tarjeta (🖼 o Ctrl+V). Mira que las piezas se vean enteras, que el propulsor sea una forma cerrada y que la hoja no tape el cuerpo.",
+            "at": "2026-10-07T17:04:48.323Z",
+            "durationMs": 43230,
+            "costUsd": 0.2285226,
+            "tokens": {
+              "input": 16,
+              "cacheWrite": 32950,
+              "cacheRead": 292853,
+              "output": 3812,
+              "calls": 9
+            },
+            "runId": "2026-10-07T17-04-05-093Z_7a0oe9o",
+            "sessionId": "9f96004f-16cd-456d-948c-65a15fba3cc5"
+          },
+          "sessionId": "9f96004f-16cd-456d-948c-65a15fba3cc5",
+          "lastRunId": "2026-10-07T17-04-05-093Z_7a0oe9o"
+        },
+        {
+          "id": "f6kvl5v",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 5: robot que dispara cañones de energia por sus brazos",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «robot que dispara cañones de energia por sus brazos»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: ice (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: floating, attack type: weapon (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body floating --attack weapon: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 5 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-robot-que-dispara-canones-de-energia-por.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "images": [
+            {
+              "id": "c810613e9ce294d7c962d37b78d4ce91.png",
+              "name": "Captura de pantalla 2026-10-07 190918.png"
+            }
+          ],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-robot-que-dispara-canones-de-energia-por",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "result": {
+            "ok": true,
+            "text": "Añadí 5 propuestas de enemigo (modo prompt, zona ice, flotante con arma) a `docs/disenos/2026-10-07-robot-que-dispara-canones-de-energia-por.json`. `check-design-batch.mjs` dice \"Lote correcto\" y quedó commiteado (`cdff0adf`).\n1. **FrostTwinCannonBot**: torso de barril y cúpula con visor, brazos cortos y gruesos con cañón ancho, propulsor de anillo.\n2. **IceRailGunner**: alto y delgado, de un solo ojo, con brazos largos que son cañones de riel.\n3. **GlacierBlasterOrb**: esfera sin cabeza con una lente, brazos-turbina con aletas, propulsor de disco.\n4. **CrystalSiegeBot**: pesado, con brazos enormes tipo mortero y cristales como carga.\n5. **SnowflakeDroneGunner**: dron en forma de rombo, brazos con tres cañones, propulsor doble.\n\n- **Decisión propia:** puse a mano las piezas (`--piece`), con un brazo-cañón a cada lado de la imagen. El arma por defecto es una sola pieza y el pedido eran dos brazos que disparan. Los brazos-cañón no llevan mano. El robot 3 no tiene cabeza aparte, su lente va en el cuerpo.\n- **Para probar:** pega cada prompt en Gemini y comprueba que los dos brazos se vean enteros, sin mano y con la boca apuntando a la derecha. Luego pega la imagen en la tarjeta y aprueba la que prefieras.",
+            "at": "2026-10-07T17:10:41.754Z",
+            "durationMs": 45327,
+            "costUsd": 0.22256459999999995,
+            "tokens": {
+              "input": 14,
+              "cacheWrite": 32838,
+              "cacheRead": 250173,
+              "output": 4115,
+              "calls": 9
+            },
+            "runId": "2026-10-07T17-09-56-426Z_f6kvl5v",
+            "sessionId": "15d7ab35-329f-4e43-9cd0-d4767dd8673d"
+          },
+          "sessionId": "15d7ab35-329f-4e43-9cd0-d4767dd8673d",
+          "lastRunId": "2026-10-07T17-09-56-426Z_f6kvl5v"
+        },
+        {
+          "id": "88s1vj1",
+          "note": "",
+          "done": false,
+          "text": "Diseños · enemigo × 2: robot ojo",
+          "prompt": "Use the design-proposals skill (.claude/skills/design-proposals/SKILL.md), kind: enemy (enemy).\nWhat the user asked for (their words): «robot ojo»\nMode: PROMPT MODE — you do NOT draw: write the Gemini prompt of each proposal (the user pastes it in the Gemini app and brings the picture back) — the skill's \"prompt\" recipe. Zone: ice (docs/zonas.json): every proposal belongs to it (palette, crystals).\nBody type: floating, attack type: magic (docs/tipos-enemigo.json). Build every prompt with enemy-prompt.mjs --body floating --attack magic --cast <the body part that casts: hand, mouth…>: those rules decide the anatomy, so the design must not contradict them (no arms on a quadruped, no legs on a floater, no weapon on a magic one). The zone gives the colour palette only, not materials.\nCount: 2 proposals, different from each other.\nBatch: docs/disenos/2026-10-07-robot-ojo.json (it already exists: ADD your proposals to \"items\", do not touch the ones there). Check the batch with the skill's tool before finishing.",
+          "needs": [],
+          "model": "sonnet",
+          "effort": "medium",
+          "design": {
+            "lote": "2026-10-07-robot-ojo",
+            "kind": "enemy"
+          },
+          "status": "done",
+          "result": {
+            "ok": true,
+            "text": "Añadí 2 propuestas con su prompt de Gemini en `docs/disenos/2026-10-07-robot-ojo.json`. `check-design-batch.mjs` dio \"Lote correcto\" y quedó commiteado.\n\n- **1 `IceEyeOrb`**: esfera de acero con un iris cian grande, párpados de placas, tres aletas y un cristal grande arriba. Lanza el rayo por la lente central.\n- **2 `IceCompoundEye`**: cúpula azul marino y blanca, tipo ojo compuesto, con muchas lentes pequeñas y dos antenas. Lanza balas de escarcha por el grupo de lentes, con 2 cristales en el lomo.\n\nDecisiones mías: el `--cast` de cada una es esa lente, y los nombres son nuevos (no chocan con ningún prefab).\n\nPara probar: pega cada prompt en Gemini y trae la imagen a la tarjeta (🖼 / Ctrl+V). Revisa que el robot flote sin patas y que ninguna pieza tape a otra.",
+            "at": "2026-10-07T17:14:20.144Z",
+            "durationMs": 34576,
+            "costUsd": 0.19501259999999998,
+            "tokens": {
+              "input": 14,
+              "cacheWrite": 29982,
+              "cacheRead": 242483,
+              "output": 2656,
+              "calls": 8
+            },
+            "runId": "2026-10-07T17-13-45-568Z_88s1vj1",
+            "sessionId": "c0600811-3506-4adf-8e35-3d00dad16fcc"
+          },
+          "sessionId": "c0600811-3506-4adf-8e35-3d00dad16fcc",
+          "lastRunId": "2026-10-07T17-13-45-568Z_88s1vj1"
         }
       ]
     }

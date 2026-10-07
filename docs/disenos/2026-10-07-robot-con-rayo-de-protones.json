@@ -1,0 +1,16 @@
+{
+  "title": "2 × enemigo: robot con rayo de protones",
+  "request": "robot con rayo de protones",
+  "kind": "enemy",
+  "count": 2,
+  "mode": "one",
+  "createdAt": "2026-10-07T16:04:09.195Z",
+  "generator": "prompt",
+  "zone": "ice",
+  "body": "floating",
+  "attack": "weapon",
+  "taskIds": [
+    "oaiaiuj"
+  ],
+  "items": []
+}

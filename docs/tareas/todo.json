@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-07T15:09:14.120Z",
+  "updated": "2026-10-07T15:16:42.843Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -965,9 +965,25 @@
           "effort": "medium",
           "enemy": "ThornFairy",
           "kind": "resto",
-          "status": "running",
+          "status": "done",
           "lastRunId": "2026-10-07T15-09-14-119Z_1g4wg9o",
-          "sessionId": "6be7aaaf-425d-498f-8d6b-579a380076b8"
+          "sessionId": "6be7aaaf-425d-498f-8d6b-579a380076b8",
+          "result": {
+            "ok": true,
+            "text": "ThornFairy está montada y en `por-aprobar` en la hoja del enemigo. Compila sin errores, pero no la he probado en Play ni he revisado el aleteo a ojo. Dos cosas quedan sin hacer: no usé tu orbe de la biblioteca y no separé las alas.\n\n- **Orbe:** `OrbeHada` está en la biblioteca del navegador (IndexedDB) y desde aquí no se puede leer. Creé un orbe verde nuevo (`sparkBolt`, «FairyOrb») y lo uso como disparo. Cambiarlo por `OrbeHada` es sustituir ese prefab en la carta `Shot`.\n- **Ataque y dash:** el ataque `Shot` es un orbe verde que sale de la mano, con carga y destello. Tiene dos dashes: uno hacia atrás cuando el jugador se acerca a menos de 3,5, y otro hacia delante con un 35 % de probabilidad al recibir un golpe.\n- **Alas:** siguen siendo una sola pieza. Aletean con escala y giro, y la pose cambia al avanzar (`FlyFwd`, alas atrás) y al retirarse (`FlyBack`, alas abiertas). Los dashes tienen gestos propios (`DashFwd`, `DashBack`).\n- **Cambio de código:** añadí `moveBackGesture` en `ProceduralRig` para el vuelo de espaldas. Es un campo solo del prefab; el JSON y la web aún no lo llevan.\n- **Sonidos:** tres nuevos (aleteo, impulso, lanzamiento del orbe). Faltan por puntuar en Biblioteca Jere ▸ Sounds.\n\nPara probar:\n1. Ver si el aleteo se lee bien (velocidad, amplitud).\n2. Acercarse a la hada para comprobar el dash atrás, y golpearla para ver el dash adelante.\n3. Ver que va de espaldas al retirarse.\n4. Ver que el orbe sale de la palma.\n5. Decidir si hay que separar las alas en 2 partes (es un cambio de plantilla).\n\nCommit `ee7e5b97`.",
+            "at": "2026-10-07T15:16:42.843Z",
+            "durationMs": 448723,
+            "costUsd": 1.4909966000000003,
+            "tokens": {
+              "input": 82,
+              "cacheWrite": 124555,
+              "cacheRead": 3794363,
+              "output": 23374,
+              "calls": 49
+            },
+            "runId": "2026-10-07T15-09-14-119Z_1g4wg9o",
+            "sessionId": "6be7aaaf-425d-498f-8d6b-579a380076b8"
+          }
         }
       ]
     },

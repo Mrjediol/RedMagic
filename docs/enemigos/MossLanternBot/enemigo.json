@@ -1,6 +1,6 @@
 {
   "name": "MossLanternBot",
-  "estado": "por-aprobar",
+  "estado": "con-pendientes",
   "diseno": {
     "image": "docs/enemigos/MossLanternBot/diseno.png",
     "source": "docs/disenos/img/2026-10-07-robot__p1.png",
@@ -10,7 +10,15 @@
     "request": "robot",
     "note": "Robot-farol de latón y musgo con cañón de ballesta"
   },
-  "pendientes": [],
+  "pendientes": [
+    {
+      "id": "gzbpw49",
+      "tipo": "comportamiento",
+      "texto": "se gira por completo como si fuera el icecanonorb, trabajando en sus animaciones projectiles se puede usar.",
+      "estado": "abierto",
+      "createdAt": "2026-10-07T15:21:05.104Z"
+    }
+  ],
   "createdAt": "2026-10-07T03:45:25.383Z",
   "tarea": "ml6hdb2",
   "prefab": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",

@@ -1,6 +1,6 @@
 {
   "name": "ThornFairy",
-  "estado": "por-aprobar",
+  "estado": "con-pendientes",
   "diseno": {
     "image": "docs/enemigos/ThornFairy/diseno.png",
     "source": "docs/disenos/img/2026-10-07-hada__3.png",
@@ -10,7 +10,15 @@
     "request": "hada",
     "note": "Hada espinosa: vestido de hojas, corona de espinas, porte altivo"
   },
-  "pendientes": [],
+  "pendientes": [
+    {
+      "id": "y58tz7w",
+      "tipo": "comportamiento",
+      "texto": "Enemigo de prueba volador, si lo retoco a mano quiza consigo que sirva como enemigo",
+      "estado": "abierto",
+      "createdAt": "2026-10-07T15:19:59.723Z"
+    }
+  ],
   "createdAt": "2026-10-07T14:31:42.696Z",
   "instrucciones": [
     {

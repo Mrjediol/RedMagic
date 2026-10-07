@@ -1,0 +1,16 @@
+{
+  "title": "3 × enemigo: robot mele",
+  "request": "robot mele",
+  "kind": "enemy",
+  "count": 3,
+  "mode": "one",
+  "createdAt": "2026-10-07T04:05:17.120Z",
+  "generator": "prompt",
+  "zone": "volcano",
+  "body": "floating",
+  "attack": "none",
+  "taskIds": [
+    "entonsg"
+  ],
+  "items": []
+}

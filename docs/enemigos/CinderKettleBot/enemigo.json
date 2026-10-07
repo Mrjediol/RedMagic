@@ -1,6 +1,6 @@
 {
   "name": "CinderKettleBot",
-  "estado": "por-montar",
+  "estado": "montando-cuerpo",
   "diseno": {
     "image": "docs/enemigos/CinderKettleBot/diseno.png",
     "source": "docs/disenos/img/2026-10-07-robot-2__p3.png",
@@ -11,5 +11,55 @@
     "note": "Round pot/kettle body with chimney and a mortar tube; comic and rounded."
   },
   "pendientes": [],
-  "createdAt": "2026-10-07T04:14:51.653Z"
+  "createdAt": "2026-10-07T04:14:51.653Z",
+  "estados": [
+    {
+      "id": "vuq3w48",
+      "pieza": "Head",
+      "nombre": "enfadada",
+      "texto": "igual pero ojos rojos",
+      "uso": "attacking",
+      "frames": 1,
+      "estado": "en-curso",
+      "createdAt": "2026-10-07T16:13:18.418Z",
+      "tarea": "zl37h4o"
+    },
+    {
+      "id": "9kc780g",
+      "pieza": "CastArm",
+      "nombre": "Caliente",
+      "texto": "el cañon que se vea caliente despues de disparar durante el tiempo de cooldown, con una trancision que hace que nada mas disparar se vea muy caliente y se vaya volviendo a la normalidad poco a poco y ya sea normal 0.5 segundos antes de poder disparar",
+      "uso": "",
+      "frames": 1,
+      "estado": "en-curso",
+      "createdAt": "2026-10-07T16:15:52.739Z",
+      "tarea": "zl37h4o"
+    }
+  ],
+  "piezas": {
+    "modo": "manual",
+    "lista": [
+      {
+        "nombre": "Head",
+        "nota": ""
+      },
+      {
+        "nombre": "Torso",
+        "nota": ""
+      },
+      {
+        "nombre": "Accessory",
+        "nota": "lo que esta entre el torso y la llama"
+      },
+      {
+        "nombre": "Lower",
+        "nota": "la llama de abajo"
+      },
+      {
+        "nombre": "CastArm",
+        "nota": ""
+      }
+    ]
+  },
+  "tarea": "zl37h4o"
 }

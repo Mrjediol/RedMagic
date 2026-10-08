@@ -7,7 +7,7 @@ Shader "RedMagic/Sprite Additive"
 {
     Properties
     {
-        [MainTexture] _MainTex ("Texture", 2D) = "white" {}
+        [MainTexture] [NoScaleOffset] _MainTex ("Texture", 2D) = "white" {}
         [MainColor] _Color ("Tint", Color) = (1, 1, 1, 1)
         [Toggle] _UseSpriteColor ("Use SpriteRenderer color", Float) = 1
     }
@@ -42,7 +42,6 @@ Shader "RedMagic/Sprite Additive"
             SAMPLER(sampler_MainTex);
 
             CBUFFER_START(UnityPerMaterial)
-                float4 _MainTex_ST;
                 half4 _Color;
                 half _UseSpriteColor;
             CBUFFER_END
@@ -70,7 +69,7 @@ Shader "RedMagic/Sprite Additive"
                 Varyings output;
                 float3 position = _UseSpriteColor > 0.5 ? UnityFlipSprite(input.positionOS, unity_SpriteProps.xy) : input.positionOS;
                 output.positionCS = TransformObjectToHClip(position);
-                output.uv = TRANSFORM_TEX(input.uv, _MainTex);
+                output.uv = input.uv;   // sin _MainTex_ST: el SRP Batcher 2D no admite _ST/_TexelSize
                 half4 rendererColor = _UseSpriteColor > 0.5 ? (half4)unity_SpriteColor : half4(1, 1, 1, 1);
                 output.color = input.color * _Color * rendererColor;
                 return output;

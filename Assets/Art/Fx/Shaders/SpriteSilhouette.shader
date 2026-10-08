@@ -6,7 +6,7 @@ Shader "RedMagic/Sprite Silhouette"
 {
     Properties
     {
-        [MainTexture] _MainTex ("Texture", 2D) = "white" {}
+        [MainTexture] [NoScaleOffset] _MainTex ("Texture", 2D) = "white" {}
         [MainColor] _Color ("Tint", Color) = (1, 1, 1, 1)
     }
 
@@ -40,7 +40,6 @@ Shader "RedMagic/Sprite Silhouette"
             SAMPLER(sampler_MainTex);
 
             CBUFFER_START(UnityPerMaterial)
-                float4 _MainTex_ST;
                 half4 _Color;
             CBUFFER_END
 
@@ -67,7 +66,7 @@ Shader "RedMagic/Sprite Silhouette"
                 Varyings output;
                 float3 position = UnityFlipSprite(input.positionOS, unity_SpriteProps.xy);
                 output.positionCS = TransformObjectToHClip(position);
-                output.uv = TRANSFORM_TEX(input.uv, _MainTex);
+                output.uv = input.uv;   // sin _MainTex_ST: el SRP Batcher 2D no admite _ST/_TexelSize
                 output.color = input.color * _Color * (half4)unity_SpriteColor;
                 return output;
             }

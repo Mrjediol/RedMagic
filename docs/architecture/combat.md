@@ -17,6 +17,14 @@
   **Contact damage (`EnemyBrain`/`EnemyController`/`BossController` bodies) and `QuakeSlamAttack` do
   not go through it on purpose.** `PlayerParry`: short window (`window`, default 0.12 s), long
   `missCooldown` (4 s, starts on press), `successCooldown` (0) on a block; also catches enemy
+  **Frame-rate independent timing**: the window is `[press + startup, + window]` on the Input System
+  clock (`InputState.currentTime`; press = the `performed` event's own timestamp, touch = read time).
+  Catch-circle projectiles are judged by their back-computed *entry time* (position + `Projectile.Velocity`,
+  scaled by `timeScale`), scanned in Update **and** FixedUpdate; body/melee hits read now count if the
+  last frame's span touches the window (`HitInWindow`). The window closes on the first frame after its
+  end, which still judges retroactively — so 0.02 s means 20 ms at 30, 60 or 200 fps. Known limit:
+  a physics hit processed in the same frame *before* the press is read (FixedUpdate runs before
+  input) already dealt its damage. Also catches enemy
   `Projectile`s inside a `catchRadius` circle around the body during the window — **omnidirectional
   by design** (`frontOnly` exists but is off). `graceAfterSuccess` silently blocks the rest of the
   same swing / a trailing bullet without rewards. Air success → `PlayerMovement.RefundAirMoves`

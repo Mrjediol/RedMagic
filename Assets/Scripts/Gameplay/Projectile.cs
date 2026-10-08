@@ -237,6 +237,9 @@ namespace RedMagic.Gameplay
         /// <summary>Quien lo disparó (null = del entorno).</summary>
         public GameObject Owner => _owner;
 
+        /// <summary>Velocidad actual (unidades por segundo de juego).</summary>
+        public Vector2 Velocity => _velocity;
+
         /// <summary>Daño de impacto directo de este disparo.</summary>
         public float Damage => damage;
 

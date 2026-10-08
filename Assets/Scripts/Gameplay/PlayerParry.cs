@@ -6,6 +6,7 @@ using RedMagic.Core;
 using RedMagic.Fx;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace RedMagic.Gameplay
 {
@@ -166,8 +167,9 @@ namespace RedMagic.Gameplay
 
         private float _cooldown;
         private float _cooldownDuration;
-        private float _startupTimer;
-        private float _windowTimer;
+        private double _windowStart;          // reloj real (InputState.currentTime)
+        private double _windowEnd;
+        private double _pendingPress = -1d;   // marca de la pulsación aún no procesada; <0 = ninguna
         private bool _windowOpen;
         private bool _succeededThisWindow;
         private float _graceUntil = float.NegativeInfinity;
@@ -202,7 +204,7 @@ namespace RedMagic.Gameplay
         private static readonly ContactFilter2D CatchFilter = new ContactFilter2D { useTriggers = true };   // los proyectiles suelen ser trigger
 
         /// <summary>True mientras la ventana de parry está abierta (ya pasado el startup).</summary>
-        public bool IsParrying => _windowOpen && _startupTimer <= 0f;
+        public bool IsParrying => _windowOpen && Now >= _windowStart && Now <= _windowEnd;
 
         /// <summary>Duración de la ventana. Escribible en caliente (dificultades de un minijuego, items).</summary>
         public float Window
@@ -245,12 +247,17 @@ namespace RedMagic.Gameplay
 
         private void OnEnable()
         {
-            _parryAction?.Enable();
+            if (_parryAction != null)
+            {
+                _parryAction.Enable();
+                _parryAction.performed += OnParryPerformed;
+            }
 
             // Domain Reload apagado + jugador que persiste: nada de una sesión anterior.
             _cooldown = 0f;
             _cooldownDuration = 0f;
             _windowOpen = false;
+            _pendingPress = -1d;
             _graceUntil = float.NegativeInfinity;
             _lastMeleeAttacker = null;
         }
@@ -258,11 +265,30 @@ namespace RedMagic.Gameplay
         private void OnDisable()
         {
             // No se desactiva la acción: el InputActionAsset es compartido (ver PlayerAttack.Suppressed).
+            if (_parryAction != null) _parryAction.performed -= OnParryPerformed;
             CloseWindow(notifyMiss: false);
             EndHitStop();
             _flashTimer = 0f;
             SetVisual(false);
             if (_flash != null) _flash.enabled = false;
+        }
+
+        // ------------------------------------------------------------------ reloj
+        //
+        // La ventana NO se mide en frames: se guarda el instante real de la pulsación (marca de tiempo
+        // del evento de entrada, no el frame en que se lee) y cada golpe se juzga por el instante en
+        // que ocurrió. Así 0.02 s son 0.02 s a 30, 60 o 200 fps. Todo va en el reloj del Input System
+        // (InputState.currentTime: tiempo real continuo), que es el de las marcas de los eventos.
+
+        private static double Now => InputState.currentTime;
+
+        /// <summary>Lo que ha durado el último frame (real), con tope: la incertidumbre de "cuándo pasó" un golpe leído ahora.</summary>
+        private static double FrameSlack => Mathf.Min(Time.unscaledDeltaTime, 0.05f);
+
+        private void OnParryPerformed(InputAction.CallbackContext context)
+        {
+            // La primera pulsación pendiente manda (dos en el mismo frame = una).
+            if (_pendingPress < 0d) _pendingPress = context.time;
         }
 
         private void Update()
@@ -273,25 +299,30 @@ namespace RedMagic.Gameplay
             if (!GameStateManager.CanPlayerAct || (_health != null && _health.IsDead))
             {
                 TouchInput.ConsumeParry();
+                _pendingPress = -1d;
                 if (_windowOpen) CloseWindow(notifyMiss: false);
                 return;
             }
 
-            bool pressed = (_parryAction != null && _parryAction.WasPressedThisFrame()) || TouchInput.ConsumeParry();
-            if (pressed && _cooldown <= 0f) OpenWindow();
+            // Táctil: no hay marca de evento, se toma el instante en que se lee.
+            double press = _pendingPress;
+            _pendingPress = -1d;
+            if (TouchInput.ConsumeParry() && press < 0d) press = Now;
+            if (press >= 0d && _cooldown <= 0f) OpenWindow(press);
 
             if (!_windowOpen) return;
 
-            if (_startupTimer > 0f)
-            {
-                _startupTimer -= dt;
-                if (_startupTimer > 0f) return;
-            }
-
             CatchProjectiles();
 
-            _windowTimer -= dt;
-            if (_windowTimer <= 0f) CloseWindow(notifyMiss: true);
+            // Se cierra el primer frame que empieza después del final: ese frame aún ha juzgado (con
+            // su instante real) lo que pasó entre el anterior y el final de la ventana.
+            if (Now > _windowEnd) CloseWindow(notifyMiss: true);
+        }
+
+        // Un paso de física extra: una bala rápida puede cruzar el círculo y tocar el cuerpo entre dos frames.
+        private void FixedUpdate()
+        {
+            if (_windowOpen) CatchProjectiles();
         }
 
         // Después de que el Animator cambie el frame: la silueta copia el sprite de este frame.
@@ -299,15 +330,15 @@ namespace RedMagic.Gameplay
 
         // ------------------------------------------------------------------ ventana
 
-        private void OpenWindow()
+        private void OpenWindow(double pressTime)
         {
             // Re-pulsar con la ventana aún abierta (tras acertar el cooldown es 0): se cierra la anterior.
             if (_windowOpen) CloseWindow(notifyMiss: true);
 
             _windowOpen = true;
             _succeededThisWindow = false;
-            _startupTimer = startup;
-            _windowTimer = window;
+            _windowStart = pressTime + startup;
+            _windowEnd = _windowStart + window;
 
             // El cooldown de fallo arranca ya: si se acierta, OnSuccess lo sustituye.
             _cooldown = startup + window + missCooldown;
@@ -327,12 +358,28 @@ namespace RedMagic.Gameplay
             WindowClosed?.Invoke(_succeededThisWindow);
         }
 
-        /// <summary>Para los proyectiles enemigos que estén dentro del círculo antes de que toquen el cuerpo.</summary>
+        /// <summary>
+        /// ¿Un golpe que se está leyendo ahora pudo ocurrir dentro de la ventana? Ocurrió en algún
+        /// momento entre el frame anterior y ahora, así que vale si ese tramo toca la ventana.
+        /// </summary>
+        private bool HitInWindow(double now) =>
+            _windowOpen && now >= _windowStart && now - FrameSlack <= _windowEnd;
+
+        /// <summary>
+        /// Para los proyectiles enemigos que estén dentro del círculo antes de que toquen el cuerpo. Se
+        /// calcula hacia atrás <b>cuándo</b> entró cada uno (posición y velocidad): vale si entró antes
+        /// de que acabara la ventana, aunque el frame que lo ve llegue tarde.
+        /// </summary>
         private void CatchProjectiles()
         {
             if (!parryProjectiles || catchRadius <= 0f || _health == null) return;
 
-            int count = Physics2D.OverlapCircle(CatchCenter(), catchRadius * Scale, CatchFilter, CatchBuffer);
+            double now = Now;
+            if (now < _windowStart) return;   // aún en el startup
+
+            Vector2 center = CatchCenter();
+            float radius = catchRadius * Scale;
+            int count = Physics2D.OverlapCircle(center, radius, CatchFilter, CatchBuffer);
             CatchSeen.Clear();
 
             for (int i = 0; i < count; i++)
@@ -340,16 +387,34 @@ namespace RedMagic.Gameplay
                 var projectile = CatchBuffer[i] != null ? CatchBuffer[i].GetComponentInParent<Projectile>() : null;
                 if (projectile == null || !CatchSeen.Add(projectile)) continue;
                 if (!projectile.CanHit(_health)) continue;   // del jugador, ya gastado, o aliado
+                if (EntryTime(projectile, center, radius, now) > _windowEnd) continue;   // entró ya tarde
 
                 var hit = new IncomingHit(_health, projectile.Damage, projectile.Owner,
                                           projectile.transform.position, ParryHitKind.Projectile);
-                if (TryParry(hit)) projectile.Deflect();
+                if (Resolve(hit, inWindow: true)) projectile.Deflect();
             }
+        }
+
+        /// <summary>Instante (reloj real) en que el proyectil cruzó el borde del círculo, según su velocidad.</summary>
+        private static double EntryTime(Projectile projectile, Vector2 center, float radius, double now)
+        {
+            Vector2 offset = (Vector2)projectile.transform.position - center;
+            float distance = offset.magnitude;
+            if (distance < 0.0001f) return double.NegativeInfinity;
+
+            // Velocidad de acercamiento en unidades por segundo real (la bala va en tiempo de juego).
+            float closing = -Vector2.Dot(projectile.Velocity, offset / distance) * Time.timeScale;
+            if (closing <= 0.0001f) return double.NegativeInfinity;   // parada o alejándose: ya estaba dentro
+
+            return now - (radius - distance) / closing;
         }
 
         // ------------------------------------------------------------------ IParryReceiver
 
-        public bool TryParry(in IncomingHit hit)
+        /// <summary>Golpe que toca el cuerpo (bala) o caja de daño (melé): se juzga por el instante en que se lee.</summary>
+        public bool TryParry(in IncomingHit hit) => Resolve(hit, HitInWindow(Now));
+
+        private bool Resolve(in IncomingHit hit, bool inWindow)
         {
             if (!enabled) return false;
             if (hit.Kind == ParryHitKind.Projectile && !parryProjectiles) return false;
@@ -367,7 +432,7 @@ namespace RedMagic.Gameplay
             if (inGrace && hit.Kind == ParryHitKind.Melee && hit.Attacker != null && hit.Attacker == _lastMeleeAttacker)
                 return true;
 
-            if (IsParrying)
+            if (inWindow)
             {
                 OnSuccess(hit);
                 return true;

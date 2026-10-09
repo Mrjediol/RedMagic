@@ -43,6 +43,8 @@ namespace RedMagic.Gameplay
             [Min(0.1f)] public float power = 1f;
             [Tooltip("Origen del tajo respecto al jugador, mirando a la derecha.")]
             public Vector2 offset = new Vector2(0.3f, 0.2f);
+            [Tooltip("Escala X/Y del arco antes de rotar: (1,1) = círculo; (1.6, 0.7) = barrido horizontal ancho y aplanado.")]
+            public Vector2 stretch = Vector2.one;
 
             [Tooltip("Multiplica el daño base.")]
             [Min(0f)] public float damageMultiplier = 1f;
@@ -83,6 +85,8 @@ namespace RedMagic.Gameplay
         [SerializeField] private float inputBuffer = 0.2f;
         [Tooltip("Enfriamiento tras el último golpe del combo.")]
         [SerializeField] private float comboCooldown = 0.35f;
+        [Tooltip("Al salir un golpe, el tajo anterior se desvanece en este tiempo (no hay dos a la vez).")]
+        [SerializeField] private float interruptFade = 0.06f;
         [SerializeField] private LayerMask hitLayers = ~0;
 
         [Header("Depuración")]
@@ -227,6 +231,7 @@ namespace RedMagic.Gameplay
 
             _current = list[index];
             _sinceHit = 0f;
+            if (_slash != null) _slash.Interrupt(interruptFade);
             _slashStarted = false;
             _slash = null;
             _alreadyHit.Clear();
@@ -264,14 +269,14 @@ namespace RedMagic.Gameplay
             var go = PrefabPool.Spawn(_current.slash.gameObject, SlashOrigin(_currentOffset, facing), Quaternion.Euler(0f, 0f, rot));
             _slash = go.GetComponent<MeleeSlashFx>();
             float range = PlayerStats.Multiplier(PlayerStat.MeleeRange);
-            _slash.Play(_current.power * range, facing < 0, _current.reverse);
+            _slash.Play(_current.power * range, facing < 0, _current.reverse, _current.stretch);
         }
 
         private void ApplyHits()
         {
             Vector2 origin = _slash.transform.position;
             _hits.Clear();
-            Physics2D.OverlapCircle(origin, _slash.CurrentWorldRadius * 1.15f, _filter, _hits);
+            Physics2D.OverlapCircle(origin, _slash.CurrentWorldRadius * Mathf.Max(_current.stretch.x, _current.stretch.y) * 1.15f, _filter, _hits);
 
             float dmg = damage * _current.damageMultiplier * PlayerStats.Multiplier(PlayerStat.MeleeDamage);
             foreach (var hit in _hits)

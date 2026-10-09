@@ -17,7 +17,7 @@ namespace RedMagic.Gameplay.EditorTools
         private struct HitDef
         {
             public string label; public float rotation; public bool reverse; public float power;
-            public Vector2 offset; public float damage, knockback, windup, recovery;
+            public Vector2 offset, stretch; public float damage, knockback, windup, recovery;
         }
 
         [MenuItem("Tools/RedMagic/FX/Tajo melee · Combo del jugador (3 golpes, tajo C)")]
@@ -29,11 +29,11 @@ namespace RedMagic.Gameplay.EditorTools
             var hits = new[]
             {
                 new HitDef { label = "1 · Descendente", rotation = 0f, reverse = false, power = 0.85f,
-                    offset = new Vector2(0.3f, 0.3f), damage = 1f, knockback = 0.6f, windup = 0.03f, recovery = 0.22f },
-                new HitDef { label = "2 · Ascendente", rotation = 0f, reverse = true, power = 0.9f,
-                    offset = new Vector2(0.3f, 0.1f), damage = 1f, knockback = 0.6f, windup = 0.03f, recovery = 0.24f },
-                new HitDef { label = "3 · Remate", rotation = -25f, reverse = false, power = 1.25f,
-                    offset = new Vector2(0.4f, 0.3f), damage = 1.8f, knockback = 2f, windup = 0.08f, recovery = 0.38f },
+                    offset = new Vector2(0.3f, 0.3f), stretch = Vector2.one, damage = 1f, knockback = 0.6f, windup = 0.03f, recovery = 0.32f },
+                new HitDef { label = "2 · Ascendente", rotation = 15f, reverse = true, power = 0.9f,
+                    offset = new Vector2(0.3f, 0.1f), stretch = Vector2.one, damage = 1f, knockback = 0.6f, windup = 0.04f, recovery = 0.34f },
+                new HitDef { label = "3 · Remate horizontal", rotation = 0f, reverse = false, power = 1.15f,
+                    offset = new Vector2(0.9f, 0.1f), stretch = new Vector2(1.7f, 0.65f), damage = 1.8f, knockback = 2.2f, windup = 0.14f, recovery = 0.45f },
             };
 
             var root = PrefabUtility.LoadPrefabContents(PlayerPath);
@@ -55,6 +55,7 @@ namespace RedMagic.Gameplay.EditorTools
                     e.FindPropertyRelative("reverse").boolValue = h.reverse;
                     e.FindPropertyRelative("power").floatValue = h.power;
                     e.FindPropertyRelative("offset").vector2Value = h.offset;
+                    e.FindPropertyRelative("stretch").vector2Value = h.stretch;
                     e.FindPropertyRelative("damageMultiplier").floatValue = h.damage;
                     e.FindPropertyRelative("knockbackMultiplier").floatValue = h.knockback;
                     e.FindPropertyRelative("windup").floatValue = h.windup;

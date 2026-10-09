@@ -145,6 +145,8 @@
   resets to hit 1; after the last hit `comboCooldown`. `UnlockedHits` caps how many entries are used (builds:
   3 → 5). **The hitbox is the slash itself**: `MeleeSlashFx.Covers(point)` uses the shader's geometry
   (arc, layer radii, mirrors, rotation) and only the part already swept, so what you see is what hits.
+  `stretch` per hit (X/Y scale of the arc before rotating; the finisher is a flattened horizontal sweep).
+  A new hit `Interrupt`s the previous slash (fades in `interruptFade`, stops damaging) so two never overlap.
   The slash follows the player while it plays; facing is locked per hit. Build stats `PlayerStat.MeleeDamage`
   / `MeleeRange` (range scales slash + hitbox together). Default 3-hit combo with slash C written by
   **Tools ▸ RedMagic ▸ FX ▸ Tajo melee · Combo del jugador** (`Gameplay/Editor/PlayerComboSetup`, overwrites).

@@ -93,6 +93,9 @@ namespace RedMagic.Fx
         private float _time;
         private float _power = 1f;
         private bool _mirrorX, _mirrorY;
+        private Vector2 _stretch = Vector2.one;
+        private bool _interrupted;
+        private float _interruptLeft, _interruptDuration = 1f;
         private bool _playing;
         private double _lastEditorTime;
 
@@ -135,15 +138,35 @@ namespace RedMagic.Fx
         /// <paramref name="mirrorY"/> invierte el sentido del barrido (un tajo descendente pasa a ascendente).
         /// La rotación la pone quien lo lanza en el transform.
         /// </summary>
-        public void Play(float power, bool mirrorX, bool mirrorY)
+        public void Play(float power, bool mirrorX, bool mirrorY) => Play(power, mirrorX, mirrorY, Vector2.one);
+
+        /// <summary>
+        /// Como el anterior, con <paramref name="stretch"/>: escala X/Y del arco antes de rotar
+        /// (p. ej. (1.6, 0.7) = barrido horizontal ancho y aplanado). La zona de daño se deforma igual.
+        /// </summary>
+        public void Play(float power, bool mirrorX, bool mirrorY, Vector2 stretch)
         {
             _power = Mathf.Max(0.1f, power);
             _mirrorX = mirrorX;
             _mirrorY = mirrorY;
+            _stretch = new Vector2(Mathf.Max(0.1f, stretch.x), Mathf.Max(0.1f, stretch.y));
+            _interrupted = false;
             _time = 0f;
             _playing = true;
             ApplyScale();
             UpdateLayers();
+        }
+
+        /// <summary>
+        /// Corta el tajo: deja de hacer daño y se desvanece en <paramref name="fade"/> segundos.
+        /// Lo usa el combo al sacar el siguiente golpe, para que no haya dos tajos a la vez.
+        /// </summary>
+        public void Interrupt(float fade = 0.06f)
+        {
+            if (!_playing || _interrupted) return;
+            _interrupted = true;
+            _interruptDuration = Mathf.Max(0.001f, fade);
+            _interruptLeft = _interruptDuration;
         }
 
         /// <summary>Radio exterior del tajo en mundo con la potencia actual.</summary>
@@ -153,7 +176,7 @@ namespace RedMagic.Fx
         public float HeadProgress => _playing ? HeadAt(_time / Mathf.Max(duration, 1e-4f)) : 0f;
 
         /// <summary>True mientras la cabeza todavía avanza: la ventana de daño natural del tajo.</summary>
-        public bool IsSweeping => _playing && _time < duration * headPortion;
+        public bool IsSweeping => _playing && !_interrupted && _time < duration * headPortion;
 
         /// <summary>
         /// ¿Cae <paramref name="worldPoint"/> dentro de lo que el tajo ya ha barrido? Misma
@@ -239,7 +262,8 @@ namespace RedMagic.Fx
             ApplyScale();
             UpdateLayers();
 
-            if (_time >= TotalDuration)
+            if (_interrupted) _interruptLeft -= dt;
+            if (_time >= TotalDuration || (_interrupted && _interruptLeft <= 0f))
             {
                 _playing = false;
                 _time = 0f;
@@ -252,7 +276,7 @@ namespace RedMagic.Fx
         {
             float s = worldRadius * _power;
             float sx = (clockwise ? -s : s) * (_mirrorX ? -1f : 1f);
-            transform.localScale = new Vector3(sx, _mirrorY ? -s : s, 1f);
+            transform.localScale = new Vector3(sx * _stretch.x, (_mirrorY ? -s : s) * _stretch.y, 1f);
         }
 
         private void UpdateLayers()
@@ -295,7 +319,8 @@ namespace RedMagic.Fx
                 m.SetFloat(ShardDriftId, l.shardDrift);
                 m.SetFloat(ShardStyleId, (float)l.shardStyle);
                 m.SetFloat(SeedId, l.seed);
-                m.SetFloat(AlphaId, visible ? fade : 0f);
+                float cut = _interrupted ? Mathf.Clamp01(_interruptLeft / _interruptDuration) : 1f;
+                m.SetFloat(AlphaId, visible ? fade * cut : 0f);
             }
         }
 

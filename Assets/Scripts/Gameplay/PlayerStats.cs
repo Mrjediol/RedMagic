@@ -41,12 +41,14 @@ namespace RedMagic.Gameplay
     {
         private static readonly Dictionary<object, (PlayerStat stat, float value)> Multipliers = new();
         private static readonly Dictionary<object, int> ComboBonuses = new();
+        private static readonly Dictionary<object, float> DashDamages = new();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             Multipliers.Clear();
             ComboBonuses.Clear();
+            DashDamages.Clear();
         }
 
         /// <summary>Pone (o actualiza) el multiplicador que aporta <paramref name="source"/>.</summary>
@@ -75,6 +77,18 @@ namespace RedMagic.Gameplay
         public static int ComboHitBonus
         {
             get { int n = 0; foreach (var v in ComboBonuses.Values) n += v; return n; }
+        }
+
+        /// <summary>Daño que hace el dash al atravesar enemigos, aportado por <paramref name="source"/> (se suman).</summary>
+        public static void SetDashDamage(object source, float damage) => DashDamages[source] = damage;
+
+        /// <summary>Quita el daño de dash que aportaba <paramref name="source"/>. Seguro llamarlo de más.</summary>
+        public static void RemoveDashDamage(object source) => DashDamages.Remove(source);
+
+        /// <summary>Daño total del dash (0 = el dash no hace daño). Lo aplica <c>PlayerDashCombat</c>.</summary>
+        public static float DashDamage
+        {
+            get { float n = 0f; foreach (var v in DashDamages.Values) n += v; return n; }
         }
     }
 }

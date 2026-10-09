@@ -26,6 +26,7 @@ Shader "RedMagic/Melee Slash Layer"
         _ShardStyle ("Shard style (0 rombo, 1 rayas, 2 chispas, 3 trozos)", Float) = 0
         _Seed ("Seed", Float) = 0
         _Alpha ("Alpha", Range(0, 1)) = 1
+        _Symmetric ("Symmetric (opens from the centre both ways)", Float) = 0
     }
 
     SubShader
@@ -56,7 +57,7 @@ Shader "RedMagic/Melee Slash Layer"
                 half4 _Color;
                 float _Radius, _Thickness, _ArcStart, _ArcSpan, _Head, _Tail;
                 float _HeadTaper, _TailTaper, _FraySpread, _FrayFreq, _OuterJag, _InnerJag;
-                float _Breakup, _Shards, _ShardDrift, _ShardStyle, _Seed, _Alpha;
+                float _Breakup, _Shards, _ShardDrift, _ShardStyle, _Seed, _Alpha, _Symmetric;
             CBUFFER_END
 
             struct Attributes { float3 positionOS : POSITION; float2 uv : TEXCOORD0; };
@@ -161,6 +162,8 @@ Shader "RedMagic/Melee Slash Layer"
                 float r = length(p);
                 float ang = atan2(p.y, p.x) - _ArcStart;
                 ang = ang - TWO_PI * floor(ang / TWO_PI);      // 0..2π, sentido antihorario
+                // Simétrico: _ArcStart es el centro y _ArcSpan medio arco; se abre hacia los dos lados.
+                if (_Symmetric > 0.5) ang = abs(ang > PI ? ang - TWO_PI : ang);
                 float t = ang / _ArcSpan;                      // 0..1 dentro del arco
                 float aa = max(fwidth(r), 1e-4) * 1.2;
 

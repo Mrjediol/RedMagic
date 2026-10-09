@@ -55,6 +55,7 @@ GameObject:
   - component: {fileID: 1232626756917567298}
   - component: {fileID: 5668994849381310021}
   - component: {fileID: 4447773840029447090}
+  - component: {fileID: 2956011988635932019}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -723,6 +724,24 @@ MonoBehaviour:
   visualHold: 0.18
   visualFade: 0.3
   drawGizmo: 1
+--- !u!114 &2956011988635932019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4486680268914706177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0146ce5744c2204497376203c7aef65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerDashCombat
+  matchParryWindow: 1
+  fallbackInvulnerability: 0.12
+  hitPadding: 0.25
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &5936975751486156930
 GameObject:
   m_ObjectHideFlags: 0

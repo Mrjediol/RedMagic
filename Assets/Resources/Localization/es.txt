@@ -401,6 +401,7 @@ synergy.gold.tier3 = La marca de oro multiplica el botín ×3 (en vez de ×2).
 effect.currency_drop_bonus = +{0:0}% de moneda de los enemigos
 effect.max_health_bonus = +{0:0} de vida máxima
 effect.combo_hits = +{0} golpe(s) de combo
+effect.dash_damage = El dash hace {0:0} de daño
 effect.currency_on_damage_taken = +{0} {1} por cada golpe que sobrevives
 effect.shot_damage_bonus = +{0:0}% de daño de los disparos
 effect.currency_on_kill = +{0} {1} por cada baja

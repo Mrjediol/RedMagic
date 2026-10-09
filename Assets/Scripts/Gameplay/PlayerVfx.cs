@@ -1,3 +1,4 @@
+using RedMagic.Core;
 using RedMagic.Fx;
 using UnityEngine;
 
@@ -7,33 +8,40 @@ namespace RedMagic.Gameplay
     /// Engancha los efectos visuales del jugador a los eventos de <see cref="PlayerMovement"/>.
     /// Se mantiene aparte para que el controlador de movimiento no tenga que conocer prefabs.
     ///
-    /// Los tres efectos son sistemas de partículas pooled (<see cref="VfxOneShot"/>), generados por
-    /// <b>Tools ▸ RedMagic ▸ FX ▸ VFX del jugador · Generar</b> en <c>Assets/Prefabs/Fx/Player/</c>.
+    /// Cada efecto puede ser de dos tipos, según el prefab asignado:
+    /// <list type="bullet">
+    /// <item><see cref="MeleeSlashFx"/> — mismo set visual que los tajos melee (variantes en
+    /// <c>Assets/Prefabs/Fx/Player/Movement/</c>, <b>Tools ▸ RedMagic ▸ FX ▸ Movimiento · Generar
+    /// variantes</b>). Se espeja según hacia dónde mira el jugador; el del dash le sigue mientras dura.</item>
+    /// <item>Partículas pooled (<see cref="VfxOneShot"/>), los antiguos <c>VFX_Dash/Jump/DoubleJump</c>.</item>
+    /// </list>
     /// </summary>
     [RequireComponent(typeof(PlayerMovement))]
     [DisallowMultipleComponent]
     public class PlayerVfx : MonoBehaviour
     {
         [Header("Dash")]
-        [Tooltip("Estela + soplo del dash (VFX_Dash). Sigue al jugador mientras dura el dash; sus " +
-                 "partículas quedan a lo largo del camino.")]
+        [Tooltip("Estela del dash. Sigue al jugador mientras dura el dash.")]
         [SerializeField] private GameObject dashEffect;
         [Tooltip("Posición relativa al jugador. La X se invierte según la dirección del dash.")]
         [SerializeField] private Vector2 dashEffectOffset = new Vector2(-0.2f, -0.1f);
 
         [Header("Salto")]
-        [Tooltip("Estallido en los pies al despegar del suelo (VFX_Jump).")]
+        [Tooltip("Efecto en los pies al despegar del suelo.")]
         [SerializeField] private GameObject jumpEffect;
         [Tooltip("Por defecto en la base del collider (-0.75), es decir a la altura de los pies.")]
         [SerializeField] private Vector2 jumpEffectOffset = new Vector2(0f, -0.72f);
 
         [Header("Doble salto")]
-        [Tooltip("Anillo mágico bajo el jugador al saltar en el aire (VFX_DoubleJump).")]
+        [Tooltip("Efecto bajo el jugador al saltar en el aire.")]
         [SerializeField] private GameObject doubleJumpEffect;
         [Tooltip("Por defecto en la base del collider (-0.75), es decir a la altura de los pies.")]
         [SerializeField] private Vector2 doubleJumpEffectOffset = new Vector2(0f, -0.72f);
 
         private PlayerMovement _movement;
+        private MeleeSlashFx _dashSlash;
+        private Vector2 _dashSlashOffset;
+        private float _dashFollowLeft;
 
         private void Awake() => _movement = GetComponent<PlayerMovement>();
 
@@ -42,6 +50,7 @@ namespace RedMagic.Gameplay
             _movement.Dashed += OnDashed;
             _movement.Jumped += OnJumped;
             _movement.AirJumped += OnAirJumped;
+            _dashSlash = null;
         }
 
         private void OnDisable()
@@ -54,14 +63,46 @@ namespace RedMagic.Gameplay
         // Los efectos y sus offsets siguen la escala del jugador (PlayerScaleConfig la cambia por escena).
         private float Scale => Mathf.Abs(transform.lossyScale.y);
 
-        private void OnDashed(int direction) =>
+        private void LateUpdate()
+        {
+            if (_dashSlash == null) return;
+            _dashFollowLeft -= Time.deltaTime;
+            if (_dashFollowLeft <= 0f || !_dashSlash.isActiveAndEnabled) { _dashSlash = null; return; }
+            _dashSlash.transform.position = transform.position + (Vector3)_dashSlashOffset;
+        }
+
+        private void OnDashed(int direction)
+        {
+            var offset = new Vector2(dashEffectOffset.x * direction, dashEffectOffset.y) * Scale;
+            var slash = SpawnSlash(dashEffect, offset, direction);
+            if (slash != null)
+            {
+                _dashSlash = slash;
+                _dashSlashOffset = offset;
+                _dashFollowLeft = _movement.DashDuration;
+                return;
+            }
             VfxOneShot.SpawnFollowing(dashEffect, transform, dashEffectOffset * Scale, direction, _movement.DashDuration, Scale);
+        }
 
         private void OnJumped() => SpawnAtFeet(jumpEffect, jumpEffectOffset);
 
         private void OnAirJumped() => SpawnAtFeet(doubleJumpEffect, doubleJumpEffectOffset);
 
-        private void SpawnAtFeet(GameObject prefab, Vector2 offset) =>
+        private void SpawnAtFeet(GameObject prefab, Vector2 offset)
+        {
+            if (SpawnSlash(prefab, offset * Scale, _movement.Facing) != null) return;
             VfxOneShot.Spawn(prefab, transform.position + (Vector3)(offset * Scale), _movement.Facing, null, Scale);
+        }
+
+        /// <summary>Si el prefab es un <see cref="MeleeSlashFx"/>, lo saca del pool y lo lanza; si no, null.</summary>
+        private MeleeSlashFx SpawnSlash(GameObject prefab, Vector2 offset, int facing)
+        {
+            if (prefab == null || prefab.GetComponent<MeleeSlashFx>() == null) return null;
+            var go = PrefabPool.Spawn(prefab, transform.position + (Vector3)offset, Quaternion.identity);
+            var slash = go.GetComponent<MeleeSlashFx>();
+            slash.Play(Scale, facing < 0, false);
+            return slash;
+        }
     }
 }

@@ -30,6 +30,8 @@ namespace RedMagic.Fx.EditorTools
             public float arcDegrees = 220f;
             public float startAngle = 110f;
             public bool clockwise = true;
+            public bool symmetric;
+            public Vector2 shapeStretch = Vector2.one;
             public float duration = 0.32f;
             public float headPortion = 0.45f;
             public float tailStart = 0.2f;
@@ -109,7 +111,7 @@ namespace RedMagic.Fx.EditorTools
             return p;
         }
 
-        private static GameObject BuildPrefab(string name, Preset preset, Shader shader)
+        private static GameObject BuildPrefab(string name, Preset preset, Shader shader, string folder = Folder)
         {
             var go = new GameObject(name);
             var fx = go.AddComponent<MeleeSlashFx>();
@@ -118,16 +120,19 @@ namespace RedMagic.Fx.EditorTools
             so.FindProperty("shader").objectReferenceValue = shader;
             so.ApplyModifiedPropertiesWithoutUndo();
 
-            string path = $"{Folder}/{name}.prefab";
+            string path = $"{folder}/{name}.prefab";
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, path);
             UnityEngine.Object.DestroyImmediate(go);
             return prefab;
         }
 
-        private static void BuildScene(GameObject[] prefabs, string scenePath, Vector3[] slots, float orthoSize)
+        private static void BuildScene(GameObject[] prefabs, string scenePath, Vector3[] slots, float orthoSize,
+                                       Vector3[] fxOffsets = null)
         {
-            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            // Aditiva: no guarda, no cierra ni toca las escenas que el usuario tenga abiertas.
+            var previousActive = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+            UnityEngine.SceneManagement.SceneManager.SetActiveScene(scene);
 
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
             var cam = camGo.AddComponent<Camera>();
@@ -140,7 +145,7 @@ namespace RedMagic.Fx.EditorTools
             for (int i = 0; i < prefabs.Length && i < slots.Length; i++)
             {
                 var inst = (GameObject)PrefabUtility.InstantiatePrefab(prefabs[i]);
-                inst.transform.position = slots[i];
+                inst.transform.position = slots[i] + (fxOffsets != null ? fxOffsets[i] : Vector3.zero);
                 var so = new SerializedObject(inst.GetComponent<MeleeSlashFx>());
                 so.FindProperty("previewLoop").boolValue = true;
                 so.ApplyModifiedPropertiesWithoutUndo();
@@ -158,6 +163,206 @@ namespace RedMagic.Fx.EditorTools
             }
 
             EditorSceneManager.SaveScene(scene, scenePath);
+            if (previousActive.IsValid()) UnityEngine.SceneManagement.SceneManager.SetActiveScene(previousActive);
+            EditorSceneManager.CloseScene(scene, true);
+        }
+
+        // ── Movimiento (salto, doble salto, dash) ─────────────────────────────────────
+        // Mismo shader y paleta que los tajos, para que todo se lea como un set.
+
+        private const string MovementFolder = "Assets/Prefabs/Fx/Player/Movement";
+        private const string MovementScenePath = "Assets/Scenes/Test/MovementFxPreview.unity";
+
+        /// <summary>Pies del muñeco de la escena respecto a su casilla (muñeco 1.8 de alto, centrado 0.2 más abajo).</summary>
+        private const float FeetY = -1.1f;
+
+        [MenuItem("Tools/RedMagic/FX/Movimiento · Generar variantes + escena de prueba")]
+        public static void GenerateMovement()
+        {
+            EnsureFolder(MovementFolder);
+            var shader = Shader.Find("RedMagic/Melee Slash Layer");
+            if (shader == null) { Debug.LogError("[MeleeSlashPack] Falta el shader RedMagic/Melee Slash Layer."); return; }
+
+            var rows = new (string prefix, Preset[] presets, Vector3 offset)[]
+            {
+                ("Fx_Jump", new[] { Jump1(), Jump2(), Jump3(), Jump4() }, new Vector3(0f, FeetY + 0.8f)),
+                ("Fx_DoubleJump", new[] { Double1(), Double2(), Double3(), Double4() }, new Vector3(0f, FeetY + 0.1f)),
+                ("Fx_Dash", new[] { Dash1(), Dash2(), Dash3(), Dash4() }, new Vector3(0.8f, -0.2f)),
+            };
+
+            var prefabs = new System.Collections.Generic.List<GameObject>();
+            var slots = new System.Collections.Generic.List<Vector3>();
+            var offsets = new System.Collections.Generic.List<Vector3>();
+            for (int r = 0; r < rows.Length; r++)
+            for (int c = 0; c < rows[r].presets.Length; c++)
+            {
+                prefabs.Add(BuildPrefab($"{rows[r].prefix}_{c + 1}", rows[r].presets[c], shader, MovementFolder));
+                slots.Add(new Vector3(-12f + c * 8f, 6f - r * 6.5f));
+                offsets.Add(rows[r].offset);
+            }
+
+            BuildScene(prefabs.ToArray(), MovementScenePath, slots.ToArray(), 10.5f, offsets.ToArray());
+            Debug.Log($"[MeleeSlashPack] {prefabs.Count} variantes de movimiento en {MovementFolder}, escena {MovementScenePath}.");
+        }
+
+        // Salto: salpicadura en los pies que se abre hacia los dos lados (simétrica, centro abajo).
+        private static Preset Jump1() => new Preset   // media luna limpia
+        {
+            worldRadius = 1.7f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 180f,
+            shapeStretch = new Vector2(1.5f, 0.55f), duration = 0.3f, headPortion = 0.4f,
+            layers = new[]
+            {
+                L("Azul", DeepBlue, 0.95f, 0.30f, 0.04f, fray: 0.1f, innerJag: 0.1f, breakup: 0.1f, seed: 31),
+                L("Cian", Cyan, 0.93f, 0.22f, 0.02f, fray: 0.1f, innerJag: 0.1f, breakup: 0.1f, seed: 32),
+                L("Núcleo", White, 0.91f, 0.12f, 0f, fray: 0.05f, innerJag: 0.05f, breakup: 0.05f, seed: 33),
+            },
+        };
+
+        private static Preset Jump2() => new Preset   // alas: más abierta, deshilachada, con chispas
+        {
+            worldRadius = 1.8f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 230f,
+            shapeStretch = new Vector2(1.4f, 0.75f), duration = 0.36f,
+            layers = new[]
+            {
+                L("Estela morada", Purple, 0.99f, 0.10f, 0.08f, fray: 0.4f, bands: 7f, innerJag: 0.4f, seed: 41),
+                L("Azul", DeepBlue, 0.94f, 0.38f, 0.05f, fray: 0.4f, bands: 7f, innerJag: 0.45f, breakup: 0.35f, seed: 42),
+                L("Cian", Cyan, 0.92f, 0.28f, 0.025f, fray: 0.3f, innerJag: 0.35f, breakup: 0.25f, seed: 43),
+                Spark(L("Núcleo", White, 0.90f, 0.15f, 0f, fray: 0.15f, innerJag: 0.2f, breakup: 0.1f, seed: 44), 12),
+            },
+        };
+
+        private static Preset Jump3() => new Preset   // salpicadura baja con muchas chispas
+        {
+            worldRadius = 1.6f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 150f,
+            shapeStretch = new Vector2(1.6f, 0.45f), duration = 0.32f,
+            layers = new[]
+            {
+                L("Azul", DeepBlue, 0.94f, 0.32f, 0.04f, fray: 0.3f, innerJag: 0.4f, breakup: 0.3f, seed: 51),
+                Spark(L("Cian", Cyan, 0.92f, 0.24f, 0.02f, fray: 0.25f, innerJag: 0.3f, breakup: 0.25f, seed: 52), 10),
+                Spark(L("Núcleo", White, 0.90f, 0.12f, 0f, fray: 0.1f, innerJag: 0.15f, seed: 53), 18),
+            },
+        };
+
+        private static Preset Jump4() => new Preset   // fina y rápida
+        {
+            worldRadius = 1.8f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 200f,
+            shapeStretch = new Vector2(1.7f, 0.5f), duration = 0.22f, headPortion = 0.5f,
+            layers = new[]
+            {
+                L("Estela morada", Purple, 0.97f, 0.06f, 0.06f, fray: 0.2f, tailTaper: 2.6f, innerJag: 0.2f, seed: 61),
+                L("Cian", Cyan, 0.95f, 0.12f, 0.02f, fray: 0.15f, tailTaper: 2.4f, innerJag: 0.15f, seed: 62),
+                L("Núcleo", White, 0.94f, 0.05f, 0f, fray: 0.05f, tailTaper: 2.4f, innerJag: 0.05f, seed: 63),
+            },
+        };
+
+        // Doble salto: anillo bajo los pies que se cierra por arriba (simétrico casi completo).
+        private static Preset Double1() => new Preset   // anillo fino
+        {
+            worldRadius = 1.6f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f,
+            shapeStretch = new Vector2(1.3f, 0.4f), duration = 0.32f, headPortion = 0.5f, tailStart = 0.35f,
+            layers = new[]
+            {
+                L("Cian", Cyan, 0.97f, 0.12f, 0.03f, fray: 0.1f, innerJag: 0.1f, breakup: 0.1f, seed: 71),
+                L("Núcleo", White, 0.96f, 0.06f, 0f, fray: 0.05f, innerJag: 0.05f, breakup: 0.05f, seed: 72),
+            },
+        };
+
+        private static Preset Double2() => new Preset   // anillo grueso con estela morada
+        {
+            worldRadius = 1.7f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f,
+            shapeStretch = new Vector2(1.3f, 0.45f), duration = 0.38f, tailStart = 0.3f,
+            layers = new[]
+            {
+                L("Estela morada", Purple, 0.99f, 0.10f, 0.08f, fray: 0.35f, innerJag: 0.4f, breakup: 0.3f, seed: 81),
+                L("Azul", DeepBlue, 0.96f, 0.30f, 0.05f, fray: 0.3f, innerJag: 0.4f, breakup: 0.35f, seed: 82),
+                L("Cian", Cyan, 0.94f, 0.22f, 0.025f, fray: 0.25f, innerJag: 0.3f, breakup: 0.25f, seed: 83),
+                L("Núcleo", White, 0.92f, 0.11f, 0f, fray: 0.1f, innerJag: 0.15f, breakup: 0.1f, seed: 84),
+            },
+        };
+
+        private static Preset Double3() => new Preset   // dos anillos (uno dentro de otro)
+        {
+            worldRadius = 1.8f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f,
+            shapeStretch = new Vector2(1.25f, 0.42f), duration = 0.36f, tailStart = 0.3f,
+            layers = new[]
+            {
+                L("Azul", DeepBlue, 0.98f, 0.14f, 0.06f, fray: 0.2f, innerJag: 0.2f, breakup: 0.2f, seed: 91),
+                L("Cian", Cyan, 0.97f, 0.09f, 0.04f, fray: 0.15f, innerJag: 0.15f, seed: 92),
+                L("Cian claro", LightCyan, 0.68f, 0.12f, 0.02f, fray: 0.2f, innerJag: 0.2f, breakup: 0.2f, seed: 93),
+                L("Núcleo", White, 0.66f, 0.06f, 0f, fray: 0.1f, innerJag: 0.1f, seed: 94),
+            },
+        };
+
+        private static Preset Double4() => new Preset   // anillo alto con chispas
+        {
+            worldRadius = 1.6f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f,
+            shapeStretch = new Vector2(1.2f, 0.7f), duration = 0.36f, tailStart = 0.3f,
+            layers = new[]
+            {
+                L("Azul", DeepBlue, 0.96f, 0.24f, 0.05f, fray: 0.3f, innerJag: 0.35f, breakup: 0.3f, seed: 101),
+                Spark(L("Cian", Cyan, 0.94f, 0.18f, 0.025f, fray: 0.25f, innerJag: 0.3f, breakup: 0.25f, seed: 102), 12),
+                Spark(L("Núcleo", White, 0.92f, 0.09f, 0f, fray: 0.1f, innerJag: 0.1f, seed: 103), 18),
+            },
+        };
+
+        // Dash: estela detrás del jugador (el centro del arco mira hacia atrás, 180°).
+        private static Preset Dash1() => new Preset   // lente simétrica limpia
+        {
+            worldRadius = 2f, symmetric = true, clockwise = false, startAngle = 180f, arcDegrees = 130f,
+            shapeStretch = new Vector2(2.4f, 0.45f), duration = 0.3f, headPortion = 0.4f,
+            layers = new[]
+            {
+                L("Azul", DeepBlue, 0.96f, 0.30f, 0.04f, fray: 0.15f, innerJag: 0.15f, breakup: 0.1f, seed: 111),
+                L("Cian", Cyan, 0.94f, 0.22f, 0.02f, fray: 0.1f, innerJag: 0.1f, breakup: 0.1f, seed: 112),
+                L("Núcleo", White, 0.92f, 0.12f, 0f, fray: 0.05f, innerJag: 0.05f, seed: 113),
+            },
+        };
+
+        private static Preset Dash2() => new Preset   // corte: barre de arriba-delante a abajo-detrás
+        {
+            worldRadius = 2f, clockwise = false, startAngle = 110f, arcDegrees = 150f,
+            shapeStretch = new Vector2(2.2f, 0.5f), duration = 0.3f,
+            layers = new[]
+            {
+                L("Estela morada", Purple, 0.99f, 0.09f, 0.08f, fray: 0.4f, tailTaper: 2.2f, innerJag: 0.4f, seed: 121),
+                L("Azul", DeepBlue, 0.95f, 0.36f, 0.05f, fray: 0.4f, innerJag: 0.45f, breakup: 0.35f, seed: 122),
+                L("Cian", Cyan, 0.93f, 0.27f, 0.025f, fray: 0.3f, innerJag: 0.35f, breakup: 0.25f, seed: 123),
+                L("Núcleo", White, 0.91f, 0.14f, 0f, fray: 0.15f, innerJag: 0.2f, breakup: 0.1f, seed: 124),
+            },
+        };
+
+        private static Preset Dash3() => new Preset   // viento: líneas largas y finas deshilachadas
+        {
+            worldRadius = 2.2f, symmetric = true, clockwise = false, startAngle = 180f, arcDegrees = 110f,
+            shapeStretch = new Vector2(2.8f, 0.32f), duration = 0.28f,
+            layers = new[]
+            {
+                L("Estela morada", Purple, 0.99f, 0.08f, 0.07f, fray: 0.5f, bands: 9f, tailTaper: 2.6f, innerJag: 0.5f, breakup: 0.4f, seed: 131),
+                L("Cian", Cyan, 0.90f, 0.16f, 0.04f, fray: 0.45f, bands: 8f, tailTaper: 2.4f, innerJag: 0.5f, breakup: 0.4f, seed: 132),
+                L("Cian claro", LightCyan, 0.74f, 0.10f, 0.06f, fray: 0.45f, bands: 7f, tailTaper: 2.4f, innerJag: 0.4f, breakup: 0.4f, seed: 133),
+                L("Núcleo", White, 0.88f, 0.06f, 0f, fray: 0.2f, tailTaper: 2.4f, innerJag: 0.2f, seed: 134),
+            },
+        };
+
+        private static Preset Dash4() => new Preset   // lente con estela morada y chispas
+        {
+            worldRadius = 2f, symmetric = true, clockwise = false, startAngle = 180f, arcDegrees = 140f,
+            shapeStretch = new Vector2(2.3f, 0.55f), duration = 0.34f,
+            layers = new[]
+            {
+                L("Estela morada", Purple, 0.99f, 0.10f, 0.08f, fray: 0.4f, innerJag: 0.4f, breakup: 0.3f, seed: 141),
+                L("Azul", DeepBlue, 0.95f, 0.34f, 0.05f, fray: 0.35f, innerJag: 0.4f, breakup: 0.35f, seed: 142),
+                Spark(L("Cian", Cyan, 0.93f, 0.25f, 0.025f, fray: 0.3f, innerJag: 0.3f, breakup: 0.25f, seed: 143), 10),
+                Spark(L("Núcleo", White, 0.91f, 0.13f, 0f, fray: 0.15f, innerJag: 0.15f, seed: 144), 16),
+            },
+        };
+
+        private static MeleeSlashFx.Layer Spark(MeleeSlashFx.Layer l, int count)
+        {
+            l.shardStyle = MeleeSlashFx.ShardStyle.Chispas;
+            l.shards = count;
+            l.shardDrift = 0.4f;
+            return l;
         }
 
         // ── Variantes ────────────────────────────────────────────────────────────────

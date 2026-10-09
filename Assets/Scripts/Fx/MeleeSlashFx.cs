@@ -60,6 +60,10 @@ namespace RedMagic.Fx
         [SerializeField] private float startAngle = 110f;
         [Tooltip("Barrido en sentido horario (si no, antihorario).")]
         [SerializeField] private bool clockwise = true;
+        [Tooltip("Se abre desde el centro hacia los dos lados (salpicaduras, anillos). Entonces Start Angle es el centro del arco.")]
+        [SerializeField] private bool symmetric;
+        [Tooltip("Escala X/Y de la forma antes de rotar (1,1 = círculo). Se multiplica por el stretch de Play.")]
+        [SerializeField] private Vector2 shapeStretch = Vector2.one;
 
         [Header("Tiempo")]
         [Tooltip("Duración total de una capa, en segundos.")]
@@ -118,6 +122,7 @@ namespace RedMagic.Fx
         private static readonly int ShardStyleId = Shader.PropertyToID("_ShardStyle");
         private static readonly int SeedId = Shader.PropertyToID("_Seed");
         private static readonly int AlphaId = Shader.PropertyToID("_Alpha");
+        private static readonly int SymmetricId = Shader.PropertyToID("_Symmetric");
 
         /// <summary>Duración total del tajo (última capa incluida), en segundos.</summary>
         public float TotalDuration
@@ -195,6 +200,7 @@ namespace RedMagic.Fx
             float start = clockwise ? 180f - startAngle : startAngle;
             float ang = Mathf.Atan2(p.y, p.x) * Mathf.Rad2Deg - start;
             ang = Mathf.Repeat(ang, 360f);
+            if (symmetric) return Mathf.Abs(Mathf.DeltaAngle(0f, ang)) / (arcDegrees * 0.5f) <= HeadProgress + 0.02f;
             float t = ang / arcDegrees;
             return t <= HeadProgress + 0.02f;
         }
@@ -276,7 +282,7 @@ namespace RedMagic.Fx
         {
             float s = worldRadius * _power;
             float sx = (clockwise ? -s : s) * (_mirrorX ? -1f : 1f);
-            transform.localScale = new Vector3(sx * _stretch.x, (_mirrorY ? -s : s) * _stretch.y, 1f);
+            transform.localScale = new Vector3(sx * _stretch.x * shapeStretch.x, (_mirrorY ? -s : s) * _stretch.y * shapeStretch.y, 1f);
         }
 
         private void UpdateLayers()
@@ -285,7 +291,7 @@ namespace RedMagic.Fx
             // Con escala X negativa el quad se espeja: el ángulo de inicio se espeja también para
             // que startAngle siga significando lo mismo en pantalla.
             float start = (clockwise ? 180f - startAngle : startAngle) * Mathf.Deg2Rad;
-            float span = arcDegrees * Mathf.Deg2Rad;
+            float span = (symmetric ? arcDegrees * 0.5f : arcDegrees) * Mathf.Deg2Rad;
             float thicknessMul = Mathf.Lerp(1f, _power, 0.5f);
 
             for (int i = 0; i < layers.Length && i < _materials.Length; i++)
@@ -321,6 +327,7 @@ namespace RedMagic.Fx
                 m.SetFloat(SeedId, l.seed);
                 float cut = _interrupted ? Mathf.Clamp01(_interruptLeft / _interruptDuration) : 1f;
                 m.SetFloat(AlphaId, visible ? fade * cut : 0f);
+                m.SetFloat(SymmetricId, symmetric ? 1f : 0f);
             }
         }
 

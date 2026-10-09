@@ -119,3 +119,10 @@ direction, `Play(power)` (power scales size/thickness — build upgrades). Poole
 **Tools ▸ RedMagic ▸ FX ▸ Tajo melee · Generar variantes + escena de prueba** (`Fx/Editor/MeleeSlashPack.cs`),
 which also writes `Assets/Scenes/Test/SlashPreview.unity` (all variants looping). Outer particles per layer: `shardStyle` Rombo / Rayas (speed lines) / Chispas (sparks off the head) / Trozos (chunks off the tail), compared in `SlashPreview_Exterior` (*Tajo melee · Variantes de parte exterior*). The quad is ±1.5 radii so they are not clipped. Planned on top: combo list
 (3→5 hits), build-upgraded variants, air/dash hits — keep visual params separate from gameplay params.
+- **Movement FX in the slash set**: jump / double jump / dash variants are `MeleeSlashFx` prefabs too
+  (`Assets/Prefabs/Fx/Player/Movement/Fx_{Jump,DoubleJump,Dash}_1..4`, *Movimiento · Generar variantes +
+  escena de prueba* → `Assets/Scenes/Test/MovementFxPreview.unity`). `MeleeSlashFx.symmetric` opens the arc from
+  its centre (`startAngle` = centre) both ways; `shapeStretch` is the prefab's own X/Y squash. `PlayerVfx`
+  accepts either a `MeleeSlashFx` prefab (pooled, mirrored by facing, dash one follows the player) or the old
+  `VfxOneShot` particles. Preview scenes are built **additively** and closed after saving — the generators
+  never save or close the user's open scenes.

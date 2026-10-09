@@ -138,3 +138,14 @@
   `gravityScale` is zeroed in `Awake`, the ledge probe and the vertical-tolerance gate are skipped,
   detection uses true distance, and chasing flies straight at the target on both axes while holding
   its altitude. Set it on the floating enemies; leave it off for anything that should walk.
+- **Melee combo (`Gameplay.PlayerAttack`)** — the basic sword is a list of `Hit`s (`combo`, plus optional
+  `airCombo`, empty = ground list), Inspector-first: per hit a `MeleeSlashFx` prefab (pooled), `rotation`,
+  `reverse` (mirror Y = sweep the other way), `power`, `offset`, damage/knockback multipliers, `windup`,
+  `recovery` (when the next hit may come out). Presses are buffered (`inputBuffer`); missing `chainWindow`
+  resets to hit 1; after the last hit `comboCooldown`. `UnlockedHits` caps how many entries are used (builds:
+  3 → 5). **The hitbox is the slash itself**: `MeleeSlashFx.Covers(point)` uses the shader's geometry
+  (arc, layer radii, mirrors, rotation) and only the part already swept, so what you see is what hits.
+  The slash follows the player while it plays; facing is locked per hit. Build stats `PlayerStat.MeleeDamage`
+  / `MeleeRange` (range scales slash + hitbox together). Default 3-hit combo with slash C written by
+  **Tools ▸ RedMagic ▸ FX ▸ Tajo melee · Combo del jugador** (`Gameplay/Editor/PlayerComboSetup`, overwrites).
+  Not yet: dash-specific hits, per-hit animations (player is still the old sprite rig).

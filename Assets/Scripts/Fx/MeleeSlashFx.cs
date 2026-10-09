@@ -92,6 +92,7 @@ namespace RedMagic.Fx
         private Material[] _materials;
         private float _time;
         private float _power = 1f;
+        private bool _mirrorX, _mirrorY;
         private bool _playing;
         private double _lastEditorTime;
 
@@ -127,13 +128,68 @@ namespace RedMagic.Fx
         }
 
         /// <summary>Reinicia el tajo. <paramref name="power"/> 1 = normal; &gt;1 más grande y grueso.</summary>
-        public void Play(float power = 1f)
+        public void Play(float power = 1f) => Play(power, false, false);
+
+        /// <summary>
+        /// Reinicia el tajo espejado: <paramref name="mirrorX"/> para quien mira a la izquierda,
+        /// <paramref name="mirrorY"/> invierte el sentido del barrido (un tajo descendente pasa a ascendente).
+        /// La rotación la pone quien lo lanza en el transform.
+        /// </summary>
+        public void Play(float power, bool mirrorX, bool mirrorY)
         {
             _power = Mathf.Max(0.1f, power);
+            _mirrorX = mirrorX;
+            _mirrorY = mirrorY;
             _time = 0f;
             _playing = true;
             ApplyScale();
             UpdateLayers();
+        }
+
+        /// <summary>Radio exterior del tajo en mundo con la potencia actual.</summary>
+        public float CurrentWorldRadius => worldRadius * _power * MaxLayerRadius;
+
+        /// <summary>Fracción del arco que la cabeza ya ha barrido (0..1).</summary>
+        public float HeadProgress => _playing ? HeadAt(_time / Mathf.Max(duration, 1e-4f)) : 0f;
+
+        /// <summary>True mientras la cabeza todavía avanza: la ventana de daño natural del tajo.</summary>
+        public bool IsSweeping => _playing && _time < duration * headPortion;
+
+        /// <summary>
+        /// ¿Cae <paramref name="worldPoint"/> dentro de lo que el tajo ya ha barrido? Misma
+        /// geometría que el shader (arco, radio y grosor de las capas, espejos y rotación del
+        /// transform), así que la zona de daño coincide con lo que se ve.
+        /// </summary>
+        public bool Covers(Vector2 worldPoint, float radialMargin = 0.1f)
+        {
+            if (!_playing) return false;
+            Vector2 p = transform.InverseTransformPoint(worldPoint);   // en radios (1 = worldRadius·power)
+            float r = p.magnitude;
+            float outer = MaxLayerRadius + radialMargin;
+            float inner = Mathf.Max(0f, MinInnerRadius - radialMargin - 0.25f);
+            if (r > outer || r < inner) return false;
+
+            float start = clockwise ? 180f - startAngle : startAngle;
+            float ang = Mathf.Atan2(p.y, p.x) * Mathf.Rad2Deg - start;
+            ang = Mathf.Repeat(ang, 360f);
+            float t = ang / arcDegrees;
+            return t <= HeadProgress + 0.02f;
+        }
+
+        private float MaxLayerRadius
+        {
+            get { float m = 0f; foreach (var l in layers) m = Mathf.Max(m, l.radius); return m > 0f ? m : 1f; }
+        }
+
+        private float MinInnerRadius
+        {
+            get { float m = 1f; foreach (var l in layers) m = Mathf.Min(m, l.radius - l.thickness); return m; }
+        }
+
+        private float HeadAt(float local)
+        {
+            float headT = Mathf.Clamp01(local / headPortion);
+            return 1f - (1f - headT) * (1f - headT) * (1f - headT);
         }
 
         private void OnEnable()
@@ -195,7 +251,8 @@ namespace RedMagic.Fx
         private void ApplyScale()
         {
             float s = worldRadius * _power;
-            transform.localScale = new Vector3(clockwise ? -s : s, s, 1f);
+            float sx = (clockwise ? -s : s) * (_mirrorX ? -1f : 1f);
+            transform.localScale = new Vector3(sx, _mirrorY ? -s : s, 1f);
         }
 
         private void UpdateLayers()
@@ -213,8 +270,8 @@ namespace RedMagic.Fx
                 var m = _materials[i];
                 float local = duration > 0f ? (_time / duration) - l.delay : 1f;
 
-                float headT = Mathf.Clamp01(local / headPortion);
-                float head = 1f - (1f - headT) * (1f - headT) * (1f - headT);   // ease-out cúbico
+
+                float head = HeadAt(local);                                      // ease-out cúbico
                 float tailT = Mathf.Clamp01((local - tailStart) / Mathf.Max(1f - tailStart, 1e-3f));
                 float tail = tailT * tailT;                                      // ease-in
                 float fade = fadePortion > 0f ? Mathf.Clamp01((1f - local) / fadePortion) : 1f;

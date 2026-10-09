@@ -147,6 +147,8 @@ stat.move_speed = Velocidad
 stat.dash_distance = Distancia de dash
 stat.jump_height = Altura de salto
 stat.cooldown_rate = Ritmo de enfriamiento
+stat.melee_damage = Daño cuerpo a cuerpo
+stat.melee_range = Alcance cuerpo a cuerpo
 
 # --- modificadores
 modifier.element = El disparo pasa a ser de {0}.

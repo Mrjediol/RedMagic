@@ -147,6 +147,8 @@ stat.move_speed = Move speed
 stat.dash_distance = Dash distance
 stat.jump_height = Jump height
 stat.cooldown_rate = Cooldown rate
+stat.melee_damage = Melee damage
+stat.melee_range = Melee range
 
 # --- modifiers
 modifier.element = Your shot becomes {0}.

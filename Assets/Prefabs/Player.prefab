@@ -269,12 +269,42 @@ MonoBehaviour:
   actionMapName: Player
   attackActionName: Attack
   damage: 25
-  cooldown: 0.45
-  windup: 0.25
-  activeTime: 0.1
-  knockbackMultiplier: 1
-  hitboxOffset: {x: 0.49, y: 0.1}
-  hitboxSize: {x: 1.1, y: 1}
+  combo:
+  - label: "1 \xB7 Descendente"
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: 0
+    reverse: 0
+    power: 0.85
+    offset: {x: 0.3, y: 0.3}
+    damageMultiplier: 1
+    knockbackMultiplier: 0.6
+    windup: 0.03
+    recovery: 0.22
+  - label: "2 \xB7 Ascendente"
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: 0
+    reverse: 1
+    power: 0.9
+    offset: {x: 0.3, y: 0.1}
+    damageMultiplier: 1
+    knockbackMultiplier: 0.6
+    windup: 0.03
+    recovery: 0.24
+  - label: "3 \xB7 Remate"
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: -25
+    reverse: 0
+    power: 1.25
+    offset: {x: 0.4, y: 0.3}
+    damageMultiplier: 1.8
+    knockbackMultiplier: 2
+    windup: 0.08
+    recovery: 0.38
+  airCombo: []
+  unlockedHits: 3
+  chainWindow: 0.35
+  inputBuffer: 0.2
+  comboCooldown: 0.35
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295

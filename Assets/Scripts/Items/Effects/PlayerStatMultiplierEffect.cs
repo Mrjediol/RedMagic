@@ -36,6 +36,8 @@ namespace RedMagic.Items
             PlayerStat.DashDistance => Loc.Get("stat.dash_distance"),
             PlayerStat.JumpHeight => Loc.Get("stat.jump_height"),
             PlayerStat.CooldownRate => Loc.Get("stat.cooldown_rate"),
+            PlayerStat.MeleeDamage => Loc.Get("stat.melee_damage"),
+            PlayerStat.MeleeRange => Loc.Get("stat.melee_range"),
             _ => stat.ToString(),
         };
     }

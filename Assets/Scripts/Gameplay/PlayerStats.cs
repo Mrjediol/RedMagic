@@ -20,6 +20,12 @@ namespace RedMagic.Gameplay
         /// vacía un 50% más rápido. No cambia el cooldown base, sólo lo rápido que corre.
         /// </summary>
         CooldownRate,
+
+        /// <summary>Daño de los golpes cuerpo a cuerpo (<c>PlayerAttack</c>).</summary>
+        MeleeDamage,
+
+        /// <summary>Tamaño de los tajos cuerpo a cuerpo: agranda el tajo y su zona de daño a la vez.</summary>
+        MeleeRange,
     }
 
     /// <summary>

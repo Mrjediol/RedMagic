@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-09T15:56:31.300Z",
+  "updated": "2026-10-09T20:42:27.752Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -326,6 +326,35 @@
             {
               "id": "fsc214d",
               "text": "Solución para tajos que se salen de pantalla por abajo",
+              "done": false
+            }
+          ]
+        },
+        {
+          "id": "ataque-distancia-fx",
+          "text": "Ataque a distancia del player con proyectiles hechos de efectos",
+          "note": "Mismo proceso que el dash: referencia → bocetos HTML animados → port a Unity con FxCanvas (docs/fx-proceso-bocetos.md). Proyectiles sin sprite, sólo efectos, con la paleta del set.",
+          "done": false,
+          "doc": "docs/fx-proceso-bocetos.md",
+          "steps": [
+            {
+              "id": "nrztych",
+              "text": "Referencias del usuario y descripción por fases",
+              "done": false
+            },
+            {
+              "id": "87zz4or",
+              "text": "Bocetos HTML animados (varios conceptos, capas, cámara lenta)",
+              "done": false
+            },
+            {
+              "id": "cr387zr",
+              "text": "Port a Unity con FxCanvas + impacto + pooling",
+              "done": false
+            },
+            {
+              "id": "4itr247",
+              "text": "Verificación con render fuera de pantalla y checklist para el usuario",
               "done": false
             }
           ]

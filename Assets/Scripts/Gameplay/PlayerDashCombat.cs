@@ -22,6 +22,8 @@ namespace RedMagic.Gameplay
         [Header("Esquiva")]
         [Tooltip("I-frames sólo justo al empezar el dash (segundos). El resto del dash se puede recibir daño, y recibirlo corta el dash (salvo item \"Dash imparable\").")]
         [SerializeField, Min(0f)] private float startInvulnerability = 0.06f;
+        [Tooltip("Durante el dash se ignora el choque físico con enemigos a esta distancia por delante/detrás (no los empuja, los atraviesa).")]
+        [SerializeField, Min(0f)] private float passThroughLookAhead = 1.2f;
 
         [Header("Daño (mejora)")]
         [Tooltip("Margen alrededor del collider del jugador para el golpe del dash.")]
@@ -46,6 +48,8 @@ namespace RedMagic.Gameplay
             _health = GetComponent<Health>();
             _body = GetComponent<Collider2D>();
             _filter = new ContactFilter2D { useLayerMask = true, layerMask = hitLayers, useTriggers = true };
+            _solidFilter = new ContactFilter2D { useTriggers = false };
+            GetComponentsInChildren(true, _ownColliders);
         }
 
         private void OnEnable()
@@ -60,6 +64,7 @@ namespace RedMagic.Gameplay
         {
             _movement.Dashed -= OnDashed;
             if (_health != null) _health.Damaged -= OnDamaged;
+            RestoreAllCollisions();
         }
 
         private void OnDamaged(float amount) => _movement.CancelDash();
@@ -75,6 +80,7 @@ namespace RedMagic.Gameplay
 
         private void FixedUpdate()
         {
+            UpdatePassThrough();
             if (!_movement.IsDashing || _body == null) return;
             float damage = PlayerStats.DashDamage + testDamage;
             if (damage <= 0f) return;
@@ -95,6 +101,59 @@ namespace RedMagic.Gameplay
             }
         }
 
+
+        // ------------------------------------------------------------------ atravesar enemigos
+
+        // El jugador es cinemático y los enemigos dinámicos: al cruzarlos los empujaría. Durante el
+        // dash se ignora la colisión física con los enemigos cercanos y se devuelve cuando ya no se
+        // solapan (si se devolviera dentro, el motor los separaría de golpe).
+        private readonly List<Collider2D> _ignored = new List<Collider2D>();
+        private readonly List<Collider2D> _ownColliders = new List<Collider2D>();
+        private readonly List<Collider2D> _near = new List<Collider2D>();
+        private ContactFilter2D _solidFilter;
+
+        private void UpdatePassThrough()
+        {
+            if (_body == null) return;
+            var b = _body.bounds;
+
+            if (_movement.IsDashing)
+            {
+                var size = (Vector2)b.size + new Vector2(passThroughLookAhead * 2f, 0.4f);
+                _near.Clear();
+                Physics2D.OverlapBox(b.center, size, 0f, _solidFilter, _near);
+                foreach (var col in _near)
+                {
+                    if (col == null || col.isTrigger || _ignored.Contains(col)) continue;
+                    if (col.transform == transform || col.transform.IsChildOf(transform)) continue;
+                    var h = col.GetComponentInParent<Health>();
+                    if (h == null || h == _health) continue;
+                    SetIgnored(col, true);
+                    _ignored.Add(col);
+                }
+            }
+
+            for (int i = _ignored.Count - 1; i >= 0; i--)
+            {
+                var col = _ignored[i];
+                bool gone = col == null || !col.enabled || !col.gameObject.activeInHierarchy;
+                if (!gone && (_movement.IsDashing || col.bounds.Intersects(b))) continue;
+                if (!gone) SetIgnored(col, false);
+                _ignored.RemoveAt(i);
+            }
+        }
+
+        private void SetIgnored(Collider2D other, bool ignore)
+        {
+            foreach (var own in _ownColliders)
+                if (own != null && !own.isTrigger) Physics2D.IgnoreCollision(own, other, ignore);
+        }
+
+        private void RestoreAllCollisions()
+        {
+            foreach (var col in _ignored) if (col != null) SetIgnored(col, false);
+            _ignored.Clear();
+        }
         /// <summary>Impacto visual en un enemigo golpeado (dash o picado). Null-safe.</summary>
         public static void SpawnHitEffect(GameObject prefab, Vector2 point, Vector2 direction)
         {

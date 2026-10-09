@@ -1,0 +1,34 @@
+var prev = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+var sc = UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene, UnityEditor.SceneManagement.NewSceneMode.Additive);
+UnityEngine.SceneManagement.SceneManager.SetActiveScene(sc);
+var camGo = new GameObject("cam"); var cam = camGo.AddComponent<Camera>(); cam.orthographic = true; cam.orthographicSize = 4f; cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.29f,0.29f,0.29f); camGo.transform.position = new Vector3(0,0.5f,-10);
+var ground = GameObject.CreatePrimitive(PrimitiveType.Quad); ground.transform.position = new Vector3(0,-2.5f,1); ground.transform.localScale = new Vector3(20,2,1);
+var bf = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+var tTrail = typeof(RedMagic.Fx.DashTrailFx); var tImp = typeof(RedMagic.Fx.ImpactBurstFx);
+// dash horizontal (sustituye)
+var tgt = new GameObject("tgt"); tgt.transform.position = new Vector3(-5, 0.5f, 0);
+var dash = (GameObject)UnityEngine.Object.Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Fx/Player/Dash/Fx_DashTrail_SUBTYPE.prefab"));
+var fx = dash.GetComponent<RedMagic.Fx.DashTrailFx>();
+var body = GameObject.CreatePrimitive(PrimitiveType.Quad); body.transform.SetParent(tgt.transform,false); body.transform.localScale = new Vector3(0.6f,1.2f,1);
+fx.Begin(tgt.transform, Vector2.zero, Vector2.right, 1f);
+float dt = 0.016f, T = TIME, endAt = 0.22f; bool ended = false;
+for (float t = 0; t < T; t += dt) {
+  if (t < endAt) tgt.transform.position = new Vector3(Mathf.Lerp(-5, 3, 1 - Mathf.Pow(1 - t/endAt, 3)), 0.5f, 0);
+  else if (!ended) { fx.End(); ended = true; }
+  tTrail.GetField("_t", bf).SetValue(fx, (float)tTrail.GetField("_t", bf).GetValue(fx) + dt);
+  var head = (Vector2)tgt.transform.position;
+  if (!ended) { var step = head - (Vector2)tTrail.GetField("_head", bf).GetValue(fx); if (step.sqrMagnitude > 1e-6f) tTrail.GetField("_dir", bf).SetValue(fx, step.normalized); tTrail.GetField("_head", bf).SetValue(fx, head); var path = tTrail.GetField("_path", bf).GetValue(fx); path.GetType().GetMethod("Add").Invoke(path, new object[]{ System.ValueTuple.Create((float)tTrail.GetField("_t", bf).GetValue(fx), head) }); }
+}
+tTrail.GetMethod("Draw", bf).Invoke(fx, null);
+// impactos
+var gi = (GameObject)UnityEngine.Object.Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Fx/Player/Dash/Fx_GroundImpact.prefab"));
+var g = gi.GetComponent<RedMagic.Fx.ImpactBurstFx>(); tImp.GetField("shakeAmplitude", bf).SetValue(g, 0f); g.Play(new Vector2(-3.5f,-1.5f), Vector2.down); tImp.GetField("_t", bf).SetValue(g, IMPT); tImp.GetMethod("Draw", bf).Invoke(g, null);
+var hi = (GameObject)UnityEngine.Object.Instantiate(UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Fx/Player/Dash/Fx_EnemyHitImpact.prefab"));
+var h = hi.GetComponent<RedMagic.Fx.ImpactBurstFx>(); h.Play(new Vector2(4.5f,-1.2f), Vector2.right); tImp.GetField("_t", bf).SetValue(h, IMPT*0.5f); tImp.GetMethod("Draw", bf).Invoke(h, null);
+var rt = new RenderTexture(1600, 900, 24); cam.targetTexture = rt; cam.Render();
+RenderTexture.active = rt; var tex = new Texture2D(1600, 900, TextureFormat.RGB24, false); tex.ReadPixels(new Rect(0,0,1600,900),0,0); tex.Apply();
+System.IO.File.WriteAllBytes("C:/Users/mrjed/AppData/Local/Temp/claude/E--redmagic-Proyecto-RedMagic/5e116490-daaa-4325-8248-9aebe8daf5e5/scratchpad/sim_OUT.png", tex.EncodeToPNG());
+RenderTexture.active = null; cam.targetTexture = null;
+UnityEngine.SceneManagement.SceneManager.SetActiveScene(prev);
+UnityEditor.SceneManagement.EditorSceneManager.CloseScene(sc, true);
+return "ok";

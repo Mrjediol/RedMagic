@@ -77,6 +77,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 |---|---|
 | Object pools, spawning | `docs/architecture/pooling.md` |
 | Placeholder FX → real art (`Assets/Prefab/Fx/`) | `docs/architecture/fx-placeholders.md` |
+| Code-drawn FX (dash, impacts, new projectiles): sketch → Unity process | `docs/fx-proceso-bocetos.md` |
 | Singletons, pause, `CanPlayerAct` | `docs/architecture/singletons.md` |
 | Scene refs, `SceneReference` | `docs/architecture/scene-references.md` |
 | Runs, worlds, sections, `RunManager` | `docs/architecture/run-world.md` |

@@ -19,12 +19,14 @@ namespace RedMagic.Fx
     [DisallowMultipleComponent]
     public sealed class MeleeSlashFx : MonoBehaviour
     {
+        public enum ShardStyle { Rombo = 0, Rayas = 1, Chispas = 2, Trozos = 3 }
+
         [Serializable]
         public sealed class Layer
         {
             public string label = "Capa";
             public Color color = Color.white;
-            [Tooltip("Radio del borde exterior (1 = borde del quad).")]
+            [Tooltip("Radio del borde exterior (1 = worldRadius).")]
             [Range(0.1f, 1f)] public float radius = 0.85f;
             [Tooltip("Grosor máximo de la media luna, en la misma escala que el radio.")]
             [Range(0f, 0.8f)] public float thickness = 0.25f;
@@ -44,6 +46,8 @@ namespace RedMagic.Fx
             [Tooltip("Esquirlas sueltas fuera del borde (0 = ninguna).")]
             [Range(0, 40)] public int shards;
             [Range(0f, 1f)] public float shardDrift = 0.25f;
+            [Tooltip("Rombo: esquirlas sueltas · Rayas: líneas de velocidad pegadas al borde · Chispas: salen despedidas de la cabeza · Trozos: se desprenden de la cola.")]
+            public ShardStyle shardStyle = ShardStyle.Rombo;
             public float seed;
         }
 
@@ -107,6 +111,7 @@ namespace RedMagic.Fx
         private static readonly int BreakupId = Shader.PropertyToID("_Breakup");
         private static readonly int ShardsId = Shader.PropertyToID("_Shards");
         private static readonly int ShardDriftId = Shader.PropertyToID("_ShardDrift");
+        private static readonly int ShardStyleId = Shader.PropertyToID("_ShardStyle");
         private static readonly int SeedId = Shader.PropertyToID("_Seed");
         private static readonly int AlphaId = Shader.PropertyToID("_Alpha");
 
@@ -231,6 +236,7 @@ namespace RedMagic.Fx
                 m.SetFloat(BreakupId, l.breakup);
                 m.SetFloat(ShardsId, l.shards);
                 m.SetFloat(ShardDriftId, l.shardDrift);
+                m.SetFloat(ShardStyleId, (float)l.shardStyle);
                 m.SetFloat(SeedId, l.seed);
                 m.SetFloat(AlphaId, visible ? fade : 0f);
             }
@@ -301,7 +307,7 @@ namespace RedMagic.Fx
                 _quad = new Mesh { name = "SlashQuad", hideFlags = HideFlags.HideAndDontSave };
                 _quad.vertices = new[]
                 {
-                    new Vector3(-1, -1), new Vector3(1, -1), new Vector3(-1, 1), new Vector3(1, 1)
+                    new Vector3(-1.5f, -1.5f), new Vector3(1.5f, -1.5f), new Vector3(-1.5f, 1.5f), new Vector3(1.5f, 1.5f)
                 };
                 _quad.uv = new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(1, 1) };
                 _quad.triangles = new[] { 0, 2, 1, 2, 3, 1 };

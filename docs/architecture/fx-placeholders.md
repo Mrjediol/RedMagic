@@ -117,5 +117,5 @@ shards give the fanned-tongue look. Independent of the attacker: place at the hi
 direction, `Play(power)` (power scales size/thickness — build upgrades). Pooled via `PrefabPool`, restarts in
 `OnEnable`, despawns itself. Variants = prefabs in `Assets/Prefabs/Fx/Player/Slash/`, built (overwritten) by
 **Tools ▸ RedMagic ▸ FX ▸ Tajo melee · Generar variantes + escena de prueba** (`Fx/Editor/MeleeSlashPack.cs`),
-which also writes `Assets/Scenes/Test/SlashPreview.unity` (all variants looping). Planned on top: combo list
+which also writes `Assets/Scenes/Test/SlashPreview.unity` (all variants looping). Outer particles per layer: `shardStyle` Rombo / Rayas (speed lines) / Chispas (sparks off the head) / Trozos (chunks off the tail), compared in `SlashPreview_Exterior` (*Tajo melee · Variantes de parte exterior*). The quad is ±1.5 radii so they are not clipped. Planned on top: combo list
 (3→5 hits), build-upgraded variants, air/dash hits — keep visual params separate from gameplay params.

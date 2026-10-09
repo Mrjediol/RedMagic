@@ -57,8 +57,57 @@ namespace RedMagic.Fx.EditorTools
             for (int i = 0; i < variants.Length; i++)
                 prefabs[i] = BuildPrefab(variants[i].name, variants[i].preset, shader);
 
-            BuildScene(prefabs);
+            BuildScene(prefabs, ScenePath, new[]
+            {
+                new Vector3(-5.5f, 3.2f), new Vector3(5.5f, 3.2f),
+                new Vector3(-5.5f, -3.6f), new Vector3(5.5f, -3.6f),
+            }, 7f);
             Debug.Log($"[MeleeSlashPack] {prefabs.Length} variantes en {Folder}, escena {ScenePath}.");
+        }
+
+        private const string ExteriorScenePath = "Assets/Scenes/Test/SlashPreview_Exterior.unity";
+
+        /// <summary>
+        /// La variante A con cada estilo de parte exterior (y sin ella), para elegir a ojo. Las
+        /// partículas van en el núcleo y en la capa cian, del color de cada capa.
+        /// </summary>
+        [MenuItem("Tools/RedMagic/FX/Tajo melee · Variantes de parte exterior")]
+        public static void GenerateExterior()
+        {
+            EnsureFolder(Folder);
+            var shader = Shader.Find("RedMagic/Melee Slash Layer");
+            if (shader == null) { Debug.LogError("[MeleeSlashPack] Falta el shader RedMagic/Melee Slash Layer."); return; }
+
+            var variants = new (string name, Preset preset)[]
+            {
+                ("Fx_Slash_A_Ext1_Rombos", Exterior(Viento(), MeleeSlashFx.ShardStyle.Rombo, 14, 0)),
+                ("Fx_Slash_A_Ext2_Rayas", Exterior(Viento(), MeleeSlashFx.ShardStyle.Rayas, 16, 12)),
+                ("Fx_Slash_A_Ext3_Chispas", Exterior(Viento(), MeleeSlashFx.ShardStyle.Chispas, 22, 14)),
+                ("Fx_Slash_A_Ext4_Trozos", Exterior(Viento(), MeleeSlashFx.ShardStyle.Trozos, 18, 14)),
+                ("Fx_Slash_A_Ext5_Sin", Exterior(Viento(), MeleeSlashFx.ShardStyle.Rombo, 0, 0)),
+            };
+            var prefabs = new GameObject[variants.Length];
+            for (int i = 0; i < variants.Length; i++)
+                prefabs[i] = BuildPrefab(variants[i].name, variants[i].preset, shader);
+
+            var slots = new[]
+            {
+                new Vector3(-12f, 4.5f), new Vector3(0f, 4.5f), new Vector3(12f, 4.5f),
+                new Vector3(-6f, -5f), new Vector3(6f, -5f),
+            };
+            BuildScene(prefabs, ExteriorScenePath, slots, 10.5f);
+            Debug.Log($"[MeleeSlashPack] {prefabs.Length} variantes de parte exterior, escena {ExteriorScenePath}.");
+        }
+
+        private static Preset Exterior(Preset p, MeleeSlashFx.ShardStyle style, int coreCount, int cyanCount)
+        {
+            foreach (var l in p.layers)
+            {
+                l.shardStyle = style;
+                l.shards = l.label == "Núcleo" ? coreCount : l.label == "Cian" ? cyanCount : 0;
+                l.shardDrift = style == MeleeSlashFx.ShardStyle.Rayas ? 0.2f : 0.5f;
+            }
+            return p;
         }
 
         private static GameObject BuildPrefab(string name, Preset preset, Shader shader)
@@ -76,7 +125,7 @@ namespace RedMagic.Fx.EditorTools
             return prefab;
         }
 
-        private static void BuildScene(GameObject[] prefabs)
+        private static void BuildScene(GameObject[] prefabs, string scenePath, Vector3[] slots, float orthoSize)
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -84,16 +133,11 @@ namespace RedMagic.Fx.EditorTools
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
             var cam = camGo.AddComponent<Camera>();
             cam.orthographic = true;
-            cam.orthographicSize = 7f;
+            cam.orthographicSize = orthoSize;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.13f, 0.14f, 0.18f);
             camGo.transform.position = new Vector3(0f, 0f, -10f);
 
-            var slots = new[]
-            {
-                new Vector3(-5.5f, 3.2f), new Vector3(5.5f, 3.2f),
-                new Vector3(-5.5f, -3.6f), new Vector3(5.5f, -3.6f),
-            };
             for (int i = 0; i < prefabs.Length && i < slots.Length; i++)
             {
                 var inst = (GameObject)PrefabUtility.InstantiatePrefab(prefabs[i]);
@@ -114,7 +158,7 @@ namespace RedMagic.Fx.EditorTools
                 mr.sortingOrder = 1;
             }
 
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            EditorSceneManager.SaveScene(scene, scenePath);
         }
 
         // ── Variantes ────────────────────────────────────────────────────────────────

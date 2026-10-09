@@ -1,0 +1,150 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7038597626448683089
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4298949469302754221}
+  - component: {fileID: 7558065270347326004}
+  m_Layer: 0
+  m_Name: Fx_Slash_C_Tormenta
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4298949469302754221
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7038597626448683089}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: -2.5, y: 2.5, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7558065270347326004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7038597626448683089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c2424cc61803da4a9bc989c228518f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Fx.MeleeSlashFx
+  worldRadius: 2.5
+  arcDegrees: 260
+  startAngle: 110
+  clockwise: 1
+  duration: 0.42
+  headPortion: 0.45
+  tailStart: 0.25
+  fadePortion: 0.2
+  layers:
+  - label: Estela morada
+    color: {r: 0.46, g: 0.22, b: 0.86, a: 1}
+    radius: 0.99
+    thickness: 0.16
+    delay: 0.16
+    headTaper: 0.6
+    tailTaper: 1.6
+    fraySpread: 0.6
+    frayBands: 10
+    outerJag: 0.05
+    innerJag: 0.7
+    breakup: 0.5
+    shards: 10
+    shardDrift: 0.35
+    seed: 11
+  - label: Azul
+    color: {r: 0.1, g: 0.36, b: 0.86, a: 1}
+    radius: 0.93
+    thickness: 0.6
+    delay: 0.09
+    headTaper: 0.6
+    tailTaper: 1.6
+    fraySpread: 0.55
+    frayBands: 9
+    outerJag: 0.05
+    innerJag: 0.6
+    breakup: 0.5
+    shards: 0
+    shardDrift: 0.25
+    seed: 12
+  - label: Cian
+    color: {r: 0.16, g: 0.76, b: 1, a: 1}
+    radius: 0.9
+    thickness: 0.5
+    delay: 0.06
+    headTaper: 0.6
+    tailTaper: 1.6
+    fraySpread: 0.5
+    frayBands: 8
+    outerJag: 0.05
+    innerJag: 0.55
+    breakup: 0.45
+    shards: 0
+    shardDrift: 0.25
+    seed: 13
+  - label: Cian 2
+    color: {r: 0.16, g: 0.76, b: 1, a: 1}
+    radius: 0.72
+    thickness: 0.28
+    delay: 0.11
+    headTaper: 0.6
+    tailTaper: 1.6
+    fraySpread: 0.5
+    frayBands: 6
+    outerJag: 0.05
+    innerJag: 0.6
+    breakup: 0.5
+    shards: 0
+    shardDrift: 0.25
+    seed: 14
+  - label: Cian claro
+    color: {r: 0.62, g: 0.95, b: 1, a: 1}
+    radius: 0.88
+    thickness: 0.38
+    delay: 0.03
+    headTaper: 0.6
+    tailTaper: 1.6
+    fraySpread: 0.4
+    frayBands: 7
+    outerJag: 0.05
+    innerJag: 0.45
+    breakup: 0.3
+    shards: 0
+    shardDrift: 0.25
+    seed: 15
+  - label: "N\xFAcleo"
+    color: {r: 1, g: 1, b: 1, a: 1}
+    radius: 0.87
+    thickness: 0.24
+    delay: 0
+    headTaper: 0.6
+    tailTaper: 1.6
+    fraySpread: 0.3
+    frayBands: 5
+    outerJag: 0.05
+    innerJag: 0.3
+    breakup: 0.2
+    shards: 24
+    shardDrift: 0.25
+    seed: 16
+  shader: {fileID: 4800000, guid: 7f6a645704bf6124693351cbe8d47f9e, type: 3}
+  sortingLayer: Characters
+  baseSortingOrder: 40
+  previewLoop: 0
+  previewGap: 0.5

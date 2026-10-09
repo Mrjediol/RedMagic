@@ -107,3 +107,15 @@ swapping in real art is then: open the prefab, delete the shape sprite, drop the
   `chargeVfxPrefab` (a pooled loop at the muzzle while charging, scaled 0.35 → 1 of the prefab's size by charge).
   A beam prefab keeps `FxPlaceholderStyle` on purpose: `ShotBeam` then tints it with the weapon / element colour and
   fades it out — its art is baked near-white for that.
+
+## Melee slash (`Fx.MeleeSlashFx`)
+Procedural layered slash, no texture: each layer is a hidden quad child (`HideAndDontSave`, rebuilt from
+the `layers` list, so Inspector edits show instantly — also in edit mode with `previewLoop`) drawn by
+`RedMagic/Melee Slash Layer` (`Assets/Art/Fx/Shaders/MeleeSlashLayer.shader`): a crescent along an arc whose
+`_Head`/`_Tail` the component drives; per-layer delay/radius/thickness + tail fray, inner lobes, breakup and
+shards give the fanned-tongue look. Independent of the attacker: place at the hit origin, rotate to the
+direction, `Play(power)` (power scales size/thickness — build upgrades). Pooled via `PrefabPool`, restarts in
+`OnEnable`, despawns itself. Variants = prefabs in `Assets/Prefabs/Fx/Player/Slash/`, built (overwritten) by
+**Tools ▸ RedMagic ▸ FX ▸ Tajo melee · Generar variantes + escena de prueba** (`Fx/Editor/MeleeSlashPack.cs`),
+which also writes `Assets/Scenes/Test/SlashPreview.unity` (all variants looping). Planned on top: combo list
+(3→5 hits), build-upgraded variants, air/dash hits — keep visual params separate from gameplay params.

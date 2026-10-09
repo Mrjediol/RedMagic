@@ -28,12 +28,12 @@ namespace RedMagic.Gameplay.EditorTools
 
             var hits = new[]
             {
-                new HitDef { label = "1 · Descendente", rotation = 0f, reverse = false, power = 0.85f,
-                    offset = new Vector2(0.3f, 0.3f), stretch = Vector2.one, damage = 1f, knockback = 0.6f, windup = 0.03f, recovery = 0.32f },
-                new HitDef { label = "2 · Ascendente", rotation = 15f, reverse = true, power = 0.9f,
-                    offset = new Vector2(0.3f, 0.1f), stretch = Vector2.one, damage = 1f, knockback = 0.6f, windup = 0.04f, recovery = 0.34f },
-                new HitDef { label = "3 · Diagonal amplio", rotation = 35f, reverse = false, power = 1.1f,
-                    offset = new Vector2(0.6f, 0.2f), stretch = new Vector2(1.3f, 0.95f), damage = 1.6f, knockback = 2f, windup = 0.12f, recovery = 0.42f },
+                new HitDef { label = "1 · Descendente", rotation = 0f, reverse = false, power = 1.05f,
+                    offset = new Vector2(0.25f, 0.15f), stretch = new Vector2(1.05f, 1.25f), damage = 1f, knockback = 0.6f, windup = 0.03f, recovery = 0.32f },
+                new HitDef { label = "2 · Ascendente", rotation = 15f, reverse = true, power = 1.05f,
+                    offset = new Vector2(0.25f, 0.05f), stretch = new Vector2(1.05f, 1.25f), damage = 1f, knockback = 0.6f, windup = 0.04f, recovery = 0.34f },
+                new HitDef { label = "3 · Diagonal amplio", rotation = 35f, reverse = false, power = 1.15f,
+                    offset = new Vector2(0.35f, 0.15f), stretch = new Vector2(1.3f, 1.1f), damage = 1.6f, knockback = 2f, windup = 0.12f, recovery = 0.42f },
                 new HitDef { label = "4 · Vertical ascendente", rotation = 0f, reverse = true, power = 1f,
                     offset = new Vector2(0.7f, 0.6f), stretch = new Vector2(1.15f, 1.45f), damage = 1.2f, knockback = 1f, windup = 0.05f, recovery = 0.34f },
                 new HitDef { label = "5 · Gran remate", rotation = -20f, reverse = false, power = 1.45f,

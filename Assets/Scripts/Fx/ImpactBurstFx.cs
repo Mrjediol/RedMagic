@@ -166,7 +166,7 @@ namespace RedMagic.Fx
                 bool high = i < puffs / 2;
                 float spread = high ? 110f : 160f;
                 var p = _pos + new Vector2((R.Next() - 0.5f) * spread * grow, (high ? 18f + R.Next() * 30f : 4f + R.Next() * 10f) * grow + t * 20f) * px;
-                float r = (14f + R.Next() * 14f) * (0.5f + grow * 0.7f) * px;
+                float r = (10f + R.Next() * 9f) * (0.5f + grow * 0.6f) * px;
                 var c = i % 2 == 0 ? dust : dustDark;
                 var canvas = high ? _back : _front;
                 canvas.Disc(p + new Vector2(0f, -r * 0.15f), r * 1.05f, Fade(dustDark, fade), Fade(dustDark, fade * 0.6f), 18);   // sombra

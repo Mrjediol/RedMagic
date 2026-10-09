@@ -303,12 +303,48 @@ MonoBehaviour:
     knockbackMultiplier: 2.2
     windup: 0.14
     recovery: 0.45
+  - label: "4 \xB7 Vertical ascendente"
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: 0
+    reverse: 1
+    power: 1
+    offset: {x: 0.6, y: 0.6}
+    stretch: {x: 0.75, y: 1.4}
+    damageMultiplier: 1.2
+    knockbackMultiplier: 1
+    windup: 0.05
+    recovery: 0.34
+  - label: "5 \xB7 Gran remate"
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: -20
+    reverse: 0
+    power: 1.45
+    offset: {x: 0.6, y: 0.4}
+    stretch: {x: 1.25, y: 1}
+    damageMultiplier: 2.6
+    knockbackMultiplier: 3
+    windup: 0.18
+    recovery: 0.5
   airCombo: []
   unlockedHits: 3
   chainWindow: 0.35
   inputBuffer: 0.2
   comboCooldown: 0.35
   interruptFade: 0.06
+  dashHit:
+    label: Dash
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: 0
+    reverse: 0
+    power: 0.95
+    offset: {x: 0.7, y: 0}
+    stretch: {x: 2, y: 0.45}
+    damageMultiplier: 1.4
+    knockbackMultiplier: 1.5
+    windup: 0
+    recovery: 0.25
+  dashGrace: 0.12
+  dashChainsTo: 1
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295

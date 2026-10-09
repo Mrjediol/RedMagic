@@ -5,7 +5,7 @@ using UnityEngine;
 namespace RedMagic.Gameplay.EditorTools
 {
     /// <summary>
-    /// Escribe el combo de 3 golpes por defecto en <c>PlayerAttack</c> de <c>Player.prefab</c>,
+    /// Escribe el combo por defecto (5 golpes, 3 desbloqueados) y el golpe de dash en <c>PlayerAttack</c> de <c>Player.prefab</c>,
     /// con el tajo C (Tormenta). Sobrescribe la lista: punto de partida, el ajuste fino se hace
     /// después en el Inspector del prefab.
     /// </summary>
@@ -20,7 +20,7 @@ namespace RedMagic.Gameplay.EditorTools
             public Vector2 offset, stretch; public float damage, knockback, windup, recovery;
         }
 
-        [MenuItem("Tools/RedMagic/FX/Tajo melee · Combo del jugador (3 golpes, tajo C)")]
+        [MenuItem("Tools/RedMagic/FX/Tajo melee · Combo del jugador (5 golpes + dash, tajo C)")]
         public static void Setup()
         {
             var slash = AssetDatabase.LoadAssetAtPath<MeleeSlashFx>(SlashPath);
@@ -34,7 +34,14 @@ namespace RedMagic.Gameplay.EditorTools
                     offset = new Vector2(0.3f, 0.1f), stretch = Vector2.one, damage = 1f, knockback = 0.6f, windup = 0.04f, recovery = 0.34f },
                 new HitDef { label = "3 · Remate horizontal", rotation = 0f, reverse = false, power = 1.15f,
                     offset = new Vector2(0.9f, 0.1f), stretch = new Vector2(1.7f, 0.65f), damage = 1.8f, knockback = 2.2f, windup = 0.14f, recovery = 0.45f },
+                new HitDef { label = "4 · Vertical ascendente", rotation = 0f, reverse = true, power = 1f,
+                    offset = new Vector2(0.6f, 0.6f), stretch = new Vector2(0.75f, 1.4f), damage = 1.2f, knockback = 1f, windup = 0.05f, recovery = 0.34f },
+                new HitDef { label = "5 · Gran remate", rotation = -20f, reverse = false, power = 1.45f,
+                    offset = new Vector2(0.6f, 0.4f), stretch = new Vector2(1.25f, 1f), damage = 2.6f, knockback = 3f, windup = 0.18f, recovery = 0.5f },
             };
+
+            var dash = new HitDef { label = "Dash", rotation = 0f, reverse = false, power = 0.95f,
+                offset = new Vector2(0.7f, 0f), stretch = new Vector2(2f, 0.45f), damage = 1.4f, knockback = 1.5f, windup = 0f, recovery = 0.25f };
 
             var root = PrefabUtility.LoadPrefabContents(PlayerPath);
             try
@@ -47,21 +54,10 @@ namespace RedMagic.Gameplay.EditorTools
                 combo.arraySize = hits.Length;
                 for (int i = 0; i < hits.Length; i++)
                 {
-                    var e = combo.GetArrayElementAtIndex(i);
-                    var h = hits[i];
-                    e.FindPropertyRelative("label").stringValue = h.label;
-                    e.FindPropertyRelative("slash").objectReferenceValue = slash;
-                    e.FindPropertyRelative("rotation").floatValue = h.rotation;
-                    e.FindPropertyRelative("reverse").boolValue = h.reverse;
-                    e.FindPropertyRelative("power").floatValue = h.power;
-                    e.FindPropertyRelative("offset").vector2Value = h.offset;
-                    e.FindPropertyRelative("stretch").vector2Value = h.stretch;
-                    e.FindPropertyRelative("damageMultiplier").floatValue = h.damage;
-                    e.FindPropertyRelative("knockbackMultiplier").floatValue = h.knockback;
-                    e.FindPropertyRelative("windup").floatValue = h.windup;
-                    e.FindPropertyRelative("recovery").floatValue = h.recovery;
+                    Write(combo.GetArrayElementAtIndex(i), hits[i], slash);
                 }
-                so.FindProperty("unlockedHits").intValue = hits.Length;
+                Write(so.FindProperty("dashHit"), dash, slash);
+                so.FindProperty("unlockedHits").intValue = 3;   // 4.º y 5.º: items con "Golpes extra de combo"
                 so.ApplyModifiedPropertiesWithoutUndo();
                 PrefabUtility.SaveAsPrefabAsset(root, PlayerPath);
                 Debug.Log($"[PlayerComboSetup] Combo de {hits.Length} golpes escrito en {PlayerPath}.");
@@ -70,6 +66,21 @@ namespace RedMagic.Gameplay.EditorTools
             {
                 PrefabUtility.UnloadPrefabContents(root);
             }
+        }
+
+        private static void Write(SerializedProperty e, HitDef h, MeleeSlashFx slash)
+        {
+            e.FindPropertyRelative("label").stringValue = h.label;
+            e.FindPropertyRelative("slash").objectReferenceValue = slash;
+            e.FindPropertyRelative("rotation").floatValue = h.rotation;
+            e.FindPropertyRelative("reverse").boolValue = h.reverse;
+            e.FindPropertyRelative("power").floatValue = h.power;
+            e.FindPropertyRelative("offset").vector2Value = h.offset;
+            e.FindPropertyRelative("stretch").vector2Value = h.stretch;
+            e.FindPropertyRelative("damageMultiplier").floatValue = h.damage;
+            e.FindPropertyRelative("knockbackMultiplier").floatValue = h.knockback;
+            e.FindPropertyRelative("windup").floatValue = h.windup;
+            e.FindPropertyRelative("recovery").floatValue = h.recovery;
         }
     }
 }

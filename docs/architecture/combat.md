@@ -150,4 +150,7 @@
   The slash follows the player while it plays; facing is locked per hit. Build stats `PlayerStat.MeleeDamage`
   / `MeleeRange` (range scales slash + hitbox together). Default 3-hit combo with slash C written by
   **Tools ▸ RedMagic ▸ FX ▸ Tajo melee · Combo del jugador** (`Gameplay/Editor/PlayerComboSetup`, overwrites).
-  Not yet: dash-specific hits, per-hit animations (player is still the old sprite rig).
+  **Dash hit**: `dashHit` fires when attacking during a dash (or `dashGrace` after), once per dash, cancels
+  the current hit, ignores the combo cooldown, then the combo continues at `dashChainsTo`. **Hits 4–5**: the
+  list holds 5, `unlockedHits` = 3; items add hits with `ComboHitsEffect` ("Jugador · Golpes extra de combo",
+  summed in `PlayerStats.ComboHitBonus`). Not yet: per-hit animations (player is still the old sprite rig).

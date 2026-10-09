@@ -40,9 +40,14 @@ namespace RedMagic.Gameplay
     public static class PlayerStats
     {
         private static readonly Dictionary<object, (PlayerStat stat, float value)> Multipliers = new();
+        private static readonly Dictionary<object, int> ComboBonuses = new();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => Multipliers.Clear();
+        private static void ResetStatics()
+        {
+            Multipliers.Clear();
+            ComboBonuses.Clear();
+        }
 
         /// <summary>Pone (o actualiza) el multiplicador que aporta <paramref name="source"/>.</summary>
         public static void SetMultiplier(object source, PlayerStat stat, float value) =>
@@ -58,6 +63,18 @@ namespace RedMagic.Gameplay
             foreach (var entry in Multipliers.Values)
                 if (entry.stat == stat) m *= entry.value;
             return m;
+        }
+
+        /// <summary>Golpes extra del combo cuerpo a cuerpo que aporta <paramref name="source"/> (se suman).</summary>
+        public static void SetComboHitBonus(object source, int hits) => ComboBonuses[source] = hits;
+
+        /// <summary>Quita los golpes extra que aportaba <paramref name="source"/>. Seguro llamarlo de más.</summary>
+        public static void RemoveComboHitBonus(object source) => ComboBonuses.Remove(source);
+
+        /// <summary>Total de golpes extra del combo (<c>PlayerAttack</c> no pasa del tamaño de su lista).</summary>
+        public static int ComboHitBonus
+        {
+            get { int n = 0; foreach (var v in ComboBonuses.Values) n += v; return n; }
         }
     }
 }

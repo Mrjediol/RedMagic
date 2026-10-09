@@ -60,7 +60,7 @@ namespace RedMagic.Gameplay
         /// <summary>OnAttack al iniciar cada golpe. Ver <see cref="SoundEmitter"/>.</summary>
         public event Action<SoundTrigger> SoundTriggered;
 
-        /// <summary>Se dispara al salir cada golpe con su índice en el combo (0 = primero).</summary>
+        /// <summary>Se dispara al salir cada golpe con su índice en el combo (0 = primero, -1 = golpe de dash).</summary>
         public event Action<int> HitStarted;
 
         public void DeclareSoundTriggers(List<SoundTrigger> into) { into.Add(SoundTrigger.OnAttack); }
@@ -77,7 +77,7 @@ namespace RedMagic.Gameplay
         [SerializeField] private Hit[] combo = Array.Empty<Hit>();
         [Tooltip("Golpes en el aire. Vacío = usa los del suelo.")]
         [SerializeField] private Hit[] airCombo = Array.Empty<Hit>();
-        [Tooltip("Cuántos golpes del combo están disponibles (las builds lo suben).")]
+        [Tooltip("Cuántos golpes del combo están disponibles sin items (los items de build suman golpes extra).")]
         [Min(1)] [SerializeField] private int unlockedHits = 3;
         [Tooltip("Tiempo tras poder encadenar en el que todavía cuenta la pulsación para el siguiente golpe.")]
         [SerializeField] private float chainWindow = 0.35f;
@@ -87,6 +87,14 @@ namespace RedMagic.Gameplay
         [SerializeField] private float comboCooldown = 0.35f;
         [Tooltip("Al salir un golpe, el tajo anterior se desvanece en este tiempo (no hay dos a la vez).")]
         [SerializeField] private float interruptFade = 0.06f;
+        [Header("Dash")]
+        [Tooltip("Golpe al atacar durante un dash (uno por dash). Sin tajo = el dash no ataca.")]
+        [SerializeField] private Hit dashHit = new Hit();
+        [Tooltip("Tras acabar el dash, durante cuánto todavía sale el golpe de dash.")]
+        [SerializeField] private float dashGrace = 0.12f;
+        [Tooltip("Índice del golpe del combo que sigue al de dash (1 = el segundo).")]
+        [SerializeField] private int dashChainsTo = 1;
+
         [SerializeField] private LayerMask hitLayers = ~0;
 
         [Header("Depuración")]
@@ -105,6 +113,8 @@ namespace RedMagic.Gameplay
         private Hit _current;
         private Vector2 _currentOffset;
         private int _currentFacing = 1;
+        private float _sinceDash = 999f;
+        private bool _dashHitUsed;
         private bool _slashStarted;
         private MeleeSlashFx _slash;
 
@@ -173,6 +183,9 @@ namespace RedMagic.Gameplay
         private void OnEnable()
         {
             _attackAction?.Enable();
+            if (_movement != null) { _movement.Dashed -= OnDashed; _movement.Dashed += OnDashed; }
+            _sinceDash = 999f;
+            _dashHitUsed = false;
             // Domain Reload desactivado: el estado del combo no sobrevive entre sesiones de Play.
             _nextIndex = 0;
             _sinceHit = 999f;
@@ -182,7 +195,11 @@ namespace RedMagic.Gameplay
             _slash = null;
         }
 
-        private void OnDisable() => _attackAction?.Disable();
+        private void OnDisable()
+        {
+            _attackAction?.Disable();
+            if (_movement != null) _movement.Dashed -= OnDashed;
+        }
 
         private void Update()
         {
@@ -190,6 +207,7 @@ namespace RedMagic.Gameplay
             if (_cooldownTimer > 0f) _cooldownTimer -= dt;
             if (_bufferTimer > 0f) _bufferTimer -= dt;
             _sinceHit += dt;
+            _sinceDash += dt;
 
             UpdateCurrentHit();
 
@@ -209,13 +227,30 @@ namespace RedMagic.Gameplay
             // Combo caducado: se vuelve al primer golpe.
             if (_current != null && _sinceHit > _current.recovery + chainWindow) _nextIndex = 0;
 
-            if (_bufferTimer <= 0f || _cooldownTimer > 0f) return;
+            if (_bufferTimer <= 0f) return;
+
+            // Golpe en dash: uno por dash, cancela el golpe en curso y no espera al enfriamiento.
+            bool inDash = _movement != null && (_movement.IsDashing || _sinceDash <= dashGrace);
+            if (inDash && !_dashHitUsed && dashHit != null && dashHit.slash != null)
+            {
+                _bufferTimer = 0f;
+                _dashHitUsed = true;
+                int count = HitCount(combo);
+                int next = Mathf.Clamp(dashChainsTo, 0, Mathf.Max(0, count - 1));
+                StartHit(dashHit, -1, next, setCooldown: false);
+                return;
+            }
+
+            if (_cooldownTimer > 0f) return;
             if (_current != null && _sinceHit < _current.recovery) return;   // todavía no se puede cancelar
 
             var list = ActiveList();
-            if (list.Length == 0) return;
+            int total = HitCount(list);
+            if (total == 0) return;
             _bufferTimer = 0f;
-            StartHit(list, _nextIndex);
+            int index = _nextIndex < total ? _nextIndex : 0;
+            bool last = index == total - 1;
+            StartHit(list[index], index, last ? 0 : index + 1, setCooldown: last);
         }
 
         private Hit[] ActiveList()
@@ -224,21 +259,27 @@ namespace RedMagic.Gameplay
             return air ? airCombo : combo;
         }
 
-        private void StartHit(Hit[] list, int index)
-        {
-            int count = Mathf.Min(unlockedHits, list.Length);
-            if (index >= count) index = 0;
+        /// <summary>Golpes usables de una lista: los desbloqueados + los que añaden los items.</summary>
+        private int HitCount(Hit[] list) =>
+            Mathf.Min(UnlockedHits + PlayerStats.ComboHitBonus, list.Length);
 
-            _current = list[index];
+        private void OnDashed(int direction)
+        {
+            _sinceDash = 0f;
+            _dashHitUsed = false;
+        }
+
+        private void StartHit(Hit hit, int index, int nextIndex, bool setCooldown)
+        {
+            _current = hit;
             _sinceHit = 0f;
             if (_slash != null) _slash.Interrupt(interruptFade);
             _slashStarted = false;
             _slash = null;
             _alreadyHit.Clear();
 
-            bool last = index == count - 1;
-            _nextIndex = last ? 0 : index + 1;
-            if (last) _cooldownTimer = comboCooldown + _current.recovery;
+            _nextIndex = nextIndex;
+            if (setCooldown) _cooldownTimer = comboCooldown + _current.recovery;
 
             if (_animator != null) _animator.TriggerAttack();
             SoundTriggered?.Invoke(SoundTrigger.OnAttack);

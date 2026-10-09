@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-07T22:47:45.713Z",
+  "updated": "2026-10-09T15:56:31.300Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -280,6 +280,55 @@
           "text": "Idea: la otra mano lleva el cristal del parry",
           "note": "Con mejoras que también cambien su aspecto visual",
           "done": false
+        },
+        {
+          "id": "ataque-melee",
+          "text": "Ataque melee pendiente",
+          "note": "Combo de suelo actual como base; con el player nuevo: impulso al atacar, ataques arriba/abajo, uno en el aire hasta el suelo con área de impacto, saltito en el golpe 3, intercalar direccionales en el combo, todo mejorable con builds. Pendiente: tajos que se salen de pantalla por abajo.",
+          "done": false,
+          "doc": "docs/tareas/ataque-melee.md",
+          "steps": [
+            {
+              "id": "tlwzqcu",
+              "text": "Impulso del player al atacar sin cortar el movimiento",
+              "done": false
+            },
+            {
+              "id": "2qwprpl",
+              "text": "Arriba + ataque: tajo hacia arriba-delante",
+              "done": false
+            },
+            {
+              "id": "xuxtspo",
+              "text": "Abajo + ataque: tajo hacia abajo",
+              "done": false
+            },
+            {
+              "id": "3r4txaj",
+              "text": "Ataque aéreo: caer al suelo golpeando + área de impacto",
+              "done": false
+            },
+            {
+              "id": "26ji6pn",
+              "text": "Golpe 3: saltito y golpe hacia abajo",
+              "done": false
+            },
+            {
+              "id": "ae2d96l",
+              "text": "Intercalar direccionales dentro del combo",
+              "done": false
+            },
+            {
+              "id": "dhhthcb",
+              "text": "Mejoras de build por ataque (tamaño, poder, área)",
+              "done": false
+            },
+            {
+              "id": "fsc214d",
+              "text": "Solución para tajos que se salen de pantalla por abajo",
+              "done": false
+            }
+          ]
         }
       ]
     },

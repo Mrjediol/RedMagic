@@ -99,6 +99,45 @@ namespace RedMagic.Fx
             }
         }
 
+        /// <summary>
+        /// Trazo con ancho y color por punto (cometas, anillos que adelgazan). Con
+        /// <paramref name="soft"/> los bordes van a alfa 0 (resplandor).
+        /// </summary>
+        public void StrokeVar(List<Vector2> pts, List<float> widths, List<Color> colors, bool soft = false)
+        {
+            int n = pts.Count;
+            if (n < 2) return;
+            int start = _verts.Count;
+            int rows = soft ? 3 : 2;
+            for (int i = 0; i < n; i++)
+            {
+                Vector2 a = pts[Mathf.Max(0, i - 1)], b = pts[Mathf.Min(n - 1, i + 1)];
+                Vector2 d = b - a;
+                Vector2 nrm = d.sqrMagnitude > 1e-10f ? new Vector2(-d.y, d.x).normalized : Vector2.up;
+                float w = Mathf.Max(0f, widths[i]) * 0.5f;
+                Color c = colors[i];
+                if (soft)
+                {
+                    var clear = new Color(c.r, c.g, c.b, 0f);
+                    _verts.Add(pts[i] + nrm * w); _colors.Add(clear);
+                    _verts.Add(pts[i]); _colors.Add(c);
+                    _verts.Add(pts[i] - nrm * w); _colors.Add(clear);
+                }
+                else
+                {
+                    _verts.Add(pts[i] + nrm * w); _colors.Add(c);
+                    _verts.Add(pts[i] - nrm * w); _colors.Add(c);
+                }
+            }
+            for (int i = 0; i < n - 1; i++)
+            for (int k = 0; k < rows - 1; k++)
+            {
+                int v = start + i * rows + k;
+                _tris.Add(v); _tris.Add(v + rows); _tris.Add(v + 1);
+                _tris.Add(v + 1); _tris.Add(v + rows); _tris.Add(v + rows + 1);
+            }
+        }
+
         /// <summary>Trazo con bordes difuminados (núcleo de color, bordes a alfa 0): brillos y estelas.</summary>
         public void StrokeSoft(Vector2 a, Vector2 b, float width, Color color)
         {

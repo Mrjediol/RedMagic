@@ -132,7 +132,9 @@ which also writes `Assets/Scenes/Test/SlashPreview.unity` (all variants looping)
   ellipse arcs with dashes, discs/glows, teardrops, triangles) into a vertex-colour mesh
   (`RedMagic/Fx Vertex Color`, material `Assets/Art/Fx/Materials/Fx_VertexColor.mat`). Two canvases per effect
   (back order 2 / front order 40) give the behind/in-front split. Ported 1:1 from web sketches (sizes in sketch
-  "px" × `pixel`). Users: `DashTrailFx` (departure sphere + rings, white thread, light capsule + speed lines,
+  "px" × `pixel`). `StrokeVar` = per-point width/colour (+soft edges) for brush-like, tapering strokes. Users:
+  `DashTrailFx` (departure sphere + brush rings, white thread, comet along the real path — tail stays at the origin
+  while travelling and retracts after `End` — with flame-noise width, 5 palette layers, shedding drops, speed lines,
   bow shock of partial strands/teardrops/sparks, wisps; `replaceTarget` hides the target's SpriteRenderers
   during travel) and `ImpactBurstFx` (`ground`: flash, dust spikes + puffs, two ground rings, debris, sparks,
   camera shake; enemy mode: flash, ring, directional shards). Prefabs in `Assets/Prefabs/Fx/Player/Dash/`,

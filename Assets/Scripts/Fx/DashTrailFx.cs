@@ -39,10 +39,8 @@ namespace RedMagic.Fx
         [Header("Tiempos (s)")]
         [Tooltip("Lo que dura el destello de salida (esfera + anillos).")]
         [SerializeField] private float departureLife = 0.45f;
-        [Tooltip("Retraso de la cola de la cápsula respecto a la cabeza.")]
-        [SerializeField] private float tailLag = 0.08f;
-        [Tooltip("Tras llegar, lo que tarda la cola en alcanzar a la cabeza.")]
-        [SerializeField] private float tailCatchUp = 0.12f;
+        [Tooltip("Tras llegar, lo que tarda la cola (que se queda en el origen) en recogerse hasta la cabeza.")]
+        [SerializeField] private float tailCatchUp = 0.16f;
         [Tooltip("Tras llegar, lo que tarda en apagarse el hilo blanco.")]
         [SerializeField] private float threadFade = 0.35f;
         [Tooltip("Seguridad: si nadie llama a End, termina solo.")]
@@ -62,6 +60,7 @@ namespace RedMagic.Fx
         [SerializeField] private Color lightCyan = new Color(0.62f, 0.95f, 1f);
         [SerializeField] private Color cyan = new Color(0.16f, 0.76f, 1f);
         [SerializeField] private Color blue = new Color(0.11f, 0.36f, 0.86f);
+        [SerializeField] private Color purple = new Color(0.46f, 0.22f, 0.86f);
 
         [Header("Render")]
         [SerializeField] private Material material;
@@ -184,6 +183,10 @@ namespace RedMagic.Fx
 
         // ------------------------------------------------------------------ dibujo
 
+        private readonly List<Vector2> _pts = new List<Vector2>(64);
+        private readonly List<float> _ws = new List<float>(64);
+        private readonly List<Color> _cs = new List<Color>(64);
+
         private void Draw()
         {
             _back.Clear();
@@ -191,23 +194,19 @@ namespace RedMagic.Fx
             float px = pixel;
 
             if (departure) DrawDeparture(px);
+            if (thread) DrawThread(px);
 
-            if (thread)
-            {
-                float a = 1f - Seg(SinceEnd, 0.05f, threadFade);
-                _back.Line(_origin, _head, 2f * px, Fade(white, a));
-            }
-
-            // cola de la cápsula: posición del camino hace "lag" segundos
-            float tailTime = Ended ? Mathf.Lerp(_endTime - tailLag, _endTime, Seg(SinceEnd, 0f, tailCatchUp)) : _t - tailLag;
-            Vector2 tail = PathAt(Mathf.Max(0f, tailTime));
-            float capAlpha = 1f - Seg(SinceEnd, 0.05f, 0.16f);
+            // La cola se queda en el origen durante el viaje (la estela mide todo el recorrido) y al
+            // llegar se recoge hacia la cabeza.
+            float headTime = Ended ? _endTime : _t;
+            float tailTime = Ended ? Mathf.Lerp(0f, _endTime, EaseIn(Seg(SinceEnd, 0f, tailCatchUp))) : 0f;
+            float capAlpha = 1f - Seg(SinceEnd, tailCatchUp * 0.6f, tailCatchUp + 0.08f);
 
             if (capsule && capAlpha > 0f)
             {
                 var canvas = replaceTarget ? _front : _back;
                 float thick = (replaceTarget ? capsuleThickness : capsuleThickness * 0.75f) * px;
-                DrawCapsule(canvas, tail, _head, thick, capAlpha);
+                DrawComet(canvas, tailTime, headTime, thick, capAlpha);
             }
 
             if (bowShock) DrawBowShock(px);
@@ -217,6 +216,8 @@ namespace RedMagic.Fx
             _front.Apply();
         }
 
+        // Anillos de pincel: trazos que adelgazan en las puntas, radio con ruido y tres pasadas
+        // (resplandor morado, cian, núcleo blanco). Se rompen en trazos al apagarse.
         private void DrawDeparture(float px)
         {
             float t = _t;
@@ -224,58 +225,170 @@ namespace RedMagic.Fx
             float life = Seg(t, 0.05f, departureLife);
             float alpha = 1f - EaseIn(life);
             if (alpha <= 0f) return;
-            float width = Mathf.Lerp(7f, 1.2f, life) * px;
-            float dash = Seg(t, 0.15f, 0.4f);
-            float on = dash > 0f ? Mathf.Max(2f, 14f * (1f - dash)) * px : 0f;
-            float off = dash > 0f ? (6f + 26f * dash) * px : 0f;
-            var w = Fade(white, alpha);
+            float width = Mathf.Lerp(7f, 1.6f, life) * px;
+            float gaps = Seg(t, 0.12f, 0.4f);                     // 0 = entero, 1 = muy roto
             float ang = Mathf.Atan2(_dir.y, _dir.x);
 
-            // esfera (delante)
-            float sr = (Mathf.Lerp(10f, 30f, grow) + life * 8f) * px;
-            if (t < 0.08f) _front.Disc(_origin, sr, w);
-            _front.EllipseArc(_origin, sr, sr, 0f, 0f, Mathf.PI * 2f, width, w, on, off);
+            // destello inicial
+            if (t < 0.1f)
+            {
+                float f = 1f - t / 0.1f;
+                _front.Glow(_origin, 55f * px * (0.6f + grow), Fade(white, 0.8f * f));
+                _back.Glow(_origin, 90f * px * (0.6f + grow), Fade(cyan, 0.35f * f));
+            }
 
-            // dos anillos perpendiculares: mitad de atrás (lado opuesto al viaje) detrás del personaje
+            // esfera
+            float sr = (Mathf.Lerp(10f, 30f, grow) + life * 8f) * px;
+            if (t < 0.07f) _front.Disc(_origin, sr, Fade(white, alpha));
+            BrushArc(_back, _front, _origin, sr, sr, 0f, 0f, Mathf.PI * 2f, width, alpha, gaps, 5);
+
             for (int k = 0; k < 2; k++)
             {
-                float r = (k == 0 ? Mathf.Lerp(30f, 70f, grow) : Mathf.Lerp(24f, 56f, grow)) * px;
+                float r = (k == 0 ? Mathf.Lerp(30f, 72f, grow) : Mathf.Lerp(24f, 58f, grow)) * px;
                 var c = _origin + _dir * ((k == 0 ? -12f : 14f) * px);
-                _back.EllipseArc(c, r * 0.32f, r, ang, Mathf.PI * 0.5f, Mathf.PI * 1.5f, width, w, on, off);
-                _front.EllipseArc(c, r * 0.32f, r, ang, -Mathf.PI * 0.5f, Mathf.PI * 0.5f, width, w, on, off);
+                // mitad de atrás del anillo (lado opuesto al viaje) detrás del personaje
+                BrushArc(_back, _back, c, r * 0.32f, r, ang, Mathf.PI * 0.5f, Mathf.PI * 1.5f, width, alpha, gaps, 11 + k);
+                BrushArc(_back, _front, c, r * 0.32f, r, ang, -Mathf.PI * 0.5f, Mathf.PI * 0.5f, width, alpha, gaps, 21 + k);
             }
         }
 
-        private void DrawCapsule(FxCanvas canvas, Vector2 tail, Vector2 head, float thick, float alpha)
+        /// <summary>
+        /// Arco de elipse con aspecto de pincelada: radio con ruido, grosor que respira y trazos con
+        /// puntas afiladas; tres pasadas de color (morado suave en <paramref name="glow"/>, cian y
+        /// blanco en <paramref name="main"/>).
+        /// </summary>
+        private void BrushArc(FxCanvas glow, FxCanvas main, Vector2 c, float rx, float ry, float rot,
+                              float a0, float a1, float width, float alpha, float gaps, int seed)
         {
-            var d = head - tail;
-            float len = d.magnitude;
-            if (len < 1e-3f) return;
-            var u = d / len;
-            var n = new Vector2(-u.y, u.x);
+            var R = new Rng(seed);
+            int dashes = gaps <= 0f ? 1 : Mathf.RoundToInt(Mathf.Lerp(3f, 9f, gaps));
+            float span = a1 - a0, slot = span / dashes;
+            float fill = Mathf.Lerp(1f, 0.35f, gaps);
+            float cs = Mathf.Cos(rot), sn = Mathf.Sin(rot);
+            bool closed = dashes == 1 && span > Mathf.PI * 1.9f;
+            for (int d = 0; d < dashes; d++)
+            {
+                float s0 = a0 + slot * d + (dashes > 1 ? R.Next() * slot * (1f - fill) : 0f);
+                float s1 = s0 + slot * fill;
+                for (int pass = 0; pass < 3; pass++)
+                {
+                    _pts.Clear(); _ws.Clear(); _cs.Clear();
+                    const int seg = 16;
+                    for (int i = 0; i <= seg; i++)
+                    {
+                        float u = i / (float)seg;
+                        float a = Mathf.Lerp(s0, s1, u);
+                        float wob = 1f + Mathf.Sin(a * 7f + seed) * 0.03f + Mathf.Sin(a * 13f + seed * 2f) * 0.02f;
+                        var p = new Vector2(Mathf.Cos(a) * rx * wob, Mathf.Sin(a) * ry * wob);
+                        _pts.Add(c + new Vector2(p.x * cs - p.y * sn, p.x * sn + p.y * cs));
+                        float taper = closed ? 1f : Mathf.Sin(Mathf.PI * u);
+                        float breathe = 0.75f + 0.25f * Mathf.Sin(a * 5f + seed + _t * 10f);
+                        float w = width * Mathf.Max(0.15f, taper) * breathe;
+                        _ws.Add(pass == 0 ? w * 3.2f : pass == 1 ? w * 1.7f : w);
+                        _cs.Add(pass == 0 ? Fade(purple, 0.35f * alpha) : pass == 1 ? Fade(cyan, 0.9f * alpha) : Fade(white, alpha));
+                    }
+                    (pass == 0 ? glow : main).StrokeVar(_pts, _ws, _cs, pass == 0);
+                }
+            }
+        }
 
-            canvas.StrokeSoft(tail, head + u * thick * 0.3f, thick * 2.4f, Fade(cyan, 0.45f * alpha));
+        private void DrawThread(float px)
+        {
+            float a = 1f - Seg(SinceEnd, 0.05f, threadFade);
+            if (a <= 0f) return;
+            _pts.Clear(); _ws.Clear(); _cs.Clear();
+            const int seg = 12;
+            for (int i = 0; i <= seg; i++)
+            {
+                float u = i / (float)seg;
+                _pts.Add(Vector2.Lerp(_origin, _head, u));
+                _ws.Add((0.8f + 1.6f * u) * px);
+                _cs.Add(Fade(white, a * (0.4f + 0.6f * u)));
+            }
+            _back.StrokeVar(_pts, _ws, _cs);
+            for (int i = 0; i <= seg; i++) { _ws[i] *= 4f; _cs[i] = Fade(cyan, a * 0.35f * (i / (float)seg)); }
+            _back.StrokeVar(_pts, _ws, _cs, true);
+        }
 
+        // Cometa: sigue el camino real de la cola a la cabeza; grosor creciente hacia la cabeza con
+        // lenguas que se mueven, cinco capas de color de la paleta y gotas que se desprenden.
+        private readonly Vector2[] _comet = new Vector2[41];
+
+        private void DrawComet(FxCanvas canvas, float tailTime, float headTime, float thick, float alpha)
+        {
+            const int N = 40;
+            var path = _comet;
+            for (int i = 0; i <= N; i++) path[i] = PathAt(Mathf.Lerp(tailTime, headTime, i / (float)N));
+            path[N] = _head;
+            float len = 0f;
+            for (int i = 1; i <= N; i++) len += Vector2.Distance(path[i - 1], path[i]);
+            if (len < thick * 0.2f) { canvas.Glow(_head, thick, Fade(lightCyan, alpha)); return; }
+
+            for (int L = 0; L < 5; L++)
+            {
+                float lw; Color lc; float la; bool soft = false;
+                switch (L)
+                {
+                    case 0: lw = 2.8f; lc = purple; la = 0.35f; soft = true; break;
+                    case 1: lw = 1.35f; lc = blue; la = 0.95f; break;
+                    case 2: lw = 1.08f; lc = cyan; la = 1f; break;
+                    case 3: lw = 0.74f; lc = lightCyan; la = 1f; break;
+                    default: lw = 0.42f; lc = core; la = 1f; break;
+                }
+                _pts.Clear(); _ws.Clear(); _cs.Clear();
+                for (int i = 0; i <= N; i++)
+                {
+                    float u = i / (float)N;                               // 0 cola → 1 cabeza
+                    float profile = Mathf.Pow(u, 0.6f);
+                    float flame = 1f + 0.22f * Mathf.Sin(u * 23f - _t * 38f + L) + 0.12f * Mathf.Sin(u * 51f + _t * 29f + L * 2f);
+                    flame = Mathf.Lerp(1f, flame, 1f - u * 0.7f);         // las lenguas se notan más hacia la cola
+                    _pts.Add(path[i]);
+                    _ws.Add(thick * lw * profile * flame);
+                    float fadeTail = Mathf.SmoothStep(0f, 1f, u * 1.6f);
+                    _cs.Add(Fade(lc, alpha * la * fadeTail));
+                }
+                (L == 0 ? _back : canvas).StrokeVar(_pts, _ws, _cs, soft);
+            }
+
+            // brillo y bola de la cabeza
+            canvas.Glow(_head, thick * 1.5f, Fade(white, 0.7f * alpha));
+            canvas.Disc(_head, thick * 0.55f, Fade(cyan, alpha));
+            canvas.Disc(_head, thick * 0.4f, Fade(lightCyan, alpha));
+            canvas.Disc(_head, thick * 0.24f, Fade(white, alpha));
+
+            // rayas de velocidad a los lados, afiladas
             if (speedLines)
             {
-                var R = new Rng(17 + Mathf.FloorToInt(_t * 20f));
-                for (int i = 0; i < 7; i++)
+                var R = new Rng(17 + Mathf.FloorToInt(_t * 24f));
+                for (int i = 0; i < 9; i++)
                 {
-                    float off = (R.Next() - 0.5f) * thick * 2.6f;
-                    float l0 = R.Next() * len * 0.5f, l1 = Mathf.Min(l0 + len * (0.3f + R.Next() * 0.6f), len + thick);
-                    var c = i % 2 == 0 ? lightCyan : cyan;
-                    (i < 4 ? canvas : _back).Line(tail + u * l0 + n * off, tail + u * l1 + n * off,
-                        (1.5f + R.Next() * 2f) * pixel, Fade(c, alpha), true);
+                    float u = 0.35f + R.Next() * 0.6f;
+                    int idx = Mathf.Clamp(Mathf.RoundToInt(u * N), 1, N);
+                    var p = path[idx];
+                    var tan = (path[idx] - path[idx - 1]).normalized;
+                    var nrm = new Vector2(-tan.y, tan.x);
+                    float off = (R.Next() - 0.5f) * thick * 3f, l = len * (0.15f + R.Next() * 0.3f);
+                    var a = p + nrm * off;
+                    Color c = (i % 3) switch { 0 => lightCyan, 1 => cyan, _ => purple };
+                    (off > 0f ? _back : canvas).Line(a - tan * l, a + tan * thick * 0.6f, (1.4f + R.Next() * 1.8f) * pixel, Fade(c, alpha * 0.9f), true);
                 }
             }
 
-            canvas.Line(tail, head, thick, Fade(cyan, alpha), false);
-            canvas.Line(tail + u * thick * 0.1f, head, thick * 0.72f, Fade(lightCyan, alpha), false);
-            canvas.Line(tail + u * thick * 0.2f, head, thick * 0.42f, Fade(core, alpha), false);
-            canvas.Disc(head, thick * 0.5f, Fade(cyan, alpha));
-            canvas.Disc(head, thick * 0.36f, Fade(lightCyan, alpha));
-            canvas.Disc(head, thick * 0.21f, Fade(core, alpha));
-            canvas.Line(tail + u * len * 0.1f, head + u * thick * 0.4f, 2f * pixel, Fade(white, alpha));
+            // gotas que se desprenden de los bordes y se quedan atrás
+            for (int i = 0; i < 16; i++)
+            {
+                var R = new Rng(400 + i * 37);
+                float rate = 2.5f + R.Next() * 2f, s = Mathf.Repeat(_t * rate + R.Next(), 1f);
+                float u = Mathf.Lerp(0.85f, 0.2f, s);
+                int idx = Mathf.Clamp(Mathf.RoundToInt(u * N), 1, N);
+                var tan = (path[idx] - path[idx - 1]).normalized;
+                var nrm = new Vector2(-tan.y, tan.x);
+                float side = i % 2 == 0 ? 1f : -1f;
+                var pos = path[idx] + nrm * side * thick * (0.55f + s * 0.9f) * Mathf.Pow(u, 0.6f);
+                Color c = (i % 3) switch { 0 => cyan, 1 => blue, _ => purple };
+                (side > 0f ? _back : canvas).Teardrop(pos, Mathf.Atan2(-tan.y, -tan.x), thick * (0.6f + R.Next() * 0.5f) * (1f - s),
+                    thick * 0.16f * (1f - s * 0.7f), Fade(c, alpha * (1f - s)));
+            }
         }
 
         private void DrawBowShock(float px)
@@ -287,71 +400,71 @@ namespace RedMagic.Fx
             float s = shockSize * _shockScale * (1f + shockOut * 0.6f) * px;
             var u = _dir;
             var n = new Vector2(-u.y, u.x);
-            var nose = _head + u * ((replaceTarget ? 8f : 16f) * pixel);
+            // pegada a la bola de la cabeza: las hebras de dentro casi la tocan
+            var nose = _head + u * ((replaceTarget ? -6f : 10f) * pixel);
             float splitY = nose.y;
-            Vector2 P(float x, float y) => nose + (u * x + n * y) * s;
+            Vector2 P(float x, float y) => nose + (u * (x - 12f) + n * y) * s;
 
-            _front.Glow(P(30f, 0f), 26f * s, Fade(white, 0.85f * alpha));
+            _front.Glow(P(26f, 0f), 30f * s, Fade(white, 0.8f * alpha));
+            _back.Glow(P(30f, 0f), 46f * s, Fade(cyan, 0.3f * alpha));
 
-            // hebras: arcos parciales de una familia de parábolas x = a - y²/b
+            // hebras: arcos parciales con puntas afiladas y grosor variable; las de fuera moradas/azules
             var R = new Rng(11);
-            Color[] pal = { white, lightCyan, cyan, blue, lightCyan, white, cyan };
+            Color[] pal = { white, white, lightCyan, cyan, lightCyan, cyan, blue, purple, blue, purple };
             var pts = new List<Vector2>(24);
-            for (int k = 0; k < 9; k++)
+            for (int k = 0; k < pal.Length; k++)
             {
-                float a = 22f + k * 3.2f + R.Next() * 3f, b = 22f + k * 2.4f, w = 26f + k * 4.5f;
+                float a = 20f + k * 3.4f + R.Next() * 3f, b = 20f + k * 2.6f, w = 24f + k * 4.6f;
                 float ph = R.Next() * 6.28f, sp = 18f + R.Next() * 22f;
-                float y0 = -w * (0.25f + 0.75f * (0.5f + 0.5f * Mathf.Sin(_t * sp + ph)));
-                float y1 = w * (0.25f + 0.75f * (0.5f + 0.5f * Mathf.Sin(_t * sp * 1.3f + ph + 2f)));
-                float width = (k < 3 ? 3f - k * 0.6f : 1f + R.Next() * 2.2f) * s;
+                float y0 = -w * (0.3f + 0.7f * (0.5f + 0.5f * Mathf.Sin(_t * sp + ph)));
+                float y1 = w * (0.3f + 0.7f * (0.5f + 0.5f * Mathf.Sin(_t * sp * 1.3f + ph + 2f)));
+                float width = (k < 3 ? 3.4f - k * 0.5f : 1.2f + R.Next() * 2.4f) * s;
                 pts.Clear();
                 for (int i = 0; i <= 18; i++)
                 {
                     float y = Mathf.Lerp(y0, y1, i / 18f);
                     pts.Add(P(a - y * y / b, y));
                 }
-                StrokeSplit(pts, width, Fade(pal[k % pal.Length], alpha), splitY);
+                StrokeSplitTaper(pts, width, Fade(pal[k], alpha), splitY);
             }
 
-            // gotitas que nacen en la nariz y resbalan por la envolvente hacia atrás
-            for (int i = 0; i < 26; i++)
+            for (int i = 0; i < 30; i++)
             {
                 var Ri = new Rng(31 * 11 + i * 7);
                 float side = i % 2 == 1 ? 1f : -1f, rate = 2.2f + Ri.Next() * 2.2f, ph = Ri.Next();
                 float st = Mathf.Repeat(_t * rate + ph, 1f);
-                float a = 26f + Ri.Next() * 16f, b = 24f + Ri.Next() * 10f, wMax = 34f + Ri.Next() * 18f;
+                float a = 24f + Ri.Next() * 16f, b = 22f + Ri.Next() * 10f, wMax = 34f + Ri.Next() * 20f;
                 float y = side * st * wMax;
-                float back = st > 0.7f ? (st - 0.7f) * 160f : 0f;
+                float back = st > 0.7f ? (st - 0.7f) * 170f : 0f;
                 float x = a - y * y / b - back;
-                float len = (9f + Ri.Next() * 10f) * (1f - st * 0.6f) * s;
+                float len = (9f + Ri.Next() * 12f) * (1f - st * 0.6f) * s;
                 float wid = (2.4f + Ri.Next() * 2.5f) * (1f - st * 0.7f) * s;
                 float fa = alpha * (1f - st) * (st < 0.08f ? st / 0.08f : 1f);
-                // dirección local de la gota: hacia atrás a lo largo de la curva
                 var localDir = new Vector2(-2f * Mathf.Abs(y) / b, side);
                 var worldDir = (u * localDir.x + n * localDir.y).normalized;
-                float ang = Mathf.Atan2(worldDir.y, worldDir.x);        // la gota avanza hacia atrás por la curva
-                Color c = (i % 4) switch { 0 => white, 1 => lightCyan, 2 => cyan, _ => blue };
+                float ang = Mathf.Atan2(worldDir.y, worldDir.x);
+                Color c = (i % 5) switch { 0 => white, 1 => lightCyan, 2 => cyan, 3 => blue, _ => purple };
                 var pos = P(x, y);
                 (pos.y >= splitY ? _back : _front).Teardrop(pos, ang, len, wid, Fade(c, fa));
             }
 
-            // chispas que saltan del borde
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 14; i++)
             {
                 var Ri = new Rng(53 * 11 + i * 13);
                 float side = i % 2 == 1 ? 1f : -1f, rate = 3f + Ri.Next() * 3f, st = Mathf.Repeat(_t * rate + Ri.Next(), 1f);
-                float y = side * (10f + Ri.Next() * 40f), x = 46f - y * y / 32f;
-                float d = st * (20f + Ri.Next() * 30f);
+                float y = side * (10f + Ri.Next() * 42f), x = 46f - y * y / 32f;
+                float d = st * (20f + Ri.Next() * 34f);
                 var pos = P(x - d * 0.8f, y + side * d * 0.6f);
-                (pos.y >= splitY ? _back : _front).Disc(pos, (2.2f * (1f - st) + 0.6f) * s, Fade(i % 3 == 0 ? cyan : white, alpha * (1f - st)));
+                (pos.y >= splitY ? _back : _front).Disc(pos, (2.4f * (1f - st) + 0.6f) * s,
+                    Fade(i % 3 == 0 ? cyan : (i % 3 == 1 ? white : purple), alpha * (1f - st)));
             }
         }
 
         private void DrawWisps(float px)
         {
-            const float spacing = 0.022f, life = 0.55f;
+            const float spacing = 0.02f, life = 0.6f;
             float until = Ended ? _endTime + 0.15f : _t;
-            int count = Mathf.Min(60, Mathf.FloorToInt(until / spacing));
+            int count = Mathf.Min(70, Mathf.FloorToInt(until / spacing));
             for (int i = 0; i < count; i++)
             {
                 var R = new Rng(3 + i * 17);
@@ -361,34 +474,37 @@ namespace RedMagic.Fx
                 var at = PathAt(Mathf.Min(birth, Ended ? _endTime : _t));
                 float a = R.Next() * Mathf.PI * 2f;
                 var dir = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
-                float dist = 34f * (0.3f + EaseOut(l) * (0.7f + R.Next())) * px;
-                var pos = at + dir * dist + Vector2.up * (l * 18f * px);
+                float dist = 30f * (0.3f + EaseOut(l) * (0.7f + R.Next())) * px;
+                var pos = at + dir * dist + Vector2.up * (l * 22f * px);
                 float sz = (3f + R.Next() * 6f) * (1f - l) * px;
-                var c = i % 3 == 0 ? cyan : blue;
-                (dir.y > 0f ? _back : _front).Ellipse(pos, sz * 1.6f, sz, a, Fade(c, 1f - l), Fade(c, (1f - l) * 0.6f), 10);
+                Color c = (i % 3) switch { 0 => cyan, 1 => blue, _ => purple };
+                var canvas = dir.y > 0f ? _back : _front;
+                canvas.Teardrop(pos, a + l * 3f, sz * 2.4f, sz, Fade(c, 1f - l));
+                canvas.Glow(pos, sz * 2.2f, Fade(c, 0.35f * (1f - l)));
             }
         }
 
-        /// <summary>Traza una polilínea repartiendo sus tramos: por encima de splitY detrás, por debajo delante.</summary>
-        private void StrokeSplit(List<Vector2> pts, float width, Color color, float splitY)
+        /// <summary>Polilínea con puntas afiladas y grosor que late, repartida: por encima de splitY detrás, por debajo delante.</summary>
+        private void StrokeSplitTaper(List<Vector2> pts, float width, Color color, float splitY)
         {
-            var run = FxCanvas.Points();
+            int n = pts.Count;
+            _pts.Clear(); _ws.Clear(); _cs.Clear();
             bool? backRun = null;
-            for (int i = 0; i < pts.Count; i++)
+            for (int i = 0; i < n; i++)
             {
+                float u = i / (float)(n - 1);
+                float w = width * Mathf.Max(0.1f, Mathf.Sin(Mathf.PI * u)) * (0.8f + 0.2f * Mathf.Sin(u * 9f + _t * 20f));
                 bool isBack = pts[i].y >= splitY;
                 if (backRun.HasValue && isBack != backRun.Value)
                 {
-                    run.Add(pts[i]);
-                    (backRun.Value ? _back : _front).Stroke(run, width, color);
-                    var last = pts[i];
-                    run = FxCanvas.Points();
-                    run.Add(last);
+                    _pts.Add(pts[i]); _ws.Add(w); _cs.Add(color);
+                    if (_pts.Count > 1) (backRun.Value ? _back : _front).StrokeVar(_pts, _ws, _cs);
+                    _pts.Clear(); _ws.Clear(); _cs.Clear();
                 }
-                else run.Add(pts[i]);
+                _pts.Add(pts[i]); _ws.Add(w); _cs.Add(color);
                 backRun = isBack;
             }
-            if (backRun.HasValue && run.Count > 1) (backRun.Value ? _back : _front).Stroke(run, width, color);
+            if (backRun.HasValue && _pts.Count > 1) (backRun.Value ? _back : _front).StrokeVar(_pts, _ws, _cs);
         }
 
         private Vector2 PathAt(float time)

@@ -41,6 +41,7 @@ namespace RedMagic.Fx
         [SerializeField] private Color lightCyan = new Color(0.62f, 0.95f, 1f);
         [SerializeField] private Color cyan = new Color(0.16f, 0.76f, 1f);
         [SerializeField] private Color blue = new Color(0.11f, 0.36f, 0.86f);
+        [SerializeField] private Color purple = new Color(0.46f, 0.22f, 0.86f);
         [SerializeField] private Color dust = new Color(0.85f, 0.8f, 0.71f);
         [SerializeField] private Color dustDark = new Color(0.72f, 0.65f, 0.55f);
         [SerializeField] private Color rock = new Color(0.3f, 0.32f, 0.38f);
@@ -146,6 +147,19 @@ namespace RedMagic.Fx
                                Fade(i % 2 == 0 ? dust : dustDark, fade));
             }
 
+            // corona de energía (detrás): esquirlas finas cian / blancas / moradas más largas que el polvo
+            for (int i = 0; i < spikes; i++)
+            {
+                float a = Mathf.PI * (0.12f + 0.76f * (i / Mathf.Max(1f, spikes - 1f))) + (R.Next() - 0.5f) * 0.2f;
+                float st = Seg(t, 0f, 0.5f);
+                float len = (70f + R.Next() * 70f) * EaseOut(st) * (1f - Seg(t, 0.35f, 0.75f));
+                var dv = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+                var sd = new Vector2(-dv.y, dv.x);
+                var b = _pos + dv * 14f * px;
+                Color c = (i % 3) switch { 0 => white, 1 => cyan, _ => purple };
+                _back.Triangle(b + sd * 3.5f * px, b + dv * (24f + len) * px, b - sd * 3.5f * px, Fade(c, 0.9f * fade));
+            }
+
             // puffs: los altos detrás, los bajos delante; suben y se hinchan
             for (int i = 0; i < puffs; i++)
             {
@@ -154,7 +168,10 @@ namespace RedMagic.Fx
                 var p = _pos + new Vector2((R.Next() - 0.5f) * spread * grow, (high ? 18f + R.Next() * 30f : 4f + R.Next() * 10f) * grow + t * 20f) * px;
                 float r = (14f + R.Next() * 14f) * (0.5f + grow * 0.7f) * px;
                 var c = i % 2 == 0 ? dust : dustDark;
-                (high ? _back : _front).Disc(p, r, Fade(c, fade), Fade(c, fade * 0.7f), 18);
+                var canvas = high ? _back : _front;
+                canvas.Disc(p + new Vector2(0f, -r * 0.15f), r * 1.05f, Fade(dustDark, fade), Fade(dustDark, fade * 0.6f), 18);   // sombra
+                canvas.Disc(p, r, Fade(c, fade), Fade(c, fade * 0.75f), 18);
+                canvas.Disc(p + new Vector2(-r * 0.3f, r * 0.3f), r * 0.45f, Fade(Color.Lerp(c, white, 0.5f), fade * 0.8f), Fade(c, 0f), 14);   // brillo
             }
 
             // dos ondas a ras de suelo: mitad lejana detrás, cercana delante
@@ -166,6 +183,9 @@ namespace RedMagic.Fx
                 float rx = (30f + (k == 0 ? 170f : 120f) * g) * px, ry = (6f + 18f * g) * px;
                 float w = (5f * (1f - tk) + 1f) * px;
                 var c = Fade(k == 0 ? white : cyan, 1f - tk);
+                var glowC = Fade(purple, 0.35f * (1f - tk));
+                _back.EllipseArc(_pos, rx, ry, 0f, 0f, Mathf.PI, w * 3.5f, glowC);
+                _front.EllipseArc(_pos, rx, ry, 0f, Mathf.PI, Mathf.PI * 2f, w * 3.5f, glowC);
                 _back.EllipseArc(_pos, rx, ry, 0f, 0f, Mathf.PI, w, c);
                 _front.EllipseArc(_pos, rx, ry, 0f, Mathf.PI, Mathf.PI * 2f, w, c);
             }
@@ -217,6 +237,8 @@ namespace RedMagic.Fx
             {
                 float r = (14f + 46f * EaseOut(rt)) * px, w = (4f * (1f - rt) + 1f) * px;
                 var c = Fade(lightCyan, 1f - rt);
+                _back.EllipseArc(_pos, r, r * 0.8f, 0f, 0f, Mathf.PI, w * 3f, Fade(purple, 0.35f * (1f - rt)));
+                _front.EllipseArc(_pos, r, r * 0.8f, 0f, Mathf.PI, Mathf.PI * 2f, w * 3f, Fade(purple, 0.35f * (1f - rt)));
                 _back.EllipseArc(_pos, r, r * 0.8f, 0f, 0f, Mathf.PI, w, c);
                 _front.EllipseArc(_pos, r, r * 0.8f, 0f, Mathf.PI, Mathf.PI * 2f, w, c);
             }
@@ -232,7 +254,7 @@ namespace RedMagic.Fx
                 float d0 = (8f + 40f * EaseOut(st)) * px, len = (16f + R.Next() * 16f) * (1f - st) * px;
                 var b = _pos + dv * d0;
                 (dv.y > 0f ? _back : _front).Triangle(b + sd * 3f * px, b + dv * len, b - sd * 3f * px,
-                    Fade(i % 3 == 0 ? white : (i % 3 == 1 ? cyan : blue), 1f - st));
+                    Fade((i % 4) switch { 0 => white, 1 => cyan, 2 => blue, _ => purple }, 1f - st));
             }
 
             for (int i = 0; i < sparks; i++)

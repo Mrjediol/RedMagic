@@ -94,7 +94,6 @@ namespace RedMagic.Fx
         private float _power = 1f;
         private bool _mirrorX, _mirrorY;
         private Vector2 _stretch = Vector2.one;
-        private float _clipY = NoClip;
         private bool _interrupted;
         private float _interruptLeft, _interruptDuration = 1f;
         private bool _playing;
@@ -119,8 +118,6 @@ namespace RedMagic.Fx
         private static readonly int ShardStyleId = Shader.PropertyToID("_ShardStyle");
         private static readonly int SeedId = Shader.PropertyToID("_Seed");
         private static readonly int AlphaId = Shader.PropertyToID("_Alpha");
-        private static readonly int ClipYId = Shader.PropertyToID("_ClipY");
-        private const float NoClip = -100000f;
 
         /// <summary>Duración total del tajo (última capa incluida), en segundos.</summary>
         public float TotalDuration
@@ -154,21 +151,9 @@ namespace RedMagic.Fx
             _mirrorY = mirrorY;
             _stretch = new Vector2(Mathf.Max(0.1f, stretch.x), Mathf.Max(0.1f, stretch.y));
             _interrupted = false;
-            _clipY = NoClip;
             _time = 0f;
             _playing = true;
             ApplyScale();
-            UpdateLayers();
-        }
-
-        /// <summary>
-        /// No dibuja lo que quede por debajo de <paramref name="worldY"/> (el suelo bajo quien ataca),
-        /// para que un tajo grande no se salga por abajo de la pantalla. <see cref="Play"/> lo quita.
-        /// Sólo visual: la zona de daño no cambia (debajo del suelo no hay nadie a quien pegar).
-        /// </summary>
-        public void SetGroundClip(float worldY)
-        {
-            _clipY = worldY;
             UpdateLayers();
         }
 
@@ -336,7 +321,6 @@ namespace RedMagic.Fx
                 m.SetFloat(SeedId, l.seed);
                 float cut = _interrupted ? Mathf.Clamp01(_interruptLeft / _interruptDuration) : 1f;
                 m.SetFloat(AlphaId, visible ? fade * cut : 0f);
-                m.SetFloat(ClipYId, _clipY);
             }
         }
 

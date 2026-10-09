@@ -29,19 +29,19 @@ namespace RedMagic.Gameplay.EditorTools
             var hits = new[]
             {
                 new HitDef { label = "1 · Descendente", rotation = 0f, reverse = false, power = 1.05f,
-                    offset = new Vector2(0.25f, 0.15f), stretch = new Vector2(1.05f, 1.25f), damage = 1f, knockback = 0.6f, windup = 0.03f, recovery = 0.32f },
+                    offset = new Vector2(0.25f, 0.15f), stretch = new Vector2(1.05f, 1.25f), damage = 1f, knockback = 0.08f, windup = 0.03f, recovery = 0.32f },
                 new HitDef { label = "2 · Ascendente", rotation = 15f, reverse = true, power = 1.05f,
-                    offset = new Vector2(0.25f, 0.05f), stretch = new Vector2(1.05f, 1.25f), damage = 1f, knockback = 0.6f, windup = 0.04f, recovery = 0.34f },
+                    offset = new Vector2(0.25f, 0.05f), stretch = new Vector2(1.05f, 1.25f), damage = 1f, knockback = 0.08f, windup = 0.04f, recovery = 0.34f },
                 new HitDef { label = "3 · Diagonal amplio", rotation = 35f, reverse = false, power = 1.15f,
-                    offset = new Vector2(0.35f, 0.15f), stretch = new Vector2(1.3f, 1.1f), damage = 1.6f, knockback = 2f, windup = 0.12f, recovery = 0.42f },
+                    offset = new Vector2(0.35f, 0.15f), stretch = new Vector2(1.3f, 1.1f), damage = 1.6f, knockback = 0.12f, windup = 0.12f, recovery = 0.42f },
                 new HitDef { label = "4 · Vertical ascendente", rotation = 0f, reverse = true, power = 1.3f,
-                    offset = new Vector2(0.5f, 0.4f), stretch = new Vector2(1.15f, 1.45f), damage = 1.2f, knockback = 1f, windup = 0.05f, recovery = 0.34f },
+                    offset = new Vector2(0.5f, 0.4f), stretch = new Vector2(1.15f, 1.45f), damage = 1.2f, knockback = 0.1f, windup = 0.05f, recovery = 0.34f },
                 new HitDef { label = "5 · Gran remate", rotation = -20f, reverse = false, power = 1.6f,
-                    offset = new Vector2(0.7f, 0.4f), stretch = new Vector2(1.6f, 0.85f), damage = 2.6f, knockback = 3f, windup = 0.2f, recovery = 0.5f },
+                    offset = new Vector2(0.7f, 0.4f), stretch = new Vector2(1.6f, 0.85f), damage = 2.6f, knockback = 0.2f, windup = 0.2f, recovery = 0.5f },
             };
 
             var dash = new HitDef { label = "Dash", rotation = 0f, reverse = false, power = 0.95f,
-                offset = new Vector2(0.7f, 0f), stretch = new Vector2(2f, 0.45f), damage = 1.4f, knockback = 1.5f, windup = 0f, recovery = 0.25f };
+                offset = new Vector2(0.7f, 0f), stretch = new Vector2(2f, 0.45f), damage = 1.4f, knockback = 0.1f, windup = 0f, recovery = 0.25f };
 
             var root = PrefabUtility.LoadPrefabContents(PlayerPath);
             try

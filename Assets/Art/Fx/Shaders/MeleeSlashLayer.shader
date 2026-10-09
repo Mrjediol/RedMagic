@@ -26,7 +26,6 @@ Shader "RedMagic/Melee Slash Layer"
         _ShardStyle ("Shard style (0 rombo, 1 rayas, 2 chispas, 3 trozos)", Float) = 0
         _Seed ("Seed", Float) = 0
         _Alpha ("Alpha", Range(0, 1)) = 1
-        _ClipY ("Clip below world Y", Float) = -100000
     }
 
     SubShader
@@ -57,18 +56,17 @@ Shader "RedMagic/Melee Slash Layer"
                 half4 _Color;
                 float _Radius, _Thickness, _ArcStart, _ArcSpan, _Head, _Tail;
                 float _HeadTaper, _TailTaper, _FraySpread, _FrayFreq, _OuterJag, _InnerJag;
-                float _Breakup, _Shards, _ShardDrift, _ShardStyle, _Seed, _Alpha, _ClipY;
+                float _Breakup, _Shards, _ShardDrift, _ShardStyle, _Seed, _Alpha;
             CBUFFER_END
 
             struct Attributes { float3 positionOS : POSITION; float2 uv : TEXCOORD0; };
-            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; float worldY : TEXCOORD1; };
+            struct Varyings { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
 
             Varyings vert(Attributes input)
             {
                 Varyings o;
                 o.positionCS = TransformObjectToHClip(input.positionOS);
                 o.uv = input.uv;
-                o.worldY = TransformObjectToWorld(input.positionOS).y;
                 return o;
             }
 
@@ -196,9 +194,7 @@ Shader "RedMagic/Melee Slash Layer"
                     for (int j = -2; j <= 1; j++) shard = max(shard, Particle(cell + j, t, r, aa));
                 }
 
-                // Suelo: lo que queda por debajo de _ClipY no se dibuja (el tajo "choca" con el suelo).
-                float ground = saturate((input.worldY - _ClipY) / 0.12);
-                half a = saturate(max(body, shard)) * _Color.a * _Alpha * ground;
+                half a = saturate(max(body, shard)) * _Color.a * _Alpha;
                 return half4(_Color.rgb, a);
             }
             ENDHLSL

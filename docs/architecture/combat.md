@@ -151,6 +151,8 @@
   / `MeleeRange` (range scales slash + hitbox together). Default 3-hit combo with slash C written by
   **Tools ▸ RedMagic ▸ FX ▸ Tajo melee · Combo del jugador** (`Gameplay/Editor/PlayerComboSetup`, overwrites).
   **Dash hit**: `dashHit` fires when attacking during a dash (or `dashGrace` after), once per dash, cancels
-  the current hit, ignores the combo cooldown, then the combo continues at `dashChainsTo`. **Hits 4–5**: the
+  the current hit, ignores the combo cooldown and does not touch the combo index (1 · dash · 2 · 3 · dash · 4 · 5).
+  **Parry → finisher**: a successful `Parry` on this player makes the next press the last unlocked hit,
+  skipping the combo cooldown. Melee knockback is near zero on purpose (0.08–0.2, visual only). **Hits 4–5**: the
   list holds 5, `unlockedHits` = 3; items add hits with `ComboHitsEffect` ("Jugador · Golpes extra de combo",
   summed in `PlayerStats.ComboHitBonus`). Not yet: per-hit animations (player is still the old sprite rig).

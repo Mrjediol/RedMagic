@@ -87,19 +87,11 @@ namespace RedMagic.Gameplay
         [SerializeField] private float comboCooldown = 0.35f;
         [Tooltip("Al salir un golpe, el tajo anterior se desvanece en este tiempo (no hay dos a la vez).")]
         [SerializeField] private float interruptFade = 0.06f;
-        [Header("Suelo")]
-        [Tooltip("Atacando en el suelo, la parte del tajo bajo los pies no se dibuja (sólo visual).")]
-        [SerializeField] private bool clipAtGround = true;
-        [Tooltip("Altura del corte respecto a los pies (negativo = un poco dentro del suelo).")]
-        [SerializeField] private float groundClipOffset = -0.1f;
-
         [Header("Dash")]
         [Tooltip("Golpe al atacar durante un dash (uno por dash). Sin tajo = el dash no ataca.")]
         [SerializeField] private Hit dashHit = new Hit();
         [Tooltip("Tras acabar el dash, durante cuánto todavía sale el golpe de dash.")]
         [SerializeField] private float dashGrace = 0.12f;
-        [Tooltip("Índice del golpe del combo que sigue al de dash (1 = el segundo).")]
-        [SerializeField] private int dashChainsTo = 1;
 
         [SerializeField] private LayerMask hitLayers = ~0;
 
@@ -110,7 +102,6 @@ namespace RedMagic.Gameplay
         private PlayerMovement _movement;
         private PlayerAnimator _animator;
         private Health _health;
-        private Collider2D _body;
         private InputAction _attackAction;
 
         private int _nextIndex;           // golpe que sale con la próxima pulsación
@@ -122,6 +113,7 @@ namespace RedMagic.Gameplay
         private int _currentFacing = 1;
         private float _sinceDash = 999f;
         private bool _dashHitUsed;
+        private bool _finisherReady;
         private bool _slashStarted;
         private MeleeSlashFx _slash;
 
@@ -169,7 +161,6 @@ namespace RedMagic.Gameplay
             _movement = GetComponent<PlayerMovement>();
             _animator = GetComponent<PlayerAnimator>();
             _health = GetComponent<Health>();
-            _body = GetComponent<Collider2D>();
 
             _filter = new ContactFilter2D
             {
@@ -192,6 +183,9 @@ namespace RedMagic.Gameplay
         {
             _attackAction?.Enable();
             if (_movement != null) { _movement.Dashed -= OnDashed; _movement.Dashed += OnDashed; }
+            Parry.Succeeded -= OnParrySucceeded;
+            Parry.Succeeded += OnParrySucceeded;
+            _finisherReady = false;
             _sinceDash = 999f;
             _dashHitUsed = false;
             // Domain Reload desactivado: el estado del combo no sobrevive entre sesiones de Play.
@@ -207,6 +201,7 @@ namespace RedMagic.Gameplay
         {
             _attackAction?.Disable();
             if (_movement != null) _movement.Dashed -= OnDashed;
+            Parry.Succeeded -= OnParrySucceeded;
         }
 
         private void Update()
@@ -232,31 +227,33 @@ namespace RedMagic.Gameplay
             bool pressed = (_attackAction != null && _attackAction.WasPressedThisFrame()) || TouchInput.ConsumeAttack();
             if (pressed) _bufferTimer = inputBuffer;
 
-            // Combo caducado: se vuelve al primer golpe.
+            // Combo caducado: se vuelve al primer golpe (el remate tras parry no caduca).
             if (_current != null && _sinceHit > _current.recovery + chainWindow) _nextIndex = 0;
 
             if (_bufferTimer <= 0f) return;
 
-            // Golpe en dash: uno por dash, cancela el golpe en curso y no espera al enfriamiento.
+            // Golpe en dash: uno por dash, cancela el golpe en curso, no espera al enfriamiento y no
+            // toca el combo (1 · dash · 2 · 3 · dash · 4 · 5).
             bool inDash = _movement != null && (_movement.IsDashing || _sinceDash <= dashGrace);
             if (inDash && !_dashHitUsed && dashHit != null && dashHit.slash != null)
             {
                 _bufferTimer = 0f;
                 _dashHitUsed = true;
-                int count = HitCount(combo);
-                int next = Mathf.Clamp(dashChainsTo, 0, Mathf.Max(0, count - 1));
-                StartHit(dashHit, -1, next, setCooldown: false);
+
+
+                StartHit(dashHit, -1, _nextIndex, setCooldown: false);   // no rompe el combo: sigue donde iba
                 return;
             }
 
-            if (_cooldownTimer > 0f) return;
+            if (_cooldownTimer > 0f && !_finisherReady) return;   // el remate tras parry no espera
             if (_current != null && _sinceHit < _current.recovery) return;   // todavía no se puede cancelar
 
             var list = ActiveList();
             int total = HitCount(list);
             if (total == 0) return;
             _bufferTimer = 0f;
-            int index = _nextIndex < total ? _nextIndex : 0;
+            int index = _finisherReady ? total - 1 : (_nextIndex < total ? _nextIndex : 0);
+            _finisherReady = false;
             bool last = index == total - 1;
             StartHit(list[index], index, last ? 0 : index + 1, setCooldown: last);
         }
@@ -271,6 +268,13 @@ namespace RedMagic.Gameplay
         private int HitCount(Hit[] list) =>
             Mathf.Min(UnlockedHits + PlayerStats.ComboHitBonus, list.Length);
 
+
+        /// <summary>Parry acertado: el siguiente golpe del combo es directamente el último (el remate).</summary>
+        private void OnParrySucceeded(IncomingHit hit)
+        {
+            if (hit.Target == null || hit.Target != _health) return;
+            _finisherReady = true;
+        }
         private void OnDashed(int direction)
         {
             _sinceDash = 0f;
@@ -319,9 +323,6 @@ namespace RedMagic.Gameplay
             _slash = go.GetComponent<MeleeSlashFx>();
             float range = PlayerStats.Multiplier(PlayerStat.MeleeRange);
             _slash.Play(_current.power * range, facing < 0, _current.reverse, _current.stretch);
-            // En el suelo el tajo no se dibuja por debajo de los pies: no se sale por abajo de la pantalla.
-            if (clipAtGround && _movement != null && _movement.IsGrounded && _body != null)
-                _slash.SetGroundClip(_body.bounds.min.y + groundClipOffset);
         }
 
         private void ApplyHits()

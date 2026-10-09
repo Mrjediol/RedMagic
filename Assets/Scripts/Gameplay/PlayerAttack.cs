@@ -87,6 +87,12 @@ namespace RedMagic.Gameplay
         [SerializeField] private float comboCooldown = 0.35f;
         [Tooltip("Al salir un golpe, el tajo anterior se desvanece en este tiempo (no hay dos a la vez).")]
         [SerializeField] private float interruptFade = 0.06f;
+        [Header("Suelo")]
+        [Tooltip("Atacando en el suelo, la parte del tajo bajo los pies no se dibuja (sólo visual).")]
+        [SerializeField] private bool clipAtGround = true;
+        [Tooltip("Altura del corte respecto a los pies (negativo = un poco dentro del suelo).")]
+        [SerializeField] private float groundClipOffset = -0.1f;
+
         [Header("Dash")]
         [Tooltip("Golpe al atacar durante un dash (uno por dash). Sin tajo = el dash no ataca.")]
         [SerializeField] private Hit dashHit = new Hit();
@@ -104,6 +110,7 @@ namespace RedMagic.Gameplay
         private PlayerMovement _movement;
         private PlayerAnimator _animator;
         private Health _health;
+        private Collider2D _body;
         private InputAction _attackAction;
 
         private int _nextIndex;           // golpe que sale con la próxima pulsación
@@ -162,6 +169,7 @@ namespace RedMagic.Gameplay
             _movement = GetComponent<PlayerMovement>();
             _animator = GetComponent<PlayerAnimator>();
             _health = GetComponent<Health>();
+            _body = GetComponent<Collider2D>();
 
             _filter = new ContactFilter2D
             {
@@ -311,6 +319,9 @@ namespace RedMagic.Gameplay
             _slash = go.GetComponent<MeleeSlashFx>();
             float range = PlayerStats.Multiplier(PlayerStat.MeleeRange);
             _slash.Play(_current.power * range, facing < 0, _current.reverse, _current.stretch);
+            // En el suelo el tajo no se dibuja por debajo de los pies: no se sale por abajo de la pantalla.
+            if (clipAtGround && _movement != null && _movement.IsGrounded && _body != null)
+                _slash.SetGroundClip(_body.bounds.min.y + groundClipOffset);
         }
 
         private void ApplyHits()

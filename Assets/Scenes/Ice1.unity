@@ -1017,6 +1017,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CinderKettleBot
       objectReference: {fileID: 0}
+    - target: {fileID: 2689247267595700242, guid: dbdeff51b4cbc1d428db2e106274c342, type: 3}
+      propertyPath: tuning.maxHealth
+      value: 34
+      objectReference: {fileID: 0}
     - target: {fileID: 4282298408061697420, guid: dbdeff51b4cbc1d428db2e106274c342, type: 3}
       propertyPath: m_LocalPosition.x
       value: -30.797523
@@ -1621,6 +1625,10 @@ PrefabInstance:
     - target: {fileID: 7815733602716581748, guid: d17a89dc0989ba9428e9443f056f2fbb, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.726
+      objectReference: {fileID: 0}
+    - target: {fileID: 8182171875400212576, guid: d17a89dc0989ba9428e9443f056f2fbb, type: 3}
+      propertyPath: damage
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8253735097509097905, guid: d17a89dc0989ba9428e9443f056f2fbb, type: 3}
       propertyPath: maxHealth

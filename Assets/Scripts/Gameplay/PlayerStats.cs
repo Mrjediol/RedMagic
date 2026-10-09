@@ -42,6 +42,7 @@ namespace RedMagic.Gameplay
         private static readonly Dictionary<object, (PlayerStat stat, float value)> Multipliers = new();
         private static readonly Dictionary<object, int> ComboBonuses = new();
         private static readonly Dictionary<object, float> DashDamages = new();
+        private static readonly HashSet<object> DashUnstoppableSources = new();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
@@ -49,6 +50,7 @@ namespace RedMagic.Gameplay
             Multipliers.Clear();
             ComboBonuses.Clear();
             DashDamages.Clear();
+            DashUnstoppableSources.Clear();
         }
 
         /// <summary>Pone (o actualiza) el multiplicador que aporta <paramref name="source"/>.</summary>
@@ -90,5 +92,14 @@ namespace RedMagic.Gameplay
         {
             get { float n = 0f; foreach (var v in DashDamages.Values) n += v; return n; }
         }
+
+        /// <summary>Activa/quita "dash imparable" (recibir daño no corta el dash) para <paramref name="source"/>.</summary>
+        public static void SetDashUnstoppable(object source, bool on)
+        {
+            if (on) DashUnstoppableSources.Add(source); else DashUnstoppableSources.Remove(source);
+        }
+
+        /// <summary>True si algún item hace el dash imparable.</summary>
+        public static bool DashUnstoppable => DashUnstoppableSources.Count > 0;
     }
 }

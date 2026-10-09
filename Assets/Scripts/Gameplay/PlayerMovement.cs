@@ -1324,6 +1324,17 @@ namespace RedMagic.Gameplay
         // ================================================================ retroceso
 
         /// <summary>
+        /// Corta el dash en curso (recibir daño en pleno dash). Conserva algo de inercia, como al
+        /// terminar un dash normal. No hace nada con "dash imparable" (item).
+        /// </summary>
+        public void CancelDash()
+        {
+            if (_dashTimer <= 0f || PlayerStats.DashUnstoppable) return;
+            _dashTimer = 0f;
+            _currentHorizontalSpeed = Mathf.Clamp(_currentHorizontalSpeed, -MoveClamp, MoveClamp);
+        }
+
+        /// <summary>
         /// Recibe el empujón de <see cref="Knockback"/>. Como este controlador integra su propia
         /// velocidad y sólo usa un Rigidbody2D cinemático, el empujón no puede llegar como una
         /// fuerza: se escribe directamente en la velocidad interna.
@@ -1334,6 +1345,8 @@ namespace RedMagic.Gameplay
         public void ApplyKnockback(Vector2 velocity, float duration)
         {
             if (duration <= 0f) return;
+            // Con "dash imparable" (item) un golpe en pleno dash no lo corta ni empuja.
+            if (_dashTimer > 0f && PlayerStats.DashUnstoppable) return;
 
             _knockbackTimer = Mathf.Max(_knockbackTimer, duration);
 

@@ -402,6 +402,7 @@ effect.currency_drop_bonus = +{0:0}% currency from enemies
 effect.max_health_bonus = +{0:0} max health
 effect.combo_hits = +{0} combo hit(s)
 effect.dash_damage = Dash deals {0:0} damage
+effect.dash_unstoppable = Taking damage no longer interrupts the dash
 effect.currency_on_damage_taken = +{0} {1} for every hit you survive
 effect.shot_damage_bonus = +{0:0}% shot damage
 effect.currency_on_kill = +{0} {1} per kill

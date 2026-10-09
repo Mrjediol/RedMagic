@@ -7,8 +7,10 @@ namespace RedMagic.Gameplay
     /// <summary>
     /// Lo que el dash hace en combate, aparte de mover (eso es <see cref="PlayerMovement"/>):
     /// <list type="bullet">
-    /// <item><b>Esquiva</b>: al empezar el dash, i-frames durante la misma ventana que el parry
-    /// (<see cref="PlayerParry.Window"/>), así un dash a tiempo atraviesa un golpe.</item>
+    /// <item><b>Esquiva</b>: i-frames sólo al arrancar (<see cref="startInvulnerability"/>). Recibir daño
+    /// en el resto del dash lo corta (<see cref="PlayerMovement.CancelDash"/>), salvo "dash imparable".</item>
+    /// <item><b>Atravesar</b>: el jugador sólo choca con el terreno, así que el dash pasa a través de
+    /// los enemigos (pueden golpearle por contacto al cruzarlos).</item>
     /// <item><b>Daño</b> (mejora de build): mientras dura el dash, cada enemigo que toque el cuerpo
     /// recibe <see cref="PlayerStats.DashDamage"/> una vez por dash. Sin items, 0 = no hace daño.</item>
     /// </list>
@@ -18,10 +20,8 @@ namespace RedMagic.Gameplay
     public sealed class PlayerDashCombat : MonoBehaviour
     {
         [Header("Esquiva")]
-        [Tooltip("I-frames al empezar el dash = la ventana del parry. Si no hay PlayerParry, se usa Fallback.")]
-        [SerializeField] private bool matchParryWindow = true;
-        [Tooltip("I-frames si no se copia la ventana del parry (o no hay PlayerParry).")]
-        [SerializeField] private float fallbackInvulnerability = 0.12f;
+        [Tooltip("I-frames sólo justo al empezar el dash (segundos). El resto del dash se puede recibir daño, y recibirlo corta el dash (salvo item \"Dash imparable\").")]
+        [SerializeField, Min(0f)] private float startInvulnerability = 0.06f;
 
         [Header("Daño (mejora)")]
         [Tooltip("Margen alrededor del collider del jugador para el golpe del dash.")]
@@ -33,7 +33,6 @@ namespace RedMagic.Gameplay
         [SerializeField] private GameObject hitEffect;
 
         private PlayerMovement _movement;
-        private PlayerParry _parry;
         private Health _health;
         private Collider2D _body;
         private ContactFilter2D _filter;
@@ -44,7 +43,6 @@ namespace RedMagic.Gameplay
         private void Awake()
         {
             _movement = GetComponent<PlayerMovement>();
-            _parry = GetComponent<PlayerParry>();
             _health = GetComponent<Health>();
             _body = GetComponent<Collider2D>();
             _filter = new ContactFilter2D { useLayerMask = true, layerMask = hitLayers, useTriggers = true };
@@ -54,17 +52,24 @@ namespace RedMagic.Gameplay
         {
             _movement.Dashed -= OnDashed;
             _movement.Dashed += OnDashed;
+            if (_health != null) { _health.Damaged -= OnDamaged; _health.Damaged += OnDamaged; }
             _alreadyHit.Clear();
         }
 
-        private void OnDisable() => _movement.Dashed -= OnDashed;
+        private void OnDisable()
+        {
+            _movement.Dashed -= OnDashed;
+            if (_health != null) _health.Damaged -= OnDamaged;
+        }
+
+        private void OnDamaged(float amount) => _movement.CancelDash();
 
         private void OnDashed(int direction)
         {
             _dashDirection = direction;
             _alreadyHit.Clear();
             if (_health == null) return;
-            float iframes = matchParryWindow && _parry != null ? _parry.Window : fallbackInvulnerability;
+            float iframes = startInvulnerability;
             _health.StartInvulnerability(iframes);
         }
 

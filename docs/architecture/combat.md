@@ -156,7 +156,10 @@
   skipping the combo cooldown. Melee knockback is near zero on purpose (0.08–0.2, visual only). **Hits 4–5**: the
   list holds 5, `unlockedHits` = 3; items add hits with `ComboHitsEffect` ("Jugador · Golpes extra de combo",
   summed in `PlayerStats.ComboHitBonus`). Not yet: per-hit animations (player is still the old sprite rig).
-- **Dash in combat (`Gameplay.PlayerDashCombat`)** — on `Dashed`: i-frames = `PlayerParry.Window` (dodge through
+- **Dash in combat (`Gameplay.PlayerDashCombat`)** — i-frames only at the start (`startInvulnerability`, 0.06 s); the
+  player only collides with terrain so it passes through enemies, but contact/hits land after that and any damage
+  cancels the dash (`PlayerMovement.CancelDash`; knockback too) unless an item gives `DashUnstoppableEffect`
+  (`PlayerStats.DashUnstoppable`). Old note: (dodge through
   a hit, same timing as a parry). Build upgrade `DashDamageEffect` ("Jugador · Dash con daño", summed in
   `PlayerStats.DashDamage`): while dashing, each enemy touching the body (+`hitPadding`) takes it once per dash.
   Each hit spawns `hitEffect` (`ImpactBurstFx`, enemy mode); `testDamage` adds dash damage without items (testing).

@@ -84,6 +84,14 @@ namespace RedMagic.Fx
         [Tooltip("Orden de la capa de más atrás; cada capa siguiente suma 1.")]
         [SerializeField] private int baseSortingOrder = 40;
 
+        [Header("Profundidad")]
+        [Tooltip("Parte el efecto en dos: lo de debajo de Split Y se dibuja delante (Base Sorting Order) y lo de encima detrás (Back Sorting Order). Así un anillo en los pies rodea al personaje.")]
+        [SerializeField] private bool depthSplit;
+        [Tooltip("Altura del corte en radios del efecto, antes de rotar (0 = centro; -0.5 = más abajo).")]
+        [SerializeField, Range(-1.5f, 1.5f)] private float splitY;
+        [Tooltip("Orden de la mitad de detrás (por debajo del personaje: el player está en 10).")]
+        [SerializeField] private int backSortingOrder = 2;
+
         [Header("Preview")]
         [Tooltip("Repite el tajo en bucle (escena de prueba / modo edición). En juego, false.")]
         [SerializeField] private bool previewLoop;
@@ -123,6 +131,11 @@ namespace RedMagic.Fx
         private static readonly int SeedId = Shader.PropertyToID("_Seed");
         private static readonly int AlphaId = Shader.PropertyToID("_Alpha");
         private static readonly int SymmetricId = Shader.PropertyToID("_Symmetric");
+        private static readonly int DepthSideId = Shader.PropertyToID("_DepthSide");
+        private static readonly int SplitYId = Shader.PropertyToID("_SplitY");
+
+        /// <summary>Un renderer por capa, o dos (delante + detrás) con <see cref="depthSplit"/>.</summary>
+        private int RendererCount => depthSplit ? layers.Length * 2 : layers.Length;
 
         /// <summary>Duración total del tajo (última capa incluida), en segundos.</summary>
         public float TotalDuration
@@ -235,12 +248,12 @@ namespace RedMagic.Fx
         private void OnValidate()
         {
             // Cambiar el nº de capas en el Inspector reconstruye en el siguiente Update.
-            if (_renderers != null && _renderers.Length != layers.Length) _renderers = null;
+            if (_renderers != null && _renderers.Length != RendererCount) _renderers = null;
         }
 
         private void Update()
         {
-            if (_renderers == null || _renderers.Length != layers.Length) BuildLayers();
+            if (_renderers == null || _renderers.Length != RendererCount) BuildLayers();
 #if UNITY_EDITOR
             // En modo edición Update sólo corre si algo cambia: se pide el siguiente frame.
             if (!Application.isPlaying && (_playing || previewLoop))
@@ -294,10 +307,12 @@ namespace RedMagic.Fx
             float span = (symmetric ? arcDegrees * 0.5f : arcDegrees) * Mathf.Deg2Rad;
             float thicknessMul = Mathf.Lerp(1f, _power, 0.5f);
 
-            for (int i = 0; i < layers.Length && i < _materials.Length; i++)
+            for (int k = 0; k < _materials.Length; k++)
             {
+                int i = k % layers.Length;
+                bool back = k >= layers.Length;
                 var l = layers[i];
-                var m = _materials[i];
+                var m = _materials[k];
                 float local = duration > 0f ? (_time / duration) - l.delay : 1f;
 
 
@@ -328,6 +343,8 @@ namespace RedMagic.Fx
                 float cut = _interrupted ? Mathf.Clamp01(_interruptLeft / _interruptDuration) : 1f;
                 m.SetFloat(AlphaId, visible ? fade * cut : 0f);
                 m.SetFloat(SymmetricId, symmetric ? 1f : 0f);
+                m.SetFloat(DepthSideId, depthSplit ? (back ? -1f : 1f) : 0f);
+                m.SetFloat(SplitYId, splitY);
             }
         }
 
@@ -343,9 +360,10 @@ namespace RedMagic.Fx
             var sh = shader != null ? shader : Shader.Find("RedMagic/Melee Slash Layer");
             if (sh == null) return;
 
-            _renderers = new MeshRenderer[layers.Length];
-            _materials = new Material[layers.Length];
-            for (int i = 0; i < layers.Length; i++)
+            if (layers.Length == 0) { _renderers = Array.Empty<MeshRenderer>(); _materials = Array.Empty<Material>(); return; }
+            _renderers = new MeshRenderer[RendererCount];
+            _materials = new Material[RendererCount];
+            for (int k = 0; k < RendererCount; k++)
             {
                 var go = new GameObject(ChildName) { hideFlags = HideFlags.HideAndDontSave };
                 go.transform.SetParent(transform, false);
@@ -354,9 +372,10 @@ namespace RedMagic.Fx
                 var mat = new Material(sh) { hideFlags = HideFlags.HideAndDontSave };
                 mr.sharedMaterial = mat;
                 mr.sortingLayerName = sortingLayer;
-                mr.sortingOrder = baseSortingOrder + i;
-                _renderers[i] = mr;
-                _materials[i] = mat;
+                int i = k % layers.Length;
+                mr.sortingOrder = (k >= layers.Length ? backSortingOrder : baseSortingOrder) + i;
+                _renderers[k] = mr;
+                _materials[k] = mat;
             }
         }
 

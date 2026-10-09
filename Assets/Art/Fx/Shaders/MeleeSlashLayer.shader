@@ -27,6 +27,8 @@ Shader "RedMagic/Melee Slash Layer"
         _Seed ("Seed", Float) = 0
         _Alpha ("Alpha", Range(0, 1)) = 1
         _Symmetric ("Symmetric (opens from the centre both ways)", Float) = 0
+        _DepthSide ("Depth side (0 all, 1 front = below split, -1 back = above split)", Float) = 0
+        _SplitY ("Depth split (local Y, radii)", Float) = 0
     }
 
     SubShader
@@ -57,7 +59,7 @@ Shader "RedMagic/Melee Slash Layer"
                 half4 _Color;
                 float _Radius, _Thickness, _ArcStart, _ArcSpan, _Head, _Tail;
                 float _HeadTaper, _TailTaper, _FraySpread, _FrayFreq, _OuterJag, _InnerJag;
-                float _Breakup, _Shards, _ShardDrift, _ShardStyle, _Seed, _Alpha, _Symmetric;
+                float _Breakup, _Shards, _ShardDrift, _ShardStyle, _Seed, _Alpha, _Symmetric, _DepthSide, _SplitY;
             CBUFFER_END
 
             struct Attributes { float3 positionOS : POSITION; float2 uv : TEXCOORD0; };
@@ -197,7 +199,10 @@ Shader "RedMagic/Melee Slash Layer"
                     for (int j = -2; j <= 1; j++) shard = max(shard, Particle(cell + j, t, r, aa));
                 }
 
-                half a = saturate(max(body, shard)) * _Color.a * _Alpha;
+                // Profundidad: la mitad "delante" (bajo _SplitY) y la "detrás" van en dos renderers
+                // con distinto orden, uno por delante del personaje y otro por detrás.
+                float side = _DepthSide > 0.5 ? step(p.y, _SplitY) : (_DepthSide < -0.5 ? step(_SplitY, p.y) : 1);
+                half a = saturate(max(body, shard)) * _Color.a * _Alpha * side;
                 return half4(_Color.rgb, a);
             }
             ENDHLSL

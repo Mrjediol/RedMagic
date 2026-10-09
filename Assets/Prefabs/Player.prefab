@@ -362,11 +362,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerVfx
   dashEffect: {fileID: 437731077658300166, guid: c8bed192e2ed1e642b11c92a445fc1a7, type: 3}
-  dashEffectOffset: {x: 0.8, y: -0.1}
+  dashEffectOffset: {x: 0.45, y: -0.15}
+  dashEffectSize: 0.6
   jumpEffect: {fileID: 2629817948170733221, guid: 169535fd5454da44cb4eeace65c44cbd, type: 3}
-  jumpEffectOffset: {x: 0, y: 0.1}
+  jumpEffectOffset: {x: 0, y: -0.25}
+  jumpEffectSize: 0.6
   doubleJumpEffect: {fileID: 945700494345746566, guid: 429acab2c3554994dbf92e0c6e897a77, type: 3}
-  doubleJumpEffectOffset: {x: 0, y: -0.62}
+  doubleJumpEffectOffset: {x: 0, y: -0.65}
+  doubleJumpEffectSize: 0.65
 --- !u!114 &6828806480495331336
 MonoBehaviour:
   m_ObjectHideFlags: 0

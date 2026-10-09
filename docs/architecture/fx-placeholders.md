@@ -124,5 +124,7 @@ which also writes `Assets/Scenes/Test/SlashPreview.unity` (all variants looping)
   escena de prueba* → `Assets/Scenes/Test/MovementFxPreview.unity`). `MeleeSlashFx.symmetric` opens the arc from
   its centre (`startAngle` = centre) both ways; `shapeStretch` is the prefab's own X/Y squash. `PlayerVfx`
   accepts either a `MeleeSlashFx` prefab (pooled, mirrored by facing, dash one follows the player) or the old
-  `VfxOneShot` particles. Preview scenes are built **additively** and closed after saving — the generators
+  `VfxOneShot` particles, with a per-effect `Size` + `Offset`. **Depth split** (`depthSplit`, `splitY`,
+  `backSortingOrder`): each layer is drawn twice — below `splitY` in front (`baseSortingOrder`), above it behind
+  the player (`backSortingOrder` 2 < player 10) — so a ring at the feet wraps the body. Preview scenes are built **additively** and closed after saving — the generators
   never save or close the user's open scenes.

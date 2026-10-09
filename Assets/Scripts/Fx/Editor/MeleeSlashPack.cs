@@ -32,6 +32,9 @@ namespace RedMagic.Fx.EditorTools
             public bool clockwise = true;
             public bool symmetric;
             public Vector2 shapeStretch = Vector2.one;
+            public bool depthSplit;
+            public float splitY;
+            public int backSortingOrder = 2;
             public float duration = 0.32f;
             public float headPortion = 0.45f;
             public float tailStart = 0.2f;
@@ -208,7 +211,7 @@ namespace RedMagic.Fx.EditorTools
         // Salto: salpicadura en los pies que se abre hacia los dos lados (simétrica, centro abajo).
         private static Preset Jump1() => new Preset   // media luna limpia
         {
-            worldRadius = 1.7f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 180f,
+            worldRadius = 1.7f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 180f, depthSplit = true, splitY = -0.35f,
             shapeStretch = new Vector2(1.5f, 0.55f), duration = 0.3f, headPortion = 0.4f,
             layers = new[]
             {
@@ -220,7 +223,7 @@ namespace RedMagic.Fx.EditorTools
 
         private static Preset Jump2() => new Preset   // alas: más abierta, deshilachada, con chispas
         {
-            worldRadius = 1.8f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 230f,
+            worldRadius = 1.8f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 230f, depthSplit = true, splitY = -0.35f,
             shapeStretch = new Vector2(1.4f, 0.75f), duration = 0.36f,
             layers = new[]
             {
@@ -233,7 +236,7 @@ namespace RedMagic.Fx.EditorTools
 
         private static Preset Jump3() => new Preset   // salpicadura baja con muchas chispas
         {
-            worldRadius = 1.6f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 150f,
+            worldRadius = 1.6f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 150f, depthSplit = true, splitY = -0.35f,
             shapeStretch = new Vector2(1.6f, 0.45f), duration = 0.32f,
             layers = new[]
             {
@@ -245,7 +248,7 @@ namespace RedMagic.Fx.EditorTools
 
         private static Preset Jump4() => new Preset   // fina y rápida
         {
-            worldRadius = 1.8f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 200f,
+            worldRadius = 1.8f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 200f, depthSplit = true, splitY = -0.35f,
             shapeStretch = new Vector2(1.7f, 0.5f), duration = 0.22f, headPortion = 0.5f,
             layers = new[]
             {
@@ -258,7 +261,7 @@ namespace RedMagic.Fx.EditorTools
         // Doble salto: anillo bajo los pies que se cierra por arriba (simétrico casi completo).
         private static Preset Double1() => new Preset   // anillo fino
         {
-            worldRadius = 1.6f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f,
+            worldRadius = 1.6f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f, depthSplit = true, splitY = 0f,
             shapeStretch = new Vector2(1.3f, 0.4f), duration = 0.32f, headPortion = 0.5f, tailStart = 0.35f,
             layers = new[]
             {
@@ -269,7 +272,7 @@ namespace RedMagic.Fx.EditorTools
 
         private static Preset Double2() => new Preset   // anillo grueso con estela morada
         {
-            worldRadius = 1.7f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f,
+            worldRadius = 1.7f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f, depthSplit = true, splitY = 0f,
             shapeStretch = new Vector2(1.3f, 0.45f), duration = 0.38f, tailStart = 0.3f,
             layers = new[]
             {
@@ -282,7 +285,7 @@ namespace RedMagic.Fx.EditorTools
 
         private static Preset Double3() => new Preset   // dos anillos (uno dentro de otro)
         {
-            worldRadius = 1.8f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f,
+            worldRadius = 1.8f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f, depthSplit = true, splitY = 0f,
             shapeStretch = new Vector2(1.25f, 0.42f), duration = 0.36f, tailStart = 0.3f,
             layers = new[]
             {
@@ -295,7 +298,7 @@ namespace RedMagic.Fx.EditorTools
 
         private static Preset Double4() => new Preset   // anillo alto con chispas
         {
-            worldRadius = 1.6f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f,
+            worldRadius = 1.6f, symmetric = true, clockwise = false, startAngle = 270f, arcDegrees = 350f, depthSplit = true, splitY = 0f,
             shapeStretch = new Vector2(1.2f, 0.7f), duration = 0.36f, tailStart = 0.3f,
             layers = new[]
             {
@@ -308,7 +311,7 @@ namespace RedMagic.Fx.EditorTools
         // Dash: estela detrás del jugador (el centro del arco mira hacia atrás, 180°).
         private static Preset Dash1() => new Preset   // lente simétrica limpia
         {
-            worldRadius = 2f, symmetric = true, clockwise = false, startAngle = 180f, arcDegrees = 130f,
+            worldRadius = 2f, symmetric = true, clockwise = false, startAngle = 180f, arcDegrees = 130f, depthSplit = true, splitY = 0f,
             shapeStretch = new Vector2(2.4f, 0.45f), duration = 0.3f, headPortion = 0.4f,
             layers = new[]
             {
@@ -320,7 +323,7 @@ namespace RedMagic.Fx.EditorTools
 
         private static Preset Dash2() => new Preset   // corte: barre de arriba-delante a abajo-detrás
         {
-            worldRadius = 2f, clockwise = false, startAngle = 110f, arcDegrees = 150f,
+            worldRadius = 2f, clockwise = false, startAngle = 110f, arcDegrees = 150f, depthSplit = true, splitY = 0f,
             shapeStretch = new Vector2(2.2f, 0.5f), duration = 0.3f,
             layers = new[]
             {
@@ -333,7 +336,7 @@ namespace RedMagic.Fx.EditorTools
 
         private static Preset Dash3() => new Preset   // viento: líneas largas y finas deshilachadas
         {
-            worldRadius = 2.2f, symmetric = true, clockwise = false, startAngle = 180f, arcDegrees = 110f,
+            worldRadius = 2.2f, symmetric = true, clockwise = false, startAngle = 180f, arcDegrees = 110f, depthSplit = true, splitY = 0f,
             shapeStretch = new Vector2(2.8f, 0.32f), duration = 0.28f,
             layers = new[]
             {
@@ -346,7 +349,7 @@ namespace RedMagic.Fx.EditorTools
 
         private static Preset Dash4() => new Preset   // lente con estela morada y chispas
         {
-            worldRadius = 2f, symmetric = true, clockwise = false, startAngle = 180f, arcDegrees = 140f,
+            worldRadius = 2f, symmetric = true, clockwise = false, startAngle = 180f, arcDegrees = 140f, depthSplit = true, splitY = 0f,
             shapeStretch = new Vector2(2.3f, 0.55f), duration = 0.34f,
             layers = new[]
             {

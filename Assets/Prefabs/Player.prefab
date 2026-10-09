@@ -316,8 +316,8 @@ MonoBehaviour:
     recovery: 0.34
   - label: "5 \xB7 Gran remate"
     slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
-    rotation: -20
-    reverse: 0
+    rotation: 20
+    reverse: 1
     power: 1.6
     offset: {x: 0.7, y: 0.4}
     stretch: {x: 1.6, y: 0.85}

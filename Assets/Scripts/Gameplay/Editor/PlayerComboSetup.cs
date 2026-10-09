@@ -36,7 +36,7 @@ namespace RedMagic.Gameplay.EditorTools
                     offset = new Vector2(0.35f, 0.15f), stretch = new Vector2(1.3f, 1.1f), damage = 1.6f, knockback = 0.12f, windup = 0.12f, recovery = 0.42f },
                 new HitDef { label = "4 · Vertical ascendente", rotation = 0f, reverse = true, power = 1.3f,
                     offset = new Vector2(0.5f, 0.4f), stretch = new Vector2(1.15f, 1.45f), damage = 1.2f, knockback = 0.1f, windup = 0.05f, recovery = 0.34f },
-                new HitDef { label = "5 · Gran remate", rotation = -20f, reverse = false, power = 1.6f,
+                new HitDef { label = "5 · Gran remate", rotation = 20f, reverse = true, power = 1.6f,
                     offset = new Vector2(0.7f, 0.4f), stretch = new Vector2(1.6f, 0.85f), damage = 2.6f, knockback = 0.2f, windup = 0.2f, recovery = 0.5f },
             };
 

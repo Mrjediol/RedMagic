@@ -13,6 +13,7 @@ namespace RedMagic.Gameplay
     /// <item><see cref="MeleeSlashFx"/> — mismo set visual que los tajos melee (variantes en
     /// <c>Assets/Prefabs/Fx/Player/Movement/</c>, <b>Tools ▸ RedMagic ▸ FX ▸ Movimiento · Generar
     /// variantes</b>). Se espeja según hacia dónde mira el jugador; el del dash le sigue mientras dura.</item>
+    /// <item><see cref="DashTrailFx"/> (sólo dash): salida + cápsula de luz + onda de choque; termina al acabar el dash.</item>
     /// <item>Partículas pooled (<see cref="VfxOneShot"/>), los antiguos <c>VFX_Dash/Jump/DoubleJump</c>.</item>
     /// </list>
     /// </summary>
@@ -45,6 +46,7 @@ namespace RedMagic.Gameplay
         [SerializeField, Min(0.05f)] private float doubleJumpEffectSize = 1f;
 
         private PlayerMovement _movement;
+        private DashTrailFx _dashTrail;
         private MeleeSlashFx _dashSlash;
         private Vector2 _dashSlashOffset;
         private float _dashFollowLeft;
@@ -71,6 +73,13 @@ namespace RedMagic.Gameplay
 
         private void LateUpdate()
         {
+            // El viaje del dash termina cuando PlayerMovement deja de estar en dash.
+            if (_dashTrail != null && !_movement.IsDashing) { _dashTrail.End(); _dashTrail = null; }
+            FollowDashSlash();
+        }
+
+        private void FollowDashSlash()
+        {
             if (_dashSlash == null) return;
             _dashFollowLeft -= Time.deltaTime;
             if (_dashFollowLeft <= 0f || !_dashSlash.isActiveAndEnabled) { _dashSlash = null; return; }
@@ -80,6 +89,14 @@ namespace RedMagic.Gameplay
         private void OnDashed(int direction)
         {
             var offset = new Vector2(dashEffectOffset.x * direction, dashEffectOffset.y) * Scale;
+            if (dashEffect != null && dashEffect.GetComponent<DashTrailFx>() != null)
+            {
+                if (_dashTrail != null) _dashTrail.End();
+                var trailGo = PrefabPool.Spawn(dashEffect, transform.position, Quaternion.identity);
+                _dashTrail = trailGo.GetComponent<DashTrailFx>();
+                _dashTrail.Begin(transform, offset, new Vector2(direction, 0f), dashEffectSize);
+                return;
+            }
             var slash = SpawnSlash(dashEffect, offset, direction, dashEffectSize);
             if (slash != null)
             {

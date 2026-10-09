@@ -128,3 +128,13 @@ which also writes `Assets/Scenes/Test/SlashPreview.unity` (all variants looping)
   `backSortingOrder`): each layer is drawn twice — below `splitY` in front (`baseSortingOrder`), above it behind
   the player (`backSortingOrder` 2 < player 10) — so a ring at the feet wraps the body. Preview scenes are built **additively** and closed after saving — the generators
   never save or close the user's open scenes.
+- **Code-drawn FX (`Fx.FxCanvas`)**: effects built from many small shapes each frame (strokes, soft strokes,
+  ellipse arcs with dashes, discs/glows, teardrops, triangles) into a vertex-colour mesh
+  (`RedMagic/Fx Vertex Color`, material `Assets/Art/Fx/Materials/Fx_VertexColor.mat`). Two canvases per effect
+  (back order 2 / front order 40) give the behind/in-front split. Ported 1:1 from web sketches (sizes in sketch
+  "px" × `pixel`). Users: `DashTrailFx` (departure sphere + rings, white thread, light capsule + speed lines,
+  bow shock of partial strands/teardrops/sparks, wisps; `replaceTarget` hides the target's SpriteRenderers
+  during travel) and `ImpactBurstFx` (`ground`: flash, dust spikes + puffs, two ground rings, debris, sparks,
+  camera shake; enemy mode: flash, ring, directional shards). Prefabs in `Assets/Prefabs/Fx/Player/Dash/`,
+  built + wired to the player by **Tools ▸ RedMagic ▸ FX ▸ Dash y picado · Generar prefabs y asignar al jugador**
+  (`Fx/Editor/DashFxPack`, overwrites).

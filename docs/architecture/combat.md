@@ -159,3 +159,8 @@
 - **Dash in combat (`Gameplay.PlayerDashCombat`)** — on `Dashed`: i-frames = `PlayerParry.Window` (dodge through
   a hit, same timing as a parry). Build upgrade `DashDamageEffect` ("Jugador · Dash con daño", summed in
   `PlayerStats.DashDamage`): while dashing, each enemy touching the body (+`hitPadding`) takes it once per dash.
+  Each hit spawns `hitEffect` (`ImpactBurstFx`, enemy mode); `testDamage` adds dash damage without items (testing).
+- **Dive attack (`PlayerAttack` ▸ Picado)** — in the air, Down + attack: `PlayerMovement.TryStartDive(velocity)`
+  (own state: fixed velocity, no gravity/control, cancelled by knockback) at `diveAngle` toward facing. Damages
+  what it crosses (`diveContactMultiplier`, `diveHitEffect`); on `PlayerMovement.DiveLanded` an area hit
+  (`diveImpactRadius`, `diveImpactMultiplier`) + `diveGroundImpact` (with camera shake). Trail: `diveTrail`.

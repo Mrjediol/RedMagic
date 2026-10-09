@@ -332,6 +332,15 @@ MonoBehaviour:
   inputBuffer: 0.2
   comboCooldown: 0.35
   interruptFade: 0.06
+  diveEnabled: 1
+  diveSpeed: 26
+  diveAngle: 60
+  diveContactMultiplier: 1.2
+  diveImpactMultiplier: 2.5
+  diveImpactRadius: 2.2
+  diveTrail: {fileID: 1634751481077949723, guid: b7cd57fb948483c47880c9ad71bd58a5, type: 3}
+  diveGroundImpact: {fileID: 5002810239131722341, guid: 6fa7f0f998485d64693a0d41797b0067, type: 3}
+  diveHitEffect: {fileID: 6212086469215316062, guid: 90e7f001fdc59c045994dee695cb1b0b, type: 3}
   dashHit:
     label: Dash
     slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
@@ -361,15 +370,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52741b71fea6e6e479570d8b2f0d212d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerVfx
-  dashEffect: {fileID: 437731077658300166, guid: c8bed192e2ed1e642b11c92a445fc1a7, type: 3}
-  dashEffectOffset: {x: 0.45, y: -0.15}
-  dashEffectSize: 0.6
+  dashEffect: {fileID: 8715186467154088323, guid: daf7fceab035da04da57144142b3cef6, type: 3}
+  dashEffectOffset: {x: 0, y: 0}
+  dashEffectSize: 1
   jumpEffect: {fileID: 2629817948170733221, guid: 169535fd5454da44cb4eeace65c44cbd, type: 3}
   jumpEffectOffset: {x: 0, y: -0.25}
   jumpEffectSize: 0.6
   doubleJumpEffect: {fileID: 945700494345746566, guid: 429acab2c3554994dbf92e0c6e897a77, type: 3}
   doubleJumpEffectOffset: {x: 0, y: -0.65}
-  doubleJumpEffectSize: 0.65
+  doubleJumpEffectSize: 1
 --- !u!114 &6828806480495331336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -742,9 +751,11 @@ MonoBehaviour:
   matchParryWindow: 1
   fallbackInvulnerability: 0.12
   hitPadding: 0.25
+  testDamage: 0
   hitLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  hitEffect: {fileID: 6212086469215316062, guid: 90e7f001fdc59c045994dee695cb1b0b, type: 3}
 --- !u!1 &5936975751486156930
 GameObject:
   m_ObjectHideFlags: 0

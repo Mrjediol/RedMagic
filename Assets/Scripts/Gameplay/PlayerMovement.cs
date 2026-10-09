@@ -112,6 +112,15 @@ namespace RedMagic.Gameplay
         /// <summary>True mientras el jugador sale despedido por un golpe (no controla).</summary>
         public bool IsKnockedBack => _knockbackTimer > 0f;
 
+        /// <summary>True mientras dura un picado (<see cref="TryStartDive"/>): la velocidad la fija el picado hasta tocar suelo.</summary>
+        public bool IsDiving => _diving;
+
+        /// <summary>Entrada abajo mantenida (stick, teclas o táctil).</summary>
+        public bool DownHeld => _input.DownHeld || _input.Y < -0.5f;
+
+        /// <summary>El picado ha tocado suelo (posición de los pies). Lo usa el ataque en picado para el impacto.</summary>
+        public event System.Action<Vector2> DiveLanded;
+
         /// <summary>Se dispara al saltar desde el suelo (o con coyote / salto guardado). Lo usa el VFX de los pies.</summary>
         public event System.Action Jumped;
 
@@ -341,6 +350,8 @@ namespace RedMagic.Gameplay
         private int _airJumpsUsed;
         private int _airDashesUsed;
         private float _knockbackTimer;
+        private bool _diving;
+        private Vector2 _diveVelocity;
         private float _dashTimer;
         private float _dashCooldownTimer;
         private float _dashCooldownDuration;
@@ -534,6 +545,7 @@ namespace RedMagic.Gameplay
                 _currentHorizontalSpeed = 0f;
                 _dashTimer = 0f;
                 _knockbackTimer = 0f;
+                _diving = false;
                 _moveSource = MoveSource.None;
                 ClearDropThrough();
                 return;
@@ -579,6 +591,11 @@ namespace RedMagic.Gameplay
             {
                 _moveSource = MoveSource.Knockback;
                 UpdateKnockback();   // el empujón manda sobre todo lo demás
+            }
+            else if (_diving)
+            {
+                _moveSource = MoveSource.Dash;
+                UpdateDive();     // el picado manda hasta tocar suelo
             }
             else if (_dashTimer > 0f)
             {
@@ -1270,6 +1287,40 @@ namespace RedMagic.Gameplay
             }
         }
 
+        // ================================================================ picado
+
+        /// <summary>
+        /// Empieza un picado: sólo en el aire. Hasta tocar suelo la velocidad es
+        /// <paramref name="velocity"/> (sin gravedad ni control); al aterrizar se lanza
+        /// <see cref="DiveLanded"/>. Corta el dash en curso. Un golpe recibido lo cancela.
+        /// </summary>
+        public bool TryStartDive(Vector2 velocity)
+        {
+            if (_diving || _colDown || IsKnockedBack || velocity.y >= 0f) return false;
+            _diving = true;
+            _diveVelocity = velocity;
+            _dashTimer = 0f;
+            _endedJumpEarly = true;
+            _coyoteUsable = false;
+            if (Mathf.Abs(velocity.x) > 0.01f) Facing = velocity.x < 0f ? -1 : 1;
+            return true;
+        }
+
+        private void UpdateDive()
+        {
+            _currentHorizontalSpeed = _diveVelocity.x;
+            _currentVerticalSpeed = _diveVelocity.y;
+            if ((_currentHorizontalSpeed > 0 && _colRight) || (_currentHorizontalSpeed < 0 && _colLeft))
+                _currentHorizontalSpeed = 0f;
+
+            if (!_colDown) return;
+            _diving = false;
+            _currentVerticalSpeed = 0f;
+            _currentHorizontalSpeed = Mathf.Clamp(_currentHorizontalSpeed * 0.2f, -MoveClamp, MoveClamp);
+            var feet = _collider != null ? new Vector2(transform.position.x, _collider.bounds.min.y) : (Vector2)transform.position;
+            DiveLanded?.Invoke(feet);
+        }
+
         // ================================================================ retroceso
 
         /// <summary>
@@ -1293,6 +1344,7 @@ namespace RedMagic.Gameplay
             // salir despedido en pleno dash dejaría al jugador cayendo sin recursos.
             _dashTimer = 0f;
             _endedJumpEarly = true;
+            _diving = false;   // un golpe corta también el picado
 
             if (velocity.y > 0f) _coyoteUsable = false;
         }
@@ -1329,6 +1381,7 @@ namespace RedMagic.Gameplay
             if (_knockbackTimer <= 0f) return;
 
             _knockbackTimer = 0f;
+            _diving = false;
             _currentHorizontalSpeed = 0f;
             _currentVerticalSpeed = 0f;
 
@@ -1992,6 +2045,7 @@ namespace RedMagic.Gameplay
             _currentVerticalSpeed = 0f;
             _dashTimer = 0f;
             _knockbackTimer = 0f;
+            _diving = false;
             ClearDropThrough();
         }
 

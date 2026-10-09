@@ -26,7 +26,11 @@ namespace RedMagic.Gameplay
         [Header("Daño (mejora)")]
         [Tooltip("Margen alrededor del collider del jugador para el golpe del dash.")]
         [SerializeField] private float hitPadding = 0.25f;
+        [Tooltip("Daño de dash para probar sin items (se suma al de los items). En juego, 0.")]
+        [SerializeField, Min(0f)] private float testDamage;
         [SerializeField] private LayerMask hitLayers = ~0;
+        [Tooltip("Impacto al atravesar a un enemigo (prefab con ImpactBurstFx en modo enemigo).")]
+        [SerializeField] private GameObject hitEffect;
 
         private PlayerMovement _movement;
         private PlayerParry _parry;
@@ -67,7 +71,7 @@ namespace RedMagic.Gameplay
         private void FixedUpdate()
         {
             if (!_movement.IsDashing || _body == null) return;
-            float damage = PlayerStats.DashDamage;
+            float damage = PlayerStats.DashDamage + testDamage;
             if (damage <= 0f) return;
 
             var b = _body.bounds;
@@ -78,12 +82,21 @@ namespace RedMagic.Gameplay
                 if (hit == null || hit.transform == transform || hit.transform.IsChildOf(transform)) continue;
                 var target = hit.GetComponentInParent<Health>();
                 if (target == null || target == _health || target.IsDead || !_alreadyHit.Add(target)) continue;
-                if (Items.PlayerHit.Deal(target, damage, transform.position, 0f, Items.HitKind.Melee))
-                {
-                    var knockback = target.GetComponent<Knockback>();
-                    if (knockback != null) knockback.Apply(_dashDirection, 0.1f);
-                }
+                if (!Items.PlayerHit.Deal(target, damage, transform.position, 0f, Items.HitKind.Melee)) continue;
+
+                SpawnHitEffect(hitEffect, hit.ClosestPoint(transform.position), new Vector2(_dashDirection, 0f));
+                var knockback = target.GetComponent<Knockback>();
+                if (knockback != null) knockback.Apply(_dashDirection, 0.1f);
             }
+        }
+
+        /// <summary>Impacto visual en un enemigo golpeado (dash o picado). Null-safe.</summary>
+        public static void SpawnHitEffect(GameObject prefab, Vector2 point, Vector2 direction)
+        {
+            if (prefab == null) return;
+            var go = Core.PrefabPool.Spawn(prefab, point, Quaternion.identity);
+            var fx = go.GetComponent<Fx.ImpactBurstFx>();
+            if (fx != null) fx.Play(point, direction);
         }
     }
 }

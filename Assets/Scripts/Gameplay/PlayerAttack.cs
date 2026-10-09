@@ -87,6 +87,26 @@ namespace RedMagic.Gameplay
         [SerializeField] private float comboCooldown = 0.35f;
         [Tooltip("Al salir un golpe, el tajo anterior se desvanece en este tiempo (no hay dos a la vez).")]
         [SerializeField] private float interruptFade = 0.06f;
+        [Header("Picado (aire + abajo + ataque)")]
+        [Tooltip("Activa el ataque en picado.")]
+        [SerializeField] private bool diveEnabled = true;
+        [Tooltip("Velocidad del picado (unidades/s).")]
+        [SerializeField] private float diveSpeed = 26f;
+        [Tooltip("Ángulo bajo la horizontal, hacia donde mira el jugador (90 = vertical).")]
+        [SerializeField, Range(20f, 90f)] private float diveAngle = 60f;
+        [Tooltip("Daño a lo que atraviesa por el camino (× daño base).")]
+        [SerializeField, Min(0f)] private float diveContactMultiplier = 1.2f;
+        [Tooltip("Daño del impacto contra el suelo, en área (× daño base).")]
+        [SerializeField, Min(0f)] private float diveImpactMultiplier = 2.5f;
+        [Tooltip("Radio del impacto contra el suelo.")]
+        [SerializeField, Min(0f)] private float diveImpactRadius = 2.2f;
+        [Tooltip("Efecto del viaje (prefab con DashTrailFx).")]
+        [SerializeField] private GameObject diveTrail;
+        [Tooltip("Impacto contra el suelo (prefab con ImpactBurstFx en modo suelo).")]
+        [SerializeField] private GameObject diveGroundImpact;
+        [Tooltip("Impacto en cada enemigo golpeado (prefab con ImpactBurstFx en modo enemigo).")]
+        [SerializeField] private GameObject diveHitEffect;
+
         [Header("Dash")]
         [Tooltip("Golpe al atacar durante un dash (uno por dash). Sin tajo = el dash no ataca.")]
         [SerializeField] private Hit dashHit = new Hit();
@@ -102,6 +122,7 @@ namespace RedMagic.Gameplay
         private PlayerMovement _movement;
         private PlayerAnimator _animator;
         private Health _health;
+        private Collider2D _body;
         private InputAction _attackAction;
 
         private int _nextIndex;           // golpe que sale con la próxima pulsación
@@ -114,6 +135,8 @@ namespace RedMagic.Gameplay
         private float _sinceDash = 999f;
         private bool _dashHitUsed;
         private bool _finisherReady;
+        private DashTrailFx _diveTrail;
+        private readonly HashSet<Health> _diveHits = new HashSet<Health>();
         private bool _slashStarted;
         private MeleeSlashFx _slash;
 
@@ -161,6 +184,7 @@ namespace RedMagic.Gameplay
             _movement = GetComponent<PlayerMovement>();
             _animator = GetComponent<PlayerAnimator>();
             _health = GetComponent<Health>();
+            _body = GetComponent<Collider2D>();
 
             _filter = new ContactFilter2D
             {
@@ -182,7 +206,12 @@ namespace RedMagic.Gameplay
         private void OnEnable()
         {
             _attackAction?.Enable();
-            if (_movement != null) { _movement.Dashed -= OnDashed; _movement.Dashed += OnDashed; }
+            if (_movement != null)
+            {
+                _movement.Dashed -= OnDashed; _movement.Dashed += OnDashed;
+                _movement.DiveLanded -= OnDiveLanded; _movement.DiveLanded += OnDiveLanded;
+            }
+            _diveTrail = null;
             Parry.Succeeded -= OnParrySucceeded;
             Parry.Succeeded += OnParrySucceeded;
             _finisherReady = false;
@@ -200,7 +229,7 @@ namespace RedMagic.Gameplay
         private void OnDisable()
         {
             _attackAction?.Disable();
-            if (_movement != null) _movement.Dashed -= OnDashed;
+            if (_movement != null) { _movement.Dashed -= OnDashed; _movement.DiveLanded -= OnDiveLanded; }
             Parry.Succeeded -= OnParrySucceeded;
         }
 
@@ -213,6 +242,7 @@ namespace RedMagic.Gameplay
             _sinceDash += dt;
 
             UpdateCurrentHit();
+            UpdateDive();
 
             if (Suppressed) return;
 
@@ -231,6 +261,8 @@ namespace RedMagic.Gameplay
             if (_current != null && _sinceHit > _current.recovery + chainWindow) _nextIndex = 0;
 
             if (_bufferTimer <= 0f) return;
+            if (_movement != null && _movement.IsDiving) return;   // el picado manda hasta tocar suelo
+            if (TryStartDive()) return;
 
             // Golpe en dash: uno por dash, cancela el golpe en curso, no espera al enfriamiento y no
             // toca el combo (1 · dash · 2 · 3 · dash · 4 · 5).
@@ -275,6 +307,84 @@ namespace RedMagic.Gameplay
             if (hit.Target == null || hit.Target != _health) return;
             _finisherReady = true;
         }
+        // ------------------------------------------------------------------ picado
+
+        private bool TryStartDive()
+        {
+            if (!diveEnabled || _movement == null || _movement.IsGrounded || !_movement.DownHeld) return false;
+            int facing = Facing;
+            float a = diveAngle * Mathf.Deg2Rad;
+            var dir = new Vector2(Mathf.Cos(a) * facing, -Mathf.Sin(a));
+            if (!_movement.TryStartDive(dir * diveSpeed)) return false;
+
+            _bufferTimer = 0f;
+            _diveHits.Clear();
+            if (_slash != null) _slash.Interrupt(interruptFade);
+            if (_animator != null) _animator.TriggerAttack();
+            SoundTriggered?.Invoke(SoundTrigger.OnAttack);
+
+            if (diveTrail != null)
+            {
+                var go = PrefabPool.Spawn(diveTrail, transform.position, Quaternion.identity);
+                _diveTrail = go.GetComponent<DashTrailFx>();
+                if (_diveTrail != null) _diveTrail.Begin(transform, Vector2.zero, dir, 1.2f);
+            }
+            return true;
+        }
+
+        private void UpdateDive()
+        {
+            if (_movement == null) return;
+            if (!_movement.IsDiving)
+            {
+                // cortado sin aterrizar (un golpe): el efecto termina igual
+                if (_diveTrail != null) { _diveTrail.End(); _diveTrail = null; }
+                return;
+            }
+            if (_body == null) return;
+
+            var b = _body.bounds;
+            _hits.Clear();
+            Physics2D.OverlapBox(b.center, (Vector2)b.size + Vector2.one * 0.4f, 0f, _filter, _hits);
+            float dmg = damage * diveContactMultiplier * PlayerStats.Multiplier(PlayerStat.MeleeDamage);
+            var dir = new Vector2(Facing, -1f).normalized;
+            foreach (var hit in _hits)
+            {
+                if (hit == null || hit.transform == transform || hit.transform.IsChildOf(transform)) continue;
+                var target = hit.GetComponentInParent<Health>();
+                if (target == null || target == _health || target.IsDead || !_diveHits.Add(target)) continue;
+                if (!Items.PlayerHit.Deal(target, dmg, transform.position, 0f, Items.HitKind.Melee)) continue;
+                PlayerDashCombat.SpawnHitEffect(diveHitEffect, hit.ClosestPoint(transform.position), dir);
+            }
+        }
+
+        private void OnDiveLanded(Vector2 feet)
+        {
+            if (_diveTrail != null) { _diveTrail.End(); _diveTrail = null; }
+
+            if (diveGroundImpact != null)
+            {
+                var go = PrefabPool.Spawn(diveGroundImpact, feet, Quaternion.identity);
+                var fx = go.GetComponent<ImpactBurstFx>();
+                if (fx != null) fx.Play(feet, Vector2.down);
+            }
+
+            // impacto en área: también a los que ya se golpearon por el camino
+            _hits.Clear();
+            Physics2D.OverlapCircle(feet, diveImpactRadius, _filter, _hits);
+            float dmg = damage * diveImpactMultiplier * PlayerStats.Multiplier(PlayerStat.MeleeDamage);
+            _alreadyHit.Clear();
+            foreach (var hit in _hits)
+            {
+                if (hit == null || hit.transform == transform || hit.transform.IsChildOf(transform)) continue;
+                var target = hit.GetComponentInParent<Health>();
+                if (target == null || target == _health || target.IsDead || !_alreadyHit.Add(target)) continue;
+                if (!Items.PlayerHit.Deal(target, dmg, feet, 0f, Items.HitKind.Melee)) continue;
+                var knockback = target.GetComponent<Knockback>();
+                if (knockback != null) knockback.Apply(target.transform.position.x >= feet.x ? 1 : -1, 0.2f);
+            }
+        }
+
         private void OnDashed(int direction)
         {
             _sinceDash = 0f;

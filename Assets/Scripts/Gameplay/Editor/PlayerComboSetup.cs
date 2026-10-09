@@ -32,10 +32,10 @@ namespace RedMagic.Gameplay.EditorTools
                     offset = new Vector2(0.3f, 0.3f), stretch = Vector2.one, damage = 1f, knockback = 0.6f, windup = 0.03f, recovery = 0.32f },
                 new HitDef { label = "2 · Ascendente", rotation = 15f, reverse = true, power = 0.9f,
                     offset = new Vector2(0.3f, 0.1f), stretch = Vector2.one, damage = 1f, knockback = 0.6f, windup = 0.04f, recovery = 0.34f },
-                new HitDef { label = "3 · Remate horizontal", rotation = 0f, reverse = false, power = 1.15f,
-                    offset = new Vector2(0.9f, 0.1f), stretch = new Vector2(1.7f, 0.65f), damage = 1.8f, knockback = 2.2f, windup = 0.14f, recovery = 0.45f },
+                new HitDef { label = "3 · Diagonal amplio", rotation = 35f, reverse = false, power = 1.1f,
+                    offset = new Vector2(0.6f, 0.2f), stretch = new Vector2(1.3f, 0.95f), damage = 1.6f, knockback = 2f, windup = 0.12f, recovery = 0.42f },
                 new HitDef { label = "4 · Vertical ascendente", rotation = 0f, reverse = true, power = 1f,
-                    offset = new Vector2(0.6f, 0.6f), stretch = new Vector2(0.75f, 1.4f), damage = 1.2f, knockback = 1f, windup = 0.05f, recovery = 0.34f },
+                    offset = new Vector2(0.7f, 0.6f), stretch = new Vector2(1.15f, 1.45f), damage = 1.2f, knockback = 1f, windup = 0.05f, recovery = 0.34f },
                 new HitDef { label = "5 · Gran remate", rotation = -20f, reverse = false, power = 1.45f,
                     offset = new Vector2(0.6f, 0.4f), stretch = new Vector2(1.25f, 1f), damage = 2.6f, knockback = 3f, windup = 0.18f, recovery = 0.5f },
             };
@@ -57,7 +57,7 @@ namespace RedMagic.Gameplay.EditorTools
                     Write(combo.GetArrayElementAtIndex(i), hits[i], slash);
                 }
                 Write(so.FindProperty("dashHit"), dash, slash);
-                so.FindProperty("unlockedHits").intValue = 3;   // 4.º y 5.º: items con "Golpes extra de combo"
+                // unlockedHits no se toca: lo decide quien prueba (3 por defecto; 4.º y 5.º con items).
                 so.ApplyModifiedPropertiesWithoutUndo();
                 PrefabUtility.SaveAsPrefabAsset(root, PlayerPath);
                 Debug.Log($"[PlayerComboSetup] Combo de {hits.Length} golpes escrito en {PlayerPath}.");

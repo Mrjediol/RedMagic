@@ -292,24 +292,24 @@ MonoBehaviour:
     knockbackMultiplier: 0.6
     windup: 0.04
     recovery: 0.34
-  - label: "3 \xB7 Remate horizontal"
+  - label: "3 \xB7 Diagonal amplio"
     slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
-    rotation: 0
+    rotation: 35
     reverse: 0
-    power: 1.15
-    offset: {x: 0.9, y: 0.1}
-    stretch: {x: 1.7, y: 0.65}
-    damageMultiplier: 1.8
-    knockbackMultiplier: 2.2
-    windup: 0.14
-    recovery: 0.45
+    power: 1.1
+    offset: {x: 0.6, y: 0.2}
+    stretch: {x: 1.3, y: 0.95}
+    damageMultiplier: 1.6
+    knockbackMultiplier: 2
+    windup: 0.12
+    recovery: 0.42
   - label: "4 \xB7 Vertical ascendente"
     slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
     rotation: 0
     reverse: 1
     power: 1
-    offset: {x: 0.6, y: 0.6}
-    stretch: {x: 0.75, y: 1.4}
+    offset: {x: 0.7, y: 0.6}
+    stretch: {x: 1.15, y: 1.45}
     damageMultiplier: 1.2
     knockbackMultiplier: 1
     windup: 0.05
@@ -326,7 +326,7 @@ MonoBehaviour:
     windup: 0.18
     recovery: 0.5
   airCombo: []
-  unlockedHits: 3
+  unlockedHits: 5
   chainWindow: 0.35
   inputBuffer: 0.2
   comboCooldown: 0.35

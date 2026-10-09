@@ -593,6 +593,22 @@ namespace RedMagic.Gameplay
 
         private void TickPlaceholders(float dt)
         {
+            // Con el cuerpo sustituido por un efecto (dash / picado en modo sustituye) el sprite está
+            // oculto: la silueta roja se pinta en la bola de ese efecto, no copiando el sprite.
+            var replaced = Fx.DashTrailFx.ReplacingFor(transform);
+            TickPlaceholders(dt, replaced);
+            if (!_visualOn)
+            {
+                if (replaced != null) replaced.SetHeadTint(auraColor, 0f);
+                // el efecto que ocultaba al jugador vuelve a encender lo que encontró encendido
+                foreach (var copy in _outline) if (copy.enabled) copy.enabled = false;
+                if (_aura != null && _aura.enabled) _aura.enabled = false;
+                if (_tint != null && _tint.enabled) _tint.enabled = false;
+            }
+        }
+
+        private void TickPlaceholders(float dt, Fx.DashTrailFx replaced)
+        {
             if (_visualOn)
             {
                 // A tope mientras dura la ventana y al menos visualHold; luego se desvanece.
@@ -617,13 +633,21 @@ namespace RedMagic.Gameplay
                     float pop = Mathf.Clamp01(_visualTime / PopTime);
                     pop = 1f - (1f - pop) * (1f - pop);                   // sale de golpe y frena
                     var color = _whiteTimer > 0f ? Color.Lerp(auraColor, Color.white, 0.75f) : auraColor;
-                    DrawOutline(color, alpha, pop);
-                    DrawAura(color, alpha, pop);
-                    if (_tint != null && _tint.enabled)
+                    if (replaced != null)
                     {
-                        CopyBody(_tint, Vector2.zero);
-                        var c = color; c.a = bodyTint * alpha;
-                        _tint.color = c;
+                        replaced.SetHeadTint(color, alpha);
+                        HideCopies();
+                    }
+                    else
+                    {
+                        DrawOutline(color, alpha, pop);
+                        DrawAura(color, alpha, pop);
+                        if (_tint != null && _tint.enabled)
+                        {
+                            CopyBody(_tint, Vector2.zero);
+                            var c = color; c.a = bodyTint * alpha;
+                            _tint.color = c;
+                        }
                     }
                 }
             }
@@ -641,6 +665,14 @@ namespace RedMagic.Gameplay
             }
         }
 
+
+        /// <summary>Deja las copias del cuerpo (borde, aura, tinte) transparentes sin tocar si están encendidas.</summary>
+        private void HideCopies()
+        {
+            foreach (var copy in _outline) copy.color = Color.clear;
+            if (_aura != null) _aura.color = Color.clear;
+            if (_tint != null) _tint.color = Color.clear;
+        }
         private void DrawOutline(Color color, float alpha, float pop)
         {
             float width = outlineWidth * Scale * Mathf.Lerp(2.2f, 1f, pop);   // empieza grueso y se asienta

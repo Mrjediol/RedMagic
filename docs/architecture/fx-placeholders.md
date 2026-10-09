@@ -136,7 +136,8 @@ which also writes `Assets/Scenes/Test/SlashPreview.unity` (all variants looping)
   `DashTrailFx` (departure sphere + brush rings, white thread, comet along the real path — tail stays at the origin
   while travelling and retracts after `End` — with flame-noise width, 5 palette layers, shedding drops, speed lines,
   bow shock of partial strands/teardrops/sparks, wisps; `replaceTarget` hides the target's SpriteRenderers
-  during travel) and `ImpactBurstFx` (`ground`: flash, dust spikes + puffs, two ground rings, debris, sparks,
+  during travel; `ReplacingFor(target)` + `SetHeadTint` let `PlayerParry` paint its red silhouette on the ball
+  instead of copying the hidden sprite) and `ImpactBurstFx` (`ground`: flash, dust spikes + puffs, two ground rings, debris, sparks,
   camera shake; enemy mode: flash, ring, directional shards). Prefabs in `Assets/Prefabs/Fx/Player/Dash/`,
   built + wired to the player by **Tools ▸ RedMagic ▸ FX ▸ Dash y picado · Generar prefabs y asignar al jugador**
   (`Fx/Editor/DashFxPack`, overwrites).

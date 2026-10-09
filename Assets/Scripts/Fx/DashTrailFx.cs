@@ -77,6 +77,30 @@ namespace RedMagic.Fx
         private bool _running;
         private readonly List<(float t, Vector2 p)> _path = new List<(float, Vector2)>(128);
         private readonly List<SpriteRenderer> _hidden = new List<SpriteRenderer>();
+        private static readonly List<DashTrailFx> Replacing = new List<DashTrailFx>();
+        private Color _headTint;
+        private float _headTintAmount;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => Replacing.Clear();
+
+        /// <summary>
+        /// El efecto que está sustituyendo ahora mismo a <paramref name="target"/> (dash/picado en modo
+        /// sustituye), o null. Lo usa el parry para teñir la bola en vez de dibujar la silueta del sprite oculto.
+        /// </summary>
+        public static DashTrailFx ReplacingFor(Transform target)
+        {
+            foreach (var fx in Replacing)
+                if (fx != null && fx._target == target && fx._running && !fx.Ended) return fx;
+            return null;
+        }
+
+        /// <summary>Tiñe la bola de la cabeza (borde + aura del color dado). 0 = sin tinte. Hay que llamarlo cada frame que dure.</summary>
+        public void SetHeadTint(Color color, float amount)
+        {
+            _headTint = color;
+            _headTintAmount = Mathf.Clamp01(amount);
+        }
 
         private bool Ended => _endTime >= 0f;
         private float SinceEnd => Ended ? _t - _endTime : 0f;
@@ -101,6 +125,8 @@ namespace RedMagic.Fx
             _path.Clear();
             _path.Add((0f, _head));
 
+            _headTintAmount = 0f;
+            if (replaceTarget && !Replacing.Contains(this)) Replacing.Add(this);
             if (replaceTarget)
             {
                 target.GetComponentsInChildren(false, _hidden);
@@ -117,12 +143,19 @@ namespace RedMagic.Fx
         {
             if (!_running || Ended) return;
             _endTime = _t;
+            Replacing.Remove(this);
             RestoreTarget();
         }
 
         private void OnEnable() => EnsureCanvases();
 
         private void OnDisable()
+        {
+            Replacing.Remove(this);
+            OnDisableInner();
+        }
+
+        private void OnDisableInner()
         {
             RestoreTarget();
             _running = false;
@@ -350,11 +383,19 @@ namespace RedMagic.Fx
                 (L == 0 ? _back : canvas).StrokeVar(_pts, _ws, _cs, soft);
             }
 
+            // tinte del parry: borde y aura del color pedido alrededor de la bola (silueta de la bola)
+            if (_headTintAmount > 0f)
+            {
+                canvas.Glow(_head, thick * 2.6f, Fade(_headTint, 0.7f * _headTintAmount * alpha));
+                canvas.Disc(_head, thick * 0.78f, Fade(_headTint, _headTintAmount * alpha));
+            }
+
             // brillo y bola de la cabeza
             canvas.Glow(_head, thick * 1.5f, Fade(white, 0.7f * alpha));
             canvas.Disc(_head, thick * 0.55f, Fade(cyan, alpha));
             canvas.Disc(_head, thick * 0.4f, Fade(lightCyan, alpha));
             canvas.Disc(_head, thick * 0.24f, Fade(white, alpha));
+            if (_headTintAmount > 0f) canvas.Disc(_head, thick * 0.55f, Fade(_headTint, 0.35f * _headTintAmount * alpha));
 
             // rayas de velocidad a los lados, afiladas
             if (speedLines)

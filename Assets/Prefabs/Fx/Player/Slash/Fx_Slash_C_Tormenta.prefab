@@ -65,8 +65,9 @@ MonoBehaviour:
     outerJag: 0.05
     innerJag: 0.7
     breakup: 0.5
-    shards: 10
-    shardDrift: 0.35
+    shards: 0
+    shardDrift: 0.5
+    shardStyle: 2
     seed: 11
   - label: Azul
     color: {r: 0.1, g: 0.36, b: 0.86, a: 1}
@@ -81,7 +82,8 @@ MonoBehaviour:
     innerJag: 0.6
     breakup: 0.5
     shards: 0
-    shardDrift: 0.25
+    shardDrift: 0.5
+    shardStyle: 2
     seed: 12
   - label: Cian
     color: {r: 0.16, g: 0.76, b: 1, a: 1}
@@ -95,8 +97,9 @@ MonoBehaviour:
     outerJag: 0.05
     innerJag: 0.55
     breakup: 0.45
-    shards: 0
-    shardDrift: 0.25
+    shards: 16
+    shardDrift: 0.5
+    shardStyle: 2
     seed: 13
   - label: Cian 2
     color: {r: 0.16, g: 0.76, b: 1, a: 1}
@@ -111,7 +114,8 @@ MonoBehaviour:
     innerJag: 0.6
     breakup: 0.5
     shards: 0
-    shardDrift: 0.25
+    shardDrift: 0.5
+    shardStyle: 2
     seed: 14
   - label: Cian claro
     color: {r: 0.62, g: 0.95, b: 1, a: 1}
@@ -126,7 +130,8 @@ MonoBehaviour:
     innerJag: 0.45
     breakup: 0.3
     shards: 0
-    shardDrift: 0.25
+    shardDrift: 0.5
+    shardStyle: 2
     seed: 15
   - label: "N\xFAcleo"
     color: {r: 1, g: 1, b: 1, a: 1}
@@ -140,8 +145,9 @@ MonoBehaviour:
     outerJag: 0.05
     innerJag: 0.3
     breakup: 0.2
-    shards: 24
-    shardDrift: 0.25
+    shards: 26
+    shardDrift: 0.5
+    shardStyle: 2
     seed: 16
   shader: {fileID: 4800000, guid: 7f6a645704bf6124693351cbe8d47f9e, type: 3}
   sortingLayer: Characters

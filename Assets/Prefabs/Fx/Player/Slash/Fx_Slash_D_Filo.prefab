@@ -67,6 +67,7 @@ MonoBehaviour:
     breakup: 0.3
     shards: 0
     shardDrift: 0.25
+    shardStyle: 0
     seed: 21
   - label: Cian
     color: {r: 0.16, g: 0.76, b: 1, a: 1}
@@ -82,6 +83,7 @@ MonoBehaviour:
     breakup: 0.3
     shards: 0
     shardDrift: 0.25
+    shardStyle: 0
     seed: 22
   - label: "N\xFAcleo"
     color: {r: 1, g: 1, b: 1, a: 1}
@@ -97,6 +99,7 @@ MonoBehaviour:
     breakup: 0.3
     shards: 8
     shardDrift: 0.25
+    shardStyle: 0
     seed: 23
   shader: {fileID: 4800000, guid: 7f6a645704bf6124693351cbe8d47f9e, type: 3}
   sortingLayer: Characters

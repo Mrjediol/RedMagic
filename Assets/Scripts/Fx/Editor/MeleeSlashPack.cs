@@ -47,9 +47,9 @@ namespace RedMagic.Fx.EditorTools
 
             var variants = new (string name, Preset preset)[]
             {
-                ("Fx_Slash_A_Viento", Viento()),
+                ("Fx_Slash_A_Viento", Exterior(Viento(), MeleeSlashFx.ShardStyle.Chispas, 22, 14)),
                 ("Fx_Slash_B_Luna", Luna()),
-                ("Fx_Slash_C_Tormenta", Tormenta()),
+                ("Fx_Slash_C_Tormenta", Exterior(Tormenta(), MeleeSlashFx.ShardStyle.Chispas, 26, 16)),
                 ("Fx_Slash_D_Filo", Filo()),
             };
 
@@ -81,9 +81,7 @@ namespace RedMagic.Fx.EditorTools
             var variants = new (string name, Preset preset)[]
             {
                 ("Fx_Slash_A_Ext1_Rombos", Exterior(Viento(), MeleeSlashFx.ShardStyle.Rombo, 14, 0)),
-                ("Fx_Slash_A_Ext2_Rayas", Exterior(Viento(), MeleeSlashFx.ShardStyle.Rayas, 16, 12)),
                 ("Fx_Slash_A_Ext3_Chispas", Exterior(Viento(), MeleeSlashFx.ShardStyle.Chispas, 22, 14)),
-                ("Fx_Slash_A_Ext4_Trozos", Exterior(Viento(), MeleeSlashFx.ShardStyle.Trozos, 18, 14)),
                 ("Fx_Slash_A_Ext5_Sin", Exterior(Viento(), MeleeSlashFx.ShardStyle.Rombo, 0, 0)),
             };
             var prefabs = new GameObject[variants.Length];
@@ -93,12 +91,13 @@ namespace RedMagic.Fx.EditorTools
             var slots = new[]
             {
                 new Vector3(-12f, 4.5f), new Vector3(0f, 4.5f), new Vector3(12f, 4.5f),
-                new Vector3(-6f, -5f), new Vector3(6f, -5f),
+
             };
             BuildScene(prefabs, ExteriorScenePath, slots, 10.5f);
             Debug.Log($"[MeleeSlashPack] {prefabs.Length} variantes de parte exterior, escena {ExteriorScenePath}.");
         }
 
+        // Elegido (2026-10-09): Chispas para A y C. Rombos y Sin se conservan como alternativas.
         private static Preset Exterior(Preset p, MeleeSlashFx.ShardStyle style, int coreCount, int cyanCount)
         {
             foreach (var l in p.layers)

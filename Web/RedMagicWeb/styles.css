@@ -1042,3 +1042,9 @@ body.movil #tab-todo{flex:1;}
 .todoRun > summary{cursor:pointer;font-size:13.5px;color:var(--muted);padding:3px 0;}
 .todoRun[open] > summary{color:var(--accent);}
 .todoHistTable td.faintCell{color:var(--faint);}
+
+#lsSidebar{width:300px;min-width:300px;background:var(--panel);border-right:1px solid var(--border);padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+#lsMain{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+#lsWrap{flex:1;overflow:auto;padding:12px;}
+#lsCanvas{position:static;display:block;cursor:crosshair;}   /* page-wide canvas rule is absolute */
+#lsStatus{padding:6px 12px;}

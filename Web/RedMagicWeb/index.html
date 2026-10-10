@@ -41,6 +41,7 @@
   <button class="tabBtn" data-tab="enemy" title="Comportamiento de un enemigo de hoja de sprites">🧩 Enemy Creator</button>
   <button class="tabBtn" data-tab="fx" title="Cómo vuela y golpea un proyectil">🔥 Proyectil/VFX</button>
   <button class="tabBtn" data-tab="map" title="Trazar colisiones y piezas sobre un fondo">🗺️ Map Tracer</button>
+  <button class="tabBtn" data-tab="levelsketch" title="Pintar en una cuadrícula dónde hay terreno, a escala fija">🧱 Boceto de nivel</button>
 </div>
 
 <div id="tab-sprites" class="tabPanel">
@@ -425,6 +426,28 @@
     <div id="libraryFilterBar" class="libFilterBar"></div>
     <div id="libraryTabList" class="libList"></div>
   </div>
+</div>
+
+<div id="tab-levelsketch" class="tabPanel" hidden>
+  <div id="lsSidebar">
+    <div>
+      <h1>🧱 Boceto de nivel</h1>
+      <p class="hint">Clic izq. pinta terreno · clic der. (o Shift) borra. 1 celda = 1 unidad de Unity: todos los niveles comparten escala.</p>
+    </div>
+    <div class="field"><label>Nombre</label><input type="text" id="lsName" value="nivel"></div>
+    <div class="row">
+      <div class="field"><label>Ancho (celdas)</label><input type="number" id="lsW" value="60"></div>
+      <div class="field"><label>Alto (celdas)</label><input type="number" id="lsH" value="30"></div>
+    </div>
+    <button id="lsResize" style="width:100%;">Aplicar tamaño</button>
+    <div class="field"><label>Alto del jugador (celdas)</label><input type="number" id="lsPlayer" value="2" min="1" max="10"></div>
+    <div class="field"><label>Zoom</label><input type="range" id="lsZoom" min="6" max="48" value="20"></div>
+    <button id="lsFloor" style="width:100%;">Rellenar fila inferior (suelo)</button>
+    <button id="lsClear" class="danger" style="width:100%;">Borrar todo</button>
+    <button id="lsExport" class="primary" style="width:100%;">⬇ Exportar .levelsketch.json</button>
+    <label class="hint">Importar: <input type="file" id="lsImport" accept=".json"></label>
+  </div>
+  <div id="lsMain"><div id="lsWrap"><canvas id="lsCanvas"></canvas></div><div id="lsStatus" class="hint"></div></div>
 </div>
 
 <div id="tab-map" class="tabPanel" hidden>

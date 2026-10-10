@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cometa · perforación</title>
+<style>
+  :root { --bg:#1b1d24; --panel:#4a4a4a; --ink:#e8ecf2; --muted:#9aa3b2; --accent:#29c2ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
+  header { padding:16px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; position:sticky; top:0; background:var(--bg); z-index:2; border-bottom:1px solid #2c303a; }
+  h1 { font-size:18px; margin:0 12px 0 0; }
+  label { display:flex; gap:8px; align-items:center; color:var(--muted); }
+  button { background:#2a2f3a; color:var(--ink); border:1px solid #3a4150; border-radius:6px; padding:6px 12px; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  main { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap:16px; padding:16px; }
+  section { background:#23262f; border-radius:10px; padding:12px; }
+  h2 { font-size:15px; margin:0 0 4px; }
+  p { margin:0 0 8px; color:var(--muted); font-size:13px; }
+  canvas { width:100%; height:auto; background:var(--panel); border-radius:6px; display:block; }
+  .bar { display:flex; gap:6px; align-items:center; margin-top:8px; }
+  .bar input[type=range] { flex:1; accent-color:var(--accent); }
+  .bar button { padding:4px 9px; }
+  .bar .tm { font:12px ui-monospace, monospace; color:var(--muted); min-width:46px; text-align:right; }
+  .legend { font-size:12px; color:var(--muted); }
+  .legend b.back { color:#ff9a3c; } .legend b.front { color:#5dff8a; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cometa · perforación de enemigos</h1>
+  <label>Velocidad <input id="speed" type="range" min="0.05" max="1" step="0.05" value="0.35"> <span id="speedv">0.35×</span></label>
+  <button id="pause">Pausa todo</button>
+  <label><input id="layers" type="checkbox"> Ver capas</label>
+  <span class="legend">(<b class="back">naranja</b> = detrás · <b class="front">verde</b> = delante) · cada clip tiene su barra: arrastra para rebobinar, ◀ ▶ avanzan un paso</span>
+</header>
+<main id="grid"></main>
+<script>
+// ---------------------------------------------------------------- paleta del set
+const C = {
+  white:'#ffffff', core:'#ffe6ea', light:'#9ef2ff', cyan:'#29c2ff', blue:'#1c5cdb', purple:'#7538db',
+  player:'#e07a3c', playerDark:'#8a4520', enemy:'#6a3a5c', enemyDark:'#42243a'
+};
+const W = 640, H = 400, GROUND = 340;
+const X0 = 124, X1 = 508, YM = GROUND - 50;
+const T0 = 0.35, T1 = 0.77;
+const LOOP = 2.2, N = 40;
+
+let speed = 0.35, showLayers = false;
+document.getElementById('speed').oninput = e => { speed = +e.target.value; document.getElementById('speedv').textContent = speed.toFixed(2) + '×'; };
+document.getElementById('layers').onchange = e => showLayers = e.target.checked;
+
+// ---------------------------------------------------------------- utilidades
+const clamp = (v, a=0, b=1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const easeIn = t => t * t * t;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+function rand(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+function col(c, layer) { return showLayers ? (layer === 'back' ? '#ff9a3c' : '#5dff8a') : c; }
+
+function player(ctx, x, y, dir, opts = {}) {
+  const { squash = 0, lean = 0 } = opts;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(lean * dir); ctx.scale(1 + squash, 1 - squash);
+  ctx.fillStyle = C.playerDark; ctx.beginPath(); ctx.roundRect(-13, -48, 26, 48, 9); ctx.fill();
+  ctx.fillStyle = C.player;
+  ctx.beginPath(); ctx.ellipse(4 * dir, -60, 15, 13, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-3 * dir, -78, 4, 11, -0.3 * dir, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(11 * dir, -62, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+// knock = empujón en px; hitT = instante del golpe (flash blanco, aplastamiento y temblor)
+function enemy(ctx, t, x, hitT, knockAmp, flashLen) {
+  const ht = seg(t, hitT, hitT + 0.5);
+  const k = ht > 0 ? Math.sin(Math.min(ht * 2.2, 1) * Math.PI) * knockAmp : 0;
+  const shake = ht > 0 && ht < 0.5 ? Math.sin(ht * 70) * (1 - ht * 2) * 3 : 0;
+  const sq = ht > 0 && ht < 0.4 ? Math.sin(ht / 0.4 * Math.PI) * 0.12 : 0;
+  ctx.save(); ctx.translate(x + k + shake, GROUND); ctx.scale(1 - sq, 1 + sq * 0.6);
+  ctx.fillStyle = C.enemyDark; ctx.beginPath(); ctx.ellipse(0, -42, 30, 42, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = C.enemy; ctx.beginPath(); ctx.ellipse(-3, -46, 26, 38, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.arc(-14, -56, 4, 0, 7); ctx.fill();
+  if (ht > 0 && ht < flashLen) { ctx.globalAlpha = 1 - ht / flashLen; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(-3, -46, 26, 38, 0, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
+function ground(ctx) {
+  ctx.fillStyle = '#2f5d7a'; ctx.fillRect(0, GROUND, W, H - GROUND);
+  ctx.fillStyle = '#3d7598'; ctx.fillRect(0, GROUND, W, 6);
+}
+
+// ---------------------------------------------------------------- recorrido y estado
+// v.x(t) = posición de la cabeza en el tiempo; la cola muestrea ese historial (si la cabeza se frena, la cola se amontona).
+const crossT = (v, xv) => { for (let t = 0; t < 2; t += 0.001) if (v.x(t) >= xv) return t; return 2; };
+function state(t, v) {
+  const span = v.tailSpan(t), th = Math.min(t, v.TB), tTail = clamp(t - span, T0, th), pts = [];
+  for (let i = 0; i <= N; i++) pts.push({ x: v.x(lerp(th, tTail, i / N)), y: YM });
+  for (let i = 0; i <= N; i++) {
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(N, i + 1)];
+    const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy);
+    pts[i].nx = l < 0.01 ? 0 : -dy / l; pts[i].ny = l < 0.01 ? 1 : dx / l;
+  }
+  const h = pts[0];
+  const inside = v.hits.some(e => e.pierce && Math.abs(h.x - e.ex) < 27);
+  return { pts, h, ang: 0, alive: t > T0 && t < v.TB + span, headAlive: t > T0 && t < v.TB,
+           tailFade: 1 - seg(t, v.TB, v.TB + span) * 0.6, t, sc: v.scale(t), inside };
+}
+
+// ---------------------------------------------------------------- piezas
+function ribbon(ctx, S, wfn, color, alpha, layer) {
+  const pts = S.pts, L = [], R = [];
+  for (let i = 0; i <= N; i++) {
+    const p = pts[i], w = wfn(i / N) / 2;
+    L.push([p.x + p.nx * w, p.y + p.ny * w]); R.push([p.x - p.nx * w, p.y - p.ny * w]);
+  }
+  ctx.save(); ctx.globalAlpha = alpha * S.tailFade; ctx.fillStyle = col(color, layer);
+  ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]);
+  for (const q of L) ctx.lineTo(q[0], q[1]);
+  for (let i = N; i >= 0; i--) ctx.lineTo(R[i][0], R[i][1]);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function strand(ctx, S, offFn, wFn, color, alpha, layer) {
+  const pts = S.pts;
+  ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = col(color, layer);
+  for (let i = 0; i < N; i++) {
+    const s = i / N, a = pts[i], b = pts[i + 1], o0 = offFn(s), o1 = offFn((i + 1) / N);
+    ctx.globalAlpha = alpha * S.tailFade; ctx.lineWidth = Math.max(0.3, wFn(s));
+    ctx.beginPath(); ctx.moveTo(a.x + a.nx * o0, a.y + a.ny * o0); ctx.lineTo(b.x + b.nx * o1, b.y + b.ny * o1); ctx.stroke();
+  }
+  ctx.restore();
+}
+function glow(ctx, x, y, r, c0, a) {
+  if (showLayers) return;
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, c0); g.addColorStop(1, 'rgba(117,56,219,0)');
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.restore();
+}
+function disc(ctx, x, y, r, c, a, layer) {
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = col(c, layer); ctx.beginPath(); ctx.arc(x, y, Math.max(0.1, r), 0, 7); ctx.fill(); ctx.restore();
+}
+// gota: cabeza redonda en (x,y), cola afilada hacia -dir
+function drop(ctx, x, y, ang, len, wid, c, a, layer) {
+  if (a <= 0 || len < 0.5) return;
+  ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.rotate(ang); ctx.fillStyle = col(c, layer);
+  ctx.beginPath(); ctx.moveTo(-len, 0); ctx.quadraticCurveTo(-len * 0.2, -wid, wid * 0.6, 0); ctx.quadraticCurveTo(-len * 0.2, wid, -len, 0); ctx.fill();
+  ctx.restore();
+}
+// trazo afilado (chispa alargada) de a→b, grueso en b
+function shard(ctx, ax, ay, bx, by, w, c, a, layer) {
+  if (a <= 0) return;
+  const dx = bx - ax, dy = by - ay, l = Math.hypot(dx, dy) || 1, nx = -dy / l * w / 2, ny = dx / l * w / 2;
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = col(c, layer);
+  ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx + nx, by + ny); ctx.lineTo(bx - nx, by - ny); ctx.closePath(); ctx.fill(); ctx.restore();
+}
+// anillo con ruido, mitad lejana (back) o cercana (front); squash = aplastamiento horizontal
+function ringHalf(ctx, x, y, r, squash, wob, seed, width, c, a, layer) {
+  if (a <= 0) return;
+  const R = rand(seed), ph = [R() * 6, R() * 6, R() * 6];
+  ctx.save(); ctx.globalAlpha = a; ctx.lineWidth = Math.max(0.5, width); ctx.lineCap = 'round'; ctx.strokeStyle = col(c, layer);
+  ctx.beginPath();
+  const a0 = layer === 'back' ? Math.PI * 0.5 : -Math.PI * 0.5;
+  for (let i = 0; i <= 28; i++) {
+    const th = a0 + Math.PI * i / 28;
+    const rr = r * (1 + wob * (Math.sin(th * 3 + ph[0]) * 0.5 + Math.sin(th * 5 + ph[1]) * 0.3));
+    const px = x + Math.cos(th) * rr * squash, py = y + Math.sin(th) * rr;
+    i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+  }
+  ctx.stroke(); ctx.restore();
+}
+function trailLine(ctx, fn, uHead, span, w, c, a, layer) {   // estela afilada siguiendo fn(u)
+  const M = 10;
+  ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = col(c, layer);
+  let prev = null;
+  for (let i = 0; i <= M; i++) {
+    const u = Math.max(0, uHead - span * i / M), p = fn(u);
+    if (prev) { ctx.globalAlpha = a * (1 - i / M); ctx.lineWidth = Math.max(0.3, w * (1 - i / M)); ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(p.x, p.y); ctx.stroke(); }
+    prev = p;
+  }
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------- cabeza
+function headBall(ctx, S, r, layer, pulse = 1) {
+  if (!S.headAlive) return;
+  const { x, y } = S.h, k = r * pulse;
+  if (showLayers) { disc(ctx, x, y, k, C.white, 1, layer); return; }
+  glow(ctx, x, y, k * 3.6, 'rgba(160,110,255,0.9)', 0.55);
+  glow(ctx, x, y, k * 2.0, 'rgba(120,220,255,0.9)', 0.5);
+  disc(ctx, x, y, k * 1.25, C.cyan, 0.9, layer);
+  disc(ctx, x, y, k * 0.95, C.light, 1, layer);
+  disc(ctx, x, y, k * 0.6, C.white, 1, layer);
+}
+
+// ---------------------------------------------------------------- COMETA BÁSICO (S.sc escala grosores y cabeza)
+function comet(ctx, t, layer, S) {
+  const sc = S.sc;
+  if (S.alive && layer === 'back') {
+    const br = 1 + 0.12 * Math.sin(t * 30);
+    const w = w0 => s => w0 * sc * Math.pow(1 - s, 0.9) * (br + 0.08 * Math.sin(t * 40 - s * 14));
+    ribbon(ctx, S, w(60), C.purple, 0.16, layer);
+    ribbon(ctx, S, w(42), C.purple, 0.32, layer);
+    ribbon(ctx, S, w(29), C.blue, 0.55, layer);
+    ribbon(ctx, S, w(20), C.cyan, 0.9, layer);
+    ribbon(ctx, S, w(12), C.light, 1, layer);
+    ribbon(ctx, S, w(5), C.white, 1, layer);
+    const cs = [C.cyan, C.light, C.blue, C.cyan, C.light];
+    for (let k = 0; k < 5; k++)
+      strand(ctx, S, s => (k % 2 ? 1 : -1) * sc * (6 + s * 20 + k * 1.5) * (0.5 + 0.5 * Math.sin(t * 25 + k * 2 - s * 9)),
+             s => sc * (3.2 - k * 0.3) * (1 - s), cs[k], 0.8, layer);
+    for (let k = 0; k < 4; k++)
+      strand(ctx, S, s => (k % 2 ? 1 : -1) * sc * (2 + k * 1.4) * Math.sin(t * 38 + k * 1.9 - s * 13),
+             s => sc * 1.3 * (1 - s), k % 2 ? C.white : C.light, 0.9, layer);
+  }
+  if (S.alive) {
+    for (let i = 0; i < 16; i++) {
+      const R = rand(77 + i * 19), s0 = 0.04 + R() * 0.6, side = R() < 0.5 ? -1 : 1, rate = 1.3 + R() * 1.5;
+      const age = (t * rate + R()) % 1, lay = R() < 0.55 ? 'back' : 'front';
+      if (lay !== layer) continue;
+      const p = S.pts[Math.floor(s0 * N)], d = (5 + age * 22 * (0.6 + R())) * sc;
+      drop(ctx, p.x + p.nx * side * d - age * 26, p.y + p.ny * side * d, Math.PI * 0 + side * 0.25 * age,
+           (9 + R() * 10) * (1 - age * 0.6) * sc, (2.2 + R() * 2.4) * (1 - age * 0.7) * sc,
+           [C.white, C.light, C.cyan, C.blue][i % 4], (1 - age) * S.tailFade, layer);
+    }
+    for (let i = 0; i < 14; i++) {
+      const R = rand(300 + i * 17), s0 = 0.05 + R() * 0.8, side = R() < 0.5 ? -1 : 1, rate = 1.4 + R() * 1.6;
+      const age = (t * rate + R()) % 1, lay = R() < 0.5 ? 'back' : 'front';
+      if (lay !== layer) continue;
+      const p = S.pts[Math.floor(s0 * N)], d = age * 26 * (0.5 + R()) * sc;
+      disc(ctx, p.x + p.nx * side * d - age * 14, p.y + p.ny * side * d + age * age * 10, ((1 + R() * 2) * (1 - age) + 0.4) * sc,
+           i % 3 === 0 ? C.white : (i % 3 === 1 ? C.light : C.cyan), (1 - age) * S.tailFade, layer);
+    }
+  }
+  if (S.headAlive) {
+    const { x, y } = S.h;
+    if (S.inside) {                                   // dentro del cuerpo: sólo se ve la luz a través de él
+      if (layer === 'front') { glow(ctx, x, y, 30 * sc, 'rgba(255,255,255,0.9)', 0.55); glow(ctx, x, y, 52 * sc, 'rgba(120,220,255,0.9)', 0.35); }
+      return;
+    }
+    for (let k = 0; k < 3; k++) {
+      const a = t * 14 + k * 2.09, sy = Math.sin(a);
+      if ((sy < 0 ? 'back' : 'front') !== layer) continue;
+      disc(ctx, x + Math.cos(a) * 14 * sc, y + sy * 6 * sc, (1.8 + sy * 0.4) * sc, k % 2 ? C.light : C.white, 0.95, layer);
+    }
+    if (layer === 'front') {
+      if (!showLayers) {
+        ctx.save(); ctx.translate(x, y); ctx.lineCap = 'round';
+        const g = ctx.createLinearGradient(-6, 0, 38 * sc, 0); g.addColorStop(0, 'rgba(255,255,255,0.8)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.strokeStyle = g; ctx.lineWidth = 3 * sc; ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(38 * sc, 0); ctx.stroke();
+        ctx.globalAlpha = 0.7; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+        ctx.rotate(t * 6); ctx.beginPath(); ctx.ellipse(0, 0, 15 * sc, 5 * sc, 0, 0, 7); ctx.stroke();
+        ctx.restore();
+      }
+      headBall(ctx, S, 8.5 * sc, layer, 1 + 0.08 * Math.sin(t * 50));
+    }
+  }
+}
+
+// ---------------------------------------------------------------- carga y disparo (se mantienen)
+function charge(ctx, t, layer) {
+  const prep = seg(t, 0.05, T0);
+  if (prep <= 0 || t >= T0 || layer !== 'front') return;
+  glow(ctx, X0, YM, 8 + 26 * prep, 'rgba(160,110,255,0.9)', 0.5 * prep);
+  disc(ctx, X0, YM, 2 + 7 * prep, C.cyan, 1, 'front');
+  disc(ctx, X0, YM, 1 + 4 * prep, C.white, 1, 'front');
+  const R = rand(5);
+  for (let i = 0; i < 8; i++) {
+    const a = R() * 6.28, d = (1 - ((prep * 2 + R()) % 1)) * 36;
+    disc(ctx, X0 + Math.cos(a) * d, YM + Math.sin(a) * d, 1.6, i % 2 ? C.light : C.white, prep, 'front');
+  }
+}
+function muzzle(ctx, t, layer) {
+  const m = seg(t, T0, T0 + 0.22); if (m <= 0 || m >= 1) return;
+  const a = 1 - easeIn(m), r = lerp(10, 44, easeOut(m));
+  ctx.save(); ctx.lineCap = 'round'; ctx.globalAlpha = a; ctx.strokeStyle = col(C.white, layer); ctx.lineWidth = lerp(5, 1, m);
+  ctx.setLineDash([Math.max(2, 14 * (1 - m)), 4 + 20 * m]);
+  ctx.beginPath();
+  if (layer === 'back') ctx.ellipse(X0 + 4, YM, r * 0.3, r, 0, Math.PI * 0.5, Math.PI * 1.5);
+  else ctx.ellipse(X0 + 4, YM, r * 0.3, r, 0, -Math.PI * 0.5, Math.PI * 0.5);
+  ctx.stroke(); ctx.restore();
+  if (layer === 'front' && m < 0.3) disc(ctx, X0, YM, lerp(18, 4, m / 0.3), C.white, 1 - m / 0.3, 'front');
+}
+
+// ================================================================ IMPACTOS
+const IY = YM, IXEND = 522;
+function flash(ctx, ht, size, layer, x) {
+  if (layer !== 'front' || ht > 0.3 || ht < 0) return;
+  const f = ht / 0.3;
+  glow(ctx, x, IY, lerp(size * 2.2, size * 0.5, f), 'rgba(255,255,255,0.95)', 1 - f);
+  glow(ctx, x, IY, lerp(size * 3.4, size, f), 'rgba(160,110,255,0.9)', 0.7 * (1 - f));
+  disc(ctx, x, IY, lerp(size, 3, f), C.white, 1 - f, 'front');
+}
+
+// Impacto normal (último enemigo): flash, onda estrecha y chispas hacia atrás.
+function impactN(ctx, t, layer, tB) {
+  const ht = seg(t, tB, tB + 0.5); if (ht <= 0 || ht >= 1) return;
+  const fade = 1 - easeIn(ht), e = easeOut(ht), x = IXEND;
+  flash(ctx, ht, 26, layer, x);
+  ringHalf(ctx, x, IY, lerp(10, 54, e), 0.32, 0.1, 6, lerp(5, 1, ht), layer === 'back' ? C.cyan : C.white, fade, layer);
+  if (layer === 'front') {
+    const R = rand(41);
+    for (let i = 0; i < 14; i++) {
+      const a = Math.PI + (R() - 0.5) * 2.2 - 0.3, d = e * (30 + R() * 60), len = (8 + R() * 14) * (1 - ht);
+      const px = x + Math.cos(a) * d, py = IY + Math.sin(a) * d * 0.8 + ht * ht * 18;
+      shard(ctx, px - Math.cos(a) * len, py - Math.sin(a) * len * 0.8, px, py, 2.4 * (1 - ht) + 0.6, i % 3 ? C.light : C.white, fade, 'front');
+    }
+  }
+}
+
+// Perforación (enemigos que se atraviesan): destello de entrada, grietas, luz en el cuerpo, onda y chispas de salida.
+function pierceFx(ctx, t, layer, h, p) {
+  const xe = h.ex - 30, xx = h.ex + 30, cy = IY - 4;
+  const he = seg(t, h.tE, h.tE + 0.45), hx = seg(t, h.tX, h.tX + 0.5);
+  if (he > 0 && he < 1) {
+    flash(ctx, he, p.flash, layer, xe);
+    ringHalf(ctx, xe, IY, lerp(6, p.ring, easeOut(he)), 0.32, 0.1, 8, lerp(6, 1, he), layer === 'back' ? C.cyan : C.white, 1 - easeIn(he), layer);
+  }
+  if (layer === 'front') {
+    const hc = seg(t, h.tE, h.tE + 0.75);
+    if (hc > 0 && hc < 1) {                                   // grietas
+      const R = rand(63), gr = easeOut(seg(t, h.tE, h.tE + 0.22)), o = 1 - seg(hc, 0.35, 1);
+      for (let i = 0; i < p.crack; i++) {
+        const a = R() * 6.283, len = 18 + R() * 30;
+        const pts = [[h.ex, cy]]; let x = h.ex, y = cy;
+        for (let k = 1; k <= 4; k++) { const aa = a + (R() - 0.5) * 0.9; x += Math.cos(aa) * len * gr / 4; y += Math.sin(aa) * len * gr / 4; pts.push([x, y]); }
+        ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        for (const [lw, c, al] of [[p.crackW * 2.4, C.cyan, 0.35], [p.crackW, C.white, 1]]) {
+          ctx.globalAlpha = o * al; ctx.lineWidth = lw; ctx.strokeStyle = col(c, 'front'); ctx.beginPath();
+          pts.forEach((q, j) => j ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+    const bg = p.bodyGlow * (t > h.tE ? 1 - seg(t, h.tE, h.tX + 0.18) : 0);   // luz que se ve a través del cuerpo
+    if (bg > 0) { glow(ctx, h.ex, cy, 46, 'rgba(255,255,255,0.9)', bg); glow(ctx, h.ex, cy, 70, 'rgba(120,220,255,0.9)', bg * 0.6); }
+  }
+  if (hx > 0 && hx < 1) {
+    const fade = 1 - easeIn(hx), e = easeOut(hx);
+    flash(ctx, hx, 14 + p.flash * 0.3, layer, xx);
+    ringHalf(ctx, xx, IY, lerp(6, p.exitRing, e), 0.32, 0.12, 12, lerp(5, 1, hx), layer === 'back' ? C.purple : C.cyan, fade, layer);
+    if (layer === 'front') {
+      const R = rand(23);
+      for (let i = 0; i < p.sparks; i++) {
+        const a = (R() - 0.5) * 1.6, d = e * (30 + R() * 90), len = (8 + R() * 16) * (1 - hx);
+        const px = xx + Math.cos(a) * d, py = IY + Math.sin(a) * d * 0.8 + hx * hx * 12;
+        shard(ctx, px - Math.cos(a) * len, py - Math.sin(a) * len * 0.8, px, py, 2.6 * (1 - hx) + 0.6, i % 3 ? C.white : C.cyan, fade, 'front');
+      }
+      for (let i = 0; i < p.embers; i++) {
+        const a = (R() - 0.3) * 1.6, d = e * (14 + R() * 40);
+        disc(ctx, xx + Math.cos(a) * d, IY + Math.sin(a) * d * 0.8 + hx * hx * 50, 2.4 * (1 - hx) + 0.6, i % 2 ? C.light : C.cyan, fade, 'front');
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------- escena
+function scene(ctx, t, v) {
+  const S = state(t, v);
+  const prep = seg(t, 0.05, T0), rec = seg(t, T0, T0 + 0.15);
+  let sk = 0;
+  for (const h of v.hits) {
+    const tv = h.pierce ? h.tE : v.TB, hs = seg(t, tv, tv + 0.3), amp = h.pierce ? h.p.shake : 4;
+    if (hs > 0 && hs < 1) sk += Math.sin(hs * 120) * (1 - hs) * amp;
+  }
+  ctx.clearRect(0, 0, W, H);
+  ctx.save(); ctx.translate(sk, sk * 0.5); ground(ctx);
+
+  comet(ctx, t, 'back', S); muzzle(ctx, t, 'back');
+  for (const h of v.hits) h.pierce ? pierceFx(ctx, t, 'back', h, h.p) : impactN(ctx, t, 'back', v.TB);
+  for (const h of v.hits) enemy(ctx, t, h.ex, h.pierce ? h.tE : v.TB, h.pierce ? h.p.knock : 10, h.pierce ? h.p.flashLen : 0.22);
+  player(ctx, 90, GROUND, 1, { lean: -prep * 0.12 + (t >= T0 ? 0.14 * (1 - rec) : 0), squash: prep * 0.05 - (t >= T0 ? 0.08 * (1 - rec) : 0) });
+  charge(ctx, t, 'front'); comet(ctx, t, 'front', S); muzzle(ctx, t, 'front');
+  for (const h of v.hits) h.pierce ? pierceFx(ctx, t, 'front', h, h.p) : impactN(ctx, t, 'front', v.TB);
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------- variantes
+const XEND = 508, EX1 = 400, EX2 = 540;
+const mk = (o) => {
+  const v = Object.assign({ hits: [] }, o);
+  v.hits = o.pierce ? [{ ex: EX1, pierce: true, p: o.pierce, tE: crossT(v, EX1 - 28), tX: crossT(v, EX1 + 28) }, { ex: EX2, pierce: false }]
+                    : [{ ex: EX2, pierce: false }];
+  return v;
+};
+const scenes = [
+  mk({ title:'Base · 1 enemigo (referencia)', TB:0.77, tailSpan:() => 0.23, scale:() => 1,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.77), 1.35),
+    text:'El cometa de siempre con un único enemigo: impacto normal. Es lo que ocurre cuando perforación = 0 (o al agotarse).' }),
+  mk({ title:'Perforación A · Limpia', TB:0.80, tailSpan:() => 0.23, scale:() => 1,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.80), 1.25),
+    pierce:{ flash:30, ring:50, crack:6, crackW:1.6, bodyGlow:0.25, exitRing:60, sparks:12, embers:0, knock:8, shake:3, flashLen:0.25 },
+    text:'Atraviesa sin perder nada: destello y onda de entrada, grietas de luz, la luz se ve a través del cuerpo y sale con onda y chispas. Sigue igual hasta el último enemigo.' }),
+  mk({ title:'Perforación B · Pierde fuerza', TB:0.95, tailSpan:t => 0.23 - 0.08 * seg(t, 0.64, 0.7), scale:t => 1 - 0.28 * seg(t, 0.64, 0.7),
+    x: t => t <= 0.6 ? X0 + (EX1 - X0) * Math.pow(seg(t, T0, 0.6), 1.4) : EX1 + (XEND - EX1) * (1 - Math.pow(1 - seg(t, 0.6, 0.95), 1.6)),
+    pierce:{ flash:20, ring:40, crack:5, crackW:1.4, bodyGlow:0.2, exitRing:44, sparks:7, embers:10, knock:6, shake:2, flashLen:0.2 },
+    text:'Cada perforación le cuesta: tras el primer enemigo el cometa se encoge (cabeza y cola más cortas) y va más lento. Sale con brasas en vez de tantas chispas. Se lee como «energía que se gasta».' }),
+  mk({ title:'Perforación C · Frenazo y reventón', TB:0.88, tailSpan:t => lerp(0.23, 0.34, seg(t, 0.62, 0.7)) - 0.08 * seg(t, 0.8, 0.88),
+    scale:t => t < 0.66 ? 1 + 0.25 * seg(t, 0.56, 0.62) : 1.25 - 0.25 * seg(t, 0.66, 0.9),
+    x: t => t < 0.58 ? X0 + (392 - X0) * Math.pow(seg(t, T0, 0.58), 1.5) : t < 0.66 ? 392 : 392 + (XEND - 392) * easeOut(seg(t, 0.66, 0.88)),
+    pierce:{ flash:48, ring:70, crack:9, crackW:2.6, bodyGlow:0.6, exitRing:96, sparks:20, embers:6, knock:20, shake:6, flashLen:0.35 },
+    text:'Hit-stop: el cometa se detiene dentro del enemigo un instante (el cuerpo brilla y se agrieta) y revienta por detrás más rápido y con cola estirada. El golpe más pesado.' }),
+];
+
+// ---------------------------------------------------------------- paneles con barra de tiempo
+const grid = document.getElementById('grid');
+const views = scenes.map(s => {
+  const sec = document.createElement('section');
+  sec.innerHTML = `<h2>${s.title}</h2><p>${s.text}</p>`;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; sec.appendChild(cv);
+  const bar = document.createElement('div'); bar.className = 'bar';
+  const btn = document.createElement('button'), back = document.createElement('button'), fwd = document.createElement('button');
+  const sl = document.createElement('input'); sl.type = 'range'; sl.min = 0; sl.max = 1000; sl.value = 0;
+  const tm = document.createElement('span'); tm.className = 'tm';
+  btn.textContent = 'Pausa'; back.textContent = '◀'; fwd.textContent = '▶';
+  bar.append(btn, back, sl, fwd, tm); sec.appendChild(bar); grid.appendChild(sec);
+  const v = { s, ctx: cv.getContext('2d'), t: 0, playing: true, sl, btn, tm };
+  const setPlay = p => { v.playing = p; btn.textContent = p ? 'Pausa' : 'Seguir'; };
+  v.setPlay = setPlay;
+  btn.onclick = () => setPlay(!v.playing);
+  sl.oninput = () => { setPlay(false); v.t = sl.value / 1000 * LOOP; };
+  back.onclick = () => { setPlay(false); v.t = Math.max(0, v.t - 0.02); };
+  fwd.onclick = () => { setPlay(false); v.t = Math.min(LOOP, v.t + 0.02); };
+  return v;
+});
+let allPaused = false;
+document.getElementById('pause').onclick = e => {
+  allPaused = !allPaused; e.target.textContent = allPaused ? 'Seguir todo' : 'Pausa todo';
+  views.forEach(v => v.setPlay(!allPaused));
+};
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  for (const v of views) {
+    if (v.playing) { v.t += dt * speed; if (v.t >= LOOP) v.t = 0; v.sl.value = v.t / LOOP * 1000; }
+    v.tm.textContent = v.t.toFixed(2) + 's';
+    scene(v.ctx, v.t, v.s);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

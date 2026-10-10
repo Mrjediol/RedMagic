@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ataque cometa · 5 versiones</title>
+<style>
+  :root { --bg:#1b1d24; --panel:#4a4a4a; --ink:#e8ecf2; --muted:#9aa3b2; --accent:#29c2ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
+  header { padding:16px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; position:sticky; top:0; background:var(--bg); z-index:2; border-bottom:1px solid #2c303a; }
+  h1 { font-size:18px; margin:0 12px 0 0; }
+  label { display:flex; gap:8px; align-items:center; color:var(--muted); }
+  button { background:#2a2f3a; color:var(--ink); border:1px solid #3a4150; border-radius:6px; padding:6px 12px; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  main { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap:16px; padding:16px; }
+  section { background:#23262f; border-radius:10px; padding:12px; }
+  h2 { font-size:15px; margin:0 0 4px; }
+  p { margin:0 0 8px; color:var(--muted); font-size:13px; }
+  canvas { width:100%; height:auto; background:var(--panel); border-radius:6px; display:block; }
+  .legend { font-size:12px; color:var(--muted); }
+  .legend b.back { color:#ff9a3c; } .legend b.front { color:#5dff8a; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ataque a distancia · cometa</h1>
+  <label>Velocidad <input id="speed" type="range" min="0.05" max="1" step="0.05" value="0.35"> <span id="speedv">0.35×</span></label>
+  <button id="pause">Pausa</button>
+  <label><input id="layers" type="checkbox"> Ver capas</label>
+  <span class="legend">(<b class="back">naranja</b> = detrás del player/enemigo · <b class="front">verde</b> = delante)</span>
+</header>
+<main id="grid"></main>
+<script>
+// ---------------------------------------------------------------- paleta del set
+const C = {
+  white:'#ffffff', core:'#ffe6ea', light:'#9ef2ff', cyan:'#29c2ff', blue:'#1c5cdb', purple:'#7538db',
+  player:'#e07a3c', playerDark:'#8a4520', enemy:'#6a3a5c', enemyDark:'#42243a'
+};
+const W = 640, H = 400, GROUND = 340;
+const X0 = 124, X1 = 508, YM = GROUND - 50;           // boca, impacto, altura del disparo
+const T0 = 0.35, T1 = 0.77;                            // disparo, llegada
+const LOOP = 1.9, N = 40;
+
+let speed = 0.35, paused = false, showLayers = false;
+document.getElementById('speed').oninput = e => { speed = +e.target.value; document.getElementById('speedv').textContent = speed.toFixed(2) + '×'; };
+document.getElementById('pause').onclick = e => { paused = !paused; e.target.textContent = paused ? 'Seguir' : 'Pausa'; };
+document.getElementById('layers').onchange = e => showLayers = e.target.checked;
+
+// ---------------------------------------------------------------- utilidades
+const clamp = (v, a=0, b=1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const easeIn = t => t * t * t;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+function rand(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+function col(c, layer) { return showLayers ? (layer === 'back' ? '#ff9a3c' : '#5dff8a') : c; }
+
+function player(ctx, x, y, dir, opts = {}) {
+  const { squash = 0, lean = 0 } = opts;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(lean * dir); ctx.scale(1 + squash, 1 - squash);
+  ctx.fillStyle = C.playerDark; ctx.beginPath(); ctx.roundRect(-13, -48, 26, 48, 9); ctx.fill();
+  ctx.fillStyle = C.player;
+  ctx.beginPath(); ctx.ellipse(4 * dir, -60, 15, 13, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-3 * dir, -78, 4, 11, -0.3 * dir, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(11 * dir, -62, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+function enemy(ctx, t) {
+  const ht = seg(t, T1, T1 + 0.35), shake = ht > 0 && ht < 1 ? Math.sin(ht * 40) * (1 - ht) * 6 : 0;
+  ctx.save(); ctx.translate(540 + shake, GROUND);
+  ctx.fillStyle = C.enemyDark; ctx.beginPath(); ctx.ellipse(0, -42, 30, 42, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = C.enemy; ctx.beginPath(); ctx.ellipse(-3, -46, 26, 38, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.arc(-14, -56, 4, 0, 7); ctx.fill();
+  if (ht > 0 && ht < 0.25) { ctx.globalAlpha = 1 - ht / 0.25; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(-3, -46, 26, 38, 0, 0, 7); ctx.fill(); }
+  ctx.restore();
+}
+function ground(ctx) {
+  ctx.fillStyle = '#2f5d7a'; ctx.fillRect(0, GROUND, W, H - GROUND);
+  ctx.fillStyle = '#3d7598'; ctx.fillRect(0, GROUND, W, 6);
+}
+
+// ---------------------------------------------------------------- camino y estado de un proyectil
+// τ = avance 0..1 sobre el camino. El camino da la y; la x es lineal.
+function P(tau, cfg) { return { x: lerp(X0, X1, tau), y: YM + cfg.path(tau) }; }
+
+function state(t, cfg) {
+  const uLive = (t - T0) / (T1 - T0);
+  const head = clamp(uLive, 0, 1), uTail = clamp(uLive - cfg.tail, 0, head);
+  const pts = [];
+  for (let i = 0; i <= N; i++) {
+    const ui = lerp(head, uTail, i / N);
+    pts.push(P(Math.pow(ui, cfg.acc), cfg));
+  }
+  for (let i = 0; i <= N; i++) {            // normales
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(N, i + 1)];
+    const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy) || 1;
+    pts[i].nx = -dy / l; pts[i].ny = dx / l;
+  }
+  const h = pts[0], q = pts[3];
+  const ang = Math.hypot(h.x - q.x, h.y - q.y) < 0.01 ? 0 : Math.atan2(h.y - q.y, h.x - q.x);
+  return { uLive, head, pts, ang, h, alive: uLive > 0 && uLive < 1 + cfg.tail, headAlive: uLive > 0 && uLive < 1,
+           tailFade: 1 - seg(uLive, 1, 1 + cfg.tail) * 0.6, t };
+}
+
+// ---------------------------------------------------------------- piezas
+// cinta de ancho variable a lo largo de pts (s: 0 cabeza → 1 cola)
+function ribbon(ctx, S, wfn, color, alpha, layer) {
+  const pts = S.pts, L = [], R = [];
+  for (let i = 0; i <= N; i++) {
+    const p = pts[i], w = wfn(i / N) / 2;
+    L.push([p.x + p.nx * w, p.y + p.ny * w]); R.push([p.x - p.nx * w, p.y - p.ny * w]);
+  }
+  ctx.save(); ctx.globalAlpha = alpha * S.tailFade; ctx.fillStyle = col(color, layer);
+  ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]);
+  for (const q of L) ctx.lineTo(q[0], q[1]);
+  for (let i = N; i >= 0; i--) ctx.lineTo(R[i][0], R[i][1]);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+// hebra desplazada por la normal; offFn(s) → desplazamiento, wFn(s) → grosor; segLayer(s) filtra por profundidad
+function strand(ctx, S, offFn, wFn, color, alpha, layer, segLayer) {
+  const pts = S.pts;
+  ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = col(color, layer);
+  for (let i = 0; i < N; i++) {
+    const s = i / N;
+    if (segLayer && segLayer(s) !== layer) continue;
+    const a = pts[i], b = pts[i + 1], o0 = offFn(s), o1 = offFn((i + 1) / N);
+    ctx.globalAlpha = alpha * S.tailFade; ctx.lineWidth = Math.max(0.3, wFn(s));
+    ctx.beginPath(); ctx.moveTo(a.x + a.nx * o0, a.y + a.ny * o0); ctx.lineTo(b.x + b.nx * o1, b.y + b.ny * o1); ctx.stroke();
+  }
+  ctx.restore();
+}
+function glow(ctx, x, y, r, c0, a) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, c0); g.addColorStop(1, 'rgba(117,56,219,0)');
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.restore();
+}
+function disc(ctx, x, y, r, c, a, layer) {
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = col(c, layer); ctx.beginPath(); ctx.arc(x, y, Math.max(0.1, r), 0, 7); ctx.fill(); ctx.restore();
+}
+// cabeza: halo morado → cian → claro → núcleo blanco
+function headBall(ctx, S, r, layer, pulse = 1) {
+  if (!S.headAlive) return;
+  const { x, y } = S.h, k = r * pulse;
+  if (showLayers) { disc(ctx, x, y, k, C.white, 1, layer); return; }
+  glow(ctx, x, y, k * 3.2, 'rgba(160,110,255,0.9)', 0.55);
+  disc(ctx, x, y, k * 1.25, C.cyan, 0.9, layer);
+  disc(ctx, x, y, k * 0.95, C.light, 1, layer);
+  disc(ctx, x, y, k * 0.6, C.white, 1, layer);
+}
+// chispas que se sueltan de la cola y se alejan por la normal
+function sparks(ctx, S, count, seed, reach, layer) {
+  if (!S.alive) return;
+  for (let i = 0; i < count; i++) {
+    const R = rand(seed + i * 17), s0 = 0.05 + R() * 0.8, side = R() < 0.5 ? -1 : 1, rate = 1.4 + R() * 1.6;
+    const age = (S.t * rate + R()) % 1, lay = R() < 0.5 ? 'back' : 'front';
+    if (lay !== layer) continue;
+    const p = S.pts[Math.floor(s0 * N)];
+    const d = age * reach * (0.5 + R());
+    disc(ctx, p.x + p.nx * side * d - age * 14, p.y + p.ny * side * d + age * age * 10, (1 + R() * 2) * (1 - age) + 0.4,
+         i % 3 === 0 ? C.white : (i % 3 === 1 ? C.light : C.cyan), (1 - age) * S.tailFade, layer);
+  }
+}
+
+// ---------------------------------------------------------------- boca de disparo y carga
+function charge(ctx, t, layer) {
+  const prep = seg(t, 0.05, T0);
+  if (prep <= 0 || t >= T0) return;
+  if (layer === 'front') {
+    if (!showLayers) glow(ctx, X0, YM, 8 + 26 * prep, 'rgba(160,110,255,0.9)', 0.5 * prep);
+    disc(ctx, X0, YM, 2 + 7 * prep, C.cyan, 1, 'front');
+    disc(ctx, X0, YM, 1 + 4 * prep, C.white, 1, 'front');
+    // hilos de energía que entran a la orbe
+    const R = rand(5);
+    for (let i = 0; i < 8; i++) {
+      const a = R() * 6.28, d = (1 - ((prep * 2 + R()) % 1)) * 36;
+      disc(ctx, X0 + Math.cos(a) * d, YM + Math.sin(a) * d, 1.6, i % 2 ? C.light : C.white, prep, 'front');
+    }
+  }
+}
+function muzzle(ctx, t, layer) {
+  const m = seg(t, T0, T0 + 0.22); if (m <= 0 || m >= 1) return;
+  const a = 1 - easeIn(m), r = lerp(10, 44, easeOut(m));
+  ctx.save(); ctx.lineCap = 'round'; ctx.globalAlpha = a; ctx.strokeStyle = col(C.white, layer); ctx.lineWidth = lerp(5, 1, m);
+  ctx.setLineDash([Math.max(2, 14 * (1 - m)), 4 + 20 * m]);
+  ctx.beginPath();
+  if (layer === 'back') ctx.ellipse(X0 + 4, YM, r * 0.3, r, 0, Math.PI * 0.5, Math.PI * 1.5);
+  else ctx.ellipse(X0 + 4, YM, r * 0.3, r, 0, -Math.PI * 0.5, Math.PI * 0.5);
+  ctx.stroke(); ctx.restore();
+  if (layer === 'front' && m < 0.3) { disc(ctx, X0, YM, lerp(18, 4, m / 0.3), C.white, 1 - m / 0.3, 'front'); }
+}
+
+// ---------------------------------------------------------------- impacto en el enemigo
+function impact(ctx, t, layer, style) {
+  const ht = seg(t, T1, T1 + 0.45); if (ht <= 0 || ht >= 1) return;
+  const x = X1 + 14, y = YM, fade = 1 - easeIn(ht);
+  if (layer === 'front') {
+    if (ht < 0.35) { const f = ht / 0.35; if (!showLayers) glow(ctx, x, y, lerp(50, 14, f), 'rgba(255,255,255,0.9)', 1 - f); disc(ctx, x, y, lerp(22, 3, f), C.white, 1 - f, 'front'); }
+    // chispas: salen sobre todo hacia atrás/arriba
+    const R = rand(41);
+    for (let i = 0; i < 14; i++) {
+      const a = Math.PI + (R() - 0.5) * 2.2 - 0.3, d = easeOut(ht) * (30 + R() * 60), len = (8 + R() * 14) * (1 - ht);
+      const px = x + Math.cos(a) * d, py = y + Math.sin(a) * d * 0.8 + ht * ht * 18;
+      ctx.save(); ctx.globalAlpha = fade; ctx.strokeStyle = col(i % 3 ? C.light : C.white, 'front'); ctx.lineWidth = 2.2 * (1 - ht) + 0.6; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px - Math.cos(a) * len, py - Math.sin(a) * len * 0.8); ctx.stroke(); ctx.restore();
+    }
+  }
+  const r = lerp(10, style === 'wide' ? 78 : 54, easeOut(ht));
+  ctx.save(); ctx.globalAlpha = fade; ctx.lineCap = 'round'; ctx.lineWidth = lerp(5, 1, ht); ctx.strokeStyle = col(layer === 'back' ? C.cyan : C.white, layer);
+  ctx.beginPath();
+  if (layer === 'back') ctx.ellipse(x, y, r * 0.32, r, 0, Math.PI * 0.5, Math.PI * 1.5);
+  else ctx.ellipse(x, y, r * 0.32, r, 0, -Math.PI * 0.5, Math.PI * 0.5);
+  ctx.stroke(); ctx.restore();
+}
+
+// ================================================================ VERSIONES
+// 1 · Cometa clásico: cabeza esfera + cola afilada con lenguas y chispas.
+function v1(ctx, t, layer, S) {
+  if (layer === 'back' && S.alive) {
+    const br = 1 + 0.12 * Math.sin(t * 30);
+    const w = (w0) => s => w0 * Math.pow(1 - s, 0.9) * (br + 0.08 * Math.sin(t * 40 - s * 14));
+    ribbon(ctx, S, w(40), C.purple, 0.35, layer);
+    ribbon(ctx, S, w(28), C.blue, 0.55, layer);
+    ribbon(ctx, S, w(19), C.cyan, 0.9, layer);
+    ribbon(ctx, S, w(11), C.light, 1, layer);
+    ribbon(ctx, S, w(5), C.white, 1, layer);
+    const cs = [C.cyan, C.light, C.blue, C.cyan];
+    for (let k = 0; k < 4; k++)
+      strand(ctx, S, s => (k % 2 ? 1 : -1) * (5 + s * 16) * (0.5 + 0.5 * Math.sin(t * 25 + k * 2 - s * 9)),
+             s => 2.8 * (1 - s), cs[k], 0.8, layer);
+  }
+  if (layer === 'front') { sparks(ctx, S, 16, 3, 24, layer); headBall(ctx, S, 8, layer, 1 + 0.08 * Math.sin(t * 50)); }
+}
+// 2 · Cola ondulante: la cola serpentea en hebras de colores; cabeza en gota alargada.
+function v2(ctx, t, layer, S) {
+  if (layer === 'back' && S.alive) {
+    const w = w0 => s => w0 * Math.pow(1 - s, 1.1);
+    ribbon(ctx, S, w(24), C.purple, 0.3, layer);
+    ribbon(ctx, S, w(12), C.cyan, 0.8, layer);
+    ribbon(ctx, S, w(5), C.white, 1, layer);
+    const cs = [C.white, C.light, C.cyan, C.blue, C.purple];
+    for (let k = 0; k < 5; k++)
+      strand(ctx, S, s => 24 * Math.pow(s, 0.7) * Math.sin(t * 30 - s * 12 + k * 1.3) * (k % 2 ? 1 : 0.7),
+             s => (3.2 - k * 0.3) * (1 - s * 0.85), cs[k], 0.9, layer);
+  }
+  if (layer === 'front') {
+    sparks(ctx, S, 8, 9, 30, layer);
+    if (S.headAlive) {
+      const { x, y } = S.h;
+      glow(ctx, x, y, 34, 'rgba(160,110,255,0.9)', 0.5);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(S.ang);
+      for (const [rx, ry, c] of [[18, 9, C.cyan], [14, 7, C.light], [9, 4.2, C.white]]) {
+        ctx.fillStyle = col(c, layer); ctx.beginPath(); ctx.moveTo(-rx * 1.6, 0);
+        ctx.quadraticCurveTo(-rx * 0.2, -ry * 1.1, rx * 0.5, 0); ctx.quadraticCurveTo(-rx * 0.2, ry * 1.1, -rx * 1.6, 0); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(rx * 0.05, 0, rx * 0.5, ry, 0, 0, 7); ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+}
+// 3 · Cometa con onda de choque: cola corta y gruesa + líneas de velocidad + arcos de choque al frente (como el dash).
+function v3(ctx, t, layer, S) {
+  if (layer === 'back' && S.alive) {
+    const w = w0 => s => w0 * Math.pow(1 - s, 0.6);
+    ribbon(ctx, S, w(30), C.blue, 0.5, layer);
+    ribbon(ctx, S, w(22), C.cyan, 0.9, layer);
+    ribbon(ctx, S, w(13), C.light, 1, layer);
+    ribbon(ctx, S, w(6), C.white, 1, layer);
+  }
+  if (S.headAlive) {
+    const { x, y } = S.h, R = rand(21), ux = Math.cos(S.ang), uy = Math.sin(S.ang);
+    // líneas de velocidad
+    if (layer === 'back') for (let i = 0; i < 6; i++) {
+      const off = (R() - 0.5) * 46, l0 = 20 + R() * 20, l1 = l0 + 40 + R() * 60;
+      ctx.save(); ctx.globalAlpha = 0.65; ctx.strokeStyle = col(i % 2 ? C.cyan : C.light, layer); ctx.lineWidth = 1.2 + R() * 1.6; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x - ux * l0 - uy * off, y - uy * l0 + ux * off); ctx.lineTo(x - ux * l1 - uy * off, y - uy * l1 + ux * off); ctx.stroke(); ctx.restore();
+    }
+    // arcos de choque: x = a - y²/b en el marco del proyectil; cada tramo va a su capa por la y del mundo
+    const pal = [C.white, C.light, C.cyan, C.blue, C.light, C.white];
+    for (let k = 0; k < 6; k++) {
+      const a = 12 + k * 2.6, b = 12 + k * 2.2, wy = 16 + k * 4.5, ph = k * 1.7;
+      const y0 = -wy * (0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 22 + ph))), y1 = wy * (0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * 28 + ph + 2)));
+      ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = col(pal[k], layer); ctx.lineWidth = k < 2 ? 2.6 : 1.4;
+      ctx.globalAlpha = 0.95 - k * 0.07;
+      let prev = null;
+      for (let i = 0; i <= 14; i++) {
+        const yy = y0 + (y1 - y0) * i / 14, xx = a - yy * yy / b;
+        const wx = x + ux * xx - uy * yy, wy2 = y + uy * xx + ux * yy;
+        if (prev && ((wy2 + prev[1]) / 2 < y ? 'back' : 'front') === layer) { ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(wx, wy2); ctx.stroke(); }
+        prev = [wx, wy2];
+      }
+      ctx.restore();
+    }
+    if (layer === 'front') { glow(ctx, x + ux * 14, y + uy * 14, 22, 'rgba(255,255,255,0.9)', 0.7); headBall(ctx, S, 7, layer); }
+  }
+}
+// 4 · Brasas: cola corta; cada pocos ms suelta una brasa que se queda en el aire, cae y se apaga.
+function v4(ctx, t, layer, S, cfg) {
+  if (layer === 'back' && S.alive) {
+    const w = w0 => s => w0 * Math.pow(1 - s, 1.2);
+    ribbon(ctx, S, w(22), C.purple, 0.35, layer);
+    ribbon(ctx, S, w(13), C.cyan, 0.85, layer);
+    ribbon(ctx, S, w(5), C.white, 1, layer);
+  }
+  // brasas emitidas a lo largo del vuelo, ancladas al mundo
+  const DT = 0.011, tEnd = Math.min(t, T1);
+  for (let k = 0; T0 + k * DT <= tEnd; k++) {
+    const te = T0 + k * DT, age = (t - te) / 0.55; if (age >= 1) continue;
+    const R = rand(k * 97 + 13), lay = R() < 0.5 ? 'back' : 'front'; if (lay !== layer) continue;
+    const p = P(Math.pow(clamp((te - T0) / (T1 - T0)), cfg.acc), cfg);
+    const dx = (R() - 0.5) * 34 * easeOut(age), dy = (R() - 0.7) * 26 * easeOut(age) + age * age * 46;
+    const r = (1.6 + R() * 3.6) * (1 - age * 0.8), c = [C.white, C.light, C.cyan, C.blue][Math.floor(R() * 4)];
+    if (!showLayers) glow(ctx, p.x + dx, p.y + dy, r * 3.4, 'rgba(120,200,255,0.8)', 0.4 * (1 - age));
+    disc(ctx, p.x + dx, p.y + dy, r, c, 1 - age * age, layer);
+  }
+  if (layer === 'front' && S.headAlive) {
+    const { x, y } = S.h, pul = 1 + 0.18 * Math.sin(t * 60);
+    headBall(ctx, S, 9, layer, pul);
+    if (!showLayers) {       // destello de 4 puntas girando
+      ctx.save(); ctx.translate(x, y); ctx.rotate(t * 8); ctx.strokeStyle = '#fff'; ctx.lineCap = 'round';
+      for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); ctx.globalAlpha = 0.8; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(24 * pul, 0); ctx.stroke(); }
+      ctx.restore();
+    }
+  }
+}
+// 5 · Doble hélice: dos hilos se enroscan alrededor del eje (pasan por detrás y por delante) + anillo orbital en la cabeza.
+function v5(ctx, t, layer, S) {
+  if (S.alive) {
+    const amp = s => 15 * Math.pow(1 - s, 0.55) + 2;
+    const ph = s => t * 22 - s * 17;
+    if (layer === 'back') {
+      ribbon(ctx, S, s => 14 * Math.pow(1 - s, 1.1), C.purple, 0.35, layer);
+      ribbon(ctx, S, s => 5 * Math.pow(1 - s, 1.2), C.white, 0.95, layer);
+    }
+    const depth = k => s => Math.cos(ph(s) + k * Math.PI) > 0 ? 'front' : 'back';
+    for (let k = 0; k < 2; k++) {
+      const c = k ? C.cyan : C.light;
+      strand(ctx, S, s => amp(s) * Math.sin(ph(s) + k * Math.PI), s => 4 * (1 - s * 0.8) * (0.7 + 0.3 * Math.cos(ph(s) + k * Math.PI)) + 0.4,
+             c, 0.95, layer, depth(k));
+    }
+  }
+  if (S.headAlive) {
+    const { x, y } = S.h;
+    if (layer === 'back') { // mitad lejana del anillo
+      ctx.save(); ctx.translate(x, y); ctx.rotate(S.ang); ctx.strokeStyle = col(C.cyan, layer); ctx.lineWidth = 2.2; ctx.globalAlpha = 0.9;
+      ctx.beginPath(); ctx.ellipse(0, 0, 6, 18 + 2 * Math.sin(t * 30), 0, Math.PI * 0.5, Math.PI * 1.5); ctx.stroke(); ctx.restore();
+    } else {
+      ctx.save(); ctx.translate(x, y); ctx.rotate(S.ang); ctx.strokeStyle = col(C.white, layer); ctx.lineWidth = 2.6;
+      ctx.beginPath(); ctx.ellipse(0, 0, 6, 18 + 2 * Math.sin(t * 30), 0, -Math.PI * 0.5, Math.PI * 0.5); ctx.stroke(); ctx.restore();
+      headBall(ctx, S, 7, layer, 1 + 0.1 * Math.sin(t * 50));
+      sparks(ctx, S, 6, 31, 20, layer);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- escena
+function scene(ctx, t, cfg) {
+  const S = state(t, cfg);
+  const prep = seg(t, 0.05, T0), rec = seg(t, T0, T0 + 0.15);
+  ctx.clearRect(0, 0, W, H); ground(ctx);
+
+  // DETRÁS
+  cfg.draw(ctx, t, 'back', S, cfg);
+  muzzle(ctx, t, 'back'); impact(ctx, t, 'back', cfg.impact);
+
+  enemy(ctx, t);
+  player(ctx, 90, GROUND, 1, { lean: -prep * 0.12 + (t >= T0 ? 0.14 * (1 - rec) : 0), squash: prep * 0.05 - (t >= T0 ? 0.08 * (1 - rec) : 0) });
+
+  // DELANTE
+  charge(ctx, t, 'front');
+  cfg.draw(ctx, t, 'front', S, cfg);
+  muzzle(ctx, t, 'front'); impact(ctx, t, 'front', cfg.impact);
+}
+
+const scenes = [
+  { title:'1 · Cometa clásico', draw:v1, tail:0.55, acc:1.35, path:() => 0, impact:'normal',
+    text:'Esfera con halo morado y cola afilada en 5 capas de color; lenguas que respiran y chispas que se sueltan. Es el cometa "de manual".' },
+  { title:'2 · Cola ondulante', draw:v2, tail:0.62, acc:1.3, path:tau => Math.sin(tau * 9) * 7, impact:'normal',
+    text:'Cuerpo en gota alargada y 5 hebras de colores que serpentean cada vez más abiertas hacia la cola; el camino mismo oscila un poco.' },
+  { title:'3 · Onda de choque', draw:v3, tail:0.3, acc:1.5, path:() => 0, impact:'wide',
+    text:'Cola corta y gruesa, líneas de velocidad y arcos de choque al frente (mismo lenguaje que el dash). Se siente rápido y pesado.' },
+  { title:'4 · Brasas', draw:v4, tail:0.28, acc:1.25, path:tau => -Math.sin(Math.PI * tau) * 46, impact:'normal',
+    text:'Tiro en parábola. Cola corta y brasas que se quedan en el aire, caen y se apagan: el rastro dura más que el proyectil.' },
+  { title:'5 · Doble hélice', draw:v5, tail:0.6, acc:1.3, path:() => 0, impact:'wide',
+    text:'Dos hilos se enroscan en el eje (pasan por detrás y por delante) y un anillo orbita la cabeza. Máximo volumen; el más "mágico".' },
+];
+
+const grid = document.getElementById('grid');
+const views = scenes.map(s => {
+  const sec = document.createElement('section');
+  sec.innerHTML = `<h2>${s.title}</h2><p>${s.text}</p>`;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  sec.appendChild(cv); grid.appendChild(sec);
+  return { s, ctx: cv.getContext('2d') };
+});
+
+let t = 0, last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!paused) t = (t + dt * speed) % LOOP;
+  for (const v of views) scene(v.ctx, t, v.s);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

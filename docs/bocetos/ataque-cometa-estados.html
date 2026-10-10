@@ -1,0 +1,1663 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cometa · perforación</title>
+<style>
+  :root { --bg:#1b1d24; --panel:#4a4a4a; --ink:#e8ecf2; --muted:#9aa3b2; --accent:#29c2ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
+  header { padding:16px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; position:sticky; top:0; background:var(--bg); z-index:2; border-bottom:1px solid #2c303a; }
+  h1 { font-size:18px; margin:0 12px 0 0; }
+  label { display:flex; gap:8px; align-items:center; color:var(--muted); }
+  button { background:#2a2f3a; color:var(--ink); border:1px solid #3a4150; border-radius:6px; padding:6px 12px; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button.on { border-color:var(--accent); background:#1f3a4d; }
+  main { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap:16px; padding:16px; }
+  section { background:#23262f; border-radius:10px; padding:12px; }
+  h2 { font-size:15px; margin:0 0 4px; }
+  p { margin:0 0 8px; color:var(--muted); font-size:13px; }
+  canvas { width:100%; height:auto; background:var(--panel); border-radius:6px; display:block; }
+  .lab { display:flex; flex-wrap:wrap; gap:8px; }
+  .bar { display:flex; gap:6px; align-items:center; margin-top:8px; }
+  .bar input[type=range] { flex:1; accent-color:var(--accent); }
+  .bar button { padding:4px 9px; }
+  .bar .tm { font:12px ui-monospace, monospace; color:var(--muted); min-width:46px; text-align:right; }
+  .legend { font-size:12px; color:var(--muted); }
+  .legend b.back { color:#ff9a3c; } .legend b.front { color:#5dff8a; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ataque cometa</h1>
+  <button data-tab="saved" class="on">✔ Guardados</button>
+  <button data-tab="wip">🛠 En curso</button>
+  <button data-tab="arc">📁 Archivo</button>
+  <button data-tab="snd">🔊 Sonidos</button>
+  <label>Velocidad <input id="speed" type="range" min="0.05" max="1" step="0.05" value="0.35"> <span id="speedv">0.35×</span></label>
+  <button id="pause">Pausa todo</button>
+  <label><input id="layers" type="checkbox"> Ver capas</label>
+  <label>Espera en «listo» <input id="hold" type="range" min="0" max="1.5" step="0.05" value="0.5"> <span id="holdv">0.50s</span></label>
+  <label><input id="frm" type="checkbox" checked> Impact frames</label>
+  <label><input id="snd" type="checkbox"> 🔊 Sonido</label>
+  <label>Carga <select id="sch"></select></label>
+  <label>Listo <select id="srd"></select></label>
+  <label>Disparo <select id="srl"></select></label>
+  <label>Cadena <select id="scn"></select></label>
+  <label>Impactos <select id="sset"><option value="A">A · Seco y pesado</option><option value="B" selected>B · Energía eléctrica</option><option value="C">C · Metal pesado</option><option value="old">Antiguo (arcade)</option></select></label>
+  <span class="legend">(<b class="back">naranja</b> = detrás · <b class="front">verde</b> = delante) · cada clip tiene su barra: arrastra para rebobinar, ◀ ▶ avanzan un paso</span>
+</header>
+<main id="grid-saved"></main>
+<main id="grid-wip" style="display:none"></main>
+<main id="grid-arc" style="display:none"></main>
+<main id="grid-snd" style="display:none"></main>
+<script>
+// ---------------------------------------------------------------- paleta del set
+const C = {
+  white:'#ffffff', core:'#ffe6ea', light:'#9ef2ff', cyan:'#29c2ff', blue:'#1c5cdb', purple:'#7538db',
+  player:'#e07a3c', playerDark:'#8a4520', enemy:'#6a3a5c', enemyDark:'#42243a'
+};
+const W = 640, H = 400, GROUND = 340;
+const X0 = 124, X1 = 508, YM = GROUND - 50;
+const T0 = 0.35, T1 = 0.77;
+const LOOP = 2.2, N = 40;
+
+let speed = 0.35, showLayers = false;
+document.getElementById('speed').oninput = e => { speed = +e.target.value; document.getElementById('speedv').textContent = speed.toFixed(2) + '×'; };
+document.getElementById('layers').onchange = e => showLayers = e.target.checked;
+let soundOn = false, framesOn = true;
+document.getElementById('frm').onchange = e => framesOn = e.target.checked;
+document.getElementById('snd').onchange = e => { soundOn = e.target.checked; if (soundOn) audioInit(); else if (AC) stopHum(); };
+document.getElementById('hold').oninput = e => { HOLD = +e.target.value; document.getElementById('holdv').textContent = HOLD.toFixed(2) + 's'; };
+
+// ---------------------------------------------------------------- utilidades
+const clamp = (v, a=0, b=1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const easeIn = t => t * t * t;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+function rand(seed) { let s = (Math.abs(seed) * 2654435761 % 2147483647) || 1; for (let i = 0; i < 4; i++) s = (s * 16807) % 2147483647; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+function col(c, layer) { return showLayers ? (layer === 'back' ? '#ff9a3c' : '#5dff8a') : c; }
+
+function player(ctx, x, y, dir, opts = {}) {
+  const { squash = 0, lean = 0 } = opts;
+  ctx.save(); ctx.translate(x, y); ctx.rotate(lean * dir); ctx.scale(1 + squash, 1 - squash);
+  ctx.fillStyle = C.playerDark; ctx.beginPath(); ctx.roundRect(-13, -48, 26, 48, 9); ctx.fill();
+  ctx.fillStyle = C.player;
+  ctx.beginPath(); ctx.ellipse(4 * dir, -60, 15, 13, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-3 * dir, -78, 4, 11, -0.3 * dir, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(11 * dir, -62, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+// knock = empujón en px; hitT = instante del golpe (flash blanco, aplastamiento y temblor)
+function enemy(ctx, t, x, hitT, knockAmp, flashLen, o = {}) {
+  const ht = seg(t, hitT, hitT + 0.5);
+  const k = ht > 0 ? Math.sin(Math.min(ht * 2.2, 1) * Math.PI) * knockAmp : 0;
+  const shake = ht > 0 && ht < 0.5 ? Math.sin(ht * 70) * (1 - ht * 2) * 3 : 0;
+  const sq = ht > 0 && ht < 0.4 ? Math.sin(ht / 0.4 * Math.PI) * 0.12 : 0;
+  const body = () => {
+    ctx.fillStyle = C.enemyDark; ctx.beginPath(); ctx.ellipse(0, -42, 30, 42, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = C.enemy; ctx.beginPath(); ctx.ellipse(-3, -46, 26, 38, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.arc(-14, -56, 4, 0, 7); ctx.fill();
+    if (o.solid) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(0, -42, 30, 42, 0, 0, 7); ctx.fill(); }
+    else if (ht > 0 && ht < flashLen) { ctx.globalAlpha = 1 - ht / flashLen; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(-3, -46, 26, 38, 0, 0, 7); ctx.fill(); }
+  };
+  const free = o.cy !== undefined, up = free ? GROUND - 44 - o.cy : (o.up || 0), bob = !free && up ? Math.sin(t * 3) * 2 : 0;
+  ctx.save(); ctx.translate(x + k + shake, GROUND - up + bob); ctx.scale(1 - sq, 1 + sq * 0.6);
+  if (o.split) {                                    // mitad de arriba y de abajo se separan por el tajo (y = -46)
+    for (const s of [-1, 1]) {
+      ctx.save(); ctx.beginPath(); ctx.rect(-80, s < 0 ? -140 : -46, 160, s < 0 ? 94 : 60); ctx.clip();
+      ctx.translate(0, s * o.split); body(); ctx.restore();
+    }
+  } else body();
+  if (o.flash2 !== undefined) { const ft = seg(t, o.flash2, o.flash2 + 0.14); if (ft > 0 && ft < 1) { ctx.globalAlpha = 1 - ft; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(-3, -46, 26, 38, 0, 0, 7); ctx.fill(); } }
+  ctx.restore();
+}
+function ground(ctx) {
+  ctx.fillStyle = '#2f5d7a'; ctx.fillRect(0, GROUND, W, H - GROUND);
+  ctx.fillStyle = '#3d7598'; ctx.fillRect(0, GROUND, W, 6);
+}
+
+// ---------------------------------------------------------------- recorrido y estado
+// v.x(t) = posición de la cabeza en el tiempo; la cola muestrea ese historial (si la cabeza se frena, la cola se amontona).
+const crossT = (v, xv) => { for (let t = 0; t < 2; t += 0.001) if (v.x(t) >= xv) return t; return 2; };
+function state(t, v) {
+  const span = v.tailSpan(t), th = Math.min(t, v.TB), tTail = clamp(t - span, T0, th), pts = [];
+  for (let i = 0; i <= N; i++) pts.push({ x: v.x(lerp(th, tTail, i / N)), y: v.y ? v.y(lerp(th, tTail, i / N)) : YM });
+  for (let i = 0; i <= N; i++) {
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(N, i + 1)];
+    const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy);
+    pts[i].nx = l < 0.01 ? 0 : -dy / l; pts[i].ny = l < 0.01 ? 1 : dx / l;
+  }
+  const h = pts[0];
+  const inside = v.hits.some(e => e.pierce && Math.pow((h.x - e.ex) / 27, 2) + Math.pow((h.y - (GROUND - 44)) / 39, 2) < 1);
+  return { pts, h, ang: v.ang ? v.ang(th) : 0, alive: t > T0 && t < v.TB + span, headAlive: t > T0 && t < v.TB,
+           tailFade: 1 - seg(t, v.TB, v.TB + span) * 0.6, t, sc: v.scale(t), inside, pr: v.proj, shape: v.shape, up: v.up, v };
+}
+
+// ---------------------------------------------------------------- piezas
+function ribbon(ctx, S, wfn, color, alpha, layer) {
+  const pts = S.pts, L = [], R = [];
+  for (let i = 0; i <= N; i++) {
+    const p = pts[i], w = wfn(i / N) / 2;
+    L.push([p.x + p.nx * w, p.y + p.ny * w]); R.push([p.x - p.nx * w, p.y - p.ny * w]);
+  }
+  ctx.save(); ctx.globalAlpha = alpha * S.tailFade; ctx.fillStyle = col(color, layer);
+  ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]);
+  for (const q of L) ctx.lineTo(q[0], q[1]);
+  for (let i = N; i >= 0; i--) ctx.lineTo(R[i][0], R[i][1]);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+const tailEnv = s => Math.sin(Math.PI * Math.pow(clamp(s), 0.55));   // 0 en la cabeza, máximo hacia el 30 %, vuelve a 0 en la punta
+const tailRise = s => Math.pow(seg(s, 0, 0.08), 0.5);                  // el grosor también nace de 0
+function strand(ctx, S, offFn, wFn, color, alpha, layer, segLayer) {
+  const pts = S.pts;
+  ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = col(color, layer);
+  for (let i = 0; i < N; i++) {
+    const s = i / N, a = pts[i], b = pts[i + 1], o0 = offFn(s), o1 = offFn((i + 1) / N);
+    if (segLayer && segLayer(s) !== layer) continue;
+    ctx.globalAlpha = alpha * S.tailFade * (1 - 0.92 * seg(s, 0.65, 1)); ctx.lineWidth = Math.max(0.3, wFn(s));
+    ctx.beginPath(); ctx.moveTo(a.x + a.nx * o0, a.y + a.ny * o0); ctx.lineTo(b.x + b.nx * o1, b.y + b.ny * o1); ctx.stroke();
+  }
+  ctx.restore();
+}
+function glow(ctx, x, y, r, c0, a) {
+  if (showLayers) return;
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, AMBON ? c0.replace('160,110,255', '255,150,40').replace('120,220,255', '255,220,120').replace('140,100,255', '255,140,40').replace('90,60,230', '255,120,20').replace('30,70,220', '255,170,40').replace('110,70,255', '255,140,40') : c0); g.addColorStop(1, 'rgba(117,56,219,0)');
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.restore();
+}
+function disc(ctx, x, y, r, c, a, layer) {
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = col(c, layer); ctx.beginPath(); ctx.arc(x, y, Math.max(0.1, r), 0, 7); ctx.fill(); ctx.restore();
+}
+// gota: cabeza redonda en (x,y), cola afilada hacia -dir
+function drop(ctx, x, y, ang, len, wid, c, a, layer) {
+  if (a <= 0 || len < 0.5) return;
+  ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.rotate(ang); ctx.fillStyle = col(c, layer);
+  ctx.beginPath(); ctx.moveTo(-len, 0); ctx.quadraticCurveTo(-len * 0.2, -wid, wid * 0.6, 0); ctx.quadraticCurveTo(-len * 0.2, wid, -len, 0); ctx.fill();
+  ctx.restore();
+}
+// trazo afilado (chispa alargada) de a→b, grueso en b
+function shard(ctx, ax, ay, bx, by, w, c, a, layer) {
+  if (a <= 0) return;
+  const dx = bx - ax, dy = by - ay, l = Math.hypot(dx, dy) || 1, nx = -dy / l * w / 2, ny = dx / l * w / 2;
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = col(c, layer);
+  ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx + nx, by + ny); ctx.lineTo(bx - nx, by - ny); ctx.closePath(); ctx.fill(); ctx.restore();
+}
+// anillo con ruido, mitad lejana (back) o cercana (front); squash = aplastamiento horizontal
+function ringHalf(ctx, x, y, r, squash, wob, seed, width, c, a, layer) {
+  if (a <= 0) return;
+  const R = rand(seed), ph = [R() * 6, R() * 6, R() * 6];
+  ctx.save(); ctx.globalAlpha = a; ctx.lineWidth = Math.max(0.5, width); ctx.lineCap = 'round'; ctx.strokeStyle = col(c, layer);
+  ctx.beginPath();
+  const a0 = layer === 'back' ? Math.PI * 0.5 : -Math.PI * 0.5;
+  for (let i = 0; i <= 28; i++) {
+    const th = a0 + Math.PI * i / 28;
+    const rr = r * (1 + wob * (Math.sin(th * 3 + ph[0]) * 0.5 + Math.sin(th * 5 + ph[1]) * 0.3));
+    const px = x + Math.cos(th) * rr * squash, py = y + Math.sin(th) * rr;
+    i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+  }
+  ctx.stroke(); ctx.restore();
+}
+function trailLine(ctx, fn, uHead, span, w, c, a, layer) {   // estela afilada siguiendo fn(u)
+  const M = 10;
+  ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = col(c, layer);
+  let prev = null;
+  for (let i = 0; i <= M; i++) {
+    const u = Math.max(0, uHead - span * i / M), p = fn(u);
+    if (prev) { ctx.globalAlpha = a * (1 - i / M); ctx.lineWidth = Math.max(0.3, w * (1 - i / M)); ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(p.x, p.y); ctx.stroke(); }
+    prev = p;
+  }
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------- cabeza
+function headBall(ctx, S, r, layer, pulse = 1) {
+  if (!S.headAlive) return;
+  const { x, y } = S.h, k = r * pulse;
+  if (showLayers) { disc(ctx, x, y, k, C.white, 1, layer); return; }
+  glow(ctx, x, y, k * 3.6, 'rgba(160,110,255,0.9)', 0.55);
+  glow(ctx, x, y, k * 2.0, 'rgba(120,220,255,0.9)', 0.5);
+  disc(ctx, x, y, k * 1.25, C.cyan, 0.9, layer);
+  disc(ctx, x, y, k * 0.95, C.light, 1, layer);
+  disc(ctx, x, y, k * 0.6, C.white, 1, layer);
+}
+
+// ---------------------------------------------------------------- COMETA BÁSICO (S.sc escala grosores y cabeza)
+function comet(ctx, t, layer, S) {
+  if (S.shape === 'wavy') return cometWavy(ctx, t, layer, S);
+  if (S.shape === 'helix') return cometHelix(ctx, t, layer, S);
+  const sc = S.sc, pr = S.pr, tp = pr ? pr.taper : 0.9, wm = pr ? pr.wmul : ((S.up && S.up.pow) ? 0.72 : 1), wob = pr ? pr.wob : ((S.up && S.up.pow) ? 0.65 : 1);
+  const up = S.up, dens = up ? up.dens : 1, nsat = up && up.sat ? up.sat : 3, pw = !!(up && up.pow);
+  if (up && up.kind === 'embers') embersFx(ctx, S, layer);
+  if (pw && !(S.inside && layer === 'front')) powStrands(ctx, S, t, layer, sc);
+  if (up && up.pow && layer === 'front' && S.headAlive && !S.inside) { if (up.kind === 'blade') powBlades(ctx, S, t, layer, up); else powShock(ctx, S, t, layer, up); }
+  if (up && up.kind === 'storm') powBolts(ctx, S, t, layer);
+  if (S.alive && layer === 'back') {
+    const br = 1 + 0.12 * wob * Math.sin(t * 30);
+    const teeth = (w0, s) => pr && pr.saw && w0 >= 20 ? 1 + pr.saw * ((1 - ((s * 14) % 1)) - 0.5) : 1;
+    const w = w0 => s => w0 * wm * sc * Math.pow(1 - s, tp) * teeth(w0, s) * (up && up.pow ? Math.pow(seg(s, 0, 0.1), 0.5) : 1) * (br + 0.08 * wob * Math.sin(t * 40 - s * 14));
+    if (up && up.pow) { ribbon(ctx, S, w(34), navyC(), 0.55, layer); ribbon(ctx, S, w(30), C.purple, 0.55, layer); ribbon(ctx, S, w(26), C.blue, 0.65, layer); }
+    else {
+      ribbon(ctx, S, w(60), C.purple, 0.16, layer);
+      ribbon(ctx, S, w(42), C.purple, 0.32, layer);
+      ribbon(ctx, S, w(29), C.blue, 0.55, layer);
+    }
+    ribbon(ctx, S, w(20), C.cyan, 0.9, layer);
+    ribbon(ctx, S, w(12), C.light, 1, layer);
+    ribbon(ctx, S, w(5), C.white, 1, layer);
+    const cs = [C.cyan, C.light, C.blue, C.cyan, C.light];
+    for (let k = 0; k < (pw ? 0 : 5); k++)
+      strand(ctx, S, s => (k % 2 ? 1 : -1) * sc * wob * (20 + k * 2.5) * tailEnv(s) * (0.55 + 0.45 * Math.sin(t * 25 + k * 2 - s * 9)),
+             s => sc * (3.2 - k * 0.3) * (1 - s) * tailRise(s), cs[k], 0.85, layer);
+    for (let k = 0; k < (pw ? 0 : 4); k++)
+      strand(ctx, S, s => (k % 2 ? 1 : -1) * sc * wob * (5 + k * 2.2) * tailEnv(s) * Math.sin(t * 38 + k * 1.9 - s * 13),
+             s => sc * 1.3 * (1 - s) * tailRise(s), k % 2 ? C.white : C.light, 0.9, layer);
+  }
+  if (S.alive && up && up.kind === 'braid') {        // trenza: dos hilos que se enroscan al eje de la cola (pasan por detrás y por delante)
+    const amp = s => 13 * Math.pow(1 - s, 0.55) * sc + 2, ph = s => t * 20 - s * 15, depth = k => s => Math.cos(ph(s) + k * Math.PI) > 0 ? 'front' : 'back';
+    for (let k = 0; k < 2; k++)
+      strand(ctx, S, s => amp(s) * Math.sin(ph(s) + k * Math.PI), s => (3.6 * (1 - s * 0.8) * (0.7 + 0.3 * Math.cos(ph(s) + k * Math.PI)) + 0.4) * sc, k ? C.light : C.white, 0.95, layer, depth(k));
+  }
+  if (S.alive) {
+    for (let i = 0; i < Math.round(16 * dens); i++) {
+      const R = rand(77 + i * 19), s0 = 0.04 + R() * 0.6, side = R() < 0.5 ? -1 : 1, rate = 1.3 + R() * 1.5;
+      const age = (t * rate + R()) % 1, lay = R() < 0.55 ? 'back' : 'front';
+      if (lay !== layer) continue;
+      const p = S.pts[Math.floor(s0 * N)], d = (5 + age * 22 * (0.6 + R())) * sc;
+      drop(ctx, p.x + p.nx * side * d - age * 26, p.y + p.ny * side * d, Math.PI * 0 + side * 0.25 * age,
+           (9 + R() * 10) * (1 - age * 0.6) * sc, (2.2 + R() * 2.4) * (1 - age * 0.7) * sc,
+           [C.white, C.light, C.cyan, C.blue][i % 4], (1 - age) * S.tailFade, layer);
+    }
+    for (let i = 0; i < Math.round(14 * dens); i++) {
+      const R = rand(300 + i * 17), s0 = 0.05 + R() * 0.8, side = R() < 0.5 ? -1 : 1, rate = 1.4 + R() * 1.6;
+      const age = (t * rate + R()) % 1, lay = R() < 0.5 ? 'back' : 'front';
+      if (lay !== layer) continue;
+      const p = S.pts[Math.floor(s0 * N)], d = age * 26 * (0.5 + R()) * sc;
+      disc(ctx, p.x + p.nx * side * d - age * 14, p.y + p.ny * side * d + age * age * 10, ((1 + R() * 2) * (1 - age) + 0.4) * sc,
+           i % 3 === 0 ? C.white : (i % 3 === 1 ? C.light : C.cyan), (1 - age) * S.tailFade, layer);
+    }
+  }
+  if (S.headAlive) {
+    const { x, y } = S.h;
+    if (S.inside) {                                   // dentro del cuerpo: sólo se ve la luz a través de él
+      if (layer === 'front') { glow(ctx, x, y, 30 * sc, 'rgba(255,255,255,0.9)', 0.55); glow(ctx, x, y, 52 * sc, 'rgba(120,220,255,0.9)', 0.35); }
+      return;
+    }
+    if (pr) { if (layer === 'front') { if (pw) { glow(ctx, x, y, 52 * sc, 'rgba(90,60,230,0.9)', 0.5); glow(ctx, x, y, 34 * sc, 'rgba(30,70,220,0.9)', 0.45); } ctx.save(); ctx.translate(x, y); ctx.rotate(S.ang); ctx.translate(-x, -y); pierceHead(ctx, S, t, sc, pr.kind); ctx.restore(); } return; }
+    for (let k = 0; k < nsat; k++) {
+      const a = t * 14 + k * (6.283 / nsat), sy = Math.sin(a);
+      if ((sy < 0 ? 'back' : 'front') !== layer) continue;
+      disc(ctx, x + Math.cos(a) * 14 * sc, y + sy * 6 * sc, (1.8 + sy * 0.4) * sc, k % 2 ? C.light : C.white, 0.95, layer);
+    }
+    if (layer === 'front') {
+      if (!showLayers) {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(S.ang); ctx.lineCap = 'round';
+        const g = ctx.createLinearGradient(-6, 0, 38 * sc, 0); g.addColorStop(0, 'rgba(255,255,255,0.8)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.strokeStyle = g; ctx.lineWidth = 3 * sc; ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(38 * sc, 0); ctx.stroke();
+        ctx.globalAlpha = 0.7; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+        ctx.rotate(t * 6); ctx.beginPath(); ctx.ellipse(0, 0, 15 * sc, 5 * sc, 0, 0, 7); ctx.stroke();
+        ctx.restore();
+      }
+      if (up && up.pow) { glow(ctx, x, y, 52 * sc, 'rgba(90,60,230,0.9)', 0.5); glow(ctx, x, y, 34 * sc, 'rgba(30,70,220,0.9)', 0.45); disc(ctx, x, y, 8.5 * sc * 1.6, C.blue, 0.8, layer); disc(ctx, x, y, 8.5 * sc * 1.42, C.purple, 0.85, layer); }
+      headBall(ctx, S, 8.5 * sc, layer, 1 + 0.08 * Math.sin(t * 50));
+      if (up && up.kind === 'corona') {                // corona: agujas que giran alrededor de la cabeza + aro fino
+        for (let i = 0; i < 10; i++) {
+          const a = t * 2.6 + i * 0.628, l = (i % 2 ? 30 : 19) * sc, c0 = 8 * sc;
+          needle(ctx, x + Math.cos(a) * c0, y + Math.sin(a) * c0, x + Math.cos(a) * (c0 + l), y + Math.sin(a) * (c0 + l), 2.2, i % 2 ? C.white : C.cyan, 0.9, 'front');
+        }
+        ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeStyle = col(C.light, 'front'); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(x, y, 24 * sc, 0, 7); ctx.stroke(); ctx.restore();
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------- formas alternativas del proyectil (persecución)
+function tailSparks(ctx, S, count, seed, reach, layer) {
+  if (!S.alive) return;
+  for (let i = 0; i < count; i++) {
+    const R = rand(seed + i * 17), s0 = 0.05 + R() * 0.8, side = R() < 0.5 ? -1 : 1, rate = 1.4 + R() * 1.6;
+    const age = (S.t * rate + R()) % 1, lay = R() < 0.5 ? 'back' : 'front';
+    if (lay !== layer) continue;
+    const p = S.pts[Math.floor(s0 * N)], d = age * reach * (0.5 + R());
+    disc(ctx, p.x + p.nx * side * d - age * 14, p.y + p.ny * side * d + age * age * 10, (1 + R() * 2) * (1 - age) + 0.4,
+         i % 3 === 0 ? C.white : (i % 3 === 1 ? C.light : C.cyan), (1 - age) * S.tailFade, layer);
+  }
+}
+function cometWavy(ctx, t, layer, S) {         // cola ondulante: 5 hebras de colores que serpentean + cabeza en gota
+  if (layer === 'back' && S.alive) {
+    const w = w0 => s => w0 * Math.pow(1 - s, 1.1);
+    ribbon(ctx, S, w(24), C.purple, 0.3, layer); ribbon(ctx, S, w(12), C.cyan, 0.8, layer); ribbon(ctx, S, w(5), C.white, 1, layer);
+    const cs = [C.white, C.light, C.cyan, C.blue, C.purple];
+    for (let k = 0; k < 5; k++)
+      strand(ctx, S, s => 24 * Math.pow(s, 0.7) * Math.sin(t * 30 - s * 12 + k * 1.3) * (k % 2 ? 1 : 0.7), s => (3.2 - k * 0.3) * (1 - s * 0.85), cs[k], 0.9, layer);
+  }
+  if (layer === 'front') {
+    tailSparks(ctx, S, 8, 9, 30, layer);
+    if (S.headAlive) {
+      const { x, y } = S.h;
+      glow(ctx, x, y, 34, 'rgba(160,110,255,0.9)', 0.5);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(S.ang);
+      for (const [rx, ry, c] of [[18, 9, C.cyan], [14, 7, C.light], [9, 4.2, C.white]]) {
+        ctx.fillStyle = col(c, layer); ctx.beginPath(); ctx.moveTo(-rx * 1.6, 0);
+        ctx.quadraticCurveTo(-rx * 0.2, -ry * 1.1, rx * 0.5, 0); ctx.quadraticCurveTo(-rx * 0.2, ry * 1.1, -rx * 1.6, 0); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(rx * 0.05, 0, rx * 0.5, ry, 0, 0, 7); ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+}
+function cometHelix(ctx, t, layer, S) {        // doble hélice: dos hilos que se enroscan al eje + anillo orbital en la cabeza
+  if (S.alive) {
+    const amp = s => 15 * Math.pow(1 - s, 0.55) + 2, ph = s => t * 22 - s * 17;
+    if (layer === 'back') { ribbon(ctx, S, s => 14 * Math.pow(1 - s, 1.1), C.purple, 0.35, layer); ribbon(ctx, S, s => 5 * Math.pow(1 - s, 1.2), C.white, 0.95, layer); }
+    const depth = k => s => Math.cos(ph(s) + k * Math.PI) > 0 ? 'front' : 'back';
+    for (let k = 0; k < 2; k++)
+      strand(ctx, S, s => amp(s) * Math.sin(ph(s) + k * Math.PI), s => 4 * (1 - s * 0.8) * (0.7 + 0.3 * Math.cos(ph(s) + k * Math.PI)) + 0.4, k ? C.cyan : C.light, 0.95, layer, depth(k));
+  }
+  if (S.headAlive) {
+    const { x, y } = S.h, rr = 18 + 2 * Math.sin(t * 30);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(S.ang); ctx.lineWidth = layer === 'back' ? 2.2 : 2.6; ctx.strokeStyle = col(layer === 'back' ? C.cyan : C.white, layer);
+    ctx.globalAlpha = layer === 'back' ? 0.9 : 1; ctx.beginPath();
+    if (layer === 'back') ctx.ellipse(0, 0, 6, rr, 0, Math.PI * 0.5, Math.PI * 1.5); else ctx.ellipse(0, 0, 6, rr, 0, -Math.PI * 0.5, Math.PI * 0.5);
+    ctx.stroke(); ctx.restore();
+    if (layer === 'front') { headBall(ctx, S, 7, layer, 1 + 0.1 * Math.sin(t * 50)); tailSparks(ctx, S, 6, 31, 20, layer); }
+  }
+}
+
+// Persecución: sale hacia el ratón (a0), gira hacia el objetivo con giro limitado y va acelerando; el objetivo se queda aturdido al ser alcanzado.
+function simHoming(T, a0) {
+  const dt = 0.004, xs = [], ys = [], as = []; let t = T0, x = X0, y = YM, a = a0, sp = 520, end = null;
+  while (t < T0 + 1.6) {
+    const tg = T(t), want = Math.atan2(tg.y - y, tg.x - x); let da = ((want - a + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+    a += clamp(da, -5.2 * dt, 5.2 * dt); sp = Math.min(1150, sp + 2600 * dt); x += Math.cos(a) * sp * dt; y += Math.sin(a) * sp * dt; t += dt;
+    xs.push(x); ys.push(y); as.push(a);
+    if (Math.hypot(tg.x - x, tg.y - y) < 27) { end = { x, y, a }; break; }
+  }
+  const at = (arr, t) => arr[clamp(Math.round((t - T0) / dt) - 1, 0, arr.length - 1)];
+  return { x: t => t <= T0 ? X0 : at(xs, t), y: t => t <= T0 ? YM : at(ys, t), ang: t => t <= T0 ? a0 : at(as, t), TB: t, end: end || { x, y, a } };
+}
+
+// ---------------------------------------------------------------- UPGRADE «POTENTE»: onda de choque delante, más azul oscuro/morado, carga e impacto con más efectos
+const NAVY = '#16277a', navyC = () => AMBON ? '#5a2606' : NAVY;
+const VIVID_A = ['#ff8a00', '#ffb23c', '#ff5a1f', '#ffd24a', '#ffffff', '#ffe39a', '#ff3b1f', '#ff9a4d', '#ffc400', '#ffffff', '#ff7a2e', '#ffe066', '#ff6a00', '#ffb347'];
+// 14 hilos distintos (amplitud, frecuencia, fase, longitud y grosor propios) en colores intensos; pasan por detrás y por delante del eje
+const VIVID = ['#2f6bff', '#8a3cff', '#c24bff', '#00c8ff', '#ffffff', '#5cf0ff', '#3a2bff', '#d68bff', '#1a9bff', '#ffffff', '#a05cff', '#00e1ff', '#4d4dff', '#ff7ae6'];
+function powStrands(ctx, S, t, layer, sc) {
+  if (!S.alive) return;
+  for (let k = 0; k < VIVID.length; k++) {
+    const A = (5 + (k * 3) % 10) * sc * 0.65, F = 16 + (k * 7) % 23, K = 5 + (k * 3) % 9, PH = k * 1.7, L = 0.5 + (k % 5) * 0.11, W0 = 1.2 + (k % 4) * 0.75, sg = k % 2 ? 1 : -1;
+    const ph = s => t * F - s * K + PH;
+    strand(ctx, S, s => sg * A * 1.5 * tailEnv(Math.min(1, s / L)) * Math.sin(ph(s)), s => Math.max(0, W0 * sc * 0.8 * (1 - Math.min(1, s / L)) * tailRise(s)), (AMBON ? VIVID_A : VIVID)[k], 0.92, layer, s => Math.cos(ph(s)) > 0 ? 'front' : 'back');
+  }
+}
+// semicírculo afilado desde la punta (aTip) hasta el centro (aMid): ancho 0 en la punta, máximo en el centro
+function arcHalf(ctx, cx, cy, r, aTip, aMid, w, c, a, layer) {
+  if (a <= 0 || w <= 0) return;
+  ctx.save(); ctx.strokeStyle = col(c, layer); ctx.lineCap = 'round'; const M = 12; let px = 0, py = 0;
+  for (let i = 0; i <= M; i++) {
+    const th = lerp(aTip, aMid, i / M), qx = cx + Math.cos(th) * r, qy = cy + Math.sin(th) * r;
+    if (i) { ctx.globalAlpha = a; ctx.lineWidth = Math.max(0.3, w * Math.sin(Math.PI / 2 * (i - 0.5) / M)); ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(qx, qy); ctx.stroke(); }
+    px = qx; py = qy;
+  }
+  ctx.restore();
+}
+function bolt(ctx, x0, y0, ang, len, segs, R, wide, layer) {       // rayo en zigzag (morado ancho + núcleo blanco)
+  const pts = [[x0, y0]]; let x = x0, y = y0;
+  for (let k = 1; k <= segs; k++) { const aa = ang + (R() - 0.5) * 1.2; x += Math.cos(aa) * len / segs; y += Math.sin(aa) * len / segs; pts.push([x, y]); }
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const [lw, c, al] of [[wide, C.purple, 0.45], [wide * 0.4, C.white, 1]]) { ctx.globalAlpha = al; ctx.lineWidth = lw; ctx.strokeStyle = col(c, layer); ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); }
+  ctx.restore();
+}
+// onda de choque frontal (como la del dash, más grande y con más azul/morado). Mitad de arriba detrás, mitad de abajo delante.
+function powShock(ctx, S, t, layer, up) {
+  const hx = S.h.x, hy = S.h.y, T = t - T0, al = easeOut(seg(T, 0, 0.05)), sc = up.scale || 1.3, ns = up.strands || 11;
+  if (al <= 0) return;
+  ctx.save();
+  ctx.translate(hx, hy); ctx.rotate(S.ang); ctx.scale(sc, sc); ctx.globalAlpha = al; ctx.lineCap = 'round';
+  const env = (a, b, y) => a - (y * y) / b, pal = [C.white, C.light, C.cyan, C.blue, C.purple, C.light, C.blue, C.purple, C.white, C.cyan, C.purple];
+  if (!showLayers) { const g = ctx.createRadialGradient(34, 0, 0, 34, 0, 30); g.addColorStop(0, 'rgba(255,255,255,0.85)'); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(34, 0, 30, 0, 7); ctx.fill(); }
+  const R = rand(11);
+  for (let k = 0; k < ns; k++) {                                   // hebras parciales que laten
+    const a = 24 + k * 3.2 + R() * 3, b = 24 + k * 2.4, w = 28 + k * 5, ph = R() * 6.28, sp = 18 + R() * 22;
+    const y0 = -w * (0.25 + 0.75 * (0.5 + 0.5 * Math.sin(T * sp + ph))), y1 = w * (0.25 + 0.75 * (0.5 + 0.5 * Math.sin(T * sp * 1.3 + ph + 2)));
+    ctx.strokeStyle = col(pal[k % pal.length], layer); ctx.lineWidth = k < 3 ? 3.6 - k * 0.6 : 1 + R() * 2.4; ctx.beginPath();
+    for (let i = 0; i <= 18; i++) { const y = y0 + (y1 - y0) * i / 18; ctx.lineTo(env(a, b, y), y); }
+    ctx.stroke();
+  }
+  for (let i = 0; i < 30; i++) {                                   // lenguas: gotas que resbalan hacia atrás por la envolvente
+    const Ri = rand(11 * 31 + i * 7), side = i % 2 ? 1 : -1, rate = 2.2 + Ri() * 2.2, ph = Ri(), s = (T * rate + ph) % 1;
+    const a = 26 + Ri() * 16, b = 24 + Ri() * 10, wMax = 36 + Ri() * 20, y = side * s * wMax, back = s > 0.7 ? (s - 0.7) * 160 : 0, x = env(a, b, y) - back;
+    const len = (9 + Ri() * 11) * (1 - s * 0.6), wid = (2.6 + Ri() * 2.6) * (1 - s * 0.7);
+    ctx.save(); ctx.globalAlpha = al * (1 - s) * (s < 0.08 ? s / 0.08 : 1); ctx.translate(x, y); ctx.rotate(Math.atan2(side, -2 * Math.abs(y) / b));
+    ctx.fillStyle = col([C.white, C.light, C.blue, C.purple][i % 4], layer);
+    ctx.beginPath(); ctx.moveTo(-len, 0); ctx.quadraticCurveTo(-len * 0.2, -wid, wid * 0.6, 0); ctx.quadraticCurveTo(-len * 0.2, wid, -len, 0); ctx.fill(); ctx.restore();
+  }
+  for (let i = 0; i < 14; i++) {                                   // chispas morados/azules que saltan del borde
+    const Ri = rand(11 * 53 + i * 13), side = i % 2 ? 1 : -1, rate = 3 + Ri() * 3, s = (T * rate + Ri()) % 1, y = side * (10 + Ri() * 44), x = env(48, 32, y), d = s * (20 + Ri() * 34);
+    ctx.globalAlpha = al * (1 - s); ctx.fillStyle = col(i % 3 ? C.purple : C.white, layer); ctx.beginPath(); ctx.arc(x - d * 0.8, y + side * d * 0.6, 2.6 * (1 - s) + 0.7, 0, 7); ctx.fill();
+  }
+  ctx.restore();
+}
+// medias lunas en capas (blanco → cian → azul → morado) con cuentas moradas que salen despedidas por las puntas
+function powBlades(ctx, S, t, layer, up) {
+  const hx = S.h.x, hy = S.h.y, T = t - T0, al = easeOut(seg(T, 0, 0.05)), sc = up.scale || 1.3; if (al <= 0) return;
+  ctx.save(); ctx.translate(hx, hy); ctx.rotate(S.ang); ctx.scale(sc, sc);
+  const cols = [C.white, C.light, C.cyan, C.blue, C.purple, C.blue, C.purple];
+  for (let k = 0; k < 7; k++) {
+    const r = 16 + k * 8, span = 2.5 - k * 0.12, w = (10 - k * 1.2) * (1 + 0.12 * Math.sin(T * 30 + k));
+    for (const half of [-1, 1]) arcHalf(ctx, -6, 0, r, half * span / 2, 0, w, cols[k], al * (0.97 - k * 0.06), layer);
+  }
+  for (let i = 0; i < 12; i++) {
+    const side = i % 2 ? 1 : -1, age = (T * 2.2 + i * 0.083) % 1, tip = side * 1.05, rr = 44 + age * 70;
+    disc(ctx, -6 + Math.cos(tip) * rr, Math.sin(tip) * rr, 4.2 * (1 - age) + 0.6, i % 3 ? C.purple : C.blue, al * (1 - age), layer);
+  }
+  ctx.restore();
+}
+function powBolts(ctx, S, t, layer) {          // rayos que saltan de la cola y de la cabeza (se resortean cada 0,05 s)
+  if (!S.alive) return;
+  const sd = Math.floor(t / 0.05);
+  for (let j = 0; j < 5; j++) {
+    const R = rand(sd * 13 + j * 7 + 1), lay = R() < 0.5 ? 'back' : 'front', p = S.pts[Math.floor((0.04 + R() * 0.45) * N)], side = R() < 0.5 ? -1 : 1, len = 24 + R() * 38;
+    if (lay !== layer) continue;
+    bolt(ctx, p.x, p.y, Math.atan2(p.ny * side, p.nx * side), len * S.tailFade, 5, R, 4.4, layer);
+  }
+  if (S.headAlive && layer === 'front') for (let j = 0; j < 3; j++) { const R = rand(sd * 29 + j * 11 + 3); bolt(ctx, S.h.x, S.h.y, R() * 6.283, 20 + R() * 20, 4, R, 4, 'front'); }
+}
+// carga potente: la misma carga de siempre, pero llegan muchas más partículas y de colores más intensos (ángulos repartidos por igual)
+function powChargeFx(ctx, tt, layer, up, prep, tr, ready, rl, al, e2) {
+  const x = X0, y = YM;
+  for (let i = 0; i < 30; i++) {
+    const R = rand(i * 41 + 7), a = i * 2.39996 + 0.4, cyc = (e2 * 2 + R() + i * 0.37) % 1, d = 6 + 56 * (1 - cyc), sd = Math.sin(a) < 0 ? 'back' : 'front';
+    if (sd !== layer) continue;
+    disc(ctx, x + Math.cos(a) * d, y + Math.sin(a) * d * 0.8, 1.8 + (i % 3) * 0.6, (AMBON ? VIVID_A : VIVID)[i % VIVID.length], Math.min(1, prep * 1.5) * al * (ready ? 0.8 : 1), layer);
+  }
+}
+// impacto potente, mismo vocabulario que el impacto de suelo del picado (flash, púas, corona de energía, nubes, dos ondas, escombros con gravedad, chispas)
+// pero compacto (nada pasa de ~100 px) y con temblor más suave, porque se encadena contra muchos enemigos.
+function impactPow(ctx, t, layer, tB, ix, iy, ang, up) {
+  const hb = seg(t, tB, tB + 0.65); if (hb <= 0 || hb >= 1) return;
+  const grow = easeOut(seg(hb, 0, 0.35)), fade = 1 - easeIn(seg(hb, 0.3, 1)), back = ang + Math.PI, R = rand(99);
+  ctx.save(); ctx.translate(ix, iy);
+  const fl = 1 - seg(hb, 0, 0.14);
+  if (layer === 'front' && fl > 0) {                                                   // destello inicial
+    glow(ctx, 0, 0, 44 + 44 * grow, 'rgba(255,255,255,0.95)', 0.9 * fl); glow(ctx, 0, 0, 70 + 40 * grow, 'rgba(90,60,230,0.9)', 0.6 * fl); disc(ctx, 0, 0, 14 + 22 * grow, C.white, fl, 'front');
+  }
+  const NS = 11;
+  for (let i = 0; i < NS; i++) {                                                       // púas de energía (azul/morado) en abanico hacia atrás
+    const a = back + (i / (NS - 1) - 0.5) * 2.5 + (R() - 0.5) * 0.15, len = (26 + R() * 34) * grow, lay = i % 2 ? 'front' : 'back';
+    if (lay !== layer) continue;
+    shard(ctx, Math.cos(a) * (14 + 22 + len), Math.sin(a) * (14 + 22 + len), Math.cos(a) * 14, Math.sin(a) * 14, 12, i % 2 ? C.purple : C.blue, fade, layer);
+  }
+  for (let i = 0; i < NS; i++) {                                                       // corona fina y larga (blanca / cian / morada) que se encoge pronto
+    const a = back + (i / (NS - 1) - 0.5) * 2.8 + (R() - 0.5) * 0.2, len = (46 + R() * 46) * easeOut(seg(hb, 0, 0.5)) * (1 - seg(hb, 0.35, 0.75)), lay = i % 2 ? 'back' : 'front';
+    if (lay !== layer) continue;
+    shard(ctx, Math.cos(a) * (12 + len), Math.sin(a) * (12 + len), Math.cos(a) * 12, Math.sin(a) * 12, 6.5, [C.white, C.cyan, C.purple][i % 3], 0.9 * fade, layer);
+  }
+  for (let i = 0; i < 9; i++) {                                                        // nubes de energía blandas que se hinchan y suben un poco
+    const a = back + (R() - 0.5) * 2.4, d = (10 + R() * 44) * grow, lay = R() < 0.5 ? 'back' : 'front', r = (9 + R() * 8) * (0.5 + grow * 0.6);
+    if (lay !== layer) continue;
+    const px = Math.cos(a) * d, py = Math.sin(a) * d - hb * 16;
+    glow(ctx, px, py, r * 2.4, 'rgba(110,70,255,0.8)', 0.55 * fade); disc(ctx, px, py, r * 0.7, i % 2 ? C.purple : C.blue, 0.6 * fade, layer); disc(ctx, px - r * 0.2, py - r * 0.2, r * 0.3, C.light, 0.5 * fade, layer);
+  }
+  for (let k = 0; k < 2; k++) {                                                        // dos ondas (la lejana detrás, la cercana delante)
+    const tk = seg(hb, k * 0.08, 0.7 + k * 0.1); if (tk <= 0 || tk >= 1) continue;
+    const g = easeOut(tk), r = 24 + (k ? 34 : 48) * g, w = 4.5 * (1 - tk) + 1;
+    ctx.save(); ctx.rotate(ang);
+    ringHalf(ctx, 0, 0, r, 0.32, 0.1, 6 + k, w * 3.2, C.purple, 0.35 * (1 - tk), layer);
+    ringHalf(ctx, 0, 0, r, 0.32, 0.1, 6 + k, w, k ? C.cyan : C.white, 1 - tk, layer);
+    ctx.restore();
+  }
+  for (let i = 0; i < 8; i++) {                                                        // escombros de energía con gravedad
+    const a = back + (R() - 0.5) * 2.2 - 0.4, v = 140 + R() * 140, tt = hb * 0.65, lay = i % 2 ? 'back' : 'front', sz = 3 + R() * 3, rot = tt * 12 + i;
+    if (lay !== layer) continue;
+    const px = Math.cos(a) * v * tt, py = Math.sin(a) * v * tt + 520 * tt * tt;
+    ctx.save(); ctx.globalAlpha = fade; ctx.fillStyle = col(i % 3 ? C.blue : C.purple, layer); ctx.translate(px, py); ctx.rotate(rot);
+    ctx.beginPath(); ctx.moveTo(sz, 0); ctx.lineTo(-sz * 0.6, sz * 0.8); ctx.lineTo(-sz * 0.6, -sz * 0.8); ctx.fill(); ctx.restore();
+  }
+  if (layer === 'front') for (let i = 0; i < 16; i++) {                                // chispas con cola
+    const a = back + (R() - 0.5) * 2.8, d = 14 + easeOut(hb) * (36 + R() * 52), ca = Math.cos(a), sa = Math.sin(a), tail = 10 * (1 - hb);
+    shard(ctx, ca * (d - tail), sa * (d - tail), ca * d, sa * d, 3 * (1 - hb) + 1, i % 2 ? C.cyan : C.white, 1 - hb, 'front');
+  }
+  if (up.kind === 'blade') {                                                           // remate propio: tres medias lunas compactas hacia atrás
+    ctx.save(); ctx.rotate(ang);
+    for (let k = 0; k < 3; k++) arcHalf(ctx, lerp(0, -14, grow), 0, lerp(14, 34 + k * 12, grow), Math.PI + (layer === 'back' ? -1 : 1) * (1.2 - k * 0.1), Math.PI, (7 - k * 1.5) * (1 - hb) + 0.5, [C.white, C.blue, C.purple][k], fade, layer);
+    ctx.restore();
+  } else if (up.kind === 'storm' && layer === 'front') {                              // remate propio: seis rayos cortos
+    const sd = Math.floor(t / 0.05);
+    for (let j = 0; j < 6; j++) { const Rj = rand(sd * 19 + j * 5 + 1); bolt(ctx, 0, 0, back + (Rj() - 0.5) * 3, lerp(8, 30 + Rj() * 34, grow), 4, Rj, 4 * (1 - hb) + 1, 'front'); }
+  }
+  ctx.restore();
+}
+const impactAny = (ctx, t, layer, tB, ix = IXEND, iy = IY, ang = 0, up = null) => up && up.pow ? impactPow(ctx, t, layer, tB, ix, iy, ang, up) : impactN(ctx, t, layer, tB, ix, iy, ang, up);
+
+// brasas ancladas al mundo que quedan atrás durante el vuelo (upgrade «brasas»)
+function embersFx(ctx, S, layer) {
+  const v = S.v, t = S.t, DT = 0.011, tEnd = Math.min(t, v.TB);
+  for (let k = 0; T0 + k * DT <= tEnd; k++) {
+    const te = T0 + k * DT, age = (t - te) / 0.6; if (age >= 1) continue;
+    const R = rand(k * 97 + 13), lay = R() < 0.5 ? 'back' : 'front'; if (lay !== layer) continue;
+    const px = v.x(te), py = v.y ? v.y(te) : YM, dx = (R() - 0.5) * 34 * easeOut(age), dy = (R() - 0.7) * 26 * easeOut(age) + age * age * 46;
+    const r = (1.6 + R() * 3.6) * (1 - age * 0.8), c = [C.white, C.light, C.cyan, C.blue][Math.floor(R() * 4)];
+    glow(ctx, px + dx, py + dy, r * 3.4, 'rgba(120,200,255,0.8)', 0.4 * (1 - age)); disc(ctx, px + dx, py + dy, r, c, 1 - age * age, layer);
+  }
+}
+
+// ---------------------------------------------------------------- cabezas del cometa perforador (más afiladas)
+function pierceHead(ctx, S, t, sc, kind) {
+  const { x, y } = S.h, pulse = 1 + 0.06 * Math.sin(t * 50);
+  glow(ctx, x, y, 34 * sc, 'rgba(160,110,255,0.9)', 0.45);
+  if (kind === 'sp') {                          // punta de lanza + 2 aletas barridas hacia atrás
+    for (const s of [-1, 1]) { needle(ctx, x + 2, y + s * 3, x - 30 * sc, y + s * 15 * sc, 3.4, C.cyan, 0.9, 'front'); needle(ctx, x + 2, y + s * 2, x - 20 * sc, y + s * 10 * sc, 1.6, C.white, 1, 'front'); }
+    for (const [k, c, a] of [[1.5, C.purple, 0.5], [1.15, C.cyan, 0.95], [0.8, C.light, 1], [0.45, C.white, 1]]) {
+      const L = 24 * sc * k * pulse, Wd = 8 * sc * k;
+      ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = col(c, 'front'); ctx.beginPath();
+      ctx.moveTo(x + L, y); ctx.lineTo(x - 2, y - Wd); ctx.lineTo(x - L * 0.5, y); ctx.lineTo(x - 2, y + Wd); ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+  } else if (kind === 'nd') {                   // aguja alargada con un plano cortante delante
+    needle(ctx, x - 36 * sc, y, x + 34 * sc * pulse, y, 11 * sc, C.cyan, 0.9, 'front');
+    needle(ctx, x - 30 * sc, y, x + 38 * sc * pulse, y, 6 * sc, C.light, 1, 'front');
+    needle(ctx, x - 24 * sc, y, x + 42 * sc * pulse, y, 2.6 * sc, C.white, 1, 'front');
+    disc(ctx, x, y, 4.2 * sc, C.white, 1, 'front');
+    lens(ctx, x + 22 * sc, y, 17 * sc, 2.2, C.white, 0.85, 'front', 1.5);
+    lens(ctx, x + 22 * sc, y, 11 * sc, 1.4, C.cyan, 0.9, 'front', 1.1);
+  } else {                                      // cortante: bola pequeña + pico delante + hoja vertical detrás + plumas
+    lens(ctx, x - 8 * sc, y, 24 * sc, 3.4, C.cyan, 0.35, 'front', 0);
+    lens(ctx, x - 8 * sc, y, 24 * sc, 3.4, C.white, 0.95, 'front', 1.8);
+    for (const s of [-1, 1]) needle(ctx, x, y, x - 24 * sc, y + s * 13 * sc, 3, C.light, 0.9, 'front');
+    needle(ctx, x - 10 * sc, y, x + 38 * sc * pulse, y, 6 * sc, C.cyan, 0.9, 'front');
+    needle(ctx, x - 8 * sc, y, x + 40 * sc * pulse, y, 2.8 * sc, C.white, 1, 'front');
+    disc(ctx, x, y, 6.2 * sc, C.light, 1, 'front'); disc(ctx, x, y, 3.4 * sc, C.white, 1, 'front');
+  }
+}
+
+// ---------------------------------------------------------------- carga y disparo (se mantienen)
+function charge(ctx, t, layer) {
+  const prep = seg(t, 0.05, T0);
+  if (prep <= 0 || t >= T0 || layer !== 'front') return;
+  glow(ctx, X0, YM, 8 + 26 * prep, 'rgba(160,110,255,0.9)', 0.5 * prep);
+  disc(ctx, X0, YM, 2 + 7 * prep, C.cyan, 1, 'front');
+  disc(ctx, X0, YM, 1 + 4 * prep, C.white, 1, 'front');
+  const R = rand(5);
+  for (let i = 0; i < 8; i++) {
+    const a = R() * 6.28, d = (1 - ((prep * 2 + R()) % 1)) * 36;
+    disc(ctx, X0 + Math.cos(a) * d, YM + Math.sin(a) * d, 1.6, i % 2 ? C.light : C.white, prep, 'front');
+  }
+}
+function muzzle(ctx, t, layer, up) {
+  const m = seg(t, T0, T0 + 0.22); if (m <= 0 || m >= 1) return;
+  const pw = up && up.pow ? 1.6 : 1, a = 1 - easeIn(m), r = lerp(10, 44, easeOut(m)) * pw;
+  ctx.save(); ctx.lineCap = 'round'; ctx.globalAlpha = a; ctx.strokeStyle = col(pw > 1 ? C.purple : C.white, layer); ctx.lineWidth = lerp(5, 1, m) * pw;
+  ctx.setLineDash([Math.max(2, 14 * (1 - m)), 4 + 20 * m]);
+  ctx.beginPath();
+  if (layer === 'back') ctx.ellipse(X0 + 4, YM, r * 0.3, r, 0, Math.PI * 0.5, Math.PI * 1.5);
+  else ctx.ellipse(X0 + 4, YM, r * 0.3, r, 0, -Math.PI * 0.5, Math.PI * 0.5);
+  ctx.stroke(); ctx.restore();
+  if (layer === 'front' && m < 0.3) disc(ctx, X0, YM, lerp(18, 4, m / 0.3), C.white, 1 - m / 0.3, 'front');
+}
+
+// ================================================================ IMPACTOS
+const IY = YM, IXEND = 522;
+function flash(ctx, ht, size, layer, x, y = IY) {
+  if (layer !== 'front' || ht > 0.3 || ht < 0) return;
+  const f = ht / 0.3;
+  glow(ctx, x, y, lerp(size * 2.2, size * 0.5, f), 'rgba(255,255,255,0.95)', 1 - f);
+  glow(ctx, x, y, lerp(size * 3.4, size, f), 'rgba(160,110,255,0.9)', 0.7 * (1 - f));
+  disc(ctx, x, y, lerp(size, 3, f), C.white, 1 - f, 'front');
+}
+
+// Impacto normal (último enemigo): flash, onda estrecha y chispas hacia atrás. (ix, iy, ang) = punto y dirección de llegada. up = upgrade.
+function impactN(ctx, t, layer, tB, ix = IXEND, iy = IY, ang = 0, up = null) {
+  const kind = up ? up.kind : '', dur = kind === 'embers' ? 0.85 : 0.5;
+  const ht = seg(t, tB, tB + dur); if (ht <= 0 || ht >= 1) return;
+  const hb = seg(t, tB, tB + 0.5), big = kind === 'big';
+  ctx.save(); ctx.translate(ix, iy); ctx.rotate(ang);
+  if (hb < 1) {
+    const fade = 1 - easeIn(hb), e = easeOut(hb);
+    flash(ctx, hb, big ? 38 : 26, layer, 0, 0);
+    ringHalf(ctx, 0, 0, lerp(10, big ? 78 : 54, e), 0.32, 0.1, 6, lerp(big ? 8 : 5, 1, hb), layer === 'back' ? C.cyan : C.white, fade, layer);
+    if (layer === 'front') {
+      const R = rand(41), n = big ? 24 : 14;
+      for (let i = 0; i < n; i++) {
+        const a = Math.PI + (R() - 0.5) * (big ? 3 : 2.2) - 0.3, d = e * (30 + R() * (big ? 90 : 60)), len = (8 + R() * 14) * (1 - hb) * (big ? 1.4 : 1);
+        const px = Math.cos(a) * d, py = Math.sin(a) * d * 0.8 + hb * hb * 18;
+        shard(ctx, px - Math.cos(a) * len, py - Math.sin(a) * len * 0.8, px, py, (2.4 * (1 - hb) + 0.6) * (big ? 1.4 : 1), i % 3 ? C.light : C.white, fade, 'front');
+      }
+    }
+    if (kind === 'corona') {                           // segunda onda más grande y agujas radiales largas
+      const h2 = seg(t, tB + 0.06, tB + 0.5);
+      if (h2 > 0 && h2 < 1) ringHalf(ctx, 0, 0, lerp(10, 96, easeOut(h2)), 0.32, 0.12, 9, lerp(3.5, 0.6, h2), C.light, 1 - easeIn(h2), layer);
+      if (layer === 'front') for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + 0.2, L = lerp(0, 74, e); needle(ctx, Math.cos(a) * 10, Math.sin(a) * 10, Math.cos(a) * (10 + L), Math.sin(a) * (10 + L) * 0.9, 2.6 * (1 - hb) + 0.4, C.white, fade, 'front'); }
+    } else if (kind === 'braid') {                     // dos arcos afilados que giran al abrirse la onda
+      for (const [k, c] of [[1, C.white], [-1, C.cyan]])
+        for (let j = 0; j < 2; j++) arcTaper(ctx, 0, 0, lerp(16, 64, e), k * hb * 7 + j * Math.PI, 1.5, 3.4 * (1 - hb) + 0.4, c, fade, layer, 0.9);
+    } else if (kind === 'echo') {                      // eco: segundo destello y segunda onda, más pequeños, tras un instante
+      const h2 = seg(t, tB + 0.11, tB + 0.55);
+      if (h2 > 0 && h2 < 1) {
+        flash(ctx, h2, 16, layer, 0, 0);
+        ringHalf(ctx, 0, 0, lerp(8, 44, easeOut(h2)), 0.32, 0.1, 13, lerp(4, 0.8, h2), layer === 'back' ? C.purple : C.light, 1 - easeIn(h2), layer);
+        if (layer === 'front') { const R2 = rand(63); for (let i = 0; i < 9; i++) { const a = Math.PI + (R2() - 0.5) * 2.2, d = easeOut(h2) * (22 + R2() * 40), len = 7 * (1 - h2); const px = Math.cos(a) * d, py = Math.sin(a) * d * 0.8; shard(ctx, px - Math.cos(a) * len, py - Math.sin(a) * len * 0.8, px, py, 2 * (1 - h2) + 0.5, C.light, 1 - easeIn(h2), 'front'); } }
+      }
+    }
+  }
+  if (kind === 'embers') {                             // brasas que caen y se apagan (el impacto dura más)
+    const R = rand(97);
+    for (let i = 0; i < 20; i++) {
+      const lay = R() < 0.5 ? 'back' : 'front', a = Math.PI + (R() - 0.5) * 2.8, d = easeOut(ht) * (16 + R() * 70), r = (1.6 + R() * 2.6) * (1 - ht * 0.8);
+      if (lay !== layer) continue;
+      const px = Math.cos(a) * d, py = Math.sin(a) * d * 0.8 + ht * ht * 60;
+      glow(ctx, px, py, r * 3.4, 'rgba(120,200,255,0.8)', 0.4 * (1 - ht)); disc(ctx, px, py, r, [C.white, C.light, C.cyan][i % 3], 1 - ht * ht, layer);
+    }
+  }
+  ctx.restore();
+}
+
+// Perforación (enemigos que se atraviesan): destello de entrada, grietas, luz en el cuerpo, onda y chispas de salida.
+function pierceA(ctx, t, layer, h, p) {
+  const xe = h.ex - 30, xx = h.ex + 30, cy = IY - 4;
+  const he = seg(t, h.tE, h.tE + 0.45), hx = seg(t, h.tX, h.tX + 0.5);
+  if (he > 0 && he < 1) {
+    flash(ctx, he, p.flash, layer, xe);
+    ringHalf(ctx, xe, IY, lerp(6, p.ring, easeOut(he)), 0.32, 0.1, 8, lerp(6, 1, he), layer === 'back' ? C.cyan : C.white, 1 - easeIn(he), layer);
+  }
+  if (layer === 'front') {
+    const hc = seg(t, h.tE, h.tE + 0.75);
+    if (hc > 0 && hc < 1) {                                   // grietas
+      const R = rand(63), gr = easeOut(seg(t, h.tE, h.tE + 0.22)), o = 1 - seg(hc, 0.35, 1);
+      for (let i = 0; i < p.crack; i++) {
+        const a = R() * 6.283, len = 18 + R() * 30;
+        const pts = [[h.ex, cy]]; let x = h.ex, y = cy;
+        for (let k = 1; k <= 4; k++) { const aa = a + (R() - 0.5) * 0.9; x += Math.cos(aa) * len * gr / 4; y += Math.sin(aa) * len * gr / 4; pts.push([x, y]); }
+        ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        for (const [lw, c, al] of [[p.crackW * 2.4, C.cyan, 0.35], [p.crackW, C.white, 1]]) {
+          ctx.globalAlpha = o * al; ctx.lineWidth = lw; ctx.strokeStyle = col(c, 'front'); ctx.beginPath();
+          pts.forEach((q, j) => j ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+    const bg = p.bodyGlow * (t > h.tE ? 1 - seg(t, h.tE, h.tX + 0.18) : 0);   // luz que se ve a través del cuerpo
+    if (bg > 0) { glow(ctx, h.ex, cy, 46, 'rgba(255,255,255,0.9)', bg); glow(ctx, h.ex, cy, 70, 'rgba(120,220,255,0.9)', bg * 0.6); }
+  }
+  if (hx > 0 && hx < 1) {
+    const fade = 1 - easeIn(hx), e = easeOut(hx);
+    flash(ctx, hx, 14 + p.flash * 0.3, layer, xx);
+    ringHalf(ctx, xx, IY, lerp(6, p.exitRing, e), 0.32, 0.12, 12, lerp(5, 1, hx), layer === 'back' ? C.purple : C.cyan, fade, layer);
+    if (layer === 'front') {
+      const R = rand(23);
+      for (let i = 0; i < p.sparks; i++) {
+        const a = (R() - 0.5) * 1.6, d = e * (30 + R() * 90), len = (8 + R() * 16) * (1 - hx);
+        const px = xx + Math.cos(a) * d, py = IY + Math.sin(a) * d * 0.8 + hx * hx * 12;
+        shard(ctx, px - Math.cos(a) * len, py - Math.sin(a) * len * 0.8, px, py, 2.6 * (1 - hx) + 0.6, i % 3 ? C.white : C.cyan, fade, 'front');
+      }
+      for (let i = 0; i < p.embers; i++) {
+        const a = (R() - 0.3) * 1.6, d = e * (14 + R() * 40);
+        disc(ctx, xx + Math.cos(a) * d, IY + Math.sin(a) * d * 0.8 + hx * hx * 50, 2.4 * (1 - hx) + 0.6, i % 2 ? C.light : C.cyan, fade, 'front');
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------- piezas afiladas
+// aguja: punta afilada en los dos extremos, lo más ancho al 70 % del recorrido
+function needle(ctx, x0, y0, x1, y1, w, c, a, layer) {
+  if (a <= 0 || w <= 0) return;
+  const dx = x1 - x0, dy = y1 - y0, l = Math.hypot(dx, dy) || 1, nx = -dy / l * w / 2, ny = dx / l * w / 2, mx = x0 + dx * 0.7, my = y0 + dy * 0.7;
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = col(c, layer);
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(mx + nx, my + ny); ctx.lineTo(x1, y1); ctx.lineTo(mx - nx, my - ny); ctx.closePath(); ctx.fill(); ctx.restore();
+}
+// lente (vesica) vertical de puntas afiladas arriba y abajo; lw<=0 relleno
+function lens(ctx, x, y, h, bulge, c, a, layer, lw) {
+  if (a <= 0 || h <= 0.5) return;
+  ctx.save(); ctx.globalAlpha = a; ctx.lineJoin = 'miter'; ctx.miterLimit = 10;
+  ctx.beginPath(); ctx.moveTo(x, y - h); ctx.quadraticCurveTo(x + bulge * 2, y, x, y + h); ctx.quadraticCurveTo(x - bulge * 2, y, x, y - h);
+  if (lw > 0) { ctx.lineWidth = lw; ctx.strokeStyle = col(c, layer); ctx.stroke(); } else { ctx.fillStyle = col(c, layer); ctx.fill(); }
+  ctx.restore();
+}
+// abanico de agujas que salen de (x,y); u = 0..1 vida del abanico
+function fan(ctx, x, y, n, seed, a0, a1, l0, l1, u, w, layer, pal) {
+  if (u <= 0 || u >= 1) return;
+  const R = rand(seed), e = easeOut(seg(u, 0, 0.3)), fade = 1 - seg(u, 0.3, 1);
+  for (let i = 0; i < n; i++) {
+    const a = lerp(a0, a1, R()), len = l0 + R() * (l1 - l0), lay = R() < 0.5 ? 'back' : 'front';
+    if (lay !== layer) continue;
+    const D1 = 6 + len * e + len * 0.25 * u, D0 = Math.min(D1 - 2, 6 + len * 0.25 * e + len * 0.55 * u), ca = Math.cos(a), sa = Math.sin(a);
+    needle(ctx, x + ca * D0, y + sa * D0 * 0.9, x + ca * D1, y + sa * D1 * 0.9, w * (1 - u * 0.5), pal[i % pal.length], fade, layer);
+  }
+}
+const PAL = [C.white, C.light, C.cyan, C.white, C.light];
+const PALPOW = [C.white, C.blue, C.purple, C.light, C.cyan, C.purple];
+let AMBON = false; const AMB = { cyan: '#ffb23c', light: '#ffe39a', blue: '#e8801f', purple: '#b5500e', core: '#fff3d6' }, ORIG = {};
+function swapAmber(on) {                       // el «homing» se firma con un color propio (ámbar) en vez del cian/morado del resto
+  AMBON = on; for (const k in AMB) { if (on) { ORIG[k] = C[k]; C[k] = AMB[k]; } else C[k] = ORIG[k]; }
+  PAL[0] = C.white; PAL[1] = C.light; PAL[2] = C.cyan; PAL[3] = C.white; PAL[4] = C.light;
+  PALPOW[0] = C.white; PALPOW[1] = C.blue; PALPOW[2] = C.purple; PALPOW[3] = C.light; PALPOW[4] = C.cyan; PALPOW[5] = C.purple;
+}
+const bodyClip = (ctx, ex) => { ctx.beginPath(); ctx.ellipse(ex, GROUND - 44, 29, 41, 0, 0, 7); ctx.clip(); };
+
+// ---- P1 · Cono: anillo/lente blanco de entrada, cono de luz morada dentro del cuerpo que converge a un punto de salida con chispa afilada
+function pierceP1(ctx, t, layer, h, p, S) {
+  const xe = h.ex - 30, xx = h.ex + 30, cy = IY, he = seg(t, h.tE, h.tE + 0.4), hx = seg(t, h.tX, h.tX + 0.45);
+  if (he > 0 && he < 1) {
+    fan(ctx, xe, cy, 10, 11, Math.PI - 1.0, Math.PI + 1.0, 40, 100, he, 3, layer, PAL);
+    if (layer === 'front') {
+      const e = easeOut(he);
+      lens(ctx, xe, cy, lerp(16, 42, e), 4, C.white, he < 0.14 ? 1 : 0, 'front', 0);
+      lens(ctx, xe, cy, lerp(14, 40, e), 5, C.white, 1 - he, 'front', lerp(4, 0.6, he));
+      lens(ctx, xe, cy, lerp(10, 54, e), 9, C.cyan, 0.8 * (1 - he), 'front', lerp(2.4, 0.4, he));
+      needle(ctx, xe - lerp(20, 150, e), cy, xe + lerp(10, 36, e), cy, lerp(8, 1, he), C.cyan, 0.6 * (1 - he), 'front');
+      needle(ctx, xe - lerp(20, 130, e), cy, xe + lerp(10, 30, e), cy, lerp(4, 0.6, he), C.white, 1 - he, 'front');
+    }
+  }
+  if (layer === 'front' && t > h.tE) {                         // cono de luz dentro del cuerpo
+    const life = 1 - seg(t, h.tX + 0.03, h.tX + 0.4), apex = Math.min(S.h.x, xx + 4), h0 = 30 * (1 - 0.35 * seg(t, h.tE, h.tX));
+    if (life > 0 && apex > xe + 2) {
+      ctx.save(); bodyClip(ctx, h.ex);
+      const g = ctx.createLinearGradient(xe, 0, apex, 0); g.addColorStop(0, 'rgba(176,120,255,0.75)'); g.addColorStop(1, 'rgba(120,220,255,0.2)');
+      ctx.globalAlpha = life; ctx.fillStyle = showLayers ? '#5dff8a' : g;
+      ctx.beginPath(); ctx.moveTo(xe, cy - h0); ctx.lineTo(apex, cy); ctx.lineTo(xe, cy + h0); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = col(C.light, 'front'); ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(xe, cy - h0); ctx.lineTo(apex, cy); ctx.lineTo(xe, cy + h0); ctx.stroke();
+      ctx.strokeStyle = col(C.white, 'front'); ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(xe, cy); ctx.lineTo(apex, cy); ctx.stroke();
+      ctx.restore();
+    }
+  }
+  if (hx > 0 && hx < 1) {                                      // salida: estrella afilada + abanico + lente que se abre hacia delante
+    const e = easeOut(hx), f = 1 - easeIn(hx);
+    fan(ctx, xx, cy, 11, 23, -0.75, 0.75, 30, 110, hx, 2.8, layer, PAL);
+    if (layer === 'front') {
+      const L = lerp(14, 90, e);
+      needle(ctx, xx - 20 * f, cy, xx + L, cy, 5 * f + 1, C.white, f, 'front');
+      needle(ctx, xx, cy - 28 * e, xx, cy + 28 * e, 3.2 * f + 0.5, C.white, f, 'front');
+      for (const s of [-1, 1]) needle(ctx, xx, cy, xx + 20 * e, cy + s * 20 * e, 2.4 * f + 0.4, C.light, f, 'front');
+      if (!showLayers) glow(ctx, xx, cy, 22, 'rgba(120,220,255,0.9)', 0.6 * f);
+      lens(ctx, xx + 34 * e, cy, lerp(8, 50, e), -5, C.cyan, f, 'front', lerp(3, 0.5, hx));
+    }
+  }
+}
+
+// ---- P2 · Corte: un tajo horizontal de luz atraviesa el cuerpo y lo parte un instante; lentes afiladas en entrada y salida
+function pierceP2(ctx, t, layer, h, p, S) {
+  const xe = h.ex - 30, xx = h.ex + 30, cy = IY, he = seg(t, h.tE, h.tE + 0.4), hx = seg(t, h.tX, h.tX + 0.45);
+  fan(ctx, xe, cy, 7, 31, Math.PI - 0.7, Math.PI + 0.7, 30, 70, he, 2.6, layer, PAL);
+  fan(ctx, xx, cy, 9, 47, -0.55, 0.55, 40, 100, hx, 2.6, layer, PAL);
+  if (layer !== 'front') return;
+  if (he > 0 && he < 1) {
+    const e = easeOut(he);
+    lens(ctx, xe, cy, lerp(18, 40, e), 4, C.white, he < 0.15 ? 1 : 0, 'front', 0);
+    lens(ctx, xe, cy, lerp(18, 44, e), 5, C.white, 1 - he, 'front', lerp(3.5, 0.5, he));
+  }
+  if (hx > 0 && hx < 1) {
+    const e = easeOut(hx);
+    lens(ctx, xx, cy, lerp(20, 48, e), -4, C.white, hx < 0.15 ? 1 : 0, 'front', 0);
+    lens(ctx, xx + 8 * e, cy, lerp(18, 54, e), -6, C.cyan, 1 - hx, 'front', lerp(3.5, 0.5, hx));
+  }
+  if (t > h.tE) {                                              // el tajo: crece con la cabeza y se cierra
+    const tt = seg(t, h.tX, h.tX + 0.45), end = Math.min(S.h.x, xx + 18), start = xe - 12, mid = (start + end) / 2;
+    const th = 7 * (1 - easeIn(tt)), al = 1 - seg(tt, 0.55, 1);
+    if (th > 0.2 && end > start + 4) {
+      for (const [k, c, a] of [[2.6, C.purple, 0.4], [1.2, C.cyan, 0.9], [0.45, C.white, 1]]) {
+        ctx.save(); ctx.globalAlpha = a * al; ctx.fillStyle = col(c, 'front');
+        ctx.beginPath(); ctx.moveTo(start, cy); ctx.lineTo(mid, cy - th * k / 2); ctx.lineTo(end, cy); ctx.lineTo(mid, cy + th * k / 2); ctx.closePath(); ctx.fill(); ctx.restore();
+      }
+      const R = rand(9), u = seg(t, h.tE, h.tE + 0.45);        // virutas de luz que saltan del tajo
+      for (let i = 0; i < 8; i++) {
+        const x = lerp(start, end, R()), s = i % 2 ? 1 : -1, d = easeOut(u) * (14 + R() * 26);
+        needle(ctx, x, cy, x - d * 0.7, cy + s * d, 2.2 * (1 - u), i % 3 ? C.white : C.cyan, (1 - u) * al, 'front');
+      }
+    }
+  }
+}
+
+// ---- P3 · Aguja: impact frames (fondo oscuro + enemigo blanco) y un hilo larguísimo con agujas radiales en entrada y salida
+function pierceP3(ctx, t, layer, h, p, S) {
+  const xe = h.ex - 30, xx = h.ex + 30, cy = IY, he = seg(t, h.tE, h.tE + 0.4), hx = seg(t, h.tX, h.tX + 0.45);
+  const pm = S && S.up && S.up.pow ? 1.4 : 1, fp = pm > 1 ? PALPOW : PAL;
+  fan(ctx, xe, cy, Math.round(16 * pm), 61, 0, Math.PI * 2, 40 * pm, 120 * pm, he, 3.4 * Math.min(pm, 1.2), layer, fp);
+  fan(ctx, xx, cy, Math.round(16 * pm), 71, -1.2, 1.2, 50 * pm, 140 * pm, hx, 3.2 * Math.min(pm, 1.2), layer, fp);
+  if (pm > 1) {
+    if (he > 0 && he < 1) ringHalf(ctx, xe, cy, lerp(8, 60, easeOut(he)), 0.32, 0.1, 31, lerp(6, 1, he), C.purple, 1 - easeIn(he), layer);
+    if (hx > 0 && hx < 1) ringHalf(ctx, xx, cy, lerp(8, 72, easeOut(hx)), 0.32, 0.1, 32, lerp(6, 1, hx), C.blue, 1 - easeIn(hx), layer);
+  }
+  if (layer !== 'front') return;
+  const u = seg(t, h.tE, h.tX + 0.45);
+  if (t > h.tE && u < 1) {
+    const grow = easeOut(seg(t, h.tE, h.tX + 0.05)), a = 1 - seg(u, 0.5, 1), a0 = xe - 140 * grow, a1 = lerp(xe, xx + 130, grow);
+    needle(ctx, a0, cy, a1, cy, (pm > 1 ? 18 : 12) * (1 - u), C.purple, (pm > 1 ? 0.55 : 0.35) * a, 'front');
+    needle(ctx, a0, cy, a1, cy, (pm > 1 ? 9 : 6.5) * (1 - u), pm > 1 ? C.blue : C.cyan, 0.85 * a, 'front');
+    needle(ctx, a0, cy, a1, cy, 3 * (1 - u), C.white, a, 'front');
+  }
+  if (he > 0 && he < 0.5) lens(ctx, xe, cy, lerp(30, 60, he * 2), 2, C.white, 1 - he * 2, 'front', 0);
+  if (hx > 0 && hx < 0.5) lens(ctx, xx, cy, lerp(30, 66, hx * 2), -2, C.white, 1 - hx * 2, 'front', 0);
+}
+// ---------------------------------------------------------------- ATAQUE EN CADENA: llega, se pega, apunta al siguiente y sale con fuerza
+function chainFx(ctx, t, layer, h, p, S) {
+  const pm = S.up && S.up.pow ? 1.5 : 1, fp = pm > 1 ? PALPOW : PAL, S1 = h.S1, xe = h.ex - 28, he = seg(t, h.tE, h.tE + 0.35), hx = seg(t, h.tX, h.tX + 0.45), a2 = h.ang2;
+  if (he > 0 && he < 1) {                                      // llegada: destello, onda y agujas hacia atrás
+    flash(ctx, he, 28 * pm, layer, xe, S1.y);
+    ringHalf(ctx, xe, S1.y, lerp(6, 46 * pm, easeOut(he)), 0.32, 0.1, 8, lerp(5, 1, he), layer === 'back' ? C.cyan : C.white, 1 - easeIn(he), layer);
+    fan(ctx, xe, S1.y, Math.round(9 * pm), 11, Math.PI - 1, Math.PI + 1, 30 * pm, 85 * pm, he, 2.8 * Math.min(pm, 1.3), layer, fp);
+  }
+  if (t > h.tE && t < h.tX + 0.05 && layer === 'front') {      // pegado: la energía se acumula en el punto y aparece la aguja que apunta al siguiente
+    const u = seg(t, h.tE + 0.04, h.tX), fl = 0.75 + 0.25 * Math.sin(t * 90);
+    ctx.save(); bodyClip(ctx, h.ex);
+    glow(ctx, S1.x, S1.y, (16 + 36 * u) * pm, 'rgba(255,255,255,0.95)', (0.35 + 0.55 * u) * fl);
+    glow(ctx, S1.x, S1.y, (30 + 50 * u) * pm, 'rgba(140,100,255,0.9)', 0.5 * u + 0.15);
+    const R = rand(Math.floor(t / 0.06) * 13 + 7);              // venas de luz que parpadean por el cuerpo
+    for (let i = 0; i < 7; i++) {
+      const a = R() * 6.283, len = (10 + R() * 22) * (0.5 + u * 0.7); let x = S1.x, y = S1.y; const pts = [[x, y]];
+      for (let k = 1; k <= 3; k++) { const aa = a + (R() - 0.5) * 1.0; x += Math.cos(aa) * len / 3; y += Math.sin(aa) * len / 3; pts.push([x, y]); }
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      for (const [lw, c, al] of [[3.4, C.cyan, 0.4], [1.4, C.white, 0.95]]) { ctx.globalAlpha = al; ctx.lineWidth = lw; ctx.strokeStyle = col(c, 'front'); ctx.beginPath(); pts.forEach((q, j) => j ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); }
+    }
+    ctx.restore();
+    for (let i = 0; i < 8; i++) {                               // agujas de energía que convergen al punto
+      const Ri = rand(i * 37 + 5), a = Ri() * 6.283, cyc = (t * 3 + Ri()) % 1, d = 10 + 46 * (1 - cyc);
+      needle(ctx, S1.x + Math.cos(a) * (d + 16), S1.y + Math.sin(a) * (d + 16) * 0.8, S1.x + Math.cos(a) * d, S1.y + Math.sin(a) * d * 0.8, 2.4, i % 2 ? C.cyan : C.white, Math.sin(Math.PI * cyc) * u * 0.9, 'front');
+    }
+    const L = 14 + 46 * u;
+    needle(ctx, S1.x, S1.y, S1.x + Math.cos(a2) * L, S1.y + Math.sin(a2) * L, 3.2, C.white, 0.85 * u, 'front');
+  }
+  if (hx > 0 && hx < 1) {                                       // salida: reventón orientado hacia el siguiente enemigo
+    const e = easeOut(hx), f = 1 - easeIn(hx);
+    flash(ctx, hx, 44 * pm, layer, S1.x, S1.y);
+    ctx.save(); ctx.translate(S1.x, S1.y); ctx.rotate(a2);
+    ringHalf(ctx, 0, 0, lerp(8, 74 * pm, e), 0.32, 0.1, 15, lerp(7, 1, hx), layer === 'back' ? C.purple : C.cyan, f, layer);
+    fan(ctx, 0, 0, Math.round(12 * pm), 29, -0.55, 0.55, 50 * pm, 150 * pm, hx, 3 * Math.min(pm, 1.3), layer, fp);
+    fan(ctx, 0, 0, Math.round(6 * pm), 41, Math.PI - 0.6, Math.PI + 0.6, 25 * pm, 60 * pm, hx, 2.4, layer, fp);
+    if (layer === 'front') {
+      lens(ctx, 0, 0, lerp(24, 54 * pm, e), 3, C.white, hx < 0.15 ? 1 : 0, 'front', 0);
+      lens(ctx, 0, 0, lerp(24, 58 * pm, e), 4, C.white, f, 'front', lerp(3.5, 0.5, hx));
+      needle(ctx, -10, 0, lerp(30, 130 * pm, e), 0, 5 * f + 1, C.white, f, 'front');
+    }
+    ctx.restore();
+  }
+}
+
+const PIERCE = { CH: (c, t, l, h, S) => chainFx(c, t, l, h, h.p, S), A: (c, t, l, h, S) => pierceA(c, t, l, h, h.p), P1: (c, t, l, h, S) => pierceP1(c, t, l, h, h.p, S),
+                 P2: (c, t, l, h, S) => pierceP2(c, t, l, h, h.p, S), P3: (c, t, l, h, S) => pierceP3(c, t, l, h, h.p, S) };
+
+// ---------------------------------------------------------------- CARGA → LISTO (mantener) → SOLTAR
+// Línea de tiempo nueva (tt): 0..CH carga, CH..REL "listo" en bucle (REL = CH + espera), REL = suelta y sale el disparo.
+// Los paneles sin `ch` conservan la carga antigua (orbe que crece y sale solo).
+const CH = 0.55;
+let HOLD = 0.5;
+const isNew = v => !!v.ch && v.ch !== 'old';
+const relOf = v => isNew(v) ? CH + HOLD : T0;
+const totalOf = v => isNew(v) ? relOf(v) + 1.45 : LOOP;
+
+function orbDraw(ctx, x, y, r, a) {
+  if (r <= 0.3 || a <= 0) return;
+  glow(ctx, x, y, r * 3.4, 'rgba(160,110,255,0.9)', 0.5 * a);
+  glow(ctx, x, y, r * 1.9, 'rgba(120,220,255,0.9)', 0.45 * a);
+  disc(ctx, x, y, r * 1.25, C.cyan, 0.9 * a, 'front'); disc(ctx, x, y, r * 0.95, C.light, a, 'front'); disc(ctx, x, y, r * 0.6, C.white, a, 'front');
+}
+// aviso de "ya está cargado": flash vertical afilado + onda + abanico de agujas (u = 0..1)
+function readyPop(ctx, u, layer, big) {
+  if (u <= 0 || u >= 1) return;
+  const e = easeOut(u), x = X0, y = YM;
+  ringHalf(ctx, x, y, lerp(10, 66 * big, e), 0.32, 0.08, 3, lerp(5, 1, u), layer === 'back' ? C.cyan : C.white, 1 - u, layer);
+  fan(ctx, x, y, 9, 5, 0, Math.PI * 2, 26, 56 * big, u, 2.4, layer, PAL);
+  if (layer === 'front') {
+    lens(ctx, x, y, lerp(22, 46 * big, e), 3, C.white, u < 0.2 ? 1 : 0, 'front', 0);
+    lens(ctx, x, y, lerp(22, 46 * big, e), 4, C.white, 1 - u, 'front', lerp(3, 0.5, u));
+    glow(ctx, x, y, lerp(60, 20, u), 'rgba(255,255,255,0.95)', (1 - u) * 0.8);
+  }
+}
+// trazo en arco afilado en las dos puntas (r, a0..a0+span, aplastado en y)
+function arcTaper(ctx, x, y, r, a0, span, w, c, a, layer, sq) {
+  ctx.save(); ctx.strokeStyle = col(c, layer); ctx.lineCap = 'round';
+  const M = 14; let px = 0, py = 0;
+  for (let i = 0; i <= M; i++) {
+    const th = a0 + span * i / M, qx = x + Math.cos(th) * r, qy = y + Math.sin(th) * r * sq;
+    if (i) { ctx.globalAlpha = a; ctx.lineWidth = Math.max(0.3, w * Math.sin(Math.PI * (i - 0.5) / M)); ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(qx, qy); ctx.stroke(); }
+    px = qx; py = qy;
+  }
+  ctx.restore();
+}
+// Carga de siempre (orbe pequeño que crece recibiendo partículas) + «listo» en bucle (R1 pulso · R2 arcos · R3 chispas)
+function chargeReady(ctx, tt, REL, layer, kind, up) {
+  const rl = tt >= REL ? seg(tt, REL, REL + 0.08) : 0;
+  if (tt < 0.04 || rl >= 1) return;
+  const e2 = (tt - 0.04) / (CH - 0.04), prep = clamp(e2), tr = Math.max(0, tt - CH), ready = tr > 0, al = 1 - rl, x = X0, y = YM;
+  const pop = ready ? 1 - seg(tr, 0, 0.18) : 0;
+  const mul = (ready ? 1 + 0.1 * Math.sin(tt * 14) : 1) * (1 + 0.55 * pop) * (1 - rl * 0.5) * (up ? up.orb : 1);
+  const R = rand(5);
+  if (layer === 'front') {                                   // partículas que entran (como antes; siguen entrando al estar listo)
+    for (let i = 0; i < 8; i++) {
+      const a = R() * 6.28, d = (1 - ((e2 * 2 + R()) % 1)) * 36;
+      disc(ctx, x + Math.cos(a) * d, y + Math.sin(a) * d, 1.6, i % 2 ? C.light : C.white, prep * (ready ? 0.65 : 1) * al, 'front');
+    }
+    glow(ctx, x, y, (8 + 26 * prep) * mul * (ready ? 1.25 : 1), 'rgba(160,110,255,0.9)', 0.5 * prep * al);
+    if (ready) glow(ctx, x, y, 24 * mul, 'rgba(120,220,255,0.9)', 0.35 * al);
+    disc(ctx, x, y, (2 + 7 * prep) * mul, C.cyan, al, 'front');
+    disc(ctx, x, y, (1 + 4 * prep) * mul * (ready ? 1.15 : 1), C.white, al, 'front');
+  }
+  if (up && up.pow) powChargeFx(ctx, tt, layer, up, prep, tr, ready, rl, al, e2);
+  if (!ready || rl > 0) return;
+  // aviso común: onda corta + destello de la propia orbe
+  const u = tr / 0.3;
+  if (u < 1) ringHalf(ctx, x, y, lerp(10, 46, easeOut(u)), 0.32, 0.08, 3, lerp(4, 1, u), layer === 'back' ? C.cyan : C.white, 1 - u, layer);
+  if (kind === 'R1') {                                       // pulso: halo respira + onda que sale cada ~0,5 s
+    const p = (tt * 2) % 1;
+    ringHalf(ctx, x, y, lerp(12, 36, easeOut(p)), 0.32, 0.06, 7, 1.6, C.light, (1 - p) * 0.55, layer);
+  } else if (kind === 'R2') {                                // dos arcos afilados que giran en sentidos contrarios
+    for (let k = 0; k < 3; k++) {
+      const a0 = tt * 4 + k * 2.09, sd = Math.sin(a0 + 0.4) < 0 ? 'back' : 'front';
+      if (sd === layer) arcTaper(ctx, x, y, 18, a0, 1.0, 2.6, C.white, 0.95, layer, 0.5);
+      const b0 = -tt * 3 + k * 2.09, sb = Math.sin(b0 + 0.4) < 0 ? 'back' : 'front';
+      if (sb === layer) arcTaper(ctx, x, y, 25, b0, 0.85, 1.8, C.cyan, 0.85, layer, 0.5);
+    }
+  } else {                                                   // R3: chispas afiladas que salen y un destello en cruz que gira
+    for (let i = 0; i < 10; i++) {
+      const Ri = rand(i * 31 + 9), rate = 1.5 + Ri() * 0.8, cyc = (tt * rate + Ri()) % 1, seed = Math.floor(tt * rate + Ri() * 0 + i);
+      const a = rand(seed * 7 + i * 13 + 1)() * 6.283, lay = Math.sin(a) < 0 ? 'back' : 'front';
+      if (lay !== layer) continue;
+      const d0 = 8 + 14 * cyc, d1 = 8 + 34 * easeOut(cyc), ca = Math.cos(a), sa = Math.sin(a);
+      needle(ctx, x + ca * d0, y + sa * d0 * 0.8, x + ca * d1, y + sa * d1 * 0.8, 2.6 * (1 - cyc), i % 3 ? C.white : C.cyan, 1 - cyc, layer);
+    }
+    if (layer === 'front') for (let k = 0; k < 2; k++) {
+      const a = tt * 2.4 + k * Math.PI / 2;
+      needle(ctx, x - Math.cos(a) * 30, y - Math.sin(a) * 30, x + Math.cos(a) * 30, y + Math.sin(a) * 30, 2.2, C.white, 0.7, 'front');
+    }
+  }
+}
+function chargeFx(ctx, tt, REL, layer, kind, up) {
+  if (kind[0] === 'R') return chargeReady(ctx, tt, REL, layer, kind, up);
+  const rl = tt >= REL ? seg(tt, REL, REL + 0.08) : 0;
+  if (tt < 0.04 || rl >= 1) return;
+  const tc = clamp((tt - 0.04) / (CH - 0.04)), tr = Math.max(0, tt - CH), ready = tr > 0, al = 1 - rl;
+  const pulse = ready ? 1 + 0.1 * Math.sin(tt * 16) : 1, x = X0, y = YM;
+  const r0 = lerp(2, 11, easeOut(tc)) * (1 - rl * 0.5);
+  if (kind === 'C1') {                       // orbe que se condensa: partículas en espiral, anillo orbital al estar listo
+    const power = ready ? 0.45 : 1;
+    for (let i = 0; i < 20; i++) {
+      const R = rand(i * 13 + 5), a0 = R() * 6.283, ph = R(), rate = 0.9 + R() * 0.5;
+      const cyc = (tt * rate + ph) % 1, c0 = Math.max(0, cyc - 0.09);
+      const pos = c => { const d = 5 + 52 * Math.pow(1 - c, 1.2), a = a0 + c * 2.2; return [x + Math.cos(a) * d, y + Math.sin(a) * d * 0.62, Math.sin(a)]; };
+      const p1 = pos(cyc), p0 = pos(c0);
+      if ((p1[2] < 0 ? 'back' : 'front') !== layer) continue;
+      needle(ctx, p0[0], p0[1], p1[0], p1[1], 2.4, i % 3 ? C.light : C.white, Math.sin(Math.PI * cyc) * power * Math.min(1, tc * 3) * al, layer);
+    }
+    if (ready) readyPop(ctx, tr / 0.32, layer, 1);
+    if (layer === 'front') {
+      orbDraw(ctx, x, y, r0 * pulse, al);
+      if (ready && rl === 0) {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(tt * 5); ctx.strokeStyle = col(C.white, 'front'); ctx.globalAlpha = 0.85; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.ellipse(0, 0, 17 * pulse, 6, 0, 0, 7); ctx.stroke(); ctx.restore();
+      }
+    }
+  } else if (kind === 'C2') {                // la lanza se forja: agujas de energía convergen y se cierra la punta
+    const k = lerp(0.25, 1, easeOut(tc)), jit = ready ? 0.7 : 0, jx = Math.sin(tt * 90) * jit, jy = Math.cos(tt * 77) * jit;
+    if (layer === 'front') {
+      for (let i = 0; i < 9; i++) {
+        const R = rand(i * 29 + 3), a = (R() - 0.5) * 3.1 + (i % 2 ? Math.PI : 0), cyc = (tt * (1 + R() * 0.6) + R()) % 1, d = 8 + 46 * (1 - cyc);
+        const pw = (ready ? 0.4 : 1) * Math.min(1, tc * 3) * Math.sin(Math.PI * cyc) * al;
+        needle(ctx, x + Math.cos(a) * (d + 18), y + Math.sin(a) * (d + 18) * 0.7, x + Math.cos(a) * d, y + Math.sin(a) * d * 0.7, 2.6, i % 2 ? C.cyan : C.white, pw, 'front');
+      }
+      ctx.save(); ctx.globalAlpha = al; pierceHead(ctx, { h: { x: x + jx, y: y + jy } }, tt, k * pulse, 'sp'); ctx.restore();
+      if (ready) {                           // aguja delantera que centellea
+        const L = 16 + 10 * Math.sin(tt * 22);
+        needle(ctx, x + 14, y, x + 14 + L, y, 2.4, C.white, 0.9 * al, 'front');
+      }
+    }
+    if (ready) { readyPop(ctx, tr / 0.32, layer, 1.1); if (layer === 'front' && tr < 0.3) needle(ctx, x - 10, y, x + lerp(20, 110, easeOut(tr / 0.3)), y, 4 * (1 - tr / 0.3), C.white, 1 - tr / 0.3, 'front'); }
+  } else {                                   // C3 · anillos que colapsan en 3 pulsos + rayos inestables al estar listo
+    let boost = 1;
+    for (let j = 0; j < 3; j++) {
+      const s0 = j * 0.26, e0 = s0 + 0.42, p = seg(tc, s0, e0);
+      if (p > 0 && p < 1) ringHalf(ctx, x + 4, y, lerp(66 - 8 * j, 12, easeIn(p)), 0.3, 0.05, 20 + j, lerp(1.6, 4.2, p), j % 2 ? C.cyan : C.white, (0.4 + 0.6 * p) * al, layer);
+      if (tc >= e0) boost += 0.55 * (1 - seg(tc, e0, e0 + 0.1));
+    }
+    if (ready) readyPop(ctx, tr / 0.32, layer, 1);
+    if (ready && rl === 0) ringHalf(ctx, x + 4, y, 17 * pulse, 0.3, 0.04, 33, 2.2, layer === 'back' ? C.cyan : C.white, 0.95, layer);
+    if (layer === 'front') {
+      orbDraw(ctx, x, y, r0 * pulse * boost, al);
+      if (ready && rl === 0) {
+        const sd = Math.floor(tt / 0.07);
+        for (let j = 0; j < 4; j++) {
+          const R = rand(sd * 17 + j * 5 + 1), a = R() * 6.283, len = 16 + R() * 22; let px = x, py = y; const pts = [[px, py]];
+          for (let k2 = 1; k2 <= 4; k2++) { const aa = a + (R() - 0.5) * 1.1; px += Math.cos(aa) * len / 4; py += Math.sin(aa) * len / 4 * 0.8; pts.push([px, py]); }
+          ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          for (const [lw, c, aA] of [[3.6, C.cyan, 0.4], [1.5, C.white, 1]]) { ctx.globalAlpha = aA; ctx.lineWidth = lw; ctx.strokeStyle = col(c, 'front'); ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); }
+          ctx.restore();
+        }
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------- SONIDO (síntesis WebAudio, sólo para elegir carácter)
+let AC = null, master = null, noiseBuf = null, humNodes = null, rev = null;
+function audioInit() {
+  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
+  AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = 0.7;
+  const comp = AC.createDynamicsCompressor(); comp.threshold.value = -16; comp.knee.value = 12; comp.ratio.value = 5; comp.attack.value = 0.002; comp.release.value = 0.18;
+  master.connect(comp); comp.connect(AC.destination);
+  rev = AC.createConvolver(); const rl = Math.floor(AC.sampleRate * 1.8), ir = AC.createBuffer(2, rl, AC.sampleRate);   // cola de reverb sintética (oscura)
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); let lp = 0; for (let i = 0; i < rl; i++) { lp += ((Math.random() * 2 - 1) * Math.pow(1 - i / rl, 3) - lp) * Math.max(0.05, 0.6 * (1 - i / rl)); d[i] = lp; } }
+  rev.buffer = ir; rev.connect(master);
+  const n = AC.sampleRate; noiseBuf = AC.createBuffer(1, n, AC.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+}
+const X = 0.0001;
+function osc(type, f0, f1, t0, dur, peak, att = 0.01) {
+  const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+  g.gain.setValueAtTime(X, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + att); g.gain.exponentialRampToValueAtTime(X, t0 + dur);
+  o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function swell(type, f0, f1, t0, dur, peak) {      // sube de volumen y de tono hasta el final y corta
+  const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+  g.gain.setValueAtTime(X, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + dur * 0.96); g.gain.exponentialRampToValueAtTime(X, t0 + dur + 0.04);
+  o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + dur + 0.08);
+}
+function noise(t0, dur, peak, ftype, f0, f1, q = 1, att = 0.004, rising = false) {
+  const s = AC.createBufferSource(); s.buffer = noiseBuf; s.loop = true; const f = AC.createBiquadFilter(); f.type = ftype; f.Q.value = q;
+  f.frequency.setValueAtTime(f0, t0); f.frequency.exponentialRampToValueAtTime(f1, t0 + dur); const g = AC.createGain(); g.gain.setValueAtTime(X, t0);
+  if (rising) { g.gain.exponentialRampToValueAtTime(peak, t0 + dur * 0.96); g.gain.exponentialRampToValueAtTime(X, t0 + dur + 0.04); }
+  else { g.gain.exponentialRampToValueAtTime(peak, t0 + att); g.gain.exponentialRampToValueAtTime(X, t0 + dur); }
+  s.connect(f); f.connect(g); g.connect(master); s.start(t0); s.stop(t0 + dur + 0.08);
+}
+function stopHum() { if (humNodes) { const t = AC.currentTime; humNodes.g.gain.cancelScheduledValues(t); humNodes.g.gain.setTargetAtTime(X, t, 0.03); humNodes.os.forEach(o => o.stop(t + 0.2)); humNodes = null; } }
+const SFX = {
+  charge(kind, k, dur) {
+    if (kind === 'R1' || kind === 'R3') kind = 'C1'; else if (kind === 'R2') kind = 'C2';
+    const t = AC.currentTime + 0.02, d = dur * k;
+    if (kind === 'C2') { swell('sawtooth', 120, 700, t, d, 0.05); swell('sine', 300, 1900, t, d, 0.1); swell('sine', 304, 1915, t, d, 0.08); noise(t, d, 0.07, 'highpass', 3000, 9000, 1, 0.01, true); }
+    else if (kind === 'C3') {
+      for (let j = 0; j < 3; j++) { const s0 = t + 0.26 * j * d, sd = d * 0.42; swell('triangle', 220 * Math.pow(1.34, j), 330 * Math.pow(1.34, j), s0, sd, 0.12); noise(s0 + sd * 0.95, 0.07 * k, 0.12, 'bandpass', 3200, 5200, 4); }
+      swell('sine', 700, 1500, t + d * 0.45, d * 0.55, 0.07);
+    } else { swell('triangle', 180, 780, t, d, 0.14); swell('sine', 360, 1560, t, d, 0.07); noise(t, d, 0.05, 'highpass', 1500, 7000, 1, 0.01, true); }
+  },
+  ready(k) {
+    const t = AC.currentTime + 0.01;
+    osc('sine', 1318, 1318, t, 0.55 * k, 0.16, 0.004); osc('sine', 1976, 1976, t + 0.03 * k, 0.45 * k, 0.12, 0.004); osc('triangle', 659, 659, t, 0.4 * k, 0.1, 0.004);
+    noise(t, 0.08 * k, 0.12, 'highpass', 6000, 9000);
+    stopHum();                                         // zumbido de "listo" que dura hasta soltar
+    const g = AC.createGain(); g.gain.setValueAtTime(X, t); g.gain.exponentialRampToValueAtTime(0.045, t + 0.15);
+    const l = AC.createOscillator(), lg = AC.createGain(); l.frequency.value = 7; lg.gain.value = 0.02; l.connect(lg); lg.connect(g.gain); l.start();
+    const a = AC.createOscillator(), b = AC.createOscillator(); a.type = 'sine'; b.type = 'sine'; a.frequency.value = 330; b.frequency.value = 333;
+    a.connect(g); b.connect(g); g.connect(master); a.start(t); b.start(t);
+    humNodes = { g, os: [a, b, l] };
+  },
+  release(k) {
+    stopHum(); const t = AC.currentTime + 0.01;
+    noise(t, 0.3 * k, 0.28, 'bandpass', 3800, 300, 1.2, 0.01); osc('sawtooth', 1000, 120, t, 0.2 * k, 0.12, 0.005); osc('sine', 2000, 320, t, 0.12 * k, 0.14, 0.003);
+  },
+  pierceIn(k) { const t = AC.currentTime + 0.01; noise(t, 0.16 * k, 0.3, 'highpass', 5000, 9500, 1, 0.002); osc('sine', 2600, 1700, t, 0.16 * k, 0.16, 0.002); osc('triangle', 160, 55, t, 0.14 * k, 0.28, 0.003); },
+  pierceOut(k) { const t = AC.currentTime + 0.01; noise(t, 0.12 * k, 0.18, 'highpass', 7000, 12000, 1, 0.002); osc('sine', 3300, 2400, t, 0.12 * k, 0.12, 0.002); },
+  impact(k) {
+    const t = AC.currentTime + 0.01;
+    osc('sine', 150, 36, t, 0.35 * k, 0.5, 0.004); noise(t, 0.28 * k, 0.36, 'lowpass', 3500, 200, 0.8, 0.002);
+    osc('sine', 2400, 3800, t, 0.12 * k, 0.1, 0.002); osc('triangle', 1200, 900, t + 0.04 * k, 0.2 * k, 0.07, 0.003);
+  },
+};
+// ---------------------------------------------------------------- SONIDO v2: capas con peso (sub + cuerpo + transitorio + cola), sin pitidos agudos tipo arcade
+// vThump: golpe grave con caída de tono · vNoise: ruido filtrado (opc. distorsión/reverb) · vSaw: diente de sierra con filtro que barre
+// vRing: parciales inarmónicos (cuerpo metálico) · vCrackle: chisporroteo eléctrico · sendOut: salida seca + envío a reverb
+function sendOut(node, wet) {
+  node.connect(master);
+  if (wet > 0) { const w = AC.createGain(); w.gain.value = wet; node.connect(w); w.connect(rev); }
+}
+const curves = {};
+function driveNode(amount) {
+  if (!curves[amount]) { const n = 2048, c = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i * 2 / n - 1; c[i] = Math.tanh(x * amount) / Math.tanh(amount); } curves[amount] = c; }
+  const ws = AC.createWaveShaper(); ws.curve = curves[amount]; ws.oversample = '2x'; return ws;
+}
+function vThump(t0, f0, f1, dur, peak, dr = 0, wet = 0.1) {
+  const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine';
+  o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur * 0.6);
+  g.gain.setValueAtTime(X, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + 0.003); g.gain.exponentialRampToValueAtTime(X, t0 + dur);
+  o.connect(g); let last = g; if (dr > 0) { const ws = driveNode(dr); g.connect(ws); last = ws; }
+  sendOut(last, wet); o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function vNoise(t0, dur, peak, type, f0, f1, q = 1, o = {}) {
+  const s = AC.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
+  const f = AC.createBiquadFilter(); f.type = type; f.Q.value = q; f.frequency.setValueAtTime(f0, t0); f.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+  const g = AC.createGain(); g.gain.setValueAtTime(X, t0);
+  if (o.rising) { g.gain.exponentialRampToValueAtTime(peak, t0 + dur * 0.95); g.gain.exponentialRampToValueAtTime(X, t0 + dur + 0.03); }
+  else { g.gain.exponentialRampToValueAtTime(peak, t0 + (o.att || 0.002)); g.gain.exponentialRampToValueAtTime(X, t0 + dur); }
+  s.connect(f); f.connect(g); let last = g; if (o.dr) { const ws = driveNode(o.dr); g.connect(ws); last = ws; }
+  if (o.pan) { const pn = AC.createStereoPanner(); pn.pan.setValueAtTime(o.pan[0], t0); pn.pan.linearRampToValueAtTime(o.pan[1], t0 + dur); last.connect(pn); last = pn; }
+  sendOut(last, o.wet || 0); s.start(t0, Math.random() * 0.5); s.stop(t0 + dur + 0.06);
+}
+function vSaw(t0, f0, f1, dur, peak, lp0, lp1, dr = 0, wet = 0.1) {
+  const o = AC.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+  const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(lp0, t0); f.frequency.exponentialRampToValueAtTime(lp1, t0 + dur);
+  const g = AC.createGain(); g.gain.setValueAtTime(X, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + 0.006); g.gain.exponentialRampToValueAtTime(X, t0 + dur);
+  o.connect(f); f.connect(g); let last = g; if (dr > 0) { const ws = driveNode(dr); g.connect(ws); last = ws; }
+  sendOut(last, wet); o.start(t0); o.stop(t0 + dur + 0.05);
+}
+function vRing(t0, freqs, dur, peak, wet = 0.2) {
+  freqs.forEach((fr, i) => {
+    const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = fr;
+    g.gain.setValueAtTime(X, t0); g.gain.exponentialRampToValueAtTime(peak / (1 + i * 0.4), t0 + 0.002); g.gain.exponentialRampToValueAtTime(X, t0 + dur * (1 - i * 0.12));
+    o.connect(g); sendOut(g, wet); o.start(t0); o.stop(t0 + dur + 0.05);
+  });
+}
+function vCrackle(t0, dur, peak, count, wet = 0.2) {
+  for (let i = 0; i < count; i++) {
+    const tt = t0 + Math.random() * dur, a = peak * (0.3 + Math.random() * 0.7) * (1 - (tt - t0) / dur * 0.7);
+    vNoise(tt, 0.012 + Math.random() * 0.01, a, 'highpass', 2000 + Math.random() * 3000, 2500 + Math.random() * 4000, 1, { att: 0.001, wet });
+  }
+}
+function startHum(t) {                                 // el zumbido de «listo» (el que gustó) no cambia
+  stopHum(); const g = AC.createGain(); g.gain.setValueAtTime(X, t); g.gain.exponentialRampToValueAtTime(0.045, t + 0.15);
+  const l = AC.createOscillator(), lg = AC.createGain(); l.frequency.value = 7; lg.gain.value = 0.02; l.connect(lg); lg.connect(g.gain); l.start();
+  const a = AC.createOscillator(), b = AC.createOscillator(); a.type = 'sine'; b.type = 'sine'; a.frequency.value = 330; b.frequency.value = 333;
+  a.connect(g); b.connect(g); g.connect(master); a.start(t); b.start(t); humNodes = { g, os: [a, b, l] };
+}
+
+// Sets: cada uno es un carácter coherente (listo + perforación + impacto). `old` = el arcade anterior, sólo para comparar.
+const SETS = {};
+SETS.old = { name: 'Antiguo (arcade)', ready: SFX.ready, pierceIn: SFX.pierceIn, pierceOut: SFX.pierceOut, impact: SFX.impact };
+const nowT = () => AC.currentTime + 0.01;
+SETS.A = { name: 'A · Seco y pesado',
+  ready(k) {                                           // inhalación inversa + cierre grave con acorde de quinta oscuro
+    const t = nowT(), t1 = t + 0.16 * k;
+    vNoise(t, 0.16 * k, 0.2, 'bandpass', 300, 2500, 1, { rising: true, wet: 0.2 });
+    vThump(t1, 95, 46, 0.42 * k, 0.7, 2, 0.2); vSaw(t1, 110, 108, 0.45 * k, 0.13, 1400, 180, 1.5, 0.25); vSaw(t1, 165, 163, 0.4 * k, 0.08, 1400, 200, 1.5, 0.25);
+    vNoise(t1, 0.05 * k, 0.22, 'highpass', 3000, 3000); startHum(t1 + 0.05 * k);
+  },
+  pierceIn(k) { const t = nowT(); vNoise(t, 0.15 * k, 0.42, 'bandpass', 900, 6000, 2.5, { att: 0.004, dr: 1.5, wet: 0.15 }); vThump(t, 150, 60, 0.16 * k, 0.55, 2); vNoise(t, 0.02 * k, 0.3, 'highpass', 4000, 4000); },
+  pierceOut(k) { const t = nowT(); vNoise(t, 0.12 * k, 0.28, 'bandpass', 4000, 1500, 2, { wet: 0.2 }); vThump(t, 110, 55, 0.12 * k, 0.28, 1.5); },
+  impact(k) { const t = nowT(); vThump(t, 130, 34, 0.5 * k, 0.95, 3, 0.15); vNoise(t, 0.22 * k, 0.55, 'lowpass', 2600, 140, 0.8, { att: 0.001, dr: 2.5, wet: 0.15 }); vNoise(t, 0.03 * k, 0.35, 'highpass', 3500, 3500); vNoise(t + 0.01, 0.5 * k, 0.18, 'lowpass', 500, 120, 1, { wet: 0.3 }); },
+};
+SETS.B = { name: 'B · Energía eléctrica',
+  ready(k) {                                           // ignición: barrido de aire que sube + chisporroteo + sub cálido
+    const t = nowT(), t1 = t + 0.35 * k;
+    vNoise(t, 0.35 * k, 0.22, 'bandpass', 500, 4500, 0.9, { rising: true, wet: 0.3 }); vCrackle(t + 0.1 * k, 0.4 * k, 0.18, 28);
+    vThump(t1, 70, 45, 0.5 * k, 0.4, 1.5, 0.3); vSaw(t1, 196, 196, 0.6 * k, 0.08, 600, 300, 0, 0.35); vSaw(t1, 198.5, 198.5, 0.6 * k, 0.08, 600, 300, 0, 0.35); startHum(t1 + 0.1 * k);
+  },
+  pierceIn(k) { const t = nowT(); vSaw(t, 1500, 120, 0.16 * k, 0.28, 4000, 300, 2, 0.12); vCrackle(t, 0.2 * k, 0.25, 30, 0.15); vThump(t, 130, 50, 0.15 * k, 0.5, 2); },
+  pierceOut(k) { const t = nowT(); vNoise(t, 0.14 * k, 0.25, 'highpass', 2500, 9000, 1, { wet: 0.15 }); vCrackle(t, 0.15 * k, 0.15, 20, 0.15); vThump(t, 100, 55, 0.1 * k, 0.2, 1.5); },
+  impact(k) { const t = nowT(); vThump(t, 110, 30, 0.6 * k, 0.9, 3, 0.15); vNoise(t, 0.5 * k, 0.5, 'bandpass', 7000, 250, 0.7, { att: 0.002, dr: 2, wet: 0.35 }); vCrackle(t + 0.02 * k, 0.45 * k, 0.3, 50, 0.3); vSaw(t, 900, 60, 0.22 * k, 0.25, 3000, 200, 2, 0.2); },
+};
+SETS.C = { name: 'C · Metal pesado',
+  ready(k) {                                           // mecanismo: dos clics secos + golpe grave + cuerpo metálico
+    const t = nowT(), t1 = t + 0.07 * k;
+    vNoise(t, 0.03 * k, 0.3, 'bandpass', 2800, 2800, 6); vNoise(t + 0.05 * k, 0.03 * k, 0.25, 'bandpass', 1800, 1800, 6);
+    vThump(t1, 140, 70, 0.22 * k, 0.5, 2, 0.12); vSaw(t1, 140, 380, 0.2 * k, 0.09, 900, 2500, 1, 0.15); vRing(t1, [233, 391, 617], 0.35 * k, 0.06, 0.2); startHum(t1 + 0.05 * k);
+  },
+  pierceIn(k) { const t = nowT(); vNoise(t, 0.1 * k, 0.38, 'highpass', 4000, 8000, 1, { att: 0.002, wet: 0.1 }); vRing(t, [420, 700, 1180], 0.3 * k, 0.08, 0.2); vThump(t, 140, 60, 0.15 * k, 0.5, 2); },
+  pierceOut(k) { const t = nowT(); vRing(t, [520, 860], 0.2 * k, 0.05, 0.2); vNoise(t, 0.1 * k, 0.22, 'bandpass', 3000, 1200, 2, { wet: 0.1 }); },
+  impact(k) { const t = nowT(); vThump(t, 100, 42, 0.45 * k, 0.85, 3, 0.15); vNoise(t, 0.03 * k, 0.35, 'highpass', 4000, 4000); vRing(t, [185, 311, 527, 798], 0.5 * k, 0.12, 0.25); vSaw(t, 700, 70, 0.22 * k, 0.3, 2400, 160, 2.5, 0.15); vNoise(t, 0.2 * k, 0.3, 'lowpass', 2000, 200, 1, { wet: 0.2 }); },
+};
+let curSet = 'B';
+for (const n of ['ready', 'pierceIn', 'pierceOut', 'impact']) SFX[n] = k => SETS[curSet][n](k);
+document.getElementById('sset').onchange = e => { curSet = e.target.value; };
+
+// ---------------------------------------------------------------- VARIANTES de carga / listo / disparo (carácter «energía eléctrica»)
+// vRise: como vSaw pero el volumen SUBE hasta el final (risers)
+function vRise(t0, type, f0, f1, dur, peak, lp0, lp1, dr = 0, wet = 0.1, q = 1) {
+  const o = AC.createOscillator(); o.type = type; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+  const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = q; f.frequency.setValueAtTime(lp0, t0); f.frequency.exponentialRampToValueAtTime(lp1, t0 + dur);
+  const g = AC.createGain(); g.gain.setValueAtTime(X, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + dur * 0.95); g.gain.exponentialRampToValueAtTime(X, t0 + dur + 0.04);
+  o.connect(f); f.connect(g); let last = g; if (dr > 0) { const ws = driveNode(dr); g.connect(ws); last = ws; }
+  sendOut(last, wet); o.start(t0); o.stop(t0 + dur + 0.08);
+}
+// chasquidos que se aceleran (más seguidos al final) y suben de volumen
+function rampTicks(t0, d, n, p0, p1, f0, f1, wet = 0.1) {
+  for (let i = 0; i < n; i++) {
+    const u = i / n, tt = t0 + d * (1 - Math.pow(1 - u, 2)), f = f0 + (f1 - f0) * u;
+    vNoise(tt, 0.012, p0 + (p1 - p0) * u, 'bandpass', f, f, 5, { att: 0.001, wet });
+  }
+}
+const chargeOld = SFX.charge, releaseOld = SFX.release;
+const CHV = {
+  base: { name: 'Actual (suave)', fn: (k, dur) => chargeOld('R1', k, dur) },
+  a: { name: 'A · Condensador', fn(k, dur) {            // silbido resonante que sube + sub + chasquidos cada vez más seguidos
+    const t = nowT(), d = dur * k;
+    vRise(t, 'sawtooth', 70, 420, d, 0.16, 200, 3600, 0, 0.12, 9); swell('sine', 45, 90, t, d, 0.22);
+    rampTicks(t, d, 30, 0.05, 0.2, 2200, 4500);
+  } },
+  b: { name: 'B · Absorción', fn(k, dur) {              // sigue a las partículas: aire que sube + «granos» que se aceleran + tono hueco
+    const t = nowT(), d = dur * k;
+    vNoise(t, d, 0.18, 'bandpass', 400, 5000, 1, { rising: true, wet: 0.2 });
+    rampTicks(t, d, 28, 0.06, 0.22, 2400, 4200, 0.12); vRise(t, 'sawtooth', 90, 360, d, 0.08, 300, 1400, 2, 0.15);
+  } },
+  c: { name: 'C · Turbina', fn(k, dur) {                // vibrato que se acelera (arranca un motor) + siseo + latidos graves cada vez más rápidos
+    const t = nowT(), d = dur * k;
+    const o = AC.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(700, t + d);
+    const l = AC.createOscillator(), lg = AC.createGain(); l.frequency.setValueAtTime(6, t); l.frequency.exponentialRampToValueAtTime(38, t + d); lg.gain.value = 30; l.connect(lg); lg.connect(o.frequency);
+    const g = AC.createGain(); g.gain.setValueAtTime(X, t); g.gain.exponentialRampToValueAtTime(0.14, t + d * 0.95); g.gain.exponentialRampToValueAtTime(X, t + d + 0.04);
+    o.connect(g); sendOut(g, 0.12); o.start(t); l.start(t); o.stop(t + d + 0.08); l.stop(t + d + 0.08);
+    vNoise(t, d, 0.07, 'highpass', 2000, 8000, 1, { rising: true });
+    for (let i = 0; i < 8; i++) { const u = i / 8; vThump(t + d * (1 - Math.pow(1 - u, 1.8)), 70, 50, 0.07, 0.1 + 0.12 * u, 1.5, 0.05); }
+  } },
+  d: { name: 'D · Tensión grave', fn(k, dur) {          // riser cinematográfico grave con distorsión y chisporroteo al final
+    const t = nowT(), d = dur * k;
+    vRise(t, 'sawtooth', 55, 110, d, 0.12, 150, 1800, 1.5, 0.15); vRise(t, 'sawtooth', 56.5, 111.5, d, 0.1, 150, 1800, 1.5, 0.15);
+    vNoise(t, d, 0.1, 'highpass', 1200, 6000, 1, { rising: true, wet: 0.15 }); swell('sine', 40, 80, t, d, 0.25); vCrackle(t + d * 0.6, d * 0.4, 0.16, 24, 0.15);
+  } },
+};
+const RDV = {
+  set: { name: 'Del set elegido', fn: k => SETS[curSet].ready(k) },
+  a: { name: 'A · Descarga seca', fn(k) {                // chasquido eléctrico corto y seco + golpe grave
+    const t = nowT();
+    vNoise(t, 0.02, 0.4, 'highpass', 3500, 3500); vSaw(t, 3200, 180, 0.1 * k, 0.3, 5000, 400, 2.5, 0.1); vCrackle(t, 0.14 * k, 0.28, 22, 0.15);
+    vThump(t, 85, 48, 0.3 * k, 0.65, 2, 0.2); startHum(t + 0.1 * k);
+  } },
+  b: { name: 'B · Sobretensión', fn(k) {                 // sube la tensión y salta con zumbido de transformador
+    const t = nowT(), t1 = t + 0.18 * k;
+    vNoise(t, 0.18 * k, 0.16, 'bandpass', 500, 3000, 1, { rising: true, wet: 0.2 });
+    vSaw(t1, 100, 100, 0.3 * k, 0.2, 1200, 300, 2, 0.2); vThump(t1, 90, 48, 0.4 * k, 0.6, 2, 0.2); vCrackle(t1, 0.3 * k, 0.22, 26, 0.2); startHum(t1 + 0.1 * k);
+  } },
+  c: { name: 'C · Doble golpe', fn(k) {                  // dos golpes graves seguidos (el segundo más grande) con resonancia
+    const t = nowT(), t2 = t + 0.1 * k;
+    vThump(t, 110, 52, 0.3 * k, 0.7, 2.5, 0.15); vThump(t2, 85, 42, 0.4 * k, 0.8, 2.5, 0.25);
+    vNoise(t, 0.03, 0.25, 'highpass', 3000, 3000); vNoise(t2, 0.03, 0.25, 'highpass', 3000, 3000);
+    vRing(t2, [196, 330], 0.5 * k, 0.07, 0.35); vCrackle(t2, 0.25 * k, 0.18, 16, 0.2); startHum(t2 + 0.02 * k);
+  } },
+  d: { name: 'D · Resonancia', fn(k) {                    // «ping» resonante que sube rápido + acorde grave que se funde con el zumbido
+    const t = nowT();
+    vNoise(t, 0.22 * k, 0.22, 'bandpass', 400, 2600, 12, { att: 0.01, wet: 0.3 }); vThump(t, 80, 48, 0.45 * k, 0.55, 1.5, 0.3);
+    vSaw(t, 165, 165, 0.7 * k, 0.1, 300, 1400, 0, 0.35); vSaw(t, 330, 331, 0.7 * k, 0.07, 400, 1800, 0, 0.35); startHum(t + 0.15 * k);
+  } },
+};
+const RLV = {
+  base: { name: 'Actual', fn: releaseOld },
+  a: { name: 'A · Láser grave', fn(k) {                   // zap que cae en picado + sub + barrido de aire que se desplaza de izquierda a derecha
+    stopHum(); const t = nowT();
+    vSaw(t, 1400, 90, 0.2 * k, 0.3, 5000, 300, 2.5, 0.15); vThump(t, 75, 40, 0.25 * k, 0.55, 2, 0.15);
+    vNoise(t, 0.22 * k, 0.28, 'bandpass', 5000, 400, 1.2, { att: 0.004, wet: 0.15, pan: [-0.2, 0.5] }); vCrackle(t + 0.04 * k, 0.2 * k, 0.14, 14, 0.15);
+  } },
+  b: { name: 'B · Chasquido y whoosh', fn(k) {             // chasquido seco + paso rápido de aire que cruza hacia el enemigo
+    stopHum(); const t = nowT();
+    vNoise(t, 0.025, 0.5, 'highpass', 3000, 3000); vNoise(t, 0.32 * k, 0.3, 'bandpass', 700, 3800, 3, { att: 0.01, wet: 0.2, pan: [-0.4, 0.7] });
+    vNoise(t + 0.12 * k, 0.25 * k, 0.18, 'bandpass', 3800, 900, 3, { wet: 0.25, pan: [0.3, 0.9] }); vThump(t, 100, 55, 0.2 * k, 0.45, 1.5);
+  } },
+  c: { name: 'C · Cañón', fn(k) {                          // el más pesado: patada grave + ráfaga + zap descendente
+    stopHum(); const t = nowT();
+    vThump(t, 120, 35, 0.4 * k, 0.9, 3, 0.2); vNoise(t, 0.28 * k, 0.45, 'lowpass', 4500, 300, 0.8, { att: 0.001, dr: 2.5, wet: 0.25 });
+    vSaw(t, 700, 60, 0.24 * k, 0.28, 3000, 200, 2.5, 0.2); vCrackle(t, 0.3 * k, 0.2, 24, 0.25);
+  } },
+  d: { name: 'D · Aguja', fn(k) {                          // fino y rápido, a juego con la punta de lanza
+    stopHum(); const t = nowT();
+    vSaw(t, 4200, 300, 0.1 * k, 0.22, 7000, 500, 2, 0.1); vNoise(t, 0.2 * k, 0.25, 'highpass', 2500, 9000, 1, { att: 0.003, wet: 0.15, pan: [-0.3, 0.7] });
+    vThump(t, 90, 55, 0.12 * k, 0.35, 1.5); vNoise(t, 0.02, 0.3, 'highpass', 5000, 5000);
+  } },
+};
+let curCharge = 'c', curReady = 'a', curRelease = 'a';
+SFX.charge = (kind, k, dur) => CHV[curCharge].fn(k, dur);
+SFX.ready = k => RDV[curReady].fn(k);
+SFX.release = k => RLV[curRelease].fn(k);
+const fillSel = (id, obj, cur, set) => { const el = document.getElementById(id); el.innerHTML = Object.keys(obj).map(k => `<option value="${k}"${k === cur ? ' selected' : ''}>${obj[k].name}</option>`).join(''); el.onchange = e => set(e.target.value); };
+fillSel('sch', CHV, curCharge, v => curCharge = v); fillSel('srd', RDV, curReady, v => curReady = v); fillSel('srl', RLV, curRelease, v => curRelease = v);
+
+// sonidos del primer golpe de la cadena: llega + impacta, se queda pegado (tensión) y sale con fuerza
+const CHN = {
+  a: { name: 'A · Chisporroteo y latigazo',
+    stick(k, dur) { const t = nowT(), d = dur * k;
+      vThump(t, 110, 45, 0.3 * k, 0.7, 2.5, 0.15); vNoise(t, 0.15 * k, 0.4, 'lowpass', 3000, 200, 1, { att: 0.001, dr: 2, wet: 0.15 }); vNoise(t, 0.02, 0.35, 'highpass', 3500, 3500);
+      vCrackle(t + 0.05 * k, Math.max(0.05, d - 0.05 * k), 0.2, 34, 0.15); vRise(t + 0.04 * k, 'sawtooth', 200, 900, Math.max(0.06, d - 0.04 * k), 0.08, 300, 3000, 1.5, 0.15, 6); },
+    out(k) { const t = nowT();
+      vNoise(t, 0.02, 0.5, 'highpass', 3500, 3500); vSaw(t, 2200, 100, 0.18 * k, 0.32, 6000, 300, 2.5, 0.15); vThump(t, 95, 40, 0.3 * k, 0.8, 3, 0.2);
+      vNoise(t, 0.25 * k, 0.3, 'bandpass', 5000, 500, 1.2, { att: 0.004, wet: 0.2, pan: [-0.2, 0.6] }); vCrackle(t + 0.03 * k, 0.2 * k, 0.16, 16, 0.2); } },
+  b: { name: 'B · Succión y disparo',
+    stick(k, dur) { const t = nowT(), d = dur * k;
+      vThump(t, 100, 48, 0.25 * k, 0.55, 2, 0.15); vNoise(t, 0.02, 0.3, 'highpass', 3500, 3500);
+      vNoise(t + 0.04 * k, Math.max(0.08, d - 0.04 * k), 0.22, 'bandpass', 300, 3500, 1, { rising: true, wet: 0.2 });
+      vRise(t + 0.04 * k, 'sine', 60, 190, Math.max(0.08, d - 0.04 * k), 0.2, 800, 2000, 0, 0.1); rampTicks(t + 0.06 * k, Math.max(0.06, d - 0.08 * k), 16, 0.05, 0.18, 2400, 4200); },
+    out(k) { const t = nowT();
+      vThump(t, 120, 32, 0.4 * k, 0.95, 3, 0.25); vNoise(t, 0.28 * k, 0.45, 'lowpass', 4500, 250, 0.8, { att: 0.001, dr: 2.5, wet: 0.3 });
+      vSaw(t, 1200, 80, 0.22 * k, 0.3, 4000, 200, 2.5, 0.2); vCrackle(t, 0.3 * k, 0.22, 26, 0.3); } },
+  c: { name: 'C · Catapulta',
+    stick(k, dur) { const t = nowT(), d = dur * k;
+      vThump(t, 105, 46, 0.28 * k, 0.65, 2.5, 0.15); vRing(t, [185, 311, 527], 0.4 * k, 0.1, 0.25); vNoise(t, 0.02, 0.35, 'highpass', 3500, 3500);
+      vRise(t + 0.04 * k, 'sine', 120, 520, Math.max(0.08, d - 0.04 * k), 0.2, 2500, 4000, 0, 0.1); vRise(t + 0.04 * k, 'sawtooth', 90, 260, Math.max(0.08, d - 0.04 * k), 0.06, 200, 1500, 1.5, 0.15, 5); },
+    out(k) { const t = nowT();
+      vNoise(t, 0.015, 0.55, 'highpass', 4000, 4000); const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(900, t); o.frequency.exponentialRampToValueAtTime(90, t + 0.12 * k);
+      g.gain.setValueAtTime(0.3, t); g.gain.exponentialRampToValueAtTime(X, t + 0.14 * k); o.connect(g); sendOut(g, 0.1); o.start(t); o.stop(t + 0.2 * k);
+      vThump(t, 100, 38, 0.32 * k, 0.85, 3, 0.2); vNoise(t, 0.3 * k, 0.28, 'bandpass', 3500, 400, 1.5, { wet: 0.2, pan: [-0.2, 0.7] }); } },
+};
+let curChain = 'a';
+fillSel('scn', CHN, curChain, v => curChain = v);
+
+
+
+// eventos de sonido de una escena, en tiempo de animación (tt)
+function eventsOf(v) {
+  const ev = [], REL = relOf(v), nw = isNew(v), o = nw ? REL - T0 : 0;
+  ev.push({ t: nw ? 0.04 : 0.05, f: k => SFX.charge(nw ? v.ch : 'C1', k, nw ? CH - 0.04 : T0 - 0.05) });
+  if (nw) ev.push({ t: CH, f: k => SFX.ready(k) });
+  ev.push({ t: REL, f: k => SFX.release(k) });
+  for (const h of v.hits) {
+    if (h.pierce && h.p.fx === 'CH') { ev.push({ t: h.tE + o, f: k => CHN[curChain].stick(k, h.tX - h.tE) }); ev.push({ t: h.tX + o, f: k => CHN[curChain].out(k) }); }
+    else if (h.pierce) { ev.push({ t: h.tE + o, f: k => SFX.pierceIn(k) }); ev.push({ t: h.tX + o, f: k => SFX.pierceOut(k) }); }
+    else ev.push({ t: v.TB + o, f: k => SFX.impact(k) });
+  }
+  return ev;
+}
+
+// Marca común de homing (5 conceptos): 'brackets' y 'orbit' marcan al enemigo; 'thread', 'needle' y 'amber' no.
+function homingMark(ctx, t, layer, v, S, trl) {
+  const kind = v.mark; if (!kind || kind === 'amber') return;
+  const h = v.hits[0]; if (!h || !h.pos || t < T0) return;
+  const after = seg(t, v.TB, v.TB + 0.14); if (after >= 1) return;
+  const p = h.pos(trl), cx = p.x, cy = p.y + 2, u = easeOut(seg(t, T0, T0 + 0.16)), a = 1 - after, tm = t - T0;
+  if (kind === 'brackets') {                   // cuatro esquinas afiladas que se cierran sobre el enemigo y se quedan girando levemente
+    if (layer !== 'front') return;
+    const hw = lerp(120, 40, u) * (1 - after * 0.4), hh = lerp(150, 56, u) * (1 - after * 0.4), rot = (1 - u) * 0.9 + 0.05 * Math.sin(tm * 8), wd = 3.4 * (1 + 0.2 * Math.sin(tm * 14));
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+      const x = sx * hw, y = sy * hh, al = a * (0.4 + 0.6 * u);
+      needle(ctx, x, y, x - sx * 22, y, wd, C.white, al, 'front'); needle(ctx, x, y, x, y - sy * 26, wd, C.white, al, 'front');
+      needle(ctx, x, y, x - sx * 14, y, wd * 2.1, C.cyan, al * 0.45, 'front'); needle(ctx, x, y, x, y - sy * 17, wd * 2.1, C.cyan, al * 0.45, 'front');
+    }
+    ctx.restore();
+    if (u < 1) glow(ctx, cx, cy, 70, 'rgba(255,255,255,0.9)', (1 - u) * 0.5);
+  } else if (kind === 'orbit') {               // dos anillos finos de arcos afilados alrededor del enemigo + un nodo que orbita
+    const r1 = lerp(92, 47, u), r2 = lerp(80, 40, u);
+    for (const [r, yo, sp, w, c, n] of [[r1, 8, 5, 2.6, C.white, 3], [r2, -26, -4, 1.8, C.cyan, 3]]) {
+      for (let k = 0; k < n; k++) {
+        const a0 = tm * sp + k * (6.283 / n), sd = Math.sin(a0 + 0.5) < 0 ? 'back' : 'front';
+        if (sd === layer) arcTaper(ctx, cx, cy + yo, r, a0, 1.25, w, c, a * 0.95, layer, 0.3);
+      }
+    }
+    const ang = tm * 7, sd = Math.sin(ang) < 0 ? 'back' : 'front';
+    if (sd === layer) {
+      const nx = cx + Math.cos(ang) * r1, ny = cy + 8 + Math.sin(ang) * r1 * 0.3;
+      needle(ctx, nx + Math.sin(ang) * 22, ny - Math.cos(ang) * 6.6, nx, ny, 3, C.white, a * 0.7, layer);
+      glow(ctx, nx, ny, 12, 'rgba(255,255,255,0.9)', 0.7 * a); disc(ctx, nx, ny, 3.2, C.white, a, layer);
+    }
+  } else if (kind === 'thread') {              // hilo fino que sale de la cabeza, se curva hacia el enemigo y lleva cuentas de luz
+    if (layer !== 'front' || !S.headAlive) return;
+    const P0 = S.h, dx = cx - P0.x, dy = cy - P0.y, dist = Math.hypot(dx, dy), ca = P0.x + Math.cos(S.ang) * dist * 0.45, cb = P0.y + Math.sin(S.ang) * dist * 0.45;
+    const at = s => ({ x: (1 - s) * (1 - s) * P0.x + 2 * (1 - s) * s * ca + s * s * cx, y: (1 - s) * (1 - s) * P0.y + 2 * (1 - s) * s * cb + s * s * cy });
+    ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = col(C.light, 'front');
+    for (let i = 0; i < 26; i++) { const s0 = i / 26, s1 = (i + 1) / 26, q0 = at(s0), q1 = at(s1); ctx.globalAlpha = a * 0.6 * (1 - 0.45 * s0); ctx.lineWidth = 2.4 * (1 - s0) + 0.5; ctx.beginPath(); ctx.moveTo(q0.x, q0.y); ctx.lineTo(q1.x, q1.y); ctx.stroke(); }
+    ctx.restore();
+    for (let i = 0; i < 4; i++) { const s = (tm * 2.4 + i / 4) % 1, q = at(s); disc(ctx, q.x, q.y, 2.4 * (1 - s * 0.4), C.white, a * 0.95, 'front'); }
+  } else if (kind === 'needle') {              // una aguja-brújula en la cabeza que apunta siempre al objetivo (la cabeza va girando detrás)
+    if (layer !== 'front' || !S.headAlive) return;
+    const P0 = S.h, ta = Math.atan2(cy - P0.y, cx - P0.x), L = 40;
+    needle(ctx, P0.x, P0.y, P0.x + Math.cos(ta) * L, P0.y + Math.sin(ta) * L, 7, C.cyan, a * 0.45, 'front');
+    needle(ctx, P0.x, P0.y, P0.x + Math.cos(ta) * (L + 4), P0.y + Math.sin(ta) * (L + 4), 3, C.white, a * 0.95, 'front');
+    disc(ctx, P0.x + Math.cos(ta) * (L + 2), P0.y + Math.sin(ta) * (L + 2), 2.2, C.white, a, 'front');
+  }
+}
+function mouseCursor(ctx, p, a) {
+  if (a <= 0) return;
+  ctx.save(); ctx.translate(p.x, p.y); ctx.globalAlpha = a; ctx.scale(1.1, 1.1);
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 17); ctx.lineTo(4.5, 13); ctx.lineTo(8, 20); ctx.lineTo(11, 18.5); ctx.lineTo(7.5, 12); ctx.lineTo(13, 12); ctx.closePath();
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#1b1d24'; ctx.lineWidth = 1.6; ctx.lineJoin = 'round'; ctx.stroke(); ctx.fill(); ctx.restore();
+}
+// ---------------------------------------------------------------- escena
+function scene(ctx, tt, v) {
+  const nw = isNew(v), REL = relOf(v);
+  const t = nw ? (tt < REL ? 0 : T0 + (tt - REL)) : tt;          // t = tiempo del disparo (cadena antigua de efectos)
+  const S = state(t, v);
+  const prep = nw ? easeOut(clamp(tt / CH)) : seg(t, 0.05, T0), rec = seg(t, T0, T0 + 0.15);
+  const tremble = nw && tt > CH && tt < REL ? 0.012 * Math.sin(tt * 70) : 0;
+  let sk = 0;
+  const trl = nw ? T0 + (tt - REL) : tt;                         // tiempo del disparo extendido (también negativo antes de soltar): mueve a los enemigos
+  const winOf = h => h.pierce ? [[h.tE, h.tE + 0.05], [h.tX, h.tX + 0.045]] : [[v.TB, v.TB + 0.05]];
+  const hitDark = h => framesOn && winOf(h).some(w => t >= w[0] && t < w[1]);
+  for (const h of v.hits) {
+    const tv = h.pierce ? h.tE : v.TB, hs = seg(t, tv, tv + 0.3), amp = h.pierce ? h.p.shake : (v.up && v.up.pow ? 7 : 4);
+    if (hs > 0 && hs < 1) sk += Math.sin(hs * 120) * (1 - hs) * amp;
+    if (h.p && h.p.fx === 'CH') { const h2 = seg(t, h.tX, h.tX + 0.3); if (h2 > 0 && h2 < 1) sk += Math.sin(h2 * 120) * (1 - h2) * h.p.shake2; }
+  }
+  const dark = v.hits.some(hitDark);
+  ctx.clearRect(0, 0, W, H);
+  ctx.save(); ctx.translate(sk, sk * 0.5); ground(ctx);
+
+  if (v.amber || v.mark === 'amber') swapAmber(true);
+  const echoes = v.up && v.up.kind === 'echo' ? [[0.045, 0.3], [0.09, 0.17]].map(([d, al]) => [state(t - d, v), al]) : [];
+  for (const [Se, al] of echoes) if (Se.alive) { ribbon(ctx, Se, s => 20 * Math.pow(1 - s, 0.9), C.cyan, al, 'back'); ribbon(ctx, Se, s => 9 * Math.pow(1 - s, 0.9), C.light, al * 1.5, 'back'); }
+  comet(ctx, t, 'back', S); muzzle(ctx, t, 'back', v.up); homingMark(ctx, t, 'back', v, S, trl);
+  if (nw) chargeFx(ctx, tt, REL, 'back', v.ch, v.up);
+  for (const h of v.hits) h.pierce ? PIERCE[h.p.fx](ctx, t, 'back', h, S) : impactAny(ctx, t, 'back', v.TB, h.ix, h.iy, h.iang, v.up);
+  player(ctx, 90, GROUND, 1, { lean: -prep * 0.12 + (t >= T0 ? 0.14 * (1 - rec) : 0), squash: prep * 0.05 - (t >= T0 ? 0.08 * (1 - rec) : 0) + tremble });
+  if (dark) { ctx.fillStyle = 'rgba(10,6,36,0.62)'; ctx.fillRect(-20, -20, W + 40, H + 40); }
+  for (const h of v.hits) {
+    const o = {};
+    if (h.pierce && h.p.split) o.split = 4.5 * Math.sin(Math.PI * seg(t, h.tE + 0.01, h.tX + 0.25));
+    o.solid = hitDark(h); if (h.up) o.up = h.up; if (h.p && h.p.fx === 'CH') o.flash2 = h.tX;
+    let ex = h.ex; if (h.pos) { const p = h.pos(trl); ex = p.x; o.cy = p.y; }
+    enemy(ctx, t, ex, h.pierce ? h.tE : v.TB, h.pierce ? h.p.knock : (v.up && v.up.pow ? 22 : 10), h.pierce ? h.p.flashLen : 0.22, o);
+  }
+  const mh = v.hits[0] && v.hits[0].mouse; if (nw && mh) mouseCursor(ctx, mh, Math.min(1, tt / 0.15) * (1 - seg(tt, REL, REL + 0.18)));
+  if (nw) chargeFx(ctx, tt, REL, 'front', v.ch, v.up); else charge(ctx, t, 'front');
+  for (const [Se, al] of echoes) if (Se.headAlive) { glow(ctx, Se.h.x, Se.h.y, 18, 'rgba(160,110,255,0.9)', al * 2); disc(ctx, Se.h.x, Se.h.y, 6, C.cyan, al * 2.2, 'front'); disc(ctx, Se.h.x, Se.h.y, 3, C.white, al * 2.4, 'front'); }
+  homingMark(ctx, t, 'front', v, S, trl); comet(ctx, t, 'front', S); muzzle(ctx, t, 'front', v.up);
+  for (const h of v.hits) h.pierce ? PIERCE[h.p.fx](ctx, t, 'front', h, S) : impactAny(ctx, t, 'front', v.TB, h.ix, h.iy, h.iang, v.up);
+  ctx.restore();
+  if (v.amber || v.mark === 'amber') swapAmber(false);
+}
+
+// ---------------------------------------------------------------- variantes
+const XEND = 508, EX1 = 400, EX2 = 540;
+const E2X = 520, E2UP = 130, CT = { x: 504, y: GROUND - 44 - E2UP + 8 }, CH_A2 = Math.atan2(CT.y - YM, CT.x - 392);
+const mk = (o) => {
+  const v = Object.assign({ hits: [] }, o);
+  if (o.homing) {
+    const hm = o.homing, H = simHoming(hm.T, Math.atan2(hm.aim.y - YM, hm.aim.x - X0));
+    Object.assign(v, { x: H.x, y: H.y, ang: H.ang, TB: H.TB });
+    v.hits = [{ ex: 0, pierce: false, pos: tr => hm.T(Math.min(tr, H.TB)), ix: H.end.x, iy: H.end.y, iang: H.end.a, mouse: hm.aim }];
+    return v;
+  }
+  if (o.chain) v.hits = [{ ex: EX1, pierce: true, p: o.up && o.up.pow ? { fx: 'CH', knock: 13, shake: 8, shake2: 9, flashLen: 0.3 } : { fx: 'CH', knock: 7, shake: 5, shake2: 6, flashLen: 0.3 }, tE: crossT(v, EX1 - 28), tA: 0.58, tX: 0.78, ang2: CH_A2, S1: { x: 392, y: YM } },
+                         { ex: E2X, up: E2UP, pierce: false, ix: CT.x, iy: CT.y, iang: CH_A2 }];
+  else v.hits = o.pierce ? [{ ex: EX1, pierce: true, p: o.pierce, tE: crossT(v, EX1 - 28), tX: crossT(v, EX1 + 28) }, { ex: EX2, pierce: false }]
+                    : [{ ex: EX2, pierce: false }];
+  return v;
+};
+const motionA = { TB:0.80, tailSpan:() => 0.23, scale:() => 1, x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.80), 1.25) };
+const pA = { fx:'A', flash:30, ring:50, crack:6, crackW:1.6, bodyGlow:0.25, exitRing:60, sparks:12, embers:0, knock:8, shake:3, flashLen:0.25 };
+const UPA = { kind: 'shock', pow: true, orb: 1.7, dens: 2, sat: 5, strands: 11, scale: 1.2 };
+const PROJ_SP = { kind: 'sp', taper: 1.3, wmul: 0.82, wob: 0.6 };
+const HM_T4 = t => ({ x: 550 + 25 * Math.sin(3 * t + 0.8), y: 95 + 18 * Math.sin(2.4 * t + 1.4) }), HM_AIM4 = { x: 512, y: 142 };
+const CHAIN_M = { TB: 0.98,
+  x: t => t < 0.58 ? X0 + (392 - X0) * Math.pow(seg(t, T0, 0.58), 1.5) : t < 0.78 ? 392 : 392 + (CT.x - 392) * easeOut(seg(t, 0.78, 0.98)),
+  y: t => t < 0.78 ? YM : YM + (CT.y - YM) * easeOut(seg(t, 0.78, 0.98)),
+  ang: t => t < 0.6 ? 0 : CH_A2 * easeOut(seg(t, 0.6, 0.76)) };
+const scenes = [
+  // ------------------------------------------------ GUARDADOS · los 4 ataques, cada uno en versión base y UPGRADE (Upgrade A: onda de choque de hebras)
+  mk({ tab:'saved', ch:'R1', title:'1 · Base', TB:0.77, tailSpan:() => 0.23, scale:() => 1,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.77), 1.35),
+    text:'Disparo base: carga con pulso, cometa detallado e impacto normal.' }),
+  mk({ tab:'saved', ch:'R1', title:'1 · Base · UPGRADE', TB:0.77, tailSpan:() => 0.34, scale:() => 1.45,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.77), 1.35), up:UPA,
+    text:'Carga con más partículas de colores intensos; cabeza mayor con anillo azul/violeta; onda de choque frontal, cola con capas oscuras y 14 hilos; impacto grande tipo suelo del picado, con temblor suave.' }),
+  mk(Object.assign({ tab:'saved', ch:'R1', chain:true, title:'2 · Ataque en cadena', tailSpan:() => 0.25, scale:() => 1,
+    text:'Llega al primer enemigo, impacta y se queda pegado: la energía se acumula y una aguja apunta al siguiente. Sale con fuerza en diagonal y termina con el impacto normal.' }, CHAIN_M)),
+  mk(Object.assign({ tab:'saved', ch:'R1', chain:true, title:'2 · Ataque en cadena · UPGRADE', up:UPA, text:'Mismo comportamiento con el upgrade: onda de choque, estela de hilos intensos y el primer golpe (llegada, pegado y salida) más grande, con más agujas en azul y morado.' }, CHAIN_M, { tailSpan:() => 0.34, scale:() => 1.45 })),
+  mk(Object.assign({ tab:'saved', ch:'R1', title:'3 · Perforación (perforador de lanza)', proj:PROJ_SP, pierce:{ fx:'P3', knock:10, shake:5, flashLen:0.1, frames:true },
+    text:'Punta de lanza que atraviesa enemigos: entrada y salida con agujas radiales e hilo largo; termina con el impacto normal en el último.' }, motionA, { tailSpan:() => 0.27 })),
+  mk(Object.assign({ tab:'saved', ch:'R1', title:'3 · Perforación · UPGRADE', proj:PROJ_SP, up:UPA, pierce:{ fx:'P3', knock:16, shake:8, flashLen:0.1, frames:true },
+    text:'La lanza con el upgrade: onda de choque, hilos intensos y halo oscuro; al atravesar, más agujas largas en azul/morado, hilo más grueso y ondas de entrada y salida.' }, motionA, { tailSpan:() => 0.34, scale:() => 1.45 })),
+  mk({ tab:'saved', ch:'R1', mark:'brackets', amber:true, title:'4 · Persecución (homing)', tailSpan:() => 0.25, scale:() => 1, homing:{ T:HM_T4, aim:HM_AIM4 },
+    text:'Cometa clásico en ámbar con esquinas de fijación sobre el enemigo marcado. Dispara hacia el cursor y gira hacia el enemigo más cercano a él.' }),
+  mk({ tab:'saved', ch:'R1', mark:'brackets', amber:true, title:'4 · Persecución (homing) · UPGRADE', tailSpan:() => 0.34, scale:() => 1.45, homing:{ T:HM_T4, aim:HM_AIM4 }, up:UPA,
+    text:'La persecución con el upgrade, toda en tonos ámbar/naranja: onda de choque, hilos intensos y el impacto grande con temblor suave.' }),
+  // ------------------------------------------------ EN CURSO · proyectil perforador (misma salida/entrada que la básica)
+  mk(Object.assign({ tab:'arc', title:'Proyectil · Aguja',
+    text:'La cabeza es una aguja de luz alargada con un plano cortante (lente vertical) delante. Cola muy fina, casi recta (ondulación reducida), más larga.',
+    proj:{ kind:'nd', taper:1.5, wmul:0.65, wob:0.3 }, pierce:{"fx":"P3","knock":10,"shake":5,"flashLen":0.1,"frames":true} }, motionA, { tailSpan:() => 0.3 })),
+  mk(Object.assign({ tab:'arc', title:'Proyectil · Cortante',
+    text:'Bola pequeña con pico delantero, hoja vertical justo detrás y plumas en V. La cola tiene el borde dentado (dientes que apuntan atrás) como una sierra afilada.',
+    proj:{ kind:'bl', taper:1.1, wmul:0.9, wob:0.5, saw:0.55 }, pierce:{"fx":"P3","knock":10,"shake":5,"flashLen":0.1,"frames":true} }, motionA)),
+  // ------------------------------------------------ EN CURSO · carga de siempre + «listo» (con el perforador de lanza)
+  mk(Object.assign({ tab:'arc', ch:'R1', title:'Listo 1 · Pulso',
+    text:'Misma carga de siempre (orbe pequeño que crece recibiendo partículas). Al llegar al máximo: onda corta y el orbe se hincha un instante; después el halo respira y sale una onda suave cada medio segundo.',
+    proj:{ kind:'sp', taper:1.3, wmul:0.82, wob:0.6 }, pierce:{ fx:'P3', knock:10, shake:5, flashLen:0.1, frames:true } }, motionA, { tailSpan:() => 0.27 })),
+  mk(Object.assign({ tab:'arc', ch:'R2', title:'Listo 2 · Arcos',
+    text:'Misma carga. Al llegar: onda corta; después seis arcos afilados giran alrededor del orbe en sentidos contrarios (blancos cerca, cian lejos), como un seguro que se ha cerrado.',
+    proj:{ kind:'sp', taper:1.3, wmul:0.82, wob:0.6 }, pierce:{ fx:'P3', knock:10, shake:5, flashLen:0.1, frames:true } }, motionA, { tailSpan:() => 0.27 })),
+  mk(Object.assign({ tab:'arc', ch:'R3', title:'Listo 3 · Chispas',
+    text:'Misma carga. Al llegar: onda corta; después el orbe emite agujas afiladas continuamente y un destello en cruz gira lento. Estado «inestable, a punto de saltar».',
+    proj:{ kind:'sp', taper:1.3, wmul:0.82, wob:0.6 }, pierce:{ fx:'P3', knock:10, shake:5, flashLen:0.1, frames:true } }, motionA, { tailSpan:() => 0.27 })),
+  mk(Object.assign({ tab:'arc', ch:'C1', title:'Carga 1 · Orbe que se condensa',
+    text:'Partículas en espiral se absorben en el orbe. Al llegar al máximo: onda + destello vertical afilado y un anillo orbital que gira en bucle mientras se mantiene. Sonido: barrido suave que sube, campanilla de listo y zumbido hasta soltar.',
+    proj:{ kind:'sp', taper:1.3, wmul:0.82, wob:0.6 }, pierce:{ fx:'P3', knock:10, shake:5, flashLen:0.1, frames:true } }, motionA, { tailSpan:() => 0.27 })),
+  mk(Object.assign({ tab:'arc', ch:'C2', title:'Carga 2 · La lanza se forja',
+    text:'Agujas de energía convergen y van cerrando la punta de lanza (la misma del proyectil: continuidad al soltar). Al máximo: chasquido con aguja larga hacia delante y la punta vibra con una aguja que centellea. Sonido: tensión metálica que sube, campanilla y zumbido.',
+    proj:{ kind:'sp', taper:1.3, wmul:0.82, wob:0.6 }, pierce:{ fx:'P3', knock:10, shake:5, flashLen:0.1, frames:true } }, motionA, { tailSpan:() => 0.27 })),
+  mk(Object.assign({ tab:'arc', ch:'C3', title:'Carga 3 · Anillos que colapsan',
+    text:'Tres anillos se cierran sobre el orbe en tres pulsos (3 «niveles»). Al máximo: anillo fijo y rayos inestables que se re-sortean. Sonido: tres escalones con tic, campanilla y zumbido.',
+    proj:{ kind:'sp', taper:1.3, wmul:0.82, wob:0.6 }, pierce:{ fx:'P3', knock:10, shake:5, flashLen:0.1, frames:true } }, motionA, { tailSpan:() => 0.27 })),
+  // ------------------------------------------------ EN CURSO · persecución con cometa clásico, 4 posiciones del enemigo
+  mk({ tab:'arc', ch:'R1', title:'Persecución · enemigo encima del player', tailSpan:() => 0.25, scale:() => 1,
+    homing:{ T:t => ({ x: 150 + 30 * Math.sin(3 * t), y: 105 + 14 * Math.sin(2.4 * t + 1) }), aim:{ x: 118, y: 150 } },
+    text:'Casi vertical: el cometa sube y corrige hacia el enemigo, que se desplaza un poco. El cursor (flecha blanca) está cerca del enemigo pero no encima: dispara hacia el cursor y gira al objetivo.' }),
+  mk({ tab:'arc', ch:'R1', title:'Persecución · enemigo delante del player', tailSpan:() => 0.25, scale:() => 1,
+    homing:{ T:t => ({ x: 470 + 35 * Math.sin(3 * t), y: GROUND - 52 + 10 * Math.sin(2.4 * t) }), aim:{ x: 438, y: 330 } },
+    text:'Mismo nivel del player: casi un disparo recto; la curva sólo se nota en la última parte al compensar el movimiento del enemigo.' }),
+  mk({ tab:'arc', ch:'R1', title:'Persecución · arriba a la derecha, cerca', tailSpan:() => 0.25, scale:() => 1,
+    homing:{ T:t => ({ x: 290 + 30 * Math.sin(3 * t), y: 175 + 16 * Math.sin(2.4 * t + 0.6) }), aim:{ x: 258, y: 218 } },
+    text:'Diagonal corta: poca distancia, así que la curva es breve y el enemigo casi no se mueve antes del impacto.' }),
+  // ------------------------------------------------ EN CURSO · marca común de «homing» (5 conceptos)
+  mk({ tab:'arc', ch:'R1', mark:'brackets', title:'Marca 1 · Esquinas de fijación (marca al enemigo)', tailSpan:() => 0.25, scale:() => 1,
+    homing:{ T:t => ({ x: 550 + 25 * Math.sin(3 * t + 0.8), y: 95 + 18 * Math.sin(2.4 * t + 1.4) }), aim:{ x: 512, y: 142 } },
+    text:'Al soltar, cuatro esquinas afiladas se cierran desde lejos sobre el enemigo fijado, con un destello, y se quedan girando levemente mientras lo persigue. Al impacto se contraen. Se lee de un vistazo qué enemigo está fijado.' }),
+  mk({ tab:'arc', ch:'R1', mark:'orbit', title:'Marca 2 · Anillos orbitales (marca al enemigo)', tailSpan:() => 0.25, scale:() => 1,
+    homing:{ T:t => ({ x: 550 + 25 * Math.sin(3 * t + 0.8), y: 95 + 18 * Math.sin(2.4 * t + 1.4) }), aim:{ x: 512, y: 142 } },
+    text:'Dos anillos finos de arcos afilados rodean al enemigo (la mitad de atrás por detrás de él, como volumen) y un nodo de luz orbita. Más sutil y más «mágico» que las esquinas; no tapa el cuerpo.' }),
+  mk({ tab:'arc', ch:'R1', mark:'thread', title:'Marca 3 · Hilo guía (sin marcar al enemigo)', tailSpan:() => 0.25, scale:() => 1,
+    homing:{ T:t => ({ x: 550 + 25 * Math.sin(3 * t + 0.8), y: 95 + 18 * Math.sin(2.4 * t + 1.4) }), aim:{ x: 512, y: 142 } },
+    text:'Un hilo fino sale de la cabeza y se curva hasta el enemigo, con cuentas de luz que viajan por él. Muestra la intención del giro. Se ve en cualquier proyectil sin tocar al enemigo.' }),
+  mk({ tab:'arc', ch:'R1', mark:'needle', title:'Marca 4 · Aguja brújula (sin marcar al enemigo)', tailSpan:() => 0.25, scale:() => 1,
+    homing:{ T:t => ({ x: 550 + 25 * Math.sin(3 * t + 0.8), y: 95 + 18 * Math.sin(2.4 * t + 1.4) }), aim:{ x: 512, y: 142 } },
+    text:'En la cabeza aparece una aguja que apunta siempre al objetivo; la cabeza del proyectil va girando detrás de ella. Muy compacta y legible incluso con muchos proyectiles en pantalla.' }),
+  mk({ tab:'arc', ch:'R1', mark:'amber', title:'Marca 5 · Color propio ámbar (sin marcar al enemigo)', tailSpan:() => 0.25, scale:() => 1,
+    homing:{ T:t => ({ x: 550 + 25 * Math.sin(3 * t + 0.8), y: 95 + 18 * Math.sin(2.4 * t + 1.4) }), aim:{ x: 512, y: 142 } },
+    text:'Todo el proyectil homing (carga, cola, destellos e impacto) cambia el cian/morado por ámbar/naranja: no se parece a Isaac y se distingue por color incluso en el rabillo del ojo.' }),
+  // ------------------------------------------------ EN CURSO · upgrade potente de la base (3 estilos de onda de choque) + referencia
+  mk({ tab:'arc', ch:'R1', title:'Upgrade B · Medias lunas', TB:0.77, tailSpan:() => 0.34, scale:() => 1.45,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.77), 1.35),
+    up:{ kind:'blade', pow:true, orb:1.7, dens:2, sat:5, scale:1.2 },
+    text:'Como tu referencia: siete medias lunas en capas (blanco, cian, azul, morado) envuelven la cabeza y salen cuentas moradas despedidas por las puntas. Misma cola oscura y misma carga potente. El impacto abre medias lunas hacia atrás con cuentas.' }),
+  mk({ tab:'arc', ch:'R1', title:'Upgrade C · Tormenta', TB:0.77, tailSpan:() => 0.34, scale:() => 1.45,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.77), 1.35),
+    up:{ kind:'storm', pow:true, orb:1.7, dens:2, sat:5, strands:7, scale:1.15 },
+    text:'Onda de choque más contenida (7 hebras) pero con rayos que saltan constantemente de la cola y de la cabeza (morado con núcleo blanco). Carga con rayitos inestables; el impacto se abre en una grieta de 8 rayos radiales. El más eléctrico y agresivo.' }),
+  mk({ tab:'arc', ch:'R1', title:'Upgrade 1 · Más grande y denso', TB:0.77, tailSpan:() => 0.3, scale:() => 1.3,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.77), 1.35),
+    up:{ kind:'big', orb:1.3, dens:1.7, sat:5 },
+    text:'Todo escala: orbe de carga, cabeza, cola más ancha, 5 satélites en vez de 3, el doble de llamitas y chispas; el impacto con flash, onda y astillas más grandes. Lectura inmediata de «más potente», pero sin forma nueva.' }),
+  mk({ tab:'arc', ch:'R1', title:'Upgrade 2 · Corona', TB:0.77, tailSpan:() => 0.25, scale:() => 1.1,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.77), 1.35),
+    up:{ kind:'corona', orb:1.1, dens:1.2 },
+    text:'Mismo cometa con una corona de 10 agujas que giran alrededor de la cabeza y un aro fino. El impacto añade una segunda onda grande y agujas radiales largas.' }),
+  mk({ tab:'arc', ch:'R1', title:'Upgrade 3 · Cola trenzada', TB:0.77, tailSpan:() => 0.3, scale:() => 1.1,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.77), 1.35),
+    up:{ kind:'braid', orb:1.1, dens:1.2 },
+    text:'Dos hilos se enroscan en el eje de la cola (por delante y por detrás): vuelo más rico y con volumen. El impacto abre dos arcos afilados que giran.' }),
+  mk({ tab:'arc', ch:'R1', title:'Upgrade 4 · Brasas', TB:0.77, tailSpan:() => 0.34, scale:() => 1.1,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.77), 1.35),
+    up:{ kind:'embers', orb:1.1, dens:1.2 },
+    text:'Cola algo más larga y brasas que se quedan en el aire durante el vuelo, caen y se apagan. El impacto lanza brasas que caen durante casi un segundo: el efecto dura más que el golpe.' }),
+  mk({ tab:'arc', ch:'R1', title:'Upgrade 5 · Eco', TB:0.77, tailSpan:() => 0.25, scale:() => 1.1,
+    x: t => X0 + (XEND - X0) * Math.pow(seg(t, T0, 0.77), 1.35),
+    up:{ kind:'echo', orb:1.1, dens:1.2 },
+    text:'Dos copias fantasma del cometa van un instante por detrás (como un eco) y el impacto se repite más pequeño tras un momento: «golpe doble» visual.' }),
+  // ------------------------------------------------ ARCHIVO · perforaciones descartadas (por si se mezclan piezas)
+  mk(Object.assign({ tab:'arc', title:'Perforación · versión anterior (A)',
+    text:'Perforación aprobada antes de afilarla.', pierce:pA }, motionA)),
+  mk(Object.assign({ tab:'arc', title:'Perforación · Cono',
+    text:'Lente de entrada, cono de luz morada dentro del cuerpo y chispa afilada de salida.',
+    pierce:{ fx:'P1', knock:8, shake:3, flashLen:0.15 } }, motionA)),
+  mk(Object.assign({ tab:'arc', title:'Perforación · Corte',
+    text:'Tajo horizontal que parte el cuerpo un instante.',
+    pierce:{ fx:'P2', knock:5, shake:3, flashLen:0.12, split:true } }, motionA)),
+];
+
+// ---------------------------------------------------------------- pestañas y paneles con barra de tiempo
+let tab = 'saved';
+const grids = { saved: document.getElementById('grid-saved'), wip: document.getElementById('grid-wip'), arc: document.getElementById('grid-arc'), snd: document.getElementById('grid-snd') };
+document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => {
+  tab = b.dataset.tab;
+  document.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('on', x === b));
+  for (const k in grids) grids[k].style.display = k === tab ? '' : 'none';
+});
+const views = scenes.map(s => {
+  const sec = document.createElement('section');
+  sec.innerHTML = `<h2>${s.title}</h2><p>${s.text}</p>`;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; sec.appendChild(cv);
+  const bar = document.createElement('div'); bar.className = 'bar';
+  const btn = document.createElement('button'), back = document.createElement('button'), fwd = document.createElement('button');
+  const sl = document.createElement('input'); sl.type = 'range'; sl.min = 0; sl.max = 1000; sl.value = 0;
+  const tm = document.createElement('span'); tm.className = 'tm';
+  btn.textContent = 'Pausa'; back.textContent = '◀'; fwd.textContent = '▶';
+  const spk = document.createElement('button'); spk.textContent = '🔊'; spk.title = 'Oír este clip (sólo uno a la vez)';
+  bar.append(btn, back, sl, fwd, tm, spk); sec.appendChild(bar); grids[s.tab].appendChild(sec);
+  const v = { s, ctx: cv.getContext('2d'), t: 0, playing: true, sl, btn, tm, spk, audio: false };
+  const setPlay = p => { v.playing = p; btn.textContent = p ? 'Pausa' : 'Seguir'; if (!p && AC) stopHum(); };
+  v.setPlay = setPlay;
+  btn.onclick = () => setPlay(!v.playing);
+  sl.oninput = () => { setPlay(false); v.t = sl.value / 1000 * totalOf(s); };
+  back.onclick = () => { setPlay(false); v.t = Math.max(0, v.t - 0.01); };
+  fwd.onclick = () => { setPlay(false); v.t = Math.min(totalOf(s), v.t + 0.01); };
+  spk.onclick = () => { const on = !v.audio; views.forEach(x => { x.audio = false; x.spk.classList.remove('on'); }); v.audio = on; spk.classList.toggle('on', on); if (on) { document.getElementById('snd').checked = true; soundOn = true; audioInit(); } };
+  return v;
+});
+let allPaused = false;
+document.getElementById('pause').onclick = e => {
+  allPaused = !allPaused; e.target.textContent = allPaused ? 'Seguir todo' : 'Pausa todo';
+  views.forEach(v => v.setPlay(!allPaused));
+};
+
+// ---------------------------------------------------------------- pestaña «Sonidos»: escuchar cada pieza y la secuencia completa
+{
+  const labEl = document.getElementById('grid-snd');
+  const card = (title, desc, obj, play, extra) => {
+    const sec = document.createElement('section'); sec.innerHTML = '<h2>' + title + '</h2><p>' + desc + '</p>';
+    const row = document.createElement('div'); row.className = 'lab'; sec.appendChild(row);
+    for (const key of Object.keys(obj)) { const b = document.createElement('button'); b.textContent = '▶ ' + obj[key].name; b.onclick = () => { audioInit(); play(key); }; row.appendChild(b); }
+    if (extra) { const b = document.createElement('button'); b.textContent = extra[0]; b.onclick = extra[1]; row.appendChild(b); }
+    labEl.appendChild(sec);
+  };
+  card('Carga', 'Dura lo que la animación (~0,5 s) mientras el orbe crece y recibe partículas.', CHV, key => CHV[key].fn(1, CH - 0.04));
+  card('Listo', 'Se oye al terminar de cargar; después sigue el zumbido de mantener (el que gustó, sin cambios) hasta que sueltas o paras.', RDV, key => RDV[key].fn(1), ['■ parar zumbido', () => { if (AC) stopHum(); }]);
+  card('Cadena · primer golpe', 'Llega, impacta y se pega (tensión sostenida ~0,25 s) y luego sale con fuerza. Sustituye al impacto seco sólo en este ataque.', CHN, key => { CHN[key].stick(1, 0.25); setTimeout(() => { if (AC) CHN[key].out(1); }, 250); });
+  card('Disparo (soltar)', 'Al soltar el botón: sale el cometa. Algunas variantes barren de izquierda a derecha (mejor con auriculares).', RLV, key => RLV[key].fn(1));
+}
+
+const lab = document.getElementById('grid-snd');
+const CATS = [['pierceIn', 'Perforación · entrada', 'Al atravesar el cuerpo del primer enemigo.'],
+              ['pierceOut', 'Perforación · salida', 'Al salir por el otro lado.'],
+              ['impact', 'Impacto final', 'En el último enemigo. Aquí va la fuerza.']];
+const labBtn = (parent, text, fn) => { const b = document.createElement('button'); b.textContent = text; b.onclick = () => { audioInit(); fn(); }; parent.appendChild(b); };
+for (const [id, title, desc] of CATS) {
+  const sec = document.createElement('section'); sec.innerHTML = `<h2>${title}</h2><p>${desc}</p>`;
+  const row = document.createElement('div'); row.className = 'lab'; sec.appendChild(row);
+  for (const key of ['old', 'A', 'B', 'C']) labBtn(row, '▶ ' + SETS[key].name, () => SETS[key][id](1));
+  lab.appendChild(sec);
+}
+{
+  const sec = document.createElement('section'); sec.innerHTML = '<h2>Secuencia completa</h2><p>Carga → listo → mantener → soltar → perforación → impacto, a velocidad real.</p>';
+  const row = document.createElement('div'); row.className = 'lab'; sec.appendChild(row);
+  const ref = scenes.find(s => s.tab === 'saved' && s.proj), h0 = ref.hits[0], rel = CH + 0.6;
+  for (const key of ['old', 'A', 'B', 'C']) labBtn(row, '▶ ' + SETS[key].name, () => {
+    const prev = curSet; curSet = key;
+    const at = (sec, fn) => setTimeout(() => { if (AC) fn(); }, sec * 1000);
+    SFX.charge('R1', 1, CH - 0.04);
+    at(CH, () => SFX.ready(1)); at(rel, () => SFX.release(1));
+    at(rel + h0.tE - T0, () => SFX.pierceIn(1)); at(rel + h0.tX - T0, () => SFX.pierceOut(1)); at(rel + ref.TB - T0, () => SFX.impact(1));
+    setTimeout(() => { curSet = prev; }, (rel + 1.6) * 1000);
+  });
+  lab.appendChild(sec);
+}
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  for (const v of views) {
+    if (v.s.tab !== tab) continue;
+    const total = totalOf(v.s);
+    if (v.playing) {
+      const prev = v.t; v.t += dt * speed;
+      if (v.t >= total) { v.t = 0; if (AC) stopHum(); }
+      else if (soundOn && v.audio && AC) { const k = Math.min(4, 1 / speed); for (const e of eventsOf(v.s)) if (prev < e.t && e.t <= v.t) e.f(k); }
+      v.sl.value = v.t / total * 1000;
+    }
+    v.tm.textContent = v.t.toFixed(2) + 's';
+    scene(v.ctx, v.t, v.s);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -63,3 +63,17 @@ hechos sólo de efectos, sin sprite.
 | Azul profundo | `0.11, 0.36, 0.86` |
 | Morado (resplandor / estela) | `0.46, 0.22, 0.86` |
 | Polvo (sólo impacto de suelo) | `0.85, 0.8, 0.71` · oscuro `0.72, 0.65, 0.55` |
+
+## Página de estados del ataque a distancia (`docs/bocetos/ataque-cometa-estados.html`)
+Evolución de la plantilla para el ataque del jugador (cometa). Un solo `.html` con pestañas:
+**✔ Guardados** (lo aprobado: 4 ataques — Base, Cadena, Perforación, Persecución — cada uno en versión base y UPGRADE),
+**🛠 En curso** (sólo la ronda actual; al empezar otra, mover lo anterior a Guardados o Archivo), **📁 Archivo** (descartes) y
+**🔊 Sonidos** (síntesis WebAudio para elegir carácter: carga, listo, disparo, impactos, primer golpe de la cadena).
+- Cada clip tiene barra de tiempo (rebobinar, pasos ◀ ▶), línea de tiempo carga → «listo» (en bucle, ajustable) → soltar.
+- Interruptores de cabecera: velocidad, ver capas, espera en «listo», impact frames, sonido y un selector por pieza de sonido.
+- Los efectos se definen por parámetros (`up` = upgrade, `mark`/`amber` = homing, `proj` = forma del proyectil), no por copia de código.
+- Decisiones tomadas: carga = orbe pequeño que recibe partículas + «listo» con pulso; perforador = punta de lanza; homing = esquinas de
+  fijación + color ámbar; upgrade = «Upgrade A» (onda de choque de hebras, cola con capas oscuras y hilos intensos, impacto compacto
+  estilo suelo del picado con temblor suave); sonidos: carga C turbina, listo A descarga seca, disparo A láser grave, impactos B energía eléctrica.
+- Trampas conocidas: el `rand(seed)` del boceto debe mezclar la semilla (la primera tirada con semilla pequeña era ~0 y alineaba partículas);
+  las ondas de choque van enteras por delante (no partidas detrás/delante del enemigo); las estelas nacen en el centro y acaban en punta.

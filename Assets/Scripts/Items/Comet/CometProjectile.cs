@@ -29,6 +29,9 @@ namespace RedMagic.Items
     public sealed class CometProjectile : MonoBehaviour, IPooled
     {
         private const int GroundMask = 1 << 6;
+
+        /// <summary>Homing: diferencia de altura (unidades) por debajo de la cual se considera «a la misma altura».</summary>
+        private const float SameHeight = 1.5f;
         private static readonly RaycastHit2D[] Hits = new RaycastHit2D[24];
         private static readonly Collider2D[] Overlaps = new Collider2D[48];
         private static Pool<CometProjectile> _pool;
@@ -49,6 +52,7 @@ namespace RedMagic.Items
         private readonly HashSet<Health> _hit = new HashSet<Health>();
 
         private Health _target;               // homing / siguiente de la cadena
+        private int _turnSign;                // homing: sentido de giro decidido cuando el objetivo queda detrás (0 = libre)
         private Collider2D _targetBody;
         private Collider2D _insideBody;       // perforación: cuerpo que estamos cruzando (impact frame al salir)
         private Health _insideHealth;
@@ -99,6 +103,7 @@ namespace RedMagic.Items
             if (settings.aimAtCursor && cursor.HasValue && (cursor.Value - _pos).sqrMagnitude > 0.01f) _dir = (cursor.Value - _pos).normalized;
             _hit.Clear();
             _target = null; _targetBody = null;
+            _turnSign = 0;
             _insideBody = null; _insideHealth = null;
             _stickTo = null; _chainFx = null;
 
@@ -227,9 +232,27 @@ namespace RedMagic.Items
                 if (_target == null) return;
             }
 
-            Vector2 desired = ((Vector2)_targetBody.bounds.center - _pos).normalized;
+            Vector2 toTarget = (Vector2)_targetBody.bounds.center - _pos;
+            Vector2 desired = toTarget.normalized;
             float rate = homing ? _s.homingTurnRate : 720f;
-            _dir = ((Vector2)Vector3.RotateTowards(_dir, desired, rate * Mathf.Deg2Rad * dt, 0f)).normalized;
+            float step = rate * dt;
+            float angle = Vector2.SignedAngle(_dir, desired);
+
+            // Objetivo casi justo detrás y a una altura parecida: el giro más corto es ambiguo y a veces
+            // bajaba contra el suelo. Se decide una vez girar hacia ARRIBA y se mantiene hasta encararlo.
+            if (homing && Mathf.Abs(angle) > 120f && Mathf.Abs(toTarget.y) < SameHeight)
+            {
+                if (_turnSign == 0) _turnSign = _dir.x < 0f ? -1 : 1;   // girar con este signo sube la punta
+            }
+            else if (Mathf.Abs(angle) < 90f) _turnSign = 0;
+
+            if (_turnSign != 0)
+            {
+                float turn = Mathf.Min(step, Mathf.Abs(angle)) * _turnSign;
+                _dir = ((Vector2)(Quaternion.Euler(0f, 0f, turn) * _dir)).normalized;
+                return;
+            }
+            _dir = ((Vector2)Vector3.RotateTowards(_dir, desired, step * Mathf.Deg2Rad, 0f)).normalized;
         }
 
         /// <summary>Devuelve true si el cometa deja de volar (se pega o termina).</summary>

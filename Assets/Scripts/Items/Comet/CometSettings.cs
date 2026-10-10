@@ -71,6 +71,9 @@ namespace RedMagic.Items
         [Min(0f)] public float homingTurnRate = 320f;
 
         [Header("General")]
+        [Tooltip("Mejora: el cometa sale hacia el cursor. Apagado (base) = recto hacia donde mira el jugador.")]
+        public bool aimAtCursor;
+
         [Tooltip("Segundos desde que se suelta el botón hasta que sale el cometa (el orbe ya está cargado; " +
                  "las demás armas esperan al gesto, WeaponUser ▸ Release Delay).")]
         [Min(0f)] public float fireDelay = 0.06f;

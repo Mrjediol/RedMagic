@@ -112,6 +112,7 @@ namespace RedMagic.Items
             GUILayout.Space(10 * k);
             GUILayout.Label("General:", _label);
             s.impactFrames = Toggle("Impact frames", s.impactFrames);
+            s.aimAtCursor = Toggle("Apuntar con el ratón (mejora)", s.aimAtCursor);
             s.upgraded = Toggle("Upgrade", s.upgraded);
             var st = s.Stats;
             GUILayout.Label($"Daño ×{st.damageMultiplier:0.##} · Velocidad ×{st.speedMultiplier:0.##} · Tamaño ×{st.sizeScale:0.##}", _label);

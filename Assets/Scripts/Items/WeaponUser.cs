@@ -265,7 +265,9 @@ namespace RedMagic.Items
 
             // Se soltó el botón: dispara si llegó al mínimo y no hay cooldown; si no, se cancela.
             float frac = Mathf.Clamp01(_charge / weapon.Shot.chargeTime);
-            bool canFire = frac >= weapon.Shot.minChargeToFire && _cooldownTimer <= 0f;
+            // El cometa sólo sale con la carga completa («listo»); soltar antes la cancela.
+            float minCharge = weapon.IsComet ? 1f : weapon.Shot.minChargeToFire;
+            bool canFire = frac >= minCharge && _cooldownTimer <= 0f;
 
             if (canFire && _cometCharge != null)
             {

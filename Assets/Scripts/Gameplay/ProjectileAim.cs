@@ -90,6 +90,9 @@ namespace RedMagic.Gameplay
             if (mouse == null || camera == null) return null;
 
             Vector3 screen = mouse.position.ReadValue();
+            // El Input System puede dar NaN (ventana sin foco, cambio de tamaño): convertirlo saca
+            // "Screen position out of view frustum" en la consola.
+            if (float.IsNaN(screen.x) || float.IsNaN(screen.y) || float.IsInfinity(screen.x) || float.IsInfinity(screen.y)) return null;
             screen.z = Mathf.Abs(camera.transform.position.z);
             return camera.ScreenToWorldPoint(screen);
         }

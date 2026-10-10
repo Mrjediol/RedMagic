@@ -93,7 +93,10 @@ namespace RedMagic.Items
             }
 
             _pos = ctx.Muzzle(shot.muzzleOffset);
-            _dir = ctx.Aim;
+            // base: recto hacia donde mira el jugador; con la mejora «apuntar con el ratón», hacia el cursor
+            Vector2? cursor = ProjectileAim.MouseWorld();
+            _dir = new Vector2(ctx.Facing, 0f);
+            if (settings.aimAtCursor && cursor.HasValue && (cursor.Value - _pos).sqrMagnitude > 0.01f) _dir = (cursor.Value - _pos).normalized;
             _hit.Clear();
             _target = null; _targetBody = null;
             _insideBody = null; _insideHealth = null;
@@ -101,12 +104,10 @@ namespace RedMagic.Items
 
             if (homing)
             {
-                Vector2? mouse = ProjectileAim.MouseWorld();
-                Vector2 seek = mouse ?? _pos + _dir * 6f;
+                // fija al enemigo más cercano al cursor; sale recto (o hacia el cursor con la mejora) y gira hacia él
+                Vector2 seek = cursor ?? _pos + _dir * 6f;
                 _target = FindNearest(seek, settings.homingCursorRadius, out _targetBody);
                 if (_target == null) _target = FindNearest(_pos, ProjectileAim.NearestEnemySearchRadius, out _targetBody);
-                if (mouse.HasValue && (mouse.Value - _pos).sqrMagnitude > 0.01f) _dir = (mouse.Value - _pos).normalized;
-                else if (_targetBody != null) _dir = ((Vector2)_targetBody.bounds.center - _pos).normalized;
             }
 
             _state = State.Fly;

@@ -113,10 +113,10 @@ Inspector wiring.
   `Resources/Items/Weapons/Weapon_Cometa.asset` (**Tools ▸ RedMagic ▸ Items ▸ Cometa · Crear o actualizar arma**, no pisa lo
   afinado). Todo lo suyo va en `WeaponDefinition ▸ Comet` (`CometSettings`): `behaviour` (uno solo: Base / Chain + `chainCount`,
   `chainRange`, `chainStickTime` / Pierce + `pierceCount` / Homing + `homingCursorRadius`, `homingTurnRate`), `impactFrames`,
-  `upgraded` y los números de cada versión (`baseStats` / `upgradeStats`: daño, velocidad, tamaño, empuje, temblor, relativos al
+  `aimAtCursor` (mejora: sale hacia el cursor; base = recto hacia donde mira, el `aimMode` del arma no cuenta), `upgraded` y los números de cada versión (`baseStats` / `upgradeStats`: daño, velocidad, tamaño, empuje, temblor, relativos al
   arma), materiales y sus sonidos propios. `ShotResolver.Fire` entrega a `CometProjectile` (pooled, se mueve solo con CircleCast;
   daño por `PlayerHit.Deal`; Ground lo para). Carga: `WeaponUser` usa `CometChargeFx` en vez del cuadrado de carga (orbe que crece
-  + «listo» con pulso + `readySound`/`holdLoopSound`); al soltar el orbe queda «pendiente» hasta que sale el disparo
+  + «listo» con pulso + `readySound`/`holdLoopSound`); sólo dispara con la carga completa (soltar antes cancela); al soltar el orbe queda «pendiente» hasta que sale el disparo
   (`CometSettings.fireDelay`, no el `releaseDelay` del gesto). Dibujo: `CometBodyFx` (cola por historial de posiciones, cabeza
   orbe / lanza del perforador, onda de choque y capas oscuras del upgrade, esquinas de fijación del homing), `CometHitFx`
   (impacto normal / potente, perforación, cadena pegada y su salida), `CometDraw` (piezas y paletas: `CometPalette.Normal`, y

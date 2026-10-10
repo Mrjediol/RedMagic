@@ -46,7 +46,7 @@ MonoBehaviour:
     chargeVfxPrefab: {fileID: 0}
     faceDirection: 0
     facingAxis: 0
-    aimMode: 1
+    aimMode: 0
     meleeRange: 1.2
     meleeArc: 90
     chargeTime: 0.55

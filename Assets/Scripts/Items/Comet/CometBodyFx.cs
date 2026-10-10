@@ -341,11 +341,7 @@ namespace RedMagic.Items
                 canvas.Disc(h + (u * ox - n * oy) * px, (1.8f + sy * 0.4f) * sc * px, Fade(k % 2 == 1 ? Pal.light : Pal.white, 0.95f));
             }
 
-            // destello alargado en el sentido del vuelo + anillo que gira
-            _p.Clear(); _w.Clear(); _c.Clear();
-            _p.Add(h - u * (6f * px)); _w.Add(3f * sc * px); _c.Add(Fade(Pal.white, 0.8f));
-            _p.Add(h + u * (38f * sc * px)); _w.Add(3f * sc * px); _c.Add(Fade(Pal.white, 0f));
-            _front.StrokeVar(_p, _w, _c);
+            // anillo que gira
             _front.EllipseArc(h, 15f * sc * px, 5f * sc * px, _ang + t * 6f, 0f, Mathf.PI * 2f, 1.5f * px, Fade(Pal.white, 0.7f));
 
             float kR = 8.5f * sc * (1f + 0.08f * Mathf.Sin(t * 50f)) * px;

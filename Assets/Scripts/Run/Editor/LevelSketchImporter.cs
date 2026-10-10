@@ -143,7 +143,7 @@ namespace RedMagic.RunEditor
             var bg = new GameObject("BG");
             bg.transform.SetParent(parent, false);
             bg.transform.localPosition = new Vector3(w * 0.5f, h * 0.5f, 0f);
-            bg.transform.localScale = new Vector3(w, h, 1f);
+            bg.transform.localScale = new Vector3(w / 4f, h / 4f, 1f); // el sprite blanco mide 4x4 unidades
             var sr = bg.AddComponent<SpriteRenderer>();
             sr.sprite = GetOrCreateWhiteSprite();
             sr.color = new Color(0.063f, 0.098f, 0.106f);

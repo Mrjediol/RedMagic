@@ -21,6 +21,12 @@ namespace RedMagic.RunEditor
         [Min(0.5f), Tooltip("Cuántas unidades (celdas) cubre una repetición de la textura de relleno.")]
         public float fillTileUnits = 4f;
 
+        [Tooltip("Multiplica el color del relleno. Oscurecerlo hace que los bordes destaquen.")]
+        public Color fillTint = Color.white;
+
+        [Tooltip("Placa de fondo que se ve a través del aire; se estira al rectángulo del nivel. Vacío = color liso.")]
+        public Sprite background;
+
         [Tooltip("Borde de los suelos (aire encima del terreno). Tira horizontal, exterior arriba.")]
         public Sprite floorEdge;
 

@@ -20,6 +20,10 @@ MonoBehaviour:
     width: 390
     height: 600
   fillTileUnits: 4
+  fillTint: {r: 0.3, g: 0.4, b: 0.62, a: 1}
+  makeBackground: 1
+  backgroundWidth: 116
+  backgroundBrightness: 0.5
   floor:
     rect:
       x: 3760
@@ -36,11 +40,11 @@ MonoBehaviour:
     air: 1
   wall:
     rect:
-      x: 480
-      y: 680
-      width: 200
-      height: 620
-    air: 3
+      x: 40
+      y: 640
+      width: 120
+      height: 660
+    air: 2
   blendPixels: 100
-  stripPixelsPerUnit: 240
+  stripPixelsPerUnit: 170
   edgeOverhang: 0.1

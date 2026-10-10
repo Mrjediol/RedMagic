@@ -92,7 +92,7 @@ namespace RedMagic.RunEditor
             var root = new GameObject(name);
             try
             {
-                BuildBackground(root.transform, w, h);
+                BuildBackground(root.transform, w, h, kit);
                 BuildFill(root.transform, rects, h, kit, folder, name);
                 BuildEdges(root.transform, solid, w, h, kit);
                 BuildCollision(root.transform, rects, h);
@@ -137,16 +137,26 @@ namespace RedMagic.RunEditor
             return true;
         }
 
-        private static void BuildBackground(Transform parent, int w, int h)
+        private static void BuildBackground(Transform parent, int w, int h, LevelKit kit)
         {
             // "BG" lo lee CameraBounds: su renderer define el rectángulo al que se limita la cámara.
             var bg = new GameObject("BG");
             bg.transform.SetParent(parent, false);
             bg.transform.localPosition = new Vector3(w * 0.5f, h * 0.5f, 0f);
-            bg.transform.localScale = new Vector3(w / 4f, h / 4f, 1f); // el sprite blanco mide 4x4 unidades
             var sr = bg.AddComponent<SpriteRenderer>();
-            sr.sprite = GetOrCreateWhiteSprite();
-            sr.color = new Color(0.063f, 0.098f, 0.106f);
+            if (kit.background != null)
+            {
+                // Se estira al rectángulo del nivel: es una placa borrosa y oscura, no aguanta mirarla de cerca.
+                sr.sprite = kit.background;
+                var size = kit.background.bounds.size;
+                bg.transform.localScale = new Vector3(w / size.x, h / size.y, 1f);
+            }
+            else
+            {
+                sr.sprite = GetOrCreateWhiteSprite();
+                bg.transform.localScale = new Vector3(w / 4f, h / 4f, 1f); // el sprite blanco mide 4x4 unidades
+                sr.color = new Color(0.063f, 0.098f, 0.106f);
+            }
             sr.sortingOrder = BackgroundOrder;
         }
 
@@ -167,7 +177,7 @@ namespace RedMagic.RunEditor
                 verts.Add(new Vector3(x1, y1)); verts.Add(new Vector3(x1, y0));
                 uvs.Add(new Vector2(x0, y0) * inv); uvs.Add(new Vector2(x0, y1) * inv);
                 uvs.Add(new Vector2(x1, y1) * inv); uvs.Add(new Vector2(x1, y0) * inv);
-                for (int k = 0; k < 4; k++) cols.Add(Color.white);
+                for (int k = 0; k < 4; k++) cols.Add(kit.fillTint);
                 tris.AddRange(new[] { i, i + 1, i + 2, i, i + 2, i + 3 });
             }
 
@@ -196,22 +206,42 @@ namespace RedMagic.RunEditor
         {
             var edges = new GameObject("Edges");
             edges.transform.SetParent(parent, false);
+            float o = kit.edgeOverhang;
 
+            // Aire dentro del mapa (fuera del mapa no cuenta: ahí no hay tira ni esquina).
+            bool Air(int y, int x) => x >= 0 && x < w && y >= 0 && y < h && !solid[y, x];
+
+            // En una esquina convexa (el vecino del extremo también es aire) la tira se alarga
+            // 'o' para que su pared vecina la cierre sin dejar muesca.
             // Suelos (aire encima) y techos (aire debajo): corridas horizontales por fila.
             for (int y = 0; y < h; y++)
             {
-                RunsAlong(w, x => solid[y, x] && y > 0 && !solid[y - 1, x],
-                    (start, len) => PlaceStrip(edges.transform, kit, Facing.Up, start, h - y, len));
-                RunsAlong(w, x => solid[y, x] && y < h - 1 && !solid[y + 1, x],
-                    (start, len) => PlaceStrip(edges.transform, kit, Facing.Down, start, h - y - 1, len));
+                int row = y;
+                RunsAlong(w, x => solid[row, x] && Air(row - 1, x), (start, len) =>
+                {
+                    float lo = Air(row, start - 1) ? o : 0f, hi = Air(row, start + len) ? o : 0f;
+                    PlaceStrip(edges.transform, kit, Facing.Up, start - lo, h - row, len + lo + hi);
+                });
+                RunsAlong(w, x => solid[row, x] && Air(row + 1, x), (start, len) =>
+                {
+                    float lo = Air(row, start - 1) ? o : 0f, hi = Air(row, start + len) ? o : 0f;
+                    PlaceStrip(edges.transform, kit, Facing.Down, start - lo, h - row - 1, len + lo + hi);
+                });
             }
             // Paredes: aire a la izquierda / derecha, corridas verticales por columna.
             for (int x = 0; x < w; x++)
             {
-                RunsAlong(h, y => solid[y, x] && x > 0 && !solid[y, x - 1],
-                    (start, len) => PlaceStrip(edges.transform, kit, Facing.Left, x, h - start - len, len));
-                RunsAlong(h, y => solid[y, x] && x < w - 1 && !solid[y, x + 1],
-                    (start, len) => PlaceStrip(edges.transform, kit, Facing.Right, x + 1, h - start - len, len));
+                int col = x;
+                RunsAlong(h, y => solid[y, col] && Air(y, col - 1), (start, len) =>
+                {
+                    float lo = Air(start + len, col) ? o : 0f, hi = Air(start - 1, col) ? o : 0f;
+                    PlaceStrip(edges.transform, kit, Facing.Left, col, h - start - len - lo, len + lo + hi);
+                });
+                RunsAlong(h, y => solid[y, col] && Air(y, col + 1), (start, len) =>
+                {
+                    float lo = Air(start + len, col) ? o : 0f, hi = Air(start - 1, col) ? o : 0f;
+                    PlaceStrip(edges.transform, kit, Facing.Right, col + 1, h - start - len - lo, len + lo + hi);
+                });
             }
         }
 
@@ -232,7 +262,7 @@ namespace RedMagic.RunEditor
         /// Up/Down, a = x inicial y b = y de la línea del borde; para Left/Right, a = x de la línea
         /// del borde y b = y inicial (la más baja) de la corrida.
         /// </summary>
-        private static void PlaceStrip(Transform parent, LevelKit kit, Facing facing, float a, float b, int len)
+        private static void PlaceStrip(Transform parent, LevelKit kit, Facing facing, float a, float b, float len)
         {
             var sprite = facing switch
             {
@@ -264,7 +294,7 @@ namespace RedMagic.RunEditor
             sr.drawMode = SpriteDrawMode.Tiled;
             sr.size = new Vector2(len, t);
             sr.tileMode = SpriteTileMode.Continuous;
-            sr.sortingOrder = EdgeOrder;
+            sr.sortingOrder = EdgeOrder + facing switch { Facing.Down => 0, Facing.Left or Facing.Right => 1, _ => 2 };
         }
 
         private static void BuildCollision(Transform parent, List<Rect2Int> rects, int h)

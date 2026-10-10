@@ -37,6 +37,14 @@ namespace RedMagic.RunEditor
         [Tooltip("Recorte del mapa; se hace repetible en horizontal y vertical.")]
         public RectInt fill;
         [Min(0.5f)] public float fillTileUnits = 4f;
+        [Tooltip("Multiplica el color del relleno para oscurecerlo y que los bordes destaquen.")]
+        public Color fillTint = new Color(0.45f, 0.55f, 0.8f, 1f);
+
+        [Header("Fondo (a través del aire)")]
+        [Tooltip("Se saca del mapa entero, reducido y oscurecido hasta quedar como una cueva lejana y borrosa.")]
+        public bool makeBackground = true;
+        [Min(16)] public int backgroundWidth = 464;
+        [Range(0.1f, 1f)] public float backgroundBrightness = 0.55f;
 
         [Header("Tiras de borde")]
         public Strip floor = new Strip { air = AirSide.Up };
@@ -47,7 +55,7 @@ namespace RedMagic.RunEditor
         [Min(0), Tooltip("Píxeles que se mezclan en la junta para que la tira encaje consigo misma.")]
         public int blendPixels = 100;
         [Min(1), Tooltip("Píxeles de la tira por unidad de mundo. El grosor del borde = alto / este valor.")]
-        public int stripPixelsPerUnit = 240;
+        public int stripPixelsPerUnit = 170;
         [Min(0f)] public float edgeOverhang = 0.1f;
 
         // ------------------------------------------------------------------ generación
@@ -71,6 +79,8 @@ namespace RedMagic.RunEditor
             var wallSprite = SaveStrip("wall", wall);
             var fillAsset = SaveTexture($"{outputFolder}/fill.png", fillTex, sprite: false);
 
+            var bgSprite = makeBackground ? SaveTexture($"{outputFolder}/background.png", Pixels.Blurry(src, backgroundWidth, backgroundBrightness), sprite: true, ppu: 100) : null;
+
             Object.DestroyImmediate(src);
 
             string kitPath = $"{outputFolder}/{Path.GetFileName(outputFolder)}Kit.asset";
@@ -86,6 +96,8 @@ namespace RedMagic.RunEditor
             kit.ceilingEdge = (Sprite)ceilingSprite;
             kit.wallEdge = (Sprite)wallSprite;
             kit.edgeOverhang = edgeOverhang;
+            kit.fillTint = fillTint;
+            kit.background = (Sprite)bgSprite;
             EditorUtility.SetDirty(kit);
             AssetDatabase.SaveAssets();
             Debug.Log($"[LevelKitRecipe] Kit generado → {kitPath}", kit);
@@ -104,7 +116,7 @@ namespace RedMagic.RunEditor
             return SaveTexture($"{outputFolder}/{name}.png", tex, sprite: true);
         }
 
-        private Object SaveTexture(string path, Texture2D tex, bool sprite)
+        private Object SaveTexture(string path, Texture2D tex, bool sprite, int ppu = 0)
         {
             File.WriteAllBytes(path, tex.EncodeToPNG());
             Object.DestroyImmediate(tex);
@@ -112,6 +124,7 @@ namespace RedMagic.RunEditor
 
             var importer = (TextureImporter)AssetImporter.GetAtPath(path);
             importer.textureType = sprite ? TextureImporterType.Sprite : TextureImporterType.Default;
+            if (sprite) importer.spriteImportMode = SpriteImportMode.Single;
             importer.filterMode = FilterMode.Bilinear;
             importer.wrapMode = TextureWrapMode.Repeat;
             importer.mipmapEnabled = false;
@@ -120,7 +133,7 @@ namespace RedMagic.RunEditor
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             if (sprite)
             {
-                importer.spritePixelsPerUnit = stripPixelsPerUnit;
+                importer.spritePixelsPerUnit = ppu > 0 ? ppu : stripPixelsPerUnit;
                 var settings = new TextureImporterSettings();
                 importer.ReadTextureSettings(settings);
                 settings.spriteMeshType = SpriteMeshType.FullRect;
@@ -141,6 +154,30 @@ namespace RedMagic.RunEditor
                 t.SetPixels(src.GetPixels(r.x, y, r.width, r.height));
                 t.Apply();
                 return t;
+            }
+
+            /// <summary>Reduce el mapa entero por promedio de bloques y lo oscurece: queda una placa borrosa.</summary>
+            public static Texture2D Blurry(Texture2D src, int width, float brightness)
+            {
+                int block = Mathf.Max(1, src.width / width);
+                int w = src.width / block, h = src.height / block;
+                var o = new Texture2D(w, h, TextureFormat.RGBA32, false);
+                var all = src.GetPixels32();
+                for (int y = 0; y < h; y++)
+                    for (int x = 0; x < w; x++)
+                    {
+                        float r = 0, g = 0, b = 0; int n = 0;
+                        for (int yy = 0; yy < block; yy += 2)
+                            for (int xx = 0; xx < block; xx += 2)
+                            {
+                                var c = all[(y * block + yy) * src.width + x * block + xx];
+                                r += c.r; g += c.g; b += c.b; n++;
+                            }
+                        float k = brightness / (255f * n);
+                        o.SetPixel(x, y, new Color(r * k, g * k, b * k, 1f));
+                    }
+                o.Apply();
+                return o;
             }
 
             /// <summary>Gira el recorte para que el lado del aire quede ARRIBA.</summary>

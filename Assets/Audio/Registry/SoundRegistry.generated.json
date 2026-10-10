@@ -4525,8 +4525,8 @@
       }
     },
     {
-      "id": "818737513e15ccc43b95ee95c01f9606/HitShield/breakSound",
-      "name": "IceCannonOrb · Break",
+      "id": "5c47ca2a376838547868c47913334c3c/HitShield/breakSound",
+      "name": "Shield · Break",
       "category": "Other/HitShield",
       "kind": "CueField",
       "origin": "Discovered",
@@ -4535,16 +4535,16 @@
         "Assets/Audio/Sfx/VfxLab/shieldBreak.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
-        "guid": "818737513e15ccc43b95ee95c01f9606",
+        "asset": "Assets/Prefabs/Enemies/Shield/Shield.prefab",
+        "guid": "5c47ca2a376838547868c47913334c3c",
         "component": "HitShield",
         "member": "breakSound",
         "property": "breakSound"
       }
     },
     {
-      "id": "818737513e15ccc43b95ee95c01f9606/HitShield/upSound",
-      "name": "IceCannonOrb · Up",
+      "id": "5c47ca2a376838547868c47913334c3c/HitShield/upSound",
+      "name": "Shield · Up",
       "category": "Other/HitShield",
       "kind": "CueField",
       "origin": "Discovered",
@@ -4553,8 +4553,8 @@
         "Assets/Audio/Sfx/VfxLab/shieldUp.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
-        "guid": "818737513e15ccc43b95ee95c01f9606",
+        "asset": "Assets/Prefabs/Enemies/Shield/Shield.prefab",
+        "guid": "5c47ca2a376838547868c47913334c3c",
         "component": "HitShield",
         "member": "upSound",
         "property": "upSound"
@@ -4609,6 +4609,42 @@
       "owner": {
         "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
         "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "fireSound",
+        "property": "fireSound"
+      }
+    },
+    {
+      "id": "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/chargeSound",
+      "name": "Charge",
+      "category": "Player/Attack/Cometa",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Comet/comet_charge.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_Cometa.asset",
+        "guid": "b61f706e8393adb42b7eb791ba0c1846",
+        "component": "WeaponDefinition",
+        "member": "chargeSound",
+        "property": "chargeSound"
+      }
+    },
+    {
+      "id": "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/fireSound",
+      "name": "Fire",
+      "category": "Player/Attack/Cometa",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Comet/comet_fire.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_Cometa.asset",
+        "guid": "b61f706e8393adb42b7eb791ba0c1846",
         "component": "WeaponDefinition",
         "member": "fireSound",
         "property": "fireSound"
@@ -4808,6 +4844,38 @@
         "component": "SoundEmitter",
         "member": "OnLowHealth",
         "property": "soundEvents.Array.data[10].cue"
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnParry",
+      "name": "Parry",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnParry",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnParrySuccess",
+      "name": "Parry success",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Player.prefab",
+        "guid": "d17a89dc0989ba9428e9443f056f2fbb",
+        "component": "SoundEmitter",
+        "member": "OnParrySuccess",
+        "entryMissing": true
       }
     },
     {
@@ -6937,6 +7005,102 @@
       }
     },
     {
+      "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/comet.chainReleaseSound",
+      "name": "Comet.chain release",
+      "category": "Projectiles/Weapons/BolaDeFuego",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
+        "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "comet.chainReleaseSound",
+        "property": "comet.chainReleaseSound"
+      }
+    },
+    {
+      "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/comet.chainStickSound",
+      "name": "Comet.chain stick",
+      "category": "Projectiles/Weapons/BolaDeFuego",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
+        "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "comet.chainStickSound",
+        "property": "comet.chainStickSound"
+      }
+    },
+    {
+      "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/comet.holdLoopSound",
+      "name": "Comet.hold loop",
+      "category": "Projectiles/Weapons/BolaDeFuego",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
+        "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "comet.holdLoopSound",
+        "property": "comet.holdLoopSound"
+      }
+    },
+    {
+      "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/comet.pierceEntrySound",
+      "name": "Comet.pierce entry",
+      "category": "Projectiles/Weapons/BolaDeFuego",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
+        "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceEntrySound",
+        "property": "comet.pierceEntrySound"
+      }
+    },
+    {
+      "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/comet.pierceExitSound",
+      "name": "Comet.pierce exit",
+      "category": "Projectiles/Weapons/BolaDeFuego",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
+        "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceExitSound",
+        "property": "comet.pierceExitSound"
+      }
+    },
+    {
+      "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/comet.readySound",
+      "name": "Comet.ready",
+      "category": "Projectiles/Weapons/BolaDeFuego",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_BolaDeFuego.asset",
+        "guid": "65a2f3386719c72303cb83f36da93320",
+        "component": "WeaponDefinition",
+        "member": "comet.readySound",
+        "property": "comet.readySound"
+      }
+    },
+    {
       "id": "65a2f3386719c72303cb83f36da93320/WeaponDefinition/expireSound",
       "name": "Expire",
       "category": "Projectiles/Weapons/BolaDeFuego",
@@ -6988,6 +7152,228 @@
         "component": "WeaponDefinition",
         "member": "terrainImpactSound",
         "property": "terrainImpactSound"
+      }
+    },
+    {
+      "id": "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.chainReleaseSound",
+      "name": "Comet.chain release",
+      "category": "Projectiles/Weapons/Cometa",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Comet/comet_chain_release.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_Cometa.asset",
+        "guid": "b61f706e8393adb42b7eb791ba0c1846",
+        "component": "WeaponDefinition",
+        "member": "comet.chainReleaseSound",
+        "property": "comet.chainReleaseSound"
+      }
+    },
+    {
+      "id": "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.chainStickSound",
+      "name": "Comet.chain stick",
+      "category": "Projectiles/Weapons/Cometa",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Comet/comet_chain_stick.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_Cometa.asset",
+        "guid": "b61f706e8393adb42b7eb791ba0c1846",
+        "component": "WeaponDefinition",
+        "member": "comet.chainStickSound",
+        "property": "comet.chainStickSound"
+      }
+    },
+    {
+      "id": "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.holdLoopSound",
+      "name": "Comet.hold loop",
+      "category": "Projectiles/Weapons/Cometa",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Comet/comet_hold_loop.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_Cometa.asset",
+        "guid": "b61f706e8393adb42b7eb791ba0c1846",
+        "component": "WeaponDefinition",
+        "member": "comet.holdLoopSound",
+        "property": "comet.holdLoopSound"
+      }
+    },
+    {
+      "id": "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.pierceEntrySound",
+      "name": "Comet.pierce entry",
+      "category": "Projectiles/Weapons/Cometa",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Comet/comet_pierce_in.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_Cometa.asset",
+        "guid": "b61f706e8393adb42b7eb791ba0c1846",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceEntrySound",
+        "property": "comet.pierceEntrySound"
+      }
+    },
+    {
+      "id": "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.pierceExitSound",
+      "name": "Comet.pierce exit",
+      "category": "Projectiles/Weapons/Cometa",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Comet/comet_pierce_out.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_Cometa.asset",
+        "guid": "b61f706e8393adb42b7eb791ba0c1846",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceExitSound",
+        "property": "comet.pierceExitSound"
+      }
+    },
+    {
+      "id": "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.readySound",
+      "name": "Comet.ready",
+      "category": "Projectiles/Weapons/Cometa",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Comet/comet_ready.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_Cometa.asset",
+        "guid": "b61f706e8393adb42b7eb791ba0c1846",
+        "component": "WeaponDefinition",
+        "member": "comet.readySound",
+        "property": "comet.readySound"
+      }
+    },
+    {
+      "id": "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/impactSound",
+      "name": "Impact",
+      "category": "Projectiles/Weapons/Cometa",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Comet/comet_impact.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_Cometa.asset",
+        "guid": "b61f706e8393adb42b7eb791ba0c1846",
+        "component": "WeaponDefinition",
+        "member": "impactSound",
+        "property": "impactSound"
+      }
+    },
+    {
+      "id": "a6c925cbbe61526704c311d7fb0a376c/WeaponDefinition/comet.chainReleaseSound",
+      "name": "Comet.chain release",
+      "category": "Projectiles/Weapons/EscopetaEspectral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
+        "guid": "a6c925cbbe61526704c311d7fb0a376c",
+        "component": "WeaponDefinition",
+        "member": "comet.chainReleaseSound",
+        "property": "comet.chainReleaseSound"
+      }
+    },
+    {
+      "id": "a6c925cbbe61526704c311d7fb0a376c/WeaponDefinition/comet.chainStickSound",
+      "name": "Comet.chain stick",
+      "category": "Projectiles/Weapons/EscopetaEspectral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
+        "guid": "a6c925cbbe61526704c311d7fb0a376c",
+        "component": "WeaponDefinition",
+        "member": "comet.chainStickSound",
+        "property": "comet.chainStickSound"
+      }
+    },
+    {
+      "id": "a6c925cbbe61526704c311d7fb0a376c/WeaponDefinition/comet.holdLoopSound",
+      "name": "Comet.hold loop",
+      "category": "Projectiles/Weapons/EscopetaEspectral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
+        "guid": "a6c925cbbe61526704c311d7fb0a376c",
+        "component": "WeaponDefinition",
+        "member": "comet.holdLoopSound",
+        "property": "comet.holdLoopSound"
+      }
+    },
+    {
+      "id": "a6c925cbbe61526704c311d7fb0a376c/WeaponDefinition/comet.pierceEntrySound",
+      "name": "Comet.pierce entry",
+      "category": "Projectiles/Weapons/EscopetaEspectral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
+        "guid": "a6c925cbbe61526704c311d7fb0a376c",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceEntrySound",
+        "property": "comet.pierceEntrySound"
+      }
+    },
+    {
+      "id": "a6c925cbbe61526704c311d7fb0a376c/WeaponDefinition/comet.pierceExitSound",
+      "name": "Comet.pierce exit",
+      "category": "Projectiles/Weapons/EscopetaEspectral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
+        "guid": "a6c925cbbe61526704c311d7fb0a376c",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceExitSound",
+        "property": "comet.pierceExitSound"
+      }
+    },
+    {
+      "id": "a6c925cbbe61526704c311d7fb0a376c/WeaponDefinition/comet.readySound",
+      "name": "Comet.ready",
+      "category": "Projectiles/Weapons/EscopetaEspectral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_EscopetaEspectral.asset",
+        "guid": "a6c925cbbe61526704c311d7fb0a376c",
+        "component": "WeaponDefinition",
+        "member": "comet.readySound",
+        "property": "comet.readySound"
       }
     },
     {
@@ -7045,6 +7431,102 @@
       }
     },
     {
+      "id": "23dff8ac298c99f53ea6feef5436cb08/WeaponDefinition/comet.chainReleaseSound",
+      "name": "Comet.chain release",
+      "category": "Projectiles/Weapons/GranadaRunica",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
+        "guid": "23dff8ac298c99f53ea6feef5436cb08",
+        "component": "WeaponDefinition",
+        "member": "comet.chainReleaseSound",
+        "property": "comet.chainReleaseSound"
+      }
+    },
+    {
+      "id": "23dff8ac298c99f53ea6feef5436cb08/WeaponDefinition/comet.chainStickSound",
+      "name": "Comet.chain stick",
+      "category": "Projectiles/Weapons/GranadaRunica",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
+        "guid": "23dff8ac298c99f53ea6feef5436cb08",
+        "component": "WeaponDefinition",
+        "member": "comet.chainStickSound",
+        "property": "comet.chainStickSound"
+      }
+    },
+    {
+      "id": "23dff8ac298c99f53ea6feef5436cb08/WeaponDefinition/comet.holdLoopSound",
+      "name": "Comet.hold loop",
+      "category": "Projectiles/Weapons/GranadaRunica",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
+        "guid": "23dff8ac298c99f53ea6feef5436cb08",
+        "component": "WeaponDefinition",
+        "member": "comet.holdLoopSound",
+        "property": "comet.holdLoopSound"
+      }
+    },
+    {
+      "id": "23dff8ac298c99f53ea6feef5436cb08/WeaponDefinition/comet.pierceEntrySound",
+      "name": "Comet.pierce entry",
+      "category": "Projectiles/Weapons/GranadaRunica",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
+        "guid": "23dff8ac298c99f53ea6feef5436cb08",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceEntrySound",
+        "property": "comet.pierceEntrySound"
+      }
+    },
+    {
+      "id": "23dff8ac298c99f53ea6feef5436cb08/WeaponDefinition/comet.pierceExitSound",
+      "name": "Comet.pierce exit",
+      "category": "Projectiles/Weapons/GranadaRunica",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
+        "guid": "23dff8ac298c99f53ea6feef5436cb08",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceExitSound",
+        "property": "comet.pierceExitSound"
+      }
+    },
+    {
+      "id": "23dff8ac298c99f53ea6feef5436cb08/WeaponDefinition/comet.readySound",
+      "name": "Comet.ready",
+      "category": "Projectiles/Weapons/GranadaRunica",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_GranadaRunica.asset",
+        "guid": "23dff8ac298c99f53ea6feef5436cb08",
+        "component": "WeaponDefinition",
+        "member": "comet.readySound",
+        "property": "comet.readySound"
+      }
+    },
+    {
       "id": "23dff8ac298c99f53ea6feef5436cb08/WeaponDefinition/explosionSound",
       "name": "Explosion",
       "category": "Projectiles/Weapons/GranadaRunica",
@@ -7078,6 +7560,102 @@
         "component": "WeaponDefinition",
         "member": "impactSound",
         "property": "impactSound"
+      }
+    },
+    {
+      "id": "b286b86e93a8a3a9f1891e913b1090fb/WeaponDefinition/comet.chainReleaseSound",
+      "name": "Comet.chain release",
+      "category": "Projectiles/Weapons/LanzaAstral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
+        "guid": "b286b86e93a8a3a9f1891e913b1090fb",
+        "component": "WeaponDefinition",
+        "member": "comet.chainReleaseSound",
+        "property": "comet.chainReleaseSound"
+      }
+    },
+    {
+      "id": "b286b86e93a8a3a9f1891e913b1090fb/WeaponDefinition/comet.chainStickSound",
+      "name": "Comet.chain stick",
+      "category": "Projectiles/Weapons/LanzaAstral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
+        "guid": "b286b86e93a8a3a9f1891e913b1090fb",
+        "component": "WeaponDefinition",
+        "member": "comet.chainStickSound",
+        "property": "comet.chainStickSound"
+      }
+    },
+    {
+      "id": "b286b86e93a8a3a9f1891e913b1090fb/WeaponDefinition/comet.holdLoopSound",
+      "name": "Comet.hold loop",
+      "category": "Projectiles/Weapons/LanzaAstral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
+        "guid": "b286b86e93a8a3a9f1891e913b1090fb",
+        "component": "WeaponDefinition",
+        "member": "comet.holdLoopSound",
+        "property": "comet.holdLoopSound"
+      }
+    },
+    {
+      "id": "b286b86e93a8a3a9f1891e913b1090fb/WeaponDefinition/comet.pierceEntrySound",
+      "name": "Comet.pierce entry",
+      "category": "Projectiles/Weapons/LanzaAstral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
+        "guid": "b286b86e93a8a3a9f1891e913b1090fb",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceEntrySound",
+        "property": "comet.pierceEntrySound"
+      }
+    },
+    {
+      "id": "b286b86e93a8a3a9f1891e913b1090fb/WeaponDefinition/comet.pierceExitSound",
+      "name": "Comet.pierce exit",
+      "category": "Projectiles/Weapons/LanzaAstral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
+        "guid": "b286b86e93a8a3a9f1891e913b1090fb",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceExitSound",
+        "property": "comet.pierceExitSound"
+      }
+    },
+    {
+      "id": "b286b86e93a8a3a9f1891e913b1090fb/WeaponDefinition/comet.readySound",
+      "name": "Comet.ready",
+      "category": "Projectiles/Weapons/LanzaAstral",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_LanzaAstral.asset",
+        "guid": "b286b86e93a8a3a9f1891e913b1090fb",
+        "component": "WeaponDefinition",
+        "member": "comet.readySound",
+        "property": "comet.readySound"
       }
     },
     {
@@ -7135,6 +7713,102 @@
       }
     },
     {
+      "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/comet.chainReleaseSound",
+      "name": "Comet.chain release",
+      "category": "Projectiles/Weapons/ProyectilRecto",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
+        "guid": "646ccef625a76464a8886b4ce55cc056",
+        "component": "WeaponDefinition",
+        "member": "comet.chainReleaseSound",
+        "property": "comet.chainReleaseSound"
+      }
+    },
+    {
+      "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/comet.chainStickSound",
+      "name": "Comet.chain stick",
+      "category": "Projectiles/Weapons/ProyectilRecto",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
+        "guid": "646ccef625a76464a8886b4ce55cc056",
+        "component": "WeaponDefinition",
+        "member": "comet.chainStickSound",
+        "property": "comet.chainStickSound"
+      }
+    },
+    {
+      "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/comet.holdLoopSound",
+      "name": "Comet.hold loop",
+      "category": "Projectiles/Weapons/ProyectilRecto",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
+        "guid": "646ccef625a76464a8886b4ce55cc056",
+        "component": "WeaponDefinition",
+        "member": "comet.holdLoopSound",
+        "property": "comet.holdLoopSound"
+      }
+    },
+    {
+      "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/comet.pierceEntrySound",
+      "name": "Comet.pierce entry",
+      "category": "Projectiles/Weapons/ProyectilRecto",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
+        "guid": "646ccef625a76464a8886b4ce55cc056",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceEntrySound",
+        "property": "comet.pierceEntrySound"
+      }
+    },
+    {
+      "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/comet.pierceExitSound",
+      "name": "Comet.pierce exit",
+      "category": "Projectiles/Weapons/ProyectilRecto",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
+        "guid": "646ccef625a76464a8886b4ce55cc056",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceExitSound",
+        "property": "comet.pierceExitSound"
+      }
+    },
+    {
+      "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/comet.readySound",
+      "name": "Comet.ready",
+      "category": "Projectiles/Weapons/ProyectilRecto",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_ProyectilRecto.asset",
+        "guid": "646ccef625a76464a8886b4ce55cc056",
+        "component": "WeaponDefinition",
+        "member": "comet.readySound",
+        "property": "comet.readySound"
+      }
+    },
+    {
       "id": "646ccef625a76464a8886b4ce55cc056/WeaponDefinition/expireSound",
       "name": "Expire",
       "category": "Projectiles/Weapons/ProyectilRecto",
@@ -7186,6 +7860,102 @@
         "component": "WeaponDefinition",
         "member": "terrainImpactSound",
         "property": "terrainImpactSound"
+      }
+    },
+    {
+      "id": "8925b63ba0f269c6039bbabaf86a5cc5/WeaponDefinition/comet.chainReleaseSound",
+      "name": "Comet.chain release",
+      "category": "Projectiles/Weapons/RafagaArcana",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
+        "guid": "8925b63ba0f269c6039bbabaf86a5cc5",
+        "component": "WeaponDefinition",
+        "member": "comet.chainReleaseSound",
+        "property": "comet.chainReleaseSound"
+      }
+    },
+    {
+      "id": "8925b63ba0f269c6039bbabaf86a5cc5/WeaponDefinition/comet.chainStickSound",
+      "name": "Comet.chain stick",
+      "category": "Projectiles/Weapons/RafagaArcana",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
+        "guid": "8925b63ba0f269c6039bbabaf86a5cc5",
+        "component": "WeaponDefinition",
+        "member": "comet.chainStickSound",
+        "property": "comet.chainStickSound"
+      }
+    },
+    {
+      "id": "8925b63ba0f269c6039bbabaf86a5cc5/WeaponDefinition/comet.holdLoopSound",
+      "name": "Comet.hold loop",
+      "category": "Projectiles/Weapons/RafagaArcana",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
+        "guid": "8925b63ba0f269c6039bbabaf86a5cc5",
+        "component": "WeaponDefinition",
+        "member": "comet.holdLoopSound",
+        "property": "comet.holdLoopSound"
+      }
+    },
+    {
+      "id": "8925b63ba0f269c6039bbabaf86a5cc5/WeaponDefinition/comet.pierceEntrySound",
+      "name": "Comet.pierce entry",
+      "category": "Projectiles/Weapons/RafagaArcana",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
+        "guid": "8925b63ba0f269c6039bbabaf86a5cc5",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceEntrySound",
+        "property": "comet.pierceEntrySound"
+      }
+    },
+    {
+      "id": "8925b63ba0f269c6039bbabaf86a5cc5/WeaponDefinition/comet.pierceExitSound",
+      "name": "Comet.pierce exit",
+      "category": "Projectiles/Weapons/RafagaArcana",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
+        "guid": "8925b63ba0f269c6039bbabaf86a5cc5",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceExitSound",
+        "property": "comet.pierceExitSound"
+      }
+    },
+    {
+      "id": "8925b63ba0f269c6039bbabaf86a5cc5/WeaponDefinition/comet.readySound",
+      "name": "Comet.ready",
+      "category": "Projectiles/Weapons/RafagaArcana",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RafagaArcana.asset",
+        "guid": "8925b63ba0f269c6039bbabaf86a5cc5",
+        "component": "WeaponDefinition",
+        "member": "comet.readySound",
+        "property": "comet.readySound"
       }
     },
     {
@@ -7258,6 +8028,102 @@
         "component": "WeaponDefinition",
         "member": "beamLoopSound",
         "property": "beamLoopSound"
+      }
+    },
+    {
+      "id": "c96dd323e939eb9cf88301ec22ae540c/WeaponDefinition/comet.chainReleaseSound",
+      "name": "Comet.chain release",
+      "category": "Projectiles/Weapons/RayoArcano",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
+        "guid": "c96dd323e939eb9cf88301ec22ae540c",
+        "component": "WeaponDefinition",
+        "member": "comet.chainReleaseSound",
+        "property": "comet.chainReleaseSound"
+      }
+    },
+    {
+      "id": "c96dd323e939eb9cf88301ec22ae540c/WeaponDefinition/comet.chainStickSound",
+      "name": "Comet.chain stick",
+      "category": "Projectiles/Weapons/RayoArcano",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
+        "guid": "c96dd323e939eb9cf88301ec22ae540c",
+        "component": "WeaponDefinition",
+        "member": "comet.chainStickSound",
+        "property": "comet.chainStickSound"
+      }
+    },
+    {
+      "id": "c96dd323e939eb9cf88301ec22ae540c/WeaponDefinition/comet.holdLoopSound",
+      "name": "Comet.hold loop",
+      "category": "Projectiles/Weapons/RayoArcano",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
+        "guid": "c96dd323e939eb9cf88301ec22ae540c",
+        "component": "WeaponDefinition",
+        "member": "comet.holdLoopSound",
+        "property": "comet.holdLoopSound"
+      }
+    },
+    {
+      "id": "c96dd323e939eb9cf88301ec22ae540c/WeaponDefinition/comet.pierceEntrySound",
+      "name": "Comet.pierce entry",
+      "category": "Projectiles/Weapons/RayoArcano",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
+        "guid": "c96dd323e939eb9cf88301ec22ae540c",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceEntrySound",
+        "property": "comet.pierceEntrySound"
+      }
+    },
+    {
+      "id": "c96dd323e939eb9cf88301ec22ae540c/WeaponDefinition/comet.pierceExitSound",
+      "name": "Comet.pierce exit",
+      "category": "Projectiles/Weapons/RayoArcano",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
+        "guid": "c96dd323e939eb9cf88301ec22ae540c",
+        "component": "WeaponDefinition",
+        "member": "comet.pierceExitSound",
+        "property": "comet.pierceExitSound"
+      }
+    },
+    {
+      "id": "c96dd323e939eb9cf88301ec22ae540c/WeaponDefinition/comet.readySound",
+      "name": "Comet.ready",
+      "category": "Projectiles/Weapons/RayoArcano",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Resources/Items/Weapons/Weapon_RayoArcano.asset",
+        "guid": "c96dd323e939eb9cf88301ec22ae540c",
+        "component": "WeaponDefinition",
+        "member": "comet.readySound",
+        "property": "comet.readySound"
       }
     },
     {

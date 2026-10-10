@@ -356,6 +356,11 @@
               "id": "4itr247",
               "text": "Verificación con render fuera de pantalla y checklist para el usuario",
               "done": true
+            },
+            {
+              "id": "cometa-pj-final",
+              "text": "Personaje definitivo: animación de apuntar/corregir hacia el cursor mientras carga con la mejora «apuntar con el ratón» (hoy sólo se cambia la boca de lado). Si se complica, quitar esa mejora.",
+              "done": false
             }
           ]
         }

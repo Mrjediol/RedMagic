@@ -65,6 +65,19 @@ namespace RedMagic.Items
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void ResetStatics() => _pool = null;
 
+        /// <summary>
+        /// Lado de la boca (-1 / 1). Normalmente hacia donde mira el jugador; con la mejora «apuntar con el
+        /// ratón» y el cursor detrás, la boca pasa a ese lado para que el cometa no cruce el cuerpo del jugador
+        /// (con el personaje definitivo esto será una animación de apuntar hacia el cursor).
+        /// </summary>
+        public static int MuzzleSide(CometSettings settings, Vector2 origin, int facing)
+        {
+            if (settings == null || !settings.aimAtCursor) return facing;
+            Vector2? cursor = ProjectileAim.MouseWorld();
+            if (!cursor.HasValue || Mathf.Abs(cursor.Value.x - origin.x) < 0.05f) return facing;
+            return cursor.Value.x < origin.x ? -1 : 1;
+        }
+
         /// <summary>Lanza un cometa con el disparo ya resuelto (lo llama <see cref="ShotResolver.Fire"/>).</summary>
         public static CometProjectile Launch(WeaponShot shot, in ShotContext ctx)
         {
@@ -96,10 +109,11 @@ namespace RedMagic.Items
                 _fx = new CometBodyFx(transform, mat);
             }
 
-            _pos = ctx.Muzzle(shot.muzzleOffset);
+            int side = MuzzleSide(settings, ctx.Origin, ctx.Facing);
+            _pos = ctx.Origin + new Vector2(shot.muzzleOffset.x * side, shot.muzzleOffset.y);
             // base: recto hacia donde mira el jugador; con la mejora «apuntar con el ratón», hacia el cursor
             Vector2? cursor = ProjectileAim.MouseWorld();
-            _dir = new Vector2(ctx.Facing, 0f);
+            _dir = new Vector2(side, 0f);
             if (settings.aimAtCursor && cursor.HasValue && (cursor.Value - _pos).sqrMagnitude > 0.01f) _dir = (cursor.Value - _pos).normalized;
             _hit.Clear();
             _target = null; _targetBody = null;

@@ -113,7 +113,7 @@ Inspector wiring.
   `Resources/Items/Weapons/Weapon_Cometa.asset` (**Tools ▸ RedMagic ▸ Items ▸ Cometa · Crear o actualizar arma**, no pisa lo
   afinado). Todo lo suyo va en `WeaponDefinition ▸ Comet` (`CometSettings`): `behaviour` (uno solo: Base / Chain + `chainCount`,
   `chainRange`, `chainStickTime` / Pierce + `pierceCount` / Homing + `homingCursorRadius`, `homingTurnRate`), `impactFrames`,
-  `aimAtCursor` (mejora: sale hacia el cursor; base = recto hacia donde mira, el `aimMode` del arma no cuenta), `upgraded` y los números de cada versión (`baseStats` / `upgradeStats`: daño, velocidad, tamaño, empuje, temblor, relativos al
+  `aimAtCursor` (mejora: sale hacia el cursor; base = recto hacia donde mira, el `aimMode` del arma no cuenta; con el cursor detrás la boca —y el orbe de carga— pasan a ese lado, `CometProjectile.MuzzleSide`, para no cruzar el cuerpo), `upgraded` y los números de cada versión (`baseStats` / `upgradeStats`: daño, velocidad, tamaño, empuje, temblor, relativos al
   arma), materiales y sus sonidos propios. `ShotResolver.Fire` entrega a `CometProjectile` (pooled, se mueve solo con CircleCast;
   daño por `PlayerHit.Deal`; Ground lo para). Carga: `WeaponUser` usa `CometChargeFx` en vez del cuadrado de carga (orbe que crece
   + «listo» con pulso + `readySound`/`holdLoopSound`); sólo dispara con la carga completa (soltar antes cancela); al soltar el orbe queda «pendiente» hasta que sale el disparo

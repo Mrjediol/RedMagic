@@ -250,7 +250,7 @@ namespace RedMagic.Items
                 {
                     _charging = true;
                     _charge = 0f;
-                    if (weapon.IsComet) _cometCharge = CometChargeFx.Begin(CometRuntime.For(weapon), () => MuzzleWorld(weapon));
+                    if (weapon.IsComet) _cometCharge = CometChargeFx.Begin(CometRuntime.For(weapon), () => CometMuzzleWorld(weapon));
                     else _chargeFx = MakeChargeFx(weapon);
                     AudioManager.Instance?.Play(weapon.ChargeSound, transform.position);
                 }
@@ -443,6 +443,14 @@ namespace RedMagic.Items
             int facing = ResolveFacing();
             var offset = weapon.Shot.muzzleOffset;
             return (Vector2)transform.position + new Vector2(offset.x * facing, offset.y);
+        }
+
+        /// <summary>Boca del cometa: como <see cref="MuzzleWorld"/>, pero al lado del cursor con la mejora de apuntar con el ratón.</summary>
+        private Vector2 CometMuzzleWorld(WeaponDefinition weapon)
+        {
+            var offset = weapon.Shot.muzzleOffset;
+            int side = CometProjectile.MuzzleSide(CometRuntime.For(weapon), transform.position, ResolveFacing());
+            return (Vector2)transform.position + new Vector2(offset.x * side, offset.y);
         }
 
         private int ResolveFacing()

@@ -1,0 +1,241 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca7e4e726982a714f8b0f3d8944d404b, type: 3}
+  m_Name: Weapon_Cometa
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponDefinition
+  textKey: weapon.cometa
+  displayName: Cometa
+  description: "Mant\xE9n para cargar un orbe y su\xE9ltalo: sale un cometa de luz."
+  icon: {fileID: 0}
+  accent: {r: 0.16, g: 0.76, b: 1, a: 1}
+  baseDamage: 14
+  baseCooldown: 0.35
+  baseKnockbackMultiplier: 1
+  baseShot:
+    delivery: 3
+    count: 1
+    spreadAngle: 0
+    randomSpread: 0
+    speed: 13
+    lifetime: 2.5
+    size: {x: 0.4, y: 0.4}
+    muzzleOffset: {x: 0.6, y: 0.15}
+    overrideCollider: 0
+    colliderType: 0
+    colliderSize: {x: 0.2, y: 0.2}
+    colliderOffset: {x: 0, y: 0}
+    pierce: 0
+    arcGravity: 0
+    burstCount: 1
+    burstInterval: 0.09
+    impactRadius: 0
+    impactDamage: 0
+    projectilePrefab: {fileID: 0}
+    beamPrefab: {fileID: 0}
+    impactVfxPrefab: {fileID: 0}
+    explosionVfxPrefab: {fileID: 0}
+    chargeVfxPrefab: {fileID: 0}
+    faceDirection: 0
+    facingAxis: 0
+    aimMode: 1
+    meleeRange: 1.2
+    meleeArc: 90
+    chargeTime: 0.55
+    minChargeToFire: 0.25
+    minChargeDamage: 0.5
+    beamDuration: 0.5
+    beamTickInterval: 0.06
+    beamLength: 14
+    beamWidth: 0.5
+  comet:
+    behaviour: 0
+    chainCount: 3
+    chainRange: 7
+    chainStickTime: 0.2
+    pierceCount: 1
+    homingCursorRadius: 8
+    homingTurnRate: 320
+    fireDelay: 0.06
+    impactFrames: 1
+    impactFrameDuration: 0.06
+    upgraded: 0
+    baseStats:
+      damageMultiplier: 1
+      speedMultiplier: 1
+      sizeScale: 1
+      knockbackMultiplier: 1
+      shakeAmplitude: 0.08
+      shakeDuration: 0.16
+    upgradeStats:
+      damageMultiplier: 2.5
+      speedMultiplier: 1.1
+      sizeScale: 1.45
+      knockbackMultiplier: 1.6
+      shakeAmplitude: 0.16
+      shakeDuration: 0.2
+    fxMaterial: {fileID: 2100000, guid: 5d525daf0045a6943afab65d71f2bd04, type: 2}
+    silhouetteMaterial: {fileID: 2100000, guid: 1a802b8bc803db243a2a1f259799ceab, type: 2}
+    pixel: 0.016
+    readySound:
+      clips:
+      - {fileID: 8300000, guid: ba358a8ce91b6c24b95e5039afc66671, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    holdLoopSound:
+      clips:
+      - {fileID: 8300000, guid: c3f43f8ff95227845b4002eb4a501670, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    pierceEntrySound:
+      clips:
+      - {fileID: 8300000, guid: 9454736e39765ca44aeda2ac6c69b0e6, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    pierceExitSound:
+      clips:
+      - {fileID: 8300000, guid: 0ca19f798f8620b4e9e6e167f08141e6, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    chainStickSound:
+      clips:
+      - {fileID: 8300000, guid: b1e8de5b2f2a46d4885076dce109ece2, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    chainReleaseSound:
+      clips:
+      - {fileID: 8300000, guid: f1d74bf8fa9921b44917ca2fafbb7d6b, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  innateElement: 0
+  universalTag: 100
+  chargeSound:
+    clips:
+    - {fileID: 8300000, guid: 560e798a52b95224388d54af0a5ff188, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  fireSound:
+    clips:
+    - {fileID: 8300000, guid: feeb85b055dad9940adbe517676ce473, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  impactSound:
+    clips:
+    - {fileID: 8300000, guid: 414a96da3fd2a1d46bde28601508143f, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  terrainImpactSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  expireSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 0
+    positional: 1
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  explosionSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 2
+    positional: 1
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  beamLoopSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1

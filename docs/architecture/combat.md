@@ -169,3 +169,4 @@
   (own state: fixed velocity, no gravity/control, cancelled by knockback) at `diveAngle` toward facing. Damages
   what it crosses (`diveContactMultiplier`, `diveHitEffect`); on `PlayerMovement.DiveLanded` an area hit
   (`diveImpactRadius`, `diveImpactMultiplier`) + `diveGroundImpact` (with camera shake). Trail: `diveTrail`.
+- **Impact frames (`Fx.ImpactFrames`)** — genérico: `ImpactFrames.Play(target, seconds, silhouetteMaterial)` oscurece el fondo un instante (tiempo real) con un rectángulo en `Characters` orden 34 y dibuja al objetivo en blanco plano encima (copias de sus SpriteRenderers con `Fx_SpriteSilhouette`, órdenes 35-39; los efectos de delante, 40, quedan por encima). Copias y no el enemigo en sí: el rig y `HitFlash` reescriben sus renderers cada frame. Lo usa el Cometa (`CometSettings.impactFrames`).

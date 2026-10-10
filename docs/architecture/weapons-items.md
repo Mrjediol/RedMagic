@@ -108,3 +108,21 @@ Inspector wiring.
   beam is still tinted.
 - Projectiles never collide with other projectiles — pellets from one blast spawn on top of each
   other and would annihilate on frame one.
+- **Cometa (`ShotDelivery.Comet`, `Assets/Scripts/Items/Comet/`)** — arma de proyectil hecho sólo de efectos
+  (boceto `docs/bocetos/ataque-cometa-estados.html`, proceso `docs/fx-proceso-bocetos.md`). Asset
+  `Resources/Items/Weapons/Weapon_Cometa.asset` (**Tools ▸ RedMagic ▸ Items ▸ Cometa · Crear o actualizar arma**, no pisa lo
+  afinado). Todo lo suyo va en `WeaponDefinition ▸ Comet` (`CometSettings`): `behaviour` (uno solo: Base / Chain + `chainCount`,
+  `chainRange`, `chainStickTime` / Pierce + `pierceCount` / Homing + `homingCursorRadius`, `homingTurnRate`), `impactFrames`,
+  `upgraded` y los números de cada versión (`baseStats` / `upgradeStats`: daño, velocidad, tamaño, empuje, temblor, relativos al
+  arma), materiales y sus sonidos propios. `ShotResolver.Fire` entrega a `CometProjectile` (pooled, se mueve solo con CircleCast;
+  daño por `PlayerHit.Deal`; Ground lo para). Carga: `WeaponUser` usa `CometChargeFx` en vez del cuadrado de carga (orbe que crece
+  + «listo» con pulso + `readySound`/`holdLoopSound`); al soltar el orbe queda «pendiente» hasta que sale el disparo
+  (`CometSettings.fireDelay`, no el `releaseDelay` del gesto). Dibujo: `CometBodyFx` (cola por historial de posiciones, cabeza
+  orbe / lanza del perforador, onda de choque y capas oscuras del upgrade, esquinas de fijación del homing), `CometHitFx`
+  (impacto normal / potente, perforación, cadena pegada y su salida), `CometDraw` (piezas y paletas: `CometPalette.Normal`, y
+  `Amber` = firma de todo lo homing). Impact frames: `Fx.ImpactFrames.Play(target, seconds, silhouette)` (genérico).
+  **Menú DEV** (`CometDevMenu`, F9 o botón «DEV», sólo editor/dev build, pausa el juego): cambia el Cometa equipado en Play sobre
+  una copia (`CometRuntime`), nunca el asset. **Escena de prueba**: **Tools ▸ RedMagic ▸ Test ▸ Escena del cometa** →
+  `Assets/Scenes/Test/CometTest.unity` (fila para perforar, grupo para la cadena, blancos rápidos `Test.TestMover` para el homing;
+  `CometTestKit` equipa el arma). Sonidos: WAV sintetizados con el código del boceto (`docs/bocetos/render-sonidos-cometa.cjs`) en
+  `Assets/Audio/Sounds/Player/Comet/`.

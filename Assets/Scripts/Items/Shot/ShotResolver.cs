@@ -71,6 +71,13 @@ namespace RedMagic.Items
             if (shot.chargeFraction < 1f)
                 shot.damage *= Mathf.Lerp(shot.minChargeDamage, 1f, shot.chargeFraction);
 
+            // Cometa: proyectil dibujado por código con su propio comportamiento (WeaponDefinition ▸ Comet).
+            if (shot.delivery == ShotDelivery.Comet)
+            {
+                CometProjectile.Launch(shot, ctx);
+                return;
+            }
+
             if (shot.delivery == ShotDelivery.Hitscan)
             {
                 EmitBeam(shot, ctx);

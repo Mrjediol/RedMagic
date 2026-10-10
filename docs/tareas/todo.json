@@ -333,29 +333,29 @@
         {
           "id": "ataque-distancia-fx",
           "text": "Ataque a distancia del player con proyectiles hechos de efectos",
-          "note": "Mismo proceso que el dash: referencia → bocetos HTML animados → port a Unity con FxCanvas (docs/fx-proceso-bocetos.md). Proyectiles sin sprite, sólo efectos, con la paleta del set.",
+          "note": "Mismo proceso que el dash: referencia → bocetos HTML animados → port a Unity con FxCanvas (docs/fx-proceso-bocetos.md). Proyectiles sin sprite, sólo efectos, con la paleta del set. Hecho: arma Cometa en Unity (Weapon_Cometa, escena Assets/Scenes/Test/CometTest.unity, menú DEV F9). Falta la prueba del usuario.",
           "done": false,
           "doc": "docs/fx-proceso-bocetos.md",
           "steps": [
             {
               "id": "nrztych",
               "text": "Referencias del usuario y descripción por fases",
-              "done": false
+              "done": true
             },
             {
               "id": "87zz4or",
               "text": "Bocetos HTML animados (varios conceptos, capas, cámara lenta)",
-              "done": false
+              "done": true
             },
             {
               "id": "cr387zr",
               "text": "Port a Unity con FxCanvas + impacto + pooling",
-              "done": false
+              "done": true
             },
             {
               "id": "4itr247",
               "text": "Verificación con render fuera de pantalla y checklist para el usuario",
-              "done": false
+              "done": true
             }
           ]
         }

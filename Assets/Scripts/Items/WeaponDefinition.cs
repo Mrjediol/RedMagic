@@ -10,6 +10,8 @@ namespace RedMagic.Items
         Projectile,
         Melee,
         Hitscan,
+        /// <summary>Cometa dibujado por código (CometProjectile); su comportamiento va en WeaponDefinition ▸ Comet.</summary>
+        Comet,
     }
 
     /// <summary>
@@ -213,6 +215,11 @@ namespace RedMagic.Items
         [Header("Disparo base (sin modificadores)")]
         [SerializeField] private BaseShot baseShot = new BaseShot();
 
+        [Header("Cometa (sólo Delivery = Comet)")]
+        [Tooltip("Comportamiento (base / cadena / perforación / homing), impact frames, upgrade y sus números. " +
+                 "En Play se puede cambiar sin tocar el asset desde el menú DEV (F9).")]
+        [SerializeField] private CometSettings comet = new CometSettings();
+
         [Header("Identidad de build")]
         [Tooltip("Elemento con el que nace el arma. None = arma física; cuenta igual para sinergias " +
                  "si no es None. El slot Elemento lo sobrescribe (último equipado gana).")]
@@ -270,6 +277,8 @@ namespace RedMagic.Items
         public float BaseCooldown => baseCooldown;
         public float BaseKnockbackMultiplier => baseKnockbackMultiplier;
         public BaseShot Shot => baseShot;
+        public CometSettings Comet => comet;
+        public bool IsComet => baseShot != null && baseShot.delivery == ShotDelivery.Comet;
         public ElementId InnateElement => innateElement;
         public BuildTag UniversalTag => universalTag;
 

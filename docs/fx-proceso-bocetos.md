@@ -77,3 +77,4 @@ Evolución de la plantilla para el ataque del jugador (cometa). Un solo `.html` 
   estilo suelo del picado con temblor suave); sonidos: carga C turbina, listo A descarga seca, disparo A láser grave, impactos B energía eléctrica.
 - Trampas conocidas: el `rand(seed)` del boceto debe mezclar la semilla (la primera tirada con semilla pequeña era ~0 y alineaba partículas);
   las ondas de choque van enteras por delante (no partidas detrás/delante del enemigo); las estelas nacen en el centro y acaban en punta.
+- **Port a Unity hecho** (arma Cometa): ver `docs/architecture/weapons-items.md` ▸ Cometa. Verificado con render fuera de pantalla (vuelo de las 4 variantes, impactos, perforación, cadena y carga). Los sonidos elegidos se pasan a WAV con `docs/bocetos/render-sonidos-cometa.cjs` (mismo código de síntesis, en un OfflineAudioContext de Node).

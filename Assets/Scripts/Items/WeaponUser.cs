@@ -89,6 +89,11 @@ namespace RedMagic.Items
         private GameObject _chargeFx;
         private bool _chargeFxPooled;   // sale de PrefabPool (arte del arma) y no de AbilityFx.SpawnSprite
 
+        // Cometa: la carga dibujada por código. Al soltar pasa a 'pendiente' (el orbe sigue en la boca) hasta
+        // que el disparo sale de verdad, para que el orbe se convierta en el cometa sin hueco.
+        private CometChargeFx _cometCharge;
+        private CometChargeFx _cometPending;
+
         private bool _suppressingBasic;
 
         /// <summary>El WeaponUser del jugador activo (hub o run), o null. Para efectos de item que tocan el cooldown.</summary>
@@ -179,6 +184,7 @@ namespace RedMagic.Items
         {
             _attackAction?.Disable();
             CancelCharge();
+            CancelPendingComet();
             ReleaseBasicAttack();
             if (Current == this) Current = null;
         }
@@ -244,12 +250,14 @@ namespace RedMagic.Items
                 {
                     _charging = true;
                     _charge = 0f;
-                    _chargeFx = MakeChargeFx(weapon);
+                    if (weapon.IsComet) _cometCharge = CometChargeFx.Begin(CometRuntime.For(weapon), () => MuzzleWorld(weapon));
+                    else _chargeFx = MakeChargeFx(weapon);
                     AudioManager.Instance?.Play(weapon.ChargeSound, transform.position);
                 }
 
                 _charge = Mathf.Min(weapon.Shot.chargeTime, _charge + Time.deltaTime);
                 UpdateChargeFx(weapon);
+                if (_cometCharge != null) _cometCharge.SetFraction(_charge / weapon.Shot.chargeTime);
                 return;
             }
 
@@ -259,6 +267,12 @@ namespace RedMagic.Items
             float frac = Mathf.Clamp01(_charge / weapon.Shot.chargeTime);
             bool canFire = frac >= weapon.Shot.minChargeToFire && _cooldownTimer <= 0f;
 
+            if (canFire && _cometCharge != null)
+            {
+                CancelPendingComet();
+                _cometPending = _cometCharge;
+                _cometCharge = null;
+            }
             CancelCharge();
 
             if (canFire) Fire(weapon, frac);
@@ -268,6 +282,8 @@ namespace RedMagic.Items
         {
             _charging = false;
             _charge = 0f;
+            if (_cometCharge != null) _cometCharge.Cancel();
+            _cometCharge = null;
             if (_chargeFx != null)
             {
                 if (_chargeFxPooled) Core.PrefabPool.Despawn(_chargeFx);
@@ -275,6 +291,12 @@ namespace RedMagic.Items
             }
             _chargeFx = null;
             _chargeFxPooled = false;
+        }
+
+        private void CancelPendingComet()
+        {
+            if (_cometPending != null) _cometPending.Cancel();
+            _cometPending = null;
         }
 
         private GameObject MakeChargeFx(WeaponDefinition weapon)
@@ -343,21 +365,27 @@ namespace RedMagic.Items
             _cooldownDuration = weapon.BaseCooldown;
             if (_animator != null) _animator.TriggerAttack();
 
-            if (releaseDelay <= 0f)
+            // El cometa sale casi al soltar: el orbe ya está cargado en la boca.
+            float delay = weapon.IsComet ? CometRuntime.For(weapon).fireDelay : releaseDelay;
+            if (delay <= 0f)
             {
                 Release(chargeFraction);
                 return;
             }
 
-            StartCoroutine(ReleaseRoutine(chargeFraction));
+            StartCoroutine(ReleaseRoutine(chargeFraction, delay));
         }
 
-        private IEnumerator ReleaseRoutine(float chargeFraction)
+        private IEnumerator ReleaseRoutine(float chargeFraction, float delay)
         {
-            yield return new WaitForSeconds(releaseDelay);
+            yield return new WaitForSeconds(delay);
 
             // Si mientras tanto se ha muerto o se ha abierto un menú, el gesto no llega a salir.
-            if (!GameStateManager.CanPlayerAct || (_health != null && _health.IsDead)) yield break;
+            if (!GameStateManager.CanPlayerAct || (_health != null && _health.IsDead))
+            {
+                CancelPendingComet();
+                yield break;
+            }
 
             Release(chargeFraction);
         }
@@ -369,6 +397,9 @@ namespace RedMagic.Items
         /// </summary>
         private void Release(float chargeFraction)
         {
+            if (_cometPending != null) _cometPending.Release();
+            _cometPending = null;
+
             var loadout = WeaponLoadout.Instance;
             if (loadout == null || loadout.Inventory.Weapon == null) return;
 

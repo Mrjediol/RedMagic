@@ -265,6 +265,31 @@ namespace RedMagic.Fx
             _tris.Add(s); _tris.Add(s + 1); _tris.Add(s + 2);
         }
 
+        /// <summary>Polígono convexo relleno (abanico desde el primer punto): lentes, cuñas.</summary>
+        public void Polygon(List<Vector2> pts, Color color)
+        {
+            int n = pts.Count;
+            if (n < 3 || color.a <= 0f) return;
+            int s = _verts.Count;
+            for (int i = 0; i < n; i++) { _verts.Add(pts[i]); _colors.Add(color); }
+            for (int i = 1; i < n - 1; i++) { _tris.Add(s); _tris.Add(s + i); _tris.Add(s + i + 1); }
+        }
+
+        /// <summary>Aguja: afilada en los dos extremos, lo más ancha al 70 % de <paramref name="a"/> a <paramref name="b"/>.</summary>
+        public void Needle(Vector2 a, Vector2 b, float width, Color color)
+        {
+            if (color.a <= 0f || width <= 0f) return;
+            Vector2 d = b - a;
+            if (d.sqrMagnitude < 1e-10f) return;
+            Vector2 n = new Vector2(-d.y, d.x).normalized * (width * 0.5f);
+            Vector2 m = a + d * 0.7f;
+            int s = _verts.Count;
+            _verts.Add(a); _verts.Add(m + n); _verts.Add(b); _verts.Add(m - n);
+            for (int i = 0; i < 4; i++) _colors.Add(color);
+            _tris.Add(s); _tris.Add(s + 1); _tris.Add(s + 2);
+            _tris.Add(s); _tris.Add(s + 2); _tris.Add(s + 3);
+        }
+
         /// <summary>Lista temporal para construir polilíneas sin reservar memoria.</summary>
         public static List<Vector2> Points()
         {

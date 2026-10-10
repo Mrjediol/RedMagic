@@ -72,3 +72,14 @@
   so the resize lands in the same frame as the teleport and is never seen popping. No entry for the
   loaded scene → scale 1.0 and a console warning (a new scene nobody's tuned yet); no asset at all
   → the prefab's scale is left alone entirely.
+
+## Level sketch → section prefab
+
+Web tab **🧱 Boceto de nivel** (`modules/level-sketch.js`) paints terrain on a grid (1 cell = 1 Unity unit,
+row 0 = top) and exports `*.levelsketch.json` (`rows` of `#` solid / `.` air). Unity side:
+**Tools ▸ RedMagic ▸ Niveles ▸ Importar boceto...** (`LevelSketchImporter`) builds `Assets/Levels/<name>/<name>.prefab`:
+`BG` (camera bounds = sketch rectangle), `Fill` (merged-rect mesh, kit texture tiled in world units), `Edges`
+(Tiled sprite strips rotated per facing; none on the map border), `Collision` (BoxCollider2D per rect → CompositeCollider2D,
+layer Ground), `SectionEntry`/`SectionExit` auto-placed on the first/last standable floor. Art comes from a `LevelKit`
+asset (Tools ▸ RedMagic ▸ Niveles ▸ Crear kit de arte); with none selected a generated placeholder kit is used.
+Usable as `WorldSceneGenerator`'s Base Section Prefab.

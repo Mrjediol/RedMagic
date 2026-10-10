@@ -12,6 +12,51 @@
       "notes": "Placeholder aceptado: un clip corto (Sly 2) en bucle como música de menú.",
       "lastModified": "2026-09-27 17:42"
     },
+    "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/chargeSound": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-10 06:43"
+    },
+    "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.chainReleaseSound": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-10 06:43"
+    },
+    "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.chainStickSound": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-10 06:43"
+    },
+    "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.holdLoopSound": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-10 06:43"
+    },
+    "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.pierceEntrySound": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-10 06:43"
+    },
+    "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.pierceExitSound": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-10 06:43"
+    },
+    "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/comet.readySound": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-10 06:44"
+    },
+    "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/fireSound": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-10 06:43"
+    },
+    "b61f706e8393adb42b7eb791ba0c1846/WeaponDefinition/impactSound": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-10 06:44"
+    },
     "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/Footstep": {
       "status": "Bad",
       "notes": "",

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 895aa9c5c4933cb4194df41af549260d, type: 3}
+  m_Name: Ice1Kit
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::RedMagic.RunEditor.LevelKit
+  fill: {fileID: 2800000, guid: cc95058e5cc5ccc4690c709fbf7186d3, type: 3}
+  fillTileUnits: 4
+  floorEdge: {fileID: -4373184736405950995, guid: 3b79828261b803146b94a4224018d546, type: 3}
+  ceilingEdge: {fileID: -3231186124988075587, guid: 85c7186b3ef74fd4d80df7aee6cd3de6, type: 3}
+  wallEdge: {fileID: 2868539044483428322, guid: 1d80078e59a8ffe44904a2d13c437f25, type: 3}
+  edgeOverhang: 0.1

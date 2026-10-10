@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f69d332ff25fed14b904a3cca7b9ff04, type: 3}
+  m_Name: Ice1Recipe
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::RedMagic.RunEditor.LevelKitRecipe
+  map: {fileID: 2800000, guid: e4bf9758904c07e4ebab743f2f9c27cf, type: 3}
+  outputFolder: Assets/Levels/_Kits/Ice1
+  fill:
+    x: 170
+    y: 200
+    width: 390
+    height: 600
+  fillTileUnits: 4
+  floor:
+    rect:
+      x: 3760
+      y: 1666
+      width: 540
+      height: 146
+    air: 0
+  ceiling:
+    rect:
+      x: 2510
+      y: 50
+      width: 610
+      height: 90
+    air: 1
+  wall:
+    rect:
+      x: 480
+      y: 680
+      width: 200
+      height: 620
+    air: 3
+  blendPixels: 100
+  stripPixelsPerUnit: 240
+  edgeOverhang: 0.1

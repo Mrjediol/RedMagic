@@ -26,6 +26,8 @@ namespace RedMagic.RunEditor
     {
         private const string OutputRoot = "Assets/Levels";
         private const string PlaceholderKitPath = "Assets/Levels/_Kits/Placeholder/PlaceholderKit.asset";
+        // Margen para pantallas anchas/altas: dos mitades de pantalla con holgura (zoom 10, hasta 21:9).
+        private static readonly Vector2 ScreenMargin = new Vector2(64f, 40f);
         private const int FillOrder = 2, EdgeOrder = 3, BackgroundOrder = -100;
 
         [Serializable]
@@ -139,25 +141,48 @@ namespace RedMagic.RunEditor
 
         private static void BuildBackground(Transform parent, int w, int h, LevelKit kit)
         {
-            // "BG" lo lee CameraBounds: su renderer define el rectángulo al que se limita la cámara.
+            // "BG" lo lee CameraFollow: su renderer define el rectángulo al que se limita la cámara.
+            // Es invisible (alfa 0) cuando hay capas: lo que se ve detrás del terreno es el parallax.
             var bg = new GameObject("BG");
             bg.transform.SetParent(parent, false);
             bg.transform.localPosition = new Vector3(w * 0.5f, h * 0.5f, 0f);
+            bg.transform.localScale = new Vector3(w / 4f, h / 4f, 1f); // el sprite blanco mide 4x4 unidades
             var sr = bg.AddComponent<SpriteRenderer>();
-            if (kit.background != null)
-            {
-                // Se estira al rectángulo del nivel: es una placa borrosa y oscura, no aguanta mirarla de cerca.
-                sr.sprite = kit.background;
-                var size = kit.background.bounds.size;
-                bg.transform.localScale = new Vector3(w / size.x, h / size.y, 1f);
-            }
-            else
-            {
-                sr.sprite = GetOrCreateWhiteSprite();
-                bg.transform.localScale = new Vector3(w / 4f, h / 4f, 1f); // el sprite blanco mide 4x4 unidades
-                sr.color = new Color(0.063f, 0.098f, 0.106f);
-            }
+            sr.sprite = GetOrCreateWhiteSprite();
             sr.sortingOrder = BackgroundOrder;
+
+            var layers = kit.layers;
+            if (layers == null || layers.Length == 0)
+            {
+                sr.color = new Color(0.063f, 0.098f, 0.106f, 1f); // sin capas: fondo liso
+                return;
+            }
+            sr.color = new Color(0.063f, 0.098f, 0.106f, 0f);
+
+            for (int i = 0; i < layers.Length; i++)
+            {
+                var def = layers[i];
+                if (def == null || def.sprite == null) continue;
+
+                // Tamaño que garantiza que la cámara no vea nunca el borde de la capa mientras
+                // recorre el nivel entero (ver ParallaxLayer): lo que se mueve es la capa, y la
+                // diferencia con la cámara es (1 - factor) por el recorrido, más media pantalla por lado.
+                var size = new Vector2(
+                    (1f - def.factor.x) * w + ScreenMargin.x,
+                    (1f - def.factor.y) * h + ScreenMargin.y);
+
+                var go = new GameObject("Parallax_" + i);
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = new Vector3(w * 0.5f, h * 0.5f, 0f);
+                var layer = go.AddComponent<SpriteRenderer>();
+                layer.sprite = def.sprite;
+                layer.drawMode = SpriteDrawMode.Tiled;
+                layer.tileMode = SpriteTileMode.Continuous;
+                layer.size = size;
+                layer.color = def.tint;
+                layer.sortingOrder = BackgroundOrder + 1 + i;
+                go.AddComponent<RedMagic.Gameplay.ParallaxLayer>().Configure(def.factor, new Vector2(w * 0.5f, h * 0.5f));
+            }
         }
 
         private static void BuildFill(Transform parent, List<Rect2Int> rects, int h, LevelKit kit,
@@ -177,7 +202,7 @@ namespace RedMagic.RunEditor
                 verts.Add(new Vector3(x1, y1)); verts.Add(new Vector3(x1, y0));
                 uvs.Add(new Vector2(x0, y0) * inv); uvs.Add(new Vector2(x0, y1) * inv);
                 uvs.Add(new Vector2(x1, y1) * inv); uvs.Add(new Vector2(x1, y0) * inv);
-                for (int k = 0; k < 4; k++) cols.Add(kit.fillTint);
+                for (int k = 0; k < 4; k++) cols.Add(Color.white);
                 tris.AddRange(new[] { i, i + 1, i + 2, i, i + 2, i + 3 });
             }
 

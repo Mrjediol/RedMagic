@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -37,14 +38,23 @@ namespace RedMagic.RunEditor
         [Tooltip("Recorte del mapa; se hace repetible en horizontal y vertical.")]
         public RectInt fill;
         [Min(0.5f)] public float fillTileUnits = 4f;
-        [Tooltip("Multiplica el color del relleno para oscurecerlo y que los bordes destaquen.")]
+        [Tooltip("Multiplica el color del relleno (se hornea en fill.png) para oscurecerlo y que los bordes destaquen.")]
         public Color fillTint = new Color(0.45f, 0.55f, 0.8f, 1f);
 
-        [Header("Fondo (a través del aire)")]
-        [Tooltip("Se saca del mapa entero, reducido y oscurecido hasta quedar como una cueva lejana y borrosa.")]
-        public bool makeBackground = true;
-        [Min(16)] public int backgroundWidth = 464;
-        [Range(0.1f, 1f)] public float backgroundBrightness = 0.55f;
+        [System.Serializable]
+        public class ParallaxSource
+        {
+            [Tooltip("Cualquier imagen de fondo. Se repite en espejo, así que no hace falta que encaje consigo misma.")]
+            public Texture2D image;
+            [Min(1), Tooltip("Píxeles por unidad: cuanto más alto, más pequeña se ve la imagen.")]
+            public int pixelsPerUnit = 32;
+            public Vector2 factor = new Vector2(0.15f, 0.08f);
+            [Tooltip("Multiplica el color: oscurecer la capa deja leer mejor el juego.")]
+            public Color tint = Color.white;
+        }
+
+        [Header("Fondo con parallax (a través del aire)")]
+        public ParallaxSource[] parallax;
 
         [Header("Tiras de borde")]
         public Strip floor = new Strip { air = AirSide.Up };
@@ -74,12 +84,29 @@ namespace RedMagic.RunEditor
             fillTex = Pixels.TileAxis(fillTex, blendPixels, horizontal: true);
             fillTex = Pixels.TileAxis(fillTex, blendPixels, horizontal: false);
 
+            // El tinte se hornea en la textura: el shader de sprites 2D no multiplica el color de vértice de una malla.
+            var fillPx = fillTex.GetPixels();
+            for (int i = 0; i < fillPx.Length; i++) fillPx[i] *= fillTint;
+            fillTex.SetPixels(fillPx);
+            fillTex.Apply();
+
             var floorSprite = SaveStrip("floor", floor);
             var ceilingSprite = SaveStrip("ceiling", ceiling);
             var wallSprite = SaveStrip("wall", wall);
             var fillAsset = SaveTexture($"{outputFolder}/fill.png", fillTex, sprite: false);
 
-            var bgSprite = makeBackground ? SaveTexture($"{outputFolder}/background.png", Pixels.Blurry(src, backgroundWidth, backgroundBrightness), sprite: true, ppu: 100) : null;
+            var layerDefs = new List<LevelKit.ParallaxLayerDef>();
+            for (int i = 0; parallax != null && i < parallax.Length; i++)
+            {
+                var layer = parallax[i];
+                if (layer == null || layer.image == null) continue;
+                var layerSrc = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                layerSrc.LoadImage(File.ReadAllBytes(AssetDatabase.GetAssetPath(layer.image)));
+                var mirrored = Pixels.Mirror2x2(layerSrc);
+                Object.DestroyImmediate(layerSrc);
+                var sprite = (Sprite)SaveTexture($"{outputFolder}/parallax_{i}.png", mirrored, sprite: true, ppu: layer.pixelsPerUnit);
+                layerDefs.Add(new LevelKit.ParallaxLayerDef { sprite = sprite, factor = layer.factor, tint = layer.tint });
+            }
 
             Object.DestroyImmediate(src);
 
@@ -96,8 +123,7 @@ namespace RedMagic.RunEditor
             kit.ceilingEdge = (Sprite)ceilingSprite;
             kit.wallEdge = (Sprite)wallSprite;
             kit.edgeOverhang = edgeOverhang;
-            kit.fillTint = fillTint;
-            kit.background = (Sprite)bgSprite;
+            kit.layers = layerDefs.ToArray();
             EditorUtility.SetDirty(kit);
             AssetDatabase.SaveAssets();
             Debug.Log($"[LevelKitRecipe] Kit generado → {kitPath}", kit);
@@ -129,7 +155,7 @@ namespace RedMagic.RunEditor
             importer.wrapMode = TextureWrapMode.Repeat;
             importer.mipmapEnabled = false;
             importer.alphaIsTransparency = true;
-            importer.maxTextureSize = 4096;
+            importer.maxTextureSize = 8192;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             if (sprite)
             {
@@ -156,26 +182,21 @@ namespace RedMagic.RunEditor
                 return t;
             }
 
-            /// <summary>Reduce el mapa entero por promedio de bloques y lo oscurece: queda una placa borrosa.</summary>
-            public static Texture2D Blurry(Texture2D src, int width, float brightness)
+            /// <summary>Imagen 2x2 en espejo: se repite sin costura aunque la original no encaje consigo misma.</summary>
+            public static Texture2D Mirror2x2(Texture2D s)
             {
-                int block = Mathf.Max(1, src.width / width);
-                int w = src.width / block, h = src.height / block;
-                var o = new Texture2D(w, h, TextureFormat.RGBA32, false);
-                var all = src.GetPixels32();
-                for (int y = 0; y < h; y++)
-                    for (int x = 0; x < w; x++)
+                int w = s.width, h = s.height;
+                var o = new Texture2D(w * 2, h * 2, TextureFormat.RGBA32, false);
+                var px = s.GetPixels32();
+                var outPx = new Color32[w * 2 * h * 2];
+                for (int y = 0; y < h * 2; y++)
+                    for (int x = 0; x < w * 2; x++)
                     {
-                        float r = 0, g = 0, b = 0; int n = 0;
-                        for (int yy = 0; yy < block; yy += 2)
-                            for (int xx = 0; xx < block; xx += 2)
-                            {
-                                var c = all[(y * block + yy) * src.width + x * block + xx];
-                                r += c.r; g += c.g; b += c.b; n++;
-                            }
-                        float k = brightness / (255f * n);
-                        o.SetPixel(x, y, new Color(r * k, g * k, b * k, 1f));
+                        int sx = x < w ? x : w * 2 - 1 - x;
+                        int sy = y < h ? y : h * 2 - 1 - y;
+                        outPx[y * w * 2 + x] = px[sy * w + sx];
                     }
+                o.SetPixels32(outPx);
                 o.Apply();
                 return o;
             }

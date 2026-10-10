@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp-Editor::RedMagic.RunEditor.LevelKit
   fill: {fileID: 2800000, guid: cc95058e5cc5ccc4690c709fbf7186d3, type: 3}
   fillTileUnits: 4
-  fillTint: {r: 0.3, g: 0.4, b: 0.62, a: 1}
-  background: {fileID: 21300000, guid: 093c8126f9ba0414bb2f45dc86dcd84b, type: 3}
+  layers:
+  - sprite: {fileID: 21300000, guid: 1564f0cd6f8546c4c966c26e2031fc81, type: 3}
+    factor: {x: 0.15, y: 0.08}
+    tint: {r: 0.75, g: 0.82, b: 0.95, a: 1}
   floorEdge: {fileID: 21300000, guid: 3b79828261b803146b94a4224018d546, type: 3}
   ceilingEdge: {fileID: 21300000, guid: 85c7186b3ef74fd4d80df7aee6cd3de6, type: 3}
   wallEdge: {fileID: 21300000, guid: 1d80078e59a8ffe44904a2d13c437f25, type: 3}

@@ -20,10 +20,12 @@ MonoBehaviour:
     width: 390
     height: 600
   fillTileUnits: 4
-  fillTint: {r: 0.3, g: 0.4, b: 0.62, a: 1}
-  makeBackground: 1
-  backgroundWidth: 116
-  backgroundBrightness: 0.5
+  fillTint: {r: 0.2, g: 0.3, b: 0.55, a: 1}
+  parallax:
+  - image: {fileID: 2800000, guid: b27420db030d2ea478e161cb46394a8e, type: 3}
+    pixelsPerUnit: 34
+    factor: {x: 0.15, y: 0.08}
+    tint: {r: 0.75, g: 0.82, b: 0.95, a: 1}
   floor:
     rect:
       x: 3760

@@ -82,4 +82,5 @@ row 0 = top) and exports `*.levelsketch.json` (`rows` of `#` solid / `.` air). U
 (Tiled sprite strips rotated per facing; none on the map border), `Collision` (BoxCollider2D per rect → CompositeCollider2D,
 layer Ground), `SectionEntry`/`SectionExit` auto-placed on the first/last standable floor. Art comes from a `LevelKit`
 asset (Tools ▸ RedMagic ▸ Niveles ▸ Crear kit de arte); with none selected a generated placeholder kit is used.
+See `docs/niveles-handoff.md` for state, failures and pending work.
 Usable as `WorldSceneGenerator`'s Base Section Prefab.

@@ -18,7 +18,23 @@ namespace RedMagic.Rigging.EditorTools
     /// </summary>
     public static class ProceduralEnemyPacks
     {
-        public const string Folder = "Assets/Prefabs/Enemies/Procedural";
+        /// <summary>Carpeta de los enemigos por piezas. Se pueden repartir en subcarpetas (zonas): ver <see cref="PathFor"/>.</summary>
+        public const string Folder = "Assets/Prefabs/Enemies";
+
+        /// <summary>
+        /// Dónde está (o irá) el prefab del enemigo <paramref name="name"/>: el que ya exista con ese nombre en cualquier
+        /// subcarpeta de <see cref="Folder"/> (zonas de hielo, bosque…), y si no hay ninguno, <c>Folder/name.prefab</c>.
+        /// Así mover un enemigo a la carpeta de su zona no rompe el reimportar desde la web.
+        /// </summary>
+        public static string PathFor(string name)
+        {
+            foreach (string guid in AssetDatabase.FindAssets($"{name} t:Prefab", new[] { Folder }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (System.IO.Path.GetFileNameWithoutExtension(path) == name && !path.Contains("/_")) return path;
+            }
+            return $"{Folder}/{name}.prefab";
+        }
         private const string FxFolder = "Assets/Prefabs/Fx/Enemies";
         private const string PlaceholderDisc = "Assets/Art/Placeholder/Disc.png";
 

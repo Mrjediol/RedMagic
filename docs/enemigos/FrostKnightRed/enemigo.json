@@ -1,7 +1,7 @@
 {
   "name": "FrostKnightRed",
   "estado": "descartado",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/FrostKnightRed.prefab",
+  "prefab": "Assets/Prefabs/Enemies/FrostKnightRed.prefab",
   "pendientes": [],
   "createdAt": "2026-10-03T20:19:33.498Z",
   "origen": "web",

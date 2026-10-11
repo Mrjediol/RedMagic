@@ -1,7 +1,7 @@
 # Levels: terrain, parallax background, biomes (`Assets/Scripts/Levels/`)
 
 Replaces the old sketch-importer/kit system (tiled edge strips, `LevelKit`, old `ParallaxLayer`), now in
-`Assets/Scripts/Legacy/Levels/`. Validated first in the web prototypes `Web/ParallaxTest/` (see
+`Assets/Legacy/Scripts/Levels/`. Validated first in the web prototypes `Web/ParallaxTest/` (see
 `docs/biomas-receta.md`); the Unity code ports the same algorithms and the same parameters.
 
 ## Scale
@@ -68,8 +68,7 @@ opacity, fall speed, landed time, particle caps for falling/landed/background). 
 
 ## Menus (`Tools ▸ RedMagic ▸ Niveles`, `LevelSetup`)
 Preparar bioma de hielo · Crear tile y paleta de terreno · Importar fondo de parallax (.json) · Crear nieve ·
-Crear escenas de prueba de hielo (`Assets/Scenes/Test/NivelHielo_{1000,2000,3000}.unity`, copied from `TestMap`
-with the web sketch layout) · Importar boceto en el nivel (web `*.levelsketch.json` → size + painted cells).
+Importar boceto en el nivel (web `*.levelsketch.json` → size + painted cells).
 
 ## Pending
 **Door art**: the Ice1 door was drawn for a floor with depth; on the flat rim it doesn't sit well. Tried a procedural

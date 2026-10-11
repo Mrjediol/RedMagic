@@ -13,7 +13,7 @@
   "pendientes": [],
   "createdAt": "2026-10-07T04:19:24.487Z",
   "tarea": "05wa22t",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab",
+  "prefab": "Assets/Prefabs/Enemies/LensCannonBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T04:23:46.373Z",
     "plantilla": "floatingCaster",

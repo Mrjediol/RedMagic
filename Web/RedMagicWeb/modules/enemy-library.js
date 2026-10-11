@@ -18,7 +18,7 @@
 // stays at 1: nothing about the object store itself changed.
 //
 // The field holding the name is still called `enemyName` for every kind. It is deliberately NOT
-// renamed: it is the same key that reaches `manifest.json`, which Assets/Editor/EnemyImporter.cs
+// renamed: it is the same key that reaches `manifest.json`, which Assets/Scripts/Editor/EnemyImporter.cs
 // reads by that exact name. A neutral alias is exposed as `entryName()` for UI that shouldn't say
 // "enemy" about a VFX.
 

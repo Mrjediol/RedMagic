@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 namespace RedMagic.Test.Editor
 {
     /// <summary>
-    /// <b>Tools ▸ RedMagic ▸ Test ▸ Escena del cometa</b>: genera <c>Assets/Scenes/Test/CometTest.unity</c> para
+    /// <b>Tools ▸ RedMagic ▸ Test ▸ Escena del cometa</b>: genera <c>Assets/Test/Scenes/CometTest.unity</c> para
     /// probar el arma Cometa. Una pista larga con tres zonas separadas (marcadas en el suelo con su color):
     /// <list type="number">
     /// <item><b>Perforación</b> (azul): cuatro muñecos en fila a la altura del jugador.</item>
@@ -23,8 +23,8 @@ namespace RedMagic.Test.Editor
     /// </summary>
     public static class CometTestSceneBuilder
     {
-        private const string SourceScene = "Assets/Scenes/Ice2.unity";
-        private const string OutputScene = "Assets/Scenes/Test/CometTest.unity";
+        private const string SourceScene = "Assets/Legacy/Scenes/Ice2.unity";
+        private const string OutputScene = "Assets/Test/Scenes/CometTest.unity";
         private const string PlayerPrefab = "Assets/Prefabs/Player.prefab";
         private const string TargetPrefab = "Assets/Prefabs/Eviroment/Target.prefab";
         private const string SquareSprite = "Assets/Art/Placeholder/Square.png";

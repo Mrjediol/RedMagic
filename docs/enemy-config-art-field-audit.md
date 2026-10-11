@@ -4,7 +4,7 @@ Read-only pass. No code changed.
 
 ## 1. What produces `OgroSpriteTestController`
 
-**`Assets/Editor/EnemyImporter.cs`** (menu: `Tools > Enemy Importer > Build Enemy From Folder`).
+**`Assets/Scripts/Editor/EnemyImporter.cs`** (menu: `Tools > Enemy Importer > Build Enemy From Folder`).
 Takes the `.zip` the web Sprites tab exports (`manifest.json` + one folder of `frame_NNN.png` per
 animation), unzipped under `Assets/`, and generates:
 
@@ -17,7 +17,7 @@ animation), unzipped under `Assets/`, and generates:
 - `Assets/Prefabs/Enemies/<Name>.prefab` — a hand-built `GameObject` (`SpriteRenderer` +
   `Animator` + `Rigidbody2D` + `BoxCollider2D`, `BuildEnemyPrefab()`). Confirmed present:
   `Assets/Prefabs/Enemies/OgroSpriteTest.prefab`.
-- `Assets/Prefabs/Projectiles/<ProjName>.prefab` for any manifest projectile.
+- `Assets/Legacy/Prefabs/Projectiles/<ProjName>.prefab` for any manifest projectile.
 
 `Assets/Enemies/OgroSpriteTest/manifest.json` on disk matches the web tool's export shape exactly
 (`{enemyName, animations:[{name,fps,loop,frameCount,projectile}], projectiles:[]}`), confirming

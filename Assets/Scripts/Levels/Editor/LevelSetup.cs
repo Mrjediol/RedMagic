@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using RedMagic.Levels;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEditor.Tilemaps;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -28,8 +27,6 @@ namespace RedMagic.LevelsEditor
         private const string PlatformTilePath = BiomesRoot + "/Plataforma.asset";
         private const string PlatformSpritePath = BiomesRoot + "/plataforma_tile.png";
         private const string PaletteName = "PaletaTerreno";
-        private const string TemplateScene = "Assets/Scenes/Test/TestMap.unity";
-        private const string TestScenesFolder = "Assets/Scenes/Test";
         /// <summary>La página de parallax mide en px de una pantalla de 720 px; aquí la pantalla mide 20 unidades.</summary>
         private const float ScreenPxToUnits = 20f / 720f;
 
@@ -370,156 +367,6 @@ namespace RedMagic.LevelsEditor
             EditorUtility.SetDirty(profile);
             AssetDatabase.SaveAssets();
             return profile;
-        }
-
-        // ------------------------------------------------------------------ escenas de prueba
-
-        [MenuItem("Tools/RedMagic/Niveles/Crear escenas de prueba de hielo (1000, 2000, 3000 px)")]
-        public static void CreateIceTestScenes()
-        {
-            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-            var biome = EnsureIceBiome();
-            EnsureTiles(out var tile, out var platformTile);
-            var post = EnsurePostProfile();
-            foreach (int rows in new[] { 25, 50, 75 })
-                CreateTestScene(rows, biome, tile, platformTile, post);
-        }
-
-        private static void CreateTestScene(int rows, LevelBiome biome, TileBase tile, TileBase platformTile, VolumeProfile post)
-        {
-            string path = $"{TestScenesFolder}/NivelHielo_{rows * 40}.unity";
-            AssetDatabase.DeleteAsset(path);
-            AssetDatabase.CopyAsset(TemplateScene, path);
-            var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
-
-            // Fuera el nivel viejo de la plantilla: se queda la cámara y el jugador.
-            foreach (var go in scene.GetRootGameObjects())
-                if (go.name != "Main Camera" && go.name != "Player") Object.DestroyImmediate(go);
-
-            var levelGo = new GameObject($"Nivel {rows * 40}px");
-            var level = levelGo.AddComponent<Level>();
-            var grid = new GameObject("Grid", typeof(Grid));
-            grid.transform.SetParent(levelGo.transform, false);
-            var terrainGo = new GameObject("Terreno", typeof(Tilemap), typeof(TilemapRenderer));
-            terrainGo.transform.SetParent(grid.transform, false);
-            terrainGo.GetComponent<TilemapRenderer>().enabled = false; // lo que se ve lo dibuja el Nivel
-            var map = terrainGo.GetComponent<Tilemap>();
-            var platformsGo = new GameObject("Plataformas", typeof(Tilemap), typeof(TilemapRenderer));
-            platformsGo.transform.SetParent(grid.transform, false);
-            platformsGo.GetComponent<TilemapRenderer>().enabled = false;
-            var platformMap = platformsGo.GetComponent<Tilemap>();
-            level.SetSize(85, rows);
-            level.SetBiome(biome);
-            level.SetTerrain(map);
-            level.SetPlatforms(platformMap);
-            PaintTestLayout(map, tile, platformMap, platformTile, 85, rows);
-
-            if (biome.background != null)
-            {
-                var bg = (GameObject)PrefabUtility.InstantiatePrefab(biome.background, levelGo.transform);
-                bg.name = "Fondo";
-            }
-            if (biome.particles != null) PrefabUtility.InstantiatePrefab(biome.particles, levelGo.transform);
-            level.Rebuild();
-
-            var light = new GameObject("Luz global").AddComponent<Light2D>();
-            light.lightType = Light2D.LightType.Global;
-            light.intensity = 1f;
-
-            var volume = new GameObject("Postproceso").AddComponent<Volume>();
-            volume.isGlobal = true;
-            volume.sharedProfile = post;
-
-            var cam = GameObject.Find("Main Camera")?.GetComponent<Camera>();
-            if (cam != null)
-            {
-                cam.orthographic = true;
-                cam.orthographicSize = 10f;
-                cam.backgroundColor = new Color32(7, 20, 38, 255);
-                cam.GetUniversalAdditionalCameraData().renderPostProcessing = true;
-            }
-
-            var player = GameObject.Find("Player");
-            if (player != null) player.transform.position = new Vector3(4.5f, level.GroundTop(4) + 1f, 0f);
-
-            EditorSceneManager.SaveScene(scene);
-            Debug.Log($"[LevelSetup] Escena de prueba: {path}");
-        }
-
-        /// <summary>El nivel del boceto web: suelo y techo escalonados, 4 plataformas y, si es alto, una escalera de plataformas.</summary>
-        private static void PaintTestLayout(Tilemap map, TileBase tile, Tilemap platformMap, TileBase platformTile, int cols, int rows)
-        {
-            map.ClearAllTiles();
-            platformMap.ClearAllTiles();
-            var platformCells = new List<Vector3Int>();
-            int[] floorH = Profile(cols, new[] { (0, 1), (10, 2), (13, 3), (18, 3), (20, 2), (24, 4), (29, 5), (34, 3), (40, 3), (42, 2), (47, 6), (55, 7), (60, 4), (66, 2), (73, 3), (75, 1) });
-            int[] ceilH = Profile(cols, new[] { (0, 1), (11, 2), (12, 4), (14, 6), (16, 4), (18, 2), (20, 1), (31, 3), (35, 1), (50, 2), (53, 1), (61, 3), (66, 1), (70, 1) });
-            var solid = new bool[cols, rows];
-            for (int x = 1; x < cols - 1; x++)
-            {
-                for (int y = 1; y < floorH[x]; y++) solid[x, y] = true;
-                for (int y = rows - ceilH[x]; y < rows - 1; y++) solid[x, y] = true;
-            }
-            // Plataformas: [columna, filas desde el suelo, ancho, alto]
-            // (las plataformas sueltas van al Tilemap de plataformas: se atraviesan desde abajo)
-            foreach (var (c, fromBottom, w, h) in new[] { (22, 12, 5, 1), (38, 16, 5, 2), (56, 13, 4, 1), (64, 18, 6, 1) })
-                Platform(solid, platformCells, c, fromBottom - h, w, h);
-
-            if (rows >= 40)
-            {
-                var rng = new System.Random(rows * 7);
-                for (int fromBottom = 21; fromBottom < rows - 5; fromBottom += 4)
-                {
-                    int placed = 0;
-                    for (int tries = 0; tries < 40 && placed < 4; tries++)
-                    {
-                        int w = 3 + rng.Next(4), c = 11 + rng.Next(cols - 26), y = fromBottom + rng.Next(2);
-                        if (!Free(solid, c, y, w, 1, cols, rows)) continue;
-                        Platform(solid, platformCells, c, y, w, 1);
-                        placed++;
-                    }
-                }
-            }
-
-            var positions = new List<Vector3Int>();
-            var isPlatform = new HashSet<Vector3Int>(platformCells);
-            for (int x = 1; x < cols - 1; x++)
-            for (int y = 1; y < rows - 1; y++)
-                if (solid[x, y] && !isPlatform.Contains(new Vector3Int(x, y, 0))) positions.Add(new Vector3Int(x, y, 0));
-            var ptiles = new TileBase[platformCells.Count];
-            for (int i = 0; i < ptiles.Length; i++) ptiles[i] = platformTile;
-            platformMap.SetTiles(platformCells.ToArray(), ptiles);
-            var tiles = new TileBase[positions.Count];
-            for (int i = 0; i < tiles.Length; i++) tiles[i] = tile;
-            map.SetTiles(positions.ToArray(), tiles);
-        }
-
-        private static int[] Profile(int n, (int from, int value)[] list)
-        {
-            var a = new int[n];
-            for (int c = 0; c < n; c++) foreach (var (from, value) in list) if (c >= from) a[c] = value;
-            return a;
-        }
-
-        private static void Platform(bool[,] solid, List<Vector3Int> cells, int x0, int y0, int w, int h)
-        {
-            for (int x = x0; x < x0 + w; x++) for (int y = y0; y < y0 + h; y++) { solid[x, y] = true; cells.Add(new Vector3Int(x, y, 0)); }
-        }
-
-        private static void Block(bool[,] solid, int x0, int y0, int w, int h)
-        {
-            for (int x = x0; x < x0 + w; x++) for (int y = y0; y < y0 + h; y++) solid[x, y] = true;
-        }
-
-        private static bool Free(bool[,] solid, int x0, int y0, int w, int h, int cols, int rows)
-        {
-            for (int x = x0 - 2; x <= x0 + w + 1; x++)
-            for (int y = y0 - 2; y <= y0 + h + 1; y++)
-            {
-                if (x <= 0 || y <= 0 || x >= cols - 1 || y >= rows - 1) return false;
-                if (solid[x, y]) return false;
-            }
-            return true;
         }
 
         // ------------------------------------------------------------------ utilidades de textura

@@ -117,11 +117,11 @@ shards give the fanned-tongue look. Independent of the attacker: place at the hi
 direction, `Play(power)` (power scales size/thickness — build upgrades). Pooled via `PrefabPool`, restarts in
 `OnEnable`, despawns itself. Variants = prefabs in `Assets/Prefabs/Fx/Player/Slash/`, built (overwritten) by
 **Tools ▸ RedMagic ▸ FX ▸ Tajo melee · Generar variantes + escena de prueba** (`Fx/Editor/MeleeSlashPack.cs`),
-which also writes `Assets/Scenes/Test/SlashPreview.unity` (all variants looping). Outer particles per layer: `shardStyle` Rombo / Rayas (speed lines) / Chispas (sparks off the head) / Trozos (chunks off the tail), compared in `SlashPreview_Exterior` (*Tajo melee · Variantes de parte exterior*). The quad is ±1.5 radii so they are not clipped. Planned on top: combo list
+which also writes `Assets/Test/Scenes/SlashPreview.unity` (all variants looping). Outer particles per layer: `shardStyle` Rombo / Rayas (speed lines) / Chispas (sparks off the head) / Trozos (chunks off the tail), compared in `SlashPreview_Exterior` (*Tajo melee · Variantes de parte exterior*). The quad is ±1.5 radii so they are not clipped. Planned on top: combo list
 (3→5 hits), build-upgraded variants, air/dash hits — keep visual params separate from gameplay params.
 - **Movement FX in the slash set**: jump / double jump / dash variants are `MeleeSlashFx` prefabs too
   (`Assets/Prefabs/Fx/Player/Movement/Fx_{Jump,DoubleJump,Dash}_1..4`, *Movimiento · Generar variantes +
-  escena de prueba* → `Assets/Scenes/Test/MovementFxPreview.unity`). `MeleeSlashFx.symmetric` opens the arc from
+  escena de prueba* → `Assets/Test/Scenes/MovementFxPreview.unity`). `MeleeSlashFx.symmetric` opens the arc from
   its centre (`startAngle` = centre) both ways; `shapeStretch` is the prefab's own X/Y squash. `PlayerVfx`
   accepts either a `MeleeSlashFx` prefab (pooled, mirrored by facing, dash one follows the player) or the old
   `VfxOneShot` particles, with a per-effect `Size` + `Offset`. **Depth split** (`depthSplit`, `splitY`,

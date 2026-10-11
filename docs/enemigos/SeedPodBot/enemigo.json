@@ -13,7 +13,7 @@
   "pendientes": [],
   "createdAt": "2026-10-07T03:45:25.414Z",
   "tarea": "dlgnt71",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab",
+  "prefab": "Assets/Prefabs/Enemies/SeedPodBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T04:03:16.904Z",
     "plantilla": "floatingCaster",

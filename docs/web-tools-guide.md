@@ -51,7 +51,7 @@ pida. Dentro debe estar `manifest.json` más una carpeta de PNGs por animación 
 - `Assets/Art/EnemyImports/<Nombre>/Animations/*.anim`
 - `Assets/Art/EnemyImports/<Nombre>/<Nombre>Controller.controller`
 - `Assets/Art/EnemyImports/<Nombre>/<Nombre>.sheet.asset` (un `SpriteSheetRecipe`)
-- `Assets/Prefabs/Projectiles/<NombreProyectil>/...` (clip + controller + prefab) si el enemigo
+- `Assets/Legacy/Prefabs/Projectiles/<NombreProyectil>/...` (clip + controller + prefab) si el enemigo
   dispara algo
 - El prefab jugable de verdad sale del siguiente menú (*Import Config...*), apuntando su `art` a
   este `.sheet.asset` — no de aquí directamente.
@@ -310,7 +310,7 @@ Library/<id>/…            ← opcional: el proyectil de biblioteca del enemigo
 - **Sprites**: `"Assets/…png"` = sprite del proyecto, se usa sin tocarlo. Otra ruta = archivo del
   bundle: se copia a `Assets/Art/RigImports/<name>/` y su import (Single, ppu, pivote) se escribe
   desde `sprites` (`pixelsPerUnit`, `pivot` normalizado) o `pixelsPerUnit` general.
-- **Prefab**: `Assets/Prefabs/Enemies/Procedural/<name>.prefab` = raíz → `Visual` → piezas,
+- **Prefab**: `Assets/Prefabs/Enemies/<name>.prefab` = raíz → `Visual` → piezas,
   `ProceduralRig` entero, pila de enemigo (`ProceduralRigTool.Setup`) o de jefe
   (`BossBodyBuilder.AddBossStack` + `BossLimbs` + `SoundEmitter`, definición del `boss-config`
   enlazada), con su motor (`RigDriverCode`) en el propio prefab: un solo prefab, sin variantes
@@ -450,7 +450,7 @@ importador de mapas). Un único diálogo resumen (piezas creadas, sprites no enc
 
 ## Tools ▸ Web ▸ Biblioteca
 
-**Qué hace**: una ventana acoplable (`Tools ▸ Web ▸ Biblioteca Jere`, `Assets/Editor/WebLibraryWindow.cs`)
+**Qué hace**: una ventana acoplable (`Tools ▸ Web ▸ Biblioteca Jere`, `Assets/Scripts/Editor/WebLibraryWindow.cs`)
 para navegar y borrar de forma segura lo que estos importadores (y el pipeline de enemigos/jefes)
 han ido dejando en el proyecto — sin ella, limpiar un enemigo de prueba significa acordarte a mano
 de las 2-4 carpetas/prefabs que le corresponden y no dejarte ninguna suelta. No lee nada de la web
@@ -492,7 +492,7 @@ prefab real puede seguir apuntando ahí si vino de "Importar enemigo completo").
 lista las rutas que realmente existen (hasta 2: el prefab más esa carpeta), pide confirmación
 explícita, y borra cada una con `AssetDatabase.MoveAssetToTrash` (recuperable desde la papelera del
 sistema operativo, nunca un borrado duro) — si alguna ruta ya no existe, se omite y se reporta al
-final en vez de abortar todo el borrado. Los proyectiles (`Assets/Prefabs/Projectiles/<Nombre>/`)
+final en vez de abortar todo el borrado. Los proyectiles (`Assets/Legacy/Prefabs/Projectiles/<Nombre>/`)
 **no** se borran con el enemigo a propósito: están indexados por nombre de proyectil, no de
 enemigo, y nada impide que dos enemigos compartan uno — bórralos a mano si quedan huérfanos.
 

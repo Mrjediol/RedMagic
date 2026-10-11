@@ -14,7 +14,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class ChampiPack
     {
-        private const string Sheet = "Assets/Sprites/champi-distancia-statico-suelo.jpg";
+        private const string Sheet = "Assets/Legacy/Sprites/champi-distancia-statico-suelo.jpg";
         private const string RecipeFolder = "Assets/Art/Characters/Champi";
         private const string SheetRecipePath = RecipeFolder + "/Champi.sheet.asset";
         private const string EnemyRecipePath = RecipeFolder + "/Champi.enemy.asset";

@@ -158,7 +158,7 @@ gesture poses, effect defaults), then anything that does not behave as described
 
 The user compared the DOTween copies in Play (2026-10-01): no clear difference, and the extra bounce
 on every action was not liked. Decision: **one driver, `RigDriverCode`**; the DOTween driver is in
-`Assets/Scripts/Legacy/`, its copies and pack are deleted.
+`Assets/Legacy/Scripts/`, its copies and pack are deleted.
 
 **Tests**
 - [ ] T1 · Regression: `Robot`, `Turret` and `BossIce2` animate exactly as before the experiment
@@ -477,7 +477,7 @@ level, loops closing), not how they sound.
 
 Art from ComfyUI (Qwen Image 2.1), body from the `floatingCaster` template, built and imported with
 `Web/RedMagicWeb/tools/comfy/make-enemy.mjs` (brief: `enemies/ShroomShaman.json`). Process: `.claude/skills/make-enemy`.
-Prefab: `Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab`. **Checked statically only** (components, sprites,
+Prefab: `Assets/Prefabs/Enemies/ShroomShaman.prefab`. **Checked statically only** (components, sprites,
 projectile, deck of 2 attacks, sound slots; compiles). Nothing was seen moving.
 
 - [ ] SH1 · Drop the prefab in a section. Size next to the player (meant to be 2.8 units tall) — too big / small?

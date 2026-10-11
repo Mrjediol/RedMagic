@@ -83,6 +83,8 @@ namespace RedMagic.Audio.EditorTools
 
         public static bool IsIgnored(string assetPath)
         {
+            // Lo de Legacy ya no se usa: ni sus sonidos ni sus huecos de sonido cuentan.
+            if (RedMagic.EditorTools.LegacyGuard.IsLegacyPath(assetPath)) return true;
             var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
             return asset != null && AssetDatabase.GetLabels(asset).Contains(IgnoreLabel);
         }

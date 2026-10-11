@@ -63,7 +63,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 - **Scenes**: never store a scene by name string → use `SceneReference`.
 - **Generic-first**: attacks/movements reusable by any enemy or boss; build generic behaviour first, then specific enemy. Every attack ships a default placeholder projectile/FX.
 - **Inspector-first**: plain fields/checkboxes over ScriptableObject indirection when it reads better in Inspector. Prefer redesign over workaround.
-- **Legacy** (`Assets/Scripts/Legacy/`) and `Assets/_Reference/`: read-only reference, never build on it.
+- **Legacy** (`Assets/Legacy/Scripts/`) and `Assets/_Reference/`: read-only reference, never build on it.
 - **Search scope**: `Assets/Scripts`, `Assets/Ui`, `Assets/Audio`, `Assets/Scenes`. Skip `Assets/Brackeys/`, `Assets/Cainos/`, `Assets/Dragon Warrior Files/`.
 - "Biblioteca Jere" (antes "Biblioteca web") = custom tabbed Unity **editor window** (Tools ▸ Web ▸ Biblioteca Jere), NOT `Web/RedMagicWeb`. Tab "Enemies" = part-based, "EnemiesSprite" = sprite-sheet.
 

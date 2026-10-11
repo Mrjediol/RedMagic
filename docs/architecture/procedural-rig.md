@@ -53,7 +53,7 @@ sheet. Animation is code, not clips.
   `Corpse` fades/destroys the whole enemy.
 - **One driver.** `RigDriverCode` is the only engine. A DOTween one (`RigDriverTween`) was built and
   compared on the drone, the turret and BossIce2 (2026-10-01) and retired to
-  `Assets/Scripts/Legacy/RigDriverTween.cs`: no visible gain in game, and it costs more — a dozen
+  `Assets/Legacy/Scripts/RigDriverTween.cs`: no visible gain in game, and it costs more — a dozen
   tweens and closures allocated per gesture against zero-allocation composition, a second engine to
   keep in step with every rig feature, and tuning (eases) that lived on the component instead of
   in `ProceduralRig`, so it did not travel in `rig-config.json` nor reach other enemies. **What
@@ -228,7 +228,7 @@ spawns folded (not in `OnEnable`: the rig resets its pose there). Animator enemi
 `PlaySleep` (their Idle clip already is the sleep).
 
 ## One prefab, driver included
-Each part-based enemy/boss is **one prefab** (`Assets/Prefabs/Enemies/Procedural/<Name>.prefab`)
+Each part-based enemy/boss is **one prefab** (`Assets/Prefabs/Enemies/<Name>.prefab`)
 carrying everything: enemy/boss stack, `ProceduralRig` **and its driver** (`RigDriverCode`). There
 are no `_Code` / `_Dotween` variants any more (the old pairs were merged on 2026-09-30, the
 variant's values winning). Trying another engine = swapping the `RigDriver` component

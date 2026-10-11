@@ -10,7 +10,7 @@ Léelo entero antes de tocar nada de niveles. Es el estado real tras una sesión
 Poder hacerse mapas de CUALQUIER tamaño (300 celdas de ancho, 200 de alto…) sin depender de un
 mapa entero generado por Gemini (5:1, sin verticalidad, sin control de plataformas, escala distinta
 en cada imagen). **No es artista** y las IAs no dan buenos tilesets. El listón de calidad es un mapa
-entero de Gemini (`Assets/Prefabs/Maps/Hielo/Ice1.png`): marco de piedra, paredes de hielo que dan
+entero de Gemini (`Assets/Legacy/Prefabs/Maps/Hielo/Ice1.png`): marco de piedra, paredes de hielo que dan
 sentido a la puerta, carámbanos, cristales, plataformas, fondo de cueva con profundidad.
 
 **Lo fácil** (plataformas, decoración, puentes, puertas como objeto aparte): ya hay hojas buenas.
@@ -21,20 +21,20 @@ sentido a la puerta, carámbanos, cristales, plataformas, fondo de cueva con pro
 
 - **Web** `Web/RedMagicWeb/modules/level-sketch.js`, pestaña "🧱 Boceto de nivel": cuadrícula, pinta
   terreno, 1 celda = 1 unidad Unity, silueta del jugador. Exporta `*.levelsketch.json`
-  (`rows` de `#`/`.`, fila 0 = arriba). Bocetos en `Assets/LevelsBoceto/`.
+  (`rows` de `#`/`.`, fila 0 = arriba). Bocetos en `Assets/Legacy/LevelsBoceto/`.
 - **Unity** `Assets/Scripts/Run/Editor/`:
   - `LevelSketchImporter` (Tools ▸ RedMagic ▸ Niveles ▸ Importar boceto): boceto → prefab en
     `Assets/Levels/<nombre>/` con `BG` (límites de cámara), `Parallax_i`, `Fill` (malla de rectángulos),
     `Edges` (tiras Tiled giradas por orientación, esquinas convexas alargadas), `Collision`
     (BoxCollider2D → CompositeCollider2D, capa Ground), `SectionEntry`/`SectionExit` automáticos.
   - `LevelKit` + `LevelKitRecipe`: kit de arte (relleno, tiras suelo/techo/pared, capas parallax) sacado
-    de recortes de un mapa de Gemini + imagen de fondo. Receta de Ice1 en `Assets/Levels/_Kits/Ice1/`.
+    de recortes de un mapa de Gemini + imagen de fondo. Receta de Ice1 en `Assets/Legacy/Levels/_Kits/Ice1/`.
   - `SheetSlicer`: corta hojas de piezas sobre magenta en PNG sueltos.
 - **Runtime** `Assets/Scripts/Gameplay/ParallaxLayer.cs`: una capa = un sprite Tiled que sigue a la cámara
   a una fracción; ancla = centro del nivel. El fondo se genera en espejo 2×2 para repetirse sin costura.
 - `CameraFollow` ya acotaba al objeto `BG` de la escena: no hizo falta cámara nueva. No renombrar la raíz
   del prefab a `BG`.
-- Escena de prueba `Assets/Scenes/Test/TestMap.unity` (sin commitear, el usuario la guarda).
+- Escena de prueba `Assets/Test/Scenes/TestMap.unity` (sin commitear, el usuario la guarda).
 
 ## Decisiones tomadas
 

@@ -31,7 +31,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class PlayerPack
     {
-        private const string Sheet = "Assets/Sprites/player_sprite.jpeg";
+        private const string Sheet = "Assets/Legacy/Sprites/player_sprite.jpeg";
         private const string Folder = "Assets/Art/Characters/Player";
         private const string SheetRecipePath = Folder + "/Player.sheet.asset";
         private const string ControllerPath = Folder + "/Player.controller";
@@ -47,7 +47,7 @@ namespace RedMagic.Pipeline.EditorTools
         private const string PlayerPrefab = "Assets/Prefabs/Player.prefab";
 
         /// <summary>Recuadros del ataque cortados a mano, como Sprite sueltos.</summary>
-        private const string HandCutFolder = "Assets/Sprites/New folder";
+        private const string HandCutFolder = "Assets/Legacy/Sprites/New folder";
 
         /// <summary>
         /// Ancho de la columna de rótulos, medido con <see cref="Diagnose"/>: el texto ocupa
@@ -220,7 +220,7 @@ namespace RedMagic.Pipeline.EditorTools
         /// La fila del ataque es la única que ninguna heurística acierta: el aura de energía crece
         /// tanto que invade los frames vecinos, así que el reparto uniforme partía dos poses por la
         /// mitad. Los cinco recuadros están puestos a mano como <see cref="Sprite"/> en
-        /// <c>Assets/Sprites/New folder/</c>; aquí se copian a la receta.
+        /// <c>Assets/Legacy/Sprites/New folder/</c>; aquí se copian a la receta.
         ///
         /// Se copian, no se leen en cada corte: una vez escritos, la receta es autosuficiente y los
         /// assets sueltos se pueden borrar. Si se retocan a mano, volver a lanzar el pack los

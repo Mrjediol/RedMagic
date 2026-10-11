@@ -13,7 +13,7 @@
   "pendientes": [],
   "createdAt": "2026-10-07T03:45:25.394Z",
   "tarea": "2fyvohh",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab",
+  "prefab": "Assets/Prefabs/Enemies/LeafBladeBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T03:54:52.565Z",
     "plantilla": "floatingCaster",

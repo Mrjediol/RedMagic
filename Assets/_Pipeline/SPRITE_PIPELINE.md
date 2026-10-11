@@ -31,7 +31,7 @@ Menú: **Tools ▸ RedMagic ▸ Pipeline**.
 
 | Ruta | Qué contiene |
 |---|---|
-| `Assets/Sprites/` | Láminas tal como llegan del artista. No se tocan nunca. |
+| `Assets/Legacy/Sprites/` | Láminas tal como llegan del artista. No se tocan nunca. |
 | `Assets/Art/Characters/<Nombre>/` | Todo lo generado de ese personaje. |
 | `Assets/Art/Characters/<Nombre>/<Nombre>.sheet.asset` | La receta de la lámina. **Es la fuente de verdad del corte.** |
 | `Assets/Art/Characters/<Nombre>/<Nombre>.enemy.asset` | La ficha del enemigo. **Es la fuente de verdad de sus números.** |
@@ -413,7 +413,7 @@ unity command recompile_status   # errors: [] = limpio
 
 ## 8. Ejemplo trabajado: TreeWalk
 
-`Assets/Sprites/TreeWalk.jpg`, 1264×1264, 4 filas (IDLE / ATTACK / HURT / DEATH) × 5 frames, con
+`Assets/Legacy/Sprites/TreeWalk.jpg`, 1264×1264, 4 filas (IDLE / ATTACK / HURT / DEATH) × 5 frames, con
 los rótulos escritos en la imagen y **sin canal alfa**.
 
 Lo que hizo el pipeline sin intervención:
@@ -511,7 +511,7 @@ sólo *dónde empieza y acaba cada frame*.
 
 Cómo se sacan los números sin contar píxeles: abre la lámina en el Sprite Editor, corta esa fila a
 mano, y lee el `rect` de cada sprite resultante. `PlayerPack.AdoptHandCutAttack` hace justo eso con
-los cinco `attack1..5.asset` de `Assets/Sprites/New folder/` y los **copia** a la receta — una vez
+los cinco `attack1..5.asset` de `Assets/Legacy/Sprites/New folder/` y los **copia** a la receta — una vez
 copiados la receta es autosuficiente y los sprites sueltos se pueden borrar.
 
 Fue necesario en la fila del ataque del jugador: el aura de energía crece tanto que invade los

@@ -15,7 +15,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class GorilaPack
     {
-        private const string Sheet = "Assets/Sprites/Gorilla-meele-movimiento-suelo.jpeg";
+        private const string Sheet = "Assets/Legacy/Sprites/Gorilla-meele-movimiento-suelo.jpeg";
         private const string RecipeFolder = "Assets/Art/Characters/Gorila";
         private const string SheetRecipePath = RecipeFolder + "/Gorila.sheet.asset";
         private const string EnemyRecipePath = RecipeFolder + "/Gorila.enemy.asset";

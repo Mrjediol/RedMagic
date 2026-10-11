@@ -13,7 +13,7 @@
   "pendientes": [],
   "createdAt": "2026-10-07T16:06:29.315Z",
   "tarea": "cd96jly",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab",
+  "prefab": "Assets/Prefabs/Enemies/ProtonSentry.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T16:09:40.036Z",
     "plantilla": "floatingCaster",

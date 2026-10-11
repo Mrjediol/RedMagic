@@ -7,7 +7,7 @@ namespace RedMagic.Items
 {
     /// <summary>
     /// Nivel de cada arma (1..3) y su compra con calaveras, para el sistema de armas/items.
-    /// Reemplaza al viejo <c>AbilityLevelManager</c> (ver <c>Assets/Scripts/Legacy/WeaponLevels/</c>),
+    /// Reemplaza al viejo <c>AbilityLevelManager</c> (ver <c>Assets/Legacy/Scripts/WeaponLevels/</c>),
     /// que subía de nivel una <c>AbilityDefinition</c> — con el sistema de items equipado, el altar
     /// nunca encontraba nada que subir.
     ///

@@ -32,7 +32,7 @@
   ],
   "createdAt": "2026-10-05T20:07:52.78Z",
   "tarea": "u10nnxh",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/PolarTurretBot.prefab",
+  "prefab": "Assets/Prefabs/Enemies/PolarTurretBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-05T20:27:58.287Z",
     "plantilla": "floatingCaster",

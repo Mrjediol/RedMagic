@@ -26,7 +26,7 @@ namespace RedMagic.Economy.EditorTools
     public static class ShopSceneSetup
     {
         private const string ScenePath = "Assets/Scenes/Shop.unity";
-        private const string BackgroundPath = "Assets/Prefabs/Maps/maps/Shop1.png";
+        private const string BackgroundPath = "Assets/Art/Shop/Shop1.png";
 
         // Medido sobre Shop1.png (0..1 desde abajo-izquierda): los 5 altares.
         private static readonly float[] AltarU = { 0.2765f, 0.3825f, 0.5f, 0.62f, 0.7225f };

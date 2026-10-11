@@ -2,7 +2,7 @@
 // -----------------------------------------------------------------------------
 // Ported from the old exportBtn click handler + its cropToDataURL helper.
 // Produces the exact same manifest.json shape and folder layout the existing
-// Unity-side importer (Assets/Editor/EnemyImporter.cs) already reads — do not
+// Unity-side importer (Assets/Scripts/Editor/EnemyImporter.cs) already reads — do not
 // change field names or folder structure here without updating that importer
 // too.
 //

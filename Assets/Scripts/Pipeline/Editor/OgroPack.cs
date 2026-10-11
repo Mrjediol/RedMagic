@@ -17,7 +17,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class OgroPack
     {
-        private const string Sheet = "Assets/Sprites/Ogro-distancia-movimiento-suelo.jpeg";
+        private const string Sheet = "Assets/Legacy/Sprites/Ogro-distancia-movimiento-suelo.jpeg";
         private const string RecipeFolder = "Assets/Art/Characters/Ogro";
         private const string SheetRecipePath = RecipeFolder + "/Ogro.sheet.asset";
         private const string EnemyRecipePath = RecipeFolder + "/Ogro.enemy.asset";

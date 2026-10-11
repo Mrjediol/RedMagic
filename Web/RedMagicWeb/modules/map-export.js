@@ -3,7 +3,7 @@
 // PNG compositing + Map JSON export, ported from MapTracer.html's `exportPng`/`exportJson`/
 // `sceneLines`. The JSON shape (`format: 'RedMagicMap/1'`, `canvas`, `instances[]`,
 // `collisions.groundLines/platformLines`) is byte-identical to the original — it's parsed as-is
-// by Assets/Editor/CollisionImporter.cs's `MapImporter`, so **coordinate with that file before
+// by Assets/Legacy/Scripts/Editor/CollisionImporter.cs's `MapImporter`, so **coordinate with that file before
 // changing field names or shapes**.
 
 import { findAsset } from './map-assets.js';
@@ -74,7 +74,7 @@ export function buildMapJson(width, height, assets, instances) {
  * composed map, so there is no `canvas`/`instances` here, just each piece's own local-space
  * lines. `fileName` mirrors `map-library.js`'s `loadPieceAsAsset` convention (== `name`, a saved
  * piece has no original uploaded filename to remember). Parsed by the same
- * `Assets/Editor/CollisionImporter.cs` file as `buildMapJson` above, in a dedicated importer for
+ * `Assets/Legacy/Scripts/Editor/CollisionImporter.cs` file as `buildMapJson` above, in a dedicated importer for
  * this shape — coordinate with that file before changing field names.
  */
 export function buildPiecesJson(pieceRecords) {

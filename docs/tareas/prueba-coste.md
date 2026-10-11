@@ -10,10 +10,10 @@ Variante teñida del caballero, **solo teñida en Unity**, sin regenerar arte. L
 (web) **roja**: mismo trabajo, distinto color y distinto nombre, así que no se pisan y **no hace falta tocar ramas de git**.
 
 Lado 1 (terminal):
-> Crea una variante del enemigo FrostKnight de color verde, llamada FrostKnightGreen. Solo teñirlo en Unity: no regeneres arte ni pidas sprites; reutiliza las piezas existentes con un tinte verde (en los SpriteRenderer o con el mecanismo que ya tenga el proyecto). Prefab nuevo en Assets/Prefabs/Enemies/Procedural/, con el mismo comportamiento, ataques y animaciones. Compila, haz commit y dime qué has hecho y cómo probarlo.
+> Crea una variante del enemigo FrostKnight de color verde, llamada FrostKnightGreen. Solo teñirlo en Unity: no regeneres arte ni pidas sprites; reutiliza las piezas existentes con un tinte verde (en los SpriteRenderer o con el mecanismo que ya tenga el proyecto). Prefab nuevo en Assets/Prefabs/Enemies/, con el mismo comportamiento, ataques y animaciones. Compila, haz commit y dime qué has hecho y cómo probarlo.
 
 Lado 2 (web):
-> Crea una variante del enemigo FrostKnight de color rojo, llamada FrostKnightRed. Solo teñirlo en Unity: no regeneres arte ni pidas sprites; reutiliza las piezas existentes con un tinte rojo (en los SpriteRenderer o con el mecanismo que ya tenga el proyecto). Prefab nuevo en Assets/Prefabs/Enemies/Procedural/, con el mismo comportamiento, ataques y animaciones. Compila, haz commit y dime qué has hecho y cómo probarlo.
+> Crea una variante del enemigo FrostKnight de color rojo, llamada FrostKnightRed. Solo teñirlo en Unity: no regeneres arte ni pidas sprites; reutiliza las piezas existentes con un tinte rojo (en los SpriteRenderer o con el mecanismo que ya tenga el proyecto). Prefab nuevo en Assets/Prefabs/Enemies/, con el mismo comportamiento, ataques y animaciones. Compila, haz commit y dime qué has hecho y cómo probarlo.
 
 (La cola le añade su encabezado y las reglas de informe: es parte de lo que se mide. Si el lado 2 reutiliza lo que hizo el
 lado 1, es otra diferencia a anotar.)

@@ -39,7 +39,7 @@ namespace RedMagic.Bosses.EditorTools
         private const string PropsSheet =
             "Assets/Cainos/Pixel Art Platformer - Village Props/Texture/TX Village Props.png";
 
-        private const string BossScenePath = "Assets/Scenes/Worlds/World3/World3_Boss.unity";
+        private const string BossScenePath = "Assets/Legacy/Scenes/Worlds/World3/World3_Boss.unity";
 
         /// <summary>
         /// La estatua mide 35×77 px a 32 px/unidad = 1,1 × 2,4 unidades. A ×3,7 se queda en unas

@@ -444,7 +444,7 @@
         "Assets/Audio/Sfx/Game/boss/boss_activate.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "SoundEmitter",
         "member": "OnActivate",
@@ -462,7 +462,7 @@
         "Assets/Audio/Sfx/Game/boss/boss_death.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -480,7 +480,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_charge.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[0].sounds.Array.data[0].sound",
@@ -498,7 +498,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_dash.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[1].sounds.Array.data[0].sound",
@@ -516,7 +516,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_slam.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[4].sounds.Array.data[0].sound",
@@ -534,7 +534,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_step.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[3].sounds.Array.data[0].sound",
@@ -552,7 +552,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_pickup.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[5].sounds.Array.data[0].sound",
@@ -570,7 +570,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_throw.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[6].sounds.Array.data[0].sound",
@@ -588,7 +588,7 @@
         "Assets/Audio/Sfx/Game/boss/boss_hurt.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -606,7 +606,7 @@
         "Assets/Audio/Sfx/Game/boss/boss_vulnerable.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "SoundEmitter",
         "member": "OnVulnerable",
@@ -1000,7 +1000,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/BarkDrumBot.prefab",
         "guid": "b6748897f1308994bb03c84edc97cd7b",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -1016,7 +1016,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/BarkDrumBot.prefab",
         "guid": "b6748897f1308994bb03c84edc97cd7b",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -1032,7 +1032,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/BarkDrumBot.prefab",
         "guid": "b6748897f1308994bb03c84edc97cd7b",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -1050,7 +1050,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/BarkDrumBot.prefab",
         "guid": "b6748897f1308994bb03c84edc97cd7b",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -1066,7 +1066,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BloomSentry.prefab",
+        "asset": "Assets/Prefabs/Enemies/BloomSentry.prefab",
         "guid": "0cc705be6e8002c45b554607c163b8f2",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -1120,7 +1120,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_death_plant.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BloomSentry.prefab",
+        "asset": "Assets/Prefabs/Enemies/BloomSentry.prefab",
         "guid": "0cc705be6e8002c45b554607c163b8f2",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -1138,7 +1138,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_hurt_plant.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BloomSentry.prefab",
+        "asset": "Assets/Prefabs/Enemies/BloomSentry.prefab",
         "guid": "0cc705be6e8002c45b554607c163b8f2",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -1156,7 +1156,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_wake.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/BloomSentry.prefab",
+        "asset": "Assets/Prefabs/Enemies/BloomSentry.prefab",
         "guid": "0cc705be6e8002c45b554607c163b8f2",
         "component": "SoundEmitter",
         "member": "OnWake",
@@ -1172,7 +1172,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/CinderKettleBot.prefab",
         "guid": "dbdeff51b4cbc1d428db2e106274c342",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -1206,7 +1206,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/CinderKettleBot.prefab",
         "guid": "dbdeff51b4cbc1d428db2e106274c342",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -1222,7 +1222,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/CinderKettleBot.prefab",
         "guid": "dbdeff51b4cbc1d428db2e106274c342",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -1240,7 +1240,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/CinderKettleBot.prefab",
         "guid": "dbdeff51b4cbc1d428db2e106274c342",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -1256,7 +1256,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/CrystalOrbBot.prefab",
         "guid": "6f3e0fda101b77348bd8b7fa06c6fb22",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -1272,7 +1272,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/CrystalOrbBot.prefab",
         "guid": "6f3e0fda101b77348bd8b7fa06c6fb22",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -1288,7 +1288,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/CrystalOrbBot.prefab",
         "guid": "6f3e0fda101b77348bd8b7fa06c6fb22",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -1306,7 +1306,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/CrystalOrbBot.prefab",
         "guid": "6f3e0fda101b77348bd8b7fa06c6fb22",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -1322,7 +1322,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostBoxBot.prefab",
         "guid": "e0451c03e0f2d8f4a9683c335855f80a",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -1338,7 +1338,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostBoxBot.prefab",
         "guid": "e0451c03e0f2d8f4a9683c335855f80a",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -1354,7 +1354,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostBoxBot.prefab",
         "guid": "e0451c03e0f2d8f4a9683c335855f80a",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -1372,7 +1372,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostBoxBot.prefab",
         "guid": "e0451c03e0f2d8f4a9683c335855f80a",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -1388,7 +1388,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnight.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnight.prefab",
         "guid": "145ff34e0c8f24f41bf5facbb5af676e",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -1440,7 +1440,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnight.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnight.prefab",
         "guid": "145ff34e0c8f24f41bf5facbb5af676e",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -1458,7 +1458,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnight.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnight.prefab",
         "guid": "145ff34e0c8f24f41bf5facbb5af676e",
         "component": "SoundEmitter",
         "member": "OnEvade",
@@ -1474,7 +1474,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnight.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnight.prefab",
         "guid": "145ff34e0c8f24f41bf5facbb5af676e",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -1490,7 +1490,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnight.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnight.prefab",
         "guid": "145ff34e0c8f24f41bf5facbb5af676e",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -1506,7 +1506,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnightGreen.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnightGreen.prefab",
         "guid": "1c4ca4448e841e1429b10a279c2397a7",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -1522,7 +1522,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnightGreen.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnightGreen.prefab",
         "guid": "1c4ca4448e841e1429b10a279c2397a7",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -1540,7 +1540,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnightGreen.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnightGreen.prefab",
         "guid": "1c4ca4448e841e1429b10a279c2397a7",
         "component": "SoundEmitter",
         "member": "OnEvade",
@@ -1556,7 +1556,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnightGreen.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnightGreen.prefab",
         "guid": "1c4ca4448e841e1429b10a279c2397a7",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -1572,7 +1572,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnightGreen.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnightGreen.prefab",
         "guid": "1c4ca4448e841e1429b10a279c2397a7",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -1588,7 +1588,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnightRed.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnightRed.prefab",
         "guid": "7c0edd6f57844141b673eef48cd9f591",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -1604,7 +1604,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnightRed.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnightRed.prefab",
         "guid": "7c0edd6f57844141b673eef48cd9f591",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -1622,7 +1622,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnightRed.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnightRed.prefab",
         "guid": "7c0edd6f57844141b673eef48cd9f591",
         "component": "SoundEmitter",
         "member": "OnEvade",
@@ -1638,7 +1638,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnightRed.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnightRed.prefab",
         "guid": "7c0edd6f57844141b673eef48cd9f591",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -1654,7 +1654,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/FrostKnightRed.prefab",
+        "asset": "Assets/Prefabs/Enemies/FrostKnightRed.prefab",
         "guid": "7c0edd6f57844141b673eef48cd9f591",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -1743,7 +1743,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb.prefab",
         "guid": "818737513e15ccc43b95ee95c01f9606",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -1795,7 +1795,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb.prefab",
         "guid": "818737513e15ccc43b95ee95c01f9606",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -1813,7 +1813,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb.prefab",
         "guid": "818737513e15ccc43b95ee95c01f9606",
         "component": "SoundEmitter",
         "member": "OnEvade",
@@ -1831,7 +1831,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_dash.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb.prefab",
         "guid": "818737513e15ccc43b95ee95c01f9606",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[4].sounds.Array.data[0].sound",
@@ -1847,7 +1847,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb.prefab",
         "guid": "818737513e15ccc43b95ee95c01f9606",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -1865,7 +1865,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb.prefab",
         "guid": "818737513e15ccc43b95ee95c01f9606",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -1881,7 +1881,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb 1.prefab",
         "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -1897,7 +1897,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb 1.prefab",
         "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -1915,7 +1915,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb 1.prefab",
         "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
         "component": "SoundEmitter",
         "member": "OnEvade",
@@ -1933,7 +1933,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_dash.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb 1.prefab",
         "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[4].sounds.Array.data[0].sound",
@@ -1949,7 +1949,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb 1.prefab",
         "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -1967,7 +1967,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb 1.prefab",
         "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -2053,7 +2053,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -2107,7 +2107,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_death_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -2125,7 +2125,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnEvade",
@@ -2143,7 +2143,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_charge.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[1].sounds.Array.data[0].sound",
@@ -2161,7 +2161,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_shoot.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[4].sounds.Array.data[0].sound",
@@ -2179,7 +2179,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_flick.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[0].sounds.Array.data[0].sound",
@@ -2197,7 +2197,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_sweep.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[2].sounds.Array.data[0].sound",
@@ -2216,7 +2216,7 @@
         "Assets/Audio/Sfx/Enemies/IceRobot/shop_buy.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[6].sounds.Array.data[0].sound",
@@ -2234,7 +2234,7 @@
         "Assets/Audio/Sfx/Enemies/IceRobot/player_dash.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[6].sounds.Array.data[1].sound",
@@ -2252,7 +2252,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_hurt_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -2270,7 +2270,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -2288,7 +2288,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_wake_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot.prefab",
         "guid": "70d25f523f32864479851e50119cff00",
         "component": "SoundEmitter",
         "member": "OnWake",
@@ -2304,7 +2304,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot2.prefab",
         "guid": "2f22a3361a3daff48b9d19235e4ca7d6",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -2412,7 +2412,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_death_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot2.prefab",
         "guid": "2f22a3361a3daff48b9d19235e4ca7d6",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -2430,7 +2430,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot2.prefab",
         "guid": "2f22a3361a3daff48b9d19235e4ca7d6",
         "component": "SoundEmitter",
         "member": "OnEvade",
@@ -2448,7 +2448,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_hurt_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot2.prefab",
         "guid": "2f22a3361a3daff48b9d19235e4ca7d6",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -2466,7 +2466,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot2.prefab",
         "guid": "2f22a3361a3daff48b9d19235e4ca7d6",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -2484,7 +2484,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_wake_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceRobot2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceRobot2.prefab",
         "guid": "2f22a3361a3daff48b9d19235e4ca7d6",
         "component": "SoundEmitter",
         "member": "OnWake",
@@ -2570,7 +2570,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/LeafBladeBot.prefab",
         "guid": "3f442e612330da84ea24cb5388888639",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -2586,7 +2586,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/LeafBladeBot.prefab",
         "guid": "3f442e612330da84ea24cb5388888639",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -2602,7 +2602,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/LeafBladeBot.prefab",
         "guid": "3f442e612330da84ea24cb5388888639",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -2620,7 +2620,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/LeafBladeBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/LeafBladeBot.prefab",
         "guid": "3f442e612330da84ea24cb5388888639",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -2636,7 +2636,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/LensCannonBot.prefab",
         "guid": "5a4e96081182fcb4d8d584c50930215c",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -2652,7 +2652,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/LensCannonBot.prefab",
         "guid": "5a4e96081182fcb4d8d584c50930215c",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -2668,7 +2668,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/LensCannonBot.prefab",
         "guid": "5a4e96081182fcb4d8d584c50930215c",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -2686,7 +2686,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/LensCannonBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/LensCannonBot.prefab",
         "guid": "5a4e96081182fcb4d8d584c50930215c",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -2702,7 +2702,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/MawDomeBot.prefab",
         "guid": "970d3a5aebe9d5e4e92e63af3e2fe408",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -2718,7 +2718,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/MawDomeBot.prefab",
         "guid": "970d3a5aebe9d5e4e92e63af3e2fe408",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -2734,7 +2734,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/MawDomeBot.prefab",
         "guid": "970d3a5aebe9d5e4e92e63af3e2fe408",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -2752,7 +2752,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/MawDomeBot.prefab",
         "guid": "970d3a5aebe9d5e4e92e63af3e2fe408",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -2768,7 +2768,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/MossLanternBot.prefab",
         "guid": "9cfd2b1cc8b6d42449f279c5a2608962",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -2802,7 +2802,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/MossLanternBot.prefab",
         "guid": "9cfd2b1cc8b6d42449f279c5a2608962",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -2820,7 +2820,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/MossLanternBot.prefab",
         "guid": "9cfd2b1cc8b6d42449f279c5a2608962",
         "component": "SoundEmitter",
         "member": "OnEvade",
@@ -2836,7 +2836,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/MossLanternBot.prefab",
         "guid": "9cfd2b1cc8b6d42449f279c5a2608962",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -2854,7 +2854,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/MossLanternBot.prefab",
         "guid": "9cfd2b1cc8b6d42449f279c5a2608962",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -2870,7 +2870,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/PolarTurretBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/PolarTurretBot.prefab",
         "guid": "cd3f669cbe8146148880945b7e5b54c2",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -2924,7 +2924,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_death_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/PolarTurretBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/PolarTurretBot.prefab",
         "guid": "cd3f669cbe8146148880945b7e5b54c2",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -2942,7 +2942,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_hurt_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/PolarTurretBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/PolarTurretBot.prefab",
         "guid": "cd3f669cbe8146148880945b7e5b54c2",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -2960,7 +2960,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/PolarTurretBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/PolarTurretBot.prefab",
         "guid": "cd3f669cbe8146148880945b7e5b54c2",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -2976,7 +2976,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab",
+        "asset": "Assets/Prefabs/Enemies/ProtonSentry.prefab",
         "guid": "6aaed22a8d4f4464fb2ed45045fb3c8b",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -2992,7 +2992,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab",
+        "asset": "Assets/Prefabs/Enemies/ProtonSentry.prefab",
         "guid": "6aaed22a8d4f4464fb2ed45045fb3c8b",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -3008,7 +3008,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab",
+        "asset": "Assets/Prefabs/Enemies/ProtonSentry.prefab",
         "guid": "6aaed22a8d4f4464fb2ed45045fb3c8b",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -3026,7 +3026,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ProtonSentry.prefab",
+        "asset": "Assets/Prefabs/Enemies/ProtonSentry.prefab",
         "guid": "6aaed22a8d4f4464fb2ed45045fb3c8b",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -3042,7 +3042,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/SeedPodBot.prefab",
         "guid": "ba4ddf340e03a4544aec66b5b994e9b3",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -3058,7 +3058,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/SeedPodBot.prefab",
         "guid": "ba4ddf340e03a4544aec66b5b994e9b3",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -3074,7 +3074,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/SeedPodBot.prefab",
         "guid": "ba4ddf340e03a4544aec66b5b994e9b3",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -3092,7 +3092,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/SeedPodBot.prefab",
+        "asset": "Assets/Prefabs/Enemies/SeedPodBot.prefab",
         "guid": "ba4ddf340e03a4544aec66b5b994e9b3",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -3108,7 +3108,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "asset": "Assets/Prefabs/Enemies/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -3180,7 +3180,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_death_plant.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "asset": "Assets/Prefabs/Enemies/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -3198,7 +3198,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "asset": "Assets/Prefabs/Enemies/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "SoundEmitter",
         "member": "OnEvade",
@@ -3216,7 +3216,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_charge.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "asset": "Assets/Prefabs/Enemies/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[1].sounds.Array.data[0].sound",
@@ -3234,7 +3234,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_dash.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "asset": "Assets/Prefabs/Enemies/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[3].sounds.Array.data[0].sound",
@@ -3252,7 +3252,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_flick.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "asset": "Assets/Prefabs/Enemies/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[0].sounds.Array.data[0].sound",
@@ -3270,7 +3270,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_sweep.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "asset": "Assets/Prefabs/Enemies/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[2].sounds.Array.data[0].sound",
@@ -3288,7 +3288,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_sweep.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "asset": "Assets/Prefabs/Enemies/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[4].sounds.Array.data[0].sound",
@@ -3306,7 +3306,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_hurt_plant.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "asset": "Assets/Prefabs/Enemies/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -3324,7 +3324,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ShroomShaman.prefab",
+        "asset": "Assets/Prefabs/Enemies/ShroomShaman.prefab",
         "guid": "b9d04b6a93c95534498068b28e5c43d4",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -3340,7 +3340,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestBee.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestBee.prefab",
         "guid": "3ba055a0ea8e39848867ec836f9bd196",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -3356,7 +3356,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestBee.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestBee.prefab",
         "guid": "3ba055a0ea8e39848867ec836f9bd196",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -3372,7 +3372,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestBee.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestBee.prefab",
         "guid": "3ba055a0ea8e39848867ec836f9bd196",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -3390,7 +3390,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestBee.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestBee.prefab",
         "guid": "3ba055a0ea8e39848867ec836f9bd196",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -3406,7 +3406,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestGolem.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestGolem.prefab",
         "guid": "84579723b8de88544829dba077f19b39",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -3442,7 +3442,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_death_ice.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestGolem.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestGolem.prefab",
         "guid": "84579723b8de88544829dba077f19b39",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -3460,7 +3460,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_hurt_ice.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestGolem.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestGolem.prefab",
         "guid": "84579723b8de88544829dba077f19b39",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -3476,7 +3476,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestGolem.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestGolem.prefab",
         "guid": "84579723b8de88544829dba077f19b39",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -3492,7 +3492,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestRobot.prefab",
         "guid": "37eabbe9a3c0e1a49841fa665de06b4a",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -3528,7 +3528,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_death_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestRobot.prefab",
         "guid": "37eabbe9a3c0e1a49841fa665de06b4a",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -3546,7 +3546,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_hurt_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestRobot.prefab",
         "guid": "37eabbe9a3c0e1a49841fa665de06b4a",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -3564,7 +3564,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/TestRobot.prefab",
+        "asset": "Assets/Prefabs/Enemies/TestRobot.prefab",
         "guid": "37eabbe9a3c0e1a49841fa665de06b4a",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -3580,7 +3580,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+        "asset": "Assets/Prefabs/Enemies/ThornFairy.prefab",
         "guid": "4c328ff226ccb0843b659d79c0c821f0",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -3614,7 +3614,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+        "asset": "Assets/Prefabs/Enemies/ThornFairy.prefab",
         "guid": "4c328ff226ccb0843b659d79c0c821f0",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -3632,7 +3632,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+        "asset": "Assets/Prefabs/Enemies/ThornFairy.prefab",
         "guid": "4c328ff226ccb0843b659d79c0c821f0",
         "component": "SoundEmitter",
         "member": "OnEvade",
@@ -3648,7 +3648,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+        "asset": "Assets/Prefabs/Enemies/ThornFairy.prefab",
         "guid": "4c328ff226ccb0843b659d79c0c821f0",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -3666,7 +3666,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+        "asset": "Assets/Prefabs/Enemies/ThornFairy.prefab",
         "guid": "4c328ff226ccb0843b659d79c0c821f0",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -3682,7 +3682,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Turret.prefab",
+        "asset": "Assets/Prefabs/Enemies/Turret.prefab",
         "guid": "7116cf21cf3670b44a2d253afd4e1e97",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -3700,7 +3700,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_death_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Turret.prefab",
+        "asset": "Assets/Prefabs/Enemies/Turret.prefab",
         "guid": "7116cf21cf3670b44a2d253afd4e1e97",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -3718,7 +3718,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_hurt_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Turret.prefab",
+        "asset": "Assets/Prefabs/Enemies/Turret.prefab",
         "guid": "7116cf21cf3670b44a2d253afd4e1e97",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -3736,7 +3736,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_wake_metal.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/Turret.prefab",
+        "asset": "Assets/Prefabs/Enemies/Turret.prefab",
         "guid": "7116cf21cf3670b44a2d253afd4e1e97",
         "component": "SoundEmitter",
         "member": "OnWake",
@@ -3752,7 +3752,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
+        "asset": "Assets/Prefabs/Enemies/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
         "component": "SoundEmitter",
         "member": "OnAttack",
@@ -3822,7 +3822,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
+        "asset": "Assets/Prefabs/Enemies/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
         "component": "SoundEmitter",
         "member": "OnDeath",
@@ -3840,7 +3840,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_charge.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
+        "asset": "Assets/Prefabs/Enemies/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[1].sounds.Array.data[0].sound",
@@ -3858,7 +3858,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_flick.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
+        "asset": "Assets/Prefabs/Enemies/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[0].sounds.Array.data[0].sound",
@@ -3876,7 +3876,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_hop.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
+        "asset": "Assets/Prefabs/Enemies/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[3].sounds.Array.data[0].sound",
@@ -3894,7 +3894,7 @@
         "Assets/Audio/Sfx/Game/gesture/gesture_sweep.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
+        "asset": "Assets/Prefabs/Enemies/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
         "component": "ProceduralRig",
         "member": "gestures.Array.data[2].sounds.Array.data[0].sound",
@@ -3910,7 +3910,7 @@
       "clipSource": "InheritedPlaceholder",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
+        "asset": "Assets/Prefabs/Enemies/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
         "component": "SoundEmitter",
         "member": "OnHit",
@@ -3928,7 +3928,7 @@
         "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/koros.prefab",
+        "asset": "Assets/Prefabs/Enemies/koros.prefab",
         "guid": "b7b738613f12540478432615be1dbff6",
         "component": "SoundEmitter",
         "member": "OnMove",
@@ -4349,7 +4349,7 @@
       "clipSource": "None",
       "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceBoss2.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
         "component": "BossController",
         "member": "music",
@@ -4499,7 +4499,7 @@
         "Assets/Audio/Sfx/VfxLab/shieldBreak.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb 1.prefab",
         "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
         "component": "HitShield",
         "member": "breakSound",
@@ -4517,7 +4517,7 @@
         "Assets/Audio/Sfx/VfxLab/shieldUp.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Procedural/IceCannonOrb 1.prefab",
+        "asset": "Assets/Prefabs/Enemies/IceCannonOrb 1.prefab",
         "guid": "d3d16ed1a0e9fa447a1f9041ec9a9f67",
         "component": "HitShield",
         "member": "upSound",
@@ -4535,7 +4535,7 @@
         "Assets/Audio/Sfx/VfxLab/shieldBreak.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Shield/Shield.prefab",
+        "asset": "Assets/Prefabs/Enemies/_Comportamientos/Shield.prefab",
         "guid": "5c47ca2a376838547868c47913334c3c",
         "component": "HitShield",
         "member": "breakSound",
@@ -4553,7 +4553,7 @@
         "Assets/Audio/Sfx/VfxLab/shieldUp.wav"
       ],
       "owner": {
-        "asset": "Assets/Prefabs/Enemies/Shield/Shield.prefab",
+        "asset": "Assets/Prefabs/Enemies/_Comportamientos/Shield.prefab",
         "guid": "5c47ca2a376838547868c47913334c3c",
         "component": "HitShield",
         "member": "upSound",

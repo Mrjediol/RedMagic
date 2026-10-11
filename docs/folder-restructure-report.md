@@ -8,7 +8,7 @@ FolderRestructureMigration.cs` (this pass). No filesystem-level moves.
 
 ## Step 1 — dead basic-prefab step removed, not just relocated
 
-`Assets/Editor/EnemyImporter.cs`'s `BuildEnemyFromFolderPath` no longer builds or saves a
+`Assets/Scripts/Editor/EnemyImporter.cs`'s `BuildEnemyFromFolderPath` no longer builds or saves a
 sprite-only enemy prefab (`BuildEnemyPrefab` method deleted entirely, along with its call site,
 the now-dead `ENEMY_PREFAB_FOLDER` constant, and the now-pointless `projectileTriggers` dict that
 only fed it). It still builds animation clips, the `AnimatorController`, the `SpriteSheetRecipe`
@@ -27,13 +27,13 @@ before this pass), and a live re-run of its sprite-import call produced the same
 | `Assets/Prefabs/` (whole folder — basic sprite-only prefabs + test junk: `ElTestDEOgro`, `OgroSpriteTest`, `RegressionFixEnemy`, `TestBundleEnemy`, etc., plus `Prefabs/Projectiles/Rock.prefab`) | **deleted** (`MoveAssetToTrash`, OS-recoverable) | Confirmed fully dead before deletion — nothing downstream read it |
 | `Assets/Prefab/` (singular) | `Assets/Prefabs/` (plural, now free) | Whole-tree rename — carries `Enemies/`, `Fx/`, `Eviroment/`, `Maps/` (see split below), `Player.prefab` |
 | `Assets/Enemies/<name>/` | `Assets/Art/EnemyImports/<name>/` | Rename only, internals untouched |
-| `Assets/Projectiles/` (top-level, `Rock/` anim+controller) | `Assets/Prefabs/Projectiles/` | Folded into the new `Prefabs/` root — same folder `EnemyImporter.cs`'s projectile-prefab step already writes to |
+| `Assets/Projectiles/` (top-level, `Rock/` anim+controller) | `Assets/Legacy/Prefabs/Projectiles/` | Folded into the new `Prefabs/` root — same folder `EnemyImporter.cs`'s projectile-prefab step already writes to |
 | `Assets/Ui/Art/*` (2 loose files: `MainMenu.jpeg`, `necrotic_bone_shrine_03.png`) | `Assets/Art/UI/*` | **File-level merge, not a folder rename** — `Assets/Art/UI/` already existed (the UI-art-kit pipeline's own output: `ItemIcons/`, `ItemsUi/`, `Menus/`); moved the 2 loose files in individually, then trashed the now-empty `Ui/Art/` |
 | `Assets/Icon/` | `Assets/Art/Icons/` | Rename |
 | `Assets/Sounds/*.wav` (6 files) | `Assets/Audio/Sfx/` | Rename — confirmed NOT `Resources.Load`'d |
 | `Assets/Data/Worlds/` | `Assets/ScriptableObjects/Worlds/` | Rename; `Assets/Data/` was empty afterward, trashed |
 | `Assets/Prefab/Maps/Bg.prefab` | `Assets/Art/Environments/Bg.prefab` | The one prefab in `Maps/` with **no** `Collisions` child — a standalone piece, not a composed map |
-| `Assets/Prefab/Maps/{Border, frame_005, frame_007, "frame_007 1", "map (1)", map, map2}.prefab` + the nested `maps/{map, "map (1)"}.prefab` (+ their `.json`) | `Assets/Prefabs/Maps/` (same names) | **All 8 of these DO have a `Collisions` child** (checked live, not by filename — my filename-based guess going in was wrong) — classified as composed maps and rode along with the `Prefab → Prefabs` rename unchanged |
+| `Assets/Prefab/Maps/{Border, frame_005, frame_007, "frame_007 1", "map (1)", map, map2}.prefab` + the nested `maps/{map, "map (1)"}.prefab` (+ their `.json`) | `Assets/Legacy/Prefabs/Maps/` (same names) | **All 8 of these DO have a `Collisions` child** (checked live, not by filename — my filename-based guess going in was wrong) — classified as composed maps and rode along with the `Prefab → Prefabs` rename unchanged |
 
 ### Deliberately NOT moved (and why)
 
@@ -52,7 +52,7 @@ before this pass), and a live re-run of its sprite-import call produced the same
 |---|---|---|
 | `EnemyRecipe.ResolvedFolder` default | `Scripts/Pipeline/EnemyRecipe.cs` | `Assets/Prefabs/Enemies` |
 | `ENEMY_PREFAB_FOLDER` | `Editor/EnemyImporter.cs` | **removed** (Step 1) |
-| `PROJECTILE_PREFAB_FOLDER` / `PROJECTILE_ASSET_FOLDER` | `Editor/EnemyImporter.cs` | both `Assets/Prefabs/Projectiles` (consolidated — previously two separate top-level folders) |
+| `PROJECTILE_PREFAB_FOLDER` / `PROJECTILE_ASSET_FOLDER` | `Editor/EnemyImporter.cs` | both `Assets/Legacy/Prefabs/Projectiles` (consolidated — previously two separate top-level folders) |
 | `enemyRoot` | `Editor/EnemyImporter.cs`, `Scripts/Pipeline/Editor/ConfigImport/CombinedBundleImporter.cs` | `Assets/Art/EnemyImports/{enemyName}` |
 | `folder` (per-enemy projectile FX) | `Scripts/Pipeline/Editor/EnemyFactory.cs` | `Assets/Prefabs/Fx/Enemies/{recipe.enemyName}` |
 | `ENEMY_PIPELINE_FOLDER`, `ENEMY_IMPORTER_FOLDER`, `PLAYER_PREFAB_PATH` | `Editor/WebLibraryWindow.cs` | `Assets/Prefabs/Enemies`, `Assets/Art/EnemyImports`, `Assets/Prefabs/Player.prefab` (`ART_CHARACTERS_FOLDER`/`BOSS_DEFINITION_FOLDER`/`SCENES_FOLDER` unchanged — not moved) |

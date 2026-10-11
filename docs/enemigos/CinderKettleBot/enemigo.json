@@ -64,7 +64,7 @@
     ]
   },
   "tarea": "7c4x7fj",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/CinderKettleBot.prefab",
+  "prefab": "Assets/Prefabs/Enemies/CinderKettleBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T16:22:17.033Z",
     "plantilla": "floatingCaster",

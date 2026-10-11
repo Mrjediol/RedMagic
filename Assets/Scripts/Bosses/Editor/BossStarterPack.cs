@@ -30,7 +30,7 @@ namespace RedMagic.Bosses.EditorTools
         private const string TreePrefabPath =
             "Assets/Cainos/Pixel Art Platformer - Village Props/Prefab/PF Village Props - Tree 01.prefab";
 
-        private const string BossScenePath = "Assets/Scenes/Worlds/World1/World1_Boss.unity";
+        private const string BossScenePath = "Assets/Legacy/Scenes/Worlds/World1/World1_Boss.unity";
 
         /// <summary>
         /// Escala del sprite del árbol. Se ha ajustado a la cámara: con un tamaño ortográfico de

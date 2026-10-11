@@ -9,7 +9,7 @@ hacer ahora). Rama: `task/humanoid-walker`. Idioma con el usuario: español, res
 - Arte: 8 piezas flotantes estilo "Fracture" (Cape, BackHand, BackFoot, Hips, Torso, Head, FrontFoot, WeaponHand) +
   variantes (Head: attacking/hurt/dead; WeaponHand: gesture_Slash; BackHand: gesture_DarkOrb). Originales a 1024 en
   `%LOCALAPPDATA%\Comfy-Desktop\ComfyUI-Shared\output\claude\` (base `kn_fix2_raw_00002_`, manos `kn2_BackHand_raw_*`),
-  finales 2048 en `claude/knight/final/`. Prefab: `Assets/Prefabs/Enemies/Procedural/FrostKnight.prefab`; brief:
+  finales 2048 en `claude/knight/final/`. Prefab: `Assets/Prefabs/Enemies/FrostKnight.prefab`; brief:
   `Web/RedMagicWeb/tools/comfy/enemies/FrostKnight.json`.
 - **Andar** (`ProceduralRig.gait`, `RigDriverCode.ApplyGait`): pies que pisan sin patinar, ciclo por distancia; doc en
   `docs/architecture/procedural-rig.md` ▸ Walking. El usuario le dio un 5/10 ("decente, mejorable en el futuro").

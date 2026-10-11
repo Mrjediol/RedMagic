@@ -152,7 +152,7 @@ zero references anywhere outside their own pack folder.
 | `Enemy_{enemyName}.prefab` | `Scripts/Pipeline/EnemyRecipe.cs:70` (`PrefabPath`) | Prefab naming convention itself |
 | `Assets/Art/Characters/{characterName}` (default) | `Scripts/Pipeline/SpriteSheetRecipe.cs:259` (`ResolvedFolder`) | Every pipeline-cut sheet's sprite/controller/recipe location |
 | `Assets/Prefabs/Enemies` | `Editor/EnemyImporter.cs:65` (`ENEMY_PREFAB_FOLDER`) | "Build Enemy From Folder"'s sprite-only prefab output |
-| `Assets/Prefabs/Projectiles` | `Editor/EnemyImporter.cs:66` (`PROJECTILE_PREFAB_FOLDER`) | Same importer's projectile prefabs |
+| `Assets/Legacy/Prefabs/Projectiles` | `Editor/EnemyImporter.cs:66` (`PROJECTILE_PREFAB_FOLDER`) | Same importer's projectile prefabs |
 | `Assets/Projectiles` | `Editor/EnemyImporter.cs:67` (`PROJECTILE_ASSET_FOLDER`) | Same importer's projectile anim/controller |
 | `Assets/Enemies/{enemyName}` | `Editor/EnemyImporter.cs:217` (`enemyRoot`) | Sprite/anim/controller/config-json tree for both the standalone and combined-bundle import paths |
 | `Assets/Prefab/Fx/Enemies/{recipe.enemyName}` | `Scripts/Pipeline/Editor/EnemyFactory.cs:288` | Generated per-enemy projectile FX prefab folder |
@@ -164,20 +164,20 @@ zero references anywhere outside their own pack folder.
 | `Assets/Scenes` | `Editor/WebLibraryWindow.cs:70` (`SCENES_FOLDER`) | Biblioteca's Escenas grid source |
 | `Assets/Resources/Bosses` | `Scripts/Bosses/Editor/BossStarterPack.cs:20`, `ScarecrowBossPack.cs:31` (`BossFolder`) | Where each boss pack writes its `BossDefinition`/`BossAttack_*` assets |
 | `Assets/Prefab/Enemies` | `BossStarterPack.cs:21`, `ScarecrowBossPack.cs:32` (`PrefabFolder`) | Where each boss pack writes its prefab |
-| `Assets/Scenes/Worlds/World1/World1_Boss.unity` | `BossStarterPack.cs:28` (`BossScenePath`) | "Colocar jefe en escena" menu target |
-| `Assets/Scenes/Worlds/World2/World2_Boss.unity` | `ScarecrowBossPack.cs:42` (`BossScenePath`) | Same, World 2 |
+| `Assets/Legacy/Scenes/Worlds/World1/World1_Boss.unity` | `BossStarterPack.cs:28` (`BossScenePath`) | "Colocar jefe en escena" menu target |
+| `Assets/Legacy/Scenes/Worlds/World2/World2_Boss.unity` | `ScarecrowBossPack.cs:42` (`BossScenePath`) | Same, World 2 |
 | `Assets/Brackeys/2D Mega Pack/Enemies/Crow.png` | `ScarecrowBossPack.cs:40` (`CrowTexture`) | Crow minion/projectile sprite source at generation time |
-| `Assets/Sprites/player_sprite.jpeg` | `Scripts/Pipeline/Editor/PlayerPack.cs:34` (`Sheet`) | Player regen source sheet |
+| `Assets/Legacy/Sprites/player_sprite.jpeg` | `Scripts/Pipeline/Editor/PlayerPack.cs:34` (`Sheet`) | Player regen source sheet |
 | `Assets/Art/Characters/Player` | `PlayerPack.cs:35` (`Folder`) | Player's cut-sheet output folder |
 | `Assets/Dragon Warrior Files/Animations/DragonWarrior.controller` | `PlayerPack.cs:38` (`SourceController`) | Player regen's starting controller template (see §2) |
 | `Assets/Prefab/Player.prefab` | `PlayerPack.cs:39` (`PlayerPrefab`) | The one player prefab's location |
-| `Assets/Sprites/New folder` | `PlayerPack.cs:42` (`HandCutFolder`) | A hand-cut fallback sprite source — note the literal un-renamed `"New folder"` name |
+| `Assets/Legacy/Sprites/New folder` | `PlayerPack.cs:42` (`HandCutFolder`) | A hand-cut fallback sprite source — note the literal un-renamed `"New folder"` name |
 | *(dialog start folder only, not a real constraint)* | `Editor/CollisionImporter.cs:29,45,251` | `SaveFilePanelInProject`/`OpenFolderPanel`/`SaveFolderPanel` all start at `"Assets"` or prompt the user — Map Tracer import paths are **not** hardcoded beyond that; safe w.r.t. restructure by design |
 
 **`Assets/...` paths mentioned in the four docs** (grep of each file):
 
-- `Web/RedMagicWeb/ARCHITECTURE.md`: `Assets/Editor/EnemyImporter.cs`, `Assets/Editor/CollisionImporter.cs`, `Assets/Editor/WebLibraryWindow.cs`, `Assets/Enemies/<enemyName>/<enemyName>.sheet.asset` (the convention `libraryArtPath()` assumes — noted in-doc as "inert if wrong, not a silent bug").
-- `docs/web-tools-guide.md`: `Assets/Enemies/RawImport/...` (example), `Assets/Enemies/<Nombre>/...` (Animations/.controller/.sheet.asset), `Assets/Prefabs/Enemies/<Nombre>.prefab`, `Assets/Projectiles/<NombreProyectil>/...`, `Assets/Prefabs/Projectiles/<NombreProyectil>.prefab`, `Assets/Prefab/Enemies` (singular, contrasted explicitly against the plural), `Assets/Art/Characters/<Nombre>/`, `Assets/Resources/Bosses/`, `Assets/Prefab/Player.prefab`, `Assets/Scenes/`. This doc is the densest concentration of literal paths in prose form — a restructure invalidates most of its "Qué produce" sections verbatim.
+- `Web/RedMagicWeb/ARCHITECTURE.md`: `Assets/Scripts/Editor/EnemyImporter.cs`, `Assets/Legacy/Scripts/Editor/CollisionImporter.cs`, `Assets/Scripts/Editor/WebLibraryWindow.cs`, `Assets/Enemies/<enemyName>/<enemyName>.sheet.asset` (the convention `libraryArtPath()` assumes — noted in-doc as "inert if wrong, not a silent bug").
+- `docs/web-tools-guide.md`: `Assets/Enemies/RawImport/...` (example), `Assets/Enemies/<Nombre>/...` (Animations/.controller/.sheet.asset), `Assets/Prefabs/Enemies/<Nombre>.prefab`, `Assets/Projectiles/<NombreProyectil>/...`, `Assets/Legacy/Prefabs/Projectiles/<NombreProyectil>.prefab`, `Assets/Prefab/Enemies` (singular, contrasted explicitly against the plural), `Assets/Art/Characters/<Nombre>/`, `Assets/Resources/Bosses/`, `Assets/Prefab/Player.prefab`, `Assets/Scenes/`. This doc is the densest concentration of literal paths in prose form — a restructure invalidates most of its "Qué produce" sections verbatim.
 - `docs/schemas/enemy-config.schema.json`: `Assets/Enemies/<enemyName>/<enemyName>.sheet.asset` (in `libraryArtPath`-adjacent commentary imported from ARCHITECTURE.md's convention), plus the `art` field's `pattern: "^Assets/"` and `prefabFolder`'s `pattern: "^Assets/"` / `default: "Assets/Prefab/Enemies"` — these are **schema-enforced** patterns, not just prose: any restructure that moves content out of `Assets/` (impossible in Unity anyway) or changes the default prefab folder needs this default updated too.
 - `docs/schemas/COMPATIBILITY.md`: no literal `Assets/...` paths — it's about C# field-mapping, not folder locations.
 

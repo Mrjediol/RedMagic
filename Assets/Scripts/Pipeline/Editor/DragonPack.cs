@@ -18,7 +18,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class DragonPack
     {
-        private const string Sheet = "Assets/Sprites/Dragon-Distancia-Movimiento-Volador (2).jpeg";
+        private const string Sheet = "Assets/Legacy/Sprites/Dragon-Distancia-Movimiento-Volador (2).jpeg";
         private const string RecipeFolder = "Assets/Art/Characters/Dragon";
         private const string SheetRecipePath = RecipeFolder + "/Dragon.sheet.asset";
         private const string EnemyRecipePath = RecipeFolder + "/Dragon.enemy.asset";

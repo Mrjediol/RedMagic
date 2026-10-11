@@ -41,7 +41,7 @@
     "name": {
       "type": "string",
       "minLength": 1,
-      "$comment": "Nombre del prefab: Assets/Prefabs/Enemies/Procedural/<name>.prefab (con su motor). Reimportar con el mismo nombre actualiza."
+      "$comment": "Nombre del prefab: Assets/Prefabs/Enemies/<name>.prefab (con su motor). Reimportar con el mismo nombre actualiza."
     },
     "pixelsPerUnit": {
       "type": "number",

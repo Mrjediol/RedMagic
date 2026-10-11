@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 namespace RedMagic.Test.Editor
 {
     /// <summary>
-    /// <b>Tools ▸ RedMagic ▸ Test ▸ Escena de parry</b>: genera <c>Assets/Scenes/Test/ParryTest.unity</c>.
+    /// <b>Tools ▸ RedMagic ▸ Test ▸ Escena de parry</b>: genera <c>Assets/Test/Scenes/ParryTest.unity</c>.
     ///
     /// Los singletons de escena, la UI y la cámara se <b>mueven</b> desde una sección real
     /// (<see cref="SourceScene"/>, que se cierra sin guardar), así llegan con todas sus referencias
@@ -22,9 +22,9 @@ namespace RedMagic.Test.Editor
     /// </summary>
     public static class ParryTestSceneBuilder
     {
-        private const string SourceScene = "Assets/Scenes/Ice2.unity";
-        private const string OutputScene = "Assets/Scenes/Test/ParryTest.unity";
-        private const string MeleeEnemy = "Assets/Prefabs/Enemies/Procedural/TestGolem.prefab";
+        private const string SourceScene = "Assets/Legacy/Scenes/Ice2.unity";
+        private const string OutputScene = "Assets/Test/Scenes/ParryTest.unity";
+        private const string MeleeEnemy = "Assets/Prefabs/Enemies/TestGolem.prefab";
         private const string SquareSprite = "Assets/Art/Placeholder/Square.png";
         private const int GroundLayer = 6;
 

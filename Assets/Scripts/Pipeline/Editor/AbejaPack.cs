@@ -20,7 +20,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class AbejaPack
     {
-        private const string Sheet = "Assets/Sprites/abeja-distancia-statica-aire.jpg";
+        private const string Sheet = "Assets/Legacy/Sprites/abeja-distancia-statica-aire.jpg";
         private const string RecipeFolder = "Assets/Art/Characters/Abeja";
         private const string SheetRecipePath = RecipeFolder + "/Abeja.sheet.asset";
         private const string EnemyRecipePath = RecipeFolder + "/Abeja.enemy.asset";

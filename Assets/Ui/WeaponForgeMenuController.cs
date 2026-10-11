@@ -14,7 +14,7 @@ namespace RedMagic.UI
     /// sistema de items, pagando con calaveras.
     ///
     /// Reemplaza al viejo <c>WeaponUpgradeMenuController</c> (ver
-    /// <c>Assets/Scripts/Legacy/WeaponLevels/</c>), que leía <c>AbilityUser.Equipped</c>. Es a
+    /// <c>Assets/Legacy/Scripts/WeaponLevels/</c>), que leía <c>AbilityUser.Equipped</c>. Es a
     /// propósito una pantalla mínima — una sola carta, un solo botón —: la decisión no es qué
     /// comprar sino si gastar las calaveras ahora o guardarlas.
     ///

@@ -11,7 +11,7 @@ namespace RedMagic.Items
     /// sistema de items a cambio de calaveras.
     ///
     /// Reemplaza al viejo <c>WeaponUpgradeAltar</c> (ver
-    /// <c>Assets/Scripts/Legacy/WeaponLevels/</c>), que buscaba un <c>AbilityUser</c> — con el
+    /// <c>Assets/Legacy/Scripts/WeaponLevels/</c>), que buscaba un <c>AbilityUser</c> — con el
     /// sistema de habilidades ya sin uso, el jugador nunca tenía nada equipado ahí y la forja
     /// siempre decía "no llevas ningún arma equipada" aunque sí llevara una del sistema nuevo.
     ///

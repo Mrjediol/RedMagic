@@ -1565,7 +1565,7 @@ function renderLibraryTab() {
 
 // ============================================================ Map Tracer tab
 //
-// Ported from the standalone Assets/Editor/MapTracer.html. Same shape as the Sprites tab's own
+// Ported from the standalone Assets/Legacy/Scripts/Editor/MapTracer.html. Same shape as the Sprites tab's own
 // canvas wiring (hitTestHandle/dragState for resize, applySelectionClick-like shift semantics for
 // multi-select) but driven by the map-*.js modules instead of inline logic. See ARCHITECTURE.md's
 // "Map Tracer" section for the module map and the two-kind (maps/pieces) library schema.

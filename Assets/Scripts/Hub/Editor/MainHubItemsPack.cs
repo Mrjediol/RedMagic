@@ -8,7 +8,7 @@ namespace RedMagic.Hub.EditorTools
 {
     /// <summary>
     /// El pack de los 5 props del hub (cofre, libro, yunque, armario, espejo), los cinco cortados
-    /// de la misma lámina, <c>Assets/Sprites/Maibhubitems.png</c>.
+    /// de la misma lámina, <c>Assets/Legacy/Sprites/Maibhubitems.png</c>.
     ///
     /// No encaja en el molde de <c>&lt;Nombre&gt;Pack.cs</c> de un enemigo o un jefe — una receta,
     /// un personaje — porque aquí <b>una lámina son cinco objetos</b>, cada uno con su propio
@@ -25,7 +25,7 @@ namespace RedMagic.Hub.EditorTools
     /// </summary>
     public static class MainHubItemsPack
     {
-        private const string SheetPath = "Assets/Sprites/Maibhubitems.png";
+        private const string SheetPath = "Assets/Legacy/Sprites/Maibhubitems.png";
         private const string CharacterName = "MainHubItems";
         private const string RootFolder = "Assets/Art/Characters/MainHubItems";
         private const string RecipePath = RootFolder + "/MainHubItems.sheet.asset";

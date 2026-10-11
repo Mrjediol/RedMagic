@@ -23,11 +23,11 @@ namespace RedMagic.Bosses.EditorTools
     ///
     /// Es a la vez la plantilla de un jefe con lámina propia. De dos láminas sale todo:
     /// <list type="bullet">
-    ///   <item><c>Assets/Sprites/TreeBoss.png</c> — el cuerpo, una fila por estado (reposo, cargar,
+    ///   <item><c>Assets/Legacy/Sprites/TreeBoss.png</c> — el cuerpo, una fila por estado (reposo, cargar,
     ///         golpe al suelo, invocar, tambaleo, muerte). Pasa por el pipeline de enemigos
     ///         (<see cref="SpritePipeline.RunSheet"/>) y sale con clips, controller y los eventos de
     ///         suelta en cada gesto.</item>
-    ///   <item><c>Assets/Sprites/BossAttack.png</c> — los efectos (orbe quieto / en vuelo / estallido,
+    ///   <item><c>Assets/Legacy/Sprites/BossAttack.png</c> — los efectos (orbe quieto / en vuelo / estallido,
     ///         púa que brota / se retira, onda de raíces). Se corta con dos recetas sobre la misma
     ///         lámina, recortada por arriba o por abajo, porque los orbes van centrados y lo que sale
     ///         del suelo va con el pivote abajo.</item>
@@ -47,8 +47,8 @@ namespace RedMagic.Bosses.EditorTools
     {
         // ================================================================= rutas
 
-        private const string BodySheet = "Assets/Sprites/TreeBoss.png";
-        private const string FxSheet = "Assets/Sprites/BossAttack.png";
+        private const string BodySheet = "Assets/Legacy/Sprites/TreeBoss.png";
+        private const string FxSheet = "Assets/Legacy/Sprites/BossAttack.png";
 
         private const string ArtFolder = "Assets/Art/Characters/TreeBoss";
         private const string BodyRecipePath = ArtFolder + "/TreeBoss.sheet.asset";
@@ -88,7 +88,7 @@ namespace RedMagic.Bosses.EditorTools
         // cayendo, impacto de la hoja. DressFireAndLeafArt sustituye los cuatro prefabs de arriba
         // en cuanto la lámina esté cortada, y crea el quinto (el estallido, que antes no existía)
         // sin tocar boltPrefab/firePrefab/projectile.prefab ni ningún número del ataque.
-        private const string FireLeafSheet = "Assets/Sprites/FireAndleaf.png";
+        private const string FireLeafSheet = "Assets/Legacy/Sprites/FireAndleaf.png";
         private const string FireLeafRecipePath = FxArtFolder + "/FireAndLeaf.sheet.asset";
         private const string FireImpactPath = FxFolder + "/Fx_TreeBoss_FireImpact.prefab";
 
@@ -103,7 +103,7 @@ namespace RedMagic.Bosses.EditorTools
         private const string DefinitionPath = BossFolder + "/Boss_TreeBoss.asset";
         private const string PrefabFolder = "Assets/Prefabs/Enemies";
         private const string PrefabPath = PrefabFolder + "/Boss_TreeBoss.prefab";
-        private const string BossScenePath = "Assets/Scenes/Worlds/World1/World1_Boss.unity";
+        private const string BossScenePath = "Assets/Legacy/Scenes/Worlds/World1/World1_Boss.unity";
 
         /// <summary>Gestos del cuerpo: filas de la lámina y valor de <c>gesture</c> en los ataques.</summary>
         public const string Charge = "Charge";
@@ -384,7 +384,7 @@ namespace RedMagic.Bosses.EditorTools
             fx.leaf = LeafPlaceholder(fx.leafImpact, log);
 
             // Sustituye los cuatro placeholders de arriba por el arte final y crea el estallido de
-            // impacto (nuevo) en cuanto Assets/Sprites/FireAndleaf.png esté cortada. Sin lámina
+            // impacto (nuevo) en cuanto Assets/Legacy/Sprites/FireAndleaf.png esté cortada. Sin lámina
             // cortada, no toca nada y el juego sigue con los cuadrados de código.
             DressFireAndLeafArt(fx, log);
 

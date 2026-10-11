@@ -34,8 +34,8 @@ On top of B, decided with the user:
 **Every phase of this plan is now built. What is left is the user's batched test pass**
 (`docs/part-rig-pending-playtests.md`, phases D → F) and the readjustments that come out of it.
 
-Pending from the user side: nothing blocking. Their scratch files `Assets/Json/` and
-`Assets/Prefabs/Enemies/Procedural/rigconfi_Code.prefab` (orphan variant) are untracked junk to delete.
+Pending from the user side: nothing blocking. Their scratch files `Assets/Legacy/Json/` and
+`Assets/Prefabs/Enemies/rigconfi_Code.prefab` (orphan variant) are untracked junk to delete.
 
 ## ▶ How to resume (read this first, next session)
 
@@ -108,7 +108,7 @@ Side track, **closed 2026-10-01**: the **DOTween comparison**. `RigDriverTween` 
 three reference bodies got a DOTween copy each, and the user compared them in Play: no visible
 advantage either way, and the extra bounce on every small action (the turret's base moving when the
 neck rises, the drone's body bouncing on each shot) was not liked. **Decision: one driver,
-`RigDriverCode`.** The DOTween driver moved to `Assets/Scripts/Legacy/` as reference, the copies
+`RigDriverCode`.** The DOTween driver moved to `Assets/Legacy/Scripts/` as reference, the copies
 and their pack were deleted, `driver: "dotween"` in a config is accepted with a warning and gets
 `RigDriverCode`. Reasoning in `procedural-rig.md` ▸ *One driver*.
 

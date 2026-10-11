@@ -1,7 +1,7 @@
 # Main Hub interactables (`Assets/Scripts/Hub/`)
 Five hand-built props in the hub, each its own MonoBehaviour rather than data-driven content —
 there's no recurring "new prop" pipeline to build a tool for yet, unlike enemies/bosses/items. All
-five share one sheet, `Assets/Sprites/Maibhubitems.png` (flat dark-teal background, no alpha, keyed
+five share one sheet, `Assets/Legacy/Sprites/Maibhubitems.png` (flat dark-teal background, no alpha, keyed
 like `TreeBoss.png`/`BossAttack.png`), sliced via `Assets/Art/Characters/MainHubItems/`.
 
 **Import is `Hub.EditorTools.MainHubItemsPack`** (`Tools ▸ RedMagic ▸ Hub ▸ Generar props del hub`)

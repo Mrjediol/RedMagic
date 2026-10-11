@@ -123,6 +123,6 @@ Inspector wiring.
   `Amber` = firma de todo lo homing). Impact frames: `Fx.ImpactFrames.Play(target, seconds, silhouette)` (genérico).
   **Menú DEV** (`CometDevMenu`, F9 o botón «DEV», sólo editor/dev build, pausa el juego): cambia el Cometa equipado en Play sobre
   una copia (`CometRuntime`), nunca el asset. **Escena de prueba**: **Tools ▸ RedMagic ▸ Test ▸ Escena del cometa** →
-  `Assets/Scenes/Test/CometTest.unity` (fila para perforar, grupo para la cadena, blancos rápidos `Test.TestMover` para el homing;
+  `Assets/Test/Scenes/CometTest.unity` (fila para perforar, grupo para la cadena, blancos rápidos `Test.TestMover` para el homing;
   `CometTestKit` equipa el arma). Sonidos: WAV sintetizados con el código del boceto (`docs/bocetos/render-sonidos-cometa.cjs`) en
   `Assets/Audio/Sounds/Player/Comet/`.

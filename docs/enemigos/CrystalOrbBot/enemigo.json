@@ -13,7 +13,7 @@
   "pendientes": [],
   "createdAt": "2026-10-07T03:34:26.371Z",
   "tarea": "zpi421a",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/CrystalOrbBot.prefab",
+  "prefab": "Assets/Prefabs/Enemies/CrystalOrbBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T03:39:14.92Z",
     "plantilla": "floatingCaster",

@@ -46,7 +46,7 @@ module's responsibility shifts, update its row in the same change.
 | Cropping a box to pixels / a data URL (used by thumbnails AND export) | `modules/export-manifest.js` | `cropBox`, `cropToDataURL` |
 | Which library entries travel INSIDE an enemy's combined bundle (`Library/<libraryId>/`), so importing the enemy alone materializes its projectile | `modules/enemy-bundle.js` | `embedReferencedLibraryEntries()` — **coordinate with `CombinedBundleImporter.LiftEmbeddedLibraryEntries` and `FxPrefabBuilder` on the Unity side** |
 | The Enemy Creator's "projectile art from the library" picker (exports `tuning.projectile.libraryId`) | `modules/enemy-form.js` | `renderProjectileLibraryRow()` |
-| manifest.json shape / zip folder layout | `modules/export-manifest.js` | `populateSpriteZip({enemyName, kind, lanes, boxes, source})` (`kind` is emitted into the manifest; `enemyName` keeps its name for every kind because that is the key `EnemyImporter.cs` reads) fills an existing JSZip and returns the manifest; `buildExportZip({...}, JSZip)` wraps it into a fresh zip + blob for the plain export — **coordinate with the Unity-side importer (`Assets/Editor/EnemyImporter.cs`) before changing field names or folder structure** |
+| manifest.json shape / zip folder layout | `modules/export-manifest.js` | `populateSpriteZip({enemyName, kind, lanes, boxes, source})` (`kind` is emitted into the manifest; `enemyName` keeps its name for every kind because that is the key `EnemyImporter.cs` reads) fills an existing JSZip and returns the manifest; `buildExportZip({...}, JSZip)` wraps it into a fresh zip + blob for the plain export — **coordinate with the Unity-side importer (`Assets/Scripts/Editor/EnemyImporter.cs`) before changing field names or folder structure** |
 | Triggering the actual file download | `modules/export-manifest.js` | `downloadBlob(blob, filename)` |
 | The shared, persistent (IndexedDB) entry library — save/list/get/delete/update, for every kind | `modules/enemy-library.js` | `saveEnemy`, `listEnemies` (all kinds), `listEntries(kind)` (one kind, or all when null), `getEnemy`, `deleteEnemy`, `updateEnemy`, `entryName` — see "Shared entry library" below |
 | Decoding a saved sheet snapshot back into an `Image`, building a card thumbnail | `modules/enemy-library.js` | `loadImageFromDataURL(dataURL)`, `buildThumbnail(source)` |
@@ -85,7 +85,7 @@ beyond the current session; boss/map/player config are out of scope.
 | Enabling/wiring "⬇ Exportar todo junto (.zip)", and persisting the exported config back onto the linked library entry | `modules/enemy-form.js` | `updateCombinedExportAvailability()`, `exportCombinedBtn` handler, `persistConfigToLibraryIfLinked()` |
 | Which EnemyConfig field maps to which widget, and which UI group/order it's in | `modules/enemy-form.js` | `TUNING_FIELDS` array (group, key, widget kind, label, opts) — add a row here for a new schema field, no new function needed |
 | The presence / projectileArt / top-level field rows (not table-driven — small, fixed sets) | `modules/enemy-form.js` | the "top-level fields" and "presence" sections at the top of `initEnemyCreator()` |
-| Sprite pivot (`anchor`: Center/BottomCenter — `RedMagic.Pipeline.AnchorMode`) | `modules/enemy-form.js` | the `anchorField` row in the "top-level fields" section, next to `art`. Only meaningful on a combined-bundle import (`Assets/Editor/EnemyImporter.cs`'s `BuildEnemyFromFolderPath`/`ConfigureSpriteImport`, which now takes `AnchorMode` instead of a hardcoded bottom-pivot bool) — see `docs/schemas/enemy-config.schema.json`'s `anchor` field and `docs/schemas/COMPATIBILITY.md` for why a manual/already-imported `art` path ignores it |
+| Sprite pivot (`anchor`: Center/BottomCenter — `RedMagic.Pipeline.AnchorMode`) | `modules/enemy-form.js` | the `anchorField` row in the "top-level fields" section, next to `art`. Only meaningful on a combined-bundle import (`Assets/Scripts/Editor/EnemyImporter.cs`'s `BuildEnemyFromFolderPath`/`ConfigureSpriteImport`, which now takes `AnchorMode` instead of a hardcoded bottom-pivot bool) — see `docs/schemas/enemy-config.schema.json`'s `anchor` field and `docs/schemas/COMPATIBILITY.md` for why a manual/already-imported `art` path ignores it |
 | The projectile "usar por defecto ↔ configurar inline" toggle and its sub-form fields | `modules/enemy-form.js` | `setProjectileMode()`, `renderProjectileInline()`, `PROJECTILE_SPEC_FIELDS` |
 | The **"Defensa" section** (defensive moves): cards with when / how / gesture at hand and the numbers folded; `state.defences` + `defencesTouched` (an edited empty list is exported to clear them) | `modules/enemy-form.js` / `modules/enemy-defaults.js` / `modules/enemy-export.js` | `renderDefences()`, `createDefence()`, `applyDefences()` → `tuning.defences` |
 | The **"Ataques" section** (the enemy's deck): the built-in attack card (`builtInAttack` / `builtInWeight`), the catalog attack cards with their per-card deck rows (min/max range, target height), which gestures a card can pick (`bodyGestureNames()`: a rig's `draft.gestures`, or a sheet's animation lanes), the options of the art the attacks use | `modules/enemy-form.js` | the "ataques (la baraja)" block: `createAttackEditor({...})` call (`typeFilter` hides catalog `hosts: 'boss'` types, `hiddenCommon` hides boss-only base fields), `renderExtra`, `renderDeckArt()`, `exportContext()` |
@@ -490,7 +490,7 @@ kind-agnostic). Loading a saved entry adopts **that entry's** kind instead.
 exported config (schema: `_shared.schema.json#/definitions/entryKind`, pinned to `"enemy"` by
 `enemy-config.schema.json` and to `"boss"` by `boss-config.schema.json`, narrowed to
 `projectile`/`fx` by `fx-config.schema.json`). It is **additive** — `enemyName` keeps its name and
-position in the manifest for every kind, because that is the key `Assets/Editor/EnemyImporter.cs`
+position in the manifest for every kind, because that is the key `Assets/Scripts/Editor/EnemyImporter.cs`
 reads, and an absent `kind` means `enemy` so every bundle exported before this field existed still
 imports identically.
 
@@ -648,7 +648,7 @@ that record by id — it does not copy or duplicate its sprite data) and pre-fil
 still empty. The exported `art` string in this mode is computed
 (`modules/enemy-export.js`'s `libraryArtPath()`) as
 `Assets/Art/EnemyImports/<enemyName>/<enemyName>.sheet.asset` — the exact path
-`Assets/Editor/EnemyImporter.cs`'s sprite-import step creates a `SpriteSheetRecipe` at, by
+`Assets/Scripts/Editor/EnemyImporter.cs`'s sprite-import step creates a `SpriteSheetRecipe` at, by
 convention; the Unity-side combined-bundle importer (see below) resolves the real freshly-created
 asset explicitly rather than trusting this string, so a convention drift here is inert, never a
 silent bug. **"Escribir ruta manualmente"** is the original behavior: a plain path/assetRef into a
@@ -690,10 +690,10 @@ readable without opening anything.
 
 ### Map Tracer tab
 
-Ported from the standalone `Assets/Editor/MapTracer.html` (a piece library of uploaded images,
+Ported from the standalone `Assets/Legacy/Scripts/Editor/MapTracer.html` (a piece library of uploaded images,
 placed as instances on a scene canvas, each piece carrying its own traced collision lines) into
 the same module-per-concern shape as the rest of this app. The exported `RedMagicMap/1` JSON is
-parsed as-is by `Assets/Editor/CollisionImporter.cs`'s `MapImporter` — **coordinate with that file
+parsed as-is by `Assets/Legacy/Scripts/Editor/CollisionImporter.cs`'s `MapImporter` — **coordinate with that file
 before changing field names or shapes**.
 
 | To change... | Edit | Function |
@@ -704,8 +704,8 @@ before changing field names or shapes**.
 | Per-piece collision line tracing (add/undo/commit/delete a point or line) | `modules/map-collision-tracing.js` | `startLine`, `addPoint`, `undoPoint`, `commitLine`, `deleteLine` |
 | Map canvas zoom/pan | `modules/map-canvas-view.js` | re-exports `CanvasView` from `modules/canvas-view.js` unchanged — see that file's module-map row |
 | PNG compositing export (draw order: background → platform → border) | `modules/map-export.js` | `composeMap`, `composeMapToBlob` |
-| Baking a piece's local-space traced lines into absolute map-space, and the exported `RedMagicMap/1` JSON shape | `modules/map-export.js` | `sceneLines`, `buildMapJson` — **coordinate with `Assets/Editor/CollisionImporter.cs`** |
-| The exported `RedMagicMapPieces/1` JSON shape (standalone pieces, no canvas/instances) | `modules/map-export.js` | `buildPiecesJson(pieceRecords)` — **coordinate with `Assets/Editor/CollisionImporter.cs`'s `MapPiecesImporter`** |
+| Baking a piece's local-space traced lines into absolute map-space, and the exported `RedMagicMap/1` JSON shape | `modules/map-export.js` | `sceneLines`, `buildMapJson` — **coordinate with `Assets/Legacy/Scripts/Editor/CollisionImporter.cs`** |
+| The exported `RedMagicMapPieces/1` JSON shape (standalone pieces, no canvas/instances) | `modules/map-export.js` | `buildPiecesJson(pieceRecords)` — **coordinate with `Assets/Legacy/Scripts/Editor/CollisionImporter.cs`'s `MapPiecesImporter`** |
 | The persistent (IndexedDB) Map Tracer library — save/list/get/delete/update for BOTH maps and standalone pieces | `modules/map-library.js` | `saveMap`/`listMaps`/`getMap`/`deleteMap`/`updateMap`, `savePiece`/`listPieces`/`getPiece`/`deletePiece`/`updatePiece` — see "Map Tracer library" below |
 | Rehydrating a saved map/piece record back into live session state | `modules/map-library.js` | `loadMapAsSession`, `loadPieceAsAsset` |
 | Biblioteca panel's multi-select over saved pieces (ctrl-toggle/shift-range, same rule as the Sprites tab's box grid) and the "⬇ Exportar piezas seleccionadas"/per-card "⬇ Exportar" actions | `app.js` | `applyPieceLibrarySelectionClick`, `exportPieceLibraryEntry`, `mapExportSelectedPiecesBtn` handler, `selectedPieceLibraryIds` |
@@ -713,10 +713,10 @@ before changing field names or shapes**.
 | Map tab canvas interaction (place/select/move/resize/trace), all mode switching, piece/instance panels, library wiring | `app.js` | the "Map Tracer tab" section at the bottom of the file |
 | Map tab layout / colors | `styles.css` | the "Map Tracer tab" block (`.map*`/`#map*` selectors) |
 | Map tab page structure | `index.html` | `#tab-map` — containers only, `app.js` populates everything |
-| Single-map import as a Unity prefab | `Assets/Editor/CollisionImporter.cs` | `MapImporter.ImportMap()` / shared `ImportOneMap()` |
-| Batch-importing every Map JSON in a folder in one pass | `Assets/Editor/CollisionImporter.cs` | `MapImporter.ImportMapsBatch()` |
-| Importing a `RedMagicMapPieces/1` JSON as one prefab per piece | `Assets/Editor/CollisionImporter.cs` | `MapPiecesImporter.ImportPieces()` / `BuildPiecePrefab()` |
-| Browsing/deleting everything these importers (and the enemy/boss pipeline) have produced, from inside Unity | `Assets/Editor/WebLibraryWindow.cs` | `Tools ▸ Web ▸ Biblioteca` — see `docs/web-tools-guide.md` for the full category breakdown |
+| Single-map import as a Unity prefab | `Assets/Legacy/Scripts/Editor/CollisionImporter.cs` | `MapImporter.ImportMap()` / shared `ImportOneMap()` |
+| Batch-importing every Map JSON in a folder in one pass | `Assets/Legacy/Scripts/Editor/CollisionImporter.cs` | `MapImporter.ImportMapsBatch()` |
+| Importing a `RedMagicMapPieces/1` JSON as one prefab per piece | `Assets/Legacy/Scripts/Editor/CollisionImporter.cs` | `MapPiecesImporter.ImportPieces()` / `BuildPiecePrefab()` |
+| Browsing/deleting everything these importers (and the enemy/boss pipeline) have produced, from inside Unity | `Assets/Scripts/Editor/WebLibraryWindow.cs` | `Tools ▸ Web ▸ Biblioteca` — see `docs/web-tools-guide.md` for the full category breakdown |
 
 ### Map Tracer library (maps vs. pieces)
 
@@ -793,7 +793,7 @@ Both funnel into `modules/map-export.js`'s `buildPiecesJson(pieceRecords)`, prod
 
 `fileName` is always `== assetName` for a library piece (a saved piece has no original uploaded
 filename to remember — same convention `loadPieceAsAsset` already uses when reopening one into a
-session). No pixel data travels in this JSON; `Assets/Editor/CollisionImporter.cs`'s
+session). No pixel data travels in this JSON; `Assets/Legacy/Scripts/Editor/CollisionImporter.cs`'s
 `MapPiecesImporter.ImportPieces()` resolves each piece's `Sprite` by name from assets already
 imported into the Unity project (via `MapImporter.FindSprite`, shared rather than duplicated) and
 builds one prefab per piece — a `SpriteRenderer` plus, for `border`/`platform` pieces with traced

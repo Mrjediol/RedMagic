@@ -100,7 +100,7 @@ namespace RedMagic.Enemies.EditorTools
         [MenuItem("Tools/Enemies/Pulido visual · PolarTurretBot (base)")]
         private static void PolishPolarTurretBot()
         {
-            const string basePath = "Assets/Prefabs/Enemies/Procedural/PolarTurretBot.prefab";
+            const string basePath = "Assets/Prefabs/Enemies/PolarTurretBot.prefab";
             var shader = Shader.Find(ShaderName);
             if (!AssetDatabase.IsValidFolder(MaterialDir)) AssetDatabase.CreateFolder("Assets/Art/Fx/Materials", "Enemies");
             var matPath = MaterialDir + "/PolarTurretBot_Polish.mat";
@@ -125,7 +125,7 @@ namespace RedMagic.Enemies.EditorTools
         [MenuItem("Tools/Enemies/Variantes de shader · PolarTurretBot")]
         private static void PolarTurretBot()
         {
-            const string basePath = "Assets/Prefabs/Enemies/Procedural/PolarTurretBot.prefab";
+            const string basePath = "Assets/Prefabs/Enemies/PolarTurretBot.prefab";
 
             // Escarcha: destello blanco-azulado que pasa por el cuerpo + cristales que laten.
             Create(basePath, "Frost", m =>

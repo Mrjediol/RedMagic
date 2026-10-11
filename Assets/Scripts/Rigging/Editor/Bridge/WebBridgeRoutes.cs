@@ -366,7 +366,7 @@ namespace RedMagic.Rigging.EditorTools
         // ============================================================ GET /enemies
 
         private static readonly string[] SkipFolders =
-            { "Assets/Brackeys/", "Assets/Cainos/", "Assets/Dragon Warrior Files/", "Assets/_Reference/", "Assets/Scripts/Legacy/" };
+            { "Assets/Brackeys/", "Assets/Cainos/", "Assets/Dragon Warrior Files/", "Assets/_Reference/", "Assets/Legacy/" };
 
         /// <summary>
         /// Los prefabs con <see cref="ProceduralRig"/> (enemigos y jefes por partes), por nombre. Se buscan
@@ -446,7 +446,7 @@ namespace RedMagic.Rigging.EditorTools
             }
             else
             {
-                prefabPath = $"{ProceduralEnemyPacks.Folder}/{name}.prefab";
+                prefabPath = ProceduralEnemyPacks.PathFor(name);
                 if (!force && AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) != null)
                 {
                     Fail(context, 409, $"Ya hay un '{name}' en Unity ({prefabPath}).",

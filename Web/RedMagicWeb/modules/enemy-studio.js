@@ -379,7 +379,7 @@ export function initEnemyStudio({ panel, stepsEl, centerEl, rightEl, rig, enemy,
       : 'Crea el prefab en Unity (o lo actualiza si ya hay uno con este nombre: te lo pregunta). Sin exportar ni importar el .zip.';
     save.onclick = () => saveWholeToUnity(false);
     box.appendChild(save);
-    box.appendChild(el('p', 'hint', known ? `En Unity: ${unity.prefab}` : `Irá a Assets/Prefabs/Enemies/Procedural/${st.name || '<nombre>'}.prefab`));
+    box.appendChild(el('p', 'hint', known ? `En Unity: ${unity.prefab}` : `Irá a Assets/Prefabs/Enemies/${st.name || '<nombre>'}.prefab`));
 
     if (unity.exists) {
       const c = el('div', 'unityConflict');

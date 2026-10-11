@@ -13,7 +13,7 @@
   "pendientes": [],
   "createdAt": "2026-10-07T04:22:31.474Z",
   "tarea": "fvist42",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/MawDomeBot.prefab",
+  "prefab": "Assets/Prefabs/Enemies/MawDomeBot.prefab",
   "imagen": "docs/enemigos/MawDomeBot/preview.png",
   "cuerpo": {
     "fecha": "2026-10-07T04:28:46.928Z",

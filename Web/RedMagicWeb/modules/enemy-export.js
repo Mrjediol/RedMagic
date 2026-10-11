@@ -37,7 +37,7 @@ function buildTuningExport(tuning) {
 
 /**
  * Library mode's 'art' isn't a path the user typed — it's the path EnemyImporter.cs's sprite-import
- * step (Assets/Editor/EnemyImporter.cs, BuildSpriteSheetRecipe) will create the SpriteSheetRecipe
+ * step (Assets/Scripts/Editor/EnemyImporter.cs, BuildSpriteSheetRecipe) will create the SpriteSheetRecipe
  * at once the combined bundle is imported: 'Assets/Art/EnemyImports/<enemyName>/<enemyName>.sheet.asset'
  * (renamed from 'Assets/Enemies/<enemyName>/...' in the Assets/ folder restructure — see
  * docs/folder-restructure-audit.md). Emitted so a "solo config JSON" export stays schema-valid even

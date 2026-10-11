@@ -204,9 +204,8 @@ namespace RedMagic.Rigging.EditorTools
             if (!boss && File.Exists(bossConfigPath)) report.Warnings.Add($"{RigConfigJson.BossConfigFile} se ignora: kind = enemy.");
 
             // --- 4) prefab.
-            string folder = options.PrefabFolder ?? ProceduralEnemyPacks.Folder;
-            BossAuthoring.EnsureFolder(folder);
-            string prefabPath = $"{folder}/{name}.prefab";
+            string prefabPath = options.PrefabFolder != null ? $"{options.PrefabFolder}/{name}.prefab" : ProceduralEnemyPacks.PathFor(name);
+            BossAuthoring.EnsureFolder(System.IO.Path.GetDirectoryName(prefabPath).Replace('\\', '/'));
             bool isNew = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath) == null;
             if (isNew) CreateEmptyPrefab(name, prefabPath);
             bool reset = options.ResetTuning || isNew;
@@ -289,8 +288,7 @@ namespace RedMagic.Rigging.EditorTools
                                           ConfigImportReport report)
         {
             string name = options.NameOverride ?? ConfigJson.RequireString(config, "name", "RigConfig");
-            string folder = options.PrefabFolder ?? ProceduralEnemyPacks.Folder;
-            string prefabPath = $"{folder}/{name}.prefab";
+            string prefabPath = options.PrefabFolder != null ? $"{options.PrefabFolder}/{name}.prefab" : ProceduralEnemyPacks.PathFor(name);
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
             if (existing == null)
                 throw new ConfigImportException(

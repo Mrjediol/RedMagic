@@ -14,7 +14,7 @@ namespace RedMagic.Test.Editor
     /// </summary>
     public static class ParryMinigameBuild
     {
-        private const string Scene = "Assets/Scenes/Test/ParryTest.unity";
+        private const string Scene = "Assets/Test/Scenes/ParryTest.unity";
         private const string Folder = "Builds/ParryMinigame";
         private const string Exe = "RedMagicParry.exe";
         private const string Zip = "Builds/RedMagicParry.zip";

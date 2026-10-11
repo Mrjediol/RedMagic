@@ -11,7 +11,7 @@ Hecho y validado por el usuario:
 - **Sistema de niveles en Unity** (`Assets/Scripts/Levels/`): `Level` (tamaño en unidades, 1 = 40 px, alto máx. 75),
   terreno pintado en Tilemap (`PaletaTerreno`: tiles Roca y Plataforma), borde de hielo procedural con esquinas
   redondeadas, brillo interior por distancia, collider redondeado, plataformas atravesables (capa Platform),
-  parallax por capas, nieve que se posa (`SnowSettings`), bloom/viñeta. Escenas `Assets/Scenes/Test/NivelHielo_{1000,2000,3000}`.
+  parallax por capas, nieve que se posa (`SnowSettings`), bloom/viñeta. Escenas `Assets/Test/Scenes/NivelHielo_{1000,2000,3000}`.
 - Orden de dibujo: el nivel en Default con orden negativo (`LevelSorting`), enemigos visibles delante.
 
 Descartado (no repetir): tiras de Gemini dobladas por el contorno; brillo exterior; profundidad del suelo (cara

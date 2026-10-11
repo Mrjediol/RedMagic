@@ -33,7 +33,7 @@
     }
   ],
   "tarea": "1g4wg9o",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/ThornFairy.prefab",
+  "prefab": "Assets/Prefabs/Enemies/ThornFairy.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T14:55:00.154Z",
     "plantilla": "floatingCaster",

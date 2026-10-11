@@ -16,7 +16,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class CaballoPack
     {
-        private const string Sheet = "Assets/Sprites/caballo-mele-movimiento-suelo.jpeg";
+        private const string Sheet = "Assets/Legacy/Sprites/caballo-mele-movimiento-suelo.jpeg";
         private const string RecipeFolder = "Assets/Art/Characters/Caballo";
         private const string SheetRecipePath = RecipeFolder + "/Caballo.sheet.asset";
         private const string EnemyRecipePath = RecipeFolder + "/Caballo.enemy.asset";

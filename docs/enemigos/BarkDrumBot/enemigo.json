@@ -13,7 +13,7 @@
   "pendientes": [],
   "createdAt": "2026-10-07T03:45:25.387Z",
   "tarea": "t35tyrl",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/BarkDrumBot.prefab",
+  "prefab": "Assets/Prefabs/Enemies/BarkDrumBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T03:59:42.283Z",
     "plantilla": "floatingCaster",

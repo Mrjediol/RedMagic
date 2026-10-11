@@ -1,25 +1,47 @@
-# Legacy (`Assets/Scripts/Legacy/`, `Assets/Resources/Legacy/`) — reference only, do not build on it
-The **ability system**: 22 `AbilityDefinition` assets (now in `Assets/Resources/Legacy/Abilities/`
-— `AbilityLibrary.ResourceFolder` points there, so the dev-only K menu still lists them as a
-working reference instead of coming up empty), the nine archetype classes, `AbilityUser`,
-`AbilityLibrary`, `AbilityMenuController`, the `AbilityStarterPack` editor tool, and the runtime
-pieces only they used: `AbilityTurret`, `DamageZone`, `OrbitSpinner`. Plus the **old weapon level
-1–3** system that hung off it, `AbilityLevelManager` + `WeaponUpgradeAltar` +
-`WeaponUpgradeMenuController` — replaced by the `WeaponLevelManager` / `WeaponForgeAltar` /
-`WeaponForgeMenuController` trio documented above. Superseded by the weapons/items build system;
-five of the abilities were rescued as weapons (`Assets/Resources/Items/Weapons/`).
+# Legacy (`Assets/Legacy/`, `Assets/Resources/Legacy/`) — apartado, no se construye encima
 
-It still compiles and the `.meta` files moved with the sources, so GUIDs are intact. `Player.prefab`
-still carries the legacy `AbilityUser` component (inert unless something equips it) and
-`WeaponUpgrade.prefab` (`RunManager.bossRewardPrefab`) was **repointed** from `WeaponUpgradeAltar`
-to the new `WeaponForgeAltar` — that swap is why the forge used to say "no llevas arma equipada"
-even with an item-system weapon out. Read the rest as reference and port what is needed into
-`Assets/Scripts/Items/`; do not extend it.
+Lo que ya no se usa se **mueve** aquí en vez de borrarse (los `.meta` viajan con los archivos: GUIDs intactos, todo
+sigue compilando). Se borrará entero en la limpieza total (`docs/tareas/limpieza-total.md`). Nunca se añade nada nuevo
+que dependa de Legacy.
 
-**Deliberately *not* legacy**, because the live systems call into it: `AbilityContext` /
-`AbilityHit` (the one place target filtering and damage application live — weapons and bosses both
-use it), `AbilityFx` (code-built sprites/flashes — the fallback when no placeholder prefab is
-assigned), `ProjectileSpec` / `ProjectileFactory` and `Projectile` (the pooled projectile the
-bosses fire; `ProjectileFactory` now restyles a prefab instance that carries `FxPlaceholderStyle`).
-- `Legacy/ProceduralSway.cs` — first per-part sine sway; superseded by `RigPart` sway in
-  `ProceduralRig` (the setup tool copies its values into the rig and removes the component).
+| Carpeta | Qué hay |
+|---|---|
+| `Legacy/Scripts/` | Código viejo (antes `Assets/Scripts/Legacy/`): sistema de **habilidades** (`AbilityUser`, `AbilityDefinition`, `AbilityLibrary`, menú K), **niveles de arma 1-3** (`AbilityLevelManager`, `WeaponUpgradeAltar`), niveles por kits (`Levels/`), `ProceduralSway`, interactuables viejos. `Editor/`: migraciones de una vez y el Map Tracer (`CollisionImporter`, `MapTracer.html`) |
+| `Legacy/Scenes/` | Todas las escenas viejas (Bosque, Fire, Ice2-4, `Worlds/`, `Test/` — incluidas `NivelHielo_2000/3000` y `TestMap`) |
+| `Legacy/OldEnemies/` | Prefabs de enemigos **por sprite** y sus jefes (`Enemy_*`, `Boss_*`) |
+| `Legacy/Prefabs/` | `Maps/` (mapas viejos), `Projectiles/` (proyectiles de los enemigos por sprite), `Fx/` sin uso |
+| `Legacy/Art/Characters/` | Arte de enemigos por sprite que ya no usa nada |
+| `Legacy/Sprites/` | La antigua `Assets/Sprites` (láminas originales, referencias) |
+| `Legacy/Levels/` | El intento de niveles por kits (`nivel 1`, `_Kits`, `Test1`) — sustituido por `Level` + Tilemap |
+| `Legacy/Json/`, `Legacy/LevelsBoceto/` | Pruebas |
+| `Legacy/AdaptivePerformance/` | Ajustes huérfanos del paquete Adaptive Performance (no está instalado) |
+| `Resources/Legacy/Abilities/` | Los `AbilityDefinition` (por ruta de Resources, se quedan ahí) |
+
+**Sigue vivo a propósito** (lo usan armas y jefes): `Scripts/Abilities/` — `AbilityContext`, `AbilityHit`, `AbilityFx`,
+`ProjectileSpec`/`ProjectileFactory`.
+
+## LegacyGuard — saber si algo de Legacy se usa
+
+`Assets/Scripts/Editor/LegacyGuard.cs` (sólo editor):
+- **En Play**, automático: al cargar una escena revisa sus dependencias y cada 3 s lo vivo (scripts, sprites,
+  materiales, audio, animators — también lo instanciado por código o por pool). Cada uso nuevo: aviso `[Legacy]` en
+  consola y una línea (una vez por asset y escena) en **`docs/legacy-usage.log`**. Si no aparece en semanas, Legacy no
+  se usa.
+- **Tools ▸ RedMagic ▸ Legacy ▸ Comprobar qué usa Legacy**: todos los assets de fuera y el código de fuera (tipos
+  principales declarados sólo en Legacy, sin contar comentarios) → `docs/legacy-report.md`.
+- `LegacyGuard.IsLegacyPath(path)` es el filtro común: lo usan la **Biblioteca Jere** (todas las pestañas), el registro
+  de **sonidos** (`SoundSlotScanner.IsIgnored`) y el puente web (`WebBridgeRoutes.SkipFolders`), así que lo de Legacy
+  no sale en ninguna lista.
+- Exentos (referencia a propósito): `Assets/Scenes/Ice1.unity`. `Assets/_Recovery/` (copia de un crash de Unity, fuera
+  de git) no cuenta.
+
+## Organización de carpetas (2026-10-11)
+
+- `Assets/Prefabs/Enemies/`: los enemigos **por piezas** (antes en `Procedural/`). Se pueden repartir en subcarpetas
+  por zona: los importadores los encuentran por nombre (`ProceduralEnemyPacks.PathFor`).
+- `Assets/Prefabs/Enemies/_Comportamientos/`: piezas sueltas que se añaden a un enemigo (escudo, nota de `HeatGlow`).
+  El `_` la deja fuera de las listas de enemigos.
+- `Assets/Scripts/Editor/`: las herramientas que vivían en `Assets/Editor/` (Biblioteca Jere, `PlayModePerfMonitor`…).
+- `Assets/Test/`: lo nuevo o experimental va aquí primero (las herramientas que generan escenas de previsualización
+  escriben en `Assets/Test/Scenes/`).
+- DOTween **desinstalado** (plugin, ajustes, defines y los dos scripts que lo usaban).

@@ -32,7 +32,7 @@
   door working. Its gizmo is blue for a hub door, amber for a section exit. MainHub's is at the far
   right of the ground (x≈35) with `requireEnemiesDead` off — there is nothing to kill in the hub.
   The predecessor, `TombInteractable` (proximity + press E, its own input handling), is retired to
-  `Assets/Scripts/Legacy/`, along with `CauldronInteractable` and `AbilityChest` (see Main Hub
+  `Assets/Legacy/Scripts/`, along with `CauldronInteractable` and `AbilityChest` (see Main Hub
   interactables below for what replaced them).
 - **`SectionClearTracker`** — `DontDestroyOnLoad` singleton placed in MainHub (with an
   `AfterSceneLoad` fallback). On every scene load it subscribes to every `Health` **inside that

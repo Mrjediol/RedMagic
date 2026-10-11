@@ -7,7 +7,7 @@ using UnityEngine;
 namespace RedMagic.Enemies
 {
     /// <summary>
-    /// Escudo de golpes autónomo: vive en el prefab <c>Prefabs/Enemies/Shield/Shield</c>, que se arrastra como HIJO de
+    /// Escudo de golpes autónomo: vive en el prefab <c>Prefabs/Enemies/_Comportamientos/Shield</c>, que se arrastra como HIJO de
     /// cualquier enemigo (con <see cref="Health"/> en algún padre) y ya está. Absorbe los primeros <see cref="hits"/> golpes
     /// (no quitan vida, no empujan) y se rompe. Va por <see cref="Health.HitAbsorber"/>, el único sitio
     /// por el que entra el daño, así que ningún arma ni ataque sabe que existe. El dibujo es el hijo <see cref="shield"/>

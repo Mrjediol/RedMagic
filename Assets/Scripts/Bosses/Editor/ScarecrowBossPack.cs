@@ -49,7 +49,7 @@ namespace RedMagic.Bosses.EditorTools
 
         private const string CrowTexture = "Assets/Brackeys/2D Mega Pack/Enemies/Crow.png";
 
-        private const string BossScenePath = "Assets/Scenes/Worlds/World2/World2_Boss.unity";
+        private const string BossScenePath = "Assets/Legacy/Scenes/Worlds/World2/World2_Boss.unity";
 
         /// <summary>
         /// Escala del sprite del espantapájaros (64×90 px a 32 px/unidad = 2,0 × 2,8 unidades).

@@ -13,7 +13,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class LoboPack
     {
-        private const string Sheet = "Assets/Sprites/Lobo-Distancia-movimiento-suelo.jpeg";
+        private const string Sheet = "Assets/Legacy/Sprites/Lobo-Distancia-movimiento-suelo.jpeg";
         private const string RecipeFolder = "Assets/Art/Characters/Lobo";
         private const string SheetRecipePath = RecipeFolder + "/Lobo.sheet.asset";
         private const string EnemyRecipePath = RecipeFolder + "/Lobo.enemy.asset";

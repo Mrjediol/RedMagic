@@ -8,13 +8,13 @@ namespace RedMagic.Fx.EditorTools
     /// <summary>
     /// Genera las variantes del tajo melee (<see cref="MeleeSlashFx"/>) como prefabs en
     /// <c>Assets/Prefabs/Fx/Player/Slash/</c> y una escena de prueba que las repite en bucle
-    /// (<c>Assets/Scenes/Test/SlashPreview.unity</c>) para elegir una a ojo. Sobrescribe los prefabs:
+    /// (<c>Assets/Test/Scenes/SlashPreview.unity</c>) para elegir una a ojo. Sobrescribe los prefabs:
     /// es un punto de partida, el ajuste fino se hace después en el Inspector del prefab elegido.
     /// </summary>
     public static class MeleeSlashPack
     {
         private const string Folder = "Assets/Prefabs/Fx/Player/Slash";
-        private const string ScenePath = "Assets/Scenes/Test/SlashPreview.unity";
+        private const string ScenePath = "Assets/Test/Scenes/SlashPreview.unity";
 
         private static readonly Color White = new Color(1f, 1f, 1f);
         private static readonly Color LightCyan = new Color(0.62f, 0.95f, 1f);
@@ -70,7 +70,7 @@ namespace RedMagic.Fx.EditorTools
             Debug.Log($"[MeleeSlashPack] {prefabs.Length} variantes en {Folder}, escena {ScenePath}.");
         }
 
-        private const string ExteriorScenePath = "Assets/Scenes/Test/SlashPreview_Exterior.unity";
+        private const string ExteriorScenePath = "Assets/Test/Scenes/SlashPreview_Exterior.unity";
 
         /// <summary>
         /// La variante A con cada estilo de parte exterior (y sin ella), para elegir a ojo. Las
@@ -174,7 +174,7 @@ namespace RedMagic.Fx.EditorTools
         // Mismo shader y paleta que los tajos, para que todo se lea como un set.
 
         private const string MovementFolder = "Assets/Prefabs/Fx/Player/Movement";
-        private const string MovementScenePath = "Assets/Scenes/Test/MovementFxPreview.unity";
+        private const string MovementScenePath = "Assets/Test/Scenes/MovementFxPreview.unity";
 
         /// <summary>Pies del muñeco de la escena respecto a su casilla (muñeco 1.8 de alto, centrado 0.2 más abajo).</summary>
         private const float FeetY = -1.1f;

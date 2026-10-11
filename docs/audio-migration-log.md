@@ -20,8 +20,8 @@ Cambios: 43 · Problemas: 0
 - Assets/Scenes/Fire1.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip — no hay sonido que migrar; se vacía el campo.
 - Assets/Scenes/Ice1.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Ice1.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip — no hay sonido que migrar; se vacía el campo.
-- Assets/Scenes/Ice2.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
-- Assets/Scenes/Ice2.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip — no hay sonido que migrar; se vacía el campo.
+- Assets/Legacy/Scenes/Ice2.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
+- Assets/Legacy/Scenes/Ice2.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip — no hay sonido que migrar; se vacía el campo.
 - Assets/Scenes/Ice3.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Ice3.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip — no hay sonido que migrar; se vacía el campo.
 - Assets/Scenes/Ice4.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
@@ -80,7 +80,7 @@ Cambios: 28 (sin clip: 14) · Problemas: 0
 - Assets/Scenes/Fire1 1.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Fire1.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Ice1.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
-- Assets/Scenes/Ice2.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
+- Assets/Legacy/Scenes/Ice2.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Ice3.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Ice4.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Worlds/World1/Bosque1.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
@@ -96,7 +96,7 @@ Cambios: 28 (sin clip: 14) · Problemas: 0
 - Assets/Scenes/Fire1 1.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
 - Assets/Scenes/Fire1.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
 - Assets/Scenes/Ice1.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
-- Assets/Scenes/Ice2.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
+- Assets/Legacy/Scenes/Ice2.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
 - Assets/Scenes/Ice3.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
 - Assets/Scenes/Ice4.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
 - Assets/Scenes/Shop.unity ▸ ShopManager · ShopManager.denySfxId = 'SFX_ButtonClick': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
@@ -117,7 +117,7 @@ Cambios: 28 (sin clip: 14) · Problemas: 0
 - Assets/Scenes/Fire1 1.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Fire1.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Ice1.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
-- Assets/Scenes/Ice2.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
+- Assets/Legacy/Scenes/Ice2.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Ice3.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Ice4.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
 - Assets/Scenes/Worlds/World1/Bosque1.unity ▸ AudioManager: copia del AudioManager borrada — tabla de 11 entradas idéntica a MainMenu; su AudioListener se va con ella (lo pone el prefab).
@@ -133,7 +133,7 @@ Cambios: 28 (sin clip: 14) · Problemas: 0
 - Assets/Scenes/Fire1 1.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
 - Assets/Scenes/Fire1.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
 - Assets/Scenes/Ice1.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
-- Assets/Scenes/Ice2.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
+- Assets/Legacy/Scenes/Ice2.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
 - Assets/Scenes/Ice3.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
 - Assets/Scenes/Ice4.unity ▸ SectionClearTracker · SectionClearTracker.clearSfxId = 'SFX_Fireball': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.
 - Assets/Scenes/Shop.unity ▸ ShopManager · ShopManager.denySfxId = 'SFX_ButtonClick': la entrada no tiene clip; se vacía el campo. Sonido que falta por hacer.

@@ -27,7 +27,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class MurcielagoPack
     {
-        private const string Sheet = "Assets/Sprites/Gemini_Generated_Image_cl5nqicl5nqicl5n-removebg-preview.png";
+        private const string Sheet = "Assets/Legacy/Sprites/Gemini_Generated_Image_cl5nqicl5nqicl5n-removebg-preview.png";
         private const string RecipeFolder = "Assets/Art/Characters/Murcielago";
         private const string SheetRecipePath = RecipeFolder + "/Murcielago.sheet.asset";
         private const string EnemyRecipePath = RecipeFolder + "/Murcielago.enemy.asset";

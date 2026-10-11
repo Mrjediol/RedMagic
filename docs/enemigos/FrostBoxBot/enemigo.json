@@ -23,7 +23,7 @@
   ],
   "createdAt": "2026-10-05T20:07:52.216Z",
   "tarea": "gchk87h",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/FrostBoxBot.prefab",
+  "prefab": "Assets/Prefabs/Enemies/FrostBoxBot.prefab",
   "cuerpo": {
     "fecha": "2026-10-07T03:22:09.395Z",
     "plantilla": "floatingCaster",

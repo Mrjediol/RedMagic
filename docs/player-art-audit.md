@@ -12,7 +12,7 @@ Fecha: 2026-09-18. Estado leído de disco (`Assets/`), no del Editor abierto.
 | Sprites viejos | `Assets/Art/Characters/Player/Legacy/` (8 PNG hoja) |
 | Sprites nuevos | `Assets/Art/Characters/Player/Animations/<Estado>/frame_###.png` (9 carpetas, 46 PNG) |
 | Sobrante | `Assets/Art/Characters/Player/New player/Player/manifest.json` |
-| Receta vieja | `Assets/Art/Characters/Player/Player.sheet.asset` (apunta a `Assets/Sprites/player_sprite.jpeg`) |
+| Receta vieja | `Assets/Art/Characters/Player/Player.sheet.asset` (apunta a `Assets/Legacy/Sprites/player_sprite.jpeg`) |
 | Pack | `Assets/Scripts/Pipeline/Editor/PlayerPack.cs` — **roto a propósito**: su `SourceController` vive en `Assets/Dragon Warrior Files/`, borrado en la limpieza de vendors |
 
 Jerarquía del prefab: raíz `Player` → hijos `GroundCheck` y `Sprite`.

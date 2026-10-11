@@ -21,7 +21,7 @@
   ],
   "createdAt": "2026-10-07T03:45:25.383Z",
   "tarea": "ml6hdb2",
-  "prefab": "Assets/Prefabs/Enemies/Procedural/MossLanternBot.prefab",
+  "prefab": "Assets/Prefabs/Enemies/MossLanternBot.prefab",
   "montaje": {
     "fecha": "2026-10-07T03:49:40.473Z",
     "resumen": "Montado con 4 piezas (Torso barril con cristal y hombreras de musgo, Head cúpula con lente y cristal, CastArm ballesta, Lower copa propulsora con llama verde), una semilla por pieza, todas limpias a la primera. Volador a distancia (FlyingRanged): dispara un virote verde con gesto Aim y se propulsa (DashAway) tras atacar; efectos en verde del bosque. Sin escudo, OffArm ni Accessory (las hombreras van en el torso)."

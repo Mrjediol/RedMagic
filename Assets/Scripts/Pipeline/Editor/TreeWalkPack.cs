@@ -20,7 +20,7 @@ namespace RedMagic.Pipeline.EditorTools
     /// </summary>
     public static class TreeWalkPack
     {
-        private const string Sheet = "Assets/Sprites/TreeWalk.jpg";
+        private const string Sheet = "Assets/Legacy/Sprites/TreeWalk.jpg";
         private const string RecipeFolder = "Assets/Art/Characters/TreeWalk";
         private const string SheetRecipePath = RecipeFolder + "/TreeWalk.sheet.asset";
         private const string EnemyRecipePath = RecipeFolder + "/TreeWalk.enemy.asset";

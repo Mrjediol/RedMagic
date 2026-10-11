@@ -12,13 +12,17 @@ screen height), as forced by `RunManager`.
 - `width` × `height` in units (Inspector shows the px equivalent). Height capped at `Level.MaxHeight` = 75
   (3000 px). Changing the size re-fits everything: the implicit 1-cell rock frame, `BG` (camera bounds read by
   `CameraFollow`), the collider and the parallax range. Painted cells are kept.
+- **Platforms** = a second Tilemap (`Grid/Plataformas`, tile `Plataforma` in the same palette). Same look as rock, but
+  each connected platform gets its own child under `Plataformas`: layer Platform, `PolygonCollider2D` (rounded contour,
+  usedByEffector) + one-way `PlatformEffector2D`. One collider per platform because drop-through ignores the specific
+  collider being stood on (`PlayerMovement.TryDropThroughPlatform`). Rock-only cells feed `Colision` (Ground).
 - Terrain = a `Tilemap` child (`Grid/Terreno`, renderer disabled). Paint with the **`PaletaTerreno`** palette
   (`Assets/Levels/_Biomas/`): any tile = rock. The frame is NOT painted — cells on the border and outside are
   always rock (`Level.IsSolid`). Origin = bottom-left corner.
 - Regenerates on paint (`Tilemap.tilemapTileChanged`), on size/biome change and on load; meshes are `DontSave`.
   Children it owns: `BG`, `Roca` (rock fill, Sprite-Lit, biome texture tiled in world space), `Brillo` (rock shadow +
   inner glow baked into a texture by exact distance-to-air at 8 texels/unit), `Borde` (4 colour bands of noisy
-  width, outer glow, dark outline — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, rounded like the art, layer Ground).
+  width, dark outline (outer glow off: `outerGlowWidth` 0, the user didn't want it) — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, rounded like the art, layer Ground).
 - Geometry in `LevelShape` (pure): contours of the air pockets with rock on the right (pinch vertices turn left
   so each pocket keeps its own loop), every corner rounded with a quadratic curve of `cornerRadius`, and the rock
   fill cut by the same curves (convex corners cut, concave corners get a curved fillet) so no square corner pokes
@@ -43,8 +47,10 @@ writes the images to `Assets/Levels/_Biomas/Hielo/Fondo/` and builds `Fondo_Hiel
 Blur is not reproduced (warned).
 
 ## Ambience
-`Nieve.prefab`: two particle systems on a `FollowCameraView` emitter — the gameplay-plane one collides with Ground
-(2D) and lands (dampen 1, lifetime loss 0.8), the background one passes through. Test scenes add a Global Light 2D
+`Nieve.prefab` (cheap by design: native particle systems, no per-flake script, capped at 300 + 260 particles):
+two systems on a `FollowCameraView` emitter. The gameplay-plane one collides in 2D with Ground + Platform (static
+colliders only, quality Medium); a flake dies on impact and a Collision sub-emitter (`Copo posado`, max 150) spawns a
+still flake that stays 2-3.5 s and fades. The background one passes through. Rebuild: `Tools ▸ … ▸ Crear nieve`. Test scenes add a Global Light 2D
 (rock is lit, ready for crystal lights) and a global Volume `PostHielo` (bloom + vignette).
 
 ## Menus (`Tools ▸ RedMagic ▸ Niveles`, `LevelSetup`)

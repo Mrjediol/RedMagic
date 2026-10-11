@@ -50,7 +50,7 @@ namespace RedMagic.Levels
         [Min(0f)] public float outlineWidth = 0.11f;
         [Tooltip("Brillo hacia el aire (se desvanece).")]
         public Color outerGlow = new Color(0.75f, 0.91f, 0.98f, 0.35f);
-        [Min(0f)] public float outerGlowWidth = 0.3f;
+        [Min(0f)] public float outerGlowWidth = 0f;
         [Tooltip("Brillo hacia dentro de la roca (se desvanece): da profundidad.")]
         public Color innerGlow = new Color(0.31f, 0.76f, 1f, 0.28f);
         [Min(0f)] public float innerGlowWidth = 1.6f;

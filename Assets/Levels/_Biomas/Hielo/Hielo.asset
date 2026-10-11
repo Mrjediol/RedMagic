@@ -39,7 +39,7 @@ MonoBehaviour:
   outline: {r: 0.015686275, g: 0.06666667, b: 0.16470589, a: 1}
   outlineWidth: 0.11
   outerGlow: {r: 0.75, g: 0.91, b: 0.98, a: 0.35}
-  outerGlowWidth: 0.3
+  outerGlowWidth: 0
   innerGlow: {r: 0.31, g: 0.76, b: 1, a: 0.28}
   innerGlowWidth: 1.6
   rimShader: {fileID: 4800000, guid: aa3734fe1975c094ab4bafd8b23b47d9, type: 3}

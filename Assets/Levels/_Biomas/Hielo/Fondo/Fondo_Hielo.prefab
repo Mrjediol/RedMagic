@@ -168,9 +168,9 @@ MonoBehaviour:
   shader: {fileID: 4800000, guid: 1ae6205a6e7a2554caf872c2a166862b, type: 3}
   speed: 1
   repeat: 2
-  positionX: -0.33333334
+  positionX: 0.51
   size: 500
-  heightOffset: -17
+  heightOffset: 3.3
   anchor: 2
   align: 2
   travel: 1

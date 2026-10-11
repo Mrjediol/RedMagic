@@ -29,7 +29,7 @@ namespace RedMagic.Levels
         public const int MaxWidth = 400;
         public const int MinSize = 12;
 
-        public const string BackgroundName = "BG", RockName = "Roca", RimName = "Borde", GlowName = "Brillo", CollisionName = "Colision";
+        public const string BackgroundName = "BG", RockName = "Roca", RimName = "Borde", GlowName = "Brillo", CollisionName = "Colision", PlatformsName = "Plataformas";
 
         [Tooltip("Ancho del nivel en unidades (celdas), marco incluido. 1 unidad = 40 px del boceto.")]
         [SerializeField] private int width = 85;
@@ -43,6 +43,10 @@ namespace RedMagic.Levels
         [Tooltip("Tilemap donde se pinta el terreno. Cualquier tile cuenta como roca.")]
         [SerializeField] private Tilemap terrain;
 
+        [Tooltip("Tilemap de plataformas: se ven igual que el terreno, pero se atraviesan desde abajo y se puede " +
+                 "bajar de ellas (capa Platform, una por plataforma). Opcional.")]
+        [SerializeField] private Tilemap platforms;
+
         [Tooltip("Orden de dibujo (capa Terrain) de la roca; el borde va justo encima.")]
         [SerializeField] private int sortingOrder = 2;
 
@@ -50,6 +54,7 @@ namespace RedMagic.Levels
         public int Height => height;
         public LevelBiome Biome => biome;
         public Tilemap Terrain => terrain;
+        public Tilemap Platforms => platforms;
 
         /// <summary>Rectángulo del nivel en mundo (marco incluido).</summary>
         public Rect WorldRect => new Rect((Vector2)transform.position, new Vector2(width, height));
@@ -96,7 +101,7 @@ namespace RedMagic.Levels
 
         private void OnTilesChanged(Tilemap map, Tilemap.SyncTile[] tiles)
         {
-            if (map != terrain) return;
+            if (map != terrain && map != platforms) return;
             _dirty = true;
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
@@ -115,12 +120,24 @@ namespace RedMagic.Levels
 
         public void SetTerrain(Tilemap map) { terrain = map; _dirty = true; }
 
-        /// <summary>Roca en (x, y) de la cuadrícula del nivel; fuera del nivel y en el marco, siempre.</summary>
-        public bool IsSolid(int x, int y)
+        public void SetPlatforms(Tilemap map) { platforms = map; _dirty = true; }
+
+        /// <summary>Roca maciza (colisiona por todos lados): marco, terreno pintado.</summary>
+        public bool IsRock(int x, int y)
         {
             if (x <= 0 || y <= 0 || x >= width - 1 || y >= height - 1) return true;
             return terrain != null && terrain.HasTile(new Vector3Int(x, y, 0));
         }
+
+        /// <summary>Celda de plataforma (y no de roca).</summary>
+        public bool IsPlatform(int x, int y)
+        {
+            if (x < 0 || y < 0 || x >= width || y >= height || IsRock(x, y)) return false;
+            return platforms != null && platforms.HasTile(new Vector3Int(x, y, 0));
+        }
+
+        /// <summary>Roca en (x, y) de la cuadrícula del nivel; fuera del nivel y en el marco, siempre.</summary>
+        public bool IsSolid(int x, int y) => IsRock(x, y) || IsPlatform(x, y);
 
         /// <summary>Altura (y local) del primer suelo libre en la columna x, buscando desde abajo.</summary>
         public float GroundTop(int x)
@@ -150,7 +167,8 @@ namespace RedMagic.Levels
             BuildRock(polygons);
             BuildGlow(polygons);
             BuildRim(polygons, loops, radius);
-            BuildCollision(loops, radius);
+            BuildCollision(LevelShape.Loops(IsRock, width, height), radius);
+            BuildPlatforms(LevelShape.Loops(IsPlatform, width, height), radius);
         }
 
         private void BuildBackgroundRect()
@@ -227,7 +245,8 @@ namespace RedMagic.Levels
                 }
 
                 // 4. brillo hacia el aire y 5. contorno oscuro
-                Ribbon(pts, verts, cols, tris, i => 0f, i => -biome.outerGlowWidth, i => biome.outerGlow, i => clear(biome.outerGlow));
+                if (biome.outerGlowWidth > 0f && biome.outerGlow.a > 0f)
+                    Ribbon(pts, verts, cols, tris, i => 0f, i => -biome.outerGlowWidth, i => biome.outerGlow, i => clear(biome.outerGlow));
                 float half = biome.outlineWidth * 0.5f;
                 Ribbon(pts, verts, cols, tris, i => -half, i => half, i => biome.outline, i => biome.outline);
             }
@@ -253,6 +272,33 @@ namespace RedMagic.Levels
                 path.Add(pts[0].position);
                 var edge = col.gameObject.AddComponent<EdgeCollider2D>();
                 edge.SetPoints(path);
+            }
+        }
+
+        /// <summary>
+        /// Una plataforma = un objeto en la capa Platform con su PolygonCollider2D (contorno redondeado) y un
+        /// PlatformEffector2D de un solo sentido. Separadas porque el jugador, al dejarse caer, ignora la plataforma
+        /// concreta que pisa (<c>PlayerMovement.TryDropThroughPlatform</c>).
+        /// </summary>
+        private void BuildPlatforms(List<List<Vector2Int>> loops, float radius)
+        {
+            var root = Child(PlatformsName);
+            for (int i = root.childCount - 1; i >= 0; i--) DestroySafe(root.GetChild(i).gameObject);
+            int layer = LayerMask.NameToLayer("Platform");
+            for (int i = 0; i < loops.Count; i++)
+            {
+                var pts = LevelShape.Rounded(loops[i], radius, 1000f, 4);
+                var path = new Vector2[pts.Count];
+                for (int k = 0; k < pts.Count; k++) path[k] = pts[k].position;
+                var go = new GameObject("Plataforma " + (i + 1));
+                go.transform.SetParent(root, false);
+                if (layer >= 0) go.layer = layer;
+                var poly = go.AddComponent<PolygonCollider2D>();
+                poly.SetPath(0, path);
+                poly.usedByEffector = true;
+                var effector = go.AddComponent<PlatformEffector2D>();
+                effector.useOneWay = true;
+                effector.surfaceArc = 160f;
             }
         }
 

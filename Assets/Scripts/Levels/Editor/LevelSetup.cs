@@ -25,6 +25,8 @@ namespace RedMagic.LevelsEditor
         private const string IceBiomePath = IceFolder + "/Hielo.asset";
         private const string TilePath = BiomesRoot + "/Roca.asset";
         private const string TileSpritePath = BiomesRoot + "/roca_tile.png";
+        private const string PlatformTilePath = BiomesRoot + "/Plataforma.asset";
+        private const string PlatformSpritePath = BiomesRoot + "/plataforma_tile.png";
         private const string PaletteName = "PaletaTerreno";
         private const string TemplateScene = "Assets/Scenes/Test/TestMap.unity";
         private const string TestScenesFolder = "Assets/Scenes/Test";
@@ -47,40 +49,51 @@ namespace RedMagic.LevelsEditor
             biome.rockTexture = rock;
             biome.rockShader = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
             biome.rimShader = Shader.Find("RedMagic/Fx Vertex Color");
-            if (biome.particles == null) biome.particles = EnsureSnow();
+            biome.particles = EnsureSnow(false);
+            biome.outerGlowWidth = 0f; // el usuario lo quitó: sólo bandas, contorno y brillo interior
             EditorUtility.SetDirty(biome);
             AssetDatabase.SaveAssets();
             return biome;
         }
 
         [MenuItem("Tools/RedMagic/Niveles/Crear tile y paleta de terreno")]
-        public static TileBase EnsureTileAndPalette()
+        public static TileBase EnsureTileAndPalette() { EnsureTiles(out var rock, out _); return rock; }
+
+        /// <summary>Tiles "Roca" (terreno macizo) y "Plataforma" (se atraviesa desde abajo) y la paleta con los dos.</summary>
+        public static void EnsureTiles(out TileBase rock, out TileBase platform)
         {
             Directory.CreateDirectory(BiomesRoot);
-            var tile = AssetDatabase.LoadAssetAtPath<Tile>(TilePath);
-            if (tile == null)
-            {
-                var sprite = SaveSprite(TileSpritePath, 32, 32, (x, y) =>
-                    x == 0 || y == 0 || x == 31 || y == 31 ? new Color(0.1f, 0.25f, 0.45f, 1f) : new Color(0.35f, 0.62f, 0.85f, 1f), 32);
-                tile = ScriptableObject.CreateInstance<Tile>();
-                tile.sprite = sprite;
-                tile.colliderType = Tile.ColliderType.None;
-                AssetDatabase.CreateAsset(tile, TilePath);
-            }
+            rock = EnsureTile(TilePath, TileSpritePath, new Color(0.35f, 0.62f, 0.85f), new Color(0.1f, 0.25f, 0.45f));
+            platform = EnsureTile(PlatformTilePath, PlatformSpritePath, new Color(0.95f, 0.72f, 0.3f), new Color(0.5f, 0.3f, 0.08f));
 
             string palettePath = $"{BiomesRoot}/{PaletteName}.prefab";
             if (AssetDatabase.LoadAssetAtPath<GameObject>(palettePath) == null)
             {
                 var created = GridPaletteUtility.CreateNewPalette(BiomesRoot, PaletteName, GridLayout.CellLayout.Rectangle,
                     GridPalette.CellSizing.Automatic, Vector3.one, GridLayout.CellSwizzle.XYZ);
-                string path = created != null ? AssetDatabase.GetAssetPath(created) : palettePath;
-                var contents = PrefabUtility.LoadPrefabContents(path);
-                var map = contents.GetComponentInChildren<Tilemap>();
-                if (map != null) map.SetTile(Vector3Int.zero, tile);
-                PrefabUtility.SaveAsPrefabAsset(contents, path);
-                PrefabUtility.UnloadPrefabContents(contents);
+                if (created != null) palettePath = AssetDatabase.GetAssetPath(created);
             }
+            var contents = PrefabUtility.LoadPrefabContents(palettePath);
+            var map = contents.GetComponentInChildren<Tilemap>();
+            if (map != null)
+            {
+                map.SetTile(new Vector3Int(0, 0, 0), rock);
+                map.SetTile(new Vector3Int(1, 0, 0), platform);
+            }
+            PrefabUtility.SaveAsPrefabAsset(contents, palettePath);
+            PrefabUtility.UnloadPrefabContents(contents);
             AssetDatabase.SaveAssets();
+        }
+
+        private static TileBase EnsureTile(string tilePath, string spritePath, Color fill, Color border)
+        {
+            var tile = AssetDatabase.LoadAssetAtPath<Tile>(tilePath);
+            if (tile != null) return tile;
+            var sprite = SaveSprite(spritePath, 32, 32, (x, y) => x == 0 || y == 0 || x == 31 || y == 31 ? border : fill, 32);
+            tile = ScriptableObject.CreateInstance<Tile>();
+            tile.sprite = sprite;
+            tile.colliderType = Tile.ColliderType.None;
+            AssetDatabase.CreateAsset(tile, tilePath);
             return tile;
         }
 
@@ -195,38 +208,49 @@ namespace RedMagic.LevelsEditor
         // ------------------------------------------------------------------ nieve y postproceso
 
         [MenuItem("Tools/RedMagic/Niveles/Crear nieve")]
-        public static GameObject EnsureSnow()
+        private static void RebuildSnowMenu() => EnsureSnow(true);
+
+        /// <summary>
+        /// Nieve barata: sistemas de partículas nativos (simulados en C++ por Unity, sin scripts por copo), con tope de
+        /// partículas, colisión 2D sólo contra estáticos (Ground) y calidad media. El plano del juego colisiona: el copo
+        /// muere al tocar y suelta (sub-emisor) un copo quieto que se queda 2-3,5 s y se desvanece. El de fondo no
+        /// colisiona. <paramref name="rebuild"/> reescribe el prefab manteniendo su GUID (las escenas lo siguen usando).
+        /// </summary>
+        public static GameObject EnsureSnow(bool rebuild)
         {
             string prefabPath = IceFolder + "/Nieve.prefab";
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-            if (existing != null) return existing;
+            if (existing != null && !rebuild) return existing;
 
-            var flake = SaveTexture(IceFolder + "/copo.png", 32, 32, (x, y) =>
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(IceFolder + "/Copo.mat");
+            if (mat == null)
             {
-                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(16, 16)) / 16f;
-                float a = Mathf.Clamp01(1f - d);
-                return new Color(0.95f, 0.98f, 1f, a * a);
-            });
-            var mat = new Material(Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default")) { mainTexture = flake };
-            AssetDatabase.CreateAsset(mat, IceFolder + "/Copo.mat");
+                var flake = SaveTexture(IceFolder + "/copo.png", 32, 32, (x, y) =>
+                {
+                    float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(16, 16)) / 16f;
+                    float a = Mathf.Clamp01(1f - d);
+                    return new Color(0.95f, 0.98f, 1f, a * a);
+                });
+                mat = new Material(Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default")) { mainTexture = flake };
+                AssetDatabase.CreateAsset(mat, IceFolder + "/Copo.mat");
+            }
 
             var root = new GameObject("Nieve");
             try
             {
                 root.AddComponent<FollowCameraView>();
-                // Plano del juego: los copos se posan en el suelo y las plataformas (y se desvanecen).
-                Snow(root.transform, "Nieve plano", mat, collide: true, sizes: new Vector2(0.07f, 0.24f), alpha: 0.9f,
-                     rate: 22f, fall: new Vector2(-1.8f, -0.6f), layer: "Characters", order: 20);
-                // Detrás del terreno: más pequeños y tenues, atraviesan todo.
-                Snow(root.transform, "Nieve fondo", mat, collide: false, sizes: new Vector2(0.04f, 0.12f), alpha: 0.45f,
-                     rate: 30f, fall: new Vector2(-1.1f, -0.4f), layer: "BackGround", order: 30);
+                var game = Snow(root.transform, "Nieve plano", mat, sizes: new Vector2(0.07f, 0.24f), alpha: 0.9f,
+                                rate: 14f, maxParticles: 300, layer: "Characters", order: 20);
+                AddLanding(game, mat);
+                Snow(root.transform, "Nieve fondo", mat, sizes: new Vector2(0.04f, 0.12f), alpha: 0.45f,
+                     rate: 14f, maxParticles: 260, layer: "BackGround", order: 30);
                 return PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             }
             finally { Object.DestroyImmediate(root); }
         }
 
-        private static void Snow(Transform parent, string name, Material mat, bool collide, Vector2 sizes, float alpha,
-                                 float rate, Vector2 fall, string layer, int order)
+        private static ParticleSystem Snow(Transform parent, string name, Material mat, Vector2 sizes, float alpha,
+                                           float rate, int maxParticles, string layer, int order)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -234,57 +258,97 @@ namespace RedMagic.LevelsEditor
             var main = ps.main;
             main.loop = true;
             main.prewarm = true;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(18f, 26f);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(13f, 18f);
             main.startSpeed = 0f;
             main.startSize = new ParticleSystem.MinMaxCurve(sizes.x, sizes.y);
             main.startColor = new Color(1f, 1f, 1f, alpha);
             main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.maxParticles = 800;
+            main.maxParticles = maxParticles;
 
             var emission = ps.emission;
             emission.rateOverTime = rate;
 
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
-            shape.scale = new Vector3(48f, 0.5f, 0.1f);
+            shape.scale = new Vector3(44f, 0.5f, 0.1f);
 
             var vel = ps.velocityOverLifetime;
             vel.enabled = true;
             vel.space = ParticleSystemSimulationSpace.World;
             vel.x = new ParticleSystem.MinMaxCurve(-0.35f, 0.1f);
-            vel.y = new ParticleSystem.MinMaxCurve(fall.x, fall.y);
+            vel.y = new ParticleSystem.MinMaxCurve(-2f, -0.9f);
             vel.z = new ParticleSystem.MinMaxCurve(0f, 0f);
 
             var noise = ps.noise;
             noise.enabled = true;
             noise.strength = 0.25f;
             noise.frequency = 0.3f;
+            noise.quality = ParticleSystemNoiseQuality.Low;
 
             var fade = ps.colorOverLifetime;
             fade.enabled = true;
-            var g = new Gradient();
-            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
-                      new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, 0.04f), new GradientAlphaKey(1f, 0.85f), new GradientAlphaKey(0f, 1f) });
-            fade.color = g;
-
-            if (collide)
-            {
-                var col = ps.collision;
-                col.enabled = true;
-                col.type = ParticleSystemCollisionType.World;
-                col.mode = ParticleSystemCollisionMode.Collision2D;
-                col.collidesWith = LayerMask.GetMask("Ground");
-                col.dampen = 1f;
-                col.bounce = 0f;
-                col.lifetimeLoss = 0.8f; // al posarse se queda poco y se desvanece
-                col.radiusScale = 0.5f;
-                col.quality = ParticleSystemCollisionQuality.High;
-            }
+            fade.color = Fade(0.04f, 0.85f);
 
             var r = go.GetComponent<ParticleSystemRenderer>();
             r.sharedMaterial = mat;
             r.sortingLayerName = layer;
             r.sortingOrder = order;
+            return ps;
+        }
+
+        private static void AddLanding(ParticleSystem ps, Material mat)
+        {
+            var col = ps.collision;
+            col.enabled = true;
+            col.type = ParticleSystemCollisionType.World;
+            col.mode = ParticleSystemCollisionMode.Collision2D;
+            col.collidesWith = LayerMask.GetMask("Ground", "Platform");
+            col.enableDynamicColliders = false;     // sólo el terreno, que no se mueve: más barato
+            col.quality = ParticleSystemCollisionQuality.Medium;
+            col.maxCollisionShapes = 64;
+            col.lifetimeLoss = 1f;                   // el que cae muere al tocar...
+            col.radiusScale = 0.4f;
+
+            // ...y en su sitio aparece uno quieto que se queda un momento y se desvanece.
+            var go = new GameObject("Copo posado");
+            go.transform.SetParent(ps.transform, false);
+            var landed = go.AddComponent<ParticleSystem>();
+            var main = landed.main;
+            main.loop = false;
+            main.playOnAwake = false;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(2f, 3.5f);
+            main.startSpeed = 0f;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.maxParticles = 150;
+            var emission = landed.emission;
+            emission.rateOverTime = 0f;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 1) });
+            var shape = landed.shape;
+            shape.enabled = false;
+            var fade = landed.colorOverLifetime;
+            fade.enabled = true;
+            fade.color = Fade(0f, 0.35f);
+            var r = go.GetComponent<ParticleSystemRenderer>();
+            r.sharedMaterial = mat;
+            var parentRenderer = ps.GetComponent<ParticleSystemRenderer>();
+            r.sortingLayerName = parentRenderer.sortingLayerName;
+            r.sortingOrder = parentRenderer.sortingOrder;
+
+            var sub = ps.subEmitters;
+            sub.enabled = true;
+            sub.AddSubEmitter(landed, ParticleSystemSubEmitterType.Collision,
+                ParticleSystemSubEmitterProperties.InheritColor | ParticleSystemSubEmitterProperties.InheritSize);
+        }
+
+        /// <summary>Alfa 0 → 1 hasta <paramref name="fadeIn"/>, 1 hasta <paramref name="fadeOutFrom"/>, → 0 al final.</summary>
+        private static Gradient Fade(float fadeIn, float fadeOutFrom)
+        {
+            var g = new Gradient();
+            var alpha = fadeIn > 0f
+                ? new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(1f, fadeIn), new GradientAlphaKey(1f, fadeOutFrom), new GradientAlphaKey(0f, 1f) }
+                : new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, fadeOutFrom), new GradientAlphaKey(0f, 1f) };
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) }, alpha);
+            return g;
         }
 
         public static VolumeProfile EnsurePostProfile()
@@ -314,13 +378,13 @@ namespace RedMagic.LevelsEditor
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             var biome = EnsureIceBiome();
-            var tile = EnsureTileAndPalette();
+            EnsureTiles(out var tile, out var platformTile);
             var post = EnsurePostProfile();
             foreach (int rows in new[] { 25, 50, 75 })
-                CreateTestScene(rows, biome, tile, post);
+                CreateTestScene(rows, biome, tile, platformTile, post);
         }
 
-        private static void CreateTestScene(int rows, LevelBiome biome, TileBase tile, VolumeProfile post)
+        private static void CreateTestScene(int rows, LevelBiome biome, TileBase tile, TileBase platformTile, VolumeProfile post)
         {
             string path = $"{TestScenesFolder}/NivelHielo_{rows * 40}.unity";
             AssetDatabase.DeleteAsset(path);
@@ -339,10 +403,15 @@ namespace RedMagic.LevelsEditor
             terrainGo.transform.SetParent(grid.transform, false);
             terrainGo.GetComponent<TilemapRenderer>().enabled = false; // lo que se ve lo dibuja el Nivel
             var map = terrainGo.GetComponent<Tilemap>();
+            var platformsGo = new GameObject("Plataformas", typeof(Tilemap), typeof(TilemapRenderer));
+            platformsGo.transform.SetParent(grid.transform, false);
+            platformsGo.GetComponent<TilemapRenderer>().enabled = false;
+            var platformMap = platformsGo.GetComponent<Tilemap>();
             level.SetSize(85, rows);
             level.SetBiome(biome);
             level.SetTerrain(map);
-            PaintTestLayout(map, tile, 85, rows);
+            level.SetPlatforms(platformMap);
+            PaintTestLayout(map, tile, platformMap, platformTile, 85, rows);
 
             if (biome.background != null)
             {
@@ -377,9 +446,11 @@ namespace RedMagic.LevelsEditor
         }
 
         /// <summary>El nivel del boceto web: suelo y techo escalonados, 4 plataformas y, si es alto, una escalera de plataformas.</summary>
-        private static void PaintTestLayout(Tilemap map, TileBase tile, int cols, int rows)
+        private static void PaintTestLayout(Tilemap map, TileBase tile, Tilemap platformMap, TileBase platformTile, int cols, int rows)
         {
             map.ClearAllTiles();
+            platformMap.ClearAllTiles();
+            var platformCells = new List<Vector3Int>();
             int[] floorH = Profile(cols, new[] { (0, 1), (10, 2), (13, 3), (18, 3), (20, 2), (24, 4), (29, 5), (34, 3), (40, 3), (42, 2), (47, 6), (55, 7), (60, 4), (66, 2), (73, 3), (75, 1) });
             int[] ceilH = Profile(cols, new[] { (0, 1), (11, 2), (12, 4), (14, 6), (16, 4), (18, 2), (20, 1), (31, 3), (35, 1), (50, 2), (53, 1), (61, 3), (66, 1), (70, 1) });
             var solid = new bool[cols, rows];
@@ -389,8 +460,9 @@ namespace RedMagic.LevelsEditor
                 for (int y = rows - ceilH[x]; y < rows - 1; y++) solid[x, y] = true;
             }
             // Plataformas: [columna, filas desde el suelo, ancho, alto]
+            // (las plataformas sueltas van al Tilemap de plataformas: se atraviesan desde abajo)
             foreach (var (c, fromBottom, w, h) in new[] { (22, 12, 5, 1), (38, 16, 5, 2), (56, 13, 4, 1), (64, 18, 6, 1) })
-                Block(solid, c, fromBottom - h, w, h);
+                Platform(solid, platformCells, c, fromBottom - h, w, h);
 
             if (rows >= 40)
             {
@@ -402,16 +474,20 @@ namespace RedMagic.LevelsEditor
                     {
                         int w = 3 + rng.Next(4), c = 11 + rng.Next(cols - 26), y = fromBottom + rng.Next(2);
                         if (!Free(solid, c, y, w, 1, cols, rows)) continue;
-                        Block(solid, c, y, w, 1);
+                        Platform(solid, platformCells, c, y, w, 1);
                         placed++;
                     }
                 }
             }
 
             var positions = new List<Vector3Int>();
+            var isPlatform = new HashSet<Vector3Int>(platformCells);
             for (int x = 1; x < cols - 1; x++)
             for (int y = 1; y < rows - 1; y++)
-                if (solid[x, y]) positions.Add(new Vector3Int(x, y, 0));
+                if (solid[x, y] && !isPlatform.Contains(new Vector3Int(x, y, 0))) positions.Add(new Vector3Int(x, y, 0));
+            var ptiles = new TileBase[platformCells.Count];
+            for (int i = 0; i < ptiles.Length; i++) ptiles[i] = platformTile;
+            platformMap.SetTiles(platformCells.ToArray(), ptiles);
             var tiles = new TileBase[positions.Count];
             for (int i = 0; i < tiles.Length; i++) tiles[i] = tile;
             map.SetTiles(positions.ToArray(), tiles);
@@ -422,6 +498,11 @@ namespace RedMagic.LevelsEditor
             var a = new int[n];
             for (int c = 0; c < n; c++) foreach (var (from, value) in list) if (c >= from) a[c] = value;
             return a;
+        }
+
+        private static void Platform(bool[,] solid, List<Vector3Int> cells, int x0, int y0, int w, int h)
+        {
+            for (int x = x0; x < x0 + w; x++) for (int y = y0; y < y0 + h; y++) { solid[x, y] = true; cells.Add(new Vector3Int(x, y, 0)); }
         }
 
         private static void Block(bool[,] solid, int x0, int y0, int w, int h)

@@ -1,6 +1,6 @@
 # Run / world system (`Assets/Scripts/Run/`)
 - **`WorldDefinition`** — a ScriptableObject per world: a pool of section `SceneReference`s, how
-  many to sample per run (`sectionsPerRun`), and a boss `SceneReference`. `TryBuildRunOrder(seed,
+  many to sample per run (`sectionsPerRun`), and a boss `SceneReference` — **optional**: empty (`HasBoss` false) = finishing the sections completes the world. Today only World1 is unlocked (section `NivelHielo_1000`, no boss); World2/3 are locked and empty until their levels exist. `TryBuildRunOrder(seed,
   out order)` does a seeded Fisher-Yates sample so a run seed is reproducible, and treats
   unassigned or not-in-Build-Settings pool entries as warnings rather than hard failures. Add a new
   world by creating a new asset, not by editing code. **Tools > RedMagic > World Scene Generator**
@@ -15,7 +15,7 @@
   in memory at once — by keeping one throwaway `SceneManager.CreateScene` "root" scene alive for
   the whole run, since Unity refuses to unload the last remaining loaded scene. The run's player is
   a separate persistent instance of `playerPrefab` (not the Player living inside whatever scene is
-  loaded), so health/upgrades survive section transitions; `RunManager` repositions it at each
+  loaded), so health/upgrades survive section transitions — any Player (`PlayerMovement`) inside the loaded scene is deactivated right after the load, before its `Start`, so a level can keep an active Player for solo testing; `RunManager` repositions it at each
   scene's `SectionEntry` and retargets `CameraFollow` components after each load. Player death is
   detected via the existing `Health.Died` event — `RunManager` subscribes to it directly rather
   than `Health` knowing anything about runs. Every transition is covered by **`ScreenFader`**

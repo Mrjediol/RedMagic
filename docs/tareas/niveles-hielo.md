@@ -23,7 +23,7 @@ superior); halo de sombra alrededor de la puerta; montón de nieve al pie de la 
    `NivelHielo_1000` o GameObject con `Level` + `Grid/Terreno` + `Grid/Plataformas` + fondo + nieve), poner Ancho/Alto,
    *Abrir paleta de terreno*, pincel/rectángulo/borrar con Roca y Plataforma, la cámara/BG/collider se ajustan solos,
    colocar jugador y enemigos. Si falta algo para que sea cómodo (p. ej. un menú *Crear nivel vacío*), hacerlo.
-2. **→ Ahora tarea propia: `docs/tareas/editor-niveles.md` (EditorNiveles).** Notas originales: **Herramienta web de creación de niveles**: editor de cuadrícula (pintar roca / plataforma, tamaño en celdas con
+2. **✅ Hecho como tarea propia: `docs/tareas/editor-niveles.md` (EditorNiveles, `Web/EditorNiveles/` + Tools ▸ EditorNiveles).** Notas originales: **Herramienta web de creación de niveles**: editor de cuadrícula (pintar roca / plataforma, tamaño en celdas con
    tope 75 de alto, vista previa con el borde del boceto y el fondo de la escena exportada) que exporte
    `*.levelsketch.json` con las plataformas en otra marca (p. ej. `=`), y actualizar `LevelSketchImporter` para leerlas
    al Tilemap de plataformas. Partir de `Web/ParallaxTest/boceto-nivel.html` (ya tiene borde, fondo y niveles) y de la
@@ -41,5 +41,5 @@ superior); halo de sombra alrededor de la puerta; montón de nieve al pie de la 
 ## Archivos clave
 
 `Assets/Scripts/Levels/{Level,LevelShape,LevelBiome,LevelSorting,ParallaxBackgroundLayer,SnowSettings,FollowCameraView}.cs`,
-`Assets/Scripts/Levels/Editor/{LevelSetup,LevelEditor}.cs`, `Assets/Scripts/Run/Editor/LevelSketchImporter.cs`,
+`Assets/Scripts/Levels/Editor/{LevelSetup,LevelEditor}.cs`, `Assets/Test/EditorNiveles/Editor/`, `Web/EditorNiveles/`,
 `Assets/Art/Levels/Shaders/`, `Assets/Levels/_Biomas/`, `Web/ParallaxTest/`, `Web/RedMagicWeb/tools/comfy/{claude-workflow,despill}.mjs`.

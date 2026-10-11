@@ -109,7 +109,7 @@ la imagen, borde interior irregular, 9:16; puerta: arco de piedra frontal, 1:1).
 
 1. Crear su `LevelBiome` (copia de `Assets/Levels/_Biomas/Hielo/Hielo.asset`): textura de roca (T1 del bioma),
    colores de las 4 bandas de suelo y techo, contorno, brillos, grosores.
-2. En `parallax-test.html`, **Exportar escena** con sus 7 capas ya limpias → `Tools ▸ RedMagic ▸ Niveles ▸ Importar
+2. En `parallax-test.html`, **Exportar escena** con sus 7 capas ya limpias → `Tools ▸ EditorNiveles ▸ Montaje ▸ Importar
    fondo de parallax (.json)`. ⚠ `LevelSetup` tiene la carpeta y los nombres del hielo fijos (`IceFolder`,
    `EnsureIceBiome`, `CreateIceTestScenes`): parametrizarlo por bioma ANTES de empezar el 2º.
 3. Partículas del bioma: copiar `Nieve.prefab` y cambiar textura, velocidad y colisión (hojas: más lentas y con

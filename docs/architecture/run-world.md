@@ -61,14 +61,9 @@
   point dropdown from the manager's list — stored as a reference, not a name / delay).
 - The player keeps its prefab scale in every scene (the old per-scene `PlayerScaleConfig` is in `Assets/Legacy/`).
 
-## Level sketch → section prefab
+## Level sketch → level scene
 
-Web tab **🧱 Boceto de nivel** (`modules/level-sketch.js`) paints terrain on a grid (1 cell = 1 Unity unit,
-row 0 = top) and exports `*.levelsketch.json` (`rows` of `#` solid / `.` air). Unity side:
-**Tools ▸ RedMagic ▸ Niveles ▸ Importar boceto...** (`LevelSketchImporter`) builds `Assets/Levels/<name>/<name>.prefab`:
-`BG` (camera bounds = sketch rectangle), `Fill` (merged-rect mesh, kit texture tiled in world units), `Edges`
-(Tiled sprite strips rotated per facing; none on the map border), `Collision` (BoxCollider2D per rect → CompositeCollider2D,
-layer Ground), `SectionEntry`/`SectionExit` auto-placed on the first/last standable floor. Art comes from a `LevelKit`
-asset (Tools ▸ RedMagic ▸ Niveles ▸ Crear kit de arte); with none selected a generated placeholder kit is used.
-See `docs/niveles-handoff.md` for state, failures and pending work.
-Usable as `WorldSceneGenerator`'s Base Section Prefab.
+Superseded: the old web tab 🧱 Boceto de nivel and `LevelSketchImporter` (prefab with tiled edge strips, `LevelKit`)
+are in Legacy. Levels are now a `Level` + Tilemaps scene made with **EditorNiveles** (web editor + *Tools ▸
+EditorNiveles ▸ Nuevo nivel desde boceto…*, which also places `SectionEntry`/`SectionExit` on the floor at both ends):
+see `docs/architecture/levels.md` ▸ EditorNiveles.

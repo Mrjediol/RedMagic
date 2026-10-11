@@ -1,51 +1,33 @@
 # EditorNiveles — editor de niveles web + importador en Unity
 
 Paso `nh-2` de `niveles-hielo` (`docs/tareas/niveles-hielo.md`), sacado a tarea propia el 2026-10-11.
+**Estado (2026-10-12): hecho, pendiente de la prueba del usuario.** Rama `task/editor-niveles`.
+Arquitectura y formato: `docs/architecture/levels.md` ▸ *EditorNiveles*.
 
-## Decisión del usuario
+## Decisiones del usuario
 
-- Es una **herramienta nueva y propia, "EditorNiveles"**: **no** va como pestaña de la web principal
-  (`Web/RedMagicWeb`, la vieja pestaña 🧱 Boceto de nivel) **ni** dentro de *Tools ▸ Web* en Unity.
-  - Web: página propia, p. ej. `Web/EditorNiveles/index.html`.
-  - Unity: menú propio, p. ej. *Tools ▸ EditorNiveles ▸ …*, con el importador.
-  - Confirmar con el usuario al empezar si es esto lo que quiere decir con "nuevo tool".
+- Herramienta **propia**: página `Web/EditorNiveles/index.html` (no pestaña de `Web/RedMagicWeb`) y menú
+  **Tools ▸ EditorNiveles** en Unity (no *Tools ▸ Web*). Los comandos de *Tools ▸ RedMagic ▸ Niveles* se movieron a
+  *Tools ▸ EditorNiveles ▸ Montaje*.
+- Por ahora sólo **terreno y plataformas (placeholder)**. Entrada/salida y enemigos: no desde la web (la escena nueva
+  pone `SectionEntry`/`SectionExit` en los extremos y se mueven a mano).
+- Pronto: **varios tipos de plataforma** y **objetos** (decoración y fuentes de luz, p. ej. cristales) → `nh-3`.
+- Tras importar, el nivel **se sigue editando en Unity** (paleta, objetos): reimportar sólo toca tiles, tamaño y bioma.
 
-## Qué hay ya (partir de aquí, no de cero)
+## Hecho
 
-- **Sistema de niveles en Unity** (`docs/architecture/levels.md`):
-  - `Level` + Tilemaps `Grid/Terreno` (roca) y `Grid/Plataformas` (plataformas atravesables).
-  - 1 celda = 1 unidad = 40 px, alto máximo 75.
-  - El borde de hielo, el collider (esquinas cuadradas), la cámara y el parallax se generan solos al pintar.
-- **Nivel de referencia**: `Assets/Scenes/NivelHielo_1000.unity`.
-  - Es el nivel en el que trabaja el usuario y la única sección del Mundo 1.
-  - Tiene `SectionEntry` y `SectionExit` (puestos a ojo) y `PlayerNuevo`.
-- **Importador viejo**: `Assets/Scripts/Run/Editor/LevelSketchImporter.cs`, menú
-  *Tools ▸ RedMagic ▸ Niveles ▸ Importar boceto en el nivel...*.
-  - Lee `*.levelsketch.json` (`rows`: `#` roca, `.` aire) y lo vuelca en un `Level`.
-  - Aún no lee plataformas.
-- **Prototipos web**:
-  - `Web/ParallaxTest/boceto-nivel.html` (298 líneas): ya tiene borde, fondo y niveles.
-  - `Web/RedMagicWeb/modules/level-sketch.js`: la pestaña vieja de 98 líneas.
-- **Otros comandos de niveles**: `LevelSetup.cs` / `LevelEditor.cs` (menú *Tools ▸ RedMagic ▸ Niveles*: bioma,
-  paleta, fondo de parallax, nieve).
+- Web (`index.html`, `editor.js`, `terreno.js`): pincel / rectángulo / relleno / borrar, grosor, deshacer, tamaño
+  (alto ≤ 75, pegado abajo a la izquierda), escala (cámara del juego + jugador 0,6 × 1,74), vista previa con borde,
+  textura y fondo del bioma, guardar/abrir (File System Access, descarga si no hay), autoguardado, arrastrar .json.
+- `datos-unity.js` generado desde Unity (tiles + valores y capas de fondo de cada `LevelBiome`).
+- Unity (`Assets/Test/EditorNiveles/Editor/`): `LevelSketchFile` (formato v2 con leyenda por nombre de tile, lee v1),
+  `EditorNivelesMenu` (abrir web, nuevo nivel desde boceto, importar en el nivel abierto, exportar el nivel abierto,
+  montaje), `EditorNivelesWebData`.
+- Ejemplo: `Web/EditorNiveles/bocetos/NivelHielo_1000.levelsketch.json` (exportado del nivel real).
+- A Legacy: `LevelSketchImporter` (sin menú) y la pestaña web vieja (`Web/legacy/level-sketch.js`).
 
-## Qué tiene que hacer
+## Queda
 
-1. **Editor web de cuadrícula**:
-   - pintar roca y plataforma (pincel, rectángulo, borrar);
-   - tamaño en celdas, con tope de 75 de alto;
-   - vista previa con el borde de hielo y el fondo del bioma;
-   - exportar `*.levelsketch.json` con las plataformas en otra marca (p. ej. `=`).
-2. **Importador en Unity (menú propio EditorNiveles)**:
-   - roca → `Grid/Terreno`, plataformas → `Grid/Plataformas`, tamaño → `Level`;
-   - en una escena de nivel nueva o en la abierta.
-   - Lo que hay de *Niveles* se puede mover a ese menú.
-3. Probablemente también quiera colocar en el editor web la entrada y la salida (`SectionEntry` / `SectionExit`) y los
-   enemigos. Preguntarlo; no darlo por hecho.
-
-## Reglas que aplican
-
-- Lo nuevo va primero a `Assets/Test/`.
-- Lo que deje de usarse (la pestaña vieja, `LevelSketchImporter` si se sustituye) se mueve a `Assets/Legacy/`.
-- Herramienta reutilizable, no un nivel suelto ([[build-the-tool-not-the-instance]]).
-- Para probar: pasos cortos en el chat, y una sola importación en Unity al final.
+- Prueba del usuario. Cuando funcione: mover `Assets/Test/EditorNiveles/` a su sitio (p. ej. `Assets/Scripts/Levels/Editor/EditorNiveles/`).
+- Con `nh-3`: tipos de plataforma (tile `Plataforma<Algo>` en `_Biomas` → sale solo en la paleta web) y objetos
+  colocables (necesitará una lista `objects` en el formato y prefabs por convención de nombre).

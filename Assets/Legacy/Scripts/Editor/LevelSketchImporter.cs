@@ -27,7 +27,7 @@ namespace RedMagic.RunEditor
             public string[] rows;
         }
 
-        [MenuItem("Tools/RedMagic/Niveles/Importar boceto en el nivel...")]
+        // (menú quitado: sustituido por Tools ▸ EditorNiveles, Assets/Test/EditorNiveles)
         private static void Import()
         {
             var level = Selection.activeGameObject != null ? Selection.activeGameObject.GetComponentInParent<Level>() : null;

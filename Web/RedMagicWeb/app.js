@@ -32,7 +32,6 @@ import { renderLibraryCards } from './modules/library-panel.js';
 import { buildCombinedBundle } from './modules/enemy-bundle.js';
 import { KINDS, KIND_IDS, SHEET_KIND_IDS, DEFAULT_KIND, kindOf, canonicalLanesFor, defaultLanesFor } from './modules/entry-kinds.js';
 import { CanvasView as MapCanvasView } from './modules/map-canvas-view.js';
-import { initLevelSketch } from './modules/level-sketch.js';
 import * as MapAssets from './modules/map-assets.js';
 import * as MapInstances from './modules/map-instances.js';
 import * as MapTracing from './modules/map-collision-tracing.js';
@@ -113,7 +112,6 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     if (btn.dataset.tab === 'library') renderLibraryTab();
     if (btn.dataset.tab === 'todo') { todoPanel?.onShow(); designsPanel?.onShow(); }
     if (btn.dataset.tab === 'map') { renderMapLibraryLists(); mapView.frameToFit(); }
-    if (btn.dataset.tab === 'levelsketch') levelSketch.onShow();
   });
 }
 
@@ -1570,7 +1568,6 @@ function renderLibraryTab() {
 // multi-select) but driven by the map-*.js modules instead of inline logic. See ARCHITECTURE.md's
 // "Map Tracer" section for the module map and the two-kind (maps/pieces) library schema.
 
-const levelSketch = initLevelSketch();
 const mapTabPanel = document.getElementById('tab-map');
 const mapCanvas = document.getElementById('mapCanvas');
 const mapCtx = mapCanvas.getContext('2d');

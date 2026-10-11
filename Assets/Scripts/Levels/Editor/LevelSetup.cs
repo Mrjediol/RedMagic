@@ -15,7 +15,7 @@ namespace RedMagic.LevelsEditor
     /// <summary>
     /// Montaje del sistema de niveles: bioma, tile y paleta de terreno, importación del fondo de parallax desde la
     /// página de prueba web, nieve, postproceso y escenas de prueba. Todo idempotente: se puede relanzar.
-    /// Menú: <b>Tools ▸ RedMagic ▸ Niveles</b>.
+    /// Menú: <b>Tools ▸ EditorNiveles ▸ Montaje</b> (EditorNivelesMenu).
     /// </summary>
     public static class LevelSetup
     {
@@ -32,7 +32,6 @@ namespace RedMagic.LevelsEditor
 
         // ------------------------------------------------------------------ bioma, tile, paleta
 
-        [MenuItem("Tools/RedMagic/Niveles/Preparar bioma de hielo")]
         public static LevelBiome EnsureIceBiome()
         {
             Directory.CreateDirectory(IceFolder);
@@ -53,7 +52,6 @@ namespace RedMagic.LevelsEditor
             return biome;
         }
 
-        [MenuItem("Tools/RedMagic/Niveles/Crear tile y paleta de terreno")]
         public static TileBase EnsureTileAndPalette() { EnsureTiles(out var rock, out _); return rock; }
 
         /// <summary>Tiles "Roca" (terreno macizo) y "Plataforma" (se atraviesa desde abajo) y la paleta con los dos.</summary>
@@ -106,8 +104,8 @@ namespace RedMagic.LevelsEditor
             public bool on = true, key, front;
         }
 
-        [MenuItem("Tools/RedMagic/Niveles/Importar fondo de parallax (.json)...")]
-        private static void ImportBackgroundMenu()
+        /// <summary>Menú: Tools ▸ EditorNiveles ▸ Montaje.</summary>
+        public static void ImportBackgroundMenu()
         {
             string json = EditorUtility.OpenFilePanel("Escena exportada de la página de parallax", "", "json");
             if (string.IsNullOrEmpty(json)) return;
@@ -203,9 +201,6 @@ namespace RedMagic.LevelsEditor
         }
 
         // ------------------------------------------------------------------ nieve y postproceso
-
-        [MenuItem("Tools/RedMagic/Niveles/Crear nieve")]
-        private static void RebuildSnowMenu() => EnsureSnow(true);
 
         /// <summary>
         /// Nieve barata: sistemas de partículas nativos (simulados en C++ por Unity, sin scripts por copo), con tope de

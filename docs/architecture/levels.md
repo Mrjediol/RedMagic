@@ -32,6 +32,8 @@ screen height), as forced by `RunManager`.
 - Inner glow is a distance field, NOT ribbons pushed inward from the rim: ribbons fanned out at corners and left
   light wedges (rejected by the user). Thin rock naturally gets less glow.
 
+**Antialiasing**: the rim/outline are hard-edged meshes with a fine wobble; without AA their edges hop pixel to pixel as the camera moves by sub-pixels (seen as subtle trembling, 2026-10-12). `UniversalRP.asset` MSAA = 4x — keep it on.
+
 ## Draw order (`LevelSorting`)
 Everything of the level is on sorting layer **Default with negative orders** (project convention for backgrounds):
 parallax -1000+, background snow -600, rock/glow/rim -300/-299/-298, over-terrain objects (doors) -200+, bounds -2000.

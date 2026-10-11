@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Comparar recortes</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#0b1018;--panel:#121a26;--line:#243248;--txt:#d6e4f5;--mut:#7f93ad;--acc:#4aa8dc}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px system-ui,sans-serif;height:100vh;display:flex;flex-direction:column}
+header{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line)}
+button,select{background:#1a2638;color:var(--txt);border:1px solid var(--line);border-radius:5px;padding:4px 10px;font:inherit;cursor:pointer}
+button.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+#views{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;min-height:0}
+.v{position:relative;border:1px solid var(--line);border-radius:6px;overflow:hidden;min-height:0}
+.v canvas{width:100%;height:100%;display:block;cursor:grab}
+.v .lab{position:absolute;left:8px;top:6px;background:rgba(0,0,0,.6);padding:2px 8px;border-radius:4px;font-size:12px;pointer-events:none}
+small{color:var(--mut)}
+</style></head><body>
+<header>
+ <label>Original <input type="file" id="fo" accept="image/*"></label> <label>Nueva <input type="file" id="fn" accept="image/*"></label>
+ <span>Fondo: <button data-bg="check" class="on">cuadros</button><button data-bg="#000">negro</button><button data-bg="#fff">blanco</button><button data-bg="#ff00ff">magenta</button><button data-bg="#10304f">azul juego</button></span>
+ <button id="fit">Encajar</button><span id="zoom"></span>
+ <small>Rueda = zoom (hasta píxel) · arrastrar = mover · las dos vistas van sincronizadas</small>
+</header>
+<div id="views"><div class="v"><canvas id="a"></canvas><div class="lab" id="la"></div></div><div class="v"><canvas id="b"></canvas><div class="lab" id="lb"></div></div></div>
+<script>
+// Herramienta: elige la imagen original (con su fondo) y la limpia (ComfyUI finish/despill) y compáralas a nivel de píxel.
+const cvs=[document.getElementById('a'),document.getElementById('b')],imgs=[null,null];
+let bg='check',cx=.5,cy=.5,scale=1,cur=0;// cx,cy = centro en coordenadas normalizadas (0-1) de la imagen; scale = px de pantalla por px de la imagen NUEVA
+const load=s=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=s});
+const checker=(()=>{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.fillStyle='#bbb';x.fillRect(0,0,16,16);x.fillStyle='#777';x.fillRect(0,0,8,8);x.fillRect(8,8,8,8);return c})();
+function size(){cvs.forEach(c=>{const r=c.getBoundingClientRect();c.width=Math.round(r.width*devicePixelRatio);c.height=Math.round(r.height*devicePixelRatio)})}
+function draw(){const N=imgs[1]||imgs[0];if(!N)return;
+ cvs.forEach((c,k)=>{const g=c.getContext('2d'),im=imgs[k];g.setTransform(1,0,0,1,0,0);
+  if(bg==='check'){g.fillStyle=g.createPattern(checker,'repeat');g.fillRect(0,0,c.width,c.height)}else{g.fillStyle=bg;g.fillRect(0,0,c.width,c.height)}
+  if(!im)return;
+  // misma región en las dos: la escala de la original se ajusta a su resolución
+  const s=scale*devicePixelRatio*(N.width/im.width),w=im.width*s,h=im.height*s,x=c.width/2-cx*w,y=c.height/2-cy*h;
+  g.imageSmoothingEnabled=s<1;g.drawImage(im,x,y,w,h)});
+ document.getElementById('zoom').textContent='zoom '+(scale*100).toFixed(0)+' %'+(scale>=4?' · píxel':'')}
+function fit(){const N=imgs[1];if(!N)return;const r=cvs[1].getBoundingClientRect();scale=Math.min(r.width/N.width,r.height/N.height)*.95;cx=cy=.5;draw()}
+async function loadFile(k,f){if(!f)return;imgs[k]=await load(URL.createObjectURL(f));document.getElementById(k?'lb':'la').textContent=(k?'Nueva · ':'Original · ')+f.name+' · '+imgs[k].width+'×'+imgs[k].height;if(imgs[1])fit();else draw()}
+document.getElementById('fo').onchange=e=>loadFile(0,e.target.files[0]);document.getElementById('fn').onchange=e=>loadFile(1,e.target.files[0]);
+document.querySelectorAll('[data-bg]').forEach(b=>b.onclick=()=>{bg=b.dataset.bg;document.querySelectorAll('[data-bg]').forEach(x=>x.classList.toggle('on',x===b));draw()});
+document.getElementById('fit').onclick=fit;
+let drag=null;
+cvs.forEach(c=>{
+ c.addEventListener('wheel',e=>{e.preventDefault();const N=imgs[1];if(!N)return;const r=c.getBoundingClientRect(),mx=e.clientX-r.left-r.width/2,my=e.clientY-r.top-r.height/2;
+  const k=e.deltaY<0?1.25:.8,ns=Math.min(64,Math.max(.02,scale*k));
+  // mantener fijo el punto bajo el ratón
+  cx+=mx/(N.width*scale)-mx/(N.width*ns);cy+=my/(N.height*scale)-my/(N.height*ns);scale=ns;draw()},{passive:false});
+ c.addEventListener('mousedown',e=>{drag={x:e.clientX,y:e.clientY,cx,cy};c.style.cursor='grabbing'});
+});
+addEventListener('mousemove',e=>{if(!drag||!imgs[1])return;cx=drag.cx-(e.clientX-drag.x)/(imgs[1].width*scale);cy=drag.cy-(e.clientY-drag.y)/(imgs[1].height*scale);draw()});
+addEventListener('mouseup',()=>{drag=null;cvs.forEach(c=>c.style.cursor='grab')});
+addEventListener('resize',()=>{size();draw()});
+size();
+</script></body></html>

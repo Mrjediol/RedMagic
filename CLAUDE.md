@@ -90,7 +90,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 | Legacy code | `docs/architecture/legacy.md` |
 | Bosses, Boss Creator | `docs/architecture/bosses.md` |
 | Currency, shop, reroll | `docs/architecture/economy.md` |
-| Levels: terrain (Tilemap → rounded ice rim), size, parallax background, biomes | `docs/architecture/levels.md` |
+| Levels: terrain (Tilemap → rounded ice rim), size, parallax background, biomes | `docs/architecture/levels.md`, `docs/biomas-receta.md` (skill `make-biome`) |
 | Main Hub, tombs, interactables | `docs/architecture/hub.md` |
 | Audio, `SoundEmitter` | `docs/architecture/audio.md` |
 | To-do, task queue, 📋 Tareas (apuntes + talleres), `taller-server` | `docs/architecture/tareas.md` |

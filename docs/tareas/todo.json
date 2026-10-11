@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-10T14:42:17.144Z",
+  "updated": "2026-10-11T04:04:50.019Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -131,6 +131,38 @@
           "text": "Probar un nuevo método para obtener mapas",
           "note": "",
           "done": false
+        },
+        {
+          "id": "niveles-hielo",
+          "text": "Niveles de hielo: crear niveles (Unity + web), objetos y plataformas con variantes, puerta",
+          "note": "Sistema de niveles ya hecho (ver doc). Quedan: explicar cómo crear niveles con el tile en Unity, herramienta web de niveles, decoración y plataformas con variantes, y una puerta que asiente en el suelo plano.",
+          "done": false,
+          "doc": "docs/tareas/niveles-hielo.md",
+          "needs": [
+            "unity"
+          ],
+          "steps": [
+            {
+              "id": "nh-1",
+              "text": "Explicar cómo crear un nivel en Unity con el tile (y lo que falte para que sea cómodo)",
+              "done": false
+            },
+            {
+              "id": "nh-2",
+              "text": "Herramienta web de creación de niveles (roca + plataformas → levelsketch.json → Unity)",
+              "done": false
+            },
+            {
+              "id": "nh-3",
+              "text": "Objetos de decoración (cristales con luz, carámbanos, nieve, rocas) y plataformas con variantes",
+              "done": false
+            },
+            {
+              "id": "nh-4",
+              "text": "Puerta que asiente en el suelo plano (arte nuevo o escalones + pulsar arriba)",
+              "done": false
+            }
+          ]
         },
         {
           "id": "t4",

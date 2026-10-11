@@ -1,3 +1,6 @@
+> **Superado (2026-10-11).** Este traspaso describe el primer intento (tiras de borde, `LevelKit`), ya en `Legacy`.
+> Lo vigente: `docs/architecture/levels.md`, `docs/biomas-receta.md`, `docs/tareas/niveles-hielo.md`, skill `make-biome`.
+
 # Creación de niveles — traspaso (2026-10-10)
 
 Léelo entero antes de tocar nada de niveles. Es el estado real tras una sesión larga de pruebas.

@@ -1,5 +1,8 @@
 # Receta de niveles por bioma (reutilizable)
 
+> Resumen operativo en la skill **`make-biome`** (`.claude/skills/make-biome/SKILL.md`). Estado y pendientes del hielo:
+> `docs/tareas/niveles-hielo.md`. Sistema en Unity: `docs/architecture/levels.md`.
+
 Hielo es el primer bioma; bosque y volcán repiten este proceso. Aquí va solo lo que **funcionó** (y lo que no,
 para no repetirlo). Ejemplo resuelto con valores: `docs/niveles-prompts-hielo.md`. Regla: cada buen resultado
 nuevo se apunta aquí en el mismo momento.
@@ -9,6 +12,7 @@ nuevo se apunta aquí en el mismo momento.
 | Página | Para qué |
 |---|---|
 | `parallax-test.html` | Montar las 5 capas de fondo: pegar (Ctrl+V) / arrastrar / subir, velocidad, tamaño, anclaje vertical (proporcional / techo / suelo), espejo, quitar magenta (vista previa), difuminar, atenuar, delante del jugador. Jugador volador + cámara que sigue. **Exportar escena (.json)**. |
+| `comparar-recortes.html` | Original vs limpia (ComfyUI) lado a lado, zoom a píxel, fondos negro/blanco/magenta/azul juego. |
 | `boceto-nivel.html` | Nivel completo: carga la escena .json, terreno (borde procedural + roca pintada), pared+puerta en versión A (una imagen) o B (separadas) con atenuar/tamaño/posición, nieve que se posa. |
 
 Ambas guardan en el navegador (IndexedDB). Para otro bioma: cambiar textura de roca, colores del borde y
@@ -106,7 +110,8 @@ la imagen, borde interior irregular, 9:16; puerta: arco de piedra frontal, 1:1).
 1. Crear su `LevelBiome` (copia de `Assets/Levels/_Biomas/Hielo/Hielo.asset`): textura de roca (T1 del bioma),
    colores de las 4 bandas de suelo y techo, contorno, brillos, grosores.
 2. En `parallax-test.html`, **Exportar escena** con sus 7 capas ya limpias → `Tools ▸ RedMagic ▸ Niveles ▸ Importar
-   fondo de parallax (.json)` (hoy escribe en la carpeta del hielo: parametrizar carpeta/nombre para el 2º bioma).
+   fondo de parallax (.json)`. ⚠ `LevelSetup` tiene la carpeta y los nombres del hielo fijos (`IceFolder`,
+   `EnsureIceBiome`, `CreateIceTestScenes`): parametrizarlo por bioma ANTES de empezar el 2º.
 3. Partículas del bioma: copiar `Nieve.prefab` y cambiar textura, velocidad y colisión (hojas: más lentas y con
    giro; ceniza/brasas: suben, sin colisión).
 4. Nivel: GameObject con `Level` (tamaño en unidades, 1 = 40 px) + `Grid/Terreno` (Tilemap) → pintar con

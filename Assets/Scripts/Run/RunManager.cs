@@ -325,20 +325,13 @@ namespace RedMagic.Run
             if (!world.TryBuildRunOrder(RunSeed, out _order) || _order.Count == 0)
                 return false;
 
-            if (!world.BossScene.CanLoad)
-            {
-                Debug.LogError($"[RunManager] El mundo '{world.DisplayName}' no tiene una escena de " +
-                               "jefe cargable. Se cancela la run.", this);
-                return false;
-            }
-
             CurrentWorld = world;
             _index = 0;
             RunInProgress = true;
             SetPhase(RunPhase.Section);
 
             Debug.Log($"[RunManager] Run en '{world.DisplayName}' (semilla {RunSeed}): " +
-                      $"{string.Join(" → ", _order.ConvertAll(s => s.Name))} → {world.BossScene.Name}");
+                      $"{string.Join(" → ", _order.ConvertAll(s => s.Name))} → {(world.HasBoss ? world.BossScene.Name : "sin jefe")}");
 
             RunStarted?.Invoke(world);
             SystemSounds.Play(s => s.runStart);
@@ -378,6 +371,14 @@ namespace RedMagic.Run
             }
 
             _index++;
+
+            // Mundo sin jefe (aún no hecho): acabar las secciones es acabar el mundo.
+            if (_index >= _order.Count && !CurrentWorld.HasBoss)
+            {
+                CompleteWorld();
+                return;
+            }
+
             SetPhase(_index < _order.Count ? RunPhase.Section : RunPhase.Boss);
             _flow = StartCoroutine(EnterCurrentRoutine(firstOfRun: false));
         }
@@ -474,6 +475,10 @@ namespace RedMagic.Run
             }
 
             while (!load.isDone) yield return null;
+
+            // El Player que trae la escena para probarla suelta sobra: la run usa el persistente.
+            // Se apaga ya, antes de su Start (aún no se ha enganchado a cámara, HUD, etc.).
+            DisableScenePlayers(target.GetLoadedScene());
 
             // La integración de la escena (todos los Awake/OnEnable/Start de golpe) es el frame
             // más caro de la transición; se le deja respirar un frame antes de tocar nada más para
@@ -602,7 +607,7 @@ namespace RedMagic.Run
             // Encadenar sin pasar por el hub: se resortea el orden pero el jugador sigue tal cual
             // está (vida y mejoras incluidas), que es lo que le da tensión a la run larga.
             RunSeed = debugSeed != 0 ? debugSeed : Environment.TickCount;
-            if (!next.TryBuildRunOrder(RunSeed, out _order) || _order.Count == 0 || !next.BossScene.CanLoad)
+            if (!next.TryBuildRunOrder(RunSeed, out _order) || _order.Count == 0)
             {
                 Debug.LogError($"[RunManager] '{next.DisplayName}' no está listo para jugarse; la run " +
                                "termina en el hub.", this);
@@ -799,6 +804,14 @@ namespace RedMagic.Run
 
             if (Player != null) MoveToHubEntry(Player);
             _playerHealth?.ResetHealth();
+        }
+
+        private void DisableScenePlayers(Scene scene)
+        {
+            if (Player == null || !scene.IsValid()) return;
+            foreach (var root in scene.GetRootGameObjects())
+                foreach (var movement in root.GetComponentsInChildren<PlayerMovement>())
+                    movement.gameObject.SetActive(false);
         }
 
         private void PlacePlayerAtEntry(Scene scene)

@@ -1761,7 +1761,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f7b0121c34b26684d894d0aa12b1d92b, type: 2}
   - {fileID: 11400000, guid: 3a74a0ce5ea18464394b8d9a3cd0bf43, type: 2}
   chainToNextWorld: 1
-  playerPrefab: {fileID: 4486680268914706177, guid: d17a89dc0989ba9428e9443f056f2fbb, type: 3}
+  playerPrefab: {fileID: 8299514448751579472, guid: 985c48aec45a106489781ecd6f82ed4d, type: 3}
   deathReturnDelay: 1.5
   debugSeed: 0
   hubMusicId: MainHub

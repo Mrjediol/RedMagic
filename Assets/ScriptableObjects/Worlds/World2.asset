@@ -14,19 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Run.WorldDefinition
   worldNumber: 2
   displayName: Mundo 2
-  unlocked: 1
-  sectionPool:
-  - sceneAsset: {fileID: 102900000, guid: 68eacb98ccaae32448c7b11a8712a4ba, type: 3}
-    scenePath: Assets/Scenes/Ice1.unity
-    sceneName: Ice1
-  - sceneAsset: {fileID: 102900000, guid: 49008393c71e696469e4867decdc2ae4, type: 3}
-    scenePath: Assets/Scenes/Ice2.unity
-    sceneName: Ice2
-  - sceneAsset: {fileID: 102900000, guid: 172adc07d4124f240a0233013e7973d2, type: 3}
-    scenePath: Assets/Scenes/Ice3.unity
-    sceneName: Ice3
+  unlocked: 0
+  sectionPool: []
   sectionsPerRun: 2
   bossScene:
-    sceneAsset: {fileID: 102900000, guid: d82dcfd92ad1d7f4a911dff5c75f3f55, type: 3}
-    scenePath: Assets/Scenes/Ice4.unity
-    sceneName: Ice4
+    sceneAsset: {fileID: 0}
+    scenePath: 
+    sceneName: 

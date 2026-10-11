@@ -14,13 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Run.WorldDefinition
   worldNumber: 3
   displayName: Mundo 3
-  unlocked: 1
-  sectionPool:
-  - sceneAsset: {fileID: 102900000, guid: c212d2d50cbe95541a9c9951bfc841c6, type: 3}
-    scenePath: Assets/Scenes/Fire1.unity
-    sceneName: Fire1
+  unlocked: 0
+  sectionPool: []
   sectionsPerRun: 1
   bossScene:
-    sceneAsset: {fileID: 102900000, guid: 7757a44f119776143883c0345dc842f8, type: 3}
-    scenePath: Assets/Scenes/Fire1 1.unity
-    sceneName: Fire1 1
+    sceneAsset: {fileID: 0}
+    scenePath: 
+    sceneName: 

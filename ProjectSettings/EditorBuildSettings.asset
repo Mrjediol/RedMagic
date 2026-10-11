@@ -80,6 +80,9 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Worlds/World3/World3_Section05.unity
     guid: 9ec28983138295042b0163b26d9c1200
+  - enabled: 1
+    path: Assets/Scenes/NivelHielo_1000.unity
+    guid: 3a7e9fd6109dbd04597aaed54c75b7f0
   m_configObjects:
     com.unity.adaptivePerformance.basic.provider_settings: {fileID: 11400000, guid: a99728a281b759d4dbfdbbd8fdd87634, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: c158f1ab2c0c7074eb5822584efa8ffa, type: 2}

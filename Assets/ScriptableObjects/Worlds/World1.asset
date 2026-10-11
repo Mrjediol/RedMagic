@@ -16,11 +16,11 @@ MonoBehaviour:
   displayName: Mundo 1
   unlocked: 1
   sectionPool:
-  - sceneAsset: {fileID: 102900000, guid: 68eacb98ccaae32448c7b11a8712a4ba, type: 3}
-    scenePath: Assets/Scenes/Ice1.unity
-    sceneName: Ice1
+  - sceneAsset: {fileID: 102900000, guid: 3a7e9fd6109dbd04597aaed54c75b7f0, type: 3}
+    scenePath: Assets/Scenes/NivelHielo_1000.unity
+    sceneName: NivelHielo_1000
   sectionsPerRun: 1
   bossScene:
-    sceneAsset: {fileID: 102900000, guid: 399eb5522346b2f4c8f6ff1f3c83f700, type: 3}
-    scenePath: Assets/Scenes/Worlds/World1/BosqueBoss.unity
-    sceneName: BosqueBoss
+    sceneAsset: {fileID: 0}
+    scenePath: 
+    sceneName: 

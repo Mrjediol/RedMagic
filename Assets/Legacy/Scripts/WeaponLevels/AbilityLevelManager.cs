@@ -33,7 +33,7 @@ namespace RedMagic.Abilities
         /// <summary>(habilidad, nivel nuevo). Lo escuchan el menú del altar y la UI.</summary>
         public event Action<AbilityDefinition, int> LevelChanged;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        // Legacy: ya no se autocrea (se quitó el RuntimeInitializeOnLoadMethod).
         private static void Bootstrap()
         {
             if (Instance != null) return;

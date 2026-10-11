@@ -17,6 +17,8 @@ que dependa de Legacy.
 | `Legacy/AdaptivePerformance/` | Ajustes huérfanos del paquete Adaptive Performance (no está instalado) |
 | `Resources/Legacy/Abilities/` | Los `AbilityDefinition` (por ruta de Resources, se quedan ahí) |
 
+Nada de Legacy se **autocrea** (`RuntimeInitializeOnLoadMethod` quitado de `AbilityLevelManager`, `AbilityMenuController`, `WeaponUpgradeMenuController` y los HUD viejos): si no lo pone una escena o un prefab, no corre.
+
 **Sigue vivo a propósito** (lo usan armas y jefes): `Scripts/Abilities/` — `AbilityContext`, `AbilityHit`, `AbilityFx`,
 `ProjectileSpec`/`ProjectileFactory`.
 

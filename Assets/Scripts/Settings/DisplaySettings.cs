@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
@@ -203,9 +204,30 @@ namespace RedMagic.Settings
             _backdrop.enabled = boxed;
 
             foreach (var cam in Camera.allCameras)
-                if (cam != _backdrop && cam.targetTexture == null) cam.rect = _rect;
+            {
+                if (cam == _backdrop || cam.targetTexture != null) continue;
+                cam.rect = _rect;
+                FixBoxedPostProcessing(cam, boxed);
+            }
 
             ApplyToPanels(GameSettingsConfig.Instance.letterboxUi ? _rect : new Rect(0f, 0f, 1f, 1f));
+        }
+
+        // Bug de URP 2D: con postproceso y un Camera.rect desplazado, la imagen sale pegada a la izquierda
+        // (no centrada entre las bandas) y la UI, que sí va centrada, queda descolocada. Con FXAA URP hace
+        // una pasada final aparte que sí respeta el rect: se activa sólo mientras hay bandas.
+        private readonly HashSet<Camera> _fxaaForBands = new();
+
+        private void FixBoxedPostProcessing(Camera cam, bool boxed)
+        {
+            if (!cam.TryGetComponent(out UniversalAdditionalCameraData data)) return;
+            if (boxed && data.renderPostProcessing && data.antialiasing == AntialiasingMode.None)
+            {
+                data.antialiasing = AntialiasingMode.FastApproximateAntialiasing;
+                _fxaaForBands.Add(cam);
+            }
+            else if (!boxed && _fxaaForBands.Remove(cam))
+                data.antialiasing = AntialiasingMode.None;
         }
 
         private static Rect ComputeRect(float target, int width, int height)

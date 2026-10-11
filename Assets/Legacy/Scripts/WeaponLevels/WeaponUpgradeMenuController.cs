@@ -37,7 +37,7 @@ namespace RedMagic.UI
 
         private AbilityUser _user;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        // Legacy: ya no se autocrea (se quitó el RuntimeInitializeOnLoadMethod).
         private static void Bootstrap()
         {
             if (Instance != null) return;

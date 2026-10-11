@@ -805,7 +805,11 @@ namespace RedMagic.Gameplay
         {
             var b = new Bounds(transform.position, _characterBounds.size);
 
-            _raysDown = new RayRange(b.min.x + _rayBuffer, b.min.y, b.max.x - _rayBuffer, b.min.y, Vector2.down);
+            // Los rayos de suelo cubren el MISMO ancho que la caja del barrido (encogida 'solverSkin'), no
+            // '_rayBuffer' hacia dentro: si no, en el borde de una esquina cuadrada la caja se apoya en el
+            // canto pero ningún rayo ve suelo, y el personaje se queda colgado "cayendo" sin caer ni saltar.
+            float footInset = solverSkin * 0.5f;
+            _raysDown = new RayRange(b.min.x + footInset, b.min.y, b.max.x - footInset, b.min.y, Vector2.down);
             _raysUp = new RayRange(b.min.x + _rayBuffer, b.max.y, b.max.x - _rayBuffer, b.max.y, Vector2.up);
             _raysLeft = new RayRange(b.min.x, b.min.y + _rayBuffer, b.min.x, b.max.y - _rayBuffer, Vector2.left);
             _raysRight = new RayRange(b.max.x, b.min.y + _rayBuffer, b.max.x, b.max.y - _rayBuffer, Vector2.right);

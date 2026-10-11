@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Fx.MeleeSlashFx
   worldRadius: 1.8
-  arcDegrees: 350
+  arcDegrees: 340
   startAngle: 270
   clockwise: 0
   symmetric: 1

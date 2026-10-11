@@ -16,7 +16,7 @@ MonoBehaviour:
   rockTileUnits: 5.4
   rockShadow: {r: 0.016, g: 0.055, b: 0.133, a: 0.45}
   rockShader: {fileID: 4800000, guid: e260cfa7296ee7642b167f1eb5be5023, type: 3}
-  cornerRadius: 0.4
+  cornerRadius: 0.191
   floorWidth: 0.625
   wallWidth: 0.4
   ceilingWidth: 0.35

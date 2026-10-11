@@ -71,3 +71,11 @@ Cada personaje que la llevaba construía su propio Canvas encima de la cabeza. S
 barras de enemigo del HUD (`UI.HudEnemyBars`: flotante / foco / lista, a elegir en Opciones ▸
 Interfaz), que salen solas para todo enemigo sin tocar su prefab; la del jugador ya la había
 sustituido `UI.HudHealthBar`. Sin usos en prefabs ni escenas al moverla.
+
+## `Levels/` — importador de bocetos con tiras de borde, `LevelKit`, `ParallaxLayer`
+
+El primer intento de niveles a partir del boceto web: un prefab por boceto con relleno, tiras de borde Tiled
+giradas por orientación y piezas de esquina, kit de arte recortado de un mapa de Gemini (`LevelKitRecipe`,
+`SheetSlicer` de hojas sobre magenta) y `ParallaxLayer` (sprite Tiled que sigue a la cámara a una fracción).
+Falló en las esquinas y en el aspecto del borde. Sustituido por **`RedMagic.Levels`** (`Level` + Tilemap, borde
+procedural con esquinas redondeadas, `ParallaxBackgroundLayer`, `LevelBiome`): ver `docs/architecture/levels.md`.

@@ -101,6 +101,17 @@ la imagen, borde interior irregular, 9:16; puerta: arco de piedra frontal, 1:1).
 4. Usar la salida `_cut` (fondo quitado) recortada a su contenido. Montar como capa con Repetir = "extremos del
    nivel" en `parallax-test.html`.
 
+## Pasar un bioma a Unity (sistema `RedMagic.Levels`, ver `docs/architecture/levels.md`)
+
+1. Crear su `LevelBiome` (copia de `Assets/Levels/_Biomas/Hielo/Hielo.asset`): textura de roca (T1 del bioma),
+   colores de las 4 bandas de suelo y techo, contorno, brillos, grosores.
+2. En `parallax-test.html`, **Exportar escena** con sus 7 capas ya limpias → `Tools ▸ RedMagic ▸ Niveles ▸ Importar
+   fondo de parallax (.json)` (hoy escribe en la carpeta del hielo: parametrizar carpeta/nombre para el 2º bioma).
+3. Partículas del bioma: copiar `Nieve.prefab` y cambiar textura, velocidad y colisión (hojas: más lentas y con
+   giro; ceniza/brasas: suben, sin colisión).
+4. Nivel: GameObject con `Level` (tamaño en unidades, 1 = 40 px) + `Grid/Terreno` (Tilemap) → pintar con
+   `PaletaTerreno`. El marco, la cámara, el collider y el fondo se ajustan solos.
+
 ## Qué cambia por bioma
 
 | | Hielo | Bosque (por definir) | Volcán (por definir) |

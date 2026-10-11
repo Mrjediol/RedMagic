@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 840e8848457669d4a98a4c2e77dddb2a, type: 3}
+  m_Name: Hielo
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Levels.LevelBiome
+  rockTexture: {fileID: 2800000, guid: 0bd53e65d623ff042a31b310753f4611, type: 3}
+  rockTileUnits: 5.4
+  rockShadow: {r: 0.016, g: 0.055, b: 0.133, a: 0.45}
+  rockShader: {fileID: 4800000, guid: e260cfa7296ee7642b167f1eb5be5023, type: 3}
+  cornerRadius: 0.4
+  floorWidth: 0.625
+  wallWidth: 0.4
+  ceilingWidth: 0.35
+  widthVariation: 0.5
+  floorBands:
+  - {r: 0.24705882, g: 0.58431375, b: 0.8156863, a: 1}
+  - {r: 0.5254902, g: 0.8039216, b: 0.9490196, a: 1}
+  - {r: 0.8039216, g: 0.93333334, b: 0.9882353, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
+  ceilingBands:
+  - {r: 0.15686275, g: 0.40784314, b: 0.6666667, a: 1}
+  - {r: 0.32941177, g: 0.627451, b: 0.85490197, a: 1}
+  - {r: 0.5882353, g: 0.8235294, b: 0.95686275, a: 1}
+  - {r: 0.8235294, g: 0.9411765, b: 1, a: 1}
+  bandFractions:
+  - 1
+  - 0.68
+  - 0.4
+  - 0.17
+  outline: {r: 0.015686275, g: 0.06666667, b: 0.16470589, a: 1}
+  outlineWidth: 0.11
+  outerGlow: {r: 0.75, g: 0.91, b: 0.98, a: 0.35}
+  outerGlowWidth: 0.3
+  innerGlow: {r: 0.31, g: 0.76, b: 1, a: 0.28}
+  innerGlowWidth: 1.6
+  rimShader: {fileID: 4800000, guid: aa3734fe1975c094ab4bafd8b23b47d9, type: 3}
+  background: {fileID: 4788031873096802469, guid: defa88a04941a534187a7b40412601a9, type: 3}
+  particles: {fileID: 6180064699060363894, guid: 76c79d46ada46de4194e8512f424c9e0, type: 3}

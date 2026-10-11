@@ -43,7 +43,10 @@ right — wall and door); vertical `anchor` Proportional (spread over the level 
 levels) / Ceiling / Floor (move with the world at `verticalSpeed`); `fade` toward `fogColor`; `inFront` draws on
 `Characters` (order 50+); `overTerrain` draws on `Terrain` order 20+ (above the rim, behind the player — doors). Doors also
 use `sitOnGround` (LevelEnds: base placed on `Level.GroundTop` at each end, Altura = fine offset) and `castShadow`
-(blurred silhouette offset onto the wall + soft ellipse on the floor, `RedMagic/Parallax Shadow`). Drawn with its own quad + `RedMagic/Parallax Layer` shader (repeat/mirror in the shader,
+(sharp silhouette offset into the level, drawn on `BackGround` right above the wall so it lands ON the wall and the
+terrain hides it below the floor line — a blurred copy around the door read as dirt and was rejected; plus a soft
+ellipse on the floor, `RedMagic/Parallax Shadow`). `snowDrift`: procedural snow mound (rim colours + outline) over
+the door base, joining the door to the flat floor (attempt; `ConfigureAsDoor` sets all of this). Drawn with its own quad + `RedMagic/Parallax Layer` shader (repeat/mirror in the shader,
 gradient sampling so seams don't show a mip line). Needs a `Level` in a parent.
 
 Import: `Tools ▸ RedMagic ▸ Niveles ▸ Importar fondo de parallax (.json)` reads the page's **Exportar escena** file,

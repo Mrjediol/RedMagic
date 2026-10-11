@@ -13,24 +13,24 @@ namespace RedMagic.Levels
     {
         [Header("Plano del juego (choca y se posa)")]
         [Tooltip("Copos por segundo.")]
-        [Range(0f, 80f)] public float amount = 24f;
+        [Range(0f, 150f)] public float amount = 60f;
         [Tooltip("Tamaño mínimo y máximo, en unidades (1 unidad = 40 px del boceto).")]
-        public Vector2 size = new Vector2(0.12f, 0.34f);
+        public Vector2 size = new Vector2(0.2f, 0.55f);
         [Range(0f, 1f)] public float opacity = 0.9f;
         [Tooltip("Velocidad de caída mínima y máxima (unidades/s).")]
         public Vector2 fallSpeed = new Vector2(0.9f, 2f);
         [Tooltip("Segundos que se queda un copo posado antes de desvanecerse (mín, máx).")]
         public Vector2 landedTime = new Vector2(2f, 3.5f);
         [Tooltip("Tope de copos cayendo a la vez (coste).")]
-        [Range(50, 1000)] public int maxFalling = 450;
+        [Range(50, 1500)] public int maxFalling = 1000;
         [Tooltip("Tope de copos posados a la vez (coste).")]
-        [Range(20, 500)] public int maxLanded = 200;
+        [Range(20, 800)] public int maxLanded = 400;
 
         [Header("Fondo (detrás del terreno, no choca)")]
-        [Range(0f, 80f)] public float backgroundAmount = 16f;
-        public Vector2 backgroundSize = new Vector2(0.05f, 0.14f);
+        [Range(0f, 150f)] public float backgroundAmount = 40f;
+        public Vector2 backgroundSize = new Vector2(0.09f, 0.24f);
         [Range(0f, 1f)] public float backgroundOpacity = 0.45f;
-        [Range(50, 1000)] public int maxBackground = 300;
+        [Range(50, 1500)] public int maxBackground = 700;
 
         private void OnEnable() => Apply();
         private void OnValidate() => Apply();

@@ -160,3 +160,12 @@ Fix propuesto (mismo patrón que el salto):
 3. Player: quitar rampas (§2.1). Rama `task/no-slopes` (refactor grande). Commit.
 4. Player: arreglos de jump buffer + `TouchInput.JumpHeld` + dash buffer. Commit.
 5. Docs: `enemies.md`, `levels.md`, cabecera de `PlayerMovement`.
+
+---
+
+## 7. Arreglos ya hechos (2026-10-11) — conservar al quitar rampas
+
+- Rayos de suelo con el ancho de la caja del barrido (`solverSkin/2`, no `_rayBuffer`): sin esto, colgado en el canto.
+- Rayo de Ground nace `FootProbeRise` (0.1) sobre los pies y `SnapToGround` también sube: el barrido de caída deja
+  los pies ~0.015 dentro del suelo y un rayo nacido bajo un `EdgeCollider2D` no lo ve (atasco "cayendo" al aterrizar,
+  intermitente según altura/frame).

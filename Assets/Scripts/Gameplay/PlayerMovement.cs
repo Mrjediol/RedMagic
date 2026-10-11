@@ -367,6 +367,9 @@ namespace RedMagic.Gameplay
         // Hack del original: los colliders no están del todo listos al arrancar.
         private bool _active;
 
+        /// <summary>Desde cuánto por encima de los pies sale el rayo de suelo (ver <see cref="ProbeGround"/>).</summary>
+        private const float FootProbeRise = 0.1f;
+
         private RayRange _raysUp, _raysRight, _raysDown, _raysLeft;
         private bool _colUp, _colRight, _colDown, _colLeft;
         private float _timeLeftGrounded;
@@ -749,7 +752,14 @@ namespace RedMagic.Gameplay
 
             foreach (var point in EvaluateRayPositions(_raysDown))
             {
-                Consider(Physics2D.Raycast(point, Vector2.down, probeRange, _groundLayer), false);
+                // El rayo de Ground nace FootProbeRise por encima de los pies: el barrido de caída deja los pies
+                // ~0.02 dentro del suelo (su caja va encogida 'solverSkin'), y un rayo nacido bajo la línea de un
+                // EdgeCollider no la ve — se quedaba "cayendo" sobre suelo firme sin poder saltar. La distancia
+                // se devuelve medida desde los pies: negativa = hundido, y SnapToGround lo saca.
+                var groundHit = Physics2D.Raycast(point + Vector2.up * FootProbeRise, Vector2.down,
+                                                  probeRange + FootProbeRise, _groundLayer);
+                if (groundHit) groundHit.distance -= FootProbeRise;
+                Consider(groundHit, false);
 
                 if (platformsActive)
                 {
@@ -1433,14 +1443,19 @@ namespace RedMagic.Gameplay
         // _detectionRayLength por debajo, así que puede quedarse flotando hasta esa distancia.
         // Aquí se baja lo justo para que los pies toquen de verdad.
         // Al bajar una rampa el hueco puede llegar a 'slopeSnapDistance': ProbeGround ya midió la
-        // distancia exacta al suelo (rampa o plataforma incluidas), así que aquí sólo se baja.
+        // distancia exacta al suelo (rampa o plataforma incluidas). Si es negativa (pies hundidos tras
+        // aterrizar), se sube.
         private void SnapToGround()
         {
             if (!snapToGround || !_colDown || _currentVerticalSpeed > 0f) return;
             if (_groundDistance >= float.MaxValue) return;
 
             float drop = _groundDistance - groundSkin;
-            if (drop <= 0.0001f) return;
+            if (Mathf.Abs(drop) <= 0.0001f) return;
+
+            // Hundido (el barrido de caída deja los pies unos centímetros dentro): se sube hasta la superficie,
+            // salvo que eso lo meta en un techo.
+            if (drop < 0f && WouldOverlapGround(transform.position - Vector3.up * drop)) return;
 
             _lastWrite = MoveSource.GroundSnap;
             transform.position += Vector3.down * drop;

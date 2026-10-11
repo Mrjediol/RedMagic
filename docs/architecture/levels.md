@@ -16,14 +16,15 @@ screen height), as forced by `RunManager`.
   (`Assets/Levels/_Biomas/`): any tile = rock. The frame is NOT painted — cells on the border and outside are
   always rock (`Level.IsSolid`). Origin = bottom-left corner.
 - Regenerates on paint (`Tilemap.tilemapTileChanged`), on size/biome change and on load; meshes are `DontSave`.
-  Children it owns: `BG`, `Roca` (rock fill, Sprite-Lit, biome texture tiled in world space), `Borde` (rim: shadow
-  over the rock, inner glow, 4 colour bands of noisy width, outer glow, dark outline — one vertex-colour mesh with
-  `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, rounded like the art, layer Ground).
+  Children it owns: `BG`, `Roca` (rock fill, Sprite-Lit, biome texture tiled in world space), `Brillo` (rock shadow +
+  inner glow baked into a texture by exact distance-to-air at 8 texels/unit), `Borde` (4 colour bands of noisy
+  width, outer glow, dark outline — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, rounded like the art, layer Ground).
 - Geometry in `LevelShape` (pure): contours of the air pockets with rock on the right (pinch vertices turn left
   so each pocket keeps its own loop), every corner rounded with a quadratic curve of `cornerRadius`, and the rock
   fill cut by the same curves (convex corners cut, concave corners get a curved fillet) so no square corner pokes
   out — the "black corner" bug of the web sketch.
-- Inner glow is clamped to half the local rock thickness (else it shines through 1-cell platforms).
+- Inner glow is a distance field, NOT ribbons pushed inward from the rim: ribbons fanned out at corners and left
+  light wedges (rejected by the user). Thin rock naturally gets less glow.
 
 ## `LevelBiome` (ScriptableObject, one per biome)
 Rock texture/tile size/shadow, corner radius, rim widths (floor/wall/ceiling), 4 floor + 4 ceiling band colours,
@@ -52,5 +53,5 @@ Crear escenas de prueba de hielo (`Assets/Scenes/Test/NivelHielo_{1000,2000,3000
 with the web sketch layout) · Importar boceto en el nivel (web `*.levelsketch.json` → size + painted cells).
 
 ## Pending
-Light wedge where inner glows overlap at concave ceiling corners (fix = distance-based glow); slopes (45° cells);
+Slopes (45° cells);
 objects (platform variants, crystals with Light2D) as prefabs; level entry/exit for runs (`SectionEntry/Exit`).

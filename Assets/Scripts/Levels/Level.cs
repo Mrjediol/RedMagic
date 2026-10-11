@@ -29,7 +29,7 @@ namespace RedMagic.Levels
         public const int MaxWidth = 400;
         public const int MinSize = 12;
 
-        public const string BackgroundName = "BG", RockName = "Roca", RimName = "Borde", CollisionName = "Colision";
+        public const string BackgroundName = "BG", RockName = "Roca", RimName = "Borde", GlowName = "Brillo", CollisionName = "Colision";
 
         [Tooltip("Ancho del nivel en unidades (celdas), marco incluido. 1 unidad = 40 px del boceto.")]
         [SerializeField] private int width = 85;
@@ -55,8 +55,9 @@ namespace RedMagic.Levels
         public Rect WorldRect => new Rect((Vector2)transform.position, new Vector2(width, height));
 
         private bool _dirty = true;
-        private Mesh _rockMesh, _rimMesh;
-        private Material _rockMaterial, _rimMaterial;
+        private Mesh _rockMesh, _rimMesh, _glowMesh;
+        private Material _rockMaterial, _rimMaterial, _glowMaterial;
+        private Texture2D _glowTexture;
         private Sprite _bgSprite;
 
         // ------------------------------------------------------------------ ciclo de vida
@@ -72,7 +73,8 @@ namespace RedMagic.Levels
 
         private void OnDestroy()
         {
-            DestroySafe(_rockMesh); DestroySafe(_rimMesh);
+            DestroySafe(_rockMesh); DestroySafe(_rimMesh); DestroySafe(_glowMesh);
+            DestroySafe(_glowMaterial); DestroySafe(_glowTexture);
             DestroySafe(_rockMaterial); DestroySafe(_rimMaterial);
             if (_bgSprite != null) DestroySafe(_bgSprite);
         }
@@ -146,6 +148,7 @@ namespace RedMagic.Levels
             var loops = LevelShape.Loops(IsSolid, width, height);
 
             BuildRock(polygons);
+            BuildGlow(polygons);
             BuildRim(polygons, loops, radius);
             BuildCollision(loops, radius);
         }
@@ -190,8 +193,6 @@ namespace RedMagic.Levels
             var cols = new List<Color>();
             var tris = new List<int>();
 
-            // 1. sombra de toda la roca (el brillo interior la aclara junto al aire)
-            foreach (var poly in polygons) AddFan(poly, verts, tris, null, 0f, cols, biome.rockShadow);
 
             var contours = new List<List<RimPoint>>();
             foreach (var loop in loops) contours.Add(LevelShape.Rounded(loop, radius, 0.15f, 24));
@@ -213,12 +214,7 @@ namespace RedMagic.Levels
                     t[i] = (1f - q.normal.y) * 0.5f; // 0 techo, 1 suelo
                 }
 
-                // 2. brillo interior (dos pasadas: ancha y estrecha), se desvanece hacia dentro. Nunca más de media
-                //    roca: en una plataforma de 1 celda atravesaría y saldría por el otro lado como una raya de luz.
-                var glow = new float[n];
-                for (int i = 0; i < n; i++) glow[i] = Mathf.Min(biome.innerGlowWidth, Thickness(pts[i]) * 0.5f);
-                Ribbon(pts, verts, cols, tris, i => 0f, i => glow[i], i => biome.innerGlow, i => clear(biome.innerGlow));
-                Ribbon(pts, verts, cols, tris, i => 0f, i => glow[i] * 0.45f, i => biome.innerGlow, i => clear(biome.innerGlow));
+                // (sombra y brillo interior: textura por distancia, ver BuildGlow)
 
                 // 3. las 4 bandas del borde, de la más ancha a la más estrecha
                 for (int b = 0; b < 4; b++)
@@ -239,7 +235,7 @@ namespace RedMagic.Levels
             _rimMesh = Assign(_rimMesh, "LevelRim", verts, tris, null, cols);
             var shader = biome.rimShader != null ? biome.rimShader : Shader.Find("RedMagic/Fx Vertex Color");
             _rimMaterial = GetMaterial(ref _rimMaterial, shader, "LevelRim");
-            SetupRenderer(Child(RimName), _rimMesh, _rimMaterial, sortingOrder + 1);
+            SetupRenderer(Child(RimName), _rimMesh, _rimMaterial, sortingOrder + 2);
         }
 
         private void BuildCollision(List<List<Vector2Int>> loops, float radius)
@@ -260,15 +256,123 @@ namespace RedMagic.Levels
             }
         }
 
-        /// <summary>Roca que hay hacia dentro desde un punto del borde (hasta 4 unidades).</summary>
-        private float Thickness(RimPoint q)
+        /// <summary>
+        /// Sombra de la roca + brillo hacia dentro, por DISTANCIA al aire (como el desenfoque del boceto web): se
+        /// rasteriza la roca ya redondeada a <see cref="GlowTexelsPerUnit"/> texels por unidad, se calcula la distancia
+        /// euclídea exacta de cada texel al aire y el brillo cae con ella. Uniforme en cualquier esquina; las cintas
+        /// que salían del borde se abrían en abanico en las esquinas y dejaban cuñas de luz.
+        /// </summary>
+        private const int GlowTexelsPerUnit = 8;
+
+        private void BuildGlow(List<List<Vector2>> polygons)
         {
-            for (float d = 0.05f; d < 4f; d += 0.1f)
+            int R = GlowTexelsPerUnit, tw = width * R, th = height * R;
+            var inside = new bool[tw * th];
+            var pt = new Vector2();
+            foreach (var poly in polygons)
             {
-                Vector2 p = q.position + q.normal * d;
-                if (!IsSolid(Mathf.FloorToInt(p.x), Mathf.FloorToInt(p.y))) return d;
+                float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+                foreach (var p in poly) { minX = Mathf.Min(minX, p.x); maxX = Mathf.Max(maxX, p.x); minY = Mathf.Min(minY, p.y); maxY = Mathf.Max(maxY, p.y); }
+                int x0 = Mathf.Max(0, Mathf.FloorToInt(minX * R)), x1 = Mathf.Min(tw - 1, Mathf.CeilToInt(maxX * R));
+                int y0 = Mathf.Max(0, Mathf.FloorToInt(minY * R)), y1 = Mathf.Min(th - 1, Mathf.CeilToInt(maxY * R));
+                for (int y = y0; y <= y1; y++)
+                for (int x = x0; x <= x1; x++)
+                {
+                    int k = y * tw + x;
+                    if (inside[k]) continue;
+                    pt.x = (x + 0.5f) / R; pt.y = (y + 0.5f) / R;
+                    if (Contains(poly, pt)) inside[k] = true;
+                }
             }
-            return 4f;
+
+            var dist = DistanceToAir(inside, tw, th); // en texels
+            float wide = Mathf.Max(0.01f, biome.innerGlowWidth) * R, narrow = wide * 0.45f;
+            var pixels = new Color32[tw * th];
+            Color sc = biome.rockShadow, gc = biome.innerGlow;
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                if (!inside[i]) { pixels[i] = new Color32(0, 0, 0, 0); continue; }
+                float d = dist[i];
+                float fa = d < wide ? (1f - d / wide) * (1f - d / wide) : 0f, fb = d < narrow ? (1f - d / narrow) * (1f - d / narrow) : 0f;
+                float ga = Mathf.Clamp01(gc.a * (fa + fb)), sa = sc.a;
+                float a = ga + sa * (1f - ga);
+                Color c = a > 0f ? (gc * ga + sc * (sa * (1f - ga))) / a : sc;
+                c.a = a;
+                pixels[i] = c;
+            }
+
+            if (_glowTexture == null || _glowTexture.width != tw || _glowTexture.height != th)
+            {
+                DestroySafe(_glowTexture);
+                _glowTexture = new Texture2D(tw, th, TextureFormat.RGBA32, false) { name = "LevelGlow", hideFlags = HideFlags.DontSave, wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            }
+            _glowTexture.SetPixels32(pixels);
+            _glowTexture.Apply(false);
+
+            var verts = new List<Vector3> { new Vector3(0, 0), new Vector3(width, 0), new Vector3(width, height), new Vector3(0, height) };
+            var uvs = new List<Vector2> { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
+            var cols = new List<Color> { Color.white, Color.white, Color.white, Color.white };
+            _glowMesh = Assign(_glowMesh, "LevelGlow", verts, new List<int> { 0, 2, 1, 0, 3, 2 }, uvs, cols);
+            _glowMaterial = GetMaterial(ref _glowMaterial, Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default"), "LevelGlow");
+            _glowMaterial.mainTexture = _glowTexture;
+            SetupRenderer(Child(GlowName), _glowMesh, _glowMaterial, sortingOrder + 1);
+        }
+
+        private static bool Contains(List<Vector2> poly, Vector2 p)
+        {
+            bool c = false;
+            for (int i = 0, j = poly.Count - 1; i < poly.Count; j = i++)
+            {
+                Vector2 a = poly[i], b = poly[j];
+                if ((a.y > p.y) != (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) c = !c;
+            }
+            return c;
+        }
+
+        /// <summary>Distancia euclídea exacta (en texels) de cada texel de roca al texel de aire más cercano (Felzenszwalb).</summary>
+        private static float[] DistanceToAir(bool[] inside, int w, int h)
+        {
+            const double Inf = 1e20;
+            var f = new double[w * h];
+            for (int i = 0; i < f.Length; i++) f[i] = inside[i] ? Inf : 0.0;
+            int n = Mathf.Max(w, h);
+            var line = new double[n]; var outLine = new double[n]; var v = new int[n]; var z = new double[n + 1];
+            for (int x = 0; x < w; x++)
+            {
+                for (int y = 0; y < h; y++) line[y] = f[y * w + x];
+                Edt1D(line, h, outLine, v, z);
+                for (int y = 0; y < h; y++) f[y * w + x] = outLine[y];
+            }
+            var result = new float[w * h];
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++) line[x] = f[y * w + x];
+                Edt1D(line, w, outLine, v, z);
+                for (int x = 0; x < w; x++) result[y * w + x] = (float)System.Math.Sqrt(outLine[x]);
+            }
+            return result;
+        }
+
+        private static void Edt1D(double[] f, int n, double[] d, int[] v, double[] z)
+        {
+            int k = 0;
+            v[0] = 0; z[0] = double.NegativeInfinity; z[1] = double.PositiveInfinity;
+            for (int q = 1; q < n; q++)
+            {
+                double s = ((f[q] + (double)q * q) - (f[v[k]] + (double)v[k] * v[k])) / (2.0 * q - 2.0 * v[k]);
+                while (s <= z[k])
+                {
+                    k--;
+                    s = ((f[q] + (double)q * q) - (f[v[k]] + (double)v[k] * v[k])) / (2.0 * q - 2.0 * v[k]);
+                }
+                k++; v[k] = q; z[k] = s; z[k + 1] = double.PositiveInfinity;
+            }
+            k = 0;
+            for (int q = 0; q < n; q++)
+            {
+                while (z[k + 1] < q) k++;
+                d[q] = (double)(q - v[k]) * (q - v[k]) + f[v[k]];
+            }
         }
 
         // ------------------------------------------------------------------ utilidades de malla

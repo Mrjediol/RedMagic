@@ -64,13 +64,36 @@ namespace RedMagic.Levels
         [SerializeField] private Color fogColor = new Color32(18, 52, 92, 255);
         [Tooltip("Delante del jugador (capa Characters) en vez de en el fondo.")]
         [SerializeField] private bool inFront;
+        [Tooltip("Encima del terreno pero detrás del jugador (puertas, objetos apoyados en el suelo).")]
+        [SerializeField] private bool overTerrain;
+        [Tooltip("Sólo en 'extremos del nivel': la base se coloca sola sobre el suelo del nivel en cada extremo (Altura = ajuste fino).")]
+        [SerializeField] private bool sitOnGround;
         [SerializeField] private int sortingOrder;
 
-        private MeshRenderer _main, _mirror;
+        [Header("Sombra (sólo en 'extremos del nivel')")]
+        [Tooltip("Sombra de la propia silueta, desplazada y difuminada, sobre lo que hay detrás (la pared).")]
+        [SerializeField] private bool castShadow;
+        [SerializeField] private Color shadowColor = new Color(0.01f, 0.04f, 0.12f, 0.55f);
+        [Tooltip("Desplazamiento de la sombra en unidades (x hacia el interior del nivel).")]
+        [SerializeField] private Vector2 shadowOffset = new Vector2(0.35f, -0.15f);
+        [Tooltip("Difuminado de la sombra, en unidades.")]
+        [Range(0f, 1.5f)] [SerializeField] private float shadowSoftness = 0.35f;
+        [Tooltip("Sombra de contacto en el suelo (elipse bajo la base). 0 = sin ella.")]
+        [Range(0f, 2f)] [SerializeField] private float groundShadowWidth = 1.3f;
+        [Range(0f, 1.5f)] [SerializeField] private float groundShadowHeight = 0.45f;
+        [Range(0f, 1f)] [SerializeField] private float groundShadowOpacity = 0.6f;
+
+        private MeshRenderer _main, _mirror, _shadow, _shadowMirror, _ground, _groundMirror;
         private MaterialPropertyBlock _block;
-        private Material _material;
+        private Material _material, _shadowMaterial;
         private Level _level;
         private static Mesh _quad;
+
+        /// <summary>Encima del terreno y con sombras en pared y suelo: lo que necesita una puerta.</summary>
+        public void ConfigureAsDoor()
+        {
+            overTerrain = true; inFront = false; castShadow = true; sitOnGround = true; heightOffset = 0f;
+        }
 
         public void Configure(Texture2D tex, Shader sh, float spd, ParallaxRepeat rep, float posX, float sz, float hOffset,
                               ParallaxVerticalAnchor anc, ParallaxAlign al, float trav, float vSpeed,
@@ -86,18 +109,27 @@ namespace RedMagic.Levels
             _block ??= new MaterialPropertyBlock();
             _main = Part("Capa");
             _mirror = Part("Capa (espejo)");
+            _shadow = Part("Sombra");
+            _shadowMirror = Part("Sombra (espejo)");
+            _ground = Part("Sombra suelo");
+            _groundMirror = Part("Sombra suelo (espejo)");
         }
 
-        private void OnDisable()
+        private void OnDisable() => HideAll();
+
+        private void HideAll()
         {
-            if (_main != null) _main.enabled = false;
-            if (_mirror != null) _mirror.enabled = false;
+            foreach (var r in new[] { _main, _mirror, _shadow, _shadowMirror, _ground, _groundMirror })
+                if (r != null) r.enabled = false;
         }
 
         private void OnDestroy()
         {
-            if (_material == null) return;
-            if (Application.isPlaying) Destroy(_material); else DestroyImmediate(_material);
+            foreach (var m in new[] { _material, _shadowMaterial })
+            {
+                if (m == null) continue;
+                if (Application.isPlaying) Destroy(m); else DestroyImmediate(m);
+            }
         }
 
         private MeshRenderer Part(string partName)
@@ -133,8 +165,7 @@ namespace RedMagic.Levels
             if (_level == null) _level = GetComponentInParent<Level>();
             if (cam == null || !cam.orthographic || texture == null || _level == null || _main == null)
             {
-                if (_main != null) _main.enabled = false;
-                if (_mirror != null) _mirror.enabled = false;
+                HideAll();
                 return;
             }
 
@@ -174,16 +205,45 @@ namespace RedMagic.Levels
             }
             float worldBottom = viewTop - y - h;
 
-            string layer = inFront ? "Characters" : "BackGround";
-            int order = inFront ? 50 + sortingOrder : -100 + sortingOrder;
+            string layer = inFront ? "Characters" : overTerrain ? "Terrain" : "BackGround";
+            int order = inFront ? 50 + sortingOrder : overTerrain ? 20 + sortingOrder : -100 + sortingOrder;
+            bool shadows = castShadow && repeat == ParallaxRepeat.LevelEnds;
+            if (!shadows) { _shadow.enabled = _shadowMirror.enabled = _ground.enabled = _groundMirror.enabled = false; }
             Color fog = new Color(fogColor.r, fogColor.g, fogColor.b, fade);
 
             if (repeat == ParallaxRepeat.LevelEnds)
             {
                 float left = viewLeft + (-camLeft * speed + positionX);
                 float right = viewLeft + (viewW + (level.width - viewW) * speed - camLeft * speed - positionX);
-                Draw(_main, new Vector3(left, worldBottom), new Vector3(w, h, 1f), new Vector4(0f, 1f, 2f, 0f), fog, layer, order);
-                Draw(_mirror, new Vector3(right - w, worldBottom), new Vector3(w, h, 1f), new Vector4(0f, 1f, 2f, 1f), fog, layer, order);
+                float bottomLeft = worldBottom, bottomRight = worldBottom;
+                if (sitOnGround)
+                {
+                    float fine = heightOffset * viewH / 200f;
+                    bottomLeft = level.yMin + _level.GroundTop(Mathf.FloorToInt(left + w * 0.5f - level.xMin)) + fine;
+                    bottomRight = level.yMin + _level.GroundTop(Mathf.FloorToInt(right - w * 0.5f - level.xMin)) + fine;
+                }
+                Draw(_main, new Vector3(left, bottomLeft), new Vector3(w, h, 1f), new Vector4(0f, 1f, 2f, 0f), fog, layer, order);
+                Draw(_mirror, new Vector3(right - w, bottomRight), new Vector3(w, h, 1f), new Vector4(0f, 1f, 2f, 1f), fog, layer, order);
+                if (shadows)
+                {
+                    if (_shadowMaterial == null)
+                        _shadowMaterial = new Material(Shader.Find("RedMagic/Parallax Shadow")) { name = "Sombra " + name, hideFlags = HideFlags.DontSave };
+                    float m = shadowSoftness;
+                    var blur = new Vector2(m / (w + 2f * m), m / (h + 2f * m));
+                    var size = new Vector3(w + 2f * m, h + 2f * m, 1f);
+                    Shadow(_shadow, new Vector3(left - m + shadowOffset.x, bottomLeft - m + shadowOffset.y), size, new Vector4(0f, 1f, 2f, 0f), blur, 0f, shadowColor, layer, order - 2);
+                    Shadow(_shadowMirror, new Vector3(right - w - m - shadowOffset.x, bottomRight - m + shadowOffset.y), size, new Vector4(0f, 1f, 2f, 1f), blur, 0f, shadowColor, layer, order - 2);
+
+                    var gc = new Color(shadowColor.r, shadowColor.g, shadowColor.b, groundShadowOpacity);
+                    float gw = w * groundShadowWidth, gh = groundShadowHeight;
+                    bool ground = groundShadowWidth > 0f && groundShadowOpacity > 0f;
+                    if (ground)
+                    {
+                        Shadow(_ground, new Vector3(left + w * 0.5f - gw * 0.5f, bottomLeft - gh * 0.5f), new Vector3(gw, gh, 1f), Vector4.zero, Vector2.zero, 1f, gc, layer, order - 1);
+                        Shadow(_groundMirror, new Vector3(right - w * 0.5f - gw * 0.5f, bottomRight - gh * 0.5f), new Vector3(gw, gh, 1f), Vector4.zero, Vector2.zero, 1f, gc, layer, order - 1);
+                    }
+                    else _ground.enabled = _groundMirror.enabled = false;
+                }
             }
             else
             {
@@ -192,6 +252,23 @@ namespace RedMagic.Levels
                      new Vector4(u0, viewW / w, repeat == ParallaxRepeat.Mirror ? 1f : 0f, 0f), fog, layer, order);
                 _mirror.enabled = false;
             }
+        }
+
+        private void Shadow(MeshRenderer r, Vector3 position, Vector3 scale, Vector4 uv, Vector2 blur, float mode, Color color, string layer, int order)
+        {
+            r.enabled = true;
+            r.transform.position = new Vector3(position.x, position.y, transform.position.z);
+            r.transform.localScale = scale;
+            r.sharedMaterial = _shadowMaterial;
+            r.sortingLayerName = layer;
+            r.sortingOrder = order;
+            _block.Clear();
+            _block.SetTexture("_MainTex", texture);
+            _block.SetVector("_UV", uv);
+            _block.SetVector("_Blur", blur);
+            _block.SetFloat("_Mode", mode);
+            _block.SetColor("_Color", color);
+            r.SetPropertyBlock(_block);
         }
 
         private void Draw(MeshRenderer r, Vector3 position, Vector3 scale, Vector4 uv, Color fog, string layer, int order)

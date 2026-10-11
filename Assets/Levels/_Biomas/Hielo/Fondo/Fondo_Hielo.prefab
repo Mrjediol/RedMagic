@@ -50,7 +50,7 @@ MonoBehaviour:
   repeat: 2
   positionX: 0.5833333
   size: 25
-  heightOffset: 20
+  heightOffset: 0
   anchor: 2
   align: 2
   travel: 1
@@ -59,7 +59,16 @@ MonoBehaviour:
   fade: 0
   fogColor: {r: 0.07058824, g: 0.20392157, b: 0.36078432, a: 1}
   inFront: 0
+  overTerrain: 1
+  sitOnGround: 1
   sortingOrder: 6
+  castShadow: 1
+  shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
+  shadowOffset: {x: 0.35, y: -0.15}
+  shadowSoftness: 0.35
+  groundShadowWidth: 1.3
+  groundShadowHeight: 0.45
+  groundShadowOpacity: 0.6
 --- !u!1 &3042543331848564041
 GameObject:
   m_ObjectHideFlags: 0
@@ -119,7 +128,16 @@ MonoBehaviour:
   fade: 0.62
   fogColor: {r: 0.07058824, g: 0.20392157, b: 0.36078432, a: 1}
   inFront: 0
+  overTerrain: 0
+  sitOnGround: 0
   sortingOrder: 3
+  castShadow: 0
+  shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
+  shadowOffset: {x: 0.35, y: -0.15}
+  shadowSoftness: 0.35
+  groundShadowWidth: 1.3
+  groundShadowHeight: 0.45
+  groundShadowOpacity: 0.6
 --- !u!1 &3068961048518809966
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,7 +197,16 @@ MonoBehaviour:
   fade: 0
   fogColor: {r: 0.07058824, g: 0.20392157, b: 0.36078432, a: 1}
   inFront: 0
+  overTerrain: 0
+  sitOnGround: 0
   sortingOrder: 5
+  castShadow: 0
+  shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
+  shadowOffset: {x: 0.35, y: -0.15}
+  shadowSoftness: 0.35
+  groundShadowWidth: 1.3
+  groundShadowHeight: 0.45
+  groundShadowOpacity: 0.6
 --- !u!1 &4487395886422526573
 GameObject:
   m_ObjectHideFlags: 0
@@ -239,7 +266,16 @@ MonoBehaviour:
   fade: 0.44
   fogColor: {r: 0.07058824, g: 0.20392157, b: 0.36078432, a: 1}
   inFront: 0
+  overTerrain: 0
+  sitOnGround: 0
   sortingOrder: 0
+  castShadow: 0
+  shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
+  shadowOffset: {x: 0.35, y: -0.15}
+  shadowSoftness: 0.35
+  groundShadowWidth: 1.3
+  groundShadowHeight: 0.45
+  groundShadowOpacity: 0.6
 --- !u!1 &4788031873096802469
 GameObject:
   m_ObjectHideFlags: 0
@@ -337,7 +373,16 @@ MonoBehaviour:
   fade: 0.44
   fogColor: {r: 0.07058824, g: 0.20392157, b: 0.36078432, a: 1}
   inFront: 1
+  overTerrain: 0
+  sitOnGround: 0
   sortingOrder: 4
+  castShadow: 0
+  shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
+  shadowOffset: {x: 0.35, y: -0.15}
+  shadowSoftness: 0.35
+  groundShadowWidth: 1.3
+  groundShadowHeight: 0.45
+  groundShadowOpacity: 0.6
 --- !u!1 &5245115941643517386
 GameObject:
   m_ObjectHideFlags: 0
@@ -397,7 +442,16 @@ MonoBehaviour:
   fade: 0.8
   fogColor: {r: 0.07058824, g: 0.20392157, b: 0.36078432, a: 1}
   inFront: 0
+  overTerrain: 0
+  sitOnGround: 0
   sortingOrder: 1
+  castShadow: 0
+  shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
+  shadowOffset: {x: 0.35, y: -0.15}
+  shadowSoftness: 0.35
+  groundShadowWidth: 1.3
+  groundShadowHeight: 0.45
+  groundShadowOpacity: 0.6
 --- !u!1 &7289151366941829720
 GameObject:
   m_ObjectHideFlags: 0
@@ -457,4 +511,13 @@ MonoBehaviour:
   fade: 0.7
   fogColor: {r: 0.07058824, g: 0.20392157, b: 0.36078432, a: 1}
   inFront: 0
+  overTerrain: 0
+  sitOnGround: 0
   sortingOrder: 2
+  castShadow: 0
+  shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
+  shadowOffset: {x: 0.35, y: -0.15}
+  shadowSoftness: 0.35
+  groundShadowWidth: 1.3
+  groundShadowHeight: 0.45
+  groundShadowOpacity: 0.6

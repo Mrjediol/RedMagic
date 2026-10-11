@@ -23,6 +23,10 @@ screen height), as forced by `RunManager`.
   Children it owns: `BG`, `Roca` (rock fill, Sprite-Lit, biome texture tiled in world space), `Brillo` (rock shadow +
   inner glow baked into a texture by exact distance-to-air at 8 texels/unit), `Borde` (4 colour bands of noisy
   width, dark outline (outer glow off: `outerGlowWidth` 0, the user didn't want it) — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, rounded like the art, layer Ground).
+- **Floor depth** (`LevelBiome.floorDepth`, 0 = flat side view): floor-facing parts of the rim get a pale top face of
+  height D centred on the collider line (front edge D/2 into the rock, back edge D/2 into the air, dark outline on
+  the back edge), so the floor reads as seen slightly from above like the Ice1 art and the player stands mid-face.
+  Weighted by how much the normal faces up, so it fades out around corners. Experimental (user test pending).
 - Geometry in `LevelShape` (pure): contours of the air pockets with rock on the right (pinch vertices turn left
   so each pocket keeps its own loop), every corner rounded with a quadratic curve of `cornerRadius`, and the rock
   fill cut by the same curves (convex corners cut, concave corners get a curved fillet) so no square corner pokes
@@ -39,7 +43,9 @@ Same logic as `parallax-test.html`: size and height offset relative to screen he
 (fraction of camera movement); `repeat` Repeat / Mirror / LevelEnds (once at the level's left end, mirrored at the
 right — wall and door); vertical `anchor` Proportional (spread over the level height: same look for 1000 or 3000 px
 levels) / Ceiling / Floor (move with the world at `verticalSpeed`); `fade` toward `fogColor`; `inFront` draws on
-`Characters` (order 50+). Drawn with its own quad + `RedMagic/Parallax Layer` shader (repeat/mirror in the shader,
+`Characters` (order 50+); `overTerrain` draws on `Terrain` order 20+ (above the rim, behind the player — doors). Doors also
+use `sitOnGround` (LevelEnds: base placed on `Level.GroundTop` at each end, Altura = fine offset) and `castShadow`
+(blurred silhouette offset onto the wall + soft ellipse on the floor, `RedMagic/Parallax Shadow`). Drawn with its own quad + `RedMagic/Parallax Layer` shader (repeat/mirror in the shader,
 gradient sampling so seams don't show a mip line). Needs a `Level` in a parent.
 
 Import: `Tools ▸ RedMagic ▸ Niveles ▸ Importar fondo de parallax (.json)` reads the page's **Exportar escena** file,
@@ -50,7 +56,8 @@ Blur is not reproduced (warned).
 `Nieve.prefab` (cheap by design: native particle systems, no per-flake script, capped at 300 + 260 particles):
 two systems on a `FollowCameraView` emitter. The gameplay-plane one collides in 2D with Ground + Platform (static
 colliders only, quality Medium); a flake dies on impact and a Collision sub-emitter (`Copo posado`, max 150) spawns a
-still flake that stays 2-3.5 s and fades. The background one passes through. Rebuild: `Tools ▸ … ▸ Crear nieve`. Test scenes add a Global Light 2D
+still flake that stays 2-3.5 s and fades. The background one passes through. Rebuild: `Tools ▸ … ▸ Crear nieve`. Tuning in one place: **`SnowSettings`** on the prefab root (amount, size range,
+opacity, fall speed, landed time, particle caps for falling/landed/background). Test scenes add a Global Light 2D
 (rock is lit, ready for crystal lights) and a global Volume `PostHielo` (bloom + vignette).
 
 ## Menus (`Tools ▸ RedMagic ▸ Niveles`, `LevelSetup`)

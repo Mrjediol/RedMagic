@@ -232,6 +232,16 @@ namespace RedMagic.Levels
                     t[i] = (1f - q.normal.y) * 0.5f; // 0 techo, 1 suelo
                 }
 
+                // Profundidad: en los suelos (normal hacia abajo = roca debajo) hay una cara superior de alto D centrada en
+                // la línea del collider: el borde delantero baja D/2 dentro de la roca y el trasero sube D/2 al aire.
+                var lip = new float[n];
+                for (int i = 0; i < n; i++)
+                {
+                    float up = -pts[i].normal.y;
+                    float f = Mathf.Clamp01((up - 0.35f) / 0.5f);
+                    lip[i] = biome.floorDepth * 0.5f * f * f * (3f - 2f * f);
+                }
+
                 // (sombra y brillo interior: textura por distancia, ver BuildGlow)
 
                 // 3. las 4 bandas del borde, de la más ancha a la más estrecha
@@ -239,7 +249,7 @@ namespace RedMagic.Levels
                 {
                     int band = b;
                     float frac = biome.bandFractions != null && biome.bandFractions.Length > band ? biome.bandFractions[band] : 1f - band * 0.25f;
-                    Ribbon(pts, verts, cols, tris, i => 0f, i => w[i] * frac,
+                    Ribbon(pts, verts, cols, tris, i => lip[i], i => lip[i] + w[i] * frac,
                         i => Color.Lerp(biome.ceilingBands[band], biome.floorBands[band], t[i]),
                         i => Color.Lerp(biome.ceilingBands[band], biome.floorBands[band], t[i]));
                 }
@@ -247,8 +257,20 @@ namespace RedMagic.Levels
                 // 4. brillo hacia el aire y 5. contorno oscuro
                 if (biome.outerGlowWidth > 0f && biome.outerGlow.a > 0f)
                     Ribbon(pts, verts, cols, tris, i => 0f, i => -biome.outerGlowWidth, i => biome.outerGlow, i => clear(biome.outerGlow));
+                // cara superior (del borde delantero al trasero) y su línea delantera
+                if (biome.floorDepth > 0f)
+                {
+                    Ribbon(pts, verts, cols, tris, i => lip[i], i => -lip[i],
+                        i => WithAlpha(biome.topFaceFront, lip[i] > 0.001f ? 1f : 0f), i => WithAlpha(biome.topFaceBack, lip[i] > 0.001f ? 1f : 0f));
+                    float lipHalf = biome.outlineWidth * 0.35f;
+                    Ribbon(pts, verts, cols, tris, i => lip[i] - lipHalf, i => lip[i] + lipHalf,
+                        i => WithAlpha(biome.topFaceLip, Mathf.Clamp01(lip[i] / Mathf.Max(0.01f, biome.floorDepth * 0.25f))),
+                        i => WithAlpha(biome.topFaceLip, Mathf.Clamp01(lip[i] / Mathf.Max(0.01f, biome.floorDepth * 0.25f))));
+                }
+
+                // contorno oscuro: en los suelos va por el borde trasero de la cara superior (la silueta)
                 float half = biome.outlineWidth * 0.5f;
-                Ribbon(pts, verts, cols, tris, i => -half, i => half, i => biome.outline, i => biome.outline);
+                Ribbon(pts, verts, cols, tris, i => -lip[i] - half, i => -lip[i] + half, i => biome.outline, i => biome.outline);
             }
 
             _rimMesh = Assign(_rimMesh, "LevelRim", verts, tris, null, cols);
@@ -508,6 +530,8 @@ namespace RedMagic.Levels
             if (o == null) return;
             if (Application.isPlaying) Destroy(o); else DestroyImmediate(o);
         }
+
+        private static Color WithAlpha(Color c, float a) => new Color(c.r, c.g, c.b, c.a * a);
 
         /// <summary>Ruido de valor 1D en [0, 1] (mismo papel que el del boceto web).</summary>
         private static float Noise(float x, float seed)

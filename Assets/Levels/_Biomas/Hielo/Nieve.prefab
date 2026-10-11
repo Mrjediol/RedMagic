@@ -117,8 +117,8 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 18
-      minScalar: 13
+      scalar: 25.444445
+      minScalar: 11
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -288,8 +288,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.24
-      minScalar: 0.07
+      scalar: 0.34
+      minScalar: 0.12
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -605,7 +605,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 300
+    maxNumParticles: 450
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -871,7 +871,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 14
+      scalar: 24
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -4847,6 +4847,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2854621787554395951}
   - component: {fileID: 6517902825121007676}
+  - component: {fileID: 6254106602773401315}
   m_Layer: 0
   m_Name: Nieve
   m_TagString: Untagged
@@ -4884,6 +4885,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Levels.FollowCameraView
   offset: {x: 0, y: 11}
+--- !u!114 &6254106602773401315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6180064699060363894}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf289099a80af664dbd1afc52c9a94bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Levels.SnowSettings
+  amount: 24
+  size: {x: 0.12, y: 0.34}
+  opacity: 0.9
+  fallSpeed: {x: 0.9, y: 2}
+  landedTime: {x: 2, y: 3.5}
+  maxFalling: 450
+  maxLanded: 200
+  backgroundAmount: 16
+  backgroundSize: {x: 0.05, y: 0.14}
+  backgroundOpacity: 0.45
+  maxBackground: 300
 --- !u!1 &6443618851671017153
 GameObject:
   m_ObjectHideFlags: 0
@@ -5488,7 +5512,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 150
+    maxNumParticles: 200
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -9894,8 +9918,8 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 18
-      minScalar: 13
+      scalar: 35.920635
+      minScalar: 15.714286
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -10065,8 +10089,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.12
-      minScalar: 0.04
+      scalar: 0.14
+      minScalar: 0.05
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -10382,7 +10406,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 260
+    maxNumParticles: 300
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -10648,7 +10672,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 14
+      scalar: 16
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -11326,8 +11350,8 @@ ParticleSystem:
     y:
       serializedVersion: 2
       minMaxState: 3
-      scalar: -0.9
-      minScalar: -2
+      scalar: -0.63
+      minScalar: -1.4
       maxCurve:
         serializedVersion: 2
         m_Curve:

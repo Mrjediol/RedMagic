@@ -244,6 +244,7 @@ namespace RedMagic.LevelsEditor
                 AddLanding(game, mat);
                 Snow(root.transform, "Nieve fondo", mat, sizes: new Vector2(0.04f, 0.12f), alpha: 0.45f,
                      rate: 14f, maxParticles: 260, layer: "BackGround", order: 30);
+                root.AddComponent<SnowSettings>().Apply(); // valores de partida y sitio único para tocarlos
                 return PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             }
             finally { Object.DestroyImmediate(root); }

@@ -46,6 +46,15 @@ namespace RedMagic.Levels
         };
         [Tooltip("Proporción del grosor que ocupa cada banda (la 1ª es la más ancha).")]
         public float[] bandFractions = { 1f, 0.68f, 0.4f, 0.17f };
+        [Header("Profundidad del suelo (vista un poco desde arriba)")]
+        [Tooltip("Alto de la cara superior de los suelos, en unidades. El jugador pisa su centro. 0 = de perfil, sin cara.")]
+        [Range(0f, 1.2f)] public float floorDepth = 0.55f;
+        [Tooltip("Color de la cara superior: borde delantero (abajo) y trasero (arriba).")]
+        public Color topFaceFront = new Color32(196, 234, 251, 255);
+        public Color topFaceBack = new Color32(240, 250, 255, 255);
+        [Tooltip("Línea del borde delantero de la cara superior.")]
+        public Color topFaceLip = new Color32(84, 160, 218, 255);
+
         public Color outline = new Color32(4, 17, 42, 255);
         [Min(0f)] public float outlineWidth = 0.11f;
         [Tooltip("Brillo hacia el aire (se desvanece).")]

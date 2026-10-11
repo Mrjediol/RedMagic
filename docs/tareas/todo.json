@@ -133,6 +133,33 @@
           "done": false
         },
         {
+          "id": "editor-niveles",
+          "text": "EditorNiveles: editor de niveles web propio + importador en Unity (no dentro de la web ni de Tools ▸ Web)",
+          "note": "Roca + plataformas → levelsketch.json → Level/Tilemaps. Partir de Web/ParallaxTest/boceto-nivel.html y LevelSketchImporter.",
+          "done": false,
+          "doc": "docs/tareas/editor-niveles.md",
+          "needs": [
+            "unity"
+          ],
+          "steps": [
+            {
+              "id": "en-1",
+              "text": "Editor web de cuadrícula (roca, plataforma, tamaño, vista previa, exportar)",
+              "done": false
+            },
+            {
+              "id": "en-2",
+              "text": "Importador en Unity con menú propio EditorNiveles (roca, plataformas, tamaño)",
+              "done": false
+            },
+            {
+              "id": "en-3",
+              "text": "Preguntar si quiere colocar entrada/salida y enemigos desde el editor",
+              "done": false
+            }
+          ]
+        },
+        {
           "id": "niveles-hielo",
           "text": "Niveles de hielo: crear niveles (Unity + web), objetos y plataformas con variantes, puerta",
           "note": "Sistema de niveles ya hecho (ver doc). Quedan: explicar cómo crear niveles con el tile en Unity, herramienta web de niveles, decoración y plataformas con variantes, y una puerta que asiente en el suelo plano.",
@@ -149,7 +176,7 @@
             },
             {
               "id": "nh-2",
-              "text": "Herramienta web de creación de niveles (roca + plataformas → levelsketch.json → Unity)",
+              "text": "Herramienta EditorNiveles (web propia + importador en Unity con menú propio) → docs/tareas/editor-niveles.md",
               "done": false
             },
             {

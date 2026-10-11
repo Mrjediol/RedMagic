@@ -11,7 +11,7 @@ Hecho y validado por el usuario:
 - **Sistema de niveles en Unity** (`Assets/Scripts/Levels/`): `Level` (tamaño en unidades, 1 = 40 px, alto máx. 75),
   terreno pintado en Tilemap (`PaletaTerreno`: tiles Roca y Plataforma), borde de hielo procedural con esquinas
   redondeadas, brillo interior por distancia, collider redondeado, plataformas atravesables (capa Platform),
-  parallax por capas, nieve que se posa (`SnowSettings`), bloom/viñeta. Escenas `Assets/Test/Scenes/NivelHielo_{1000,2000,3000}`.
+  parallax por capas, nieve que se posa (`SnowSettings`), bloom/viñeta. Escena de trabajo `Assets/Scenes/NivelHielo_1000.unity` (sección del Mundo 1); 2000/3000 en Legacy.
 - Orden de dibujo: el nivel en Default con orden negativo (`LevelSorting`), enemigos visibles delante.
 
 Descartado (no repetir): tiras de Gemini dobladas por el contorno; brillo exterior; profundidad del suelo (cara
@@ -23,7 +23,7 @@ superior); halo de sombra alrededor de la puerta; montón de nieve al pie de la 
    `NivelHielo_1000` o GameObject con `Level` + `Grid/Terreno` + `Grid/Plataformas` + fondo + nieve), poner Ancho/Alto,
    *Abrir paleta de terreno*, pincel/rectángulo/borrar con Roca y Plataforma, la cámara/BG/collider se ajustan solos,
    colocar jugador y enemigos. Si falta algo para que sea cómodo (p. ej. un menú *Crear nivel vacío*), hacerlo.
-2. **Herramienta web de creación de niveles**: editor de cuadrícula (pintar roca / plataforma, tamaño en celdas con
+2. **→ Ahora tarea propia: `docs/tareas/editor-niveles.md` (EditorNiveles).** Notas originales: **Herramienta web de creación de niveles**: editor de cuadrícula (pintar roca / plataforma, tamaño en celdas con
    tope 75 de alto, vista previa con el borde del boceto y el fondo de la escena exportada) que exporte
    `*.levelsketch.json` con las plataformas en otra marca (p. ej. `=`), y actualizar `LevelSketchImporter` para leerlas
    al Tilemap de plataformas. Partir de `Web/ParallaxTest/boceto-nivel.html` (ya tiene borde, fondo y niveles) y de la

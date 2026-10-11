@@ -23,10 +23,8 @@ screen height), as forced by `RunManager`.
   Children it owns: `BG`, `Roca` (rock fill, Sprite-Lit, biome texture tiled in world space), `Brillo` (rock shadow +
   inner glow baked into a texture by exact distance-to-air at 8 texels/unit), `Borde` (4 colour bands of noisy
   width, dark outline (outer glow off: `outerGlowWidth` 0, the user didn't want it) — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, rounded like the art, layer Ground).
-- **Floor depth** (`LevelBiome.floorDepth`, 0 = flat side view): floor-facing parts of the rim get a pale top face of
-  height D centred on the collider line (front edge D/2 into the rock, back edge D/2 into the air, dark outline on
-  the back edge), so the floor reads as seen slightly from above like the Ice1 art and the player stands mid-face.
-  Weighted by how much the normal faces up, so it fades out around corners. Experimental (user test pending).
+- Floor depth (a pale top face so the floor reads as seen slightly from above, like Ice1) was tried and **rejected**:
+  it looked wrong and made walking feel off. Keep the rim flat/side-view.
 - Geometry in `LevelShape` (pure): contours of the air pockets with rock on the right (pinch vertices turn left
   so each pocket keeps its own loop), every corner rounded with a quadratic curve of `cornerRadius`, and the rock
   fill cut by the same curves (convex corners cut, concave corners get a curved fillet) so no square corner pokes

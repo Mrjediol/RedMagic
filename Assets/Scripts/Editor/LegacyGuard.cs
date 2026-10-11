@@ -69,8 +69,34 @@ namespace RedMagic.EditorTools
             if (IsLegacyPath(scene.path)) { Report(scene.path, "escena cargada", scene.path); return; }
             if (Exempt.Contains(scene.path)) return;
 
-            foreach (string dep in AssetDatabase.GetDependencies(scene.path, true))
-                if (IsLegacyPath(dep)) Report(dep, "dependencia de la escena", scene.path);
+            foreach (var group in EntryPoints(scene.path).GroupBy(h => h.user))
+                Report(string.Join(", ", group.Select(h => h.legacy)),
+                       $"lo referencia {(group.Key == scene.path ? "la escena" : group.Key)}", scene.path);
+        }
+
+        /// <summary>
+        /// Los assets vivos que apuntan directamente a Legacy, recorriendo las dependencias de la escena sin entrar
+        /// en Legacy (lo que cuelga de algo de Legacy no es otro culpable) ni en otras escenas (se revisan al
+        /// cargarse). Así sale "World2.asset → Ice3.unity" una vez, no todo lo que lleva Ice3 dentro.
+        /// </summary>
+        private static List<(string user, string legacy)> EntryPoints(string root)
+        {
+            var hits = new List<(string, string)>();
+            var seen = new HashSet<string>();
+            var pending = new Stack<string>();
+            pending.Push(root);
+            while (pending.Count > 0)
+            {
+                string path = pending.Pop();
+                if (!seen.Add(path)) continue;
+                foreach (string dep in AssetDatabase.GetDependencies(path, false))
+                {
+                    if (dep == path) continue;
+                    if (IsLegacyPath(dep)) hits.Add((path, dep));
+                    else if (!dep.EndsWith(".unity", StringComparison.Ordinal)) pending.Push(dep);
+                }
+            }
+            return hits;
         }
 
         private static void OnUpdate()

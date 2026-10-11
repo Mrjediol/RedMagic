@@ -69,6 +69,9 @@ namespace RedMagic.Levels
         [Tooltip("Sólo en 'extremos del nivel': la base se coloca sola sobre el suelo del nivel en cada extremo (Altura = ajuste fino).")]
         [SerializeField] private bool sitOnGround;
         [SerializeField] private int sortingOrder;
+        [Tooltip("Copia de esta capa la colocación (velocidad, repetición, posición, tamaño, altura, anclaje): " +
+                 "los escalones de la puerta se quedan siempre encajados con ella aunque se mueva.")]
+        [SerializeField] private ParallaxBackgroundLayer alignWith;
 
         [Header("Sombra (sólo en 'extremos del nivel')")]
         [Tooltip("Sombra de la propia silueta, desplazada y difuminada, sobre lo que hay detrás (la pared).")]
@@ -166,6 +169,12 @@ namespace RedMagic.Levels
 
         private void LateUpdate()
         {
+            if (alignWith != null && alignWith != this)
+            {
+                var a = alignWith;
+                speed = a.speed; repeat = a.repeat; positionX = a.positionX; size = a.size; heightOffset = a.heightOffset;
+                anchor = a.anchor; align = a.align; travel = a.travel; verticalSpeed = a.verticalSpeed; sitOnGround = a.sitOnGround;
+            }
             var cam = Camera.main;
             if (_level == null) _level = GetComponentInParent<Level>();
             if (cam == null || !cam.orthographic || texture == null || _level == null || _main == null)

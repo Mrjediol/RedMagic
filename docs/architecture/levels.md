@@ -23,6 +23,7 @@ screen height), as forced by `RunManager`.
   Children it owns: `BG`, `Roca` (rock fill, Sprite-Lit, biome texture tiled in world space), `Brillo` (rock shadow +
   inner glow baked into a texture by exact distance-to-air at 8 texels/unit), `Borde` (4 colour bands of noisy
   width, dark outline (outer glow off: `outerGlowWidth` 0, the user didn't want it) — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, layer Ground — **square corners**: the rounding is visual only, the game has no slopes).
+- - **Rim style** (`LevelBiome.rimStyle`, same colours/widths/outline): *Bandas* (the original, default) · *A · Nieve acumulada* (snow pads sticking out into the air on floors, lumpy top, rounded ends — `snowPileHeight`; thin ice bands below) · *B · Hielo cristalino* (saw-tooth faceted bands with alternate lighter facets, icicles under ceilings — `icicleLength` — and 4-point glints on floors). Variants under test (2026-10-12).
 - Floor depth (a pale top face so the floor reads as seen slightly from above, like Ice1) was tried and **rejected**:
   it looked wrong and made walking feel off. Keep the rim flat/side-view.
 - Geometry in `LevelShape` (pure): contours of the air pockets with rock on the right (pinch vertices turn left
@@ -53,7 +54,7 @@ levels) / Ceiling / Floor (move with the world at `verticalSpeed`); `fade` towar
 use `sitOnGround` (LevelEnds: base placed on `Level.GroundTop` at each end, Altura = fine offset) and `castShadow`
 (sharp silhouette offset toward the level edge (light comes from the level centre), drawn right above the wall so it lands ON the wall and the
 terrain hides it below the floor line — a blurred copy around the door read as dirt and was rejected; plus a soft
-ellipse on the floor, `RedMagic/Parallax Shadow`). `ConfigureAsDoor` sets all of this. Drawn with its own quad + `RedMagic/Parallax Layer` shader (repeat/mirror in the shader,
+ellipse on the floor, `RedMagic/Parallax Shadow`). `ConfigureAsDoor` sets all of this. **Door steps**: layer "Escalones" (`escalones.png`, same canvas as the door, drawn by `DoorSteps` — *Tools ▸ RedMagic ▸ Niveles ▸ Crear escalones de la puerta*) with `alignWith` = the door layer: it copies the door placement every frame, so it stays fitted if the door is moved or resized. Drawn with its own quad + `RedMagic/Parallax Layer` shader (repeat/mirror in the shader,
 gradient sampling so seams don't show a mip line). Needs a `Level` in a parent.
 
 Import: `Tools ▸ RedMagic ▸ Niveles ▸ Importar fondo de parallax (.json)` reads the page's **Exportar escena** file,

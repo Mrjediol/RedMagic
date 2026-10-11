@@ -2,6 +2,13 @@ using UnityEngine;
 
 namespace RedMagic.Levels
 {
+    public enum RimStyle
+    {
+        [InspectorName("Bandas (actual)")] Bandas,
+        [InspectorName("A · Nieve acumulada")] NieveAcumulada,
+        [InspectorName("B · Hielo cristalino")] HieloCristal,
+    }
+
     /// <summary>
     /// Todo lo que cambia de un bioma a otro (hielo, bosque, volcán) para el mismo sistema de niveles: la
     /// textura de la roca, los colores y grosores del borde, el fondo de parallax y las partículas. Un nivel
@@ -62,6 +69,14 @@ namespace RedMagic.Levels
         [Min(0f)] public float innerGlowWidth = 1.6f;
         [Tooltip("Shader del borde (color por vértice, sin luz).")]
         public Shader rimShader;
+
+        [Header("Estilo del borde")]
+        [Tooltip("Bandas = el borde de siempre. Las variantes usan los mismos colores, grosores y contorno de arriba.")]
+        public RimStyle rimStyle = RimStyle.Bandas;
+        [Tooltip("A · Nieve acumulada: alto de los montones de nieve sobre los suelos, en unidades.")]
+        [Min(0f)] public float snowPileHeight = 0.28f;
+        [Tooltip("B · Hielo cristalino: largo máximo de los carámbanos de los techos, en unidades. 0 = sin carámbanos.")]
+        [Min(0f)] public float icicleLength = 0.5f;
 
         [Header("Ambiente")]
         [Tooltip("Fondo de parallax del bioma (prefab hecho con 'Importar fondo de parallax').")]

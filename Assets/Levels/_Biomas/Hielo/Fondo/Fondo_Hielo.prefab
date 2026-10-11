@@ -1,5 +1,75 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &360469176472936927
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7650019629371792258}
+  - component: {fileID: 5034568324591651594}
+  m_Layer: 0
+  m_Name: Escalones
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7650019629371792258
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 360469176472936927}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 878308382009621562}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5034568324591651594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 360469176472936927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54632d38d6750644ea9258f8719debe6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Levels.ParallaxBackgroundLayer
+  texture: {fileID: 2800000, guid: 2031549dd651ccb4f9b83c38a800b132, type: 3}
+  shader: {fileID: 4800000, guid: 1ae6205a6e7a2554caf872c2a166862b, type: 3}
+  speed: 1
+  repeat: 2
+  positionX: 1.27
+  size: 25
+  heightOffset: 0
+  anchor: 2
+  align: 2
+  travel: 1
+  verticalSpeed: 1
+  opacity: 1
+  fade: 0
+  fogColor: {r: 0.07058824, g: 0.20392157, b: 0.36078432, a: 1}
+  inFront: 0
+  overTerrain: 1
+  sitOnGround: 1
+  sortingOrder: 7
+  alignWith: {fileID: 6451878312319385724}
+  castShadow: 0
+  shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.5}
+  shadowOffset: {x: -0.55, y: 0.1}
+  shadowSoftness: 0.12
+  groundShadowWidth: 1.6
+  groundShadowHeight: 0.5
+  groundShadowOpacity: 0.35
 --- !u!1 &1294290690336650748
 GameObject:
   m_ObjectHideFlags: 0
@@ -62,6 +132,7 @@ MonoBehaviour:
   overTerrain: 1
   sitOnGround: 1
   sortingOrder: 6
+  alignWith: {fileID: 0}
   castShadow: 1
   shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.5}
   shadowOffset: {x: -0.55, y: 0.1}
@@ -131,6 +202,7 @@ MonoBehaviour:
   overTerrain: 0
   sitOnGround: 0
   sortingOrder: 3
+  alignWith: {fileID: 0}
   castShadow: 0
   shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
   shadowOffset: {x: 0.35, y: -0.15}
@@ -200,6 +272,7 @@ MonoBehaviour:
   overTerrain: 0
   sitOnGround: 0
   sortingOrder: 5
+  alignWith: {fileID: 0}
   castShadow: 0
   shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
   shadowOffset: {x: 0.35, y: -0.15}
@@ -269,6 +342,7 @@ MonoBehaviour:
   overTerrain: 0
   sitOnGround: 0
   sortingOrder: 0
+  alignWith: {fileID: 0}
   castShadow: 0
   shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
   shadowOffset: {x: 0.35, y: -0.15}
@@ -312,6 +386,7 @@ Transform:
   - {fileID: 2938115221910877457}
   - {fileID: 6457576468999638007}
   - {fileID: 6000440577960427145}
+  - {fileID: 7650019629371792258}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4885453586374644418
@@ -376,6 +451,7 @@ MonoBehaviour:
   overTerrain: 0
   sitOnGround: 0
   sortingOrder: 4
+  alignWith: {fileID: 0}
   castShadow: 0
   shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
   shadowOffset: {x: 0.35, y: -0.15}
@@ -445,6 +521,7 @@ MonoBehaviour:
   overTerrain: 0
   sitOnGround: 0
   sortingOrder: 1
+  alignWith: {fileID: 0}
   castShadow: 0
   shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
   shadowOffset: {x: 0.35, y: -0.15}
@@ -514,6 +591,7 @@ MonoBehaviour:
   overTerrain: 0
   sitOnGround: 0
   sortingOrder: 2
+  alignWith: {fileID: 0}
   castShadow: 0
   shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.55}
   shadowOffset: {x: 0.35, y: -0.15}

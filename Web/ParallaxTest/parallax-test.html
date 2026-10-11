@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Prueba de parallax</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#0b1018;--panel:#121a26;--line:#243248;--txt:#d6e4f5;--mut:#7f93ad;--acc:#4aa8dc}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px system-ui,sans-serif}
+#app{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:12px;padding:12px;max-width:1700px;margin:0 auto}
+@media(max-width:1000px){#app{grid-template-columns:1fr}}
+#app>div:first-child{position:sticky;top:12px;align-self:start}
+#side{max-height:calc(100vh - 24px);overflow-y:auto;padding-right:4px}
+@media(max-width:1000px){#app>div:first-child{position:static}#side{max-height:none}}
+canvas{width:100%;max-height:calc(100vh - 110px);object-fit:contain;display:block;border:1px solid var(--line);background:#000;border-radius:6px;cursor:default}
+.bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:8px;color:var(--mut)}
+label{display:flex;gap:5px;align-items:center}
+#layers{display:flex;flex-direction:column;gap:8px}
+.layer{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px}
+.layer.sel{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.layer h3{margin:0 0 6px;font-size:13px;display:flex;gap:8px;align-items:center}
+.layer h3 span{flex:1}
+.row{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:12px;color:var(--mut)}
+.row input[type=range]{flex:1;min-width:0}.row b{width:42px;text-align:right;color:var(--txt);font-weight:500}
+.thumb{width:64px;height:36px;border:1px dashed var(--line);border-radius:4px;background:#05080d center/cover;flex:none}
+button,select{background:#1a2638;color:var(--txt);border:1px solid var(--line);border-radius:5px;padding:4px 8px;font:inherit;cursor:pointer}
+button:hover{border-color:var(--acc)}
+.hint{color:var(--mut);font-size:12px;line-height:1.4;margin:0 0 8px}
+</style></head><body>
+<div id="app">
+ <div>
+  <canvas id="c" width="1280" height="720"></canvas>
+  <div class="bar">
+   <label>Velocidad jugador <input type="range" id="spd" min="100" max="900" value="380"></label>
+   <label><input type="checkbox" id="ref" checked>Referencia (suelo + jugador)</label>
+   <label><input type="checkbox" id="fit">Ajustar ancho a la pantalla</label>
+   <label>Ancho del nivel <input type="number" id="lvw" value="3400" min="1280" step="100" style="width:70px"> px</label>
+   <label>Altura del nivel <input type="number" id="lvh" value="3000" min="720" step="100" style="width:70px"> px</label>
+   <span id="cyv">altura 0 px</span>
+   <span><b>Mover y volar: flechas o WASD</b> (la cámara te sigue). Pulsa R para volver al suelo.</span>
+  </div>
+ </div>
+ <div id="side">
+  <p class="hint">Elige una capa (clic en su título) y: <b>Ctrl+V</b> para pegar una imagen, <b>arrastra un archivo</b> a la pantalla, o usa <b>Subir</b>. Las capas se guardan en el navegador. Orden: 1 = la más lejana.</p>
+  <p class="hint"><button id="exp">Exportar escena (.json)</button> <button id="imp">Importar escena (.json)</button><input type="file" id="impf" accept=".json" hidden> — guarda las 5 capas con sus ajustes para cargarlas en el boceto del nivel.</p>
+  <div id="layers"></div>
+ </div>
+</div>
+<script>
+const cv=document.getElementById('c'),g=cv.getContext('2d'),W=cv.width,H=cv.height;
+const N=7,NAMES=['1 Fondo lejano','2 Cueva lejana','3 Pilares / cascada','4 Rocas y cristales','5 Primer plano','6 Pared','7 Puerta'];
+const DEF=[{f:.04,s:100,y:0,al:'c',key:false,bl:0,fd:0},{f:.12,s:100,y:0,al:'c',key:true,bl:0,fd:0},{f:.28,s:100,y:0,al:'b',key:true,bl:0,fd:0},{f:.5,s:100,y:0,al:'b',key:true,bl:0,fd:0},{f:.85,s:100,y:0,al:'b',key:true,bl:0,fd:0},{f:1,s:100,y:0,al:'b',key:true,bl:0,fd:0,mode:'e',vmode:'b',fy:1},{f:1,s:20,y:0,al:'b',key:true,bl:0,fd:0,mode:'e',vmode:'b',fy:1}];
+const L=[];let sel=0,cam=0,dir=1,drag=null,keys={};
+
+// ---------- almacenamiento (IndexedDB para las imágenes, localStorage para los ajustes) ----------
+let db=null;
+function openDB(){return new Promise(res=>{try{const r=indexedDB.open('parallax-test',1);r.onupgradeneeded=()=>r.result.createObjectStore('img');r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>res()}catch(e){res()}})}
+function dbPut(k,b){if(!db)return;try{const t=db.transaction('img','readwrite');b?t.objectStore('img').put(b,k):t.objectStore('img').delete(k)}catch(e){}}
+function dbGet(k){return new Promise(res=>{if(!db)return res(null);try{const r=db.transaction('img').objectStore('img').get(k);r.onsuccess=()=>res(r.result||null);r.onerror=()=>res(null)}catch(e){res(null)}})}
+function saveCfg(){try{localStorage.setItem('parallax-test',JSON.stringify(L.map(l=>({f:l.f,s:l.s,y:l.y,al:l.al,mode:l.mode,on:l.on,op:l.op,key:l.key,bl:l.bl,fd:l.fd,cr:l.cr,fy:l.fy,vm:l.vm,fp:l.fp,vmode:l.vmode,front:l.front,x:l.x}))))}catch(e){}}
+function loadCfg(){try{return JSON.parse(localStorage.getItem('parallax-test')||'null')}catch(e){return null}}
+
+// ---------- UI ----------
+const host=document.getElementById('layers');
+function build(i){const l=L[i],d=document.createElement('div');d.className='layer';d.innerHTML=`
+ <h3><span>${NAMES[i]}</span><label><input type="checkbox" class="on"> visible</label></h3>
+ <div class="row"><div class="thumb"></div><button class="up">Subir</button><button class="clr">Quitar</button><input type="file" accept="image/*" hidden></div>
+ <div class="row">Velocidad<input type="range" class="f" min="0" max="120"><b class="fv"></b></div>
+ <div class="row">Tamaño<input type="range" class="s" min="20" max="500"><b class="sv"></b></div>
+ <div class="row">Altura<input type="range" class="y" min="-100" max="100"><b class="yv"></b></div>
+ <div class="row">Posición X<input type="range" class="x" min="-800" max="800"><b class="xv"></b></div>
+ <div class="row">Opacidad<input type="range" class="op" min="0" max="100"><b class="ov"></b></div>
+ <div class="row"><label><input type="checkbox" class="front"> Delante del jugador</label></div>
+ <div class="row">Anclaje vertical<select class="vmode"><option value="p">proporcional (fondo)</option><option value="t">techo del nivel</option><option value="b">suelo del nivel</option></select></div>
+ <div class="row">Recorrido (prop.)<input type="range" class="fp" min="0" max="150"><b class="fpv"></b></div>
+ <div class="row">Vel. vertical (techo/suelo)<input type="range" class="fy" min="0" max="120"><b class="fyv"></b></div>
+ <div class="row">Repetir vertical<select class="vm"><option value="n">no</option><option value="m">espejo</option></select></div>
+ <div class="row">Recortar bordes<input type="range" class="cr" min="0" max="40"><b class="crv"></b></div>
+ <div class="row">Difuminar<input type="range" class="bl" min="0" max="16"><b class="blv"></b></div>
+ <div class="row">Atenuar<input type="range" class="fd" min="0" max="90"><b class="fdv"></b></div>
+ <div class="row"><label><input type="checkbox" class="key"> Quitar magenta (vista previa)</label></div>
+ <div class="row">Alinear<select class="al"><option value="t">arriba</option><option value="c">centro</option><option value="b">abajo</option></select>
+  Repetir<select class="mode"><option value="r">normal</option><option value="m">espejo</option><option value="e">extremos del nivel</option></select></div>`;
+ l.el=d;const q=s=>d.querySelector(s);
+ const sync=()=>{q('.on').checked=l.on;q('.f').value=l.f*100;q('.fv').textContent=l.f.toFixed(2);q('.s').value=l.s;q('.sv').textContent=l.s+'%';q('.y').value=l.y;q('.yv').textContent=l.y;q('.x').value=l.x||0;q('.xv').textContent=(l.x||0)+'px';q('.op').value=l.op;q('.ov').textContent=l.op+'%';q('.al').value=l.al;q('.key').checked=l.key;q('.vmode').value=l.vmode;q('.front').checked=l.front;q('.fp').value=l.fp*100;q('.fpv').textContent=Math.round(l.fp*100)+'%';q('.fy').value=l.fy*100;q('.fyv').textContent=l.fy.toFixed(2);q('.vm').value=l.vm;q('.cr').value=l.cr;q('.crv').textContent=l.cr+'px';q('.bl').value=l.bl;q('.blv').textContent=l.bl+'px';q('.fd').value=l.fd;q('.fdv').textContent=l.fd+'%';q('.mode').value=l.mode};
+ sync();
+ d.addEventListener('click',()=>select(i));
+ q('.on').onchange=e=>{l.on=e.target.checked;saveCfg()};
+ q('.f').oninput=e=>{l.f=e.target.value/100;q('.fv').textContent=l.f.toFixed(2);saveCfg()};
+ q('.s').oninput=e=>{l.s=+e.target.value;q('.sv').textContent=l.s+'%';saveCfg()};
+ q('.y').oninput=e=>{l.y=+e.target.value;q('.yv').textContent=l.y;saveCfg()};
+ q('.x').oninput=e=>{l.x=+e.target.value;q('.xv').textContent=l.x+'px';saveCfg()};
+ q('.op').oninput=e=>{l.op=+e.target.value;q('.ov').textContent=l.op+'%';saveCfg()};
+ q('.key').onchange=e=>{l.key=e.target.checked;applyFx(l);saveCfg()};
+ q('.front').onchange=e=>{l.front=e.target.checked;saveCfg()};
+ q('.vmode').onchange=e=>{l.vmode=e.target.value;if(l.vmode!=='p'&&l.fy<.5){l.fy=.9;q('.fy').value=90;q('.fyv').textContent='0.90'}saveCfg()};
+ q('.fp').oninput=e=>{l.fp=e.target.value/100;q('.fpv').textContent=e.target.value+'%';saveCfg()};
+ q('.fy').oninput=e=>{l.fy=e.target.value/100;q('.fyv').textContent=l.fy.toFixed(2);saveCfg()};
+ q('.vm').onchange=e=>{l.vm=e.target.value;saveCfg()};
+ q('.cr').oninput=e=>{l.cr=+e.target.value;q('.crv').textContent=l.cr+'px';applyFx(l);saveCfg()};
+ q('.bl').oninput=e=>{l.bl=+e.target.value;q('.blv').textContent=l.bl+'px';applyFx(l);saveCfg()};
+ q('.fd').oninput=e=>{l.fd=+e.target.value;q('.fdv').textContent=l.fd+'%';applyFx(l);saveCfg()};
+ q('.al').onchange=e=>{l.al=e.target.value;saveCfg()};
+ q('.mode').onchange=e=>{l.mode=e.target.value;saveCfg()};
+ const fi=q('input[type=file]');q('.up').onclick=()=>fi.click();fi.onchange=()=>{if(fi.files[0])setImage(i,fi.files[0]);fi.value=''};
+ q('.clr').onclick=()=>setImage(i,null);
+ host.appendChild(d)}
+function applyFx(l){if(!l.src)return;if(!l.key&&!l.bl&&!l.fd&&!l.cr){l.img=l.src;return}
+ let c=document.createElement('canvas');c.width=l.src.width-2*l.cr;c.height=l.src.height;let x=c.getContext('2d');x.drawImage(l.src,-l.cr,0);
+ if(l.key){const d=x.getImageData(0,0,c.width,c.height),p=d.data;
+  for(let i=0;i<p.length;i+=4){const m=(p[i]+p[i+2])/2-p[i+1];if(m>35){p[i+3]=p[i+3]*Math.max(0,Math.min(1,1-(m-35)/90));const k=.85*Math.min(1,m/120);p[i]=Math.max(0,p[i]-m*k);p[i+2]=Math.max(0,p[i+2]-m*k)}}
+  x.putImageData(d,0,0)}
+ if(l.bl){const c2=document.createElement('canvas');c2.width=c.width;c2.height=c.height;const x2=c2.getContext('2d');x2.filter='blur('+l.bl+'px)';x2.drawImage(c,0,0);c=c2;x=x2}
+ if(l.fd){x.globalCompositeOperation='source-atop';x.fillStyle='rgba(18,52,92,'+l.fd/100+')';x.fillRect(0,0,c.width,c.height);x.globalCompositeOperation='source-over'}
+ l.img=c}
+function select(i){sel=i;L.forEach((l,k)=>l.el.classList.toggle('sel',k==i))}
+function setImage(i,blob,silent){const l=L[i],th=l.el.querySelector('.thumb');
+ if(l.url)URL.revokeObjectURL(l.url);
+ if(!blob){l.img=null;l.src=null;l.url=null;th.style.backgroundImage='';if(!silent)dbPut(i,null);return}
+ l.url=URL.createObjectURL(blob);const im=new Image();im.onload=()=>{l.src=im;applyFx(l);th.style.backgroundImage=`url(${l.url})`};im.src=l.url;if(!silent)dbPut(i,blob)}
+
+// ---------- entrada de imágenes ----------
+addEventListener('paste',e=>{for(const it of e.clipboardData.items)if(it.type.startsWith('image/')){setImage(sel,it.getAsFile());e.preventDefault();return}});
+addEventListener('dragover',e=>e.preventDefault());
+addEventListener('drop',e=>{e.preventDefault();const f=[...e.dataTransfer.files].filter(f=>f.type.startsWith('image/'));f.forEach((file,k)=>{if(sel+k<N)setImage(sel+k,file)})});
+
+addEventListener('mouseup',()=>{drag=null;cv.style.cursor='grab'});
+
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;keys[e.key]=1});addEventListener('keyup',e=>keys[e.key]=0);
+
+// ---------- dibujo ----------
+function drawLayer(l){if(!l.on||!l.img)return;const im=l.img,fit=document.getElementById('fit').checked;
+ let h=H*l.s/100,w=im.width*h/im.height;if(fit){w=W*l.s/100;h=im.height*w/im.width}
+ let y=(l.al==='t'?0:l.al==='c'?(H-h)/2:H-h)-l.y*H/200;
+ const cmax=camYmax(),yoff=-l.y*H/200;
+ if(l.vmode==='t')y=yoff-camY*l.fy;
+ else if(l.vmode==='b')y=(H-h)+yoff+(cmax-camY)*l.fy;
+ else{const t=cmax?camY/cmax:0,D=H-h;
+  y=l.al==='t'?yoff+D*t*l.fp:l.al==='b'?(H-h)+yoff-D*(1-t)*l.fp:(H-h)/2+yoff+D*(t-.5)*l.fp}
+ w=Math.round(w);const off=Math.round((((cam*l.f-(l.x||0))%(w*2))+w*2)%(w*2));g.globalAlpha=l.op/100;y=Math.round(y);h=Math.round(h);
+ const j0=l.vm==='m'?-6:0,j1=l.vm==='m'?6:0;
+ for(let j=j0;j<=j1;j++){const yy=y+j*h;if(yy>H||yy+h<0)continue;const vf=j!==0&&((j%2)+2)%2===1;
+  if(l.mode==='e'){const lw=+document.getElementById('lvw').value,xl=Math.round(-cam*l.f+(l.x||0)),xr=Math.round(W+(lw-W)*l.f-cam*l.f-(l.x||0));
+   g.save();g.translate(xl,vf?yy+h+1:yy);g.scale(1,vf?-1:1);g.drawImage(im,0,0,w+1,h+1);g.restore();
+   g.save();g.translate(xr,vf?yy+h+1:yy);g.scale(-1,vf?-1:1);g.drawImage(im,0,0,w+1,h+1);g.restore()}
+  else for(let k=-2;k*w-off<W+w;k++){const x=k*w-off,mir=l.mode==='m'&&((k%2)+2)%2===1;
+   g.save();g.translate(mir?x+w+1:x,vf?yy+h+1:yy);g.scale(mir?-1:1,vf?-1:1);g.drawImage(im,0,0,w+1,h+1);g.restore()}}
+ g.globalAlpha=1}
+let camY=0;const camYmax=()=>Math.max(0,+document.getElementById('lvh').value-H);
+let px=0,py=0,started=false;const groundY=()=>+document.getElementById('lvh').value-80;
+let last=performance.now();
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+ const gy=groundY(),sp=+document.getElementById('spd').value;if(!started||keys.r||keys.R){px=keys.r||keys.R?px:0;py=gy;started=true}
+ const k=n=>keys[n]||keys[n.toUpperCase()];
+ if(keys.ArrowRight||k('d'))px+=sp*dt;if(keys.ArrowLeft||k('a'))px-=sp*dt;
+ if(keys.ArrowUp||k('w')||keys[' '])py-=sp*dt;if(keys.ArrowDown||k('s'))py+=sp*dt;
+ py=Math.max(60,Math.min(gy,py));
+ const lw=+document.getElementById('lvw').value;px=Math.max(30,Math.min(lw-30,px));cam=Math.max(0,Math.min(Math.max(0,lw-W),px-W*.4));camY=Math.max(0,Math.min(camYmax(),py-H*.62));
+ document.getElementById('cyv').textContent='altura '+Math.round(gy-py)+' px';
+ g.fillStyle='#0a1424';g.fillRect(0,0,W,H);const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#060d1c');gr.addColorStop(1,'#10304f');g.fillStyle=gr;g.fillRect(0,0,W,H);
+ L.forEach(l=>{if(!l.front)drawLayer(l)});
+ if(document.getElementById('ref').checked){const sy=gy-camY;
+  g.fillStyle='rgba(8,20,40,.9)';g.fillRect(0,sy,W,H);g.fillStyle='#9fdcf8';g.fillRect(0,sy,W,4);
+  g.font='13px system-ui';for(let hgt=300;hgt<+document.getElementById('lvh').value;hgt+=300){const y=gy-hgt-camY;if(y<-10||y>H+10)continue;g.fillStyle='rgba(255,255,255,.12)';g.fillRect(0,y,W,1);g.fillStyle='rgba(255,255,255,.4)';g.fillText(hgt+' px',8,y-3)}
+  for(let i=Math.floor((cam-60)/380);i*380<cam+W+60;i++){for(let j=1;j<10;j++){const hh=((i*7+j*13)%5);if(hh<2)continue;const x=i*380+((i*53+j*29)%160)-cam,y=gy-j*300+((i*31)%90)-camY;if(y<-20||y>H)continue;
+    g.fillStyle='#2b6f9c';g.fillRect(x,y,150,18);g.fillStyle='#9fdcf8';g.fillRect(x,y,150,4)}}
+  const X=px-cam,Y=py-camY;g.fillStyle='#fff';g.fillRect(X-14,Y-60,28,60);g.fillStyle='#ff5a5a';g.fillRect(X-14,Y-60,28,12)}
+ L.forEach(l=>{if(l.front)drawLayer(l)});
+ requestAnimationFrame(frame)}
+
+// ---------- exportar ----------
+document.getElementById('exp').onclick=()=>{const out={v:1,layers:L.map(l=>{let image=null;if(l.src){const c=document.createElement('canvas');c.width=l.src.width;c.height=l.src.height;const x=c.getContext('2d');x.drawImage(l.src,0,0);const p=x.getImageData(0,0,c.width,c.height).data;let alpha=false;for(let i=3;i<p.length;i+=16)if(p[i]<250){alpha=true;break}image=alpha?c.toDataURL('image/png'):c.toDataURL('image/jpeg',.95)}
+  const{el,img,src,url,...cfg}=l;return{...cfg,image}}),levelW:+document.getElementById('lvw').value,levelH:+document.getElementById('lvh').value};
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out)],{type:'application/json'}));a.download='escena-parallax.json';a.click()};
+// ---------- importar (sustituye imágenes y ajustes de todas las capas) ----------
+document.getElementById('imp').onclick=()=>document.getElementById('impf').click();
+document.getElementById('impf').onchange=async e=>{const f=e.target.files[0];if(!f)return;let d;try{d=JSON.parse(await f.text())}catch(_){alert('JSON no válido');return}
+ for(let i=0;i<N&&i<(d.layers||[]).length;i++){const{image,...cfg}=d.layers[i];Object.assign(L[i],cfg);
+  if(image){const b=await (await fetch(image)).blob();await new Promise(r=>{try{const t=db.transaction('img','readwrite');t.objectStore('img').put(b,i);t.oncomplete=r;t.onerror=r}catch(_){r()}})}}
+ if(d.levelW)try{localStorage.setItem('parallax-test-lvw',d.levelW)}catch(_){}
+ saveCfg();location.reload()};
+// ---------- arranque ----------
+(async()=>{await openDB();const cfg=loadCfg();
+ for(let i=0;i<N;i++){const c=Object.assign({on:true,mode:'r',op:100,bl:0,fd:0,cr:3,vm:'n',fp:1,vmode:i==3?'t':i==4?'b':'p',front:i==4,fy:i>=3?.85:DEF[i].f,cr:i>=5?0:3},DEF[i],cfg&&cfg[i]||{});L.push(c);build(i)}
+ select(0);
+ for(let i=0;i<N;i++){const b=await dbGet(i);if(b)setImage(i,b,true)}
+ try{const v=localStorage.getItem('parallax-test-lvw');if(v)document.getElementById('lvw').value=v}catch(e){}
+ document.getElementById('lvw').onchange=e=>{try{localStorage.setItem('parallax-test-lvw',e.target.value)}catch(_){}};
+ // imágenes que se pegaron en la antigua sección de pared/puerta → capas 6 y 7
+ for(const[k,i]of[['obj-wall',5],['obj-door',6]]){if(!L[i].src&&!(await dbGet(i))){const b=await dbGet(k);if(b)setImage(i,b)}}
+ requestAnimationFrame(frame)})();
+</script></body></html>

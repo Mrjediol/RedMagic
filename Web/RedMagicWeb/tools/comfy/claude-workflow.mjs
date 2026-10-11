@@ -17,6 +17,8 @@
 //       --lora file.safetensors [--lora-strength 0.8]   style LoRA (file in Comfy's models/loras)
 //       --name prefix       file prefix under output/claude/ (default: "sheet")
 //   node claude-workflow.mjs finish --ref image --name prefix [--megapixels 4]
+//   node claude-workflow.mjs clean  --ref image --name prefix [--megapixels 4]
+//                           same result, but cut BEFORE upscaling (clean soft edges on flat backgrounds)
 //                           an approved image → upscaled (<prefix>_up) and with its background cut (<prefix>_cut)
 //   env COMFY_URL (default http://127.0.0.1:8188). Comfy Desktop must be open.
 //
@@ -131,6 +133,32 @@ export function finishGraph({ image, name, megapixels = 4 }) {
   };
 }
 
+// clean: cut FIRST at the image's own resolution (thin soft edges, no mask shrink, background colour removed from
+// the edge pixels with refine_foreground), THEN upscale colour (model ×4) and alpha (lanczos ×4) apart and join them.
+// finish (upscale then cut) widens every soft edge ×4 and its −2 px offset at process_res eats thin outlines on big
+// images; use clean for anything painted soft over a flat background (parallax layers, blurred art).
+export function cleanGraph({ image, name, megapixels = 4 }) {
+  return {
+    nodes: [
+      { id: 1, type: "LoadImage", pos: [0, 0], size: [310, 330], values: { image } },
+      { id: 2, type: "RMBG", pos: [0, 0], size: [340, 360],
+        values: { model: "RMBG-2.0", sensitivity: 1, process_res: 1024, mask_blur: 0, mask_offset: 0, invert_output: false, refine_foreground: true, background: "Alpha" },
+        links: { image: [1, 0] } },
+      { id: 3, type: "SplitImageWithAlpha", pos: [0, 0], size: [300, 60], links: { image: [2, 0] } },
+      { id: 4, type: "SaveImage", pos: [0, 0], size: [300, 300], values: { filename_prefix: `claude/${name}_cut1x` }, links: { images: [2, 0] } },
+      { id: 5, type: "UpscaleModelLoader", pos: [0, 0], size: [300, 60], values: { model_name: "RealESRGAN_x4plus_anime_6B.pth" } },
+      { id: 6, type: "ImageUpscaleWithModel", pos: [0, 0], size: [300, 60], links: { upscale_model: [5, 0], image: [3, 0] } },
+      { id: 7, type: "ImageScaleToTotalPixels", pos: [0, 0], size: [300, 110], values: { upscale_method: "lanczos", megapixels, resolution_steps: 1 }, links: { image: [6, 0] } },
+      { id: 8, type: "MaskToImage", pos: [0, 0], size: [300, 60], links: { mask: [3, 1] } },
+      { id: 9, type: "ImageScaleBy", pos: [0, 0], size: [300, 80], values: { upscale_method: "lanczos", scale_by: 4 }, links: { image: [8, 0] } },
+      { id: 10, type: "ImageScaleToTotalPixels", pos: [0, 0], size: [300, 110], values: { upscale_method: "lanczos", megapixels, resolution_steps: 1 }, links: { image: [9, 0] } },
+      { id: 11, type: "ImageToMask", pos: [0, 0], size: [300, 60], values: { channel: "red" }, links: { image: [10, 0] } },
+      { id: 12, type: "JoinImageWithAlpha", pos: [0, 0], size: [300, 60], links: { image: [7, 0], alpha: [11, 0] } },
+      { id: 13, type: "SaveImage", pos: [0, 0], size: [300, 300], values: { filename_prefix: `claude/${name}_clean` }, links: { images: [12, 0] } },
+    ],
+  };
+}
+
 const NOTE = `## Qué es
 El flujo con el que Claude hace el arte de los enemigos. **No lo edites a mano para que quede**: se
 reescribe desde \`Web/RedMagicWeb/tools/comfy/claude-workflow.mjs\` (\`node claude-workflow.mjs install\`).
@@ -202,10 +230,12 @@ async function main() {
     return;
   }
 
-  if (command === 'run' || command === 'finish') {
+  if (command === 'run' || command === 'finish' || command === 'clean') {
     const o = options(rest);
     if (o.seed === undefined) o.seed = Math.floor(Math.random() * 2 ** 48);
-    const prompt = toApi(command === 'finish' ? finishGraph({ image: o.refs[0], name: o.name, megapixels: o.megapixels }) : claudeGraph(o), defs);
+    const graph = command === 'finish' ? finishGraph({ image: o.refs[0], name: o.name, megapixels: o.megapixels })
+      : command === 'clean' ? cleanGraph({ image: o.refs[0], name: o.name, megapixels: o.megapixels }) : claudeGraph(o);
+    const prompt = toApi(graph, defs);
     const started = Date.now();
     const { prompt_id: id } = await (await api('/prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, client_id: 'claude-workflow' }) })).json();
     console.log(`queued ${id} (seed ${o.seed})`);

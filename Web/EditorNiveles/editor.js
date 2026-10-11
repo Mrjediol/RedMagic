@@ -4,7 +4,7 @@
 'use strict';
 (() => {
   const $ = id => document.getElementById(id);
-  const MIN = 12, MAX_W = 400, MAX_H = 75, PX = 40, VIEW_H = 20, PLAYER = { w: 0.6, h: 1.74 };
+  const MIN = 12, MAX_W = 400, MAX_H = 75, PX = 40, VIEW_H = 20;
   const STORE = 'editorNiveles.v1', FREE_CHARS = '=-~^+*%&@$!?abcdefghijklmnopqrstuvwxyz';
   const DATA = window.UNITY_DATA || null;
   const FALLBACK_BIOME = {
@@ -92,7 +92,7 @@
   let CW = 0, CH = 0, dpr = 1;
   const V = { z: 16, ox: 20, oy: 20 };
   const cam = { x: 0, y: 0 }; // vista previa: centro de la cámara en unidades (y hacia arriba)
-  let aspect = 16 / 9;
+  const aspect = 16 / 9;
   function viewport() { // rectángulo de la pantalla del juego dentro del canvas
     let w = CW, h = CW / aspect; if (h > CH) { h = CH; w = CH * aspect; }
     return { x0: (CW - w) / 2, y0: (CH - h) / 2, w, h, ppu: h / VIEW_H, viewW: VIEW_H * w / h, viewH: VIEW_H };
@@ -182,7 +182,6 @@
     }
   }
   function drawLayers(vp, which) {
-    if (!$('optBg').checked) return;
     const view = { viewW: vp.viewW, viewH: VIEW_H, ppu: vp.ppu, x0: vp.x0, y0: vp.y0 };
     for (const L of biome().layers || []) {
       const kind = L.inFront ? 'front' : L.overTerrain ? 'over' : 'back';
@@ -212,19 +211,6 @@
     const n = S.tool === 'fill' ? 1 : S.brush, o = Math.floor((n - 1) / 2);
     g.strokeStyle = S.tool === 'erase' ? '#ff8a80' : '#fff'; g.lineWidth = 1.5;
     g.strokeRect(V.ox + (c - o) * z + .5, V.oy + (r - o) * z + .5, n * z - 1, n * z - 1);
-    if (!$('optScale').checked) return;
-    // jugador (0,6 × 1,74) de pie en la celda del cursor
-    const px = V.ox + (c + 0.5 - PLAYER.w / 2) * z, py = V.oy + (r + 1 - PLAYER.h) * z;
-    g.fillStyle = 'rgba(255,90,90,.85)'; g.fillRect(px, py, PLAYER.w * z, PLAYER.h * z);
-    g.fillStyle = '#fff'; g.fillRect(px, py, PLAYER.w * z, Math.max(2, PLAYER.h * z * 0.22));
-    if (S.mode === 'edit') { // lo que enseña la cámara del juego, centrada en el cursor y dentro del nivel
-      const vw = VIEW_H * aspect, vh = VIEW_H;
-      let cx = c + 0.5, cy = r + 0.5;
-      cx = S.w <= vw ? S.w / 2 : Math.max(vw / 2, Math.min(S.w - vw / 2, cx));
-      cy = S.h <= vh ? S.h / 2 : Math.max(vh / 2, Math.min(S.h - vh / 2, cy));
-      g.strokeStyle = 'rgba(120,200,255,.7)'; g.setLineDash([6, 4]); g.lineWidth = 1.5;
-      g.strokeRect(V.ox + (cx - vw / 2) * z, V.oy + (cy - vh / 2) * z, vw * z, vh * z); g.setLineDash([]);
-    }
   }
   const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; };
 
@@ -244,7 +230,7 @@
       if (terrain && terrain.w === S.w && terrain.h === S.h) g.drawImage(terrain.cv, V.ox, V.oy, S.w * V.z, S.h * V.z);
       if (!terrain || terrainStale) drawCells(terrain ? 0.55 : 1);
       drawLayers(vp, 'over');
-      if ($('optPlat').checked) drawPlatformMarks();
+      drawPlatformMarks();
       drawLayers(vp, 'front');
       drawCursor(vp);
       g.restore();
@@ -383,8 +369,6 @@
   $('resize').onclick = () => resize(+$('w').value, +$('h').value);
   $('new').onclick = () => { if (!confirmNew()) return; pushUndo(); blank(S.w, S.h); handle = null; setFile(null); changed(); };
   $('open').onclick = open; $('save').onclick = () => save(false); $('saveAs').onclick = () => save(true);
-  $('aspect').onchange = e => { aspect = +e.target.value; redraw(); };
-  ['optScale', 'optPlat', 'optBg'].forEach(id => $(id).onchange = redraw);
   // "Nuevo" vacía el nivel (se puede deshacer): sin diálogo del navegador, segundo clic para confirmar
   let armed = 0;
   function confirmNew() { if (Date.now() - armed < 2500) return true; armed = Date.now(); toast('Pulsa otra vez "Nuevo" para vaciar el nivel (Ctrl+Z lo recupera)'); return false; }

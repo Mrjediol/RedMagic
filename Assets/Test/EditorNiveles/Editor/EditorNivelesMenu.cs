@@ -1,5 +1,4 @@
 using System.IO;
-using System.Linq;
 using RedMagic.Gameplay;
 using RedMagic.Levels;
 using RedMagic.LevelsEditor;
@@ -14,102 +13,65 @@ using UnityEngine.Tilemaps;
 namespace RedMagic.EditorNiveles
 {
     /// <summary>
-    /// Menú <b>Tools ▸ EditorNiveles</b>: abrir el editor web (<c>Web/EditorNiveles/index.html</c>), crear una escena de
-    /// nivel desde un boceto, volcar un boceto en el nivel abierto y exportar el nivel abierto para seguir en la web.
-    /// Tras importar, el nivel se sigue editando en Unity (paleta de terreno, objetos): reimportar sólo toca los tiles
-    /// y el tamaño. El montaje del sistema de niveles (bioma, paleta, fondo, nieve) cuelga de <c>Montaje</c>.
+    /// Menú propio <b>EditorNiveles ▸ Importar nivel...</b> (en la barra de menús, aparte de Tools): lee un
+    /// <c>*.levelsketch.json</c> del editor web y lo vuelca en el nivel de la escena abierta o en una escena nueva.
+    /// Reimportar sólo toca tiles, tamaño y bioma; lo añadido a mano en la escena se queda. Al importar también se
+    /// refresca <c>datos-unity.js</c> (valores del bioma para la vista previa web).
     /// </summary>
     public static class EditorNivelesMenu
     {
-        public const string Root = "Tools/EditorNiveles/";
         private const string LastFolderKey = "EditorNiveles.LastFolder";
 
-        private static string ProjectRoot => Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
         private static string LastFolder
         {
-            get => EditorPrefs.GetString(LastFolderKey, Path.Combine(ProjectRoot, "Web", "EditorNiveles", "bocetos"));
+            get => EditorPrefs.GetString(LastFolderKey, Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Web", "EditorNiveles", "bocetos")));
             set => EditorPrefs.SetString(LastFolderKey, value);
         }
 
-        [MenuItem(Root + "Abrir editor web", priority = 0)]
-        private static void OpenWeb()
+        [MenuItem("EditorNiveles/Importar nivel...")]
+        private static void Import()
         {
+            var sketch = PickSketch();
+            if (sketch == null) return;
             EditorNivelesWebData.Write();
-            string page = Path.Combine(ProjectRoot, "Web", "EditorNiveles", "index.html");
-            Application.OpenURL("file:///" + page.Replace('\\', '/'));
-        }
 
-        [MenuItem(Root + "Nuevo nivel desde boceto...", priority = 20)]
-        private static void NewLevelFromSketch()
-        {
-            var sketch = PickSketch("Nuevo nivel desde boceto");
-            if (sketch == null || !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            var level = FindOpenLevel();
+            if (level != null)
+            {
+                int choice = EditorUtility.DisplayDialogComplex("Importar nivel",
+                    $"¿Dónde va '{sketch.name}'?\n\nEn el nivel abierto se cambian sus tiles y su tamaño; lo demás de la escena se queda.",
+                    $"En el nivel abierto ({level.gameObject.scene.name})", "Cancelar", "En una escena nueva");
+                if (choice == 1) return;
+                if (choice == 0)
+                {
+                    LevelSketchFile.Apply(sketch, level);
+                    EditorSceneManager.MarkSceneDirty(level.gameObject.scene);
+                    return;
+                }
+            }
+
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             string path = EditorUtility.SaveFilePanelInProject("Escena del nivel", sketch.name, "unity",
                 "Dónde guardar la escena del nivel nuevo.", "Assets/Scenes");
-            if (string.IsNullOrEmpty(path)) return;
-            CreateLevelScene(sketch, path);
+            if (!string.IsNullOrEmpty(path)) CreateLevelScene(sketch, path);
         }
 
-        [MenuItem(Root + "Importar boceto en el nivel abierto...", priority = 21)]
-        private static void ImportIntoOpenLevel()
+        private static LevelSketchFile.Sketch PickSketch()
         {
-            var level = FindOpenLevel();
-            if (level == null) return;
-            var sketch = PickSketch("Importar boceto en " + level.name);
-            if (sketch == null) return;
-            LevelSketchFile.Apply(sketch, level);
-            EditorSceneManager.MarkSceneDirty(level.gameObject.scene);
-        }
-
-        [MenuItem(Root + "Exportar nivel abierto a boceto...", priority = 22)]
-        private static void ExportOpenLevel()
-        {
-            var level = FindOpenLevel();
-            if (level == null) return;
-            string sceneName = level.gameObject.scene.name;
-            string file = EditorUtility.SaveFilePanel("Exportar nivel a boceto", LastFolder, sceneName + ".levelsketch", "json");
-            if (string.IsNullOrEmpty(file)) return;
-            LastFolder = Path.GetDirectoryName(file);
-            var sketch = LevelSketchFile.FromLevel(level, sceneName);
-            File.WriteAllText(file, JsonUtility.ToJson(sketch, true));
-            Debug.Log($"[EditorNiveles] {level.name} → {file}");
-        }
-
-        [MenuItem(Root + "Actualizar biomas del editor web", priority = 40)]
-        private static void UpdateWebData() => EditorNivelesWebData.Write();
-
-        // ------------------------------------------------------------------ montaje (antes Tools ▸ RedMagic ▸ Niveles)
-
-        [MenuItem(Root + "Montaje/Preparar bioma de hielo", priority = 60)]
-        private static void SetupIce() => LevelSetup.EnsureIceBiome();
-
-        [MenuItem(Root + "Montaje/Crear tile y paleta de terreno", priority = 61)]
-        private static void SetupTiles() => LevelSetup.EnsureTileAndPalette();
-
-        [MenuItem(Root + "Montaje/Importar fondo de parallax (.json)...", priority = 62)]
-        private static void SetupBackground() => LevelSetup.ImportBackgroundMenu();
-
-        [MenuItem(Root + "Montaje/Crear nieve", priority = 63)]
-        private static void SetupSnow() => LevelSetup.EnsureSnow(true);
-
-        // ------------------------------------------------------------------ utilidades
-
-        private static LevelSketchFile.Sketch PickSketch(string title)
-        {
-            string file = EditorUtility.OpenFilePanelWithFilters(title, LastFolder, new[] { "Boceto de nivel", "json" });
+            string file = EditorUtility.OpenFilePanelWithFilters("Importar nivel", LastFolder, new[] { "Boceto de nivel", "json" });
             if (string.IsNullOrEmpty(file)) return null;
             LastFolder = Path.GetDirectoryName(file);
             var sketch = LevelSketchFile.Parse(File.ReadAllText(file), out string error);
             if (sketch == null)
             {
-                EditorUtility.DisplayDialog(title, error, "Vale");
+                EditorUtility.DisplayDialog("Importar nivel", error, "Vale");
                 return null;
             }
             if (string.IsNullOrEmpty(sketch.name)) sketch.name = Path.GetFileNameWithoutExtension(file).Replace(".levelsketch", "");
             return sketch;
         }
 
-        /// <summary>El nivel seleccionado, o el único de la escena abierta.</summary>
+        /// <summary>El nivel seleccionado, o el único de la escena abierta (null si no hay uno claro).</summary>
         private static Level FindOpenLevel()
         {
             var level = Selection.activeGameObject != null ? Selection.activeGameObject.GetComponentInParent<Level>() : null;
@@ -117,19 +79,8 @@ namespace RedMagic.EditorNiveles
             {
                 var all = Object.FindObjectsByType<Level>(FindObjectsInactive.Include, FindObjectsSortMode.None);
                 if (all.Length == 1) level = all[0];
-                else if (all.Length > 1)
-                {
-                    EditorUtility.DisplayDialog("EditorNiveles", "Hay varios niveles abiertos: selecciona uno en la jerarquía.", "Vale");
-                    return null;
-                }
             }
-            if (level == null || level.Terrain == null)
-            {
-                EditorUtility.DisplayDialog("EditorNiveles", "No hay ningún Nivel (con su Tilemap de terreno) en la escena abierta. " +
-                                                             "Usa 'Nuevo nivel desde boceto...'.", "Vale");
-                return null;
-            }
-            return level;
+            return level != null && level.Terrain != null ? level : null;
         }
 
         /// <summary>

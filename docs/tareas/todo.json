@@ -135,7 +135,7 @@
         {
           "id": "editor-niveles",
           "text": "EditorNiveles: editor de niveles web propio + importador en Unity (no dentro de la web ni de Tools ▸ Web)",
-          "note": "Hecho (pendiente de prueba del usuario): Web/EditorNiveles + Tools ▸ EditorNiveles. Entrada/salida/enemigos: no por ahora (decoración y plataformas con variantes llegarán con nh-3).",
+          "note": "Funciona (probado). Falta: el editor web va DENTRO de la web principal (pestaña), no como página suelta.",
           "done": false,
           "doc": "docs/tareas/editor-niveles.md",
           "needs": [
@@ -156,6 +156,11 @@
               "id": "en-3",
               "text": "Preguntar si quiere colocar entrada/salida y enemigos desde el editor",
               "done": true
+            },
+            {
+              "id": "en-4",
+              "text": "Mover el editor de niveles a una pestaña de la web principal (Web/RedMagicWeb); Unity sólo el importador en su menú propio",
+              "done": false
             }
           ]
         },

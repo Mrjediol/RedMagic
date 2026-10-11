@@ -47,6 +47,13 @@ namespace RedMagic.Levels
                  "bajar de ellas (capa Platform, una por plataforma). Opcional.")]
         [SerializeField] private Tilemap platforms;
 
+        [Header("Nieve del borde")]
+        [Tooltip("Bandas claras (nieve/hielo) del borde del terreno. Apagado: sólo roca y contorno.")]
+        [SerializeField] private bool rimOnTerrain = true;
+
+        [Tooltip("Bandas claras del borde en las plataformas. En las de 1 celda de grosor las de arriba y abajo se juntan.")]
+        [SerializeField] private bool rimOnPlatforms = true;
+
 
         public int Width => width;
         public int Height => height;
@@ -242,6 +249,9 @@ namespace RedMagic.Levels
                                       + (biome.ceilingWidth - biome.wallWidth) * ceiling;
                     float wobble = 1f - biome.widthVariation * 0.44f + biome.widthVariation * Noise(q.distance / 0.6f, 3.3f);
                     w[i] = baseWidth * wobble + (Noise(q.distance / 0.175f, 9f) - 0.5f) * 0.075f;
+                    // la normal apunta hacia dentro del sólido: la celda de al lado dice si es roca o plataforma
+                    var inside = q.position + q.normal * 0.3f;
+                    if (!(IsPlatform(Mathf.FloorToInt(inside.x), Mathf.FloorToInt(inside.y)) ? rimOnPlatforms : rimOnTerrain)) w[i] = 0f;
                     t[i] = (1f - q.normal.y) * 0.5f; // 0 techo, 1 suelo
                 }
 

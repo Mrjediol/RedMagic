@@ -64,6 +64,5 @@
 ## Level sketch → level scene
 
 Superseded: the old web tab 🧱 Boceto de nivel and `LevelSketchImporter` (prefab with tiled edge strips, `LevelKit`)
-are in Legacy. Levels are now a `Level` + Tilemaps scene made with **EditorNiveles** (web editor + *Tools ▸
-EditorNiveles ▸ Nuevo nivel desde boceto…*, which also places `SectionEntry`/`SectionExit` on the floor at both ends):
+are in Legacy. Levels are now a `Level` + Tilemaps scene made with **EditorNiveles** (web editor + menu *EditorNiveles ▸ Importar nivel…* → new scene, which also places `SectionEntry`/`SectionExit` on the floor at both ends):
 see `docs/architecture/levels.md` ▸ EditorNiveles.

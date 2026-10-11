@@ -83,17 +83,10 @@ label.chk{display:flex;gap:6px;align-items:center;font-size:13px;margin:3px 0}
       <div class="row"><button id="new">Nuevo</button><button id="open">Abrir…</button></div>
       <div class="row" style="margin-top:6px"><button id="save" class="primary">💾 Guardar</button><button id="saveAs">Guardar como…</button></div>
       <p id="file" class="hint"></p>
-      <p class="hint">Formato <code>*.levelsketch.json</code>. En Unity: <b>Tools ▸ EditorNiveles</b> ▸ <i>Nuevo nivel desde boceto…</i> o <i>Importar boceto en el nivel abierto…</i>. Lo editado en Unity vuelve aquí con <i>Exportar nivel abierto a boceto…</i>. También puedes arrastrar el .json a la ventana.</p>
+      <p class="hint">Se guarda como <code>*.levelsketch.json</code>. En Unity: menú <b>EditorNiveles ▸ Importar nivel…</b>. También puedes arrastrar el .json a la ventana.</p>
     </div>
 
-    <div class="box">
-      <h2>Ayudas</h2>
-      <label class="chk"><input type="checkbox" id="optScale" checked> Escala: cámara del juego y jugador en el cursor</label>
-      <label class="chk"><input type="checkbox" id="optPlat" checked> Marcar plataformas en la vista previa</label>
-      <label class="chk"><input type="checkbox" id="optBg" checked> Fondo del bioma en la vista previa</label>
-      <div class="field"><label>Pantalla</label><select id="aspect"><option value="1.7778">16:9</option><option value="2.1667">19.5:9 (móvil)</option><option value="1.3333">4:3</option></select></div>
-      <p id="warn"></p>
-    </div>
+    <p id="warn"></p>
 
     <div class="box">
       <h2>Controles</h2>

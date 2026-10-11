@@ -25,7 +25,6 @@ namespace RedMagic.EditorNiveles
         public const int Version = 2;
         public const string TerrainLayer = "terrain", PlatformsLayer = "platforms";
         public const string RockTile = "Roca", PlatformTile = "Plataforma";
-        private const string FreeChars = "=-~^+*%&@$!?abcdefghijklmnopqrstuvwxyz";
 
         [Serializable]
         public class LegendEntry
@@ -140,42 +139,6 @@ namespace RedMagic.EditorNiveles
             level.Rebuild();
             EditorUtility.SetDirty(level);
             Debug.Log($"[EditorNiveles] '{sketch.name}' ({w}×{h}: {rockCells.Count} roca, {platCells.Count} plataforma) → {level.name}");
-        }
-
-        /// <summary>El nivel tal como está en Unity, en el mismo formato: para seguir editándolo en la web.</summary>
-        public static Sketch FromLevel(Level level, string sketchName)
-        {
-            var legend = new List<LegendEntry> { new LegendEntry { @char = "#", layer = TerrainLayer, tile = RockTile } };
-            var platformChars = new Dictionary<string, char>();
-            char PlatformChar(TileBase tile)
-            {
-                string tileName = tile != null ? tile.name : PlatformTile;
-                if (platformChars.TryGetValue(tileName, out var c)) return c;
-                c = tileName == PlatformTile ? '=' : FreeChars.First(f => f != '=' && legend.All(l => l.@char[0] != f));
-                platformChars[tileName] = c;
-                legend.Add(new LegendEntry { @char = c.ToString(), layer = PlatformsLayer, tile = tileName });
-                return c;
-            }
-
-            int w = level.Width, h = level.Height;
-            var rows = new string[h];
-            var line = new char[w];
-            for (int row = 0; row < h; row++)
-            {
-                int y = h - 1 - row;
-                for (int x = 0; x < w; x++)
-                {
-                    if (level.IsRock(x, y)) line[x] = '#';
-                    else if (level.IsPlatform(x, y)) line[x] = PlatformChar(level.Platforms.GetTile(new Vector3Int(x, y, 0)));
-                    else line[x] = '.';
-                }
-                rows[row] = new string(line);
-            }
-            return new Sketch
-            {
-                name = sketchName, biome = level.Biome != null ? level.Biome.name : null,
-                width = w, height = h, legend = legend.ToArray(), rows = rows,
-            };
         }
     }
 }

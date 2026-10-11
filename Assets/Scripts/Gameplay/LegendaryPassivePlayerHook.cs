@@ -136,7 +136,7 @@ namespace RedMagic.Gameplay
             _shield.gameObject.SetActive(_shieldHits > 0);
             if (_shieldHits <= 0) return;
 
-            // Tamaño en mundo fijo aunque el jugador tenga escala por escena (PlayerScaleConfig).
+            // Tamaño en mundo fijo aunque el jugador esté escalado.
             _shield.transform.position = BodyCenter();
             var lossy = transform.lossyScale;
             var size = ShieldSize();

@@ -59,19 +59,7 @@
   it, labelled `W<n> <enemy> ×<count>`; unused points grey. Inspector (`WaveManagerEditor` +
   `EnemySpawnDrawer`): collapsible waves with a summary line, one row per enemy (prefab / spawn
   point dropdown from the manager's list — stored as a reference, not a name / delay).
-- **`PlayerScaleConfig`** — per-scene override for the player's `transform.localScale`, needed
-  because each level's background is generated separately by AI and the art scale isn't consistent
-  from one image to the next. Lives at `Assets/Resources/PlayerScaleConfig.asset` (loaded with
-  `Resources.Load`, same pattern as `CurrencyConfig`/`ShopConfig` — nothing to drag onto
-  `RunManager`), a list of `(SceneReference, float)` rows edited through
-  `PlayerScaleConfigEditor`'s **Tools ▸ RedMagic ▸ Jugador ▸ Sincronizar escalas con Build
-  Settings** (also a button in the asset's own Inspector), which appends one row per enabled
-  Build Settings scene at scale 1.0 — idempotent, never touches a row already tuned. `RunManager`
-  calls `ApplyPlayerScale(scene)` right after `Player.transform.position = entry.SpawnPosition`
-  (`PlacePlayerAtEntry`, `MoveToHubEntry`/`EnterHub`) — same synchronous span, before any `yield`,
-  so the resize lands in the same frame as the teleport and is never seen popping. No entry for the
-  loaded scene → scale 1.0 and a console warning (a new scene nobody's tuned yet); no asset at all
-  → the prefab's scale is left alone entirely.
+- The player keeps its prefab scale in every scene (the old per-scene `PlayerScaleConfig` is in `Assets/Legacy/`).
 
 ## Level sketch → section prefab
 

@@ -5,9 +5,8 @@
 //
 //   · Cargar MainHub      — opens the hub scene. Resolved from RunManager.hubScene (the same
 //                           SceneReference the game uses), by GUID — never by scene name.
-//   · Añadir Player       — drops a Player.prefab instance into the active scene for solo testing,
-//                           at its SectionEntry and with the PlayerScaleConfig scale RunManager
-//                           would give it. Selects the existing one instead of duplicating.
+//   · Añadir Player       — drops a PlayerNuevo.prefab instance into the active scene for solo testing,
+//                           at its SectionEntry. Selects the existing one instead of duplicating.
 //   · Quitar Player …     — deletes every placed Player from every scene under Assets/Scenes. In a
 //                           real run the player is ALWAYS spawned by RunManager (playerPrefab), so a
 //                           placed one left over from testing only shows up as a duplicate.
@@ -96,14 +95,6 @@ internal static class WebLibraryUtilities
         {
             Vector3 pivot = SceneView.lastActiveSceneView.pivot;
             player.transform.position = new Vector3(pivot.x, pivot.y, 0f);
-        }
-
-        // Misma escala que le pondría RunManager.ApplyPlayerScale al entrar en esta escena.
-        var scaleConfig = Resources.Load<PlayerScaleConfig>("PlayerScaleConfig");
-        if (scaleConfig != null)
-        {
-            float scale = scaleConfig.ScaleFor(scene);
-            player.transform.localScale = new Vector3(scale, scale, scale);
         }
 
         EditorSceneManager.MarkSceneDirty(scene);

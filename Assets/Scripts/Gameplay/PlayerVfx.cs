@@ -68,7 +68,7 @@ namespace RedMagic.Gameplay
             _movement.AirJumped -= OnAirJumped;
         }
 
-        // Los efectos y sus offsets siguen la escala del jugador (PlayerScaleConfig la cambia por escena).
+        // Los efectos y sus offsets siguen la escala del jugador.
         private float Scale => Mathf.Abs(transform.lossyScale.y);
 
         private void LateUpdate()

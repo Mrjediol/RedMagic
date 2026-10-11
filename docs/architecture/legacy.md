@@ -13,6 +13,7 @@ que dependa de Legacy.
 | `Legacy/Art/Characters/` | Arte de enemigos por sprite que ya no usa nada |
 | `Legacy/Sprites/` | La antigua `Assets/Sprites` (láminas originales, referencias) |
 | `Legacy/Levels/` | El intento de niveles por kits (`nivel 1`, `_Kits`, `Test1`) — sustituido por `Level` + Tilemap |
+| `Legacy/Run/` + `Legacy/Scripts/Run/` | `PlayerScaleConfig` (escala del jugador por escena; ya no hace falta) |
 | `Legacy/Json/`, `Legacy/LevelsBoceto/` | Pruebas |
 | `Legacy/AdaptivePerformance/` | Ajustes huérfanos del paquete Adaptive Performance (no está instalado) |
 | `Resources/Legacy/Abilities/` | Los `AbilityDefinition` (por ruta de Resources, se quedan ahí) |

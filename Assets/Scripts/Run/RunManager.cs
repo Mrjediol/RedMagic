@@ -193,9 +193,6 @@ namespace RedMagic.Run
         private bool _frozen;               // si hemos sumado una pausa al contador de GameStateManager
         private int _scenesSinceCleanup;    // para assetCleanupEveryNScenes
 
-        private const string PlayerScaleConfigResourcePath = "PlayerScaleConfig";
-        private PlayerScaleConfig _playerScaleConfig;
-        private bool _playerScaleConfigLoaded; // Resources.Load una sola vez, aunque el asset no exista
 
         // ------------------------------------------------------------------ ciclo de vida
 
@@ -676,7 +673,6 @@ namespace RedMagic.Run
             if (Player == null) return;    // sin playerPrefab asignado: no hay nada que colocar
 
             MoveToHubEntry(Player);
-            ApplyPlayerScale(hubScene.GetLoadedScene());
             _playerHealth?.ResetHealth();
             RetargetCameras(hubScene.GetLoadedScene());
         }
@@ -835,7 +831,6 @@ namespace RedMagic.Run
             }
 
             Player.transform.position = entry.SpawnPosition;
-            ApplyPlayerScale(scene);
 
             // Cortar la inercia que traía de la sección anterior, incluida la de un empujón a
             // medias: si no, se entra en la sección nueva despedido y sin control unos frames.
@@ -847,32 +842,6 @@ namespace RedMagic.Run
             }
 
             Player.GetComponentInChildren<Knockback>()?.Cancel();
-        }
-
-        /// <summary>
-        /// Aplica la escala de <see cref="PlayerScaleConfig"/> para <paramref name="scene"/> al
-        /// jugador persistente. Se llama en el mismo tramo síncrono en que se le fija la posición
-        /// (justo después, antes de cualquier <c>yield</c>), así que el cambio de tamaño cae en el
-        /// mismo frame que la teletransportación y nunca se ve: no hay un frame intermedio en el
-        /// que se renderice al jugador ya en la escena nueva pero todavía al tamaño de la anterior.
-        ///
-        /// Sin asset en <c>Assets/Resources/PlayerScaleConfig.asset</c> no se toca la escala del
-        /// prefab — es opcional, no un requisito para que la run funcione.
-        /// </summary>
-        private void ApplyPlayerScale(Scene scene)
-        {
-            if (Player == null) return;
-
-            if (!_playerScaleConfigLoaded)
-            {
-                _playerScaleConfig = Resources.Load<PlayerScaleConfig>(PlayerScaleConfigResourcePath);
-                _playerScaleConfigLoaded = true;
-            }
-
-            if (_playerScaleConfig == null) return;
-
-            float scale = _playerScaleConfig.ScaleFor(scene);
-            Player.transform.localScale = new Vector3(scale, scale, scale);
         }
 
         /// <summary>

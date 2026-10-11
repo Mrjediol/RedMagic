@@ -95,7 +95,7 @@ public class WebLibraryWindow : EditorWindow
     private const string ART_CHARACTERS_FOLDER = "Assets/Art/Characters";
     private const string ENEMY_IMPORTER_FOLDER = "Assets/Art/EnemyImports";
     private const string BOSS_DEFINITION_FOLDER = "Assets/Resources/Bosses";
-    private const string PLAYER_PREFAB_PATH = "Assets/Prefabs/Player.prefab";
+    private const string PLAYER_PREFAB_PATH = "Assets/Prefabs/PlayerNuevo.prefab";
     private const string SCENES_FOLDER = "Assets/Scenes";
 
     private class Entry
@@ -303,7 +303,7 @@ public class WebLibraryWindow : EditorWindow
                 return "MiniBosses: sin herramienta de importación dedicada todavía — no hay ningún " +
                        "tipo/convención de asset para minijefes en el proyecto (auditado, cero coincidencias).";
             case Category.Player:
-                return "No se encontró Assets/Prefabs/Player.prefab.";
+                return "No se encontró " + PLAYER_PREFAB_PATH + ".";
             case Category.Bosses:
                 return "Sin BossDefinition en Assets/Resources/Bosses/.";
             case Category.Escenas:

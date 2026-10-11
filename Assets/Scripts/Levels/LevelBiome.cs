@@ -11,6 +11,11 @@ namespace RedMagic.Levels
     [CreateAssetMenu(menuName = "RedMagic/Niveles/Bioma", fileName = "Bioma")]
     public class LevelBiome : ScriptableObject
     {
+        /// <summary>Un valor del bioma ha cambiado en el Inspector: los <see cref="Level"/> que lo usan se redibujan.</summary>
+        public static event System.Action<LevelBiome> Changed;
+
+        private void OnValidate() => Changed?.Invoke(this);
+
         [Header("Roca (relleno del terreno)")]
         [Tooltip("Textura repetible de la roca. Se repite en coordenadas de mundo.")]
         public Texture2D rockTexture;
@@ -22,7 +27,8 @@ namespace RedMagic.Levels
         public Shader rockShader;
 
         [Header("Borde")]
-        [Tooltip("Radio de todas las esquinas, en unidades. 0.4 = 16 px del boceto.")]
+        [Tooltip("Radio de todas las esquinas, en unidades. 0.4 = 16 px del boceto. SÓLO visual: el collider " +
+                 "tiene siempre esquinas cuadradas. 0 = esquinas en ángulo recto.")]
         [Range(0f, 0.5f)] public float cornerRadius = 0.4f;
         [Tooltip("Grosor del borde en suelos (cara hacia arriba).")]
         public float floorWidth = 0.625f;

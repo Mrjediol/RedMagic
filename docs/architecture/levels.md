@@ -13,7 +13,7 @@ screen height), as forced by `RunManager`.
   (3000 px). Changing the size re-fits everything: the implicit 1-cell rock frame, `BG` (camera bounds read by
   `CameraFollow`), the collider and the parallax range. Painted cells are kept.
 - **Platforms** = a second Tilemap (`Grid/Plataformas`, tile `Plataforma` in the same palette). Same look as rock, but
-  each connected platform gets its own child under `Plataformas`: layer Platform, `PolygonCollider2D` (rounded contour,
+  each connected platform gets its own child under `Plataformas`: layer Platform, `PolygonCollider2D` (square corners,
   usedByEffector) + one-way `PlatformEffector2D`. One collider per platform because drop-through ignores the specific
   collider being stood on (`PlayerMovement.TryDropThroughPlatform`). Rock-only cells feed `Colision` (Ground).
 - Terrain = a `Tilemap` child (`Grid/Terreno`, renderer disabled). Paint with the **`PaletaTerreno`** palette
@@ -22,7 +22,7 @@ screen height), as forced by `RunManager`.
 - Regenerates on paint (`Tilemap.tilemapTileChanged`), on size/biome change and on load; meshes are `DontSave`.
   Children it owns: `BG`, `Roca` (rock fill, Sprite-Lit, biome texture tiled in world space), `Brillo` (rock shadow +
   inner glow baked into a texture by exact distance-to-air at 8 texels/unit), `Borde` (4 colour bands of noisy
-  width, dark outline (outer glow off: `outerGlowWidth` 0, the user didn't want it) — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, rounded like the art, layer Ground).
+  width, dark outline (outer glow off: `outerGlowWidth` 0, the user didn't want it) — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, layer Ground — **square corners**: the rounding is visual only, the game has no slopes).
 - Floor depth (a pale top face so the floor reads as seen slightly from above, like Ice1) was tried and **rejected**:
   it looked wrong and made walking feel off. Keep the rim flat/side-view.
 - Geometry in `LevelShape` (pure): contours of the air pockets with rock on the right (pinch vertices turn left
@@ -39,7 +39,7 @@ Enemies, projectiles and FX live on Default 0..20, and Default draws BEFORE Back
 those layers hid every enemy (bug seen in the first test). In-front layers and gameplay snow go on Characters.
 
 ## `LevelBiome` (ScriptableObject, one per biome)
-Rock texture/tile size/shadow, corner radius, rim widths (floor/wall/ceiling), 4 floor + 4 ceiling band colours,
+Rock texture/tile size/shadow, corner radius (visual only; editing any biome value redraws its levels live via `LevelBiome.Changed`), rim widths (floor/wall/ceiling), 4 floor + 4 ceiling band colours,
 outline, glows, background prefab, particles prefab. Ice: `Assets/Levels/_Biomas/Hielo/Hielo.asset`.
 
 ## `ParallaxBackgroundLayer` (one per background layer)
@@ -75,5 +75,4 @@ with the web sketch layout) · Importar boceto en el nivel (web `*.levelsketch.j
 **Door art**: the Ice1 door was drawn for a floor with depth; on the flat rim it doesn't sit well. Tried a procedural
 snow mound at its base — rejected. Needs new door art made for a flat side-view floor (or Hollow-Knight-style steps +
 press up to enter).
-Slopes (45° cells);
-objects (platform variants, crystals with Light2D) as prefabs; level entry/exit for runs (`SectionEntry/Exit`).
+Objects (platform variants, crystals with Light2D) as prefabs; level entry/exit for runs (`SectionEntry/Exit`).

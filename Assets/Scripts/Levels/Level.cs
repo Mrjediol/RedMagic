@@ -68,11 +68,26 @@ namespace RedMagic.Levels
         private void OnEnable()
         {
             Tilemap.tilemapTileChanged += OnTilesChanged;
+            LevelBiome.Changed += OnBiomeChanged;
             _dirty = true;
             Rebuild();
         }
 
-        private void OnDisable() => Tilemap.tilemapTileChanged -= OnTilesChanged;
+        private void OnDisable()
+        {
+            Tilemap.tilemapTileChanged -= OnTilesChanged;
+            LevelBiome.Changed -= OnBiomeChanged;
+        }
+
+        /// <summary>Tocar un valor del bioma en el Inspector (radio de esquina, colores…) redibuja al momento.</summary>
+        private void OnBiomeChanged(LevelBiome changed)
+        {
+            if (changed != biome) return;
+            _dirty = true;
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
+#endif
+        }
 
         private void OnDestroy()
         {
@@ -165,8 +180,8 @@ namespace RedMagic.Levels
             BuildRock(polygons);
             BuildGlow(polygons);
             BuildRim(polygons, loops, radius);
-            BuildCollision(LevelShape.Loops(IsRock, width, height), radius);
-            BuildPlatforms(LevelShape.Loops(IsPlatform, width, height), radius);
+            BuildCollision(LevelShape.Loops(IsRock, width, height));
+            BuildPlatforms(LevelShape.Loops(IsPlatform, width, height));
         }
 
         private void BuildBackgroundRect()
@@ -256,7 +271,11 @@ namespace RedMagic.Levels
             SetupRenderer(Child(RimName), _rimMesh, _rimMaterial, LevelSorting.Rim);
         }
 
-        private void BuildCollision(List<List<Vector2Int>> loops, float radius)
+        /// <summary>
+        /// Collider de la roca: los vértices de la cuadrícula tal cual, <b>esquinas cuadradas</b>. El redondeo de
+        /// <see cref="LevelBiome.cornerRadius"/> es sólo visual: el juego no tiene superficies inclinadas.
+        /// </summary>
+        private void BuildCollision(List<List<Vector2Int>> loops)
         {
             var col = Child(CollisionName);
             int ground = LayerMask.NameToLayer("Ground");
@@ -265,30 +284,28 @@ namespace RedMagic.Levels
 
             foreach (var loop in loops)
             {
-                var pts = LevelShape.Rounded(loop, radius, 1000f, 4);
-                var path = new List<Vector2>(pts.Count + 1);
-                foreach (var p in pts) path.Add(p.position);
-                path.Add(pts[0].position);
+                var path = new List<Vector2>(loop.Count + 1);
+                foreach (var p in loop) path.Add(p);
+                path.Add(loop[0]);
                 var edge = col.gameObject.AddComponent<EdgeCollider2D>();
                 edge.SetPoints(path);
             }
         }
 
         /// <summary>
-        /// Una plataforma = un objeto en la capa Platform con su PolygonCollider2D (contorno redondeado) y un
-        /// PlatformEffector2D de un solo sentido. Separadas porque el jugador, al dejarse caer, ignora la plataforma
-        /// concreta que pisa (<c>PlayerMovement.TryDropThroughPlatform</c>).
+        /// Una plataforma = un objeto en la capa Platform con su PolygonCollider2D (esquinas cuadradas, como
+        /// la roca) y un PlatformEffector2D de un solo sentido. Separadas porque el jugador, al dejarse caer, ignora la
+        /// plataforma concreta que pisa (<c>PlayerMovement.TryDropThroughPlatform</c>).
         /// </summary>
-        private void BuildPlatforms(List<List<Vector2Int>> loops, float radius)
+        private void BuildPlatforms(List<List<Vector2Int>> loops)
         {
             var root = Child(PlatformsName);
             for (int i = root.childCount - 1; i >= 0; i--) DestroySafe(root.GetChild(i).gameObject);
             int layer = LayerMask.NameToLayer("Platform");
             for (int i = 0; i < loops.Count; i++)
             {
-                var pts = LevelShape.Rounded(loops[i], radius, 1000f, 4);
-                var path = new Vector2[pts.Count];
-                for (int k = 0; k < pts.Count; k++) path[k] = pts[k].position;
+                var path = new Vector2[loops[i].Count];
+                for (int k = 0; k < path.Length; k++) path[k] = loops[i][k];
                 var go = new GameObject("Plataforma " + (i + 1));
                 go.transform.SetParent(root, false);
                 if (layer >= 0) go.layer = layer;

@@ -74,7 +74,7 @@ plataformas de un sentido, red de seguridad (`ValidateGroundContainment`).
 
 Jefes: `BossController` no tiene lógica de rampas (las coincidencias de búsqueda eran "trampa"/`speedRampPerWave`).
 
-### 2.3 ⚠ Bloqueante: el collider del nivel no es cuadrado
+### 2.3 ✅ Collider del nivel cuadrado (hecho 2026-10-11)
 
 `Levels/Level.cs:268` (`BuildCollision`) y `:289` (`BuildPlatforms`) construyen el collider con
 `LevelShape.Rounded(loop, radius, 1000f, 4)`, con `cornerRadius = 0.4` (`Hielo.asset`). Cada esquina — convexa y

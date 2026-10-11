@@ -240,10 +240,10 @@ namespace RedMagic.LevelsEditor
             {
                 root.AddComponent<FollowCameraView>();
                 var game = Snow(root.transform, "Nieve plano", mat, sizes: new Vector2(0.07f, 0.24f), alpha: 0.9f,
-                                rate: 14f, maxParticles: 300, layer: "Characters", order: 20);
+                                rate: 14f, maxParticles: 300, layer: LevelSorting.FrontLayer, order: LevelSorting.GameplaySnow);
                 AddLanding(game, mat);
                 Snow(root.transform, "Nieve fondo", mat, sizes: new Vector2(0.04f, 0.12f), alpha: 0.45f,
-                     rate: 14f, maxParticles: 260, layer: "BackGround", order: 30);
+                     rate: 14f, maxParticles: 260, layer: LevelSorting.Layer, order: LevelSorting.BackgroundSnow);
                 root.AddComponent<SnowSettings>().Apply(); // valores de partida y sitio único para tocarlos
                 return PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             }

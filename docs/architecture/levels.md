@@ -32,6 +32,12 @@ screen height), as forced by `RunManager`.
 - Inner glow is a distance field, NOT ribbons pushed inward from the rim: ribbons fanned out at corners and left
   light wedges (rejected by the user). Thin rock naturally gets less glow.
 
+## Draw order (`LevelSorting`)
+Everything of the level is on sorting layer **Default with negative orders** (project convention for backgrounds):
+parallax -1000+, background snow -600, rock/glow/rim -300/-299/-298, over-terrain objects (doors) -200+, bounds -2000.
+Enemies, projectiles and FX live on Default 0..20, and Default draws BEFORE BackGround/Terrain — putting the level on
+those layers hid every enemy (bug seen in the first test). In-front layers and gameplay snow go on Characters.
+
 ## `LevelBiome` (ScriptableObject, one per biome)
 Rock texture/tile size/shadow, corner radius, rim widths (floor/wall/ceiling), 4 floor + 4 ceiling band colours,
 outline, glows, background prefab, particles prefab. Ice: `Assets/Levels/_Biomas/Hielo/Hielo.asset`.
@@ -41,12 +47,11 @@ Same logic as `parallax-test.html`: size and height offset relative to screen he
 (fraction of camera movement); `repeat` Repeat / Mirror / LevelEnds (once at the level's left end, mirrored at the
 right — wall and door); vertical `anchor` Proportional (spread over the level height: same look for 1000 or 3000 px
 levels) / Ceiling / Floor (move with the world at `verticalSpeed`); `fade` toward `fogColor`; `inFront` draws on
-`Characters` (order 50+); `overTerrain` draws on `Terrain` order 20+ (above the rim, behind the player — doors). Doors also
+`Characters` (order 50+); `overTerrain` draws above the rim and behind enemies/player (doors). Doors also
 use `sitOnGround` (LevelEnds: base placed on `Level.GroundTop` at each end, Altura = fine offset) and `castShadow`
-(sharp silhouette offset into the level, drawn on `BackGround` right above the wall so it lands ON the wall and the
+(sharp silhouette offset toward the level edge (light comes from the level centre), drawn right above the wall so it lands ON the wall and the
 terrain hides it below the floor line — a blurred copy around the door read as dirt and was rejected; plus a soft
-ellipse on the floor, `RedMagic/Parallax Shadow`). `snowDrift`: procedural snow mound (rim colours + outline) over
-the door base, joining the door to the flat floor (attempt; `ConfigureAsDoor` sets all of this). Drawn with its own quad + `RedMagic/Parallax Layer` shader (repeat/mirror in the shader,
+ellipse on the floor, `RedMagic/Parallax Shadow`). `ConfigureAsDoor` sets all of this. Drawn with its own quad + `RedMagic/Parallax Layer` shader (repeat/mirror in the shader,
 gradient sampling so seams don't show a mip line). Needs a `Level` in a parent.
 
 Import: `Tools ▸ RedMagic ▸ Niveles ▸ Importar fondo de parallax (.json)` reads the page's **Exportar escena** file,
@@ -67,5 +72,8 @@ Crear escenas de prueba de hielo (`Assets/Scenes/Test/NivelHielo_{1000,2000,3000
 with the web sketch layout) · Importar boceto en el nivel (web `*.levelsketch.json` → size + painted cells).
 
 ## Pending
+**Door art**: the Ice1 door was drawn for a floor with depth; on the flat rim it doesn't sit well. Tried a procedural
+snow mound at its base — rejected. Needs new door art made for a flat side-view floor (or Hollow-Knight-style steps +
+press up to enter).
 Slopes (45° cells);
 objects (platform variants, crystals with Light2D) as prefabs; level entry/exit for runs (`SectionEntry/Exit`).

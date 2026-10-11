@@ -64,17 +64,11 @@ MonoBehaviour:
   sortingOrder: 6
   castShadow: 1
   shadowColor: {r: 0.01, g: 0.04, b: 0.12, a: 0.5}
-  shadowOffset: {x: 0.55, y: 0.1}
+  shadowOffset: {x: -0.55, y: 0.1}
   shadowSoftness: 0.12
   groundShadowWidth: 1.6
   groundShadowHeight: 0.5
   groundShadowOpacity: 0.35
-  snowDrift: 1
-  driftWidth: 1.45
-  driftHeight: 0.42
-  driftTop: {r: 1, g: 1, b: 1, a: 1}
-  driftBottom: {r: 0.5882353, g: 0.8235294, b: 0.95686275, a: 1}
-  driftOutline: {r: 0.015686275, g: 0.06666667, b: 0.16470589, a: 1}
 --- !u!1 &3042543331848564041
 GameObject:
   m_ObjectHideFlags: 0
@@ -144,12 +138,6 @@ MonoBehaviour:
   groundShadowWidth: 1.3
   groundShadowHeight: 0.45
   groundShadowOpacity: 0.6
-  snowDrift: 0
-  driftWidth: 1.45
-  driftHeight: 0.42
-  driftTop: {r: 1, g: 1, b: 1, a: 1}
-  driftBottom: {r: 0.5882353, g: 0.8235294, b: 0.95686275, a: 1}
-  driftOutline: {r: 0.015686275, g: 0.06666667, b: 0.16470589, a: 1}
 --- !u!1 &3068961048518809966
 GameObject:
   m_ObjectHideFlags: 0
@@ -219,12 +207,6 @@ MonoBehaviour:
   groundShadowWidth: 1.3
   groundShadowHeight: 0.45
   groundShadowOpacity: 0.6
-  snowDrift: 0
-  driftWidth: 1.45
-  driftHeight: 0.42
-  driftTop: {r: 1, g: 1, b: 1, a: 1}
-  driftBottom: {r: 0.5882353, g: 0.8235294, b: 0.95686275, a: 1}
-  driftOutline: {r: 0.015686275, g: 0.06666667, b: 0.16470589, a: 1}
 --- !u!1 &4487395886422526573
 GameObject:
   m_ObjectHideFlags: 0
@@ -294,12 +276,6 @@ MonoBehaviour:
   groundShadowWidth: 1.3
   groundShadowHeight: 0.45
   groundShadowOpacity: 0.6
-  snowDrift: 0
-  driftWidth: 1.45
-  driftHeight: 0.42
-  driftTop: {r: 1, g: 1, b: 1, a: 1}
-  driftBottom: {r: 0.5882353, g: 0.8235294, b: 0.95686275, a: 1}
-  driftOutline: {r: 0.015686275, g: 0.06666667, b: 0.16470589, a: 1}
 --- !u!1 &4788031873096802469
 GameObject:
   m_ObjectHideFlags: 0
@@ -407,12 +383,6 @@ MonoBehaviour:
   groundShadowWidth: 1.3
   groundShadowHeight: 0.45
   groundShadowOpacity: 0.6
-  snowDrift: 0
-  driftWidth: 1.45
-  driftHeight: 0.42
-  driftTop: {r: 1, g: 1, b: 1, a: 1}
-  driftBottom: {r: 0.5882353, g: 0.8235294, b: 0.95686275, a: 1}
-  driftOutline: {r: 0.015686275, g: 0.06666667, b: 0.16470589, a: 1}
 --- !u!1 &5245115941643517386
 GameObject:
   m_ObjectHideFlags: 0
@@ -482,12 +452,6 @@ MonoBehaviour:
   groundShadowWidth: 1.3
   groundShadowHeight: 0.45
   groundShadowOpacity: 0.6
-  snowDrift: 0
-  driftWidth: 1.45
-  driftHeight: 0.42
-  driftTop: {r: 1, g: 1, b: 1, a: 1}
-  driftBottom: {r: 0.5882353, g: 0.8235294, b: 0.95686275, a: 1}
-  driftOutline: {r: 0.015686275, g: 0.06666667, b: 0.16470589, a: 1}
 --- !u!1 &7289151366941829720
 GameObject:
   m_ObjectHideFlags: 0
@@ -557,9 +521,3 @@ MonoBehaviour:
   groundShadowWidth: 1.3
   groundShadowHeight: 0.45
   groundShadowOpacity: 0.6
-  snowDrift: 0
-  driftWidth: 1.45
-  driftHeight: 0.42
-  driftTop: {r: 1, g: 1, b: 1, a: 1}
-  driftBottom: {r: 0.5882353, g: 0.8235294, b: 0.95686275, a: 1}
-  driftOutline: {r: 0.015686275, g: 0.06666667, b: 0.16470589, a: 1}

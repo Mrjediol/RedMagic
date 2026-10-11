@@ -47,8 +47,6 @@ namespace RedMagic.Levels
                  "bajar de ellas (capa Platform, una por plataforma). Opcional.")]
         [SerializeField] private Tilemap platforms;
 
-        [Tooltip("Orden de dibujo (capa Terrain) de la roca; el borde va justo encima.")]
-        [SerializeField] private int sortingOrder = 2;
 
         public int Width => width;
         public int Height => height;
@@ -184,8 +182,8 @@ namespace RedMagic.Levels
             if (!bg.TryGetComponent<SpriteRenderer>(out var sr)) sr = bg.gameObject.AddComponent<SpriteRenderer>();
             sr.sprite = _bgSprite;
             sr.color = new Color(1f, 1f, 1f, 0f);
-            sr.sortingLayerName = "BackGround";
-            sr.sortingOrder = -1000;
+            sr.sortingLayerName = LevelSorting.Layer;
+            sr.sortingOrder = LevelSorting.Bounds;
             bg.localPosition = Vector3.zero;
             bg.localScale = new Vector3(width, height, 1f);
         }
@@ -202,7 +200,7 @@ namespace RedMagic.Levels
             var shader = biome.rockShader != null ? biome.rockShader : Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
             _rockMaterial = GetMaterial(ref _rockMaterial, shader, "LevelRock");
             _rockMaterial.mainTexture = biome.rockTexture;
-            SetupRenderer(Child(RockName), _rockMesh, _rockMaterial, sortingOrder);
+            SetupRenderer(Child(RockName), _rockMesh, _rockMaterial, LevelSorting.Rock);
         }
 
         private void BuildRim(List<List<Vector2>> polygons, List<List<Vector2Int>> loops, float radius)
@@ -255,7 +253,7 @@ namespace RedMagic.Levels
             _rimMesh = Assign(_rimMesh, "LevelRim", verts, tris, null, cols);
             var shader = biome.rimShader != null ? biome.rimShader : Shader.Find("RedMagic/Fx Vertex Color");
             _rimMaterial = GetMaterial(ref _rimMaterial, shader, "LevelRim");
-            SetupRenderer(Child(RimName), _rimMesh, _rimMaterial, sortingOrder + 2);
+            SetupRenderer(Child(RimName), _rimMesh, _rimMaterial, LevelSorting.Rim);
         }
 
         private void BuildCollision(List<List<Vector2Int>> loops, float radius)
@@ -362,7 +360,7 @@ namespace RedMagic.Levels
             _glowMesh = Assign(_glowMesh, "LevelGlow", verts, new List<int> { 0, 2, 1, 0, 3, 2 }, uvs, cols);
             _glowMaterial = GetMaterial(ref _glowMaterial, Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default"), "LevelGlow");
             _glowMaterial.mainTexture = _glowTexture;
-            SetupRenderer(Child(GlowName), _glowMesh, _glowMaterial, sortingOrder + 1);
+            SetupRenderer(Child(GlowName), _glowMesh, _glowMaterial, LevelSorting.Glow);
         }
 
         private static bool Contains(List<Vector2> poly, Vector2 p)
@@ -491,7 +489,7 @@ namespace RedMagic.Levels
             if (!child.TryGetComponent<MeshRenderer>(out var mr)) mr = child.gameObject.AddComponent<MeshRenderer>();
             mf.sharedMesh = mesh;
             mr.sharedMaterial = material;
-            mr.sortingLayerName = "Terrain";
+            mr.sortingLayerName = LevelSorting.Layer;
             mr.sortingOrder = order;
         }
 

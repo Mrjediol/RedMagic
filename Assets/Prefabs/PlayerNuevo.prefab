@@ -1,0 +1,782 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2847971829499809251
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1474754931631391687}
+  - component: {fileID: 6993797815450466073}
+  - component: {fileID: 6594863532248937213}
+  m_Layer: 0
+  m_Name: Sprite
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1474754931631391687
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2847971829499809251}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.19, y: 0.187, z: 0}
+  m_LocalScale: {x: 0.19076107, y: 0.19076107, z: 0.15934159}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 9142995706599735733}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &6993797815450466073
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2847971829499809251}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: -1541402115
+  m_SortingLayer: 3
+  m_SortingOrder: 10
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: -1808982527863717971, guid: 076d5edf98fd12043b41947571e54b8d, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1.28, y: 1.62}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
+--- !u!95 &6594863532248937213
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2847971829499809251}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e90f4eaf844b3a441bff7777008c4702, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!1 &8299514448751579472
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9142995706599735733}
+  - component: {fileID: 6277826650155392113}
+  - component: {fileID: 6836520738670755875}
+  - component: {fileID: 6750222921504065963}
+  - component: {fileID: 4708313564779615468}
+  - component: {fileID: 9085093805848026262}
+  - component: {fileID: 239243958890423150}
+  - component: {fileID: 3132323936175055123}
+  - component: {fileID: 4453806307868493049}
+  - component: {fileID: 3995897194701916887}
+  - component: {fileID: 1473775756030360518}
+  - component: {fileID: 8475271277335673988}
+  - component: {fileID: 3452199481863186579}
+  - component: {fileID: 7356258496195605434}
+  - component: {fileID: 7483600060583956546}
+  m_Layer: 0
+  m_Name: PlayerNuevo
+  m_TagString: Player
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9142995706599735733
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1474754931631391687}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!50 &6277826650155392113
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_BodyType: 2
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 1
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 1
+  m_Constraints: 4
+--- !u!61 &6836520738670755875
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.08}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 0.6, y: 1.74}
+  m_EdgeRadius: 0
+--- !u!114 &6750222921504065963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ed19a26ed8fe1a4585cf1652e42f4c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Health
+  maxHealth: 4000
+  currentHealth: 4000
+  invulnerable: 0
+  damageMultiplier: 1
+  invulnerabilityDuration: 0.8
+  invulnerabilityUsesUnscaledTime: 0
+  lowHealthThreshold: 0.25
+--- !u!114 &4708313564779615468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2834dccf877e154e8542123d8a6320f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Knockback
+  horizontalForce: 10
+  verticalForce: 14
+  duration: 0.22
+  resistance: 0
+  immune: 0
+--- !u!114 &9085093805848026262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 149b2f6ad9846b2459f53db66c4872ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.HitFlash
+  flashColor: {r: 1, g: 0.35, b: 0.35, a: 1}
+  flashDuration: 0.1
+  blinkWhileInvulnerable: 1
+  blinkInterval: 0.06
+  blinkAlpha: 0.35
+--- !u!114 &239243958890423150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f1fa4864a6c5594696e15dd36fe645b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerMovement
+  inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
+  actionMapName: Player
+  moveActionName: Move
+  jumpActionName: Jump
+  dashActionName: Dash
+  footstepInterval: 0.32
+  landMinAirTime: 0.15
+  _groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  _detectorCount: 3
+  _detectionRayLength: 0.1
+  _rayBuffer: 0.1
+  enableSlopes: 0
+  maxSlopeAngle: 80
+  slopeCheckDistance: 0.35
+  slopeSnapDistance: 0.35
+  _platformLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  allowDropThrough: 1
+  dropThroughDuration: 1.5
+  enableStepUp: 1
+  stepThresholdHeight: 0.4
+  debugStepUp: 0
+  groundIsImpassable: 1
+  groundStepMinFaceAngle: 85
+  groundClampInset: 0.04
+  groundClampMaxPush: 1.5
+  debugGroundClamp: 0
+  _acceleration: 90
+  _moveClamp: 13
+  _deAcceleration: 60
+  _apexBonus: 2
+  _fallClamp: -40
+  _minFallSpeed: 80
+  _maxFallSpeed: 120
+  _jumpHeight: 30
+  _jumpApexThreshold: 10
+  _coyoteTimeThreshold: 0.1
+  _jumpBuffer: 0.1
+  _jumpEndEarlyGravityModifier: 3
+  maxAirJumps: 1
+  airJumpHeight: 0
+  allowDash: 1
+  dashSpeed: 26
+  dashDuration: 0.18
+  dashCooldown: 0.55
+  maxAirDashes: 1
+  dashIgnoresGravity: 1
+  _freeColliderIterations: 10
+  snapToGround: 1
+  groundSkin: 0.01
+  solverSkin: 0.06
+--- !u!114 &3132323936175055123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0146ce5744c2204497376203c7aef65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerDashCombat
+  startInvulnerability: 0.06
+  passThroughLookAhead: 1.2
+  hitPadding: 0.25
+  testDamage: 0
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  hitEffect: {fileID: 6212086469215316062, guid: 90e7f001fdc59c045994dee695cb1b0b, type: 3}
+--- !u!114 &4453806307868493049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60200dfc898d9154e9675470a2a28c34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerAnimator
+  animator: {fileID: 6594863532248937213}
+--- !u!114 &3995897194701916887
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52741b71fea6e6e479570d8b2f0d212d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerVfx
+  dashEffect: {fileID: 8715186467154088323, guid: daf7fceab035da04da57144142b3cef6, type: 3}
+  dashEffectOffset: {x: 0, y: 0}
+  dashEffectSize: 1
+  jumpEffect: {fileID: 2629817948170733221, guid: 169535fd5454da44cb4eeace65c44cbd, type: 3}
+  jumpEffectOffset: {x: 0, y: -0.25}
+  jumpEffectSize: 0.6
+  doubleJumpEffect: {fileID: 945700494345746566, guid: 429acab2c3554994dbf92e0c6e897a77, type: 3}
+  doubleJumpEffectOffset: {x: 0, y: -0.65}
+  doubleJumpEffectSize: 1
+--- !u!114 &1473775756030360518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a25cfbe258b33f94ea1784802d025799, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerAttack
+  inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
+  actionMapName: Player
+  attackActionName: Attack
+  damage: 25
+  combo:
+  - label: "1 \xB7 Descendente"
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: 0
+    reverse: 0
+    power: 1.05
+    offset: {x: 0.25, y: 0.15}
+    stretch: {x: 1.05, y: 1.25}
+    damageMultiplier: 1
+    knockbackMultiplier: 0.08
+    windup: 0.03
+    recovery: 0.32
+  - label: "2 \xB7 Ascendente"
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: 15
+    reverse: 1
+    power: 1.05
+    offset: {x: 0.25, y: 0.05}
+    stretch: {x: 1.05, y: 1.25}
+    damageMultiplier: 1
+    knockbackMultiplier: 0.08
+    windup: 0.04
+    recovery: 0.34
+  - label: "3 \xB7 Diagonal amplio"
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: 35
+    reverse: 0
+    power: 1.15
+    offset: {x: 0.35, y: 0.15}
+    stretch: {x: 1.3, y: 1.1}
+    damageMultiplier: 1.6
+    knockbackMultiplier: 0.12
+    windup: 0.12
+    recovery: 0.42
+  - label: "4 \xB7 Vertical ascendente"
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: 0
+    reverse: 1
+    power: 1.3
+    offset: {x: 0.5, y: 0.4}
+    stretch: {x: 1.15, y: 1.45}
+    damageMultiplier: 1.2
+    knockbackMultiplier: 0.1
+    windup: 0.05
+    recovery: 0.34
+  - label: "5 \xB7 Gran remate"
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: 20
+    reverse: 1
+    power: 1.6
+    offset: {x: 0.7, y: 0.4}
+    stretch: {x: 1.6, y: 0.85}
+    damageMultiplier: 2.6
+    knockbackMultiplier: 0.2
+    windup: 0.2
+    recovery: 0.5
+  airCombo: []
+  unlockedHits: 5
+  chainWindow: 0.35
+  inputBuffer: 0.2
+  comboCooldown: 0.35
+  interruptFade: 0.06
+  diveEnabled: 1
+  diveSpeed: 26
+  diveAngle: 60
+  diveContactMultiplier: 1.2
+  diveImpactMultiplier: 2.5
+  diveImpactRadius: 2.2
+  diveTrail: {fileID: 1634751481077949723, guid: b7cd57fb948483c47880c9ad71bd58a5, type: 3}
+  diveGroundImpact: {fileID: 5002810239131722341, guid: 6fa7f0f998485d64693a0d41797b0067, type: 3}
+  diveHitEffect: {fileID: 6212086469215316062, guid: 90e7f001fdc59c045994dee695cb1b0b, type: 3}
+  dashHit:
+    label: Dash
+    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
+    rotation: 0
+    reverse: 0
+    power: 0.95
+    offset: {x: 0.7, y: 0}
+    stretch: {x: 2, y: 0.45}
+    damageMultiplier: 1.4
+    knockbackMultiplier: 0.1
+    windup: 0
+    recovery: 0.25
+  dashGrace: 0.12
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  drawGizmo: 0
+--- !u!114 &8475271277335673988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 097f3ea27ea465644aed9d7d214232f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerParry
+  inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
+  actionMapName: Player
+  parryActionName: Parry
+  startup: 0
+  window: 0.12
+  missCooldown: 4
+  successCooldown: 0
+  parryProjectiles: 1
+  parryMelee: 1
+  frontOnly: 0
+  catchCenterOffset: {x: 0, y: 0.1}
+  catchRadius: 1
+  hitStopDuration: 0.08
+  hitStopTimeScale: 0.05
+  graceAfterSuccess: 0.25
+  airReward: 1
+  airJumpsRefund: 1
+  airDashesRefund: 1
+  resetDashCooldown: 1
+  stackBeyondMax: 0
+  airBounce: 0
+  reflectDamage: 0
+  reflectMultiplier: 1
+  reflectFromProjectiles: 1
+  reflectFromMelee: 1
+  reflectKnockback: 1
+  parryEffect: {fileID: 0}
+  successEffect: {fileID: 0}
+  reflectEffect: {fileID: 0}
+  effectOffset: {x: 0.55, y: 0.1}
+  auraColor: {r: 1, g: 0.12, b: 0.16, a: 1}
+  silhouetteMaterial: {fileID: 2100000, guid: 1a802b8bc803db243a2a1f259799ceab, type: 2}
+  glowMaterial: {fileID: 2100000, guid: 4d69835d7ad47404f90aee19723a5f8b, type: 2}
+  outlineWidth: 0.07
+  auraSize: 3.2
+  auraIntensity: 0.75
+  bodyTint: 0.35
+  visualHold: 0.18
+  visualFade: 0.3
+  drawGizmo: 0
+--- !u!114 &3452199481863186579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7915b000cdaf5d4987f2ffb907860da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponUser
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  releaseDelay: 0.28
+  previewWeapon: {fileID: 11400000, guid: 646ccef625a76464a8886b4ce55cc056, type: 2}
+  previewWhenPlayerSelected: 0
+  alwaysShowPreview: 0
+  inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
+  actionMapName: Player
+  attackActionName: Attack
+  useTouchButton: 1
+--- !u!114 &7356258496195605434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70116179f72527a42ab36158c004de7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.LegendaryPassiveStatHook
+--- !u!114 &7483600060583956546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e7509053f7d33041993a6e2142f35c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Audio.SoundEmitter
+  soundEvents:
+  - trigger: 4
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 2003ffb7399335544afb004fb81d2623, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  - trigger: 5
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 2003ffb7399335544afb004fb81d2623, type: 3}
+      volume: 1
+      pitchMin: 1.1
+      pitchMax: 1.1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  - trigger: 6
+    cue:
+      clips:
+      - {fileID: 8300000, guid: a79bc298b9edb8647a967201931790e8, type: 3}
+      volume: 0.8
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  - trigger: 7
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 75a92ff837abffb46b22a39bc760e436, type: 3}
+      - {fileID: 8300000, guid: 552fdeb2cdf14e84f82a19475b313d4c, type: 3}
+      - {fileID: 8300000, guid: 1bad6106a706537479bf650a24b489e9, type: 3}
+      volume: 1
+      pitchMin: 0.95
+      pitchMax: 1.05
+      noRepeatLast: 1
+      priority: 0
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  - trigger: 1
+    cue:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 1
+  - trigger: 3
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9d0864ce49035c8418b3f129ad3d8be1, type: 3}
+      volume: 1
+      pitchMin: 0.38
+      pitchMax: 0.38
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  - trigger: 2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 4d3e953ba54855b469a9f0078cc4d68b, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  - trigger: 17
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9899a8b842353ac41875f7e28f5189f9, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  - trigger: 12
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 040621a3f54421044b827597bea43977, type: 3}
+      volume: 0.8
+      pitchMin: 0.88
+      pitchMax: 1.12
+      noRepeatLast: 1
+      priority: 0
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  - trigger: 11
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 401dd408598fab949994b690ab50f2c0, type: 3}
+      volume: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  - trigger: 18
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9bc5a46246705544fae004eacc7902d1, type: 3}
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 2
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  - trigger: 13
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 54291057a172f0043b5e5d492a4e9720, type: 3}
+      volume: 1
+      pitchMin: 0.94
+      pitchMax: 1.06
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 8
+      rolloffEnd: 24
+      initialized: 1
+    silent: 0
+  useGenericFallback: 1

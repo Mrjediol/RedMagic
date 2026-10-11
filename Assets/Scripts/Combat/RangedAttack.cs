@@ -88,7 +88,7 @@ namespace RedMagic.Combat
         [SerializeField] private float verticalTolerance = 2.5f;
 
         [Header("Depuración")]
-        [SerializeField] private bool drawGizmos = true;
+        [SerializeField] private bool drawGizmos;
 
         private PlayerMovement _movement;
         private SpriteRenderer _sprite;

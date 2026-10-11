@@ -158,7 +158,7 @@ namespace RedMagic.Gameplay
         [SerializeField] private float visualFade = 0.3f;
 
         [Header("Depuración")]
-        [SerializeField] private bool drawGizmo = true;
+        [SerializeField] private bool drawGizmo;
 
         private PlayerMovement _movement;
         private Health _health;

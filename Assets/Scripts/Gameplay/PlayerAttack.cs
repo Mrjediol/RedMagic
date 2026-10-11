@@ -117,7 +117,7 @@ namespace RedMagic.Gameplay
 
         [Header("Depuración")]
         [Tooltip("Dibuja el alcance del golpe actual en la vista de escena.")]
-        [SerializeField] private bool drawGizmo = true;
+        [SerializeField] private bool drawGizmo;
 
         private PlayerMovement _movement;
         private PlayerAnimator _animator;

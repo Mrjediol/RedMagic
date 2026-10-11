@@ -17,6 +17,11 @@ namespace RedMagic.Gameplay
     ///  - Dashing (Bool)    mientras dura el dash
     ///  - DoubleJump (Trigger) al gastar un salto en el aire
     ///  - Interact (Trigger) lo dispara el interactuable que se está usando (ver <see cref="TriggerInteract"/>)
+    ///
+    /// También voltea el dibujo alrededor del <b>centro del jugador</b> (su origen = centro de la caja), no del pivote
+    /// del sprite: <c>flipX</c> espeja sobre el pivote, y como el cuerpo no está centrado en él (cola a un lado,
+    /// mochila al otro) al darse la vuelta saltaba de sitio y dejaba de coincidir con la caja. Se coloca el hijo
+    /// <c>Sprite</c> mirando a la derecha con el cuerpo sobre el origen, y al voltear se refleja también su X.
     /// </summary>
     [DisallowMultipleComponent]
     public class PlayerAnimator : MonoBehaviour
@@ -26,6 +31,8 @@ namespace RedMagic.Gameplay
 
         private PlayerMovement _movement;
         private Health _health;
+        private SpriteRenderer _sprite;
+        private float _spriteRightX;   // X local del hijo Sprite mirando a la derecha (la del prefab)
 
         private static readonly int SpeedKey = Animator.StringToHash("Speed");
         private static readonly int VSpeedKey = Animator.StringToHash("VSpeed");
@@ -45,6 +52,10 @@ namespace RedMagic.Gameplay
             if (animator == null) animator = GetComponentInChildren<Animator>();
             _movement = GetComponent<PlayerMovement>();
             _health = GetComponent<Health>();
+
+            _sprite = animator != null ? animator.GetComponent<SpriteRenderer>() : GetComponentInChildren<SpriteRenderer>();
+            if (_sprite != null && _sprite.transform != transform) _spriteRightX = _sprite.transform.localPosition.x;
+            else _sprite = null;   // el sprite en la raíz no se puede reflejar moviéndolo
 
             if (animator == null)
                 Debug.LogWarning("[PlayerAnimator] No hay Animator ni en este objeto ni en sus hijos.", this);
@@ -90,6 +101,15 @@ namespace RedMagic.Gameplay
             animator.SetFloat(VSpeedKey, raw.y);
             animator.SetBool(GroundedKey, _movement.IsGrounded);
             animator.SetBool(DashingKey, _movement.IsDashing);
+        }
+
+        // LateUpdate: después de todo lo que escribe flipX este frame (movimiento, dash, disparo…).
+        private void LateUpdate()
+        {
+            if (_sprite == null) return;
+            var p = _sprite.transform.localPosition;
+            p.x = _sprite.flipX ? -_spriteRightX : _spriteRightX;
+            _sprite.transform.localPosition = p;
         }
 
         private void OnAirJumped()

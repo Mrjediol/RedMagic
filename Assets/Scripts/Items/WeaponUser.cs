@@ -63,6 +63,10 @@ namespace RedMagic.Items
                  "(Muzzle Offset). En Play se dibuja el arma equipada. Vacío = sólo en Play.")]
         [SerializeField] private WeaponDefinition previewWeapon;
 
+        [Tooltip("Dibujar la vista previa también al seleccionar el JUGADOR. Apagado, sólo sale al seleccionar el " +
+                 "asset del arma (o con 'Always Show Preview').")]
+        [SerializeField] private bool previewWhenPlayerSelected;
+
         [Tooltip("Dibujar la vista previa siempre, aunque no esté seleccionado nada.")]
         [SerializeField] private bool alwaysShowPreview;
 
@@ -476,6 +480,7 @@ namespace RedMagic.Items
         private bool PreviewSelected(WeaponDefinition weapon)
         {
             if (UnityEditor.Selection.activeObject == weapon) return true;
+            if (!previewWhenPlayerSelected) return false;
             foreach (var t in UnityEditor.Selection.transforms)
                 if (t == transform || t.IsChildOf(transform)) return true;
             return false;

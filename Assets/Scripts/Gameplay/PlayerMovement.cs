@@ -34,7 +34,7 @@ namespace RedMagic.Gameplay
     /// de colisión / trigger a los enemigos, proyectiles y zonas de daño.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    [RequireComponent(typeof(Collider2D))]
+    [RequireComponent(typeof(BoxCollider2D))]
     [DisallowMultipleComponent]
     public class PlayerMovement : MonoBehaviour, IKnockbackReceiver, ISoundEventSource, ICooldownSource
     {
@@ -168,9 +168,23 @@ namespace RedMagic.Gameplay
 
         // ---------------------------------------------------------------- colisión
 
+        // La caja del personaje es UNA: su BoxCollider2D (offset + tamaño). Con ella se mueve, se apoya, choca y
+        // recibe golpes. Se ajusta con el botón "Edit Collider" del BoxCollider2D, no aquí.
+        private BoxCollider2D _box;
+
+        private Bounds Box
+        {
+            get
+            {
+                if (_box == null) _box = GetComponent<BoxCollider2D>();
+                return _box != null ? new Bounds(_box.offset, _box.size) : new Bounds(Vector3.zero, new Vector3(0.6f, 1.6f));
+            }
+        }
+
+        /// <summary>La caja del personaje en mundo si estuviera en <paramref name="position"/>.</summary>
+        private Bounds BodyAt(Vector3 position) => new Bounds(position + Box.center, Box.size);
+
         [Header("COLLISION")]
-        [Tooltip("Caja del personaje para los sensores. Si se deja a cero se toma del Collider2D.")]
-        [SerializeField] private Bounds _characterBounds = new Bounds(Vector3.zero, new Vector3(0.7f, 1.5f, 0f));
         [SerializeField] private LayerMask _groundLayer;
         [SerializeField] private int _detectorCount = 3;
         [SerializeField] private float _detectionRayLength = 0.1f;
@@ -473,9 +487,6 @@ namespace RedMagic.Gameplay
             // cuerpo dormido deja de reportarlos, y estar quieto apoyado contra un escalón es
             // exactamente el caso en el que hacen falta.
             _body.sleepMode = RigidbodySleepMode2D.NeverSleep;
-
-            if (_characterBounds.size == Vector3.zero && _collider != null)
-                _characterBounds = new Bounds(_collider.offset, _collider.bounds.size);
 
             RebuildGroundFilter();
 
@@ -813,7 +824,7 @@ namespace RedMagic.Gameplay
 
         private void CalculateRayRanged()
         {
-            var b = new Bounds(transform.position, _characterBounds.size);
+            var b = BodyAt(transform.position);
 
             // Los rayos de suelo cubren el MISMO ancho que la caja del barrido (encogida 'solverSkin'), no
             // '_rayBuffer' hacia dentro: si no, en el borde de una esquina cuadrada la caja se apoya en el
@@ -915,7 +926,7 @@ namespace RedMagic.Gameplay
                 : (_currentHorizontalSpeed != 0f ? (int)Mathf.Sign(_currentHorizontalSpeed) : 0);
             if (dir == 0) return;
 
-            var b = new Bounds(transform.position, _characterBounds.size);
+            var b = BodyAt(transform.position);
             float thresholdY = b.min.y + stepThresholdHeight;
 
             bool blockedAboveThreshold = false;
@@ -1032,7 +1043,7 @@ namespace RedMagic.Gameplay
             // 20 que a 300 FPS.
             bool fresh = Time.time - _stepContactTime <= Mathf.Max(Time.fixedDeltaTime, Time.deltaTime) * 2f;
 
-            var b = new Bounds(transform.position, _characterBounds.size);
+            var b = BodyAt(transform.position);
             float lift = _stepSurfaceY + groundSkin - b.min.y;
 
             // Se acumula el motivo del rechazo en vez de salir en silencio: cuando esto falla, lo
@@ -1244,7 +1255,7 @@ namespace RedMagic.Gameplay
                 return;
             }
 
-            float headY = transform.position.y + _characterBounds.center.y + _characterBounds.extents.y;
+            float headY = transform.position.y + Box.center.y + Box.extents.y;
             if (headY < _dropCollider.bounds.min.y) ClearDropThrough();
         }
 
@@ -1515,9 +1526,9 @@ namespace RedMagic.Gameplay
             // En rampa además se le sube la base: la caja es plana y la cuesta no, así que su
             // esquina del lado de subida se mete en el suelo y el barrido lo leía como un muro.
             // Los pies ya los ha colocado ResolveSurface; al barrido sólo le toca ver paredes.
-            var solverSize = (Vector2)_characterBounds.size - Vector2.one * solverSkin;
+            var solverSize = (Vector2)Box.size - Vector2.one * solverSkin;
             solverSize.y -= sweepLift;
-            var solverOffset = new Vector3(0f, sweepLift * 0.5f);
+            var solverOffset = Box.center + new Vector3(0f, sweepLift * 0.5f);
 
             // Barrido REAL del trayecto contra la capa Ground, antes de aplicar nada. El resolvedor
             // de abajo sólo mira el punto de destino, así que por sí solo deja pasar cualquier paso
@@ -1720,9 +1731,9 @@ namespace RedMagic.Gameplay
         {
             float lift = Mathf.Max(0f, _sweepLift);
 
-            size = (Vector2)_characterBounds.size - Vector2.one * groundClampInset;
+            size = (Vector2)Box.size - Vector2.one * groundClampInset;
             size.y = Mathf.Max(0.05f, size.y - lift);
-            center = (Vector2)(position + _characterBounds.center) + Vector2.up * (lift * 0.5f);
+            center = (Vector2)(position + Box.center) + Vector2.up * (lift * 0.5f);
         }
 
         /// <summary>
@@ -1754,7 +1765,7 @@ namespace RedMagic.Gameplay
 
             // Un teletransporte (cambio de sección, respawn) no es un cruce: se reancla y ya.
             // Cualquier frame legítimo se mueve muchísimo menos que esto.
-            float teleport = Mathf.Max(4f, _characterBounds.size.y * 3f);
+            float teleport = Mathf.Max(4f, Box.size.y * 3f);
             if ((current - _lastSafePosition).sqrMagnitude > teleport * teleport)
             {
                 _lastSafePosition = current;
@@ -1802,15 +1813,15 @@ namespace RedMagic.Gameplay
         /// </summary>
         private bool CrossedGround(Vector3 from, Vector3 to)
         {
-            var a = (Vector2)(from + _characterBounds.center);
-            var b = (Vector2)(to + _characterBounds.center);
+            var a = (Vector2)(from + Box.center);
+            var b = (Vector2)(to + Box.center);
             if ((b - a).sqrMagnitude <= 0.000001f) return false;
 
             if (Physics2D.Linecast(a, b, _groundFilter, _groundCasts) == 0) return false;
 
             // ¿Sigue habiendo superficie pisable justo debajo? Entonces se ha pasado por encima de
             // ella (cresta, lomo), que es movimiento legítimo.
-            float reach = _characterBounds.extents.y + _detectionRayLength + groundSkin;
+            float reach = Box.extents.y + _detectionRayLength + groundSkin;
             if (Physics2D.Raycast(b, Vector2.down, _groundFilter, _groundCasts, reach) > 0)
             {
                 for (int i = 0; i < _groundCasts.Count; i++)
@@ -2007,7 +2018,7 @@ namespace RedMagic.Gameplay
                 // A partir de ~70° 'sweepLift' crece muy rápido (tan diverge) y sin este tope podía
                 // comerse toda la altura de 'solverSize' en MoveCharacter y dejarla en 0 o negativa,
                 // lo que rompe el OverlapBox del barrido. Se deja siempre medio cuerpo de margen.
-                sweepLift = Mathf.Min(sweepLift, _characterBounds.size.y * 0.5f - solverSkin);
+                sweepLift = Mathf.Min(sweepLift, Box.size.y * 0.5f - solverSkin);
             }
 
             if (debugStepUp) DebugReportSurfaceLift(move, feetY, rise, bestSurfaceY);
@@ -2112,16 +2123,26 @@ namespace RedMagic.Gameplay
             };
         }
 
-        private void OnDrawGizmos()
+        /// <summary>
+        /// Sólo con el jugador seleccionado. La caja ya la dibuja Unity (contorno verde del BoxCollider2D); aquí
+        /// sólo los sensores: rayos de pies (verdes si pisa suelo, azules si no) y laterales/cabeza (azules).
+        /// </summary>
+        private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireCube(transform.position + _characterBounds.center, _characterBounds.size);
+            if (!Application.isPlaying) CalculateRayRanged();
+            foreach (var range in new[] { _raysUp, _raysRight, _raysDown, _raysLeft })
+            {
+                bool feet = range.Dir == Vector2.down;
+                Gizmos.color = feet && _colDown ? Color.green : Color.blue;
+                foreach (var point in EvaluateRayPositions(range))
+                    Gizmos.DrawRay(point, range.Dir * _detectionRayLength);
+            }
 
             if (debugStepUp)
             {
                 // Línea de los pies y línea del umbral: todo contacto que caiga entre las dos es
                 // escalón, todo el que caiga por encima de la amarilla es pared.
-                var stepBounds = new Bounds(transform.position, _characterBounds.size);
+                var stepBounds = BodyAt(transform.position);
                 float margin = 0.25f;
                 Gizmos.color = Color.cyan;
                 Gizmos.DrawLine(new Vector3(stepBounds.min.x - margin, stepBounds.min.y),
@@ -2141,26 +2162,6 @@ namespace RedMagic.Gameplay
                 Gizmos.DrawWireCube(_lastClampCenter, _lastClampSize);
                 Gizmos.DrawRay((Vector3)(_lastClampCenter - _lastClampPush), _lastClampPush);
             }
-
-            if (!Application.isPlaying)
-            {
-                CalculateRayRanged();
-                Gizmos.color = Color.blue;
-                foreach (var range in new List<RayRange> { _raysUp, _raysRight, _raysDown, _raysLeft })
-                    foreach (var point in EvaluateRayPositions(range))
-                        Gizmos.DrawRay(point, range.Dir * _detectionRayLength);
-                return;
-            }
-
-            Gizmos.color = Color.red;
-            var futureMove = (Vector3)ProjectOnSlope(new Vector2(_currentHorizontalSpeed, _currentVerticalSpeed)) * Time.deltaTime;
-            Gizmos.DrawWireCube(transform.position + _characterBounds.center + futureMove, _characterBounds.size);
-
-            if (!_colDown) return;
-
-            // Normal del suelo: verde si la rampa es transitable, roja si actúa como pared.
-            Gizmos.color = _slopeAngle <= maxSlopeAngle ? Color.green : Color.red;
-            Gizmos.DrawRay(new Vector3(transform.position.x, _raysDown.Start.y - _groundDistance), _groundNormal);
         }
     }
 }

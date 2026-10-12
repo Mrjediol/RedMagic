@@ -16,7 +16,7 @@ namespace RedMagic.EditorNiveles
     ///
     /// La leyenda dice qué es cada carácter: capa (<c>terrain</c> = Grid/Terreno, <c>platforms</c> = Grid/Plataformas)
     /// y nombre del tile. Un tipo nuevo de plataforma = un tile nuevo llamado <c>Plataforma…</c> en
-    /// <see cref="LevelSetup.BiomesRoot"/>: la web lo recibe en <c>datos-unity.js</c> y el importador lo busca por nombre.
+    /// <see cref="LevelSetup.BiomesRoot"/>: la web lo recibe en <c>datos-unity.json</c> y el importador lo busca por nombre.
     /// Sin leyenda (formato v1 de la pestaña vieja): <c>#</c> = roca.
     /// </summary>
     public static class LevelSketchFile

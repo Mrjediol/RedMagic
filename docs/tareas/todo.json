@@ -135,7 +135,7 @@
         {
           "id": "editor-niveles",
           "text": "EditorNiveles: editor de niveles web propio + importador en Unity (no dentro de la web ni de Tools ▸ Web)",
-          "note": "Funciona (probado). Falta: el editor web va DENTRO de la web principal (pestaña), no como página suelta.",
+          "note": "Hecho: pestaña 🧱 Niveles en la web + EditorNiveles ▸ Importar nivel… en Unity. Pendiente de prueba.",
           "done": false,
           "doc": "docs/tareas/editor-niveles.md",
           "needs": [
@@ -160,7 +160,7 @@
             {
               "id": "en-4",
               "text": "Mover el editor de niveles a una pestaña de la web principal (Web/RedMagicWeb); Unity sólo el importador en su menú propio",
-              "done": false
+              "done": true
             }
           ]
         },

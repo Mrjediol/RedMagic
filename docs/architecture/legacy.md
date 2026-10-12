@@ -16,7 +16,7 @@ que dependa de Legacy.
 | `Legacy/Run/` + `Legacy/Scripts/Run/` | `PlayerScaleConfig` (escala del jugador por escena; ya no hace falta) |
 | `Legacy/Json/`, `Legacy/LevelsBoceto/` | Pruebas |
 | `Legacy/AdaptivePerformance/` | Ajustes huérfanos del paquete Adaptive Performance (no está instalado) |
-| `Web/legacy/level-sketch.js` | La pestaña vieja 🧱 Boceto de nivel de la web principal (sustituida por `Web/EditorNiveles/`) |
+| `Web/legacy/level-sketch.js`, `Web/legacy/EditorNiveles/` | La pestaña vieja 🧱 Boceto de nivel y la primera página suelta del editor de niveles (sustituidas por la pestaña 🧱 Niveles) |
 | `Resources/Legacy/Abilities/` | Los `AbilityDefinition` (por ruta de Resources, se quedan ahí) |
 
 Nada de Legacy se **autocrea** (`RuntimeInitializeOnLoadMethod` quitado de `AbilityLevelManager`, `AbilityMenuController`, `WeaponUpgradeMenuController` y los HUD viejos): si no lo pone una escena o un prefab, no corre.

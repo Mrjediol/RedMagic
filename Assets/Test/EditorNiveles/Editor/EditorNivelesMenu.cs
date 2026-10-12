@@ -16,7 +16,7 @@ namespace RedMagic.EditorNiveles
     /// Menú propio <b>EditorNiveles ▸ Importar nivel...</b> (en la barra de menús, aparte de Tools): lee un
     /// <c>*.levelsketch.json</c> del editor web y lo vuelca en el nivel de la escena abierta o en una escena nueva.
     /// Reimportar sólo toca tiles, tamaño y bioma; lo añadido a mano en la escena se queda. Al importar también se
-    /// refresca <c>datos-unity.js</c> (valores del bioma para la vista previa web).
+    /// refresca <c>datos-unity.json</c> (valores del bioma para la vista previa web).
     /// </summary>
     public static class EditorNivelesMenu
     {
@@ -24,7 +24,7 @@ namespace RedMagic.EditorNiveles
 
         private static string LastFolder
         {
-            get => EditorPrefs.GetString(LastFolderKey, Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Web", "EditorNiveles", "bocetos")));
+            get => EditorPrefs.GetString(LastFolderKey, Path.GetFullPath(Path.Combine(Application.dataPath, "Levels", "Bocetos")));
             set => EditorPrefs.SetString(LastFolderKey, value);
         }
 
@@ -33,7 +33,7 @@ namespace RedMagic.EditorNiveles
         {
             var sketch = PickSketch();
             if (sketch == null) return;
-            EditorNivelesWebData.Write();
+            EditorNivelesWebData.Write(log: true);
 
             var level = FindOpenLevel();
             if (level != null)

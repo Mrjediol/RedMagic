@@ -11,10 +11,10 @@ using UnityEngine.Tilemaps;
 namespace RedMagic.EditorNiveles
 {
     /// <summary>
-    /// Escribe <c>Web/EditorNiveles/datos-unity.js</c>: los tiles que se pueden pintar y, por bioma, los valores del
-    /// <see cref="LevelBiome"/> y las capas de su fondo de parallax. Así la vista previa web dibuja con lo mismo que
-    /// Unity sin copiar números a mano. Se regenera al abrir el editor web desde el menú.
-    /// (Un .js con <c>window.UNITY_DATA</c> y no un .json porque la página se abre con file:// y no puede hacer fetch.)
+    /// Escribe <c>Web/RedMagicWeb/assets/niveles/datos-unity.json</c> para la pestaña 🧱 Niveles de la web: los tiles
+    /// que se pueden pintar y, por bioma, los valores del <see cref="LevelBiome"/> y las capas de su fondo de parallax
+    /// (texturas por su ruta del proyecto; las sirve el servidor del taller). Así la vista previa dibuja con lo mismo que
+    /// Unity sin copiar números a mano. Se regenera solo al guardar un bioma o su fondo (<see cref="Watcher"/>) y al importar.
     /// </summary>
     public static class EditorNivelesWebData
     {
@@ -42,17 +42,15 @@ namespace RedMagic.EditorNiveles
             public int sortingOrder;
         }
 
-        public static string FilePath => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Web", "EditorNiveles", "datos-unity.js"));
+        public static string FilePath => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Web", "RedMagicWeb", "assets", "niveles", "datos-unity.json"));
 
-        public static void Write()
+        public static void Write(bool log = false)
         {
             var data = new Data { tiles = Tiles(), biomes = Biomes() };
             string json = JsonUtility.ToJson(data, true);
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
-            File.WriteAllText(FilePath,
-                "// Generado por Unity (Tools ▸ EditorNiveles ▸ Actualizar biomas del editor web). No editar a mano.\n" +
-                "window.UNITY_DATA = " + json + ";\n");
-            Debug.Log($"[EditorNiveles] {data.biomes.Length} biomas y {data.tiles.Length} tiles → {FilePath}");
+            File.WriteAllText(FilePath, json);
+            if (log) Debug.Log($"[EditorNiveles] {data.biomes.Length} biomas y {data.tiles.Length} tiles → {FilePath}");
         }
 
         /// <summary>Roca (terreno) y todo tile llamado "Plataforma…" (plataformas): el tipo nuevo aparece solo en la web.</summary>
@@ -107,8 +105,25 @@ namespace RedMagic.EditorNiveles
             return list.ToArray();
         }
 
-        /// <summary>Ruta del asset vista desde <c>Web/EditorNiveles/</c>.</summary>
+        /// <summary>Ruta del asset en el proyecto (Assets/…).</summary>
         private static string WebPath(UnityEngine.Object asset) =>
-            asset == null ? null : "../../" + AssetDatabase.GetAssetPath(asset);
+            asset == null ? null : AssetDatabase.GetAssetPath(asset);
+
+        /// <summary>Guardar un bioma, su fondo o un tile de <see cref="LevelSetup.BiomesRoot"/> rehace el archivo.</summary>
+        private class Watcher : AssetPostprocessor
+        {
+            private static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
+            {
+                foreach (var p in imported)
+                    if (p.StartsWith(LevelSetup.BiomesRoot + "/") && (p.EndsWith(".asset") || p.EndsWith(".prefab")))
+                    {
+                        EditorApplication.delayCall -= Rewrite;
+                        EditorApplication.delayCall += Rewrite;
+                        return;
+                    }
+            }
+
+            private static void Rewrite() => Write();
+        }
     }
 }

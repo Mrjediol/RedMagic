@@ -1043,3 +1043,16 @@ body.movil #tab-todo{flex:1;}
 .todoRun[open] > summary{color:var(--accent);}
 .todoHistTable td.faintCell{color:var(--faint);}
 
+
+/* ===== 🧱 Niveles (modules/level-editor.js) ===== */
+#lvSidebar{width:340px;min-width:340px;background:var(--panel);border-right:1px solid var(--border);padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+#lvMain{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+#lvTools{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--border);}
+#lvTools .lvGroup{display:flex;gap:4px;align-items:center;}
+#lvTools select{width:auto;}
+#lvStage{flex:1;position:relative;overflow:hidden;background:var(--pit);}
+#lvCanvas{cursor:crosshair;}
+#lvStatus{display:flex;flex-wrap:wrap;gap:18px;padding:6px 12px;font-size:14px;color:var(--muted);background:var(--panel);border-top:1px solid var(--border);}
+.lvSwatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.5);}
+.lvPx{color:var(--faint);font-size:13px;}
+p.lvWarn{color:var(--accent2);margin-top:8px;}

@@ -1,7 +1,7 @@
 # EditorNiveles — editor de niveles web + importador en Unity
 
 Paso `nh-2` de `niveles-hielo` (`docs/tareas/niveles-hielo.md`), sacado a tarea propia el 2026-10-11.
-**Estado (2026-10-12): funciona (importado y probado por el usuario). Falta reubicarlo (ver Queda).**
+**Estado (2026-10-12): el editor ya es la pestaña 🧱 Niveles de la web; Unity sólo tiene el importador. Pendiente de prueba del usuario.**
 Arquitectura y formato: `docs/architecture/levels.md` ▸ *EditorNiveles*.
 
 ## Decisiones del usuario
@@ -16,6 +16,8 @@ Arquitectura y formato: `docs/architecture/levels.md` ▸ *EditorNiveles*.
 
 ## Hecho
 
+- Pestaña 🧱 Niveles en `Web/RedMagicWeb` (`modules/level-editor.js`, `level-terrain.js`); bocetos en `Assets/Levels/Bocetos` vía el servidor del taller (`niveles.mjs`); `datos-unity.json` se rehace solo al guardar el bioma. La página suelta pasó a `Web/legacy/EditorNiveles/`.
+
 - Web (`index.html`, `editor.js`, `terreno.js`): pincel / rectángulo / relleno / borrar, grosor, deshacer, tamaño
   (alto ≤ 75, pegado abajo a la izquierda), vista previa con borde,
   textura y fondo del bioma, guardar/abrir (File System Access, descarga si no hay), autoguardado, arrastrar .json.
@@ -28,7 +30,6 @@ Arquitectura y formato: `docs/architecture/levels.md` ▸ *EditorNiveles*.
 
 ## Queda
 
-- **Mover el editor web a una pestaña de `Web/RedMagicWeb`** (hoy es la página suelta `Web/EditorNiveles/index.html`).
 - Cuando funcione: mover `Assets/Test/EditorNiveles/` a su sitio (p. ej. `Assets/Scripts/Levels/Editor/EditorNiveles/`).
 - Con `nh-3`: tipos de plataforma (tile `Plataforma<Algo>` en `_Biomas` → sale solo en la paleta web) y objetos
   colocables (decoración y luces, p. ej. cristales: lista `objects` en el formato y prefabs por convención de nombre).

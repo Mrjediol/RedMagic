@@ -41,6 +41,7 @@
   <button class="tabBtn" data-tab="enemy" title="Comportamiento de un enemigo de hoja de sprites">🧩 Enemy Creator</button>
   <button class="tabBtn" data-tab="fx" title="Cómo vuela y golpea un proyectil">🔥 Proyectil/VFX</button>
   <button class="tabBtn" data-tab="map" title="Trazar colisiones y piezas sobre un fondo">🗺️ Map Tracer</button>
+  <button class="tabBtn" data-tab="levels" title="Pintar el terreno y las plataformas de un nivel para Unity">🧱 Niveles</button>
 </div>
 
 <div id="tab-sprites" class="tabPanel">
@@ -425,6 +426,61 @@
     <div id="libraryFilterBar" class="libFilterBar"></div>
     <div id="libraryTabList" class="libList"></div>
   </div>
+</div>
+
+<div id="tab-levels" class="tabPanel" hidden>
+  <div id="lvSidebar">
+    <div>
+      <h1>🧱 Niveles</h1>
+      <p class="hint">Pinta roca y plataformas en la cuadrícula. 1 celda = 1 unidad de Unity = 40 px. En Unity: menú <b>EditorNiveles ▸ Importar nivel…</b></p>
+    </div>
+
+    <div>
+      <h2>Nivel</h2>
+      <div class="field"><label>Nombre</label><input type="text" id="lvName" value="nivel"></div>
+      <div class="field"><label>Bioma</label><select id="lvBiome"></select></div>
+      <div class="row">
+        <div class="field"><label>Ancho <span id="lvWpx" class="lvPx"></span></label><input type="number" id="lvW" min="12" max="400"></div>
+        <div class="field"><label>Alto <span id="lvHpx" class="lvPx"></span></label><input type="number" id="lvH" min="12" max="75"></div>
+      </div>
+      <button id="lvResize" style="width:100%;">Aplicar tamaño</button>
+      <p class="hint" style="margin-top:6px;">Alto máximo 75. Lo pintado se queda pegado abajo a la izquierda (como en Unity). El marco de 1 celda es siempre roca.</p>
+    </div>
+
+    <div>
+      <h2>Archivo</h2>
+      <div class="row">
+        <button id="lvNew">Nuevo</button>
+        <select id="lvOpen" data-nodirty title="Bocetos guardados en Assets/Levels/Bocetos"><option value="">Abrir…</option></select>
+      </div>
+      <button id="lvSave" class="primary" style="width:100%;margin-top:8px;">💾 Guardar</button>
+      <p class="hint" style="margin-top:6px;">Se guarda en <code>Assets/Levels/Bocetos/&lt;nombre&gt;.levelsketch.json</code>. También puedes arrastrar un .json aquí.</p>
+      <p id="lvWarn" class="hint lvWarn" hidden></p>
+    </div>
+
+    <div>
+      <h2>Controles</h2>
+      <p class="hint">
+        Clic izq. pinta · clic der. borra<br>
+        Rueda: zoom · botón central o Espacio+arrastrar: mover<br>
+        Vista previa: rueda / WASD / flechas mueven la cámara<br>
+        B pincel · R rectángulo · G relleno · E borrar · 1–9 tipo · [ ] grosor · P vista · F ajustar · Ctrl+Z / Ctrl+Y
+      </p>
+    </div>
+  </div>
+
+  <div id="lvMain">
+    <div id="lvTools" data-nodirty>
+      <span class="lvGroup"><button class="small" data-lvtool="brush" title="Pincel (B). Clic derecho borra.">✏️ Pincel</button><button class="small" data-lvtool="rect" title="Rectángulo (R). Clic derecho borra el rectángulo.">▭ Rectángulo</button><button class="small" data-lvtool="fill" title="Relleno (G): la zona conectada del mismo tipo">🪣 Relleno</button><button class="small" data-lvtool="erase" title="Borrar (E)">🧽 Borrar</button></span>
+      <span class="lvGroup" id="lvMats"></span>
+      <span class="lvGroup"><select id="lvBrush" title="Grosor del pincel ([ y ])"><option>1</option><option>2</option><option>3</option><option>5</option><option>8</option></select></span>
+      <span class="lvGroup"><button class="small" id="lvModeEdit" title="Cuadrícula (P)">🔲 Edición</button><button class="small" id="lvModePreview" title="Como en el juego: cámara de 20 unidades de alto, borde y fondo del bioma (P)">🎮 Vista previa</button><button class="small" id="lvFit" title="Ajustar (F)">⤢</button></span>
+      <span class="lvGroup"><button class="small" id="lvUndo" title="Deshacer (Ctrl+Z)">↶</button><button class="small" id="lvRedo" title="Rehacer (Ctrl+Y)">↷</button></span>
+    </div>
+    <div id="lvStage"><canvas id="lvCanvas"></canvas></div>
+    <div id="lvStatus"><span id="lvStPos">—</span><span id="lvStSize"></span><span id="lvStCount"></span><span id="lvStHint"></span></div>
+  </div>
+  <input type="file" id="lvFileInput" accept=".json" hidden>
 </div>
 
 <div id="tab-map" class="tabPanel" hidden>

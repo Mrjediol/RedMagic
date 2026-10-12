@@ -25,6 +25,7 @@ import { pickAndSaveSounds, soundArrayBuffer } from './modules/sound-library.js'
 import { decodeAudio, playBuffer } from './modules/vfx-stage.js';
 import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail, exportAllRecords, restoreRecords } from './modules/enemy-library.js';
 import { initShellTools } from './modules/shell-tools.js';
+import { initLevelEditor } from './modules/level-editor.js';
 import { initTodoPanel } from './modules/todo-panel.js';
 import { initDesignsPanel } from './modules/designs-panel.js';
 import { PRESETS as VFX_PRESETS, FAMILIES as VFX_FAMILIES } from './modules/vfx-presets.js';
@@ -112,6 +113,7 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     if (btn.dataset.tab === 'library') renderLibraryTab();
     if (btn.dataset.tab === 'todo') { todoPanel?.onShow(); designsPanel?.onShow(); }
     if (btn.dataset.tab === 'map') { renderMapLibraryLists(); mapView.frameToFit(); }
+    if (btn.dataset.tab === 'levels') levelEditor.onShow();
   });
 }
 
@@ -2206,6 +2208,12 @@ const designsPanel = initDesignsPanel({
 
 const tabButtonOf = (tab) => document.querySelector(`.tabBtn[data-tab="${tab}"]`);
 const openTabById = (tab) => { const btn = tabButtonOf(tab); if (btn && !btn.disabled) btn.click(); };
+// 🧱 Niveles: el shell aún no existe aquí; se le llama cuando ya está.
+const levelEditor = initLevelEditor({
+  toast: (msg, kind) => shell?.toast(msg, kind),
+  setDirty: (dirty, what) => shell?.setDirty('levels', dirty, what),
+});
+
 const clickSave = (btn) => { if (!btn || btn.disabled) return false; btn.click(); return undefined; };
 
 /** Space in Enemy Studio (either door): "▶ Probar" of the open gesture's timeline, else of the first gesture. */
@@ -2221,7 +2229,7 @@ shell = initShellTools({
   tabButton: tabButtonOf,
   tabPanel: (tab) => document.getElementById(`tab-${panelOf(tab)}`),
   // Only the tabs where an edit can be lost by closing: the rest either save as they go or only export.
-  dirtyTabs: ['studio', 'vfx', 'boss', 'enemy', 'fx'],
+  dirtyTabs: ['studio', 'vfx', 'boss', 'enemy', 'fx', 'levels'],
   saveActions: {
     studio: async () => { await rigComposer.save(); },
     gestures: async () => { await rigComposer.save(); },
@@ -2229,6 +2237,7 @@ shell = initShellTools({
     boss: () => clickSave(document.getElementById('bossSaveBtn')),
     sprites: () => clickSave(saveToLibraryBtn),
     map: () => clickSave(document.getElementById('mapSaveMapBtn')),
+    levels: () => levelEditor.save(),
     enemy: async () => ((await enemyCreator.persistLinked()) ? undefined : 'Enemy Creator guarda al exportar: usa "⬇ Exportar".'),
     fx: () => 'Proyectil/VFX guarda al exportar: usa "⬇ Exportar".',
     todo: async () => { await todoPanel.flush(); return 'La lista se guarda sola; ahora mismo, guardada.'; },

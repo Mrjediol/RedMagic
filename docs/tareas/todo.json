@@ -253,6 +253,25 @@
           },
           "sessionId": "d6d48ba9-6bb6-416c-9961-4dcf4a5a2890",
           "lastRunId": "2026-10-03T17-16-35-375Z_tnua5yz"
+        },
+        {
+          "id": "limpiar-ramas",
+          "text": "Limpiar las 11 ramas task/* ya fusionadas: backup y después borrarlas",
+          "note": "Todas están fusionadas en main (comprobado 2026-10-12). Borrar sólo con git branch -d y con permiso explícito.",
+          "done": false,
+          "doc": "docs/tareas/limpiar-ramas.md",
+          "steps": [
+            {
+              "id": "lr-1",
+              "text": "Backup (git bundle --all o copia del proyecto)",
+              "done": false
+            },
+            {
+              "id": "lr-2",
+              "text": "Comprobar que siguen fusionadas y borrarlas con git branch -d",
+              "done": false
+            }
+          ]
         }
       ]
     },

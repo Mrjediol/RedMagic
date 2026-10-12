@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-11T22:09:54.438Z",
+  "updated": "2026-10-12T00:24:01.879Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -135,7 +135,7 @@
         {
           "id": "editor-niveles",
           "text": "EditorNiveles: editor de niveles web propio + importador en Unity (no dentro de la web ni de Tools ▸ Web)",
-          "note": "Hecho: pestaña 🧱 Niveles en la web + EditorNiveles ▸ Importar nivel… en Unity. Pendiente de prueba.",
+          "note": "Hecho: 🧱 Niveles + 🏞️ Fondos en la web, EditorNiveles ▸ Importar nivel… / Importar fondo… en Unity, ⚙️ Opciones. Pendiente de prueba.",
           "done": false,
           "doc": "docs/tareas/editor-niveles.md",
           "needs": [
@@ -160,6 +160,11 @@
             {
               "id": "en-4",
               "text": "Mover el editor de niveles a una pestaña de la web principal (Web/RedMagicWeb); Unity sólo el importador en su menú propio",
+              "done": true
+            },
+            {
+              "id": "en-5",
+              "text": "🏞️ Fondos en la web (Biblioteca + export) con un solo importador en Unity; ⚙️ Opciones para ocultar/ordenar pestañas",
               "done": true
             }
           ]

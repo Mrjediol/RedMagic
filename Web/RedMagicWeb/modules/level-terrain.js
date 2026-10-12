@@ -115,13 +115,16 @@ export function build(solid, W, H, biome, rockImg, ppu) {
 }
 
 // ---- fondo: misma lógica que ParallaxBackgroundLayer.LateUpdate (todo en unidades, vista de viewH de alto) ----
-const faded = new Map(); // imagen + niebla precalculadas (no se lee la imagen: file:// no deja)
+const faded = new WeakMap(); // por imagen (o canvas ya procesado): { clave de niebla → canvas atenuado }
 function fadedImage(img, fog, fade) {
   if (!fade) return img;
-  const k = img.src + '|' + fade; if (faded.has(k)) return faded.get(k);
+  const k = fade + '|' + fog.r + ',' + fog.g + ',' + fog.b;
+  let byImg = faded.get(img);
+  if (!byImg) faded.set(img, (byImg = new Map()));
+  if (byImg.has(k)) return byImg.get(k);
   const c = mk(img.width, img.height), x = c.getContext('2d'); x.drawImage(img, 0, 0);
   x.globalCompositeOperation = 'source-atop'; x.fillStyle = css(fog, fade); x.fillRect(0, 0, c.width, c.height);
-  faded.set(k, c); return c;
+  byImg.clear(); byImg.set(k, c); return c; // sólo la última: el valor cambia al mover el deslizador
 }
 
 // cam = {x, y} centro de la vista en unidades (y hacia arriba, origen abajo a la izquierda); rect = vista en pantalla.

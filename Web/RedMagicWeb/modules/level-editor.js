@@ -7,6 +7,7 @@
 // - Valores del bioma y tiles: assets/niveles/datos-unity.json, lo escribe Unity (EditorNivelesWebData).
 // Celdas con la fila 0 ARRIBA; Unity pone el origen abajo a la izquierda (lo convierte el importador).
 import * as Terrain from './level-terrain.js';
+import * as Bg from './parallax-data.js';
 
 const MIN = 12, MAX_W = 400, MAX_H = 75, PX = 40, VIEW_H = 20;
 const STORE = 'redmagic.levelEditor.v1', FREE_CHARS = '=-~^+*%&@$!?abcdefghijklmnopqrstuvwxyz';
@@ -51,7 +52,7 @@ export function initLevelEditor({ toast, setDirty }) {
   buildPalette();
 
   // ---------------------------------------------------------------- estado
-  const S = { name: 'nivel', biome: 'Hielo', w: 85, h: 25, cells: null, mode: 'edit', tool: 'brush', mat: ROCK, brush: 1 };
+  const S = { name: 'nivel', biome: 'Hielo', background: '', w: 85, h: 25, cells: null, mode: 'edit', tool: 'brush', mat: ROCK, brush: 1 };
   const idx = (c, r) => r * S.w + c;
   const inside = (c, r) => c >= 0 && r >= 0 && c < S.w && r < S.h;
   const isFrame = (c, r) => c === 0 || r === 0 || c === S.w - 1 || r === S.h - 1;
@@ -214,10 +215,33 @@ export function initLevelEditor({ toast, setDirty }) {
   }
   function drawLayers(vp, which) {
     const view = { viewW: vp.viewW, viewH: VIEW_H, ppu: vp.ppu, x0: vp.x0, y0: vp.y0 };
-    for (const L of biome().layers || []) {
+    // un fondo de la Biblioteca (🏞️ Fondos) si se eligió; si no, el del bioma en Unity
+    const layers = bgLayers || biome().layers || [];
+    for (const L of layers) {
+      if (L.on === false) continue;
       const kind = L.inFront ? 'front' : L.overTerrain ? 'over' : 'back';
-      if (kind === which) Terrain.drawLayer(g, L, img(L.texture), cam, view, { w: S.w, h: S.h }, groundTop);
+      if (kind === which) Terrain.drawLayer(g, L, bgLayers ? L.img : img(L.texture), cam, view, { w: S.w, h: S.h }, groundTop);
     }
+  }
+
+  // ---------------------------------------------------------------- fondo de la Biblioteca
+  let bgLayers = null;
+  async function setBackground(name) {
+    S.background = name || '';
+    bgLayers = null;
+    if (S.background) {
+      const e = (await Bg.listBackgrounds()).find((x) => x.enemyName === S.background);
+      if (e) bgLayers = await Bg.readyLayers(e.draft?.layers || []);
+      else toast(`El fondo "${S.background}" no está en la Biblioteca: se usa el del bioma`, 'info');
+    }
+    $('lvBg').value = bgLayers ? S.background : '';
+    redraw();
+  }
+  async function refreshBackgrounds() {
+    const list = await Bg.listBackgrounds();
+    $('lvBg').innerHTML = '<option value="">Del bioma (Unity)</option>' + list.map((e) => `<option>${e.enemyName}</option>`).join('');
+    $('lvBg').value = bgLayers ? S.background : '';
+    if (S.background) setBackground(S.background); // por si se volvió a guardar en 🏞️ Fondos
   }
   function drawPlatformMarks() {
     const z = V.z, { c0, c1, r0, r1 } = cellsRange();
@@ -304,7 +328,7 @@ export function initLevelEditor({ toast, setDirty }) {
   // ---------------------------------------------------------------- formato .levelsketch.json
   function toJson() {
     return {
-      format: 'redmagic-level', version: 2, name: S.name, biome: S.biome, width: S.w, height: S.h,
+      format: 'redmagic-level', version: 2, name: S.name, biome: S.biome, background: S.background || undefined, width: S.w, height: S.h,
       legend: palette.slice(1).map((p) => ({ char: p.char, layer: p.layer, tile: p.name })),
       rows: Array.from({ length: S.h }, (_, r) => Array.from(S.cells.subarray(r * S.w, (r + 1) * S.w), (v) => palette[v].char).join('')),
     };
@@ -327,6 +351,7 @@ export function initLevelEditor({ toast, setDirty }) {
     S.name = d.name || S.name;
     if (d.biome) { if (BIOMES.some((b) => b.name === d.biome)) S.biome = d.biome; else toast(`Bioma "${d.biome}" no está en los datos de Unity`, 'info'); }
     buildMats(); syncInputs(); changed(false); fit();
+    setBackground(d.background || '');
   }
 
   // ---------------------------------------------------------------- archivo
@@ -407,6 +432,7 @@ export function initLevelEditor({ toast, setDirty }) {
   $('lvFit').onclick = fit; $('lvUndo').onclick = doUndo; $('lvRedo').onclick = doRedo;
   $('lvName').oninput = (e) => { S.name = e.target.value.trim() || 'nivel'; changed(false); };
   $('lvBiome').onchange = (e) => { S.biome = e.target.value; changed(false); };
+  $('lvBg').onchange = (e) => { setBackground(e.target.value); changed(false); };
   $('lvW').oninput = (e) => { $('lvWpx').textContent = `${(+e.target.value || 0) * PX} px`; };
   $('lvH').oninput = (e) => { $('lvHpx').textContent = `${(+e.target.value || 0) * PX} px`; };
   $('lvResize').onclick = () => resize(+$('lvW').value, +$('lvH').value);
@@ -504,7 +530,7 @@ export function initLevelEditor({ toast, setDirty }) {
   return {
     /** Al abrir la pestaña: arranca el dibujo y relee la lista de bocetos del proyecto. */
     onShow() {
-      resizeCanvas(); redraw(); refreshSketches();
+      resizeCanvas(); redraw(); refreshSketches(); refreshBackgrounds();
       if (!running) { running = true; requestAnimationFrame(loop); }
     },
     save,

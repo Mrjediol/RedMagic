@@ -24,7 +24,7 @@ namespace RedMagic.EditorNiveles
         [Serializable]
         private class BiomeInfo
         {
-            public string name, rockTexture;
+            public string name, rockTexture, backgroundName;
             public float rockTileUnits, cornerRadius, floorWidth, wallWidth, ceilingWidth, widthVariation, outlineWidth, innerGlowWidth;
             public Color rockShadow, outline, innerGlow;
             public Color[] floorBands, ceilingBands;
@@ -35,7 +35,7 @@ namespace RedMagic.EditorNiveles
         [Serializable]
         private class LayerInfo
         {
-            public string texture, repeat, anchor, align;
+            public string name, texture, repeat, anchor, align;
             public float speed, positionX, size, heightOffset, travel, verticalSpeed, opacity, fade;
             public Color fogColor;
             public bool inFront, overTerrain, sitOnGround;
@@ -78,7 +78,7 @@ namespace RedMagic.EditorNiveles
                     ceilingWidth = b.ceilingWidth, widthVariation = b.widthVariation, floorBands = b.floorBands,
                     ceilingBands = b.ceilingBands, bandFractions = b.bandFractions, outline = b.outline,
                     outlineWidth = b.outlineWidth, innerGlow = b.innerGlow, innerGlowWidth = b.innerGlowWidth,
-                    layers = Layers(b.background),
+                    layers = Layers(b.background), backgroundName = b.background != null ? b.background.name : null,
                 }).ToArray();
         }
 
@@ -86,7 +86,8 @@ namespace RedMagic.EditorNiveles
         {
             if (background == null) return new LayerInfo[0];
             var list = new List<LayerInfo>();
-            foreach (var layer in background.GetComponentsInChildren<ParallaxBackgroundLayer>(true))
+            // sólo las capas de primer nivel (las hijas de una capa, como los escalones, no son capas)
+            foreach (var layer in background.GetComponentsInChildren<ParallaxBackgroundLayer>(true).Where(l => l.transform.parent == background.transform))
             {
                 var so = new SerializedObject(layer);
                 string Enum(string p) { var sp = so.FindProperty(p); return sp.enumNames[sp.enumValueIndex]; }
@@ -94,7 +95,7 @@ namespace RedMagic.EditorNiveles
                 bool B(string p) => so.FindProperty(p).boolValue;
                 list.Add(new LayerInfo
                 {
-                    texture = WebPath(so.FindProperty("texture").objectReferenceValue), repeat = Enum("repeat"),
+                    name = layer.name, texture = WebPath(so.FindProperty("texture").objectReferenceValue), repeat = Enum("repeat"),
                     anchor = Enum("anchor"), align = Enum("align"), speed = F("speed"), positionX = F("positionX"),
                     size = F("size"), heightOffset = F("heightOffset"), travel = F("travel"), verticalSpeed = F("verticalSpeed"),
                     opacity = F("opacity"), fade = F("fade"), fogColor = so.FindProperty("fogColor").colorValue,

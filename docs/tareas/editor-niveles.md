@@ -1,7 +1,7 @@
 # EditorNiveles — editor de niveles web + importador en Unity
 
 Paso `nh-2` de `niveles-hielo` (`docs/tareas/niveles-hielo.md`), sacado a tarea propia el 2026-10-11.
-**Estado (2026-10-12): el editor ya es la pestaña 🧱 Niveles de la web; Unity sólo tiene el importador. Pendiente de prueba del usuario.**
+**Estado (2026-10-12): pestañas 🧱 Niveles y 🏞️ Fondos en la web; en Unity, EditorNiveles ▸ Importar nivel… e Importar fondo…. Pendiente de prueba del usuario.**
 Arquitectura y formato: `docs/architecture/levels.md` ▸ *EditorNiveles*.
 
 ## Decisiones del usuario
@@ -15,6 +15,8 @@ Arquitectura y formato: `docs/architecture/levels.md` ▸ *EditorNiveles*.
 - Tras importar, el nivel **se sigue editando en Unity** (paleta, objetos): reimportar sólo toca tiles, tamaño y bioma.
 
 ## Hecho
+
+- 🏞️ Fondos (port de parallax-test.html): capas con los campos de ParallaxBackgroundLayer, guardado en la Biblioteca (kind parallax), Traer de Unity, un solo export *.parallax.json; Unity: ParallaxImporter (un solo importador, actualiza Fondo_<nombre> en su sitio). 🧱 Niveles elige el fondo (bioma o Biblioteca) y lo guarda en el boceto (`background`). ⚙️ Opciones: ocultar/ordenar pestañas (Sprites, Enemy Creator, Proyectil/VFX y Map Tracer ocultas de serie).
 
 - Pestaña 🧱 Niveles en `Web/RedMagicWeb` (`modules/level-editor.js`, `level-terrain.js`); bocetos en `Assets/Levels/Bocetos` vía el servidor del taller (`niveles.mjs`); `datos-unity.json` se rehace solo al guardar el bioma. La página suelta pasó a `Web/legacy/EditorNiveles/`.
 

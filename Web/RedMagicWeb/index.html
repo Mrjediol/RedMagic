@@ -36,12 +36,14 @@
   <button class="tabBtn" data-tab="boss" title="Un jefe con sus ataques y fases">👑 Boss Creator</button>
   <button class="tabBtn" data-tab="library" title="Todo lo guardado en este navegador">📚 Biblioteca</button>
   <button class="tabBtn" data-tab="todo" title="Apuntes (lo que falta por hacer) y talleres (diseños, enemigos…) con la cola de Claude">📋 Tareas</button>
+  <button class="tabBtn" data-tab="levels" title="Pintar el terreno y las plataformas de un nivel para Unity">🧱 Niveles</button>
+  <button class="tabBtn" data-tab="backgrounds" title="Fondos de parallax por capas: probarlos y llevarlos a Unity">🏞️ Fondos</button>
   <span class="tabSep"></span>
   <button class="tabBtn active" data-tab="sprites" title="Cortar una hoja de sprites en animaciones">🍄 Sprites</button>
   <button class="tabBtn" data-tab="enemy" title="Comportamiento de un enemigo de hoja de sprites">🧩 Enemy Creator</button>
   <button class="tabBtn" data-tab="fx" title="Cómo vuela y golpea un proyectil">🔥 Proyectil/VFX</button>
   <button class="tabBtn" data-tab="map" title="Trazar colisiones y piezas sobre un fondo">🗺️ Map Tracer</button>
-  <button class="tabBtn" data-tab="levels" title="Pintar el terreno y las plataformas de un nivel para Unity">🧱 Niveles</button>
+  <button class="tabBtn" data-tab="options" title="Qué pestañas se ven y en qué orden">⚙️ Opciones</button>
 </div>
 
 <div id="tab-sprites" class="tabPanel">
@@ -439,6 +441,7 @@
       <h2>Nivel</h2>
       <div class="field"><label>Nombre</label><input type="text" id="lvName" value="nivel"></div>
       <div class="field"><label>Bioma</label><select id="lvBiome"></select></div>
+      <div class="field"><label>Fondo</label><select id="lvBg" title="El fondo del bioma en Unity, o uno guardado en 🏞️ Fondos"></select></div>
       <div class="row">
         <div class="field"><label>Ancho <span id="lvWpx" class="lvPx"></span></label><input type="number" id="lvW" min="12" max="400"></div>
         <div class="field"><label>Alto <span id="lvHpx" class="lvPx"></span></label><input type="number" id="lvH" min="12" max="75"></div>
@@ -481,6 +484,56 @@
     <div id="lvStatus"><span id="lvStPos">—</span><span id="lvStSize"></span><span id="lvStCount"></span><span id="lvStHint"></span></div>
   </div>
   <input type="file" id="lvFileInput" accept=".json" hidden>
+</div>
+
+<div id="tab-backgrounds" class="tabPanel" hidden>
+  <div id="pbSidebar">
+    <div>
+      <h1>🏞️ Fondos</h1>
+      <p class="hint">Fondos de parallax por capas (1 = la más lejana). Elige una capa y pega una imagen con Ctrl+V, arrástrala o usa «Subir imagen…».</p>
+    </div>
+
+    <div>
+      <h2>Fondo</h2>
+      <div class="field"><label>Nombre</label><input type="text" id="pbName"></div>
+      <select id="pbOpen" data-nodirty title="Fondos de la Biblioteca, o traer el de un bioma de Unity"><option value="">Abrir…</option></select>
+      <button id="pbSave" class="primary" style="width:100%;margin-top:8px;">💾 Guardar en la Biblioteca</button>
+      <button id="pbExport" style="width:100%;margin-top:6px;">⬇ Exportar a Unity</button>
+      <p class="hint" style="margin-top:6px;">Guardado en la Biblioteca se puede seguir más tarde y ya sale en 🧱 Niveles. Para el juego: «Exportar a Unity» y en Unity <b>EditorNiveles ▸ Importar fondo…</b></p>
+    </div>
+
+    <div data-nodirty>
+      <h2>Nivel de prueba</h2>
+      <div class="row">
+        <div class="field"><label>Ancho (u)</label><input type="number" id="pbLvW" min="12" max="400"></div>
+        <div class="field"><label>Alto (u)</label><input type="number" id="pbLvH" min="12" max="75"></div>
+      </div>
+      <div class="field"><label>Borde del bioma</label><select id="pbBiome"></select></div>
+      <p class="hint">Mueve al jugador con WASD o las flechas (vuela); R lo baja al suelo. La cámara es la del juego: 20 unidades de alto.</p>
+    </div>
+  </div>
+
+  <div id="pbMain">
+    <div id="pbStage"><canvas id="pbCanvas"></canvas></div>
+    <div id="pbStatus"></div>
+  </div>
+
+  <div id="pbRight">
+    <div class="pbRightHead"><h2>Capas</h2><button id="pbAddLayer" class="small">＋ Añadir capa</button></div>
+    <div id="pbLayers"></div>
+  </div>
+</div>
+
+<div id="tab-options" class="tabPanel" hidden>
+  <div id="optPanel">
+    <h1>⚙️ Opciones</h1>
+    <div>
+      <h2>Pestañas</h2>
+      <p class="hint">Qué pestañas se ven y en qué orden (Alt+1…9 sigue este orden). Se guarda en este navegador.</p>
+      <div id="optTabList" data-nodirty></div>
+      <button id="optTabsReset" class="small" style="margin-top:10px;">Volver a lo de serie</button>
+    </div>
+  </div>
 </div>
 
 <div id="tab-map" class="tabPanel" hidden>

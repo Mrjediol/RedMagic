@@ -41,6 +41,8 @@ namespace RedMagic.EditorNiveles
             public int version = Version;
             public string name;
             public string biome;
+            /// <summary>Fondo elegido en la web (🏞️ Fondos): prefab <c>Fondo_&lt;background&gt;</c> si ya se importó.</summary>
+            public string background;
             public int width;
             public int height;
             public LegendEntry[] legend;
@@ -138,6 +140,13 @@ namespace RedMagic.EditorNiveles
             if (lost > 0) Debug.LogWarning($"[EditorNiveles] El nivel no tiene Tilemap de plataformas: {lost} celdas de plataforma sin pintar.");
             level.Rebuild();
             EditorUtility.SetDirty(level);
+            if (!string.IsNullOrEmpty(sketch.background))
+            {
+                var bg = ParallaxImporter.FindBackground(sketch.background);
+                if (bg != null) ParallaxImporter.ReplaceBackground(level, bg);
+                else Debug.LogWarning($"[EditorNiveles] El nivel usa el fondo '{sketch.background}', que aún no está en Unity: " +
+                                      "expórtalo en 🏞️ Fondos e impórtalo con EditorNiveles ▸ Importar fondo…");
+            }
             Debug.Log($"[EditorNiveles] '{sketch.name}' ({w}×{h}: {rockCells.Count} roca, {platCells.Count} plataforma) → {level.name}");
         }
     }

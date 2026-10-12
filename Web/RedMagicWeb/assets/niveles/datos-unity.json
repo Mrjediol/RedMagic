@@ -13,6 +13,7 @@
         {
             "name": "Hielo",
             "rockTexture": "Assets/Levels/_Biomas/Hielo/roca.jpg",
+            "backgroundName": "Fondo_Hielo",
             "rockTileUnits": 5.400000095367432,
             "cornerRadius": 0.2529999911785126,
             "floorWidth": 0.4699999988079071,
@@ -99,6 +100,7 @@
             ],
             "layers": [
                 {
+                    "name": "Capa 1",
                     "texture": "Assets/Levels/_Biomas/Hielo/Fondo/capa1.jpg",
                     "repeat": "Mirror",
                     "anchor": "Proportional",
@@ -123,6 +125,7 @@
                     "sortingOrder": 0
                 },
                 {
+                    "name": "Capa 2",
                     "texture": "Assets/Levels/_Biomas/Hielo/Fondo/capa2.png",
                     "repeat": "Mirror",
                     "anchor": "Proportional",
@@ -147,6 +150,7 @@
                     "sortingOrder": 1
                 },
                 {
+                    "name": "Capa 3",
                     "texture": "Assets/Levels/_Biomas/Hielo/Fondo/capa3.png",
                     "repeat": "Mirror",
                     "anchor": "Proportional",
@@ -171,6 +175,7 @@
                     "sortingOrder": 2
                 },
                 {
+                    "name": "Capa 4",
                     "texture": "Assets/Levels/_Biomas/Hielo/Fondo/capa4.png",
                     "repeat": "Repeat",
                     "anchor": "Ceiling",
@@ -195,6 +200,7 @@
                     "sortingOrder": 3
                 },
                 {
+                    "name": "Capa 5",
                     "texture": "Assets/Levels/_Biomas/Hielo/Fondo/capa5.png",
                     "repeat": "Mirror",
                     "anchor": "Floor",
@@ -219,6 +225,7 @@
                     "sortingOrder": 4
                 },
                 {
+                    "name": "Capa 6",
                     "texture": "Assets/Levels/_Biomas/Hielo/Fondo/capa6.png",
                     "repeat": "LevelEnds",
                     "anchor": "Floor",
@@ -243,6 +250,7 @@
                     "sortingOrder": 5
                 },
                 {
+                    "name": "Capa 7",
                     "texture": "Assets/Levels/_Biomas/Hielo/Fondo/capa7.png",
                     "repeat": "LevelEnds",
                     "anchor": "Floor",

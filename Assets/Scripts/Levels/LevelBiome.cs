@@ -2,11 +2,63 @@ using UnityEngine;
 
 namespace RedMagic.Levels
 {
-    public enum RimStyle
+    public enum RimInUse
     {
-        [InspectorName("Bandas (actual)")] Bandas,
-        [InspectorName("A · Nieve acumulada")] NieveAcumulada,
-        [InspectorName("B · Hielo cristalino")] HieloCristal,
+        [InspectorName("Actual")] Actual,
+        [InspectorName("Variante A · Grumos")] VarianteA,
+        [InspectorName("Variante B · Goteo")] VarianteB,
+    }
+
+    /// <summary>Valores de una nieve del borde. Las bandas van de fuera (la superficie) hacia dentro de la roca.</summary>
+    [System.Serializable]
+    public class RimLook
+    {
+        [Tooltip("Grosor en suelos (cara hacia arriba), paredes y techos.")]
+        public float floorWidth = 0.625f;
+        public float wallWidth = 0.4f;
+        public float ceilingWidth = 0.35f;
+        [Range(0f, 1f)] public float widthVariation = 0.5f;
+        [Tooltip("4 colores en suelos: [0] el más hondo … [3] la superficie.")]
+        public Color[] floorBands =
+        {
+            new Color32(63, 149, 208, 255), new Color32(134, 205, 242, 255),
+            new Color32(205, 238, 252, 255), new Color32(255, 255, 255, 255),
+        };
+        [Tooltip("Los mismos 4 en techos; las paredes mezclan.")]
+        public Color[] ceilingBands =
+        {
+            new Color32(40, 104, 170, 255), new Color32(84, 160, 218, 255),
+            new Color32(150, 210, 244, 255), new Color32(210, 240, 255, 255),
+        };
+        public Color outline = new Color32(4, 17, 42, 255);
+        [Min(0f)] public float outlineWidth = 0.11f;
+
+        public void CopyFrom(RimLook o)
+        {
+            floorWidth = o.floorWidth; wallWidth = o.wallWidth; ceilingWidth = o.ceilingWidth; widthVariation = o.widthVariation;
+            floorBands = (Color[])o.floorBands.Clone(); ceilingBands = (Color[])o.ceilingBands.Clone();
+            outline = o.outline; outlineWidth = o.outlineWidth;
+        }
+    }
+
+    [System.Serializable]
+    public class RimLookGrumos : RimLook
+    {
+        [Tooltip("Ancho de cada grumo, en unidades.")]
+        [Min(0.1f)] public float lumpSize = 0.45f;
+        [Tooltip("Lo que se meten los grumos (0 = recto, 1 = grumos muy marcados).")]
+        [Range(0f, 1f)] public float lumpDepth = 0.35f;
+    }
+
+    [System.Serializable]
+    public class RimLookGoteo : RimLook
+    {
+        [Tooltip("Largo máximo de los goterones, en unidades. 0 = sin goterones.")]
+        [Min(0f)] public float dripLength = 0.45f;
+        [Tooltip("Separación media entre goterones, en unidades.")]
+        [Min(0.3f)] public float dripSpacing = 1.1f;
+        [Tooltip("Parte de la banda que va en sombra (el tono oscuro, hacia dentro).")]
+        [Range(0f, 0.9f)] public float shadowFraction = 0.35f;
     }
 
     /// <summary>
@@ -70,13 +122,31 @@ namespace RedMagic.Levels
         [Tooltip("Shader del borde (color por vértice, sin luz).")]
         public Shader rimShader;
 
-        [Header("Estilo del borde")]
-        [Tooltip("Bandas = el borde de siempre. Las variantes usan los mismos colores, grosores y contorno de arriba.")]
-        public RimStyle rimStyle = RimStyle.Bandas;
-        [Tooltip("A · Nieve acumulada: alto de los montones de nieve sobre los suelos, en unidades.")]
-        [Min(0f)] public float snowPileHeight = 0.28f;
-        [Tooltip("B · Hielo cristalino: largo máximo de los carámbanos de los techos, en unidades. 0 = sin carámbanos.")]
-        [Min(0f)] public float icicleLength = 0.5f;
+        [Header("Nieve del borde en uso")]
+        [Tooltip("Qué nieve del borde se dibuja. Cada variante tiene sus propios valores (abajo): probarlas no toca " +
+                 "la actual (los valores de 'Borde' de arriba).")]
+        public RimInUse rimInUse = RimInUse.Actual;
+        [Tooltip("Variante A · Grumos: la banda acaba hacia dentro en grumos redondos, con degradado suave.")]
+        public RimLookGrumos varianteA = new RimLookGrumos();
+        [Tooltip("Variante B · Goteo: dos tonos planos (luz y sombra) y goterones que bajan desde los suelos.")]
+        public RimLookGoteo varianteB = new RimLookGoteo();
+
+        /// <summary>La nieve actual (los campos de 'Borde') con la misma forma que las variantes.</summary>
+        public RimLook CurrentRim() => new RimLook
+        {
+            floorWidth = floorWidth, wallWidth = wallWidth, ceilingWidth = ceilingWidth, widthVariation = widthVariation,
+            floorBands = floorBands, ceilingBands = ceilingBands, outline = outline, outlineWidth = outlineWidth,
+        };
+
+        public RimLook ActiveRim() => rimInUse == RimInUse.VarianteA ? varianteA : rimInUse == RimInUse.VarianteB ? varianteB : CurrentRim();
+
+        [ContextMenu("Copiar la nieve actual a las dos variantes")]
+        public void CopyCurrentToVariants()
+        {
+            varianteA.CopyFrom(CurrentRim());
+            varianteB.CopyFrom(CurrentRim());
+            Changed?.Invoke(this);
+        }
 
         [Header("Ambiente")]
         [Tooltip("Fondo de parallax del bioma (prefab hecho con 'Importar fondo de parallax').")]

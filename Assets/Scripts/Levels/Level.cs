@@ -231,9 +231,10 @@ namespace RedMagic.Levels
             var cols = new List<Color>();
             var tris = new List<int>();
 
-            var style = biome.rimStyle;
-            // el hielo cristalino necesita más puntos: sus facetas son más cortas que el paso normal
-            float step = style == RimStyle.HieloCristal ? 0.06f : 0.15f;
+            var mode = biome.rimInUse;
+            var look = biome.ActiveRim();
+            // los grumos y los goterones son más estrechos que el paso normal: necesitan más puntos
+            float step = mode == RimInUse.Actual ? 0.15f : 0.05f;
             var contours = new List<List<RimPoint>>();
             foreach (var loop in loops) contours.Add(LevelShape.Rounded(loop, radius, step, 24));
 
@@ -244,62 +245,45 @@ namespace RedMagic.Levels
                 var w = new float[n];
                 var t = new float[n];
                 var on = new bool[n];
-                var facet = new bool[n];
                 for (int i = 0; i < n; i++)
                 {
                     var q = pts[i];
                     float floor = Mathf.Clamp01(-q.normal.y), ceiling = Mathf.Clamp01(q.normal.y);
-                    float baseWidth = biome.wallWidth + (biome.floorWidth - biome.wallWidth) * floor
-                                      + (biome.ceilingWidth - biome.wallWidth) * ceiling;
-                    float wobble = 1f - biome.widthVariation * 0.44f + biome.widthVariation * Noise(q.distance / 0.6f, 3.3f);
+                    float baseWidth = look.wallWidth + (look.floorWidth - look.wallWidth) * floor
+                                      + (look.ceilingWidth - look.wallWidth) * ceiling;
+                    float wobble = 1f - look.widthVariation * 0.44f + look.widthVariation * Noise(q.distance / 0.6f, 3.3f);
                     w[i] = baseWidth * wobble + (Noise(q.distance / 0.175f, 9f) - 0.5f) * 0.075f;
                     // la normal apunta hacia dentro del sólido: la celda de al lado dice si es roca o plataforma
                     var inside = q.position + q.normal * 0.3f;
                     on[i] = IsPlatform(Mathf.FloorToInt(inside.x), Mathf.FloorToInt(inside.y)) ? rimOnPlatforms : rimOnTerrain;
                     if (!on[i]) w[i] = 0f;
                     t[i] = (1f - q.normal.y) * 0.5f; // 0 techo, 1 suelo
-
-                    if (style == RimStyle.NieveAcumulada) w[i] *= 0.45f; // hielo fino debajo de la nieve
-                    else if (style == RimStyle.HieloCristal)
-                    {
-                        // dientes de sierra: cada faceta crece y se corta en seco, como un cristal
-                        float u = q.distance / 0.32f + Noise(q.distance / 1.3f, 51f) * 0.8f, f = u - Mathf.Floor(u);
-                        w[i] *= 0.62f + 0.5f * (1f - Mathf.Abs(2f * f - 1f));
-                        facet[i] = (Mathf.FloorToInt(u) & 1) == 1;
-                    }
                 }
 
                 // (sombra y brillo interior: textura por distancia, ver BuildGlow)
 
-                // 3. las 4 bandas del borde, de la más ancha a la más estrecha
-                for (int b = 0; b < 4; b++)
+                // 3. la banda de nieve
+                if (mode == RimInUse.VarianteA) RimLumps(pts, w, t, biome.varianteA, verts, cols, tris);
+                else if (mode == RimInUse.VarianteB) RimDrips(pts, w, t, on, biome.varianteB, verts, cols, tris);
+                else
                 {
-                    int band = b;
-                    float frac = biome.bandFractions != null && biome.bandFractions.Length > band ? biome.bandFractions[band] : 1f - band * 0.25f;
-                    Color Band(int i)
+                    // las 4 bandas del borde, de la más ancha a la más estrecha
+                    for (int b = 0; b < 4; b++)
                     {
-                        var c = Color.Lerp(biome.ceilingBands[band], biome.floorBands[band], t[i]);
-                        // facetas alternas un poco más claras (sólo en las dos bandas anchas)
-                        if (facet[i] && band < 2) c = Color.Lerp(c, Color.Lerp(biome.ceilingBands[band + 1], biome.floorBands[band + 1], t[i]), 0.4f);
-                        return c;
+                        int band = b;
+                        float frac = biome.bandFractions != null && biome.bandFractions.Length > band ? biome.bandFractions[band] : 1f - band * 0.25f;
+                        Ribbon(pts, verts, cols, tris, i => 0f, i => w[i] * frac,
+                            i => Color.Lerp(look.ceilingBands[band], look.floorBands[band], t[i]),
+                            i => Color.Lerp(look.ceilingBands[band], look.floorBands[band], t[i]));
                     }
-                    Ribbon(pts, verts, cols, tris, i => 0f, i => w[i] * frac, Band, Band);
                 }
 
                 // 4. brillo hacia el aire y 5. contorno oscuro
                 if (biome.outerGlowWidth > 0f && biome.outerGlow.a > 0f)
                     Ribbon(pts, verts, cols, tris, i => 0f, i => -biome.outerGlowWidth, i => biome.outerGlow, i => clear(biome.outerGlow));
                 // contorno oscuro
-                float half = biome.outlineWidth * 0.5f;
-                Ribbon(pts, verts, cols, tris, i => -half, i => half, i => biome.outline, i => biome.outline);
-
-                // 6. lo propio de cada variante, encima del contorno
-                if (style == RimStyle.NieveAcumulada) SnowPiles(pts, on, verts, cols, tris);
-                else if (style == RimStyle.HieloCristal)
-                {
-                    Icicles(pts, on, verts, cols, tris);
-                    Glints(pts, on, w, verts, cols, tris);
-                }
+                float half = look.outlineWidth * 0.5f;
+                Ribbon(pts, verts, cols, tris, i => -half, i => half, i => look.outline, i => look.outline);
             }
 
             _rimMesh = Assign(_rimMesh, "LevelRim", verts, tris, null, cols);
@@ -308,112 +292,66 @@ namespace RedMagic.Levels
             SetupRenderer(Child(RimName), _rimMesh, _rimMaterial, LevelSorting.Rim);
         }
 
+        private static Color BandColor(RimLook look, int band, float t) => Color.Lerp(look.ceilingBands[band], look.floorBands[band], t);
+
         /// <summary>
-        /// Variante A: montones de nieve que sobresalen hacia el aire en los suelos, con la parte de arriba ondulada y
-        /// los extremos redondeados (se desvanecen al llegar a una esquina). Azul abajo, blanco arriba, con contorno.
+        /// Variante A · Grumos: degradado suave de la superficie (color 3) hacia dentro (color 1), y el borde de dentro
+        /// hecho de grumos redondos con un labio más oscuro (color 0) que los dibuja.
         /// </summary>
-        private void SnowPiles(List<RimPoint> pts, bool[] on, List<Vector3> verts, List<Color> cols, List<int> tris)
+        private static void RimLumps(List<RimPoint> pts, float[] w, float[] t, RimLookGrumos look,
+                                     List<Vector3> verts, List<Color> cols, List<int> tris)
         {
             int n = pts.Count;
-            var fl = new float[n];
-            bool any = false;
+            var lw = new float[n];
             for (int i = 0; i < n; i++)
             {
-                fl[i] = on[i] ? Mathf.InverseLerp(0.6f, 0.95f, -pts[i].normal.y) : 0f;
-                any |= fl[i] > 0f;
+                float u = pts[i].distance / look.lumpSize + Noise(pts[i].distance / 2.3f, 31f) * 0.6f, f = u - Mathf.Floor(u);
+                float bump = Mathf.Sqrt(Mathf.Max(0f, 1f - (2f * f - 1f) * (2f * f - 1f))); // medio círculo por grumo
+                lw[i] = w[i] * (1f - look.lumpDepth + look.lumpDepth * bump);
             }
-            if (!any || biome.snowPileHeight <= 0f) return;
-
-            // distancia por el contorno hasta el final del tramo de suelo, por los dos lados (el contorno es cerrado)
-            float total = pts[n - 1].distance + Vector2.Distance(pts[n - 1].position, pts[0].position);
-            var toEnd = new float[n];
-            for (int i = 0; i < n; i++) toEnd[i] = float.MaxValue;
-            float last = float.NegativeInfinity;
-            for (int k = 0; k < 2 * n; k++)
-            {
-                int i = k % n; float d = pts[i].distance + (k >= n ? total : 0f);
-                if (fl[i] < 0.5f) last = d; else toEnd[i] = Mathf.Min(toEnd[i], d - last);
-            }
-            last = float.PositiveInfinity;
-            for (int k = 2 * n - 1; k >= 0; k--)
-            {
-                int i = k % n; float d = pts[i].distance + (k >= n ? total : 0f);
-                if (fl[i] < 0.5f) last = d; else toEnd[i] = Mathf.Min(toEnd[i], last - d);
-            }
-
-            var h = new float[n];
-            for (int i = 0; i < n; i++)
-            {
-                if (fl[i] <= 0f) continue;
-                float s = pts[i].distance;
-                float cap = Mathf.Sqrt(Mathf.Clamp01(toEnd[i] / 0.45f)); // punta redonda
-                float lumps = 0.72f + 0.38f * Noise(s / 1.1f, 21f) + 0.14f * Noise(s / 0.37f, 23f);
-                h[i] = biome.snowPileHeight * fl[i] * cap * lumps;
-            }
-
-            Color deep = biome.floorBands[1], snow = biome.floorBands[3], mid = biome.floorBands[2];
-            Ribbon(pts, verts, cols, tris, i => 0f, i => -h[i], i => deep, i => snow);              // cuerpo
-            Ribbon(pts, verts, cols, tris, i => -h[i] * 0.45f, i => -h[i], i => mid, i => snow);    // cara de arriba
-            float half = biome.outlineWidth * 0.5f;
-            Ribbon(pts, verts, cols, tris, i => -h[i] - half, i => -h[i] + half, i => biome.outline, i => biome.outline);
+            Ribbon(pts, verts, cols, tris, i => 0f, i => lw[i], i => BandColor(look, 3, t[i]), i => BandColor(look, 1, t[i]));
+            Ribbon(pts, verts, cols, tris, i => lw[i] * 0.8f, i => lw[i], i => BandColor(look, 1, t[i]), i => BandColor(look, 0, t[i]));
+            Ribbon(pts, verts, cols, tris, i => lw[i], i => lw[i] > 0f ? lw[i] + 0.035f : 0f,
+                i => Color.Lerp(BandColor(look, 0, t[i]), look.outline, 0.5f), i => Color.Lerp(BandColor(look, 0, t[i]), look.outline, 0.5f));
+            // brillo fino justo debajo de la superficie
+            Color shine = new Color(1f, 1f, 1f, 0.75f);
+            Ribbon(pts, verts, cols, tris, i => Mathf.Min(0.03f, lw[i]), i => Mathf.Min(0.08f, lw[i] * 0.4f), i => shine, i => shine);
         }
 
-        /// <summary>Variante B: carámbanos colgando de los techos, separados al azar (determinista), con contorno.</summary>
-        private void Icicles(List<RimPoint> pts, bool[] on, List<Vector3> verts, List<Color> cols, List<int> tris)
+        /// <summary>
+        /// Variante B · Goteo: dos tonos planos (luz = color 3, sombra hacia dentro = color 1) con una línea fina de
+        /// color 0 al final, y goterones redondeados que bajan desde los suelos hacia dentro de la roca.
+        /// </summary>
+        private static void RimDrips(List<RimPoint> pts, float[] w, float[] t, bool[] on, RimLookGoteo look,
+                                     List<Vector3> verts, List<Color> cols, List<int> tris)
         {
-            if (biome.icicleLength <= 0f) return;
-            float next = 0.3f, o = biome.outlineWidth * 0.5f;
-            int k = 0;
-            for (int i = 0; i < pts.Count; i++)
+            int n = pts.Count;
+            var dw = (float[])w.Clone();
+            if (look.dripLength > 0f)
             {
-                var q = pts[i];
-                if (!on[i] || q.normal.y < 0.85f || q.distance < next) continue; // techo: la normal apunta arriba, a la roca
-                float r1 = Hash(k, 41f), r2 = Hash(k, 42f), r3 = Hash(k, 43f);
-                k++;
-                next = q.distance + 0.35f + r1 * 0.75f;
-                float len = biome.icicleLength * (0.35f + 0.65f * r2), bw = 0.12f + 0.12f * r3;
-                Vector2 tan = q.tangent, down = -q.normal;
-                Vector2 a = q.position - tan * bw * 0.5f + q.normal * 0.06f;
-                Vector2 b = q.position + tan * bw * 0.5f + q.normal * 0.06f;
-                Vector2 tip = q.position + down * len + tan * ((r1 - 0.5f) * bw * 0.4f);
-                Tri(verts, cols, tris, a - tan * o, b + tan * o, tip + down * o * 2f, biome.outline, biome.outline, biome.outline);
-                Color top = biome.ceilingBands[2], end = biome.floorBands[3];
-                Tri(verts, cols, tris, a, b, tip, top, top, end);
-                // brillo: tira clara en la mitad izquierda
-                Vector2 m = Vector2.Lerp(a, b, 0.35f);
-                Tri(verts, cols, tris, Vector2.Lerp(a, b, 0.2f), m, Vector2.Lerp(m, tip, 0.75f), end, end, new Color(end.r, end.g, end.b, 0f));
-            }
-        }
-
-        /// <summary>Variante B: destellos (estrellas de 4 puntas) sueltos dentro del borde de los suelos.</summary>
-        private void Glints(List<RimPoint> pts, bool[] on, float[] w, List<Vector3> verts, List<Color> cols, List<int> tris)
-        {
-            float next = 0.6f;
-            int k = 0;
-            Color white = Color.white, fade = new Color(1f, 1f, 1f, 0f);
-            for (int i = 0; i < pts.Count; i++)
-            {
-                var q = pts[i];
-                if (!on[i] || q.normal.y > -0.85f || q.distance < next) continue;
-                float r = Hash(k++, 61f);
-                next = q.distance + 0.9f + r * 1.3f;
-                Vector2 c = q.position + q.normal * (w[i] * 0.45f);
-                float s = 0.07f + 0.05f * r, th = s * 0.22f;
-                foreach (var d in new[] { Vector2.right, Vector2.up })
+                float next = look.dripSpacing * 0.5f;
+                int k = 0;
+                for (int c = 0; c < n; c++)
                 {
-                    Vector2 p = new Vector2(-d.y, d.x) * th;
-                    Tri(verts, cols, tris, c - d * s, c + p, c - p, fade, white, white);
-                    Tri(verts, cols, tris, c + d * s, c + p, c - p, fade, white, white);
+                    var q = pts[c];
+                    if (!on[c] || -q.normal.y < 0.7f || q.distance < next) continue; // sólo suelos: caen por gravedad
+                    float r1 = Hash(k, 71f), r2 = Hash(k, 72f), r3 = Hash(k, 73f);
+                    k++;
+                    next = q.distance + look.dripSpacing * (0.6f + 0.8f * r1);
+                    float len = look.dripLength * (0.4f + 0.6f * r2), hw = 0.08f + 0.07f * r3;
+                    for (int dir = -1; dir <= 1; dir += 2)
+                        for (int j = dir < 0 ? c : c + 1; j >= 0 && j < n; j += dir)
+                        {
+                            float d = Mathf.Abs(pts[j].distance - q.distance);
+                            if (d >= hw) break;
+                            dw[j] = Mathf.Max(dw[j], w[j] + len * Mathf.Sqrt(1f - (d / hw) * (d / hw)));
+                        }
                 }
             }
-        }
-
-        private static void Tri(List<Vector3> verts, List<Color> cols, List<int> tris, Vector2 a, Vector2 b, Vector2 c, Color ca, Color cb, Color cc)
-        {
-            int s = verts.Count;
-            verts.Add(a); verts.Add(b); verts.Add(c);
-            cols.Add(ca); cols.Add(cb); cols.Add(cc);
-            tris.Add(s); tris.Add(s + 1); tris.Add(s + 2);
+            float sf = look.shadowFraction;
+            Ribbon(pts, verts, cols, tris, i => 0f, i => dw[i], i => BandColor(look, 3, t[i]), i => BandColor(look, 3, t[i]));
+            Ribbon(pts, verts, cols, tris, i => dw[i] * (1f - sf), i => dw[i], i => BandColor(look, 1, t[i]), i => BandColor(look, 1, t[i]));
+            Ribbon(pts, verts, cols, tris, i => dw[i], i => dw[i] > 0f ? dw[i] + 0.035f : 0f, i => BandColor(look, 0, t[i]), i => BandColor(look, 0, t[i]));
         }
 
         /// <summary>

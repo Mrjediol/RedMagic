@@ -3,6 +3,7 @@
   "version": 2,
   "name": "nivel",
   "biome": "Hielo",
+  "background": "HieloSinCapaDelante",
   "width": 85,
   "height": 25,
   "legend": [

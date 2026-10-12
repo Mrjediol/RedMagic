@@ -25,6 +25,10 @@ import { pickAndSaveSounds, soundArrayBuffer } from './modules/sound-library.js'
 import { decodeAudio, playBuffer } from './modules/vfx-stage.js';
 import { saveEnemy, getEnemy, updateEnemy, deleteEnemy, listEntries, loadImageFromDataURL, buildThumbnail, exportAllRecords, restoreRecords } from './modules/enemy-library.js';
 import { initShellTools } from './modules/shell-tools.js';
+import { initLevelEditor } from './modules/level-editor.js';
+import { initParallaxEditor } from './modules/parallax-editor.js';
+import { initTabSettings } from './modules/tab-settings.js';
+import { KIND as PARALLAX_KIND, toUnityFile } from './modules/parallax-data.js';
 import { initTodoPanel } from './modules/todo-panel.js';
 import { initDesignsPanel } from './modules/designs-panel.js';
 import { PRESETS as VFX_PRESETS, FAMILIES as VFX_FAMILIES } from './modules/vfx-presets.js';
@@ -32,7 +36,6 @@ import { renderLibraryCards } from './modules/library-panel.js';
 import { buildCombinedBundle } from './modules/enemy-bundle.js';
 import { KINDS, KIND_IDS, SHEET_KIND_IDS, DEFAULT_KIND, kindOf, canonicalLanesFor, defaultLanesFor } from './modules/entry-kinds.js';
 import { CanvasView as MapCanvasView } from './modules/map-canvas-view.js';
-import { initLevelSketch } from './modules/level-sketch.js';
 import * as MapAssets from './modules/map-assets.js';
 import * as MapInstances from './modules/map-instances.js';
 import * as MapTracing from './modules/map-collision-tracing.js';
@@ -113,7 +116,8 @@ for (const btn of document.querySelectorAll('.tabBtn')) {
     if (btn.dataset.tab === 'library') renderLibraryTab();
     if (btn.dataset.tab === 'todo') { todoPanel?.onShow(); designsPanel?.onShow(); }
     if (btn.dataset.tab === 'map') { renderMapLibraryLists(); mapView.frameToFit(); }
-    if (btn.dataset.tab === 'levelsketch') levelSketch.onShow();
+    if (btn.dataset.tab === 'levels') levelEditor.onShow();
+    if (btn.dataset.tab === 'backgrounds') parallaxEditor.onShow();
   });
 }
 
@@ -1505,6 +1509,20 @@ function renderLibraryTab() {
         ? 'Un enemigo por partes no tiene hoja: se exporta desde Enemy Studio.'
         : 'Un jefe no tiene hoja propia: su arte es la del enemigo base.';
 
+      // A background (🏞️ Fondos): open it there, send it to Unity, copy it, delete it.
+      if (entry.kind === PARALLAX_KIND) return [
+        { label: 'Abrir en Fondos', className: 'small', onClick: (e) => { document.querySelector('.tabBtn[data-tab="backgrounds"]').click(); parallaxEditor.open(e.id); } },
+        {
+          label: '⬇ Exportar a Unity', className: 'small',
+          onClick: async (e) => {
+            const file = await toUnityFile(e.enemyName, e.draft?.layers || []);
+            downloadBlob(new Blob([JSON.stringify(file)], { type: 'application/json' }), `${e.enemyName.replace(/[\/:*?"<>|.]+/g, '_')}.parallax.json`);
+          },
+        },
+        { label: 'Duplicar', className: 'small', onClick: (e) => duplicateLibraryEntry(e) },
+        { label: 'Eliminar', className: 'small danger', onClick: async (e) => { await deleteLibraryEntry(e); renderLibraryTab(); } },
+      ];
+
       // A sound is just its file: hear it, copy it, delete it.
       if (entry.kind === 'sound') return [
         { label: '▶ Oír', className: 'small', onClick: (e) => playLibrarySound(e) },
@@ -1570,7 +1588,6 @@ function renderLibraryTab() {
 // multi-select) but driven by the map-*.js modules instead of inline logic. See ARCHITECTURE.md's
 // "Map Tracer" section for the module map and the two-kind (maps/pieces) library schema.
 
-const levelSketch = initLevelSketch();
 const mapTabPanel = document.getElementById('tab-map');
 const mapCanvas = document.getElementById('mapCanvas');
 const mapCtx = mapCanvas.getContext('2d');
@@ -2209,6 +2226,17 @@ const designsPanel = initDesignsPanel({
 
 const tabButtonOf = (tab) => document.querySelector(`.tabBtn[data-tab="${tab}"]`);
 const openTabById = (tab) => { const btn = tabButtonOf(tab); if (btn && !btn.disabled) btn.click(); };
+// 🧱 Niveles: el shell aún no existe aquí; se le llama cuando ya está.
+const levelEditor = initLevelEditor({
+  toast: (msg, kind) => shell?.toast(msg, kind),
+  setDirty: (dirty, what) => shell?.setDirty('levels', dirty, what),
+});
+// 🏞️ Fondos: lo que guarda en la Biblioteca lo ve 🧱 Niveles (que relee la lista al abrirse).
+const parallaxEditor = initParallaxEditor({
+  toast: (msg, kind) => shell?.toast(msg, kind),
+  setDirty: (dirty, what) => shell?.setDirty('backgrounds', dirty, what),
+});
+
 const clickSave = (btn) => { if (!btn || btn.disabled) return false; btn.click(); return undefined; };
 
 /** Space in Enemy Studio (either door): "▶ Probar" of the open gesture's timeline, else of the first gesture. */
@@ -2224,7 +2252,7 @@ shell = initShellTools({
   tabButton: tabButtonOf,
   tabPanel: (tab) => document.getElementById(`tab-${panelOf(tab)}`),
   // Only the tabs where an edit can be lost by closing: the rest either save as they go or only export.
-  dirtyTabs: ['studio', 'vfx', 'boss', 'enemy', 'fx'],
+  dirtyTabs: ['studio', 'vfx', 'boss', 'enemy', 'fx', 'levels', 'backgrounds'],
   saveActions: {
     studio: async () => { await rigComposer.save(); },
     gestures: async () => { await rigComposer.save(); },
@@ -2232,6 +2260,8 @@ shell = initShellTools({
     boss: () => clickSave(document.getElementById('bossSaveBtn')),
     sprites: () => clickSave(saveToLibraryBtn),
     map: () => clickSave(document.getElementById('mapSaveMapBtn')),
+    levels: () => levelEditor.save(),
+    backgrounds: () => parallaxEditor.save(),
     enemy: async () => ((await enemyCreator.persistLinked()) ? undefined : 'Enemy Creator guarda al exportar: usa "⬇ Exportar".'),
     fx: () => 'Proyectil/VFX guarda al exportar: usa "⬇ Exportar".',
     todo: async () => { await todoPanel.flush(); return 'La lista se guarda sola; ahora mismo, guardada.'; },
@@ -2242,7 +2272,7 @@ shell = initShellTools({
     gestures: playOpenGesture,
   },
   paletteItems: async () => {
-    const items = [...document.querySelectorAll('#tabBar .tabBtn')].map((btn, i) => ({
+    const items = tabSettings.visibleTabs().map((btn, i) => ({
       group: 'Pestañas', label: btn.firstChild.textContent.trim(), hint: `Alt+${i + 1}`, run: () => btn.click(),
     }));
     items.push(
@@ -2271,27 +2301,34 @@ shell = initShellTools({
 
 // ============================================================ tab shortcuts
 
-// Alt+1…8 opens the tab in that position of the bar (Ctrl+number is the browser's own tab switch and
-// cannot be taken). Each tab shows its number, and the order of the buttons in index.html is the
-// only place the mapping lives. Works from inside a text field too: Alt+digit types nothing.
-(function tabShortcuts() {
-  const buttons = [...document.querySelectorAll('#tabBar .tabBtn')];
-  buttons.forEach((btn, i) => {
+// Alt+1…9 opens the VISIBLE tab in that position of the bar, in the order set in ⚙️ Opciones (modules/tab-settings.js;
+// index.html only gives the default order). Ctrl+number is the browser's own tab switch and cannot be taken. Each
+// visible tab shows its number. Works from inside a text field too: Alt+digit types nothing.
+const tabSettings = initTabSettings({ onChange: () => renumberTabs() });
+
+function renumberTabs() {
+  document.querySelectorAll('#tabBar .tabKey').forEach((k) => k.remove());
+  // del DOM y no de tabSettings: initTabSettings ya avisa (onChange) antes de devolver
+  [...document.querySelectorAll('#tabBar .tabBtn')].filter((b) => !b.hidden).forEach((btn, i) => {
+    btn.dataset.baseTitle ??= btn.title;
+    if (i >= 9) { btn.title = btn.dataset.baseTitle; return; }
     const key = document.createElement('kbd');
     key.className = 'tabKey';
     key.textContent = String(i + 1);
     btn.appendChild(key);
-    btn.title = `${btn.title} (Alt+${i + 1})`.trim();
+    btn.title = `${btn.dataset.baseTitle} (Alt+${i + 1})`.trim();
   });
-  document.addEventListener('keydown', (e) => {
-    if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-    const m = /^(?:Digit|Numpad)([1-9])$/.exec(e.code);
-    const btn = m ? buttons[Number(m[1]) - 1] : null;
-    if (!btn || btn.disabled) return;
-    e.preventDefault();
-    btn.click();
-  });
-}());
+}
+renumberTabs();
+
+document.addEventListener('keydown', (e) => {
+  if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  const m = /^(?:Digit|Numpad)([1-9])$/.exec(e.code);
+  const btn = m ? tabSettings.visibleTabs()[Number(m[1]) - 1] : null;
+  if (!btn || btn.disabled) return;
+  e.preventDefault();
+  btn.click();
+});
 
 // ============================================================ reopen the last tab
 
@@ -2303,7 +2340,8 @@ shell = initShellTools({
   // First visit: the tab used most. (Sprites is the one the page loads on, so it needs no click.)
   if (last === 'designs') last = 'todo';   // 🎨 Designs now lives inside 📋 Tareas ▸ Talleres
   const wanted = bridge.linked ? 'gestures' : last || 'studio';
-  const btn = wanted !== 'sprites' ? document.querySelector(`.tabBtn[data-tab="${wanted}"]`) : null;
-  if (btn && !btn.disabled) btn.click();
+  const btn = document.querySelector(`.tabBtn[data-tab="${wanted}"]`);
+  if (btn && !btn.disabled && !btn.hidden) btn.click();
+  else tabSettings.visibleTabs()[0]?.click();
   if (bridge.linked) enemyStudio.openFromUnity();
 }());

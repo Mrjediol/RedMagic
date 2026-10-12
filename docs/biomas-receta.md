@@ -7,22 +7,22 @@ Hielo es el primer bioma; bosque y volcán repiten este proceso. Aquí va solo l
 para no repetirlo). Ejemplo resuelto con valores: `docs/niveles-prompts-hielo.md`. Regla: cada buen resultado
 nuevo se apunta aquí en el mismo momento.
 
-## Herramientas (`Web/ParallaxTest/`, aparte de la web principal)
+## Herramientas
 
-| Página | Para qué |
+| Dónde | Para qué |
 |---|---|
-| `parallax-test.html` | Montar las 5 capas de fondo: pegar (Ctrl+V) / arrastrar / subir, velocidad, tamaño, anclaje vertical (proporcional / techo / suelo), espejo, quitar magenta (vista previa), difuminar, atenuar, delante del jugador. Jugador volador + cámara que sigue. **Exportar escena (.json)**. |
-| `comparar-recortes.html` | Original vs limpia (ComfyUI) lado a lado, zoom a píxel, fondos negro/blanco/magenta/azul juego. |
-| `boceto-nivel.html` | Nivel completo: carga la escena .json, terreno (borde procedural + roca pintada), pared+puerta en versión A (una imagen) o B (separadas) con atenuar/tamaño/posición, nieve que se posa. |
+| Web ▸ **🏞️ Fondos** | Montar las capas del fondo: pegar (Ctrl+V) / arrastrar / subir, velocidad, tamaño, altura, anclaje vertical (proporcional / techo / suelo), espejo, extremos del nivel (pared y puerta), quitar magenta, recortar bordes, atenuar, delante del jugador / encima del terreno. Jugador volador + cámara del juego delante de un nivel con el borde del bioma. Se guarda en la Biblioteca y se exporta a Unity (**⬇ Exportar a Unity**). |
+| `Web/ParallaxTest/comparar-recortes.html` | Original vs limpia (ComfyUI) lado a lado, zoom a píxel, fondos negro/blanco/magenta/azul juego. |
+| Web ▸ **🧱 Niveles** | El nivel entero: terreno y plataformas con el borde del bioma, delante de un fondo de la Biblioteca. |
 
-Ambas guardan en el navegador (IndexedDB). Para otro bioma: cambiar textura de roca, colores del borde y
+Los fondos se guardan en la Biblioteca de la web (IndexedDB); los niveles, en `Assets/Levels/Bocetos/`. Para otro bioma: cambiar textura de roca, colores del borde y
 partículas (ver "Qué cambia por bioma").
 
 ## Orden de trabajo (validar cada paso con el usuario antes del siguiente)
 
-1. Capas de parallax 1→5 en `parallax-test.html`.
+1. Capas de parallax 1→5 en 🏞️ Fondos.
 2. Roca de relleno (T1) y pared/puerta.
-3. Montaje en `boceto-nivel.html` con el terreno.
+3. Montaje en 🧱 Niveles con el terreno (Fondo = el de la Biblioteca).
 4. Objetos sueltos (cristales/plataformas/decoración) pedidos uno a uno con variantes; luces.
 5. Pasar a Unity.
 
@@ -70,7 +70,7 @@ corregidas de la conversación (capa 2 "ONLY isolated shapes…", capa 3 "exactl
 
 ## Pared y puerta (objetos de fondo en los extremos del nivel)
 
-Probar las dos versiones en `boceto-nivel.html`:
+Probar las dos versiones en 🏞️ Fondos / 🧱 Niveles:
 - **A, una imagen**: la puerta queda integrada con su sombra, pero atenuar la pared atenúa la puerta.
 - **B, separadas**: se atenúan por separado.
 
@@ -103,15 +103,15 @@ la imagen, borde interior irregular, 9:16; puerta: arco de piedra frontal, 1:1).
    con "the same … as in the reference image, but very tall and narrow so it fills this very tall thin image".
    Mantuvo el estilo; ×4 → 1448×11585, recortada y reducida a la mitad (575×5719) para la web.
 4. Usar la salida `_cut` (fondo quitado) recortada a su contenido. Montar como capa con Repetir = "extremos del
-   nivel" en `parallax-test.html`.
+   nivel" en 🏞️ Fondos.
 
 ## Pasar un bioma a Unity (sistema `RedMagic.Levels`, ver `docs/architecture/levels.md`)
 
 1. Crear su `LevelBiome` (copia de `Assets/Levels/_Biomas/Hielo/Hielo.asset`): textura de roca (T1 del bioma),
    colores de las 4 bandas de suelo y techo, contorno, brillos, grosores.
-2. En `parallax-test.html`, **Exportar escena** con sus 7 capas ya limpias → `Tools ▸ RedMagic ▸ Niveles ▸ Importar
-   fondo de parallax (.json)`. ⚠ `LevelSetup` tiene la carpeta y los nombres del hielo fijos (`IceFolder`,
-   `EnsureIceBiome`, `CreateIceTestScenes`): parametrizarlo por bioma ANTES de empezar el 2º.
+2. En 🏞️ Fondos, **⬇ Exportar a Unity** → en Unity `EditorNiveles ▸ Importar fondo…`: crea `Fondo_<nombre>` en
+   `<bioma>/Fondos/<nombre>/` (el bioma del nivel abierto) y ofrece ponerlo como fondo del bioma y del nivel abierto.
+   ⚠ `LevelSetup.EnsureIceBiome` sigue siendo sólo de hielo: para el 2º bioma, crear su `LevelBiome` a mano o generalizarlo.
 3. Partículas del bioma: copiar `Nieve.prefab` y cambiar textura, velocidad y colisión (hojas: más lentas y con
    giro; ceniza/brasas: suben, sin colisión).
 4. Nivel: GameObject con `Level` (tamaño en unidades, 1 = 40 px) + `Grid/Terreno` (Tilemap) → pintar con

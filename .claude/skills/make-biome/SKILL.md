@@ -25,7 +25,7 @@ Ice is the worked example (2026-10-10/11). **Do not re-derive the process; follo
 ## Steps
 1. **Parallax, layer by layer** (prompts in chat; template in `biomas-receta.md` §Fondo):
    far full background (no magenta) → far isolated shapes → pillars/trunks (straight shaft, 1:1, ~3 slim) → ceiling
-   hangers (anchored to ceiling) → near silhouettes (optional, in front). Mount each in `Web/ParallaxTest/parallax-test.html`
+   hangers (anchored to ceiling) → near silhouettes (optional, in front). Mount each in the web tab **🏞️ Fondos**
    (paste/drag; anchors proportional/techo/suelo; espejo; extremos del nivel; atenuar/difuminar) with the user.
 2. **Wall + door** as layers 6-7 ("extremos del nivel", anchored to floor). Best source so far: cut them out of a good
    Gemini map with ComfyUI (`claude-workflow.mjs run --ref <crop> --keep-size` "keep ONLY … exactly as drawn …
@@ -36,13 +36,13 @@ Ice is the worked example (2026-10-10/11). **Do not re-derive the process; follo
    transparent edge). Review side by side with the user in `Web/ParallaxTest/comparar-recortes.html` (original vs new, zoom
    to pixel, bg black/white/magenta/game blue). Load PNGs with
    **Subir/drag, never Ctrl+V** (Windows drops alpha). `clean` workflow and erode exist but were rejected for ice.
-4. **Export the scene** (`Exportar escena (.json)` in parallax-test; transparent layers go as PNG).
+4. **Save it in the Biblioteca** (💾 in 🏞️ Fondos) and **export** it (`⬇ Exportar a Unity` → `*.parallax.json`; transparent layers go as PNG).
 5. **Rock texture** (T1 template in `biomas-receta.md`): seamless 1:1, flat light, no outline. Copy to
    `Assets/Levels/_Biomas/<Bioma>/roca.*`.
 6. **Unity**: create `LevelBiome` (copy `Hielo.asset`): rock texture, 4 floor + 4 ceiling band colours, outline,
-   inner glow, widths. ⚠ `LevelSetup` still hardcodes the ice folder (`IceFolder`, `EnsureIceBiome`,
-   `CreateIceTestScenes`, background prefab name): **parametrize it by biome first** (folder + name), then
-   *Importar fondo de parallax (.json)*, particles (copy `Nieve.prefab` + `SnowSettings`; leaves/ash: change texture,
+   inner glow, widths (⚠ `LevelSetup.EnsureIceBiome` is ice-only: make the new `LevelBiome` by hand or generalize it).
+   Background: open a level of that biome and run **EditorNiveles ▸ Importar fondo…** with the exported `*.parallax.json`
+   (makes `Fondo_<name>` and offers to set it on the biome + open level); particles (copy `Nieve.prefab` + `SnowSettings`; leaves/ash: change texture,
    speed, collision), test scenes 1000/2000/3000 px.
 7. Compile-check (`unity command recompile`), capture with `capture_game_view` in edit mode to self-check (delete the
    PNG after), commit, then give the user a short test list (they play; no Play Mode from here).

@@ -203,6 +203,26 @@ KINDS.sound = {
   configFile: null,
 };
 
+// A parallax background (🏞️ Fondos): its layers (image + the fields of ParallaxBackgroundLayer) are the record's
+// `draft` (parallax-data.js). No sheet, no config: it reaches Unity as one *.parallax.json (EditorNiveles ▸ Importar fondo…).
+KINDS.parallax = {
+  id: 'parallax',
+  sheet: false,
+  label: 'Fondo',
+  plural: 'Fondos',
+  icon: '🏞️',
+  nameLabel: 'Nombre del fondo',
+  namePlaceholder: 'ej. Hielo',
+  fallbackName: 'Fondo',
+  saveLabel: '💾 Guardar fondo',
+  emptyMessage: 'Todavía no hay fondos guardados. Móntalos en la pestaña 🏞️ Fondos.',
+  lanes: [],
+  defaultLanes: [],
+  projectileLanes: false,
+  creator: null,
+  configFile: null,
+};
+
 /** Kind ids in display order. */
 export const KIND_IDS = Object.keys(KINDS);
 

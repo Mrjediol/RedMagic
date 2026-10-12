@@ -85,6 +85,14 @@ namespace RedMagic.Levels
 
 
 
+        /// <summary>'Extremos del nivel' y dibujada este frame: esquina inferior izquierda de la copia izquierda.</summary>
+        public Vector2 LeftEnd { get; private set; }
+        /// <summary>Esquina inferior derecha de la copia derecha (la de espejo).</summary>
+        public Vector2 RightEnd { get; private set; }
+        public bool HasEnds { get; private set; }
+        public string SortingLayerName { get; private set; } = LevelSorting.Layer;
+        public int SortingOrder { get; private set; }
+
         private MeshRenderer _main, _mirror, _shadow, _shadowMirror, _ground, _groundMirror;
         private MaterialPropertyBlock _block;
         private Material _material, _shadowMaterial;
@@ -166,6 +174,7 @@ namespace RedMagic.Levels
 
         private void LateUpdate()
         {
+            HasEnds = false;
             var cam = Camera.main;
             if (_level == null) _level = GetComponentInParent<Level>();
             if (cam == null || !cam.orthographic || texture == null || _level == null || _main == null)
@@ -229,6 +238,9 @@ namespace RedMagic.Levels
                     bottomLeft = level.yMin + _level.GroundTop(Mathf.FloorToInt(left + w * 0.5f - level.xMin)) + fine;
                     bottomRight = level.yMin + _level.GroundTop(Mathf.FloorToInt(right - w * 0.5f - level.xMin)) + fine;
                 }
+                LeftEnd = new Vector2(left, bottomLeft); RightEnd = new Vector2(right, bottomRight);
+                HasEnds = true; SortingLayerName = layer; SortingOrder = order;
+                FollowLeftEnd();
                 Draw(_main, new Vector3(left, bottomLeft), new Vector3(w, h, 1f), new Vector4(0f, 1f, 2f, 0f), fog, layer, order);
                 Draw(_mirror, new Vector3(right - w, bottomRight), new Vector3(w, h, 1f), new Vector4(0f, 1f, 2f, 1f), fog, layer, order);
                 if (shadows)
@@ -265,6 +277,18 @@ namespace RedMagic.Levels
                      new Vector4(u0, viewW / w, repeat == ParallaxRepeat.Mirror ? 1f : 0f, 0f), fog, layer, order);
                 _mirror.enabled = false;
             }
+        }
+
+        /// <summary>
+        /// Si lleva hijos <see cref="LevelEndsAttachment"/> (p. ej. los escalones de la puerta), el objeto de la capa se
+        /// coloca en la esquina inferior izquierda de su copia izquierda: así los hijos se mueven con ella y se pueden
+        /// colocar a mano dentro. Sólo cuando se mueve con el mundo (velocidad 1): si no, cambiaría cada frame.
+        /// </summary>
+        private void FollowLeftEnd()
+        {
+            if (!Mathf.Approximately(speed, 1f) || GetComponentInChildren<LevelEndsAttachment>(true) == null) return;
+            var p = new Vector3(LeftEnd.x, LeftEnd.y, transform.position.z);
+            if ((transform.position - p).sqrMagnitude > 1e-8f) transform.position = p;
         }
 
         private void Shadow(MeshRenderer r, Vector3 position, Vector3 scale, Vector4 uv, Vector2 blur, float mode, Color color, string layer, int order)

@@ -36,12 +36,14 @@
   <button class="tabBtn" data-tab="boss" title="Un jefe con sus ataques y fases">👑 Boss Creator</button>
   <button class="tabBtn" data-tab="library" title="Todo lo guardado en este navegador">📚 Biblioteca</button>
   <button class="tabBtn" data-tab="todo" title="Apuntes (lo que falta por hacer) y talleres (diseños, enemigos…) con la cola de Claude">📋 Tareas</button>
+  <button class="tabBtn" data-tab="levels" title="Pintar el terreno y las plataformas de un nivel para Unity">🧱 Niveles</button>
+  <button class="tabBtn" data-tab="backgrounds" title="Fondos de parallax por capas: probarlos y llevarlos a Unity">🏞️ Fondos</button>
   <span class="tabSep"></span>
   <button class="tabBtn active" data-tab="sprites" title="Cortar una hoja de sprites en animaciones">🍄 Sprites</button>
   <button class="tabBtn" data-tab="enemy" title="Comportamiento de un enemigo de hoja de sprites">🧩 Enemy Creator</button>
   <button class="tabBtn" data-tab="fx" title="Cómo vuela y golpea un proyectil">🔥 Proyectil/VFX</button>
   <button class="tabBtn" data-tab="map" title="Trazar colisiones y piezas sobre un fondo">🗺️ Map Tracer</button>
-  <button class="tabBtn" data-tab="levelsketch" title="Pintar en una cuadrícula dónde hay terreno, a escala fija">🧱 Boceto de nivel</button>
+  <button class="tabBtn" data-tab="options" title="Qué pestañas se ven y en qué orden">⚙️ Opciones</button>
 </div>
 
 <div id="tab-sprites" class="tabPanel">
@@ -428,26 +430,110 @@
   </div>
 </div>
 
-<div id="tab-levelsketch" class="tabPanel" hidden>
-  <div id="lsSidebar">
+<div id="tab-levels" class="tabPanel" hidden>
+  <div id="lvSidebar">
     <div>
-      <h1>🧱 Boceto de nivel</h1>
-      <p class="hint">Clic izq. pinta terreno · clic der. (o Shift) borra. 1 celda = 1 unidad de Unity: todos los niveles comparten escala.</p>
+      <h1>🧱 Niveles</h1>
+      <p class="hint">Pinta roca y plataformas en la cuadrícula. 1 celda = 1 unidad de Unity = 40 px. En Unity: menú <b>EditorNiveles ▸ Importar nivel…</b></p>
     </div>
-    <div class="field"><label>Nombre</label><input type="text" id="lsName" value="nivel"></div>
-    <div class="row">
-      <div class="field"><label>Ancho (celdas)</label><input type="number" id="lsW" value="60"></div>
-      <div class="field"><label>Alto (celdas)</label><input type="number" id="lsH" value="30"></div>
+
+    <div>
+      <h2>Nivel</h2>
+      <div class="field"><label>Nombre</label><input type="text" id="lvName" value="nivel"></div>
+      <div class="field"><label>Bioma</label><select id="lvBiome"></select></div>
+      <div class="field"><label>Fondo</label><select id="lvBg" title="El fondo del bioma en Unity, o uno guardado en 🏞️ Fondos"></select></div>
+      <div class="row">
+        <div class="field"><label>Ancho <span id="lvWpx" class="lvPx"></span></label><input type="number" id="lvW" min="12" max="400"></div>
+        <div class="field"><label>Alto <span id="lvHpx" class="lvPx"></span></label><input type="number" id="lvH" min="12" max="75"></div>
+      </div>
+      <button id="lvResize" style="width:100%;">Aplicar tamaño</button>
+      <p class="hint" style="margin-top:6px;">Alto máximo 75. Lo pintado se queda pegado abajo a la izquierda (como en Unity). El marco de 1 celda es siempre roca.</p>
     </div>
-    <button id="lsResize" style="width:100%;">Aplicar tamaño</button>
-    <div class="field"><label>Alto del jugador (celdas)</label><input type="number" id="lsPlayer" value="2" min="1" max="10"></div>
-    <div class="field"><label>Zoom</label><input type="range" id="lsZoom" min="6" max="48" value="20"></div>
-    <button id="lsFloor" style="width:100%;">Rellenar fila inferior (suelo)</button>
-    <button id="lsClear" class="danger" style="width:100%;">Borrar todo</button>
-    <button id="lsExport" class="primary" style="width:100%;">⬇ Exportar .levelsketch.json</button>
-    <label class="hint">Importar: <input type="file" id="lsImport" accept=".json"></label>
+
+    <div>
+      <h2>Archivo</h2>
+      <div class="row">
+        <button id="lvNew">Nuevo</button>
+        <select id="lvOpen" data-nodirty title="Bocetos guardados en Assets/Levels/Bocetos"><option value="">Abrir…</option></select>
+      </div>
+      <button id="lvSave" class="primary" style="width:100%;margin-top:8px;">💾 Guardar</button>
+      <p class="hint" style="margin-top:6px;">Se guarda en <code>Assets/Levels/Bocetos/&lt;nombre&gt;.levelsketch.json</code>. También puedes arrastrar un .json aquí.</p>
+      <p id="lvWarn" class="hint lvWarn" hidden></p>
+    </div>
+
+    <div>
+      <h2>Controles</h2>
+      <p class="hint">
+        Clic izq. pinta · clic der. borra<br>
+        Rueda: zoom · botón central o Espacio+arrastrar: mover<br>
+        Vista previa: rueda / WASD / flechas mueven la cámara<br>
+        B pincel · R rectángulo · G relleno · E borrar · 1–9 tipo · [ ] grosor · P vista · F ajustar · Ctrl+Z / Ctrl+Y
+      </p>
+    </div>
   </div>
-  <div id="lsMain"><div id="lsWrap"><canvas id="lsCanvas"></canvas></div><div id="lsStatus" class="hint"></div></div>
+
+  <div id="lvMain">
+    <div id="lvTools" data-nodirty>
+      <span class="lvGroup"><button class="small" data-lvtool="brush" title="Pincel (B). Clic derecho borra.">✏️ Pincel</button><button class="small" data-lvtool="rect" title="Rectángulo (R). Clic derecho borra el rectángulo.">▭ Rectángulo</button><button class="small" data-lvtool="fill" title="Relleno (G): la zona conectada del mismo tipo">🪣 Relleno</button><button class="small" data-lvtool="erase" title="Borrar (E)">🧽 Borrar</button></span>
+      <span class="lvGroup" id="lvMats"></span>
+      <span class="lvGroup"><select id="lvBrush" title="Grosor del pincel ([ y ])"><option>1</option><option>2</option><option>3</option><option>5</option><option>8</option></select></span>
+      <span class="lvGroup"><button class="small" id="lvModeEdit" title="Cuadrícula (P)">🔲 Edición</button><button class="small" id="lvModePreview" title="Como en el juego: cámara de 20 unidades de alto, borde y fondo del bioma (P)">🎮 Vista previa</button><button class="small" id="lvFit" title="Ajustar (F)">⤢</button></span>
+      <span class="lvGroup"><button class="small" id="lvUndo" title="Deshacer (Ctrl+Z)">↶</button><button class="small" id="lvRedo" title="Rehacer (Ctrl+Y)">↷</button></span>
+    </div>
+    <div id="lvStage"><canvas id="lvCanvas"></canvas></div>
+    <div id="lvStatus"><span id="lvStPos">—</span><span id="lvStSize"></span><span id="lvStCount"></span><span id="lvStHint"></span></div>
+  </div>
+  <input type="file" id="lvFileInput" accept=".json" hidden>
+</div>
+
+<div id="tab-backgrounds" class="tabPanel" hidden>
+  <div id="pbSidebar">
+    <div>
+      <h1>🏞️ Fondos</h1>
+      <p class="hint">Fondos de parallax por capas (1 = la más lejana). Elige una capa y pega una imagen con Ctrl+V, arrástrala o usa «Subir imagen…».</p>
+    </div>
+
+    <div>
+      <h2>Fondo</h2>
+      <div class="field"><label>Nombre</label><input type="text" id="pbName"></div>
+      <select id="pbOpen" data-nodirty title="Fondos de la Biblioteca, o traer el de un bioma de Unity"><option value="">Abrir…</option></select>
+      <button id="pbSave" class="primary" style="width:100%;margin-top:8px;">💾 Guardar en la Biblioteca</button>
+      <button id="pbExport" style="width:100%;margin-top:6px;">⬇ Exportar a Unity</button>
+      <p class="hint" style="margin-top:6px;">Guardado en la Biblioteca se puede seguir más tarde y ya sale en 🧱 Niveles. Para el juego: «Exportar a Unity» y en Unity <b>EditorNiveles ▸ Importar fondo…</b></p>
+    </div>
+
+    <div data-nodirty>
+      <h2>Nivel de prueba</h2>
+      <div class="row">
+        <div class="field"><label>Ancho (u)</label><input type="number" id="pbLvW" min="12" max="400"></div>
+        <div class="field"><label>Alto (u)</label><input type="number" id="pbLvH" min="12" max="75"></div>
+      </div>
+      <div class="field"><label>Borde del bioma</label><select id="pbBiome"></select></div>
+      <p class="hint">Mueve al jugador con WASD o las flechas (vuela); R lo baja al suelo. La cámara es la del juego: 20 unidades de alto.</p>
+    </div>
+  </div>
+
+  <div id="pbMain">
+    <div id="pbStage"><canvas id="pbCanvas"></canvas></div>
+    <div id="pbStatus"></div>
+  </div>
+
+  <div id="pbRight">
+    <div class="pbRightHead"><h2>Capas</h2><button id="pbAddLayer" class="small">＋ Añadir capa</button></div>
+    <div id="pbLayers"></div>
+  </div>
+</div>
+
+<div id="tab-options" class="tabPanel" hidden>
+  <div id="optPanel">
+    <h1>⚙️ Opciones</h1>
+    <div>
+      <h2>Pestañas</h2>
+      <p class="hint">Qué pestañas se ven y en qué orden (Alt+1…9 sigue este orden). Se guarda en este navegador.</p>
+      <div id="optTabList" data-nodirty></div>
+      <button id="optTabsReset" class="small" style="margin-top:10px;">Volver a lo de serie</button>
+    </div>
+  </div>
 </div>
 
 <div id="tab-map" class="tabPanel" hidden>

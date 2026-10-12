@@ -24,6 +24,8 @@
 //
 //   POST /api/adjunto { name, type, data: <base64> } → { id, name }   a reference image for a task's prompt (Logs/Taller/adjuntos/)
 //   GET  /api/adjunto?id=<id>       → that image
+//   GET  /api/niveles/bocetos       → [{ name, mtime }]   Assets/Levels/Bocetos (niveles.mjs)
+//   GET  /api/niveles/boceto?name=   GET /api/niveles/arte?path=Assets/Levels/…   POST /api/niveles/guardar { name, text } → { path }
 //   GET  /api/movil                → { key, url }   (this PC only) the phone's pairing link
 //   POST /api/pair   { key }        → sets the phone's cookie
 //
@@ -46,6 +48,7 @@ import { Store } from './store.mjs';
 import { Runner } from './runner.mjs';
 import { Disenos } from './disenos.mjs';
 import { Enemigos } from './enemigos.mjs';
+import { Niveles } from './niveles.mjs';
 import { BEHAVIORS, PIECES } from './design-prompts.mjs';
 import { loadZones, loadTypes } from '../enemy-prompt.mjs';
 
@@ -96,6 +99,7 @@ const runner = new Runner(store, {
 });
 const disenos = new Disenos({ projectRoot, comfyOutput: path.resolve(config.comfyOutput), store, runner });
 const enemigos = new Enemigos({ projectRoot, store, runner });
+const niveles = new Niveles({ projectRoot });
 const token = crypto.randomBytes(24).toString('hex');
 
 // ============================================================ the phone
@@ -216,6 +220,9 @@ async function api(req, res, url) {
   }
   if (route === 'GET /api/enemigos/prefabs') return send(res, 200, enemigos.prefabs());
   if (route === 'GET /api/img') return serveFile(res, disenos.resolveImage(url.searchParams.get('src')), 'no-cache');
+  if (route === 'GET /api/niveles/bocetos') return send(res, 200, niveles.list());
+  if (route === 'GET /api/niveles/boceto') return serveFile(res, niveles.resolveSketch(url.searchParams.get('name')), 'no-cache');
+  if (route === 'GET /api/niveles/arte') return serveFile(res, niveles.resolveArt(url.searchParams.get('path')), 'no-cache');
   if (route === 'GET /api/status') return send(res, 200, { rev: store.rev, ...runner.status(), apps: await refreshApps() });
 
   // Everything below changes something.
@@ -266,6 +273,7 @@ async function api(req, res, url) {
   if (route === 'POST /api/cancel') { runner.cancel(body.taskId); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/unqueue') { runner.unqueue(String(body.qid || '')); return send(res, 200, { ok: true }); }
   if (route === 'POST /api/force') { runner.forceStart(body.taskId); return send(res, 200, { ok: true }); }
+  if (route === 'POST /api/niveles/guardar') return send(res, 200, niveles.save(body));
   if (route === 'POST /api/open') {
     if (!['comfy', 'unity'].includes(body.app)) return send(res, 400, { error: 'app' });
     runner.open(body.app);

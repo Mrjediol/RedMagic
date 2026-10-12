@@ -6,7 +6,7 @@ que dependa de Legacy.
 
 | Carpeta | Qué hay |
 |---|---|
-| `Legacy/Scripts/` | Código viejo (antes `Assets/Scripts/Legacy/`): sistema de **habilidades** (`AbilityUser`, `AbilityDefinition`, `AbilityLibrary`, menú K), **niveles de arma 1-3** (`AbilityLevelManager`, `WeaponUpgradeAltar`), niveles por kits (`Levels/`), `ProceduralSway`, interactuables viejos. `Editor/`: migraciones de una vez y el Map Tracer (`CollisionImporter`, `MapTracer.html`) |
+| `Legacy/Scripts/` | Código viejo (antes `Assets/Scripts/Legacy/`): sistema de **habilidades** (`AbilityUser`, `AbilityDefinition`, `AbilityLibrary`, menú K), **niveles de arma 1-3** (`AbilityLevelManager`, `WeaponUpgradeAltar`), niveles por kits (`Levels/`), `ProceduralSway`, interactuables viejos. `Editor/`: migraciones de una vez, el Map Tracer (`CollisionImporter`, `MapTracer.html`) y `LevelSketchImporter` (sin menú; sustituido por EditorNiveles) |
 | `Legacy/Scenes/` | Todas las escenas viejas (Bosque, Fire, Ice2-4, `Worlds/`, `Test/` — incluidas `NivelHielo_2000/3000` y `TestMap`) |
 | `Legacy/OldEnemies/` | Prefabs de enemigos **por sprite** y sus jefes (`Enemy_*`, `Boss_*`) |
 | `Legacy/Prefabs/` | `Maps/` (mapas viejos), `Projectiles/` (proyectiles de los enemigos por sprite), `Fx/` sin uso |
@@ -16,6 +16,7 @@ que dependa de Legacy.
 | `Legacy/Run/` + `Legacy/Scripts/Run/` | `PlayerScaleConfig` (escala del jugador por escena; ya no hace falta) |
 | `Legacy/Json/`, `Legacy/LevelsBoceto/` | Pruebas |
 | `Legacy/AdaptivePerformance/` | Ajustes huérfanos del paquete Adaptive Performance (no está instalado) |
+| `Web/legacy/level-sketch.js`, `Web/legacy/EditorNiveles/` | La pestaña vieja 🧱 Boceto de nivel y la primera página suelta del editor de niveles (sustituidas por la pestaña 🧱 Niveles) |
 | `Resources/Legacy/Abilities/` | Los `AbilityDefinition` (por ruta de Resources, se quedan ahí) |
 
 Nada de Legacy se **autocrea** (`RuntimeInitializeOnLoadMethod` quitado de `AbilityLevelManager`, `AbilityMenuController`, `WeaponUpgradeMenuController` y los HUD viejos): si no lo pone una escena o un prefab, no corre.

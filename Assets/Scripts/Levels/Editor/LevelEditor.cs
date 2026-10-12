@@ -1,6 +1,9 @@
 using RedMagic.Levels;
 using UnityEditor;
+using UnityEditor.EditorTools;
+using UnityEditor.Tilemaps;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace RedMagic.LevelsEditor
 {
@@ -31,13 +34,32 @@ namespace RedMagic.LevelsEditor
             EditorGUILayout.Space();
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("Regenerar")) level.Rebuild();
-                if (GUILayout.Button("Abrir paleta de terreno"))
-                {
-                    EditorApplication.ExecuteMenuItem("Window/2D/Tile Palette");
-                    if (level.Terrain != null) Selection.activeGameObject = level.Terrain.gameObject;
-                }
+                using (new EditorGUI.DisabledScope(level.Terrain == null))
+                    if (GUILayout.Button("🖌 Pintar roca", GUILayout.Height(26))) Paint(level.Terrain, false);
+                using (new EditorGUI.DisabledScope(level.Platforms == null))
+                    if (GUILayout.Button("🖌 Pintar plataformas", GUILayout.Height(26))) Paint(level.Platforms, true);
             }
+            if (GUILayout.Button("Regenerar")) level.Rebuild();
+        }
+
+        /// <summary>
+        /// Abre la Tile Palette lista para pintar: Tilemap destino (Terreno o Plataformas), paleta del terreno, el tile
+        /// en el pincel y la herramienta Pincel activa. Así no se pinta una plataforma en el Tilemap de roca por error.
+        /// </summary>
+        private static void Paint(Tilemap map, bool platform)
+        {
+            var tile = LevelSetup.LoadTile(platform, out var palette);
+            EditorApplication.ExecuteMenuItem("Window/2D/Tile Palette");
+            Selection.activeGameObject = map.gameObject;
+            GridPaintingState.scenePaintTarget = map.gameObject;
+            if (palette != null) GridPaintingState.palette = palette;
+            if (GridPaintingState.gridBrush is GridBrush brush)
+            {
+                brush.Init(Vector3Int.one);
+                brush.SetTile(Vector3Int.zero, tile);
+            }
+            ToolManager.SetActiveTool<PaintTool>();
+            SceneView.lastActiveSceneView?.Focus();
         }
 
         private static void SizeField(SerializedProperty prop, string label, int max)

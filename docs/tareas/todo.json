@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-11T18:15:54.678Z",
+  "updated": "2026-10-12T00:24:01.879Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -133,6 +133,43 @@
           "done": false
         },
         {
+          "id": "editor-niveles",
+          "text": "EditorNiveles: editor de niveles web propio + importador en Unity (no dentro de la web ni de Tools ▸ Web)",
+          "note": "Hecho: 🧱 Niveles + 🏞️ Fondos en la web, EditorNiveles ▸ Importar nivel… / Importar fondo… en Unity, ⚙️ Opciones. Pendiente de prueba.",
+          "done": false,
+          "doc": "docs/tareas/editor-niveles.md",
+          "needs": [
+            "unity"
+          ],
+          "steps": [
+            {
+              "id": "en-1",
+              "text": "Editor web de cuadrícula (roca, plataforma, tamaño, vista previa, exportar)",
+              "done": true
+            },
+            {
+              "id": "en-2",
+              "text": "Importador en Unity con menú propio EditorNiveles (roca, plataformas, tamaño)",
+              "done": true
+            },
+            {
+              "id": "en-3",
+              "text": "Preguntar si quiere colocar entrada/salida y enemigos desde el editor",
+              "done": true
+            },
+            {
+              "id": "en-4",
+              "text": "Mover el editor de niveles a una pestaña de la web principal (Web/RedMagicWeb); Unity sólo el importador en su menú propio",
+              "done": true
+            },
+            {
+              "id": "en-5",
+              "text": "🏞️ Fondos en la web (Biblioteca + export) con un solo importador en Unity; ⚙️ Opciones para ocultar/ordenar pestañas",
+              "done": true
+            }
+          ]
+        },
+        {
           "id": "niveles-hielo",
           "text": "Niveles de hielo: crear niveles (Unity + web), objetos y plataformas con variantes, puerta",
           "note": "Sistema de niveles ya hecho (ver doc). Quedan: explicar cómo crear niveles con el tile en Unity, herramienta web de niveles, decoración y plataformas con variantes, y una puerta que asiente en el suelo plano.",
@@ -149,8 +186,8 @@
             },
             {
               "id": "nh-2",
-              "text": "Herramienta web de creación de niveles (roca + plataformas → levelsketch.json → Unity)",
-              "done": false
+              "text": "Herramienta EditorNiveles (web propia + importador en Unity con menú propio) → docs/tareas/editor-niveles.md",
+              "done": true
             },
             {
               "id": "nh-3",

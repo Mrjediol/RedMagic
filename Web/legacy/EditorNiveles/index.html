@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EditorNiveles</title>
+<style>
+:root{--bg:#0b1018;--panel:#121a26;--panel2:#0f1622;--border:#243248;--text:#d6e4f5;--muted:#7f93ad;--accent:#4aa8dc;--danger:#e0605a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px system-ui,sans-serif;overflow:hidden}
+#app{display:grid;grid-template-columns:minmax(0,1fr) 300px;grid-template-rows:auto minmax(0,1fr) auto;height:100%}
+#tools{grid-column:1;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border);background:var(--panel)}
+#tools .grp{display:flex;gap:4px;align-items:center}
+#tools .grp>span{color:var(--muted);font-size:12px;margin-right:2px}
+#stage{grid-column:1;position:relative;min-height:0;background:#05080d}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+#status{grid-column:1;padding:5px 10px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;background:var(--panel);display:flex;gap:16px;flex-wrap:wrap}
+#side{grid-column:2;grid-row:1/4;border-left:1px solid var(--border);background:var(--panel);overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:10px}
+h1{font-size:16px;margin:0}
+h2{font-size:12px;margin:0 0 6px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.box{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px}
+.field{display:flex;align-items:center;gap:6px;margin:4px 0}
+.field label{flex:0 0 64px;color:var(--muted);font-size:12px}
+.field input,.field select{flex:1;min-width:0}
+.field small{color:var(--muted);width:62px;text-align:right}
+input,select,button{background:#1a2638;color:var(--text);border:1px solid var(--border);border-radius:5px;padding:4px 7px;font:inherit}
+button{cursor:pointer;white-space:nowrap}
+button:hover{border-color:#3a5070}
+button.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);background:#1d3550}
+button.primary{background:#1d4f72;border-color:#2f6f9a}
+button.danger{color:#ffb4ae}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.row>button{flex:1}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid #0008}
+.hint{color:var(--muted);font-size:12px;line-height:1.45;margin:4px 0 0}
+kbd{background:#1a2638;border:1px solid var(--border);border-radius:3px;padding:0 4px;font-size:11px}
+label.chk{display:flex;gap:6px;align-items:center;font-size:13px;margin:3px 0}
+#file{font-size:12px;color:var(--muted);word-break:break-all}
+#warn{color:#ffcf7a;font-size:12px}
+#toast{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:#1d3550;border:1px solid var(--accent);border-radius:6px;padding:6px 12px;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="tools">
+    <div class="grp"><span>Herramienta</span>
+      <button data-tool="brush" title="Pincel (B). Clic derecho borra.">✏️ Pincel</button>
+      <button data-tool="rect" title="Rectángulo (R). Clic derecho borra el rectángulo.">▭ Rectángulo</button>
+      <button data-tool="fill" title="Relleno (G): rellena la zona conectada del mismo tipo.">🪣 Relleno</button>
+      <button data-tool="erase" title="Borrar (E)">🧽 Borrar</button>
+    </div>
+    <div class="grp" id="mats"><span>Pintar</span></div>
+    <div class="grp"><span>Grosor</span>
+      <select id="brush" title="Grosor del pincel ([ y ])"><option>1</option><option>2</option><option>3</option><option>5</option><option>8</option></select>
+    </div>
+    <div class="grp"><span>Vista</span>
+      <button id="modeEdit" title="Cuadrícula (P cambia de vista)">🔲 Edición</button>
+      <button id="modePreview" title="Como en el juego: cámara de 20 unidades de alto, borde y fondo del bioma (P)">🎮 Vista previa</button>
+      <button id="fit" title="Ajustar a la ventana (F)">⤢</button>
+    </div>
+    <div class="grp"><button id="undo" title="Deshacer (Ctrl+Z)">↶</button><button id="redo" title="Rehacer (Ctrl+Y)">↷</button></div>
+  </div>
+
+  <div id="stage"><canvas id="cv"></canvas><div id="toast"></div></div>
+  <div id="status"><span id="stPos">—</span><span id="stSize"></span><span id="stCount"></span><span id="stHint"></span></div>
+
+  <div id="side">
+    <h1>🧱 EditorNiveles</h1>
+
+    <div class="box">
+      <h2>Nivel</h2>
+      <div class="field"><label>Nombre</label><input id="name" value="nivel"></div>
+      <div class="field"><label>Bioma</label><select id="biome"></select></div>
+      <div class="field"><label>Ancho</label><input id="w" type="number" min="12" max="400"><small id="wpx"></small></div>
+      <div class="field"><label>Alto</label><input id="h" type="number" min="12" max="75"><small id="hpx"></small></div>
+      <div class="row"><button id="resize">Aplicar tamaño</button></div>
+      <p class="hint">1 celda = 1 unidad de Unity = 40 px. Alto máximo 75. Al cambiar el tamaño, lo pintado se queda pegado a la esquina inferior izquierda (como en Unity). El marco de 1 celda es siempre roca.</p>
+    </div>
+
+    <div class="box">
+      <h2>Archivo</h2>
+      <div class="row"><button id="new">Nuevo</button><button id="open">Abrir…</button></div>
+      <div class="row" style="margin-top:6px"><button id="save" class="primary">💾 Guardar</button><button id="saveAs">Guardar como…</button></div>
+      <p id="file" class="hint"></p>
+      <p class="hint">Se guarda como <code>*.levelsketch.json</code>. En Unity: menú <b>EditorNiveles ▸ Importar nivel…</b>. También puedes arrastrar el .json a la ventana.</p>
+    </div>
+
+    <p id="warn"></p>
+
+    <div class="box">
+      <h2>Controles</h2>
+      <p class="hint">
+        Clic izq. pinta · clic der. borra<br>
+        Rueda: zoom · botón central o <kbd>Espacio</kbd>+arrastrar: mover<br>
+        En vista previa: rueda / <kbd>WASD</kbd> / flechas mueven la cámara<br>
+        <kbd>B</kbd> pincel · <kbd>R</kbd> rectángulo · <kbd>G</kbd> relleno · <kbd>E</kbd> borrar<br>
+        <kbd>1</kbd>–<kbd>9</kbd> tipo · <kbd>[</kbd> <kbd>]</kbd> grosor · <kbd>P</kbd> vista · <kbd>F</kbd> ajustar<br>
+        <kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Y</kbd> · <kbd>Ctrl+S</kbd> guardar · <kbd>Ctrl+O</kbd> abrir
+      </p>
+    </div>
+  </div>
+</div>
+<input type="file" id="fileInput" accept=".json" hidden>
+<script src="datos-unity.js"></script>
+<script src="terreno.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

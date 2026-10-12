@@ -42,10 +42,10 @@ step with `--accent` / `--accent2` if those ever change.
 - **One primary button per decision.** Secondary actions are stone buttons.
 - **Carved type (Cinzel) only for names of things** (the brand, a tab's title, the selected effect).
   Never for body text, labels or buttons.
-- **Tabs are ordered by use**: the used-most ones first (Enemy Studio, Gestos y ataques, VFX Lab, Boss Creator, Biblioteca, 🎨 Designs, 📋 Tareas),
-  a divider, then the rest. **Alt+1…8** opens the tab in that position and each tab shows its number
-  (`app.js ▸ tabShortcuts`); the order of the buttons in `index.html` is the only place that mapping lives.
-  Ctrl+number belongs to the browser and cannot be used.
+- **Tabs are ordered by use** (default order = `index.html`): the used-most first, a divider, then the rest. The user
+  can hide tabs and reorder them in **⚙️ Opciones** (`modules/tab-settings.js`, per browser; ⚙️ Opciones stays last and
+  cannot be hidden). **Alt+1…9** opens the visible tab in that position and each visible tab shows its number
+  (`app.js ▸ renumberTabs`). Ctrl+number belongs to the browser and cannot be used.
 - **The Biblioteca is a shelf**: each saved thing is a slab with its art in a lit niche; the colour of its
   top edge and first badge says what kind it is (`.libCard[data-kind]`).
 - **Rebuilding a panel must not move the user**: keep scroll positions (see `vfx-lab.js ▸ renderForm`),
@@ -58,7 +58,7 @@ step with `--accent` / `--accent2` if those ever change.
 
 | Key | Does |
 |---|---|
-| Alt+1…8 | opens the tab in that position |
+| Alt+1…9 | opens the visible tab in that position (order from ⚙️ Opciones) |
 | Ctrl+S | saves what the open tab saves (`saveActions`) — a tab that only exports says so |
 | Ctrl+K | the finder: tabs, VFX Lab effects, saved entries, actions |
 | Space | "▶ Probar" of the open tab (VFX Lab; the open gesture in Enemy Studio) — never while typing in a field |

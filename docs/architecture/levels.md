@@ -23,7 +23,7 @@ screen height), as forced by `RunManager`.
   Children it owns: `BG`, `Roca` (rock fill, Sprite-Lit, biome texture tiled in world space), `Brillo` (rock shadow +
   inner glow baked into a texture by exact distance-to-air at 8 texels/unit), `Borde` (4 colour bands of noisy
   width, dark outline (outer glow off: `outerGlowWidth` 0, the user didn't want it) — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, layer Ground — **square corners**: the rounding is visual only, the game has no slopes).
-- - **Snow rim in use** (`LevelBiome.rimInUse`): *Actual* (the `Borde` fields, 4 hard bands) · *Variante A · Grumos* (smooth gradient band whose inner edge is round lumps with a darker lip — `lumpSize`, `lumpDepth`) · *Variante B · Goteo* (2 flat tones, light + inner shadow, and rounded drips running down from floors — `dripLength`, `dripSpacing`, `shadowFraction`). Each variant has its **own** widths/colours/outline (`RimLook`), so trying one never touches the current snow; context menu *Copiar la nieve actual a las dos variantes* reseeds them. Under test (2026-10-12).
+- - Rim variants tried and **rejected** (2026-10-12): snow pads sticking out of floors, faceted crystal ice with icicles, lumpy gradient band, flat two-tone band with drips. The 4-band rim stays.
 - Floor depth (a pale top face so the floor reads as seen slightly from above, like Ice1) was tried and **rejected**:
   it looked wrong and made walking feel off. Keep the rim flat/side-view.
 - Geometry in `LevelShape` (pure): contours of the air pockets with rock on the right (pinch vertices turn left

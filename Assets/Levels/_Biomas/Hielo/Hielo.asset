@@ -43,45 +43,5 @@ MonoBehaviour:
   innerGlow: {r: 0.31, g: 0.76, b: 1, a: 0.28}
   innerGlowWidth: 0
   rimShader: {fileID: 4800000, guid: aa3734fe1975c094ab4bafd8b23b47d9, type: 3}
-  rimInUse: 0
-  varianteA:
-    floorWidth: 0.47
-    wallWidth: 0.43
-    ceilingWidth: 0.35
-    widthVariation: 0
-    floorBands:
-    - {r: 0.24705882, g: 0.58431375, b: 0.8156863, a: 1}
-    - {r: 0.5254902, g: 0.8039216, b: 0.9490196, a: 1}
-    - {r: 0.8039216, g: 0.93333334, b: 0.9882353, a: 1}
-    - {r: 1, g: 1, b: 1, a: 1}
-    ceilingBands:
-    - {r: 0.15686275, g: 0.40784314, b: 0.6666667, a: 1}
-    - {r: 0.32941177, g: 0.627451, b: 0.85490197, a: 1}
-    - {r: 0.5882353, g: 0.8235294, b: 0.95686275, a: 1}
-    - {r: 0.8235294, g: 0.9411765, b: 1, a: 1}
-    outline: {r: 0, g: 0, b: 0, a: 0}
-    outlineWidth: 0.11
-    lumpSize: 0.45
-    lumpDepth: 0.35
-  varianteB:
-    floorWidth: 0.47
-    wallWidth: 0.43
-    ceilingWidth: 0.35
-    widthVariation: 0
-    floorBands:
-    - {r: 0.24705882, g: 0.58431375, b: 0.8156863, a: 1}
-    - {r: 0.5254902, g: 0.8039216, b: 0.9490196, a: 1}
-    - {r: 0.8039216, g: 0.93333334, b: 0.9882353, a: 1}
-    - {r: 1, g: 1, b: 1, a: 1}
-    ceilingBands:
-    - {r: 0.15686275, g: 0.40784314, b: 0.6666667, a: 1}
-    - {r: 0.32941177, g: 0.627451, b: 0.85490197, a: 1}
-    - {r: 0.5882353, g: 0.8235294, b: 0.95686275, a: 1}
-    - {r: 0.8235294, g: 0.9411765, b: 1, a: 1}
-    outline: {r: 0, g: 0, b: 0, a: 0}
-    outlineWidth: 0.11
-    dripLength: 0.45
-    dripSpacing: 1.1
-    shadowFraction: 0.35
   background: {fileID: 4788031873096802469, guid: defa88a04941a534187a7b40412601a9, type: 3}
   particles: {fileID: 6180064699060363894, guid: 76c79d46ada46de4194e8512f424c9e0, type: 3}

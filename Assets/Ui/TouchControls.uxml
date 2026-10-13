@@ -20,6 +20,9 @@
                 <ui:Button name="dashButton" text="#touch.dash" class="touch-button touch-button--dash" />
             </ui:VisualElement>
 
+            <!-- Sólo aparece con algo con lo que interactuar a mano (tienda, item del suelo, interactuables del hub). -->
+            <ui:Button name="interactButton" text="#touch.interact" class="touch-button touch-button--interact" />
+
             <ui:VisualElement name="actionPad" class="touch-cluster touch-cluster--right" picking-mode="Ignore">
                 <ui:Button name="parryButton" text="#touch.parry" class="touch-button touch-button--parry" />
                 <ui:Button name="weaponButton" text="#touch.weapon" class="touch-button touch-button--fireball" />

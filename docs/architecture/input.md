@@ -34,5 +34,10 @@ unused `Fireball` action) fires the equipped weapon (`WeaponUser`). Equipping a 
 Touch: `weaponButton` (was `fireballButton`) → `TouchInput.QueueWeapon/ConsumeWeapon`, shown only while a weapon is
 equipped, with its own cooldown dial; the weapon has its own HUD slot, `CooldownSlot.Weapon` (weapon icon).
 
+**Interact** (`InteractInput.Pressed`): E / Enter, gamepad **L1** (`leftShoulder` — triangle is the weapon), or the
+touch `interactButton` ("USAR"), which only shows while something can be interacted with: `InteractionPromptUi.IsVisible`
+or an interactable calling `TouchInput.RequestInteractButton()` that frame (the shop does, while an altar is focused).
+It also reports `TouchInput.InteractHeld` for hold actions (recycling a ground item; keyboard uses hold F).
+
 **Parry** (`Player/Parry`, read by `PlayerParry`): right mouse button, `L`, gamepad `buttonEast`;
 touch `parryButton` → `TouchInput.QueueParry/ConsumeParry`. Listed in `HudControlsLegend.Rows`.

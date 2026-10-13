@@ -29,6 +29,9 @@ namespace RedMagic.Hub
     {
         public static InteractionPromptUi Instance { get; private set; }
 
+        /// <summary>¿Hay un cartel a la vista? (el botón táctil de interactuar se muestra entonces).</summary>
+        public static bool IsVisible => Instance != null && Instance._owner != null;
+
         private const string PanelSettingsResourcePath = "InteractionPromptPanelSettings";
 
         private UIDocument _document;

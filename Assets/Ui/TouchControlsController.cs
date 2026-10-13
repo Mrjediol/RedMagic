@@ -33,6 +33,7 @@ namespace RedMagic.UI
         private Button _dashButton;
         private Button _weaponButton;
         private Button _parryButton;
+        private Button _interactButton;
 
         // Cooldown pintado sobre el botón que lanza cada acción (el mismo dial que el HUD de PC).
         private readonly List<(CooldownSlot slot, CooldownDial dial)> _dials = new();
@@ -54,6 +55,15 @@ namespace RedMagic.UI
             _dashButton = _root.Q<Button>("dashButton");
             _weaponButton = _root.Q<Button>("weaponButton");
             _parryButton = _root.Q<Button>("parryButton");
+            _interactButton = _root.Q<Button>("interactButton");
+            if (_interactButton != null)
+            {
+                _interactButton.style.display = DisplayStyle.None;
+                _interactButton.RegisterCallback<PointerDownEvent>(OnInteractDown);
+                _interactButton.RegisterCallback<PointerUpEvent>(OnInteractUp);
+                _interactButton.RegisterCallback<PointerLeaveEvent>(OnInteractLeave);
+                _interactButton.RegisterCallback<PointerCaptureOutEvent>(OnInteractCaptureOut);
+            }
 
             WireHold(_leftButton, -1f);
             WireHold(_rightButton, 1f);
@@ -110,6 +120,15 @@ namespace RedMagic.UI
         {
             float dt = Time.unscaledDeltaTime;
 
+            // Interactuar sólo con algo a mano: el cartel de interacción a la vista o un interactuable que lo pide.
+            if (_interactButton != null)
+            {
+                bool wanted = TouchInput.InteractButtonWanted || Hub.InteractionPromptUi.IsVisible;
+                var display = wanted ? DisplayStyle.Flex : DisplayStyle.None;
+                if (_interactButton.style.display != display) _interactButton.style.display = display;
+                if (!wanted) TouchInput.InteractHeld = false;
+            }
+
             // El botón del arma sólo con un arma equipada (sin arma no hace nada).
             if (_weaponButton != null)
             {
@@ -133,6 +152,15 @@ namespace RedMagic.UI
         {
             UnwireHold(_leftButton);
             UnwireHold(_rightButton);
+
+            if (_interactButton != null)
+            {
+                _interactButton.UnregisterCallback<PointerDownEvent>(OnInteractDown);
+                _interactButton.UnregisterCallback<PointerUpEvent>(OnInteractUp);
+                _interactButton.UnregisterCallback<PointerLeaveEvent>(OnInteractLeave);
+                _interactButton.UnregisterCallback<PointerCaptureOutEvent>(OnInteractCaptureOut);
+                TouchInput.InteractHeld = false;
+            }
 
             if (_jumpButton != null)
                 _jumpButton.UnregisterCallback<PointerDownEvent>(OnJumpDown);
@@ -220,6 +248,15 @@ namespace RedMagic.UI
         private static void OnParryDown(PointerDownEvent evt) => TouchInput.QueueParry();
 
         // ------------------------------------------------------------------ abajo (atravesar plataformas)
+
+        // Interactuar: la pulsación (comprar, abrir…) y el estado mantenido (reciclar un item del suelo).
+        private static void OnInteractDown(PointerDownEvent evt) { TouchInput.QueueInteract(); TouchInput.InteractHeld = true; }
+
+        private static void OnInteractUp(PointerUpEvent evt) => TouchInput.InteractHeld = false;
+
+        private static void OnInteractLeave(PointerLeaveEvent evt) => TouchInput.InteractHeld = false;
+
+        private static void OnInteractCaptureOut(PointerCaptureOutEvent evt) => TouchInput.InteractHeld = false;
 
         private static void OnDownDown(PointerDownEvent evt) => TouchInput.Down = true;
 

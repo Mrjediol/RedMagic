@@ -58,6 +58,14 @@
   (left door), leave through its `SectionExit` (right door). After loading, `RunManager.StockShop`
   calls `ShopManager.Stock(CurrentWorldNumber, seed)`; a Shop scene opened on its own stocks itself
   as world 1.
+- **Full inventory / replacing / recycling** — buying a free-pool item with the 6 free slots full opens the item screen
+  in *replace mode* (`ItemMenuController.OpenReplace`: a banner, tapping a free slot chooses it, closing cancels); the
+  gold is only charged once a slot is chosen (`ShopManager.CompletePurchase` re-validates everything). Whatever leaves
+  the inventory — the chosen free item, or the modifier a dedicated item displaces (`WeaponInventory.Occupant`) —
+  drops in front of the player as an `ItemPickup` with `autoCollect: false` (otherwise it would bounce straight back).
+  Ground items that don't auto-collect (or don't fit) show the shared `InteractionPromptUi`: **E / L1 / tap USE** =
+  equip (same replace screen if full; what leaves drops), **hold F / L1 / USE** `ItemPickup.RecycleSeconds` (0.8 s) =
+  recycle for `ShopConfig.recycleFraction` (0.3) of `PriceFor(item, world)` in gold.
 - **`ItemLibrary.All`** (`Assets/Scripts/Items/`) is the global item pool (folder scan of
   `Resources/Items`), read by the shop and `ItemPickup` — a new item asset shows up in both with no
   wiring. The pool is currently the 6 ice-set items.

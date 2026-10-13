@@ -77,6 +77,17 @@ namespace RedMagic.Core
             return true;
         }
 
+        /// <summary>True mientras se mantiene pulsado el botón táctil de interactuar (reciclar un item del suelo).</summary>
+        public static bool InteractHeld { get; set; }
+
+        private static int _interactWantedFrame = -10;
+
+        /// <summary>Algo interactuable está a mano este frame: el botón táctil de interactuar se muestra.</summary>
+        public static void RequestInteractButton() => _interactWantedFrame = Time.frameCount;
+
+        /// <summary>¿Lo ha pedido alguien en este frame o el anterior?</summary>
+        public static bool InteractButtonWanted => Time.frameCount - _interactWantedFrame <= 1;
+
         /// <summary>La UI táctil lo llama al pulsar el botón de interactuar (tumbas del hub).</summary>
         public static void QueueInteract() => _interactQueued = true;
 
@@ -98,6 +109,7 @@ namespace RedMagic.Core
             _weaponQueued = false;
             _interactQueued = false;
             _parryQueued = false;
+            InteractHeld = false;
         }
 
         // Con "Reload Domain" desactivado los estáticos sobreviven entre sesiones de Play.

@@ -81,6 +81,9 @@ namespace RedMagic.Economy
         [Header("Precio en oro = base por rareza × multiplicador del mundo")]
         public RarityTable basePrice = new(30f, 60f, 120f, 200f);
 
+        [Tooltip("Fracción del precio que da reciclar un item tirado en el suelo (manteniendo pulsado).")]
+        [Range(0f, 1f)] public float recycleFraction = 0.3f;
+
         [Tooltip("0 = mundo 1; la última vale para ese mundo y los siguientes.")]
         public List<float> priceMultiplierPerWorld = new() { 1f, 1.4f, 1.8f, 2.2f };
 

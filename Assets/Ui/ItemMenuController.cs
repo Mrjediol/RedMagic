@@ -29,6 +29,10 @@ namespace RedMagic.UI
     /// ese tipo (afordancia de pruebas, como el menú de habilidades) para poder ejercitar todas las
     /// combinaciones sin tocar código.
     ///
+    /// <b>Modo sustituir</b> (<see cref="OpenReplace"/>): con los 6 huecos libres llenos, la tienda o un item del suelo
+    /// abren esta pantalla con un cartel arriba; tocar un hueco libre lo elige (se cierra y avisa a quien la abrió),
+    /// cerrar cancela. En ese modo los dedicados y el arma no responden.
+    ///
     /// <b>Arte</b>: marcos, cabeceras, slots y botón de cerrar salen de <see cref="ItemMenuSkin"/>
     /// (<c>Resources/ItemMenuSkin.asset</c>, generado por <c>ItemsUiPack</c>). Cada pieza que falte
     /// cae al aspecto plano de <see cref="MenuStyle"/>, así que el menú funciona igual sin skin.
@@ -58,6 +62,11 @@ namespace RedMagic.UI
         private bool _built;
 
         private WeaponLoadout _loadout;
+
+        // modo sustituir
+        private FreePoolItemDefinition _replaceIncoming;
+        private System.Action<int> _replaceChosen;
+        private Label _replaceBanner;
 
         // Columna izquierda
         private readonly Dictionary<BuildTag, SynergyRow> _synergyRows = new Dictionary<BuildTag, SynergyRow>();
@@ -194,10 +203,51 @@ namespace RedMagic.UI
             RefreshAll();
         }
 
+        /// <summary>
+        /// Abre la pantalla para elegir qué hueco libre deja su sitio a <paramref name="incoming"/>. Al tocar uno se
+        /// cierra y llama a <paramref name="onChosen"/> con su índice (ya sin pausa); cerrar sin elegir cancela.
+        /// </summary>
+        public void OpenReplace(FreePoolItemDefinition incoming, System.Action<int> onChosen)
+        {
+            if (incoming == null || onChosen == null) return;
+            if (_open) Close();
+            Open();
+            if (!_open) return;
+
+            _replaceIncoming = incoming;
+            _replaceChosen = onChosen;
+            if (_replaceBanner == null)
+            {
+                _replaceBanner = new Label { name = "item-replace-banner", pickingMode = PickingMode.Ignore };
+                _replaceBanner.style.position = Position.Absolute;
+                _replaceBanner.style.top = 18;
+                _replaceBanner.style.alignSelf = Align.Center;
+                _replaceBanner.style.fontSize = 40;
+                _replaceBanner.style.unityFontStyleAndWeight = FontStyle.Bold;
+                _replaceBanner.style.color = new Color(1f, 0.86f, 0.45f);
+                _replaceBanner.style.backgroundColor = new Color(0.05f, 0.03f, 0.04f, 0.9f);
+                _replaceBanner.style.paddingLeft = 28;
+                _replaceBanner.style.paddingRight = 28;
+                _replaceBanner.style.paddingTop = 10;
+                _replaceBanner.style.paddingBottom = 10;
+                _replaceBanner.style.borderTopLeftRadius = 14;
+                _replaceBanner.style.borderTopRightRadius = 14;
+                _replaceBanner.style.borderBottomLeftRadius = 14;
+                _replaceBanner.style.borderBottomRightRadius = 14;
+                _overlay.Add(_replaceBanner);
+            }
+            _replaceBanner.text = Loc.Get("items.replace_title", incoming.DisplayName);
+            _replaceBanner.style.display = DisplayStyle.Flex;
+            ShowItemDescription(incoming);
+        }
+
         public void Close()
         {
             if (!_open) return;
             _open = false;
+            _replaceIncoming = null;   // cerrar sin elegir = cancelar
+            _replaceChosen = null;
+            if (_replaceBanner != null) _replaceBanner.style.display = DisplayStyle.None;
             SystemSounds.Play(s => s.itemMenu.close);
 
             _overlay.style.display = DisplayStyle.None;
@@ -975,6 +1025,7 @@ namespace RedMagic.UI
 
         private void CycleDedicated(ItemSlot slot)
         {
+            if (_replaceIncoming != null) return;
             var inventory = _loadout.Inventory;
             switch (slot)
             {
@@ -1001,6 +1052,14 @@ namespace RedMagic.UI
 
         private void CycleFree(int index)
         {
+            if (_replaceIncoming != null)
+            {
+                var chosen = _replaceChosen;
+                Close();
+                chosen?.Invoke(index);
+                return;
+            }
+
             var inventory = _loadout.Inventory;
             var next = NextCandidate(_freeCandidates, inventory.GetFree(index));
             inventory.EquipFree(index, next);
@@ -1008,6 +1067,7 @@ namespace RedMagic.UI
 
         private void CycleWeapon()
         {
+            if (_replaceIncoming != null) return;
             var inventory = _loadout.Inventory;
             inventory.SetWeapon(NextCandidate(_weaponCandidates, inventory.Weapon));
         }

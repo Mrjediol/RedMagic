@@ -120,6 +120,18 @@ namespace RedMagic.Items
 
         public bool FreeSlotsFull => FreeSlotsUsed >= FreeSlotCount;
 
+        /// <summary>
+        /// El item que <paramref name="item"/> sacaría al equiparse en su hueco dedicado (o null). Los de pool libre no sacan
+        /// a nadie por tipo: ahí se elige el hueco.
+        /// </summary>
+        public ItemDefinition Occupant(ItemDefinition item) => item switch
+        {
+            ElementModifier => _element,
+            TrajectoryModifier => _trajectory,
+            ShapeModifier => _shape,
+            _ => null,
+        };
+
         /// <summary>Recorre todos los huecos con item. Lo usará el synergy tracker para reconstruir su cuenta.</summary>
         public IEnumerable<(InventorySlot slot, ItemDefinition item)> EquippedItems()
         {

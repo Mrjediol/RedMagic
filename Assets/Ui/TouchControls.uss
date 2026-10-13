@@ -122,6 +122,23 @@
     background-color: rgba(96, 160, 44, 0.85);
 }
 
+.touch-button--interact {
+    position: absolute;
+    right: 64px;
+    bottom: 330px;
+    width: 200px;
+    height: 200px;
+    font-size: 28px;
+    letter-spacing: 1px;
+    border-radius: 100px;
+    background-color: rgba(70, 56, 14, 0.6);
+    border-color: rgba(244, 206, 132, 0.8);
+}
+
+.touch-button--interact:active {
+    background-color: rgba(196, 150, 40, 0.85);
+}
+
 /* Con 8 botones el margen por defecto deja los clusters muy juntos. */
 .touch-controls-inner {
     padding: 0 48px 56px 48px;

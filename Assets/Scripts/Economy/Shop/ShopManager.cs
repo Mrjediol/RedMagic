@@ -175,6 +175,7 @@ namespace RedMagic.Economy
             SetFocus(Nearest());
 
             if (_focused == null || !GameStateManager.CanPlayerAct) return;
+            TouchInput.RequestInteractButton();
             if (!InteractInput.Pressed(_interactAction)) return;
 
             if (_focused is ShopAltar altar) TryBuy(altar);
@@ -241,24 +242,50 @@ namespace RedMagic.Economy
                 return;
             }
 
-            // Comprobar antes de cobrar: un item de pool libre con los 6 huecos llenos no cabe.
-            if (entry.Item is FreePoolItemDefinition && inventory.FreeSlotsFull)
+            // Un item de pool libre con los 6 huecos llenos: el jugador elige cuál sale (pantalla de items); se cobra al elegir.
+            if (entry.Item is FreePoolItemDefinition free && inventory.FreeSlotsFull)
             {
-                altar.Deny();
-                SystemSounds.Play(s => s.shopDeny);
-                RewardPopupUi.Show(entry.Item.Icon, Loc.Get("shop.free_slots_full"), entry.Item.DisplayName, entry.Item.Accent);
+                var menu = UI.ItemMenuController.Instance;
+                if (menu == null) { Deny(altar); return; }
+                menu.OpenReplace(free, index => CompletePurchase(altar, free, index));
                 return;
             }
+
+            CompletePurchase(altar, entry.Item, -1);
+        }
+
+        /// <summary>
+        /// Cobra y equipa. <paramref name="freeIndex"/> = hueco libre elegido para sustituir (-1 = el que toque). Lo que
+        /// sale del inventario (el elegido, o el modificador de su hueco dedicado) cae al suelo delante del jugador.
+        /// </summary>
+        private void CompletePurchase(ShopAltar altar, ItemDefinition item, int freeIndex)
+        {
+            var wallet = CurrencyManager.Instance;
+            var inventory = WeaponLoadout.Instance != null ? WeaponLoadout.Instance.Inventory : null;
+            // Entre abrir la pantalla y elegir puede haber cambiado algo: se vuelve a comprobar todo.
+            if (wallet == null || inventory == null || altar == null || !altar.HasItem || altar.Entry.Item != item) return;
+            var entry = altar.Entry;
+            if (wallet.Get(Currency.Gold) < entry.Price) { Deny(altar); return; }
 
             int goldBefore = wallet.Get(Currency.Gold);
             if (!wallet.TrySpend(Currency.Gold, entry.Price)) { altar.Deny(); return; }
 
-            if (!inventory.TryEquip(entry.Item))
+            ItemDefinition replaced;
+            if (freeIndex >= 0 && item is FreePoolItemDefinition free)
             {
-                wallet.Add(Currency.Gold, entry.Price); // no debería pasar tras la comprobación; devolver
-                altar.Deny();
-                return;
+                replaced = inventory.EquipFree(freeIndex, free);
             }
+            else
+            {
+                replaced = inventory.Occupant(item);
+                if (!inventory.TryEquip(item))
+                {
+                    wallet.Add(Currency.Gold, entry.Price); // no debería pasar; devolver
+                    altar.Deny();
+                    return;
+                }
+            }
+            ItemPickup.DropReplaced(replaced, FindPlayer());
 
             _purchased.Add(entry.Item);
             SystemSounds.Play(s => s.shopBuy);

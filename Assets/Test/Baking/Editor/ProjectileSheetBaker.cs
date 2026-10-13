@@ -233,7 +233,7 @@ namespace RedMagic.BakingTest
             renderer.sortingOrder = 100;
         }
 
-        [MenuItem("Tools/RedMagic/Baking (prueba)/5b Proyectiles: poner la lluvia de 100 (teclas 1 / 2 / 0 en Play)")]
+        [MenuItem("Tools/RedMagic/Baking (prueba)/5b Proyectiles: poner la lluvia de 100 (teclas 1, 2, 0 en Play)")]
         public static void PlaceRain()
         {
             var originals = new List<GameObject>();

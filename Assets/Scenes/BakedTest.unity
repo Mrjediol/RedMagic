@@ -333,6 +333,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3860499393854105203, guid: 40f06a55b0d1ebc4884994da9d81f4d6, type: 3}
   m_PrefabInstance: {fileID: 209014778}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &272690054
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 272690055}
+  - component: {fileID: 272690056}
+  m_Layer: 0
+  m_Name: Lluvia
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &272690055
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 272690054}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1477393362}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &272690056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 272690054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94201eb0eb6bda14b9d2175ff0ad3677, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.BakingTest.ProjectileRainTest
+  originals:
+  - {fileID: 7940552799397235345, guid: b0208d870d7a76d4aa47fccbe778477e, type: 3}
+  - {fileID: 1200812990498349432, guid: 2c7e6372a59081b42833cc05c4c2dba2, type: 3}
+  baked:
+  - {fileID: 1537478022758512840, guid: 2f0efb4e2976dff49b9c7ac587abcbfb, type: 3}
+  - {fileID: 605894918659337384, guid: 099007c4626c94f4e9d0951e42108da9, type: 3}
+  count: 100
+  minX: 74
+  maxX: 92
+  topY: 17
+  bottomY: 1.5
+  speed: 7
+  scale: 0.5
 --- !u!1 &376741761
 GameObject:
   m_ObjectHideFlags: 0
@@ -1677,6 +1734,7 @@ Transform:
   - {fileID: 866571810}
   - {fileID: 209014779}
   - {fileID: 376741762}
+  - {fileID: 272690055}
   m_Father: {fileID: 463863945}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1540291646

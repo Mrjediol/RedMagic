@@ -37,7 +37,7 @@ screen height), as forced by `RunManager`.
 
 ## Draw order (`LevelSorting`)
 Everything of the level is on sorting layer **Default with negative orders** (project convention for backgrounds):
-parallax -1000+, background snow -600, rock/glow/rim -300/-299/-298, over-terrain objects (doors) -200+, bounds -2000.
+parallax -1000+, background snow -600, rock/glow/rim -300/-299/-295, objects embedded in the terrain (energy doors, `LevelSorting.Embedded` -298..-296: ABOVE the rock, BELOW the snow rim -295, so the rim hides the ends of the object and it looks planted, not resting on the snow), over-terrain objects (parallax doors) -200+, bounds -2000.
 Enemies, projectiles and FX live on Default 0..20, and Default draws BEFORE BackGround/Terrain — putting the level on
 those layers hid every enemy (bug seen in the first test). In-front layers and gameplay snow go on Characters.
 

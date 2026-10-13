@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 
 namespace RedMagic.Levels
 {
@@ -10,7 +9,7 @@ namespace RedMagic.Levels
     /// <see cref="cellsHigh"/>; 1 celda = 1 unidad) y se monta con piezas del arte en vez de estirar la imagen:
     /// tapas fijas con los cristales centrados (se alargan por los lados con un trozo liso), laterales de runas que se
     /// repiten en vertical según el alto y una ranura central que se ensancha. Dentro de la ranura fluye la energía
-    /// (<c>RedMagic/Fx Door Energy</c>); la imagen encendida (cristales y runas) se funde sobre la apagada.
+    /// (<c>RedMagic/Fx Door Energy</c>); la imagen encendida (cristales y runas) se funde sobre la apagada. Sin glow hacia fuera.
     /// <b>Cerrada</b> = encendida, con energía, bloquea siempre. <b>Abierta</b> = apagada y sin colisión.
     /// El origen es la esquina inferior izquierda del hueco, alineada con la cuadrícula del <see cref="Level"/>.
     /// </summary>
@@ -20,7 +19,7 @@ namespace RedMagic.Levels
     public class LevelDoor : MonoBehaviour
     {
         public const int MinWide = 1, MaxWide = 4, MinHigh = 2, MaxHigh = 10;
-        public const string BodyName = "Cuerpo", LitName = "Encendida", EnergyName = "Energia", HaloName = "Halo", LightName = "Luz";
+        public const string BodyName = "Cuerpo", LitName = "Encendida", EnergyName = "Energia";
 
         [Header("Tamaño (celdas enteras)")]
         [SerializeField, Range(MinWide, MaxWide)] private int cellsWide = 1;
@@ -37,6 +36,9 @@ namespace RedMagic.Levels
         [SerializeField] private Texture2D onTexture;
         [SerializeField] private Shader energyShader;
         [SerializeField] private Color energyColor = new Color(0.2f, 0.8f, 1f, 1f);
+
+        [Tooltip("Cuánto se clava en el suelo y el techo (unidades). El borde de nieve del terreno se dibuja ENCIMA de la puerta, así que la tapa asoma de la nieve en vez de apoyarse sobre ella. 0 = justo en la línea del hueco.")]
+        [SerializeField, Range(0f, 0.4f)] private float embed = 0.15f;
 
         [Header("Regiones del arte (px, desde arriba-izquierda de la imagen)")]
         [Tooltip("Alto de la tapa de arriba (cristales y collar).")]
@@ -64,9 +66,9 @@ namespace RedMagic.Levels
 
         private float _progress, _target;       // 1 = cerrada y encendida
         private bool _built;
-        private Mesh _bodyMesh, _litMesh, _energyMesh, _haloMesh;
-        private Material _bodyMaterial, _litMaterial, _energyMaterial, _haloMaterial;
-        private List<Color> _litColors = new List<Color>(), _haloColors = new List<Color>();
+        private Mesh _bodyMesh, _litMesh, _energyMesh;
+        private Material _bodyMaterial, _litMaterial, _energyMaterial;
+        private List<Color> _litColors = new List<Color>();
         private int _litVerts;
 
         // ------------------------------------------------------------------ ciclo de vida
@@ -80,8 +82,8 @@ namespace RedMagic.Levels
 
         private void OnDestroy()
         {
-            Level.DestroySafe(_bodyMesh); Level.DestroySafe(_litMesh); Level.DestroySafe(_energyMesh); Level.DestroySafe(_haloMesh);
-            Level.DestroySafe(_bodyMaterial); Level.DestroySafe(_litMaterial); Level.DestroySafe(_energyMaterial); Level.DestroySafe(_haloMaterial);
+            Level.DestroySafe(_bodyMesh); Level.DestroySafe(_litMesh); Level.DestroySafe(_energyMesh);
+            Level.DestroySafe(_bodyMaterial); Level.DestroySafe(_litMaterial); Level.DestroySafe(_energyMaterial);
         }
 
         private void OnValidate()
@@ -141,13 +143,14 @@ namespace RedMagic.Levels
             float texW = offTexture.width, texH = offTexture.height;
 
             var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>();
-            BuildPieces(W, H, ppc, texW, texH, verts, uvs, tris);
+            BuildPieces(W, H + 2f * embed, ppc, texW, texH, verts, uvs, tris);
+            for (int i = 0; i < verts.Count; i++) verts[i] -= new Vector3(0f, embed); // el arte sobresale por abajo y por arriba
 
             var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
             _bodyMesh = Level.Assign(_bodyMesh, "DoorBody", verts, tris, uvs, null);
             _bodyMaterial = Level.GetMaterial(ref _bodyMaterial, shader, "DoorBody");
             _bodyMaterial.mainTexture = offTexture;
-            Level.SetupRenderer(Child(BodyName), _bodyMesh, _bodyMaterial, LevelSorting.OverTerrain);
+            Level.SetupRenderer(Child(BodyName), _bodyMesh, _bodyMaterial, LevelSorting.Embedded);
 
             if (onTexture != null)
             {
@@ -155,11 +158,11 @@ namespace RedMagic.Levels
                 _litMesh = Level.Assign(_litMesh, "DoorLit", verts, tris, uvs, null);
                 _litMaterial = Level.GetMaterial(ref _litMaterial, shader, "DoorLit");
                 _litMaterial.mainTexture = onTexture;
-                Level.SetupRenderer(Child(LitName), _litMesh, _litMaterial, LevelSorting.OverTerrain + 1);
+                Level.SetupRenderer(Child(LitName), _litMesh, _litMaterial, LevelSorting.Embedded + 1);
             }
 
             BuildEnergy(W, H, ppc);
-            BuildHalo(W, H);
+            RemoveLegacyChildren();
             ApplyProgress();
         }
 
@@ -226,7 +229,7 @@ namespace RedMagic.Levels
 
             float leftW = slotLeftPx / ppc, rightW = (offTexture.width - slotRightPx) / ppc, inset = 0.012f;
             float x0 = leftW + inset, x1 = W - rightW - inset;
-            float y0 = (offTexture.height - slotBottomPx) / ppc, y1 = H - slotTopPx / ppc;
+            float y0 = (offTexture.height - slotBottomPx) / ppc - embed, y1 = H + embed - slotTopPx / ppc;
 
             var verts = new List<Vector3> { new Vector3(x0, y0), new Vector3(x1, y0), new Vector3(x1, y1), new Vector3(x0, y1) };
             var uvs = new List<Vector2> { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
@@ -234,43 +237,20 @@ namespace RedMagic.Levels
             _energyMaterial = Level.GetMaterial(ref _energyMaterial, energyShader, "DoorEnergy");
             _energyMaterial.SetColor("_Color", energyColor);
             _energyMaterial.SetVector("_Size", new Vector4(x1 - x0, y1 - y0, 0f, 0f));
-            Level.SetupRenderer(Child(EnergyName), _energyMesh, _energyMaterial, LevelSorting.OverTerrain + 2);
+            Level.SetupRenderer(Child(EnergyName), _energyMesh, _energyMaterial, LevelSorting.Embedded + 2);
         }
 
-        /// <summary>Resplandor que sale del marco hacia fuera (cinta con la alfa de dentro a fuera), sobre el terreno.</summary>
-        private void BuildHalo(float W, float H)
+        /// <summary>Versiones anteriores tenían halo y luz: fuera.</summary>
+        private void RemoveLegacyChildren()
         {
-            var shader = Shader.Find("RedMagic/Fx Vertex Color");
-            if (shader == null) return;
-            const float Out = 0.7f;
-            float ix0 = 0.08f, iy0 = 0.08f, ix1 = W - 0.08f, iy1 = H - 0.08f;
-            var v = new List<Vector3>
+            foreach (var n in new[] { "Halo", "Luz" })
             {
-                new Vector3(ix0, iy0), new Vector3(ix1, iy0), new Vector3(ix1, iy1), new Vector3(ix0, iy1),
-                new Vector3(ix0 - Out, iy0 - Out), new Vector3(ix1 + Out, iy0 - Out), new Vector3(ix1 + Out, iy1 + Out), new Vector3(ix0 - Out, iy1 + Out),
-            };
-            var t = new List<int>();
-            for (int i = 0; i < 4; i++)
-            {
-                int a = i, b = (i + 1) % 4, c = 4 + (i + 1) % 4, d = 4 + i;
-                t.Add(a); t.Add(c); t.Add(b); t.Add(a); t.Add(d); t.Add(c);
+                var t = transform.Find(n);
+                if (t != null) Level.DestroySafe(t.gameObject);
             }
-            _haloColors.Clear();
-            for (int i = 0; i < 8; i++) _haloColors.Add(Color.clear);
-            _haloMesh = Level.Assign(_haloMesh, "DoorHalo", v, t, null, _haloColors);
-            _haloMaterial = Level.GetMaterial(ref _haloMaterial, shader, "DoorHalo");
-            Level.SetupRenderer(Child(HaloName), _haloMesh, _haloMaterial, LevelSorting.OverTerrain + 3);
-
-            var go = Child(LightName);
-            if (!go.TryGetComponent<Light2D>(out var l)) l = go.gameObject.AddComponent<Light2D>();
-            go.localPosition = new Vector3(W * 0.5f, H * 0.5f);
-            l.lightType = Light2D.LightType.Point;
-            l.color = new Color(0.45f, 0.85f, 1f);
-            l.pointLightOuterRadius = 2.5f + H * 0.5f;
-            l.pointLightInnerRadius = 0f;
         }
 
-        /// <summary>Aplica el progreso: colisión, encendido, energía, halo y luz.</summary>
+        /// <summary>Aplica el progreso: colisión, encendido y energía.</summary>
         private void ApplyProgress()
         {
             if (TryGetComponent<BoxCollider2D>(out var box)) box.enabled = _progress > 0.001f || _target > 0f;
@@ -285,19 +265,12 @@ namespace RedMagic.Levels
             }
             if (_energyMaterial != null)
             {
-                _energyMaterial.SetFloat("_Progress", _progress);
+                // cerrando: el frente sube desde abajo; abriendo: la cola sube y vacía la energía de abajo hacia arriba
+                bool closing = _target > 0f;
+                _energyMaterial.SetFloat("_Progress", closing ? _progress : 1f);
+                _energyMaterial.SetFloat("_Tail", closing ? 0f : 1f - _progress);
                 _energyMaterial.SetFloat("_Intensity", _progress > 0.001f ? 1f : 0f);
             }
-            if (_haloMesh != null)
-            {
-                _haloColors.Clear();
-                var inner = new Color(0.35f, 0.85f, 1f, 0.32f * lit);
-                for (int i = 0; i < 4; i++) _haloColors.Add(inner);
-                for (int i = 0; i < 4; i++) _haloColors.Add(new Color(inner.r, inner.g, inner.b, 0f));
-                _haloMesh.SetColors(_haloColors);
-            }
-            var light = transform.Find(LightName);
-            if (light != null && light.TryGetComponent<Light2D>(out var l)) l.intensity = 0.8f * lit;
         }
 
         private Transform Child(string childName)

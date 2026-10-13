@@ -1,6 +1,7 @@
 // Energía que fluye hacia arriba dentro de la ranura de una puerta (LevelDoor). Aditivo, sin textura ni luz:
 // todo sale de ruido procedural, así que se adapta a cualquier tamaño de ranura (_Size en unidades).
-//   _Progress: 0 = vacía, 1 = llena; el frente de la energía baja desde arriba (la puerta se "cierra").
+//   _Progress: 0 = vacía, 1 = llena; el frente de la energía SUBE desde abajo (como fluye) al cerrarse.
+//   _Tail: 0 = sin cola; al abrirse sube de 0 a 1 y vacía la energía de abajo hacia arriba.
 //   _Intensity: brillo general (0 = apagada).
 Shader "RedMagic/Fx Door Energy"
 {
@@ -10,6 +11,7 @@ Shader "RedMagic/Fx Door Energy"
         _Core ("Núcleo", Color) = (0.85, 1, 1, 1)
         _Size ("Tamaño de la ranura (unidades)", Vector) = (0.3, 3, 0, 0)
         _Progress ("Progreso", Range(0, 1)) = 1
+        _Tail ("Cola", Range(0, 1)) = 0
         _Intensity ("Intensidad", Range(0, 2)) = 1
         _Speed ("Velocidad", Float) = 1.4
     }
@@ -41,6 +43,7 @@ Shader "RedMagic/Fx Door Energy"
                 half4 _Core;
                 float4 _Size;
                 float _Progress;
+                float _Tail;
                 float _Intensity;
                 float _Speed;
             CBUFFER_END
@@ -92,11 +95,12 @@ Shader "RedMagic/Fx Door Energy"
                 float2 cell = float2(world.x * 9.0, world.y * 3.0 - t * 1.6);
                 float spark = step(0.965, hash21(floor(cell))) * smoothstep(0.5, 0.0, length(frac(cell) - 0.5));
 
-                // el frente baja desde arriba según el progreso
-                float fromTop = 1.0 - uv.y;
+                // el frente sube desde abajo al cerrarse; al abrirse la cola sube y vacía la energía de abajo hacia arriba
                 float reach = _Progress * 1.08;
-                float mask = saturate((reach - fromTop) / 0.08);
-                float front = exp(-abs(reach - 0.04 - fromTop) * 28.0) * step(0.001, _Progress) * (1.0 - step(0.999, _Progress));
+                float mask = saturate((reach - uv.y) / 0.08);
+                float tailMask = _Tail <= 0.001 ? 1.0 : saturate((uv.y - (_Tail * 1.08 - 0.08)) / 0.08);
+                mask *= tailMask;
+                float front = exp(-abs(reach - 0.04 - uv.y) * 28.0) * step(0.001, _Progress) * (1.0 - step(0.999, _Progress));
 
                 float body = 0.32 + 0.5 * strands + 0.35 * centre;
                 float a = (body * mask + front * 0.9 + spark * mask) * edge * _Intensity;

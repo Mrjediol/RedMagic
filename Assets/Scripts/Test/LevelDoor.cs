@@ -37,9 +37,6 @@ namespace RedMagic.Levels
         [SerializeField] private Shader energyShader;
         [SerializeField] private Color energyColor = new Color(0.2f, 0.8f, 1f, 1f);
 
-        [Tooltip("Cuánto se clava en el suelo y el techo (unidades). El borde de nieve del terreno se dibuja ENCIMA de la puerta, así que la tapa asoma de la nieve en vez de apoyarse sobre ella. 0 = justo en la línea del hueco.")]
-        [SerializeField, Range(0f, 0.4f)] private float embed = 0.15f;
-
         [Header("Regiones del arte (px, desde arriba-izquierda de la imagen)")]
         [Tooltip("Alto de la tapa de arriba (cristales y collar).")]
         [SerializeField] private int topCapPx = 122;
@@ -143,14 +140,13 @@ namespace RedMagic.Levels
             float texW = offTexture.width, texH = offTexture.height;
 
             var verts = new List<Vector3>(); var uvs = new List<Vector2>(); var tris = new List<int>();
-            BuildPieces(W, H + 2f * embed, ppc, texW, texH, verts, uvs, tris);
-            for (int i = 0; i < verts.Count; i++) verts[i] -= new Vector3(0f, embed); // el arte sobresale por abajo y por arriba
+            BuildPieces(W, H, ppc, texW, texH, verts, uvs, tris);
 
             var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
             _bodyMesh = Level.Assign(_bodyMesh, "DoorBody", verts, tris, uvs, null);
             _bodyMaterial = Level.GetMaterial(ref _bodyMaterial, shader, "DoorBody");
             _bodyMaterial.mainTexture = offTexture;
-            Level.SetupRenderer(Child(BodyName), _bodyMesh, _bodyMaterial, LevelSorting.Embedded);
+            Level.SetupRenderer(Child(BodyName), _bodyMesh, _bodyMaterial, LevelSorting.OverTerrain);
 
             if (onTexture != null)
             {
@@ -158,7 +154,7 @@ namespace RedMagic.Levels
                 _litMesh = Level.Assign(_litMesh, "DoorLit", verts, tris, uvs, null);
                 _litMaterial = Level.GetMaterial(ref _litMaterial, shader, "DoorLit");
                 _litMaterial.mainTexture = onTexture;
-                Level.SetupRenderer(Child(LitName), _litMesh, _litMaterial, LevelSorting.Embedded + 1);
+                Level.SetupRenderer(Child(LitName), _litMesh, _litMaterial, LevelSorting.OverTerrain + 1);
             }
 
             BuildEnergy(W, H, ppc);
@@ -229,7 +225,7 @@ namespace RedMagic.Levels
 
             float leftW = slotLeftPx / ppc, rightW = (offTexture.width - slotRightPx) / ppc, inset = 0.012f;
             float x0 = leftW + inset, x1 = W - rightW - inset;
-            float y0 = (offTexture.height - slotBottomPx) / ppc - embed, y1 = H + embed - slotTopPx / ppc;
+            float y0 = (offTexture.height - slotBottomPx) / ppc, y1 = H - slotTopPx / ppc;
 
             var verts = new List<Vector3> { new Vector3(x0, y0), new Vector3(x1, y0), new Vector3(x1, y1), new Vector3(x0, y1) };
             var uvs = new List<Vector2> { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
@@ -237,7 +233,7 @@ namespace RedMagic.Levels
             _energyMaterial = Level.GetMaterial(ref _energyMaterial, energyShader, "DoorEnergy");
             _energyMaterial.SetColor("_Color", energyColor);
             _energyMaterial.SetVector("_Size", new Vector4(x1 - x0, y1 - y0, 0f, 0f));
-            Level.SetupRenderer(Child(EnergyName), _energyMesh, _energyMaterial, LevelSorting.Embedded + 2);
+            Level.SetupRenderer(Child(EnergyName), _energyMesh, _energyMaterial, LevelSorting.OverTerrain + 2);
         }
 
         /// <summary>Versiones anteriores tenían halo y luz: fuera.</summary>

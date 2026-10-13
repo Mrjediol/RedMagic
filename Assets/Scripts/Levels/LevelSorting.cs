@@ -16,8 +16,7 @@ namespace RedMagic.Levels
         public const int BackgroundSnow = -600;    // nieve de fondo: delante del parallax, detrás del terreno
         public const int Rock = -300;              // relleno de roca
         public const int Glow = -299;              // sombra + brillo interior
-        public const int Embedded = -298;          // + 0..2: objetos clavados en el terreno (puertas): sobre la roca, BAJO el borde de nieve
-        public const int Rim = -295;               // bandas y contorno del borde
+        public const int Rim = -298;               // bandas y contorno del borde
         public const int OverTerrain = -200;       // + índice: puertas y objetos apoyados en el suelo
         public const int Front = 50;               // + índice, en FrontLayer: delante del jugador
         public const int GameplaySnow = 20;        // en FrontLayer: nieve del plano del juego

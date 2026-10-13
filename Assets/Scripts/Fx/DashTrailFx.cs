@@ -216,6 +216,8 @@ namespace RedMagic.Fx
 
         // ------------------------------------------------------------------ dibujo
 
+        private readonly Color[] _wispPalette = new Color[10];
+        private readonly List<Vector2> _wispPoints = new List<Vector2>(24);
         private readonly List<Vector2> _pts = new List<Vector2>(64);
         private readonly List<float> _ws = new List<float>(64);
         private readonly List<Color> _cs = new List<Color>(64);
@@ -451,8 +453,10 @@ namespace RedMagic.Fx
 
             // hebras: arcos parciales con puntas afiladas y grosor variable; las de fuera moradas/azules
             var R = new Rng(11);
-            Color[] pal = { white, white, lightCyan, cyan, lightCyan, cyan, blue, purple, blue, purple };
-            var pts = new List<Vector2>(24);
+            var pal = _wispPalette;
+            pal[0] = white; pal[1] = white; pal[2] = lightCyan; pal[3] = cyan; pal[4] = lightCyan;
+            pal[5] = cyan; pal[6] = blue; pal[7] = purple; pal[8] = blue; pal[9] = purple;
+            var pts = _wispPoints;
             for (int k = 0; k < pal.Length; k++)
             {
                 float a = 20f + k * 3.4f + R.Next() * 3f, b = 20f + k * 2.6f, w = 24f + k * 4.6f;

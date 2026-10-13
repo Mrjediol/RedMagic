@@ -236,7 +236,8 @@ namespace RedMagic.Fx
 
         private void OnEnable()
         {
-            BuildLayers();
+            // Una sola vez: el efecto sale del pool y reconstruir aquí creaba GameObjects y Materiales en cada golpe.
+            if (_renderers == null || _renderers.Length != RendererCount || _renderers[0] == null) BuildLayers();
             _lastEditorTime = Now();
             Play(_power);
         }

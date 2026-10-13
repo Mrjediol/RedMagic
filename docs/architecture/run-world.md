@@ -1,6 +1,6 @@
 # Run / world system (`Assets/Scripts/Run/`)
 - **`WorldDefinition`** — a ScriptableObject per world: a pool of section `SceneReference`s, how
-  many to sample per run (`sectionsPerRun`), and a boss `SceneReference` — **optional**: empty (`HasBoss` false) = finishing the sections completes the world. Today only World1 is unlocked (section `NivelHielo_1000`, no boss); World2/3 are locked and empty until their levels exist. `TryBuildRunOrder(seed,
+  many to sample per run (`sectionsPerRun`), and a boss `SceneReference` — **optional**: empty (`HasBoss` false) = finishing the sections completes the world. Today only World1 is unlocked (sections `NivelHielo_1000` and `3 CombatRoomsTest` — the room/door test level — both per run, no boss); World2/3 are locked and empty until their levels exist. `TryBuildRunOrder(seed,
   out order)` does a seeded Fisher-Yates sample so a run seed is reproducible, and treats
   unassigned or not-in-Build-Settings pool entries as warnings rather than hard failures. Add a new
   world by creating a new asset, not by editing code. **Tools > RedMagic > World Scene Generator**
@@ -56,8 +56,11 @@
     `dropItem` → `ItemPickup.Spawn` at the room centre), `finishLevel` (releases the `SectionClearTracker` hold →
     exit/shop open, `OnAllWavesComplete`). Spawned enemies are **not** `Register`ed in the tracker, so an optional room
     left uncleared never blocks the exit. No wave marked `finishLevel` → the level finishes when every wave is done.
-  - **Rooms** (`LevelRoom`, a cell rectangle with scene handles, *+ Sala* in the Inspector): when the player's box is
-    fully inside a room that still has unfinished waves, its doors close (`Lock`) and its *al entrar* waves launch.
+  - **Rooms** (`LevelRoom`, a cell rectangle with scene handles, *+ Sala* in the Inspector; it may include its doors):
+    when the player's box is fully inside the room's **interior** — the rectangle shrunk `entryMargin` (2) cells left
+    and right, dotted in the gizmo, so the door never shuts in the player's face nor lets a dash carry them back out —
+    and the room still has unfinished waves, its doors close (`Lock`) and its *al entrar* waves launch. The player is
+    found by tag `Player` (re-found if the cached one is deactivated, as `RunManager` does to a scene's test player).
     Its doors are found by geometry: every `LevelDoor` overlapping the room rectangle grown by half a cell (painted
     doors aren't saved, so they can't be dragged in); gizmo lines show them (green = starts open). No trigger collider on
     purpose: *Queries Hit Triggers* is on, and a room-sized trigger would be seen by projectile/sensor rays.
@@ -65,6 +68,8 @@
   - Old data (before rooms) is migrated once (`roomsMigrated`): wave 1 at load, each launches the next, last finishes
     the level — the old behaviour. *+ Oleada* hands `finishLevel`/`finishRoom` from the previous wave to the new one
     and makes the previous launch it.
+  - Each enemy row's spawn-point dropdown ends with *+ Nuevo en el centro de <sala>*: a new point, child of the wave's
+    room, added to the manager's list.
   Events `OnWaveStart(int)` / `OnWaveComplete(int)` / `OnAllWavesComplete` (0-based). Gizmos: a sphere per spawn point
   coloured by the first wave that uses it, labelled `W<n> <enemy> ×<count>`.
 - The player keeps its prefab scale in every scene (the old per-scene `PlayerScaleConfig` is in `Assets/Legacy/`).

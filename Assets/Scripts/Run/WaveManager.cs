@@ -153,12 +153,13 @@ namespace RedMagic.Run
         private void CheckRooms()
         {
             if (_rooms.Count == _entered.Count) return;
-            if (_player == null)
+            // En una run, el Player que trae la escena para probarla suelta está apagado: vale el persistente.
+            if (_player == null || !_player.gameObject.activeInHierarchy)
             {
+                _player = null;
                 var go = GameObject.FindWithTag("Player");
                 if (go == null || !go.TryGetComponent(out _player)) return;
             }
-            if (!_player.gameObject.activeInHierarchy) return;
 
             var bounds = _player.bounds;
             foreach (var room in _rooms)

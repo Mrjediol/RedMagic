@@ -450,7 +450,7 @@ namespace RedMagic.Levels
         // ------------------------------------------------------------------ utilidades de malla
 
         /// <summary>Cinta a lo largo del contorno: de <c>pos + normal·from</c> a <c>pos + normal·to</c>, cerrada.</summary>
-        private static void Ribbon(List<RimPoint> pts, List<Vector3> verts, List<Color> cols, List<int> tris,
+        internal static void Ribbon(List<RimPoint> pts, List<Vector3> verts, List<Color> cols, List<int> tris,
                                    System.Func<int, float> from, System.Func<int, float> to,
                                    System.Func<int, Color> colorFrom, System.Func<int, Color> colorTo)
         {
@@ -471,7 +471,7 @@ namespace RedMagic.Levels
             }
         }
 
-        private static void AddFan(List<Vector2> poly, List<Vector3> verts, List<int> tris, List<Vector2> uvs, float uvScale,
+        internal static void AddFan(List<Vector2> poly, List<Vector3> verts, List<int> tris, List<Vector2> uvs, float uvScale,
                                    List<Color> cols, Color color)
         {
             int start = verts.Count;
@@ -487,7 +487,7 @@ namespace RedMagic.Levels
             }
         }
 
-        private static Mesh Assign(Mesh mesh, string name, List<Vector3> verts, List<int> tris, List<Vector2> uvs, List<Color> cols)
+        internal static Mesh Assign(Mesh mesh, string name, List<Vector3> verts, List<int> tris, List<Vector2> uvs, List<Color> cols)
         {
             if (mesh == null) mesh = new Mesh { name = name, hideFlags = HideFlags.DontSave };
             mesh.Clear();
@@ -500,7 +500,7 @@ namespace RedMagic.Levels
             return mesh;
         }
 
-        private static Material GetMaterial(ref Material material, Shader shader, string name)
+        internal static Material GetMaterial(ref Material material, Shader shader, string name)
         {
             if (material == null || material.shader != shader)
             {
@@ -510,7 +510,7 @@ namespace RedMagic.Levels
             return material;
         }
 
-        private static void SetupRenderer(Transform child, Mesh mesh, Material material, int order)
+        internal static void SetupRenderer(Transform child, Mesh mesh, Material material, int order)
         {
             if (!child.TryGetComponent<MeshFilter>(out var mf)) mf = child.gameObject.AddComponent<MeshFilter>();
             if (!child.TryGetComponent<MeshRenderer>(out var mr)) mr = child.gameObject.AddComponent<MeshRenderer>();
@@ -529,14 +529,14 @@ namespace RedMagic.Levels
             return go.transform;
         }
 
-        private static void DestroySafe(Object o)
+        internal static void DestroySafe(Object o)
         {
             if (o == null) return;
             if (Application.isPlaying) Destroy(o); else DestroyImmediate(o);
         }
 
         /// <summary>Ruido de valor 1D en [0, 1] (mismo papel que el del boceto web).</summary>
-        private static float Noise(float x, float seed)
+        internal static float Noise(float x, float seed)
         {
             float i = Mathf.Floor(x), f = x - i;
             float u = f * f * (3f - 2f * f);

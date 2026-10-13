@@ -19,23 +19,29 @@ namespace RedMagic.LevelsEditor
         private const string Folder = "Assets/Test/Puertas";
         private const string PrefabPath = Folder + "/PuertaEnergia.prefab";
 
-        [MenuItem("Tools/RedMagic/Niveles/Crear puertas de prueba")]
-        public static void CreateTestDoors()
+        /// <summary>Prefab de la puerta de energía (lo crea si falta). Null si faltan el arte o el shader.</summary>
+        public static GameObject EnsurePrefab()
         {
             var off = Prepare(OffPath);
             var on = Prepare(OnPath);
             var shader = AssetDatabase.LoadAssetAtPath<Shader>(ShaderPath);
-            if (off == null || on == null || shader == null) { Debug.LogError("Faltan las imágenes de la puerta o el shader de energía."); return; }
+            if (off == null || on == null || shader == null) { Debug.LogError("Faltan las imágenes de la puerta o el shader de energía."); return null; }
             Directory.CreateDirectory(Folder);
 
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
-            if (prefab == null)
-            {
-                var temp = new GameObject("PuertaEnergia");
-                temp.AddComponent<LevelDoor>().Configure(1, 4, false, off, on, shader);
-                prefab = PrefabUtility.SaveAsPrefabAsset(temp, PrefabPath);
-                Object.DestroyImmediate(temp);
-            }
+            if (prefab != null) return prefab;
+            var temp = new GameObject("PuertaEnergia");
+            temp.AddComponent<LevelDoor>().Configure(1, 4, false, off, on, shader);
+            prefab = PrefabUtility.SaveAsPrefabAsset(temp, PrefabPath);
+            Object.DestroyImmediate(temp);
+            return prefab;
+        }
+
+        [MenuItem("Tools/RedMagic/Niveles/Crear puertas de prueba")]
+        public static void CreateTestDoors()
+        {
+            var prefab = EnsurePrefab();
+            if (prefab == null) return;
 
             var level = Object.FindFirstObjectByType<Level>();
             var root = new GameObject("Puertas de prueba").transform;
@@ -49,7 +55,8 @@ namespace RedMagic.LevelsEditor
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, root);
                 go.name = $"Puerta {s.w}x{s.h}" + (s.open ? " (abierta)" : "");
                 var door = go.GetComponent<LevelDoor>();
-                door.Configure(s.w, s.h, s.open, off, on, shader);
+                door.SetCells(s.w, s.h);
+                door.SetStartOpen(s.open);
                 float y = level != null ? level.GroundTop(Mathf.RoundToInt(x)) : 0f;
                 go.transform.localPosition = new Vector3(x, y, 0f);
                 x += 6f;

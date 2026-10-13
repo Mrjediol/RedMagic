@@ -116,6 +116,21 @@ namespace RedMagic.Levels
             ApplyProgress();
         }
 
+        /// <summary>Cambia sólo el tamaño (lo usa <see cref="DoorTilemap"/> con el rectángulo pintado).</summary>
+        public void SetCells(int wide, int high)
+        {
+            cellsWide = Mathf.Clamp(wide, MinWide, MaxWide);
+            cellsHigh = Mathf.Clamp(high, MinHigh, MaxHigh);
+            Rebuild();
+        }
+
+        /// <summary>Estado al empezar (y ahora mismo, sin animación).</summary>
+        public void SetStartOpen(bool open)
+        {
+            startOpen = open;
+            SetClosed(!open, true);
+        }
+
         /// <summary>Desde código (importador, menús).</summary>
         public void Configure(int wide, int high, bool open, Texture2D off, Texture2D on, Shader energy)
         {

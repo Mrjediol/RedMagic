@@ -122,6 +122,16 @@ platform tile into Terreno would make it rock). Then Tile Palette tools: B brush
 Shift+click). The level redraws as you paint. **Nieve del borde** (`rimOnTerrain`, `rimOnPlatforms`): turn the light rim
 bands off for rock and/or platforms (1-cell platforms get top and bottom bands meeting in the middle); the outline stays.
 
+## Painted objects (in `Assets/Scripts/Test/` until validated)
+- **Art platforms**: `ArtPlatformTile` (left / repeating centre / right / single sprite chosen from its left-right
+  neighbours) painted in `Grid/PlataformasArte`; `ArtPlatformTilemap` makes one thin one-way collider per run
+  (`surfaceDrop` below the cell top skips the art's dark outline, `colliderThickness`). Thin styles only (art hangs
+  from the cell top). Menu *Preparar plataformas de arte*.
+- **Doors**: `DoorTile` cells painted in `Grid/Puertas` (renderer off); `DoorTilemap` turns each connected group into a
+  `LevelDoor` of its bounding rectangle, `DontSave` (rebuilt on paint and load: the painted cells are the truth).
+  `DoorTilemap.Doors` is the list for room logic. Menu *Preparar puertas pintables*.
+- Both palettes share `_Biomas/PaletaPlataformasArte`; pick the right target Tilemap. Not yet in the web editor.
+
 ## Pending
 **Door art**: the Ice1 door was drawn for a floor with depth; on the flat rim it doesn't sit well. Tried a procedural
 snow mound at its base — rejected. Needs new door art made for a flat side-view floor (or Hollow-Knight-style steps +

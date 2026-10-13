@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ee95bcbd1822f843afdc2da421f6fd6, type: 3}
+  m_Name: ArtTile_FinaLarga
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Levels.ArtPlatformTile
+  left: {fileID: 21300000, guid: a1e79eaf1a1b427448f9799841aa1bb6, type: 3}
+  center: {fileID: 21300000, guid: 4aadc6ceb0c08fa4abd7f132618baa78, type: 3}
+  right: {fileID: 21300000, guid: 974950f6e83d65a45875126a0933684a, type: 3}
+  single: {fileID: 21300000, guid: 5ada34ba0c1567d4ea22c2e84f491ba1, type: 3}
+  colliderThickness: 0.12

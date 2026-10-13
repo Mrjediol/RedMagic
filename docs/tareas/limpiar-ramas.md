@@ -25,3 +25,7 @@ Pendiente desde 2026-10-12, a petición del usuario: primero un backup, después
 ## Reglas
 
 CLAUDE.md prohíbe borrar ramas sin permiso: pedir confirmación explícita en el momento de borrar.
+
+
+## Añadida 2026-10-13
+- `task/movimiento-plano` (movimiento sin rampas ni escalones) también está fusionada en `main`: entra en la limpieza (ahora son 12 ramas `task/*`).

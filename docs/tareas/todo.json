@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-12T23:59:16.217Z",
+  "updated": "2026-10-13T07:08:57.997Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -272,6 +272,45 @@
               "done": false
             }
           ]
+        },
+        {
+          "done": false,
+          "id": "objetos-editor-web",
+          "text": "Editor web: poner plataformas y puertas (formato v3 + importador en Unity)",
+          "note": "Dibujar plataformas finas y puertas (1-2 × 3-5 celdas) en 🧱 Niveles y que Unity las cree al importar. Ya existen los tiles pintables en Unity (ArtPlatformTile, DoorTile).",
+          "doc": "docs/tareas/objetos-editor-web.md",
+          "needs": [
+            "unity"
+          ],
+          "steps": [
+            {
+              "id": "jpk74bo",
+              "text": "Formato v3 de *.levelsketch.json (capa objects, v1/v2 se siguen leyendo)",
+              "done": false
+            },
+            {
+              "id": "4diravx",
+              "text": "Web: paleta de objetos en 🧱 Niveles (plataformas finas, puerta cerrada/abierta) + vista previa",
+              "done": false
+            },
+            {
+              "id": "5wnml99",
+              "text": "Importador: crear Tilemaps PlataformasArte y Puertas y pintar las celdas",
+              "done": false
+            },
+            {
+              "id": "rm9mc55",
+              "text": "Validar con el usuario y mover lo de Test a su sitio",
+              "done": false
+            }
+          ]
+        },
+        {
+          "done": false,
+          "id": "objetos-pulir",
+          "text": "Plataformas y puertas: más variantes (barrotes, que caen, móviles) y pulido",
+          "note": "Puerta de barrotes, plataformas que se caen/se mueven sobre LevelPlatform, colisión, decisión de la nieve junto a objetos.",
+          "doc": "docs/tareas/objetos-pulir.md"
         }
       ]
     },
@@ -337,6 +376,20 @@
           "text": "Comprobar la optimización de FPS",
           "note": "Ya conseguido",
           "done": true
+        },
+        {
+          "done": false,
+          "id": "prueba-movil-salas",
+          "text": "Probar en el móvil/mando: salas, tienda con inventario lleno, menús persistentes, FPS",
+          "note": "Todo construido y compilando pero sin probar en un dispositivo. Incluye mando en la pantalla de elegir hueco, Auditar claves y quitar la tecla P temporal.",
+          "doc": "docs/tareas/prueba-movil-salas.md"
+        },
+        {
+          "done": false,
+          "id": "optimizaciones-propuestas",
+          "text": "Optimizaciones: proponer, probar en variante aislada y adoptar sólo con el visto bueno",
+          "note": "Regla del usuario: lo que pueda empeorar el aspecto (baking) se prueba antes. Baking de puerta y proyectiles probado y no adoptado.",
+          "doc": "docs/tareas/optimizaciones-propuestas.md"
         }
       ]
     },
@@ -451,6 +504,12 @@
               "done": false
             }
           ]
+        },
+        {
+          "done": false,
+          "id": "controles-tactiles",
+          "text": "Rehacer los controles táctiles cuando el player esté acabado",
+          "note": "Ahora sólo se cuida el mando. Ya hay botones ARMA y USAR (contextual) y el menú de pausa persistente."
         }
       ]
     },
@@ -522,8 +581,8 @@
         {
           "id": "mundos-nivel1",
           "text": "Enganchar NivelHielo_1000 como primera sección de la run",
-          "done": false,
-          "note": "World1-3 (ScriptableObjects/Worlds) apuntan aún a escenas de Legacy: una run desde el hub carga escenas viejas y LegacyGuard lo avisará. PlayerScaleConfig también lista escenas viejas."
+          "done": true,
+          "note": "World1-3 (ScriptableObjects/Worlds) apuntan aún a escenas de Legacy: una run desde el hub carga escenas viejas y LegacyGuard lo avisará. PlayerScaleConfig también lista escenas viejas. Hecho 2026-10-13: NivelHielo_1000 y 3 CombatRoomsTest están en World1 (2 secciones por run) y en Build Settings."
         }
       ]
     },

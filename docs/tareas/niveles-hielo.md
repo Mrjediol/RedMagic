@@ -43,3 +43,7 @@ superior); halo de sombra alrededor de la puerta; montón de nieve al pie de la 
 `Assets/Scripts/Levels/{Level,LevelShape,LevelBiome,LevelSorting,ParallaxBackgroundLayer,SnowSettings,FollowCameraView}.cs`,
 `Assets/Scripts/Levels/Editor/{LevelSetup,LevelEditor}.cs`, `Assets/Test/EditorNiveles/Editor/`, `Web/EditorNiveles/`,
 `Assets/Art/Levels/Shaders/`, `Assets/Levels/_Biomas/`, `Web/ParallaxTest/`, `Web/RedMagicWeb/tools/comfy/{claude-workflow,despill}.mjs`.
+
+
+## Estado 2026-10-13
+- Paso 3 (objetos/plataformas con variantes) y 4 (puerta): hechos como sistema pintable en Unity (`ArtPlatformTile`, `DoorTile`, `LevelDoor` de energía, salas con `LevelRoom`). Falta ponerlos desde la web: `docs/tareas/objetos-editor-web.md`; más variantes y pulido: `docs/tareas/objetos-pulir.md`.

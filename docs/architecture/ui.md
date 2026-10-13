@@ -37,6 +37,19 @@ all of which bit during that pass:
 - **Multi-state pieces of the same drawing share `trimGroup` *and* `interior`** (the three button
   states do), or the hover's glow shrinks its fill and the button jumps on mouse-over.
 
+## Menus that must exist in every scene (`Resources/MenusUI.prefab`)
+Touch controls, **pause** and **options** (`TouchControlsUI`, `PauseMenuUI`, `OptionsMenuUI`) used to live inside MainHub and Ice1, so a run (MainHub
+unloads) or any new level scene had no pause button, Esc/Start or touch controls. They are now one prefab, spawned before the first scene by
+`PersistentMenus` (`DontDestroyOnLoad`; its children are deactivated while `MainMenuController.IsOpen`, the main menu has its own options screen).
+**Never put them in a scene again.** The one-off migration is `Tools ▸ RedMagic ▸ UI ▸ Migrar menús a prefab persistente` (`MenusUiMigration`, delete it).
+
+**Performance options** (Options ▸ General): `PerformanceSettings` — FPS limit 30/60/90/120/144/*display* (default: the display's highest refresh
+rate; was a hardcoded 60) and *Show FPS* (`FpsOverlay`, now in every build, default on only in the editor / Development Build). Applied at startup by
+`PerformanceBootstrap`; the limit needs vSync off or Unity ignores `targetFrameRate`.
+
+**Shaders found by name** (`Shader.Find`: Fx Vertex Color, Parallax Layer/Shadow, Melee Slash Layer, Door Energy, Sprite Lit FX…) must be in
+*Project Settings ▸ Graphics ▸ Always Included Shaders* or a build strips them (magenta quads). The custom ones are listed there.
+
 ## In-game HUD (`Assets/Ui/Hud/`)
 One persistent, self-bootstrapping panel, **`GameHud`** (`Resources/CurrencyHudPanelSettings`,
 sort 15: above touch buttons, below Pause (20) and Options (25)), code-built from widget classes that each

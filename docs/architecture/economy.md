@@ -50,7 +50,10 @@
 **Shop (scene-based, between sections):**
 
 - **Flow** — `RunPhase.Shop`. `RunManager.AdvanceSection` from a cleared normal section loads
-  `ShopConfig.shopScene` (global, never in a world's section pool) before the next section; from
+  `ShopConfig.shopScene` (global, never in a world's section pool) before the next section **when the world asks for
+  it**: `WorldDefinition ▸ Tiendas ▸ shopAfterSections` lists the run section numbers (from 1) followed by a shop
+  (default 1..5 = after every one; World1 = [1], one shop between its 2 sections). `Shop.unity` must be enabled in
+  Build Settings or `CanLoad` is false and no shop ever appears; from
   the shop it continues as usual; bosses never lead to a shop. Enter at the scene's `SectionEntry`
   (left door), leave through its `SectionExit` (right door). After loading, `RunManager.StockShop`
   calls `ShopManager.Stock(CurrentWorldNumber, seed)`; a Shop scene opened on its own stocks itself

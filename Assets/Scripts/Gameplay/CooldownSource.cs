@@ -11,6 +11,7 @@ namespace RedMagic.Gameplay
         Attack = 0,
         Dash = 10,
         Parry = 20,
+        Weapon = 30,
     }
 
     /// <summary>Foto del cooldown de una acción en este frame.</summary>
@@ -39,8 +40,7 @@ namespace RedMagic.Gameplay
     /// dash, parry…). El HUD (<c>UI.GameHud</c>) y los botones táctiles los buscan en el jugador
     /// con <c>GetComponents</c>: una acción nueva sólo tiene que implementar esto, sin tocar la UI.
     ///
-    /// Varias fuentes pueden compartir casilla (la espada y el arma en <see cref="CooldownSlot.Attack"/>):
-    /// manda la primera con <see cref="CooldownActive"/> a true.
+    /// Varias fuentes pueden compartir casilla: manda la primera con <see cref="CooldownActive"/> a true.
     /// </summary>
     public interface ICooldownSource
     {

@@ -28,5 +28,11 @@ Each mode shows its own on-screen help and nothing else:
   E to interact or I for items), update `ControlsLegendHud.Rows` too.
 - **Gamepad** → neither, since the prompts would be wrong buttons.
 
+**Melee vs weapon are separate buttons** (2026-10-13): `Player/Attack` (left click, X, gamepad `buttonWest` = square)
+is always the melee combo (`PlayerAttack`); `Player/Weapon` (Q, gamepad `buttonNorth` = triangle; it replaced the
+unused `Fireball` action) fires the equipped weapon (`WeaponUser`). Equipping a weapon no longer silences the melee.
+Touch: `weaponButton` (was `fireballButton`) → `TouchInput.QueueWeapon/ConsumeWeapon`, shown only while a weapon is
+equipped, with its own cooldown dial; the weapon has its own HUD slot, `CooldownSlot.Weapon` (weapon icon).
+
 **Parry** (`Player/Parry`, read by `PlayerParry`): right mouse button, `L`, gamepad `buttonEast`;
 touch `parryButton` → `TouchInput.QueueParry/ConsumeParry`. Listed in `HudControlsLegend.Rows`.

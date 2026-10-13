@@ -31,7 +31,7 @@ namespace RedMagic.UI
         private Button _attackButton;
         private Button _downButton;
         private Button _dashButton;
-        private Button _fireballButton;
+        private Button _weaponButton;
         private Button _parryButton;
 
         // Cooldown pintado sobre el botón que lanza cada acción (el mismo dial que el HUD de PC).
@@ -52,7 +52,7 @@ namespace RedMagic.UI
             _attackButton = _root.Q<Button>("attackButton");
             _downButton = _root.Q<Button>("downButton");
             _dashButton = _root.Q<Button>("dashButton");
-            _fireballButton = _root.Q<Button>("fireballButton");
+            _weaponButton = _root.Q<Button>("weaponButton");
             _parryButton = _root.Q<Button>("parryButton");
 
             WireHold(_leftButton, -1f);
@@ -67,8 +67,8 @@ namespace RedMagic.UI
             if (_dashButton != null)
                 _dashButton.RegisterCallback<PointerDownEvent>(OnDashDown);
 
-            if (_fireballButton != null)
-                _fireballButton.RegisterCallback<PointerDownEvent>(OnFireballDown);
+            if (_weaponButton != null)
+                _weaponButton.RegisterCallback<PointerDownEvent>(OnWeaponDown);
 
             if (_parryButton != null)
                 _parryButton.RegisterCallback<PointerDownEvent>(OnParryDown);
@@ -91,6 +91,7 @@ namespace RedMagic.UI
             AttachDial(_attackButton, CooldownSlot.Attack);
             AttachDial(_dashButton, CooldownSlot.Dash);
             AttachDial(_parryButton, CooldownSlot.Parry);
+            AttachDial(_weaponButton, CooldownSlot.Weapon);
 
             TouchInput.Clear();
         }
@@ -108,6 +109,14 @@ namespace RedMagic.UI
         private void Update()
         {
             float dt = Time.unscaledDeltaTime;
+
+            // El botón del arma sólo con un arma equipada (sin arma no hace nada).
+            if (_weaponButton != null)
+            {
+                bool armed = HudPlayer.Cooldown(CooldownSlot.Weapon) != null;
+                var display = armed ? DisplayStyle.Flex : DisplayStyle.None;
+                if (_weaponButton.style.display != display) _weaponButton.style.display = display;
+            }
             foreach (var (slot, dial) in _dials)
             {
                 var source = HudPlayer.Cooldown(slot);
@@ -134,8 +143,8 @@ namespace RedMagic.UI
             if (_dashButton != null)
                 _dashButton.UnregisterCallback<PointerDownEvent>(OnDashDown);
 
-            if (_fireballButton != null)
-                _fireballButton.UnregisterCallback<PointerDownEvent>(OnFireballDown);
+            if (_weaponButton != null)
+                _weaponButton.UnregisterCallback<PointerDownEvent>(OnWeaponDown);
 
             if (_parryButton != null)
                 _parryButton.UnregisterCallback<PointerDownEvent>(OnParryDown);
@@ -206,7 +215,7 @@ namespace RedMagic.UI
 
         private static void OnDashDown(PointerDownEvent evt) => TouchInput.QueueDash();
 
-        private static void OnFireballDown(PointerDownEvent evt) => TouchInput.QueueFireball();
+        private static void OnWeaponDown(PointerDownEvent evt) => TouchInput.QueueWeapon();
 
         private static void OnParryDown(PointerDownEvent evt) => TouchInput.QueueParry();
 

@@ -358,9 +358,10 @@ namespace RedMagic.Run
                 return;
             }
 
-            // Sección normal despejada → tienda antes de lo siguiente. Desde la tienda (o sin
-            // escena de tienda asignada) se sigue como siempre.
-            if (Phase == RunPhase.Section && Economy.ShopConfig.Instance.shopScene.CanLoad)
+            // Sección normal despejada → tienda antes de lo siguiente, si el mundo la pone tras esta sección
+            // (WorldDefinition ▸ Tiendas). Desde la tienda (o sin escena de tienda asignada) se sigue como siempre.
+            if (Phase == RunPhase.Section && Economy.ShopConfig.Instance.shopScene.CanLoad
+                && CurrentWorld.ShopAfterSection(_index + 1))
             {
                 SetPhase(RunPhase.Shop);
                 _flow = StartCoroutine(EnterCurrentRoutine(firstOfRun: false));

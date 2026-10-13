@@ -53,6 +53,7 @@ namespace RedMagic.UI
             CooldownSlot.Attack => new Color(1f, 0.70f, 0.32f, 1f),
             CooldownSlot.Dash => new Color(0.42f, 0.86f, 1f, 1f),
             CooldownSlot.Parry => new Color(0.62f, 1f, 0.35f, 1f),   // verde lima, como su icono
+            CooldownSlot.Weapon => new Color(0.78f, 0.52f, 1f, 1f),
             _ => Gold,
         };
 

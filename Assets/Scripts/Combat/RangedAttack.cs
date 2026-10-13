@@ -71,8 +71,8 @@ namespace RedMagic.Combat
         [Header("Input — sólo en modo PlayerInput")]
         [SerializeField] private InputActionAsset inputActions;
         [SerializeField] private string actionMapName = "Player";
-        [SerializeField] private string actionName = "Fireball";
-        [Tooltip("Añade también el botón táctil de bola de fuego.")]
+        [SerializeField] private string actionName = "Weapon";
+        [Tooltip("Añade también el botón táctil del arma.")]
         [SerializeField] private bool useTouchButton = true;
 
         [Header("IA — sólo en modo AutoDetect")]
@@ -131,7 +131,7 @@ namespace RedMagic.Combat
 
             if (!GameStateManager.CanPlayerAct || IsDead)
             {
-                if (mode == TriggerMode.PlayerInput && useTouchButton) TouchInput.ConsumeFireball();
+                if (mode == TriggerMode.PlayerInput && useTouchButton) TouchInput.ConsumeWeapon();
                 return;
             }
 
@@ -139,7 +139,7 @@ namespace RedMagic.Combat
             {
                 case TriggerMode.PlayerInput:
                     bool pressed = (_fireAction != null && _fireAction.WasPressedThisFrame())
-                                   || (useTouchButton && TouchInput.ConsumeFireball());
+                                   || (useTouchButton && TouchInput.ConsumeWeapon());
                     if (pressed) TryFire();
                     break;
 

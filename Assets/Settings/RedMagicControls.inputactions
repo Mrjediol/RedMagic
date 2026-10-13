@@ -47,7 +47,7 @@
                     "priority": 0
                 },
                 {
-                    "name": "Fireball",
+                    "name": "Weapon",
                     "type": "Button",
                     "id": "8e15c3b6-70d4-49af-b6e2-04c8a1fd53d9",
                     "expectedControlType": "Button",
@@ -291,11 +291,11 @@
                 {
                     "name": "",
                     "id": "d94b28c7-6e05-41fa-b378-1c60ae95f2d3",
-                    "path": "<Keyboard>/k",
+                    "path": "<Keyboard>/q",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
-                    "action": "Fireball",
+                    "action": "Weapon",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -306,7 +306,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "Fireball",
+                    "action": "Weapon",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

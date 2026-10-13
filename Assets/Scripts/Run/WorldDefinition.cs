@@ -40,6 +40,11 @@ namespace RedMagic.Run
         [Min(1)]
         [SerializeField] private int sectionsPerRun = 5;
 
+        [Header("Tiendas")]
+        [Tooltip("Después de qué secciones sale la tienda, contando las secciones de la run desde 1 (1 = tras la primera). " +
+                 "Vacío = ninguna. Nunca sale después del jefe. La escena de tienda está en ShopConfig.")]
+        [SerializeField] private List<int> shopAfterSections = new List<int> { 1, 2, 3, 4, 5 };
+
         [Header("Jefe")]
         [Tooltip("Escena del jefe. Se juega al terminar las secciones sorteadas. Vacía = mundo sin jefe (aún no hecho): acabar las secciones acaba el mundo.")]
         [SerializeField] private SceneReference bossScene = new SceneReference();
@@ -51,6 +56,9 @@ namespace RedMagic.Run
         public SceneReference BossScene => bossScene;
         public bool HasBoss => bossScene != null && bossScene.CanLoad;
         public IReadOnlyList<SceneReference> SectionPool => sectionPool;
+
+        /// <summary>¿Sale la tienda tras la sección número <paramref name="sectionNumber"/> de la run (desde 1)?</summary>
+        public bool ShopAfterSection(int sectionNumber) => shopAfterSections != null && shopAfterSections.Contains(sectionNumber);
 
         /// <summary>Secciones del pool que están asignadas y presentes en Build Settings.</summary>
         public int PlayableSectionCount

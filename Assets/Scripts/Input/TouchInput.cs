@@ -18,7 +18,7 @@ namespace RedMagic.Core
         private static bool _jumpQueued;
         private static bool _attackQueued;
         private static bool _dashQueued;
-        private static bool _fireballQueued;
+        private static bool _weaponQueued;
         private static bool _interactQueued;
         private static bool _parryQueued;
 
@@ -66,14 +66,14 @@ namespace RedMagic.Core
             return true;
         }
 
-        /// <summary>La UI táctil lo llama al pulsar el botón de bola de fuego.</summary>
-        public static void QueueFireball() => _fireballQueued = true;
+        /// <summary>La UI táctil lo llama al pulsar el botón del arma.</summary>
+        public static void QueueWeapon() => _weaponQueued = true;
 
-        /// <summary>Devuelve true una sola vez por pulsación de bola de fuego.</summary>
-        public static bool ConsumeFireball()
+        /// <summary>Devuelve true una sola vez por pulsación del botón del arma.</summary>
+        public static bool ConsumeWeapon()
         {
-            if (!_fireballQueued) return false;
-            _fireballQueued = false;
+            if (!_weaponQueued) return false;
+            _weaponQueued = false;
             return true;
         }
 
@@ -95,7 +95,7 @@ namespace RedMagic.Core
             _jumpQueued = false;
             _attackQueued = false;
             _dashQueued = false;
-            _fireballQueued = false;
+            _weaponQueued = false;
             _interactQueued = false;
             _parryQueued = false;
         }

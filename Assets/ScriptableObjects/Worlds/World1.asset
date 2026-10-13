@@ -23,6 +23,7 @@ MonoBehaviour:
     scenePath: Assets/Scenes/3 CombatRoomsTest.unity
     sceneName: 3 CombatRoomsTest
   sectionsPerRun: 2
+  shopAfterSections: 01000000
   bossScene:
     sceneAsset: {fileID: 0}
     scenePath: 

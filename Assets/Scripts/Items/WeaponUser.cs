@@ -73,13 +73,13 @@ namespace RedMagic.Items
         [Header("Input")]
         [SerializeField] private InputActionAsset inputActions;
         [SerializeField] private string actionMapName = "Player";
-        [SerializeField] private string attackActionName = "Attack";
-        [Tooltip("Usa también el botón táctil de ataque (sólo armas sin carga).")]
+        [Tooltip("Acción del arma (Q / triángulo). La espada sigue en Attack: tener arma no quita el cuerpo a cuerpo.")]
+        [SerializeField] private string weaponActionName = "Weapon";
+        [Tooltip("Usa también el botón táctil del arma (sólo armas sin carga).")]
         [SerializeField] private bool useTouchButton = true;
 
         private PlayerMovement _movement;
         private PlayerAnimator _animator;
-        private PlayerAttack _basicAttack;
         private AbilityUser _abilityUser;
         private Health _health;
         private SpriteRenderer _sprite;
@@ -97,8 +97,6 @@ namespace RedMagic.Items
         // que el disparo sale de verdad, para que el orbe se convierta en el cometa sin hueco.
         private CometChargeFx _cometCharge;
         private CometChargeFx _cometPending;
-
-        private bool _suppressingBasic;
 
         /// <summary>El WeaponUser del jugador activo (hub o run), o null. Para efectos de item que tocan el cooldown.</summary>
         public static WeaponUser Current { get; private set; }
@@ -139,9 +137,9 @@ namespace RedMagic.Items
 
         // ------------------------------------------------------------------ HUD (ICooldownSource)
 
-        public CooldownSlot Slot => CooldownSlot.Attack;
+        public CooldownSlot Slot => CooldownSlot.Weapon;
 
-        /// <summary>El arma lleva el botón de atacar mientras hay una equipada y ninguna habilidad la pisa.</summary>
+        /// <summary>Hay un arma equipada y ninguna habilidad la pisa.</summary>
         public bool CooldownActive => Weapon != null && (_abilityUser == null || _abilityUser.Equipped == null);
 
         public CooldownState Cooldown
@@ -165,7 +163,6 @@ namespace RedMagic.Items
         {
             _movement = GetComponent<PlayerMovement>();
             _animator = GetComponent<PlayerAnimator>();
-            _basicAttack = GetComponent<PlayerAttack>();
             _abilityUser = GetComponent<AbilityUser>();
             _health = GetComponent<Health>();
             _sprite = GetComponentInChildren<SpriteRenderer>();
@@ -173,7 +170,7 @@ namespace RedMagic.Items
             if (inputActions != null)
             {
                 var map = inputActions.FindActionMap(actionMapName, throwIfNotFound: false);
-                if (map != null) _attackAction = map.FindAction(attackActionName, throwIfNotFound: false);
+                if (map != null) _attackAction = map.FindAction(weaponActionName, throwIfNotFound: false);
                 else Debug.LogWarning($"[WeaponUser] No existe el action map '{actionMapName}'.", this);
             }
         }
@@ -189,7 +186,6 @@ namespace RedMagic.Items
             _attackAction?.Disable();
             CancelCharge();
             CancelPendingComet();
-            ReleaseBasicAttack();
             if (Current == this) Current = null;
         }
 
@@ -200,30 +196,25 @@ namespace RedMagic.Items
 
             var weapon = Weapon;
 
-            // Sin arma: soltamos nuestra supresión de la espada y salimos.
             if (weapon == null)
             {
                 CancelCharge();
-                ReleaseBasicAttack();
+                if (useTouchButton) TouchInput.ConsumeWeapon();
                 return;
             }
 
-            // Con arma pero también con habilidad equipada: el arma cede. No tocamos la supresión
-            // de la espada — de eso se encarga AbilityUser mientras la habilidad esté puesta.
+            // Con arma pero también con habilidad equipada: el arma cede.
             if (_abilityUser != null && _abilityUser.Equipped != null)
             {
                 CancelCharge();
-                _suppressingBasic = false;   // AbilityUser toma el relevo
-                if (useTouchButton) TouchInput.ConsumeAttack();
+                if (useTouchButton) TouchInput.ConsumeWeapon();
                 return;
             }
-
-            SuppressBasicAttack();
 
             if (!GameStateManager.CanPlayerAct || (_health != null && _health.IsDead))
             {
                 CancelCharge();
-                if (useTouchButton) TouchInput.ConsumeAttack();
+                if (useTouchButton) TouchInput.ConsumeWeapon();
                 return;
             }
 
@@ -236,7 +227,7 @@ namespace RedMagic.Items
         private void UpdateInstant(WeaponDefinition weapon)
         {
             bool held = _attackAction != null && _attackAction.IsPressed();
-            bool touch = useTouchButton && TouchInput.ConsumeAttack();
+            bool touch = useTouchButton && TouchInput.ConsumeWeapon();
 
             if ((held || touch) && _cooldownTimer <= 0f)
                 Fire(weapon, 1f);
@@ -493,21 +484,5 @@ namespace RedMagic.Items
             return sprite != null && sprite.flipX ? -1 : 1;
         }
 #endif
-
-        // ------------------------------------------------------------------ espada
-
-        private void SuppressBasicAttack()
-        {
-            if (_basicAttack == null || _suppressingBasic) return;
-            _basicAttack.Suppressed = true;
-            _suppressingBasic = true;
-        }
-
-        private void ReleaseBasicAttack()
-        {
-            if (_basicAttack == null || !_suppressingBasic) return;
-            _basicAttack.Suppressed = false;
-            _suppressingBasic = false;
-        }
     }
 }

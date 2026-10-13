@@ -22,7 +22,7 @@
 
             <ui:VisualElement name="actionPad" class="touch-cluster touch-cluster--right" picking-mode="Ignore">
                 <ui:Button name="parryButton" text="#touch.parry" class="touch-button touch-button--parry" />
-                <ui:Button name="fireballButton" text="#touch.fire" class="touch-button touch-button--fireball" />
+                <ui:Button name="weaponButton" text="#touch.weapon" class="touch-button touch-button--fireball" />
                 <ui:Button name="attackButton" text="#touch.attack" class="touch-button touch-button--attack" />
                 <ui:Button name="jumpButton" text="#touch.jump" class="touch-button touch-button--jump" />
             </ui:VisualElement>

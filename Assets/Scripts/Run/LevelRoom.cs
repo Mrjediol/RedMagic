@@ -9,8 +9,11 @@ namespace RedMagic.Run
 {
     /// <summary>
     /// Una sala del nivel para el <see cref="WaveManager"/>: un rectángulo en celdas enteras (origen = esquina inferior
-    /// izquierda, se ajusta con las asas en la escena). Al entrar el jugador del todo, el WaveManager cierra sus puertas
-    /// y lanza las oleadas que esperan a esta sala; al terminarla, las abre.
+    /// izquierda, se ajusta con las asas en la escena) que puede incluir sus puertas. Cuando el jugador está entero dentro
+    /// del rectángulo <b>encogido <see cref="entryMargin"/> celdas a izquierda y derecha</b> (el interior: las salas se
+    /// enlazan en horizontal, y en vertical el suelo está en el mismo borde), el WaveManager cierra
+    /// sus puertas y lanza las oleadas que esperan a esta sala; al terminarla, las abre. El margen hace que haya que
+    /// avanzar un poco tras cruzar la puerta: no se cierra en la cara ni se sale de un dash sin querer.
     ///
     /// <b>Sus puertas se encuentran solas</b>: toda <see cref="LevelDoor"/> que toque el borde del rectángulo (las pintadas
     /// en el Tilemap de puertas no se guardan en la escena, así que no se podrían arrastrar). Una puerta entre dos salas
@@ -25,10 +28,25 @@ namespace RedMagic.Run
         [Tooltip("Tamaño en celdas. La posición del objeto es la esquina inferior izquierda.")]
         [SerializeField] private Vector2Int size = new Vector2Int(12, 6);
 
+        [Tooltip("Celdas que hay que adentrarse desde el borde izquierdo o derecho para que se cierre. Las puertas " +
+                 "se detectan en todo el rectángulo; al jugador sólo se le cuenta dentro del interior.")]
+        [SerializeField, Min(0)] private int entryMargin = 2;
+
         /// <summary>El rectángulo de la sala en mundo.</summary>
         public Rect Area => new Rect((Vector2)transform.position, size);
 
         public Vector2 Center => Area.center;
+
+        /// <summary>El interior: la sala encogida <see cref="entryMargin"/> a izquierda y derecha (nunca menos de 1 celda).</summary>
+        public Rect Inner
+        {
+            get
+            {
+                var a = Area;
+                float mx = Mathf.Min(entryMargin, (a.width - 1f) * 0.5f);
+                return new Rect(a.x + mx, a.y, a.width - mx * 2f, a.height);
+            }
+        }
 
         private List<LevelDoor> _doors;
 
@@ -42,11 +60,11 @@ namespace RedMagic.Run
             _doors = null;
         }
 
-        /// <summary>True si la caja <paramref name="bounds"/> está entera dentro de la sala.</summary>
+        /// <summary>True si el jugador (<paramref name="bounds"/>) ha entrado: su caja entera dentro del interior.</summary>
         public bool ContainsFully(Bounds bounds)
         {
-            var a = Area;
-            return bounds.min.x >= a.xMin && bounds.max.x <= a.xMax && bounds.min.y >= a.yMin && bounds.max.y <= a.yMax;
+            var i = Inner;
+            return bounds.min.x >= i.xMin && bounds.max.x <= i.xMax && bounds.min.y >= i.yMin && bounds.max.y <= i.yMax;
         }
 
         /// <summary>Las puertas que tocan el borde de la sala.</summary>
@@ -99,6 +117,16 @@ namespace RedMagic.Run
             Gizmos.DrawCube(a.center, a.size);
             Gizmos.color = color;
             Gizmos.DrawWireCube(a.center, a.size);
+            // interior: donde hay que llegar para que se cierre
+            var inner = Inner;
+            Handles.color = new Color(color.r, color.g, color.b, 0.8f);
+            Handles.DrawDottedLines(new Vector3[]
+            {
+                new Vector3(inner.xMin, inner.yMin), new Vector3(inner.xMax, inner.yMin),
+                new Vector3(inner.xMax, inner.yMin), new Vector3(inner.xMax, inner.yMax),
+                new Vector3(inner.xMax, inner.yMax), new Vector3(inner.xMin, inner.yMax),
+                new Vector3(inner.xMin, inner.yMax), new Vector3(inner.xMin, inner.yMin),
+            }, 4f);
 
             // línea a cada puerta suya: verde si empieza abierta, roja si cerrada
             _doors = null;

@@ -7,7 +7,8 @@ namespace RedMagic.Run.EditorTools
     /// <summary>
     /// Una línea por enemigo: <c>#n [prefab] [punto de spawn ▾] [retardo s]</c>. El punto se elige
     /// de la lista del <see cref="WaveManager"/> por nombre, pero se guarda la referencia
-    /// (renombrar el objeto no rompe nada).
+    /// (renombrar el objeto no rompe nada). La última opción crea un punto nuevo en el centro de la sala de la oleada
+    /// (hijo de la sala, añadido a la lista).
     /// </summary>
     [CustomPropertyDrawer(typeof(EnemySpawn))]
     public class EnemySpawnDrawer : PropertyDrawer
@@ -45,7 +46,7 @@ namespace RedMagic.Run.EditorTools
             if (prefab.objectReferenceValue == null) GUI.color = Missing;
             EditorGUI.PropertyField(prefabR, prefab, GUIContent.none);
             GUI.color = point.objectReferenceValue == null ? Missing : old;
-            DrawPointPicker(pointR, point, property.serializedObject.targetObject as WaveManager);
+            DrawPointPicker(pointR, point, property);
             GUI.color = old;
 
             float labelW = EditorGUIUtility.labelWidth;
@@ -58,28 +59,59 @@ namespace RedMagic.Run.EditorTools
             EditorGUI.EndProperty();
         }
 
-        private static void DrawPointPicker(Rect rect, SerializedProperty point, WaveManager manager)
+        private static void DrawPointPicker(Rect rect, SerializedProperty point, SerializedProperty entry)
         {
+            var manager = entry.serializedObject.targetObject as WaveManager;
             var points = new List<Transform>();
             if (manager != null)
                 foreach (var p in manager.SpawnPoints)
                     if (p != null && !points.Contains(p)) points.Add(p);
 
-            // Sin lista, o con una referencia de fuera de la lista: campo de objeto normal.
+            // Con una referencia de fuera de la lista: campo de objeto normal.
             var current = point.objectReferenceValue as Transform;
-            if (points.Count == 0 || (current != null && !points.Contains(current)))
+            if (manager == null || (current != null && !points.Contains(current)))
             {
                 EditorGUI.PropertyField(rect, point, GUIContent.none);
                 return;
             }
 
-            var names = new GUIContent[points.Count + 1];
+            var room = RoomOf(entry);
+            var names = new GUIContent[points.Count + 2];
             names[0] = new GUIContent("— punto de spawn —");
             for (int i = 0; i < points.Count; i++) names[i + 1] = new GUIContent(points[i].name);
+            names[points.Count + 1] = new GUIContent(room != null ? $"+ Nuevo en el centro de {room.name}" : "+ Nuevo (centro de la vista)");
 
             int sel = current == null ? 0 : points.IndexOf(current) + 1;
             int next = EditorGUI.Popup(rect, sel, names);
-            if (next != sel) point.objectReferenceValue = next == 0 ? null : points[next - 1];
+            if (next == sel) return;
+            if (next == points.Count + 1) point.objectReferenceValue = CreatePoint(entry.serializedObject, manager, room);
+            else point.objectReferenceValue = next == 0 ? null : points[next - 1];
+        }
+
+        /// <summary>La sala de la oleada a la que pertenece esta entrada (waves.Array.data[i].enemies.Array.data[j]).</summary>
+        private static LevelRoom RoomOf(SerializedProperty entry)
+        {
+            string path = entry.propertyPath;
+            int cut = path.IndexOf(".enemies.Array", System.StringComparison.Ordinal);
+            if (cut < 0) return null;
+            var wave = entry.serializedObject.FindProperty(path.Substring(0, cut));
+            return wave?.FindPropertyRelative(nameof(WaveDefinition.room))?.objectReferenceValue as LevelRoom;
+        }
+
+        /// <summary>Punto nuevo en el centro de la sala (hijo de ella) o de la vista, añadido a la lista del manager.</summary>
+        private static Transform CreatePoint(SerializedObject so, WaveManager manager, LevelRoom room)
+        {
+            var list = so.FindProperty("spawnPoints");
+            var go = new GameObject($"SpawnPoint_{list.arraySize + 1}");
+            Undo.RegisterCreatedObjectUndo(go, "Nuevo punto de spawn");
+            go.transform.SetParent(room != null ? room.transform : manager.transform, false);
+            Vector3 at = room != null ? (Vector3)room.Center
+                       : SceneView.lastActiveSceneView != null ? SceneView.lastActiveSceneView.pivot : manager.transform.position;
+            go.transform.position = new Vector3(at.x, at.y, 0f);
+
+            list.arraySize++;
+            list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = go.transform;
+            return go.transform;
         }
 
         /// <summary>Prefab asset de una instancia de escena; null si ya es asset o no viene de prefab.</summary>

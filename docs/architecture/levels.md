@@ -22,7 +22,7 @@ screen height), as forced by `RunManager`.
 - Regenerates on paint (`Tilemap.tilemapTileChanged`), on size/biome change and on load; meshes are `DontSave`.
   Children it owns: `BG`, `Roca` (rock fill, Sprite-Lit, biome texture tiled in world space), `Brillo` (rock shadow +
   inner glow baked into a texture by exact distance-to-air at 8 texels/unit), `Borde` (4 colour bands of noisy
-  width, dark outline (outer glow off: `outerGlowWidth` 0, the user didn't want it) — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, layer Ground — **square corners**: the rounding is visual only, the game has no slopes).
+  width, dark outline (outer glow off: `outerGlowWidth` 0, the user didn't want it) — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, layer Ground — **square corners**: the rounding is visual only, the game has no slopes). `PlayerMovement` matches: no slope following and no automatic step-up — any higher surface, even a 1-cell platform, has to be jumped onto (removed 2026-10-13: the slope `rise` lifted the player onto platforms up to `|move.x|·tan 80°` high, ~2.4 u in a dash).
 - - Rim variants tried and **rejected** (2026-10-12): snow pads sticking out of floors, faceted crystal ice with icicles, lumpy gradient band, flat two-tone band with drips. The 4-band rim stays.
 - Floor depth (a pale top face so the floor reads as seen slightly from above, like Ice1) was tried and **rejected**:
   it looked wrong and made walking feel off. Keep the rim flat/side-view.

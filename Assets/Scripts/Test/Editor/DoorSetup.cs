@@ -13,7 +13,7 @@ namespace RedMagic.LevelsEditor
     /// </summary>
     public static class DoorSetup
     {
-        private const string ArtFolder = "Assets/Levels/_Biomas/Hielo/Doors";
+        private const string ArtFolder = "Assets/Levels/_Biomas/Hielo/Objetos/Doors";
         private const string OffPath = ArtFolder + "/DoorOff_cut.png", OnPath = ArtFolder + "/DoorOn_cut.png";
         private const string ShaderPath = "Assets/Art/Fx/Shaders/FxDoorEnergy.shader";
         private const string Folder = "Assets/Test/Puertas";

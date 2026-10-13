@@ -46,8 +46,9 @@ namespace RedMagic.LevelsEditor
                 mapTransform = go.transform;
             }
             var go2 = mapTransform.gameObject;
-            var map = go2.GetComponent<Tilemap>() ?? go2.AddComponent<Tilemap>();
-            var renderer = go2.GetComponent<TilemapRenderer>() ?? go2.AddComponent<TilemapRenderer>();
+            // (no usar "GetComponent(...) ?? AddComponent(...)": en el editor un componente que falta no es null para ??)
+            if (!go2.TryGetComponent<Tilemap>(out var map)) map = go2.AddComponent<Tilemap>();
+            if (!go2.TryGetComponent<TilemapRenderer>(out var renderer)) renderer = go2.AddComponent<TilemapRenderer>();
             renderer.sortingLayerName = LevelSorting.Layer;
             renderer.sortingOrder = LevelSorting.OverTerrain;
             if (go2.GetComponent<ArtPlatformTilemap>() == null) go2.AddComponent<ArtPlatformTilemap>();

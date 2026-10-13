@@ -16,4 +16,5 @@ MonoBehaviour:
   center: {fileID: 21300000, guid: 4aadc6ceb0c08fa4abd7f132618baa78, type: 3}
   right: {fileID: 21300000, guid: 974950f6e83d65a45875126a0933684a, type: 3}
   single: {fileID: 21300000, guid: 5ada34ba0c1567d4ea22c2e84f491ba1, type: 3}
-  colliderThickness: 0.12
+  surfaceDrop: 0.04
+  colliderThickness: 0.1

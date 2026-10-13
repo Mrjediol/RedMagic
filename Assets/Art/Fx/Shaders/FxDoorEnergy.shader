@@ -69,9 +69,23 @@ Shader "RedMagic/Fx Door Energy"
             float vnoise(float2 p)
             {
                 float2 i = floor(p), f = frac(p);
-                f = f * f * (3.0 - 2.0 * f);
+                f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);   // quíntica: sin la costura de cuadrícula de la cúbica
                 float a = hash21(i), b = hash21(i + float2(1, 0)), c = hash21(i + float2(0, 1)), d = hash21(i + float2(1, 1));
                 return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
+            }
+
+            // 3 octavas, cada una girada: esconde los ejes de la cuadrícula del ruido
+            float fbm(float2 p)
+            {
+                const float2x2 rot = float2x2(0.8, -0.6, 0.6, 0.8);
+                float sum = 0.0, amp = 0.5;
+                for (int k = 0; k < 3; k++)
+                {
+                    sum += amp * vnoise(p);
+                    p = mul(rot, p) * 2.03 + 17.1;
+                    amp *= 0.5;
+                }
+                return sum / 0.875;
             }
 
             half4 frag(Varyings input) : SV_Target
@@ -80,20 +94,23 @@ Shader "RedMagic/Fx Door Energy"
                 float t = _Time.y * _Speed;
                 float2 world = float2(uv.x * _Size.x, uv.y * _Size.y);
 
-                // hebras verticales que suben: ruido alargado en vertical, dos capas a distinta velocidad
-                float n1 = vnoise(float2(world.x * 7.0, world.y * 1.3 - t));
-                float n2 = vnoise(float2(world.x * 13.0 + 5.0, world.y * 2.1 - t * 1.7));
-                float density = saturate(n1 * 0.6 + n2 * 0.5);
-                float strands = smoothstep(0.35, 0.85, density);
+                // hebras que suben: ruido fino (en la ranura de ~0,3 de ancho caben varias hebras), alargado en vertical y
+                // deformado por otro ruido para que serpentee en vez de verse como bloques
+                float2 flow = float2(world.x * 30.0, world.y * 6.0 - t * 1.1);
+                float2 warp = float2(fbm(flow * 0.45 + float2(0.0, -t * 0.35)), fbm(flow * 0.45 + 7.7)) - 0.5;
+                float density = fbm(flow + warp * 2.2);
+                float strands = smoothstep(0.28, 0.82, density);
 
                 // más claro en el centro, se funde con el marco por los lados
                 float side = 1.0 - abs(uv.x - 0.5) * 2.0;
                 float edge = smoothstep(0.0, 0.22, side);
                 float centre = pow(saturate(side), 1.6);
 
-                // chispas: puntos que suben
-                float2 cell = float2(world.x * 9.0, world.y * 3.0 - t * 1.6);
-                float spark = step(0.965, hash21(floor(cell))) * smoothstep(0.5, 0.0, length(frac(cell) - 0.5));
+                // chispas: puntos suaves que suben, con posición propia dentro de su celda
+                float2 cell = float2(world.x * 16.0, world.y * 5.0 - t * 1.8);
+                float2 id = floor(cell);
+                float2 offset = float2(hash21(id + 3.1), hash21(id + 8.7)) * 0.5 + 0.25;
+                float spark = step(0.9, hash21(id)) * smoothstep(0.32, 0.0, length(frac(cell) - offset));
 
                 // el frente sube desde abajo al cerrarse; al abrirse la cola sube y vacía la energía de abajo hacia arriba
                 float reach = _Progress * 1.08;

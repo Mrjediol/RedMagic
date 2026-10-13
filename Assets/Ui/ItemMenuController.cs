@@ -489,26 +489,26 @@ namespace RedMagic.UI
 
             grid.Add(SubHeader("items.free_slots"));
 
-            var freeGrid = new VisualElement();
-            freeGrid.style.flexDirection = FlexDirection.Row;
-            freeGrid.style.flexWrap = Wrap.Wrap;
-            freeGrid.style.justifyContent = Justify.Center;
-            grid.Add(freeGrid);
-
+            // Los libres, siempre en dos filas de tres (la misma anchura que los dedicados). Filas explícitas y no un
+            // contenedor con wrap: con wrap, en cuanto el ancho disponible quedaba un pelo corto pasaban a 2 por fila y la
+            // tercera fila se salía del panel.
+            VisualElement freeRow = null;
             for (int i = 0; i < _freeSlots.Length; i++)
             {
+                if (i % 3 == 0)
+                {
+                    freeRow = new VisualElement();
+                    freeRow.style.flexDirection = FlexDirection.Row;
+                    freeRow.style.justifyContent = Justify.Center;
+                    freeRow.style.flexShrink = 0;
+                    grid.Add(freeRow);
+                }
+
                 int index = i;
                 _freeSlots[i] = MakeSlot(() => Loc.Get("items.slot_free", index + 1),
                     () => CycleFree(index),
                     () => _loadout.Inventory.GetFree(index));
-                freeGrid.Add(_freeSlots[i].Button);
-            }
-
-            // Con arte, los libres van en dos filas de tres: la misma anchura que los dedicados.
-            if (IsSlotSkinned)
-            {
-                freeGrid.style.maxWidth = 3 * SlotOuterWidth + 1;
-                freeGrid.style.alignSelf = Align.Center;
+                freeRow.Add(_freeSlots[i].Button);
             }
 
             if (weaponHolder != null)

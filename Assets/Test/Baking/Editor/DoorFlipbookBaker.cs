@@ -155,6 +155,7 @@ namespace RedMagic.BakingTest
         public static void DeleteAll()
         {
             RemoveTestObjects();
+            ProjectileSheetBaker.RemoveTestObjects();
             if (AssetDatabase.IsValidFolder(Root)) AssetDatabase.DeleteAsset(Root);
             AssetDatabase.SaveAssets();
             Debug.Log("[Baking] Borrado: puertas de prueba de la escena y la carpeta " + Root + ". Guarda la escena.");

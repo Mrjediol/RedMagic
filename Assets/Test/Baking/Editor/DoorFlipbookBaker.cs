@@ -128,6 +128,7 @@ namespace RedMagic.BakingTest
                 var door = go.GetComponent<LevelDoor>();
                 door.SetCells(w, h);
                 door.SetStartOpen(false);
+                if (go.TryGetComponent<DoorFlipbookBinder>(out var binder)) binder.Bind();   // tras cambiar el tamaño
                 float y = level != null ? level.GroundTop(Mathf.RoundToInt(x)) : 0f;
                 go.transform.localPosition = new Vector3(x, y, 0f);
                 lastX = x + w;

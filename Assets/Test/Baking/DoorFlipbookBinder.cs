@@ -9,6 +9,7 @@ namespace RedMagic.Levels
     /// </summary>
     [ExecuteAlways]
     [DisallowMultipleComponent]
+    [DefaultExecutionOrder(10)]   // después de LevelDoor (-40), que es quien crea el material
     public class DoorFlipbookBinder : MonoBehaviour
     {
         private static readonly int FlipId = Shader.PropertyToID("_Flip");
@@ -19,7 +20,12 @@ namespace RedMagic.Levels
 
         private MeshRenderer _energy;
 
-        private void Update()
+        private void OnEnable() => Bind();
+
+        private void Update() => Bind();
+
+        /// <summary>Se llama también desde fuera tras cambiar el tamaño de la puerta (se vuelve a crear la malla).</summary>
+        public void Bind()
         {
             if (flipbook == null) return;
             if (_energy == null)

@@ -8,9 +8,11 @@ using UnityEngine.UIElements;
 namespace RedMagic.UI
 {
     /// <summary>
-    /// Ficha del item del altar que tiene delante el jugador en la tienda: nombre (color de rareza),
-    /// rareza, efecto, sus sinergias con "ahora → tras comprar" (en dorado, con lo que desbloquea, si
-    /// la compra cruza un umbral 2/4/6), y "Pulsa [Interactuar] para comprar".
+    /// Ficha del item que tiene delante el jugador: en la tienda (altar) y en el suelo (<see cref="ShowGroundItem"/>).
+    /// Nombre (color de rareza), rareza, efecto, sus sinergias con "ahora → después" (en dorado, con lo que
+    /// desbloquea, si cruza un umbral 2/4/6) y abajo las acciones: "comprar · 30 (moneda)" o "equipar" y
+    /// "mantén reciclar · +9 (moneda)" con su barra de progreso. Las cantidades van con el icono de la moneda, nunca
+    /// con la palabra.
     ///
     /// No pausa: es un cartel, no un menú. <see cref="Show"/>/<see cref="Hide"/> estáticos con dueño,
     /// como <c>InteractionPromptUi</c>. Se auto-crea; PanelSettings propio en Resources.
@@ -27,7 +29,13 @@ namespace RedMagic.UI
 
         private UIDocument _document;
         private VisualElement _card, _synergies;
-        private Label _name, _rarity, _description, _hint, _warning;
+        private Label _name, _rarity, _description, _warning;
+        private VisualElement _actions, _holdFill;
+
+        // ficha del suelo a la vista: si no cambia nada, sólo se mueve la barra de mantener
+        private ItemDefinition _groundItem;
+        private int _groundGold = -1;
+        private string _groundKeys;
         private bool _built;
         private System.Action _refill; // repinta la ficha visible al cambiar de idioma
 
@@ -84,10 +92,34 @@ namespace RedMagic.UI
             _instance._card.style.display = DisplayStyle.Flex;
         }
 
+        /// <summary>
+        /// Ficha de un item del suelo: equipar y mantener para reciclar por <paramref name="recycleGold"/>, con la barra
+        /// de mantener a <paramref name="holdFraction"/> (0..1). Se puede llamar cada frame: sólo repinta lo que cambia.
+        /// </summary>
+        public static void ShowGroundItem(object owner, ItemDefinition item, int recycleGold, float holdFraction,
+                                          string equipText, string recycleText)
+        {
+            if (_instance == null || item == null || !_instance.EnsureBuilt()) return;
+            var panel = _instance;
+            string keys = equipText + "|" + recycleText;
+            if (_owner != owner || panel._groundItem != item || panel._groundGold != recycleGold || panel._groundKeys != keys)
+            {
+                _owner = owner;
+                panel._groundItem = item;
+                panel._groundGold = recycleGold;
+                panel._groundKeys = keys;
+                panel.FillGround(item, recycleGold, equipText, recycleText);
+                panel._refill = () => panel.FillGround(item, recycleGold, equipText, recycleText);
+                panel._card.style.display = DisplayStyle.Flex;
+            }
+            if (panel._holdFill != null) panel._holdFill.style.width = Length.Percent(Mathf.Clamp01(holdFraction) * 100f);
+        }
+
         public static void Hide(object owner)
         {
             if (_instance == null || _owner != owner || !_instance._built) return;
             _owner = null;
+            _instance._groundItem = null;
             _instance._card.style.display = DisplayStyle.None;
         }
 
@@ -96,6 +128,38 @@ namespace RedMagic.UI
         private void Fill(ShopStockEntry entry)
         {
             var item = entry.Item;
+            var inventory = FillItem(item);
+            _groundItem = null;
+
+            int gold = CurrencyManager.Instance != null ? CurrencyManager.Instance.Get(Currency.Gold) : 0;
+            bool full = item is FreePoolItemDefinition && inventory != null && inventory.FreeSlotsFull;
+
+            SetWarning(full ? Loc.Get("ground.full") : gold < entry.Price ? Loc.Get("shop.not_enough_gold", gold, entry.Price) : "");
+            _actions.Clear();
+            _holdFill = null;
+            _actions.Add(Action(Loc.Get("shop.buy_hint"), entry.Price.ToString(), gold >= entry.Price ? Gold : TooDear, false));
+        }
+
+        private void FillGround(ItemDefinition item, int recycleGold, string equipText, string recycleText)
+        {
+            var inventory = FillItem(item);
+            bool full = item is FreePoolItemDefinition && inventory != null && inventory.FreeSlotsFull;
+            SetWarning(full ? Loc.Get("ground.full") : "");
+
+            _actions.Clear();
+            _actions.Add(Action(equipText, null, Gold, false));
+            _actions.Add(Action(recycleText, "+" + recycleGold, Gold, true));
+        }
+
+        private void SetWarning(string text)
+        {
+            _warning.text = text;
+            _warning.style.display = text.Length > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        /// <summary>Nombre, rareza, efecto y sinergias ahora → después. Devuelve el inventario (o null).</summary>
+        private WeaponInventory FillItem(ItemDefinition item)
+        {
             var rarityColor = ItemRarities.ColorOf(item.Rarity);
 
             _name.text = item.DisplayName;
@@ -124,15 +188,77 @@ namespace RedMagic.UI
                 int after = now + Count(item.Tags, tag) - (replaced != null ? Count(replaced.Tags, tag) : 0);
                 _synergies.Add(SynergyLine(tag, now, after));
             }
+            return inventory;
+        }
 
-            int gold = CurrencyManager.Instance != null ? CurrencyManager.Instance.Get(Currency.Gold) : 0;
-            bool full = item is FreePoolItemDefinition && inventory != null && inventory.FreeSlotsFull;
+        /// <summary>
+        /// Una acción de la ficha: el texto (con su tecla) y, si hay cantidad, la cifra con el icono del oro. Con
+        /// <paramref name="holdBar"/>, una barra fina debajo que se llena al mantener.
+        /// </summary>
+        private VisualElement Action(string text, string amount, Color amountColor, bool holdBar)
+        {
+            var box = new VisualElement { pickingMode = PickingMode.Ignore };
+            box.style.flexGrow = 1;
+            box.style.flexBasis = 0;
+            box.style.marginLeft = 6;
+            box.style.marginRight = 6;
+            box.style.paddingTop = 8;
+            box.style.paddingBottom = 8;
+            box.style.paddingLeft = 12;
+            box.style.paddingRight = 12;
+            box.style.backgroundColor = new Color(0f, 0f, 0f, 0.28f);
+            MenuStyle.SetBorder(box, 1, new Color(MenuStyle.GoldBorder.r, MenuStyle.GoldBorder.g, MenuStyle.GoldBorder.b, 0.45f), 10);
 
-            _warning.text = full ? Loc.Get("shop.free_slots_full")
-                          : gold < entry.Price ? Loc.Get("shop.not_enough_gold", gold, entry.Price)
-                          : "";
-            _warning.style.display = _warning.text.Length > 0 ? DisplayStyle.Flex : DisplayStyle.None;
-            _hint.text = Loc.Get("shop.buy_hint", entry.Price);
+            var row = new VisualElement { pickingMode = PickingMode.Ignore };
+            row.style.flexDirection = FlexDirection.Row;
+            row.style.justifyContent = Justify.Center;
+            row.style.alignItems = Align.Center;
+            box.Add(row);
+
+            var label = new Label(text) { pickingMode = PickingMode.Ignore };
+            label.style.fontSize = 22;
+            label.style.color = MenuStyle.Cream;
+            label.style.unityTextAlign = TextAnchor.MiddleCenter;
+            row.Add(label);
+
+            if (amount != null)
+            {
+                var value = new Label(amount) { pickingMode = PickingMode.Ignore };
+                value.style.fontSize = 26;
+                value.style.unityFontStyleAndWeight = FontStyle.Bold;
+                value.style.color = amountColor;
+                value.style.marginLeft = 12;
+                row.Add(value);
+
+                var coin = CurrencyManager.Instance != null ? CurrencyManager.Instance.Config?.VisualFor(Currency.Gold)?.icon : null;
+                if (coin != null)
+                {
+                    var icon = new Image { sprite = coin, scaleMode = ScaleMode.ScaleToFit, pickingMode = PickingMode.Ignore };
+                    icon.style.width = 30;
+                    icon.style.height = 30;
+                    icon.style.marginLeft = 4;
+                    row.Add(icon);
+                }
+            }
+
+            if (holdBar)
+            {
+                var track = new VisualElement { pickingMode = PickingMode.Ignore };
+                track.style.height = 6;
+                track.style.marginTop = 6;
+                track.style.backgroundColor = new Color(1f, 1f, 1f, 0.12f);
+                MenuStyle.SetBorder(track, 0, Color.clear, 3);
+                box.Add(track);
+
+                _holdFill = new VisualElement { pickingMode = PickingMode.Ignore };
+                _holdFill.style.height = Length.Percent(100);
+                _holdFill.style.width = Length.Percent(0);
+                _holdFill.style.backgroundColor = Gold;
+                MenuStyle.SetBorder(_holdFill, 0, Color.clear, 3);
+                track.Add(_holdFill);
+            }
+
+            return box;
         }
 
         private void FillReroll(int rerolls, int slots)
@@ -146,9 +272,11 @@ namespace RedMagic.UI
             _description.text = Loc.Get("shop.reroll.description", slots);
             _synergies.Clear();
 
-            _warning.text = rerolls > 0 ? "" : Loc.Get("shop.reroll.none");
-            _warning.style.display = _warning.text.Length > 0 ? DisplayStyle.Flex : DisplayStyle.None;
-            _hint.text = Loc.Get("shop.reroll.hint");
+            _groundItem = null;
+            SetWarning(rerolls > 0 ? "" : Loc.Get("shop.reroll.none"));
+            _actions.Clear();
+            _holdFill = null;
+            _actions.Add(Action(Loc.Get("shop.reroll.hint"), null, Gold, false));
         }
 
         private static VisualElement SynergyLine(BuildTag tag, int now, int after)
@@ -254,12 +382,12 @@ namespace RedMagic.UI
             _warning.style.color = TooDear;
             _card.Add(_warning);
 
-            _hint = new Label { pickingMode = PickingMode.Ignore };
-            _hint.style.fontSize = 22;
-            _hint.style.color = MenuStyle.Cream;
-            _hint.style.unityTextAlign = TextAnchor.MiddleCenter;
-            _hint.style.marginTop = 6;
-            _card.Add(_hint);
+            _actions = new VisualElement { pickingMode = PickingMode.Ignore };
+            _actions.style.flexDirection = FlexDirection.Row;
+            _actions.style.marginTop = 8;
+            _actions.style.marginLeft = -6;
+            _actions.style.marginRight = -6;
+            _card.Add(_actions);
 
             _built = true;
             return true;

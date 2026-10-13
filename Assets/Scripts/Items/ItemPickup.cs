@@ -15,7 +15,7 @@ namespace RedMagic.Items
     /// Un item tirado en el suelo. Si <c>autoCollect</c> y cabe, se equipa al tocarlo (mismas reglas que la tienda: un
     /// modificador reemplaza su hueco, uno de pool libre va al primer hueco vacío). Si no (no cabe, o es un item que
     /// acaba de salir del inventario al sustituirlo — ésos nunca se recogen solos, o rebotarían de un hueco a otro), con
-    /// el jugador encima sale el cartel y:
+    /// el jugador encima sale su ficha (<c>ShopItemPanel.ShowGroundItem</c>, la misma de la tienda) y:
     /// <list type="bullet">
     /// <item><b>Interactuar</b> (E / L1 / tocar el botón) lo equipa; con los 6 huecos libres llenos abre la pantalla de
     /// items para elegir cuál sustituir. Lo sustituido cae al suelo.</item>
@@ -299,18 +299,16 @@ namespace RedMagic.Items
             Audio.SystemSounds.Play(s => s.shopBuy);
             AbilityFx.Flash(ProceduralSprites.Glow, transform.position, Vector2.one * 2.5f,
                             new Color(1f, 0.82f, 0.3f), 0.4f, 0f, 1.8f, gameObject);
-            RewardPopupUi.Show(_item.Icon, Loc.Get("item.recycled", gold), _item.DisplayName, new Color(1f, 0.82f, 0.3f));
+            RewardPopupUi.Show(_item.Icon, Loc.Get("item.recycled", "+" + gold), _item.DisplayName, new Color(1f, 0.82f, 0.3f));
             _pool?.Release(this);
         }
 
+        /// <summary>La ficha del item (la misma que en la tienda) con equipar y mantener-reciclar.</summary>
         private void ShowPrompt()
         {
-            string key = InputDeviceManager.TouchActive ? "prompt.ground_item.touch"
-                       : InputDeviceManager.GamepadActive ? "prompt.ground_item.pad"
-                       : "prompt.ground_item.kb";
-            string text = Loc.Get(key, RecycleValue(_item));
-            if (_hold > 0f) text += $"  {Mathf.RoundToInt(_hold / RecycleSeconds * 100f)}%";
-            InteractionPromptUi.Show(this, text);
+            string device = InputDeviceManager.TouchActive ? "touch" : InputDeviceManager.GamepadActive ? "pad" : "kb";
+            UI.ShopItemPanel.ShowGroundItem(this, _item, RecycleValue(_item), _hold / RecycleSeconds,
+                                            Loc.Get("ground.equip." + device), Loc.Get("ground.recycle." + device));
             _prompting = true;
         }
 
@@ -318,7 +316,7 @@ namespace RedMagic.Items
         {
             if (!_prompting) return;
             _prompting = false;
-            InteractionPromptUi.Hide(this);
+            UI.ShopItemPanel.Hide(this);
         }
 
         private static Transform PlayerTransform()

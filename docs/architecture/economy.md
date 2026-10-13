@@ -63,7 +63,8 @@
   gold is only charged once a slot is chosen (`ShopManager.CompletePurchase` re-validates everything). Whatever leaves
   the inventory — the chosen free item, or the modifier a dedicated item displaces (`WeaponInventory.Occupant`) —
   drops in front of the player as an `ItemPickup` with `autoCollect: false` (otherwise it would bounce straight back).
-  Ground items that don't auto-collect (or don't fit) show the shared `InteractionPromptUi`: **E / L1 / tap USE** =
+  Ground items that don't auto-collect (or don't fit) show the shop's item card (`ShopItemPanel.ShowGroundItem`: name,
+  rarity, effect, synergies now → after, and two action chips with the gold amount + coin icon and a hold bar): **E / L1 / tap USE** =
   equip (same replace screen if full; what leaves drops), **hold F / L1 / USE** `ItemPickup.RecycleSeconds` (0.8 s) =
   recycle for `ShopConfig.recycleFraction` (0.3) of `PriceFor(item, world)` in gold.
 - **`ItemLibrary.All`** (`Assets/Scripts/Items/`) is the global item pool (folder scan of

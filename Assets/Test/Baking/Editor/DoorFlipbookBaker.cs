@@ -107,27 +107,47 @@ namespace RedMagic.BakingTest
             if (level != null) root.SetParent(level.transform, false);
             Undo.RegisterCreatedObjectUndo(root.gameObject, "Baking test");
 
-            // de izquierda a derecha: viva 1×4, horneada 1×4, viva 2×4, horneada 2×4
-            (GameObject prefab, int w, string label)[] doors =
-            {
-                (live, 1, "VIVA 1x4"), (baked, 1, "HORNEADA 1x4"), (live, 2, "VIVA 2x4"), (baked, 2, "HORNEADA 2x4"),
-            };
-            float x = 8f;
-            foreach (var (prefab, w, label) in doors)
-            {
-                var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, root);
-                go.name = label;
-                var door = go.GetComponent<LevelDoor>();
-                door.SetCells(w, 4);
-                door.SetStartOpen(false);
-                float y = level != null ? level.GroundTop(Mathf.RoundToInt(x)) : 0f;
-                go.transform.localPosition = new Vector3(x, y, 0f);
-                x += w + 3f;
-            }
+            // mismas 4 puertas a cada lado: la izquierda VIVA (shader original), la derecha HORNEADA (flipbook)
+            (int w, int h)[] sizes = { (1, 3), (1, 4), (1, 5), (2, 4) };
+            PlaceRow(root, level, live, sizes, 14f, "VIVA");
+            PlaceRow(root, level, baked, sizes, 54f, "HORNEADA");
 
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(root.gameObject.scene);
             Selection.activeTransform = root;
-            Debug.Log("[Baking] Puertas de prueba puestas (viva, horneada, viva, horneada).");
+            Debug.Log("[Baking] 4 puertas VIVAS (izquierda, x=14) y 4 HORNEADAS (derecha, x=54), con carteles.");
+        }
+
+        private static void PlaceRow(Transform root, Level level, GameObject prefab, (int w, int h)[] sizes, float startX, string label)
+        {
+            float x = startX;
+            float firstX = x, lastX = x;
+            foreach (var (w, h) in sizes)
+            {
+                var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, root);
+                go.name = $"{label} {w}x{h}";
+                var door = go.GetComponent<LevelDoor>();
+                door.SetCells(w, h);
+                door.SetStartOpen(false);
+                float y = level != null ? level.GroundTop(Mathf.RoundToInt(x)) : 0f;
+                go.transform.localPosition = new Vector3(x, y, 0f);
+                lastX = x + w;
+                x += w + 4f;
+            }
+
+            float groundY = level != null ? level.GroundTop(Mathf.RoundToInt(startX)) : 0f;
+            var text = new GameObject("Cartel " + label);
+            text.transform.SetParent(root, false);
+            text.transform.localPosition = new Vector3((firstX + lastX) * 0.5f, groundY + 8f, 0f);
+            var mesh = text.AddComponent<TextMesh>();
+            mesh.text = label == "VIVA" ? "SIN HORNEAR (viva)" : "HORNEADA (flipbook)";
+            mesh.anchor = TextAnchor.MiddleCenter;
+            mesh.alignment = TextAlignment.Center;
+            mesh.characterSize = 0.35f;
+            mesh.fontSize = 60;
+            mesh.color = label == "VIVA" ? new Color(1f, 0.6f, 0.3f) : new Color(0.4f, 1f, 0.6f);
+            var renderer = text.GetComponent<MeshRenderer>();
+            renderer.sortingLayerName = "Default";
+            renderer.sortingOrder = 100;
         }
 
         [MenuItem("Tools/RedMagic/Baking (prueba)/3 BORRAR todo lo de baking (sin restos)")]

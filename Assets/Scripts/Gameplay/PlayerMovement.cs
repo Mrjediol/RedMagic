@@ -324,6 +324,8 @@ namespace RedMagic.Gameplay
         [SerializeField] private float dashCooldown = 0.55f;
         [Tooltip("Dashes disponibles en el aire antes de tocar suelo. 0 = sólo en el suelo.")]
         [SerializeField] private int maxAirDashes = 1;
+        [Tooltip("Segundos que se recuerda un dash pulsado antes de poder hacerlo. Cuenta DESDE QUE ACABA el dash en curso: pulsar durante un dash dispara el siguiente justo al terminar, siempre en el mismo frame (doble dash consistente).")]
+        [SerializeField, Range(0f, 0.3f)] private float dashBuffer = 0.12f;
         [Tooltip("Congela la caída durante el dash (dash horizontal puro).")]
         [SerializeField] private bool dashIgnoresGravity = true;
 
@@ -464,6 +466,7 @@ namespace RedMagic.Gameplay
         private float _apexPoint;   // 1 en el ápex del salto
         private float _fallSpeed;
         private float _lastJumpPressed = float.MinValue;
+        private float _dashBufferUntil = float.MinValue;   // hasta cuándo vale un dash pulsado y todavía sin gastar
 
         private bool CanUseCoyote => _coyoteUsable && !_colDown && _timeLeftGrounded + _coyoteTimeThreshold > Time.time;
         private bool HasBufferedJump => _colDown && _lastJumpPressed + _jumpBuffer > Time.time;
@@ -556,6 +559,7 @@ namespace RedMagic.Gameplay
                 TouchInput.ConsumeDash();
                 _input = default;
                 _lastJumpPressed = float.MinValue;
+                _dashBufferUntil = float.MinValue;
                 _currentHorizontalSpeed = 0f;
                 _dashTimer = 0f;
                 _knockbackTimer = 0f;
@@ -572,6 +576,7 @@ namespace RedMagic.Gameplay
                 TouchInput.ConsumeJump();
                 TouchInput.ConsumeDash();
                 _input = default;
+                _dashBufferUntil = float.MinValue;   // un golpe anula lo que se había pulsado
             }
             else
             {
@@ -674,6 +679,9 @@ namespace RedMagic.Gameplay
             };
 
             if (_input.JumpDown) _lastJumpPressed = Time.time;
+            // El dash se recuerda hasta "dashBuffer" segundos DESPUÉS de que acabe el que está en curso: si no, lo pulsado
+            // durante el dash se perdía y el siguiente salía en el frame exacto en que el dedo cayera (caída variable).
+            if (_input.DashDown) _dashBufferUntil = Time.time + dashBuffer + Mathf.Max(0f, _dashTimer);
 
             if (Mathf.Abs(_input.X) > 0.01f)
             {
@@ -1269,10 +1277,15 @@ namespace RedMagic.Gameplay
 
         private void TryStartDash()
         {
-            if (!allowDash || !_input.DashDown || _dashTimer > 0f || _dashCooldownTimer > 0f) return;
-            if (!_colDown && _airDashesUsed >= maxAirDashes) return;
+            bool wantsDash = _input.DashDown || Time.time <= _dashBufferUntil;
+            if (!allowDash || !wantsDash || _dashTimer > 0f || _dashCooldownTimer > 0f) return;
+            // Recién salido de un borde (coyote) cuenta como dash de suelo: si no, pulsar justo al despegar gastaba el dash aéreo
+            // y el doble dash dependía de qué frame detectaba el suelo perdido.
+            bool fromGround = _colDown || CanUseCoyote;
+            if (!fromGround && _airDashesUsed >= maxAirDashes) return;
+            _dashBufferUntil = float.MinValue;
 
-            if (!_colDown) _airDashesUsed++;
+            if (!fromGround) _airDashesUsed++;
 
             // Se lanza hacia donde se está apuntando; si no hay input, hacia donde se mira.
             _dashDirection = Mathf.Abs(_input.X) > 0.01f ? (int)Mathf.Sign(_input.X) : Facing;
@@ -1284,6 +1297,8 @@ namespace RedMagic.Gameplay
             _dashTimer = duration;
             _dashCooldownTimer = dashCooldown + duration;
             _dashCooldownDuration = _dashCooldownTimer;
+            // Dash de suelo ya despegado (coyote): es lo mismo que salir del borde en pleno dash, que ya devuelve el cooldown.
+            if (!_colDown) _dashCooldownTimer = 0f;
 
             SoundTriggered?.Invoke(SoundTrigger.OnDash);
             Dashed?.Invoke(_dashDirection);

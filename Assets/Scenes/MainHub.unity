@@ -1644,7 +1644,7 @@ PrefabInstance:
     - target: {fileID: 5829929809505512136, guid: ed53e94378883174baa77619b4f54265, type: 3}
       propertyPath: forcedWeapon
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 11400000, guid: b61f706e8393adb42b7eb791ba0c1846, type: 2}
     - target: {fileID: 6322926410334942216, guid: ed53e94378883174baa77619b4f54265, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.4066

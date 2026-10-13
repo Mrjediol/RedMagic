@@ -6,9 +6,9 @@ using UnityEngine;
 namespace RedMagic.Run.EditorTools
 {
     /// <summary>
-    /// Inspector de <see cref="WaveManager"/>: puntos de spawn con botón para crear uno, y cada
-    /// oleada plegable con su resumen ("Oleada 2 · 3 enemigos: Ogro ×2, Lobo") y una línea por
-    /// enemigo (<see cref="EnemySpawnDrawer"/>). También añade GameObject ▸ RedMagic ▸ Wave Manager.
+    /// Inspector de <see cref="WaveManager"/>: puntos de spawn y salas con botón para crear uno, y cada
+    /// oleada plegable con su resumen ("Oleada 2 · 3 enemigos: Ogro ×2, Lobo"), cuándo empieza, una línea por
+    /// enemigo (<see cref="EnemySpawnDrawer"/>) y qué pasa al terminar. También añade GameObject ▸ RedMagic ▸ Wave Manager.
     /// </summary>
     [CustomEditor(typeof(WaveManager))]
     public class WaveManagerEditor : Editor
@@ -30,8 +30,8 @@ namespace RedMagic.Run.EditorTools
 
             EditorGUILayout.PropertyField(_startOnLoad);
             if (Application.isPlaying)
-                EditorGUILayout.HelpBox(manager.Finished ? "Todas las oleadas terminadas."
-                    : manager.Running ? $"Oleada {manager.CurrentWave + 1}/{_waves.arraySize} · vivos: {manager.AliveCount}"
+                EditorGUILayout.HelpBox(manager.Finished ? "Nivel superado."
+                    : manager.Running ? $"Última oleada empezada: {manager.CurrentWave + 1}/{_waves.arraySize} · vivos: {manager.AliveCount}"
                     : "Sin empezar.", MessageType.None);
 
             EditorGUILayout.Space();
@@ -40,6 +40,7 @@ namespace RedMagic.Run.EditorTools
             {
                 if (GUILayout.Button("+ Punto de spawn")) AddSpawnPoint(manager);
                 if (GUILayout.Button("Recoger hijos")) CollectChildren(manager);
+                if (GUILayout.Button("+ Sala")) AddRoom(manager);
             }
 
             EditorGUILayout.Space();
@@ -70,6 +71,12 @@ namespace RedMagic.Run.EditorTools
 
                     if (_folded.Contains(i)) continue;
 
+                    var start = wave.FindPropertyRelative(nameof(WaveDefinition.start));
+                    var room = wave.FindPropertyRelative(nameof(WaveDefinition.room));
+                    EditorGUILayout.PropertyField(start, new GUIContent("Empieza"));
+                    EditorGUILayout.PropertyField(room, new GUIContent("Sala"));
+                    if (start.enumValueIndex == (int)WaveStart.OnRoomEnter && room.objectReferenceValue == null)
+                        EditorGUILayout.HelpBox("Empieza al entrar en su sala, pero no tiene sala: no saldrá nunca.", MessageType.Warning);
                     EditorGUILayout.PropertyField(wave.FindPropertyRelative(nameof(WaveDefinition.startDelay)),
                         new GUIContent("Espera antes"));
 
@@ -87,6 +94,7 @@ namespace RedMagic.Run.EditorTools
                     }
 
                     if (GUILayout.Button("+ Enemigo", EditorStyles.miniButton)) AddEnemy(enemies, manager);
+                    DrawOnFinish(wave, i);
                 }
             }
 
@@ -94,15 +102,95 @@ namespace RedMagic.Run.EditorTools
             else if (moveUp > 0) _waves.MoveArrayElement(moveUp, moveUp - 1);
             else if (duplicate >= 0) _waves.GetArrayElementAtIndex(duplicate).DuplicateCommand();
 
-            if (GUILayout.Button("+ Oleada", GUILayout.Height(24)))
-            {
-                _waves.arraySize++;
-                var wave = _waves.GetArrayElementAtIndex(_waves.arraySize - 1);
-                wave.FindPropertyRelative(nameof(WaveDefinition.startDelay)).floatValue = 0.5f;
-                wave.FindPropertyRelative(nameof(WaveDefinition.enemies)).arraySize = 0;
-            }
+            if (GUILayout.Button("+ Oleada", GUILayout.Height(24))) AddWave();
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        /// <summary>"Al terminar": lanzar oleada (por defecto la siguiente), terminar sala (+ item) y terminar nivel.</summary>
+        private void DrawOnFinish(SerializedProperty wave, int index)
+        {
+            EditorGUILayout.LabelField("Al terminar", EditorStyles.miniBoldLabel);
+
+            var launch = wave.FindPropertyRelative(nameof(WaveDefinition.launchWave));
+            var target = wave.FindPropertyRelative(nameof(WaveDefinition.launchIndex));
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                launch.boolValue = EditorGUILayout.ToggleLeft("Lanzar oleada", launch.boolValue, GUILayout.Width(110));
+                using (new EditorGUI.DisabledScope(!launch.boolValue))
+                {
+                    var names = new GUIContent[_waves.arraySize + 1];
+                    names[0] = new GUIContent(index + 1 < _waves.arraySize ? $"La siguiente ({index + 2})" : "La siguiente (no hay)");
+                    for (int w = 0; w < _waves.arraySize; w++) names[w + 1] = new GUIContent($"Oleada {w + 1}");
+                    int sel = Mathf.Clamp(target.intValue + 1, 0, _waves.arraySize);
+                    target.intValue = EditorGUILayout.Popup(sel, names) - 1;
+                }
+            }
+
+            var finishRoom = wave.FindPropertyRelative(nameof(WaveDefinition.finishRoom));
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                finishRoom.boolValue = EditorGUILayout.ToggleLeft(new GUIContent("Terminar sala",
+                    "Abre las puertas de su sala."), finishRoom.boolValue, GUILayout.Width(110));
+                using (new EditorGUI.DisabledScope(!finishRoom.boolValue))
+                    EditorGUILayout.PropertyField(wave.FindPropertyRelative(nameof(WaveDefinition.dropItem)),
+                        new GUIContent("Item", "Cae en el centro de la sala. Vacío = ninguno."));
+            }
+            if (finishRoom.boolValue && wave.FindPropertyRelative(nameof(WaveDefinition.room)).objectReferenceValue == null)
+                EditorGUILayout.HelpBox("Terminar sala sin sala: no abre nada.", MessageType.Warning);
+
+            var finishLevel = wave.FindPropertyRelative(nameof(WaveDefinition.finishLevel));
+            finishLevel.boolValue = EditorGUILayout.ToggleLeft(new GUIContent("Terminar nivel",
+                "El nivel queda superado y se puede salir, aunque queden salas opcionales."), finishLevel.boolValue);
+        }
+
+        /// <summary>
+        /// Oleada nueva: la anterior pasa a lanzarla al terminar y le cede 'terminar nivel' y 'terminar sala' (la sala
+        /// sigue hasta su última oleada); la nueva es de la misma sala y espera a que la lancen.
+        /// </summary>
+        private void AddWave()
+        {
+            int prev = _waves.arraySize - 1;
+            _waves.arraySize++;
+            var wave = _waves.GetArrayElementAtIndex(_waves.arraySize - 1);
+            wave.FindPropertyRelative(nameof(WaveDefinition.startDelay)).floatValue = 0.5f;
+            wave.FindPropertyRelative(nameof(WaveDefinition.enemies)).arraySize = 0;
+            wave.FindPropertyRelative(nameof(WaveDefinition.launchWave)).boolValue = false;
+            wave.FindPropertyRelative(nameof(WaveDefinition.launchIndex)).intValue = -1;
+            wave.FindPropertyRelative(nameof(WaveDefinition.dropItem)).objectReferenceValue = null;
+
+            if (prev < 0)
+            {
+                wave.FindPropertyRelative(nameof(WaveDefinition.start)).enumValueIndex = (int)WaveStart.OnLoad;
+                wave.FindPropertyRelative(nameof(WaveDefinition.room)).objectReferenceValue = null;
+                wave.FindPropertyRelative(nameof(WaveDefinition.finishRoom)).boolValue = false;
+                wave.FindPropertyRelative(nameof(WaveDefinition.finishLevel)).boolValue = true;
+                return;
+            }
+
+            var before = _waves.GetArrayElementAtIndex(prev);
+            wave.FindPropertyRelative(nameof(WaveDefinition.start)).enumValueIndex = (int)WaveStart.Launched;
+            wave.FindPropertyRelative(nameof(WaveDefinition.room)).objectReferenceValue =
+                before.FindPropertyRelative(nameof(WaveDefinition.room)).objectReferenceValue;
+            foreach (var flag in new[] { nameof(WaveDefinition.finishRoom), nameof(WaveDefinition.finishLevel) })
+            {
+                var from = before.FindPropertyRelative(flag);
+                wave.FindPropertyRelative(flag).boolValue = from.boolValue;
+                from.boolValue = false;
+            }
+            before.FindPropertyRelative(nameof(WaveDefinition.launchWave)).boolValue = true;
+            before.FindPropertyRelative(nameof(WaveDefinition.launchIndex)).intValue = -1;
+        }
+
+        private void AddRoom(WaveManager manager)
+        {
+            var go = new GameObject($"Sala_{manager.GetComponentsInChildren<LevelRoom>(true).Length + 1}");
+            Undo.RegisterCreatedObjectUndo(go, "Añadir sala");
+            go.transform.SetParent(manager.transform, false);
+            var pivot = SceneView.lastActiveSceneView != null ? SceneView.lastActiveSceneView.pivot : manager.transform.position;
+            go.transform.position = new Vector3(Mathf.Round(pivot.x - 6f), Mathf.Round(pivot.y - 3f), 0f);
+            go.AddComponent<LevelRoom>();
+            Selection.activeGameObject = go;
         }
 
         private static string Summary(int index, SerializedProperty enemies)
@@ -184,7 +272,12 @@ namespace RedMagic.Run.EditorTools
 
             var waves = so.FindProperty("waves");
             waves.arraySize = 1;
-            waves.GetArrayElementAtIndex(0).FindPropertyRelative(nameof(WaveDefinition.startDelay)).floatValue = 0.5f;
+            var first = waves.GetArrayElementAtIndex(0);
+            first.FindPropertyRelative(nameof(WaveDefinition.startDelay)).floatValue = 0.5f;
+            first.FindPropertyRelative(nameof(WaveDefinition.start)).enumValueIndex = (int)WaveStart.OnLoad;
+            first.FindPropertyRelative(nameof(WaveDefinition.finishLevel)).boolValue = true;
+            first.FindPropertyRelative(nameof(WaveDefinition.launchIndex)).intValue = -1;
+            so.FindProperty("roomsMigrated").boolValue = true;
             so.ApplyModifiedPropertiesWithoutUndo();
 
             Selection.activeGameObject = go;

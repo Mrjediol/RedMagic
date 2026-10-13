@@ -141,6 +141,7 @@ MonoBehaviour:
   art: {fileID: 21300000, guid: 95c8d57c72a6b57419a31e71e33adbbe, type: 3}
   cellsWide: 4
   colliderThickness: 0.3
+  surfaceDrop: 0.04
 --- !u!61 &7590257640024734578
 BoxCollider2D:
   m_ObjectHideFlags: 0

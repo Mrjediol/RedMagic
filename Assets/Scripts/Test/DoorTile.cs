@@ -14,6 +14,9 @@ namespace RedMagic.Levels
         [Tooltip("Puerta que se crea en cada rectángulo pintado.")]
         public LevelDoor doorPrefab;
 
+        [Tooltip("Cómo empieza la puerta: abierta (se puede pasar; la cierra su sala al entrar) o cerrada.")]
+        public bool startOpen;
+
         [Tooltip("Icono para la paleta.")]
         public Sprite icon;
 

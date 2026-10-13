@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baf58661fba6dea43a28e2f4afbf37ed, type: 3}
+  m_Name: DoorTile_Energia
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Levels.DoorTile
+  doorPrefab: {fileID: 9039900654199808071, guid: 6eaef2b4097246f449781e3c7473ddad, type: 3}
+  icon: {fileID: 21300000, guid: be072c569226acd4ea054e8fbbf7fc9a, type: 3}

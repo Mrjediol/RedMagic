@@ -46,19 +46,27 @@
   live. When the last one dies it plays `clearSfxId` and spawns `clearEffectPrefab` (the fireball's
   `VFX_Explosion`) at every `SectionExit` in the scene, so the feedback points at the way out.
 - **`WaveManager`** (+ `WaveDefinition` / `EnemySpawn`, serialized classes — not SOs, because
-  entries reference scene `Transform`s) — optional, one per combat scene
-  (**GameObject ▸ RedMagic ▸ Wave Manager** creates it with two child spawn points). `Start` →
-  wave 1 (after its `startDelay`); each `EnemySpawn` is `Instantiate`d after its `spawnDelay` at its
-  spawn point and moved into the manager's scene (sections load additively); next wave when every
-  spawned `Health` is dead (`Health.AnyDied` + a null/dead poll for enemies destroyed without
-  dying). Events `OnWaveStart(int)` / `OnWaveComplete(int)` / `OnAllWavesComplete` (0-based).
-  Enemy prefabs are untouched. It **holds `SectionClearTracker`** (`AddHold`/`ReleaseHold`) so the
-  exit/shop stay locked between waves, and `Register`s each spawned enemy (the tracker only scans at
-  load); the "cleared" feedback fires once, after the last wave — an unload mid-wave releases
-  silently. Gizmos are always drawn: a sphere per spawn point coloured by the first wave that uses
-  it, labelled `W<n> <enemy> ×<count>`; unused points grey. Inspector (`WaveManagerEditor` +
-  `EnemySpawnDrawer`): collapsible waves with a summary line, one row per enemy (prefab / spawn
-  point dropdown from the manager's list — stored as a reference, not a name / delay).
+  entries reference scene objects) — optional, one per combat scene
+  (**GameObject ▸ RedMagic ▸ Wave Manager** creates it with two child spawn points). Waves are a small graph, not a
+  fixed sequence, and several can run at once:
+  - **Start** (`WaveStart`): *al empezar el nivel* (`Start`), *al entrar en su sala*, or *la lanza otra oleada*; then
+    `startDelay`, then each `EnemySpawn` is `Instantiate`d after its `spawnDelay` at its spawn point and moved into the
+    manager's scene. A wave is done when every spawned `Health` is dead (`Health.AnyDied` + a null/dead poll).
+  - **On finish**: `launchWave` (`launchIndex`, -1 = the next one), `finishRoom` (opens its room's doors; optional
+    `dropItem` → `ItemPickup.Spawn` at the room centre), `finishLevel` (releases the `SectionClearTracker` hold →
+    exit/shop open, `OnAllWavesComplete`). Spawned enemies are **not** `Register`ed in the tracker, so an optional room
+    left uncleared never blocks the exit. No wave marked `finishLevel` → the level finishes when every wave is done.
+  - **Rooms** (`LevelRoom`, a cell rectangle with scene handles, *+ Sala* in the Inspector): when the player's box is
+    fully inside a room that still has unfinished waves, its doors close (`Lock`) and its *al entrar* waves launch.
+    Its doors are found by geometry: every `LevelDoor` overlapping the room rectangle grown by half a cell (painted
+    doors aren't saved, so they can't be dragged in); gizmo lines show them (green = starts open). No trigger collider on
+    purpose: *Queries Hit Triggers* is on, and a room-sized trigger would be seen by projectile/sensor rays.
+  - Door start state comes from the tile: `DoorTile_Energia` (closed) / `DoorTile_Energia_Abierta` (open).
+  - Old data (before rooms) is migrated once (`roomsMigrated`): wave 1 at load, each launches the next, last finishes
+    the level — the old behaviour. *+ Oleada* hands `finishLevel`/`finishRoom` from the previous wave to the new one
+    and makes the previous launch it.
+  Events `OnWaveStart(int)` / `OnWaveComplete(int)` / `OnAllWavesComplete` (0-based). Gizmos: a sphere per spawn point
+  coloured by the first wave that uses it, labelled `W<n> <enemy> ×<count>`.
 - The player keeps its prefab scale in every scene (the old per-scene `PlayerScaleConfig` is in `Assets/Legacy/`).
 
 ## Level sketch → level scene

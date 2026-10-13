@@ -7,8 +7,8 @@ namespace RedMagic.Levels
     /// <summary>
     /// Va en el Tilemap donde se pintan los <see cref="DoorTile"/>. Cada grupo de celdas pintadas con el mismo tile
     /// es una puerta: se crea una <see cref="LevelDoor"/> del tamaño de su rectángulo (esquina inferior izquierda en la
-    /// celda de abajo a la izquierda). Las puertas creadas NO se guardan en la escena: se regeneran al pintar y al
-    /// cargar, así que lo único que manda son las celdas pintadas.
+    /// celda de abajo a la izquierda), abierta o cerrada según el tile. Las puertas creadas NO se guardan en la escena: se
+    /// regeneran al pintar y al cargar, así que lo único que manda son las celdas pintadas.
     /// </summary>
     [ExecuteAlways]
     [RequireComponent(typeof(Tilemap))]
@@ -59,7 +59,7 @@ namespace RedMagic.Levels
             var root = transform.Find(RootName);
             if (root == null)
             {
-                var go = new GameObject(RootName) { hideFlags = HideFlags.DontSave };
+                var go = new GameObject(RootName) { hideFlags = Application.isPlaying ? HideFlags.None : HideFlags.DontSave };
                 go.transform.SetParent(transform, false);
                 root = go.transform;
             }
@@ -95,7 +95,8 @@ namespace RedMagic.Levels
                 door.name = $"Puerta {w}x{h}";
                 door.transform.localPosition = _map.CellToLocal(new Vector3Int(minX, minY, 0));
                 door.SetCells(w, h);
-                SetHideFlags(door.transform, HideFlags.DontSave);
+                door.SetStartOpen(tile.startOpen);
+                if (!Application.isPlaying) SetHideFlags(door.transform, HideFlags.DontSave);
                 _doors.Add(door);
                 if (w > LevelDoor.MaxWide || h > LevelDoor.MaxHigh || h < LevelDoor.MinHigh)
                     Debug.LogWarning($"[DoorTilemap] Puerta de {w}x{h} celdas fuera de rango " +

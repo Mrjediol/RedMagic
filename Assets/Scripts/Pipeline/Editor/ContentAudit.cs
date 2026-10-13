@@ -123,12 +123,10 @@ namespace RedMagic.Pipeline.EditorTools
         /// sistemas) y fichas del pipeline.
         ///
         /// El fallo que arregla es exactamente igual de silencioso que el de los componentes que
-        /// faltan: la máscara por defecto era sólo <c>Ground</c>, pero las plataformas y los
-        /// puentes inclinados del proyecto viven en la capa <c>Platform</c>. Con esa máscara, un
-        /// enemigo que llega a un puente sondea el suelo, no encuentra nada, lo lee como
-        /// precipicio y se planta — en un puente perfectamente sólido por el que el jugador acaba
-        /// de pasar. Y sobre la rampa no encuentra superficie que seguir, así que empuja de frente
-        /// contra la cuesta en vez de subirla.
+        /// faltan: la máscara por defecto era sólo <c>Ground</c>, pero las plataformas del proyecto
+        /// viven en la capa <c>Platform</c>. Con esa máscara, un enemigo que llega a una plataforma
+        /// sondea el suelo, no encuentra nada, lo lee como precipicio y se planta — en una plataforma
+        /// perfectamente sólida por la que el jugador acaba de pasar.
         ///
         /// Sólo <b>añade</b> las capas de terreno que falten: lo que ya estuviera configurado se
         /// respeta, porque una máscara más ancha puede ser una decisión (el sistema viejo trae

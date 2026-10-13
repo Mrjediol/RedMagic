@@ -56,27 +56,19 @@ meant to be edited by hand.**
     `Death` is the explosion, and `EnemyStats.Apply` turns `Corpse.tintOnDeath` off.
     `rootedWhileAttacking = false` now actively keeps chasing during the attack clip. Reference:
     `MurcielagoPack`.
-- **`Gameplay.GroundMotion`** — walking on slopes and phasing through terrain, shared by
-  `EnemyBrain` and the legacy `EnemyController` so both move the same way:
-  - **Slopes.** An enemy is a dynamic `Rigidbody2D` whose velocity the AI writes. Writing only
-    `velocity.x` into a ramp is pushing head-on against it: the enemy shakes at the foot of the
-    slope, and when it stops, gravity slides it back down. `Probe` measures the surface with three
-    downward rays (tail, centre, muzzle, from `0.35` above the feet so a few centimetres of
-    penetration don't blind it) and `AlongSlope` returns the surface **tangent** at the same speed,
-    so up, down and flat all cost the same — the dynamic-body equivalent of the player's
-    `ProjectOnSlope`. `Halt` is the other half: stopped **and resting**, velocity goes to zero on
-    both axes, which is what stops the slide. `MaxSlopeAngle` is 45°, deliberately the same as the
-    player's: a ramp one of them can climb and the other can't reads as a broken level.
+- **`Gameplay.GroundMotion`** — terrain helpers shared by `EnemyBrain` and the legacy `EnemyController`:
+  - **No slopes.** The game has none (levels are cells with square corners), so walking is `Walk` (write X, keep
+    the physics' Y) and stopping is `Halt` (X = 0, keep the fall). The old slope probe / `AlongSlope` tangent
+    following was removed on 2026-10-13, same as the player's (`docs/architecture/levels.md`).
   - **Flyers phase through terrain.** `PhaseThroughTerrain` sets the collider's `excludeLayers`, so
     no new layer and no change to the project's collision matrix. Only terrain is excluded — a
     flyer still collides with the player, so contact damage is unchanged. The trigger is
     `EnemyTuning.Airborne` (`Flies || gravityScale <= 0`), which also covers the hovering turret
     (the bee is `Static` with gravity 0, not a `Flying*` archetype, but it is just as much in the
     air).
-  - **`obstacleLayers` must contain BOTH terrain layers**, `Ground` (6) *and* `Platform` (8) — the
-    sloped bridges and most platforms in `Forest-1` are on `Platform`. With the old `1 << 6`
-    default, an enemy reaching a bridge probed for ground, found none, read it as a cliff and stood
-    still on perfectly solid footing — and on the ramp it found no surface to follow.
+  - **`obstacleLayers` must contain BOTH terrain layers**, `Ground` (6) *and* `Platform` (8): platforms are on
+    `Platform`. With the old `1 << 6` default, an enemy reaching a platform probed for ground, found
+    none, read it as a cliff and stood still on perfectly solid footing.
     `GroundMotion.TerrainMask` is the canonical mask (resolved by layer *name*), and
     `Pipeline ▸ 4/5` audits and repairs the mask on every enemy prefab and `EnemyRecipe`.
 - **Part-based enemies** (one sprite per body part) use a `ProceduralRig` + `RigDriver` instead of

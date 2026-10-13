@@ -326,9 +326,8 @@ namespace RedMagic.Enemies
 
         [Tooltip("Capas que cuentan como terreno: dónde se apoya, qué cuenta como precipicio y, " +
                  "en un volador, qué atraviesa. Tienen que estar las DOS del proyecto — 'Ground' " +
-                 "(lo macizo) y 'Platform' (plataformas y puentes) —: con sólo 'Ground', un " +
-                 "enemigo se planta al borde de un puente creyendo que es un precipicio, y en la " +
-                 "rampa no encuentra suelo que seguir.")]
+                 "(lo macizo) y 'Platform' (plataformas) —: con sólo 'Ground', un enemigo se planta " +
+                 "al borde de una plataforma creyendo que es un precipicio.")]
         public LayerMask obstacleLayers = (1 << 6) | (1 << 8);   // 'Ground' + 'Platform'
 
         [Tooltip("Sólo voladores: las capas de terreno que ATRAVIESA. Por defecto 'Platform' " +

@@ -139,7 +139,6 @@ namespace RedMagic.Enemies
         private const float RetreatStallTime = 0.2f;
 
         /// <summary>El suelo bajo los pies, medido una vez por paso de física. Vacío en un volador.</summary>
-        private GroundContact _ground;
 
         /// <summary>Estado actual. Lo leen gizmos y depuración; nadie lo escribe desde fuera.</summary>
         public State Current { get; private set; } = State.Idle;
@@ -395,11 +394,6 @@ namespace RedMagic.Enemies
             // FixedUpdate el empujón se borraría en el mismo frame y el golpe no se notaría.
             if (_knockback != null && _knockback.IsActive) return;
 
-            // El suelo bajo los pies, una vez por paso de física: de ahí salen tanto seguir la
-            // rampa al andar como no resbalar al pararse. Un volador no lo necesita — el terreno
-            // ni siquiera le estorba (ver EnemyStats.Apply).
-            _ground = T.Flies ? default : GroundMotion.Probe(_collider, T.obstacleLayers);
-
             switch (Current)
             {
                 case State.Approach:
@@ -524,11 +518,7 @@ namespace RedMagic.Enemies
             bool adjacent = Mathf.Abs(toTarget.x) <= Reach();
             if (!adjacent && !CanAdvance(direction)) { Stop(); return false; }
 
-            // Seguir la pendiente en vez de empujar contra ella: en una plataforma inclinada,
-            // escribir sólo la X deja al enemigo temblando al pie de la cuesta, y al pararse lo
-            // deja resbalando. Mismo criterio de rampa transitable que usa el jugador.
-            _body.linearVelocity = GroundMotion.AlongSlope(_ground, direction * Mathf.Abs(speed),
-                                                           _body.linearVelocity);
+            _body.linearVelocity = GroundMotion.Walk(direction * Mathf.Abs(speed), _body.linearVelocity);
             return true;
         }
 
@@ -573,9 +563,8 @@ namespace RedMagic.Enemies
         }
 
         /// <summary>
-        /// Quedarse quieto. En un volador es flotar (no se desploma); en uno de suelo es pararse
-        /// <b>sin resbalar</b>: en una rampa, poner sólo la X a cero deja que la gravedad lo baje
-        /// deslizando, así que apoyado se frena del todo.
+        /// Quedarse quieto. En un volador es flotar (no se desploma); en uno de suelo, X a cero y la
+        /// caída se respeta.
         /// </summary>
         private void Stop()
         {
@@ -585,7 +574,7 @@ namespace RedMagic.Enemies
                 return;
             }
 
-            _body.linearVelocity = GroundMotion.Halt(_ground, _body.linearVelocity);
+            _body.linearVelocity = GroundMotion.Halt(_body.linearVelocity);
         }
 
         private float Reach() => (_collider != null ? _collider.bounds.extents.x : 0.3f) + 0.4f;
@@ -861,7 +850,7 @@ namespace RedMagic.Enemies
             {
                 int direction = velocity.x >= 0f ? 1 : -1;
                 if (!CanAdvance(direction)) { EndEvade(); return; }   // se acaba el suelo: hasta aquí
-                _body.linearVelocity = GroundMotion.AlongSlope(_ground, velocity.x, _body.linearVelocity);
+                _body.linearVelocity = GroundMotion.Walk(velocity.x, _body.linearVelocity);
             }
 
             _evadeTime += Time.fixedDeltaTime;

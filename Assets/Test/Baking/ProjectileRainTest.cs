@@ -125,8 +125,7 @@ namespace RedMagic.BakingTest
             string mode = _mode == 1 ? "ORIGINALES (texturas sueltas)" : _mode == 2 ? "HOJA ÚNICA (horneado)" : "parado";
             string text = $"LLUVIA DE PROYECTILES   [1] orig  [2] hoja  [0] parar  [+/-] cantidad\n" +
                           $"Modo: {mode}   Proyectiles: {(_mode == 0 ? 0 : count)}\n" +
-                          $"TEXTURAS distintas en pantalla: {_distinctTextures}   (sprites distintos: {_distinctSprites})
-" +
+                          $"TEXTURAS distintas en pantalla: {_distinctTextures}   (sprites distintos: {_distinctSprites})\n" +
                           $"{_fpsSmooth:0} FPS   {_msAverage:0.00} ms/frame (media 1 s)";
 #if UNITY_EDITOR
             text += $"\nBatches: {UnityEditor.UnityStats.batches}   SetPass: {UnityEditor.UnityStats.setPassCalls}   Tris: {UnityEditor.UnityStats.triangles}";

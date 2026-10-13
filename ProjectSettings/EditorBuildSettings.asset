@@ -11,7 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MainHub.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
-  - enabled: 1
+  - enabled: 0
     path: Assets/Legacy/Scenes/Worlds/World1/Bosque1.unity
     guid: 4f47a9a0eb2a04845bdf8eebbdb8c2bd
   - enabled: 0
@@ -26,7 +26,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Legacy/Scenes/Worlds/World1/BosqueBoss.unity
     guid: 399eb5522346b2f4c8f6ff1f3c83f700
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Ice1.unity
     guid: 68eacb98ccaae32448c7b11a8712a4ba
   - enabled: 0

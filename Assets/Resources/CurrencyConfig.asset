@@ -31,8 +31,8 @@ MonoBehaviour:
     tint: {r: 1, g: 1, b: 1, a: 1}
   basic:
     gold:
-      min: 3
-      max: 8
+      min: 3000
+      max: 8000
     diamond:
       min: 0
       max: 0

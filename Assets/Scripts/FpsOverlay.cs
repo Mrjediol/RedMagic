@@ -8,9 +8,8 @@ namespace RedMagic.Core
     /// (no hay que ponerlo en ninguna escena) y sobrevive a los cambios de escena, así que se ve
     /// igual en el menú, el hub, las secciones y el jefe.
     ///
-    /// Sólo existe en el editor y en <b>Development Build</b>: un build de release no lo incluye,
-    /// así que no hay que acordarse de quitarlo. Para forzarlo en un build normal, añade el define
-    /// <c>REDMAGIC_FPS</c> en Player Settings.
+    /// Se enseña según <see cref="PerformanceSettings.ShowFps"/> (Opciones ▸ Mostrar FPS): por defecto encendido en el
+    /// editor y en Development Build, apagado en un build de release; el jugador lo cambia a su gusto.
     ///
     /// Se dibuja con IMGUI (<see cref="OnGUI"/>) a propósito: no depende de UI Toolkit ni de un
     /// Canvas, así que funciona aunque la escena todavía no haya montado su UI. El tamaño de letra
@@ -22,23 +21,17 @@ namespace RedMagic.Core
     [DisallowMultipleComponent]
     public class FpsOverlay : MonoBehaviour
     {
-        private const string VisiblePref = "debug.fps.visible";
-
         public static FpsOverlay Instance { get; private set; }
 
         /// <summary>True si el contador se está dibujando ahora mismo.</summary>
-        public static bool Visible { get; private set; } = true;
+        public static bool Visible => PerformanceSettings.ShowFps;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
-#if !UNITY_EDITOR && !DEVELOPMENT_BUILD && !REDMAGIC_FPS
-            return;
-#else
             if (Instance != null) return;
             var go = new GameObject("[FpsOverlay]");
             go.AddComponent<FpsOverlay>();
-#endif
         }
 
         // --- medición -------------------------------------------------------
@@ -75,8 +68,6 @@ namespace RedMagic.Core
             Instance = this;
             transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
-
-            Visible = PlayerPrefs.GetInt(VisiblePref, 1) == 1;
 
             _bg = new Texture2D(1, 1);
             _bg.SetPixel(0, 0, new Color(0f, 0f, 0f, 0.55f));
@@ -137,9 +128,7 @@ namespace RedMagic.Core
 
         private static void SetVisible(bool visible)
         {
-            Visible = visible;
-            PlayerPrefs.SetInt(VisiblePref, visible ? 1 : 0);
-            PlayerPrefs.Save();
+            PerformanceSettings.ShowFps = visible;
         }
 
         private void OnGUI()

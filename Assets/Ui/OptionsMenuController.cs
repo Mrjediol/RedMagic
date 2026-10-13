@@ -29,8 +29,9 @@ namespace RedMagic.UI
         private Toggle _masterMute, _musicMute, _sfxMute;
         private Label _masterValue, _musicValue, _sfxValue;
         private Button _backButton;
-        private Button _resolutionPrev, _resolutionNext, _languagePrev, _languageNext;
-        private Label _resolutionValue, _languageValue;
+        private Button _resolutionPrev, _resolutionNext, _languagePrev, _languageNext, _fpsLimitPrev, _fpsLimitNext;
+        private Label _resolutionValue, _languageValue, _fpsLimitValue;
+        private Toggle _showFpsToggle;
         private Toggle _controlsToggle;
 
         // Pestaña Interfaz
@@ -83,6 +84,10 @@ namespace RedMagic.UI
             _languagePrev = _root.Q<Button>("languagePrev");
             _languageNext = _root.Q<Button>("languageNext");
             _languageValue = _root.Q<Label>("languageValue");
+            _fpsLimitPrev = _root.Q<Button>("fpsLimitPrev");
+            _fpsLimitNext = _root.Q<Button>("fpsLimitNext");
+            _fpsLimitValue = _root.Q<Label>("fpsLimitValue");
+            _showFpsToggle = _root.Q<Toggle>("showFpsToggle");
             _controlsToggle = _root.Q<Toggle>("controlsToggle");
 
             _generalTab = _root.Q<Button>("generalTab");
@@ -123,6 +128,9 @@ namespace RedMagic.UI
             WireArrow(_resolutionNext, NextResolution);
             WireArrow(_languagePrev, PrevLanguage);
             WireArrow(_languageNext, NextLanguage);
+            WireArrow(_fpsLimitPrev, () => StepFpsLimit(-1));
+            WireArrow(_fpsLimitNext, () => StepFpsLimit(1));
+            _showFpsToggle?.RegisterValueChangedCallback(OnShowFpsToggled);
             Loc.Changed += OnLanguageChanged;
 
             // Claves "#…" del UXML → texto del idioma activo; antes de vestir, que la skin mueve el
@@ -151,7 +159,9 @@ namespace RedMagic.UI
             MenuSkinDresser.DressToggle(_masterMute, skin);
             MenuSkinDresser.DressToggle(_musicMute, skin);
             MenuSkinDresser.DressToggle(_sfxMute, skin);
+            MenuSkinDresser.DressToggle(_showFpsToggle, skin);
             MenuSkinDresser.DressToggle(_controlsToggle, skin);
+            MenuSkinDresser.DressToggle(_showFpsToggle, skin);
             MenuSkinDresser.DressToggle(_hurtToggle, skin);
             MenuSkinDresser.DressToggle(_healToggle, skin);
             MenuSkinDresser.DressToggle(_lowHealthToggle, skin);
@@ -179,6 +189,7 @@ namespace RedMagic.UI
             UnwireArrow(_resolutionNext, NextResolution);
             UnwireArrow(_languagePrev, PrevLanguage);
             UnwireArrow(_languageNext, NextLanguage);
+            _showFpsToggle?.UnregisterValueChangedCallback(OnShowFpsToggled);
             Loc.Changed -= OnLanguageChanged;
         }
 
@@ -372,6 +383,16 @@ namespace RedMagic.UI
             RefreshSelectors();
         }
 
+        private void StepFpsLimit(int step)
+        {
+            var limits = PerformanceSettings.FpsLimits;
+            int current = System.Array.IndexOf(limits, PerformanceSettings.FpsLimit);
+            PerformanceSettings.FpsLimit = limits[((current + step) % limits.Length + limits.Length) % limits.Length];
+            RefreshSelectors();
+        }
+
+        private static void OnShowFpsToggled(ChangeEvent<bool> evt) => PerformanceSettings.ShowFps = evt.newValue;
+
         private void StepLanguage(int step)
         {
             var languages = Loc.Languages;
@@ -397,6 +418,14 @@ namespace RedMagic.UI
             var preset = DisplaySettings.Current;
             if (_resolutionValue != null)
                 _resolutionValue.text = preset != null ? Loc.Get("options.resolution_value", Loc.Get(preset.labelKey), preset.aspect) : "-";
+
+            if (_fpsLimitValue != null)
+            {
+                int limit = PerformanceSettings.FpsLimit;
+                _fpsLimitValue.text = limit > 0 ? Loc.Get("options.fps_value", limit)
+                                                : Loc.Get("options.fps_screen", PerformanceSettings.ScreenRefreshRate());
+            }
+            _showFpsToggle?.SetValueWithoutNotify(PerformanceSettings.ShowFps);
 
             if (_languageValue != null)
             {

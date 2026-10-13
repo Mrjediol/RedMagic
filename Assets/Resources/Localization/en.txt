@@ -458,3 +458,7 @@ ground.equip.touch = USE: equip
 ground.recycle.kb = Hold [F] Recycle
 ground.recycle.pad = Hold [L1] Recycle
 ground.recycle.touch = Hold USE: recycle
+options.fps_limit = FPS limit
+options.fps_value = {0} FPS
+options.fps_screen = Display ({0} Hz)
+options.show_fps = Show FPS

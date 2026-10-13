@@ -38,6 +38,18 @@
                             <ui:Button name="resolutionNext" text="&gt;" class="option-arrow"/>
                         </ui:VisualElement>
                     </ui:VisualElement>
+                    <ui:VisualElement name="fpsLimitRow" class="option-row">
+                        <ui:Label text="#options.fps_limit" class="option-label"/>
+                        <ui:VisualElement class="option-selector">
+                            <ui:Button name="fpsLimitPrev" text="&lt;" class="option-arrow"/>
+                            <ui:Label name="fpsLimitValue" text="60" class="option-choice"/>
+                            <ui:Button name="fpsLimitNext" text="&gt;" class="option-arrow"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="showFpsRow" class="option-row">
+                        <ui:Label text="#options.show_fps" class="option-label"/>
+                        <ui:Toggle name="showFpsToggle" label="#options.show" class="option-mute"/>
+                    </ui:VisualElement>
                     <ui:VisualElement name="languageRow" class="option-row">
                         <ui:Label text="#options.language" class="option-label"/>
                         <ui:VisualElement class="option-selector">

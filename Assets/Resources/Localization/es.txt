@@ -458,3 +458,7 @@ ground.equip.touch = USAR: equipar
 ground.recycle.kb = Mantén [F] Reciclar
 ground.recycle.pad = Mantén [L1] Reciclar
 ground.recycle.touch = Mantén USAR: reciclar
+options.fps_limit = Límite de FPS
+options.fps_value = {0} FPS
+options.fps_screen = Pantalla ({0} Hz)
+options.show_fps = Mostrar FPS

@@ -15,30 +15,18 @@ namespace RedMagic.Core
     /// </summary>
     public static class PerformanceBootstrap
     {
-        /// <summary>
-        /// FPS objetivo en dispositivos móviles. 60 porque es el refresco nativo de la inmensa
-        /// mayoría de móviles; en un panel de 90/120 Hz el juego se queda corto a propósito antes
-        /// que arriesgar caídas de frame en gama baja. Súbelo aquí si se quiere aprovechar pantallas
-        /// de más refresco.
-        /// </summary>
-        private const int MobileTargetFrameRate = 60;
+        // El límite de FPS lo elige el jugador (Opciones ▸ Límite de FPS, ver PerformanceSettings). Por defecto, la
+        // frecuencia de la pantalla: 60 en un móvil normal, 120/144 en uno gaming. Antes estaba fijo en 60.
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Apply()
         {
             // vSyncCount a 0 primero: mientras esté a 1 o más, Unity ignora por completo
             // targetFrameRate y sincroniza al refresco de pantalla — asignar uno sin el otro no
-            // tiene efecto.
-            QualitySettings.vSyncCount = 0;
-
-            // En PC se deja correr libre (-1). !UNITY_EDITOR es obligatorio: con el build target en
-            // Android, UNITY_ANDROID también está definido en el Editor y lo dejaba clavado a 60 (con
-            // tirones, porque sin vSync el límite se hace durmiendo).
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-            Application.targetFrameRate = MobileTargetFrameRate;
-#else
-            Application.targetFrameRate = -1;
-#endif
+            // tiene efecto. En PC se deja correr libre (-1) salvo límite elegido; en móvil, el elegido
+            // o la frecuencia de la pantalla. (!UNITY_EDITOR dentro de Apply: con el build target en Android,
+            // UNITY_ANDROID también está definido en el Editor.)
+            PerformanceSettings.Apply();
 #if UNITY_EDITOR
             // En el Editor, al refresco del monitor (vSync): por encima no se ve nada más y la GPU
             // trabaja al 100% para nada. Con vSync, no durmiendo: no da tirones.

@@ -20,6 +20,10 @@ namespace RedMagic.Levels
         public Sprite single;
 
         [Header("Colisión")]
+        [Tooltip("Cuánto se baja la línea de colisión desde el borde de arriba de la celda (unidades): el contorno oscuro del " +
+                 "arte (~0,04) queda por encima y el jugador se apoya en la superficie clara.")]
+        [Min(0f)] public float surfaceDrop = 0.04f;
+
         [Tooltip("Grosor (unidades) de la línea de colisión bajo la cara de arriba. Una plataforma de un solo sentido: lo de " +
                  "abajo no tiene hitbox.")]
         [Min(0.05f)] public float colliderThickness = 0.12f;

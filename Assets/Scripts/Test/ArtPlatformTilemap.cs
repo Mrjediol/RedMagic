@@ -84,7 +84,7 @@ namespace RedMagic.Levels
             if (layer >= 0) go.layer = layer;
             var box = go.AddComponent<BoxCollider2D>();
             box.size = new Vector2(run, tile.colliderThickness);
-            box.offset = new Vector2(run * 0.5f, -tile.colliderThickness * 0.5f);
+            box.offset = new Vector2(run * 0.5f, -tile.surfaceDrop - tile.colliderThickness * 0.5f);
             box.usedByEffector = true;
             var effector = go.AddComponent<PlatformEffector2D>();
             effector.useOneWay = true;

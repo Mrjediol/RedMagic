@@ -26,6 +26,9 @@ namespace RedMagic.Levels
         [Tooltip("Grosor INICIAL de la línea de colisión (unidades). Después se ajusta en el BoxCollider2D y no se pisa.")]
         [SerializeField, Min(0.1f)] private float colliderThickness = 0.12f;
 
+        [Tooltip("Cuánto baja la línea de colisión desde el borde de arriba de la imagen (el contorno oscuro). Sólo al crearla.")]
+        [SerializeField, Min(0f)] private float surfaceDrop = 0.04f;
+
         public int CellsWide => cellsWide;
 
         private void OnEnable() => Rebuild();
@@ -84,7 +87,7 @@ namespace RedMagic.Levels
             // ajuste a mano en el BoxCollider2D no se pisa al dar a Play. "colliderThickness" sólo vale al crearlo.
             bool created = box.size == new Vector2(1f, 1f) && box.offset == Vector2.zero;
             float thickness = created ? colliderThickness : box.size.y;
-            float offsetY = created ? -colliderThickness * 0.5f : box.offset.y;
+            float offsetY = created ? -surfaceDrop - colliderThickness * 0.5f : box.offset.y;
             box.size = new Vector2(cellsWide, thickness);
             box.offset = new Vector2(cellsWide * 0.5f, offsetY);
             box.usedByEffector = true;

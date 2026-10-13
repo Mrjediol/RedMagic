@@ -233,6 +233,49 @@ namespace RedMagic.BakingTest
             renderer.sortingOrder = 100;
         }
 
+        [MenuItem("Tools/RedMagic/Baking (prueba)/5b Proyectiles: poner la lluvia de 100 (teclas 1 / 2 / 0 en Play)")]
+        public static void PlaceRain()
+        {
+            var originals = new List<GameObject>();
+            var baked = new List<GameObject>();
+            foreach (var enemy in Enemies)
+            {
+                foreach (var guid in AssetDatabase.FindAssets("t:Prefab", new[] { $"{Folder}/{enemy}" }))
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    if (!path.Contains("_Projectile_Baked")) continue;
+                    var bakedPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                    // el original es el prefab del que el variante hereda
+                    var source = PrefabUtility.GetCorrespondingObjectFromSource(bakedPrefab);
+                    if (source == null) continue;
+                    baked.Add(bakedPrefab);
+                    originals.Add(source);
+                }
+            }
+            if (baked.Count == 0) { Debug.LogError("[Baking] Primero el paso 4."); return; }
+
+            var level = Object.FindFirstObjectByType<Level>();
+            var root = GameObject.Find(RootName);
+            if (root == null)
+            {
+                root = new GameObject(RootName);
+                if (level != null) root.transform.SetParent(level.transform, false);
+                Undo.RegisterCreatedObjectUndo(root, "Baking proyectiles");
+            }
+            var old = root.transform.Find("Lluvia");
+            if (old != null) Object.DestroyImmediate(old.gameObject);
+
+            var rain = new GameObject("Lluvia");
+            rain.transform.SetParent(root.transform, false);
+            float top = level != null ? level.Height - 3f : 17f;
+            float bottom = level != null ? level.GroundTop(80) + 0.5f : 2f;
+            rain.AddComponent<RedMagic.BakingTest.ProjectileRainTest>().Configure(originals.ToArray(), baked.ToArray(), 74f, 92f, top, bottom);
+
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(root.scene);
+            Selection.activeGameObject = rain;
+            Debug.Log($"[Baking] Lluvia lista ({originals.Count} tipos de proyectil). En Play: 1 = originales, 2 = hoja única, 0 = parar, +/- = cantidad.");
+        }
+
         [MenuItem("Tools/RedMagic/Baking (prueba)/6 BORRAR la prueba de proyectiles (sin restos)")]
         public static void DeleteProjectiles()
         {

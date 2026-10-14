@@ -285,7 +285,7 @@ namespace RedMagic.RunEditor
             return instance;
         }
 
-        private static void AddToBuildSettings(string scenePath)
+        public static void AddToBuildSettings(string scenePath)
         {
             var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
 
@@ -337,7 +337,7 @@ namespace RedMagic.RunEditor
         /// Rellena una SceneReference: el asset (que es el enlace por GUID que sobrevive a
         /// renombrados) y además los valores horneados, que son los que existen en un build.
         /// </summary>
-        private static void AssignScene(SerializedProperty sceneReference, string scenePath)
+        public static void AssignScene(SerializedProperty sceneReference, string scenePath)
         {
             var asset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scenePath);
             if (asset == null)

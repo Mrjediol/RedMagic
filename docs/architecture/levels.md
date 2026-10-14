@@ -103,7 +103,7 @@ only has the importer, in its own top menu. The first standalone page is in `Web
 - **Menu `EditorNiveles ▸ Importar nivel…`** (top menu bar, NOT under Tools; `EditorNivelesMenu`, its only item; opens in
   `Assets/Levels/Bocetos`): into the open scene's `Level` (selected or the only one) or into a new scene (camera with
   `CameraFollow`, `Level` + Grid/Terreno + Grid/Plataformas + biome background and particles, global light, `PostHielo`
-  volume, `SectionEntry`/`SectionExit` on the floor at both ends — move them by hand; add the scene to the `WorldDefinition`).
+  volume, `SectionEntry`/`SectionExit` on the floor at both ends — move them by hand, plus an empty `WaveManager` (one wave, no enemies, finishes the level) and the scene is added to Build Settings; add it to the `WorldDefinition` pool to get it in a run).
 - **Importing only touches tiles, size and biome** (with Undo): objects, enemies, entry/exit added in Unity survive.
 
 ## 🏞️ Fondos (web tab, `modules/parallax-editor.js` + `parallax-data.js`)

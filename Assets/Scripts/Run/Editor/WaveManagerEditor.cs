@@ -258,6 +258,22 @@ namespace RedMagic.Run.EditorTools
 
             var manager = go.AddComponent<WaveManager>();
             Undo.RegisterCreatedObjectUndo(go, "Crear Wave Manager");
+            Setup(manager);
+            Selection.activeGameObject = go;
+        }
+
+        /// <summary>Un WaveManager listo en la escena activa (dos puntos de aparición, una oleada vacía que termina el nivel).</summary>
+        public static WaveManager CreateDefault()
+        {
+            var go = new GameObject("WaveManager");
+            var manager = go.AddComponent<WaveManager>();
+            Setup(manager);
+            return manager;
+        }
+
+        private static void Setup(WaveManager manager)
+        {
+            var go = manager.gameObject;
 
             var so = new SerializedObject(manager);
             var points = so.FindProperty("spawnPoints");
@@ -279,8 +295,6 @@ namespace RedMagic.Run.EditorTools
             first.FindPropertyRelative(nameof(WaveDefinition.launchIndex)).intValue = -1;
             so.FindProperty("roomsMigrated").boolValue = true;
             so.ApplyModifiedPropertiesWithoutUndo();
-
-            Selection.activeGameObject = go;
         }
     }
 }

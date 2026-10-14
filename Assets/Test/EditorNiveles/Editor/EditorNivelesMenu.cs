@@ -3,6 +3,8 @@ using RedMagic.Gameplay;
 using RedMagic.Levels;
 using RedMagic.LevelsEditor;
 using RedMagic.Run;
+using RedMagic.Run.EditorTools;
+using RedMagic.RunEditor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -132,10 +134,14 @@ namespace RedMagic.EditorNiveles
             exitGo.AddComponent<SectionExit>();
             exitGo.transform.position = new Vector3(exitX + 0.5f, level.GroundTop(exitX) + 2f, 0f);
 
+            // Vacío pero listo: una oleada sin enemigos que termina el nivel (la salida abre). Se rellena a mano.
+            WaveManagerEditor.CreateDefault();
+
             camGo.transform.position = new Vector3(entry.transform.position.x, entry.transform.position.y, -10f);
             Selection.activeGameObject = levelGo;
             EditorSceneManager.SaveScene(scene, path);
-            Debug.Log($"[EditorNiveles] Escena nueva: {path}. Añádela al mundo (WorldDefinition) para jugarla en la run.");
+            WorldSceneGenerator.AddToBuildSettings(path);
+            Debug.Log($"[EditorNiveles] Escena nueva: {path} (en Build Settings, con WaveManager). Añádela al pool de su WorldDefinition para que salga en la run.");
         }
 
         private static Tilemap NewTilemap(string name, Transform parent)

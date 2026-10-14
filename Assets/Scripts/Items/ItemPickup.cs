@@ -30,8 +30,9 @@ namespace RedMagic.Items
     /// </summary>
     public sealed class ItemPickup : MonoBehaviour, IPooled
     {
-        private const float IconSize = 0.9f;
-        private const float HoverHeight = 0.9f;
+        private const float IconSize = 1.6f;
+        private const float HoverHeight = 1.2f;
+        private const float OutlineScale = 1.1f;
         private const float Spacing = 1.4f;
 
         /// <summary>Segundos manteniendo pulsado para reciclar.</summary>
@@ -40,7 +41,7 @@ namespace RedMagic.Items
         private static Pool<ItemPickup> _pool;
 
         private ItemDefinition _item;
-        private SpriteRenderer _icon, _glow;
+        private SpriteRenderer _icon, _glow, _outline;
         private Vector3 _basePosition;
         private float _phase;
         private bool _autoCollect;
@@ -144,13 +145,18 @@ namespace RedMagic.Items
             pickup._glow = glow.AddComponent<SpriteRenderer>();
             pickup._glow.sprite = ProceduralSprites.Glow;
 
+            // Silueta oscura detrás del icono: lo recorta del fondo y le da definición.
+            var outline = new GameObject("Outline");
+            outline.transform.SetParent(go.transform, false);
+            pickup._outline = outline.AddComponent<SpriteRenderer>();
+
             var icon = new GameObject("Icon");
             icon.transform.SetParent(go.transform, false);
             pickup._icon = icon.AddComponent<SpriteRenderer>();
 
             var trigger = go.AddComponent<CircleCollider2D>();
             trigger.isTrigger = true;
-            trigger.radius = 0.6f;
+            trigger.radius = 0.9f;
 
             return pickup;
         }
@@ -171,14 +177,27 @@ namespace RedMagic.Items
 
             _icon.sprite = item.Icon != null ? item.Icon : AbilityFx.DefaultSprite;
             _icon.color = item.Icon != null ? Color.white : item.Accent;
-            AbilityFx.Resize(_icon.transform, _icon, Vector2.one * IconSize);
+            FitIcon(_icon.transform, _icon, IconSize);
 
-            _glow.color = new Color(rarity.r, rarity.g, rarity.b, 0.75f);
-            AbilityFx.Resize(_glow.transform, _glow, Vector2.one * IconSize * 2.2f);
+            _outline.sprite = _icon.sprite;
+            _outline.color = new Color(0.04f, 0.03f, 0.08f, 0.9f);
+            FitIcon(_outline.transform, _outline, IconSize * OutlineScale);
+
+            _glow.color = new Color(rarity.r, rarity.g, rarity.b, 0.6f);
+            AbilityFx.Resize(_glow.transform, _glow, Vector2.one * IconSize * 1.9f);
 
             var reference = Run.RunManager.Instance != null ? Run.RunManager.Instance.Player : null;
             AbilityFx.CopySorting(_glow, reference, 1);
-            AbilityFx.CopySorting(_icon, reference, 2);
+            AbilityFx.CopySorting(_outline, reference, 2);
+            AbilityFx.CopySorting(_icon, reference, 3);
+        }
+
+        /// <summary>Encaja el sprite en un cuadrado de <paramref name="size"/> sin deformarlo.</summary>
+        private static void FitIcon(Transform t, SpriteRenderer r, float size)
+        {
+            var b = r.sprite != null ? r.sprite.bounds.size : Vector3.one;
+            float k = size / Mathf.Max(b.x, b.y, 0.0001f);
+            t.localScale = new Vector3(k, k, 1f);
         }
 
         public void OnReturnedToPool()

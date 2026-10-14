@@ -215,6 +215,12 @@ namespace RedMagic.Gameplay
         [Range(0.02f, 0.2f)]
         [SerializeField] private float groundClampInset = 0.04f;
 
+        [Tooltip("Desnivel máximo (unidades) que se sube andando sin saltar: el escalón mínimo entre una " +
+                 "plataforma y el suelo contiguo (el collider de la plataforma va unos píxeles más bajo). " +
+                 "0 = desactivado.")]
+        [Range(0f, 0.3f)]
+        [SerializeField] private float maxStepHeight = 0.12f;
+
         [Tooltip("Desplazamiento máximo que puede aplicar la red de seguridad de una sola vez. " +
                  "Corre cada frame, así que una penetración real nunca es más profunda que un " +
                  "frame de movimiento: este tope sólo evita un tirón visible si algo va muy mal.")]
@@ -1219,13 +1225,14 @@ namespace RedMagic.Gameplay
             if (!groundIsImpassable || _groundLayer.value == 0) return move;
             if (solverSize.x <= 0f || solverSize.y <= 0f) return move;
 
-            // --- horizontal: paredes.
+            // --- horizontal: paredes (un escalón mínimo se sube en vez de frenar).
+            float stepLift = 0f;
             if (Mathf.Abs(move.x) > 0.0001f)
             {
                 float dirX = Mathf.Sign(move.x);
                 float wanted = Mathf.Abs(move.x);
                 float allowed = SweepAxisAgainstGround(origin, solverSize, new Vector2(dirX, 0f), wanted);
-                if (allowed < wanted)
+                if (allowed < wanted && !TryStepUp(origin, solverSize, dirX, wanted, out stepLift))
                 {
                     move.x = allowed * dirX;
                     if (Mathf.Abs(_currentHorizontalSpeed) > 0f &&
@@ -1248,7 +1255,37 @@ namespace RedMagic.Gameplay
                 }
             }
 
+            if (stepLift > 0f && move.y <= 0f) move.y = stepLift;
             return move;
+        }
+
+        /// <summary>
+        /// ¿Lo que frena el avance es un escalón de <see cref="maxStepHeight"/> o menos? Sólo andando por el suelo (no
+        /// subiendo). Con la caja subida esa altura el avance debe quedar libre y debe haber suelo debajo; devuelve cuánto
+        /// hay que subir para quedar apoyado encima.
+        /// </summary>
+        private bool TryStepUp(Vector3 origin, Vector2 size, float dirX, float wanted, out float lift)
+        {
+            lift = 0f;
+            if (maxStepHeight <= 0f || !_colDown || _currentVerticalSpeed > 0.01f) return false;
+
+            var raised = origin + Vector3.up * maxStepHeight;
+            if (SweepAxisAgainstGround(origin, size, Vector2.up, maxStepHeight) < maxStepHeight) return false;   // techo
+            if (SweepAxisAgainstGround(raised, size, new Vector2(dirX, 0f), wanted) < wanted) return false;      // muro alto
+
+            var landing = raised + new Vector3(dirX * wanted, 0f);
+            int count = Physics2D.BoxCast(landing, size, 0f, Vector2.down, _groundFilter, _groundCasts, maxStepHeight);
+            float fall = -1f;
+            for (int i = 0; i < count; i++)
+            {
+                var c = _groundCasts[i];
+                if (c.collider == null || c.distance <= 0f) continue;
+                if (fall < 0f || c.distance < fall) fall = c.distance;
+            }
+            if (fall < 0f) return false;
+
+            lift = Mathf.Clamp(maxStepHeight - fall + groundSkin, 0f, maxStepHeight);
+            return lift > 0f;
         }
 
         /// <summary>

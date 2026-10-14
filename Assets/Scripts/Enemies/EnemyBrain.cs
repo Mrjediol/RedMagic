@@ -506,7 +506,7 @@ namespace RedMagic.Enemies
                 Vector2 desired = toTarget + Vector2.up * hover;
                 if (desired.sqrMagnitude < 0.0001f) { Stop(); return false; }
 
-                _body.linearVelocity = desired.normalized * speed;
+                SetVelocity(desired.normalized * speed);
                 return true;
             }
 
@@ -518,7 +518,7 @@ namespace RedMagic.Enemies
             bool adjacent = Mathf.Abs(toTarget.x) <= Reach();
             if (!adjacent && !CanAdvance(direction)) { Stop(); return false; }
 
-            _body.linearVelocity = GroundMotion.Walk(direction * Mathf.Abs(speed), _body.linearVelocity);
+            SetVelocity(GroundMotion.Walk(direction * Mathf.Abs(speed), _body.linearVelocity));
             return true;
         }
 
@@ -570,11 +570,18 @@ namespace RedMagic.Enemies
         {
             if (T.Flies)
             {
-                _body.linearVelocity = Vector2.zero;
+                SetVelocity(Vector2.zero);
                 return;
             }
 
-            _body.linearVelocity = GroundMotion.Halt(_body.linearVelocity);
+            SetVelocity(GroundMotion.Halt(_body.linearVelocity));
+        }
+
+        /// <summary>Un cuerpo Static (torreta en pared o techo) no admite velocidad: se queda donde está.</summary>
+        private void SetVelocity(Vector2 velocity)
+        {
+            if (_body.bodyType == RigidbodyType2D.Static) return;
+            _body.linearVelocity = velocity;
         }
 
         private float Reach() => (_collider != null ? _collider.bounds.extents.x : 0.3f) + 0.4f;
@@ -832,7 +839,7 @@ namespace RedMagic.Enemies
 
             if (T.Flies)
             {
-                _body.linearVelocity = velocity;
+                SetVelocity(velocity);
             }
             else if (_evade.move == DefenceMove.HopBack)
             {
@@ -844,13 +851,13 @@ namespace RedMagic.Enemies
                     y = DefenceMotion.HopImpulse(_evade.hopHeight, Mathf.Abs(Physics2D.gravity.y) * _body.gravityScale);
                 }
 
-                _body.linearVelocity = new Vector2(velocity.x, y);
+                SetVelocity(new Vector2(velocity.x, y));
             }
             else
             {
                 int direction = velocity.x >= 0f ? 1 : -1;
                 if (!CanAdvance(direction)) { EndEvade(); return; }   // se acaba el suelo: hasta aquí
-                _body.linearVelocity = GroundMotion.Walk(velocity.x, _body.linearVelocity);
+                SetVelocity(GroundMotion.Walk(velocity.x, _body.linearVelocity));
             }
 
             _evadeTime += Time.fixedDeltaTime;

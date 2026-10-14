@@ -411,6 +411,17 @@ namespace RedMagic.Audio
             _musicRoutine = null;
         }
 
+        /// <summary>
+        /// Congela / reanuda la música donde está (menú de pausa). Opciones no la pausa, para poder oír el volumen que se ajusta.
+        /// Con la música pausada, <c>isPlaying</c> es falso: una música nueva arranca normal y limpia la pausa.
+        /// </summary>
+        public void SetMusicPaused(bool paused)
+        {
+            if (_musicSource == null) return;
+            if (paused) _musicSource.Pause();
+            else _musicSource.UnPause();
+        }
+
         /// <summary>Para la música con un fundido de salida.</summary>
         public void StopMusic()
         {

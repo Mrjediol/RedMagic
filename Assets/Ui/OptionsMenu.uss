@@ -34,11 +34,15 @@
     flex-direction: row;
     align-items: center;
     margin: 12px 0;
-    padding: 6px 0;
+    padding: 6px 10px;
+    border-left-width: 6px;
+    border-left-color: rgba(0, 0, 0, 0);
+    border-radius: 8px;
 }
 
 .option-label {
-    width: 160px;
+    width: 260px;
+    flex-shrink: 0;
     font-size: 30px;
     -unity-font-style: bold;
     color: #ecdfbf;
@@ -215,4 +219,33 @@
 
 .option-page--compact .option-row--buttons {
     margin-top: 18px;
+}
+
+/* ---- Foco (mando / teclado): la fila entera se enciende, sea slider, casilla o selector ---- */
+.option-row--focus {
+    background-color: rgba(122, 26, 34, 0.5);
+    border-left-color: #f4ce84;
+}
+
+.option-row--focus .option-label {
+    color: #ffe6a8;
+}
+
+.option-slider:focus .unity-base-slider__dragger {
+    width: 34px;
+    height: 34px;
+    border-radius: 17px;
+    background-color: #fff2c4;
+}
+
+.option-mute:focus .unity-toggle__checkmark {
+    border-color: #ffe6a8;
+    border-width: 3px;
+}
+
+.option-tab:focus {
+    color: #ffe6a8;
+    background-color: rgba(122, 26, 34, 0.6);
+    border-color: #f4ce84;
+    border-width: 3px;
 }

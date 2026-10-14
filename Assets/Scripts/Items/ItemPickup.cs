@@ -17,9 +17,9 @@ namespace RedMagic.Items
     /// acaba de salir del inventario al sustituirlo — ésos nunca se recogen solos, o rebotarían de un hueco a otro), con
     /// el jugador encima sale su ficha (<c>ShopItemPanel.ShowGroundItem</c>, la misma de la tienda) y:
     /// <list type="bullet">
-    /// <item><b>Interactuar</b> (E / L1 / tocar el botón) lo equipa; con los 6 huecos libres llenos abre la pantalla de
+    /// <item><b>Interactuar</b> (E / triángulo / tocar el botón) lo equipa; con los 6 huecos libres llenos abre la pantalla de
     /// items para elegir cuál sustituir. Lo sustituido cae al suelo.</item>
-    /// <item><b>Mantener</b> (F / L1 / el botón táctil) <see cref="RecycleSeconds"/> lo recicla por
+    /// <item><b>Mantener</b> (F / triángulo / el botón táctil) <see cref="RecycleSeconds"/> lo recicla por
     /// <c>ShopConfig.recycleFraction</c> de su precio en oro.</item>
     /// </list>
     ///
@@ -47,7 +47,7 @@ namespace RedMagic.Items
         private bool _autoCollect;
         private float _nearUntil;       // el jugador sigue dentro del trigger (lo renueva OnTriggerStay)
         private float _hold;            // segundos manteniendo reciclar
-        private bool _holdCanSwap;      // la pulsación en curso es de L1 / táctil: soltar pronto = equipar
+        private bool _holdCanSwap;      // la pulsación en curso es de triángulo / táctil: soltar pronto = equipar
         private bool _prompting;
 
         /// <summary>El item del suelo que atiende la entrada ahora mismo (con varios a la vez, sólo uno).</summary>
@@ -260,7 +260,7 @@ namespace RedMagic.Items
             var keyboard = Keyboard.current;
             var gamepad = Gamepad.current;
             bool fHeld = keyboard != null && keyboard.fKey.isPressed;
-            bool swapHeld = (gamepad != null && gamepad.leftShoulder.isPressed) || TouchInput.InteractHeld;
+            bool swapHeld = (gamepad != null && gamepad.buttonNorth.isPressed) || TouchInput.InteractHeld;
             bool tap = keyboard != null && (keyboard.eKey.wasPressedThisFrame || keyboard.enterKey.wasPressedThisFrame);
             TouchInput.ConsumeInteract();   // el botón táctil se lee por su estado (mantener), no por la pulsación
 
@@ -272,7 +272,7 @@ namespace RedMagic.Items
             }
             else
             {
-                // L1 / táctil soltados antes de reciclar = pulsación corta = equipar
+                // Triángulo / táctil soltados antes de reciclar = pulsación corta = equipar
                 if (_hold > 0f && _holdCanSwap) tap = true;
                 _hold = 0f;
             }

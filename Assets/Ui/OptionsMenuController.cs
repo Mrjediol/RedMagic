@@ -132,6 +132,9 @@ namespace RedMagic.UI
             WireArrow(_fpsLimitNext, () => StepFpsLimit(1));
             _showFpsToggle?.RegisterValueChangedCallback(OnShowFpsToggled);
             Loc.Changed += OnLanguageChanged;
+            _root.RegisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
+            _root.RegisterCallback<FocusInEvent>(OnFocusIn);
+            _root.RegisterCallback<FocusOutEvent>(OnFocusOut);
 
             // Claves "#…" del UXML → texto del idioma activo; antes de vestir, que la skin mueve el
             // rótulo de los botones a un hijo.
@@ -191,6 +194,126 @@ namespace RedMagic.UI
             UnwireArrow(_languageNext, NextLanguage);
             _showFpsToggle?.UnregisterValueChangedCallback(OnShowFpsToggled);
             Loc.Changed -= OnLanguageChanged;
+            if (_root != null)
+            {
+                _root.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
+                _root.UnregisterCallback<FocusInEvent>(OnFocusIn);
+                _root.UnregisterCallback<FocusOutEvent>(OnFocusOut);
+            }
+        }
+
+        // ------------------------------------------------------------------ navegación con mando
+
+        // Un solo recorrido lineal por la página (arriba/abajo): nada se salta ni depende de la geometría. Los selectores
+        // (resolución, FPS, idioma, vida de enemigos) son una parada y se cambian con izquierda/derecha; los sliders también;
+        // los toggles con aceptar. Cada parada pinta su fila (option-row--focus), que es lo que da feedback.
+        private VisualElement _focusedRow;
+
+        private void OnFocusIn(FocusInEvent evt)
+        {
+            SetFocusedRow(RowOf(evt.target as VisualElement));
+        }
+
+        private void OnFocusOut(FocusOutEvent evt)
+        {
+            if (RowOf(evt.target as VisualElement) == _focusedRow) SetFocusedRow(null);
+        }
+
+        private void SetFocusedRow(VisualElement row)
+        {
+            if (_focusedRow == row) return;
+            _focusedRow?.RemoveFromClassList("option-row--focus");
+            _focusedRow = row;
+            _focusedRow?.AddToClassList("option-row--focus");
+        }
+
+        private static VisualElement RowOf(VisualElement e)
+        {
+            for (; e != null; e = e.parent)
+                if (e.ClassListContains("option-row")) return e;
+            return null;
+        }
+
+        private System.Collections.Generic.List<VisualElement> NavStops()
+        {
+            bool iface = _interfacePage != null && _interfacePage.resolvedStyle.display == DisplayStyle.Flex;
+            VisualElement[] page = iface
+                ? new VisualElement[] { _hurtSlider, _hurtToggle, _healSlider, _healToggle, _lowHealthSlider, _lowHealthToggle,
+                                        _controlsToggle, _enemyModePrev, _enemyNumbersToggle, _enemyCooldownsToggle,
+                                        _layoutButton, _layoutResetButton }
+                : new VisualElement[] { _masterSlider, _masterMute, _musicSlider, _musicMute, _sfxSlider, _sfxMute,
+                                        _resolutionPrev, _fpsLimitPrev, _showFpsToggle, _languagePrev };
+            var stops = new System.Collections.Generic.List<VisualElement> { iface ? _interfaceTab : _generalTab };
+            stops.AddRange(page);
+            stops.Add(_backButton);
+            stops.RemoveAll(s => s == null || !s.enabledInHierarchy);
+            return stops;
+        }
+
+        // Izquierda/derecha sobre un selector = anterior/siguiente, esté enfocada la flecha que esté.
+        private bool TryStepSelector(VisualElement focused, int step)
+        {
+            if (focused == _resolutionPrev || focused == _resolutionNext) { StepResolution(step); return true; }
+            if (focused == _fpsLimitPrev || focused == _fpsLimitNext) { StepFpsLimit(step); return true; }
+            if (focused == _languagePrev || focused == _languageNext) { StepLanguage(step); return true; }
+            if (focused == _enemyModePrev || focused == _enemyModeNext) { StepEnemyMode(step); return true; }
+            return false;
+        }
+
+        private void OnNavigationMove(NavigationMoveEvent evt)
+        {
+            if (!_open || _hidden || _root == null) return;
+            var focused = _root.panel?.focusController?.focusedElement as VisualElement;
+            var stops = NavStops();
+            int index = focused != null ? stops.IndexOf(focused) : -1;
+            if (index < 0 && focused != null) index = stops.IndexOf(RowStop(focused, stops));
+
+            switch (evt.direction)
+            {
+                case NavigationMoveEvent.Direction.Up:
+                case NavigationMoveEvent.Direction.Previous:
+                    FocusStop(stops, index <= 0 ? 0 : index - 1);
+                    break;
+                case NavigationMoveEvent.Direction.Down:
+                case NavigationMoveEvent.Direction.Next:
+                    FocusStop(stops, index < 0 ? 0 : Mathf.Min(index + 1, stops.Count - 1));
+                    break;
+                case NavigationMoveEvent.Direction.Left:
+                case NavigationMoveEvent.Direction.Right:
+                {
+                    int step = evt.direction == NavigationMoveEvent.Direction.Left ? -1 : 1;
+                    if (focused is Slider) return;   // el slider cambia su valor él solo
+                    if (focused == _generalTab || focused == _interfaceTab)
+                    {
+                        bool toInterface = step > 0;
+                        ShowTab(toInterface);
+                        (toInterface ? _interfaceTab : _generalTab)?.Focus();
+                    }
+                    else if (focused == _layoutButton || focused == _layoutResetButton)
+                        (step > 0 ? _layoutResetButton : _layoutButton)?.Focus();
+                    else TryStepSelector(focused, step);
+                    break;
+                }
+                default:
+                    return;
+            }
+
+            evt.StopPropagation();
+            evt.PreventDefault();
+        }
+
+        // Si el foco está en la otra flecha de un selector, su parada es la flecha "anterior" de la misma fila.
+        private static VisualElement RowStop(VisualElement focused, System.Collections.Generic.List<VisualElement> stops)
+        {
+            var row = RowOf(focused);
+            foreach (var s in stops)
+                if (s != null && RowOf(s) == row) return s;
+            return null;
+        }
+
+        private static void FocusStop(System.Collections.Generic.List<VisualElement> stops, int index)
+        {
+            if (index >= 0 && index < stops.Count) stops[index].Focus();
         }
 
         // ------------------------------------------------------------------ pestañas

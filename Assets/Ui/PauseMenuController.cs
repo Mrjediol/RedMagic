@@ -231,6 +231,7 @@ namespace RedMagic.UI
                 RunManager.Instance.DiscardRun();
 
             _open = false;
+            AudioManager.Instance?.SetMusicPaused(false);
             if (GameStateManager.Instance != null)
                 GameStateManager.Instance.ForceResume();
 
@@ -278,6 +279,7 @@ namespace RedMagic.UI
         // alternar display es fiable: el panel ya tiene layout y display:none quita también el picking.
         private void ShowOverlay(bool visible)
         {
+            AudioManager.Instance?.SetMusicPaused(visible);   // la pausa congela la música; Opciones no (se oye el volumen)
             if (_overlay != null)
                 _overlay.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }

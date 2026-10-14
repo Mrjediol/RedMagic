@@ -245,8 +245,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ed19a26ed8fe1a4585cf1652e42f4c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Combat.Health
-  maxHealth: 4000
-  currentHealth: 4000
+  maxHealth: 200
+  currentHealth: 200
   invulnerable: 0
   damageMultiplier: 1
   invulnerabilityDuration: 0.8
@@ -311,21 +311,14 @@ MonoBehaviour:
   _detectorCount: 3
   _detectionRayLength: 0.1
   _rayBuffer: 0.1
-  enableSlopes: 0
-  maxSlopeAngle: 80
-  slopeCheckDistance: 0.35
-  slopeSnapDistance: 0.35
   _platformLayer:
     serializedVersion: 2
     m_Bits: 256
   allowDropThrough: 1
   dropThroughDuration: 1.5
-  enableStepUp: 1
-  stepThresholdHeight: 0.4
-  debugStepUp: 0
   groundIsImpassable: 1
-  groundStepMinFaceAngle: 85
   groundClampInset: 0.04
+  maxStepHeight: 0.12
   groundClampMaxPush: 1.5
   debugGroundClamp: 0
   _acceleration: 90
@@ -347,6 +340,7 @@ MonoBehaviour:
   dashDuration: 0.18
   dashCooldown: 0.55
   maxAirDashes: 1
+  dashBuffer: 0.12
   dashIgnoresGravity: 1
   _freeColliderIterations: 10
   snapToGround: 1
@@ -421,7 +415,7 @@ MonoBehaviour:
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player
   attackActionName: Attack
-  damage: 25
+  damage: 12
   combo:
   - label: "1 \xB7 Descendente"
     slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
@@ -456,30 +450,8 @@ MonoBehaviour:
     knockbackMultiplier: 0.12
     windup: 0.12
     recovery: 0.42
-  - label: "4 \xB7 Vertical ascendente"
-    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
-    rotation: 0
-    reverse: 1
-    power: 1.3
-    offset: {x: 0.5, y: 0.4}
-    stretch: {x: 1.15, y: 1.45}
-    damageMultiplier: 1.2
-    knockbackMultiplier: 0.1
-    windup: 0.05
-    recovery: 0.34
-  - label: "5 \xB7 Gran remate"
-    slash: {fileID: 7558065270347326004, guid: c4567b678896c42469fbf487fcc211ba, type: 3}
-    rotation: 20
-    reverse: 1
-    power: 1.6
-    offset: {x: 0.7, y: 0.4}
-    stretch: {x: 1.6, y: 0.85}
-    damageMultiplier: 2.6
-    knockbackMultiplier: 0.2
-    windup: 0.2
-    recovery: 0.5
   airCombo: []
-  unlockedHits: 5
+  unlockedHits: 3
   chainWindow: 0.35
   inputBuffer: 0.2
   comboCooldown: 0.35
@@ -583,7 +555,7 @@ MonoBehaviour:
   alwaysShowPreview: 0
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player
-  attackActionName: Attack
+  weaponActionName: Weapon
   useTouchButton: 1
 --- !u!114 &7356258496195605434
 MonoBehaviour:

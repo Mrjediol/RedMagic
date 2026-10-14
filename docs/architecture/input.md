@@ -29,15 +29,22 @@ Each mode shows its own on-screen help and nothing else:
 - **Gamepad** → neither, since the prompts would be wrong buttons.
 
 **Melee vs weapon are separate buttons** (2026-10-13): `Player/Attack` (left click, X, gamepad `buttonWest` = square)
-is always the melee combo (`PlayerAttack`); `Player/Weapon` (Q, gamepad `buttonNorth` = triangle; it replaced the
+is always the melee combo (`PlayerAttack`); `Player/Weapon` (Q, gamepad **R1** `rightShoulder`; it replaced the
 unused `Fireball` action) fires the equipped weapon (`WeaponUser`). Equipping a weapon no longer silences the melee.
 Touch: `weaponButton` (was `fireballButton`) → `TouchInput.QueueWeapon/ConsumeWeapon`, shown only while a weapon is
 equipped, with its own cooldown dial; the weapon has its own HUD slot, `CooldownSlot.Weapon` (weapon icon).
 
-**Interact** (`InteractInput.Pressed`): E / Enter, gamepad **L1** (`leftShoulder` — triangle is the weapon), or the
+**Interact** (`InteractInput.Pressed`): E / Enter, gamepad **triangle** (`buttonNorth`), or the
 touch `interactButton` ("USAR"), which only shows while something can be interacted with: `InteractionPromptUi.IsVisible`
 or an interactable calling `TouchInput.RequestInteractButton()` that frame (the shop does, while an altar is focused).
 It also reports `TouchInput.InteractHeld` for hold actions (recycling a ground item; keyboard uses hold F).
 
 **Parry** (`Player/Parry`, read by `PlayerParry`): right mouse button, `L`, gamepad `buttonEast`;
 touch `parryButton` → `TouchInput.QueueParry/ConsumeParry`. Listed in `HudControlsLegend.Rows`.
+
+**Gamepad layout (2026-10-14)**: square = melee, **triangle = interact** (hold = recycle a ground item), **L1 = dash**, **R1 = weapon**, circle = parry.
+
+**Options menu with a gamepad** (`OptionsMenuController.OnNavigationMove`): up/down walks ONE linear list of stops per page (tab, sliders,
+mute toggles, one stop per selector row, buttons, back) — UI Toolkit's geometric navigation skipped right-aligned toggles. Left/right
+changes a slider or a selector, switches tabs. The focused row gets `option-row--focus` (USS) for feedback. Pause menu pauses the
+music (`AudioManager.SetMusicPaused`); Options un-pauses it so volume changes are audible.

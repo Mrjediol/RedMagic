@@ -16,12 +16,6 @@ MonoBehaviour:
   displayName: Mundo 1
   unlocked: 1
   sectionPool:
-  - sceneAsset: {fileID: 102900000, guid: 3a7e9fd6109dbd04597aaed54c75b7f0, type: 3}
-    scenePath: Assets/Scenes/NivelHielo_1000.unity
-    sceneName: NivelHielo_1000
-  - sceneAsset: {fileID: 102900000, guid: 0bb2d2e18f0828740944b7d5cd938994, type: 3}
-    scenePath: Assets/Scenes/3 CombatRoomsTest.unity
-    sceneName: 3 CombatRoomsTest
   - sceneAsset: {fileID: 102900000, guid: d1b13e0e447ec1b4b9c1ffeb48294eb7, type: 3}
     scenePath: Assets/Scenes/LargeLevelTest.unity
     sceneName: LargeLevelTest

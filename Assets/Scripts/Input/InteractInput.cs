@@ -4,7 +4,7 @@ namespace RedMagic.Core
 {
     /// <summary>
     /// "¿Se ha pulsado Interactuar este frame?" — la acción Interact del asset de input (si quien
-    /// pregunta la tiene), E / Intro, L1 del mando (el triángulo es el arma), o el botón táctil
+    /// pregunta la tiene), E / Intro, triángulo del mando, o el botón táctil
     /// (<see cref="TouchInput.ConsumeInteract"/>). Único sitio con esta receta: la usan todos los
     /// interactuables (cofres, espejo, yunque, forja, tienda).
     /// </summary>
@@ -19,7 +19,7 @@ namespace RedMagic.Core
                 return true;
 
             var gamepad = Gamepad.current;
-            if (gamepad != null && gamepad.leftShoulder.wasPressedThisFrame) return true;
+            if (gamepad != null && gamepad.buttonNorth.wasPressedThisFrame) return true;
 
             return TouchInput.ConsumeInteract();
         }

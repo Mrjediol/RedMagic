@@ -498,15 +498,15 @@ MonoBehaviour:
   actionMapName: Player
   parryActionName: Parry
   startup: 0
-  window: 0.12
-  missCooldown: 4
+  window: 0.2
+  missCooldown: 2
   successCooldown: 0
   parryProjectiles: 1
   parryMelee: 1
   frontOnly: 0
   catchCenterOffset: {x: 0, y: 0.1}
   catchRadius: 1
-  hitStopDuration: 0.08
+  hitStopDuration: 0.2
   hitStopTimeScale: 0.05
   graceAfterSuccess: 0.25
   airReward: 1
@@ -515,8 +515,8 @@ MonoBehaviour:
   resetDashCooldown: 1
   stackBeyondMax: 0
   airBounce: 0
-  reflectDamage: 0
-  reflectMultiplier: 1
+  reflectDamage: 1
+  reflectMultiplier: 2
   reflectFromProjectiles: 1
   reflectFromMelee: 1
   reflectKnockback: 1

@@ -33,7 +33,8 @@ by `Assets/Ui/TouchTapButtons.cs` from `EnhancedTouch.Touch.activeTouches` every
 buttons' `worldBound` (+ `buttonHitPadding`). UI Toolkit's `Button` clickable captured the pointer and delayed/dropped
 presses. A touch that begins inside a button queues the action that same frame (`TouchControlsController` runs at
 execution order −50, before the player). Pressed look = USS class `touch-button--pressed`. Hold buttons (left/right/
-down/interact) still use pointer events.
+down) still use pointer events. Interact is a tap button too (press = `QueueInteract` + `InteractHeld`, release clears it).
+Gesture scheme: parry sits where interact sits in the classic layout (above jump); interact shifts left (`touch-button--interact-gesture`).
 
 **Gesture touch scheme (2026-10-15, experimental)**: Options ▸ Interfaz ▸ *Controles táctiles por gestos*
 (`HudSettings.GestureControls`) swaps `movePad`/`actionPad` for `gestureLayout` in `TouchControls.uxml`. Logic lives in

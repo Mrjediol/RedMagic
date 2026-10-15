@@ -213,6 +213,18 @@
     border-color: rgba(244, 206, 132, 0.7);
 }
 
+/* El parry ocupa el sitio de USAR del esquema clásico (encima del salto)... */
+.gesture-parry {
+    position: absolute;
+    right: 74px;
+    bottom: 340px;
+}
+
+/* ...y USAR, cuando aparece, se aparta a su izquierda. */
+.touch-button--interact.touch-button--interact-gesture {
+    right: 300px;
+}
+
 .gesture-actions {
     position: absolute;
     right: 48px;

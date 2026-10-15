@@ -51,7 +51,7 @@ namespace RedMagic.UI
         private readonly TouchTapButtons _tapButtons = new();
 
         private VisualElement _movePad, _actionPad, _gestureLayout;
-        private Button _gestureJumpButton, _gestureAttackButton, _gestureDashButton;
+        private Button _gestureJumpButton, _gestureAttackButton, _gestureDashButton, _gestureParryButton;
         private bool? _gestureMode;
 
         // Cooldown pintado sobre el botón que lanza cada acción (el mismo dial que el HUD de PC).
@@ -84,14 +84,8 @@ namespace RedMagic.UI
             gestures.Bind(_root.Q<VisualElement>("gestureSurface"), _root.Q<VisualElement>("gestureZone"),
                           _root.Q<VisualElement>("gestureStick"), _root.Q<VisualElement>("gestureKnob"),
                           _root.Q<VisualElement>("gestureAim"));
-            if (_interactButton != null)
-            {
-                _interactButton.style.display = DisplayStyle.None;
-                _interactButton.RegisterCallback<PointerDownEvent>(OnInteractDown);
-                _interactButton.RegisterCallback<PointerUpEvent>(OnInteractUp);
-                _interactButton.RegisterCallback<PointerLeaveEvent>(OnInteractLeave);
-                _interactButton.RegisterCallback<PointerCaptureOutEvent>(OnInteractCaptureOut);
-            }
+            _gestureParryButton = _root.Q<Button>("gestureParryButton");
+            if (_interactButton != null) _interactButton.style.display = DisplayStyle.None;
 
             WireHold(_leftButton, -1f);
             WireHold(_rightButton, 1f);
@@ -105,6 +99,9 @@ namespace RedMagic.UI
             _tapButtons.Add(_gestureDashButton, TouchInput.QueueDash);
             _tapButtons.Add(_weaponButton, TouchInput.QueueWeapon);
             _tapButtons.Add(_parryButton, TouchInput.QueueParry);
+            _tapButtons.Add(_gestureParryButton, TouchInput.QueueParry);
+            // Interactuar: la pulsación (comprar, abrir…) y el estado mantenido (reciclar un item del suelo).
+            _tapButtons.Add(_interactButton, OnInteractPress, OnInteractRelease);
             _tapButtons.Enable();
 
             if (_downButton != null)
@@ -128,6 +125,7 @@ namespace RedMagic.UI
             AttachDial(_weaponButton, CooldownSlot.Weapon);
             AttachDial(_gestureAttackButton, CooldownSlot.Attack);
             AttachDial(_gestureDashButton, CooldownSlot.Dash);
+            AttachDial(_gestureParryButton, CooldownSlot.Parry);
 
             HudSettings.Changed -= ApplyScheme;
             HudSettings.Changed += ApplyScheme;
@@ -149,6 +147,8 @@ namespace RedMagic.UI
             if (_movePad != null) _movePad.style.display = classic;
             if (_actionPad != null) _actionPad.style.display = classic;
             if (_gestureLayout != null) _gestureLayout.style.display = gesture ? DisplayStyle.Flex : DisplayStyle.None;
+            // Con gestos el parry ocupa el sitio de USAR (encima del salto) y USAR se aparta a su izquierda.
+            _interactButton?.EnableInClassList("touch-button--interact-gesture", gesture);
 
             gestures.Reset();
             _tapButtons.Release();
@@ -205,16 +205,8 @@ namespace RedMagic.UI
             UnwireHold(_leftButton);
             UnwireHold(_rightButton);
 
-            if (_interactButton != null)
-            {
-                _interactButton.UnregisterCallback<PointerDownEvent>(OnInteractDown);
-                _interactButton.UnregisterCallback<PointerUpEvent>(OnInteractUp);
-                _interactButton.UnregisterCallback<PointerLeaveEvent>(OnInteractLeave);
-                _interactButton.UnregisterCallback<PointerCaptureOutEvent>(OnInteractCaptureOut);
-                TouchInput.InteractHeld = false;
-            }
-
             _tapButtons.Disable();
+            TouchInput.InteractHeld = false;
             gestures.Unbind();
             HudSettings.Changed -= ApplyScheme;
 
@@ -280,14 +272,9 @@ namespace RedMagic.UI
 
         // ------------------------------------------------------------------ abajo (atravesar plataformas)
 
-        // Interactuar: la pulsación (comprar, abrir…) y el estado mantenido (reciclar un item del suelo).
-        private static void OnInteractDown(PointerDownEvent evt) { TouchInput.QueueInteract(); TouchInput.InteractHeld = true; }
+        private static void OnInteractPress() { TouchInput.QueueInteract(); TouchInput.InteractHeld = true; }
 
-        private static void OnInteractUp(PointerUpEvent evt) => TouchInput.InteractHeld = false;
-
-        private static void OnInteractLeave(PointerLeaveEvent evt) => TouchInput.InteractHeld = false;
-
-        private static void OnInteractCaptureOut(PointerCaptureOutEvent evt) => TouchInput.InteractHeld = false;
+        private static void OnInteractRelease() => TouchInput.InteractHeld = false;
 
         private static void OnDownDown(PointerDownEvent evt) => TouchInput.Down = true;
 

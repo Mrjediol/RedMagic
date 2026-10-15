@@ -21,6 +21,8 @@
                 <ui:VisualElement name="gestureStick" class="gesture-stick" picking-mode="Ignore" />
                 <ui:VisualElement name="gestureKnob" class="gesture-knob" picking-mode="Ignore" />
                 <ui:VisualElement name="gestureAim" class="gesture-aim" picking-mode="Ignore" />
+                <!-- Encima del salto, donde en el esquema clásico sale USAR (que con gestos se aparta a la izquierda). -->
+                <ui:Button name="gestureParryButton" text="#touch.parry" class="touch-button touch-button--parry gesture-parry" />
                 <ui:VisualElement name="gestureActions" class="gesture-actions" picking-mode="Ignore">
                     <ui:Button name="gestureAttackButton" text="#touch.attack" class="touch-button touch-button--attack" />
                     <ui:Button name="gestureDashButton" text="#touch.dash" class="touch-button touch-button--dash" />

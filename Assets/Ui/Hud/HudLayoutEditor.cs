@@ -8,13 +8,14 @@ using UnityEngine.UIElements;
 namespace RedMagic.UI
 {
     /// <summary>
-    /// Modo "colocar HUD" (Opciones ▸ Interfaz ▸ Colocar elementos): una cuadrícula sobre la
-    /// pantalla y un asa encima de cada pieza (<see cref="HudElement"/>) que se arrastra con ratón o
+    /// Modo "colocar" (Opciones ▸ Interfaz ▸ Colocar elementos / Colocar botones táctiles): una cuadrícula sobre la
+    /// pantalla y un asa encima de cada pieza registrada que se arrastra con ratón o
     /// dedo. Al arrastrar, el borde o el centro de la pieza que quede más cerca de una línea se pega a
-    /// ella — así centrar algo es soltarlo cerca de la línea dorada del medio. Al soltar se guarda en
-    /// <see cref="HudSettings"/>; "Restablecer" vuelve todo a su sitio de fábrica.
+    /// ella — así centrar algo es soltarlo cerca de la línea dorada del medio. Al soltar llama al guardado de la pieza
+    /// (<see cref="HudSettings"/>); "Restablecer" llama al de fábrica. Lo usan el HUD (<see cref="GameHud"/>) y los
+    /// botones táctiles de los gestos (<see cref="TouchControlsController"/>), cada uno en su panel.
     ///
-    /// Sólo dibuja y arrastra: dónde está cada pieza lo aplica <see cref="GameHud"/>.
+    /// Sólo dibuja y arrastra: dónde está cada pieza lo aplica su dueño. Las piezas son hijas directas de <c>host</c>.
     /// </summary>
     public class HudLayoutEditor : VisualElement
     {
@@ -24,13 +25,13 @@ namespace RedMagic.UI
 
         private sealed class Handle
         {
-            public HudElement Element;
+            public Action<Rect> Commit;
             public VisualElement Target;
             public VisualElement Box;
         }
 
         private readonly VisualElement _host;
-        private readonly Func<HudElement, Rect, HudAnchor> _toAnchor;
+        private readonly Action _reset;
         private readonly List<Handle> _handles = new();
         private readonly VisualElement _grid;
         private readonly VisualElement _toolbar;
@@ -47,10 +48,12 @@ namespace RedMagic.UI
         /// <summary>Pieza que se está arrastrando ahora (GameHud no la recoloca mientras tanto).</summary>
         public VisualElement Dragging => _dragging?.Target;
 
-        public HudLayoutEditor(VisualElement host, Func<HudElement, Rect, HudAnchor> toAnchor)
+        /// <param name="host">Contenedor a pantalla completa del que cuelgan las piezas.</param>
+        /// <param name="reset">"Restablecer": vuelve todo a su sitio de fábrica.</param>
+        public HudLayoutEditor(VisualElement host, string titleKey, string hintKey, Action reset)
         {
             _host = host;
-            _toAnchor = toAnchor;
+            _reset = reset;
             name = "hud-layout-editor";
             pickingMode = PickingMode.Position;   // tapa el juego y los menús de detrás mientras se edita
             HudStyle.Fill(this);
@@ -61,13 +64,14 @@ namespace RedMagic.UI
             _grid.generateVisualContent += DrawGrid;
             Add(_grid);
 
-            _toolbar = BuildToolbar();
+            _toolbar = BuildToolbar(titleKey, hintKey);
             Add(_toolbar);
         }
 
-        public void Register(HudElement element, VisualElement target, string labelKey)
+        /// <summary>Añade una pieza arrastrable; <paramref name="commit"/> recibe dónde se soltó (coordenadas de host).</summary>
+        public void Register(VisualElement target, string labelKey, Action<Rect> commit)
         {
-            var box = new VisualElement { name = $"handle-{element}", pickingMode = PickingMode.Position };
+            var box = new VisualElement { name = $"handle-{labelKey}", pickingMode = PickingMode.Position };
             box.style.position = Position.Absolute;
             box.style.backgroundColor = new Color(1f, 0.82f, 0.4f, 0.10f);
             HudStyle.Border(box, 3f, new Color(1f, 0.82f, 0.4f, 0.8f));
@@ -82,7 +86,7 @@ namespace RedMagic.UI
             label.style.color = HudStyle.Gold;
             box.Add(label);
 
-            var handle = new Handle { Element = element, Target = target, Box = box };
+            var handle = new Handle { Commit = commit, Target = target, Box = box };
             box.RegisterCallback<PointerDownEvent>(e => BeginDrag(handle, e));
             box.RegisterCallback<PointerMoveEvent>(e => Drag(handle, e));
             box.RegisterCallback<PointerUpEvent>(e => EndDrag(handle, e));
@@ -182,7 +186,7 @@ namespace RedMagic.UI
             _dragging = null;
             var r = handle.Target.layout;
             var placed = new Rect(_placed.x, _placed.y, r.width, r.height);
-            HudSettings.SetAnchor(handle.Element, _toAnchor(handle.Element, placed));
+            handle.Commit?.Invoke(placed);
             _guide = new Vector2(-1f, -1f);
             _grid.MarkDirtyRepaint();
             Highlight(handle, false);
@@ -272,7 +276,7 @@ namespace RedMagic.UI
 
         // ---------------------------------------------------------------- barra de herramientas
 
-        private VisualElement BuildToolbar()
+        private VisualElement BuildToolbar(string titleKey, string hintKey)
         {
             var bar = new VisualElement { name = "toolbar", pickingMode = PickingMode.Position };
             bar.style.position = Position.Absolute;
@@ -290,11 +294,11 @@ namespace RedMagic.UI
 
             var title = HudStyle.OutlinedLabel("title", 38f);
             title.style.color = HudStyle.Gold;
-            LocalizedUi.Bind(title, "hud.layout.title");
+            LocalizedUi.Bind(title, titleKey);
             bar.Add(title);
 
             var hint = new Label { pickingMode = PickingMode.Ignore };
-            LocalizedUi.Bind(hint, "hud.layout.hint");
+            LocalizedUi.Bind(hint, hintKey);
             hint.style.fontSize = 24;
             hint.style.color = new Color(0.92f, 0.88f, 0.78f, 0.85f);
             hint.style.marginTop = 6;
@@ -310,7 +314,7 @@ namespace RedMagic.UI
 
             buttons.Add(ToolbarButton("hud.layout.reset", () =>
             {
-                HudSettings.ResetAnchors();
+                _reset?.Invoke();
                 UiSounds.Back();
             }));
             buttons.Add(ToolbarButton("hud.layout.done", () => Finished?.Invoke()));

@@ -200,10 +200,8 @@ namespace RedMagic.UI
                 if (float.IsNaN(size.width) || size.width <= 0f) continue;
 
                 var anchor = HudSettings.TryGetAnchor(element, out var saved) ? saved : DefaultAnchor(element, area);
-                float x = anchor.Position.x * area.width - anchor.Pivot.x * size.width;
-                float y = anchor.Position.y * area.height - anchor.Pivot.y * size.height;
-                x = Mathf.Clamp(x, 0f, Mathf.Max(0f, area.width - size.width));
-                y = Mathf.Clamp(y, 0f, Mathf.Max(0f, area.height - size.height));
+                var place = PlaceFromAnchor(anchor, area, size.size);
+                float x = place.x, y = place.y;
 
                 if (Mathf.Abs(view.resolvedStyle.left - x) > 0.5f) view.style.left = x;
                 if (Mathf.Abs(view.resolvedStyle.top - y) > 0.5f) view.style.top = y;
@@ -238,18 +236,37 @@ namespace RedMagic.UI
         /// </summary>
         private HudAnchor AnchorFor(HudElement element, Rect placed)
         {
-            var area = _root.layout;
+            var anchor = AnchorFromRect(placed, _root.layout);
+            // La lista de enemigos cambia de alto con cada enemigo: en el centro se ancla por arriba,
+            // o crecería hacia los dos lados y bailaría.
+            if (element == HudElement.EnemyList && Mathf.Approximately(anchor.Pivot.y, 0.5f))
+                anchor = AnchorFromRect(placed, _root.layout, forceTopPivot: true);
+            return anchor;
+        }
+
+        /// <summary>
+        /// Ancla de una pieza soltada en <paramref name="placed"/> dentro de <paramref name="area"/>: se ancla por el
+        /// borde del tercio de pantalla en el que cae (lo comparten el HUD y los botones táctiles).
+        /// </summary>
+        public static HudAnchor AnchorFromRect(Rect placed, Rect area, bool forceTopPivot = false)
+        {
             float w = Mathf.Max(1f, area.width), h = Mathf.Max(1f, area.height);
 
             static float PivotFor(float center, float extent) =>
                 center < extent / 3f ? 0f : center > extent * 2f / 3f ? 1f : 0.5f;
 
-            var pivot = new Vector2(PivotFor(placed.center.x, w), PivotFor(placed.center.y, h));
-            // La lista de enemigos cambia de alto con cada enemigo: en el centro se ancla por arriba,
-            // o crecería hacia los dos lados y bailaría.
-            if (element == HudElement.EnemyList && Mathf.Approximately(pivot.y, 0.5f)) pivot.y = 0f;
+            var pivot = new Vector2(PivotFor(placed.center.x, w), forceTopPivot ? 0f : PivotFor(placed.center.y, h));
             var point = new Vector2(placed.x + pivot.x * placed.width, placed.y + pivot.y * placed.height);
             return new HudAnchor(pivot, new Vector2(point.x / w, point.y / h));
+        }
+
+        /// <summary>Esquina superior izquierda de una pieza de tamaño <paramref name="size"/> con <paramref name="anchor"/>, dentro de <paramref name="area"/>.</summary>
+        public static Vector2 PlaceFromAnchor(HudAnchor anchor, Rect area, Vector2 size)
+        {
+            float x = anchor.Position.x * area.width - anchor.Pivot.x * size.x;
+            float y = anchor.Position.y * area.height - anchor.Pivot.y * size.y;
+            return new Vector2(Mathf.Clamp(x, 0f, Mathf.Max(0f, area.width - size.x)),
+                               Mathf.Clamp(y, 0f, Mathf.Max(0f, area.height - size.y)));
         }
 
         // ---------------------------------------------------------------- construcción
@@ -315,16 +332,19 @@ namespace RedMagic.UI
             AddMovable(HudElement.Controls, _legend);
 
             // Encima de todo: el editor de posiciones (oculto hasta que se abre desde Opciones).
-            _editor = new HudLayoutEditor(_root, AnchorFor);
-            _editor.Register(HudElement.Health, _health, "hud.element.health");
-            _editor.Register(HudElement.Cooldowns, _slotRow, "hud.element.cooldowns");
-            _editor.Register(HudElement.Currency, _rightColumn, "hud.element.currency");
-            _editor.Register(HudElement.Controls, _legend, "hud.element.controls");
-            _editor.Register(HudElement.EnemyFocus, _enemyBars.Focus, "hud.element.enemy_focus");
-            _editor.Register(HudElement.EnemyList, _enemyBars.List, "hud.element.enemy_list");
+            _editor = new HudLayoutEditor(_root, "hud.layout.title", "hud.layout.hint", HudSettings.ResetAnchors);
+            RegisterPiece(HudElement.Health, "hud.element.health");
+            RegisterPiece(HudElement.Cooldowns, "hud.element.cooldowns");
+            RegisterPiece(HudElement.Currency, "hud.element.currency");
+            RegisterPiece(HudElement.Controls, "hud.element.controls");
+            RegisterPiece(HudElement.EnemyFocus, "hud.element.enemy_focus");
+            RegisterPiece(HudElement.EnemyList, "hud.element.enemy_list");
             _editor.Finished += EndLayoutEdit;
             _root.Add(_editor);
         }
+
+        private void RegisterPiece(HudElement element, string labelKey) =>
+            _editor.Register(_movable[element], labelKey, placed => HudSettings.SetAnchor(element, AnchorFor(element, placed)));
 
         private void AddMovable(HudElement element, VisualElement view)
         {

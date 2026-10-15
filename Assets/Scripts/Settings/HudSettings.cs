@@ -15,6 +15,16 @@ namespace RedMagic.Settings
         EnemyList,
     }
 
+    /// <summary>Botones táctiles de los controles por gestos que el jugador puede recolocar (Opciones ▸ Interfaz).</summary>
+    public enum TouchElement
+    {
+        Jump,
+        Attack,
+        Dash,
+        Parry,
+        Interact,
+    }
+
     /// <summary>Cómo se enseña la vida de los enemigos con los que se pelea (Opciones ▸ Interfaz).</summary>
     public enum EnemyHealthMode
     {
@@ -162,10 +172,47 @@ namespace RedMagic.Settings
         // ---------------------------------------------------------------- posiciones
 
         /// <summary>Posición guardada de <paramref name="element"/>, o false si usa la de fábrica.</summary>
-        public static bool TryGetAnchor(HudElement element, out HudAnchor anchor)
+        public static bool TryGetAnchor(HudElement element, out HudAnchor anchor) => TryGetAnchor(AnchorKey(element), out anchor);
+
+        public static void SetAnchor(HudElement element, HudAnchor anchor) => SetAnchor(AnchorKey(element), anchor);
+
+        /// <summary>Vuelve todas las piezas a su sitio de fábrica.</summary>
+        public static void ResetAnchors()
+        {
+            foreach (HudElement element in Enum.GetValues(typeof(HudElement)))
+                PlayerPrefs.DeleteKey(AnchorKey(element));
+            PlayerPrefs.Save();
+            Changed?.Invoke();
+        }
+
+        /// <summary>Posición guardada de un botón táctil de los gestos, o false si usa la de fábrica (la del USS).</summary>
+        public static bool TryGetTouchAnchor(TouchElement element, out HudAnchor anchor) => TryGetAnchor(TouchKey(element), out anchor);
+
+        public static void SetTouchAnchor(TouchElement element, HudAnchor anchor) => SetAnchor(TouchKey(element), anchor);
+
+        /// <summary>Vuelve todos los botones táctiles a su sitio de fábrica.</summary>
+        public static void ResetTouchAnchors()
+        {
+            foreach (TouchElement element in Enum.GetValues(typeof(TouchElement)))
+                PlayerPrefs.DeleteKey(TouchKey(element));
+            PlayerPrefs.Save();
+            Changed?.Invoke();
+        }
+
+        // Claves literales (no "$touch.{elemento}") para que se puedan buscar.
+        private static string TouchKey(TouchElement element) => element switch
+        {
+            TouchElement.Jump => Prefix + "touch.jump",
+            TouchElement.Attack => Prefix + "touch.attack",
+            TouchElement.Dash => Prefix + "touch.dash",
+            TouchElement.Parry => Prefix + "touch.parry",
+            _ => Prefix + "touch.interact",
+        };
+
+        private static bool TryGetAnchor(string key, out HudAnchor anchor)
         {
             anchor = default;
-            string raw = PlayerPrefs.GetString(AnchorKey(element), "");
+            string raw = PlayerPrefs.GetString(key, "");
             if (string.IsNullOrEmpty(raw)) return false;
 
             var parts = raw.Split(';');
@@ -180,21 +227,12 @@ namespace RedMagic.Settings
             return true;
         }
 
-        public static void SetAnchor(HudElement element, HudAnchor anchor)
+        private static void SetAnchor(string key, HudAnchor anchor)
         {
             string raw = string.Join(";",
                 anchor.Pivot.x.ToString(CultureInfo.InvariantCulture), anchor.Pivot.y.ToString(CultureInfo.InvariantCulture),
                 anchor.Position.x.ToString(CultureInfo.InvariantCulture), anchor.Position.y.ToString(CultureInfo.InvariantCulture));
-            PlayerPrefs.SetString(AnchorKey(element), raw);
-            PlayerPrefs.Save();
-            Changed?.Invoke();
-        }
-
-        /// <summary>Vuelve todas las piezas a su sitio de fábrica.</summary>
-        public static void ResetAnchors()
-        {
-            foreach (HudElement element in Enum.GetValues(typeof(HudElement)))
-                PlayerPrefs.DeleteKey(AnchorKey(element));
+            PlayerPrefs.SetString(key, raw);
             PlayerPrefs.Save();
             Changed?.Invoke();
         }

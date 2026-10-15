@@ -92,6 +92,14 @@ nearest of start/centre/end edge to a grid line (cyan guide), drop saves. Option
 editing; Escape / Done (`GameHud.EndLayoutEdit`) returns to it. While editing every piece is forced
 visible (preview health bar in the main menu).
 
+`HudLayoutEditor` is generic (host + title/hint keys + reset callback; `Register(target, labelKey, commit)`), and
+`GameHud.AnchorFromRect` / `PlaceFromAnchor` are the shared anchor maths. The **touch buttons of the gesture scheme**
+reuse it inside the touch panel: Options ▸ Interfaz ▸ *Colocar botones táctiles* → `TouchControlsController.BeginLayoutEdit`
+(dash, attack, jump, parry, interact = `Settings.TouchElement`, saved by `HudSettings.SetTouchAnchor`, reset by
+*Botones por defecto*). Unset = the USS factory spot (`gesture-*` right/bottom); a placed one gets inline left/top with
+right/bottom `auto`. While editing, the touch layer is forced visible (even paused / not in touch mode) and taps don't
+press buttons. Disabled in the main menu (no `TouchControlsController.Current` there).
+
 **Options** has two tabs, General (audio, display, language) and Interfaz (the `HudSettings` above,
 place / reset positions); `ShowTab` toggles the pages, `.option-pages` min-height keeps the panel from jumping.
 

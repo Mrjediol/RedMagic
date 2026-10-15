@@ -106,6 +106,10 @@
                         <ui:Button name="layoutButton" text="#options.hud.place" class="menu-button option-wide-button"/>
                         <ui:Button name="layoutResetButton" text="#options.hud.reset_layout" class="menu-button option-wide-button"/>
                     </ui:VisualElement>
+                    <ui:VisualElement name="touchLayoutRow" class="option-row option-row--buttons">
+                        <ui:Button name="touchLayoutButton" text="#options.touch_place" class="menu-button option-wide-button"/>
+                        <ui:Button name="touchLayoutResetButton" text="#options.touch_reset_layout" class="menu-button option-wide-button"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:Button name="backButton" text="#common.back" class="menu-button back-button"/>

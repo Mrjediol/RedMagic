@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using RedMagic.Core;
 using RedMagic.Gameplay;
@@ -50,9 +51,24 @@ namespace RedMagic.UI
         // Saltar, atacar, dash, arma y parry se leen de los toques directamente (ver TouchTapButtons).
         private readonly TouchTapButtons _tapButtons = new();
 
-        private VisualElement _movePad, _actionPad, _gestureLayout;
+        private VisualElement _touchControls, _movePad, _actionPad, _gestureLayout;
         private Button _gestureJumpButton, _gestureAttackButton, _gestureDashButton, _gestureParryButton;
         private bool? _gestureMode;
+
+        // Colocar botones (Opciones ▸ Interfaz ▸ Colocar botones táctiles): el mismo editor que el HUD.
+        private HudLayoutEditor _layoutEditor;
+        private Action _onLayoutDone;
+        private readonly List<(TouchElement element, VisualElement view)> _touchPieces = new();
+        private readonly HashSet<VisualElement> _placedPieces = new();
+
+        /// <summary>El controlador táctil activo (no existe en el menú principal), o null.</summary>
+        public static TouchControlsController Current { get; private set; }
+
+        /// <summary>True mientras el jugador está colocando los botones táctiles.</summary>
+        public static bool IsEditingLayout => Current != null && Current._layoutEditor != null && Current._layoutEditor.IsOpen;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => Current = null;
 
         // Cooldown pintado sobre el botón que lanza cada acción (el mismo dial que el HUD de PC).
         private readonly List<(CooldownSlot slot, CooldownDial dial)> _dials = new();
@@ -85,7 +101,10 @@ namespace RedMagic.UI
                           _root.Q<VisualElement>("gestureStick"), _root.Q<VisualElement>("gestureKnob"),
                           _root.Q<VisualElement>("gestureAim"));
             _gestureParryButton = _root.Q<Button>("gestureParryButton");
+            _touchControls = _root.Q<VisualElement>("touchControls");
             if (_interactButton != null) _interactButton.style.display = DisplayStyle.None;
+            BuildLayoutEditor();
+            Current = this;
 
             WireHold(_leftButton, -1f);
             WireHold(_rightButton, 1f);
@@ -143,16 +162,155 @@ namespace RedMagic.UI
             if (_gestureMode == gesture) return;
             _gestureMode = gesture;
 
-            var classic = gesture ? DisplayStyle.None : DisplayStyle.Flex;
-            if (_movePad != null) _movePad.style.display = classic;
-            if (_actionPad != null) _actionPad.style.display = classic;
-            if (_gestureLayout != null) _gestureLayout.style.display = gesture ? DisplayStyle.Flex : DisplayStyle.None;
-            // Con gestos el parry ocupa el sitio de USAR (encima del salto) y USAR se aparta a su izquierda.
-            _interactButton?.EnableInClassList("touch-button--interact-gesture", gesture);
-
+            RefreshVisibility();
             gestures.Reset();
             _tapButtons.Release();
             TouchInput.Clear();
+        }
+
+        /// <summary>
+        /// Qué capa se ve: el esquema (botones o gestos), la pausa y el modo táctil. Colocando botones se fuerza la
+        /// de gestos aunque el juego esté en pausa (Opciones) o no se esté en táctil.
+        /// </summary>
+        private void RefreshVisibility()
+        {
+            bool editing = _layoutEditor != null && _layoutEditor.IsOpen;
+            bool paused = GameStateManager.Instance != null && GameStateManager.Instance.IsPaused;
+            bool gesture = _gestureMode == true || editing;
+
+            SetDisplay(_touchControls, editing || InputDeviceManager.TouchActive);
+            SetDisplay(_inner, editing || !paused);
+            SetDisplay(_movePad, !gesture);
+            SetDisplay(_actionPad, !gesture);
+            SetDisplay(_gestureLayout, gesture);
+
+            // Con gestos USAR vive entre los botones sueltos (se puede recolocar); si no, en su sitio clásico.
+            if (_interactButton != null)
+            {
+                var parent = gesture ? _gestureLayout : _inner;
+                if (parent != null && _interactButton.parent != parent) parent.Add(_interactButton);
+                _interactButton.EnableInClassList("touch-button--interact-gesture", gesture);
+                _layoutEditor?.BringToFront();
+            }
+        }
+
+        private static void SetDisplay(VisualElement element, bool show)
+        {
+            if (element == null) return;
+            var display = show ? DisplayStyle.Flex : DisplayStyle.None;
+            if (element.style.display != display) element.style.display = display;
+        }
+
+        // ------------------------------------------------------------------ colocar botones (gestos)
+
+        private void BuildLayoutEditor()
+        {
+            _touchPieces.Clear();
+            _placedPieces.Clear();
+            _layoutEditor = null;
+            if (_gestureLayout == null) return;
+
+            _touchPieces.Add((TouchElement.Dash, _gestureDashButton));
+            _touchPieces.Add((TouchElement.Attack, _gestureAttackButton));
+            _touchPieces.Add((TouchElement.Jump, _gestureJumpButton));
+            _touchPieces.Add((TouchElement.Parry, _gestureParryButton));
+            _touchPieces.Add((TouchElement.Interact, _interactButton));
+
+            // OnEnable puede repetirse sobre el mismo árbol: un solo editor.
+            _gestureLayout.Q<HudLayoutEditor>()?.RemoveFromHierarchy();
+            _layoutEditor = new HudLayoutEditor(_gestureLayout, "touch.layout.title", "touch.layout.hint", HudSettings.ResetTouchAnchors);
+            foreach (var (element, view) in _touchPieces)
+            {
+                if (view == null) continue;
+                var key = element;
+                _layoutEditor.Register(view, LabelKey(element),
+                                       placed => HudSettings.SetTouchAnchor(key, GameHud.AnchorFromRect(placed, _gestureLayout.layout)));
+            }
+            _layoutEditor.Finished += EndLayoutEdit;
+            _gestureLayout.Add(_layoutEditor);
+        }
+
+        // Claves literales para que la auditoría de idiomas las vea.
+        private static string LabelKey(TouchElement element) => element switch
+        {
+            TouchElement.Jump => "touch.jump",
+            TouchElement.Attack => "touch.attack",
+            TouchElement.Dash => "touch.dash",
+            TouchElement.Parry => "touch.parry",
+            _ => "touch.interact",
+        };
+
+        /// <summary>
+        /// Abre "colocar botones táctiles" (los de los controles por gestos). <paramref name="onDone"/> se llama al
+        /// terminar (Listo o Escape). Devuelve false si los controles táctiles no existen (menú principal).
+        /// </summary>
+        public static bool BeginLayoutEdit(Action onDone)
+        {
+            var self = Current;
+            if (self == null || self._layoutEditor == null) return false;
+            self._onLayoutDone = onDone;
+            self.gestures.Reset();
+            self._tapButtons.Release();
+            self._layoutEditor.Open();
+            self.RefreshVisibility();
+            return true;
+        }
+
+        /// <summary>Cierra "colocar botones táctiles" (lo soltado ya está guardado).</summary>
+        public static void EndLayoutEdit()
+        {
+            if (!IsEditingLayout) return;
+            var self = Current;
+            self._layoutEditor.Close();
+            self.RefreshVisibility();
+            var done = self._onLayoutDone;
+            self._onLayoutDone = null;
+            done?.Invoke();
+        }
+
+        /// <summary>
+        /// Pone cada botón de gestos donde lo dejó el jugador (<see cref="HudSettings.TryGetTouchAnchor"/>); sin
+        /// posición guardada vuelve a la de fábrica del USS (right / bottom).
+        /// </summary>
+        private void ApplyTouchLayout()
+        {
+            var area = _gestureLayout.layout;
+            if (float.IsNaN(area.width) || area.width <= 0f) return;
+
+            foreach (var (element, view) in _touchPieces)
+            {
+                if (view == null) continue;
+                bool dragging = _layoutEditor != null && view == _layoutEditor.Dragging;
+                bool saved = HudSettings.TryGetTouchAnchor(element, out var anchor);
+
+                if (view.parent != _gestureLayout || (!saved && !dragging))
+                {
+                    if (_placedPieces.Remove(view))
+                    {
+                        view.style.left = StyleKeyword.Null;
+                        view.style.top = StyleKeyword.Null;
+                        view.style.right = StyleKeyword.Null;
+                        view.style.bottom = StyleKeyword.Null;
+                    }
+                    continue;
+                }
+
+                // Colocada a mano: manda left/top, el right/bottom de fábrica se anula.
+                if (_placedPieces.Add(view))
+                {
+                    view.style.left = view.layout.x;   // desde donde está, sin saltar a 0,0 antes del primer arrastre
+                    view.style.top = view.layout.y;
+                    view.style.right = StyleKeyword.Auto;
+                    view.style.bottom = StyleKeyword.Auto;
+                }
+                if (dragging) continue;   // la mueve el editor
+
+                var size = view.layout.size;
+                if (float.IsNaN(size.x) || size.x <= 0f) continue;
+                var place = GameHud.PlaceFromAnchor(anchor, area, size);
+                if (Mathf.Abs(view.resolvedStyle.left - place.x) > 0.5f) view.style.left = place.x;
+                if (Mathf.Abs(view.resolvedStyle.top - place.y) > 0.5f) view.style.top = place.y;
+            }
         }
 
         // ------------------------------------------------------------------ cooldowns
@@ -168,14 +326,22 @@ namespace RedMagic.UI
         private void Update()
         {
             float dt = Time.unscaledDeltaTime;
+            bool editing = IsEditingLayout && Current == this;
             if (_gestureMode == true) gestures.Tick();
             _tapButtons.HitPadding = buttonHitPadding;
-            _tapButtons.Tick(_root?.panel);
+            if (editing)
+            {
+                RefreshVisibility();   // TouchOnlyUI la ocultaría al usar el ratón
+                _layoutEditor.Tick();
+            }
+            else _tapButtons.Tick(_root?.panel);   // colocando, tocar un botón no lo pulsa
+            if (_gestureLayout != null && _gestureLayout.resolvedStyle.display == DisplayStyle.Flex) ApplyTouchLayout();
 
             // Interactuar sólo con algo a mano: el cartel de interacción a la vista o un interactuable que lo pide.
+            // Colocando botones se enseña siempre, para poder moverlo.
             if (_interactButton != null)
             {
-                bool wanted = TouchInput.InteractButtonWanted || Hub.InteractionPromptUi.IsVisible;
+                bool wanted = editing || TouchInput.InteractButtonWanted || Hub.InteractionPromptUi.IsVisible;
                 var display = wanted ? DisplayStyle.Flex : DisplayStyle.None;
                 if (_interactButton.style.display != display) _interactButton.style.display = display;
                 if (!wanted) TouchInput.InteractHeld = false;
@@ -204,6 +370,9 @@ namespace RedMagic.UI
         {
             UnwireHold(_leftButton);
             UnwireHold(_rightButton);
+
+            if (IsEditingLayout && Current == this) EndLayoutEdit();
+            if (Current == this) Current = null;
 
             _tapButtons.Disable();
             TouchInput.InteractHeld = false;
@@ -288,8 +457,7 @@ namespace RedMagic.UI
 
         private void OnPausedChanged(bool paused)
         {
-            if (_inner != null)
-                _inner.style.display = paused ? DisplayStyle.None : DisplayStyle.Flex;
+            RefreshVisibility();
 
             if (!paused) return;
             gestures.Reset();

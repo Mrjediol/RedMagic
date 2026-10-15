@@ -21,13 +21,13 @@
                 <ui:VisualElement name="gestureStick" class="gesture-stick" picking-mode="Ignore" />
                 <ui:VisualElement name="gestureKnob" class="gesture-knob" picking-mode="Ignore" />
                 <ui:VisualElement name="gestureAim" class="gesture-aim" picking-mode="Ignore" />
-                <!-- Encima del salto, donde en el esquema clásico sale USAR (que con gestos se aparta a la izquierda). -->
-                <ui:Button name="gestureParryButton" text="#touch.parry" class="touch-button touch-button--parry gesture-parry" />
-                <ui:VisualElement name="gestureActions" class="gesture-actions" picking-mode="Ignore">
-                    <ui:Button name="gestureAttackButton" text="#touch.attack" class="touch-button touch-button--attack" />
-                    <ui:Button name="gestureDashButton" text="#touch.dash" class="touch-button touch-button--dash" />
-                    <ui:Button name="gestureJumpButton" text="#touch.jump" class="touch-button touch-button--jump" />
-                </ui:VisualElement>
+                <!-- Botones sueltos (position absolute): su sitio de fábrica está en el USS (gesture-*); el que el
+                     jugador mueva en Opciones ▸ Interfaz ▸ Colocar botones táctiles se guarda en HudSettings.
+                     USAR se mete aquí con gestos (TouchControlsController.ApplyScheme). -->
+                <ui:Button name="gestureDashButton" text="#touch.dash" class="touch-button touch-button--dash gesture-button gesture-dash" />
+                <ui:Button name="gestureAttackButton" text="#touch.attack" class="touch-button touch-button--attack gesture-button gesture-attack" />
+                <ui:Button name="gestureJumpButton" text="#touch.jump" class="touch-button touch-button--jump gesture-button gesture-jump" />
+                <ui:Button name="gestureParryButton" text="#touch.parry" class="touch-button touch-button--parry gesture-button gesture-parry" />
             </ui:VisualElement>
 
             <ui:VisualElement name="movePad" class="touch-cluster touch-cluster--left" picking-mode="Ignore">

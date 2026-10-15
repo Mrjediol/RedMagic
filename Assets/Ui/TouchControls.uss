@@ -213,24 +213,37 @@
     border-color: rgba(244, 206, 132, 0.7);
 }
 
-/* El parry ocupa el sitio de USAR del esquema clásico (encima del salto)... */
-.gesture-parry {
+/* Sitio de fábrica de cada botón de gestos (abajo a la derecha: dash · ataque · salto, parry encima del salto
+   y USAR encima del ataque). Lo que el jugador recoloque lo pone el código en left/top. */
+.gesture-button {
     position: absolute;
-    right: 74px;
-    bottom: 340px;
+    margin: 0;
 }
 
-/* ...y USAR, cuando aparece, se aparta a su izquierda. */
-.touch-button--interact.touch-button--interact-gesture {
-    right: 300px;
-}
-
-.gesture-actions {
-    position: absolute;
-    right: 48px;
+.gesture-jump {
+    right: 66px;
     bottom: 56px;
-    flex-direction: row;
-    align-items: flex-end;
+}
+
+.gesture-attack {
+    right: 332px;
+    bottom: 56px;
+}
+
+.gesture-dash {
+    right: 568px;
+    bottom: 56px;
+}
+
+.gesture-parry {
+    right: 91px;
+    bottom: 322px;
+}
+
+.touch-button--interact.touch-button--interact-gesture {
+    margin: 0;
+    right: 332px;
+    bottom: 322px;
 }
 
 /* Con 8 botones el margen por defecto deja los clusters muy juntos. */

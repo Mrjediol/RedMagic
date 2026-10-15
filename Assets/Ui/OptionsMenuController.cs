@@ -42,6 +42,7 @@ namespace RedMagic.UI
         private Label _hurtValue, _healValue, _lowHealthValue;
         private Toggle _hurtToggle, _healToggle, _lowHealthToggle;
         private Button _layoutButton, _layoutResetButton;
+        private Button _touchLayoutButton, _touchLayoutResetButton;
         private Button _enemyModePrev, _enemyModeNext;
         private Label _enemyModeValue;
         private Toggle _enemyNumbersToggle, _enemyCooldownsToggle;
@@ -107,6 +108,8 @@ namespace RedMagic.UI
             _lowHealthToggle = _root.Q<Toggle>("lowHealthToggle");
             _layoutButton = _root.Q<Button>("layoutButton");
             _layoutResetButton = _root.Q<Button>("layoutResetButton");
+            _touchLayoutButton = _root.Q<Button>("touchLayoutButton");
+            _touchLayoutResetButton = _root.Q<Button>("touchLayoutResetButton");
             _enemyModePrev = _root.Q<Button>("enemyModePrev");
             _enemyModeNext = _root.Q<Button>("enemyModeNext");
             _enemyModeValue = _root.Q<Label>("enemyModeValue");
@@ -176,6 +179,8 @@ namespace RedMagic.UI
             MenuSkinDresser.DressButton(_backButton, skin, Color.white);
             MenuSkinDresser.DressButton(_layoutButton, skin, Color.white);
             MenuSkinDresser.DressButton(_layoutResetButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_touchLayoutButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_touchLayoutResetButton, skin, Color.white);
         }
 
         private void OnDisable()
@@ -242,7 +247,7 @@ namespace RedMagic.UI
             VisualElement[] page = iface
                 ? new VisualElement[] { _hurtSlider, _hurtToggle, _healSlider, _healToggle, _lowHealthSlider, _lowHealthToggle,
                                         _controlsToggle, _gestureControlsToggle, _enemyModePrev, _enemyNumbersToggle, _enemyCooldownsToggle,
-                                        _layoutButton, _layoutResetButton }
+                                        _layoutButton, _layoutResetButton, _touchLayoutButton, _touchLayoutResetButton }
                 : new VisualElement[] { _masterSlider, _masterMute, _musicSlider, _musicMute, _sfxSlider, _sfxMute,
                                         _resolutionPrev, _fpsLimitPrev, _showFpsToggle, _languagePrev };
             var stops = new System.Collections.Generic.List<VisualElement> { iface ? _interfaceTab : _generalTab };
@@ -293,6 +298,8 @@ namespace RedMagic.UI
                     }
                     else if (focused == _layoutButton || focused == _layoutResetButton)
                         (step > 0 ? _layoutResetButton : _layoutButton)?.Focus();
+                    else if (focused == _touchLayoutButton || focused == _touchLayoutResetButton)
+                        (step > 0 ? _touchLayoutResetButton : _touchLayoutButton)?.Focus();
                     else TryStepSelector(focused, step);
                     break;
                 }
@@ -350,6 +357,8 @@ namespace RedMagic.UI
 
             if (_layoutButton != null) _layoutButton.clicked += OnPlaceHud;
             if (_layoutResetButton != null) _layoutResetButton.clicked += HudSettings.ResetAnchors;
+            if (_touchLayoutButton != null) _touchLayoutButton.clicked += OnPlaceTouch;
+            if (_touchLayoutResetButton != null) _touchLayoutResetButton.clicked += HudSettings.ResetTouchAnchors;
 
             WireArrow(_enemyModePrev, PrevEnemyMode);
             WireArrow(_enemyModeNext, NextEnemyMode);
@@ -375,6 +384,8 @@ namespace RedMagic.UI
 
             if (_layoutButton != null) _layoutButton.clicked -= OnPlaceHud;
             if (_layoutResetButton != null) _layoutResetButton.clicked -= HudSettings.ResetAnchors;
+            if (_touchLayoutButton != null) _touchLayoutButton.clicked -= OnPlaceTouch;
+            if (_touchLayoutResetButton != null) _touchLayoutResetButton.clicked -= HudSettings.ResetTouchAnchors;
 
             UnwireArrow(_enemyModePrev, PrevEnemyMode);
             UnwireArrow(_enemyModeNext, NextEnemyMode);
@@ -424,6 +435,8 @@ namespace RedMagic.UI
             if (_enemyModeValue != null) _enemyModeValue.text = EnemyModeLabel(HudSettings.EnemyHealth);
             _enemyNumbersToggle?.SetEnabled(HudSettings.EnemyHealth != EnemyHealthMode.Off);
             _enemyCooldownsToggle?.SetEnabled(HudSettings.EnemyHealth != EnemyHealthMode.Off);
+            // Los controles táctiles no existen en el menú principal.
+            _touchLayoutButton?.SetEnabled(TouchControlsController.Current != null);
             RefreshEffectRow(_hurtSlider, _hurtValue, HudSettings.HurtEffect, HudSettings.HurtIntensity);
             RefreshEffectRow(_healSlider, _healValue, HudSettings.HealEffect, HudSettings.HealIntensity);
             RefreshEffectRow(_lowHealthSlider, _lowHealthValue, HudSettings.LowHealthEffect, HudSettings.LowHealthIntensity);
@@ -483,6 +496,13 @@ namespace RedMagic.UI
         private void OnPlaceHud()
         {
             if (!GameHud.BeginLayoutEdit(() => SetVisible(true))) return;
+            SetVisible(false);
+        }
+
+        /// <summary>"Colocar botones táctiles": como <see cref="OnPlaceHud"/>, con los botones de los controles por gestos.</summary>
+        private void OnPlaceTouch()
+        {
+            if (!TouchControlsController.BeginLayoutEdit(() => SetVisible(true))) return;
             SetVisible(false);
         }
 
@@ -672,6 +692,11 @@ namespace RedMagic.UI
             if (GameHud.IsEditingLayout)
             {
                 GameHud.EndLayoutEdit();
+                return;
+            }
+            if (TouchControlsController.IsEditingLayout)
+            {
+                TouchControlsController.EndLayoutEdit();
                 return;
             }
 

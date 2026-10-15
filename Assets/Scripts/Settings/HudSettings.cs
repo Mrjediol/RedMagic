@@ -71,6 +71,16 @@ namespace RedMagic.Settings
             set => SetBool("showControls", value);
         }
 
+        /// <summary>
+        /// Controles táctiles por gestos (arrastrar para andar, tocar para disparar) en vez de los
+        /// botones clásicos. Sólo afecta al modo táctil. Por defecto no.
+        /// </summary>
+        public static bool GestureControls
+        {
+            get => GetBool("gestureControls", false);
+            set => SetBool("gestureControls", value);
+        }
+
         /// <summary>Bordes de la pantalla en rojo al recibir un golpe.</summary>
         public static bool HurtEffect
         {

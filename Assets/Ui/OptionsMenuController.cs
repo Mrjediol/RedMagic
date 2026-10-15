@@ -33,6 +33,7 @@ namespace RedMagic.UI
         private Label _resolutionValue, _languageValue, _fpsLimitValue;
         private Toggle _showFpsToggle;
         private Toggle _controlsToggle;
+        private Toggle _gestureControlsToggle;
 
         // Pestaña Interfaz
         private Button _generalTab, _interfaceTab;
@@ -89,6 +90,7 @@ namespace RedMagic.UI
             _fpsLimitValue = _root.Q<Label>("fpsLimitValue");
             _showFpsToggle = _root.Q<Toggle>("showFpsToggle");
             _controlsToggle = _root.Q<Toggle>("controlsToggle");
+            _gestureControlsToggle = _root.Q<Toggle>("gestureControlsToggle");
 
             _generalTab = _root.Q<Button>("generalTab");
             _interfaceTab = _root.Q<Button>("interfaceTab");
@@ -164,7 +166,7 @@ namespace RedMagic.UI
             MenuSkinDresser.DressToggle(_sfxMute, skin);
             MenuSkinDresser.DressToggle(_showFpsToggle, skin);
             MenuSkinDresser.DressToggle(_controlsToggle, skin);
-            MenuSkinDresser.DressToggle(_showFpsToggle, skin);
+            MenuSkinDresser.DressToggle(_gestureControlsToggle, skin);
             MenuSkinDresser.DressToggle(_hurtToggle, skin);
             MenuSkinDresser.DressToggle(_healToggle, skin);
             MenuSkinDresser.DressToggle(_lowHealthToggle, skin);
@@ -239,7 +241,7 @@ namespace RedMagic.UI
             bool iface = _interfacePage != null && _interfacePage.resolvedStyle.display == DisplayStyle.Flex;
             VisualElement[] page = iface
                 ? new VisualElement[] { _hurtSlider, _hurtToggle, _healSlider, _healToggle, _lowHealthSlider, _lowHealthToggle,
-                                        _controlsToggle, _enemyModePrev, _enemyNumbersToggle, _enemyCooldownsToggle,
+                                        _controlsToggle, _gestureControlsToggle, _enemyModePrev, _enemyNumbersToggle, _enemyCooldownsToggle,
                                         _layoutButton, _layoutResetButton }
                 : new VisualElement[] { _masterSlider, _masterMute, _musicSlider, _musicMute, _sfxSlider, _sfxMute,
                                         _resolutionPrev, _fpsLimitPrev, _showFpsToggle, _languagePrev };
@@ -344,6 +346,7 @@ namespace RedMagic.UI
             _lowHealthSlider?.RegisterValueChangedCallback(OnLowHealthSlider);
             _lowHealthToggle?.RegisterValueChangedCallback(OnLowHealthToggle);
             _controlsToggle?.RegisterValueChangedCallback(OnControlsToggled);
+            _gestureControlsToggle?.RegisterValueChangedCallback(OnGestureControlsToggled);
 
             if (_layoutButton != null) _layoutButton.clicked += OnPlaceHud;
             if (_layoutResetButton != null) _layoutResetButton.clicked += HudSettings.ResetAnchors;
@@ -368,6 +371,7 @@ namespace RedMagic.UI
             _lowHealthSlider?.UnregisterValueChangedCallback(OnLowHealthSlider);
             _lowHealthToggle?.UnregisterValueChangedCallback(OnLowHealthToggle);
             _controlsToggle?.UnregisterValueChangedCallback(OnControlsToggled);
+            _gestureControlsToggle?.UnregisterValueChangedCallback(OnGestureControlsToggled);
 
             if (_layoutButton != null) _layoutButton.clicked -= OnPlaceHud;
             if (_layoutResetButton != null) _layoutResetButton.clicked -= HudSettings.ResetAnchors;
@@ -414,6 +418,7 @@ namespace RedMagic.UI
             _lowHealthSlider?.SetValueWithoutNotify(HudSettings.LowHealthIntensity);
             _lowHealthToggle?.SetValueWithoutNotify(HudSettings.LowHealthEffect);
             _controlsToggle?.SetValueWithoutNotify(HudSettings.ShowControls);
+            _gestureControlsToggle?.SetValueWithoutNotify(HudSettings.GestureControls);
             _enemyNumbersToggle?.SetValueWithoutNotify(HudSettings.EnemyHealthNumbers);
             _enemyCooldownsToggle?.SetValueWithoutNotify(HudSettings.EnemyCooldownsDebug);
             if (_enemyModeValue != null) _enemyModeValue.text = EnemyModeLabel(HudSettings.EnemyHealth);
@@ -468,6 +473,8 @@ namespace RedMagic.UI
         }
 
         private static void OnControlsToggled(ChangeEvent<bool> evt) => HudSettings.ShowControls = evt.newValue;
+
+        private static void OnGestureControlsToggled(ChangeEvent<bool> evt) => HudSettings.GestureControls = evt.newValue;
 
         /// <summary>
         /// "Colocar elementos": Opciones se aparta (sigue abierto y el juego en pausa) y el HUD

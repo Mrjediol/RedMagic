@@ -82,6 +82,10 @@
                         <ui:Label text="#options.controls_legend" class="option-label option-label--wide"/>
                         <ui:Toggle name="controlsToggle" label="#options.show" class="option-mute"/>
                     </ui:VisualElement>
+                    <ui:VisualElement name="gestureControlsRow" class="option-row">
+                        <ui:Label text="#options.touch_gestures" class="option-label option-label--wide"/>
+                        <ui:Toggle name="gestureControlsToggle" label="#options.enabled" class="option-mute"/>
+                    </ui:VisualElement>
                     <ui:VisualElement name="enemyModeRow" class="option-row">
                         <ui:Label text="#options.hud.enemy_health" class="option-label option-label--hud"/>
                         <ui:VisualElement class="option-selector">

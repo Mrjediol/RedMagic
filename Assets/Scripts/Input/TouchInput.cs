@@ -77,6 +77,19 @@ namespace RedMagic.Core
             return true;
         }
 
+        /// <summary>
+        /// True mientras un dedo mantiene el arma (controles por gestos: tocar fuera de la zona de
+        /// movimiento). Con arma de carga, mantener carga y soltar dispara; sin carga, dispara en ráfaga.
+        /// </summary>
+        public static bool WeaponHeld { get; set; }
+
+        /// <summary>
+        /// Último punto de pantalla (píxeles, origen abajo a la izquierda) donde apuntó un dedo, o null.
+        /// <c>ProjectileAim.MouseWorld</c> lo usa en vez del ratón en modo táctil: el disparo con
+        /// "apuntar al ratón" sale hacia donde se tocó.
+        /// </summary>
+        public static Vector2? AimScreen { get; set; }
+
         /// <summary>True mientras se mantiene pulsado el botón táctil de interactuar (reciclar un item del suelo).</summary>
         public static bool InteractHeld { get; set; }
 
@@ -110,6 +123,8 @@ namespace RedMagic.Core
             _interactQueued = false;
             _parryQueued = false;
             InteractHeld = false;
+            WeaponHeld = false;
+            AimScreen = null;
         }
 
         // Con "Reload Domain" desactivado los estáticos sobreviven entre sesiones de Play.

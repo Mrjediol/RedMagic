@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using RedMagic.Core;
 using RedMagic.Gameplay;
 using RedMagic.Localization;
+using RedMagic.Settings;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -18,6 +19,9 @@ namespace RedMagic.UI
     ///  - Pinta el cooldown de cada acción (<see cref="CooldownDial"/>) sobre su botón: en táctil
     ///    el HUD no enseña casillas, el pulgar ya está aquí. Un botón nuevo con cooldown (parry) =
     ///    una línea <c>AttachDial</c>.
+    ///  - Dos esquemas, según <see cref="HudSettings.GestureControls"/> (Opciones ▸ Interfaz): los botones
+    ///    clásicos (<c>movePad</c> + <c>actionPad</c>) o los gestos (<c>gestureLayout</c>, lógica en
+    ///    <see cref="TouchGestureInput"/>, parámetros en el Inspector ▸ Gestures).
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class TouchControlsController : MonoBehaviour
@@ -34,6 +38,13 @@ namespace RedMagic.UI
         private Button _weaponButton;
         private Button _parryButton;
         private Button _interactButton;
+
+        [Tooltip("Controles por gestos: zona de movimiento, joystick y dash por doble toque. Se ajusta en vivo en Play.")]
+        [SerializeField] private TouchGestureInput gestures = new TouchGestureInput();
+
+        private VisualElement _movePad, _actionPad, _gestureLayout;
+        private Button _gestureJumpButton, _gestureAttackButton, _gestureDashButton;
+        private bool? _gestureMode;
 
         // Cooldown pintado sobre el botón que lanza cada acción (el mismo dial que el HUD de PC).
         private readonly List<(CooldownSlot slot, CooldownDial dial)> _dials = new();
@@ -56,6 +67,15 @@ namespace RedMagic.UI
             _weaponButton = _root.Q<Button>("weaponButton");
             _parryButton = _root.Q<Button>("parryButton");
             _interactButton = _root.Q<Button>("interactButton");
+            _movePad = _root.Q<VisualElement>("movePad");
+            _actionPad = _root.Q<VisualElement>("actionPad");
+            _gestureLayout = _root.Q<VisualElement>("gestureLayout");
+            _gestureJumpButton = _root.Q<Button>("gestureJumpButton");
+            _gestureAttackButton = _root.Q<Button>("gestureAttackButton");
+            _gestureDashButton = _root.Q<Button>("gestureDashButton");
+            gestures.Bind(_root.Q<VisualElement>("gestureSurface"), _root.Q<VisualElement>("gestureZone"),
+                          _root.Q<VisualElement>("gestureStick"), _root.Q<VisualElement>("gestureKnob"),
+                          _root.Q<VisualElement>("gestureAim"));
             if (_interactButton != null)
             {
                 _interactButton.style.display = DisplayStyle.None;
@@ -68,14 +88,12 @@ namespace RedMagic.UI
             WireHold(_leftButton, -1f);
             WireHold(_rightButton, 1f);
 
-            if (_jumpButton != null)
-                _jumpButton.RegisterCallback<PointerDownEvent>(OnJumpDown);
-
-            if (_attackButton != null)
-                _attackButton.RegisterCallback<PointerDownEvent>(OnAttackDown);
-
-            if (_dashButton != null)
-                _dashButton.RegisterCallback<PointerDownEvent>(OnDashDown);
+            _jumpButton?.RegisterCallback<PointerDownEvent>(OnJumpDown);
+            _gestureJumpButton?.RegisterCallback<PointerDownEvent>(OnJumpDown);
+            _attackButton?.RegisterCallback<PointerDownEvent>(OnAttackDown);
+            _gestureAttackButton?.RegisterCallback<PointerDownEvent>(OnAttackDown);
+            _dashButton?.RegisterCallback<PointerDownEvent>(OnDashDown);
+            _gestureDashButton?.RegisterCallback<PointerDownEvent>(OnDashDown);
 
             if (_weaponButton != null)
                 _weaponButton.RegisterCallback<PointerDownEvent>(OnWeaponDown);
@@ -102,7 +120,31 @@ namespace RedMagic.UI
             AttachDial(_dashButton, CooldownSlot.Dash);
             AttachDial(_parryButton, CooldownSlot.Parry);
             AttachDial(_weaponButton, CooldownSlot.Weapon);
+            AttachDial(_gestureAttackButton, CooldownSlot.Attack);
+            AttachDial(_gestureDashButton, CooldownSlot.Dash);
 
+            HudSettings.Changed -= ApplyScheme;
+            HudSettings.Changed += ApplyScheme;
+            _gestureMode = null;
+            ApplyScheme();
+
+            TouchInput.Clear();
+        }
+
+        // ------------------------------------------------------------------ esquema (botones / gestos)
+
+        private void ApplyScheme()
+        {
+            bool gesture = HudSettings.GestureControls;
+            if (_gestureMode == gesture) return;
+            _gestureMode = gesture;
+
+            var classic = gesture ? DisplayStyle.None : DisplayStyle.Flex;
+            if (_movePad != null) _movePad.style.display = classic;
+            if (_actionPad != null) _actionPad.style.display = classic;
+            if (_gestureLayout != null) _gestureLayout.style.display = gesture ? DisplayStyle.Flex : DisplayStyle.None;
+
+            gestures.Reset();
             TouchInput.Clear();
         }
 
@@ -119,6 +161,7 @@ namespace RedMagic.UI
         private void Update()
         {
             float dt = Time.unscaledDeltaTime;
+            if (_gestureMode == true) gestures.Tick();
 
             // Interactuar sólo con algo a mano: el cartel de interacción a la vista o un interactuable que lo pide.
             if (_interactButton != null)
@@ -162,14 +205,15 @@ namespace RedMagic.UI
                 TouchInput.InteractHeld = false;
             }
 
-            if (_jumpButton != null)
-                _jumpButton.UnregisterCallback<PointerDownEvent>(OnJumpDown);
+            _jumpButton?.UnregisterCallback<PointerDownEvent>(OnJumpDown);
+            _gestureJumpButton?.UnregisterCallback<PointerDownEvent>(OnJumpDown);
+            _attackButton?.UnregisterCallback<PointerDownEvent>(OnAttackDown);
+            _gestureAttackButton?.UnregisterCallback<PointerDownEvent>(OnAttackDown);
+            _dashButton?.UnregisterCallback<PointerDownEvent>(OnDashDown);
+            _gestureDashButton?.UnregisterCallback<PointerDownEvent>(OnDashDown);
 
-            if (_attackButton != null)
-                _attackButton.UnregisterCallback<PointerDownEvent>(OnAttackDown);
-
-            if (_dashButton != null)
-                _dashButton.UnregisterCallback<PointerDownEvent>(OnDashDown);
+            gestures.Unbind();
+            HudSettings.Changed -= ApplyScheme;
 
             if (_weaponButton != null)
                 _weaponButton.UnregisterCallback<PointerDownEvent>(OnWeaponDown);
@@ -273,7 +317,9 @@ namespace RedMagic.UI
             if (_inner != null)
                 _inner.style.display = paused ? DisplayStyle.None : DisplayStyle.Flex;
 
-            if (paused) TouchInput.Clear();
+            if (!paused) return;
+            gestures.Reset();
+            TouchInput.Clear();
         }
     }
 }

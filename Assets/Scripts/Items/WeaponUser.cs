@@ -75,7 +75,8 @@ namespace RedMagic.Items
         [SerializeField] private string actionMapName = "Player";
         [Tooltip("Acción del arma (Q / triángulo). La espada sigue en Attack: tener arma no quita el cuerpo a cuerpo.")]
         [SerializeField] private string weaponActionName = "Weapon";
-        [Tooltip("Usa también el botón táctil del arma (sólo armas sin carga).")]
+        [Tooltip("Usa también la entrada táctil: el botón del arma (sólo armas sin carga) y, con los controles por " +
+                 "gestos, mantener un dedo fuera de la zona de movimiento (carga y suelta).")]
         [SerializeField] private bool useTouchButton = true;
 
         private PlayerMovement _movement;
@@ -226,7 +227,7 @@ namespace RedMagic.Items
 
         private void UpdateInstant(WeaponDefinition weapon)
         {
-            bool held = _attackAction != null && _attackAction.IsPressed();
+            bool held = (_attackAction != null && _attackAction.IsPressed()) || (useTouchButton && TouchInput.WeaponHeld);
             bool touch = useTouchButton && TouchInput.ConsumeWeapon();
 
             if ((held || touch) && _cooldownTimer <= 0f)
@@ -237,7 +238,10 @@ namespace RedMagic.Items
 
         private void UpdateCharge(WeaponDefinition weapon)
         {
-            bool held = _attackAction != null && _attackAction.IsPressed();
+            // El toque rápido (pulsar y soltar en el mismo frame) no carga nada: se descarta para que no
+            // dispare luego si se cambia a un arma sin carga.
+            if (useTouchButton) TouchInput.ConsumeWeapon();
+            bool held = (_attackAction != null && _attackAction.IsPressed()) || (useTouchButton && TouchInput.WeaponHeld);
 
             if (held)
             {

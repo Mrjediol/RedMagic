@@ -28,6 +28,16 @@ Each mode shows its own on-screen help and nothing else:
   E to interact or I for items), update `ControlsLegendHud.Rows` too.
 - **Gamepad** → neither, since the prompts would be wrong buttons.
 
+**Gesture touch scheme (2026-10-15, experimental)**: Options ▸ Interfaz ▸ *Controles táctiles por gestos*
+(`HudSettings.GestureControls`) swaps `movePad`/`actionPad` for `gestureLayout` in `TouchControls.uxml`. Logic lives in
+`Assets/Test/TouchGestures/TouchGestureInput.cs`, a serialized field (`gestures`) on `TouchControlsController` with all tuning
+in the Inspector. A full-screen `gestureSurface` sits UNDER the gesture buttons (attack, dash, jump): a finger in the
+bottom-left move zone is a floating stick (`TouchInput.Horizontal` = ±1 past the deadzone, drag down = `Down`); lift-and-
+retap near the same spot within `retapWindow` queues a dash and resumes walking the same way. Any other finger sets
+`TouchInput.WeaponHeld` (charge weapons charge/release like holding Q) and `TouchInput.AimScreen`, which
+`ProjectileAim.MouseWorld` uses instead of the mouse in Touch mode. Test in the Editor with Game view ▸ Simulator (mouse =
+one finger); multi-finger needs a device.
+
 **Melee vs weapon are separate buttons** (2026-10-13): `Player/Attack` (left click, X, gamepad `buttonWest` = square)
 is always the melee combo (`PlayerAttack`); `Player/Weapon` (Q, gamepad **R1** `rightShoulder`; it replaced the
 unused `Fireball` action) fires the equipped weapon (`WeaponUser`). Equipping a weapon no longer silences the melee.

@@ -82,14 +82,24 @@ namespace RedMagic.Gameplay
             _ => 0f,
         };
 
-        /// <summary>Posición del cursor en el mundo, o null sin ratón / sin cámara.</summary>
+        /// <summary>
+        /// Posición del cursor en el mundo, o null sin ratón / sin cámara. En modo táctil es el último
+        /// punto tocado para disparar (<see cref="RedMagic.Core.TouchInput.AimScreen"/>).
+        /// </summary>
         public static Vector2? MouseWorld()
         {
-            var mouse = Mouse.current;
             var camera = Camera.main;
-            if (mouse == null || camera == null) return null;
+            if (camera == null) return null;
 
-            Vector3 screen = mouse.position.ReadValue();
+            Vector3 screen;
+            var touchAim = RedMagic.Core.TouchInput.AimScreen;
+            if (touchAim.HasValue && RedMagic.Core.InputDeviceManager.TouchActive) screen = touchAim.Value;
+            else
+            {
+                var mouse = Mouse.current;
+                if (mouse == null) return null;
+                screen = mouse.position.ReadValue();
+            }
             // El Input System puede dar NaN (ventana sin foco, cambio de tamaño): convertirlo saca
             // "Screen position out of view frustum" en la consola.
             if (float.IsNaN(screen.x) || float.IsNaN(screen.y) || float.IsInfinity(screen.x) || float.IsInfinity(screen.y)) return null;

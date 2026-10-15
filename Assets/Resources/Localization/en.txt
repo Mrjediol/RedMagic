@@ -30,6 +30,7 @@ options.resolution = Display
 options.resolution_value = {0} · {1}
 options.language = Language
 options.controls_legend = On-screen controls guide
+options.touch_gestures = Gesture touch controls
 options.show = Show
 options.enabled = On
 options.disabled = Off

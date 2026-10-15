@@ -13,6 +13,21 @@
         <!-- TouchControlsController oculta esta capa mientras el juego está en pausa. -->
         <ui:VisualElement name="touchControlsInner" class="touch-controls-inner" picking-mode="Ignore">
 
+            <!-- Controles por gestos (Opciones ▸ Interfaz): sustituye a movePad y actionPad. La superficie va
+                 primero para quedar DEBAJO de los botones: lo que no pisa un botón es un gesto (TouchGestureInput). -->
+            <ui:VisualElement name="gestureLayout" class="gesture-layout" picking-mode="Ignore">
+                <ui:VisualElement name="gestureSurface" class="gesture-surface" />
+                <ui:VisualElement name="gestureZone" class="gesture-zone" picking-mode="Ignore" />
+                <ui:VisualElement name="gestureStick" class="gesture-stick" picking-mode="Ignore" />
+                <ui:VisualElement name="gestureKnob" class="gesture-knob" picking-mode="Ignore" />
+                <ui:VisualElement name="gestureAim" class="gesture-aim" picking-mode="Ignore" />
+                <ui:VisualElement name="gestureActions" class="gesture-actions" picking-mode="Ignore">
+                    <ui:Button name="gestureAttackButton" text="#touch.attack" class="touch-button touch-button--attack" />
+                    <ui:Button name="gestureDashButton" text="#touch.dash" class="touch-button touch-button--dash" />
+                    <ui:Button name="gestureJumpButton" text="#touch.jump" class="touch-button touch-button--jump" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
             <ui:VisualElement name="movePad" class="touch-cluster touch-cluster--left" picking-mode="Ignore">
                 <ui:Button name="leftButton" text="&lt;" class="touch-button" />
                 <ui:Button name="rightButton" text="&gt;" class="touch-button" />

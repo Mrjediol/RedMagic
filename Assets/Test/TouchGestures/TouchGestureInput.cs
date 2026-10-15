@@ -22,10 +22,10 @@ namespace RedMagic.UI
     {
         [Header("Zona de movimiento")]
         [Tooltip("Ancho de la zona de movimiento, en fracción de la pantalla desde la izquierda.")]
-        [Range(0.1f, 1f)] public float moveZoneWidth = 0.42f;
+        [Range(0.1f, 1f)] public float moveZoneWidth = 0.336f;
 
         [Tooltip("Alto de la zona de movimiento, en fracción de la pantalla desde abajo.")]
-        [Range(0.1f, 1f)] public float moveZoneHeight = 0.75f;
+        [Range(0.1f, 1f)] public float moveZoneHeight = 0.375f;
 
         [Tooltip("Pintar la zona de movimiento (para probar). Apagado = invisible.")]
         public bool showMoveZone = true;

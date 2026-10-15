@@ -24,14 +24,14 @@ namespace RedMagic.UI
         /// <summary>Margen extra (px del panel) alrededor de cada botón para que un toque al borde cuente.</summary>
         public float HitPadding = 24f;
 
-        private readonly List<(VisualElement button, Action press)> _buttons = new();
-        private readonly Dictionary<int, VisualElement> _held = new();
+        private readonly List<Entry> _buttons = new();
+        private readonly Dictionary<int, Entry> _held = new();
         private readonly HashSet<int> _alive = new();
         private bool _enabled;
 
-        public void Add(VisualElement button, Action press)
+        public void Add(VisualElement button, Action press, Action release = null)
         {
-            if (button != null && press != null) _buttons.Add((button, press));
+            if (button != null && press != null) _buttons.Add(new Entry(button, press, release));
         }
 
         public void Enable()
@@ -53,7 +53,11 @@ namespace RedMagic.UI
         /// <summary>Suelta todos los dedos (pausa, cambio de esquema).</summary>
         public void Release()
         {
-            foreach (var button in _held.Values) button?.RemoveFromClassList(PressedClass);
+            foreach (var entry in _held.Values)
+            {
+                entry.Button.RemoveFromClassList(PressedClass);
+                entry.Release?.Invoke();
+            }
             _held.Clear();
         }
 
@@ -70,11 +74,11 @@ namespace RedMagic.UI
                 if (phase == ETouchPhase.Began && !_held.ContainsKey(id))
                 {
                     var hit = Hit(panel, touch.screenPosition);
-                    if (hit.button != null)
+                    if (hit != null)
                     {
-                        hit.press();
-                        _held[id] = hit.button;
-                        hit.button.AddToClassList(PressedClass);
+                        hit.Press();
+                        _held[id] = hit;
+                        hit.Button.AddToClassList(PressedClass);
                     }
                 }
 
@@ -91,24 +95,26 @@ namespace RedMagic.UI
             }
         }
 
+        // Soltar el dedo: avisa (salto corto) y apaga el aspecto pulsado si ningún otro dedo mantiene el botón.
         private void Drop(int id)
         {
-            if (!_held.TryGetValue(id, out var button)) return;
+            if (!_held.TryGetValue(id, out var entry)) return;
             _held.Remove(id);
-            if (!_held.ContainsValue(button)) button.RemoveFromClassList(PressedClass);
+            entry.Release?.Invoke();
+            if (!_held.ContainsValue(entry)) entry.Button.RemoveFromClassList(PressedClass);
         }
 
-        private (VisualElement button, Action press) Hit(IPanel panel, Vector2 screen)
+        private Entry Hit(IPanel panel, Vector2 screen)
         {
             // ScreenToPanel espera el origen arriba a la izquierda.
             Vector2 p = RuntimePanelUtils.ScreenToPanel(panel, new Vector2(screen.x, Screen.height - screen.y));
 
-            (VisualElement, Action) best = default;
+            Entry best = null;
             float bestDistance = float.MaxValue;
             foreach (var entry in _buttons)
             {
-                if (!IsShown(entry.button)) continue;
-                Rect r = entry.button.worldBound;
+                if (!IsShown(entry.Button)) continue;
+                Rect r = entry.Button.worldBound;
                 if (float.IsNaN(r.width) || r.width <= 0f) continue;
 
                 var padded = new Rect(r.x - HitPadding, r.y - HitPadding, r.width + HitPadding * 2f, r.height + HitPadding * 2f);
@@ -121,6 +127,20 @@ namespace RedMagic.UI
                 best = entry;
             }
             return best;
+        }
+
+        private sealed class Entry
+        {
+            public readonly VisualElement Button;
+            public readonly Action Press;
+            public readonly Action Release;
+
+            public Entry(VisualElement button, Action press, Action release)
+            {
+                Button = button;
+                Press = press;
+                Release = release;
+            }
         }
 
         private static bool IsShown(VisualElement element)

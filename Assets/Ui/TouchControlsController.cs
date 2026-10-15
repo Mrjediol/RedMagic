@@ -97,8 +97,8 @@ namespace RedMagic.UI
             WireHold(_rightButton, 1f);
 
             _tapButtons.Disable();
-            _tapButtons.Add(_jumpButton, TouchInput.QueueJump);
-            _tapButtons.Add(_gestureJumpButton, TouchInput.QueueJump);
+            _tapButtons.Add(_jumpButton, TouchInput.QueueJump, TouchInput.QueueJumpRelease);
+            _tapButtons.Add(_gestureJumpButton, TouchInput.QueueJump, TouchInput.QueueJumpRelease);
             _tapButtons.Add(_attackButton, TouchInput.QueueAttack);
             _tapButtons.Add(_gestureAttackButton, TouchInput.QueueAttack);
             _tapButtons.Add(_dashButton, TouchInput.QueueDash);

@@ -44,6 +44,19 @@ namespace RedMagic.Core
             return true;
         }
 
+        private static bool _jumpReleaseQueued;
+
+        /// <summary>La UI táctil lo llama al soltar el botón de salto (salto corto, como soltar en teclado o mando).</summary>
+        public static void QueueJumpRelease() => _jumpReleaseQueued = true;
+
+        /// <summary>Devuelve true una sola vez por cada vez que se suelta el botón de salto.</summary>
+        public static bool ConsumeJumpRelease()
+        {
+            if (!_jumpReleaseQueued) return false;
+            _jumpReleaseQueued = false;
+            return true;
+        }
+
         /// <summary>La UI táctil lo llama al pulsar el botón de ataque.</summary>
         public static void QueueAttack() => _attackQueued = true;
 
@@ -117,6 +130,7 @@ namespace RedMagic.Core
             Horizontal = 0f;
             Down = false;
             _jumpQueued = false;
+            _jumpReleaseQueued = false;
             _attackQueued = false;
             _dashQueued = false;
             _weaponQueued = false;

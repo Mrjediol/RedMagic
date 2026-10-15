@@ -486,6 +486,7 @@ namespace RedMagic.Gameplay
             if (!_controlEnabled || !GameStateManager.CanPlayerAct || Time.timeScale == 0f)
             {
                 TouchInput.ConsumeJump();
+                TouchInput.ConsumeJumpRelease();
                 TouchInput.ConsumeDash();
                 _input = default;
                 _lastJumpPressed = float.MinValue;
@@ -504,6 +505,7 @@ namespace RedMagic.Gameplay
             if (IsKnockedBack)
             {
                 TouchInput.ConsumeJump();
+                TouchInput.ConsumeJumpRelease();
                 TouchInput.ConsumeDash();
                 _input = default;
                 _dashBufferUntil = float.MinValue;   // un golpe anula lo que se había pulsado
@@ -595,7 +597,7 @@ namespace RedMagic.Gameplay
             float x = Mathf.Abs(touch) > Mathf.Abs(stick.x) ? touch : stick.x;
 
             bool jumpDown = (_jumpAction != null && _jumpAction.WasPressedThisFrame()) || TouchInput.ConsumeJump();
-            bool jumpUp = _jumpAction != null && _jumpAction.WasReleasedThisFrame();
+            bool jumpUp = (_jumpAction != null && _jumpAction.WasReleasedThisFrame()) || TouchInput.ConsumeJumpRelease();
             bool dashDown = (_dashAction != null && _dashAction.WasPressedThisFrame()) || TouchInput.ConsumeDash();
 
             _input = new FrameInput

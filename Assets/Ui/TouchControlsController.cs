@@ -24,6 +24,7 @@ namespace RedMagic.UI
     ///    <see cref="TouchGestureInput"/>, parámetros en el Inspector ▸ Gestures).
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
+    [DefaultExecutionOrder(-50)]   // los toques se encolan antes de que el jugador los lea: sin un frame de retraso
     public class TouchControlsController : MonoBehaviour
     {
         private UIDocument _document;
@@ -41,6 +42,13 @@ namespace RedMagic.UI
 
         [Tooltip("Controles por gestos: zona de movimiento, joystick y dash por doble toque. Se ajusta en vivo en Play.")]
         [SerializeField] private TouchGestureInput gestures = new TouchGestureInput();
+
+        [Tooltip("Margen extra (px del panel) alrededor de saltar / atacar / dash / arma / parry para que un toque " +
+                 "al borde también cuente.")]
+        [Min(0f)] [SerializeField] private float buttonHitPadding = 24f;
+
+        // Saltar, atacar, dash, arma y parry se leen de los toques directamente (ver TouchTapButtons).
+        private readonly TouchTapButtons _tapButtons = new();
 
         private VisualElement _movePad, _actionPad, _gestureLayout;
         private Button _gestureJumpButton, _gestureAttackButton, _gestureDashButton;
@@ -88,18 +96,16 @@ namespace RedMagic.UI
             WireHold(_leftButton, -1f);
             WireHold(_rightButton, 1f);
 
-            _jumpButton?.RegisterCallback<PointerDownEvent>(OnJumpDown);
-            _gestureJumpButton?.RegisterCallback<PointerDownEvent>(OnJumpDown);
-            _attackButton?.RegisterCallback<PointerDownEvent>(OnAttackDown);
-            _gestureAttackButton?.RegisterCallback<PointerDownEvent>(OnAttackDown);
-            _dashButton?.RegisterCallback<PointerDownEvent>(OnDashDown);
-            _gestureDashButton?.RegisterCallback<PointerDownEvent>(OnDashDown);
-
-            if (_weaponButton != null)
-                _weaponButton.RegisterCallback<PointerDownEvent>(OnWeaponDown);
-
-            if (_parryButton != null)
-                _parryButton.RegisterCallback<PointerDownEvent>(OnParryDown);
+            _tapButtons.Disable();
+            _tapButtons.Add(_jumpButton, TouchInput.QueueJump);
+            _tapButtons.Add(_gestureJumpButton, TouchInput.QueueJump);
+            _tapButtons.Add(_attackButton, TouchInput.QueueAttack);
+            _tapButtons.Add(_gestureAttackButton, TouchInput.QueueAttack);
+            _tapButtons.Add(_dashButton, TouchInput.QueueDash);
+            _tapButtons.Add(_gestureDashButton, TouchInput.QueueDash);
+            _tapButtons.Add(_weaponButton, TouchInput.QueueWeapon);
+            _tapButtons.Add(_parryButton, TouchInput.QueueParry);
+            _tapButtons.Enable();
 
             if (_downButton != null)
             {
@@ -145,6 +151,7 @@ namespace RedMagic.UI
             if (_gestureLayout != null) _gestureLayout.style.display = gesture ? DisplayStyle.Flex : DisplayStyle.None;
 
             gestures.Reset();
+            _tapButtons.Release();
             TouchInput.Clear();
         }
 
@@ -162,6 +169,8 @@ namespace RedMagic.UI
         {
             float dt = Time.unscaledDeltaTime;
             if (_gestureMode == true) gestures.Tick();
+            _tapButtons.HitPadding = buttonHitPadding;
+            _tapButtons.Tick(_root?.panel);
 
             // Interactuar sólo con algo a mano: el cartel de interacción a la vista o un interactuable que lo pide.
             if (_interactButton != null)
@@ -205,21 +214,9 @@ namespace RedMagic.UI
                 TouchInput.InteractHeld = false;
             }
 
-            _jumpButton?.UnregisterCallback<PointerDownEvent>(OnJumpDown);
-            _gestureJumpButton?.UnregisterCallback<PointerDownEvent>(OnJumpDown);
-            _attackButton?.UnregisterCallback<PointerDownEvent>(OnAttackDown);
-            _gestureAttackButton?.UnregisterCallback<PointerDownEvent>(OnAttackDown);
-            _dashButton?.UnregisterCallback<PointerDownEvent>(OnDashDown);
-            _gestureDashButton?.UnregisterCallback<PointerDownEvent>(OnDashDown);
-
+            _tapButtons.Disable();
             gestures.Unbind();
             HudSettings.Changed -= ApplyScheme;
-
-            if (_weaponButton != null)
-                _weaponButton.UnregisterCallback<PointerDownEvent>(OnWeaponDown);
-
-            if (_parryButton != null)
-                _parryButton.UnregisterCallback<PointerDownEvent>(OnParryDown);
 
             if (_downButton != null)
             {
@@ -281,16 +278,6 @@ namespace RedMagic.UI
             }
         }
 
-        private static void OnJumpDown(PointerDownEvent evt) => TouchInput.QueueJump();
-
-        private static void OnAttackDown(PointerDownEvent evt) => TouchInput.QueueAttack();
-
-        private static void OnDashDown(PointerDownEvent evt) => TouchInput.QueueDash();
-
-        private static void OnWeaponDown(PointerDownEvent evt) => TouchInput.QueueWeapon();
-
-        private static void OnParryDown(PointerDownEvent evt) => TouchInput.QueueParry();
-
         // ------------------------------------------------------------------ abajo (atravesar plataformas)
 
         // Interactuar: la pulsación (comprar, abrir…) y el estado mantenido (reciclar un item del suelo).
@@ -319,6 +306,7 @@ namespace RedMagic.UI
 
             if (!paused) return;
             gestures.Reset();
+            _tapButtons.Release();
             TouchInput.Clear();
         }
     }

@@ -28,6 +28,13 @@ Each mode shows its own on-screen help and nothing else:
   E to interact or I for items), update `ControlsLegendHud.Rows` too.
 - **Gamepad** → neither, since the prompts would be wrong buttons.
 
+**Tap buttons are polled, not UI events** (2026-10-15): jump / attack / dash / weapon / parry (both schemes) are read
+by `Assets/Ui/TouchTapButtons.cs` from `EnhancedTouch.Touch.activeTouches` every frame and hit-tested against the
+buttons' `worldBound` (+ `buttonHitPadding`). UI Toolkit's `Button` clickable captured the pointer and delayed/dropped
+presses. A touch that begins inside a button queues the action that same frame (`TouchControlsController` runs at
+execution order −50, before the player). Pressed look = USS class `touch-button--pressed`. Hold buttons (left/right/
+down/interact) still use pointer events.
+
 **Gesture touch scheme (2026-10-15, experimental)**: Options ▸ Interfaz ▸ *Controles táctiles por gestos*
 (`HudSettings.GestureControls`) swaps `movePad`/`actionPad` for `gestureLayout` in `TouchControls.uxml`. Logic lives in
 `Assets/Test/TouchGestures/TouchGestureInput.cs`, a serialized field (`gestures`) on `TouchControlsController` with all tuning

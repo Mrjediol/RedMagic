@@ -46,7 +46,8 @@
     background-color: rgba(18, 11, 14, 0.6);
 }
 
-.touch-button:active {
+.touch-button:active,
+.touch-button--pressed {
     scale: 0.94;
     background-color: rgba(122, 26, 34, 0.75);
     border-color: rgba(244, 206, 132, 0.95);
@@ -62,7 +63,8 @@
     background-color: rgba(60, 16, 22, 0.5);
 }
 
-.touch-button--jump:active {
+.touch-button--jump:active,
+.touch-button--jump.touch-button--pressed {
     background-color: rgba(150, 32, 42, 0.8);
 }
 
@@ -72,7 +74,8 @@
     background-color: rgba(24, 20, 30, 0.5);
 }
 
-.touch-button--down:active {
+.touch-button--down:active,
+.touch-button--down.touch-button--pressed {
     background-color: rgba(70, 58, 92, 0.8);
 }
 
@@ -85,7 +88,8 @@
     background-color: rgba(68, 40, 12, 0.5);
 }
 
-.touch-button--attack:active {
+.touch-button--attack:active,
+.touch-button--attack.touch-button--pressed {
     background-color: rgba(186, 108, 30, 0.8);
 }
 
@@ -95,7 +99,8 @@
     background-color: rgba(16, 30, 38, 0.5);
 }
 
-.touch-button--dash:active {
+.touch-button--dash:active,
+.touch-button--dash.touch-button--pressed {
     background-color: rgba(38, 104, 128, 0.8);
 }
 
@@ -108,7 +113,8 @@
     background-color: rgba(74, 22, 14, 0.5);
 }
 
-.touch-button--fireball:active {
+.touch-button--fireball:active,
+.touch-button--fireball.touch-button--pressed {
     background-color: rgba(196, 66, 26, 0.85);
 }
 
@@ -118,7 +124,8 @@
     background-color: rgba(22, 40, 14, 0.5);
 }
 
-.touch-button--parry:active {
+.touch-button--parry:active,
+.touch-button--parry.touch-button--pressed {
     background-color: rgba(96, 160, 44, 0.85);
 }
 
@@ -135,7 +142,8 @@
     border-color: rgba(244, 206, 132, 0.8);
 }
 
-.touch-button--interact:active {
+.touch-button--interact:active,
+.touch-button--interact.touch-button--pressed {
     background-color: rgba(196, 150, 40, 0.85);
 }
 

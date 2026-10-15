@@ -131,12 +131,7 @@ namespace RedMagic.UI
                 _downButton.RegisterCallback<PointerCaptureOutEvent>(OnDownCaptureOut);
             }
 
-            if (GameStateManager.Instance != null)
-            {
-                GameStateManager.Instance.PausedChanged -= OnPausedChanged;
-                GameStateManager.Instance.PausedChanged += OnPausedChanged;
-                OnPausedChanged(GameStateManager.Instance.IsPaused);
-            }
+            _wasPaused = null;   // la pausa se sondea en Update (ver UpdatePause)
 
             AttachDial(_attackButton, CooldownSlot.Attack);
             AttachDial(_dashButton, CooldownSlot.Dash);
@@ -326,6 +321,7 @@ namespace RedMagic.UI
         private void Update()
         {
             float dt = Time.unscaledDeltaTime;
+            UpdatePause();
             bool editing = IsEditingLayout && Current == this;
             if (_gestureMode == true) gestures.Tick();
             _tapButtons.HitPadding = buttonHitPadding;
@@ -386,9 +382,6 @@ namespace RedMagic.UI
                 _downButton.UnregisterCallback<PointerLeaveEvent>(OnDownLeave);
                 _downButton.UnregisterCallback<PointerCaptureOutEvent>(OnDownCaptureOut);
             }
-
-            if (GameStateManager.Instance != null)
-                GameStateManager.Instance.PausedChanged -= OnPausedChanged;
 
             TouchInput.Clear();
         }
@@ -454,6 +447,21 @@ namespace RedMagic.UI
         private static void OnDownCaptureOut(PointerCaptureOutEvent evt) => TouchInput.Down = false;
 
         // ------------------------------------------------------------------ pausa
+
+        private bool? _wasPaused;
+
+        /// <summary>
+        /// Se sondea cada frame en vez de suscribirse a <c>GameStateManager.PausedChanged</c>: este objeto
+        /// (Resources/MenusUI) nace antes de la escena y el GameStateManager vive en ella, así que en OnEnable aún no
+        /// existe y el evento no llegaba nunca — al salir de la pausa la capa táctil se quedaba oculta.
+        /// </summary>
+        private void UpdatePause()
+        {
+            bool paused = GameStateManager.Instance != null && GameStateManager.Instance.IsPaused;
+            if (_wasPaused == paused) return;
+            _wasPaused = paused;
+            OnPausedChanged(paused);
+        }
 
         private void OnPausedChanged(bool paused)
         {

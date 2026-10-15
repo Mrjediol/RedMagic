@@ -69,6 +69,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b33f912a0774df44a82e039c9571a0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.UI.TouchControlsController
+  gestures:
+    moveZoneWidth: 0.336
+    moveZoneHeight: 0.375
+    showMoveZone: 1
+    deadzone: 30
+    stickRadius: 140
+    swipeDownDropsThrough: 1
+    dropThreshold: 110
+    retapWindow: 0.25
+    retapRadius: 200
+  buttonHitPadding: 24
 --- !u!114 &4592941680409547771
 MonoBehaviour:
   m_ObjectHideFlags: 0

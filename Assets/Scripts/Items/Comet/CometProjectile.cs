@@ -70,13 +70,20 @@ namespace RedMagic.Items
         /// ratón» y el cursor detrás, la boca pasa a ese lado para que el cometa no cruce el cuerpo del jugador
         /// (con el personaje definitivo esto será una animación de apuntar hacia el cursor).
         /// </summary>
-        public static int MuzzleSide(CometSettings settings, Vector2 origin, int facing)
+        public static int MuzzleSide(CometSettings settings, ProjectileAimMode aimMode, Vector2 origin, int facing)
         {
-            if (settings == null || !settings.aimAtCursor) return facing;
+            if (!AimsAtCursor(settings, aimMode)) return facing;
             Vector2? cursor = ProjectileAim.MouseWorld();
             if (!cursor.HasValue || Mathf.Abs(cursor.Value.x - origin.x) < 0.05f) return facing;
             return cursor.Value.x < origin.x ? -1 : 1;
         }
+
+        /// <summary>
+        /// Apunta al cursor (o al dedo en táctil) con la mejora del cometa (<see cref="CometSettings.aimAtCursor"/>)
+        /// o con BaseShot ▸ Aim Mode = Mouse Direction, como cualquier otro disparo.
+        /// </summary>
+        public static bool AimsAtCursor(CometSettings settings, ProjectileAimMode aimMode) =>
+            aimMode == ProjectileAimMode.MouseDirection || (settings != null && settings.aimAtCursor);
 
         /// <summary>Lanza un cometa con el disparo ya resuelto (lo llama <see cref="ShotResolver.Fire"/>).</summary>
         public static CometProjectile Launch(WeaponShot shot, in ShotContext ctx)
@@ -109,12 +116,16 @@ namespace RedMagic.Items
                 _fx = new CometBodyFx(transform, mat);
             }
 
-            int side = MuzzleSide(settings, ctx.Origin, ctx.Facing);
+            int side = MuzzleSide(settings, shot.aimMode, ctx.Origin, ctx.Facing);
             _pos = ctx.Origin + new Vector2(shot.muzzleOffset.x * side, shot.muzzleOffset.y);
-            // base: recto hacia donde mira el jugador; con la mejora «apuntar con el ratón», hacia el cursor
+            // base: recto hacia donde mira el jugador; apuntando al cursor (mejora o Aim Mode), hacia el cursor;
+            // con Aim Mode = Nearest Enemy, la dirección que ya resolvió ShotResolver.
             Vector2? cursor = ProjectileAim.MouseWorld();
             _dir = new Vector2(side, 0f);
-            if (settings.aimAtCursor && cursor.HasValue && (cursor.Value - _pos).sqrMagnitude > 0.01f) _dir = (cursor.Value - _pos).normalized;
+            if (AimsAtCursor(settings, shot.aimMode) && cursor.HasValue && (cursor.Value - _pos).sqrMagnitude > 0.01f)
+                _dir = (cursor.Value - _pos).normalized;
+            else if (shot.aimMode == ProjectileAimMode.NearestEnemy && ctx.Aim.sqrMagnitude > 0.0001f)
+                _dir = ctx.Aim.normalized;
             _hit.Clear();
             _target = null; _targetBody = null;
             _turnSign = 0;

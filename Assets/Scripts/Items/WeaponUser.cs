@@ -448,7 +448,7 @@ namespace RedMagic.Items
         private Vector2 CometMuzzleWorld(WeaponDefinition weapon)
         {
             var offset = weapon.Shot.muzzleOffset;
-            int side = CometProjectile.MuzzleSide(CometRuntime.For(weapon), transform.position, ResolveFacing());
+            int side = CometProjectile.MuzzleSide(CometRuntime.For(weapon), weapon.Shot.aimMode, transform.position, ResolveFacing());
             return (Vector2)transform.position + new Vector2(offset.x * side, offset.y);
         }
 

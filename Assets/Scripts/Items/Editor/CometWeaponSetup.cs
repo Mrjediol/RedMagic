@@ -39,7 +39,7 @@ namespace RedMagic.Items.Editor
                 Num(so, "baseShot.lifetime", 2.5f);
                 so.FindProperty("baseShot.size").vector2Value = new Vector2(0.4f, 0.4f);
                 so.FindProperty("baseShot.muzzleOffset").vector2Value = new Vector2(0.6f, 0.15f);
-                so.FindProperty("baseShot.aimMode").enumValueIndex = (int)Gameplay.ProjectileAimMode.Fixed;   // el cometa apunta él solo (CometSettings.aimAtCursor)
+                so.FindProperty("baseShot.aimMode").enumValueIndex = (int)Gameplay.ProjectileAimMode.Fixed;   // por defecto recto; Mouse Direction / Nearest Enemy o CometSettings.aimAtCursor lo apuntan
                 Num(so, "baseShot.chargeTime", 0.55f);
                 Num(so, "baseShot.minChargeToFire", 0.25f);
                 Num(so, "baseShot.minChargeDamage", 0.5f);

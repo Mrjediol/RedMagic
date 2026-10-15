@@ -508,8 +508,36 @@
         {
           "done": false,
           "id": "controles-tactiles",
-          "text": "Rehacer los controles táctiles cuando el player esté acabado",
-          "note": "Ahora sólo se cuida el mando. Ya hay botones ARMA y USAR (contextual) y el menú de pausa persistente."
+          "text": "Refinar los controles táctiles por gestos (probar en el móvil y pulir)",
+          "note": "Esquema por gestos hecho y probado en el Simulator (2026-10-15): zona de movimiento, dash por re-toque, botones leídos de los toques, salto variable, magia tocando la pantalla, colocar botones en Opciones. Falta la prueba en el móvil real y afinar con lo que salga.",
+          "doc": "docs/tareas/controles-tactiles.md",
+          "steps": [
+            {
+              "id": "ct-movil",
+              "text": "Probar en el móvil real (RedMagic 11 Pro): multitáctil, andar + disparar a la vez, dash por re-toque, tamaño de la zona",
+              "done": false
+            },
+            {
+              "id": "ct-ajustes",
+              "text": "Ajustar los valores de Gestures y Button Hit Padding con lo que diga el usuario y guardarlos en MenusUI.prefab",
+              "done": false
+            },
+            {
+              "id": "ct-frustum",
+              "text": "Revisar el error 'Screen position out of view frustum (inf, -inf)' de UIElements UpdatePanels (¿sólo en el Simulator?)",
+              "done": false
+            },
+            {
+              "id": "ct-clasico",
+              "text": "Decidir si el esquema clásico se queda, se mejora (botones recolocables, salto variable ya hecho) o se retira",
+              "done": false
+            },
+            {
+              "id": "ct-mover",
+              "text": "Cuando funcione: mover TouchGestureInput de Assets/Test/TouchGestures a su sitio (Assets/Ui) y quitar 'experimental' de la doc",
+              "done": false
+            }
+          ]
         }
       ]
     },

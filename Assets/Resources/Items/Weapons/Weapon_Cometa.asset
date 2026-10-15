@@ -44,9 +44,9 @@ MonoBehaviour:
     impactVfxPrefab: {fileID: 0}
     explosionVfxPrefab: {fileID: 0}
     chargeVfxPrefab: {fileID: 0}
-    faceDirection: 0
+    faceDirection: 1
     facingAxis: 0
-    aimMode: 0
+    aimMode: 1
     meleeRange: 1.2
     meleeArc: 90
     chargeTime: 0.55
@@ -64,6 +64,7 @@ MonoBehaviour:
     pierceCount: 1
     homingCursorRadius: 8
     homingTurnRate: 320
+    aimAtCursor: 0
     fireDelay: 0.06
     impactFrames: 1
     impactFrameDuration: 0.06

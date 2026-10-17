@@ -9,7 +9,9 @@ Play sessions):
   menu (e.g. Options over Pause) doesn't unpause on close. `CanPlayerAct` is a **static** bool that
   every gameplay script (`PlayerMovement`, `PlayerAttack`, `RangedAttack`, `EnemyController`) polls
   directly, without needing a reference to the singleton. `ForceResume()` zeroes the counter
-  unconditionally (used when leaving to gameplay/hub, where no menu should stay "open").
+  unconditionally (used when leaving to gameplay/hub, where no menu should stay "open"). Lives in MainMenu/MainHub;
+  an `AfterSceneLoad` fallback creates `[GameStateManager]` when the first scene has none (a level scene played on its
+  own), so the persistent pause menu still freezes the game there.
 - **`AudioManager`** (`Assets/Audio/AudioManager.cs`) — **one prefab**, `Assets/Resources/AudioManager.prefab`,
   instantiated `BeforeSceneLoad` (never place one in a scene). See **Audio** below.
 - **`RunManager`** (`Assets/Scripts/Run/RunManager.cs`) — owns the run loop. See below.

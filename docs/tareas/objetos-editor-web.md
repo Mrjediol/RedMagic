@@ -1,5 +1,10 @@
 # Objetos en el editor de niveles web: plataformas y puertas
 
+**Estado (2026-10-17): pasos 1–3 hechos, falta la prueba del usuario (paso 4).** Formato v3, paleta de objetos en 🧱 Niveles
+(arte de Unity en edición y vista previa, aviso de puertas de tamaño no válido), importador que crea y pinta `PlataformasArte` y
+`Puertas`. Además: escena nueva con WaveManager en el centro, diálogo para meterla en el pool del mundo, y `GameStateManager`
+que se crea solo (pausa al jugar un nivel suelto).
+
 Pendiente desde 2026-10-13. Leer antes: `docs/architecture/levels.md` ▸ *Painted objects* y *EditorNiveles*, `docs/tareas/editor-niveles.md`.
 
 ## Objetivo

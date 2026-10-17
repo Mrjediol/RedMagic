@@ -1,7 +1,10 @@
 // modules/level-editor.js
 // -----------------------------------------------------------------------------
-// 🧱 Niveles: editor de cuadrícula de niveles. Pinta roca y plataformas y guarda *.levelsketch.json, que Unity importa
-// con el menú EditorNiveles ▸ Importar nivel… (formato: docs/architecture/levels.md ▸ EditorNiveles).
+// 🧱 Niveles: editor de cuadrícula de niveles. Pinta roca, plataformas, plataformas de arte y puertas y guarda
+// *.levelsketch.json, que Unity importa con el menú EditorNiveles ▸ Importar nivel… (formato: docs/architecture/levels.md
+// ▸ EditorNiveles). Una celda = una cosa. Como en Unity: un tramo seguido del mismo tile de arte es UNA plataforma
+// (extremos y centro según los vecinos, ArtPlatformTile) y cada grupo de celdas de puerta es UNA puerta de su rectángulo
+// (DoorTilemap); ni unas ni otras cuentan como roca para el borde.
 // - Con el servidor del taller (start.cmd): guarda/abre en Assets/Levels/Bocetos y la vista previa lee el arte del
 //   bioma de Assets/Levels (tools/taller-server/niveles.mjs). Sin él: descarga/abre archivos y vista previa sin arte.
 // - Valores del bioma y tiles: assets/niveles/datos-unity.json, lo escribe Unity (EditorNivelesWebData).
@@ -12,6 +15,13 @@ import * as Bg from './parallax-data.js';
 const MIN = 12, MAX_W = 400, MAX_H = 75, PX = 40, VIEW_H = 20;
 const STORE = 'redmagic.levelEditor.v1', FREE_CHARS = '=-~^+*%&@$!?abcdefghijklmnopqrstuvwxyz';
 const PLAT_COLORS = ['#f2b84d', '#e07a5f', '#9bd36a', '#c58df0', '#5fd0c4', '#f07fb0'];
+const ART_COLORS = ['#cfe9ff', '#9fd2f5', '#79b4e0', '#b9c6ff'];
+const MAT_HINT = {
+  terrain: 'Roca maciza (Grid/Terreno)',
+  platforms: 'Plataforma de roca atravesable desde abajo (Grid/Plataformas)',
+  artPlatforms: 'Plataforma de arte (Grid/PlataformasArte): un tramo seguido = una plataforma, extremos y centro solos',
+  doors: 'Puerta (Grid/Puertas): cada grupo de celdas es una puerta de su rectángulo',
+};
 const FALLBACK = {
   tiles: [{ name: 'Roca', layer: 'terrain' }, { name: 'Plataforma', layer: 'platforms' }],
   biomes: [{
@@ -37,19 +47,28 @@ export function initLevelEditor({ toast, setDirty }) {
   // ---------------------------------------------------------------- paleta (de los tiles de Unity)
   const palette = [{ name: '(aire)', layer: null, char: '.', color: null }];
   let ROCK = 1;
-  function addTile(name, layer, ch) {
-    const plats = palette.filter((p) => p.layer === 'platforms').length;
+  /** Nombre para la paleta: ArtTile_FinaLarga → "Fina larga", DoorTile_Energia_Abierta → "Puerta energia abierta". */
+  const label = (name, layer) => {
+    const words = name.replace(/^(ArtTile|DoorTile)_?/, '').replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().trim();
+    const nice = words.charAt(0).toUpperCase() + words.slice(1);
+    return layer === 'doors' ? `Puerta ${words}` : layer === 'artPlatforms' ? nice : name;
+  };
+  function addTile(name, layer, ch, info = {}) {
+    const same = palette.filter((p) => p.layer === layer).length;
     const used = new Set(palette.map((p) => p.char));
     const char = ch && !used.has(ch) ? ch : name === 'Roca' && !used.has('#') ? '#' : name === 'Plataforma' && !used.has('=') ? '=' : [...FREE_CHARS].find((c) => !used.has(c));
-    palette.push({ name, layer, char, color: layer === 'terrain' ? '#5a9ed9' : PLAT_COLORS[plats % PLAT_COLORS.length] });
+    const color = layer === 'terrain' ? '#5a9ed9' : layer === 'artPlatforms' ? ART_COLORS[same % ART_COLORS.length]
+      : layer === 'doors' ? (info.startOpen ? '#5fe0a0' : '#ff5fa8') : PLAT_COLORS[same % PLAT_COLORS.length];
+    palette.push({ ...info, name, layer, char, color, label: label(name, layer) });
     return palette.length - 1;
   }
   function buildPalette() {
     palette.length = 1;
-    DATA.tiles.forEach((t) => addTile(t.name, t.layer));
+    DATA.tiles.forEach((t) => addTile(t.name, t.layer, undefined, t));
     ROCK = palette.findIndex((p) => p.layer === 'terrain');
   }
   buildPalette();
+  const isObject = (v) => v !== 0 && (palette[v].layer === 'artPlatforms' || palette[v].layer === 'doors');
 
   // ---------------------------------------------------------------- estado
   const S = { name: 'nivel', biome: 'Hielo', background: '', w: 85, h: 25, cells: null, mode: 'edit', tool: 'brush', mat: ROCK, brush: 1 };
@@ -57,7 +76,7 @@ export function initLevelEditor({ toast, setDirty }) {
   const inside = (c, r) => c >= 0 && r >= 0 && c < S.w && r < S.h;
   const isFrame = (c, r) => c === 0 || r === 0 || c === S.w - 1 || r === S.h - 1;
   const cell = (c, r) => (inside(c, r) ? S.cells[idx(c, r)] : ROCK);
-  const solid = (c, r) => cell(c, r) !== 0;
+  const solid = (c, r) => { const v = cell(c, r); return v !== 0 && !isObject(v); }; // roca o plataforma (Level)
   const groundTop = (x) => { x = Math.max(1, Math.min(S.w - 2, x)); let y = 1; while (y < S.h - 1 && solid(x, S.h - 1 - y)) y++; return y; }; // y de Unity
   function frame() { for (let r = 0; r < S.h; r++) for (let c = 0; c < S.w; c++) if (isFrame(c, r)) S.cells[idx(c, r)] = ROCK; }
   function blank(w, h) { S.w = w; S.h = h; S.cells = new Uint8Array(w * h); frame(); }
@@ -196,7 +215,7 @@ export function initLevelEditor({ toast, setDirty }) {
     const { c0, c1, r0, r1 } = cellsRange(), z = V.z;
     g.globalAlpha = alpha;
     for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
-      const v = S.cells[idx(c, r)]; if (!v) continue;
+      const v = S.cells[idx(c, r)]; if (!v || isObject(v)) continue; // los objetos los dibuja drawObjects
       g.fillStyle = isFrame(c, r) ? '#22364d' : palette[v].color;
       g.fillRect(V.ox + c * z, V.oy + r * z, Math.ceil(z), Math.ceil(z));
     }
@@ -252,6 +271,53 @@ export function initLevelEditor({ toast, setDirty }) {
     }
     g.setLineDash([]);
   }
+
+  // ---------------------------------------------------------------- objetos: plataformas de arte y puertas (como en Unity)
+  let objCache = null; // se rehace al cambiar algo (changed)
+  function objects() {
+    if (objCache) return objCache;
+    const runs = [], doors = [], seen = new Uint8Array(S.w * S.h);
+    for (let r = 1; r < S.h - 1; r++) for (let c = 1; c < S.w - 1; c++) {
+      const v = S.cells[idx(c, r)];
+      if (!isObject(v) || seen[idx(c, r)]) continue;
+      if (palette[v].layer === 'artPlatforms') { // ArtPlatformTilemap: un tramo seguido del mismo tile = una plataforma
+        let e = c; while (e < S.w - 1 && S.cells[idx(e, r)] === v) seen[idx(e++, r)] = 1;
+        runs.push({ v, c, r, n: e - c });
+        continue;
+      }
+      // DoorTilemap: celdas vecinas con el mismo tile = una puerta del tamaño de su rectángulo
+      let x0 = c, x1 = c, y0 = r, y1 = r; const st = [[c, r]]; seen[idx(c, r)] = 1;
+      while (st.length) {
+        const [x, y] = st.pop();
+        x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+        for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]])
+          if (inside(nx, ny) && !seen[idx(nx, ny)] && S.cells[idx(nx, ny)] === v) { seen[idx(nx, ny)] = 1; st.push([nx, ny]); }
+      }
+      const p = palette[v], w = x1 - x0 + 1, h = y1 - y0 + 1;
+      const bad = !!p.maxWide && (w < p.minWide || w > p.maxWide || h < p.minHigh || h > p.maxHigh);
+      doors.push({ v, c: x0, r: y0, w, h, bad });
+    }
+    return (objCache = { runs, doors });
+  }
+  /** El arte de Unity si se puede leer (servidor del taller); si no, el color de la paleta. */
+  function drawObjects(edit) {
+    const z = V.z, { runs, doors } = objects();
+    for (const o of runs) {
+      const p = palette[o.v];
+      for (let k = 0; k < o.n; k++) { // ArtPlatformTile: suelto, extremo izquierdo, centro o extremo derecho
+        const im = img(o.n === 1 ? p.single : k === 0 ? p.left : k === o.n - 1 ? p.right : p.center);
+        const x = V.ox + (o.c + k) * z, y = V.oy + o.r * z;
+        if (im) { const h = z * im.naturalHeight / im.naturalWidth; g.drawImage(im, x, y + (z - h) / 2, z, h); } // celda entera, pivote al centro
+        else { g.fillStyle = p.color; g.fillRect(x, y, Math.ceil(z), Math.max(2, z * 0.3)); }
+      }
+    }
+    for (const d of doors) {
+      const p = palette[d.v], im = img(p.startOpen ? p.doorOff : p.doorOn); // cerrada = encendida
+      const x = V.ox + d.c * z, y = V.oy + d.r * z, w = d.w * z, h = d.h * z;
+      if (im) g.drawImage(im, x, y, w, h); else { g.fillStyle = hexA(p.color, 0.6); g.fillRect(x, y, w, h); }
+      if (edit || d.bad) { g.strokeStyle = d.bad ? '#ff5252' : p.color; g.lineWidth = d.bad ? 2 : 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1); }
+    }
+  }
   const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; };
   function drawCursor() {
     if (!hover || panning) return;
@@ -273,7 +339,7 @@ export function initLevelEditor({ toast, setDirty }) {
     g.fillStyle = '#05080d'; g.fillRect(0, 0, CW, CH);
     if (S.mode === 'edit') {
       g.fillStyle = '#0d1724'; g.fillRect(V.ox, V.oy, S.w * V.z, S.h * V.z);
-      drawCells(1); drawGrid();
+      drawCells(1); drawObjects(true); drawGrid();
       g.strokeStyle = accent(); g.lineWidth = 1; g.strokeRect(V.ox - .5, V.oy - .5, S.w * V.z + 1, S.h * V.z + 1);
       drawCursor();
     } else {
@@ -284,6 +350,7 @@ export function initLevelEditor({ toast, setDirty }) {
       if (terrain && terrain.w === S.w && terrain.h === S.h) g.drawImage(terrain.cv, V.ox, V.oy, S.w * V.z, S.h * V.z);
       if (!terrain || terrainStale) drawCells(terrain ? 0.55 : 1);
       drawLayers(vp, 'over');
+      drawObjects(false);
       drawPlatformMarks();
       drawLayers(vp, 'front');
       drawCursor();
@@ -310,17 +377,20 @@ export function initLevelEditor({ toast, setDirty }) {
   // ---------------------------------------------------------------- estado en pantalla
   function status() {
     const h = hover && inside(hover.c, hover.r) ? hover : null;
-    $('lvStPos').textContent = h ? `x ${h.c} · y ${S.h - 1 - h.r} (Unity)${isFrame(h.c, h.r) ? ' · marco' : ''} · ${palette[cell(h.c, h.r)].name}` : '—';
+    $('lvStPos').textContent = h ? `x ${h.c} · y ${S.h - 1 - h.r} (Unity)${isFrame(h.c, h.r) ? ' · marco' : ''} · ${palette[cell(h.c, h.r)].label || palette[cell(h.c, h.r)].name}` : '—';
     $('lvStSize').textContent = `${S.w} × ${S.h} celdas = ${S.w * PX} × ${S.h * PX} px`;
-    let rock = 0, plat = 0; for (let r = 1; r < S.h - 1; r++) for (let c = 1; c < S.w - 1; c++) { const v = S.cells[idx(c, r)]; if (v) palette[v].layer === 'platforms' ? plat++ : rock++; }
-    $('lvStCount').textContent = `${rock} roca · ${plat} plataforma`;
-    $('lvStHint').textContent = S.mode === 'preview' && terrainStale ? 'regenerando borde…' : '';
+    let rock = 0, plat = 0; for (let r = 1; r < S.h - 1; r++) for (let c = 1; c < S.w - 1; c++) { const v = S.cells[idx(c, r)]; if (v && !isObject(v)) palette[v].layer === 'platforms' ? plat++ : rock++; }
+    const { runs, doors } = objects(), bad = doors.filter((d) => d.bad);
+    $('lvStCount').textContent = `${rock} roca · ${plat} plataforma · ${runs.length} plataforma(s) de arte · ${doors.length} puerta(s)`;
+    const p = bad.length ? palette[bad[0].v] : null;
+    $('lvStHint').textContent = bad.length ? `⚠ ${bad.length} puerta(s) de tamaño no válido (${bad.map((d) => `${d.w}×${d.h}`).join(', ')}; ${p.minWide}–${p.maxWide} de ancho × ${p.minHigh}–${p.maxHigh} de alto)`
+      : S.mode === 'preview' && terrainStale ? 'regenerando borde…' : '';
   }
 
   // ---------------------------------------------------------------- cambios y autoguardado (en el navegador)
   let storeTimer = 0;
   function changed(edit = true) {
-    redraw(); scheduleTerrain();
+    objCache = null; redraw(); scheduleTerrain();
     if (edit) setDirty(true, 'cuadrícula');
     clearTimeout(storeTimer); storeTimer = setTimeout(() => { try { localStorage.setItem(STORE, JSON.stringify(toJson())); } catch { /* sin almacenamiento */ } }, 400);
   }
@@ -328,7 +398,7 @@ export function initLevelEditor({ toast, setDirty }) {
   // ---------------------------------------------------------------- formato .levelsketch.json
   function toJson() {
     return {
-      format: 'redmagic-level', version: 2, name: S.name, biome: S.biome, background: S.background || undefined, width: S.w, height: S.h,
+      format: 'redmagic-level', version: 3, name: S.name, biome: S.biome, background: S.background || undefined, width: S.w, height: S.h,
       legend: palette.slice(1).map((p) => ({ char: p.char, layer: p.layer, tile: p.name })),
       rows: Array.from({ length: S.h }, (_, r) => Array.from(S.cells.subarray(r * S.w, (r + 1) * S.w), (v) => palette[v].char).join('')),
     };
@@ -408,8 +478,8 @@ export function initLevelEditor({ toast, setDirty }) {
     palette.forEach((p, i) => {
       if (!i) return;
       const b = document.createElement('button'); b.dataset.mat = i; b.className = 'small';
-      b.innerHTML = `<span class="lvSwatch" style="background:${p.color}"></span>${p.name}`;
-      b.title = `${p.layer === 'terrain' ? 'Roca maciza (Grid/Terreno)' : 'Plataforma atravesable desde abajo (Grid/Plataformas)'} — tecla ${i}`;
+      b.innerHTML = `<span class="lvSwatch" style="background:${p.color}"></span>${p.label || p.name}`;
+      b.title = `${MAT_HINT[p.layer] || p.layer}${p.layer === 'doors' ? ` (${p.startOpen ? 'empieza abierta' : 'empieza cerrada'}; ${p.minWide}–${p.maxWide} × ${p.minHigh}–${p.maxHigh} celdas)` : ''} — ${p.name}${i < 10 ? ` — tecla ${i}` : ''}`;
       b.onclick = () => { S.mat = i; if (S.tool === 'erase') S.tool = 'brush'; syncButtons(); };
       box.appendChild(b);
     });

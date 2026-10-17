@@ -36,22 +36,8 @@ namespace RedMagic.LevelsEditor
                 Debug.LogWarning("Abre un nivel (con Level y Terreno) para crear el Tilemap PlataformasArte. Tiles y paleta creados.");
                 return;
             }
-            var grid = level.Terrain.transform.parent;
-            var mapTransform = grid.Find(MapName);
-            if (mapTransform == null)
-            {
-                var go = new GameObject(MapName);
-                Undo.RegisterCreatedObjectUndo(go, "Crear PlataformasArte");
-                go.transform.SetParent(grid, false);
-                mapTransform = go.transform;
-            }
-            var go2 = mapTransform.gameObject;
-            // (no usar "GetComponent(...) ?? AddComponent(...)": en el editor un componente que falta no es null para ??)
-            if (!go2.TryGetComponent<Tilemap>(out var map)) map = go2.AddComponent<Tilemap>();
-            if (!go2.TryGetComponent<TilemapRenderer>(out var renderer)) renderer = go2.AddComponent<TilemapRenderer>();
-            renderer.sortingLayerName = LevelSorting.Layer;
-            renderer.sortingOrder = LevelSorting.OverTerrain;
-            if (go2.GetComponent<ArtPlatformTilemap>() == null) go2.AddComponent<ArtPlatformTilemap>();
+            var map = EnsureMap(level);
+            var go2 = map.gameObject;
 
             // una de cada estilo, de 2, 5 y 9 celdas, sobre el suelo del nivel, para ver extremos y centro
             int[] lengths = { 2, 5, 9 };
@@ -66,6 +52,31 @@ namespace RedMagic.LevelsEditor
             EditorSceneManager.MarkSceneDirty(go2.scene);
             Selection.activeGameObject = go2;
             Debug.Log("Plataformas de arte listas: pinta en " + MapName + " con la paleta " + PaletteName + " (Window ▸ 2D ▸ Tile Palette).");
+        }
+
+        /// <summary>
+        /// El Tilemap <c>Grid/PlataformasArte</c> del nivel, con su renderer (encima del terreno) y
+        /// <see cref="ArtPlatformTilemap"/>; lo crea si falta. Lo usan este menú y el importador de EditorNiveles.
+        /// </summary>
+        public static Tilemap EnsureMap(Level level)
+        {
+            var grid = level.Terrain.transform.parent;
+            var mapTransform = grid.Find(MapName);
+            if (mapTransform == null)
+            {
+                var created = new GameObject(MapName);
+                Undo.RegisterCreatedObjectUndo(created, "Crear PlataformasArte");
+                created.transform.SetParent(grid, false);
+                mapTransform = created.transform;
+            }
+            var go = mapTransform.gameObject;
+            // (no usar "GetComponent(...) ?? AddComponent(...)": en el editor un componente que falta no es null para ??)
+            if (!go.TryGetComponent<Tilemap>(out var map)) map = go.AddComponent<Tilemap>();
+            if (!go.TryGetComponent<TilemapRenderer>(out var renderer)) renderer = go.AddComponent<TilemapRenderer>();
+            renderer.sortingLayerName = LevelSorting.Layer;
+            renderer.sortingOrder = LevelSorting.OverTerrain;
+            if (!go.TryGetComponent<ArtPlatformTilemap>(out _)) go.AddComponent<ArtPlatformTilemap>();
+            return map;
         }
 
         private static ArtPlatformTile EnsureTile(string style)

@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using RedMagic.Gameplay;
 using RedMagic.Levels;
 using RedMagic.LevelsEditor;
@@ -86,8 +87,9 @@ namespace RedMagic.EditorNiveles
         }
 
         /// <summary>
-        /// Escena de nivel completa: cámara que sigue al jugador, nivel (Grid/Terreno + Grid/Plataformas, bioma, fondo,
-        /// partículas), luz global, postproceso, y entrada y salida en los extremos sobre el suelo (para moverlas a mano).
+        /// Escena de nivel completa: cámara que sigue al jugador, nivel (Grid/Terreno + Plataformas + PlataformasArte +
+        /// Puertas, bioma, fondo, partículas), luz global, postproceso, entrada y salida en los extremos sobre el suelo
+        /// (para moverlas a mano) y un WaveManager vacío. Pausa, HUD y jugador no van en la escena: son persistentes.
         /// </summary>
         public static void CreateLevelScene(LevelSketchFile.Sketch sketch, string path)
         {
@@ -135,13 +137,45 @@ namespace RedMagic.EditorNiveles
             exitGo.transform.position = new Vector3(exitX + 0.5f, level.GroundTop(exitX) + 2f, 0f);
 
             // Vacío pero listo: una oleada sin enemigos que termina el nivel (la salida abre). Se rellena a mano.
-            WaveManagerEditor.CreateDefault();
+            // En el centro del nivel sobre el suelo, para que sus puntos de aparición no caigan dentro del marco de roca.
+            var waves = WaveManagerEditor.CreateDefault();
+            int midX = level.Width / 2;
+            waves.transform.position = new Vector3(midX + 0.5f, level.GroundTop(midX) + 1f, 0f);
 
             camGo.transform.position = new Vector3(entry.transform.position.x, entry.transform.position.y, -10f);
             Selection.activeGameObject = levelGo;
             EditorSceneManager.SaveScene(scene, path);
             WorldSceneGenerator.AddToBuildSettings(path);
-            Debug.Log($"[EditorNiveles] Escena nueva: {path} (en Build Settings, con WaveManager). Añádela al pool de su WorldDefinition para que salga en la run.");
+            var world = OfferRunPool(path);
+            Debug.Log($"[EditorNiveles] Escena nueva: {path} (en Build Settings, con WaveManager)" +
+                      (world != null ? $", en el pool de {world.name}." : ". Añádela al pool de su WorldDefinition para que salga en la run."));
+        }
+
+        /// <summary>
+        /// Pregunta si la escena entra ya en las runs: la añade al pool de secciones del primer mundo desbloqueado
+        /// (por referencia a la escena, como lo hace el WorldSceneGenerator). Devuelve el mundo o null.
+        /// </summary>
+        private static WorldDefinition OfferRunPool(string scenePath)
+        {
+            var world = AssetDatabase.FindAssets("t:WorldDefinition")
+                .Select(g => AssetDatabase.LoadAssetAtPath<WorldDefinition>(AssetDatabase.GUIDToAssetPath(g)))
+                .Where(w => w != null && w.Unlocked)
+                .OrderBy(w => w.WorldNumber)
+                .FirstOrDefault();
+            if (world == null) return null;
+            if (world.SectionPool.Any(s => s != null && s.Path == scenePath)) return world;
+            if (!EditorUtility.DisplayDialog("Importar nivel",
+                    $"¿Meter el nivel en las runs?\n\nSe añade al pool de secciones de '{world.DisplayName}' ({world.name}); " +
+                    "si no, se queda sólo en Build Settings y se añade a mano.", "Sí, en la run", "No")) return null;
+
+            var so = new SerializedObject(world);
+            var pool = so.FindProperty("sectionPool");
+            pool.arraySize++;
+            WorldSceneGenerator.AssignScene(pool.GetArrayElementAtIndex(pool.arraySize - 1), scenePath);
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(world);
+            AssetDatabase.SaveAssets();
+            return world;
         }
 
         private static Tilemap NewTilemap(string name, Transform parent)

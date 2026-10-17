@@ -19,7 +19,17 @@ namespace RedMagic.EditorNiveles
     public static class EditorNivelesWebData
     {
         [Serializable] private class Data { public TileInfo[] tiles; public BiomeInfo[] biomes; }
-        [Serializable] private class TileInfo { public string name, layer; }
+        [Serializable]
+        private class TileInfo
+        {
+            public string name, layer;
+            /// <summary>Plataforma de arte: sprite de cada pieza (extremos, centro, suelta), ruta Assets/….</summary>
+            public string left, center, right, single;
+            /// <summary>Puerta: imagen apagada / encendida, cómo empieza y el tamaño admitido en celdas.</summary>
+            public string doorOff, doorOn;
+            public bool startOpen;
+            public int minWide, maxWide, minHigh, maxHigh;
+        }
 
         [Serializable]
         private class BiomeInfo
@@ -53,16 +63,42 @@ namespace RedMagic.EditorNiveles
             if (log) Debug.Log($"[EditorNiveles] {data.biomes.Length} biomas y {data.tiles.Length} tiles → {FilePath}");
         }
 
-        /// <summary>Roca (terreno) y todo tile llamado "Plataforma…" (plataformas): el tipo nuevo aparece solo en la web.</summary>
+        /// <summary>
+        /// Roca (terreno), todo tile llamado "Plataforma…" (plataformas), y todo <see cref="ArtPlatformTile"/> y
+        /// <see cref="DoorTile"/> de <see cref="LevelSetup.BiomesRoot"/>: el tipo nuevo aparece solo en la web.
+        /// </summary>
         private static TileInfo[] Tiles()
         {
             var list = new List<TileInfo> { new TileInfo { name = LevelSketchFile.RockTile, layer = LevelSketchFile.TerrainLayer } };
-            var platforms = AssetDatabase.FindAssets("t:TileBase", new[] { LevelSetup.BiomesRoot })
+            var all = AssetDatabase.FindAssets("t:TileBase", new[] { LevelSetup.BiomesRoot })
                 .Select(g => AssetDatabase.LoadAssetAtPath<TileBase>(AssetDatabase.GUIDToAssetPath(g)))
-                .Where(t => t != null && t.name.StartsWith(LevelSketchFile.PlatformTile))
-                .Select(t => t.name).Distinct()
-                .OrderBy(n => n == LevelSketchFile.PlatformTile ? "" : n);
-            foreach (var n in platforms) list.Add(new TileInfo { name = n, layer = LevelSketchFile.PlatformsLayer });
+                .Where(t => t != null)
+                .GroupBy(t => t.name).Select(g => g.First())
+                .OrderBy(t => t.name == LevelSketchFile.PlatformTile ? "" : t.name)
+                .ToList();
+            foreach (var t in all.Where(t => t.name.StartsWith(LevelSketchFile.PlatformTile) && !(t is ArtPlatformTile) && !(t is DoorTile)))
+                list.Add(new TileInfo { name = t.name, layer = LevelSketchFile.PlatformsLayer });
+            foreach (var t in all.OfType<ArtPlatformTile>())
+                list.Add(new TileInfo
+                {
+                    name = t.name, layer = LevelSketchFile.ArtPlatformsLayer,
+                    left = WebPath(t.left), center = WebPath(t.center), right = WebPath(t.right), single = WebPath(t.single),
+                });
+            foreach (var t in all.OfType<DoorTile>())
+            {
+                var info = new TileInfo
+                {
+                    name = t.name, layer = LevelSketchFile.DoorsLayer, startOpen = t.startOpen,
+                    minWide = LevelDoor.MinWide, maxWide = LevelDoor.MaxWide, minHigh = LevelDoor.MinHigh, maxHigh = LevelDoor.MaxHigh,
+                };
+                if (t.doorPrefab != null)
+                {
+                    var so = new SerializedObject(t.doorPrefab);
+                    info.doorOff = WebPath(so.FindProperty("offTexture").objectReferenceValue);
+                    info.doorOn = WebPath(so.FindProperty("onTexture").objectReferenceValue);
+                }
+                list.Add(info);
+            }
             return list.ToArray();
         }
 

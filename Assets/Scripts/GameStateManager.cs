@@ -35,6 +35,23 @@ namespace RedMagic.Core
         // sin que al cerrarlo se despause el juego.
         private int _openMenuCount;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            Instance = null;
+            CanPlayerAct = true;
+        }
+
+        /// <summary>
+        /// Respaldo: vive en MainMenu y MainHub, así que al darle a Play en una escena de nivel suelta no había ninguno y el
+        /// menú de pausa se abría sin parar el juego. Tras cargar la primera escena, si ninguna lo trae, se crea uno.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void EnsureExists()
+        {
+            if (Instance == null) new GameObject("[GameStateManager]").AddComponent<GameStateManager>();
+        }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)

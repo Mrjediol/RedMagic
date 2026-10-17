@@ -39,6 +39,24 @@ namespace RedMagic.LevelsEditor
                 Debug.LogWarning("Abre un nivel (con Level y Terreno) para crear el Tilemap Puertas. Tile creado.");
                 return;
             }
+            var map = EnsureMap(level);
+            var go = map.gameObject;
+
+            // ejemplo: una puerta de 1×4 sobre el suelo, cerca del inicio
+            int x = 5, y = Mathf.RoundToInt(level.GroundTop(5));
+            for (int k = 0; k < 4; k++) map.SetTile(new Vector3Int(x, y + k, 0), tile);
+
+            EditorSceneManager.MarkSceneDirty(go.scene);
+            Selection.activeGameObject = go;
+            Debug.Log("Puertas pintables listas: pinta en el Tilemap " + MapName + " con la paleta PaletaPlataformasArte.");
+        }
+
+        /// <summary>
+        /// El Tilemap <c>Grid/Puertas</c> del nivel con <see cref="DoorTilemap"/> (renderer apagado); lo crea si falta.
+        /// Lo usan este menú y el importador de EditorNiveles.
+        /// </summary>
+        public static Tilemap EnsureMap(Level level)
+        {
             var grid = level.Terrain.transform.parent;
             var t = grid.Find(MapName);
             if (t == null)
@@ -52,14 +70,7 @@ namespace RedMagic.LevelsEditor
             if (!go.TryGetComponent<Tilemap>(out var map)) map = go.AddComponent<Tilemap>();
             if (!go.TryGetComponent<TilemapRenderer>(out _)) go.AddComponent<TilemapRenderer>();
             if (!go.TryGetComponent<DoorTilemap>(out _)) go.AddComponent<DoorTilemap>();
-
-            // ejemplo: una puerta de 1×4 sobre el suelo, cerca del inicio
-            int x = 5, y = Mathf.RoundToInt(level.GroundTop(5));
-            for (int k = 0; k < 4; k++) map.SetTile(new Vector3Int(x, y + k, 0), tile);
-
-            EditorSceneManager.MarkSceneDirty(go.scene);
-            Selection.activeGameObject = go;
-            Debug.Log("Puertas pintables listas: pinta en el Tilemap " + MapName + " con la paleta PaletaPlataformasArte.");
+            return map;
         }
 
         private static DoorTile EnsureTile(string path, GameObject prefab, Sprite icon, bool startOpen)

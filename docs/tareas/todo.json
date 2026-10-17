@@ -277,7 +277,7 @@
           "done": false,
           "id": "objetos-editor-web",
           "text": "Editor web: poner plataformas y puertas (formato v3 + importador en Unity)",
-          "note": "Dibujar plataformas finas y puertas (1-2 × 3-5 celdas) en 🧱 Niveles y que Unity las cree al importar. Ya existen los tiles pintables en Unity (ArtPlatformTile, DoorTile).",
+          "note": "Hecho 2026-10-17 (pasos 1-3): formato v3, paleta de objetos en 🧱 Niveles, importador crea PlataformasArte y Puertas. Falta prueba del usuario y mover lo de Test.",
           "doc": "docs/tareas/objetos-editor-web.md",
           "needs": [
             "unity"
@@ -286,17 +286,17 @@
             {
               "id": "jpk74bo",
               "text": "Formato v3 de *.levelsketch.json (capa objects, v1/v2 se siguen leyendo)",
-              "done": false
+              "done": true
             },
             {
               "id": "4diravx",
               "text": "Web: paleta de objetos en 🧱 Niveles (plataformas finas, puerta cerrada/abierta) + vista previa",
-              "done": false
+              "done": true
             },
             {
               "id": "5wnml99",
               "text": "Importador: crear Tilemaps PlataformasArte y Puertas y pintar las celdas",
-              "done": false
+              "done": true
             },
             {
               "id": "rm9mc55",

@@ -10,8 +10,8 @@ namespace RedMagic.Run
     /// Sala de parkour opcional. Va junto a un <see cref="LevelRoom"/> (su rectángulo, sus asas y sus puertas) y encuentra
     /// sola, por posición dentro del rectángulo, su <see cref="RespawnPad"/> (el inicio) y su <see cref="LevelChest"/> (la
     /// recompensa). La puerta del final se pinta cerrada (<c>DoorTile_Energia</c>): al abrir el cofre se abren todas las
-    /// puertas de la sala. Mientras el jugador está dentro y no la ha terminado, su plataforma se enciende; si se clava en
-    /// unos pinchos (<see cref="SpikeTilemap"/>), vuelve a ella.
+    /// puertas de la sala. Si el jugador se clava en unos pinchos (<see cref="SpikeTilemap"/>), vuelve a su plataforma, que se
+    /// enciende al reaparecer.
     /// No la toca el <see cref="WaveManager"/>: es una sala sin oleadas.
     /// </summary>
     [RequireComponent(typeof(LevelRoom))]
@@ -76,8 +76,7 @@ namespace RedMagic.Run
         {
             Find();
             if (Completed || Pad == null) return;
-            bool inside = PlayerInside();
-            if (inside != Pad.Lit) Pad.SetLit(inside);
+            if (PlayerInside() && RespawnPad.Last != Pad) Pad.MarkCheckpoint();
         }
 
         private bool PlayerInside()
@@ -97,7 +96,6 @@ namespace RedMagic.Run
             if (Completed) return;
             Completed = true;
             Room.Unlock();
-            if (Pad != null) Pad.SetLit(false);
         }
 
         // ------------------------------------------------------------------ reaparición
@@ -129,9 +127,15 @@ namespace RedMagic.Run
             root.GetComponentInChildren<Knockback>()?.Cancel();
             root.GetComponentInChildren<PlayerMovement>()?.CancelDash();
 
-            foreach (var room in Live)
-                if (room != null && room.Room.Area.Contains(position) && room.Pad != null) { room.Pad.Pulse(); return; }
-            if (RespawnPad.Last != null) RespawnPad.Last.Pulse();
+            // se enciende la plataforma sobre la que reaparece (la más cercana al punto, si está a menos de 2 celdas)
+            RespawnPad best = null;
+            float bestDist = 2f;
+            foreach (var pad in FindObjectsByType<RespawnPad>(FindObjectsSortMode.None))
+            {
+                float d = Vector2.Distance(pad.SpawnPosition, position);
+                if (d < bestDist) { bestDist = d; best = pad; }
+            }
+            if (best != null) best.Pulse();
         }
 
 #if UNITY_EDITOR

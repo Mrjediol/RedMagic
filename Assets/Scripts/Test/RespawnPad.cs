@@ -4,8 +4,8 @@ namespace RedMagic.Levels
 {
     /// <summary>
     /// Plataforma de reaparición: donde vuelve el jugador al clavarse en unos pinchos. Cada sala de parkour
-    /// (<see cref="Run.ParkourRoom"/>) empieza con una; la sala la enciende mientras el jugador está dentro sin haberla
-    /// terminado. Es decoración apoyada en el suelo: no tiene colisión.
+    /// (<see cref="Run.ParkourRoom"/>) empieza con una. Está apagada y se enciende al reaparecer el jugador en ella (durante
+    /// <see cref="litDuration"/>). Es decoración apoyada en el suelo: no tiene colisión.
     /// El origen del objeto es el punto del suelo bajo su centro; el jugador aparece <see cref="spawnHeight"/> por encima.
     /// </summary>
     [ExecuteAlways]
@@ -28,11 +28,13 @@ namespace RedMagic.Levels
         [Min(0f)] [SerializeField] private float spawnHeight = 1.1f;
 
         [Header("Al reaparecer")]
+        [Tooltip("Segundos que se queda encendida tras reaparecer el jugador en ella.")]
+        [Min(0f)] [SerializeField] private float litDuration = 1.5f;
         [Tooltip("Pulso de tamaño al volver el jugador (1 = sin pulso).")]
         [Range(1f, 1.5f)] [SerializeField] private float pulseScale = 1.15f;
         [Min(0.01f)] [SerializeField] private float pulseDuration = 0.35f;
 
-        /// <summary>La última que se encendió: a ella vuelve el jugador si se clava fuera de una sala de parkour.</summary>
+        /// <summary>La última en cuya sala entró el jugador: a ella vuelve si se clava fuera de una sala de parkour.</summary>
         public static RespawnPad Last { get; private set; }
 
         public Vector3 SpawnPosition => transform.position + Vector3.up * spawnHeight;
@@ -40,6 +42,7 @@ namespace RedMagic.Levels
 
         private SpriteRenderer _sprite;
         private float _pulse;
+        private float _litTimer;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics() => Last = null;
@@ -60,20 +63,32 @@ namespace RedMagic.Levels
             if (isActiveAndEnabled) Apply();
         }
 
-        /// <summary>Enciende o apaga el círculo de runas. Encender la hace la de reaparición por defecto (<see cref="Last"/>).</summary>
+        /// <summary>El jugador ha entrado en su sala: es su punto de reaparición (<see cref="Last"/>). No cambia el dibujo.</summary>
+        public void MarkCheckpoint() => Last = this;
+
+        /// <summary>Enciende o apaga las runas.</summary>
         public void SetLit(bool lit)
         {
-            if (lit) Last = this;
             if (Lit == lit) return;
             Lit = lit;
             Apply();
         }
 
-        /// <summary>El jugador acaba de volver aquí.</summary>
-        public void Pulse() => _pulse = pulseDuration;
+        /// <summary>El jugador acaba de reaparecer aquí: se enciende un rato y late.</summary>
+        public void Pulse()
+        {
+            _pulse = pulseDuration;
+            _litTimer = litDuration;
+            SetLit(true);
+        }
 
         private void Update()
         {
+            if (_litTimer > 0f)
+            {
+                _litTimer -= Time.deltaTime;
+                if (_litTimer <= 0f) SetLit(false);
+            }
             if (_pulse <= 0f || _sprite == null) return;
             _pulse -= Time.deltaTime;
             float t = Mathf.Clamp01(_pulse / pulseDuration);

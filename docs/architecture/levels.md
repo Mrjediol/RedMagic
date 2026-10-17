@@ -157,9 +157,10 @@ bands off for rock and/or platforms (1-cell platforms get top and bottom bands m
   `ItemPickup.RandomItem` → hold → fade/rise/scale → inactive; `Opened` event.
 - **Respawn pad** `RespawnPad` (`PlataformaReaparicion.prefab`, `2DSpawn_cut`/`2DSpawnOff_cut`, trimmed copies of the user's
   side-view art): no collider, origin = ground point, `width` / `heightScale` (1) / `sink`, `SpawnPosition`,
-  lit while it is the active checkpoint (`RespawnPad.Last`).
+  off by default, lit for `litDuration` (1.5 s) when the player respawns on it; `RespawnPad.Last` = pad of the last parkour
+  room entered (fallback outside rooms).
 - **Parkour room** `ParkourRoom` (needs a `LevelRoom`; *GameObject ▸ RedMagic ▸ Sala de parkour* makes one with pad left and
-  chest right): finds its pad and chest by position; lights the pad while the player is inside and the room isn't done; chest
+  chest right): finds its pad and chest by position; entering it makes its pad the checkpoint; chest
   opened → `LevelRoom.Unlock()` (the closed end door). Spikes inside it send the player back to its pad. Menu *Tools ▸ RedMagic ▸
   Niveles ▸ Preparar parkour* (idempotent: art import, tile + palette, prefabs created or re-dressed with the current art, `Grid/Pinchos` on the open level;
   EditorNiveles imports also add `Grid/Pinchos`).

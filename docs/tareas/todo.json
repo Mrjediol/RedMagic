@@ -414,6 +414,58 @@
           "text": "Optimizaciones: proponer, probar en variante aislada y adoptar sólo con el visto bueno",
           "note": "Regla del usuario: lo que pueda empeorar el aspecto (baking) se prueba antes. Baking de puerta y proyectiles probado y no adoptado.",
           "doc": "docs/tareas/optimizaciones-propuestas.md"
+        },
+        {
+          "done": false,
+          "id": "optimizacion-arte-carga",
+          "text": "Reestructurar el arte (píxeles óptimos, múltiplos de 4, atlas, compresión) y la carga de niveles (enemigos bajo demanda, sin el fondo del bioma)",
+          "note": "Medido: cargar LargeLevelTest 1.153 ms; 472 texturas ~461 MB; 1.092 de 2.058 texturas no son múltiplo de 4 (no se comprimen). Prueba aislada antes de adoptar.",
+          "doc": "docs/tareas/optimizacion-arte-carga.md",
+          "needs": [
+            "unity"
+          ],
+          "steps": [
+            {
+              "id": "oac-1",
+              "text": "Auditoría de texturas + prueba aislada (1 fondo, 1 enemigo) con visto bueno",
+              "done": false
+            },
+            {
+              "id": "oac-2",
+              "text": "Fondos al presupuesto y múltiplos de 4; ParallaxImporter y 🏞️ Fondos lo aplican",
+              "done": false
+            },
+            {
+              "id": "oac-3",
+              "text": "SpriteAtlas por personaje (enemigos, jefes, jugador) y pipeline de sprites",
+              "done": false
+            },
+            {
+              "id": "oac-4",
+              "text": "UI en atlas y al presupuesto",
+              "done": false
+            },
+            {
+              "id": "oac-5",
+              "text": "Recetas y skills (make-enemy, make-biome, fx) con las reglas",
+              "done": false
+            },
+            {
+              "id": "oac-6",
+              "text": "Fondo/partículas del bioma fuera de la carga del juego",
+              "done": false
+            },
+            {
+              "id": "oac-7",
+              "text": "Enemigos de oleadas bajo demanda (Addressables + precarga + pooling)",
+              "done": false
+            },
+            {
+              "id": "oac-8",
+              "text": "Medir tras cada paso (transición y build de móvil)",
+              "done": false
+            }
+          ]
         }
       ]
     },

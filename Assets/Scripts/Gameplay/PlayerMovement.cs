@@ -759,8 +759,9 @@ namespace RedMagic.Gameplay
                     if (AcceptPlatformHit(plat)) Consider(plat, true);
                 }
 
-                // la cabeza de un enemigo vivo también es suelo (no subiendo, como las plataformas)
-                if (standOnEnemies && _currentVerticalSpeed <= 0f)
+                // la cabeza de un enemigo vivo también es suelo (no subiendo, como las plataformas). Nunca en un dash o un
+                // picado: lo atraviesan como si no estuviera, y contar su cabeza como suelo lo subía encima (efecto rampa).
+                if (standOnEnemies && _currentVerticalSpeed <= 0f && _dashTimer <= 0f && !_diving)
                 {
                     _enemyFilter.SetLayerMask(~(_groundLayer.value | _platformLayer.value));
                     _enemyFilter.useTriggers = false;
@@ -769,6 +770,7 @@ namespace RedMagic.Gameplay
                     {
                         var hit = _enemyHits[i];
                         if (hit.collider == null || hit.collider.attachedRigidbody == _body || !IsLiveEnemy(hit.collider)) continue;
+                        if (hit.distance <= 0f) continue;   // el rayo nace dentro del enemigo: está metido en él, no encima
                         hit.distance -= FootProbeRise;
                         Consider(hit, false);
                     }

@@ -159,6 +159,12 @@ bands off for rock and/or platforms (1-cell platforms get top and bottom bands m
   side-view art): no collider, origin = ground point, `width` / `heightScale` (1) / `sink`, `SpawnPosition`,
   off by default, lit for `litDuration` (1.5 s) when the player respawns on it; `RespawnPad.Last` = pad of the last parkour
   room entered (fallback outside rooms).
+- **Tutorial text** `TutorialSign` (*GameObject ▸ RedMagic ▸ Texto de tutorial*): world-space TextMesh Pro with
+  `Assets/Ui/Fonts/Cinzel/Cinzel-Bold SDF` (OFL font, dynamic atlas) and material *Cartel* (dark outline + soft shadow),
+  Default order `OverTerrain + 10` (in front of the level, behind actors). Text = localization key
+  `tutorial.<scene>.<n>`: its Inspector edits Spanish + English straight into `es.txt` / `en.txt` (section *carteles del
+  tutorial*); a duplicated sign gets its own key when its text is edited. Optional `showDistance` fades it in near the
+  player. Size/colour/alignment on the TextMeshPro. The menu imported TMP Essential Resources (`Assets/TextMesh Pro/`).
 - **Parkour room** `ParkourRoom` (needs a `LevelRoom`; *GameObject ▸ RedMagic ▸ Sala de parkour* makes one with pad left and
   chest right): finds its pad and chest by position; entering it makes its pad the checkpoint; chest
   opened → `LevelRoom.Unlock()` (the closed end door). Spikes inside it send the player back to its pad. Menu *Tools ▸ RedMagic ▸

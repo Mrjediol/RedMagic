@@ -30,8 +30,9 @@
   same swing / a trailing bullet without rewards. Air success → `PlayerMovement.RefundAirMoves`
   (+ optional `Bounce`). Optional reflect: damage × `reflectMultiplier` to the attacker, instantly,
   via `PlayerHit.Deal(..., HitKind.Parry)`; no owner = no reflect. **Nothing visibly travels to the
-  enemy** (user decision: the read is on the player). Hit-stop only touches `Time.timeScale` when it
-  is 1 and only restores it if still its own value (never fights pause).
+  enemy** (user decision: the read is on the player). Hit-stop = the shared **`Combat.HitStop.Play(duration,
+  timeScale)`** (also used by spikes): only touches `Time.timeScale` when it is 1, overlapping calls extend one freeze,
+  and only restores it if still its own value (never fights pause).
   **Visual ("Reflejo")**: everything hugs the player's *body*, never a bubble/shield, so it stacks
   with a spherical shield (like `HitShield` on IceCannonOrb). Placeholder: a solid **red border** =
   8 copies of the current body frame offset by `outlineWidth` behind the body, drawn flat with

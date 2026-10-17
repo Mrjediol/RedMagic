@@ -175,9 +175,6 @@ namespace RedMagic.Gameplay
         private float _graceUntil = float.NegativeInfinity;
         private GameObject _lastMeleeAttacker;
 
-        private Coroutine _hitStop;
-        private bool _hitStopOwnsTimeScale;
-
         // Placeholder, hijos del jugador creados una vez y reutilizados: 8 copias planas de la silueta
         // desplazadas detrás del cuerpo (= borde), un aura difusa, un tinte encima del cuerpo y un
         // destello en el punto de contacto.
@@ -267,7 +264,6 @@ namespace RedMagic.Gameplay
             // No se desactiva la acción: el InputActionAsset es compartido (ver PlayerAttack.Suppressed).
             if (_parryAction != null) _parryAction.performed -= OnParryPerformed;
             CloseWindow(notifyMiss: false);
-            EndHitStop();
             _flashTimer = 0f;
             SetVisual(false);
             if (_flash != null) _flash.enabled = false;
@@ -459,7 +455,7 @@ namespace RedMagic.Gameplay
 
             SoundTriggered?.Invoke(SoundTrigger.OnParrySuccess);
             ShowSuccessEffect(hit.Point);
-            StartHitStop();
+            HitStop.Play(hitStopDuration, hitStopTimeScale);
 
             Combat.Parry.RaiseSucceeded(hit);
         }
@@ -476,37 +472,6 @@ namespace RedMagic.Gameplay
             if (Items.PlayerHit.Deal(target, hit.Damage * reflectMultiplier, hit.Point, reflectKnockback,
                                      Items.HitKind.Parry) && reflectEffect != null)
                 VfxOneShot.Spawn(reflectEffect, BodyCenter(target), Facing, null, Scale);
-        }
-
-        // ------------------------------------------------------------------ hit-stop
-
-        private void StartHitStop()
-        {
-            if (hitStopDuration <= 0f) return;
-
-            // Sólo si el juego va a velocidad normal: no pisar la pausa ni una cámara lenta de depuración.
-            if (!_hitStopOwnsTimeScale && !Mathf.Approximately(Time.timeScale, 1f)) return;
-
-            if (_hitStop != null) StopCoroutine(_hitStop);
-            _hitStop = StartCoroutine(HitStopRoutine());
-        }
-
-        private IEnumerator HitStopRoutine()
-        {
-            _hitStopOwnsTimeScale = true;
-            Time.timeScale = hitStopTimeScale;
-            yield return new WaitForSecondsRealtime(hitStopDuration);
-            EndHitStop();
-        }
-
-        private void EndHitStop()
-        {
-            _hitStop = null;
-            if (!_hitStopOwnsTimeScale) return;
-            _hitStopOwnsTimeScale = false;
-
-            // Si mientras tanto se pausó (timeScale 0), la pausa manda y ella lo devolverá a 1.
-            if (Mathf.Approximately(Time.timeScale, hitStopTimeScale)) Time.timeScale = 1f;
         }
 
         // ------------------------------------------------------------------ visual

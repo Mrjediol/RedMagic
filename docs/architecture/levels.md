@@ -143,6 +143,24 @@ bands off for rock and/or platforms (1-cell platforms get top and bottom bands m
   `LevelDoor` of its bounding rectangle, `DontSave` (rebuilt on paint and load: the painted cells are the truth).
   `DoorTilemap.Doors` is the list for room logic. Menu *Preparar puertas pintables*.
 - Both palettes share `_Biomas/PaletaPlataformasArte`; pick the right target Tilemap. Also paintable in the web editor (format v3).
+- **Spikes (crystals)**: `SpikeTile` (`_Biomas/Hielo/Objetos/Pinchos/SpikeTile_Cristal`, palette row 3) painted in `Grid/Pinchos`
+  (renderer off); `SpikeTilemap` reads the `Level` rock around each cell — rock below = grows up, above = down, else from the
+  side wall — groups same-orientation cells into runs (2-cell sprite per pair, 1-cell for the leftover, variant by cell hash),
+  base-less art (`Cristal1_*` 256 px = 1 cell, `Cristal2_*` 512 px = 2 cells, pivot bottom-centre, `sink` into the rim) and
+  one trigger per run (layer Ignore Raycast, `SpikeHazard`, player team only). Generated objects are `DontSave`; rebuilt on
+  painting spikes or rock. Hit = damage + `CameraFollow.ShakeAll` + `HitStop` + fade and teleport to the respawn point
+  (`ParkourRoom.RespawnPointFor`), all tuned on `SpikeTilemap`. Not in the web editor yet.
+- **Gold chest** `LevelChest` (`Assets/Test/Parkour/CofreOro.prefab`, sheet `Objetos/ChestOpening.png`, 6 frames, 190 ppu):
+  interact (`prompt.chest_open`, `InteractInput`, touch button) → frames → `gold` (500) + `itemChance` (10 %) of
+  `ItemPickup.RandomItem` → hold → fade/rise/scale → inactive; `Opened` event.
+- **Respawn pad** `RespawnPad` (`PlataformaReaparicion.prefab`, `SpawnOn_cut`/`SpawnOff_cut`, trimmed copies of the user's
+  art): no collider, origin = ground point, `width` / `heightScale` (squash the isometric-ish art) / `sink`, `SpawnPosition`,
+  lit while it is the active checkpoint (`RespawnPad.Last`).
+- **Parkour room** `ParkourRoom` (needs a `LevelRoom`; *GameObject ▸ RedMagic ▸ Sala de parkour* makes one with pad left and
+  chest right): finds its pad and chest by position; lights the pad while the player is inside and the room isn't done; chest
+  opened → `LevelRoom.Unlock()` (the closed end door). Spikes inside it send the player back to its pad. Menu *Tools ▸ RedMagic ▸
+  Niveles ▸ Preparar parkour* (idempotent: art import, tile + palette, prefabs if missing, `Grid/Pinchos` on the open level;
+  EditorNiveles imports also add `Grid/Pinchos`).
 
 ## Pending
 **Door art**: the Ice1 door was drawn for a floor with depth; on the flat rim it doesn't sit well. Tried a procedural

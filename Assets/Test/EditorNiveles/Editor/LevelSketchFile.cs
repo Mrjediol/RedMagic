@@ -101,6 +101,7 @@ namespace RedMagic.EditorNiveles
 
             var artMap = ArtPlatformSetup.EnsureMap(level);
             var doorMap = DoorTileSetup.EnsureMap(level);
+            ParkourSetup.EnsureMap(level); // pinchos: aún sólo se pintan en Unity
             bool hasObjects = sketch.version >= 3; // v1/v2 no saben de objetos: no se borran los pintados en Unity
 
             var maps = new Dictionary<string, Tilemap>

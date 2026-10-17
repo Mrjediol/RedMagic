@@ -74,6 +74,9 @@
   coloured by the first wave that uses it, labelled `W<n> <enemy> ×<count>`.
 - The player keeps its prefab scale in every scene (the old per-scene `PlayerScaleConfig` is in `Assets/Legacy/`).
 
+- **Parkour rooms** (`ParkourRoom` next to a `LevelRoom`, no waves): start at a `RespawnPad`, end at a closed door that the
+  room's `LevelChest` opens; spikes send the player back to the pad. See `docs/architecture/levels.md` ▸ Painted objects.
+
 ## Level sketch → level scene
 
 Superseded: the old web tab 🧱 Boceto de nivel and `LevelSketchImporter` (prefab with tiled edge strips, `LevelKit`)

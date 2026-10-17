@@ -22,7 +22,9 @@
   (`Assets/Scripts/Run/`, self-bootstrapping persistent uGUI overlay, sorting 32000, unscaled time):
   `EnterCurrentRoutine` fades out after freezing and fades in after unfreezing; `ReturnToHub` fades
   out, then loads. Any `Single` load that arrives with the screen covered fades back in by itself,
-  so a cut transition can't leave it black. Timings/colour: `RunManager ▸ transitionFadeOut/In/Color`.
+  so a cut transition can't leave it black. Timings/colour: `RunManager ▸ transitionFadeOut/In/Color`. While the screen
+  is black the section loads with `Application.backgroundLoadingPriority = High` (`fastSceneLoading`; the default
+  BelowNormal only gives integration a few ms per frame). Each transition logs its phases (`[RunManager] Transición: …`).
 - **`SectionExit` is also how you leave the hub.** Assign its `world` (a `WorldDefinition` asset
   reference, not an index/name, so reordering `RunManager.worlds` can't desync it) and, with no run
   in progress, crossing it calls `StartRun(world)` instead of `AdvanceSection()`. Leaving the hub

@@ -122,6 +122,11 @@ namespace RedMagic.Run
         [Min(0)]
         [SerializeField] private int assetCleanupEveryNScenes = 1;
 
+        [Tooltip("Durante la transición (pantalla en negro), la carga de la sección usa todo el frame " +
+                 "(Application.backgroundLoadingPriority = High) en vez de unos pocos ms por frame. Mucho más rápido; " +
+                 "no se nota porque el juego está congelado y tapado.")]
+        [SerializeField] private bool fastSceneLoading = true;
+
         [Tooltip("Frames (con el juego congelado) que se esperan tras cargar la escena antes de " +
                  "devolver el control, para que el primer frame de trabajo pesado (integrar la " +
                  "escena, compilar shaders) caiga dentro de la transición y no en la primera " +
@@ -455,6 +460,12 @@ namespace RedMagic.Run
             yield return ScreenFader.FadeOut(transitionFadeOut, transitionFadeIn, transitionColor);
             Mark("fundido a negro");
 
+            // Con la pantalla en negro y el juego congelado no hay nada que proteger: la carga en segundo plano puede usar
+            // todo el frame. Por defecto (BelowNormal) Unity sólo dedica unos ms por frame a integrar la escena, y una sección
+            // grande tardaba más de un segundo en entrar sólo por ese reparto.
+            var loadingPriority = Application.backgroundLoadingPriority;
+            if (fastSceneLoading) Application.backgroundLoadingPriority = ThreadPriority.High;
+
             // 1. La escena-sostén se crea una sola vez por run. A partir de aquí siempre hay al
             //    menos una escena cargada, así que descargar la actual es legal.
             if (firstOfRun || !_runRootScene.IsValid() || !_runRootScene.isLoaded)
@@ -481,6 +492,7 @@ namespace RedMagic.Run
             {
                 // ResolveForLoad ya ha dejado en consola el motivo exacto.
                 Debug.LogError($"[RunManager] No se pudo cargar '{target}'. Se aborta la run.", this);
+                Application.backgroundLoadingPriority = loadingPriority;
                 IsTransitioning = false;
                 ReturnToHub(completed: false);
                 yield break;
@@ -498,6 +510,7 @@ namespace RedMagic.Run
             // no encadenar ese pico con el del reposicionamiento y la cámara.
             yield return null;
             Mark("integrar escena (Awake/OnEnable/Start)");
+            Application.backgroundLoadingPriority = loadingPriority;
 
             _loadedRunScene = target.GetLoadedScene();
             if (_loadedRunScene.IsValid())

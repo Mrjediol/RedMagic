@@ -89,6 +89,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/LargeLevelTest.unity
     guid: d1b13e0e447ec1b4b9c1ffeb48294eb7
+  - enabled: 1
+    path: Assets/Scenes/smallLevel.unity
+    guid: ff11bb79269d05c41b79bc76e7743eec
   m_configObjects:
     com.unity.adaptivePerformance.basic.provider_settings: {fileID: 11400000, guid: a99728a281b759d4dbfdbbd8fdd87634, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: c158f1ab2c0c7074eb5822584efa8ffa, type: 2}

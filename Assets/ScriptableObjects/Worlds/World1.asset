@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: Mundo 1
   unlocked: 1
   sectionPool:
-  - sceneAsset: {fileID: 102900000, guid: d1b13e0e447ec1b4b9c1ffeb48294eb7, type: 3}
-    scenePath: Assets/Scenes/LargeLevelTest.unity
-    sceneName: LargeLevelTest
+  - sceneAsset: {fileID: 102900000, guid: ff11bb79269d05c41b79bc76e7743eec, type: 3}
+    scenePath: Assets/Scenes/smallLevel.unity
+    sceneName: smallLevel
   sectionsPerRun: 2
   shopAfterSections: 01000000
   bossScene:

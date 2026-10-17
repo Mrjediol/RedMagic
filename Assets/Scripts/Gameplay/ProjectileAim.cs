@@ -84,12 +84,22 @@ namespace RedMagic.Gameplay
 
         /// <summary>
         /// Posición del cursor en el mundo, o null sin ratón / sin cámara. En modo táctil es el último
-        /// punto tocado para disparar (<see cref="RedMagic.Core.TouchInput.AimScreen"/>).
+        /// punto tocado para disparar (<see cref="RedMagic.Core.TouchInput.AimScreen"/>), o la dirección del joystick de
+        /// apuntado (<see cref="RedMagic.Core.TouchInput.AimDirection"/>) si la hay.
         /// </summary>
         public static Vector2? MouseWorld()
         {
             var camera = Camera.main;
             if (camera == null) return null;
+
+            // Joystick de apuntado táctil: un punto lejano en esa dirección desde el jugador.
+            var touchDir = RedMagic.Core.TouchInput.AimDirection;
+            if (touchDir.HasValue && RedMagic.Core.InputDeviceManager.TouchActive)
+            {
+                var shooter = RedMagic.Items.WeaponUser.Current;
+                Vector2 from = shooter != null ? (Vector2)shooter.transform.position : (Vector2)camera.transform.position;
+                return from + touchDir.Value.normalized * 20f;
+            }
 
             Vector3 screen;
             var touchAim = RedMagic.Core.TouchInput.AimScreen;

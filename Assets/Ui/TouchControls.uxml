@@ -21,6 +21,8 @@
                 <ui:VisualElement name="gestureStick" class="gesture-stick" picking-mode="Ignore" />
                 <ui:VisualElement name="gestureKnob" class="gesture-knob" picking-mode="Ignore" />
                 <ui:VisualElement name="gestureAim" class="gesture-aim" picking-mode="Ignore" />
+                <ui:VisualElement name="gestureAimStick" class="gesture-stick gesture-aim-stick" picking-mode="Ignore" />
+                <ui:VisualElement name="gestureAimKnob" class="gesture-knob gesture-aim-knob" picking-mode="Ignore" />
                 <!-- Botones sueltos (position absolute): su sitio de fábrica está en el USS (gesture-*); el que el
                      jugador mueva en Opciones ▸ Interfaz ▸ Colocar botones táctiles se guarda en HudSettings.
                      USAR se mete aquí con gestos (TouchControlsController.ApplyScheme). -->

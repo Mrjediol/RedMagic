@@ -99,7 +99,8 @@ namespace RedMagic.UI
             _gestureDashButton = _root.Q<Button>("gestureDashButton");
             gestures.Bind(_root.Q<VisualElement>("gestureSurface"), _root.Q<VisualElement>("gestureZone"),
                           _root.Q<VisualElement>("gestureStick"), _root.Q<VisualElement>("gestureKnob"),
-                          _root.Q<VisualElement>("gestureAim"));
+                          _root.Q<VisualElement>("gestureAim"), _root.Q<VisualElement>("gestureAimStick"),
+                          _root.Q<VisualElement>("gestureAimKnob"));
             _gestureParryButton = _root.Q<Button>("gestureParryButton");
             _touchControls = _root.Q<VisualElement>("touchControls");
             if (_interactButton != null) _interactButton.style.display = DisplayStyle.None;

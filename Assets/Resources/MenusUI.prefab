@@ -73,10 +73,13 @@ MonoBehaviour:
     moveZoneWidth: 0.336
     moveZoneHeight: 0.375
     showMoveZone: 1
+    moveAlpha: 0
     deadzone: 30
     stickRadius: 140
     swipeDownDropsThrough: 1
     dropThreshold: 110
+    aimDeadzone: 25
+    aimStickRadius: 110
     retapWindow: 0.25
     retapRadius: 200
   buttonHitPadding: 24

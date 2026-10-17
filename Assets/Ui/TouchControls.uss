@@ -203,6 +203,13 @@
     border-color: rgba(244, 206, 132, 0.9);
 }
 
+/* joystick de apuntado (armas que apuntan al cursor): el mismo aro y bola que el de movimiento, algo más pequeña */
+.gesture-aim-knob {
+    width: 90px;
+    height: 90px;
+    border-radius: 45px;
+}
+
 .gesture-aim {
     position: absolute;
     display: none;

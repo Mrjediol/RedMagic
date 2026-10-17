@@ -103,6 +103,12 @@ namespace RedMagic.Core
         /// </summary>
         public static Vector2? AimScreen { get; set; }
 
+        /// <summary>
+        /// Dirección elegida con el joystick de apuntado de los controles por gestos (armas que apuntan al cursor), o null.
+        /// En modo táctil manda sobre <see cref="AimScreen"/>: <c>ProjectileAim.MouseWorld</c> apunta desde el jugador hacia ella.
+        /// </summary>
+        public static Vector2? AimDirection { get; set; }
+
         /// <summary>True mientras se mantiene pulsado el botón táctil de interactuar (reciclar un item del suelo).</summary>
         public static bool InteractHeld { get; set; }
 
@@ -139,6 +145,7 @@ namespace RedMagic.Core
             InteractHeld = false;
             WeaponHeld = false;
             AimScreen = null;
+            AimDirection = null;
         }
 
         // Con "Reload Domain" desactivado los estáticos sobreviven entre sesiones de Play.

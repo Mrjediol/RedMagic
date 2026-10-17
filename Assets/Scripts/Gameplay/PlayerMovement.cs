@@ -350,7 +350,6 @@ namespace RedMagic.Gameplay
         private float _wallLeftTime = float.MinValue;
         private float _wallJumpLockTimer;
         private int _wallJumpDirection;
-        private int _dashHitWall;              // pared contra la que acaba de chocar un dash (agarra aunque no se apunte)
 
         private FrameInput _input;
         private Vector3 _lastPosition;
@@ -906,8 +905,7 @@ namespace RedMagic.Gameplay
 
         /// <summary>
         /// Agarre a la pared (cada frame, tras los sensores). Se agarra en el aire tocando una pared de la capa Ground y
-        /// apuntando hacia ella (o justo al chocar con ella un dash); sigue agarrado mientras la toque y no apunte hacia
-        /// fuera. Agarrado: no avanza en horizontal, mira hacia fuera, cae a <see cref="wallSlideSpeed"/> como mucho y
+        /// <b>sólo mientras se apunta hacia ella</b>: al soltar la dirección se cae con normalidad. Agarrado: no avanza en horizontal, mira hacia fuera, cae a <see cref="wallSlideSpeed"/> como mucho y
         /// recupera el doble salto y el dash (y su cooldown).
         /// </summary>
         private void UpdateWall()
@@ -919,9 +917,7 @@ namespace RedMagic.Gameplay
             bool can = allowWallSlide && touching != 0 && !_colDown && !IsKnockedBack && !_diving && _dashTimer <= 0f && _wallJumpLockTimer <= 0f;
 
             if (!can) _wallSide = 0;
-            else if (_wallSide == touching) { if (_input.X * touching < -0.01f) _wallSide = 0; } // apuntar hacia fuera suelta
-            else _wallSide = _input.X * touching > 0.01f || _dashHitWall == touching ? touching : 0;
-            _dashHitWall = 0;
+            else _wallSide = _input.X * touching > 0.01f ? touching : 0; // soltar la dirección (o apuntar fuera) suelta
 
             if (_wallSide != 0)
             {
@@ -1049,7 +1045,6 @@ namespace RedMagic.Gameplay
             if (_currentHorizontalSpeed == 0f ||
                 (_currentHorizontalSpeed > 0 && _colRight) || (_currentHorizontalSpeed < 0 && _colLeft))
             {
-                if (_currentHorizontalSpeed != 0f && !_colDown) _dashHitWall = _currentHorizontalSpeed > 0f ? 1 : -1; // se agarra solo
                 _currentHorizontalSpeed = 0f;
                 _dashTimer = 0f;
             }

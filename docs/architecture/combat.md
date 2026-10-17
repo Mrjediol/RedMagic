@@ -158,9 +158,9 @@
   list holds 5, `unlockedHits` = 3; items add hits with `ComboHitsEffect` ("Jugador · Golpes extra de combo",
   summed in `PlayerStats.ComboHitBonus`). Not yet: per-hit animations (player is still the old sprite rig).
 - **Wall slide / wall jump (`PlayerMovement` ▸ WALL, Hollow Knight's Mantis Claw)** — in the air, touching a Ground-layer
-  wall (platforms are never walls) and pointing at it, or a dash that hits it, clings: no horizontal motion, facing away,
+  wall (platforms are never walls) clings **only while pointing at it** (user decision; releasing = normal fall): no horizontal motion, facing away,
   fall capped at `wallSlideSpeed` (7; free fall 40), and **clinging refills the double jump, the air dash and the dash
-  cooldown**. Stays until pointing away, leaving the wall or landing. Jump while clinging (or within `wallCoyoteTime`, or a
+  cooldown**. Jump while clinging (or within `wallCoyoteTime`, or a
   buffered jump) = diagonal jump away: `wallJumpHeight` up, `wallJumpHorizontalSpeed` out, input ignored for
   `wallJumpInputLock` (0.12 s, short so holding toward the wall climbs it). Dash while clinging = straight out. A hit,
   a dash or a dive releases the wall. `IsWallSliding` / `WallSide` are exposed for the animation (none yet). Exact HK

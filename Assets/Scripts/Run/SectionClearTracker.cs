@@ -66,6 +66,7 @@ namespace RedMagic.Run
         /// borra solo al descargarse.
         /// </summary>
         private readonly HashSet<object> _holds = new();
+        private bool _forcedClear;   // ForceClear: el nivel se ha terminado por orden, queden o no enemigos
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void EnsureExists()
@@ -111,6 +112,7 @@ namespace RedMagic.Run
         public void Track(Scene scene)
         {
             Untrack();
+            _forcedClear = false;
 
             if (!scene.IsValid() || !scene.isLoaded)
             {
@@ -143,6 +145,19 @@ namespace RedMagic.Run
             _tracked.Add(health);
             health.Died += OnEnemyDied;
             Recount(announce: true);
+        }
+
+        /// <summary>
+        /// Da la sección por despejada aunque queden enemigos vivos en ella: el nivel lo termina quien lo dirige (el
+        /// <see cref="WaveManager"/> al acabar una oleada con "terminar nivel"), no el recuento. Sin esto los enemigos
+        /// colocados a mano en la escena seguían cerrando la salida después de terminar el nivel. Dura hasta la siguiente
+        /// sección (<see cref="Track"/>).
+        /// </summary>
+        public void ForceClear(bool announce = true)
+        {
+            if (_forcedClear) return;
+            _forcedClear = true;
+            Recount(announce);
         }
 
         /// <summary>Mantiene la sección sin despejar hasta <see cref="ReleaseHold"/>.</summary>
@@ -205,7 +220,7 @@ namespace RedMagic.Run
                 if (_deadSeen.Add(health)) LastDeathPosition = health.transform.position;
             }
 
-            bool nowCleared = alive == 0 && _holds.Count == 0;
+            bool nowCleared = _forcedClear || (alive == 0 && _holds.Count == 0);
             bool wasCleared = IsCleared;
 
             SetCleared(nowCleared, alive);

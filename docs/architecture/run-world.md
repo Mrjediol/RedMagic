@@ -53,8 +53,9 @@
     `startDelay`, then each `EnemySpawn` is `Instantiate`d after its `spawnDelay` at its spawn point and moved into the
     manager's scene. A wave is done when every spawned `Health` is dead (`Health.AnyDied` + a null/dead poll).
   - **On finish**: `launchWave` (`launchIndex`, -1 = the next one), `finishRoom` (opens its room's doors; optional
-    `dropItem` → `ItemPickup.Spawn` at the room centre), `finishLevel` (releases the `SectionClearTracker` hold →
-    exit/shop open, `OnAllWavesComplete`). Spawned enemies are **not** `Register`ed in the tracker, so an optional room
+    `dropItem` → `ItemPickup.Spawn` at the room centre), `finishLevel` (releases the `SectionClearTracker` hold **and
+    `ForceClear`s it** → exit/shop open even if enemies placed by hand in the scene are still alive — before, they kept the
+    exit shut; `OnAllWavesComplete`). Scenes without a `WaveManager` keep the kill-everything rule. Spawned enemies are **not** `Register`ed in the tracker, so an optional room
     left uncleared never blocks the exit. No wave marked `finishLevel` → the level finishes when every wave is done.
   - **Rooms** (`LevelRoom`, a cell rectangle with scene handles, *+ Sala* in the Inspector; it may include its doors):
     when the player's box is fully inside the room's **interior** — the rectangle shrunk `entryMargin` (2) cells left

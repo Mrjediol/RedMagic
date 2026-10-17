@@ -245,7 +245,9 @@ namespace RedMagic.Run
             if (Finished) return;
             Finished = true;
             Running = false;
-            ReleaseSection(announce: true);
+            ReleaseSection(announce: false);
+            // "terminar nivel" manda: la salida se abre aunque queden enemigos colocados a mano en la escena
+            if (SectionClearTracker.Instance != null) SectionClearTracker.Instance.ForceClear(announce: true);
             OnAllWavesComplete?.Invoke();
         }
 

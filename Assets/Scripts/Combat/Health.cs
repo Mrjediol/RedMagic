@@ -267,6 +267,9 @@ namespace RedMagic.Combat
         public bool TakeDamage(float amount)
         {
             if (amount <= 0f || IsDead || IsInvulnerable) return false;
+            // TEMPORAL — trucos de prueba (Opciones ▸ Pruebas)
+            bool cheatKill = DebugCheats.OneHitKill && Teams.Of(gameObject) != Team.Player;
+            if (DebugCheats.GodMode && Teams.Of(gameObject) == Team.Player) return false;
 
             // La armadura se aplica aquí, antes de nada más, para que todo lo que viene después
             // —la vida, los eventos, el número flotante— hable del daño que de verdad ha entrado.
@@ -283,7 +286,8 @@ namespace RedMagic.Combat
                 if (amount <= 0f) return false;
             }
 
-            if (HitAbsorber != null && HitAbsorber(this, amount))
+            if (cheatKill) amount = Mathf.Max(amount, currentHealth); // ni armadura ni escudo: muere de un golpe
+            else if (HitAbsorber != null && HitAbsorber(this, amount))
             {
                 StartInvulnerability(invulnerabilityDuration);
                 return false;

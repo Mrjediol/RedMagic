@@ -659,6 +659,12 @@
           "text": "Enganchar NivelHielo_1000 como primera sección de la run",
           "done": true,
           "note": "World1-3 (ScriptableObjects/Worlds) apuntan aún a escenas de Legacy: una run desde el hub carga escenas viejas y LegacyGuard lo avisará. PlayerScaleConfig también lista escenas viejas. Hecho 2026-10-13: NivelHielo_1000 y 3 CombatRoomsTest están en World1 (2 secciones por run) y en Build Settings."
+        },
+        {
+          "done": false,
+          "id": "quitar-trucos-prueba",
+          "text": "Quitar los trucos de prueba (inmortal / matar de un golpe) de Opciones antes de publicar",
+          "note": "DebugCheats + 2 filas en OptionsMenu.uxml / OptionsMenuController + 2 líneas en Health.TakeDamage + claves options.debug.*"
         }
       ]
     },

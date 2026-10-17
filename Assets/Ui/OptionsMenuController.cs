@@ -32,6 +32,7 @@ namespace RedMagic.UI
         private Button _resolutionPrev, _resolutionNext, _languagePrev, _languageNext, _fpsLimitPrev, _fpsLimitNext;
         private Label _resolutionValue, _languageValue, _fpsLimitValue;
         private Toggle _showFpsToggle;
+        private Toggle _godModeToggle, _oneHitKillToggle;   // TEMPORAL: trucos de prueba
         private Toggle _controlsToggle;
         private Toggle _gestureControlsToggle;
 
@@ -90,6 +91,8 @@ namespace RedMagic.UI
             _fpsLimitNext = _root.Q<Button>("fpsLimitNext");
             _fpsLimitValue = _root.Q<Label>("fpsLimitValue");
             _showFpsToggle = _root.Q<Toggle>("showFpsToggle");
+            _godModeToggle = _root.Q<Toggle>("godModeToggle");
+            _oneHitKillToggle = _root.Q<Toggle>("oneHitKillToggle");
             _controlsToggle = _root.Q<Toggle>("controlsToggle");
             _gestureControlsToggle = _root.Q<Toggle>("gestureControlsToggle");
 
@@ -136,6 +139,8 @@ namespace RedMagic.UI
             WireArrow(_fpsLimitPrev, () => StepFpsLimit(-1));
             WireArrow(_fpsLimitNext, () => StepFpsLimit(1));
             _showFpsToggle?.RegisterValueChangedCallback(OnShowFpsToggled);
+            _godModeToggle?.RegisterValueChangedCallback(OnGodModeToggled);
+            _oneHitKillToggle?.RegisterValueChangedCallback(OnOneHitKillToggled);
             Loc.Changed += OnLanguageChanged;
             _root.RegisterCallback<NavigationMoveEvent>(OnNavigationMove, TrickleDown.TrickleDown);
             _root.RegisterCallback<FocusInEvent>(OnFocusIn);
@@ -168,6 +173,8 @@ namespace RedMagic.UI
             MenuSkinDresser.DressToggle(_musicMute, skin);
             MenuSkinDresser.DressToggle(_sfxMute, skin);
             MenuSkinDresser.DressToggle(_showFpsToggle, skin);
+            MenuSkinDresser.DressToggle(_godModeToggle, skin);
+            MenuSkinDresser.DressToggle(_oneHitKillToggle, skin);
             MenuSkinDresser.DressToggle(_controlsToggle, skin);
             MenuSkinDresser.DressToggle(_gestureControlsToggle, skin);
             MenuSkinDresser.DressToggle(_hurtToggle, skin);
@@ -200,6 +207,8 @@ namespace RedMagic.UI
             UnwireArrow(_languagePrev, PrevLanguage);
             UnwireArrow(_languageNext, NextLanguage);
             _showFpsToggle?.UnregisterValueChangedCallback(OnShowFpsToggled);
+            _godModeToggle?.UnregisterValueChangedCallback(OnGodModeToggled);
+            _oneHitKillToggle?.UnregisterValueChangedCallback(OnOneHitKillToggled);
             Loc.Changed -= OnLanguageChanged;
             if (_root != null)
             {
@@ -249,7 +258,7 @@ namespace RedMagic.UI
                                         _controlsToggle, _gestureControlsToggle, _enemyModePrev, _enemyNumbersToggle, _enemyCooldownsToggle,
                                         _layoutButton, _layoutResetButton, _touchLayoutButton, _touchLayoutResetButton }
                 : new VisualElement[] { _masterSlider, _masterMute, _musicSlider, _musicMute, _sfxSlider, _sfxMute,
-                                        _resolutionPrev, _fpsLimitPrev, _showFpsToggle, _languagePrev };
+                                        _resolutionPrev, _fpsLimitPrev, _showFpsToggle, _languagePrev, _godModeToggle, _oneHitKillToggle };
             var stops = new System.Collections.Generic.List<VisualElement> { iface ? _interfaceTab : _generalTab };
             stops.AddRange(page);
             stops.Add(_backButton);
@@ -576,6 +585,8 @@ namespace RedMagic.UI
                                                 : Loc.Get("options.fps_screen", PerformanceSettings.ScreenRefreshRate());
             }
             _showFpsToggle?.SetValueWithoutNotify(PerformanceSettings.ShowFps);
+            _godModeToggle?.SetValueWithoutNotify(Combat.DebugCheats.GodMode);
+            _oneHitKillToggle?.SetValueWithoutNotify(Combat.DebugCheats.OneHitKill);
 
             if (_languageValue != null)
             {
@@ -585,6 +596,10 @@ namespace RedMagic.UI
                 _languageValue.text = name;
             }
         }
+
+        // TEMPORAL: trucos de prueba (DebugCheats)
+        private void OnGodModeToggled(ChangeEvent<bool> e) => Combat.DebugCheats.GodMode = e.newValue;
+        private void OnOneHitKillToggled(ChangeEvent<bool> e) => Combat.DebugCheats.OneHitKill = e.newValue;
 
         /// <summary>Abre Opciones desde <paramref name="returnTo"/> y pausa el juego.</summary>
         public void Open(IMenuScreen returnTo)

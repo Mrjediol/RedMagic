@@ -58,6 +58,15 @@
                             <ui:Button name="languageNext" text="&gt;" class="option-arrow"/>
                         </ui:VisualElement>
                     </ui:VisualElement>
+                    <!-- TEMPORAL: trucos de prueba (DebugCheats) -->
+                    <ui:VisualElement name="godModeRow" class="option-row">
+                        <ui:Label text="#options.debug.god_mode" class="option-label option-label--wide"/>
+                        <ui:Toggle name="godModeToggle" label="#options.enabled" class="option-mute"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="oneHitKillRow" class="option-row">
+                        <ui:Label text="#options.debug.one_hit_kill" class="option-label option-label--wide"/>
+                        <ui:Toggle name="oneHitKillToggle" label="#options.enabled" class="option-mute"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="interfacePage" class="option-page option-page--compact">
                     <ui:VisualElement name="hurtRow" class="option-row">

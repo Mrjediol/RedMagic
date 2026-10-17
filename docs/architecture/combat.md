@@ -157,6 +157,10 @@
   skipping the combo cooldown. Melee knockback is near zero on purpose (0.08–0.2, visual only). **Hits 4–5**: the
   list holds 5, `unlockedHits` = 3; items add hits with `ComboHitsEffect` ("Jugador · Golpes extra de combo",
   summed in `PlayerStats.ComboHitBonus`). Not yet: per-hit animations (player is still the old sprite rig).
+- **TEMPORARY test cheats (`Combat.DebugCheats`, toggles in Options ▸ General ▸ *Pruebas*)** — not saved, off every
+  session. Applied at the top of `Health.TakeDamage`: `GodMode` = player-team takes no damage; `OneHitKill` = any damage
+  to an enemy-team `Health` is at least its current health (skips its `HitAbsorber` shield). Remove before release
+  (todo `quitar-trucos-prueba`).
 - **Weight of hits taken (`Gameplay.PlayerHurtFeedback`, on `PlayerNuevo`)** — on `Health.Damaged` (final amount): fraction
   of max health → `t` from `minAtFraction` (1 %, small but noticeable) to `maxAtFraction` (50 %, the max), shaped by
   `curve` (0.8); `HitStop` 0.06→0.25 s and `CameraFollow.ShakeAll` 0.1→0.6 amplitude (0.02 s at 1 % was too weak). Any source (enemies, projectiles, spikes).

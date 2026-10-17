@@ -12,7 +12,8 @@ namespace RedMagic.Levels
     /// Va en el Tilemap donde se pintan los <see cref="SpikeTile"/> (<c>Grid/Pinchos</c>, renderer apagado). Por cada celda
     /// mira la roca del <see cref="Level"/>: con roca debajo los cristales salen del suelo, encima del techo, y si no de la
     /// pared que tenga al lado. Las celdas seguidas con la misma orientación forman un tramo: un sprite de 2 celdas por cada
-    /// pareja, uno de 1 en la que sobre, y una sola zona de daño para todo el tramo. Lo generado NO se guarda en la escena
+    /// pareja, uno de 1 en la que sobre, y una sola zona de daño para todo el tramo. Un bloque de 2×2 celdas (2 a lo largo de
+    /// la superficie y 2 hacia fuera) es un solo cristal grande: el de 1 celda al doble, con su zona de daño el doble de alta. Lo generado NO se guarda en la escena
     /// (se rehace al pintar, al cambiar la roca y al cargar): lo que manda son las celdas pintadas.
     ///
     /// Al tocarlos, el jugador (sólo él: los enemigos pasan por encima) recibe daño con sacudida y hit-stop y vuelve al
@@ -108,7 +109,8 @@ namespace RedMagic.Levels
             int count = 0;
             foreach (var cell in b.allPositionsWithin)
             {
-                if (done.Contains(cell) || !(_map.GetTile(cell) is SpikeTile tile)) continue;
+                // las celdas de fuera (apiladas sobre las de la superficie) sólo cuentan como parte de un cristal grande
+                if (done.Contains(cell) || !(_map.GetTile(cell) is SpikeTile tile) || IsOuter(cell)) continue;
                 var dir = DirOf(cell);
                 // el tramo avanza a lo largo de la superficie: en x para suelo/techo, en y para paredes
                 var step = dir == Dir.Up || dir == Dir.Down ? Vector3Int.right : Vector3Int.up;
@@ -116,15 +118,20 @@ namespace RedMagic.Levels
                 while (Same(start - step, tile, dir) && !done.Contains(start - step)) start -= step;
                 int n = 0;
                 while (Same(start + step * n, tile, dir)) { done.Add(start + step * n); n++; }
-                AddRun(root, tile, start, step, n, dir, ++count);
+                AddRun(root, tile, start, step, n, dir, ++count, done);
             }
 
             if (!Application.isPlaying) SetHideFlags(root, HideFlags.DontSave);
         }
 
-        private bool Same(Vector3Int c, SpikeTile tile, Dir dir) => _map.GetTile(c) == tile && DirOf(c) == dir;
+        private bool IsSpike(Vector3Int c) => _map.GetTile(c) is SpikeTile;
+
+        private bool Same(Vector3Int c, SpikeTile tile, Dir dir) => _map.GetTile(c) == tile && !IsOuter(c) && DirOf(c) == dir;
 
         private bool Solid(int x, int y) => _level != null && _level.IsSolid(x, y);
+
+        private bool TouchesRock(Vector3Int c) =>
+            Solid(c.x, c.y - 1) || Solid(c.x, c.y + 1) || Solid(c.x - 1, c.y) || Solid(c.x + 1, c.y);
 
         private Dir DirOf(Vector3Int c)
         {
@@ -135,28 +142,65 @@ namespace RedMagic.Levels
             return Dir.Up;
         }
 
-        private void AddRun(Transform root, SpikeTile tile, Vector3Int start, Vector3Int step, int n, Dir dir, int index)
+        private static Vector3Int Outward(Dir dir) => dir switch
+        {
+            Dir.Up => Vector3Int.up, Dir.Down => Vector3Int.down, Dir.Right => Vector3Int.right, _ => Vector3Int.left,
+        };
+
+        /// <summary>Celda sin roca al lado apilada encima (hacia fuera) de una celda de superficie: la segunda fila de un 2×2.</summary>
+        private bool IsOuter(Vector3Int c)
+        {
+            if (TouchesRock(c)) return false;
+            foreach (Dir d in System.Enum.GetValues(typeof(Dir)))
+            {
+                var n = c - Outward(d);
+                if (IsSpike(n) && TouchesRock(n) && DirOf(n) == d) return true;
+            }
+            return false;
+        }
+
+        private void AddRun(Transform root, SpikeTile tile, Vector3Int start, Vector3Int step, int n, Dir dir, int index, HashSet<Vector3Int> done)
         {
             var run = new GameObject($"Pinchos {index} ({n})");
             run.transform.SetParent(root, false);
             int ignoreRaycast = LayerMask.NameToLayer("Ignore Raycast"); // con Queries Hit Triggers, que no frene rayos ni balas
             if (ignoreRaycast >= 0) run.layer = ignoreRaycast;
+            var o = Outward(dir);
 
-            // sprites: parejas de 2 celdas y, si sobra una, una de 1
+            // sprites: un 2×2 pintado (2 a lo largo y 2 hacia fuera) = el cristal de 1 celda al doble; si no, parejas de
+            // 2 celdas y, si sobra una, una de 1
             for (int k = 0; k < n;)
             {
+                var c = start + step * k;
+                bool big = k + 1 < n && Free(c + o, tile, done) && Free(c + step + o, tile, done) && tile.oneCell != null && tile.oneCell.Length > 0;
+                if (big)
+                {
+                    done.Add(c + o);
+                    done.Add(c + step + o);
+                    AddSprite(run.transform, Pick(tile.oneCell, c), c, 2, 2f, dir, tile.sink);
+                    AddZone(run, tile, c, 2, 2f * tile.hurtDepth, dir);
+                    k += 2;
+                    continue;
+                }
                 bool pair = k + 1 < n && tile.twoCells != null && tile.twoCells.Length > 0;
                 int w = pair ? 2 : 1;
                 var set = pair ? tile.twoCells : tile.oneCell;
-                var c = start + step * k;
-                if (set != null && set.Length > 0) AddSprite(run.transform, Pick(set, c), c, step, w, dir, tile.sink);
+                if (set != null && set.Length > 0) AddSprite(run.transform, Pick(set, c), c, w, 1f, dir, tile.sink);
                 k += w;
             }
 
-            // zona de daño: el tramo entero, de la superficie hacia fuera
+            // zona de daño: el tramo entero, de la superficie hacia fuera (los cristales grandes llevan además la suya)
+            AddZone(run, tile, start, n, tile.hurtDepth, dir);
+            run.AddComponent<SpikeHazard>().Init(this);
+        }
+
+        private bool Free(Vector3Int c, SpikeTile tile, HashSet<Vector3Int> done) => _map.GetTile(c) == tile && IsOuter(c) && !done.Contains(c);
+
+        private void AddZone(GameObject run, SpikeTile tile, Vector3Int start, int n, float depth, Dir dir)
+        {
             var box = run.AddComponent<BoxCollider2D>();
             box.isTrigger = true;
-            float len = n - tile.hurtInset * 2f, depth = tile.hurtDepth;
+            float len = n - tile.hurtInset * 2f;
             var o = (Vector2)_map.CellToLocal(start);
             Rect r = dir switch
             {
@@ -167,10 +211,9 @@ namespace RedMagic.Levels
             };
             box.offset = r.center;
             box.size = r.size;
-            run.AddComponent<SpikeHazard>().Init(this);
         }
 
-        private void AddSprite(Transform parent, Sprite sprite, Vector3Int first, Vector3Int step, int w, Dir dir, float sink)
+        private void AddSprite(Transform parent, Sprite sprite, Vector3Int first, int w, float scale, Dir dir, float sink)
         {
             var go = new GameObject(sprite.name);
             go.transform.SetParent(parent, false);
@@ -184,6 +227,7 @@ namespace RedMagic.Levels
                 _ => new Vector3(o.x + 1f + sink, o.y + w * 0.5f),
             };
             go.transform.localRotation = Quaternion.Euler(0f, 0f, dir switch { Dir.Up => 0f, Dir.Down => 180f, Dir.Right => -90f, _ => 90f });
+            go.transform.localScale = new Vector3(scale, scale, 1f);
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = sprite;
             sr.sortingLayerName = LevelSorting.Layer;

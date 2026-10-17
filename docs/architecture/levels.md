@@ -145,7 +145,8 @@ bands off for rock and/or platforms (1-cell platforms get top and bottom bands m
 - Both palettes share `_Biomas/PaletaPlataformasArte`; pick the right target Tilemap. Also paintable in the web editor (format v3).
 - **Spikes (crystals)**: `SpikeTile` (`_Biomas/Hielo/Objetos/Pinchos/SpikeTile_Cristal`, palette row 3) painted in `Grid/Pinchos`
   (renderer off); `SpikeTilemap` reads the `Level` rock around each cell — rock below = grows up, above = down, else from the
-  side wall — groups same-orientation cells into runs (2-cell sprite per pair, 1-cell for the leftover, variant by cell hash),
+  side wall — groups same-orientation cells into runs (2-cell sprite per pair, 1-cell for the leftover, variant by cell hash;
+  a 2×2 block — 2 along the surface, 2 outward — is one big crystal: the 1-cell sprite ×2, hurt zone twice as deep),
   base-less art (`Cristal1_*` 256 px = 1 cell, `Cristal2_*` 512 px = 2 cells, pivot bottom-centre, `sink` into the rim) and
   one trigger per run (layer Ignore Raycast, `SpikeHazard`, player team only). Generated objects are `DontSave`; rebuilt on
   painting spikes or rock. Hit = damage + `CameraFollow.ShakeAll` + `HitStop` + fade and teleport to the respawn point

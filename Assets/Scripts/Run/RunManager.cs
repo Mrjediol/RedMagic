@@ -439,9 +439,21 @@ namespace RedMagic.Run
             IsTransitioning = true;
             Freeze();
 
+            // Medición de la transición (sale en consola al terminar): cuánto tarda cada fase, para saber qué hace
+            // lenta una carga en vez de suponerlo.
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            var total = System.Diagnostics.Stopwatch.StartNew();
+            var timing = new System.Text.StringBuilder();
+            void Mark(string what)
+            {
+                timing.Append(what).Append(' ').Append(clock.ElapsedMilliseconds).Append(" ms · ");
+                clock.Restart();
+            }
+
             // 0. Fundido a negro (tiempo real, el juego ya está congelado): todo lo que sigue —
             //    descarga, carga, integración — pasa con la pantalla tapada.
             yield return ScreenFader.FadeOut(transitionFadeOut, transitionFadeIn, transitionColor);
+            Mark("fundido a negro");
 
             // 1. La escena-sostén se crea una sola vez por run. A partir de aquí siempre hay al
             //    menos una escena cargada, así que descargar la actual es legal.
@@ -455,10 +467,12 @@ namespace RedMagic.Run
             //    Se descarga ANTES de cargar, que es lo que mantiene el pico de memoria en una
             //    sola sección.
             yield return UnloadPreviousRoutine(firstOfRun);
+            Mark($"descargar {(firstOfRun ? "hub" : "sección")} (limpieza de assets {_lastCleanupMs} ms)");
 
             // 3. El jugador persistente se crea una vez (si aún no existía, p. ej. si la run
             //    empezó sin haber pasado por el hub) y sobrevive a todas las secciones.
             EnsurePlayer();
+            Mark("jugador");
 
             // 4. Dentro la siguiente, en aditivo.
             var target = CurrentTarget;
@@ -473,6 +487,7 @@ namespace RedMagic.Run
             }
 
             while (!load.isDone) yield return null;
+            Mark($"cargar '{target.Name}'");
 
             // El Player que trae la escena para probarla suelta sobra: la run usa el persistente.
             // Se apaga ya, antes de su Start (aún no se ha enganchado a cámara, HUD, etc.).
@@ -482,6 +497,7 @@ namespace RedMagic.Run
             // más caro de la transición; se le deja respirar un frame antes de tocar nada más para
             // no encadenar ese pico con el del reposicionamiento y la cámara.
             yield return null;
+            Mark("integrar escena (Awake/OnEnable/Start)");
 
             _loadedRunScene = target.GetLoadedScene();
             if (_loadedRunScene.IsValid())
@@ -492,6 +508,7 @@ namespace RedMagic.Run
             RetargetCameras(_loadedRunScene);
             StockShop(_loadedRunScene);
             BindClearTracker();
+            Mark("colocar jugador y cámara");
 
             // 6. Música de la fase (World{n}-{puesto} o BossBattle{n}). Si no hay clip con ese
             //    nombre en Resources/Music, PlaySceneMusic deja la escena en silencio sin errores.
@@ -504,10 +521,12 @@ namespace RedMagic.Run
             //    LateUpdate de la cámara caigan dentro de la transición y no nada más soltar.
             for (int i = 0; i < postLoadSettleFrames; i++)
                 yield return null;
+            Mark($"asentar ({postLoadSettleFrames} frames)");
 
             Unfreeze();
             IsTransitioning = false;
             _flow = null;
+            Debug.Log($"[RunManager] Transición: {timing}TOTAL {total.ElapsedMilliseconds} ms (+ fundido de vuelta {transitionFadeIn:0.##} s)", this);
 
             // 8. La escena nueva aparece ya con el juego en marcha.
             ScreenFader.FadeIn(transitionFadeIn);
@@ -552,6 +571,8 @@ namespace RedMagic.Run
             SceneManager.MoveGameObjectToScene(reward, _loadedRunScene);
         }
 
+        private long _lastCleanupMs;   // lo que tardó Resources.UnloadUnusedAssets en la última descarga (para el log)
+
         private IEnumerator UnloadPreviousRoutine(bool firstOfRun)
         {
             Scene toUnload = firstOfRun ? hubScene.GetLoadedScene() : _loadedRunScene;
@@ -569,11 +590,14 @@ namespace RedMagic.Run
             // más pesa en una transición, así que su frecuencia se controla desde el Inspector
             // (assetCleanupEveryNScenes): en móvil, cada carga; en PC con memoria de sobra, cada
             // varias, para que las transiciones sean más suaves.
+            _lastCleanupMs = 0;
             if (assetCleanupEveryNScenes > 0 && ++_scenesSinceCleanup >= assetCleanupEveryNScenes)
             {
                 _scenesSinceCleanup = 0;
+                var watch = System.Diagnostics.Stopwatch.StartNew();
                 var cleanup = Resources.UnloadUnusedAssets();
                 while (!cleanup.isDone) yield return null;
+                _lastCleanupMs = watch.ElapsedMilliseconds;
             }
         }
 

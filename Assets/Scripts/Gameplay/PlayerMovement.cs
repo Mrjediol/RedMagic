@@ -322,6 +322,11 @@ namespace RedMagic.Gameplay
 
         // ---------------------------------------------------------------- movimiento
 
+        [Header("ENEMIGOS — empujar con el cuerpo")]
+        [Tooltip("Velocidad máxima (unidades/s) al andar contra un enemigo: a la que lo empuja. Andando normal se va a 13. " +
+                 "0 = no lo mueve nada (se queda pegado a él).")]
+        [Min(0f)] [SerializeField] private float enemyPushSpeed = 1f;
+
         [Header("MOVE")]
         [SerializeField]
         [Tooltip("Sube la precisión de colisión a costa de rendimiento.")]
@@ -373,6 +378,9 @@ namespace RedMagic.Gameplay
         private int _pendingStick;            // pared contra la que acaba de chocar un dash en el aire
         private int _wallStickSide;
         private float _wallStickTimer;
+
+        private ContactFilter2D _enemyFilter;
+        private readonly List<RaycastHit2D> _enemyHits = new List<RaycastHit2D>(8);
 
         private FrameInput _input;
         private Vector3 _lastPosition;
@@ -821,6 +829,35 @@ namespace RedMagic.Gameplay
             // Contra una pared se frena. No hay subida automática: un borde, por bajo que sea, se salta.
             if ((_currentHorizontalSpeed > 0 && _colRight) || (_currentHorizontalSpeed < 0 && _colLeft))
                 _currentHorizontalSpeed = 0;
+
+            // Contra un enemigo apenas avanza: así casi no lo empuja (ver enemyPushSpeed).
+            if (Mathf.Abs(_currentHorizontalSpeed) > enemyPushSpeed && EnemyAhead(_currentHorizontalSpeed > 0f ? 1 : -1))
+                _currentHorizontalSpeed = Mathf.Sign(_currentHorizontalSpeed) * enemyPushSpeed;
+        }
+
+        /// <summary>
+        /// ¿Hay un enemigo vivo pegado a la caja del jugador en esa dirección? El jugador es cinemático y mueve su
+        /// transform: contra un cuerpo dinámico la física lo aparta como si el jugador tuviera masa infinita, así que andar
+        /// contra un enemigo lo arrastraba. Frenando aquí, el choque sigue existiendo (el daño por contacto lo necesita)
+        /// pero el enemigo apenas se mueve. El dash no pasa por aquí (lo atraviesa, <see cref="PlayerDashCombat"/>).
+        /// </summary>
+        private bool EnemyAhead(int dir)
+        {
+            var b = BodyAt(transform.position);
+            var size = new Vector2(b.size.x * 0.9f, b.size.y * 0.8f);
+            float distance = 0.06f + Mathf.Abs(_currentHorizontalSpeed) * Time.deltaTime;
+            _enemyFilter.SetLayerMask(~(_groundLayer.value | _platformLayer.value));
+            _enemyFilter.useTriggers = false;
+            int n = Physics2D.BoxCast(b.center, size, 0f, new Vector2(dir, 0f), _enemyFilter, _enemyHits, distance);
+            for (int i = 0; i < n; i++)
+            {
+                var c = _enemyHits[i].collider;
+                if (c == null || c.attachedRigidbody == _body) continue;
+                if ((c.bounds.center.x - b.center.x) * dir <= 0f) continue;   // está detrás: alejarse no se frena
+                var h = c.GetComponentInParent<Health>();
+                if (h != null && !h.IsDead && Teams.Of(h.gameObject) != Team.Player) return true;
+            }
+            return false;
         }
 
         // ================================================================ gravedad

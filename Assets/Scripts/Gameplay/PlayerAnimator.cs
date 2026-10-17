@@ -43,6 +43,7 @@ namespace RedMagic.Gameplay
         private static readonly int DashingKey = Animator.StringToHash("Dashing");
         private static readonly int DoubleJumpKey = Animator.StringToHash("DoubleJump");
         private static readonly int InteractKey = Animator.StringToHash("Interact");
+        private static readonly int IdleStateHash = Animator.StringToHash("Idle");
 
         /// <summary>Animator en uso, por si otro script necesita consultarlo.</summary>
         public Animator Animator => animator;
@@ -144,9 +145,20 @@ namespace RedMagic.Gameplay
             animator.SetBool(DeadKey, true);
         }
 
+        /// <summary>
+        /// Al revivir (vuelta al hub, respawn) se sale de la muerte en el acto. El estado Die del controlador no tiene
+        /// transición de salida (sólo se entra por Any State), así que bajar Dead no bastaba: se quedaba en la pose de
+        /// muerte hasta que otro trigger (atacar, saltar…) lo sacaba.
+        /// </summary>
         private void OnRevived()
         {
-            if (animator != null) animator.SetBool(DeadKey, false);
+            if (animator == null) return;
+            animator.SetBool(DeadKey, false);
+            animator.ResetTrigger(HurtKey);
+            animator.ResetTrigger(AttackKey);
+            if (!animator.HasState(0, IdleStateHash)) return;
+            animator.Play(IdleStateHash, 0, 0f);
+            animator.Update(0f);
         }
     }
 }

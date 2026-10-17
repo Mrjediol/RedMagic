@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 3452199481863186579}
   - component: {fileID: 7356258496195605434}
   - component: {fileID: 7483600060583956546}
+  - component: {fileID: 4389117394150901812}
   m_Layer: 0
   m_Name: PlayerNuevo
   m_TagString: Player
@@ -342,6 +343,18 @@ MonoBehaviour:
   maxAirDashes: 1
   dashBuffer: 0.12
   dashIgnoresGravity: 1
+  allowWallSlide: 1
+  wallSlideSpeed: 7
+  wallJumpHorizontalSpeed: 15
+  wallJumpHeight: 27
+  wallJumpInputLock: 0.12
+  wallCoyoteTime: 0.1
+  wallDashStickTime: 0.5
+  wallStickShakeAmplitude: 0.15
+  wallStickShakeDuration: 0.12
+  wallDashOutShakeAmplitude: 0.08
+  wallDashOutShakeDuration: 0.1
+  enemyPushSpeed: 1
   _freeColliderIterations: 10
   snapToGround: 1
   groundSkin: 0.01
@@ -752,3 +765,25 @@ MonoBehaviour:
       initialized: 1
     silent: 0
   useGenericFallback: 1
+--- !u!114 &4389117394150901812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8299514448751579472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08bc8e8dd6bedfe41a7caa3c2bc9d497, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerHurtFeedback
+  minAtFraction: 0.01
+  maxAtFraction: 0.5
+  curve: 1.3
+  hitStopMin: 0.02
+  hitStopMax: 0.22
+  hitStopTimeScale: 0.03
+  shakeAmplitudeMin: 0.06
+  shakeAmplitudeMax: 0.6
+  shakeDurationMin: 0.1
+  shakeDurationMax: 0.4

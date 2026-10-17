@@ -157,6 +157,13 @@
   skipping the combo cooldown. Melee knockback is near zero on purpose (0.08–0.2, visual only). **Hits 4–5**: the
   list holds 5, `unlockedHits` = 3; items add hits with `ComboHitsEffect` ("Jugador · Golpes extra de combo",
   summed in `PlayerStats.ComboHitBonus`). Not yet: per-hit animations (player is still the old sprite rig).
+- **Weight of hits taken (`Gameplay.PlayerHurtFeedback`, on `PlayerNuevo`)** — on `Health.Damaged` (final amount): fraction
+  of max health → `t` from `minAtFraction` (1 %, barely noticeable) to `maxAtFraction` (50 %, the max), shaped by `curve`;
+  `HitStop` 0.02→0.22 s and `CameraFollow.ShakeAll` 0.06→0.6 amplitude. Any source (enemies, projectiles, spikes).
+- **Body vs enemies (`PlayerMovement` ▸ ENEMIGOS)** — the player is kinematic and moves its transform, so physics shoved
+  dynamic enemies as if the player had infinite mass. The collision stays (contact damage uses `OnCollisionStay2D`), but
+  walking into a live enemy-team body caps horizontal speed at `enemyPushSpeed` (1 u/s; walk is 13), so it barely moves.
+  Dashes still pass through (`PlayerDashCombat`).
 - **Wall slide / wall jump (`PlayerMovement` ▸ WALL, Hollow Knight's Mantis Claw)** — in the air, touching a Ground-layer
   wall (platforms are never walls) clings **only while pointing at it** (user decision; releasing = normal fall): no horizontal motion, facing away,
   fall capped at `wallSlideSpeed` (7; free fall 40), and **clinging refills the double jump, the air dash and the dash

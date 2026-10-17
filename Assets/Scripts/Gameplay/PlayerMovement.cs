@@ -100,6 +100,12 @@ namespace RedMagic.Gameplay
         /// </summary>
         public bool IsActive => _active;
 
+        /// <summary>True mientras se desliza agarrado a una pared (para la animación).</summary>
+        public bool IsWallSliding => _wallSide != 0;
+
+        /// <summary>-1 pared a la izquierda, 1 a la derecha, 0 sin pared. Mientras desliza se mira al lado contrario.</summary>
+        public int WallSide => _wallSide;
+
         /// <summary>True mientras dura un dash.</summary>
         public bool IsDashing => _dashTimer > 0f;
 
@@ -277,6 +283,23 @@ namespace RedMagic.Gameplay
         [Tooltip("Congela la caída durante el dash (dash horizontal puro).")]
         [SerializeField] private bool dashIgnoresGravity = true;
 
+        // Como la garra de mantis de Hollow Knight: agarrarse a una pared del aire la desliza despacio; saltar sale en
+        // diagonal hacia el lado contrario con el control bloqueado un instante; el dash sale recto hacia fuera; y
+        // agarrarse recarga el doble salto y el dash. Sólo las paredes de la capa Ground (las plataformas no son pared).
+        [Header("WALL — deslizar por la pared y salto de pared")]
+        [SerializeField] private bool allowWallSlide = true;
+        [Tooltip("Velocidad máxima de caída deslizando (unidades/s). La caída libre llega a 40.")]
+        [Min(0f)] [SerializeField] private float wallSlideSpeed = 7f;
+        [Tooltip("Velocidad horizontal con la que el salto de pared despega hacia el lado contrario.")]
+        [Min(0f)] [SerializeField] private float wallJumpHorizontalSpeed = 15f;
+        [Tooltip("Impulso vertical del salto de pared. 0 o menos = el del salto normal.")]
+        [SerializeField] private float wallJumpHeight = 27f;
+        [Tooltip("Segundos tras el salto de pared en que la dirección no cuenta (sale despegado aunque se apunte a la pared). " +
+                 "Corto: con la dirección hacia la pared se vuelve a ella y se trepa a saltos.")]
+        [Range(0f, 0.4f)] [SerializeField] private float wallJumpInputLock = 0.12f;
+        [Tooltip("Segundos tras soltarse de la pared en que aún vale el salto de pared (como el coyote time).")]
+        [Range(0f, 0.3f)] [SerializeField] private float wallCoyoteTime = 0.1f;
+
         // ---------------------------------------------------------------- movimiento
 
         [Header("MOVE")]
@@ -320,6 +343,14 @@ namespace RedMagic.Gameplay
         private float _dashCooldownTimer;
         private float _dashCooldownDuration;
         private int _dashDirection = 1;
+
+        // pared
+        private int _wallSide;                 // -1 pared a la izquierda, 1 a la derecha, 0 sin agarre
+        private int _lastWallSide;
+        private float _wallLeftTime = float.MinValue;
+        private float _wallJumpLockTimer;
+        private int _wallJumpDirection;
+        private int _dashHitWall;              // pared contra la que acaba de chocar un dash (agarra aunque no se apunte)
 
         private FrameInput _input;
         private Vector3 _lastPosition;
@@ -495,6 +526,8 @@ namespace RedMagic.Gameplay
                 _dashTimer = 0f;
                 _knockbackTimer = 0f;
                 _diving = false;
+                _wallSide = 0;
+                _wallJumpLockTimer = 0f;
                 _moveSource = MoveSource.None;
                 ClearDropThrough();
                 return;
@@ -526,6 +559,8 @@ namespace RedMagic.Gameplay
                 _airDashesUsed = 0;
                 ClearDropThrough();   // se ha vuelto a pisar algo: la caída a través ha terminado
             }
+
+            UpdateWall();
 
             if (_dashCooldownTimer > 0f) _dashCooldownTimer -= Time.deltaTime;
             if (!IsKnockedBack) TryStartDash();
@@ -736,7 +771,13 @@ namespace RedMagic.Gameplay
 
         private void CalculateWalk()
         {
-            if (_input.X != 0)
+            // Recién saltado de una pared: sale despegado hacia el otro lado aunque se apunte a la pared.
+            if (_wallJumpLockTimer > 0f)
+            {
+                _wallJumpLockTimer -= Time.deltaTime;
+                _currentHorizontalSpeed = _wallJumpDirection * wallJumpHorizontalSpeed;
+            }
+            else if (_input.X != 0)
             {
                 _currentHorizontalSpeed += _input.X * _acceleration * PlayerStats.Multiplier(PlayerStat.MoveSpeed) * Time.deltaTime;
                 _currentHorizontalSpeed = Mathf.Clamp(_currentHorizontalSpeed, -MoveClamp, MoveClamp);
@@ -772,6 +813,9 @@ namespace RedMagic.Gameplay
                 _currentVerticalSpeed -= fallSpeed * Time.deltaTime;
 
                 if (_currentVerticalSpeed < _fallClamp) _currentVerticalSpeed = _fallClamp;
+
+                // Agarrado a la pared se desliza despacio (subiendo no se toca: el impulso de un salto sigue).
+                if (_wallSide != 0 && _currentVerticalSpeed < -wallSlideSpeed) _currentVerticalSpeed = -wallSlideSpeed;
             }
         }
 
@@ -805,6 +849,10 @@ namespace RedMagic.Gameplay
                 Jumped?.Invoke();
                 SoundTriggered?.Invoke(SoundTrigger.OnJump);
             }
+            else if (!_colDown && CanWallJump)
+            {
+                WallJump();
+            }
             else if (_input.JumpDown && !_colDown && _airJumpsUsed < maxAirJumps)
             {
                 // Doble salto: cancela el dash y avisa para el efecto en los pies.
@@ -823,6 +871,72 @@ namespace RedMagic.Gameplay
                 _endedJumpEarly = true;
 
             if (_colUp && _currentVerticalSpeed > 0) _currentVerticalSpeed = 0;
+        }
+
+        /// <summary>
+        /// Salto de pared: agarrado (o recién soltado, <see cref="wallCoyoteTime"/>) y pulsando salto; agarrado también vale
+        /// un salto pulsado justo antes de tocarla (jump buffer). No gasta el doble salto.
+        /// </summary>
+        private bool CanWallJump
+        {
+            get
+            {
+                if (!allowWallSlide) return false;
+                if (_wallSide != 0) return _input.JumpDown || _lastJumpPressed + _jumpBuffer > Time.time;
+                return _input.JumpDown && _lastWallSide != 0 && Time.time - _wallLeftTime <= wallCoyoteTime;
+            }
+        }
+
+        private void WallJump()
+        {
+            int away = -(_wallSide != 0 ? _wallSide : _lastWallSide);
+            _wallSide = 0;
+            _wallLeftTime = float.MinValue;   // un salto de pared por agarre
+            _dashTimer = 0f;
+            Jump(wallJumpHeight > 0f ? wallJumpHeight : _jumpHeight);
+            _wallJumpDirection = away;
+            _wallJumpLockTimer = wallJumpInputLock;
+            _currentHorizontalSpeed = away * wallJumpHorizontalSpeed;
+            Facing = away;
+            if (_sprite != null) _sprite.flipX = away < 0;
+            SoundTriggered?.Invoke(SoundTrigger.OnJump);
+        }
+
+        // ================================================================ pared
+
+        /// <summary>
+        /// Agarre a la pared (cada frame, tras los sensores). Se agarra en el aire tocando una pared de la capa Ground y
+        /// apuntando hacia ella (o justo al chocar con ella un dash); sigue agarrado mientras la toque y no apunte hacia
+        /// fuera. Agarrado: no avanza en horizontal, mira hacia fuera, cae a <see cref="wallSlideSpeed"/> como mucho y
+        /// recupera el doble salto y el dash (y su cooldown).
+        /// </summary>
+        private void UpdateWall()
+        {
+            int touching = _colLeft && _colRight
+                ? (_input.X < -0.01f ? -1 : _input.X > 0.01f ? 1 : _wallSide)
+                : _colLeft ? -1 : _colRight ? 1 : 0;
+            int was = _wallSide;
+            bool can = allowWallSlide && touching != 0 && !_colDown && !IsKnockedBack && !_diving && _dashTimer <= 0f && _wallJumpLockTimer <= 0f;
+
+            if (!can) _wallSide = 0;
+            else if (_wallSide == touching) { if (_input.X * touching < -0.01f) _wallSide = 0; } // apuntar hacia fuera suelta
+            else _wallSide = _input.X * touching > 0.01f || _dashHitWall == touching ? touching : 0;
+            _dashHitWall = 0;
+
+            if (_wallSide != 0)
+            {
+                if (was == 0) _dashCooldownTimer = 0f;   // agarrarse devuelve el dash al momento
+                _airJumpsUsed = 0;
+                _airDashesUsed = 0;
+                _lastWallSide = _wallSide;
+                _currentHorizontalSpeed = 0f;
+                Facing = -_wallSide;
+                if (_sprite != null) _sprite.flipX = Facing < 0;
+            }
+            else if (was != 0)
+            {
+                _wallLeftTime = Time.time;
+            }
         }
 
         private void Jump(float height)
@@ -905,8 +1019,10 @@ namespace RedMagic.Gameplay
 
             if (!fromGround) _airDashesUsed++;
 
-            // Se lanza hacia donde se está apuntando; si no hay input, hacia donde se mira.
-            _dashDirection = Mathf.Abs(_input.X) > 0.01f ? (int)Mathf.Sign(_input.X) : Facing;
+            // Se lanza hacia donde se está apuntando; si no hay input, hacia donde se mira. Desde la pared, recto hacia fuera.
+            _dashDirection = _wallSide != 0 ? -_wallSide : Mathf.Abs(_input.X) > 0.01f ? (int)Mathf.Sign(_input.X) : Facing;
+            _wallSide = 0;
+            _wallJumpLockTimer = 0f;
             Facing = _dashDirection;
             if (_sprite != null) _sprite.flipX = _dashDirection < 0;
 
@@ -933,6 +1049,7 @@ namespace RedMagic.Gameplay
             if (_currentHorizontalSpeed == 0f ||
                 (_currentHorizontalSpeed > 0 && _colRight) || (_currentHorizontalSpeed < 0 && _colLeft))
             {
+                if (_currentHorizontalSpeed != 0f && !_colDown) _dashHitWall = _currentHorizontalSpeed > 0f ? 1 : -1; // se agarra solo
                 _currentHorizontalSpeed = 0f;
                 _dashTimer = 0f;
             }
@@ -1015,6 +1132,8 @@ namespace RedMagic.Gameplay
             _dashTimer = 0f;
             _endedJumpEarly = true;
             _diving = false;   // un golpe corta también el picado
+            _wallSide = 0;     // …y suelta la pared
+            _wallJumpLockTimer = 0f;
 
             if (velocity.y > 0f) _coyoteUsable = false;
         }

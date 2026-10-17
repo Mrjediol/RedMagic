@@ -311,6 +311,30 @@
           "text": "Plataformas y puertas: más variantes (barrotes, que caen, móviles) y pulido",
           "note": "Puerta de barrotes, plataformas que se caen/se mueven sobre LevelPlatform, colisión, decisión de la nieve junto a objetos.",
           "doc": "docs/tareas/objetos-pulir.md"
+        },
+        {
+          "done": false,
+          "id": "parkour-obstaculos",
+          "text": "Parkour: obstáculos en medio del mapa (no sólo en bordes como los pinchos)",
+          "note": "Pensar y proponer obstáculos colocables en el aire; reutilizar el golpe de los pinchos.",
+          "doc": "docs/tareas/parkour-obstaculos.md",
+          "steps": [
+            {
+              "id": "po-1",
+              "text": "Proponer opciones (flotante, péndulo, bloque que cae, viento)",
+              "done": false
+            },
+            {
+              "id": "po-2",
+              "text": "Sacar el golpe de los pinchos a un componente común",
+              "done": false
+            },
+            {
+              "id": "po-3",
+              "text": "Hacer el elegido y pintarlo/colocarlo en una sala de parkour",
+              "done": false
+            }
+          ]
         }
       ]
     },

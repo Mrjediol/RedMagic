@@ -41,12 +41,15 @@ Gesture scheme: parry sits where interact sits in the classic layout (above jump
 `Assets/Test/TouchGestures/TouchGestureInput.cs`, a serialized field (`gestures`) on `TouchControlsController` with all tuning
 in the Inspector. A full-screen `gestureSurface` sits UNDER the gesture buttons (attack, dash, jump): a finger in the
 bottom-left move zone is a floating stick (`TouchInput.Horizontal` = ±1 past the deadzone, drag down = `Down`); lift-and-
-retap near the same spot within `retapWindow` queues a dash and resumes walking the same way. The move zone and stick are
-drawn at `moveAlpha` (0 = invisible but working, user decision 2026-10-17). Any other finger is the weapon: **if the
+retap near the same spot within `retapWindow` queues a dash and resumes walking the same way. The move-zone outline is
+drawn at `zoneAlpha` (0 = invisible but working, user decision 2026-10-17); the move stick is always visible. Any other finger is the weapon: **if the
 equipped weapon aims at the cursor** (`MouseDirection`, or a comet aiming at the cursor) it becomes a floating **aim
-stick** (`gestureAimStick`/`gestureAimKnob`): dragging past `aimDeadzone` sets `TouchInput.AimDirection` (kept after
-release so a charge weapon fires that way) and holds the weapon; a tap without dragging fires once toward facing.
-`ProjectileAim.MouseWorld` turns `AimDirection` into a point 20 u from the player. (Before, the touched point itself was
+stick** (`gestureAimStick`/`gestureAimKnob`). The weapon is held (charging starts) from touch-down; dragging past
+`aimDeadzone` sets `TouchInput.AimDirection`, back inside it = null = straight toward facing; the value at release is
+what a charge weapon fires with.
+`ProjectileAim.MouseWorld` turns `AimDirection` into a point 20 u from the player; in Touch mode it never reads the
+mouse. **Gamepad, same rule**: right stick past `ProjectileAim.GamepadAimDeadzone` (0.35) = aim there, neutral = straight
+(read when the shot fires, i.e. on release for charge weapons). (Before, the touched point itself was
 the target, so enemies behind the move zone could not be aimed at.) Otherwise the old behaviour: the finger sets
 `TouchInput.WeaponHeld` (charge weapons charge/release like holding Q) and `TouchInput.AimScreen`, which
 `ProjectileAim.MouseWorld` uses instead of the mouse in Touch mode. Test in the Editor with Game view ▸ Simulator (mouse =

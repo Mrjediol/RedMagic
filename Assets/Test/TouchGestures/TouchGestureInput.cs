@@ -12,9 +12,9 @@ namespace RedMagic.UI
     /// <item><b>Zona de movimiento</b> (abajo a la izquierda): joystick flotante. El origen es donde se toca;
     /// arrastrar a un lado anda a tope hacia ese lado, abajo atraviesa plataformas. Soltar andando y volver a
     /// tocar enseguida cerca del mismo sitio = <b>dash</b>, y se sigue andando hacia el mismo lado.</item>
-    /// <item><b>Resto de la pantalla</b>: el arma. Si el arma equipada apunta al cursor, ahí aparece un <b>joystick de
-    /// apuntado</b> (el origen es donde se toca): arrastrar elige la dirección del disparo
-    /// (<see cref="TouchInput.AimDirection"/>) y mantiene el arma; un toque sin arrastrar dispara hacia donde se mira. Si
+    /// <item><b>Resto de la pantalla</b>: el arma, sujeta (y cargando) desde que se toca. Si el arma equipada apunta al
+    /// cursor, ahí aparece un <b>joystick de apuntado</b> (el origen es donde se toca): arrastrar elige la dirección del
+    /// disparo (<see cref="TouchInput.AimDirection"/>); con el dedo en el centro sale recto hacia donde se mira. Si
     /// no apunta al cursor, se mantiene el arma tocando en cualquier sitio (<see cref="TouchInput.WeaponHeld"/>,
     /// <see cref="TouchInput.AimScreen"/>). Con arma de carga, soltar con la carga completa dispara.</item>
     /// </list>
@@ -33,8 +33,10 @@ namespace RedMagic.UI
         [Tooltip("Pintar la zona de movimiento (para probar). Apagado = invisible.")]
         public bool showMoveZone = true;
 
-        [Tooltip("Opacidad de la zona y del joystick de movimiento (0 = invisibles, siguen funcionando).")]
-        [Range(0f, 1f)] public float moveAlpha = 0f;
+        [Tooltip("Opacidad del recuadro que marca la zona de movimiento (0 = invisible; la zona sigue funcionando). " +
+                 "El joystick de movimiento se ve siempre.")]
+        [UnityEngine.Serialization.FormerlySerializedAs("moveAlpha")]
+        [Range(0f, 1f)] public float zoneAlpha = 0f;
 
         [Header("Joystick")]
         [Tooltip("Píxeles de arrastre horizontal antes de empezar a andar.")]
@@ -51,7 +53,7 @@ namespace RedMagic.UI
         [Min(1f)] public float dropThreshold = 110f;
 
         [Header("Joystick de apuntado (armas que apuntan al cursor)")]
-        [Tooltip("Píxeles de arrastre antes de fijar la dirección. Por debajo, soltar dispara hacia donde se mira.")]
+        [Tooltip("Píxeles de arrastre antes de fijar la dirección. Por debajo, el disparo sale recto hacia donde se mira.")]
         [Min(0f)] public float aimDeadzone = 25f;
 
         [Tooltip("Arrastre máximo desde el origen; más allá, el origen sigue al dedo.")]
@@ -80,7 +82,6 @@ namespace RedMagic.UI
         private Vector2 _weaponPos;
         private Vector2 _weaponPanelPos;
         private bool _aimWithStick;     // este dedo es el joystick de apuntado
-        private bool _aimChosen;        // ya pasó la zona muerta: hay dirección
         private Vector2 _aimOrigin;
 
         /// <summary>Engancha la superficie y los elementos visuales (todos menos la superficie pueden ser null).</summary>
@@ -142,11 +143,9 @@ namespace RedMagic.UI
         /// <summary>Cada frame: tamaño y visibilidad de la zona (se ajusta en vivo desde el Inspector).</summary>
         public void Tick()
         {
-            if (_stick != null) _stick.style.opacity = moveAlpha;
-            if (_knob != null) _knob.style.opacity = moveAlpha;
             if (_zone == null) return;
-            SetVisible(_zone, showMoveZone && moveAlpha > 0f);
-            _zone.style.opacity = moveAlpha;
+            SetVisible(_zone, showMoveZone && zoneAlpha > 0f);
+            _zone.style.opacity = zoneAlpha;
             _zone.style.width = Length.Percent(moveZoneWidth * 100f);
             _zone.style.height = Length.Percent(moveZoneHeight * 100f);
         }
@@ -180,21 +179,23 @@ namespace RedMagic.UI
                 _weaponPos = pos;
                 _weaponPanelPos = evt.position;
                 _aimWithStick = AimsWithStick();
+                TouchInput.AimDirection = null;
+                // el arma se sujeta (y empieza a cargar) desde que se toca; un toque más corto que un frame también
+                // dispara un arma sin carga
+                TouchInput.WeaponHeld = true;
+                TouchInput.QueueWeapon();
                 if (_aimWithStick)
                 {
-                    // joystick de apuntado: aún no hay dirección; no se dispara hasta arrastrar (o al soltar, si es un toque)
+                    // joystick de apuntado: sin arrastrar no hay dirección y el disparo sale recto hacia donde se mira
+                    TouchInput.AimScreen = null;
                     _aimOrigin = pos;
-                    _aimChosen = false;
                     PlaceAimStick(Vector2.zero);
                     SetVisible(_aimStick, true);
                     SetVisible(_aimKnob, true);
                 }
                 else
                 {
-                    TouchInput.AimDirection = null;
                     TouchInput.AimScreen = PanelToScreen(evt.position);
-                    TouchInput.WeaponHeld = true;
-                    TouchInput.QueueWeapon();   // un toque más corto que un frame también dispara un arma sin carga
                     PlaceAim();
                     SetVisible(_aim, true);
                 }
@@ -247,9 +248,7 @@ namespace RedMagic.UI
                 _weaponPointer = -1;
                 if (_aimWithStick)
                 {
-                    // un toque sin arrastrar: un disparo hacia donde se mira. Si hubo dirección, se queda guardada para el
-                    // disparo de esta suelta (armas de carga) y el siguiente toque la vuelve a elegir.
-                    if (!_aimChosen) { TouchInput.AimDirection = null; TouchInput.QueueWeapon(); }
+                    // la dirección de este momento se queda para el disparo de la suelta (armas de carga): null = recto
                     SetVisible(_aimStick, false);
                     SetVisible(_aimKnob, false);
                 }
@@ -301,11 +300,8 @@ namespace RedMagic.UI
         {
             Vector2 d = pos - _aimOrigin;
             if (d.magnitude > aimStickRadius) { _aimOrigin = pos - d.normalized * aimStickRadius; d = d.normalized * aimStickRadius; }
-            if (d.magnitude >= aimDeadzone)
-            {
-                TouchInput.AimDirection = new Vector2(d.x, -d.y).normalized;   // y del panel crece hacia abajo
-                if (!_aimChosen) { _aimChosen = true; TouchInput.WeaponHeld = true; }
-            }
+            // fuera de la zona muerta, esa dirección; dentro (dedo quieto o vuelto al centro), recto hacia donde se mira
+            TouchInput.AimDirection = d.magnitude >= aimDeadzone ? new Vector2(d.x, -d.y).normalized : (Vector2?)null;   // y del panel crece hacia abajo
             PlaceAimStick(d);
         }
 
@@ -324,7 +320,7 @@ namespace RedMagic.UI
                 float half = HalfSize(_aimKnob, 90f);
                 _aimKnob.style.left = _aimOrigin.x + offset.x - half;
                 _aimKnob.style.top = _aimOrigin.y + offset.y - half;
-                _aimKnob.EnableInClassList("gesture-knob--active", _aimChosen);
+                _aimKnob.EnableInClassList("gesture-knob--active", TouchInput.AimDirection.HasValue);
             }
         }
 

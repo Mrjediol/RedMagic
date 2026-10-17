@@ -92,13 +92,21 @@ namespace RedMagic.Gameplay
             var camera = Camera.main;
             if (camera == null) return null;
 
-            // Joystick de apuntado táctil: un punto lejano en esa dirección desde el jugador.
-            var touchDir = RedMagic.Core.TouchInput.AimDirection;
-            if (touchDir.HasValue && RedMagic.Core.InputDeviceManager.TouchActive)
+            // Táctil: la dirección del joystick de apuntado o el punto tocado; sin ninguno, null (sale recto hacia donde se
+            // mira). Nunca el ratón: en el simulador del editor también hay uno y daría direcciones sin sentido.
+            if (RedMagic.Core.InputDeviceManager.TouchActive)
             {
-                var shooter = RedMagic.Items.WeaponUser.Current;
-                Vector2 from = shooter != null ? (Vector2)shooter.transform.position : (Vector2)camera.transform.position;
-                return from + touchDir.Value.normalized * 20f;
+                var touchDir = RedMagic.Core.TouchInput.AimDirection;
+                if (touchDir.HasValue) return FromPlayer(camera, touchDir.Value);
+                if (!RedMagic.Core.TouchInput.AimScreen.HasValue) return null;
+            }
+
+            // Mando: el stick derecho. Quieto = null (recto hacia donde se mira); inclinado = hacia ahí.
+            if (RedMagic.Core.InputDeviceManager.GamepadActive)
+            {
+                var pad = Gamepad.current;
+                Vector2 stick = pad != null ? pad.rightStick.ReadValue() : Vector2.zero;
+                return stick.magnitude >= GamepadAimDeadzone ? FromPlayer(camera, stick) : (Vector2?)null;
             }
 
             Vector3 screen;
@@ -115,6 +123,17 @@ namespace RedMagic.Gameplay
             if (float.IsNaN(screen.x) || float.IsNaN(screen.y) || float.IsInfinity(screen.x) || float.IsInfinity(screen.y)) return null;
             screen.z = Mathf.Abs(camera.transform.position.z);
             return camera.ScreenToWorldPoint(screen);
+        }
+
+        /// <summary>Inclinación mínima del stick derecho del mando para apuntar; por debajo el disparo sale recto.</summary>
+        public const float GamepadAimDeadzone = 0.35f;
+
+        /// <summary>Un punto lejano desde el jugador en <paramref name="direction"/> (lo que apuntan el joystick táctil y el mando).</summary>
+        private static Vector2 FromPlayer(Camera camera, Vector2 direction)
+        {
+            var shooter = RedMagic.Items.WeaponUser.Current;
+            Vector2 from = shooter != null ? (Vector2)shooter.transform.position : (Vector2)camera.transform.position;
+            return from + direction.normalized * 20f;
         }
 
         /// <summary>Centro del cuerpo del enemigo vivo más cercano a <paramref name="origin"/>, o null.</summary>

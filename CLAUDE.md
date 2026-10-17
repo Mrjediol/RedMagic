@@ -68,6 +68,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 - **Generic-first**: attacks/movements reusable by any enemy or boss; build generic behaviour first, then specific enemy. Every attack ships a default placeholder projectile/FX.
 - **Inspector-first**: plain fields/checkboxes over ScriptableObject indirection when it reads better in Inspector. Prefer redesign over workaround.
 - **Legacy** (`Assets/Legacy/`, `Resources/Legacy/`) and `Assets/_Reference/`: read-only, never build on it. What stops being used is **moved** there (not deleted) until the full cleanup; `LegacyGuard` logs any use to `docs/legacy-usage.log` (`docs/architecture/legacy.md`).
+- **Art / textures**: width and height multiples of 4 (else ETC2/DXT don't compress → RGBA32), ~100-128 px per unit max (camera = 20 u on 1080 px), sprites in a SpriteAtlas per character. Say so BEFORE art is produced. Fix plan for existing art: `docs/tareas/optimizacion-arte-carga.md`.
 - **New / experimental** content goes to `Assets/Test/` first; move it to its real place once it works.
 - **Search scope**: `Assets/Scripts`, `Assets/Ui`, `Assets/Audio`, `Assets/Scenes`. Skip `Assets/Brackeys/`, `Assets/Cainos/`, `Assets/Dragon Warrior Files/`.
 - "Biblioteca Jere" (antes "Biblioteca web") = custom tabbed Unity **editor window** (Tools ▸ Web ▸ Biblioteca Jere), NOT `Web/RedMagicWeb`. Tab "Enemies" = part-based, "EnemiesSprite" = sprite-sheet.

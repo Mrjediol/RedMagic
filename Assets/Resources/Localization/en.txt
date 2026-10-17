@@ -467,3 +467,7 @@ options.fps_limit = FPS limit
 options.fps_value = {0} FPS
 options.fps_screen = Display ({0} Hz)
 options.show_fps = Show FPS
+
+# --- carteles del tutorial (TutorialSign; se editan desde el Inspector del cartel)
+tutorial.largeleveltest.1 = Jump-DobleJump-DashToWall\nDashFromWall-DobleJump
+tutorial.largeleveltest.2 = Jump to wall

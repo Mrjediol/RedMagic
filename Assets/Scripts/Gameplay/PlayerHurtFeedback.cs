@@ -19,16 +19,16 @@ namespace RedMagic.Gameplay
         [Tooltip("Fracción de la vida máxima a la que el efecto llega al máximo (0,5 = 50 %).")]
         [Range(0.05f, 1f)] [SerializeField] private float maxAtFraction = 0.5f;
         [Tooltip("Forma de la subida: 1 = lineal, >1 = los golpes pequeños se notan menos y los grandes más.")]
-        [Range(0.3f, 3f)] [SerializeField] private float curve = 1.3f;
+        [Range(0.3f, 3f)] [SerializeField] private float curve = 0.8f;
 
         [Header("Hit-stop (segundos reales)")]
-        [Min(0f)] [SerializeField] private float hitStopMin = 0.02f;
-        [Min(0f)] [SerializeField] private float hitStopMax = 0.22f;
+        [Min(0f)] [SerializeField] private float hitStopMin = 0.06f;
+        [Min(0f)] [SerializeField] private float hitStopMax = 0.25f;
         [Tooltip("Velocidad del juego durante la congelación (0 = parado del todo).")]
         [Range(0f, 1f)] [SerializeField] private float hitStopTimeScale = 0.03f;
 
         [Header("Sacudida de cámara")]
-        [Min(0f)] [SerializeField] private float shakeAmplitudeMin = 0.06f;
+        [Min(0f)] [SerializeField] private float shakeAmplitudeMin = 0.1f;
         [Min(0f)] [SerializeField] private float shakeAmplitudeMax = 0.6f;
         [Min(0f)] [SerializeField] private float shakeDurationMin = 0.1f;
         [Min(0f)] [SerializeField] private float shakeDurationMax = 0.4f;

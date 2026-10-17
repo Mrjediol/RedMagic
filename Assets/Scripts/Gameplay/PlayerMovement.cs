@@ -627,6 +627,7 @@ namespace RedMagic.Gameplay
                 CalculateJumpApex();  // afecta a la caída: antes de la gravedad
                 CalculateGravity();   // vertical
                 CalculateJump();      // puede sobreescribir la vertical
+                LimitVerticalIntoEnemies();
             }
 
             SnapToGround();       // pega los pies al suelo (corrige el flotar del sensor)
@@ -831,8 +832,16 @@ namespace RedMagic.Gameplay
                 _currentHorizontalSpeed = 0;
 
             // Contra un enemigo apenas avanza: así casi no lo empuja (ver enemyPushSpeed).
-            if (Mathf.Abs(_currentHorizontalSpeed) > enemyPushSpeed && EnemyAhead(_currentHorizontalSpeed > 0f ? 1 : -1))
+            if (Mathf.Abs(_currentHorizontalSpeed) > enemyPushSpeed && EnemyAhead(new Vector2(_currentHorizontalSpeed > 0f ? 1 : -1, 0f), _currentHorizontalSpeed))
                 _currentHorizontalSpeed = Mathf.Sign(_currentHorizontalSpeed) * enemyPushSpeed;
+        }
+
+        /// <summary>Lo mismo en vertical: saltar contra un enemigo desde abajo o caerle encima apenas lo mueve.</summary>
+        private void LimitVerticalIntoEnemies()
+        {
+            if (_colDown || Mathf.Abs(_currentVerticalSpeed) <= enemyPushSpeed) return;
+            if (EnemyAhead(new Vector2(0f, _currentVerticalSpeed > 0f ? 1 : -1), _currentVerticalSpeed))
+                _currentVerticalSpeed = Mathf.Sign(_currentVerticalSpeed) * enemyPushSpeed;
         }
 
         /// <summary>
@@ -841,19 +850,20 @@ namespace RedMagic.Gameplay
         /// contra un enemigo lo arrastraba. Frenando aquí, el choque sigue existiendo (el daño por contacto lo necesita)
         /// pero el enemigo apenas se mueve. El dash no pasa por aquí (lo atraviesa, <see cref="PlayerDashCombat"/>).
         /// </summary>
-        private bool EnemyAhead(int dir)
+        private bool EnemyAhead(Vector2 dir, float speed)
         {
             var b = BodyAt(transform.position);
-            var size = new Vector2(b.size.x * 0.9f, b.size.y * 0.8f);
-            float distance = 0.06f + Mathf.Abs(_currentHorizontalSpeed) * Time.deltaTime;
+            // la caja se encoge en el eje que NO se mira, para no contar lo que sólo roza por el lado
+            var size = dir.x != 0f ? new Vector2(b.size.x * 0.9f, b.size.y * 0.8f) : new Vector2(b.size.x * 0.8f, b.size.y * 0.9f);
+            float distance = 0.06f + Mathf.Abs(speed) * Time.deltaTime;
             _enemyFilter.SetLayerMask(~(_groundLayer.value | _platformLayer.value));
             _enemyFilter.useTriggers = false;
-            int n = Physics2D.BoxCast(b.center, size, 0f, new Vector2(dir, 0f), _enemyFilter, _enemyHits, distance);
+            int n = Physics2D.BoxCast(b.center, size, 0f, dir, _enemyFilter, _enemyHits, distance);
             for (int i = 0; i < n; i++)
             {
                 var c = _enemyHits[i].collider;
                 if (c == null || c.attachedRigidbody == _body) continue;
-                if ((c.bounds.center.x - b.center.x) * dir <= 0f) continue;   // está detrás: alejarse no se frena
+                if (Vector2.Dot((Vector2)(c.bounds.center - b.center), dir) <= 0f) continue;   // está detrás: alejarse no se frena
                 var h = c.GetComponentInParent<Health>();
                 if (h != null && !h.IsDead && Teams.Of(h.gameObject) != Team.Player) return true;
             }

@@ -779,11 +779,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Gameplay.PlayerHurtFeedback
   minAtFraction: 0.01
   maxAtFraction: 0.5
-  curve: 1.3
-  hitStopMin: 0.02
-  hitStopMax: 0.22
+  curve: 0.8
+  hitStopMin: 0.06
+  hitStopMax: 0.25
   hitStopTimeScale: 0.03
-  shakeAmplitudeMin: 0.06
+  shakeAmplitudeMin: 0.1
   shakeAmplitudeMax: 0.6
   shakeDurationMin: 0.1
   shakeDurationMax: 0.4

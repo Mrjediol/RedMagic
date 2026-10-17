@@ -562,6 +562,30 @@
               "done": false
             }
           ]
+        },
+        {
+          "done": false,
+          "id": "personaje-nuevo-pared",
+          "text": "Personaje nuevo: animaciones y efectos de la pared (deslizar, agarrarse, clavarse con dash, salto y dash de pared)",
+          "note": "El movimiento ya funciona; faltan animaciones, FX y sonidos. Ganchos en PlayerMovement (IsWallSliding, IsWallStuck, WallSide, WallGrabbed, WallStuck, WallJumped).",
+          "doc": "docs/tareas/personaje-nuevo-pared.md",
+          "steps": [
+            {
+              "id": "pnp-1",
+              "text": "Animaciones: deslizar, agarrarse, clavado, salto de pared, dash desde la pared",
+              "done": false
+            },
+            {
+              "id": "pnp-2",
+              "text": "FX: roce al deslizar, impacto al clavarse, salida del salto, salida del dash",
+              "done": false
+            },
+            {
+              "id": "pnp-3",
+              "text": "Sonidos: roce, golpe al clavarse, salto de pared",
+              "done": false
+            }
+          ]
         }
       ]
     },

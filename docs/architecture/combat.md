@@ -162,7 +162,10 @@
   fall capped at `wallSlideSpeed` (7; free fall 40), and **clinging refills the double jump, the air dash and the dash
   cooldown**. Jump while clinging (or within `wallCoyoteTime`, or a
   buffered jump) = diagonal jump away: `wallJumpHeight` up, `wallJumpHorizontalSpeed` out, input ignored for
-  `wallJumpInputLock` (0.12 s, short so holding toward the wall climbs it). Dash while clinging = straight out. A hit,
+  `wallJumpInputLock` (0.12 s, short so holding toward the wall climbs it). Dash while clinging = straight out (small
+  shake). A dash that hits a wall in the air **sticks** for `wallDashStickTime` (0.5 s: no fall, no walking off, input
+  ignored; leave by jumping or dashing) with a small shake. Hooks for the future character: `IsWallSliding`,
+  `IsWallStuck`, `WallSide`, events `WallGrabbed` / `WallStuck` / `WallJumped` (`docs/tareas/personaje-nuevo-pared.md`). A hit,
   a dash or a dive releases the wall. `IsWallSliding` / `WallSide` are exposed for the animation (none yet). Exact HK
   constants were not found online: values are by feel, all in the Inspector.
 - **Dash in combat (`Gameplay.PlayerDashCombat`)** — passes through enemies: while dashing, `Physics2D.IgnoreCollision`

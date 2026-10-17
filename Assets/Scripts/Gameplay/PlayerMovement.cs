@@ -326,6 +326,9 @@ namespace RedMagic.Gameplay
         [Tooltip("Velocidad máxima (unidades/s) al andar contra un enemigo: a la que lo empuja. Andando normal se va a 13. " +
                  "0 = no lo mueve nada (se queda pegado a él).")]
         [Min(0f)] [SerializeField] private float enemyPushSpeed = 1f;
+        [Tooltip("La cabeza de un enemigo es suelo: al caerle encima el jugador se queda de pie sobre él y puede saltar " +
+                 "(recarga saltos y dash como el suelo).")]
+        [SerializeField] private bool standOnEnemies = true;
 
         [Header("MOVE")]
         [SerializeField]
@@ -755,6 +758,21 @@ namespace RedMagic.Gameplay
                     var plat = Physics2D.Raycast(point, Vector2.down, range, _platformLayer);
                     if (AcceptPlatformHit(plat)) Consider(plat, true);
                 }
+
+                // la cabeza de un enemigo vivo también es suelo (no subiendo, como las plataformas)
+                if (standOnEnemies && _currentVerticalSpeed <= 0f)
+                {
+                    _enemyFilter.SetLayerMask(~(_groundLayer.value | _platformLayer.value));
+                    _enemyFilter.useTriggers = false;
+                    int n = Physics2D.Raycast(point + Vector2.up * FootProbeRise, Vector2.down, _enemyFilter, _enemyHits, range + FootProbeRise);
+                    for (int i = 0; i < n; i++)
+                    {
+                        var hit = _enemyHits[i];
+                        if (hit.collider == null || hit.collider.attachedRigidbody == _body || !IsLiveEnemy(hit.collider)) continue;
+                        hit.distance -= FootProbeRise;
+                        Consider(hit, false);
+                    }
+                }
             }
 
             bool grounded = bestDistance <= range;
@@ -832,16 +850,34 @@ namespace RedMagic.Gameplay
                 _currentHorizontalSpeed = 0;
 
             // Contra un enemigo apenas avanza: así casi no lo empuja (ver enemyPushSpeed).
-            if (Mathf.Abs(_currentHorizontalSpeed) > enemyPushSpeed && EnemyAhead(new Vector2(_currentHorizontalSpeed > 0f ? 1 : -1, 0f), _currentHorizontalSpeed))
+            if (Mathf.Abs(_currentHorizontalSpeed) > enemyPushSpeed && EnemyAhead(new Vector2(_currentHorizontalSpeed > 0f ? 1 : -1, 0f), _currentHorizontalSpeed, out _))
                 _currentHorizontalSpeed = Mathf.Sign(_currentHorizontalSpeed) * enemyPushSpeed;
         }
 
-        /// <summary>Lo mismo en vertical: saltar contra un enemigo desde abajo o caerle encima apenas lo mueve.</summary>
+        /// <summary>
+        /// En vertical: saltar contra un enemigo desde abajo apenas lo mueve; al caerle encima se aterriza justo sobre él
+        /// (el sensor de suelo lo cuenta como suelo, ver <see cref="standOnEnemies"/>) en vez de meterse dentro.
+        /// </summary>
         private void LimitVerticalIntoEnemies()
         {
-            if (_colDown || Mathf.Abs(_currentVerticalSpeed) <= enemyPushSpeed) return;
-            if (EnemyAhead(new Vector2(0f, _currentVerticalSpeed > 0f ? 1 : -1), _currentVerticalSpeed))
-                _currentVerticalSpeed = Mathf.Sign(_currentVerticalSpeed) * enemyPushSpeed;
+            if (_colDown || _currentVerticalSpeed == 0f) return;
+            if (_currentVerticalSpeed > 0f)
+            {
+                if (_currentVerticalSpeed > enemyPushSpeed && EnemyAhead(Vector2.up, _currentVerticalSpeed, out _))
+                    _currentVerticalSpeed = enemyPushSpeed;
+                return;
+            }
+            if (!EnemyAhead(Vector2.down, _currentVerticalSpeed, out float gap)) return;
+            if (standOnEnemies)
+            {
+                // se baja lo justo para quedar apoyado en su cabeza este frame
+                float land = Mathf.Max(0f, gap - groundSkin) / Mathf.Max(Time.deltaTime, 0.0001f);
+                if (land < -_currentVerticalSpeed) _currentVerticalSpeed = -land;
+            }
+            else if (-_currentVerticalSpeed > enemyPushSpeed)
+            {
+                _currentVerticalSpeed = -enemyPushSpeed;
+            }
         }
 
         /// <summary>
@@ -850,24 +886,33 @@ namespace RedMagic.Gameplay
         /// contra un enemigo lo arrastraba. Frenando aquí, el choque sigue existiendo (el daño por contacto lo necesita)
         /// pero el enemigo apenas se mueve. El dash no pasa por aquí (lo atraviesa, <see cref="PlayerDashCombat"/>).
         /// </summary>
-        private bool EnemyAhead(Vector2 dir, float speed)
+        private bool EnemyAhead(Vector2 dir, float speed, out float gap)
         {
+            gap = float.MaxValue;
             var b = BodyAt(transform.position);
             // la caja se encoge en el eje que NO se mira, para no contar lo que sólo roza por el lado
             var size = dir.x != 0f ? new Vector2(b.size.x * 0.9f, b.size.y * 0.8f) : new Vector2(b.size.x * 0.8f, b.size.y * 0.9f);
             float distance = 0.06f + Mathf.Abs(speed) * Time.deltaTime;
             _enemyFilter.SetLayerMask(~(_groundLayer.value | _platformLayer.value));
             _enemyFilter.useTriggers = false;
-            int n = Physics2D.BoxCast(b.center, size, 0f, dir, _enemyFilter, _enemyHits, distance);
+            // lo que la caja encogida tiene de menos por delante: el hueco real es la distancia del barrido menos eso
+            float shrink = dir.x != 0f ? (b.size.x - size.x) * 0.5f : (b.size.y - size.y) * 0.5f;
+            int n = Physics2D.BoxCast(b.center, size, 0f, dir, _enemyFilter, _enemyHits, distance + shrink);
             for (int i = 0; i < n; i++)
             {
                 var c = _enemyHits[i].collider;
                 if (c == null || c.attachedRigidbody == _body) continue;
                 if (Vector2.Dot((Vector2)(c.bounds.center - b.center), dir) <= 0f) continue;   // está detrás: alejarse no se frena
-                var h = c.GetComponentInParent<Health>();
-                if (h != null && !h.IsDead && Teams.Of(h.gameObject) != Team.Player) return true;
+                if (!IsLiveEnemy(c)) continue;
+                gap = Mathf.Min(gap, _enemyHits[i].distance - shrink);
             }
-            return false;
+            return gap < float.MaxValue;
+        }
+
+        private static bool IsLiveEnemy(Collider2D c)
+        {
+            var h = c.GetComponentInParent<Health>();
+            return h != null && !h.IsDead && Teams.Of(h.gameObject) != Team.Player;
         }
 
         // ================================================================ gravedad

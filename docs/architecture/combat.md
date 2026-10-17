@@ -163,7 +163,9 @@
 - **Body vs enemies (`PlayerMovement` ▸ ENEMIGOS)** — the player is kinematic and moves its transform, so physics shoved
   dynamic enemies as if the player had infinite mass. The collision stays (contact damage uses `OnCollisionStay2D`), but
   moving into a live enemy-team body caps the speed toward it at `enemyPushSpeed` (1 u/s; walk is 13), horizontally and
-  vertically (jumping into one from below, falling on one), so it barely moves.
+  when jumping into one from below, so it barely moves. **A live enemy's head is ground** (`standOnEnemies`): falling
+  onto one lands exactly on top (`LimitVerticalIntoEnemies` cuts the fall to the gap) and `ProbeGround` counts it, so
+  the player stands on it and jumps from it with the ground refills. Contact damage still applies while touching it.
   Dashes still pass through (`PlayerDashCombat`).
 - **Wall slide / wall jump (`PlayerMovement` ▸ WALL, Hollow Knight's Mantis Claw)** — in the air, touching a Ground-layer
   wall (platforms are never walls) clings **only while pointing at it** (user decision; releasing = normal fall): no horizontal motion, facing away,

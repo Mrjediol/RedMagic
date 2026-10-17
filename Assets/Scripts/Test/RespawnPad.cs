@@ -17,8 +17,8 @@ namespace RedMagic.Levels
         [SerializeField] private Sprite onSprite;
         [Tooltip("Ancho en celdas.")]
         [Min(0.5f)] [SerializeField] private float width = 2.2f;
-        [Tooltip("Aplasta el arte en vertical (1 = como está). El arte es de vista algo isométrica: aplastarlo lo acerca a la vista lateral del juego.")]
-        [Range(0.2f, 1.5f)] [SerializeField] private float heightScale = 0.6f;
+        [Tooltip("Aplasta o estira el arte en vertical (1 = como está).")]
+        [Range(0.2f, 1.5f)] [SerializeField] private float heightScale = 1f;
         [Tooltip("Cuánto se hunde en el suelo (celdas), para que no flote sobre el borde del terreno.")]
         [Range(0f, 0.5f)] [SerializeField] private float sink = 0.1f;
         [SerializeField] private int sortingOrder = LevelSorting.OverTerrain + 2;

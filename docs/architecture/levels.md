@@ -151,16 +151,17 @@ bands off for rock and/or platforms (1-cell platforms get top and bottom bands m
   one trigger per run (layer Ignore Raycast, `SpikeHazard`, player team only). Generated objects are `DontSave`; rebuilt on
   painting spikes or rock. Hit = damage + `CameraFollow.ShakeAll` + `HitStop` + fade and teleport to the respawn point
   (`ParkourRoom.RespawnPointFor`), all tuned on `SpikeTilemap`. Not in the web editor yet.
-- **Gold chest** `LevelChest` (`Assets/Test/Parkour/CofreOro.prefab`, sheet `Objetos/ChestOpening.png`, 6 frames, 190 ppu):
+- **Gold chest** `LevelChest` (`Assets/Test/Parkour/CofreOro.prefab`, side-view sheet `Objetos/2DOpenChest.png`, 6 frames in
+  2 rows read top-left first, 175 ppu; the first, perspective art is in `Assets/Legacy/Sprites/Parkour/`):
   interact (`prompt.chest_open`, `InteractInput`, touch button) → frames → `gold` (500) + `itemChance` (10 %) of
   `ItemPickup.RandomItem` → hold → fade/rise/scale → inactive; `Opened` event.
-- **Respawn pad** `RespawnPad` (`PlataformaReaparicion.prefab`, `SpawnOn_cut`/`SpawnOff_cut`, trimmed copies of the user's
-  art): no collider, origin = ground point, `width` / `heightScale` (squash the isometric-ish art) / `sink`, `SpawnPosition`,
+- **Respawn pad** `RespawnPad` (`PlataformaReaparicion.prefab`, `2DSpawn_cut`/`2DSpawnOff_cut`, trimmed copies of the user's
+  side-view art): no collider, origin = ground point, `width` / `heightScale` (1) / `sink`, `SpawnPosition`,
   lit while it is the active checkpoint (`RespawnPad.Last`).
 - **Parkour room** `ParkourRoom` (needs a `LevelRoom`; *GameObject ▸ RedMagic ▸ Sala de parkour* makes one with pad left and
   chest right): finds its pad and chest by position; lights the pad while the player is inside and the room isn't done; chest
   opened → `LevelRoom.Unlock()` (the closed end door). Spikes inside it send the player back to its pad. Menu *Tools ▸ RedMagic ▸
-  Niveles ▸ Preparar parkour* (idempotent: art import, tile + palette, prefabs if missing, `Grid/Pinchos` on the open level;
+  Niveles ▸ Preparar parkour* (idempotent: art import, tile + palette, prefabs created or re-dressed with the current art, `Grid/Pinchos` on the open level;
   EditorNiveles imports also add `Grid/Pinchos`).
 
 ## Pending

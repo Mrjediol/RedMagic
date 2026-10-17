@@ -21,15 +21,16 @@ namespace RedMagic.LevelsEditor
         private const string ArtFolder = "Assets/Levels/_Biomas/Hielo/Objetos";
         private const string SpikeFolder = ArtFolder + "/Pinchos";
         private const string SpikeTilePath = SpikeFolder + "/SpikeTile_Cristal.asset";
-        private const string ChestSheet = ArtFolder + "/ChestOpening.png";
-        private const string PadOn = ArtFolder + "/SpawnOn_cut.png", PadOff = ArtFolder + "/SpawnOff_cut.png";
+        // arte en vista lateral (2D…); los _cut son copias recortadas de 2DSpawn / 2DSpawnOff (sin el margen del lienzo)
+        private const string ChestSheet = ArtFolder + "/2DOpenChest.png";
+        private const string PadOn = ArtFolder + "/2DSpawn_cut.png", PadOff = ArtFolder + "/2DSpawnOff_cut.png";
         private const string PalettePath = "Assets/Levels/_Biomas/PaletaPlataformasArte.prefab";
         private const string PrefabFolder = "Assets/Test/Parkour";
         public const string ChestPrefabPath = PrefabFolder + "/CofreOro.prefab";
         public const string PadPrefabPath = PrefabFolder + "/PlataformaReaparicion.prefab";
         private const string MapName = "Pinchos";
         private const float SpikePixelsPerCell = 256f; // Cristal1_* miden 256 (1 celda), Cristal2_* 512 (2 celdas)
-        private const float ChestPixelsPerUnit = 190f;  // fotograma de 310 px ≈ 1,6 celdas
+        private const float ChestPixelsPerUnit = 175f;  // fotograma de 265 px ≈ 1,5 celdas
 
         [MenuItem("Tools/RedMagic/Niveles/Preparar parkour")]
         public static void Setup()
@@ -186,46 +187,62 @@ namespace RedMagic.LevelsEditor
                 importer.mipmapEnabled = false;
                 importer.SaveAndReimport();
             }
-            var frames = AssetDatabase.LoadAllAssetsAtPath(ChestSheet).OfType<Sprite>().OrderBy(s => s.rect.x).ToArray();
+            // en orden de lectura: filas de arriba abajo, cada una de izquierda a derecha (vale para 1 fila o varias)
+            var frames = AssetDatabase.LoadAllAssetsAtPath(ChestSheet).OfType<Sprite>()
+                .OrderByDescending(s => Mathf.RoundToInt(s.rect.y / 50f)).ThenBy(s => s.rect.x).ToArray();
             if (frames.Length == 0) { Debug.LogWarning("La hoja " + ChestSheet + " no tiene sprites cortados."); return; }
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(ChestPrefabPath) != null) return; // no pisar lo retocado a mano
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(ChestPrefabPath) != null)
+            {
+                // ya existe: sólo se viste con el arte (fotogramas, sprite y tamaño de la zona de interactuar)
+                var contents = PrefabUtility.LoadPrefabContents(ChestPrefabPath);
+                DressChest(contents, frames);
+                PrefabUtility.SaveAsPrefabAsset(contents, ChestPrefabPath);
+                PrefabUtility.UnloadPrefabContents(contents);
+                return;
+            }
 
             EnsureFolder();
             var root = new GameObject("CofreOro");
-            var box = root.AddComponent<BoxCollider2D>();
-            box.isTrigger = true;
-            box.size = new Vector2(frames[0].bounds.size.x + 1f, frames[0].bounds.size.y + 0.5f);
+            root.AddComponent<BoxCollider2D>().isTrigger = true;
             var art = new GameObject("Arte");
             art.transform.SetParent(root.transform, false);
             var sr = art.AddComponent<SpriteRenderer>();
-            sr.sprite = frames[0];
             sr.sortingLayerName = LevelSorting.Layer;
             sr.sortingOrder = LevelSorting.OverTerrain + 3;
-            var chest = root.AddComponent<LevelChest>();
-            var so = new SerializedObject(chest);
+            root.AddComponent<LevelChest>();
+            DressChest(root, frames);
+            PrefabUtility.SaveAsPrefabAsset(root, ChestPrefabPath);
+            Object.DestroyImmediate(root);
+        }
+
+        private static void DressChest(GameObject root, Sprite[] frames)
+        {
+            var sr = root.GetComponentInChildren<SpriteRenderer>();
+            if (sr != null) sr.sprite = frames[0];
+            if (root.TryGetComponent<BoxCollider2D>(out var box))
+                box.size = new Vector2(frames[0].bounds.size.x + 1f, frames[0].bounds.size.y + 0.5f);
+            var so = new SerializedObject(root.GetComponent<LevelChest>());
             var list = so.FindProperty("frames");
             list.arraySize = frames.Length;
             for (int i = 0; i < frames.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
             so.ApplyModifiedPropertiesWithoutUndo();
-            PrefabUtility.SaveAsPrefabAsset(root, ChestPrefabPath);
-            Object.DestroyImmediate(root);
         }
 
         private static void EnsurePadPrefab()
         {
             var on = PreparePadSprite(PadOn);
             var off = PreparePadSprite(PadOff);
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(PadPrefabPath) != null) return;
-
-            EnsureFolder();
-            var root = new GameObject("PlataformaReaparicion");
-            var pad = root.AddComponent<RespawnPad>();
+            bool exists = AssetDatabase.LoadAssetAtPath<GameObject>(PadPrefabPath) != null;
+            if (!exists) EnsureFolder();
+            var root = exists ? PrefabUtility.LoadPrefabContents(PadPrefabPath) : new GameObject("PlataformaReaparicion");
+            if (!root.TryGetComponent<RespawnPad>(out var pad)) pad = root.AddComponent<RespawnPad>();
             var so = new SerializedObject(pad);
             so.FindProperty("onSprite").objectReferenceValue = on;
             so.FindProperty("offSprite").objectReferenceValue = off;
+            so.FindProperty("heightScale").floatValue = 1f; // arte de vista lateral: sin aplastar
             so.ApplyModifiedPropertiesWithoutUndo();
             PrefabUtility.SaveAsPrefabAsset(root, PadPrefabPath);
-            Object.DestroyImmediate(root);
+            if (exists) PrefabUtility.UnloadPrefabContents(root); else Object.DestroyImmediate(root);
         }
 
         private static Sprite PreparePadSprite(string path)

@@ -13,8 +13,10 @@ namespace RedMagic.Levels
     /// cambiar el tamaño; el marco NO se pinta, es implícito.
     ///
     /// El aspecto lo genera el código a partir de la cuadrícula, igual que el boceto web: roca con la textura del
-    /// bioma, borde de hielo de grosor variable con esquinas redondeadas, brillo y contorno. Se regenera al pintar,
-    /// al cambiar el tamaño o el bioma, y al cargar (las mallas no se guardan en la escena).
+    /// bioma, borde de hielo de grosor variable con esquinas redondeadas, brillo y contorno. Se regenera al pintar y
+    /// al cambiar el tamaño o el bioma. <b>Al cargar NO se genera</b>: se usa lo horneado al guardar la escena
+    /// (<see cref="LevelBake"/>, escrito por <c>LevelBaker</c>); sólo si falta o ya no cuadra con los tiles/bioma
+    /// (<see cref="Signature"/>) se genera como antes.
     /// El origen del nivel (su posición) es la esquina inferior izquierda.
     /// </summary>
     [ExecuteAlways]
@@ -54,6 +56,12 @@ namespace RedMagic.Levels
         [Tooltip("Bandas claras del borde en las plataformas. En las de 1 celda de grosor las de arriba y abajo se juntan.")]
         [SerializeField] private bool rimOnPlatforms = true;
 
+        [Tooltip("Aspecto horneado (lo pone el editor al guardar la escena). No se toca a mano.")]
+        [SerializeField, HideInInspector] private LevelBake bake;
+
+        /// <summary>Sube si cambia el código que genera el aspecto: invalida todos los horneados.</summary>
+        public const int GeneratorVersion = 1;
+
 
         public int Width => width;
         public int Height => height;
@@ -77,7 +85,7 @@ namespace RedMagic.Levels
             Tilemap.tilemapTileChanged += OnTilesChanged;
             LevelBiome.Changed += OnBiomeChanged;
             _dirty = true;
-            Rebuild();
+            if (!TryUseBake()) Rebuild();
         }
 
         private void OnDisable()
@@ -116,7 +124,83 @@ namespace RedMagic.Levels
 
         private void Update()
         {
-            if (_dirty) Rebuild();
+            if (_dirty && !TryUseBake()) Rebuild();
+        }
+
+        // ------------------------------------------------------------------ horneado
+
+        public LevelBake Bake => bake;
+
+        /// <summary>Lo que se está viendo ahora (para hornearlo). Null si aún no se ha generado en esta sesión.</summary>
+        public Mesh RockMesh => _rockMesh;
+        public Mesh RimMesh => _rimMesh;
+        public Mesh GlowMesh => _glowMesh;
+        public Material RockMaterial => _rockMaterial;
+        public Material RimMaterial => _rimMaterial;
+        public Material GlowMaterial => _glowMaterial;
+        public Texture2D GlowTexture => _glowTexture;
+
+        /// <summary>Lo pone el horneador del editor tras guardar el aspecto en <paramref name="baked"/>.</summary>
+        public void SetBake(LevelBake baked)
+        {
+            bake = baked;
+            if (bake != null) ApplyBake();
+        }
+
+        /// <summary>
+        /// ¿Hay un horneado bueno? Si lo hay, los renderers lo usan y no se genera nada. En el editor se comprueba que
+        /// cuadre con los tiles, el tamaño y el bioma de ahora; en una build se confía en él (se hornea al guardar).
+        /// </summary>
+        private bool TryUseBake()
+        {
+            if (bake == null || !bake.IsComplete || biome == null) return false;
+#if UNITY_EDITOR
+            if (bake.signature != Signature()) return false;
+#endif
+            _dirty = false;
+            ApplyBake();
+            return true;
+        }
+
+        private void ApplyBake()
+        {
+            if (terrain == null) terrain = GetComponentInChildren<Tilemap>(true);
+            BuildBackgroundRect();
+            SetupRenderer(Child(RockName), bake.rock, bake.rockMaterial, LevelSorting.Rock);
+            SetupRenderer(Child(GlowName), bake.glow, bake.glowMaterial, LevelSorting.Glow);
+            SetupRenderer(Child(RimName), bake.rim, bake.rimMaterial, LevelSorting.Rim);
+            // los colliders (Colision y Plataformas) ya vienen guardados en la escena
+        }
+
+        /// <summary>
+        /// Huella de todo lo que decide el aspecto: tamaño, interruptores del borde, valores del bioma, tiles de roca y de
+        /// plataforma y la versión del generador. Si cambia, el horneado ya no vale.
+        /// </summary>
+        public string Signature()
+        {
+            var sb = new System.Text.StringBuilder(4096);
+            sb.Append(GeneratorVersion).Append('|').Append(width).Append('x').Append(height)
+              .Append('|').Append(rimOnTerrain).Append(rimOnPlatforms).Append('|');
+            if (biome != null)
+            {
+                // los ids de instancia de las referencias cambian entre sesiones: fuera, y en su lugar los nombres
+                string json = System.Text.RegularExpressions.Regex.Replace(JsonUtility.ToJson(biome), "\"instanceID\":-?\\d+", "");
+                sb.Append(biome.name).Append(json)
+                  .Append(biome.rockTexture != null ? biome.rockTexture.name : "-")
+                  .Append(biome.rockShader != null ? biome.rockShader.name : "-")
+                  .Append(biome.rimShader != null ? biome.rimShader.name : "-");
+            }
+            AppendTiles(sb, terrain);
+            sb.Append('#');
+            AppendTiles(sb, platforms);
+            return Hash128.Compute(sb.ToString()).ToString();
+        }
+
+        private static void AppendTiles(System.Text.StringBuilder sb, Tilemap map)
+        {
+            if (map == null) return;
+            foreach (var p in map.cellBounds.allPositionsWithin)
+                if (map.HasTile(p)) sb.Append(p.x).Append(',').Append(p.y).Append(';');
         }
 
         private void OnTilesChanged(Tilemap map, Tilemap.SyncTile[] tiles)

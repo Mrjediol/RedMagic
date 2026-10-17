@@ -6672,7 +6672,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 3795682349391402279, guid: 5588f2c52e13a0a4e934fad8817383f7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6703,7 +6703,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 544314455}
-  m_Mesh: {fileID: 0}
+  m_Mesh: {fileID: 1580045843709961625, guid: 5588f2c52e13a0a4e934fad8817383f7, type: 2}
 --- !u!1 &601289649
 GameObject:
   m_ObjectHideFlags: 0
@@ -6762,7 +6762,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 8172860629687497909, guid: 5588f2c52e13a0a4e934fad8817383f7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6793,7 +6793,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 601289649}
-  m_Mesh: {fileID: 0}
+  m_Mesh: {fileID: -1005949071650949964, guid: 5588f2c52e13a0a4e934fad8817383f7, type: 2}
 --- !u!1 &675594527
 GameObject:
   m_ObjectHideFlags: 0
@@ -7630,6 +7630,7 @@ MonoBehaviour:
   platforms: {fileID: 1327903170}
   rimOnTerrain: 1
   rimOnPlatforms: 1
+  bake: {fileID: 11400000, guid: 5588f2c52e13a0a4e934fad8817383f7, type: 2}
 --- !u!4 &1097092301
 Transform:
   m_ObjectHideFlags: 0
@@ -8382,7 +8383,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 3407753030212646862, guid: 5588f2c52e13a0a4e934fad8817383f7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8413,7 +8414,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1921353856}
-  m_Mesh: {fileID: 0}
+  m_Mesh: {fileID: 9009736002304656111, guid: 5588f2c52e13a0a4e934fad8817383f7, type: 2}
 --- !u!1 &1955098983
 GameObject:
   m_ObjectHideFlags: 0

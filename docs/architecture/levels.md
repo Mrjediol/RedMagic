@@ -19,7 +19,15 @@ screen height), as forced by `RunManager`.
 - Terrain = a `Tilemap` child (`Grid/Terreno`, renderer disabled). Paint with the **`PaletaTerreno`** palette
   (`Assets/Levels/_Biomas/`): any tile = rock. The frame is NOT painted — cells on the border and outside are
   always rock (`Level.IsSolid`). Origin = bottom-left corner.
-- Regenerates on paint (`Tilemap.tilemapTileChanged`), on size/biome change and on load; meshes are `DontSave`.
+- Regenerates on paint (`Tilemap.tilemapTileChanged`) and on size/biome change (meshes `DontSave` while editing). **Not on
+  load: baked** (user decision 2026-10-17: "no tiene sentido que un terreno ya elegido se regenere en tiempo de ejecución").
+  `LevelBaker` (editor, `sceneSaving`) stores the exact generated rock/rim/glow meshes + materials in
+  `Assets/Levels/Horneado/<scene>_<level>.asset` and the glow as `_brillo.png` (uncompressed, no mips/NPOT scaling);
+  `Level.TryUseBake` points the renderers at it in `OnEnable`. Colliders are already scene-serialized. `Level.Signature()`
+  (size, rim toggles, biome values, terrain + platform tiles, `GeneratorVersion` — bump it when the generator changes)
+  is checked in the Editor only; a mismatch regenerates live and re-bakes on the next save. Builds trust the bake.
+  Verified pixel-identical; LargeLevelTest open 453 → 33 ms. *Tools ▸ RedMagic ▸ Niveles ▸ Hornear todas las escenas de
+  nivel* bakes every scene in `Assets/Scenes`. The bake asset is big text (meshes; LargeLevelTest ≈ 11 MB).
   Children it owns: `BG`, `Roca` (rock fill, Sprite-Lit, biome texture tiled in world space), `Brillo` (rock shadow +
   inner glow baked into a texture by exact distance-to-air at 8 texels/unit), `Borde` (4 colour bands of noisy
   width, dark outline (outer glow off: `outerGlowWidth` 0, the user didn't want it) — one vertex-colour mesh with `RedMagic/Fx Vertex Color`), `Colision` (one `EdgeCollider2D` per contour, layer Ground — **square corners**: the rounding is visual only, the game has no slopes). `PlayerMovement` matches: no slope following and no automatic step-up — any higher surface, even a 1-cell platform, has to be jumped onto (removed 2026-10-13: the slope `rise` lifted the player onto platforms up to `|move.x|·tan 80°` high, ~2.4 u in a dash).

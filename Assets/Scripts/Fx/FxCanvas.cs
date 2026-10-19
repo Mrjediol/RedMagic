@@ -21,6 +21,7 @@ namespace RedMagic.Fx
         private readonly List<Color> _colors = new List<Color>(1024);
         private readonly List<int> _tris = new List<int>(2048);
         private static readonly List<Vector2> Scratch = new List<Vector2>(256);
+        private bool _nanWarned;
 
         public FxCanvas(Transform parent, string name, Material material, string sortingLayer, int sortingOrder)
         {
@@ -57,6 +58,15 @@ namespace RedMagic.Fx
                 _transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
                 var ls = _transform.parent.lossyScale;
                 _transform.localScale = new Vector3(1f / NonZero(ls.x), 1f / NonZero(ls.y), 1f);
+            }
+            // Un solo vértice NaN deja los límites de la malla en NaN y Unity la descarta ENTERA (desaparece todo el lienzo):
+            // se aplastan a un punto y se avisa una vez para poder encontrar la pieza que lo genera.
+            for (int i = 0; i < _verts.Count; i++)
+            {
+                var v = _verts[i];
+                if (!float.IsNaN(v.x) && !float.IsNaN(v.y) && !float.IsInfinity(v.x) && !float.IsInfinity(v.y)) continue;
+                _verts[i] = Vector3.zero;
+                if (!_nanWarned) { _nanWarned = true; Debug.LogWarning($"[FxCanvas] Vértice NaN en '{_mesh.name}' (índice {i}): una pieza recibe un valor inválido."); }
             }
             _mesh.Clear();
             _mesh.SetVertices(_verts);

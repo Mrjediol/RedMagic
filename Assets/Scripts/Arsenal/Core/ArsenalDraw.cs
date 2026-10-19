@@ -79,7 +79,8 @@ namespace RedMagic.Arsenal
         public static float Seg(float t, float a, float b) => b <= a ? (t >= b ? 1f : 0f) : Mathf.Clamp01((t - a) / (b - a));
         public static float EaseOut(float t) => 1f - Mathf.Pow(1f - Mathf.Clamp01(t), 3f);
         public static float EaseIn(float t) { t = Mathf.Clamp01(t); return t * t * t; }
-        public static float Bump(float u) => Mathf.Sin(Mathf.PI * Mathf.Clamp01(u));
+        /// <summary>0 → 1 → 0. Nunca negativo: sin(π) da -8e-8 y elevarlo a una potencia fraccionaria daba NaN (malla descartada).</summary>
+        public static float Bump(float u) => Mathf.Max(0f, Mathf.Sin(Mathf.PI * Mathf.Clamp01(u)));
         public static float Noise1(float x, float s = 0f) => Mathf.Sin(x * 1.7f + s) * 0.5f + Mathf.Sin(x * 3.1f + s * 2.3f) * 0.3f + Mathf.Sin(x * 5.3f + s * 0.7f) * 0.2f;
         public static Color A(Color c, float a) => new Color(c.r, c.g, c.b, c.a * Mathf.Clamp01(a));
         public static Vector2 Dir(float ang) => new Vector2(Mathf.Cos(ang), Mathf.Sin(ang));

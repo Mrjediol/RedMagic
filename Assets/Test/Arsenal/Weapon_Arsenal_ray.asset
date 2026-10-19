@@ -1,0 +1,282 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca7e4e726982a714f8b0f3d8944d404b, type: 3}
+  m_Name: Weapon_Arsenal_ray
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Items.WeaponDefinition
+  textKey: weapon.arsenal_ray
+  displayName: ray
+  description: 
+  icon: {fileID: 0}
+  accent: {r: 0.85, g: 0.8, b: 0.6, a: 1}
+  baseDamage: 20
+  baseCooldown: 0.5
+  baseKnockbackMultiplier: 1
+  baseShot:
+    delivery: 4
+    count: 1
+    spreadAngle: 0
+    randomSpread: 0
+    speed: 12
+    lifetime: 2
+    size: {x: 0.35, y: 0.35}
+    muzzleOffset: {x: 0.5, y: 0.3}
+    overrideCollider: 0
+    colliderType: 0
+    colliderSize: {x: 0.2, y: 0.2}
+    colliderOffset: {x: 0, y: 0}
+    pierce: 0
+    arcGravity: 0
+    burstCount: 1
+    burstInterval: 0.09
+    impactRadius: 0
+    impactDamage: 0
+    projectilePrefab: {fileID: 0}
+    beamPrefab: {fileID: 0}
+    impactVfxPrefab: {fileID: 0}
+    explosionVfxPrefab: {fileID: 0}
+    chargeVfxPrefab: {fileID: 0}
+    faceDirection: 0
+    facingAxis: 0
+    aimMode: 0
+    meleeRange: 1.2
+    meleeArc: 90
+    chargeTime: 0
+    minChargeToFire: 0.2
+    minChargeDamage: 0.35
+    beamDuration: 0.5
+    beamTickInterval: 0.06
+    beamLength: 14
+    beamWidth: 0.5
+  comet:
+    behaviour: 0
+    chainCount: 3
+    chainRange: 7
+    chainStickTime: 0.2
+    pierceCount: 1
+    homingCursorRadius: 8
+    homingTurnRate: 320
+    aimAtCursor: 0
+    fireDelay: 0.06
+    impactFrames: 1
+    impactFrameDuration: 0.06
+    upgraded: 0
+    baseStats:
+      damageMultiplier: 1
+      speedMultiplier: 1
+      sizeScale: 1
+      knockbackMultiplier: 1
+      shakeAmplitude: 0.08
+      shakeDuration: 0.16
+    upgradeStats:
+      damageMultiplier: 2.5
+      speedMultiplier: 1.1
+      sizeScale: 1.45
+      knockbackMultiplier: 1.6
+      shakeAmplitude: 0.16
+      shakeDuration: 0.2
+    fxMaterial: {fileID: 0}
+    silhouetteMaterial: {fileID: 0}
+    pixel: 0.016
+    readySound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    holdLoopSound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    pierceEntrySound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    pierceExitSound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    chainStickSound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+    chainReleaseSound:
+      clips: []
+      volume: 1
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  arsenal:
+    rid: 7676312346081886452
+  innateElement: 0
+  universalTag: 100
+  chargeSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  fireSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  impactSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  terrainImpactSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 1
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  expireSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 0
+    positional: 1
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  explosionSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 2
+    positional: 1
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  beamLoopSound:
+    clips: []
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    noRepeatLast: 1
+    priority: 1
+    positional: 0
+    rolloffStart: 10
+    rolloffEnd: 32
+    initialized: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: 7676312346081886452
+      type: {class: RayKit, ns: RedMagic.Arsenal, asm: Assembly-CSharp}
+      data:
+        evolution: 0
+        upgrade1: 0
+        upgrade2: 0
+        upgrade3: 0
+        maxChannel: 2
+        cooldown: 0.8
+        range: 13
+        turnRate: 9
+        tick: 0.1
+        tickDamage: 6
+        push: 0.12
+        freezeTick: 0.07
+        burnTick: 0.6
+        dupAngle: 0.07
+        overMax: 2.5
+        overBurst: 40
+        overMin: 0.2
+        overHeavyAt: 0.5
+        overHeatCd: 2
+        sweetFrom: 0.75
+        sweetMul: 2
+        pierceAt: 0.5
+        waveRadius: 2.25
+        waveDamage: 30
+        prismCount: 2
+        prismRange: 7.5
+        prismMul: 0.6
+        chainJumps: 1
+        focusMul: 0.6
+        crownCount: 3
+        crownLen: 4.25
+        crownSpin: 5
+        crownMul: 0.9
+        beaconTime: 3
+        beaconMul: 0.8
+        beaconRange: 10.5
+        linkDps: 20
+        lifesteal: 0.3
+        novaDamage: 50
+        novaRadius: 2.75
+        watchTime: 1

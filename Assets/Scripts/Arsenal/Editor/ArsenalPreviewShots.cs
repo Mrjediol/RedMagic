@@ -102,5 +102,39 @@ namespace RedMagic.Arsenal.Editor
             }
             return "ok sing";
         }
+
+        public static string Ray(string dir)
+        {
+            ArsenalSetup.Run();
+            var w = Weapon("ray"); Vector2 m = new Vector2(0.5f, 1.05f);
+            var aim = Aim(m, new Vector2(6f, 1.05f));
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, 0);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(0.5f, _ => c.OnHold(aim, ArsenalPreviewStage.Dt)); st.Shot(dir + "/ray_base.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, RayKit.Sobrecarga, true, true, true);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(1.65f, _ => c.OnHold(aim, ArsenalPreviewStage.Dt)); st.Shot(dir + "/ray_sobrecarga_franja.png");
+                c.OnRelease(aim); st.Run(0.06f); st.Shot(dir + "/ray_sobrecarga_descarga.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); st.Dummy(new Vector2(7.6f, 39 * P)); Setup(w, RayKit.Prisma, true, false, true);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(0.6f, _ => c.OnHold(aim, ArsenalPreviewStage.Dt)); st.Shot(dir + "/ray_prisma_corona.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, RayKit.Faro, true, true, false);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(0.3f, _ => c.OnHold(aim, ArsenalPreviewStage.Dt)); c.OnRelease(aim);
+                st.Run(0.8f, _ => c.Tick(ArsenalPreviewStage.Dt, false)); st.Shot(dir + "/ray_faro.png");
+            }
+            return "ok ray";
+        }
     }
 }

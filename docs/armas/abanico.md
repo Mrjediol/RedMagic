@@ -34,7 +34,7 @@ Detalle:
   - Metralla: `shrapCount` esquirlas pequeñas (`shrapDamage`, vuelan 0,35 s) por estallido, hacia fuera (hacia arriba si la
     esquirla estaba en el suelo); no chocan con el enemigo que la tenía clavada.
   - Hemorragia: `bleedDps` por esquirla clavada (cada 0,5 s; es daño continuo: no activa items de golpe).
-- **Lanza**: recarga `lanceCooldown`; `lanceCount` esquirlas en fila, una cada `lanceGap` s, hacia donde apuntas **en ese momento**
+- **Lanza**: recarga `lanceCooldown`; las esquirlas BASE del arma (`count`) en fila, una cada `lanceGap` s, hacia donde apuntas **en ese momento**
   (puedes barrer durante la ráfaga), a `lanceSpeed` durante `lanceLife` s; cada una atraviesa 1 enemigo.
   - Perforación: atraviesan a todos; +`pierceDmgUp` de daño por enemigo atravesado.
   - Aceleración: manteniendo, cada ráfaga recarga `accelStep` antes (hasta ×`accelMin`); al soltar vuelve a empezar.
@@ -81,7 +81,6 @@ Detalle:
 | `shrapDamage` | 4 | 1 – 30 (paso 1) | Erizo · Metralla: daño |
 | `bleedDps` | 4 | 0 – 30 (paso 0.5) | Erizo · Hemorragia: daño/s por clavada |
 | `lanceCooldown` | 0.55 | 0.1 – 2 (paso 0.01) | Lanza: recarga (s) |
-| `lanceCount` | 5 | 1 – 12 (paso 1) | Lanza: esquirlas por ráfaga |
 | `lanceGap` | 0.035 | 0.01 – 0.15 (paso 0.005) | Lanza: tiempo entre esquirlas (s) |
 | `lanceSpeed` | 1350 | 400 – 2500 (paso 10) | Lanza: velocidad |
 | `lanceLife` | 0.75 | 0.1 – 2 (paso 0.05) | Lanza: alcance (s) |
@@ -123,6 +122,9 @@ evento de cambio en `WeaponUser` (2 armas activas).
 - 2026-10-19 · Arreglos tras la prueba del usuario: Metralla no salía, el Caleidoscopio base ya buscaba al siguiente (sólo debe
   con Buscador) y el Prisma no se dividía. Causa común de Metralla y Prisma: lo creado durante la actualización de una entidad se
   perdía (arreglado en `game.js ▸ step`; afectaba también a la estela de fuego, el racimo, los cráteres y algunos impactos).
+
+- 2026-10-19 · Lanza: la ráfaga usa las esquirlas base del arma (`count`; se quitó `lanceCount`) y con Duplicador cada esquirla sale
+  doble en el mismo instante (antes la segunda fila esperaba a que acabara la primera y salía de golpe al final).
 
 ## Preguntas abiertas
 

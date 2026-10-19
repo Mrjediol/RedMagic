@@ -25,7 +25,7 @@ addWeapon({
     spikeLife: [2.5, 0.3, 8, 0.1, 'Erizo: estallan solas a los (s)'], spikeBlast: [10, 0, 60, 1, 'Erizo: daño del estallido'], spikeBlastRadius: [34, 8, 120, 2, 'Erizo: radio del estallido'],
     returnDamage: [7, 0, 60, 1, 'Erizo · Retorno: daño al volver'], refund: [0.15, 0, 1, 0.01, 'Erizo · Retorno: recarga del arma de reserva por esquirla (s)'],
     shrapCount: [3, 1, 8, 1, 'Erizo · Metralla: esquirlas por estallido'], shrapDamage: [4, 1, 30, 1, 'Erizo · Metralla: daño'], bleedDps: [4, 0, 30, 0.5, 'Erizo · Hemorragia: daño/s por clavada'],
-    lanceCooldown: [0.55, 0.1, 2, 0.01, 'Lanza: recarga (s)'], lanceCount: [5, 1, 12, 1, 'Lanza: esquirlas por ráfaga'], lanceGap: [0.035, 0.01, 0.15, 0.005, 'Lanza: tiempo entre esquirlas (s)'],
+    lanceCooldown: [0.55, 0.1, 2, 0.01, 'Lanza: recarga (s)'], lanceGap: [0.035, 0.01, 0.15, 0.005, 'Lanza: tiempo entre esquirlas (s)'],
     lanceSpeed: [1350, 400, 2500, 10, 'Lanza: velocidad'], lanceLife: [0.75, 0.1, 2, 0.05, 'Lanza: alcance (s)'], pierceDmgUp: [0.25, 0, 1, 0.05, 'Lanza · Perforación: + daño por atravesado'],
     accelStep: [0.12, 0, 0.5, 0.01, 'Lanza · Aceleración: − recarga por ráfaga'], accelMin: [0.5, 0.1, 1, 0.05, 'Lanza · Aceleración: recarga mínima (×)'],
     bigMul: [3, 1, 8, 0.1, 'Lanza · Cristal mayor: × daño'], bigSize: [1.8, 1, 3, 0.05, 'Lanza · Cristal mayor: tamaño'],
@@ -43,10 +43,10 @@ addWeapon({
         const base = t.lanceCooldown * cdMul();
         cd = base * Math.max(t.accelMin, 1 - (hasMod(slot, 'accel') ? accel : 0));
         if (hasMod(slot, 'accel')) accel = Math.min(1 - t.accelMin, accel + t.accelStep);
-        for (let c = 0; c < n; c++) {                       // Duplicador: dos líneas paralelas
-          const off = n > 1 ? (c ? 7 : -7) : 0;
-          for (let i = 0; i < t.lanceCount; i++) queue.push({ at: G.t + i * t.lanceGap, last: i === t.lanceCount - 1, off });
-        }
+        // ráfaga con las esquirlas BASE del arma (count); con Duplicador cada esquirla sale doble a la vez, en dos filas paralelas
+        const offs = n > 1 ? [-7, 7] : [0];
+        for (let i = 0; i < t.count; i++) queue.push({ at: G.t + i * t.lanceGap, last: i === t.count - 1, offs });
+        queue.sort((a, b) => a.at - b.at);
       } else {
         cd = t.cooldown * cdMul();
         const cnt = t.count * n, spr = t.spread * (n > 1 ? 1.35 : 1);
@@ -69,7 +69,7 @@ addWeapon({
           while (queue.length && queue[0].at <= G.t) {
             const q = queue.shift(), a = aim.ang + (Math.random() - 0.5) * 0.03, nx = -Math.sin(a), ny = Math.cos(a);
             const big = q.last && hasMod(slot, 'big');
-            G.ents.push(fanShard(slot, aim.x + nx * q.off, aim.y + ny * q.off, Math.cos(a) * t.lanceSpeed, Math.sin(a) * t.lanceSpeed, pal(), { lance: true, big }));
+            for (const off of q.offs) G.ents.push(fanShard(slot, aim.x + nx * off, aim.y + ny * off, Math.cos(a) * t.lanceSpeed, Math.sin(a) * t.lanceSpeed, pal(), { lance: true, big }));
           }
         }
       },

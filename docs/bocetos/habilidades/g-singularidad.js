@@ -23,15 +23,15 @@ addWeapon({
     cooldown: [3.5, 0.3, 10, 0.1, 'Base: recarga (s)'], range: [360, 80, 800, 10, 'Base: distancia máxima (px)'], travelTime: [0.5, 0.15, 1.5, 0.05, 'Base: viaje (s)'],
     pullTime: [1.8, 0.2, 5, 0.05, 'Base: tiempo atrayendo (s)'], pullRadius: [150, 40, 400, 5, 'Base: radio de atracción'], pullSpeed: [150, 0, 500, 5, 'Base: fuerza de atracción (px/s)'],
     burstDamage: [40, 0, 200, 1, 'Base: daño del colapso'], burstRadius: [130, 30, 350, 5, 'Base: radio del colapso'], burstKnock: [380, 0, 900, 10, 'Base: empuje del colapso'],
-    captureRadius: [95, 0, 250, 5, 'Base: radio de captura de proyectiles'], ejectSpeed: [900, 200, 2000, 10, 'Base: velocidad de salida de lo capturado'],
+    captureRadius: [55, 0, 250, 5, 'Base: radio de captura de proyectiles'], ejectSpeed: [900, 200, 2000, 10, 'Base: velocidad de salida de lo capturado'],
     burn: [3, 0, 8, 0.1, 'Fuego: quemadura (s)'],
     devourRadius: [40, 10, 120, 2, 'Fauces: radio de la boca'], devourDps: [70, 0, 200, 1, 'Fauces: daño por segundo dentro'],
     hungerTime: [0.5, 0, 2, 0.05, 'Fauces · Hambre: + s por baja'], hungerGrow: [0.1, 0, 0.5, 0.01, 'Fauces · Hambre: + tamaño por baja'], hungerMax: [1.6, 1, 3, 0.05, 'Fauces · Hambre: tamaño máximo'],
-    swallowPct: [0.35, 0, 0.6, 0.01, 'Fauces · Digestión: traga por debajo de (× vida)'], regurgDamage: [20, 1, 100, 1, 'Fauces · Regurgitar: daño de cada proyectil'],
+    swallowPct: [0.35, 0, 0.6, 0.01, 'Fauces · Digestión: traga por debajo de (× vida)'], regurgDamage: [45, 1, 150, 1, 'Fauces · Regurgitar: daño de cada proyectil'], regurgRadius: [55, 0, 150, 5, 'Fauces · Regurgitar: radio del estallido al impactar'],
     driftSpeed: [80, 10, 400, 5, 'Errante: velocidad (px/s)'], huntSpeed: [130, 10, 500, 5, 'Errante · Cazadora: velocidad'],
     trailEvery: [0.35, 0.1, 1.5, 0.05, 'Errante · Rastro: cada (s)'], trailLife: [1.2, 0.2, 4, 0.1, 'Errante · Rastro: duración (s)'], trailDps: [10, 0, 60, 1, 'Errante · Rastro: daño/s'],
     massScale: [1.4, 1, 2.5, 0.05, 'Errante · Masa: escala'], massTime: [1.35, 1, 3, 0.05, 'Errante · Masa: × tiempo atrayendo'],
-    arsenalRadius: [1.4, 1, 3, 0.05, 'Arsenal: × radio de captura'], arsenalMul: [1.5, 1, 4, 0.05, 'Arsenal: × daño de lo capturado'],
+    arsenalRadius: [1.25, 1, 3, 0.05, 'Arsenal: × radio de captura'], arsenalMul: [1.5, 1, 4, 0.05, 'Arsenal: × daño de lo capturado'],
     reloadRefund: [0.2, 0, 1, 0.01, 'Arsenal · Recarga: s por captura'], shotDamage: [12, 1, 60, 1, 'Arsenal · Escudo: daño de una bala devuelta'],
     look: [3, 0, 5, 1, 'Aspecto: 0 anillas · 1 horizonte · 2 remolino · 3 grieta · 4 abismo · 5 lente'], over: [0, 0, 1, 1, 'Vórtice por encima de los enemigos (0 = no, 1 = sí)'],
     mergeTime: [0.3, 0.05, 1, 0.05, 'Duplicador: tiempo de fusión (s)'], mergeScale: [1.35, 1, 2.5, 0.05, 'Duplicador: escala de la fusionada'], mergeDamage: [1.7, 1, 4, 0.05, 'Duplicador: × daño de la fusionada'],
@@ -133,7 +133,9 @@ function voidOrbEnt(slot, x0, y0, tx, ty, twin) {
           if (!q.capturable || q.captured || q.state !== 'fly' || q.lastSing === this) continue;
           if (q.hostile && !(arsenal && hasMod(slot, 'shield'))) continue;
           if (Math.hypot(q.x - p.x, q.y - p.y) < capR) {
-            q.captured = this; q.lastSing = this; captured.push({ q, a: Math.atan2(q.y - p.y, q.x - p.x), r: (40 + Math.random() * 18) * Math.min(1.4, s), spin: 9 + Math.random() * 3 });
+            const d0 = Math.hypot(q.x - p.x, q.y - p.y), qx = q.x, qy = q.y;
+            q.captured = this; q.lastSing = this; captured.push({ q, a: Math.atan2((q.y - p.y) / 0.6, q.x - p.x), r: (40 + Math.random() * 18) * Math.min(1.4, s), r0: d0, tc: G.t, spin: 9 + Math.random() * 3 });
+            addFx(0.3, (ctx, layer, tf) => { if (layer === 'front') { const u = seg(G.t, tf, tf + 0.25); star4(ctx, qx, qy, 12 * (1 - u), 0.6, '#cdbcff', 1 - u, layer); glow(ctx, qx, qy, 18 * (1 - u), [160, 110, 255], 0.6 * (1 - u)); } });
             if (arsenal && hasMod(slot, 'reload')) for (const so of otherSlots(slot)) if (so.inst && so.inst.refund) so.inst.refund(t.reloadRefund);
             if (!this._capSfx || G.t - this._capSfx > 0.3) { this._capSfx = G.t; sfx(SND.sing_capture.fn); }
           }
@@ -141,8 +143,8 @@ function voidOrbEnt(slot, x0, y0, tx, ty, twin) {
       }
       if (G.t >= TC && stopHum) { stopHum(); stopHum = null; sfx(SND.sing_collapse.fn); }
       for (const c of captured) {
-        const shrink = 1 - 0.6 * seg(G.t, TC, TB); c.a += c.spin * dt;
-        c.q.x = p.x + Math.cos(c.a) * c.r * shrink; c.q.y = p.y + Math.sin(c.a) * c.r * 0.6 * shrink; c.q.ang = c.a + Math.PI / 2; c.q.depth = Math.sin(c.a);
+        const shrink = 1 - 0.6 * seg(G.t, TC, TB), inU = easeOut(seg(G.t, c.tc, c.tc + 0.18)), r = lerp(c.r0, c.r, inU) * shrink; c.a += c.spin * dt * inU;
+        c.q.x = p.x + Math.cos(c.a) * r; c.q.y = p.y + Math.sin(c.a) * r * lerp(1, 0.6, inU); c.q.ang = c.a + Math.PI / 2; c.q.depth = Math.sin(c.a);
       }
       if (G.t >= TB && !burst) {
         burst = true;
@@ -204,22 +206,37 @@ function miniRift(slot, x, y, life, dps) {
     draw(ctx, layer) { const u = seg(G.t, t0 + life - 0.25, t0 + life); lookRift(ctx, G.t, layer, x, y, { s: 0.38, form: 1, collapse: u, pullT: 0, liveT: G.t - t0, phase: 'live', openT: G.t - t0, pal: PAL.void }); },
   };
 }
-// Fauces · Regurgitar: proyectil de vacío que sale en abanico y persigue al enemigo más cercano
+// Fauces · Regurgitar: orbe de vacío grande que sale en abanico, persigue al enemigo más cercano y estalla en área al impactar
+// (el usuario: «apenas se nota, efecto demasiado débil para una mejora así», 2026-10-19)
 function voidBolt(x, y, a0, target, dmg, slot) {
-  let vx = Math.cos(a0) * 300, vy = Math.sin(a0) * 300, life = 2.5; const trail = [];
+  const t = T('sing'), R0 = 11;
+  let vx = Math.cos(a0) * 380, vy = Math.sin(a0) * 380 - 120, life = 3, age = 0; const trail = [];
+  sfx(k => { const tn = nowT(); vThump(tn, 110, 45, 0.25 * k, 0.4, 2, 0.2); vNoise(tn, 0.2 * k, 0.2, 'bandpass', 800, 3000, 1.2, { att: 0.005, wet: 0.2 }); });
+  const boom = () => {
+    damageArea(x, y, t.regurgRadius, { dmg, slot, heavy: true, kx: 200, ky: -150, shake: 5, hitstop: 0.04 }, false);
+    const bx = x, by = y;
+    addFx(1.4, (ctx, layer, tb) => burstRefined(ctx, G.t, layer, tb, bx, by, 0.45, PAL.void, {}));
+    sfx(SND.sing_burst.fn);
+  };
   return {
     kind: 'bolt',
     update(dt) {
-      life -= dt; if (life <= 0) return false;
-      if (!target || target.dead) target = nearestEnemy(x, y, 700);
-      if (target) { const a = Math.atan2(target.y - y, target.x - x); vx = lerp(vx, Math.cos(a) * 650, Math.min(1, dt * 5)); vy = lerp(vy, Math.sin(a) * 650, Math.min(1, dt * 5)); }
-      x += vx * dt; y += vy * dt; trail.unshift({ x, y }); if (trail.length > 10) trail.pop();
-      if (target && Math.hypot(target.x - x, target.y - y) < target.rx) { damage(target, { dmg, slot, kx: Math.sign(vx) * 100 }); return false; }
-      return y < GROUND;
+      life -= dt; age += dt; if (life <= 0) { boom(); return false; }
+      if (!target || target.dead) target = nearestEnemy(x, y, 800);
+      const turn = Math.min(1, dt * (age < 0.15 ? 1 : 6));
+      if (target) { const a = Math.atan2(target.y - y, target.x - x); vx = lerp(vx, Math.cos(a) * 720, turn); vy = lerp(vy, Math.sin(a) * 720, turn); }
+      x += vx * dt; y += vy * dt; trail.unshift({ x, y }); if (trail.length > 16) trail.pop();
+      if ((target && Math.hypot(target.x - x, target.y - y) < target.rx + R0 * 0.5) || y >= GROUND - 4) { boom(); return false; }
+      return true;
     },
     draw(ctx, layer) {
-      if (layer === 'back' && trail.length > 1) { ribbon(ctx, trail, q => 7 * (1 - q), '#3a1c9c', 0.6, layer); ribbon(ctx, trail, q => 3 * (1 - q), '#cdbcff', 0.9, layer); }
-      if (layer === 'front') { glow(ctx, x, y, 14, [140, 90, 255], 0.7); disc(ctx, x, y, 4, '#05020e', 1, layer); ellArc(ctx, x, y, 4.5, 4.5, 0, TAU, 1.2, '#ffffff', 0.9, layer, { taper: 0 }); }
+      if (layer === 'back' && trail.length > 1) { ribbon(ctx, trail, q => 22 * Math.pow(1 - q, 1.2), '#3a1c9c', 0.45, layer); ribbon(ctx, trail, q => 11 * (1 - q), '#8a5cff', 0.8, layer); ribbon(ctx, trail, q => 4 * (1 - q), '#ffffff', 0.9, layer); }
+      if (layer !== 'front') return;
+      glow(ctx, x, y, 40, [130, 70, 255], 0.75); glow(ctx, x, y, 18, [220, 210, 255], 0.6);
+      disc(ctx, x, y, R0 + 3, '#5a2fd0', 0.9, layer); disc(ctx, x, y, R0, '#05020e', 1, layer);
+      ellArc(ctx, x, y, R0 + 0.8, R0 + 0.8, 0, TAU, 2, '#ffffff', 0.95, layer, { taper: 0, m: 30 });
+      const B = rand(Math.floor(G.t * 22) + Math.floor(x));
+      for (let i = 0; i < 2; i++) { const a = B() * TAU; bolt(ctx, x, y, x + Math.cos(a) * 24, y + Math.sin(a) * 24, 3, B, 1.1, PAL.set, 0.8, layer); }
     },
   };
 }

@@ -34,7 +34,8 @@ Detalle:
   dentro alimenta a la grieta (destello y motas que entran).
   - Hambre: cada baja dentro +`hungerTime` s (máx. +2 s) y +`hungerGrow` de tamaño (hasta `hungerMax`).
   - Digestión: los que entran en la boca con menos de `swallowPct` de vida desaparecen al instante («TRAGADO») y cuentan como alimento.
-  - Regurgitar: al colapsar, un proyectil de vacío teledirigido por cada baja dentro (`regurgDamage`).
+  - Regurgitar: al colapsar, un orbe de vacío grande (estela gruesa, chispas) por cada baja dentro; persigue al más cercano y estalla
+    en área al impactar (`regurgDamage` en `regurgRadius`, golpe fuerte).
 - **Errante**: mientras atrae se desplaza hacia el ratón a `driftSpeed` (entre 60 px del techo y el suelo), arrastrando a los
   atrapados; atrae un 25 % más fuerte y levanta a los voladores.
   - Cazadora: va sola hacia el enemigo más cercano a `huntSpeed`.
@@ -74,7 +75,7 @@ Detalle:
 | `burstDamage` | 40 | 0 – 200 (paso 1) | Base: daño del colapso |
 | `burstRadius` | 130 | 30 – 350 (paso 5) | Base: radio del colapso |
 | `burstKnock` | 380 | 0 – 900 (paso 10) | Base: empuje del colapso |
-| `captureRadius` | 95 | 0 – 250 (paso 5) | Base: radio de captura de proyectiles |
+| `captureRadius` | 55 | 0 – 250 (paso 5) | Base: radio de captura de proyectiles |
 | `ejectSpeed` | 900 | 200 – 2000 (paso 10) | Base: velocidad de salida de lo capturado |
 | `burn` | 3 | 0 – 8 (paso 0.1) | Fuego: quemadura (s) |
 | `devourRadius` | 40 | 10 – 120 (paso 2) | Fauces: radio de la boca |
@@ -83,7 +84,8 @@ Detalle:
 | `hungerGrow` | 0.1 | 0 – 0.5 (paso 0.01) | Fauces · Hambre: + tamaño por baja |
 | `hungerMax` | 1.6 | 1 – 3 (paso 0.05) | Fauces · Hambre: tamaño máximo |
 | `swallowPct` | 0.35 | 0 – 0.6 (paso 0.01) | Fauces · Digestión: traga por debajo de (× vida) |
-| `regurgDamage` | 20 | 1 – 100 (paso 1) | Fauces · Regurgitar: daño de cada proyectil |
+| `regurgDamage` | 45 | 1 – 150 (paso 1) | Fauces · Regurgitar: daño de cada proyectil |
+| `regurgRadius` | 55 | 0 – 150 (paso 5) | Fauces · Regurgitar: radio del estallido al impactar |
 | `driftSpeed` | 80 | 10 – 400 (paso 5) | Errante: velocidad (px/s) |
 | `huntSpeed` | 130 | 10 – 500 (paso 5) | Errante · Cazadora: velocidad |
 | `trailEvery` | 0.35 | 0.1 – 1.5 (paso 0.05) | Errante · Rastro: cada (s) |
@@ -91,7 +93,7 @@ Detalle:
 | `trailDps` | 10 | 0 – 60 (paso 1) | Errante · Rastro: daño/s |
 | `massScale` | 1.4 | 1 – 2.5 (paso 0.05) | Errante · Masa: escala |
 | `massTime` | 1.35 | 1 – 3 (paso 0.05) | Errante · Masa: × tiempo atrayendo |
-| `arsenalRadius` | 1.4 | 1 – 3 (paso 0.05) | Arsenal: × radio de captura |
+| `arsenalRadius` | 1.25 | 1 – 3 (paso 0.05) | Arsenal: × radio de captura |
 | `arsenalMul` | 1.5 | 1 – 4 (paso 0.05) | Arsenal: × daño de lo capturado |
 | `reloadRefund` | 0.2 | 0 – 1 (paso 0.01) | Arsenal · Recarga: s por captura |
 | `shotDamage` | 12 | 1 – 60 (paso 1) | Arsenal · Escudo: daño de una bala devuelta |
@@ -132,6 +134,10 @@ proyectiles), no lógica del Abanico. Atracción como fuerza sobre el `Rigidbody
 congelado y estados).
 
 ## Decisiones
+
+- 2026-10-19 · Tras la prueba del usuario: Regurgitar «apenas se nota, demasiado débil» → orbe grande que estalla en área (45 de
+  daño, golpe fuerte). La captura saltaba desde demasiado lejos y las esquirlas «desaparecían» → radio 55 (antes 95; Arsenal ×1,25)
+  y entran girando suave en 0,18 s desde donde estaban, con un destello.
 
 - 2026-10-19 · Árbol: Fauces / Errante / Arsenal (la Masa pasa a ser mejora de Errante). Fauces necesita matar dentro para que
   Hambre y Regurgitar sirvan: `devourDps` 70 y Digestión al 35 % (con 30 / 25 % no llegaba a matar contra 120 de vida).

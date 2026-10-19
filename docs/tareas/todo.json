@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-19T14:59:54.357Z",
+  "updated": "2026-10-19T15:42:54.188Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -642,7 +642,7 @@
         {
           "id": "habilidades-prototipos",
           "text": "Habilidades nuevas: prototipos web (6 ataques × base + 3 variantes de build) y sistemas de build propuestos",
-          "note": "Jugable con progresión en prueba: árbol por arma (Abanico y Golpe estelar con 3 evoluciones × 3 mejoras), items generales con rareza (elemento, Duplicador…), modo run con sorteos, dificultad. Diseño: docs/armas/progresion.md. Falta: que el usuario lo juegue y decida.",
+          "note": "RETOMAR: «retoma tarea de armas» → leer docs/tareas/habilidades-prototipos.md ▸ RETOMAR AQUÍ. Árboles hechos: Abanico, Golpe estelar, Singularidad (Grieta). Siguen: Rayo → Media luna → Semilla, de uno en uno con revisión del usuario.",
           "done": false,
           "doc": "docs/tareas/habilidades-prototipos.md",
           "steps": [
@@ -668,7 +668,7 @@
             },
             {
               "id": "hp-arbol4",
-              "text": "Árbol con evoluciones para Singularidad, Rayo, Media luna y Semilla (tras validar el modelo)",
+              "text": "Árbol con evoluciones: Singularidad ✔ · Rayo · Media luna · Semilla (de uno en uno, revisión del usuario entre cada uno)",
               "done": false
             },
             {

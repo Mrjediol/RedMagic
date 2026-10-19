@@ -69,3 +69,47 @@ Las otras cuatro armas: sus mods quedan como mejoras provisionales y expresan el
 
 - 2026-10-19 · Ronda de aspectos de la Singularidad (fx-sing.js, clips 2b en 🛠 En curso; el resto de clips pasan a ✔ Guardados por defecto). Pendiente: que el usuario elija.
 - 2026-10-19 · Elegida la Grieta: orbe que viaja y abre la grieta en el sitio; dura más. La jugable guarda en el navegador sólo los ajustes cambiados a mano (v4).
+
+---
+
+## ▶ RETOMAR AQUÍ — «retoma tarea de armas» (traspaso 2026-10-19, fin de sesión)
+
+**Qué toca**: terminar los árboles de evoluciones de las armas que quedan, **de una en una**, en este orden:
+**3 · Rayo → 4 · Media luna → 5 · Semilla**. Hechos y validados por el usuario: Abanico, Golpe estelar, Singularidad (Grieta).
+
+**Leer primero** (en este orden): `docs/armas/README.md` (reglas comunes y cómo se porta), `docs/armas/progresion.md` (las tres
+vías: árbol propio, sinergias, items con etiquetas 2/4/6; el elemento se aplica con 4), la ficha del arma que toca
+(`docs/armas/rayo.md`…) y, como modelo de árbol ya hecho, `g-abanico.js` / `g-singularidad.js` + sus fichas.
+
+**Método que pidió el usuario** (cada arma):
+1. Proponer en el chat el árbol: **3 evoluciones** (formas avanzadas que cambian cómo se juega, no «más proyectiles»), cada una con
+   **3 mejoras**. Las mejoras provisionales actuales del arma se reaprovechan dentro de alguna evolución (como Masa → Errante).
+   Nada de mejoras que sean items generales (elemento, Duplicador → son items; cada arma sólo define cómo los expresa).
+2. Implementar en `g-<arma>.js`: `archetypes: [{ id, name, desc, ups: [3] }]` en lugar de `ups`, comportamiento con `hasMod(slot, id)`
+   y `slot.arch`, todos los números en `tuning` con prefijo «Evolución: …» / «Evolución · Mejora: …». Mantener elemento
+   (`elemOf()`), Duplicador (`copies()`), `cdMul()` y lo que ya funciona.
+3. Probar: prueba dirigida en Node de cada evolución (patrón: cargar los scripts de `jugable.html` en un `vm`, preparar huecos y
+   build, `step(1/60)` y medir lo que debe pasar: daño, entidades creadas, posiciones) + `tools/test-jugable.cjs` (matriz completa,
+   debe dar «todo ok») + `tools/test-clips.cjs`. Si algo no llega a activarse con los valores (como Fauces, que no mataba),
+   subir los valores hasta que la evolución cumpla su papel.
+4. Mirar en el navegador lo nuevo (servidor: `node docs/bocetos/habilidades/tools/serve.cjs`, luego
+   `http://127.0.0.1:8765/habilidades/jugable.html`; desde la consola `__G` da el estado; disparar con
+   `G.slots[i].inst.onPress(aimInfo())` tras fijar `G.mouse.sx/sy` y esperar un frame; congelar con `G.timeScale = 0.0001`).
+5. Ficha del arma: sección «Árbol» con `<!-- gen:tree -->` + «Detalle» a mano, «Elemento y Duplicador», decisiones con fecha;
+   `node docs/bocetos/habilidades/tools/gen-fichas.cjs`. Commit (`feat: árbol del <arma>: …`).
+6. **Parar y avisar al usuario** con: qué es cada evolución y mejora, lo que se ajustó, y una lista corta de qué probar. Esperar su
+   opinión, arreglar lo que diga, y sólo entonces pasar a la siguiente arma.
+
+**Trampas aprendidas en esta sesión**:
+- Bash + `node -e "…"` con backticks o `${}` en el texto rompe (bash los ejecuta): para scripts de edición largos, escribir un
+  `.js` con la herramienta Write y ejecutarlo; para cambios cortos, la herramienta Edit.
+- Lo que una entidad crea durante su `update` ya no se pierde (`game.js ▸ step` recorre una copia) — no volver al `filter` directo.
+- La jugable guarda en el navegador sólo los ajustes cambiados a mano (clave `hab.jugable.v4`): cambiar un valor por defecto en el
+  código sí le llega al usuario. Si se cambia la estructura del guardado, subir la versión de la clave.
+- Proyectiles capturables por la Singularidad: `capturable: true`, `state: 'fly'`, respetar `captured`, y si se quiere Multiplicar,
+  método `clone()`. Las balas enemigas son `hostile`.
+- Dibujo nuevo que se comparta entre clips y juego → `fx.js` (o `fx-sing.js`), nunca duplicado en el `g-*.js`.
+- Ronda de bocetos en los clips (`index.html`): lo nuevo con `tab: 'wip'`; sin `tab` = Guardados.
+
+**Pendiente aparte (no tocar sin que lo pida)**: `optimizacion-arte-carga` (ASTC + quitar mipmaps esperando visto bueno),
+`rigtrans`, `armas-meta-upgrades` (mejoras de arma fuera de la run, para Unity).

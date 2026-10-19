@@ -20,6 +20,8 @@ los expresa. Árbol completo hoy: Abanico y Golpe estelar; las otras cuatro tien
 | Ajustes afinados por el usuario | `docs/armas/ajustes.json` (exportado con «⬇ Exportar ajustes» y guardado aquí) |
 | Sistemas de build propuestos | `docs/builds-sistemas-propuesta.md` |
 | Pruebas sin navegador | `node docs/bocetos/habilidades/tools/test-clips.cjs` · `tools/test-jugable.cjs` |
+| Servidor local (Claude in Chrome no abre file://) | `node docs/bocetos/habilidades/tools/serve.cjs` → http://127.0.0.1:8765/habilidades/jugable.html |
+| Retomar el trabajo de armas | `docs/tareas/habilidades-prototipos.md` ▸ «RETOMAR AQUÍ» |
 | Tablas de las fichas | `node docs/bocetos/habilidades/tools/gen-fichas.cjs` |
 
 ## Fichas

@@ -65,6 +65,8 @@ Mejora provisional:
 | `burn` | 3 | 0 – 8 (paso 0.1) | Fuego: quemadura (s) |
 | `massScale` | 1.4 | 1 – 2.5 (paso 0.05) | Masa: escala |
 | `massTime` | 1.35 | 1 – 3 (paso 0.05) | Masa: × tiempo atrayendo |
+| `look` | 1 | 0 – 5 (paso 1) | Aspecto: 0 anillas · 1 horizonte · 2 remolino · 3 grieta · 4 abismo · 5 lente |
+| `over` | 0 | 0 – 1 (paso 1) | Vórtice por encima de los enemigos (0 = no, 1 = sí) |
 | `mergeTime` | 0.3 | 0.05 – 1 (paso 0.05) | Duplicador: tiempo de fusión (s) |
 | `mergeScale` | 1.35 | 1 – 2.5 (paso 0.05) | Duplicador: escala de la fusionada |
 | `mergeDamage` | 1.7 | 1 – 4 (paso 0.05) | Duplicador: × daño de la fusionada |
@@ -76,6 +78,17 @@ Mejora provisional:
 (`singularityCore`), partículas en espiral, anillos de succión, polvo del suelo arrastrado (si está cerca del suelo), estela de
 distorsión en el viaje y líneas que convergen en el colapso. `voidBurst`: destello, onda de hebras parciales, anillo de suelo,
 agujas, chispas, gotas, polvo; + grietas/escombros (Masa) o llamas/brasas (Fuego).
+
+### Ronda de aspectos (2026-10-19, pendiente de elegir)
+
+El usuario: la primera versión «eran simplemente anillas con huecos incluso entre ellas» y es el arma que menos le convencía
+visualmente. Cinco aspectos con superficies continuas en `fx-sing.js` (clips: «2b · Singularidad — variantes visuales» en 🛠 En curso;
+jugable: Ajustes de la Singularidad ▸ `look` 0-5 y `over`):
+**Horizonte de sucesos** (disco liso con degradado, seda que gira, lado brillante por Doppler y anillo de luz sobre la sombra),
+**Remolino** (brazos en espiral de tinta), **Grieta** (desgarro vertical con estrellas, bordes que arden, escombros que se cuelan),
+**Abismo** (rejilla del espacio que se hunde), **Lente** (refracta y retuerce lo que hay detrás, enemigos incluidos). Estallido
+refinado común: onda continua + destello alargado (la Grieta se cierra en una línea de luz; el Abismo hace ondular la rejilla).
+Interruptor de capas: con profundidad (mitad trasera detrás de los enemigos) o todo por encima.
 
 ## Sonido
 

@@ -348,6 +348,8 @@ function drawEnemy(ctx, t, E, solid) {
   ctx.save(); ctx.translate(p.x + shake, p.y + bob + (fly ? 0 : 44));
   const by = fly ? 0 : -44;                 // centro del cuerpo respecto al origen dibujado
   ctx.scale(1 - sq + dying * 0.2, 1 + sq * 0.6 - dying * 0.4);
+  const sk = E.suck ? E.suck(t) : null, skK = sk ? clamp(sk.k) : 0;       // atrapado por una singularidad: se estira hacia ella
+  if (skK > 0) { const sa = Math.atan2(sk.y - p.y, sk.x - p.x); ctx.translate(0, fly ? 0 : -44); ctx.rotate(sa); ctx.scale(1 + 0.22 * skK, 1 - 0.14 * skK); ctx.rotate(-sa); ctx.translate(0, fly ? 0 : 44); }
   ctx.globalAlpha = 1 - dying;
   if (fly) {                                // alas que baten (lectura de "volador")
     const fl = Math.sin(t * 22 + E.x) * (1 - fz);
@@ -361,6 +363,7 @@ function drawEnemy(ctx, t, E, solid) {
   ctx.fillStyle = C.enemy; ctx.beginPath(); ctx.ellipse(-3, by - 2, rx - 4, ry - 4, 0, 0, TAU); ctx.fill();
   ctx.fillStyle = C.eye; ctx.beginPath(); ctx.arc(-14, by - 12, 4, 0, TAU); ctx.fill();
   if (E.tint) { const [c, a] = E.tint(t); if (a > 0) { ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(0, by + 2, rx, ry, 0, 0, TAU); ctx.fill(); ctx.restore(); } }
+  if (skK > 0) { ctx.save(); ctx.globalAlpha = 0.32 * skK; ctx.fillStyle = PAL.void.mid; ctx.beginPath(); ctx.ellipse(0, by + 2, rx, ry, 0, 0, TAU); ctx.fill(); ctx.restore(); }
   if (solid) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(0, by + 2, rx, ry, 0, 0, TAU); ctx.fill(); }
   else if (flash > 0) { ctx.save(); ctx.globalAlpha = flash; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(-3, by - 2, rx - 4, ry - 4, 0, 0, TAU); ctx.fill(); ctx.restore(); }
   ctx.restore();

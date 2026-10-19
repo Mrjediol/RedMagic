@@ -66,3 +66,5 @@ Las otras cuatro armas: sus mods quedan como mejoras provisionales y expresan el
 - Build = sistema del juego: 6 items con etiqueta elemental + universal, tramos 2/4/6; **el elemento se aplica con 4** (propuesta
   del usuario: así nunca hay dos estados elementales a la vez); 2 hielo = recarga, 2 fuego = daño. Items de hielo y oro copiados
   del juego; los generales de las pruebas llevan Fuego + universal. Tablas en `docs/armas/README.md`.
+
+- 2026-10-19 · Ronda de aspectos de la Singularidad (fx-sing.js, clips 2b en 🛠 En curso; el resto de clips pasan a ✔ Guardados por defecto). Pendiente: que el usuario elija.

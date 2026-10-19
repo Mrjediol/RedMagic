@@ -16,6 +16,7 @@ addWeapon({
     burstDamage: [40, 0, 200, 1, 'Daño del colapso'], burstRadius: [130, 30, 350, 5, 'Radio del colapso'], burstKnock: [380, 0, 900, 10, 'Empuje del colapso'],
     captureRadius: [95, 0, 250, 5, 'Radio de captura de proyectiles'], ejectSpeed: [900, 200, 2000, 10, 'Velocidad de salida de lo capturado'],
     burn: [3, 0, 8, 0.1, 'Fuego: quemadura (s)'], massScale: [1.4, 1, 2.5, 0.05, 'Masa: escala'], massTime: [1.35, 1, 3, 0.05, 'Masa: × tiempo atrayendo'],
+    look: [1, 0, 5, 1, 'Aspecto: 0 anillas · 1 horizonte · 2 remolino · 3 grieta · 4 abismo · 5 lente'], over: [0, 0, 1, 1, 'Vórtice por encima de los enemigos (0 = no, 1 = sí)'],
     mergeTime: [0.3, 0.05, 1, 0.05, 'Duplicador: tiempo de fusión (s)'], mergeScale: [1.35, 1, 2.5, 0.05, 'Duplicador: escala de la fusionada'], mergeDamage: [1.7, 1, 4, 0.05, 'Duplicador: × daño de la fusionada'],
   },
   create(slot) {
@@ -95,7 +96,8 @@ function voidOrbEnt(slot, x0, y0, tx, ty, twin) {
         if (mass) for (const e of hit) if (e.fly) { e.slammed = true; e.vy = 700; }
         for (const c of captured) { const q = c.q, sp = t.ejectSpeed; q.captured = null; q.ejected = true; q.age = 0; q.hit = new Set(); q.vx = Math.cos(c.a) * sp; q.vy = Math.sin(c.a) * sp; q.ang = c.a; q.trail = []; }
         const bx = p.x, by = p.y;
-        addFx(1.6, (ctx, layer, tb) => voidBurst(ctx, G.t, layer, tb, bx, by, s, bp, { mass, fire: el === 'fire' }));
+        const lk = SING_LOOK_IDS[t.look | 0] || 'horizon';
+        addFx(1.6, (ctx, layer, tb) => singBurst(lk, ctx, G.t, layer, tb, bx, by, s, bp, { mass, fire: el === 'fire' }));
         if (el === 'ice') addFx(1.6, (ctx, layer, tb) => frostNova(ctx, G.t, layer, tb, bx, t.burstRadius * s * 0.8));
         sfx(el === 'fire' ? SND.sing_burst_fire.fn : el === 'ice' ? SND.seed_nova.fn : SND.sing_burst.fn);
         if (captured.length) sfx(SND.sing_eject.fn);
@@ -106,10 +108,10 @@ function voidOrbEnt(slot, x0, y0, tx, ty, twin) {
     draw(ctx, layer) {
       const live = { pal, bp, pullT: G.t >= TM && G.t < TC ? G.t - TM : -1, liveT: G.t - t0, collapse: seg(G.t, TC, TB) };
       if (twin && G.t < TM) {                                 // dos orbes (más pequeños) que se buscan
-        [-1, 1].forEach((k, i) => { const q = orbPos(k); voidOrbOver(ctx, G.t, layer, q.x, q.y, Object.assign({}, live, { s: s0, form: easeOut(seg(G.t, t0, TA)), trail: G.t < TA ? [0.04, 0.08, 0.12].map(dt => hist[i].find(h => G.t - h.t >= dt)).filter(Boolean) : [] })); });
+        [-1, 1].forEach((k, i) => { const q = orbPos(k); singLook(SING_LOOK_IDS[t.look | 0] || 'horizon', ctx, G.t, layer, q.x, q.y, Object.assign({}, live, { s: s0, form: easeOut(seg(G.t, t0, TA)), trail: G.t < TA ? [0.04, 0.08, 0.12].map(dt => hist[i].find(h => G.t - h.t >= dt)).filter(Boolean) : [] }), t.over >= 0.5); });
         if (G.t >= TA && layer === 'front') { const m = seg(G.t, TA, TM); glow(ctx, tx, ty, 50 * s * m, bp.g2, 0.6 * m); }
       } else {
-        voidOrbOver(ctx, G.t, layer, this.x, this.y, Object.assign({}, live, { s, form: twin ? 1 : easeOut(seg(G.t, t0, TA)), trail: !twin && G.t < TA ? [0.04, 0.08, 0.12].map(dt => hist[0].find(h => G.t - h.t >= dt)).filter(Boolean) : [] }));
+        singLook(SING_LOOK_IDS[t.look | 0] || 'horizon', ctx, G.t, layer, this.x, this.y, Object.assign({}, live, { s, form: twin ? 1 : easeOut(seg(G.t, t0, TA)), trail: !twin && G.t < TA ? [0.04, 0.08, 0.12].map(dt => hist[0].find(h => G.t - h.t >= dt)).filter(Boolean) : [] }), t.over >= 0.5);
       }
       if (G.settings.hitboxes && G.t >= TM) { ctx.strokeStyle = 'rgba(160,110,255,.6)'; ctx.beginPath(); ctx.arc(this.x, this.y, t.pullRadius * s, 0, TAU); ctx.stroke(); }
     },

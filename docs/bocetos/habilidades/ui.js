@@ -9,6 +9,7 @@
   $('layers').onchange = e => showLayers = e.target.checked;
   $('frm').onchange = e => framesOn = e.target.checked;
   $('snd').onchange = e => { soundOn = e.target.checked; if (soundOn) audioInit(); };
+  if ($('over')) $('over').onchange = e => { orbOver = e.target.checked; };
 
   // ------------------------------------------------ clips
   const views = [];
@@ -21,7 +22,7 @@
   }
   for (const A of ABIL) {
     for (const tb of ['saved', 'wip', 'arc']) {
-      const clips = A.clips.filter(c => (c.tab || 'wip') === tb);
+      const clips = A.clips.filter(c => (c.tab || 'saved') === tb);   // sin tab = ya vistos (Guardados); la ronda en curso marca tab: 'wip'
       if (!clips.length) continue;
       const intro = document.createElement('section'); intro.className = 'intro'; intro.dataset.abil = A.id;
       intro.innerHTML = `<h2>${A.num} · ${A.name}</h2><p>${A.pitch}</p>` +
@@ -80,6 +81,8 @@
     filter = f; store.set('filter', f);
     chips.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.f === f));
     document.querySelectorAll('section[data-abil]').forEach(s => s.style.display = (f === 'all' || s.dataset.abil === f) ? '' : 'none');
+    // si con este filtro la pestaña queda vacía (p. ej. una ronda nueva de otra habilidad), vuelve a «Todas»
+    const g = grids[tab]; if (f !== 'all' && g && g.querySelector('section[data-abil]') && !g.querySelector(`section[data-abil="${f}"]`)) setFilter('all');
   }
   function setTab(t) {
     tab = t; store.set('tab', t);
@@ -87,6 +90,7 @@
     for (const k in grids) grids[k].style.display = k === t ? '' : 'none';
     chips.style.display = (t === 'snd' || t === 'sys') ? 'none' : '';
     if (!grids[t].children.length && t !== 'snd' && t !== 'sys') grids[t].innerHTML = '<section class="intro"><p>Nada aquí todavía.</p></section>';
+    if (typeof filter !== 'undefined') setFilter(filter);
   }
   document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 

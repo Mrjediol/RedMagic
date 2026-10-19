@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-19T12:22:43.914Z",
+  "updated": "2026-10-19T12:57:14.585Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -419,7 +419,7 @@
           "done": false,
           "id": "optimizacion-arte-carga",
           "text": "Reestructurar el arte (píxeles óptimos, múltiplos de 4, atlas, compresión) y la carga de niveles (enemigos bajo demanda, sin el fondo del bioma)",
-          "note": "Medido: cargar LargeLevelTest 1.153 ms; 472 texturas ~461 MB; 1.092 de 2.058 texturas no son múltiplo de 4 (no se comprimen). Prueba aislada antes de adoptar.",
+          "note": "Auditoría hecha (docs/auditoria-texturas.md): 1.146 texturas sin comprimir = 1.377 MB. Prueba aislada lista (Assets/Test/Optimizacion/Prueba): ASTC 6×6 sin mips 21,3 → 1,8 MB en una capa de fondo, casi sin diferencia visual. Falta el visto bueno para pasar Android a ASTC + quitar mipmaps.",
           "doc": "docs/tareas/optimizacion-arte-carga.md",
           "needs": [
             "unity"

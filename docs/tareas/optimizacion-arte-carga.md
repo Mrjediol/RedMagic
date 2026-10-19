@@ -66,3 +66,16 @@ carga ya es alta; lo que queda es lo que la escena arrastra.
 
 - 2026-10-19 · **Paso 6**: `LevelBiome.background` / `particles` pasan a GUID (`[EditorOnlyAsset]`, propiedades sólo en editor
   con los mismos nombres). Los niveles ya no arrastran `Fondo_Hielo` ni la nieve del bioma. Falta medir la transición (paso 8).
+- 2026-10-19 · **Paso 1, auditoría**: *Tools ▸ RedMagic ▸ Optimización ▸ Auditar texturas* (`Assets/Test/Optimizacion/Editor/TextureAudit.cs`)
+  → `docs/auditoria-texturas.md`. Sin legacy: 2.120 texturas, 1.734 MB en Android; **1.146 sin comprimir (RGBA32) = 1.377 MB**,
+  casi todas por no ser múltiplo de 4. Por escena (sin seguir `SceneReference`, que en la build no carga nada): MainMenu 0,5 MB,
+  MainHub 105 MB, LargeLevelTest 272 MB (ya sin `Fondo_Hielo`: no hay camino de dependencias), NivelHielo_1000 98 MB (usa
+  `Fondo_Hielo` como fondo propio). Lo que más pesa: enemigos por hojas de `EnemyImports` (BossIce 279 MB), capas de fondo de 8192 px
+  con mipmaps, `RigImports` (piezas de 1000-1500 px).
+- 2026-10-19 · **Paso 1, prueba aislada**: *Prueba de compresión · crear / borrar* (`CompressionTest.cs`). Resultado en
+  `Assets/Test/Optimizacion/Prueba/resultado.md` + `comparacion_*.png` (mismo recorte ×3: actual · ×4 ETC2 · ASTC 6×6 · ASTC 4×4):
+  capa3 21,3 MB → ETC2 4,0 / **ASTC 6×6 1,8** / ASTC 4×4 4,0 MB; Torso 7,0 → 1,76 / **0,78** / 1,76 MB. Diferencia visual mínima
+  (ASTC 6×6 algo más suave en líneas finas). Hallazgos: **ASTC comprime cualquier tamaño** (no hace falta rellenar a ×4) y **con
+  mipmaps + tamaño no potencia de 2 Unity no comprime nada** (las capas de fondo tienen mips: hay que quitarlos).
+  **Propuesta pendiente del visto bueno del usuario**: formato por defecto de Android a ASTC (Player Settings ▸ Texture compression)
+  + quitar mipmaps a sprites y capas de fondo. Arregla ~1.100 texturas sin tocar ningún PNG; ASTC 4×4 para UI/detalle fino.

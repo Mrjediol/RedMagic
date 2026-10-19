@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-19T11:58:49.637Z",
+  "updated": "2026-10-19T12:22:43.914Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -635,6 +635,35 @@
             {
               "id": "pnp-3",
               "text": "Sonidos: roce, golpe al clavarse, salto de pared",
+              "done": false
+            }
+          ]
+        },
+        {
+          "id": "habilidades-prototipos",
+          "text": "Habilidades nuevas: prototipos web (6 ataques × base + 3 variantes de build) y sistemas de build propuestos",
+          "note": "Página docs/bocetos/habilidades/index.html (filtro por habilidad, ⬇ vídeo, 🧩 sistemas, 🔊 sonidos). Propuesta: docs/builds-sistemas-propuesta.md (3 preguntas abiertas). Falta: revisión 1 a 1 del usuario y retoques.",
+          "done": false,
+          "doc": "docs/tareas/habilidades-prototipos.md",
+          "steps": [
+            {
+              "id": "hp-1",
+              "text": "Prototipos web de 6 habilidades con sonidos y variantes",
+              "done": true
+            },
+            {
+              "id": "hp-2",
+              "text": "Propuesta de sistemas de build",
+              "done": true
+            },
+            {
+              "id": "hp-3",
+              "text": "Revisión 1 a 1 con el usuario y retoques (aprobadas → ✔ Guardados)",
+              "done": false
+            },
+            {
+              "id": "hp-4",
+              "text": "Port a Unity de las aprobadas (FxCanvas) y diseño de los sistemas elegidos",
               "done": false
             }
           ]

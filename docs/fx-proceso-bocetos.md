@@ -78,3 +78,9 @@ Evolución de la plantilla para el ataque del jugador (cometa). Un solo `.html` 
 - Trampas conocidas: el `rand(seed)` del boceto debe mezclar la semilla (la primera tirada con semilla pequeña era ~0 y alineaba partículas);
   las ondas de choque van enteras por delante (no partidas detrás/delante del enemigo); las estelas nacen en el centro y acaban en punta.
 - **Port a Unity hecho** (arma Cometa): ver `docs/architecture/weapons-items.md` ▸ Cometa. Verificado con render fuera de pantalla (vuelo de las 4 variantes, impactos, perforación, cadena y carga). Los sonidos elegidos se pasan a WAV con `docs/bocetos/render-sonidos-cometa.cjs` (mismo código de síntesis, en un OfflineAudioContext de Node).
+
+## Página de prototipos de habilidades (`docs/bocetos/habilidades/`)
+Sucesora de la página del cometa para **varias habilidades a la vez**: un archivo por habilidad (`a1-…a6-*.js`, cada uno con sus
+sonidos, `build(P)` y sus clips) sobre una base común (`core.js`: escena, paletas por etiqueta —set, hielo, fuego, oro, vida,
+vacío—, primitivas, enemigo con estados congelado/ardiendo/atraído, impactos). Filtro por habilidad, botón **⬇ vídeo** (webm de
+una vuelta), pestañas 🧩 Sistemas de build y 🔊 Sonidos. Estado y siguiente paso: `docs/tareas/habilidades-prototipos.md`.

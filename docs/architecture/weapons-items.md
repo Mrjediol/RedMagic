@@ -17,6 +17,7 @@ Inspector wiring.
   (`ElementModifier`, `TrajectoryModifier`, `ShapeModifier`, each with a fixed `PipelineOrder`) and
   `FreePoolItemDefinition`. Free-pool items **do not transform the shot at all** — their whole
   contribution is a pair of tags.
+- Proposed new build systems (reactions, return, bounce, marks, second weapon, transformations…): `docs/builds-sistemas-propuesta.md`.
 - **Synergies** (`SynergyTracker` + `BuildTag`/`BuildTags` + `Assets/Resources/SynergyConfig.asset`)
   — the single source of truth for tag points, fed only by `WeaponInventory` events. Every equipped
   copy counts (+1 per tag, the same asset in two free slots counts twice), thresholds are 2/4/6 and

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Habilidades · prototipos</title>
+<style>
+  :root { --bg:#1b1d24; --panel:#4a4a4a; --ink:#e8ecf2; --muted:#9aa3b2; --accent:#29c2ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
+  header { padding:12px 16px; display:flex; flex-wrap:wrap; gap:12px 16px; align-items:center; position:sticky; top:0; background:var(--bg); z-index:2; border-bottom:1px solid #2c303a; }
+  h1 { font-size:18px; margin:0 12px 0 0; }
+  label { display:flex; gap:8px; align-items:center; color:var(--muted); }
+  button { background:#2a2f3a; color:var(--ink); border:1px solid #3a4150; border-radius:6px; padding:6px 12px; cursor:pointer; font:inherit; }
+  button:hover { border-color:var(--accent); }
+  button.on { border-color:var(--accent); background:#1f3a4d; }
+  button:disabled { opacity:.6; cursor:default; }
+  #chips { display:flex; flex-wrap:wrap; gap:6px; padding:10px 16px 0; }
+  main { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap:16px; padding:16px; }
+  section { background:#23262f; border-radius:10px; padding:12px; min-width:0; }
+  section.intro { grid-column:1 / -1; background:#1f2430; border:1px solid #2c3446; }
+  section.intro h2 { font-size:17px; }
+  h2 { font-size:15px; margin:0 0 4px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  p { margin:0 0 8px; color:var(--muted); font-size:13px; }
+  p.fit { color:#c6cede; }
+  p.seen { font-size:12px; }
+  details { color:var(--muted); font-size:13px; } summary { cursor:pointer; color:#c6cede; }
+  ul { margin:6px 0 0; padding-left:20px; color:var(--muted); font-size:13px; }
+  canvas { width:100%; height:auto; background:var(--panel); border-radius:6px; display:block; }
+  .lab { display:flex; flex-wrap:wrap; gap:8px; }
+  .bar { display:flex; gap:6px; align-items:center; margin-top:8px; flex-wrap:wrap; }
+  .bar input[type=range] { flex:1; min-width:120px; accent-color:var(--accent); }
+  .bar button { padding:4px 9px; }
+  .bar .tm { font:12px ui-monospace, monospace; color:var(--muted); min-width:46px; text-align:right; }
+  .legend { font-size:12px; color:var(--muted); }
+  .legend b.back { color:#ff9a3c; } .legend b.front { color:#5dff8a; }
+  .badge { font-size:11px; font-weight:600; padding:2px 7px; border-radius:20px; background:#2f3646; color:#c6cede; }
+  .badge.base { background:#24364a; color:#9ef2ff; }
+  .badge.new { background:#4a2b5a; color:#f0c8ff; }
+  .badge.tag { background:#3a3420; color:#ffe39a; }
+  @media (max-width: 600px) { header { padding:10px; } main { padding:10px; gap:10px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Habilidades · prototipos</h1>
+  <button data-tab="saved">✔ Guardados</button>
+  <button data-tab="wip">🛠 En curso</button>
+  <button data-tab="arc">📁 Archivo</button>
+  <button data-tab="sys">🧩 Sistemas de build</button>
+  <button data-tab="snd">🔊 Sonidos</button>
+  <label>Velocidad <input id="speed" type="range" min="0.05" max="1" step="0.05" value="0.5"> <span id="speedv">0.50×</span></label>
+  <button id="pause">Pausa todo</button>
+  <label><input id="layers" type="checkbox"> Ver capas</label>
+  <label><input id="frm" type="checkbox" checked> Impact frames</label>
+  <label><input id="snd" type="checkbox"> 🔊 Sonido</label>
+  <span class="legend">(<b class="back">naranja</b> = detrás · <b class="front">verde</b> = delante) · etiqueta <span class="badge new">Sistema nuevo</span> = propone un sistema de build que aún no existe</span>
+</header>
+<div id="chips"></div>
+<main id="grid-saved"></main>
+<main id="grid-wip"></main>
+<main id="grid-arc"></main>
+<main id="grid-sys"></main>
+<main id="grid-snd"></main>
+<script src="core.js"></script>
+<script src="sound.js"></script>
+<script src="a1-abanico.js"></script>
+<script src="a2-singularidad.js"></script>
+<script src="a3-rayo.js"></script>
+<script src="a4-media-luna.js"></script>
+<script src="a5-semilla.js"></script>
+<script src="a6-golpe-estelar.js"></script>
+<script src="systems.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>

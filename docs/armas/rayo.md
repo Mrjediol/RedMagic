@@ -30,7 +30,7 @@ Mejoras provisionales (el árbol con evoluciones está pendiente de diseñar):
 - **Robo de vida**: `lifesteal` del daño cura al player (gotas carmesí que vuelven por el haz, cruces de curación).
   Para probarlo hay que activar «Los enemigos disparan» (Dificultad).
 
-## Elemento y Duplicador (items generales)
+## Elemento (sinergia: con 4 items de ese elemento) y Duplicador (item)
 
 - **Hielo**: paleta hielo; cada tick suma `freezeTick`. **Al soltar**, todo lo que tocó y esté congelado recibe un golpe
   fuerte → añicos (canalizar hasta congelar y soltar = ritmo propio del arma).

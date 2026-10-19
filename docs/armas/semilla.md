@@ -31,7 +31,7 @@ Mejoras provisionales (el árbol con evoluciones está pendiente de diseñar):
 - **Proximidad**: se arma al instante y espera (zona marcada en el suelo, radio `proxRadius`); cuando un enemigo de suelo entra,
   3 tics rápidos y estalla. Hasta `maxMines` a la vez (la más vieja estalla al poner otra).
 
-## Elemento y Duplicador (items generales)
+## Elemento (sinergia: con 4 items de ese elemento) y Duplicador (item)
 
 - **Hielo**: en vez de columna, nova de escarcha (picos que brotan hacia fuera) de radio `novaRadius`: congela al instante a
   todos (y la mitad del daño). Ideal para preparar añicos con otra arma.

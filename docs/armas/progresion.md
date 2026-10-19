@@ -11,7 +11,7 @@ combo muy bueno. Se experimenta primero con **Abanico** y **Golpe estelar**.
 |---|---|---|---|
 | **1 · Árbol del arma** | Evolución (forma avanzada) + mejoras de esa evolución | Forja con Skulls (`WeaponLevelManager`, niveles) | Profundidad de UNA arma; cada evolución cambia cómo se juega |
 | **2 · Sinergias generales** | Reglas del mundo: reacciones elementales, captura, marcas | No se compran: salen al combinar | Funcionan con cualquier pareja de armas |
-| **3 · Items generales** | Pasivos con rareza: elemento, Duplicador, gatillos… | Tienda (oro) / cofres | **Sólo usan eventos que tienen todas las armas** (golpear, golpe fuerte, matar, cambiar de arma, dash, recargar) o un parámetro que todas definen (nº de proyectiles, elemento) → nunca un item muerto |
+| **3 · Items y sinergias** | Items con 2 etiquetas (elemental + universal) que suman tramos 2/4/6; efecto propio opcional | Tienda (oro) / cofres | **Sólo usan eventos que tienen todas las armas** (golpear, golpe fuerte, matar, cambiar de arma) o un parámetro que todas definen (nº de proyectiles, elemento) → nunca un item muerto |
 
 ## 1 · Árbol del arma
 
@@ -37,21 +37,34 @@ combo muy bueno. Se experimenta primero con **Abanico** y **Golpe estelar**.
 | **Cazador** | Tus otras armas **marcan**; las lanzas caen solas sobre los marcados | Acumulación (marcas apilables hasta 3: más daño por marca) · Ejecución (remata a los que quedan con poca vida y marca al siguiente) · Vigilancia (cada 4 s cae una lanza sola sobre un marcado, aunque lleves la otra arma) |
 | **Tormenta** | Lluvia de agujas sobre una zona | Diluvio (más agujas, dura el doble y sigue al ratón) · Agujas pesadas (golpes fuertes: rompen congelados) · Ojo de la tormenta (atrae hacia el centro y acaba con una lanza) |
 
-## 3 · Items generales (rareza: común · raro · legendario)
+## 3 · Items y sinergias (como el juego: 2 etiquetas por item, tramos 2 / 4 / 6)
 
-| Item | Rareza | Efecto (en todas las armas) |
-|---|---|---|
-| Esencia de hielo | raro (hueco Elemento) | Los golpes congelan; cada arma lo expresa a su manera (tabla abajo) |
-| Esencia de fuego | raro (hueco Elemento) | Los golpes queman; ídem |
-| **Duplicador** | legendario | ×2 proyectiles: 2 lanzas, el doble de esquirlas, 2 semillas, 2 hojas, 2 haces; **2 singularidades que se funden en una mayor al llegar** |
-| Gatillo de cambio | raro | Tras cambiar de arma, el siguiente ataque (1,5 s) hace +60 % y es golpe fuerte |
-| Constelación | raro | Cada 8 golpes cae una lanza pequeña sobre el último enemigo golpeado |
-| Corazón de vacío | raro | Los golpes fuertes atraen un instante a los enemigos cercanos |
-| Cristal afilado | común | +20 % de daño |
-| Engranaje | común | −15 % de recarga |
-| Sangre de cristal | común | Cada enemigo eliminado cura 3 |
+Corrección del usuario (2026-10-19): el elemento ya está en el juego como **sinergia**. Cada item lleva **una etiqueta elemental**
+(Hielo, Fuego, Oro) y **una universal** (Tanque, Prisa, Robo de vida, Reset) — `BuildTag` + `SynergyConfig` en Unity — y cada
+etiqueta activa tramos a 2 / 4 / 6 puntos (6 huecos de items). Propuesta del usuario que se prueba en la web:
 
-### Cómo expresa cada arma el elemento
+- **El elemento se APLICA a los enemigos con 4** de ese elemento (Hielo 4 = los golpes congelan; Fuego 4 = queman). Con 6 huecos
+  sólo un elemento puede llegar a 4 → **nunca dos estados elementales a la vez** en un enemigo (no hay que resolver mezclas).
+- **El tramo 2 es un bonus compatible**: 2 Hielo = −15 % de recarga, 2 Fuego = +15 % de daño. Se puede ir 4 hielo + 2 fuego o al revés.
+- Cada arma decide cómo expresa el elemento (tabla de abajo) y el Duplicador.
+- Un item puede además tener **efecto propio** (los 6 de hielo y los de oro copian los del juego; los «generales» de las pruebas —
+  Duplicador, Gatillo, Constelación… — reciben etiquetas Fuego + universal).
+
+Tablas completas (generadas del código): [README ▸ Items generales](README.md). Resumen de los tramos propuestos:
+
+| Etiqueta | 2 | 4 | 6 |
+|---|---|---|---|
+| Hielo | −15 % recarga | aplica hielo | congelado +50 % y añicos ×2 |
+| Fuego | +15 % daño | aplica fuego | la quemadura salta al morir |
+| Oro | monedas (sin efecto aquí) | 5 % golpes dorados ×2 | botín (sin efecto aquí) |
+| Tanque | +20 % vida | regeneración | escudo una vez al 30 % |
+| Prisa | recarga ×1,5 con hielo en pantalla | −20 % recarga | −35 % recarga |
+| Robo de vida | baja cura 3 | 10 % robo | sobrante → escudo |
+| Reset | baja: −2 s arma activa | y −2 s la de reserva | baja recarga del todo la activa |
+
+En Unity hoy el tramo 1 de Hielo es «ralentiza un 40 %» y el de Fuego «aplica quemadura»: si se adopta esto, pasan al tramo 2.
+
+### Cómo expresa cada arma el elemento (con 4 de ese elemento)
 
 | Arma | Hielo | Fuego |
 |---|---|---|
@@ -70,5 +83,4 @@ cuesta; evolución + 1 mejora + 2 comunes = cómodo; evolución completa + Dupli
 ## Abierto
 
 - ¿Skulls para el árbol y oro para items (lo que ya hay), o una sola moneda?
-- ¿El elemento es de toda la build (propuesta) o por arma?
 - ¿Cuántas evoluciones por arma en el juego final (3 parece el mínimo para que haya variedad entre runs)?

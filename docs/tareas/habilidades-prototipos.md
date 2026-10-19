@@ -58,3 +58,11 @@ Hecho en la jugable: Abanico (Erizo / Lanza / Caleidoscopio) y Golpe estelar (Bo
 evolución; 9 items con rareza (Esencias de hielo/fuego = elemento de la build, Duplicador, Gatillo de cambio, Constelación,
 Corazón de vacío, Cristal afilado, Engranaje, Sangre de cristal); modo run (🎲 subir de nivel, 🎁 cofre); dificultad (vida ×).
 Las otras cuatro armas: sus mods quedan como mejoras provisionales y expresan elemento y Duplicador.
+
+## 2026-10-19 (noche, 2) — arreglos y sinergias como el juego
+
+- Arreglos tras la prueba del usuario: Metralla no salía, Caleidoscopio base buscaba enemigos sin Buscador, Prisma no dividía.
+  Causa de fondo: lo creado durante la actualización de una entidad se perdía (`game.js ▸ step`).
+- Build = sistema del juego: 6 items con etiqueta elemental + universal, tramos 2/4/6; **el elemento se aplica con 4** (propuesta
+  del usuario: así nunca hay dos estados elementales a la vez); 2 hielo = recarga, 2 fuego = daño. Items de hielo y oro copiados
+  del juego; los generales de las pruebas llevan Fuego + universal. Tablas en `docs/armas/README.md`.

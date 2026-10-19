@@ -42,7 +42,7 @@ Detalle:
   - Diluvio: ×`delugeMul` agujas, el doble de duración y la zona sigue al ratón. Agujas pesadas: ×`heavyMul` de daño y golpe
     fuerte. Ojo de la tormenta: atrae hacia el centro (`eyePull`) mientras dura y acaba con una lanza normal en medio.
 
-## Elemento y Duplicador (items generales)
+## Elemento (sinergia: con 4 items de ese elemento) y Duplicador (item)
 
 - **Hielo**: los de la columna se congelan al instante; la onda congela a medias en `iceRadius`; nova de escarcha en el impacto.
 - **Fuego**: cráter ardiendo (`craterTime`, `craterBurn`) donde cae cada lanza; contra congelados, deshielo.

@@ -29,7 +29,7 @@ Mejoras provisionales (el árbol con evoluciones está pendiente de diseñar):
 | Masa (`mass`) | Más grande y dura más; arranca a los voladores y los estampa contra el suelo. |
 <!-- /gen:tree -->
 
-## Elemento y Duplicador (items generales)
+## Elemento (sinergia: con 4 items de ese elemento) y Duplicador (item)
 
 - **Fuego**: el estallido es de fuego (paleta fuego, llamas que se abren por el suelo, brasas) y quema `burn` s. Contra
   congelados = **deshielo** (daño ×2).

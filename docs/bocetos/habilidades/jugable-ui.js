@@ -3,18 +3,18 @@
 'use strict';
 const UI = {};
 (function () {
-  const KEY = 'hab.jugable.v2';
+  const KEY = 'hab.jugable.v3';
   const store = { load() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } },
                   save() { try { localStorage.setItem(KEY, JSON.stringify(snapshot())); } catch (e) { /* sin almacenamiento */ } } };
   const DEFAULT_SLOTS = ['fan', 'star', 'sing'];
   const offers = {};                                         // ofertas abiertas por hueco (sorteo de subida de nivel)
   let chestOffer = null;
-  function snapshot() { return { v: 2, slotCount: G.slotCount, slots: G.slots.map(s => ({ w: s.w, arch: s.arch, ups: s.ups })), build: G.build, settings: G.settings, tuning: G.tuning }; }
+  function snapshot() { return { v: 3, slotCount: G.slotCount, slots: G.slots.map(s => ({ w: s.w, arch: s.arch, ups: s.ups })), build: G.build, settings: G.settings, tuning: G.tuning }; }
   function apply(snap) {
-    if (!snap || snap.v !== 2) return;
+    if (!snap || snap.v < 2) return;
     if (snap.slotCount) G.slotCount = clamp(snap.slotCount, 2, 3);
     if (snap.slots) snap.slots.forEach((s, i) => { if (G.slots[i] && WEAPONS[s.w]) Object.assign(G.slots[i], { w: s.w, arch: s.arch || null, ups: Object.assign({}, s.ups) }); });
-    if (snap.build) G.build = { element: snap.build.element || null, items: Object.assign({}, snap.build.items) };
+    if (snap.build) G.build = { items: Object.fromEntries(Object.entries(snap.build.items || {}).filter(([k, v]) => v && ITEMS.some(i => i.id === k))) };
     if (snap.settings) Object.assign(G.settings, snap.settings);
     if (snap.tuning) for (const id in snap.tuning) if (G.tuning[id]) Object.assign(G.tuning[id], snap.tuning[id]);
   }
@@ -37,14 +37,15 @@ const UI = {};
     return pick(pool, 2).map(u => ({ kind: 'up', id: u.id, name: u.name, desc: u.desc, tag: 'Mejora' }));
   }
   function chestRoll() {
-    const pool = ITEMS.filter(it => !G.build.items[it.id] && G.build.element !== it.id), out = [];
+    const pool = ITEMS.filter(it => !G.build.items[it.id]), out = [];
     while (pool.length && out.length < 3) {
       const tot = pool.reduce((a, it) => a + RARITY[it.rarity].w, 0); let r = Math.random() * tot;
       const i = pool.findIndex(it => (r -= RARITY[it.rarity].w) <= 0); out.push(pool.splice(Math.max(0, i), 1)[0]);
     }
     return out;
   }
-  function giveItem(it) { if (it.elem) G.build.element = it.id; else G.build.items[it.id] = true; }
+  const itemCount = () => Object.values(G.build.items).filter(Boolean).length;
+  function giveItem(it) { if (itemCount() < MAX_ITEMS) G.build.items[it.id] = true; }
 
   // ------------------------------------------------ panel
   const panel = document.getElementById('panel');
@@ -56,17 +57,30 @@ const UI = {};
     const slotsCard = el('div', { className: 'card' }, el('h3', {}, 'Armas equipadas', el('label', {}, el('input', { type: 'checkbox', checked: G.slotCount === 3, on: { change: e => { G.slotCount = e.target.checked ? 3 : 2; if (G.cur >= G.slotCount) G.cur = 0; changed(); } } }), '3er hueco')));
     for (let i = 0; i < G.slotCount; i++) slotsCard.append(slotBox(i));
     panel.append(slotsCard);
-    // ---- build de items
-    const b = el('div', { className: 'card' }, el('h3', {}, 'Build (items generales)', el('button', { on: { click: () => { chestOffer = chestRoll(); build(); } } }, '🎁 Cofre')));
-    if (chestOffer) b.append(offerRow(chestOffer.map(it => ({ name: it.name, desc: it.desc, tag: it.rarity, color: RARITY[it.rarity].color, go: () => { giveItem(it); chestOffer = null; changed(); } })), () => { chestOffer = null; build(); }));
-    b.append(el('div', { className: 'sub' }, 'Elemento (un hueco)'));
-    for (const opt of [{ id: null, name: 'Ninguno' }, ...ITEMS.filter(it => it.elem)])
-      b.append(el('label', { className: 'item', style: opt.rarity ? `color:${RARITY[opt.rarity].color}` : '' }, el('input', { type: 'radio', name: 'elem', checked: G.build.element === opt.id, on: { change: () => { G.build.element = opt.id; changed(); } } }), opt.name, opt.desc ? desc(opt.desc) : null));
-    b.append(el('div', { className: 'sub' }, 'Items'));
-    for (const it of ITEMS.filter(x => !x.elem))
-      b.append(el('label', { className: 'item', style: `color:${RARITY[it.rarity].color}`, title: it.rarity }, el('input', { type: 'checkbox', checked: !!G.build.items[it.id], on: { change: e => { G.build.items[it.id] = e.target.checked; changed(false); } } }), `${it.name} · ${it.rarity}`, desc(it.desc)));
-    b.append(el('div', { className: 'row', style: 'margin-top:6px' }, el('button', { on: { click: () => { G.build = { element: null, items: {} }; changed(); } } }, 'Vaciar build')));
-    panel.append(b);
+    // ---- build de items: cada item = 1 etiqueta elemental + 1 universal; sinergias a 2 / 4 / 6 (como el juego)
+    const full = itemCount() >= MAX_ITEMS;
+    const bc = el('div', { className: 'card' }, el('h3', {}, `Build · ${itemCount()}/${MAX_ITEMS} items`, el('button', { on: { click: () => { chestOffer = full ? [] : chestRoll(); build(); } } }, '🎁 Cofre')));
+    if (chestOffer) bc.append(chestOffer.length
+      ? offerRow(chestOffer.map(it => ({ name: it.name, desc: it.desc + ' · ' + it.tags.map(t => TAGS[t].name).join(' + '), tag: it.rarity, color: RARITY[it.rarity].color, go: () => { giveItem(it); chestOffer = null; changed(); } })), () => { chestOffer = null; build(); })
+      : el('div', { className: 'd' }, 'Build llena: quita un item para abrir otro cofre.'));
+    // resumen de sinergias
+    const syn = el('div', { className: 'syn' });
+    for (const k in TAGS) {
+      const c = tagCount(k), tr = tier(k), d = TAGS[k];
+      const row = el('div', { className: 'synrow' + (c ? '' : ' off') }, el('b', { style: `color:${d.color}` }, `${d.name} ${c}`));
+      d.tiers.forEach((txt, i) => row.append(el('span', { className: 'tier' + (tr > i ? ' on' : ''), title: txt }, `${[2, 4, 6][i]}: ${txt}`)));
+      syn.append(row);
+    }
+    bc.append(el('details', { open: true }, el('summary', {}, 'Sinergias (2 / 4 / 6) — el elemento se aplica con 4'), syn));
+    bc.append(el('div', { className: 'sub' }, 'Items'));
+    for (const it of ITEMS) {
+      const on = !!G.build.items[it.id];
+      bc.append(el('label', { className: 'item', style: `color:${RARITY[it.rarity].color}`, title: it.rarity },
+        el('input', { type: 'checkbox', checked: on, disabled: !on && full, on: { change: e => { G.build.items[it.id] = e.target.checked; changed(); } } }),
+        it.name, el('span', { className: 'tags' }, it.tags.map(t => el('i', { style: `color:${TAGS[t].color}` }, TAGS[t].name))), desc(`${it.rarity} · ${it.desc}`)));
+    }
+    bc.append(el('div', { className: 'row', style: 'margin-top:6px' }, el('button', { on: { click: () => { G.build = { items: {} }; changed(); } } }, 'Vaciar build')));
+    panel.append(bc);
     // ---- dificultad
     const dif = el('div', { className: 'card' }, el('h3', {}, 'Dificultad'));
     const hv = el('span', {}, '×' + G.settings.hpMul.toFixed(2));

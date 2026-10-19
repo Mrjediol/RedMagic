@@ -31,7 +31,8 @@ Detalle:
   (rompe congelados → añicos). Un arma lenta en la otra mano + Erizo = cargar, cambiar, reventar.
   - Retorno: tras estallar vuelven en curva al cristal; lo que atraviesan recibe `returnDamage`; cada una que llega resta
     `refund` s a la recarga del arma de reserva.
-  - Metralla: `shrapCount` esquirlas pequeñas (`shrapDamage`, vuelan 0,25 s) por estallido.
+  - Metralla: `shrapCount` esquirlas pequeñas (`shrapDamage`, vuelan 0,35 s) por estallido, hacia fuera (hacia arriba si la
+    esquirla estaba en el suelo); no chocan con el enemigo que la tenía clavada.
   - Hemorragia: `bleedDps` por esquirla clavada (cada 0,5 s; es daño continuo: no activa items de golpe).
 - **Lanza**: recarga `lanceCooldown`; `lanceCount` esquirlas en fila, una cada `lanceGap` s, hacia donde apuntas **en ese momento**
   (puedes barrer durante la ráfaga), a `lanceSpeed` durante `lanceLife` s; cada una atraviesa 1 enemigo.
@@ -39,12 +40,13 @@ Detalle:
   - Aceleración: manteniendo, cada ráfaga recarga `accelStep` antes (hasta ×`accelMin`); al soltar vuelve a empezar.
   - Cristal mayor: la última de cada ráfaga es grande (`bigSize`), ×`bigMul` de daño, golpe fuerte, empuja más.
 - **Caleidoscopio**: paleta oro; `kalBounces` rebotes (suelo, plataformas, enemigos); cada rebote +`kalBounceDmg` de daño.
-  En un enemigo se desvía hacia el más cercano que no haya tocado (≤ `kalSeekRange`); en el suelo, rebota.
-  - Buscador: también los rebotes de suelo van hacia el enemigo más cercano.
-  - Prisma: al rebotar en un enemigo sale una copia hacia el siguiente (×`splitMul` de daño, un rebote menos; la copia no se divide).
+  En un enemigo rebota según la superficie del cuerpo (reflejo sobre la normal de la elipse); en suelo y plataformas, rebota.
+  - Buscador: todos los rebotes (enemigo, suelo, plataforma) van hacia el enemigo más cercano que no haya tocado (≤ `kalSeekRange`).
+  - Prisma: al rebotar en un enemigo se divide en dos que se abren ±0,35 rad (con Buscador, la copia va al segundo más cercano);
+    la copia hace ×`splitMul` de daño, tiene un rebote menos y no vuelve a dividirse.
   - Eterno: +3 rebotes y el alcance se renueva en cada rebote.
 
-## Elemento y Duplicador (items generales)
+## Elemento (sinergia: con 4 items de ese elemento) y Duplicador (item)
 
 - **Hielo**: cada esquirla suma `freeze` (con 3 se congela); el estallido del Erizo y el Cristal mayor rompen congelados.
 - **Fuego**: cada esquirla quema `burn` s.
@@ -117,6 +119,10 @@ evento de cambio en `WeaponUser` (2 armas activas).
 - 2026-10-19 · El usuario: las mejoras de un arma no pueden ser items generales; árbol profundo con varias formas avanzadas.
   Se prueban Erizo / Lanza / Caleidoscopio. El hielo pasa a ser item (elemento de la build), no mod del arma.
 - 2026-10-19 · Erizo detona al cambiar de arma (propuesta para dar sentido a las 2 armas; pendiente de opinión).
+
+- 2026-10-19 · Arreglos tras la prueba del usuario: Metralla no salía, el Caleidoscopio base ya buscaba al siguiente (sólo debe
+  con Buscador) y el Prisma no se dividía. Causa común de Metralla y Prisma: lo creado durante la actualización de una entidad se
+  perdía (arreglado en `game.js ▸ step`; afectaba también a la estela de fuego, el racimo, los cráteres y algunos impactos).
 
 ## Preguntas abiertas
 

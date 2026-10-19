@@ -10,8 +10,8 @@ const files = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]).filter
 const sb = { console, Math, performance: { now: () => 0 }, window: {}, document: { getElementById: () => ({}) }, setTimeout: () => 0 };
 vm.createContext(sb);
 for (const f of files) vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), sb, { filename: f });
-vm.runInContext('this.__x = { WEAPONS, REACT_TUNING, ITEMS, ITEM_TUNING };', sb);
-const { WEAPONS, REACT_TUNING, ITEMS, ITEM_TUNING } = sb.__x;
+vm.runInContext('this.__x = { WEAPONS, REACT_TUNING, ITEMS, ITEM_TUNING, TAGS };', sb);
+const { WEAPONS, REACT_TUNING, ITEMS, ITEM_TUNING, TAGS } = sb.__x;
 
 const code = s => '`' + s + '`';
 const tuningTable = spec => '| Campo | Valor | Rango | Qué es |\n|---|---:|---|---|\n' +
@@ -20,7 +20,8 @@ const upsTable = ups => '| Mejora (id) | Qué hace |\n|---|---|\n' + ups.map(m =
 const treeText = d => d.archetypes
   ? '| Evolución (id) | Idea | Mejoras |\n|---|---|---|\n' + d.archetypes.map(a => `| **${a.name}** (${code(a.id)}) | ${a.desc} | ${a.ups.map(u => `**${u.name}** (${code(u.id)}): ${u.desc}`).join('<br>')} |`).join('\n')
   : 'Mejoras provisionales (el árbol con evoluciones está pendiente de diseñar):\n\n' + upsTable(d.ups || []);
-const itemsTable = () => '| Item (id) | Rareza | Efecto |\n|---|---|---|\n' + ITEMS.map(i => `| ${i.name} (${code(i.id)}) | ${i.rarity}${i.elem ? ' · elemento' : ''} | ${i.desc} |`).join('\n');
+const itemsTable = () => '| Item (id) | Rareza | Etiquetas | Efecto propio |\n|---|---|---|---|\n' + ITEMS.map(i => `| ${i.name} (${code(i.id)}) | ${i.rarity} | ${i.tags.map(t => TAGS[t].name).join(' + ')} | ${i.desc} |`).join('\n');
+const synTable = () => '| Etiqueta | 2 | 4 | 6 |\n|---|---|---|---|\n' + Object.values(TAGS).map(t => `| **${t.name}** (${t.kind === 'elem' ? 'elemental' : 'universal'}) | ${t.tiers.join(' | ')} |`).join('\n');
 
 function put(file, tag, body) {
   const f = path.join(out, file);
@@ -38,5 +39,5 @@ for (const id in WEAPONS) {
   console.log('ok', file);
 }
 put('README.md', 'react', tuningTable(REACT_TUNING));
-put('README.md', 'items', itemsTable() + '\n\nAjustes (' + code('G.tuning.items') + '):\n\n' + tuningTable(ITEM_TUNING));
+put('README.md', 'items', '**Sinergias**\n\n' + synTable() + '\n\n**Items**\n\n' + itemsTable() +'\n\nAjustes (' + code('G.tuning.items') + '):\n\n' + tuningTable(ITEM_TUNING));
 console.log('ok README.md (reacciones, items)');

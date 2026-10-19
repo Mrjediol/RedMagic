@@ -13,7 +13,7 @@ const G = {
   player: null, enemies: [], ents: [], texts: [], dmgLog: [], dmgTotal: 0,
   slots: [], cur: 0, slotCount: 2,
   settings: { reactions: true, frames: true, hitstop: true, sound: false, enemyAttacks: false, hitboxes: false, hpMul: 1 },
-  build: { element: null, items: {} }, lastSwap: -9, swapBuff: -9,
+  build: { items: {} }, lastSwap: -9, swapBuff: -9,
   tuning: {},
 };
 
@@ -154,8 +154,8 @@ function enemyShot(e) {
       return this.life > 0 && this.y < GROUND; },
     draw(ctx, layer) { if (layer !== 'front') return; glow(ctx, this.x, this.y, 16, [255, 80, 80], 0.6); disc(ctx, this.x, this.y, 5, '#ff6a6a', 1, layer); disc(ctx, this.x, this.y, 2.4, '#fff', 1, layer); } });
 }
-function hurtPlayer(d) { const p = G.player; if (p.hurtT > 0) return; p.hp = Math.max(0, p.hp - d); p.hurtT = 0.5; G.shake += 4; text(p.x, p.y - 90, '-' + d, '#ff6a6a'); if (p.hp <= 0) p.hp = p.hpMax; }
-function healPlayer(d) { const p = G.player; const before = p.hp; p.hp = Math.min(p.hpMax, p.hp + d); if (p.hp > before + 0.5) { p.aura = PAL.life.g1; p.auraT = 0.4; } return p.hp - before; }
+function hurtPlayer(d) { const p = G.player; if (p.hurtT > 0) return; if (p.shield > 0) { const b = Math.min(p.shield, d); p.shield -= b; d -= b; } p.hp = Math.max(0, p.hp - d); p.hurtT = 0.5; G.shake += 4; text(p.x, p.y - 90, '-' + d, '#ff6a6a'); if (p.hp <= 0) p.hp = p.hpMax; }
+function healPlayer(d) { const p = G.player; const before = p.hp; if (tier('life') >= 3 && p.hp + d > p.hpMax) p.shield = Math.min(30, (p.shield || 0) + p.hp + d - p.hpMax); p.hp = Math.min(p.hpMax, p.hp + d); if (p.hp > before + 0.5) { p.aura = PAL.life.g1; p.auraT = 0.4; } return p.hp - before; }
 
 // ---------------------------------------------------------------- daño, estados y reacciones
 // o = { dmg, kx, ky (empujón), slot, heavy (golpe fuerte: rompe congelados), elem: 'ice'|'fire', freeze (0..1 que suma),
@@ -164,18 +164,31 @@ function damage(e, o) {
   if (!e || e.dead) return 0;
   let dmg = o.dmg || 0, label = null;
   const it = T('items');
-  if (o.slot && !o.dot) {                                     // items generales sobre golpes de arma (no sobre daño continuo)
+  let gilded = false;
+  if (o.slot && !o.dot) {                                     // build sobre golpes de arma (no sobre daño continuo)
+    if (tier('fire') >= 1) dmg *= it.fire2Damage;
     if (hasItem('sharp')) dmg *= it.sharpMul;
+    if (hasItem('espadaO')) dmg *= 1.2;
+    const iced = e.freeze > 0 || e.frozenT > 0;
+    if (iced && hasItem('grimorio')) dmg *= it.grimorioMul;
+    if (iced && hasItem('anillo')) dmg += e.hpMax * it.anilloPct;
+    if (G.empower && G.empower > 1) { dmg *= G.empower; o.heavy = true; if (!G.empowerHit) { G.empowerHit = true; G.empowerEnd = G.t + 0.12; } }
     if (hasItem('swap') && G.t < G.swapBuff) { dmg *= it.swapMul; o.heavy = true; if (!G.swapBuffHit) { G.swapBuffHit = true; G.swapBuff = G.t + 0.12; } }
+    let gc = tier('gold') >= 2 ? it.gildChance : 0;
+    if (hasItem('botasO')) gc += Math.min(it.botasOMax, it.botasOBase + it.botasOPerDmg * dmg);
+    G.goldHits = (G.goldHits || 0) + 1;
+    if (Math.random() < gc || (hasItem('guantesO') && G.goldHits % 4 === 0)) { dmg *= 2; gilded = true; }
   }
   const frozen = e.frozenT > 0, R = G.settings.reactions && !o.noReact;
   // reacciones
   if (R && frozen && o.elem === 'fire') { dmg *= 2; e.frozenT = 0; e.freeze = 0; label = 'DESHIELO'; hitFx('steam', e.x, e.y); }
   else if (R && frozen && o.heavy) { shatter(e); label = 'AÑICOS'; }
   else if (R && e.burnT > 0 && o.elem === 'ice') { e.burnT = 0; label = 'VAPOR'; vapor(e); }
-  if (o.elem === 'ice' && o.freeze && !(label === 'AÑICOS')) { e.freeze = Math.min(1, e.freeze + o.freeze); if (e.freeze >= 1 && e.frozenT <= 0) { e.frozenT = T('react').frozenTime; sfx(SFXLIB.freeze.bind(null, 1, 0.3)); } }
+  if (o.elem === 'ice' && o.freeze && !(label === 'AÑICOS')) { e.freeze = Math.min(1, e.freeze + o.freeze); if (e.freeze >= 1 && e.frozenT <= 0) { e.frozenT = T('react').frozenTime * (tier('ice') >= 3 ? 1.5 : 1); sfx(SFXLIB.freeze.bind(null, 1, 0.3)); } }
   if (o.burn && o.elem === 'fire' && label !== 'DESHIELO') { e.burnT = Math.max(e.burnT, o.burn); e.burnTick = Math.min(e.burnTick, 0.1); }
   e.hp -= dmg; logDmg(dmg); e.lastHitT = G.t;
+  if (gilded) text(e.x - 14, e.y - e.ry - 30, 'ORO', '#ffc93c', true);
+  if (o.slot && !o.dot && tier('life') >= 2 && dmg > 0) { G.lifeAcc = (G.lifeAcc || 0) + dmg * 0.1; if (G.lifeAcc >= 1) { const hv = Math.floor(G.lifeAcc); G.lifeAcc -= hv; healPlayer(hv); } }
   if (!o.silentFlash) { e.flashT = 0.12; e.sqT = 0.2; e.shakeT = 0.22; }
   if (e.frozenT <= 0) { e.vx += o.kx || 0; if (o.ky) { e.vy += o.ky; } }
   if (dmg > 0) {                                             // golpes pequeños seguidos se suman en un solo número
@@ -184,6 +197,7 @@ function damage(e, o) {
     else { text(e.x + (Math.random() - 0.5) * 20, e.y - e.ry - 12, Math.round(dmg) + '', colr, dmg >= 30); if (dmg < 30) { e._txt = G.texts[G.texts.length - 1]; e._txt.v = dmg; } }
   }
   if (label) text(e.x, e.y - e.ry - 34, label, label === 'AÑICOS' ? '#cdf6ff' : label === 'VAPOR' ? '#e0e8ff' : '#ffcf7a', true);
+  if (G.empowerEnd && G.t > G.empowerEnd) { G.empower = 0; G.empowerHit = false; G.empowerEnd = 0; }
   if (o.hitstop && G.settings.hitstop) G.hitStop = Math.max(G.hitStop, o.hitstop);
   if (o.shake) G.shake += o.shake;
   if (o.frame && G.settings.frames) G.dark = Math.max(G.dark, 0.05);
@@ -201,7 +215,7 @@ function damage(e, o) {
   }
   if (e.hp <= 0) {
     e.dead = true; e.deadT = 0; hitFx('die', e.x, e.y, e);
-    if (hasItem('blood')) { const h = healPlayer(it.bloodHeal); if (h > 0) text(G.player.x, G.player.y - 92, '+' + Math.round(h), '#ff9fb4'); }
+    onKillBuild(e, o);
     if (o.onKill) o.onKill(e);
   }
   return dmg;
@@ -219,11 +233,11 @@ function damageArea(x, y, r, o, falloff = true) {
 }
 // daño directo (reacciones): resta, número y muerte
 function logDmg(d) { if (d > 0) { G.dmgLog.push({ t: G.t, d }); G.dmgTotal += d; } }
-function hurtEnemy(e, d, color, big) { if (e.dead) return; e.hp -= d; logDmg(d); e.lastHitT = G.t; text(e.x + 10, e.y - e.ry, Math.round(d) + '', color, big); if (e.hp <= 0) { e.dead = true; e.deadT = 0; hitFx('die', e.x, e.y, e); } }
+function hurtEnemy(e, d, color, big) { if (e.dead) return; e.hp -= d; logDmg(d); e.lastHitT = G.t; text(e.x + 10, e.y - e.ry, Math.round(d) + '', color, big); if (e.hp <= 0) { e.dead = true; e.deadT = 0; hitFx('die', e.x, e.y, e); onKillBuild(e, {}); } }
 // Reacción añicos: daño extra + fragmentos que dañan alrededor
 function shatter(e) {
   const tr = T('react');
-  e.frozenT = 0; e.freeze = 0; hurtEnemy(e, tr.shatterDmg, '#cdf6ff', true);
+  e.frozenT = 0; e.freeze = 0; hurtEnemy(e, tr.shatterDmg * (tier('ice') >= 3 ? 2 : 1), '#cdf6ff', true);
   for (const o of alive()) if (o !== e && Math.hypot(o.x - e.x, o.y - e.y) < tr.shatterRadius) damage(o, { dmg: tr.shatterSplash, kx: Math.sign(o.x - e.x) * 120, elem: 'ice', freeze: 0.25, noReact: true });
   hitFx('shatter', e.x, e.y); G.shake += 7; if (G.settings.frames) G.dark = 0.05; if (G.settings.hitstop) G.hitStop = Math.max(G.hitStop, 0.06);
   sfx(SFXLIB.shatter.bind(null, 1, 1.1));
@@ -238,30 +252,103 @@ G.tuning.react = { frozenTime: 2.5, shatterDmg: 45, shatterRadius: 80, shatterSp
 const REACT_TUNING = { frozenTime: [2.5, 0.5, 6, 0.1, 'Congelado: duración (s)'], shatterDmg: [45, 0, 150, 1, 'Añicos: daño extra'], shatterRadius: [80, 0, 200, 1, 'Añicos: radio'],
                        shatterSplash: [15, 0, 80, 1, 'Añicos: daño alrededor'], vaporDmg: [25, 0, 100, 1, 'Vapor: daño'], vaporRadius: [70, 0, 200, 1, 'Vapor: radio'] };
 
-// ---------------------------------------------------------------- items generales (vía 3: valen para todas las armas)
-// Regla: un item sólo usa eventos que tienen todas las armas (golpear, golpe fuerte, matar, cambiar de arma) o un parámetro
-// que todas definen (elemento, nº de proyectiles). Cada arma decide cómo EXPRESA el elemento y el Duplicador.
+// ---------------------------------------------------------------- build: items con 2 etiquetas y sinergias 2/4/6 (como el juego)
+// Igual que en Unity (BuildTag, SynergyConfig): cada item lleva UNA etiqueta elemental (Hielo, Fuego, Oro) y UNA universal
+// (Tanque, Prisa, Robo de vida, Reset); cada etiqueta suma puntos y activa tramos a 2 / 4 / 6. Propuesta del usuario (2026-10-19):
+// el elemento se APLICA a los enemigos con 4 de ese elemento (con 6 huecos sólo cabe uno → nunca dos estados a la vez); con 2 es
+// un bonus compatible (2 hielo = menos recarga, 2 fuego = más daño), así se puede ir 4 hielo + 2 fuego o al revés.
+// Un item además puede tener efecto propio (los de hielo y oro copian los del juego; los generales son los de las pruebas).
+const TAGS = {
+  ice:  { name: 'Hielo', kind: 'elem', color: '#9ef2ff', tiers: ['−15 % de recarga en todas las armas', 'Tus golpes aplican HIELO (cada arma a su manera; congelado + golpe fuerte = añicos)', 'Congelado dura +50 % y los añicos hacen el doble'] },
+  fire: { name: 'Fuego', kind: 'elem', color: '#ffb35a', tiers: ['+15 % de daño en todas las armas', 'Tus golpes aplican FUEGO (quemadura; congelado + fuego = deshielo)', 'Al morir un enemigo quemado, la quemadura salta a los cercanos'] },
+  gold: { name: 'Oro', kind: 'elem', color: '#ffc93c', tiers: ['+15 % de monedas (sin efecto en el prototipo)', '+5 % de golpes dorados (×2 de daño)', 'Botín ×3 con la marca de oro (sin efecto en el prototipo)'] },
+  tank: { name: 'Tanque', kind: 'univ', color: '#c8ccd4', tiers: ['+20 % de vida máxima', 'Regeneras 1 de vida por segundo', 'Escudo de 30 al bajar del 30 % de vida (una vez)'] },
+  haste: { name: 'Prisa', kind: 'univ', color: '#c8ccd4', tiers: ['Con un enemigo con hielo en pantalla, la recarga corre ×1,5', '−20 % de recarga', '−35 % de recarga'] },
+  life: { name: 'Robo de vida', kind: 'univ', color: '#c8ccd4', tiers: ['Cada baja cura 3', '10 % de robo de vida en los golpes de arma', 'La curación sobrante se convierte en escudo (hasta 30)'] },
+  reset: { name: 'Reset', kind: 'univ', color: '#c8ccd4', tiers: ['Cada baja quita 2 s a la recarga del arma activa', 'Cada baja quita también 2 s a la de reserva', 'Cada baja recarga del todo el arma activa'] },
+};
+const MAX_ITEMS = 6;
+// rareza como en el juego: común · raro (azul) · épico · legendario
+const RARITY = { 'común': { w: 50, color: '#c8ccd4' }, 'raro': { w: 30, color: '#5fb8ff' }, 'épico': { w: 15, color: '#c77dff' }, 'legendario': { w: 5, color: '#ffc93c' } };
 const ITEMS = [
-  { id: 'ice', name: 'Esencia de hielo', rarity: 'raro', elem: true, desc: 'Los golpes congelan (cada arma a su manera). Congelado + golpe fuerte = añicos.' },
-  { id: 'fire', name: 'Esencia de fuego', rarity: 'raro', elem: true, desc: 'Los golpes queman (cada arma a su manera). Congelado + fuego = deshielo.' },
-  { id: 'dup', name: 'Duplicador', rarity: 'legendario', desc: 'Dobla los proyectiles de todas tus armas (dos singularidades se funden en una mayor).' },
-  { id: 'swap', name: 'Gatillo de cambio', rarity: 'raro', desc: 'Tras cambiar de arma, el siguiente ataque hace más daño y es golpe fuerte.' },
-  { id: 'const', name: 'Constelación', rarity: 'raro', desc: 'Cada pocos golpes cae una lanza pequeña sobre el último enemigo golpeado.' },
-  { id: 'void', name: 'Corazón de vacío', rarity: 'raro', desc: 'Los golpes fuertes atraen un instante a los enemigos cercanos.' },
-  { id: 'sharp', name: 'Cristal afilado', rarity: 'común', desc: 'Más daño en todos los golpes de arma.' },
-  { id: 'gear', name: 'Engranaje', rarity: 'común', desc: 'Menos recarga en todas las armas.' },
-  { id: 'blood', name: 'Sangre de cristal', rarity: 'común', desc: 'Cada enemigo eliminado cura un poco.' },
+  // --- hielo (los 6 del juego, efecto adaptado: «ralentizado» = con hielo acumulado)
+  { id: 'anillo', name: 'Anillo Glacial', rarity: 'raro', tags: ['ice', 'life'], desc: 'Los golpes a enemigos con hielo hacen un extra según su vida máxima.' },
+  { id: 'baston', name: 'Bastón Helado', rarity: 'legendario', tags: ['ice', 'haste'], desc: 'Al matar, el siguiente ataque hace ×3 y el arma activa se recarga.' },
+  { id: 'botasR', name: 'Botas Rúnicas', rarity: 'épico', tags: ['ice', 'haste'], desc: 'Con un enemigo con hielo en pantalla, la recarga corre ×1,5.' },
+  { id: 'capa', name: 'Capa de Escarcha', rarity: 'épico', tags: ['ice', 'reset'], desc: 'Al matar, un fragmento de hielo sale del cuerpo hacia el enemigo más cercano.' },
+  { id: 'grimorio', name: 'Grimorio Glacial', rarity: 'raro', tags: ['ice', 'reset'], desc: 'Los enemigos con hielo reciben +30 % de daño.' },
+  { id: 'yelmo', name: 'Yelmo Rúnico', rarity: 'legendario', tags: ['ice', 'life'], desc: 'Cada 5 bajas, estallido de hielo a tu alrededor que congela.' },
+  // --- fuego (generales de las pruebas)
+  { id: 'dup', name: 'Duplicador', rarity: 'legendario', tags: ['fire', 'reset'], desc: 'Dobla los proyectiles de todas tus armas (dos singularidades se funden en una mayor).' },
+  { id: 'swap', name: 'Gatillo de cambio', rarity: 'épico', tags: ['fire', 'haste'], desc: 'Tras cambiar de arma, el siguiente ataque hace más daño y es golpe fuerte.' },
+  { id: 'const', name: 'Constelación', rarity: 'épico', tags: ['fire', 'reset'], desc: 'Cada pocos golpes cae una lanza pequeña sobre el último enemigo golpeado.' },
+  { id: 'void', name: 'Corazón de vacío', rarity: 'raro', tags: ['fire', 'tank'], desc: 'Los golpes fuertes atraen un instante a los enemigos cercanos.' },
+  { id: 'sharp', name: 'Cristal afilado', rarity: 'común', tags: ['fire', 'life'], desc: '+20 % de daño en todos los golpes de arma.' },
+  { id: 'blood', name: 'Sangre de cristal', rarity: 'común', tags: ['fire', 'life'], desc: 'Cada baja cura un poco.' },
+  { id: 'gear', name: 'Engranaje', rarity: 'común', tags: ['ice', 'haste'], desc: '−15 % de recarga en todas las armas.' },
+  // --- oro (del juego, sólo lo que tiene sentido sin monedas)
+  { id: 'espadaO', name: 'Espada de Oro', rarity: 'épico', tags: ['gold', 'life'], desc: '+20 % de daño (y monedas al matar, sin efecto aquí).' },
+  { id: 'botasO', name: 'Botas de Oro', rarity: 'legendario', tags: ['gold', 'haste'], desc: 'Golpes dorados (×2) con probabilidad que sube con el daño del golpe.' },
+  { id: 'guantesO', name: 'Guanteletes de Oro', rarity: 'épico', tags: ['gold', 'haste'], desc: 'Cada 4 golpes, uno dorado (×2).' },
 ];
-const RARITY = { 'común': { w: 60, color: '#c8ccd4' }, 'raro': { w: 30, color: '#5fb8ff' }, 'legendario': { w: 10, color: '#ffc93c' } };
-const hasItem = id => !!(G.build.items[id] || G.build.element === id);
-const elemOf = () => G.build.element;                       // 'ice' | 'fire' | null (un solo hueco de elemento)
+const hasItem = id => !!G.build.items[id];
+const ownedItems = () => ITEMS.filter(i => G.build.items[i.id]);
+function tagCount(tag) { return Math.min(6, ownedItems().reduce((n, i) => n + (i.tags.includes(tag) ? 1 : 0), 0)); }
+function tier(tag) { const c = tagCount(tag); return c >= 6 ? 3 : c >= 4 ? 2 : c >= 2 ? 1 : 0; }
+// elemento aplicado = el elemental con 4+ (si por pruebas hubiera dos, el que más tenga)
+function elemOf() { const c = ['ice', 'fire'].map(t => [t, tagCount(t)]).filter(x => x[1] >= 4).sort((a, b) => b[1] - a[1]); return c.length ? c[0][0] : null; }
 const copies = () => hasItem('dup') ? 2 : 1;
-const cdMul = () => hasItem('gear') ? T('items').gearMul : 1;
 const elemPal = base => PAL[elemOf() || base];
-G.tuning.items = { sharpMul: 1.2, gearMul: 0.85, swapMul: 1.6, swapTime: 1.5, constEvery: 8, voidRadius: 130, voidTime: 0.4, bloodHeal: 3 };
-const ITEM_TUNING = { sharpMul: [1.2, 1, 3, 0.05, 'Cristal afilado: × daño'], gearMul: [0.85, 0.3, 1, 0.01, 'Engranaje: × recarga'], swapMul: [1.6, 1, 4, 0.05, 'Gatillo: × daño'],
+function cdMul() { let m = 1; if (tier('ice') >= 1) m *= T('items').ice2Cooldown; if (hasItem('gear')) m *= T('items').gearMul; const h = tier('haste'); if (h === 2) m *= 0.8; if (h >= 3) m *= 0.65; return m; }
+const iceOnScreen = () => alive().some(e => (e.freeze > 0 || e.frozenT > 0) && Math.abs(e.x - G.player.x) < VW);
+function cdRate() { return ((tier('haste') >= 1 || hasItem('botasR')) && iceOnScreen()) ? 1.5 : 1; }
+G.tuning.items = { ice2Cooldown: 0.85, fire2Damage: 1.15, sharpMul: 1.2, gearMul: 0.85, swapMul: 1.6, swapTime: 1.5, constEvery: 8, voidRadius: 130, voidTime: 0.4, bloodHeal: 3,
+                   anilloPct: 0.04, grimorioMul: 1.3, yelmoKills: 5, yelmoDamage: 40, yelmoRadius: 160, gildChance: 0.05, botasOBase: 0.05, botasOPerDmg: 0.004, botasOMax: 0.5 };
+const ITEM_TUNING = {
+  ice2Cooldown: [0.85, 0.5, 1, 0.01, 'Hielo 2: × recarga'], fire2Damage: [1.15, 1, 2, 0.01, 'Fuego 2: × daño'],
+  sharpMul: [1.2, 1, 3, 0.05, 'Cristal afilado: × daño'], gearMul: [0.85, 0.3, 1, 0.01, 'Engranaje: × recarga'], swapMul: [1.6, 1, 4, 0.05, 'Gatillo: × daño'],
   swapTime: [1.5, 0.2, 5, 0.1, 'Gatillo: ventana (s)'], constEvery: [8, 2, 30, 1, 'Constelación: cada N golpes'], voidRadius: [130, 30, 400, 5, 'Corazón de vacío: radio'],
-  voidTime: [0.4, 0.1, 2, 0.05, 'Corazón de vacío: duración (s)'], bloodHeal: [3, 0, 30, 1, 'Sangre de cristal: cura por muerte'] };
+  voidTime: [0.4, 0.1, 2, 0.05, 'Corazón de vacío: duración (s)'], bloodHeal: [3, 0, 30, 1, 'Sangre de cristal: cura por baja'],
+  anilloPct: [0.04, 0, 0.2, 0.005, 'Anillo Glacial: extra (× vida máx. del enemigo)'], grimorioMul: [1.3, 1, 3, 0.05, 'Grimorio: × daño a enemigos con hielo'],
+  yelmoKills: [5, 1, 20, 1, 'Yelmo: bajas por estallido'], yelmoDamage: [40, 0, 200, 1, 'Yelmo: daño'], yelmoRadius: [160, 30, 400, 5, 'Yelmo: radio'],
+  gildChance: [0.05, 0, 0.5, 0.01, 'Oro 4: probabilidad de golpe dorado'], botasOBase: [0.05, 0, 0.5, 0.01, 'Botas de Oro: probabilidad base'],
+  botasOPerDmg: [0.004, 0, 0.05, 0.001, 'Botas de Oro: + por punto de daño'], botasOMax: [0.5, 0, 1, 0.05, 'Botas de Oro: máximo'],
+};
+// efectos que dependen del tiempo (regeneración, escudo) y de las bajas
+function updateBuild(dt) {
+  const p = G.player, hm = 100 * (tier('tank') >= 1 ? 1.2 : 1);
+  if (p.hpMax !== hm) { p.hp = Math.min(hm, p.hp * hm / p.hpMax); p.hpMax = hm; }
+  if (tier('tank') >= 2) { p.hp = Math.min(p.hpMax, p.hp + dt); }
+  if (tier('tank') >= 3 && !p.shieldUsed && p.hp < p.hpMax * 0.3) { p.shieldUsed = true; p.shield = Math.max(p.shield || 0, 30); text(p.x, p.y - 100, 'ESCUDO', '#c8ccd4', true); }
+}
+function onKillBuild(e, o) {
+  const it = T('items'), p = G.player;
+  if (hasItem('blood')) { const h = healPlayer(it.bloodHeal); if (h > 0) text(p.x, p.y - 92, '+' + Math.round(h), '#ff9fb4'); }
+  if (tier('life') >= 1) { const h = healPlayer(3); if (h > 0) text(p.x, p.y - 100, '+' + Math.round(h), '#ff9fb4'); }
+  const r = tier('reset'), act = G.slots[G.cur], other = otherSlots(act);
+  if (r >= 1 && act.inst && act.inst.refund) act.inst.refund(r >= 3 ? 99 : 2);
+  if (r >= 2) for (const so of other) if (so.inst && so.inst.refund) so.inst.refund(2);
+  if (hasItem('baston')) { G.empower = 3; if (act.inst && act.inst.refund) act.inst.refund(99); text(p.x, p.y - 108, '×3', '#9ef2ff', true); }
+  if (hasItem('capa')) { const n = nearestEnemy(e.x, e.y, 400); if (n) G.ents.push(iceBolt(e.x, e.y, n, Math.max(8, (o.dmg || 10) * 0.5))); }
+  if (hasItem('yelmo')) { G.yelmoKills = (G.yelmoKills || 0) + 1; if (G.yelmoKills >= it.yelmoKills) { G.yelmoKills = 0; yelmoBurst(); } }
+  if (tier('fire') >= 3 && e.burnT > 0) for (const o2 of alive()) if (Math.hypot(o2.x - e.x, o2.y - e.y) < 110) { o2.burnT = Math.max(o2.burnT, 2.5); o2.burnTick = 0.1; }
+}
+function iceBolt(x, y, target, dmg) {                         // Capa de Escarcha: fragmento que persigue al más cercano
+  let vx = 0, vy = -200; const P = PAL.ice; const trail = [];
+  return { kind: 'bolt', update(dt) {
+      if (target.dead) return false;
+      const a = Math.atan2(target.y - y, target.x - x); vx = lerp(vx, Math.cos(a) * 700, Math.min(1, dt * 8)); vy = lerp(vy, Math.sin(a) * 700, Math.min(1, dt * 8));
+      x += vx * dt; y += vy * dt; trail.unshift({ x, y }); if (trail.length > 8) trail.pop();
+      if (Math.hypot(target.x - x, target.y - y) < target.rx) { damage(target, { dmg, elem: 'ice', freeze: 0.4, kx: Math.sign(vx) * 80 }); return false; }
+      return true; },
+    draw(ctx, layer) { if (layer === 'back' && trail.length > 1) ribbon(ctx, trail, q => 6 * (1 - q), P.mid, 0.8, layer); crystalShard(ctx, x, y, Math.atan2(vy, vx), 0.7, P, 1, layer); } };
+}
+function yelmoBurst() {
+  const it = T('items'), p = G.player, cx = p.x, cy = p.y - 40;
+  damageArea(cx, cy, it.yelmoRadius, { dmg: it.yelmoDamage, kx: 200, elem: 'ice', freeze: 1, shake: 6 });
+  addFx(1.6, (ctx, layer, t0) => frostNova(ctx, G.t, layer, t0, cx, it.yelmoRadius));
+  sfx(SND.seed_nova.fn);
+}
 function voidPulse(x, y) {
   const it = T('items'); if (G.t - (G._voidT || -9) < 0.2) return; G._voidT = G.t;
   for (const e of alive()) if (Math.hypot(e.x - x, e.y - y) < it.voidRadius) e.vpull = { x, y, until: G.t + it.voidTime };
@@ -342,10 +429,15 @@ function step(dt) {
   G.t += dt;
   updatePlayer(dt);
   const s = G.slots[G.cur];
-  for (const sl of G.slots.slice(0, G.slotCount)) if (sl.inst && sl.inst.update) sl.inst.update(dt, sl === s);
+  const rate = cdRate();
+  for (const sl of G.slots.slice(0, G.slotCount)) if (sl.inst && sl.inst.update) sl.inst.update(dt * rate, sl === s);
+  updateBuild(dt);
   if (G.mouse.down && s.inst && s.inst.onHold) s.inst.onHold(aimInfo(), dt);
   updateEnemies(dt);
-  G.ents = G.ents.filter(e => e.update(dt) !== false);
+  // se recorre una copia: lo que se crea durante la actualización entra en G.ents y se actualiza el frame siguiente
+  const dead = new Set();
+  for (const e of G.ents.slice()) if (e.update(dt) !== false) continue; else dead.add(e);
+  if (dead.size) G.ents = G.ents.filter(e => !dead.has(e));
   G.texts = G.texts.filter(x => G.t - x.t0 < 0.9);
   while (G.dmgLog.length && G.t - G.dmgLog[0].t > 3) G.dmgLog.shift();
   G.shake = Math.min(14, G.shake) * Math.pow(0.0005, dt);
@@ -427,9 +519,11 @@ function render(ctx) {
 function drawHud(ctx) {
   const p = G.player;
   ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(12, 12, 160, 12); ctx.fillStyle = '#ff5a7e'; ctx.fillRect(14, 14, 156 * p.hp / p.hpMax, 8);
-  // build activa: elemento + items, con el color de su rareza
+  // build activa: puntos por etiqueta (los tramos activos en su color) y escudo
   let bx = 14; ctx.font = '600 10px system-ui';
-  for (const it of ITEMS) if (hasItem(it.id)) { ctx.fillStyle = RARITY[it.rarity].color; ctx.fillText(it.name, bx, 38); bx += ctx.measureText(it.name).width + 10; }
+  for (const k in TAGS) { const c = tagCount(k); if (!c) continue; const tr = tier(k), txt = TAGS[k].name + ' ' + c + (tr ? ' ★' + tr : ''); ctx.fillStyle = tr ? TAGS[k].color : 'rgba(255,255,255,.45)'; ctx.fillText(txt, bx, 38); bx += ctx.measureText(txt).width + 10; }
+  if (elemOf()) { ctx.fillStyle = TAGS[elemOf()].color; ctx.fillText('aplica ' + TAGS[elemOf()].name.toUpperCase(), bx, 38); }
+  if (G.player.shield > 0) { ctx.fillStyle = 'rgba(200,204,212,.9)'; ctx.fillRect(14, 26, 156 * Math.min(1, G.player.shield / 30), 3); }
   // huecos de arma
   for (let i = 0; i < G.slotCount; i++) {
     const s = G.slots[i], d = WEAPONS[s.w], x = 12 + i * 112, y = VH - 44, on = i === G.cur, rd = s.inst && s.inst.ready ? clamp(s.inst.ready()) : 1;

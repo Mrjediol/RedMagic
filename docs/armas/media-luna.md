@@ -31,7 +31,7 @@ Mejoras provisionales (el árbol con evoluciones está pendiente de diseñar):
 - **Órbita**: al volver no se atrapa: da una vuelta de radio `orbitRadius` en `orbitTime` s alrededor del player (mitad trasera
   por detrás de él) golpeando a lo que se acerque por la espalda.
 
-## Elemento y Duplicador (items generales)
+## Elemento (sinergia: con 4 items de ese elemento) y Duplicador (item)
 
 - **Fuego**: deja trozos de llama colgados en el aire durante `fireLife` s que queman (`fireBurn` s) a quien los toca.
 - **Hielo**: la ida congela (`iceFreeze`) y **la vuelta es golpe fuerte** → congelar y romper con un solo lanzamiento.

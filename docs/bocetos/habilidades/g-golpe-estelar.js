@@ -96,7 +96,8 @@ G.spawnMiniStrike = e => G.ents.push(starStrike({ slot: null, pal: elemPal('set'
 function starStrike(o) {
   const t = T('star'), el = elemOf(), slot = o.slot, pal = o.pal, sc = o.scale || 1;
   const t0 = G.t, TS = t0 + o.delay, FALL = 0.07, TI = TS + FALL;
-  const xAt = () => (o.target && !o.target.dead ? o.target.x : o.track ? o.track() : o.x) + (o.offset || 0);
+  let lastX = o.target ? o.target.x : o.x;                 // si el objetivo muere antes de caer, la lanza cae donde estaba
+  const xAt = () => { lastX = o.target ? (o.target.dead ? lastX : o.target.x) : o.track ? o.track() : o.x; return lastX + (o.offset || 0); };
   let x = xAt(), done = false, fallPlayed = false;
   if (!o.noShock) sfx(SND.star_mark.fn);
   return {

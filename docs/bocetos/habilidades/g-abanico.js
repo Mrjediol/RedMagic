@@ -89,7 +89,7 @@ function fanShard(slot, x, y, vx, vy, pal, o) {
     kind: 'shard', capturable: !o.mini, slot, x, y, vx, vy, pal, state: 'fly', age: 0, hit: new Set(), trail: [], ang: Math.atan2(vy, vx),
     bounces: o.bounces !== undefined ? o.bounces : kal ? t.kalBounces + (hasMod(slot, 'eternal') ? 3 : 0) : 0, nb: 0,
     pierce: lance ? (hasMod(slot, 'pierce') ? 99 : 1) : 0, pierced: 0, dmgMul: o.dmgMul || 1,
-    life: o.mini ? 0.25 : lance ? t.lanceLife : t.life,
+    life: o.mini ? 0.35 : lance ? t.lanceLife : t.life,
     stickE: null, ox: 0, oy: 0, stickAt: 0, bleedT: 0,
     update(dt) {
       this.age += dt;
@@ -124,15 +124,25 @@ function fanShard(slot, x, y, vx, vy, pal, o) {
       if (this.bounces > 0) {                                                                        // Caleidoscopio
         this.bounces--; this.nb++; this.x = h.x; this.y = h.y;
         if (hasMod(slot, 'eternal')) this.age = 0;
-        const sp = Math.hypot(this.vx, this.vy), nxt = nearestEnemy(h.x, h.y, t.kalSeekRange, this.hit);
-        if (nxt) { const a = Math.atan2(nxt.y - h.y, nxt.x - h.x); this.vx = Math.cos(a) * sp; this.vy = Math.sin(a) * sp; }
-        else { this.vx = -this.vx * 0.7; this.vy = -Math.abs(this.vy) - sp * 0.4; }
-        if (hasMod(slot, 'split') && !o.split) {                                                     // Prisma: una copia hacia el siguiente
-          const nx2 = nearestEnemy(h.x, h.y, t.kalSeekRange, new Set([...this.hit, nxt].filter(Boolean)));
-          const a2 = nx2 ? Math.atan2(nx2.y - h.y, nx2.x - h.x) : Math.atan2(this.vy, this.vx) + 0.6;
-          const c = fanShard(slot, h.x, h.y, Math.cos(a2) * sp, Math.sin(a2) * sp, this.pal, { split: true, bounces: Math.max(0, this.bounces - 1), dmgMul: this.dmgMul * t.splitMul });
-          c.hit = new Set(this.hit); c.nb = this.nb; G.ents.push(c);
+        const sp = Math.hypot(this.vx, this.vy), seek = hasMod(slot, 'seek');
+        const nxt = seek ? nearestEnemy(h.x, h.y, t.kalSeekRange, this.hit) : null;
+        let a;
+        if (nxt) a = Math.atan2(nxt.y - h.y, nxt.x - h.x);
+        else {                                               // reflejo físico sobre la normal del cuerpo en el punto de impacto
+          let nx = (h.x - e.x) / (e.rx * e.rx), ny = (h.y - e.y) / (e.ry * e.ry); const nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
+          const d = this.vx * nx + this.vy * ny; a = Math.atan2(this.vy - 2 * d * ny, this.vx - 2 * d * nx);
         }
+        if (hasMod(slot, 'split') && !o.split) {             // Prisma: se divide en dos
+          const nx2 = seek ? nearestEnemy(h.x, h.y, t.kalSeekRange, new Set([...this.hit, nxt].filter(Boolean))) : null;
+          const a2 = nx2 ? Math.atan2(nx2.y - h.y, nx2.x - h.x) : a - 0.35;
+          if (!nxt) a += 0.35;
+          const c = fanShard(slot, h.x + Math.cos(a2) * 4, h.y + Math.sin(a2) * 4, Math.cos(a2) * sp, Math.sin(a2) * sp, this.pal, { split: true, bounces: Math.max(0, this.bounces - 1), dmgMul: this.dmgMul * t.splitMul });
+          c.hit = new Set(this.hit); c.nb = this.nb; c.age = 0; G.ents.push(c);
+          const P2 = this.pal, px = h.x, py = h.y;
+          addFx(0.3, (ctx, layer, t0) => { if (layer === 'front') { const u = seg(G.t, t0, t0 + 0.25); prismGem(ctx, G.t, px, py, 1 - u, P2, layer); } });
+        }
+        this.vx = Math.cos(a) * sp; this.vy = Math.sin(a) * sp;
+        this.x += this.vx * 0.006; this.y += this.vy * 0.006;   // sale del cuerpo para no volver a chocar en el mismo frame
         sfx(SND.fan_ricochet.fn); return true;
       }
       if (spike) { this.stick(e, h.x, h.y); sfx(el === 'ice' ? SND.fan_stick.fn : SND.fan_hit.fn); return true; }
@@ -169,7 +179,12 @@ function fanShard(slot, x, y, vx, vy, pal, o) {
       damageArea(hx, hy, t.spikeBlastRadius, { dmg: t.spikeBlast, kx: 60, slot, heavy: true, elem: el, freeze: el === 'ice' ? t.freeze * 0.5 : 0, burn: el === 'fire' ? t.burn : 0 }, false);
       addFx(0.7, (ctx, layer, t0) => { impact(ctx, G.t, layer, t0, hx, hy, 0.5, P, { spread: TAU, seed: Math.floor(hx * 3), needles: 8, drops: 3 }); sparks(ctx, G.t, t0, hx, hy, layer, { n: 6, pal: P, sp: 200, seed: Math.floor(hy), len: 10, life: 0.3 }); });
       if (!G._detSfx || G.t - G._detSfx > 0.06) { G._detSfx = G.t; sfx(k => SFXLIB.hitEnergy(k, 0.6)); }
-      if (hasMod(slot, 'shrap')) for (let i = 0; i < t.shrapCount; i++) { const a = Math.random() * TAU; G.ents.push(fanShard(slot, hx, hy, Math.cos(a) * 700, Math.sin(a) * 700, P, { mini: true })); }
+      if (hasMod(slot, 'shrap')) for (let i = 0; i < t.shrapCount; i++) {
+        const a = this.stickE ? (i / t.shrapCount) * TAU + Math.random() * 0.6 : -Math.PI * (0.15 + 0.7 * (i + Math.random() * 0.8) / t.shrapCount);
+        const c = fanShard(slot, hx + Math.cos(a) * 8, hy + Math.sin(a) * 8 - (this.stickE ? 0 : 3), Math.cos(a) * 650, Math.sin(a) * 650, P, { mini: true });
+        if (this.stickE) c.hit.add(this.stickE);
+        G.ents.push(c);
+      }
       if (hasMod(slot, 'ret')) return this.startBack();
       return false;
     },

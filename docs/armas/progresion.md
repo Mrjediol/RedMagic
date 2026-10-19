@@ -19,7 +19,7 @@ combo muy bueno. Se experimenta primero con **Abanico** y **Golpe estelar**.
 - **Nivel 2 — Evolución**: 1 de 3 formas avanzadas. En la run se ofrecen **2 al azar** (no siempre puedes ir a tu favorita).
 - **Niveles 3, 4, 5 — Mejoras**: cada vez se ofrecen **2 al azar** de las 3 mejoras de tu evolución que aún no tienes (la
   última subida puede no darte a elegir). Máximo = evolución + sus 3 mejoras.
-- La Semilla aún tiene una lista plana de mejoras provisionales. Árboles de Singularidad, Rayo y Media luna: en sus fichas.
+- Las seis armas tienen árbol (2026-10-19). Singularidad, Rayo, Media luna y Semilla: resumen abajo y detalle en sus fichas.
 
 ### Abanico
 
@@ -52,6 +52,14 @@ combo muy bueno. Se experimenta primero con **Abanico** y **Golpe estelar**.
 | **Sierra** | Se queda triturando donde toca; vuelve al pulsar otra vez | Tirón (arrastra hacia ti a la vuelta) · Desgarro (cortes seguidos suben el daño) · Imán (atrae a la sierra) |
 | **Satélite** | Gira siempre a tu alrededor; se lanza sin recarga y vuelve a la órbita | Doble (dos hojas) · Luna creciente (crece en órbita y carga el lanzamiento) · Escudo (rompe balas enemigas) |
 | **Malabar** | Atrapada perfecta = relanzar al instante con racha (más rápida y fuerte) | Filo creciente (más grande con la racha) · Eco (hoja fantasma que repite el lanzamiento anterior) · Gran final (racha llena = hoja enorme) |
+
+### Semilla
+
+| Evolución | Idea | Mejoras |
+|---|---|---|
+| **Campo de minas** | Minas que esperan a que llegue alguien (hasta 3) | Reacción en cadena · Raíces (sujetan antes de estallar) · Semillero (crecen con el tiempo puestas) |
+| **Racimo** | Suelta semillas pequeñas que estallan en cadena | Semillas vivas (buscan enemigos) · Generaciones (otra tanda más pequeña) · Siembra (las que fallan quedan de mina) |
+| **Madura** | Mantener = crece en la mano; soltar = lanzar | Supernova (madura: estalla tres veces) · Implosión (atrae antes de estallar) · Cosecha (una baja = la siguiente medio madura) |
 
 ## 3 · Items y sinergias (como el juego: 2 etiquetas por item, tramos 2 / 4 / 6)
 

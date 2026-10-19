@@ -7,7 +7,7 @@ ficha en la misma sesión** (comportamiento, decisiones) y se vuelve a ejecutar 
 **Modelo de progresión** (2026-10-19, en prueba): [progresion.md](progresion.md). Tres vías de mejora: **árbol propio del arma**
 (evolución en nivel 2 entre 3 formas avanzadas + 3 mejoras de esa evolución), **sinergias generales** (reacciones, captura,
 marcas) e **items generales** con rareza (elemento, Duplicador…) que funcionan en todas las armas porque cada arma define cómo
-los expresa. Árbol completo hoy: todas menos la Semilla, que tiene mejoras provisionales.
+los expresa. Árbol completo hoy en las seis armas.
 
 ## Dónde está cada cosa
 

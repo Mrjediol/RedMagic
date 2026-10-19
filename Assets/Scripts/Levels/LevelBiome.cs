@@ -63,10 +63,24 @@ namespace RedMagic.Levels
         [Tooltip("Shader del borde (color por vértice, sin luz).")]
         public Shader rimShader;
 
-        [Header("Ambiente")]
-        [Tooltip("Fondo de parallax del bioma (prefab hecho con 'Importar fondo de parallax').")]
-        public GameObject background;
-        [Tooltip("Partículas del bioma (nieve, hojas, ceniza...).")]
-        public GameObject particles;
+        // Fondo y partículas sólo los usa el editor (crear escenas, datos de la web): cada nivel lleva su propia copia en
+        // la escena. Se guardan como GUID para que cargar un nivel no cargue también el fondo por defecto del bioma.
+        [Header("Ambiente (sólo editor: cada nivel lleva su copia)")]
+        [Tooltip("Fondo de parallax por defecto del bioma (prefab hecho con 'Importar fondo de parallax'). Se copia en " +
+                 "las escenas nuevas; el juego no lo carga desde aquí.")]
+        [SerializeField, Core.EditorOnlyAsset(typeof(GameObject))] private string backgroundGuid;
+        [Tooltip("Partículas del bioma (nieve, hojas, ceniza...). Se copian en las escenas nuevas.")]
+        [SerializeField, Core.EditorOnlyAsset(typeof(GameObject))] private string particlesGuid;
+
+#if UNITY_EDITOR
+        public GameObject background { get => LoadGuid(backgroundGuid); set => backgroundGuid = Guid(value); }
+        public GameObject particles { get => LoadGuid(particlesGuid); set => particlesGuid = Guid(value); }
+
+        private static GameObject LoadGuid(string guid) => string.IsNullOrEmpty(guid) ? null
+            : UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
+
+        private static string Guid(Object asset) => asset == null ? ""
+            : UnityEditor.AssetDatabase.AssetPathToGUID(UnityEditor.AssetDatabase.GetAssetPath(asset));
+#endif
     }
 }

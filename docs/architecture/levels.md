@@ -51,7 +51,7 @@ those layers hid every enemy (bug seen in the first test). In-front layers and g
 
 ## `LevelBiome` (ScriptableObject, one per biome)
 Rock texture/tile size/shadow, corner radius (visual only; editing any biome value redraws its levels live via `LevelBiome.Changed`), rim widths (floor/wall/ceiling), 4 floor + 4 ceiling band colours,
-outline, glows, background prefab, particles prefab. Ice: `Assets/Levels/_Biomas/Hielo/Hielo.asset`.
+outline, glows, background prefab, particles prefab. Those two are **editor-only** (`[EditorOnlyAsset]` GUID strings, `background`/`particles` properties under `#if UNITY_EDITOR`): new scenes copy them, the game never loads the biome default background. Ice: `Assets/Levels/_Biomas/Hielo/Hielo.asset`.
 
 ## `ParallaxBackgroundLayer` (one per background layer)
 Same logic as the web tab 🏞️ Fondos (`level-terrain.js ▸ drawLayer`): size and height offset relative to screen height; horizontal `speed`

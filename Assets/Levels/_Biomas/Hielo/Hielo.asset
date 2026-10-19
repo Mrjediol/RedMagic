@@ -43,5 +43,5 @@ MonoBehaviour:
   innerGlow: {r: 0.31, g: 0.76, b: 1, a: 0.28}
   innerGlowWidth: 0
   rimShader: {fileID: 4800000, guid: aa3734fe1975c094ab4bafd8b23b47d9, type: 3}
-  background: {fileID: 4788031873096802469, guid: defa88a04941a534187a7b40412601a9, type: 3}
-  particles: {fileID: 6180064699060363894, guid: 76c79d46ada46de4194e8512f424c9e0, type: 3}
+  backgroundGuid: defa88a04941a534187a7b40412601a9
+  particlesGuid: 76c79d46ada46de4194e8512f424c9e0

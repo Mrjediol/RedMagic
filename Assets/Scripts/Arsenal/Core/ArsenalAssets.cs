@@ -40,6 +40,10 @@ namespace RedMagic.Arsenal
         [Tooltip("Vapor: segundos que aturde.")]
         [Min(0f)] public float vaporStun = 0.6f;
 
+        [Header("Sonidos (por id, los SND.* de la web)")]
+        [Tooltip("Tabla id → sonido. Un id sin clips no suena. Los WAV salen del mismo código de síntesis de la web.")]
+        public System.Collections.Generic.List<ArsenalSoundEntry> sounds = new System.Collections.Generic.List<ArsenalSoundEntry>();
+
         private static ArsenalAssets _cached;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

@@ -75,7 +75,7 @@ namespace RedMagic.Arsenal
             }
             if (shatter) Shatter(b, rules);
             if (label != null) Label(b.c + Vector2.up * (b.ry + 0.8f), label, label == "arsenal.react.shatter" ? new Color(0.8f, 0.96f, 1f) : label == "arsenal.react.vapor" ? new Color(0.88f, 0.91f, 1f) : new Color(1f, 0.81f, 0.48f));
-            if (o.hitstop > 0f) HitStop.Play(o.hitstop);
+            if (o.hitstop > 0f && Application.isPlaying) HitStop.Play(o.hitstop);
             if (o.shake > 0f) ArsenalFeel.Shake(o.shake);
             if (b.Dead) o.onKill?.Invoke(b);
             return Mathf.Max(dmg, 0.0001f);
@@ -117,6 +117,7 @@ namespace RedMagic.Arsenal
         /// <summary>Aviso flotante localizado (reacciones, «¡JUSTO!»…).</summary>
         public static void Label(Vector2 p, string key, Color color, params object[] args)
         {
+            if (!Application.isPlaying) return;
             string text = args != null && args.Length > 0 ? Loc.Get(key, args) : Loc.Get(key);
             DamagePopups.ShowLabel(p, text, color);
         }
@@ -141,7 +142,7 @@ namespace RedMagic.Arsenal
                 if (o != b && Vector2.Distance(o.c, b.c) < r)
                     Hit(o, new ArsenalHit { dmg = splash, from = b.c, knock = 0.6f, elem = ArsenalElement.Ice, freeze = 0.25f, noReact = true, kind = HitKind.Burst });
             ArsenalReactFx.Shatter(b.c, b.rx, b.ry);
-            HitStop.Play(0.06f);
+            if (Application.isPlaying) HitStop.Play(0.06f);
             ArsenalFeel.Shake(0.18f);
         }
 

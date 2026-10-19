@@ -74,8 +74,14 @@ namespace RedMagic.Arsenal
         /// <summary>Efecto de sólo dibujo que dura <paramref name="life"/> s; <paramref name="draw"/> recibe la capa y el instante en que nació.</summary>
         public static void AddFx(float life, Action<L, float> draw) => Add(FxEntity.Get(life, draw));
 
-        private void Awake()
+        private void Awake() => Init();
+
+        private bool _inited;
+
+        private void Init()
         {
+            if (_inited) return;
+            _inited = true;
             var assets = ArsenalAssets.Load();
             Material solid = assets != null ? assets.solidMaterial : null, glow = assets != null ? assets.glowMaterial : null;
             if (solid == null) Debug.LogWarning("[Arsenal] Falta Resources/Arsenal/ArsenalAssets (Tools ▸ RedMagic ▸ Arsenal ▸ Preparar): los efectos no se verán.");
@@ -108,34 +114,62 @@ namespace RedMagic.Arsenal
             _entities.Clear();
         }
 
-        private void Update()
+        private void Update() => Step(Time.deltaTime);
+
+        private void LateUpdate() => Render();
+
+        /// <summary>
+        /// Mundo para los renders del editor (sin Play): las entidades se avanzan y se dibujan a mano con <see cref="Step"/> y
+        /// <see cref="Render"/>. Quitarlo con <see cref="Object.DestroyImmediate"/> del GameObject al terminar.
+        /// </summary>
+        public static ArsenalWorld CreatePreview()
         {
-            float dt = Time.deltaTime;
+            if (_instance != null) Destroy0(_instance.gameObject);
+            var go = new GameObject("[ArsenalWorld preview]") { hideFlags = HideFlags.HideAndDontSave };
+            _instance = go.AddComponent<ArsenalWorld>();
+            _instance.Init();
+            T = 0f;
+            return _instance;
+        }
+
+        /// <summary>Capa de los cuatro lienzos (los renders del editor los aíslan en una capa propia).</summary>
+        public void SetCanvasLayer(int layer)
+        {
+            _back.GameObject.layer = layer; _front.GameObject.layer = layer; _backGlow.GameObject.layer = layer; _frontGlow.GameObject.layer = layer;
+        }
+
+        private static void Destroy0(UnityEngine.Object o) { if (Application.isPlaying) Destroy(o); else DestroyImmediate(o); }
+
+        /// <summary>Avanza <paramref name="dt"/> segundos: lo que se crea durante la actualización se actualiza el frame siguiente.</summary>
+        public void Step(float dt)
+        {
             if (dt <= 0f) return;
             T += dt;
 
             // se recorre una copia: lo que se crea durante la actualización entra en la lista y se actualiza el frame siguiente
             _snapshot.Clear();
             _snapshot.AddRange(_entities);
-            bool removed = false;
+            _dead.Clear();
             foreach (var e in _snapshot)
             {
                 bool alive;
                 try { alive = e.Tick(dt); }
                 catch (Exception ex) { Debug.LogException(ex); alive = false; }
-                if (alive) continue;
-                e.OnRemoved();
-                MarkDead(e);
-                removed = true;
+                if (!alive) _dead.Add(e);
             }
-            if (removed) _entities.RemoveAll(e => _dead.Contains(e));
+            if (_dead.Count == 0) return;
+            // primero se quitan y DESPUÉS se devuelven a su pool: si no, una entidad reciclada en este mismo frame
+            // se quitaría de la lista junto con la vieja (es el mismo objeto)
+            _entities.RemoveAll(IsDead);
+            foreach (var e in _dead) e.OnRemoved();
             _dead.Clear();
         }
 
         private readonly HashSet<ArsenalEntity> _dead = new HashSet<ArsenalEntity>();
-        private void MarkDead(ArsenalEntity e) => _dead.Add(e);
+        private bool IsDead(ArsenalEntity e) => _dead.Contains(e);
 
-        private void LateUpdate()
+        /// <summary>Vuelve a dibujar todas las entidades en los lienzos.</summary>
+        public void Render()
         {
             _back.Clear(); _front.Clear(); _backGlow.Clear(); _frontGlow.Clear();
             ArsenalDraw.Bind(_back, _front, _backGlow, _frontGlow);

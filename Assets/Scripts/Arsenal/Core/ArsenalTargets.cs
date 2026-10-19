@@ -42,21 +42,26 @@ namespace RedMagic.Arsenal
         private static readonly List<Collider2D> Cols = new List<Collider2D>(8);
         private static int _frame = -1;
 
+        /// <summary>Sólo para los renders del editor (sin Play, <c>Health.Active</c> está vacío): los enemigos a usar.</summary>
+        public static List<Health> PreviewHealths;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             AliveList.Clear();
             Cache.Clear();
             _frame = -1;
+            PreviewHealths = null;
         }
 
         /// <summary>Enemigos vivos este frame. Lista compartida: léela, no la guardes.</summary>
         public static List<Body> Alive()
         {
-            if (_frame == Time.frameCount) return AliveList;
+            if (_frame == Time.frameCount && PreviewHealths == null) return AliveList;
             _frame = Time.frameCount;
             AliveList.Clear();
-            foreach (var h in Health.Active)
+            IEnumerable<Health> source = PreviewHealths != null ? (IEnumerable<Health>)PreviewHealths : Health.Active;
+            foreach (var h in source)
             {
                 if (h == null || h.IsDead || !h.isActiveAndEnabled) continue;
                 if (Teams.Of(h) == Team.Player) continue;

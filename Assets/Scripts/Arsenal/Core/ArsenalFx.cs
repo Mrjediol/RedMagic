@@ -8,7 +8,7 @@ namespace RedMagic.Arsenal
     public static class ArsenalFeel
     {
         /// <summary>Temblor; <paramref name="amount"/> en "px" de la web × <see cref="ArsenalDraw.PX"/> aprox. (0,1 = suave, 0,3 = fuerte).</summary>
-        public static void Shake(float amount) => CameraFollow.ShakeAll(Mathf.Min(0.35f, amount), 0.18f);
+        public static void Shake(float amount) { if (Application.isPlaying) CameraFollow.ShakeAll(Mathf.Min(0.35f, amount), 0.18f); }
     }
 
     /// <summary>Dibujo de las reacciones y de los estados (bloque de hielo, barra de congelación, llamas).</summary>

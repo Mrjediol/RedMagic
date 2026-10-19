@@ -12,7 +12,7 @@ addWeapon({
     { id: 'prism', name: 'Prisma', desc: 'Atraviesa al primero y se divide en haces dorados hacia los enemigos más cercanos.',
       ups: [{ id: 'chain', name: 'Cadena', desc: 'Cada haz dorado salta a un enemigo más.' },
             { id: 'focus', name: 'Foco', desc: 'Cada haz que no encuentra a quién ir se suma al principal (bueno contra uno solo).' },
-            { id: 'reflect', name: 'Reflejo', desc: 'El haz rebota una vez en el suelo con el alcance que le queda.' }] },
+            { id: 'crown', name: 'Corona', desc: 'Haces dorados cortos giran alrededor de la gema y cortan a todo lo que rodea al primero.' }] },
     { id: 'beacon', name: 'Faro', desc: 'Al soltar, el cristal se queda flotando donde estabas y sigue disparando solo al enemigo más cercano. Premia cambiar de arma.',
       ups: [{ id: 'link', name: 'Vínculo', desc: 'Un hilo de luz une el faro contigo: daña lo que lo cruza y parte del daño del faro te cura.' },
             { id: 'nova', name: 'Estallido', desc: 'Al apagarse, el faro lo descarga todo de golpe: estallido en área donde apunta (golpe fuerte).' },
@@ -32,6 +32,8 @@ addWeapon({
     waveRadius: [90, 20, 250, 5, 'Sobrecarga · Onda: radio'], waveDamage: [30, 0, 150, 1, 'Sobrecarga · Onda: daño (calor al máximo)'],
     prismCount: [2, 1, 5, 1, 'Prisma: haces'], prismRange: [300, 50, 600, 10, 'Prisma: alcance'], prismMul: [0.6, 0.1, 1.5, 0.05, 'Prisma: daño de cada haz (×)'],
     chainJumps: [1, 1, 4, 1, 'Prisma · Cadena: saltos extra por haz'], focusMul: [0.6, 0, 2, 0.05, 'Prisma · Foco: + daño del principal por haz sin usar'],
+    crownCount: [3, 1, 6, 1, 'Prisma · Corona: haces que giran'], crownLen: [170, 40, 300, 5, 'Prisma · Corona: largo (px)'], crownSpin: [5, 0.5, 15, 0.5, 'Prisma · Corona: giro (rad/s)'],
+    crownMul: [0.9, 0.1, 2, 0.05, 'Prisma · Corona: daño de cada haz (×)'],
     beaconTime: [3, 0.5, 10, 0.1, 'Faro: duración (s)'], beaconMul: [0.8, 0.1, 2, 0.05, 'Faro: × daño por tick'], beaconRange: [420, 100, 900, 10, 'Faro: alcance para buscar enemigo'],
     linkDps: [20, 0, 100, 1, 'Faro · Vínculo: daño/s del hilo'], lifesteal: [0.3, 0, 1, 0.01, 'Faro · Vínculo: fracción del daño del faro que cura'],
     novaDamage: [50, 0, 200, 1, 'Faro · Estallido: daño'], novaRadius: [110, 20, 300, 5, 'Faro · Estallido: radio'],
@@ -59,29 +61,21 @@ addWeapon({
   },
 });
 
-// Recorrido del haz desde (x0,y0) con ángulo a: tramos hasta el primer enemigo, el suelo o el alcance.
-// bounce = rebota una vez en el suelo (Prisma · Reflejo); pierce = no se para en los enemigos (los devuelve todos en hits).
-function rayPath(x0, y0, a, range, bounce, pierce) {
+// Recorrido del haz desde (x0,y0) con ángulo a hasta el primer enemigo, el suelo o el alcance (pts = [origen, final]).
+// pierce = no se para en los enemigos (los devuelve todos en hits, en orden).
+function rayPath(x0, y0, a, range, pierce) {
   const pts = [{ x: x0, y: y0 }], hits = [];
-  let left = range, b = bounce ? 1 : 0;
-  for (;;) {
-    const ex = x0 + Math.cos(a) * left, ey = y0 + Math.sin(a) * left;
-    const ug = ey > GROUND && y0 < GROUND ? (GROUND - y0) / (ey - y0) : 2;            // fracción del tramo hasta el suelo
-    if (pierce) {
-      const skip = new Set(hits.map(h => h.e)); let h;
-      while ((h = raycastEnemy(x0, y0, ex, ey, skip)) && h.u < ug) { h.ang = a; hits.push(h); skip.add(h.e); }
-    } else {
-      const h = raycastEnemy(x0, y0, ex, ey);
-      if (h && h.u < ug) { h.ang = a; hits.push(h); pts.push({ x: h.x, y: h.y }); return { pts, hits }; }
-    }
-    if (ug <= 1) {
-      const gx = lerp(x0, ex, ug); pts.push({ x: gx, y: GROUND });
-      if (b-- > 0 && ug < 0.999) { left *= 1 - ug; x0 = gx; y0 = GROUND - 0.5; a = -a; continue; }
-      return { pts, hits };
-    }
-    pts.push({ x: ex, y: ey });
-    return { pts, hits };
+  const ex = x0 + Math.cos(a) * range, ey = y0 + Math.sin(a) * range;
+  const ug = ey > GROUND && y0 < GROUND ? (GROUND - y0) / (ey - y0) : 2;              // fracción del recorrido hasta el suelo
+  if (pierce) {
+    const skip = new Set(); let h;
+    while ((h = raycastEnemy(x0, y0, ex, ey, skip)) && h.u < ug) { h.ang = a; hits.push(h); skip.add(h.e); }
+  } else {
+    const h = raycastEnemy(x0, y0, ex, ey);
+    if (h && h.u < ug) { h.ang = a; hits.push(h); pts.push({ x: h.x, y: h.y }); return { pts, hits }; }
   }
+  pts.push(ug <= 1 ? { x: lerp(x0, ex, ug), y: GROUND } : { x: ex, y: ey });
+  return { pts, hits };
 }
 
 // Haz: lo sostiene el player ('held'); con Faro, al soltar se planta y dispara solo ('beacon'); al final se apaga (released).
@@ -91,7 +85,7 @@ function rayBeam(slot, aim0, angOff = 0, quiet = false, idx = 0) {
   const over = arch === 'over', prism = arch === 'prism', beacon = arch === 'beacon';
   const pal = elemPal('set'), gp = PAL.gold, lp = PAL.life;
   const t0 = G.t;
-  let mode = 'held', ang = aim0.ang + angOff, tickT = 0, linkT = 0, released = -1, healAcc = 0, unused = 0;
+  let mode = 'held', ang = aim0.ang + angOff, tickT = 0, linkT = 0, released = -1, healAcc = 0, unused = 0, crownA = 0, crown = [];
   let path = { pts: [{ x: aim0.x, y: aim0.y }, { x: aim0.x, y: aim0.y }], hits: [] }, first = null, subs = [], touched = new Set();
   let bx = 0, by = 0, plantT = 0, endT = 0, on = 0;
   if (!quiet) sfx(SND.ray_ignite.fn);
@@ -114,7 +108,7 @@ function rayBeam(slot, aim0, angOff = 0, quiet = false, idx = 0) {
   const discharge = maxed => {
     const k = hf(); if (k < t.overMin) return;
     const sweet = hasMod(slot, 'sweet') && !maxed && k >= t.sweetFrom, mul = k * (sweet ? t.sweetMul : 1), heavy = sweet || k >= t.overHeavyAt;
-    const line = rayPath(ent.x0, ent.y0, ang, t.range, false, true), P = sweet ? gp : pal, end = path.pts[path.pts.length - 1];
+    const line = rayPath(ent.x0, ent.y0, ang, t.range, true), P = sweet ? gp : pal, end = path.pts[path.pts.length - 1];
     const hit = { slot, heavy, elem: el, freeze: ice ? t.freezeTick * 3 : 0, burn: fire ? t.burnTick * 3 : 0, hitstop: heavy ? 0.05 : 0, shake: heavy ? 4 : 0, frame: sweet };
     for (const h of line.hits) damage(h.e, Object.assign({}, hit, { dmg: t.overBurst * mul, kx: Math.sign(Math.cos(ang)) * 140 * k }));
     if (hasMod(slot, 'wave')) { damageArea(end.x, end.y, t.waveRadius, Object.assign({}, hit, { dmg: t.waveDamage * mul, kx: 160 })); }
@@ -161,7 +155,7 @@ function rayBeam(slot, aim0, angOff = 0, quiet = false, idx = 0) {
         on = clamp(on + (tg ? 6 : -6) * dt);
         if (tg) { const d = ((Math.atan2(tg.y - by, tg.x - bx) - ang + Math.PI * 3) % TAU) - Math.PI; ang += clamp(d, -t.turnRate * dt, t.turnRate * dt); }
       }
-      path = rayPath(this.x0, this.y0, ang, t.range, prism && hasMod(slot, 'reflect'), piercing());
+      path = rayPath(this.x0, this.y0, ang, t.range, piercing());
       const h0 = path.hits[0];
       first = h0 ? h0.e : null;
       // prisma: sale por detrás del primero y se divide (Cadena: cada haz salta a uno más)
@@ -175,6 +169,12 @@ function rayBeam(slot, aim0, angOff = 0, quiet = false, idx = 0) {
         }
         this.px = px; this.py = py;
       }
+      // Corona: haces cortos que giran alrededor de la gema
+      crown = [];
+      if (prism && first && hasMod(slot, 'crown')) {
+        crownA += t.crownSpin * dt;
+        for (let i = 0; i < t.crownCount; i++) { const a = crownA + i / t.crownCount * TAU; crown.push({ x0: this.px, y0: this.py, x1: this.px + Math.cos(a) * t.crownLen, y1: this.py + Math.sin(a) * t.crownLen, a }); }
+      }
       tickT -= dt;
       if (tickT <= 0 && (mode === 'held' || on > 0.5)) {
         tickT = t.tick;
@@ -183,6 +183,8 @@ function rayBeam(slot, aim0, angOff = 0, quiet = false, idx = 0) {
         const targets = piercing() ? path.hits : h0 ? [h0] : [];
         for (const h of targets) hitOne(h.e, mul, h.ang);
         for (const s of subs) hitOne(s.e, t.prismMul, Math.atan2(s.e.y - s.y0, s.e.x - s.x0));
+        const cut = new Set([first]);                       // Corona: cada enemigo, un golpe por tick aunque lo crucen varios haces
+        for (const c of crown) { let h; while ((h = raycastEnemy(c.x0, c.y0, c.x1, c.y1, cut))) { cut.add(h.e); hitOne(h.e, t.crownMul, c.a); } }
         if (targets.length && !quiet) sfx(k => { const tt = nowT(); vThump(tt, 130, 70, 0.07 * k * (mode === 'beacon' ? 0.5 : 1), 0.16, 1.5, 0.05); });
       }
       // Faro · Vínculo: el hilo faro → player daña lo que lo cruza
@@ -226,6 +228,7 @@ function rayBeam(slot, aim0, angOff = 0, quiet = false, idx = 0) {
           energyBeam(ctx, G.t, layer, s.x0, s.y0, tx, s.e.y, env * 0.95, gp, { sc: s.chain ? 0.4 : 0.5, seed: i * 2.1 });
           beamContact(ctx, G.t, layer, tx, s.e.y, env, gp, Math.ceil((G.t - 0.4) / 0.035) * 0.035, G.t, 0.6, 10 + i);
         }
+        for (const [i, c] of crown.entries()) energyBeam(ctx, G.t, layer, c.x0, c.y0, c.x1, c.y1, env * 0.9, gp, { sc: 0.35, seed: 30 + i });
         if (subs.length || (prism && first)) { if (layer === 'front') glow(ctx, this.px, this.py, 34 * (1 + 0.3 * unused * (hasMod(slot, 'focus') ? 1 : 0)), gp.g2, 0.5 * env); prismGem(ctx, G.t, this.px, this.py, env, gp, layer); }
       }
       if (released >= 0) {                                   // restos que flotan sobre la línea del haz

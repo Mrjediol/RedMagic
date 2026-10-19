@@ -20,7 +20,7 @@ apuntar. Otra forma de disparar («mantener» en vez de «cargar y soltar»).
 | Evolución (id) | Idea | Mejoras |
 |---|---|---|
 | **Sobrecarga** (`over`) | El daño crece mientras canalizas y al soltar descarga a lo largo de todo el haz. Si llegas al máximo se recalienta y tarda más en recargar. | **Punto justo** (`sweet`): Soltar en el último tramo del calor, sin llegar al máximo: descarga doble y golpe fuerte.<br>**Perforante** (`pierce`): Con más de medio calor el haz atraviesa a todos los de la línea.<br>**Onda** (`wave`): La descarga estalla también en el punto de contacto, en área. |
-| **Prisma** (`prism`) | Atraviesa al primero y se divide en haces dorados hacia los enemigos más cercanos. | **Cadena** (`chain`): Cada haz dorado salta a un enemigo más.<br>**Foco** (`focus`): Cada haz que no encuentra a quién ir se suma al principal (bueno contra uno solo).<br>**Reflejo** (`reflect`): El haz rebota una vez en el suelo con el alcance que le queda. |
+| **Prisma** (`prism`) | Atraviesa al primero y se divide en haces dorados hacia los enemigos más cercanos. | **Cadena** (`chain`): Cada haz dorado salta a un enemigo más.<br>**Foco** (`focus`): Cada haz que no encuentra a quién ir se suma al principal (bueno contra uno solo).<br>**Corona** (`crown`): Haces dorados cortos giran alrededor de la gema y cortan a todo lo que rodea al primero. |
 | **Faro** (`beacon`) | Al soltar, el cristal se queda flotando donde estabas y sigue disparando solo al enemigo más cercano. Premia cambiar de arma. | **Vínculo** (`link`): Un hilo de luz une el faro contigo: daña lo que lo cruza y parte del daño del faro te cura.<br>**Estallido** (`nova`): Al apagarse, el faro lo descarga todo de golpe: estallido en área donde apunta (golpe fuerte).<br>**Vigía** (`watch`): Cada baja del faro alarga su vida. |
 <!-- /gen:tree -->
 
@@ -36,7 +36,8 @@ Detalle:
   cercanos a ese punto (≤ `prismRange`), cada uno ×`prismMul`. Gema-prisma girando en el punto de salida.
   - Cadena: cada haz dorado salta `chainJumps` vez/veces más al siguiente más cercano.
   - Foco: cada haz que no encuentra enemigo suma +`focusMul` al daño del principal (contra uno solo: ×2,2 con 2 haces).
-  - Reflejo: al tocar el suelo rebota una vez (ángulo de espejo) con el alcance que le queda; el primero tras el rebote cuenta para el Prisma.
+  - Corona: `crownCount` haces dorados de `crownLen` px giran alrededor de la gema a `crownSpin` rad/s y dañan (×`crownMul`) a todo lo
+    que cruzan menos al primero; cada enemigo, un golpe por tick. Para grupos que rodean al primero.
 - **Faro**: al soltar (o al cambiar de arma, o al llegar al máximo) el cristal se queda flotando donde estaba la boca y dispara solo
   `beaconTime` s al enemigo más cercano (≤ `beaconRange`), con ×`beaconMul` de daño y el mismo giro limitado. Un faro (dos con
   Duplicador) a la vez: al plantar los nuevos, los anteriores se apagan. La recarga corre mientras el faro dispara.
@@ -88,6 +89,10 @@ Detalle:
 | `prismMul` | 0.6 | 0.1 – 1.5 (paso 0.05) | Prisma: daño de cada haz (×) |
 | `chainJumps` | 1 | 1 – 4 (paso 1) | Prisma · Cadena: saltos extra por haz |
 | `focusMul` | 0.6 | 0 – 2 (paso 0.05) | Prisma · Foco: + daño del principal por haz sin usar |
+| `crownCount` | 3 | 1 – 6 (paso 1) | Prisma · Corona: haces que giran |
+| `crownLen` | 170 | 40 – 300 (paso 5) | Prisma · Corona: largo (px) |
+| `crownSpin` | 5 | 0.5 – 15 (paso 0.5) | Prisma · Corona: giro (rad/s) |
+| `crownMul` | 0.9 | 0.1 – 2 (paso 0.05) | Prisma · Corona: daño de cada haz (×) |
 | `beaconTime` | 3 | 0.5 – 10 (paso 0.1) | Faro: duración (s) |
 | `beaconMul` | 0.8 | 0.1 – 2 (paso 0.05) | Faro: × daño por tick |
 | `beaconRange` | 420 | 100 – 900 (paso 10) | Faro: alcance para buscar enemigo |
@@ -116,6 +121,9 @@ Modo de disparo nuevo «canalizar» en `WeaponUser` (hoy: tocar o cargar). Rayca
 daño por temporizador; el haz con `FxCanvas` (cintas por puntos, como la estela del dash).
 
 ## Decisiones
+
+- 2026-10-19 · Reflejo (rebote en el suelo) fuera: el usuario no le veía utilidad, sólo servía antes de tocar a un enemigo.
+  Lo sustituye Corona. Con ×0,4 y 140 px sumaba sólo un 25 % en grupo → ×0,9 y 170 px (+60 %).
 
 - 2026-10-19 · Árbol: Sobrecarga / Prisma / Faro. Prisma pasa de mejora a evolución; Robo de vida se rehace como Vínculo del Faro
   (robo de vida suelto ya es la etiqueta universal). Responde a la pregunta abierta: la Sobrecarga es evolución, no comportamiento base.

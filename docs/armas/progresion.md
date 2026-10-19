@@ -43,7 +43,7 @@ combo muy bueno. Se experimenta primero con **Abanico** y **Golpe estelar**.
 | Evolución | Idea | Mejoras |
 |---|---|---|
 | **Sobrecarga** | El daño crece con el calor; al soltar **descarga** por toda la línea; si llegas al máximo se recalienta | Punto justo (soltar en la franja final = doble y golpe fuerte) · Perforante (con medio calor atraviesa a todos) · Onda (la descarga estalla en área) |
-| **Prisma** | Se divide en haces dorados tras el primero: contra grupos | Cadena (cada haz salta a otro) · Foco (los haces sin objetivo refuerzan el principal) · Reflejo (rebota en el suelo) |
+| **Prisma** | Se divide en haces dorados tras el primero: contra grupos | Cadena (cada haz salta a otro) · Foco (los haces sin objetivo refuerzan el principal) · Corona (haces cortos que giran alrededor de la gema) |
 | **Faro** | Al soltar, el cristal se queda disparando solo: premia cambiar de arma | Vínculo (hilo que daña y cura) · Estallido (al apagarse descarga en área) · Vigía (cada baja alarga el faro) |
 
 ## 3 · Items y sinergias (como el juego: 2 etiquetas por item, tramos 2 / 4 / 6)

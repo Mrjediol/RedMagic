@@ -19,27 +19,39 @@ en un estallido. Control de masas y, sobre todo, **preparar a la otra arma**.
 - Colapso de 0,12 s (todo se cierra) y estallido: daño en área `burstDamage` en `burstRadius` (cae a la mitad en el borde),
   empuje hacia fuera `burstKnock` y un poco hacia arriba; **golpe fuerte** (rompe congelados → añicos). Hit-stop, impact frames.
 
-## Mejoras
+## Árbol (evolución en nivel 2, mejoras en 3-5)
 
 <!-- gen:tree -->
-Mejoras provisionales (el árbol con evoluciones está pendiente de diseñar):
-
-| Mejora (id) | Qué hace |
-|---|---|
-| Masa (`mass`) | Más grande y dura más; arranca a los voladores y los estampa contra el suelo. |
+| Evolución (id) | Idea | Mejoras |
+|---|---|---|
+| **Fauces** (`maw`) | Devora: lo que llega a la grieta recibe daño continuo y desaparece dentro. | **Hambre** (`hunger`): Cada baja alarga la grieta y la hace crecer.<br>**Digestión** (`swallow`): Se traga de golpe a los que tienen poca vida.<br>**Regurgitar** (`regurg`): Al colapsar escupe un proyectil teledirigido por cada baja. |
+| **Errante** (`drift`) | Mientras atrae, la grieta se desplaza hacia el ratón arrastrando a los enemigos. | **Cazadora** (`hunt`): Va sola, más rápido, a por el enemigo más cercano.<br>**Rastro** (`trail`): Deja grietas pequeñas por el camino que atraen y dañan un momento.<br>**Masa** (`mass`): Más grande y dura más; arranca a los voladores y los estampa contra el suelo. |
+| **Arsenal** (`arsenal`) | Captura más lejos; lo capturado sale reforzado y APUNTADO a los enemigos, no en todas direcciones. | **Recarga** (`reload`): Cada proyectil capturado recarga un poco tu otra arma.<br>**Multiplicar** (`multiply`): Cada proyectil capturado sale doble.<br>**Escudo de vacío** (`shield`): También captura las balas enemigas y las devuelve como tuyas. |
 <!-- /gen:tree -->
+
+Detalle:
+- **Fauces**: la boca (`devourRadius`, aro que late) hace `devourDps` (daño continuo, en ticks de 0,2 s) a lo que llega. Una baja
+  dentro alimenta a la grieta (destello y motas que entran).
+  - Hambre: cada baja dentro +`hungerTime` s (máx. +2 s) y +`hungerGrow` de tamaño (hasta `hungerMax`).
+  - Digestión: los que entran en la boca con menos de `swallowPct` de vida desaparecen al instante («TRAGADO») y cuentan como alimento.
+  - Regurgitar: al colapsar, un proyectil de vacío teledirigido por cada baja dentro (`regurgDamage`).
+- **Errante**: mientras atrae se desplaza hacia el ratón a `driftSpeed` (entre 60 px del techo y el suelo), arrastrando a los
+  atrapados; atrae un 25 % más fuerte y levanta a los voladores.
+  - Cazadora: va sola hacia el enemigo más cercano a `huntSpeed`.
+  - Rastro: cada `trailEvery` s deja una grieta pequeña (`trailLife` s) que atrae y hace `trailDps`.
+  - Masa: ×`massScale` de tamaño y ×`massTime` de tiempo; al estallar estampa a los voladores contra el suelo.
+- **Arsenal**: radio de captura ×`arsenalRadius`; al colapsar, cada capturado sale **apuntado** a un enemigo (repartidos del más
+  cercano al más lejano) con ×`arsenalMul` de daño.
+  - Recarga: cada captura resta `reloadRefund` s a la recarga de tu otra arma.
+  - Multiplicar: cada capturado sale doble (abierto ±0,12 rad; los proyectiles tienen `clone()`).
+  - Escudo de vacío: captura también las balas enemigas; al soltarlas son tuyas (`shotDamage`). Para probarlo, «Los enemigos disparan».
 
 ## Elemento (sinergia: con 4 items de ese elemento) y Duplicador (item)
 
-- **Fuego**: el estallido es de fuego (paleta fuego, llamas que se abren por el suelo, brasas) y quema `burn` s. Contra
-  congelados = **deshielo** (daño ×2).
+- **Fuego**: el estallido es de fuego (llamas que se abren por el suelo, brasas) y quema `burn` s. Contra congelados = **deshielo**.
 - **Hielo**: el colapso congela a todos los alcanzados (nova de escarcha) → la otra arma los rompe.
-- **Duplicador**: salen **dos orbes** en arco (uno por cada lado) que, al llegar, giran uno alrededor del otro `mergeTime` s y se
-  **funden** en uno ×`mergeScale` de tamaño y radios y ×`mergeDamage` de daño (petición del usuario, 2026-10-19).
-
-Mejora provisional:
-- **Masa**: ×`massScale` de tamaño y radios, ×`massTime` de tiempo atrayendo; levanta a los voladores hacia el centro y al
-  estallar los **estampa** contra el suelo (se quedan 1,6 s en el suelo). Grietas y escombros en el estallido.
+- **Duplicador**: salen **dos orbes** en arco que, al llegar, giran uno alrededor del otro `mergeTime` s y abren **una sola grieta**
+  ×`mergeScale` de tamaño y radios y ×`mergeDamage` de daño.
 
 ## Sinergias
 
@@ -48,23 +60,41 @@ Mejora provisional:
 - **Reacciones**: junta enemigos congelados y el estallido los rompe a todos (añicos en cadena).
 - **Golpe estelar**: los atraídos quedan quietos en una columna → la lanza los alcanza a todos.
 
+## Ajustes
+
 <!-- gen:tuning -->
 | Campo | Valor | Rango | Qué es |
 |---|---:|---|---|
-| `cooldown` | 3.5 | 0.3 – 10 (paso 0.1) | Recarga (s) |
-| `range` | 360 | 80 – 800 (paso 10) | Distancia máxima (px) |
-| `travelTime` | 0.5 | 0.15 – 1.5 (paso 0.05) | Viaje (s) |
-| `pullTime` | 1.8 | 0.2 – 5 (paso 0.05) | Tiempo atrayendo (s) |
-| `pullRadius` | 150 | 40 – 400 (paso 5) | Radio de atracción |
-| `pullSpeed` | 150 | 0 – 500 (paso 5) | Fuerza de atracción (px/s) |
-| `burstDamage` | 40 | 0 – 200 (paso 1) | Daño del colapso |
-| `burstRadius` | 130 | 30 – 350 (paso 5) | Radio del colapso |
-| `burstKnock` | 380 | 0 – 900 (paso 10) | Empuje del colapso |
-| `captureRadius` | 95 | 0 – 250 (paso 5) | Radio de captura de proyectiles |
-| `ejectSpeed` | 900 | 200 – 2000 (paso 10) | Velocidad de salida de lo capturado |
+| `cooldown` | 3.5 | 0.3 – 10 (paso 0.1) | Base: recarga (s) |
+| `range` | 360 | 80 – 800 (paso 10) | Base: distancia máxima (px) |
+| `travelTime` | 0.5 | 0.15 – 1.5 (paso 0.05) | Base: viaje (s) |
+| `pullTime` | 1.8 | 0.2 – 5 (paso 0.05) | Base: tiempo atrayendo (s) |
+| `pullRadius` | 150 | 40 – 400 (paso 5) | Base: radio de atracción |
+| `pullSpeed` | 150 | 0 – 500 (paso 5) | Base: fuerza de atracción (px/s) |
+| `burstDamage` | 40 | 0 – 200 (paso 1) | Base: daño del colapso |
+| `burstRadius` | 130 | 30 – 350 (paso 5) | Base: radio del colapso |
+| `burstKnock` | 380 | 0 – 900 (paso 10) | Base: empuje del colapso |
+| `captureRadius` | 95 | 0 – 250 (paso 5) | Base: radio de captura de proyectiles |
+| `ejectSpeed` | 900 | 200 – 2000 (paso 10) | Base: velocidad de salida de lo capturado |
 | `burn` | 3 | 0 – 8 (paso 0.1) | Fuego: quemadura (s) |
-| `massScale` | 1.4 | 1 – 2.5 (paso 0.05) | Masa: escala |
-| `massTime` | 1.35 | 1 – 3 (paso 0.05) | Masa: × tiempo atrayendo |
+| `devourRadius` | 40 | 10 – 120 (paso 2) | Fauces: radio de la boca |
+| `devourDps` | 70 | 0 – 200 (paso 1) | Fauces: daño por segundo dentro |
+| `hungerTime` | 0.5 | 0 – 2 (paso 0.05) | Fauces · Hambre: + s por baja |
+| `hungerGrow` | 0.1 | 0 – 0.5 (paso 0.01) | Fauces · Hambre: + tamaño por baja |
+| `hungerMax` | 1.6 | 1 – 3 (paso 0.05) | Fauces · Hambre: tamaño máximo |
+| `swallowPct` | 0.35 | 0 – 0.6 (paso 0.01) | Fauces · Digestión: traga por debajo de (× vida) |
+| `regurgDamage` | 20 | 1 – 100 (paso 1) | Fauces · Regurgitar: daño de cada proyectil |
+| `driftSpeed` | 80 | 10 – 400 (paso 5) | Errante: velocidad (px/s) |
+| `huntSpeed` | 130 | 10 – 500 (paso 5) | Errante · Cazadora: velocidad |
+| `trailEvery` | 0.35 | 0.1 – 1.5 (paso 0.05) | Errante · Rastro: cada (s) |
+| `trailLife` | 1.2 | 0.2 – 4 (paso 0.1) | Errante · Rastro: duración (s) |
+| `trailDps` | 10 | 0 – 60 (paso 1) | Errante · Rastro: daño/s |
+| `massScale` | 1.4 | 1 – 2.5 (paso 0.05) | Errante · Masa: escala |
+| `massTime` | 1.35 | 1 – 3 (paso 0.05) | Errante · Masa: × tiempo atrayendo |
+| `arsenalRadius` | 1.4 | 1 – 3 (paso 0.05) | Arsenal: × radio de captura |
+| `arsenalMul` | 1.5 | 1 – 4 (paso 0.05) | Arsenal: × daño de lo capturado |
+| `reloadRefund` | 0.2 | 0 – 1 (paso 0.01) | Arsenal · Recarga: s por captura |
+| `shotDamage` | 12 | 1 – 60 (paso 1) | Arsenal · Escudo: daño de una bala devuelta |
 | `look` | 3 | 0 – 5 (paso 1) | Aspecto: 0 anillas · 1 horizonte · 2 remolino · 3 grieta · 4 abismo · 5 lente |
 | `over` | 0 | 0 – 1 (paso 1) | Vórtice por encima de los enemigos (0 = no, 1 = sí) |
 | `mergeTime` | 0.3 | 0.05 – 1 (paso 0.05) | Duplicador: tiempo de fusión (s) |
@@ -74,12 +104,12 @@ Mejora provisional:
 
 ## Visual
 
-`voidOrb` (fx.js): disco de acreción inclinado (`singularityDisk`, mitad de arriba detrás), núcleo oscuro con aro
+Aspecto actual: **Grieta** (`lookRift` + `riftSeed` + `burstRift` en fx-sing.js). Primera versión (anillas): `voidOrb` (fx.js): disco de acreción inclinado (`singularityDisk`, mitad de arriba detrás), núcleo oscuro con aro
 (`singularityCore`), partículas en espiral, anillos de succión, polvo del suelo arrastrado (si está cerca del suelo), estela de
 distorsión en el viaje y líneas que convergen en el colapso. `voidBurst`: destello, onda de hebras parciales, anillo de suelo,
 agujas, chispas, gotas, polvo; + grietas/escombros (Masa) o llamas/brasas (Fuego).
 
-### Ronda de aspectos (2026-10-19, pendiente de elegir)
+### Ronda de aspectos (2026-10-19) — elegida la Grieta
 
 El usuario: la primera versión «eran simplemente anillas con huecos incluso entre ellas» y es el arma que menos le convencía
 visualmente. Cinco aspectos con superficies continuas en `fx-sing.js` (clips: «2b · Singularidad — variantes visuales» en 🛠 En curso;
@@ -102,6 +132,9 @@ proyectiles), no lógica del Abanico. Atracción como fuerza sobre el `Rigidbody
 congelado y estados).
 
 ## Decisiones
+
+- 2026-10-19 · Árbol: Fauces / Errante / Arsenal (la Masa pasa a ser mejora de Errante). Fauces necesita matar dentro para que
+  Hambre y Regurgitar sirvan: `devourDps` 70 y Digestión al 35 % (con 30 / 25 % no llegaba a matar contra 120 de vida).
 
 - 2026-10-19 · **Aspecto elegido: Grieta** (`look` 3, por defecto). Viaja un orbe pequeño con la grieta anunciada en vertical
   (`riftSeed`) y, al llegar, la grieta se abre en el sitio: línea de luz que crece y se rasga con destello y chispas (`openT`).

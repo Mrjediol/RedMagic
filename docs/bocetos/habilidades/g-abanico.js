@@ -100,6 +100,7 @@ function fanShard(slot, x, y, vx, vy, pal, o) {
       return false;
     },
     push() { this.trail.push({ x: this.x, y: this.y }); if (this.trail.length > 8) this.trail.shift(); },
+    clone() { return fanShard(slot, this.x, this.y, this.vx, this.vy, this.pal, Object.assign({}, o, { dmgMul: this.dmgMul, bounces: this.bounces })); },   // Singularidad · Multiplicar
     fly(dt) {
       if (this.age > this.life + (this.ejected ? 0.6 : 0)) return false;
       const n = 3;

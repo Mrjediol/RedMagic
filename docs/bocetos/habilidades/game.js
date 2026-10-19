@@ -148,11 +148,18 @@ function updateEnemies(dt) {
 }
 function enemyShot(e) {
   const p = G.player, a = Math.atan2(p.y - 40 - e.y, p.x - e.x), sp = 220;
-  G.ents.push({ x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 4,
-    update(dt) { this.x += this.vx * dt; this.y += this.vy * dt; this.life -= dt;
-      const p = G.player; if (Math.abs(this.x - p.x) < 14 && this.y > p.y - 70 && this.y < p.y) { hurtPlayer(8); return false; }
-      return this.life > 0 && this.y < GROUND; },
-    draw(ctx, layer) { if (layer !== 'front') return; glow(ctx, this.x, this.y, 16, [255, 80, 80], 0.6); disc(ctx, this.x, this.y, 5, '#ff6a6a', 1, layer); disc(ctx, this.x, this.y, 2.4, '#fff', 1, layer); } });
+  // bala enemiga: capturable por la Singularidad con Escudo de vacío (hostile); al soltarla pasa a ser del player (friendly)
+  G.ents.push({ kind: 'enemyShot', capturable: true, hostile: true, state: 'fly', x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 4,
+    update(dt) {
+      if (this.captured) return true;
+      this.x += this.vx * dt; this.y += this.vy * dt; this.life -= dt;
+      if (this.friendly) { const h = insideEnemy(this.x, this.y, 4); if (h) { damage(h, { dmg: this.dmg * (this.dmgMul || 1), slot: this.slot, kx: Math.sign(this.vx) * 80 }); return false; } }
+      else { const p = G.player; if (Math.abs(this.x - p.x) < 14 && this.y > p.y - 70 && this.y < p.y) { hurtPlayer(8); return false; } }
+      return this.life > 0 && this.y < GROUND && this.x > -50 && this.x < WW + 50; },
+    draw(ctx, layer) {
+      if (layer !== 'front') return;
+      if (this.friendly || this.captured) { glow(ctx, this.x, this.y, 16, [150, 100, 255], 0.7); disc(ctx, this.x, this.y, 5, '#8a5cff', 1, layer); disc(ctx, this.x, this.y, 2.4, '#fff', 1, layer); }
+      else { glow(ctx, this.x, this.y, 16, [255, 80, 80], 0.6); disc(ctx, this.x, this.y, 5, '#ff6a6a', 1, layer); disc(ctx, this.x, this.y, 2.4, '#fff', 1, layer); } } });
 }
 function hurtPlayer(d) { const p = G.player; if (p.hurtT > 0) return; if (p.shield > 0) { const b = Math.min(p.shield, d); p.shield -= b; d -= b; } p.hp = Math.max(0, p.hp - d); p.hurtT = 0.5; G.shake += 4; text(p.x, p.y - 90, '-' + d, '#ff6a6a'); if (p.hp <= 0) p.hp = p.hpMax; }
 function healPlayer(d) { const p = G.player; const before = p.hp; if (tier('life') >= 3 && p.hp + d > p.hpMax) p.shield = Math.min(30, (p.shield || 0) + p.hp + d - p.hpMax); p.hp = Math.min(p.hpMax, p.hp + d); if (p.hp > before + 0.5) { p.aura = PAL.life.g1; p.auraT = 0.4; } return p.hp - before; }

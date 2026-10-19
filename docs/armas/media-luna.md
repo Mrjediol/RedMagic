@@ -23,7 +23,7 @@ vuelta; mientras está fuera no se puede volver a lanzar (el ritmo lo marca la v
 |---|---|---|
 | **Sierra** (`saw`) | Se queda girando donde toca al primer enemigo (o en el extremo) y lo tritura; vuelve al pulsar otra vez o sola al rato. | **Tirón** (`yank`): A la vuelta arrastra hacia ti a los que corta.<br>**Desgarro** (`rend`): Cada corte seguido al mismo enemigo hace más daño.<br>**Imán** (`magnet`): Mientras tritura, atrae hacia la sierra a los enemigos cercanos. |
 | **Satélite** (`orbit`) | La hoja vive girando a tu alrededor y corta lo que se acerca; al lanzarla vuelve a la órbita, sin recarga. | **Doble** (`twin`): Dos hojas en órbita; cada clic lanza una.<br>**Luna creciente** (`wax`): Cada vuelta en órbita sin lanzarla la hace crecer y suma daño al próximo lanzamiento.<br>**Escudo** (`guard`): Las hojas en órbita destruyen las balas enemigas que tocan. |
-| **Malabar** (`juggle`) | Atrapada perfecta: pulsa justo cuando vuelve y sale otra vez al instante, más rápida y fuerte (racha de hasta 3). Si la dejas llegar, la racha se pierde. | **Filo creciente** (`edge`): Con cada punto de racha la hoja es más grande y corta más lejos.<br>**Eco** (`echo`): Cada atrapada perfecta deja una hoja fantasma que repite el lanzamiento anterior.<br>**Gran final** (`finale`): Con la racha llena, la siguiente atrapada perfecta lanza una hoja enorme (golpe fuerte) y la racha vuelve a empezar. |
+| **Malabar** (`juggle`) | Atrapada perfecta: pulsa justo cuando vuelve y sale otra vez al instante, más rápida y fuerte (racha de hasta 3). Pulsar antes de tiempo es fallo: pierdes la racha y esa vuelta ya no vale. | **Filo creciente** (`edge`): Con cada punto de racha la hoja es más grande y corta más lejos.<br>**Eco** (`echo`): Cada atrapada perfecta deja una hoja fantasma que repite el lanzamiento anterior.<br>**Gran final** (`finale`): Con la racha llena, la siguiente atrapada perfecta lanza una hoja enorme (golpe fuerte) y la racha vuelve a empezar. |
 <!-- /gen:tree -->
 
 Detalle:
@@ -41,7 +41,8 @@ Detalle:
 - **Malabar** (la «atrapada perfecta» de las preguntas abiertas): pulsar cuando a la hoja le quedan menos de `perfectWindow` s de vuelta
   (o hasta `perfectLate` s después de atraparla) la vuelve a lanzar al instante sin recarga y sube la racha (hasta `rachaMax`):
   +`jugDmg` de daño y −`jugSpeed` de tiempo de vuelo por punto. Aviso: la hoja y el cristal brillan en dorado durante la ventana.
-  Si la dejas llegar sin pulsar, «racha perdida».
+  Si la dejas llegar sin pulsar, «racha perdida». **Pulsar antes de la ventana = «FALLO»**: racha a 0 y esa vuelta ya no puede ser
+  perfecta (ni con el margen tardío) → no se puede spamear.
   - Filo creciente: +`edgeGrow` de tamaño y radio de golpe por punto de racha.
   - Eco: cada atrapada perfecta lanza además una hoja fantasma (translúcida, ×`echoMul`) que repite el lanzamiento anterior y se desvanece.
   - Gran final: con la racha llena, la siguiente perfecta lanza una hoja enorme (×`finaleMul` de daño, ×`finaleSize`, golpe fuerte) y la racha vuelve a 0.
@@ -112,6 +113,8 @@ Proyectil con estado (ida / pausa / vuelta / órbita) y «munición» de 1. La v
 efectos «al atrapar» del sistema Retorno.
 
 ## Decisiones
+
+- 2026-10-19 · Malabar: el usuario podía conseguir la racha spameando el clic → pulsar antes de tiempo es fallo y anula esa vuelta.
 
 - 2026-10-19 · Árbol: Sierra / Satélite / Malabar. Órbita y Doble (provisionales) pasan a Satélite. Imán sube a 170 px de radio
   (con 130 no llegaba al vecino) y no arrastra al enemigo clavado. Tirón sigue arrastrando 0,45 s tras atraparla (sólo con la vuelta

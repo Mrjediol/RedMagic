@@ -13,7 +13,7 @@ addWeapon({
       ups: [{ id: 'twin', name: 'Doble', desc: 'Dos hojas en órbita; cada clic lanza una.' },
             { id: 'wax', name: 'Luna creciente', desc: 'Cada vuelta en órbita sin lanzarla la hace crecer y suma daño al próximo lanzamiento.' },
             { id: 'guard', name: 'Escudo', desc: 'Las hojas en órbita destruyen las balas enemigas que tocan.' }] },
-    { id: 'juggle', name: 'Malabar', desc: 'Atrapada perfecta: pulsa justo cuando vuelve y sale otra vez al instante, más rápida y fuerte (racha de hasta 3). Si la dejas llegar, la racha se pierde.',
+    { id: 'juggle', name: 'Malabar', desc: 'Atrapada perfecta: pulsa justo cuando vuelve y sale otra vez al instante, más rápida y fuerte (racha de hasta 3). Pulsar antes de tiempo es fallo: pierdes la racha y esa vuelta ya no vale.',
       ups: [{ id: 'edge', name: 'Filo creciente', desc: 'Con cada punto de racha la hoja es más grande y corta más lejos.' },
             { id: 'echo', name: 'Eco', desc: 'Cada atrapada perfecta deja una hoja fantasma que repite el lanzamiento anterior.' },
             { id: 'finale', name: 'Gran final', desc: 'Con la racha llena, la siguiente atrapada perfecta lanza una hoja enorme (golpe fuerte) y la racha vuelve a empezar.' }] },
@@ -36,15 +36,15 @@ addWeapon({
   },
   create(slot) {
     const id = 'moon', inst = {};
-    let cd = 0, out = [], sats = [], racha = 0, caughtAt = -9, lastAim = null;
+    let cd = 0, out = [], sats = [], racha = 0, caughtAt = -9, lastAim = null, fumbled = false;
     const throwAim = (aim, o = {}) => {
       G.player.castT = 0.2;
       const n = copies(); out = [];
       for (let c = 0; c < n; c++) out.push(moonBlade(slot, inst, aim, Object.assign({ mirror: c > 0, onDone }, o)));
-      out.forEach(b => G.ents.push(b)); sfx(SND.moon_throw.fn);
+      out.forEach(b => G.ents.push(b)); sfx(SND.moon_throw.fn); fumbled = false;
       lastAim = { x: aim.x, y: aim.y, dx: aim.dx, dy: aim.dy };
     };
-    const onDone = () => { out = out.filter(b => !b.done); if (!out.length) { cd = T(id).cooldown * cdMul(); caughtAt = G.t; } };
+    const onDone = () => { out = out.filter(b => !b.done); if (!out.length) { cd = T(id).cooldown * cdMul(); caughtAt = fumbled ? -9 : G.t; fumbled = false; } };   // tras un fallo no hay margen tardío
     const jugStats = () => { const t = T(id); return { dmgMul: 1 + t.jugDmg * racha, speed: 1 - t.jugSpeed * racha, size: 1 + (hasMod(slot, 'edge') ? t.edgeGrow * racha : 0) }; };
     return Object.assign(inst, {
       onPress(aim) {
@@ -54,7 +54,7 @@ addWeapon({
         if (a === 'juggle') {
           const inWin = out.length && out.every(b => b.phase === 'back' && b.remain() < t.perfectWindow);
           const late = !out.length && G.t - caughtAt < t.perfectLate;
-          if (inWin || late) {                               // atrapada perfecta: sale otra vez al instante
+          if ((inWin || late) && !fumbled) {                               // atrapada perfecta: sale otra vez al instante
             out.forEach(b => b.catchNow()); out = []; caughtAt = -9;
             const finale = hasMod(slot, 'finale') && racha >= t.rachaMax;
             racha = finale ? 0 : Math.min(t.rachaMax, racha + 1);
@@ -64,7 +64,11 @@ addWeapon({
             throwAim(aim, finale ? { dmgMul: t.finaleMul, size: t.finaleSize, giant: true } : jugStats());
             return;
           }
-          if (cd > 0 || out.length) return;
+          if (out.length) {                                   // antes de tiempo = fallo (no se puede spamear hasta acertar)
+            if (!fumbled) { fumbled = true; racha = 0; text(G.player.x, G.player.y - 110, 'FALLO', '#ff8a8a', true); sfx(k => SFXLIB.whoosh(k, 500, 200, 0.12, 0.12)); }
+            return;
+          }
+          if (cd > 0) return;
           racha = 0; throwAim(aim, jugStats()); return;
         }
         if (cd > 0 || out.length) return;
@@ -80,6 +84,7 @@ addWeapon({
         } else if (sats.length) { sats.forEach(b => b.kill()); sats = []; }
         if (slot.arch === 'juggle' && racha > 0 && !out.length && G.t - caughtAt > t.perfectLate) { racha = 0; text(G.player.x, G.player.y - 110, 'racha perdida', '#9aa3b5'); }
       },
+      fumbled: () => fumbled,
       ready() {
         if (slot.arch === 'orbit') return sats.length ? sats.filter(b => b.phase === 'orbit').length / sats.length : 1;
         return out.length ? 0 : 1 - cd / Math.max(0.01, T(id).cooldown);
@@ -230,7 +235,7 @@ function moonBlade(slot, owner, aim, o) {
       for (const k of [1, 2]) crescentBlade(ctx, this.x, this.y, R, rot - k * 0.32, P, 0.22 / k * ga, layer);
       crescentBlade(ctx, this.x, this.y, R, rot, P, ga, layer);
       if (layer === 'front' && phase === 'saw') glow(ctx, this.x, this.y, R * 2.6, P.g2, 0.35 + 0.15 * Math.sin(G.t * 50));
-      if (layer === 'front' && arch === 'juggle' && !o.ghost && !o.mirror && this.remain() < t.perfectWindow) {   // Malabar: ¡ahora!
+      if (layer === 'front' && arch === 'juggle' && !o.ghost && !o.mirror && this.remain() < t.perfectWindow && !owner.fumbled()) {   // Malabar: ¡ahora!
         const m = muzzle(), pu = 0.6 + 0.4 * Math.sin(G.t * 45), gp = PAL.gold;
         glow(ctx, this.x, this.y, R * 2.4, gp.g2, 0.7 * pu); glow(ctx, m.x, m.y, 36, gp.g1, 0.6 * pu); star4(ctx, m.x, m.y, 22 * pu, G.t * 6, gp.core, 1, layer);
       }

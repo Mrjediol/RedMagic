@@ -61,3 +61,8 @@ carga ya es alta; lo que queda es lo que la escena arrastra.
 - 2026-10-17: queda como pendiente por ser un cambio grande. Pidió el plan de reestructuración del arte (píxeles óptimos),
   optimizar la carga de enemigos y quitar la carga del fondo del bioma.
 - Lo del terreno ya está hecho (horneado al guardar, `docs/architecture/levels.md`) y la carga con prioridad alta.
+
+## Hecho
+
+- 2026-10-19 · **Paso 6**: `LevelBiome.background` / `particles` pasan a GUID (`[EditorOnlyAsset]`, propiedades sólo en editor
+  con los mismos nombres). Los niveles ya no arrastran `Fondo_Hielo` ni la nieve del bioma. Falta medir la transición (paso 8).

@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-19T11:55:05.020Z",
+  "updated": "2026-10-19T11:58:49.637Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -453,7 +453,7 @@
             {
               "id": "oac-6",
               "text": "Fondo/partículas del bioma fuera de la carga del juego",
-              "done": false
+              "done": true
             },
             {
               "id": "oac-7",

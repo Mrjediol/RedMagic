@@ -11,12 +11,12 @@ addWeapon({
     { id: 'mass', name: 'Masa', desc: 'Más grande y dura más; arranca a los voladores y los estampa contra el suelo.' },
   ],
   tuning: {
-    cooldown: [2.5, 0.3, 8, 0.1, 'Recarga (s)'], range: [360, 80, 800, 10, 'Distancia máxima (px)'], travelTime: [0.5, 0.15, 1.5, 0.05, 'Viaje (s)'],
-    pullTime: [0.8, 0.2, 3, 0.05, 'Tiempo atrayendo (s)'], pullRadius: [150, 40, 400, 5, 'Radio de atracción'], pullSpeed: [150, 0, 500, 5, 'Fuerza de atracción (px/s)'],
+    cooldown: [3.5, 0.3, 10, 0.1, 'Recarga (s)'], range: [360, 80, 800, 10, 'Distancia máxima (px)'], travelTime: [0.5, 0.15, 1.5, 0.05, 'Viaje (s)'],
+    pullTime: [1.8, 0.2, 5, 0.05, 'Tiempo atrayendo (s)'], pullRadius: [150, 40, 400, 5, 'Radio de atracción'], pullSpeed: [150, 0, 500, 5, 'Fuerza de atracción (px/s)'],
     burstDamage: [40, 0, 200, 1, 'Daño del colapso'], burstRadius: [130, 30, 350, 5, 'Radio del colapso'], burstKnock: [380, 0, 900, 10, 'Empuje del colapso'],
     captureRadius: [95, 0, 250, 5, 'Radio de captura de proyectiles'], ejectSpeed: [900, 200, 2000, 10, 'Velocidad de salida de lo capturado'],
     burn: [3, 0, 8, 0.1, 'Fuego: quemadura (s)'], massScale: [1.4, 1, 2.5, 0.05, 'Masa: escala'], massTime: [1.35, 1, 3, 0.05, 'Masa: × tiempo atrayendo'],
-    look: [1, 0, 5, 1, 'Aspecto: 0 anillas · 1 horizonte · 2 remolino · 3 grieta · 4 abismo · 5 lente'], over: [0, 0, 1, 1, 'Vórtice por encima de los enemigos (0 = no, 1 = sí)'],
+    look: [3, 0, 5, 1, 'Aspecto: 0 anillas · 1 horizonte · 2 remolino · 3 grieta · 4 abismo · 5 lente'], over: [0, 0, 1, 1, 'Vórtice por encima de los enemigos (0 = no, 1 = sí)'],
     mergeTime: [0.3, 0.05, 1, 0.05, 'Duplicador: tiempo de fusión (s)'], mergeScale: [1.35, 1, 2.5, 0.05, 'Duplicador: escala de la fusionada'], mergeDamage: [1.7, 1, 4, 0.05, 'Duplicador: × daño de la fusionada'],
   },
   create(slot) {
@@ -58,6 +58,7 @@ function voidOrbEnt(slot, x0, y0, tx, ty, twin) {
     kind: 'singularity', x: x0, y: y0,
     update(dt) {
       const p = orbPos(0); this.x = p.x; this.y = p.y;
+      if (!this.opened && G.t >= TM) { this.opened = true; sfx(SND.sing_tear.fn); }   // la grieta se abre en el sitio
       if (G.t < TA) (twin ? [-1, 1] : [0]).forEach((k, i) => { const q = orbPos(k); hist[i].unshift({ x: q.x, y: q.y, t: G.t }); if (hist[i].length > 30) hist[i].pop(); });
       if (twin && !this.merged && G.t >= TM) {               // fusión: destello y onda corta
         this.merged = true; G.shake += 4;
@@ -106,12 +107,12 @@ function voidOrbEnt(slot, x0, y0, tx, ty, twin) {
       return true;
     },
     draw(ctx, layer) {
-      const live = { pal, bp, pullT: G.t >= TM && G.t < TC ? G.t - TM : -1, liveT: G.t - t0, collapse: seg(G.t, TC, TB) };
+      const live = { pal, bp, pullT: G.t >= TM && G.t < TC ? G.t - TM : -1, liveT: G.t - t0, collapse: seg(G.t, TC, TB), phase: G.t < TM ? 'travel' : 'live', openT: G.t - TM };
       if (twin && G.t < TM) {                                 // dos orbes (más pequeños) que se buscan
-        [-1, 1].forEach((k, i) => { const q = orbPos(k); singLook(SING_LOOK_IDS[t.look | 0] || 'horizon', ctx, G.t, layer, q.x, q.y, Object.assign({}, live, { s: s0, form: easeOut(seg(G.t, t0, TA)), trail: G.t < TA ? [0.04, 0.08, 0.12].map(dt => hist[i].find(h => G.t - h.t >= dt)).filter(Boolean) : [] }), t.over >= 0.5); });
+        [-1, 1].forEach((k, i) => { const q = orbPos(k); singLook(SING_LOOK_IDS[t.look | 0] || 'horizon', ctx, G.t, layer, q.x, q.y, Object.assign({}, live, { s: s0, form: easeOut(seg(G.t, t0, TA)), trail: G.t < TA ? [0.025, 0.05, 0.075, 0.1, 0.125].map(dt => hist[i].find(h => G.t - h.t >= dt)).filter(Boolean) : [] }), t.over >= 0.5); });
         if (G.t >= TA && layer === 'front') { const m = seg(G.t, TA, TM); glow(ctx, tx, ty, 50 * s * m, bp.g2, 0.6 * m); }
       } else {
-        singLook(SING_LOOK_IDS[t.look | 0] || 'horizon', ctx, G.t, layer, this.x, this.y, Object.assign({}, live, { s, form: twin ? 1 : easeOut(seg(G.t, t0, TA)), trail: !twin && G.t < TA ? [0.04, 0.08, 0.12].map(dt => hist[0].find(h => G.t - h.t >= dt)).filter(Boolean) : [] }), t.over >= 0.5);
+        singLook(SING_LOOK_IDS[t.look | 0] || 'horizon', ctx, G.t, layer, this.x, this.y, Object.assign({}, live, { s, form: twin ? 1 : easeOut(seg(G.t, t0, TA)), trail: !twin && G.t < TA ? [0.025, 0.05, 0.075, 0.1, 0.125].map(dt => hist[0].find(h => G.t - h.t >= dt)).filter(Boolean) : [] }), t.over >= 0.5);
       }
       if (G.settings.hitboxes && G.t >= TM) { ctx.strokeStyle = 'rgba(160,110,255,.6)'; ctx.beginPath(); ctx.arc(this.x, this.y, t.pullRadius * s, 0, TAU); ctx.stroke(); }
     },

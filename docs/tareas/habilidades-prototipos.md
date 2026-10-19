@@ -68,3 +68,4 @@ Las otras cuatro armas: sus mods quedan como mejoras provisionales y expresan el
   del juego; los generales de las pruebas llevan Fuego + universal. Tablas en `docs/armas/README.md`.
 
 - 2026-10-19 · Ronda de aspectos de la Singularidad (fx-sing.js, clips 2b en 🛠 En curso; el resto de clips pasan a ✔ Guardados por defecto). Pendiente: que el usuario elija.
+- 2026-10-19 · Elegida la Grieta: orbe que viaja y abre la grieta en el sitio; dura más. La jugable guarda en el navegador sólo los ajustes cambiados a mano (v4).

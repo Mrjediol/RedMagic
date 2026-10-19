@@ -3,13 +3,16 @@
 'use strict';
 const UI = {};
 (function () {
-  const KEY = 'hab.jugable.v3';
+  const KEY = 'hab.jugable.v4';                              // v4: el navegador guarda sólo los ajustes cambiados a mano
   const store = { load() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } },
-                  save() { try { localStorage.setItem(KEY, JSON.stringify(snapshot())); } catch (e) { /* sin almacenamiento */ } } };
+                  save() { try { localStorage.setItem(KEY, JSON.stringify(snapshot(true))); } catch (e) { /* sin almacenamiento */ } } };
   const DEFAULT_SLOTS = ['fan', 'star', 'sing'];
   const offers = {};                                         // ofertas abiertas por hueco (sorteo de subida de nivel)
   let chestOffer = null;
-  function snapshot() { return { v: 3, slotCount: G.slotCount, slots: G.slots.map(s => ({ w: s.w, arch: s.arch, ups: s.ups })), build: G.build, settings: G.settings, tuning: G.tuning }; }
+  // diff = sólo los ajustes que difieren del valor por defecto del código (así un cambio de valor por defecto llega al navegador)
+  const specOf = id => id === 'react' ? REACT_TUNING : id === 'items' ? ITEM_TUNING : WEAPONS[id] && WEAPONS[id].tuning;
+  function tuningDiff() { const out = {}; for (const id in G.tuning) { const sp = specOf(id); if (!sp) continue; for (const k in G.tuning[id]) if (sp[k] && G.tuning[id][k] !== sp[k][0]) (out[id] = out[id] || {})[k] = G.tuning[id][k]; } return out; }
+  function snapshot(diff) { return { v: 4, slotCount: G.slotCount, slots: G.slots.map(s => ({ w: s.w, arch: s.arch, ups: s.ups })), build: G.build, settings: G.settings, tuning: diff ? tuningDiff() : G.tuning, cambiados: diff ? undefined : tuningDiff() }; }
   function apply(snap) {
     if (!snap || snap.v < 2) return;
     if (snap.slotCount) G.slotCount = clamp(snap.slotCount, 2, 3);

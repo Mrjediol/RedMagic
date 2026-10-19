@@ -51,10 +51,10 @@ Mejora provisional:
 <!-- gen:tuning -->
 | Campo | Valor | Rango | Qué es |
 |---|---:|---|---|
-| `cooldown` | 2.5 | 0.3 – 8 (paso 0.1) | Recarga (s) |
+| `cooldown` | 3.5 | 0.3 – 10 (paso 0.1) | Recarga (s) |
 | `range` | 360 | 80 – 800 (paso 10) | Distancia máxima (px) |
 | `travelTime` | 0.5 | 0.15 – 1.5 (paso 0.05) | Viaje (s) |
-| `pullTime` | 0.8 | 0.2 – 3 (paso 0.05) | Tiempo atrayendo (s) |
+| `pullTime` | 1.8 | 0.2 – 5 (paso 0.05) | Tiempo atrayendo (s) |
 | `pullRadius` | 150 | 40 – 400 (paso 5) | Radio de atracción |
 | `pullSpeed` | 150 | 0 – 500 (paso 5) | Fuerza de atracción (px/s) |
 | `burstDamage` | 40 | 0 – 200 (paso 1) | Daño del colapso |
@@ -65,7 +65,7 @@ Mejora provisional:
 | `burn` | 3 | 0 – 8 (paso 0.1) | Fuego: quemadura (s) |
 | `massScale` | 1.4 | 1 – 2.5 (paso 0.05) | Masa: escala |
 | `massTime` | 1.35 | 1 – 3 (paso 0.05) | Masa: × tiempo atrayendo |
-| `look` | 1 | 0 – 5 (paso 1) | Aspecto: 0 anillas · 1 horizonte · 2 remolino · 3 grieta · 4 abismo · 5 lente |
+| `look` | 3 | 0 – 5 (paso 1) | Aspecto: 0 anillas · 1 horizonte · 2 remolino · 3 grieta · 4 abismo · 5 lente |
 | `over` | 0 | 0 – 1 (paso 1) | Vórtice por encima de los enemigos (0 = no, 1 = sí) |
 | `mergeTime` | 0.3 | 0.05 – 1 (paso 0.05) | Duplicador: tiempo de fusión (s) |
 | `mergeScale` | 1.35 | 1 – 2.5 (paso 0.05) | Duplicador: escala de la fusionada |
@@ -102,6 +102,10 @@ proyectiles), no lógica del Abanico. Atracción como fuerza sobre el `Rigidbody
 congelado y estados).
 
 ## Decisiones
+
+- 2026-10-19 · **Aspecto elegido: Grieta** (`look` 3, por defecto). Viaja un orbe pequeño con la grieta anunciada en vertical
+  (`riftSeed`) y, al llegar, la grieta se abre en el sitio: línea de luz que crece y se rasga con destello y chispas (`openT`).
+  El usuario: ver la grieta volando «queda raro». Más duración: atrae 1,8 s (antes 0,8) y recarga 3,5 s (antes 2,5). Sonido `sing_tear`.
 
 - 2026-10-19 · Capas: todo el vórtice se dibuja delante de los enemigos (`voidOrbOver` en fx.js) y el disco se ordena sólo respecto a su
   núcleo; antes la mitad trasera iba detrás de los enemigos y un enemigo dentro del disco cortaba el anillo (lo vio el usuario).

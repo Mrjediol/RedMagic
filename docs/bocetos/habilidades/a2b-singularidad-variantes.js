@@ -5,7 +5,7 @@ let orbOver = false;                                        // interruptor de la
 (function () {
   const TR = 0.32, XS = 462, YS = HY - 10;
   function build(P) {
-    const look = P.look, pal = PAL.void, bp = PAL.set, s = 1, dur = 0.9;
+    const look = P.look, pal = PAL.void, bp = PAL.set, s = 1, dur = P.dur || 0.9;
     const TA = TR + 0.5, TC = TA + dur, TB = TC + 0.14, total = TB + 1.15;
     const orbX = t => t < TA ? lerp(O.x + 10, XS, easeOut(seg(t, TR, TA))) : XS;
     const orbY = t => t < TA ? YS - 26 * bump(seg(t, TR, TA)) : YS + Math.sin(t * 5) * 2;
@@ -18,10 +18,11 @@ let orbOver = false;                                        // interruptor de la
       return E;
     };
     const enemies = [mkE(400), mkE(532)];
-    const sfx = [{ t: 0.02, f: k => SFXLIB.castShort(k) }, { t: TR, f: SND.sing_launch.fn }, { t: TC, f: SND.sing_collapse.fn }, { t: TB, f: SND.sing_burst.fn }];
+    const sfx = [{ t: 0.02, f: k => SFXLIB.castShort(k) }, { t: TR, f: SND.sing_launch.fn }, ...(look === 'rift' ? [{ t: TA, f: SND.sing_tear.fn }] : []), { t: TC, f: SND.sing_collapse.fn }, { t: TB, f: SND.sing_burst.fn }];
     function draw(ctx, t, layer) {
       castFx(ctx, t, layer, 0.04, TR, pal, 1.1);
-      if (t > TR && t < TB) singLook(look, ctx, t, layer, orbX(t), orbY(t), { s, pal, bp, form: easeOut(seg(t, TR, TA)), collapse: seg(t, TC, TB), pullT: t > TA && t < TC ? t - TA : -1, liveT: t - TR, trail: [] }, orbOver);
+      if (t > TR && t < TB) singLook(look, ctx, t, layer, orbX(t), orbY(t), { s, pal, bp, form: easeOut(seg(t, TR, TA)), collapse: seg(t, TC, TB), pullT: t > TA && t < TC ? t - TA : -1, liveT: t - TR, phase: t < TA ? 'travel' : 'live', openT: t - TA,
+        trail: t < TA ? [0.025, 0.05, 0.075, 0.1, 0.125].filter(d => t - d > TR).map(d => ({ x: orbX(t - d), y: orbY(t - d) })) : [] }, orbOver);
       if (t >= TB) singBurst(look, ctx, t, layer, TB, XS, YS, s, bp, {});
     }
     return { total, draw, enemies, playerPose: t => poseCast(t, 0.04, TR, { lean: 0.1, kick: 0.16 }), shakes: [{ t: TB, a: 9, d: 0.4 }], frames: [{ t: TB, d: 0.06 }], sfx };
@@ -33,7 +34,7 @@ let orbOver = false;                                        // interruptor de la
     clips: [
       { tab: 'wip', title: '2b · 1 · Horizonte de sucesos', tag: 'Variante', text: 'Disco de acreción liso: blanco caliente por dentro que se enfría a violeta, con textura de seda que gira (más rápido cerca del centro) y el lado que se acerca más brillante. Sobre la sombra, el anillo de luz de la parte trasera del disco curvada por la gravedad (estilo Interstellar). Filamentos que caen en espiral. Estallido: onda continua y destello alargado.', P: { look: 'horizon' } },
       { tab: 'wip', title: '2b · 2 · Remolino', tag: 'Variante', text: 'Cuatro brazos en espiral de tinta violeta (oscuro → violeta → blanco en el filo) que giran hacia un ojo negro, en perspectiva (pasan por detrás y por delante del ojo); gotas arrastradas por los brazos. Más orgánico y legible de lejos.', P: { look: 'whirl' } },
-      { tab: 'wip', title: '2b · 3 · Grieta', tag: 'Variante', text: 'Un desgarro vertical en el espacio: dentro, vacío con estrellas y nebulosa; los bordes arden (morado, cian, blanco) y saltan chispas eléctricas; escombros orbitan y se cuelan por la grieta. Al colapsar se cierra de golpe en una línea de luz y escupe los escombros.', P: { look: 'rift' } },
+      { tab: 'wip', title: '2b · 3 · Grieta', tag: 'Elegida', text: 'Elegida por el usuario. Viaja un orbe pequeño (con la grieta anunciada en vertical) y, al llegar, se abre en el sitio: línea de luz que crece y se rasga con destello y chispas. Dura más (atrae 1,8 s). Un desgarro vertical en el espacio: dentro, vacío con estrellas y nebulosa; los bordes arden (morado, cian, blanco) y saltan chispas eléctricas; escombros orbitan y se cuelan por la grieta. Al colapsar se cierra de golpe en una línea de luz y escupe los escombros.', P: { look: 'rift', dur: 1.8 } },
       { tab: 'wip', title: '2b · 4 · Abismo (rejilla)', tag: 'Variante', text: 'La rejilla del espacio-tiempo se hunde hacia un punto negro: se lee «gravedad» al instante, sin anillos. Filamentos que caen. Al estallar, la onda recorre la rejilla hacia fuera.', P: { look: 'grid' } },
       { tab: 'wip', title: '2b · 5 · Lente', tag: 'Variante', text: 'Una esfera que refracta lo que hay detrás (fondo y enemigos), aumentado y retorcido en remolino hacia un centro oscuro; borde de cristal con aberración cromática y un brillo. Es el efecto real de un agujero negro sobre lo que lo rodea.', P: { look: 'lens' } },
       { tab: 'wip', title: '2b · 0 · Anillas (versión anterior)', tag: 'Referencia', text: 'La primera versión, para comparar.', P: { look: 'rings' } },

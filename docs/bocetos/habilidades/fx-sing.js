@@ -115,8 +115,34 @@ function lookWhirl(ctx, t, layer, x, y, o) {
 }
 
 // ---------------------------------------------------------------- 3 · GRIETA
+// orbe que viaja hasta el sitio y abre allí la grieta (el usuario: ver la grieta volando «queda raro», 2026-10-19)
+function riftSeed(ctx, t, layer, x, y, s, trail) {
+  if (layer === 'back') {
+    if (trail && trail.length > 1) { strokeTaper(ctx, [{ x, y }, ...trail], 7 * s, '#7538db', 0.45, layer); strokeTaper(ctx, [{ x, y }, ...trail], 2.6 * s, '#cdbcff', 0.9, layer); }
+    glow(ctx, x, y, 34 * s, [110, 50, 240], 0.6);
+    return;
+  }
+  glow(ctx, x, y, 16 * s, [210, 230, 255], 0.8);
+  disc(ctx, x, y, 6.5 * s, '#5a2fd0', 1, layer); disc(ctx, x, y, 4.5 * s, '#c9b6ff', 1, layer); disc(ctx, x, y, 2.4 * s, '#ffffff', 1, layer);
+  lens(ctx, x, y, Math.PI / 2, 22 * s * (1 + 0.25 * Math.sin(t * 30)), 2.2 * s, '#ffffff', 0.85, layer);    // anuncia la grieta
+  const B = rand(Math.floor(t * 20) + 3);
+  for (let i = 0; i < 2; i++) { const a = B() * TAU; bolt(ctx, x, y, x + Math.cos(a) * 15 * s, y + Math.sin(a) * 15 * s, 3, B, 0.9, PAL.set, 0.75, layer); }
+}
+// o.phase = 'travel' → orbe; si no, la grieta, que se abre en el sitio: línea de luz que crece y luego se rasga (o.openT = s desde que llegó)
 function lookRift(ctx, t, layer, x, y, o) {
-  const op = (0.15 + 0.85 * o.form) * (1 - easeIn(o.collapse || 0)), s = o.s, H = 84 * s * (0.6 + 0.4 * o.form) * (1 - 0.6 * easeIn(o.collapse || 0)), Wd = 15 * s * op * (1 + 0.08 * Math.sin(t * 9));
+  const s = o.s;
+  if (o.phase === 'travel') return riftSeed(ctx, t, layer, x, y, s, o.trail);
+  const ot = o.openT === undefined ? 1 : o.openT, lineU = easeOut(seg(ot, 0, 0.14)), openU = easeOut(seg(ot, 0.1, 0.45)), cU = easeIn(o.collapse || 0);
+  const op = (0.08 + 0.92 * openU) * (1 - cU), H = 84 * s * (0.2 + 0.8 * lineU) * (1 - 0.6 * cU), Wd = 15 * s * openU * (1 - cU) * (1 + 0.08 * Math.sin(t * 9));
+  if (op <= 0.01 && lineU >= 1) return;
+  // apertura: línea vertical de luz y destello al rasgarse
+  if (layer === 'front' && ot < 0.5) {
+    const lf = 1 - seg(ot, 0.3, 0.5);
+    glow(ctx, x, y, 50 * s * lineU, [200, 220, 255], 0.7 * lf);
+    lens(ctx, x, y, Math.PI / 2, H * 1.15, 4 * s * (1 - openU * 0.5), '#ffffff', lf, layer);
+    const fu = seg(ot, 0.1, 0.3); if (fu > 0 && fu < 1) { star4(ctx, x, y, 46 * s * (1 - fu * 0.4), 0, '#ffffff', 1 - fu, layer, 0.12); lens(ctx, x, y, 0, 120 * s * (1 - fu * 0.3), 4 * s * (1 - fu), '#9ef2ff', 1 - fu, layer); }
+  }
+  if (ot >= 0.1) sparks(ctx, t, t - ot + 0.1, x, y, layer, { n: 14, a0: -Math.PI, a1: Math.PI, sp: 260 * s, pal: PAL.set, seed: 31, len: 14, life: 0.45, w: 2 });
   if (op <= 0.01) return;
   if (layer === 'back') { glow(ctx, x, y, 95 * s, [90, 40, 220], 0.45 * op); return; }
   const seed = Math.floor(t * 16), N = 18, L = [], Rr = [];

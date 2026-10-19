@@ -12,6 +12,7 @@
     burstFire: sound('sing_burst_fire', G, 'Estallido ígneo', k => { SFXLIB.boom(k, 1.05); SFXLIB.burn(k, 1.0); const t = nowT(); vNoise(t, 0.5 * k, 0.3, 'bandpass', 400, 2500, 0.8, { att: 0.01, wet: 0.3 }); }),
     slam: sound('sing_slam', G, 'Masa · estampa al volador', k => { const t = nowT(); vThump(t, 110, 30, 0.45 * k, 0.9, 3, 0.15); vNoise(t, 0.3 * k, 0.4, 'lowpass', 1800, 150, 0.8, { dr: 2, wet: 0.2 }); }),
     capture: sound('sing_capture', G, 'Catapulta · atrapa esquirlas', k => { const t = nowT(); vNoise(t, 0.5 * k, 0.12, 'bandpass', 1500, 3500, 3, { hold: true, att: 0.05, lfo: [14, 0.8], wet: 0.2 }); vRing(t, [2600, 3900], 0.2 * k, 0.04, 0.3); }),
+    tear: sound('sing_tear', G, 'Grieta · se abre', k => { const t = nowT(); vNoise(t, 0.12 * k, 0.3, 'highpass', 1500, 7000, 0.8, { rising: true, wet: 0.2 }); vNoise(t + 0.12 * k, 0.35 * k, 0.4, 'bandpass', 5000, 600, 0.9, { att: 0.002, dr: 1.5, wet: 0.35 }); vCrackle(t + 0.1 * k, 0.4 * k, 0.25, 40, 0.3); vThump(t + 0.12 * k, 90, 38, 0.4 * k, 0.6, 2, 0.3); }),
     eject: sound('sing_eject', G, 'Catapulta · salen disparadas', k => { const t = nowT(); vNoise(t, 0.2 * k, 0.3, 'bandpass', 6000, 1200, 1.2, { att: 0.002, wet: 0.2 }); vRing(t, [2300, 3450, 4700], 0.25 * k, 0.05, 0.25); }),
   };
   const fanRel = SND.fan_release ? SND.fan_release.fn : SFXLIB.whoosh;

@@ -19,7 +19,8 @@ combo muy bueno. Se experimenta primero con **Abanico** y **Golpe estelar**.
 - **Nivel 2 — Evolución**: 1 de 3 formas avanzadas. En la run se ofrecen **2 al azar** (no siempre puedes ir a tu favorita).
 - **Niveles 3, 4, 5 — Mejoras**: cada vez se ofrecen **2 al azar** de las 3 mejoras de tu evolución que aún no tienes (la
   última subida puede no darte a elegir). Máximo = evolución + sus 3 mejoras.
-- Las armas aún no rediseñadas (Singularidad, Rayo, Media luna, Semilla) tienen de momento una lista plana de mejoras provisionales.
+- Las armas aún no rediseñadas (Media luna, Semilla) tienen de momento una lista plana de mejoras provisionales. Árboles de Singularidad y
+  Rayo: en sus fichas.
 
 ### Abanico
 
@@ -36,6 +37,14 @@ combo muy bueno. Se experimenta primero con **Abanico** y **Golpe estelar**.
 | **Bombardeo** | Lanzas más pequeñas en **fila** desde el punto marcado hacia delante | Salva (+2 lanzas) · Final (la última es enorme) · Rodante (la fila sigue al ratón mientras cae) |
 | **Cazador** | Tus otras armas **marcan**; las lanzas caen solas sobre los marcados | Acumulación (marcas apilables hasta 3: más daño por marca) · Ejecución (remata a los que quedan con poca vida y marca al siguiente) · Vigilancia (cada 4 s cae una lanza sola sobre un marcado, aunque lleves la otra arma) |
 | **Tormenta** | Lluvia de agujas sobre una zona | Diluvio (más agujas, dura el doble y sigue al ratón) · Agujas pesadas (golpes fuertes: rompen congelados) · Ojo de la tormenta (atrae hacia el centro y acaba con una lanza) |
+
+### Rayo
+
+| Evolución | Idea | Mejoras |
+|---|---|---|
+| **Sobrecarga** | El daño crece con el calor; al soltar **descarga** por toda la línea; si llegas al máximo se recalienta | Punto justo (soltar en la franja final = doble y golpe fuerte) · Perforante (con medio calor atraviesa a todos) · Onda (la descarga estalla en área) |
+| **Prisma** | Se divide en haces dorados tras el primero: contra grupos | Cadena (cada haz salta a otro) · Foco (los haces sin objetivo refuerzan el principal) · Reflejo (rebota en el suelo) |
+| **Faro** | Al soltar, el cristal se queda disparando solo: premia cambiar de arma | Vínculo (hilo que daña y cura) · Estallido (al apagarse descarga en área) · Vigía (cada baja alarga el faro) |
 
 ## 3 · Items y sinergias (como el juego: 2 etiquetas por item, tramos 2 / 4 / 6)
 

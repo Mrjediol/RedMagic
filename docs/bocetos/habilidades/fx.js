@@ -264,3 +264,32 @@ function voidOrbOver(ctx, t, layer, ox, oy, o) {
   voidOrb(ctx, t, 'back', ox, oy, o);
   voidOrb(ctx, t, 'front', ox, oy, o);
 }
+
+// ---------------------------------------------------------------- Rayo: evoluciones (g-rayo.js)
+// Faro: cristal doble flotando con un aro que gira; k = vida que le queda (0..1, arco del aro)
+function beaconCrystal(ctx, t, x, y, a, pal, layer, k = 1) {
+  if (a <= 0 || layer !== 'front') return;
+  const bob = Math.sin(t * 3) * 2;
+  ellArc(ctx, x, y + bob, 20, 6, t * 2.2, t * 2.2 + TAU * clamp(k), 2, pal.light, 0.8 * a, layer, { m: 24 });
+  glow(ctx, x, y + bob, 40, pal.g1, 0.5 * a); glow(ctx, x, y + bob, 18, pal.g2, 0.7 * a);
+  crystalShard(ctx, x, y + bob + 4, -Math.PI / 2, 0.75, pal, a, layer);
+  crystalShard(ctx, x, y + bob - 4, Math.PI / 2, 0.45, pal, a, layer);
+  star4(ctx, x, y + bob, 9 + 3 * Math.sin(t * 9), t * 1.5, pal.core, a, layer);
+}
+// Sobrecarga: descarga a lo largo de la línea pts (tramos), haz grueso que se apaga en 0,3 s y chispas por toda la línea; k = calor 0..1
+function beamDischarge(ctx, t, layer, t0, pts, k, pal) {
+  const u = seg(t, t0, t0 + 0.3); if (u >= 1) return;
+  for (let i = 0; i + 1 < pts.length; i++) energyBeam(ctx, t, layer, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, 1 - easeIn(u), pal, { sc: 1.3 + 1.4 * k, seed: 9 + i });
+  const R = rand(Math.floor(t0 * 100));
+  for (let i = 0; i + 1 < pts.length; i++) for (let j = 0; j < 6; j++) {
+    const s = R(), x = lerp(pts[i].x, pts[i + 1].x, s), y = lerp(pts[i].y, pts[i + 1].y, s);
+    sparks(ctx, t, t0, x, y, layer, { n: 3, pal, sp: 220, seed: i * 31 + j, len: 12, life: 0.35 });
+  }
+}
+// onda de choque circular (Sobrecarga · Onda, Faro · Estallido)
+function shockRing(ctx, t, layer, t0, x, y, r, pal) {
+  const u = seg(t, t0, t0 + 0.35); if (u >= 1 || layer !== 'front') return;
+  const rr = r * easeOut(u);
+  glow(ctx, x, y, rr * 1.1, pal.g1, 0.45 * (1 - u));
+  for (const [kk, c, w] of [[1, pal.mid, 5], [0.93, pal.core, 2]]) ellArc(ctx, x, y, rr * kk, rr * kk, 0, TAU, w * (1 - u * 0.6), c, 1 - u, layer, { m: 40, wob: 0.06, seed: 2, taper: 0 });
+}

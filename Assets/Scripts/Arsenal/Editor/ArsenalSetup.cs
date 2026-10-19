@@ -22,6 +22,8 @@ namespace RedMagic.Arsenal.Editor
         private const string SolidMat = "Assets/Art/Fx/Materials/Fx_VertexColor.mat";
         private const string GlowMat = "Assets/Art/Fx/Materials/Fx_VertexColorAdditive.mat";
         private const string AssetsPath = "Assets/Resources/Arsenal/ArsenalAssets.asset";
+        /// <summary>WAV de las armas (tools/render-sonidos-armas.cjs): el nombre del archivo es el id de ArsenalSounds.</summary>
+        public const string SoundsFolder = "Assets/Audio/Sounds/Player/Arsenal";
 
         [MenuItem("Tools/RedMagic/Arsenal/Preparar (materiales, assets y armas)")]
         public static List<WeaponDefinition> Run()
@@ -40,6 +42,7 @@ namespace RedMagic.Arsenal.Editor
             if (assets == null) { assets = ScriptableObject.CreateInstance<ArsenalAssets>(); AssetDatabase.CreateAsset(assets, AssetsPath); }
             assets.solidMaterial = AssetDatabase.LoadAssetAtPath<Material>(SolidMat);
             assets.glowMaterial = glow;
+            AssignSounds(assets);
             EditorUtility.SetDirty(assets);
 
             Directory.CreateDirectory(WeaponsFolder);
@@ -54,6 +57,25 @@ namespace RedMagic.Arsenal.Editor
             AssetDatabase.SaveAssets();
             Debug.Log($"[Arsenal] Preparado: {weapons.Count} armas en {WeaponsFolder}.");
             return weapons;
+        }
+
+        /// <summary>Cada WAV de <see cref="SoundsFolder"/> entra en la tabla por su nombre; lo que ya tenga clip no se toca.</summary>
+        private static void AssignSounds(ArsenalAssets assets)
+        {
+            if (!AssetDatabase.IsValidFolder(SoundsFolder)) return;
+            foreach (var guid in AssetDatabase.FindAssets("t:AudioClip", new[] { SoundsFolder }))
+            {
+                var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(AssetDatabase.GUIDToAssetPath(guid));
+                if (clip == null) continue;
+                var entry = assets.sounds.Find(s => s != null && s.id == clip.name);
+                if (entry == null) { entry = new ArsenalSoundEntry { id = clip.name }; assets.sounds.Add(entry); }
+                if (entry.cue.HasClips) continue;
+                bool loop = clip.name.EndsWith("_loop") || clip.name == "moon_spin";
+                entry.cue.clips = new[] { clip };
+                entry.cue.volume = loop ? 0.55f : 0.8f;
+                entry.cue.positional = !loop;
+                entry.cue.pitchMin = loop ? 1f : 0.96f; entry.cue.pitchMax = loop ? 1f : 1.04f;
+            }
         }
 
         private static readonly string[] OrderIds = { "fan", "sing", "ray", "moon", "seed", "star" };

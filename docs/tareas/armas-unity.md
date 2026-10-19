@@ -31,15 +31,39 @@ Fuente de verdad de cada arma: su ficha en `docs/armas/` + su `g-*.js`.
 
 | # | Fase | Estado |
 |---|---|---|
-| 0 | Cimientos: delivery + kits, mundo de entidades, reglas comunes, 2.º hueco + cambio, menú DEV, escena de prueba | en curso |
-| 1 | Abanico (Erizo / Lanza / Caleidoscopio) | pendiente |
-| 2 | Singularidad · Grieta (Fauces / Errante / Arsenal) + captura | pendiente |
-| 3 | Rayo (Sobrecarga / Prisma / Faro) | pendiente |
-| 4 | Media luna (Sierra / Satélite / Malabar) | pendiente |
-| 5 | Semilla (Campo de minas / Racimo / Madura) | pendiente |
-| 6 | Golpe estelar (Bombardeo / Cazador / Tormenta) + marcas | pendiente |
-| 7 | Sonidos: piezas `SND.*` a WAV con el mismo código (como `render-sonidos-cometa.cjs`) y que el usuario los califique | pendiente |
+| 0 | Cimientos: delivery + kits, mundo de entidades, reglas comunes, 2.º hueco + cambio, menú DEV, escena de prueba | hecho |
+| 1 | Abanico (Erizo / Lanza / Caleidoscopio) | hecho |
+| 2 | Singularidad · Grieta (Fauces / Errante / Arsenal) + captura | hecho |
+| 3 | Rayo (Sobrecarga / Prisma / Faro) | hecho |
+| 4 | Media luna (Sierra / Satélite / Malabar) | hecho |
+| 5 | Semilla (Campo de minas / Racimo / Madura) | hecho |
+| 6 | Golpe estelar (Bombardeo / Cazador / Tormenta) + marcas | hecho |
+| 7 | Sonidos: piezas `SND.*` a WAV con el mismo código y que el usuario los califique | a medias (ver RETOMAR) |
 | 8 | Items de la web (Duplicador, Gatillo, Constelación…) frente a los del juego: decidir con el usuario | pendiente |
+
+## ▶ RETOMAR AQUÍ (fin de sesión 2026-10-19)
+
+**Estado**: las 6 armas portadas, compilan y se ven bien en renders fuera de pantalla (`ArsenalPreviewShots.Fan/Sing/Ray/Moon/Seed/Star`,
+`unity command eval --code "return RedMagic.Arsenal.Editor.ArsenalPreviewShots.Ray(@\"<carpeta>\");"`). **Nada probado en Play**:
+lo prueba el usuario. Rama `task/armas-unity` (sin fusionar).
+
+**Cómo probar**: Tools ▸ RedMagic ▸ Test ▸ Escena de armas (arsenal) → abrir `Assets/Test/Scenes/ArsenalTest.unity` → Play.
+Q dispara (mantener = repetir / canalizar / madurar), Tab cambia de arma, F10 (o botón «ARMAS») = menú DEV: arma de cada hueco,
+evolución, mejoras, elemento forzado (hielo/fuego), Duplicador, reacciones.
+
+**Siguiente**:
+1. Recoger la prueba del usuario y arreglar (un arma cada vez).
+2. Sonidos: el script está hecho (`docs/bocetos/habilidades/tools/render-sonidos-armas.cjs`, 54 ids → WAV en
+   `Assets/Audio/Sounds/Player/Arsenal/`), pero falta `node-web-audio-api`: la instalación del cometa
+   (`%TEMP%/cometaudio`) está incompleta. Con permiso del usuario: `npm i node-web-audio-api@1.0.4` en una carpeta temporal,
+   `WEB_AUDIO_API=<ruta>/node_modules/node-web-audio-api node … Assets/Audio/Sounds/Player/Arsenal`, luego Tools ▸ RedMagic ▸
+   Arsenal ▸ Preparar (mete cada WAV en ArsenalAssets ▸ Sonidos por su nombre) y que el usuario califique cada sonido
+   (regla del registro de sonido).
+3. Fase 8 (items) y pasar las armas de `Assets/Test/Arsenal/` a `Resources/Items/Weapons/` cuando el usuario las dé por buenas.
+
+**Trampas aprendidas**: `Bump(1)` = sin(π) negativo → `Pow` daba NaN y Unity descartaba el lienzo entero (arreglado;
+`FxCanvas` avisa de NaN). El mundo devolvía al pool entidades antes de quitarlas de la lista (arreglado). Ediciones a .cs con
+CRLF: usar un script que normalice saltos de línea. El banco de renders aísla todo en la capa 31.
 
 ## Cómo se verifica
 
@@ -48,4 +72,5 @@ Compilar con el editor abierto (`unity command recompile`). Aspecto: render fuer
 
 ## Historial
 
+- 2026-10-19 · Fases 0-6 hechas en una sesión; sonido a medias (falta instalar node-web-audio-api).
 - 2026-10-19 · Empieza la tarea. Antes, en la web: Malabar exige timing (pulsar antes de tiempo = fallo).

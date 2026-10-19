@@ -166,7 +166,7 @@ namespace RedMagic.Arsenal
             if (k.Evo(MoonKit.Satelite))
             {   // las hojas viven en órbita (también con la otra arma en la mano)
                 int want = (k.Doble ? 2 : 1) * ArsenalBuild.Copies;
-                _sats.RemoveAll(b => b.Dead);
+                _sats.RemoveAll(b => b.Dead || !b.InWorld);
                 if (_sats.Count != want)
                 {
                     foreach (var b in _sats) b.Kill();

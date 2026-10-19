@@ -142,6 +142,7 @@ namespace RedMagic.Arsenal
                 if (o != b && Vector2.Distance(o.c, b.c) < r)
                     Hit(o, new ArsenalHit { dmg = splash, from = b.c, knock = 0.6f, elem = ArsenalElement.Ice, freeze = 0.25f, noReact = true, kind = HitKind.Burst });
             ArsenalReactFx.Shatter(b.c, b.rx, b.ry);
+            ArsenalSounds.Play("react_shatter", b.c, 0.06f);
             if (Application.isPlaying) HitStop.Play(0.06f);
             ArsenalFeel.Shake(0.18f);
         }
@@ -159,6 +160,6 @@ namespace RedMagic.Arsenal
             SteamFx(b.c);
         }
 
-        private static void SteamFx(Vector2 p) => ArsenalReactFx.Steam(p);
+        private static void SteamFx(Vector2 p) { ArsenalReactFx.Steam(p); ArsenalSounds.Play("react_vapor", p, 0.08f); }
     }
 }

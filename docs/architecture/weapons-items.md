@@ -109,6 +109,15 @@ Inspector wiring.
   beam is still tinted.
 - Projectiles never collide with other projectiles — pellets from one blast spawn on top of each
   other and would annihilate on frame one.
+- **Arsenal (`ShotDelivery.Arsenal`, `Assets/Scripts/Arsenal/`)** — las 6 armas diseñadas en la web (Abanico, Singularidad, Rayo,
+  Media luna, Semilla, Golpe estelar), cada una con 3 evoluciones × 3 mejoras. Todo el arma va en `WeaponDefinition ▸ Arsenal`
+  (`[SerializeReference]` kit por arma: evolución + 3 casillas + ajustes de la web en unidades). `WeaponUser` delega en un
+  `ArsenalController` por arma equipada; **segundo hueco** (`WeaponInventory.SecondWeapon`, acción `SwapWeapon` = Tab / mando ▲,
+  cuenta para sinergias). Proyectiles y efectos son entidades C# de `ArsenalWorld` dibujadas en 4 lienzos `FxCanvas` (detrás 1-2,
+  delante 39-40; los de brillo son aditivos). Reglas comunes: `ArsenalCombat` (golpe → `PlayerHit.Deal`, reacciones añicos/
+  deshielo/vapor), `ElementStatus` (congelación, quemado, aturdido; `EnemyBrain` no actúa congelado), atraer = `Knockback.ApplyVelocity`,
+  captura (`ArsenalProjectile`), marcas del Cazador (`ArsenalMarks`, cualquier golpe del jugador). Elemento/Duplicador:
+  `ArsenalBuild`. Menú DEV F10. Escena: Tools ▸ RedMagic ▸ Test ▸ Escena de armas. Estado y siguiente paso: `docs/tareas/armas-unity.md`.
 - **Cometa (`ShotDelivery.Comet`, `Assets/Scripts/Items/Comet/`)** — arma de proyectil hecho sólo de efectos
   (boceto `docs/bocetos/ataque-cometa-estados.html`, proceso `docs/fx-proceso-bocetos.md`). Asset
   `Resources/Items/Weapons/Weapon_Cometa.asset` (**Tools ▸ RedMagic ▸ Items ▸ Cometa · Crear o actualizar arma**, no pisa lo

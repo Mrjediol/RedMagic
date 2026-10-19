@@ -18,6 +18,9 @@ namespace RedMagic.Arsenal
         public abstract void Draw(L layer);
         /// <summary>Se llama al quitarla (para devolverla a su pool o cortar un sonido en bucle).</summary>
         public virtual void OnRemoved() { }
+
+        /// <summary>Está en el mundo (se actualiza y se dibuja). Lo pone el mundo al añadirla y lo quita al sacarla o al vaciarse.</summary>
+        public bool InWorld { get; internal set; }
     }
 
     /// <summary>
@@ -78,7 +81,7 @@ namespace RedMagic.Arsenal
         public static T Add<T>(T entity) where T : ArsenalEntity
         {
             var w = Instance;
-            if (w != null && entity != null) w._entities.Add(entity);
+            if (w != null && entity != null) { w._entities.Add(entity); entity.InWorld = true; }
             return entity;
         }
 
@@ -121,7 +124,7 @@ namespace RedMagic.Arsenal
         /// <summary>Quita todas las entidades (cambio de escena, reinicio de la escena de prueba).</summary>
         public void Clear()
         {
-            foreach (var e in _entities) e.OnRemoved();
+            foreach (var e in _entities) { e.InWorld = false; e.OnRemoved(); }
             _entities.Clear();
         }
 
@@ -172,7 +175,7 @@ namespace RedMagic.Arsenal
             // primero se quitan y DESPUÉS se devuelven a su pool: si no, una entidad reciclada en este mismo frame
             // se quitaría de la lista junto con la vieja (es el mismo objeto)
             _entities.RemoveAll(IsDead);
-            foreach (var e in _dead) e.OnRemoved();
+            foreach (var e in _dead) { e.InWorld = false; e.OnRemoved(); }
             _dead.Clear();
         }
 

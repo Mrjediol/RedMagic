@@ -107,7 +107,7 @@ namespace RedMagic.Arsenal
             hit = default; bool found = false;
             foreach (var e in Alive())
             {
-                if (skip != null && skip.Contains(e.health)) continue;
+                if (e.Dead || (skip != null && skip.Contains(e.health))) continue;
                 if (!SegHitsEllipse(a, b, e.c, e.rx + pad, e.ry + pad, out float u0)) continue;
                 if (!found || u0 < hit.u) { hit = new RayHit { body = e, u = u0, p = Vector2.Lerp(a, b, u0) }; found = true; }
             }
@@ -132,7 +132,7 @@ namespace RedMagic.Arsenal
             Body best = null; float bd = maxD;
             foreach (var e in Alive())
             {
-                if (skip != null && skip.Contains(e.health)) continue;
+                if (e.Dead || (skip != null && skip.Contains(e.health))) continue;
                 float d = Vector2.Distance(e.c, p);
                 if (d < bd) { bd = d; best = e; }
             }
@@ -144,6 +144,7 @@ namespace RedMagic.Arsenal
         {
             foreach (var e in Alive())
             {
+                if (e.Dead) continue;
                 float x = (p.x - e.c.x) / (e.rx + pad), y = (p.y - e.c.y) / (e.ry + pad);
                 if (x * x + y * y < 1f) return e;
             }

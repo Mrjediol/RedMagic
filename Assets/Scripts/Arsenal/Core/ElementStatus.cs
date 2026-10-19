@@ -99,6 +99,7 @@ namespace RedMagic.Arsenal
             if (Freeze < 1f) { Tint(); return false; }
             FrozenRemaining = frozenTime;
             FrozenAt = ArsenalWorld.T;
+            ArsenalSounds.Play("react_freeze", transform.position, 0.05f);
             Hold();
             Tint();
             return true;

@@ -19,8 +19,7 @@ combo muy bueno. Se experimenta primero con **Abanico** y **Golpe estelar**.
 - **Nivel 2 — Evolución**: 1 de 3 formas avanzadas. En la run se ofrecen **2 al azar** (no siempre puedes ir a tu favorita).
 - **Niveles 3, 4, 5 — Mejoras**: cada vez se ofrecen **2 al azar** de las 3 mejoras de tu evolución que aún no tienes (la
   última subida puede no darte a elegir). Máximo = evolución + sus 3 mejoras.
-- Las armas aún no rediseñadas (Media luna, Semilla) tienen de momento una lista plana de mejoras provisionales. Árboles de Singularidad y
-  Rayo: en sus fichas.
+- La Semilla aún tiene una lista plana de mejoras provisionales. Árboles de Singularidad, Rayo y Media luna: en sus fichas.
 
 ### Abanico
 
@@ -45,6 +44,14 @@ combo muy bueno. Se experimenta primero con **Abanico** y **Golpe estelar**.
 | **Sobrecarga** | El daño crece con el calor; al soltar **descarga** por toda la línea; si llegas al máximo se recalienta | Punto justo (soltar en la franja final = doble y golpe fuerte) · Perforante (con medio calor atraviesa a todos) · Onda (la descarga estalla en área) |
 | **Prisma** | Se divide en haces dorados tras el primero: contra grupos | Cadena (cada haz salta a otro) · Foco (los haces sin objetivo refuerzan el principal) · Corona (haces cortos que giran alrededor de la gema) |
 | **Faro** | Al soltar, el cristal se queda disparando solo: premia cambiar de arma | Vínculo (hilo que daña y cura) · Estallido (al apagarse descarga en área) · Vigía (cada baja alarga el faro) |
+
+### Media luna
+
+| Evolución | Idea | Mejoras |
+|---|---|---|
+| **Sierra** | Se queda triturando donde toca; vuelve al pulsar otra vez | Tirón (arrastra hacia ti a la vuelta) · Desgarro (cortes seguidos suben el daño) · Imán (atrae a la sierra) |
+| **Satélite** | Gira siempre a tu alrededor; se lanza sin recarga y vuelve a la órbita | Doble (dos hojas) · Luna creciente (crece en órbita y carga el lanzamiento) · Escudo (rompe balas enemigas) |
+| **Malabar** | Atrapada perfecta = relanzar al instante con racha (más rápida y fuerte) | Filo creciente (más grande con la racha) · Eco (hoja fantasma que repite el lanzamiento anterior) · Gran final (racha llena = hoja enorme) |
 
 ## 3 · Items y sinergias (como el juego: 2 etiquetas por item, tramos 2 / 4 / 6)
 

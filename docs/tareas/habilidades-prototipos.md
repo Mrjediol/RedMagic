@@ -68,6 +68,8 @@ Las otras cuatro armas: sus mods quedan como mejoras provisionales y expresan el
   del juego; los generales de las pruebas llevan Fuego + universal. Tablas en `docs/armas/README.md`.
 
 - 2026-10-19 · Ronda de aspectos de la Singularidad (fx-sing.js, clips 2b en 🛠 En curso; el resto de clips pasan a ✔ Guardados por defecto). Pendiente: que el usuario elija.
+- 2026-10-19 · Árbol de la Media luna: Sierra / Satélite / Malabar. Pendiente: opinión del usuario.
+- 2026-10-19 · Rayo: el usuario no ve utilidad a Reflejo → Corona (haces que giran alrededor de la gema).
 - 2026-10-19 · Árbol del Rayo: Sobrecarga / Prisma / Faro (ficha `docs/armas/rayo.md`). Pendiente: opinión del usuario.
 - 2026-10-19 · Elegida la Grieta: orbe que viaja y abre la grieta en el sitio; dura más. La jugable guarda en el navegador sólo los ajustes cambiados a mano (v4).
 
@@ -77,7 +79,8 @@ Las otras cuatro armas: sus mods quedan como mejoras provisionales y expresan el
 
 **Qué toca**: terminar los árboles de evoluciones de las armas que quedan, **de una en una**, en este orden:
 **3 · Rayo → 4 · Media luna → 5 · Semilla**. Hechos y validados por el usuario: Abanico, Golpe estelar, Singularidad (Grieta).
-**Rayo hecho (Sobrecarga / Prisma / Faro), esperando la opinión del usuario**: arreglar lo que diga y luego Media luna.
+**Rayo hecho** (Sobrecarga / Prisma / Faro; Reflejo → Corona a petición del usuario). **Media luna hecha (Sierra / Satélite /
+Malabar), esperando la opinión del usuario**: arreglar lo que diga y luego Semilla.
 
 **Leer primero** (en este orden): `docs/armas/README.md` (reglas comunes y cómo se porta), `docs/armas/progresion.md` (las tres
 vías: árbol propio, sinergias, items con etiquetas 2/4/6; el elemento se aplica con 4), la ficha del arma que toca

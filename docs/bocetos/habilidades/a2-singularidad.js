@@ -19,28 +19,6 @@
 
   const TR = 0.32, XS = 462, YS = HY - 10;
 
-  // disco de acreción: anillos inclinados + trazos que giran; mitad de arriba detrás, mitad de abajo delante
-  function disk(ctx, t, layer, x, y, s, pal, a, spin = 1) {
-    if (a <= 0 || s <= 0) return;
-    const rot = -0.28, half = layer === 'back' ? [Math.PI, TAU] : [0, Math.PI];
-    for (const [k, c, w, aa] of [[1.25, pal.dark, 7, 0.5], [1, pal.deep, 5, 0.75], [0.8, pal.mid, 3.4, 0.9], [0.62, pal.light, 2.2, 1], [0.48, pal.core, 1.4, 1]])
-      ellArc(ctx, x, y, 46 * s * k, 11 * s * k, half[0], half[1], w * s, c, a * aa, layer, { rot, taper: 0, wob: 0.06, seed: k * 10, m: 28 });
-    const R = rand(17);
-    for (let i = 0; i < 9; i++) {                       // trazos que giran (dan la sensación de rotación)
-      const k = 0.55 + R() * 0.75, a0 = R() * TAU + t * 7 * spin / k, span = 0.5 + R() * 0.6, mid = a0 + span / 2;
-      if ((Math.sin(mid) < 0) !== (layer === 'back')) continue;
-      ellArc(ctx, x, y, 46 * s * k, 11 * s * k, a0, a0 + span, 2.6 * s, i % 3 ? pal.light : pal.core, a * 0.95, layer, { rot, m: 10 });
-    }
-  }
-  function core(ctx, t, x, y, s, pal, a) {
-    if (a <= 0) return;
-    glow(ctx, x, y, 60 * s, pal.g1, 0.55 * a);
-    glow(ctx, x, y, 26 * s, pal.g2, 0.35 * a);
-    disc(ctx, x, y, 13 * s, pal.deep, 0.6 * a, 'front');
-    disc(ctx, x, y, 10.5 * s, PAL.void.dark, a, 'front');
-    ellArc(ctx, x, y, 11 * s, 11 * s, 0, TAU, 1.8 * s, pal.core, a, 'front', { taper: 0, m: 30 });
-    ellArc(ctx, x, y, 17 * s, 17 * s, t * 3, t * 3 + TAU, 1.2 * s, pal.light, 0.5 * a, 'front', { taper: 0, wob: 0.12, seed: 3, m: 30 });
-  }
 
   function build(P) {
     P = Object.assign({ pal: 'void', burst: 'set', mode: 'base', sc: 1, dur: 0.8 }, P);
@@ -135,8 +113,8 @@
             strokeTaper(ctx, [{ x: px, y: py }, { x: px + side * 12 * age + side * 4, y: py + 2 }], 3, '#c9d3dc', 0.6 * Math.sin(Math.PI * age), layer);
           }
         }
-        disk(ctx, t, layer, ox, oy, ss, pal, 1);
-        if (layer === 'front') core(ctx, t, ox, oy, ss, pal, 1);
+        singularityDisk(ctx, t, layer, ox, oy, ss, pal, 1);
+        if (layer === 'front') singularityCore(ctx, t, ox, oy, ss, pal, 1);
         if (layer === 'back') { // estela de distorsión durante el viaje
           if (t < TA) for (let k = 1; k <= 3; k++) { const tt = t - k * 0.04; if (tt > TR) ellArc(ctx, orbX(tt), orbY(tt), 14 * s * (1 + k * 0.2), 14 * s * (1 + k * 0.2), 0, TAU, 1.4, pal.light, 0.4 - k * 0.1, layer, { taper: 0, wob: 0.2, seed: k }); }
         }

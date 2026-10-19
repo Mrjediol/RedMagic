@@ -17,27 +17,6 @@
 
   const TR = 0.28, TFL = 0.5;
 
-  function seedDraw(ctx, t, x, y, rot, pal, a, layer, big = 1) {
-    if (layer !== 'front' || a <= 0) return;
-    glow(ctx, x, y, 24 * big, pal.g1, 0.6 * a); glow(ctx, x, y, 11 * big, pal.g2, 0.8 * a);
-    star4(ctx, x, y, 13 * big, rot, pal.mid, a, layer, 0.28); star4(ctx, x, y, 10 * big, rot + 0.78, pal.light, a, layer, 0.22);
-    star4(ctx, x, y, 7 * big, rot, pal.core, a, layer, 0.2); disc(ctx, x, y, 3 * big, pal.core, a, layer);
-  }
-  // nova de escarcha: picos que brotan del suelo desde el centro hacia fuera
-  function nova(ctx, t, layer, t0, x, reach) {
-    if (t < t0) return;
-    const I = PAL.ice, u = t - t0;
-    for (let i = 0; i < 22; i++) {
-      const R = rand(i + 600), side = i % 2 ? 1 : -1, d = 8 + (i / 22) * reach + R() * 10, tOn = t0 + d / 500, g = easeOut(seg(t, tOn, tOn + 0.1)) * (1 - seg(u, 1.0, 1.4));
-      const lay = R() < 0.4 ? 'back' : 'front'; if (lay !== layer) continue;
-      const h = (34 - d * 0.18) * (0.6 + R() * 0.6);
-      iceSpike(ctx, x + side * d, GROUND + 3, h * g, 4 + R() * 3, side * (0.12 + R() * 0.25), g, layer);
-    }
-    groundRing(ctx, x, GROUND, 20 + reach * easeOut(seg(u, 0, 0.3)), 3, I.core, 1 - seg(u, 0, 0.35), layer, { seed: 5 });
-    if (layer === 'front') { glow(ctx, x, GROUND - 20, 120, I.g1, 0.6 * (1 - seg(u, 0, 0.3))); star4(ctx, x, GROUND - 14, 46, 0, I.core, 1 - seg(u, 0, 0.16), layer); }
-    dust(ctx, t, t0, x, layer, { n: 12, reach: reach * 0.9, seed: 61, life: 1.1, sc: 1.3 });
-    sparks(ctx, t, t0, x, GROUND - 8, layer, { n: 14, a0: -Math.PI * 0.95, a1: -Math.PI * 0.05, pal: I, sp: 300, seed: 63, len: 14 });
-  }
 
   function build(P) {
     P = Object.assign({ pal: 'set', mode: 'base' }, P);
@@ -80,14 +59,14 @@
       if (t > TR && t < TL) {
         const p = pos(t);
         if (layer === 'back') { const pts = trailPts(pos, t, 0.09, 10, TR); ribbon(ctx, pts, s => 8 * Math.pow(1 - s, 1.2), pal.dark, 0.35, layer); ribbon(ctx, pts, s => 4 * (1 - s), pal.light, 0.9, layer); }
-        seedDraw(ctx, t, p.x, p.y, t * 14, pal, 1, layer);
+        starSeed(ctx, t, p.x, p.y, t * 14, pal, 1, layer);
       }
       // clavada, armándose
       if (t >= TL && t < TD) {
         const blink = ticks.reduce((m, tt) => Math.max(m, 1 - seg(t, tt, tt + 0.16)), 0), armed = prox && t > ticks[0];
         if (layer === 'front') {
           for (let i = 0; i < 3; i++) needle(ctx, LX, GROUND - 2, LX + (i - 1) * 7, GROUND - 16 - (i === 1 ? 8 : 0) - blink * 8, 2.2, pal.light, 0.8, layer);     // rayitos hacia arriba
-          seedDraw(ctx, t, LX, GROUND - 5, 0.785, pal, 1, layer, 0.8 + blink * 0.35);
+          starSeed(ctx, t, LX, GROUND - 5, 0.785, pal, 1, layer, 0.8 + blink * 0.35);
         }
         // zona de efecto (proximidad: siempre visible y respirando)
         if (armed) groundRing(ctx, LX, GROUND, 46, 1.4, pal.light, 0.35 + 0.15 * Math.sin(t * 8), layer, { taper: 0, seed: 2 });
@@ -99,7 +78,7 @@
       if (layer === 'front') { const u = seg(t, TL, TL + 0.15); if (u > 0 && u < 1) star4(ctx, LX, GROUND - 4, 18 * (1 - u * 0.5), 0, pal.core, 1 - u, layer); }
       // estallido
       if (t >= TD) {
-        if (P.mode === 'ice') nova(ctx, t, layer, TD, LX, 130);
+        if (P.mode === 'ice') frostNova(ctx, t, layer, TD, LX, 130);
         else {
           const sc = P.mode === 'cluster' ? 0.7 : 1.1, u = t - TD, cu = seg(u, 0, 0.3);
           if (layer === 'front' && cu < 1) {                // columna vertical de luz que se afina
@@ -115,7 +94,7 @@
           cracks(ctx, t, TD, LX, layer, { n: 6, len: 60 * sc, pal });
         }
         for (const c of kids) {
-          if (t < c.t1) { const p = kidPos(c, t); if (layer === 'back') { const pts = trailPts(q => kidPos(c, q), t, 0.07, 8, TD); ribbon(ctx, pts, s => 4 * (1 - s), pal.light, 0.9, layer); } seedDraw(ctx, t, p.x, p.y, t * 18, pal, 1, layer, 0.6); }
+          if (t < c.t1) { const p = kidPos(c, t); if (layer === 'back') { const pts = trailPts(q => kidPos(c, q), t, 0.07, 8, TD); ribbon(ctx, pts, s => 4 * (1 - s), pal.light, 0.9, layer); } starSeed(ctx, t, p.x, p.y, t * 18, pal, 1, layer, 0.6); }
           else groundImpact(ctx, t, layer, c.t1, c.x, 0.6, pal, { seed: Math.floor(c.x) });
         }
       }

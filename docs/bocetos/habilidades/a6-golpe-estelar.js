@@ -15,33 +15,6 @@
 
   const TUP = 0.38;
 
-  // círculo rúnico en el suelo: arcos afilados que giran en sentidos contrarios, marcas radiales y columna guía tenue
-  function runeCircle(ctx, t, layer, x, r, a, pal, seed = 0) {
-    if (a <= 0) return;
-    for (let i = 0; i < 4; i++) {
-      const a0 = (i / 4) * TAU + t * (i % 2 ? 1.6 : -1.2) + seed;
-      const half = Math.sin(a0 + 0.6) < 0 ? 'back' : 'front';
-      if (half === layer) ellArc(ctx, x, GROUND + 1, r, r * 0.24, a0, a0 + 1.2, 3, i % 2 ? pal.mid : pal.light, a, layer, { m: 12 });
-    }
-    groundRing(ctx, x, GROUND + 1, r * 0.7, 1.4, pal.core, a * 0.8, layer, { taper: 0, seed: 4 });
-    for (let i = 0; i < 12; i++) {
-      const th = i / 12 * TAU - t * 0.8 + seed, cx = x + Math.cos(th) * r * 0.85, cy = GROUND + 1 + Math.sin(th) * r * 0.85 * 0.24, lay = Math.sin(th) < 0 ? 'back' : 'front';
-      if (lay === layer) needle(ctx, cx, cy - 3, cx, cy + 3, 2, pal.light, a * 0.9, layer);
-    }
-    if (layer === 'back' && !showLayers) {
-      const g = ctx.createLinearGradient(0, 0, 0, GROUND); g.addColorStop(0, rgba(pal.g2, 0)); g.addColorStop(1, rgba(pal.g2, 0.22 * a));
-      ctx.save(); ctx.fillStyle = g; ctx.fillRect(x - r * 0.5, 0, r, GROUND); ctx.restore();
-    }
-  }
-  // lanza de luz que cae: columna por capas desde arriba hasta la cabeza (hy); tras el impacto se afina
-  function lance(ctx, t, layer, x, hy, w, a, pal) {
-    if (layer !== 'front' || a <= 0) return;
-    const pts = []; for (let i = 0; i <= 14; i++) pts.push({ x: x + Math.sin(i * 1.3 + t * 40) * 1.2, y: lerp(hy, -40, i / 14) });
-    for (const [k, c, aa] of [[1.7, pal.dark, 0.3], [1.15, pal.deep, 0.55], [0.8, pal.mid, 0.9], [0.5, pal.light, 1], [0.22, pal.core, 1]])
-      ribbon(ctx, pts, s => w * k * (1 - 0.35 * s), c, a * aa, layer);
-    glow(ctx, x, hy, w * 2.6, pal.g1, 0.7 * a);
-    lens(ctx, x, hy - w * 0.6, Math.PI / 2, w * 2.6, w * 0.7, pal.core, a, layer);
-  }
 
   function build(P) {
     P = Object.assign({ pal: 'set', mode: 'base' }, P);
@@ -116,7 +89,7 @@
       for (const s of strikes) {
         if (t < s.t) continue;
         const fallU = seg(t, s.t, s.ti), hy = lerp(-30, s.hy, easeIn(fallU)), after = seg(t, s.ti + 0.12, s.ti + 0.3), w = 18 * (1 - after);
-        if (after < 1) lance(ctx, t, layer, s.x, hy, w, 1 - after * after, pal);
+        if (after < 1) starLance(ctx, t, layer, s.x, hy, w, 1 - after * after, pal);
         if (t < s.ti && layer === 'front') for (let i = 0; i < 6; i++) { const R = rand(i + 70), ox = (R() - 0.5) * 60, l = 40 + R() * 50, y = lerp(-60, s.hy, easeIn(seg(t, s.t - 0.02 * i, s.ti))); needle(ctx, s.x + ox, y - l, s.x + ox, y, 2, pal.light, 0.7, layer); }
         if (t >= s.ti) {
           if (s.E.cy === undefined) { groundImpact(ctx, t, layer, s.ti, s.x, 1.35, pal, { seed: Math.floor(s.x) }); cracks(ctx, t, s.ti, s.x, layer, { n: 8, len: 110, pal }); }

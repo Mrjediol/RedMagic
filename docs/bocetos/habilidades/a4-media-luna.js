@@ -14,17 +14,6 @@
 
   const TR = 0.28, XA = 575;
 
-  // media luna centrada en (x,y), girada rot; R = radio exterior
-  function crescentPath(ctx, R, th) { ctx.beginPath(); ctx.arc(0, 0, R, -1.95, 1.95); ctx.arc(R * th, 0, R * (1 - th * 0.55), 1.75, -1.75, true); ctx.closePath(); }
-  function crescent(ctx, x, y, R, rot, pal, a, layer) {
-    if (a <= 0) return;
-    glow(ctx, x, y, R * 2.2, pal.g1, 0.45 * a);
-    for (const [k, th, c, aa] of [[1.18, 0.32, pal.dark, 0.45], [1.0, 0.36, pal.deep, 0.9], [0.92, 0.42, pal.mid, 1], [0.86, 0.5, pal.light, 1]]) {
-      ctx.save(); ctx.globalAlpha = clamp(a * aa); ctx.translate(x, y); ctx.rotate(rot); ctx.fillStyle = col(c, layer); crescentPath(ctx, R * k, th); ctx.fill(); ctx.restore();
-    }
-    ctx.save(); ctx.globalAlpha = clamp(a); ctx.translate(x, y); ctx.rotate(rot); ctx.strokeStyle = col(pal.core, layer); ctx.lineWidth = 2; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.arc(0, 0, R * 0.93, -1.6, 1.6); ctx.stroke(); ctx.restore();
-  }
 
   function build(P) {
     P = Object.assign({ pal: 'set', mode: 'base' }, P);
@@ -92,9 +81,9 @@
       }
       // estela de posición (afterimages)
       if (layer === lay) {
-        for (let k = 3; k >= 1; k--) { const tt = t - k * 0.022; if (tt > TR) { const q = pf(tt); crescent(ctx, q.x, q.y, R0 * (1 - k * 0.06), spin(tt) + bi * 1.3, pal, 0.18 / k + 0.06, layer); } }
-        for (let k = 1; k <= 2; k++) crescent(ctx, p.x, p.y, R0, rot - k * 0.32, pal, 0.22 / k, layer);      // desenfoque de giro
-        crescent(ctx, p.x, p.y, R0, rot, pal, 1, layer);
+        for (let k = 3; k >= 1; k--) { const tt = t - k * 0.022; if (tt > TR) { const q = pf(tt); crescentBlade(ctx, q.x, q.y, R0 * (1 - k * 0.06), spin(tt) + bi * 1.3, pal, 0.18 / k + 0.06, layer); } }
+        for (let k = 1; k <= 2; k++) crescentBlade(ctx, p.x, p.y, R0, rot - k * 0.32, pal, 0.22 / k, layer);      // desenfoque de giro
+        crescentBlade(ctx, p.x, p.y, R0, rot, pal, 1, layer);
       }
     }
 

@@ -23,52 +23,6 @@
 
   const TI = 0.35, TE = 1.35;
 
-  // haz entre dos puntos, por capas; env = grosor 0..1; seed cambia el ruido
-  function beam(ctx, t, layer, x0, y0, x1, y1, env, pal, o = {}) {
-    if (env <= 0.01) return;
-    const n = 36, dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L, sc = o.sc || 1, sd = o.seed || 0;
-    const pt = (s, off = 0) => { const wv = Math.sin(s * L * 0.05 - t * 30 + sd) * 1.3 * env; return { x: x0 + dx * s + nx * (wv + off), y: y0 + dy * s + ny * (wv + off) }; };
-    const pts = []; for (let i = 0; i <= n; i++) pts.push(pt(i / n));
-    const breathe = s => 1 + 0.16 * Math.sin(s * L * 0.09 - t * 45 + sd) + 0.08 * noise1(s * 9 - t * 11, sd);
-    const rise = s => 0.55 + 0.45 * seg(s, 0, 0.1);
-    if (layer === 'front') {
-      for (const [w, c, a] of [[28, pal.dark, 0.2], [17, pal.deep, 0.45], [11, pal.mid, 0.9], [6, pal.light, 1], [2.6, pal.core, 1]])
-        ribbon(ctx, pts, s => w * sc * env * breathe(s) * rise(s), c, a, layer);
-      // anillos de flujo que avanzan por el haz
-      for (let i = 0; i < 6; i++) {
-        const s = ((t * 900 / L) + i / 6) % 1, p = pt(s), w = 9 * sc * env * breathe(s);
-        ctx.save(); ctx.globalAlpha = clamp(0.55 * env * Math.sin(Math.PI * s)); ctx.strokeStyle = col(pal.core, layer); ctx.lineWidth = 1.4;
-        ctx.translate(p.x, p.y); ctx.rotate(Math.atan2(dy, dx)); ctx.beginPath(); ctx.ellipse(0, 0, 2.6, w, 0, 0, TAU); ctx.stroke(); ctx.restore();
-      }
-      // motas que corren hacia delante
-      const R = rand(sd + 3);
-      for (let i = 0; i < 12; i++) {
-        const sp = 0.8 + R() * 0.8, s = ((t * sp * 1.6) + R()) % 1, off = (R() - 0.5) * 16 * sc * env, p = pt(s, off);
-        drop(ctx, p.x, p.y, Math.atan2(dy, dx), (6 + R() * 8) * sc, 1.4 * sc, i % 2 ? pal.core : pal.light, env * Math.sin(Math.PI * s), layer);
-      }
-    }
-    // dos hilos en hélice (por detrás y por delante del eje)
-    for (let k = 0; k < 2; k++) {
-      const ph = s => s * L * 0.07 - t * 50 + k * Math.PI;
-      const seg2 = []; let cur = null;
-      for (let i = 0; i <= n; i++) {
-        const s = i / n, front = Math.cos(ph(s)) > 0;
-        if ((layer === 'front') !== front) { if (cur) { seg2.push(cur); cur = null; } continue; }
-        (cur = cur || []).push(pt(s, Math.sin(ph(s)) * 9 * sc * env * rise(s)));
-      }
-      if (cur) seg2.push(cur);
-      for (const sgm of seg2) if (sgm.length > 1) { ctx.save(); ctx.globalAlpha = clamp(env); ctx.strokeStyle = col(k ? pal.light : pal.core, layer); ctx.lineWidth = 1.7 * sc; ctx.lineCap = 'round'; ctx.beginPath(); sgm.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.restore(); }
-    }
-  }
-  // punto de contacto: luz, destello que parpadea y chispas continuas que saltan hacia atrás
-  function contact(ctx, t, layer, x, y, env, pal, t0, t1, sc = 1, seed = 0) {
-    if (layer === 'front' && env > 0) {
-      glow(ctx, x, y, 46 * sc * env, pal.g1, 0.7 * env); glow(ctx, x, y, 20 * sc * env, pal.g2, 0.9 * env);
-      star4(ctx, x, y, (18 + 6 * Math.sin(t * 70 + seed)) * sc * env, t * 4 + seed, pal.core, env, layer);
-      disc(ctx, x, y, 5 * sc * env, pal.core, env, layer);
-    }
-    for (let e = t0; e < Math.min(t, t1); e += 0.035) if (t - e < 0.4) sparks(ctx, t, e, x, y, layer, { n: 3, a0: Math.PI - 1.1, a1: Math.PI + 1.1, sp: 260 * sc, pal, seed: Math.floor(e * 1000) + seed, len: 12, life: 0.3, w: 2.2 });
-  }
 
   function build(P) {
     P = Object.assign({ pal: 'set', mode: 'base' }, P);
@@ -106,12 +60,12 @@
       castFx(ctx, t, layer, 0.04, TI, pal, 1.1);
       const e = env(t), cx = contactX(t), tipX = lerp(O.x + 6, cx, reach(t));
       if (t > TI && t < TE + 0.16) {
-        beam(ctx, t, layer, O.x + 6, O.y, tipX, O.y, e, pal);
+        energyBeam(ctx, t, layer, O.x + 6, O.y, tipX, O.y, e, pal);
         if (layer === 'front') {                            // boca: luz y destello que gira
           glow(ctx, O.x + 6, O.y, 34 * e, pal.g1, 0.7 * e); star4(ctx, O.x + 6, O.y, 16 * e, t * 7, pal.core, e, layer);
           ellArc(ctx, O.x + 6, O.y, 6 + 6 * ((t * 6) % 1), 10 + 12 * ((t * 6) % 1), -1.3, 1.3, 1.6, pal.light, e * (1 - (t * 6) % 1), layer);
         }
-        if (reach(t) >= 1) contact(ctx, t, layer, cx, O.y, e, pal, TI + 0.07, TE, 1, 1);
+        if (reach(t) >= 1) beamContact(ctx, t, layer, cx, O.y, e, pal, TI + 0.07, TE, 1, 1);
         else if (layer === 'front') { glow(ctx, tipX, O.y, 26, pal.g2, 0.9); star4(ctx, tipX, O.y, 14, 0, pal.core, 1, layer); }
       }
       // al apagarse: restos que flotan y se deshacen sobre la línea del haz
@@ -135,8 +89,8 @@
         targets.forEach((tg, i) => {
           let x1, y1; if (tg.E) { const q = enemyPos(t, tg.E); x1 = q.x + tg.dx; y1 = q.y + tg.dy; } else { x1 = tg.ground; y1 = GROUND - 2; }
           const rr = easeOut(seg(t, TP + i * 0.02, TP + 0.08 + i * 0.02)), tx = lerp(ex + 4, x1, rr), ty = lerp(O.y, y1, rr);
-          beam(ctx, t, layer, ex + 4, O.y, tx, ty, e2 * 0.95, gp, { sc: 0.5, seed: i * 2.1 });
-          if (rr >= 1) contact(ctx, t, layer, x1, y1, e2, gp, TP + 0.1, TE, 0.6, 10 + i);
+          energyBeam(ctx, t, layer, ex + 4, O.y, tx, ty, e2 * 0.95, gp, { sc: 0.5, seed: i * 2.1 });
+          if (rr >= 1) beamContact(ctx, t, layer, x1, y1, e2, gp, TP + 0.1, TE, 0.6, 10 + i);
         });
         if (layer === 'back') sparks(ctx, t, TP, ex + 4, O.y, layer, { n: 10, pal: gp, sp: 260, seed: 5, len: 12, life: 0.4 });
       }

@@ -89,6 +89,7 @@ namespace RedMagic.Arsenal
 
         public override void Draw(L l)
         {
+            ArsenalMarks.Draw(l);
             var list = ElementStatus.Active;
             for (int i = 0; i < list.Count; i++)
             {

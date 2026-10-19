@@ -36,6 +36,17 @@ namespace RedMagic.Arsenal
         private readonly List<ArsenalEntity> _snapshot = new List<ArsenalEntity>(256);
         private FxCanvas _back, _front, _backGlow, _frontGlow;
 
+        /// <summary>Renders del editor: borde superior de la vista (sin Play, Camera.main no es la del banco de pruebas).</summary>
+        public static Func<float> ViewTopOverride;
+
+        /// <summary>Altura del borde superior de la cámara (las lanzas del Golpe estelar caen desde ahí).</summary>
+        public static float ViewTop(float fallback)
+        {
+            if (ViewTopOverride != null) return ViewTopOverride();
+            var cam = Camera.main;
+            return cam != null && cam.orthographic ? cam.transform.position.y + cam.orthographicSize : fallback;
+        }
+
         /// <summary>Segundos de juego desde que existe el mundo (el <c>G.t</c> de la web). Respeta pausa y hit-stop.</summary>
         public static float T { get; private set; }
 

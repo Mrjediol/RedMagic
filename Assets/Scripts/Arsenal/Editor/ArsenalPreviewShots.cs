@@ -209,5 +209,33 @@ namespace RedMagic.Arsenal.Editor
             }
             return "ok seed";
         }
+
+        public static string Star(string dir)
+        {
+            ArsenalSetup.Run();
+            var w = Weapon("star"); Vector2 m = new Vector2(0.5f, 1.05f);
+            var aim = Aim(m, new Vector2(4.6f, 0.5f));
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, 0);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(0.35f); st.Shot(dir + "/star_aviso.png");
+                st.Run(0.3f); st.Shot(dir + "/star_impacto.png");
+                st.Run(0.12f); st.Shot(dir + "/star_impacto_b.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(4.6f, 2.4f)))
+            {
+                Group(st); Setup(w, StarKit.Bombardeo, true, true, false);
+                var c = Ctrl(w); c.OnPress(Aim(m, new Vector2(3.5f, 0.5f)));
+                st.Run(0.9f); st.Shot(dir + "/star_bombardeo.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, StarKit.Tormenta, false, true, true);
+                var c = Ctrl(w); c.OnPress(Aim(m, new Vector2(5.4f, 0.5f)));
+                st.Run(0.85f); st.Shot(dir + "/star_tormenta.png");
+            }
+            return "ok star";
+        }
     }
 }

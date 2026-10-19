@@ -63,6 +63,8 @@ namespace RedMagic.Arsenal.Editor
             groundArt.transform.SetParent(ground.transform, false);
             var gr = groundArt.AddComponent<SpriteRenderer>(); gr.sprite = square; gr.color = new Color(0.17f, 0.24f, 0.32f);
 
+            float top = camCenter.y + orthoSize;
+            ArsenalWorld.ViewTopOverride = () => top;
             World = ArsenalWorld.CreatePreview();
             World.SetCanvasLayer(Layer);
             ArsenalTargets.PreviewHealths = _enemies;
@@ -122,6 +124,7 @@ namespace RedMagic.Arsenal.Editor
         public void Dispose()
         {
             ArsenalTargets.PreviewHealths = null;
+            ArsenalWorld.ViewTopOverride = null;
             if (World != null) { World.Clear(); UnityEngine.Object.DestroyImmediate(World.gameObject); }
             if (_prev.IsValid() && _prev.isLoaded) SceneManager.SetActiveScene(_prev);
             EditorSceneManager.CloseScene(_scene, true);

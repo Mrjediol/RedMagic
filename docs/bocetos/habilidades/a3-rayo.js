@@ -81,9 +81,7 @@
         const p1 = enemyPos(t, E1), ex = p1.x + 25, gp = PAL.gold, e2 = e * easeOut(seg(t, TP, TP + 0.08));
         if (layer === 'front') {                           // luz que atraviesa el cuerpo + cristal-prisma
           glow(ctx, p1.x, O.y, 34, gp.g2, 0.5 * e2);
-          ctx.save(); ctx.translate(ex + 4, O.y); ctx.rotate(t * 2.5); ctx.globalAlpha = e2;
-          for (const [r, c] of [[11, gp.deep], [8, gp.mid], [4.5, gp.core]]) { ctx.fillStyle = col(c, layer); ctx.beginPath(); ctx.moveTo(0, -r * 1.3); ctx.lineTo(r, 0); ctx.lineTo(0, r * 1.3); ctx.lineTo(-r, 0); ctx.closePath(); ctx.fill(); }
-          ctx.restore();
+          prismGem(ctx, t, ex + 4, O.y, e2, gp, layer);
         }
         const targets = [{ E: E2, dx: -24, dy: 0 }, { E: E3, dx: -16, dy: 6 }, { ground: 492 }];
         targets.forEach((tg, i) => {
@@ -118,17 +116,9 @@
       }
       // robo de vida: gotas carmesí que vuelven por el haz hasta el player y cruces que suben de él
       if (P.mode === 'life' && t > TI + 0.15 && t < TE + 0.4) {
-        const L2 = PAL.life, cxx = contactX(t), R = rand(301), on = 1 - seg(t, TE, TE + 0.3);
-        for (let i = 0; i < 14; i++) {
-          const sp = 0.9 + R() * 0.7, s = ((t * sp * 1.3) + R()) % 1, x = lerp(cxx - 4, O.x + 4, s), wob = Math.sin(s * 14 + i) * 10 * (1 - s), lay = Math.sin(s * 14 + i) > 0 ? 'front' : 'back';
-          if (lay !== layer) continue;
-          drop(ctx, x, O.y + wob, Math.PI, 9, 2.6, i % 3 ? L2.mid : L2.light, on * Math.sin(Math.PI * s), layer);
-          if (i % 3 === 0) glow(ctx, x, O.y + wob, 9, L2.g1, 0.5 * on * Math.sin(Math.PI * s));
-        }
-        if (layer === 'front') for (let i = 0; i < 6; i++) {
-          const R2 = rand(i + 500), age = ((t - TI) * 1.2 + R2()) % 1, x = PX + (R2() - 0.5) * 36, y = GROUND - 30 - age * 50, a = Math.sin(Math.PI * age) * on, r = 4 + R2() * 2;
-          ctx.save(); ctx.globalAlpha = clamp(a); ctx.fillStyle = col(L2.light, layer); ctx.fillRect(x - r, y - 1.2, r * 2, 2.4); ctx.fillRect(x - 1.2, y - r, 2.4, r * 2); ctx.restore();
-        }
+        const on = 1 - seg(t, TE, TE + 0.3);
+        lifeMotes(ctx, t, layer, contactX(t) - 4, O.y, O.x + 4, O.y, on);
+        healCrosses(ctx, t - TI, layer, PX, GROUND, on);
       }
     }
     const pose = t => {

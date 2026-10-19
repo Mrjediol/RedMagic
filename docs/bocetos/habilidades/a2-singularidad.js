@@ -89,82 +89,10 @@
       castFx(ctx, t, layer, 0.04, TR, pal, 1.1);
       if (P.mode === 'catapult') castFx(ctx, t, layer, TA - 0.1, TF, PAL.set, 0.7, { seed: 9 });
       const ox = orbX(t), oy = orbY(t), live = t > TR && t < TB;
-      if (live) {
-        const form = easeOut(seg(t, TR, TA)), col = 1 - easeIn(seg(t, TC, TB)), ss = s * (0.45 + 0.55 * form) * col;
-        // anillos de succión que se cierran
-        if (t > TA && t < TC) for (let i = 0; i < 3; i++) {
-          const u = ((t - TA) * 2.4 + i / 3) % 1;
-          ellArc(ctx, ox, oy, (95 - 80 * easeIn(u)) * s, (95 - 80 * easeIn(u)) * s * 0.92, layer === 'back' ? Math.PI : 0, layer === 'back' ? TAU : Math.PI, 1.6 * s, pal.light, 0.35 * Math.sin(Math.PI * u), layer, { taper: 0, wob: 0.15, seed: i + 3 });
-        }
-        // partículas en espiral hacia el centro (aplastadas como el disco)
-        const R = rand(23), n = t > TA ? 26 : 10;
-        for (let i = 0; i < n; i++) {
-          const rate = 0.9 + R() * 0.9, ph = R(), a0 = R() * TAU, age = ((t - TR) * rate * (t > TC ? 3 : 1) + ph) % 1, r = 120 * s * Math.pow(1 - age, 1.4), th = a0 + age * 5.5;
-          const rot = -0.28, ex = Math.cos(th) * r, ey = Math.sin(th) * r * 0.42, px = ox + ex * Math.cos(rot) - ey * Math.sin(rot), py = oy + ex * Math.sin(rot) + ey * Math.cos(rot);
-          if ((Math.sin(th) < 0) !== (layer === 'back')) continue;
-          const th2 = th - 0.25, r2 = r * 1.12, ex2 = Math.cos(th2) * r2, ey2 = Math.sin(th2) * r2 * 0.42, qx = ox + ex2 * Math.cos(rot) - ey2 * Math.sin(rot), qy = oy + ex2 * Math.sin(rot) + ey2 * Math.cos(rot);
-          drop(ctx, px, py, Math.atan2(py - qy, px - qx), (5 + 10 * age) * s, (1.4 + 1.2 * age) * s, [pal.core, pal.light, pal.mid, PAL.set.light][i % 4], Math.sin(Math.PI * age) * form, layer);
-        }
-        // polvo del suelo arrastrado hacia la singularidad
-        if (t > TA && layer === 'front') {
-          for (let i = 0; i < 10; i++) {
-            const Rr = rand(i * 9 + 1), side = i % 2 ? 1 : -1, x0 = XS + side * (50 + Rr() * 110) * s, rate = 1.2 + Rr(), age = ((t - TA) * rate + Rr()) % 1;
-            const px = lerp(x0, XS + side * 12, easeIn(age)), py = GROUND - 3 - age * age * 28 * s;
-            strokeTaper(ctx, [{ x: px, y: py }, { x: px + side * 12 * age + side * 4, y: py + 2 }], 3, '#c9d3dc', 0.6 * Math.sin(Math.PI * age), layer);
-          }
-        }
-        singularityDisk(ctx, t, layer, ox, oy, ss, pal, 1);
-        if (layer === 'front') singularityCore(ctx, t, ox, oy, ss, pal, 1);
-        if (layer === 'back') { // estela de distorsión durante el viaje
-          if (t < TA) for (let k = 1; k <= 3; k++) { const tt = t - k * 0.04; if (tt > TR) ellArc(ctx, orbX(tt), orbY(tt), 14 * s * (1 + k * 0.2), 14 * s * (1 + k * 0.2), 0, TAU, 1.4, pal.light, 0.4 - k * 0.1, layer, { taper: 0, wob: 0.2, seed: k }); }
-        }
-        // colapso: líneas que convergen y punto blanco que crece
-        if (t > TC && layer === 'front') {
-          const u = seg(t, TC, TB), Rr = rand(55);
-          for (let i = 0; i < 14; i++) { const a = Rr() * TAU, r0 = (90 - 80 * u) * s, r1 = r0 + 40 * s * (1 - u); needle(ctx, ox + Math.cos(a) * r0, oy + Math.sin(a) * r0, ox + Math.cos(a) * r1, oy + Math.sin(a) * r1, 2.4 * s, i % 2 ? pal.core : pal.light, u, layer); }
-          glow(ctx, ox, oy, 40 * s * u, bp.g2, u); disc(ctx, ox, oy, 7 * s * u, '#ffffff', u, layer);
-        }
-      }
-      // estallido
-      if (t >= TB) {
-        const u = t - TB, ru = seg(u, 0, 0.42), fu = seg(u, 0, 0.18);
-        if (layer === 'front') {
-          glow(ctx, XS, YS, 140 * s * (1 - fu * 0.4), bp.g1, 0.8 * (1 - fu));
-          glow(ctx, XS, YS, 60 * s, bp.g2, 0.9 * (1 - fu));
-          star4(ctx, XS, YS, 70 * s * (1 - fu * 0.4), 0.15, bp.core, 1 - fu, layer, 0.12);
-          disc(ctx, XS, YS, 18 * s * (1 - fu), bp.core, 1 - fu, layer);
-        }
-        // onda: hebras parciales con ruido (no una media luna sólida)
-        for (let i = 0; i < 6; i++) {
-          const Rr = rand(i + 70), a0 = Rr() * TAU, span = 0.9 + Rr() * 1.4, k = 0.85 + Rr() * 0.3, mid = a0 + span / 2;
-          if ((Math.sin(mid) < 0) !== (layer === 'back')) continue;
-          const r = (24 + 150 * easeOut(ru)) * s * k;
-          ellArc(ctx, XS, YS, r, r * 0.92, a0, a0 + span, (5 - 4 * ru) * s, i % 2 ? bp.mid : bp.light, 1 - ru, layer, { wob: 0.1, seed: i });
-        }
-        groundRing(ctx, XS, GROUND, (20 + 130 * easeOut(ru)) * s, 4 * s * (1 - ru) + 0.4, bp.mid, 1 - ru, layer, { wob: 0.08, seed: 4 });
-        const Rr = rand(81);
-        for (let i = 0; i < 18; i++) {
-          const ang = Rr() * TAU, l0 = (14 + Rr() * 20) * s, nu = seg(u, 0, 0.3), l1 = l0 + (40 + Rr() * 60) * s * easeOut(nu), lay = Rr() < 0.4 ? 'back' : 'front';
-          if (lay !== layer || nu >= 1) continue;
-          needle(ctx, XS + Math.cos(ang) * l0, YS + Math.sin(ang) * l0, XS + Math.cos(ang) * l1, YS + Math.sin(ang) * l1, 3.6 * s * (1 - nu * 0.6), i % 3 ? bp.light : bp.core, 1 - nu, layer);
-        }
-        sparks(ctx, t, TB, XS, YS, layer, { n: 16, pal: bp, sp: 380 * s, seed: 12, len: 18, life: 0.55 });
-        droplets(ctx, t, TB + 0.03, XS, YS, layer, { n: 12, pal: bp, sp: 220 * s, seed: 31 });
-        dust(ctx, t, TB, XS, layer, { n: 12, reach: 110 * s, sc: 1.2 * s, seed: 7 });
-        if (P.mode === 'tank') { cracks(ctx, t, TB, XS, layer, { n: 8, len: 110, pal: bp }); debris(ctx, t, TB, XS, layer, { n: 12, sp: 340, seed: 14 }); }
-        if (P.mode === 'fire') {                           // llamas que se abren por el suelo y brasas que suben
-          for (let i = 0; i < 14; i++) {
-            const Rf = rand(i * 5 + 2), side = i % 2 ? 1 : -1, d = (14 + Rf() * 120) * s, tOn = TB + d / (500 * s), lf = 0.8 + Rf() * 0.35;
-            const a = seg(t, tOn, tOn + 0.08) * (1 - seg(t, tOn + lf * 0.7, tOn + lf)), lay = Rf() < 0.45 ? 'back' : 'front';
-            if (lay === layer) flame(ctx, XS + side * d, GROUND + 1, (22 + Rf() * 22) * a, (6 + Rf() * 5) * Math.max(0.3, a), t, i, a, layer);
-          }
-          for (let i = 0; i < 16; i++) {
-            const Rf = rand(i * 3 + 90), lf = 0.7 + Rf() * 0.6, tt = u - Rf() * 0.3; if (tt < 0 || tt > lf || (Rf() < 0.5 ? 'back' : 'front') !== layer) continue;
-            disc(ctx, XS + (Rf() - 0.5) * 160 * s + Math.sin(tt * 8 + i) * 8, GROUND - 10 - tt * (60 + Rf() * 80), 1.6 + Rf() * 1.6, i % 2 ? PAL.fire.light : PAL.fire.mid, 1 - tt / lf, layer);
-          }
-        }
-        if (P.mode === 'tank' && fly) { const p = enemyPos(TSL, fly); groundImpact(ctx, t, layer, TSL, p.x, 0.7, PAL.void, { seed: 8 }); }
-      }
+      if (live) voidOrb(ctx, t, layer, ox, oy, { s, pal, bp, form: easeOut(seg(t, TR, TA)), collapse: seg(t, TC, TB), pullT: t > TA && t < TC ? t - TA : -1, liveT: t - TR,
+        trail: t < TA ? [1, 2, 3].map(k => t - k * 0.04).filter(tt => tt > TR).map(tt => ({ x: orbX(tt), y: orbY(tt) })) : [] });
+      if (t >= TB) voidBurst(ctx, t, layer, TB, XS, YS, s, bp, { mass: P.mode === 'tank', fire: P.mode === 'fire' });
+      if (t >= TB && P.mode === 'tank' && fly) { const p = enemyPos(TSL, fly); groundImpact(ctx, t, layer, TSL, p.x, 0.7, PAL.void, { seed: 8 }); }
       // catapulta
       for (const c of cat) {
         if (t < TF) continue;

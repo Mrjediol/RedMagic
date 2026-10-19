@@ -33,3 +33,19 @@ y llama `scene()` en 400 instantes por clip).
   lo descartado a 📁 Archivo (`tab: 'arc'`).
 - Lo aprobado sigue el proceso de `docs/fx-proceso-bocetos.md` (port a Unity con `FxCanvas`), y los sistemas elegidos se
   diseñan aparte.
+
+## 2026-10-19 (tarde) — versión jugable
+
+El usuario revisó los clips: le encantaron (sobre todo la Singularidad + Abanico) y decide **2 armas de base con un botón para
+cambiar (Q)**, 3 sólo en builds especiales. Pidió probarlas jugando antes de llevar nada a Unity, y una forma de que lo aprendido
+en la web no se pierda entre `/clear`s → **fichas en `docs/armas/`** (fuente de verdad; leer `docs/armas/README.md` primero).
+
+Hecho:
+- `jugable.html` (+ `game.js`, `g-*.js`, `jugable-ui.js`): escenario con plataformas, 10 dianas (suelo, andan, vuelan) que
+  reaparecen, movimiento con doble salto y dash, 2-3 huecos de arma con sus mods, reacciones, captura, marcas, hit-stop,
+  impact frames, números de daño, DPS, sonido, velocidad del juego, panel de ajustes por arma (se guardan en el navegador;
+  ⬇ Exportar → guardar como `docs/armas/ajustes.json`).
+- Dibujo compartido clips/juego en `fx.js`; `tools/test-clips.cjs`, `tools/test-jugable.cjs` (sin navegador) y
+  `tools/gen-fichas.cjs` (tablas de mods y ajustes de las fichas desde el código).
+
+Siguiente: el usuario juega, pide retoques arma a arma; cada retoque actualiza su ficha (decisiones) y se regeneran las tablas.

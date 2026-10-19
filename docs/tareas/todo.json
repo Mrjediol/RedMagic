@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-19T12:57:14.585Z",
+  "updated": "2026-10-19T13:17:19.261Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -642,7 +642,7 @@
         {
           "id": "habilidades-prototipos",
           "text": "Habilidades nuevas: prototipos web (6 ataques × base + 3 variantes de build) y sistemas de build propuestos",
-          "note": "Página docs/bocetos/habilidades/index.html (filtro por habilidad, ⬇ vídeo, 🧩 sistemas, 🔊 sonidos). Propuesta: docs/builds-sistemas-propuesta.md (3 preguntas abiertas). Falta: revisión 1 a 1 del usuario y retoques.",
+          "note": "Clips (index.html) + versión jugable (jugable.html, 6 armas con mods, 2-3 huecos, Q cambia). Fichas: docs/armas/ (leer README primero). Falta: que el usuario juegue y pida retoques arma a arma.",
           "done": false,
           "doc": "docs/tareas/habilidades-prototipos.md",
           "steps": [
@@ -654,6 +654,11 @@
             {
               "id": "hp-2",
               "text": "Propuesta de sistemas de build",
+              "done": true
+            },
+            {
+              "id": "hp-jug",
+              "text": "Versión jugable en la web (escenario, movimiento, 2-3 armas, mods, ajustes, exportar) + fichas docs/armas/",
               "done": true
             },
             {

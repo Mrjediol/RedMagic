@@ -82,11 +82,7 @@
         else {
           const sc = P.mode === 'cluster' ? 0.7 : 1.1, u = t - TD, cu = seg(u, 0, 0.3);
           if (layer === 'front' && cu < 1) {                // columna vertical de luz que se afina
-            const h = 190 * sc * easeOut(seg(u, 0, 0.06)), w = 30 * sc * (1 - cu);
-            glow(ctx, LX, GROUND - h * 0.4, 70 * sc, pal.g1, 0.7 * (1 - cu));
-            lens(ctx, LX, GROUND - h / 2, Math.PI / 2, h, w, pal.mid, 0.9 * (1 - cu), layer);
-            lens(ctx, LX, GROUND - h / 2, Math.PI / 2, h * 0.92, w * 0.55, pal.light, 1 - cu, layer);
-            lens(ctx, LX, GROUND - h / 2, Math.PI / 2, h * 0.85, w * 0.22, pal.core, 1 - cu, layer);
+            lightColumn(ctx, LX, GROUND, u, sc, pal, layer);
           }
           groundImpact(ctx, t, layer, TD, LX, sc, pal, { seed: 3 });
           const R = rand(19);                                // agujas hacia arriba

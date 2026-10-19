@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Armas · jugable</title>
+<style>
+  :root { --bg:#1b1d24; --panel:#23262f; --ink:#e8ecf2; --muted:#9aa3b2; --accent:#29c2ff; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.4 system-ui, sans-serif; }
+  .wrap { display:flex; gap:12px; padding:12px; align-items:flex-start; }
+  .stage { flex:1; min-width:0; }
+  canvas { width:100%; aspect-ratio: 2 / 1; display:block; border-radius:8px; background:#3a4150; cursor:none; outline:none; }
+  .help { color:var(--muted); font-size:12px; margin-top:8px; }
+  .help b { color:var(--ink); }
+  aside { width:330px; flex:none; max-height:calc(100vh - 24px); overflow:auto; display:flex; flex-direction:column; gap:10px; }
+  .card { background:var(--panel); border-radius:8px; padding:10px; }
+  .card h3 { margin:0 0 6px; font-size:13px; display:flex; justify-content:space-between; align-items:center; }
+  .slot { border:1px solid #3a4150; border-radius:6px; padding:8px; margin-top:6px; }
+  .slot.on { border-color:var(--accent); background:#1f2b38; }
+  select, button, input[type=number] { background:#2a2f3a; color:var(--ink); border:1px solid #3a4150; border-radius:6px; padding:5px 8px; font:inherit; }
+  button { cursor:pointer; } button:hover { border-color:var(--accent); }
+  select { width:100%; }
+  label { display:flex; gap:6px; align-items:center; color:var(--muted); margin-top:4px; cursor:pointer; }
+  label.mod { color:#ffe39a; } label .d { color:var(--muted); font-size:11px; }
+  .row { display:flex; gap:6px; flex-wrap:wrap; }
+  details { margin-top:6px; } summary { cursor:pointer; color:#c6cede; font-weight:600; }
+  .tun { display:grid; grid-template-columns: 1fr 70px; gap:2px 6px; align-items:center; margin-top:4px; }
+  .tun span { color:var(--muted); font-size:11px; } .tun input[type=range] { grid-column: 1 / -1; width:100%; accent-color:var(--accent); margin:0 0 4px; }
+  .tun input[type=number] { padding:2px 4px; width:70px; font-size:11px; }
+  @media (max-width: 900px) { .wrap { flex-direction:column; } aside { width:100%; max-height:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="stage">
+    <canvas id="cv" tabindex="0"></canvas>
+    <div class="help"><b>A/D</b> mover · <b>W/Espacio</b> saltar (doble) · <b>S</b> bajar de plataforma · <b>Shift</b> dash · <b>ratón</b> apuntar ·
+      <b>clic</b> disparar (mantener = repetir / canalizar) · <b>Q</b> o rueda cambia de arma · <b>1 2 3</b> elegir hueco · <b>R</b> reiniciar enemigos.
+      Haz clic en el escenario para que reciba el teclado.</div>
+  </div>
+  <aside id="panel"></aside>
+</div>
+<script src="core.js"></script>
+<script src="sound.js"></script>
+<script src="fx.js"></script>
+<script src="a1-abanico.js"></script>
+<script src="a2-singularidad.js"></script>
+<script src="a3-rayo.js"></script>
+<script src="a4-media-luna.js"></script>
+<script src="a5-semilla.js"></script>
+<script src="a6-golpe-estelar.js"></script>
+<script src="game.js"></script>
+<script src="g-abanico.js"></script>
+<script src="g-singularidad.js"></script>
+<script src="g-rayo.js"></script>
+<script src="g-media-luna.js"></script>
+<script src="g-semilla.js"></script>
+<script src="g-golpe-estelar.js"></script>
+<script src="jugable-ui.js"></script>
+</body>
+</html>

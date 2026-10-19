@@ -112,7 +112,7 @@
         const hy = n.hitE && n.hitE.cy !== undefined ? n.hitE.cy + 4 : GROUND - 2, endU = (hy - y0) / (GROUND - y0);
         if (t >= n.t0 && t < n.t1) {
           const u = seg(t, n.t0, n.t1) * endU, x = lerp(x0, n.tx, u), y = lerp(y0, GROUND, u);
-          if (layer === 'front') { strokeTaper(ctx, [{ x, y }, { x: x - Math.cos(ang) * 120, y: y - Math.sin(ang) * 120 }], 9, pal.deep, 0.5, layer); strokeTaper(ctx, [{ x, y }, { x: x - Math.cos(ang) * 100, y: y - Math.sin(ang) * 100 }], 5, pal.mid, 0.9, layer); lens(ctx, x - Math.cos(ang) * 14, y - Math.sin(ang) * 14, ang, 38, 6, pal.light, 1, layer); lens(ctx, x - Math.cos(ang) * 12, y - Math.sin(ang) * 12, ang, 30, 3, pal.core, 1, layer); glow(ctx, x, y, 26, pal.g1, 0.7); }
+          rainNeedle(ctx, x, y, ang, pal, layer);
         }
         if (t >= n.t1) {
           const ix = lerp(x0, n.tx, endU), iy = lerp(y0, GROUND, endU);

@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-17T08:48:28.553Z",
+  "updated": "2026-10-19T11:55:05.020Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -39,15 +39,15 @@
         {
           "id": "oujdsd5",
           "text": "Ajustar la cola al plan Pro: mostrar uso real, parar por umbral, Sonnet por defecto",
-          "note": "Quitar los dólares de los informes; leer el % de 5 h y semanal; parar la cola al 85 % semanal.",
-          "done": false,
+          "note": "Ya estaba hecho: barras de uso 5 h / semana en la web, sin $; el tope semanal se quitó a propósito (docs/architecture/tareas.md ▸ Plan usage).",
+          "done": true,
           "doc": "docs/tareas/sistema-tareas-web.md"
         },
         {
           "id": "hlixg39",
           "text": "Quitar Bash(git push) de .claude/settings.json (contradice CLAUDE.md)",
-          "note": "",
-          "done": false
+          "note": "Hecho 2026-10-19: git push pasado de allow a deny en .claude/settings.json.",
+          "done": true
         },
         {
           "id": "4r1espk",

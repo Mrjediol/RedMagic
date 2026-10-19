@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-19T15:42:54.188Z",
+  "updated": "2026-10-19T20:21:46.574Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -381,6 +381,13 @@
           "text": "Primer balanceo para el prototipo",
           "note": "Números, daños, pasivas, upgrades, vidas y coste en tiendas",
           "done": false
+        },
+        {
+          "id": "modo-supervivencia",
+          "text": "Modo Supervivencia: una sala, oleadas progresivas (survivor) como modo y como banco de balance",
+          "note": "Mismos enemigos y armas. Cada oleada = nivel de poder de una run. Idea, sin diseñar: docs/tareas/modo-supervivencia.md",
+          "done": false,
+          "doc": "docs/tareas/modo-supervivencia.md"
         }
       ]
     },
@@ -642,7 +649,7 @@
         {
           "id": "habilidades-prototipos",
           "text": "Habilidades nuevas: prototipos web (6 ataques × base + 3 variantes de build) y sistemas de build propuestos",
-          "note": "RETOMAR: «retoma tarea de armas» → leer docs/tareas/habilidades-prototipos.md ▸ RETOMAR AQUÍ. Árboles hechos: Abanico, Golpe estelar, Singularidad (Grieta). Siguen: Rayo → Media luna → Semilla, de uno en uno con revisión del usuario.",
+          "note": "Árboles web hechos (las 6 armas). Port a Unity hecho (rama task/armas-unity): «continúa con las armas» → docs/tareas/armas-unity.md ▸ RETOMAR AQUÍ (sonidos con permiso dado, Semilla incompleta, lo no portado).",
           "done": false,
           "doc": "docs/tareas/habilidades-prototipos.md",
           "steps": [
@@ -669,7 +676,7 @@
             {
               "id": "hp-arbol4",
               "text": "Árbol con evoluciones: Singularidad ✔ · Rayo · Media luna · Semilla (de uno en uno, revisión del usuario entre cada uno)",
-              "done": false
+              "done": true
             },
             {
               "id": "hp-3",
@@ -678,7 +685,7 @@
             },
             {
               "id": "hp-4",
-              "text": "Port a Unity de las aprobadas (FxCanvas) y diseño de los sistemas elegidos",
+              "text": "Port a Unity de las 6 armas (hecho, falta pulir): docs/tareas/armas-unity.md",
               "done": false
             }
           ]
@@ -689,6 +696,43 @@
           "note": "Idea del usuario (2026-10-19), para cuando las armas se porten a Unity. Diseño: docs/armas/progresion.md ▸ Fuera de la run. Usa UpgradeTree/UpgradeManager (aún sin usar).",
           "done": false,
           "doc": "docs/armas/progresion.md"
+        },
+        {
+          "id": "armas-unity",
+          "text": "Armas del arsenal en Unity: sonidos, Semilla, retoques y lo no portado",
+          "note": "«continúa con las armas». Leer docs/tareas/armas-unity.md ▸ RETOMAR AQUÍ.",
+          "done": false,
+          "doc": "docs/tareas/armas-unity.md",
+          "needs": [
+            "unity"
+          ],
+          "steps": [
+            {
+              "id": "au-1",
+              "text": "Sonidos: instalar node-web-audio-api (permiso dado), render, Preparar, que el usuario los califique",
+              "done": false
+            },
+            {
+              "id": "au-2",
+              "text": "Semilla: preguntar qué falla y completarla",
+              "done": false
+            },
+            {
+              "id": "au-3",
+              "text": "HUD del arma de reserva + botón táctil de cambiar",
+              "done": false
+            },
+            {
+              "id": "au-4",
+              "text": "Items de la web y tramos 6 de Hielo/Fuego; feel (impact frames, números sumados)",
+              "done": false
+            },
+            {
+              "id": "au-5",
+              "text": "Mover las armas a Resources/Items/Weapons y localizar el árbol cuando el usuario las apruebe",
+              "done": false
+            }
+          ]
         }
       ]
     },

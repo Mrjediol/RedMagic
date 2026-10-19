@@ -259,7 +259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f43388b9ea28fbb40ad95e824f9c4808, type: 3}
   m_Name: LargeLevelTest_Nivel
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Levels.LevelBake
-  signature: af7eaeaa0e3c79f29c84a8c8d7638c43
+  signature: 29679a084afaae5f385b49ea9cd68c68
   rock: {fileID: -7065926724243201352}
   rim: {fileID: 5230064830377706413}
   glow: {fileID: 4882883909056741872}

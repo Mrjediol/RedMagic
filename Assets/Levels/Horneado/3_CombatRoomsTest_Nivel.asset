@@ -190,7 +190,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f43388b9ea28fbb40ad95e824f9c4808, type: 3}
   m_Name: 3_CombatRoomsTest_Nivel
   m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Levels.LevelBake
-  signature: 57370a770f233a4d42e73ef398736127
+  signature: 907f744c80944fd7c070f8d48820d85f
   rock: {fileID: 1580045843709961625}
   rim: {fileID: 9009736002304656111}
   glow: {fileID: -1005949071650949964}

@@ -41,7 +41,11 @@ Fuente de verdad de cada arma: su ficha en `docs/armas/` + su `g-*.js`.
 | 7 | Sonidos: piezas `SND.*` a WAV con el mismo código y que el usuario los califique | a medias (ver RETOMAR) |
 | 8 | Items de la web (Duplicador, Gatillo, Constelación…) frente a los del juego: decidir con el usuario | pendiente |
 
-## ▶ RETOMAR AQUÍ (fin de sesión 2026-10-19)
+## ▶ RETOMAR AQUÍ — «continúa con las armas» (fin de sesión 2026-10-19)
+
+**Primera prueba del usuario (2026-10-19)**: «a priori funciona la mayoría de cosas aparentemente bien, aunque tocará retocar y
+mejorar muchas cosas»; **la Semilla parece incompleta** (sin detalle aún: preguntarle qué echa en falta antes de tocarla).
+**Permiso dado** para `npm i node-web-audio-api@1.0.4` (sonidos), en una carpeta temporal fuera del repo.
 
 **Estado**: las 6 armas portadas, compilan y se ven bien en renders fuera de pantalla (`ArsenalPreviewShots.Fan/Sing/Ray/Moon/Seed/Star`,
 `unity command eval --code "return RedMagic.Arsenal.Editor.ArsenalPreviewShots.Ray(@\"<carpeta>\");"`). **Nada probado en Play**:
@@ -51,7 +55,25 @@ lo prueba el usuario. Rama `task/armas-unity` (sin fusionar).
 Q dispara (mantener = repetir / canalizar / madurar), Tab cambia de arma, F10 (o botón «ARMAS») = menú DEV: arma de cada hueco,
 evolución, mejoras, elemento forzado (hielo/fuego), Duplicador, reacciones.
 
-**Siguiente**:
+**Siguiente (en este orden)**:
+1. Sonidos (permiso ya dado; ver punto 2 de abajo para los comandos).
+2. Preguntar al usuario qué falla de la Semilla y arreglarlo; luego el resto de retoques que vaya pidiendo, un arma cada vez.
+3. Lo que quedó sin portar o a medias (lista de abajo).
+
+**Sin terminar / sin portar (2026-10-19)**:
+- Sonidos: ningún WAV todavía; ningún id suena (`ArsenalSounds` los busca en `ArsenalAssets ▸ Sonidos`). Tras asignarlos, que el
+  usuario califique cada uno (Perfect/Good/Bad/Horrible) en el registro de sonido.
+- HUD: no se ve qué arma hay en el hueco de reserva ni su recarga (la web tenía las dos tarjetas abajo). Falta botón táctil de cambiar.
+- Items de la web sin portar: Gatillo de cambio, Constelación, Corazón de vacío, Cristal afilado, Sangre de cristal…; el Duplicador sólo
+  existe como interruptor DEV. Tramos 6 de Fuego (la quemadura salta al morir) y de Hielo (congelado +50 %) no aplicados.
+- Feel de la web no portado: impact frames (pantalla oscura + enemigo blanco en golpes fuertes), estiramiento del enemigo atrapado por la
+  grieta (aquí hay hebras y brillo), suma de números pequeños seguidos (aquí cada tick saca su número).
+- Balance: los números son los de la web (enemigos de 120 de vida); con los enemigos reales habrá que reajustar (ver modo Supervivencia).
+- Las armas viven en `Assets/Test/Arsenal/`: moverlas a `Resources/Items/Weapons/` cuando el usuario las dé por buenas; los nombres
+  de evoluciones/mejoras (`ArsenalTree`) están sin localizar (sólo los ve el DEV; localizarlos antes de enseñarlos al jugador).
+- Rama `task/armas-unity` sin fusionar: el usuario la fusiona cuando quiera.
+
+**Siguiente (detalle)**:
 1. Recoger la prueba del usuario y arreglar (un arma cada vez).
 2. Sonidos: el script está hecho (`docs/bocetos/habilidades/tools/render-sonidos-armas.cjs`, 54 ids → WAV en
    `Assets/Audio/Sounds/Player/Arsenal/`), pero falta `node-web-audio-api`: la instalación del cometa

@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-19T14:06:45.421Z",
+  "updated": "2026-10-19T14:59:54.357Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -682,6 +682,13 @@
               "done": false
             }
           ]
+        },
+        {
+          "id": "armas-meta-upgrades",
+          "text": "Unity: mejoras permanentes de cada arma en el árbol del hub (stats base, desbloquear mejoras del árbol) y desbloqueo de la evolución en la run",
+          "note": "Idea del usuario (2026-10-19), para cuando las armas se porten a Unity. Diseño: docs/armas/progresion.md ▸ Fuera de la run. Usa UpgradeTree/UpgradeManager (aún sin usar).",
+          "done": false,
+          "doc": "docs/armas/progresion.md"
         }
       ]
     },

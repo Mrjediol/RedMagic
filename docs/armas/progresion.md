@@ -75,6 +75,21 @@ En Unity hoy el tramo 1 de Hielo es «ralentiza un 40 %» y el de Fuego «aplica
 | Semilla | nova de escarcha (picos, congela todo) | charco de fuego donde estalla |
 | Golpe estelar | el impacto congela la columna y alrededor | cráter ardiendo |
 
+## Fuera de la run: mejoras permanentes de cada arma (idea del usuario, 2026-10-19 — para Unity, no para la web)
+
+Aprovechar el árbol de mejoras del hub que aún no se usa (`UpgradeTree` / `UpgradeManager`, fragmentos de alma, rejilla de
+carriles estilo Skul: `docs/architecture/economy.md`) con **un apartado por arma**:
+
+- **Estadísticas base del arma**: el arma empieza más corta y se sube fuera de la run. Ej.: el Abanico de base con **3 esquirlas**,
+  ampliable hasta 5; daño, alcance, recarga.
+- **Desbloqueo de mejoras del árbol**: de base cada evolución sólo trae 1 de sus 3 mejoras (p. ej. Erizo → sólo Retorno);
+  Metralla y Hemorragia se desbloquean en el hub. Lo mismo podría valer para evoluciones enteras.
+- **En la run**: se juega siempre con el arma base hasta que algo desbloquea la evolución (p. ej. matar al primer jefe, u otra
+  condición por decidir). Las mejoras no están garantizadas: una run puede no dar ninguna y otra con suerte las 3 → carrilea la run.
+
+Encaja con la curva pedida (difícil de base, la suerte y la meta-progresión la suavizan). Para cuando se porte a Unity: la web
+sigue siendo el sitio donde se terminan y afinan las armas; esta capa se diseña al montarlas en el juego.
+
 ## Curva de dificultad (para probar)
 
 Panel «Dificultad» de la jugable: vida de los enemigos ×1-×4 y que disparen. Objetivo a comprobar jugando: arma base sola =

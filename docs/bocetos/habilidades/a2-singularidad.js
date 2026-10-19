@@ -89,7 +89,7 @@
       castFx(ctx, t, layer, 0.04, TR, pal, 1.1);
       if (P.mode === 'catapult') castFx(ctx, t, layer, TA - 0.1, TF, PAL.set, 0.7, { seed: 9 });
       const ox = orbX(t), oy = orbY(t), live = t > TR && t < TB;
-      if (live) voidOrb(ctx, t, layer, ox, oy, { s, pal, bp, form: easeOut(seg(t, TR, TA)), collapse: seg(t, TC, TB), pullT: t > TA && t < TC ? t - TA : -1, liveT: t - TR,
+      if (live) voidOrbOver(ctx, t, layer, ox, oy, { s, pal, bp, form: easeOut(seg(t, TR, TA)), collapse: seg(t, TC, TB), pullT: t > TA && t < TC ? t - TA : -1, liveT: t - TR,
         trail: t < TA ? [1, 2, 3].map(k => t - k * 0.04).filter(tt => tt > TR).map(tt => ({ x: orbX(tt), y: orbY(tt) })) : [] });
       if (t >= TB) voidBurst(ctx, t, layer, TB, XS, YS, s, bp, { mass: P.mode === 'tank', fire: P.mode === 'fire' });
       if (t >= TB && P.mode === 'tank' && fly) { const p = enemyPos(TSL, fly); groundImpact(ctx, t, layer, TSL, p.x, 0.7, PAL.void, { seed: 8 }); }

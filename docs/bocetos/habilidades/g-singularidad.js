@@ -74,6 +74,7 @@ function voidOrbEnt(slot, x0, y0, tx, ty, twin) {
         for (const e of alive()) {
           const d = Math.hypot(e.x - p.x, e.y - p.y); if (d > R) continue;
           e.pull = { x: p.x, y: p.y, s: t.pullSpeed * (1 - 0.4 * d / R), lift: mass && e.fly };
+          e.suck = { x: p.x, y: p.y, k: Math.min(1, (1 - d / R) * 1.4) * seg(G.t, TM, TM + 0.25), t: G.t };
         }
         for (const q of G.ents) {                             // captura proyectiles del player
           if (!q.capturable || q.captured || q.state !== 'fly' || q.lastSing === this) continue;
@@ -105,10 +106,10 @@ function voidOrbEnt(slot, x0, y0, tx, ty, twin) {
     draw(ctx, layer) {
       const live = { pal, bp, pullT: G.t >= TM && G.t < TC ? G.t - TM : -1, liveT: G.t - t0, collapse: seg(G.t, TC, TB) };
       if (twin && G.t < TM) {                                 // dos orbes (más pequeños) que se buscan
-        [-1, 1].forEach((k, i) => { const q = orbPos(k); voidOrb(ctx, G.t, layer, q.x, q.y, Object.assign({}, live, { s: s0, form: easeOut(seg(G.t, t0, TA)), trail: G.t < TA ? [0.04, 0.08, 0.12].map(dt => hist[i].find(h => G.t - h.t >= dt)).filter(Boolean) : [] })); });
+        [-1, 1].forEach((k, i) => { const q = orbPos(k); voidOrbOver(ctx, G.t, layer, q.x, q.y, Object.assign({}, live, { s: s0, form: easeOut(seg(G.t, t0, TA)), trail: G.t < TA ? [0.04, 0.08, 0.12].map(dt => hist[i].find(h => G.t - h.t >= dt)).filter(Boolean) : [] })); });
         if (G.t >= TA && layer === 'front') { const m = seg(G.t, TA, TM); glow(ctx, tx, ty, 50 * s * m, bp.g2, 0.6 * m); }
       } else {
-        voidOrb(ctx, G.t, layer, this.x, this.y, Object.assign({}, live, { s, form: twin ? 1 : easeOut(seg(G.t, t0, TA)), trail: !twin && G.t < TA ? [0.04, 0.08, 0.12].map(dt => hist[0].find(h => G.t - h.t >= dt)).filter(Boolean) : [] }));
+        voidOrbOver(ctx, G.t, layer, this.x, this.y, Object.assign({}, live, { s, form: twin ? 1 : easeOut(seg(G.t, t0, TA)), trail: !twin && G.t < TA ? [0.04, 0.08, 0.12].map(dt => hist[0].find(h => G.t - h.t >= dt)).filter(Boolean) : [] }));
       }
       if (G.settings.hitboxes && G.t >= TM) { ctx.strokeStyle = 'rgba(160,110,255,.6)'; ctx.beginPath(); ctx.arc(this.x, this.y, t.pullRadius * s, 0, TAU); ctx.stroke(); }
     },

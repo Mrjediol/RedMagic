@@ -463,6 +463,9 @@ function drawDummy(ctx, e, solid) {
   const fz = e.frozenT > 0 ? 1 : 0;
   const shake = e.shakeT > 0 && !fz ? Math.sin(G.t * 140) * e.shakeT * 14 : 0, sq = e.sqT > 0 ? Math.sin(e.sqT / 0.2 * Math.PI) * 0.12 : 0;
   ctx.save(); ctx.translate(e.x + shake, e.y); ctx.scale(1 - sq, 1 + sq * 0.6);
+  // atrapado por una singularidad: se estira hacia el centro (se lo está tragando) y se tiñe de violeta
+  const suckK = e.suck && G.t - e.suck.t < 0.06 ? e.suck.k : 0;
+  if (suckK > 0) { const sa = Math.atan2(e.suck.y - e.y, e.suck.x - e.x); ctx.rotate(sa); ctx.scale(1 + 0.22 * suckK, 1 - 0.14 * suckK); ctx.rotate(-sa); }
   if (e.fly) { const fl = Math.sin(G.t * 22 + e.sp.x) * (1 - fz); for (const s of [-1, 1]) { ctx.save(); ctx.fillStyle = C.enemyDark; ctx.translate(s * 20, -18); ctx.rotate(s * (0.5 + fl * 0.5)); ctx.beginPath(); ctx.ellipse(s * 14, 0, 16, 7, 0, 0, TAU); ctx.fill(); ctx.restore(); } }
   const rx = e.rx + 3, ry = e.ry + 3;
   ctx.fillStyle = C.enemyDark; ctx.beginPath(); ctx.ellipse(0, 2, rx, ry, 0, 0, TAU); ctx.fill();
@@ -470,6 +473,7 @@ function drawDummy(ctx, e, solid) {
   ctx.fillStyle = C.eye; ctx.beginPath(); ctx.arc(-14 * (G.player.x < e.x ? 1 : -1), -12, 4, 0, TAU); ctx.fill();
   if (e.freeze > 0 && !fz) { ctx.globalAlpha = 0.45 * e.freeze; ctx.fillStyle = PAL.ice.light; ctx.beginPath(); ctx.ellipse(0, 2, rx, ry, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
   if (e.burnT > 0) { ctx.globalAlpha = 0.22 + 0.1 * Math.sin(G.t * 30); ctx.fillStyle = '#ff7a2e'; ctx.beginPath(); ctx.ellipse(0, 2, rx, ry, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
+  if (suckK > 0) { ctx.globalAlpha = 0.32 * suckK; ctx.fillStyle = PAL.void.mid; ctx.beginPath(); ctx.ellipse(0, 2, rx, ry, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
   if (solid) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(0, 2, rx, ry, 0, 0, TAU); ctx.fill(); }
   else if (e.flashT > 0) { ctx.globalAlpha = e.flashT / 0.12; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(-3, -2, rx - 4, ry - 4, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
   ctx.restore();

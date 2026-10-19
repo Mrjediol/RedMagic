@@ -256,3 +256,11 @@ function rainNeedle(ctx, x, y, ang, pal, layer) {
   lens(ctx, x - Math.cos(ang) * 12, y - Math.sin(ang) * 12, ang, 30, 3, pal.core, 1, layer);
   glow(ctx, x, y, 26, pal.g1, 0.7);
 }
+// Singularidad por encima de los enemigos: el disco se ordena sólo respecto a su núcleo (mitad trasera detrás del agujero,
+// delantera delante) y todo el vórtice va delante. Si la mitad trasera fuera detrás de los enemigos, un enemigo dentro del
+// disco "cortaba" el anillo por donde se superpone (lo vio el usuario, 2026-10-19). El atrapado se estira hacia el centro (juego).
+function voidOrbOver(ctx, t, layer, ox, oy, o) {
+  if (layer !== 'front') return;
+  voidOrb(ctx, t, 'back', ox, oy, o);
+  voidOrb(ctx, t, 'front', ox, oy, o);
+}

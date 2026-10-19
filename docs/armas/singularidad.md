@@ -90,6 +90,10 @@ congelado y estados).
 
 ## Decisiones
 
+- 2026-10-19 · Capas: todo el vórtice se dibuja delante de los enemigos (`voidOrbOver` en fx.js) y el disco se ordena sólo respecto a su
+  núcleo; antes la mitad trasera iba detrás de los enemigos y un enemigo dentro del disco cortaba el anillo (lo vio el usuario).
+  Para que se lea «se lo traga», el atrapado se estira hacia el centro y se tiñe de violeta (`e.suck`, `drawDummy`).
+
 - 2026-10-19 · La Catapulta no es un mod: es la regla genérica de captura (el usuario la señaló como lo mejor).
 
 ## Preguntas abiertas

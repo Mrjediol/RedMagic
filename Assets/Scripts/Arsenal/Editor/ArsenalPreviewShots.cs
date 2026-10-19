@@ -169,5 +169,45 @@ namespace RedMagic.Arsenal.Editor
             }
             return "ok moon";
         }
+
+        public static string Seed(string dir)
+        {
+            ArsenalSetup.Run();
+            var w = Weapon("seed"); Vector2 m = new Vector2(0.5f, 1.05f);
+            var aim = Aim(m, new Vector2(5.4f, 0.5f));
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, 0);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(0.25f); st.Shot(dir + "/seed_vuelo.png");
+                st.Run(0.5f); st.Shot(dir + "/seed_armada.png");
+                st.Run(0.45f); st.Shot(dir + "/seed_erupcion.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, SeedKit.Racimo, true, true, false);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(1.25f); st.Shot(dir + "/seed_racimo.png");
+                st.Run(0.3f); st.Shot(dir + "/seed_racimo_b.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, SeedKit.Madura, true, true, false);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(1.3f, _ => c.OnHold(aim, ArsenalPreviewStage.Dt)); st.Shot(dir + "/seed_madura_mano.png");
+                c.OnRelease(aim); st.Run(0.85f); st.Shot(dir + "/seed_madura_implosion.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Setup(w, SeedKit.CampoMinas, true, true, true);
+                var c = Ctrl(w); c.OnPress(Aim(m, new Vector2(4.2f, 0.5f))); st.Run(0.9f, _ => c.Tick(ArsenalPreviewStage.Dt, true));
+                c.OnPress(Aim(m, new Vector2(6.2f, 0.5f))); st.Run(0.9f, _ => c.Tick(ArsenalPreviewStage.Dt, true));
+                st.Shot(dir + "/seed_minas.png");
+                st.Dummy(new Vector2(4.4f, 39 * P)); st.Dummy(new Vector2(5.4f, 39 * P));
+                st.Run(0.35f); st.Shot(dir + "/seed_minas_raices.png");
+                st.Run(0.5f); st.Shot(dir + "/seed_minas_cadena.png");
+            }
+            return "ok seed";
+        }
     }
 }

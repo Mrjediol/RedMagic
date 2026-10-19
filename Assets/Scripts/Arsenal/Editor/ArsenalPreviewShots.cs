@@ -136,5 +136,38 @@ namespace RedMagic.Arsenal.Editor
             }
             return "ok ray";
         }
+
+        public static string Moon(string dir)
+        {
+            ArsenalSetup.Run();
+            var w = Weapon("moon"); Vector2 m = new Vector2(0.5f, 1.05f);
+            var aim = Aim(m, new Vector2(6f, 1.2f));
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, 0);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(0.3f); st.Shot(dir + "/moon_ida.png");
+                st.Run(0.55f); st.Shot(dir + "/moon_vuelta.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, MoonKit.Sierra, false, true, true);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(0.9f); st.Shot(dir + "/moon_sierra.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(1.5f, 1.2f), 2.5f))
+            {
+                Setup(w, MoonKit.Satelite, true, true, false);
+                var c = Ctrl(w); c.Tick(0f, true);
+                st.Run(2.1f, _ => c.Tick(ArsenalPreviewStage.Dt, true)); st.Shot(dir + "/moon_satelite.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, MoonKit.Malabar);
+                var c = Ctrl(w); c.OnPress(aim);
+                st.Run(1.03f, _ => c.Tick(ArsenalPreviewStage.Dt, true)); st.Shot(dir + "/moon_malabar_ventana.png");
+            }
+            return "ok moon";
+        }
     }
 }

@@ -81,6 +81,7 @@ legend.jump = Saltar / doble salto
 legend.dash = Dash
 legend.attack = Atacar
 legend.weapon = Arma
+legend.swap_weapon = Cambiar de arma
 legend.parry = Parry
 legend.interact = Interactuar
 legend.items = Items
@@ -473,3 +474,31 @@ options.debug.one_hit_kill = Pruebas: matar de un golpe
 # --- carteles del tutorial (TutorialSign; se editan desde el Inspector del cartel)
 tutorial.largeleveltest.1 = Salto-DobleSalto-Dash a la pared\nDash desde la pared- DobleSalto
 tutorial.largeleveltest.2 = Rebota en las paredes
+
+# --- armas del arsenal (avisos flotantes sobre enemigos y player)
+arsenal.react.shatter = AÑICOS
+arsenal.react.thaw = DESHIELO
+arsenal.react.vapor = VAPOR
+arsenal.swallowed = TRAGADO
+arsenal.ray.sweet = ¡JUSTO!
+arsenal.ray.overheat = RECALENTADO
+arsenal.moon.streak = RACHA {0}
+arsenal.moon.streak_lost = racha perdida
+arsenal.moon.fumble = FALLO
+arsenal.moon.finale = GRAN FINAL
+arsenal.seed.chain = CADENA ×{0}
+arsenal.extra_seconds = +{0} s
+
+# --- armas del arsenal (nombre y descripción)
+weapon.arsenal_fan.name = Abanico de cristal
+weapon.arsenal_fan.description = Una ráfaga de esquirlas en abanico. Corta distancia, mucho daño de cerca.
+weapon.arsenal_sing.name = Singularidad
+weapon.arsenal_sing.description = Lanza un orbe que abre una grieta: atrae a los enemigos y colapsa. Prepara el terreno para tus otras armas.
+weapon.arsenal_ray.name = Rayo
+weapon.arsenal_ray.description = Mantén para canalizar un haz que quema a lo que toca. Si te pasas, se recalienta.
+weapon.arsenal_moon.name = Media luna
+weapon.arsenal_moon.description = Un bumerán de luz que corta a la ida y a la vuelta.
+weapon.arsenal_seed.name = Semilla estelar
+weapon.arsenal_seed.description = Una mina que se lanza en parábola, se clava en el suelo y estalla en una columna de luz.
+weapon.arsenal_star.name = Golpe estelar
+weapon.arsenal_star.description = Marca un punto: una lanza de luz cae del cielo un instante después.

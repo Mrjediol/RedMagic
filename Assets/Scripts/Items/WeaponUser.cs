@@ -1,5 +1,7 @@
 using System.Collections;
+using System.Collections.Generic;
 using RedMagic.Abilities;
+using RedMagic.Arsenal;
 using RedMagic.Audio;
 using RedMagic.Combat;
 using RedMagic.Core;
@@ -75,6 +77,9 @@ namespace RedMagic.Items
         [SerializeField] private string actionMapName = "Player";
         [Tooltip("Acción del arma (Q / triángulo). La espada sigue en Attack: tener arma no quita el cuerpo a cuerpo.")]
         [SerializeField] private string weaponActionName = "Weapon";
+        [Tooltip("Acción de cambiar entre el arma activa y la de reserva (Tab / mando ▲). Cambiar con el botón pulsado " +
+                 "suelta la actual y pulsa la nueva.")]
+        [SerializeField] private string swapActionName = "SwapWeapon";
         [Tooltip("Usa también la entrada táctil: el botón del arma (sólo armas sin carga) y, con los controles por " +
                  "gestos, mantener un dedo fuera de la zona de movimiento (carga y suelta).")]
         [SerializeField] private bool useTouchButton = true;
@@ -85,6 +90,12 @@ namespace RedMagic.Items
         private Health _health;
         private SpriteRenderer _sprite;
         private InputAction _attackAction;
+        private InputAction _swapAction;
+
+        // Armas del arsenal: un controlador por arma equipada (activa o de reserva); el de reserva sigue recargando.
+        private readonly Dictionary<WeaponDefinition, ArsenalController> _arsenal = new Dictionary<WeaponDefinition, ArsenalController>();
+        private readonly List<WeaponDefinition> _arsenalGone = new List<WeaponDefinition>();
+        private bool _arsenalHeld;
 
         private float _cooldownTimer;
         private float _cooldownDuration;
@@ -147,6 +158,9 @@ namespace RedMagic.Items
         {
             get
             {
+                var arsenal = Weapon != null && Weapon.IsArsenal ? ArsenalFor(Weapon) : null;
+                if (arsenal != null) return new CooldownState { Remaining = 1f - Mathf.Clamp01(arsenal.Ready), Duration = 1f, Charge = 0f };
+
                 // En segundos reales: el temporizador corre más deprisa con los items de enfriamiento.
                 float rate = Mathf.Max(0.01f, PlayerStats.Multiplier(PlayerStat.CooldownRate));
                 return new CooldownState
@@ -171,7 +185,11 @@ namespace RedMagic.Items
             if (inputActions != null)
             {
                 var map = inputActions.FindActionMap(actionMapName, throwIfNotFound: false);
-                if (map != null) _attackAction = map.FindAction(weaponActionName, throwIfNotFound: false);
+                if (map != null)
+                {
+                    _attackAction = map.FindAction(weaponActionName, throwIfNotFound: false);
+                    _swapAction = map.FindAction(swapActionName, throwIfNotFound: false);
+                }
                 else Debug.LogWarning($"[WeaponUser] No existe el action map '{actionMapName}'.", this);
             }
         }
@@ -179,12 +197,15 @@ namespace RedMagic.Items
         private void OnEnable()
         {
             _attackAction?.Enable();
+            _swapAction?.Enable();
             Current = this;
         }
 
         private void OnDisable()
         {
             _attackAction?.Disable();
+            _swapAction?.Disable();
+            ReleaseArsenal();
             CancelCharge();
             CancelPendingComet();
             if (Current == this) Current = null;
@@ -194,6 +215,9 @@ namespace RedMagic.Items
         {
             // Items que aceleran el enfriamiento (Botas, Rapidez 2) cambian el ritmo, no el cooldown base.
             if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime * PlayerStats.Multiplier(PlayerStat.CooldownRate);
+
+            TickArsenal();
+            if (_swapAction != null && _swapAction.WasPressedThisFrame() && GameStateManager.CanPlayerAct) Swap();
 
             var weapon = Weapon;
 
@@ -219,8 +243,110 @@ namespace RedMagic.Items
                 return;
             }
 
-            if (weapon.Shot.chargeTime > 0f) UpdateCharge(weapon);
+            if (weapon.IsArsenal) UpdateArsenal(weapon);
+            else if (weapon.Shot.chargeTime > 0f) UpdateCharge(weapon);
             else UpdateInstant(weapon);
+        }
+
+        // ------------------------------------------------------------------ armas del arsenal
+
+        /// <summary>El controlador de <paramref name="weapon"/> (lo crea la primera vez), o null si no es del arsenal.</summary>
+        public ArsenalController ArsenalFor(WeaponDefinition weapon)
+        {
+            if (weapon == null || !weapon.IsArsenal) return null;
+            if (_arsenal.TryGetValue(weapon, out var c)) return c;
+            var kit = ArsenalRuntime.For(weapon);
+            if (kit == null) return null;
+            c = kit.CreateController();
+            c.Bind(weapon, this);
+            _arsenal[weapon] = c;
+            ArsenalStatusDrawer.Ensure();
+            return c;
+        }
+
+        /// <summary>Los otros controladores del arsenal equipados (para efectos sobre el arma de reserva).</summary>
+        public IEnumerable<ArsenalController> OtherArsenal(ArsenalController self)
+        {
+            foreach (var c in _arsenal.Values) if (c != self) yield return c;
+        }
+
+        /// <summary>Pulsar / mantener / soltar el arma activa del arsenal. Sale al pulsar (sin esperar al gesto).</summary>
+        private void UpdateArsenal(WeaponDefinition weapon)
+        {
+            var c = ArsenalFor(weapon);
+            if (c == null) return;
+            bool touch = useTouchButton && TouchInput.ConsumeWeapon();
+            bool held = (_attackAction != null && _attackAction.IsPressed()) || (useTouchButton && TouchInput.WeaponHeld) || touch;
+            var aim = BuildArsenalAim();
+            if (held && !_arsenalHeld) c.OnPress(aim);
+            else if (held) c.OnHold(aim, Time.deltaTime);
+            else if (_arsenalHeld) c.OnRelease(aim);
+            _arsenalHeld = held && !touch;
+            if (touch) c.OnRelease(aim);
+        }
+
+        /// <summary>Recargas y lo que viva solo de cada arma equipada; quita los controladores de armas que ya no están.</summary>
+        private void TickArsenal()
+        {
+            var inv = WeaponLoadout.Instance != null ? WeaponLoadout.Instance.Inventory : null;
+            WeaponDefinition active = inv != null ? inv.Weapon : null, reserve = inv != null ? inv.SecondWeapon : null;
+            ArsenalFor(active); ArsenalFor(reserve);
+            _arsenalGone.Clear();
+            foreach (var kv in _arsenal) if (kv.Key != active && kv.Key != reserve) _arsenalGone.Add(kv.Key);
+            foreach (var w in _arsenalGone) { _arsenal[w].Dispose(); _arsenal.Remove(w); }
+            float dt = Time.deltaTime * ArsenalBuild.CooldownRate;
+            foreach (var kv in _arsenal) kv.Value.Tick(dt, kv.Key == active);
+        }
+
+        /// <summary>Suelta lo que se esté manteniendo (cambio de arma, menú, muerte).</summary>
+        private void ReleaseArsenal()
+        {
+            if (!_arsenalHeld) return;
+            _arsenalHeld = false;
+            ArsenalFor(Weapon)?.OnRelease(BuildArsenalAim());
+        }
+
+        /// <summary>Cambia a la de reserva. Con el botón pulsado, suelta la actual y pulsa la nueva.</summary>
+        private void Swap()
+        {
+            var inv = WeaponLoadout.Instance != null ? WeaponLoadout.Instance.Inventory : null;
+            if (inv == null || inv.SecondWeapon == null) return;
+            bool wasHeld = _arsenalHeld;
+            ReleaseArsenal();
+            CancelCharge();
+            if (!inv.SwapWeapons()) return;
+            LastSwapTime = Time.time;
+            Swapped?.Invoke();
+            var next = ArsenalFor(inv.Weapon);
+            if (wasHeld && next != null) { next.OnPress(BuildArsenalAim()); _arsenalHeld = true; }
+        }
+
+        /// <summary>Instante (Time.time) del último cambio de arma: el Erizo del Abanico estalla al cambiar.</summary>
+        public float LastSwapTime { get; private set; } = -99f;
+
+        /// <summary>Se ha cambiado de arma.</summary>
+        public event System.Action Swapped;
+
+        /// <summary>Animación de ataque (para las armas del arsenal que lanzan algo).</summary>
+        public void PlayAttackAnimation() { if (_animator != null) _animator.TriggerAttack(); }
+
+        /// <summary>
+        /// Boca y dirección hacia el cursor (o el stick / joystick táctil; sin apuntar, recto hacia donde mira). La boca
+        /// sale del lado hacia el que se apunta, a la altura del pecho (<c>Base Shot ▸ Muzzle Offset</c> desde el centro del cuerpo).
+        /// </summary>
+        public ArsenalAim BuildArsenalAim()
+        {
+            Vector2 center = PlayerHit.BodyCenter(this);
+            int facing = ResolveFacing();
+            Vector2? cursor = ProjectileAim.MouseWorld();
+            Vector2 target = cursor ?? center + new Vector2(facing * 20f, 0f);
+            int side = Mathf.Abs(target.x - center.x) < 0.05f ? facing : (target.x > center.x ? 1 : -1);
+            var weapon = Weapon;
+            Vector2 off = weapon != null ? weapon.Shot.muzzleOffset : new Vector2(0.5f, 0.3f);
+            Vector2 muzzle = center + new Vector2(off.x * side, off.y);
+            Vector2 dir = target - muzzle;
+            if (dir.sqrMagnitude < 0.0001f) dir = new Vector2(side, 0f);
+            return new ArsenalAim { origin = muzzle, dir = dir.normalized, target = target };
         }
 
         // ------------------------------------------------------------------ sin carga

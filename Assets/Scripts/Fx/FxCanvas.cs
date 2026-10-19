@@ -232,6 +232,33 @@ namespace RedMagic.Fx
             }
         }
 
+        /// <summary>
+        /// Disco con degradado de tres paradas: <paramref name="center"/> en el centro, <paramref name="mid"/> a la fracción
+        /// <paramref name="midAt"/> del radio y <paramref name="edge"/> en el borde (los brillos de los bocetos web).
+        /// </summary>
+        public void Radial(Vector2 c, float r, Color center, float midAt, Color mid, Color edge, int segments = 24)
+        {
+            if (r <= 0f || (center.a <= 0f && mid.a <= 0f)) return;
+            int s = _verts.Count;
+            _verts.Add(c); _colors.Add(center);
+            float rm = r * Mathf.Clamp01(midAt);
+            for (int i = 0; i < segments; i++)
+            {
+                float a = i / (float)segments * Mathf.PI * 2f;
+                var d = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+                _verts.Add(c + d * rm); _colors.Add(mid);
+                _verts.Add(c + d * r); _colors.Add(edge);
+            }
+            for (int i = 0; i < segments; i++)
+            {
+                int j = (i + 1) % segments;
+                int mi = s + 1 + i * 2, mj = s + 1 + j * 2;
+                _tris.Add(s); _tris.Add(mi); _tris.Add(mj);
+                _tris.Add(mi); _tris.Add(mi + 1); _tris.Add(mj + 1);
+                _tris.Add(mi); _tris.Add(mj + 1); _tris.Add(mj);
+            }
+        }
+
         /// <summary>Gota: cabeza redonda en <paramref name="pos"/>, cola afilada hacia atrás según <paramref name="angle"/>.</summary>
         public void Teardrop(Vector2 pos, float angle, float length, float width, Color color)
         {

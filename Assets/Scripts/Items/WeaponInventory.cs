@@ -86,6 +86,36 @@ namespace RedMagic.Items
             WeaponChanged?.Invoke(previous, weapon);
         }
 
+        // -- Segunda arma (2 armas equipadas + botón de cambiar: docs/armas/README.md) -----------------------------
+
+        private WeaponDefinition _secondWeapon;
+
+        /// <summary>(anterior, nueva) del segundo hueco. Sus tags cuentan para las sinergias igual que las del arma activa.</summary>
+        public event Action<WeaponDefinition, WeaponDefinition> SecondWeaponChanged;
+
+        /// <summary>Se intercambiaron el arma activa y la de reserva (no cambia ninguna tag: las dos siguen equipadas).</summary>
+        public event Action Swapped;
+
+        /// <summary>Arma de reserva (la que entra al cambiar), o null.</summary>
+        public WeaponDefinition SecondWeapon => _secondWeapon;
+
+        public void SetSecondWeapon(WeaponDefinition weapon)
+        {
+            if (ReferenceEquals(_secondWeapon, weapon)) return;
+            var previous = _secondWeapon;
+            _secondWeapon = weapon;
+            SecondWeaponChanged?.Invoke(previous, weapon);
+        }
+
+        /// <summary>Cambia el arma activa por la de reserva. false si no hay de reserva.</summary>
+        public bool SwapWeapons()
+        {
+            if (_secondWeapon == null) return false;
+            (_weapon, _secondWeapon) = (_secondWeapon, _weapon);
+            Swapped?.Invoke();
+            return true;
+        }
+
         // -- Lectura --------------------------------------------------------------------------------
 
         public ElementModifier Element => _element;

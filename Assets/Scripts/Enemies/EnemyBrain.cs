@@ -243,6 +243,9 @@ namespace RedMagic.Enemies
 
             if (Current == State.Dead || !GameStateManager.CanPlayerAct) return;
 
+            // Congelado o aturdido (armas del arsenal): ni decide ni ataca; el empujón quieto ya lo para en FixedUpdate.
+            if (Arsenal.ElementStatus.Disables(this)) return;
+
             // Un ataque en curso no se interrumpe: manda la animación hasta que avise de que acabó.
             // Despertarse tampoco: es el aviso de que viene, y cortarlo lo hace ilegible.
             // Apartarse tampoco: se acaba solo (ver EvadeStep).

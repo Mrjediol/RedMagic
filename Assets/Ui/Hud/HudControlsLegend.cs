@@ -26,6 +26,7 @@ namespace RedMagic.UI
             ("Shift", "legend.dash"),
             ("legend.key_left_click", "legend.attack"),
             ("Q", "legend.weapon"),
+            ("Tab", "legend.swap_weapon"),
             ("legend.key_right_click", "legend.parry"),
             ("E", "legend.interact"),
             ("I", "legend.items"),

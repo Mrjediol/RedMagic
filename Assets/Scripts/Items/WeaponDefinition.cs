@@ -12,6 +12,9 @@ namespace RedMagic.Items
         Hitscan,
         /// <summary>Cometa dibujado por código (CometProjectile); su comportamiento va en WeaponDefinition ▸ Comet.</summary>
         Comet,
+        /// <summary>Arma del arsenal (las 6 de la web: Abanico, Singularidad…): todo su comportamiento va en su kit,
+        /// WeaponDefinition ▸ Arsenal (docs/tareas/armas-unity.md).</summary>
+        Arsenal,
     }
 
     /// <summary>
@@ -220,6 +223,11 @@ namespace RedMagic.Items
                  "En Play se puede cambiar sin tocar el asset desde el menú DEV (F9).")]
         [SerializeField] private CometSettings comet = new CometSettings();
 
+        [Header("Arsenal (sólo Delivery = Arsenal)")]
+        [Tooltip("El arma entera: qué arma es (el tipo del kit), su evolución, sus mejoras y sus ajustes (mismos nombres que " +
+                 "en la web, px × 0,025 = unidades). En Play se cambia sin tocar el asset desde el menú DEV (F10).")]
+        [SerializeReference, Core.SubclassPicker] private Arsenal.ArsenalKit arsenal;
+
         [Header("Identidad de build")]
         [Tooltip("Elemento con el que nace el arma. None = arma física; cuenta igual para sinergias " +
                  "si no es None. El slot Elemento lo sobrescribe (último equipado gana).")]
@@ -279,6 +287,9 @@ namespace RedMagic.Items
         public BaseShot Shot => baseShot;
         public CometSettings Comet => comet;
         public bool IsComet => baseShot != null && baseShot.delivery == ShotDelivery.Comet;
+        public bool IsArsenal => baseShot != null && baseShot.delivery == ShotDelivery.Arsenal && arsenal != null;
+        /// <summary>El kit tal cual está en el asset (el efectivo en Play: <see cref="Arsenal.ArsenalRuntime.For"/>).</summary>
+        public Arsenal.ArsenalKit ArsenalKitAsset => arsenal;
         public ElementId InnateElement => innateElement;
         public BuildTag UniversalTag => universalTag;
 

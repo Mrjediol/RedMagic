@@ -72,6 +72,13 @@ namespace RedMagic.Fx
             float jitterX = Random.Range(-0.25f, 0.25f);
             DamagePopup.Spawn(worldPosition + new Vector3(jitterX, 0f, 0f), amount, kind);
         }
+
+        /// <summary>
+        /// Etiqueta flotante (reacciones y avisos de las armas: «AÑICOS», «¡JUSTO!»…). <paramref name="text"/> ya viene
+        /// localizado; <paramref name="big"/> = tamaño de golpe grande.
+        /// </summary>
+        public static void ShowLabel(Vector3 worldPosition, string text, Color color, bool big = true) =>
+            DamagePopup.SpawnLabel(worldPosition, text, color, big);
     }
 
     /// <summary>
@@ -104,6 +111,19 @@ namespace RedMagic.Fx
 
             var popup = _pool.Get();
             popup.Begin(worldPosition, amount, kind);
+            return popup;
+        }
+
+        public static DamagePopup SpawnLabel(Vector3 worldPosition, string text, Color color, bool big)
+        {
+            _pool ??= new Core.Pool<DamagePopup>(Build, prewarm: 16);
+            var popup = _pool.Get();
+            popup.Begin(worldPosition, 1f, DamagePopupKind.DealtToEnemy);
+            popup._baseColor = color;
+            popup._text.text = text;
+            popup._text.color = color;
+            popup._text.fontSize = big ? 56 : 40;
+            popup._velocity = new Vector3(0f, RiseSpeed * 0.8f, 0f);
             return popup;
         }
 

@@ -54,10 +54,12 @@ namespace RedMagic.Items
             foreach (var (_, item) in _inventory.EquippedItems())
                 AddTags(item, silent: true);
             AddWeaponTags(_inventory.Weapon, silent: true);
+            AddWeaponTags(_inventory.SecondWeapon, silent: true);
 
             _inventory.ItemEquipped += OnItemEquipped;
             _inventory.ItemUnequipped += OnItemUnequipped;
             _inventory.WeaponChanged += OnWeaponChanged;
+            _inventory.SecondWeaponChanged += OnWeaponChanged;
         }
 
         public void Dispose()
@@ -65,6 +67,7 @@ namespace RedMagic.Items
             _inventory.ItemEquipped -= OnItemEquipped;
             _inventory.ItemUnequipped -= OnItemUnequipped;
             _inventory.WeaponChanged -= OnWeaponChanged;
+            _inventory.SecondWeaponChanged -= OnWeaponChanged;
         }
 
         // -- Consulta --------------------------------------------------------------------------------

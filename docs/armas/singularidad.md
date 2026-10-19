@@ -19,15 +19,25 @@ en un estallido. Control de masas y, sobre todo, **preparar a la otra arma**.
 - Colapso de 0,12 s (todo se cierra) y estallido: daño en área `burstDamage` en `burstRadius` (cae a la mitad en el borde),
   empuje hacia fuera `burstKnock` y un poco hacia arriba; **golpe fuerte** (rompe congelados → añicos). Hit-stop, impact frames.
 
-<!-- gen:mods -->
-| Mod (`id`) | Qué hace |
+## Mejoras
+
+<!-- gen:tree -->
+Mejoras provisionales (el árbol con evoluciones está pendiente de diseñar):
+
+| Mejora (id) | Qué hace |
 |---|---|
-| Fuego (`fire`) | El colapso quema a todo lo que alcanza (y rompe congelados: deshielo). |
 | Masa (`mass`) | Más grande y dura más; arranca a los voladores y los estampa contra el suelo. |
-<!-- /gen:mods -->
+<!-- /gen:tree -->
+
+## Elemento y Duplicador (items generales)
 
 - **Fuego**: el estallido es de fuego (paleta fuego, llamas que se abren por el suelo, brasas) y quema `burn` s. Contra
   congelados = **deshielo** (daño ×2).
+- **Hielo**: el colapso congela a todos los alcanzados (nova de escarcha) → la otra arma los rompe.
+- **Duplicador**: salen **dos orbes** en arco (uno por cada lado) que, al llegar, giran uno alrededor del otro `mergeTime` s y se
+  **funden** en uno ×`mergeScale` de tamaño y radios y ×`mergeDamage` de daño (petición del usuario, 2026-10-19).
+
+Mejora provisional:
 - **Masa**: ×`massScale` de tamaño y radios, ×`massTime` de tiempo atrayendo; levanta a los voladores hacia el centro y al
   estallar los **estampa** contra el suelo (se quedan 1,6 s en el suelo). Grietas y escombros en el estallido.
 
@@ -55,6 +65,9 @@ en un estallido. Control de masas y, sobre todo, **preparar a la otra arma**.
 | `burn` | 3 | 0 – 8 (paso 0.1) | Fuego: quemadura (s) |
 | `massScale` | 1.4 | 1 – 2.5 (paso 0.05) | Masa: escala |
 | `massTime` | 1.35 | 1 – 3 (paso 0.05) | Masa: × tiempo atrayendo |
+| `mergeTime` | 0.3 | 0.05 – 1 (paso 0.05) | Duplicador: tiempo de fusión (s) |
+| `mergeScale` | 1.35 | 1 – 2.5 (paso 0.05) | Duplicador: escala de la fusionada |
+| `mergeDamage` | 1.7 | 1 – 4 (paso 0.05) | Duplicador: × daño de la fusionada |
 <!-- /gen:tuning -->
 
 ## Visual

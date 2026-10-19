@@ -1,85 +1,124 @@
 # Abanico de cristal (`fan`)
 
-**Estado**: prototipo web (clips + jugable), pendiente de que el usuario lo pruebe. Código: `a1-abanico.js` (clips),
-`g-abanico.js` (jugable). Reglas comunes: [README](README.md).
+**Estado**: prototipo web, árbol completo (3 evoluciones × 3 mejoras) en prueba. Código: `g-abanico.js` (jugable), `a1-abanico.js`
+(clips de la primera versión, con los mods antiguos). Reglas comunes: [README](README.md) · progresión: [progresion.md](progresion.md).
 
 ## Rol
 
-Disparo inmediato sin carga: varias esquirlas en abanico, corto alcance. El arma de «pegarse al enemigo», opuesta al Cometa
-(que premia la distancia). Mucho daño de cerca porque aciertan casi todas; de lejos se abren y fallan.
+Disparo inmediato sin carga, varias esquirlas. La base es una escopeta corta (mucho daño de cerca). Cada evolución la convierte en
+otra arma: **Erizo** (clavar y detonar alternando armas), **Lanza** (precisión de lejos que perfora), **Caleidoscopio** (rebotes).
 
-## Comportamiento (jugable)
+## Comportamiento (base)
 
-- Clic = una ráfaga; mantener = ráfaga cada `cooldown`.
-- `count` esquirlas repartidas en ±`spread` rad alrededor de la puntería (pequeño azar de ±0,01 rad y de ±5 % de velocidad).
-- Vuelan recto a `speed` durante `life` s. Chocan con el primer enemigo (elipse) o con el suelo; atraviesan las plataformas.
-- Al chocar con enemigo: `damage` + empuje `knockback`; impacto pequeño (agujas + gotas). Contra el suelo: chispas y polvo.
-- Son **capturables** por la Singularidad mientras vuelan.
+- Clic = ráfaga; mantener = ráfaga cada `cooldown`.
+- `count` esquirlas repartidas en ±`spread` rad (azar ±0,01 rad y ±5 % de velocidad), recto a `speed` durante `life` s.
+- Chocan con el primer enemigo (elipse) o el suelo; atraviesan plataformas (salvo el Caleidoscopio, que rebota en ellas).
+- `damage` + `knockback` por esquirla. Son **capturables** por la Singularidad mientras vuelan.
 
-<!-- gen:mods -->
-| Mod (`id`) | Qué hace |
-|---|---|
-| Hielo (`ice`) | Las esquirlas se clavan y congelan; congelado + 0,5 s = añicos. |
-| Rebote (`bounce`) | Cada esquirla rebota una vez (suelo o enemigo → hacia el siguiente). |
-| Retorno (`ret`) | Se clavan y vuelven al cristal golpeando otra vez; cada una recarga el arma de reserva. |
-<!-- /gen:mods -->
+## Árbol (evolución en nivel 2, mejoras en 3-5)
 
-Detalle de los mods:
-- **Hielo**: paleta hielo; cada esquirla suma `freeze` de congelación y **se queda clavada** (asoma la mitad trasera). Cuando el
-  enemigo se congela, las clavadas esperan `shatterDelay` s y provocan un golpe fuerte → reacción **añicos**.
-- **Rebote**: paleta oro; un rebote por esquirla. En el suelo sale hacia arriba (75 % de la vertical). En un enemigo se desvía
-  hacia el **enemigo más cercano** (≤ 420 px) que no haya tocado; si no hay, sale hacia atrás y arriba. Conserva `bounceKeep`.
-- **Retorno**: se clavan (enemigo o suelo), esperan `stickTime` y vuelven en curva al cristal: al arrancarse hacen
-  `returnDamage`. Cada una que llega **resta `refund` s a la recarga del arma de reserva** (sinergia de 2 armas).
-- Combinables entre sí (Hielo + Retorno: se clavan, congelan y vuelven).
+<!-- gen:tree -->
+| Evolución (id) | Idea | Mejoras |
+|---|---|---|
+| **Erizo** (`spike`) | Se clavan en enemigos y suelo y estallan al cambiar de arma (o solas al rato). Premia alternar armas. | **Retorno** (`ret`): Tras estallar vuelven al cristal atravesando enemigos; cada una recarga el arma de reserva.<br>**Metralla** (`shrap`): Cada estallido suelta esquirlas pequeñas en todas direcciones.<br>**Hemorragia** (`bleed`): Cada esquirla clavada hace daño continuo mientras está dentro. |
+| **Lanza** (`lance`) | Ráfaga en línea, rápida y de largo alcance, que atraviesa al primer enemigo. | **Perforación** (`pierce`): Atraviesan a todos; cada enemigo atravesado suma daño.<br>**Aceleración** (`accel`): Manteniendo el disparo, cada ráfaga sale antes que la anterior.<br>**Cristal mayor** (`big`): La última de cada ráfaga es una lanza grande: mucho daño y golpe fuerte. |
+| **Caleidoscopio** (`kal`) | Rebotan en suelo, plataformas y enemigos, y cada rebote suma daño. | **Buscador** (`seek`): Todos los rebotes van hacia el enemigo más cercano.<br>**Prisma** (`split`): Al rebotar en un enemigo se divide en dos.<br>**Eterno** (`eternal`): +3 rebotes y no caducan mientras sigan rebotando. |
+<!-- /gen:tree -->
+
+Detalle:
+- **Erizo**: TODA esquirla que toca algo se clava (enemigo: se mueve con él; suelo: se queda). Estallan cuando **cambias de
+  arma** (cualquier cambio después de clavarse) o a los `spikeLife` s: daño `spikeBlast` en `spikeBlastRadius`, **golpe fuerte**
+  (rompe congelados → añicos). Un arma lenta en la otra mano + Erizo = cargar, cambiar, reventar.
+  - Retorno: tras estallar vuelven en curva al cristal; lo que atraviesan recibe `returnDamage`; cada una que llega resta
+    `refund` s a la recarga del arma de reserva.
+  - Metralla: `shrapCount` esquirlas pequeñas (`shrapDamage`, vuelan 0,25 s) por estallido.
+  - Hemorragia: `bleedDps` por esquirla clavada (cada 0,5 s; es daño continuo: no activa items de golpe).
+- **Lanza**: recarga `lanceCooldown`; `lanceCount` esquirlas en fila, una cada `lanceGap` s, hacia donde apuntas **en ese momento**
+  (puedes barrer durante la ráfaga), a `lanceSpeed` durante `lanceLife` s; cada una atraviesa 1 enemigo.
+  - Perforación: atraviesan a todos; +`pierceDmgUp` de daño por enemigo atravesado.
+  - Aceleración: manteniendo, cada ráfaga recarga `accelStep` antes (hasta ×`accelMin`); al soltar vuelve a empezar.
+  - Cristal mayor: la última de cada ráfaga es grande (`bigSize`), ×`bigMul` de daño, golpe fuerte, empuja más.
+- **Caleidoscopio**: paleta oro; `kalBounces` rebotes (suelo, plataformas, enemigos); cada rebote +`kalBounceDmg` de daño.
+  En un enemigo se desvía hacia el más cercano que no haya tocado (≤ `kalSeekRange`); en el suelo, rebota.
+  - Buscador: también los rebotes de suelo van hacia el enemigo más cercano.
+  - Prisma: al rebotar en un enemigo sale una copia hacia el siguiente (×`splitMul` de daño, un rebote menos; la copia no se divide).
+  - Eterno: +3 rebotes y el alcance se renueva en cada rebote.
+
+## Elemento y Duplicador (items generales)
+
+- **Hielo**: cada esquirla suma `freeze` (con 3 se congela); el estallido del Erizo y el Cristal mayor rompen congelados.
+- **Fuego**: cada esquirla quema `burn` s.
+- **Duplicador**: base/Caleidoscopio = el doble de esquirlas con un 35 % más de apertura; Lanza = dos filas paralelas.
 
 ## Sinergias
 
-- **Singularidad**: las esquirlas que pasan cerca quedan orbitando y salen en todas direcciones al colapsar (Catapulta). Con
-  Hielo, la metralla congela todo el grupo atraído.
-- **Retorno** acelera el arma de reserva → pareja natural con armas de recarga larga (Singularidad, Golpe estelar).
-- **Golpe estelar con Marcas**: cada esquirla marca.
+- **Singularidad**: captura las esquirlas en vuelo y las suelta en todas direcciones (Catapulta). Con hielo, congela al grupo.
+- **Erizo + Gatillo de cambio** (item): el cambio que detona además hace que el siguiente ataque sea fuerte.
+- **Golpe estelar · Cazador**: cada esquirla marca; la Lanza perforando marca a una fila entera.
+
+## Ajustes
 
 <!-- gen:tuning -->
 | Campo | Valor | Rango | Qué es |
 |---|---:|---|---|
-| `cooldown` | 0.45 | 0.1 – 2 (paso 0.01) | Recarga (s) |
-| `count` | 5 | 1 – 12 (paso 1) | Esquirlas |
-| `spread` | 0.2 | 0 – 0.8 (paso 0.01) | Apertura (rad, media) |
-| `speed` | 950 | 300 – 2000 (paso 10) | Velocidad (px/s) |
-| `damage` | 9 | 1 – 60 (paso 1) | Daño por esquirla |
-| `knockback` | 60 | 0 – 400 (paso 5) | Empuje |
-| `life` | 0.6 | 0.1 – 2 (paso 0.05) | Alcance (s de vuelo) |
+| `cooldown` | 0.45 | 0.1 – 2 (paso 0.01) | Base: recarga (s) |
+| `count` | 5 | 1 – 12 (paso 1) | Base: esquirlas |
+| `spread` | 0.2 | 0 – 0.8 (paso 0.01) | Base: apertura (rad, media) |
+| `speed` | 950 | 300 – 2000 (paso 10) | Base: velocidad (px/s) |
+| `damage` | 9 | 1 – 60 (paso 1) | Base: daño por esquirla |
+| `knockback` | 60 | 0 – 400 (paso 5) | Base: empuje |
+| `life` | 0.6 | 0.1 – 2 (paso 0.05) | Base: alcance (s de vuelo) |
 | `freeze` | 0.34 | 0 – 1 (paso 0.01) | Hielo: congelación por esquirla |
-| `shatterDelay` | 0.5 | 0 – 2 (paso 0.05) | Hielo: espera hasta añicos (s) |
-| `stickTime` | 0.35 | 0 – 1.5 (paso 0.05) | Retorno: tiempo clavada (s) |
-| `returnDamage` | 7 | 0 – 60 (paso 1) | Retorno: daño al volver |
-| `refund` | 0.15 | 0 – 1 (paso 0.01) | Retorno: recarga del arma de reserva por esquirla (s) |
-| `bounceKeep` | 0.85 | 0.3 – 1.2 (paso 0.01) | Rebote: velocidad que conserva |
+| `burn` | 1.5 | 0 – 6 (paso 0.1) | Fuego: quemadura (s) |
+| `spikeLife` | 2.5 | 0.3 – 8 (paso 0.1) | Erizo: estallan solas a los (s) |
+| `spikeBlast` | 10 | 0 – 60 (paso 1) | Erizo: daño del estallido |
+| `spikeBlastRadius` | 34 | 8 – 120 (paso 2) | Erizo: radio del estallido |
+| `returnDamage` | 7 | 0 – 60 (paso 1) | Erizo · Retorno: daño al volver |
+| `refund` | 0.15 | 0 – 1 (paso 0.01) | Erizo · Retorno: recarga del arma de reserva por esquirla (s) |
+| `shrapCount` | 3 | 1 – 8 (paso 1) | Erizo · Metralla: esquirlas por estallido |
+| `shrapDamage` | 4 | 1 – 30 (paso 1) | Erizo · Metralla: daño |
+| `bleedDps` | 4 | 0 – 30 (paso 0.5) | Erizo · Hemorragia: daño/s por clavada |
+| `lanceCooldown` | 0.55 | 0.1 – 2 (paso 0.01) | Lanza: recarga (s) |
+| `lanceCount` | 5 | 1 – 12 (paso 1) | Lanza: esquirlas por ráfaga |
+| `lanceGap` | 0.035 | 0.01 – 0.15 (paso 0.005) | Lanza: tiempo entre esquirlas (s) |
+| `lanceSpeed` | 1350 | 400 – 2500 (paso 10) | Lanza: velocidad |
+| `lanceLife` | 0.75 | 0.1 – 2 (paso 0.05) | Lanza: alcance (s) |
+| `pierceDmgUp` | 0.25 | 0 – 1 (paso 0.05) | Lanza · Perforación: + daño por atravesado |
+| `accelStep` | 0.12 | 0 – 0.5 (paso 0.01) | Lanza · Aceleración: − recarga por ráfaga |
+| `accelMin` | 0.5 | 0.1 – 1 (paso 0.05) | Lanza · Aceleración: recarga mínima (×) |
+| `bigMul` | 3 | 1 – 8 (paso 0.1) | Lanza · Cristal mayor: × daño |
+| `bigSize` | 1.8 | 1 – 3 (paso 0.05) | Lanza · Cristal mayor: tamaño |
+| `kalBounces` | 3 | 1 – 10 (paso 1) | Caleidoscopio: rebotes |
+| `kalBounceDmg` | 0.25 | 0 – 1 (paso 0.05) | Caleidoscopio: + daño por rebote |
+| `kalSeekRange` | 500 | 100 – 900 (paso 10) | Caleidoscopio: alcance al buscar |
+| `splitMul` | 0.5 | 0.1 – 1 (paso 0.05) | Caleidoscopio · Prisma: daño de la copia (×) |
 <!-- /gen:tuning -->
 
 ## Visual
 
-`crystalShard` (core.js: lente en 3 capas + faceta clara + resplandor), estela `ribbon` en 3 pasadas (morado ancho, medio,
-núcleo) que nace en la cabeza y acaba en punta. Impacto `impact(…, 0.45)`. Clavada: la misma esquirla desplazada 8 px hacia atrás
-(sólo asoma la cola) + destello `star4` si es de hielo. Añicos: `hitFx('shatter')` en `game.js` (onda, fragmentos `chunk`, chispas).
+`crystalShard` (core.js) + estela `ribbon` en 3 pasadas; impacto `impact(…, 0,45)` (0,8 la grande). Clavada: la esquirla
+retrocedida 8 px + destello `star4`; tiembla en los últimos 0,4 s antes de estallar sola. Estallido del Erizo: `impact` radial +
+chispas. Añicos: `hitFx('shatter')`.
 
 ## Sonido
 
-`fan_release` (disparo: ruido filtrado que barre + parciales de cristal + golpe grave corto), `fan_hit`, `fan_ground`,
-`fan_stick` (hielo), `fan_freeze`, `fan_shatter`, `fan_ricochet`, `fan_rip` (se arrancan), `fan_absorb` (vuelven al cristal).
+`fan_release`, `fan_hit`, `fan_ground`, `fan_stick`, `fan_ricochet`, `fan_rip`, `fan_absorb`; estallido del Erizo =
+`SFXLIB.hitEnergy` suave.
 
 ## Port a Unity (plan)
 
-Forma nueva del disparo base (abanico) en el pipeline de `ShotResolver`; los mods son items (Hielo = Elemento; Rebote y Retorno
-= Trayectorias nuevas que el resto de armas también pueden usar). Esquirla = proyectil con pool y estado (vuela / clavada /
-vuelve). El «refund» al arma de reserva necesita que `WeaponInventory` tenga dos armas activas.
+Arma con forma «abanico». El árbol vive en la propia arma (evolución + mejoras como datos de `WeaponDefinition`, elegidas en la
+forja); la esquirla es un proyectil con pool y estados (vuela / clavada / vuelve). El estallido «al cambiar de arma» necesita el
+evento de cambio en `WeaponUser` (2 armas activas).
 
 ## Decisiones
 
-- 2026-10-19 · Apertura 0,2 rad (0,24 dejaba pasar dos por encima del enemigo en el clip): 3 aciertan, 1 al suelo, 1 se pierde.
-- 2026-10-19 · Retorno recarga el arma de reserva (idea propia para dar sentido al sistema de 2 armas; pendiente de opinión).
+- 2026-10-19 · Apertura 0,2 rad (con 0,24 pasaban dos por encima del enemigo).
+- 2026-10-19 · El usuario: las mejoras de un arma no pueden ser items generales; árbol profundo con varias formas avanzadas.
+  Se prueban Erizo / Lanza / Caleidoscopio. El hielo pasa a ser item (elemento de la build), no mod del arma.
+- 2026-10-19 · Erizo detona al cambiar de arma (propuesta para dar sentido a las 2 armas; pendiente de opinión).
 
 ## Preguntas abiertas
 
-- ¿El Retorno debería recargar el arma de reserva, dar escudo o curar?
+- ¿El Erizo debería detonar también con un clic largo, para quien juegue con una sola arma?
+- Equilibrio: la Lanza sale bastante más fuerte que la base (es lo esperado de una evolución, pero hay que comparar las tres).

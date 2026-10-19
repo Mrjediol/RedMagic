@@ -16,18 +16,26 @@ vuelta; mientras está fuera no se puede volver a lanzar (el ritmo lo marca la v
   `damage`, empuje en la dirección de la hoja, micro hit-stop. Tajo diagonal que se abre y se afina + chispas.
 - Al atraparla: destello en el cristal y `cooldown` corto.
 
-<!-- gen:mods -->
-| Mod (`id`) | Qué hace |
+## Mejoras
+
+<!-- gen:tree -->
+Mejoras provisionales (el árbol con evoluciones está pendiente de diseñar):
+
+| Mejora (id) | Qué hace |
 |---|---|
 | Doble (`twin`) | Sale otra hoja en arco alto (cubre arriba y abajo). |
 | Órbita (`orbit`) | Al volver da una vuelta alrededor del player antes de atraparse. |
-| Fuego (`fire`) | Deja una estela de llamas en el aire que quema. |
-<!-- /gen:mods -->
+<!-- /gen:tree -->
 
 - **Doble**: paleta oro; segunda hoja con arco de `twinArc` px hacia arriba (cubre voladores). La recarga empieza cuando vuelven las dos.
 - **Órbita**: al volver no se atrapa: da una vuelta de radio `orbitRadius` en `orbitTime` s alrededor del player (mitad trasera
   por detrás de él) golpeando a lo que se acerque por la espalda.
-- **Fuego**: paleta fuego; deja trozos de llama colgados en el aire durante `fireLife` s que queman (`fireBurn` s) a quien los toca.
+
+## Elemento y Duplicador (items generales)
+
+- **Fuego**: deja trozos de llama colgados en el aire durante `fireLife` s que queman (`fireBurn` s) a quien los toca.
+- **Hielo**: la ida congela (`iceFreeze`) y **la vuelta es golpe fuerte** → congelar y romper con un solo lanzamiento.
+- **Duplicador**: cada hoja sale doble; la copia hace el arco hacia abajo.
 
 ## Sinergias
 
@@ -50,6 +58,7 @@ vuelta; mientras está fuera no se puede volver a lanzar (el ritmo lo marca la v
 | `orbitRadius` | 64 | 30 – 140 (paso 2) | Órbita: radio |
 | `orbitTime` | 0.42 | 0.15 – 1.5 (paso 0.02) | Órbita: duración (s) |
 | `fireLife` | 0.75 | 0.2 – 2 (paso 0.05) | Fuego: duración de la estela (s) |
+| `iceFreeze` | 0.5 | 0 – 1 (paso 0.05) | Hielo: congelación en la ida |
 | `fireBurn` | 2 | 0 – 6 (paso 0.1) | Fuego: quemadura (s) |
 <!-- /gen:tuning -->
 

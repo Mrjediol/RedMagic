@@ -3,9 +3,9 @@
 'use strict';
 addWeapon({
   id: 'seed', name: 'Semilla estelar', short: 'Semilla', pal: 'set',
-  mods: [
+  // mejoras provisionales (árbol con evoluciones pendiente). Elemento (item): hielo = nova de escarcha; fuego = charco ardiendo.
+  ups: [
     { id: 'cluster', name: 'Racimo', desc: 'Estallido menor que suelta semillas pequeñas que estallan en cadena.' },
-    { id: 'ice', name: 'Hielo', desc: 'Nova de escarcha: picos de hielo y congela a todos los de alrededor.' },
     { id: 'prox', name: 'Proximidad', desc: 'Se arma y espera a que un enemigo se acerque (hasta 3 a la vez).' },
   ],
   tuning: {
@@ -13,7 +13,8 @@ addWeapon({
     armTime: [0.62, 0, 2, 0.02, 'Armado hasta estallar (s)'], damage: [45, 1, 200, 1, 'Daño'], radius: [70, 20, 200, 2, 'Radio'],
     knockback: [260, 0, 800, 10, 'Empuje'], launch: [420, 0, 900, 10, 'Lanza hacia arriba'], clusterCount: [3, 1, 8, 1, 'Racimo: semillas'],
     clusterDamage: [22, 1, 100, 1, 'Racimo: daño de cada una'], clusterRadius: [48, 10, 150, 2, 'Racimo: radio'], novaRadius: [130, 30, 300, 5, 'Hielo: radio de la nova'],
-    proxRadius: [46, 10, 150, 2, 'Proximidad: radio de disparo'], maxMines: [3, 1, 8, 1, 'Proximidad: minas a la vez'],
+    proxRadius: [46, 10, 150, 2, 'Proximidad: radio de disparo'], maxMines: [3, 1, 8, 1, 'Proximidad: minas a la vez'], puddleTime: [1.5, 0.2, 5, 0.1, 'Fuego: duración del charco (s)'], puddleBurn: [2, 0, 6, 0.1, 'Fuego: quemadura (s)'],
+    dupSpread: [45, 0, 150, 1, 'Duplicador: separación de las dos semillas (px)'],
   },
   create(slot) {
     const id = 'seed';
@@ -22,23 +23,22 @@ addWeapon({
     return {
       onPress(aim) {
         if (cd > 0) return;
-        const t = T(id); cd = t.cooldown; G.player.castT = 0.2;
+        const t = T(id); cd = t.cooldown * cdMul(); G.player.castT = 0.2;
         if (hasMod(slot, 'prox')) { const live = mines.filter(m => !m.gone); while (live.length >= t.maxMines) live.shift().detonate(); }
-        const tx = clamp(aim.tx, aim.x - t.range, aim.x + t.range);
-        const s = starSeedEnt(slot, aim.x, aim.y, tx);
-        G.ents.push(s); mines.push(s);
+        const tx = clamp(aim.tx, aim.x - t.range, aim.x + t.range), n = copies();
+        for (let c = 0; c < n; c++) { const s = starSeedEnt(slot, aim.x, aim.y, tx + (n > 1 ? (c ? 1 : -1) * t.dupSpread : 0)); G.ents.push(s); mines.push(s); }
         sfx(SND.seed_lob.fn);
       },
       update(dt) { cd -= dt; for (let i = mines.length - 1; i >= 0; i--) if (mines[i].gone) mines.splice(i, 1); },
-      ready() { return 1 - cd / T(id).cooldown; },
+      ready() { return 1 - cd / (T(id).cooldown * cdMul()); },
       refund(s) { cd -= s; },
     };
   },
 });
 
 function starSeedEnt(slot, x0, y0, tx) {
-  const t = T('seed'), ice = hasMod(slot, 'ice'), cluster = hasMod(slot, 'cluster'), prox = hasMod(slot, 'prox');
-  const pal = ice ? PAL.ice : PAL.set, t0 = G.t, TL = t0 + t.flightTime, d = Math.abs(tx - x0), hApex = 60 + d * 0.28;
+  const t = T('seed'), el = elemOf(), ice = el === 'ice', fire = el === 'fire', cluster = hasMod(slot, 'cluster'), prox = hasMod(slot, 'prox');
+  const pal = elemPal('set'), t0 = G.t, TL = t0 + t.flightTime, d = Math.abs(tx - x0), hApex = 60 + d * 0.28;
   let state = 'fly', armedAt = -1, trigger = -1, ticks = [];
   const pos = tt => { const u = seg(tt, t0, TL); return { x: lerp(x0, tx, u), y: lerp(y0, GROUND - 4, u) - 4 * hApex * u * (1 - u) }; };
   const ent = {
@@ -73,7 +73,8 @@ function starSeedEnt(slot, x0, y0, tx) {
         sfx(SND.seed_nova.fn);
       } else {
         const sc = cluster ? 0.7 : 1.1;
-        damageArea(x, cy, t.radius * (cluster ? 0.75 : 1), { dmg: t.damage * (cluster ? 0.6 : 1), kx: t.knockback, ky: -t.launch, heavy: true, slot, shake: cluster ? 5 : 8, frame: true, hitstop: 0.06 });
+        damageArea(x, cy, t.radius * (cluster ? 0.75 : 1), { dmg: t.damage * (cluster ? 0.6 : 1), kx: t.knockback, ky: -t.launch, heavy: true, slot, elem: el, burn: fire ? t.puddleBurn : 0, shake: cluster ? 5 : 8, frame: true, hitstop: 0.06 });
+        if (fire) G.ents.push(fireZone(x, t.radius * 0.9, t.puddleTime, t.puddleBurn, slot));
         addFx(1.4, (ctx, layer, tb) => {
           const u = G.t - tb;
           lightColumn(ctx, x, GROUND, u, sc, pal, layer);

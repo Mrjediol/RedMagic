@@ -13,7 +13,7 @@
   canvas { width:100%; aspect-ratio: 2 / 1; display:block; border-radius:8px; background:#3a4150; cursor:none; outline:none; }
   .help { color:var(--muted); font-size:12px; margin-top:8px; }
   .help b { color:var(--ink); }
-  aside { width:330px; flex:none; max-height:calc(100vh - 24px); overflow:auto; display:flex; flex-direction:column; gap:10px; }
+  aside { width:370px; flex:none; max-height:calc(100vh - 24px); overflow:auto; display:flex; flex-direction:column; gap:10px; }
   .card { background:var(--panel); border-radius:8px; padding:10px; }
   .card h3 { margin:0 0 6px; font-size:13px; display:flex; justify-content:space-between; align-items:center; }
   .slot { border:1px solid #3a4150; border-radius:6px; padding:8px; margin-top:6px; }
@@ -23,11 +23,19 @@
   select { width:100%; }
   label { display:flex; gap:6px; align-items:center; color:var(--muted); margin-top:4px; cursor:pointer; }
   label.mod { color:#ffe39a; } label .d { color:var(--muted); font-size:11px; }
+  label.mod, label.arch, label.item { flex-wrap:wrap; } label.mod .d, label.arch .d, label.item .d { flex-basis:100%; padding-left:22px; margin-top:-3px; }
   .row { display:flex; gap:6px; flex-wrap:wrap; }
   details { margin-top:6px; } summary { cursor:pointer; color:#c6cede; font-weight:600; }
   .tun { display:grid; grid-template-columns: 1fr 70px; gap:2px 6px; align-items:center; margin-top:4px; }
   .tun span { color:var(--muted); font-size:11px; } .tun input[type=range] { grid-column: 1 / -1; width:100%; accent-color:var(--accent); margin:0 0 4px; }
   .tun input[type=number] { padding:2px 4px; width:70px; font-size:11px; }
+  .sub { margin-top:8px; font-size:11px; font-weight:700; color:#c6cede; text-transform:uppercase; letter-spacing:.04em; }
+  label.arch { color:#f0c8ff; } label.item { margin-top:3px; }
+  .lvl { margin:6px 0 2px; align-items:center; } .lvl b { margin-right:auto; color:#fff; }
+  .offer { display:flex; gap:6px; margin:6px 0; align-items:stretch; }
+  .card-btn { flex:1; display:flex; flex-direction:column; gap:2px; text-align:left; padding:6px 8px; background:#1d2633; border-color:#4a5568; }
+  .card-btn small { font-size:10px; font-weight:700; text-transform:uppercase; } .card-btn b { color:#fff; } .card-btn span { color:var(--muted); font-size:11px; }
+  .offer .x { padding:4px 8px; }
   @media (max-width: 900px) { .wrap { flex-direction:column; } aside { width:100%; max-height:none; } }
 </style>
 </head>

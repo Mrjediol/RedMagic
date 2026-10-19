@@ -15,20 +15,28 @@ diferido: se coloca antes de que llegue el enemigo o se lanza por encima de obst
 - Estallido: daño en área `damage` en `radius` (centro a 30 px sobre el suelo), empuje `knockback` hacia fuera y `launch` hacia
   arriba; **golpe fuerte**. Columna de luz, anillo de suelo, agujas hacia arriba, grietas, polvo y escombros.
 
-<!-- gen:mods -->
-| Mod (`id`) | Qué hace |
+## Mejoras
+
+<!-- gen:tree -->
+Mejoras provisionales (el árbol con evoluciones está pendiente de diseñar):
+
+| Mejora (id) | Qué hace |
 |---|---|
 | Racimo (`cluster`) | Estallido menor que suelta semillas pequeñas que estallan en cadena. |
-| Hielo (`ice`) | Nova de escarcha: picos de hielo y congela a todos los de alrededor. |
 | Proximidad (`prox`) | Se arma y espera a que un enemigo se acerque (hasta 3 a la vez). |
-<!-- /gen:mods -->
+<!-- /gen:tree -->
 
 - **Racimo**: estallido principal al 60 % del daño y 75 % del radio, y suelta `clusterCount` semillas pequeñas que saltan a los
   lados (50-170 px) y estallan en cadena (`clusterDamage`, `clusterRadius`).
-- **Hielo**: en vez de columna, nova de escarcha (picos que brotan hacia fuera) de radio `novaRadius`: congela al instante a
-  todos (y la mitad del daño). Ideal para preparar añicos con otra arma.
 - **Proximidad**: se arma al instante y espera (zona marcada en el suelo, radio `proxRadius`); cuando un enemigo de suelo entra,
   3 tics rápidos y estalla. Hasta `maxMines` a la vez (la más vieja estalla al poner otra).
+
+## Elemento y Duplicador (items generales)
+
+- **Hielo**: en vez de columna, nova de escarcha (picos que brotan hacia fuera) de radio `novaRadius`: congela al instante a
+  todos (y la mitad del daño). Ideal para preparar añicos con otra arma.
+- **Fuego**: el estallido quema y deja un charco ardiendo (`puddleTime`, `puddleBurn`).
+- **Duplicador**: dos semillas a ±`dupSpread` px del punto.
 
 ## Sinergias
 
@@ -53,6 +61,9 @@ diferido: se coloca antes de que llegue el enemigo o se lanza por encima de obst
 | `novaRadius` | 130 | 30 – 300 (paso 5) | Hielo: radio de la nova |
 | `proxRadius` | 46 | 10 – 150 (paso 2) | Proximidad: radio de disparo |
 | `maxMines` | 3 | 1 – 8 (paso 1) | Proximidad: minas a la vez |
+| `puddleTime` | 1.5 | 0.2 – 5 (paso 0.1) | Fuego: duración del charco (s) |
+| `puddleBurn` | 2 | 0 – 6 (paso 0.1) | Fuego: quemadura (s) |
+| `dupSpread` | 45 | 0 – 150 (paso 1) | Duplicador: separación de las dos semillas (px) |
 <!-- /gen:tuning -->
 
 ## Visual

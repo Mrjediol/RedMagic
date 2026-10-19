@@ -49,3 +49,12 @@ Hecho:
   `tools/gen-fichas.cjs` (tablas de mods y ajustes de las fichas desde el código).
 
 Siguiente: el usuario juega, pide retoques arma a arma; cada retoque actualiza su ficha (decisiones) y se regeneran las tablas.
+
+## 2026-10-19 (noche) — progresión en prueba
+
+El usuario: las mejoras de un arma no pueden ser items generales; quiere árbol profundo (varias formas avanzadas por arma), items
+generales aplicables a todas, y curva de roguelite (difícil de base, combo = romper la run). Diseño en `docs/armas/progresion.md`.
+Hecho en la jugable: Abanico (Erizo / Lanza / Caleidoscopio) y Golpe estelar (Bombardeo / Cazador / Tormenta) con 3 mejoras cada
+evolución; 9 items con rareza (Esencias de hielo/fuego = elemento de la build, Duplicador, Gatillo de cambio, Constelación,
+Corazón de vacío, Cristal afilado, Engranaje, Sangre de cristal); modo run (🎲 subir de nivel, 🎁 cofre); dificultad (vida ×).
+Las otras cuatro armas: sus mods quedan como mejoras provisionales y expresan elemento y Duplicador.

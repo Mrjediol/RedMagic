@@ -14,20 +14,28 @@ apuntar. Otra forma de disparar («mantener» en vez de «cargar y soltar»).
 - Cada `tick` s: `tickDamage` al primero + empuje `push`. El calor sube mientras canalizas; a `maxChannel` s se corta solo.
 - Al soltar (o al cambiar de arma, o al llegar al máximo): se apaga en 0,14 s dejando restos que flotan; recarga `cooldown`.
 
-<!-- gen:mods -->
-| Mod (`id`) | Qué hace |
+## Mejoras
+
+<!-- gen:tree -->
+Mejoras provisionales (el árbol con evoluciones está pendiente de diseñar):
+
+| Mejora (id) | Qué hace |
 |---|---|
 | Prisma (`prism`) | Atraviesa al primero y se divide en haces dorados hacia los enemigos más cercanos. |
-| Hielo (`ice`) | Congela poco a poco; al soltar, lo congelado estalla (añicos). |
 | Robo de vida (`life`) | Una parte del daño cura al player. |
-<!-- /gen:mods -->
+<!-- /gen:tree -->
 
 - **Prisma**: sale por detrás del primero y se divide en `prismCount` haces dorados hacia los enemigos más cercanos a ese punto
   (≤ `prismRange`), cada uno con ×`prismMul` del daño. Gema-prisma girando en el punto de salida.
-- **Hielo**: paleta hielo; cada tick suma `freezeTick`. **Al soltar**, todo lo que tocó y esté congelado recibe un golpe
-  fuerte → añicos. (Canalizar hasta congelar y soltar = ritmo propio del arma.)
 - **Robo de vida**: `lifesteal` del daño cura al player (gotas carmesí que vuelven por el haz, cruces de curación).
-  Para probarlo hay que activar «Los enemigos disparan» en el panel.
+  Para probarlo hay que activar «Los enemigos disparan» (Dificultad).
+
+## Elemento y Duplicador (items generales)
+
+- **Hielo**: paleta hielo; cada tick suma `freezeTick`. **Al soltar**, todo lo que tocó y esté congelado recibe un golpe
+  fuerte → añicos (canalizar hasta congelar y soltar = ritmo propio del arma).
+- **Fuego**: cada tick quema `burnTick` s.
+- **Duplicador**: dos haces separados ±`dupAngle` rad (sólo uno suena).
 
 ## Sinergias
 
@@ -50,6 +58,8 @@ apuntar. Otra forma de disparar («mantener» en vez de «cargar y soltar»).
 | `prismMul` | 0.6 | 0.1 – 1.5 (paso 0.05) | Prisma: daño de cada haz (×) |
 | `freezeTick` | 0.07 | 0 – 0.5 (paso 0.01) | Hielo: congelación por tick |
 | `lifesteal` | 0.3 | 0 – 1 (paso 0.01) | Robo de vida: fracción del daño |
+| `burnTick` | 0.6 | 0 – 4 (paso 0.1) | Fuego: quemadura por tick (s) |
+| `dupAngle` | 0.07 | 0 – 0.4 (paso 0.01) | Duplicador: separación de los dos haces (rad) |
 <!-- /gen:tuning -->
 
 ## Visual

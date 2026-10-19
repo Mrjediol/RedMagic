@@ -1,16 +1,20 @@
-// jugable-ui.js — panel (huecos, mods, opciones, ajustes con exportar/importar), entrada y bucle de la versión jugable.
+// jugable-ui.js — panel (armas con su árbol, build de items, dificultad, opciones, ajustes con exportar/importar), entrada y bucle.
+// Modo libre: marcas lo que quieras. Modo run: «🎲 Subir de nivel» y «🎁 Cofre» sortean como lo haría la run (te ofrecen 2-3).
 'use strict';
 const UI = {};
 (function () {
-  const KEY = 'hab.jugable.v1';
+  const KEY = 'hab.jugable.v2';
   const store = { load() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } },
                   save() { try { localStorage.setItem(KEY, JSON.stringify(snapshot())); } catch (e) { /* sin almacenamiento */ } } };
-  const DEFAULT_SLOTS = ['fan', 'sing', 'ray'];
-  function snapshot() { return { v: 1, slotCount: G.slotCount, slots: G.slots.map(s => ({ w: s.w, mods: s.mods })), settings: G.settings, tuning: G.tuning }; }
+  const DEFAULT_SLOTS = ['fan', 'star', 'sing'];
+  const offers = {};                                         // ofertas abiertas por hueco (sorteo de subida de nivel)
+  let chestOffer = null;
+  function snapshot() { return { v: 2, slotCount: G.slotCount, slots: G.slots.map(s => ({ w: s.w, arch: s.arch, ups: s.ups })), build: G.build, settings: G.settings, tuning: G.tuning }; }
   function apply(snap) {
-    if (!snap) return;
+    if (!snap || snap.v !== 2) return;
     if (snap.slotCount) G.slotCount = clamp(snap.slotCount, 2, 3);
-    if (snap.slots) snap.slots.forEach((s, i) => { if (G.slots[i] && WEAPONS[s.w]) { G.slots[i].w = s.w; G.slots[i].mods = Object.assign({}, s.mods); } });
+    if (snap.slots) snap.slots.forEach((s, i) => { if (G.slots[i] && WEAPONS[s.w]) Object.assign(G.slots[i], { w: s.w, arch: s.arch || null, ups: Object.assign({}, s.ups) }); });
+    if (snap.build) G.build = { element: snap.build.element || null, items: Object.assign({}, snap.build.items) };
     if (snap.settings) Object.assign(G.settings, snap.settings);
     if (snap.tuning) for (const id in snap.tuning) if (G.tuning[id]) Object.assign(G.tuning[id], snap.tuning[id]);
   }
@@ -18,46 +22,106 @@ const UI = {};
 
   // ------------------------------------------------ estado inicial
   const ids = Object.keys(WEAPONS);
-  G.slots = DEFAULT_SLOTS.map((w, i) => ({ w: WEAPONS[w] ? w : ids[i % ids.length], mods: {} }));
-  G.player = makePlayer(); resetEnemies();
+  G.slots = DEFAULT_SLOTS.map((w, i) => ({ w: WEAPONS[w] ? w : ids[i % ids.length], arch: null, ups: {} }));
+  G.player = makePlayer();
   apply(store.load());
+  resetEnemies();
   G.slots.forEach(makeInst);
+
+  // ------------------------------------------------ sorteos (lo que haría la run)
+  const pick = (arr, n) => { const a = arr.slice(), out = []; while (a.length && out.length < n) out.push(a.splice(Math.floor(Math.random() * a.length), 1)[0]); return out; };
+  function levelOffer(s) {
+    const d = WEAPONS[s.w];
+    if (d.archetypes && !s.arch) return pick(d.archetypes, 2).map(a => ({ kind: 'arch', id: a.id, name: a.name, desc: a.desc, tag: 'Evolución' }));
+    const pool = (d.archetypes ? d.archetypes.find(a => a.id === s.arch).ups : d.ups || []).filter(u => !s.ups[u.id]);
+    return pick(pool, 2).map(u => ({ kind: 'up', id: u.id, name: u.name, desc: u.desc, tag: 'Mejora' }));
+  }
+  function chestRoll() {
+    const pool = ITEMS.filter(it => !G.build.items[it.id] && G.build.element !== it.id), out = [];
+    while (pool.length && out.length < 3) {
+      const tot = pool.reduce((a, it) => a + RARITY[it.rarity].w, 0); let r = Math.random() * tot;
+      const i = pool.findIndex(it => (r -= RARITY[it.rarity].w) <= 0); out.push(pool.splice(Math.max(0, i), 1)[0]);
+    }
+    return out;
+  }
+  function giveItem(it) { if (it.elem) G.build.element = it.id; else G.build.items[it.id] = true; }
 
   // ------------------------------------------------ panel
   const panel = document.getElementById('panel');
-  function el(tag, attrs = {}, ...kids) { const e = document.createElement(tag); for (const k in attrs) { if (k === 'on') for (const ev in attrs.on) e.addEventListener(ev, attrs.on[ev]); else if (k in e) e[k] = attrs[k]; else e.setAttribute(k, attrs[k]); } kids.flat().forEach(c => e.append(c)); return e; }
+  function el(tag, attrs = {}, ...kids) { const e = document.createElement(tag); for (const k in attrs) { if (k === 'on') for (const ev in attrs.on) e.addEventListener(ev, attrs.on[ev]); else if (k === 'style') e.setAttribute('style', attrs[k]); else if (k in e) e[k] = attrs[k]; else e.setAttribute(k, attrs[k]); } kids.flat().forEach(c => c != null && e.append(c)); return e; }
+  const desc = t => el('span', { className: 'd' }, '— ' + t);
   function build() {
     panel.innerHTML = '';
-    // huecos
+    // ---- armas
     const slotsCard = el('div', { className: 'card' }, el('h3', {}, 'Armas equipadas', el('label', {}, el('input', { type: 'checkbox', checked: G.slotCount === 3, on: { change: e => { G.slotCount = e.target.checked ? 3 : 2; if (G.cur >= G.slotCount) G.cur = 0; changed(); } } }), '3er hueco')));
-    for (let i = 0; i < G.slotCount; i++) {
-      const s = G.slots[i], d = WEAPONS[s.w];
-      const box = el('div', { className: 'slot' + (i === G.cur ? ' on' : '') });
-      const sel = el('select', { on: { change: e => { s.w = e.target.value; s.mods = {}; makeInst(s); changed(); } } }, ids.map(id => el('option', { value: id, selected: id === s.w }, `${i + 1} · ${WEAPONS[id].name}`)));
-      box.append(sel);
-      for (const m of d.mods) box.append(el('label', { className: 'mod', title: m.desc }, el('input', { type: 'checkbox', checked: !!s.mods[m.id], on: { change: e => { s.mods[m.id] = e.target.checked; changed(false); } } }), m.name, el('span', { className: 'd' }, '— ' + m.desc)));
-      slotsCard.append(box);
-    }
+    for (let i = 0; i < G.slotCount; i++) slotsCard.append(slotBox(i));
     panel.append(slotsCard);
-    // opciones
+    // ---- build de items
+    const b = el('div', { className: 'card' }, el('h3', {}, 'Build (items generales)', el('button', { on: { click: () => { chestOffer = chestRoll(); build(); } } }, '🎁 Cofre')));
+    if (chestOffer) b.append(offerRow(chestOffer.map(it => ({ name: it.name, desc: it.desc, tag: it.rarity, color: RARITY[it.rarity].color, go: () => { giveItem(it); chestOffer = null; changed(); } })), () => { chestOffer = null; build(); }));
+    b.append(el('div', { className: 'sub' }, 'Elemento (un hueco)'));
+    for (const opt of [{ id: null, name: 'Ninguno' }, ...ITEMS.filter(it => it.elem)])
+      b.append(el('label', { className: 'item', style: opt.rarity ? `color:${RARITY[opt.rarity].color}` : '' }, el('input', { type: 'radio', name: 'elem', checked: G.build.element === opt.id, on: { change: () => { G.build.element = opt.id; changed(); } } }), opt.name, opt.desc ? desc(opt.desc) : null));
+    b.append(el('div', { className: 'sub' }, 'Items'));
+    for (const it of ITEMS.filter(x => !x.elem))
+      b.append(el('label', { className: 'item', style: `color:${RARITY[it.rarity].color}`, title: it.rarity }, el('input', { type: 'checkbox', checked: !!G.build.items[it.id], on: { change: e => { G.build.items[it.id] = e.target.checked; changed(false); } } }), `${it.name} · ${it.rarity}`, desc(it.desc)));
+    b.append(el('div', { className: 'row', style: 'margin-top:6px' }, el('button', { on: { click: () => { G.build = { element: null, items: {} }; changed(); } } }, 'Vaciar build')));
+    panel.append(b);
+    // ---- dificultad
+    const dif = el('div', { className: 'card' }, el('h3', {}, 'Dificultad'));
+    const hv = el('span', {}, '×' + G.settings.hpMul.toFixed(2));
+    dif.append(el('label', {}, 'Vida de los enemigos', el('input', { type: 'range', min: 0.5, max: 4, step: 0.25, value: G.settings.hpMul, on: { input: e => { G.settings.hpMul = +e.target.value; hv.textContent = '×' + G.settings.hpMul.toFixed(2); }, change: () => { resetEnemies(); store.save(); } } }), hv));
+    dif.append(el('label', {}, el('input', { type: 'checkbox', checked: !!G.settings.enemyAttacks, on: { change: e => { G.settings.enemyAttacks = e.target.checked; store.save(); } } }), 'Los enemigos disparan'));
+    panel.append(dif);
+    // ---- opciones
     const opts = el('div', { className: 'card' }, el('h3', {}, 'Opciones'));
     const tog = (k, txt) => opts.append(el('label', {}, el('input', { type: 'checkbox', checked: !!G.settings[k], on: { change: e => { G.settings[k] = e.target.checked; if (k === 'sound' && e.target.checked) audioInit(); store.save(); } } }), txt));
     tog('reactions', 'Reacciones (añicos, deshielo, vapor)'); tog('frames', 'Impact frames'); tog('hitstop', 'Hit-stop (micro-pausa al golpear fuerte)');
-    tog('sound', '🔊 Sonido'); tog('enemyAttacks', 'Los enemigos disparan (para probar robo de vida)'); tog('hitboxes', 'Ver hitboxes');
-    const sp = el('input', { type: 'range', min: 0.1, max: 1, step: 0.05, value: G.timeScale, on: { input: e => { G.timeScale = +e.target.value; spv.textContent = G.timeScale.toFixed(2) + '×'; } } }), spv = el('span', {}, G.timeScale.toFixed(2) + '×');
-    opts.append(el('label', {}, 'Velocidad del juego', sp, spv));
+    tog('sound', '🔊 Sonido'); tog('hitboxes', 'Ver hitboxes');
+    const spv = el('span', {}, G.timeScale.toFixed(2) + '×');
+    opts.append(el('label', {}, 'Velocidad del juego', el('input', { type: 'range', min: 0.1, max: 1, step: 0.05, value: G.timeScale, on: { input: e => { G.timeScale = +e.target.value; spv.textContent = G.timeScale.toFixed(2) + '×'; } } }), spv));
     opts.append(el('div', { className: 'row', style: 'margin-top:8px' },
       el('button', { on: { click: resetEnemies } }, '↺ Enemigos (R)'),
       el('button', { on: { click: exportJson } }, '⬇ Exportar ajustes'),
       el('button', { on: { click: () => fileIn.click() } }, '⬆ Importar'),
       el('button', { on: { click: resetTuning } }, 'Valores por defecto')));
     panel.append(opts);
-    // ajustes de lo equipado + reacciones
+    // ---- ajustes
     const tun = el('div', { className: 'card' }, el('h3', {}, 'Ajustes (se guardan en este navegador; ⬇ para pasarlos al repo)'));
     const used = [...new Set(G.slots.slice(0, G.slotCount).map(s => s.w))];
-    for (const id of used) tun.append(tuningBlock(WEAPONS[id].name, id, WEAPONS[id].tuning, used.length === 1));
+    for (const id of used) tun.append(tuningBlock(WEAPONS[id].name, id, WEAPONS[id].tuning, false));
+    tun.append(tuningBlock('Items generales', 'items', ITEM_TUNING, false));
     tun.append(tuningBlock('Reacciones (sistema común)', 'react', REACT_TUNING, false));
     panel.append(tun);
+  }
+  function slotBox(i) {
+    const s = G.slots[i], d = WEAPONS[s.w];
+    const box = el('div', { className: 'slot' + (i === G.cur ? ' on' : '') });
+    box.append(el('select', { on: { change: e => { s.w = e.target.value; s.arch = null; s.ups = {}; delete offers[i]; makeInst(s); changed(); } } }, ids.map(id => el('option', { value: id, selected: id === s.w }, `${i + 1} · ${WEAPONS[id].name}`))));
+    box.append(el('div', { className: 'row lvl' }, el('b', {}, `Nivel ${slotLevel(s)}`),
+      el('button', { on: { click: () => { offers[i] = levelOffer(s); build(); } } }, '🎲 Subir de nivel'),
+      el('button', { on: { click: () => { s.arch = null; s.ups = {}; delete offers[i]; changed(); } } }, '↺ Nv 1')));
+    if (offers[i]) box.append(offers[i].length
+      ? offerRow(offers[i].map(o => ({ name: o.name, desc: o.desc, tag: o.tag, color: o.kind === 'arch' ? '#f0c8ff' : '#ffe39a', go: () => { if (o.kind === 'arch') s.arch = o.id; else s.ups[o.id] = true; delete offers[i]; changed(); } })), () => { delete offers[i]; build(); })
+      : el('div', { className: 'd' }, 'Nivel máximo: no quedan mejoras.'));
+    if (d.archetypes) {
+      box.append(el('div', { className: 'sub' }, 'Evolución (nivel 2)'));
+      for (const a of [{ id: null, name: 'Ninguna (base)' }, ...d.archetypes])
+        box.append(el('label', { className: 'arch' }, el('input', { type: 'radio', name: 'arch' + i, checked: s.arch === a.id, on: { change: () => { s.arch = a.id; s.ups = {}; changed(); } } }), a.name, a.desc ? desc(a.desc) : null));
+      const arch = d.archetypes.find(a => a.id === s.arch);
+      if (arch) { box.append(el('div', { className: 'sub' }, `Mejoras de ${arch.name} (niveles 3-5)`)); for (const u of arch.ups) box.append(upBox(s, u)); }
+    } else if (d.ups && d.ups.length) {
+      box.append(el('div', { className: 'sub' }, 'Mejoras (provisionales: árbol pendiente de diseñar)'));
+      for (const u of d.ups) box.append(upBox(s, u));
+    }
+    return box;
+  }
+  const upBox = (s, u) => el('label', { className: 'mod', title: u.desc }, el('input', { type: 'checkbox', checked: !!s.ups[u.id], on: { change: e => { s.ups[u.id] = e.target.checked; changed(); } } }), u.name, desc(u.desc));
+  function offerRow(list, cancel) {
+    const row = el('div', { className: 'offer' });
+    for (const o of list) row.append(el('button', { className: 'card-btn', on: { click: o.go } }, el('small', { style: `color:${o.color}` }, o.tag), el('b', {}, o.name), el('span', {}, o.desc)));
+    row.append(el('button', { className: 'x', title: 'Descartar', on: { click: cancel } }, '✕'));
+    return row;
   }
   function tuningBlock(title, id, spec, open) {
     const det = el('details', { open }); det.append(el('summary', {}, title));
@@ -77,13 +141,14 @@ const UI = {};
   function resetTuning() {
     for (const id in WEAPONS) G.tuning[id] = Object.fromEntries(Object.entries(WEAPONS[id].tuning).map(([k, v]) => [k, v[0]]));
     G.tuning.react = Object.fromEntries(Object.entries(REACT_TUNING).map(([k, v]) => [k, v[0]]));
+    G.tuning.items = Object.fromEntries(Object.entries(ITEM_TUNING).map(([k, v]) => [k, v[0]]));
     changed();
   }
   function exportJson() {
     const blob = new Blob([JSON.stringify(Object.assign({ exportado: new Date().toISOString() }, snapshot()), null, 2)], { type: 'application/json' });
-    const a = el('a', { href: URL.createObjectURL(blob), download: 'ajustes-armas.json' }); a.click();
+    el('a', { href: URL.createObjectURL(blob), download: 'ajustes.json' }).click();
   }
-  const fileIn = el('input', { type: 'file', accept: '.json', style: 'display:none', on: { change: e => { const f = e.target.files[0]; if (!f) return; f.text().then(txt => { try { apply(JSON.parse(txt)); G.slots.forEach(makeInst); changed(); } catch (err) { console.warn(err); } }); } } });
+  const fileIn = el('input', { type: 'file', accept: '.json', style: 'display:none', on: { change: e => { const f = e.target.files[0]; if (!f) return; f.text().then(txt => { try { apply(JSON.parse(txt)); G.slots.forEach(makeInst); resetEnemies(); changed(); } catch (err) { console.warn(err); } }); } } });
   document.body.append(fileIn);
   build();
 

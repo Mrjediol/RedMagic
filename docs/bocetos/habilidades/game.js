@@ -12,7 +12,8 @@ const G = {
   cam: { x: 0 }, mouse: { x: 0, y: 0, sx: 0, sy: 0, down: false }, keys: {},
   player: null, enemies: [], ents: [], texts: [], dmgLog: [], dmgTotal: 0,
   slots: [], cur: 0, slotCount: 2,
-  settings: { reactions: true, frames: true, hitstop: true, sound: false, enemyAttacks: false, hitboxes: false },
+  settings: { reactions: true, frames: true, hitstop: true, sound: false, enemyAttacks: false, hitboxes: false, hpMul: 1 },
+  build: { element: null, items: {} }, lastSwap: -9, swapBuff: -9,
   tuning: {},
 };
 
@@ -22,7 +23,9 @@ const WEAPONS = {};
 // instancia = { onPress(aim), onHold(aim, dt), onRelease(aim), update(dt), ready() 0..1, label? }
 function addWeapon(def) { WEAPONS[def.id] = def; G.tuning[def.id] = Object.fromEntries(Object.entries(def.tuning).map(([k, v]) => [k, v[0]])); }
 const T = id => G.tuning[id];
-const hasMod = (slot, m) => !!(slot && slot.mods && slot.mods[m]);
+// hueco = { w, arch (evolución elegida o null), ups { id: true } } — hasMod mira las dos cosas
+const hasMod = (slot, m) => !!(slot && (slot.arch === m || (slot.ups && slot.ups[m])));
+function slotLevel(s) { const d = WEAPONS[s.w]; return 1 + (d.archetypes && s.arch ? 1 : 0) + Object.keys(s.ups || {}).filter(k => s.ups[k]).length; }
 function slotOf(id) { return G.slots.slice(0, G.slotCount).find(s => s.w === id); }
 function otherSlots(slot) { return G.slots.slice(0, G.slotCount).filter(s => s !== slot); }
 
@@ -73,7 +76,8 @@ function selectSlot(i) {
   if (i === G.cur || i >= G.slotCount) return;
   const s = G.slots[G.cur]; if (G.mouse.down && s.inst && s.inst.onRelease) s.inst.onRelease(aimInfo());
   G.cur = i; if (G.mouse.down) { const n = G.slots[G.cur]; n.inst && n.inst.onPress && n.inst.onPress(aimInfo()); }
-  G.swapFx = G.t; sfx(k => SFXLIB.whoosh(k, 2400, 900, 0.12, 0.12)); UI.refreshSlots && UI.refreshSlots();
+  G.swapFx = G.t; G.lastSwap = G.t; if (hasItem('swap')) { G.swapBuff = G.t + T('items').swapTime; G.swapBuffHit = false; }
+  sfx(k => SFXLIB.whoosh(k, 2400, 900, 0.12, 0.12)); UI.refreshSlots && UI.refreshSlots();
 }
 function swapWeapon(d) { selectSlot((G.cur + d + G.slotCount) % G.slotCount); }
 
@@ -86,7 +90,7 @@ const SPAWNS = [
 function makeEnemy(sp) {
   const fly = sp.kind === 'flyer';
   return { sp, kind: sp.kind, fly, x: sp.x, y: fly ? sp.y : GROUND - 44, homeY: fly ? sp.y : GROUND - 44, vx: 0, vy: 0, dir: 1,
-           rx: fly ? 22 : 27, ry: fly ? 28 : 39, hp: 120, hpMax: 120, dead: false, deadT: 0, flashT: 0, sqT: 0, shakeT: 0,
+           rx: fly ? 22 : 27, ry: fly ? 28 : 39, hp: 120 * (G.settings.hpMul || 1), hpMax: 120 * (G.settings.hpMul || 1), markN: 0, dead: false, deadT: 0, flashT: 0, sqT: 0, shakeT: 0,
            freeze: 0, frozenT: 0, burnT: 0, burnTick: 0, markT: 0, stunT: 0, pull: null, slammed: false, lastHitT: -9, atkT: 2 + Math.random() * 2 };
 }
 function resetEnemies() { G.enemies = SPAWNS.map(makeEnemy); }
@@ -120,6 +124,7 @@ function updateEnemies(dt) {
     if (!frozen && e.stunT <= 0 && e.kind === 'walker' && Math.abs(e.vx) < 30 && !e.pull) {
       e.x += e.dir * 40 * dt; if (e.x > e.sp.x1) e.dir = -1; if (e.x < e.sp.x0) e.dir = 1;
     }
+    if (e.vpull && G.t < e.vpull.until && !e.pull) e.pull = { x: e.vpull.x, y: e.vpull.y, s: 240 };
     // atracción (singularidad): la pone cada frame quien atrae
     if (e.pull) {
       const dx = e.pull.x - e.x, dy = e.pull.y - e.y, d = Math.hypot(dx, dy) || 1, s = e.pull.s * (frozen ? 0.5 : 1);
@@ -158,6 +163,11 @@ function healPlayer(d) { const p = G.player; const before = p.hp; p.hp = Math.mi
 function damage(e, o) {
   if (!e || e.dead) return 0;
   let dmg = o.dmg || 0, label = null;
+  const it = T('items');
+  if (o.slot && !o.dot) {                                     // items generales sobre golpes de arma (no sobre daño continuo)
+    if (hasItem('sharp')) dmg *= it.sharpMul;
+    if (hasItem('swap') && G.t < G.swapBuff) { dmg *= it.swapMul; o.heavy = true; if (!G.swapBuffHit) { G.swapBuffHit = true; G.swapBuff = G.t + 0.12; } }
+  }
   const frozen = e.frozenT > 0, R = G.settings.reactions && !o.noReact;
   // reacciones
   if (R && frozen && o.elem === 'fire') { dmg *= 2; e.frozenT = 0; e.freeze = 0; label = 'DESHIELO'; hitFx('steam', e.x, e.y); }
@@ -178,8 +188,22 @@ function damage(e, o) {
   if (o.shake) G.shake += o.shake;
   if (o.frame && G.settings.frames) G.dark = Math.max(G.dark, 0.05);
   // sistema de marcas: con el Golpe estelar + mod Marcas equipado, los golpes de las otras armas marcan
-  if (o.slot && o.slot.w !== 'star' && slotOf('star') && hasMod(slotOf('star'), 'marks')) e.markT = 8;
-  if (e.hp <= 0) { e.dead = true; e.deadT = 0; hitFx('die', e.x, e.y, e); }
+  // marcas: las da el Cazador (evolución del Golpe estelar); con Acumulación se apilan hasta 3 (un golpe por ataque)
+  const hunter = slotOf('star');
+  if (o.slot && o.slot.w !== 'star' && !o.dot && hunter && hasMod(hunter, 'hunter')) {
+    const fresh = G.t - (e.markHitT || -9) > 0.25;
+    e.markN = hasMod(hunter, 'stack') ? Math.min(3, (e.markT > 0 ? e.markN : 0) + (fresh ? 1 : 0)) || 1 : 1;
+    e.markHitT = G.t; e.markT = 8;
+  }
+  if (o.slot && !o.dot && dmg > 0) {
+    if (hasItem('const')) { G.constHits = (G.constHits || 0) + 1; if (G.constHits >= it.constEvery) { G.constHits = 0; if (G.spawnMiniStrike) G.spawnMiniStrike(e); } }
+    if (hasItem('void') && o.heavy) voidPulse(e.x, e.y);
+  }
+  if (e.hp <= 0) {
+    e.dead = true; e.deadT = 0; hitFx('die', e.x, e.y, e);
+    if (hasItem('blood')) { const h = healPlayer(it.bloodHeal); if (h > 0) text(G.player.x, G.player.y - 92, '+' + Math.round(h), '#ff9fb4'); }
+    if (o.onKill) o.onKill(e);
+  }
   return dmg;
 }
 function damageArea(x, y, r, o, falloff = true) {
@@ -213,6 +237,63 @@ function vapor(e) {
 G.tuning.react = { frozenTime: 2.5, shatterDmg: 45, shatterRadius: 80, shatterSplash: 15, vaporDmg: 25, vaporRadius: 70 };
 const REACT_TUNING = { frozenTime: [2.5, 0.5, 6, 0.1, 'Congelado: duración (s)'], shatterDmg: [45, 0, 150, 1, 'Añicos: daño extra'], shatterRadius: [80, 0, 200, 1, 'Añicos: radio'],
                        shatterSplash: [15, 0, 80, 1, 'Añicos: daño alrededor'], vaporDmg: [25, 0, 100, 1, 'Vapor: daño'], vaporRadius: [70, 0, 200, 1, 'Vapor: radio'] };
+
+// ---------------------------------------------------------------- items generales (vía 3: valen para todas las armas)
+// Regla: un item sólo usa eventos que tienen todas las armas (golpear, golpe fuerte, matar, cambiar de arma) o un parámetro
+// que todas definen (elemento, nº de proyectiles). Cada arma decide cómo EXPRESA el elemento y el Duplicador.
+const ITEMS = [
+  { id: 'ice', name: 'Esencia de hielo', rarity: 'raro', elem: true, desc: 'Los golpes congelan (cada arma a su manera). Congelado + golpe fuerte = añicos.' },
+  { id: 'fire', name: 'Esencia de fuego', rarity: 'raro', elem: true, desc: 'Los golpes queman (cada arma a su manera). Congelado + fuego = deshielo.' },
+  { id: 'dup', name: 'Duplicador', rarity: 'legendario', desc: 'Dobla los proyectiles de todas tus armas (dos singularidades se funden en una mayor).' },
+  { id: 'swap', name: 'Gatillo de cambio', rarity: 'raro', desc: 'Tras cambiar de arma, el siguiente ataque hace más daño y es golpe fuerte.' },
+  { id: 'const', name: 'Constelación', rarity: 'raro', desc: 'Cada pocos golpes cae una lanza pequeña sobre el último enemigo golpeado.' },
+  { id: 'void', name: 'Corazón de vacío', rarity: 'raro', desc: 'Los golpes fuertes atraen un instante a los enemigos cercanos.' },
+  { id: 'sharp', name: 'Cristal afilado', rarity: 'común', desc: 'Más daño en todos los golpes de arma.' },
+  { id: 'gear', name: 'Engranaje', rarity: 'común', desc: 'Menos recarga en todas las armas.' },
+  { id: 'blood', name: 'Sangre de cristal', rarity: 'común', desc: 'Cada enemigo eliminado cura un poco.' },
+];
+const RARITY = { 'común': { w: 60, color: '#c8ccd4' }, 'raro': { w: 30, color: '#5fb8ff' }, 'legendario': { w: 10, color: '#ffc93c' } };
+const hasItem = id => !!(G.build.items[id] || G.build.element === id);
+const elemOf = () => G.build.element;                       // 'ice' | 'fire' | null (un solo hueco de elemento)
+const copies = () => hasItem('dup') ? 2 : 1;
+const cdMul = () => hasItem('gear') ? T('items').gearMul : 1;
+const elemPal = base => PAL[elemOf() || base];
+G.tuning.items = { sharpMul: 1.2, gearMul: 0.85, swapMul: 1.6, swapTime: 1.5, constEvery: 8, voidRadius: 130, voidTime: 0.4, bloodHeal: 3 };
+const ITEM_TUNING = { sharpMul: [1.2, 1, 3, 0.05, 'Cristal afilado: × daño'], gearMul: [0.85, 0.3, 1, 0.01, 'Engranaje: × recarga'], swapMul: [1.6, 1, 4, 0.05, 'Gatillo: × daño'],
+  swapTime: [1.5, 0.2, 5, 0.1, 'Gatillo: ventana (s)'], constEvery: [8, 2, 30, 1, 'Constelación: cada N golpes'], voidRadius: [130, 30, 400, 5, 'Corazón de vacío: radio'],
+  voidTime: [0.4, 0.1, 2, 0.05, 'Corazón de vacío: duración (s)'], bloodHeal: [3, 0, 30, 1, 'Sangre de cristal: cura por muerte'] };
+function voidPulse(x, y) {
+  const it = T('items'); if (G.t - (G._voidT || -9) < 0.2) return; G._voidT = G.t;
+  for (const e of alive()) if (Math.hypot(e.x - x, e.y - y) < it.voidRadius) e.vpull = { x, y, until: G.t + it.voidTime };
+  addFx(0.45, (ctx, layer, t0) => {
+    const u = seg(G.t, t0, t0 + 0.4);
+    for (let i = 0; i < 2; i++) { const r = it.voidRadius * (1 - easeIn(u)) * (1 - i * 0.3); ellArc(ctx, x, y, r, r, layer === 'back' ? Math.PI : 0, layer === 'back' ? TAU : Math.PI, 2, PAL.void.light, 0.6 * (1 - u), layer, { taper: 0, wob: 0.15, seed: i + 7 }); }
+  });
+}
+// zona de fuego en el suelo (cráter, charco): quema a quien la pisa
+function fireZone(x, halfW, life, burn, slot) {
+  const t0 = G.t; let tick = 0;
+  return {
+    kind: 'zone',
+    update(dt) {
+      tick -= dt;
+      if (tick <= 0) { tick = 0.3; for (const e of alive()) if (Math.abs(e.x - x) < halfW && GROUND - (e.y + e.ry) < 30) damage(e, { dmg: 3, elem: 'fire', burn, slot, silentFlash: true, dot: true }); }
+      return G.t - t0 < life + 0.35;
+    },
+    draw(ctx, layer) {
+      const end = t0 + life, n = Math.max(4, Math.round(halfW / 14));
+      for (let i = 0; i < n; i++) {
+        const R = rand(i + Math.floor(x)), d = (R() - 0.5) * halfW * 1.7, on = seg(G.t, t0 + Math.abs(d) / 400, t0 + Math.abs(d) / 400 + 0.1) * (1 - seg(G.t, end - 0.2 + R() * 0.2, end + 0.35)), lay = R() < 0.45 ? 'back' : 'front';
+        if (lay === layer) flame(ctx, x + d, GROUND + 2, (24 + R() * 22) * on, (7 + R() * 5) * Math.max(0.3, on), G.t, i, on, layer);
+      }
+      if (layer === 'back') {
+        const a = (1 - seg(G.t, end, end + 0.35)) * 0.7;
+        ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = col('#3a1208', layer); ctx.beginPath(); ctx.ellipse(x, GROUND + 4, halfW, 9, 0, 0, TAU); ctx.fill(); ctx.restore();
+        groundRing(ctx, x, GROUND + 3, halfW * 0.94, 2.4, PAL.fire.mid, a, layer, { taper: 0, wob: 0.1, seed: 9 });
+      }
+    },
+  };
+}
 
 // ---------------------------------------------------------------- efectos de un solo uso (dibujo de core.js / fx.js con el tiempo del juego)
 function addFx(life, draw) { const t0 = G.t; G.ents.push({ fx: true, update() { return G.t - t0 < life; }, draw(ctx, layer) { draw(ctx, layer, t0); } }); }
@@ -307,6 +388,7 @@ function drawDummy(ctx, e, solid) {
     ctx.save(); ctx.translate(e.x, y); ctx.rotate(G.t * 2); ctx.globalAlpha = a;
     for (const [r, c] of [[8, PAL.set.mid], [5, PAL.set.core]]) { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r * 0.7, 0); ctx.lineTo(0, r); ctx.lineTo(-r * 0.7, 0); ctx.closePath(); ctx.fill(); }
     ctx.restore();
+    if (e.markN > 1) { ctx.font = '700 10px system-ui'; ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText('×' + e.markN, e.x + 13, y + 4); ctx.textAlign = 'left'; }
   }
   // vida
   if (e.hp < e.hpMax && G.t - e.lastHitT < 3) {
@@ -345,6 +427,9 @@ function render(ctx) {
 function drawHud(ctx) {
   const p = G.player;
   ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(12, 12, 160, 12); ctx.fillStyle = '#ff5a7e'; ctx.fillRect(14, 14, 156 * p.hp / p.hpMax, 8);
+  // build activa: elemento + items, con el color de su rareza
+  let bx = 14; ctx.font = '600 10px system-ui';
+  for (const it of ITEMS) if (hasItem(it.id)) { ctx.fillStyle = RARITY[it.rarity].color; ctx.fillText(it.name, bx, 38); bx += ctx.measureText(it.name).width + 10; }
   // huecos de arma
   for (let i = 0; i < G.slotCount; i++) {
     const s = G.slots[i], d = WEAPONS[s.w], x = 12 + i * 112, y = VH - 44, on = i === G.cur, rd = s.inst && s.inst.ready ? clamp(s.inst.ready()) : 1;
@@ -354,7 +439,7 @@ function drawHud(ctx) {
     ctx.beginPath(); ctx.roundRect(x, y, 104, 32, 6); ctx.fill(); ctx.stroke();
     ctx.fillStyle = 'rgba(41,194,255,.35)'; ctx.fillRect(x + 2, y + 26, 100 * rd, 4);
     ctx.fillStyle = on ? '#fff' : '#9aa3b2'; ctx.font = '600 12px system-ui'; ctx.fillText(`${i + 1} · ${d.short}`, x + 8, y + 15);
-    const mods = Object.keys(s.mods || {}).filter(k => s.mods[k]).map(k => (d.mods.find(m => m.id === k) || {}).name).filter(Boolean);
+    const arch = d.archetypes && s.arch ? d.archetypes.find(a => a.id === s.arch) : null, mods = ['Nv ' + slotLevel(s), arch ? arch.name : ''].filter(Boolean);
     ctx.font = '10px system-ui'; ctx.fillStyle = '#ffe39a'; ctx.fillText(mods.join(' · ').slice(0, 20), x + 8, y + 25);
     ctx.restore();
   }

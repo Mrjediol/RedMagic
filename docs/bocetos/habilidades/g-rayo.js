@@ -3,9 +3,9 @@
 'use strict';
 addWeapon({
   id: 'ray', name: 'Rayo', short: 'Rayo', pal: 'set',
-  mods: [
+  // mejoras provisionales (árbol con evoluciones pendiente). Elemento (item): hielo congela por tick y al soltar rompe; fuego quema por tick.
+  ups: [
     { id: 'prism', name: 'Prisma', desc: 'Atraviesa al primero y se divide en haces dorados hacia los enemigos más cercanos.' },
-    { id: 'ice', name: 'Hielo', desc: 'Congela poco a poco; al soltar, lo congelado estalla (añicos).' },
     { id: 'life', name: 'Robo de vida', desc: 'Una parte del daño cura al player.' },
   ],
   tuning: {
@@ -13,33 +13,34 @@ addWeapon({
     turnRate: [9, 1, 40, 0.5, 'Giro hacia el ratón (rad/s)'], tick: [0.1, 0.03, 0.5, 0.01, 'Cada cuánto quema (s)'], tickDamage: [6, 1, 40, 1, 'Daño por tick'],
     push: [18, 0, 120, 1, 'Empuje por tick'], prismCount: [2, 1, 5, 1, 'Prisma: haces'], prismRange: [300, 50, 600, 10, 'Prisma: alcance'],
     prismMul: [0.6, 0.1, 1.5, 0.05, 'Prisma: daño de cada haz (×)'], freezeTick: [0.07, 0, 0.5, 0.01, 'Hielo: congelación por tick'],
-    lifesteal: [0.3, 0, 1, 0.01, 'Robo de vida: fracción del daño'],
+    lifesteal: [0.3, 0, 1, 0.01, 'Robo de vida: fracción del daño'], burnTick: [0.6, 0, 4, 0.1, 'Fuego: quemadura por tick (s)'],
+    dupAngle: [0.07, 0, 0.4, 0.01, 'Duplicador: separación de los dos haces (rad)'],
   },
   create(slot) {
     const id = 'ray';
     let cd = 0, beam = null;
     const stop = aim => {
       if (!beam) return;
-      beam.release(); beam = null; cd = T(id).cooldown;
+      beam.forEach(b => b.release()); beam = null; cd = T(id).cooldown * cdMul();
     };
     return {
-      onPress(aim) { if (cd > 0 || beam) return; beam = rayBeam(slot, aim); G.ents.push(beam); },
-      onHold(aim, dt) { if (beam) { beam.aim(aim, dt); if (beam.heat >= T(id).maxChannel) stop(aim); } },
+      onPress(aim) { if (cd > 0 || beam) return; const n = copies(); beam = []; for (let c = 0; c < n; c++) { const b = rayBeam(slot, aim, n > 1 ? (c ? 1 : -1) * T(id).dupAngle : 0, c > 0); beam.push(b); G.ents.push(b); } },
+      onHold(aim, dt) { if (beam) { beam.forEach(b => b.aim(aim, dt)); if (beam[0].heat >= T(id).maxChannel) stop(aim); } },
       onRelease(aim) { stop(aim); },
       update(dt, current) { cd -= dt; if (beam && !current) stop(); },
-      ready() { return beam ? 1 - beam.heat / T(id).maxChannel : 1 - cd / Math.max(0.01, T(id).cooldown); },
+      ready() { return beam ? 1 - beam[0].heat / T(id).maxChannel : 1 - cd / Math.max(0.01, T(id).cooldown * cdMul()); },
       refund(s) { cd -= s; },
     };
   },
 });
 
-function rayBeam(slot, aim0) {
-  const t = T('ray'), ice = hasMod(slot, 'ice'), life = hasMod(slot, 'life'), prism = hasMod(slot, 'prism');
-  const pal = ice ? PAL.ice : PAL.set, gp = PAL.gold;
+function rayBeam(slot, aim0, angOff = 0, quiet = false) {
+  const t = T('ray'), el = elemOf(), ice = el === 'ice', fire = el === 'fire', life = hasMod(slot, 'life'), prism = hasMod(slot, 'prism');
+  const pal = elemPal('set'), gp = PAL.gold;
   const t0 = G.t;
-  let ang = aim0.ang, tickT = 0, released = -1, x1 = aim0.x, y1 = aim0.y, first = null, subs = [], touched = new Set(), healAcc = 0;
-  sfx(SND.ray_ignite.fn);
-  const stopLoop = loopSound(out => {
+  let ang = aim0.ang + angOff, tickT = 0, released = -1, x1 = aim0.x, y1 = aim0.y, first = null, subs = [], touched = new Set(), healAcc = 0;
+  if (!quiet) sfx(SND.ray_ignite.fn);
+  const stopLoop = quiet ? () => {} : loopSound(out => {
     const mk = (f, g, type = 'sawtooth') => { const o = AC.createOscillator(), gg = AC.createGain(), lp = AC.createBiquadFilter(); o.type = type; o.frequency.value = f; lp.type = 'lowpass'; lp.frequency.value = 1500; gg.gain.value = g; o.connect(lp); lp.connect(gg); gg.connect(out); o.start(); return o; };
     const a = mk(110, 0.07), b = mk(111.7, 0.06), c = mk(220, 0.025);
     const n = AC.createBufferSource(); n.buffer = noiseBuf; n.loop = true; const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3000; bp.Q.value = 2; const ng = AC.createGain(); ng.gain.value = 0.06; n.connect(bp); bp.connect(ng); ng.connect(out); n.start();
@@ -47,9 +48,9 @@ function rayBeam(slot, aim0) {
   });
   const ent = {
     kind: 'beam', heat: 0,
-    aim(aim, dt) { let d = ((aim.ang - ang + Math.PI * 3) % TAU) - Math.PI; ang += clamp(d, -t.turnRate * dt, t.turnRate * dt); },
+    aim(aim, dt) { let d = ((aim.ang + angOff - ang + Math.PI * 3) % TAU) - Math.PI; ang += clamp(d, -t.turnRate * dt, t.turnRate * dt); },
     release() {
-      if (released >= 0) return; released = G.t; stopLoop(); sfx(SND.ray_off.fn);
+      if (released >= 0) return; released = G.t; stopLoop(); if (!quiet) sfx(SND.ray_off.fn);
       if (ice) for (const e of touched) if (!e.dead && e.frozenT > 0) damage(e, { dmg: 0, heavy: true, slot });
     },
     update(dt) {
@@ -74,12 +75,12 @@ function rayBeam(slot, aim0) {
           tickT = t.tick;
           const hitOne = (e, mul) => {
             touched.add(e);
-            const d = damage(e, { dmg: t.tickDamage * mul, kx: Math.sign(Math.cos(ang)) * t.push, slot, elem: ice ? 'ice' : null, freeze: ice ? t.freezeTick : 0, silentFlash: Math.random() < 0.5 });
+            const d = damage(e, { dmg: t.tickDamage * mul, kx: Math.sign(Math.cos(ang)) * t.push, slot, elem: el, freeze: ice ? t.freezeTick : 0, burn: fire ? t.burnTick : 0, silentFlash: Math.random() < 0.5 });
             if (life && d > 0) { healAcc += d * t.lifesteal; if (healAcc >= 1) { const hv = Math.floor(healAcc); healAcc -= hv; if (healPlayer(hv) > 0) text(G.player.x, G.player.y - 92, '+' + hv, '#ff9fb4'); } }
           };
           if (first) hitOne(first, 1);
           for (const s of subs) hitOne(s.e, t.prismMul);
-          if (first) sfx(k => { const tt = nowT(); vThump(tt, 130, 70, 0.07 * k, 0.16, 1.5, 0.05); });
+          if (first && !quiet) sfx(k => { const tt = nowT(); vThump(tt, 130, 70, 0.07 * k, 0.16, 1.5, 0.05); });
         }
         return true;
       }

@@ -3,17 +3,17 @@
 'use strict';
 addWeapon({
   id: 'moon', name: 'Media luna', short: 'Media luna', pal: 'set',
-  mods: [
+  // mejoras provisionales (árbol con evoluciones pendiente). Elemento (item): fuego = estela de llamas; hielo = la ida congela y la vuelta rompe.
+  ups: [
     { id: 'twin', name: 'Doble', desc: 'Sale otra hoja en arco alto (cubre arriba y abajo).' },
     { id: 'orbit', name: 'Órbita', desc: 'Al volver da una vuelta alrededor del player antes de atraparse.' },
-    { id: 'fire', name: 'Fuego', desc: 'Deja una estela de llamas en el aire que quema.' },
   ],
   tuning: {
     damage: [18, 1, 80, 1, 'Daño por pasada'], range: [360, 100, 700, 10, 'Alcance (px)'], outTime: [0.55, 0.15, 1.5, 0.05, 'Ida (s)'],
     hoverTime: [0.14, 0, 1, 0.02, 'Pausa en el extremo (s)'], backTime: [0.48, 0.15, 1.5, 0.05, 'Vuelta (s)'], knockback: [130, 0, 500, 5, 'Empuje'],
     hitRadius: [22, 6, 60, 1, 'Radio de golpe'], cooldown: [0.15, 0, 2, 0.05, 'Recarga tras atraparla (s)'],
     twinArc: [120, 20, 250, 5, 'Doble: altura del arco'], orbitRadius: [64, 30, 140, 2, 'Órbita: radio'], orbitTime: [0.42, 0.15, 1.5, 0.02, 'Órbita: duración (s)'],
-    fireLife: [0.75, 0.2, 2, 0.05, 'Fuego: duración de la estela (s)'], fireBurn: [2.0, 0, 6, 0.1, 'Fuego: quemadura (s)'],
+    fireLife: [0.75, 0.2, 2, 0.05, 'Fuego: duración de la estela (s)'], iceFreeze: [0.5, 0, 1, 0.05, 'Hielo: congelación en la ida'], fireBurn: [2.0, 0, 6, 0.1, 'Fuego: quemadura (s)'],
   },
   create(slot) {
     const id = 'moon';
@@ -22,8 +22,9 @@ addWeapon({
       onPress(aim) {
         if (cd > 0 || out.length) return;
         G.player.castT = 0.2;
-        out = [moonBlade(slot, aim, 0, () => { out = out.filter(b => !b.done); if (!out.length) cd = T(id).cooldown; })];
-        if (hasMod(slot, 'twin')) out.push(moonBlade(slot, aim, 1, () => { out = out.filter(b => !b.done); if (!out.length) cd = T(id).cooldown; }));
+        const done = () => { out = out.filter(b => !b.done); if (!out.length) cd = T(id).cooldown * cdMul(); };
+        const kinds = hasMod(slot, 'twin') ? [0, 1] : [0], n = copies();       // Duplicador: cada hoja sale doble (la copia, en arco hacia abajo)
+        out = []; for (const bi of kinds) for (let c = 0; c < n; c++) out.push(moonBlade(slot, aim, bi, done, c > 0));
         out.forEach(b => G.ents.push(b));
         sfx(SND.moon_throw.fn);
       },
@@ -34,11 +35,11 @@ addWeapon({
   },
 });
 
-function moonBlade(slot, aim, bi, onDone) {
-  const t = T('moon'), orbit = hasMod(slot, 'orbit'), fire = hasMod(slot, 'fire'), pal = PAL[fire ? 'fire' : hasMod(slot, 'twin') ? 'gold' : 'set'], R0 = 21;
+function moonBlade(slot, aim, bi, onDone, mirror = false) {
+  const t = T('moon'), orbit = hasMod(slot, 'orbit'), el = elemOf(), fire = el === 'fire', ice = el === 'ice', pal = elemPal(hasMod(slot, 'twin') ? 'gold' : 'set'), R0 = 21;
   const t0 = G.t, TO = t0 + t.outTime, TH = TO + t.hoverTime, TB = TH + t.backTime, TOE = TB + (orbit ? t.orbitTime : 0);
   const ox = aim.x, oy = aim.y, dir = { x: aim.dx, y: aim.dy }, perp = { x: dir.y, y: -dir.x }, hi = bi === 1 ? t.twinArc : 14;
-  const up = perp.y > 0 ? -1 : 1;                           // el arco siempre hacia arriba en pantalla
+  const up = (perp.y > 0 ? -1 : 1) * (mirror ? -1 : 1) * (mirror && bi === 0 ? 3 : 1);   // el arco hacia arriba (la copia del Duplicador, hacia abajo)
   let apex = null, last = { x: ox, y: oy }, stopSpin = null;
   const hitOut = new Set(), hitBack = new Set(), hitOrbit = new Set();
   const pos = tt => {
@@ -54,8 +55,8 @@ function moonBlade(slot, aim, bi, onDone) {
   return {
     kind: 'blade', done: false,
     update(dt) {
-      if (G.t >= TO && !stopSpin) stopSpin = loopSound(out => { const n = AC.createBufferSource(); n.buffer = noiseBuf; n.loop = true; const f = AC.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1200; f.Q.value = 2.2; const g = AC.createGain(); g.gain.value = 0.14; const l = AC.createOscillator(), lg = AC.createGain(); l.frequency.value = 15; lg.gain.value = 0.1; l.connect(lg); lg.connect(g.gain); n.connect(f); f.connect(g); g.connect(out); n.start(); l.start(); return [n, l]; });
-      const p = pos(G.t); this.x = p.x; this.y = p.y; this.depth = p.depth;
+      if (G.t >= TO && !stopSpin && !mirror) stopSpin = loopSound(out => { const n = AC.createBufferSource(); n.buffer = noiseBuf; n.loop = true; const f = AC.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1200; f.Q.value = 2.2; const g = AC.createGain(); g.gain.value = 0.14; const l = AC.createOscillator(), lg = AC.createGain(); l.frequency.value = 15; lg.gain.value = 0.1; l.connect(lg); lg.connect(g.gain); n.connect(f); f.connect(g); g.connect(out); n.start(); l.start(); return [n, l]; });
+      const p = pos(G.t); p.y = Math.min(p.y, GROUND - 12); this.x = p.x; this.y = p.y; this.depth = p.depth;
       hist.unshift({ x: p.x, y: p.y, t: G.t, r: this.rot() }); if (hist.length > 40) hist.pop();
       // golpes (una vez por pasada)
       const pass = G.t <= TH ? hitOut : G.t <= TB ? hitBack : hitOrbit;
@@ -64,7 +65,8 @@ function moonBlade(slot, aim, bi, onDone) {
         if (Math.pow((p.x - e.x) / (e.rx + t.hitRadius), 2) + Math.pow((p.y - e.y) / (e.ry + t.hitRadius * 0.6), 2) < 1) {
           pass.add(e);
           const dx = p.x - last.x, k = Math.sign(dx) || Math.sign(e.x - G.player.x);
-          damage(e, { dmg: t.damage, kx: k * t.knockback, slot, elem: fire ? 'fire' : null, burn: fire ? t.fireBurn : 0, shake: 3, hitstop: 0.03 });
+          const backPass = G.t > TH;
+          damage(e, { dmg: t.damage, kx: k * t.knockback, slot, elem: el, burn: fire ? t.fireBurn : 0, freeze: ice && !backPass ? t.iceFreeze : 0, heavy: ice && backPass, shake: 3, hitstop: 0.03 });
           const hx = e.x, hy = e.y, back = dx < 0, P = pal;
           addFx(0.5, (ctx, layer, th) => {                     // tajo diagonal que se abre y se afina + chispas
             const u = seg(G.t, th, th + 0.22), len = 70 * easeOut(seg(u, 0, 0.35)), a = 1 - seg(u, 0.4, 1), ang = (back ? 1 : -1) * 0.55 + (bi ? 0.6 : 0);
@@ -75,7 +77,7 @@ function moonBlade(slot, aim, bi, onDone) {
             }
             sparks(ctx, G.t, th, hx, hy, layer, { n: 9, a0: (back ? Math.PI : 0) - 0.7, a1: (back ? Math.PI : 0) + 0.7, sp: 300, pal: P, seed: Math.floor(th * 1000), len: 14, life: 0.35 });
           });
-          sfx(SND.moon_hit.fn);
+          if (!mirror) sfx(SND.moon_hit.fn);
         }
       }
       // estela de fuego
@@ -83,7 +85,7 @@ function moonBlade(slot, aim, bi, onDone) {
       last = p;
       if (G.t >= TOE) {
         this.done = true; if (stopSpin) stopSpin(); onDone();
-        sfx(SND.moon_catch.fn); G.player.squashT = 0.15;
+        if (!mirror) sfx(SND.moon_catch.fn);
         addFx(0.25, (ctx, layer, tc) => { const m = muzzle(), u = seg(G.t, tc, tc + 0.22); if (layer === 'front') { glow(ctx, m.x, m.y, 34, pal.g2, 0.8 * (1 - u)); star4(ctx, m.x, m.y, 20 * (1 + u * 0.4), 0.6, pal.core, 1 - u, layer); ellArc(ctx, m.x, m.y, 10 + 24 * easeOut(u), 10 + 24 * easeOut(u), 0, TAU, 2, pal.light, 1 - u, layer, { taper: 0 }); } });
         return false;
       }

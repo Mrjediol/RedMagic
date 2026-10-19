@@ -177,7 +177,8 @@ namespace RedMagic.Arsenal
         private Opt _o;
         private ArsenalPal _pal;
         private State _state;
-        private float _age, _life, _ang, _size;
+        private float _age, _life, _size;
+        private float _ang { get => ang; set => ang = value; }
         private int _bounces, _nb, _pierce, _pierced;
         private readonly HashSet<Health> _hit = new HashSet<Health>();
         private readonly List<Vector2> _trail = new List<Vector2>(10);
@@ -203,7 +204,7 @@ namespace RedMagic.Arsenal
             _bounces = o.hasBounces ? o.bounces : _kal ? _k.kalBounces + (_k.Eterno ? 3 : 0) : 0; _nb = 0;
             _pierce = _lance ? (_k.Perforacion ? 99 : 1) : 0; _pierced = 0;
             _life = o.mini ? 0.35f : _lance ? _k.lanceLife : _k.life;
-            dmgMul = 1f; captured = false; ejected = false; hostile = false; depth = 0f;
+            dmgMul = 1f; captured = false; ejected = false; hostile = false; depth = 0f; lastCapturer = null;
             _hit.Clear(); _trail.Clear(); _stickE = null;
         }
 
@@ -216,7 +217,13 @@ namespace RedMagic.Arsenal
             return c;
         }
 
-        public override void OnRemoved() { _ctrl = null; _k = null; _stickE = null; Pool.Push(this); }
+        public override void OnRemoved() { _ctrl = null; _k = null; _stickE = null; lastCapturer = null; Pool.Push(this); }
+
+        public override void Eject(Vector2 velocity, float mul)
+        {
+            base.Eject(velocity, mul);
+            _age = 0f; _hit.Clear(); _trail.Clear(); _state = State.Fly;
+        }
 
         private static int PlatformMask
         {

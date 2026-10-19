@@ -473,6 +473,25 @@ namespace RedMagic.Arsenal
             }
         }
 
+        /// <summary>Nova de escarcha: picos de hielo que brotan hacia fuera desde <paramref name="x"/> hasta <paramref name="reach"/> (u), anillo, destello, polvo.</summary>
+        public static void FrostNova(L l, float t, float t0, float x, float gy, float reach)
+        {
+            if (t < t0) return;
+            var I = ArsenalPal.Ice; float u = t - t0, reachPx = reach / PX;
+            for (int i = 0; i < 22; i++)
+            {
+                var R = new Rng(i + 600); int side = i % 2 == 1 ? 1 : -1;
+                float d = 8f + (i / 22f) * reachPx + R.Next() * 10f, tOn = t0 + d / 500f, g = EaseOut(Seg(t, tOn, tOn + 0.1f)) * (1f - Seg(u, 1f, 1.4f));
+                bool back = R.Next() < 0.4f; float h = (34f - d * 0.18f) * (0.6f + R.Next() * 0.6f), w = 4f + R.Next() * 3f, lean = side * (0.12f + R.Next() * 0.25f);
+                if ((back ? L.Back : L.Front) != l) continue;
+                IceSpike(l, x + side * d * PX, gy - 3f * PX, Mathf.Max(0f, h) * PX * g, w * PX, lean, g);
+            }
+            GroundRing(l, x, gy, (20f + reachPx * EaseOut(Seg(u, 0f, 0.3f))) * PX, 3f * PX, I.core, 1f - Seg(u, 0f, 0.35f), new ArcOpt { m = 40, seed = 5, taper = 1 });
+            if (l == L.Front) { Glow(new Vector2(x, gy + 20f * PX), 120f * PX, I.g1, 0.6f * (1f - Seg(u, 0f, 0.3f))); Star4(l, new Vector2(x, gy + 14f * PX), 46f * PX, 0f, I.core, 1f - Seg(u, 0f, 0.16f)); }
+            Dust(l, t, t0, x, gy, 61, 12, reachPx * 0.9f, 1.3f, 1.1f);
+            Sparks(l, t, t0, new Vector2(x, gy + 8f * PX), new SparkOpt { n = 14, pal = I, seed = 63, sp = 300, grav = 520, len = 14, a0 = Mathf.PI * 0.05f, a1 = Mathf.PI * 0.95f, life = 0.45f, w = 2.6f, backShare = 0.45f });
+        }
+
         /// <summary>Lista temporal compartida para construir polilíneas sin reservar memoria (no anidar).</summary>
         public static List<Vector2> TempPoints() { Pts.Clear(); return Pts; }
     }

@@ -74,5 +74,33 @@ namespace RedMagic.Arsenal.Editor
             log.Append("ok fan");
             return log.ToString();
         }
+
+        public static string Sing(string dir)
+        {
+            ArsenalSetup.Run();
+            var w = Weapon("sing"); var fan = Weapon("fan");
+            Vector2 m = new Vector2(0.5f, 1.05f);
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, 0); Setup(fan, 0);
+                var c = Ctrl(w); c.OnPress(Aim(m, new Vector2(5.2f, 1.7f)));
+                st.Run(0.3f); st.Shot(dir + "/sing_viaje.png");
+                st.Run(0.32f); st.Shot(dir + "/sing_apertura.png");
+                var f = Ctrl(fan);
+                st.Run(0.4f); f.OnPress(Aim(m, new Vector2(5.2f, 1.6f)));
+                st.Run(0.5f); st.Shot(dir + "/sing_captura.png");
+                st.Run(1.1f); st.Shot(dir + "/sing_colapso.png");
+                st.Run(0.15f); st.Shot(dir + "/sing_colapso_b.png");
+            }
+            using (var st = new ArsenalPreviewStage(new Vector2(3.8f, 2.4f)))
+            {
+                Group(st); Setup(w, SingularityKit.Fauces, true, true, true); ArsenalBuild.ElementOverride = ArsenalBuild.ElementMode.Fire;
+                var c = Ctrl(w); c.OnPress(Aim(m, new Vector2(5.2f, 1.2f)));
+                st.Run(1.2f); st.Shot(dir + "/sing_fauces.png");
+                st.Run(1.25f); st.Shot(dir + "/sing_fauces_fuego_colapso.png");
+                ArsenalBuild.ElementOverride = ArsenalBuild.ElementMode.Auto;
+            }
+            return "ok sing";
+        }
     }
 }

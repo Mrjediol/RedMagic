@@ -22,6 +22,16 @@ namespace RedMagic.Arsenal
         public float dmgMul = 1f;
         /// <summary>Bala enemiga (sólo la captura el Escudo de vacío).</summary>
         public bool hostile;
+        /// <summary>Ángulo con el que se dibuja (en vuelo, el de la velocidad; en órbita, tangente a la órbita).</summary>
+        public float ang;
+        /// <summary>La última grieta que lo capturó (no vuelve a capturarlo la misma).</summary>
+        public object lastCapturer;
+
+        /// <summary>La grieta lo coloca en su órbita este frame.</summary>
+        public virtual void Orbit(Vector2 p, float angle, float orbitDepth)
+        {
+            pos = p; ang = angle; depth = orbitDepth;
+        }
 
         /// <summary>Una copia en vuelo (Singularidad · Multiplicar); null = no se puede multiplicar.</summary>
         public virtual ArsenalProjectile CloneForCapture() => null;
@@ -30,6 +40,7 @@ namespace RedMagic.Arsenal
         public virtual void Eject(Vector2 velocity, float mul)
         {
             vel = velocity;
+            ang = Mathf.Atan2(velocity.y, velocity.x);
             dmgMul *= mul;
             captured = false;
             ejected = true;

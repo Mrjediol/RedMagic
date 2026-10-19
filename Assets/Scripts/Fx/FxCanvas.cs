@@ -259,6 +259,32 @@ namespace RedMagic.Fx
             }
         }
 
+        /// <summary>
+        /// Anillo con degradado radial: <paramref name="inner"/> en r0, <paramref name="mid"/> a mitad y <paramref name="outer"/> en r1.
+        /// <paramref name="squashY"/> aplasta en vertical (perspectiva de suelo); <paramref name="a0"/>..<paramref name="a1"/> = arco (radianes).
+        /// </summary>
+        public void Annulus(Vector2 c, float r0, float r1, float squashY, Color inner, Color mid, Color outer,
+                            float a0 = 0f, float a1 = Mathf.PI * 2f, int segments = 40)
+        {
+            if (r1 <= 0f || (inner.a <= 0f && mid.a <= 0f && outer.a <= 0f)) return;
+            int s = _verts.Count;
+            float rm = (r0 + r1) * 0.5f;
+            for (int i = 0; i <= segments; i++)
+            {
+                float a = Mathf.Lerp(a0, a1, i / (float)segments);
+                var d = new Vector2(Mathf.Cos(a), Mathf.Sin(a) * squashY);
+                _verts.Add(c + d * r0); _colors.Add(inner);
+                _verts.Add(c + d * rm); _colors.Add(mid);
+                _verts.Add(c + d * r1); _colors.Add(outer);
+            }
+            for (int i = 0; i < segments; i++)
+            {
+                int v = s + i * 3, w = v + 3;
+                _tris.Add(v); _tris.Add(w); _tris.Add(v + 1); _tris.Add(v + 1); _tris.Add(w); _tris.Add(w + 1);
+                _tris.Add(v + 1); _tris.Add(w + 1); _tris.Add(v + 2); _tris.Add(v + 2); _tris.Add(w + 1); _tris.Add(w + 2);
+            }
+        }
+
         /// <summary>Gota: cabeza redonda en <paramref name="pos"/>, cola afilada hacia atrás según <paramref name="angle"/>.</summary>
         public void Teardrop(Vector2 pos, float angle, float length, float width, Color color)
         {
@@ -289,6 +315,16 @@ namespace RedMagic.Fx
             int s = _verts.Count;
             _verts.Add(a); _verts.Add(b); _verts.Add(c);
             _colors.Add(color); _colors.Add(color); _colors.Add(color);
+            _tris.Add(s); _tris.Add(s + 1); _tris.Add(s + 2);
+        }
+
+        /// <summary>Triángulo con color por vértice (degradados dentro de formas: el vacío de la grieta).</summary>
+        public void Triangle(Vector2 a, Vector2 b, Vector2 c, Color ca, Color cb, Color cc)
+        {
+            if (ca.a <= 0f && cb.a <= 0f && cc.a <= 0f) return;
+            int s = _verts.Count;
+            _verts.Add(a); _verts.Add(b); _verts.Add(c);
+            _colors.Add(ca); _colors.Add(cb); _colors.Add(cc);
             _tris.Add(s); _tris.Add(s + 1); _tris.Add(s + 2);
         }
 

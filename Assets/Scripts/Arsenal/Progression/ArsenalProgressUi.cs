@@ -53,9 +53,14 @@ namespace RedMagic.Arsenal
         public static void Toast(string key)
         {
             if (_instance == null || !_instance.EnsureBuilt()) return;
-            _instance._toast.text = Loc.Get(key);
-            _instance._toast.style.display = DisplayStyle.Flex;
-            _instance._toastLeft = ToastSeconds;
+            _instance.ToastText(Loc.Get(key));
+        }
+
+        /// <summary>Aviso corto arriba con huecos {0}….</summary>
+        public static void ToastFormat(string key, params object[] args)
+        {
+            if (_instance == null || !_instance.EnsureBuilt()) return;
+            _instance.ToastText(Loc.Get(key, args));
         }
 
         private void Awake()
@@ -88,6 +93,14 @@ namespace RedMagic.Arsenal
             _stored.style.color = new Color(1f, 0.88f, 0.55f);
             _stored.style.display = DisplayStyle.None;
             root.Add(_stored);
+
+            for (int i = 0; i < MaxArrows; i++)
+            {
+                var arrow = new EdgeArrow();
+                arrow.style.display = DisplayStyle.None;
+                root.Add(arrow);
+                _arrows.Add(arrow);
+            }
 
             _overlay = new VisualElement { name = "progress-overlay" };
             MenuStyle.FillParent(_overlay);
@@ -130,6 +143,8 @@ namespace RedMagic.Arsenal
                 if (_toastLeft <= 0f) _toast.style.display = DisplayStyle.None;
             }
 
+            UpdateArrows();
+
             int cores = WeaponRunProgress.PendingCores;
             bool showStored = !_open && cores > 0;
             _stored.style.display = showStored ? DisplayStyle.Flex : DisplayStyle.None;
@@ -162,11 +177,12 @@ namespace RedMagic.Arsenal
                 if (WeaponRunProgress.Equipped().Count > 0) WeaponRunProgress.GrantCore();
                 return;
             }
-            if (weapons.Count == 1) { ShowEvolutions(weapons[0]); return; }
-            ShowWeapons("progress.evolve_title", "progress.pick_weapon", weapons, ShowEvolutions);
+            if (weapons.Count == 1) { ShowEvolutions(weapons[0], false); return; }
+            ShowWeapons("progress.evolve_title", "progress.pick_weapon", weapons, w => ShowEvolutions(w, false));
         }
 
-        private void ShowEvolutions(WeaponDefinition weapon)
+        /// <param name="fromCore">La paga un Núcleo (si no, un Prisma).</param>
+        private void ShowEvolutions(WeaponDefinition weapon, bool fromCore)
         {
             var kit = ArsenalRuntime.For(weapon);
             var evos = new List<int>();
@@ -174,13 +190,14 @@ namespace RedMagic.Arsenal
             Shuffle(evos);
             if (evos.Count > WeaponProgressionConfig.Instance.offerEvolutions) evos.RemoveRange(WeaponProgressionConfig.Instance.offerEvolutions, evos.Count - WeaponProgressionConfig.Instance.offerEvolutions);
 
-            Open("progress.evolve_title", weapon.DisplayName);
+            Open(fromCore ? "progress.core_title" : "progress.evolve_title", weapon.DisplayName);
             foreach (int e in evos)
             {
                 int evo = e;
                 AddCard(weapon.Icon, ArsenalTexts.EvolutionName(kit, evo), ArsenalTexts.EvolutionDesc(kit, evo), () =>
                 {
-                    WeaponRunProgress.ConsumeEvolution();
+                    if (fromCore) WeaponRunProgress.ConsumeCore();
+                    else WeaponRunProgress.ConsumeEvolution();
                     WeaponRunProgress.ApplyEvolution(weapon, evo);
                     Close();
                     ToastText(Loc.Get("progress.evolved", weapon.DisplayName, ArsenalTexts.EvolutionName(kit, evo)));
@@ -190,21 +207,25 @@ namespace RedMagic.Arsenal
 
         // ------------------------------------------------------------------ Núcleo
 
+        /// <summary>Un núcleo sube un nivel el arma: evolución si no la tiene, si no una mejora. Sin nada que subir, almas.</summary>
         private void StartCore()
         {
-            var equipped = WeaponRunProgress.Equipped();
-            var weapons = equipped.FindAll(w => WeaponRunProgress.AvailableUpgrades(w).Count > 0);
+            var weapons = WeaponRunProgress.Equipped().FindAll(w => WeaponRunProgress.LevelsLeft(w) > 0);
             if (weapons.Count == 0)
             {
-                // Nada que mejorar ahora: si alguna arma está sin evolucionar, el núcleo espera; si no, oro.
-                if (equipped.Exists(WeaponRunProgress.CanEvolve)) return;
                 WeaponRunProgress.ConsumeCore();
-                CurrencyManager.Instance?.Add(Currency.Gold, WeaponProgressionConfig.Instance.goldIfNothingToGive);
-                Toast("progress.core_to_gold");
+                CurrencyManager.Instance?.Add(Currency.SoulFragment, WeaponProgressionConfig.Instance.soulsInsteadOfCore);
+                Toast("progress.core_to_souls");
                 return;
             }
-            if (weapons.Count == 1) { ShowUpgrades(weapons[0]); return; }
-            ShowWeapons("progress.core_title", "progress.pick_weapon", weapons, ShowUpgrades);
+            if (weapons.Count == 1) { LevelUp(weapons[0]); return; }
+            ShowWeapons("progress.core_title", "progress.pick_weapon", weapons, LevelUp);
+        }
+
+        private void LevelUp(WeaponDefinition weapon)
+        {
+            if (WeaponRunProgress.CanEvolve(weapon)) ShowEvolutions(weapon, true);
+            else ShowUpgrades(weapon);
         }
 
         private void ShowUpgrades(WeaponDefinition weapon)
@@ -305,6 +326,102 @@ namespace RedMagic.Arsenal
             _toast.text = text;
             _toast.style.display = DisplayStyle.Flex;
             _toastLeft = ToastSeconds;
+        }
+
+        // ------------------------------------------------------------------ flecha al portador fuera de pantalla
+
+        private const int MaxArrows = 3;
+        private const float ArrowMargin = 70f;
+        private readonly List<EdgeArrow> _arrows = new List<EdgeArrow>();
+
+        private void UpdateArrows()
+        {
+            var cam = Camera.main;
+            var panel = _document.rootVisualElement.panel;
+            var carriers = CoreCarrier.Active;
+            for (int i = 0; i < _arrows.Count; i++)
+            {
+                var arrow = _arrows[i];
+                bool show = false;
+                if (cam != null && panel != null && i < carriers.Count && carriers[i] != null && !_open)
+                {
+                    Vector3 sp = cam.WorldToScreenPoint(carriers[i].Center);
+                    bool off = sp.z < 0f || sp.x < 0f || sp.y < 0f || sp.x > Screen.width || sp.y > Screen.height;
+                    if (off)
+                    {
+                        // Al borde, en la dirección del portador desde el centro de la pantalla.
+                        Vector2 center = new Vector2(Screen.width, Screen.height) * 0.5f;
+                        Vector2 dir = ((Vector2)sp - center);
+                        if (sp.z < 0f) dir = -dir;
+                        if (dir.sqrMagnitude < 1f) dir = Vector2.up;
+                        float sx = (center.x - ArrowMargin) / Mathf.Max(0.001f, Mathf.Abs(dir.x));
+                        float sy = (center.y - ArrowMargin) / Mathf.Max(0.001f, Mathf.Abs(dir.y));
+                        Vector2 edge = center + dir * Mathf.Min(sx, sy);
+                        Vector2 p = RuntimePanelUtils.ScreenToPanel(panel, new Vector2(edge.x, Screen.height - edge.y));
+                        arrow.Set(p, Mathf.Atan2(-dir.y, dir.x), carriers[i].DropsSouls ? SoulIcon() : WeaponProgressionConfig.Instance.coreSprite);
+                        show = true;
+                    }
+                }
+                arrow.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+        }
+
+        private static Sprite SoulIcon()
+        {
+            var visual = CurrencyManager.Instance != null ? CurrencyManager.Instance.Config?.VisualFor(Currency.SoulFragment) : null;
+            return visual != null ? visual.icon : WeaponProgressionConfig.Instance.coreSprite;
+        }
+
+        /// <summary>Icono de lo que suelta el portador con una flecha que apunta hacia él, pegado al borde de la pantalla.</summary>
+        private sealed class EdgeArrow : VisualElement
+        {
+            private const float Size = 72f;
+            private readonly Image _icon;
+            private float _angle;   // radianes, en coordenadas de panel (y hacia abajo)
+
+            public EdgeArrow()
+            {
+                pickingMode = PickingMode.Ignore;
+                style.position = Position.Absolute;
+                style.width = Size;
+                style.height = Size;
+                _icon = new Image { scaleMode = ScaleMode.ScaleToFit, pickingMode = PickingMode.Ignore };
+                _icon.style.position = Position.Absolute;
+                _icon.style.left = _icon.style.top = Size * 0.2f;
+                _icon.style.width = _icon.style.height = Size * 0.6f;
+                Add(_icon);
+                generateVisualContent += Draw;
+            }
+
+            public void Set(Vector2 panelPos, float angle, Sprite icon)
+            {
+                style.left = panelPos.x - Size * 0.5f;
+                style.top = panelPos.y - Size * 0.5f;
+                if (_icon.sprite != icon) _icon.sprite = icon;
+                if (!Mathf.Approximately(angle, _angle)) { _angle = angle; MarkDirtyRepaint(); }
+                float s = 1f + 0.1f * Mathf.Sin(Time.unscaledTime * 6f);
+                style.scale = new Scale(new Vector3(s, s, 1f));
+            }
+
+            private void Draw(MeshGenerationContext ctx)
+            {
+                var p = ctx.painter2D;
+                Vector2 c = new Vector2(Size, Size) * 0.5f;
+                Vector2 d = new Vector2(Mathf.Cos(_angle), Mathf.Sin(_angle));
+                Vector2 n = new Vector2(-d.y, d.x);
+                p.fillColor = new Color(0.08f, 0.05f, 0.06f, 0.85f);
+                p.BeginPath(); p.Arc(c, Size * 0.36f, Angle.Degrees(0f), Angle.Degrees(360f)); p.Fill();
+                p.fillColor = new Color(1f, 0.88f, 0.45f, 1f);
+                p.BeginPath();
+                p.MoveTo(c + d * (Size * 0.5f));
+                p.LineTo(c + d * (Size * 0.3f) + n * (Size * 0.14f));
+                p.LineTo(c + d * (Size * 0.3f) - n * (Size * 0.14f));
+                p.ClosePath();
+                p.Fill();
+                p.strokeColor = new Color(1f, 0.88f, 0.45f, 1f);
+                p.lineWidth = 3f;
+                p.BeginPath(); p.Arc(c, Size * 0.36f, Angle.Degrees(0f), Angle.Degrees(360f)); p.Stroke();
+            }
         }
 
         private static void Shuffle(List<int> list)

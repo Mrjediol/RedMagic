@@ -9,19 +9,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: cf726fe9197223d459728a014e2a4f13, type: 3}
   m_Name: WeaponProgressionConfig
   m_EditorClassIdentifier: Assembly-CSharp:RedMagic.Arsenal:WeaponProgressionConfig
   startAtBase: 1
   offerEvolutions: 2
   offerUpgrades: 2
-  goldIfNothingToGive: 120
+  soulsInsteadOfCore: 30
   carrierChancePerEnemy: 0.012
   testEase: 8
   carrierLifetime: 20
   carrierBlink: 5
   carrierLook: {fileID: 11400000, guid: 2764f879046205044817676ba9364ce6, type: 2}
   variantShader: {fileID: 4800000, guid: 913c679ff15b5f147a40b1d902eba827, type: 3}
+  glowMaterial: {fileID: 2100000, guid: 4d69835d7ad47404f90aee19723a5f8b, type: 2}
+  carrierGlow: {r: 1, g: 0.92, b: 0.55, a: 1}
   coreSprite: {fileID: 21300000, guid: 0d459c28f27dd8244856bb601c5d0add, type: 3}
   coreSize: 1
   coreMagnetRadius: 4

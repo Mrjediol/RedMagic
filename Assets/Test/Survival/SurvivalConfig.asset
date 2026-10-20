@@ -203,18 +203,13 @@ MonoBehaviour:
     rewards: 1
   repeatLastStage: 1
   waveMode: 1
-  flyingCount:
-    atFirstWave: 3
-    perWave: 1
-    max: 30
-  groundCount:
-    atFirstWave: 3
-    perWave: 1
-    max: 30
-  turretCount:
-    atFirstWave: 1
-    perWave: 0.25
-    max: 8
+  flyingPercent: 80
+  groundPercent: 15
+  turretPercent: 5
+  enemiesPerWave:
+    atFirstWave: 8
+    perWave: 3
+    max: 80
   firstSpawnDelay: 1.5
   spawnInterval: 0.6
   maxAlive: 3
@@ -234,6 +229,9 @@ MonoBehaviour:
   minSeparation: 3
   flyerClearance: 1
   groundSpawnHeight: 1
+  turretOnFloors: 1
+  turretOnWalls: 1
+  turretOnCeilings: 1
   solidLayers:
     serializedVersion: 2
     m_Bits: 64
@@ -271,6 +269,8 @@ MonoBehaviour:
   itemDrops: 1
   healBetweenWaves: 0.356
   autoNextWaveSeconds: 0
+  evolutionAfterWaves: 0100000002000000
+  carrierChancePerWave: 0.1
   goldDropMultiplier: 1
   goldPerWaveCleared: 0
   variantShader: {fileID: 4800000, guid: 913c679ff15b5f147a40b1d902eba827, type: 3}

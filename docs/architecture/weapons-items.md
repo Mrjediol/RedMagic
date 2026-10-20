@@ -127,10 +127,14 @@ Inspector wiring.
     con `[ArsenalDamage]` / `[ArsenalCooldown]` / `[ArsenalSignature]`. Menú: el del libro del hub (`UpgradeMenuController`), pestaña
     por arma (`WeaponMasteryConfig.weapons`); `OpenWeapons()` lo abre en armas (Supervivencia: preparación y pantalla final).
   - **En la run** (`Assets/Scripts/Arsenal/Progression/`, `WeaponRunProgress` + `Resources/WeaponProgressionConfig.asset`):
-    Prisma = evolución segura por hito (clásico: jefe derrotado; Supervivencia: `evolutionAfterWaves`); Núcleo = mejora entera que
-    suelta un portador (`CoreCarrier`: variante `Variant_Portador`, se escapa a los 20 s parpadeando los últimos 5) como
-    `CorePickup` (imán al acercarse). Elegir: `ArsenalProgressUi` (pausa; arma si hay dos, luego 2 opciones al azar). Diseño y
-    números: `docs/armas/progresion.md ▸ En Unity`. **`testEase`** (×8) multiplica los portadores para probar: ponerlo a 1.
+    Prisma = evolución segura por hito (clásico: jefe derrotado; Supervivencia: `evolutionAfterWaves`); Núcleo = subir un nivel
+    un arma (evolución si no la tiene, si no una mejora) que suelta un portador (`CoreCarrier`: variante `Variant_Portador` +
+    halo, columna de luz e icono encima, flecha de borde en `ArsenalProgressUi`; se escapa a los 20 s parpadeando los últimos 5)
+    como `CorePickup` (imán al acercarse); con las armas al tope (`WeaponRunProgress.NothingLeft`) suelta fragmentos de alma.
+    Elegir: `ArsenalProgressUi` (pausa; arma si hay dos, luego 2 opciones al azar). Diseño y números:
+    `docs/armas/progresion.md ▸ En Unity`. **`testEase`** (×8) multiplica los portadores para probar: ponerlo a 1.
+  - **Ojo**: un ScriptableObject tiene que ir en un fichero con el nombre de su clase (`WeaponMasteryConfig.cs`,
+    `WeaponProgressionConfig.cs`); si no, el asset se guarda con `m_Script: {fileID: 0}` y `Resources.Load` da null en silencio.
   - Textos de los árboles para el jugador: `ArsenalTexts` (`arsenal.<id>.evo<e>[.up<u>].name|desc`, en es/en).
 - **Cometa (`ShotDelivery.Comet`, `Assets/Scripts/Items/Comet/`)** — arma de proyectil hecho sólo de efectos
   (boceto `docs/bocetos/ataque-cometa-estados.html`, proceso `docs/fx-proceso-bocetos.md`). Asset

@@ -62,8 +62,10 @@ level of a run.
 - `ResetRun` → `WeaponRunProgress.ResetRun` (weapons back to base + permanent upgrades). `evolutionAfterWaves` (5, 10) grant a
   Prisma; each non-boss wave rolls `carrierChancePerWave` (× `WeaponProgressionConfig.testEase`) and, if hit, one of its first
   spawns becomes a `CoreCarrier`. See `docs/armas/progresion.md ▸ En Unity`.
-- Turrets: `Mount` puts them on floors / platforms / walls / ceilings (`turretOnFloors/Walls/Ceilings` weights), rotated so
-  their base faces the surface; `EnemyBrain.FaceTowards` works in local space so a rotated turret still faces the player.
+- Turrets: `Enemies.SurfaceMount` puts them on floors / platforms / walls / ceilings (`turretOnFloors/Walls/Ceilings`
+  weights), rotated so their base faces the surface and moved until the lowest sprite **vertex** touches it — re-measured for
+  the first frames, because the rig poses the body after spawning (measuring once at spawn left a gap).
+  `EnemyBrain.FaceTowards` works in local space so a rotated turret still faces the player.
 
 ## Shared pieces it added (usable anywhere)
 - **`EnemyVariant`** (`Assets/Scripts/Enemies/`, assets in `Assets/Test/Survival/Variants/`) — a version of any enemy

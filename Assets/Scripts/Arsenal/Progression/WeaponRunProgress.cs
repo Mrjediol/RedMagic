@@ -16,12 +16,14 @@ namespace RedMagic.Arsenal
     /// <item><b>Evolución — Prisma</b>: seguro, uno por hito (en el modo clásico, cada jefe derrotado; en Supervivencia, las
     /// rondas de <c>SurvivalConfig.evolutionAfterWaves</c>). Eliges qué arma evoluciona (si hay dos sin evolucionar) y una de
     /// <see cref="WeaponProgressionConfig.offerEvolutions"/> evoluciones al azar.</item>
-    /// <item><b>Mejoras — Núcleo</b>: lo suelta entero un <b>portador</b> (<see cref="CoreCarrier"/>), un enemigo raro y
-    /// brillante que se escapa si no lo matas a tiempo. Eliges arma evolucionada y una de
-    /// <see cref="WeaponProgressionConfig.offerUpgrades"/> mejoras al azar entre las desbloqueadas
-    /// (<see cref="WeaponMastery.IsUpgradeUnlocked"/>) que aún no tiene. Un núcleo sin dónde ponerlo espera a la siguiente
-    /// evolución; si ya no queda nada que mejorar, se cambia por oro.</item>
+    /// <item><b>Subida de nivel — Núcleo</b>: lo suelta entero un <b>portador</b> (<see cref="CoreCarrier"/>), un enemigo raro
+    /// y brillante que se escapa si no lo matas a tiempo. Sube un nivel el arma que elijas, al momento: si no está
+    /// evolucionada, evoluciona (como un Prisma); si lo está, una de <see cref="WeaponProgressionConfig.offerUpgrades"/>
+    /// mejoras al azar entre las desbloqueadas (<see cref="WeaponMastery.IsUpgradeUnlocked"/>) que aún no tiene.</item>
     /// </list>
+    /// Cuánto puede subir cada arma lo marcan las mejoras permanentes: de serie, evolución + su 1.ª mejora (2 niveles); con
+    /// las dos de cada evolución desbloqueadas, 4. Cuando ninguna de las armas que llevas puede subir más
+    /// (<see cref="NothingLeft"/>), el portador suelta fragmentos de alma (moneda permanente) en vez de núcleo.
     /// Núcleos enteros y no fragmentos a propósito: sumar fragmentos estrecha la curva (casi todas las runs acaban con lo
     /// mismo); sucesos raros que dan la mejora entera dan la que se busca — ~30 % sin mejoras, ~35 % una, ~22 % dos, ~13 %
     /// tres o más (Poisson de media ≈1,3 núcleos por run). Las elecciones las enseña <see cref="ArsenalProgressUi"/>.
@@ -30,7 +32,7 @@ namespace RedMagic.Arsenal
     {
         /// <summary>Evoluciones ganadas y aún sin elegir.</summary>
         public static int PendingEvolutions { get; private set; }
-        /// <summary>Núcleos ganados y aún sin usar (esperando una evolución o el momento de elegir).</summary>
+        /// <summary>Núcleos ganados y aún sin usar (esperando el momento de elegir: sin menú abierto).</summary>
         public static int PendingCores { get; private set; }
 
         /// <summary>Algo ha cambiado (se ha ganado o gastado algo, o una partida nueva).</summary>
@@ -84,6 +86,36 @@ namespace RedMagic.Arsenal
             for (int u = 0; u < 3; u++)
                 if (!k.GetUpgrade(u) && WeaponMastery.IsUpgradeUnlocked(k.WeaponId, k.evolution, u)) list.Add(u);
             return list;
+        }
+
+        /// <summary>Niveles que le quedan a <paramref name="w"/>: la evolución (si no la tiene) + las mejoras que podrá conseguir.</summary>
+        public static int LevelsLeft(WeaponDefinition w)
+        {
+            var k = ArsenalRuntime.For(w);
+            if (k == null) return 0;
+            if (k.evolution > 0) return AvailableUpgrades(w).Count;
+            int best = 0;   // aún sin evolucionar: la evolución + las mejoras de la que más tenga desbloqueadas
+            for (int e = 1; e < k.Tree.evolutions.Count; e++)
+            {
+                int n = 0;
+                for (int u = 0; u < 3; u++) if (WeaponMastery.IsUpgradeUnlocked(k.WeaponId, e, u)) n++;
+                best = Mathf.Max(best, n);
+            }
+            return 1 + best;
+        }
+
+        /// <summary>¿Se puede usar un núcleo ahora mismo en alguna de las armas que llevas?</summary>
+        public static bool CanUseCore() => Equipped().Exists(w => LevelsLeft(w) > 0);
+
+        /// <summary>
+        /// Ninguna arma que llevas puede subir más, contando lo ya ganado y sin gastar (Prismas y núcleos pendientes): un
+        /// portador suelta almas en vez de núcleo.
+        /// </summary>
+        public static bool NothingLeft()
+        {
+            int left = 0;
+            foreach (var w in Equipped()) left += LevelsLeft(w);
+            return left - PendingCores - PendingEvolutions <= 0;
         }
 
         public static void ApplyEvolution(WeaponDefinition w, int evo)
@@ -143,56 +175,4 @@ namespace RedMagic.Arsenal
         }
     }
 
-    /// <summary>
-    /// Números de la progresión del arma en la run (<see cref="WeaponRunProgress"/>), en
-    /// <c>Resources/WeaponProgressionConfig.asset</c>. La parte propia de Supervivencia (rondas con evolución, portadores
-    /// por ronda) está en su <c>SurvivalConfig</c>.
-    /// </summary>
-    [CreateAssetMenu(menuName = "RedMagic/Armas/Progresión en la run", fileName = "WeaponProgressionConfig")]
-    public class WeaponProgressionConfig : ScriptableObject
-    {
-        [Tooltip("Las armas empiezan cada partida en su forma base (la evolución y las mejoras se ganan jugando). Apagado = la " +
-                 "evolución y las mejoras puestas en el asset del arma (como antes, para probar una forma concreta).")]
-        public bool startAtBase = true;
-
-        [Header("Elegir")]
-        [Tooltip("Cuántas de las evoluciones del arma se ofrecen (al azar) en cada Prisma.")]
-        [Min(1)] public int offerEvolutions = 2;
-        [Tooltip("Cuántas mejoras se ofrecen (al azar, de las que se pueden conseguir) con cada Núcleo.")]
-        [Min(1)] public int offerUpgrades = 2;
-        [Tooltip("Oro a cambio de un Núcleo cuando ya no queda nada que mejorar en ningún arma.")]
-        [Min(0)] public int goldIfNothingToGive = 120;
-
-        [Header("Portadores de núcleo")]
-        [Tooltip("Clásico: probabilidad de que un enemigo normal salga de portador (sin contar la facilidad de prueba).")]
-        [Range(0f, 1f)] public float carrierChancePerEnemy = 0.012f;
-        [Tooltip("FACILIDAD DE PRUEBA: multiplica la probabilidad de portadores (clásico y Supervivencia). 1 = la de verdad.")]
-        [Min(0f)] public float testEase = 8f;
-        [Tooltip("Segundos que vive un portador antes de escaparse.")]
-        [Min(1f)] public float carrierLifetime = 20f;
-        [Tooltip("Los últimos segundos parpadea (se va a escapar).")]
-        [Min(0f)] public float carrierBlink = 5f;
-        [Tooltip("Aspecto y fuerza del portador (una variante de enemigo).")]
-        public Enemies.EnemyVariant carrierLook;
-        [Tooltip("Shader de las variantes (RedMagic/Sprite Lit FX).")]
-        public Shader variantShader;
-
-        [Header("Núcleo (lo que suelta)")]
-        public Sprite coreSprite;
-        [Min(0.1f)] public float coreSize = 1f;
-        [Tooltip("Se va hacia el jugador cuando está a esta distancia.")]
-        [Min(0f)] public float coreMagnetRadius = 4f;
-
-        private static WeaponProgressionConfig _instance;
-
-        public static WeaponProgressionConfig Instance
-        {
-            get
-            {
-                if (_instance == null) _instance = Resources.Load<WeaponProgressionConfig>("WeaponProgressionConfig");
-                if (_instance == null) _instance = CreateInstance<WeaponProgressionConfig>();
-                return _instance;
-            }
-        }
-    }
 }

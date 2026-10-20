@@ -16,7 +16,7 @@ namespace RedMagic.Survival
     /// <item><b>Volador</b>: en el aire, con <see cref="SurvivalConfig.flyerClearance"/> de hueco alrededor.</item>
     /// <item><b>Suelo</b>: sobre un suelo o una plataforma (rayo hacia abajo), un poco por encima: cae solo.</item>
     /// <item><b>Torreta</b>: pegada a un suelo, plataforma, pared o techo (pesos del config), girada para que su base mire a la
-    /// superficie y apoyada en ella (<see cref="Mount"/>): su cuerpo es estático, no cae.</item>
+    /// superficie y apoyada en ella (<see cref="Enemies.SurfaceMount"/>): su cuerpo es estático, no cae.</item>
     /// <item><b>Jefe</b>: en el suelo de abajo, en el centro del nivel.</item>
     /// </list>
     /// "Dentro de la roca" sale de la cuadrícula del <see cref="Level"/> (el terreno pintado tiene colliders de borde, que
@@ -54,7 +54,7 @@ namespace RedMagic.Survival
         }
 
         /// <param name="normal">Hacia dónde mira la superficie en la que se apoya (arriba salvo torretas en pared o techo).
-        /// Para una torreta, <paramref name="position"/> es el punto de la superficie: la coloca <see cref="Mount"/>.</param>
+        /// Para una torreta, <paramref name="position"/> es el punto de la superficie: la coloca <see cref="Enemies.SurfaceMount"/>.</param>
         public bool TryFind(SurvivalSpawnKind kind, Vector2 player, List<Health> alive, System.Random rng,
                             out Vector2 position, out Vector2 normal)
         {
@@ -86,29 +86,6 @@ namespace RedMagic.Survival
             }
             position = default;
             return false;
-        }
-
-        /// <summary>
-        /// Planta <paramref name="enemy"/> (una torreta) en la superficie: lo gira para que su "abajo" apunte contra ella —
-        /// techo boca abajo, pared de lado — y lo apoya con la base tocándola, midiendo lo que asoma su dibujo por debajo de
-        /// la raíz. Llamar después de escalarlo (variantes), para medir el tamaño de verdad.
-        /// </summary>
-        public static void Mount(GameObject enemy, Vector2 surfacePoint, Vector2 normal)
-        {
-            var root = enemy.transform;
-            root.rotation = Quaternion.identity;
-            float below = 0f;
-            bool any = false;
-            foreach (var r in enemy.GetComponentsInChildren<SpriteRenderer>())
-            {
-                if (!r.enabled || r.sprite == null) continue;
-                float b = root.position.y - r.bounds.min.y;
-                below = any ? Mathf.Max(below, b) : b;
-                any = true;
-            }
-            float angle = Mathf.Atan2(normal.y, normal.x) * Mathf.Rad2Deg - 90f;   // arriba de la torreta = la normal
-            root.rotation = Quaternion.Euler(0f, 0f, angle);
-            root.position = surfacePoint + normal.normalized * (any ? below : 0f);
         }
 
         // ------------------------------------------------------------------ reglas

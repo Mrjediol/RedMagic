@@ -136,9 +136,13 @@ para todas, deducido del kit:
 
 - **Prisma**, seguro: clásico = cada jefe derrotado; Supervivencia = rondas de `evolutionAfterWaves` (5 y 10, fin de cada
   mundo). Eliges arma (si hay dos sin evolucionar) y 1 de 2 evoluciones al azar.
-- **Núcleo**, raro: lo suelta **entero** un **portador** — un enemigo cualquiera convertido (blanco radiante, ×1,6 vida) que
-  **se escapa a los 20 s** (parpadea los últimos 5). Clásico: 1,2 % por enemigo; Supervivencia: 10 % por ronda. Eliges arma
-  evolucionada y 1 de 2 mejoras desbloqueadas que no tengas. Sin evolución todavía, espera; sin nada que mejorar, oro.
+- **Núcleo**, raro = **subir un nivel el arma, al momento**: si no está evolucionada, eliges evolución; si lo está, 1 de 2
+  mejoras desbloqueadas que no tenga. Lo suelta **entero** un **portador** — un enemigo cualquiera convertido (blanco radiante,
+  ×1,6 vida) con halo que late, columna de luz hacia arriba y el icono de lo que suelta encima; fuera de pantalla, flecha en
+  el borde. **Se escapa a los 20 s** (parpadea los últimos 5). Clásico: 1,2 % por enemigo; Supervivencia: 10 % por ronda.
+- **Tope**: cada arma sube evolución + sus mejoras desbloqueadas (de serie la 1.ª = 2 niveles; con las permanentes, 4). Con
+  las dos armas al tope (contando núcleos y prismas sin gastar), el portador suelta **fragmentos de alma** (30) en vez de núcleo.
+  (Corrección del usuario 2026-10-20: antes un núcleo «esperaba a una evolución», confuso; ahora siempre se usa al momento.)
 - **Facilidad de prueba ×8** (`WeaponProgressionConfig.testEase`): multiplica los portadores. Para jugar de verdad, 1.
 
 **Por qué núcleos enteros y no fragmentos que se combinan** (simulado, 200 000 runs): la curva pedida — ~30 % sin mejoras,

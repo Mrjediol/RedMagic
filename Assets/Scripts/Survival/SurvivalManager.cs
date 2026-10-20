@@ -411,7 +411,7 @@ namespace RedMagic.Survival
                                     config.DamageScale(Wave) * Stage.damageMultiplier * _difficulty.damageMultiplier);
             if (request.special != null) request.special.Apply(enemy, shader);
             // Ya con su tamaño final: apoyada en su superficie (suelo, pared o techo), con la base tocándola.
-            if (request.kind == SurvivalSpawnKind.Turret) SurvivalSpawnFinder.Mount(enemy, position, normal);
+            if (request.kind == SurvivalSpawnKind.Turret) SurfaceMount.Attach(enemy, position, normal);
 
             // El portador de la ronda (si le toca): uno de los primeros en salir.
             if (++_spawnedThisWave == _carrierAt) CoreCarrier.Make(enemy);

@@ -47,9 +47,12 @@ function freezePlayer(s) {
   sfx(SFXLIB.freeze.bind(null, 1, 0.3));
 }
 const playerLocked = () => G.player.lockT > G.t;
+// arrastrado (liana del Atrapamoscas…): no anda ni salta, el que arrastra le mueve; SÍ puede disparar y el dash le suelta
+const playerDragged = () => !!(G.player.dragBy && !G.player.dragBy.dead && G.player.dragBy.st === G.player.dragSt);
 const _onKeyDown = onKeyDown;
 onKeyDown = function (code) {
   if (playerLocked() && ['KeyW', 'ArrowUp', 'Space', 'KeyS', 'ArrowDown', 'ShiftLeft', 'ShiftRight'].includes(code)) return;
+  if (playerDragged() && ['KeyW', 'ArrowUp', 'Space', 'KeyS', 'ArrowDown'].includes(code)) return;
   _onKeyDown(code);
 };
 
@@ -114,7 +117,8 @@ updatePlayer = function (dt) {
   const p = G.player;
   if (G.t < (p.slowUntil || 0)) p.speedMul = Math.min(p.speedMul || 1, p.slowK || 0.5);
   if (playerLocked()) { const k = G.keys; G.keys = {}; p.vx = 0; p.dashT = 0; _updatePlayer(dt); G.keys = k; }
-  else _updatePlayer(dt);
+  else if (playerDragged() && !(p.dashT > 0)) { const k = G.keys; G.keys = { ShiftLeft: k.ShiftLeft, ShiftRight: k.ShiftRight }; p.vx = 0; _updatePlayer(dt); G.keys = k; }
+  else { if (p.dragBy) p.dragBy = null; _updatePlayer(dt); }
   p.x = clamp(p.x, ARENA.x0 + 14, ARENA.x1 - 14);
 };
 const _step = step;
@@ -424,6 +428,10 @@ function drawWarn(ctx, layer, w) {
     ctx.beginPath(); ctx.moveTo(w.x, w.y); ctx.arc(w.x, w.y, w.len, w.ang - w.half, w.ang + w.half); ctx.closePath(); ctx.fill();
     ctx.globalAlpha = 0.8 * a; ctx.strokeStyle = edge; ctx.lineWidth = 1.5; ctx.setLineDash([8, 6]); ctx.stroke(); ctx.setLineDash([]);
   }
+  if (w.kind === 'path' && layer === 'front' && w.pts && w.pts.length > 1) {   // recorrido curvo (picado): puntos que se encienden en orden
+    ctx.globalAlpha = (0.3 + 0.5 * u) * a; ctx.strokeStyle = edge; ctx.lineWidth = clamp(w.w || 2, 2, 4); ctx.setLineDash([9, 7]); ctx.lineDashOffset = -G.t * 60;
+    ctx.beginPath(); w.pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); ctx.setLineDash([]);
+  }
   if (w.kind === 'mark' && layer === 'back') {
     const r = Math.max(14, w.r), rot = G.t * 3;
     ctx.globalAlpha = (0.4 + 0.5 * u) * a; ctx.strokeStyle = edge; ctx.lineWidth = 2;
@@ -438,6 +446,16 @@ function drawWarn(ctx, layer, w) {
 // colores del mundo de hielo (cuerpos y proyectiles; el aviso de peligro sigue siendo rojo en todos los mundos)
 const ICE = { snow: '#f4f8ff', pale: '#cfefff', light: '#9fd6f2', mid: '#5fa8d8', deep: '#2f5a7a', dark: '#1c3348', fur: '#e6e1d6', furD: '#b9b2a4',
               pal: { core: '#ffffff', light: '#e4f9ff', mid: '#9fd6f2', deep: '#3f93e3', dark: '#24499e', g: [170, 225, 255], g1: [110, 180, 255], g2: [205, 246, 255] } };
+// colores del bosque (madera, musgo, setas; cian-turquesa sólo en lo mágico: cristales, ojos)
+const WOOD = { bark: '#5a4632', barkD: '#3a2c20', moss: '#4f7a3e', mossL: '#6f9f52', leaf: '#2f6b45', crystal: '#7fe8ff', crystalL: '#bff6ff',
+               cap: '#b8503c', capD: '#7a2e24', spot: '#f2e6c8', stem: '#e8dcc0', berry: '#d8304a',
+               pal: { core: '#fbfff0', light: '#d8f5a8', mid: '#8fd45a', deep: '#3f8a2e', dark: '#1d4a16', g: [160, 230, 110], g1: [120, 210, 80], g2: [210, 250, 170] } };
+// salto en arco a un punto (pies en feetT), con altura h sobre el más alto de los dos: lo usan los que trepan o caen encima
+function leapTo(e, tx, feetT, h) {
+  const feetE = e.y + e.foot, top = Math.min(feetE, feetT) - h;
+  const vy0 = -Math.sqrt(2 * GRAV * Math.max(1, feetE - top)), T = -vy0 / GRAV + Math.sqrt(2 * Math.max(0, feetT - top) / GRAV);
+  e.vy = vy0; e.mx = (tx - e.x) / T; e.onGround = false; e.y -= 1; return T;
+}
 const FOE_PAL = { core: '#ffffff', light: '#ffc2b0', mid: '#ff5a4a', deep: '#b0203a', g: [255, 80, 70] };
 // o = { x, y, vx, vy, g (gravedad), r, dmg, e, atk, style ('orb'|'needle'|'rock'|'seed'|'web'|'spore'), pal, life,
 //       landY (para al llegar a esa y, cayendo), onLand(x, y), onHitP() (en vez del daño normal), warnEnt }
@@ -468,6 +486,8 @@ function foeShot(o) {
     if (layer !== 'front') return;
     const fr = this.friendly || this.captured, P = fr ? PAL.void : this.pal, gl = fr ? [150, 100, 255] : this.pal.g || FOE_PAL.g, a = Math.atan2(this.vy, this.vx);
     if (this.style === 'needle') { glow(ctx, this.x, this.y, 14, gl, 0.6); lens(ctx, this.x, this.y, a, 26, 4, P.mid, 1, layer); lens(ctx, this.x, this.y, a, 18, 1.8, '#fff', 1, layer); return; }
+    if (this.style === 'thorn') { lens(ctx, this.x, this.y, a, this.r * 5, this.r * 1.1, fr ? P.mid : '#6b4a2a', 1, layer); lens(ctx, this.x + Math.cos(a) * this.r * 1.5, this.y + Math.sin(a) * this.r * 1.5, a, this.r * 2, this.r * 0.6, fr ? P.light : '#c9e08a', 1, layer); return; }
+    if (this.style === 'feather') { glow(ctx, this.x, this.y, 12, fr ? gl : [130, 235, 255], 0.5); lens(ctx, this.x, this.y, a, this.r * 5, this.r * 1.5, fr ? P.mid : '#7fe8ff', 1, layer); lens(ctx, this.x, this.y, a, this.r * 3.5, this.r * 0.4, '#ffffff', 1, layer); return; }
     if (this.style === 'icicle') { glow(ctx, this.x, this.y, 12, fr ? gl : [180, 230, 255], 0.5); lens(ctx, this.x, this.y, a, this.r * 5, this.r * 1.2, fr ? P.mid : '#9fd6f2', 1, layer); lens(ctx, this.x, this.y, a, this.r * 3.4, this.r * 0.5, '#ffffff', 1, layer); return; }
     if (this.style === 'snow') { glow(ctx, this.x, this.y, this.r * 2.4, [230, 245, 255], 0.5); disc(ctx, this.x, this.y, this.r, fr ? P.mid : '#eef6ff', 1, layer); disc(ctx, this.x - this.r * 0.3, this.y - this.r * 0.3, this.r * 0.45, '#ffffff', 1, layer); return; }
     if (this.style === 'ice') { glow(ctx, this.x, this.y, this.r * 2.6, [160, 220, 255], 0.5); chunk(ctx, this.x, this.y, this.r + 2, this.spin, Math.floor(this.r * 7), fr ? P.mid : '#8fc8e8', fr ? P.light : '#e4f9ff', 1, layer); return; }
@@ -559,10 +579,25 @@ function groundSpike(e, x, o) {
 }
 
 // ---------------------------------------------------------------- mundos (sólo aspecto: el fondo y, en el hielo, el techo de carámbanos)
-const WORLDS = { neutro: { name: 'Neutro' }, hielo: { name: 'Hielo' } };
+const WORLDS = { neutro: { name: 'Neutro' }, hielo: { name: 'Hielo' }, bosque: { name: 'Bosque' } };
 const CEIL = 30;                                            // alto del techo de hielo (los Colgantes cuelgan de él)
+// ramas altas donde se posan los voladores que se posan (Búho); en el bosque se dibujan saliendo de los troncos de la copa
+const BRANCHES = [{ x: 330, y: 92 }, { x: 610, y: 78 }, { x: 900, y: 96 }, { x: 1180, y: 80 }, { x: 1400, y: 100 }];
+// sitios para posarse: las ramas altas y encima de las plataformas
+function perches() { return BRANCHES.map(b => ({ x: b.x, y: b.y })).concat(PLATFORMS.map(pl => ({ x: (pl.x0 + pl.x1) / 2, y: pl.y }))); }
 const _drawWorld = drawWorld;
 drawWorld = function (ctx) {
+  if (G.world === 'bosque') {
+    const g = ctx.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#0f2418'); g.addColorStop(1, '#2c4a2e');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
+    ctx.save(); ctx.translate(-G.cam.x * 0.3, 0);                 // troncos lejanos
+    for (let i = 0; i < 16; i++) { const x = i * 150 + (i % 3) * 20, w = 26 + (i % 4) * 10; ctx.fillStyle = i % 2 ? '#1c3322' : '#183020'; ctx.fillRect(x, 0, w, GROUND); }
+    ctx.restore();
+    ctx.save(); ctx.translate(-G.cam.x * 0.6, 0);                 // musgo colgando y cristales
+    for (let i = 0; i < 22; i++) { const x = i * 97, h = 30 + (i * 37) % 60; ctx.fillStyle = 'rgba(79,122,62,.5)'; ctx.fillRect(x, 0, 3, h); if (i % 4 === 0) { ctx.fillStyle = 'rgba(127,232,255,.35)'; ctx.beginPath(); ctx.moveTo(x, GROUND); ctx.lineTo(x + 8, GROUND - 26); ctx.lineTo(x + 16, GROUND); ctx.fill(); } }
+    ctx.restore();
+    return;
+  }
   if (G.world !== 'hielo') return _drawWorld(ctx);
   const g = ctx.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#16273a'); g.addColorStop(1, '#3b5a72');
   ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
@@ -571,6 +606,11 @@ drawWorld = function (ctx) {
   ctx.restore();
 };
 function drawCeiling(ctx) {
+  if (G.world === 'bosque') {                                   // copa de hojas arriba y las ramas para posarse
+    for (let x = ARENA.x0 - 60; x < ARENA.x1 + 60; x += 46) { const R = rand(x + 3); ctx.fillStyle = R() < 0.5 ? '#1f4a2a' : '#2a5a32'; ctx.beginPath(); ctx.ellipse(x, 6 + R() * 12, 40, 26, 0, 0, TAU); ctx.fill(); }
+    for (const b of BRANCHES) { ctx.strokeStyle = '#4a3624'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(b.x - 46, b.y - 30); ctx.quadraticCurveTo(b.x - 10, b.y + 6, b.x + 34, b.y); ctx.stroke(); ctx.fillStyle = '#4f7a3e'; ctx.beginPath(); ctx.ellipse(b.x + 30, b.y - 4, 12, 6, 0, 0, TAU); ctx.fill(); }
+    return;
+  }
   if (G.world !== 'hielo') return;
   ctx.fillStyle = '#20384f'; ctx.fillRect(ARENA.x0 - 400, -40, ARENA.x1 - ARENA.x0 + 800, CEIL + 40);
   ctx.fillStyle = '#9fd6f2'; ctx.fillRect(ARENA.x0 - 400, CEIL - 3, ARENA.x1 - ARENA.x0 + 800, 3);
@@ -675,13 +715,14 @@ render = function (ctx) {
 // paredes de la arena (fondo de roca a los lados)
 // (dibuja también lo de las plataformas: grietas al cargarse, hueco de las rotas que vuelve a llenarse)
 drawPlatforms = function (ctx) {
-  ctx.fillStyle = '#2f5d7a'; ctx.fillRect(0, GROUND, WW, VH - GROUND + 40);
-  ctx.fillStyle = '#3d7598'; ctx.fillRect(0, GROUND, WW, 6);
-  for (const pl of PLATFORMS) {
+  const forest = G.world === 'bosque', gc = forest ? ['#3a2c20', '#4f7a3e'] : ['#2f5d7a', '#3d7598'], pc = forest ? ['#5a4632', '#5f8f45'] : ['#2f5d7a', '#5a9cc2'];
+  ctx.fillStyle = gc[0]; ctx.fillRect(0, GROUND, WW, VH - GROUND + 40);
+  ctx.fillStyle = gc[1]; ctx.fillRect(0, GROUND, WW, 6);
+  for (const pl of PLATFORMS) {                               // en el bosque, ramas con musgo
     const k = G.es.crumble ? clamp(pl.standT / G.es.crumbleT) : 0;
     const jx = k > 0.5 ? Math.sin(G.t * 70) * (k - 0.5) * 4 : 0, x0 = pl.x0 + jx, w = pl.x1 - pl.x0, y = pl.y;
-    ctx.fillStyle = k > 0 ? mixHex('#2f5d7a', '#7a4a3a', k) : '#2f5d7a'; ctx.beginPath(); ctx.roundRect(x0, y, w, 12, 5); ctx.fill();
-    ctx.fillStyle = G.es.crumble ? '#c9a27a' : '#5a9cc2'; ctx.fillRect(x0 + 3, y, w - 6, 3);
+    ctx.fillStyle = k > 0 ? mixHex(pc[0], '#7a4a3a', k) : pc[0]; ctx.beginPath(); ctx.roundRect(x0, y, w, 12, 5); ctx.fill();
+    ctx.fillStyle = G.es.crumble ? '#c9a27a' : pc[1]; ctx.fillRect(x0 + 3, y, w - 6, 3);
     if (k > 0.05) { ctx.strokeStyle = '#1a1e26'; ctx.lineWidth = 1.5; const R = rand(Math.floor(pl.x0)); for (let i = 0; i < Math.ceil(k * 5); i++) { const cx = x0 + 10 + R() * (w - 20); ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + (R() - 0.5) * 10, y + 6); ctx.lineTo(cx + (R() - 0.5) * 14, y + 12); ctx.stroke(); } }
   }
   for (const b of BROKEN) { const u = 1 - clamp((b.back - G.t) / G.es.respawnT); ctx.save(); ctx.globalAlpha = 0.15 + 0.35 * u; ctx.strokeStyle = '#9ab8d0'; ctx.setLineDash([5, 5]); ctx.lineWidth = 1.5; ctx.strokeRect(b.pl.x0, b.pl.y, (b.pl.x1 - b.pl.x0), 12); ctx.restore(); }

@@ -55,3 +55,4 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 - 2026-10-20 · Diseñado sin arte (primero el comportamiento, luego se busca el arte). Pendiente de que el usuario lo pruebe.
 - 2026-10-20 · El usuario: le disparaba desde fuera de pantalla y entre ataques no hacía nada; «si me acerco debería intentar huir». → regla general de pantalla; ahora se recoloca a ráfagas, huye a saltitos y, acorralado, rueda a través de ti.
+- 2026-10-20 · Al usuario le ha gustado, sobre todo rodar al estar acorralado (y que huya).

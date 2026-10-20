@@ -105,6 +105,26 @@ congela 1 s (mismo efecto que un aturdido, con aspecto de hielo): la **Pinza hel
 - El **Arte** de cada ficha describe silueta, materiales, colores, estados y piezas, para buscarlo o generarlo después
   (con las reglas de texturas: múltiplos de 4, ~100-128 px/u, atlas por personaje; tamaños en unidades en cada ficha).
 
+## Bosque (2026-10-20, sin probar por el usuario)
+
+Mismas reglas que el hielo: el bosque es **visual** (madera, musgo, setas, zarzas; cian-turquesa sólo en lo mágico: cristales y
+ojos, dirección de arte del GDD) con mecánicas ligeras; **sin veneno general**. Cada uno hace una pregunta nueva (ninguno repite
+los del hielo ni los genéricos) y todos se mueven con intención entre ataques; cada uno tiene su giro como el Rodar del Erizo.
+
+| Enemigo | Nivel | Qué aporta | El giro |
+|---|---|---|---|
+| Saltaseta | común | ritmo «1, 2, 3… ¡PLAF!», en grupo | el gran salto cae en tu plataforma |
+| Zarza | común | muro de espinas con hueco: ¿de pie o saltando? | acorralada, latigazo que te aparta |
+| Oso de musgo | común | combo con un tercer zarpazo retrasado (no castigues antes) | trepa a tu plataforma; panzazo desde arriba |
+| Búho de cristal | común | se posa (ramas, plataformas) y cae en picado por una curva marcada | si te acercas a su rama, se va |
+| Atrapamoscas | común | trampa plantada: la liana te arrastra a su boca | te sueltas con el dash o pegándole fuerte |
+| Seta madre | élite | ritmo más corto + ondas | se divide en Saltasetas al perder vida |
+
+- Piezas genéricas nuevas: arrastrar al player (`dragBy`: no anda ni salta, sí dispara; el dash le suelta), `leapTo` (salto a
+  un punto: trepar, caer encima), `perches()` + `BRANCHES` (sitios para posarse), aviso `path` (recorrido curvo), proyectiles
+  `thorn` / `feather`, `trap: true` (enemigo que no se mueve: en el duelo de prueba el player empieza a su alcance).
+- Aspecto del bosque en la jugable: troncos al fondo, copa de hojas con ramas arriba (donde se posa el Búho), plataformas-rama.
+
 ## Plantilla de enemigos
 <!-- gen:plantilla -->
 | Enemigo | Nivel | `id` | Rol | Pregunta al jugador | Ficha |
@@ -123,9 +143,15 @@ congela 1 s (mismo efecto que un aturdido, con aspecto de hielo): la **Pinza hel
 | Ventisca | común | `gale` | Voladora de control: te empuja | Posicionarte contra el viento: el soplo te empuja (físicamente: sí te saca de una plataforma) hacia lo que tengas detrás. El dash lo atraviesa. Y esquivar sus bolas de nieve, que revientan en trozos. | [ventisca.md](ventisca.md) |
 | Ermitaño de hielo | común | `hermit` | Blindado en dos fases (coraza → cangrejo) | Romperle la coraza (los golpes fuertes la agrietan mucho más) sin ponerte a tiro de su pinza, que te congela un segundo y te remata. Roto, cambia de ritmo: pequeño, rápido y frágil. | [ermitano.md](ermitano.md) |
 | Morsa | común | `walrus` | Pesada de control de suelo | Saltar la hilera de carámbanos que avanza hacia ti y no quedarte encerrado entre los pinchos que deja (duran un rato). Si te subes, te lanza un témpano. | [morsa.md](morsa.md) |
+| Saltaseta | común | `shroom` | Saltarina de grupo (ritmo) | Leer el ritmo: tres saltitos y un gran salto que cae donde estás (también en tu plataforma). En grupo, cada una lleva su cuenta: apartarte a tiempo de la que va a caer. | [saltaseta.md](saltaseta.md) |
+| Zarza | común | `bramble` | Tiradora de patrones (muro con hueco) | Mirar dónde está el hueco del muro de espinas (abajo: quédate de pie; en medio o arriba: salta en el momento justo) y perseguirla, que huye; si la acorralas, cuidado con el latigazo. | [zarza.md](zarza.md) |
+| Oso de musgo | común | `bear` | Pesado cuerpo a cuerpo que trepa | Esquivar el combo de zarpazos y no castigar antes de tiempo: a veces hay un tercero, más lento y fuerte. Subirte no te salva: trepa (despacio) a tu plataforma y desde arriba se tira en panzazo. | [oso-musgo.md](oso-musgo.md) |
+| Búho de cristal | común | `owl` | Volador que se posa y cae en picado | Leer la curva del picado (sale marcada: pasa por donde estás y sube al otro lado) y apartarte de ella; pegarle cuando está posado. Si te acercas a su rama, se va volando a otra. | [buho-cristal.md](buho-cristal.md) |
+| Atrapamoscas | común | `flytrap` | Trampa plantada que te arrastra | Apartarte de la línea de la liana; si te atrapa, soltarte antes de llegar a la boca: con el dash, o haciéndole daño suficiente mientras tira de ti (puedes seguir disparando). De cerca, cuidado con el mordisco. | [atrapamoscas.md](atrapamoscas.md) |
 | Embestidor alfa | élite | `chargerAlpha` | Élite del Embestidor: cargas encadenadas y furia | Lo mismo que el Embestidor, pero sin respiro: tras una carga que esquivas viene otra enseguida. Ponerte delante de la pared corta la cadena (el choque sigue siendo tu premio). | [embestidor-alfa.md](embestidor-alfa.md) |
 | Acechador alfa | élite | `stalkerAlpha` | Élite del Acechador: jefe de manada | Prioridad y lectura: si no lo matas, aúlla y su manada va más rápido (y si está solo, la llama). De cerca no huye: zarpazo. Sus saltos vienen de dos en dos. | [acechador-alfa.md](acechador-alfa.md) |
 | Morsa matriarca | élite | `walrusAlpha` | Élite de la Morsa: muros dobles y tobogán | La Morsa, pero te encierra: los muros salen a los dos lados y cuando estás entre pinchos se tira en tobogán, rebota en la pared y vuelve. Hay que saltarla dos veces sin caer en los pinchos. | [morsa-matriarca.md](morsa-matriarca.md) |
+| Seta madre | élite | `shroomAlpha` | Élite de la Saltaseta: ondas y se divide | El ritmo de la Saltaseta, más corto (gran salto cada dos) y con ondas al caer que hay que saltar; y al perder vida suelta Saltasetas: ¿la rematas o limpias a las crías? | [seta-madre.md](seta-madre.md) |
 <!-- /gen:plantilla -->
 
 ## Encuentros
@@ -146,6 +172,12 @@ congela 1 s (mismo efecto que un aturdido, con aspecto de hielo): la **Pinza hel
 | Orilla helada | Ermitaño de hielo ×2, Erizo de escarcha | 2 Ermitaños + Erizo: no te dejes agarrar mientras esquivas la lluvia. |
 | Matriarca | Morsa matriarca, Colgante | Morsa matriarca + Colgante: tobogán y muros mientras algo cuelga encima. |
 | Todo el hielo | Colgante, Erizo de escarcha, Ventisca, Ermitaño de hielo, Morsa | Uno de cada común del hielo, para ver cómo se mezclan. |
+| Claro de setas | Saltaseta ×3, Zarza | 3 Saltasetas + Zarza: tres ritmos a la vez y un muro con hueco. |
+| Zarzal | Zarza ×2, Atrapamoscas | 2 Zarzas + Atrapamoscas: la liana te deja quieto delante del muro. |
+| Osera | Oso de musgo, Búho de cristal | Oso de musgo + Búho de cristal: abajo el oso, arriba el búho; subir no te salva. |
+| Espesura | Atrapamoscas, Búho de cristal, Saltaseta ×2 | Atrapamoscas + Búho + 2 Saltasetas: te arrastra debajo del picado. |
+| Seta madre | Seta madre, Zarza | Seta madre + Zarza: ondas, crías y muros. |
+| Todo el bosque | Saltaseta, Zarza, Oso de musgo, Búho de cristal, Atrapamoscas | Uno de cada común del bosque. |
 <!-- /gen:encuentros -->
 
 ## Cómo se pasa un enemigo a Unity (cuando el usuario lo apruebe)
@@ -172,4 +204,5 @@ congela 1 s (mismo efecto que un aturdido, con aspecto de hielo): la **Pinza hel
   gusta la sacudida de plataformas a distancia (sin coherencia física) → quitada; en su lugar carga con salto y pedrada.
   Pide un set para el mundo de hielo con la temática visual y mecánicas ligeras (ver «Mundo de hielo»). Después: el Erizo le
   dispara desde fuera de pantalla y en general los nota lentos y predecibles entre ataques, «le falta chispa» (la Tundra, que se
-  mueve entre ataques, sí le gusta) → regla de pantalla, `roam` / `dart`, huida de los de distancia, Rodar del Erizo. Relacionado: tarea `t1` de `docs/tareas/todo.json` («15 enemigos: 5 por zona en las 3 primeras zonas»).
+  mueve entre ataques, sí le gusta) → regla de pantalla, `roam` / `dart`, huida de los de distancia, Rodar del Erizo. Le gusta el
+  Erizo, sobre todo rodar al estar acorralado; pide un set para el bosque (ver «Bosque»). Relacionado: tarea `t1` de `docs/tareas/todo.json` («15 enemigos: 5 por zona en las 3 primeras zonas»).

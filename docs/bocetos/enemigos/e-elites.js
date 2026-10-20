@@ -200,3 +200,34 @@ addFoe(Object.assign({}, FOES.walrus, {
     for (let i = 0; i < 5; i++) E_poly(ctx, P, [[-40 + i * 13, -18], [-36 + i * 13, -30 - (i % 2) * 6], [-30 + i * 13, -18]], i % 2 ? ICE.snow : ICE.pale);
   },
 }));
+
+// ---------------------------------------------------------------- Seta madre (bosque)
+addFoe(Object.assign({}, FOES.shroom, {
+  id: 'shroomAlpha', name: 'Seta madre', short: 'Seta α', tier: 'élite', rx: 34, ry: 36,
+  role: 'Élite de la Saltaseta: ondas y se divide',
+  question: 'El ritmo de la Saltaseta, más corto (gran salto cada dos) y con ondas al caer que hay que saltar; y al perder vida suelta Saltasetas: ¿la rematas o limpias a las crías?',
+  moves: [
+    { name: 'Gran salto con ondas', desc: 'Como la Saltaseta, pero cada dos saltitos; al caer, además del ¡PLAF!, dos ondas de esporas corren por el suelo a los lados.' },
+    { name: 'Esporada', desc: 'Al bajar de 2/3 y de 1/3 de vida se sacude y suelta dos Saltasetas, que saltan hacia los lados.' },
+  ],
+  combos: 'Con una Zarza: muros mientras saltas ondas.',
+  art: 'La Saltaseta grande y vieja: sombrero ancho lleno de motas-cristal que brillan, musgo y setas pequeñas creciéndole encima (las crías que suelta).',
+  tuning: eliteTuning('shroom', { hp: 420, poise: 120, kb: 0.3, hopX: 150, hopV: 340, bigEvery: 2, slamR: 80, slamDmg: 18, bigH: 170, keep: 140 }, {
+    waveSpeed: [320, 80, 800, 10, 'Ondas: velocidad'], waveDist: [420, 50, 1200, 10, 'Ondas: recorrido'], waveH: [26, 10, 80, 1, 'Ondas: altura'], waveDmg: [10, 0, 40, 1, 'Ondas: daño'],
+    splitN: [2, 0, 5, 1, 'Esporada: crías'],
+  }),
+  init(e) { FOES.shroom.init(e); e.splits = 0; },
+  onEnter(e, st) { if (st === 'rest') { const t = FT(e); for (const d of [-1, 1]) groundWave(e, e.x + d * e.rx, d, { speed: t.waveSpeed, dist: t.waveDist, h: t.waveH, dmg: t.waveDmg, atk: 'Gran salto (ondas)', pal: { a: WOOD.moss, b: WOOD.pal.light } }); } },
+  onHurt(e) {
+    const t = FT(e), want = e.hp < e.hpMax / 3 ? 2 : e.hp < e.hpMax * 2 / 3 ? 1 : 0;
+    while (e.splits < want) {
+      e.splits++; say(e, '¡ESPORADA!', '#d8f5a8', true); e.stunT = Math.max(e.stunT, 0.4);
+      for (let i = 0; i < t.splitN; i++) { const s = i % 2 ? 1 : -1, n = spawnFoe('shroom', e.x + s * 20, undefined, { aware: true }); n.y = e.y; groundHop(n, s * 200, 330); n.restT = 0.6; }
+    }
+  },
+  draw(ctx, e, P) {
+    drawAs(ctx, e, P, 'shroom', e.ry / FOES.shroom.ry);
+    if (!P.mono) glow(ctx, 0, -e.ry * 0.5, 40, WOOD.pal.g, 0.25);
+    for (const [x, y] of [[-14, -34], [10, -38]]) { E_ell(ctx, P, x, y, 7, 4, WOOD.cap); E_line(ctx, P, [[x, y + 2], [x, y + 8]], 2, WOOD.stem); }
+  },
+}));

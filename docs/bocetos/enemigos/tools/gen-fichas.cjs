@@ -12,7 +12,8 @@ for (const f of files) vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'
 const { FOES, ENCOUNTERS } = vm.runInContext('({ FOES, ENCOUNTERS })', sb);
 fs.mkdirSync(out, { recursive: true });
 const fileOf = { charger: 'embestidor', stalker: 'acechador', mortar: 'artillero', weaver: 'tejedora', shell: 'caparazon', hive: 'colmena', drone: 'zangano', wisp: 'fatuo', burrower: 'excavador', chargerAlpha: 'embestidor-alfa', stalkerAlpha: 'acechador-alfa',
-  icicle: 'colgante', urchin: 'erizo-escarcha', gale: 'ventisca', hermit: 'ermitano', walrus: 'morsa', walrusAlpha: 'morsa-matriarca' };
+  icicle: 'colgante', urchin: 'erizo-escarcha', gale: 'ventisca', hermit: 'ermitano', walrus: 'morsa', walrusAlpha: 'morsa-matriarca',
+  shroom: 'saltaseta', bramble: 'zarza', bear: 'oso-musgo', owl: 'buho-cristal', flytrap: 'atrapamoscas', shroomAlpha: 'seta-madre' };
 const block = (name, body, txt) => {
   const a = `<!-- gen:${name} -->`, b = `<!-- /gen:${name} -->`, i = txt.indexOf(a), j = txt.indexOf(b);
   return i < 0 || j < 0 ? txt : txt.slice(0, i + a.length) + '\n' + body + '\n' + txt.slice(j);

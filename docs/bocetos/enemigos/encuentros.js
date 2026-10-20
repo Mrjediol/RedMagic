@@ -39,3 +39,16 @@ addEncounter({ id: 'matriarca', world: 'hielo', name: 'Matriarca', desc: 'Morsa 
   list: [{ type: 'walrusAlpha', x: 1050 }, { type: 'icicle', x: 800 }] });
 addEncounter({ id: 'hielo_todo', world: 'hielo', name: 'Todo el hielo', desc: 'Uno de cada común del hielo, para ver cómo se mezclan.',
   list: [{ type: 'icicle', x: 900 }, { type: 'urchin', x: 1300 }, { type: 'gale', x: 1100, y: 150 }, { type: 'hermit', x: 800 }, { type: 'walrus', x: 1200 }] });
+// ---- bosque (aspecto: troncos, copa de hojas con ramas para posarse, plataformas-rama)
+addEncounter({ id: 'claro', world: 'bosque', name: 'Claro de setas', desc: '3 Saltasetas + Zarza: tres ritmos a la vez y un muro con hueco.',
+  list: [{ type: 'shroom', x: 650 }, { type: 'shroom', x: 760 }, { type: 'shroom', x: 900 }, { type: 'bramble', x: 1100 }] });
+addEncounter({ id: 'zarzal', world: 'bosque', name: 'Zarzal', desc: '2 Zarzas + Atrapamoscas: la liana te deja quieto delante del muro.',
+  list: [{ type: 'bramble', x: 800 }, { type: 'flytrap', x: 1000 }, { type: 'bramble', x: 1250 }] });
+addEncounter({ id: 'osera', world: 'bosque', name: 'Osera', desc: 'Oso de musgo + Búho de cristal: abajo el oso, arriba el búho; subir no te salva.',
+  list: [{ type: 'bear', x: 800 }, { type: 'owl', x: 1000, y: 120 }] });
+addEncounter({ id: 'espesura', world: 'bosque', name: 'Espesura', desc: 'Atrapamoscas + Búho + 2 Saltasetas: te arrastra debajo del picado.',
+  list: [{ type: 'flytrap', x: 900 }, { type: 'owl', x: 1100, y: 120 }, { type: 'shroom', x: 700 }, { type: 'shroom', x: 1200 }] });
+addEncounter({ id: 'setamadre', world: 'bosque', name: 'Seta madre', desc: 'Seta madre + Zarza: ondas, crías y muros.',
+  list: [{ type: 'shroomAlpha', x: 750 }, { type: 'bramble', x: 1150 }] });
+addEncounter({ id: 'bosque_todo', world: 'bosque', name: 'Todo el bosque', desc: 'Uno de cada común del bosque.',
+  list: [{ type: 'shroom', x: 700 }, { type: 'bramble', x: 1250 }, { type: 'bear', x: 950 }, { type: 'owl', x: 1100, y: 120 }, { type: 'flytrap', x: 1400 }] });

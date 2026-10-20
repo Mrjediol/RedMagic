@@ -63,13 +63,15 @@ const NEED = { charger: ['chargeW', 'charge'], stalker: ['crouch', 'leap', 'land
   hive: ['birthW'], drone: ['diveW', 'dive'], wisp: ['fuse'], burrower: ['under', 'emergeW', 'emerge', 'spitW', 'digW'],
   chargerAlpha: ['chargeW', 'charge'], stalkerAlpha: ['howlW', 'howl', 'crouch', 'leap', 'recrouch'],
   icicle: ['hang', 'shiver', 'fall', 'stuck', 'climb'], urchin: ['rainW', 'bald'], gale: ['gustW', 'gust', 'snowW'],
-  hermit: ['grabW', 'grab', 'grabRec'], walrus: ['spikeW', 'spike'], walrusAlpha: ['slideW', 'slide', 'restUp'] };
+  hermit: ['grabW', 'grab', 'grabRec'], walrus: ['spikeW', 'spike'], walrusAlpha: ['slideW', 'slide', 'restUp'],
+  shroom: ['hop', 'bigW', 'big', 'rest'], bramble: ['wallW', 'wall'], bear: ['swipeW', 'swipe', 'swipeGap'], owl: ['fly', 'perch', 'swoopW', 'swoop'],
+  flytrap: ['vineW', 'vine'], shroomAlpha: ['bigW', 'big', 'rest'] };
 const only = process.argv[2];
 const types = Object.keys(A.FOES).filter(t => !only || t === only);
 
 console.log('— 1. duelo contra un player quieto (30 s, sin morir: vida infinita)');
 for (const t of types) {
-  setup(A.duelEncounter(t, t === 'drone' ? 3 : 1));
+  setup(A.duelEncounter(t, t === 'drone' ? 3 : 1), { px: A.FOES[t].trap ? 420 : undefined });   // una trampa no se mueve: el player se pone a su alcance
   const err = run(30, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
   const vis = Object.keys(G._visits[t] || {}), miss = (NEED[t] || []).filter(s => !vis.includes(s));
   check(`${t}: sin errores`, !err, err ? err.stack.split('\n').slice(0, 3).join(' | ') : '');
@@ -148,6 +150,17 @@ if (!only) {
   check('Erizo: acorralado, rueda a través de ti', !!(G._visits.urchin || {}).roll, Object.keys(G._visits.urchin || {}).join(' '));
   setup({ id: 't', name: 'cadena', list: [{ type: 'chargerAlpha', x: 1100 }] }, { px: 700 }); G.es.harmless = true; run(10, () => { G.keys = {}; });
   check('Embestidor alfa: encadena una segunda carga', !!(G._visits.chargerAlpha || {}).rechargeW, Object.keys(G._visits.chargerAlpha || {}).join(' '));
+  // bosque
+  setup({ id: 't', name: 'liana', list: [{ type: 'flytrap', x: 600 }] }, { px: 380 }); let grabbed = false; run(6, () => { G.player.hp = G.player.hpMax; G.keys = {}; if (G.player.dragBy) grabbed = true; });
+  check('Atrapamoscas: la liana te atrapa, te arrastra y muerde', grabbed && !!G.fight.hits['Atrapamoscas · Mordisco (arrastrado)'], Object.keys(G.fight.hits).join(', '));
+  setup({ id: 't', name: 'suelta', list: [{ type: 'flytrap', x: 600 }] }, { px: 380 }); let freed = false; run(6, () => { G.player.hp = G.player.hpMax; G.keys = {}; if (G.player.dragBy && !freed && G.player.dashCd <= 0) { sb.onKeyDown('ShiftLeft'); freed = true; } });
+  check('Atrapamoscas: con el dash te sueltas', freed && !G.fight.hits['Atrapamoscas · Mordisco (arrastrado)'], Object.keys(G.fight.hits).join(', '));
+  setup({ id: 't', name: 'trepa', list: [{ type: 'bear', x: 1000 }] }, { arena: 'vertical' }); const pb2 = A.PLATFORMS.find(pl => pl.x0 === 640); onPl(pb2); run(10, () => { G.player.hp = G.player.hpMax; G.keys = {}; if (G.player.y >= 340) onPl(pb2); });
+  check('Oso: trepa a tu plataforma', !!(G._visits.bear || {}).climb, Object.keys(G._visits.bear || {}).join(' '));
+  setup({ id: 't', name: 'esporada', list: [{ type: 'shroomAlpha', x: 600 }] }); G.es.frozenAI = true; const sm = G.enemies[0]; A.damage(sm, { dmg: sm.hpMax * 0.4 }); run(0.2);
+  check('Seta madre: al perder vida suelta Saltasetas', A.alive().filter(e => e.type === 'shroom').length === 2);
+  setup({ id: 't', name: 'latigo', list: [{ type: 'bramble', x: 280 }] }, { px: 200 }); run(3, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  check('Zarza: si te pegas (o la acorralas), latigazo que te aparta', !!G.fight.hits['Zarza · Latigazo'], Object.keys(G.fight.hits).join(', '));
 }
 console.log(bad ? `${bad} de ${n} mal` : `todo ok (${n})`);
 if (bad) process.exitCode = 1;

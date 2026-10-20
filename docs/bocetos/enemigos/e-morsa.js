@@ -25,7 +25,7 @@ addFoe({
     switch (e.st) {
       case 'idle':
         faceTo(e, p.x); e.cdT -= dt;
-        walkDir(e, ad > t.keep + 80 ? Math.sign(dx) : ad < t.keep - 120 ? -Math.sign(dx) * 0.6 : 0, t.walk, dt, 3);
+        roam(e, dt, { min: t.keep - 80, max: t.keep + 80, speed: t.walk, burst: 2.2, hop: 0.7 });   // a saltos sobre las aletas
         if (e.cdT > 0 || !canStart(e)) break;
         if (ad > t.tossRange || playerUpTime() > 0.5) { begin(e, 'Témpano'); go(e, 'tossW'); }
         else { begin(e, 'Muro de carámbanos'); go(e, 'spikeW'); e.sdir = Math.sign(dx) || e.face; }

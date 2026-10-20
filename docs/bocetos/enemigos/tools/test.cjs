@@ -136,9 +136,16 @@ if (!only) {
   check('Ermitaño: la coraza reduce y los golpes fuertes la rompen', d1 < 8 && h.broken, `primer golpe ${d1.toFixed(1)} · rota ${h.broken}`);
   setup({ id: 't', name: 'viento', list: [{ type: 'gale', x: 500, y: 200 }] }, { px: 300 }); const x0 = G.player.x; let pushed = 0; run(8, () => { G.player.hp = G.player.hpMax; G.keys = {}; pushed = Math.max(pushed, Math.abs(G.player.x - x0)); });
   check('Ventisca: el soplo empuja al player', pushed > 60, Math.round(pushed) + ' px');
-  setup({ id: 't', name: 'llamada', list: [{ type: 'stalkerAlpha', x: 900 }] });
-  run(3, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  setup({ id: 't', name: 'llamada', list: [{ type: 'stalkerAlpha', x: 650 }] });
+  run(6, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
   check('Acechador alfa: solo, aúlla y llama a su manada', A.alive().filter(e => e.type === 'stalker').length >= 2, Object.keys(G._visits.stalkerAlpha || {}).join(' ') + ' · ' + A.alive().map(e => e.type).join(','));
+  // vida entre ataques
+  setup({ id: 't', name: 'fuera', list: [{ type: 'mortar', x: 1400 }, { type: 'urchin', x: 1300 }] }); run(8, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  check('Nadie ataca desde fuera de la pantalla', G.fight.dmgTaken === 0 && !G.enemies.some(e => e.aware), 'daño ' + G.fight.dmgTaken);
+  setup({ id: 't', name: 'huye', list: [{ type: 'urchin', x: 700 }] }, { px: 560 }); const u0 = G.enemies[0].x; run(1.2, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  check('Erizo: si te acercas, huye', G.enemies[0].x - u0 > 60, Math.round(G.enemies[0].x - u0) + ' px');
+  setup({ id: 't', name: 'rueda', list: [{ type: 'urchin', x: 1420 }] }, { px: 1300 }); G.cam.x = 700; run(4, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  check('Erizo: acorralado, rueda a través de ti', !!(G._visits.urchin || {}).roll, Object.keys(G._visits.urchin || {}).join(' '));
   setup({ id: 't', name: 'cadena', list: [{ type: 'chargerAlpha', x: 1100 }] }, { px: 700 }); G.es.harmless = true; run(10, () => { G.keys = {}; });
   check('Embestidor alfa: encadena una segunda carga', !!(G._visits.chargerAlpha || {}).rechargeW, Object.keys(G._visits.chargerAlpha || {}).join(' '));
 }

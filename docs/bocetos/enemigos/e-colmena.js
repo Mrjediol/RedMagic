@@ -65,7 +65,7 @@ addFoe({
 const myDrones = e => foes().filter(d => d.mother === e && !d.dead).length;
 function spawnDrones(e, n) {
   for (let i = 0; i < n; i++) {
-    const d = spawnFoe('drone', e.x + (i - (n - 1) / 2) * 14, e.y + e.ry, { mother: e });
+    const d = spawnFoe('drone', e.x + (i - (n - 1) / 2) * 14, e.y + e.ry, { mother: e, aware: true });
     d.vy = 140; d.vx = (i - (n - 1) / 2) * 120; d.cdT = 0.8 + Math.random();
   }
   sfx(k => { const t0 = nowT(); vNoise(t0, 0.3 * k, 0.12, 'bandpass', 600, 900, 3, { att: 0.02 }); });

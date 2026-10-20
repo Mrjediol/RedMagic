@@ -55,7 +55,7 @@ onKeyDown = function (code) {
 
 // ---------------------------------------------------------------- ajustes generales de los enemigos (no de uno concreto)
 G.es = { harmless: false, frozenAI: false, dashIframes: true, dmgMul: 1, hpMul: 1, maxAttackers: 3, respawn: true, showStates: false,
-         arena: 'actual', crumble: false, crumbleT: 1, respawnT: 3, eliteSlots: 2 };
+         arena: 'actual', crumble: false, crumbleT: 1, respawnT: 3, eliteSlots: 2, jitter: 0.35 };
 function mixHex(a, b, k) { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join(''); }
 G.fight = null;
 const EUI = {};                                             // ganchos del panel (ui.js)
@@ -104,6 +104,7 @@ function hitP(e, atk, dmg, kx = 0, ky = 0) {
   hurtPlayer(d);
   if (before - d <= 0 && p.hp === p.hpMax && F) F.deaths++;
   p.vx = kx; if (ky) { p.vy = ky; p.onGround = false; }
+  if (e && e.def && !e.dead) later(e, 0.35, () => { if (e.phase === 'active' || e.hidden) return; if (!e.fly) groundHop(e, 0, 170); else e.vy -= 120; });   // celebra el golpe
   if (F) { const k = (e && e.def ? e.def.name : '?') + ' · ' + atk; const h = F.hits[k] = F.hits[k] || { n: 0, dmg: 0 }; h.n++; h.dmg += d; F.dmgTaken += d; }
   return true;
 }
@@ -150,13 +151,64 @@ function drawAs(ctx, e, P, baseId, k) {
   ctx.save(); ctx.translate(0, e.ry - b.ry * k); ctx.scale(k, k); b.draw(ctx, pe, P); ctx.restore();
 }
 // turnos de ataque: como mucho G.es.maxAttackers enemigos preparando / ejecutando un ataque a la vez (multitudes justas)
+// Regla (usuario 2026-10-20: «el erizo me dispara desde fuera de pantalla»): nadie empieza un ataque fuera de la pantalla.
+function onScreen(e, m = 10) { const x = e.hidden ? e.hx : e.x; return x > G.cam.x - m && x < G.cam.x + VW + m; }
 function canStart(e) {
-  if (G.es.frozenAI) return false;
+  if (G.es.frozenAI || !onScreen(e, -e.rx * 0.5)) return false;
   const w = o => o.def.tier === 'élite' ? G.es.eliteSlots : 1;           // un élite ocupa más turnos (deja menos sitio a los demás)
   let n = 0; for (const o of alive()) if (o !== e && o.busy && o.def) n += w(o);
   return n + w(e) <= Math.max(G.es.maxAttackers, w(e));
 }
 function begin(e, name) { e.busy = true; e.atkId++; e.atkName = name; }
+
+// ---------------------------------------------------------------- vida entre ataques (el «juego neutro»)
+// Usuario 2026-10-20: «se sienten lentos y predecibles entre ataques… que se sientan más vivos». Piezas genéricas:
+// roam (suelo) y dart (voladores): se recolocan a RÁFAGAS (eligen sitio, van rápido, paran y miran), no se deslizan a velocidad
+// constante; si te acercas a menos de `flee`, huyen (y si están acorralados contra la pared, onCornered decide qué hacer).
+// o = { min, max (distancia que les gusta), speed, burst (× al ir), flee, hop (prob. de saltito al arrancar), onCornered(e) → true si actúa }
+function groundHop(e, vx = 0, v = 260) { if (!e.onGround) return; e.vy = -v; e.onGround = false; e.y -= 1; if (vx) e.mx = vx; }
+function roam(e, dt, o) {
+  const p = G.player, dx = p.x - e.x, ad = Math.abs(dx), cur = Math.sign(e.x - p.x) || 1;
+  e.roamT = (e.roamT || 0) - dt;
+  if (o.flee && ad < o.flee && Math.abs(p.y - (e.y + e.foot)) < 90) {
+    const away = cur, room = away < 0 ? e.x - ARENA.x0 - e.rx : ARENA.x1 - e.x - e.rx;
+    if (room < 70 && o.onCornered && o.onCornered(e)) return true;
+    if (e.onGround) walkDir(e, away, o.speed * o.burst * 1.2, dt, 10);
+    if (o.hop && e.onGround && Math.random() < dt * 2) groundHop(e, away * o.speed * o.burst, 220);
+    e.roamT = 0; return false;
+  }
+  if (e.roamX === undefined || e.roamT <= 0 || Math.abs(Math.abs(p.x - e.roamX) - (o.min + o.max) / 2) > (o.max - o.min) * 0.5 + 120) {
+    e.roamT = 0.5 + Math.random() * 1.1;
+    const d = o.min + Math.random() * (o.max - o.min);
+    e.roamX = clamp(p.x + cur * d, ARENA.x0 + e.rx + 10, ARENA.x1 - e.rx - 10);
+    if (Math.abs(e.roamX - p.x) < o.min * 0.8) e.roamX = clamp(p.x - cur * d, ARENA.x0 + e.rx + 10, ARENA.x1 - e.rx - 10);   // sin sitio detrás: al otro lado
+    e.roamGo = Math.random() < 0.8;                          // a veces se queda quieto mirándote
+    if (e.roamGo && o.hop && Math.random() < o.hop) groundHop(e, Math.sign(e.roamX - e.x) * o.speed * o.burst);
+  }
+  if (!e.onGround) return false;
+  if (e.roamGo && Math.abs(e.roamX - e.x) > 8) walkTo(e, e.roamX, o.speed * o.burst, dt, 9); else e.mx = lerp(e.mx, 0, Math.min(1, dt * 10));
+  return false;
+}
+function dart(e, dt, o) {
+  const p = G.player, c = pCenter(), cur = Math.sign(e.x - p.x) || 1, d = Math.hypot(c.x - e.x, c.y - e.y);
+  e.roamT = (e.roamT || 0) - dt;
+  const fleeing = o.flee && d < o.flee;
+  if (fleeing || e.roamX === undefined || e.roamT <= 0) {
+    e.roamT = fleeing ? 0.4 : 0.7 + Math.random() * 1.0; e.dartT = 0.35;
+    let side = cur; if (!fleeing && Math.random() < 0.18) side = -cur;   // de vez en cuando cruza por encima de ti
+    const dist = o.min + Math.random() * (o.max - o.min);
+    let x = p.x + side * dist; if (x < ARENA.x0 + 50 || x > ARENA.x1 - 50) x = p.x - side * dist;
+    e.roamX = clamp(x, ARENA.x0 + 40, ARENA.x1 - 40); e.roamY = clamp(c.y - o.height + (Math.random() - 0.5) * 90, CEIL + 40, GROUND - 110);
+  }
+  e.dartT -= dt;
+  steer(e, e.roamX, e.roamY + Math.sin(G.t * 2.2 + e.id) * 8, o.speed * (e.dartT > 0 || fleeing ? o.burst : 0.6), dt, e.dartT > 0 ? 7 : 3);
+}
+// Cuando te ve por primera vez: «!» y un respingo (y no hace nada hasta entonces: como un enemigo que estaba a lo suyo)
+function noticePlayer(e) {
+  e.aware = true; text(e.hidden ? e.hx : e.x, (e.hidden ? GROUND : e.y) - e.ry - 30, '!', '#ffe08a', true);
+  if (!e.fly && !e.hidden) groundHop(e, 0, 200); else if (e.fly) e.vy -= 160;
+  e.cdT = Math.max(e.cdT || 0, 0.45 + Math.random() * 0.4);
+}
 // fases de un ataque: preparación (se puede interrumpir, el cuerpo se enciende) → golpe (destello blanco) → recuperación (castigo)
 function windup(e, dur) { e.phase = 'windup'; e.tell = clamp(e.stT / Math.max(0.01, dur)); return e.stT >= dur; }
 function release(e) { e.phase = 'active'; e.tell = 0; e.relT = G.t; }
@@ -267,8 +319,16 @@ updateEnemies = function (dt0) {
     if (G.t - e.lastHitT > 1.2) e.poiseDmg = Math.max(0, e.poiseDmg - FT(e).poise * 0.6 * dt);
     // aturdido por otra cosa (vapor, golpe…) mientras prepara = interrumpido
     if ((e.stunT > 0 || frozen) && e.phase === 'windup') interrupt(e, frozen ? '¡CONGELADO!' : '¡INTERRUMPIDO!');
-    // IA
-    if (!frozen && e.stunT <= 0 && !G.es.frozenAI && tk > 0) { e.stT += dt; e.def.think(e, dt); }
+    // IA (no piensa hasta verte; aprovecha tus errores: tras tu dash, sus pausas corren el doble)
+    if (!e.aware && (onScreen(e, -20) || e.hp < e.hpMax)) noticePlayer(e);
+    if (e.aware && !frozen && e.stunT <= 0 && !G.es.frozenAI && tk > 0) {
+      if (G.player.dashCd > 0.15 && G.player.dashT <= 0) e.cdT -= dt;
+      e.stT += dt; e.def.think(e, dt);
+      // pausas menos predecibles: cada vez que un enemigo fija su pausa entre ataques, se multiplica por un azar
+      if (e.cdT > (e._cdPrev || 0) + 0.25) e.cdT *= 1 - G.es.jitter + Math.random() * 2 * G.es.jitter;
+      e._cdPrev = e.cdT;
+    }
+    else if (!e.aware) { e.mx = lerp(e.mx, 0, Math.min(1, dt * 8)); e.my = 0; }
     else { e.mx = 0; e.my = 0; }
     if (e.dead || e.hidden) continue;
     // atracción (singularidad, corazón de vacío)
@@ -290,6 +350,12 @@ updateEnemies = function (dt0) {
       const oy = e.y; e.vy += GRAV * dt; e.y += e.vy * dt; e.onGround = false;
       if (e.y >= GROUND - e.foot) { e.y = GROUND - e.foot; if (e.vy > 0) e.vy = 0; e.onGround = true; }
       else if (e.def.platforms && e.vy >= 0 && !e.dropT) for (const pl of PLATFORMS) { const py = pl.y - e.foot; if (e.x > pl.x0 && e.x < pl.x1 && oy <= py + 1 && e.y >= py) { e.y = py; e.vy = 0; e.onGround = true; } }
+    }
+    // no se amontonan: dos enemigos de suelo que se solapan se separan poco a poco
+    if (!e.fly) for (const o of G.enemies) {
+      if (o === e || o.dead || o.hidden || !o.def || o.fly || o.phase === 'active' || e.phase === 'active') continue;
+      const ddx = e.x - o.x, need = (e.rx + o.rx) * 0.75;
+      if (Math.abs(ddx) < need && Math.abs(e.y - o.y) < (e.ry + o.ry) * 0.8) e.x += (Math.sign(ddx) || (e.id > o.id ? 1 : -1)) * Math.min(90 * dt, need - Math.abs(ddx));
     }
     const lo = ARENA.x0 + e.rx, hi = ARENA.x1 - e.rx;
     e.wall = e.x <= lo ? -1 : e.x >= hi ? 1 : 0; e.x = clamp(e.x, lo, hi);
@@ -524,7 +590,10 @@ function E_eye(ctx, P, e, x, y, r) {
   const hot = e.tell > 0 || G.t - e.relT < 0.15;
   if (!P.mono && hot) glow(ctx, x, y, r * 4, [255, 220, 120], 0.5 + 0.4 * e.tell);
   ctx.fillStyle = P.c(hot ? '#ffffff' : C.eye); ctx.beginPath(); ctx.arc(x, y, r * (hot ? 1.25 : 1), 0, TAU); ctx.fill();
-  if (!P.mono && !hot) { ctx.fillStyle = '#1a0f14'; ctx.beginPath(); ctx.arc(x + r * 0.3, y, r * 0.45, 0, TAU); ctx.fill(); }
+  if (!P.mono && !hot) {                                      // la pupila te sigue (arriba / abajo)
+    const py = clamp((G.player.y - 40 - e.y) / 160, -1, 1) * r * 0.35;
+    ctx.fillStyle = '#1a0f14'; ctx.beginPath(); ctx.arc(x + r * 0.3, y + py, r * 0.45, 0, TAU); ctx.fill();
+  }
 }
 drawDummy = function (ctx, e, solid) {
   if (!e.def || e.dead) return;
@@ -536,6 +605,8 @@ drawDummy = function (ctx, e, solid) {
   const body = P => {
     ctx.save(); ctx.translate(e.x + shake, e.y); ctx.scale(1 - sq, 1 + sq * 0.6);
     if (suckK > 0) { const sa = Math.atan2(e.suck.y - e.y, e.suck.x - e.x); ctx.rotate(sa); ctx.scale(1 + 0.22 * suckK, 1 - 0.14 * suckK); ctx.rotate(-sa); }
+    // respira (sube y baja un poco, más deprisa si está alerta) y se inclina al moverse
+    if (!fz && !e.stasis) { const br = Math.sin(G.t * (e.aware ? 4.5 : 2.5) + e.id) * 0.025; ctx.translate(0, e.ry); ctx.scale(1 - br * 0.5, 1 + br); ctx.translate(0, -e.ry); if (!e.fly) ctx.rotate(clamp(e.mx / 2500, -0.08, 0.08)); }
     ctx.scale(e.face, 1); d.draw(ctx, e, P); ctx.restore();
   };
   const over = (c, a) => { if (a <= 0.01) return; ctx.save(); ctx.globalAlpha = Math.min(1, a); body(monoPaint(c)); ctx.restore(); };

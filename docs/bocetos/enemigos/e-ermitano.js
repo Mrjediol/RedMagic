@@ -28,7 +28,7 @@ addFoe({
     switch (e.st) {
       case 'shell':
         faceTo(e, p.x); e.cdT -= dt;
-        walkDir(e, ad > 70 ? Math.sign(dx) : 0, t.walk, dt, 3);
+        roam(e, dt, { min: 55, max: 105, speed: t.walk, burst: 3.5 });                // a pasos rápidos de lado, como un cangrejo
         if (e.cdT <= 0 && ad < t.grabRange && Math.abs(p.y - (e.y + e.foot)) < 70 && canStart(e)) { begin(e, 'Pinza helada'); go(e, 'grabW'); }
         break;
       case 'grabW':

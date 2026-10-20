@@ -30,8 +30,7 @@ addFoe({
     switch (e.st) {
       case 'prowl': {
         faceTo(e, p.x); e.cdT -= dt;
-        const want = ad > t.keepMax ? Math.sign(dx) : ad < t.keepMin ? -Math.sign(dx) * 0.6 : Math.sin(G.t * 0.9 + e.id) * 0.3;
-        walkDir(e, want, t.walk, dt);
+        roam(e, dt, { min: t.keepMin, max: t.keepMax, speed: t.walk, burst: 2.2, hop: 0.15 });
         if (e.cdT > 0 || !canStart(e)) break;
         {
           const pl = p.onGround && p.y < GROUND - 2 ? PLATFORMS.find(q => onPlatform(q)) : null, reach = !pl || GROUND - pl.y <= t.leapReach;

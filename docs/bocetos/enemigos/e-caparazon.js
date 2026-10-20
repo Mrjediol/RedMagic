@@ -32,7 +32,7 @@ addFoe({
     switch (e.st) {
       case 'walk':
         turning(); e.cdT -= dt; e.quakeT += dt;
-        if (side === e.face && ad > t.keep) walkDir(e, side, t.walk, dt, 3); else e.mx = lerp(e.mx, 0, Math.min(1, dt * 6));
+        if (side === e.face && ad > t.keep) walkDir(e, side, t.walk * (1 + Math.sin(G.t * 5 + e.id)), dt, 6); else e.mx = lerp(e.mx, 0, Math.min(1, dt * 6));
         if (!canStart(e)) break;
         if (e.quakeT > t.quakeEvery && ad < 650) {
           begin(e, 'Sacudida'); go(e, 'quakeW'); e.quakeT = 0;

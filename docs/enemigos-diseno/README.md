@@ -36,7 +36,14 @@ taller 🎨 Diseños).
 - **Aguante (poise):** el daño recibido mientras prepara se acumula (barra blanca bajo la vida; golpe fuerte cuenta ×2); al
   llenarse, **interrumpido**. Durante el golpe no se interrumpe. Congelar o aturdir mientras prepara también interrumpe.
 - **Turnos:** como mucho `Atacando a la vez` enemigos (3) preparan o ejecutan un ataque a la vez → las multitudes son justas.
-- **Contacto flojo**, el daño de verdad está en los ataques avisados.
+- **Contacto flojo**, el daño de verdad está en los ataques avisados (y durante un ataque no cuenta: el golpe es el del ataque).
+- **Nadie ataca desde fuera de la pantalla** (usuario, 2026-10-20). Y no piensan hasta verte: al verte, «!» y un respingo.
+- **Vivos entre ataques** (usuario: «lentos y predecibles entre ataques… que se sientan más vivos»), piezas genéricas del motor:
+  - `roam` (suelo) / `dart` (voladores): se recolocan **a ráfagas** (eligen sitio, van rápido, paran y te miran), no se deslizan
+    a velocidad constante; algunos a saltitos (Morsa sobre las aletas, Erizo al huir).
+  - **Los de distancia huyen** si te acercas (`flee`); acorralados contra la pared hacen algo (el Erizo rueda a través de ti).
+  - Pausas entre ataques con azar (`jitter`, ±35 %); **aprovechan tus errores**: tras tu dash, sus pausas corren el doble.
+  - No se amontonan (se separan); respiran, se inclinan al moverse, la pupila te sigue; celebran con un saltito cuando te dan.
 - **Los sistemas de las armas valen contra ellos**: sus balas son las mismas que las de prueba (Égida, Espejo, Singularidad ·
   Escudo de vacío, Reloj, Ráfaga, Látigo, Media luna y Tótem las desvían o capturan), se congelan, se queman, se lanzan, se
   atraen. Algunos además usan a los demás enemigos: el Embestidor los atropella, el Fatuo los revienta.
@@ -163,4 +170,6 @@ congela 1 s (mismo efecto que un aturdido, con aspecto de hielo): la **Pinza hel
   pregunta si hacer enemigos más complejos. Decidido probar: respuesta hacia arriba en todos los de suelo, 3 arenas +
   plataformas que se rompen, y niveles común / élite (primeros élites: Embestidor alfa y Acechador alfa). Después: no le
   gusta la sacudida de plataformas a distancia (sin coherencia física) → quitada; en su lugar carga con salto y pedrada.
-  Pide un set para el mundo de hielo con la temática visual y mecánicas ligeras (ver «Mundo de hielo»). Relacionado: tarea `t1` de `docs/tareas/todo.json` («15 enemigos: 5 por zona en las 3 primeras zonas»).
+  Pide un set para el mundo de hielo con la temática visual y mecánicas ligeras (ver «Mundo de hielo»). Después: el Erizo le
+  dispara desde fuera de pantalla y en general los nota lentos y predecibles entre ataques, «le falta chispa» (la Tundra, que se
+  mueve entre ataques, sí le gusta) → regla de pantalla, `roam` / `dart`, huida de los de distancia, Rodar del Erizo. Relacionado: tarea `t1` de `docs/tareas/todo.json` («15 enemigos: 5 por zona en las 3 primeras zonas»).

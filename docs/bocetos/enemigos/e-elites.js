@@ -130,7 +130,7 @@ function alphaHowl(e, t) {
   if (others < t.callN && G.t > e.callAt) {
     e.callAt = G.t + t.callCd;
     const p = G.player, edge = Math.abs(p.x - ARENA.x0) > Math.abs(p.x - ARENA.x1) ? ARENA.x0 + 40 : ARENA.x1 - 40;
-    for (let i = others; i < t.callN; i++) { const n = spawnFoe('stalker', edge + (edge < 700 ? 1 : -1) * (i - others) * 60); n.rageUntil = G.t + t.howlTime; n.cdT = 1.2; }
+    for (let i = others; i < t.callN; i++) { const n = spawnFoe('stalker', edge + (edge < 700 ? 1 : -1) * (i - others) * 60, undefined, { aware: true }); n.rageUntil = G.t + t.howlTime; n.cdT = 1.2; }
     text(edge, GROUND - 120, '¡LLAMADA!', '#ffb08a', true);
   }
 }

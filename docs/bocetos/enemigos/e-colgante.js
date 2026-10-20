@@ -27,7 +27,7 @@ addFoe({
     switch (e.st) {
       case 'hang':
         e.cdT -= dt; e.dripT += dt;
-        e.mx = lerp(e.mx, clamp(dxP(e), -1, 1) * (ad > 20 ? t.crawl : 0), Math.min(1, dt * 3)); e.my = (e.hangY - e.y) * 6;
+        e.mx = lerp(e.mx, clamp(dxP(e), -1, 1) * (ad > 20 ? t.crawl * (0.3 + 1.6 * Math.max(0, Math.sin(G.t * 3 + e.id))) : 0), Math.min(1, dt * 3)); e.my = (e.hangY - e.y) * 6;
         if (e.cdT <= 0 && ad < t.trigger + Math.abs(p.vx) * 0.3 && canStart(e)) {
           begin(e, 'Caída'); go(e, 'shiver');
           warn({ e, kind: 'circle', x: e.x, r: t.impactR, t: t.shiver + (GROUND - e.y) / t.fallSpeed });

@@ -13,6 +13,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 - **Lluvia de púas** — Se encoge y dispara sus púas hacia arriba; un momento después caen en varios sitios alrededor de ti (marcas en el suelo o en tu plataforma desde que las dispara).
 - **Pelado** — Tras la lluvia se queda sin púas un rato: recibe más daño (anillo rosa) hasta que le vuelven a crecer.
 - **Erizarse** — Si te pegas a él, saca todas las púas (preparación corta): tocarlo mientras está erizado duele y empuja.
+- **Huir y Rodar** — Entre ataques se recoloca a ráfagas a media distancia. Si te acercas, huye a saltitos. Si lo acorralas contra la pared, se hace bola de púas y rueda a través de ti hasta el otro lado (salta por encima).
 
 **Combina con:** Con Colgantes: arriba (carámbanos) y abajo a la vez. Con Morsa: los pinchos del suelo te encierran y llueve.
 
@@ -27,8 +28,14 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 | `poise` | 35 | 0 – 300 (paso 5) | Aguante: daño que le interrumpe mientras prepara (0 = nunca) |
 | `kb` | 0.8 | 0 – 3 (paso 0.05) | Empuje recibido × |
 | `contact` | 4 | 0 – 40 (paso 1) | Daño por contacto |
-| `keep` | 260 | 0 – 600 (paso 10) | Se queda a esta distancia |
-| `walk` | 70 | 0 – 250 (paso 5) | Velocidad andando |
+| `keepMin` | 230 | 0 – 600 (paso 10) | Le gusta estar a (mín.) |
+| `keepMax` | 360 | 50 – 700 (paso 10) | Le gusta estar a (máx.) |
+| `walk` | 85 | 0 – 250 (paso 5) | Velocidad andando |
+| `flee` | 180 | 0 – 400 (paso 10) | Huye si te acercas a menos de |
+| `rollWindup` | 0.35 | 0.1 – 1.5 (paso 0.05) | Rodar: preparación (s) |
+| `rollSpeed` | 430 | 100 – 900 (paso 10) | Rodar: velocidad |
+| `rollDist` | 420 | 100 – 1000 (paso 10) | Rodar: recorrido |
+| `rollDmg` | 12 | 0 – 50 (paso 1) | Rodar: daño |
 | `rainWindup` | 0.6 | 0.1 – 2 (paso 0.05) | Lluvia: preparación (s) |
 | `quills` | 5 | 1 – 12 (paso 1) | Lluvia: púas |
 | `spread` | 70 | 0 – 200 (paso 5) | Lluvia: separación |
@@ -47,3 +54,4 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 ## Decisiones y feedback
 
 - 2026-10-20 · Diseñado sin arte (primero el comportamiento, luego se busca el arte). Pendiente de que el usuario lo pruebe.
+- 2026-10-20 · El usuario: le disparaba desde fuera de pantalla y entre ataques no hacía nada; «si me acerco debería intentar huir». → regla general de pantalla; ahora se recoloca a ráfagas, huye a saltitos y, acorralado, rueda a través de ti.

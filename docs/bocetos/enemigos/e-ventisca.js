@@ -27,10 +27,7 @@ addFoe({
     switch (e.st) {
       case 'hover': {
         e.cdT -= dt; faceTo(e, p.x);
-        if (Math.abs(e.x - p.x) < t.distMin * 0.7) e.side = Math.sign(e.x - p.x) || e.side;
-        const mid = (t.distMin + t.distMax) / 2;
-        let tx = p.x + e.side * mid; if (tx < ARENA.x0 + 50 || tx > ARENA.x1 - 50) { e.side = -e.side; tx = p.x + e.side * mid; }
-        steer(e, tx, clamp(c.y - t.height + Math.sin(G.t * 1.4 + e.id) * 20, CEIL + 40, GROUND - 110), t.speed, dt);
+        dart(e, dt, { min: t.distMin, max: t.distMax, height: t.height, speed: t.speed, burst: 2.4, flee: t.distMin * 0.7 });
         if (e.cdT > 0 || !canStart(e)) break;
         if (Math.hypot(c.x - e.x, c.y - e.y) < t.gustRange && Math.random() < t.gustChance) {
           begin(e, 'Soplo'); go(e, 'gustW'); e.gA = Math.atan2(c.y - e.y, c.x - e.x);

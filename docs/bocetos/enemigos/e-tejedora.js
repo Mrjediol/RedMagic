@@ -31,11 +31,7 @@ addFoe({
     switch (e.st) {
       case 'hover': {
         e.cdT -= dt; faceTo(e, p.x);
-        if (Math.abs(e.x - p.x) < t.distMin * 0.7) e.side = Math.sign(e.x - p.x) || e.side;
-        const mid = (t.distMin + t.distMax) / 2;
-        let tx = p.x + e.side * mid; if (tx < ARENA.x0 + 50 || tx > ARENA.x1 - 50) { e.side = -e.side; tx = p.x + e.side * mid; }
-        const ty = clamp(c.y - t.height + Math.sin(G.t * 1.7 + e.id) * 25, 50, GROUND - 120);
-        steer(e, tx, ty, Math.abs(e.x - p.x) < t.distMin ? t.speed * 1.7 : t.speed, dt);
+        dart(e, dt, { min: t.distMin, max: t.distMax, height: t.height, speed: t.speed, burst: 2.6, flee: t.distMin * 0.75 });
         if (e.attacks >= t.blinkAfter && e.blinkCdT <= 0) { weaverBlink(e); break; }
         if (e.cdT > 0 || !canStart(e)) break;
         if (Math.random() < t.webChance) { begin(e, 'Telaraña'); go(e, 'webW'); break; }

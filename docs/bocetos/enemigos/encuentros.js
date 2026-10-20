@@ -20,7 +20,7 @@ addEncounter({ id: 'todo', name: 'Todos', desc: 'Uno de cada (sin zánganos suel
 // duelo: lo monta el panel (tipo × cantidad)
 function duelEncounter(type, n = 1) {
   const def = FOES[type], list = [];
-  for (let i = 0; i < n; i++) list.push({ type, x: 900 + i * 150, y: def.fly ? 130 + (i % 2) * 50 : undefined });
+  for (let i = 0; i < n; i++) list.push({ type, x: 640 + i * 110, y: def.fly ? 130 + (i % 2) * 50 : undefined });   // a la vista (no piensan hasta verte)
   return { id: 'duelo:' + type + ':' + n, name: 'Duelo · ' + def.name + (n > 1 ? ' ×' + n : ''), desc: def.question, list, world: def.world };
 }
 // élites (1 por encuentro, con comunes alrededor)

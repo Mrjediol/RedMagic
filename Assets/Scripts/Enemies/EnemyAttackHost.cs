@@ -253,7 +253,7 @@ namespace RedMagic.Enemies
             Vector2 aim = delta.sqrMagnitude < 0.0001f ? new Vector2(facing, 0f) : delta.normalized;
 
             var ability = new AbilityContext(gameObject, this, _health, tuning.hitLayers, facing, aim,
-                                             CompareTag("Untagged") ? null : tag);
+                                             CompareTag("Untagged") ? null : tag, damageScale: _stats.OutgoingDamageScale);
 
             // Sin fases: el ritmo es 1 y el color de los avisos es el del propio ataque.
             return new BossContext(this, target, ability, MeasureGroundY(tuning), arenaHalfWidth,

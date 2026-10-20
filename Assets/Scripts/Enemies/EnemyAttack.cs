@@ -305,7 +305,7 @@ namespace RedMagic.Enemies
             var context = Context(tuning, direction, facing);
 
             ProjectileFactory.Spawn(context, tuning.projectile, origin, direction,
-                                    tuning.attackDamage, tuning.attackKnockbackMultiplier,
+                                    tuning.attackDamage * context.DamageScale, tuning.attackKnockbackMultiplier,
                                     tuning.projectileSprite, tuning.projectileTint);
         }
 
@@ -368,7 +368,8 @@ namespace RedMagic.Enemies
         {
             string friendly = CompareTag("Untagged") ? null : tag;
 
-            return new AbilityContext(gameObject, this, _health, tuning.hitLayers, facing, aim, friendly);
+            return new AbilityContext(gameObject, this, _health, tuning.hitLayers, facing, aim, friendly,
+                                      damageScale: _stats != null ? _stats.OutgoingDamageScale : 1f);
         }
 
         private void OnDrawGizmosSelected()

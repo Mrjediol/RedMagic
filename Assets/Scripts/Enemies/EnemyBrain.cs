@@ -974,7 +974,7 @@ namespace RedMagic.Enemies
             if (other == null || other == _health) return;
             if (!string.IsNullOrEmpty(tuning.targetTag) && !other.CompareTag(tuning.targetTag)) return;
 
-            other.TakeDamage(tuning.contactDamage, transform.position, tuning.contactKnockbackMultiplier);
+            other.TakeDamage(tuning.contactDamage * _stats.OutgoingDamageScale, transform.position, tuning.contactKnockbackMultiplier);
             _contactTimer = tuning.contactDamageCooldown;
         }
 

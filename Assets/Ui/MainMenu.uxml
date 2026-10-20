@@ -8,6 +8,9 @@
             <ui:Button name="playButton" text="#menu.play" class="menu-button"/>
             <ui:Button name="optionsButton" text="#menu.options" class="menu-button"/>
             <ui:Button name="quitButton" text="#menu.quit" class="menu-button menu-button--quit"/>
+            <ui:Button name="classicButton" text="#menu.mode_classic" class="menu-button" style="display: none;"/>
+            <ui:Button name="survivalButton" text="#menu.mode_survival" class="menu-button" style="display: none;"/>
+            <ui:Button name="backButton" text="#menu.back" class="menu-button menu-button--quit" style="display: none;"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

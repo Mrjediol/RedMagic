@@ -83,6 +83,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 | Singletons, pause, `CanPlayerAct` | `docs/architecture/singletons.md` |
 | Scene refs, `SceneReference` | `docs/architecture/scene-references.md` |
 | Runs, worlds, sections, `RunManager` | `docs/architecture/run-world.md` |
+| Survival mode (waves, `SurvivalConfig`), enemy variants (`EnemyVariant`), `IOutgoingDamageScale` | `docs/architecture/survival.md` |
 | Enemies, AI | `docs/architecture/enemies.md` |
 | Part-based bodies (separate sprites), `ProceduralRig`, rig drivers | `docs/architecture/procedural-rig.md` |
 | Sprite/enemy import pipeline | `docs/architecture/sprite-pipeline.md` |

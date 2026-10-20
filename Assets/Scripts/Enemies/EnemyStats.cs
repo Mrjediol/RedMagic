@@ -19,7 +19,7 @@ namespace RedMagic.Enemies
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Health))]
-    public class EnemyStats : MonoBehaviour, IEnemySoundFallbackUser
+    public class EnemyStats : MonoBehaviour, IEnemySoundFallbackUser, IOutgoingDamageScale
     {
         [SerializeField] private EnemyTuning tuning = new EnemyTuning();
 
@@ -34,6 +34,9 @@ namespace RedMagic.Enemies
             Apply();
         }
 #endif
+
+        /// <summary>Multiplica todo su daño (golpe, proyectil, contacto). Lo pone quien lo crea (Supervivencia, variantes).</summary>
+        public float OutgoingDamageScale { get; set; } = 1f;
 
         private void Awake() => Apply();
 

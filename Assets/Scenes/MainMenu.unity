@@ -395,6 +395,10 @@ MonoBehaviour:
     sceneAsset: {fileID: 102900000, guid: 8c9cfa26abfee488c85f1582747f6a02, type: 3}
     scenePath: Assets/Scenes/MainHub.unity
     sceneName: MainHub
+  survivalScene:
+    sceneAsset: {fileID: 102900000, guid: f2625edbbb9da2e4c984ebf554b85344, type: 3}
+    scenePath: Assets/Scenes/SurvivalArena.unity
+    sceneName: SurvivalArena
   optionsMenu: {fileID: 773491707}
 --- !u!114 &931500089
 MonoBehaviour:

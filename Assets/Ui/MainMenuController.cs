@@ -13,7 +13,8 @@ namespace RedMagic.UI
 {
     /// <summary>
     /// Lógica de los botones del menú principal (UI Toolkit).
-    /// Se engancha a los botones definidos en MainMenu.uxml.
+    /// Se engancha a los botones definidos en MainMenu.uxml. Jugar no carga nada: cambia los botones por la elección de
+    /// modo (Clásico → hub, Supervivencia → <see cref="survivalScene"/>, Atrás).
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class MainMenuController : MonoBehaviour, IMenuScreen
@@ -30,6 +31,9 @@ namespace RedMagic.UI
                  "nombre, así que aguanta renombrados. Debe estar en Build Settings.")]
         [SerializeField] private SceneReference hubScene = new SceneReference();
 
+        [Tooltip("Escena del modo Supervivencia (botón Supervivencia tras pulsar Jugar). Debe estar en Build Settings.")]
+        [SerializeField] private SceneReference survivalScene = new SceneReference();
+
         [Header("Opciones")]
         [Tooltip("Menú de opciones. Se muestra al pulsar Opciones y este menú se oculta.")]
         [SerializeField] private OptionsMenuController optionsMenu;
@@ -39,7 +43,8 @@ namespace RedMagic.UI
         private Button _playButton;
         private Button _optionsButton;
         private Button _quitButton;
-        private bool _hidden;
+        private Button _classicButton, _survivalButton, _backButton;
+        private bool _hidden, _choosingMode;
 
         private void OnEnable()
         {
@@ -55,10 +60,17 @@ namespace RedMagic.UI
             _playButton = _root.Q<Button>("playButton");
             _optionsButton = _root.Q<Button>("optionsButton");
             _quitButton = _root.Q<Button>("quitButton");
+            _classicButton = _root.Q<Button>("classicButton");
+            _survivalButton = _root.Q<Button>("survivalButton");
+            _backButton = _root.Q<Button>("backButton");
 
             Wire(_playButton, OnPlayClicked);
             Wire(_optionsButton, OnOptionsClicked);
             Wire(_quitButton, OnQuitClicked);
+            Wire(_classicButton, OnClassicClicked);
+            Wire(_survivalButton, OnSurvivalClicked);
+            Wire(_backButton, OnBackClicked);
+            ShowModeChoice(false);
 
             LocalizedUi.BindTree(_root); // claves "#…" del UXML, antes de vestir
             UiSounds.Bind(_root);
@@ -81,13 +93,16 @@ namespace RedMagic.UI
             MenuSkinDresser.DressButton(_playButton, skin, Color.white);
             MenuSkinDresser.DressButton(_optionsButton, skin, Color.white);
             MenuSkinDresser.DressButton(_quitButton, skin, skin.quitTint);
+            MenuSkinDresser.DressButton(_classicButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_survivalButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_backButton, skin, skin.quitTint);
         }
 
         /// <summary>Con mando, deja el primer botón enfocado para poder navegar con el d-pad.</summary>
         private void FocusForGamepad()
         {
             if (!_hidden && InputDeviceManager.GamepadActive)
-                _playButton?.Focus();
+                (_choosingMode ? _classicButton : _playButton)?.Focus();
         }
 
         private void Start()
@@ -110,6 +125,9 @@ namespace RedMagic.UI
             Unwire(_playButton, OnPlayClicked);
             Unwire(_optionsButton, OnOptionsClicked);
             Unwire(_quitButton, OnQuitClicked);
+            Unwire(_classicButton, OnClassicClicked);
+            Unwire(_survivalButton, OnSurvivalClicked);
+            Unwire(_backButton, OnBackClicked);
         }
 
         private void Update()
@@ -122,6 +140,8 @@ namespace RedMagic.UI
 
             if (optionsMenu != null && optionsMenu.IsOpen)
                 optionsMenu.GoBack();
+            else if (_choosingMode)
+                OnBackClicked();
         }
 
         /// <summary>Muestra u oculta el menú sin desactivar el GameObject (evita perder el layout de UI Toolkit).</summary>
@@ -153,14 +173,40 @@ namespace RedMagic.UI
             button.clicked -= onClick;
         }
 
-        private void OnPlayClicked()
+        /// <summary>Jugar: en vez de cargar, enseña la elección de modo.</summary>
+        private void OnPlayClicked() => ShowModeChoice(true);
+
+        private void OnBackClicked() => ShowModeChoice(false);
+
+        private void ShowModeChoice(bool choosing)
+        {
+            _choosingMode = choosing;
+            SetDisplay(_playButton, !choosing);
+            SetDisplay(_optionsButton, !choosing);
+            SetDisplay(_quitButton, !choosing);
+            SetDisplay(_classicButton, choosing);
+            SetDisplay(_survivalButton, choosing);
+            SetDisplay(_backButton, choosing);
+            FocusForGamepad();
+        }
+
+        private static void SetDisplay(VisualElement e, bool on)
+        {
+            if (e != null) e.style.display = on ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void OnClassicClicked() => LoadGameScene(hubScene);
+
+        private void OnSurvivalClicked() => LoadGameScene(survivalScene);
+
+        private void LoadGameScene(SceneReference scene)
         {
             // Se valida ANTES de tocar pausa o música: si la escena no se pudiera cargar, el menú
             // se queda como estaba en vez de cortar la música y dejar al jugador en un menú mudo.
-            string path = hubScene.ResolveForLoad(this);
+            string path = scene.ResolveForLoad(this);
             if (path == null) return;
 
-            // Al entrar al hub: despausar del todo y parar la música del menú.
+            // Al entrar a jugar: despausar del todo y parar la música del menú.
             if (GameStateManager.Instance != null)
                 GameStateManager.Instance.ForceResume();
 

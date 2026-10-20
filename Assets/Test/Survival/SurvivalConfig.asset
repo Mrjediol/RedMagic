@@ -1,0 +1,218 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ce610796cc9e6e4eb786b30f57b432d, type: 3}
+  m_Name: SurvivalConfig
+  m_EditorClassIdentifier: Assembly-CSharp::RedMagic.Survival.SurvivalConfig
+  startingGold: 0
+  startingWeapon: {fileID: 11400000, guid: 8bff0cb5110241f46b22bfd0d1750640, type: 2}
+  startingSecondWeapon: {fileID: 11400000, guid: f0fe748cc70b7a04581b614f8f7560ec, type: 2}
+  startingItems: []
+  devWeapons:
+  - {fileID: 11400000, guid: 8bff0cb5110241f46b22bfd0d1750640, type: 2}
+  - {fileID: 11400000, guid: f0fe748cc70b7a04581b614f8f7560ec, type: 2}
+  - {fileID: 11400000, guid: 301a0d3891d3fa74d9fefe4d42bbda32, type: 2}
+  - {fileID: 11400000, guid: 6147336d3bc4c7645b5cf1ce61ce4b28, type: 2}
+  - {fileID: 11400000, guid: afbc4fdd64b53134ab09ee14a402eeb6, type: 2}
+  - {fileID: 11400000, guid: f714f672144395b4793264645bcee91c, type: 2}
+  stages:
+  - textKey: survival.stage.ice
+    fallbackName: Hielo
+    waves: 4
+    worldNumber: 1
+    zoneLook: {fileID: 0}
+    healthMultiplier: 1
+    damageMultiplier: 1
+    countMultiplier: 1
+    flying:
+    - prefab: {fileID: 4074207443637217106, guid: b7b738613f12540478432615be1dbff6, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    - prefab: {fileID: 1744773434637354618, guid: 70d25f523f32864479851e50119cff00, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    - prefab: {fileID: 7495333354011070827, guid: cd3f669cbe8146148880945b7e5b54c2, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    - prefab: {fileID: 7018523485113919345, guid: 818737513e15ccc43b95ee95c01f9606, type: 3}
+      rarity: 1
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    ground:
+    - prefab: {fileID: 8047233175511339553, guid: a3010e40427fd224a8fbadc9480bd3f6, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+      - {fileID: 11400000, guid: 10e1fc1f04ae61446bf8ccbcd03820ea, type: 2}
+    turrets:
+    - prefab: {fileID: 993704669555814581, guid: 7116cf21cf3670b44a2d253afd4e1e97, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    bossWave: 1
+    bosses:
+    - {fileID: 4655559755096861651, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
+    overrideRewards: 0
+    rewards: 1
+  - textKey: survival.stage.forest
+    fallbackName: Bosque
+    waves: 5
+    worldNumber: 2
+    zoneLook: {fileID: 11400000, guid: 15259a8a7b03ccd459185be20ec5dc18, type: 2}
+    healthMultiplier: 1.1
+    damageMultiplier: 1
+    countMultiplier: 1
+    flying:
+    - prefab: {fileID: 4074207443637217106, guid: b7b738613f12540478432615be1dbff6, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    - prefab: {fileID: 1744773434637354618, guid: 70d25f523f32864479851e50119cff00, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    - prefab: {fileID: 7495333354011070827, guid: cd3f669cbe8146148880945b7e5b54c2, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    - prefab: {fileID: 7018523485113919345, guid: 818737513e15ccc43b95ee95c01f9606, type: 3}
+      rarity: 1
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    ground:
+    - prefab: {fileID: 8047233175511339553, guid: a3010e40427fd224a8fbadc9480bd3f6, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+      - {fileID: 11400000, guid: 10e1fc1f04ae61446bf8ccbcd03820ea, type: 2}
+    turrets:
+    - prefab: {fileID: 993704669555814581, guid: 7116cf21cf3670b44a2d253afd4e1e97, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    bossWave: 0
+    bosses: []
+    overrideRewards: 0
+    rewards: 1
+  - textKey: survival.stage.volcano
+    fallbackName: "Volc\xE1n"
+    waves: 5
+    worldNumber: 3
+    zoneLook: {fileID: 11400000, guid: ef9579610d44c6242a87d23b979ce8f7, type: 2}
+    healthMultiplier: 1.2
+    damageMultiplier: 1.1
+    countMultiplier: 1
+    flying:
+    - prefab: {fileID: 4074207443637217106, guid: b7b738613f12540478432615be1dbff6, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    - prefab: {fileID: 1744773434637354618, guid: 70d25f523f32864479851e50119cff00, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    - prefab: {fileID: 7495333354011070827, guid: cd3f669cbe8146148880945b7e5b54c2, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    - prefab: {fileID: 7018523485113919345, guid: 818737513e15ccc43b95ee95c01f9606, type: 3}
+      rarity: 1
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    ground:
+    - prefab: {fileID: 8047233175511339553, guid: a3010e40427fd224a8fbadc9480bd3f6, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+      - {fileID: 11400000, guid: 10e1fc1f04ae61446bf8ccbcd03820ea, type: 2}
+    turrets:
+    - prefab: {fileID: 993704669555814581, guid: 7116cf21cf3670b44a2d253afd4e1e97, type: 3}
+      rarity: 0
+      specials:
+      - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
+      - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
+      - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    bossWave: 0
+    bosses: []
+    overrideRewards: 0
+    rewards: 1
+  repeatLastStage: 1
+  flyingCount:
+    atFirstWave: 3
+    perWave: 1
+    max: 30
+  groundCount:
+    atFirstWave: 3
+    perWave: 1
+    max: 30
+  turretCount:
+    atFirstWave: 1
+    perWave: 0.25
+    max: 8
+  firstSpawnDelay: 1.5
+  spawnInterval: 0.6
+  maxAlive: 14
+  preferSpawnsWithin: 16
+  healthGrowthPerWave: 0.12
+  damageGrowthPerWave: 0.08
+  compoundGrowth: 0
+  difficultyAtFirstWave: 1
+  difficultyPerWave: 0.2
+  specialChance: 0.3
+  rarityWeights:
+  - 1
+  - 0.7
+  - 0.4
+  - 0.15
+  rewards: 1
+  itemDrops: 1
+  healBetweenWaves: 0
+  autoNextWaveSeconds: 0
+  goldDropMultiplier: 1
+  goldPerWaveCleared: 0
+  variantShader: {fileID: 4800000, guid: 913c679ff15b5f147a40b1d902eba827, type: 3}

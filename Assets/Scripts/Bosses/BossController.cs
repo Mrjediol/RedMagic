@@ -38,7 +38,7 @@ namespace RedMagic.Bosses
     /// </summary>
     [RequireComponent(typeof(Health))]
     [DisallowMultipleComponent]
-    public class BossController : MonoBehaviour, IAttackHost, ISoundEventSource, IEnemySoundFallbackUser
+    public class BossController : MonoBehaviour, IAttackHost, ISoundEventSource, IEnemySoundFallbackUser, IOutgoingDamageScale
     {
         /// <summary>OnActivate al empezar la presentación (rugido), OnVulnerable al abrir una ventana de castigo. Ver <see cref="SoundEmitter"/>.</summary>
         public event Action<SoundTrigger> SoundTriggered;
@@ -491,6 +491,9 @@ namespace RedMagic.Bosses
         }
 
         // ------------------------------------------------------------------ ciclo de vida
+
+        /// <summary>Multiplica todo su daño (fases incluidas). Lo pone quien lo crea (Supervivencia); 1 = el de la definición.</summary>
+        public float OutgoingDamageScale { get; set; } = 1f;
 
         private void Awake()
         {
@@ -949,7 +952,7 @@ namespace RedMagic.Bosses
                 facing: FacingSign(),
                 aim: AimAtTarget(),
                 friendlyTag: gameObject.CompareTag("Untagged") ? null : tag,
-                damageScale: phase != null ? phase.damageScale : 1f);
+                damageScale: (phase != null ? phase.damageScale : 1f) * OutgoingDamageScale);
 
             return new BossContext(this, ResolveTarget(), ability, _groundY, arenaHalfWidth,
                                    arenaHeight, PaceOf(phase), fxSprite,
@@ -1151,7 +1154,7 @@ namespace RedMagic.Bosses
             if (otherHealth == null || otherHealth == _health) return;
             if (!string.IsNullOrEmpty(targetTag) && !otherHealth.CompareTag(targetTag)) return;
 
-            if (otherHealth.TakeDamage(contactDamage, transform.position, contactKnockbackMultiplier))
+            if (otherHealth.TakeDamage(contactDamage * OutgoingDamageScale, transform.position, contactKnockbackMultiplier))
                 _contactTimer = contactDamageCooldown;
         }
 

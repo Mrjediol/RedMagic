@@ -52,3 +52,16 @@ addEncounter({ id: 'setamadre', world: 'bosque', name: 'Seta madre', desc: 'Seta
   list: [{ type: 'shroomAlpha', x: 750 }, { type: 'bramble', x: 1150 }] });
 addEncounter({ id: 'bosque_todo', world: 'bosque', name: 'Todo el bosque', desc: 'Uno de cada común del bosque.',
   list: [{ type: 'shroom', x: 700 }, { type: 'bramble', x: 1250 }, { type: 'bear', x: 950 }, { type: 'owl', x: 1100, y: 120 }, { type: 'flytrap', x: 1400 }] });
+// ---- volcán (aspecto: cielo rojo oscuro, volcanes con ríos de lava, pavesas, suelo de basalto con grietas)
+addEncounter({ id: 'colada', world: 'volcan', name: 'Colada', desc: '2 Salamandras + Serpiente de lava: el suelo se llena de rastros mientras te salta por encima.',
+  list: [{ type: 'salamander', x: 700 }, { type: 'salamander', x: 1100 }, { type: 'lavaserpent', x: 900 }] });
+addEncounter({ id: 'nido', world: 'volcan', name: 'Nido de brasas', desc: '2 Aves brasa + Escorpión: esperar su guardia mientras caen brasas; rematar los huevos.',
+  list: [{ type: 'emberbird', x: 800, y: 130 }, { type: 'emberbird', x: 1150, y: 150 }, { type: 'scorpion', x: 1000 }] });
+addEncounter({ id: 'cantera', world: 'volcan', name: 'Cantera', desc: 'Golem de escoria + Salamandra: pilares y rastros, poco suelo.',
+  list: [{ type: 'slaggolem', x: 900 }, { type: 'salamander', x: 1200 }] });
+addEncounter({ id: 'caldera', world: 'volcan', name: 'Caldera', desc: 'Serpiente + Escorpión + Ave brasa: saltos, guardias y pasadas.',
+  list: [{ type: 'lavaserpent', x: 800 }, { type: 'scorpion', x: 1000 }, { type: 'emberbird', x: 1200, y: 140 }] });
+addEncounter({ id: 'fenix', world: 'volcan', name: 'Fénix', desc: 'Fénix + Escorpión: ida y vuelta, llamas, y un huevo que hay que romper.',
+  list: [{ type: 'phoenix', x: 900, y: 130 }, { type: 'scorpion', x: 1100 }] });
+addEncounter({ id: 'volcan_todo', world: 'volcan', name: 'Todo el volcán', desc: 'Uno de cada común del volcán.',
+  list: [{ type: 'salamander', x: 700 }, { type: 'scorpion', x: 1000 }, { type: 'emberbird', x: 1100, y: 140 }, { type: 'lavaserpent', x: 850 }, { type: 'slaggolem', x: 1300 }] });

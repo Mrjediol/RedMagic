@@ -231,3 +231,39 @@ addFoe(Object.assign({}, FOES.shroom, {
     for (const [x, y] of [[-14, -34], [10, -38]]) { E_ell(ctx, P, x, y, 7, 4, WOOD.cap); E_line(ctx, P, [[x, y + 2], [x, y + 8]], 2, WOOD.stem); }
   },
 }));
+
+// ---------------------------------------------------------------- Fénix (volcán)
+addFoe(Object.assign({}, FOES.emberbird, {
+  id: 'phoenix', name: 'Fénix', short: 'Fénix', tier: 'élite', rx: 28, ry: 22,
+  role: 'Élite del Ave brasa: ida y vuelta, llamas y renace',
+  question: 'La pasada del Ave brasa, pero de ida y vuelta y dejando llamas en el suelo donde caen las brasas; al morir su huevo aguanta más y renace antes: hay que ir a romperlo sí o sí.',
+  moves: [
+    { name: 'Pasada de ida y vuelta', desc: 'Cruza soltando brasas (franja marcada) y, al llegar, se da la vuelta y vuelve por encima (otra franja).' },
+    { name: 'Llamas', desc: 'Las brasas que tocan el suelo dejan llamas un momento.' },
+    { name: 'Renacer', desc: 'Como el Ave brasa, pero el huevo tiene más vida y eclosiona antes (renace a media vida, una sola vez).' },
+  ],
+  combos: 'Con el Escorpión: no puedes esperar su guardia quieto bajo las llamas.',
+  art: 'El Ave brasa grande: alas largas de fuego con plumas de cristal ardiente, cresta de llamas, cola de tres plumas largas; brilla más que nada en pantalla.',
+  tuning: eliteTuning('emberbird', { hp: 260, poise: 60, kb: 0.5, runSpeed: 560, dropEvery: 0.09, emberDmg: 8, eggHp: 70, reviveTime: 2.5, reviveHp: 0.5, cooldown: 1.8 }, {
+    emberZone: [1.4, 0, 5, 0.1, 'Llamas: duran (s)'], backWindup: [0.35, 0.1, 1.5, 0.05, 'Vuelta: preparación (s)'],
+  }),
+  think(e, dt) {
+    if (e.st === 'backW') {
+      const t = FT(e); e.busy = true; e.mx = lerp(e.mx, 0, Math.min(1, dt * 10)); e.my = 0; e.face = e.rdir;
+      if (windup(e, t.backWindup)) { go(e, 'run'); release(e); e.dropT = 0; e.hitP = false; }
+      return;
+    }
+    FOES.emberbird.think(e, dt);
+  },
+  onEnter(e, st) {
+    if (st === 'toStart') e.backDone = false;
+    if (st === 'circle' && e.backDone === false) {
+      const t = FT(e); e.backDone = true; e.rdir = -e.rdir; e.rx1 = clamp(e.x + e.rdir * t.runDist, ARENA.x0 + 20, ARENA.x1 - 20);
+      begin(e, 'Pasada'); go(e, 'backW'); warn({ e, kind: 'band', x0: e.x, x1: e.rx1, t: t.backWindup + 0.3 });
+    }
+  },
+  draw(ctx, e, P) {
+    drawAs(ctx, e, P, 'emberbird', e.ry / FOES.emberbird.ry);
+    for (let i = 0; i < 3; i++) E_poly(ctx, P, [[16 + i * 4, -18], [18 + i * 5, -34 - i * 4 + Math.sin(G.t * 10 + i) * 3], [22 + i * 4, -18]], i % 2 ? MAGMA.hot : MAGMA.glow);
+  },
+}));

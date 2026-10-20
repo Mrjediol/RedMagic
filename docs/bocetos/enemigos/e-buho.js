@@ -101,4 +101,3 @@ function swoopCurve(e, q) {
   const x0 = e.x, y0 = e.y, x2 = clamp(q.x + (q.x - x0), ARENA.x0 + 40, ARENA.x1 - 40), y2 = Math.min(y0, q.y - 60);
   return [[x0, y0], [2 * q.x - 0.5 * (x0 + x2), 2 * (q.y + 6) - 0.5 * (y0 + y2)], [x2, y2]];
 }
-const bez = (b, s) => { const u = 1 - s; return [u * u * b[0][0] + 2 * u * s * b[1][0] + s * s * b[2][0], u * u * b[0][1] + 2 * u * s * b[1][1] + s * s * b[2][1]]; };

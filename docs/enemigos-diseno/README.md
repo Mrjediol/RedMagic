@@ -125,6 +125,25 @@ los del hielo ni los genéricos) y todos se mueven con intención entre ataques;
   `thorn` / `feather`, `trap: true` (enemigo que no se mueve: en el duelo de prueba el player empieza a su alcance).
 - Aspecto del bosque en la jugable: troncos al fondo, copa de hojas con ramas arriba (donde se posa el Búho), plataformas-rama.
 
+## Volcán (2026-10-20, sin probar por el usuario)
+
+Mismas reglas: el volcán es **visual** (obsidiana, basalto, magma, ceniza, brasas) con mecánicas ligeras; **sin quemadura
+general**. Preguntas nuevas, un giro por enemigo, todos se mueven entre ataques.
+
+| Enemigo | Nivel | Qué aporta | El giro |
+|---|---|---|---|
+| Salamandra de magma | común | carrera que deja **rastro de lava**: el suelo cambia | trepa la pared y se lanza desde ella |
+| Escorpión de obsidiana | común | paciencia: picotazo largo con la cola (castigo cuando se clava) | **guardia**: si le pegas, contraataca |
+| Ave brasa | común | pasadas rasantes soltando brasas (franja marcada) | al morir, **huevo que renace** si no lo rompes |
+| Serpiente de lava | común | salta en arco **por donde estás** (entrada, salida y curva marcadas) | dos saltos seguidos; fuera se retuerce (castigo) |
+| Golem de escoria | común | levanta **pilares** que tapan tus disparos | los revienta y te lanza la metralla (si no los rompes antes) |
+| Fénix | élite | pasada de ida y vuelta, llamas en el suelo | renace una vez, antes y con más aguante |
+
+- Piezas genéricas nuevas: aviso `band` (franja del suelo), objetos que no cuentan para despejar (`prop`: el pilar; paran los
+  disparos porque las armas los golpean), enemigos sin ficha (`noFicha`: el huevo), trepar paredes (la Salamandra pasa a
+  volador mientras está en la pared), `bez` (curvas) en el motor.
+- Aspecto del volcán: cielo rojo oscuro, volcanes con ríos de lava, pavesas que suben, suelo de basalto con grietas que brillan.
+
 ## Plantilla de enemigos
 <!-- gen:plantilla -->
 | Enemigo | Nivel | `id` | Rol | Pregunta al jugador | Ficha |
@@ -148,10 +167,16 @@ los del hielo ni los genéricos) y todos se mueven con intención entre ataques;
 | Oso de musgo | común | `bear` | Pesado cuerpo a cuerpo que trepa | Esquivar el combo de zarpazos y no castigar antes de tiempo: a veces hay un tercero, más lento y fuerte. Subirte no te salva: trepa (despacio) a tu plataforma y desde arriba se tira en panzazo. | [oso-musgo.md](oso-musgo.md) |
 | Búho de cristal | común | `owl` | Volador que se posa y cae en picado | Leer la curva del picado (sale marcada: pasa por donde estás y sube al otro lado) y apartarte de ella; pegarle cuando está posado. Si te acercas a su rama, se va volando a otra. | [buho-cristal.md](buho-cristal.md) |
 | Atrapamoscas | común | `flytrap` | Trampa plantada que te arrastra | Apartarte de la línea de la liana; si te atrapa, soltarte antes de llegar a la boca: con el dash, o haciéndole daño suficiente mientras tira de ti (puedes seguir disparando). De cerca, cuidado con el mordisco. | [atrapamoscas.md](atrapamoscas.md) |
+| Salamandra de magma | común | `salamander` | Corredora que deja rastro (cambia el suelo) | El suelo cambia: cada carrera deja una franja de lava que dura unos segundos. No quedarte encerrado entre rastros, saltar la carrera, y mirar las paredes: trepa y se lanza desde ellas. | [salamandra.md](salamandra.md) |
+| Escorpión de obsidiana | común | `scorpion` | Duelista: guardia y contraataque | Paciencia: cuando cruza las pinzas en guardia (brillo claro, «GUARDIA»), no le pegues o te contraataca con la cola. Esquiva el picotazo largo (línea marcada) y castígale mientras la cola está clavada. | [escorpion.md](escorpion.md) |
+| Ave brasa | común | `emberbird` | Voladora de pasadas; renace si no la rematas | Salir de la franja marcada cuando hace la pasada (las brasas caen a lo largo de ella) y, al matarla, romper el huevo de brasa antes de que eclosione: si no, vuelve. | [ave-brasa.md](ave-brasa.md) |
+| Serpiente de lava | común | `lavaserpent` | Saltadora en arco desde el suelo | Su salto pasa por donde estás (marcadas la entrada, la salida y la curva): saltar por encima de su cuerpo justo cuando pasa, o salirte del arco. Al caer se retuerce fuera un momento: castígala antes de que se hunda. | [serpiente-lava.md](serpiente-lava.md) |
+| Golem de escoria | común | `slaggolem` | Pesado que construye cobertura | Sus pilares tapan tus disparos: rodéalos (saltando por encima) o rómpelos tú antes de que los reviente, porque si lo hace él te lanza la metralla. De cerca, golpe al suelo. | [golem-escoria.md](golem-escoria.md) |
 | Embestidor alfa | élite | `chargerAlpha` | Élite del Embestidor: cargas encadenadas y furia | Lo mismo que el Embestidor, pero sin respiro: tras una carga que esquivas viene otra enseguida. Ponerte delante de la pared corta la cadena (el choque sigue siendo tu premio). | [embestidor-alfa.md](embestidor-alfa.md) |
 | Acechador alfa | élite | `stalkerAlpha` | Élite del Acechador: jefe de manada | Prioridad y lectura: si no lo matas, aúlla y su manada va más rápido (y si está solo, la llama). De cerca no huye: zarpazo. Sus saltos vienen de dos en dos. | [acechador-alfa.md](acechador-alfa.md) |
 | Morsa matriarca | élite | `walrusAlpha` | Élite de la Morsa: muros dobles y tobogán | La Morsa, pero te encierra: los muros salen a los dos lados y cuando estás entre pinchos se tira en tobogán, rebota en la pared y vuelve. Hay que saltarla dos veces sin caer en los pinchos. | [morsa-matriarca.md](morsa-matriarca.md) |
 | Seta madre | élite | `shroomAlpha` | Élite de la Saltaseta: ondas y se divide | El ritmo de la Saltaseta, más corto (gran salto cada dos) y con ondas al caer que hay que saltar; y al perder vida suelta Saltasetas: ¿la rematas o limpias a las crías? | [seta-madre.md](seta-madre.md) |
+| Fénix | élite | `phoenix` | Élite del Ave brasa: ida y vuelta, llamas y renace | La pasada del Ave brasa, pero de ida y vuelta y dejando llamas en el suelo donde caen las brasas; al morir su huevo aguanta más y renace antes: hay que ir a romperlo sí o sí. | [fenix.md](fenix.md) |
 <!-- /gen:plantilla -->
 
 ## Encuentros
@@ -178,6 +203,12 @@ los del hielo ni los genéricos) y todos se mueven con intención entre ataques;
 | Espesura | Atrapamoscas, Búho de cristal, Saltaseta ×2 | Atrapamoscas + Búho + 2 Saltasetas: te arrastra debajo del picado. |
 | Seta madre | Seta madre, Zarza | Seta madre + Zarza: ondas, crías y muros. |
 | Todo el bosque | Saltaseta, Zarza, Oso de musgo, Búho de cristal, Atrapamoscas | Uno de cada común del bosque. |
+| Colada | Salamandra de magma ×2, Serpiente de lava | 2 Salamandras + Serpiente de lava: el suelo se llena de rastros mientras te salta por encima. |
+| Nido de brasas | Ave brasa ×2, Escorpión de obsidiana | 2 Aves brasa + Escorpión: esperar su guardia mientras caen brasas; rematar los huevos. |
+| Cantera | Golem de escoria, Salamandra de magma | Golem de escoria + Salamandra: pilares y rastros, poco suelo. |
+| Caldera | Serpiente de lava, Escorpión de obsidiana, Ave brasa | Serpiente + Escorpión + Ave brasa: saltos, guardias y pasadas. |
+| Fénix | Fénix, Escorpión de obsidiana | Fénix + Escorpión: ida y vuelta, llamas, y un huevo que hay que romper. |
+| Todo el volcán | Salamandra de magma, Escorpión de obsidiana, Ave brasa, Serpiente de lava, Golem de escoria | Uno de cada común del volcán. |
 <!-- /gen:encuentros -->
 
 ## Cómo se pasa un enemigo a Unity (cuando el usuario lo apruebe)
@@ -205,4 +236,5 @@ los del hielo ni los genéricos) y todos se mueven con intención entre ataques;
   Pide un set para el mundo de hielo con la temática visual y mecánicas ligeras (ver «Mundo de hielo»). Después: el Erizo le
   dispara desde fuera de pantalla y en general los nota lentos y predecibles entre ataques, «le falta chispa» (la Tundra, que se
   mueve entre ataques, sí le gusta) → regla de pantalla, `roam` / `dart`, huida de los de distancia, Rodar del Erizo. Le gusta el
-  Erizo, sobre todo rodar al estar acorralado; pide un set para el bosque (ver «Bosque»). Relacionado: tarea `t1` de `docs/tareas/todo.json` («15 enemigos: 5 por zona en las 3 primeras zonas»).
+  Erizo, sobre todo rodar al estar acorralado; pide un set para el bosque (ver «Bosque»). Le gustan; pide el del volcán
+  (ver «Volcán»). Relacionado: tarea `t1` de `docs/tareas/todo.json` («15 enemigos: 5 por zona en las 3 primeras zonas»).

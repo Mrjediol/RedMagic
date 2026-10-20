@@ -13,12 +13,13 @@ const { FOES, ENCOUNTERS } = vm.runInContext('({ FOES, ENCOUNTERS })', sb);
 fs.mkdirSync(out, { recursive: true });
 const fileOf = { charger: 'embestidor', stalker: 'acechador', mortar: 'artillero', weaver: 'tejedora', shell: 'caparazon', hive: 'colmena', drone: 'zangano', wisp: 'fatuo', burrower: 'excavador', chargerAlpha: 'embestidor-alfa', stalkerAlpha: 'acechador-alfa',
   icicle: 'colgante', urchin: 'erizo-escarcha', gale: 'ventisca', hermit: 'ermitano', walrus: 'morsa', walrusAlpha: 'morsa-matriarca',
-  shroom: 'saltaseta', bramble: 'zarza', bear: 'oso-musgo', owl: 'buho-cristal', flytrap: 'atrapamoscas', shroomAlpha: 'seta-madre' };
+  shroom: 'saltaseta', bramble: 'zarza', bear: 'oso-musgo', owl: 'buho-cristal', flytrap: 'atrapamoscas', shroomAlpha: 'seta-madre',
+  salamander: 'salamandra', scorpion: 'escorpion', emberbird: 'ave-brasa', lavaserpent: 'serpiente-lava', slaggolem: 'golem-escoria', phoenix: 'fenix' };
 const block = (name, body, txt) => {
   const a = `<!-- gen:${name} -->`, b = `<!-- /gen:${name} -->`, i = txt.indexOf(a), j = txt.indexOf(b);
   return i < 0 || j < 0 ? txt : txt.slice(0, i + a.length) + '\n' + body + '\n' + txt.slice(j);
 };
-for (const id in FOES) {
+for (const id in FOES) { if (FOES[id].prop || FOES[id].noFicha) continue;
   const d = FOES[id], f = path.join(out, (fileOf[id] || id) + '.md');
   const diseno = [
     `**Nivel:** ${d.tier || 'común'}${d.world ? ' · **Mundo:** ' + d.world : ''} · **Rol:** ${d.role} · **Cuerpo:** ${d.fly ? 'volador' : 'de suelo'}, hitbox ${d.rx * 2}×${d.ry * 2} px (≈ ${(d.rx * 2 * 0.025).toFixed(1)}×${(d.ry * 2 * 0.025).toFixed(1)} u) · código \`e-*.js\` id \`${id}\``,
@@ -38,7 +39,7 @@ const readme = path.join(out, 'README.md');
 if (fs.existsSync(readme)) {
   let txt = fs.readFileSync(readme, 'utf8');
   txt = block('plantilla', ['| Enemigo | Nivel | `id` | Rol | Pregunta al jugador | Ficha |', '|---|---|---|---|---|---|',
-    ...Object.entries(FOES).map(([id, d]) => `| ${d.name} | ${d.tier || 'común'} | \`${id}\` | ${d.role} | ${d.question} | [${fileOf[id] || id}.md](${fileOf[id] || id}.md) |`)].join('\n'), txt);
+    ...Object.entries(FOES).filter(([, d]) => !d.prop && !d.noFicha).map(([id, d]) => `| ${d.name} | ${d.tier || 'común'} | \`${id}\` | ${d.role} | ${d.question} | [${fileOf[id] || id}.md](${fileOf[id] || id}.md) |`)].join('\n'), txt);
   txt = block('encuentros', ['| Encuentro | Quién | Qué prueba |', '|---|---|---|',
     ...ENCOUNTERS.map(e => `| ${e.name} | ${Object.entries(e.list.reduce((a, s) => (a[FOES[s.type].name] = (a[FOES[s.type].name] || 0) + 1, a), {})).map(([k, n]) => n > 1 ? `${k} ×${n}` : k).join(', ')} | ${e.desc} |`)].join('\n'), txt);
   fs.writeFileSync(readme, txt);

@@ -65,9 +65,11 @@ const NEED = { charger: ['chargeW', 'charge'], stalker: ['crouch', 'leap', 'land
   icicle: ['hang', 'shiver', 'fall', 'stuck', 'climb'], urchin: ['rainW', 'bald'], gale: ['gustW', 'gust', 'snowW'],
   hermit: ['grabW', 'grab', 'grabRec'], walrus: ['spikeW', 'spike'], walrusAlpha: ['slideW', 'slide', 'restUp'],
   shroom: ['hop', 'bigW', 'big', 'rest'], bramble: ['wallW', 'wall'], bear: ['swipeW', 'swipe', 'swipeGap'], owl: ['fly', 'perch', 'swoopW', 'swoop'],
-  flytrap: ['vineW', 'vine'], shroomAlpha: ['bigW', 'big', 'rest'] };
+  flytrap: ['vineW', 'vine'], shroomAlpha: ['bigW', 'big', 'rest'],
+  salamander: ['dashW', 'dash', 'skid'], scorpion: ['stingW', 'stingRec'], emberbird: ['toStart', 'runW', 'run'], lavaserpent: ['under', 'leapW', 'leap', 'surface'],
+  slaggolem: ['raiseW', 'raise'], phoenix: ['runW', 'run', 'backW'], pillar: [], emberEgg: [] };
 const only = process.argv[2];
-const types = Object.keys(A.FOES).filter(t => !only || t === only);
+const types = Object.keys(A.FOES).filter(t => (!only || t === only) && !A.FOES[t].prop && !A.FOES[t].noFicha);
 
 console.log('— 1. duelo contra un player quieto (30 s, sin morir: vida infinita)');
 for (const t of types) {
@@ -161,6 +163,18 @@ if (!only) {
   check('Seta madre: al perder vida suelta Saltasetas', A.alive().filter(e => e.type === 'shroom').length === 2);
   setup({ id: 't', name: 'latigo', list: [{ type: 'bramble', x: 280 }] }, { px: 200 }); run(3, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
   check('Zarza: si te pegas (o la acorralas), latigazo que te aparta', !!G.fight.hits['Zarza · Latigazo'], Object.keys(G.fight.hits).join(', '));
+  // volcán
+  setup({ id: 't', name: 'guardia', list: [{ type: 'scorpion', x: 600 }] }); const sc = G.enemies[0]; sc.aware = true; sc.st = 'guard'; sc.stT = 0; const dg = A.damage(sc, { dmg: 20, kx: -50 }); run(0.5, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  check('Escorpión: pegarle en guardia no hace daño y contraataca', dg === 0 && !!(G._visits.scorpion || {}).counter, 'daño ' + dg);
+  setup({ id: 't', name: 'huevo', list: [{ type: 'emberbird', x: 600, y: 200 }] }); A.damage(G.enemies[0], { dmg: 999 }); run(0.2);
+  const egg = G.enemies.find(e => e.type === 'emberEgg' && !e.dead); run(4, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  check('Ave brasa: al morir deja un huevo que renace si no lo rompes', !!egg && A.alive().some(e => e.type === 'emberbird' && e.revived));
+  setup({ id: 't', name: 'huevo2', list: [{ type: 'emberbird', x: 600, y: 200 }] }); A.damage(G.enemies[0], { dmg: 999 }); run(0.2); const egg2 = G.enemies.find(e => e.type === 'emberEgg' && !e.dead); A.damage(egg2, { dmg: 999 }); run(4);
+  check('Ave brasa: si rompes el huevo, no vuelve (y el encuentro se despeja)', !A.alive().some(e => e.type === 'emberbird') && !!G.fight.tEnd);
+  setup({ id: 't', name: 'pilar', list: [{ type: 'slaggolem', x: 700 }] }, { px: 300 }); let sawPillar = false; run(10, () => { G.player.hp = G.player.hpMax; G.keys = {}; if (A.alive().some(e => e.type === 'pillar')) sawPillar = true; });
+  check('Golem: alza pilares y los revienta (metralla)', sawPillar && !!G.fight.hits['Golem de escoria · Reventar pilar'], Object.keys(G.fight.hits).join(', '));
+  setup({ id: 't', name: 'rastro', list: [{ type: 'salamander', x: 650 }] }, { px: 300 }); let zones = 0; run(6, () => { G.player.hp = G.player.hpMax; G.keys = {}; zones = Math.max(zones, G.ents.filter(x => x.kind === 'foeZone').length); });
+  check('Salamandra: la carrera deja rastro de lava', zones >= 5, zones + ' trozos de rastro');
 }
 console.log(bad ? `${bad} de ${n} mal` : `todo ok (${n})`);
 if (bad) process.exitCode = 1;

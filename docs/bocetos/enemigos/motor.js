@@ -298,7 +298,7 @@ function startEncounter(enc) {
 resetEnemies = function () { startEncounter(G.enc || ENCOUNTERS[0]); };
 function checkClear() {
   const F = G.fight; if (!F || F.tEnd) return;
-  if (G.enemies.some(e => e.def && !e.dead)) return;
+  if (G.enemies.some(e => e.def && !e.dead && !e.def.prop)) return;                 // los objetos (pilares…) no cuentan
   F.tEnd = G.t;
   if (EUI.onClear) EUI.onClear(F);
   if (G.es.respawn) G.restartAt = G.t + 3;
@@ -357,7 +357,7 @@ updateEnemies = function (dt0) {
     }
     // no se amontonan: dos enemigos de suelo que se solapan se separan poco a poco
     if (!e.fly) for (const o of G.enemies) {
-      if (o === e || o.dead || o.hidden || !o.def || o.fly || o.phase === 'active' || e.phase === 'active') continue;
+      if (o === e || o.dead || o.hidden || !o.def || o.fly || o.def.prop || e.def.prop || o.phase === 'active' || e.phase === 'active') continue;
       const ddx = e.x - o.x, need = (e.rx + o.rx) * 0.75;
       if (Math.abs(ddx) < need && Math.abs(e.y - o.y) < (e.ry + o.ry) * 0.8) e.x += (Math.sign(ddx) || (e.id > o.id ? 1 : -1)) * Math.min(90 * dt, need - Math.abs(ddx));
     }
@@ -428,6 +428,12 @@ function drawWarn(ctx, layer, w) {
     ctx.beginPath(); ctx.moveTo(w.x, w.y); ctx.arc(w.x, w.y, w.len, w.ang - w.half, w.ang + w.half); ctx.closePath(); ctx.fill();
     ctx.globalAlpha = 0.8 * a; ctx.strokeStyle = edge; ctx.lineWidth = 1.5; ctx.setLineDash([8, 6]); ctx.stroke(); ctx.setLineDash([]);
   }
+  if (w.kind === 'band' && layer === 'back') {             // franja del suelo de x0 a x1 (lo que cae a lo largo de una pasada)
+    const x0 = Math.min(w.x0, w.x1), x1 = Math.max(w.x0, w.x1), y = (w.y === undefined ? GROUND : w.y) - 3;
+    ctx.globalAlpha = 0.2 * a; ctx.fillStyle = '#ff4a2a'; ctx.fillRect(x0, y, x1 - x0, 7);
+    ctx.globalAlpha = 0.45 * a; ctx.fillRect(w.x0 < w.x1 ? x0 : x1 - (x1 - x0) * u, y, (x1 - x0) * u, 7);
+    ctx.globalAlpha = 0.9 * a; ctx.strokeStyle = edge; ctx.lineWidth = 1.5; ctx.strokeRect(x0, y, x1 - x0, 7);
+  }
   if (w.kind === 'path' && layer === 'front' && w.pts && w.pts.length > 1) {   // recorrido curvo (picado): puntos que se encienden en orden
     ctx.globalAlpha = (0.3 + 0.5 * u) * a; ctx.strokeStyle = edge; ctx.lineWidth = clamp(w.w || 2, 2, 4); ctx.setLineDash([9, 7]); ctx.lineDashOffset = -G.t * 60;
     ctx.beginPath(); w.pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); ctx.setLineDash([]);
@@ -450,6 +456,11 @@ const ICE = { snow: '#f4f8ff', pale: '#cfefff', light: '#9fd6f2', mid: '#5fa8d8'
 const WOOD = { bark: '#5a4632', barkD: '#3a2c20', moss: '#4f7a3e', mossL: '#6f9f52', leaf: '#2f6b45', crystal: '#7fe8ff', crystalL: '#bff6ff',
                cap: '#b8503c', capD: '#7a2e24', spot: '#f2e6c8', stem: '#e8dcc0', berry: '#d8304a',
                pal: { core: '#fbfff0', light: '#d8f5a8', mid: '#8fd45a', deep: '#3f8a2e', dark: '#1d4a16', g: [160, 230, 110], g1: [120, 210, 80], g2: [210, 250, 170] } };
+// colores del volcán (obsidiana, basalto, magma, ceniza)
+const MAGMA = { obs: '#1e1a22', obsL: '#3a3444', basalt: '#2e2428', ash: '#6a6066', glow: '#ff7a2e', hot: '#ffd36b', lava: '#ff4a1a',
+                pal: PAL.fire };
+// punto de una curva cuadrática b = [p0, p1, p2] en s (0..1): recorridos de picados y saltos en arco
+const bez = (b, s) => { const u = 1 - s; return [u * u * b[0][0] + 2 * u * s * b[1][0] + s * s * b[2][0], u * u * b[0][1] + 2 * u * s * b[1][1] + s * s * b[2][1]]; };
 // salto en arco a un punto (pies en feetT), con altura h sobre el más alto de los dos: lo usan los que trepan o caen encima
 function leapTo(e, tx, feetT, h) {
   const feetE = e.y + e.foot, top = Math.min(feetE, feetT) - h;
@@ -486,6 +497,7 @@ function foeShot(o) {
     if (layer !== 'front') return;
     const fr = this.friendly || this.captured, P = fr ? PAL.void : this.pal, gl = fr ? [150, 100, 255] : this.pal.g || FOE_PAL.g, a = Math.atan2(this.vy, this.vx);
     if (this.style === 'needle') { glow(ctx, this.x, this.y, 14, gl, 0.6); lens(ctx, this.x, this.y, a, 26, 4, P.mid, 1, layer); lens(ctx, this.x, this.y, a, 18, 1.8, '#fff', 1, layer); return; }
+    if (this.style === 'ember') { glow(ctx, this.x, this.y, this.r * 3.5, fr ? gl : [255, 120, 40], 0.7); disc(ctx, this.x, this.y, this.r, fr ? P.mid : '#ff8a1f', 1, layer); disc(ctx, this.x, this.y, this.r * 0.5, '#fff1c8', 1, layer); return; }
     if (this.style === 'thorn') { lens(ctx, this.x, this.y, a, this.r * 5, this.r * 1.1, fr ? P.mid : '#6b4a2a', 1, layer); lens(ctx, this.x + Math.cos(a) * this.r * 1.5, this.y + Math.sin(a) * this.r * 1.5, a, this.r * 2, this.r * 0.6, fr ? P.light : '#c9e08a', 1, layer); return; }
     if (this.style === 'feather') { glow(ctx, this.x, this.y, 12, fr ? gl : [130, 235, 255], 0.5); lens(ctx, this.x, this.y, a, this.r * 5, this.r * 1.5, fr ? P.mid : '#7fe8ff', 1, layer); lens(ctx, this.x, this.y, a, this.r * 3.5, this.r * 0.4, '#ffffff', 1, layer); return; }
     if (this.style === 'icicle') { glow(ctx, this.x, this.y, 12, fr ? gl : [180, 230, 255], 0.5); lens(ctx, this.x, this.y, a, this.r * 5, this.r * 1.2, fr ? P.mid : '#9fd6f2', 1, layer); lens(ctx, this.x, this.y, a, this.r * 3.4, this.r * 0.5, '#ffffff', 1, layer); return; }
@@ -579,7 +591,7 @@ function groundSpike(e, x, o) {
 }
 
 // ---------------------------------------------------------------- mundos (sólo aspecto: el fondo y, en el hielo, el techo de carámbanos)
-const WORLDS = { neutro: { name: 'Neutro' }, hielo: { name: 'Hielo' }, bosque: { name: 'Bosque' } };
+const WORLDS = { neutro: { name: 'Neutro' }, hielo: { name: 'Hielo' }, bosque: { name: 'Bosque' }, volcan: { name: 'Volcán' } };
 const CEIL = 30;                                            // alto del techo de hielo (los Colgantes cuelgan de él)
 // ramas altas donde se posan los voladores que se posan (Búho); en el bosque se dibujan saliendo de los troncos de la copa
 const BRANCHES = [{ x: 330, y: 92 }, { x: 610, y: 78 }, { x: 900, y: 96 }, { x: 1180, y: 80 }, { x: 1400, y: 100 }];
@@ -587,6 +599,17 @@ const BRANCHES = [{ x: 330, y: 92 }, { x: 610, y: 78 }, { x: 900, y: 96 }, { x: 
 function perches() { return BRANCHES.map(b => ({ x: b.x, y: b.y })).concat(PLATFORMS.map(pl => ({ x: (pl.x0 + pl.x1) / 2, y: pl.y }))); }
 const _drawWorld = drawWorld;
 drawWorld = function (ctx) {
+  if (G.world === 'volcan') {
+    const g = ctx.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#1a0c0e'); g.addColorStop(1, '#4a1e14');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
+    ctx.save(); ctx.translate(-G.cam.x * 0.25, 0);               // volcanes lejanos con ríos de lava
+    for (let i = 0; i < 8; i++) { const x = i * 330 + 80, h = 150 + (i % 3) * 50; ctx.fillStyle = '#2a1416'; ctx.beginPath(); ctx.moveTo(x - 180, GROUND); ctx.lineTo(x - 30, GROUND - h); ctx.lineTo(x + 30, GROUND - h); ctx.lineTo(x + 180, GROUND); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,110,40,.55)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - 10, GROUND - h); ctx.quadraticCurveTo(x - 40, GROUND - h * 0.5, x - 70, GROUND); ctx.stroke();
+      glow(ctx, x, GROUND - h, 50, [255, 90, 30], 0.35); }
+    ctx.restore();
+    for (let i = 0; i < 18; i++) { const R = rand(i + 77), x = ((R() * 900 - G.cam.x * 0.5) % 900 + 900) % 900 - 50, y = VH - ((G.t * (20 + R() * 30) + R() * VH) % VH); disc(ctx, x, y, 1.5 + R() * 1.5, R() < 0.5 ? '#ffb347' : '#ff6a2a', 0.7, 'front'); }   // pavesas que suben
+    return;
+  }
   if (G.world === 'bosque') {
     const g = ctx.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#0f2418'); g.addColorStop(1, '#2c4a2e');
     ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
@@ -715,9 +738,11 @@ render = function (ctx) {
 // paredes de la arena (fondo de roca a los lados)
 // (dibuja también lo de las plataformas: grietas al cargarse, hueco de las rotas que vuelve a llenarse)
 drawPlatforms = function (ctx) {
-  const forest = G.world === 'bosque', gc = forest ? ['#3a2c20', '#4f7a3e'] : ['#2f5d7a', '#3d7598'], pc = forest ? ['#5a4632', '#5f8f45'] : ['#2f5d7a', '#5a9cc2'];
+  const forest = G.world === 'bosque', volc = G.world === 'volcan';
+  const gc = forest ? ['#3a2c20', '#4f7a3e'] : volc ? ['#241a1c', '#3a2a2a'] : ['#2f5d7a', '#3d7598'], pc = forest ? ['#5a4632', '#5f8f45'] : volc ? ['#2e2428', '#ff7a2e'] : ['#2f5d7a', '#5a9cc2'];
   ctx.fillStyle = gc[0]; ctx.fillRect(0, GROUND, WW, VH - GROUND + 40);
   ctx.fillStyle = gc[1]; ctx.fillRect(0, GROUND, WW, 6);
+  if (volc) { ctx.strokeStyle = 'rgba(255,110,40,' + (0.45 + 0.15 * Math.sin(G.t * 2)) + ')'; ctx.lineWidth = 2; for (let x = ARENA.x0; x < ARENA.x1; x += 90) { const R = rand(x); ctx.beginPath(); ctx.moveTo(x, GROUND + 8); ctx.lineTo(x + 20 + R() * 20, GROUND + 18 + R() * 10); ctx.lineTo(x + 50 + R() * 20, GROUND + 14); ctx.stroke(); } }
   for (const pl of PLATFORMS) {                               // en el bosque, ramas con musgo
     const k = G.es.crumble ? clamp(pl.standT / G.es.crumbleT) : 0;
     const jx = k > 0.5 ? Math.sin(G.t * 70) * (k - 0.5) * 4 : 0, x0 = pl.x0 + jx, w = pl.x1 - pl.x0, y = pl.y;

@@ -411,3 +411,28 @@ function groundWave(ctx, t, layer, x, dir, h, pal, a, seed = 0) {
   for (let i = 0; i < 5; i++) { const ox = -dir * i * 12, hh = h * (1 - i * 0.18); const lay = i % 2 ? 'back' : 'front'; if (lay !== layer) continue; shard(ctx, x + ox, GROUND - hh, x + ox - dir * 4, GROUND + 2, 16 - i * 2, i ? pal.mid : pal.light, a * (1 - i * 0.15), layer); }
   if (layer === 'front') { glow(ctx, x, GROUND - h * 0.5, h, pal.g1, 0.4 * a); for (let i = 0; i < 3; i++) chunk(ctx, x - dir * R() * 30, GROUND - R() * h * 1.2, 3 + R() * 3, R() * 6, i, pal.mid, pal.core, a, layer); }
 }
+
+// ---------------------------------------------------------------- Égida (g-egida.js)
+// escudo de cristal curvo delante del player: centro (x,y), mirando a ang, radio r; k = brillo (parada, carga)
+function crystalShield(ctx, t, layer, x, y, ang, r, pal, a, k = 0) {
+  if (a <= 0) return;
+  const a0 = ang - 0.95, a1 = ang + 0.95;
+  if (layer === 'back') { ellArc(ctx, x, y, r + 4, r + 4, a0, a1, 12, pal.dark, 0.35 * a, layer, { taper: 0.4, m: 20 }); return; }
+  glow(ctx, x + Math.cos(ang) * r, y + Math.sin(ang) * r, 34 + 30 * k, pal.g1, (0.35 + 0.5 * k) * a);
+  ellArc(ctx, x, y, r, r, a0, a1, 10, pal.deep, 0.85 * a, layer, { taper: 0.5, m: 20 });
+  ellArc(ctx, x, y, r, r, a0 + 0.08, a1 - 0.08, 6, pal.mid, a, layer, { taper: 0.5, m: 20 });
+  ellArc(ctx, x, y, r + 2, r + 2, a0 + 0.2, a1 - 0.2, 2, pal.core, a, layer, { taper: 0.6, m: 20 });
+  for (let i = -1; i <= 1; i++) { const th = ang + i * 0.45; lens(ctx, x + Math.cos(th) * r, y + Math.sin(th) * r, th + Math.PI / 2, 14, 3, pal.core, 0.8 * a, layer); }
+  if (k > 0.5) star4(ctx, x + Math.cos(ang) * (r + 4), y + Math.sin(ang) * (r + 4), 18 * k, t * 6, pal.core, a, layer);
+}
+// muro de cristal plantado (Bastión): losa vertical de altura h sobre el suelo
+function crystalWall(ctx, t, layer, x, h, pal, a, hurt = 0) {
+  if (a <= 0) return;
+  const top = GROUND - h;
+  if (layer === 'back') { ctx.save(); ctx.globalAlpha = clamp(0.5 * a); ctx.fillStyle = col(pal.dark, layer); ctx.fillRect(x - 12, top, 24, h); ctx.restore(); return; }
+  ctx.save(); ctx.globalAlpha = clamp(0.75 * a); ctx.fillStyle = col(pal.deep, layer); ctx.beginPath(); ctx.moveTo(x - 11, GROUND); ctx.lineTo(x - 9, top + 10); ctx.lineTo(x, top); ctx.lineTo(x + 9, top + 10); ctx.lineTo(x + 11, GROUND); ctx.closePath(); ctx.fill();
+  ctx.globalAlpha = clamp(0.85 * a); ctx.fillStyle = col(pal.mid, layer); ctx.fillRect(x - 5, top + 12, 6, h - 14); ctx.restore();
+  strokeTaper(ctx, [{ x: x + 3, y: GROUND - 4 }, { x: x + 3, y: top + 8 }], 2, pal.core, a, layer, false);
+  if (hurt > 0) glow(ctx, x, top + h / 2, 40, pal.g1, 0.5 * hurt * a);
+  const g = (t * 0.6) % 1; star4(ctx, x, GROUND - g * h, 8 * Math.sin(Math.PI * g), 0, pal.core, 0.8 * a, layer);
+}

@@ -298,5 +298,30 @@ if (!only || only === 'hammer') {
   const dt = trem('tremor'), dn = trem(null);
   check('Sismo: los golpes del Abanico en la zona provocan réplicas', dt > dn + 30, `${dt} vs ${dn}`);
 }
+// ---------------------------------------------------------------- 17 · Égida
+if (!only || only === 'aegis') {
+  // parar balas: con el escudo arriba hacia el tirador no te dan
+  const shield = (arch, ups) => { sim.setup({ slots: [{ w: 'aegis', arch, ups }, { w: 'fan' }], enemies: [{ x: 520, kind: 'ground' }], px: 200, enemyAttacks: true }); sim.aim(520, 296).press().run(5); return G.player.hp; };
+  check('Égida: con el escudo arriba las balas no te dan', shield(null, {}) === 100);
+  // parada: levantarlo justo cuando llega la bala
+  sim.setup({ slots: [{ w: 'aegis' }, { w: 'fan' }], enemies: [{ x: 520, kind: 'ground' }], px: 200, enemyAttacks: true });
+  let parried = 0; sim.run(6, () => { const s = G.ents.find(s => s.kind === 'enemyShot' && s.hostile && Math.abs(s.x - G.player.x) < 70); if (s && !G.mouse.down) { sim.aim(520, 296).press(); } if (G.texts.some(x => x.s === '¡PARADA!')) parried = 1; if (G.mouse.down && !s) sim.release(); });
+  check('Égida: parada perfecta al levantarlo justo', parried === 1 && G.enemies[0].hp < G.enemies[0].hpMax, `vida enemigo ${Math.round(G.enemies[0].hp)}`);
+  // golpe de escudo: avanza y lanza
+  sim.setup({ slots: [{ w: 'aegis' }, { w: 'fan' }], enemies: [{ x: 300, kind: 'ground' }, { x: 420, kind: 'ground' }], px: 200 });
+  sim.aim(400, 296).press().run(0.1).release().run(0.8);
+  check('Égida: el golpe de escudo lanza contra el de detrás', G.enemies[1].hp < G.enemies[1].hpMax && G.player.x > 280, `player ${Math.round(G.player.x)}, vida 2.º ${Math.round(G.enemies[1].hp)}`);
+  // Bastión: el muro para a un caminante y estalla al pulsar
+  sim.setup({ slots: [{ w: 'aegis', arch: 'bastion' }, { w: 'fan' }], enemies: [{ x: 330, kind: 'walker', x0: 100, x1: 360 }], px: 200 });
+  sim.aim(500, 296).press().run(0.1).release(); sim.run(3);
+  const wx = G.slots[0].inst.walls()[0]; const blocked = G.enemies[0].x > wx.x;
+  sim.tap().run(0.3);
+  check('Bastión: el muro frena al caminante', blocked, `muro ${Math.round(wx.x)} enemigo ${Math.round(G.enemies[0].x)}`);
+  check('Bastión: pulsar lo hace estallar', G.slots[0].inst.walls().length === 0 && sim.dmg() >= T('aegis').wallBlast * 0.5, `daño ${sim.dmg()}`);
+  // Embestida: arrastra y estampa
+  sim.setup({ slots: [{ w: 'aegis', arch: 'charge' }, { w: 'fan' }], enemies: [{ x: 300, kind: 'ground' }], px: 200 }); const e0 = G.enemies[0], x0 = e0.x;
+  sim.aim(600, 296).press().run(0.8).release().run(1);
+  check('Embestida: arrastra al enemigo y lo estampa', e0.x - x0 > 150 && e0.hp < e0.hpMax, `${Math.round(e0.x - x0)} px, vida ${Math.round(e0.hp)}`);
+}
 check.done();
 function GROUND_Y() { return 340; }

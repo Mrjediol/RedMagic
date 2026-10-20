@@ -29,6 +29,7 @@ function configs(d) {
 function run(slotsDef, secs, build) {
   G.t = 0; G.ents = []; G.texts = []; G.dmgTotal = 0; G.dmgLog = []; G.lastSwap = -9; G.swapBuff = -9;
   G.build = { items: Object.fromEntries(build.map(i => [i, true])) };
+  G.settings.enemyAttacks = true;                            // con balas enemigas: también se prueban paradas, reflejos, señuelos…
   G.player = makePlayer(); resetEnemies(); G.cur = 0; G.slotCount = slotsDef.length;
   G.slots = slotsDef.map(s => ({ w: s.w, arch: s.arch || null, ups: s.ups || {} })); G.slots.forEach(s => s.inst = WEAPONS[s.w].create(s));
   nan = 0; for (const k in nanWhere) delete nanWhere[k];

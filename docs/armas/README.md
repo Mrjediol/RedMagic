@@ -44,6 +44,7 @@ los expresa. Árbol completo hoy en las seis armas.
 | Acumulador | `volt` | se carga con los golpes de la otra arma y descarga | [acumulador.md](acumulador.md) |
 | Pacto de sangre | `blood` | pagas vida por daño; sangrado, vampiro, mártir | [pacto.md](pacto.md) |
 | Mazo de cristal | `hammer` | golpe pesado con carga y picado | [mazo.md](mazo.md) |
+| Égida | `aegis` | escudo: bloqueo, parada que potencia, muro, embestida | [egida.md](egida.md) |
 
 Armas 7+ (2026-10-20, hechas sin el usuario, **sin probar**): dibujo en `fx-armas2.js`, pruebas dirigidas en
 `tools/test-armas2.cjs` (usa `tools/sim.cjs`, que carga la jugable en Node para medir lo que hace un arma).

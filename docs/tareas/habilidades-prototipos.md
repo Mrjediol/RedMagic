@@ -143,3 +143,5 @@ destapó y se arreglaron un bucle de choques (Ráfaga · Martillo 2599 DPS → 1
 Bastión sin recarga y los proyectiles que nacen dentro de un enemigo (ahora le dan). Ideas no hechas: Alud (bola de nieve que
 crece rodando y se traga enemigos), Maldición (vudú: golpear un muñeco daña a los malditos), Sombra (clon que repite tus
 disparos). **Siguiente**: que el usuario las pruebe (Égida con «Los enemigos disparan») y arreglar una cada vez.
+
+**Pendiente (2026-10-20)**: el feedback del usuario sobre las 12 armas nuevas → `docs/tareas/armas-nuevas-web.md` (tarea `armas-nuevas-web` en todo.json).

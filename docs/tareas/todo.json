@@ -708,6 +708,30 @@
           ]
         },
         {
+          "id": "armas-nuevas-web",
+          "text": "Feedback de las 12 armas nuevas de la web (Reloj, Ráfaga, Látigo, Jabalina, Enjambre, Tótem, Espejo, Acumulador, Pacto, Mazo, Égida, Ballesta)",
+          "note": "Hechas el 2026-10-20 sin el usuario (✦ en el desplegable de jugable.html). «feedback de las armas nuevas» → docs/tareas/armas-nuevas-web.md.",
+          "done": false,
+          "doc": "docs/tareas/armas-nuevas-web.md",
+          "steps": [
+            {
+              "id": "anw-1",
+              "text": "El usuario prueba las 12 (lista de 7 pruebas en el doc) y da su opinión",
+              "done": false
+            },
+            {
+              "id": "anw-2",
+              "text": "Arreglar una arma cada vez según el feedback (ficha + tests + dps.cjs + commit)",
+              "done": false
+            },
+            {
+              "id": "anw-3",
+              "text": "Aprobadas: quitar fresh y añadirlas a la cola de port a Unity; descartadas: archivar",
+              "done": false
+            }
+          ]
+        },
+        {
           "id": "armas-meta-upgrades",
           "text": "Progresión de armas: mejoras permanentes por arma (hecho) y evolución/núcleos en la run — retoques del feedback",
           "note": "Hecho 2026-10-20 (rama task/supervivencia). Pendiente: el núcleo se guarda como moneda y se gasta desde el inventario (I), sin evolucionar; efectos del portador más suaves; UI. Ver doc.",

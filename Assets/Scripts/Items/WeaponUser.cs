@@ -33,7 +33,7 @@ namespace RedMagic.Items
     /// genérica: cualquier arma futura (haz o proyectil) puede usarla.
     /// </summary>
     [DisallowMultipleComponent]
-    public class WeaponUser : MonoBehaviour, ISoundEventSource, ICooldownSource
+    public class WeaponUser : MonoBehaviour, ISoundEventSource, ICooldownSource, IReserveCooldownSource
     {
         /// <summary>OnLoot al recoger un item del suelo (<see cref="ItemPickup"/>). Ver <see cref="SoundEmitter"/>.</summary>
         public event System.Action<SoundTrigger> SoundTriggered;
@@ -173,6 +173,27 @@ namespace RedMagic.Items
         }
 
         public Sprite CooldownIcon => Weapon != null ? Weapon.Icon : null;
+
+        // ------------------------------------------------------------------ HUD: arma de reserva (IReserveCooldownSource)
+
+        private WeaponDefinition Reserve =>
+            WeaponLoadout.Instance != null ? WeaponLoadout.Instance.Inventory.SecondWeapon : null;
+
+        public bool HasReserve => Reserve != null;
+
+        public Sprite ReserveIcon => Reserve != null ? Reserve.Icon : null;
+
+        /// <summary>La del arsenal sigue recargando en reserva; las demás comparten el temporizador del gesto, así que en reserva están listas.</summary>
+        public CooldownState ReserveCooldown
+        {
+            get
+            {
+                var arsenal = ArsenalFor(Reserve);
+                return arsenal != null
+                    ? new CooldownState { Remaining = 1f - Mathf.Clamp01(arsenal.Ready), Duration = 1f }
+                    : default;
+            }
+        }
 
         private void Awake()
         {

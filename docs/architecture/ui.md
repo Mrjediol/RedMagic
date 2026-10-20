@@ -58,7 +58,10 @@ spot in brackets):
 - **Health** (top-left): `HudHealthBar` (fill + delayed "ghost" trail on damage, green lead on heal,
   white flash + shake on hit, pulse under `Health.LowHealthThreshold`, shield bar floating above it —
   pips for ≤12 hits, continuous otherwise — positioned absolutely so a shield never resizes the piece).
-- **Cooldowns** (under health): a row of `HudCooldownSlot`s, one per `CooldownSlot` enum value.
+- **Cooldowns** (under health): a row of `HudCooldownSlot`s, one per `CooldownSlot` enum value. A source that also
+  implements `IReserveCooldownSource` (`WeaponUser`: the second weapon) gets a `HudReserveBadge` stuck to the slot's
+  bottom-right: reserve icon, its own cooldown dial, the swap key (Tab / pad ▲) and a pop on every swap. Not shown in
+  touch mode (the row is hidden there; a touch swap button is still pending).
 - **Currency** (top-right): `HudCurrency` (gain counts up + pop, `GameHud.PlaySpend` for the shop's
   count-down, reroll counter only while `ShopManager.Current`) with `HudBuffRow` (`BuffIndicators`) under it.
 - **Controls** (bottom-left): `HudControlsLegend`, keyboard/mouse only, `HudSettings.ShowControls`.
@@ -71,7 +74,7 @@ intensity in `HudSettings`.
 **Enemy health** (`HudEnemyBars`, mode in `HudSettings.EnemyHealth`: Off / Overhead / Focus / List,
 default List): `HudEnemies` builds the "in combat" set each frame from `Health.Active` (a static set
 every `Health` joins in `OnEnable`) — enemy = has `EnemyStats` / legacy `EnemyController` /
-`TrainingDummy` and no `BossController` above it (bosses keep `BossHealthBar`); in combat =
+`TrainingDummy` / a component marked `IHudEnemy` (test dummies) and no `BossController` above it (bosses keep `BossHealthBar`); in combat =
 `EnemyBrain.InCombat` or hit within 6 s (`Health.LastDamagedTime`); sorted by distance to the
 player. **Overhead** = pooled `EnemyBarView`s on a full-screen layer placed via
 `Camera.WorldToScreenPoint` → `RuntimePanelUtils.ScreenToPanel` at the collider's top; **Focus** =

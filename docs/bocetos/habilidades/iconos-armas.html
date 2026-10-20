@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Iconos de armas del arsenal</title>
+<!--
+  Iconos del HUD de las seis armas del arsenal, dibujados por código con la paleta de sus efectos en Unity (núcleo blanco,
+  cian, halo violeta); cada arma se distingue por la forma. Se dibujan a 512 y se reducen a 128 (múltiplo de 4).
+  Exportar a PNG: tools/exportar-iconos-armas.cjs (Chrome headless --dump-dom lee los dataURL de #out).
+  Abrir a mano = vista previa sobre la casilla del HUD.
+-->
+<style>
+  body { margin: 0; background: #1c1d2b; color: #ddd; font: 14px system-ui, sans-serif; }
+  .row { display: flex; gap: 28px; padding: 24px; flex-wrap: wrap; }
+  .cell { text-align: center; }
+  .slot { width: 104px; height: 104px; border-radius: 50%; background: rgba(20, 16, 24, .82); border: 3px solid #8a6a3e;
+          display: grid; place-items: center; margin-bottom: 6px; }
+  .slot img { width: 62px; height: 62px; }
+  .big { background: repeating-conic-gradient(#2a2b3a 0 25%, #222331 0 50%) 0 0 / 16px 16px; width: 256px; height: 256px; }
+  #out { display: none; }
+</style>
+</head>
+<body>
+<div class="row" id="slots"></div>
+<div class="row" id="big"></div>
+<pre id="out"></pre>
+<script>
+const S = 512, OUT = 128;
+const C = { white: '#ffffff', cyan: '#7fe9ff', cyanDeep: '#3fb6ff', violet: '#8a5cff', violetSoft: '#cdbcff', violetDeep: '#3a1c9c', ink: '#05020e', leaf: '#8affc8' };
+
+function rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+function P(v) { return v * S; }
+function glow(g, x, y, r, hex, a) {
+  const gr = g.createRadialGradient(P(x), P(y), 0, P(x), P(y), P(r));
+  gr.addColorStop(0, rgba(hex, a)); gr.addColorStop(0.45, rgba(hex, a * 0.45)); gr.addColorStop(1, rgba(hex, 0));
+  g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.beginPath(); g.arc(P(x), P(y), P(r), 0, 7); g.fill(); g.restore();
+}
+// Destello de cuatro puntas (el de los efectos del arsenal).
+function sparkle(g, x, y, r, w, hex, rot = 0) {
+  g.save(); g.translate(P(x), P(y)); g.rotate(rot); g.fillStyle = hex; g.beginPath();
+  for (let i = 0; i < 4; i++) {
+    const a = i * Math.PI / 2, b = a + Math.PI / 4;
+    g.lineTo(Math.cos(a) * P(r), Math.sin(a) * P(r)); g.lineTo(Math.cos(b) * P(w), Math.sin(b) * P(w));
+  }
+  g.closePath(); g.fill(); g.restore();
+}
+// Hoja/aguja: de (x0,y0) a (x1,y1), ancho w, degradado base→punta.
+function needle(g, x0, y0, x1, y1, w, stops) {
+  const dx = P(x1 - x0), dy = P(y1 - y0), L = Math.hypot(dx, dy), a = Math.atan2(dy, dx);
+  g.save(); g.translate(P(x0), P(y0)); g.rotate(a);
+  const gr = g.createLinearGradient(0, 0, L, 0); stops.forEach(([t, c]) => gr.addColorStop(t, c));
+  g.fillStyle = gr; g.beginPath(); g.moveTo(0, 0);
+  g.quadraticCurveTo(L * 0.55, -P(w), L, 0); g.quadraticCurveTo(L * 0.55, P(w), 0, 0); g.fill(); g.restore();
+}
+function shadow(g, blur = 14, a = 0.85) { g.shadowColor = rgba(C.ink, a); g.shadowBlur = blur; }
+
+const ICONS = {
+  // Abanico: cinco agujas de cristal abriéndose desde la mano.
+  fan(g) {
+    const ox = 0.19, oy = 0.81, ang = i => -Math.PI * (0.44 - i * 0.095), len = i => i === 2 ? 0.8 : i % 2 ? 0.74 : 0.66;
+    g.save(); g.globalCompositeOperation = 'lighter'; g.filter = `blur(${P(0.05)}px)`;
+    g.fillStyle = rgba(C.violet, 0.4); g.beginPath(); g.moveTo(P(ox), P(oy));
+    g.arc(P(ox), P(oy), P(0.62), ang(0) + 0.08, ang(4) - 0.08); g.closePath(); g.fill();
+    g.restore();
+    shadow(g);
+    for (let i = 0; i < 5; i++) {
+      const a = ang(i), L = len(i);
+      needle(g, ox, oy, ox + Math.cos(a) * L, oy + Math.sin(a) * L, 0.065,
+             [[0, rgba(C.violet, 0.0)], [0.3, rgba(C.violet, 0.95)], [0.65, C.cyan], [1, C.white]]);
+    }
+    g.shadowBlur = 0;
+    for (let i = 0; i < 5; i++) glow(g, ox + Math.cos(ang(i)) * len(i) * 0.92, oy + Math.sin(ang(i)) * len(i) * 0.92, 0.08, C.cyan, 0.6);
+    glow(g, ox, oy, 0.24, C.cyan, 0.7);
+    sparkle(g, ox, oy, 0.16, 0.035, C.white);
+  },
+
+  // Singularidad: núcleo negro con disco de acreción inclinado y destello.
+  sing(g) {
+    const cx = 0.5, cy = 0.5, rot = -0.42;
+    glow(g, cx, cy, 0.48, C.violet, 0.75);
+    const ring = (front) => {
+      g.save(); g.translate(P(cx), P(cy)); g.rotate(rot);
+      g.lineCap = 'round';
+      for (const [w, col] of [[0.075, rgba(C.violet, 0.75)], [0.04, C.cyan], [0.014, C.white]]) {
+        g.strokeStyle = col; g.lineWidth = P(w); g.beginPath();
+        g.ellipse(0, 0, P(0.42), P(0.13), 0, front ? 0 : Math.PI, front ? Math.PI : Math.PI * 2); g.stroke();
+      }
+      g.restore();
+    };
+    ring(false);
+    shadow(g, 20, 0.9);
+    const core = g.createRadialGradient(P(cx), P(cy), 0, P(cx), P(cy), P(0.2));
+    core.addColorStop(0, C.ink); core.addColorStop(0.78, C.ink); core.addColorStop(0.9, C.violetDeep); core.addColorStop(1, C.violetSoft);
+    g.fillStyle = core; g.beginPath(); g.arc(P(cx), P(cy), P(0.2), 0, 7); g.fill();
+    g.shadowBlur = 0;
+    ring(true);
+    for (const [x, y, s] of [[0.16, 0.24, 0.035], [0.84, 0.74, 0.03], [0.78, 0.2, 0.025], [0.24, 0.82, 0.022]]) {
+      g.save(); g.translate(P(x), P(y)); g.rotate(x * 9); g.fillStyle = C.violetSoft; g.fillRect(-P(s) / 2, -P(s) / 2, P(s), P(s)); g.restore();
+    }
+    glow(g, 0.66, 0.34, 0.12, C.white, 0.7);
+    sparkle(g, 0.66, 0.34, 0.12, 0.022, C.white);
+  },
+
+  // Rayo: haz en diagonal con hélice, prisma en la salida y estallido al final.
+  ray(g) {
+    const x0 = 0.16, y0 = 0.82, x1 = 0.84, y1 = 0.2;
+    g.save(); g.lineCap = 'round';
+    for (const [w, col] of [[0.2, rgba(C.violet, 0.4)], [0.11, rgba(C.cyanDeep, 0.9)], [0.06, C.cyan], [0.024, C.white]]) {
+      g.strokeStyle = col; g.lineWidth = P(w); g.beginPath(); g.moveTo(P(x0), P(y0)); g.lineTo(P(x1), P(y1)); g.stroke();
+    }
+    const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
+    g.lineWidth = P(0.016);
+    for (const ph of [0, Math.PI]) {
+      g.strokeStyle = ph ? rgba(C.violetSoft, 0.95) : rgba(C.white, 0.95); g.beginPath();
+      for (let i = 0; i <= 60; i++) {
+        const t = 0.06 + i / 60 * 0.86, s = Math.sin(t * 22 + ph) * 0.07;
+        const x = x0 + dx * t + nx * s, y = y0 + dy * t + ny * s;
+        i ? g.lineTo(P(x), P(y)) : g.moveTo(P(x), P(y));
+      }
+      g.stroke();
+    }
+    g.restore();
+    glow(g, x1, y1, 0.22, C.white, 0.8);
+    for (let i = 0; i < 7; i++) {
+      const a = i / 7 * Math.PI * 2 + 0.3, r0 = 0.07, r1 = 0.15 + (i % 2) * 0.05;
+      g.strokeStyle = C.cyan; g.lineWidth = P(0.014); g.lineCap = 'round'; g.beginPath();
+      g.moveTo(P(x1 + Math.cos(a) * r0), P(y1 + Math.sin(a) * r0)); g.lineTo(P(x1 + Math.cos(a) * r1), P(y1 + Math.sin(a) * r1)); g.stroke();
+    }
+    sparkle(g, x1, y1, 0.1, 0.025, C.white, 0.4);
+    glow(g, x0, y0, 0.16, C.violet, 0.7);
+    sparkle(g, x0, y0, 0.12, 0.028, C.white);
+  },
+
+  // Media luna: hoja curva con estela de giro.
+  moon(g) {
+    // Media luna = círculo menos otro desplazado, en su propia capa (el recorte no toca lo de debajo).
+    const crescent = (rot, fill, edge) => {
+      const c = document.createElement('canvas'); c.width = c.height = S; const k = c.getContext('2d');
+      k.translate(P(0.5), P(0.5)); k.rotate(rot);
+      if (!fill) {   // degradado del filo: hondo en los cuernos, blanco en el lomo
+        fill = k.createLinearGradient(-P(0.1), 0, P(0.38), 0);
+        fill.addColorStop(0, C.cyanDeep); fill.addColorStop(0.55, C.cyan); fill.addColorStop(1, C.white);
+      }
+      k.fillStyle = fill; k.beginPath(); k.arc(0, 0, P(0.38), 0, 7); k.fill();
+      if (edge) { k.strokeStyle = edge; k.lineWidth = P(0.03); k.stroke(); }
+      k.globalCompositeOperation = 'destination-out'; k.beginPath(); k.arc(-P(0.17), 0, P(0.33), 0, 7); k.fill();
+      return c;
+    };
+    const rot = -0.6;
+    glow(g, 0.58, 0.48, 0.44, C.violet, 0.5);
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (let k = 3; k >= 1; k--) { g.globalAlpha = 0.12 + (3 - k) * 0.08; g.drawImage(crescent(rot - k * 0.45, k === 1 ? C.cyan : C.violet), 0, 0); }
+    g.restore();
+    shadow(g, 16);
+    g.drawImage(crescent(rot, null, C.white), 0, 0);
+    g.shadowBlur = 0;
+    glow(g, 0.7, 0.16, 0.12, C.cyan, 0.7);
+    sparkle(g, 0.7, 0.16, 0.11, 0.024, C.white, 0.3);
+  },
+
+  // Semilla: semilla con nervio que brilla, brote y el aro de la mina en el suelo.
+  seed(g) {
+    const cx = 0.5, cy = 0.55;
+    g.save(); g.translate(P(cx), P(0.82)); g.scale(1, 0.24);
+    g.strokeStyle = rgba(C.cyan, 0.9); g.lineWidth = P(0.03) / 0.5; g.beginPath(); g.arc(0, 0, P(0.33), 0, 7); g.stroke();
+    g.restore();
+    glow(g, cx, 0.82, 0.3, C.cyan, 0.35);
+    glow(g, cx, cy, 0.4, C.violet, 0.55);
+    // Brote: dos hojas desde la punta.
+    const leaf = (sx, sy, ex, ey, bend) => {
+      g.beginPath(); g.moveTo(P(sx), P(sy));
+      g.quadraticCurveTo(P((sx + ex) / 2 + bend), P((sy + ey) / 2 - Math.abs(bend)), P(ex), P(ey));
+      g.quadraticCurveTo(P((sx + ex) / 2 - bend * 0.2), P((sy + ey) / 2 + Math.abs(bend) * 0.6), P(sx), P(sy)); g.fill();
+    };
+    shadow(g, 12);
+    g.fillStyle = C.leaf; leaf(0.5, 0.27, 0.8, 0.06, 0.11); leaf(0.5, 0.27, 0.22, 0.1, -0.1);
+    g.strokeStyle = C.leaf; g.lineWidth = P(0.032); g.lineCap = 'round'; g.beginPath(); g.moveTo(P(0.5), P(0.34)); g.lineTo(P(0.5), P(0.22)); g.stroke();
+    // Cuerpo de la semilla (gota con la punta arriba).
+    const body = g.createRadialGradient(P(0.44), P(0.5), P(0.02), P(cx), P(cy), P(0.26));
+    body.addColorStop(0, '#7a52d8'); body.addColorStop(0.6, C.violetDeep); body.addColorStop(1, '#1d0c4a');
+    g.fillStyle = body; g.beginPath(); g.moveTo(P(cx), P(0.3));
+    g.bezierCurveTo(P(0.74), P(0.42), P(0.72), P(0.78), P(cx), P(0.78));
+    g.bezierCurveTo(P(0.28), P(0.78), P(0.26), P(0.42), P(cx), P(0.3)); g.fill();
+    g.shadowBlur = 0;
+    g.strokeStyle = C.violetSoft; g.lineWidth = P(0.014); g.stroke();
+    // Nervio y núcleo encendido.
+    g.strokeStyle = C.cyan; g.lineWidth = P(0.018); g.beginPath(); g.moveTo(P(cx), P(0.36));
+    g.quadraticCurveTo(P(0.54), P(0.55), P(cx), P(0.72)); g.stroke();
+    glow(g, cx, 0.58, 0.14, C.cyan, 0.9);
+    sparkle(g, cx, 0.58, 0.08, 0.02, C.white);
+  },
+
+  // Golpe estelar: estrella que cae con su cola y marca de impacto.
+  star(g) {
+    const hx = 0.36, hy = 0.6, tx = 0.94, ty = 0.04;
+    g.save(); g.translate(P(0.5), P(0.86)); g.scale(1, 0.26);
+    g.strokeStyle = rgba(C.cyan, 0.85); g.lineWidth = P(0.026) / 0.5; g.setLineDash([P(0.07), P(0.045)]);
+    g.beginPath(); g.arc(0, 0, P(0.3), 0, 7); g.stroke(); g.restore();
+    const dx = tx - hx, dy = ty - hy, L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (const [w, col] of [[0.24, rgba(C.violet, 0.55)], [0.15, rgba(C.cyanDeep, 0.75)], [0.08, rgba(C.cyan, 0.95)], [0.03, C.white]]) {
+      const gr = g.createLinearGradient(P(hx), P(hy), P(tx), P(ty)); gr.addColorStop(0, col); gr.addColorStop(1, rgba('#000000', 0));
+      g.fillStyle = gr; g.beginPath();
+      g.moveTo(P(hx + nx * w / 2), P(hy + ny * w / 2)); g.lineTo(P(tx), P(ty)); g.lineTo(P(hx - nx * w / 2), P(hy - ny * w / 2)); g.closePath(); g.fill();
+    }
+    g.strokeStyle = rgba(C.cyan, 0.7); g.lineWidth = P(0.012); g.lineCap = 'round';
+    for (const [o, a, b] of [[0.13, 0.2, 0.6], [-0.12, 0.3, 0.75]]) {
+      g.beginPath(); g.moveTo(P(hx + dx * a + nx * o), P(hy + dy * a + ny * o)); g.lineTo(P(hx + dx * b + nx * o), P(hy + dy * b + ny * o)); g.stroke();
+    }
+    g.restore();
+    glow(g, hx, hy, 0.27, C.cyan, 0.75);
+    shadow(g, 14, 0.7);
+    sparkle(g, hx, hy, 0.25, 0.055, C.white, 0.18);
+    g.shadowBlur = 0;
+    sparkle(g, hx, hy, 0.11, 0.025, C.cyan, 0.18 + Math.PI / 4);
+    sparkle(g, hx, hy, 0.06, 0.02, C.white, 0.18 + Math.PI / 4);
+  },
+};
+
+const out = [];
+for (const [id, draw] of Object.entries(ICONS)) {
+  const big = document.createElement('canvas'); big.width = big.height = S;
+  draw(big.getContext('2d'));
+  const small = document.createElement('canvas'); small.width = small.height = OUT;
+  const sg = small.getContext('2d'); sg.imageSmoothingQuality = 'high';
+  // Dos pasos (512 → 256 → 128) para que la reducción no pierda las líneas finas.
+  const mid = document.createElement('canvas'); mid.width = mid.height = S / 2;
+  const mg = mid.getContext('2d'); mg.imageSmoothingQuality = 'high'; mg.drawImage(big, 0, 0, S / 2, S / 2);
+  sg.drawImage(mid, 0, 0, OUT, OUT);
+  const url = small.toDataURL('image/png');
+  out.push(id + ':' + url);
+
+  const cell = document.createElement('div'); cell.className = 'cell';
+  cell.innerHTML = `<div class="slot"><img src="${url}"></div>${id}`;
+  document.getElementById('slots').append(cell);
+  big.className = 'big'; document.getElementById('big').append(big);
+}
+document.getElementById('out').textContent = out.join('\n');
+</script>
+</body>
+</html>

@@ -77,6 +77,46 @@
       "notes": "Placeholder migrado de la tabla antigua: usa enemydmg1, un clip de daño a enemigo. Hay que sustituirlo.",
       "lastModified": "2026-10-02 11:05",
       "removed": true
+    },
+    "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[0].cue": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-20 07:34"
+    },
+    "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[1].cue": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-20 07:35"
+    },
+    "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[2].cue": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-20 07:35"
+    },
+    "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[3].cue": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-20 07:34"
+    },
+    "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[4].cue": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-20 07:34"
+    },
+    "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[5].cue": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-20 07:34"
+    },
+    "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[7].cue": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-20 07:34"
+    },
+    "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[9].cue": {
+      "status": "Good",
+      "notes": "",
+      "lastModified": "2026-10-20 07:37"
     }
   }
 }

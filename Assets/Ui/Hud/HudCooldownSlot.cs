@@ -9,7 +9,8 @@ namespace RedMagic.UI
     /// icono (el de la fuente, o un glifo vectorial por defecto), el <see cref="CooldownDial"/> y los
     /// segundos que faltan en el centro (sólo si el cooldown es largo, para no parpadear números).
     ///
-    /// Se esconde sola si nadie ocupa la casilla (p. ej. Parry hasta que exista).
+    /// Se esconde sola si nadie ocupa la casilla (p. ej. Parry hasta que exista). Si la fuente tiene hueco de reserva
+    /// (<see cref="IReserveCooldownSource"/>: la segunda arma) lleva pegada la <see cref="HudReserveBadge"/>.
     /// </summary>
     public class HudCooldownSlot : VisualElement
     {
@@ -24,6 +25,8 @@ namespace RedMagic.UI
         private readonly Label _seconds;
         private readonly Image _ring;              // aro del HudSkin (null sin arte)
         private readonly HudSkin _skin;
+        private readonly HudReserveBadge _reserve;   // sólo la casilla del arma
+        private float _lastSwap = float.NaN;
 
         private ICooldownSource _source;
         private float _popT = 1f;
@@ -79,6 +82,15 @@ namespace RedMagic.UI
             HudStyle.Fill(_seconds);
             Add(_seconds);
 
+            if (slot == CooldownSlot.Weapon)
+            {
+                _reserve = new HudReserveBadge();
+                _reserve.style.left = HudStyle.SlotSize * 0.72f;
+                _reserve.style.top = HudStyle.SlotSize * 0.48f;
+                _reserve.style.display = DisplayStyle.None;
+                Add(_reserve);
+            }
+
             SetIcon(ResolveIcon(null));
         }
 
@@ -118,6 +130,15 @@ namespace RedMagic.UI
 
             var state = source.Cooldown;
             _dial.Tick(state, dt);
+
+            if (_reserve != null)
+            {
+                var reserve = source as IReserveCooldownSource;
+                _reserve.Tick(reserve, dt);
+                float swap = reserve != null ? reserve.LastSwapTime : float.NaN;
+                if (!float.IsNaN(_lastSwap) && swap != _lastSwap) { Pop(1.2f); _reserve.Pop(); }
+                _lastSwap = swap;
+            }
 
             bool ready = state.Ready;
             var tint = ready ? Color.white : new Color(0.55f, 0.52f, 0.5f, state.Blocked ? 0.5f : 0.85f);

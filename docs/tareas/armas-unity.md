@@ -64,7 +64,9 @@ evolución, mejoras, elemento forzado (hielo/fuego), Duplicador, reacciones.
 3. Lo que quedó sin portar o a medias (lista de abajo).
 
 **Sin terminar / sin portar (2026-10-19)**:
-- HUD: no se ve qué arma hay en el hueco de reserva ni su recarga (la web tenía las dos tarjetas abajo). Falta botón táctil de cambiar.
+- HUD: hecho con teclado/mando (insignia de reserva en la casilla del arma, iconos en `Assets/Test/Arsenal/Icons/` desde
+  `docs/bocetos/habilidades/iconos-armas.html` + `tools/exportar-iconos-armas.cjs`). Falta el botón táctil de cambiar
+  (en táctil la fila de casillas no se ve).
 - Items de la web sin portar: Gatillo de cambio, Constelación, Corazón de vacío, Cristal afilado, Sangre de cristal…; el Duplicador sólo
   existe como interruptor DEV. Tramos 6 de Fuego (la quemadura salta al morir) y de Hielo (congelado +50 %) no aplicados.
 - Feel de la web no portado: impact frames (pantalla oscura + enemigo blanco en golpes fuertes), estiramiento del enemigo atrapado por la
@@ -94,6 +96,7 @@ Compilar con el editor abierto (`unity command recompile`). Aspecto: render fuer
 
 ## Historial
 
+- 2026-10-20 · Barras de vida en los muñecos (`IHudEnemy`), insignia del arma de reserva en el HUD e iconos de las 6 armas.
 - 2026-10-20 · Sonidos: 56 WAV asignados y en el registro (`Player/Arsenal/*`); quitado el hueco fantasma `OnRangedAttack`
   de PlayerNuevo (bloqueaba el registro; el disparo suena por `WeaponDefinition.FireSound`).
 - 2026-10-19 · Fases 0-6 hechas en una sesión; sonido a medias (falta instalar node-web-audio-api).

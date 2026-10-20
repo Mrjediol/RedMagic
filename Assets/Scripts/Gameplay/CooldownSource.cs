@@ -55,6 +55,25 @@ namespace RedMagic.Gameplay
         Sprite CooldownIcon { get; }
     }
 
+    /// <summary>
+    /// Una <see cref="ICooldownSource"/> con un segundo hueco intercambiable (las dos armas): el HUD lo enseña como una
+    /// insignia pegada a su casilla, con su icono, su recarga y la tecla de cambiar.
+    /// </summary>
+    public interface IReserveCooldownSource
+    {
+        /// <summary>Hay algo en el hueco de reserva.</summary>
+        bool HasReserve { get; }
+
+        /// <summary>Icono de lo que hay en reserva; null = sin icono.</summary>
+        Sprite ReserveIcon { get; }
+
+        /// <summary>Recarga de lo que hay en reserva (sigue corriendo aunque no esté activo).</summary>
+        CooldownState ReserveCooldown { get; }
+
+        /// <summary>Time.time del último cambio (el HUD lo anima).</summary>
+        float LastSwapTime { get; }
+    }
+
     /// <summary>Qué recarga un cooldown de enemigo (fija el color y el orden en su barra).</summary>
     public enum EnemyCooldownKind
     {

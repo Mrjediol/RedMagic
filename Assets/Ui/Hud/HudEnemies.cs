@@ -11,7 +11,8 @@ namespace RedMagic.UI
     /// Qué enemigos está peleando el jugador ahora mismo, para las barras de vida de enemigo del HUD.
     ///
     /// Sale de <see cref="Health.Active"/> (sin escanear la escena). Cuenta como enemigo lo que lleva
-    /// <see cref="EnemyStats"/>, el <see cref="EnemyController"/> antiguo o un <see cref="TrainingDummy"/>,
+    /// <see cref="EnemyStats"/>, el <see cref="EnemyController"/> antiguo, un <see cref="TrainingDummy"/> o algo marcado con
+    /// <see cref="IHudEnemy"/> (muñecos de prueba),
     /// y no cuelga de un <see cref="BossController"/> (los jefes ya tienen su barra). "Peleando" =
     /// vivo y, o bien su <see cref="EnemyBrain.InCombat"/>, o bien le han dado hace menos de
     /// <see cref="EngageMemory"/> segundos. Ordenados por cercanía al jugador.
@@ -141,7 +142,8 @@ namespace RedMagic.UI
             Info info = null;
             bool enemy = health.GetComponent<EnemyStats>() != null
                          || health.GetComponent<EnemyController>() != null
-                         || health.GetComponent<TrainingDummy>() != null;
+                         || health.GetComponent<TrainingDummy>() != null
+                         || health.GetComponent<IHudEnemy>() != null;
             if (enemy && !health.CompareTag("Player") && health.GetComponentInParent<BossController>() == null)
             {
                 info = new Info
@@ -159,4 +161,10 @@ namespace RedMagic.UI
             return info;
         }
     }
+
+    /// <summary>
+    /// Marca un <see cref="Health"/> como enemigo para las barras del HUD sin ser un enemigo del juego (los muñecos de la
+    /// escena de prueba de armas). Va en el mismo GameObject que el Health.
+    /// </summary>
+    public interface IHudEnemy { }
 }

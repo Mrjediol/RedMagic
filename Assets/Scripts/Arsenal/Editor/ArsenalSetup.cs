@@ -14,6 +14,8 @@ namespace RedMagic.Arsenal.Editor
     /// <item><c>Resources/Arsenal/ArsenalAssets.asset</c> con los dos materiales (y las reglas comunes, que no se pisan);</item>
     /// <item>un <see cref="WeaponDefinition"/> por cada tipo de kit en <c>Assets/Test/Arsenal/</c> (<c>Weapon_Arsenal_&lt;id&gt;</c>):
     /// si ya existe sólo asegura la entrega Arsenal y el kit de su tipo, respetando lo afinado.</item>
+    /// <item>el icono del HUD de cada arma, por nombre: <c>Icons/icon_&lt;id&gt;.png</c> (de <c>docs/bocetos/habilidades/iconos-armas.html</c>,
+    /// exportados con <c>tools/exportar-iconos-armas.cjs</c>); un icono ya puesto a mano no se pisa.</item>
     /// </list>
     /// </summary>
     public static class ArsenalSetup
@@ -24,6 +26,8 @@ namespace RedMagic.Arsenal.Editor
         private const string AssetsPath = "Assets/Resources/Arsenal/ArsenalAssets.asset";
         /// <summary>WAV de las armas (tools/render-sonidos-armas.cjs): el nombre del archivo es el id de ArsenalSounds.</summary>
         public const string SoundsFolder = "Assets/Audio/Sounds/Player/Arsenal";
+        /// <summary>Iconos del HUD (icon_&lt;WeaponId&gt;.png).</summary>
+        public const string IconsFolder = WeaponsFolder + "/Icons";
 
         [MenuItem("Tools/RedMagic/Arsenal/Preparar (materiales, assets y armas)")]
         public static List<WeaponDefinition> Run()
@@ -103,6 +107,9 @@ namespace RedMagic.Arsenal.Editor
                 so.FindProperty("baseCooldown").floatValue = 0.5f;
             }
             so.FindProperty("baseShot.delivery").enumValueIndex = (int)ShotDelivery.Arsenal;
+            var iconProp = so.FindProperty("icon");
+            var icon = IconFor(fresh.WeaponId);
+            if (icon != null && (iconProp.objectReferenceValue == null || IsConventionIcon(iconProp.objectReferenceValue))) iconProp.objectReferenceValue = icon;
             var kitProp = so.FindProperty("arsenal");
             if (kitProp.managedReferenceValue == null || kitProp.managedReferenceValue.GetType() != fresh.GetType()) kitProp.managedReferenceValue = fresh;
             so.ApplyModifiedPropertiesWithoutUndo();
@@ -119,5 +126,26 @@ namespace RedMagic.Arsenal.Editor
             }
             return weapon;
         }
+
+        /// <summary>El icono de <paramref name="id"/> en <see cref="IconsFolder"/>, importado como sprite de UI; null si no hay.</summary>
+        private static Sprite IconFor(string id)
+        {
+            string path = $"{IconsFolder}/icon_{id}.png";
+            if (!(AssetImporter.GetAtPath(path) is TextureImporter imp)) return null;
+            if (imp.textureType != TextureImporterType.Sprite || imp.spriteImportMode != SpriteImportMode.Single || imp.mipmapEnabled
+                || !imp.alphaIsTransparency)
+            {
+                imp.textureType = TextureImporterType.Sprite;
+                imp.spriteImportMode = SpriteImportMode.Single;
+                imp.mipmapEnabled = false;
+                imp.alphaIsTransparency = true;
+                imp.spritePixelsPerUnit = 100f;
+                imp.SaveAndReimport();
+            }
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        private static bool IsConventionIcon(UnityEngine.Object o) =>
+            AssetDatabase.GetAssetPath(o).StartsWith(IconsFolder + "/", StringComparison.Ordinal);
     }
 }

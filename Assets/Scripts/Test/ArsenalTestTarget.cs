@@ -1,5 +1,6 @@
 using RedMagic.Arsenal;
 using RedMagic.Combat;
+using RedMagic.UI;
 using UnityEngine;
 
 namespace RedMagic.Test
@@ -9,10 +10,11 @@ namespace RedMagic.Test
     /// empujan), <b>andarín</b> (va y viene entre dos puntos) o <b>volador</b> (flota a su altura). Tiene <see cref="Health"/>,
     /// <see cref="Knockback"/> y <see cref="HitFlash"/> como un enemigo de verdad, así que empujones, atracciones y
     /// congelación funcionan igual; al morir se oculta y reaparece entero a los <see cref="respawnDelay"/> s (las mejoras
-    /// que dependen de matar necesitan bajas). Mientras el empujón está activo no toca su velocidad.
+    /// que dependen de matar necesitan bajas). Mientras el empujón está activo no toca su velocidad. Sale con barra de vida
+    /// en el HUD como un enemigo (<see cref="IHudEnemy"/>).
     /// </summary>
     [RequireComponent(typeof(Health), typeof(Rigidbody2D))]
-    public class ArsenalTestTarget : MonoBehaviour
+    public class ArsenalTestTarget : MonoBehaviour, IHudEnemy
     {
         public enum Kind { Ground, Walker, Flyer }
 

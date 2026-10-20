@@ -436,3 +436,31 @@ function crystalWall(ctx, t, layer, x, h, pal, a, hurt = 0) {
   if (hurt > 0) glow(ctx, x, top + h / 2, 40, pal.g1, 0.5 * hurt * a);
   const g = (t * 0.6) % 1; star4(ctx, x, GROUND - g * h, 8 * Math.sin(Math.PI * g), 0, pal.core, 0.8 * a, layer);
 }
+
+// ---------------------------------------------------------------- Ballesta de cristal (g-ballesta.js)
+// mira láser: tramos punteados con puntos de rebote; k = concentración 0..1 (más fina y brillante)
+function laserSight(ctx, t, layer, pts, k, pal) {
+  if (layer !== 'front' || pts.length < 2) return;
+  for (let i = 0; i + 1 < pts.length; i++) {
+    const a = pts[i], b = pts[i + 1], L = Math.hypot(b.x - a.x, b.y - a.y), n = Math.max(2, Math.floor(L / 10));
+    for (let j = 0; j < n; j += 2) { const s0 = j / n, s1 = Math.min(1, (j + 1) / n); strokeTaper(ctx, [{ x: lerp(a.x, b.x, s0), y: lerp(a.y, b.y, s0) }, { x: lerp(a.x, b.x, s1), y: lerp(a.y, b.y, s1) }], 1.8 + 1.6 * k, k >= 1 ? pal.core : pal.light, (0.55 + 0.45 * k) * (1 - i * 0.15), layer, false); }
+    if (i > 0) { disc(ctx, a.x, a.y, 3, pal.core, 0.8, layer); }
+  }
+  const e = pts[pts.length - 1]; ellArc(ctx, e.x, e.y, 10 - 5 * k, 10 - 5 * k, 0, TAU, 1.4, pal.core, 0.8, layer, { taper: 0, m: 16 }); if (k >= 1) star4(ctx, e.x, e.y, 9, t * 4, pal.core, 1, layer);
+}
+// virote de cristal: aguja larga y fina con estela recta
+function crystalBolt(ctx, t, layer, x, y, ang, sc, pal, a, trail) {
+  if (a <= 0) return;
+  if (layer === 'back') { if (trail && trail.length > 1) { ribbon(ctx, trail, s => 5 * sc * (1 - s), pal.mid, 0.6 * a, layer); ribbon(ctx, trail, s => 2 * sc * (1 - s), pal.core, a, layer); } return; }
+  glow(ctx, x, y, 18 * sc, pal.g1, 0.5 * a);
+  needle(ctx, x - Math.cos(ang) * 34 * sc, y - Math.sin(ang) * 34 * sc, x, y, 5 * sc, pal.mid, a, layer);
+  needle(ctx, x - Math.cos(ang) * 26 * sc, y - Math.sin(ang) * 26 * sc, x, y, 2.2 * sc, pal.core, a, layer);
+}
+// punto débil (Marcador): diana que gira sobre el enemigo con los golpes que le quedan
+function weakSpot(ctx, t, layer, e, n, pal) {
+  if (layer !== 'front' || n <= 0) return;
+  const x = e.x, y = e.y - e.ry * 0.45;
+  ellArc(ctx, x, y, 11, 11, t * 3, t * 3 + TAU * 0.8, 1.8, pal.core, 0.9, layer, { taper: 0, m: 20 });
+  for (let i = 0; i < 4; i++) { const a = t * 3 + i * Math.PI / 2; needle(ctx, x + Math.cos(a) * 8, y + Math.sin(a) * 8, x + Math.cos(a) * 16, y + Math.sin(a) * 16, 2, pal.light, 0.9, layer); }
+  ctx.font = '700 10px system-ui'; ctx.fillStyle = pal.core; ctx.textAlign = 'center'; ctx.fillText('×' + n, x + 18, y - 10); ctx.textAlign = 'left';
+}

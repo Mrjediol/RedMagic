@@ -323,5 +323,22 @@ if (!only || only === 'aegis') {
   sim.aim(600, 296).press().run(0.8).release().run(1);
   check('Embestida: arrastra al enemigo y lo estampa', e0.x - x0 > 150 && e0.hp < e0.hpMax, `${Math.round(e0.x - x0)} px, vida ${Math.round(e0.hp)}`);
 }
+// ---------------------------------------------------------------- 18 · Ballesta
+if (!only || only === 'bow') {
+  const shot = (ax, ay, hold, arch, ups, ens) => { sim.setup({ slots: [{ w: 'bow', arch, ups }, { w: 'fan' }], enemies: ens || [{ x: 600, kind: 'ground' }], px: 200, hpMul: 6 }); sim.aim(ax, ay).press().run(hold).release().run(0.6); return sim.dmg(); };
+  const body = shot(600, 300, 1, null, {}), head = shot(600, 270, 1, null, {}), quick = shot(600, 300, 0.02, null, {});
+  check('Ballesta: concentrada pega mucho más', body > quick * 3, `${body} vs ${quick}`);
+  check('Ballesta: arriba del cuerpo es crítico', head > body * 1.5, `${head} vs ${body}`);
+  // Perforador: atraviesa a todos
+  shot(700, 300, 1, 'pierce', {}, near(500, 3));
+  check('Perforador: atraviesa a los tres', G.enemies.every(e => e.hp < e.hpMax), G.enemies.map(e => Math.round(e.hp)).join('/'));
+  // Rebote: apuntando al suelo llega a un enemigo detrás de un rebote
+  shot(380, 340, 0.6, 'ricochet', {}, [{ x: 560, kind: 'ground' }]);
+  check('Rebote: rebota en el suelo y le da (crítico tras rebotar)', sim.dmg() > 40, `daño ${sim.dmg()}`);
+  // Marcador: los golpes de la otra arma al marcado son críticos
+  const spot = arch => { sim.setup({ slots: [{ w: 'bow', arch }, { w: 'fan' }], enemies: [{ x: 420, kind: 'ground' }], px: 200, hpMul: 10 }); sim.aim(420, 300).press().run(0.1).release().run(0.3); const d0 = sim.dmg(); sim.swap(1); for (let i = 0; i < 2; i++) sim.aim(420, 296).tap().run(0.55); return sim.dmg() - d0; };
+  const sm = spot('spotter'), sn = spot(null);
+  check('Marcador: el Abanico hace críticos al marcado', sm > sn * 1.3, `${sm} vs ${sn}`);
+}
 check.done();
 function GROUND_Y() { return 340; }

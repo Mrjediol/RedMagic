@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-20T05:49:18.246Z",
+  "updated": "2026-10-20T10:25:31.420Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -385,9 +385,26 @@
         {
           "id": "modo-supervivencia",
           "text": "Modo Supervivencia: una sala, oleadas progresivas (survivor) como modo y como banco de balance",
-          "note": "Mismos enemigos y armas. Cada oleada = nivel de poder de una run. Idea, sin diseñar: docs/tareas/modo-supervivencia.md",
+          "note": "Esqueleto hecho 2026-10-20 (rama task/supervivencia): oleadas simples/dinámicas, dificultades, aparición por reglas, torretas en pared/techo, variantes. Pendiente y preguntas abiertas en el doc.",
           "done": false,
-          "doc": "docs/tareas/modo-supervivencia.md"
+          "doc": "docs/tareas/modo-supervivencia.md",
+          "steps": [
+            {
+              "id": "sv-1",
+              "text": "Respuestas a las preguntas abiertas del doc (persecución global, dificultad por mundo, qué se pierde al morir, fin por tiempo)",
+              "done": false
+            },
+            {
+              "id": "sv-2",
+              "text": "Métricas por ronda a fichero para balancear",
+              "done": false
+            },
+            {
+              "id": "sv-3",
+              "text": "Mover Assets/Test/Survival a su sitio y fusionar la rama cuando se dé por bueno",
+              "done": false
+            }
+          ]
         }
       ]
     },
@@ -692,10 +709,37 @@
         },
         {
           "id": "armas-meta-upgrades",
-          "text": "Unity: mejoras permanentes de cada arma en el árbol del hub (stats base, desbloquear mejoras del árbol) y desbloqueo de la evolución en la run",
-          "note": "Idea del usuario (2026-10-19), para cuando las armas se porten a Unity. Diseño: docs/armas/progresion.md ▸ Fuera de la run. Usa UpgradeTree/UpgradeManager (aún sin usar).",
+          "text": "Progresión de armas: mejoras permanentes por arma (hecho) y evolución/núcleos en la run — retoques del feedback",
+          "note": "Hecho 2026-10-20 (rama task/supervivencia). Pendiente: el núcleo se guarda como moneda y se gasta desde el inventario (I), sin evolucionar; efectos del portador más suaves; UI. Ver doc.",
           "done": false,
-          "doc": "docs/armas/progresion.md"
+          "doc": "docs/tareas/armas-meta-upgrades.md",
+          "steps": [
+            {
+              "id": "amu-1",
+              "text": "Núcleo como moneda: se guarda hasta tener evolución y se gasta desde el inventario (I); no evoluciona el arma",
+              "done": false
+            },
+            {
+              "id": "amu-2",
+              "text": "Efectos del portador menos exagerados (halo, columna, pulso), afinables desde el config",
+              "done": false
+            },
+            {
+              "id": "amu-3",
+              "text": "Pulido visual de la UI (pestañas/árbol de armas, pantalla de elegir, flecha del borde)",
+              "done": false
+            },
+            {
+              "id": "amu-4",
+              "text": "Probar: portador con las armas al tope suelta almas",
+              "done": false
+            },
+            {
+              "id": "amu-5",
+              "text": "Al acabar las pruebas: testEase a 1",
+              "done": false
+            }
+          ]
         },
         {
           "id": "armas-unity",

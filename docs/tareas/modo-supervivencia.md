@@ -26,6 +26,10 @@ Rama `task/supervivencia` (sale de `task/armas-unity`, sin fusionar). Arquitectu
 - Dificultad Fácil / Normal / Difícil (menú): enemigos a la vez ×1 / ×1,5 / ×2, bajas igual, vida ×1 / ×1,25 / ×1,6, daño
   ×1 / ×1,2 / ×1,5.
 
+## Prueba del usuario (2026-10-20, fin de sesión)
+- Torretas (suelo/pared/techo): "parece que están mejor" tras `SurfaceMount`.
+- Progresión de armas (núcleos, portador, mejoras permanentes): feedback y pasos en `docs/tareas/armas-meta-upgrades.md`.
+
 ## Pendiente / ideas
 - Respuestas del usuario a las preguntas de abajo.
 - Torretas en pared (girar la base contra la pared): tarea aparte, pedida para después.

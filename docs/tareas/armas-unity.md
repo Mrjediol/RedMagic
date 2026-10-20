@@ -58,7 +58,7 @@ evolución, mejoras, elemento forzado (hielo/fuego), Duplicador, reacciones.
 **Sonidos (2026-10-20)**: los 56 WAV renderizados y asignados en `ArsenalAssets ▸ Sonidos`; en el registro salen como
 `Player/Arsenal/<arma>` ▸ `<id>`. **Falta que el usuario los califique** (pestaña Sounds). Re-renderizar: punto 2 de abajo.
 
-**Siguiente (en este orden)**:
+**Siguiente (en este orden)** — la progresión de armas (núcleos, portador, mejoras permanentes) sigue en `docs/tareas/armas-meta-upgrades.md`:
 1. Calificación de los 56 sonidos del arsenal (la hace el usuario; apuntar en `SoundStatus.json`).
 2. Preguntar al usuario qué falla de la Semilla y arreglarlo; luego el resto de retoques que vaya pidiendo, un arma cada vez.
 3. Lo que quedó sin portar o a medias (lista de abajo).

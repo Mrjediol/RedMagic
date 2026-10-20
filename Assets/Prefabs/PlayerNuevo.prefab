@@ -355,6 +355,7 @@ MonoBehaviour:
   wallDashOutShakeAmplitude: 0.08
   wallDashOutShakeDuration: 0.1
   enemyPushSpeed: 1
+  standOnEnemies: 1
   _freeColliderIterations: 10
   snapToGround: 1
   groundSkin: 0.01
@@ -569,6 +570,7 @@ MonoBehaviour:
   inputActions: {fileID: -944628639613478452, guid: 89e033185412158439fa6c9a84d462ad, type: 3}
   actionMapName: Player
   weaponActionName: Weapon
+  swapActionName: SwapWeapon
   useTouchButton: 1
 --- !u!114 &7356258496195605434
 MonoBehaviour:
@@ -745,20 +747,6 @@ MonoBehaviour:
       pitchMax: 1
       noRepeatLast: 1
       priority: 2
-      positional: 0
-      rolloffStart: 8
-      rolloffEnd: 24
-      initialized: 1
-    silent: 0
-  - trigger: 13
-    cue:
-      clips:
-      - {fileID: 8300000, guid: 54291057a172f0043b5e5d492a4e9720, type: 3}
-      volume: 1
-      pitchMin: 0.94
-      pitchMax: 1.06
-      noRepeatLast: 1
-      priority: 1
       positional: 0
       rolloffStart: 8
       rolloffEnd: 24

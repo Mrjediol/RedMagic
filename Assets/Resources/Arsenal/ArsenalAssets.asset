@@ -24,4 +24,732 @@ MonoBehaviour:
   vaporDamage: 25
   vaporRadius: 1.75
   vaporStun: 0.6
-  sounds: []
+  sounds:
+  - id: fan_absorb
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 22ba19528f9c3fb4a86c0f3094a085e6, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: fan_detonate
+    cue:
+      clips:
+      - {fileID: 8300000, guid: f500b13b230e8734888e9eac43141f5f, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: fan_ground
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 28d1ed6ed8a1fc741a9aa87937ad8725, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: fan_hit
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 910378f2ba1ce7c46b565e061d1d9baa, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: fan_release
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 577980ed51b1c73479dff49bdbb6edac, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: fan_ricochet
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 06eeafeebdd4f7d4bb74890433616e2b, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: fan_rip
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 668ad34c467695543a479594d80b8eec, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: fan_stick
+    cue:
+      clips:
+      - {fileID: 8300000, guid: ec92de4270ebeb049bd42d5642ae3129, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: moon_block
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 9f9a382f120c5d140ba1bd7b5fe6f7eb, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: moon_catch
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 583c1d0afb26e2c4c8aa3ddc4316100f, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: moon_fumble
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 3ec97f3ffe8ade143905301b4b1c8e5d, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: moon_grind
+    cue:
+      clips:
+      - {fileID: 8300000, guid: d8a0a14f4b8460c43b44626663d7ecd1, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: moon_hit
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 4345b2d609ab7d54a9dad61e26eed95a, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: moon_perfect
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 5e0b0e551125a8b4b909b15c229619e9, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: moon_spin
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 36e470288f9b46e419ff810f584fd986, type: 3}
+      volume: 0.55
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: moon_throw
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 45e9e8b3d47f8a745a0e9a55b5cf31c8, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: ray_discharge
+    cue:
+      clips:
+      - {fileID: 8300000, guid: f05e51ede1ec1614ea09633fca6aea74, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: ray_ignite
+    cue:
+      clips:
+      - {fileID: 8300000, guid: a56ada14e775bf340a8bcef57a9f1ca8, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: ray_loop
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 315cefdccd152664c8c2cfec45cd5655, type: 3}
+      volume: 0.55
+      pitchMin: 1
+      pitchMax: 1
+      noRepeatLast: 1
+      priority: 1
+      positional: 0
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: ray_nova
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 7107db506e7efc0428c8992d7ce8294b, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: ray_off
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 14d3945dcca1aca4e965d9e697ee5d69, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: ray_plant
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 770f37bf011266740858b8c1fbe07cd5, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: ray_sweet
+    cue:
+      clips:
+      - {fileID: 8300000, guid: cdc5422a2889d704ab5f417e1c4b8dc8, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: ray_tick
+    cue:
+      clips:
+      - {fileID: 8300000, guid: a750aeb8ad31e9341b13205f14db3715, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: ray_wave
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 0e8ac68c46c052d48b7443492fc68e7b, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: react_freeze
+    cue:
+      clips:
+      - {fileID: 8300000, guid: a8f8914650717f440a56c7a252ecb2c1, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: react_shatter
+    cue:
+      clips:
+      - {fileID: 8300000, guid: e47eea976e45d3e48a3fad9bae7e809b, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: react_vapor
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 1fdafd645e11f69458262f1bda0ebdff, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_armed
+    cue:
+      clips:
+      - {fileID: 8300000, guid: b18df4670c562364080701076db326fe, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_boom
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 7ca600a9c734bfa47a0cf5e6d2d3097c, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_land
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 1d9c6df42dc900746aa2a04bb389ab78, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_lob
+    cue:
+      clips:
+      - {fileID: 8300000, guid: c61f9e56bf076324f8219ed60ac666b4, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_mini
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 0c137a610cb06fb47857b0bb98895994, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_nova
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 5af9accc6dd0b2a48b45a1feee7d2abd, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_ripe
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 662cec2e71028964b9ba95fda9ac54b5, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_roots
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 671d8bfba14d8574998033925157e243, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_split
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 40857af799670c64c8ca7823a5e8fcc1, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_tick0
+    cue:
+      clips:
+      - {fileID: 8300000, guid: e6475ae28f33f634ab713bc0a42dcfee, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_tick1
+    cue:
+      clips:
+      - {fileID: 8300000, guid: b3064f9449591584ba25b167d3ce7816, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_tick2
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 8c1ec225df85b804ab4a7f667f0d132d, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: seed_trigger
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 609d5f51e2fb2844fb661451f910d192, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: sing_bolt
+    cue:
+      clips:
+      - {fileID: 8300000, guid: aa1b8e5df4d1928489c1ea69d257b188, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: sing_burst
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 74fcf3a5be257dd4fbc6cba189502e34, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: sing_burst_fire
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 7a2f2f8d7b17d0741983cd8c9c4b965a, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: sing_capture
+    cue:
+      clips:
+      - {fileID: 8300000, guid: c3568493a56a89244a632c8cb4c8f007, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: sing_collapse
+    cue:
+      clips:
+      - {fileID: 8300000, guid: a0c61b05bb1c0e145b5e0e1eaab41093, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: sing_eject
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 6ce7dcb2a004784448ff7f81dbdbb617, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: sing_feed
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 14808b255f1b8e24eba50f446885471a, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: sing_launch
+    cue:
+      clips:
+      - {fileID: 8300000, guid: e6c452f05df585b45990814b8b381d6f, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: sing_merge
+    cue:
+      clips:
+      - {fileID: 8300000, guid: ac0220db4e4317045be4ca9c5a28abf3, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: sing_tear
+    cue:
+      clips:
+      - {fileID: 8300000, guid: db16e1d1cb16bfc4ea7c29bb1dd7c0a4, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: star_fall
+    cue:
+      clips:
+      - {fileID: 8300000, guid: d2ccc2609781ba14c868c3b89c0bbd09, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: star_impact
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 8f5e63db11a10504cac1aa1c0d5136b3, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: star_mark
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 859fd262e5131e24faaab320b35c01a3, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: star_needle
+    cue:
+      clips:
+      - {fileID: 8300000, guid: a16d61fbed297cf429820ecfefcf8f9f, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1
+  - id: star_up
+    cue:
+      clips:
+      - {fileID: 8300000, guid: 7534be7b23386ec4b941d0f847176acd, type: 3}
+      volume: 0.8
+      pitchMin: 0.96
+      pitchMax: 1.04
+      noRepeatLast: 1
+      priority: 1
+      positional: 1
+      rolloffStart: 10
+      rolloffEnd: 32
+      initialized: 1

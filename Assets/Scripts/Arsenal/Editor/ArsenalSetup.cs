@@ -107,6 +107,16 @@ namespace RedMagic.Arsenal.Editor
             if (kitProp.managedReferenceValue == null || kitProp.managedReferenceValue.GetType() != fresh.GetType()) kitProp.managedReferenceValue = fresh;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(weapon);
+
+            // Sus sonidos son los de ArsenalAssets ▸ Sonidos: los huecos de disparo/cometa del WeaponDefinition no suenan
+            // con Delivery = Arsenal, así que fuera del registro de sonidos.
+            var labels = AssetDatabase.GetLabels(weapon);
+            if (Array.IndexOf(labels, Audio.EditorTools.SoundSlotScanner.IgnoreLabel) < 0)
+            {
+                Array.Resize(ref labels, labels.Length + 1);
+                labels[labels.Length - 1] = Audio.EditorTools.SoundSlotScanner.IgnoreLabel;
+                AssetDatabase.SetLabels(weapon, labels);
+            }
             return weapon;
         }
     }

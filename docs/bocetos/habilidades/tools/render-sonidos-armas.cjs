@@ -1,7 +1,8 @@
 // tools/render-sonidos-armas.cjs — pasa a WAV los sonidos de las armas del arsenal (Unity) con el MISMO código de síntesis de la
 // web (sound.js + el bloque sound(...) de cada a*-*.js), en un OfflineAudioContext de node-web-audio-api (como el cometa).
 // Uso: WEB_AUDIO_API=<ruta a node_modules/node-web-audio-api> node docs/bocetos/habilidades/tools/render-sonidos-armas.cjs <salida>
-//   (instalar una vez en una carpeta temporal: npm i node-web-audio-api@1.0.4)
+//   (instalar una vez en una carpeta temporal: npm i node-web-audio-api@1.0.4; WEB_AUDIO_API = .../node-web-audio-api/index.cjs)
+// Los typed arrays se pasan al sandbox desde fuera: el módulo nativo rechaza un Float32Array de otro realm.
 // Los nombres de archivo son los ids que usa Unity (ArsenalSounds.Play("fan_hit")…); los bucles (ray_loop, moon_spin) se cierran
 // con un fundido cruzado para que no hagan clic. Tabla id → pieza de la web: SOUNDS, abajo.
 const fs = require('fs'), path = require('path'), vm = require('vm');
@@ -12,13 +13,13 @@ fs.mkdirSync(out, { recursive: true });
 
 const html = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
 const files = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]).filter(f => f !== 'ui.js' && f !== 'systems.js');
-const sb = { console, Math, performance: { now: () => 0 }, window: {}, document: { getElementById: () => ({}) }, setTimeout: () => 0, wa, fs, path, Buffer, out };
+const sb = { console, Math, Float32Array, Float64Array, Uint8Array, Int16Array, ArrayBuffer, DataView, Promise, performance: { now: () => 0 }, window: {}, document: { getElementById: () => ({}) }, setTimeout: () => 0, wa, fs, path, Buffer, out };
 vm.createContext(sb);
 for (const f of files) vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), sb, { filename: f });
 
 // id de Unity → [segundos de render, función(k), opciones]
 const driver = `
-const seedTickFn = (k, i) => { const tn = nowT(); vNoise(tn, 0.02 * k, 0.25, 'bandpass', 2600 + i * 500, 2600 + i * 500, 6, { att: 0.001 }); vTone(tn, 220 * Math.pow(1.26, i), 200 * Math.pow(1.26, i), 0.12 * k, 0.12, 'sine', 0.1); };
+const seedTickFn = (k, i, dt = 0) => { const tn = nowT() + dt;vNoise(tn, 0.02 * k, 0.25, 'bandpass', 2600 + i * 500, 2600 + i * 500, 6, { att: 0.001 }); vTone(tn, 220 * Math.pow(1.26, i), 200 * Math.pow(1.26, i), 0.12 * k, 0.12, 'sine', 0.1); };
 const SOUNDS = {
   fan_release: [1.2, k => SND.fan_release.fn(k)], fan_hit: [1, k => SND.fan_hit.fn(k)], fan_ricochet: [1, k => SND.fan_ricochet.fn(k)],
   fan_stick: [1, k => SND.fan_stick.fn(k)], fan_ground: [1, k => SND.fan_ground.fn(k)], fan_detonate: [1.2, k => SFXLIB.hitEnergy(k, 0.6)],
@@ -40,7 +41,7 @@ const SOUNDS = {
   moon_block: [1, k => SFXLIB.glass(k, 0.5)], moon_grind: [0.6, k => SFXLIB.whoosh(k, 3200, 1600, 0.08, 0.1)],
   seed_lob: [1, k => SND.seed_lob.fn(k)], seed_land: [1, k => SND.seed_land.fn(k)], seed_armed: [1, k => SND.seed_armed.fn(k)],
   seed_tick0: [0.6, k => seedTickFn(k, 0)], seed_tick1: [0.6, k => seedTickFn(k, 1)], seed_tick2: [0.6, k => seedTickFn(k, 2)],
-  seed_trigger: [1, k => SND.seed_trigger.fn(k)], seed_roots: [1, k => SFXLIB.whoosh(k, 600, 200, 0.25, 0.2)], seed_ripe: [1, k => SND.seed_armed.fn(k)],
+  seed_trigger: [0.8, k => { for (let i = 0; i < 3; i++) seedTickFn(k * 0.6, 2 + i, i * 0.026 * k); }]   /* la web usa setTimeout */, seed_roots: [1, k => SFXLIB.whoosh(k, 600, 200, 0.25, 0.2)], seed_ripe: [1, k => SND.seed_armed.fn(k)],
   seed_boom: [2.2, k => SND.seed_boom.fn(k)], seed_split: [2, k => SND.seed_split.fn(k)], seed_mini: [1.2, k => SND.seed_mini.fn(k)], seed_nova: [2.2, k => SND.seed_nova.fn(k)],
   star_up: [1, k => SND.star_up.fn(k)], star_mark: [1.2, k => SND.star_mark.fn(k)], star_fall: [1.2, k => SND.star_fall.fn(k)],
   star_impact: [2.4, k => SND.star_impact.fn(k)], star_needle: [0.8, k => SND.star_needle.fn(k)],

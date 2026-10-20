@@ -38,7 +38,7 @@ Fuente de verdad de cada arma: su ficha en `docs/armas/` + su `g-*.js`.
 | 4 | Media luna (Sierra / Satélite / Malabar) | hecho |
 | 5 | Semilla (Campo de minas / Racimo / Madura) | hecho |
 | 6 | Golpe estelar (Bombardeo / Cazador / Tormenta) + marcas | hecho |
-| 7 | Sonidos: piezas `SND.*` a WAV con el mismo código y que el usuario los califique | a medias (ver RETOMAR) |
+| 7 | Sonidos: piezas `SND.*` a WAV con el mismo código y que el usuario los califique | WAV hechos y asignados; falta calificar |
 | 8 | Items de la web (Duplicador, Gatillo, Constelación…) frente a los del juego: decidir con el usuario | pendiente |
 
 ## ▶ RETOMAR AQUÍ — «continúa con las armas» (fin de sesión 2026-10-19)
@@ -55,14 +55,15 @@ lo prueba el usuario. Rama `task/armas-unity` (sin fusionar).
 Q dispara (mantener = repetir / canalizar / madurar), Tab cambia de arma, F10 (o botón «ARMAS») = menú DEV: arma de cada hueco,
 evolución, mejoras, elemento forzado (hielo/fuego), Duplicador, reacciones.
 
+**Sonidos (2026-10-20)**: los 56 WAV renderizados y asignados en `ArsenalAssets ▸ Sonidos`; en el registro salen como
+`Player/Arsenal/<arma>` ▸ `<id>`. **Falta que el usuario los califique** (pestaña Sounds). Re-renderizar: punto 2 de abajo.
+
 **Siguiente (en este orden)**:
-1. Sonidos (permiso ya dado; ver punto 2 de abajo para los comandos).
+1. Calificación de los 56 sonidos del arsenal (la hace el usuario; apuntar en `SoundStatus.json`).
 2. Preguntar al usuario qué falla de la Semilla y arreglarlo; luego el resto de retoques que vaya pidiendo, un arma cada vez.
 3. Lo que quedó sin portar o a medias (lista de abajo).
 
 **Sin terminar / sin portar (2026-10-19)**:
-- Sonidos: ningún WAV todavía; ningún id suena (`ArsenalSounds` los busca en `ArsenalAssets ▸ Sonidos`). Tras asignarlos, que el
-  usuario califique cada uno (Perfect/Good/Bad/Horrible) en el registro de sonido.
 - HUD: no se ve qué arma hay en el hueco de reserva ni su recarga (la web tenía las dos tarjetas abajo). Falta botón táctil de cambiar.
 - Items de la web sin portar: Gatillo de cambio, Constelación, Corazón de vacío, Cristal afilado, Sangre de cristal…; el Duplicador sólo
   existe como interruptor DEV. Tramos 6 de Fuego (la quemadura salta al morir) y de Hielo (congelado +50 %) no aplicados.
@@ -75,12 +76,11 @@ evolución, mejoras, elemento forzado (hielo/fuego), Duplicador, reacciones.
 
 **Siguiente (detalle)**:
 1. Recoger la prueba del usuario y arreglar (un arma cada vez).
-2. Sonidos: el script está hecho (`docs/bocetos/habilidades/tools/render-sonidos-armas.cjs`, 54 ids → WAV en
-   `Assets/Audio/Sounds/Player/Arsenal/`), pero falta `node-web-audio-api`: la instalación del cometa
-   (`%TEMP%/cometaudio`) está incompleta. Con permiso del usuario: `npm i node-web-audio-api@1.0.4` en una carpeta temporal,
-   `WEB_AUDIO_API=<ruta>/node_modules/node-web-audio-api node … Assets/Audio/Sounds/Player/Arsenal`, luego Tools ▸ RedMagic ▸
-   Arsenal ▸ Preparar (mete cada WAV en ArsenalAssets ▸ Sonidos por su nombre) y que el usuario califique cada sonido
-   (regla del registro de sonido).
+2. Re-renderizar sonidos (`docs/bocetos/habilidades/tools/render-sonidos-armas.cjs`, 56 ids → WAV en
+   `Assets/Audio/Sounds/Player/Arsenal/`): `npm i node-web-audio-api@1.0.4` en una carpeta temporal,
+   `WEB_AUDIO_API=<ruta>/node_modules/node-web-audio-api/index.cjs node … Assets/Audio/Sounds/Player/Arsenal`, luego Tools ▸
+   RedMagic ▸ Arsenal ▸ Preparar (mete cada WAV en ArsenalAssets ▸ Sonidos por su nombre; lo que ya tiene clip no se toca) y
+   regenerar el registro. Piezas de la web con `setTimeout` (no corre offline) se programan a mano en el script (`seed_trigger`).
 3. Fase 8 (items) y pasar las armas de `Assets/Test/Arsenal/` a `Resources/Items/Weapons/` cuando el usuario las dé por buenas.
 
 **Trampas aprendidas**: `Bump(1)` = sin(π) negativo → `Pow` daba NaN y Unity descartaba el lienzo entero (arreglado;
@@ -94,5 +94,7 @@ Compilar con el editor abierto (`unity command recompile`). Aspecto: render fuer
 
 ## Historial
 
+- 2026-10-20 · Sonidos: 56 WAV asignados y en el registro (`Player/Arsenal/*`); quitado el hueco fantasma `OnRangedAttack`
+  de PlayerNuevo (bloqueaba el registro; el disparo suena por `WeaponDefinition.FireSound`).
 - 2026-10-19 · Fases 0-6 hechas en una sesión; sonido a medias (falta instalar node-web-audio-api).
 - 2026-10-19 · Empieza la tarea. Antes, en la web: Malabar exige timing (pulsar antes de tiempo = fallo).

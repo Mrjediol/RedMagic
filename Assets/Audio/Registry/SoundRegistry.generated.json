@@ -2,60 +2,6 @@
   "_comment": "GENERADO por Tools > RedMagic > Audio > 3. No editar a mano: se sobrescribe. Calificaciones y notas: SoundStatus.json. Huecos sin momento aún: SoundDeclared.json.",
   "slots": [
     {
-      "id": "56fb851934fd63542ac2ea35df703eb9/SoundEmitter/OnActivate",
-      "name": "Activation",
-      "category": "Bosses/ColosodeHielo",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/boss/boss_activate.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
-        "guid": "56fb851934fd63542ac2ea35df703eb9",
-        "component": "SoundEmitter",
-        "member": "OnActivate",
-        "property": "soundEvents.Array.data[0].cue"
-      }
-    },
-    {
-      "id": "56fb851934fd63542ac2ea35df703eb9/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Bosses/ColosodeHielo",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/boss/boss_death.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
-        "guid": "56fb851934fd63542ac2ea35df703eb9",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "property": "soundEvents.Array.data[1].cue"
-      }
-    },
-    {
-      "id": "56fb851934fd63542ac2ea35df703eb9/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Bosses/ColosodeHielo",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/boss/boss_hurt.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
-        "guid": "56fb851934fd63542ac2ea35df703eb9",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "property": "soundEvents.Array.data[2].cue"
-      }
-    },
-    {
       "id": "55976d839ff5f3b45bea45375a392b62/BossDefinition/phases.Array.data[1].transitionSound",
       "name": "Phase 2 transition",
       "category": "Bosses/ColosodeHielo",
@@ -71,24 +17,6 @@
         "component": "BossDefinition",
         "member": "phases.Array.data[1].transitionSound",
         "property": "phases.Array.data[1].transitionSound"
-      }
-    },
-    {
-      "id": "56fb851934fd63542ac2ea35df703eb9/SoundEmitter/OnVulnerable",
-      "name": "Vulnerable window",
-      "category": "Bosses/ColosodeHielo",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/boss/boss_vulnerable.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
-        "guid": "56fb851934fd63542ac2ea35df703eb9",
-        "component": "SoundEmitter",
-        "member": "OnVulnerable",
-        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -614,60 +542,6 @@
       }
     },
     {
-      "id": "f601d572303009c4b9ada9aab10e20a2/SoundEmitter/OnActivate",
-      "name": "Activation",
-      "category": "Bosses/TreeBoss",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/boss/boss_activate.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
-        "guid": "f601d572303009c4b9ada9aab10e20a2",
-        "component": "SoundEmitter",
-        "member": "OnActivate",
-        "property": "soundEvents.Array.data[0].cue"
-      }
-    },
-    {
-      "id": "f601d572303009c4b9ada9aab10e20a2/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Bosses/TreeBoss",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/boss/boss_death.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
-        "guid": "f601d572303009c4b9ada9aab10e20a2",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "property": "soundEvents.Array.data[1].cue"
-      }
-    },
-    {
-      "id": "f601d572303009c4b9ada9aab10e20a2/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Bosses/TreeBoss",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/boss/boss_hurt.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
-        "guid": "f601d572303009c4b9ada9aab10e20a2",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "property": "soundEvents.Array.data[2].cue"
-      }
-    },
-    {
       "id": "7a25097e1bcb58746986c2da883c44e5/BossDefinition/phases.Array.data[1].transitionSound",
       "name": "Phase 2 transition",
       "category": "Bosses/TreeBoss",
@@ -683,24 +557,6 @@
         "component": "BossDefinition",
         "member": "phases.Array.data[1].transitionSound",
         "property": "phases.Array.data[1].transitionSound"
-      }
-    },
-    {
-      "id": "f601d572303009c4b9ada9aab10e20a2/SoundEmitter/OnVulnerable",
-      "name": "Vulnerable window",
-      "category": "Bosses/TreeBoss",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/boss/boss_vulnerable.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
-        "guid": "f601d572303009c4b9ada9aab10e20a2",
-        "component": "SoundEmitter",
-        "member": "OnVulnerable",
-        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -1380,7 +1236,7 @@
       }
     },
     {
-      "id": "145ff34e0c8f24f41bf5facbb5af676e/SoundEmitter/OnAttack",
+      "id": "a3010e40427fd224a8fbadc9480bd3f6/SoundEmitter/OnAttack",
       "name": "Attack",
       "category": "Enemies/FrostKnight",
       "kind": "EmitterTrigger",
@@ -1389,7 +1245,7 @@
       "clips": [],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/FrostKnight.prefab",
-        "guid": "145ff34e0c8f24f41bf5facbb5af676e",
+        "guid": "a3010e40427fd224a8fbadc9480bd3f6",
         "component": "SoundEmitter",
         "member": "OnAttack",
         "entryMissing": true
@@ -1432,7 +1288,7 @@
       }
     },
     {
-      "id": "145ff34e0c8f24f41bf5facbb5af676e/SoundEmitter/OnDeath",
+      "id": "a3010e40427fd224a8fbadc9480bd3f6/SoundEmitter/OnDeath",
       "name": "Death",
       "category": "Enemies/FrostKnight",
       "kind": "EmitterTrigger",
@@ -1441,14 +1297,14 @@
       "clips": [],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/FrostKnight.prefab",
-        "guid": "145ff34e0c8f24f41bf5facbb5af676e",
+        "guid": "a3010e40427fd224a8fbadc9480bd3f6",
         "component": "SoundEmitter",
         "member": "OnDeath",
         "entryMissing": true
       }
     },
     {
-      "id": "145ff34e0c8f24f41bf5facbb5af676e/SoundEmitter/OnEvade",
+      "id": "a3010e40427fd224a8fbadc9480bd3f6/SoundEmitter/OnEvade",
       "name": "Evade",
       "category": "Enemies/FrostKnight",
       "kind": "EmitterTrigger",
@@ -1459,14 +1315,14 @@
       ],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/FrostKnight.prefab",
-        "guid": "145ff34e0c8f24f41bf5facbb5af676e",
+        "guid": "a3010e40427fd224a8fbadc9480bd3f6",
         "component": "SoundEmitter",
         "member": "OnEvade",
         "property": "soundEvents.Array.data[0].cue"
       }
     },
     {
-      "id": "145ff34e0c8f24f41bf5facbb5af676e/SoundEmitter/OnHit",
+      "id": "a3010e40427fd224a8fbadc9480bd3f6/SoundEmitter/OnHit",
       "name": "Hurt",
       "category": "Enemies/FrostKnight",
       "kind": "EmitterTrigger",
@@ -1475,14 +1331,14 @@
       "clips": [],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/FrostKnight.prefab",
-        "guid": "145ff34e0c8f24f41bf5facbb5af676e",
+        "guid": "a3010e40427fd224a8fbadc9480bd3f6",
         "component": "SoundEmitter",
         "member": "OnHit",
         "entryMissing": true
       }
     },
     {
-      "id": "145ff34e0c8f24f41bf5facbb5af676e/SoundEmitter/OnMove",
+      "id": "a3010e40427fd224a8fbadc9480bd3f6/SoundEmitter/OnMove",
       "name": "Move",
       "category": "Enemies/FrostKnight",
       "kind": "EmitterTrigger",
@@ -1491,7 +1347,7 @@
       "clips": [],
       "owner": {
         "asset": "Assets/Prefabs/Enemies/FrostKnight.prefab",
-        "guid": "145ff34e0c8f24f41bf5facbb5af676e",
+        "guid": "a3010e40427fd224a8fbadc9480bd3f6",
         "component": "SoundEmitter",
         "member": "OnMove",
         "entryMissing": true
@@ -1656,6 +1512,88 @@
       "owner": {
         "asset": "Assets/Prefabs/Enemies/FrostKnightRed.prefab",
         "guid": "7c0edd6f57844141b673eef48cd9f591",
+        "component": "SoundEmitter",
+        "member": "OnMove",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "145ff34e0c8f24f41bf5facbb5af676e/SoundEmitter/OnAttack",
+      "name": "Attack",
+      "category": "Enemies/FrostKnightShield",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/FrostKnightShield.prefab",
+        "guid": "145ff34e0c8f24f41bf5facbb5af676e",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "145ff34e0c8f24f41bf5facbb5af676e/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Enemies/FrostKnightShield",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/FrostKnightShield.prefab",
+        "guid": "145ff34e0c8f24f41bf5facbb5af676e",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "145ff34e0c8f24f41bf5facbb5af676e/SoundEmitter/OnEvade",
+      "name": "Evade",
+      "category": "Enemies/FrostKnightShield",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/enemy/enemy_evade.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/FrostKnightShield.prefab",
+        "guid": "145ff34e0c8f24f41bf5facbb5af676e",
+        "component": "SoundEmitter",
+        "member": "OnEvade",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "145ff34e0c8f24f41bf5facbb5af676e/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Enemies/FrostKnightShield",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/FrostKnightShield.prefab",
+        "guid": "145ff34e0c8f24f41bf5facbb5af676e",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "145ff34e0c8f24f41bf5facbb5af676e/SoundEmitter/OnMove",
+      "name": "Move",
+      "category": "Enemies/FrostKnightShield",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "InheritedPlaceholder",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/Enemies/FrostKnightShield.prefab",
+        "guid": "145ff34e0c8f24f41bf5facbb5af676e",
         "component": "SoundEmitter",
         "member": "OnMove",
         "entryMissing": true
@@ -1972,76 +1910,6 @@
         "component": "SoundEmitter",
         "member": "OnMove",
         "property": "soundEvents.Array.data[1].cue"
-      }
-    },
-    {
-      "id": "df03e960fcd6b8442b4e6820d5dd5c41/SoundEmitter/OnAttack",
-      "name": "Attack",
-      "category": "Enemies/IceGolem",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sounds/EnemyGenericSounds/enemy_attack.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_IceGolem.prefab",
-        "guid": "df03e960fcd6b8442b4e6820d5dd5c41",
-        "component": "SoundEmitter",
-        "member": "OnAttack",
-        "property": "soundEvents.Array.data[0].cue"
-      }
-    },
-    {
-      "id": "df03e960fcd6b8442b4e6820d5dd5c41/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Enemies/IceGolem",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/enemy/enemy_death_ice.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_IceGolem.prefab",
-        "guid": "df03e960fcd6b8442b4e6820d5dd5c41",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "property": "soundEvents.Array.data[1].cue"
-      }
-    },
-    {
-      "id": "df03e960fcd6b8442b4e6820d5dd5c41/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Enemies/IceGolem",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/enemy/enemy_hurt_ice.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_IceGolem.prefab",
-        "guid": "df03e960fcd6b8442b4e6820d5dd5c41",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "property": "soundEvents.Array.data[2].cue"
-      }
-    },
-    {
-      "id": "df03e960fcd6b8442b4e6820d5dd5c41/SoundEmitter/OnMove",
-      "name": "Move",
-      "category": "Enemies/IceGolem",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_IceGolem.prefab",
-        "guid": "df03e960fcd6b8442b4e6820d5dd5c41",
-        "component": "SoundEmitter",
-        "member": "OnMove",
-        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -2489,76 +2357,6 @@
         "component": "SoundEmitter",
         "member": "OnWake",
         "property": "soundEvents.Array.data[4].cue"
-      }
-    },
-    {
-      "id": "ac3f483dadeed734b963e9b32ecbecd2/SoundEmitter/OnAttack",
-      "name": "Attack",
-      "category": "Enemies/IceSpirit",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "InheritedPlaceholder",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
-        "guid": "ac3f483dadeed734b963e9b32ecbecd2",
-        "component": "SoundEmitter",
-        "member": "OnAttack",
-        "property": "soundEvents.Array.data[0].cue"
-      }
-    },
-    {
-      "id": "ac3f483dadeed734b963e9b32ecbecd2/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Enemies/IceSpirit",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/enemy/enemy_death_spirit.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
-        "guid": "ac3f483dadeed734b963e9b32ecbecd2",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "property": "soundEvents.Array.data[1].cue"
-      }
-    },
-    {
-      "id": "ac3f483dadeed734b963e9b32ecbecd2/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Enemies/IceSpirit",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/enemy/enemy_hurt_spirit.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
-        "guid": "ac3f483dadeed734b963e9b32ecbecd2",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "property": "soundEvents.Array.data[2].cue"
-      }
-    },
-    {
-      "id": "ac3f483dadeed734b963e9b32ecbecd2/SoundEmitter/OnMove",
-      "name": "Move",
-      "category": "Enemies/IceSpirit",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/enemy/enemy_move_air.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Enemy_IceSpirit.prefab",
-        "guid": "ac3f483dadeed734b963e9b32ecbecd2",
-        "component": "SoundEmitter",
-        "member": "OnMove",
-        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -3990,39 +3788,35 @@
       }
     },
     {
-      "id": "921951d32e0acd147a18643794bb67c2/SoundEmitter/OnDeath",
-      "name": "Death",
-      "category": "Interactables/Fx_BossCenter2_Anchor",
+      "id": "534d458310a2cff459485f7d96bdb436/SoundEmitter/OnLoot",
+      "name": "Loot",
+      "category": "Interactables/CofreOro",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/world/prop_break.wav"
-      ],
+      "clipSource": "None",
+      "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Anchor.prefab",
-        "guid": "921951d32e0acd147a18643794bb67c2",
+        "asset": "Assets/Test/Parkour/CofreOro.prefab",
+        "guid": "534d458310a2cff459485f7d96bdb436",
         "component": "SoundEmitter",
-        "member": "OnDeath",
-        "property": "soundEvents.Array.data[0].cue"
+        "member": "OnLoot",
+        "entryMissing": true
       }
     },
     {
-      "id": "921951d32e0acd147a18643794bb67c2/SoundEmitter/OnHit",
-      "name": "Hurt",
-      "category": "Interactables/Fx_BossCenter2_Anchor",
+      "id": "534d458310a2cff459485f7d96bdb436/SoundEmitter/OnInteract",
+      "name": "Use",
+      "category": "Interactables/CofreOro",
       "kind": "EmitterTrigger",
       "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/world/prop_hit.wav"
-      ],
+      "clipSource": "None",
+      "clips": [],
       "owner": {
-        "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Anchor.prefab",
-        "guid": "921951d32e0acd147a18643794bb67c2",
+        "asset": "Assets/Test/Parkour/CofreOro.prefab",
+        "guid": "534d458310a2cff459485f7d96bdb436",
         "component": "SoundEmitter",
-        "member": "OnHit",
-        "property": "soundEvents.Array.data[1].cue"
+        "member": "OnInteract",
+        "entryMissing": true
       }
     },
     {
@@ -4325,22 +4119,6 @@
       }
     },
     {
-      "id": "56fb851934fd63542ac2ea35df703eb9/BossController/music",
-      "name": "Boss override · ColosodeHielo",
-      "category": "Music",
-      "kind": "MusicField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Boss_ColosodeHielo.prefab",
-        "guid": "56fb851934fd63542ac2ea35df703eb9",
-        "component": "BossController",
-        "member": "music",
-        "property": "music"
-      }
-    },
-    {
       "id": "a7ccfe0086e6bab498620e3f22e06007/BossController/music",
       "name": "Boss override · IceBoss2",
       "category": "Music",
@@ -4351,22 +4129,6 @@
       "owner": {
         "asset": "Assets/Prefabs/Enemies/IceBoss2.prefab",
         "guid": "a7ccfe0086e6bab498620e3f22e06007",
-        "component": "BossController",
-        "member": "music",
-        "property": "music"
-      }
-    },
-    {
-      "id": "f601d572303009c4b9ada9aab10e20a2/BossController/music",
-      "name": "Boss override · TreeBoss",
-      "category": "Music",
-      "kind": "MusicField",
-      "origin": "Discovered",
-      "clipSource": "None",
-      "clips": [],
-      "owner": {
-        "asset": "Assets/Prefabs/Enemies/Boss_TreeBoss.prefab",
-        "guid": "f601d572303009c4b9ada9aab10e20a2",
         "component": "BossController",
         "member": "music",
         "property": "music"
@@ -4558,6 +4320,1032 @@
         "component": "HitShield",
         "member": "upSound",
         "property": "upSound"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[0].cue",
+      "name": "fan_absorb",
+      "category": "Player/Arsenal/fan",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/fan_absorb.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[0].cue",
+        "property": "sounds.Array.data[0].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[1].cue",
+      "name": "fan_detonate",
+      "category": "Player/Arsenal/fan",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/fan_detonate.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[1].cue",
+        "property": "sounds.Array.data[1].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[2].cue",
+      "name": "fan_ground",
+      "category": "Player/Arsenal/fan",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/fan_ground.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[2].cue",
+        "property": "sounds.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[3].cue",
+      "name": "fan_hit",
+      "category": "Player/Arsenal/fan",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/fan_hit.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[3].cue",
+        "property": "sounds.Array.data[3].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[4].cue",
+      "name": "fan_release",
+      "category": "Player/Arsenal/fan",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/fan_release.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[4].cue",
+        "property": "sounds.Array.data[4].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[5].cue",
+      "name": "fan_ricochet",
+      "category": "Player/Arsenal/fan",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/fan_ricochet.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[5].cue",
+        "property": "sounds.Array.data[5].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[6].cue",
+      "name": "fan_rip",
+      "category": "Player/Arsenal/fan",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/fan_rip.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[6].cue",
+        "property": "sounds.Array.data[6].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[7].cue",
+      "name": "fan_stick",
+      "category": "Player/Arsenal/fan",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/fan_stick.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[7].cue",
+        "property": "sounds.Array.data[7].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[8].cue",
+      "name": "moon_block",
+      "category": "Player/Arsenal/moon",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/moon_block.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[8].cue",
+        "property": "sounds.Array.data[8].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[9].cue",
+      "name": "moon_catch",
+      "category": "Player/Arsenal/moon",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/moon_catch.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[9].cue",
+        "property": "sounds.Array.data[9].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[10].cue",
+      "name": "moon_fumble",
+      "category": "Player/Arsenal/moon",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/moon_fumble.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[10].cue",
+        "property": "sounds.Array.data[10].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[11].cue",
+      "name": "moon_grind",
+      "category": "Player/Arsenal/moon",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/moon_grind.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[11].cue",
+        "property": "sounds.Array.data[11].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[12].cue",
+      "name": "moon_hit",
+      "category": "Player/Arsenal/moon",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/moon_hit.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[12].cue",
+        "property": "sounds.Array.data[12].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[13].cue",
+      "name": "moon_perfect",
+      "category": "Player/Arsenal/moon",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/moon_perfect.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[13].cue",
+        "property": "sounds.Array.data[13].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[14].cue",
+      "name": "moon_spin",
+      "category": "Player/Arsenal/moon",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/moon_spin.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[14].cue",
+        "property": "sounds.Array.data[14].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[15].cue",
+      "name": "moon_throw",
+      "category": "Player/Arsenal/moon",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/moon_throw.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[15].cue",
+        "property": "sounds.Array.data[15].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[16].cue",
+      "name": "ray_discharge",
+      "category": "Player/Arsenal/ray",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/ray_discharge.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[16].cue",
+        "property": "sounds.Array.data[16].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[17].cue",
+      "name": "ray_ignite",
+      "category": "Player/Arsenal/ray",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/ray_ignite.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[17].cue",
+        "property": "sounds.Array.data[17].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[18].cue",
+      "name": "ray_loop",
+      "category": "Player/Arsenal/ray",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/ray_loop.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[18].cue",
+        "property": "sounds.Array.data[18].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[19].cue",
+      "name": "ray_nova",
+      "category": "Player/Arsenal/ray",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/ray_nova.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[19].cue",
+        "property": "sounds.Array.data[19].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[20].cue",
+      "name": "ray_off",
+      "category": "Player/Arsenal/ray",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/ray_off.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[20].cue",
+        "property": "sounds.Array.data[20].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[21].cue",
+      "name": "ray_plant",
+      "category": "Player/Arsenal/ray",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/ray_plant.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[21].cue",
+        "property": "sounds.Array.data[21].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[22].cue",
+      "name": "ray_sweet",
+      "category": "Player/Arsenal/ray",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/ray_sweet.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[22].cue",
+        "property": "sounds.Array.data[22].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[23].cue",
+      "name": "ray_tick",
+      "category": "Player/Arsenal/ray",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/ray_tick.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[23].cue",
+        "property": "sounds.Array.data[23].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[24].cue",
+      "name": "ray_wave",
+      "category": "Player/Arsenal/ray",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/ray_wave.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[24].cue",
+        "property": "sounds.Array.data[24].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[25].cue",
+      "name": "react_freeze",
+      "category": "Player/Arsenal/react",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/react_freeze.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[25].cue",
+        "property": "sounds.Array.data[25].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[26].cue",
+      "name": "react_shatter",
+      "category": "Player/Arsenal/react",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/react_shatter.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[26].cue",
+        "property": "sounds.Array.data[26].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[27].cue",
+      "name": "react_vapor",
+      "category": "Player/Arsenal/react",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/react_vapor.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[27].cue",
+        "property": "sounds.Array.data[27].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[28].cue",
+      "name": "seed_armed",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_armed.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[28].cue",
+        "property": "sounds.Array.data[28].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[29].cue",
+      "name": "seed_boom",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_boom.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[29].cue",
+        "property": "sounds.Array.data[29].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[30].cue",
+      "name": "seed_land",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_land.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[30].cue",
+        "property": "sounds.Array.data[30].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[31].cue",
+      "name": "seed_lob",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_lob.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[31].cue",
+        "property": "sounds.Array.data[31].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[32].cue",
+      "name": "seed_mini",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_mini.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[32].cue",
+        "property": "sounds.Array.data[32].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[33].cue",
+      "name": "seed_nova",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_nova.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[33].cue",
+        "property": "sounds.Array.data[33].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[34].cue",
+      "name": "seed_ripe",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_ripe.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[34].cue",
+        "property": "sounds.Array.data[34].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[35].cue",
+      "name": "seed_roots",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_roots.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[35].cue",
+        "property": "sounds.Array.data[35].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[36].cue",
+      "name": "seed_split",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_split.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[36].cue",
+        "property": "sounds.Array.data[36].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[37].cue",
+      "name": "seed_tick0",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_tick0.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[37].cue",
+        "property": "sounds.Array.data[37].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[38].cue",
+      "name": "seed_tick1",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_tick1.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[38].cue",
+        "property": "sounds.Array.data[38].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[39].cue",
+      "name": "seed_tick2",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_tick2.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[39].cue",
+        "property": "sounds.Array.data[39].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[40].cue",
+      "name": "seed_trigger",
+      "category": "Player/Arsenal/seed",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/seed_trigger.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[40].cue",
+        "property": "sounds.Array.data[40].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[41].cue",
+      "name": "sing_bolt",
+      "category": "Player/Arsenal/sing",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/sing_bolt.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[41].cue",
+        "property": "sounds.Array.data[41].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[42].cue",
+      "name": "sing_burst",
+      "category": "Player/Arsenal/sing",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/sing_burst.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[42].cue",
+        "property": "sounds.Array.data[42].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[43].cue",
+      "name": "sing_burst_fire",
+      "category": "Player/Arsenal/sing",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/sing_burst_fire.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[43].cue",
+        "property": "sounds.Array.data[43].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[44].cue",
+      "name": "sing_capture",
+      "category": "Player/Arsenal/sing",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/sing_capture.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[44].cue",
+        "property": "sounds.Array.data[44].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[45].cue",
+      "name": "sing_collapse",
+      "category": "Player/Arsenal/sing",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/sing_collapse.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[45].cue",
+        "property": "sounds.Array.data[45].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[46].cue",
+      "name": "sing_eject",
+      "category": "Player/Arsenal/sing",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/sing_eject.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[46].cue",
+        "property": "sounds.Array.data[46].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[47].cue",
+      "name": "sing_feed",
+      "category": "Player/Arsenal/sing",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/sing_feed.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[47].cue",
+        "property": "sounds.Array.data[47].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[48].cue",
+      "name": "sing_launch",
+      "category": "Player/Arsenal/sing",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/sing_launch.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[48].cue",
+        "property": "sounds.Array.data[48].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[49].cue",
+      "name": "sing_merge",
+      "category": "Player/Arsenal/sing",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/sing_merge.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[49].cue",
+        "property": "sounds.Array.data[49].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[50].cue",
+      "name": "sing_tear",
+      "category": "Player/Arsenal/sing",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/sing_tear.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[50].cue",
+        "property": "sounds.Array.data[50].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[51].cue",
+      "name": "star_fall",
+      "category": "Player/Arsenal/star",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/star_fall.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[51].cue",
+        "property": "sounds.Array.data[51].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[52].cue",
+      "name": "star_impact",
+      "category": "Player/Arsenal/star",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/star_impact.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[52].cue",
+        "property": "sounds.Array.data[52].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[53].cue",
+      "name": "star_mark",
+      "category": "Player/Arsenal/star",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/star_mark.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[53].cue",
+        "property": "sounds.Array.data[53].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[54].cue",
+      "name": "star_needle",
+      "category": "Player/Arsenal/star",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/star_needle.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[54].cue",
+        "property": "sounds.Array.data[54].cue"
+      }
+    },
+    {
+      "id": "ed8d1588a340d8940b21664c5288b525/ArsenalAssets/sounds.Array.data[55].cue",
+      "name": "star_up",
+      "category": "Player/Arsenal/star",
+      "kind": "CueField",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/Player/Arsenal/star_up.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Resources/Arsenal/ArsenalAssets.asset",
+        "guid": "ed8d1588a340d8940b21664c5288b525",
+        "component": "ArsenalAssets",
+        "member": "sounds.Array.data[55].cue",
+        "property": "sounds.Array.data[55].cue"
+      }
+    },
+    {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnAttack",
+      "name": "Melee attack",
+      "category": "Player/Attack",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/enemydmg1.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnAttack",
+        "property": "soundEvents.Array.data[5].cue"
       }
     },
     {
@@ -4777,6 +5565,24 @@
       }
     },
     {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnDeath",
+      "name": "Death",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/player/player_death.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnDeath",
+        "property": "soundEvents.Array.data[6].cue"
+      }
+    },
+    {
       "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnDeath",
       "name": "Death",
       "category": "Player/Health",
@@ -4792,6 +5598,24 @@
         "component": "SoundEmitter",
         "member": "OnDeath",
         "property": "soundEvents.Array.data[6].cue"
+      }
+    },
+    {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnHeal",
+      "name": "Heal",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/player/player_heal.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnHeal",
+        "property": "soundEvents.Array.data[7].cue"
       }
     },
     {
@@ -4813,6 +5637,22 @@
       }
     },
     {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnHit",
+      "name": "Hurt",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnHit",
+        "property": "soundEvents.Array.data[4].cue"
+      }
+    },
+    {
       "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnHit",
       "name": "Hurt",
       "category": "Player/Health",
@@ -4826,6 +5666,24 @@
         "component": "SoundEmitter",
         "member": "OnHit",
         "property": "soundEvents.Array.data[4].cue"
+      }
+    },
+    {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnLowHealth",
+      "name": "Low health",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/player/player_low_health.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnLowHealth",
+        "property": "soundEvents.Array.data[10].cue"
       }
     },
     {
@@ -4847,6 +5705,22 @@
       }
     },
     {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnParry",
+      "name": "Parry",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnParry",
+        "entryMissing": true
+      }
+    },
+    {
       "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnParry",
       "name": "Parry",
       "category": "Player/Health",
@@ -4859,6 +5733,22 @@
         "guid": "d17a89dc0989ba9428e9443f056f2fbb",
         "component": "SoundEmitter",
         "member": "OnParry",
+        "entryMissing": true
+      }
+    },
+    {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnParrySuccess",
+      "name": "Parry success",
+      "category": "Player/Health",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "None",
+      "clips": [],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnParrySuccess",
         "entryMissing": true
       }
     },
@@ -4876,6 +5766,24 @@
         "component": "SoundEmitter",
         "member": "OnParrySuccess",
         "entryMissing": true
+      }
+    },
+    {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnAirJump",
+      "name": "Air jump",
+      "category": "Player/Movement",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/player_jump.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnAirJump",
+        "property": "soundEvents.Array.data[1].cue"
       }
     },
     {
@@ -4897,6 +5805,24 @@
       }
     },
     {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnDash",
+      "name": "Dash",
+      "category": "Player/Movement",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/player_dash.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnDash",
+        "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
       "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnDash",
       "name": "Dash",
       "category": "Player/Movement",
@@ -4912,6 +5838,26 @@
         "component": "SoundEmitter",
         "member": "OnDash",
         "property": "soundEvents.Array.data[2].cue"
+      }
+    },
+    {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/Footstep",
+      "name": "Footstep",
+      "category": "Player/Movement",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/player_footstep_01.wav",
+        "Assets/Audio/Sounds/player_footstep_02.wav",
+        "Assets/Audio/Sounds/player_footstep_03.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "Footstep",
+        "property": "soundEvents.Array.data[3].cue"
       }
     },
     {
@@ -4935,6 +5881,24 @@
       }
     },
     {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnJump",
+      "name": "Jump",
+      "category": "Player/Movement",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sounds/player_jump.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnJump",
+        "property": "soundEvents.Array.data[0].cue"
+      }
+    },
+    {
       "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnJump",
       "name": "Jump",
       "category": "Player/Movement",
@@ -4953,6 +5917,24 @@
       }
     },
     {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnLand",
+      "name": "Land",
+      "category": "Player/Movement",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/player/player_land.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnLand",
+        "property": "soundEvents.Array.data[8].cue"
+      }
+    },
+    {
       "id": "d17a89dc0989ba9428e9443f056f2fbb/SoundEmitter/OnLand",
       "name": "Land",
       "category": "Player/Movement",
@@ -4968,6 +5950,24 @@
         "component": "SoundEmitter",
         "member": "OnLand",
         "property": "soundEvents.Array.data[8].cue"
+      }
+    },
+    {
+      "id": "985c48aec45a106489781ecd6f82ed4d/SoundEmitter/OnLoot",
+      "name": "Pick up item",
+      "category": "Player/Pickup",
+      "kind": "EmitterTrigger",
+      "origin": "Discovered",
+      "clipSource": "Own",
+      "clips": [
+        "Assets/Audio/Sfx/Game/player/pickup_item.wav"
+      ],
+      "owner": {
+        "asset": "Assets/Prefabs/PlayerNuevo.prefab",
+        "guid": "985c48aec45a106489781ecd6f82ed4d",
+        "component": "SoundEmitter",
+        "member": "OnLoot",
+        "property": "soundEvents.Array.data[9].cue"
       }
     },
     {
@@ -5199,78 +6199,6 @@
       "owner": {
         "asset": "Assets/Prefabs/Fx/Projectiles/BlueBullet/Fx_BlueBullet.prefab",
         "guid": "512f48ba21bed8f4c8b15ef1cec3c36e",
-        "component": "SoundEmitter",
-        "member": "OnSpawn",
-        "property": "soundEvents.Array.data[3].cue"
-      }
-    },
-    {
-      "id": "d5d101c8c3e40834697a1a33c65e0ed2/SoundEmitter/OnDeath",
-      "name": "Expire",
-      "category": "Projectiles/BossCenter2_Bullet",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Bullet.prefab",
-        "guid": "d5d101c8c3e40834697a1a33c65e0ed2",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "property": "soundEvents.Array.data[0].cue"
-      }
-    },
-    {
-      "id": "d5d101c8c3e40834697a1a33c65e0ed2/SoundEmitter/OnHit",
-      "name": "Hit target",
-      "category": "Projectiles/BossCenter2_Bullet",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Bullet.prefab",
-        "guid": "d5d101c8c3e40834697a1a33c65e0ed2",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "property": "soundEvents.Array.data[1].cue"
-      }
-    },
-    {
-      "id": "d5d101c8c3e40834697a1a33c65e0ed2/SoundEmitter/OnHitTerrain",
-      "name": "Hit terrain",
-      "category": "Projectiles/BossCenter2_Bullet",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Bullet.prefab",
-        "guid": "d5d101c8c3e40834697a1a33c65e0ed2",
-        "component": "SoundEmitter",
-        "member": "OnHitTerrain",
-        "property": "soundEvents.Array.data[2].cue"
-      }
-    },
-    {
-      "id": "d5d101c8c3e40834697a1a33c65e0ed2/SoundEmitter/OnSpawn",
-      "name": "Launch",
-      "category": "Projectiles/BossCenter2_Bullet",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Fx/Bosses/BossCenter2/Fx_BossCenter2_Bullet.prefab",
-        "guid": "d5d101c8c3e40834697a1a33c65e0ed2",
         "component": "SoundEmitter",
         "member": "OnSpawn",
         "property": "soundEvents.Array.data[3].cue"
@@ -6423,78 +7351,6 @@
       "owner": {
         "asset": "Assets/Prefabs/Fx/Enemies/PolarTurretBot/Fx_PolarTurretBot_PolarBotBolt_Projectile.prefab",
         "guid": "6e749e35d0a12714e81d9a56bdf96f60",
-        "component": "SoundEmitter",
-        "member": "OnSpawn",
-        "property": "soundEvents.Array.data[3].cue"
-      }
-    },
-    {
-      "id": "59fcad6a052333a4e9c612af15a3feeb/SoundEmitter/OnDeath",
-      "name": "Expire",
-      "category": "Projectiles/Robot_Projectile",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/projectile/proj_expire.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile.prefab",
-        "guid": "59fcad6a052333a4e9c612af15a3feeb",
-        "component": "SoundEmitter",
-        "member": "OnDeath",
-        "property": "soundEvents.Array.data[0].cue"
-      }
-    },
-    {
-      "id": "59fcad6a052333a4e9c612af15a3feeb/SoundEmitter/OnHit",
-      "name": "Hit target",
-      "category": "Projectiles/Robot_Projectile",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/projectile/proj_hit_energy.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile.prefab",
-        "guid": "59fcad6a052333a4e9c612af15a3feeb",
-        "component": "SoundEmitter",
-        "member": "OnHit",
-        "property": "soundEvents.Array.data[1].cue"
-      }
-    },
-    {
-      "id": "59fcad6a052333a4e9c612af15a3feeb/SoundEmitter/OnHitTerrain",
-      "name": "Hit terrain",
-      "category": "Projectiles/Robot_Projectile",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/projectile/proj_terrain_soft.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile.prefab",
-        "guid": "59fcad6a052333a4e9c612af15a3feeb",
-        "component": "SoundEmitter",
-        "member": "OnHitTerrain",
-        "property": "soundEvents.Array.data[2].cue"
-      }
-    },
-    {
-      "id": "59fcad6a052333a4e9c612af15a3feeb/SoundEmitter/OnSpawn",
-      "name": "Launch",
-      "category": "Projectiles/Robot_Projectile",
-      "kind": "EmitterTrigger",
-      "origin": "Discovered",
-      "clipSource": "Own",
-      "clips": [
-        "Assets/Audio/Sfx/Game/projectile/proj_launch_energy.wav"
-      ],
-      "owner": {
-        "asset": "Assets/Prefabs/Fx/Enemies/Robot/Fx_Robot_Projectile.prefab",
-        "guid": "59fcad6a052333a4e9c612af15a3feeb",
         "component": "SoundEmitter",
         "member": "OnSpawn",
         "property": "soundEvents.Array.data[3].cue"

@@ -46,6 +46,15 @@ namespace RedMagic.Audio.EditorTools
                 case "SystemSounds":
                     DescribeSystem(member, out category, out name);
                     return;
+                case "ArsenalAssets":
+                {
+                    // Tabla de sonidos por id (fan_hit, ray_loop…): el prefijo del id es el arma.
+                    string id = ArsenalSoundId(slot);
+                    int cut = id.IndexOf('_');
+                    category = $"Player/Arsenal/{(cut > 0 ? id.Substring(0, cut) : id)}";
+                    name = id;
+                    return;
+                }
                 case "LegendaryPassiveTuning":
                     category = "Legendary Passives";
                     name = Pretty(member);
@@ -268,6 +277,16 @@ namespace RedMagic.Audio.EditorTools
                 for (var t = c != null ? c.GetType() : null; t != null; t = t.BaseType)
                     if (t.Name == typeName) return true;
             return false;
+        }
+
+        /// <summary>El <c>id</c> hermano del <c>cue</c> (<c>sounds.Array.data[i].id</c>) en ArsenalAssets.</summary>
+        private static string ArsenalSoundId(SoundSlot slot)
+        {
+            var asset = AssetDatabase.LoadMainAssetAtPath(slot.AssetPath);
+            string path = slot.Member.EndsWith(".cue", StringComparison.Ordinal)
+                ? slot.Member.Substring(0, slot.Member.Length - 4) + ".id" : null;
+            var prop = asset != null && path != null ? new SerializedObject(asset).FindProperty(path) : null;
+            return prop != null && !string.IsNullOrEmpty(prop.stringValue) ? prop.stringValue : Pretty(slot.Member);
         }
 
         private static string Strip(string s, string prefix) =>

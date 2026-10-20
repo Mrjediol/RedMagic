@@ -47,6 +47,11 @@ variants, volume, pitch range, no-repeat, priority, positional + rolloff. Three 
     definition's attack sounds under the definition's name, not under itself.
   - After an import, press **Regenerar registro** in the Sounds tab (a full scan opens scenes, so it is not
     automatic); the new rows appear, empty ones silent until *Preparar huecos* or you assign clips.
+- **Arsenal weapons** (`Delivery = Arsenal`): sounds by id in `Resources/Arsenal/ArsenalAssets ▸ Sonidos`
+  (`ArsenalSounds.Play("fan_hit")`), WAVs rendered from the web code by
+  `docs/bocetos/habilidades/tools/render-sonidos-armas.cjs` into `Assets/Audio/Sounds/Player/Arsenal/` and wired by
+  file name (*Arsenal ▸ Preparar*). Rows `Player/Arsenal/<id prefix>` ▸ `<id>`. The arsenal `WeaponDefinition`s carry
+  `SoundIgnore` (their fire/comet cues never play).
 - **Generic enemy sounds**: `SystemSounds.enemyHurt/Death/Move/Attack`. An enemy (`EnemyStats` or
   `BossController`, marker `IEnemySoundFallbackUser`) whose `SoundEmitter` slot is empty plays them
   (`SoundEmitter.useGenericFallback`, default on). `EnemyFactory` stamps a `SoundEmitter` on every enemy,

@@ -224,5 +224,29 @@ if (!only || only === 'mirror') {
   sim.aim(330, 280).tap(); sim.run(4.5, () => { if (G.ents.some(s => s.kind === 'enemyShot' && s.friendly)) turned = 1; });
   check('Espejo: devuelve las balas enemigas', turned === 1 && G.player.hp === G.player.hpMax, `vida ${G.player.hp}`);
 }
+// ---------------------------------------------------------------- 14 · Acumulador
+if (!only || only === 'volt') {
+  // se carga con la otra arma y no consigo mismo
+  sim.setup({ slots: [{ w: 'volt' }, { w: 'fan' }], enemies: near(420, 3), px: 200, hpMul: 6 });
+  sim.tap(); const c0 = G.slots[0].inst.charge(); sim.swap(1); for (let i = 0; i < 6; i++) sim.aim(470, 296).tap().run(0.55);
+  const c1 = G.slots[0].inst.charge();
+  check('Acumulador: sin carga no descarga', c0 === 0 && sim.dmg() > 0);
+  check('Acumulador: se carga con los golpes del Abanico', c1 > 30, `carga ${Math.round(c1)}`);
+  const before = sim.dmg(); G.player.x = G.enemies[1].x - 40; sim.swap(0).tap().run(0.3);
+  check('Acumulador: la descarga pega a todos alrededor según la carga', sim.dmg() - before > 3 * (10 + c1 * 0.9) * 0.9, `+${sim.dmg() - before}`);
+  // Sobrecarga: descarga sola con la otra arma en la mano
+  sim.setup({ slots: [{ w: 'volt', arch: 'overload' }, { w: 'fan' }], enemies: near(420, 3), px: 200, hpMul: 10 }); sim.swap(1); let auto = 0;
+  for (let i = 0; i < 14; i++) sim.aim(470, 296).tap().run(0.55, () => { if (G.texts.some(x => x.s === 'SOBRECARGA')) auto = 1; });
+  check('Sobrecarga: descarga sola al llenarse', auto === 1);
+  // Arco: salta entre enemigos
+  sim.setup({ slots: [{ w: 'volt', arch: 'arc' }, { w: 'fan' }], enemies: [{ x: 500, kind: 'ground' }, { x: 640, kind: 'ground' }, { x: 780, kind: 'ground' }, { x: 920, kind: 'ground' }], px: 200, hpMul: 6 });
+  G.slots[0].inst.onAnyHit(G.enemies[0], { slot: G.slots[1] }, 600); sim.aim(500, 296).tap().run(0.3);
+  check('Arco: salta a los cuatro con carga llena', G.enemies.every(e => e.hp < e.hpMax), G.enemies.map(e => Math.round(e.hp)).join('/'));
+  // Celdas: guarda varias y cada clic gasta una en un rayo
+  sim.setup({ slots: [{ w: 'volt', arch: 'cells' }, { w: 'fan' }], enemies: [{ x: 600, kind: 'ground' }], px: 200, hpMul: 6 });
+  G.slots[0].inst.onAnyHit(G.enemies[0], { slot: G.slots[1] }, 5000); const full = G.slots[0].inst.charge();
+  sim.aim(600, 296).tap().run(0.5);
+  check('Celdas: 3 celdas y cada clic gasta una (rayo del cielo)', full === 300 && G.slots[0].inst.charge() === 200 && sim.dmg() >= 70, `carga ${full} → ${G.slots[0].inst.charge()}, daño ${sim.dmg()}`);
+}
 check.done();
 function GROUND_Y() { return 340; }

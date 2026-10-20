@@ -24,6 +24,8 @@ const PAL = {
   wind: { core: '#ffffff', light: '#eef6ff', mid: '#bcd6ef', deep: '#7393bd', dark: '#3d527c', g1: [160, 195, 240], g2: [230, 242, 255] },
   ember: { core: '#fffbea', light: '#fff0a8', mid: '#ffd84a', deep: '#f08a1c', dark: '#6e3a0a', g1: [255, 200, 60], g2: [255, 245, 170] },
   storm: { core: '#ffffff', light: '#e9e4ff', mid: '#a99bff', deep: '#5b48e0', dark: '#241a6e', g1: [140, 120, 255], g2: [215, 210, 255] },
+  volt: { core: '#ffffff', light: '#fffbd0', mid: '#fff06a', deep: '#d9b400', dark: '#5c4a00', g1: [255, 225, 70], g2: [255, 250, 205] },
+  blood: { core: '#fff0f0', light: '#ff9a9a', mid: '#e8304a', deep: '#a3122c', dark: '#4a0612', g1: [230, 30, 60], g2: [255, 150, 160] },
 };
 const C = { player: '#e07a3c', playerDark: '#8a4520', enemy: '#6a3a5c', enemyDark: '#42243a', eye: '#ffd34d' };
 

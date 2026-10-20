@@ -342,3 +342,25 @@ function glintRay(ctx, t, layer, t0, x0, y0, x1, y1, pal) {
   strokeTaper(ctx, [{ x: x0, y: y0 }, { x: x1, y: y1 }], 1.6 * (1 - u), pal.core, 1 - u, layer, false);
   star4(ctx, x1, y1, 14 * (1 - u), 0.7, pal.core, 1 - u, layer);
 }
+
+// ---------------------------------------------------------------- Acumulador (g-acumulador.js)
+// carga alrededor del player: chispas que orbitan, más y más rápidas con la carga (k = 0..1, cells = celdas llenas)
+function voltAura(ctx, t, layer, x, y, k, pal, cells = 0) {
+  if (k <= 0.02 && !cells) return;
+  const n = 2 + Math.floor(k * 8), R = rand(Math.floor(t * 12));
+  for (let i = 0; i < n; i++) {
+    const a = t * (3 + k * 6) + i * TAU / n, r = 28 + 6 * Math.sin(t * 5 + i), front = Math.sin(a) > 0;
+    if (front !== (layer === 'front')) continue;
+    const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r * 0.45;
+    disc(ctx, px, py, 1.6 + k * 1.4, pal.core, 0.9, layer);
+    if (R() < 0.35 + k * 0.4) bolt(ctx, px, py, px + (R() - 0.5) * 20, py + (R() - 0.5) * 20, 3, R, 0.9, pal, 0.8, layer, 0.6);
+  }
+  if (layer === 'front' && k >= 0.99) glow(ctx, x, y, 46, pal.g1, 0.35 + 0.2 * Math.sin(t * 20));
+  for (let c = 0; c < cells; c++) if (layer === 'front') { const a = t * 1.5 + c * TAU / 3; disc(ctx, x + Math.cos(a) * 40, y - 30 + Math.sin(a) * 8, 4, pal.mid, 1, layer); disc(ctx, x + Math.cos(a) * 40, y - 30 + Math.sin(a) * 8, 2, pal.core, 1, layer); }
+}
+// rayo del cielo (Acumulador · Celdas): zigzag grueso de arriba al suelo + destello y grietas
+function skyBolt(ctx, t, layer, t0, x, pal, sc = 1) {
+  const u = seg(t, t0, t0 + 0.35); if (u >= 1) return;
+  if (layer === 'front') { const R = rand(Math.floor(t * 20) + Math.floor(x)); bolt(ctx, x + (R() - 0.5) * 30, -20, x, GROUND, 12, R, 4.2 * sc * (1 - u * 0.7), pal, 1 - u, layer, 0.18); bolt(ctx, x, GROUND - 120, x + (R() - 0.5) * 80, GROUND - 40, 5, R, 1.6 * sc, pal, (1 - u) * 0.8, layer, 0.4); glow(ctx, x, GROUND - 30, 120 * sc, pal.g1, 0.7 * (1 - u)); }
+  groundImpact(ctx, t, layer, t0, x, 1.1 * sc, pal, { seed: Math.floor(x), debris: true });
+}

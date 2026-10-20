@@ -29,9 +29,19 @@ EDGE RULES (critical):
 - Background: perfectly flat, uniform pure white, zero gradient or noise, even if an attached reference image has sky or scenery. The character contains no pure white fill touching the background (use pale colors).
 ```
 
+## Side view and joints (2026-10-20, Golem de escoria)
+- Gemini returns a FRONT view unless the view comes first and is repeated: open with a `VIEW (most important): strict
+  SIDE PROFILE… faces and walks to the RIGHT…` block and give a side pose (front arm forward, back arm swung back and
+  visible beyond the torso's back outline, legs in a stride). Gemini edits badly: if the view is wrong, send a whole new
+  prompt in a NEW chat, not a correction.
+- An arm that starts behind the chest is the hardest piece to cut (the model glues it to the torso). Ask for a visible
+  gap or a round ball joint at the shoulders, like the floating head.
+- The user downloads the image with Gemini's download button (a screenshot is not square and carries UI). JPEG is fine.
+
 ## World blocks (copy into ART STYLE)
 - **ICE**: `Dark fantasy frozen cave and ice crystal theme. Cold saturated palette of deep blues, icy whites, pale blue-grey stone.`
 - **FOREST**: `Dark fantasy magical forest and crystal theme. Saturated emerald and moss green, earthy browns, aged stone.`
+- **VOLCANO**: built by `enemy-prompt.mjs --zone volcano` (palette in `docs/zonas.json`); first base: the Golem de escoria, 2026-10-20.
 - New world: take its palette from `docs/GDD.md` ▸ Art direction and the existing enemies of that world.
 
 ## Template slots (rig-templates.js) to describe in PIECES

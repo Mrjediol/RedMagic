@@ -125,6 +125,17 @@ works far better than "keep only X" (Knight 2026-10-03: "keep only" failed 5 of 
   finish the rest of the enemy, and open the report with "No conseguí separar bien <part>: <what is wrong>" (and a
   `nota` in the sheet). Same for a state. Never a 4th seed.
   (Writing the shell loop: do not reuse `$s` for both the seed and the timer; the names then carry the clock.)
+- **Cut for MOVEMENT, not only for "whole" (never skip, user 2026-10-20, Golem de escoria):** a part that rotates
+  needs a ROUND joint end (a ball / cap as wide as the limb) centred where it pivots, reaching under its parent, so it
+  stays hidden while it turns: never a hook, a thin stub or an end that stops short of the joint (a leg must reach the
+  hip). A shoulder pad / armour plate that does not swing belongs to the TORSO, not to the arm (otherwise it flies off
+  when the arm rises); the arm then starts at a ball joint under it. When a cut gives a bad joint, edit THAT result
+  ("replace the curved hook at the top by a thick round shoulder joint… keep the fist identical"), do not re-cut from
+  the base. The same trick fixes a part that keeps a neighbour: edit the result to erase just that neighbour.
+- **Pose check before states (never skip):** `node pose-preview.mjs enemies/<Name>.poses.json claude/<e>_poses.png`
+  — pivots, draw order, parents, and the poses of the enemy's real moves (from its ficha in `docs/enemigos-diseno/`:
+  walk, each attack's wind-up and strike, dead). One sheet; anything that sticks out, leaves a gap or flies off = fix
+  that part. Example: `enemies/SlagGolem.poses.json`.
 The part stays where it was on the canvas → the parts assemble themselves. If the model keeps other
 parts, name each thing to delete and say "the single … at the far left".
 Check: `contact-sheet.mjs out.png --under claude/base… <parts>` (each part over the faded base).

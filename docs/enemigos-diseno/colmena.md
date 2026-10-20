@@ -4,7 +4,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 ## Diseño
 <!-- gen:diseno -->
-**Rol:** Invocadora voladora (pare zánganos) · **Cuerpo:** volador, hitbox 64×68 px (≈ 1.6×1.7 u) · código `e-*.js` id `hive`
+**Nivel:** común · **Rol:** Invocadora voladora (pare zánganos) · **Cuerpo:** volador, hitbox 64×68 px (≈ 1.6×1.7 u) · código `e-*.js` id `hive`
 
 **Pregunta al jugador:** Prioridad: ir a por la colmena (lenta, alta, resistente) mientras los zánganos te pican, o limpiar zánganos con armas de área.
 

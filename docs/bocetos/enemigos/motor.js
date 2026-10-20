@@ -8,11 +8,54 @@
 
 // ---------------------------------------------------------------- arena (más corta que la de armas: paredes para chocar)
 const ARENA = { x0: 60, x1: 1460 };
-PLATFORMS.length = 0;
-PLATFORMS.push({ x0: 280, x1: 420, y: 250 }, { x0: 650, x1: 830, y: 196 }, { x0: 1060, x1: 1200, y: 250 });
+// Tres arenas para decidir cuánta verticalidad quiere el combate (pregunta del usuario 2026-10-20): plana, la de siempre
+// (3 plataformas bajas) y vertical (como los mapas del juego: muchas, algunas altas). Opción aparte: plataformas que se
+// rompen al estar encima un rato y vuelven al poco (subir a esquivar sí, acampar no).
+const ARENAS = {
+  plana:    { name: 'Plana', plats: [] },
+  actual:   { name: 'Pocas plataformas bajas', plats: [{ x0: 280, x1: 420, y: 250 }, { x0: 650, x1: 830, y: 196 }, { x0: 1060, x1: 1200, y: 250 }] },
+  vertical: { name: 'Vertical (como los mapas)', plats: [{ x0: 250, x1: 390, y: 250 }, { x0: 450, x1: 570, y: 165 }, { x0: 640, x1: 820, y: 220 },
+                                                         { x0: 880, x1: 1000, y: 120 }, { x0: 1060, x1: 1200, y: 250 }, { x0: 1250, x1: 1390, y: 170 }] },
+};
+const BROKEN = [];                                          // plataformas rotas esperando volver { pl, back }
+function setArena(id) {
+  PLATFORMS.length = 0; BROKEN.length = 0;
+  for (const p of (ARENAS[id] || ARENAS.actual).plats) PLATFORMS.push(Object.assign({ standT: 0, shakeT: -9 }, p));
+}
+setArena('actual');
+const onPlatform = pl => { const p = G.player; return p.onGround && Math.abs(p.y - pl.y) < 1.5 && p.x > pl.x0 - 8 && p.x < pl.x1 + 8; };
+function dropPlayer() { const p = G.player; p.dropT = 0.3; p.y += 2; p.vy = 120; p.onGround = false; }
+function breakPlatform(pl) {
+  const i = PLATFORMS.indexOf(pl); if (i < 0) return;
+  if (onPlatform(pl)) dropPlayer();
+  PLATFORMS.splice(i, 1); BROKEN.push({ pl, back: G.t + G.es.respawnT });
+  const x = (pl.x0 + pl.x1) / 2, y = pl.y;
+  addFx(1.2, (ctx, layer, t0) => { if (layer !== 'front') return; const u = G.t - t0; for (let k = 0; k < 8; k++) { const R = rand(k + Math.floor(x)); chunk(ctx, x + (R() - 0.5) * (pl.x1 - pl.x0), y + 6 + u * (60 + R() * 80) + 300 * u * u, 4 + R() * 4, u * 6 + k, k, '#2f5d7a', '#5a9cc2', 1 - u / 1.2, layer); } });
+  sfx(k => { const t0 = nowT(); vNoise(t0, 0.25 * k, 0.2, 'lowpass', 1800, 300, 0.8, { att: 0.002 }); });
+}
+// Sacudida de plataformas (pieza genérica: la respuesta de los enemigos de suelo cuando estás encima). Las plataformas que
+// tocan [x - r, x + r] tiemblan; si estás en una, te tira al suelo (y te hace dmg). Con plataformas que se rompen, las rompe.
+function shakePlatforms(e, x, r, dmg, atk) {
+  let hitPl = false;
+  for (const pl of PLATFORMS.slice()) {
+    if (pl.x1 < x - r || pl.x0 > x + r) continue;
+    pl.shakeT = G.t;
+    if (onPlatform(pl)) { hitPl = true; dropPlayer(); text(G.player.x, G.player.y - 96, '¡SACUDIDO!', '#ffd27a', true); if (dmg) hitP(e, atk, dmg, 0, 0); }
+    if (G.es.crumble) breakPlatform(pl);
+  }
+  return hitPl;
+}
+// aviso de sacudida: las plataformas que va a sacudir se marcan en rojo durante la preparación (se cancela si le interrumpen)
+function warnPlatforms(e, x, r, dur) {
+  for (const pl of PLATFORMS) if (!(pl.x1 < x - r || pl.x0 > x + r)) { pl.warnT0 = G.t; pl.warnT1 = G.t + dur; pl.warnBy = e; pl.warnAtk = e.atkId; }
+}
+// cuánto tiempo lleva el player subido (en una plataforma o en el aire alto): los de suelo lo usan para responder hacia arriba
+function playerUpTime() { return G.pUpT || 0; }
 
 // ---------------------------------------------------------------- ajustes generales de los enemigos (no de uno concreto)
-G.es = { harmless: false, frozenAI: false, dashIframes: true, dmgMul: 1, hpMul: 1, maxAttackers: 3, respawn: true, showStates: false };
+G.es = { harmless: false, frozenAI: false, dashIframes: true, dmgMul: 1, hpMul: 1, maxAttackers: 3, respawn: true, showStates: false,
+         arena: 'actual', crumble: false, crumbleT: 1, respawnT: 3, eliteSlots: 2 };
+function mixHex(a, b, k) { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * k).toString(16).padStart(2, '0')).join(''); }
 G.fight = null;
 const EUI = {};                                             // ganchos del panel (ui.js)
 G.enc = null;                                               // encuentro actual { id, name, list:[{ type, x, y? }] }
@@ -75,6 +118,14 @@ const _step = step;
 step = function (dt) {
   _step(dt);
   G.cam.x = clamp(G.cam.x, ARENA.x0 - 60, ARENA.x1 + 60 - VW);
+  const p = G.player, up = p.y < GROUND - 40;
+  G.pUpT = up ? (G.pUpT || 0) + dt : Math.max(0, (G.pUpT || 0) - dt * 3);
+  // plataformas que se rompen: se cargan mientras estás encima (y se descargan despacio al bajar)
+  for (const pl of PLATFORMS.slice()) {
+    if (G.es.crumble && onPlatform(pl)) { pl.standT += dt; if (pl.standT >= G.es.crumbleT) breakPlatform(pl); }
+    else pl.standT = Math.max(0, pl.standT - dt * 0.5);
+  }
+  for (let i = BROKEN.length - 1; i >= 0; i--) if (G.t > BROKEN[i].back) { const b = BROKEN.splice(i, 1)[0]; b.pl.standT = 0; PLATFORMS.push(b.pl); }
   if (G.restartAt && G.t > G.restartAt) { G.restartAt = 0; resetEnemies(); }
 };
 
@@ -82,12 +133,25 @@ step = function (dt) {
 function go(e, st) {
   e.st = st; e.stT = 0; e.phase = null; e.tell = 0;
   if (G._visits) (G._visits[e.type] = G._visits[e.type] || {})[st] = true;
+  if (e.def.onEnter) e.def.onEnter(e, st);                 // élites: enganchan movimientos al entrar en un estado del común
+}
+// Élite = versión de un común: su IA, su dibujo y sus ajustes (con otros valores) + movimientos propios. El jugador ya sabe
+// leerlo y sólo aprende el giro. extra = ajustes nuevos; over = valores distintos del común.
+function eliteTuning(baseId, over, extra) {
+  const t = {}; for (const [k, v] of Object.entries(FOES[baseId].tuning)) t[k] = k in over ? [over[k], ...v.slice(1)] : v.slice();
+  return Object.assign(t, extra);
+}
+// dibuja el cuerpo del común a otra escala (la e falsa conserva el ry del común: las patas siguen tocando el suelo)
+function drawAs(ctx, e, P, baseId, k) {
+  const b = FOES[baseId], pe = Object.create(e); pe.ry = b.ry; pe.rx = b.rx;
+  ctx.save(); ctx.translate(0, e.ry - b.ry * k); ctx.scale(k, k); b.draw(ctx, pe, P); ctx.restore();
 }
 // turnos de ataque: como mucho G.es.maxAttackers enemigos preparando / ejecutando un ataque a la vez (multitudes justas)
 function canStart(e) {
   if (G.es.frozenAI) return false;
-  let n = 0; for (const o of alive()) if (o !== e && o.busy && o.def) n++;
-  return n < G.es.maxAttackers;
+  const w = o => o.def.tier === 'élite' ? G.es.eliteSlots : 1;           // un élite ocupa más turnos (deja menos sitio a los demás)
+  let n = 0; for (const o of alive()) if (o !== e && o.busy && o.def) n += w(o);
+  return n + w(e) <= Math.max(G.es.maxAttackers, w(e));
 }
 function begin(e, name) { e.busy = true; e.atkId++; e.atkName = name; }
 // fases de un ataque: preparación (se puede interrumpir, el cuerpo se enciende) → golpe (destello blanco) → recuperación (castigo)
@@ -163,7 +227,8 @@ function spawnFoe(type, x, y, extra = {}) {
 }
 function startEncounter(enc) {
   G.enc = enc;
-  G.enemies = []; G.restartAt = 0;
+  G.enemies = []; G.restartAt = 0; G.pUpT = 0;
+  setArena(G.es.arena);
   G.ents = G.ents.filter(x => !x.foeEnt);
   const p = G.player; p.x = 200; p.y = GROUND; p.vx = 0; p.vy = 0; p.hp = p.hpMax; p.slowUntil = 0; p.shield = 0; p.shieldUsed = false;
   G.cam.x = 0;
@@ -448,8 +513,10 @@ drawDummy = function (ctx, e, solid) {
   if (e.stasis && e.stasis.bank > 0) { ctx.font = '800 13px system-ui'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.6)'; const s = '⏸ ' + Math.round(e.stasis.bank); ctx.strokeText(s, e.x, e.y - e.ry - 36); ctx.fillStyle = '#e6f3f6'; ctx.fillText(s, e.x, e.y - e.ry - 36); ctx.textAlign = 'left'; }
   // vida (siempre, para leer el combate) + aguante (blanco, sólo si tiene)
   const w = Math.max(30, Math.min(70, e.rx * 1.6)), by = e.y + e.ry + 9;
-  if (e.hp < e.hpMax || G.t - e.lastHitT < 3) {
+  const elite = d.tier === 'élite';
+  if (e.hp < e.hpMax || G.t - e.lastHitT < 3 || elite) {
     ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(e.x - w / 2, by, w, 5);
+    if (elite) { ctx.strokeStyle = '#ffc93c'; ctx.lineWidth = 1.5; ctx.strokeRect(e.x - w / 2 - 1.5, by - 1.5, w + 3, 8); star4(ctx, e.x - w / 2 - 8, by + 2.5, 6, 0, '#ffc93c', 1, 'front'); }
     ctx.fillStyle = '#ff5a7e'; ctx.fillRect(e.x - w / 2, by, w * clamp(e.hp / e.hpMax), 5);
     const po = FT(e).poise; if (po > 0 && e.poiseDmg > 0) { ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.fillRect(e.x - w / 2, by + 6, w * clamp(e.poiseDmg / po), 2); }
     if (e.freeze > 0) { ctx.fillStyle = '#9ef2ff'; ctx.fillRect(e.x - w / 2, by + 9, w * e.freeze, 2); }
@@ -484,9 +551,23 @@ render = function (ctx) {
   ctx.restore();
 };
 // paredes de la arena (fondo de roca a los lados)
-const _drawPlatforms = drawPlatforms;
+// (dibuja también lo de las plataformas: temblor, grietas al cargarse, hueco de las rotas que vuelve a llenarse)
 drawPlatforms = function (ctx) {
-  _drawPlatforms(ctx);
+  ctx.fillStyle = '#2f5d7a'; ctx.fillRect(0, GROUND, WW, VH - GROUND + 40);
+  ctx.fillStyle = '#3d7598'; ctx.fillRect(0, GROUND, WW, 6);
+  for (const pl of PLATFORMS) {
+    const sh = G.t - pl.shakeT < 0.4 ? Math.sin(G.t * 90) * 3 * (1 - (G.t - pl.shakeT) / 0.4) : 0, k = G.es.crumble ? clamp(pl.standT / G.es.crumbleT) : 0;
+    const jx = k > 0.5 ? Math.sin(G.t * 70) * (k - 0.5) * 4 : 0, x0 = pl.x0 + jx, w = pl.x1 - pl.x0, y = pl.y + sh;
+    ctx.fillStyle = k > 0 ? mixHex('#2f5d7a', '#7a4a3a', k) : '#2f5d7a'; ctx.beginPath(); ctx.roundRect(x0, y, w, 12, 5); ctx.fill();
+    ctx.fillStyle = G.es.crumble ? '#c9a27a' : '#5a9cc2'; ctx.fillRect(x0 + 3, y, w - 6, 3);
+    if (pl.warnT1 > G.t && pl.warnBy && !pl.warnBy.dead && pl.warnBy.atkId === pl.warnAtk) {
+      const u = clamp((G.t - pl.warnT0) / (pl.warnT1 - pl.warnT0));
+      ctx.save(); ctx.globalAlpha = 0.25 + 0.4 * u; ctx.fillStyle = '#ff4a2a'; ctx.fillRect(x0, y, w * u, 12);
+      ctx.globalAlpha = 0.9; ctx.strokeStyle = u > 0.85 ? '#fff1c8' : '#ff7a5a'; ctx.lineWidth = 2; ctx.strokeRect(x0, y, w, 12); ctx.restore();
+    }
+    if (k > 0.05) { ctx.strokeStyle = '#1a1e26'; ctx.lineWidth = 1.5; const R = rand(Math.floor(pl.x0)); for (let i = 0; i < Math.ceil(k * 5); i++) { const cx = x0 + 10 + R() * (w - 20); ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + (R() - 0.5) * 10, y + 6); ctx.lineTo(cx + (R() - 0.5) * 14, y + 12); ctx.stroke(); } }
+  }
+  for (const b of BROKEN) { const u = 1 - clamp((b.back - G.t) / G.es.respawnT); ctx.save(); ctx.globalAlpha = 0.15 + 0.35 * u; ctx.strokeStyle = '#9ab8d0'; ctx.setLineDash([5, 5]); ctx.lineWidth = 1.5; ctx.strokeRect(b.pl.x0, b.pl.y, (b.pl.x1 - b.pl.x0), 12); ctx.restore(); }
   ctx.fillStyle = '#232a36';
   ctx.fillRect(ARENA.x0 - 400, -40, 400, VH + 80); ctx.fillRect(ARENA.x1, -40, 400, VH + 80);
   ctx.fillStyle = '#3a4456'; ctx.fillRect(ARENA.x0 - 6, -40, 6, VH + 80); ctx.fillRect(ARENA.x1, -40, 6, VH + 80);

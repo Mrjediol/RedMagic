@@ -8,7 +8,7 @@ addFoe({
   moves: [
     { name: 'Escudo', desc: 'Lo que le llega de frente hace sólo ×0,15 (BLOQUEO). Por la espalda, daño completo. Tarda en girarse cuando le pasas al otro lado. Un golpe fuerte de frente le rompe la guardia: queda vulnerable un rato.' },
     { name: 'Golpe de escudo', desc: 'Si estás delante y cerca: retrocede un poco y embiste corto con el escudo. Empuja mucho.' },
-    { name: 'Sacudida', desc: 'Cada pocos segundos se levanta (¡enseña la tripa: ahí el escudo no tapa!) y golpea el suelo: dos ondas que corren por el suelo a los dos lados. Hay que saltarlas.' },
+    { name: 'Sacudida', desc: 'Cada pocos segundos se levanta (¡enseña la tripa: ahí el escudo no tapa!) y golpea el suelo: dos ondas que corren por el suelo a los dos lados. Hay que saltarlas. Si estás en una plataforma cerca, la sacude (marcada en rojo) y te tira; además, si te quedas arriba, la sacudida le llega antes.' },
   ],
   combos: 'Delante de Artilleros o una Colmena: tapa a los que disparan. Con Embestidor: dos muros que te encierran.',
   art: 'Tortuga o escarabajo de piedra con musgo, una placa frontal grande (escudo) de cristal-piedra; cabeza pequeña asomando.',
@@ -21,6 +21,8 @@ addFoe({
     quakeEvery: [6, 1, 20, 0.5, 'Sacudida: cada (s)'], quakeWindup: [0.8, 0.2, 2, 0.05, 'Sacudida: preparación (s)'],
     waveSpeed: [330, 80, 800, 10, 'Onda: velocidad'], waveDist: [520, 50, 1400, 10, 'Onda: recorrido'], waveH: [34, 10, 90, 1, 'Onda: altura'],
     waveDmg: [12, 0, 60, 1, 'Onda: daño'], cooldown: [1.2, 0, 5, 0.1, 'Pausa entre ataques (s)'],
+    shakeR: [320, 0, 700, 10, 'Sacudida: sacude las plataformas a menos de'], shakeDmg: [8, 0, 40, 1, 'Sacudida: daño al tirarte de la plataforma'],
+    upRush: [3, 1, 10, 0.5, 'Si estás encima de una plataforma: la sacudida se carga × más rápido'],
   }),
   init(e) { e.turnT = 0; e.quakeT = 2; e.brokenT = 0; },
   think(e, dt) {
@@ -28,12 +30,13 @@ addFoe({
     const turning = () => { if (side !== e.face) { e.turnT += dt; if (e.turnT > t.turnDelay) { e.face = side; e.turnT = 0; } } else e.turnT = 0; };
     switch (e.st) {
       case 'walk':
-        turning(); e.cdT -= dt; e.quakeT += dt;
+        turning(); e.cdT -= dt; e.quakeT += dt * (playerUpTime() > 0.4 && ad < t.shakeR + 150 ? t.upRush : 1);
         if (side === e.face && ad > t.keep) walkDir(e, side, t.walk, dt, 3); else e.mx = lerp(e.mx, 0, Math.min(1, dt * 6));
         if (!canStart(e)) break;
         if (e.quakeT > t.quakeEvery && ad < 650) {
           begin(e, 'Sacudida'); go(e, 'quakeW'); e.quakeT = 0;
           for (const d of [-1, 1]) warn({ e, kind: 'arrow', x: e.x + d * e.rx, dir: d, len: 70, h: t.waveH, t: t.quakeWindup });
+          warnPlatforms(e, e.x, t.shakeR, t.quakeWindup);
         } else if (side === e.face && ad < t.bashRange && e.cdT <= 0) { begin(e, 'Golpe de escudo'); go(e, 'bashW'); }
         break;
       case 'bashW':
@@ -55,6 +58,7 @@ addFoe({
         go(e, 'quake'); release(e);
         for (const d of [-1, 1]) groundWave(e, e.x + d * e.rx, d, { speed: t.waveSpeed, dist: t.waveDist, h: t.waveH, dmg: t.waveDmg, atk: 'Sacudida', pal: { a: '#5d6b5a', b: '#9fb3c0' } });
         { const x = e.x; addFx(1.2, (ctx, layer, t0) => groundImpact(ctx, G.t, layer, t0, x, 0.8, PAL.wind, { seed: 6 })); }
+        shakePlatforms(e, e.x, t.shakeR, t.shakeDmg, 'Sacudida (plataforma)');
         G.shake += 7; sfx(k => { const t0 = nowT(); vThump(t0, 80, 30, 0.45 * k, 0.8, 3); });
         break;
       case 'quake':

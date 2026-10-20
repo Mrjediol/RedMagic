@@ -4,7 +4,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 ## Diseño
 <!-- gen:diseno -->
-**Rol:** Torreta enraizada: niega zonas a distancia · **Cuerpo:** de suelo, hitbox 56×80 px (≈ 1.4×2.0 u) · código `e-*.js` id `mortar`
+**Nivel:** común · **Rol:** Torreta enraizada: niega zonas a distancia · **Cuerpo:** de suelo, hitbox 56×80 px (≈ 1.4×2.0 u) · código `e-*.js` id `mortar`
 
 **Pregunta al jugador:** Acercarte esquivando los morteros (no quedarte quieto ni en los charcos) y castigarle cuando está abierto; de cerca se cierra y suelta púas.
 

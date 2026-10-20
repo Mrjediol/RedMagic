@@ -23,3 +23,8 @@ function duelEncounter(type, n = 1) {
   for (let i = 0; i < n; i++) list.push({ type, x: 900 + i * 150, y: def.fly ? 130 + (i % 2) * 50 : undefined });
   return { id: 'duelo:' + type + ':' + n, name: 'Duelo · ' + def.name + (n > 1 ? ' ×' + n : ''), desc: def.question, list };
 }
+// élites (1 por encuentro, con comunes alrededor)
+addEncounter({ id: 'alfa', name: 'Jefe de manada', desc: 'Acechador alfa + 2 Acechadores: mátalo pronto o aúlla (y si quedan pocos, llama a más).',
+  list: [{ type: 'stalkerAlpha', x: 1100 }, { type: 'stalker', x: 900 }, { type: 'stalker', x: 1300 }] });
+addEncounter({ id: 'toro', name: 'Toro y cañón', desc: 'Embestidor alfa + Artillero: cargas encadenadas mientras caen morteros.',
+  list: [{ type: 'chargerAlpha', x: 1000 }, { type: 'mortar', x: 1380 }] });

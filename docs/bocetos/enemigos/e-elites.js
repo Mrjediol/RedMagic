@@ -1,0 +1,136 @@
+// e-elites.js — ÉLITES: versiones de un común con un set de movimientos más rico (3-4), más vida y aguante; 1 por encuentro.
+// Reutilizan la IA, el dibujo y los ajustes del común (eliteTuning / drawAs / onEnter) y añaden giros: el jugador ya sabe
+// leerlos y sólo aprende lo nuevo. Ocupan G.es.eliteSlots turnos de ataque (dejan menos sitio a los demás).
+'use strict';
+
+// ---------------------------------------------------------------- Embestidor alfa
+addFoe(Object.assign({}, FOES.charger, {
+  id: 'chargerAlpha', name: 'Embestidor alfa', short: 'Emb. α', tier: 'élite', rx: 54, ry: 37,
+  role: 'Élite del Embestidor: cargas encadenadas y furia',
+  question: 'Lo mismo que el Embestidor, pero sin respiro: tras una carga que esquivas viene otra enseguida. Ponerte delante de la pared corta la cadena (el choque sigue siendo tu premio).',
+  moves: [
+    { name: 'Embestida encadenada', desc: 'Como la del común, pero al derrapar se gira y vuelve a cargar con una preparación corta (flechas otra vez). Si choca con la pared, la cadena se acaba y queda aturdido.' },
+    { name: 'Pisotón con ondas', desc: 'El pisotón del común (también sacude tu plataforma) y además suelta dos ondas por el suelo a los lados: saltarlas.' },
+    { name: 'Furia', desc: 'A media vida ruge: todo un 25 % más rápido (preparaciones, cargas y pausas) hasta que muere.' },
+  ],
+  combos: 'Solo ya es un encuentro. Con un Artillero detrás: carga + morteros. Con Fatuos: atropella fatuos y le revientan encima.',
+  art: 'El Embestidor más grande, con una cresta de cristal en el lomo y cicatrices; que se reconozca como el mismo bicho.',
+  tuning: eliteTuning('charger', { hp: 600, poise: 140, kb: 0.15, chargeSpeed: 700, shakeR: 320, cooldown: 1.1, chargeDmg: 20 }, {
+    chain: [1, 0, 3, 1, 'Embestida: cargas extra encadenadas'], windup2: [0.4, 0.1, 1.5, 0.05, 'Carga encadenada: preparación (s)'],
+    waveSpeed: [360, 80, 800, 10, 'Ondas del pisotón: velocidad'], waveDist: [480, 50, 1200, 10, 'Ondas del pisotón: recorrido'],
+    waveH: [30, 10, 90, 1, 'Ondas del pisotón: altura'], waveDmg: [10, 0, 60, 1, 'Ondas del pisotón: daño'],
+    rageAt: [0.5, 0, 1, 0.05, 'Furia: a esta fracción de vida'], rageK: [1.25, 1, 2, 0.05, 'Furia: × rapidez'],
+  }),
+  think(e, dt) {
+    const t = FT(e);
+    if (!e.rage && e.hp < e.hpMax * t.rageAt) { e.rage = t.rageK; say(e, '¡FURIA!', '#ff9a6a', true); G.shake += 4; sfx(k => { const t0 = nowT(); vSaw(t0, 120, 70, 0.6 * k, 0.12, 900, 300, 2); }); }
+    if (e.st === 'rechargeW') {
+      e.busy = true; e.mx = lerp(e.mx, 0, Math.min(1, dt * 8));
+      if (e.stT < t.windup2 * 0.6) { e.cdir = Math.sign(dxP(e)) || e.cdir; e.face = e.cdir; }
+      if (Math.random() < dt * 6) dustPuff(e.x - e.cdir * e.rx * 0.8, GROUND);
+      if (windup(e, t.windup2 / (e.rage || 1))) { go(e, 'charge'); release(e); e.run = 0; e.hitP = false; e.bowled = new Set(); sfx(k => SFXLIB.whoosh(k, 900, 300, 0.4, 0.25)); }
+      return;
+    }
+    FOES.charger.think(e, dt);
+  },
+  onEnter(e, st) {
+    const t = FT(e);
+    if (st === 'chargeW') e.combo = 0;
+    if (st === 'skid' && (e.combo || 0) < t.chain) {
+      e.combo = (e.combo || 0) + 1; begin(e, 'Embestida encadenada'); go(e, 'rechargeW'); e.cdir = Math.sign(dxP(e)) || -e.cdir;
+      warn({ e, kind: 'arrow', x: e.x, dir: e.cdir, len: e.rx * 2.4, h: e.ry * 2, t: t.windup2 / (e.rage || 1), follow: w => { w.x = e.x + e.cdir * e.rx * 0.6; w.dir = e.cdir; } });
+    }
+    if (st === 'stomp') for (const d of [-1, 1]) groundWave(e, e.x + d * e.rx, d, { speed: t.waveSpeed, dist: t.waveDist, h: t.waveH, dmg: t.waveDmg, atk: 'Pisotón (ondas)' });
+  },
+  draw(ctx, e, P) {
+    if (!P.mono && e.rage) glow(ctx, 0, -6, 70, [255, 70, 40], 0.3 + 0.1 * Math.sin(G.t * 10));
+    drawAs(ctx, e, P, 'charger', e.ry / FOES.charger.ry);
+    for (let i = 0; i < 4; i++) E_poly(ctx, P, [[-34 + i * 15, -24], [-28 + i * 15, -46 - (i % 2) * 10], [-20 + i * 15, -24]], i % 2 ? '#bff6ff' : '#7fe8ff');
+    E_line(ctx, P, [[18, -14], [26, -4]], 2, '#2a2018');
+  },
+}));
+
+// ---------------------------------------------------------------- Acechador alfa
+addFoe(Object.assign({}, FOES.stalker, {
+  id: 'stalkerAlpha', name: 'Acechador alfa', short: 'Ace. α', tier: 'élite', rx: 38, ry: 25,
+  role: 'Élite del Acechador: jefe de manada',
+  question: 'Prioridad y lectura: si no lo matas, aúlla y su manada va más rápido (y si está solo, la llama). De cerca no huye: zarpazo. Sus saltos vienen de dos en dos.',
+  moves: [
+    { name: 'Aullido', desc: 'Se para y aúlla (se puede interrumpir con daño): los acechadores cercanos (él incluido) van más rápido unos segundos (brillo rojo). Si quedan pocos, LLAMA a dos más, que entran por el borde de la arena.' },
+    { name: 'Doble salto', desc: 'El abalanzarse del común, pero al caer se vuelve a agachar un instante y salta otra vez a donde estás.' },
+    { name: 'Zarpazo', desc: 'Si te pegas a él no salta atrás como los demás: golpe rápido delante (preparación corta).' },
+  ],
+  combos: 'Con 2 Acechadores (su manada). Con una Tejedora: el enredo + la manada acelerada.',
+  art: 'El Acechador más grande, con melena de cristal y una cicatriz; que se lea como el jefe de los mismos lobos.',
+  tuning: eliteTuning('stalker', { hp: 300, poise: 80, kb: 0.6, leapDmg: 16, feint: 0.15, landRecover: 0.7, cooldown: 1.3, ringMin: 190, ringMax: 320, contact: 4 }, {
+    chain: [1, 0, 3, 1, 'Saltos encadenados'], crouch2: [0.25, 0.05, 1, 0.05, 'Salto encadenado: preparación (s)'],
+    howlEvery: [11, 2, 40, 0.5, 'Aullido: cada (s)'], howlWindup: [0.9, 0.2, 3, 0.05, 'Aullido: preparación (s)'],
+    howlR: [700, 100, 1500, 10, 'Aullido: alcance'], howlTime: [5, 0, 15, 0.5, 'Aullido: duración del acelerón (s)'],
+    callN: [2, 0, 5, 1, 'Llamada: si quedan menos de N acechadores, llama hasta N'], callCd: [16, 2, 60, 1, 'Llamada: pausa (s)'],
+    swipeRange: [110, 30, 250, 5, 'Zarpazo: si estás a menos de'], swipeWindup: [0.3, 0.1, 1, 0.05, 'Zarpazo: preparación (s)'],
+    swipeDmg: [14, 0, 60, 1, 'Zarpazo: daño'], swipeRec: [0.45, 0, 2, 0.05, 'Zarpazo: recuperación (s, castigo)'],
+  }),
+  init(e) { e.howlT = FT(e).howlEvery - 1.5; e.callAt = 0; e.combo = 0; },
+  think(e, dt) {
+    const t = FT(e), p = G.player, ad = Math.abs(dxP(e));
+    e.howlT += dt;
+    switch (e.st) {
+      case 'prowl':
+        if (e.howlT > t.howlEvery && e.onGround && canStart(e)) { begin(e, 'Aullido'); go(e, 'howlW'); return; }
+        if (e.onGround && ad < t.swipeRange && e.cdT <= 0.5 && Math.abs(p.y - (e.y + e.foot)) < 60 && canStart(e)) { begin(e, 'Zarpazo'); go(e, 'swipeW'); return; }
+        break;
+      case 'howlW':
+        e.mx = lerp(e.mx, 0, Math.min(1, dt * 10)); faceTo(e, p.x);
+        if (windup(e, t.howlWindup)) alphaHowl(e, t);
+        return;
+      case 'howl':
+        e.phase = 'recover'; e.busy = false;
+        if (e.stT > 0.5) go(e, 'prowl');
+        return;
+      case 'swipeW':
+        e.mx = lerp(e.mx, 0, Math.min(1, dt * 12)); faceTo(e, p.x);
+        if (windup(e, t.swipeWindup)) { go(e, 'swipe'); release(e); e.mx = e.face * 140; e.hitP = false; sfx(k => SFXLIB.whoosh(k, 2600, 900, 0.12, 0.18)); }
+        return;
+      case 'swipe':
+        e.phase = 'active';
+        if (!e.hitP && rectHitsPlayer(e.x, e.y - e.ry - 20, e.x + e.face * (e.rx + 34), e.y + e.ry) && hitP(e, 'Zarpazo', t.swipeDmg, e.face * 420, -220)) e.hitP = true;
+        if (e.stT > 0.15) { go(e, 'swipeRec'); recover(e); }
+        return;
+      case 'swipeRec':
+        e.phase = 'recover'; e.mx = lerp(e.mx, 0, Math.min(1, dt * 10));
+        if (e.stT > t.swipeRec) { go(e, 'prowl'); e.cdT = t.cooldown; }
+        return;
+      case 'recrouch':
+        e.busy = true; e.mx = lerp(e.mx, 0, Math.min(1, dt * 12)); faceTo(e, p.x);
+        if (windup(e, t.crouch2 / (e.rageUntil > G.t ? 1.4 : 1))) stalkerLeap(e, t, 'Doble salto');
+        return;
+    }
+    FOES.stalker.think(e, dt);
+  },
+  onEnter(e, st) {
+    if (st === 'crouch') e.combo = 0;
+    if (st === 'land' && (e.combo || 0) < FT(e).chain) { e.combo = (e.combo || 0) + 1; begin(e, 'Doble salto'); go(e, 'recrouch'); }
+  },
+  draw(ctx, e, P) {
+    if (!P.mono && e.st === 'howl') glow(ctx, 30, -14, 60, [255, 230, 200], 0.4 * (1 - e.stT * 2));
+    drawAs(ctx, e, P, 'stalker', e.ry / FOES.stalker.ry);
+    const howl = e.st === 'howlW' ? e.tell : 0;
+    for (let i = 0; i < 4; i++) E_poly(ctx, P, [[16 + i * 6, -14], [12 + i * 7, -32 - (i % 2) * 6 - howl * 6], [22 + i * 6, -12]], i % 2 ? '#bff6ff' : '#7fe8ff');
+    E_line(ctx, P, [[40, -14], [46, -6]], 1.6, '#e8d8c8');
+  },
+}));
+function alphaHowl(e, t) {
+  go(e, 'howl'); release(e); e.howlT = 0;
+  const pack = foes().filter(o => !o.dead && (o.def.pack || o.type) === 'lobo');
+  for (const o of pack) if (Math.hypot(o.x - e.x, o.y - e.y) < t.howlR) o.rageUntil = G.t + t.howlTime;
+  say(e, '¡AÚÚÚ!', '#ffe0c8', true); G.shake += 3;
+  const x = e.x, y = e.y; addFx(0.6, (ctx, layer, t0) => shockRing(ctx, G.t, layer, t0, x, y, 160, PAL.wind));
+  sfx(k => { const t0 = nowT(); vSaw(t0, 320, 520, 0.7 * k, 0.1, 1400, 700, 1, 0.3); });
+  const others = pack.filter(o => o !== e).length;
+  if (others < t.callN && G.t > e.callAt) {
+    e.callAt = G.t + t.callCd;
+    const p = G.player, edge = Math.abs(p.x - ARENA.x0) > Math.abs(p.x - ARENA.x1) ? ARENA.x0 + 40 : ARENA.x1 - 40;
+    for (let i = others; i < t.callN; i++) { const n = spawnFoe('stalker', edge + (edge < 700 ? 1 : -1) * (i - others) * 60); n.rageUntil = G.t + t.howlTime; n.cdT = 1.2; }
+    text(edge, GROUND - 120, '¡LLAMADA!', '#ffb08a', true);
+  }
+}

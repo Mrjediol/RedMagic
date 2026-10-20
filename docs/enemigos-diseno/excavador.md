@@ -4,14 +4,14 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 ## Diseño
 <!-- gen:diseno -->
-**Rol:** Emboscador subterráneo · **Cuerpo:** de suelo, hitbox 52×72 px (≈ 1.3×1.8 u) · código `e-*.js` id `burrower`
+**Nivel:** común · **Rol:** Emboscador subterráneo · **Cuerpo:** de suelo, hitbox 52×72 px (≈ 1.3×1.8 u) · código `e-*.js` id `burrower`
 
 **Pregunta al jugador:** No quedarte quieto: el montículo te persigue (más lento que tú corriendo) y sale justo debajo. Castigarle cuando está fuera y al hundirse; las plataformas te salvan de la salida.
 
 **Movimientos**
 
 - **Túnel** — Bajo tierra no se le puede dar. Se ve un montículo de tierra que avanza hacia ti.
-- **Emerger** — Se para debajo de ti: grietas y zona del ancho de su cuerpo en el suelo; sale disparado hacia arriba y te lanza por los aires.
+- **Emerger** — Se para debajo de ti: grietas y zona del ancho de su cuerpo en el suelo; sale disparado hacia arriba y te lanza por los aires. La columna de tierra atraviesa las plataformas: subirte no te salva (también se marca la plataforma).
 - **Escupitajo** — Ya fuera, escupe 3 rocas en parábola alrededor de ti (cada una marca dónde cae).
 - **Hundirse** — Al rato se vuelve a meter: tarda un poco (ventana de castigo). Un golpe fuerte mientras está fuera lo aturde; mucho daño mientras se hunde lo interrumpe y se queda fuera.
 
@@ -33,6 +33,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 | `emergeWindup` | 0.65 | 0.1 – 2 (paso 0.05) | Emerger: aviso (s) |
 | `emergeR` | 34 | 10 – 120 (paso 1) | Emerger: radio |
 | `emergeDmg` | 16 | 0 – 60 (paso 1) | Emerger: daño |
+| `emergeReach` | 230 | 40 – 340 (paso 5) | Emerger: altura de la columna (atraviesa plataformas) |
 | `outTime` | 2.6 | 0.5 – 8 (paso 0.1) | Fuera: tiempo (s) |
 | `spitWindup` | 0.5 | 0.1 – 2 (paso 0.05) | Escupitajo: preparación (s) |
 | `spitN` | 3 | 1 – 7 (paso 1) | Escupitajo: rocas |
@@ -46,3 +47,4 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 ## Decisiones y feedback
 
 - 2026-10-20 · Diseñado sin arte (primero el comportamiento, luego se busca el arte). Pendiente de que el usuario lo pruebe.
+- 2026-10-20 · Respuesta hacia arriba (el usuario no veía cómo encajan los de suelo con tantas plataformas): ver «Movimientos»; ajustes nuevos en la tabla.

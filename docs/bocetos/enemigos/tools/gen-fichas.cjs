@@ -11,7 +11,7 @@ vm.createContext(sb);
 for (const f of files) vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), sb, { filename: f });
 const { FOES, ENCOUNTERS } = vm.runInContext('({ FOES, ENCOUNTERS })', sb);
 fs.mkdirSync(out, { recursive: true });
-const fileOf = { charger: 'embestidor', stalker: 'acechador', mortar: 'artillero', weaver: 'tejedora', shell: 'caparazon', hive: 'colmena', drone: 'zangano', wisp: 'fatuo', burrower: 'excavador' };
+const fileOf = { charger: 'embestidor', stalker: 'acechador', mortar: 'artillero', weaver: 'tejedora', shell: 'caparazon', hive: 'colmena', drone: 'zangano', wisp: 'fatuo', burrower: 'excavador', chargerAlpha: 'embestidor-alfa', stalkerAlpha: 'acechador-alfa' };
 const block = (name, body, txt) => {
   const a = `<!-- gen:${name} -->`, b = `<!-- /gen:${name} -->`, i = txt.indexOf(a), j = txt.indexOf(b);
   return i < 0 || j < 0 ? txt : txt.slice(0, i + a.length) + '\n' + body + '\n' + txt.slice(j);
@@ -19,7 +19,7 @@ const block = (name, body, txt) => {
 for (const id in FOES) {
   const d = FOES[id], f = path.join(out, (fileOf[id] || id) + '.md');
   const diseno = [
-    `**Rol:** ${d.role} · **Cuerpo:** ${d.fly ? 'volador' : 'de suelo'}, hitbox ${d.rx * 2}×${d.ry * 2} px (≈ ${(d.rx * 2 * 0.025).toFixed(1)}×${(d.ry * 2 * 0.025).toFixed(1)} u) · código \`e-*.js\` id \`${id}\``,
+    `**Nivel:** ${d.tier || 'común'} · **Rol:** ${d.role} · **Cuerpo:** ${d.fly ? 'volador' : 'de suelo'}, hitbox ${d.rx * 2}×${d.ry * 2} px (≈ ${(d.rx * 2 * 0.025).toFixed(1)}×${(d.ry * 2 * 0.025).toFixed(1)} u) · código \`e-*.js\` id \`${id}\``,
     '', `**Pregunta al jugador:** ${d.question}`, '', '**Movimientos**', '', ...d.moves.map(m => `- **${m.name}** — ${m.desc}`),
     '', `**Combina con:** ${d.combos || '—'}`, '', `**Arte (idea, sin decidir):** ${d.art || '—'}`].join('\n');
   const aj = ['| Campo | Valor | Rango | Qué es |', '|---|---:|---|---|',
@@ -35,8 +35,8 @@ for (const id in FOES) {
 const readme = path.join(out, 'README.md');
 if (fs.existsSync(readme)) {
   let txt = fs.readFileSync(readme, 'utf8');
-  txt = block('plantilla', ['| Enemigo | `id` | Rol | Pregunta al jugador | Ficha |', '|---|---|---|---|---|',
-    ...Object.entries(FOES).map(([id, d]) => `| ${d.name} | \`${id}\` | ${d.role} | ${d.question} | [${fileOf[id] || id}.md](${fileOf[id] || id}.md) |`)].join('\n'), txt);
+  txt = block('plantilla', ['| Enemigo | Nivel | `id` | Rol | Pregunta al jugador | Ficha |', '|---|---|---|---|---|---|',
+    ...Object.entries(FOES).map(([id, d]) => `| ${d.name} | ${d.tier || 'común'} | \`${id}\` | ${d.role} | ${d.question} | [${fileOf[id] || id}.md](${fileOf[id] || id}.md) |`)].join('\n'), txt);
   txt = block('encuentros', ['| Encuentro | Quién | Qué prueba |', '|---|---|---|',
     ...ENCOUNTERS.map(e => `| ${e.name} | ${Object.entries(e.list.reduce((a, s) => (a[FOES[s.type].name] = (a[FOES[s.type].name] || 0) + 1, a), {})).map(([k, n]) => n > 1 ? `${k} ×${n}` : k).join(', ')} | ${e.desc} |`)].join('\n'), txt);
   fs.writeFileSync(readme, txt);

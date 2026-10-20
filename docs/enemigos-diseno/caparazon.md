@@ -4,7 +4,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 ## Diseño
 <!-- gen:diseno -->
-**Rol:** Blindado con escudo frontal · **Cuerpo:** de suelo, hitbox 80×60 px (≈ 2.0×1.5 u) · código `e-*.js` id `shell`
+**Nivel:** común · **Rol:** Blindado con escudo frontal · **Cuerpo:** de suelo, hitbox 80×60 px (≈ 2.0×1.5 u) · código `e-*.js` id `shell`
 
 **Pregunta al jugador:** Rodearlo saltando por encima (gira despacio), pegarle por la espalda o desde arriba, o romperle la guardia con un golpe fuerte; y saltar sus ondas.
 
@@ -12,7 +12,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 - **Escudo** — Lo que le llega de frente hace sólo ×0,15 (BLOQUEO). Por la espalda, daño completo. Tarda en girarse cuando le pasas al otro lado. Un golpe fuerte de frente le rompe la guardia: queda vulnerable un rato.
 - **Golpe de escudo** — Si estás delante y cerca: retrocede un poco y embiste corto con el escudo. Empuja mucho.
-- **Sacudida** — Cada pocos segundos se levanta (¡enseña la tripa: ahí el escudo no tapa!) y golpea el suelo: dos ondas que corren por el suelo a los dos lados. Hay que saltarlas.
+- **Sacudida** — Cada pocos segundos se levanta (¡enseña la tripa: ahí el escudo no tapa!) y golpea el suelo: dos ondas que corren por el suelo a los dos lados. Hay que saltarlas. Si estás en una plataforma cerca, la sacude (marcada en rojo) y te tira; además, si te quedas arriba, la sacudida le llega antes.
 
 **Combina con:** Delante de Artilleros o una Colmena: tapa a los que disparan. Con Embestidor: dos muros que te encierran.
 
@@ -44,8 +44,12 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 | `waveH` | 34 | 10 – 90 (paso 1) | Onda: altura |
 | `waveDmg` | 12 | 0 – 60 (paso 1) | Onda: daño |
 | `cooldown` | 1.2 | 0 – 5 (paso 0.1) | Pausa entre ataques (s) |
+| `shakeR` | 320 | 0 – 700 (paso 10) | Sacudida: sacude las plataformas a menos de |
+| `shakeDmg` | 8 | 0 – 40 (paso 1) | Sacudida: daño al tirarte de la plataforma |
+| `upRush` | 3 | 1 – 10 (paso 0.5) | Si estás encima de una plataforma: la sacudida se carga × más rápido |
 <!-- /gen:ajustes -->
 
 ## Decisiones y feedback
 
 - 2026-10-20 · Diseñado sin arte (primero el comportamiento, luego se busca el arte). Pendiente de que el usuario lo pruebe.
+- 2026-10-20 · Respuesta hacia arriba (el usuario no veía cómo encajan los de suelo con tantas plataformas): ver «Movimientos»; ajustes nuevos en la tabla.

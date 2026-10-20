@@ -43,19 +43,51 @@ taller 🎨 Diseños).
 - **Propuesta abierta: dash invulnerable** (opción del panel, encendida). Los diseños cuentan con esquivar con el dash;
   en Unity el player no lo tiene aún (sólo la invulnerabilidad tras recibir un golpe). Decidirlo antes de portar.
 
+## Niveles de complejidad (decisión del 2026-10-20, en prueba)
+
+| Nivel | Movimientos | Cuántos a la vez | Para qué |
+|---|---|---|---|
+| **Común** | 1 principal + 1 de situación (de cerca o hacia arriba) | muchos | material para la build; la variedad sale de mezclarlos |
+| **Élite** | 3-4 (combos, variaciones, una furia); más vida y aguante | 1 por encuentro | el enemigo "fuerte": se aprende porque dura |
+| **Minijefe / jefe** | set completo, fases | solo | cierre de zona |
+
+- Un movimiento sólo se aprende si se ve muchas veces: un común muere en 3-10 s, así que más de 2-3 movimientos no se llegan a ver.
+- **Élite = versión de un común** (`e-elites.js`: misma IA, dibujo y ajustes con otros valores + giros). Variar un movimiento
+  conocido (carga encadenada, doble salto) antes que añadir uno nuevo.
+- Un élite ocupa `Turnos que ocupa un élite` (2) de los `Atacando a la vez` (3): con él en pantalla, el resto ataca menos.
+
+## Verticalidad: ninguna plataforma es un sitio seguro (decisión del 2026-10-20, en prueba)
+
+Problema del usuario: con muchas plataformas, ¿qué hace un enemigo de suelo si estás encima? Respuesta a probar en la jugable:
+
+- **Todo enemigo de suelo tiene una respuesta hacia arriba**: Embestidor (el pisotón sacude tu plataforma y te tira),
+  Caparazón (la sacudida también, y se carga antes si te quedas arriba), Excavador (la columna atraviesa plataformas),
+  Acechador (salta a tu plataforma), Artillero (dispara en parábola). Pieza genérica: `shakePlatforms` + `warnPlatforms`
+  (la plataforma se marca en rojo mientras prepara). Un melee de suelo sin respuesta hacia arriba no entra.
+- **Suelo y aire se reparten el trabajo**: los de suelo te echan arriba, los voladores castigan estar arriba.
+- **Arena** (selector del panel): plana · pocas plataformas bajas · vertical (como los mapas). Opción **plataformas que se
+  rompen** al estar encima (`crumbleT`, 1 s) y vuelven (`respawnT`, 3 s): subir a esquivar sí, acampar no. Las sacudidas las
+  rompen al momento.
+- Propuesta de niveles para el usuario: zonas de combate con mucho suelo y pocas plataformas bajas; lo vertical para ir de
+  una zona a otra. En móvil (táctil) saltar entre plataformas mientras apuntas es mucho más difícil.
+- Coste en Unity: hoy los de suelo no suben a plataformas (sólo sondean bordes); saltar a ellas / alcanzar arriba es trabajo
+  nuevo pero genérico.
+
 ## Plantilla de enemigos
 <!-- gen:plantilla -->
-| Enemigo | `id` | Rol | Pregunta al jugador | Ficha |
-|---|---|---|---|---|
-| Embestidor | `charger` | Tanque de suelo que carga | Saltar o esquivar la carga en el último momento; colocarte delante de una pared para que se estampe y quede vendido. | [embestidor.md](embestidor.md) |
-| Acechador | `stalker` | Cazador ágil de manada | Leer la finta (el agachado no siempre acaba en salto) y esquivar por debajo del arco; no dejarse rodear. | [acechador.md](acechador.md) |
-| Artillero | `mortar` | Torreta enraizada: niega zonas a distancia | Acercarte esquivando los morteros (no quedarte quieto ni en los charcos) y castigarle cuando está abierto; de cerca se cierra y suelta púas. | [artillero.md](artillero.md) |
-| Tejedora | `weaver` | Voladora a distancia que se teletransporta | Apartarte justo cuando el hilo de puntería se queda fijo (blanco), no antes; perseguirla o derribarla con armas a distancia porque huye y reaparece. | [tejedora.md](tejedora.md) |
-| Caparazón | `shell` | Blindado con escudo frontal | Rodearlo saltando por encima (gira despacio), pegarle por la espalda o desde arriba, o romperle la guardia con un golpe fuerte; y saltar sus ondas. | [caparazon.md](caparazon.md) |
-| Colmena | `hive` | Invocadora voladora (pare zánganos) | Prioridad: ir a por la colmena (lenta, alta, resistente) mientras los zánganos te pican, o limpiar zánganos con armas de área. | [colmena.md](colmena.md) |
-| Zángano | `drone` | Cría de la Colmena: frágil, en grupo | Muchos objetivos pequeños que se lanzan en línea: aparta o barre (un golpe los mata) sin perder de vista lo grande. | [zangano.md](zangano.md) |
-| Fatuo | `wisp` | Kamikaze flotante (bomba de doble filo) | Matarlo antes de que llegue, apartarte cuando se hincha, o aprovecharlo: su explosión también daña (mucho) a los otros enemigos. | [fatuo.md](fatuo.md) |
-| Excavador | `burrower` | Emboscador subterráneo | No quedarte quieto: el montículo te persigue (más lento que tú corriendo) y sale justo debajo. Castigarle cuando está fuera y al hundirse; las plataformas te salvan de la salida. | [excavador.md](excavador.md) |
+| Enemigo | Nivel | `id` | Rol | Pregunta al jugador | Ficha |
+|---|---|---|---|---|---|
+| Embestidor | común | `charger` | Tanque de suelo que carga | Saltar o esquivar la carga en el último momento; colocarte delante de una pared para que se estampe y quede vendido. | [embestidor.md](embestidor.md) |
+| Acechador | común | `stalker` | Cazador ágil de manada | Leer la finta (el agachado no siempre acaba en salto) y esquivar por debajo del arco; no dejarse rodear. | [acechador.md](acechador.md) |
+| Artillero | común | `mortar` | Torreta enraizada: niega zonas a distancia | Acercarte esquivando los morteros (no quedarte quieto ni en los charcos) y castigarle cuando está abierto; de cerca se cierra y suelta púas. | [artillero.md](artillero.md) |
+| Tejedora | común | `weaver` | Voladora a distancia que se teletransporta | Apartarte justo cuando el hilo de puntería se queda fijo (blanco), no antes; perseguirla o derribarla con armas a distancia porque huye y reaparece. | [tejedora.md](tejedora.md) |
+| Caparazón | común | `shell` | Blindado con escudo frontal | Rodearlo saltando por encima (gira despacio), pegarle por la espalda o desde arriba, o romperle la guardia con un golpe fuerte; y saltar sus ondas. | [caparazon.md](caparazon.md) |
+| Colmena | común | `hive` | Invocadora voladora (pare zánganos) | Prioridad: ir a por la colmena (lenta, alta, resistente) mientras los zánganos te pican, o limpiar zánganos con armas de área. | [colmena.md](colmena.md) |
+| Zángano | común | `drone` | Cría de la Colmena: frágil, en grupo | Muchos objetivos pequeños que se lanzan en línea: aparta o barre (un golpe los mata) sin perder de vista lo grande. | [zangano.md](zangano.md) |
+| Fatuo | común | `wisp` | Kamikaze flotante (bomba de doble filo) | Matarlo antes de que llegue, apartarte cuando se hincha, o aprovecharlo: su explosión también daña (mucho) a los otros enemigos. | [fatuo.md](fatuo.md) |
+| Excavador | común | `burrower` | Emboscador subterráneo | No quedarte quieto: el montículo te persigue (más lento que tú corriendo) y sale justo debajo. Castigarle cuando está fuera y al hundirse; las plataformas te salvan de la salida. | [excavador.md](excavador.md) |
+| Embestidor alfa | élite | `chargerAlpha` | Élite del Embestidor: cargas encadenadas y furia | Lo mismo que el Embestidor, pero sin respiro: tras una carga que esquivas viene otra enseguida. Ponerte delante de la pared corta la cadena (el choque sigue siendo tu premio). | [embestidor-alfa.md](embestidor-alfa.md) |
+| Acechador alfa | élite | `stalkerAlpha` | Élite del Acechador: jefe de manada | Prioridad y lectura: si no lo matas, aúlla y su manada va más rápido (y si está solo, la llama). De cerca no huye: zarpazo. Sus saltos vienen de dos en dos. | [acechador-alfa.md](acechador-alfa.md) |
 <!-- /gen:plantilla -->
 
 ## Encuentros
@@ -69,6 +101,8 @@ taller 🎨 Diseños).
 | Estampida | Embestidor ×2, Fatuo | 2 Embestidores + 1 Fatuo: haz que se estampen contra la pared o que carguen hacia el fatuo. |
 | Cielo cubierto | Tejedora ×2, Colmena | 2 Tejedoras + Colmena: todo vuela; armas a distancia o subir a las plataformas. |
 | Todos | Embestidor, Acechador, Artillero, Tejedora, Caparazón, Colmena, Fatuo, Excavador | Uno de cada (sin zánganos sueltos): caos para probar el máximo de atacantes a la vez. |
+| Jefe de manada | Acechador alfa, Acechador ×2 | Acechador alfa + 2 Acechadores: mátalo pronto o aúlla (y si quedan pocos, llama a más). |
+| Toro y cañón | Embestidor alfa, Artillero | Embestidor alfa + Artillero: cargas encadenadas mientras caen morteros. |
 <!-- /gen:encuentros -->
 
 ## Cómo se pasa un enemigo a Unity (cuando el usuario lo apruebe)
@@ -80,7 +114,7 @@ taller 🎨 Diseños).
    (`docs/architecture/enemies.md`: `EnemyBrain`, la baraja de ataques `BossAttack`, defensas `EnemyDefence`), nunca dentro de un
    enemigo. Parece que ya hay (comprobar al portar): proyectil, abanico, anillo, embestida, salto atrás, onda de choque, zona. Falta seguro (de esta tanda):
    aguante/interrupción, turnos de ataque, escudo frontal por dirección, madriguera (hay `BossBurrowLocomotion` de jefe),
-   teletransporte con marca, invocar crías, kamikaze que daña a enemigos, charco que daña.
+   teletransporte con marca, invocar crías, kamikaze que daña a enemigos, charco que daña, sacudir plataformas, saltar a plataformas, élite = común + movimientos enganchados (cadenas, furia).
 4. **Datos**: los campos de `tuning` pasan con el mismo nombre (px × 0,025 = unidades; s = s) a `EnemyTuning` / la carta.
 5. **Avisos**: con las piezas de aviso que ya hay (`FxTelegraph`, flechas, círculos), siempre del tamaño de lo que avisan.
 6. Probar contra lo mismo: duelo + el encuentro de la ficha.
@@ -89,4 +123,6 @@ taller 🎨 Diseños).
 
 - 2026-10-20 · El usuario pide hacer con los enemigos lo mismo que con las armas (prototipo web antes que Unity) y al revés que
   hasta ahora: comportamiento primero, arte después. Creada la jugable y 8 enemigos + la cría de la Colmena, sin probar por el
-  usuario. Relacionado: tarea `t1` de `docs/tareas/todo.json` («15 enemigos: 5 por zona en las 3 primeras zonas»).
+  usuario. El usuario: «no están mal», pero no ve cómo encajan los de suelo (sobre todo melee) con tantas plataformas, y
+  pregunta si hacer enemigos más complejos. Decidido probar: respuesta hacia arriba en todos los de suelo, 3 arenas +
+  plataformas que se rompen, y niveles común / élite (primeros élites: Embestidor alfa y Acechador alfa). Relacionado: tarea `t1` de `docs/tareas/todo.json` («15 enemigos: 5 por zona en las 3 primeras zonas»).

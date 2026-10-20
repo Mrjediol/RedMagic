@@ -2,11 +2,11 @@
 // a los dos lados cuando te rodean?
 'use strict';
 addFoe({
-  id: 'stalker', name: 'Acechador', short: 'Acech.', rx: 30, ry: 20, home: 'prowl', platforms: true,
+  id: 'stalker', name: 'Acechador', short: 'Acech.', rx: 30, ry: 20, home: 'prowl', platforms: true, pack: 'lobo',
   role: 'Cazador ágil de manada',
   question: 'Leer la finta (el agachado no siempre acaba en salto) y esquivar por debajo del arco; no dejarse rodear.',
   moves: [
-    { name: 'Abalanzarse', desc: 'Se agacha (cuerpo naranja, ojos blancos) y salta en arco a donde vas a estar (adelanta tu movimiento). Marca en el suelo de dónde va a caer. Al caer se queda un momento recuperándose: ahí se le castiga.' },
+    { name: 'Abalanzarse', desc: 'Se agacha (cuerpo naranja, ojos blancos) y salta en arco a donde vas a estar (adelanta tu movimiento). Marca en el suelo de dónde va a caer; si estás en una plataforma, salta a la plataforma (es su respuesta si te subes). Al caer se queda un momento recuperándose: ahí se le castiga.' },
     { name: 'Finta', desc: 'A veces el mismo agachado acaba en un salto atrás. Castiga gastar el dash por reflejo.' },
     { name: 'Rodear', desc: 'Se mueve a tu alrededor a media distancia y salta atrás si te pegas. En manada se reparten a los dos lados (uno a cada lado) y se turnan para atacar.' },
   ],
@@ -21,41 +21,33 @@ addFoe({
     flank: [1, 0, 1, 1, 'Manada: repartirse a los dos lados (1 = sí)'], cooldown: [1.0, 0, 5, 0.1, 'Pausa entre ataques (s)'],
   }),
   think(e, dt) {
-    const t = FT(e), p = G.player, dx = dxP(e), ad = Math.abs(dx);
+    const t = FT(e), p = G.player, dx = dxP(e), ad = Math.abs(dx), rk = e.rageUntil > G.t ? 1.4 : 1;   // rk: aullido del alfa
     switch (e.st) {
       case 'prowl': {
-        faceTo(e, p.x); e.cdT -= dt;
-        const pack = foes().filter(o => o.type === e.type && !o.dead), idx = pack.indexOf(e);
+        faceTo(e, p.x); e.cdT -= dt * rk;
+        const pack = foes().filter(o => (o.def.pack || o.type) === (e.def.pack || e.type) && !o.dead), idx = pack.indexOf(e);
         const side = t.flank && pack.length > 1 ? (idx % 2 ? 1 : -1) : (Math.sign(e.x - p.x) || 1);
         const mid = (t.ringMin + t.ringMax) / 2 + Math.sin(G.t * 1.3 + e.id * 2) * (t.ringMax - t.ringMin) * 0.45;
         let tx = p.x + side * mid; if (tx < ARENA.x0 + 40 || tx > ARENA.x1 - 40) tx = p.x - side * mid;
-        if (e.onGround) walkTo(e, tx, t.run, dt, 5);
+        if (e.onGround) walkTo(e, tx, t.run * rk, dt, 5);
         if (e.onGround && ad < t.ringMin * 0.55 && e.stT > 0.4) { stalkerHop(e, -Math.sign(dx || 1)); break; }
         if (e.cdT <= 0 && e.onGround && ad > t.ringMin * 0.5 && ad < t.ringMax + 80 && canStart(e)) { begin(e, 'Abalanzarse'); go(e, 'crouch'); e.isFeint = Math.random() < t.feint; }
         break;
       }
       case 'crouch':
         e.mx = lerp(e.mx, 0, Math.min(1, dt * 10)); faceTo(e, p.x);
-        if (!windup(e, t.crouch)) break;
+        if (!windup(e, t.crouch / rk)) break;
         if (e.isFeint) { e.busy = false; stalkerHop(e, -Math.sign(dx || 1)); break; }
-        {
-          const tx = clamp(p.x + p.vx * t.lead, ARENA.x0 + e.rx, ARENA.x1 - e.rx);
-          const feetE = e.y + e.foot, feetT = surfaceUnder(tx, p.y), top = Math.min(feetE, feetT) - t.leapH;
-          const vy0 = -Math.sqrt(2 * GRAV * (feetE - top)), T = -vy0 / GRAV + Math.sqrt(2 * Math.max(0, feetT - top) / GRAV);
-          e.vy = vy0; e.mx = (tx - e.x) / T; e.onGround = false; e.y -= 1;
-          go(e, 'leap'); release(e); e.hitP = false;
-          warn({ e, kind: 'circle', x: tx, y: feetT + 2, r: e.rx * 1.1, t: T });
-          sfx(k => SFXLIB.whoosh(k, 1600, 500, 0.25, 0.14));
-        }
+        stalkerLeap(e, t);
         break;
       case 'leap':
         e.phase = 'active'; e.face = Math.sign(e.mx) || e.face;
-        if (!e.hitP && ellipseHitsPlayer(e, 4) && hitP(e, 'Abalanzarse', t.leapDmg, Math.sign(e.mx || 1) * 380, -260)) e.hitP = true;
+        if (!e.hitP && ellipseHitsPlayer(e, 4) && hitP(e, e.leapAtk || 'Abalanzarse', t.leapDmg, Math.sign(e.mx || 1) * 380, -260)) e.hitP = true;
         if (e.onGround && e.stT > 0.08) { go(e, 'land'); recover(e); dustPuff(e.x, e.y + e.foot); }
         break;
       case 'land':
         e.phase = 'recover'; e.mx = lerp(e.mx, 0, Math.min(1, dt * 12));
-        if (e.stT > t.landRecover) { go(e, 'prowl'); e.cdT = t.cooldown * (0.8 + Math.random() * 0.4); }
+        if (e.stT > t.landRecover) { go(e, 'prowl'); e.cdT = t.cooldown / rk * (0.8 + Math.random() * 0.4); }
         break;
       case 'hop':
         if (e.onGround && e.stT > 0.1) { go(e, 'prowl'); e.cdT = Math.max(e.cdT, 0.35); }
@@ -63,6 +55,7 @@ addFoe({
     }
   },
   draw(ctx, e, P) {
+    if (!P.mono && e.rageUntil > G.t) glow(ctx, 0, 0, 46, [255, 70, 50], 0.35 + 0.15 * Math.sin(G.t * 12));     // aullado: más rápido
     const air = !e.onGround, cr = e.st === 'crouch' ? e.tell : e.st === 'land' ? Math.max(0, 0.6 - e.stT) : 0;
     ctx.save(); ctx.translate(0, cr * 7); ctx.scale(1 + cr * 0.08, 1 - cr * 0.2);
     if (air) ctx.rotate(clamp(e.vy / 1400, -0.35, 0.35));
@@ -83,3 +76,13 @@ addFoe({
   },
 });
 function stalkerHop(e, dir) { const t = FT(e); go(e, 'hop'); e.vy = -t.hopV; e.mx = dir * 260; e.onGround = false; e.y -= 1; }
+// salto en arco a donde vas a estar (también a tu plataforma: es su respuesta si te subes); marca dónde cae
+function stalkerLeap(e, t, atk = 'Abalanzarse') {
+  const p = G.player, tx = clamp(p.x + p.vx * t.lead, ARENA.x0 + e.rx, ARENA.x1 - e.rx);
+  const feetE = e.y + e.foot, feetT = surfaceUnder(tx, p.y), top = Math.min(feetE, feetT) - t.leapH;
+  const vy0 = -Math.sqrt(2 * GRAV * (feetE - top)), T = -vy0 / GRAV + Math.sqrt(2 * Math.max(0, feetT - top) / GRAV);
+  e.vy = vy0; e.mx = (tx - e.x) / T; e.onGround = false; e.y -= 1;
+  go(e, 'leap'); release(e); e.hitP = false; e.leapAtk = atk;
+  warn({ e, kind: 'circle', x: tx, y: feetT + 2, r: e.rx * 1.1, t: T });
+  sfx(k => SFXLIB.whoosh(k, 1600, 500, 0.25, 0.14));
+}

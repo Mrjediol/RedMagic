@@ -7,7 +7,7 @@ addFoe({
   question: 'Saltar o esquivar la carga en el último momento; colocarte delante de una pared para que se estampe y quede vendido.',
   moves: [
     { name: 'Embestida', desc: 'Rasca el suelo (polvo + chevrones del alto de su cuerpo) y carga en línea recta. Fija la dirección un poco antes de salir: si te mueves al final, falla. Si choca con la pared se queda aturdido y recibe ×1,5. Si le saltas, derrapa y queda de espaldas. Atropella a los demás enemigos que encuentra.' },
-    { name: 'Pisotón', desc: 'Si estás pegado a él: se encabrita y pisa. Zona circular en el suelo; saltar la esquiva.' },
+    { name: 'Pisotón', desc: 'Si estás pegado a él: se encabrita y pisa. Zona circular en el suelo; saltar la esquiva. Si te subes a una plataforma cerca de él, el mismo pisotón la sacude (se marca en rojo) y te tira al suelo: no hay sitio seguro encima.' },
   ],
   combos: 'Con Fatuos: atrae su carga hacia un fatuo o hacia otros enemigos (los atropella). Con Artilleros: la carga te obliga a moverte mientras caen morteros.',
   art: 'Silueta ancha y baja, cuatro patas cortas, cabeza gacha con cuernos/colmillos de cristal. Jabalí de raíces, carnero de piedra, escarabajo rinoceronte.',
@@ -21,6 +21,8 @@ addFoe({
     crashVuln: [1.5, 1, 3, 0.05, 'Choque con pared: × daño recibido'], skidTime: [0.55, 0.1, 2, 0.05, 'Derrape (s, ventana de castigo)'],
     stompRange: [120, 0, 300, 5, 'Pisotón: si estás a menos de'], stompWindup: [0.5, 0.1, 1.5, 0.05, 'Pisotón: preparación (s)'],
     stompR: [130, 30, 300, 5, 'Pisotón: radio'], stompDmg: [12, 0, 60, 1, 'Pisotón: daño'],
+    upDelay: [0.6, 0, 3, 0.05, 'Si estás encima de una plataforma más de (s): pisotón'], shakeR: [260, 0, 600, 10, 'Pisotón: sacude las plataformas a menos de'],
+    shakeDmg: [6, 0, 40, 1, 'Pisotón: daño al tirarte de la plataforma'],
     cooldown: [1.3, 0, 5, 0.1, 'Pausa entre ataques (s)'],
   }),
   think(e, dt) {
@@ -31,8 +33,8 @@ addFoe({
         const want = ad > t.keepMax ? Math.sign(dx) : ad < t.keepMin ? -Math.sign(dx) * 0.6 : Math.sin(G.t * 0.9 + e.id) * 0.3;
         walkDir(e, want, t.walk, dt);
         if (e.cdT > 0 || !canStart(e)) break;
-        if (ad < t.stompRange && p.y > GROUND - 140) {
-          begin(e, 'Pisotón'); go(e, 'stompW'); warn({ e, kind: 'circle', x: e.x, r: t.stompR, t: t.stompWindup });
+        if ((ad < t.stompRange && p.y > GROUND - 140) || (playerUpTime() > t.upDelay && ad < t.shakeR)) {
+          begin(e, 'Pisotón'); go(e, 'stompW'); warn({ e, kind: 'circle', x: e.x, r: t.stompR, t: t.stompWindup }); warnPlatforms(e, e.x, t.shakeR, t.stompWindup);
         } else if (ad < t.chargeMax + 100 && p.y > GROUND - 200) {
           begin(e, 'Embestida'); go(e, 'chargeW'); e.cdir = Math.sign(dx) || 1;
           warn({ e, kind: 'arrow', x: e.x, dir: e.cdir, len: e.rx * 2.4, h: e.ry * 2, t: t.windup, follow: w => { w.x = e.x + e.cdir * e.rx * 0.6; w.dir = e.cdir; } });
@@ -40,14 +42,14 @@ addFoe({
         break;
       }
       case 'chargeW':
-        if (e.stT < t.windup * t.lockAt) { e.cdir = Math.sign(dx) || e.cdir; e.face = e.cdir; }
+        if (e.stT < t.windup / (e.rage || 1) * t.lockAt) { e.cdir = Math.sign(dx) || e.cdir; e.face = e.cdir; }
         e.mx = lerp(e.mx, -e.cdir * 25, Math.min(1, dt * 6));
         if (Math.random() < dt * 5) dustPuff(e.x - e.cdir * e.rx * 0.8, GROUND);
-        if (windup(e, t.windup)) { go(e, 'charge'); release(e); e.run = 0; e.hitP = false; e.bowled = new Set(); sfx(k => SFXLIB.whoosh(k, 900, 300, 0.4, 0.25)); }
+        if (windup(e, t.windup / (e.rage || 1))) { go(e, 'charge'); release(e); e.run = 0; e.hitP = false; e.bowled = new Set(); sfx(k => SFXLIB.whoosh(k, 900, 300, 0.4, 0.25)); }
         break;
       case 'charge': {
         e.phase = 'active';
-        const sp = t.chargeSpeed * Math.min(1, 0.35 + e.stT * 5);
+        const sp = t.chargeSpeed * (e.rage || 1) * Math.min(1, 0.35 + e.stT * 5);
         e.mx = e.cdir * sp; e.face = e.cdir; e.run += sp * dt;
         if (!e.hitP && ellipseHitsPlayer(e, 4) && hitP(e, 'Embestida', t.chargeDmg, e.cdir * 520, -300)) e.hitP = true;
         for (const o of alive()) if (o !== e && o.def && !e.bowled.has(o) && Math.abs(o.x - e.x) < e.rx + o.rx && Math.abs(o.y - e.y) < e.ry + o.ry) {
@@ -63,24 +65,25 @@ addFoe({
         if (e.wall === Math.sign(e.mx) && Math.abs(e.mx) > 260) { chargerCrash(e, t); break; }
         e.mx = lerp(e.mx, 0, Math.min(1, dt * 5));
         if (Math.random() < dt * 10) dustPuff(e.x + Math.sign(e.mx) * e.rx * 0.6, GROUND);
-        if (e.stT > t.skidTime) { go(e, 'prowl'); e.cdT = t.cooldown; }
+        if (e.stT > t.skidTime) { go(e, 'prowl'); e.cdT = t.cooldown / (e.rage || 1); }
         break;
       case 'crash':
         e.phase = 'recover'; e.mx = 0;
-        if (e.stT > 0.1) { go(e, 'prowl'); e.cdT = t.cooldown; }
+        if (e.stT > 0.1) { go(e, 'prowl'); e.cdT = t.cooldown / (e.rage || 1); }
         break;
       case 'stompW':
         e.mx = lerp(e.mx, 0, Math.min(1, dt * 10));
         if (windup(e, t.stompWindup)) {
           go(e, 'stomp'); release(e);
           if (p.y > GROUND - 30 && Math.abs(p.x - e.x) < t.stompR) hitP(e, 'Pisotón', t.stompDmg, Math.sign(dx || 1) * 360, -400);
+          shakePlatforms(e, e.x, t.shakeR, t.shakeDmg, 'Pisotón (plataforma)');
           const x = e.x; addFx(1.2, (ctx, layer, t0) => groundImpact(ctx, G.t, layer, t0, x, t.stompR / 110, { core: '#fff3e0', light: '#e8c9a8', mid: '#b08a66', deep: '#6b5442', dark: '#3a2c20', g1: [200, 150, 100], g2: [240, 210, 170] }, { seed: 4 }));
           G.shake += 6; sfx(k => { const t0 = nowT(); vThump(t0, 90, 35, 0.4 * k, 0.6, 2); });
         }
         break;
       case 'stomp':
         e.phase = 'recover'; e.busy = false;
-        if (e.stT > 0.55) { go(e, 'prowl'); e.cdT = t.cooldown; }
+        if (e.stT > 0.55) { go(e, 'prowl'); e.cdT = t.cooldown / (e.rage || 1); }
         break;
     }
   },

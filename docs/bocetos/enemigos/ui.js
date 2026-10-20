@@ -45,13 +45,20 @@ window.JUGABLE_PAGE = { key: 'enemigos.jugable.v1', slots: ['fan', 'star', 'sing
     // ---- encuentro
     const ec = el('div', { className: 'card' }, el('h3', {}, 'Encuentro', el('button', { title: 'Reiniciar (R)', on: { click: () => run(G.enc) } }, '↺ Reiniciar (R)')));
     ec.append(el('div', { className: 'row', style: 'align-items:center' },
-      el('select', { style: 'flex:1', on: { change: e => { duel.type = e.target.value; store.save(); } } }, ids.map(id => el('option', { value: id, selected: id === duel.type }, FOES[id].name + ' — ' + FOES[id].role))),
+      el('select', { style: 'flex:1', on: { change: e => { duel.type = e.target.value; store.save(); } } }, ids.map(id => el('option', { value: id, selected: id === duel.type }, (FOES[id].tier === 'élite' ? '★ ' : '') + FOES[id].name + ' — ' + FOES[id].role))),
       el('select', { on: { change: e => { duel.n = +e.target.value; store.save(); } } }, [1, 2, 3, 4].map(n => el('option', { value: n, selected: n === duel.n }, '×' + n))),
       el('button', { on: { click: () => run(duelEncounter(duel.type, duel.n)) } }, '▶ Duelo')));
     const grid = el('div', { className: 'encs' });
     for (const enc of ENCOUNTERS) grid.append(el('button', { className: 'enc' + (G.enc && G.enc.id === enc.id ? ' on' : ''), title: enc.desc, on: { click: () => run(enc) } }, el('b', {}, enc.name), el('span', {}, enc.desc)));
     ec.append(grid);
     if (G.enc) ec.append(el('div', { className: 'd', style: 'margin-top:6px' }, 'Ahora: ', el('b', {}, G.enc.name), ' — ', G.enc.desc || ''));
+    // arena: cuánta verticalidad (y plataformas que se rompen); se aplica al reiniciar
+    const ar = el('div', { className: 'row', style: 'align-items:center;margin-top:8px' }, el('span', { className: 'd' }, 'Arena'),
+      el('select', { style: 'flex:1', on: { change: e => { G.es.arena = e.target.value; run(G.enc); } } }, Object.entries(ARENAS).map(([id, a]) => el('option', { value: id, selected: id === G.es.arena }, a.name))));
+    ec.append(ar);
+    ec.append(el('label', {}, el('input', { type: 'checkbox', checked: !!G.es.crumble, on: { change: e => { G.es.crumble = e.target.checked; run(G.enc); } } }), 'Plataformas que se rompen (al estar encima; vuelven al rato)'));
+    if (G.es.crumble) { const sl2 = (k, txt, mn, mx, st) => { const v = el('span', {}, G.es[k].toFixed(1) + ' s'); ec.append(el('label', {}, txt, el('input', { type: 'range', min: mn, max: mx, step: st, value: G.es[k], on: { input: e => { G.es[k] = +e.target.value; v.textContent = G.es[k].toFixed(1) + ' s'; }, change: () => store.save() } }), v)); };
+      sl2('crumbleT', 'Se rompe a los', 0.3, 4, 0.1); sl2('respawnT', 'Vuelve a los', 0.5, 10, 0.5); }
     panel.append(ec);
     // ---- resultado (se refresca solo)
     resBox = el('div', { className: 'card' });
@@ -61,7 +68,7 @@ window.JUGABLE_PAGE = { key: 'enemigos.jugable.v1', slots: ['fan', 'star', 'sing
     fc.append(el('div', { className: 'd' }, 'Lenguaje común: el cuerpo se pone naranja y el ojo blanco mientras prepara un ataque (si le haces bastante daño ahí, se interrumpe: barra blanca bajo la vida); destello blanco = sale el golpe; rojo en el suelo / aire = zona que va a doler, el relleno marca cuánto falta; estrellas = aturdido; anillo rosa = recibe más daño.'));
     for (const id of ids) {
       const d = FOES[id], det = el('details', { className: 'foe' });
-      det.append(el('summary', {}, el('b', {}, d.name), ' — ', d.role));
+      det.append(el('summary', {}, el('b', {}, d.name), ' — ', d.role, el('span', { className: 'tier' + (d.tier === 'élite' ? ' el' : '') }, d.tier || 'común')));
       det.append(el('div', { className: 'q' }, el('b', {}, 'Pregunta al jugador: '), d.question));
       for (const m of d.moves) det.append(el('div', { className: 'mv' }, el('b', {}, m.name), ' — ', m.desc));
       if (d.combos) det.append(el('div', { className: 'mv' }, el('b', {}, 'Combina con: '), d.combos));
@@ -82,6 +89,7 @@ window.JUGABLE_PAGE = { key: 'enemigos.jugable.v1', slots: ['fan', 'star', 'sing
     sl('hpMul', 'Vida', 0.25, 4, 0.25, v => '×' + v.toFixed(2), () => run(G.enc));
     sl('dmgMul', 'Daño que hacen', 0, 3, 0.1, v => '×' + v.toFixed(1));
     sl('maxAttackers', 'Atacando a la vez (como mucho)', 1, 8, 1, v => '' + v);
+    sl('eliteSlots', 'Turnos que ocupa un élite', 1, 4, 1, v => '' + v);
     panel.append(oc);
     // ---- ajustes
     const tc = el('div', { className: 'card' }, el('h3', {}, 'Ajustes de enemigos (los del encuentro)'));

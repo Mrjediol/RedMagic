@@ -4,7 +4,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 ## Diseño
 <!-- gen:diseno -->
-**Rol:** Kamikaze flotante (bomba de doble filo) · **Cuerpo:** volador, hitbox 32×32 px (≈ 0.8×0.8 u) · código `e-*.js` id `wisp`
+**Nivel:** común · **Rol:** Kamikaze flotante (bomba de doble filo) · **Cuerpo:** volador, hitbox 32×32 px (≈ 0.8×0.8 u) · código `e-*.js` id `wisp`
 
 **Pregunta al jugador:** Matarlo antes de que llegue, apartarte cuando se hincha, o aprovecharlo: su explosión también daña (mucho) a los otros enemigos.
 

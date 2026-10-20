@@ -4,7 +4,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 ## Diseño
 <!-- gen:diseno -->
-**Rol:** Cría de la Colmena: frágil, en grupo · **Cuerpo:** volador, hitbox 20×18 px (≈ 0.5×0.5 u) · código `e-*.js` id `drone`
+**Nivel:** común · **Rol:** Cría de la Colmena: frágil, en grupo · **Cuerpo:** volador, hitbox 20×18 px (≈ 0.5×0.5 u) · código `e-*.js` id `drone`
 
 **Pregunta al jugador:** Muchos objetivos pequeños que se lanzan en línea: aparta o barre (un golpe los mata) sin perder de vista lo grande.
 

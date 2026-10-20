@@ -4,13 +4,13 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 ## Diseño
 <!-- gen:diseno -->
-**Rol:** Cazador ágil de manada · **Cuerpo:** de suelo, hitbox 60×40 px (≈ 1.5×1.0 u) · código `e-*.js` id `stalker`
+**Nivel:** común · **Rol:** Cazador ágil de manada · **Cuerpo:** de suelo, hitbox 60×40 px (≈ 1.5×1.0 u) · código `e-*.js` id `stalker`
 
 **Pregunta al jugador:** Leer la finta (el agachado no siempre acaba en salto) y esquivar por debajo del arco; no dejarse rodear.
 
 **Movimientos**
 
-- **Abalanzarse** — Se agacha (cuerpo naranja, ojos blancos) y salta en arco a donde vas a estar (adelanta tu movimiento). Marca en el suelo de dónde va a caer. Al caer se queda un momento recuperándose: ahí se le castiga.
+- **Abalanzarse** — Se agacha (cuerpo naranja, ojos blancos) y salta en arco a donde vas a estar (adelanta tu movimiento). Marca en el suelo de dónde va a caer; si estás en una plataforma, salta a la plataforma (es su respuesta si te subes). Al caer se queda un momento recuperándose: ahí se le castiga.
 - **Finta** — A veces el mismo agachado acaba en un salto atrás. Castiga gastar el dash por reflejo.
 - **Rodear** — Se mueve a tu alrededor a media distancia y salta atrás si te pegas. En manada se reparten a los dos lados (uno a cada lado) y se turnan para atacar.
 
@@ -44,3 +44,4 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 ## Decisiones y feedback
 
 - 2026-10-20 · Diseñado sin arte (primero el comportamiento, luego se busca el arte). Pendiente de que el usuario lo pruebe.
+- 2026-10-20 · Respuesta hacia arriba (el usuario no veía cómo encajan los de suelo con tantas plataformas): ver «Movimientos»; ajustes nuevos en la tabla.

@@ -4,7 +4,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 ## Diseño
 <!-- gen:diseno -->
-**Rol:** Voladora a distancia que se teletransporta · **Cuerpo:** volador, hitbox 36×44 px (≈ 0.9×1.1 u) · código `e-*.js` id `weaver`
+**Nivel:** común · **Rol:** Voladora a distancia que se teletransporta · **Cuerpo:** volador, hitbox 36×44 px (≈ 0.9×1.1 u) · código `e-*.js` id `weaver`
 
 **Pregunta al jugador:** Apartarte justo cuando el hilo de puntería se queda fijo (blanco), no antes; perseguirla o derribarla con armas a distancia porque huye y reaparece.
 

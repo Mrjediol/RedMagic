@@ -17,7 +17,7 @@ let seed = 1; const M = Object.create(Math); M.random = () => (seed = (seed * 16
 const sb = { console, Math: M, performance: { now: () => 1000 }, window: {}, document: { getElementById: () => ({}) }, setTimeout: () => 0, setInterval: () => 0, UI: {} };
 vm.createContext(sb);
 for (const f of files) vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), sb, { filename: f });
-vm.runInContext('this.__api = { G, FOES, WEAPONS, ENCOUNTERS, step, render, makePlayer, startEncounter, duelEncounter, aimInfo, alive, FT, spawnFoe, damage };', sb);
+vm.runInContext('this.__api = { G, FOES, WEAPONS, ENCOUNTERS, PLATFORMS, step, render, makePlayer, startEncounter, duelEncounter, aimInfo, alive, FT, spawnFoe, damage };', sb);
 const A = sb.__api, G = A.G, dt = 1 / 60;
 let bad = 0, n = 0;
 const check = (name, ok, info = '') => { n++; if (!ok) bad++; console.log(`${ok ? 'ok  ' : 'MAL '} ${name}${info !== '' ? ' — ' + info : ''}`); };
@@ -25,7 +25,7 @@ const check = (name, ok, info = '') => { n++; if (!ok) bad++; console.log(`${ok 
 function setup(enc, o = {}) {
   seed = o.seed || 12345; G.t = 0; G.ents = []; G.texts = []; G.dmgTotal = 0; G.dmgLog = []; G.timeScale = 1; G.hitStop = 0; G.decoys = []; G.empower = 0;
   G.settings.sound = false; G.build = { items: {} };
-  Object.assign(G.es, { harmless: false, frozenAI: false, dashIframes: true, dmgMul: 1, hpMul: o.hpMul || 1, maxAttackers: 3, respawn: false, showStates: false });
+  Object.assign(G.es, { harmless: false, frozenAI: false, dashIframes: true, dmgMul: 1, hpMul: o.hpMul || 1, maxAttackers: 3, respawn: false, showStates: false, arena: o.arena || 'actual', crumble: !!o.crumble, crumbleT: 1, respawnT: 3, eliteSlots: 2 });
   G.player = A.makePlayer();
   G.cur = 0; const sl = o.slots || [{ w: 'fan' }, { w: 'star' }]; G.slotCount = sl.length;
   G.slots = sl.map(s => ({ w: s.w, arch: s.arch || null, ups: s.ups || {} })); G.slots.forEach(s => s.inst = A.WEAPONS[s.w].create(s));
@@ -60,7 +60,8 @@ function bot() {
   if (Math.random() < 0.004) sb.onKeyDown('KeyQ');
 }
 const NEED = { charger: ['chargeW', 'charge'], stalker: ['crouch', 'leap', 'land'], mortar: ['aim', 'fire'], weaver: ['aim', 'shot'], shell: ['quakeW', 'quake'],
-  hive: ['birthW'], drone: ['diveW', 'dive'], wisp: ['fuse'], burrower: ['under', 'emergeW', 'emerge', 'spitW', 'digW'] };
+  hive: ['birthW'], drone: ['diveW', 'dive'], wisp: ['fuse'], burrower: ['under', 'emergeW', 'emerge', 'spitW', 'digW'],
+  chargerAlpha: ['chargeW', 'charge', 'rechargeW'], stalkerAlpha: ['howlW', 'howl', 'crouch', 'leap', 'recrouch'] };
 const only = process.argv[2];
 const types = Object.keys(A.FOES).filter(t => !only || t === only);
 
@@ -86,6 +87,8 @@ for (const enc of encs) {
 }
 
 if (!only) {
+  console.log('— 2b. encuentros en la arena vertical con plataformas que se rompen (sólo errores)');
+  for (const enc of A.ENCOUNTERS) { setup(enc, { arena: 'vertical', crumble: true }); const err = run(40, () => { G.player.hp = Math.max(G.player.hp, 1); bot(); }); check(`${enc.name} (vertical, se rompen): sin errores ni NaN`, !err && nan === 0, err ? err.stack.split(String.fromCharCode(10)).slice(0, 3).join(' | ') : nan ? nan + ' NaN' : ''); }
   console.log('— 3. casos dirigidos');
   // el Embestidor carga hacia el player pegado a la pared izquierda, le pasa y se estampa
   setup({ id: 't', name: 'pared', list: [{ type: 'charger', x: 700 }] }, { px: 90 });
@@ -107,6 +110,21 @@ if (!only) {
   setup({ id: 't', name: 'aguante', list: [{ type: 'stalker', x: 500 }] }, { px: 300 });
   let interrupted = false; run(6, () => { G.player.hp = G.player.hpMax; G.keys = {}; const e = G.enemies[0]; if (e.phase === 'windup' && !interrupted) { A.damage(e, { dmg: 30, kx: 10 }); interrupted = G.fight.interrupts > 0; } });
   check('Aguante: daño al preparar = interrumpido', interrupted);
+  // arenas y respuestas hacia arriba
+  const onPl = pl => { const p = G.player; p.x = (pl.x0 + pl.x1) / 2; p.y = pl.y; p.vy = 0; p.onGround = true; };
+  setup({ id: 't', name: 'rompe', list: [{ type: 'mortar', x: 1400 }] }, { crumble: true }); G.es.frozenAI = true;
+  const n0 = A.PLATFORMS.length; onPl(A.PLATFORMS[0]); run(1.4, () => { G.keys = {}; });
+  const n1 = A.PLATFORMS.length; run(3.5, () => { G.keys = {}; });
+  check('Plataformas que se rompen: se rompe al estar encima y vuelve', n1 === n0 - 1 && A.PLATFORMS.length === n0, `${n0} → ${n1} → ${A.PLATFORMS.length}`);
+  setup({ id: 't', name: 'sacude', list: [{ type: 'charger', x: 560 }] }, { arena: 'vertical' });
+  const pv = A.PLATFORMS.find(pl => pl.x0 === 640); onPl(pv); run(8, () => { G.player.hp = G.player.hpMax; G.keys = {}; if (G.player.y >= 340 && !G._dropped) { G._dropped = true; } if (G._dropped && G.player.y >= 340 && G.t % 3 < 0.02) onPl(pv); });
+  check('Embestidor: si estás en una plataforma, el pisotón te tira', !!G.fight.hits['Embestidor · Pisotón (plataforma)'], Object.keys(G.fight.hits).join(', '));
+  setup({ id: 't', name: 'columna', list: [{ type: 'burrower', x: 500 }] });
+  const pb = A.PLATFORMS.find(pl => pl.y === 196); onPl(pb); run(10, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  check('Excavador: su columna atraviesa la plataforma', !!G.fight.hits['Excavador · Emerger'], Object.keys(G.fight.hits).join(', '));
+  setup({ id: 't', name: 'llamada', list: [{ type: 'stalkerAlpha', x: 900 }] });
+  run(3, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  check('Acechador alfa: solo, aúlla y llama a su manada', A.alive().filter(e => e.type === 'stalker').length >= 2);
 }
 console.log(bad ? `${bad} de ${n} mal` : `todo ok (${n})`);
 if (bad) process.exitCode = 1;

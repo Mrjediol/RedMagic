@@ -4,7 +4,7 @@
 // Uso: node docs/bocetos/habilidades/tools/gen-fichas.cjs
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const dir = path.join(__dirname, '..'), out = path.join(__dirname, '..', '..', '..', 'armas');
-const FILES = { fan: 'abanico', sing: 'singularidad', ray: 'rayo', moon: 'media-luna', seed: 'semilla', star: 'golpe-estelar', time: 'reloj', gust: 'rafaga' };
+const FILES = { fan: 'abanico', sing: 'singularidad', ray: 'rayo', moon: 'media-luna', seed: 'semilla', star: 'golpe-estelar', time: 'reloj', gust: 'rafaga', whip: 'latigo' };
 const html = fs.readFileSync(path.join(dir, 'jugable.html'), 'utf8');
 const files = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]).filter(f => f !== 'jugable-ui.js');
 const sb = { console, Math, performance: { now: () => 0 }, window: {}, document: { getElementById: () => ({}) }, setTimeout: () => 0 };

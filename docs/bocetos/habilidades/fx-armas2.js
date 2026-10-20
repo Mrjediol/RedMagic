@@ -168,3 +168,42 @@ function ramRing(ctx, t, layer, t0, x, y, ang, dist, sc, pal) {
   ellArc(ctx, px, py, r * 0.35, r, ang + (layer === 'back' ? Math.PI / 2 : -Math.PI / 2), ang + (layer === 'back' ? Math.PI * 1.5 : Math.PI / 2), 4 * sc * (1 - u * 0.5), pal.light, 1 - u, layer, { rot: 0, taper: 0.5, m: 16 });
   if (layer === 'front') for (let i = 0; i < 5; i++) { const o = (i - 2) * 9 * sc; needle(ctx, px - Math.cos(ang) * 40 * sc + Math.cos(ang + 1.57) * o, py - Math.sin(ang) * 40 * sc + Math.sin(ang + 1.57) * o, px + Math.cos(ang + 1.57) * o * 0.6, py + Math.sin(ang + 1.57) * o * 0.6, 2.4 * sc, pal.core, 0.8 * (1 - u), layer); }
 }
+
+// ---------------------------------------------------------------- Látigo de luz (g-latigo.js)
+// cuerda de luz por una lista de puntos (del cristal a la punta): ancha en el mango, fina en la punta, con nudos de luz
+function whipRope(ctx, t, layer, pts, pal, a, o = {}) {
+  if (a <= 0 || pts.length < 2) return;
+  const w = (o.w || 1) * 1.45;
+  if (layer === 'back') { ribbon(ctx, pts, s => 9 * w * (1 - s * 0.75), pal.dark, 0.35 * a, layer); return; }
+  ribbon(ctx, pts, s => 6.5 * w * (1 - s * 0.8), pal.deep, 0.8 * a, layer);
+  ribbon(ctx, pts, s => 4 * w * (1 - s * 0.8), pal.mid, a, layer);
+  ribbon(ctx, pts, s => 1.8 * w * (1 - s * 0.7), pal.core, a, layer);
+  for (let i = 2; i < pts.length - 1; i += 3) { const p = pts[i], k = 0.5 + 0.5 * Math.sin(t * 20 - i); disc(ctx, p.x, p.y, (2.4 - i / pts.length) * w * k, pal.core, 0.8 * a, layer); }
+  const tip = pts[pts.length - 1];
+  glow(ctx, tip.x, tip.y, 16 * w * (o.tipGlow || 1), pal.g2, 0.6 * a);
+  if (o.hot) star4(ctx, tip.x, tip.y, 12 * w, t * 9, pal.core, a, layer);
+}
+// chasquido de la punta: destello en cruz, aro corto y chispas
+function whipCrack(ctx, t, layer, t0, x, y, sc, pal) {
+  const u = seg(t, t0, t0 + 0.25); if (u >= 1) return;
+  if (layer === 'front') {
+    glow(ctx, x, y, 46 * sc, pal.g1, 0.7 * (1 - u));
+    star4(ctx, x, y, 30 * sc * (1 - u * 0.5), 0.4, pal.core, 1 - u, layer);
+    ellArc(ctx, x, y, (8 + 30 * easeOut(u)) * sc, (8 + 30 * easeOut(u)) * sc, 0, TAU, 2 * sc, pal.light, 1 - u, layer, { taper: 0, m: 20 });
+  }
+  sparks(ctx, t, t0, x, y, layer, { n: 8, pal, sp: 300 * sc, seed: Math.floor(x * 7), len: 12, life: 0.3 });
+}
+// cadena de eslabones de luz entre dos puntos, con comba; pulse 0..1 = destello que la recorre al compartir daño
+function lightChain(ctx, t, layer, x0, y0, x1, y1, a, pal, pulse = 0) {
+  if (a <= 0) return;
+  const L = Math.hypot(x1 - x0, y1 - y0), n = Math.max(3, Math.floor(L / 14)), ang = Math.atan2(y1 - y0, x1 - x0), sag = Math.min(30, L * 0.12);
+  if (layer === 'back') { const pts = []; for (let i = 0; i <= 12; i++) { const s = i / 12; pts.push({ x: lerp(x0, x1, s), y: lerp(y0, y1, s) + Math.sin(Math.PI * s) * sag }); } ribbon(ctx, pts, () => 7, pal.deep, 0.35 * a, layer); }
+  for (let i = 0; i <= n; i++) {
+    const s = i / n, px = lerp(x0, x1, s), py = lerp(y0, y1, s) + Math.sin(Math.PI * s) * sag + Math.sin(t * 3 + s * 6) * 2, flat = i % 2 === 0;
+    const glowK = pulse > 0 ? Math.max(0, 1 - Math.abs(s - pulse) * 5) : 0;
+    const lay = flat ? 'front' : 'back'; if (lay !== layer) continue;
+    const c = glowK > 0.3 ? pal.core : pal.light;
+    ellArc(ctx, px, py, 8, flat ? 4.6 : 2, 0, TAU, 2.6, c, a * (0.85 + 0.15 * glowK), layer, { rot: ang, taper: 0, m: 14 });
+    if (glowK > 0 && layer === 'front') glow(ctx, px, py, 14, pal.g2, glowK * a);
+  }
+}

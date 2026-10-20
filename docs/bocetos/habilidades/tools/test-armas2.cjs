@@ -91,5 +91,36 @@ if (!only || only === 'gust') {
   sim.aim(320, 296).press().run(0.9).release().run(1.6);
   check('Martillo · Estampido: estalla donde se para', G.enemies[1].hp < G.enemies[1].hpMax || sim.dmg() > T('gust').ramMax + 10, `daño ${sim.dmg()}`);
 }
+// ---------------------------------------------------------------- 9 · Látigo
+if (!only || only === 'whip') {
+  // base: la punta pega más que el cuerpo
+  const lashAt = x => { sim.setup({ slots: [{ w: 'whip' }, { w: 'fan' }], enemies: [{ x, kind: 'ground' }], px: 200 }); sim.aim(x, 296).tap().run(0.4); return sim.dmg(); };
+  const body = lashAt(270), tip = lashAt(200 + 20 + T('whip').reach * 0.9);
+  check('Látigo base: la punta pega más que el cuerpo', tip > body * 1.6, `punta ${tip} vs cuerpo ${body}`);
+  // Cadena: el daño de la otra arma a uno llega al otro
+  sim.setup({ slots: [{ w: 'whip', arch: 'link' }, { w: 'star' }], enemies: [{ x: 360, kind: 'ground' }, { x: 560, kind: 'ground' }], px: 200 });
+  sim.aim(360, 296).tap().run(0.4);
+  const chained = sim.ents('chain').length; const hpB = G.enemies[1].hp;
+  sim.swap(1).aim(360, 296).tap().run(1);
+  check('Cadena: encadena con el más cercano', chained === 1);
+  check('Cadena: la lanza del Golpe estelar a uno daña al otro', G.enemies[1].hp < hpB - 15, `${Math.round(hpB)} → ${Math.round(G.enemies[1].hp)}`);
+  // Cadena · Ruptura al morir un eslabón
+  sim.setup({ slots: [{ w: 'whip', arch: 'link', ups: { snap: true } }, { w: 'star' }], enemies: [{ x: 360, kind: 'ground' }, { x: 420, kind: 'ground' }, { x: 470, kind: 'ground' }], px: 200 });
+  sim.aim(390, 296).tap().run(0.4); G.enemies[0].hp = 5; const hp3 = G.enemies[2].hp; sim.swap(1).aim(360, 296).tap().run(1.2);
+  check('Cadena · Ruptura: estalla al romperse', G.enemies[2].hp < hp3 || G.enemies[1].hp < G.enemies[1].hpMax * 0.6, G.enemies.map(e => Math.round(e.hp)).join('/'));
+  // Garfio: arrastra al enemigo hacia ti y queda vulnerable
+  sim.setup({ slots: [{ w: 'whip', arch: 'hook' }, { w: 'fan' }], enemies: [{ x: 200 + 20 + T('whip').reach * 0.9, kind: 'ground' }], px: 200 });
+  const e = G.enemies[0], d0 = e.x - G.player.x; sim.aim(e.x, 296).press().run(1).release();
+  check('Garfio: lo trae hacia ti', e.x - G.player.x < d0 * 0.55, `${Math.round(d0)} → ${Math.round(e.x - G.player.x)} px`);
+  check('Garfio: llega aturdido y vulnerable', e.vulnT > G.t);
+  // Garfio · Lanzamiento: soltar a medio camino lo lanza contra otro
+  sim.setup({ slots: [{ w: 'whip', arch: 'hook', ups: { fling: true } }, { w: 'fan' }], enemies: [{ x: 380, kind: 'ground' }, { x: 640, kind: 'ground' }], px: 200 });
+  sim.aim(380, 296).press().run(0.3); sim.aim(640, 296).release().run(1.2);
+  check('Garfio · Lanzamiento: el lanzado golpea al otro', G.enemies[1].hp < G.enemies[1].hpMax, `vida ${Math.round(G.enemies[1].hp)}`);
+  // Remolino: mantener golpea varias veces alrededor
+  sim.setup({ slots: [{ w: 'whip', arch: 'spin', ups: { accel: true } }, { w: 'fan' }], enemies: [{ x: 330, kind: 'ground' }, { x: 80, kind: 'ground' }], px: 200 });
+  sim.aim(330, 296).press().run(1.6).release().run(0.4);
+  check('Remolino: golpea a los dos lados', G.enemies.every(e => e.hp < e.hpMax), G.enemies.map(e => Math.round(e.hp)).join('/'));
+}
 check.done();
 function GROUND_Y() { return 340; }

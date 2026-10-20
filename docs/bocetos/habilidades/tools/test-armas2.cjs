@@ -277,5 +277,26 @@ if (!only || only === 'blood') {
   sim.setup({ slots: [{ w: 'blood', arch: 'martyr', ups: { breath: true } }, { w: 'fan' }], enemies: near(300, 2), px: 200 }); G.player.hp = 5; sim.sb.hurtPlayer(20);
   check('Mártir · Último aliento: te deja a 1 y suelta la nova', G.player.hp === 1 && sim.dmg() > 50, `vida ${G.player.hp}, daño ${sim.dmg()}`);
 }
+// ---------------------------------------------------------------- 16 · Mazo
+if (!only || only === 'hammer') {
+  const slamAt = hold => { sim.setup({ slots: [{ w: 'hammer' }, { w: 'fan' }], enemies: [{ x: 270, kind: 'ground' }], px: 200, hpMul: 4 }); sim.aim(400, 296).press().run(hold).release().run(0.3); return sim.dmg(); };
+  const s0 = slamAt(0.02), s1 = slamAt(0.7);
+  check('Mazo: cargado pega mucho más', s1 > s0 * 2, `${s1} vs ${s0}`);
+  // picado desde el aire: más fuerte que en el suelo
+  sim.setup({ slots: [{ w: 'hammer' }, { w: 'fan' }], enemies: [{ x: 210, kind: 'ground' }], px: 200, hpMul: 4 }); G.player.y = 140; G.player.onGround = false;
+  sim.aim(400, 296).press().run(0.02).release().run(0.6);
+  check('Mazo: el picado desde arriba pega más que en el suelo', sim.dmg() > s0 * 1.3, `${sim.dmg()} vs ${s0}`);
+  // Terremoto: la onda llega lejos
+  sim.setup({ slots: [{ w: 'hammer', arch: 'quake' }, { w: 'fan' }], enemies: [{ x: 560, kind: 'ground' }], px: 200 }); sim.aim(400, 296).press().run(0.3).release().run(1);
+  check('Terremoto: la onda alcanza a uno lejos', G.enemies[0].hp < G.enemies[0].hpMax, `vida ${Math.round(G.enemies[0].hp)}`);
+  // Meteoro: salta y cae solo
+  sim.setup({ slots: [{ w: 'hammer', arch: 'meteor', ups: { gravity: true } }, { w: 'fan' }], enemies: [{ x: 210, kind: 'ground' }, { x: 240, kind: 'flyer', y: 150 }], px: 200 }); let up = 0;
+  sim.aim(400, 296).press().run(0.3).release().run(1.2, () => { up = Math.max(up, GROUND_Y() - G.player.y); });
+  check('Meteoro: salta, cae y golpea', up > 60 && G.enemies[0].hp < G.enemies[0].hpMax, `altura ${Math.round(up)}, vida ${Math.round(G.enemies[0].hp)}`);
+  // Sismo: la otra arma provoca réplicas
+  const trem = arch => { sim.setup({ slots: [{ w: 'hammer', arch }, { w: 'fan' }], enemies: near(330, 2), px: 200, hpMul: 6 }); sim.aim(400, 296).press().run(0.1).release().run(0.3).swap(1); for (let i = 0; i < 4; i++) sim.aim(360, 296).tap().run(0.5); return sim.dmg(); };
+  const dt = trem('tremor'), dn = trem(null);
+  check('Sismo: los golpes del Abanico en la zona provocan réplicas', dt > dn + 30, `${dt} vs ${dn}`);
+}
 check.done();
 function GROUND_Y() { return 340; }

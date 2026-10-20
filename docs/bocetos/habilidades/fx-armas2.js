@@ -388,3 +388,26 @@ function bloodNova(ctx, t, layer, t0, x, y, r, pal) {
   const R = rand(Math.floor(x)), rr = r * easeOut(u);
   for (let i = 0; i < 14; i++) { const a = i / 14 * TAU + R() * 0.2, lay = Math.sin(a) < 0 ? 'back' : 'front'; if (lay !== layer) continue; const l = 18 + R() * 20; shard(ctx, x + Math.cos(a) * (rr + l), y + Math.sin(a) * (rr + l) * 0.8, x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.8, 7, i % 2 ? pal.mid : pal.deep, 1 - u, layer); }
 }
+
+// ---------------------------------------------------------------- Mazo (g-mazo.js)
+// mazo de cristal: mango desde (x,y) en ángulo ang, cabeza grande al final. sc = tamaño; glowK = carga 0..1
+function crystalHammer(ctx, t, layer, x, y, ang, sc, pal, a, glowK = 0) {
+  if (a <= 0 || layer !== 'front') return;
+  const L = 58 * sc, c = Math.cos(ang), s = Math.sin(ang), hx = x + c * L, hy = y + s * L, px = -s, py = c;
+  needle(ctx, x, y, hx, hy, 6 * sc, pal.dark, a, layer); needle(ctx, x, y, hx, hy, 3 * sc, pal.light, a, layer);
+  if (glowK > 0) glow(ctx, hx, hy, 40 * sc * (0.6 + glowK), pal.g1, 0.6 * glowK * a);
+  const hw = 20 * sc, hh = 13 * sc;                            // cabeza: prisma con caras
+  ctx.save(); ctx.globalAlpha = clamp(a); ctx.translate(hx, hy); ctx.rotate(ang + Math.PI / 2);
+  ctx.fillStyle = col(pal.deep, layer); ctx.beginPath(); ctx.moveTo(-hw, -hh * 0.6); ctx.lineTo(-hw * 0.7, -hh); ctx.lineTo(hw * 0.7, -hh); ctx.lineTo(hw, -hh * 0.6); ctx.lineTo(hw, hh * 0.6); ctx.lineTo(hw * 0.7, hh); ctx.lineTo(-hw * 0.7, hh); ctx.lineTo(-hw, hh * 0.6); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = col(pal.mid, layer); ctx.beginPath(); ctx.moveTo(-hw * 0.8, -hh * 0.5); ctx.lineTo(hw * 0.8, -hh * 0.5); ctx.lineTo(hw * 0.6, hh * 0.2); ctx.lineTo(-hw * 0.6, hh * 0.2); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = col(pal.core, layer); ctx.globalAlpha = clamp(a * (0.6 + 0.4 * glowK)); ctx.fillRect(-hw * 0.6, -hh * 0.42, hw * 1.2, hh * 0.18);
+  ctx.restore();
+  if (glowK >= 1) star4(ctx, hx, hy, 16 * sc + 3 * Math.sin(t * 30), t * 3, pal.core, a, layer);
+}
+// onda que corre por el suelo (Terremoto): lomo de tierra/cristal que avanza con trozos que saltan
+function groundWave(ctx, t, layer, x, dir, h, pal, a, seed = 0) {
+  if (a <= 0) return;
+  const R = rand(seed + Math.floor(t * 20));
+  for (let i = 0; i < 5; i++) { const ox = -dir * i * 12, hh = h * (1 - i * 0.18); const lay = i % 2 ? 'back' : 'front'; if (lay !== layer) continue; shard(ctx, x + ox, GROUND - hh, x + ox - dir * 4, GROUND + 2, 16 - i * 2, i ? pal.mid : pal.light, a * (1 - i * 0.15), layer); }
+  if (layer === 'front') { glow(ctx, x, GROUND - h * 0.5, h, pal.g1, 0.4 * a); for (let i = 0; i < 3; i++) chunk(ctx, x - dir * R() * 30, GROUND - R() * h * 1.2, 3 + R() * 3, R() * 6, i, pal.mid, pal.core, a, layer); }
+}

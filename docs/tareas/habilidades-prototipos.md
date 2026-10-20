@@ -121,3 +121,17 @@ vías: árbol propio, sinergias, items con etiquetas 2/4/6; el elemento se aplic
 
 **Pendiente aparte (no tocar sin que lo pida)**: `optimizacion-arte-carga` (ASTC + quitar mipmaps esperando visto bueno),
 `rigtrans`, `armas-meta-upgrades` (mejoras de arma fuera de la run, para Unity).
+
+## 2026-10-20 — armas nuevas (7+) hechas sin el usuario
+
+Pedido (usuario, se fue un rato): «créame más armas completas para este prototipo web hasta quedarte sin tokens; interesantes,
+divertidas, con sinergias con otras armas; el personaje lleva 2 armas y sólo 1 en la mano; que algunas mejoras funcionen
+después de usarla o incluso sin usarla (como Vigilancia del Cazador)».
+
+Hecho (cada una con árbol 3 × 3, ficha en `docs/armas/`, pruebas dirigidas en `tools/test-armas2.cjs`, commit propio):
+Reloj de arena (`time`), Ráfaga (`gust`), Látigo de luz (`whip`), Jabalina (`spear`), Enjambre (`swarm`).
+Motor (`game.js`): `inst.onAnyHit / onAnyKill` para todas las armas equipadas (`o.proc` evita bucles), tiempo propio del
+enemigo (`e.timeK`), estasis (`e.stasis`), vulnerable (`makeVuln`), lanzado (`o.launch`), iluminado (`e.litT`), `o.raw`.
+Herramientas: `tools/sim.cjs` (carga la jugable en Node para pruebas dirigidas), `tools/test-armas2.cjs`.
+
+**Siguiente**: el usuario las prueba y opina, un arma cada vez (método de abajo). Ninguna se ha jugado aún con ratón.

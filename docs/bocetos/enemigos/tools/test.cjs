@@ -61,7 +61,9 @@ function bot() {
 }
 const NEED = { charger: ['chargeW', 'charge'], stalker: ['crouch', 'leap', 'land'], mortar: ['aim', 'fire'], weaver: ['aim', 'shot'], shell: ['quakeW', 'quake'],
   hive: ['birthW'], drone: ['diveW', 'dive'], wisp: ['fuse'], burrower: ['under', 'emergeW', 'emerge', 'spitW', 'digW'],
-  chargerAlpha: ['chargeW', 'charge', 'rechargeW'], stalkerAlpha: ['howlW', 'howl', 'crouch', 'leap', 'recrouch'] };
+  chargerAlpha: ['chargeW', 'charge'], stalkerAlpha: ['howlW', 'howl', 'crouch', 'leap', 'recrouch'],
+  icicle: ['hang', 'shiver', 'fall', 'stuck', 'climb'], urchin: ['rainW', 'bald'], gale: ['gustW', 'gust', 'snowW'],
+  hermit: ['grabW', 'grab', 'grabRec'], walrus: ['spikeW', 'spike'], walrusAlpha: ['slideW', 'slide', 'restUp'] };
 const only = process.argv[2];
 const types = Object.keys(A.FOES).filter(t => !only || t === only);
 
@@ -116,15 +118,29 @@ if (!only) {
   const n0 = A.PLATFORMS.length; onPl(A.PLATFORMS[0]); run(1.4, () => { G.keys = {}; });
   const n1 = A.PLATFORMS.length; run(3.5, () => { G.keys = {}; });
   check('Plataformas que se rompen: se rompe al estar encima y vuelve', n1 === n0 - 1 && A.PLATFORMS.length === n0, `${n0} → ${n1} → ${A.PLATFORMS.length}`);
-  setup({ id: 't', name: 'sacude', list: [{ type: 'charger', x: 560 }] }, { arena: 'vertical' });
-  const pv = A.PLATFORMS.find(pl => pl.x0 === 640); onPl(pv); run(8, () => { G.player.hp = G.player.hpMax; G.keys = {}; if (G.player.y >= 340 && !G._dropped) { G._dropped = true; } if (G._dropped && G.player.y >= 340 && G.t % 3 < 0.02) onPl(pv); });
-  check('Embestidor: si estás en una plataforma, el pisotón te tira', !!G.fight.hits['Embestidor · Pisotón (plataforma)'], Object.keys(G.fight.hits).join(', '));
+  setup({ id: 't', name: 'salto', list: [{ type: 'charger', x: 1100 }] }, { arena: 'vertical' });
+  const pv = A.PLATFORMS.find(pl => pl.x0 === 640); onPl(pv); run(8, () => { G.player.hp = G.player.hpMax; G.keys = {}; if (G.player.y >= 340) onPl(pv); });
+  check('Embestidor: salta a tu plataforma baja con la carga', !!G.fight.hits['Embestidor · Embestida con salto'], Object.keys(G.fight.hits).join(', '));
+  setup({ id: 't', name: 'pedrada', list: [{ type: 'shell', x: 1100 }] }, { arena: 'vertical' });
+  onPl(pv); run(8, () => { G.player.hp = G.player.hpMax; G.keys = {}; if (G.player.y >= 340) onPl(pv); });
+  check('Caparazón: si te subes, te lanza una piedra', !!G.fight.hits['Caparazón · Pedrada'], Object.keys(G.fight.hits).join(', '));
   setup({ id: 't', name: 'columna', list: [{ type: 'burrower', x: 500 }] });
   const pb = A.PLATFORMS.find(pl => pl.y === 196); onPl(pb); run(10, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
   check('Excavador: su columna atraviesa la plataforma', !!G.fight.hits['Excavador · Emerger'], Object.keys(G.fight.hits).join(', '));
+  setup({ id: 't', name: 'eriza', list: [{ type: 'urchin', x: 260 }] }, { px: 200 }); run(4, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  check('Erizo: si te pegas, se eriza y duele', !!G.fight.hits['Erizo de escarcha · Erizarse'], Object.keys(G.fight.hits).join(', '));
+  setup({ id: 't', name: 'pinza', list: [{ type: 'hermit', x: 300 }] }, { px: 200 }); let froze = false; run(5, () => { G.player.hp = G.player.hpMax; G.keys = {}; if (G.player.lockT > G.t) froze = true; });
+  check('Ermitaño: la pinza congela al player y remata', froze && !!G.fight.hits['Ermitaño de hielo · Pellizco'], Object.keys(G.fight.hits).join(', '));
+  setup({ id: 't', name: 'coraza', list: [{ type: 'hermit', x: 700 }] }); G.es.frozenAI = true; const h = G.enemies[0];
+  const d1 = A.damage(h, { dmg: 20, kx: 10 }); for (let i = 0; i < 3; i++) A.damage(h, { dmg: 10, heavy: true, kx: 10 });
+  check('Ermitaño: la coraza reduce y los golpes fuertes la rompen', d1 < 8 && h.broken, `primer golpe ${d1.toFixed(1)} · rota ${h.broken}`);
+  setup({ id: 't', name: 'viento', list: [{ type: 'gale', x: 500, y: 200 }] }, { px: 300 }); const x0 = G.player.x; let pushed = 0; run(8, () => { G.player.hp = G.player.hpMax; G.keys = {}; pushed = Math.max(pushed, Math.abs(G.player.x - x0)); });
+  check('Ventisca: el soplo empuja al player', pushed > 60, Math.round(pushed) + ' px');
   setup({ id: 't', name: 'llamada', list: [{ type: 'stalkerAlpha', x: 900 }] });
   run(3, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
-  check('Acechador alfa: solo, aúlla y llama a su manada', A.alive().filter(e => e.type === 'stalker').length >= 2);
+  check('Acechador alfa: solo, aúlla y llama a su manada', A.alive().filter(e => e.type === 'stalker').length >= 2, Object.keys(G._visits.stalkerAlpha || {}).join(' ') + ' · ' + A.alive().map(e => e.type).join(','));
+  setup({ id: 't', name: 'cadena', list: [{ type: 'chargerAlpha', x: 1100 }] }, { px: 700 }); G.es.harmless = true; run(10, () => { G.keys = {}; });
+  check('Embestidor alfa: encadena una segunda carga', !!(G._visits.chargerAlpha || {}).rechargeW, Object.keys(G._visits.chargerAlpha || {}).join(' '));
 }
 console.log(bad ? `${bad} de ${n} mal` : `todo ok (${n})`);
 if (bad) process.exitCode = 1;

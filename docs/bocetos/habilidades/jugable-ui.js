@@ -180,6 +180,7 @@ const UI = {};
   cv.addEventListener('mousedown', ev => {
     cv.focus(); toWorld(ev); if (ev.button !== 0) return;
     if (G.settings.sound) audioInit();
+    if (G.player.lockT > G.t) return;                       // congelado por un enemigo (jugable de enemigos)
     G.mouse.down = true; const s = G.slots[G.cur]; s.inst.onPress && s.inst.onPress(aimInfo());
   });
   window.addEventListener('mouseup', ev => { if (ev.button !== 0 || !G.mouse.down) return; G.mouse.down = false; const s = G.slots[G.cur]; s.inst.onRelease && s.inst.onRelease(aimInfo()); });

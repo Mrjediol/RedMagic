@@ -21,10 +21,21 @@ addEncounter({ id: 'todo', name: 'Todos', desc: 'Uno de cada (sin zánganos suel
 function duelEncounter(type, n = 1) {
   const def = FOES[type], list = [];
   for (let i = 0; i < n; i++) list.push({ type, x: 900 + i * 150, y: def.fly ? 130 + (i % 2) * 50 : undefined });
-  return { id: 'duelo:' + type + ':' + n, name: 'Duelo · ' + def.name + (n > 1 ? ' ×' + n : ''), desc: def.question, list };
+  return { id: 'duelo:' + type + ':' + n, name: 'Duelo · ' + def.name + (n > 1 ? ' ×' + n : ''), desc: def.question, list, world: def.world };
 }
 // élites (1 por encuentro, con comunes alrededor)
 addEncounter({ id: 'alfa', name: 'Jefe de manada', desc: 'Acechador alfa + 2 Acechadores: mátalo pronto o aúlla (y si quedan pocos, llama a más).',
   list: [{ type: 'stalkerAlpha', x: 1100 }, { type: 'stalker', x: 900 }, { type: 'stalker', x: 1300 }] });
 addEncounter({ id: 'toro', name: 'Toro y cañón', desc: 'Embestidor alfa + Artillero: cargas encadenadas mientras caen morteros.',
   list: [{ type: 'chargerAlpha', x: 1000 }, { type: 'mortar', x: 1380 }] });
+// ---- mundo de hielo (aspecto de hielo: fondo y techo de carámbanos; las mecánicas son las de cada enemigo)
+addEncounter({ id: 'cueva', world: 'hielo', name: 'Cueva de carámbanos', desc: '2 Colgantes + Erizo de escarcha: todo cae desde arriba; mira al techo y al suelo.',
+  list: [{ type: 'icicle', x: 700 }, { type: 'icicle', x: 1150 }, { type: 'urchin', x: 1000 }] });
+addEncounter({ id: 'tundra', world: 'hielo', name: 'Tundra', desc: 'Morsa + 2 Ventiscas: el viento te empuja contra los muros de carámbanos.',
+  list: [{ type: 'walrus', x: 1000 }, { type: 'gale', x: 800, y: 140 }, { type: 'gale', x: 1300, y: 160 }] });
+addEncounter({ id: 'orilla', world: 'hielo', name: 'Orilla helada', desc: '2 Ermitaños + Erizo: no te dejes agarrar mientras esquivas la lluvia.',
+  list: [{ type: 'hermit', x: 850 }, { type: 'hermit', x: 1250 }, { type: 'urchin', x: 1050 }] });
+addEncounter({ id: 'matriarca', world: 'hielo', name: 'Matriarca', desc: 'Morsa matriarca + Colgante: tobogán y muros mientras algo cuelga encima.',
+  list: [{ type: 'walrusAlpha', x: 1050 }, { type: 'icicle', x: 800 }] });
+addEncounter({ id: 'hielo_todo', world: 'hielo', name: 'Todo el hielo', desc: 'Uno de cada común del hielo, para ver cómo se mezclan.',
+  list: [{ type: 'icicle', x: 900 }, { type: 'urchin', x: 1300 }, { type: 'gale', x: 1100, y: 150 }, { type: 'hermit', x: 800 }, { type: 'walrus', x: 1200 }] });

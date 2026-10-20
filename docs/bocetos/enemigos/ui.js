@@ -45,7 +45,7 @@ window.JUGABLE_PAGE = { key: 'enemigos.jugable.v1', slots: ['fan', 'star', 'sing
     // ---- encuentro
     const ec = el('div', { className: 'card' }, el('h3', {}, 'Encuentro', el('button', { title: 'Reiniciar (R)', on: { click: () => run(G.enc) } }, '↺ Reiniciar (R)')));
     ec.append(el('div', { className: 'row', style: 'align-items:center' },
-      el('select', { style: 'flex:1', on: { change: e => { duel.type = e.target.value; store.save(); } } }, ids.map(id => el('option', { value: id, selected: id === duel.type }, (FOES[id].tier === 'élite' ? '★ ' : '') + FOES[id].name + ' — ' + FOES[id].role))),
+      el('select', { style: 'flex:1', on: { change: e => { duel.type = e.target.value; store.save(); } } }, ids.map(id => el('option', { value: id, selected: id === duel.type }, (FOES[id].tier === 'élite' ? '★ ' : '') + (FOES[id].world === 'hielo' ? '❄ ' : '') + FOES[id].name + ' — ' + FOES[id].role))),
       el('select', { on: { change: e => { duel.n = +e.target.value; store.save(); } } }, [1, 2, 3, 4].map(n => el('option', { value: n, selected: n === duel.n }, '×' + n))),
       el('button', { on: { click: () => run(duelEncounter(duel.type, duel.n)) } }, '▶ Duelo')));
     const grid = el('div', { className: 'encs' });
@@ -68,7 +68,7 @@ window.JUGABLE_PAGE = { key: 'enemigos.jugable.v1', slots: ['fan', 'star', 'sing
     fc.append(el('div', { className: 'd' }, 'Lenguaje común: el cuerpo se pone naranja y el ojo blanco mientras prepara un ataque (si le haces bastante daño ahí, se interrumpe: barra blanca bajo la vida); destello blanco = sale el golpe; rojo en el suelo / aire = zona que va a doler, el relleno marca cuánto falta; estrellas = aturdido; anillo rosa = recibe más daño.'));
     for (const id of ids) {
       const d = FOES[id], det = el('details', { className: 'foe' });
-      det.append(el('summary', {}, el('b', {}, d.name), ' — ', d.role, el('span', { className: 'tier' + (d.tier === 'élite' ? ' el' : '') }, d.tier || 'común')));
+      det.append(el('summary', {}, el('b', {}, d.name), ' — ', d.role, el('span', { className: 'tier' + (d.tier === 'élite' ? ' el' : '') }, d.tier || 'común'), d.world === 'hielo' ? el('span', { className: 'tier ice' }, '❄ hielo') : null));
       det.append(el('div', { className: 'q' }, el('b', {}, 'Pregunta al jugador: '), d.question));
       for (const m of d.moves) det.append(el('div', { className: 'mv' }, el('b', {}, m.name), ' — ', m.desc));
       if (d.combos) det.append(el('div', { className: 'mv' }, el('b', {}, 'Combina con: '), d.combos));

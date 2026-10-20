@@ -11,7 +11,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 **Movimientos**
 
 - **Embestida encadenada** — Como la del común, pero al derrapar se gira y vuelve a cargar con una preparación corta (flechas otra vez). Si choca con la pared, la cadena se acaba y queda aturdido.
-- **Pisotón con ondas** — El pisotón del común (también sacude tu plataforma) y además suelta dos ondas por el suelo a los lados: saltarlas.
+- **Pisotón con ondas** — El pisotón del común y además suelta dos ondas por el suelo a los lados: saltarlas.
 - **Furia** — A media vida ruge: todo un 25 % más rápido (preparaciones, cargas y pausas) hasta que muere.
 
 **Combina con:** Solo ya es un encuentro. Con un Artillero detrás: carga + morteros. Con Fatuos: atropella fatuos y le revientan encima.
@@ -44,9 +44,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 | `stompWindup` | 0.5 | 0.1 – 1.5 (paso 0.05) | Pisotón: preparación (s) |
 | `stompR` | 130 | 30 – 300 (paso 5) | Pisotón: radio |
 | `stompDmg` | 12 | 0 – 60 (paso 1) | Pisotón: daño |
-| `upDelay` | 0.6 | 0 – 3 (paso 0.05) | Si estás encima de una plataforma más de (s): pisotón |
-| `shakeR` | 320 | 0 – 600 (paso 10) | Pisotón: sacude las plataformas a menos de |
-| `shakeDmg` | 6 | 0 – 40 (paso 1) | Pisotón: daño al tirarte de la plataforma |
+| `leapReach` | 160 | 0 – 300 (paso 5) | Embestida con salto: salta a plataformas hasta esta altura |
 | `cooldown` | 1.1 | 0 – 5 (paso 0.1) | Pausa entre ataques (s) |
 | `chain` | 1 | 0 – 3 (paso 1) | Embestida: cargas extra encadenadas |
 | `windup2` | 0.4 | 0.1 – 1.5 (paso 0.05) | Carga encadenada: preparación (s) |

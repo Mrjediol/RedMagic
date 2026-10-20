@@ -20,7 +20,7 @@ const ARENAS = {
 const BROKEN = [];                                          // plataformas rotas esperando volver { pl, back }
 function setArena(id) {
   PLATFORMS.length = 0; BROKEN.length = 0;
-  for (const p of (ARENAS[id] || ARENAS.actual).plats) PLATFORMS.push(Object.assign({ standT: 0, shakeT: -9 }, p));
+  for (const p of (ARENAS[id] || ARENAS.actual).plats) PLATFORMS.push(Object.assign({ standT: 0 }, p));
 }
 setArena('actual');
 const onPlatform = pl => { const p = G.player; return p.onGround && Math.abs(p.y - pl.y) < 1.5 && p.x > pl.x0 - 8 && p.x < pl.x1 + 8; };
@@ -33,24 +33,25 @@ function breakPlatform(pl) {
   addFx(1.2, (ctx, layer, t0) => { if (layer !== 'front') return; const u = G.t - t0; for (let k = 0; k < 8; k++) { const R = rand(k + Math.floor(x)); chunk(ctx, x + (R() - 0.5) * (pl.x1 - pl.x0), y + 6 + u * (60 + R() * 80) + 300 * u * u, 4 + R() * 4, u * 6 + k, k, '#2f5d7a', '#5a9cc2', 1 - u / 1.2, layer); } });
   sfx(k => { const t0 = nowT(); vNoise(t0, 0.25 * k, 0.2, 'lowpass', 1800, 300, 0.8, { att: 0.002 }); });
 }
-// Sacudida de plataformas (pieza genérica: la respuesta de los enemigos de suelo cuando estás encima). Las plataformas que
-// tocan [x - r, x + r] tiemblan; si estás en una, te tira al suelo (y te hace dmg). Con plataformas que se rompen, las rompe.
-function shakePlatforms(e, x, r, dmg, atk) {
-  let hitPl = false;
-  for (const pl of PLATFORMS.slice()) {
-    if (pl.x1 < x - r || pl.x0 > x + r) continue;
-    pl.shakeT = G.t;
-    if (onPlatform(pl)) { hitPl = true; dropPlayer(); text(G.player.x, G.player.y - 96, '¡SACUDIDO!', '#ffd27a', true); if (dmg) hitP(e, atk, dmg, 0, 0); }
-    if (G.es.crumble) breakPlatform(pl);
-  }
-  return hitPl;
-}
-// aviso de sacudida: las plataformas que va a sacudir se marcan en rojo durante la preparación (se cancela si le interrumpen)
-function warnPlatforms(e, x, r, dur) {
-  for (const pl of PLATFORMS) if (!(pl.x1 < x - r || pl.x0 > x + r)) { pl.warnT0 = G.t; pl.warnT1 = G.t + dur; pl.warnBy = e; pl.warnAtk = e.atkId; }
-}
 // cuánto tiempo lleva el player subido (en una plataforma o en el aire alto): los de suelo lo usan para responder hacia arriba
 function playerUpTime() { return G.pUpT || 0; }
+// hacer algo dentro de s segundos (secuencias: una línea de pinchos, una lluvia); se cancela si el que lo lanza muere
+function later(e, s, fn) { const at = G.t + s; G.ents.push({ foeEnt: true, update() { if (e && e.dead) return false; if (G.t >= at) { fn(); return false; } return true; }, draw() {} }); }
+
+// ---------------------------------------------------------------- congelar al player (= el aturdido de los enemigos, con aspecto de hielo)
+// Decisión del usuario (2026-10-20): el hielo es temática VISUAL; ningún enemigo ralentiza ni congela por ser «de hielo». Sólo
+// algún ataque concreto que antes habría aturdido congela 1 s: no te mueves, no saltas, no haces dash ni disparas.
+function freezePlayer(s) {
+  const p = G.player; if (G.es.harmless) return;
+  p.lockT = G.t + s; p.vx = 0; text(p.x, p.y - 100, '¡CONGELADO!', '#cdf6ff', true);
+  sfx(SFXLIB.freeze.bind(null, 1, 0.3));
+}
+const playerLocked = () => G.player.lockT > G.t;
+const _onKeyDown = onKeyDown;
+onKeyDown = function (code) {
+  if (playerLocked() && ['KeyW', 'ArrowUp', 'Space', 'KeyS', 'ArrowDown', 'ShiftLeft', 'ShiftRight'].includes(code)) return;
+  _onKeyDown(code);
+};
 
 // ---------------------------------------------------------------- ajustes generales de los enemigos (no de uno concreto)
 G.es = { harmless: false, frozenAI: false, dashIframes: true, dmgMul: 1, hpMul: 1, maxAttackers: 3, respawn: true, showStates: false,
@@ -111,12 +112,14 @@ const _updatePlayer = updatePlayer;
 updatePlayer = function (dt) {
   const p = G.player;
   if (G.t < (p.slowUntil || 0)) p.speedMul = Math.min(p.speedMul || 1, p.slowK || 0.5);
-  _updatePlayer(dt);
+  if (playerLocked()) { const k = G.keys; G.keys = {}; p.vx = 0; p.dashT = 0; _updatePlayer(dt); G.keys = k; }
+  else _updatePlayer(dt);
   p.x = clamp(p.x, ARENA.x0 + 14, ARENA.x1 - 14);
 };
 const _step = step;
 step = function (dt) {
-  _step(dt);
+  // congelado: el arma en la mano no recibe «mantener» (al soltar el botón se suelta igual)
+  if (playerLocked() && G.mouse.down) { G.mouse.down = false; _step(dt); G.mouse.down = true; } else _step(dt);
   G.cam.x = clamp(G.cam.x, ARENA.x0 - 60, ARENA.x1 + 60 - VW);
   const p = G.player, up = p.y < GROUND - 40;
   G.pUpT = up ? (G.pUpT || 0) + dt : Math.max(0, (G.pUpT || 0) - dt * 3);
@@ -228,7 +231,7 @@ function spawnFoe(type, x, y, extra = {}) {
 function startEncounter(enc) {
   G.enc = enc;
   G.enemies = []; G.restartAt = 0; G.pUpT = 0;
-  setArena(G.es.arena);
+  setArena(G.es.arena); G.world = enc.world || 'neutro';
   G.ents = G.ents.filter(x => !x.foeEnt);
   const p = G.player; p.x = 200; p.y = GROUND; p.vx = 0; p.vy = 0; p.hp = p.hpMax; p.slowUntil = 0; p.shield = 0; p.shieldUsed = false;
   G.cam.x = 0;
@@ -290,9 +293,9 @@ updateEnemies = function (dt0) {
     }
     const lo = ARENA.x0 + e.rx, hi = ARENA.x1 - e.rx;
     e.wall = e.x <= lo ? -1 : e.x >= hi ? 1 : 0; e.x = clamp(e.x, lo, hi);
-    // daño por contacto (pequeño: el daño de verdad está en los ataques, que se avisan)
+    // daño por contacto (pequeño: el daño de verdad está en los ataques, que se avisan; durante un ataque, el golpe es el del ataque)
     const c = FT(e).contact;
-    if (c > 0 && !frozen && ellipseHitsPlayer(e)) hitP(e, 'Contacto', c, Math.sign(G.player.x - e.x || 1) * 260, -160);
+    if (c > 0 && !frozen && !e.noContact && e.phase !== 'active' && ellipseHitsPlayer(e)) hitP(e, 'Contacto', c, Math.sign(G.player.x - e.x || 1) * 260, -160);
   }
   // los muertos viejos se quitan (las armas comprueban .dead, así que da igual que alguna los tenga guardados)
   if (G.enemies.length > 40) G.enemies = G.enemies.filter(e => !e.dead || e.deadT < 3);
@@ -350,6 +353,11 @@ function drawWarn(ctx, layer, w) {
       ctx.lineTo(x - d * th, y); ctx.lineTo(x + d * (h * 0.5 - th), y - h * 0.5); ctx.lineTo(x - d * th, y - h); ctx.closePath(); ctx.fill();
     }
   }
+  if (w.kind === 'cone' && layer === 'front') {             // soplo: cuña desde (x, y) hacia ang, de largo len y medio ángulo half
+    ctx.globalAlpha = (0.1 + 0.18 * u) * a; ctx.fillStyle = '#ff4a2a';
+    ctx.beginPath(); ctx.moveTo(w.x, w.y); ctx.arc(w.x, w.y, w.len, w.ang - w.half, w.ang + w.half); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 0.8 * a; ctx.strokeStyle = edge; ctx.lineWidth = 1.5; ctx.setLineDash([8, 6]); ctx.stroke(); ctx.setLineDash([]);
+  }
   if (w.kind === 'mark' && layer === 'back') {
     const r = Math.max(14, w.r), rot = G.t * 3;
     ctx.globalAlpha = (0.4 + 0.5 * u) * a; ctx.strokeStyle = edge; ctx.lineWidth = 2;
@@ -361,6 +369,9 @@ function drawWarn(ctx, layer, w) {
 
 // ---------------------------------------------------------------- proyectiles (compatibles con las armas: Égida, Espejo,
 // Singularidad · Escudo de vacío, Reloj, Ráfaga, Látigo, Media luna y Tótem los desvían / capturan igual que la bala de prueba)
+// colores del mundo de hielo (cuerpos y proyectiles; el aviso de peligro sigue siendo rojo en todos los mundos)
+const ICE = { snow: '#f4f8ff', pale: '#cfefff', light: '#9fd6f2', mid: '#5fa8d8', deep: '#2f5a7a', dark: '#1c3348', fur: '#e6e1d6', furD: '#b9b2a4',
+              pal: { core: '#ffffff', light: '#e4f9ff', mid: '#9fd6f2', deep: '#3f93e3', dark: '#24499e', g: [170, 225, 255], g1: [110, 180, 255], g2: [205, 246, 255] } };
 const FOE_PAL = { core: '#ffffff', light: '#ffc2b0', mid: '#ff5a4a', deep: '#b0203a', g: [255, 80, 70] };
 // o = { x, y, vx, vy, g (gravedad), r, dmg, e, atk, style ('orb'|'needle'|'rock'|'seed'|'web'|'spore'), pal, life,
 //       landY (para al llegar a esa y, cayendo), onLand(x, y), onHitP() (en vez del daño normal), warnEnt }
@@ -391,6 +402,9 @@ function foeShot(o) {
     if (layer !== 'front') return;
     const fr = this.friendly || this.captured, P = fr ? PAL.void : this.pal, gl = fr ? [150, 100, 255] : this.pal.g || FOE_PAL.g, a = Math.atan2(this.vy, this.vx);
     if (this.style === 'needle') { glow(ctx, this.x, this.y, 14, gl, 0.6); lens(ctx, this.x, this.y, a, 26, 4, P.mid, 1, layer); lens(ctx, this.x, this.y, a, 18, 1.8, '#fff', 1, layer); return; }
+    if (this.style === 'icicle') { glow(ctx, this.x, this.y, 12, fr ? gl : [180, 230, 255], 0.5); lens(ctx, this.x, this.y, a, this.r * 5, this.r * 1.2, fr ? P.mid : '#9fd6f2', 1, layer); lens(ctx, this.x, this.y, a, this.r * 3.4, this.r * 0.5, '#ffffff', 1, layer); return; }
+    if (this.style === 'snow') { glow(ctx, this.x, this.y, this.r * 2.4, [230, 245, 255], 0.5); disc(ctx, this.x, this.y, this.r, fr ? P.mid : '#eef6ff', 1, layer); disc(ctx, this.x - this.r * 0.3, this.y - this.r * 0.3, this.r * 0.45, '#ffffff', 1, layer); return; }
+    if (this.style === 'ice') { glow(ctx, this.x, this.y, this.r * 2.6, [160, 220, 255], 0.5); chunk(ctx, this.x, this.y, this.r + 2, this.spin, Math.floor(this.r * 7), fr ? P.mid : '#8fc8e8', fr ? P.light : '#e4f9ff', 1, layer); return; }
     if (this.style === 'rock') { chunk(ctx, this.x, this.y, this.r + 2, this.spin, Math.floor(this.r * 7), fr ? P.mid : '#6b5442', fr ? P.light : '#9a7c5e', 1, layer); return; }
     if (this.style === 'web') {
       glow(ctx, this.x, this.y, this.r * 2.2, [230, 220, 255], 0.35);
@@ -459,6 +473,42 @@ function foeBlast(e, x, y, r, dmg, atk, o = {}) {
   addFx(0.5, (ctx, layer, t0) => { if (layer !== 'front') return; const u = seg(G.t, t0, t0 + 0.35); ctx.save(); ctx.globalAlpha = 0.5 * (1 - u); ctx.fillStyle = P.light; ctx.beginPath(); ctx.arc(x, y, r * (0.4 + 0.6 * easeOut(u)), 0, TAU); ctx.fill(); ctx.restore(); });
   G.shake += 5 * Math.min(2, sc);
   sfx(k => SFXLIB.boom(k, 0.5 * Math.min(2, sc)));
+}
+
+// pincho que sale del suelo y se queda un rato como obstáculo que hace daño (carámbano, estaca, cristal): o = { h, w, life, dmg, atk, rise }
+function groundSpike(e, x, o) {
+  const t0 = G.t, rise = o.rise || 0.1, w = o.w || 16;
+  G.ents.push({ foeEnt: true, kind: 'groundSpike', x,
+    update() {
+      const u = G.t - t0, k = Math.min(1, u / rise) * (1 - seg(u, o.life, o.life + 0.25)), p = G.player;
+      if (k > 0.5 && Math.abs(p.x - x) < w * 0.6 + 12 && p.y > GROUND - o.h * k) hitP(e, o.atk, o.dmg, Math.sign(p.x - x || 1) * 340, -420);
+      if (u > o.life && !this.broke) { this.broke = true; addFx(0.8, (ctx, layer, tt) => sparks(ctx, G.t, tt, x, GROUND - o.h * 0.5, layer, { n: 6, pal: PAL.ice, sp: 160, seed: Math.floor(x), len: 8, life: 0.4 })); }
+      return u < o.life + 0.3;
+    },
+    draw(ctx, layer) {
+      const u = G.t - t0, k = Math.min(1, u / rise) * (1 - seg(u, o.life, o.life + 0.25));
+      if (k > 0.01) iceSpike(ctx, x, GROUND + 2, o.h * k, w, Math.sin(x) * 0.08, 1, layer);
+    } });
+  sfx(k => SFXLIB.glass(k, 0.6));
+}
+
+// ---------------------------------------------------------------- mundos (sólo aspecto: el fondo y, en el hielo, el techo de carámbanos)
+const WORLDS = { neutro: { name: 'Neutro' }, hielo: { name: 'Hielo' } };
+const CEIL = 30;                                            // alto del techo de hielo (los Colgantes cuelgan de él)
+const _drawWorld = drawWorld;
+drawWorld = function (ctx) {
+  if (G.world !== 'hielo') return _drawWorld(ctx);
+  const g = ctx.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#16273a'); g.addColorStop(1, '#3b5a72');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
+  ctx.save(); ctx.translate(-G.cam.x * 0.3, 0);
+  for (let i = 0; i < 14; i++) { const x = i * 190, h = 110 + (i % 3) * 50; ctx.fillStyle = i % 2 ? '#2a4660' : '#24405a'; ctx.beginPath(); ctx.moveTo(x - 60, GROUND); ctx.lineTo(x - 14, GROUND - h); ctx.lineTo(x + 6, GROUND - h - 30); ctx.lineTo(x + 60, GROUND); ctx.fill(); }
+  ctx.restore();
+};
+function drawCeiling(ctx) {
+  if (G.world !== 'hielo') return;
+  ctx.fillStyle = '#20384f'; ctx.fillRect(ARENA.x0 - 400, -40, ARENA.x1 - ARENA.x0 + 800, CEIL + 40);
+  ctx.fillStyle = '#9fd6f2'; ctx.fillRect(ARENA.x0 - 400, CEIL - 3, ARENA.x1 - ARENA.x0 + 800, 3);
+  for (let x = ARENA.x0; x < ARENA.x1; x += 37) { const R = rand(x), h = 8 + R() * 22; ctx.fillStyle = R() < 0.5 ? '#cfefff' : '#8fc8e8'; ctx.beginPath(); ctx.moveTo(x - 5, CEIL); ctx.lineTo(x + 5, CEIL); ctx.lineTo(x + R() * 2, CEIL + h); ctx.closePath(); ctx.fill(); }
 }
 
 // ---------------------------------------------------------------- dibujo de los enemigos (sustituye al de las dianas)
@@ -532,6 +582,7 @@ function stateLabel(ctx, e, x, y) {
 const _render = render;
 render = function (ctx) {
   _render(ctx);
+  if (playerLocked()) { const p = G.player, sx = (Math.random() - 0.5) * G.shake; ctx.save(); ctx.translate(-G.cam.x + sx, 0); iceBlock(ctx, p.x, p.y - 38, 24, 44, 1, 7, seg(G.t, p.lockT - 0.3, p.lockT)); ctx.restore(); }
   const F = G.fight; if (!F) return;
   const live = foes().filter(e => !e.dead);
   ctx.save(); ctx.textAlign = 'center'; ctx.font = '700 13px system-ui'; ctx.fillStyle = 'rgba(255,255,255,.85)';
@@ -551,24 +602,20 @@ render = function (ctx) {
   ctx.restore();
 };
 // paredes de la arena (fondo de roca a los lados)
-// (dibuja también lo de las plataformas: temblor, grietas al cargarse, hueco de las rotas que vuelve a llenarse)
+// (dibuja también lo de las plataformas: grietas al cargarse, hueco de las rotas que vuelve a llenarse)
 drawPlatforms = function (ctx) {
   ctx.fillStyle = '#2f5d7a'; ctx.fillRect(0, GROUND, WW, VH - GROUND + 40);
   ctx.fillStyle = '#3d7598'; ctx.fillRect(0, GROUND, WW, 6);
   for (const pl of PLATFORMS) {
-    const sh = G.t - pl.shakeT < 0.4 ? Math.sin(G.t * 90) * 3 * (1 - (G.t - pl.shakeT) / 0.4) : 0, k = G.es.crumble ? clamp(pl.standT / G.es.crumbleT) : 0;
-    const jx = k > 0.5 ? Math.sin(G.t * 70) * (k - 0.5) * 4 : 0, x0 = pl.x0 + jx, w = pl.x1 - pl.x0, y = pl.y + sh;
+    const k = G.es.crumble ? clamp(pl.standT / G.es.crumbleT) : 0;
+    const jx = k > 0.5 ? Math.sin(G.t * 70) * (k - 0.5) * 4 : 0, x0 = pl.x0 + jx, w = pl.x1 - pl.x0, y = pl.y;
     ctx.fillStyle = k > 0 ? mixHex('#2f5d7a', '#7a4a3a', k) : '#2f5d7a'; ctx.beginPath(); ctx.roundRect(x0, y, w, 12, 5); ctx.fill();
     ctx.fillStyle = G.es.crumble ? '#c9a27a' : '#5a9cc2'; ctx.fillRect(x0 + 3, y, w - 6, 3);
-    if (pl.warnT1 > G.t && pl.warnBy && !pl.warnBy.dead && pl.warnBy.atkId === pl.warnAtk) {
-      const u = clamp((G.t - pl.warnT0) / (pl.warnT1 - pl.warnT0));
-      ctx.save(); ctx.globalAlpha = 0.25 + 0.4 * u; ctx.fillStyle = '#ff4a2a'; ctx.fillRect(x0, y, w * u, 12);
-      ctx.globalAlpha = 0.9; ctx.strokeStyle = u > 0.85 ? '#fff1c8' : '#ff7a5a'; ctx.lineWidth = 2; ctx.strokeRect(x0, y, w, 12); ctx.restore();
-    }
     if (k > 0.05) { ctx.strokeStyle = '#1a1e26'; ctx.lineWidth = 1.5; const R = rand(Math.floor(pl.x0)); for (let i = 0; i < Math.ceil(k * 5); i++) { const cx = x0 + 10 + R() * (w - 20); ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + (R() - 0.5) * 10, y + 6); ctx.lineTo(cx + (R() - 0.5) * 14, y + 12); ctx.stroke(); } }
   }
   for (const b of BROKEN) { const u = 1 - clamp((b.back - G.t) / G.es.respawnT); ctx.save(); ctx.globalAlpha = 0.15 + 0.35 * u; ctx.strokeStyle = '#9ab8d0'; ctx.setLineDash([5, 5]); ctx.lineWidth = 1.5; ctx.strokeRect(b.pl.x0, b.pl.y, (b.pl.x1 - b.pl.x0), 12); ctx.restore(); }
   ctx.fillStyle = '#232a36';
   ctx.fillRect(ARENA.x0 - 400, -40, 400, VH + 80); ctx.fillRect(ARENA.x1, -40, 400, VH + 80);
   ctx.fillStyle = '#3a4456'; ctx.fillRect(ARENA.x0 - 6, -40, 6, VH + 80); ctx.fillRect(ARENA.x1, -40, 6, VH + 80);
+  drawCeiling(ctx);
 };

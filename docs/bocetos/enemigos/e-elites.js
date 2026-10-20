@@ -10,12 +10,12 @@ addFoe(Object.assign({}, FOES.charger, {
   question: 'Lo mismo que el Embestidor, pero sin respiro: tras una carga que esquivas viene otra enseguida. Ponerte delante de la pared corta la cadena (el choque sigue siendo tu premio).',
   moves: [
     { name: 'Embestida encadenada', desc: 'Como la del común, pero al derrapar se gira y vuelve a cargar con una preparación corta (flechas otra vez). Si choca con la pared, la cadena se acaba y queda aturdido.' },
-    { name: 'Pisotón con ondas', desc: 'El pisotón del común (también sacude tu plataforma) y además suelta dos ondas por el suelo a los lados: saltarlas.' },
+    { name: 'Pisotón con ondas', desc: 'El pisotón del común y además suelta dos ondas por el suelo a los lados: saltarlas.' },
     { name: 'Furia', desc: 'A media vida ruge: todo un 25 % más rápido (preparaciones, cargas y pausas) hasta que muere.' },
   ],
   combos: 'Solo ya es un encuentro. Con un Artillero detrás: carga + morteros. Con Fatuos: atropella fatuos y le revientan encima.',
   art: 'El Embestidor más grande, con una cresta de cristal en el lomo y cicatrices; que se reconozca como el mismo bicho.',
-  tuning: eliteTuning('charger', { hp: 600, poise: 140, kb: 0.15, chargeSpeed: 700, shakeR: 320, cooldown: 1.1, chargeDmg: 20 }, {
+  tuning: eliteTuning('charger', { hp: 600, poise: 140, kb: 0.15, chargeSpeed: 700, cooldown: 1.1, chargeDmg: 20 }, {
     chain: [1, 0, 3, 1, 'Embestida: cargas extra encadenadas'], windup2: [0.4, 0.1, 1.5, 0.05, 'Carga encadenada: preparación (s)'],
     waveSpeed: [360, 80, 800, 10, 'Ondas del pisotón: velocidad'], waveDist: [480, 50, 1200, 10, 'Ondas del pisotón: recorrido'],
     waveH: [30, 10, 90, 1, 'Ondas del pisotón: altura'], waveDmg: [10, 0, 60, 1, 'Ondas del pisotón: daño'],
@@ -134,3 +134,69 @@ function alphaHowl(e, t) {
     text(edge, GROUND - 120, '¡LLAMADA!', '#ffb08a', true);
   }
 }
+
+// ---------------------------------------------------------------- Morsa matriarca (mundo de hielo)
+addFoe(Object.assign({}, FOES.walrus, {
+  id: 'walrusAlpha', name: 'Morsa matriarca', short: 'Mors. α', tier: 'élite', rx: 58, ry: 38,
+  role: 'Élite de la Morsa: muros dobles y tobogán',
+  question: 'La Morsa, pero te encierra: los muros salen a los dos lados y cuando estás entre pinchos se tira en tobogán, rebota en la pared y vuelve. Hay que saltarla dos veces sin caer en los pinchos.',
+  moves: [
+    { name: 'Muro doble', desc: 'El muro de carámbanos de la Morsa, hacia ti y a la vez otro más corto hacia atrás.' },
+    { name: 'Tobogán', desc: 'Se tumba (flechas del alto de su cuerpo) y se lanza deslizándose sobre la tripa; rebota en la pared y vuelve (rebotes ajustables). Al acabar se queda boca arriba jadeando: recibe más daño.' },
+    { name: 'Témpano', desc: 'Como la Morsa: si estás lejos o subido, te lanza un bloque de hielo.' },
+  ],
+  combos: 'Con un Colgante encima: mientras saltas el tobogán, mira arriba.',
+  art: 'La Morsa más grande y vieja, con colmillos rotos y vueltos a crecer en hielo, cicatrices y una costra de escarcha gruesa en el lomo; que se lea como la misma especie.',
+  tuning: eliteTuning('walrus', { hp: 650, poise: 160, kb: 0.1, spikeN: 6, cooldown: 1.6, walk: 60 }, {
+    backN: [3, 0, 10, 1, 'Muro doble: carámbanos hacia atrás'],
+    slideChance: [0.45, 0, 1, 0.05, 'Probabilidad de tobogán'], slideRange: [750, 100, 1400, 10, 'Tobogán: si estás a menos de (también acorta distancias)'], slideWindup: [0.7, 0.2, 2, 0.05, 'Tobogán: preparación (s)'],
+    slideSpeed: [540, 150, 1000, 10, 'Tobogán: velocidad'], bounces: [1, 0, 4, 1, 'Tobogán: rebotes en la pared'],
+    slideDmg: [18, 0, 60, 1, 'Tobogán: daño'], backDist: [520, 100, 1400, 10, 'Tobogán: tras el último rebote, recorre (y se para pasado de ti)'], rest: [1.6, 0, 5, 0.1, 'Tobogán: boca arriba al acabar (s)'], restVuln: [1.4, 1, 3, 0.05, 'Boca arriba: × daño recibido'],
+  }),
+  think(e, dt) {
+    const t = FT(e), p = G.player, ad = Math.abs(dxP(e));
+    switch (e.st) {
+      case 'idle':
+        if (e.cdT - dt <= 0 && e.slideRoll === undefined) e.slideRoll = Math.random() < t.slideChance;   // una tirada por ataque
+        if (e.cdT - dt <= 0 && e.slideRoll && ad <= t.slideRange && playerUpTime() <= 0.5 && canStart(e)) {
+          begin(e, 'Tobogán'); go(e, 'slideW'); e.sdir = Math.sign(dxP(e)) || e.face;
+          warn({ e, kind: 'arrow', x: e.x, dir: e.sdir, len: e.rx * 2.2, h: e.ry * 1.6, t: t.slideWindup, follow: w => { w.x = e.x + e.sdir * e.rx * 0.6; w.dir = e.sdir; } });
+          e.cdT = 0; return;
+        }
+        break;
+      case 'slideW':
+        e.mx = lerp(e.mx, -e.sdir * 20, Math.min(1, dt * 6)); e.face = e.sdir;
+        if (windup(e, t.slideWindup)) { go(e, 'slide'); release(e); e.bounce = 0; e.hitP = false; sfx(k => SFXLIB.whoosh(k, 700, 250, 0.5, 0.2)); }
+        return;
+      case 'slide':
+        e.phase = 'active'; e.mx = e.sdir * t.slideSpeed; e.face = e.sdir;
+        if (!e.hitP && ellipseHitsPlayer(e, 4) && hitP(e, 'Tobogán', t.slideDmg, e.sdir * 520, -340)) e.hitP = true;
+        if (Math.random() < dt * 14) dustPuff(e.x - e.sdir * e.rx, GROUND);
+        if (e.bounce >= t.bounces && e.bounce > 0 && (e.back = (e.back || 0) + t.slideSpeed * dt) > t.backDist && (G.player.x - e.x) * e.sdir < 0) { go(e, 'restUp'); recover(e); e.mx = 0; makeVuln(e, t.restVuln, t.rest); return; }
+        if (e.wall === e.sdir && e.stT > 0.1) {
+          if (e.bounce < t.bounces) { e.bounce++; e.sdir = -e.sdir; e.stT = 0.05; e.hitP = false; e.back = 0; G.shake += 5; say(e, '¡BOING!', '#cdf6ff'); sfx(k => { const t0 = nowT(); vThump(t0, 100, 50, 0.25 * k, 0.6, 2); }); }
+          else { go(e, 'restUp'); recover(e); e.mx = 0; makeVuln(e, t.restVuln, t.rest); G.shake += 6; }
+        }
+        return;
+      case 'restUp':
+        e.phase = 'recover'; e.mx = lerp(e.mx, 0, Math.min(1, dt * 6));
+        if (e.stT > t.rest) { go(e, 'idle'); e.cdT = t.cooldown; }
+        return;
+    }
+    FOES.walrus.think(e, dt);
+  },
+  onEnter(e, st) { if (st === 'spikeW' || st === 'tossW' || st === 'slideW') e.slideRoll = undefined; if (st === 'spike') { const t = FT(e); if (t.backN > 0) walrusSpikes(e, t, -e.sdir, t.backN); } },
+  draw(ctx, e, P) {
+    if (e.st === 'slide' || e.st === 'slideW' || e.st === 'restUp') {            // tumbada (tobogán) o boca arriba
+      const k = e.ry / FOES.walrus.ry, belly = e.st === 'restUp';
+      ctx.save(); ctx.translate(0, 10); ctx.scale(k, k * 0.75); if (belly) ctx.scale(1, -1);
+      E_ell(ctx, P, 0, 6, 50, 24, belly ? '#c8d2da' : '#5a6f80'); E_ell(ctx, P, -4, 2, 44, 18, belly ? '#dfe6ec' : '#7a90a2');
+      E_poly(ctx, P, [[40, 10], [74, 14], [42, 18]], ICE.pale);
+      ctx.restore();
+      if (!belly) E_eye(ctx, P, e, 34, 6, 2.6);
+      return;
+    }
+    drawAs(ctx, e, P, 'walrus', e.ry / FOES.walrus.ry);
+    for (let i = 0; i < 5; i++) E_poly(ctx, P, [[-40 + i * 13, -18], [-36 + i * 13, -30 - (i % 2) * 6], [-30 + i * 13, -18]], i % 2 ? ICE.snow : ICE.pale);
+  },
+}));

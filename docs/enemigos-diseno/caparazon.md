@@ -12,7 +12,8 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 - **Escudo** — Lo que le llega de frente hace sólo ×0,15 (BLOQUEO). Por la espalda, daño completo. Tarda en girarse cuando le pasas al otro lado. Un golpe fuerte de frente le rompe la guardia: queda vulnerable un rato.
 - **Golpe de escudo** — Si estás delante y cerca: retrocede un poco y embiste corto con el escudo. Empuja mucho.
-- **Sacudida** — Cada pocos segundos se levanta (¡enseña la tripa: ahí el escudo no tapa!) y golpea el suelo: dos ondas que corren por el suelo a los dos lados. Hay que saltarlas. Si estás en una plataforma cerca, la sacude (marcada en rojo) y te tira; además, si te quedas arriba, la sacudida le llega antes.
+- **Sacudida** — Cada pocos segundos se levanta (¡enseña la tripa: ahí el escudo no tapa!) y golpea el suelo: dos ondas que corren por el suelo a los dos lados. Hay que saltarlas.
+- **Pedrada** — Si te subes a una plataforma, arranca una piedra del suelo con el escudo y te la lanza en parábola (marca dónde cae, en tu plataforma). Mientras lanza, la tripa queda al aire.
 
 **Combina con:** Delante de Artilleros o una Colmena: tapa a los que disparan. Con Embestidor: dos muros que te encierran.
 
@@ -44,12 +45,16 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 | `waveH` | 34 | 10 – 90 (paso 1) | Onda: altura |
 | `waveDmg` | 12 | 0 – 60 (paso 1) | Onda: daño |
 | `cooldown` | 1.2 | 0 – 5 (paso 0.1) | Pausa entre ataques (s) |
-| `shakeR` | 320 | 0 – 700 (paso 10) | Sacudida: sacude las plataformas a menos de |
-| `shakeDmg` | 8 | 0 – 40 (paso 1) | Sacudida: daño al tirarte de la plataforma |
-| `upRush` | 3 | 1 – 10 (paso 0.5) | Si estás encima de una plataforma: la sacudida se carga × más rápido |
+| `upDelay` | 0.5 | 0 – 3 (paso 0.05) | Pedrada: si estás en una plataforma más de (s) |
+| `rockRange` | 600 | 100 – 1200 (paso 10) | Pedrada: alcance |
+| `rockWindup` | 0.6 | 0.1 – 2 (paso 0.05) | Pedrada: preparación (s) |
+| `rockFlight` | 0.9 | 0.3 – 2 (paso 0.05) | Pedrada: vuelo (s) |
+| `rockDmg` | 10 | 0 – 60 (paso 1) | Pedrada: daño |
+| `rockR` | 30 | 10 – 100 (paso 1) | Pedrada: radio del impacto |
 <!-- /gen:ajustes -->
 
 ## Decisiones y feedback
 
 - 2026-10-20 · Diseñado sin arte (primero el comportamiento, luego se busca el arte). Pendiente de que el usuario lo pruebe.
 - 2026-10-20 · Respuesta hacia arriba (el usuario no veía cómo encajan los de suelo con tantas plataformas): ver «Movimientos»; ajustes nuevos en la tabla.
+- 2026-10-20 · El usuario descarta la sacudida de plataformas a distancia (sin coherencia física): sustituida por una respuesta física (ver «Movimientos»).

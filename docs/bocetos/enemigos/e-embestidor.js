@@ -2,12 +2,13 @@
 // y ponerte delante de una pared para que se estampe?
 'use strict';
 addFoe({
-  id: 'charger', name: 'Embestidor', short: 'Embest.', rx: 44, ry: 30, home: 'prowl',
+  id: 'charger', name: 'Embestidor', short: 'Embest.', rx: 44, ry: 30, home: 'prowl', platforms: true,
   role: 'Tanque de suelo que carga',
   question: 'Saltar o esquivar la carga en el último momento; colocarte delante de una pared para que se estampe y quede vendido.',
   moves: [
     { name: 'Embestida', desc: 'Rasca el suelo (polvo + chevrones del alto de su cuerpo) y carga en línea recta. Fija la dirección un poco antes de salir: si te mueves al final, falla. Si choca con la pared se queda aturdido y recibe ×1,5. Si le saltas, derrapa y queda de espaldas. Atropella a los demás enemigos que encuentra.' },
-    { name: 'Pisotón', desc: 'Si estás pegado a él: se encabrita y pisa. Zona circular en el suelo; saltar la esquiva. Si te subes a una plataforma cerca de él, el mismo pisotón la sacude (se marca en rojo) y te tira al suelo: no hay sitio seguro encima.' },
+    { name: 'Pisotón', desc: 'Si estás pegado a él: se encabrita y pisa. Zona circular en el suelo; saltar la esquiva.' },
+    { name: 'Embestida con salto', desc: 'Si estás en una plataforma baja, la carga acaba en un salto hasta tu plataforma (flechas también a esa altura) y sigue corriendo por ella hasta caerse por el borde. Más alta de lo que alcanza, no te llega: se queda debajo esperando a que bajes.' },
   ],
   combos: 'Con Fatuos: atrae su carga hacia un fatuo o hacia otros enemigos (los atropella). Con Artilleros: la carga te obliga a moverte mientras caen morteros.',
   art: 'Silueta ancha y baja, cuatro patas cortas, cabeza gacha con cuernos/colmillos de cristal. Jabalí de raíces, carnero de piedra, escarabajo rinoceronte.',
@@ -21,8 +22,7 @@ addFoe({
     crashVuln: [1.5, 1, 3, 0.05, 'Choque con pared: × daño recibido'], skidTime: [0.55, 0.1, 2, 0.05, 'Derrape (s, ventana de castigo)'],
     stompRange: [120, 0, 300, 5, 'Pisotón: si estás a menos de'], stompWindup: [0.5, 0.1, 1.5, 0.05, 'Pisotón: preparación (s)'],
     stompR: [130, 30, 300, 5, 'Pisotón: radio'], stompDmg: [12, 0, 60, 1, 'Pisotón: daño'],
-    upDelay: [0.6, 0, 3, 0.05, 'Si estás encima de una plataforma más de (s): pisotón'], shakeR: [260, 0, 600, 10, 'Pisotón: sacude las plataformas a menos de'],
-    shakeDmg: [6, 0, 40, 1, 'Pisotón: daño al tirarte de la plataforma'],
+    leapReach: [160, 0, 300, 5, 'Embestida con salto: salta a plataformas hasta esta altura'],
     cooldown: [1.3, 0, 5, 0.1, 'Pausa entre ataques (s)'],
   }),
   think(e, dt) {
@@ -33,11 +33,15 @@ addFoe({
         const want = ad > t.keepMax ? Math.sign(dx) : ad < t.keepMin ? -Math.sign(dx) * 0.6 : Math.sin(G.t * 0.9 + e.id) * 0.3;
         walkDir(e, want, t.walk, dt);
         if (e.cdT > 0 || !canStart(e)) break;
-        if ((ad < t.stompRange && p.y > GROUND - 140) || (playerUpTime() > t.upDelay && ad < t.shakeR)) {
-          begin(e, 'Pisotón'); go(e, 'stompW'); warn({ e, kind: 'circle', x: e.x, r: t.stompR, t: t.stompWindup }); warnPlatforms(e, e.x, t.shakeR, t.stompWindup);
-        } else if (ad < t.chargeMax + 100 && p.y > GROUND - 200) {
-          begin(e, 'Embestida'); go(e, 'chargeW'); e.cdir = Math.sign(dx) || 1;
-          warn({ e, kind: 'arrow', x: e.x, dir: e.cdir, len: e.rx * 2.4, h: e.ry * 2, t: t.windup, follow: w => { w.x = e.x + e.cdir * e.rx * 0.6; w.dir = e.cdir; } });
+        {
+          const pl = p.onGround && p.y < GROUND - 2 ? PLATFORMS.find(q => onPlatform(q)) : null, reach = !pl || GROUND - pl.y <= t.leapReach;
+          if (ad < t.stompRange && p.y > GROUND - 140) {
+            begin(e, 'Pisotón'); go(e, 'stompW'); warn({ e, kind: 'circle', x: e.x, r: t.stompR, t: t.stompWindup });
+          } else if (ad < t.chargeMax + 100 && reach && (pl || p.y > GROUND - 120)) {
+            begin(e, pl ? 'Embestida con salto' : 'Embestida'); go(e, 'chargeW'); e.cdir = Math.sign(dx) || 1; e.leapPl = pl; e.leapt = false;
+            warn({ e, kind: 'arrow', x: e.x, dir: e.cdir, len: e.rx * 2.4, h: e.ry * 2, t: t.windup, follow: w => { w.x = e.x + e.cdir * e.rx * 0.6; w.dir = e.cdir; } });
+            if (pl) warn({ e, kind: 'arrow', x: e.cdir > 0 ? pl.x0 : pl.x1, y: pl.y - 2, dir: e.cdir, len: e.rx * 1.6, h: e.ry * 2, t: t.windup });
+          } else if (pl && !reach) walkTo(e, clamp(p.x, pl.x0 - 60, pl.x1 + 60), t.walk, dt);   // no llega: espera debajo
         }
         break;
       }
@@ -51,7 +55,12 @@ addFoe({
         e.phase = 'active';
         const sp = t.chargeSpeed * (e.rage || 1) * Math.min(1, 0.35 + e.stT * 5);
         e.mx = e.cdir * sp; e.face = e.cdir; e.run += sp * dt;
-        if (!e.hitP && ellipseHitsPlayer(e, 4) && hitP(e, 'Embestida', t.chargeDmg, e.cdir * 520, -300)) e.hitP = true;
+        // con salto: despega justo para caer sobre el borde de la plataforma (sube h en tr segundos mientras avanza sp·tr)
+        if (e.leapPl && !e.leapt && e.onGround) {
+          const pl = e.leapPl, h = GROUND - pl.y + 10, tr = Math.sqrt(2 * h / GRAV), edge = e.cdir > 0 ? pl.x0 : pl.x1;
+          if ((e.x - (edge - e.cdir * t.chargeSpeed * (e.rage || 1) * tr * 0.85)) * e.cdir >= 0) { e.vy = -Math.sqrt(2 * GRAV * h); e.leapt = true; e.onGround = false; e.y -= 1; }
+        }
+        if (!e.hitP && ellipseHitsPlayer(e, 4) && hitP(e, e.leapPl ? 'Embestida con salto' : 'Embestida', t.chargeDmg, e.cdir * 520, -300)) e.hitP = true;
         for (const o of alive()) if (o !== e && o.def && !e.bowled.has(o) && Math.abs(o.x - e.x) < e.rx + o.rx && Math.abs(o.y - e.y) < e.ry + o.ry) {
           e.bowled.add(o); damage(o, { dmg: t.allyDmg, kx: e.cdir * 520, ky: -200, launch: 0.4, heavy: true, color: '#ffd0a0' }); say(o, '¡ATROPELLADO!', '#ffd0a0', true);
         }
@@ -76,7 +85,6 @@ addFoe({
         if (windup(e, t.stompWindup)) {
           go(e, 'stomp'); release(e);
           if (p.y > GROUND - 30 && Math.abs(p.x - e.x) < t.stompR) hitP(e, 'Pisotón', t.stompDmg, Math.sign(dx || 1) * 360, -400);
-          shakePlatforms(e, e.x, t.shakeR, t.shakeDmg, 'Pisotón (plataforma)');
           const x = e.x; addFx(1.2, (ctx, layer, t0) => groundImpact(ctx, G.t, layer, t0, x, t.stompR / 110, { core: '#fff3e0', light: '#e8c9a8', mid: '#b08a66', deep: '#6b5442', dark: '#3a2c20', g1: [200, 150, 100], g2: [240, 210, 170] }, { seed: 4 }));
           G.shake += 6; sfx(k => { const t0 = nowT(); vThump(t0, 90, 35, 0.4 * k, 0.6, 2); });
         }

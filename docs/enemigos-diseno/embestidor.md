@@ -11,7 +11,8 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 **Movimientos**
 
 - **Embestida** — Rasca el suelo (polvo + chevrones del alto de su cuerpo) y carga en línea recta. Fija la dirección un poco antes de salir: si te mueves al final, falla. Si choca con la pared se queda aturdido y recibe ×1,5. Si le saltas, derrapa y queda de espaldas. Atropella a los demás enemigos que encuentra.
-- **Pisotón** — Si estás pegado a él: se encabrita y pisa. Zona circular en el suelo; saltar la esquiva. Si te subes a una plataforma cerca de él, el mismo pisotón la sacude (se marca en rojo) y te tira al suelo: no hay sitio seguro encima.
+- **Pisotón** — Si estás pegado a él: se encabrita y pisa. Zona circular en el suelo; saltar la esquiva.
+- **Embestida con salto** — Si estás en una plataforma baja, la carga acaba en un salto hasta tu plataforma (flechas también a esa altura) y sigue corriendo por ella hasta caerse por el borde. Más alta de lo que alcanza, no te llega: se queda debajo esperando a que bajes.
 
 **Combina con:** Con Fatuos: atrae su carga hacia un fatuo o hacia otros enemigos (los atropella). Con Artilleros: la carga te obliga a moverte mientras caen morteros.
 
@@ -43,9 +44,7 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 | `stompWindup` | 0.5 | 0.1 – 1.5 (paso 0.05) | Pisotón: preparación (s) |
 | `stompR` | 130 | 30 – 300 (paso 5) | Pisotón: radio |
 | `stompDmg` | 12 | 0 – 60 (paso 1) | Pisotón: daño |
-| `upDelay` | 0.6 | 0 – 3 (paso 0.05) | Si estás encima de una plataforma más de (s): pisotón |
-| `shakeR` | 260 | 0 – 600 (paso 10) | Pisotón: sacude las plataformas a menos de |
-| `shakeDmg` | 6 | 0 – 40 (paso 1) | Pisotón: daño al tirarte de la plataforma |
+| `leapReach` | 160 | 0 – 300 (paso 5) | Embestida con salto: salta a plataformas hasta esta altura |
 | `cooldown` | 1.3 | 0 – 5 (paso 0.1) | Pausa entre ataques (s) |
 <!-- /gen:ajustes -->
 
@@ -53,3 +52,4 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 
 - 2026-10-20 · Diseñado sin arte (primero el comportamiento, luego se busca el arte). Pendiente de que el usuario lo pruebe.
 - 2026-10-20 · Respuesta hacia arriba (el usuario no veía cómo encajan los de suelo con tantas plataformas): ver «Movimientos»; ajustes nuevos en la tabla.
+- 2026-10-20 · El usuario descarta la sacudida de plataformas a distancia (sin coherencia física): sustituida por una respuesta física (ver «Movimientos»).

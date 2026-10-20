@@ -12,7 +12,7 @@ const SND_SWARM = {
   flare: sound('swarm_flare', 'Enjambre', 'Faroles · bengala', k => { SFXLIB.boom(k, 0.55); const t = nowT(); vRing(t, [1318, 1976], 0.5 * k, 0.04, 0.4); }),
 };
 addWeapon({
-  id: 'swarm', name: 'Enjambre', short: 'Enjambre', pal: 'ember',
+  id: 'swarm', name: 'Enjambre', short: 'Enjambre', pal: 'ember',  fresh: true,   // arma nueva (2026-10-20), sin probar por el usuario
   archetypes: [
     { id: 'hive', name: 'Colmena', desc: 'Las luciérnagas viven a tu alrededor y atacan SOLAS a cada enemigo que golpeas con CUALQUIER arma; el clic las manda todas a la vez.',
       ups: [{ id: 'queen', name: 'Reina', desc: 'Una luciérnaga grande más, cuyas picaduras son golpes fuertes.' },

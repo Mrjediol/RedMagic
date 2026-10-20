@@ -13,7 +13,7 @@ const SND_WHIP = {
   snap: sound('whip_snap', 'Látigo', 'Cadena · Ruptura', k => { SFXLIB.glass(k, 1); SFXLIB.boom(k * 0.6, 0.35); }),
 };
 addWeapon({
-  id: 'whip', name: 'Látigo de luz', short: 'Látigo', pal: 'set',
+  id: 'whip', name: 'Látigo de luz', short: 'Látigo', pal: 'set',  fresh: true,   // arma nueva (2026-10-20), sin probar por el usuario
   archetypes: [
     { id: 'link', name: 'Cadena', desc: 'El latigazo ENCADENA a los que golpea (si es uno, con el más cercano): mientras dura, parte del daño que recibe uno — de CUALQUIER arma — les llega a los demás.',
       ups: [{ id: 'shackle', name: 'Grillete', desc: 'Los encadenados se atraen entre sí: no pueden separarse.' },

@@ -11,7 +11,7 @@ const SND_HAMMER = {
   tremor: sound('hammer_tremor', 'Mazo', 'Sismo · réplica', k => { const t = nowT(); vThump(t, 80, 40, 0.2 * k, 0.45, 2); vNoise(t, 0.2 * k, 0.15, 'lowpass', 600, 150, 1, { att: 0.005 }); }),
 };
 addWeapon({
-  id: 'hammer', name: 'Mazo de cristal', short: 'Mazo', pal: 'set',
+  id: 'hammer', name: 'Mazo de cristal', short: 'Mazo', pal: 'set',  fresh: true,   // arma nueva (2026-10-20), sin probar por el usuario
   archetypes: [
     { id: 'quake', name: 'Terremoto', desc: 'El golpe suelta una onda que corre por el suelo hacia delante y lanza por los aires a todos los de suelo.',
       ups: [{ id: 'after', name: 'Réplica', desc: 'Una segunda onda sale poco después.' },

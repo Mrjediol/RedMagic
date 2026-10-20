@@ -13,7 +13,7 @@ const SND_TIME = {
   quick: sound('time_quick', 'Reloj', 'Aceleración · proyectil acelerado', k => { const t = nowT(); vNoise(t, 0.12 * k, 0.16, 'bandpass', 1500, 6000, 1.5, { rising: true, att: 0.003 }); }),
 };
 addWeapon({
-  id: 'time', name: 'Reloj de arena', short: 'Reloj', pal: 'chrono',
+  id: 'time', name: 'Reloj de arena', short: 'Reloj', pal: 'chrono',  fresh: true,   // arma nueva (2026-10-20), sin probar por el usuario
   archetypes: [
     { id: 'stasis', name: 'Estasis', desc: 'La burbuja DETIENE el tiempo: los de dentro se quedan quietos y GUARDAN todo el daño que reciben (también el de tu otra arma); al cerrarse lo reciben de golpe, aumentado.',
       ups: [{ id: 'interest', name: 'Interés', desc: 'El daño guardado crece por cada segundo que pasa dentro.' },

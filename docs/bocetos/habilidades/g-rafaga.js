@@ -12,7 +12,7 @@ const SND_GUST = {
   slam: sound('gust_slam', 'Ráfaga', 'Tornado · los estampa', k => SND.sing_slam ? SND.sing_slam.fn(k) : SFXLIB.boom(k, 0.6)),
 };
 addWeapon({
-  id: 'gust', name: 'Ráfaga', short: 'Ráfaga', pal: 'wind',
+  id: 'gust', name: 'Ráfaga', short: 'Ráfaga', pal: 'wind',  fresh: true,   // arma nueva (2026-10-20), sin probar por el usuario
   archetypes: [
     { id: 'tornado', name: 'Tornado', desc: 'Cada soplo deja un tornado que avanza, levanta a los enemigos y los mantiene girando en el aire: ahí arriba reciben más daño de todo.',
       ups: [{ id: 'chase', name: 'Persecución', desc: 'El tornado va hacia donde apuntas.' },

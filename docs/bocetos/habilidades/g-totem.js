@@ -12,7 +12,7 @@ const SND_TOTEM = {
   boom: sound('totem_boom', 'Tótem', 'Señuelo · estalla', k => { SFXLIB.boom(k, 1); SFXLIB.shatter(k, 0.8); }),
 };
 addWeapon({
-  id: 'totem', name: 'Tótem de cristal', short: 'Tótem', pal: 'set',
+  id: 'totem', name: 'Tótem de cristal', short: 'Tótem', pal: 'set',  fresh: true,   // arma nueva (2026-10-20), sin probar por el usuario
   archetypes: [
     { id: 'reson', name: 'Resonador', desc: 'El tótem COPIA tus golpes: cada golpe de tu otra arma a un enemigo cerca del tótem le devuelve una onda con parte de ese daño.',
       ups: [{ id: 'amp', name: 'Amplificador', desc: 'La copia es más fuerte y llega más lejos.' },

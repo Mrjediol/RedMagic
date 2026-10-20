@@ -14,7 +14,7 @@ const SND_SPEAR = {
   blink: sound('spear_blink', 'Jabalina', 'Destello', k => { const t = nowT(); vNoise(t, 0.12 * k, 0.3, 'highpass', 1500, 8000, 1, { rising: true, att: 0.002 }); vRing(t + 0.05 * k, [1760, 2640], 0.3 * k, 0.05, 0.3); vThump(t + 0.08 * k, 100, 45, 0.25 * k, 0.5, 2); }),
 };
 addWeapon({
-  id: 'spear', name: 'Jabalina', short: 'Jabalina', pal: 'set',
+  id: 'spear', name: 'Jabalina', short: 'Jabalina', pal: 'set',  fresh: true,   // arma nueva (2026-10-20), sin probar por el usuario
   archetypes: [
     { id: 'rod', name: 'Pararrayos', desc: 'Clavada, es un pararrayos: cada golpe de CUALQUIERA de tus armas a un enemigo cerca de ella hace caer un rayo desde la jabalina, que salta a otro.',
       ups: [{ id: 'storm', name: 'Tormenta', desc: 'Además, lanza un rayo sola cada poco al enemigo más cercano.' },

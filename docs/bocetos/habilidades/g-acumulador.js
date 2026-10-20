@@ -11,7 +11,7 @@ const SND_VOLT = {
   fizz: sound('volt_fizz', 'Acumulador', 'Sin carga', k => { const t = nowT(); vCrackle(t, 0.12 * k, 0.12, 8, 0.1, [2000, 5000]); }),
 };
 addWeapon({
-  id: 'volt', name: 'Acumulador', short: 'Acumulador', pal: 'volt',
+  id: 'volt', name: 'Acumulador', short: 'Acumulador', pal: 'volt',  fresh: true,   // arma nueva (2026-10-20), sin probar por el usuario
   archetypes: [
     { id: 'overload', name: 'Sobrecarga', desc: 'Al llenarse, descarga SOLA alrededor de ti (aunque lleves la otra arma en la mano).',
       ups: [{ id: 'short', name: 'Cortocircuito', desc: 'Descarga antes (con menos carga): más a menudo y más pequeña.' },

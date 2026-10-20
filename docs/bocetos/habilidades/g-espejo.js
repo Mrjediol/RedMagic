@@ -11,7 +11,7 @@ const SND_MIRROR = {
   shatter: sound('mirror_shatter', 'Espejo', 'Se rompe en esquirlas', k => SFXLIB.shatter(k, 0.9)),
 };
 addWeapon({
-  id: 'mirror', name: 'Espejo', short: 'Espejo', pal: 'ice',
+  id: 'mirror', name: 'Espejo', short: 'Espejo', pal: 'ice',  fresh: true,   // arma nueva (2026-10-20), sin probar por el usuario
   archetypes: [
     { id: 'facet', name: 'Facetas', desc: 'Cada proyectil que desvía se parte en dos; el Rayo que lo toca suelta además un haz al segundo enemigo.',
       ups: [{ id: 'three', name: 'Tres caras', desc: 'Se parte en tres.' },

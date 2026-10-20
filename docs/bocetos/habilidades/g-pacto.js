@@ -12,7 +12,7 @@ const SND_BLOOD = {
   drain: sound('blood_drain', 'Pacto', 'Vampiro · drenar (tic)', k => { const t = nowT(); vTone(t, 220, 330, 0.08 * k, 0.03, 'sine', 0.2); }),
 };
 addWeapon({
-  id: 'blood', name: 'Pacto de sangre', short: 'Pacto', pal: 'blood',
+  id: 'blood', name: 'Pacto de sangre', short: 'Pacto', pal: 'blood',  fresh: true,   // arma nueva (2026-10-20), sin probar por el usuario
   archetypes: [
     { id: 'bleed', name: 'Hemorragia', desc: 'El orbe hace SANGRAR (se acumula). Golpear con tu OTRA arma a un enemigo que sangra mucho revienta la sangre: daño extra y te cura.',
       ups: [{ id: 'artery', name: 'Arterias', desc: 'Al morir un enemigo que sangra, su sangrado pasa a los de alrededor.' },

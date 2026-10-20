@@ -114,7 +114,7 @@ const UI = {};
   function slotBox(i) {
     const s = G.slots[i], d = WEAPONS[s.w];
     const box = el('div', { className: 'slot' + (i === G.cur ? ' on' : '') });
-    box.append(el('select', { on: { change: e => { s.w = e.target.value; s.arch = null; s.ups = {}; delete offers[i]; makeInst(s); changed(); } } }, ids.map(id => el('option', { value: id, selected: id === s.w }, `${i + 1} · ${WEAPONS[id].name}`))));
+    box.append(el('select', { on: { change: e => { s.w = e.target.value; s.arch = null; s.ups = {}; delete offers[i]; makeInst(s); changed(); } } }, ids.map(id => el('option', { value: id, selected: id === s.w }, `${i + 1} · ${WEAPONS[id].name}${WEAPONS[id].fresh ? " ✦ nueva" : ""}`))));
     box.append(el('div', { className: 'row lvl' }, el('b', {}, `Nivel ${slotLevel(s)}`),
       el('button', { on: { click: () => { offers[i] = levelOffer(s); build(); } } }, '🎲 Subir de nivel'),
       el('button', { on: { click: () => { s.arch = null; s.ups = {}; delete offers[i]; changed(); } } }, '↺ Nv 1')));

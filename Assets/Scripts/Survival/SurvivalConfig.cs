@@ -246,6 +246,12 @@ namespace RedMagic.Survival
         [Min(0f)] public float flyerClearance = 1f;
         [Tooltip("Suelo y torretas: a cuánto por encima del suelo o plataforma aparecen (caen solos).")]
         [Min(0f)] public float groundSpawnHeight = 1f;
+        [Tooltip("Torretas: peso de aparecer en un suelo o plataforma.")]
+        [Min(0f)] public float turretOnFloors = 1f;
+        [Tooltip("Torretas: peso de aparecer en una pared (de lado, con la base contra la pared).")]
+        [Min(0f)] public float turretOnWalls = 1f;
+        [Tooltip("Torretas: peso de aparecer en un techo (boca abajo).")]
+        [Min(0f)] public float turretOnCeilings = 1f;
         [Tooltip("Capas del terreno macizo (Ground).")]
         public LayerMask solidLayers = 1 << 6;
         [Tooltip("Capas de las plataformas (Platform): valen como suelo, no como pared.")]

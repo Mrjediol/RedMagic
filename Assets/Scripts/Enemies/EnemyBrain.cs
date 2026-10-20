@@ -917,8 +917,11 @@ namespace RedMagic.Enemies
 
         private void FaceTowards(Vector2 toTarget)
         {
-            if (_animation == null || Mathf.Abs(toTarget.x) < 0.01f) return;
-            _animation.SetFacing(toTarget.x >= 0f ? 1 : -1);
+            // En su propio espacio: una torreta montada en una pared o en el techo está girada, y su "derecha" ya no es la
+            // del mundo. Sin giro es lo mismo que mirar la X del mundo.
+            Vector2 local = transform.InverseTransformDirection(toTarget);
+            if (_animation == null || Mathf.Abs(local.x) < 0.01f) return;
+            _animation.SetFacing(local.x >= 0f ? 1 : -1);
         }
 
         // ============================================================ objetivo

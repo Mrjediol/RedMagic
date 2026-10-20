@@ -14,8 +14,9 @@ namespace RedMagic.Survival
     /// no más de <see cref="SurvivalConfig.maxAbove"/> por encima ni <see cref="SurvivalConfig.maxBelow"/> por debajo, a
     /// <see cref="SurvivalConfig.minSeparation"/> de cualquier enemigo vivo o recién salido, y nunca dentro de la roca.</item>
     /// <item><b>Volador</b>: en el aire, con <see cref="SurvivalConfig.flyerClearance"/> de hueco alrededor.</item>
-    /// <item><b>Suelo</b> y <b>Torreta</b>: sobre un suelo o una plataforma (rayo hacia abajo), un poco por encima. (Torretas en
-    /// paredes y techos: tarea aparte.)</item>
+    /// <item><b>Suelo</b>: sobre un suelo o una plataforma (rayo hacia abajo), un poco por encima: cae solo.</item>
+    /// <item><b>Torreta</b>: pegada a un suelo, plataforma, pared o techo (pesos del config), girada para que su base mire a la
+    /// superficie y apoyada en ella (<see cref="Mount"/>): su cuerpo es estático, no cae.</item>
     /// <item><b>Jefe</b>: en el suelo de abajo, en el centro del nivel.</item>
     /// </list>
     /// "Dentro de la roca" sale de la cuadrícula del <see cref="Level"/> (el terreno pintado tiene colliders de borde, que
@@ -52,9 +53,13 @@ namespace RedMagic.Survival
             }
         }
 
-        public bool TryFind(SurvivalSpawnKind kind, Vector2 player, List<Health> alive, System.Random rng, out Vector2 position)
+        /// <param name="normal">Hacia dónde mira la superficie en la que se apoya (arriba salvo torretas en pared o techo).
+        /// Para una torreta, <paramref name="position"/> es el punto de la superficie: la coloca <see cref="Mount"/>.</param>
+        public bool TryFind(SurvivalSpawnKind kind, Vector2 player, List<Health> alive, System.Random rng,
+                            out Vector2 position, out Vector2 normal)
         {
             _recent.RemoveAll(s => Time.time - s.time > RecentSeconds);
+            normal = Vector2.up;
             if (kind == SurvivalSpawnKind.Boss) return BossSpot(player, out position) && Remember(position, kind);
 
             float separation = _config.minSeparation, minDistance = _config.minDistance;
@@ -66,14 +71,44 @@ namespace RedMagic.Survival
                 for (int i = 0; i < _config.maxAttempts; i++)
                 {
                     var p = Sample(player, rng);
-                    bool ok = kind == SurvivalSpawnKind.Flying ? FreeForFlyer(p) : GroundSpot(p, out p);
+                    var n = Vector2.up;
+                    bool ok = kind switch
+                    {
+                        SurvivalSpawnKind.Flying => FreeForFlyer(p),
+                        SurvivalSpawnKind.Turret => TurretSurface(p, rng, out p, out n),
+                        _ => GroundSpot(p, out p),
+                    };
                     if (!ok || !InRing(p, player, minDistance) || Crowded(p, alive, separation)) continue;
                     position = p;
+                    normal = n;
                     return Remember(p, kind);
                 }
             }
             position = default;
             return false;
+        }
+
+        /// <summary>
+        /// Planta <paramref name="enemy"/> (una torreta) en la superficie: lo gira para que su "abajo" apunte contra ella —
+        /// techo boca abajo, pared de lado — y lo apoya con la base tocándola, midiendo lo que asoma su dibujo por debajo de
+        /// la raíz. Llamar después de escalarlo (variantes), para medir el tamaño de verdad.
+        /// </summary>
+        public static void Mount(GameObject enemy, Vector2 surfacePoint, Vector2 normal)
+        {
+            var root = enemy.transform;
+            root.rotation = Quaternion.identity;
+            float below = 0f;
+            bool any = false;
+            foreach (var r in enemy.GetComponentsInChildren<SpriteRenderer>())
+            {
+                if (!r.enabled || r.sprite == null) continue;
+                float b = root.position.y - r.bounds.min.y;
+                below = any ? Mathf.Max(below, b) : b;
+                any = true;
+            }
+            float angle = Mathf.Atan2(normal.y, normal.x) * Mathf.Rad2Deg - 90f;   // arriba de la torreta = la normal
+            root.rotation = Quaternion.Euler(0f, 0f, angle);
+            root.position = surfacePoint + normal.normalized * (any ? below : 0f);
         }
 
         // ------------------------------------------------------------------ reglas
@@ -116,6 +151,35 @@ namespace RedMagic.Survival
             if (hit.collider == null || hit.normal.y < 0.7f) return false;
             spot = hit.point + Vector2.up * _config.groundSpawnHeight;
             return !IsRock(spot) && Physics2D.OverlapCircle(spot, 0.3f, _config.solidLayers) == null;
+        }
+
+        /// <summary>
+        /// Una superficie para una torreta cerca de <paramref name="from"/>: suelo o plataforma (rayo hacia abajo), pared (a un
+        /// lado al azar) o techo (hacia arriba), según los pesos del config. Pared y techo sólo de terreno macizo (una
+        /// plataforma sólo se pisa). Con hueco delante para que quepa.
+        /// </summary>
+        private bool TurretSurface(Vector2 from, System.Random rng, out Vector2 point, out Vector2 normal)
+        {
+            point = from;
+            normal = Vector2.up;
+            if (IsRock(from)) return false;
+
+            float floor = _config.turretOnFloors, wall = _config.turretOnWalls, ceiling = _config.turretOnCeilings;
+            double roll = rng.NextDouble() * (floor + wall + ceiling);
+            Vector2 dir;
+            LayerMask mask = _config.solidLayers;
+            if (roll < floor) { dir = Vector2.down; mask |= _config.platformLayers; }
+            else if (roll < floor + wall) dir = rng.Next(2) == 0 ? Vector2.left : Vector2.right;
+            else dir = Vector2.up;
+
+            float reach = Mathf.Max(_config.maxDistance, _config.maxAbove + _config.maxBelow);
+            var hit = Physics2D.Raycast(from, dir, reach, mask);
+            if (hit.collider == null || Vector2.Dot(hit.normal, -dir) < 0.9f) return false;   // de frente, no una esquina
+
+            point = hit.point;
+            normal = -dir;   // la cara plana de la celda, no la normal suavizada del borde
+            Vector2 front = point + normal * 1.2f;
+            return !IsRock(front) && Physics2D.OverlapCircle(front, 0.5f, _config.solidLayers) == null;
         }
 
         /// <summary>Centro del nivel, sobre el primer suelo desde abajo; sin <see cref="Level"/>, el suelo bajo el jugador.</summary>

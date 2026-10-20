@@ -375,7 +375,7 @@ namespace RedMagic.Survival
         private bool Spawn(SurvivalSpawnRequest request)
         {
             if (request.prefab == null || Player == null) return false;
-            if (!_finder.TryFind(request.kind, Player.transform.position, _alive, _rng, out var position))
+            if (!_finder.TryFind(request.kind, Player.transform.position, _alive, _rng, out var position, out var normal))
             {
                 if (_warnedKinds.Add(request.kind))
                     Debug.LogWarning($"[Survival] No encuentro sitio para un enemigo de tipo {request.kind} cerca del jugador " +
@@ -393,6 +393,8 @@ namespace RedMagic.Survival
             EnemyVariant.ApplyStats(enemy, config.HealthScale(Wave) * Stage.healthMultiplier * _difficulty.healthMultiplier,
                                     config.DamageScale(Wave) * Stage.damageMultiplier * _difficulty.damageMultiplier);
             if (request.special != null) request.special.Apply(enemy, shader);
+            // Ya con su tamaño final: apoyada en su superficie (suelo, pared o techo), con la base tocándola.
+            if (request.kind == SurvivalSpawnKind.Turret) SurvivalSpawnFinder.Mount(enemy, position, normal);
 
             var health = enemy.GetComponent<Health>();
             if (health != null) _alive.Add(health);

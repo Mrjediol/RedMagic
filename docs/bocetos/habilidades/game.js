@@ -139,7 +139,7 @@ function updateEnemies(dt0) {
       e.pull = null;
     }
     // empujones
-    e.x += e.vx * dt; e.vx *= Math.pow(0.02, dt);
+    e.x += e.vx * dt; e.vx *= Math.pow(e.launchT > 0 ? 0.25 : 0.02, dt);   // lanzado: resbala mucho más
     if (e.fly) {
       if (!e.slammed) { e.y += e.vy * dt; e.vy *= Math.pow(0.05, dt); e.y = lerp(e.y, e.homeY + Math.sin(G.t * 2 + e.sp.x) * 6, Math.min(1, dt * 1.2)); e.x = lerp(e.x, e.sp.x, Math.min(1, dt * 0.25)); }
       else { e.vy += GRAV * dt; e.y += e.vy * dt; if (e.y >= GROUND - 32) { e.y = GROUND - 32; if (e.vy > 300) { hitFx('slam', e.x, GROUND); } e.vy = 0; e.slamT = (e.slamT || 0) + dt; if (e.slamT > 1.6) { e.slammed = false; e.slamT = 0; } } }
@@ -413,7 +413,7 @@ function voidPulse(x, y) {
 function fireZone(x, halfW, life, burn, slot) {
   const t0 = G.t; let tick = 0;
   return {
-    kind: 'zone',
+    kind: 'zone', fire: true, x, y: GROUND - 10, halfW,
     update(dt) {
       tick -= dt;
       if (tick <= 0) { tick = 0.3; for (const e of alive()) if (Math.abs(e.x - x) < halfW && GROUND - (e.y + e.ry) < 30) damage(e, { dmg: 3, elem: 'fire', burn, slot, silentFlash: true, dot: true }); }
@@ -545,7 +545,7 @@ function drawDummy(ctx, e, solid) {
   }
   if (e.vulnT > G.t) {                                        // vulnerable: anillo roto que late
     const a = Math.min(1, (e.vulnT - G.t) * 3) * (0.6 + 0.4 * Math.sin(G.t * 16));
-    ellArc(ctx, e.x, e.y, e.rx + 9, e.ry + 9, 0, TAU, 2, '#ff8fb0', a, 'front', { taper: 0, wob: 0.25, seed: e.sp.x, m: 24 });
+    ellArc(ctx, e.x, e.y, e.rx + 9, e.ry + 9, 0, TAU, 2, '#ff8fb0', a, 'front', { taper: 0, wob: 0.08, seed: e.sp.x, m: 28 });
   }
   if (e.stunT > 0) for (let i = 0; i < 3; i++) { const a = G.t * 5 + i * TAU / 3; star4(ctx, e.x + Math.cos(a) * 18, e.y - e.ry - 8 + Math.sin(a) * 5, 5, G.t * 4, '#fff3b0', Math.min(1, e.stunT * 4), 'front'); }
   // vida

@@ -35,6 +35,7 @@ los expresa. Árbol completo hoy en las seis armas.
 | Semilla estelar | `seed` | mina lanzada en parábola | [semilla.md](semilla.md) |
 | Golpe estelar | `star` | lanza del cielo diferida | [golpe-estelar.md](golpe-estelar.md) |
 | Reloj de arena | `time` | burbuja de tiempo; potencia a la otra arma | [reloj.md](reloj.md) |
+| Ráfaga | `gust` | soplo que empuja y lanza (control) | [rafaga.md](rafaga.md) |
 
 Armas 7+ (2026-10-20, hechas sin el usuario, **sin probar**): dibujo en `fx-armas2.js`, pruebas dirigidas en
 `tools/test-armas2.cjs` (usa `tools/sim.cjs`, que carga la jugable en Node para medir lo que hace un arma).

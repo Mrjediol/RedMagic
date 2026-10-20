@@ -265,7 +265,7 @@ function fireBit(x, y, life, burn, slot) {
   const t0 = G.t, seed = Math.floor(t0 * 1000), R = rand(seed), ox = (R() - 0.5) * 10, lay = R() < 0.5 ? 'back' : 'front', h = 16 + R() * 12, w = 5 + R() * 3, ember = R() < 0.4;
   let tick = 0;
   return {
-    kind: 'zone',
+    kind: 'zone', fire: true, x, y, halfW: 10,
     update(dt) {
       tick -= dt;
       if (tick <= 0) { tick = 0.3; for (const e of alive()) if (Math.abs(e.x - x) < e.rx + 6 && Math.abs(e.y - y) < e.ry + 10) damage(e, { dmg: 2, elem: 'fire', burn, slot, silentFlash: true }); }

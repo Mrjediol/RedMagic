@@ -50,4 +50,46 @@ if (!only || only === 'time') {
   sim.setup({ slots: [{ w: 'time', arch: 'quick', ups: { encore: true } }, { w: 'star' }], enemies: E1, px: 200 }); sim.aim(900, 200).tap().run(0.1).swap(1).aim(620, 290).tap().run(3.4);
   check('Aceleración · Bis: la otra arma recargada al cerrarse', G.slots[1].inst.ready() >= 0.99, G.slots[1].inst.ready().toFixed(2));
 }
+// ---------------------------------------------------------------- 8 · Ráfaga
+if (!only || only === 'gust') {
+  // base: empuja y el lanzado choca con el de detrás
+  sim.setup({ slots: [{ w: 'gust' }, { w: 'fan' }], enemies: [{ x: 330, kind: 'ground' }, { x: 530, kind: 'ground' }], px: 200 });
+  const [a, b] = G.enemies, ax0 = a.x; let crash = 0;
+  sim.aim(330, 296).tap().run(0.6, () => { if (G.texts.some(x => x.s === 'CHOQUE')) crash = 1; });
+  check('Ráfaga base: empuja', a.x - ax0 > 40 || crash, `${Math.round(a.x - ax0)} px`);
+  check('Ráfaga base: el lanzado choca con el de detrás (daña a los dos)', crash && b.hp < b.hpMax, `vida del 2.º ${Math.round(b.hp)}`);
+  // Tornado: levanta y los hace vulnerables
+  sim.setup({ slots: [{ w: 'gust', arch: 'tornado', ups: { slam: true } }, { w: 'fan' }], enemies: near(380, 2), px: 200 });
+  let maxUp = 0, vuln = 0; sim.aim(380, 296).tap().run(2.4, () => { for (const e of G.enemies) { maxUp = Math.max(maxUp, (GROUND_Y() - 44) - e.y); if (e.vulnT > G.t) vuln = 1; } });
+  check('Tornado: levanta a los enemigos', maxUp > 40, `${Math.round(maxUp)} px`);
+  check('Tornado: en el aire son vulnerables', vuln === 1);
+  const before = sim.dmg(); sim.run(0.8);
+  check('Tornado · Estampida: los estampa al deshacerse', sim.dmg() - before >= T('gust').slamDamage, `+${sim.dmg() - before}`);
+  // Tornado · Absorción: toca fuego → tornado de fuego (los quema)
+  sim.setup({ slots: [{ w: 'gust', arch: 'tornado', ups: { absorb: true } }, { w: 'fan' }], enemies: near(420, 1), px: 200 });
+  G.ents.push(sim.sb.fireZone ? sim.sb.fireZone(330, 40, 3, 2, null) : null); sim.run(0.02);
+  let burnt = 0; sim.aim(330, 296).tap().run(2, () => { if (G.enemies[0].burnT > 0) burnt = 1; });
+  check('Tornado · Absorción: con fuego en el suelo quema', burnt === 1);
+  // Corriente: tus esquirlas que la cruzan ganan daño
+  const fanThrough = arch => { sim.setup({ slots: [{ w: 'gust', arch }, { w: 'fan' }], enemies: [{ x: 700, kind: 'ground' }], hpMul: 4, px: 200 }); sim.aim(700, 296).tap().run(0.1).swap(1); sim.aim(700, 296).tap().run(1.2); return sim.dmg(); };
+  const dc = fanThrough('current'), dn = fanThrough(null);
+  check('Corriente: las esquirlas del Abanico pegan más a favor', dc > dn * 1.15, `${dc} vs ${dn}`);
+  // Corriente · Remolque: los arrastra al final
+  sim.setup({ slots: [{ w: 'gust', arch: 'current', ups: { tow: true } }, { w: 'fan' }], enemies: [{ x: 330, kind: 'walker', x0: 250, x1: 420 }], px: 200 });
+  sim.aim(700, 296).tap(); const wx0 = G.enemies[0].x; sim.run(2);
+  check('Corriente · Remolque: arrastra al enemigo hacia el final', G.enemies[0].x - wx0 > 120, `${Math.round(G.enemies[0].x - wx0)} px`);
+  // Martillo: más carga = más lejos
+  const ramDist = hold => { sim.setup({ slots: [{ w: 'gust', arch: 'ram' }, { w: 'fan' }], enemies: [{ x: 330, kind: 'ground' }], px: 200 }); const e = G.enemies[0], x0 = e.x; sim.aim(330, 296).press().run(hold).release(); let mx = 0; sim.run(0.6, () => { mx = Math.max(mx, e.x - x0); }); return mx; };
+  const r0 = ramDist(0.02), r1 = ramDist(0.9);
+  check('Martillo: cargado lanza mucho más lejos', r1 > r0 * 1.6 && r1 > 150, `${Math.round(r1)} vs ${Math.round(r0)} px`);
+  // Martillo · Bolos: tres en fila, el 3.º también recibe
+  sim.setup({ slots: [{ w: 'gust', arch: 'ram', ups: { pins: true } }, { w: 'fan' }], enemies: near(320, 3), px: 200 });
+  sim.aim(320, 296).press().run(0.9).release().run(1);
+  check('Martillo · Bolos: el golpe llega al tercero', G.enemies[2].hp < G.enemies[2].hpMax, `vida ${G.enemies.map(e => Math.round(e.hp)).join('/')}`);
+  // Martillo · Estampido
+  sim.setup({ slots: [{ w: 'gust', arch: 'ram', ups: { crash: true } }, { w: 'fan' }], enemies: [{ x: 320, kind: 'ground' }, { x: 600, kind: 'ground' }], px: 200 });
+  sim.aim(320, 296).press().run(0.9).release().run(1.6);
+  check('Martillo · Estampido: estalla donde se para', G.enemies[1].hp < G.enemies[1].hpMax || sim.dmg() > T('gust').ramMax + 10, `daño ${sim.dmg()}`);
+}
 check.done();
+function GROUND_Y() { return 340; }

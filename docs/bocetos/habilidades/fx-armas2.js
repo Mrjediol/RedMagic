@@ -98,3 +98,73 @@ function speedStreaks(ctx, t, layer, t0, x, y, ang, pal) {
   for (let i = 0; i < 4; i++) { const off = (i - 1.5) * 5, bx = x - Math.cos(ang) * (10 + i * 6) + Math.cos(ang + Math.PI / 2) * off, by = y - Math.sin(ang) * (10 + i * 6) + Math.sin(ang + Math.PI / 2) * off;
     needle(ctx, bx, by, bx - Math.cos(ang) * 26 * (1 - u), by - Math.sin(ang) * 26 * (1 - u), 2, i % 2 ? pal.core : pal.light, 1 - u, layer); }
 }
+
+// ---------------------------------------------------------------- Ráfaga (g-rafaga.js)
+// cono de viento: trazos curvos que salen del cristal y se abren; u = 0..1 de la vida del soplo
+function gustCone(ctx, t, layer, t0, x, y, ang, range, half, pal, o = {}) {
+  const life = o.life || 0.35, u = (t - t0) / life; if (u < 0 || u >= 1) return;
+  const R = rand(o.seed || 21), n = o.n || 11;
+  for (let i = 0; i < n; i++) {
+    const off = (R() * 2 - 1) * half, lay = R() < 0.4 ? 'back' : 'front'; if (lay !== layer) continue;
+    const d0 = range * (0.05 + 0.8 * easeOut(u)) * (0.7 + R() * 0.4), len = range * (0.18 + R() * 0.2) * (1 - u * 0.5), curl = (R() - 0.5) * 0.6;
+    const pts = []; for (let k = 0; k <= 8; k++) { const s = k / 8, d = d0 - len * (1 - s), a = ang + off + curl * s * s; if (d < 4) continue; pts.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d }); }
+    if (pts.length > 1) { ribbon(ctx, pts, s => (o.w || 3.4) * Math.sin(Math.PI * s), i % 3 ? pal.light : pal.core, (1 - u) * 0.85, layer); }
+  }
+  if (layer === 'front' && u < 0.4) { glow(ctx, x, y, 30, pal.g1, 0.5 * (1 - u / 0.4)); star4(ctx, x, y, 14 * (1 - u), ang, pal.core, 1 - u / 0.4, layer); }
+}
+// remolino que queda colgado tras el soplo (espiral pequeña que se deshace)
+function windSwirl(ctx, t, layer, t0, x, y, r, pal) {
+  const u = seg(t, t0, t0 + 0.6); if (u >= 1) return;
+  ellArc(ctx, x, y, r * (0.5 + u), r * (0.5 + u) * 0.6, t * 8, t * 8 + 4.2, 2.2, pal.light, 0.7 * (1 - u), layer, { taper: 1, m: 20 });
+}
+// tornado: anillos inclinados apilados que se ensanchan hacia arriba y giran; base con polvo. h = alto, w = ancho de la boca
+function tornadoFx(ctx, t, layer, x, h, w, pal, a, seed = 0) {
+  if (a <= 0) return;
+  const n = 9;
+  for (let i = 0; i < n; i++) {
+    const s = i / (n - 1), y = GROUND - 6 - s * h, rr = lerp(w * 0.18, w, Math.pow(s, 0.8)), sway = Math.sin(t * 3 + s * 4 + seed) * 10 * s, sp = t * (9 - s * 3) + i * 0.7;
+    const half = layer === 'back' ? [Math.PI, TAU] : [0, Math.PI];
+    ellArc(ctx, x + sway, y, rr, rr * 0.22, half[0] + sp % 0.5, half[1] + sp % 0.5, 2.6 + s * 1.5, i % 2 ? pal.light : pal.mid, a * (0.55 + 0.4 * s), layer, { taper: 1, wob: 0.15, seed: i + seed, m: 16 });
+  }
+  // trazos que suben girando
+  const R = rand(seed + 5);
+  for (let i = 0; i < 10; i++) {
+    const ph = (t * (0.7 + R() * 0.5) + R()) % 1, s = ph, th = t * 7 + R() * TAU, rr = lerp(w * 0.18, w, Math.pow(s, 0.8)) * 0.95, front = Math.sin(th) > 0;
+    if (front !== (layer === 'front')) continue;
+    const px = x + Math.cos(th) * rr + Math.sin(t * 3 + s * 4 + seed) * 10 * s, py = GROUND - 6 - s * h + Math.sin(th) * rr * 0.22;
+    drop(ctx, px, py, th + Math.PI / 2 * Math.sign(Math.cos(th) || 1), 10 + s * 8, 1.6, pal.core, a * Math.sin(Math.PI * ph), layer);
+  }
+  if (layer === 'front') { glow(ctx, x, GROUND - h * 0.4, w * 1.1, pal.g1, 0.25 * a); }
+  dust(ctx, t, t - ((t * 2) % 0.6), x, layer, { n: 4, reach: w * 0.8, sc: 0.5, seed: Math.floor(t * 2) + seed, y: GROUND });
+}
+// corriente de viento: banda con trazos que corren en su dirección (x0,y0 = inicio; ang; len; wid = medio ancho)
+function windCurrent(ctx, t, layer, x0, y0, ang, len, wid, a, pal, seed = 0) {
+  if (a <= 0) return;
+  const c = Math.cos(ang), s = Math.sin(ang), nx = -s, ny = c, R = rand(seed + 3);
+  const P = (d, o) => ({ x: x0 + c * d + nx * o, y: y0 + s * d + ny * o });
+  if (layer === 'back') for (const sg of [-1, 1]) { const p0 = P(0, sg * wid), p1 = P(len, sg * wid); strokeTaper(ctx, [p0, p1], 1.6, pal.mid, 0.35 * a, layer, false); }
+  for (let i = 0; i < 16; i++) {
+    const lane = (R() * 2 - 1) * wid * 0.85, sp = 0.8 + R() * 0.7, ph = (t * sp * 1.4 + R()) % 1, d = ph * len, l = len * (0.08 + R() * 0.08), lay = R() < 0.45 ? 'back' : 'front';
+    if (lay !== layer) continue;
+    const wv = k => Math.sin((d - k) * 0.03 + t * 4 + i) * 4;
+    const pts = []; for (let k = 0; k <= 6; k++) { const dd = d - l * (1 - k / 6); if (dd < 0) continue; pts.push(P(dd, lane + wv(l * (1 - k / 6)))); }
+    if (pts.length > 1) ribbon(ctx, pts, q => 2.6 * Math.sin(Math.PI * q), i % 3 ? pal.light : pal.core, a * Math.sin(Math.PI * ph), layer);
+  }
+}
+// martillo de aire: aro de aire comprimido que viaja + trazos; carga = espiral que se cierra sobre el cristal
+function ramCharge(ctx, t, layer, x, y, k, pal) {
+  if (k <= 0) return;
+  const R = rand(13);
+  for (let i = 0; i < 8; i++) {
+    const a0 = R() * TAU + t * (6 + k * 6), r = (40 - 28 * ((t * 2 + R()) % 1)) * (0.6 + 0.4 * k), front = Math.sin(a0) > 0;
+    if (front !== (layer === 'front')) continue;
+    ellArc(ctx, x, y, r, r * 0.7, a0, a0 + 1.1, 2, pal.light, 0.8 * k, layer, { taper: 1, m: 10 });
+  }
+  if (layer === 'front') { glow(ctx, x, y, 22 + 20 * k, pal.g1, 0.6 * k); if (k >= 1) star4(ctx, x, y, 18 + 4 * Math.sin(t * 40), t * 3, pal.core, 1, layer); }
+}
+function ramRing(ctx, t, layer, t0, x, y, ang, dist, sc, pal) {
+  const u = seg(t, t0, t0 + 0.28); if (u >= 1) return;
+  const d = dist * easeOut(u), px = x + Math.cos(ang) * d, py = y + Math.sin(ang) * d, r = (18 + 30 * u) * sc;
+  ellArc(ctx, px, py, r * 0.35, r, ang + (layer === 'back' ? Math.PI / 2 : -Math.PI / 2), ang + (layer === 'back' ? Math.PI * 1.5 : Math.PI / 2), 4 * sc * (1 - u * 0.5), pal.light, 1 - u, layer, { rot: 0, taper: 0.5, m: 16 });
+  if (layer === 'front') for (let i = 0; i < 5; i++) { const o = (i - 2) * 9 * sc; needle(ctx, px - Math.cos(ang) * 40 * sc + Math.cos(ang + 1.57) * o, py - Math.sin(ang) * 40 * sc + Math.sin(ang + 1.57) * o, px + Math.cos(ang + 1.57) * o * 0.6, py + Math.sin(ang + 1.57) * o * 0.6, 2.4 * sc, pal.core, 0.8 * (1 - u), layer); }
+}

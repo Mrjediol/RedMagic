@@ -47,7 +47,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Legacy/Scenes/Worlds/World2/World2_Boss.unity
     guid: eb7cd7ee2aa08494b978aabcb5565ca8
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Shop.unity
     guid: 594b46cde2cf98c489085bbc603a33a5
   - enabled: 0
@@ -86,7 +86,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/3 CombatRoomsTest.unity
     guid: 0bb2d2e18f0828740944b7d5cd938994
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/LargeLevelTest.unity
     guid: d1b13e0e447ec1b4b9c1ffeb48294eb7
   - enabled: 0

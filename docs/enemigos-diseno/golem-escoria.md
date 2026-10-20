@@ -49,3 +49,4 @@ Estado: **prototipo web, sin probar por el usuario** · jugable: `docs/bocetos/e
 ## Decisiones y feedback
 
 - 2026-10-20 · Diseñado sin arte (primero el comportamiento, luego se busca el arte). Pendiente de que el usuario lo pruebe.
+- 2026-10-20 · Primera prueba de arte: base en Gemini (perfil a la derecha) y 6 piezas recortadas en ComfyUI → `docs/enemigos-diseno/arte/golem-escoria/`. Las poses de prueba de Claude no convencieron al usuario: lo anima él en Enemy Studio. Pendiente: base de más resolución; llevarlo a Unity (`docs/tareas/enemigos-web-unity.md`).

@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-10-20T10:25:31.420Z",
+  "updated": "2026-10-20T20:11:09.089Z",
   "phases": [
     {
       "id": "mrieeoe",
@@ -119,6 +119,40 @@
           "text": "15 enemigos: 5 por zona en las 3 primeras zonas",
           "note": "",
           "done": false
+        },
+        {
+          "id": "enemigos-web-unity",
+          "text": "Buscar un buen modo de llevar los enemigos de prueba (web) a Unity",
+          "note": "31 enemigos diseñados en la jugable web (docs/enemigos-diseno/). Primer arte: Golem de escoria por piezas, lo anima el usuario en Enemy Studio.",
+          "done": false,
+          "doc": "docs/tareas/enemigos-web-unity.md",
+          "steps": [
+            {
+              "id": "ewu1",
+              "text": "Decidir el orden de las piezas genéricas que faltan en Unity (las que sirven a más enemigos primero)",
+              "done": false
+            },
+            {
+              "id": "ewu2",
+              "text": "Decidir con el usuario el dash invulnerable",
+              "done": false
+            },
+            {
+              "id": "ewu3",
+              "text": "Arte: base de más resolución y plantillas de rig que faltan (cuadrúpedo, cadena, alas)",
+              "done": false
+            },
+            {
+              "id": "ewu4",
+              "text": "Valorar un exportador ficha/tuning → brief de make-enemy.mjs",
+              "done": false
+            },
+            {
+              "id": "ewu5",
+              "text": "Primer enemigo de punta a punta: Golem de escoria (piezas listas + animación del usuario + ataques + pilar)",
+              "done": false
+            }
+          ]
         },
         {
           "id": "t2",

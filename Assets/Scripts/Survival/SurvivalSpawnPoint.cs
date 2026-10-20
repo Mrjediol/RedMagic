@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RedMagic.Survival
@@ -7,22 +6,20 @@ namespace RedMagic.Survival
     /// Un sitio donde aparecen enemigos en Supervivencia. Se colocan a mano por el mapa, tantos como se quiera, cada uno
     /// de un tipo: <b>Volador</b> (en el aire), <b>Suelo</b> (sobre el suelo o una plataforma: el enemigo cae desde aquí),
     /// <b>Torreta</b> (donde se planta una torreta) y <b>Jefe</b> (si no hay ninguno, el jefe sale en uno de Suelo).
-    /// <see cref="SurvivalManager"/> los encuentra solos en la escena: no hay que arrastrarlos a ninguna lista.
+    /// Son hijos del <see cref="SurvivalManager"/> (botones «+ Volador / Suelo / Torreta / Jefe» de su Inspector), que los
+    /// recoge al empezar: no hay lista que mantener — duplicar uno lo añade, borrarlo lo quita.
     /// </summary>
     public class SurvivalSpawnPoint : MonoBehaviour
     {
         public SurvivalSpawnKind kind = SurvivalSpawnKind.Ground;
 
-        private static readonly List<SurvivalSpawnPoint> All = new List<SurvivalSpawnPoint>();
-
-        /// <summary>Los puntos activos ahora mismo.</summary>
-        public static IReadOnlyList<SurvivalSpawnPoint> Active => All;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() => All.Clear();
-
-        private void OnEnable() => All.Add(this);
-        private void OnDisable() => All.Remove(this);
+        public static string LabelOf(SurvivalSpawnKind kind) => kind switch
+        {
+            SurvivalSpawnKind.Flying => "Volador",
+            SurvivalSpawnKind.Ground => "Suelo",
+            SurvivalSpawnKind.Turret => "Torreta",
+            _ => "Jefe",
+        };
 
         public static Color ColorOf(SurvivalSpawnKind kind) => kind switch
         {
@@ -58,13 +55,7 @@ namespace RedMagic.Survival
             }
 #if UNITY_EDITOR
             UnityEditor.Handles.color = c;
-            UnityEditor.Handles.Label(p + Vector3.up * 1.1f, kind switch
-            {
-                SurvivalSpawnKind.Flying => "Volador",
-                SurvivalSpawnKind.Ground => "Suelo",
-                SurvivalSpawnKind.Turret => "Torreta",
-                _ => "Jefe",
-            });
+            UnityEditor.Handles.Label(p + Vector3.up * 1.1f, LabelOf(kind));
 #endif
         }
     }

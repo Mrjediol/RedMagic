@@ -72,6 +72,12 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
       - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
       - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    waveSeconds:
+    - 30
+    - 45
+    - 60
+    - 90
+    waveKills: 0f00000014000000190000001e000000
     bossWave: 1
     bosses:
     - {fileID: 4655559755096861651, guid: a7ccfe0086e6bab498620e3f22e06007, type: 3}
@@ -125,6 +131,13 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
       - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
       - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    waveSeconds:
+    - 45
+    - 60
+    - 75
+    - 90
+    - 120
+    waveKills: 190000001e00000023000000280000002d000000
     bossWave: 0
     bosses: []
     overrideRewards: 0
@@ -177,11 +190,19 @@ MonoBehaviour:
       - {fileID: 11400000, guid: 8b22b122d8d762a45bded091fb434a0b, type: 2}
       - {fileID: 11400000, guid: 5b7a99d1daaefce47b1f6a47c36f6742, type: 2}
       - {fileID: 11400000, guid: 572c615d69618b345bc154e017846d3e, type: 2}
+    waveSeconds:
+    - 60
+    - 75
+    - 90
+    - 105
+    - 120
+    waveKills: 23000000280000002d000000320000003c000000
     bossWave: 0
     bosses: []
     overrideRewards: 0
     rewards: 1
   repeatLastStage: 1
+  waveMode: 1
   flyingCount:
     atFirstWave: 3
     perWave: 1
@@ -196,8 +217,33 @@ MonoBehaviour:
     max: 8
   firstSpawnDelay: 1.5
   spawnInterval: 0.6
-  maxAlive: 14
-  preferSpawnsWithin: 16
+  maxAlive: 3
+  dynamicEnd: 0
+  dynamicMaxAlive:
+    atFirstWave: 6
+    perWave: 1
+    max: 20
+  respawnDelay: 3
+  defaultWaveSeconds: 60
+  defaultWaveKills: 30
+  onTimeUp: 0
+  spawnRadius: 15
+  minSpawnDistance: 4
+  easy:
+    enemyMultiplier: 1
+    killsMultiplier: 1
+    healthMultiplier: 1
+    damageMultiplier: 1
+  normal:
+    enemyMultiplier: 1.5
+    killsMultiplier: 1.5
+    healthMultiplier: 1.25
+    damageMultiplier: 1.2
+  hard:
+    enemyMultiplier: 2
+    killsMultiplier: 2
+    healthMultiplier: 1.6
+    damageMultiplier: 1.5
   healthGrowthPerWave: 0.12
   damageGrowthPerWave: 0.08
   compoundGrowth: 0
@@ -211,7 +257,7 @@ MonoBehaviour:
   - 0.15
   rewards: 1
   itemDrops: 1
-  healBetweenWaves: 0
+  healBetweenWaves: 0.356
   autoNextWaveSeconds: 0
   goldDropMultiplier: 1
   goldPerWaveCleared: 0

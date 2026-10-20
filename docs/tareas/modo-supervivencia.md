@@ -16,6 +16,14 @@ Rama `task/supervivencia` (sale de `task/armas-unity`, sin fusionar). Arquitectu
 - Entre rondas: tienda (la del juego, altares flotantes) y botón Siguiente ronda (Intro / Select). Item que cae: activable.
 - `SurvivalArena`: prefab `Survival` colocado (8 voladores, 6 suelo, 4 torreta, 1 jefe, tienda en el suelo centro).
 
+## Hecho (2026-10-20, segunda tanda)
+- Puntos: hijos del manager (sin registro estático), botones «+ Volador / Suelo / Torreta / Jefe» y lista en su Inspector.
+- Oleadas **dinámicas** (por defecto) además de las simples: máximo a la vez (6 +1/oleada, tope 20), reaparición a los 3 s,
+  acaban por tiempo (Hielo 30/45/60/90 s, Bosque 45…120, Volcán 60…120) o por bajas (Hielo 15/20/25/30…).
+- Aparecen sólo a ≤ 15 u del jugador y ≥ 4 u (configurable).
+- Dificultad Fácil / Normal / Difícil (menú): enemigos a la vez ×1 / ×1,5 / ×2, bajas igual, vida ×1 / ×1,25 / ×1,6, daño
+  ×1 / ×1,2 / ×1,5.
+
 ## Pendiente / ideas
 - Respuestas del usuario a las preguntas de abajo.
 - Torretas en pared (girar la base contra la pared): tarea aparte, pedida para después.
@@ -25,7 +33,9 @@ Rama `task/supervivencia` (sale de `task/armas-unity`, sin fusionar). Arquitectu
 - Cuando el usuario lo dé por bueno: mover `Assets/Test/Survival/` a su sitio y fusionar la rama.
 
 ## Preguntas abiertas (hechas al usuario el 2026-10-20)
-1. Enemigos que aparecen lejos se quedan quietos hasta que el jugador entra en su `detectionRange` (en un mapa de 50×43 u
-   pasará). Hoy se mitiga con `preferSpawnsWithin` = 16 u. ¿Persecución global en Supervivencia o así?
+1. Enemigos que aparecen lejos se quedan quietos hasta que el jugador entra en su `detectionRange`. Mitigado: sólo
+   aparecen a ≤ `spawnRadius` (15 u). ¿Persecución global en Supervivencia o así?
+4. Oleada por tiempo al acabarse: hoy dejan de salir y hay que rematar a los que quedan (alternativa en el config:
+   desaparecen sin botín). ¿Cuál por defecto?
 2. ¿La dificultad (para las especiales) se reinicia en cada mundo o sigue subiendo (así está)?
 3. ¿Al morir, se pierde todo (así está) o algo de meta (almas/calaveras)?

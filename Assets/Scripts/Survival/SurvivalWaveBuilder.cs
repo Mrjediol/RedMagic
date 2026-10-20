@@ -22,7 +22,8 @@ namespace RedMagic.Survival
         private static readonly SurvivalSpawnKind[] Kinds = { SurvivalSpawnKind.Flying, SurvivalSpawnKind.Ground, SurvivalSpawnKind.Turret };
         private static readonly List<EnemyVariant> Allowed = new List<EnemyVariant>();
 
-        public static List<SurvivalSpawnRequest> Build(SurvivalConfig config, int wave, System.Random rng)
+        /// <summary>Oleada simple (o la del jefe): la lista entera. <paramref name="countMultiplier"/> = el de la dificultad.</summary>
+        public static List<SurvivalSpawnRequest> Build(SurvivalConfig config, int wave, System.Random rng, float countMultiplier = 1f)
         {
             var list = new List<SurvivalSpawnRequest>();
             var stage = config.StageFor(wave, out _, out bool bossWave);
@@ -40,7 +41,7 @@ namespace RedMagic.Survival
             {
                 var pool = stage.Pool(kind);
                 if (pool == null || pool.Count == 0) continue;
-                int count = config.CountFor(kind, wave, stage);
+                int count = Mathf.RoundToInt(config.CountFor(kind, wave, stage) * countMultiplier);
                 for (int i = 0; i < count; i++)
                 {
                     var entry = Pick(pool, config, rng);
@@ -55,6 +56,46 @@ namespace RedMagic.Survival
                 (list[i], list[j]) = (list[j], list[i]);
             }
             return list;
+        }
+
+        /// <summary>
+        /// Oleada dinámica: el siguiente enemigo que sale. El tipo se sortea con los números de "cuántos por oleada" de esta
+        /// oleada como pesos (3 voladores, 3 de suelo y 1 torreta = 3:3:1); luego, como en las simples.
+        /// </summary>
+        public static bool PickOne(SurvivalConfig config, int wave, SurvivalStage stage, System.Random rng, out SurvivalSpawnRequest request)
+        {
+            request = default;
+            if (stage == null) return false;
+            float total = 0f;
+            foreach (var kind in Kinds) total += KindWeight(config, wave, stage, kind);
+            if (total <= 0f) return false;
+
+            double roll = rng.NextDouble() * total;
+            foreach (var kind in Kinds)
+            {
+                float w = KindWeight(config, wave, stage, kind);
+                if (w <= 0f) continue;
+                roll -= w;
+                if (roll > 0) continue;
+                var entry = Pick(stage.Pool(kind), config, rng);
+                if (entry == null) return false;
+                request = new SurvivalSpawnRequest { kind = kind, prefab = entry.prefab, special = PickSpecial(entry, config.Difficulty(wave), config, rng) };
+                return true;
+            }
+            return false;
+        }
+
+        private static float KindWeight(SurvivalConfig config, int wave, SurvivalStage stage, SurvivalSpawnKind kind)
+        {
+            var pool = stage.Pool(kind);
+            if (pool == null || !pool.Exists(e => e != null && e.prefab != null)) return 0f;
+            var count = kind switch
+            {
+                SurvivalSpawnKind.Flying => config.flyingCount,
+                SurvivalSpawnKind.Ground => config.groundCount,
+                _ => config.turretCount,
+            };
+            return Mathf.Max(0f, count.atFirstWave + count.perWave * (wave - 1));
         }
 
         private static SurvivalEnemyEntry Pick(List<SurvivalEnemyEntry> pool, SurvivalConfig config, System.Random rng)

@@ -4,6 +4,7 @@ using RedMagic.Enemies;
 using RedMagic.Items;
 using RedMagic.Localization;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RedMagic.Survival
 {
@@ -32,6 +33,55 @@ namespace RedMagic.Survival
         [InspectorName("Nada")] Nothing = 0,
         [InspectorName("Tienda")] Shop = 1,
         [InspectorName("Item que cae")] ItemDrop = 2,
+    }
+
+    /// <summary>Cómo es una oleada.</summary>
+    public enum SurvivalWaveMode
+    {
+        [InspectorName("Simples (una lista fija, salen seguidos)")] Simple,
+        [InspectorName("Dinámicas (van reapareciendo)")] Dynamic,
+    }
+
+    /// <summary>Cuándo acaba una oleada dinámica.</summary>
+    public enum SurvivalWaveEnd
+    {
+        [InspectorName("Por tiempo")] Time,
+        [InspectorName("Por bajas")] Kills,
+    }
+
+    /// <summary>Qué pasa con los enemigos vivos cuando se acaba el tiempo de una oleada dinámica.</summary>
+    public enum SurvivalTimeUp
+    {
+        [InspectorName("Dejan de salir; hay que acabar con los que quedan")] FinishRemaining,
+        [InspectorName("Desaparecen (sin botín)")] RemoveRemaining,
+    }
+
+    /// <summary>Los modos de dificultad, en el orden del menú.</summary>
+    public enum SurvivalDifficulty
+    {
+        [InspectorName("Fácil")] Easy,
+        [InspectorName("Normal")] Normal,
+        [InspectorName("Difícil")] Hard,
+    }
+
+    /// <summary>
+    /// Lo que cambia un modo de dificultad: más enemigos a la vez (más que farmear: la parte buena) y más vida y daño (la
+    /// mala). Se multiplica sobre todo lo demás.
+    /// </summary>
+    [Serializable]
+    public class SurvivalDifficultySettings
+    {
+        [Tooltip("× enemigos a la vez (dinámicas) y × enemigos por oleada (simples).")]
+        [Min(0.1f)] public float enemyMultiplier = 1f;
+        [Tooltip("× bajas a conseguir en las oleadas dinámicas por bajas.")]
+        [Min(0.1f)] public float killsMultiplier = 1f;
+        [Min(0.01f)] public float healthMultiplier = 1f;
+        [Min(0f)] public float damageMultiplier = 1f;
+
+        public SurvivalDifficultySettings(float enemies, float kills, float health, float damage)
+        {
+            enemyMultiplier = enemies; killsMultiplier = kills; healthMultiplier = health; damageMultiplier = damage;
+        }
     }
 
     /// <summary>Un enemigo de una lista: su prefab, su rareza y las especiales que puede tener.</summary>
@@ -73,8 +123,15 @@ namespace RedMagic.Survival
         public List<SurvivalEnemyEntry> ground = new List<SurvivalEnemyEntry>();
         public List<SurvivalEnemyEntry> turrets = new List<SurvivalEnemyEntry>();
 
+        [Header("Oleadas dinámicas (una por oleada de este mundo; si la lista es más corta, se repite el último valor)")]
+        [Tooltip("Segundos de cada oleada: [30, 45, 90] = la 1.ª dura 30 s, la 2.ª 45 s y de la 3.ª en adelante 90 s. " +
+                 "Vacío = el valor general del config.")]
+        public List<float> waveSeconds = new List<float>();
+        [Tooltip("Bajas para acabar cada oleada, igual que arriba. Vacío = el valor general del config.")]
+        public List<int> waveKills = new List<int>();
+
         [Header("Jefe")]
-        [Tooltip("Añade una oleada más al final, sólo con el jefe.")]
+        [Tooltip("Añade una oleada más al final, sólo con el jefe (acaba al matarlo, sea cual sea el tipo de oleada).")]
         public bool bossWave;
         [Tooltip("Uno al azar de esta lista.")]
         public List<GameObject> bosses = new List<GameObject>();
@@ -85,6 +142,10 @@ namespace RedMagic.Survival
         public SurvivalReward rewards = SurvivalReward.Shop;
 
         public string DisplayName => Loc.GetOr(textKey, fallbackName);
+
+        /// <summary>El valor de <paramref name="list"/> para la oleada <paramref name="waveInStage"/> (desde 1); vacía = <paramref name="fallback"/>.</summary>
+        public static T PerWave<T>(List<T> list, int waveInStage, T fallback) =>
+            list == null || list.Count == 0 ? fallback : list[Mathf.Clamp(waveInStage - 1, 0, list.Count - 1)];
         public int TotalWaves => waves + (bossWave && bosses.Count > 0 ? 1 : 0);
 
         public List<SurvivalEnemyEntry> Pool(SurvivalSpawnKind kind) => kind switch
@@ -132,7 +193,11 @@ namespace RedMagic.Survival
         [Tooltip("Al acabar el último mundo, seguir con oleadas suyas (el escalado sigue subiendo). Apagado = victoria.")]
         public bool repeatLastStage = true;
 
-        [Header("Cuántos enemigos por oleada")]
+        [Header("Tipo de oleada")]
+        public SurvivalWaveMode waveMode = SurvivalWaveMode.Dynamic;
+
+        [Header("Cuántos enemigos por oleada (simples) · mezcla de tipos (dinámicas)")]
+        [Tooltip("Simples: cuántos salen de cada tipo. Dinámicas: la proporción entre tipos al elegir el siguiente que sale.")]
         public SurvivalCount flyingCount = new SurvivalCount(3f, 1f, 30);
         public SurvivalCount groundCount = new SurvivalCount(3f, 1f, 30);
         public SurvivalCount turretCount = new SurvivalCount(1f, 0.25f, 8);
@@ -140,12 +205,34 @@ namespace RedMagic.Survival
         [Header("Ritmo de aparición")]
         [Tooltip("Segundos desde que empieza la oleada hasta el primer enemigo.")]
         [Min(0f)] public float firstSpawnDelay = 1.5f;
-        [Tooltip("Segundos entre un enemigo y el siguiente.")]
+        [Tooltip("Segundos entre un enemigo y el siguiente (simples, y el llenado inicial de las dinámicas).")]
         [Min(0.02f)] public float spawnInterval = 0.6f;
-        [Tooltip("Enemigos vivos a la vez como máximo: el resto espera a que muera alguno.")]
+        [Tooltip("Simples: enemigos vivos a la vez como máximo (× dificultad); el resto espera a que muera alguno.")]
         [Min(1)] public int maxAlive = 14;
-        [Tooltip("Preferir puntos a esta distancia del jugador o menos (0 = cualquiera). Si ninguno está tan cerca, el más cercano.")]
-        [Min(0f)] public float preferSpawnsWithin;
+
+        [Header("Oleadas dinámicas")]
+        public SurvivalWaveEnd dynamicEnd = SurvivalWaveEnd.Time;
+        [Tooltip("Enemigos a la vez como máximo (× mundo y × dificultad): en la oleada 1, cuántos más por oleada y tope.")]
+        public SurvivalCount dynamicMaxAlive = new SurvivalCount(6f, 1f, 20);
+        [Tooltip("Segundos desde que muere un enemigo hasta que sale otro (si hay hueco).")]
+        [Min(0f)] public float respawnDelay = 3f;
+        [Tooltip("Duración de una oleada por tiempo si el mundo no pone la suya.")]
+        [Min(1f)] public float defaultWaveSeconds = 60f;
+        [Tooltip("Bajas de una oleada por bajas si el mundo no pone las suyas.")]
+        [Min(1)] public int defaultWaveKills = 30;
+        public SurvivalTimeUp onTimeUp = SurvivalTimeUp.FinishRemaining;
+
+        [Header("Dónde aparecen")]
+        [Tooltip("Sólo en puntos a esta distancia del jugador o menos (los del jefe no cuentan). Si no hay ninguno, el más cercano.")]
+        [FormerlySerializedAs("preferSpawnsWithin")]
+        [Min(0f)] public float spawnRadius = 15f;
+        [Tooltip("Ni más cerca que esto (que no aparezcan encima del jugador), si hay otro punto dentro del radio.")]
+        [Min(0f)] public float minSpawnDistance = 4f;
+
+        [Header("Modos de dificultad (se eligen en el menú)")]
+        public SurvivalDifficultySettings easy = new SurvivalDifficultySettings(1f, 1f, 1f, 1f);
+        public SurvivalDifficultySettings normal = new SurvivalDifficultySettings(1.5f, 1.5f, 1.25f, 1.2f);
+        public SurvivalDifficultySettings hard = new SurvivalDifficultySettings(2f, 2f, 1.6f, 1.5f);
 
         [Header("Escalado por oleada (vida y daño de los enemigos)")]
         [Tooltip("+ vida por oleada (0,12 = +12 % cada oleada sobre la vida del prefab).")]
@@ -237,6 +324,19 @@ namespace RedMagic.Survival
             };
             return count != null ? count.At(wave, stage != null ? stage.countMultiplier : 1f) : 0;
         }
+
+        public SurvivalDifficultySettings Settings(SurvivalDifficulty difficulty) => difficulty switch
+        {
+            SurvivalDifficulty.Easy => easy,
+            SurvivalDifficulty.Hard => hard,
+            _ => normal,
+        };
+
+        public float WaveSeconds(SurvivalStage stage, int waveInStage) =>
+            SurvivalStage.PerWave(stage?.waveSeconds, waveInStage, defaultWaveSeconds);
+
+        public int WaveKills(SurvivalStage stage, int waveInStage) =>
+            SurvivalStage.PerWave(stage?.waveKills, waveInStage, defaultWaveKills);
 
         public SurvivalReward RewardsFor(SurvivalStage stage) =>
             stage != null && stage.overrideRewards ? stage.rewards : rewards;

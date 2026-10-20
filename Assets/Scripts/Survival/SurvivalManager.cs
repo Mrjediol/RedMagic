@@ -17,14 +17,22 @@ namespace RedMagic.Survival
     /// <summary>
     /// El modo Supervivencia en un mapa: rondas de enemigos que van a más, y entre rondas tienda y/o item que cae, hasta
     /// que el jugador muere. Todos los números salen de <see cref="config"/> (un <see cref="SurvivalConfig"/>, el mismo
-    /// para cualquier mapa); el mapa sólo aporta los <see cref="SurvivalSpawnPoint"/> (los encuentra solos) y la tienda.
+    /// para cualquier mapa); el mapa sólo aporta los <see cref="SurvivalSpawnPoint"/> (hijos de este objeto, los recoge al
+    /// empezar) y la tienda.
     ///
     /// Para llevarlo a otro mapa: arrastrar <c>Assets/Test/Survival/Survival.prefab</c> a la escena y mover sus puntos.
     ///
-    /// Ronda: <see cref="SurvivalWaveBuilder"/> decide la lista, los enemigos salen de uno en uno (ritmo y tope de vivos
-    /// del config) en un punto de su tipo, escalados por oleada × mundo × especial y con el color de zona. Acaba cuando no
-    /// queda ninguno vivo. Entre rondas: recompensas del mundo (o generales), curación, oro extra, y espera a
-    /// "Siguiente ronda" (<see cref="RequestNextWave"/>, que llama <see cref="SurvivalHud"/>) o a la cuenta atrás.
+    /// Dos tipos de oleada (<see cref="SurvivalConfig.waveMode"/>):
+    /// <list type="bullet">
+    /// <item><b>Simples</b>: <see cref="SurvivalWaveBuilder.Build"/> decide la lista entera, salen de uno en uno (ritmo y
+    /// tope de vivos) y la ronda acaba cuando no queda ninguno.</item>
+    /// <item><b>Dinámicas</b>: se llena hasta el máximo a la vez y, cada vez que muere uno, sale otro a los
+    /// <see cref="SurvivalConfig.respawnDelay"/> s. Acaban por tiempo o por bajas (<see cref="SurvivalConfig.dynamicEnd"/>),
+    /// con el valor de cada oleada del mundo.</item>
+    /// </list>
+    /// La oleada del jefe es siempre simple: acaba al matarlo. Cada enemigo sale en un punto de su tipo dentro del radio del
+    /// jugador, escalado por oleada × mundo × dificultad × especial y con el color de zona. Entre rondas: recompensas,
+    /// curación, oro extra, y espera a "Siguiente ronda" (<see cref="RequestNextWave"/>) o a la cuenta atrás.
     /// </summary>
     [DisallowMultipleComponent]
     public class SurvivalManager : MonoBehaviour
@@ -50,16 +58,26 @@ namespace RedMagic.Survival
         [Header("Pruebas")]
         [Tooltip("Empezar directamente en esta ronda (el escalado y la dificultad son los de esa ronda).")]
         [Min(1)] [SerializeField] private int startAtWave = 1;
+        [Tooltip("Dificultad si la escena se abre suelta, sin pasar por el menú.")]
+        [SerializeField] private SurvivalDifficulty testDifficulty = SurvivalDifficulty.Normal;
         [Tooltip("Semilla de las oleadas (0 = una distinta cada partida).")]
         [SerializeField] private int seed;
 
         public SurvivalConfig Config => config;
         public Phase CurrentPhase { get; private set; } = Phase.Starting;
+        public SurvivalDifficulty Difficulty { get; private set; }
         public int Wave { get; private set; }
         public SurvivalStage Stage { get; private set; }
         public bool IsBossWave { get; private set; }
-        /// <summary>Enemigos vivos + los que faltan por salir en esta ronda.</summary>
+        /// <summary>La oleada en curso es dinámica (y no la del jefe).</summary>
+        public bool IsDynamicWave { get; private set; }
+        /// <summary>Simples: enemigos vivos + los que faltan por salir. Dinámicas: vivos.</summary>
         public int EnemiesLeft => _alive.Count + _pending.Count;
+        /// <summary>Dinámica por tiempo: segundos que le quedan (0 = se acabó; hay que rematar a los que queden).</summary>
+        public float TimeLeft { get; private set; }
+        public int Kills { get; private set; }
+        /// <summary>Dinámica por bajas: las que hay que conseguir.</summary>
+        public int KillTarget { get; private set; }
         /// <summary>Segundos que faltan para que la siguiente ronda empiece sola (0 = espera al jugador).</summary>
         public float AutoNextRemaining { get; private set; }
         public GameObject Player { get; private set; }
@@ -68,12 +86,16 @@ namespace RedMagic.Survival
         public event Action<int> WaveCleared;
         public event Action<int> GameOver;
 
+        private SurvivalDifficultySettings _difficulty;
+        private readonly List<SurvivalSpawnPoint> _points = new List<SurvivalSpawnPoint>();
         private readonly List<Health> _alive = new List<Health>();
         private readonly List<SurvivalSpawnRequest> _pending = new List<SurvivalSpawnRequest>();
+        private readonly List<float> _scheduled = new List<float>();   // dinámicas: cuándo sale cada uno de los que vienen
         private readonly List<SurvivalSpawnPoint> _candidates = new List<SurvivalSpawnPoint>();
         private System.Random _rng;
         private Health _playerHealth;
         private bool _nextRequested;
+        private int _waveInStage;
         private float _waveStart, _damageTakenThisWave;
         private readonly HashSet<SurvivalSpawnKind> _warnedKinds = new HashSet<SurvivalSpawnKind>();
 
@@ -91,6 +113,9 @@ namespace RedMagic.Survival
         {
             if (config == null) { Debug.LogError("[Survival] Falta el SurvivalConfig.", this); enabled = false; return; }
 
+            Difficulty = SurvivalSession.Difficulty ?? testDifficulty;
+            _difficulty = config.Settings(Difficulty);
+            GetComponentsInChildren(false, _points);
             _rng = new System.Random(seed != 0 ? seed : Environment.TickCount);
             SetupPlayer();
             ResetRun();
@@ -189,25 +214,39 @@ namespace RedMagic.Survival
             while (true)
             {
                 Wave++;
-                Stage = config.StageFor(Wave, out _, out bool boss);
+                Stage = config.StageFor(Wave, out _waveInStage, out bool boss);
                 if (Stage == null) { CurrentPhase = Phase.Victory; GameOver?.Invoke(Wave - 1); yield break; }
                 IsBossWave = boss;
+                IsDynamicWave = !boss && config.waveMode == SurvivalWaveMode.Dynamic;
 
-                yield return RunWave();
+                CurrentPhase = Phase.Fighting;
+                _alive.Clear();
+                _pending.Clear();
+                _scheduled.Clear();
+                Kills = 0;
+                KillTarget = 0;
+                TimeLeft = 0f;
+                _waveStart = Time.time;
+                _damageTakenThisWave = 0f;
+                WaveStarted?.Invoke(Wave);
+
+                yield return IsDynamicWave ? RunDynamicWave() : RunSimpleWave();
                 if (CurrentPhase == Phase.GameOver) yield break;
+
+                Debug.Log($"[Survival] Ronda {Wave} ({Stage.fallbackName}{(IsBossWave ? ", jefe" : IsDynamicWave ? ", dinámica" : "")}, " +
+                          $"{Difficulty}) superada en {Time.time - _waveStart:0.0} s · bajas {Kills} · daño recibido " +
+                          $"{_damageTakenThisWave:0} · oro {(CurrencyManager.Instance != null ? CurrencyManager.Instance.Get(Currency.Gold) : 0)}", this);
+
                 yield return BetweenWaves();
                 if (CurrentPhase == Phase.GameOver) yield break;
             }
         }
 
-        private IEnumerator RunWave()
+        /// <summary>Lista fija: salen de uno en uno con su ritmo y tope; acaba sin nadie vivo ni por salir.</summary>
+        private IEnumerator RunSimpleWave()
         {
-            CurrentPhase = Phase.Fighting;
-            _pending.Clear();
-            _pending.AddRange(SurvivalWaveBuilder.Build(config, Wave, _rng));
-            _waveStart = Time.time;
-            _damageTakenThisWave = 0f;
-            WaveStarted?.Invoke(Wave);
+            _pending.AddRange(SurvivalWaveBuilder.Build(config, Wave, _rng, _difficulty.enemyMultiplier));
+            int maxAlive = Mathf.Max(1, Mathf.RoundToInt(config.maxAlive * _difficulty.enemyMultiplier));
 
             yield return new WaitForSeconds(config.firstSpawnDelay);
 
@@ -215,9 +254,9 @@ namespace RedMagic.Survival
             while (_pending.Count > 0 || _alive.Count > 0)
             {
                 if (CurrentPhase == Phase.GameOver) yield break;
-                _alive.RemoveAll(h => h == null || h.IsDead);
+                Kills += _alive.RemoveAll(h => h == null || h.IsDead);
 
-                if (_pending.Count > 0 && Time.time >= nextSpawn && _alive.Count < config.maxAlive)
+                if (_pending.Count > 0 && Time.time >= nextSpawn && _alive.Count < maxAlive)
                 {
                     var request = _pending[0];
                     _pending.RemoveAt(0);
@@ -226,10 +265,64 @@ namespace RedMagic.Survival
                 }
                 yield return null;
             }
+        }
 
-            Debug.Log($"[Survival] Ronda {Wave} ({Stage.fallbackName}{(IsBossWave ? ", jefe" : "")}) superada en " +
-                      $"{Time.time - _waveStart:0.0} s · daño recibido {_damageTakenThisWave:0} · oro " +
-                      $"{(CurrencyManager.Instance != null ? CurrencyManager.Instance.Get(Currency.Gold) : 0)}", this);
+        /// <summary>
+        /// Se llena hasta el máximo (escalonado) y cada baja pide otro a los <see cref="SurvivalConfig.respawnDelay"/> s,
+        /// si hay hueco. Por tiempo: al acabarse deja de salir (o se van, según <see cref="SurvivalConfig.onTimeUp"/>). Por
+        /// bajas: nunca salen más de los que faltan, y acaba al llegar a la cifra.
+        /// </summary>
+        private IEnumerator RunDynamicWave()
+        {
+            int max = Mathf.Max(1, Mathf.RoundToInt(config.dynamicMaxAlive.At(Wave, Stage.countMultiplier) * _difficulty.enemyMultiplier));
+            bool byTime = config.dynamicEnd == SurvivalWaveEnd.Time;
+            float duration = config.WaveSeconds(Stage, _waveInStage);
+            KillTarget = byTime ? 0 : Mathf.Max(1, Mathf.RoundToInt(config.WaveKills(Stage, _waveInStage) * _difficulty.killsMultiplier));
+            float endsAt = Time.time + config.firstSpawnDelay + duration;
+            int spawned = 0;
+
+            for (int i = 0; i < max; i++) _scheduled.Add(Time.time + config.firstSpawnDelay + i * config.spawnInterval);
+
+            while (true)
+            {
+                if (CurrentPhase == Phase.GameOver) yield break;
+                float now = Time.time;
+                Kills += _alive.RemoveAll(h => h == null || h.IsDead);
+
+                bool timeUp = byTime && now >= endsAt;
+                TimeLeft = byTime ? Mathf.Max(0f, endsAt - now) : 0f;
+                if (timeUp && config.onTimeUp == SurvivalTimeUp.RemoveRemaining) { RemoveAlive(); yield break; }
+                if (!byTime && Kills >= KillTarget) yield break;
+
+                bool canSpawn = !timeUp;
+                if (canSpawn)
+                {
+                    // Lo que puede haber fuera a la vez: el máximo, y por bajas nunca más de las que faltan.
+                    int outstanding = byTime ? max : Mathf.Min(max, KillTarget - spawned + _alive.Count);
+                    while (_alive.Count + _scheduled.Count < outstanding) _scheduled.Add(now + config.respawnDelay);
+                    while (_alive.Count + _scheduled.Count > outstanding && _scheduled.Count > 0) _scheduled.RemoveAt(_scheduled.Count - 1);
+
+                    _scheduled.Sort();
+                    if (_scheduled.Count > 0 && _scheduled[0] <= now && _alive.Count < max)
+                    {
+                        _scheduled.RemoveAt(0);
+                        if (SurvivalWaveBuilder.PickOne(config, Wave, Stage, _rng, out var request) && Spawn(request)) spawned++;
+                    }
+                }
+                else
+                {
+                    _scheduled.Clear();
+                    if (_alive.Count == 0) yield break;
+                }
+                yield return null;
+            }
+        }
+
+        /// <summary>Se acabó el tiempo y se van: sin morir, así que tampoco sueltan botín.</summary>
+        private void RemoveAlive()
+        {
+            foreach (var h in _alive) if (h != null) Destroy(h.gameObject);
+            _alive.Clear();
         }
 
         private IEnumerator BetweenWaves()
@@ -275,10 +368,11 @@ namespace RedMagic.Survival
 
         // ------------------------------------------------------------------ aparición
 
-        private void Spawn(SurvivalSpawnRequest request)
+        /// <returns>False si no había dónde (o qué) sacarlo.</returns>
+        private bool Spawn(SurvivalSpawnRequest request)
         {
             var point = PickPoint(request.kind);
-            if (point == null || request.prefab == null) return;
+            if (point == null || request.prefab == null) return false;
 
             var enemy = Instantiate(request.prefab, point.position, Quaternion.identity);
             SceneManager.MoveGameObjectToScene(enemy, gameObject.scene);
@@ -287,19 +381,25 @@ namespace RedMagic.Survival
             var shader = config.variantShader;
             bool specialLook = request.special != null && request.special.recolor;
             if (Stage.zoneLook != null && !specialLook) Stage.zoneLook.ApplyLook(enemy, shader);
-            EnemyVariant.ApplyStats(enemy, config.HealthScale(Wave) * Stage.healthMultiplier,
-                                    config.DamageScale(Wave) * Stage.damageMultiplier);
+            EnemyVariant.ApplyStats(enemy, config.HealthScale(Wave) * Stage.healthMultiplier * _difficulty.healthMultiplier,
+                                    config.DamageScale(Wave) * Stage.damageMultiplier * _difficulty.damageMultiplier);
             if (request.special != null) request.special.Apply(enemy, shader);
 
             var health = enemy.GetComponent<Health>();
             if (health != null) _alive.Add(health);
+            return true;
         }
 
+        /// <summary>
+        /// Un punto del tipo pedido (jefe / torreta sin punto propio: uno de suelo) entre <see cref="SurvivalConfig.minSpawnDistance"/>
+        /// y <see cref="SurvivalConfig.spawnRadius"/> del jugador; si dentro del radio sólo hay alguno demasiado cerca, ese;
+        /// si no hay ninguno dentro, el más cercano. El jefe no mira el radio.
+        /// </summary>
         private Transform PickPoint(SurvivalSpawnKind kind)
         {
             Collect(kind);
             if (_candidates.Count == 0 && (kind == SurvivalSpawnKind.Boss || kind == SurvivalSpawnKind.Turret))
-                Collect(SurvivalSpawnKind.Ground);   // jefe / torreta sin punto propio: en uno de suelo
+                Collect(SurvivalSpawnKind.Ground);
             if (_candidates.Count == 0)
             {
                 if (_warnedKinds.Add(kind))
@@ -307,22 +407,26 @@ namespace RedMagic.Survival
                 return null;
             }
 
-            if (config.preferSpawnsWithin > 0f && Player != null)
+            if (kind != SurvivalSpawnKind.Boss && config.spawnRadius > 0f && Player != null)
             {
-                // Uno al azar de los que están cerca; si no hay ninguno tan cerca, el más cercano.
                 Vector2 p = Player.transform.position;
-                float r2 = config.preferSpawnsWithin * config.preferSpawnsWithin;
+                float r2 = config.spawnRadius * config.spawnRadius, min2 = config.minSpawnDistance * config.minSpawnDistance;
                 SurvivalSpawnPoint nearest = null;
                 float best = float.MaxValue;
-                int near = 0;
+                int inRadius = 0, inRing = 0;
                 foreach (var s in _candidates)
                 {
                     float d = ((Vector2)s.transform.position - p).sqrMagnitude;
                     if (d < best) { best = d; nearest = s; }
-                    if (d <= r2) near++;
+                    if (d <= r2) { inRadius++; if (d >= min2) inRing++; }
                 }
-                if (near == 0) return nearest.transform;
-                _candidates.RemoveAll(s => ((Vector2)s.transform.position - p).sqrMagnitude > r2);
+                if (inRadius == 0) return nearest.transform;
+                bool ring = inRing > 0;
+                _candidates.RemoveAll(s =>
+                {
+                    float d = ((Vector2)s.transform.position - p).sqrMagnitude;
+                    return d > r2 || (ring && d < min2);
+                });
             }
             return _candidates[_rng.Next(_candidates.Count)].transform;
         }
@@ -330,8 +434,8 @@ namespace RedMagic.Survival
         private void Collect(SurvivalSpawnKind kind)
         {
             _candidates.Clear();
-            foreach (var s in SurvivalSpawnPoint.Active)
-                if (s != null && s.kind == kind && s.gameObject.scene == gameObject.scene) _candidates.Add(s);
+            foreach (var s in _points)
+                if (s != null && s.isActiveAndEnabled && s.kind == kind) _candidates.Add(s);
         }
 
         private void DropItems()
@@ -359,7 +463,7 @@ namespace RedMagic.Survival
             GameOver?.Invoke(Wave);
         }
 
-        /// <summary>Vuelve a empezar la partida (recarga el mapa).</summary>
+        /// <summary>Vuelve a empezar la partida (recarga el mapa, misma dificultad).</summary>
         public void Retry()
         {
             GameStateManager.Instance?.ForceResume();

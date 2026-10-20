@@ -109,6 +109,13 @@ namespace RedMagic.Survival
             Relabel();
         }
 
+        public static string DifficultyName(SurvivalDifficulty difficulty) => difficulty switch
+        {
+            SurvivalDifficulty.Easy => Loc.Get("survival.difficulty.easy"),
+            SurvivalDifficulty.Hard => Loc.Get("survival.difficulty.hard"),
+            _ => Loc.Get("survival.difficulty.normal"),
+        };
+
         private static VisualElement Column(VisualElement parent, string name)
         {
             var e = new VisualElement { name = name, pickingMode = PickingMode.Ignore };
@@ -159,15 +166,24 @@ namespace RedMagic.Survival
             if (_manager.Wave != _shownWave && _manager.Stage != null)
             {
                 _shownWave = _manager.Wave;
-                _wave.text = Loc.Get("survival.wave_stage", _manager.Wave, _manager.Stage.DisplayName);
+                _wave.text = Loc.Get("survival.wave_stage", _manager.Wave, _manager.Stage.DisplayName, DifficultyName(_manager.Difficulty));
                 _cleared.text = Loc.Get("survival.wave_cleared", _manager.Wave);
             }
             bool fighting = phase == SurvivalManager.Phase.Fighting;
-            int left = fighting ? _manager.EnemiesLeft : -2;
-            if (left != _shownLeft)
+            // Un número que cambia cuando cambia el texto: así sólo se reescribe la etiqueta si hace falta.
+            bool byTime = _manager.IsDynamicWave && _manager.Config.dynamicEnd == SurvivalWaveEnd.Time && _manager.TimeLeft > 0f;
+            bool byKills = _manager.IsDynamicWave && _manager.KillTarget > 0;
+            int key = !fighting ? -2 : _manager.IsBossWave ? -3 : byTime ? 100000 + Mathf.CeilToInt(_manager.TimeLeft)
+                    : byKills ? 200000 + _manager.Kills : _manager.EnemiesLeft;
+            if (key != _shownLeft)
             {
-                _shownLeft = left;
-                _enemies.text = !fighting ? "" : _manager.IsBossWave ? Loc.Get("survival.boss_wave") : Loc.Get("survival.enemies_left", left);
+                _shownLeft = key;
+                int secs = Mathf.CeilToInt(_manager.TimeLeft);
+                _enemies.text = !fighting ? ""
+                              : _manager.IsBossWave ? Loc.Get("survival.boss_wave")
+                              : byTime ? Loc.Get("survival.time_left", $"{secs / 60}:{secs % 60:00}")
+                              : byKills ? Loc.Get("survival.kills", _manager.Kills, _manager.KillTarget)
+                              : Loc.Get("survival.enemies_left", _manager.EnemiesLeft);
             }
             Show(_top, !over && _manager.Wave > 0);
 

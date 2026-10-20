@@ -507,7 +507,12 @@ weapon.arsenal_star.name = Star Strike
 weapon.arsenal_star.description = Mark a spot: a lance of light falls from the sky a moment later.
 
 # Survival mode
-survival.wave_stage = Wave {0} · {1}
+survival.wave_stage = Wave {0} · {1} · {2}
+survival.time_left = Time: {0}
+survival.kills = Kills: {0}/{1}
+survival.difficulty.easy = Easy
+survival.difficulty.normal = Normal
+survival.difficulty.hard = Hard
 survival.enemies_left = Enemies: {0}
 survival.boss_wave = Boss!
 survival.wave_cleared = Wave {0} cleared!

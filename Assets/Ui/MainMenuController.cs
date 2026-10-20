@@ -44,7 +44,12 @@ namespace RedMagic.UI
         private Button _optionsButton;
         private Button _quitButton;
         private Button _classicButton, _survivalButton, _backButton;
-        private bool _hidden, _choosingMode;
+        private Button _easyButton, _normalButton, _hardButton;
+        private bool _hidden;
+
+        /// <summary>Qué botones se ven: los de siempre, la elección de modo o la dificultad de Supervivencia.</summary>
+        private enum Step { Main, Mode, Difficulty }
+        private Step _step;
 
         private void OnEnable()
         {
@@ -63,6 +68,9 @@ namespace RedMagic.UI
             _classicButton = _root.Q<Button>("classicButton");
             _survivalButton = _root.Q<Button>("survivalButton");
             _backButton = _root.Q<Button>("backButton");
+            _easyButton = _root.Q<Button>("easyButton");
+            _normalButton = _root.Q<Button>("normalButton");
+            _hardButton = _root.Q<Button>("hardButton");
 
             Wire(_playButton, OnPlayClicked);
             Wire(_optionsButton, OnOptionsClicked);
@@ -70,7 +78,10 @@ namespace RedMagic.UI
             Wire(_classicButton, OnClassicClicked);
             Wire(_survivalButton, OnSurvivalClicked);
             Wire(_backButton, OnBackClicked);
-            ShowModeChoice(false);
+            Wire(_easyButton, OnEasyClicked);
+            Wire(_normalButton, OnNormalClicked);
+            Wire(_hardButton, OnHardClicked);
+            Show(Step.Main);
 
             LocalizedUi.BindTree(_root); // claves "#…" del UXML, antes de vestir
             UiSounds.Bind(_root);
@@ -96,13 +107,16 @@ namespace RedMagic.UI
             MenuSkinDresser.DressButton(_classicButton, skin, Color.white);
             MenuSkinDresser.DressButton(_survivalButton, skin, Color.white);
             MenuSkinDresser.DressButton(_backButton, skin, skin.quitTint);
+            MenuSkinDresser.DressButton(_easyButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_normalButton, skin, Color.white);
+            MenuSkinDresser.DressButton(_hardButton, skin, Color.white);
         }
 
         /// <summary>Con mando, deja el primer botón enfocado para poder navegar con el d-pad.</summary>
         private void FocusForGamepad()
         {
             if (!_hidden && InputDeviceManager.GamepadActive)
-                (_choosingMode ? _classicButton : _playButton)?.Focus();
+                (_step == Step.Mode ? _classicButton : _step == Step.Difficulty ? _normalButton : _playButton)?.Focus();
         }
 
         private void Start()
@@ -128,6 +142,9 @@ namespace RedMagic.UI
             Unwire(_classicButton, OnClassicClicked);
             Unwire(_survivalButton, OnSurvivalClicked);
             Unwire(_backButton, OnBackClicked);
+            Unwire(_easyButton, OnEasyClicked);
+            Unwire(_normalButton, OnNormalClicked);
+            Unwire(_hardButton, OnHardClicked);
         }
 
         private void Update()
@@ -140,7 +157,7 @@ namespace RedMagic.UI
 
             if (optionsMenu != null && optionsMenu.IsOpen)
                 optionsMenu.GoBack();
-            else if (_choosingMode)
+            else if (_step != Step.Main)
                 OnBackClicked();
         }
 
@@ -174,19 +191,23 @@ namespace RedMagic.UI
         }
 
         /// <summary>Jugar: en vez de cargar, enseña la elección de modo.</summary>
-        private void OnPlayClicked() => ShowModeChoice(true);
+        private void OnPlayClicked() => Show(Step.Mode);
 
-        private void OnBackClicked() => ShowModeChoice(false);
+        /// <summary>Atrás (y Escape): un paso hacia atrás.</summary>
+        private void OnBackClicked() => Show(_step == Step.Difficulty ? Step.Mode : Step.Main);
 
-        private void ShowModeChoice(bool choosing)
+        private void Show(Step step)
         {
-            _choosingMode = choosing;
-            SetDisplay(_playButton, !choosing);
-            SetDisplay(_optionsButton, !choosing);
-            SetDisplay(_quitButton, !choosing);
-            SetDisplay(_classicButton, choosing);
-            SetDisplay(_survivalButton, choosing);
-            SetDisplay(_backButton, choosing);
+            _step = step;
+            SetDisplay(_playButton, step == Step.Main);
+            SetDisplay(_optionsButton, step == Step.Main);
+            SetDisplay(_quitButton, step == Step.Main);
+            SetDisplay(_classicButton, step == Step.Mode);
+            SetDisplay(_survivalButton, step == Step.Mode);
+            SetDisplay(_easyButton, step == Step.Difficulty);
+            SetDisplay(_normalButton, step == Step.Difficulty);
+            SetDisplay(_hardButton, step == Step.Difficulty);
+            SetDisplay(_backButton, step != Step.Main);
             FocusForGamepad();
         }
 
@@ -197,7 +218,18 @@ namespace RedMagic.UI
 
         private void OnClassicClicked() => LoadGameScene(hubScene);
 
-        private void OnSurvivalClicked() => LoadGameScene(survivalScene);
+        /// <summary>Supervivencia: antes de cargar, la dificultad.</summary>
+        private void OnSurvivalClicked() => Show(Step.Difficulty);
+
+        private void OnEasyClicked() => StartSurvival(Survival.SurvivalDifficulty.Easy);
+        private void OnNormalClicked() => StartSurvival(Survival.SurvivalDifficulty.Normal);
+        private void OnHardClicked() => StartSurvival(Survival.SurvivalDifficulty.Hard);
+
+        private void StartSurvival(Survival.SurvivalDifficulty difficulty)
+        {
+            Survival.SurvivalSession.Difficulty = difficulty;
+            LoadGameScene(survivalScene);
+        }
 
         private void LoadGameScene(SceneReference scene)
         {

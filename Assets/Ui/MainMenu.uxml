@@ -10,6 +10,9 @@
             <ui:Button name="quitButton" text="#menu.quit" class="menu-button menu-button--quit"/>
             <ui:Button name="classicButton" text="#menu.mode_classic" class="menu-button" style="display: none;"/>
             <ui:Button name="survivalButton" text="#menu.mode_survival" class="menu-button" style="display: none;"/>
+            <ui:Button name="easyButton" text="#survival.difficulty.easy" class="menu-button" style="display: none;"/>
+            <ui:Button name="normalButton" text="#survival.difficulty.normal" class="menu-button" style="display: none;"/>
+            <ui:Button name="hardButton" text="#survival.difficulty.hard" class="menu-button" style="display: none;"/>
             <ui:Button name="backButton" text="#menu.back" class="menu-button menu-button--quit" style="display: none;"/>
         </ui:VisualElement>
     </ui:VisualElement>

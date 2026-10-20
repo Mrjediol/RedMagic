@@ -507,7 +507,12 @@ weapon.arsenal_star.name = Golpe estelar
 weapon.arsenal_star.description = Marca un punto: una lanza de luz cae del cielo un instante después.
 
 # Modo Supervivencia
-survival.wave_stage = Ronda {0} · {1}
+survival.wave_stage = Ronda {0} · {1} · {2}
+survival.time_left = Tiempo: {0}
+survival.kills = Bajas: {0}/{1}
+survival.difficulty.easy = Fácil
+survival.difficulty.normal = Normal
+survival.difficulty.hard = Difícil
 survival.enemies_left = Enemigos: {0}
 survival.boss_wave = ¡Jefe!
 survival.wave_cleared = ¡Ronda {0} superada!

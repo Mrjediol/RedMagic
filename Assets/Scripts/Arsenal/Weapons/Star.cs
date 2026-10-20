@@ -36,11 +36,11 @@ namespace RedMagic.Arsenal
         public override ArsenalController CreateController() => new StarController();
 
         [Header("Base")]
-        [Tooltip("Recarga (s).")] public float cooldown = 3f;
+        [Tooltip("Recarga (s).")] [ArsenalCooldown] public float cooldown = 3f;
         [Tooltip("Aviso hasta que cae (s).")] public float delay = 0.6f;
-        [Tooltip("Daño de la lanza.")] public float damage = 70f;
-        [Tooltip("Ancho de la columna (u).")] public float width = 1f;
-        [Tooltip("Onda: daño.")] public float shockDamage = 15f;
+        [Tooltip("Daño de la lanza.")] [ArsenalDamage] public float damage = 70f;
+        [Tooltip("Ancho de la columna (u).")] [ArsenalSignature(0.2f, 2, true)] public float width = 1f;
+        [Tooltip("Onda: daño.")] [ArsenalDamage] public float shockDamage = 15f;
         [Tooltip("Onda: radio (u).")] public float shockRadius = 3f;
         [Header("Elemento (build)")]
         [Tooltip("Hielo: radio que congela al caer (u).")] public float iceRadius = 2f;
@@ -50,7 +50,7 @@ namespace RedMagic.Arsenal
         public int barrageCount = 3;
         [Tooltip("Separación (u).")] public float barrageGap = 1.75f;
         [Tooltip("Tiempo entre lanzas (s).")] public float barrageStep = 0.12f;
-        [Tooltip("Daño por lanza.")] public float barrageDamage = 45f;
+        [Tooltip("Daño por lanza.")] [ArsenalDamage] public float barrageDamage = 45f;
         [Tooltip("Ancho (u).")] public float barrageWidth = 0.75f;
         [Tooltip("Final: × tamaño y daño.")] public float finaleMul = 2f;
         [Header("Cazador")]
@@ -63,7 +63,7 @@ namespace RedMagic.Arsenal
         [Tooltip("Agujas.")] public int rainNeedles = 15;
         [Tooltip("Ancho (u).")] public float rainWidth = 4.25f;
         [Tooltip("Duración (s).")] public float rainTime = 0.55f;
-        [Tooltip("Daño por aguja.")] public float needleDamage = 12f;
+        [Tooltip("Daño por aguja.")] [ArsenalDamage] public float needleDamage = 12f;
         [Tooltip("Diluvio: × agujas.")] public float delugeMul = 1.6f;
         [Tooltip("Agujas pesadas: × daño.")] public float heavyMul = 1.5f;
         [Tooltip("Ojo: fuerza de atracción (u/s).")] public float eyePull = 3.5f;

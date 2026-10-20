@@ -36,11 +36,11 @@ namespace RedMagic.Arsenal
         public override ArsenalController CreateController() => new FanController();
 
         [Header("Base")]
-        [Tooltip("Recarga (s).")] [Min(0.05f)] public float cooldown = 0.45f;
-        [Tooltip("Esquirlas por disparo.")] [Min(1)] public int count = 5;
+        [Tooltip("Recarga (s).")] [Min(0.05f)] [ArsenalCooldown] public float cooldown = 0.45f;
+        [Tooltip("Esquirlas por disparo (de base; la mejora permanente de Firma suma hasta +2).")] [Min(1)] [ArsenalSignature(1f, 2)] public int count = 3;
         [Tooltip("Apertura del abanico (rad, media).")] [Min(0f)] public float spread = 0.2f;
         [Tooltip("Velocidad (u/s).")] [Min(1f)] public float speed = 23.75f;
-        [Tooltip("Daño por esquirla.")] [Min(0f)] public float damage = 9f;
+        [Tooltip("Daño por esquirla.")] [Min(0f)] [ArsenalDamage] public float damage = 9f;
         [Tooltip("Empujón (× el del enemigo).")] [Min(0f)] public float knockback = 0.35f;
         [Tooltip("Alcance (s de vuelo).")] [Min(0.05f)] public float life = 0.6f;
 
@@ -50,16 +50,16 @@ namespace RedMagic.Arsenal
 
         [Header("Erizo")]
         [Tooltip("Estallan solas a los (s).")] public float spikeLife = 2.5f;
-        [Tooltip("Daño del estallido.")] public float spikeBlast = 10f;
+        [Tooltip("Daño del estallido.")] [ArsenalDamage] public float spikeBlast = 10f;
         [Tooltip("Radio del estallido (u).")] public float spikeBlastRadius = 0.85f;
-        [Tooltip("Retorno: daño al volver.")] public float returnDamage = 7f;
+        [Tooltip("Retorno: daño al volver.")] [ArsenalDamage] public float returnDamage = 7f;
         [Tooltip("Retorno: recarga del arma de reserva por esquirla (s).")] public float refund = 0.15f;
         [Tooltip("Metralla: esquirlas por estallido.")] public int shrapCount = 3;
-        [Tooltip("Metralla: daño.")] public float shrapDamage = 4f;
-        [Tooltip("Hemorragia: daño/s por clavada.")] public float bleedDps = 4f;
+        [Tooltip("Metralla: daño.")] [ArsenalDamage] public float shrapDamage = 4f;
+        [Tooltip("Hemorragia: daño/s por clavada.")] [ArsenalDamage] public float bleedDps = 4f;
 
         [Header("Lanza")]
-        public float lanceCooldown = 0.55f;
+        [ArsenalCooldown] public float lanceCooldown = 0.55f;
         [Tooltip("Tiempo entre esquirlas de la ráfaga (s).")] public float lanceGap = 0.035f;
         [Tooltip("Velocidad (u/s).")] public float lanceSpeed = 33.75f;
         [Tooltip("Alcance (s de vuelo).")] public float lanceLife = 0.75f;

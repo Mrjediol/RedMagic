@@ -56,6 +56,15 @@ level of a run.
   top (hidden between waves: that space is the shop card's); under it "Tiempo: 0:45" / "Bajas: 12/30" / "Enemigos: N" /
   "¡Jefe!"; the between-waves block on the right at mid height (button, Enter / pad Select, or countdown) and the game-over / victory panel (Reintentar = reload the map, same difficulty; Menú principal).
 
+## Weapons in survival
+- **Preparing** phase before wave 1: the between-waves block shows **Empezar** (Enter / Select) and **Mejoras de armas**
+  (`UpgradeMenuController.OpenWeapons`: permanent `WeaponMastery`); the game-over panel has the same button.
+- `ResetRun` → `WeaponRunProgress.ResetRun` (weapons back to base + permanent upgrades). `evolutionAfterWaves` (5, 10) grant a
+  Prisma; each non-boss wave rolls `carrierChancePerWave` (× `WeaponProgressionConfig.testEase`) and, if hit, one of its first
+  spawns becomes a `CoreCarrier`. See `docs/armas/progresion.md ▸ En Unity`.
+- Turrets: `Mount` puts them on floors / platforms / walls / ceilings (`turretOnFloors/Walls/Ceilings` weights), rotated so
+  their base faces the surface; `EnemyBrain.FaceTowards` works in local space so a rotated turret still faces the player.
+
 ## Shared pieces it added (usable anywhere)
 - **`EnemyVariant`** (`Assets/Scripts/Enemies/`, assets in `Assets/Test/Survival/Variants/`) — a version of any enemy
   without a prefab: difficulty, health / damage / size ×, recolour through `RedMagic/Sprite Lit FX` (hue — the shader

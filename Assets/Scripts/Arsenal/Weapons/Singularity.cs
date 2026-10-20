@@ -38,13 +38,13 @@ namespace RedMagic.Arsenal
         public override ArsenalController CreateController() => new SingularityController();
 
         [Header("Base")]
-        [Min(0.1f)] public float cooldown = 3.5f;
+        [Min(0.1f)] [ArsenalCooldown] public float cooldown = 3.5f;
         [Tooltip("Distancia máxima (u).")] public float range = 9f;
         [Tooltip("Viaje del orbe (s).")] public float travelTime = 0.5f;
         [Tooltip("Tiempo atrayendo (s).")] public float pullTime = 1.8f;
-        [Tooltip("Radio de atracción (u).")] public float pullRadius = 3.75f;
+        [Tooltip("Radio de atracción (u).")] [ArsenalSignature(0.15f, 2, true)] public float pullRadius = 3.75f;
         [Tooltip("Fuerza de atracción (u/s).")] public float pullSpeed = 3.75f;
-        [Tooltip("Daño del colapso.")] public float burstDamage = 40f;
+        [Tooltip("Daño del colapso.")] [ArsenalDamage] public float burstDamage = 40f;
         [Tooltip("Radio del colapso (u).")] public float burstRadius = 3.25f;
         [Tooltip("Empujón del colapso (× el del enemigo).")] public float burstKnock = 1.6f;
         [Tooltip("Lanza hacia arriba al colapsar (u/s).")] public float burstLaunch = 6.5f;
@@ -54,26 +54,26 @@ namespace RedMagic.Arsenal
         [Tooltip("Fuego: quemadura (s).")] public float burn = 3f;
         [Header("Fauces")]
         [Tooltip("Radio de la boca (u).")] public float devourRadius = 1f;
-        [Tooltip("Daño por segundo dentro.")] public float devourDps = 70f;
+        [Tooltip("Daño por segundo dentro.")] [ArsenalDamage] public float devourDps = 70f;
         [Tooltip("Hambre: + s por baja.")] public float hungerTime = 0.5f;
         [Tooltip("Hambre: + tamaño por baja.")] public float hungerGrow = 0.1f;
         [Tooltip("Hambre: tamaño máximo.")] public float hungerMax = 1.6f;
         [Tooltip("Digestión: traga por debajo de (× vida).")] public float swallowPct = 0.35f;
-        [Tooltip("Regurgitar: daño de cada proyectil.")] public float regurgDamage = 45f;
+        [Tooltip("Regurgitar: daño de cada proyectil.")] [ArsenalDamage] public float regurgDamage = 45f;
         [Tooltip("Regurgitar: radio del estallido (u).")] public float regurgRadius = 1.375f;
         [Header("Errante")]
         [Tooltip("Velocidad (u/s).")] public float driftSpeed = 2f;
         [Tooltip("Cazadora: velocidad (u/s).")] public float huntSpeed = 3.25f;
         [Tooltip("Rastro: cada (s).")] public float trailEvery = 0.35f;
         [Tooltip("Rastro: duración (s).")] public float trailLife = 1.2f;
-        [Tooltip("Rastro: daño/s.")] public float trailDps = 10f;
+        [Tooltip("Rastro: daño/s.")] [ArsenalDamage] public float trailDps = 10f;
         [Tooltip("Masa: escala.")] public float massScale = 1.4f;
         [Tooltip("Masa: × tiempo atrayendo.")] public float massTime = 1.35f;
         [Header("Arsenal")]
         [Tooltip("× radio de captura.")] public float arsenalRadius = 1.25f;
         [Tooltip("× daño de lo capturado.")] public float arsenalMul = 1.5f;
         [Tooltip("Recarga: s por captura.")] public float reloadRefund = 0.2f;
-        [Tooltip("Escudo: daño de una bala devuelta.")] public float shotDamage = 12f;
+        [Tooltip("Escudo: daño de una bala devuelta.")] [ArsenalDamage] public float shotDamage = 12f;
         [Header("Duplicador")]
         [Tooltip("Tiempo de fusión de los dos orbes (s).")] public float mergeTime = 0.3f;
         [Tooltip("Escala de la grieta fusionada.")] public float mergeScale = 1.35f;

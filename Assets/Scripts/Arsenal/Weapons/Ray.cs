@@ -38,11 +38,11 @@ namespace RedMagic.Arsenal
 
         [Header("Base")]
         [Tooltip("Canalización máxima (s).")] public float maxChannel = 2f;
-        [Tooltip("Recarga tras soltar (s).")] public float cooldown = 0.8f;
-        [Tooltip("Alcance (u).")] public float range = 13f;
+        [Tooltip("Recarga tras soltar (s).")] [ArsenalCooldown] public float cooldown = 0.8f;
+        [Tooltip("Alcance (u).")] [ArsenalSignature(0.15f, 2, true)] public float range = 13f;
         [Tooltip("Giro hacia el ratón (rad/s).")] public float turnRate = 9f;
         [Tooltip("Cada cuánto quema (s).")] public float tick = 0.1f;
-        [Tooltip("Daño por tick.")] public float tickDamage = 6f;
+        [Tooltip("Daño por tick.")] [ArsenalDamage] public float tickDamage = 6f;
         [Tooltip("Empujón por tick (× el del enemigo).")] public float push = 0.12f;
         [Header("Elemento y Duplicador (build)")]
         [Tooltip("Hielo: congelación por tick.")] public float freezeTick = 0.07f;
@@ -50,7 +50,7 @@ namespace RedMagic.Arsenal
         [Tooltip("Duplicador: separación de los dos haces (rad).")] public float dupAngle = 0.07f;
         [Header("Sobrecarga")]
         [Tooltip("× daño por tick con el calor al máximo.")] public float overMax = 2.5f;
-        [Tooltip("Daño de la descarga (calor al máximo).")] public float overBurst = 40f;
+        [Tooltip("Daño de la descarga (calor al máximo).")] [ArsenalDamage] public float overBurst = 40f;
         [Tooltip("Calor mínimo para descargar (fracción).")] public float overMin = 0.2f;
         [Tooltip("Calor para que la descarga sea golpe fuerte.")] public float overHeavyAt = 0.5f;
         [Tooltip("× recarga si se recalienta.")] public float overHeatCd = 2f;
@@ -58,7 +58,7 @@ namespace RedMagic.Arsenal
         [Tooltip("Punto justo: × descarga.")] public float sweetMul = 2f;
         [Tooltip("Perforante: calor a partir del que atraviesa.")] public float pierceAt = 0.5f;
         [Tooltip("Onda: radio (u).")] public float waveRadius = 2.25f;
-        [Tooltip("Onda: daño (calor al máximo).")] public float waveDamage = 30f;
+        [Tooltip("Onda: daño (calor al máximo).")] [ArsenalDamage] public float waveDamage = 30f;
         [Header("Prisma")]
         public int prismCount = 2;
         [Tooltip("Alcance (u).")] public float prismRange = 7.5f;
@@ -73,9 +73,9 @@ namespace RedMagic.Arsenal
         [Tooltip("Duración (s).")] public float beaconTime = 3f;
         [Tooltip("× daño por tick.")] public float beaconMul = 0.8f;
         [Tooltip("Alcance para buscar enemigo (u).")] public float beaconRange = 10.5f;
-        [Tooltip("Vínculo: daño/s del hilo.")] public float linkDps = 20f;
+        [Tooltip("Vínculo: daño/s del hilo.")] [ArsenalDamage] public float linkDps = 20f;
         [Tooltip("Vínculo: fracción del daño del faro que cura.")] public float lifesteal = 0.3f;
-        [Tooltip("Estallido: daño.")] public float novaDamage = 50f;
+        [Tooltip("Estallido: daño.")] [ArsenalDamage] public float novaDamage = 50f;
         [Tooltip("Estallido: radio (u).")] public float novaRadius = 2.75f;
         [Tooltip("Vigía: + s de vida por baja.")] public float watchTime = 1f;
 

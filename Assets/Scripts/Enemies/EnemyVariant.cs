@@ -100,27 +100,29 @@ namespace RedMagic.Enemies
         private Material MaterialFor(Material source, Texture texture, Shader litFx)
         {
             var key = (source.GetInstanceID(), GetInstanceID(), texture != null ? texture.GetInstanceID() : 0);
-            if (Cache.TryGetValue(key, out var cached) && cached != null) return cached;
-
-            // Del FX se copia todo (sombra de contacto, degradado…); del normal sólo las texturas que comparten.
-            Material m;
-            if (source.shader == litFx) m = new Material(source);
-            else
+            if (!Cache.TryGetValue(key, out var m) || m == null)
             {
-                m = new Material(litFx);
-                if (source.HasProperty("_MaskTex")) m.SetTexture("_MaskTex", source.GetTexture("_MaskTex"));
-                if (source.HasProperty("_NormalMap")) m.SetTexture("_NormalMap", source.GetTexture("_NormalMap"));
+                // Del FX se copia todo (sombra de contacto, degradado…); del normal sólo las texturas que comparten.
+                if (source.shader == litFx) m = new Material(source);
+                else
+                {
+                    m = new Material(litFx);
+                    if (source.HasProperty("_MaskTex")) m.SetTexture("_MaskTex", source.GetTexture("_MaskTex"));
+                    if (source.HasProperty("_NormalMap")) m.SetTexture("_NormalMap", source.GetTexture("_NormalMap"));
+                }
+                m.name = $"{source.name} · {name}";
+                m.hideFlags = HideFlags.DontSave;
+                if (texture != null) m.SetTexture("_MainTex", texture);
+                Cache[key] = m;
             }
-            m.name = $"{source.name} · {name}";
-            m.hideFlags = HideFlags.DontSave;
-            if (texture != null) m.SetTexture("_MainTex", texture);
+
+            // Los valores se escriben siempre (son baratos): retocar la variante en pleno Play se ve en el siguiente enemigo.
             m.SetFloat("_Hue", hue);
             m.SetFloat("_Saturation", saturation);
             m.SetFloat("_Brightness", brightness);
             if (rimColor.a > 0f) { m.SetColor("_RimColor", rimColor); m.SetFloat("_RimWidth", rimWidth); }
             if (glowColor.a > 0f) m.SetColor("_GlowColor", glowColor);
             if (sheenColor.a > 0f) m.SetColor("_SheenColor", sheenColor);
-            Cache[key] = m;
             return m;
         }
     }

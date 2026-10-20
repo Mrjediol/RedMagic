@@ -190,6 +190,27 @@ const ICONS = {
     sparkle(g, cx, 0.58, 0.08, 0.02, C.white);
   },
 
+  // Núcleo (no es un arma): lo que suelta un portador — gema facetada dorada con destello. Lo usa la progresión en la run.
+  core(g) {
+    const cx = 0.5, cy = 0.52, gold = '#ffd36a', goldDeep = '#c98a1c';
+    glow(g, cx, cy, 0.48, gold, 0.6);
+    glow(g, cx, cy, 0.3, C.white, 0.35);
+    const pts = [[0.5, 0.1], [0.82, 0.4], [0.5, 0.92], [0.18, 0.4]];
+    shadow(g, 16);
+    const body = g.createLinearGradient(P(0.2), P(0.1), P(0.8), P(0.9));
+    body.addColorStop(0, '#fff3c4'); body.addColorStop(0.45, gold); body.addColorStop(1, goldDeep);
+    g.fillStyle = body; g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(P(x), P(y)) : g.moveTo(P(x), P(y))); g.closePath(); g.fill();
+    g.shadowBlur = 0;
+    // facetas
+    g.fillStyle = rgba('#ffffff', 0.45); g.beginPath(); g.moveTo(P(0.5), P(0.1)); g.lineTo(P(0.82), P(0.4)); g.lineTo(P(0.5), P(0.46)); g.closePath(); g.fill();
+    g.fillStyle = rgba(goldDeep, 0.5); g.beginPath(); g.moveTo(P(0.18), P(0.4)); g.lineTo(P(0.5), P(0.46)); g.lineTo(P(0.5), P(0.92)); g.closePath(); g.fill();
+    g.strokeStyle = '#fff6d8'; g.lineWidth = P(0.018); g.lineJoin = 'round';
+    g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(P(x), P(y)) : g.moveTo(P(x), P(y))); g.closePath(); g.stroke();
+    g.beginPath(); g.moveTo(P(0.18), P(0.4)); g.lineTo(P(0.5), P(0.46)); g.lineTo(P(0.82), P(0.4)); g.moveTo(P(0.5), P(0.46)); g.lineTo(P(0.5), P(0.92)); g.stroke();
+    glow(g, 0.62, 0.3, 0.12, C.white, 0.8);
+    sparkle(g, 0.62, 0.3, 0.13, 0.025, C.white, 0.2);
+  },
+
   // Golpe estelar: estrella que cae con su cola y marca de impacto.
   star(g) {
     const hx = 0.36, hy = 0.6, tx = 0.94, ty = 0.04;

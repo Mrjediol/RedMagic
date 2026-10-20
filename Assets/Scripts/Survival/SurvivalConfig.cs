@@ -292,6 +292,13 @@ namespace RedMagic.Survival
         [Tooltip("0 = esperar a que el jugador pulse 'Siguiente ronda'. > 0 = empieza sola tras estos segundos.")]
         [Min(0f)] public float autoNextWaveSeconds;
 
+        [Header("Armas: evolución y núcleos en la partida (WeaponRunProgress)")]
+        [Tooltip("Al superar estas rondas se gana un Prisma (evolucionar un arma). Diseño: al acabar cada mundo.")]
+        public List<int> evolutionAfterWaves = new List<int> { 5, 10 };
+        [Tooltip("Probabilidad de que una ronda traiga un portador de núcleo (× la facilidad de prueba de " +
+                 "Resources/WeaponProgressionConfig). 0,1 ≈ 1,3 núcleos en 15 rondas.")]
+        [Range(0f, 1f)] public float carrierChancePerWave = 0.1f;
+
         [Header("Moneda")]
         [Tooltip("× al oro que sueltan los enemigos (sólo ≥ 1: se suma a los bonos de items).")]
         [Min(1f)] public float goldDropMultiplier = 1f;

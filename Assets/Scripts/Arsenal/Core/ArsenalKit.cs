@@ -93,14 +93,17 @@ namespace RedMagic.Arsenal
     }
 
     /// <summary>
-    /// Kits efectivos en Play: el del asset, o la copia que haya tocado el menú DEV (como <c>CometRuntime</c>). Nunca se
-    /// escribe en el asset.
+    /// Kits efectivos. En Play, cada arma usa una <b>copia de la partida</b> (se crea la primera vez que se pide): la del
+    /// asset con las mejoras permanentes aplicadas (<see cref="WeaponMastery"/>) y — si
+    /// <see cref="WeaponProgressionConfig.startAtBase"/> — sin evolución ni mejoras: ésas se ganan en la run
+    /// (<see cref="WeaponRunProgress"/>) y se escriben en esta copia, igual que las que toca el menú DEV. Nunca se escribe
+    /// en el asset. Fuera de Play (renders del editor) es el asset tal cual.
     /// </summary>
     public static class ArsenalRuntime
     {
         private static readonly Dictionary<WeaponDefinition, ArsenalKit> Overrides = new Dictionary<WeaponDefinition, ArsenalKit>();
 
-        /// <summary>Sube cada vez que el menú DEV cambia algo: los controladores lo usan para rehacer lo que dependa del árbol.</summary>
+        /// <summary>Sube cada vez que cambia el árbol de alguna copia: los controladores lo usan para rehacer lo que dependa de él.</summary>
         public static int Version { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -109,20 +112,46 @@ namespace RedMagic.Arsenal
         public static ArsenalKit For(WeaponDefinition weapon)
         {
             if (weapon == null) return null;
-            return Overrides.TryGetValue(weapon, out var k) ? k : weapon.ArsenalKitAsset;
+            if (Overrides.TryGetValue(weapon, out var k)) return k;
+            return Application.isPlaying ? Editable(weapon) : weapon.ArsenalKitAsset;
         }
 
-        /// <summary>La copia editable (se crea la primera vez a partir del asset).</summary>
+        /// <summary>La copia de la partida (se crea la primera vez a partir del asset).</summary>
         public static ArsenalKit Editable(WeaponDefinition weapon)
         {
             if (weapon == null || weapon.ArsenalKitAsset == null) return null;
-            if (!Overrides.TryGetValue(weapon, out var k)) { k = weapon.ArsenalKitAsset.Clone(); Overrides[weapon] = k; }
+            if (!Overrides.TryGetValue(weapon, out var k)) { k = Fresh(weapon); Overrides[weapon] = k; }
+            return k;
+        }
+
+        private static ArsenalKit Fresh(WeaponDefinition weapon)
+        {
+            var k = weapon.ArsenalKitAsset.Clone();
+            if (!Application.isPlaying) return k;
+            WeaponMastery.Apply(k);
+            if (WeaponProgressionConfig.Instance.startAtBase) { k.evolution = 0; k.upgrade1 = k.upgrade2 = k.upgrade3 = false; }
             return k;
         }
 
         public static void Touch() => Version++;
 
+        /// <summary>Partida nueva: todas las copias vuelven a empezar (base + mejoras permanentes).</summary>
         public static void Clear() { Overrides.Clear(); Version++; }
+
+        /// <summary>Se ha comprado una mejora permanente: rehace las copias con ella, conservando lo ganado en la run.</summary>
+        public static void RefreshMastery()
+        {
+            var weapons = new List<WeaponDefinition>(Overrides.Keys);
+            foreach (var w in weapons)
+            {
+                var old = Overrides[w];
+                var k = Fresh(w);
+                k.evolution = old.evolution;
+                for (int i = 0; i < 3; i++) k.SetUpgrade(i, old.GetUpgrade(i));
+                Overrides[w] = k;
+            }
+            Version++;
+        }
     }
 
     /// <summary>Hacia dónde dispara el jugador: boca (mundo), dirección y punto apuntado.</summary>

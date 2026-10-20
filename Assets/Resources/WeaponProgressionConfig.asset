@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: WeaponProgressionConfig
+  m_EditorClassIdentifier: Assembly-CSharp:RedMagic.Arsenal:WeaponProgressionConfig
+  startAtBase: 1
+  offerEvolutions: 2
+  offerUpgrades: 2
+  goldIfNothingToGive: 120
+  carrierChancePerEnemy: 0.012
+  testEase: 8
+  carrierLifetime: 20
+  carrierBlink: 5
+  carrierLook: {fileID: 11400000, guid: 2764f879046205044817676ba9364ce6, type: 2}
+  variantShader: {fileID: 4800000, guid: 913c679ff15b5f147a40b1d902eba827, type: 3}
+  coreSprite: {fileID: 21300000, guid: 0d459c28f27dd8244856bb601c5d0add, type: 3}
+  coreSize: 1
+  coreMagnetRadius: 4

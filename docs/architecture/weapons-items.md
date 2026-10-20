@@ -118,6 +118,20 @@ Inspector wiring.
   deshielo/vapor), `ElementStatus` (congelación, quemado, aturdido; `EnemyBrain` no actúa congelado), atraer = `Knockback.ApplyVelocity`,
   captura (`ArsenalProjectile`), marcas del Cazador (`ArsenalMarks`, cualquier golpe del jugador). Elemento/Duplicador:
   `ArsenalBuild`. Menú DEV F10. Escena: Tools ▸ RedMagic ▸ Test ▸ Escena de armas. Estado y siguiente paso: `docs/tareas/armas-unity.md`.
+  - **Copia por partida** (`ArsenalRuntime.For/Editable`): en Play cada arma usa una copia del kit con las mejoras permanentes
+    aplicadas y, con `WeaponProgressionConfig.startAtBase`, sin evolución ni mejoras (se ganan jugando y se escriben en la copia,
+    como las del menú DEV). `Clear()` = partida nueva; `RefreshMastery()` = rehacer tras comprar algo, conservando lo ganado.
+  - **Mejoras permanentes** (`WeaponMastery` + `Resources/WeaponMasteryConfig.asset`, fragmentos de alma, `PlayerPrefs
+    mastery.<arma>.<nodo>`): el árbol sale solo del kit — Poder (Daño → Recarga), Firma (el campo `[ArsenalSignature]`:
+    esquirlas, radio…), una fila por evolución (desbloquear su mejora 2 → 3; la 1 viene de serie). Los campos se marcan en el kit
+    con `[ArsenalDamage]` / `[ArsenalCooldown]` / `[ArsenalSignature]`. Menú: el del libro del hub (`UpgradeMenuController`), pestaña
+    por arma (`WeaponMasteryConfig.weapons`); `OpenWeapons()` lo abre en armas (Supervivencia: preparación y pantalla final).
+  - **En la run** (`Assets/Scripts/Arsenal/Progression/`, `WeaponRunProgress` + `Resources/WeaponProgressionConfig.asset`):
+    Prisma = evolución segura por hito (clásico: jefe derrotado; Supervivencia: `evolutionAfterWaves`); Núcleo = mejora entera que
+    suelta un portador (`CoreCarrier`: variante `Variant_Portador`, se escapa a los 20 s parpadeando los últimos 5) como
+    `CorePickup` (imán al acercarse). Elegir: `ArsenalProgressUi` (pausa; arma si hay dos, luego 2 opciones al azar). Diseño y
+    números: `docs/armas/progresion.md ▸ En Unity`. **`testEase`** (×8) multiplica los portadores para probar: ponerlo a 1.
+  - Textos de los árboles para el jugador: `ArsenalTexts` (`arsenal.<id>.evo<e>[.up<u>].name|desc`, en es/en).
 - **Cometa (`ShotDelivery.Comet`, `Assets/Scripts/Items/Comet/`)** — arma de proyectil hecho sólo de efectos
   (boceto `docs/bocetos/ataque-cometa-estados.html`, proceso `docs/fx-proceso-bocetos.md`). Asset
   `Resources/Items/Weapons/Weapon_Cometa.asset` (**Tools ▸ RedMagic ▸ Items ▸ Cometa · Crear o actualizar arma**, no pisa lo

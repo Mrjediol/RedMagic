@@ -43,7 +43,9 @@
   reads it yet.
 - **`UpgradeMenuController`** (`Assets/Ui/`) — self-bootstrapping persistent code-built `UIDocument`
   (`Assets/Resources/UpgradeMenuPanelSettings.asset`, sorting order 30). Hidden until
-  `Open()`; pauses the game via `GameStateManager` while open. Close with Esc / E / gamepad B.
+  `Open()`; pauses the game via `GameStateManager` while open. Close with Esc / E / gamepad B. Tabs: **General** (this
+  grid) and one per weapon of `WeaponMasteryConfig.weapons` with its permanent tree (`WeaponMastery`, see
+  `weapons-items.md ▸ Arsenal`); `OpenWeapons()` opens on the first weapon.
 - The trigger for this menu is now `Hub.BookLootContainer` on the hub's book lectern (see Main Hub
   interactables); `CauldronInteractable`, the old single-press placeholder, is retired to Legacy.
 

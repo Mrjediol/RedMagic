@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: WeaponMasteryConfig
+  m_EditorClassIdentifier: Assembly-CSharp:RedMagic.Arsenal:WeaponMasteryConfig
+  weapons:
+  - {fileID: 11400000, guid: 8bff0cb5110241f46b22bfd0d1750640, type: 2}
+  - {fileID: 11400000, guid: f0fe748cc70b7a04581b614f8f7560ec, type: 2}
+  - {fileID: 11400000, guid: 301a0d3891d3fa74d9fefe4d42bbda32, type: 2}
+  - {fileID: 11400000, guid: 6147336d3bc4c7645b5cf1ce61ce4b28, type: 2}
+  - {fileID: 11400000, guid: afbc4fdd64b53134ab09ee14a402eeb6, type: 2}
+  - {fileID: 11400000, guid: f714f672144395b4793264645bcee91c, type: 2}
+  damagePerLevel: 0.08
+  damageLevels: 5
+  damageCost: 15
+  damageCostStep: 10
+  cooldownPerLevel: 0.05
+  cooldownLevels: 4
+  cooldownCost: 20
+  cooldownCostStep: 12
+  signatureCost: 40
+  signatureCostStep: 30
+  unlockSecondCost: 60
+  unlockThirdCost: 90

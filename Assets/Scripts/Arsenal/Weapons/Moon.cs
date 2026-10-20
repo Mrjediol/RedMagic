@@ -38,14 +38,14 @@ namespace RedMagic.Arsenal
         public override ArsenalController CreateController() => new MoonController();
 
         [Header("Base")]
-        [Tooltip("Daño por pasada.")] public float damage = 18f;
+        [Tooltip("Daño por pasada.")] [ArsenalDamage] public float damage = 18f;
         [Tooltip("Alcance (u).")] public float range = 9f;
         [Tooltip("Ida (s).")] public float outTime = 0.55f;
         [Tooltip("Pausa en el extremo (s).")] public float hoverTime = 0.14f;
         [Tooltip("Vuelta (s).")] public float backTime = 0.48f;
         [Tooltip("Empujón (× el del enemigo).")] public float knockback = 0.55f;
-        [Tooltip("Radio de golpe (u).")] public float hitRadius = 0.55f;
-        [Tooltip("Recarga tras atraparla (s).")] public float cooldown = 0.15f;
+        [Tooltip("Radio de golpe (u).")] [ArsenalSignature(0.2f, 2, true)] public float hitRadius = 0.55f;
+        [Tooltip("Recarga tras atraparla (s).")] [ArsenalCooldown] public float cooldown = 0.15f;
         [Header("Elemento (build)")]
         [Tooltip("Hielo: congelación en la ida (la vuelta rompe).")] public float iceFreeze = 0.5f;
         [Tooltip("Fuego: duración de la estela (s).")] public float fireLife = 0.75f;
@@ -53,7 +53,7 @@ namespace RedMagic.Arsenal
         [Header("Sierra")]
         [Tooltip("Tiempo triturando si no la llamas (s).")] public float sawTime = 2.5f;
         [Tooltip("Cada cuánto corta (s).")] public float sawTick = 0.15f;
-        [Tooltip("Daño por corte.")] public float sawDamage = 5f;
+        [Tooltip("Daño por corte.")] [ArsenalDamage] public float sawDamage = 5f;
         [Tooltip("Tirón: velocidad del arrastre (u/s).")] public float yankSpeed = 10.5f;
         [Tooltip("Desgarro: + daño por corte seguido.")] public float rendStep = 0.15f;
         [Tooltip("Desgarro: + daño máximo.")] public float rendMax = 1.5f;

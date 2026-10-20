@@ -244,7 +244,7 @@ MonoBehaviour:
         upgrade2: 0
         upgrade3: 0
         cooldown: 0.45
-        count: 5
+        count: 3
         spread: 0.2
         speed: 23.75
         damage: 9

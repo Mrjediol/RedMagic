@@ -36,12 +36,12 @@ namespace RedMagic.Arsenal
         public override ArsenalController CreateController() => new SeedController();
 
         [Header("Base")]
-        [Tooltip("Recarga (s).")] public float cooldown = 0.8f;
+        [Tooltip("Recarga (s).")] [ArsenalCooldown] public float cooldown = 0.8f;
         [Tooltip("Alcance horizontal (u).")] public float range = 10.5f;
         [Tooltip("Vuelo (s).")] public float flightTime = 0.5f;
         [Tooltip("Armado hasta estallar (s).")] public float armTime = 0.62f;
-        public float damage = 45f;
-        [Tooltip("Radio (u).")] public float radius = 1.75f;
+        [ArsenalDamage] public float damage = 45f;
+        [Tooltip("Radio (u).")] [ArsenalSignature(0.15f, 2, true)] public float radius = 1.75f;
         [Tooltip("Empujón (× el del enemigo).")] public float knockback = 1.1f;
         [Tooltip("Lanza hacia arriba (u/s).")] public float launch = 10.5f;
         [Header("Elemento y Duplicador (build)")]
@@ -61,11 +61,11 @@ namespace RedMagic.Arsenal
         [Tooltip("Semillero: + radio al máximo.")] public float sproutSize = 0.5f;
         [Header("Racimo")]
         public int clusterCount = 3;
-        [Tooltip("Daño de cada una.")] public float clusterDamage = 22f;
+        [Tooltip("Daño de cada una.")] [ArsenalDamage] public float clusterDamage = 22f;
         [Tooltip("Radio (u).")] public float clusterRadius = 1.2f;
         [Tooltip("Semillas vivas: alcance (u).")] public float seekRange = 6f;
         [Tooltip("Generaciones: semillas por semilla.")] public int genCount = 2;
-        [Tooltip("Generaciones: daño.")] public float genDamage = 12f;
+        [Tooltip("Generaciones: daño.")] [ArsenalDamage] public float genDamage = 12f;
         [Tooltip("Siembra: duración de la mina (s).")] public float plantLife = 4f;
         [Tooltip("Siembra: radio de disparo (u).")] public float plantRadius = 1f;
         [Header("Madura")]

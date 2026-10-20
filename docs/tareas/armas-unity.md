@@ -96,6 +96,8 @@ Compilar con el editor abierto (`unity command recompile`). Aspecto: render fuer
 
 ## Historial
 
+- 2026-10-20 · Progresión: mejoras permanentes por arma (menú del hub, pestaña por arma) y en la run Prisma (evolución) + Núcleo
+  de portador (mejora); las armas empiezan en base. Diseño en `docs/armas/progresion.md ▸ En Unity`. `testEase` ×8 para probar.
 - 2026-10-20 · Barras de vida en los muñecos (`IHudEnemy`), insignia del arma de reserva en el HUD e iconos de las 6 armas.
 - 2026-10-20 · Sonidos: 56 WAV asignados y en el registro (`Player/Arsenal/*`); quitado el hueco fantasma `OnRangedAttack`
   de PlayerNuevo (bloqueaba el registro; el disparo suena por `WeaponDefinition.FireSound`).

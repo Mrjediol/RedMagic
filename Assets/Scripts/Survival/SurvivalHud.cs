@@ -25,8 +25,9 @@ namespace RedMagic.Survival
         private UIDocument _document;
         private VisualElement _top, _between, _over;
         private Label _wave, _enemies, _cleared, _nextHint, _overTitle;
-        private Button _next, _retry, _menu;
+        private Button _next, _retry, _menu, _mastery, _overMastery;
         private int _shownWave = -1, _shownLeft = -1;
+        private SurvivalManager.Phase _shownPhase = (SurvivalManager.Phase)(-1);
         private string _shownHint;
         private bool _built, _overShown;
         private float _overDelay = -1f;
@@ -82,6 +83,10 @@ namespace RedMagic.Survival
             _nextHint = HudStyle.OutlinedLabel("next-hint", 20f);
             _nextHint.style.marginTop = 4;
             _between.Add(_nextHint);
+            // Sólo en la preparación: las mejoras permanentes no se tocan a mitad de partida.
+            _mastery = MakeButton("mastery", OpenMastery);
+            _mastery.style.marginTop = 14;
+            _between.Add(_mastery);
 
             // Fin de partida: en el centro, con fondo.
             _over = Column(root, "survival-over");
@@ -100,7 +105,9 @@ namespace RedMagic.Survival
             _retry = MakeButton("retry", () => _manager.Retry());
             _menu = MakeButton("menu", () => _manager.ToMainMenu());
             _menu.style.marginLeft = 24;
-            row.Add(_retry); row.Add(_menu);
+            _overMastery = MakeButton("over-mastery", OpenMastery);
+            _overMastery.style.marginLeft = 24;
+            row.Add(_retry); row.Add(_overMastery); row.Add(_menu);
             _over.Add(row);
 
             Show(_between, false);
@@ -108,6 +115,9 @@ namespace RedMagic.Survival
             _built = true;
             Relabel();
         }
+
+        /// <summary>El menú de mejoras del hub, en la pestaña de armas (mejoras permanentes).</summary>
+        private static void OpenMastery() => UpgradeMenuController.Instance?.OpenWeapons();
 
         public static string DifficultyName(SurvivalDifficulty difficulty) => difficulty switch
         {
@@ -151,7 +161,8 @@ namespace RedMagic.Survival
             _next.text = Loc.Get("survival.next_wave");
             _retry.text = Loc.Get("survival.retry");
             _menu.text = Loc.Get("survival.main_menu");
-            _shownWave = -1; _shownLeft = -1; _shownHint = null;
+            _mastery.text = _overMastery.text = Loc.Get("survival.weapon_upgrades");
+            _shownWave = -1; _shownLeft = -1; _shownHint = null; _shownPhase = (SurvivalManager.Phase)(-1);
         }
 
         private void Update()
@@ -188,9 +199,19 @@ namespace RedMagic.Survival
             // Entre rondas el hueco de arriba es para la ficha de la tienda.
             Show(_top, !over && _manager.Wave > 0 && phase != SurvivalManager.Phase.BetweenWaves);
 
-            // Entre rondas.
-            bool between = phase == SurvivalManager.Phase.BetweenWaves;
+            // Entre rondas, y la preparación antes de la 1 (mismo bloque: "Empezar" + mejoras de armas).
+            bool preparing = phase == SurvivalManager.Phase.Preparing;
+            bool between = phase == SurvivalManager.Phase.BetweenWaves || preparing;
             Show(_between, between);
+            if (phase != _shownPhase)
+            {
+                _shownPhase = phase;
+                Show(_mastery, preparing);
+                _next.text = Loc.Get(preparing ? "survival.start" : "survival.next_wave");
+                if (preparing) _cleared.text = Loc.Get("survival.prepare", DifficultyName(_manager.Difficulty));
+                else _shownWave = -1;
+                if (preparing && InputDeviceManager.GamepadActive) _next.Focus();
+            }
             if (between)
             {
                 float auto = _manager.AutoNextRemaining;

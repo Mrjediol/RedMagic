@@ -37,7 +37,8 @@ namespace RedMagic.Survival
     [DisallowMultipleComponent]
     public class SurvivalManager : MonoBehaviour
     {
-        public enum Phase { Starting, Fighting, BetweenWaves, GameOver, Victory }
+        /// <summary>Preparing = antes de la ronda 1 (mejoras de armas, "Empezar").</summary>
+        public enum Phase { Starting, Preparing, Fighting, BetweenWaves, GameOver, Victory }
 
         public static SurvivalManager Current { get; private set; }
 
@@ -98,6 +99,7 @@ namespace RedMagic.Survival
         private Health _playerHealth;
         private bool _nextRequested;
         private int _waveInStage;
+        private int _spawnedThisWave, _carrierAt = -1;
         private float _waveStart, _damageTakenThisWave;
         private readonly HashSet<SurvivalSpawnKind> _warnedKinds = new HashSet<SurvivalSpawnKind>();
 
@@ -206,6 +208,9 @@ namespace RedMagic.Survival
             if (config.startingWeapon != null && !dev.Contains(config.startingWeapon)) dev.Add(config.startingWeapon);
             if (config.startingSecondWeapon != null && !dev.Contains(config.startingSecondWeapon)) dev.Add(config.startingSecondWeapon);
             ArsenalCatalog.Register(dev);
+
+            // Armas en su forma base (+ mejoras permanentes); evolución y mejoras se ganan jugando.
+            WeaponRunProgress.ResetRun();
         }
 
         // ------------------------------------------------------------------ bucle de rondas
@@ -213,6 +218,12 @@ namespace RedMagic.Survival
         private IEnumerator Loop()
         {
             Wave = startAtWave - 1;
+
+            // Preparación: hueco para las mejoras permanentes de armas antes de empezar.
+            CurrentPhase = Phase.Preparing;
+            _nextRequested = false;
+            while (!_nextRequested) yield return null;
+
             while (true)
             {
                 Wave++;
@@ -230,6 +241,10 @@ namespace RedMagic.Survival
                 TimeLeft = 0f;
                 _waveStart = Time.time;
                 _damageTakenThisWave = 0f;
+                _spawnedThisWave = 0;
+                _carrierAt = -1;
+                float carrier = Mathf.Clamp01(config.carrierChancePerWave * WeaponProgressionConfig.Instance.testEase);
+                if (!boss && _rng.NextDouble() < carrier) _carrierAt = 2 + _rng.Next(6);   // uno de los primeros de la ronda
                 WaveStarted?.Invoke(Wave);
 
                 yield return IsDynamicWave ? RunDynamicWave() : RunSimpleWave();
@@ -238,6 +253,8 @@ namespace RedMagic.Survival
                 Debug.Log($"[Survival] Ronda {Wave} ({Stage.fallbackName}{(IsBossWave ? ", jefe" : IsDynamicWave ? ", dinámica" : "")}, " +
                           $"{Difficulty}) superada en {Time.time - _waveStart:0.0} s · bajas {Kills} · daño recibido " +
                           $"{_damageTakenThisWave:0} · oro {(CurrencyManager.Instance != null ? CurrencyManager.Instance.Get(Currency.Gold) : 0)}", this);
+
+                if (config.evolutionAfterWaves.Contains(Wave)) WeaponRunProgress.GrantEvolution();
 
                 yield return BetweenWaves();
                 if (CurrentPhase == Phase.GameOver) yield break;
@@ -363,10 +380,10 @@ namespace RedMagic.Survival
             if (shop != null) shop.gameObject.SetActive(false);
         }
 
-        /// <summary>"Siguiente ronda": sólo cuenta entre rondas.</summary>
+        /// <summary>"Siguiente ronda" (o "Empezar" en la preparación): sólo cuenta entre rondas.</summary>
         public void RequestNextWave()
         {
-            if (CurrentPhase == Phase.BetweenWaves) _nextRequested = true;
+            if (CurrentPhase == Phase.BetweenWaves || CurrentPhase == Phase.Preparing) _nextRequested = true;
         }
 
         // ------------------------------------------------------------------ aparición
@@ -395,6 +412,9 @@ namespace RedMagic.Survival
             if (request.special != null) request.special.Apply(enemy, shader);
             // Ya con su tamaño final: apoyada en su superficie (suelo, pared o techo), con la base tocándola.
             if (request.kind == SurvivalSpawnKind.Turret) SurvivalSpawnFinder.Mount(enemy, position, normal);
+
+            // El portador de la ronda (si le toca): uno de los primeros en salir.
+            if (++_spawnedThisWave == _carrierAt) CoreCarrier.Make(enemy);
 
             var health = enemy.GetComponent<Health>();
             if (health != null) _alive.Add(health);

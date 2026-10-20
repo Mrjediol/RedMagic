@@ -119,6 +119,40 @@ sigue siendo el sitio donde se terminan y afinan las armas; esta capa se diseña
 Panel «Dificultad» de la jugable: vida de los enemigos ×1-×4 y que disparen. Objetivo a comprobar jugando: arma base sola =
 cuesta; evolución + 1 mejora + 2 comunes = cómodo; evolución completa + Duplicador + elemento con reacciones = arrasa.
 
+## En Unity (2026-10-20)
+
+### Fuera de la run — mejoras permanentes por arma (`WeaponMastery`)
+
+Menú del libro del hub (y en Supervivencia: preparación y pantalla final), pestaña por arma. Fragmentos de alma. Mismo árbol
+para todas, deducido del kit:
+
+| Fila | Nodos (cada uno pide el anterior a nivel 1) | Valores de partida (`WeaponMasteryConfig`) |
+|---|---|---|
+| Poder | Daño (5 niv.) → Recarga (4 niv.) | +8 % / −5 % por nivel; 15+10/nivel y 20+12/nivel almas |
+| Firma | la estadística del arma (2 niv.) | Abanico +1 esquirla (base 3 → 5) · Media luna +20 % hoja · Rayo +15 % alcance · Semilla +15 % radio · Singularidad +15 % atracción · Golpe estelar +20 % ancho; 40+30/nivel |
+| Cada evolución | Mejora 2 → Mejora 3 (la 1 viene de serie) | 60 y 90 almas |
+
+### En la run — Prisma (evolución) y Núcleo (mejora)
+
+- **Prisma**, seguro: clásico = cada jefe derrotado; Supervivencia = rondas de `evolutionAfterWaves` (5 y 10, fin de cada
+  mundo). Eliges arma (si hay dos sin evolucionar) y 1 de 2 evoluciones al azar.
+- **Núcleo**, raro: lo suelta **entero** un **portador** — un enemigo cualquiera convertido (blanco radiante, ×1,6 vida) que
+  **se escapa a los 20 s** (parpadea los últimos 5). Clásico: 1,2 % por enemigo; Supervivencia: 10 % por ronda. Eliges arma
+  evolucionada y 1 de 2 mejoras desbloqueadas que no tengas. Sin evolución todavía, espera; sin nada que mejorar, oro.
+- **Facilidad de prueba ×8** (`WeaponProgressionConfig.testEase`): multiplica los portadores. Para jugar de verdad, 1.
+
+**Por qué núcleos enteros y no fragmentos que se combinan** (simulado, 200 000 runs): la curva pedida — ~30 % sin mejoras,
+~35 % una, ~22 % dos, 10-15 % tres — es la de sucesos raros independientes (Poisson de media ≈1,3). Sumar fragmentos (3 = 1
+mejora) la estrecha: casi todas las runs acaban con lo mismo y las de 3 mejoras caen al 2-6 %; hacer que cada núcleo acelere el
+siguiente (bola de nieve) sube las de 0 al ~50 %. El escape mete habilidad: verlo, ir a por él y matarlo a tiempo.
+
+**Otras formas pensadas (no hechas; combinables):**
+1. **Tienda de núcleos**: un altar con un núcleo caro que sube de precio — decisión económica contra items. Determinista, menos emoción.
+2. **El jefe ofrece elegir**: mejora del arma o item legendario. Garantiza una decisión de build por jefe, pero no da varianza.
+3. **Retos del arma**: barra por bajas / golpes fuertes con esa arma → mejora. Premia jugar con ella; la curva sería por habilidad, no suerte.
+4. **Oleada maldita / altar de riesgo** (Supervivencia): aceptar una ronda más dura (más especiales) a cambio de un núcleo seguro.
+   Es la que mejor completaría la actual: suerte (portadores) + riesgo elegido.
+
 ## Abierto
 
 - ¿Skulls para el árbol y oro para items (lo que ya hay), o una sola moneda?

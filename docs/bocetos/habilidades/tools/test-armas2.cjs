@@ -155,5 +155,28 @@ if (!only || only === 'spear') {
   check('Destello: te teletransporta a la jabalina', Math.abs(G.player.x - sx) < 5 && sx > 400, `player ${Math.round(G.player.x)} jabalina ${Math.round(sx)}`);
   check('Destello · Fase: siguiente ataque potenciado', G.empower > 1);
 }
+// ---------------------------------------------------------------- 11 · Enjambre
+if (!only || only === 'swarm') {
+  sim.setup({ slots: [{ w: 'swarm' }, { w: 'fan' }], enemies: near(600, 2), px: 200 }); sim.aim(630, 296).tap().run(5);
+  check('Enjambre base: pican a los dos y vuelven', G.enemies.every(e => e.hp < e.hpMax) && G.slots[0].inst.flies().length === 0, G.enemies.map(e => Math.round(e.hp)).join('/'));
+  // Colmena: los golpes de la otra arma traen luciérnagas
+  const hiveRun = arch => { sim.setup({ slots: [{ w: 'swarm', arch }, { w: 'star' }], enemies: [{ x: 600, kind: 'ground' }], px: 200, hpMul: 4 }); sim.run(0.5).swap(1).aim(600, 296).tap().run(3); return sim.dmg(); };
+  const dh = hiveRun('hive'), dn = hiveRun(null);
+  check('Colmena: al golpear con la otra arma acuden solas', dh > dn + 8, `${dh} vs ${dn}`);
+  // Colmena · Néctar: la otra arma recarga antes
+  sim.setup({ slots: [{ w: 'swarm', arch: 'hive', ups: { nectar: true } }, { w: 'star' }], enemies: [{ x: 600, kind: 'ground' }], px: 200, hpMul: 4 }); sim.run(0.5).swap(1).aim(600, 296).tap().run(2.3);
+  const rN = G.slots[1].inst.ready();
+  sim.setup({ slots: [{ w: 'swarm', arch: 'hive' }, { w: 'star' }], enemies: [{ x: 600, kind: 'ground' }], px: 200, hpMul: 4 }); sim.run(0.5).swap(1).aim(600, 296).tap().run(2.3);
+  check('Colmena · Néctar: la otra arma recarga antes', rN > G.slots[1].inst.ready(), `${rN.toFixed(2)} vs ${G.slots[1].inst.ready().toFixed(2)}`);
+  // Plaga: se meten dentro y saltan al morir
+  sim.setup({ slots: [{ w: 'swarm', arch: 'plague' }, { w: 'fan' }], enemies: near(600, 2), px: 200 }); G.enemies[0].hp = 25;
+  let inf = 0; sim.aim(600, 296).tap().run(4, () => { inf = Math.max(inf, G.enemies[1].infest || 0); });
+  check('Plaga: infesta y, al morir el huésped, salta al vecino', G.enemies[0].dead || inf > 0, `infestación del vecino ${inf}`);
+  // Faroles: críticos a los iluminados
+  sim.setup({ slots: [{ w: 'swarm', arch: 'lantern' }, { w: 'fan' }], enemies: [{ x: 600, kind: 'ground' }], px: 200, hpMul: 20 }); sim.aim(600, 270).tap().run(0.3);
+  check('Faroles: el enemigo queda iluminado', G.enemies[0].litT > G.t);
+  sim.swap(1); let crit = 0; for (let i = 0; i < 6; i++) sim.aim(600, 296).tap().run(0.55, () => { if (G.texts.some(x => x.s === 'CRÍTICO')) crit = 1; });
+  check('Faroles: golpes críticos de la otra arma', crit === 1);
+}
 check.done();
 function GROUND_Y() { return 340; }

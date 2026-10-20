@@ -246,3 +246,31 @@ function blinkTrail(ctx, t, layer, t0, x0, y0, x1, y1, pal) {
   for (let i = 0; i < 4; i++) { const s = i / 4, x = lerp(x0, x1, s), y = lerp(y0, y1, s); ctx.save(); ctx.globalAlpha = clamp((1 - u) * 0.35 * (s + 0.2)); ctx.fillStyle = col(pal.light, layer); ctx.beginPath(); ctx.ellipse(x, y - 38, 12, 34, 0, 0, TAU); ctx.fill(); ctx.restore(); }
   shockRing(ctx, t, layer, t0, x1, y1 - 30, 70, pal);
 }
+
+// ---------------------------------------------------------------- Enjambre (g-enjambre.js)
+// luciérnaga: núcleo que late, halo cálido, alitas que baten y estela corta. sc = tamaño (reina = 1.6)
+function firefly(ctx, t, layer, x, y, ang, sc, pal, a, trail, seed = 0) {
+  if (a <= 0) return;
+  if (layer === 'back') { if (trail && trail.length > 1) ribbon(ctx, trail, s => 3.2 * sc * (1 - s), pal.mid, 0.55 * a, layer); return; }
+  const pu = 0.75 + 0.25 * Math.sin(t * 14 + seed * 3.1);
+  glow(ctx, x, y, 16 * sc * pu, pal.g1, 0.55 * a);
+  const fl = Math.sin(t * 60 + seed) * 0.6;
+  for (const sg of [-1, 1]) lens(ctx, x - Math.cos(ang) * 2 * sc + Math.cos(ang + sg * (1.9 + fl)) * 4 * sc, y - Math.sin(ang) * 2 * sc + Math.sin(ang + sg * (1.9 + fl)) * 4 * sc, ang + sg * (1.9 + fl), 8 * sc, 3.2 * sc, pal.light, 0.55 * a, layer);
+  disc(ctx, x, y, 3.4 * sc, pal.deep, a, layer); disc(ctx, x, y, 2.4 * sc * pu, pal.mid, a, layer); disc(ctx, x, y, 1.3 * sc, pal.core, a, layer);
+}
+// picadura: chispa pequeña
+function stingFx(ctx, t, layer, t0, x, y, pal, sc = 1) {
+  const u = seg(t, t0, t0 + 0.2); if (u >= 1 || layer !== 'front') return;
+  star4(ctx, x, y, 9 * sc * (1 - u), t * 9, pal.core, 1 - u, layer); glow(ctx, x, y, 14 * sc, pal.g2, 0.6 * (1 - u));
+}
+// farol: círculo de luz cálida en el suelo/aire con borde suave y motas que suben
+function lanternLight(ctx, t, layer, x, y, r, pal, a) {
+  if (a <= 0) return;
+  if (layer === 'back') {
+    if (!showLayers) { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(pal.g2, 0.22 * a)); g.addColorStop(0.7, rgba(pal.g1, 0.08 * a)); g.addColorStop(1, rgba(pal.g1, 0)); ctx.save(); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill(); ctx.restore(); }
+    ellArc(ctx, x, y, r, r, 0, TAU, 1.4, pal.light, 0.35 * a, layer, { taper: 0, wob: 0.04, seed: 5, m: 40 });
+    return;
+  }
+  const R = rand(Math.floor(x));
+  for (let i = 0; i < 8; i++) { const ph = (t * 0.35 + R()) % 1, ox = (R() - 0.5) * r * 1.4, oy = r * 0.6 - ph * r * 1.3; if (ox * ox + oy * oy > r * r) continue; disc(ctx, x + ox + Math.sin(t * 2 + i) * 4, y + oy, 1.4, pal.light, a * Math.sin(Math.PI * ph) * 0.8, layer); }
+}

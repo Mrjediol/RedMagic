@@ -94,7 +94,7 @@ function makeEnemy(sp) {
   return { sp, kind: sp.kind, fly, x: sp.x, y: fly ? sp.y : GROUND - 44, homeY: fly ? sp.y : GROUND - 44, vx: 0, vy: 0, dir: 1,
            rx: fly ? 22 : 27, ry: fly ? 28 : 39, hp: 120 * (G.settings.hpMul || 1), hpMax: 120 * (G.settings.hpMul || 1), markN: 0, dead: false, deadT: 0, flashT: 0, sqT: 0, shakeT: 0,
            freeze: 0, frozenT: 0, burnT: 0, burnTick: 0, markT: 0, stunT: 0, pull: null, slammed: false, lastHitT: -9, atkT: 2 + Math.random() * 2,
-           timeK: 1, stasis: null, vulnT: 0, vulnK: 1, launchT: 0, launchHit: null, vpull: null, slamT: 0 };
+           timeK: 1, stasis: null, vulnT: 0, vulnK: 1, launchT: 0, launchHit: null, vpull: null, slamT: 0, litT: 0, infest: 0 };
 }
 function resetEnemies() { G.enemies = SPAWNS.map(makeEnemy); }
 const alive = () => G.enemies.filter(e => !e.dead);
@@ -215,6 +215,7 @@ function damage(e, o) {
     if (hasItem('botasO')) gc += Math.min(it.botasOMax, it.botasOBase + it.botasOPerDmg * dmg);
     G.goldHits = (G.goldHits || 0) + 1;
     if (Math.random() < gc || (hasItem('guantesO') && G.goldHits % 4 === 0)) { dmg *= 2; gilded = true; }
+    if (e.litT > G.t && Math.random() < (e.litChance || 0)) { dmg *= 2; text(e.x + 14, e.y - e.ry - 30, 'CRÍTICO', '#ffe27a', true); }   // iluminado (Enjambre · Faroles)
   }
   const frozen = e.frozenT > 0, R = G.settings.reactions && !o.noReact;
   // reacciones

@@ -334,12 +334,13 @@ namespace RedMagic.UI
 
             MenuStyle.FillParent(root);
             root.pickingMode = PickingMode.Ignore;
-            root.style.justifyContent = Justify.FlexEnd;
+            // Arriba: los items están en el suelo (altares, botín) y abajo la ficha los tapaba.
+            root.style.justifyContent = Justify.FlexStart;
             root.style.alignItems = Align.Center;
 
             _card = new VisualElement { name = "shop-item-panel", pickingMode = PickingMode.Ignore };
             _card.style.width = 640;
-            _card.style.marginBottom = 36;
+            _card.style.marginTop = 24;
             _card.style.paddingTop = 18;
             _card.style.paddingBottom = 18;
             _card.style.paddingLeft = 24;

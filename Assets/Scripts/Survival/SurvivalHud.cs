@@ -68,11 +68,11 @@ namespace RedMagic.Survival
             _enemies = HudStyle.OutlinedLabel("enemies", 24f);
             _top.Add(_enemies);
 
-            // Entre rondas: abajo al centro.
+            // Entre rondas: a la derecha, a media altura (abajo tapaba la tienda del suelo; arriba va la ficha del item).
             _between = Column(root, "survival-between");
             _between.style.position = Position.Absolute;
-            _between.style.bottom = 40; _between.style.left = 0; _between.style.right = 0;
-            _between.style.alignItems = Align.Center;
+            _between.style.top = Length.Percent(36); _between.style.right = 40;
+            _between.style.alignItems = Align.FlexEnd;
             _cleared = HudStyle.OutlinedLabel("cleared", 34f);
             _cleared.style.color = HudStyle.Gold;
             _between.Add(_cleared);
@@ -185,7 +185,8 @@ namespace RedMagic.Survival
                               : byKills ? Loc.Get("survival.kills", _manager.Kills, _manager.KillTarget)
                               : Loc.Get("survival.enemies_left", _manager.EnemiesLeft);
             }
-            Show(_top, !over && _manager.Wave > 0);
+            // Entre rondas el hueco de arriba es para la ficha de la tienda.
+            Show(_top, !over && _manager.Wave > 0 && phase != SurvivalManager.Phase.BetweenWaves);
 
             // Entre rondas.
             bool between = phase == SurvivalManager.Phase.BetweenWaves;

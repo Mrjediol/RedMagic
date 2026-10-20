@@ -53,8 +53,8 @@ level of a run.
   - **Gizmos** (object selected): the spawn ring (red = min, green = max) and the above/below lines around the player (or
     where they start, outside Play); in Play, the spots used in the last 2.5 s coloured by kind.
 - **`SurvivalHud`** — code-built UI Toolkit on `CurrencyHudPanelSettings` (sortingOrder 5): wave · world · difficulty at the
-  top; under it "Tiempo: 0:45" / "Bajas: 12/30" / "Enemigos: N" / "¡Jefe!"; the between-waves block (button, Enter / pad
-  Select, or countdown) and the game-over / victory panel (Reintentar = reload the map, same difficulty; Menú principal).
+  top (hidden between waves: that space is the shop card's); under it "Tiempo: 0:45" / "Bajas: 12/30" / "Enemigos: N" /
+  "¡Jefe!"; the between-waves block on the right at mid height (button, Enter / pad Select, or countdown) and the game-over / victory panel (Reintentar = reload the map, same difficulty; Menú principal).
 
 ## Shared pieces it added (usable anywhere)
 - **`EnemyVariant`** (`Assets/Scripts/Enemies/`, assets in `Assets/Test/Survival/Variants/`) — a version of any enemy

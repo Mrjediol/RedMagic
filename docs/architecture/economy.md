@@ -78,7 +78,7 @@
   price offset / bob, proximity ranges, the Interact action. Adds a **`ShopAltar`** to each point
   (icon with a bob + world-space coin+price canvas, red when unaffordable, shake/flash on a denied
   buy). Nearest altar in range → **`UI.ShopItemPanel`** (UI Toolkit, own
-  `ShopItemPanelSettings`, sorting 17): name in rarity colour, rarity, description, each tag
+  `ShopItemPanelSettings`, sorting 17; at the **top** of the screen — items sit on the floor and a bottom card hid them): name in rarity colour, rarity, description, each tag
   "now → after" (gold + the `SynergyConfig` tier text when the buy crosses 2/4/6), and the hint.
   Interact (`Core.InteractInput`) → `CurrencyManager.TrySpend(Gold)` → `WeaponInventory.TryEquip`
   → altar cleared. A free-pool item with all 6 free slots full is refused before charging.

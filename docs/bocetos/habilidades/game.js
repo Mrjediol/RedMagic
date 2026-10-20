@@ -110,6 +110,23 @@ function raycastEnemy(ax, ay, bx, by, skip) {
   }
   return best;
 }
+// Espejos (g-espejo.js, regla común): segmentos que desvían proyectiles y haces. G.mirrors = [{ x0, y0, x1, y1, alive,
+// beam(x, y, ang) → { x, y, ang, mul } }]. Devuelve el primer espejo que corta a→b (u = fracción 0..1).
+function segSeg(ax, ay, bx, by, cx, cy, dx, dy) {
+  const rX = bx - ax, rY = by - ay, sX = dx - cx, sY = dy - cy, den = rX * sY - rY * sX;
+  if (Math.abs(den) < 1e-9) return null;
+  const u = ((cx - ax) * sY - (cy - ay) * sX) / den, v = ((cx - ax) * rY - (cy - ay) * rX) / den;
+  return u >= 0 && u <= 1 && v >= 0 && v <= 1 ? u : null;
+}
+function mirrorCross(ax, ay, bx, by, skip) {
+  let best = null;
+  for (const m of G.mirrors || []) {
+    if (!m.alive || m === skip || !G.ents.includes(m)) continue;
+    const u = segSeg(ax, ay, bx, by, m.x0, m.y0, m.x1, m.y1);
+    if (u !== null && u > 1e-4 && (!best || u < best.u)) best = { u, m, x: lerp(ax, bx, u), y: lerp(ay, by, u) };
+  }
+  return best;
+}
 function nearestEnemy(x, y, maxD = 9999, skip) {
   let best = null, bd = maxD;
   for (const e of alive()) { if (skip && skip.has(e)) continue; const d = Math.hypot(e.x - x, e.y - y); if (d < bd) { bd = d; best = e; } }

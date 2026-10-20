@@ -40,6 +40,7 @@ los expresa. Árbol completo hoy en las seis armas.
 | Jabalina | `spear` | se carga, se clava y hay que recuperarla | [jabalina.md](jabalina.md) |
 | Enjambre | `swarm` | luciérnagas que pican solas; compañero, contagio o faroles | [enjambre.md](enjambre.md) |
 | Tótem de cristal | `totem` | torreta plantada; copia tus golpes, dispara o provoca | [totem.md](totem.md) |
+| Espejo | `mirror` | desvía tus proyectiles y el Rayo hacia los enemigos; lupa; portales | [espejo.md](espejo.md) |
 
 Armas 7+ (2026-10-20, hechas sin el usuario, **sin probar**): dibujo en `fx-armas2.js`, pruebas dirigidas en
 `tools/test-armas2.cjs` (usa `tools/sim.cjs`, que carga la jugable en Node para medir lo que hace un arma).

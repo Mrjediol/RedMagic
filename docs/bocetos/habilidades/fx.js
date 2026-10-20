@@ -279,7 +279,7 @@ function beaconCrystal(ctx, t, x, y, a, pal, layer, k = 1) {
 // Sobrecarga: descarga a lo largo de la línea pts (tramos), haz grueso que se apaga en 0,3 s y chispas por toda la línea; k = calor 0..1
 function beamDischarge(ctx, t, layer, t0, pts, k, pal) {
   const u = seg(t, t0, t0 + 0.3); if (u >= 1) return;
-  for (let i = 0; i + 1 < pts.length; i++) energyBeam(ctx, t, layer, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, 1 - easeIn(u), pal, { sc: 1.3 + 1.4 * k, seed: 9 + i });
+  for (let i = 0; i + 1 < pts.length; i++) if (!pts[i].gap) energyBeam(ctx, t, layer, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, 1 - easeIn(u), pal, { sc: 1.3 + 1.4 * k, seed: 9 + i });
   const R = rand(Math.floor(t0 * 100));
   for (let i = 0; i + 1 < pts.length; i++) for (let j = 0; j < 6; j++) {
     const s = R(), x = lerp(pts[i].x, pts[i + 1].x, s), y = lerp(pts[i].y, pts[i + 1].y, s);

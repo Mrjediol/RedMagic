@@ -311,3 +311,34 @@ function resonWave(ctx, t, layer, t0, x0, y0, x1, y1, pal) {
   ellArc(ctx, x, y, 6, 14, ang - Math.PI / 2, ang + Math.PI / 2, 2.4, pal.core, 1 - u * 0.5, layer, { rot: 0, taper: 0.5, m: 12 });
   if (u > 0.8) star4(ctx, x1, y1, 16, 0.5, pal.core, (1 - u) * 5, layer);
 }
+
+// ---------------------------------------------------------------- Espejo (g-espejo.js)
+// panel de cristal entre (x0,y0) y (x1,y1): lámina con canto brillante y un destello que la recorre; o.mode = 'mirror'|'facet'|'lens'|'portal'
+function mirrorPane(ctx, t, layer, x0, y0, x1, y1, pal, a, o = {}) {
+  if (a <= 0) return;
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, L = Math.hypot(x1 - x0, y1 - y0), ang = Math.atan2(y1 - y0, x1 - x0), mode = o.mode || 'mirror';
+  if (mode === 'portal') {                                    // portal: óvalo que gira (mitad de atrás detrás)
+    const half = layer === 'back' ? [Math.PI, TAU] : [0, Math.PI];
+    for (const [k, c, w] of [[1.08, pal.deep, 6], [1, pal.mid, 3.4], [0.9, pal.core, 1.6]])
+      ellArc(ctx, cx, cy, L / 2 * k, L / 2 * k * 0.42, half[0] + t * 3, half[1] + t * 3, w, c, a, layer, { rot: ang, taper: 0, wob: 0.06, seed: k * 7, m: 24 });
+    if (layer === 'front') { glow(ctx, cx, cy, L * 0.6, pal.g1, 0.35 * a); for (let i = 0; i < 4; i++) { const th = t * 5 + i * TAU / 4, r = L * 0.3 * (0.5 + 0.5 * Math.sin(t * 3 + i)); disc(ctx, cx + Math.cos(th + ang) * r, cy + Math.sin(th + ang) * r * 0.42, 1.8, pal.core, a, layer); } }
+    if (o.label && layer === 'front') { ctx.font = '700 10px system-ui'; ctx.fillStyle = pal.light; ctx.textAlign = 'center'; ctx.fillText(o.label, cx, cy - L * 0.32 - 8); ctx.textAlign = 'left'; }
+    return;
+  }
+  if (layer === 'back') { needle(ctx, x0, y0, x1, y1, (mode === 'lens' ? 26 : 12), pal.dark, 0.35 * a, layer); return; }
+  glow(ctx, cx, cy, L * 0.7, pal.g1, (o.lit ? 0.6 : 0.3) * a);
+  if (mode === 'lens') { lens(ctx, cx, cy, ang, L, 18, pal.mid, 0.45 * a, layer); lens(ctx, cx, cy, ang, L * 0.9, 9, pal.light, 0.6 * a, layer); }
+  else { needle(ctx, x0, y0, x1, y1, 13, pal.deep, 0.8 * a, layer); needle(ctx, x0, y0, x1, y1, 8, pal.mid, 0.9 * a, layer); needle(ctx, x0, y0, x1, y1, 3.5, pal.light, a, layer); }
+  strokeTaper(ctx, [{ x: x0, y: y0 }, { x: x1, y: y1 }], 1.6, pal.core, a, layer, false);
+  if (mode === 'facet') for (let i = 1; i < 4; i++) { const s = i / 4, px = lerp(x0, x1, s), py = lerp(y0, y1, s); lens(ctx, px, py, ang + Math.PI / 2, 10, 2, pal.core, 0.8 * a, layer); }
+  const g = (t * 0.7) % 1, gx = lerp(x0, x1, g), gy = lerp(y0, y1, g);             // destello que recorre el canto
+  star4(ctx, gx, gy, 8 * Math.sin(Math.PI * g), ang, pal.core, a, layer);
+  for (const [px, py] of [[x0, y0], [x1, y1]]) disc(ctx, px, py, 3, pal.core, a, layer);
+}
+// rayito de luz del espejo a un enemigo (destello propio / eco)
+function glintRay(ctx, t, layer, t0, x0, y0, x1, y1, pal) {
+  const u = seg(t, t0, t0 + 0.2); if (u >= 1 || layer !== 'front') return;
+  strokeTaper(ctx, [{ x: x0, y: y0 }, { x: x1, y: y1 }], 4 * (1 - u), pal.light, 1 - u, layer, false);
+  strokeTaper(ctx, [{ x: x0, y: y0 }, { x: x1, y: y1 }], 1.6 * (1 - u), pal.core, 1 - u, layer, false);
+  star4(ctx, x1, y1, 14 * (1 - u), 0.7, pal.core, 1 - u, layer);
+}

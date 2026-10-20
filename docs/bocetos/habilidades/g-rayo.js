@@ -63,10 +63,21 @@ addWeapon({
 
 // Recorrido del haz desde (x0,y0) con ángulo a hasta el primer enemigo, el suelo o el alcance (pts = [origen, final]).
 // pierce = no se para en los enemigos (los devuelve todos en hits, en orden).
-function rayPath(x0, y0, a, range, pierce) {
+function rayPath(x0, y0, a, range, pierce, depth = 0, skipMirror = null) {
   const pts = [{ x: x0, y: y0 }], hits = [];
   const ex = x0 + Math.cos(a) * range, ey = y0 + Math.sin(a) * range;
   const ug = ey > GROUND && y0 < GROUND ? (GROUND - y0) / (ey - y0) : 2;              // fracción del recorrido hasta el suelo
+  // espejo antes que el suelo y que el primer enemigo (o, perforando, se queda con los de antes): el haz sigue desde él (máx. 2)
+  const mc = depth < 2 && typeof mirrorCross === 'function' ? mirrorCross(x0, y0, ex, ey, skipMirror) : null;
+  if (mc && mc.u < ug) {
+    const first = raycastEnemy(x0, y0, ex, ey);
+    if (pierce || !first || mc.u < first.u) {
+      if (pierce) { const skip = new Set(); let h; while ((h = raycastEnemy(x0, y0, ex, ey, skip)) && h.u < mc.u) { h.ang = a; hits.push(h); skip.add(h.e); } }
+      const r = mc.m.beam(mc.x, mc.y, a);
+      const sub = rayPath(r.x, r.y, r.ang, range * (1 - mc.u) + 120, pierce, depth + 1, r.from || mc.m);
+      return { pts: pts.concat(r.jump ? [{ x: mc.x, y: mc.y, gap: true }] : [], sub.pts), hits: hits.concat(sub.hits), mul: (sub.mul || 1) * (r.mul || 1) };
+    }
+  }
   if (pierce) {
     const skip = new Set(); let h;
     while ((h = raycastEnemy(x0, y0, ex, ey, skip)) && h.u < ug) { h.ang = a; hits.push(h); skip.add(h.e); }
@@ -180,6 +191,7 @@ function rayBeam(slot, aim0, angOff = 0, quiet = false, idx = 0) {
         tickT = t.tick;
         let mul = mode === 'beacon' ? t.beaconMul : over ? lerp(1, t.overMax, hf()) : 1;
         if (prism && hasMod(slot, 'focus')) mul *= 1 + t.focusMul * unused;
+        mul *= path.mul || 1;                                 // Espejo · Lupa: el haz que la cruza pega más
         const targets = piercing() ? path.hits : h0 ? [h0] : [];
         for (const h of targets) hitOne(h.e, mul, h.ang);
         for (const s of subs) hitOne(s.e, t.prismMul, Math.atan2(s.e.y - s.y0, s.e.x - s.x0));
@@ -212,7 +224,7 @@ function rayBeam(slot, aim0, angOff = 0, quiet = false, idx = 0) {
       if (env > 0.01) {
         const reach = mode === 'beacon' ? 1 : easeOut(seg(G.t, t0, t0 + 0.07));
         if (reach < 1) { const p1 = pts[1]; energyBeam(ctx, G.t, layer, m.x, m.y, lerp(m.x, p1.x, reach), lerp(m.y, p1.y, reach), env, pal, { sc }); }
-        else for (let i = 0; i + 1 < pts.length; i++) energyBeam(ctx, G.t, layer, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, env, pal, { sc, seed: i * 3 });
+        else for (let i = 0; i + 1 < pts.length; i++) { if (pts[i].gap) continue; energyBeam(ctx, G.t, layer, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, env, pal, { sc: sc * (i > 0 && path.mul > 1 ? 1.5 : 1), seed: i * 3 }); }   // gap = salto de portal (Espejo)
         if (layer === 'front' && mode === 'held') {
           glow(ctx, m.x, m.y, 34 * env * sc, pal.g1, 0.7 * env); star4(ctx, m.x, m.y, 16 * env * sc, G.t * 7, pal.core, env, layer);
           if (over && hasMod(slot, 'sweet') && k >= t.sweetFrom) { const pu = 0.6 + 0.4 * Math.sin(G.t * 40); glow(ctx, m.x, m.y, 50, gp.g1, 0.8 * pu); star4(ctx, m.x, m.y, 30 * pu, -G.t * 5, gp.core, 1, layer); }

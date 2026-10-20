@@ -200,5 +200,29 @@ if (!only || only === 'totem') {
   check('Señuelo: los atrae', G.enemies[0].x < x0 - 40, `${Math.round(x0)} → ${Math.round(G.enemies[0].x)}`);
   check('Señuelo: las balas van a por él y no a ti', G.player.hp === hp0, `vida ${G.player.hp}`);
 }
+// ---------------------------------------------------------------- 13 · Espejo
+if (!only || only === 'mirror') {
+  // base: las esquirlas del Abanico que cruzan el espejo van a por un enemigo fuera de la línea
+  const flyer = [{ x: 560, kind: 'flyer', y: 120 }];
+  const fanVia = arch => { sim.setup({ slots: [{ w: 'mirror', arch }, { w: 'fan' }], enemies: flyer, px: 200, hpMul: 4 }); if (arch !== 'none') sim.aim(400, 294).tap(); sim.run(0.2).swap(1); for (let i = 0; i < 3; i++) sim.aim(400, 294).tap().run(0.6); return G.enemies[0].hpMax - G.enemies[0].hp; };
+  const dm = fanVia(null), d0 = fanVia('none');
+  check('Espejo: desvía las esquirlas al enemigo de fuera de la línea', dm > d0 + 20, `${Math.round(dm)} vs ${Math.round(d0)}`);
+  // el Rayo rebota en el espejo
+  const rayVia = arch => { sim.setup({ slots: [{ w: 'mirror', arch }, { w: 'ray' }], enemies: flyer, px: 200, hpMul: 4 }); if (arch !== 'none') sim.aim(400, 294).tap(); sim.run(0.3).swap(1); sim.aim(400, 294).press().run(1.5).release(); return G.enemies[0].hpMax - G.enemies[0].hp; };
+  const rm = rayVia(null), r0 = rayVia('none');
+  check('Espejo: el Rayo rebota hacia el enemigo', rm > r0 + 30, `${Math.round(rm)} vs ${Math.round(r0)}`);
+  // Lupa: lo que la atraviesa pega más (enemigo en línea)
+  const lensVia = arch => { sim.setup({ slots: [{ w: 'mirror', arch }, { w: 'ray' }], enemies: [{ x: 600, kind: 'ground' }], px: 200, hpMul: 6 }); if (arch !== 'none') sim.aim(400, 296).tap(); sim.run(0.3).swap(1); sim.aim(600, 296).press().run(1.5).release(); return G.enemies[0].hpMax - G.enemies[0].hp; };
+  const lm = lensVia('lens'), l0 = lensVia('none');
+  check('Lupa: el Rayo que la cruza pega mucho más', lm > l0 * 1.5, `${Math.round(lm)} vs ${Math.round(l0)}`);
+  // Portal: un caminante que entra por A sale por B
+  sim.setup({ slots: [{ w: 'mirror', arch: 'portal' }, { w: 'fan' }], enemies: [{ x: 520, kind: 'walker', x0: 420, x1: 560 }], px: 200 });
+  sim.aim(470, 300).tap().run(1.3).aim(560, 140).tap(); let tp = 0; sim.run(12, () => { if (G.enemies[0].y < 200) tp = 1; });
+  check('Portal: el enemigo que entra por A sale por B (en el aire)', tp === 1);
+  // balas enemigas vuelven como tuyas
+  sim.setup({ slots: [{ w: 'mirror' }, { w: 'fan' }], enemies: [{ x: 520, kind: 'ground' }], px: 200, enemyAttacks: true }); let turned = 0;
+  sim.aim(330, 280).tap(); sim.run(4.5, () => { if (G.ents.some(s => s.kind === 'enemyShot' && s.friendly)) turned = 1; });
+  check('Espejo: devuelve las balas enemigas', turned === 1 && G.player.hp === G.player.hpMax, `vida ${G.player.hp}`);
+}
 check.done();
 function GROUND_Y() { return 340; }

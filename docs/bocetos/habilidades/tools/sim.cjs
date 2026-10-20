@@ -20,7 +20,7 @@ module.exports = function makeSim(dir = path.join(__dirname, '..')) {
   const sim = {
     G, api: A, sb,
     setup(o = {}) {
-      G.t = 0; G.ents = []; G.texts = []; G.dmgTotal = 0; G.dmgLog = []; G.lastSwap = -9; G.swapBuff = -9; G.quickUntil = 0; G.timeScale = 1; G.hitStop = 0;
+      G.t = 0; G.ents = []; G.texts = []; G.dmgTotal = 0; G.dmgLog = []; G.lastSwap = -9; G.swapBuff = -9; G.quickUntil = 0; G.timeScale = 1; G.hitStop = 0; G.decoys = []; G.empower = 0;
       G.settings.sound = false; G.settings.enemyAttacks = !!o.enemyAttacks; G.settings.hpMul = o.hpMul || 1;
       G.build = { items: Object.fromEntries((o.items || []).map(i => [i, true])) };
       G.player = A.makePlayer(); if (o.px) G.player.x = o.px;

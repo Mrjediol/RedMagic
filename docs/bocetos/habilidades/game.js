@@ -174,7 +174,9 @@ function launchCollide(e) {
   }
 }
 function enemyShot(e) {
-  const p = G.player, a = Math.atan2(p.y - 40 - e.y, p.x - e.x), sp = 220;
+  // señuelos (Tótem · Señuelo): si hay uno cerca del que dispara, la bala va a por él
+  const dec = (G.decoys || []).find(d => d.alive && G.ents.includes(d) && Math.hypot(d.x - e.x, d.y - e.y) < d.r);
+  const p = G.player, a = dec ? Math.atan2(dec.y - e.y, dec.x - e.x) : Math.atan2(p.y - 40 - e.y, p.x - e.x), sp = 220;
   // bala enemiga: capturable por la Singularidad con Escudo de vacío (hostile); al soltarla pasa a ser del player (friendly)
   G.ents.push({ kind: 'enemyShot', capturable: true, hostile: true, state: 'fly', x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 4,
     update(dt) {
@@ -182,7 +184,10 @@ function enemyShot(e) {
       dt *= this.timeK === undefined ? 1 : this.timeK; this.timeK = 1;          // Reloj: las balas también se ralentizan
       this.x += this.vx * dt; this.y += this.vy * dt; this.life -= dt;
       if (this.friendly) { const h = insideEnemy(this.x, this.y, 4); if (h) { damage(h, { dmg: this.dmg * (this.dmgMul || 1), slot: this.slot, kx: Math.sign(this.vx) * 80 }); return false; } }
-      else { const p = G.player; if (Math.abs(this.x - p.x) < 14 && this.y > p.y - 70 && this.y < p.y) { hurtPlayer(8); return false; } }
+      else {
+        const d = (G.decoys || []).find(d => d.alive && G.ents.includes(d) && Math.hypot(d.x - this.x, d.y - this.y) < 26); if (d) { d.hurt(8); return false; }
+        const p = G.player; if (Math.abs(this.x - p.x) < 14 && this.y > p.y - 70 && this.y < p.y) { hurtPlayer(8); return false; }
+      }
       return this.life > 0 && this.y < GROUND && this.x > -50 && this.x < WW + 50; },
     draw(ctx, layer) {
       if (layer !== 'front') return;

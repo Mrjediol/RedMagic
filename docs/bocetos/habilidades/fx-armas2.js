@@ -274,3 +274,40 @@ function lanternLight(ctx, t, layer, x, y, r, pal, a) {
   const R = rand(Math.floor(x));
   for (let i = 0; i < 8; i++) { const ph = (t * 0.35 + R()) % 1, ox = (R() - 0.5) * r * 1.4, oy = r * 0.6 - ph * r * 1.3; if (ox * ox + oy * oy > r * r) continue; disc(ctx, x + ox + Math.sin(t * 2 + i) * 4, y + oy, 1.4, pal.light, a * Math.sin(Math.PI * ph) * 0.8, layer); }
 }
+
+// ---------------------------------------------------------------- Tótem de cristal (g-totem.js)
+// tótem: losa en el suelo + cristal alto facetado con anillo flotante; (x, gy) = base; k = carga del disparo 0..1;
+// o = { mode: 'base'|'reson'|'sentry'|'decoy', hp (0..1, señuelo), life (0..1 que queda), aim (ángulo del cañón) }
+function crystalTotem(ctx, t, layer, x, gy, sc, pal, a, k = 0, o = {}) {
+  if (a <= 0) return;
+  const h = 64 * sc, cy = gy - h * 0.55, bob = Math.sin(t * 2.4) * 2;
+  if (layer === 'back') {
+    ctx.save(); ctx.globalAlpha = clamp(0.55 * a); ctx.fillStyle = col(pal.dark, layer); ctx.beginPath(); ctx.ellipse(x, gy + 2, 22 * sc, 6 * sc, 0, 0, TAU); ctx.fill(); ctx.restore();
+    ellArc(ctx, x, cy + bob, 24 * sc, 7 * sc, Math.PI, TAU, 2, pal.light, 0.7 * a, layer, { taper: 0, rot: -0.15, m: 20 });
+    if (o.life !== undefined) groundRing(ctx, x, gy + 2, 26 * sc, 2, pal.mid, 0.6 * a, layer, { taper: 0 });
+    return;
+  }
+  glow(ctx, x, cy, 44 * sc * (1 + 0.3 * k), pal.g1, (0.4 + 0.4 * k) * a);
+  lens(ctx, x, cy + bob, -Math.PI / 2, h, 22 * sc, pal.deep, a, layer);               // cristal grande
+  lens(ctx, x - 2 * sc, cy + bob - 2, -Math.PI / 2, h * 0.86, 13 * sc, pal.mid, a, layer);
+  lens(ctx, x - 4 * sc, cy + bob - 4, -Math.PI / 2, h * 0.6, 5 * sc, pal.core, 0.9 * a, layer);
+  lens(ctx, x - 13 * sc, gy - h * 0.22, -Math.PI / 2 - 0.35, h * 0.42, 9 * sc, pal.mid, a, layer);   // cristales pequeños de la base
+  lens(ctx, x + 13 * sc, gy - h * 0.2, -Math.PI / 2 + 0.4, h * 0.36, 8 * sc, pal.deep, a, layer);
+  ellArc(ctx, x, cy + bob, 24 * sc, 7 * sc, 0, Math.PI, 2, pal.light, 0.8 * a, layer, { taper: 0, rot: -0.15, m: 20 });
+  if (o.life !== undefined) groundRing(ctx, x, gy + 2, 26 * sc, 2, pal.mid, 0.6 * a, layer, { taper: 0 });
+  const top = { x, y: gy - h * 0.95 + bob };
+  if (k > 0) { glow(ctx, top.x, top.y, 18 * sc * k, pal.g2, 0.8 * k * a); star4(ctx, top.x, top.y, 10 * sc * k, t * 6, pal.core, k * a, layer); }
+  if (o.mode === 'reson') for (let i = 0; i < 3; i++) { const u = (t * 0.8 + i / 3) % 1; ellArc(ctx, x, cy, (26 + u * 50) * sc, (26 + u * 50) * sc, -2.6, -0.5, 1.6, pal.light, (1 - u) * 0.5 * a, layer, { taper: 1, m: 16 }); }
+  if (o.mode === 'decoy') { const u = (t * 1.2) % 1; ellArc(ctx, x, cy, (30 + u * 70) * sc, (30 + u * 70) * sc * 0.8, 0, TAU, 2, '#ff9fb0', (1 - u) * 0.6 * a, layer, { taper: 0, m: 30 }); }
+  if (o.hp !== undefined && o.hp < 1) { const w = 40 * sc; ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(x - w / 2, gy + 10, w, 4); ctx.fillStyle = pal.light; ctx.fillRect(x - w / 2, gy + 10, w * clamp(o.hp), 4); }
+  if (o.life !== undefined) ellArc(ctx, x, gy + 2, 26 * sc, 26 * sc * 0.24, Math.PI / 2, Math.PI / 2 + TAU * clamp(o.life), 2.4, pal.core, 0.8 * a, layer, { taper: 0, m: 30 });
+  return top;
+}
+// onda de resonancia del tótem al enemigo (copia de tu golpe): aro que viaja por la línea
+function resonWave(ctx, t, layer, t0, x0, y0, x1, y1, pal) {
+  const u = seg(t, t0, t0 + 0.22); if (u >= 1 || layer !== 'front') return;
+  const x = lerp(x0, x1, easeOut(u)), y = lerp(y0, y1, easeOut(u)), ang = Math.atan2(y1 - y0, x1 - x0);
+  strokeTaper(ctx, [{ x: x0, y: y0 }, { x, y }], 3, pal.light, 0.6 * (1 - u), layer, true);
+  ellArc(ctx, x, y, 6, 14, ang - Math.PI / 2, ang + Math.PI / 2, 2.4, pal.core, 1 - u * 0.5, layer, { rot: 0, taper: 0.5, m: 12 });
+  if (u > 0.8) star4(ctx, x1, y1, 16, 0.5, pal.core, (1 - u) * 5, layer);
+}

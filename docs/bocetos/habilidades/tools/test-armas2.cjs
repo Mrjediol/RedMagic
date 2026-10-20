@@ -178,5 +178,27 @@ if (!only || only === 'swarm') {
   sim.swap(1); let crit = 0; for (let i = 0; i < 6; i++) sim.aim(600, 296).tap().run(0.55, () => { if (G.texts.some(x => x.s === 'CRÍTICO')) crit = 1; });
   check('Faroles: golpes críticos de la otra arma', crit === 1);
 }
+// ---------------------------------------------------------------- 12 · Tótem
+if (!only || only === 'totem') {
+  sim.setup({ slots: [{ w: 'totem' }, { w: 'fan' }], enemies: [{ x: 600, kind: 'ground' }], px: 200 }); sim.aim(420, 300).tap().run(0.1).swap(1).run(4);
+  check('Tótem base: dispara solo con la otra arma en la mano', sim.dmg() >= T('totem').boltDamage * 3, `daño ${sim.dmg()}`);
+  // plataforma: se planta encima
+  sim.setup({ slots: [{ w: 'totem' }, { w: 'fan' }], enemies: [{ x: 1500, kind: 'ground' }], px: 500 }); sim.aim(590, 200).tap().run(0.5);
+  const tm = G.slots[0].inst.totems()[0];
+  check('Tótem: se planta sobre la plataforma de debajo', tm && Math.abs(tm.y - (252 - 40)) < 2, tm ? `y ${Math.round(tm.y)}` : 'sin tótem');
+  // Resonador: copia los golpes de la otra arma
+  const resRun = arch => { sim.setup({ slots: [{ w: 'totem', arch }, { w: 'star' }], enemies: [{ x: 700, kind: 'ground' }], px: 200, hpMul: 4 }); sim.aim(450, 300).tap().run(0.5).swap(1).aim(700, 296).tap().run(1.5); return G.enemies[0].hpMax - G.enemies[0].hp; };
+  const rr = resRun('reson'), rn = resRun(null);
+  check('Resonador: copia la lanza del Golpe estelar', rr > rn + 20, `${Math.round(rr)} vs ${Math.round(rn)}`);
+  // Centinela: más daño que el base
+  const sentRun = (arch, ups) => { sim.setup({ slots: [{ w: 'totem', arch, ups }, { w: 'fan' }], enemies: [{ x: 640, kind: 'ground' }], px: 200, hpMul: 10 }); sim.aim(450, 300).tap().run(0.1).swap(1).run(4); return sim.dmg(); };
+  const ds = sentRun('sentry', { triple: true }), db = sentRun(null, {});
+  check('Centinela · Triple: mucho más daño que el base', ds > db * 2, `${ds} vs ${db}`);
+  // Señuelo: atrae y las balas van a por él
+  sim.setup({ slots: [{ w: 'totem', arch: 'decoy' }, { w: 'fan' }], enemies: [{ x: 700, kind: 'walker', x0: 600, x1: 800 }, { x: 760, kind: 'flyer', y: 150 }], px: 200, enemyAttacks: true });
+  const hp0 = G.player.hp; sim.aim(520, 300).tap(); const x0 = G.enemies[0].x; sim.run(5);
+  check('Señuelo: los atrae', G.enemies[0].x < x0 - 40, `${Math.round(x0)} → ${Math.round(G.enemies[0].x)}`);
+  check('Señuelo: las balas van a por él y no a ti', G.player.hp === hp0, `vida ${G.player.hp}`);
+}
 check.done();
 function GROUND_Y() { return 340; }

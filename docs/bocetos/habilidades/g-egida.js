@@ -35,7 +35,7 @@ addWeapon({
     bashDist: [140, 40, 400, 5, 'Base: avance del golpe de escudo'], bashDamage: [22, 1, 120, 1, 'Base: daño del golpe de escudo'], bashPush: [420, 0, 1200, 10, 'Base: empuje del golpe (lanzado)'],
     iceFreeze: [0.5, 0, 1, 0.05, 'Hielo: congelación del golpe'], fireBurn: [2, 0, 6, 0.1, 'Fuego: quemadura del golpe (s)'],
     reflectDamage: [18, 1, 80, 1, 'Reflejo: daño de las balas devueltas'], reflectWindow: [2, 1, 4, 0.1, 'Reflejo: × ventana de parada'], absorbPer: [12, 0, 60, 1, 'Reflejo · Absorción: daño de la onda por bala'],
-    wallTime: [6, 1, 20, 0.5, 'Bastión: duración del muro (s)'], wallH: [110, 40, 300, 5, 'Bastión: alto del muro'], wallDps: [8, 0, 60, 1, 'Bastión: daño/s a los que lo tocan'],
+    wallTime: [6, 1, 20, 0.5, 'Bastión: duración del muro (s)'], wallCooldown: [2.5, 0.2, 10, 0.1, 'Bastión: recarga tras plantar el muro (s)'], wallH: [110, 40, 300, 5, 'Bastión: alto del muro'], wallDps: [8, 0, 60, 1, 'Bastión: daño/s a los que lo tocan'],
     spikeMul: [3.5, 1, 8, 0.1, 'Bastión · Púas: × daño'], wallBlast: [50, 0, 200, 1, 'Bastión: daño al estallar'], blastRadius: [120, 30, 300, 5, 'Bastión: radio del estallido'],
     blastMul: [1.6, 1, 3, 0.05, 'Bastión · Estallido: × daño y radio'],
     chargeTime: [0.8, 0.1, 2, 0.05, 'Embestida: carga máxima (s)'], chargeMin: [160, 40, 500, 5, 'Embestida: distancia sin carga'], chargeMax: [420, 40, 900, 10, 'Embestida: distancia con carga'],
@@ -119,6 +119,7 @@ addWeapon({
         const dir = Math.sign(Math.cos(aim.ang)) || p.face;
         if (slot.arch === 'bastion') {
           const n = copies(); for (let c = 0; c < n; c++) { const w = aegisWall(slot, clamp(p.x + dir * (50 + c * 40), 20, WW - 20), dir); walls.push(w); G.ents.push(w); }
+          cd = t.wallCooldown * cdMul();                      // el muro tiene su propia recarga (si no, planta-estalla sin parar)
           return;
         }
         const dist = slot.arch === 'charge' ? lerp(t.chargeMin, t.chargeMax, k) : t.bashDist;

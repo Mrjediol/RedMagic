@@ -135,3 +135,11 @@ enemigo (`e.timeK`), estasis (`e.stasis`), vulnerable (`makeVuln`), lanzado (`o.
 Herramientas: `tools/sim.cjs` (carga la jugable en Node para pruebas dirigidas), `tools/test-armas2.cjs`.
 
 **Siguiente**: el usuario las prueba y opina, un arma cada vez (método de abajo). Ninguna se ha jugado aún con ratón.
+
+**Actualización (fin de la sesión 2026-10-20)**: 12 armas nuevas en total — además de las 5 de arriba: Tótem (`totem`), Espejo
+(`mirror`), Acumulador (`volt`), Pacto de sangre (`blood`), Mazo (`hammer`), Égida (`aegis`), Ballesta (`bow`). Marcadas con ✦ en
+el desplegable. Nuevo `tools/dps.cjs` → `docs/armas/dps.md` (DPS de cada arma/evolución, sola y en pareja con el Abanico):
+destapó y se arreglaron un bucle de choques (Ráfaga · Martillo 2599 DPS → 107), el Rebote de la Ballesta (523 → 114), el
+Bastión sin recarga y los proyectiles que nacen dentro de un enemigo (ahora le dan). Ideas no hechas: Alud (bola de nieve que
+crece rodando y se traga enemigos), Maldición (vudú: golpear un muñeco daña a los malditos), Sombra (clon que repite tus
+disparos). **Siguiente**: que el usuario las pruebe (Égida con «Los enemigos disparan») y arreglar una cada vez.

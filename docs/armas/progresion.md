@@ -61,6 +61,50 @@ combo muy bueno. Se experimenta primero con **Abanico** y **Golpe estelar**.
 | **Racimo** | Suelta semillas pequeñas que estallan en cadena | Semillas vivas (buscan enemigos) · Generaciones (otra tanda más pequeña) · Siembra (las que fallan quedan de mina) |
 | **Madura** | Mantener = crece en la mano; soltar = lanzar | Supernova (madura: estalla tres veces) · Implosión (atrae antes de estallar) · Cosecha (una baja = la siguiente medio madura) |
 
+### Armas 7+ (2026-10-20, hechas sin el usuario; detalle en cada ficha)
+
+Muchas tienen mejoras que **funcionan con el arma guardada** (marcadas ⟳): se apoyan en el gancho común `onAnyHit` (cada golpe
+de cualquier arma equipada) o dejan algo en el mundo que sigue trabajando.
+
+| Arma | Evolución | Idea | Mejoras |
+|---|---|---|---|
+| **Reloj** | Estasis ⟳ | para el tiempo; guarda el daño y lo suelta aumentado | Interés · Onda · Paradoja |
+| | Eco ⟳ | repite cada golpe de tus armas dentro | Reverberación · Eco fuerte · Ancla |
+| | Aceleración ⟳ | dentro, tus dos armas recargan más rápido | Inercia · Bis · Retroceso |
+| **Ráfaga** | Tornado | levanta y deja vulnerables | Persecución · Estampida · Absorción |
+| | Corriente ⟳ | lleva tus proyectiles a favor, más fuertes | Viento de cola · Filo · Remolque |
+| | Martillo | cañonazo cargado que dispara al enemigo como bolo | Bolos · Estampido · Contragolpe |
+| **Látigo** | Cadena ⟳ | el daño de cualquier arma se reparte entre encadenados | Grillete · Conducción · Ruptura |
+| | Garfio | engancha y trae; llega vulnerable | Lanzamiento · Red · Remate |
+| | Remolino | giras el látigo alrededor | Vendaval · Aceleración · Desvío |
+| **Jabalina** | Pararrayos ⟳ | clavada, rayos con los golpes de tus armas cerca | Tormenta · Conductor · Descarga |
+| | Empalar | ensarta y clava (vulnerable) | Brocheta · Clavado · Arrancar |
+| | Destello | te teletransporta a la jabalina | Estela · Fase · Relevo |
+| **Enjambre** | Colmena ⟳ | luciérnagas que acuden a cada golpe de tus armas | Reina · Cría · Néctar |
+| | Plaga | infestan y saltan al morir el huésped | Fiebre · Eclosión · Contagio |
+| | Faroles ⟳ | iluminan: críticos ×2 para cualquier arma | Polillas · Bengala · Luz guía |
+| **Tótem** | Resonador ⟳ | copia los golpes de tu otra arma | Amplificador · Coro · Acorde |
+| | Centinela ⟳ | torreta que dispara sola, prioriza marcados | Triple · Ojo de halcón · Égida |
+| | Señuelo ⟳ | provoca: atrae y se come las balas | Espinas · Imán · Renacer |
+| **Espejo** | Facetas ⟳ | desvía tus proyectiles hacia enemigos y los parte | Tres caras · Brillo · Añicos |
+| | Lupa ⟳ | concentra lo que la atraviesa (Rayo incluido) | Foco · Gran angular · Convergencia |
+| | Portal ⟳ | lo que entra sale por el otro (enemigos también) | Bucle · Trampa · Atajo |
+| **Acumulador** | Sobrecarga ⟳ | se carga con la otra arma y descarga solo | Cortocircuito · Electrocución · Pulso |
+| | Arco | descarga en cadena | Cadena larga · Bifurcación · Retorno |
+| | Celdas | 3 celdas = 3 rayos del cielo | Tormenta · Suelo cargado · Goteo |
+| **Pacto de sangre** | Hemorragia ⟳ | sangrado que revienta con la otra arma y cura | Arterias · Transfusión · Rabia |
+| | Vampiro | el orbe vuelve curando | Sed · Murciélagos · Drenar |
+| | Mártir ⟳ | menos vida = más daño de todas tus armas | Último aliento · Sacrificio · Penitencia |
+| **Mazo** | Terremoto | onda por el suelo que lanza | Réplica · Fisura · Doble frente |
+| | Meteoro | salto + picado, más fuerte cuanto más alto | Cráter · Rebote · Gravedad |
+| | Sismo ⟳ | los golpes de tu otra arma en la zona provocan réplicas | Temblor largo · Réplica fuerte · Desequilibrio |
+| **Égida** | Reflejo ⟳ | devuelve todas las balas; la parada potencia tu siguiente ataque | Rebote triple · Contraataque · Absorción |
+| | Bastión ⟳ | muro plantado que para balas y enemigos; estalla al pulsar | Púas · Muralla · Estallido |
+| | Embestida | carga que arrastra y estampa | Arrollar · Imparable · Remate |
+| **Ballesta** | Perforador | atraviesa a todos | Calibre · Cadencia · Ráfaga |
+| | Rebote | rebota (mira con recorrido); tras rebotar, crítico | Más rebotes · Carambola · Astillas |
+| | Marcador ⟳ | punto débil: tu otra arma hace críticos | Puntos débiles · Exponer · Recompensa |
+
 ## 3 · Items y sinergias (como el juego: 2 etiquetas por item, tramos 2 / 4 / 6)
 
 Corrección del usuario (2026-10-19): el elemento ya está en el juego como **sinergia**. Cada item lleva **una etiqueta elemental**
@@ -98,6 +142,18 @@ En Unity hoy el tramo 1 de Hielo es «ralentiza un 40 %» y el de Fuego «aplica
 | Media luna | la ida congela, **la vuelta rompe** (golpe fuerte) | estela de llamas colgada |
 | Semilla | nova de escarcha (picos, congela todo) | charco de fuego donde estalla |
 | Golpe estelar | el impacto congela la columna y alrededor | cráter ardiendo |
+| Reloj | dentro, se van congelando | el golpe de reloj quema y deja suelo ardiendo |
+| Ráfaga | congela un poco → lanzados contra congelados = añicos | quema y aviva: la quemadura salta a los cercanos |
+| Látigo | congela; la punta (golpe fuerte) rompe | quema |
+| Jabalina | congela; cargada rompe | quema y deja suelo ardiendo donde se clava |
+| Enjambre | cada picadura congela un poco | cada picadura quema |
+| Tótem | cada cristal congela | cada cristal quema |
+| Espejo | sus destellos y esquirlas congelan (lo desviado conserva su elemento) | idem, queman |
+| Acumulador | la descarga congela según la carga | la descarga quema |
+| Pacto | orbe y nova congelan | queman |
+| Mazo | congela; es golpe fuerte → el siguiente rompe | quema y deja suelo ardiendo |
+| Égida | golpe de escudo y embestida congelan | queman |
+| Ballesta | congela; concentrada rompe | quema |
 
 ## Fuera de la run: mejoras permanentes de cada arma (idea del usuario, 2026-10-19 — para Unity, no para la web)
 

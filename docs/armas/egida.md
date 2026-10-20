@@ -81,6 +81,7 @@ Detalle:
 | `reflectWindow` | 2 | 1 – 4 (paso 0.1) | Reflejo: × ventana de parada |
 | `absorbPer` | 12 | 0 – 60 (paso 1) | Reflejo · Absorción: daño de la onda por bala |
 | `wallTime` | 6 | 1 – 20 (paso 0.5) | Bastión: duración del muro (s) |
+| `wallCooldown` | 2.5 | 0.2 – 10 (paso 0.1) | Bastión: recarga tras plantar el muro (s) |
 | `wallH` | 110 | 40 – 300 (paso 5) | Bastión: alto del muro |
 | `wallDps` | 8 | 0 – 60 (paso 1) | Bastión: daño/s a los que lo tocan |
 | `spikeMul` | 3.5 | 1 – 8 (paso 0.1) | Bastión · Púas: × daño |

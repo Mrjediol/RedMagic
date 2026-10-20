@@ -122,7 +122,7 @@ function bowBolt(slot, owner, x, y, ang, k, o = {}) {
       if (arch === 'spotter' && !o.splinter) { e.weakN = Math.max(e.weakN || 0, t.weakHits + (hasMod(slot, 'spots') ? t.spotsHits : 0)); e.weakT = G.t + t.weakTime; e._weakBy = slot; if (hasMod(slot, 'expose')) makeVuln(e, t.exposeVuln, t.weakTime); }
       const hx = h.x, hy = h.y, a = Math.atan2(this.vy, this.vx), P = pal; addFx(0.7, (ctx, layer, f0) => impact(ctx, G.t, layer, f0, hx, hy, crit ? 0.8 : 0.45, P, { dir: a + Math.PI, spread: 1.4, seed: Math.floor(hx) }));
       if (arch === 'pierce') { pierced++; return true; }
-      if (arch === 'ricochet' && hasMod(slot, 'billiard') && bounces > 0) { const n = nearestEnemy(e.x, e.y, 500, this.hit); if (n) { bounces--; nb++; const sp = Math.hypot(this.vx, this.vy), na = Math.atan2(n.y - h.y, n.x - h.x); this.vx = Math.cos(na) * sp; this.vy = Math.sin(na) * sp; this.x = h.x; this.y = h.y; sfx(SND_BOW.bounce.fn); return true; } }
+      if (arch === 'ricochet' && hasMod(slot, 'billiard') && bounces > 0) { const n = nearestEnemy(e.x, e.y, 500, this.hit); if (n) { bounces--; this.dmgMul *= 0.7; const sp = Math.hypot(this.vx, this.vy), na = Math.atan2(n.y - h.y, n.x - h.x); this.vx = Math.cos(na) * sp; this.vy = Math.sin(na) * sp; this.x = h.x; this.y = h.y; sfx(SND_BOW.bounce.fn); return true; } }
       return false;
     },
     bounce(nx, ny) {

@@ -7,7 +7,7 @@ ficha en la misma sesión** (comportamiento, decisiones) y se vuelve a ejecutar 
 **Modelo de progresión** (2026-10-19, en prueba): [progresion.md](progresion.md). Tres vías de mejora: **árbol propio del arma**
 (evolución en nivel 2 entre 3 formas avanzadas + 3 mejoras de esa evolución), **sinergias generales** (reacciones, captura,
 marcas) e **items generales** con rareza (elemento, Duplicador…) que funcionan en todas las armas porque cada arma define cómo
-los expresa. Árbol completo hoy en las seis armas.
+los expresa. Árbol completo en las 18 armas (las 12 nuevas del 2026-10-20, sin probar por el usuario: ✦ en el desplegable de la jugable).
 
 ## Dónde está cada cosa
 
@@ -15,11 +15,11 @@ los expresa. Árbol completo hoy en las seis armas.
 |---|---|
 | Clips (vídeo de cada variante contra enemigos) | `docs/bocetos/habilidades/index.html` (`a1-…a6-*.js`) |
 | Versión jugable (escenario, movimiento, 2-3 armas con su árbol, build de items, dificultad, ajustes) | `docs/bocetos/habilidades/jugable.html` (`game.js`, `g-*.js`, `jugable-ui.js`) |
-| Dibujo compartido por clips y juego (lo que se porta) | `docs/bocetos/habilidades/fx.js` + primitivas de `core.js` |
+| Dibujo compartido por clips y juego (lo que se porta) | `docs/bocetos/habilidades/fx.js` + primitivas de `core.js`; armas 7+ en `fx-armas2.js` |
 | Sonidos (síntesis WebAudio, ids `SND.*`) | `sound.js` + el bloque `sound(...)` de cada `a*-*.js` |
 | Ajustes afinados por el usuario | `docs/armas/ajustes.json` (exportado con «⬇ Exportar ajustes» y guardado aquí) |
 | Sistemas de build propuestos | `docs/builds-sistemas-propuesta.md` |
-| Pruebas sin navegador | `node docs/bocetos/habilidades/tools/test-clips.cjs` · `tools/test-jugable.cjs` |
+| Pruebas sin navegador | `node docs/bocetos/habilidades/tools/test-clips.cjs` · `tools/test-jugable.cjs` (matriz: cada arma × árbol × build, con balas enemigas) · `tools/test-armas2.cjs [id]` (pruebas dirigidas: cada evolución hace lo que dice; usa `tools/sim.cjs`, azar con semilla) |
 | Servidor local (Claude in Chrome no abre file://) | `node docs/bocetos/habilidades/tools/serve.cjs` → http://127.0.0.1:8765/habilidades/jugable.html |
 | Retomar el trabajo de armas | `docs/tareas/habilidades-prototipos.md` ▸ «RETOMAR AQUÍ» |
 | Tablas de las fichas | `node docs/bocetos/habilidades/tools/gen-fichas.cjs` |

@@ -105,7 +105,7 @@ function raycastEnemy(ax, ay, bx, by, skip) {
   let best = null;
   for (const e of alive()) {
     if (skip && skip.has(e)) continue;
-    const h = segHitsEllipse(ax, ay, bx, by, e.x, e.y, e.rx, e.ry);
+    const h = segHitsEllipse(ax, ay, bx, by, e.x, e.y, e.rx, e.ry) || (Math.pow((ax - e.x) / e.rx, 2) + Math.pow((ay - e.y) / e.ry, 2) < 1 ? { u0: 0 } : null);   // empieza dentro = le da
     if (h && (!best || h.u0 < best.u)) best = { e, u: h.u0, x: lerp(ax, bx, h.u0), y: lerp(ay, by, h.u0) };
   }
   return best;
@@ -183,6 +183,7 @@ function launchCollide(e) {
     const base = { dmg: d, heavy, slot: e.launchSlot, proc: true, shake: heavy ? 5 : 2, hitstop: heavy ? 0.04 : 0.015, color: '#e8f0ff' };
     damage(o, Object.assign({}, base, { kx: e.vx * 0.6, launch: e.launchPins ? 0.5 : 0, pins: e.launchPins }));
     damage(e, Object.assign({}, base, { kx: 0 }));
+    (o.launchHit = o.launchHit || new Set()).add(e);           // cada pareja choca una vez por lanzamiento (si no, rebotan sin fin)
     e.vx *= 0.45;
     const ix = (o.x + e.x) / 2, iy = (o.y + e.y) / 2;
     addFx(0.6, (ctx, layer, t0) => impact(ctx, G.t, layer, t0, ix, iy, heavy ? 0.7 : 0.45, PAL.wind || PAL.set, { dir: dir > 0 ? Math.PI : 0, spread: 2.6, seed: Math.floor(ix) }));
@@ -256,7 +257,7 @@ function damage(e, o) {
   if (o.elem === 'ice' && o.freeze && !(label === 'AÑICOS')) { e.freeze = Math.min(1, e.freeze + o.freeze); if (e.freeze >= 1 && e.frozenT <= 0) { e.frozenT = T('react').frozenTime * (tier('ice') >= 3 ? 1.5 : 1); sfx(SFXLIB.freeze.bind(null, 1, 0.3)); } }
   if (o.burn && o.elem === 'fire' && label !== 'DESHIELO') { e.burnT = Math.max(e.burnT, o.burn); e.burnTick = Math.min(e.burnTick, 0.1); }
   if (e.vulnT > G.t && dmg > 0) dmg *= e.vulnK || 1;          // vulnerable (Ráfaga · Tornado, Jabalina · Clavado…): recibe más de todo
-  if (o.launch && e.frozenT <= 0) { e.launchT = o.launch; e.launchHit = new Set(); e.launchSlot = o.slot; e.launchPins = o.pins; }
+  if (o.launch && e.frozenT <= 0) { if (!(e.launchT > 0)) e.launchHit = new Set(); e.launchT = Math.max(e.launchT || 0, o.launch); e.launchSlot = o.slot; e.launchPins = o.pins; }
   const banked = !!(e.stasis && !o.release);                  // Estasis (Reloj): el daño se guarda y llega todo junto al soltar
   if (banked) { e.stasis.bank += dmg; e.lastHitT = G.t; } else { e.hp -= dmg; logDmg(dmg); e.lastHitT = G.t; }
   if (gilded) text(e.x - 14, e.y - e.ry - 30, 'ORO', '#ffc93c', true);

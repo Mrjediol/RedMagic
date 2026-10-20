@@ -207,3 +207,42 @@ function lightChain(ctx, t, layer, x0, y0, x1, y1, a, pal, pulse = 0) {
     if (glowK > 0 && layer === 'front') glow(ctx, px, py, 14, pal.g2, glowK * a);
   }
 }
+
+// ---------------------------------------------------------------- Jabalina (g-jabalina.js)
+// jabalina de cristal: asta larga y fina con punta facetada; (x,y) = punta; ang = hacia dónde apunta; sc = escala
+function crystalSpear(ctx, t, layer, x, y, ang, sc, pal, a, o = {}) {
+  if (a <= 0) return;
+  const L = 74 * sc, c = Math.cos(ang), s = Math.sin(ang), bx = x - c * L, by = y - s * L;
+  if (layer === 'back') { if (o.trail && o.trail.length > 1) { ribbon(ctx, o.trail, q => 7 * sc * (1 - q), pal.deep, 0.4 * a, layer); ribbon(ctx, o.trail, q => 3 * sc * (1 - q), pal.light, 0.7 * a, layer); } return; }
+  if (o.glow !== false) glow(ctx, x - c * L * 0.3, y - s * L * 0.3, 34 * sc, pal.g1, 0.45 * a);
+  needle(ctx, bx, by, x - c * 14 * sc, y - s * 14 * sc, 5 * sc, pal.deep, a, layer);              // asta
+  needle(ctx, bx, by, x - c * 14 * sc, y - s * 14 * sc, 2.2 * sc, pal.light, a, layer);
+  lens(ctx, x - c * 10 * sc, y - s * 10 * sc, ang, 26 * sc, 9 * sc, pal.mid, a, layer);            // punta
+  lens(ctx, x - c * 8 * sc, y - s * 8 * sc, ang, 18 * sc, 4.4 * sc, pal.core, a, layer);
+  lens(ctx, bx + c * 6 * sc, by + s * 6 * sc, ang + 0.7, 12 * sc, 3 * sc, pal.light, 0.8 * a, layer);   // aletas
+  lens(ctx, bx + c * 6 * sc, by + s * 6 * sc, ang - 0.7, 12 * sc, 3 * sc, pal.light, 0.8 * a, layer);
+  if (o.hot) star4(ctx, x, y, 10 * sc * (0.8 + 0.2 * Math.sin(t * 40)), t * 4, pal.core, a, layer);
+}
+// pararrayos clavado: chispitas que saltan en la punta y aro tenue del radio
+function rodSparks(ctx, t, layer, x, y, r, pal, a) {
+  if (a <= 0) return;
+  if (layer === 'back') { groundRing(ctx, x, Math.min(GROUND, y + 30), r, 1.4, pal.mid, 0.25 * a, layer, { taper: 0, sq: 0.2 }); return; }
+  groundRing(ctx, x, Math.min(GROUND, y + 30), r, 1.4, pal.mid, 0.25 * a, layer, { taper: 0, sq: 0.2 });
+  const R = rand(Math.floor(t * 14));
+  for (let i = 0; i < 2; i++) { const ang = -Math.PI / 2 + (R() - 0.5) * 2.4, l = 14 + R() * 18; bolt(ctx, x, y, x + Math.cos(ang) * l, y + Math.sin(ang) * l, 4, R, 1.2, pal, 0.8 * a, layer, 0.5); }
+  glow(ctx, x, y, 22, pal.g2, (0.4 + 0.3 * Math.sin(t * 25)) * a);
+}
+// rayo del pararrayos a un enemigo: zigzag que se apaga en 0,2 s (cambia de forma a saltos)
+function rodBolt(ctx, t, layer, t0, x0, y0, x1, y1, pal, w = 2.2) {
+  const u = seg(t, t0, t0 + 0.22); if (u >= 1 || layer !== 'front') return;
+  const R = rand(Math.floor(t * 30) + Math.floor(x1));
+  bolt(ctx, x0, y0, x1, y1, 8, R, w * (1 - u * 0.6), pal, 1 - u, layer, 0.3);
+  glow(ctx, x1, y1, 26, pal.g2, 0.7 * (1 - u));
+}
+// destello (teletransporte): estela de siluetas desde donde estabas hasta donde llegas + aro al llegar
+function blinkTrail(ctx, t, layer, t0, x0, y0, x1, y1, pal) {
+  const u = seg(t, t0, t0 + 0.35); if (u >= 1) return;
+  if (layer === 'back') { const pts = []; for (let i = 0; i <= 10; i++) { const s = i / 10; pts.push({ x: lerp(x0, x1, s), y: lerp(y0, y1, s) - Math.sin(Math.PI * s) * 20 }); } ribbon(ctx, pts, s => 14 * s * (1 - u), pal.mid, 0.6 * (1 - u), layer); ribbon(ctx, pts, s => 5 * s * (1 - u), pal.core, 1 - u, layer); return; }
+  for (let i = 0; i < 4; i++) { const s = i / 4, x = lerp(x0, x1, s), y = lerp(y0, y1, s); ctx.save(); ctx.globalAlpha = clamp((1 - u) * 0.35 * (s + 0.2)); ctx.fillStyle = col(pal.light, layer); ctx.beginPath(); ctx.ellipse(x, y - 38, 12, 34, 0, 0, TAU); ctx.fill(); ctx.restore(); }
+  shockRing(ctx, t, layer, t0, x1, y1 - 30, 70, pal);
+}

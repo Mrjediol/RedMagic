@@ -122,5 +122,38 @@ if (!only || only === 'whip') {
   sim.aim(330, 296).press().run(1.6).release().run(0.4);
   check('Remolino: golpea a los dos lados', G.enemies.every(e => e.hp < e.hpMax), G.enemies.map(e => Math.round(e.hp)).join('/'));
 }
+// ---------------------------------------------------------------- 10 · Jabalina
+if (!only || only === 'spear') {
+  // base: cargada pega más; se queda clavada; pulsar otra vez la trae
+  const throwAt = hold => { sim.setup({ slots: [{ w: 'spear' }, { w: 'fan' }], enemies: [{ x: 600, kind: 'ground' }], px: 200 }); sim.aim(600, 296).press().run(hold).release().run(0.8); return sim.dmg(); };
+  const d0 = throwAt(0.02), d1 = throwAt(0.6);
+  check('Jabalina: cargada pega mucho más', d1 > d0 * 2, `${d1} vs ${d0}`);
+  const sp = G.slots[0].inst.spears()[0];
+  check('Jabalina: se queda clavada', sp && sp.state === 'stuck', sp ? sp.state : 'no hay');
+  check('Jabalina: mientras está fuera no se dispara', G.slots[0].inst.ready() === 0);
+  sim.tap().run(0.5);
+  check('Jabalina: pulsar otra vez la trae', G.slots[0].inst.spears().length === 0);
+  // base: pasar por encima la recoge
+  sim.setup({ slots: [{ w: 'spear' }, { w: 'fan' }], enemies: [{ x: 1500, kind: 'ground' }], px: 200 }); sim.aim(330, 330).press().run(0.1).release().run(0.4);
+  const out = G.slots[0].inst.spears().length; G.player.x = G.slots[0].inst.spears()[0] ? G.slots[0].inst.spears()[0].x : 330; sim.run(0.5);
+  check('Jabalina: pasar por encima la recoge', out === 1 && G.slots[0].inst.spears().length === 0);
+  // Pararrayos: golpes de la otra arma cerca → rayos
+  const rodRun = arch => { sim.setup({ slots: [{ w: 'spear', arch }, { w: 'fan' }], enemies: [{ x: 520, kind: 'ground' }, { x: 580, kind: 'ground' }], px: 200, hpMul: 4 }); sim.aim(470, 330).press().run(0.1).release().run(0.5).swap(1); for (let i = 0; i < 4; i++) sim.aim(540, 296).tap().run(0.5); return sim.dmg(); };
+  const dr = rodRun('rod'), dn = rodRun(null);
+  check('Pararrayos: los golpes del Abanico cerca atraen rayos', dr > dn * 1.3, `${dr} vs ${dn}`);
+  // Pararrayos · Tormenta: rayos solos
+  sim.setup({ slots: [{ w: 'spear', arch: 'rod', ups: { storm: true } }, { w: 'fan' }], enemies: [{ x: 520, kind: 'ground' }], px: 200 }); sim.aim(470, 330).press().run(0.1).release().run(3);
+  check('Pararrayos · Tormenta: rayos sin hacer nada', sim.dmg() > T('spear').rodDamage * 2, `daño ${sim.dmg()}`);
+  // Empalar: se lleva al enemigo y lo clava
+  sim.setup({ slots: [{ w: 'spear', arch: 'impale' }, { w: 'fan' }], enemies: [{ x: 360, kind: 'ground' }], px: 200 }); const e = G.enemies[0], x0 = e.x;
+  sim.aim(700, 280).press().run(0.6).release().run(0.8);
+  check('Empalar: se lleva al enemigo', e.x - x0 > 80, `${Math.round(e.x - x0)} px`);
+  check('Empalar: queda clavado y vulnerable', e.vulnT > G.t && e.stunT > 0);
+  // Destello: te lleva a la jabalina
+  sim.setup({ slots: [{ w: 'spear', arch: 'blink', ups: { phase: true } }, { w: 'fan' }], enemies: [{ x: 700, kind: 'ground' }], px: 200 });
+  sim.aim(560, 330).press().run(0.1).release().run(0.6); const sx = G.slots[0].inst.spears()[0] ? G.slots[0].inst.spears()[0].x : 0; sim.tap();
+  check('Destello: te teletransporta a la jabalina', Math.abs(G.player.x - sx) < 5 && sx > 400, `player ${Math.round(G.player.x)} jabalina ${Math.round(sx)}`);
+  check('Destello · Fase: siguiente ataque potenciado', G.empower > 1);
+}
 check.done();
 function GROUND_Y() { return 340; }

@@ -37,6 +37,7 @@ los expresa. Árbol completo hoy en las seis armas.
 | Reloj de arena | `time` | burbuja de tiempo; potencia a la otra arma | [reloj.md](reloj.md) |
 | Ráfaga | `gust` | soplo que empuja y lanza (control) | [rafaga.md](rafaga.md) |
 | Látigo de luz | `whip` | latigazo con chasquido en la punta; encadena, engancha | [latigo.md](latigo.md) |
+| Jabalina | `spear` | se carga, se clava y hay que recuperarla | [jabalina.md](jabalina.md) |
 
 Armas 7+ (2026-10-20, hechas sin el usuario, **sin probar**): dibujo en `fx-armas2.js`, pruebas dirigidas en
 `tools/test-armas2.cjs` (usa `tools/sim.cjs`, que carga la jugable en Node para medir lo que hace un arma).

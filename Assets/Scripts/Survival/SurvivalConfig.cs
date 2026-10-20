@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 
 namespace RedMagic.Survival
 {
-    /// <summary>Dónde aparece un enemigo: cada <see cref="SurvivalSpawnPoint"/> es de un tipo.</summary>
+    /// <summary>Qué reglas sigue un enemigo para aparecer (<see cref="SurvivalSpawnFinder"/>).</summary>
     public enum SurvivalSpawnKind
     {
         [InspectorName("Volador")] Flying,
@@ -222,12 +222,29 @@ namespace RedMagic.Survival
         [Min(1)] public int defaultWaveKills = 30;
         public SurvivalTimeUp onTimeUp = SurvivalTimeUp.FinishRemaining;
 
-        [Header("Dónde aparecen")]
-        [Tooltip("Sólo en puntos a esta distancia del jugador o menos (los del jefe no cuentan). Si no hay ninguno, el más cercano.")]
-        [FormerlySerializedAs("preferSpawnsWithin")]
-        [Min(0f)] public float spawnRadius = 15f;
-        [Tooltip("Ni más cerca que esto (que no aparezcan encima del jugador), si hay otro punto dentro del radio.")]
-        [Min(0f)] public float minSpawnDistance = 4f;
+        [Header("Dónde aparecen (al azar alrededor del jugador; el jefe, en el centro del suelo)")]
+        [Tooltip("Nunca más cerca del jugador que esto (que no salgan en su cara).")]
+        [FormerlySerializedAs("minSpawnDistance")]
+        [Min(0f)] public float minDistance = 6f;
+        [Tooltip("Nunca más lejos que esto.")]
+        [FormerlySerializedAs("spawnRadius")]
+        [Min(1f)] public float maxDistance = 15f;
+        [Tooltip("Como mucho tantas unidades por encima del jugador (que no salgan en el techo sin verlos).")]
+        [Min(0f)] public float maxAbove = 8f;
+        [Tooltip("Como mucho tantas unidades por debajo del jugador.")]
+        [Min(0f)] public float maxBelow = 8f;
+        [Tooltip("Distancia mínima a cualquier otro enemigo (vivo o recién salido): que no salgan amontonados.")]
+        [Min(0f)] public float minSeparation = 3f;
+        [Tooltip("Voladores: hueco libre alrededor (sin pared ni suelo a menos de esto).")]
+        [Min(0f)] public float flyerClearance = 1f;
+        [Tooltip("Suelo y torretas: a cuánto por encima del suelo o plataforma aparecen (caen solos).")]
+        [Min(0f)] public float groundSpawnHeight = 1f;
+        [Tooltip("Capas del terreno macizo (Ground).")]
+        public LayerMask solidLayers = 1 << 6;
+        [Tooltip("Capas de las plataformas (Platform): valen como suelo, no como pared.")]
+        public LayerMask platformLayers = 1 << 8;
+        [Tooltip("Intentos por enemigo antes de aflojar las reglas.")]
+        [Min(1)] public int maxAttempts = 40;
 
         [Header("Modos de dificultad (se eligen en el menú)")]
         public SurvivalDifficultySettings easy = new SurvivalDifficultySettings(1f, 1f, 1f, 1f);

@@ -6,7 +6,7 @@ Rama `task/supervivencia` (sale de `task/armas-unity`, sin fusionar). Arquitectu
 
 ## Hecho (2026-10-20, esqueleto)
 - Menú principal: Jugar → Clásico / Supervivencia / Atrás.
-- `SurvivalConfig` (un asset con todo), `SurvivalManager` + `SurvivalHud`, `SurvivalSpawnPoint` (volador / suelo / torreta /
+- `SurvivalConfig` (un asset con todo), `SurvivalManager` + `SurvivalHud`, `SurvivalSpawnFinder` (reglas por tipo: volador / suelo / torreta /
   jefe), `SurvivalWaveBuilder` (rareza por peso, especiales por dificultad).
 - Mundos: Hielo 4 + jefe IceBoss2, Bosque 5 (verde), Volcán 5 (rojo); luego se repite Volcán con el escalado subiendo.
   Enemigos: koros, IceRobot, PolarTurretBot (voladores), IceCannonOrb (volador, poco común), FrostKnight (suelo), Turret.
@@ -17,7 +17,9 @@ Rama `task/supervivencia` (sale de `task/armas-unity`, sin fusionar). Arquitectu
 - `SurvivalArena`: prefab `Survival` colocado (8 voladores, 6 suelo, 4 torreta, 1 jefe, tienda en el suelo centro).
 
 ## Hecho (2026-10-20, segunda tanda)
-- Puntos: hijos del manager (sin registro estático), botones «+ Volador / Suelo / Torreta / Jefe» y lista en su Inspector.
+- ~~Puntos de aparición con botones en el Inspector~~ → sustituidos el mismo día por reglas (`SurvivalSpawnFinder`): con
+  puntos fijos salían amontonados (pocos dentro del radio). Ahora al azar alrededor del jugador, 6–15 u, ±8 u de altura,
+  3 u de separación entre enemigos; voladores en aire libre, suelo/torretas sobre suelo o plataforma, jefe en el centro.
 - Oleadas **dinámicas** (por defecto) además de las simples: máximo a la vez (6 +1/oleada, tope 20), reaparición a los 3 s,
   acaban por tiempo (Hielo 30/45/60/90 s, Bosque 45…120, Volcán 60…120) o por bajas (Hielo 15/20/25/30…).
 - Aparecen sólo a ≤ 15 u del jugador y ≥ 4 u (configurable).
@@ -34,7 +36,7 @@ Rama `task/supervivencia` (sale de `task/armas-unity`, sin fusionar). Arquitectu
 
 ## Preguntas abiertas (hechas al usuario el 2026-10-20)
 1. Enemigos que aparecen lejos se quedan quietos hasta que el jugador entra en su `detectionRange`. Mitigado: sólo
-   aparecen a ≤ `spawnRadius` (15 u). ¿Persecución global en Supervivencia o así?
+   aparecen a ≤ `maxDistance` (15 u). ¿Persecución global en Supervivencia o así?
 4. Oleada por tiempo al acabarse: hoy dejan de salir y hay que rematar a los que quedan (alternativa en el config:
    desaparecen sin botín). ¿Cuál por defecto?
 2. ¿La dificultad (para las especiales) se reinicia en cada mundo o sigue subiendo (así está)?

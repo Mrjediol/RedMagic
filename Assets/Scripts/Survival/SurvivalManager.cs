@@ -17,10 +17,10 @@ namespace RedMagic.Survival
     /// <summary>
     /// El modo Supervivencia en un mapa: rondas de enemigos que van a más, y entre rondas tienda y/o item que cae, hasta
     /// que el jugador muere. Todos los números salen de <see cref="config"/> (un <see cref="SurvivalConfig"/>, el mismo
-    /// para cualquier mapa); el mapa sólo aporta los <see cref="SurvivalSpawnPoint"/> (hijos de este objeto, los recoge al
-    /// empezar) y la tienda.
+    /// para cualquier mapa). Los enemigos salen donde decide <see cref="SurvivalSpawnFinder"/> (al azar alrededor del
+    /// jugador, con reglas por tipo), así que el mapa no necesita puntos: sólo la tienda.
     ///
-    /// Para llevarlo a otro mapa: arrastrar <c>Assets/Test/Survival/Survival.prefab</c> a la escena y mover sus puntos.
+    /// Para llevarlo a otro mapa: arrastrar <c>Assets/Test/Survival/Survival.prefab</c> a la escena y colocar la tienda.
     ///
     /// Dos tipos de oleada (<see cref="SurvivalConfig.waveMode"/>):
     /// <list type="bullet">
@@ -30,8 +30,8 @@ namespace RedMagic.Survival
     /// <see cref="SurvivalConfig.respawnDelay"/> s. Acaban por tiempo o por bajas (<see cref="SurvivalConfig.dynamicEnd"/>),
     /// con el valor de cada oleada del mundo.</item>
     /// </list>
-    /// La oleada del jefe es siempre simple: acaba al matarlo. Cada enemigo sale en un punto de su tipo dentro del radio del
-    /// jugador, escalado por oleada × mundo × dificultad × especial y con el color de zona. Entre rondas: recompensas,
+    /// La oleada del jefe es siempre simple: acaba al matarlo. Cada enemigo sale donde dicen las reglas de su tipo,
+    /// escalado por oleada × mundo × dificultad × especial y con el color de zona. Entre rondas: recompensas,
     /// curación, oro extra, y espera a "Siguiente ronda" (<see cref="RequestNextWave"/>) o a la cuenta atrás.
     /// </summary>
     [DisallowMultipleComponent]
@@ -86,12 +86,14 @@ namespace RedMagic.Survival
         public event Action<int> WaveCleared;
         public event Action<int> GameOver;
 
+        /// <summary>Simples: veces que se reintenta un enemigo sin sitio antes de darlo por perdido.</summary>
+        private const int MaxSpawnFailures = 20;
+
         private SurvivalDifficultySettings _difficulty;
-        private readonly List<SurvivalSpawnPoint> _points = new List<SurvivalSpawnPoint>();
+        private SurvivalSpawnFinder _finder;
         private readonly List<Health> _alive = new List<Health>();
         private readonly List<SurvivalSpawnRequest> _pending = new List<SurvivalSpawnRequest>();
         private readonly List<float> _scheduled = new List<float>();   // dinámicas: cuándo sale cada uno de los que vienen
-        private readonly List<SurvivalSpawnPoint> _candidates = new List<SurvivalSpawnPoint>();
         private System.Random _rng;
         private Health _playerHealth;
         private bool _nextRequested;
@@ -115,7 +117,7 @@ namespace RedMagic.Survival
 
             Difficulty = SurvivalSession.Difficulty ?? testDifficulty;
             _difficulty = config.Settings(Difficulty);
-            GetComponentsInChildren(false, _points);
+            _finder = new SurvivalSpawnFinder(config, gameObject.scene);
             _rng = new System.Random(seed != 0 ? seed : Environment.TickCount);
             SetupPlayer();
             ResetRun();
@@ -260,7 +262,8 @@ namespace RedMagic.Survival
                 {
                     var request = _pending[0];
                     _pending.RemoveAt(0);
-                    Spawn(request);
+                    // Sin sitio ahora (el jugador está en un rincón): al final de la cola, hasta un límite.
+                    if (!Spawn(request) && ++request.failures < MaxSpawnFailures) _pending.Add(request);
                     nextSpawn = Time.time + config.spawnInterval;
                 }
                 yield return null;
@@ -371,10 +374,16 @@ namespace RedMagic.Survival
         /// <returns>False si no había dónde (o qué) sacarlo.</returns>
         private bool Spawn(SurvivalSpawnRequest request)
         {
-            var point = PickPoint(request.kind);
-            if (point == null || request.prefab == null) return false;
+            if (request.prefab == null || Player == null) return false;
+            if (!_finder.TryFind(request.kind, Player.transform.position, _alive, _rng, out var position))
+            {
+                if (_warnedKinds.Add(request.kind))
+                    Debug.LogWarning($"[Survival] No encuentro sitio para un enemigo de tipo {request.kind} cerca del jugador " +
+                                     "(se reintenta). Revisa 'Dónde aparecen' en el config.", this);
+                return false;
+            }
 
-            var enemy = Instantiate(request.prefab, point.position, Quaternion.identity);
+            var enemy = Instantiate(request.prefab, position, Quaternion.identity);
             SceneManager.MoveGameObjectToScene(enemy, gameObject.scene);
 
             // Color: el de la especial manda sobre el de zona (una especial tiene que reconocerse en cualquier mundo).
@@ -390,53 +399,41 @@ namespace RedMagic.Survival
             return true;
         }
 
+#if UNITY_EDITOR
         /// <summary>
-        /// Un punto del tipo pedido (jefe / torreta sin punto propio: uno de suelo) entre <see cref="SurvivalConfig.minSpawnDistance"/>
-        /// y <see cref="SurvivalConfig.spawnRadius"/> del jugador; si dentro del radio sólo hay alguno demasiado cerca, ese;
-        /// si no hay ninguno dentro, el más cercano. El jefe no mira el radio.
+        /// Con el objeto seleccionado: la zona donde pueden salir (anillo entre la distancia mínima y la máxima, cortado por
+        /// arriba y por abajo) alrededor del jugador — o de donde empieza, fuera de Play — y en Play, los sitios usados hace
+        /// poco, con el color de su tipo.
         /// </summary>
-        private Transform PickPoint(SurvivalSpawnKind kind)
+        private void OnDrawGizmosSelected()
         {
-            Collect(kind);
-            if (_candidates.Count == 0 && (kind == SurvivalSpawnKind.Boss || kind == SurvivalSpawnKind.Turret))
-                Collect(SurvivalSpawnKind.Ground);
-            if (_candidates.Count == 0)
-            {
-                if (_warnedKinds.Add(kind))
-                    Debug.LogWarning($"[Survival] No hay ningún SurvivalSpawnPoint de tipo {kind}: esos enemigos no salen.", this);
-                return null;
-            }
+            if (config == null) return;
+            Vector3 c = Player != null ? Player.transform.position
+                      : playerSpawn != null ? playerSpawn.position
+                      : SectionEntry.FindIn(gameObject.scene) is SectionEntry entry ? entry.SpawnPosition : transform.position;
+            UnityEditor.Handles.color = new Color(1f, 0.4f, 0.35f, 0.9f);
+            UnityEditor.Handles.DrawWireDisc(c, Vector3.forward, config.minDistance);
+            UnityEditor.Handles.color = new Color(0.4f, 1f, 0.5f, 0.9f);
+            UnityEditor.Handles.DrawWireDisc(c, Vector3.forward, config.maxDistance);
+            float w = config.maxDistance;
+            UnityEditor.Handles.color = new Color(1f, 1f, 0.4f, 0.8f);
+            UnityEditor.Handles.DrawLine(c + new Vector3(-w, config.maxAbove), c + new Vector3(w, config.maxAbove));
+            UnityEditor.Handles.DrawLine(c + new Vector3(-w, -config.maxBelow), c + new Vector3(w, -config.maxBelow));
 
-            if (kind != SurvivalSpawnKind.Boss && config.spawnRadius > 0f && Player != null)
+            if (_finder == null) return;
+            foreach (var s in _finder.Recent)
             {
-                Vector2 p = Player.transform.position;
-                float r2 = config.spawnRadius * config.spawnRadius, min2 = config.minSpawnDistance * config.minSpawnDistance;
-                SurvivalSpawnPoint nearest = null;
-                float best = float.MaxValue;
-                int inRadius = 0, inRing = 0;
-                foreach (var s in _candidates)
+                Gizmos.color = s.kind switch
                 {
-                    float d = ((Vector2)s.transform.position - p).sqrMagnitude;
-                    if (d < best) { best = d; nearest = s; }
-                    if (d <= r2) { inRadius++; if (d >= min2) inRing++; }
-                }
-                if (inRadius == 0) return nearest.transform;
-                bool ring = inRing > 0;
-                _candidates.RemoveAll(s =>
-                {
-                    float d = ((Vector2)s.transform.position - p).sqrMagnitude;
-                    return d > r2 || (ring && d < min2);
-                });
+                    SurvivalSpawnKind.Flying => new Color(0.45f, 0.8f, 1f),
+                    SurvivalSpawnKind.Ground => new Color(0.45f, 1f, 0.45f),
+                    SurvivalSpawnKind.Turret => new Color(1f, 0.7f, 0.25f),
+                    _ => new Color(1f, 0.3f, 0.35f),
+                };
+                Gizmos.DrawWireSphere(s.position, 0.5f);
             }
-            return _candidates[_rng.Next(_candidates.Count)].transform;
         }
-
-        private void Collect(SurvivalSpawnKind kind)
-        {
-            _candidates.Clear();
-            foreach (var s in _points)
-                if (s != null && s.isActiveAndEnabled && s.kind == kind) _candidates.Add(s);
-        }
+#endif
 
         private void DropItems()
         {

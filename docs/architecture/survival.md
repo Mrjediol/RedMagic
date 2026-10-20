@@ -17,8 +17,9 @@ level of a run.
     `dynamicMaxAlive` staggered by `spawnInterval`, then each death asks for another `respawnDelay` s later if there is room;
     the three counts become the kind mix; ends by **time** (`waveSeconds`, `onTimeUp`: stop spawning and finish the rest,
     or they vanish without loot) or by **kills** (`waveKills`; never spawns more than the kills still needed));
-  - where they appear: only points within `spawnRadius` of the player and not closer than `minSpawnDistance` (if none is in
-    the ring but some are in the radius, those; if none in the radius, the nearest; bosses ignore it);
+  - where they appear (rules for `SurvivalSpawnFinder`, no hand-placed points): `minDistance` / `maxDistance` from the
+    player, `maxAbove` / `maxBelow`, `minSeparation` from any enemy, `flyerClearance`, `groundSpawnHeight`, `solidLayers`
+    (Ground) / `platformLayers` (Platform), `maxAttempts`;
   - per-wave **scaling** of health and damage (linear or compound), **difficulty** (start + per wave) and `specialChance`,
     **rarity weights** (1 / 0.7 / 0.4 / 0.15 → 2 commons + 1 rare of 30 ≈ 12.5 / 12.5 / 5);
   - **difficulty modes** `easy` / `normal` / `hard` (`SurvivalDifficultySettings`): × enemies at once (dynamic) / per wave
@@ -28,9 +29,15 @@ level of a run.
 - **`SurvivalWaveBuilder`** — pure logic. `Build` = a simple wave's list (count per kind × stage × difficulty, weighted pick,
   special only if `variant.difficulty ≤ wave difficulty`, then `specialChance`, shuffled; boss wave = one random boss).
   `PickOne` = the next enemy of a dynamic wave (kind weighted by this wave's three counts, then the same pick).
-- **`SurvivalSpawnPoint`** — one kind each: Flying / Ground (the enemy drops from it) / Turret / Boss (none → a Ground one).
-  Children of the manager; the manager collects them in `Start` (no static registry, nothing to keep in sync: duplicate one
-  and it counts). Gizmo coloured by kind with a label.
+- **`SurvivalSpawnFinder`** — where each enemy appears, by rules (replaced hand-placed spawn points on 2026-10-20: with
+  ~20 points only 2–4 fell inside the radius and enemies piled up on them). Random samples in the box around the player,
+  kept if inside the ring (min–max distance, above/below limits), not in rock and `minSeparation` away from every alive or
+  just-spawned enemy. *Flying*: free air with `flyerClearance`. *Ground* / *Turret*: ray down (solid + platform layers) to
+  a surface with an up normal, spawn `groundSpawnHeight` above it (they fall). *Boss*: level centre, on the first floor from
+  the bottom. "In rock" = `Level.IsRock` on the level grid (the painted terrain only has edge colliders, which detect
+  nothing inside); without a `Level`, `OverlapPoint` on `solidLayers`. No spot → halve the separation, then drop it and halve
+  the min distance; still none → false (dynamic waves retry after `respawnDelay`, simple waves requeue it up to 20 times).
+  Wall / ceiling turrets: separate task.
 - **`SurvivalManager`** (in the scene, from `Assets/Test/Survival/Survival.prefab`) — config, player prefab (used only if the
   scene has no `Player`-tagged object; `RunManager.Player` first), player spawn (empty = `SectionEntry`), the between-waves
   **shop** (a `ShopManager` with altar points + reroll, child of the prefab; deactivated during waves, `Stock(world, seed)` on
@@ -41,9 +48,8 @@ level of a run.
   start weapons; on destroy it empties them (nothing travels to the classic mode). It disables the map's `WaveManager` and
   `SectionExit` at runtime (levels from EditorNiveles bring them). Enemies are `Instantiate`d like `WaveManager` does (the
   enemy stack destroys itself on death; pooling enemies needs a reset path first).
-  - **Inspector** (`SurvivalManagerEditor`): buttons **+ Volador / + Suelo / + Torreta / + Jefe** create a point under
-    `Puntos` at the scene view centre and select it; below, every point by kind (click = select), with a note when a kind
-    has none.
+  - **Gizmos** (object selected): the spawn ring (red = min, green = max) and the above/below lines around the player (or
+    where they start, outside Play); in Play, the spots used in the last 2.5 s coloured by kind.
 - **`SurvivalHud`** — code-built UI Toolkit on `CurrencyHudPanelSettings` (sortingOrder 5): wave · world · difficulty at the
   top; under it "Tiempo: 0:45" / "Bajas: 12/30" / "Enemigos: N" / "¡Jefe!"; the between-waves block (button, Enter / pad
   Select, or countdown) and the game-over / victory panel (Reintentar = reload the map, same difficulty; Menú principal).
@@ -65,5 +71,5 @@ level of a run.
 `MainMenuController ▸ survivalScene` = `SurvivalArena` (in Build Settings).
 
 ## Moving it to another map
-Drag `Survival.prefab` into the scene, move its points (and the shop / drop point), make sure the scene is in Build Settings
+Drag `Survival.prefab` into the scene, place the shop / drop point (no spawn points to place), make sure the scene is in Build Settings
 and point `MainMenuController ▸ survivalScene` at it. The config is shared.

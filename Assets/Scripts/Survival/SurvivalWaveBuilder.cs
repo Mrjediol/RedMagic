@@ -4,12 +4,14 @@ using UnityEngine;
 
 namespace RedMagic.Survival
 {
-    /// <summary>Un enemigo por salir: dónde (tipo de punto), cuál y, si toca, qué especial.</summary>
+    /// <summary>Un enemigo por salir: con qué reglas de sitio (tipo), cuál y, si toca, qué especial.</summary>
     public struct SurvivalSpawnRequest
     {
         public SurvivalSpawnKind kind;
         public GameObject prefab;
         public EnemyVariant special;
+        /// <summary>Veces que no encontró sitio (las simples lo reintentan, hasta un límite).</summary>
+        public int failures;
     }
 
     /// <summary>

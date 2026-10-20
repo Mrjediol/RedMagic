@@ -227,8 +227,20 @@ MonoBehaviour:
   defaultWaveSeconds: 60
   defaultWaveKills: 30
   onTimeUp: 0
-  spawnRadius: 15
-  minSpawnDistance: 4
+  minDistance: 6
+  maxDistance: 15
+  maxAbove: 8
+  maxBelow: 8
+  minSeparation: 3
+  flyerClearance: 1
+  groundSpawnHeight: 1
+  solidLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  platformLayers:
+    serializedVersion: 2
+    m_Bits: 256
+  maxAttempts: 40
   easy:
     enemyMultiplier: 1
     killsMultiplier: 1

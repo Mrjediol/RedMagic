@@ -32,13 +32,24 @@ for (const p of cfg.parts) {
   const img = await loadImage(resolve(p.file)); W = img.width; H = img.height;
   const c = createCanvas(W, H), x = c.getContext('2d'); x.drawImage(img, 0, 0);
   const d = x.getImageData(0, 0, W, H), a = d.data; let x0 = W, y0 = H, x1 = 0, y1 = 0;
+  let hasAlpha = false; for (let i = 3; i < a.length; i += 4 * 97) if (a[i] < 250) { hasAlpha = true; break; }
   for (let i = 0; i < a.length; i += 4) {
-    const m = Math.min(a[i], a[i + 1], a[i + 2]);
-    if (m > 238) a[i + 3] = 0; else if (m > 215) a[i + 3] = Math.round(255 * (238 - m) / 23);
+    if (!hasAlpha) { const m = Math.min(a[i], a[i + 1], a[i + 2]); if (m > 238) a[i + 3] = 0; else if (m > 215) a[i + 3] = Math.round(255 * (238 - m) / 23); }   // pieza sin recortar: vista aproximada
     if (a[i + 3] > 40) { const px = (i / 4) % W, py = Math.floor(i / 4 / W); if (px < x0) x0 = px; if (px > x1) x1 = px; if (py < y0) y0 = py; if (py > y1) y1 = py; }
   }
   x.putImageData(d, 0, 0);
-  parts[p.name] = { c, parent: p.parent, px: x0 + (x1 - x0) * p.pivot[0], py: y0 + (y1 - y0) * p.pivot[1] };
+  // pivote: [fx, fy] de la caja, { px: [x, y] } en píxeles del lienzo, o "joint-top" / "joint-bottom": el centro de la rótula
+  // (la fila donde el extremo redondo alcanza su ancho, medido en la máscara: nunca a ojo)
+  const span = y => { let l = -1, r = -1; for (let xx = x0; xx <= x1; xx++) if (a[(y * W + xx) * 4 + 3] > 128) { if (l < 0) l = xx; r = xx; } return [l, r]; };
+  let px, py;
+  if (p.pivot === 'joint-top' || p.pivot === 'joint-bottom') {
+    const top = p.pivot === 'joint-top', h = y1 - y0, band = Math.round(h * 0.22), rows = [];
+    for (let k = 0; k <= band; k++) { const y = top ? y0 + k : y1 - k, [l, r] = span(y); rows.push({ y, l, r, w: l < 0 ? 0 : r - l }); }
+    const wmax = Math.max(...rows.map(q => q.w)), row = rows.find(q => q.w >= wmax * 0.92);
+    px = (row.l + row.r) / 2; py = row.y;
+  } else if (p.pivot && p.pivot.px) { [px, py] = p.pivot.px; }
+  else { px = x0 + (x1 - x0) * p.pivot[0]; py = y0 + (y1 - y0) * p.pivot[1]; }
+  parts[p.name] = { c, parent: p.parent, px, py };
 }
 const cols = Math.min(cfg.poses.length, +opt('--cols', 4)), rows = Math.ceil(cfg.poses.length / cols);
 const sheet = createCanvas(cols * CELL, rows * (CELL + 24)), s = sheet.getContext('2d');

@@ -1,22 +1,21 @@
 {
-  "_doc": "Prueba de movimiento del Golem de escoria (pose-preview.mjs). Poses sacadas de sus movimientos (docs/enemigos-diseno/golem-escoria.md): andar, alzar pilar / golpe al suelo (puños arriba → abajo), reventar pilar (puño de delante).",
+  "_doc": "Prueba de movimiento del Golem de escoria (pose-preview.mjs). Poses de sus movimientos (docs/enemigos-diseno/golem-escoria.md). Piezas acabadas (claude/slaggolem/final). Profundidad (usuario 2026-10-20): la pierna de la DERECHA de la imagen es la del fondo; la de la izquierda va delante del brazo de atrás; las dos piernas y los dos brazos, detrás del torso (la cintura tapa los muslos). Para la plantilla: BackFoot = pierna derecha de la imagen (FrontFoot.png aquí), FrontFoot = pierna izquierda (BackFoot.png).",
   "parts": [
-    { "name": "BackFoot", "file": "claude/slaggolem_BackFoot_j1_raw_00001_.png", "pivot": [0.55, 0.07] },
-    { "name": "WeaponHand", "file": "claude/slaggolem_WeaponHand_j2_raw_00001_.png", "pivot": [0.2, 0.2], "parent": "Torso" },
-    { "name": "Torso", "file": "claude/slaggolem_TorsoPad_r1_raw_00001_.png", "pivot": [0.55, 0.9] },
-    { "name": "FrontFoot", "file": "claude/slaggolem_FrontFoot_r1_raw_00001_.png", "pivot": [0.5, 0.06] },
-    { "name": "BackHand", "file": "claude/slaggolem_BackHand_j1_raw_00001_.png", "pivot": [0.74, 0.09], "parent": "Torso" },
-    { "name": "Head", "file": "claude/slaggolem_Head_s1_raw_00001_.png", "pivot": [0.5, 1], "parent": "Torso" }
+    { "name": "BackHand", "file": "claude/slaggolem/final/BackHand.png", "pivot": { "px": [705, 705] }, "parent": "Torso" },
+    { "name": "LegRight", "file": "claude/slaggolem/final/FrontFoot.png", "pivot": { "px": [1270, 1160] } },
+    { "name": "LegLeft", "file": "claude/slaggolem/final/BackFoot.png", "pivot": { "px": [852, 1120] } },
+    { "name": "WeaponHand", "file": "claude/slaggolem/final/WeaponHand.png", "pivot": { "px": [1252, 690] }, "parent": "Torso" },
+    { "name": "Torso", "file": "claude/slaggolem/final/Torso.png", "pivot": [0.5, 0.92] },
+    { "name": "Head", "file": "claude/slaggolem/final/Head.png", "pivot": [0.5, 1], "parent": "Torso" }
   ],
-  "order": ["BackFoot", "BackHand", "WeaponHand", "Torso", "FrontFoot", "Head"],
+  "order": ["BackHand", "LegRight", "LegLeft", "WeaponHand", "Torso", "Head"],
   "poses": [
     { "name": "Reposo (pivotes)", "rot": {}, "pivots": true },
-    { "name": "Paso A", "rot": { "FrontFoot": -18, "BackFoot": 18, "WeaponHand": 10, "BackHand": -12, "Torso": 2 } },
-    { "name": "Paso B", "rot": { "FrontFoot": 18, "BackFoot": -18, "WeaponHand": -10, "BackHand": 12, "Torso": -2 } },
-    { "name": "Puño atrás (prepara)", "rot": { "WeaponHand": -55, "Torso": -5, "Head": -4 } },
-    { "name": "Puñetazo (reventar pilar)", "rot": { "WeaponHand": 18, "Torso": 6, "BackHand": -15 } },
-    { "name": "Puños arriba (prepara golpe)", "rot": { "WeaponHand": -110, "BackHand": 150, "Torso": -6, "Head": -6 } },
-    { "name": "Golpe al suelo", "rot": { "WeaponHand": 45, "BackHand": -35, "Torso": 10, "Head": 6 } },
-    { "name": "Muerto (caído)", "rot": { "WeaponHand": 60, "BackHand": -50, "Torso": 25, "Head": 30, "FrontFoot": -10, "BackFoot": 10 } }
+    { "name": "Paso A", "rot": { "LegLeft": -16, "LegRight": 16, "WeaponHand": 8, "BackHand": -10, "Torso": 2 } },
+    { "name": "Paso B", "rot": { "LegLeft": 16, "LegRight": -16, "WeaponHand": -8, "BackHand": 10, "Torso": -2 } },
+    { "name": "Puño atrás (prepara)", "rot": { "WeaponHand": -50, "Torso": -4, "Head": -4 } },
+    { "name": "Puñetazo (reventar pilar)", "rot": { "WeaponHand": 16, "Torso": 5, "BackHand": -12 } },
+    { "name": "Puños arriba (prepara golpe)", "rot": { "WeaponHand": -100, "BackHand": 140, "Torso": -5, "Head": -5 } },
+    { "name": "Golpe al suelo", "rot": { "WeaponHand": 40, "BackHand": -30, "Torso": 8, "Head": 5 } }
   ]
 }

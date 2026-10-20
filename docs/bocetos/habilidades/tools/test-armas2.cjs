@@ -248,5 +248,34 @@ if (!only || only === 'volt') {
   sim.aim(600, 296).tap().run(0.5);
   check('Celdas: 3 celdas y cada clic gasta una (rayo del cielo)', full === 300 && G.slots[0].inst.charge() === 200 && sim.dmg() >= 70, `carga ${full} → ${G.slots[0].inst.charge()}, daño ${sim.dmg()}`);
 }
+// ---------------------------------------------------------------- 15 · Pacto de sangre
+if (!only || only === 'blood') {
+  sim.setup({ slots: [{ w: 'blood' }, { w: 'fan' }], enemies: [{ x: 500, kind: 'ground' }], px: 200 });
+  sim.aim(500, 296).tap().run(0.6);
+  check('Pacto: el orbe cuesta vida y pega fuerte', G.player.hp === G.player.hpMax - T('blood').cost && sim.dmg() >= T('blood').orbDamage, `vida ${G.player.hp}, daño ${sim.dmg()}`);
+  G.enemies[0].hp = 10; sim.run(0.7).tap().run(0.6);
+  check('Pacto: la baja devuelve vida', G.player.hp > G.player.hpMax - 2 * T('blood').cost, `vida ${G.player.hp}`);
+  // Hemorragia: la otra arma revienta la sangre y cura
+  sim.setup({ slots: [{ w: 'blood', arch: 'bleed' }, { w: 'star' }], enemies: [{ x: 500, kind: 'ground' }], px: 200, hpMul: 6 });
+  for (let i = 0; i < 3; i++) sim.aim(500, 296).tap().run(0.6);
+  const n = G.enemies[0].bleedN, hp0 = G.player.hp; let burst = 0; sim.swap(1).aim(500, 296).tap().run(1, () => { if (G.texts.some(x => x.s === 'DERRAME')) burst = 1; });
+  check('Hemorragia: acumula sangrado', n >= 3, `cargas ${n}`);
+  check('Hemorragia: el Golpe estelar revienta la sangre y cura', burst === 1 && G.player.hp > hp0, `vida ${hp0} → ${G.player.hp}`);
+  // Vampiro: el orbe vuelve y cura
+  sim.setup({ slots: [{ w: 'blood', arch: 'vamp' }, { w: 'fan' }], enemies: [{ x: 500, kind: 'ground' }], px: 200, hpMul: 4 }); G.player.hp = 50;
+  sim.aim(500, 296).tap().run(2.6);
+  check('Vampiro: el orbe vuelve y cura más de lo que costó', G.player.hp > 50, `vida ${G.player.hp}`);
+  // Vampiro · Drenar
+  sim.setup({ slots: [{ w: 'blood', arch: 'vamp', ups: { drain: true } }, { w: 'fan' }], enemies: [{ x: 420, kind: 'ground' }], px: 200, hpMul: 4 }); G.player.hp = 50;
+  sim.aim(420, 296).press().run(2).release();
+  check('Vampiro · Drenar: chupa vida', G.player.hp > 55 && sim.dmg() > 40, `vida ${G.player.hp}, daño ${sim.dmg()}`);
+  // Mártir: con poca vida, todas tus armas pegan más
+  const fanAt = hp => { sim.setup({ slots: [{ w: 'blood', arch: 'martyr' }, { w: 'fan' }], enemies: [{ x: 420, kind: 'ground' }], px: 200, hpMul: 6 }); G.player.hp = hp; sim.swap(1).aim(420, 296).tap().run(0.6); return sim.dmg(); };
+  const lo = fanAt(10), hi = fanAt(100);
+  check('Mártir: con 10 de vida el Abanico pega mucho más', lo > hi * 1.4, `${lo} vs ${hi}`);
+  // Mártir · Último aliento
+  sim.setup({ slots: [{ w: 'blood', arch: 'martyr', ups: { breath: true } }, { w: 'fan' }], enemies: near(300, 2), px: 200 }); G.player.hp = 5; sim.sb.hurtPlayer(20);
+  check('Mártir · Último aliento: te deja a 1 y suelta la nova', G.player.hp === 1 && sim.dmg() > 50, `vida ${G.player.hp}, daño ${sim.dmg()}`);
+}
 check.done();
 function GROUND_Y() { return 340; }

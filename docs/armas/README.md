@@ -42,6 +42,7 @@ los expresa. Árbol completo hoy en las seis armas.
 | Tótem de cristal | `totem` | torreta plantada; copia tus golpes, dispara o provoca | [totem.md](totem.md) |
 | Espejo | `mirror` | desvía tus proyectiles y el Rayo hacia los enemigos; lupa; portales | [espejo.md](espejo.md) |
 | Acumulador | `volt` | se carga con los golpes de la otra arma y descarga | [acumulador.md](acumulador.md) |
+| Pacto de sangre | `blood` | pagas vida por daño; sangrado, vampiro, mártir | [pacto.md](pacto.md) |
 
 Armas 7+ (2026-10-20, hechas sin el usuario, **sin probar**): dibujo en `fx-armas2.js`, pruebas dirigidas en
 `tools/test-armas2.cjs` (usa `tools/sim.cjs`, que carga la jugable en Node para medir lo que hace un arma).

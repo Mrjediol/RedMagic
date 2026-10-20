@@ -94,7 +94,7 @@ function makeEnemy(sp) {
   return { sp, kind: sp.kind, fly, x: sp.x, y: fly ? sp.y : GROUND - 44, homeY: fly ? sp.y : GROUND - 44, vx: 0, vy: 0, dir: 1,
            rx: fly ? 22 : 27, ry: fly ? 28 : 39, hp: 120 * (G.settings.hpMul || 1), hpMax: 120 * (G.settings.hpMul || 1), markN: 0, dead: false, deadT: 0, flashT: 0, sqT: 0, shakeT: 0,
            freeze: 0, frozenT: 0, burnT: 0, burnTick: 0, markT: 0, stunT: 0, pull: null, slammed: false, lastHitT: -9, atkT: 2 + Math.random() * 2,
-           timeK: 1, stasis: null, vulnT: 0, vulnK: 1, launchT: 0, launchHit: null, vpull: null, slamT: 0, litT: 0, infest: 0 };
+           timeK: 1, stasis: null, vulnT: 0, vulnK: 1, launchT: 0, launchHit: null, vpull: null, slamT: 0, litT: 0, infest: 0, bleedN: 0, bleedT: 0 };
 }
 function resetEnemies() { G.enemies = SPAWNS.map(makeEnemy); }
 const alive = () => G.enemies.filter(e => !e.dead);
@@ -211,7 +211,15 @@ function enemyShot(e) {
       if (this.friendly || this.captured) { glow(ctx, this.x, this.y, 16, [150, 100, 255], 0.7); disc(ctx, this.x, this.y, 5, '#8a5cff', 1, layer); disc(ctx, this.x, this.y, 2.4, '#fff', 1, layer); }
       else { glow(ctx, this.x, this.y, 16, [255, 80, 80], 0.6); disc(ctx, this.x, this.y, 5, '#ff6a6a', 1, layer); disc(ctx, this.x, this.y, 2.4, '#fff', 1, layer); } } });
 }
-function hurtPlayer(d) { const p = G.player; if (p.hurtT > 0) return; if (p.shield > 0) { const b = Math.min(p.shield, d); p.shield -= b; d -= b; } p.hp = Math.max(0, p.hp - d); p.hurtT = 0.5; G.shake += 4; text(p.x, p.y - 90, '-' + d, '#ff6a6a'); if (p.hp <= 0) p.hp = p.hpMax; }
+function hurtPlayer(d) {
+  const p = G.player; if (p.hurtT > 0) return;
+  if (p.shield > 0) { const b = Math.min(p.shield, d); p.shield -= b; d -= b; }
+  const eq = G.slots.slice(0, G.slotCount);
+  if (p.hp - d <= 0) for (const s of eq) if (s.inst && s.inst.onLethal && s.inst.onLethal()) { d = p.hp - 1; break; }   // Pacto · Último aliento
+  p.hp = Math.max(0, p.hp - d); p.hurtT = 0.5; G.shake += 4; text(p.x, p.y - 90, '-' + d, '#ff6a6a');
+  for (const s of eq) if (s.inst && s.inst.onHurt) s.inst.onHurt(d);   // armas que reaccionan a que te peguen (Pacto · Penitencia)
+  if (p.hp <= 0) p.hp = p.hpMax;
+}
 function healPlayer(d) { const p = G.player; const before = p.hp; if (tier('life') >= 3 && p.hp + d > p.hpMax) p.shield = Math.min(30, (p.shield || 0) + p.hp + d - p.hpMax); p.hp = Math.min(p.hpMax, p.hp + d); if (p.hp > before + 0.5) { p.aura = PAL.life.g1; p.auraT = 0.4; } return p.hp - before; }
 
 // ---------------------------------------------------------------- daño, estados y reacciones
@@ -228,6 +236,7 @@ function damage(e, o) {
     if (tier('fire') >= 1) dmg *= it.fire2Damage;
     if (hasItem('sharp')) dmg *= it.sharpMul;
     if (hasItem('espadaO')) dmg *= 1.2;
+    for (const s of G.slots.slice(0, G.slotCount)) if (s.inst && s.inst.outMul) dmg *= s.inst.outMul(e, o);   // armas que potencian todos tus golpes (Pacto · Mártir)
     const iced = e.freeze > 0 || e.frozenT > 0;
     if (iced && hasItem('grimorio')) dmg *= it.grimorioMul;
     if (iced && hasItem('anillo')) dmg += e.hpMax * it.anilloPct;

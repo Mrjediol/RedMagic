@@ -364,3 +364,27 @@ function skyBolt(ctx, t, layer, t0, x, pal, sc = 1) {
   if (layer === 'front') { const R = rand(Math.floor(t * 20) + Math.floor(x)); bolt(ctx, x + (R() - 0.5) * 30, -20, x, GROUND, 12, R, 4.2 * sc * (1 - u * 0.7), pal, 1 - u, layer, 0.18); bolt(ctx, x, GROUND - 120, x + (R() - 0.5) * 80, GROUND - 40, 5, R, 1.6 * sc, pal, (1 - u) * 0.8, layer, 0.4); glow(ctx, x, GROUND - 30, 120 * sc, pal.g1, 0.7 * (1 - u)); }
   groundImpact(ctx, t, layer, t0, x, 1.1 * sc, pal, { seed: Math.floor(x), debris: true });
 }
+
+// ---------------------------------------------------------------- Pacto de sangre (g-pacto.js)
+// orbe de sangre: esfera oscura con brillo, gotas que se quedan atrás
+function bloodOrb(ctx, t, layer, x, y, ang, sc, pal, a, trail) {
+  if (a <= 0) return;
+  if (layer === 'back') { if (trail && trail.length > 1) { ribbon(ctx, trail, s => 10 * sc * (1 - s), pal.dark, 0.6 * a, layer); ribbon(ctx, trail, s => 5 * sc * (1 - s), pal.deep, 0.8 * a, layer); } return; }
+  glow(ctx, x, y, 30 * sc, pal.g1, 0.55 * a);
+  drop(ctx, x, y, ang, 26 * sc, 9 * sc, pal.deep, a, layer);
+  disc(ctx, x, y, 8 * sc, pal.mid, a, layer); disc(ctx, x - 2 * sc, y - 2 * sc, 3.4 * sc, pal.light, a, layer); disc(ctx, x - 2.6 * sc, y - 2.6 * sc, 1.4 * sc, pal.core, a, layer);
+}
+// sangrado: gotas que caen del enemigo, más con más cargas
+function bleedDrops(ctx, t, layer, e, n, pal) {
+  if (layer !== 'front' || n <= 0) return;
+  const R = rand(Math.floor(e.sp.x));
+  for (let i = 0; i < n * 2; i++) { const ph = (t * (0.9 + R() * 0.5) + R()) % 1, ox = (R() - 0.5) * e.rx * 1.4; drop(ctx, e.x + ox, e.y - e.ry * 0.3 + ph * e.ry * 1.4, Math.PI / 2, 6 + R() * 4, 2.2, i % 2 ? pal.mid : pal.deep, 1 - ph, layer); }
+  ctx.font = '700 10px system-ui'; ctx.fillStyle = pal.light; ctx.textAlign = 'center'; ctx.fillText('🩸' + n, e.x - 16, e.y - e.ry - 10); ctx.textAlign = 'left';
+}
+// nova de sangre: aro rojo con púas hacia fuera
+function bloodNova(ctx, t, layer, t0, x, y, r, pal) {
+  const u = seg(t, t0, t0 + 0.4); if (u >= 1) return;
+  shockRing(ctx, t, layer, t0, x, y, r, pal);
+  const R = rand(Math.floor(x)), rr = r * easeOut(u);
+  for (let i = 0; i < 14; i++) { const a = i / 14 * TAU + R() * 0.2, lay = Math.sin(a) < 0 ? 'back' : 'front'; if (lay !== layer) continue; const l = 18 + R() * 20; shard(ctx, x + Math.cos(a) * (rr + l), y + Math.sin(a) * (rr + l) * 0.8, x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.8, 7, i % 2 ? pal.mid : pal.deep, 1 - u, layer); }
+}

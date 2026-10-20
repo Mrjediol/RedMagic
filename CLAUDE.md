@@ -91,6 +91,7 @@ There is no separate build/lint/test CLI — everything goes through the Unity E
 | Camera | `docs/architecture/camera.md` |
 | Weapons, items, builds, synergies | `docs/architecture/weapons-items.md` |
 | New weapons designed in the web (clips + playable prototype), their specs, port to Unity | `docs/armas/README.md` (read FIRST; update the weapon's ficha in the same session) |
+| Enemies designed in the web first (behaviour before art: playable prototype, fichas, port) | `docs/enemigos-diseno/README.md` (read FIRST; same rules as weapons) |
 | Legacy code | `docs/architecture/legacy.md` |
 | Bosses, Boss Creator | `docs/architecture/bosses.md` |
 | Currency, shop, reroll | `docs/architecture/economy.md` |

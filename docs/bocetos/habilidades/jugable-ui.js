@@ -3,10 +3,11 @@
 'use strict';
 const UI = {};
 (function () {
-  const KEY = 'hab.jugable.v4';                              // v4: el navegador guarda sólo los ajustes cambiados a mano
+  const PAGE = window.JUGABLE_PAGE || {};                   // otra página que reutiliza este panel (enemigos/jugable.html): su guardado, armas de inicio, sin «Dificultad»
+  const KEY = PAGE.key || 'hab.jugable.v4';                 // v4: el navegador guarda sólo los ajustes cambiados a mano
   const store = { load() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } },
                   save() { try { localStorage.setItem(KEY, JSON.stringify(snapshot(true))); } catch (e) { /* sin almacenamiento */ } } };
-  const DEFAULT_SLOTS = ['fan', 'star', 'sing'];
+  const DEFAULT_SLOTS = PAGE.slots || ['fan', 'star', 'sing'];
   const offers = {};                                         // ofertas abiertas por hueco (sorteo de subida de nivel)
   let chestOffer = null;
   // diff = sólo los ajustes que difieren del valor por defecto del código (así un cambio de valor por defecto llega al navegador)
@@ -86,10 +87,12 @@ const UI = {};
     panel.append(bc);
     // ---- dificultad
     const dif = el('div', { className: 'card' }, el('h3', {}, 'Dificultad'));
-    const hv = el('span', {}, '×' + G.settings.hpMul.toFixed(2));
-    dif.append(el('label', {}, 'Vida de los enemigos', el('input', { type: 'range', min: 0.5, max: 4, step: 0.25, value: G.settings.hpMul, on: { input: e => { G.settings.hpMul = +e.target.value; hv.textContent = '×' + G.settings.hpMul.toFixed(2); }, change: () => { resetEnemies(); store.save(); } } }), hv));
-    dif.append(el('label', {}, el('input', { type: 'checkbox', checked: !!G.settings.enemyAttacks, on: { change: e => { G.settings.enemyAttacks = e.target.checked; store.save(); } } }), 'Los enemigos disparan'));
-    panel.append(dif);
+    if (!PAGE.noDifficulty) {
+      const hv = el('span', {}, '×' + G.settings.hpMul.toFixed(2));
+      dif.append(el('label', {}, 'Vida de los enemigos', el('input', { type: 'range', min: 0.5, max: 4, step: 0.25, value: G.settings.hpMul, on: { input: e => { G.settings.hpMul = +e.target.value; hv.textContent = '×' + G.settings.hpMul.toFixed(2); }, change: () => { resetEnemies(); store.save(); } } }), hv));
+      dif.append(el('label', {}, el('input', { type: 'checkbox', checked: !!G.settings.enemyAttacks, on: { change: e => { G.settings.enemyAttacks = e.target.checked; store.save(); } } }), 'Los enemigos disparan'));
+      panel.append(dif);
+    }
     // ---- opciones
     const opts = el('div', { className: 'card' }, el('h3', {}, 'Opciones'));
     const tog = (k, txt) => opts.append(el('label', {}, el('input', { type: 'checkbox', checked: !!G.settings[k], on: { change: e => { G.settings[k] = e.target.checked; if (k === 'sound' && e.target.checked) audioInit(); store.save(); } } }), txt));

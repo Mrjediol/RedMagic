@@ -1,0 +1,112 @@
+// tools/test.cjs — prueba sin navegador de la jugable de enemigos: carga jugable.html en un `vm` con un canvas falso.
+// Uso: node docs/bocetos/enemigos/tools/test.cjs [id de enemigo]
+//  1. Duelo contra un player QUIETO (cada enemigo tiene que pasar por todos sus movimientos y llegar a hacer daño).
+//  2. Duelo y encuentros contra un bot que se mueve, salta, hace dash y dispara (sin errores ni NaN; cuánto tarda y cuánto recibe).
+//  3. Casos dirigidos: el Embestidor se estampa contra la pared, el Fatuo daña a otros enemigos, el escudo del Caparazón tapa.
+const fs = require('fs'), path = require('path'), vm = require('vm');
+const dir = path.join(__dirname, '..');
+const html = fs.readFileSync(path.join(dir, 'jugable.html'), 'utf8');
+const files = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]).filter(f => !/(^|\/)(ui|jugable-ui)\.js$/.test(f));
+let nan = 0;
+const ctx = new Proxy({}, { get(_, k) {
+  if (k === 'createRadialGradient' || k === 'createLinearGradient') return () => ({ addColorStop() {} });
+  if (k === 'measureText') return () => ({ width: 10 });
+  return (...a) => { if (a.some(x => typeof x === 'number' && !isFinite(x))) nan++; };
+}, set() { return true; } });
+let seed = 1; const M = Object.create(Math); M.random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const sb = { console, Math: M, performance: { now: () => 1000 }, window: {}, document: { getElementById: () => ({}) }, setTimeout: () => 0, setInterval: () => 0, UI: {} };
+vm.createContext(sb);
+for (const f of files) vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), sb, { filename: f });
+vm.runInContext('this.__api = { G, FOES, WEAPONS, ENCOUNTERS, step, render, makePlayer, startEncounter, duelEncounter, aimInfo, alive, FT, spawnFoe, damage };', sb);
+const A = sb.__api, G = A.G, dt = 1 / 60;
+let bad = 0, n = 0;
+const check = (name, ok, info = '') => { n++; if (!ok) bad++; console.log(`${ok ? 'ok  ' : 'MAL '} ${name}${info !== '' ? ' — ' + info : ''}`); };
+
+function setup(enc, o = {}) {
+  seed = o.seed || 12345; G.t = 0; G.ents = []; G.texts = []; G.dmgTotal = 0; G.dmgLog = []; G.timeScale = 1; G.hitStop = 0; G.decoys = []; G.empower = 0;
+  G.settings.sound = false; G.build = { items: {} };
+  Object.assign(G.es, { harmless: false, frozenAI: false, dashIframes: true, dmgMul: 1, hpMul: o.hpMul || 1, maxAttackers: 3, respawn: false, showStates: false });
+  G.player = A.makePlayer();
+  G.cur = 0; const sl = o.slots || [{ w: 'fan' }, { w: 'star' }]; G.slotCount = sl.length;
+  G.slots = sl.map(s => ({ w: s.w, arch: s.arch || null, ups: s.ups || {} })); G.slots.forEach(s => s.inst = A.WEAPONS[s.w].create(s));
+  G.mouse.down = false; G._visits = {}; nan = 0;
+  A.startEncounter(enc);
+  if (o.px !== undefined) G.player.x = o.px;
+}
+function run(secs, each) {
+  const steps = Math.round(secs / dt);
+  for (let i = 0; i < steps; i++) {
+    if (each) each(i * dt);
+    try { A.step(dt); A.render(ctx); } catch (e) { return e; }
+    if (G.fight.tEnd) break;
+  }
+  return null;
+}
+// bot: se mantiene a media distancia del más cercano, salta y hace dash de vez en cuando, dispara a ráfagas
+function bot() {
+  const p = G.player, foes = A.alive().filter(e => e.def);
+  let tgt = null, bd = 1e9; for (const e of foes) { const d = Math.abs(e.x - p.x); if (d < bd) { bd = d; tgt = e; } }
+  G.keys = {};
+  if (tgt) {
+    const dx = tgt.x - p.x;
+    if (Math.abs(dx) > 320) G.keys[dx > 0 ? 'KeyD' : 'KeyA'] = true; else if (Math.abs(dx) < 140) G.keys[dx > 0 ? 'KeyA' : 'KeyD'] = true;
+    G.mouse.x = tgt.x; G.mouse.y = tgt.y;
+  }
+  const r = Math.random();
+  if (r < 0.012) sb.onKeyDown('KeyW'); else if (r < 0.018) sb.onKeyDown('ShiftLeft');
+  const fire = Math.floor(G.t / 0.35) % 2 === 0, s = G.slots[G.cur];
+  if (fire && !G.mouse.down) { G.mouse.down = true; s.inst.onPress && s.inst.onPress(A.aimInfo()); }
+  else if (!fire && G.mouse.down) { G.mouse.down = false; s.inst.onRelease && s.inst.onRelease(A.aimInfo()); }
+  if (Math.random() < 0.004) sb.onKeyDown('KeyQ');
+}
+const NEED = { charger: ['chargeW', 'charge'], stalker: ['crouch', 'leap', 'land'], mortar: ['aim', 'fire'], weaver: ['aim', 'shot'], shell: ['quakeW', 'quake'],
+  hive: ['birthW'], drone: ['diveW', 'dive'], wisp: ['fuse'], burrower: ['under', 'emergeW', 'emerge', 'spitW', 'digW'] };
+const only = process.argv[2];
+const types = Object.keys(A.FOES).filter(t => !only || t === only);
+
+console.log('— 1. duelo contra un player quieto (30 s, sin morir: vida infinita)');
+for (const t of types) {
+  setup(A.duelEncounter(t, t === 'drone' ? 3 : 1));
+  const err = run(30, () => { G.player.hp = G.player.hpMax; G.keys = {}; });
+  const vis = Object.keys(G._visits[t] || {}), miss = (NEED[t] || []).filter(s => !vis.includes(s));
+  check(`${t}: sin errores`, !err, err ? err.stack.split('\n').slice(0, 3).join(' | ') : '');
+  check(`${t}: pasa por todos sus movimientos`, !miss.length, miss.length ? 'faltan ' + miss.join(', ') : vis.join(' '));
+  check(`${t}: hace daño a un player quieto`, G.fight.dmgTaken > 0, `${G.fight.dmgTaken} en 30 s · ` + Object.entries(G.fight.hits).map(([k, h]) => `${k.split(' · ')[1]} ${h.dmg}/${h.n}×`).join(', '));
+  check(`${t}: sin NaN al dibujar`, nan === 0, nan ? nan + ' llamadas' : '');
+}
+
+console.log('— 2. contra un bot que se mueve y dispara (Abanico + Golpe estelar, máx. 60 s)');
+const encs = [...types.map(t => A.duelEncounter(t, t === 'drone' ? 4 : 1)), ...(only ? [] : A.ENCOUNTERS)];
+for (const enc of encs) {
+  setup(enc);
+  const err = run(60, () => { G.player.hp = Math.max(G.player.hp, 1); bot(); });
+  const F = G.fight;
+  check(`${enc.name}: sin errores ni NaN`, !err && nan === 0, err ? err.stack.split('\n').slice(0, 3).join(' | ') : nan ? nan + ' NaN' : '');
+  console.log(`      ${F.tEnd ? 'despejado en ' + (F.tEnd - F.t0).toFixed(1) + ' s' : 'sin despejar (quedan ' + A.alive().filter(e => e.def).length + ')'} · recibe ${F.dmgTaken} · esquivas ${F.dodges} · interrupciones ${F.interrupts} · bajas ${F.kills}`);
+}
+
+if (!only) {
+  console.log('— 3. casos dirigidos');
+  // el Embestidor carga hacia el player pegado a la pared izquierda, le pasa y se estampa
+  setup({ id: 't', name: 'pared', list: [{ type: 'charger', x: 700 }] }, { px: 90 });
+  G.es.harmless = true; run(12, () => { G.keys = {}; });
+  check('Embestidor: se estampa contra la pared', !!(G._visits.charger || {}).crash, Object.keys(G._visits.charger || {}).join(' '));
+  // el Fatuo que revienta hace daño a los otros enemigos
+  setup({ id: 't', name: 'bomba', list: [{ type: 'wisp', x: 300, y: 260 }, { type: 'shell', x: 330 }] }, { px: 250 });
+  G.es.harmless = true; const sh = G.enemies[1], hp0 = sh.hp;
+  run(4, () => { G.keys = {}; });
+  check('Fatuo: su explosión daña a otros enemigos', sh.hp < hp0, `Caparazón ${Math.round(hp0)} → ${Math.round(sh.hp)}`);
+  // escudo del Caparazón: de frente tapa, por la espalda no, golpe fuerte rompe la guardia
+  setup({ id: 't', name: 'escudo', list: [{ type: 'shell', x: 600 }] }, { px: 400 });
+  G.es.frozenAI = true; const s2 = G.enemies[0]; s2.face = -1;
+  const front = A.damage(s2, { dmg: 20, kx: 100 }), back = A.damage(s2, { dmg: 20, kx: -100 });
+  check('Caparazón: de frente ×0,15, de espalda completo', front < 5 && back >= 19, `frente ${front.toFixed(1)} · espalda ${back.toFixed(1)}`);
+  A.damage(s2, { dmg: 20, kx: 100, heavy: true });
+  check('Caparazón: golpe fuerte de frente rompe la guardia', s2.brokenT > G.t);
+  // interrumpir: mucho daño mientras prepara cancela el ataque
+  setup({ id: 't', name: 'aguante', list: [{ type: 'stalker', x: 500 }] }, { px: 300 });
+  let interrupted = false; run(6, () => { G.player.hp = G.player.hpMax; G.keys = {}; const e = G.enemies[0]; if (e.phase === 'windup' && !interrupted) { A.damage(e, { dmg: 30, kx: 10 }); interrupted = G.fight.interrupts > 0; } });
+  check('Aguante: daño al preparar = interrumpido', interrupted);
+}
+console.log(bad ? `${bad} de ${n} mal` : `todo ok (${n})`);
+if (bad) process.exitCode = 1;

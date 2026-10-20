@@ -12,7 +12,9 @@ module.exports = function makeSim(dir = path.join(__dirname, '..')) {
     if (k === 'measureText') return () => ({ width: 10 });
     return (...a) => { if (a.some(x => typeof x === 'number' && !isFinite(x))) nan++; };
   }, set() { return true; } });
-  const sb = { console, Math, performance: { now: () => 1000 }, window: {}, document: { getElementById: () => ({}) }, setTimeout: () => 0, UI: {} };
+  // Math.random con semilla: cada setup() vuelve a la misma secuencia → comparaciones justas entre dos configuraciones
+  let seed = 1; const M = Object.create(Math); M.random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const sb = { console, Math: M, performance: { now: () => 1000 }, window: {}, document: { getElementById: () => ({}) }, setTimeout: () => 0, UI: {} };
   vm.createContext(sb);
   for (const f of files) vm.runInContext(fs.readFileSync(path.join(dir, f), 'utf8'), sb, { filename: f });
   vm.runInContext('this.__api = { G, WEAPONS, ITEMS, step, render, makePlayer, resetEnemies, makeEnemy, aimInfo, selectSlot, alive, T };', sb);
@@ -20,7 +22,7 @@ module.exports = function makeSim(dir = path.join(__dirname, '..')) {
   const sim = {
     G, api: A, sb,
     setup(o = {}) {
-      G.t = 0; G.ents = []; G.texts = []; G.dmgTotal = 0; G.dmgLog = []; G.lastSwap = -9; G.swapBuff = -9; G.quickUntil = 0; G.timeScale = 1; G.hitStop = 0; G.decoys = []; G.empower = 0;
+      seed = o.seed || 12345; G.t = 0; G.ents = []; G.texts = []; G.dmgTotal = 0; G.dmgLog = []; G.lastSwap = -9; G.swapBuff = -9; G.quickUntil = 0; G.timeScale = 1; G.hitStop = 0; G.decoys = []; G.empower = 0;
       G.settings.sound = false; G.settings.enemyAttacks = !!o.enemyAttacks; G.settings.hpMul = o.hpMul || 1;
       G.build = { items: Object.fromEntries((o.items || []).map(i => [i, true])) };
       G.player = A.makePlayer(); if (o.px) G.player.x = o.px;

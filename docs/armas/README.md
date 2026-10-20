@@ -34,6 +34,10 @@ los expresa. Árbol completo hoy en las seis armas.
 | Media luna | `moon` | bumerán, golpea a la ida y a la vuelta | [media-luna.md](media-luna.md) |
 | Semilla estelar | `seed` | mina lanzada en parábola | [semilla.md](semilla.md) |
 | Golpe estelar | `star` | lanza del cielo diferida | [golpe-estelar.md](golpe-estelar.md) |
+| Reloj de arena | `time` | burbuja de tiempo; potencia a la otra arma | [reloj.md](reloj.md) |
+
+Armas 7+ (2026-10-20, hechas sin el usuario, **sin probar**): dibujo en `fx-armas2.js`, pruebas dirigidas en
+`tools/test-armas2.cjs` (usa `tools/sim.cjs`, que carga la jugable en Node para medir lo que hace un arma).
 
 ## Reglas comunes de la versión jugable (las que valen para todas las armas)
 
@@ -50,6 +54,16 @@ los expresa. Árbol completo hoy en las seis armas.
   + fuego = **deshielo** (daño ×2, quita el hielo); quemado + hielo = **vapor** (explosión pequeña que aturde).
 - **Captura** (regla genérica de la Singularidad): todo proyectil del player marcado `capturable` que vuela cerca queda
   orbitando y sale despedido al colapsar con todos sus efectos. Hoy: esquirlas del Abanico.
+- **Efectos «al golpear» de cualquier arma** (2026-10-20): una instancia de arma puede tener `onAnyHit(e, o, dmg)` y
+  `onAnyKill(e, o)`; el motor los llama para **todas** las armas equipadas (también la que no está en la mano) en cada golpe de
+  arma. Los golpes que nacen de otro golpe (ecos, rayos del pararrayos, cadenas…) llevan `proc: true` y no vuelven a disparar
+  estos efectos → nunca hay bucles. Así se hacen las mejoras que funcionan con el arma guardada (Reloj · Eco…).
+- **Tiempo propio del enemigo** (`e.timeK`, lo pone cada frame quien lo ralentiza; 0 = parado): andar, empujones, gravedad,
+  ataques, quemadura y congelación van a ese ritmo. Las balas enemigas igual. **Estasis** (`e.stasis`): el daño se guarda y
+  no puede morir hasta que se suelta (`o.release`).
+- **Vulnerable** (`makeVuln(e, k, s)`): recibe ×k de todo durante s (anillo rosa que late). **Aturdido** (`stunT`): estrellitas.
+- **Lanzado** (`o.launch` = s): un enemigo lanzado que choca a velocidad con otro hace daño a los dos (`impactDmg` +
+  `impactPerSpeed` × velocidad; golpe fuerte si va rápido → contra un congelado, añicos). Con `o.pins`, bolos.
 - **Marcas**: con el Golpe estelar en evolución **Cazador** equipado, los golpes de las otras armas marcan (8 s); el Golpe
   estelar cae sobre los marcados sin apuntar. Con Acumulación se apilan hasta 3 (una por ataque).
 - **Build** (como el juego): 6 items, cada uno con una etiqueta elemental (Hielo / Fuego / Oro) y una universal (Tanque / Prisa /
@@ -130,6 +144,8 @@ Ajustes (`G.tuning.items`):
 | `shatterSplash` | 15 | 0 – 80 (paso 1) | Añicos: daño alrededor |
 | `vaporDmg` | 25 | 0 – 100 (paso 1) | Vapor: daño |
 | `vaporRadius` | 70 | 0 – 200 (paso 1) | Vapor: radio |
+| `impactDmg` | 10 | 0 – 80 (paso 1) | Lanzado: daño base del choque |
+| `impactPerSpeed` | 0.035 | 0 – 0.2 (paso 0.005) | Lanzado: + daño por px/s de velocidad |
 <!-- /gen:react -->
 
 ## Cómo se pasa un arma a Unity (cuando el usuario la apruebe)

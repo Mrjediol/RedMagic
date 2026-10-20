@@ -19,6 +19,11 @@ const PAL = {
   gold: { core: '#fffbe8', light: '#ffe9a0', mid: '#ffc93c', deep: '#d48a0c', dark: '#7a4a06', g1: [255, 160, 30], g2: [255, 232, 150] },
   life: { core: '#fff0f3', light: '#ffb3c4', mid: '#ff5a7e', deep: '#c81e4a', dark: '#6a0f2a', g1: [255, 50, 100], g2: [255, 170, 195] },
   void: { core: '#ffffff', light: '#cdbcff', mid: '#8a5cff', deep: '#3a1c9c', dark: '#0d0626', g1: [120, 60, 255], g2: [180, 140, 255] },
+  // armas 7+ (2026-10-20): tiempo (Reloj), viento (Ráfaga), luz cálida (Enjambre), tormenta (Jabalina · Pararrayos)
+  chrono: { core: '#ffffff', light: '#d2fff1', mid: '#5ef0c8', deep: '#14a593', dark: '#0d4a5a', g1: [40, 220, 180], g2: [190, 255, 235] },
+  wind: { core: '#ffffff', light: '#eef6ff', mid: '#bcd6ef', deep: '#7393bd', dark: '#3d527c', g1: [160, 195, 240], g2: [230, 242, 255] },
+  ember: { core: '#fffbea', light: '#fff0a8', mid: '#ffd84a', deep: '#f08a1c', dark: '#6e3a0a', g1: [255, 200, 60], g2: [255, 245, 170] },
+  storm: { core: '#ffffff', light: '#e9e4ff', mid: '#a99bff', deep: '#5b48e0', dark: '#241a6e', g1: [140, 120, 255], g2: [215, 210, 255] },
 };
 const C = { player: '#e07a3c', playerDark: '#8a4520', enemy: '#6a3a5c', enemyDark: '#42243a', eye: '#ffd34d' };
 

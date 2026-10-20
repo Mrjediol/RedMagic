@@ -43,10 +43,12 @@ function updatePlayer(dt) {
   const p = G.player, k = G.keys;
   const left = k.KeyA || k.ArrowLeft, right = k.KeyD || k.ArrowRight;
   const want = (right ? 1 : 0) - (left ? 1 : 0);
+  const spd = p.speedMul || 1; p.speedMul = 1;               // lo pone cada frame quien acelera al player (Reloj, Corriente)
   p.face = G.mouse.x >= p.x ? 1 : -1;
+  if (p.blinkT > 0) { p.blinkT -= dt; }
   if (p.dashT > 0) { p.dashT -= dt; p.vx = p.dashDir * 620; p.vy = 0; }
   else {
-    const acc = p.onGround ? 2400 : 1500, max = 240;
+    const acc = (p.onGround ? 2400 : 1500) * spd, max = 240 * spd;
     if (want) p.vx = clamp(p.vx + want * acc * dt, -max, max);
     else { const f = (p.onGround ? 2600 : 600) * dt; p.vx = Math.abs(p.vx) <= f ? 0 : p.vx - Math.sign(p.vx) * f; }
     p.vy += GRAV * dt;
@@ -64,7 +66,7 @@ function updatePlayer(dt) {
 function onKeyDown(code) {
   const p = G.player;
   if (code === 'KeyW' || code === 'ArrowUp' || code === 'Space') {
-    if (p.onGround || p.jumps < 1) { if (!p.onGround) p.jumps++; p.vy = -560; p.onGround = false; dustPuff(p.x, p.y); }
+    if (p.onGround || p.jumps < 1) { if (!p.onGround) p.jumps++; p.vy = -560 * (G.t < (p.jumpUntil || 0) ? p.jumpMul : 1); p.onGround = false; dustPuff(p.x, p.y); }
   }
   if ((code === 'KeyS' || code === 'ArrowDown') && p.onGround && p.y < GROUND) { p.dropT = 0.25; p.y += 2; }
   if ((code === 'ShiftLeft' || code === 'ShiftRight') && p.dashCd <= 0) { p.dashT = 0.16; p.dashCd = 0.55; p.dashDir = (G.keys.KeyA || G.keys.ArrowLeft) ? -1 : (G.keys.KeyD || G.keys.ArrowRight) ? 1 : p.face; dustPuff(p.x, p.y); }
@@ -91,7 +93,8 @@ function makeEnemy(sp) {
   const fly = sp.kind === 'flyer';
   return { sp, kind: sp.kind, fly, x: sp.x, y: fly ? sp.y : GROUND - 44, homeY: fly ? sp.y : GROUND - 44, vx: 0, vy: 0, dir: 1,
            rx: fly ? 22 : 27, ry: fly ? 28 : 39, hp: 120 * (G.settings.hpMul || 1), hpMax: 120 * (G.settings.hpMul || 1), markN: 0, dead: false, deadT: 0, flashT: 0, sqT: 0, shakeT: 0,
-           freeze: 0, frozenT: 0, burnT: 0, burnTick: 0, markT: 0, stunT: 0, pull: null, slammed: false, lastHitT: -9, atkT: 2 + Math.random() * 2 };
+           freeze: 0, frozenT: 0, burnT: 0, burnTick: 0, markT: 0, stunT: 0, pull: null, slammed: false, lastHitT: -9, atkT: 2 + Math.random() * 2,
+           timeK: 1, stasis: null, vulnT: 0, vulnK: 1, launchT: 0, launchHit: null, vpull: null, slamT: 0 };
 }
 function resetEnemies() { G.enemies = SPAWNS.map(makeEnemy); }
 const alive = () => G.enemies.filter(e => !e.dead);
@@ -112,10 +115,14 @@ function nearestEnemy(x, y, maxD = 9999, skip) {
   for (const e of alive()) { if (skip && skip.has(e)) continue; const d = Math.hypot(e.x - x, e.y - y); if (d < bd) { bd = d; best = e; } }
   return best;
 }
-function updateEnemies(dt) {
+function updateEnemies(dt0) {
   for (const e of G.enemies) {
-    if (e.dead) { e.deadT += dt; if (e.deadT > 2.5) Object.assign(e, makeEnemy(e.sp)); continue; }
-    e.flashT -= dt; e.sqT -= dt; e.shakeT -= dt; e.markT -= dt; e.stunT -= dt;
+    if (e.dead) { e.deadT += dt0; if (e.deadT > 2.5) Object.assign(e, makeEnemy(e.sp)); continue; }
+    // tiempo propio del enemigo (Reloj: lo pone cada frame quien lo ralentiza; 0 = parado del todo)
+    const tk = e.timeK === undefined ? 1 : e.timeK, dt = dt0 * tk; e.timeK = 1; e.timeSlow = tk < 1;
+    if (tk === 0) { e.vx = 0; e.vy = 0; }
+    e.flashT -= dt0; e.sqT -= dt0; e.shakeT -= dt0; e.markT -= dt; e.stunT -= dt;
+    if (e.launchT > 0) { e.launchT -= dt; if (Math.abs(e.vx) > 220) launchCollide(e); }
     const frozen = e.frozenT > 0;
     if (frozen) { e.frozenT -= dt; if (e.frozenT <= 0) e.freeze = 0; }
     else e.freeze = Math.max(0, e.freeze - dt * 0.18);
@@ -146,12 +153,33 @@ function updateEnemies(dt) {
     if (G.settings.enemyAttacks && !frozen && e.stunT <= 0) { e.atkT -= dt; if (e.atkT <= 0) { e.atkT = 2.5 + Math.random() * 1.5; enemyShot(e); } }
   }
 }
+// Regla común «lanzado» (Ráfaga, Látigo · Garfio): un enemigo lanzado (golpe con `launch`) que choca a velocidad con otro
+// hace daño a los dos según la velocidad; si va rápido es golpe fuerte (estampar a uno contra un congelado = añicos). Con
+// `pins` el golpeado sale lanzado también (bolos).
+function launchCollide(e) {
+  const tr = T('react'), sp = Math.abs(e.vx);
+  for (const o of alive()) {
+    if (o === e || (e.launchHit && e.launchHit.has(o))) continue;
+    if (Math.pow((o.x - e.x) / (o.rx + e.rx), 2) + Math.pow((o.y - e.y) / (o.ry + e.ry), 2) >= 1) continue;
+    (e.launchHit = e.launchHit || new Set()).add(o);
+    const d = tr.impactDmg + sp * tr.impactPerSpeed, heavy = sp > 480, dir = Math.sign(e.vx);
+    const base = { dmg: d, heavy, slot: e.launchSlot, proc: true, shake: heavy ? 5 : 2, hitstop: heavy ? 0.04 : 0.015, color: '#e8f0ff' };
+    damage(o, Object.assign({}, base, { kx: e.vx * 0.6, launch: e.launchPins ? 0.5 : 0, pins: e.launchPins }));
+    damage(e, Object.assign({}, base, { kx: 0 }));
+    e.vx *= 0.45;
+    const ix = (o.x + e.x) / 2, iy = (o.y + e.y) / 2;
+    addFx(0.6, (ctx, layer, t0) => impact(ctx, G.t, layer, t0, ix, iy, heavy ? 0.7 : 0.45, PAL.wind || PAL.set, { dir: dir > 0 ? Math.PI : 0, spread: 2.6, seed: Math.floor(ix) }));
+    sfx(k => { const t = nowT(); vThump(t, 120, 50, 0.18 * k, heavy ? 0.6 : 0.35, 2); vNoise(t, 0.08 * k, 0.25, 'bandpass', 1800, 600, 1, { att: 0.002 }); });
+    text(ix, iy - 50, 'CHOQUE', '#e8f0ff', heavy);
+  }
+}
 function enemyShot(e) {
   const p = G.player, a = Math.atan2(p.y - 40 - e.y, p.x - e.x), sp = 220;
   // bala enemiga: capturable por la Singularidad con Escudo de vacío (hostile); al soltarla pasa a ser del player (friendly)
   G.ents.push({ kind: 'enemyShot', capturable: true, hostile: true, state: 'fly', x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 4,
     update(dt) {
       if (this.captured) return true;
+      dt *= this.timeK === undefined ? 1 : this.timeK; this.timeK = 1;          // Reloj: las balas también se ralentizan
       this.x += this.vx * dt; this.y += this.vy * dt; this.life -= dt;
       if (this.friendly) { const h = insideEnemy(this.x, this.y, 4); if (h) { damage(h, { dmg: this.dmg * (this.dmgMul || 1), slot: this.slot, kx: Math.sign(this.vx) * 80 }); return false; } }
       else { const p = G.player; if (Math.abs(this.x - p.x) < 14 && this.y > p.y - 70 && this.y < p.y) { hurtPlayer(8); return false; } }
@@ -166,13 +194,15 @@ function healPlayer(d) { const p = G.player; const before = p.hp; if (tier('life
 
 // ---------------------------------------------------------------- daño, estados y reacciones
 // o = { dmg, kx, ky (empujón), slot, heavy (golpe fuerte: rompe congelados), elem: 'ice'|'fire', freeze (0..1 que suma),
-//       burn (s), mark, hitstop, shake, color, silentFlash, noReact }
+//       burn (s), mark, hitstop, shake, color, silentFlash, noReact,
+//       proc (golpe nacido de otro golpe: no dispara los efectos «al golpear» de las armas → sin bucles),
+//       raw (daño ya multiplicado por la build: no se vuelve a multiplicar), launch (s lanzado: choca con otros), pins (bolos) }
 function damage(e, o) {
   if (!e || e.dead) return 0;
   let dmg = o.dmg || 0, label = null;
   const it = T('items');
   let gilded = false;
-  if (o.slot && !o.dot) {                                     // build sobre golpes de arma (no sobre daño continuo)
+  if (o.slot && !o.dot && !o.raw) {                           // build sobre golpes de arma (no sobre daño continuo)
     if (tier('fire') >= 1) dmg *= it.fire2Damage;
     if (hasItem('sharp')) dmg *= it.sharpMul;
     if (hasItem('espadaO')) dmg *= 1.2;
@@ -193,13 +223,16 @@ function damage(e, o) {
   else if (R && e.burnT > 0 && o.elem === 'ice') { e.burnT = 0; label = 'VAPOR'; vapor(e); }
   if (o.elem === 'ice' && o.freeze && !(label === 'AÑICOS')) { e.freeze = Math.min(1, e.freeze + o.freeze); if (e.freeze >= 1 && e.frozenT <= 0) { e.frozenT = T('react').frozenTime * (tier('ice') >= 3 ? 1.5 : 1); sfx(SFXLIB.freeze.bind(null, 1, 0.3)); } }
   if (o.burn && o.elem === 'fire' && label !== 'DESHIELO') { e.burnT = Math.max(e.burnT, o.burn); e.burnTick = Math.min(e.burnTick, 0.1); }
-  e.hp -= dmg; logDmg(dmg); e.lastHitT = G.t;
+  if (e.vulnT > G.t && dmg > 0) dmg *= e.vulnK || 1;          // vulnerable (Ráfaga · Tornado, Jabalina · Clavado…): recibe más de todo
+  if (o.launch && e.frozenT <= 0) { e.launchT = o.launch; e.launchHit = new Set(); e.launchSlot = o.slot; e.launchPins = o.pins; }
+  const banked = !!(e.stasis && !o.release);                  // Estasis (Reloj): el daño se guarda y llega todo junto al soltar
+  if (banked) { e.stasis.bank += dmg; e.lastHitT = G.t; } else { e.hp -= dmg; logDmg(dmg); e.lastHitT = G.t; }
   if (gilded) text(e.x - 14, e.y - e.ry - 30, 'ORO', '#ffc93c', true);
   if (o.slot && !o.dot && tier('life') >= 2 && dmg > 0) { G.lifeAcc = (G.lifeAcc || 0) + dmg * 0.1; if (G.lifeAcc >= 1) { const hv = Math.floor(G.lifeAcc); G.lifeAcc -= hv; healPlayer(hv); } }
   if (!o.silentFlash) { e.flashT = 0.12; e.sqT = 0.2; e.shakeT = 0.22; }
   if (e.frozenT <= 0) { e.vx += o.kx || 0; if (o.ky) { e.vy += o.ky; } }
   if (dmg > 0) {                                             // golpes pequeños seguidos se suman en un solo número
-    const colr = o.color || (o.elem === 'ice' ? '#bdf3ff' : o.elem === 'fire' ? '#ffb35a' : '#ffffff');
+    const colr = banked ? '#9fb4bc' : o.color || (o.elem === 'ice' ? '#bdf3ff' : o.elem === 'fire' ? '#ffb35a' : '#ffffff');
     if (dmg < 30 && e._txt && G.t - e._txt.t0 < 0.35 && G.texts.includes(e._txt)) { e._txt.v += dmg; e._txt.s = Math.round(e._txt.v) + ''; e._txt.t0 = G.t - 0.05; e._txt.big = e._txt.v >= 30; }
     else { text(e.x + (Math.random() - 0.5) * 20, e.y - e.ry - 12, Math.round(dmg) + '', colr, dmg >= 30); if (dmg < 30) { e._txt = G.texts[G.texts.length - 1]; e._txt.v = dmg; } }
   }
@@ -220,13 +253,19 @@ function damage(e, o) {
     if (hasItem('const')) { G.constHits = (G.constHits || 0) + 1; if (G.constHits >= it.constEvery) { G.constHits = 0; if (G.spawnMiniStrike) G.spawnMiniStrike(e); } }
     if (hasItem('void') && o.heavy) voidPulse(e.x, e.y);
   }
-  if (e.hp <= 0) {
+  // armas con efectos «al golpear» (también la que no llevas en la mano): Enjambre · Colmena, Látigo · Cadena, Reloj · Eco…
+  if (o.slot && !o.proc && !o.dot && dmg > 0) for (const s of G.slots.slice(0, G.slotCount)) if (s.inst && s.inst.onAnyHit) s.inst.onAnyHit(e, o, dmg);
+  if (e.hp <= 0 && !banked) {
     e.dead = true; e.deadT = 0; hitFx('die', e.x, e.y, e);
     onKillBuild(e, o);
     if (o.onKill) o.onKill(e);
+    killHooks(e, o);
   }
   return dmg;
 }
+function killHooks(e, o) { for (const s of G.slots.slice(0, G.slotCount)) if (s.inst && s.inst.onAnyKill) s.inst.onAnyKill(e, o); }
+// vulnerable: recibe ×k de todo durante s segundos (se queda con el mayor)
+function makeVuln(e, k, s) { if (e.vulnT > G.t && e.vulnK > k) return; e.vulnK = k; e.vulnT = G.t + s; }
 function damageArea(x, y, r, o, falloff = true) {
   const hit = [];
   for (const e of alive()) {
@@ -240,7 +279,12 @@ function damageArea(x, y, r, o, falloff = true) {
 }
 // daño directo (reacciones): resta, número y muerte
 function logDmg(d) { if (d > 0) { G.dmgLog.push({ t: G.t, d }); G.dmgTotal += d; } }
-function hurtEnemy(e, d, color, big) { if (e.dead) return; e.hp -= d; logDmg(d); e.lastHitT = G.t; text(e.x + 10, e.y - e.ry, Math.round(d) + '', color, big); if (e.hp <= 0) { e.dead = true; e.deadT = 0; hitFx('die', e.x, e.y, e); onKillBuild(e, {}); } }
+function hurtEnemy(e, d, color, big) {
+  if (e.dead) return;
+  if (e.stasis) { e.stasis.bank += d; e.lastHitT = G.t; text(e.x + 10, e.y - e.ry, Math.round(d) + '', '#9fb4bc', big); return; }
+  e.hp -= d; logDmg(d); e.lastHitT = G.t; text(e.x + 10, e.y - e.ry, Math.round(d) + '', color, big);
+  if (e.hp <= 0) { e.dead = true; e.deadT = 0; hitFx('die', e.x, e.y, e); onKillBuild(e, {}); killHooks(e, {}); }
+}
 // Reacción añicos: daño extra + fragmentos que dañan alrededor
 function shatter(e) {
   const tr = T('react');
@@ -255,9 +299,10 @@ function vapor(e) {
   hitFx('steam', e.x, e.y); sfx(k => { const t = nowT(); vNoise(t, 0.5 * k, 0.35, 'bandpass', 2500, 600, 0.6, { att: 0.005, wet: 0.3 }); vThump(t, 90, 40, 0.3 * k, 0.5, 2); });
 }
 // ajustes de las reacciones (sistema común, no de un arma)
-G.tuning.react = { frozenTime: 2.5, shatterDmg: 45, shatterRadius: 80, shatterSplash: 15, vaporDmg: 25, vaporRadius: 70 };
+G.tuning.react = { frozenTime: 2.5, shatterDmg: 45, shatterRadius: 80, shatterSplash: 15, vaporDmg: 25, vaporRadius: 70, impactDmg: 10, impactPerSpeed: 0.035 };
 const REACT_TUNING = { frozenTime: [2.5, 0.5, 6, 0.1, 'Congelado: duración (s)'], shatterDmg: [45, 0, 150, 1, 'Añicos: daño extra'], shatterRadius: [80, 0, 200, 1, 'Añicos: radio'],
-                       shatterSplash: [15, 0, 80, 1, 'Añicos: daño alrededor'], vaporDmg: [25, 0, 100, 1, 'Vapor: daño'], vaporRadius: [70, 0, 200, 1, 'Vapor: radio'] };
+                       shatterSplash: [15, 0, 80, 1, 'Añicos: daño alrededor'], vaporDmg: [25, 0, 100, 1, 'Vapor: daño'], vaporRadius: [70, 0, 200, 1, 'Vapor: radio'],
+                       impactDmg: [10, 0, 80, 1, 'Lanzado: daño base del choque'], impactPerSpeed: [0.035, 0, 0.2, 0.005, 'Lanzado: + daño por px/s de velocidad'] };
 
 // ---------------------------------------------------------------- build: items con 2 etiquetas y sinergias 2/4/6 (como el juego)
 // Igual que en Unity (BuildTag, SynergyConfig): cada item lleva UNA etiqueta elemental (Hielo, Fuego, Oro) y UNA universal
@@ -436,7 +481,7 @@ function step(dt) {
   G.t += dt;
   updatePlayer(dt);
   const s = G.slots[G.cur];
-  const rate = cdRate();
+  const rate = cdRate() * (G.t < (G.quickUntil || 0) ? G.quickK : 1);   // Reloj · Aceleración: tus recargas corren más
   for (const sl of G.slots.slice(0, G.slotCount)) if (sl.inst && sl.inst.update) sl.inst.update(dt * rate, sl === s);
   updateBuild(dt);
   if (G.mouse.down && s.inst && s.inst.onHold) s.inst.onHold(aimInfo(), dt);
@@ -481,6 +526,7 @@ function drawDummy(ctx, e, solid) {
   if (e.freeze > 0 && !fz) { ctx.globalAlpha = 0.45 * e.freeze; ctx.fillStyle = PAL.ice.light; ctx.beginPath(); ctx.ellipse(0, 2, rx, ry, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
   if (e.burnT > 0) { ctx.globalAlpha = 0.22 + 0.1 * Math.sin(G.t * 30); ctx.fillStyle = '#ff7a2e'; ctx.beginPath(); ctx.ellipse(0, 2, rx, ry, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
   if (suckK > 0) { ctx.globalAlpha = 0.32 * suckK; ctx.fillStyle = PAL.void.mid; ctx.beginPath(); ctx.ellipse(0, 2, rx, ry, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
+  if (e.stasis) { ctx.globalAlpha = 0.5; ctx.fillStyle = '#c9d6dc'; ctx.beginPath(); ctx.ellipse(0, 2, rx, ry, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
   if (solid) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(0, 2, rx, ry, 0, 0, TAU); ctx.fill(); }
   else if (e.flashT > 0) { ctx.globalAlpha = e.flashT / 0.12; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(-3, -2, rx - 4, ry - 4, 0, 0, TAU); ctx.fill(); ctx.globalAlpha = 1; }
   ctx.restore();
@@ -493,6 +539,15 @@ function drawDummy(ctx, e, solid) {
     ctx.restore();
     if (e.markN > 1) { ctx.font = '700 10px system-ui'; ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText('×' + e.markN, e.x + 13, y + 4); ctx.textAlign = 'left'; }
   }
+  if (e.stasis && e.stasis.bank > 0) {                       // Estasis: daño guardado
+    ctx.font = '800 13px system-ui'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.6)';
+    const s = '⏸ ' + Math.round(e.stasis.bank); ctx.strokeText(s, e.x, e.y - e.ry - 36); ctx.fillStyle = '#e6f3f6'; ctx.fillText(s, e.x, e.y - e.ry - 36); ctx.textAlign = 'left';
+  }
+  if (e.vulnT > G.t) {                                        // vulnerable: anillo roto que late
+    const a = Math.min(1, (e.vulnT - G.t) * 3) * (0.6 + 0.4 * Math.sin(G.t * 16));
+    ellArc(ctx, e.x, e.y, e.rx + 9, e.ry + 9, 0, TAU, 2, '#ff8fb0', a, 'front', { taper: 0, wob: 0.25, seed: e.sp.x, m: 24 });
+  }
+  if (e.stunT > 0) for (let i = 0; i < 3; i++) { const a = G.t * 5 + i * TAU / 3; star4(ctx, e.x + Math.cos(a) * 18, e.y - e.ry - 8 + Math.sin(a) * 5, 5, G.t * 4, '#fff3b0', Math.min(1, e.stunT * 4), 'front'); }
   // vida
   if (e.hp < e.hpMax && G.t - e.lastHitT < 3) {
     const w = 46, y = e.y + e.ry + 10; ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(e.x - w / 2, y, w, 5);

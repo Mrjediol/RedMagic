@@ -196,11 +196,18 @@ namespace RedMagic.Survival
         [Header("Tipo de oleada")]
         public SurvivalWaveMode waveMode = SurvivalWaveMode.Dynamic;
 
-        [Header("Cuántos enemigos por oleada (simples) · mezcla de tipos (dinámicas)")]
-        [Tooltip("Simples: cuántos salen de cada tipo. Dinámicas: la proporción entre tipos al elegir el siguiente que sale.")]
-        public SurvivalCount flyingCount = new SurvivalCount(3f, 1f, 30);
-        public SurvivalCount groundCount = new SurvivalCount(3f, 1f, 30);
-        public SurvivalCount turretCount = new SurvivalCount(1f, 0.25f, 8);
+        [Header("Proporción de tipos (los dos tipos de oleada)")]
+        [Tooltip("% de voladores. Los tres se reparten entre sí (no hace falta que sumen 100); un tipo sin enemigos en la " +
+                 "lista del mundo cede su parte a los otros.")]
+        [Min(0f)] public float flyingPercent = 80f;
+        [Tooltip("% de enemigos de suelo.")]
+        [Min(0f)] public float groundPercent = 15f;
+        [Tooltip("% de torretas.")]
+        [Min(0f)] public float turretPercent = 5f;
+
+        [Header("Oleadas simples: cuántos enemigos")]
+        [Tooltip("Total de la oleada (× mundo × dificultad), repartido con la proporción de arriba.")]
+        public SurvivalCount enemiesPerWave = new SurvivalCount(8f, 3f, 80);
 
         [Header("Ritmo de aparición")]
         [Tooltip("Segundos desde que empieza la oleada hasta el primer enemigo.")]
@@ -330,17 +337,14 @@ namespace RedMagic.Survival
             return rarityWeights != null && i < rarityWeights.Length ? Mathf.Max(0f, rarityWeights[i]) : 1f;
         }
 
-        public int CountFor(SurvivalSpawnKind kind, int wave, SurvivalStage stage)
+        /// <summary>El % de un tipo (sin normalizar: los tres se reparten entre sí).</summary>
+        public float KindPercent(SurvivalSpawnKind kind) => kind switch
         {
-            var count = kind switch
-            {
-                SurvivalSpawnKind.Flying => flyingCount,
-                SurvivalSpawnKind.Ground => groundCount,
-                SurvivalSpawnKind.Turret => turretCount,
-                _ => null,
-            };
-            return count != null ? count.At(wave, stage != null ? stage.countMultiplier : 1f) : 0;
-        }
+            SurvivalSpawnKind.Flying => flyingPercent,
+            SurvivalSpawnKind.Ground => groundPercent,
+            SurvivalSpawnKind.Turret => turretPercent,
+            _ => 0f,
+        };
 
         public SurvivalDifficultySettings Settings(SurvivalDifficulty difficulty) => difficulty switch
         {

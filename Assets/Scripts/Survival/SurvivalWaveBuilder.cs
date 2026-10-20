@@ -15,14 +15,16 @@ namespace RedMagic.Survival
     }
 
     /// <summary>
-    /// Decide qué sale en una oleada, sin tocar la escena: cuántos de cada tipo (<see cref="SurvivalConfig.CountFor"/>),
-    /// cuál de la lista del mundo por peso de rareza, y si sale como especial — sólo las especiales con dificultad ≤ la
-    /// de la oleada, con probabilidad <see cref="SurvivalConfig.specialChance"/>. El orden sale barajado.
+    /// Decide qué sale en una oleada, sin tocar la escena: de qué tipo (la proporción del config: 80 % voladores, 15 % suelo,
+    /// 5 % torretas…), cuál de la lista del mundo por peso de rareza, y si sale como especial — sólo las especiales con
+    /// dificultad ≤ la de la oleada, con probabilidad <see cref="SurvivalConfig.specialChance"/>. El orden sale barajado.
     /// </summary>
     public static class SurvivalWaveBuilder
     {
         private static readonly SurvivalSpawnKind[] Kinds = { SurvivalSpawnKind.Flying, SurvivalSpawnKind.Ground, SurvivalSpawnKind.Turret };
         private static readonly List<EnemyVariant> Allowed = new List<EnemyVariant>();
+        private static readonly int[] Split = new int[3];
+        private static readonly float[] Remainders = new float[3];
 
         /// <summary>Oleada simple (o la del jefe): la lista entera. <paramref name="countMultiplier"/> = el de la dificultad.</summary>
         public static List<SurvivalSpawnRequest> Build(SurvivalConfig config, int wave, System.Random rng, float countMultiplier = 1f)
@@ -39,16 +41,16 @@ namespace RedMagic.Survival
             }
 
             float difficulty = config.Difficulty(wave);
-            foreach (var kind in Kinds)
+            int total = Mathf.RoundToInt(config.enemiesPerWave.At(wave, stage.countMultiplier) * countMultiplier);
+            SplitByPercent(config, stage, total);
+            for (int k = 0; k < Kinds.Length; k++)
             {
-                var pool = stage.Pool(kind);
-                if (pool == null || pool.Count == 0) continue;
-                int count = Mathf.RoundToInt(config.CountFor(kind, wave, stage) * countMultiplier);
-                for (int i = 0; i < count; i++)
+                var pool = stage.Pool(Kinds[k]);
+                for (int i = 0; i < Split[k]; i++)
                 {
                     var entry = Pick(pool, config, rng);
                     if (entry == null) break;
-                    list.Add(new SurvivalSpawnRequest { kind = kind, prefab = entry.prefab, special = PickSpecial(entry, difficulty, config, rng) });
+                    list.Add(new SurvivalSpawnRequest { kind = Kinds[k], prefab = entry.prefab, special = PickSpecial(entry, difficulty, config, rng) });
                 }
             }
 
@@ -61,21 +63,46 @@ namespace RedMagic.Survival
         }
 
         /// <summary>
-        /// Oleada dinámica: el siguiente enemigo que sale. El tipo se sortea con los números de "cuántos por oleada" de esta
-        /// oleada como pesos (3 voladores, 3 de suelo y 1 torreta = 3:3:1); luego, como en las simples.
+        /// Reparte <paramref name="total"/> entre los tipos según su % (en <see cref="Split"/>): la parte entera de cada uno y
+        /// lo que sobra, a los de mayor resto. Así 20 enemigos al 80/15/5 son exactamente 16 / 3 / 1.
+        /// </summary>
+        private static void SplitByPercent(SurvivalConfig config, SurvivalStage stage, int total)
+        {
+            float sum = 0f;
+            for (int k = 0; k < Kinds.Length; k++) sum += KindWeight(config, stage, Kinds[k]);
+            int given = 0;
+            for (int k = 0; k < Kinds.Length; k++)
+            {
+                float exact = sum > 0f ? total * KindWeight(config, stage, Kinds[k]) / sum : 0f;
+                Split[k] = Mathf.FloorToInt(exact);
+                Remainders[k] = exact - Split[k];
+                given += Split[k];
+            }
+            for (; given < total && sum > 0f; given++)
+            {
+                int best = 0;
+                for (int k = 1; k < Kinds.Length; k++) if (Remainders[k] > Remainders[best]) best = k;
+                Split[best]++;
+                Remainders[best] = -1f;
+            }
+        }
+
+        /// <summary>
+        /// Oleada dinámica: el siguiente enemigo que sale. El tipo se sortea con la proporción del config como pesos; luego,
+        /// como en las simples.
         /// </summary>
         public static bool PickOne(SurvivalConfig config, int wave, SurvivalStage stage, System.Random rng, out SurvivalSpawnRequest request)
         {
             request = default;
             if (stage == null) return false;
             float total = 0f;
-            foreach (var kind in Kinds) total += KindWeight(config, wave, stage, kind);
+            foreach (var kind in Kinds) total += KindWeight(config, stage, kind);
             if (total <= 0f) return false;
 
             double roll = rng.NextDouble() * total;
             foreach (var kind in Kinds)
             {
-                float w = KindWeight(config, wave, stage, kind);
+                float w = KindWeight(config, stage, kind);
                 if (w <= 0f) continue;
                 roll -= w;
                 if (roll > 0) continue;
@@ -87,17 +114,12 @@ namespace RedMagic.Survival
             return false;
         }
 
-        private static float KindWeight(SurvivalConfig config, int wave, SurvivalStage stage, SurvivalSpawnKind kind)
+        /// <summary>El % del tipo, o 0 si el mundo no tiene enemigos de ese tipo (su parte se reparte entre los otros).</summary>
+        private static float KindWeight(SurvivalConfig config, SurvivalStage stage, SurvivalSpawnKind kind)
         {
             var pool = stage.Pool(kind);
             if (pool == null || !pool.Exists(e => e != null && e.prefab != null)) return 0f;
-            var count = kind switch
-            {
-                SurvivalSpawnKind.Flying => config.flyingCount,
-                SurvivalSpawnKind.Ground => config.groundCount,
-                _ => config.turretCount,
-            };
-            return Mathf.Max(0f, count.atFirstWave + count.perWave * (wave - 1));
+            return Mathf.Max(0f, config.KindPercent(kind));
         }
 
         private static SurvivalEnemyEntry Pick(List<SurvivalEnemyEntry> pool, SurvivalConfig config, System.Random rng)

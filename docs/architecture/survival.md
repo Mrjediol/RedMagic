@@ -12,10 +12,12 @@ level of a run.
     `zoneLook`, health/damage/count ×, three enemy lists — flying / ground / turret —, per-wave `waveSeconds` / `waveKills`
     for dynamic waves (list shorter than the waves → its last value repeats; empty → the config default) and an optional
     boss wave at the end); `repeatLastStage` (after the last stage keep going with it; off = victory screen);
-  - **`waveMode`**: *Simple* (a fixed list per wave: `flying/ground/turretCount` = at wave 1 / + per wave / cap; spawned one
-    every `spawnInterval` while alive < `maxAlive`; cleared when nothing alive or pending) or *Dynamic* (fill up to
-    `dynamicMaxAlive` staggered by `spawnInterval`, then each death asks for another `respawnDelay` s later if there is room;
-    the three counts become the kind mix; ends by **time** (`waveSeconds`, `onTimeUp`: stop spawning and finish the rest,
+  - **kind mix** for both wave modes: `flyingPercent` / `groundPercent` / `turretPercent` (80 / 15 / 5; normalised between
+    them, a kind with no enemies in the stage gives its share to the others);
+  - **`waveMode`**: *Simple* (a fixed list per wave: `enemiesPerWave` = at wave 1 / + per wave / cap, split by the mix with
+    largest remainders — 26 → 21 / 4 / 1; spawned one every `spawnInterval` while alive < `maxAlive`; cleared when nothing
+    alive or pending) or *Dynamic* (fill up to `dynamicMaxAlive` staggered by `spawnInterval`, then each death asks for
+    another `respawnDelay` s later if there is room; each one's kind is rolled with the mix; ends by **time** (`waveSeconds`, `onTimeUp`: stop spawning and finish the rest,
     or they vanish without loot) or by **kills** (`waveKills`; never spawns more than the kills still needed));
   - where they appear (rules for `SurvivalSpawnFinder`, no hand-placed points): `minDistance` / `maxDistance` from the
     player, `maxAbove` / `maxBelow`, `minSeparation` from any enemy, `flyerClearance`, `groundSpawnHeight`, `solidLayers`
@@ -26,9 +28,9 @@ level of a run.
     (simple), × kills to reach, × health, × damage — more enemies = more to farm, more health/damage = the cost;
   - rewards between waves (flags: shop / item drop / both / nothing; a stage can override), heal between waves, auto-next
     timer (0 = wait for the player), gold drop × (≥ 1, via `CurrencyDropModifiers`), gold per cleared wave.
-- **`SurvivalWaveBuilder`** — pure logic. `Build` = a simple wave's list (count per kind × stage × difficulty, weighted pick,
-  special only if `variant.difficulty ≤ wave difficulty`, then `specialChance`, shuffled; boss wave = one random boss).
-  `PickOne` = the next enemy of a dynamic wave (kind weighted by this wave's three counts, then the same pick).
+- **`SurvivalWaveBuilder`** — pure logic. `Build` = a simple wave's list (total × stage × difficulty split by the kind mix,
+  weighted pick by rarity, special only if `variant.difficulty ≤ wave difficulty`, then `specialChance`, shuffled; boss wave
+  = one random boss). `PickOne` = the next enemy of a dynamic wave (kind rolled with the mix, then the same pick).
 - **`SurvivalSpawnFinder`** — where each enemy appears, by rules (replaced hand-placed spawn points on 2026-10-20: with
   ~20 points only 2–4 fell inside the radius and enemies piled up on them). Random samples in the box around the player,
   kept if inside the ring (min–max distance, above/below limits), not in rock and `minSeparation` away from every alive or
